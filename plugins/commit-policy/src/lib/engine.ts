@@ -41,6 +41,7 @@ import {
 } from './services/commit-driver';
 import type { IPushDriverResult } from './services/push-driver';
 import { validateConventionalHeader } from './services/git-extra';
+import { withGitWriteLock } from './services/git-write-lock';
 
 /**
  * Discriminated event the engine accepts. Mirrors the trigger
@@ -166,180 +167,186 @@ export const createCommitPolicyEngine = (
 	options: IEngineOptions,
 ): ICommitPolicyEngine => {
 	const seen = new Set<string>();
+	let handleTail = Promise.resolve();
+	const handleEvent = async (event: IEngineEvent): Promise<IEngineResult> => {
+		// Step 1 — slice selector (x00262). Slice events carry
+		// proposalId + sliceId from the trigger; manual events
+		// may or may not carry them. Threshold / interval
+		// never carry a slice selector.
+		if (event.kind === 'slice') {
+			if (event.proposalId.length === 0 || event.sliceId.length === 0) {
+				return err('INCOMPLETE_SELECTOR', 'slice selector missing');
+			}
+		} else if (event.kind === 'manual' && event.slice !== undefined) {
+			if (
+				event.slice.proposalId.length === 0 ||
+				event.slice.sliceId.length === 0
+			) {
+				return err('INCOMPLETE_SELECTOR', 'slice selector missing');
+			}
+		}
+
+		// Step 2 — branch policy (x00267). Unified check; works
+		// for any trigger that could land on a protected
+		// branch. The driver also enforces this, but doing
+		// the check here means we can short-circuit BEFORE
+		// staging and before the post-stage subset test.
+		const branch = await options.driver.run([
+			'rev-parse',
+			'--abbrev-ref',
+			'HEAD',
+		]);
+		const branchName =
+			branch.ok && branch.output.trim() !== 'HEAD'
+				? branch.output.trim()
+				: undefined;
+		if (isBranchProtected(branchName, options.branchPolicy)) {
+			return err(
+				'BRANCH_PROTECTED',
+				branchProtectedRefusal(
+					branchName ?? '(detached)',
+					options.branchPolicy,
+				),
+			);
+		}
+
+		// Step 3 — message composition + conventional check
+		// (x00265). Threshold / interval use a generic message
+		// that is already conventional; slice events use the
+		// proposal scope; manual events use the caller-supplied
+		// message verbatim.
+		const baseMessage = composeMessage(event);
+		const verdict = validateConventionalHeader(baseMessage);
+		if (
+			verdict.status !== 'OK' &&
+			options.driver.policy.commit.requireConventional
+		) {
+			return err(
+				'NON_CONVENTIONAL_MESSAGE',
+				`${verdict.status}: ${verdict.first}`,
+			);
+		}
+
+		// Step 4 — files (x00263). Slice events must declare
+		// non-empty files; threshold / interval carry the
+		// dirty set; manual events may pass files or let the
+		// caller pre-stage.
+		if (event.kind === 'slice' && event.files.length === 0) {
+			return err(
+				'SLICE_HAS_NO_FILES',
+				`slice ${event.proposalId}-${event.sliceId} declared no files`,
+			);
+		}
+		if (
+			(event.kind === 'threshold' || event.kind === 'interval') &&
+			event.files.length === 0
+		) {
+			return err(
+				'TRIGGER_HAS_NO_FILES',
+				`${event.kind} fired with zero dirty paths`,
+			);
+		}
+
+		// Step 4.5 — idempotency check (f00183). The store is
+		// consulted BEFORE staging so a replay never wastes
+		// work on `git add --`.
+		if (options.processedEvents !== undefined) {
+			const key = computeIdempotencyKey(event);
+			if (await options.processedEvents.has(key)) {
+				return { ack: 'ALREADY_PROCESSED', key };
+			}
+		}
+
+		// Step 5 + 6 — delegate to the existing driver. It
+		// owns the staging + post-stage subset check + commit
+		// call; the engine is a pure router. f00183 will swap
+		// the driver for an idempotency-aware variant.
+		const driverInput = toDriverInput(
+			event,
+			baseMessage,
+			options.driver.policy.cadence.sliceScoping &&
+				options.driver.policy.cadence.allowForeignChanges !== true,
+		);
+		const result = await runCommitDriver(driverInput, options.driver);
+
+		if (result.refusal !== undefined) {
+			return refusalToEngine(result.refusal);
+		}
+
+		// Step 7 — push (x00266). Wait for the scheduler so
+		// callers never observe a premature success.
+		const pushed = result.pushed;
+		if (options.onCommitSucceeded !== undefined && result.committed) {
+			try {
+				const pushResult = await options.onCommitSucceeded();
+				if (
+					pushResult !== null &&
+					pushResult !== undefined &&
+					!isPushSuccess(pushResult)
+				) {
+					return err('PUSH_FAILED', pushFailureReason(pushResult), {
+						committed: true,
+						pushed: false,
+						...(result.hash !== undefined
+							? { commitSha: result.hash }
+							: {}),
+					});
+				}
+				if (pushResult !== null && pushResult !== undefined) {
+					return {
+						ack: 'OK',
+						committed: true,
+						pushed: true,
+						...(result.hash !== undefined
+							? { commitSha: result.hash }
+							: {}),
+					};
+				}
+			} catch (error) {
+				return err(
+					'PUSH_FAILED',
+					`push failed: ${error instanceof Error ? error.message : String(error)}`,
+					{
+						committed: true,
+						pushed: false,
+						...(result.hash !== undefined
+							? { commitSha: result.hash }
+							: {}),
+					},
+				);
+			}
+		}
+
+		const commitSha = result.hash;
+		seen.add(event.eventId);
+		// Persist the key AFTER a successful commit so a
+		// replay sees the marker on the next poll.
+		if (options.processedEvents !== undefined && result.committed) {
+			await options.processedEvents.add(
+				computeIdempotencyKey(event),
+				commitSha ?? 'unknown',
+			);
+		}
+		return {
+			ack: 'OK',
+			committed: result.committed,
+			pushed,
+			...(commitSha !== undefined ? { commitSha } : {}),
+		};
+	};
 
 	return {
-		async handle(event) {
-			// Step 1 — slice selector (x00262). Slice events carry
-			// proposalId + sliceId from the trigger; manual events
-			// may or may not carry them. Threshold / interval
-			// never carry a slice selector.
-			if (event.kind === 'slice') {
-				if (
-					event.proposalId.length === 0 ||
-					event.sliceId.length === 0
-				) {
-					return err('INCOMPLETE_SELECTOR', 'slice selector missing');
-				}
-			} else if (event.kind === 'manual' && event.slice !== undefined) {
-				if (
-					event.slice.proposalId.length === 0 ||
-					event.slice.sliceId.length === 0
-				) {
-					return err('INCOMPLETE_SELECTOR', 'slice selector missing');
-				}
-			}
-
-			// Step 2 — branch policy (x00267). Unified check; works
-			// for any trigger that could land on a protected
-			// branch. The driver also enforces this, but doing
-			// the check here means we can short-circuit BEFORE
-			// staging and before the post-stage subset test.
-			const branch = await options.driver.run([
-				'rev-parse',
-				'--abbrev-ref',
-				'HEAD',
-			]);
-			const branchName =
-				branch.ok && branch.output.trim() !== 'HEAD'
-					? branch.output.trim()
-					: undefined;
-			if (isBranchProtected(branchName, options.branchPolicy)) {
-				return err(
-					'BRANCH_PROTECTED',
-					branchProtectedRefusal(
-						branchName ?? '(detached)',
-						options.branchPolicy,
-					),
-				);
-			}
-
-			// Step 3 — message composition + conventional check
-			// (x00265). Threshold / interval use a generic message
-			// that is already conventional; slice events use the
-			// proposal scope; manual events use the caller-supplied
-			// message verbatim.
-			const baseMessage = composeMessage(event);
-			const verdict = validateConventionalHeader(baseMessage);
-			if (
-				verdict.status !== 'OK' &&
-				options.driver.policy.commit.requireConventional
-			) {
-				return err(
-					'NON_CONVENTIONAL_MESSAGE',
-					`${verdict.status}: ${verdict.first}`,
-				);
-			}
-
-			// Step 4 — files (x00263). Slice events must declare
-			// non-empty files; threshold / interval carry the
-			// dirty set; manual events may pass files or let the
-			// caller pre-stage.
-			if (event.kind === 'slice' && event.files.length === 0) {
-				return err(
-					'SLICE_HAS_NO_FILES',
-					`slice ${event.proposalId}-${event.sliceId} declared no files`,
-				);
-			}
-			if (
-				(event.kind === 'threshold' || event.kind === 'interval') &&
-				event.files.length === 0
-			) {
-				return err(
-					'TRIGGER_HAS_NO_FILES',
-					`${event.kind} fired with zero dirty paths`,
-				);
-			}
-
-			// Step 4.5 — idempotency check (f00183). The store is
-			// consulted BEFORE staging so a replay never wastes
-			// work on `git add --`.
-			if (options.processedEvents !== undefined) {
-				const key = computeIdempotencyKey(event);
-				if (await options.processedEvents.has(key)) {
-					return { ack: 'ALREADY_PROCESSED', key };
-				}
-			}
-
-			// Step 5 + 6 — delegate to the existing driver. It
-			// owns the staging + post-stage subset check + commit
-			// call; the engine is a pure router. f00183 will swap
-			// the driver for an idempotency-aware variant.
-			const driverInput = toDriverInput(
-				event,
-				baseMessage,
-				options.driver.policy.cadence.sliceScoping &&
-					options.driver.policy.cadence.allowForeignChanges !== true,
+		handle(event) {
+			const queued = handleTail.then(() =>
+				withGitWriteLock(options.driver.workspaceRoot, () =>
+					handleEvent(event),
+				),
 			);
-			const result = await runCommitDriver(driverInput, options.driver);
-
-			if (result.refusal !== undefined) {
-				return refusalToEngine(result.refusal);
-			}
-
-			// Step 7 — push (x00266). Wait for the scheduler so
-			// callers never observe a premature success.
-			const pushed = result.pushed;
-			if (options.onCommitSucceeded !== undefined && result.committed) {
-				try {
-					const pushResult = await options.onCommitSucceeded();
-					if (
-						pushResult !== null &&
-						pushResult !== undefined &&
-						!isPushSuccess(pushResult)
-					) {
-						return err(
-							'PUSH_FAILED',
-							pushFailureReason(pushResult),
-							{
-								committed: true,
-								pushed: false,
-								...(result.hash !== undefined
-									? { commitSha: result.hash }
-									: {}),
-							},
-						);
-					}
-					if (pushResult !== null && pushResult !== undefined) {
-						return {
-							ack: 'OK',
-							committed: true,
-							pushed: true,
-							...(result.hash !== undefined
-								? { commitSha: result.hash }
-								: {}),
-						};
-					}
-				} catch (error) {
-					return err(
-						'PUSH_FAILED',
-						`push failed: ${error instanceof Error ? error.message : String(error)}`,
-						{
-							committed: true,
-							pushed: false,
-							...(result.hash !== undefined
-								? { commitSha: result.hash }
-								: {}),
-						},
-					);
-				}
-			}
-
-			const commitSha = result.hash;
-			seen.add(event.eventId);
-			// Persist the key AFTER a successful commit so a
-			// replay sees the marker on the next poll.
-			if (options.processedEvents !== undefined && result.committed) {
-				await options.processedEvents.add(
-					computeIdempotencyKey(event),
-					commitSha ?? 'unknown',
-				);
-			}
-			return {
-				ack: 'OK',
-				committed: result.committed,
-				pushed,
-				...(commitSha !== undefined ? { commitSha } : {}),
-			};
+			handleTail = queued.then(
+				() => undefined,
+				() => undefined,
+			);
+			return queued;
 		},
 		async dispose() {
 			seen.clear();
