@@ -15,7 +15,7 @@ import { resolveAdoptionStrategy } from './adoption-strategy';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
 import { ANALYZE_INPUT_SCHEMA } from './schemas';
 import { toolJson } from '../shared/tool-response';
-import { compactOutputSchema } from '../surface/compact-output-schema';
+import { compactOutputSchema } from '../surface/compact-output-schema.helper';
 
 export interface IAnalyzeToolDeps {
 	readonly namespacePrefix: string;

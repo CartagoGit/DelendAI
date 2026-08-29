@@ -8,7 +8,7 @@ import type {
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
 import { toolJson } from '../shared/tool-response';
-import { compactOutputSchema } from '../surface/compact-output-schema';
+import { compactOutputSchema } from '../surface/compact-output-schema.helper';
 
 export interface IOverviewToolEntry {
 	readonly name: string;
