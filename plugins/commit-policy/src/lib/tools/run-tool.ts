@@ -12,6 +12,7 @@ import { buildDryRunResult, toolError, toolOk } from '@mcp-vertex/core/public';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
+import { buildTriggerCommitMessage } from '../engine';
 import { localizedString } from '../contracts/i18n-types';
 import {
 	runCommitDriver,
@@ -333,7 +334,12 @@ export const planCommitPolicyRun = async (
 		slicePin !== null
 			? `feat(${slicePin.proposalId}): commit via ${triggerEvent.kind}`
 			: triggerPin !== null
-				? `chore: commit via ${triggerEvent.kind}`
+				? buildTriggerCommitMessage({
+						kind: triggerEvent.kind,
+						files: triggerPin.files,
+						dirtyCount:
+							triggerEvent.dirtyCount ?? triggerPin.files.length,
+					})
 				: `chore: commit via ${triggerEvent.kind}`;
 
 	// Step 4 — emit the canonical DryRunResult envelope.
@@ -457,7 +463,13 @@ export const runCommitPolicyRun = async (
 				}
 			: triggerPin !== null
 				? {
-						message: `chore: commit via ${triggerEvent.kind}`,
+						message: buildTriggerCommitMessage({
+							kind: triggerEvent.kind,
+							files: triggerPin.files,
+							dirtyCount:
+								triggerEvent.dirtyCount ??
+								triggerPin.files.length,
+						}),
 						triggerContext: triggerPin,
 					}
 				: {
