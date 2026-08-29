@@ -96,6 +96,17 @@ const SYNC_IO_ALLOWLIST = new Set<string>([
 	// model.
 	'plugins/proposals/src/lib/services/transition-evidence.ts:12',
 	'plugins/proposals/src/lib/services/transition-evidence.ts:108',
+	// project-kpis currently accepts an injectable sync `pathExists`
+	// predicate across snapshot/history/query flows. The default
+	// `existsSync` checks only the presence of canonical cache files and
+	// keeps the current test seam stable while the broader async contract
+	// remains under separate design work.
+	'plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts:1',
+	'plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts:190',
+	'plugins/project-kpis/src/lib/services/kpi-history.service.ts:1',
+	'plugins/project-kpis/src/lib/services/kpi-history.service.ts:92',
+	'plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1',
+	'plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1005',
 ]);
 
 const SYNC_IO_PATTERN =

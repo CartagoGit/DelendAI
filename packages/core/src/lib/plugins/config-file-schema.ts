@@ -163,6 +163,18 @@ export const CONFIG_FILE_SCHEMA = z
 			.optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
+		core: z
+			.object({
+				agentPolicy: z
+					.object({
+						autonomous: z.boolean().optional(),
+						principles: z.array(z.string().min(1)).optional(),
+					})
+					.strict()
+					.optional(),
+			})
+			.strict()
+			.optional(),
 		// S5 (L3 — feature flags): optional top-level feature
 		// flags block. Default-off; see `docs/mcp-vertex/api/feature-flags.md`.
 		// Per-plugin flags live under `plugins.<name>.options.featureFlags`.

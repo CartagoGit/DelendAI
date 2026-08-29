@@ -107,6 +107,28 @@
 		"agentWorktree": {
 			"type": "boolean"
 		},
+		"core": {
+			"type": "object",
+			"properties": {
+				"agentPolicy": {
+					"type": "object",
+					"properties": {
+						"autonomous": {
+							"type": "boolean"
+						},
+						"principles": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1
+							}
+						}
+					},
+					"additionalProperties": false
+				}
+			},
+			"additionalProperties": false
+		},
 		"featureFlags": {
 			"type": "object",
 			"propertyNames": {

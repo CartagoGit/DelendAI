@@ -1,5 +1,9 @@
 import type { IPromptRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { buildCatalog } from '../catalog/agent-discovery-catalog';
+import {
+	DEFAULT_AGENT_POLICY,
+	type IMcpVertexAgentPolicyConfig,
+} from '../plugins/load-config-file';
 import type {
 	IBuildCatalogOptions,
 	ICatalogSources,
@@ -9,6 +13,7 @@ export interface ICatalogPromptOptions {
 	readonly sources: ICatalogSources;
 	readonly server: IBuildCatalogOptions['server'];
 	readonly now?: () => Date;
+	readonly agentPolicy?: IMcpVertexAgentPolicyConfig;
 }
 
 export const buildAgentBootstrapPromptRegistration = (
@@ -24,6 +29,12 @@ export const buildAgentBootstrapPromptRegistration = (
 					'One-click orientation for any agent connected to this MCP server. Calls `mcp-vertex_overview` first, then `mcp-vertex_agent_catalog` to discover the tools/skills/proposals you can use right now.',
 			},
 			async () => {
+				const autonomous =
+					options.agentPolicy?.autonomous ??
+					DEFAULT_AGENT_POLICY.autonomous;
+				const principles =
+					options.agentPolicy?.principles ??
+					DEFAULT_AGENT_POLICY.principles;
 				const catalog = buildCatalog(options.sources, {
 					mode: 'compact',
 					...(options.now !== undefined ? { now: options.now } : {}),
@@ -42,6 +53,11 @@ export const buildAgentBootstrapPromptRegistration = (
 							content: {
 								type: 'text' as const,
 								text: [
+									`Working mode: ${autonomous ? 'autonomous by default' : 'collaborative / ask before autonomous execution'}.`,
+									'Engineering principles:',
+									...principles.map(
+										(principle) => `- ${principle}`,
+									),
 									'1. Call `mcp-vertex_overview` first to map the server and confirm the loaded plugin surface.',
 									'2. Call `mcp-vertex_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
 									'3. Narrow with `section` or `query` before doing work, then pick the matching proposal or skill instead of rereading docs broadly.',

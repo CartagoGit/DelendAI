@@ -190,6 +190,7 @@ export { resolvePublicToolIdentity } from '../lib/contracts/resolvers/safe-tool-
 export { diagnoseWorkspaceLayout } from '../lib/plugins/diagnose-workspace-layout';
 export {
 	CONFIG_FILE_SCHEMA,
+	DEFAULT_AGENT_POLICY,
 	DEFAULT_CONFIG_FILENAME,
 	diagnoseConfigFile,
 	diagnosePluginPathConfig,
@@ -364,6 +365,8 @@ export type {
 	IBootstrapPatternOverride,
 	IBootstrapPatternOverrides,
 	IFilesystemConfig,
+	IMcpVertexAgentPolicyConfig,
+	IMcpVertexCoreConfig,
 	ILoopDetectorConfig,
 	IMcpVertexCachePolicyConfig,
 	IMcpVertexCacheWorktreesConfig,

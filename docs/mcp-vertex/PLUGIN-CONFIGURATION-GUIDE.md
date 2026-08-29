@@ -66,6 +66,36 @@ cada tarea, en la identidad configurada. El autor se resuelve **centralmente**
 en el core, así que el agente no pregunta de quién es el nombre y no deja
 trabajo terminado sin commitear.
 
+### 3.1 Política global de agentes
+
+La sección raíz `core` contiene la configuración propia del core. Su bloque
+`core.agentPolicy` define el modo de trabajo y los principios de ingeniería que
+el core incluye en el prompt canónico de bootstrap. Todos los hosts que consumen
+ese prompt reciben la misma política efectiva:
+
+```jsonc
+{
+  "core": {
+    "agentPolicy": {
+      "autonomous": true,
+      "principles": [
+        "Apply SOLID architecture where it improves ownership and changeability.",
+        "Use good engineering practices and keep the code clear and maintainable.",
+        "Reuse existing code and abstractions before introducing duplication.",
+        "Keep naming, files, and folders homogeneous with the surrounding project."
+      ]
+    }
+  }
+}
+```
+
+Si `core` o `core.agentPolicy` se omite, el core usa esos mismos valores por
+defecto. Cada campo configurado reemplaza únicamente su default: por ejemplo,
+`{"core":{"agentPolicy":{"autonomous":false}}}` conserva los cuatro
+principios y pide al agente que no ejecute trabajo autónomo sin confirmación.
+Los proyectos pueden definir sus propios principios en `principles`; deben
+describir reglas del proyecto, no depender de un plugin concreto.
+
 ### 3.2 Clean code, SOLID, código mantenible y reutilización
 
 Ya es el **default no negociable** (bootstrap §6). Los plugins que lo

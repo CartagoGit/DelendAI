@@ -3,7 +3,7 @@
 <!-- generated: token-budget-dashboard.script.ts -->
 <!-- generated — do not edit by hand -->
 
-Generated at: 2026-08-29T22:50:58.750Z
+Generated at: 2026-08-29T23:30:01.793Z
 
 This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.
 
@@ -43,10 +43,10 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 | agent_catalog full | native | 8,736 | 2184 | 8,500 | 9,000 | over warning (8,500B) |
 | analyze_project {} | native | 829 | 208 | 1,600 | 1,800 | within hard |
 | plan_mcp_project {} | native | 836 | 209 | 1,800 | 2,000 | within hard |
-| search_search | native | 797 | 200 | 2,700 | 3,000 | within hard |
-| docs_docs_list | native | 276 | 69 | 2,200 | 2,500 | within hard |
+| search_search | native | 874 | 219 | 2,700 | 3,000 | within hard |
+| docs_docs_list | native | 209 | 53 | 2,200 | 2,500 | within hard |
 | proposals_round_context | native | 153 | 39 | 2,700 | 3,000 | within hard |
-| logs_tail | native | 2,324 | 581 | 5,500 | 6,000 | within hard |
+| logs_tail | native | 2,610 | 653 | 5,500 | 6,000 | within hard |
 
 ## Real preset dashboard
 
@@ -64,7 +64,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 858 | n/a | within hard | within hard | none |
 | full | full | native | managed | tokens-gate | 31 | 168 | 193,023 | 48256 | 157,069 | 14,700 | 48,668 | 108,401 | 48,550 | 4,721 | 153 | within hard | within hard | none |
 | full | full | adaptive | managed | dynamic-client | 31 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 899 | n/a | within hard | within hard | none |
-| vertex | vertex | native | managed | tokens-gate | 37 | 189 | 244,723 | 61181 | 202,424 | 17,994 | 55,742 | 146,682 | 48,550 | 5,606 | 153 | within hard | within hard | none |
+| vertex | vertex | native | managed | tokens-gate | 37 | 189 | 245,129 | 61283 | 202,832 | 17,992 | 55,742 | 147,090 | 48,550 | 5,606 | 153 | within hard | within hard | none |
 | vertex | vertex | adaptive | managed | dynamic-client | 37 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 1,030 | n/a | within hard | within hard | none |
 | web-app | web-app | native | managed | tokens-gate | 18 | 85 | 96,974 | 24244 | 79,296 | 7,076 | 24,515 | 54,781 | 8,221 | 2,644 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | managed | dynamic-client | 18 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 727 | n/a | n/a | n/a | none |
@@ -171,7 +171,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | vertex | native | managed | tokens-gate | audit | 4 | 9,700 | 802 | 1,806 | 6,590 | 0 | 108 | 272 | 4.0% |
 | vertex | native | managed | tokens-gate | auto-agent-selector | 5 | 7,327 | 620 | 1,377 | 4,633 | 0 | 135 | 340 | 3.0% |
 | vertex | native | managed | tokens-gate | auto-plugin-selector | 1 | 3,827 | 154 | 1,227 | 2,300 | 0 | 27 | 68 | 1.6% |
-| vertex | native | managed | tokens-gate | commit-policy | 4 | 5,003 | 603 | 975 | 2,878 | 0 | 108 | 256 | 2.0% |
+| vertex | native | managed | tokens-gate | commit-policy | 4 | 5,409 | 601 | 975 | 3,286 | 0 | 108 | 256 | 2.2% |
 | vertex | native | managed | tokens-gate | completion | 3 | 2,612 | 396 | 704 | 1,129 | 0 | 81 | 204 | 1.1% |
 | vertex | native | managed | tokens-gate | container | 5 | 3,489 | 580 | 1,627 | 687 | 0 | 135 | 276 | 1.4% |
 | vertex | native | managed | tokens-gate | conventions | 2 | 1,962 | 164 | 433 | 1,088 | 0 | 54 | 136 | 0.8% |
@@ -189,11 +189,11 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | vertex | native | managed | tokens-gate | link-check | 1 | 1,354 | 112 | 85 | 1,028 | 0 | 27 | 68 | 0.6% |
 | vertex | native | managed | tokens-gate | logs | 9 | 6,905 | 695 | 2,644 | 2,482 | 0 | 243 | 612 | 2.8% |
 | vertex | native | managed | tokens-gate | memory | 9 | 8,221 | 553 | 2,737 | 3,824 | 0 | 243 | 612 | 3.4% |
-| vertex | native | managed | tokens-gate | notification | 2 | 1,592 | 196 | 291 | 840 | 0 | 54 | 136 | 0.7% |
+| vertex | native | managed | tokens-gate | notification | 2 | 1,592 | 196 | 291 | 840 | 0 | 54 | 136 | 0.6% |
 | vertex | native | managed | tokens-gate | orchestrator-runner | 11 | 14,202 | 1,028 | 4,012 | 7,595 | 0 | 297 | 748 | 5.8% |
 | vertex | native | managed | tokens-gate | agent-orchestrator | 6 | 10,007 | 737 | 1,907 | 6,561 | 0 | 162 | 408 | 4.1% |
 | vertex | native | managed | tokens-gate | perf | 3 | 3,872 | 281 | 1,152 | 2,083 | 0 | 81 | 188 | 1.6% |
-| vertex | native | managed | tokens-gate | proposals | 34 | 48,550 | 3,364 | 9,960 | 30,702 | 0 | 918 | 2,312 | 19.9% |
+| vertex | native | managed | tokens-gate | proposals | 34 | 48,550 | 3,364 | 9,960 | 30,702 | 0 | 918 | 2,312 | 19.8% |
 | vertex | native | managed | tokens-gate | quality | 4 | 3,901 | 294 | 550 | 2,535 | 0 | 108 | 272 | 1.6% |
 | vertex | native | managed | tokens-gate | rules | 3 | 5,856 | 263 | 520 | 4,700 | 0 | 81 | 204 | 2.4% |
 | vertex | native | managed | tokens-gate | search | 1 | 1,749 | 65 | 625 | 938 | 0 | 27 | 68 | 0.7% |
@@ -263,6 +263,7 @@ The 20 individual tools that cost the most tools/list bytes in the largest gover
 | mcp-vertex_audit_audit_run | audit | 3,579 | 28 | 277 | 1,005 | 2,174 | 0 | 27 | 68 |
 | mcp-vertex_adopt_project | core | 3,471 | 26 | 138 | 331 | 2,881 | 0 | 27 | 68 |
 | mcp-vertex_usage-tracking_session_hygiene | usage-tracking | 3,345 | 43 | 71 | 146 | 2,990 | 0 | 27 | 68 |
+| mcp-vertex_commit-policy_commit_policy_status | commit-policy | 2,871 | 47 | 153 | 85 | 2,491 | 0 | 27 | 68 |
 | mcp-vertex_audit_audit_consolidate | audit | 2,870 | 36 | 269 | 304 | 2,166 | 0 | 27 | 68 |
 | mcp-vertex_proposals_proposal_get | proposals | 2,772 | 35 | 44 | 33 | 2,565 | 0 | 27 | 68 |
 | mcp-vertex_auto-agent-selector_auto_run | auto-agent-selector | 2,684 | 41 | 149 | 565 | 1,834 | 0 | 27 | 68 |
@@ -270,7 +271,6 @@ The 20 individual tools that cost the most tools/list bytes in the largest gover
 | mcp-vertex_proposals_proposal_adopt | proposals | 2,597 | 37 | 121 | 263 | 2,081 | 0 | 27 | 68 |
 | mcp-vertex_scaffold | core | 2,522 | 21 | 103 | 1,519 | 784 | 0 | 27 | 68 |
 | mcp-vertex_create_plugin | core | 2,502 | 26 | 194 | 292 | 1,895 | 0 | 27 | 68 |
-| mcp-vertex_commit-policy_commit_policy_status | commit-policy | 2,465 | 47 | 155 | 85 | 2,083 | 0 | 27 | 68 |
 | mcp-vertex_agent-orchestrator_dispatch | agent-orchestrator | 2,423 | 40 | 113 | 491 | 1,684 | 0 | 27 | 68 |
 | mcp-vertex_agent-orchestrator_plan | agent-orchestrator | 2,337 | 36 | 176 | 491 | 1,539 | 0 | 27 | 68 |
 | mcp-vertex_adaptive-optimizer_optimize_run | adaptive-optimizer | 2,302 | 44 | 116 | 1,136 | 911 | 0 | 27 | 68 |
@@ -292,7 +292,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | swarm | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | native | managed | tokens-gate | 193,023 | 46688 | 47793 | 48256 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| vertex | native | managed | tokens-gate | 244,723 | 59042 | 60094 | 61181 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| vertex | native | managed | tokens-gate | 245,129 | 59123 | 60178 | 61283 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | vertex | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | native | managed | tokens-gate | 96,974 | 23192 | 23803 | 24244 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
@@ -316,7 +316,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | standard | 4,900 | ok | — | 112,516 | ok | — |
 | swarm | 4,900 | ok | — | 184,341 | ok | — |
 | full | 4,900 | ok | — | 193,023 | ok | — |
-| vertex | 4,900 | ok | — | 244,723 | ok | — |
+| vertex | 4,900 | ok | — | 245,129 | ok | — |
 | web-app | 4,900 | n/a | — | 96,974 | n/a | — |
 | backend-api | 4,900 | n/a | — | 95,390 | n/a | — |
 | cli-tool | 4,900 | n/a | — | 61,749 | n/a | — |
