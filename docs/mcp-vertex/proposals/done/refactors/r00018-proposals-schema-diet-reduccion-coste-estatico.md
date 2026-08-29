@@ -2,7 +2,7 @@
 id: r00018
 title: "proposals — schema diet: consolidar 31 tools en surfaces principales (target <40 KB), manteniendo tipos estrictos (TOK2-005)"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: tokens
 date: 2026-08-25
