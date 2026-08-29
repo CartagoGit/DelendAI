@@ -25,6 +25,7 @@ import {
 	type IProposalReadInput,
 	type IProposalReadOutput,
 } from '../contracts/surfaces/proposal-read.contract';
+import { DECIMAL_RADIX } from '../shared/branch-tool-helpers';
 import { locateProposal } from '../proposals/locate';
 import { readProposalIndex } from '../proposals/index-reader';
 import {
@@ -234,7 +235,10 @@ const buildSurfaceResponse = async (
 ): Promise<IProposalReadOutput | null> => {
 	if (args.view === 'list') {
 		const entries = await readProposalIndex(options.indexPathAbs);
-		const start = Number.parseInt(args.pagination?.cursor ?? '0', 10);
+		const start = Number.parseInt(
+			args.pagination?.cursor ?? '0',
+			DECIMAL_RADIX,
+		);
 		const limit = args.pagination?.limit ?? PROPOSAL_READ_DEFAULT_PAGE_SIZE;
 		const loaded = await Promise.all(
 			entries.map(async (entry) => {

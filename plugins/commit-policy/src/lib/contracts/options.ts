@@ -298,6 +298,17 @@ export const CommitSchema = z.object({
 export type ICommitPolicyCommit = z.infer<typeof CommitSchema>;
 
 // ---------------------------------------------------------------------------
+// Stash
+// ---------------------------------------------------------------------------
+
+export const StashSchema = z.object({
+	/** Whether agents may create, apply, list, or drop git stashes. */
+	enabled: z.boolean().default(false),
+});
+
+export type ICommitPolicyStash = z.infer<typeof StashSchema>;
+
+// ---------------------------------------------------------------------------
 // Top-level
 // ---------------------------------------------------------------------------
 
@@ -314,6 +325,7 @@ export const CommitPolicyOptionsSchema = z.object({
 		autoScopeFromProposal: true,
 		refuseWhenDisabled: true,
 	}),
+	stash: StashSchema.default({ enabled: false }),
 	identity: IdentitySchema.default({ mode: 'global' }),
 	audit: AuditSchema.default({
 		trailer: 'co-authored-by',

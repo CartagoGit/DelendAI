@@ -45,6 +45,7 @@ opt in. See "Configuration" below for the exact knobs.
 | `commit.requireConventional` | `true` | Refuse non-Conventional-Commit messages. |
 | `commit.autoScopeFromProposal` | `true` | Wrap bare `feat: x` as `feat(<proposalId>): x` when a slice context is present. |
 | `commit.refuseWhenDisabled` | `true` | Surface a typed refusal instead of silently dropping the call. |
+| `stash.enabled` | `false` | Whether agents may use git stash operations. Keep `false` to require work on the current branch. |
 | `identity.mode` | `"global"` | One of `explicit / agent / repo / global / env / auto`. |
 | `identity.owner` | _none_ | Required when `mode === "explicit"` — `{ name, email }`. |
 | `cadence.triggers` | `[]` | Empty array = no automatic commits; only `commit_policy_run` works. |

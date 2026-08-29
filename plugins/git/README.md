@@ -4,7 +4,8 @@ Git orientation plugin for
 [`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Status, changed files, diff
 stat and recent log as structured JSON, so agents cheaply see what changed —
 agnostic of language or framework. It is read-only by default; write tools are
-registered only with `plugins.git.options.allowWrite: true`.
+registered only with `plugins.git.options.allowWrite: true`. Stash management
+is separately opt-in with `plugins.git.options.allowStash: true`.
 
 ## Enable
 
@@ -33,6 +34,8 @@ registered only with `plugins.git.options.allowWrite: true`.
 
 With `allowWrite`, `git_commit` and `git_push` are added. Commits require a
 Conventional Commit message; protected destinations are refused and the only
-force mode is `with-lease`.
+force mode is `with-lease`. With `allowStash`, `git_stash` is added; it is
+disabled by default so agents cannot create, apply, or drop stashes unless the
+host explicitly permits it.
 
 BSD-3-Clause © Cartago

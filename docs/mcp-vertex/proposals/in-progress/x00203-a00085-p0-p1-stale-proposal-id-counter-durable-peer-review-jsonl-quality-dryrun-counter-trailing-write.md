@@ -46,14 +46,20 @@ a00085 scored correctness 4/10 on these exact gaps. The allocator bug already pr
   - "stale counter `{ r: 4 }` + on-disk `r00005` allocates `r00006`"
   - "counter ahead of disk still wins"
   - "prefixes reconcile independently"
-
+- review-state: done
+- review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ### S2 — Drop trailing bare writeFile in sync-proposal-counters
 - **Status**: done
 - **Files**: `tools/scripts/proposals/sync-proposal-counters.script.ts`
 - **Gate**: none
 - acceptance:
   - "script persists only via persistCounters (withFileMutex + writeFileAtomic)"
-
+- review-state: done
+- review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ### S3 — Durable peer-review JSONL writer
 - **Status**: done
 - **Files**: `plugins/proposals/src/lib/shared/peer-review-log.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/shared/peer-review-log.spec.ts`
@@ -61,14 +67,20 @@ a00085 scored correctness 4/10 on these exact gaps. The allocator bug already pr
 - acceptance:
   - "appendPeerReviewJsonl uses withFileMutex + handle.sync"
   - "authoring.tool routes through the shared helper"
-
+- review-state: done
+- review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ### S4 — run_quality dryRun does not spawn
 - **Status**: done
 - **Files**: `plugins/quality/src/index.ts`, `plugins/quality/tests/src/lib/quality.spec.ts`
 - **Gate**: lint
 - acceptance:
   - "dryRun:true returns { ok, dryRun, commands } and does not call runScope"
-
+- review-state: done
+- review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ## acceptance
 
 - Allocator stale-counter regressions pass.

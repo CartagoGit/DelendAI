@@ -369,7 +369,9 @@ const findReviewPendingPeerApproval = async (
 			if (!hasPeerApprovedReview(raw)) {
 				return { proposalId: entry.id, file: entry.file };
 			}
-		} catch {}
+		} catch (error: unknown) {
+			void error;
+		}
 	}
 	return null;
 };

@@ -34,16 +34,13 @@ Users need to understand both whether their project is progressing and whether t
 - **Status**: done
 - **Files**: `plugins/project-kpis/src/index.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.interface.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts`, `plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts`, `plugins/project-kpis/tests/src/kpi-aggregation.spec.ts`
 - **Gate**: type
-- review-state: submitted
-- review-implementer: mcp-vertex-orchestrator
-- review-reviewer: delivery_verifier
-- review-log: Contrato versionado, esquema Zod estricto y agregador bounded implementados. Typecheck de tools verde y `bun vitest run plugins/project-kpis/tests/src/kpi-aggregation.spec.ts` verde (1 archivo, 2 tests).
 - acceptance:
   - "A new project-kpis plugin builds through definePlugin and exposes a versioned typed snapshot contract."
   - "The snapshot distinguishes measured, estimated, unavailable and not-configured values."
   - "The aggregation core consumes existing public plugin services or adapters instead of duplicating scanners."
   - "The aggregate output is deterministic, bounded and passes its Zod output schema."
-
+- review-state: in_review
+- review-implementer: mcp-vertex-orchestrator
 ### S2 — Detailed invocation telemetry by plugin model agent request and outcome
 - **Status**: pending
 - **DependsOn**: [S1]

@@ -111,6 +111,17 @@ export async function createMcpProject(
 	) {
 		config.toolSurfaceRuntime.bind(toolSurfaceRuntime);
 	}
+	const knowledgeResourceRegistrations = new Map<string, Promise<void>>();
+	const registerKnowledgeResource = (
+		resource: IToolRegistration,
+	): Promise<void> => {
+		const uri = `knowledge://${resource.id.slice('resource:'.length)}`;
+		const existing = knowledgeResourceRegistrations.get(uri);
+		if (existing !== undefined) return existing;
+		const registration = resource.register(server);
+		knowledgeResourceRegistrations.set(uri, registration);
+		return registration;
+	};
 	if (toolSurfaceRuntime !== undefined) {
 		const materializedLazyTools = new Map<
 			string,
@@ -142,7 +153,7 @@ export async function createMcpProject(
 				for (const resource of buildKnowledgeResourceRegistrations(
 					registrations.knowledge ?? [],
 				)) {
-					await resource.register(server);
+					await registerKnowledgeResource(resource);
 				}
 			}
 		};
@@ -345,6 +356,10 @@ export async function createMcpProject(
 		await prompt.register(server);
 	}
 	for (const resource of config.extraResources ?? []) {
+		if (resource.id.startsWith('resource:')) {
+			await registerKnowledgeResource(resource);
+			continue;
+		}
 		await resource.register(server);
 	}
 	let disposed = false;

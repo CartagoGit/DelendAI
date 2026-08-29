@@ -117,8 +117,12 @@ export interface IScaffoldOptions {
 // Slug + filename helpers
 // ---------------------------------------------------------------------------
 
+const DEFAULT_SLUG_MAX_LENGTH = 60;
+const PROPOSAL_ID_WIDTH = 5;
+const MAX_ID_ALLOCATION_ATTEMPTS = 10_000;
+
 /** Convert a finding title to a stable, filesystem-safe kebab slug. */
-const toSlug = (title: string, maxLen = 60): string => {
+const toSlug = (title: string, maxLen = DEFAULT_SLUG_MAX_LENGTH): string => {
 	const base = title
 		.normalize('NFKD')
 		.replace(/[̀-ͯ]/gu, '')
@@ -129,7 +133,8 @@ const toSlug = (title: string, maxLen = 60): string => {
 };
 
 /** Five-digit zero-padded id, matches the repo's existing proposal ids. */
-const padId = (n: number): string => n.toString().padStart(5, '0');
+const padId = (n: number): string =>
+	n.toString().padStart(PROPOSAL_ID_WIDTH, '0');
 
 const WORKSPACE_PATH_RE =
 	/(?:^|\/)((?:packages|plugins|extensions|apps|tools|docs|scripts|src|lib)\/.+)$/;
@@ -171,12 +176,16 @@ const allocateId = (
 	startAt: number,
 	taken: ReadonlySet<string>,
 ): string => {
-	for (let n = Math.max(1, startAt); n < startAt + 10_000; n += 1) {
+	for (
+		let n = Math.max(1, startAt);
+		n < startAt + MAX_ID_ALLOCATION_ATTEMPTS;
+		n += 1
+	) {
 		const candidate = `${prefix}${padId(n)}`;
 		if (!taken.has(candidate)) return candidate;
 	}
 	throw new Error(
-		`proposal scaffolder: ran out of ids under prefix "${prefix}" after 10 000 attempts`,
+		`proposal scaffolder: ran out of ids under prefix "${prefix}" after ${MAX_ID_ALLOCATION_ATTEMPTS} attempts`,
 	);
 };
 

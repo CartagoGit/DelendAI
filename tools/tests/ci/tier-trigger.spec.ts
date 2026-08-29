@@ -45,11 +45,6 @@ interface IOnBlock {
 	readonly workflow_dispatch?: unknown;
 }
 
-interface IWorkflow {
-	readonly name?: string;
-	readonly on?: IOnBlock;
-}
-
 const here = dirname(fileURLToPath(import.meta.url));
 // tools/tests/ci/tier-trigger.spec.ts → repo root is 3 levels up.
 const repoRoot = join(here, '..', '..', '..');
