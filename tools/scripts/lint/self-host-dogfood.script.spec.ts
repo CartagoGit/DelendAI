@@ -26,6 +26,7 @@ const localDogfoodEntry = (workspace: string) => ({
 	type: 'stdio',
 	command: 'bun',
 	args: [
+		'--watch',
 		'tools/scripts/host/host-server.script.ts',
 		`--workspace=${workspace}`,
 	],

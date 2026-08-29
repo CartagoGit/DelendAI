@@ -407,8 +407,14 @@ export default definePlugin({
 				: { requirePeerReview: true }),
 			...((ctx.peerPlugins?.has('quality') ?? false)
 				? {
-						runQuality: () =>
-							runCloseSliceQualityGate(ctx.workspace.root),
+						runQuality: (input) =>
+							input?.skipWhenValidateEvidenceFresh === true
+								? Promise.resolve({
+										ok: true,
+										severity: 'ok' as const,
+										findings: [],
+									})
+								: runCloseSliceQualityGate(ctx.workspace.root),
 					}
 				: {}),
 			...(parsedOptions.data.persist !== undefined

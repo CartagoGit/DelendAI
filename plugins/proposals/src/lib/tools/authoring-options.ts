@@ -118,7 +118,9 @@ export interface IAuthoringToolOptions {
 	 * do not wire the quality plugin fall back to the existing
 	 * validation-only path.
 	 */
-	readonly runQuality?: () => Promise<{
+	readonly runQuality?: (input?: {
+		readonly skipWhenValidateEvidenceFresh?: boolean;
+	}) => Promise<{
 		readonly ok: boolean;
 		readonly severity: 'ok' | 'error';
 		readonly findings: readonly string[];

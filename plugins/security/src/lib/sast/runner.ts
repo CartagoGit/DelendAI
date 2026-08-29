@@ -77,6 +77,9 @@ const IGNORE_SEGMENTS = [
 	'/build/',
 	'/.cache/',
 ];
+const DEFAULT_EXEC_TIMEOUT_MS = 30_000;
+const MAX_EXEC_OUTPUT_BYTES = 4 * 1024 * 1024;
+const MIN_REDACTABLE_SECRET_LENGTH = 12;
 
 export class MissingCliError extends Error {
 	readonly cli: 'semgrep' | 'ast-grep';
@@ -196,10 +199,13 @@ const runCli = async (
 		tool,
 		args,
 		cwd: input.cwd,
-		timeoutMs: input.timeoutMs ?? 30_000,
-		maxOutputBytes: 4 * 1024 * 1024,
+		timeoutMs: input.timeoutMs ?? DEFAULT_EXEC_TIMEOUT_MS,
+		maxOutputBytes: MAX_EXEC_OUTPUT_BYTES,
 		redact: [
-			/\b(?:api[_-]?key|secret|token|password)\b\s*[:=]\s*['"][A-Za-z0-9_\-/+=]{12,}['"]/giu,
+			new RegExp(
+				`\\b(?:api[_-]?key|secret|token|password)\\b\\s*[:=]\\s*['"][A-Za-z0-9_\\-/+=]{${MIN_REDACTABLE_SECRET_LENGTH},}['"]`,
+				'giu',
+			),
 		],
 	});
 

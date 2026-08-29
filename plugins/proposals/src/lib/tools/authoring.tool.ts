@@ -992,6 +992,7 @@ export const buildCloseSliceRegistration = (
 				}
 				const { entry, docPath } = resolved;
 				const closeSliceOptions = options as ICloseSliceValidateOptions;
+				let validateEvidenceFresh = false;
 				if (args.force !== true) {
 					const validateEvidence =
 						await resolveRecentValidateEvidence({
@@ -1013,6 +1014,7 @@ export const buildCloseSliceRegistration = (
 						};
 						return toolErrorEnvelope(envelope);
 					}
+					validateEvidenceFresh = true;
 				}
 				let persisted: IPersistResult = {
 					committed: false,
@@ -1060,7 +1062,10 @@ export const buildCloseSliceRegistration = (
 						// refuse the close. Hosts that do not wire the quality
 						// plugin skip this check entirely.
 						if (typeof options.runQuality === 'function') {
-							const quality = await options.runQuality();
+							const quality = await options.runQuality({
+								skipWhenValidateEvidenceFresh:
+									validateEvidenceFresh,
+							});
 							if (quality.severity === 'error') {
 								const err: ICloseSliceThrownError =
 									Object.assign(

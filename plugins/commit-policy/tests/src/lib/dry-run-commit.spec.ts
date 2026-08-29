@@ -87,6 +87,7 @@ const buildPolicy = (
 	const merged: ICommitPolicyOptions = {
 		gitTimeoutMs: 60_000,
 		commit: { ...base.commit, ...(overrides.commit ?? {}) },
+		stash: { enabled: false },
 		cadence: {
 			sliceScoping: base.cadence.sliceScoping,
 			triggers: overrides.cadence?.triggers ?? base.cadence.triggers,

@@ -6,6 +6,7 @@ import { createGitRunner } from './lib/services/git';
 import { buildGitToolRegistrations } from './lib/tools';
 import { buildGitWriteToolRegistrations } from './lib/tools/write-tools';
 import { buildGitForgeToolRegistrations } from './lib/tools/forge-tools';
+import { buildGitExtendedToolRegistrations } from './lib/tools/git-extended.tool';
 
 /**
  * Narrow `ctx.effects` to a concrete value or throw. The write tools'
@@ -48,6 +49,7 @@ const requireEffects = (
 const OptionsSchema = z.object({
 	allowWrite: z.boolean().optional(),
 	allowForge: z.boolean().optional(),
+	allowStash: z.boolean().optional(),
 });
 
 export default definePlugin({
@@ -66,6 +68,7 @@ export default definePlugin({
 		const run = createGitRunner(ctx.workspace.root);
 		const allowWrite = parsed.data.allowWrite === true;
 		const allowForge = parsed.data.allowForge === true;
+		const allowStash = parsed.data.allowStash === true;
 		const readTools = buildGitToolRegistrations({
 			namespacePrefix: ctx.namespacePrefix,
 			run,
@@ -91,8 +94,19 @@ export default definePlugin({
 					workspaceRootAbs: ctx.workspace.root,
 				})
 			: [];
+		const extendedTools = allowStash
+			? buildGitExtendedToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+				})
+			: [];
 		return {
-			tools: [...readTools, ...writeTools, ...forgeTools],
+			tools: [
+				...readTools,
+				...writeTools,
+				...forgeTools,
+				...extendedTools,
+			],
 			knowledge: [
 				{
 					id: 'git-orientation',

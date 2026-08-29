@@ -52,8 +52,12 @@ export const buildRegistrySkeleton = (
 	// Re-parse the switch to extract the variable + cases
 	const switchRegex = /\bswitch\s*\([^)]*\)\s*\{/g;
 	let match: RegExpExecArray | null = null;
-	while ((match = switchRegex.exec(body)) !== null) {
-		if (lineOf(body, match.index) !== switchChain.line) continue;
+	match = switchRegex.exec(body);
+	while (match !== null) {
+		if (lineOf(body, match.index) !== switchChain.line) {
+			match = switchRegex.exec(body);
+			continue;
+		}
 		const headerMatch = body
 			.slice(match.index, match.index + match[0].length)
 			.match(SWITCH_HEADER_RE);
@@ -71,11 +75,13 @@ export const buildRegistrySkeleton = (
 		const block = body.slice(match.index + match[0].length, i - 1);
 		const cases: { key: string; value: string }[] = [];
 		let m: RegExpExecArray | null;
-		while ((m = CASE_BODY_RE.exec(block)) !== null) {
+		m = CASE_BODY_RE.exec(block);
+		while (m !== null) {
 			const quote = m[1] ?? "'";
 			const key = m[2] ?? '';
 			const value = (m[3] ?? '').trim();
 			cases.push({ key: `${quote}${key}${quote}`, value });
+			m = CASE_BODY_RE.exec(block);
 		}
 		if (cases.length < minArms) return null;
 		const registryName = `${toCamel(relPath.split('/').pop()?.replace(/\.ts$/, '') ?? 'lookup')}Registry`;

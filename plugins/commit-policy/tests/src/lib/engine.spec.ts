@@ -74,6 +74,7 @@ const basePolicy = (
 		autoScopeFromProposal: true,
 		refuseWhenDisabled: true,
 	},
+	stash: { enabled: false },
 	identity: { mode: 'global' },
 	audit: { trailer: 'co-authored-by', agentFormat: '${host}/${model}' },
 	cadence: { triggers: [], sliceScoping: true },

@@ -4,9 +4,10 @@
  *
  *   1. the published-package launch `mcpv init` emits for external
  *      consumers (`bunx --package @mcp-vertex/cli mcpv __serve …`), or
- *   2. the repo-local dogfood launch that runs the host from source
- *      (`bun tools/scripts/host/host-server.script.ts --workspace=…`)
- *      — required while `@mcp-vertex/cli` is not published to npm
+ *   2. the repo-local dogfood launch that runs the host from source under
+ *      Bun's watcher (`bun --watch tools/scripts/host/host-server.script.ts
+ *      --workspace=…`) — required while `@mcp-vertex/cli` is not published
+ *      to npm and while agents are editing this repository
  *      (see commit "fix(launch): workspace mcp.json launches the local
  *      host source, not the unpublished npm package").
  *
@@ -51,7 +52,7 @@ const CONFIGS = [
 
 const localDogfoodLaunch = (workspace: string): ILaunchShape => ({
 	command: 'bun',
-	args: [HOST_SCRIPT_REL, `--workspace=${workspace}`],
+	args: ['--watch', HOST_SCRIPT_REL, `--workspace=${workspace}`],
 });
 
 const sameArgs = (actual: unknown, expected: readonly string[]): boolean =>

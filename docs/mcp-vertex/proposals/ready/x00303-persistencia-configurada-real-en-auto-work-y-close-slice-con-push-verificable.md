@@ -80,10 +80,10 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
   - "Los errores de push, ramas protegidas, timeout y detached HEAD se propagan con refusal/reason estructurado y métricas de committed/pushed coherentes."
   - "El scheduler no deja un push fire-and-forget que sobreviva a la respuesta del tool sin una señal observable de finalización."
   - "Dogfood cubre un remote bare/local y comprueba que cada éxito reportado implica que la referencia remota contiene el commit."
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-x00298-s4
 - review-reviewer: delivery_verifier
-- review-log: Validación independiente del estado implementado: typecheck de tools verde y suites focalizadas `commit-driver`, `push-scheduler`, `engine` y dogfood verdes (4 archivos, 45 tests). Commits relevantes: `032ff1ef`, `4831bf74`, `5e6166a5`, `2f9d1c19` y `c478ccf2`.
+- review-log: approved by delivery_verifier — typecheck exit 0; 4 archivos / 45 tests focalizados pasando; commit 2c6ea3ed
 ## acceptance
 
 - La producción usa un runner real async en cwd cuando no se inyecta un fake; nunca cae silenciosamente a un no-op que simula persistencia configurada.

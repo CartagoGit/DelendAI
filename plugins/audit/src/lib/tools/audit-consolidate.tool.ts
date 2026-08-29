@@ -85,6 +85,8 @@ const ConsolidationOutputSchema = z.object({
 
 // --- input schema ----------------------------------------------------------
 
+const MAX_TOP_ACTIONS = 50;
+
 const ConsolidateInputSchema = z.object({
 	/** Select an implementation-plan scaffold or normal fix proposals. */
 	auditType: z.enum(['plan', 'valuation']).optional(),
@@ -95,7 +97,7 @@ const ConsolidateInputSchema = z.object({
 	 */
 	auditDir: z.string().optional(),
 	/** How many top actions to surface. Default: 5. */
-	topActions: z.number().int().min(1).max(50).optional(),
+	topActions: z.number().int().min(1).max(MAX_TOP_ACTIONS).optional(),
 	/**
 	 * Override the host's `autoScaffoldProposals` setting for this
 	 * call. Pass `false` to opt out of proposal scaffolding without

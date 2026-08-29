@@ -60,7 +60,6 @@ import {
 	detectLongChains,
 	detectMagicNumbers,
 	formatFixProposal,
-	lineOf,
 	shingleBlocks,
 	toRelPosix,
 	walkTsFiles,

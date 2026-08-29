@@ -39,22 +39,34 @@ a00085 finding #5: IConfirmationGate receives provider and cost but Confirmation
   - "mint/verify include providerId and estimatedCostTier"
   - "fallback hop with a different provider fails the previous token"
   - "existing denyAll default unchanged"
-
+- review-state: done
+- review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ### S2 — ReleaseWatcher.stop resets prev
 - **Status**: done
 - **Files**: `plugins/notification/src/lib/services/watcher.ts`, `plugins/notification/tests/src/lib/notification.spec.ts`
 - **Gate**: lint
-
+- review-state: done
+- review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ### S3 — Stdio connect closes transport on handshake failure
 - **Status**: done
 - **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`
 - **Gate**: lint
-
+- review-state: done
+- review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ### S4 — Scaffold plugin ping declares outputSchema
 - **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/scaffold-host.ts`, `packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts`
 - **Gate**: lint
-
+- review-state: done
+- review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ## acceptance
 
 - mint/verify include providerId and estimatedCostTier
