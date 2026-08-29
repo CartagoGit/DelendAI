@@ -15,6 +15,10 @@
 - isMcpToolSurfaceMode
 - MCP_TOOL_SURFACE_MODE
 - createWorkspacePathProvider
+- DEFAULT_MODEL_CATALOG_LIMIT
+- InMemoryModelCatalog
+- MAX_MODEL_CATALOG_LIMIT
+- ModelCatalogError
 - createEvidenceStore
 - EVIDENCE_TYPES
 - buildHostAdapterPack
@@ -27,10 +31,6 @@
 - mergeDerivedConfig
 - assembleCliConfig
 - buildConfigurationCenterSnapshot
-- readConfigurationCenterSection
-- serializeConfigurationSchema
-- FIRST_PARTY_SCOPE
-- PERMISSION_CATEGORIES
 
 ## Depends on
 
@@ -48,11 +48,11 @@ _(none)_
 ## Tests
 
 - packages/core/tests/config-schema.spec.ts
+- packages/core/tests/src/public/deprecation.spec.ts
 - packages/core/tests/src/public/public-logs-api.spec.ts
 - packages/core/tests/src/lib/shared/contain-path.spec.ts
 - packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts
 - packages/core/tests/src/lib/shared/truncate-if-too-large.spec.ts
-- packages/core/tests/src/lib/shared/checkpoint-advisory.spec.ts
 
 ## Do not
 
