@@ -361,7 +361,9 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(persistSteps[0]).toContain(
 			'committed=true/pushed=false as incomplete',
 		);
-		expect(persistSteps[0]).toContain('refuses main/master automatically');
+		expect(persistSteps[0]).toContain(
+			'refuses targets listed in the effective protected-branch policy',
+		);
 	});
 
 	it("x00051 S3: persist mode 'commit' prepends an explicit agent_worktree create step", async () => {

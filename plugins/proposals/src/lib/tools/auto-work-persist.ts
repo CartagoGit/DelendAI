@@ -90,6 +90,8 @@ export interface IAutoWorkPersistOptions {
 	 * for worktrees.
 	 */
 	readonly pushTarget?: string;
+	/** Branches refused by the host's effective commit policy. */
+	readonly protectedBranches?: readonly string[];
 	/**
 	 * Working directory of the `git` invocation. Tests inject a temp
 	 * dir; production callers pass `ctx.workspace.root`.
@@ -197,27 +199,18 @@ export const renderCommitMessage = (
  * case-sensitive on purpose — `Main` is a different branch and the
  * host's typo class of bug is exactly what we want to surface.
  */
-const pushWouldHitMain = (pushTarget: string): boolean => {
+const pushWouldHitProtectedBranch = (
+	pushTarget: string,
+	protectedBranches: readonly string[],
+): string | undefined => {
 	const tokens = pushTarget.split(/\s+/u);
-	return tokens.some(
-		(t) => t === 'main' || t.endsWith('/main') || t.endsWith('\\main'),
-	);
-};
-
-/**
- * Detect whether `pushTarget` would push to `develop`. `develop` only
- * receives merges through a pull request now — this mirrors
- * `pushWouldHitMain` exactly (same conservative token check, same
- * case-sensitivity rationale) so this engine never silently succeeds
- * at the exact push `commit-policy`'s driver refuses independently.
- */
-const pushWouldHitDevelop = (pushTarget: string): boolean => {
-	const tokens = pushTarget.split(/\s+/u);
-	return tokens.some(
-		(t) =>
-			t === 'develop' ||
-			t.endsWith('/develop') ||
-			t.endsWith('\\develop'),
+	return protectedBranches.find((branch) =>
+		tokens.some(
+			(token) =>
+				token === branch ||
+				token.endsWith(`/${branch}`) ||
+				token.endsWith(`\\${branch}`),
+		),
 	);
 };
 
@@ -283,38 +276,15 @@ export const maybePersistAfterSlice = async (
 		});
 	}
 
-	// `mode === 'commit-and-push'` with a `pushTarget` that would hit
-	// `main` or `develop` is special-cased BEFORE calling the shared
-	// engine: the commit still happens, but the push step is skipped
-	// entirely (the engine is never told to push), preserving the exact
-	// "refusing to push automatically" reason this module has always
-	// reported. `develop` only receives merges through a pull request
-	// now, so it gets the same treatment as `main` — this is the same
-	// invariant `commit-policy`'s push driver enforces independently
-	// when pushing through the plugin tool instead of this helper.
+	// A target is refused only when it matches the effective host policy.
 	const pushTarget = options.pushTarget ?? DEFAULT_PUSH_TARGET;
-	// x00298: shared-checkout mode (agentWorktree off) may still run
-	// `commit-and-push` when the push target is an explicit non-protected
-	// branch. The protected-branch refusal below (same wording as always)
-	// remains the only hard stop for main/develop targets.
-	const pushTargetExplicitlySafe =
-		options.pushTarget !== undefined &&
-		!pushWouldHitMain(pushTarget) &&
-		!pushWouldHitDevelop(pushTarget);
-	if (
-		mode === 'commit-and-push' &&
-		options.agentWorktreeEnabled !== true &&
-		!pushTargetExplicitlySafe
-	) {
-		return persistResult(false, false, mode, {
-			reason: 'commit-and-push requires agentWorktree to be enabled or an explicit non-protected pushTarget; use mode "commit" in shared-checkout mode',
-		});
-	}
-	const wouldHitMain =
-		mode === 'commit-and-push' && pushWouldHitMain(pushTarget);
-	const wouldHitDevelop =
-		mode === 'commit-and-push' && pushWouldHitDevelop(pushTarget);
-	const pushRefused = wouldHitMain || wouldHitDevelop;
+	const protectedBranches = options.protectedBranches ?? ['main', 'master'];
+	const protectedBranch = pushWouldHitProtectedBranch(
+		pushTarget,
+		protectedBranches,
+	);
+	const pushRefused =
+		mode === 'commit-and-push' && protectedBranch !== undefined;
 	const [pushRemote, pushBranch] = pushTarget.split(/\s+/u);
 
 	const result = await commitAndPush({
@@ -345,12 +315,9 @@ export const maybePersistAfterSlice = async (
 	}
 
 	if (mode === 'commit-and-push' && pushRefused) {
-		// Safety net: never push to main or develop automatically. The
-		// commit is already done; we just refuse to push and explain why.
+		// Safety net: the effective host policy wins over persistence.
 		return persistResult(true, false, mode, {
-			reason: wouldHitMain
-				? 'refusing to push to main automatically'
-				: 'refusing to push to develop automatically — open a PR from a wip/* branch instead',
+			reason: `refusing to push to ${protectedBranch} automatically`,
 			...(result.hash !== undefined ? { hash: result.hash } : {}),
 		});
 	}

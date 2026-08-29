@@ -44,6 +44,7 @@ export interface IAutoWorkPersistConfig {
 	 * `origin agent/<name>` for worktrees.
 	 */
 	readonly pushTarget?: string;
+	readonly protectedBranches?: readonly string[];
 }
 
 export interface IAutoWorkOrchestrationConfig {
@@ -133,16 +134,18 @@ export const DEFAULT_LOOP_DETECTOR_DISABLE_FOR = [
 	'proposals_auto_work',
 ] as const;
 
-const persistTargetHitsProtectedBranch = (pushTarget: string): boolean => {
+const persistTargetHitsProtectedBranch = (
+	pushTarget: string,
+	protectedBranches: readonly string[] = ['main', 'master'],
+): boolean => {
 	const tokens = pushTarget.split(/\s+/u);
-	return tokens.some(
-		(token) =>
-			token === 'main' ||
-			token === 'develop' ||
-			token.endsWith('/main') ||
-			token.endsWith('/develop') ||
-			token.endsWith('\\main') ||
-			token.endsWith('\\develop'),
+	return tokens.some((token) =>
+		protectedBranches.some(
+			(branch) =>
+				token === branch ||
+				token.endsWith(`/${branch}`) ||
+				token.endsWith(`\\${branch}`),
+		),
 	);
 };
 
@@ -724,34 +727,6 @@ export const runAutoWork = async (
 	const pushTargetHint =
 		options.persist?.pushTarget ??
 		(worktreeEnabled ? 'origin agent/<branch>' : 'origin HEAD');
-	// x00298: shared-checkout mode (agentWorktree: false) may still use
-	// `commit-and-push` as long as the push target is NOT a protected
-	// branch — that case is already rejected above by
-	// `persistTargetHitsProtectedBranch`. Only when NO explicit
-	// non-protected target is configured do we demand per-agent
-	// worktrees, whose `agent/<branch>` targets are safe by construction.
-	const pushTargetExplicitlySafe =
-		options.persist?.pushTarget !== undefined &&
-		!persistTargetHitsProtectedBranch(options.persist.pushTarget);
-	if (
-		resolvedMode === 'commit-and-push' &&
-		!worktreeEnabled &&
-		!pushTargetExplicitlySafe
-	) {
-		return json({
-			state: 'work',
-			ok: false,
-			reason: 'invalid-persist-config',
-			executionMode: 'blocked',
-			proposalId: next.proposalId,
-			file: next.file,
-			hygieneBlockers: [
-				'commit-and-push requires agentWorktree to be enabled or an explicit non-protected persist.pushTarget',
-			],
-			nextAction:
-				'Set persist.pushTarget to a wip/* or agent/* branch, or use persist.mode "commit" in shared-checkout mode.',
-		});
-	}
 	const persistStep =
 		resolvedMode === 'none'
 			? []
@@ -760,7 +735,7 @@ export const runAutoWork = async (
 						'Persist the slice using its declared files: call `maybePersistAfterSlice(claimReady.files, <proposalId>, <sliceId>, { mode: "commit" })` after validation and before release; do not stage unrelated files.',
 					]
 				: [
-						`Persist the slice using its declared files (commit + push): call \`maybePersistAfterSlice(claimReady.files, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "${pushTargetHint}" })\` after validation and before release; do not stage unrelated files. The helper refuses to push to \`main\` or \`develop\` automatically. Treat committed=true/pushed=false as incomplete and never report closed=true.`,
+						`Persist the slice using its declared files (commit + push): call \`maybePersistAfterSlice(claimReady.files, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "${pushTargetHint}" })\` after validation and before release; do not stage unrelated files. The helper refuses targets listed in the effective protected-branch policy. Treat committed=true/pushed=false as incomplete and never report closed=true.`,
 					];
 
 	// x00051 S3 + x00231: when persist is enabled, the plan must

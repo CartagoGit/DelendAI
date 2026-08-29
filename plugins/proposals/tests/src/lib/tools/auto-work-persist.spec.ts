@@ -213,18 +213,12 @@ describe('maybePersistAfterSlice', async () => {
 		expect(runner.calls.some((a) => a[0] === 'push')).toBe(false);
 	});
 
-	it('refuses to push to `develop` (PR-only landing, mirrors the `main` safety net)', async () => {
+	it('pushes to `develop` when it is not in the protected-branch policy', async () => {
 		const runner = fakeRunner([
 			{ match: (a) => a[0] === 'add', output: '' },
 			{ match: (a) => a[0] === 'commit', output: '' },
 			{ match: (a) => a[0] === 'rev-parse', output: 'abc1234' },
-			{
-				// Push MUST NOT be attempted: the runner would otherwise
-				// receive a `push` call. Assert the absence.
-				match: (a) => a[0] === 'push',
-				output: '',
-				ok: true,
-			},
+			{ match: (a) => a[0] === 'push', output: '' },
 		]);
 		const result = await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
@@ -234,21 +228,21 @@ describe('maybePersistAfterSlice', async () => {
 				mode: 'commit-and-push',
 				pushTarget: 'origin develop',
 				agentWorktreeEnabled: true,
+				protectedBranches: ['main', 'master'],
 				git: runner,
 			},
 		);
 		expect(result.committed).toBe(true);
-		expect(result.pushed).toBe(false);
-		expect(result.reason).toBe(
-			'refusing to push to develop automatically — open a PR from a wip/* branch instead',
-		);
-		expect(runner.calls.some((a) => a[0] === 'push')).toBe(false);
+		expect(result.pushed).toBe(true);
+		expect(runner.calls.some((a) => a[0] === 'push')).toBe(true);
 	});
 
-	it('refuses commit-and-push when agentWorktree is disabled', async () => {
+	it('allows commit-and-push in shared checkout when the target is not protected', async () => {
 		const runner = fakeRunner([
 			{ match: (a) => a[0] === 'add', output: '' },
 			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'abc1234' },
+			{ match: (a) => a[0] === 'push', output: '' },
 		]);
 		const result = await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
@@ -256,20 +250,15 @@ describe('maybePersistAfterSlice', async () => {
 			'S1',
 			{
 				mode: 'commit-and-push',
-				// x00298: no explicit pushTarget here - the default 'origin HEAD'
-				// is only safe with worktrees on, so the refusal must fire.
+				pushTarget: 'origin develop',
 				agentWorktreeEnabled: false,
+				protectedBranches: ['main', 'master'],
 				git: runner,
 			},
 		);
 
-		expect(result).toEqual({
-			committed: false,
-			pushed: false,
-			mode: 'commit-and-push',
-			reason: 'commit-and-push requires agentWorktree to be enabled or an explicit non-protected pushTarget; use mode "commit" in shared-checkout mode',
-		});
-		expect(runner.calls).toHaveLength(0);
+		expect(result.committed).toBe(true);
+		expect(result.pushed).toBe(true);
 	});
 
 	it('allows an explicit branch refspec when agentWorktree is enabled', async () => {
