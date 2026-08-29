@@ -30,7 +30,8 @@ Además, el persist de `auto_work` seguía en `none` (default), así que el plan
 
 ### S1 — Config de este repo: commitAuthor git + git config local fijado + persist commit-and-push
 - **Status**: done
-- **Files**: `mcp-vertex.config.json`, `.git/config` (no versionado)
+- **Files**: `mcp-vertex.config.json`
+- **Nota**: este slice también fija el `[user]` del `.git/config` local del repo. No se lista en `Files` porque no es un fichero versionado y no puede existir en un checkout limpio — declararlo ahí hacía fallar `lint:proposal-files-exist` y `lint:proposal-slice-completeness` para siempre.
 - **Gate**: none
 - acceptance:
   - "`commitAuthor` declara `mode: "git"` (recuperar `user.name`/`user.email` del git config del repo)."

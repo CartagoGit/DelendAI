@@ -177,11 +177,14 @@ escritura atómica que ya usa `reported.json`.
 - **Files**: `plugins/error-reporting/src/lib/contracts/interfaces/self-test.interface.ts`, `plugins/error-reporting/src/lib/self-test.service.ts`, `plugins/error-reporting/tests/self-test.service.spec.ts`, `plugins/error-reporting/src/public/index.ts`
 - **Gate**: `bunx vitest run --project error-reporting -- self-test.service`
 
-### S6 — wiring de `runErrorReportingSelfTest` a `mcpv doctor --deep error-reporting [--live]`
-
-- **Status**: non-goal (fuera de alcance de este proposal — ver Non-goals; territorio de `packages/core`, otro agente)
-- **Files**: n/a
-- **Gate**: n/a
+> **Nota (2026-08-29).** Este proposal tuvo un sexto slice para cablear
+> `runErrorReportingSelfTest` a `mcpv doctor --deep error-reporting [--live]`.
+> No era un slice: era trabajo de otro subsistema (`packages/cli`), y dejarlo
+> como slice `non-goal` dentro de un proposal en `done/` es exactamente la
+> deriva que `lint:proposal-slice-completeness` existe para cazar — el lint lo
+> cazó. La propiedad de ese cableado pasa a `f00275` (`mcpv doctor --deep`),
+> que es quien construye ese comando. Aquí queda como Non-goal declarado, no
+> como trabajo pendiente disfrazado de hecho.
 
 ## Dependency graph
 
