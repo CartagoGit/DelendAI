@@ -110,8 +110,7 @@ const fieldForScope = (
 			collectStrings(meta.result, parts);
 			return parts.join('\n');
 		}
-		case 'all':
-		default: {
+		case 'all': {
 			const parts: string[] = [event.summary];
 			collectStrings(meta.error, parts);
 			collectStrings(meta.args, parts);
