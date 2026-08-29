@@ -24,6 +24,8 @@
 import { BudgetTracker } from '../budget/budget-tracker.js';
 import { LoopDetector } from '../rotation/loop-detector.js';
 import type { IModePlan, IPlanStep } from '../policy/types.js';
+import { InMemoryTelemetrySink, TelemetryEvent } from '../telemetry/event.js';
+import type { ITelemetrySink } from '../telemetry/event.js';
 import type {
 	IDispatchPort,
 	IPlanOutcome,
@@ -52,10 +54,26 @@ export class LinearDispatcher {
 	readonly #detector: LoopDetector;
 	readonly #ingestionsBySlot = new Map<string, number>();
 	readonly #plan: IModePlan;
+	readonly #taskId: string;
+	readonly #telemetry: ITelemetrySink;
 
-	constructor(plan: IModePlan, port: IDispatchPort) {
+	/**
+	 * `telemetry` defaults to a private, throwaway sink so the
+	 * dispatcher stays constructible without a real one (unit tests
+	 * that only care about `IPlanOutcome`). A host wiring `_dispatch`
+	 * passes in the same sink instance the `_events` tool reads, so
+	 * dispatch/rotate events actually reach it.
+	 */
+	constructor(
+		plan: IModePlan,
+		port: IDispatchPort,
+		taskId: string,
+		telemetry: ITelemetrySink = new InMemoryTelemetrySink(),
+	) {
 		this.#plan = plan;
 		this.#port = port;
+		this.#taskId = taskId;
+		this.#telemetry = telemetry;
 		this.#budget = new BudgetTracker(plan.budget);
 		this.#detector = new LoopDetector();
 		this.#detector.setBudgetCap(plan.budget.maxTokensPerSubagent);
@@ -181,6 +199,7 @@ export class LinearDispatcher {
 			this.#budget.recordSubagent(subagentId, 0);
 
 			let result: ISubagentResult;
+			this.#telemetry.emit(TelemetryEvent.dispatchStart(this.#taskId));
 			try {
 				result = await this.#port.spawnSubagent({
 					role,
@@ -190,6 +209,12 @@ export class LinearDispatcher {
 					slotId,
 				});
 			} catch (err) {
+				// A thrown port call still settles the dispatch — the end
+				// event must fire on the failure path too, not just on
+				// success.
+				this.#telemetry.emit(
+					TelemetryEvent.dispatchEnd(this.#taskId, false, 0),
+				);
 				// Treat host throws as a hard `error-storm` outcome. The
 				// detector will surface it as `error-storm` on the next
 				// iteration; on the last iteration the step fails closed.
@@ -198,9 +223,23 @@ export class LinearDispatcher {
 				if (iter === maxIter) {
 					return failure(step, slotId, subagentIds, rotations);
 				}
+				this.#telemetry.emit(
+					TelemetryEvent.rotate(
+						this.#taskId,
+						subagentId,
+						`error-storm: ${msg}`,
+					),
+				);
 				continue;
 			}
 
+			this.#telemetry.emit(
+				TelemetryEvent.dispatchEnd(
+					this.#taskId,
+					!result.hadError,
+					result.tokensUsed,
+				),
+			);
 			this.#budget.recordSubagent(subagentId, result.tokensUsed);
 			lastResult = result;
 
@@ -251,6 +290,9 @@ export class LinearDispatcher {
 				return failure(step, slotId, subagentIds, rotations);
 			}
 			// Continue rotating on the next iter.
+			this.#telemetry.emit(
+				TelemetryEvent.rotate(this.#taskId, subagentId, verdict.reason),
+			);
 		}
 
 		return {

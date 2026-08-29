@@ -14,6 +14,8 @@ import {
 	InvalidDispatchPortFactoryError,
 	MissingDispatchPortError,
 } from '../dispatch/port-resolution.helper.js';
+import { InMemoryTelemetrySink } from '../telemetry/event.js';
+import type { ITelemetrySink } from '../telemetry/event.js';
 import {
 	BudgetPolicySchema,
 	OrchestrationModeSchema,
@@ -132,12 +134,26 @@ export interface IDispatchToolDeps {
 	readonly port: () => IDispatchPort;
 	/** Optional in-memory cache of last outcomes, keyed by taskId. */
 	readonly lastOutcome?: (taskId: string) => IPlanOutcome | undefined;
+	/**
+	 * Sink the dispatcher's `dispatch.start` / `dispatch.end` / `rotate`
+	 * events land in. Defaults to a private, throwaway sink so tests can
+	 * build a registration without a real one; a host that also mounts
+	 * the `_events` tool must pass the same instance both places, or the
+	 * two surfaces silently diverge.
+	 */
+	readonly telemetry?: ITelemetrySink;
 }
 
 export function buildDispatchRegistration(
 	deps: IDispatchToolDeps,
 ): IToolRegistration {
-	const { namespacePrefix, engine, port, lastOutcome } = deps;
+	const {
+		namespacePrefix,
+		engine,
+		port,
+		lastOutcome,
+		telemetry = new InMemoryTelemetrySink(),
+	} = deps;
 
 	const runPlan = async (task: {
 		id: string;
@@ -151,7 +167,7 @@ export function buildDispatchRegistration(
 			tags: task.tags,
 			...(task.hint !== undefined ? { hint: task.hint } : {}),
 		});
-		const dispatcher = new LinearDispatcher(plan, port());
+		const dispatcher = new LinearDispatcher(plan, port(), task.id, telemetry);
 		const outcome = await dispatcher.run();
 		lastOutcomeCache.set(task.id, { plan, outcome });
 		return outcome;

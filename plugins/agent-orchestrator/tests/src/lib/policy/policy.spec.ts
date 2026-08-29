@@ -3,7 +3,10 @@ import { describe, it, expect } from 'vitest';
 import {
 	assertPolicyValid,
 	createOrchestratorEngine,
+	OrchestratorEngine,
 } from '../../../../src/lib/policy/policy.js';
+import { ModeRegistry, UnknownModeError } from '../../../../src/lib/policy/registry.js';
+import { TaskClassifier } from '../../../../src/lib/classifier/task-classifier.js';
 import type {
 	IOrchestratorPolicy,
 	ITask,
@@ -113,6 +116,29 @@ describe('assertPolicyValid', () => {
 		).toThrow(/maxTokensOrchestrator/);
 	});
 
+	it('rejects a negative per-subagent budget cap', () => {
+		expect(() =>
+			assertPolicyValid({
+				...POLICY,
+				defaults: {
+					...POLICY.defaults,
+					budget: {
+						...POLICY.defaults.budget,
+						maxTokensPerSubagent: -1,
+					},
+				},
+			}),
+		).toThrow(/maxTokensPerSubagent/);
+	});
+
+	it('rejects a null/undefined policy up front', () => {
+		expect(() =>
+			assertPolicyValid(
+				undefined as unknown as IOrchestratorPolicy,
+			),
+		).toThrow(TypeError);
+	});
+
 	it('rejects zero maxIterationsPerSubagent', () => {
 		expect(() =>
 			assertPolicyValid({
@@ -126,5 +152,20 @@ describe('assertPolicyValid', () => {
 				},
 			}),
 		).toThrow(/maxIterationsPerSubagent/);
+	});
+});
+
+describe('OrchestratorEngine.plan — unknown default mode', () => {
+	it('throws UnknownModeError when the policy names a mode with no registered adapter', () => {
+		// createOrchestratorEngine always registers all four modes; this
+		// constructs a deliberately incomplete registry the way a host
+		// embedding a custom mode set could, to prove `plan()` itself
+		// (not just ModeRegistry.get()) fails closed on a bad defaultMode.
+		const registry = new ModeRegistry();
+		const engine = new OrchestratorEngine(registry, new TaskClassifier(), {
+			...POLICY,
+			defaultMode: 'single',
+		});
+		expect(() => engine.plan(TRIVIAL_TASK)).toThrow(UnknownModeError);
 	});
 });

@@ -65,7 +65,7 @@ describe('LinearDispatcher', () => {
 		// The A,B,A detector rule fires only when last 3 are A,B,A, not
 		// A,A,A — so a stable "ok, ok, ok" run accepts cleanly.
 		const port = new FakeDispatchPort();
-		const out = await new LinearDispatcher(PLAN, port).run();
+		const out = await new LinearDispatcher(PLAN, port, 't1').run();
 		expect(out.ok).toBe(true);
 		expect(out.steps).toHaveLength(3);
 		expect(out.steps[0]?.ok).toBe(true);
@@ -92,7 +92,7 @@ describe('LinearDispatcher', () => {
 				],
 			]),
 		});
-		const out = await new LinearDispatcher(PLAN, port).run();
+		const out = await new LinearDispatcher(PLAN, port, 't1').run();
 		expect(out.steps[0]?.ok).toBe(true);
 		expect(out.steps[0]?.subagentIds).toHaveLength(4);
 		expect(out.steps[0]?.rotations).toHaveLength(1);
@@ -118,7 +118,7 @@ describe('LinearDispatcher', () => {
 				],
 			]),
 		});
-		const out = await new LinearDispatcher(PLAN, port).run();
+		const out = await new LinearDispatcher(PLAN, port, 't1').run();
 		expect(out.steps[0]?.ok).toBe(false);
 		expect(out.steps[0]?.subagentIds).toHaveLength(5);
 		// 3 rotations: iters 3, 4, 5 each detect A,B,A. iter 5 === maxIter ⇒ fail.
@@ -146,7 +146,7 @@ describe('LinearDispatcher', () => {
 				],
 			]),
 		});
-		const out = await new LinearDispatcher(tight, port).run();
+		const out = await new LinearDispatcher(tight, port, 't1').run();
 		expect(out.steps[0]?.ok).toBe(false);
 		expect(out.steps[0]?.subagentIds).toHaveLength(3);
 		expect(out.steps[0]?.rotations[0]?.reason).toMatch(
@@ -202,7 +202,7 @@ describe('LinearDispatcher', () => {
 				],
 			]),
 		});
-		const out = await new LinearDispatcher(PLAN, port).run();
+		const out = await new LinearDispatcher(PLAN, port, 't1').run();
 		expect(out.steps[0]?.ok).toBe(false);
 		expect(out.steps[0]?.subagentIds).toHaveLength(5);
 		expect(out.steps[0]?.rotations.length).toBeGreaterThanOrEqual(1);
@@ -218,7 +218,7 @@ describe('LinearDispatcher', () => {
 			},
 		};
 		const port = new FakeDispatchPort();
-		const dispatcher = new LinearDispatcher(tight, port);
+		const dispatcher = new LinearDispatcher(tight, port, 't1');
 		// Pre-charge the orchestrator past the cap.
 		dispatcher.budget().recordOrchestrator(101);
 		const out = await dispatcher.run();
