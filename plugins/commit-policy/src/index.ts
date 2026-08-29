@@ -197,6 +197,7 @@ export default definePlugin({
 				workspaceRoot: ctx.workspace.root,
 				docsDir: ctx.docsDir,
 				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
+				onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
 			}),
 		];
 

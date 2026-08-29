@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T19:42:54.718Z",
+	"generatedAt": "2026-08-29T20:09:28.096Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1279,13 +1279,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "r00018",
-				"title": "r00018",
-				"track": "tokens",
-				"status": "in-progress",
-				"kind": "refactor"
-			},
-			{
 				"id": "v00125",
 				"title": "v00125",
 				"track": "governance",
@@ -1316,8 +1309,8 @@
 		],
 		"byStatus": {
 			"ready": 0,
-			"in-progress": 9,
-			"review": 0,
+			"in-progress": 8,
+			"review": 1,
 			"paused": 2,
 			"done": 514,
 			"blocked": 0,

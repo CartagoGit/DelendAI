@@ -25,11 +25,6 @@ import {
 } from '@mcp-vertex/commit-policy/lib/tools/run-tool';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
-const fail = (reason: string): IGitRunResult => ({
-	ok: false,
-	output: '',
-	reason,
-});
 
 /**
  * Build a runner that records every command it is asked to run.
@@ -222,5 +217,42 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 		);
 		expect(registration.effects).toEqual(['write']);
 		expect(registration.dryRunSupported).toBe(true);
+	});
+
+	it('runs the configured push callback after a successful commit', async () => {
+		const record: string[] = [];
+		let pushCalls = 0;
+		const result = await runCommitPolicyRun(
+			{ kind: 'manual' },
+			{
+				...baseOptions(
+					buildSpyRunner('develop', record),
+					buildPolicy({
+						push: {
+							enabled: true,
+							onCommit: true,
+							everyNCommits: 0,
+							everyNMinutes: 0,
+							protectedBranches: ['main', 'master'],
+							protectedPrefixes: [],
+							force: 'with-lease',
+						},
+					}),
+				),
+				onCommitSucceeded: async () => {
+					pushCalls += 1;
+					return {
+						ok: true,
+						pushed: true,
+						remote: 'origin',
+						branch: 'develop',
+					};
+				},
+			},
+		);
+		const body = result.structuredContent as Record<string, unknown>;
+		const commit = body.commit as { committed: boolean; pushed: boolean };
+		expect(pushCalls).toBe(1);
+		expect(commit).toMatchObject({ committed: true, pushed: true });
 	});
 });
