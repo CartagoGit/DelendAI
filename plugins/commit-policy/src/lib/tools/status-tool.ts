@@ -65,6 +65,7 @@ const OutputSchema = z.object({
 			}),
 		),
 		sliceScoping: z.boolean(),
+		allowForeignChanges: z.boolean(),
 	}),
 	push: z.object({
 		enabled: z.boolean(),
@@ -120,6 +121,7 @@ export const runCommitPolicyStatus = async (
 				return base;
 			}),
 			sliceScoping: options.options.cadence.sliceScoping,
+			allowForeignChanges: options.options.cadence.allowForeignChanges,
 		},
 		push: {
 			enabled: options.options.push.enabled,

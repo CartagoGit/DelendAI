@@ -191,6 +191,12 @@ export const CadenceSchema = z.object({
 	 * may include unrelated dirt). Default true.
 	 */
 	sliceScoping: z.boolean().default(true),
+	/**
+	 * Explicitly allow slice commits to include changes made by other
+	 * agents in the shared checkout. When enabled, the current dirty
+	 * workspace snapshot is committed. Default false.
+	 */
+	allowForeignChanges: z.boolean().default(false),
 });
 
 export type ICommitPolicyCadence = z.infer<typeof CadenceSchema>;
