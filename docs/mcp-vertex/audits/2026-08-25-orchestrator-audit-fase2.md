@@ -77,7 +77,7 @@ Ejes: **Código** (calidad/SOLID/Clean Code), **Idea/Diseño** (¿resuelve el pr
 | `extensions/vscode` | 7 | 7 | 5 | 6 | 6 | Tests de comandos existen y son legibles, pero estaban acoplados al formato exacto de mensaje de error del cliente (rompieron con Bug de Fase 1 #3) — acoplamiento razonable pero frágil ante cambios de "solo texto". |
 | Sistema de propuestas — mecanismo `proposal_review`/`proposal_transition` (diseño) | 6 | 7 | 5 | 4 | 3 | Ver Bugs 1 y 2. El **gate de peer-review en sí no exige ninguna evidencia empírica real** — `action: approve` acepta cualquier `note` de texto libre como justificación; nada obliga a adjuntar output de `bun run validate`, un hash de commit, o un log de test real. Esto es exactamente la brecha que el usuario señaló durante la sesión: una tool de revisión puede aprobarse a sí misma con un "confío en que está bien" sin verificación forzada. |
 | Cobertura de tests en plugins nuevos (f00165-169) | 7 | 7 | 6 | 5 | 8 | Ver Bug 6. Sin fallos, pero cobertura fina para lógica de agregación no trivial. |
-| Seguridad de dependencias (`bun.lock`) | — | — | 8 | 4 | 5 | Ver Bug 5 (5 CVEs high, todas transitivas). |
+| Seguridad de dependencias (`bun.lock`) | 6 | 6 | 8 | 4 | 5 | Ver Bug 5 (5 CVEs high, todas transitivas). La nota valora higiene de supply chain y capacidad de respuesta del repo, no código first-party. |
 
 **Media global aproximada (Código/Idea/Errores, sin contar Análisis que mide confianza propia)**: ~6.9/10 — proyecto sólido y con disciplina de gates real (validate, peer-review, baselines versionados), pero con una brecha de concurrencia real (no solo teórica: ocurrió y perdió trabajo en esta misma sesión) y un gate de revisión que confía en texto libre en vez de evidencia adjunta.
 
@@ -134,4 +134,4 @@ Tras terminar mi propia auditoría, localicé y leí `docs/mcp-vertex/audits/leg
 
 - El documento cubre packages/core, plugins/proposals, plugins/error-reporting, plugins/client (transporte), apps/web, tools/scripts, extensión VSCode y el sistema de propuestas.
 - Incluye bugs con archivo+línea+escenario, puntuación 0-10 por sección y eje, ranking, lista priorizada de bugs y roadmap.
-- Sección separada documentando qué se añadió tras leer la auditoría ChatGPT/sol legacy (parcialmente completada — ver nota de proceso arriba).
+- Sección separada documentando qué se añadió tras leer la auditoría ChatGPT/sol legacy.
