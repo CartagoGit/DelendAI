@@ -92,7 +92,7 @@ export interface IKpiAggregationOptions {
 	readonly now?: Date;
 	readonly windowDays?: number;
 	readonly maxBytes?: number;
-	readonly pathExists?: (path: string) => boolean;
+	readonly pathExists?: (path: string) => boolean | Promise<boolean>;
 	readonly readUsageSummary?: (
 		absPath: string,
 	) => Promise<

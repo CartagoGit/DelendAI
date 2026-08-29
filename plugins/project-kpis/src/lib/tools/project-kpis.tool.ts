@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { access } from 'node:fs/promises';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
@@ -1002,13 +1002,26 @@ const loadState = async (
 	query: IResolvedQuery,
 	options: IProjectKpisToolOptions,
 ): Promise<IToolSourceState> => {
-	const pathExists = options.pathExists ?? existsSync;
+	const pathExists =
+		options.pathExists ??
+		(async (path: string): Promise<boolean> => {
+			try {
+				await access(path);
+				return true;
+			} catch {
+				return false;
+			}
+		});
 	const summaryPathAbs = usageSummaryPathOf(options);
 	const invocationsPathAbs = usageInvocationsPathOf(options);
 	const historyPathAbs = historyPathOf(options);
-	const summaryExists = pathExists(summaryPathAbs);
-	const invocationsExists = pathExists(invocationsPathAbs);
-	const historyExists = pathExists(historyPathAbs);
+	const [summaryExists, invocationsExists, historyExists] = await Promise.all(
+		[
+			pathExists(summaryPathAbs),
+			pathExists(invocationsPathAbs),
+			pathExists(historyPathAbs),
+		],
+	);
 	const now = options.now ?? new Date();
 	const readUsageSummaryFn = options.readUsageSummary ?? readSummary;
 	const readUsageInvocationsFn =

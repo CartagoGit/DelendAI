@@ -4,6 +4,17 @@
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs/mcp-vertex",
 	"agentWorktree": false,
+	"core": {
+		"agentPolicy": {
+			"autonomous": true,
+			"principles": [
+				"Apply SOLID architecture where it improves ownership and changeability.",
+				"Use good engineering practices and keep the code clear and maintainable.",
+				"Reuse existing code and abstractions before introducing duplication.",
+				"Keep naming, files, and folders homogeneous with the surrounding project."
+			]
+		}
+	},
 	"commitAuthor": {
 		"mode": "git"
 	},

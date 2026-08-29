@@ -18,7 +18,14 @@
 /** Locale ids the catalog understands. Add a new entry to ship a new locale. */
 export type Locale = 'en' | 'es';
 
+export type ConventionalHeaderRefusalCode = 'EMPTY_HEADER' | 'MALFORMED_HEADER';
+
 interface IStringCatalog {
+	readonly contracts: {
+		readonly scope: {
+			readonly refusalTips: Record<ConventionalHeaderRefusalCode, string>;
+		};
+	};
 	readonly tools: {
 		readonly status: {
 			readonly summary: (params: {
@@ -68,6 +75,16 @@ interface IStringCatalog {
 }
 
 const english: IStringCatalog = {
+	contracts: {
+		scope: {
+			refusalTips: {
+				EMPTY_HEADER:
+					'Provide a Conventional Commit header like "fix: subject" before auto-scoping it.',
+				MALFORMED_HEADER:
+					'Use the Conventional Commit form "type(scope)!: subject" or "type: subject".',
+			},
+		},
+	},
 	tools: {
 		status: {
 			summary: ({ commitEnabled, pushEnabled, triggerCount }) =>
@@ -117,6 +134,16 @@ const english: IStringCatalog = {
 };
 
 const spanish: IStringCatalog = {
+	contracts: {
+		scope: {
+			refusalTips: {
+				EMPTY_HEADER:
+					'Proporciona primero un header Conventional Commit como "fix: asunto" antes de aplicar auto-scope.',
+				MALFORMED_HEADER:
+					'Usa el formato Conventional Commit "type(scope)!: asunto" o "type: asunto".',
+			},
+		},
+	},
 	tools: {
 		status: {
 			summary: ({ commitEnabled, pushEnabled, triggerCount }) =>
@@ -191,5 +218,14 @@ export const localizedString = <T>(
 	const catalog = CATALOGS[key] ?? english;
 	return accessor(catalog);
 };
+
+export const localizedScopeRefusalTip = (
+	locale: string | undefined,
+	code: ConventionalHeaderRefusalCode,
+): string =>
+	localizedString(
+		locale,
+		(catalog) => catalog.contracts.scope.refusalTips[code],
+	);
 
 export type { IStringCatalog };

@@ -77,7 +77,7 @@ export interface IKpiHistoryStorageOptions {
 	readonly cacheDir: string;
 	readonly retentionDays?: number;
 	readonly now?: Date;
-	readonly pathExists?: (path: string) => boolean;
+	readonly pathExists?: (path: string) => boolean | Promise<boolean>;
 	readonly readTextFile?: (path: string) => Promise<string>;
 	readonly writeTextFileAtomic?: (
 		path: string,

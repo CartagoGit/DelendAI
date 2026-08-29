@@ -27,7 +27,7 @@ _(none)_
 
 ## Tests
 
-_(none)_
+- packages/cli/tests/kpis.command.spec.ts
 
 ## Do not
 

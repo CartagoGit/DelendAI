@@ -85,7 +85,7 @@ export interface IProjectKpisToolOptions {
 	readonly maxBytes: number;
 	readonly windowDays: number;
 	readonly now?: Date;
-	readonly pathExists?: (path: string) => boolean;
+	readonly pathExists?: (path: string) => boolean | Promise<boolean>;
 	readonly buildKpiSnapshot?: typeof buildKpiSnapshot;
 	readonly readUsageSummary?: typeof readSummary;
 	readonly readUsageInvocations?: typeof readInvocations;
@@ -98,7 +98,7 @@ export interface IProjectKpisToolOptions {
 		readonly to?: string;
 		readonly windowDays?: number;
 		readonly limit?: number;
-		readonly pathExists?: (path: string) => boolean;
+		readonly pathExists?: (path: string) => boolean | Promise<boolean>;
 	}) => Promise<IKpiHistoryReadResult>;
 	readonly readSnapshot?: (
 		query: IKpiQuery,
