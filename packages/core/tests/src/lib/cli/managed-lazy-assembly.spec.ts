@@ -102,4 +102,45 @@ describe('managed lazy assembly defaults', () => {
 		expect(assembled.config.lazyToolActivators).toBeUndefined();
 		expect(assembled.loadResult.loaded).toHaveLength(1);
 	});
+
+	it('activates configured startup plugins before any lazy tool call', async () => {
+		const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-startup-'));
+		workspaces.push(workspace);
+		let registered = 0;
+		const args = parseCliArgs(
+			[`--plugins=commit-policy`, `--workspace=${workspace}`],
+			workspace,
+		);
+		const assembled = await assembleCliConfig(args, {
+			readFile: async (absolutePath) =>
+				absolutePath.endsWith('mcp-vertex.config.json')
+					? JSON.stringify({
+							plugins: {
+								'commit-policy': {
+									options: {
+										commit: { enabled: true },
+										push: { enabled: true },
+										cadence: {
+											triggers: [{ kind: 'slice' }],
+										},
+									},
+								},
+							},
+						})
+					: undefined,
+			import: async () => ({
+				default: {
+					name: 'commit-policy',
+					register: () => {
+						registered += 1;
+						return { tools: [] };
+					},
+				},
+			}),
+		});
+
+		expect(registered).toBe(1);
+		expect(assembled.loadResult.loaded).toEqual([]);
+		expect(assembled.startupReport.runtime.moduleLoading).toBe('lazy');
+	});
 });
