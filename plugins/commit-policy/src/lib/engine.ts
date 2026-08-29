@@ -363,6 +363,12 @@ const pushFailureReason = (value: unknown): string => {
 	}
 	return 'push failed';
 };
+
+export const buildTriggerCommitMessage = (
+	event: Extract<IEngineEvent, { kind: 'threshold' | 'interval' }>,
+): string =>
+	`chore(snapshot): preserve concurrent agent work (${event.dirtyCount} files)`;
+
 const composeMessage = (event: IEngineEvent): string => {
 	switch (event.kind) {
 		case 'slice':
@@ -372,9 +378,8 @@ const composeMessage = (event: IEngineEvent): string => {
 				true,
 			);
 		case 'threshold':
-			return `chore: commit via threshold (${event.dirtyCount} dirty)`;
 		case 'interval':
-			return `chore: commit via interval (${event.dirtyCount} dirty)`;
+			return buildTriggerCommitMessage(event);
 		case 'manual':
 			return event.message;
 	}
