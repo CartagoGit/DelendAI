@@ -188,6 +188,46 @@ describe('kpi history + trends', async () => {
 		).toEqual(['2026-08-28T12:00:00.000Z', '2026-08-29T12:00:00.000Z']);
 	});
 
+	it('applies the requested retention when reading an existing store', async () => {
+		await persistKpiSnapshotHistory({
+			workspaceRootAbs: workspaceRoot,
+			cacheDir: CACHE_DIR,
+			retentionDays: 30,
+			now: new Date('2026-08-01T12:00:00.000Z'),
+			snapshot: buildSnapshot({
+				generatedAt: '2026-08-01T12:00:00.000Z',
+				score: 80,
+				calls: 10,
+			}),
+		});
+		await persistKpiSnapshotHistory({
+			workspaceRootAbs: workspaceRoot,
+			cacheDir: CACHE_DIR,
+			retentionDays: 30,
+			now: new Date('2026-08-29T12:00:00.000Z'),
+			snapshot: buildSnapshot({
+				generatedAt: '2026-08-29T12:00:00.000Z',
+				score: 85,
+				calls: 8,
+			}),
+		});
+
+		const history = await readKpiHistoryWindow({
+			workspaceRootAbs: workspaceRoot,
+			cacheDir: CACHE_DIR,
+			retentionDays: 1,
+			now: new Date('2026-08-29T12:00:00.000Z'),
+			windowDays: 30,
+		});
+
+		expect(history.retentionDays).toBe(1);
+		expect(history.totalEntries).toBe(1);
+		expect(history.entries).toHaveLength(1);
+		expect(history.entries[0]?.snapshot.generatedAt).toBe(
+			'2026-08-29T12:00:00.000Z',
+		);
+	});
+
 	it('persists explicit economics semantics without inventing missing savings data', async () => {
 		await persistKpiSnapshotHistory({
 			workspaceRootAbs: workspaceRoot,

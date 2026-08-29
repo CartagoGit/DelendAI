@@ -32,6 +32,15 @@ export type {
 	IProposalKindInfo,
 	IProposalFlagInfo,
 } from '../lib/contracts/constants/proposal-glossary.constant';
+export {
+	DEFAULT_PROPOSAL_FOLDER_POLICY,
+	proposalFolderFor,
+	proposalFoldersForPolicy,
+} from '../lib/contracts/proposal-folder-policy';
+export type {
+	IProposalFolderMode,
+	IProposalFolderPolicy,
+} from '../lib/contracts/proposal-folder-policy';
 // Swarm-domain contracts (moved out of the agnostic core).
 export type {
 	IProposalFamily,

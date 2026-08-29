@@ -988,6 +988,36 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		}
 	},
 	{
+		"id": "project-kpis",
+		"package": "@mcp-vertex/project-kpis",
+		"summary": "Versioned project KPI snapshots and observability views across health, usage, economics and delivery.",
+		"tags": [
+			"kpi",
+			"observability",
+			"economics",
+			"project-health"
+		],
+		"maturity": "experimental",
+		"visibility": "public",
+		"presets": [
+			"vertex"
+		],
+		"capabilities": [
+			"project-kpis",
+			"observability",
+			"economics"
+		],
+		"permissions": [
+			"filesystem-read",
+			"filesystem-write"
+		],
+		"tokenBudget": {
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
 		"id": "prompt-eval",
 		"package": "@mcp-vertex/prompt-eval",
 		"summary": "Prompt-eval harness (golden prompts, scoring).",

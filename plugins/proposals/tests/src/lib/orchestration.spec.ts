@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -113,6 +119,54 @@ describe('delegate tool', async () => {
 		);
 		expect(entry.host).toBe('vscode-copilot');
 		expect(entry.model).toBe('m3');
+	});
+
+	it('reconciles an abandoned assignment before allocating a pool slot', async () => {
+		writeFileSync(
+			opts.registryPathAbs,
+			JSON.stringify({
+				version: 2,
+				adopted: [],
+				assignments: [
+					{
+						task_id: 'abandoned-task',
+						agent_name: 'alpha',
+						agent_slot: 'implementation_runner',
+						parent_task_id: null,
+						depth: 0,
+						topic: 'old work',
+						adopted: true,
+						assigned_at: '2020-01-01T00:00:00.000Z',
+						last_seen: '2020-01-01T00:00:00.000Z',
+						cooldown_until: null,
+						status: 'active',
+					},
+				],
+			}),
+		);
+		const singleNameOpts = { ...opts, pool: ['alpha'] };
+		const handler = await capture(
+			buildDelegateRegistration({
+				namespacePrefix: 'proposals',
+				agentNames: singleNameOpts,
+				lockPathAbs: opts.lockPathAbs,
+			}),
+		);
+
+		const out = parse(
+			await handler({
+				taskId: 'new-task',
+				slot: 'implementation_runner',
+				files: ['src/recovered.ts'],
+			}),
+		);
+
+		expect(out.ok).toBe(true);
+		expect(out.agent).toBe('alpha');
+		const registry = JSON.parse(readFileSync(opts.registryPathAbs, 'utf8'));
+		expect(
+			registry.assignments.map((a: { task_id: string }) => a.task_id),
+		).toEqual(['new-task']);
 	});
 });
 

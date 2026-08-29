@@ -38,6 +38,7 @@
 | orchestrator-runner | public | * | process, network |
 | perf | public | * | filesystem-read, process |
 | project-health | public | * | filesystem-read |
+| project-kpis | public | * | filesystem-read, filesystem-write |
 | prompt-eval | public | * | filesystem-read, process |
 | prompts-pack | public | * | filesystem-read |
 | proposals | public | * | filesystem-read, filesystem-write, git-read, git-write |

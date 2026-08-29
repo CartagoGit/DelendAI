@@ -286,13 +286,19 @@ export const readKpiHistoryWindow = async (
 		options.retentionDays ?? DEFAULT_KPI_HISTORY_RETENTION_DAYS;
 	const pathAbs = resolveHistoryPath(options);
 	const store = await readStore(options, pathAbs, retentionDays);
+	const effectiveRetentionDays = options.retentionDays ?? store.retentionDays;
 	const to = options.to ?? asIsoString(now);
 	const toMs = parseTime(to);
 	const windowDays = options.windowDays ?? DEFAULT_KPI_HISTORY_WINDOW_DAYS;
 	const from =
 		options.from ?? asIsoString(new Date(toMs - windowDays * DAY_MS));
 	const fromMs = parseTime(from);
-	const filtered = store.entries.filter((entry) => {
+	const retained = trimToRetention(
+		store.entries,
+		now,
+		effectiveRetentionDays,
+	);
+	const filtered = retained.filter((entry) => {
 		const timestamp = parseTime(entry.snapshot.generatedAt);
 		return timestamp >= fromMs && timestamp <= toMs;
 	});
@@ -303,8 +309,8 @@ export const readKpiHistoryWindow = async (
 			: sorted;
 	return {
 		pathAbs,
-		retentionDays: store.retentionDays,
-		totalEntries: store.entries.length,
+		retentionDays: effectiveRetentionDays,
+		totalEntries: retained.length,
 		window: {
 			from,
 			to,

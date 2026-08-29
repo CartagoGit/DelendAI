@@ -174,6 +174,51 @@ class VscodeWebviewPanel implements IWebviewPanel {
 	}
 }
 
+class VscodeWebviewViewPanel implements IWebviewPanel {
+	readonly id: string;
+	readonly visible = true;
+
+	constructor(private readonly view: vscode.WebviewView) {
+		this.id = `vscode-webview-view-${view.viewType}`;
+	}
+
+	get webview(): IWebviewPanel['webview'] {
+		return {
+			options: { enableScripts: true },
+			html: this.view.webview.html,
+			setHtml: (html: string) => {
+				this.view.webview.html = html;
+			},
+			onDidReceiveMessage: (cb) =>
+				new VscodeDisposable(
+					this.view.webview.onDidReceiveMessage((msg) => {
+						void Promise.resolve(cb(msg)).catch(
+							(error: unknown) => {
+								console.error(
+									'[mcp-vertex] KPI webview message handler threw:',
+									error,
+								);
+							},
+						);
+					}),
+				),
+			postMessage: async (msg) => {
+				await this.view.webview.postMessage(msg);
+			},
+		};
+	}
+
+	reveal(): void {
+		this.view.show(true);
+	}
+
+	dispose(): void {}
+
+	onDidDispose(cb: () => void): IDisposable {
+		return new VscodeDisposable(this.view.onDidDispose(cb));
+	}
+}
+
 export interface ICreateVscodeHostAdapterOptions {
 	/** The extension's `ExtensionContext.extensionUri`. Required for
 	 * `asWebviewUri(...)` to produce valid URIs — without it the
@@ -317,6 +362,17 @@ export const createVscodeHostAdapter = (
 				{ ...panelOptions, ...webviewOptions },
 			);
 			return new VscodeWebviewPanel(panel, options);
+		},
+
+		registerWebviewViewProvider(viewId, provider): IDisposable {
+			return new VscodeDisposable(
+				vscode.window.registerWebviewViewProvider(viewId, {
+					resolveWebviewView: (view) =>
+						provider.resolveWebviewView(
+							new VscodeWebviewViewPanel(view),
+						),
+				}),
+			);
 		},
 
 		async showInformationMessage(message: string) {

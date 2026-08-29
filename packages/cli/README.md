@@ -13,6 +13,27 @@ The CLI is a thin wrapper over the public core/client surfaces. It starts the
 same MCP server used by hosts and calls MCP tools over stdio instead of
 importing plugin internals.
 
+## KPI adapter pending
+
+f00282 S4 adds standalone KPI command modules at src/commands/kpis.command.ts,
+src/commands/kpis-renderer.ts and src/commands/kpis-options.ts plus the focal
+spec at tests/kpis.command.spec.ts. This slice intentionally does not touch the
+global registry, so the command is implemented and validated in isolation but
+not yet wired into registerAllCommands.
+
+When the slice opens registry edits, the adapter is one import plus one spread:
+load kpisCommands from src/commands/kpis.command.ts and append it in
+src/commands/registry.ts. No extra aggregation work is needed because the
+command already consumes the bounded mcp-vertex_project_kpis snapshot together
+with persisted history.json and usage-summary.json evidence.
+
+The supported views are summary, history, usage, costs, models, agents,
+plugins, errors, efficiency and audit. JSON mode returns a stable
+cli.kpis-report envelope for the selected view. Watch mode emits repeated text
+frames or newline-delimited JSON frames and threshold mode can fail CI with
+expressions such as --threshold=health.score>=80 or
+--threshold=telemetry.failedCalls<=0.
+
 ## Commands
 
 `mcpv --help` lists the full surface grouped by group; `--help --lang=es`

@@ -38,6 +38,7 @@
 | orchestrator-runner | @mcp-vertex/orchestrator-runner | public | stable | vertex |
 | perf | @mcp-vertex/perf | public | stable | vertex, cli-tool |
 | project-health | @mcp-vertex/project-health | public | experimental | vertex |
+| project-kpis | @mcp-vertex/project-kpis | public | experimental | vertex |
 | prompt-eval | @mcp-vertex/prompt-eval | public | stable | full |
 | prompts-pack | @mcp-vertex/prompts-pack | public | stable | standard, swarm, full, web-app, backend-api |
 | proposals | @mcp-vertex/proposals | public | stable | swarm, full, vertex |
@@ -95,6 +96,7 @@
 | orchestrator-runner | 2700 | 3000 | 20 |
 | perf | 2700 | 3000 | 20 |
 | project-health | 2700 | 3000 | 20 |
+| project-kpis | 2700 | 3000 | 20 |
 | prompt-eval | 2700 | 3000 | 20 |
 | prompts-pack | 2700 | 3000 | 20 |
 | proposals | 13500 | 15000 | 20 |
@@ -152,6 +154,7 @@
 | orchestrator-runner | process, network |  |
 | perf | filesystem-read, process |  |
 | project-health | filesystem-read |  |
+| project-kpis | filesystem-read, filesystem-write |  |
 | prompt-eval | filesystem-read, process |  |
 | prompts-pack | filesystem-read |  |
 | proposals | filesystem-read, filesystem-write, git-read, git-write | auto_work: filesystem-read, filesystem-write, git-read; plan: filesystem-read, filesystem-write; delegate: filesystem-read, filesystem-write; get_proposal_workflow: filesystem-read; round_context: filesystem-read; agent_lock: filesystem-read, filesystem-write; agent_worktree: filesystem-read, filesystem-write, git-write; agent_names: filesystem-read; branch_status: git-read; branch_gc: git-read, git-write; close_slice: filesystem-read, filesystem-write; proposal_transition: filesystem-read, filesystem-write; proposal_review: filesystem-read; proposal_adopt: filesystem-read, filesystem-write, git-write; proposal_diagnose: filesystem-read; state_health: filesystem-read; state_repair: filesystem-read, filesystem-write; agent_lock_release_orphan: filesystem-read, filesystem-write |
@@ -497,6 +500,15 @@
 | project-health | web-app | no | no | yes |
 | project-health | backend-api | no | no | yes |
 | project-health | cli-tool | no | no | yes |
+| project-kpis | minimal | no | no | yes |
+| project-kpis | lean | no | no | yes |
+| project-kpis | standard | no | no | yes |
+| project-kpis | swarm | no | no | yes |
+| project-kpis | full | no | no | yes |
+| project-kpis | vertex | yes | no | no |
+| project-kpis | web-app | no | no | yes |
+| project-kpis | backend-api | no | no | yes |
+| project-kpis | cli-tool | no | no | yes |
 | prompt-eval | minimal | no | no | yes |
 | prompt-eval | lean | no | no | yes |
 | prompt-eval | standard | no | no | yes |
