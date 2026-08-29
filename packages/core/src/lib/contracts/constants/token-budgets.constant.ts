@@ -9,8 +9,23 @@ export type ITokenBudgetSurface = ITokenBudgetCeiling & {
 	readonly marginalPluginWarning?: number;
 };
 
+/**
+ * AUD-B02 / x00283: a governed preset's `toolsList` ceiling is the ONE
+ * surface the dashboard renders a "Marginal Status" column for. An
+ * optional marginal ceiling there is a contradiction — the dashboard has
+ * no honest value to fall back to and previously defaulted to `?? 0`,
+ * which reported "over hard (0B)" for every plugin in four of six
+ * presets. Making both fields required here means a preset that is
+ * missing a real marginal ceiling fails to compile, not silently renders
+ * a false permanent violation.
+ */
+export type IGovernedToolsListBudget = ITokenBudgetCeiling & {
+	readonly marginalPluginHard: number;
+	readonly marginalPluginWarning: number;
+};
+
 export type IPresetTokenBudgetProfile = {
-	readonly toolsList: ITokenBudgetSurface;
+	readonly toolsList: IGovernedToolsListBudget;
 	readonly overviewCompact?: ITokenBudgetSurface;
 	readonly roundContext?: ITokenBudgetSurface;
 };
@@ -27,6 +42,16 @@ export type ITokenBudgetRegistry = {
 	readonly toolPayloads: {
 		readonly overviewFull: ITokenBudgetSurface;
 		readonly overviewCompact: ITokenBudgetSurface;
+		/**
+		 * x00296 S2 (AUD-B06): `overviewFull`/`overviewCompact` above are
+		 * calibrated for the `managed` bootstrap listing. `overview` is
+		 * also directly callable under `native` (the full catalog
+		 * listing), which is a materially larger, independently-governed
+		 * surface — this is a NEW ceiling, not a redefinition of the
+		 * `managed` one above.
+		 */
+		readonly overviewFullNative: ITokenBudgetSurface;
+		readonly overviewCompactNative: ITokenBudgetSurface;
 		readonly agentCatalogCompact: ITokenBudgetSurface;
 		readonly agentCatalogFull: ITokenBudgetSurface;
 		readonly autoWork: ITokenBudgetSurface;
@@ -90,6 +115,29 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 			warning: 1_450,
 			releaseRelativePercent: 20,
 		},
+		// x00296 S2 (AUD-B06): the `native` surface lists the full tool
+		// catalog (currently 63 tools with the `fixturePluginIds` roster) —
+		// materially larger than the lean `managed` bootstrap listing
+		// `overviewFull`/`overviewCompact` above govern. Measured real
+		// payload today (bumpPolicy step 1,
+		// justify-the-cost): 12,024 B full / 1,696 B compact. Ceiling set
+		// at +5% over that measurement (bumpPolicy step 3,
+		// attempt-a-compensation: no further compaction attempted here —
+		// that is `v00129`/future proposals' territory, out of scope for a
+		// measurement-only fix) — a guard band against the catalog's
+		// natural per-tool-added drift, not an invitation to grow into it
+		// (bumpPolicy step 4, document-the-decision: this comment + the
+		// x00296 proposal doc are that record).
+		overviewFullNative: {
+			hard: 12_650,
+			warning: 12_300,
+			releaseRelativePercent: 20,
+		},
+		overviewCompactNative: {
+			hard: 1_800,
+			warning: 1_750,
+			releaseRelativePercent: 20,
+		},
 		agentCatalogCompact: {
 			hard: 900,
 			warning: 800,
@@ -146,6 +194,16 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				hard: 64_000,
 				warning: 58_000,
 				releaseRelativePercent: 20,
+				// AUD-B02/x00283: minimal's two plugins are `git`
+				// (5,065 B) and `search` (1,749 B); `git` is the largest
+				// non-core contributor measured today. `core` itself is
+				// excluded from this ceiling — it is the always-on
+				// bootstrap roster governed by hard/warning above, not a
+				// "plugin" in the marginal sense. A small guard band over
+				// the measured 5,065 B leaves room for a few more git
+				// tools without licensing a full plugin-scale jump.
+				marginalPluginHard: 7_000,
+				marginalPluginWarning: 6_000,
 			},
 		},
 		lean: {
@@ -165,6 +223,15 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				hard: 144_000,
 				warning: 132_000,
 				releaseRelativePercent: 20,
+				// AUD-B02/x00283: standard's largest non-core owner
+				// measured today is `memory` at 8,221 B (`core` is
+				// excluded — see the `minimal` comment above). A guard
+				// band over that keeps room for the next plugin added to
+				// this preset without licensing a `proposals`-scale
+				// (45,277 B) jump; if that plugin is ever added here this
+				// ceiling must be revisited deliberately, per bumpPolicy.
+				marginalPluginHard: 11_000,
+				marginalPluginWarning: 9_500,
 			},
 		},
 		swarm: {
@@ -200,6 +267,14 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				hard: 256_000,
 				warning: 236_000,
 				releaseRelativePercent: 20,
+				// AUD-B02/x00283: `full` carries `proposals` at
+				// 45,277 B, the same plugin at the same measured size as
+				// `swarm` (both load it). Reusing swarm's marginal
+				// ceiling is not a copy of convenience — it is the same
+				// absolute plugin cost, so the same governed limit
+				// applies honestly.
+				marginalPluginHard: 80_000,
+				marginalPluginWarning: 70_000,
 			},
 		},
 		vertex: {
@@ -207,6 +282,11 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				hard: 384_000,
 				warning: 320_000,
 				releaseRelativePercent: 20,
+				// AUD-B02/x00283: `vertex` also carries `proposals` at
+				// 45,277 B (same measured cost as `swarm`/`full`); see
+				// the `full` comment above — same plugin, same ceiling.
+				marginalPluginHard: 80_000,
+				marginalPluginWarning: 70_000,
 			},
 		},
 	},

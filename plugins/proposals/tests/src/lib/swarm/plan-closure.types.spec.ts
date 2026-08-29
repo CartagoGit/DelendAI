@@ -14,7 +14,10 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { IProposalFrontmatter } from '@mcp-vertex/proposals/lib/proposals/proposal-document';
+import type {
+	IPlanClosureGate,
+	IProposalFrontmatter,
+} from '@mcp-vertex/proposals/lib/proposals/proposal-document';
 import {
 	DEFAULT_CLOSURE_GATE_POLICY,
 	policyFromFrontmatter,
@@ -29,16 +32,11 @@ const fmWith = (
 		status: 'ready',
 		track: 'test',
 	};
-	if (closureGate === undefined) {
-		return {
-			...base,
-			closureGate: undefined,
-		} as unknown as IProposalFrontmatter;
-	}
+	if (closureGate === undefined) return base;
 	return {
 		...base,
-		closureGate: closureGate as IProposalFrontmatter['closureGate'],
-	} as unknown as IProposalFrontmatter;
+		closureGate: closureGate as IPlanClosureGate,
+	};
 };
 
 describe('policyFromFrontmatter', async () => {

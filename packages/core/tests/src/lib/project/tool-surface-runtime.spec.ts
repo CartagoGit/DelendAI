@@ -112,6 +112,15 @@ describe('tool-surface-runtime schema accounting', () => {
 			['alpha_run', 'mcp-vertex_alpha_run'],
 			['beta_run', 'mcp-vertex_beta_run'],
 		] as const) {
+			// A `bindLazyTool` activator must be retained BEFORE the tool
+			// materializes (x00286): eviction can only relaze a plugin it
+			// knows how to reactivate, and `isPluginEvictable` refuses to
+			// evict any plugin missing one — exactly the production shape,
+			// where every plugin goes through `bindLazyTool` first.
+			runtime.bindLazyTool({
+				registrationId,
+				activate: async () => ({ handler: async () => undefined }),
+			});
 			runtime.bindRegisteredTool({
 				registrationId,
 				name,
@@ -191,6 +200,12 @@ describe('tool-surface-runtime schema accounting', () => {
 		});
 		const started = new Promise<void>((resolve) => {
 			markStarted = resolve;
+		});
+		runtime.bindLazyTool({
+			registrationId: 'memory_save',
+			activate: async () => ({
+				handler: async () => ({ ok: true }),
+			}),
 		});
 		runtime.bindRegisteredTool({
 			registrationId: 'memory_save',

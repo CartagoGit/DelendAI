@@ -126,6 +126,12 @@ jobs:
       - name: Verify branch protection
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional repo-admin-scoped PAT (see docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md).
+          # Without it the ambient GITHUB_TOKEN above is used, which
+          # cannot read branch protection (no `administration` scope) —
+          # the script reports that explicitly as `unverified` rather
+          # than a false pass or a red build.
+          BRANCH_PROTECTION_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
         run: bun tools/scripts/ci/verify-branch-protection.script.ts --repo ${{ github.repository }}
 
   develop-health:
@@ -146,6 +152,9 @@ jobs:
       - name: Verify develop + main are healthy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # See the `branch-protection` job above — same optional token,
+          # same fallback, same `unverified` semantics.
+          BRANCH_PROTECTION_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
         run: bun tools/scripts/ci/verify-develop-health.script.ts --repo ${{ github.repository }}
 
   privacy-audit:

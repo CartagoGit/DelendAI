@@ -16,6 +16,9 @@ import type {
 	IMcpPluginRegistrations,
 } from './plugin-contract';
 import type { IManagedLazyPluginCatalogEntry } from './managed-lazy-catalog.generated';
+import type { IManagedLazyDisposeAggregateError } from '../contracts/interfaces/plugin-activation-session.interface';
+import { activatePluginSession } from './plugin-activation-session';
+import { extractPartialRuntime } from './load-plugins-runtime.helper';
 
 export interface IManagedLazyToolBinding {
 	readonly description?: string | undefined;
@@ -31,6 +34,28 @@ export interface IManagedLazyRuntime {
 		readonly loadedPluginIds: readonly string[];
 		readonly activatedToolIds: readonly string[];
 	};
+	/**
+	 * Dispose one plugin's retained `dispose`, if it registered one and
+	 * has not already been disposed. Idempotent, and shares its
+	 * bookkeeping with `disposeAll` — a plugin evicted mid-session
+	 * (x00286 S4) is never disposed a second time at final process
+	 * shutdown. A plugin that never activated, or whose `register()`
+	 * returned no `dispose`, is a silent no-op: there is nothing to
+	 * free. Errors propagate uncaught; the one production caller
+	 * (`ToolSurfaceRuntime`'s injected `pluginDisposer`, wired through
+	 * `setPluginDisposer`) already catches and aggregates per-plugin
+	 * failures without blocking the relazy.
+	 */
+	disposePlugin(pluginId: string): Promise<void>;
+	/**
+	 * Dispose every plugin runtime activated so far, in reverse
+	 * activation order (AUD-E02 / r00039). Idempotent: a plugin whose
+	 * `dispose` already ran (or that never retained one) is skipped.
+	 * One plugin's `dispose` throwing does not stop the others — every
+	 * failure is collected and returned instead of thrown, so a single
+	 * bad plugin can never mask the rest of the teardown.
+	 */
+	disposeAll(): Promise<readonly IManagedLazyDisposeAggregateError[]>;
 }
 
 export interface IManagedLazyRuntimeOptions {
@@ -42,6 +67,15 @@ export interface IManagedLazyRuntimeOptions {
 		cacheNamespace?: 'results',
 	) => IMcpPluginContext;
 	readonly importFn: (specifier: string) => Promise<unknown>;
+	/**
+	 * Per-activation register() timeout (ms), applied through the same
+	 * `PluginActivationSession` the eager loader uses. Defaults to the
+	 * eager loader's own default (15000) so a plugin behaves identically
+	 * however it was activated (AUD-E01.b).
+	 */
+	readonly registerTimeoutMs?: number | undefined;
+	/** External cancellation, propagated to every activation's register(). */
+	readonly signal?: AbortSignal | undefined;
 	/** Reconnects plugin-level lifecycle contributions once a module activates. */
 	readonly onActivated?: (input: {
 		readonly plugin: IMcpPlugin;
@@ -80,15 +114,6 @@ const pluginFromModule = (module: unknown): IMcpPlugin | undefined => {
 		? (value as IMcpPlugin)
 		: undefined;
 };
-
-const registrationPayload = (
-	value:
-		| IMcpPluginRegistrations
-		| {
-				readonly registrations: IMcpPluginRegistrations;
-		  },
-): IMcpPluginRegistrations =>
-	'registrations' in value ? value.registrations : value;
 
 const captureToolRegistrations = async (
 	registrations: readonly IToolRegistration[],
@@ -135,9 +160,19 @@ export const createManagedLazyRuntime = (
 		}
 	}
 
+	const registerTimeoutMs = options.registerTimeoutMs ?? 15_000;
 	const activations = new Map<string, Promise<IActivatedPlugin>>();
 	const settledPluginIds = new Set<string>();
 	const activatedToolIdsByPlugin = new Map<string, readonly string[]>();
+	// Retained per-plugin `dispose`, in activation order, so `disposeAll`
+	// can tear the working set down in reverse — the lazy-route half of
+	// AUD-E01.c / AUD-E02: before this the `dispose` a plugin returned
+	// was captured nowhere and could never be called.
+	const disposersInActivationOrder: Array<{
+		readonly pluginId: string;
+		readonly dispose: () => Promise<void> | void;
+	}> = [];
+	const disposedPluginIds = new Set<string>();
 	const activatePlugin = (
 		pluginId: string,
 		activationStack: readonly string[] = [],
@@ -176,16 +211,42 @@ export const createManagedLazyRuntime = (
 				pluginId,
 				plugin.cacheNamespace,
 			);
-			if (
-				plugin.optionsSchema &&
-				!plugin.optionsSchema.safeParse(context.options).success
-			) {
-				throw new Error(
-					`plugin "${pluginId}" rejected its configured options`,
-				);
+			// Goes through the SAME `PluginActivationSession` primitive the
+			// eager loader uses: options are parsed via `parsed.data` (not
+			// discarded, AUD-E01.a), `register()` runs under
+			// `registerTimeoutMs` + `options.signal` (AUD-E01.b), and the
+			// returned runtime is normalized so its `dispose` — if any — is
+			// never lost (AUD-E01.c).
+			let runtime: Awaited<ReturnType<typeof activatePluginSession>>;
+			try {
+				runtime = await activatePluginSession({
+					plugin,
+					ctx: context,
+					timeoutMs: registerTimeoutMs,
+					signal: options.signal,
+				});
+			} catch (error) {
+				// A plugin whose register() fails mid-way may still have
+				// returned a partial runtime (attached via `error.runtime` /
+				// `error.registrations`, the same convention the eager
+				// rollback path uses). Dispose it so a failed activation
+				// leaves no residue — best-effort: a broken dispose here must
+				// not mask the original registration error.
+				const partial = extractPartialRuntime(error);
+				if (partial?.dispose !== undefined) {
+					await Promise.resolve(partial.dispose()).catch(
+						() => undefined,
+					);
+				}
+				throw error;
 			}
-			const registered = await plugin.register(context);
-			const payload = registrationPayload(registered);
+			if (runtime.dispose !== undefined) {
+				disposersInActivationOrder.push({
+					pluginId,
+					dispose: runtime.dispose,
+				});
+			}
+			const payload = runtime.registrations;
 			options.onActivated?.({
 				plugin,
 				registrations: payload,
@@ -244,6 +305,34 @@ export const createManagedLazyRuntime = (
 				);
 			}
 			return binding;
+		},
+		async disposePlugin(pluginId) {
+			if (disposedPluginIds.has(pluginId)) return;
+			const entry = disposersInActivationOrder.find(
+				(candidate) => candidate.pluginId === pluginId,
+			);
+			if (entry === undefined) return;
+			// Mark disposed before awaiting so a concurrent call (or a later
+			// `disposeAll` at process shutdown) can never race this plugin's
+			// `dispose` a second time.
+			disposedPluginIds.add(pluginId);
+			await entry.dispose();
+		},
+		async disposeAll() {
+			const errors: IManagedLazyDisposeAggregateError[] = [];
+			// Reverse activation order mirrors the eager loader's teardown
+			// (`disposeLoadedPlugins`): a plugin is disposed before the
+			// dependency it activated on the way up.
+			for (const entry of [...disposersInActivationOrder].reverse()) {
+				if (disposedPluginIds.has(entry.pluginId)) continue;
+				disposedPluginIds.add(entry.pluginId);
+				try {
+					await entry.dispose();
+				} catch (error) {
+					errors.push({ pluginId: entry.pluginId, error });
+				}
+			}
+			return errors;
 		},
 		snapshot() {
 			const loadedPluginIds = [...settledPluginIds];

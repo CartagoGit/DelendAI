@@ -153,22 +153,35 @@ export const scanText = (
 };
 
 const walk = async (dir: string, out: string[]): Promise<void> => {
-	let entries: Awaited<ReturnType<typeof readdir>>;
+	// AUD-D07's adjacent note: this used to declare `entries` via
+	// `Awaited<ReturnType<typeof readdir>>` — the un-called generic
+	// signature of an overloaded function, which resolves to a WIDER
+	// type than the actual call below produces (it includes the
+	// `Buffer`-returning overload). That widened `entry.name` type made
+	// `name === 'node_modules'` etc. always false against a `string`
+	// literal, so the walker silently descended into `node_modules`.
+	// Letting TS infer `entries` from the real call (with
+	// `withFileTypes: true` and no `encoding` override) pins `name` to
+	// `string`, so the comparisons are real again.
 	try {
-		entries = await readdir(dir, { withFileTypes: true });
+		const entries = await readdir(dir, { withFileTypes: true });
+		for (const entry of entries) {
+			const name = entry.name;
+			if (
+				name === 'node_modules' ||
+				name === 'dist' ||
+				name === 'coverage'
+			)
+				continue;
+			const abs = join(dir, name);
+			if (entry.isDirectory()) {
+				await walk(abs, out);
+				continue;
+			}
+			if (entry.isFile() && TS_FILE.test(name)) out.push(abs);
+		}
 	} catch {
 		return;
-	}
-	for (const entry of entries) {
-		const name = entry.name;
-		if (name === 'node_modules' || name === 'dist' || name === 'coverage')
-			continue;
-		const abs = join(dir, name);
-		if (entry.isDirectory()) {
-			await walk(abs, out);
-			continue;
-		}
-		if (entry.isFile() && TS_FILE.test(name)) out.push(abs);
 	}
 };
 

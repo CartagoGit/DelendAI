@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 import plugin from '@mcp-vertex/proposals';
+import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 const ctx = (): IMcpPluginContext => ({
 	workspace: {
@@ -71,15 +72,9 @@ describe('@mcp-vertex/proposals plugin', async () => {
 
 	it('namespaces tool registration by the context prefix', async () => {
 		const names: string[] = [];
-		const fakeServer = {
-			registerTool: (name: string) => {
-				names.push(name);
-			},
-		} as unknown as Parameters<
-			NonNullable<
-				Awaited<ReturnType<typeof plugin.register>>['tools']
-			>[number]['register']
-		>[0];
+		const fakeServer = createFakeToolServer({
+			onRegisterTool: (call) => names.push(call.name),
+		});
 		const registrations = await plugin.register({
 			...ctx(),
 			namespacePrefix: 'work',
@@ -136,15 +131,11 @@ describe('@mcp-vertex/proposals plugin', async () => {
 			isError?: boolean;
 		}>;
 		let handler: ToolHandler | undefined;
-		const fakeServer = {
-			registerTool: (_name: string, _schema: unknown, h: ToolHandler) => {
-				handler = h;
+		const fakeServer = createFakeToolServer({
+			onRegisterTool: (call) => {
+				handler = call.handler as ToolHandler;
 			},
-		} as unknown as Parameters<
-			NonNullable<
-				Awaited<ReturnType<typeof plugin.register>>['tools']
-			>[number]['register']
-		>[0];
+		});
 		const registrations = await plugin.register(ctx());
 		const worktree = registrations.tools?.find(
 			(t) => t.id === 'agent_worktree',

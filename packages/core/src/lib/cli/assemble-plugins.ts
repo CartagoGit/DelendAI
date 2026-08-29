@@ -47,7 +47,24 @@ import {
 	type MANAGED_LAZY_PLUGIN_CATALOG,
 } from '../plugins/managed-lazy-catalog.generated';
 import { createManagedLazyRuntime } from '../plugins/managed-lazy-runtime';
+import { disposeLoadedPlugins } from '../plugins/load-plugins-runtime.helper';
 import type { IToolSurfaceLazyBinding } from '../contracts/interfaces/tool-surface.interface';
+
+/** Wraps a raw dispose sweep so a second call is a guaranteed no-op. */
+const idempotentDisposePlugins = (
+	run: () => Promise<
+		readonly { readonly pluginName: string; readonly error: unknown }[]
+	>,
+): (() => Promise<
+	readonly { readonly pluginName: string; readonly error: unknown }[]
+>) => {
+	let disposed = false;
+	return async () => {
+		if (disposed) return [];
+		disposed = true;
+		return run();
+	};
+};
 
 /** Inputs `assemblePlugins` needs from the config-resolution phase. */
 export interface IAssemblePluginsInput {
@@ -106,6 +123,30 @@ export interface IAssemblePluginsResult {
 	/** Returns plugin non-tool registrations activated since the last drain. */
 	readonly consumeLazyPluginRegistrations?: () => readonly IMcpPluginRegistrations[];
 	readonly moduleLoading: 'lazy' | 'eager';
+	/**
+	 * Dispose every plugin runtime this assembly activated (eager: all of
+	 * them up front; lazy: whichever the session actually activated), in
+	 * reverse activation order, aggregating per-plugin failures instead of
+	 * throwing on the first one. Idempotent — a second call is a no-op.
+	 * `McpHostSession.dispose()` (`create-mcp-project.ts`) is the one
+	 * caller; see AUD-E02 / r00039.
+	 */
+	readonly disposePlugins: () => Promise<
+		readonly { readonly pluginName: string; readonly error: unknown }[]
+	>;
+	/**
+	 * Dispose exactly one plugin's runtime, by plugin id, without
+	 * touching any other plugin — the per-plugin counterpart
+	 * `disposePlugins` above lacks (x00286 S4). Present only for the
+	 * managed-lazy assembly (`moduleLoading: 'lazy'`): eager plugins
+	 * never retain a lazy activator, so `ToolSurfaceRuntime` can never
+	 * mark one evictable in the first place, and there is nothing for a
+	 * per-plugin disposer to wire into. Delegates to
+	 * `IManagedLazyRuntime.disposePlugin`, which is itself idempotent
+	 * and shares its "already disposed" bookkeeping with `disposePlugins`
+	 * so an evicted-then-shutdown plugin is never disposed twice.
+	 */
+	readonly disposePlugin?: (pluginId: string) => Promise<void>;
 }
 
 interface IOverviewPluginEntry {
@@ -441,6 +482,14 @@ const tryAssembleManagedLazy = (input: {
 			return drained;
 		},
 		moduleLoading: 'lazy',
+		disposePlugins: idempotentDisposePlugins(async () => {
+			const failures = await lazyRuntime.disposeAll();
+			return failures.map((failure) => ({
+				pluginName: failure.pluginId,
+				error: failure.error,
+			}));
+		}),
+		disposePlugin: (pluginId) => lazyRuntime.disposePlugin(pluginId),
 	};
 };
 
@@ -896,5 +945,21 @@ export const assemblePlugins = async (
 			describe: entry.plugin.describe,
 		})),
 		moduleLoading: 'eager',
+		disposePlugins: idempotentDisposePlugins(async () => {
+			const failures: {
+				readonly pluginName: string;
+				readonly error: unknown;
+			}[] = [];
+			// Reverse-order, error-aggregating dispose — the exact same
+			// helper `registerResolvedPluginsWithLifecycle` uses to roll
+			// back a partially-registered batch, reused here for full
+			// teardown (AUD-E02 / r00039).
+			await disposeLoadedPlugins(loadResult.loaded, {
+				onError: (entry, error) => {
+					failures.push({ pluginName: entry.plugin.name, error });
+				},
+			});
+			return failures;
+		}),
 	};
 };

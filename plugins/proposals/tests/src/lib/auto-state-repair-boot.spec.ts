@@ -9,8 +9,14 @@ import {
 } from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
 import type { IPluginLogInput } from '@mcp-vertex/core/public';
 
-const emptyLock = { version: 1, in_flight: [] as unknown[] };
-const emptyQueue = { version: 1, entries: [] as unknown[] };
+const emptyLock: { version: number; in_flight: unknown[] } = {
+	version: 1,
+	in_flight: [],
+};
+const emptyQueue: { version: number; entries: unknown[] } = {
+	version: 1,
+	entries: [],
+};
 
 describe('a00069 S10 auto state_repair on boot', () => {
 	let root = '';
