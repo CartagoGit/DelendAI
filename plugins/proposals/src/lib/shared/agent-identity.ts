@@ -35,6 +35,8 @@ const HOST_SLUGS: Readonly<Record<AgentHost, string>> = {
 	continue: 'continue',
 	unknown: 'unknown',
 };
+const LAST_RESORT_MODEL_MAX = 8;
+const LAST_RESORT_AGENT_MAX = 12;
 
 /**
  * Normalise any string to a slug-safe form. Keeps `[a-z0-9-]`,
@@ -131,7 +133,7 @@ export const composeIdentity = (identity: IAgentIdentity): string => {
 			return composite;
 	}
 	if (model.length > 0) {
-		const trimmedModel = capSlug(model).slice(0, 8);
+		const trimmedModel = capSlug(model).slice(0, LAST_RESORT_MODEL_MAX);
 		composite = tryCompose(trimmedModel, task);
 		if (composite.length <= AGENT_IDENTITY_LIMITS.composite)
 			return composite;
@@ -139,7 +141,7 @@ export const composeIdentity = (identity: IAgentIdentity): string => {
 	// Last resort: trim the agent_name (the required field). The
 	// composite is then `<host>-<agent_short>-<task>` and stays
 	// unique because host + task are still in there.
-	const trimmedAgent = capSlug(agent).slice(0, 12);
+	const trimmedAgent = capSlug(agent).slice(0, LAST_RESORT_AGENT_MAX);
 	const parts = [host, trimmedAgent, task].filter((p) => p.length > 0);
 	return parts.join('-');
 };

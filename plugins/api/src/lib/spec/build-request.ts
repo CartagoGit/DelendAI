@@ -35,7 +35,7 @@ export interface IBuiltRequest {
 
 const stripTrailingSlash = (s: string): string => {
 	let end = s.length;
-	while (end > 0 && s.charCodeAt(end - 1) === 47) end -= 1;
+	while (end > 0 && s[end - 1] === '/') end -= 1;
 	return end === s.length ? s : s.slice(0, end);
 };
 

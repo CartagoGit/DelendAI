@@ -85,6 +85,21 @@ export type {
 	IValidationMatrix,
 } from '../lib/contracts/interfaces/validation-matrix.interface';
 export type {
+	IModelCatalog,
+	IModelCatalogEntry,
+	IModelCatalogFilter,
+	IModelCatalogSearchOptions,
+	IModelLimits,
+	ModelCatalogErrorCode,
+	ModelLifecycle,
+} from '../lib/contracts/interfaces/model-catalog.interface';
+export {
+	DEFAULT_MODEL_CATALOG_LIMIT,
+	InMemoryModelCatalog,
+	MAX_MODEL_CATALOG_LIMIT,
+	ModelCatalogError,
+} from '../lib/catalog';
+export type {
 	EvidenceType,
 	IEvidenceStore,
 } from '../lib/contracts/interfaces/evidence.interface';

@@ -21,36 +21,10 @@ export interface IValidateResponseOptions {
 	readonly schema?: IJsonSchema;
 }
 
-const isEmailLike = (value: string): boolean => {
-	let atIndex = -1;
-	let dotAfterAt = -1;
-	for (let index = 0; index < value.length; index += 1) {
-		const code = value.charCodeAt(index);
-		if (
-			code === 9 ||
-			code === 10 ||
-			code === 11 ||
-			code === 12 ||
-			code === 13 ||
-			code === 32
-		) {
-			return false;
-		}
-		if (code === 64) {
-			if (atIndex >= 0 || index === 0 || index === value.length - 1) {
-				return false;
-			}
-			atIndex = index;
-			continue;
-		}
-		if (code === 46 && atIndex >= 0 && index > atIndex + 1) {
-			dotAfterAt = index;
-		}
-	}
-	return (
-		atIndex > 0 && dotAfterAt > atIndex + 1 && dotAfterAt < value.length - 1
-	);
-};
+const STATUS_OK = String(new Response().status);
+const EMAIL_RE = /^[^\s@]+@[^\s@.][^\s@]*\.[^\s@]+$/u;
+
+const isEmailLike = (value: string): boolean => EMAIL_RE.test(value);
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -90,27 +64,22 @@ const detectType = (value: unknown): string => {
 	return typeof value;
 };
 
+const TYPE_CHECKERS: Readonly<
+	Record<NonNullable<IJsonSchema['type']>, (value: unknown) => boolean>
+> = {
+	string: (value) => typeof value === 'string',
+	number: (value) => typeof value === 'number' && Number.isFinite(value),
+	integer: (value) => typeof value === 'number' && Number.isInteger(value),
+	boolean: (value) => typeof value === 'boolean',
+	array: (value) => Array.isArray(value),
+	object: (value) => isPlainObject(value),
+	null: (value) => value === null,
+};
+
 const matchesType = (
 	value: unknown,
 	expected: NonNullable<IJsonSchema['type']>,
-) => {
-	switch (expected) {
-		case 'string':
-			return typeof value === 'string';
-		case 'number':
-			return typeof value === 'number' && Number.isFinite(value);
-		case 'integer':
-			return typeof value === 'number' && Number.isInteger(value);
-		case 'boolean':
-			return typeof value === 'boolean';
-		case 'array':
-			return Array.isArray(value);
-		case 'object':
-			return isPlainObject(value);
-		case 'null':
-			return value === null;
-	}
-};
+) => TYPE_CHECKERS[expected]?.(value) ?? false;
 
 const isNullable = (schema: IJsonSchema): boolean =>
 	schemaExtras(schema).nullable === true;
@@ -157,7 +126,7 @@ export const resolveResponseSchema = (
 	operation: IOpenApiOperation,
 ): IJsonSchema | undefined => {
 	const exact200 = operation.responses.find(
-		(response) => response.status === '200',
+		(response) => response.status === STATUS_OK,
 	);
 	if (exact200?.schema !== undefined) return exact200.schema;
 	const success = operation.responses.find(

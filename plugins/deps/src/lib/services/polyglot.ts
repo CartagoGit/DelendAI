@@ -66,45 +66,17 @@ const splitKeyValueLine = (
 	};
 };
 
-const isWhitespaceCode = (code: number): boolean =>
-	code === 9 ||
-	code === 10 ||
-	code === 11 ||
-	code === 12 ||
-	code === 13 ||
-	code === 32;
+const ASCII_WHITESPACE_RE = /[\t\n\v\f\r ]+/u;
+const INDIRECT_COMMENT_RE = /^indirect(?:$|[^0-9A-Za-z_])/u;
 
 const splitWhitespaceFields = (value: string): readonly string[] => {
-	const out: string[] = [];
-	let start = -1;
-	for (let index = 0; index < value.length; index += 1) {
-		const code = value.charCodeAt(index);
-		if (isWhitespaceCode(code)) {
-			if (start >= 0) {
-				out.push(value.slice(start, index));
-				start = -1;
-			}
-			continue;
-		}
-		if (start < 0) start = index;
-	}
-	if (start >= 0) out.push(value.slice(start));
-	return out;
+	const trimmed = value.trim();
+	if (trimmed === '') return [];
+	return trimmed.split(ASCII_WHITESPACE_RE);
 };
 
 const hasIndirectComment = (comment: string): boolean => {
-	const trimmed = comment.trimStart();
-	if (!trimmed.startsWith('indirect')) return false;
-	const next = trimmed.charCodeAt('indirect'.length);
-	return (
-		Number.isNaN(next) ||
-		!(
-			(next >= 48 && next <= 57) ||
-			(next >= 65 && next <= 90) ||
-			(next >= 97 && next <= 122) ||
-			next === 95
-		)
-	);
+	return INDIRECT_COMMENT_RE.test(comment.trimStart());
 };
 
 /** Split TOML source into `[section]` tables of simple `key = value` lines. */
