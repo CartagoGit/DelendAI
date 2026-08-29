@@ -24,29 +24,42 @@ import {
 	parseWithCompatWindow,
 	type IDeprecatedShapeUsed,
 } from '../contracts/compat-window';
+import {
+	PROPOSAL_STATUSES,
+	type IProposalStatus,
+} from '../contracts/constants/proposal-glossary.constant';
 import type { IProposalTransitionArgs } from './proposal-transition.tool';
 import { runProposalTransition } from './proposal-transition.tool';
 import type { IProposalTransitionToolOptions } from './proposal-transition.tool';
 
+const PROPOSAL_TRANSITION_STATUS_VALUES = Object.keys(PROPOSAL_STATUSES) as [
+	IProposalStatus,
+	...IProposalStatus[],
+];
+
 /** v2 — the canonical (today's) input schema. Mirrors `IProposalTransitionArgs`. */
-const v2Schema = z.object({
-	id: z.string().min(1),
-	to: z.string().min(1),
-	reason: z.string().min(1),
-	agent: z.string().optional(),
-	force: z.boolean().optional(),
-	validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
-});
+const v2Schema = z
+	.object({
+		id: z.string().min(1),
+		to: z.enum(PROPOSAL_TRANSITION_STATUS_VALUES),
+		reason: z.string().min(1),
+		agent: z.string().optional(),
+		force: z.boolean().optional(),
+		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
+	})
+	.strict();
 
 /** v1 — legacy shape. Today v1 === v2 (seed slice). Future releases will narrow v2. */
-const v1Schema = z.object({
-	id: z.string().min(1),
-	to: z.string().min(1),
-	reason: z.string().min(1),
-	agent: z.string().optional(),
-	force: z.boolean().optional(),
-	validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
-});
+const v1Schema = z
+	.object({
+		id: z.string().min(1),
+		to: z.enum(PROPOSAL_TRANSITION_STATUS_VALUES),
+		reason: z.string().min(1),
+		agent: z.string().optional(),
+		force: z.boolean().optional(),
+		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
+	})
+	.strict();
 
 /** The compat window for proposal_transition. */
 export const PROPOSAL_TRANSITION_COMPAT =

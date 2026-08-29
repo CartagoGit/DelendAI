@@ -69,8 +69,6 @@ export interface IInternalImportFinding {
 }
 
 const SUBPATH_INTERNAL = /["'](@mcp-vertex\/core\/_internal[^"']*)["']/;
-const IMPORT_LINE =
-	/\b(?:import|export)\b(?:[\s\S]*?\bfrom\s*)?["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)|require\s*\(\s*["']([^"']+)["']\s*\)/g;
 
 /** Imports whose specifier is unambiguously a core entry point.
  *  These are the only specifiers the lint inspects for `*Internal`

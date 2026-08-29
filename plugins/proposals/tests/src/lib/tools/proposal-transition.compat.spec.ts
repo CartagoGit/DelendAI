@@ -89,6 +89,30 @@ describe('x00153 S9 — runProposalTransitionCompat v1/v2 routing', () => {
 		}
 	});
 
+	it('rejects an invalid target status with compat-window-invalid', async () => {
+		const result = await runProposalTransitionCompat(
+			{ ...baseArgs, to: 'shipping' },
+			stubOptions,
+		);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error.code).toBe('compat-window-invalid');
+			expect(Array.isArray(result.error.issues)).toBe(true);
+		}
+	});
+
+	it('rejects unknown keys with compat-window-invalid', async () => {
+		const result = await runProposalTransitionCompat(
+			{ ...baseArgs, extra: 1 },
+			stubOptions,
+		);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error.code).toBe('compat-window-invalid');
+			expect(Array.isArray(result.error.issues)).toBe(true);
+		}
+	});
+
 	it('rejects non-object input with compat-window-invalid', async () => {
 		const result = await runProposalTransitionCompat(
 			'a string',

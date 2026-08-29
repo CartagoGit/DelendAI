@@ -103,4 +103,49 @@ describe('proposals_close_plan dryRun contract', () => {
 		});
 		expect(await readFile(planPath, 'utf8')).toBe(before);
 	});
+
+	it('is idempotent when the plan is already done', async () => {
+		const donePath = join(
+			options.proposalsDirAbs,
+			'done/plans/q99999-fixture.md',
+		);
+		await mkdir(join(options.proposalsDirAbs, 'done/plans'), {
+			recursive: true,
+		});
+		await writeFile(
+			donePath,
+			'---\nid: q99999\ntype: plan\nstatus: done\n---\n\n# q99999\n',
+			'utf8',
+		);
+		await writeFile(
+			join(options.indexPathAbs),
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'q99999',
+						file: 'done/plans/q99999-fixture.md',
+						status: 'done',
+						type: 'plan',
+					},
+				],
+			}),
+			'utf8',
+		);
+
+		const { handler } = await capture(options);
+		const result = await handler({
+			planId: 'q99999',
+			reason: 'already closed',
+		});
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+
+		expect(body).toMatchObject({
+			ok: true,
+			planId: 'q99999',
+			dryRun: false,
+			closable: true,
+			blockers: [],
+			preview: { from: 'done', to: 'done' },
+		});
+	});
 });

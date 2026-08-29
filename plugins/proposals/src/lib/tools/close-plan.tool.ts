@@ -61,44 +61,70 @@ const CLOSE_PLAN_INPUT_SCHEMA = z.object({
 // x00107: SUCCESS shape only — the SDK skips schema validation for
 // `isError` results (`toolError`), so the required fields are correct.
 // (x00105 briefly loosened this; reverted.)
-const CLOSE_PLAN_OUTPUT_SCHEMA = z.union([
-	z.object({
-		dryRun: z.literal(true),
-		wouldChange: z.array(
-			z.object({
-				kind: z.enum(['write', 'delete', 'rename', 'create', 'patch']),
-				path: z.string(),
-				summary: z.string(),
-			}),
-		),
-		wouldRun: z.array(
-			z.object({
-				shape: z.enum(['shell', 'network', 'process', 'git', 'mcp']),
-				target: z.string(),
-				summary: z.string(),
-			}),
-		),
-		risk: z.enum(['low', 'medium', 'high']),
-		note: z.string().optional(),
-	}),
-	z.object({
-		ok: z.boolean(),
-		planId: z.string(),
+// x00298 (close_plan): the MCP SDK rejects a `z.union`/`z.literal`-rooted
+// `outputSchema` because `structuredContent` must serialize from a single
+// object root; an unwrapped union is silently dropped (`outputSchema` ends
+// up `undefined` at `listTools`, tripping the e2e invariant "every
+// registered tool declares an outputSchema"). Collapse the two response
+// shapes — `dryRun` only (preflight preview) vs the full result (real close
+// attempt) — into one strict object whose variant fields are optional.
+// Handlers still emit exactly one shape or the other, and `strict()` keeps
+// the envelope honest.
+const CLOSE_PLAN_OUTPUT_SCHEMA = z
+	.object({
 		dryRun: z.boolean(),
-		closable: z.boolean(),
-		blockers: z.array(
-			z.object({
-				ref: z.string(),
-				kind: z.enum(['proposal', 'plan', 'slice']),
-				code: z.enum([
-					'not-done',
-					'not-peer-reviewed',
-					'self-cycle',
-					'unknown-ref',
-				]),
-				message: z.string(),
-			}),
-		),
+		// preflight-preview variant
+		wouldChange: z
+			.array(
+				z.object({
+					kind: z.enum([
+						'write',
+						'delete',
+						'rename',
+						'create',
+						'patch',
+					]),
+					path: z.string(),
+					summary: z.string(),
+				}),
+			)
+			.optional(),
+		wouldRun: z
+			.array(
+				z.object({
+					shape: z.enum([
+						'shell',
+						'network',
+						'process',
+						'git',
+						'mcp',
+					]),
+					target: z.string(),
+					summary: z.string(),
+				}),
+			)
+			.optional(),
+		risk: z.enum(['low', 'medium', 'high']).optional(),
+		note: z.string().optional(),
+		// real-close variant
+		ok: z.boolean().optional(),
+		planId: z.string().optional(),
+		closable: z.boolean().optional(),
+		blockers: z
+			.array(
+				z.object({
+					ref: z.string(),
+					kind: z.enum(['proposal', 'plan', 'slice']),
+					code: z.enum([
+						'not-done',
+						'not-peer-reviewed',
+						'self-cycle',
+						'unknown-ref',
+					]),
+					message: z.string(),
+				}),
+			)
+			.optional(),
 		preview: z
 			.object({
 				from: z.string(),
@@ -113,8 +139,8 @@ const CLOSE_PLAN_OUTPUT_SCHEMA = z.union([
 				nextAction: z.string().optional(),
 			})
 			.optional(),
-	}),
-]);
+	})
+	.strict();
 
 /**
  * Build a resolver + evaluate closure for a given plan. Extracted
@@ -172,6 +198,20 @@ export const runClosePlan = async (
 			`${planId} is of type "${located.type}", not "plan"`,
 			'proposals_close_plan only operates on `type: plan` proposals; use proposal_transition for everything else.',
 		);
+	}
+	if (located.folder === 'done' || located.status === 'done') {
+		return toolOk({
+			planId,
+			dryRun: false,
+			closable: true,
+			blockers: [],
+			preview: {
+				from: 'done',
+				to: 'done',
+				movedFrom: located.absPath,
+				movedTo: located.absPath,
+			},
+		});
 	}
 
 	const report = await runPreflight(planId, located.absPath, options);
