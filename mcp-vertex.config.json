@@ -226,7 +226,8 @@
 						{ "kind": "slice" },
 						{ "kind": "interval", "minutes": 5 }
 					],
-					"sliceScoping": false
+					"sliceScoping": false,
+					"allowForeignChanges": true
 				},
 				"identity": {
 					"mode": "explicit",

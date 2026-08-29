@@ -51,6 +51,7 @@ opt in. See "Configuration" below for the exact knobs.
 | `cadence.triggers` | `[]` | Empty array = no automatic commits; configured `slice` and `interval` triggers run in the background, while `threshold` and `manual` are fired through `commit_policy_run`. |
 | `cadence.triggers[].kind` | — | `"slice" \| "threshold" \| "interval" \| "manual"`. |
 | `cadence.sliceScoping` | `true` | `true` scopes commits to the slice's `files:` list; `false` commits the current dirty workspace snapshot when a slice closes. |
+| `cadence.allowForeignChanges` | `false` | Explicitly permits slice commits to include dirty files changed by other agents. When enabled, the shared-workspace snapshot is used for slice commits. |
 | `audit.trailer` | `"co-authored-by"` | `"none" \| "co-authored-by" \| "body-metadata"`. |
 | `audit.agentFormat` | `"${host}/${model}"` | Template for the agent portion of the trailer. |
 | `push.enabled` | `false` | Master switch — no push ever without `true`. |
@@ -182,6 +183,9 @@ The root `mcp-vertex.config.json` opts in with:
 That means: every time a `proposals` slice transitions to `done`, the engine
 commits as the workstation's global git user and pushes the result to
 `origin/develop` (with `--force-with-lease`). Refuses `main`/`master`.
+This repository also enables `cadence.allowForeignChanges`, so the snapshot
+may include work from other agents and may be committed before the wider task
+is complete.
 
 ## Why off by default
 
