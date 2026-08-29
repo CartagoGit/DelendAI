@@ -16,6 +16,7 @@ import type {
 	IScaffoldHostOptions,
 } from '../scaffold/scaffold-host';
 import type { IScaffoldedFile } from '../scaffold/scaffold-host';
+import { stripPackageScope, toKebabCase } from '../shared/string-normalize';
 import type { IProjectAnalysis } from './analyze-project';
 import { matchPromptArtifacts } from './prompt-artifact-rules';
 import { resolvePatternCatalog } from './pattern-catalog-overrides';
@@ -90,12 +91,7 @@ export interface IBlueprintOptions {
 const kebabHead = (name: string | undefined): string => {
 	if (name?.startsWith('@mcp-vertex/')) return 'mcp-vertex';
 	if (!name) return 'app';
-	const head = name
-		.replace(/^@[^/]+\//, '')
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '')
-		.split('-')[0];
+	const head = toKebabCase(stripPackageScope(name)).split('-')[0];
 	return head && head.length > 0 ? head : 'app';
 };
 

@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, extname, relative, resolve } from 'node:path';
 
+import { toKebabCase } from '../shared/string-normalize';
 import { type IScaffoldedFile, scaffoldPluginFiles } from './scaffold-host';
 
 const require = createRequire(import.meta.url);
@@ -149,12 +150,7 @@ const defaultReadFile = (path: string): string | undefined => {
 	}
 };
 
-const kebab = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+const kebab = (value: string): string => toKebabCase(value);
 
 const snake = (value: string): string =>
 	value
