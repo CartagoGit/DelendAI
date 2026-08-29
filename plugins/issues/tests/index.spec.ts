@@ -152,17 +152,21 @@ describe('issues plugin — UX guard when `repo` is missing', async () => {
 		expect(result.knowledge?.[0]?.id).toBe('issues-needs-repo-config');
 	});
 
-	it('registers the 5 `issues_*` tools + setup_github when `repo` is provided', async () => {
+	it('registers the 9 `issues_*` tools + setup_github when `repo` is provided', async () => {
 		const result = await unwrap(
 			issuesPlugin.register(buildCtx({ repo: 'CartagoGit/mcp-vertex' })),
 		);
-		expect(result.tools ?? []).toHaveLength(6);
+		expect(result.tools ?? []).toHaveLength(10);
 		const toolIds = (result.tools ?? []).map((t) => t.id).sort();
 		expect(toolIds).toEqual([
 			'issues_analyze',
 			'issues_fetch',
 			'issues_ingest',
 			'issues_list',
+			'issues_list_advisories',
+			'issues_list_code_scanning',
+			'issues_list_dependabot',
+			'issues_list_secret_scanning',
 			'issues_resolve',
 			'setup_github',
 		]);
