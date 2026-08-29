@@ -20,6 +20,7 @@ import {
 	type ICommitDriverInput,
 	type ICommitDriverOptions,
 } from '../services/commit-driver';
+import type { IPushDriverResult } from '../services/push-driver';
 
 export interface ICommitToolOptions extends ICommitDriverOptions {
 	readonly namespacePrefix: string;
@@ -33,7 +34,9 @@ export interface ICommitToolOptions extends ICommitDriverOptions {
 	 * in setups that prefer to invoke `commit_policy_push` by
 	 * hand.
 	 */
-	readonly onCommitSucceeded?: (() => Promise<unknown>) | undefined;
+	readonly onCommitSucceeded?:
+		| (() => Promise<IPushDriverResult | null>)
+		| undefined;
 }
 
 const InputSchema = z.object({
@@ -137,15 +140,36 @@ export const runCommitPolicyCommit = async (
 		);
 	}
 
-	// x00266: fire the scheduler hook AFTER the success response
-	// is composed. Pushes happen off the critical path so a slow
-	// push never blocks the commit tool's return value. The hook
-	// is best-effort — exceptions are swallowed to avoid masking
-	// the commit result.
+	// x00298/S4: onCommit is part of the persistence contract. Await it
+	// before reporting success so committed=true,pushed=false cannot be
+	// mistaken for a completed commit-and-push operation.
 	if (options.onCommitSucceeded !== undefined) {
-		void options.onCommitSucceeded().catch(() => {
-			// best-effort — see comment above
-		});
+		let pushResult: IPushDriverResult | null;
+		try {
+			pushResult = await options.onCommitSucceeded();
+		} catch (error) {
+			return toolError(
+				JSON.stringify({
+					committed: true,
+					pushed: false,
+					hash: result.hash,
+					reason:
+						error instanceof Error ? error.message : String(error),
+				}),
+				'Commit completed locally but the configured push failed; inspect the reason and retry push.',
+			);
+		}
+		if (pushResult !== null && !pushResult.ok) {
+			return toolError(
+				JSON.stringify({
+					committed: true,
+					pushed: false,
+					hash: result.hash,
+					reason: pushResult.refusal,
+				}),
+				'Commit completed locally but the configured push was refused or failed; inspect the reason and retry push.',
+			);
+		}
 	}
 
 	const successMessage = localizedString(options.locale, (catalog) =>

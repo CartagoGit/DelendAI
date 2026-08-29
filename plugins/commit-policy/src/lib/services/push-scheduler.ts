@@ -61,6 +61,8 @@ export interface IPushScheduler {
 	 * the scheduler — the scheduler is for the AUTOMATIC path).
 	 */
 	pushNow(): Promise<IPushDriverResult>;
+	/** Wait for the currently running periodic push, if any. */
+	flush(): Promise<void>;
 	/** Tear down timers + clear state. Idempotent. */
 	stop(): void;
 }
@@ -72,19 +74,35 @@ export const createPushScheduler = (
 ): IPushScheduler => {
 	let commitsSincePush = 0;
 	let interval: ReturnType<typeof setInterval> | undefined;
+	let pendingTick: Promise<void> | undefined;
 	const onAttempt = options.onAttempt ?? (() => {});
 
-	const isProtected = async (): Promise<boolean> => {
+	const branchRefusal = async (): Promise<string | null> => {
 		const branch = await gitCurrentBranch(options.run);
-		if (branch === undefined) return true; // detached HEAD → no push
-		return isBranchProtected(branch, {
-			protected: options.policy.protectedBranches,
-			protectedPrefixes: options.policy.protectedPrefixes,
-		});
+		if (branch === undefined) {
+			return 'push refused: HEAD is detached; check out a branch before pushing';
+		}
+		if (
+			isBranchProtected(branch, {
+				protected: options.policy.protectedBranches,
+				protectedPrefixes: options.policy.protectedPrefixes,
+			})
+		) {
+			return `push refused: "${branch}" is in protectedBranches`;
+		}
+		return null;
 	};
 
 	const push = async (reason: string): Promise<IPushDriverResult> => {
-		const result = await runPushDriver({}, options.policy, options.run);
+		let result: IPushDriverResult;
+		try {
+			result = await runPushDriver({}, options.policy, options.run);
+		} catch (error) {
+			result = {
+				ok: false,
+				refusal: `push failed: ${error instanceof Error ? error.message : String(error)}`,
+			};
+		}
 		if (result.ok) {
 			commitsSincePush = 0;
 		}
@@ -103,15 +121,26 @@ export const createPushScheduler = (
 		// one commit since the last push — otherwise the
 		// scheduler would spam empty pushes every interval.
 		if (commitsSincePush === 0) return;
-		if (await isProtected()) return;
+		if ((await branchRefusal()) !== null) return;
 		await push(`everyNMinutes=${options.policy.everyNMinutes ?? 0}`);
+	};
+
+	const scheduleTick = (): void => {
+		if (pendingTick !== undefined) return;
+		pendingTick = tick().finally(() => {
+			pendingTick = undefined;
+		});
 	};
 
 	return {
 		async onCommitSucceeded() {
 			commitsSincePush += 1;
-			// Branch protection short-circuits everything.
-			if (await isProtected()) return null;
+			const refusal = await branchRefusal();
+			if (refusal !== null) {
+				const result: IPushDriverResult = { ok: false, refusal };
+				onAttempt(result);
+				return result;
+			}
 			const everyN = options.policy.everyNCommits;
 			const shouldPushByCount =
 				everyN !== undefined && commitsSincePush >= everyN;
@@ -126,6 +155,9 @@ export const createPushScheduler = (
 		async pushNow() {
 			return push('manual');
 		},
+		async flush() {
+			await pendingTick;
+		},
 		start() {
 			// The interval scheduler only runs when the host
 			// explicitly opts in via `everyNMinutes`. The
@@ -133,9 +165,10 @@ export const createPushScheduler = (
 			// single-shot helper for `commit_policy_run`.
 			if (options.policy.everyNMinutes === undefined) return;
 			if (interval !== undefined) return;
-			interval = setInterval(() => {
-				void tick();
-			}, SCHEDULER_INTERVAL_MS(options.policy.everyNMinutes));
+			interval = setInterval(
+				scheduleTick,
+				SCHEDULER_INTERVAL_MS(options.policy.everyNMinutes),
+			);
 			if (typeof interval.unref === 'function') interval.unref();
 		},
 		stop() {

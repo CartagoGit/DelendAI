@@ -56,7 +56,8 @@ describe('push scheduler (x00266)', () => {
 				pushCount.n += 1;
 			},
 		});
-		expect(await scheduler.onCommitSucceeded()).toBeNull();
+		const result = await scheduler.onCommitSucceeded();
+		expect(result).toBeNull();
 		expect(pushCount.n).toBe(0);
 	});
 
@@ -127,8 +128,31 @@ describe('push scheduler (x00266)', () => {
 				pushCount.n += 1;
 			},
 		});
-		expect(await scheduler.onCommitSucceeded()).toBeNull();
-		expect(pushCount.n).toBe(0);
+		const result = await scheduler.onCommitSucceeded();
+		expect(result?.ok).toBe(false);
+		if (result?.ok === false)
+			expect(result.refusal).toContain('protectedBranches');
+		expect(pushCount.n).toBe(1);
+	});
+
+	it('refuses pushes on develop even when config omits develop', async () => {
+		const pushCount = { n: 0 };
+		const scheduler = createPushScheduler({
+			run: buildRunner('develop', ok('pushed\n')),
+			policy: basePushPolicy({
+				onCommit: true,
+				remote: 'origin',
+				protectedBranches: ['main', 'master'],
+			}),
+			onAttempt: () => {
+				pushCount.n += 1;
+			},
+		});
+		const result = await scheduler.onCommitSucceeded();
+		expect(result?.ok).toBe(false);
+		if (result?.ok !== false) return;
+		expect(result.refusal).toContain('DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED');
+		expect(pushCount.n).toBe(1);
 	});
 
 	it('does not push when HEAD is detached', async () => {
@@ -140,8 +164,23 @@ describe('push scheduler (x00266)', () => {
 				pushCount.n += 1;
 			},
 		});
-		expect(await scheduler.onCommitSucceeded()).toBeNull();
-		expect(pushCount.n).toBe(0);
+		const result = await scheduler.onCommitSucceeded();
+		expect(result?.ok).toBe(false);
+		if (result?.ok === false) expect(result.refusal).toContain('detached');
+		expect(pushCount.n).toBe(1);
+	});
+
+	it('propagates a push timeout/error without throwing', async () => {
+		const scheduler = createPushScheduler({
+			run: async (args) => {
+				if (args[0] === 'rev-parse') return ok('feature/x\n');
+				throw new Error('command timed out after 60000ms');
+			},
+			policy: basePushPolicy({ onCommit: true }),
+		});
+		const result = await scheduler.onCommitSucceeded();
+		expect(result?.ok).toBe(false);
+		if (result?.ok === false) expect(result.refusal).toContain('timed out');
 	});
 
 	it('stop() is idempotent and resets the counter', async () => {

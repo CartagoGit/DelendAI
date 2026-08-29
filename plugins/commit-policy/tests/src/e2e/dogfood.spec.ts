@@ -16,7 +16,7 @@ import type { IGitRunner } from '@mcp-vertex/core/public';
 
 import { CommitPolicyOptionsSchema } from '../../../src/lib/contracts/options';
 import { runCommitDriver } from '../../../src/lib/services/commit-driver';
-import { runPushDriver } from '../../../src/lib/services/push-driver';
+import { createPushScheduler } from '../../../src/lib/services/push-scheduler';
 
 const execFileAsync = promisify(execFile);
 const git = (cwd: string, ...args: readonly string[]) =>
@@ -100,6 +100,10 @@ describe('commit-policy dogfood E2E', () => {
 			'utf8',
 		);
 
+		const scheduler = createPushScheduler({
+			run: runner,
+			policy: policy.push,
+		});
 		const commitResult = await runCommitDriver(
 			{
 				message: 'feat: dogfood smoke',
@@ -126,6 +130,9 @@ describe('commit-policy dogfood E2E', () => {
 		);
 		expect(commitResult.committed).toBe(true);
 		expect(commitResult.resolvedAuthor?.displayName).toBe('Cartago');
+		const pushResult = await scheduler.onCommitSucceeded();
+		expect(pushResult?.ok).toBe(true);
+		expect(commitResult.pushed).toBe(false);
 
 		const log = await git(
 			workspace,
@@ -140,9 +147,6 @@ describe('commit-policy dogfood E2E', () => {
 			'Co-authored-by: vscode-copilot/minimax-m3',
 		);
 
-		const pushResult = await runPushDriver({}, policy.push, runner);
-		expect(pushResult.ok).toBe(true);
-
 		// `--all`: the bare remote's default branch is still `develop` (set
 		// up in beforeEach), so a plain `log` walks only that ref and would
 		// never see a commit pushed to the sibling `topic/e2e-test` branch.
@@ -154,6 +158,36 @@ describe('commit-policy dogfood E2E', () => {
 		const localHead = await git(workspace, 'rev-parse', 'topic/e2e-test');
 		const remoteHead = await git(remote, 'rev-parse', 'topic/e2e-test');
 		expect(remoteHead.stdout.trim()).toBe(localHead.stdout.trim());
+	});
+
+	it('reports protected branch and detached HEAD as failed persistence', async () => {
+		const protectedScheduler = createPushScheduler({
+			run: runner,
+			policy: CommitPolicyOptionsSchema.parse({
+				push: {
+					enabled: true,
+					onCommit: true,
+					protectedBranches: ['main'],
+				},
+			}).push,
+		});
+		await git(workspace, 'checkout', '-q', '-b', 'main');
+		const protectedResult = await protectedScheduler.onCommitSucceeded();
+		expect(protectedResult?.ok).toBe(false);
+		if (protectedResult?.ok === false)
+			expect(protectedResult.refusal).toContain('protectedBranches');
+
+		await git(workspace, 'checkout', '-q', '--detach');
+		const detachedScheduler = createPushScheduler({
+			run: runner,
+			policy: CommitPolicyOptionsSchema.parse({
+				push: { enabled: true, onCommit: true },
+			}).push,
+		});
+		const detachedResult = await detachedScheduler.onCommitSucceeded();
+		expect(detachedResult?.ok).toBe(false);
+		if (detachedResult?.ok === false)
+			expect(detachedResult.refusal).toContain('detached');
 	});
 
 	it('refuses a commit when commit.enabled is false', async () => {
@@ -198,7 +232,10 @@ describe('commit-policy dogfood E2E', () => {
 				branch: 'main',
 			},
 		});
-		const result = await runPushDriver({}, policy.push, runner);
+		const result = await createPushScheduler({
+			run: runner,
+			policy: policy.push,
+		}).pushNow();
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
 		expect(result.refusal).toContain('protectedBranches');
