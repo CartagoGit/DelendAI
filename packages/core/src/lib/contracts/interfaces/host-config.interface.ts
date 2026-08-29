@@ -198,6 +198,31 @@ export interface IHostRegistrations {
 				readonly knowledge?: readonly IKnowledgeEntry[] | undefined;
 		  }[])
 		| undefined;
+	/**
+	 * Dispose every plugin runtime this host activated, in reverse
+	 * activation order, aggregating per-plugin failures rather than
+	 * throwing on the first one. `createMcpProject`'s returned
+	 * `dispose()` is the sole caller (AUD-E02 / r00039) — nobody else
+	 * should invoke this directly, since it is not itself idempotent
+	 * across independent callers racing each other.
+	 */
+	readonly disposePlugins?:
+		| (() => Promise<
+				readonly {
+					readonly pluginName: string;
+					readonly error: unknown;
+				}[]
+		  >)
+		| undefined;
+	/**
+	 * Dispose exactly one plugin's runtime, by plugin id (x00286 S4).
+	 * `createMcpProject` wires this into
+	 * `toolSurfaceRuntime.setPluginDisposer` so `evictIdlePlugins`'s
+	 * eviction has a real per-plugin dispose to call instead of only
+	 * relazying the tool. Present only for the managed-lazy assembly —
+	 * eager plugins are never evictable, so there is nothing to wire.
+	 */
+	readonly disposePlugin?: (pluginId: string) => Promise<void>;
 }
 
 /**

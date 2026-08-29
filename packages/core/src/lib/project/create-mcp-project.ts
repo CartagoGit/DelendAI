@@ -9,6 +9,14 @@ import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 
 /**
+ * Bound on how long `dispose()` waits for an in-flight lazily-activated
+ * tool call to drain before tearing down plugin runtimes anyway. A
+ * wedged handler must never pin teardown open forever (AUD-E02).
+ */
+const DISPOSE_DRAIN_TIMEOUT_MS = 5_000;
+const DISPOSE_DRAIN_POLL_MS = 25;
+
+/**
  * An assembled (but not yet connected) MCP server. `start()` connects
  * the stdio transport; `registrationOrder` exposes the exact tool
  * registration sequence for audits and tests.
@@ -17,6 +25,16 @@ export interface IMcpVertexProject {
 	readonly server: McpServer;
 	readonly registrationOrder: readonly string[];
 	start(): Promise<void>;
+	/**
+	 * Idempotent teardown (r00039 / AUD-E02): waits (bounded) for any
+	 * in-flight lazily-activated tool invocation to drain, then disposes
+	 * every plugin runtime this project activated — eager or lazy,
+	 * whichever ran — in reverse activation order. Safe to call more
+	 * than once, and safe to call even if `start()` was never invoked.
+	 * Does not close the transport itself; wire `SIGTERM`/`SIGINT` to
+	 * this alongside `gracefulShutdown(server)` (see `run-cli.ts`).
+	 */
+	dispose(): Promise<void>;
 }
 
 /**
@@ -222,6 +240,18 @@ export async function createMcpProject(
 				await drainLazyPluginRegistrations();
 			});
 		}
+		if (
+			config.disposePlugin !== undefined &&
+			toolSurfaceRuntime.setPluginDisposer !== undefined
+		) {
+			// x00286 S4: connects `evictIdlePlugins`'s bookkeeping-only
+			// eviction to a real per-plugin dispose. Without this, an
+			// evicted plugin's tools relazy but its timers/listeners/child
+			// processes outlive it (AUD-C02's "no descarga, no libera"
+			// half) — `disposePlugin` here is the managed lazy runtime's
+			// retained `dispose` for exactly this plugin id.
+			toolSurfaceRuntime.setPluginDisposer(config.disposePlugin);
+		}
 		const previousOnInitialized = server.server.oninitialized;
 		server.server.oninitialized = () => {
 			previousOnInitialized?.();
@@ -230,23 +260,36 @@ export async function createMcpProject(
 				capabilities: server.server.getClientCapabilities(),
 				explicitMode: config.toolSurfacePlan?.explicitMode,
 			});
-			const change = toolSurfaceRuntime.applySurfaceMode(decision.mode);
-			const client = server.server.getClientVersion();
-			// When the surface mode is already pinned via
-			// `config.surfaceMode` (or the `vertex` preset default), the
-			// explicit override leaves the surface unchanged. Skip the
-			// log line so the operator's stderr stays clean — the
-			// managed mode shows only bootstrap and router tools on the first
-			// `tools/list`,
-			// while native compatibility mode surfaces every loaded tool.
-			// Only report a real transition. The stable managed default must not
-			// add a redundant capability-negotiation line to stderr on every boot;
-			// the operator-facing Startup Report already records the effective mode.
-			if (change.changedToolNames.length > 0) {
-				process.stderr.write(
-					`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
+			// `oninitialized` is a fire-and-forget SDK callback (it is not
+			// awaited by `client.connect()`), and switching TO `native`
+			// needs to materialize every still-lazy plugin before the
+			// surface's visibility is computed (AUD-C01) — that import +
+			// register() work is async, so this handler must be too. Wrap
+			// rather than change the callback's own signature: nothing
+			// downstream needs to await this handler; the e2e test that
+			// depends on the outcome already polls `tools/list` for exactly
+			// this reason.
+			void (async () => {
+				const change = await toolSurfaceRuntime.applySurfaceModeAsync(
+					decision.mode,
 				);
-			}
+				const client = server.server.getClientVersion();
+				// When the surface mode is already pinned via
+				// `config.surfaceMode` (or the `vertex` preset default), the
+				// explicit override leaves the surface unchanged. Skip the
+				// log line so the operator's stderr stays clean — the
+				// managed mode shows only bootstrap and router tools on the first
+				// `tools/list`,
+				// while native compatibility mode surfaces every loaded tool.
+				// Only report a real transition. The stable managed default must not
+				// add a redundant capability-negotiation line to stderr on every boot;
+				// the operator-facing Startup Report already records the effective mode.
+				if (change.changedToolNames.length > 0) {
+					process.stderr.write(
+						`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
+					);
+				}
+			})();
 		};
 	}
 	let currentRegistration: IToolRegistration | undefined;
@@ -304,11 +347,26 @@ export async function createMcpProject(
 	for (const resource of config.extraResources ?? []) {
 		await resource.register(server);
 	}
+	let disposed = false;
 	return {
 		server,
 		registrationOrder: ordered.map((registration) => registration.id),
 		async start(): Promise<void> {
 			await server.connect(new StdioServerTransport());
+		},
+		async dispose(): Promise<void> {
+			if (disposed) return;
+			disposed = true;
+			const runtime = toolSurfaceRuntime;
+			if (runtime !== undefined) {
+				const deadline = Date.now() + DISPOSE_DRAIN_TIMEOUT_MS;
+				while (runtime.hasInFlightWork() && Date.now() < deadline) {
+					await new Promise((resolve) =>
+						setTimeout(resolve, DISPOSE_DRAIN_POLL_MS),
+					);
+				}
+			}
+			await config.disposePlugins?.();
 		},
 	};
 }

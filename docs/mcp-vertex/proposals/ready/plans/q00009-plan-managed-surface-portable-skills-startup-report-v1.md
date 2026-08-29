@@ -214,6 +214,18 @@ el cliente MCP, el working set interno y el contenido bajo demanda. Esta
 separación permite reducir el coste recurrente sin perder descubribilidad
 para el operador ni portabilidad de skills fuera del monorepo.
 
+## non-goals
+
+- **Selector ML scoring con pesos configurables** (Track L c00152 es P2;
+  scoring heurístico es suficiente en v1).
+- **RemoteSkillSource** (no en v1; skill sources son locales por seguridad).
+- **Auto-injection de skill body por selector** (Track L f00265 es P2;
+  el router invoca `skill(id)` explícito en v1).
+- **i18n de los 5 niveles del Startup Report** (sólo strings de surface
+  mode en v1; los 5 niveles son operator-facing en EN/ES).
+- **Telemetry externa** (MCP-Vertex no envía telemetría por sí mismo
+  en esta iniciativa; las métricas son in-memory / logs locales).
+
 ## architecture
 
 #### Track M — Managed Surface contracts & mode (P0 raíz)
@@ -333,18 +345,6 @@ reproducible en el SHA final:
 19. Config/schema/docs/generated artifacts sincronizados.
 20. Tests unit + integration + E2E pasan.
 21. `bun run validate` verde en el SHA final.
-
-## non-goals
-
-- **Selector ML scoring con pesos configurables** (Track L c00152 es P2;
-  scoring heurístico es suficiente en v1).
-- **RemoteSkillSource** (no en v1; skill sources son locales por seguridad).
-- **Auto-injection de skill body por selector** (Track L f00265 es P2;
-  el router invoca `skill(id)` explícito en v1).
-- **i18n de los 5 niveles del Startup Report** (sólo strings de surface
-  mode en v1; los 5 niveles son operator-facing en EN/ES).
-- **Telemetry externa** (MCP-Vertex no envía telemetría por sí mismo
-  en esta iniciativa; las métricas son in-memory / logs locales).
 
 ## notes
 

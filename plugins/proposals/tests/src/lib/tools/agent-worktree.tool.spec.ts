@@ -18,6 +18,7 @@ import type {
 	IGitRunner,
 	IGitRunResult,
 } from '@mcp-vertex/proposals/lib/shared/git-runner';
+import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 interface IHandlerResult {
 	readonly structuredContent?: Record<string, unknown>;
@@ -44,11 +45,11 @@ const captureHandler = async (
 		...(worktreesDirRel !== undefined ? { worktreesDirRel } : {}),
 	});
 	let handler: ToolHandler | undefined;
-	const fakeServer = {
-		registerTool: (_name: string, _schema: unknown, h: ToolHandler) => {
-			handler = h;
+	const fakeServer = createFakeToolServer({
+		onRegisterTool: (call) => {
+			handler = call.handler as ToolHandler;
 		},
-	} as unknown as Parameters<typeof registration.register>[0];
+	});
 	await registration.register(fakeServer);
 	if (handler === undefined) throw new Error('handler was not registered');
 	return handler;

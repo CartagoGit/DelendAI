@@ -177,6 +177,18 @@ Boots a real `assembleCliConfig` with the real `logs` plugin + a stub inline plu
 - **Gate**: `bun run validate`
 - Commit `4dbb9454`: CHANGELOG entry and close.
 
+## acceptance
+
+- [x] `IErrorCollector` engine in `@mcp-vertex/core` with redaction, classification, fan-out, never-throws.
+- [x] Public surface re-exports the 15 error-collection symbols.
+- [x] `IMcpPluginRegistrations.errorSinks` + `IMcpPluginContext.errorCollector` wired with deterministic dedupe and `ConsoleErrorSink` fallback.
+- [x] `@mcp-vertex/logs` adapter bridges to the existing JSONL streams without schema change.
+- [x] `@mcp-vertex/issues` adapter writes drafts by default, opens live issues only when `autoReport: true` + severity ≥ critical, with fingerprint de-dup + hourly rate-limit.
+- [x] End-to-end smoke validates redaction at every boundary in <5s.
+- [x] Skill bundle discoverable; knowledge entries added to both plugins.
+- [x] CHANGELOG entry under unreleased.
+- [x] Five Conventional-Commits commits on `develop` (S1 + S2 + S3+S4 combined + S5 + S6), all pushed to origin/develop.
+
 ## notes
 
 This proposal was authored via `mcp-vertex_proposals_create_proposal` on 2026-08-26. The proposal markdown was created on disk and transitioned to `in-progress` but a parallel-agent cleanup deleted it before any slice committed. The five implementation slices landed on `develop` independently (refs `f00251` in each commit message), and this file has been reconstructed post-fact to provide a single auditable record. The CHANGELOG entry and `bun run validate` findings for f00251-specific work were already recorded by S6.
@@ -197,14 +209,3 @@ This proposal was authored via `mcp-vertex_proposals_create_proposal` on 2026-08
 - 16 vitest suites fail on agent-orchestrator scaffold + r00028 subpath exports + preset drift — owned by `f00193`/`f00194`/`c00142`.
 - `f00182` (commit-policy engine) and `q00007` carry stale `ready/feats/<id>` files together with `ready/<id>` ghost files from parallel agents — belongs in a separate proposals-hygiene slice.
 
-## acceptance
-
-- [x] `IErrorCollector` engine in `@mcp-vertex/core` with redaction, classification, fan-out, never-throws.
-- [x] Public surface re-exports the 15 error-collection symbols.
-- [x] `IMcpPluginRegistrations.errorSinks` + `IMcpPluginContext.errorCollector` wired with deterministic dedupe and `ConsoleErrorSink` fallback.
-- [x] `@mcp-vertex/logs` adapter bridges to the existing JSONL streams without schema change.
-- [x] `@mcp-vertex/issues` adapter writes drafts by default, opens live issues only when `autoReport: true` + severity ≥ critical, with fingerprint de-dup + hourly rate-limit.
-- [x] End-to-end smoke validates redaction at every boundary in <5s.
-- [x] Skill bundle discoverable; knowledge entries added to both plugins.
-- [x] CHANGELOG entry under unreleased.
-- [x] Five Conventional-Commits commits on `develop` (S1 + S2 + S3+S4 combined + S5 + S6), all pushed to origin/develop.

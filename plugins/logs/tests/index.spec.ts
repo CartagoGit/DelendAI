@@ -7,6 +7,7 @@ import type { ICacheEvictionRule } from '@mcp-vertex/core/public';
 import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
 
 import logsPlugin from '../src/index';
+import { asArray } from '@mcp-vertex/test-kit/public';
 
 type Registrations = Awaited<ReturnType<typeof logsPlugin.register>>;
 
@@ -217,7 +218,7 @@ describe('logs plugin — register()', () => {
 
 		const handlers = await registerHandlers(result);
 		const errors = await handlers.get('logs_errors_tail')?.({});
-		const errorEvents = errors?.structuredContent.events as unknown[];
+		const errorEvents = asArray(errors?.structuredContent.events);
 		expect(
 			errorEvents.some(
 				(e) => (e as { taskId: string }).taskId === 'x_ok',

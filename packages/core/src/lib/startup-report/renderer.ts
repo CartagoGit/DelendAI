@@ -104,6 +104,9 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 		`workspace      ${report.identity.workspace}`,
 		`preset         ${report.identity.preset}`,
 		`surface        ${report.identity.surfaceMode}`,
+		...(report.identity.surfaceModeReason !== undefined
+			? [`  reason: ${report.identity.surfaceModeReason}`]
+			: []),
 		`startup report ${report.identity.startupReportLevel}${
 			report.identity.startupReportLevel === 'medium' ? ' (default)' : ''
 		}`,
@@ -254,6 +257,11 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 		fullLines.push(
 			`  surface.mode              ${report.identity.surfaceMode}`,
 		);
+		if (report.identity.surfaceModeReason !== undefined) {
+			fullLines.push(
+				`  surface.reason            ${report.identity.surfaceModeReason}`,
+			);
+		}
 		fullLines.push(
 			`  startupReport.level       ${report.identity.startupReportLevel}`,
 		);

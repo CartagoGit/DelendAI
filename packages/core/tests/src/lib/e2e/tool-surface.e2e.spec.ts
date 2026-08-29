@@ -232,12 +232,15 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		).toBe('mcp-vertex_git_status');
 	});
 
-	it('defaults an ordinary MCP client (no private capability) to managed', async () => {
-		// Managed is the stable default. The first tools/list is the small
-		// bootstrap surface and does not depend on list_changed support.
+	it('defaults a KNOWN host (no private capability) to managed', async () => {
+		// Managed is the stable default for hosts host-compatibility-matrix.md
+		// already documents. The first tools/list is the small bootstrap
+		// surface and does not depend on list_changed support, because the
+		// host is recognised by name (AUD-C01 / x00285 host profile), not by
+		// capability guessing.
 		await connect({
 			argv: ['--plugins=memory', `--workspace=${workspace}`],
-			clientInfo: { name: 'plain-client', version: '1.0.0' },
+			clientInfo: { name: 'claude-code', version: '1.0.0' },
 			capabilities: {},
 		});
 		const initial = await client.listTools();
@@ -250,12 +253,46 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		expect(names).toContain('mcp-vertex_vertex');
 	});
 
-	it('a client that never refreshes tools/list can still reach an activated tool (r00027 / TOK-004 follow-up)', async () => {
-		// Managed routing remains usable even when a client never refreshes
-		// tools/list after startup.
+	it('defaults an UNKNOWN client with no listChanged signal to native (AUD-C01 / x00285)', async () => {
+		// A client this repo has never verified, and that declares no
+		// mcp-vertex/surface support, gets the full native surface up
+		// front instead of being stranded behind a notification it may
+		// never act on.
 		await connect({
 			argv: ['--plugins=memory', `--workspace=${workspace}`],
-			clientInfo: { name: 'never-refreshes', version: '1.0.0' },
+			clientInfo: { name: 'plain-client', version: '1.0.0' },
+			capabilities: {},
+		});
+		// The server flips managed (its boot default) -> native for this
+		// unrecognised client inside its `oninitialized` handler, which
+		// runs on receipt of the client's "initialized" notification — a
+		// fire-and-forget message the SDK does not make `client.connect()`
+		// wait on. Poll briefly instead of asserting on the very first
+		// `tools/list`, which can race that handler.
+		const names = await (async () => {
+			const deadline = Date.now() + 2000;
+			let latest: string[] = [];
+			while (Date.now() < deadline) {
+				const initial = await client.listTools();
+				latest = initial.tools.map((tool) => tool.name);
+				if (latest.includes('mcp-vertex_memory_save')) return latest;
+				await new Promise((resolve) => setTimeout(resolve, 25));
+			}
+			return latest;
+		})();
+		expect(names).toContain('mcp-vertex_memory_save');
+		expect(names).toContain('mcp-vertex_memory_recall');
+		expect(names).toContain('mcp-vertex_overview');
+	});
+
+	it('a KNOWN host that never refreshes tools/list can still reach an activated tool through the router (r00027 / TOK-004 follow-up)', async () => {
+		// Managed routing remains usable even when a client never refreshes
+		// tools/list after startup. Uses a recognised host name so the
+		// AUD-C01 host-profile fix keeps it on `managed` — the scenario
+		// this test exists to prove is specific to the managed surface.
+		await connect({
+			argv: ['--plugins=memory', `--workspace=${workspace}`],
+			clientInfo: { name: 'cursor', version: '1.0.0' },
 			capabilities: {},
 		});
 		// Deliberately no `setNotificationHandler` registration and no

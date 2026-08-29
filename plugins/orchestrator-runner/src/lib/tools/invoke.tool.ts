@@ -7,11 +7,15 @@
  * in {@link InvocationManager}; this tool is a thin, validated shell around
  * it. It NEVER spends without a signed confirmation token.
  */
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
+import {
+	compactOutputSchema,
+	toolJson,
+	type IToolRegistration,
+} from '@mcp-vertex/core/public';
 import z from 'zod';
 
 import type { InvocationManager } from '../invoke/manager';
-import { CapabilityTagSchema, InvokeOutputSchema } from '../schemas';
+import { CapabilityTagSchema } from '../schemas';
 
 export interface IInvokeToolOptions {
 	readonly namespacePrefix: string;
@@ -45,7 +49,13 @@ export const buildInvokeRegistration = (
 				description:
 					"Execute a task on the best-scored provider and return its structured result. Plans a fallback chain (rerank|tier-down), enforces a wall-clock timeout that fires the per-kind cancellation ladder, and — CRITICAL SAFETY — never spends the user's API money unless executeApi is on AND a one-time signed confirmation token (from an MCP elicitation) authorises THAT invocation. With executeApi:false, api/cli routes return an 'execution-disabled' error and a handoff instead of spending. Returns {decision (carries sessionId), result{text, structuredContent?, usage?, costUsd?}, invocationId} on success, or {decision, error{code, tried, nextAvailableAt}, userMessage} otherwise.",
 				inputSchema: InputSchema,
-				outputSchema: InvokeOutputSchema,
+				// v00130 (AUD-B01): `InvokeOutputSchema` (the full, exported
+				// Zod shape) is not used as a runtime response validator
+				// anywhere in this handler — only declared here as the wire
+				// `outputSchema`. It stays exported from `schemas.ts` for the
+				// behavioural tests; `tools/list` gets the compact envelope
+				// instead. The real response payload is unchanged.
+				outputSchema: compactOutputSchema(),
 			},
 			async (args: z.infer<typeof InputSchema>) => {
 				const output = await options.manager.invoke({

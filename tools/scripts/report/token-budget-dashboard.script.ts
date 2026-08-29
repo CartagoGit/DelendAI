@@ -7,6 +7,9 @@ import {
 	TOKEN_BUDGETS,
 	withFileMutex,
 	writeFileAtomic,
+	type IGovernedToolsListBudget,
+	type IMcpToolSurfaceMode,
+	type ITokenBudgetSurface,
 } from '@mcp-vertex/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
@@ -37,6 +40,10 @@ import {
 interface IFixtureMeasurements {
 	readonly overviewFull: number;
 	readonly overviewCompact: number;
+	/** x00296 S2 (AUD-B06): `overview` measured under `native` — see
+	 * `overviewFullNative`/`overviewCompactNative` in `token-budgets.constant.ts`. */
+	readonly overviewFullNative: number;
+	readonly overviewCompactNative: number;
 	readonly autoWorkIdle: number;
 	readonly autoWorkWorkPlan: number;
 	readonly agentCatalogCompact: number;
@@ -129,30 +136,23 @@ const budgetStatus = (
 
 const presetToolsBudget = (
 	presetId: string,
-):
-	| {
-			readonly hard: number;
-			readonly warning: number;
-			readonly marginalPluginHard?: number;
-			readonly marginalPluginWarning?: number;
-	  }
-	| undefined => {
+): IGovernedToolsListBudget | undefined => {
 	const budgets = TOKEN_BUDGETS.presets as Readonly<
-		Record<
-			string,
-			{
-				readonly toolsList: {
-					readonly hard: number;
-					readonly warning: number;
-					readonly marginalPluginHard?: number;
-					readonly marginalPluginWarning?: number;
-				};
-			}
-		>
+		Record<string, { readonly toolsList: IGovernedToolsListBudget }>
 	>;
 	return budgets[presetId]?.toolsList;
 };
 
+/**
+ * AUD-B02/x00283: `marginalPluginHard`/`marginalPluginWarning` are
+ * REQUIRED on `IGovernedToolsListBudget` (the compiler enforces every
+ * governed preset declares them), so this can no longer silently default
+ * to `?? 0` — that default is what produced the "over hard (0B)"
+ * permanent false alarm for minimal/standard/full/vertex. A preset
+ * outside `TOKEN_BUDGETS.presets` (e.g. the non-governed dashboard-only
+ * presets like `web-app`) still renders `n/a` via the `undefined` return
+ * here, which is the one legitimately optional case.
+ */
 const presetMarginalBudget = (
 	presetId: string,
 ):
@@ -164,8 +164,8 @@ const presetMarginalBudget = (
 	const toolsListBudget = presetToolsBudget(presetId);
 	if (toolsListBudget === undefined) return undefined;
 	return {
-		hard: toolsListBudget.marginalPluginHard ?? 0,
-		warning: toolsListBudget.marginalPluginWarning ?? 0,
+		hard: toolsListBudget.marginalPluginHard,
+		warning: toolsListBudget.marginalPluginWarning,
 	};
 };
 
@@ -181,25 +181,72 @@ const markdownTable = (
 	].join('\n');
 };
 
+/**
+ * x00296 S1 (AUD-B06): every connection below now declares its surface
+ * EXPLICITLY (`surfaceMode`) instead of inheriting whatever
+ * `decideSurfaceModeFromCapabilities` infers for a client that declares no
+ * capabilities. That inference silently flipped from `managed` to `native`
+ * when `x00285` fixed AUD-C01, which is what made `overview full`/`overview
+ * compact` read "over hard" against ceilings calibrated for the smaller
+ * `managed` bootstrap listing.
+ *
+ * The explicit mode picked per row is not uniform — it is the surface each
+ * tool actually measures a REAL payload for, verified empirically (not
+ * assumed): `overview` is part of every surface's always-on bootstrap
+ * listing, so it alone gets a dedicated `managed` connection. Every other
+ * fixture tool (`auto_work`, `agent_catalog`, `analyze_project`,
+ * `plan_mcp_project`, `search`, `docs`, `round_context`, `logs_tail`) is
+ * DISABLED for direct by-name invocation under `managed` (the SDK returns
+ * `Tool <name> disabled` — by design, `managed` only exposes those tools
+ * through the `vertex` router, per the `IMcpToolSurfaceMode` doc). Forcing
+ * `managed` on those rows would not "restore" their ceiling comparison; it
+ * would silently replace every one of them with a fixed-size error-stub
+ * measurement that trivially passes any ceiling forever. Declaring `native`
+ * for them instead measures the same real payload they already measured
+ * before this fix (the fixture's implicit default), which is also the
+ * surface their ceilings were calibrated against — see the historical
+ * `overviewFull` ceiling comment and the pre-AUD-C01 measurements captured
+ * in `docs/mcp-vertex/proposals/ready/fixes/x00296-*.md`.
+ */
 const measureFixtureSurfaces = async (
 	workspace: string,
 ): Promise<IFixtureMeasurements> => {
+	const overviewSurface = await connectTokenBudgetClient(workspace, {
+		pluginList: TOKEN_BUDGETS.fixturePluginIds.join(','),
+		surfaceMode: 'managed',
+	});
 	const base = await connectTokenBudgetClient(workspace, {
 		pluginList: TOKEN_BUDGETS.fixturePluginIds.join(','),
+		surfaceMode: 'native',
 	});
 	const catalog = await connectTokenBudgetClient(workspace, {
 		pluginList: '',
+		surfaceMode: 'native',
 	});
 	const extra = await connectTokenBudgetClient(workspace, {
 		pluginList: 'proposals,memory,search,docs,logs',
+		surfaceMode: 'native',
 	});
 	try {
 		const overviewFull = await measureToolTextBytes(
-			base.client,
+			overviewSurface.client,
 			'mcp-vertex_overview',
 			{},
 		);
 		const overviewCompact = await measureToolTextBytes(
+			overviewSurface.client,
+			'mcp-vertex_overview',
+			{ compact: true },
+		);
+		// x00296 S2 (AUD-B06): the `native` surface counterpart, measured
+		// on the already-`native` `base` connection (it is also used below
+		// for `auto_work`/`analyze_project`/`plan_mcp_project`).
+		const overviewFullNative = await measureToolTextBytes(
+			base.client,
+			'mcp-vertex_overview',
+			{},
+		);
+		const overviewCompactNative = await measureToolTextBytes(
 			base.client,
 			'mcp-vertex_overview',
 			{ compact: true },
@@ -266,6 +313,8 @@ const measureFixtureSurfaces = async (
 		return {
 			overviewFull,
 			overviewCompact,
+			overviewFullNative,
+			overviewCompactNative,
 			autoWorkIdle,
 			autoWorkWorkPlan,
 			agentCatalogCompact,
@@ -278,7 +327,12 @@ const measureFixtureSurfaces = async (
 			logsTail,
 		};
 	} finally {
-		await Promise.all([base.close(), catalog.close(), extra.close()]);
+		await Promise.all([
+			overviewSurface.close(),
+			base.close(),
+			catalog.close(),
+			extra.close(),
+		]);
 	}
 };
 
@@ -347,7 +401,9 @@ export const measurePresetDashboard = async (
 			loadErrors: connection.loadErrors,
 			ownerRows: metrics.ownerRows,
 			toolBreakdowns: metrics.toolBreakdowns,
-			tokenizerEstimates: buildTokenizerEstimates(toolsListJsonText(tools)),
+			tokenizerEstimates: buildTokenizerEstimates(
+				toolsListJsonText(tools),
+			),
 		};
 	} finally {
 		await connection.close();
@@ -438,131 +494,110 @@ const renderGeneratedMarkdown = (
 	// bytes with native tokens. Each preset gets one row with two
 	// measurements side-by-side, plus per-surface deficits.
 	const perSurfaceColumns = buildPerSurfaceColumns(presetRows);
-	const fixtureRows = [
-		[
-			'overview full',
-			formatInt(fixture.overviewFull),
-			String(estimateTokensFromBytes(fixture.overviewFull)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.overviewFull.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.overviewFull.hard),
-			budgetStatus(
-				fixture.overviewFull,
-				TOKEN_BUDGETS.toolPayloads.overviewFull,
-			),
-		],
-		[
-			'overview compact',
-			formatInt(fixture.overviewCompact),
-			String(estimateTokensFromBytes(fixture.overviewCompact)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.overviewCompact.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.overviewCompact.hard),
-			budgetStatus(
-				fixture.overviewCompact,
-				TOKEN_BUDGETS.toolPayloads.overviewCompact,
-			),
-		],
-		[
-			'auto_work idle',
-			formatInt(fixture.autoWorkIdle),
-			String(estimateTokensFromBytes(fixture.autoWorkIdle)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.autoWork.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.autoWork.hard),
-			budgetStatus(
-				fixture.autoWorkIdle,
-				TOKEN_BUDGETS.toolPayloads.autoWork,
-			),
-		],
-		[
-			'auto_work work plan',
-			formatInt(fixture.autoWorkWorkPlan),
-			String(estimateTokensFromBytes(fixture.autoWorkWorkPlan)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.autoWork.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.autoWork.hard),
-			budgetStatus(
-				fixture.autoWorkWorkPlan,
-				TOKEN_BUDGETS.toolPayloads.autoWork,
-			),
-		],
-		[
-			'agent_catalog compact',
-			formatInt(fixture.agentCatalogCompact),
-			String(estimateTokensFromBytes(fixture.agentCatalogCompact)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.agentCatalogCompact.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.agentCatalogCompact.hard),
-			budgetStatus(
-				fixture.agentCatalogCompact,
-				TOKEN_BUDGETS.toolPayloads.agentCatalogCompact,
-			),
-		],
-		[
-			'agent_catalog full',
-			formatInt(fixture.agentCatalogFull),
-			String(estimateTokensFromBytes(fixture.agentCatalogFull)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.agentCatalogFull.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.agentCatalogFull.hard),
-			budgetStatus(
-				fixture.agentCatalogFull,
-				TOKEN_BUDGETS.toolPayloads.agentCatalogFull,
-			),
-		],
-		[
-			'analyze_project {}',
-			formatInt(fixture.analyzeCompact),
-			String(estimateTokensFromBytes(fixture.analyzeCompact)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.analyzeCompact.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.analyzeCompact.hard),
-			budgetStatus(
-				fixture.analyzeCompact,
-				TOKEN_BUDGETS.toolPayloads.analyzeCompact,
-			),
-		],
-		[
-			'plan_mcp_project {}',
-			formatInt(fixture.planCompact),
-			String(estimateTokensFromBytes(fixture.planCompact)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.planCompact.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.planCompact.hard),
-			budgetStatus(
-				fixture.planCompact,
-				TOKEN_BUDGETS.toolPayloads.planCompact,
-			),
-		],
-		[
-			'search_search',
-			formatInt(fixture.search),
-			String(estimateTokensFromBytes(fixture.search)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.search.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.search.hard),
-			budgetStatus(fixture.search, TOKEN_BUDGETS.toolPayloads.search),
-		],
-		[
-			'docs_docs_list',
-			formatInt(fixture.docsList),
-			String(estimateTokensFromBytes(fixture.docsList)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.docsList.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.docsList.hard),
-			budgetStatus(fixture.docsList, TOKEN_BUDGETS.toolPayloads.docsList),
-		],
-		[
-			'proposals_round_context',
-			formatInt(fixture.roundContext),
-			String(estimateTokensFromBytes(fixture.roundContext)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.roundContext.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.roundContext.hard),
-			budgetStatus(
-				fixture.roundContext,
-				TOKEN_BUDGETS.toolPayloads.roundContext,
-			),
-		],
-		[
-			'logs_tail',
-			formatInt(fixture.logsTail),
-			String(estimateTokensFromBytes(fixture.logsTail)),
-			formatInt(TOKEN_BUDGETS.toolPayloads.logsTail.warning),
-			formatInt(TOKEN_BUDGETS.toolPayloads.logsTail.hard),
-			budgetStatus(fixture.logsTail, TOKEN_BUDGETS.toolPayloads.logsTail),
-		],
+	// x00296 S1 (AUD-B06): every fixture-gated row now names the surface it
+	// measured — see the module doc on `measureFixtureSurfaces` for why
+	// `overview` is the only row measured under `managed` while the rest
+	// stay `native`.
+	const fixtureRowSpecs: ReadonlyArray<{
+		readonly label: string;
+		readonly surfaceMode: IMcpToolSurfaceMode;
+		readonly bytes: number;
+		readonly budget: ITokenBudgetSurface;
+	}> = [
+		{
+			label: 'overview full',
+			surfaceMode: 'managed',
+			bytes: fixture.overviewFull,
+			budget: TOKEN_BUDGETS.toolPayloads.overviewFull,
+		},
+		{
+			label: 'overview compact',
+			surfaceMode: 'managed',
+			bytes: fixture.overviewCompact,
+			budget: TOKEN_BUDGETS.toolPayloads.overviewCompact,
+		},
+		{
+			label: 'overview full (native)',
+			surfaceMode: 'native',
+			bytes: fixture.overviewFullNative,
+			budget: TOKEN_BUDGETS.toolPayloads.overviewFullNative,
+		},
+		{
+			label: 'overview compact (native)',
+			surfaceMode: 'native',
+			bytes: fixture.overviewCompactNative,
+			budget: TOKEN_BUDGETS.toolPayloads.overviewCompactNative,
+		},
+		{
+			label: 'auto_work idle',
+			surfaceMode: 'native',
+			bytes: fixture.autoWorkIdle,
+			budget: TOKEN_BUDGETS.toolPayloads.autoWork,
+		},
+		{
+			label: 'auto_work work plan',
+			surfaceMode: 'native',
+			bytes: fixture.autoWorkWorkPlan,
+			budget: TOKEN_BUDGETS.toolPayloads.autoWork,
+		},
+		{
+			label: 'agent_catalog compact',
+			surfaceMode: 'native',
+			bytes: fixture.agentCatalogCompact,
+			budget: TOKEN_BUDGETS.toolPayloads.agentCatalogCompact,
+		},
+		{
+			label: 'agent_catalog full',
+			surfaceMode: 'native',
+			bytes: fixture.agentCatalogFull,
+			budget: TOKEN_BUDGETS.toolPayloads.agentCatalogFull,
+		},
+		{
+			label: 'analyze_project {}',
+			surfaceMode: 'native',
+			bytes: fixture.analyzeCompact,
+			budget: TOKEN_BUDGETS.toolPayloads.analyzeCompact,
+		},
+		{
+			label: 'plan_mcp_project {}',
+			surfaceMode: 'native',
+			bytes: fixture.planCompact,
+			budget: TOKEN_BUDGETS.toolPayloads.planCompact,
+		},
+		{
+			label: 'search_search',
+			surfaceMode: 'native',
+			bytes: fixture.search,
+			budget: TOKEN_BUDGETS.toolPayloads.search,
+		},
+		{
+			label: 'docs_docs_list',
+			surfaceMode: 'native',
+			bytes: fixture.docsList,
+			budget: TOKEN_BUDGETS.toolPayloads.docsList,
+		},
+		{
+			label: 'proposals_round_context',
+			surfaceMode: 'native',
+			bytes: fixture.roundContext,
+			budget: TOKEN_BUDGETS.toolPayloads.roundContext,
+		},
+		{
+			label: 'logs_tail',
+			surfaceMode: 'native',
+			bytes: fixture.logsTail,
+			budget: TOKEN_BUDGETS.toolPayloads.logsTail,
+		},
 	];
+	const fixtureRows = fixtureRowSpecs.map((spec) => [
+		spec.label,
+		spec.surfaceMode,
+		formatInt(spec.bytes),
+		String(estimateTokensFromBytes(spec.bytes)),
+		formatInt(spec.budget.warning),
+		formatInt(spec.budget.hard),
+		budgetStatus(spec.bytes, spec.budget),
+	]);
 
 	const presetSummaryRows = presetRows.map((row) => [
 		row.presetId,
@@ -624,8 +659,12 @@ const renderGeneratedMarkdown = (
 		row.runtimeSurface,
 		row.source,
 		formatInt(row.toolsListBytes),
-		...row.tokenizerEstimates.map((estimate) => String(estimate.tokenCount)),
-		row.tokenizerEstimates.map((estimate) => estimate.confidence).join(', '),
+		...row.tokenizerEstimates.map((estimate) =>
+			String(estimate.tokenCount),
+		),
+		row.tokenizerEstimates
+			.map((estimate) => estimate.confidence)
+			.join(', '),
 	]);
 
 	const topToolsRow = presetRows.find(
@@ -694,7 +733,15 @@ const renderGeneratedMarkdown = (
 		'These are the bounded payloads the e2e spec governs directly today. They use the historical synthetic workspace fixture, so the hard ceilings stay stable until a future proposal deliberately tightens or re-baselines them.',
 		'',
 		markdownTable(
-			['Surface', 'Bytes', 'Est. Tokens', 'Warning', 'Hard', 'Status'],
+			[
+				'Surface',
+				'Measurement Surface',
+				'Bytes',
+				'Est. Tokens',
+				'Warning',
+				'Hard',
+				'Status',
+			],
 			fixtureRows,
 		),
 		'',
@@ -729,7 +776,7 @@ const renderGeneratedMarkdown = (
 		'',
 		'## Plugin marginal dashboard — component breakdown by owner',
 		'',
-		'`Tools/List Bytes` per owner is the sum of each tool\'s own serialized entry (`JSON.stringify({name, description, inputSchema, outputSchema, annotations})`), decomposed into the fields that make it up. `Envelope Bytes` is JSON punctuation and key labels — derived by subtraction, so every row\'s named-field columns plus Envelope Bytes sum exactly to Tools/List Bytes. `Share of Preset` is this owner\'s bytes divided by the sum of all owners\' bytes in that preset row (not divided by the whole-array `Tools/List Bytes` on the preset-summary table above, which also carries the array\'s own brackets/commas) — shares always sum to 100%.',
+		"`Tools/List Bytes` per owner is the sum of each tool's own serialized entry (`JSON.stringify({name, description, inputSchema, outputSchema, annotations})`), decomposed into the fields that make it up. `Envelope Bytes` is JSON punctuation and key labels — derived by subtraction, so every row's named-field columns plus Envelope Bytes sum exactly to Tools/List Bytes. `Share of Preset` is this owner's bytes divided by the sum of all owners' bytes in that preset row (not divided by the whole-array `Tools/List Bytes` on the preset-summary table above, which also carries the array's own brackets/commas) — shares always sum to 100%.",
 		'',
 		markdownTable(
 			[
@@ -773,7 +820,7 @@ const renderGeneratedMarkdown = (
 		'',
 		'## CHECK-007 — tokenizer cost by preset',
 		'',
-		'This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTES of the tools/list JSON payload, not native LLM tokens — bytes-per-token varies enough across prose descriptions, JSON schemas, and identifiers that a byte count cannot substitute for a real token count. The table below reports both, with an explicit confidence label per model: `measured-real-bpe` is a real encode with the model\'s own published tokenizer (gpt-tokenizer for gpt-5.4); `measured-legacy-bpe` is a real BPE encode but on a vocabulary the vendor published for an older model generation (Anthropic has not published an offline tokenizer for Claude Sonnet 4, so @anthropic-ai/tokenizer\'s pre-Claude-3 vocabulary is used as the closest available real encoder); `estimated-byte-ratio` is bytes / 4, used only where no offline tokenizer package exists (Gemini). See tools/scripts/report/tokenizer-real.script.ts for the profile definitions.',
+		"This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTES of the tools/list JSON payload, not native LLM tokens — bytes-per-token varies enough across prose descriptions, JSON schemas, and identifiers that a byte count cannot substitute for a real token count. The table below reports both, with an explicit confidence label per model: `measured-real-bpe` is a real encode with the model's own published tokenizer (gpt-tokenizer for gpt-5.4); `measured-legacy-bpe` is a real BPE encode but on a vocabulary the vendor published for an older model generation (Anthropic has not published an offline tokenizer for Claude Sonnet 4, so @anthropic-ai/tokenizer's pre-Claude-3 vocabulary is used as the closest available real encoder); `estimated-byte-ratio` is bytes / 4, used only where no offline tokenizer package exists (Gemini). See tools/scripts/report/tokenizer-real.script.ts for the profile definitions.",
 		'',
 		markdownTable(
 			[

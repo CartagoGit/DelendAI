@@ -288,17 +288,17 @@ override on the tool actually changes the plan mode.
 
 **Acceptance**: ≥ 90% line + branch coverage; smoke passes.
 
-## notes
+## acceptance
 
-The user authorised autonomous multi-turn execution. From here on:
+Everything in S1 compiles + tests + builds clean under today's repo
+rules (`bun run typecheck`, `bun run test`, `bun run build`). The
+remaining slices inherit the same contract. Closing q00007 means:
 
-1. `mcp-vertex_overview` once per session (no fan-out of knowledge
-   fetches — a memory entry already records the rule).
-2. For S2..S5: each slice opens via `proposals_auto_work` →
-   `claimReady` → claim → implement → test → close.
-3. The orchestrator subagent (`mcp-vertex-orchestrator`) drives the
-   heavier slices; subagents (`technical-investigator`,
-   `implementation-runner`) are used for the contained parts.
+- All six children (`f00182..f00187`) are `status: done`.
+- `t00007` is `status: done` with coverage report attached.
+- `bun run validate` is green with the plugin in `--plugins`.
+- The plugin ships as a public `@mcp-vertex/agent-orchestrator`
+  package on the same registry as the rest of the workspace.
 
 ## risks and mitigations
 
@@ -318,14 +318,15 @@ The user authorised autonomous multi-turn execution. From here on:
   `null` ⇒ no rotation; the executor surfaces it as a config bug
   instead of rotating on a forbidden trigger.
 
-## acceptance
+## notes
 
-Everything in S1 compiles + tests + builds clean under today's repo
-rules (`bun run typecheck`, `bun run test`, `bun run build`). The
-remaining slices inherit the same contract. Closing q00007 means:
+The user authorised autonomous multi-turn execution. From here on:
 
-- All six children (`f00182..f00187`) are `status: done`.
-- `t00007` is `status: done` with coverage report attached.
-- `bun run validate` is green with the plugin in `--plugins`.
-- The plugin ships as a public `@mcp-vertex/agent-orchestrator`
-  package on the same registry as the rest of the workspace.
+1. `mcp-vertex_overview` once per session (no fan-out of knowledge
+   fetches — a memory entry already records the rule).
+2. For S2..S5: each slice opens via `proposals_auto_work` →
+   `claimReady` → claim → implement → test → close.
+3. The orchestrator subagent (`mcp-vertex-orchestrator`) drives the
+   heavier slices; subagents (`technical-investigator`,
+   `implementation-runner`) are used for the contained parts.
+

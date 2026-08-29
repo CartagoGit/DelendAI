@@ -1,7 +1,6 @@
 import z from 'zod';
 
 import type { IActivationReport } from '../contracts/interfaces/activation-report.interface';
-import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type {
@@ -9,6 +8,7 @@ import type {
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
 import { toolJson } from '../shared/tool-response';
+import { compactOutputSchema } from '../surface/compact-output-schema';
 
 export interface IOverviewToolEntry {
 	readonly name: string;
@@ -127,150 +127,12 @@ export const buildOverviewToolRegistration = (
 					tag: z.string().optional(),
 					activation: z.boolean().optional(),
 				}),
-				outputSchema: z.object({
-					server: z.object({ name: z.string(), version: z.string() }),
-					namespacePrefix: z.string(),
-					corePaths: z
-						.object({ cacheDir: z.string(), docsDir: z.string() })
-						.optional(),
-					// S1: boot-time config problems (schema violations,
-					// dead docsDir/roots). Omitted when the config is clean.
-					configIssues: z.array(z.string()).optional(),
-					pluginDiagnostic: z
-						.object({
-							requested: z.array(z.string()),
-							loaded: z.array(z.string()),
-							missing: z.array(z.string()),
-							missingReasons: z
-								.record(z.string(), z.string())
-								.optional(),
-							configPlugins: z.array(z.string()),
-							errors: z.number(),
-						})
-						.optional(),
-					plugins: z.array(
-						z.union([
-							z.string(),
-							z.object({
-								name: z.string(),
-								version: z.string().optional(),
-								describe: z.string().optional(),
-							}),
-						]),
-					),
-					// Full overview: an array of per-tool entries (name +
-					// summary/tags/effects). Compact overview: a record keyed by
-					// plugin (`{ proposals: ['agent_lock', …], … }`, core tools
-					// under `core`) so the shared `<prefix>_<plugin>_` is stated
-					// once per group, not per tool.
-					tools: z.union([
-						z.array(
-							z.union([
-								z.string(),
-								z.object({
-									name: z.string(),
-									summary: z.string().optional(),
-									tags: z.array(z.string()).optional(),
-									effects: z
-										.array(
-											z.enum([
-												'write',
-												'spawn',
-												'network',
-												'destructive',
-											]),
-										)
-										.optional(),
-								}),
-							]),
-						),
-						z.record(z.string(), z.array(z.string())),
-					]),
-					knowledge: z.array(
-						z.union([
-							z.string(),
-							z.object({ id: z.string(), title: z.string() }),
-						]),
-					),
-					// f00067a S2: provider roster summaries (full mode only;
-					// omitted entirely when no roster is configured).
-					providers: z
-						.array(
-							z.object({
-								id: z.string(),
-								kind: z.enum([
-									'api',
-									'subscription',
-									'cli',
-									'mcp-server',
-								]),
-								modelId: z.string(),
-								// Literal union: keeps the generated SDK type
-								// assignable to `CostTier`.
-								costTier: z.union([
-									z.literal(1),
-									z.literal(2),
-									z.literal(3),
-									z.literal(4),
-									z.literal(5),
-								]),
-								reachable: z.boolean(),
-								strengths: z.array(z.enum(CAPABILITY_TAGS)),
-							}),
-						)
-						.optional(),
-					activationReport: z
-						.object({
-							entries: z.array(
-								z.object({
-									id: z.string(),
-									origin: z.enum([
-										'bundled',
-										'user-local',
-										'external',
-									]),
-									active: z.boolean(),
-									source: z.enum([
-										'preset',
-										'config',
-										'flag',
-									]),
-									toolCount: z.number(),
-								}),
-							),
-							counts: z.object({
-								bundled: z.number(),
-								'user-local': z.number(),
-								external: z.number(),
-							}),
-							totalTools: z.number(),
-						})
-						.optional(),
-					unusedActivePlugins: z.array(z.string()).optional(),
-					// Surface mode + counts of visible vs hidden
-					// tools. Lets the operator understand at a glance which
-					// surface the host picked and how many tools are
-					// currently announced to the MCP client vs available
-					// behind `plugin_activate`. The total loaded tool count
-					// is the sum of the two; that is the answer to
-					// "cuántas herramientas tiene disponibles" the host
-					// can give without enumerating each entry.
-					projectContext: z
-						.object({
-							surfaceMode: z.enum([
-								'managed',
-								'native',
-								'adaptive',
-								'compact',
-							]),
-							visibleToolCount: z.number().int().nonnegative(),
-							hiddenToolCount: z.number().int().nonnegative(),
-							loadedPluginCount: z.number().int().nonnegative(),
-							loadedToolCount: z.number().int().nonnegative(),
-						})
-						.optional(),
-					recommendedNextAction: z.string(),
-				}),
+				// v00129 S1 (AUD-B01): the full nested overview schema cost
+				// ~4.2 KB per tools/list entry to describe a response shape
+				// the model only needs after calling `overview` — and this
+				// tool is in the bootstrap set every preset always sends.
+				// See compact-output-schema.ts.
+				outputSchema: compactOutputSchema(),
 			},
 			async (args: {
 				compact?: boolean | undefined;

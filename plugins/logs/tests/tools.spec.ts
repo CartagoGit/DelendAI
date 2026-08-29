@@ -7,6 +7,7 @@ import { createLogStore } from '../src/lib/services/log-store';
 import { normalizeEvent } from '../src/lib/services/normalize-event';
 import { redactTest } from '../src/lib/services/redact-test';
 import { buildLogToolRegistrations } from '../src/lib/tools/tools';
+import { asArray } from '@mcp-vertex/test-kit/public';
 
 type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 
@@ -79,7 +80,7 @@ describe('log tools', async () => {
 		const first = structured(
 			await handlers.get('logs_query')?.({ limit: 1 }),
 		);
-		expect(first.events as unknown[]).toHaveLength(1);
+		expect(asArray(first.events)).toHaveLength(1);
 		expect(first.hasMore).toBe(true);
 		const second = structured(
 			await handlers.get('logs_query')?.({

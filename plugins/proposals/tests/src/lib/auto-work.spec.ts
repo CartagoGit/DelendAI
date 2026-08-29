@@ -12,6 +12,7 @@ import {
 	runAutoWork,
 	type IAutoWorkToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/auto-work.tool';
+import { asArray } from '@mcp-vertex/test-kit/public';
 
 // The tool declares an `outputSchema`, so the MCP SDK requires
 // `structuredContent` on every response — a text-only payload throws
@@ -737,7 +738,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			expect(out.executionMode).toBe('blocked');
 			// Stash rides on the response payload.
 			expect(Array.isArray(out.stashes)).toBe(true);
-			expect((out.stashes as unknown[]).length).toBe(1);
+			expect(asArray(out.stashes).length).toBe(1);
 			expect((out.stashes as Array<{ ref: string }>)[0]?.ref).toBe(
 				'stash@{0}',
 			);

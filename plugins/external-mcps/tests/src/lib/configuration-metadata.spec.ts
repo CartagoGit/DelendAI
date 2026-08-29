@@ -24,7 +24,7 @@ describe('external MCP configuration metadata', () => {
 			args: ['-y', '@example/server@1.2.3'],
 			env: ['EXAMPLE_TOKEN'],
 		};
-		const registrations = await plugin.register({
+		const reg = await plugin.register({
 			options: { servers: { demo: server } },
 			args: {},
 			namespacePrefix: 'external-mcps',
@@ -36,6 +36,10 @@ describe('external MCP configuration metadata', () => {
 				resolve: (relative: string) => join(root, relative),
 			},
 		} as never);
+		// AUD-D05: `register()` now returns an `IPluginRuntime` wrapper
+		// (`{ registrations, dispose }`) so the loader retains `dispose` —
+		// unwrap it the same way `normalizePluginRuntimeInternal` does.
+		const registrations = 'registrations' in reg ? reg.registrations : reg;
 
 		const contribution = registrations.activation?.[0];
 		expect(contribution).toMatchObject({

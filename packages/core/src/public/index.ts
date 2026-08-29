@@ -256,8 +256,11 @@ export type {
 export { CHECKPOINT_ADVISORY_SEVERITIES } from '../lib/contracts/interfaces/checkpoint-advisory.interface';
 export {
 	measureBootstrapBytes,
+	measureToolWireBytes,
 	type IBootstrapMeasurement,
+	type IMcpToolWireDefinition,
 } from '../lib/surface/bootstrap';
+export { compactOutputSchema } from '../lib/surface/compact-output-schema';
 export {
 	VALIDATE_EVIDENCE_SCHEMA,
 	type IValidateEvidenceInput,
@@ -702,6 +705,23 @@ export {
 } from '../lib/dry-run/dry-run-scope.helper';
 export { createDryRunGatedGitRunner } from '../lib/dry-run/effect-capability-factory.helper';
 export type { IPluginEffectsCapability } from '../lib/contracts/interfaces/effect-capabilities.interface';
+// r00037 S1 — post-hoc dry-run violations, bounded ring buffer keyed by
+// the plugin/tool responsible. Detection, not prevention (see the
+// EffectBroker exports below for prevention).
+export {
+	clearDryRunViolationsForTests,
+	listDryRunViolations,
+	recordDryRunViolation,
+} from '../lib/dry-run/dry-run-violation-log';
+export type { IDryRunContractViolationRecord } from '../lib/contracts/interfaces/dry-run-violation.interface';
+// r00037 S2/S3 — the EffectBroker: the single point of construction for
+// every ambient-dry-run-gated capability a plugin context hands out.
+export { createEffectBroker } from '../lib/capabilities/effect-broker';
+export type {
+	IEffectBrokerCapabilityDefinition,
+	IEffectBrokerCapabilities,
+	IEffectBrokerDefinitions,
+} from '../lib/contracts/interfaces/effect-broker.interface';
 export type {
 	CapabilityTag,
 	CostTier,
@@ -747,6 +767,8 @@ export {
 } from '../lib/contracts/constants/response-byte-budget.constant';
 export { TOKEN_BUDGETS } from '../lib/contracts/constants/token-budgets.constant';
 export type {
+	IGovernedToolsListBudget,
+	IPresetTokenBudgetProfile,
 	ITokenBudgetCeiling,
 	ITokenBudgetRegistry,
 	ITokenBudgetSurface,
