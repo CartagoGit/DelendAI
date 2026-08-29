@@ -102,15 +102,15 @@ Cada propuesta hija cita, en su `## Goal`, la sección exacta de la auditoría q
 
 ### Track `privacy` (P0 — lo primero, sin excepción)
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `x00214` | §2 ER-001/003/004/006, §32, §35 | Pipeline DTO-only: prohibir `Error/stack/args/message` crudos |
-| `x00215` | §2 ER-002, §33 | Clasificación interna por evidencia positiva + fingerprint sin datos de usuario |
-| `f00159` | §2 ER-005, §31 | Ejemplos sintéticos generados desde schema/fixtures |
-| `t00005` | §2 ER-007 | Suite adversarial (payload invariante ante datos privados) |
-| `x00216` | §2 ER-008, §34, §36 ER-NET-004 | `lastSuccessAt`, rate limits, circuit breaker |
-| `f00160` | §2 ER-009, §36 ER-NET-001..003, §1.1, §30 | `report_status`, opt-out, destino allowlisted, docs legales |
-| `f00173` | §24 error-reporting, §30, §35 | Observar todas las superficies de error (tools, lifecycle, LLM/providers, procesos) + análisis de origen |
+| Propuesta | Legacy                                    | Resumen                                                                                                  |
+| --------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `x00214`  | §2 ER-001/003/004/006, §32, §35           | Pipeline DTO-only: prohibir `Error/stack/args/message` crudos                                            |
+| `x00215`  | §2 ER-002, §33                            | Clasificación interna por evidencia positiva + fingerprint sin datos de usuario                          |
+| `f00159`  | §2 ER-005, §31                            | Ejemplos sintéticos generados desde schema/fixtures                                                      |
+| `t00005`  | §2 ER-007                                 | Suite adversarial (payload invariante ante datos privados)                                               |
+| `x00216`  | §2 ER-008, §34, §36 ER-NET-004            | `lastSuccessAt`, rate limits, circuit breaker                                                            |
+| `f00160`  | §2 ER-009, §36 ER-NET-001..003, §1.1, §30 | `report_status`, opt-out, destino allowlisted, docs legales                                              |
+| `f00173`  | §24 error-reporting, §30, §35             | Observar todas las superficies de error (tools, lifecycle, LLM/providers, procesos) + análisis de origen |
 
 > `error-reporting` se implementa en `f00158` (existente); este track **endurece** ese flujo al modelo DTO-only. Las seis propuestas del track son secuenciales en espíritu (x00214 → x00215 → f00159 → t00005 → x00216 → f00160) aunque pueden arrancar en paralelo si el agente fija primero el contrato DTO de `x00214`.
 >
@@ -118,101 +118,101 @@ Cada propuesta hija cita, en su `## Goal`, la sección exacta de la auditoría q
 
 ### Track `lifecycle`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `x00217` | §3 PL-001/002 | `parsed.data` + frontera única de validación |
-| `x00218` | §3 PL-003/004 | Grafo de dependencias con estados + ciclos |
-| `f00161` | §3 PL-005/006/007 | Cancelación (`AbortSignal`), `dispose`, rollback |
+| Propuesta | Legacy            | Resumen                                          |
+| --------- | ----------------- | ------------------------------------------------ |
+| `x00217`  | §3 PL-001/002     | `parsed.data` + frontera única de validación     |
+| `x00218`  | §3 PL-003/004     | Grafo de dependencias con estados + ciclos       |
+| `f00161`  | §3 PL-005/006/007 | Cancelación (`AbortSignal`), `dispose`, rollback |
 
 > Orden recomendado: `x00217` → `x00218` → `f00161` (todas tocan `load-plugins.ts`).
 
 ### Track `concurrency`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `x00219` | §5 MX-001/002 | Reclaim seguro de stale lock + métricas de contención |
-| `x00220` | §6 PR-001/002/003 | `maxOutputBytes` real (buffers) + política stdout/stderr |
-| `x00222` | §6 PR-004/005 | Matar árbol de procesos en `runArgv` |
-| `x00221` | §4 FS-001/002 | TOCTOU + threat model + tests Windows |
+| Propuesta | Legacy            | Resumen                                                  |
+| --------- | ----------------- | -------------------------------------------------------- |
+| `x00219`  | §5 MX-001/002     | Reclaim seguro de stale lock + métricas de contención    |
+| `x00220`  | §6 PR-001/002/003 | `maxOutputBytes` real (buffers) + política stdout/stderr |
+| `x00222`  | §6 PR-004/005     | Matar árbol de procesos en `runArgv`                     |
+| `x00221`  | §4 FS-001/002     | TOCTOU + threat model + tests Windows                    |
 
 ### Track `metrics`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `x00223` | §7 MET-001..005 | Bytes UTF-8, contar errores, tipos de coste |
-| `x00224` | §8 OUT-001..005 | Contrato de truncación honesto + paginación universal |
+| Propuesta | Legacy          | Resumen                                               |
+| --------- | --------------- | ----------------------------------------------------- |
+| `x00223`  | §7 MET-001..005 | Bytes UTF-8, contar errores, tipos de coste           |
+| `x00224`  | §8 OUT-001..005 | Contrato de truncación honesto + paginación universal |
 
 ### Track `tokens`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `v00123` | §9 TOK-001..004, §20 DOC-002 | Dashboard `tools/list` + budgets absolutos + `TOKEN-BUDGETS.md` generado |
-| `f00162` | §9 TOK-005/011, §29 | Token tax + utility per 1K + KPIs |
-| `f00163` | §9 TOK-006..010/012 | Activación dinámica + superficie compacta + descripciones en dos niveles |
+| Propuesta | Legacy                       | Resumen                                                                  |
+| --------- | ---------------------------- | ------------------------------------------------------------------------ |
+| `v00123`  | §9 TOK-001..004, §20 DOC-002 | Dashboard `tools/list` + budgets absolutos + `TOKEN-BUDGETS.md` generado |
+| `f00162`  | §9 TOK-005/011, §29          | Token tax + utility per 1K + KPIs                                        |
+| `f00163`  | §9 TOK-006..010/012          | Activación dinámica + superficie compacta + descripciones en dos niveles |
 
 ### Track `registry`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `r00016` | §10 REG-002..004, §21 MAN-001..010 | Manifests como única fuente de verdad + generadores |
-| `x00225` | §10 REG-001, §11 PRE-003 | `auto-plugin-selector` en el índice + drift `backend-api` |
-| `x00226` | §11 PRE-001/002/004/005 | Presets por lint, redefinir `standard`, budget por preset |
+| Propuesta | Legacy                             | Resumen                                                   |
+| --------- | ---------------------------------- | --------------------------------------------------------- |
+| `r00016`  | §10 REG-002..004, §21 MAN-001..010 | Manifests como única fuente de verdad + generadores       |
+| `x00225`  | §10 REG-001, §11 PRE-003           | `auto-plugin-selector` en el índice + drift `backend-api` |
+| `x00226`  | §11 PRE-001/002/004/005            | Presets por lint, redefinir `standard`, budget por preset |
 
 ### Track `core`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `r00017` | §12 CORE-001..004 | Separar runtime/plugin-sdk/authoring/setup/analyzer |
-| `x00227` | §13 CFG-001..003 | Defaults project-agnostic + project analyzer |
-| `x00228` | §16 CLIEN-001..003, §26 REL-004 | Client: versión inyectada, payload validation, errores de transporte |
-| `c00128` | §17 VER-001/002 | Política de versiones + lint `dependency-versions` |
+| Propuesta | Legacy                          | Resumen                                                              |
+| --------- | ------------------------------- | -------------------------------------------------------------------- |
+| `r00017`  | §12 CORE-001..004               | Separar runtime/plugin-sdk/authoring/setup/analyzer                  |
+| `x00227`  | §13 CFG-001..003                | Defaults project-agnostic + project analyzer                         |
+| `x00228`  | §16 CLIEN-001..003, §26 REL-004 | Client: versión inyectada, payload validation, errores de transporte |
+| `c00128`  | §17 VER-001/002                 | Política de versiones + lint `dependency-versions`                   |
 
 ### Track `memory-mcp`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `v00124` | §14 MEM-001..004 | Freshness event-driven + debounce + hit-rate |
-| `x00229` | §15 MCP-001..003 | Metadata vs `outputSchema` + envolvente `_meta` |
+| Propuesta | Legacy           | Resumen                                         |
+| --------- | ---------------- | ----------------------------------------------- |
+| `v00124`  | §14 MEM-001..004 | Freshness event-driven + debounce + hit-rate    |
+| `x00229`  | §15 MCP-001..003 | Metadata vs `outputSchema` + envolvente `_meta` |
 
 ### Track `ci-test-docs`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `i00002` | §18 CI-001..008 | Gates arquitectónicos obligatorios + DAG + branch protection |
-| `t00006` | §19 TEST-001..004 | Coverage: `index.ts` selectivo, apps/web, property-based |
-| `d00005` | §20 DOC-001..005, §27 SRC-001/002 | Docs generadas + separación humano/generado |
+| Propuesta | Legacy                            | Resumen                                                      |
+| --------- | --------------------------------- | ------------------------------------------------------------ |
+| `i00002`  | §18 CI-001..008                   | Gates arquitectónicos obligatorios + DAG + branch protection |
+| `t00006`  | §19 TEST-001..004                 | Coverage: `index.ts` selectivo, apps/web, property-based     |
+| `d00005`  | §20 DOC-001..005, §27 SRC-001/002 | Docs generadas + separación humano/generado                  |
 
 ### Track `permissions`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `f00164` | §22 PERM-001..004 | Modelo de permisos por plugin/tool + penalización de riesgo |
+| Propuesta | Legacy            | Resumen                                                     |
+| --------- | ----------------- | ----------------------------------------------------------- |
+| `f00164`  | §22 PERM-001..004 | Modelo de permisos por plugin/tool + penalización de riesgo |
 
 ### Track `product`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `f00165` | §23 IDEA-001 | `context_for_change` |
-| `f00169` | §23 IDEA-002/003 | `impact_analyze` + `tests_for_change` |
-| `f00166` | §23 IDEA-004 | `project_health` (resumen lazy) |
-| `f00167` | §23 IDEA-005 | `quality_policy` unificado |
-| `f00168` | §23 IDEA-006, §9 TOK-012 | Optimizador adaptativo |
-| `x00230` | §24 auto-agent-selector | Cablear la ejecución end-to-end de la selección automática de LLM/agentes |
+| Propuesta | Legacy                   | Resumen                                                                   |
+| --------- | ------------------------ | ------------------------------------------------------------------------- |
+| `f00165`  | §23 IDEA-001             | `context_for_change`                                                      |
+| `f00169`  | §23 IDEA-002/003         | `impact_analyze` + `tests_for_change`                                     |
+| `f00166`  | §23 IDEA-004             | `project_health` (resumen lazy)                                           |
+| `f00167`  | §23 IDEA-005             | `quality_policy` unificado                                                |
+| `f00168`  | §23 IDEA-006, §9 TOK-012 | Optimizador adaptativo                                                    |
+| `x00230`  | §24 auto-agent-selector  | Cablear la ejecución end-to-end de la selección automática de LLM/agentes |
 
 ### Track `plugin-hardening`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `a00086` | §24, §30 | Barrido seguridad/privacidad (browser, container, forge, database, api, external-mcps, ...) |
-| `a00087` | §24 | Barrido tokens/output (audit, prompt-eval, diagram, docs, search, memory, ...) |
-| `a00088` | §24 | Barrido correctitud/solapamiento (proposals, quality, refactor, test-policy, ...) |
+| Propuesta | Legacy   | Resumen                                                                                     |
+| --------- | -------- | ------------------------------------------------------------------------------------------- |
+| `a00086`  | §24, §30 | Barrido seguridad/privacidad (browser, container, forge, database, api, external-mcps, ...) |
+| `a00087`  | §24      | Barrido tokens/output (audit, prompt-eval, diagram, docs, search, memory, ...)              |
+| `a00088`  | §24      | Barrido correctitud/solapamiento (proposals, quality, refactor, test-policy, ...)           |
 
 ### Track `web-release`
 
-| Propuesta | Legacy | Resumen |
-|---|---|---|
-| `i00003` | §25 WEB-001..003 | Web: perfiles token/permisos + cobertura UI |
-| `c00129` | §26 REL-001..003 | Release: Node smoke, tarball e2e, manifest correctness |
+| Propuesta | Legacy           | Resumen                                                |
+| --------- | ---------------- | ------------------------------------------------------ |
+| `i00003`  | §25 WEB-001..003 | Web: perfiles token/permisos + cobertura UI            |
+| `c00129`  | §26 REL-001..003 | Release: Node smoke, tarball e2e, manifest correctness |
 
 ### Cobertura de secciones transversales
 
@@ -245,8 +245,8 @@ Cada propuesta hija cita, en su `## Goal`, la sección exacta de la auditoría q
 - review-log: approved by delivery_verifier — APPROVE. Direct checks confirm S1 is done, contains declares and table lists the same 43 children with no missing, extra, or duplicate IDs; commit 8724ee03 exists; proposal lint passes with 0 fatal errors; q00003 has one physical file.
 ### Estado operativo de las hijas — 2026-08-29
 
-| Estado | Propuestas | Evidencia MCP |
-|---|---|---|
+| Estado | Propuestas                                                                                                                                                                                                                                                                                                                                                                                                                                   | Evidencia MCP                                                                                                                |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `done` | `x00214`, `x00215`, `f00159`, `t00005`, `x00216`, `f00160`, `x00217`, `x00218`, `f00161`, `x00219`, `x00220`, `x00222`, `x00221`, `x00223`, `x00224`, `v00123`, `f00162`, `f00163`, `r00016`, `x00225`, `x00226`, `r00017`, `x00227`, `x00228`, `c00128`, `v00124`, `x00229`, `i00002`, `t00006`, `d00005`, `f00164`, `f00165`, `f00169`, `f00166`, `f00167`, `f00168`, `x00230`, `f00173`, `i00003`, `c00129`, `a00086`, `a00087`, `a00088` | `proposal_board`: las 43 propuestas tienen todos sus slices cerrados, peer review aprobado y archivos bajo `proposals/done/` |
 
 Resultado de S1: `proposal_board` confirma que las 43 propuestas hijas tienen todos sus slices cerrados, peer review aprobado y estado global `done`; por tanto, el plan queda listo para su cierre mediante `proposals_close_plan`.

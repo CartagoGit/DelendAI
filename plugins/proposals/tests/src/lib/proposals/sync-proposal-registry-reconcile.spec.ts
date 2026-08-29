@@ -61,17 +61,17 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 			});
 			const result = await reconcileFolders(root, FAKE_GIT_MV);
 			expect(result.moved).toEqual([
-				{ id: 'f300', from: 'blocked', to: 'ready' },
+				{ id: 'f300', from: 'blocked', to: 'ready/feats' },
 			]);
 			const moved = await readFile(
-				join(root, 'ready', 'f300-misfiled.md'),
+				join(root, 'ready', 'feats', 'f300-misfiled.md'),
 				'utf8',
 			);
 			expect(moved).toContain('status: ready');
 		});
 
 		it('is idempotent: a file already correctly placed is left alone', async () => {
-			await writeProposal(root, 'ready', 'f301-fine.md', {
+			await writeProposal(root, 'ready/feats', 'f301-fine.md', {
 				id: 'f301',
 				status: 'ready',
 			});
@@ -218,7 +218,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 			const result = await reconcileBlocked(root, FAKE_GIT_MV);
 			expect(result.resolved).toEqual([{ id: 'f401' }]);
 			const moved = await readFile(
-				join(root, 'ready', 'f401-waiting.md'),
+				join(root, 'ready', 'feats', 'f401-waiting.md'),
 				'utf8',
 			);
 			expect(moved).toContain('status: ready');
@@ -387,7 +387,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 			);
 			const matches = result.proposals.filter((p) => p.id === 'f501');
 			expect(matches).toHaveLength(1);
-			expect(matches[0]?.file).toBe('ready/f501-misfiled.md');
+			expect(matches[0]?.file).toBe('ready/feats/f501-misfiled.md');
 		});
 
 		// n007 (resume kind): proposals living in kind sub-folders inside

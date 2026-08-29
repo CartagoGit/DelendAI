@@ -37,10 +37,7 @@ import {
 	runCloseSliceQualityGate,
 } from './lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
-import {
-	bootstrapProposalsStore,
-	buildAdoptRegistration,
-} from './lib/tools/adopt.tool';
+import { buildAdoptRegistration } from './lib/tools/adopt.tool';
 import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
@@ -379,7 +376,6 @@ export default definePlugin({
 			() => true,
 			() => false,
 		);
-		await bootstrapProposalsStore(abs(layout.proposalsDir), folderPolicy);
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,

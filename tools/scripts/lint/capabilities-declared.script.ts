@@ -102,8 +102,9 @@ export const detectUsageInSource = (
 	const usages: ICapabilityUsage[] = [];
 	for (const pattern of USAGE_PATTERNS) {
 		pattern.lastIndex = 0;
-		let match: RegExpExecArray | null;
-		while ((match = pattern.exec(source)) !== null) {
+		while (true) {
+			const match = pattern.exec(source);
+			if (match === null) break;
 			const group = match[1] as string;
 			const action = match[2] as string;
 			usages.push({
@@ -238,11 +239,6 @@ const collectTsFiles = async (dir: string): Promise<string[]> => {
 // Manifest loader
 // ---------------------------------------------------------------------------
 
-interface IPluginManifestLike {
-	readonly id: string;
-	readonly capabilities?: readonly unknown[];
-}
-
 /**
  * Read a plugin's manifest source and pull out `id` + the
  * `capabilities` array. We do NOT run the TypeScript — we use a
@@ -357,14 +353,12 @@ export const lintCapabilitiesDeclared = async (
 				if (declaredSet.has(usage.capability)) continue;
 				const wl = scan.whitelist;
 				const pendingOk =
-					wl !== null &&
-					wl.pending.includes(usage.capability) &&
+					wl?.pending.includes(usage.capability) &&
 					wl.dueDate !== null &&
 					!isWhitelistExpired(wl.dueDate, options.today);
 				if (pendingOk) continue;
 				const expired =
-					wl !== null &&
-					wl.pending.includes(usage.capability) &&
+					wl?.pending.includes(usage.capability) &&
 					wl.dueDate !== null &&
 					isWhitelistExpired(wl.dueDate, options.today);
 				violations.push({

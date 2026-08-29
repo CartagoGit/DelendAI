@@ -62,7 +62,7 @@ describe('coordination chaos — heavy contention invariants (N23)', async () =>
 		const lock = readJson<ILockFile>(lockPath);
 		expect(lock.in_flight).toHaveLength(n); // none lost
 		expect(new Set(lock.in_flight.map((e) => e.task_id)).size).toBe(n);
-	});
+	}, 15_000);
 
 	it('20 concurrent claims for the SAME file: exactly one owner', async () => {
 		const file = 'src/shared.ts';

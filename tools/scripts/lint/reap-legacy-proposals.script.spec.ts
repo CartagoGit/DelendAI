@@ -17,7 +17,7 @@
  *     patch includes `archived-on:`.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
 	ageInDays,

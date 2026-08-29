@@ -39,6 +39,9 @@ const capture = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
+const proposalPath = (opts: IAuthoringToolOptions, file: string): string =>
+	join(opts.proposalsDirAbs, ...file.split('/'));
+
 const APPROVE_EVIDENCE = {
 	commitHash: 'abc1234',
 	validateExitCode: 0,
@@ -92,13 +95,13 @@ describe('proposal authoring (create → board → close)', async () => {
 			await create({ kind: 'feat', title: 'Auto allocated' }),
 		);
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('ready/f00001-auto-allocated.md');
+		expect(created.file).toBe('ready/feats/f00001-auto-allocated.md');
 
 		// A second call with the same kind continues the sequence, not f00001 again.
 		const second = parse(
 			await create({ kind: 'feat', title: 'Second one' }),
 		);
-		expect(second.file).toBe('ready/f00002-second-one.md');
+		expect(second.file).toBe('ready/feats/f00002-second-one.md');
 	});
 
 	// x00157 S1: kebab() strips ALL non-ASCII characters, so a title
@@ -111,8 +114,8 @@ describe('proposal authoring (create → board → close)', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		const created = parse(await create({ kind: 'feat', title: '提案' }));
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('ready/f00001-f00001.md');
-		expect(created.file).not.toBe('ready/f00001-.md');
+		expect(created.file).toBe('ready/feats/f00001-f00001.md');
+		expect(created.file).not.toBe('ready/feats/f00001-.md');
 	});
 
 	it('errors clearly when neither id nor kind is provided', async () => {
@@ -146,7 +149,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('ready/f00081-add-login.md');
+		expect(created.file).toBe('ready/feats/f00081-add-login.md');
 
 		const board = await capture(buildProposalBoardRegistration(opts));
 		const view = parse(await board({}));
@@ -171,10 +174,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(closed.closed).toBe(true);
-		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'ready', 'f00081-add-login.md'),
-			'utf8',
-		);
+		const doc = readFileSync(proposalPath(opts, created.file), 'utf8');
 		expect(doc).toMatch(/### S1[\s\S]*?- \*\*Status\*\*: done/);
 	});
 
@@ -205,11 +205,13 @@ describe('proposal authoring (create → board → close)', async () => {
 
 	it('does not close or release when commit-and-push is incomplete', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
-		await create({
-			id: 'f00089',
-			title: 'Incomplete push',
-			slices: [{ sliceId: 's1', files: ['src/incomplete.ts'] }],
-		});
+		const created = parse(
+			await create({
+				id: 'f00089',
+				title: 'Incomplete push',
+				slices: [{ sliceId: 's1', files: ['src/incomplete.ts'] }],
+			}),
+		);
 		const runner: IGitRunner = async (
 			args: readonly string[],
 		): Promise<IGitRunResult> => {
@@ -246,16 +248,9 @@ describe('proposal authoring (create → board → close)', async () => {
 			mode: 'commit-and-push',
 		});
 		expect(result.lockReleased).toBeUndefined();
-		expect(
-			readFileSync(
-				join(
-					opts.proposalsDirAbs,
-					'ready',
-					'f00089-incomplete-push.md',
-				),
-				'utf8',
-			),
-		).toMatch(/- \*\*Status\*\*: pending/);
+		expect(readFileSync(proposalPath(opts, created.file), 'utf8')).toMatch(
+			/- \*\*Status\*\*: pending/,
+		);
 	});
 
 	it('refuses close_slice until a distinct agent has approved the slice', async () => {
@@ -283,16 +278,9 @@ describe('proposal authoring (create → board → close)', async () => {
 		});
 		expect(refused).toMatchObject({ isError: true });
 		expect(parse(refused).blockerType).toBe('peer-review-required');
-		expect(
-			readFileSync(
-				join(
-					opts.proposalsDirAbs,
-					'ready',
-					'f00083-peer-review-gate.md',
-				),
-				'utf8',
-			),
-		).toMatch(/- \*\*Status\*\*: pending/);
+		expect(readFileSync(proposalPath(opts, created.file), 'utf8')).toMatch(
+			/- \*\*Status\*\*: pending/,
+		);
 	});
 
 	// x00157 S3-adjacent finding: `close_slice` released by the bare
@@ -352,10 +340,9 @@ describe('proposal authoring (create → board → close)', async () => {
 			goal: 'close final slice cleanly',
 			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
 		});
-		const file = join(
-			opts.proposalsDirAbs,
-			'ready',
-			'f00086-last-slice-close.md',
+		const file = proposalPath(
+			opts,
+			'ready/feats/f00086-last-slice-close.md',
 		);
 		const original = readFileSync(file, 'utf8');
 		const withAcceptance = original.replace(
@@ -398,24 +385,23 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(created.ok).toBe(true);
 		expect(created.redactedSecrets).toBeGreaterThan(0);
-		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'ready', 'f00083-wire-api.md'),
-			'utf8',
-		);
+		const doc = readFileSync(proposalPath(opts, created.file), 'utf8');
 		expect(doc).not.toContain('s3cr3tValue123');
 		expect(doc).toContain('[REDACTED]');
 	});
 
 	it('runs a peer-review loop: submit → request_changes (by another) → resubmit → approve → done (M35)', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
-		await create({
-			id: 'f00084',
-			title: 'Review me',
-			goal: 'work',
-			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
-		});
+		const created = parse(
+			await create({
+				id: 'f00084',
+				title: 'Review me',
+				goal: 'work',
+				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+			}),
+		);
 		const review = await capture(buildReviewRegistration(opts));
-		const file = join(opts.proposalsDirAbs, 'ready', 'f00084-review-me.md');
+		const file = proposalPath(opts, created.file);
 		writeFileSync(
 			file,
 			readFileSync(file, 'utf8').replace(
@@ -528,7 +514,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(r.status).toBe('in_review');
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'ready', 'f00085-meta.md'),
+			proposalPath(opts, 'ready/feats/f00085-meta.md'),
 			'utf8',
 		);
 		// The literal a.b block got the review line; the earlier axb block did NOT.
@@ -714,7 +700,7 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 		expect(result.ok).toBe(true);
 		expect(result.redactedSecrets).toBeGreaterThan(0);
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'ready', 'f00081-review-me.md'),
+			proposalPath(opts, 'ready/feats/f00081-review-me.md'),
 			'utf8',
 		);
 		expect(doc).not.toContain('sk_live_abcdef0123456789');

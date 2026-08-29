@@ -999,9 +999,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "experimental",
 		"visibility": "public",
-		"presets": [
-			"vertex"
-		],
+		"presets": [],
 		"capabilities": [
 			"project-kpis",
 			"observability",
