@@ -103,7 +103,7 @@ describe('managed lazy assembly defaults', () => {
 		expect(assembled.loadResult.loaded).toHaveLength(1);
 	});
 
-	it('keeps configured opt-in plugins lazy until a tool call', async () => {
+	it('activates configured automatic plugins before the first tool call', async () => {
 		const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-startup-'));
 		workspaces.push(workspace);
 		let registered = 0;
@@ -139,13 +139,41 @@ describe('managed lazy assembly defaults', () => {
 			}),
 		});
 
-		expect(registered).toBe(0);
-		expect(assembled.loadResult.loaded).toEqual([]);
+		expect(registered).toBe(1);
+		expect(assembled.loadResult.loaded).toHaveLength(1);
 		expect(assembled.startupReport.runtime.moduleLoading).toBe('lazy');
 		const activator =
 			assembled.config.lazyPluginActivators?.get('commit-policy');
 		expect(activator).toBeDefined();
 		await activator?.();
 		expect(registered).toBe(1);
+	});
+
+	it('activates startup plugins without explicit options', async () => {
+		const workspace = mkdtempSync(
+			join(tmpdir(), 'mcp-vertex-startup-manifest-'),
+		);
+		workspaces.push(workspace);
+		let registered = 0;
+		const args = parseCliArgs(
+			[`--plugins=error-reporting`, `--workspace=${workspace}`],
+			workspace,
+		);
+		const assembled = await assembleCliConfig(args, {
+			readFile: async () => undefined,
+			import: async () => ({
+				default: {
+					name: 'error-reporting',
+					startupActivation: true,
+					register: () => {
+						registered += 1;
+						return { tools: [] };
+					},
+				},
+			}),
+		});
+
+		expect(registered).toBe(1);
+		expect(assembled.loadResult.loaded).toHaveLength(1);
 	});
 });
