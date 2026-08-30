@@ -128,6 +128,9 @@ const main = async (): Promise<number> => {
 	try {
 		for (const presetId of presets) {
 			const presetBudget = measuredPresets[presetId];
+			if (presetBudget === undefined) {
+				throw new Error(`Missing token budget for preset: ${presetId}`);
+			}
 			const connection = await connectTokenBudgetClient(workspace, {
 				pluginList: asPresetId(presetId),
 				preset: true,

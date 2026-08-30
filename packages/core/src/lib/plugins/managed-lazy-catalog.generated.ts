@@ -150,6 +150,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'@mcp-vertex/commit-policy',
 			[
 				'commit_policy_status',
+				'commit_policy_refresh_branch_protection',
 				'commit_policy_commit',
 				'commit_policy_push',
 				'commit_policy_run',
@@ -163,7 +164,6 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 				tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
-				startupActivation: true,
 			},
 		),
 		tools(

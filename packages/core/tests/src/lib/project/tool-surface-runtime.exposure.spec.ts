@@ -45,13 +45,13 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 		const stderr = vi.spyOn(process.stderr, 'write').mockReturnValue(true);
 
 		expect(runtime.getToolExposure('never-bound-tool-name')).toBe(
-			'unknown'
+			'unknown',
 		);
 		expect(runtime.isToolExposed('never-bound-tool-name')).toBe(false);
 		expect(stderr).toHaveBeenCalledTimes(2);
 		expect(String(stderr.mock.calls[0]?.[0] ?? '')).toContain('warn');
 		expect(String(stderr.mock.calls[0]?.[0] ?? '')).toContain(
-			'never-bound-tool-name'
+			'never-bound-tool-name',
 		);
 	});
 
@@ -66,7 +66,7 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 		runtime.finalizeInitialSurface();
 
 		expect(runtime.getToolExposure('mcp-vertex_reports_run')).toBe(
-			'visible'
+			'visible',
 		);
 		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(true);
 	});
@@ -83,7 +83,7 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 		runtime.applySurfaceMode('compact');
 
 		expect(runtime.getToolExposure('mcp-vertex_reports_run')).toBe(
-			'hidden'
+			'hidden',
 		);
 		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(false);
 	});

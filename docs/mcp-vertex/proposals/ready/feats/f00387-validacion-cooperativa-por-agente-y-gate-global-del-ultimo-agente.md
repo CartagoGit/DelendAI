@@ -1,0 +1,62 @@
+---
+id: f00387
+title: "Validación cooperativa por agente y gate global del último agente"
+kind: feat
+status: ready
+type: proposal
+track: parallel-validation
+date: 2026-08-30
+---
+
+# f00387 — Validación cooperativa por agente y gate global del último agente
+
+## Goal
+
+Integrar la decisión scoped/full/blocked en calidad, persistencia y cierre de slices. Cada agente valida sólo sus scopes mientras haya otros agentes activos; el último agente debe ejecutar el gate completo y dejar evidencia global antes de cerrar.
+
+## why
+
+El workspace ya dispone de snapshots de actividad y resolvers de scopes, pero commit/push/close_slice todavía no los usan. La validación global repetida durante trabajo paralelo es costosa y mezcla fallos ajenos; el cierre final necesita una garantía explícita de consistencia global.
+
+## non-goals
+
+- No permitir que una validación scoped se marque como evidencia final.
+- No contar ramas históricas o worktrees sin identidad como agentes activos.
+- No hacer merge automático ni cambiar la protección de ramas.
+- No incorporar archivos ajenos mediante git add .
+
+## Slices
+
+- global_gate: type
+
+### S2 — Integrar decisión scoped/full en calidad y persistencia
+- **Status**: pending
+- **Files**: `plugins/quality/src/index.ts`, `plugins/quality/src/lib/tools/tools.ts`, `plugins/commit-policy/src/lib/tools/commit-tool.ts`, `plugins/commit-policy/src/lib/tools/push-tool.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`, `plugins/commit-policy/src/lib/services/push-driver.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/auto-work-persist.ts`
+- **Gate**: type
+- acceptance:
+  - "La decisión scoped/full/blocked se calcula con un snapshot común antes de validar y persistir."
+  - "Las operaciones normales con otros agentes activos ejecutan sólo los scopes derivados de los archivos propios."
+  - "close/persistencia final exige full cuando el actor actual es el único activo."
+  - "La evidencia distingue scopeCoverage y snapshotId; nunca se reporta scoped como validación global."
+
+### S3 — Observabilidad, configuración y pruebas E2E
+- **Status**: pending
+- **DependsOn**: [S2]
+- **Files**: `plugins/commit-policy/src/lib/contracts/options.ts`, `plugins/proposals/src/lib/tools/agent-lock.tool.ts`, `plugins/proposals/src/lib/tools/round-context.tool.ts`, `plugins/quality/tests/src/lib/scoped-validation.spec.ts`, `plugins/proposals/tests/src/lib/swarm/validation-activity.spec.ts`, `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts`, `docs/mcp-vertex/REPO-RULES.md`
+- **Gate**: e2e
+- acceptance:
+  - "Las respuestas exponen agentes, tareas, locks, worktrees, scopes, modo y snapshot sin secretos."
+  - "El TTL y la política ante señales incompletas son configurables."
+  - "El primer agente de un escenario de dos agentes valida scoped y el último valida full."
+  - "Los tests cubren cambio de snapshot, actor stale, fuente missing y slices disjuntas."
+
+## acceptance
+
+- La decisión scoped/full/blocked se calcula con un snapshot común antes de validar y persistir.
+- Las operaciones normales con otros agentes activos ejecutan sólo los scopes derivados de los archivos propios.
+- close/persistencia final exige full cuando el actor actual es el único activo.
+- La evidencia distingue scopeCoverage y snapshotId; nunca se reporta scoped como validación global.
+- Las respuestas exponen agentes, tareas, locks, worktrees, scopes, modo y snapshot sin secretos.
+- El TTL y la política ante señales incompletas son configurables.
+- El primer agente de un escenario de dos agentes valida scoped y el último valida full.
+- Los tests cubren cambio de snapshot, actor stale, fuente missing y slices disjuntas.

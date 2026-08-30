@@ -1,0 +1,160 @@
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import usageTrackingPlugin from '../src/index';
+import {
+	readSessionSurfaceBytes,
+	SessionSurfaceBytesService,
+	sumSessionSurfaceBytes,
+} from '../src/lib/session-surface-bytes.service';
+
+const readRecordsEventually = async (
+	filePath: string,
+	count: number,
+): Promise<Awaited<ReturnType<typeof readSessionSurfaceBytes>>> => {
+	for (let attempt = 0; attempt < 20; attempt += 1) {
+		const records = await readSessionSurfaceBytes(filePath);
+		if (records.length >= count) return records;
+		await new Promise((resolve) => setTimeout(resolve, 25));
+	}
+	return readSessionSurfaceBytes(filePath);
+};
+
+describe('session-surface-bytes service', () => {
+	let dir = '';
+
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'session-surface-bytes-'));
+	});
+
+	afterEach(() => {
+		rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('persists NDJSON rows and aggregates served bytes by session', async () => {
+		const filePath = join(dir, 'session-surface-bytes.jsonl');
+		const service = new SessionSurfaceBytesService(filePath, {
+			maxBatch: 1,
+			maxDelayMs: 1,
+		});
+
+		service.record({
+			sessionId: 's-1',
+			servedBytes: 120,
+			tools: 3,
+			at: 10,
+		});
+		service.record({ sessionId: 's-1', servedBytes: 80, tools: 2, at: 20 });
+		service.record({ sessionId: 's-2', servedBytes: 25, tools: 1, at: 30 });
+		await service.close();
+
+		const records = await readSessionSurfaceBytes(filePath);
+		expect(records.map((record) => record.sessionId)).toEqual([
+			's-1',
+			's-1',
+			's-2',
+		]);
+		expect(sumSessionSurfaceBytes(records)).toEqual({
+			's-1': 200,
+			's-2': 25,
+		});
+	});
+});
+
+describe('usage-tracking tools/list served bytes', () => {
+	let workspace = '';
+	let surfaceBytesPath = '';
+
+	beforeEach(async () => {
+		workspace = mkdtempSync(join(tmpdir(), 'usage-tracking-surface-'));
+		surfaceBytesPath = join(
+			workspace,
+			'results/usage-tracking/session-surface-bytes.jsonl',
+		);
+	});
+
+	afterEach(async () => {
+		rmSync(workspace, { recursive: true, force: true });
+	});
+
+	it('records one tools/list row per served response and accumulates bytes per session', async () => {
+		const server = new McpServer({ name: 'test', version: '0.0.0' });
+		server.registerTool(
+			'alpha',
+			{ description: 'alpha tool' },
+			async () => ({ content: [{ type: 'text', text: 'alpha' }] }),
+		);
+
+		const registrations = await usageTrackingPlugin.register({
+			workspace: {
+				root: workspace,
+				resolve: (relativePath: string) =>
+					join(workspace, relativePath),
+			},
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
+			pluginCacheDir: 'results/usage-tracking',
+			cachePath: (relativePath = '') =>
+				join(workspace, 'results/usage-tracking', relativePath),
+			pluginDocsDir: 'docs/mcp-vertex/usage-tracking',
+			namespacePrefix: 'mcp-vertex_usage-tracking',
+			options: { maxBatch: 1, maxDelayMs: 1 },
+			args: {},
+		} as Parameters<typeof usageTrackingPlugin.register>[0]);
+		expect(
+			registrations.tools?.map((registration) => registration.id),
+		).toEqual(['usage_report', 'usage_clear', 'session_hygiene']);
+		await registrations.tools?.[0]?.register(server);
+
+		const requestHandlers = (
+			server.server as unknown as {
+				_requestHandlers?: Map<
+					string,
+					(
+						request: unknown,
+						extra: { sessionId?: string },
+					) => Promise<{ tools: unknown[] }>
+				>;
+			}
+		)._requestHandlers;
+		const listTools = requestHandlers?.get('tools/list');
+		expect(listTools).toBeDefined();
+
+		const initial = await listTools?.(
+			{ method: 'tools/list', params: {} },
+			{ sessionId: 'session-1' },
+		);
+		expect(initial?.tools).toHaveLength(1);
+
+		server.registerTool('beta', { description: 'beta tool' }, async () => ({
+			content: [{ type: 'text', text: 'beta' }],
+		}));
+		const afterRegister = await listTools?.(
+			{ method: 'tools/list', params: {} },
+			{ sessionId: 'session-1' },
+		);
+		expect(afterRegister?.tools).toHaveLength(2);
+
+		const records = await readRecordsEventually(surfaceBytesPath, 2);
+		expect(records).toHaveLength(2);
+		expect(records[0]?.sessionId).toBe(records[1]?.sessionId);
+		expect(records[1]?.servedBytes).toBeGreaterThan(
+			records[0]?.servedBytes ?? 0,
+		);
+		expect(
+			sumSessionSurfaceBytes(records)[records[0]!.sessionId] ?? 0,
+		).toBe((records[0]?.servedBytes ?? 0) + (records[1]?.servedBytes ?? 0));
+
+		const raw = readFileSync(surfaceBytesPath, 'utf8');
+		expect(raw.trim().split('\n')).toHaveLength(2);
+	});
+});

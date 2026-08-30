@@ -29,7 +29,11 @@ migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-c
 
 ---
 
-## Parte I — Crítica narrativa del auditor externo
+## why
+
+Imported from a foreign proposal format so it can be tracked under the canonical proposal workflow.
+
+### Parte I — Crítica narrativa del auditor externo
 
 ### Snapshot auditado
 
@@ -218,7 +222,7 @@ Plugin summary scores — 49 plugins totales (47 públicos + 2 privados
 
 ---
 
-## Parte II — TODO ejecutable para el agente
+### Parte II — TODO ejecutable para el agente
 
 > Clasificación obligatoria: `CONFIRMADO`, `PROBABLE`, `REVISAR`, `MEJORA`,
 > `IDEA`. No mezclar significados.
@@ -814,7 +818,7 @@ bloquearse. Documentar boundary y testearlo.
 
 ---
 
-## Parte III — Orden de ejecución recomendado
+### Parte III — Orden de ejecución recomendado
 
 > No ejecutar todo en paralelo sin coordinación porque varios cambios afectan
 > los mismos gates.
@@ -861,7 +865,7 @@ bloquearse. Documentar boundary y testearlo.
 
 ---
 
-## Parte IV — Definition of Done global
+### Parte IV — Definition of Done global
 
 No considerar esta auditoría terminada hasta cumplir todo lo siguiente.
 
@@ -907,7 +911,7 @@ No considerar esta auditoría terminada hasta cumplir todo lo siguiente.
 
 ---
 
-## Parte V — Findings de auditoría anterior que NO deben reabrirse sin nueva evidencia
+### Parte V — Findings de auditoría anterior que NO deben reabrirse sin nueva evidencia
 
 Estos puntos se observaron como corregidos en el snapshot actual. Mantener
 regression tests, pero no crear trabajo nuevo por defecto:
@@ -933,7 +937,7 @@ Reabrir cualquiera solo si un test o código actual demuestra regresión.
 
 ---
 
-## Parte VI — Resultado esperado al terminar
+### Parte VI — Resultado esperado al terminar
 
 No se busca "cero findings" por maquillaje.
 
@@ -960,7 +964,7 @@ mismo SHA
 
 ---
 
-## Parte VII — Resumen ejecutivo para el agente
+### Parte VII — Resumen ejecutivo para el agente
 
 ### Primero arreglar / verificar
 
@@ -997,6 +1001,22 @@ mismo SHA
 > utilidad puede seguir apareciendo por dogfooding, pero las invariantes de
 > core — privacidad, containment, lifecycle, concurrencia, tokens, manifests
 > y CI — deben ser aburridas, universales y demostrables.
+
+## non-goals
+
+- Preserve the source document as an independently editable proposal.
+
+## Slices
+
+### S1 — Review migrated proposal
+
+- **Status**: pending
+- **Files**: `TODO`
+- **Gate**: none
+
+## acceptance
+
+- The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 

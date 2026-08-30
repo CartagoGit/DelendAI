@@ -9,7 +9,7 @@ export const checkBranchProtection: DoctorCheck = async ({ fs }) => {
 			findings: ['branch protection policy file not found'],
 		};
 	const missing = ['main', 'develop'].filter(
-		(branch) => !text.includes(branch)
+		(branch) => !text.includes(branch),
 	);
 	return missing.length === 0
 		? {

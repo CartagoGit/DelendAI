@@ -13,9 +13,9 @@ export interface IModelProfileSelectionOptions {
 
 /** Resolve the profile used for the initial tool surface. */
 export const selectModelProfile = (
-	options: IModelProfileSelectionOptions = {}
+	options: IModelProfileSelectionOptions = {},
 ): IModelProfile =>
 	getModelProfile(
 		options.profileId ?? detectModelTier(options.tierHint),
-		options.overrides
+		options.overrides,
 	);

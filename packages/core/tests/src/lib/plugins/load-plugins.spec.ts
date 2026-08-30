@@ -41,7 +41,7 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 	it('loads a local first-party package from dist when a workspace is provided', async () => {
 		const loaded = (await nodeDynamicImport(
 			'@mcp-vertex/proposals',
-			process.cwd()
+			process.cwd(),
 		)) as { default?: { readonly name?: string } };
 		expect(loaded.default?.name).toBe('proposals');
 	});
@@ -96,7 +96,7 @@ describe('loadPlugins', async () => {
 		expect(result.errors[0]?.message).toContain('TEST_CONFLICT');
 		expect(result.errors[0]?.message).toContain('plugins.a.options.mode');
 		expect(result.errors[0]?.message).toContain(
-			'mcp-vertex.config.json patch'
+			'mcp-vertex.config.json patch',
 		);
 	});
 
@@ -164,7 +164,7 @@ describe('loadPlugins', async () => {
 		const pluginPath = join(pluginDir, 'index.js');
 		writeFileSync(
 			pluginPath,
-			'export default { name: "local-demo", register: () => ({ tools: [] }) };'
+			'export default { name: "local-demo", register: () => ({ tools: [] }) };',
 		);
 		const importCalls: string[] = [];
 		const result = await loadPlugins({
@@ -194,7 +194,7 @@ describe('loadPlugins', async () => {
 		const pluginPath = join(pluginDir, 'index.js');
 		writeFileSync(
 			pluginPath,
-			'export default { name: "my-plugin", register: () => ({ tools: [] }) };'
+			'export default { name: "my-plugin", register: () => ({ tools: [] }) };',
 		);
 		const importCalls: string[] = [];
 		const result = await loadPlugins({
@@ -229,7 +229,7 @@ describe('loadPlugins', async () => {
 		expect(result.loaded).toHaveLength(0);
 		expect(result.errors[0]?.message).toMatch(/plugin path does not exist/);
 		expect(result.errors[0]?.message).toMatch(
-			/\/definitely\/missing\/plugin\.js/
+			/\/definitely\/missing\/plugin\.js/,
 		);
 	});
 
@@ -258,8 +258,8 @@ describe('loadPlugins', async () => {
 			result.errors.some(
 				(e) =>
 					e.specifier === '(dependsOn)' ||
-					/requires|depend/i.test(e.message)
-			)
+					/requires|depend/i.test(e.message),
+			),
 		).toBe(true);
 		expect(aRegistered).toBe(false);
 		expect(result.registerErrors).toEqual([

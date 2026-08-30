@@ -9,7 +9,11 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import plugin from '@mcp-vertex/commit-policy';
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+import * as corePublic from '@mcp-vertex/core/public';
+import type {
+	IMcpPluginContext,
+	IExternalToolRun,
+} from '@mcp-vertex/core/public';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({
 	workspace: {
@@ -84,7 +88,35 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 
 	afterEach(async () => {
 		vi.restoreAllMocks();
+		delete process.env
+			.MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER;
 		if (workspace) await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('register() does not refresh remote branch protection unless explicitly opted in', async () => {
+		const runExternalToolSpy = vi
+			.spyOn(corePublic, 'runExternalTool')
+			.mockResolvedValue(failedExternalToolRun('not called'));
+
+		const runtime = asRuntime(await plugin.register(buildCtx(workspace)));
+
+		expect(runExternalToolSpy).not.toHaveBeenCalled();
+		await runtime.dispose();
+	});
+
+	it('register() refreshes remote branch protection when the opt-in env var is true', async () => {
+		process.env.MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER =
+			'true';
+		const runExternalToolSpy = vi
+			.spyOn(corePublic, 'runExternalTool')
+			.mockResolvedValue(failedExternalToolRun('no remote configured'));
+
+		const runtime = asRuntime(await plugin.register(buildCtx(workspace)));
+
+		await vi.waitFor(() => {
+			expect(runExternalToolSpy).toHaveBeenCalled();
+		});
+		await runtime.dispose();
 	});
 
 	it('register() returns a runtime with dispose()', async () => {
@@ -129,4 +161,15 @@ function asRuntime(reg: Awaited<ReturnType<typeof plugin.register>>): {
 		throw new Error('register() did not return an IPluginRuntime');
 	}
 	return reg as unknown as { dispose(): void | Promise<void> };
+}
+
+function failedExternalToolRun(stderr: string): IExternalToolRun {
+	return {
+		ok: false,
+		code: 1,
+		stdout: '',
+		stderr,
+		timedOut: false,
+		unavailable: false,
+	};
 }

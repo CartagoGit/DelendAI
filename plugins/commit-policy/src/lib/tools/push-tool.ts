@@ -11,6 +11,10 @@ import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolOk } from '@mcp-vertex/core/public';
 
+import {
+	BRANCH_PROTECTED_REFUSAL_CODE,
+	refusalHasCode,
+} from '../contracts/branch';
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { localizedString } from '../contracts/i18n-types';
 import {
@@ -34,6 +38,22 @@ export interface IPushToolOptions {
 	readonly identityCtx?: IIdentityResolverContext | undefined;
 	readonly locale?: string | undefined;
 }
+
+const pushToolFallbackNextAction = (refusal: string): string => {
+	if (refusal.includes('push.forceReason')) {
+		return 'Set push.forceReason in the config before allowing a plain --force push.';
+	}
+	if (refusal.includes('identity')) {
+		return 'Resolve an identity for the caller or avoid push.force="allow".';
+	}
+	if (refusal.includes('could not resolve remote/branch')) {
+		return 'Pass remote and branch explicitly, configure push.remote/push.branch, or set an upstream.';
+	}
+	if (refusal.includes('could not resolve remote')) {
+		return 'Configure push.remote or pass a concrete remote before retrying.';
+	}
+	return 'Inspect the refusal detail, fix the local precondition, and retry the push.';
+};
 
 /**
  * Resolve who authorizes a plain `--force` push. Only consulted when the
@@ -107,7 +127,7 @@ export const runCommitPolicyPush = async (
 					nextAction: catalog.tools.push.nextActionDisabled,
 				};
 			}
-			if (result.refusal.includes('protectedBranches')) {
+			if (refusalHasCode(result.refusal, BRANCH_PROTECTED_REFUSAL_CODE)) {
 				return {
 					summary: catalog.tools.push.refuseProtected({
 						branch: result.refusal.match(/"([^"]+)"/)?.[1] ?? '',
@@ -117,7 +137,7 @@ export const runCommitPolicyPush = async (
 			}
 			return {
 				summary: result.refusal,
-				nextAction: catalog.tools.push.refuseNotImplemented,
+				nextAction: pushToolFallbackNextAction(result.refusal),
 			};
 		});
 		return toolError(localized.summary, localized.nextAction);

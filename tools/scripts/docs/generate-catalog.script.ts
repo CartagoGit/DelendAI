@@ -78,7 +78,7 @@ const compareContent = (left: string | undefined, right: string): boolean =>
 
 const renderMarkdownTable = (
 	headers: readonly string[],
-	rows: readonly (readonly string[])[]
+	rows: readonly (readonly string[])[],
 ): string => {
 	const head = `| ${headers.join(' | ')} |`;
 	const separator = `| ${headers.map(() => '---').join(' | ')} |`;
@@ -90,7 +90,7 @@ const injectGeneratedBlock = (
 	text: string,
 	startMarker: string,
 	endMarker: string,
-	body: string
+	body: string,
 ): string => {
 	const start = text.indexOf(startMarker);
 	const end = text.indexOf(endMarker);
@@ -103,39 +103,39 @@ const injectGeneratedBlock = (
 };
 
 const dedupeIndexEntries = (
-	entries: readonly IPluginRegistryEntry[]
+	entries: readonly IPluginRegistryEntry[],
 ): readonly IPluginRegistryEntry[] => {
 	const byId = new Map<string, IPluginRegistryEntry>();
 	for (const entry of entries) {
 		byId.set(entry.id, entry);
 	}
 	return [...byId.values()].sort((left, right) =>
-		left.id.localeCompare(right.id)
+		left.id.localeCompare(right.id),
 	);
 };
 
 const buildMigratedManifestMap = (
-	manifests: readonly ILoadedPluginManifest[]
+	manifests: readonly ILoadedPluginManifest[],
 ): ReadonlyMap<string, ILoadedPluginManifest> =>
 	new Map(manifests.map((entry) => [entry.id, entry] as const));
 
 const buildPackageMap = (
-	packages: readonly IPluginPackageRecord[]
+	packages: readonly IPluginPackageRecord[],
 ): ReadonlyMap<string, IPluginPackageRecord> =>
 	new Map(packages.map((entry) => [entry.id, entry] as const));
 
 export const buildCatalogEntries = (
 	entries: readonly IPluginRegistryEntry[],
 	packages: readonly IPluginPackageRecord[],
-	migratedManifests: readonly ILoadedPluginManifest[]
+	migratedManifests: readonly ILoadedPluginManifest[],
 ): readonly IPluginCatalogEntry[] => {
 	const dedupedEntries = dedupeIndexEntries(entries);
 	const packageById = buildPackageMap(packages);
 	const manifestById = buildMigratedManifestMap(migratedManifests);
 	const presetMembership = new Map(
 		PRESET_KIND.map(
-			(presetId) => [presetId, resolvePresetMembers(presetId)] as const
-		)
+			(presetId) => [presetId, resolvePresetMembers(presetId)] as const,
+		),
 	);
 	return dedupedEntries.map((entry) => {
 		const pkg = packageById.get(entry.id);
@@ -144,7 +144,7 @@ export const buildCatalogEntries = (
 		}
 		if (pkg.packageName.length > 0 && pkg.packageName !== entry.package) {
 			throw new Error(
-				`package mismatch for ${entry.id}: index=${entry.package} package.json=${pkg.packageName}`
+				`package mismatch for ${entry.id}: index=${entry.package} package.json=${pkg.packageName}`,
 			);
 		}
 		const migrated = manifestById.get(entry.id);
@@ -157,7 +157,7 @@ export const buildCatalogEntries = (
 			summarySource: migrated === undefined ? 'index' : 'manifest',
 			defaultPreset: entry.defaultPreset ?? 'none',
 			presetMembership: PRESET_KIND.filter((presetId) =>
-				(presetMembership.get(presetId) ?? []).includes(entry.id)
+				(presetMembership.get(presetId) ?? []).includes(entry.id),
 			),
 			capabilities: migrated?.manifest.capabilities ?? [],
 			capabilitySource:
@@ -170,7 +170,7 @@ export const buildCatalogEntries = (
 };
 
 export const renderReadmePluginTable = (
-	entries: readonly IPluginCatalogEntry[]
+	entries: readonly IPluginCatalogEntry[],
 ): string =>
 	renderMarkdownTable(
 		['Path', 'Package', 'What'],
@@ -178,11 +178,11 @@ export const renderReadmePluginTable = (
 			escapeCell(`\`plugins/${entry.id}\``),
 			escapeCell(`\`${entry.package}\``),
 			escapeCell(entry.summary),
-		])
+		]),
 	);
 
 export const renderCatalogMarkdown = (
-	entries: readonly IPluginCatalogEntry[]
+	entries: readonly IPluginCatalogEntry[],
 ): string => {
 	const versionRows = entries.map((entry) => [
 		`\`${entry.id}\``,
@@ -220,14 +220,14 @@ export const renderCatalogMarkdown = (
 				`\`${entry.package}\``,
 				escapeCell(entry.summary),
 				entry.summarySource,
-			])
+			]),
 		),
 		'',
 		'## Versions',
 		'',
 		renderMarkdownTable(
 			['id', 'package', 'version', 'summarySource'],
-			versionRows
+			versionRows,
 		),
 		'',
 		'## Presets',
@@ -243,20 +243,20 @@ export const renderCatalogMarkdown = (
 
 const buildOutputs = (
 	readme: string,
-	entries: readonly IPluginCatalogEntry[]
+	entries: readonly IPluginCatalogEntry[],
 ): Readonly<Record<string, string>> => ({
 	[README_PATH]: injectGeneratedBlock(
 		readme,
 		README_PLUGIN_TABLE_START,
 		README_PLUGIN_TABLE_END,
-		renderReadmePluginTable(entries)
+		renderReadmePluginTable(entries),
 	),
 	[GENERATED_CATALOG_PATH]: `${renderCatalogMarkdown(entries)}\n`,
 });
 
 export const runCatalogGenerator = async (
 	args: readonly string[],
-	io: ICatalogIo = defaultIo()
+	io: ICatalogIo = defaultIo(),
 ): Promise<{
 	readonly exitCode: number;
 	readonly result?: ICatalogGeneratorResult;
@@ -272,7 +272,7 @@ export const runCatalogGenerator = async (
 		const entries = buildCatalogEntries(
 			FIRST_PARTY_PLUGIN_INDEX.entries,
 			packages,
-			manifests
+			manifests,
 		);
 		const outputs = buildOutputs(readme, entries);
 		let changed = false;
@@ -296,7 +296,7 @@ export const runCatalogGenerator = async (
 		};
 	} catch (error) {
 		io.error(
-			`generate-catalog failed: ${error instanceof Error ? error.message : String(error)}`
+			`generate-catalog failed: ${error instanceof Error ? error.message : String(error)}`,
 		);
 		return { exitCode: 2 };
 	}

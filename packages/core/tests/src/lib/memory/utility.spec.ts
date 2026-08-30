@@ -20,7 +20,7 @@ const HOUR = 60 * 60 * 1_000;
 const DAY = 24 * HOUR;
 
 const ctx = (
-	overrides: Partial<IMemoryUtilityContext> = {}
+	overrides: Partial<IMemoryUtilityContext> = {},
 ): IMemoryUtilityContext => ({
 	now: NOW,
 	maxSizeBytes: 4_000,
@@ -53,7 +53,7 @@ describe('utility() (f00197)', () => {
 				DEFAULT_MEMORY_UTILITY_WEIGHTS.beta * 0.6 +
 				DEFAULT_MEMORY_UTILITY_WEIGHTS.gamma * r.components.usage -
 				DEFAULT_MEMORY_UTILITY_WEIGHTS.delta * r.components.costBytes,
-			6
+			6,
 		);
 	});
 
@@ -103,7 +103,7 @@ describe('utility() (f00197)', () => {
 				gamma: -Number.POSITIVE_INFINITY,
 				delta: Number.NaN,
 			},
-			ctx()
+			ctx(),
 		);
 		expect(r.score).toBe(0);
 	});
@@ -136,7 +136,7 @@ describe('filterByUtility() (f00197)', () => {
 			[hot, stale],
 			DEFAULT_MEMORY_UTILITY_WEIGHTS,
 			ctx(),
-			DEFAULT_MEMORY_COST_THRESHOLD
+			DEFAULT_MEMORY_COST_THRESHOLD,
 		);
 		expect(out.map((s) => s.entry.id)).toEqual(['hot']);
 	});
@@ -146,15 +146,15 @@ describe('filterByUtility() (f00197)', () => {
 		const score = utility(
 			exact,
 			DEFAULT_MEMORY_UTILITY_WEIGHTS,
-			ctx()
+			ctx(),
 		).score;
 		expect(
 			filterByUtility(
 				[exact],
 				DEFAULT_MEMORY_UTILITY_WEIGHTS,
 				ctx(),
-				score
-			)
+				score,
+			),
 		).toEqual([]);
 	});
 
@@ -166,7 +166,7 @@ describe('filterByUtility() (f00197)', () => {
 			[a, b, c],
 			DEFAULT_MEMORY_UTILITY_WEIGHTS,
 			ctx(),
-			0
+			0,
 		);
 		expect(out[0]?.entry.id).toBe('a'); // highest similarity
 	});
@@ -183,14 +183,14 @@ describe('filterByUtility() (f00197)', () => {
 				[allStale],
 				DEFAULT_MEMORY_UTILITY_WEIGHTS,
 				ctx(),
-				1
-			)
+				1,
+			),
 		).toEqual([]);
 	});
 
 	it('an empty input returns an empty output (no throw)', () => {
 		expect(
-			filterByUtility([], DEFAULT_MEMORY_UTILITY_WEIGHTS, ctx(), 0)
+			filterByUtility([], DEFAULT_MEMORY_UTILITY_WEIGHTS, ctx(), 0),
 		).toEqual([]);
 	});
 
@@ -206,8 +206,8 @@ describe('filterByUtility() (f00197)', () => {
 				[stale],
 				DEFAULT_MEMORY_UTILITY_WEIGHTS,
 				ctx(),
-				Number.NaN
-			)
+				Number.NaN,
+			),
 		).toEqual([]);
 	});
 });
@@ -246,7 +246,7 @@ describe('memory utility settings helpers (f00197)', () => {
 			{
 				recencyHalfLifeMs: 2 * DAY,
 				usageHalfCount: 7,
-			}
+			},
 		);
 
 		expect(context).toEqual({
@@ -260,7 +260,7 @@ describe('memory utility settings helpers (f00197)', () => {
 	it('uses the documented defaults when no tuning is provided', () => {
 		const context = createMemoryUtilityContext([entry()], NOW);
 		expect(context.recencyHalfLifeMs).toBe(
-			DEFAULT_MEMORY_RECENCY_HALF_LIFE_MS
+			DEFAULT_MEMORY_RECENCY_HALF_LIFE_MS,
 		);
 		expect(context.usageHalfCount).toBe(DEFAULT_MEMORY_USAGE_HALF_COUNT);
 	});

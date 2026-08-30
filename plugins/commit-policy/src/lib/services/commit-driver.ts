@@ -182,7 +182,7 @@ export const parseHeader = (raw: string): IParsedHeader => {
 	const trimmed = raw.trimStart();
 	// Match: type(scope)!: subject OR type!: subject OR type: subject
 	const re = new RegExp(
-		`^(${HEADER_TYPE_PATTERN})(?:(${SCOPE_PATTERN}))?(!)?:\\s*([\\s\\S]*)$`
+		`^(${HEADER_TYPE_PATTERN})(?:(${SCOPE_PATTERN}))?(!)?:\\s*([\\s\\S]*)$`,
 	);
 	const m = re.exec(trimmed);
 	if (m === null) {
@@ -221,7 +221,7 @@ export const parseHeader = (raw: string): IParsedHeader => {
 export const buildScopedMessage = (
 	original: string,
 	proposalId: string,
-	autoScope: boolean
+	autoScope: boolean,
 ): string => {
 	if (!autoScope) return original;
 	// Empty input — caller surfaces a typed refusal upstream; we
@@ -260,7 +260,7 @@ const normalizeRepoPath = (raw: string): string => {
 
 const gitStdoutTrimmed = async (
 	run: IGitRunner,
-	args: readonly string[]
+	args: readonly string[],
 ): Promise<string | undefined> => {
 	const result = await run(args);
 	if (!result.ok) return undefined;
@@ -270,7 +270,7 @@ const gitStdoutTrimmed = async (
 
 const resetStagedPathsSafely = async (
 	run: IGitRunner,
-	paths: readonly string[]
+	paths: readonly string[],
 ): Promise<void> => {
 	if (paths.length === 0) return;
 	const resetResult = await run(['reset', 'HEAD', '--', ...paths]);
@@ -316,17 +316,19 @@ const createGitRunnerWithEnv =
 						reason = `git timed out after ${timeoutMs}ms`;
 					} else {
 						reason =
-							stripAnsi(stderr || err.message || 'git command failed')
+							stripAnsi(
+								stderr || err.message || 'git command failed',
+							)
 								.trim()
 								.split('\n')[0] ?? 'git command failed';
 					}
 					resolve({ ok: false, output: '', reason });
-				}
+				},
 			);
 		});
 
 const parseAuthorFlag = (
-	authorFlag: string
+	authorFlag: string,
 ): { name: string; email: string } | undefined => {
 	const match = /^(.*)\s<([^<>]+)>$/u.exec(authorFlag.trim());
 	if (match === null) return undefined;
@@ -339,7 +341,7 @@ const parseAuthorFlag = (
 
 const buildIsolatedGitEnv = (
 	indexPath: string,
-	authorFlag: string
+	authorFlag: string,
 ): NodeJS.ProcessEnv => {
 	const author = parseAuthorFlag(authorFlag);
 	return {
@@ -357,7 +359,7 @@ const buildIsolatedGitEnv = (
 };
 
 const commitWithSharedIndexGuard = async (
-	args: ICommitWithGuardArgs
+	args: ICommitWithGuardArgs,
 ): Promise<ICommitWithGuardResult> => {
 	const headBefore = await gitStdoutTrimmed(args.run, ['rev-parse', 'HEAD']);
 	if (args.allowList.length > 0) {
@@ -379,7 +381,7 @@ const commitWithSharedIndexGuard = async (
 	if (args.enforceSubset) {
 		const expected = new Set(args.allowList.map(normalizeRepoPath));
 		const extras = staged.filter(
-			(name) => !expected.has(normalizeRepoPath(name))
+			(name) => !expected.has(normalizeRepoPath(name)),
 		);
 		if (extras.length > 0) {
 			await resetWholeStageSafely(args.run);
@@ -450,7 +452,7 @@ const commitWithSharedIndexGuard = async (
 };
 
 export const commitWithGuard = async (
-	args: ICommitWithGuardArgs
+	args: ICommitWithGuardArgs,
 ): Promise<ICommitWithGuardResult> => {
 	if (args.workspaceRoot === undefined || args.branch === undefined) {
 		return commitWithSharedIndexGuard(args);
@@ -461,7 +463,7 @@ export const commitWithGuard = async (
 	const isolatedRun = createGitRunnerWithEnv(
 		args.workspaceRoot,
 		buildIsolatedGitEnv(join(tmpDir, 'index'), args.authorFlag),
-		args.gitTimeoutMs
+		args.gitTimeoutMs,
 	);
 	const lockPath = join(args.workspaceRoot, '.mcp-vertex', 'index-lock');
 	return await withFileMutex(
@@ -504,10 +506,10 @@ export const commitWithGuard = async (
 				const staged = [...(await gitCachedNames(isolatedRun))];
 				if (args.enforceSubset) {
 					const expected = new Set(
-						args.allowList.map(normalizeRepoPath)
+						args.allowList.map(normalizeRepoPath),
 					);
 					const extras = staged.filter(
-						(name) => !expected.has(normalizeRepoPath(name))
+						(name) => !expected.has(normalizeRepoPath(name)),
 					);
 					if (extras.length > 0) {
 						await resetWholeStageSafely(isolatedRun);
@@ -607,7 +609,7 @@ export const commitWithGuard = async (
 								`refs/heads/${args.branch}`,
 								headAfter,
 								headBefore,
-							]
+							],
 				);
 				if (!updateRefResult.ok) {
 					return {
@@ -646,17 +648,17 @@ export const commitWithGuard = async (
 				};
 			} finally {
 				await rm(tmpDir, { recursive: true, force: true }).catch(
-					() => undefined
+					() => undefined,
 				);
 			}
 		},
-		{ onContention: 'wait', timeoutMs: 120_000, staleMs: 300_000 }
+		{ onContention: 'wait', timeoutMs: 120_000, staleMs: 300_000 },
 	);
 };
 
 const runCommitDriverUnlocked = async (
 	input: ICommitDriverInput,
-	options: ICommitDriverOptions
+	options: ICommitDriverOptions,
 ): Promise<ICommitDriverResult> => {
 	const scopeSliceCommit =
 		options.policy.cadence.sliceScoping &&
@@ -673,7 +675,7 @@ const runCommitDriverUnlocked = async (
 
 	const identity = await resolveAuthor(
 		options.policy.identity,
-		options.identityCtx
+		options.identityCtx,
 	);
 	if (!identity.ok) {
 		return {
@@ -708,7 +710,7 @@ const runCommitDriverUnlocked = async (
 	// `resolveProtectedBranches` (empty by default; explicit config
 	// wins; agent/worktree branches are never protected).
 	const effectiveProtectedBranches = resolveProtectedBranches(
-		options.policy.push.protectedBranches
+		options.policy.push.protectedBranches,
 	);
 	if (
 		isBranchProtected(branch, {
@@ -733,7 +735,7 @@ const runCommitDriverUnlocked = async (
 			? buildScopedMessage(
 					input.message,
 					input.sliceContext.proposalId,
-					options.policy.commit.autoScopeFromProposal
+					options.policy.commit.autoScopeFromProposal,
 				)
 			: input.message;
 
@@ -760,7 +762,7 @@ const runCommitDriverUnlocked = async (
 		baseMessage,
 		options.policy.audit.trailer,
 		options.policy.audit.agentFormat,
-		options.auditAgent
+		options.auditAgent,
 	);
 
 	const files =
@@ -852,5 +854,5 @@ const runCommitDriverUnlocked = async (
 
 export const runCommitDriver = async (
 	input: ICommitDriverInput,
-	options: ICommitDriverOptions
+	options: ICommitDriverOptions,
 ): Promise<ICommitDriverResult> => runCommitDriverUnlocked(input, options);

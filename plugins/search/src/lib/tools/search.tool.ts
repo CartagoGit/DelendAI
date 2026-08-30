@@ -40,6 +40,21 @@ const SearchOutputSchema = z.object({
 	availableProviders: z.array(AvailableProviderSchema),
 	hits: z.array(SearchHitSchema),
 });
+const SearchInputSchema = z.object({
+	query: z.string(),
+	detail: DetailSchema.optional(),
+	mode: z.enum(['lexical', 'semantic', 'hybrid']).optional(),
+	consent: z.boolean().optional(),
+	providerId: z.enum(['openai', 'voyage', 'cohere']).optional(),
+	roots: z.array(z.string()).optional(),
+	maxResults: z.number().optional(),
+	caseSensitive: z.boolean().optional(),
+	regex: z.boolean().optional(),
+	include: z.array(z.string()).optional(),
+	exclude: z.array(z.string()).optional(),
+	context: z.number().int().min(0).max(10).optional(),
+	preferRg: z.boolean().optional(),
+});
 
 type SearchPayload = {
 	readonly query: string;
@@ -118,25 +133,7 @@ export const buildSearchToolRegistrations = (
 					{
 						description:
 							'Search the workspace text files and return matching {file,line,text} hits. `query` is a substring by default, or a JS regex with regex:true. Narrow by path with `include`/`exclude` globs (e.g. "src/**/*.ts"). Pass `context: N` (0-10) for N lines before/after each hit. Pass `preferRg: true` to use the `rg` (ripgrep) binary when available — faster on huge repos; silently falls back to the built-in walker otherwise (see `usedRg`/`rgFallbackReason`). Low-token: results and per-line previews are capped. When `detail` is omitted the tool preserves the legacy payload; `compact` removes providers and hit rows, `normal` keeps hit lines without surrounding context, and `full` returns the full context blocks.',
-						inputSchema: z.object({
-							query: z.string(),
-							detail: DetailSchema.optional(),
-							mode: z
-								.enum(['lexical', 'semantic', 'hybrid'])
-								.optional(),
-							consent: z.boolean().optional(),
-							providerId: z
-								.enum(['openai', 'voyage', 'cohere'])
-								.optional(),
-							roots: z.array(z.string()).optional(),
-							maxResults: z.number().optional(),
-							caseSensitive: z.boolean().optional(),
-							regex: z.boolean().optional(),
-							include: z.array(z.string()).optional(),
-							exclude: z.array(z.string()).optional(),
-							context: z.number().int().min(0).max(10).optional(),
-							preferRg: z.boolean().optional(),
-						}),
+						inputSchema: SearchInputSchema,
 						outputSchema: SearchOutputSchema,
 					},
 					async (args: {
@@ -154,42 +151,52 @@ export const buildSearchToolRegistrations = (
 						context?: number | undefined;
 						preferRg?: boolean | undefined;
 					}) => {
+						const parsed = SearchInputSchema.safeParse(args);
+						if (!parsed.success) {
+							return toolError(
+								parsed.error.message,
+								'Pass query plus optional detail, filters and context within 0..10.',
+							);
+						}
 						try {
 							const result = await runSearchWithMode(
 								{
-									query: args.query,
-									...(args.mode !== undefined
-										? { mode: args.mode }
+									query: parsed.data.query,
+									...(parsed.data.mode !== undefined
+										? { mode: parsed.data.mode }
 										: {}),
-									...(args.consent !== undefined
-										? { consent: args.consent }
+									...(parsed.data.consent !== undefined
+										? { consent: parsed.data.consent }
 										: {}),
-									...(args.providerId !== undefined
-										? { providerId: args.providerId }
+									...(parsed.data.providerId !== undefined
+										? { providerId: parsed.data.providerId }
 										: {}),
-									...(args.roots !== undefined
-										? { roots: args.roots }
+									...(parsed.data.roots !== undefined
+										? { roots: parsed.data.roots }
 										: {}),
-									...(args.maxResults !== undefined
-										? { maxResults: args.maxResults }
+									...(parsed.data.maxResults !== undefined
+										? { maxResults: parsed.data.maxResults }
 										: {}),
-									...(args.caseSensitive !== undefined
-										? { caseSensitive: args.caseSensitive }
+									...(parsed.data.caseSensitive !== undefined
+										? {
+												caseSensitive:
+													parsed.data.caseSensitive,
+											}
 										: {}),
-									...(args.regex !== undefined
-										? { regex: args.regex }
+									...(parsed.data.regex !== undefined
+										? { regex: parsed.data.regex }
 										: {}),
-									...(args.include !== undefined
-										? { include: args.include }
+									...(parsed.data.include !== undefined
+										? { include: parsed.data.include }
 										: {}),
-									...(args.exclude !== undefined
-										? { exclude: args.exclude }
+									...(parsed.data.exclude !== undefined
+										? { exclude: parsed.data.exclude }
 										: {}),
-									...(args.context !== undefined
-										? { context: args.context }
+									...(parsed.data.context !== undefined
+										? { context: parsed.data.context }
 										: {}),
-									...(args.preferRg !== undefined
-										? { preferRg: args.preferRg }
+									...(parsed.data.preferRg !== undefined
+										? { preferRg: parsed.data.preferRg }
 										: {}),
 								},
 								{
@@ -239,12 +246,15 @@ export const buildSearchToolRegistrations = (
 									: {}),
 								hits: result.hits,
 							};
-							if (args.detail === undefined) {
+							if (parsed.data.detail === undefined) {
 								return toolJson(payload);
 							}
 							return toolJson({
-								detail: args.detail,
-								...projectSearchPayload(payload, args.detail),
+								detail: parsed.data.detail,
+								...projectSearchPayload(
+									payload,
+									parsed.data.detail,
+								),
 							});
 						} catch (err) {
 							if (err instanceof InvalidSearchPatternError) {

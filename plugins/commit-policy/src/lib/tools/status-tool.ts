@@ -20,6 +20,7 @@ import { toolError, toolOk } from '@mcp-vertex/core/public';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { isBranchProtected } from '../contracts/branch';
+import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
 import { localizedString } from '../contracts/i18n-types';
 import type { IIdentityResolverContext } from '../identity/resolver';
 import { resolveAuthor } from '../identity/resolver';
@@ -107,7 +108,9 @@ export const runCommitPolicyStatus = async (
 		options.identityCtx,
 	);
 	const currentBranch = await gitCurrentBranch(options.identityCtx.run);
-	const protectedBranches = [...options.options.push.protectedBranches];
+	const protectedBranches = resolveProtectedBranches(
+		options.options.push.protectedBranches,
+	);
 	const protectedPrefixes = [
 		...(options.options.push.protectedPrefixes ?? []),
 	];
@@ -162,7 +165,7 @@ export const runCommitPolicyStatus = async (
 				? { everyNMinutes: options.options.push.everyNMinutes }
 				: {}),
 			force: options.options.push.force,
-			protectedBranches: [...options.options.push.protectedBranches],
+			protectedBranches: [...protectedBranches],
 			...(options.options.push.remote !== undefined
 				? { remote: options.options.push.remote }
 				: {}),

@@ -23,7 +23,7 @@ const projectNameFrom = async (
 	reader: {
 		readFile(p: string): string | undefined | Promise<string | undefined>;
 	},
-	root: string
+	root: string,
 ): Promise<string> => {
 	const raw = await reader.readFile('package.json');
 	if (raw !== undefined) {
@@ -42,7 +42,7 @@ const projectNameFrom = async (
 
 const presetIdFor = (
 	framework: string | undefined,
-	language: string | undefined
+	language: string | undefined,
 ): string | undefined => {
 	if (framework === undefined) return undefined;
 	const ts = language !== 'js';
@@ -100,7 +100,7 @@ export default definePlugin({
 		};
 		const forced = presetIdFor(
 			ctx.options.framework as string | undefined,
-			ctx.options.language as string | undefined
+			ctx.options.language as string | undefined,
 		);
 		if (forced !== undefined && PRESET_BY_ID.has(forced)) {
 			overrides.root = forced;
@@ -126,7 +126,7 @@ export default definePlugin({
 				cacheRelDir,
 				mode,
 				buildDefaultComposition(),
-				overrides
+				overrides,
 			);
 			await ensureRulesCache({
 				reader,
@@ -169,7 +169,7 @@ export default definePlugin({
 										},
 									},
 								],
-							})
+							}),
 						);
 					},
 				},
@@ -178,7 +178,7 @@ export default definePlugin({
 				buildApplyingRulesKnowledge(
 					ctx.namespacePrefix,
 					mode,
-					cacheRelDir
+					cacheRelDir,
 				),
 			],
 		};

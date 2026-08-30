@@ -16,7 +16,7 @@ const callTool = async (tool: IToolRegistration, args: unknown) => {
 		registerTool: (
 			_name: string,
 			_description: unknown,
-			next: typeof handler,
+			next: typeof handler
 		) => {
 			handler = next;
 		},
@@ -38,7 +38,7 @@ describe('managed lazy assembly defaults', () => {
 		workspaces.push(workspace);
 		const args = parseCliArgs(
 			[`--plugins=memory`, `--workspace=${workspace}`],
-			workspace,
+			workspace
 		);
 		const assembled = await assembleCliConfig(args, {
 			readFile: async () => undefined,
@@ -53,15 +53,15 @@ describe('managed lazy assembly defaults', () => {
 		expect(assembled.loadResult.loaded).toEqual([]);
 		expect(assembled.startupReport.runtime.moduleLoading).toBe('lazy');
 		expect(
-			assembled.config.lazyToolActivators?.has('mcp-vertex_memory_save'),
+			assembled.config.lazyToolActivators?.has('mcp-vertex_memory_save')
 		).toBe(true);
 		const descriptor = assembled.config.toolSurfacePlan?.descriptors.find(
-			(entry) => entry.registrationId === 'mcp-vertex_memory_save',
+			(entry) => entry.registrationId === 'mcp-vertex_memory_save'
 		);
 		expect(descriptor?.summary).toBeTruthy();
 		expect(descriptor?.tags).toContain('lazy');
 		const configurationTool = assembled.config.extraTools?.find(
-			(tool) => tool.id === 'configuration_center',
+			(tool) => tool.id === 'configuration_center'
 		);
 		const page = await callTool(configurationTool!, {
 			section: 'plugins',
@@ -69,8 +69,8 @@ describe('managed lazy assembly defaults', () => {
 		});
 		expect(
 			page.plugins.find(
-				(plugin: { id: string }) => plugin.id === 'memory',
-			).permissions,
+				(plugin: { id: string }) => plugin.id === 'memory'
+			).permissions
 		).toEqual(['filesystem-read', 'filesystem-write']);
 	});
 
@@ -83,7 +83,7 @@ describe('managed lazy assembly defaults', () => {
 				`--plugins=memory`,
 				`--workspace=${workspace}`,
 			],
-			workspace,
+			workspace
 		);
 		const assembled = await assembleCliConfig(args, {
 			readFile: async (absolutePath) =>
@@ -103,13 +103,13 @@ describe('managed lazy assembly defaults', () => {
 		expect(assembled.loadResult.loaded).toHaveLength(1);
 	});
 
-	it('activates configured startup plugins before any lazy tool call', async () => {
+	it('keeps configured opt-in plugins lazy until a tool call', async () => {
 		const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-startup-'));
 		workspaces.push(workspace);
 		let registered = 0;
 		const args = parseCliArgs(
 			[`--plugins=commit-policy`, `--workspace=${workspace}`],
-			workspace,
+			workspace
 		);
 		const assembled = await assembleCliConfig(args, {
 			readFile: async (absolutePath) =>
@@ -139,8 +139,13 @@ describe('managed lazy assembly defaults', () => {
 			}),
 		});
 
-		expect(registered).toBe(1);
+		expect(registered).toBe(0);
 		expect(assembled.loadResult.loaded).toEqual([]);
 		expect(assembled.startupReport.runtime.moduleLoading).toBe('lazy');
+		const activator =
+			assembled.config.lazyPluginActivators?.get('commit-policy');
+		expect(activator).toBeDefined();
+		await activator?.();
+		expect(registered).toBe(1);
 	});
 });

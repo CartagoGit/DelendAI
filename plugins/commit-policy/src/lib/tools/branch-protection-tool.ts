@@ -14,9 +14,12 @@ import type {
 
 const OutputSchema = z.object({
 	ok: z.boolean(),
-	provider: z.enum(['github', 'gitlab']).optional(),
-	remoteBranches: z.array(z.string()).optional(),
-	effectiveBranches: z.array(z.string()).optional(),
+	state: z.enum(['fresh', 'stale', 'unsupported', 'error']),
+	provider: z.enum(['github', 'gitlab', 'unknown']).optional(),
+	remoteName: z.string().optional(),
+	remoteHost: z.string().optional(),
+	remoteBranches: z.array(z.string()),
+	effectiveBranches: z.array(z.string()),
 	reason: z.string().optional(),
 });
 
@@ -29,15 +32,27 @@ const toPayload = (result: BranchProtectionRefreshResult) =>
 	result.ok
 		? {
 				ok: true,
+				state: result.state,
 				provider: result.provider,
+				remoteName: result.remoteName,
+				remoteHost: result.remoteHost,
 				remoteBranches: [...result.remoteBranches],
 				effectiveBranches: [...result.effectiveBranches],
 			}
 		: {
 				ok: false,
+				state: result.state,
 				...(result.provider !== undefined
 					? { provider: result.provider }
 					: {}),
+				...(result.remoteName !== undefined
+					? { remoteName: result.remoteName }
+					: {}),
+				...(result.remoteHost !== undefined
+					? { remoteHost: result.remoteHost }
+					: {}),
+				remoteBranches: [...result.remoteBranches],
+				effectiveBranches: [...result.effectiveBranches],
 				reason: result.reason,
 			};
 
@@ -51,12 +66,6 @@ export const runBranchProtectionRefresh = async (
 		return toolError(
 			`commit_policy_refresh_branch_protection output schema mismatch: ${parsed.error.message}`,
 			'Report this as a plugin bug.',
-		);
-	}
-	if (!result.ok) {
-		return toolError(
-			result.reason,
-			'Check the origin remote and the authenticated gh/glab CLI, then retry the refresh.',
 		);
 	}
 	return toolOk(parsed.data);
@@ -74,7 +83,7 @@ export const buildBranchProtectionToolRegistration = (
 			`${options.namespacePrefix}_commit_policy_refresh_branch_protection`,
 			{
 				description:
-					'Read the origin forge protection rules and refresh the effective commit-policy protected branch list. Local push.protectedBranches remains protected; use this when the repository or forge rules change.',
+					'Read branch protection from push.remote, the branch upstream remote, or origin, then refresh the effective commit-policy protected branch list. Local push.protectedBranches always remains protected, even when the remote is unsupported or refresh fails.',
 				inputSchema: z.object({}),
 				outputSchema: OutputSchema,
 			},

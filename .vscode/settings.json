@@ -141,6 +141,7 @@
 		"command": "bun",
 		"args": ["run", "mcp-vertex"]
 	},
+	"mcp-vertex.development.autoReload": true,
 
 	// ──────────────────────────────────────────────────────────────────────
 	// Peacock — workspace-scoped visual identity (morado agradable)

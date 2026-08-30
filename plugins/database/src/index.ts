@@ -21,7 +21,7 @@ const OptionsSchema = z.object({
 	dsn: z
 		.string()
 		.describe(
-			'Database DSN env:DATABASE_URL provider:database capability:Database introspection DSN'
+			'Database DSN env:DATABASE_URL provider:database capability:Database introspection DSN',
 		)
 		.optional(),
 	resolveDsn: z.custom<() => string | undefined>().optional(),
@@ -37,7 +37,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`database plugin rejected its options: ${parsed.error.message}`
+				`database plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
 		const opts = parsed.data;

@@ -15,6 +15,26 @@ migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.m
 
 Migrated work item: token estimate nomenclature..
 
+## why
+
+Imported from a foreign proposal format so it can be tracked under the canonical proposal workflow.
+
+## non-goals
+
+- Preserve the source document as an independently editable proposal.
+
+## Slices
+
+### S1 — Review migrated proposal
+
+- **Status**: pending
+- **Files**: `TODO`
+- **Gate**: none
+
+## acceptance
+
+- The migrated proposal is reviewed and its files and validation gate are made explicit.
+
 ## notes
 
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#token-estimate-nomenclature` by `proposal_adopt`

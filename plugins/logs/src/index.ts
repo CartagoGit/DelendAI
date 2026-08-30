@@ -56,7 +56,7 @@ export default definePlugin({
 		// recognize the log history as durable.
 		const logsDir = ctx.workspace.resolve(ctx.pluginCacheDir);
 		const errorLogsDir = ctx.workspace.resolve(
-			join(dirname(ctx.pluginCacheDir), 'logs-errors')
+			join(dirname(ctx.pluginCacheDir), 'logs-errors'),
 		);
 		const [mainStore, errorStore] = await Promise.all([
 			createLogStore(logsDir),
@@ -135,7 +135,7 @@ export default definePlugin({
 				workspace: ctx.workspace.root,
 				namespacePrefix: ctx.namespacePrefix,
 				summary: `server-started: pid ${process.pid} @ ${ctx.workspace.root}`,
-			})
+			}),
 		);
 
 		// S4 — cross-plugin incident helper. The `logs` plugin
@@ -157,7 +157,8 @@ export default definePlugin({
 				readonly files?: readonly string[] | undefined;
 				readonly agent?: string | undefined;
 				readonly context?:
-					Readonly<Record<string, unknown>> | undefined;
+					| Readonly<Record<string, unknown>>
+					| undefined;
 			}) => Promise<void>;
 		} = {
 			log: async (input) => {
@@ -213,7 +214,7 @@ export default definePlugin({
 							agent: event.agent,
 							summary: event.summary,
 							meta: event.meta,
-						})
+						}),
 					);
 				},
 			},
@@ -246,7 +247,7 @@ export default definePlugin({
 						files: extractFilesHint(args, undefined),
 						args,
 						summary: `tool-started: ${toolName}`,
-					})
+					}),
 				);
 			},
 			onToolCall: async (toolName, args, result, error, elapsedMs) => {
@@ -280,7 +281,7 @@ export default definePlugin({
 								: error,
 						elapsedMs: roundedElapsed,
 						summary,
-					})
+					}),
 				);
 			},
 			// S2: client aborted the call while the handler was
@@ -310,7 +311,7 @@ export default definePlugin({
 								'Retry the operation or resume from the latest persisted checkpoint.',
 							cancellationError: context?.error,
 						},
-					})
+					}),
 				);
 			},
 		};
@@ -326,7 +327,7 @@ export default definePlugin({
  * it on the main timeline only.
  */
 const severityToOutcomeForHelper = (
-	severity: LogSeverity
+	severity: LogSeverity,
 ): import('./lib/services/normalize-event').LogOutcome => {
 	if (
 		severity === 'error' ||

@@ -55,16 +55,16 @@ export default definePlugin({
 		const lockPath = resolveWorkspaceContained(ctx.workspace.root, lockRel);
 		if (!lockPath.ok) {
 			throw new Error(
-				`notification: invalid watchLockFile: ${lockPath.reason ?? lockRel}`
+				`notification: invalid watchLockFile: ${lockPath.reason ?? lockRel}`,
 			);
 		}
 		const handoffPath = resolveWorkspaceContained(
 			ctx.workspace.root,
-			handoffRel
+			handoffRel,
 		);
 		if (!handoffPath.ok) {
 			throw new Error(
-				`notification: invalid watchHandoffDir: ${handoffPath.reason ?? handoffRel}`
+				`notification: invalid watchHandoffDir: ${handoffPath.reason ?? handoffRel}`,
 			);
 		}
 

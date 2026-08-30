@@ -139,12 +139,14 @@ router y el plugin manager.
 
 ### S1 — Máquina de estados + integración con router
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/states.ts`, `packages/core/src/lib/plugins/router.ts`, `packages/core/src/lib/plugins/plugin-manager.ts`, `packages/core/tests/src/lib/plugins/states.spec.ts`
 - **Gate**: type
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-f00269-review-fix
+- review-reviewer: copilot-f00269-independent-reviewer
 - review-log: requested_changes by delivery_verifier — REQUEST_CHANGES: activate() falla tras unload porque intenta UNLOADED -> ACTIVE, transición prohibida. Además hide() antes de initialize puede crear estado ACTIVE implícito y fallar ACTIVE -> LOADED_HIDDEN; debe converger desde UNLOADED o rechazar explícitamente. Añadir tests de regresión para ambos casos y mantener typecheck/tests verdes.
+- review-log: approved by copilot-f00269-independent-reviewer — Validadas transiciones pre-initialize, rechazo de IDs desconocidos, unload->activate y DENIED absorbente.
 ## acceptance
 
 - Cuatro estados implementados con tabla de transiciones.

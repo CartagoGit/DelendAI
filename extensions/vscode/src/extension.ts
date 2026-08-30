@@ -121,6 +121,7 @@ export interface IDisposable {
 }
 
 export interface IExtensionContext {
+	readonly extensionPath?: string;
 	readonly subscriptions: IDisposable[];
 	readonly globalState: {
 		get<T>(key: string): T | undefined;
@@ -161,6 +162,10 @@ export interface IVscodeApi {
 			command: string,
 			callback: (...args: readonly unknown[]) => unknown,
 		): IDisposable;
+		executeCommand?<T>(
+			command: string,
+			...args: readonly unknown[]
+		): Thenable<T>;
 	};
 	readonly window: {
 		readonly createTerminal?: NonNullable<
@@ -336,6 +341,7 @@ export const activate = async (
 		handle.register(`sub-${trackSeq++}`, disposable);
 		return disposable;
 	};
+	registerDevelopmentAutoReload(context, vscode, track);
 
 	const overview = new OverviewService(client, namespacePrefix);
 	// S3: capture the host's actually-loaded plugin set so the
@@ -783,6 +789,36 @@ export const renderOverviewHtml = (overview: IOverview): string => {
 
 const loadVscodeApi = async (): Promise<IVscodeApi> =>
 	(await import('vscode')) as unknown as IVscodeApi;
+
+const registerDevelopmentAutoReload = (
+	context: IExtensionContext,
+	vscode: IVscodeApi,
+	track: (disposable: IDisposable) => IDisposable,
+): void => {
+	const enabled = vscode.workspace
+		?.getConfiguration?.('mcp-vertex')
+		?.get<boolean>('development.autoReload', false);
+	const extensionPath = context.extensionPath;
+	if (enabled !== true || extensionPath === undefined) return;
+	const watcher = vscode.workspace?.createFileSystemWatcher(
+		`${extensionPath}/dist/extension.js`,
+	);
+	if (watcher === undefined || vscode.commands.executeCommand === undefined)
+		return;
+	let reloadScheduled = false;
+	const reload = (): void => {
+		if (reloadScheduled) return;
+		reloadScheduled = true;
+		setTimeout(() => {
+			void vscode.commands?.executeCommand?.(
+				'workbench.action.reloadWindow',
+			);
+		}, 250);
+	};
+	track({ dispose: () => undefined });
+	track(watcher.onDidChange(reload));
+	track(watcher.onDidCreate(reload));
+};
 
 /**
  * `createFakeHostFromVscode` — minimal adapter that lets the dashboard

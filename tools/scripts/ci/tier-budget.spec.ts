@@ -21,7 +21,7 @@ const repoRoot = join(__dirname, '..', '..', '..');
 const timeoutMinutes = async (file: string): Promise<number[]> => {
 	const source = await readFile(
 		join(repoRoot, '.github/workflows', file),
-		'utf8'
+		'utf8',
 	);
 	const matches = [...source.matchAll(/timeout-minutes:\s*(\d+)/gu)];
 	return matches.map((m) => Number(m[1] ?? 0));

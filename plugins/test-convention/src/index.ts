@@ -61,7 +61,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`test-convention plugin rejected its options: ${parsed.error.message}`
+				`test-convention plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
 		// The zod output is `T | undefined` for optional fields. The
@@ -70,7 +70,7 @@ export default definePlugin({
 		// so we strip the undefined entries before forwarding.
 		const opts = parsed.data;
 		const convention = mergeConvention(
-			opts as Parameters<typeof mergeConvention>[0]
+			opts as Parameters<typeof mergeConvention>[0],
 		);
 		const reader = createWorkspaceFileReader(ctx.workspace);
 		const runner: IRunnerInfo = await detectRunner(reader);

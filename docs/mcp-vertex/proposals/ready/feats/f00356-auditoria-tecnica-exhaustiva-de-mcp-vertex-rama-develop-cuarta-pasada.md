@@ -25,7 +25,11 @@ migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-c
 
 ---
 
-## 0. Cómo debe usarse este documento
+## why
+
+Imported from a foreign proposal format so it can be tracked under the canonical proposal workflow.
+
+### 0. Cómo debe usarse este documento
 
 Este documento **no debe ejecutarse como una única mega-tarea**. Debe
 utilizarse como backlog de auditoría y transformarse en propuestas
@@ -128,7 +132,7 @@ Notas globales del snapshot:
 
 # 2. Prioridades
 
-## P0 — Bloqueantes / corregir antes de añadir otra gran feature
+### P0 — Bloqueantes / corregir antes de añadir otra gran feature
 
 1. Hacer verde `develop`.
 2. Proteger `develop` en GitHub.
@@ -141,7 +145,7 @@ Notas globales del snapshot:
 9. Bloquear merges que dejen el estado integrado rojo.
 10. Mejorar el diagnóstico de jobs de CI que ocultan el output de fallo.
 
-## P1 — Arquitectura, tokens, seguridad y mantenibilidad
+### P1 — Arquitectura, tokens, seguridad y mantenibilidad
 
 1. Centralizar presupuestos de tokens.
 2. Optimizar primero `proposals` y `orchestrator-runner`.
@@ -156,7 +160,7 @@ Notas globales del snapshot:
 11. Lazy loading real de plugins.
 12. Estados explícitos de plugin: unloaded / hidden / active / denied.
 
-## P2 — Diferenciación de plataforma
+### P2 — Diferenciación de plataforma
 
 1. Routing de MCPs externos basado en coste/calidad.
 2. Surface adaptativa consciente del modelo.
@@ -173,7 +177,7 @@ Notas globales del snapshot:
 
 # 3. Hallazgos P0 detallados
 
-## AUD-P0-001 — `develop` no está protegido y puede recibir `force-with-lease`
+### AUD-P0-001 — `develop` no está protegido y puede recibir `force-with-lease`
 
 **Clasificación:** BUG/RIESGO CONFIRMADO de gobernanza.
 **Severidad:** Crítica.
@@ -221,7 +225,7 @@ commit/push + política del remote/forge + required quality gate.
 
 ---
 
-## AUD-P0-002 — La rama `develop` auditada está roja
+### AUD-P0-002 — La rama `develop` auditada está roja
 
 **Clasificación:** BUG CONFIRMADO de integración.
 **Severidad:** Crítica.
@@ -255,7 +259,7 @@ PR
 
 ---
 
-## AUD-P0-003 — Drift de generated artifacts, manifests y documentación
+### AUD-P0-003 — Drift de generated artifacts, manifests y documentación
 
 **Clasificación:** BUG CONFIRMADO.
 **Severidad:** Alta.
@@ -289,7 +293,7 @@ change source
 
 # 4. `commit-policy`: auditoría exhaustiva
 
-## AUD-CP-001 — `buildScopedMessage()` convierte `fix`/`chore`/etc. en `feat`
+### AUD-CP-001 — `buildScopedMessage()` convierte `fix`/`chore`/etc. en `feat`
 
 **Clasificación:** BUG CONFIRMADO.
 **Severidad:** Alta.
@@ -326,7 +330,7 @@ body. Regex conceptual:
 
 ---
 
-## AUD-CP-002 — El listener de slices detecta eventos y los descarta
+### AUD-CP-002 — El listener de slices detecta eventos y los descarta
 
 **Clasificación:** BUG CONFIRMADO.
 **Severidad:** Crítica para la feature automática.
@@ -360,7 +364,7 @@ manual ---------┘
 
 ---
 
-## AUD-CP-003 — El listener no se dispone al recargar el plugin
+### AUD-CP-003 — El listener no se dispone al recargar el plugin
 
 **Clasificación:** BUG CONFIRMADO.
 **Severidad:** Alta.
@@ -372,7 +376,7 @@ El plugin hace `listener.start()` pero no devuelve `dispose()` con
 
 ---
 
-## AUD-CP-004 — `proposalId` y `sliceId` están en la API pero se ignoran
+### AUD-CP-004 — `proposalId` y `sliceId` están en la API pero se ignoran
 
 **Clasificación:** BUG CONFIRMADO.
 **Severidad:** Alta.
@@ -389,7 +393,7 @@ Nunca exponer un argumento sin respetarlo.
 
 ---
 
-## AUD-CP-005 — `sliceScoping=true` no stagea los archivos del slice
+### AUD-CP-005 — `sliceScoping=true` no stagea los archivos del slice
 
 **Clasificación:** BUG CONFIRMADO.
 **Severidad:** Crítica en multiagente.
@@ -407,7 +411,7 @@ un slice, auto-commit de B puede incluir staged work de A.
 
 ---
 
-## AUD-CP-006 — Threshold mide dirty files pero no los stagea
+### AUD-CP-006 — Threshold mide dirty files pero no los stagea
 
 **Clasificación:** BUG CONFIRMADO.
 **Severidad:** Alta.
@@ -418,7 +422,7 @@ deben ser los que el engine stagee.
 
 ---
 
-## AUD-CP-007 — `requireConventional` parece no estar enforced
+### AUD-CP-007 — `requireConventional` parece no estar enforced
 
 **Clasificación:** BUG PROBABLE.
 **Severidad:** Alta.
@@ -429,7 +433,7 @@ revisado no aparece una validación de esa política antes del commit.
 
 ---
 
-## AUD-CP-008 — Políticas de push declaradas pero aparentemente sin orquestación completa
+### AUD-CP-008 — Políticas de push declaradas pero aparentemente sin orquestación completa
 
 **Clasificación:** BUG PROBABLE / FEATURE INCOMPLETA.
 **Severidad:** Alta.
@@ -440,7 +444,7 @@ push por tiempo o ejecute push post-commit.
 
 ---
 
-## AUD-CP-009 — Protección de branch solo en ciertos contextos de commit
+### AUD-CP-009 — Protección de branch solo en ciertos contextos de commit
 
 **Clasificación:** RIESGO DE DISEÑO.
 
@@ -450,7 +454,7 @@ común de branch.
 
 ---
 
-## AUD-CP-010 — Polling de proposals cuando existe mejor modelo de eventos
+### AUD-CP-010 — Polling de proposals cuando existe mejor modelo de eventos
 
 **Clasificación:** MEJORA ARQUITECTÓNICA IMPORTANTE.
 
@@ -460,7 +464,7 @@ observabilidad, tests más simples.
 
 ---
 
-## AUD-CP-011 — Operar sobre transiciones, no sobre estado presente
+### AUD-CP-011 — Operar sobre transiciones, no sobre estado presente
 
 **Clasificación:** MEJORA / CORRECCIÓN CONCEPTUAL.
 
@@ -470,7 +474,7 @@ processed-event IDs.
 
 ---
 
-## AUD-CP-012 — Idempotencia de commits automáticos
+### AUD-CP-012 — Idempotencia de commits automáticos
 
 **Clasificación:** MEJORA CRÍTICA PARA AGENTES.
 
@@ -1047,11 +1051,11 @@ No duplicar el mismo JSON en `structuredContent` + `content.text`.
 
 # 48. KPIs de eficiencia
 
-## 48.1 Useful tokens / total tokens
-## 48.2 Activation precision
-## 48.3 Activation recall
-## 48.4 Tool confusion rate
-## 48.5 Activation churn
+### 48.1 Useful tokens / total tokens
+### 48.2 Activation precision
+### 48.3 Activation recall
+### 48.4 Tool confusion rate
+### 48.5 Activation churn
 
 ---
 
@@ -1211,15 +1215,15 @@ audit + metrics + memory.
 
 # 63. Roadmap sugerido de propuestas
 
-## Fase 0 — Reproducibilidad
-## Fase 1 — Integridad de `develop`
-## Fase 2 — `commit-policy` correctness
-## Fase 3 — Token efficiency
-## Fase 4 — Boundaries / SDK
-## Fase 5 — Security capabilities
-## Fase 6 — Event-driven runtime
-## Fase 7 — CI scalability
-## Fase 8 — Product intelligence
+### Fase 0 — Reproducibilidad
+### Fase 1 — Integridad de `develop`
+### Fase 2 — `commit-policy` correctness
+### Fase 3 — Token efficiency
+### Fase 4 — Boundaries / SDK
+### Fase 5 — Security capabilities
+### Fase 6 — Event-driven runtime
+### Fase 7 — CI scalability
+### Fase 8 — Product intelligence
 
 (Ver detalles en el documento original; las hijas de cada fase se
 definen en el plan `q00006`.)
@@ -1231,55 +1235,55 @@ definen en el plan `q00006`.)
 ```markdown
 # <Título>
 
-## Contexto
+### Contexto
 Qué parte de la auditoría origina la propuesta.
 
-## Clasificación
+### Clasificación
 BUG CONFIRMADO / BUG PROBABLE / RIESGO / MEJORA
 
-## Severidad
+### Severidad
 P0 / P1 / P2 / P3
 
-## Comportamiento actual
+### Comportamiento actual
 Descripción reproducible.
 
-## Evidencia
+### Evidencia
 Archivos, funciones, tests, logs o CI.
 
-## Comportamiento deseado
+### Comportamiento deseado
 Contrato final.
 
-## Scope
+### Scope
 Incluido / no incluido.
 
-## Diseño propuesto
+### Diseño propuesto
 Decisiones y alternativas.
 
-## Cambios esperados
+### Cambios esperados
 Archivos / paquetes afectados.
 
-## Tests
+### Tests
 Unit / integration / e2e / regression.
 
-## Tokens
+### Tokens
 Impacto esperado en tools/list, input, output o runtime.
 
-## Seguridad
+### Seguridad
 Permisos / capabilities / side effects.
 
-## Compatibilidad
+### Compatibilidad
 Breaking changes, migration, deprecation.
 
-## Criterios de aceptación
+### Criterios de aceptación
 Checklist concreto.
 
-## Dependencias
+### Dependencias
 Propuestas que deben ir antes/después.
 
-## Riesgos
+### Riesgos
 Posibles regresiones.
 
-## Rollback
+### Rollback
 Cómo revertir si falla.
 ```
 
@@ -1309,11 +1313,11 @@ aplicables:
 
 # 66. Métricas que deberían añadirse al dashboard
 
-## Token economics
-## Adaptive
-## Tools
-## Plugins
-## Agent workflows
+### Token economics
+### Adaptive
+### Tools
+### Plugins
+### Agent workflows
 
 ---
 
@@ -1377,6 +1381,22 @@ cual.
 No utilizar este documento como verdad eterna. Es un snapshot técnico de
 un commit concreto y debe convertirse en tests, políticas y
 automatizaciones para que los mismos problemas no regresen.
+
+## non-goals
+
+- Preserve the source document as an independently editable proposal.
+
+## Slices
+
+### S1 — Review migrated proposal
+
+- **Status**: pending
+- **Files**: `TODO`
+- **Gate**: none
+
+## acceptance
+
+- The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 

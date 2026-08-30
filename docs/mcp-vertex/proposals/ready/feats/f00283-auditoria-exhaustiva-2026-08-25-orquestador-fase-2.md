@@ -19,7 +19,7 @@ migrated-from: docs/mcp-vertex/audits/2026-08-25-orchestrator-audit-fase2.md
 > **Contexto**: encargo de dos fases del usuario. Fase 1 (revisión empírica de propuestas 2026-08-23→08-25) cerrada primero; este documento es el resultado de la Fase 2. Escrito **antes** de leer `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit-chatgpt-sol.md` — ver la sección final "Comparación con la auditoría ChatGPT/sol" para lo añadido después.
 > **Advertencia de alcance honesta**: esta sesión ocurrió en un worktree **compartido en vivo** con al menos otro agente muy activo (49 plugins en el repo cuando el `overview` inicial listaba 36; 27 propuestas nuevas creadas y varios plugins nuevos — `changelog`, `prompt-eval` — aparecieron durante esta sesión). La cobertura de esta auditoría es real y empírica donde se afirma, pero no es una lectura línea-a-línea de las ~3.250 fuentes del monorepo; es una auditoría dirigida por evidencia, con lectura de código real en los puntos de mayor riesgo/impacto y escaneo agregado (seguridad, deuda técnica, salud) en el resto. Se marca explícitamente qué se verificó por diff/ejecución directa vs. por señal agregada.
 
-## goal
+### goal
 
 Evaluar bugs, calidad de código, diseño/arquitectura y naming/duplicación de cada sección relevante del proyecto (packages/core, plugins, apps/web, tools/scripts, extensión VSCode, sistema de propuestas), puntuar 0-10 por eje, priorizar bugs y proponer un roadmap de mejora — incluyendo eficiencia de tokens, dado que el proyecto expone tools MCP donde el tamaño de payload importa.
 
@@ -35,7 +35,7 @@ Cierre de la Fase 2 solicitada por el usuario tras la Fase 1 (revisión y cierre
 
 ---
 
-## Metodología
+### Metodología
 
 1. **Fase 1 como fuente empírica directa.** Durante la revisión de 59 propuestas se leyeron diffs reales, se ejecutó `bun run validate` en bucle (7 pasadas hasta verde), se corrigieron 6 bugs reales con evidencia archivo+línea, y se detectó en vivo un bug de concurrencia (colisión de ids `x00231-x00235` entre dos agentes) — todo esto alimenta directamente esta auditoría.
 2. **Lectura dirigida de código real** en: `packages/client/src/lib/transport/mcp-stdio-client.ts`, `tools/scripts/release/verify-published-manifest.script.ts`, `tools/scripts/lint/cli-ui-parity.script.ts` + su map, `packages/core/src/lib/registry/first-party-index.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `tools/scripts/perf/cold-start.script.ts` (re-ejecutado), el mecanismo `proposal_review`/`proposal_transition` del plugin `proposals` (por sus efectos observados, no por lectura completa de su fuente — ver limitación abajo).
@@ -46,7 +46,7 @@ Cierre de la Fase 2 solicitada por el usuario tras la Fase 1 (revisión y cierre
 
 ---
 
-## Hallazgos de Fase 1 relevantes para esta auditoría
+### Hallazgos de Fase 1 relevantes para esta auditoría
 
 Bugs reales, con evidencia archivo+línea, encontrados y corregidos durante la revisión empírica de las 59 propuestas (no simulados para esta auditoría):
 
@@ -61,7 +61,7 @@ Estos 5+1 bugs comparten un patrón: **ninguno era detectable por las tools de "
 
 ---
 
-## Bugs — lista priorizada (severidad × facilidad de arreglo)
+### Bugs — lista priorizada (severidad × facilidad de arreglo)
 
 | #   | Severidad                             | Archivo(s)                                                                                    | Escenario                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Estado                                                                                                                                                                       |
 | --- | ------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -75,7 +75,7 @@ Estos 5+1 bugs comparten un patrón: **ninguno era detectable por las tools de "
 
 ---
 
-## Puntuación por sección (0-10)
+### Puntuación por sección (0-10)
 
 Ejes: **Código** (calidad/SOLID/Clean Code), **Idea/Diseño** (¿resuelve el problema correcto, bien planteado?), **Análisis** (¿qué tan bien entendí la sección con el tiempo disponible — confianza de la puntuación), **Mejoras posibles** (margen de mejora identificado, 10 = casi nada que mejorar), **Errores** (10 = sin errores encontrados).
 
@@ -96,7 +96,7 @@ Ejes: **Código** (calidad/SOLID/Clean Code), **Idea/Diseño** (¿resuelve el pr
 
 ---
 
-## Ranking de secciones (mejor → peor, por la media de Código+Idea+Errores)
+### Ranking de secciones (mejor → peor, por la media de Código+Idea+Errores)
 
 1. `packages/core` (8, 8, 8) — arquitectura más madura, decisiones documentadas y medidas.
 2. `packages/client` (7, 8, 6) — buen diseño, hueco de test cerrado esta sesión.
@@ -111,7 +111,7 @@ Ejes: **Código** (calidad/SOLID/Clean Code), **Idea/Diseño** (¿resuelve el pr
 
 ---
 
-## Roadmap de mejora (priorizado)
+### Roadmap de mejora (priorizado)
 
 ### Inmediato (bajo riesgo, alto valor)
 1. **Actualizar las 5 dependencias con CVE high** (`brace-expansion`, `fast-uri`, `ip-address`, `js-yaml`, `undici`) vía `bun update` + `lint:dependency-versions`; ninguna es breaking conocida a la versión fix.
@@ -130,7 +130,7 @@ Ejes: **Código** (calidad/SOLID/Clean Code), **Idea/Diseño** (¿resuelve el pr
 
 ---
 
-## Comparación con la auditoría ChatGPT/sol legacy
+### Comparación con la auditoría ChatGPT/sol legacy
 
 **Nota de proceso**: durante el escaneo agregado de deuda técnica (`tech-debt debt_scan`) de esta auditoría, el propio scanner devolvió, como efecto colateral no buscado, los *títulos* de ~120 marcadores `TODO: XXX-NNN` que resultan ser el índice de hallazgos de `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md` (la auditoría **predecesora**, consolidada por `q00003`, distinta de la de "chatgpt-sol segunda pasada" citada por `q00004`). Solo vi **títulos de una línea**, nunca el análisis ni la evidencia de esos hallazgos, y no abrí ningún fichero de auditoría legacy deliberadamente hasta terminar la tabla de puntuación de arriba. Se documenta por transparencia; no se ha usado ese índice para sesgar ninguna puntuación.
 
@@ -142,6 +142,14 @@ Tras terminar mi propia auditoría, localicé y leí `docs/mcp-vertex/audits/leg
 - **Metodología más rigurosa que la mía en un eje**: esa auditoría exige explícitamente que cada punto termine en un estado verificable (`IMPLEMENTED`/`ALREADY_FIXED`/`NOT_REPRODUCIBLE`/`ACCEPTED_RISK`/`DEFERRED_WITH_REASON`/`NOT_APPLICABLE`) contra el HEAD actual antes de tocar código — una disciplina de "reproducir antes de arreglar" que recomiendo adoptar como práctica estándar de `AGENT-BOOTSTRAP.md` para toda auditoría futura, incluida esta.
 
 **Conclusión de la comparación**: mi auditoría y la de "ChatGPT/sol" son complementarias, no redundantes — la mía tiene evidencia directa de bugs de **concurrencia real observada en vivo durante esta sesión** (algo que una auditoría estática no puede ver), la suya tiene un barrido de **seguridad de código más profundo y sistemático** en los plugins nuevos que yo solo verifiqué superficialmente. Recomiendo al usuario tratar `FS2-001`/`FS2-002` (ya con propuestas hijas `x00242`/`x00243` en curso bajo `q00004`) como **el hallazgo de mayor prioridad real de todo el estado actual del repo**, por encima de cualquier punto de este documento.
+
+## Slices
+
+### S1 — Review migrated proposal
+
+- **Status**: pending
+- **Files**: `TODO`
+- **Gate**: none
 
 ## acceptance
 

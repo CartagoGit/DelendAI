@@ -251,7 +251,7 @@ describe('f00269 — plugin-manager integration', () => {
 		expect(await router.resolveTool('alpha.tool')).toBeDefined();
 	});
 
-	it('hide before initialize starts from UNLOADED', async () => {
+	it('hide before initialize rejects without mutating state', () => {
 		const loader = createLoader();
 		const discovery = createLazyPluginDiscovery({
 			loader,
@@ -263,8 +263,10 @@ describe('f00269 — plugin-manager integration', () => {
 			lazy: true,
 		});
 		const manager = createPluginManager(router);
-		expect(manager.hide('alpha')).toBe('LOADED_HIDDEN');
-		expect(router.pluginState('alpha')).toBe('LOADED_HIDDEN');
+		expect(() => manager.hide('alpha')).toThrow(
+			'plugin router must be initialized',
+		);
+		expect(router.pluginState('alpha')).toBeUndefined();
 	});
 
 	it('does not create state for an unknown plugin after initialize', async () => {
@@ -289,6 +291,24 @@ describe('f00269 — plugin-manager integration', () => {
 		});
 		const manager = createPluginManager(router);
 		expect(() => manager.activate('ghost')).toThrow(
+			'plugin router must be initialized',
+		);
+		expect(router.pluginState('ghost')).toBeUndefined();
+	});
+
+	it('does not deny an unknown plugin before initialize', () => {
+		const loader = createLoader();
+		const discovery = createLazyPluginDiscovery({
+			loader,
+			listPluginIds: async () => ['alpha', 'beta'],
+		});
+		const router = createLazyPluginRouter({
+			loader,
+			discovery,
+			lazy: true,
+		});
+		const manager = createPluginManager(router);
+		expect(() => manager.deny('ghost')).toThrow(
 			'plugin router must be initialized',
 		);
 		expect(router.pluginState('ghost')).toBeUndefined();

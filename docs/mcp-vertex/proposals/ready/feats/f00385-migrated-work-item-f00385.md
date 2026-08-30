@@ -1,6 +1,6 @@
 ---
 id: f00385
-title: "..."
+title: "Migrated work item f00385"
 kind: feat
 status: ready
 type: proposal
@@ -14,6 +14,26 @@ migrated-from: docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md#item
 ## Goal
 
 Migrated work item: ....
+
+## why
+
+Imported from a foreign proposal format so it can be tracked under the canonical proposal workflow.
+
+## non-goals
+
+- Preserve the source document as an independently editable proposal.
+
+## Slices
+
+### S1 — Review migrated proposal
+
+- **Status**: pending
+- **Files**: `TODO`
+- **Gate**: none
+
+## acceptance
+
+- The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 
