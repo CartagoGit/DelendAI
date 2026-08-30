@@ -187,7 +187,7 @@ Editar Track C en el plan para añadir al inicio:
 
 ### S1 — Supersede `r00029`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `docs/mcp-vertex/proposals/ready/refactors/r00029-extraer-contracts-tipos-puros-sin-node.md`.
 - **Gate**: docs lint
@@ -195,7 +195,7 @@ Editar Track C en el plan para añadir al inicio:
 
 ### S2 — Reescribir Goal y Architecture de `r00030`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `docs/mcp-vertex/proposals/ready/refactors/r00030-client-importar-contracts-no-core-public.md`.
 - **Gate**: docs lint
@@ -203,15 +203,15 @@ Editar Track C en el plan para añadir al inicio:
 
 ### S3 — bullet en `b00237` non-goals
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  `docs/mcp-vertex/proposals/in-progress/b00237-deprecar-nodedynamicimport-core-public.md`.
+  `docs/mcp-vertex/proposals/done/breakings/b00237-deprecar-nodedynamicimport-core-public.md`.
 - **Gate**: docs lint
 - **Depends on**: S1.
 
 ### S4 — Anotar Track C en `q00006`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `docs/mcp-vertex/proposals/in-progress/plans/q00006-plan-hardening-post-auditoria-chatgpt-sol-cuarta-pasada.md`.
 - **Gate**: docs lint

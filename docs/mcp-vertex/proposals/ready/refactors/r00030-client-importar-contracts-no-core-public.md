@@ -22,10 +22,14 @@ related:
 
 ## Goal
 
-Eliminar del cliente (`packages/client/src/**`) toda importación que
-arrastre la superficie amplia de `@mcp-vertex/core` cuando en
-realidad solo necesita tipos. Después de esta hija, los tipos puros
-vienen de `@mcp-vertex/contracts`, y solo el runtime del cliente
+Migrar los imports de tipos puros del cliente desde
+`@mcp-vertex/core/public` (conveniencia histórica) a
+`@mcp-vertex/core/contracts` (subpath), de modo que el cliente
+solo importa de `@mcp-vertex/core` lo que realmente necesita de
+runtime y los tipos puros vienen del subpath `contracts` (ADR
+0007, [`d00012`](../docs/d00012-adr-contracts-subpath-vs-package.md)).
+Después de esta hija, los tipos puros vienen de
+`@mcp-vertex/core/contracts`, y solo el runtime del cliente
 importa de `@mcp-vertex/core`.
 
 ### Comportamiento actual
@@ -42,7 +46,7 @@ importa de `@mcp-vertex/core`.
 
 ### Comportamiento deseado
 
-- Imports de tipos puros → `@mcp-vertex/contracts`.
+- Imports de tipos puros → `@mcp-vertex/core/contracts`.
 - Imports de runtime → `@mcp-vertex/core/plugin`,
   `@mcp-vertex/core/runtime` o `@mcp-vertex/core/node` (subpaths
   introducidos por `r00028`).
@@ -77,7 +81,7 @@ importa de `@mcp-vertex/core`.
 - `tools/scripts/inspect/client-imports.script.ts` (one-shot):
   - Recorre `packages/client/src/**`.
   - Clasifica cada import:
-    - `type-only`: debe ir a `@mcp-vertex/contracts`.
+    - `type-only`: debe ir a `@mcp-vertex/core/contracts`.
     - `runtime`: debe ir a un subpath (`/plugin`, `/runtime`,
       `/node`).
     - `core (full barrel)`: solo cuando realmente haga falta.
@@ -90,7 +94,7 @@ importa de `@mcp-vertex/core`.
   // antes
   import type { PluginManifest } from '@mcp-vertex/core';
   // después
-  import type { PluginManifest } from '@mcp-vertex/contracts';
+  import type { PluginManifest } from '@mcp-vertex/core/contracts';
   ```
 - Imports de runtime se cambian a subpaths:
   ```ts
@@ -105,7 +109,7 @@ importa de `@mcp-vertex/core`.
 - `tools/scripts/lint/no-core-public-types-in-client.script.ts`:
   - Escanea `packages/client/src/**`.
   - Falla si encuentra `import type { ... } from '@mcp-vertex/core'`
-    para símbolos que `@mcp-vertex/contracts` exporta.
+    para símbolos que `@mcp-vertex/core/contracts` exporta.
   - Whitelist explícita para símbolos que aún no se han movido.
 
 ### 4. Tests
@@ -125,7 +129,7 @@ importa de `@mcp-vertex/core`.
 
 ## Slices
 
-### S1 — Migrar imports de tipos puros a `@mcp-vertex/contracts`
+### S1 — Migrar imports de tipos puros a `@mcp-vertex/core/contracts`
 
 - **Status**: pending
 - **Files**: `packages/client/src/**/*.ts` (todos los `import type` de `@mcp-vertex/core` hacia `contracts`), `tools/scripts/inspect/client-imports.script.ts`, `tools/scripts/lint/no-core-public-types-in-client.script.ts`
@@ -135,7 +139,7 @@ importa de `@mcp-vertex/core`.
 
 - Cero `import type { ... } from '@mcp-vertex/core'` en
   `packages/client/src/**` para tipos que ya existen en
-  `@mcp-vertex/contracts`.
+  `@mcp-vertex/core/contracts`.
 - Bundle size decrece (medición documentada).
 - Lint pasa en CI.
 - `bun run validate` verde.

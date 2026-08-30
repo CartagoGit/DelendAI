@@ -70,6 +70,9 @@ marcándolo como `@deprecated` en su ubicación anterior.
 - No rompe a consumidores existentes en esta iteración (solo
   warning).
 - No cambia la API del subpath `/node`.
+- No refactoriza la decisión arquitectónica "contracts como
+  paquete vs subpath". Esa decisión es estable: ver
+  [`d00012`](../../ready/docs/d00012-adr-contracts-subpath-vs-package.md).
 
 ## architecture
 
