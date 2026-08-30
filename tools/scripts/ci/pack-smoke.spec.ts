@@ -8,14 +8,14 @@ const repoRoot = join(
 	dirname(fileURLToPath(import.meta.url)),
 	'..',
 	'..',
-	'..',
+	'..'
 );
 const scriptPath = join(
 	repoRoot,
 	'tools',
 	'scripts',
 	'ci',
-	'pack-smoke.script.ts',
+	'pack-smoke.script.ts'
 );
 
 const runWrapper = (command: readonly string[]) =>
@@ -45,11 +45,11 @@ describe('pack-smoke output preservation', () => {
 		expect(result.status).toBe(1);
 		expect(result.stdout).toContain('::group::pack-smoke output (exit=1)');
 		expect(result.stdout).toContain(
-			'pack-smoke: failed to start command: Executable not found in $PATH',
+			'pack-smoke: failed to start command: Executable not found in $PATH'
 		);
 		expect(result.stdout).toContain('::endgroup::');
 		expect(result.stdout).toContain(
-			'::error::pack-smoke failed with exit 1',
+			'::error::pack-smoke failed with exit 1'
 		);
 	});
 
@@ -61,7 +61,7 @@ describe('pack-smoke output preservation', () => {
 
 		expect(result.status).toBe(2);
 		expect(`${result.stdout ?? ''}${result.stderr ?? ''}`).toContain(
-			'--command requires at least one argument',
+			'--command requires at least one argument'
 		);
 	});
 });

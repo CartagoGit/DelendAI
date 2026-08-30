@@ -28,7 +28,7 @@ const seed = async (
 	root: string,
 	folder: string,
 	filename: string,
-	fm: Record<string, string>,
+	fm: Record<string, string>
 ): Promise<void> => {
 	const dir = resolve(root, DEFAULT_PATH_LAYOUT.proposalsDir, folder);
 	await mkdir(dir, { recursive: true });
@@ -38,7 +38,7 @@ const seed = async (
 	await writeFile(
 		join(dir, filename),
 		`---\n${frontmatter}\n---\n\n## Goal\n\nseed.\n`,
-		'utf8',
+		'utf8'
 	);
 };
 
@@ -50,7 +50,7 @@ interface IIndexedProposal {
 }
 
 const readIndex = async (
-	root: string,
+	root: string
 ): Promise<{ count: number; proposals: IIndexedProposal[] }> => {
 	const indexPath = resolve(root, DEFAULT_PATH_LAYOUT.proposalIndexFile);
 	return JSON.parse(await readFile(indexPath, 'utf8')) as {
@@ -88,7 +88,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 			root,
 			DEFAULT_PATH_LAYOUT,
 			[],
-			FAKE_GIT_MV,
+			FAKE_GIT_MV
 		);
 		expect(result).toBeDefined();
 
@@ -97,7 +97,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 		expect(ids).toContain('f900');
 		expect(ids).toContain('f901');
 		expect(index.proposals.find((p) => p.id === 'f900')?.status).toBe(
-			'ready',
+			'ready'
 		);
 	});
 
@@ -175,7 +175,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 			root,
 			DEFAULT_PATH_LAYOUT,
 			[],
-			FAKE_GIT_MV,
+			FAKE_GIT_MV
 		);
 		const index = await readIndex(root);
 		const ids = index.proposals.map((p) => p.id);
@@ -194,7 +194,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 			title: 'Drift',
 		});
 		const drift = await findProposalFolderDrift(
-			resolve(root, DEFAULT_PATH_LAYOUT.proposalsDir),
+			resolve(root, DEFAULT_PATH_LAYOUT.proposalsDir)
 		);
 		expect(drift).toHaveLength(1);
 		expect(drift[0]).toMatchObject({
@@ -207,12 +207,12 @@ describe('syncProposalRegistry (entry point)', async () => {
 			root,
 			DEFAULT_PATH_LAYOUT,
 			[],
-			FAKE_GIT_MV,
+			FAKE_GIT_MV
 		);
 		expect(result.errors).toEqual([]);
 		const index = await readIndex(root);
 		expect(index.proposals.find((p) => p.id === 'f903')?.file).toBe(
-			'done/feats/f903-drift.md',
+			'done/feats/f903-drift.md'
 		);
 	});
 
@@ -232,7 +232,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 				root,
 				DEFAULT_PATH_LAYOUT,
 				[],
-				FAKE_GIT_MV,
+				FAKE_GIT_MV
 			);
 			expect(result.errors).toEqual([]);
 			const index = await readIndex(root);
@@ -240,7 +240,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 			expect(archived).toBeDefined();
 			expect(archived?.status).toBe('done');
 			expect(index.proposals.find((p) => p.id === 'f910')?.file).toBe(
-				'legacy/closed/feats/f910-archived-alpha.md',
+				'legacy/closed/feats/f910-archived-alpha.md'
 			);
 		});
 
@@ -255,7 +255,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 				root,
 				DEFAULT_PATH_LAYOUT,
 				[],
-				FAKE_GIT_MV,
+				FAKE_GIT_MV
 			);
 			const index = await readIndex(root);
 			const live = index.proposals.find((p) => p.id === 'f911');
@@ -268,9 +268,9 @@ describe('syncProposalRegistry (entry point)', async () => {
 				resolve(
 					root,
 					DEFAULT_PATH_LAYOUT.proposalsDir,
-					'legacy/closed',
+					'legacy/closed'
 				),
-				{ recursive: true },
+				{ recursive: true }
 			);
 			await seed(root, 'ready', 'f912-baseline.md', {
 				id: 'f912',
@@ -282,7 +282,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 				root,
 				DEFAULT_PATH_LAYOUT,
 				[],
-				FAKE_GIT_MV,
+				FAKE_GIT_MV
 			);
 			expect(result.errors).toEqual([]);
 			const index = await readIndex(root);

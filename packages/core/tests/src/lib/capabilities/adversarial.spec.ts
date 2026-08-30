@@ -90,13 +90,13 @@ describe('f00188 — capability gate adversarial (Track F)', () => {
 	it('parseCapability throws on unknown input, parseCapabilityList tolerates a single bad entry by throwing too', () => {
 		expect(() => parseCapability('git:read')).not.toThrow();
 		expect(() => parseCapability('git:teleport')).toThrow(
-			/unknown capability/,
+			/unknown capability/
 		);
 		expect(() =>
-			parseCapabilityList(['git:read', 'fs:write']),
+			parseCapabilityList(['git:read', 'fs:write'])
 		).not.toThrow();
 		expect(() =>
-			parseCapabilityList(['git:read', 'fs:write', 42]),
+			parseCapabilityList(['git:read', 'fs:write', 42])
 		).toThrow();
 	});
 
@@ -146,7 +146,7 @@ describe('f00188 — capability gate adversarial (Track F)', () => {
 	it('runtime: plugin declaring fs:read gets a refusal for git.write', () => {
 		const refusals: ICapabilityRefusal[] = [];
 		const ctx = createCapabilityContext(['fs:read'], {}, (r) =>
-			refusals.push(r),
+			refusals.push(r)
 		);
 		const result = (
 			ctx as unknown as {
@@ -207,7 +207,7 @@ describe('f00188 — capability gate adversarial (Track F)', () => {
 			ctx as unknown as { fs: { read: (args: unknown) => unknown } }
 		).fs.read;
 		expect(() => read('/tmp')).toThrow(
-			/granted but no implementation is registered/,
+			/granted but no implementation is registered/
 		);
 	});
 

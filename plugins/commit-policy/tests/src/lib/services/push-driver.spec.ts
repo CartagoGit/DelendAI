@@ -228,7 +228,7 @@ describe('runPushDriver', () => {
 		expect(pushes.calls.length).toBe(0);
 	});
 
-	it('refuses an authorized force push targeting a protected branch', async () => {
+	it('refuses an authorized force push targeting main before protected branch policy', async () => {
 		const { run, pushes } = buildPushFake();
 		const result = await runPushDriver(
 			{ authorizedBy: 'Release Bot' },
@@ -242,7 +242,7 @@ describe('runPushDriver', () => {
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('BRANCH_PROTECTED');
+		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
 		expect(pushes.calls.length).toBe(0);
 	});
 
@@ -257,15 +257,17 @@ describe('runPushDriver', () => {
 		expect(pushes.calls.length).toBe(1);
 	});
 
-	it('allows main resolved from the current branch when protectedBranches is empty', async () => {
+	it('refuses main resolved from the current branch even when protectedBranches is empty', async () => {
 		const { run, pushes } = buildPushFake({ currentBranch: 'main' });
 		const result = await runPushDriver(
 			{},
 			basePush({ remote: 'origin', protectedBranches: [] }),
 			run,
 		);
-		expect(result.ok).toBe(true);
-		expect(pushes.calls.length).toBe(1);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(pushes.calls.length).toBe(0);
 	});
 
 	it('allows direct push to develop when config omits it', async () => {

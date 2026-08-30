@@ -69,7 +69,7 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 		const files = ['src/a.ts', 'src/b.ts'];
 		const claim = await harness.callTool<LockOutput>(
 			'mcp-vertex_proposals_agent_lock',
-			{ action: 'claim', task_id: 'task-A', agent: 'agent-A', files },
+			{ action: 'claim', task_id: 'task-A', agent: 'agent-A', files }
 		);
 		expect(claim.ok).toBe(true);
 		expect(claim.structured.blocked).not.toBe(true);
@@ -77,14 +77,14 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 		// Status reflects agent-A owning both files.
 		const status = await harness.callTool<LockOutput>(
 			'mcp-vertex_proposals_agent_lock',
-			{ action: 'status' },
+			{ action: 'status' }
 		);
 		const entryA = (status.structured.in_flight ?? []).find(
-			(e) => e.task_id === 'task-A',
+			(e) => e.task_id === 'task-A'
 		);
 		expect(entryA?.agent).toBe('agent-A');
 		expect([...(entryA?.ownership ?? [])].sort()).toEqual(
-			[...files].sort(),
+			[...files].sort()
 		);
 
 		// agent-B claiming an overlapping file is blocked, naming the
@@ -97,7 +97,7 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 				agent: 'agent-B',
 				files: ['src/a.ts'],
 				onContention: 'fail',
-			},
+			}
 		);
 		expect(conflict.structured.blocked).toBe(true);
 		expect(conflict.structured.ok).toBe(false);
@@ -107,24 +107,24 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 		// agent-A releases; the files leave the in-flight set.
 		const release = await harness.callTool<LockOutput>(
 			'mcp-vertex_proposals_agent_lock',
-			{ action: 'release', task_id: 'task-A', agent: 'agent-A' },
+			{ action: 'release', task_id: 'task-A', agent: 'agent-A' }
 		);
 		expect(release.ok).toBe(true);
 		const after = await harness.callTool<LockOutput>(
 			'mcp-vertex_proposals_agent_lock',
-			{ action: 'status' },
+			{ action: 'status' }
 		);
 		expect(
 			(after.structured.in_flight ?? []).some(
-				(e) => e.task_id === 'task-A',
-			),
+				(e) => e.task_id === 'task-A'
+			)
 		).toBe(false);
 	});
 
 	it('sync_proposals picks up a freshly dropped proposal into the index', async () => {
 		const before = await harness.callTool<{ count: number }>(
 			'mcp-vertex_proposals_sync_proposals',
-			{},
+			{}
 		);
 		const baseline = before.structured.count;
 
@@ -148,7 +148,7 @@ title: freshly dropped
 
 Seed for the sync e2e.
 `,
-			'utf8',
+			'utf8'
 		);
 
 		const after = await harness.callTool<{
@@ -176,7 +176,7 @@ Seed for the sync e2e.
 				writeFileSync(
 					join(dir, filename),
 					`---\nid: ${id}\nstatus: review\nkind: ${kind}\ntype: proposal\ntrack: runtime\ndate: 2026-08-30\n---\n\n## Goal\n\nRuntime route coverage.\n`,
-					'utf8',
+					'utf8'
 				);
 			}
 			const result = await runtime.callTool<{
@@ -225,7 +225,7 @@ Seed for the sync e2e.
 			expect(res.structured.path).toBeDefined();
 			const wtPath = res.structured.path as string;
 			expect(wtPath).toBe(
-				join(ws, '.cache', 'mcp-vertex', '.worktrees', 'agent-a'),
+				join(ws, '.cache', 'mcp-vertex', '.worktrees', 'agent-a')
 			);
 			expect(existsSync(wtPath)).toBe(true);
 
@@ -253,7 +253,7 @@ Seed for the sync e2e.
 		expect(res.structured.ok).toBe(false);
 		expect(res.structured.action).toBe('create');
 		expect(res.structured.reason).toBe(
-			'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in mcp-vertex.config.json to enable.',
+			'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in mcp-vertex.config.json to enable.'
 		);
 	});
 
@@ -295,7 +295,7 @@ Seed for the sync e2e.
 		// not two (a duplicate would also make the file parseQueue-invalid).
 		const report = await harness.callTool<{ queuedCount?: number }>(
 			'mcp-vertex_proposals_task_queue',
-			{ action: 'report', params: {} },
+			{ action: 'report', params: {} }
 		);
 		expect(report.ok).toBe(true);
 		expect(report.structured.queuedCount).toBe(1);
@@ -309,7 +309,7 @@ Seed for the sync e2e.
 				task_id: 'task-P',
 				agent: 'agent-P',
 				files: ['src/p.ts'],
-			},
+			}
 		);
 		// Success envelopes have exact text/structured parity (no logHint).
 		expect(claim.text).toBe(JSON.stringify(claim.structured));
