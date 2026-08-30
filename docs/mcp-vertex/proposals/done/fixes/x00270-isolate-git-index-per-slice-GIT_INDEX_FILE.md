@@ -2,7 +2,9 @@
 id: x00270
 title: "AUD-CP-005.iso — Aislar el índice Git por slice (`GIT_INDEX_FILE`) para eliminar TOCTOU del staging compartido"
 kind: fix
-status: ready
+status: done
+shipped-in:
+    - 7a253726
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -214,27 +216,36 @@ cierre AUD-CP-005.
 
 ### S1 — `commitWithGuard` con `GIT_INDEX_FILE` aislado
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/commit-policy/src/lib/services/commit-driver.ts` — `commitWithGuard`.
   - `plugins/commit-policy/src/lib/services/commit-driver.spec.ts` — tabla: subset ok, subset fail, files vacío, files vacío skipStageExplicit, branch inválida, lock contention.
   - `.gitignore` — añade `.mcp-vertex/`.
 - **Gate**: type + concurrency (test que lanza 8 slices paralelos sobre mismo repo).
 - **Depends on**: `x00263`, `x00264`, `x00269`, `f00182`
-
+- review-state: done
+- review-implementer: sparrow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificacion independiente en el checkout actual: commitWithGuard usa GIT_INDEX_FILE temporal con mkdtemp, ejecuta read-tree -> add -> write-tree -> commit-tree -> update-ref bajo withFileMutex en .mcp-vertex/index-lock, preserva .git/index real en la preparacion y deja la via de indice compartido solo como fallback cuando faltan workspaceRoot o branch. Focused vitest verde y typecheck del plugin verde. Hay cambios fuera del slice en el working tree, pero no bloquean esta aprobacion del comportamiento revisado.
 ### S2 — `engine.ts` adopta `commitWithGuard` y deprecación de `commitAndPush`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/engine.ts`, `plugins/commit-policy/src/public/index.ts`.
 - **Gate**: type
 - **Depends on**: S1
-
+- review-state: done
+- review-implementer: finch
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente en el checkout actual: el engine real enruta el commit por commitWithGuard en lib/engine.ts, la API pública expone commitWithGuard en public/index.ts y no hay reexport vigente de commitAndPush ni consumidores rotos detectados. Validaciones enfocadas verdes: plugins/commit-policy bun run typecheck y engine.spec.ts 16/16.
 ### S3 — Limpieza de tmp + lint de `.mcp-vertex/`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/commit-driver.ts`, `.gitignore`, `tools/scripts/lint/ephemeral-paths.script.ts`.
 - **Gate**: lint
-
+- review-state: done
+- review-implementer: finch
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificacion independiente del checkout actual: commit-driver limpia el tmp del indice aislado en el finally interno al callback de withFileMutex; el lint solo exime el patron acotado de commit-policy con mkdtemp+GIT_INDEX_FILE+index-lock+rm(tmpDir); lint:ephemeral, typecheck del plugin y spec focalizada del commit driver pasan sin regresiones locales.
 ## acceptance
 
 - `t00022` corre con `--git-isolation=index-file`: 8 slices

@@ -2,7 +2,9 @@
 id: x00265
 title: "AUD-CP-007 — `requireConventional=true` debe rechazar mensajes no convencionales"
 kind: fix
-status: ready
+status: done
+shipped-in:
+    - 6b11ca54
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -130,7 +132,7 @@ Sin refusal, commit procede.
 
 ### S1 — Engine valida cabecera y rechaza con `NON_CONVENTIONAL_MESSAGE` cuando aplica
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/contracts/i18n-types.ts` (o nuevo `conventional.ts`), `plugins/commit-policy/tests/src/lib/engine.spec.ts`
 - **Gate**: type
 - **Dependency**: `x00259`, `f00182`
@@ -139,7 +141,11 @@ Sin refusal, commit procede.
   - "requireConventional=true + 'feat: x' → ok"
   - "requireConventional=false + 'hola' → warning, commit procede"
   - "refusal lleva código específico (EMPTY_HEADER / MALFORMED_HEADER / UNKNOWN_TYPE)"
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: copilot_delivery_verifier
+- review-log: requested_changes by delivery_verifier — Los tests de engine pasan (15/15) y la lógica requireConventional está implementada, pero Biome falla por formato en i18n-types.ts (clave UNKNOWN_TYPE con indentación incorrecta en ambos locales). Corregir el formato para que bun run lint quede verde.
+- review-log: approved by copilot_delivery_verifier — Verificacion independiente: tests engine 15/15 verdes, Biome limpio sobre los archivos del slice y typecheck de plugins/commit-policy verde tras la correccion de formato en i18n-types.ts.
 ## acceptance
 
 - Cero commits con header no convencional cuando

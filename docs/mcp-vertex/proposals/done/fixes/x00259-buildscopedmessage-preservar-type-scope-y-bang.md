@@ -2,7 +2,9 @@
 id: x00259
 title: "AUD-CP-001 — `buildScopedMessage` debe preservar `type`, scope y `!`"
 kind: fix
-status: ready
+status: done
+shipped-in:
+    - dcf046ef
 type: proposal
 track: commit-policy
 date: 2026-08-25
