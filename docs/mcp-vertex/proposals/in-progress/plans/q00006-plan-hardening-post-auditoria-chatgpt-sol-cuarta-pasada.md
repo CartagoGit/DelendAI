@@ -1228,6 +1228,9 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### Track C — Arquitectura y boundaries (P1)
 
+> **Nota arquitectónica**: las decisiones de boundary de este
+> track están consolidadas en [`d00012`](../../ready/docs/d00012-adr-contracts-subpath-vs-package.md) (ADR 0007).
+> `r00029` queda **superseded-by: d00012**.
 > **Audit refs:** §6 (core god package), §7 (plugin-sdk),
 > §8 (packages target), §9 (`core/public` amplio), §22-23 (client
 > decoupling).
