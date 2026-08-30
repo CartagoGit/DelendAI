@@ -236,6 +236,50 @@ export interface IActivationDeps {
 	readonly trustOverride?: boolean;
 }
 
+interface IResilientClient {
+	readonly client: McpStdioClient;
+	reconnect(): Promise<void>;
+}
+
+const createResilientClient = (
+	initial: McpStdioClient,
+	connect: () => Promise<McpStdioClient>,
+): IResilientClient => {
+	let current = initial;
+	let reconnecting: Promise<void> | undefined;
+	const proxy = McpStdioClient.fromTransport({
+		async callTool(input) {
+			return {
+				structuredContent: await current.request(
+					input.name,
+					input.arguments ?? {},
+				),
+			};
+		},
+		async listTools() {
+			return { tools: await current.listTools() };
+		},
+		async close() {
+			await current.close();
+		},
+	});
+	return {
+		client: proxy,
+		reconnect: async () => {
+			reconnecting ??= connect()
+				.then(async (next) => {
+					const previous = current;
+					current = next;
+					await previous.close();
+				})
+				.finally(() => {
+					reconnecting = undefined;
+				});
+			await reconnecting;
+		},
+	};
+};
+
 export const activate = async (
 	context: IExtensionContext,
 	deps: IActivationDeps = {},
@@ -288,31 +332,70 @@ export const activate = async (
 		deps.trustOverride === true
 			? true
 			: (vscode.workspace?.isTrusted ?? true);
-	if (!isTrusted) {
-		await vscode.window.showInformationMessage?.(
-			'MCP-Vertex: workspace is untrusted — child server NOT started. Run `MCP-Vertex: Start Server (Untrusted)` to start manually.',
-		);
-		setRuntimeHandle(handle);
-		return;
-	}
 	const startupReportChannel =
 		vscode.window.createOutputChannel?.('MCP Vertex');
 	if (startupReportChannel !== undefined) {
 		handle.register('startup-report-channel', startupReportChannel);
 	}
-	let client: McpStdioClient;
-	try {
-		client = await (
+	let initialClient: McpStdioClient;
+	const connectClient = (): Promise<McpStdioClient> =>
+		(
 			deps.createClient ??
 			(() => createDefaultClient(vscode, startupReportChannel))
 		)();
-	} catch (err) {
-		// Best-effort: surface the failure but never leave a stale handle
-		// for a future activation to inherit.
-		setRuntimeHandle(undefined);
-		handle.disposeAll();
-		throw err;
+	const disconnectedClient = (failure: Error): McpStdioClient =>
+		McpStdioClient.fromTransport({
+			async callTool() {
+				throw failure;
+			},
+			async listTools() {
+				throw failure;
+			},
+			async close() {},
+		});
+	if (!isTrusted) {
+		initialClient = disconnectedClient(
+			new Error('workspace is untrusted; MCP server was not started'),
+		);
+		runSafely(
+			Promise.resolve(
+				vscode.window.showInformationMessage?.(
+					'MCP-Vertex: workspace is untrusted — child server NOT started. Run `MCP-Vertex: Start Server (Untrusted)` to start manually.',
+				),
+			),
+		);
+	} else {
+		try {
+			initialClient = await connectClient();
+		} catch (err) {
+			const failure = err instanceof Error ? err : new Error(String(err));
+			initialClient = McpStdioClient.fromTransport({
+				async callTool() {
+					throw failure;
+				},
+				async listTools() {
+					throw failure;
+				},
+				async close() {},
+			});
+			runSafely(
+				Promise.resolve(
+					vscode.window.showErrorMessage?.(
+						`MCP-Vertex: server unavailable. Use Restart MCP Server to reconnect: ${failure.message}`,
+					),
+				),
+			);
+		}
 	}
+	const resilient = createResilientClient(initialClient, connectClient);
+	const client = resilient.client;
+	const reconnect = resilient.reconnect;
+	void Promise.resolve(
+		context.globalState.update(CLIENT_STATE_KEY, client),
+	).catch(() => {
+		// Persistence is auxiliary; the live client remains usable when the
+		// host cannot write global state during startup.
+	});
 	// Only NOW is the handle fully wired — client + services can safely
 	// register disposables that depend on it.
 	setRuntimeHandle(handle);
@@ -518,7 +601,11 @@ export const activate = async (
 	track(registerOpenToolDetailCommand({ vscode, client, ...withPrefix }));
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
-	track(registerRestartServerCommand(vscode));
+	track(
+		registerRestartServerCommand(vscode, {
+			restartFn: reconnect,
+		}),
+	);
 	track(
 		registerPluginActivationCommand({
 			vscode,

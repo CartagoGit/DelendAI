@@ -81,7 +81,7 @@ describe('VS Code extension smoke', async () => {
 			createClient: async () => client,
 		});
 
-		expect(stored.get(CLIENT_STATE_KEY)).toBe(client);
+		expect(stored.get(CLIENT_STATE_KEY)).toBeInstanceOf(McpStdioClient);
 		// f125 + f126/f00026: original commands + observability commands.
 		// f00047 S5: +1 for the new mcp-vertex.openToolbar command.
 		// f00030 S4: +1 for the new mcp-vertex.setupGithub command.
@@ -162,6 +162,60 @@ describe('VS Code extension smoke', async () => {
 		await expect(
 			activate(context, { vscode, createClient: async () => client }),
 		).resolves.toBeUndefined();
+		await deactivate();
+	});
+
+	it('keeps the extension alive and reconnects after an initial MCP failure', async () => {
+		const commands = new Map<
+			string,
+			(...args: readonly unknown[]) => unknown
+		>();
+		const context: IExtensionContext = {
+			subscriptions: [],
+			globalState: {
+				get<T>(): T | undefined {
+					return undefined;
+				},
+				async update() {},
+			},
+		};
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand(command, callback) {
+					commands.set(command, callback);
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+				async showErrorMessage() {
+					return undefined;
+				},
+			},
+		};
+		const connected = McpStdioClient.fromTransport({
+			async callTool() {
+				return { structuredContent: overviewFixture };
+			},
+		});
+		let attempts = 0;
+		const createClient = async (): Promise<McpStdioClient> => {
+			attempts += 1;
+			if (attempts === 1) throw new Error('server is starting');
+			return connected;
+		};
+
+		await expect(
+			activate(context, { vscode, createClient }),
+		).resolves.toBeUndefined();
+		expect(commands.has('mcp-vertex.providers.healthcheck')).toBe(true);
+		expect(commands.has('mcp-vertex.restartServer')).toBe(true);
+
+		await commands.get('mcp-vertex.restartServer')?.();
+		expect(attempts).toBe(2);
 		await deactivate();
 	});
 
