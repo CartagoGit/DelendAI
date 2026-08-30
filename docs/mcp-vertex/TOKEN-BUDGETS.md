@@ -3,7 +3,7 @@
 <!-- generated: token-budget-dashboard.script.ts -->
 <!-- generated — do not edit by hand -->
 
-Generated at: 2026-08-30T13:09:18.567Z
+Generated at: 2026-08-30T13:48:04.456Z
 
 This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.
 
@@ -46,7 +46,7 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 | search_search | native | 874 | 219 | 2,700 | 3,000 | within hard |
 | docs_docs_list | native | 209 | 53 | 2,200 | 2,500 | within hard |
 | proposals_round_context | native | 153 | 39 | 2,700 | 3,000 | within hard |
-| logs_tail | native | 1,609 | 403 | 5,500 | 6,000 | within hard |
+| logs_tail | native | 1,605 | 402 | 5,500 | 6,000 | within hard |
 
 ## Real preset dashboard
 

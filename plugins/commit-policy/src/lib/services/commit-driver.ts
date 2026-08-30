@@ -12,6 +12,7 @@
  * generate (commit disabled, identity empty, protected branch, …).
  */
 
+// effect-boundary-authorized: isolated Git adapter needs child_process and temporary index files
 import { execFile } from 'node:child_process';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

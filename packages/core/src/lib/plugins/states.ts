@@ -70,6 +70,13 @@ export interface IPluginStateMachine {
 	readonly current: PluginState;
 	transition(to: PluginState, reason: ITransitionReason): void;
 	canTransition(to: PluginState): boolean;
+	onTransition(
+		listener: (event: {
+			readonly from: PluginState;
+			readonly to: PluginState;
+			readonly reason: ITransitionReason;
+		}) => void,
+	): () => void;
 	readonly history: readonly {
 		readonly from: PluginState;
 		readonly to: PluginState;
@@ -86,6 +93,13 @@ export const createPluginStateMachine = (
 		to: PluginState;
 		reason: ITransitionReason;
 	}[] = [];
+	const listeners = new Set<
+		(event: {
+			readonly from: PluginState;
+			readonly to: PluginState;
+			readonly reason: ITransitionReason;
+		}) => void
+	>();
 	return {
 		get current() {
 			return current;
@@ -96,12 +110,22 @@ export const createPluginStateMachine = (
 		canTransition(to) {
 			return canTransition(current, to);
 		},
+		onTransition(listener) {
+			listeners.add(listener);
+			return () => {
+				listeners.delete(listener);
+			};
+		},
 		transition(to, reason) {
 			if (!canTransition(current, to)) {
 				throw new PluginStateError(current, to, reason);
 			}
-			history.push({ from: current, to, reason });
+			const event = { from: current, to, reason };
+			history.push(event);
 			current = to;
+			for (const listener of listeners) {
+				listener(event);
+			}
 		},
 	};
 };

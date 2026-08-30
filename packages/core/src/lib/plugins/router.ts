@@ -13,6 +13,11 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from './plugin-contract';
+import {
+	createPluginStateMachine,
+	type ITransitionReason,
+	type PluginState,
+} from './states';
 
 export type PluginRouteKind = 'tool' | 'prompt' | 'resource';
 
@@ -53,8 +58,31 @@ export interface IPluginRouterStats extends IPluginRouterBootResult {
 	readonly totalRouteLoadMs: number;
 }
 
+export interface IPluginStateTransitionEvent {
+	readonly pluginId: string;
+	readonly from: PluginState;
+	readonly to: PluginState;
+	readonly reason: ITransitionReason;
+}
+
+export class PluginRouteStateError extends Error {
+	readonly kind = 'plugin-not-active';
+
+	constructor(
+		readonly pluginId: string,
+		readonly state: PluginState,
+		readonly route: IPluginRouteMatch,
+	) {
+		super(
+			`plugin "${pluginId}" is ${state} and cannot serve ${route.kind} "${route.key}"`,
+		);
+		this.name = 'PluginRouteStateError';
+	}
+}
+
 export interface ILazyPluginRouter {
 	initialize(): Promise<IPluginRouterBootResult>;
+	listTools(): Promise<readonly string[]>;
 	resolveTool(toolName: string): Promise<IPluginRouteMatch | undefined>;
 	resolvePrompt(promptName: string): Promise<IPluginRouteMatch | undefined>;
 	resolveResource(
@@ -63,6 +91,15 @@ export interface ILazyPluginRouter {
 	loadToolOwner(toolName: string): Promise<IPluginRouteLoadResult>;
 	loadPromptOwner(promptName: string): Promise<IPluginRouteLoadResult>;
 	loadResourceOwner(resourceUri: string): Promise<IPluginRouteLoadResult>;
+	pluginState(pluginId: string): PluginState | undefined;
+	transitionPlugin(
+		pluginId: string,
+		to: PluginState,
+		reason: ITransitionReason,
+	): PluginState;
+	onPluginStateTransition(
+		listener: (event: IPluginStateTransitionEvent) => void,
+	): () => void;
 	stats(): IPluginRouterStats;
 	reset(): void;
 }
@@ -134,6 +171,7 @@ interface IRouteCache {
 	readonly toolOwners: ReadonlyMap<string, IPluginRouteMatch>;
 	readonly promptOwners: ReadonlyMap<string, IPluginRouteMatch>;
 	readonly resourceOwners: ReadonlyMap<string, IPluginRouteMatch>;
+	readonly pluginIds: readonly string[];
 	readonly boot: IPluginRouterBootResult;
 }
 
@@ -177,6 +215,7 @@ const buildRouteMaps = (manifests: readonly IPluginManifest[]): IRouteCache => {
 		toolOwners,
 		promptOwners,
 		resourceOwners,
+		pluginIds: manifests.map((manifest) => manifest.id),
 		boot: {
 			mode: 'lazy',
 			bootMs: 0,
@@ -206,6 +245,32 @@ export const createLazyPluginRouter = (
 		string,
 		Promise<ReadonlyMap<string, ICapturedToolBinding>>
 	>();
+	const pluginStates = new Map<
+		string,
+		ReturnType<typeof createPluginStateMachine>
+	>();
+	const transitionListeners = new Set<
+		(event: IPluginStateTransitionEvent) => void
+	>();
+
+	const bindStateMachine = (
+		pluginId: string,
+		initial: PluginState = 'ACTIVE',
+	) => {
+		const existing = pluginStates.get(pluginId);
+		if (existing !== undefined) return existing;
+		const machine = createPluginStateMachine(initial);
+		machine.onTransition((event) => {
+			for (const listener of transitionListeners) {
+				listener({ pluginId, ...event });
+			}
+		});
+		pluginStates.set(pluginId, machine);
+		return machine;
+	};
+
+	const stateOf = (pluginId: string): PluginState | undefined =>
+		pluginStates.get(pluginId)?.current;
 
 	const ensureInitialized = async (): Promise<IRouteCache> => {
 		if (cache !== undefined) return cache;
@@ -215,6 +280,9 @@ export const createLazyPluginRouter = (
 			const manifests = await options.discovery.manifests();
 			const manifestScanMs = options.discovery.stats().lastScanMs;
 			const routeCache = buildRouteMaps(manifests);
+			for (const pluginId of routeCache.pluginIds) {
+				bindStateMachine(pluginId);
+			}
 			let failures: readonly IFailedPluginEntry[] = [];
 			let eagerlyLoadedPluginCount = 0;
 			if (mode === 'eager') {
@@ -247,9 +315,35 @@ export const createLazyPluginRouter = (
 	): Promise<IPluginRouteMatch | undefined> => {
 		routeLookups += 1;
 		const initialized = await ensureInitialized();
+		const route =
+			kind === 'tool'
+				? initialized.toolOwners.get(key)
+				: kind === 'prompt'
+					? initialized.promptOwners.get(key)
+					: initialized.resourceOwners.get(key);
+		if (route === undefined) return undefined;
+		return stateOf(route.pluginId) === 'ACTIVE' ? route : undefined;
+	};
+
+	const resolveKnownRoute = async (
+		kind: PluginRouteKind,
+		key: string,
+	): Promise<IPluginRouteMatch | undefined> => {
+		const initialized = await ensureInitialized();
 		if (kind === 'tool') return initialized.toolOwners.get(key);
 		if (kind === 'prompt') return initialized.promptOwners.get(key);
 		return initialized.resourceOwners.get(key);
+	};
+
+	const assertRouteIsActive = (route: IPluginRouteMatch): void => {
+		const state = stateOf(route.pluginId);
+		if (state !== 'ACTIVE') {
+			throw new PluginRouteStateError(
+				route.pluginId,
+				state ?? 'UNLOADED',
+				route,
+			);
+		}
 	};
 
 	const activateToolBindings = async (
@@ -277,8 +371,9 @@ export const createLazyPluginRouter = (
 		kind: PluginRouteKind,
 		key: string,
 	): Promise<IPluginRouteLoadResult> => {
-		const route = await resolveRoute(kind, key);
+		const route = await resolveKnownRoute(kind, key);
 		if (route === undefined) throw missingRouteError(kind, key);
+		assertRouteIsActive(route);
 		const cacheHit = options.loader.state(route.pluginId) === 'loaded';
 		const startedAt = Date.now();
 		const entry = await options.loader.load(route.pluginId);
@@ -304,6 +399,13 @@ export const createLazyPluginRouter = (
 		async initialize() {
 			return (await ensureInitialized()).boot;
 		},
+		async listTools() {
+			const initialized = await ensureInitialized();
+			return [...initialized.toolOwners.values()]
+				.filter((route) => stateOf(route.pluginId) === 'ACTIVE')
+				.map((route) => route.key)
+				.sort();
+		},
 		resolveTool(toolName) {
 			return resolveRoute('tool', toolName);
 		},
@@ -321,6 +423,19 @@ export const createLazyPluginRouter = (
 		},
 		loadResourceOwner(resourceUri) {
 			return loadRouteOwner('resource', resourceUri);
+		},
+		pluginState(pluginId) {
+			return stateOf(pluginId);
+		},
+		transitionPlugin(pluginId, to, reason) {
+			bindStateMachine(pluginId).transition(to, reason);
+			return stateOf(pluginId) ?? to;
+		},
+		onPluginStateTransition(listener) {
+			transitionListeners.add(listener);
+			return () => {
+				transitionListeners.delete(listener);
+			};
 		},
 		stats() {
 			return {
@@ -347,6 +462,8 @@ export const createLazyPluginRouter = (
 			lastRouteLoadMs = 0;
 			totalRouteLoadMs = 0;
 			activationCache.clear();
+			pluginStates.clear();
+			transitionListeners.clear();
 			options.discovery.invalidate();
 		},
 	};
