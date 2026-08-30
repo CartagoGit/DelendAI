@@ -52,8 +52,15 @@ describe('resolveAutoScaffold — proposals availability', async () => {
 				expect(outcome.records[1]?.kind).toBe('plan');
 				expect(outcome.records[2]?.severity).toBe('FATAL');
 				// The proposal file must be on disk.
+				expect(
+					outcome.records.map((record) => record.relativePath),
+				).toEqual([
+					'audits/a00001-consolidated-audit-record.md',
+					'plans/q00001-implementation-plan-from-audit-findings.md',
+					'fixes/x00001-titles-persistences.md',
+				]);
 				const written = await readFile(
-					path.join(dir, outcome.records[0]!.filename),
+					path.join(dir, outcome.records[0]!.relativePath),
 					'utf8',
 				);
 				expect(written).toContain('kind: audit');
@@ -96,7 +103,7 @@ describe('resolveAutoScaffold — proposals availability', async () => {
 			expect(outcome.kind).toBe('scaffolded');
 			if (outcome.kind === 'scaffolded') {
 				const written = await readFile(
-					path.join(dir, outcome.records[0]!.filename),
+					path.join(dir, outcome.records[0]!.relativePath),
 					'utf8',
 				);
 				expect(written).not.toContain('Alcance B');

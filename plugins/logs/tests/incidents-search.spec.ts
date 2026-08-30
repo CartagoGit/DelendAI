@@ -108,6 +108,7 @@ describe('logs_log (f00153 S2)', () => {
 		const query = structured(
 			await handlers.get('logs_query')?.({
 				incidentType: 'lock-conflict',
+				detail: 'full',
 			}),
 		);
 		const events = query.events as Array<{

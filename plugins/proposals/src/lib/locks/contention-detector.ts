@@ -276,6 +276,7 @@ export const detectContention = async (
 
 	for (const entry of history) {
 		if (entry.kind !== 'disjoint') continue;
+		if (entry.resolvedAt !== undefined) continue;
 		const startedMs = new Date(entry.startedAt).getTime();
 		if (Number.isNaN(startedMs)) continue;
 		const resolvedMs =

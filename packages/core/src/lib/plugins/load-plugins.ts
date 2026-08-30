@@ -9,9 +9,8 @@ import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-li
 import { registerResolvedPluginsWithLifecycle } from './load-plugins-lifecycle.helper';
 import { normalizePluginOptions } from './plugin-activation-session';
 import { validatePluginConfiguration } from './configuration-compatibility';
-import { resolve as resolvePath } from 'node:path';
+import { join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { join } from 'node:path';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 import { basename } from 'node:path';
@@ -93,8 +92,13 @@ export interface ILoadPluginsOptions {
  */
 export const nodeDynamicImport = async (
 	specifier: string,
+	workspaceRoot?: string,
 ): Promise<unknown> => {
-	const normalized = normalizeImportSpecifier(specifier);
+	const runtimeSpecifier =
+		workspaceRoot !== undefined && specifier.startsWith('@mcp-vertex/')
+			? await resolveLocalFirstPartyDist(specifier, workspaceRoot)
+			: specifier;
+	const normalized = normalizeImportSpecifier(runtimeSpecifier);
 	// Use `Function` to hide `import()` from the static analyser, but
 	// fall back to the direct form on sandbox failures so callers
 	// (and the test suite) keep working in restricted runtimes.
@@ -110,6 +114,22 @@ export const nodeDynamicImport = async (
 		}
 		throw err;
 	}
+};
+
+const resolveLocalFirstPartyDist = async (
+	specifier: string,
+	workspaceRoot: string,
+): Promise<string> => {
+	const packageId = specifier.slice('@mcp-vertex/'.length);
+	if (packageId.includes('/')) return specifier;
+	const candidates = [
+		join(workspaceRoot, 'packages', packageId, 'dist', 'index.js'),
+		join(workspaceRoot, 'plugins', packageId, 'dist', 'index.js'),
+	];
+	for (const candidate of candidates) {
+		if (await fileExists(candidate)) return candidate;
+	}
+	return specifier;
 };
 
 const normalizeImportSpecifier = (specifier: string): string => {

@@ -2,6 +2,7 @@ import type { McpVertexToolOutputs } from '@mcp-vertex/client';
 
 import type { ICommandDeps } from './types';
 import { renderJsonHtml, showCommandError } from './types';
+import { runInPrivateTerminalWithRetry } from './private-terminal-supervisor';
 
 export const RUN_VALIDATION_COMMAND = 'mcp-vertex.runValidation';
 
@@ -28,6 +29,19 @@ export const registerRunValidationCommand = (deps: ICommandDeps) =>
 				{ scope: string; dryRun: boolean },
 				IQualityRunOutput
 			>('mcp-vertex_quality_run_quality', { scope: 'all', dryRun: true });
+			const failedCommand = quality.results.find((result) => !result.ok);
+			const terminalRecovery =
+				failedCommand === undefined
+					? undefined
+					: await runInPrivateTerminalWithRetry(
+							deps.vscode,
+							failedCommand.command,
+							{
+								timeoutMs: failedCommand.timedOut
+									? 15_000
+									: 120_000,
+							},
+						);
 			const panel = deps.vscode.window.createWebviewPanel(
 				'mcpVertexValidation',
 				'mcp-vertex Validation',
@@ -37,6 +51,7 @@ export const registerRunValidationCommand = (deps: ICommandDeps) =>
 			panel.webview.html = renderJsonHtml('mcp-vertex Validation', {
 				matrix,
 				quality,
+				...(terminalRecovery === undefined ? {} : { terminalRecovery }),
 			});
 		} catch (err) {
 			await showCommandError(deps.vscode, 'run validation', err);

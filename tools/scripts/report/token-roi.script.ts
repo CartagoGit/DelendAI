@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import {
 	aggregateROI,
+	buildValueLookup,
 	loadAllPluginManifests,
 	validatePluginManifest,
 	withFileMutex,
@@ -11,7 +12,6 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
-import { buildValueLookup } from '../../../packages/core/src/lib/budgets/manifest';
 
 export const TOKEN_ROI_OUTPUT_PATH = 'apps/web/src/data/token-roi.json';
 

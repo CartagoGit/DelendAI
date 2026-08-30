@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 
-import { killProcessGroup, killProcessTree } from '../commands/process-group';
+import { killProcessTree } from '../commands/process-group';
 import type {
 	IRunArgvOptions,
 	IRunArgvOutcome,
@@ -31,6 +31,7 @@ export interface IRunCommandOutcome {
 	readonly code: number;
 	readonly output: string;
 	readonly timedOut: boolean;
+	readonly aborted?: boolean;
 }
 
 export interface IRunCommandOptions {
@@ -46,6 +47,11 @@ export interface IRunCommandOptions {
 	 * or a lockfile) so concurrent callers serialize instead of racing.
 	 */
 	readonly lockPath?: string;
+	/**
+	 * Optional abort signal. When aborted, the whole process tree is killed
+	 * and the promise resolves only after the child closes.
+	 */
+	readonly signal?: AbortSignal;
 }
 
 /**
@@ -114,39 +120,105 @@ const decodeUtf8Chunks = (chunks: readonly Buffer[]): string => {
 	return truncateUtf8Buffer(combined, combined.length).toString('utf8');
 };
 
+const TIMEOUT_EXIT_CODE = 124;
+const ABORT_EXIT_CODE = 130;
+
+type IStopReason = 'timeout' | 'abort';
+
+const bindAbortSignal = (
+	signal: AbortSignal | undefined,
+	onAbort: () => void,
+): (() => void) => {
+	if (signal === undefined) return () => {};
+	if (signal.aborted) {
+		onAbort();
+		return () => {};
+	}
+	const handleAbort = (): void => {
+		onAbort();
+	};
+	signal.addEventListener('abort', handleAbort, { once: true });
+	return () => {
+		signal.removeEventListener('abort', handleAbort);
+	};
+};
+
+const resolveOutcomeCode = (
+	code: number | null,
+	timedOut: boolean,
+	aborted: boolean,
+): number => {
+	if (aborted) return ABORT_EXIT_CODE;
+	if (timedOut) return TIMEOUT_EXIT_CODE;
+	return code ?? 1;
+};
+
 const spawnOnce = (
 	command: string,
 	cwd: string,
 	timeoutMs: number,
 	maxOutputBytes: number,
+	signal?: AbortSignal,
 ): Promise<IRunCommandOutcome> =>
 	new Promise<IRunCommandOutcome>((resolve) => {
+		if (signal?.aborted === true) {
+			resolve({
+				code: ABORT_EXIT_CODE,
+				output: 'aborted before spawn',
+				timedOut: false,
+				aborted: true,
+			});
+			return;
+		}
 		const outputCollector = createByteCollector(maxOutputBytes);
-		let timedOut = false;
+		let stopReason: IStopReason | undefined;
 		const child = spawnShell(command, cwd);
 		const capture = (chunk: Buffer): void => {
 			captureUtf8Bytes(outputCollector, chunk);
 		};
 		child.stdout?.on('data', capture);
 		child.stderr?.on('data', capture);
+		let teardown: Promise<void> | undefined;
+		const stop = (reason: IStopReason): void => {
+			if (stopReason !== undefined) return;
+			stopReason = reason;
+			teardown = killProcessTree(child.pid);
+		};
+		const disposeAbort = bindAbortSignal(signal, () => {
+			stop('abort');
+		});
 		const timer = setTimeout(() => {
-			timedOut = true;
-			killProcessGroup(child.pid);
+			stop('timeout');
 		}, timeoutMs);
-		child.on('close', (code) => {
+		child.on('close', async (code) => {
 			clearTimeout(timer);
+			disposeAbort();
+			await teardown;
 			resolve({
-				code: timedOut ? 124 : (code ?? 1),
+				code: resolveOutcomeCode(
+					code,
+					stopReason === 'timeout',
+					stopReason === 'abort',
+				),
 				output: decodeUtf8Chunks(outputCollector.chunks),
-				timedOut,
+				timedOut: stopReason === 'timeout',
+				aborted: stopReason === 'abort',
 			});
 		});
-		child.on('error', (error) => {
+		child.on('error', async (error: NodeJS.ErrnoException) => {
 			clearTimeout(timer);
+			disposeAbort();
+			await teardown;
 			resolve({
-				code: 127,
+				code:
+					stopReason === 'abort'
+						? ABORT_EXIT_CODE
+						: error.code === 'ENOENT'
+							? 127
+							: 126,
 				output: String(error),
-				timedOut: false,
+				timedOut: stopReason === 'timeout',
+				aborted: stopReason === 'abort',
 			});
 		});
 	});
@@ -164,7 +236,13 @@ export const runCommand = async (
 	const timeoutMs = options.timeoutMs ?? 600_000;
 	const maxOutputBytes = options.maxOutputBytes ?? 64 * 1024;
 	const run = (): Promise<IRunCommandOutcome> =>
-		spawnOnce(command, options.cwd, timeoutMs, maxOutputBytes);
+		spawnOnce(
+			command,
+			options.cwd,
+			timeoutMs,
+			maxOutputBytes,
+			options.signal,
+		);
 	return options.lockPath !== undefined
 		? withFileMutex(options.lockPath, run)
 		: run();
@@ -183,6 +261,16 @@ export const runArgv = (
 	options: IRunArgvOptions = {},
 ): Promise<IRunArgvOutcome> =>
 	new Promise<IRunArgvOutcome>((resolve) => {
+		if (options.signal?.aborted === true) {
+			resolve({
+				code: ABORT_EXIT_CODE,
+				stdout: '',
+				stderr: 'aborted before spawn',
+				timedOut: false,
+				aborted: true,
+			});
+			return;
+		}
 		const [binary, ...args] = argv;
 		if (binary === undefined) {
 			resolve({
@@ -190,6 +278,7 @@ export const runArgv = (
 				stdout: '',
 				stderr: 'runArgv: empty argv',
 				timedOut: false,
+				aborted: false,
 			});
 			return;
 		}
@@ -198,7 +287,7 @@ export const runArgv = (
 		const totalCollector = createByteCollector(maxOutputBytes);
 		const stdoutCollector = createByteCollector(options.maxStdoutBytes);
 		const stderrCollector = createByteCollector(options.maxStderrBytes);
-		let timedOut = false;
+		let stopReason: IStopReason | undefined;
 		let timeoutTeardown: Promise<void> | undefined;
 		const child = spawn(binary, args, {
 			...(options.cwd !== undefined ? { cwd: options.cwd } : {}),
@@ -218,28 +307,48 @@ export const runArgv = (
 		child.stderr?.on('data', (chunk: Buffer) => {
 			captureUtf8Bytes(stderrCollector, chunk, totalCollector);
 		});
-		const timer = setTimeout(() => {
-			timedOut = true;
+		const stop = (reason: IStopReason): void => {
+			if (stopReason !== undefined) return;
+			stopReason = reason;
 			timeoutTeardown = killProcessTree(child.pid);
+		};
+		const disposeAbort = bindAbortSignal(options.signal, () => {
+			stop('abort');
+		});
+		const timer = setTimeout(() => {
+			stop('timeout');
 		}, timeoutMs);
 		child.on('close', async (code) => {
 			clearTimeout(timer);
+			disposeAbort();
 			await timeoutTeardown;
 			resolve({
-				code: timedOut ? 124 : (code ?? 1),
+				code: resolveOutcomeCode(
+					code,
+					stopReason === 'timeout',
+					stopReason === 'abort',
+				),
 				stdout: decodeUtf8Chunks(stdoutCollector.chunks),
 				stderr: decodeUtf8Chunks(stderrCollector.chunks),
-				timedOut,
+				timedOut: stopReason === 'timeout',
+				aborted: stopReason === 'abort',
 			});
 		});
 		child.on('error', async (error: NodeJS.ErrnoException) => {
 			clearTimeout(timer);
+			disposeAbort();
 			await timeoutTeardown;
 			resolve({
-				code: error.code === 'ENOENT' ? 127 : 126,
+				code:
+					stopReason === 'abort'
+						? ABORT_EXIT_CODE
+						: error.code === 'ENOENT'
+							? 127
+							: 126,
 				stdout: decodeUtf8Chunks(stdoutCollector.chunks),
 				stderr: String(error),
-				timedOut: false,
+				timedOut: stopReason === 'timeout',
+				aborted: stopReason === 'abort',
 			});
 		});
 	});

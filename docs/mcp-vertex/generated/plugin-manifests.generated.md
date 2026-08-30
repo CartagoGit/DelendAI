@@ -38,7 +38,7 @@
 | orchestrator-runner | @mcp-vertex/orchestrator-runner | public | stable | vertex |
 | perf | @mcp-vertex/perf | public | stable | vertex, cli-tool |
 | project-health | @mcp-vertex/project-health | public | experimental | vertex |
-| project-kpis | @mcp-vertex/project-kpis | public | experimental |  |
+| project-kpis | @mcp-vertex/project-kpis | public | experimental | vertex |
 | prompt-eval | @mcp-vertex/prompt-eval | public | stable | full |
 | prompts-pack | @mcp-vertex/prompts-pack | public | stable | standard, swarm, full, web-app, backend-api |
 | proposals | @mcp-vertex/proposals | public | stable | swarm, full, vertex |
@@ -505,7 +505,7 @@
 | project-kpis | standard | no | no | yes |
 | project-kpis | swarm | no | no | yes |
 | project-kpis | full | no | no | yes |
-| project-kpis | vertex | no | no | yes |
+| project-kpis | vertex | yes | yes | yes |
 | project-kpis | web-app | no | no | yes |
 | project-kpis | backend-api | no | no | yes |
 | project-kpis | cli-tool | no | no | yes |

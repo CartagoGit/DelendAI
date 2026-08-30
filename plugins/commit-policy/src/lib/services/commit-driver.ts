@@ -700,10 +700,10 @@ const runCommitDriverUnlocked = async (
 	// every commit path — manual, slice, threshold, interval.
 	// The previous behaviour gated the check on `sliceContext`
 	// which let threshold / interval commits bypass the
-	// `develop` / `main` policy entirely. The same list feeds
+	// configured branch policy entirely. The same list feeds
 	// the push scheduler (x00266).
 	// c00145: the effective protected list is resolved through
-	// `resolveProtectedBranches` (default main/master; explicit config
+	// `resolveProtectedBranches` (empty by default; explicit config
 	// wins; agent/worktree branches are never protected).
 	const effectiveProtectedBranches = resolveProtectedBranches(
 		options.policy.push.protectedBranches,

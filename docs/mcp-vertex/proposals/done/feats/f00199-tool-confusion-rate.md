@@ -2,12 +2,14 @@
 id: f00199
 title: "Tool confusion rate"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: observability
 date: 2026-08-25
 priority: P2
 parent-plan: q00006
+shipped-in:
+  - 20ce1c3a
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track M / f00199"
@@ -100,10 +102,13 @@ documentar mejor.
 
 ### S1 — Módulo + dashboard + tests básicos
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/observability/tool-confusion.ts`, `tools/scripts/report/token-budget-dashboard.script.ts`, `packages/core/tests/src/lib/observability/tool-confusion.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: módulo de tool confusion y dashboard pasan 21/21 tests focales; packages/core typecheck pasa. La matriz, top pairs y sugerencias están cubiertos sin payloads ni telemetría.
 ## acceptance
 
 - Módulo computa matriz de confusion.

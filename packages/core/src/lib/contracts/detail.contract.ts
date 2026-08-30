@@ -1,5 +1,6 @@
 /**
- * `detail: compact | normal | full` — transversal contract (`f00187`).
+ * `detail: compact | normal | full` — transversal contract (`f00187`,
+ * adopted across more plugins by `f00271`).
  *
  * The pattern `r00031` and `r00032` apply to `proposal_get` and the
  * orchestrator-runner hotspot is promoted here as a shared, importable

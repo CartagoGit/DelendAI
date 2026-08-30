@@ -16,7 +16,7 @@
  *   audit.trailer            = 'co-authored-by'
  *   audit.agentFormat        = '${host}/${model}'
  *   triggers                 = []         (no automatic commits)
- *   protectedBranches        = ['main', 'master']
+ *   protectedBranches        = []
  *   force                    = 'with-lease'
  */
 
@@ -234,21 +234,18 @@ const PushObjectSchema = z.object({
 		.trim()
 		.min(1, 'push.forceReason must not be empty when set')
 		.optional(),
-	/** Protected branches — push is always refused. Default `main` + `master`. */
-	protectedBranches: z.array(z.string()).default(['main', 'master']),
+	/** Protected branches — push is always refused. Default `[]`. */
+	protectedBranches: z.array(z.string()).default([]),
 	/**
 	 * x00267 (AUD-CP-009): branch-name prefixes that are also
 	 * protected (e.g. `release/`, `hotfix/`). The unified branch
 	 * policy applies the same list to every commit path AND to
-	 * the push scheduler. Defaults to `['release/', 'hotfix/']`.
+	 * the push scheduler. Defaults to `[]`.
 	 * Optional in the type so existing test fixtures (built as
 	 * raw objects) keep compiling; `parseCommitPolicyOptions`
 	 * fills the default at parse time.
 	 */
-	protectedPrefixes: z
-		.array(z.string())
-		.default(['release/', 'hotfix/'])
-		.optional(),
+	protectedPrefixes: z.array(z.string()).default([]).optional(),
 	/** Remote name. Defaults to whatever `git config push.default` resolves. */
 	remote: z.string().optional(),
 	/** Branch name. Defaults to the current branch. */
@@ -346,8 +343,8 @@ export const CommitPolicyOptionsSchema = z.object({
 		enabled: false,
 		onCommit: false,
 		force: 'with-lease',
-		protectedBranches: ['main', 'master'],
-		protectedPrefixes: ['release/', 'hotfix/'],
+		protectedBranches: [],
+		protectedPrefixes: [],
 	}),
 });
 export type ICommitPolicyOptions = z.infer<typeof CommitPolicyOptionsSchema>;

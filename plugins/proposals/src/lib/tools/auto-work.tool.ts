@@ -211,6 +211,33 @@ interface IClaimReadyResolution {
 	readonly pendingTrackedArtifacts: readonly string[];
 }
 
+const findReviewPendingPeerApproval = async (
+	options: Pick<IAutoWorkToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
+): Promise<{ proposalId: string; file: string } | null> => {
+	if (options.proposalsDirAbs === undefined) return null;
+	const index = await readJsonOrNull<{
+		proposals?: Array<{ id: string; file: string }>;
+	}>(options.indexPathAbs);
+	for (const entry of index?.proposals ?? []) {
+		if (
+			entry.file.startsWith('review/') ||
+			entry.file.includes('/review/')
+		) {
+			try {
+				const raw = (
+					await new SafeWorkspaceReader(
+						options.proposalsDirAbs,
+					).readText(entry.file)
+				).content;
+				if (!hasPeerApprovedReview(raw)) {
+					return { proposalId: entry.id, file: entry.file };
+				}
+			} catch {}
+		}
+	}
+	return null;
+};
+
 const hasTrackedArtifact = async (
 	workspaceRoot: string,
 	file: string,
@@ -345,36 +372,6 @@ const buildPeerReviewPlan = (input: {
 		`Repeat ${input.namespacePrefix}_auto_work.`,
 	],
 });
-
-const findReviewPendingPeerApproval = async (
-	options: Pick<IAutoWorkToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
-): Promise<{ proposalId: string; file: string } | null> => {
-	if (options.proposalsDirAbs === undefined) return null;
-	const index = await readJsonOrNull<{
-		proposals?: Array<{ id: string; file: string }>;
-	}>(options.indexPathAbs);
-	for (const entry of index?.proposals ?? []) {
-		if (
-			!entry.file.startsWith('review/') &&
-			!entry.file.includes('/review/')
-		) {
-			continue;
-		}
-		try {
-			const raw = (
-				await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
-					entry.file,
-				)
-			).content;
-			if (!hasPeerApprovedReview(raw)) {
-				return { proposalId: entry.id, file: entry.file };
-			}
-		} catch (error: unknown) {
-			void error;
-		}
-	}
-	return null;
-};
 
 export const buildAutoWorkOrchestrationPolicy = (options: {
 	readonly namespacePrefix: string;
@@ -570,7 +567,12 @@ export const runAutoWork = async (
 		pickedFromPaused?: boolean;
 	};
 	const requirePeer = options.requirePeerReview !== false;
-	if (requirePeer) {
+	const nextIsExecutable =
+		next.kind === 'next-proposal' &&
+		typeof next.file === 'string' &&
+		!next.file.startsWith('review/') &&
+		!next.file.includes('/review/');
+	if (requirePeer && !nextIsExecutable) {
 		const pendingReview = await findReviewPendingPeerApproval(options);
 		if (pendingReview !== null) {
 			consecutiveIdle = 0;

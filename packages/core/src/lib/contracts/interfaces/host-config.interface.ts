@@ -131,6 +131,11 @@ export interface IHostObservability {
 				toolName: string,
 				args: unknown,
 				elapsedMs: number,
+				context?: {
+					readonly reason: string;
+					readonly nextAction: string;
+					readonly error: unknown;
+				},
 		  ) => Promise<void> | void)
 		| undefined;
 	readonly onHookError?:

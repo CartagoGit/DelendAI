@@ -31,6 +31,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { nodeDynamicImport } from '@mcp-vertex/core/lib/plugins/load-plugins';
 
 import proposalsPlugin from '@mcp-vertex/proposals';
 
@@ -57,6 +58,8 @@ export interface IAssembledProposalsServer {
 	readonly server: McpServer;
 	/** Absolute path of the throwaway workspace. */
 	readonly workspace: string;
+	/** Resolved module specifier recorded by the real plugin loader. */
+	readonly resolvedPlugin: string;
 	/** Call a proposals tool over the real protocol and parse its response. */
 	callTool<T = unknown>(
 		name: string,
@@ -81,6 +84,8 @@ export interface ICreateAssembledProposalsServerOptions {
 	 * enables it.
 	 */
 	readonly enableAgentWorktree?: boolean;
+	/** Load proposals through the production Node/Bun runtime importer. */
+	readonly useRuntimeImporter?: boolean;
 }
 
 export const createAssembledProposalsServer = async (
@@ -99,9 +104,14 @@ export const createAssembledProposalsServer = async (
 		],
 		workspace,
 	);
-	const { config } = await assembleCliConfig(args, {
+	const { config, loadResult } = await assembleCliConfig(args, {
 		// Inject the real proposals plugin (no dynamic resolution in tests).
-		import: async () => ({ default: proposalsPlugin }),
+		import: options.useRuntimeImporter
+			? (specifier) =>
+					nodeDynamicImport(specifier, process.cwd()) as Promise<{
+						default: unknown;
+					}>
+			: async () => ({ default: proposalsPlugin }),
 		// No on-disk config file: the harness owns the workspace, the
 		// plugin receives pure defaults from ctx.corePaths.
 		readFile: async () => undefined,
@@ -138,6 +148,9 @@ export const createAssembledProposalsServer = async (
 		client,
 		server: assembled.server,
 		workspace,
+		resolvedPlugin:
+			loadResult.loaded.find((entry) => entry.plugin.name === 'proposals')
+				?.resolved ?? '',
 		callTool,
 		close: async () => {
 			await client.close();

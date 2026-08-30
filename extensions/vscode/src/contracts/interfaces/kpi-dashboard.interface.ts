@@ -41,6 +41,7 @@ export const KPI_DASHBOARD_VIEWS = [
 	'errors',
 	'efficiency',
 	'audit',
+	'activation',
 ] as const;
 
 export type TKpiDashboardViewName = (typeof KPI_DASHBOARD_VIEWS)[number];
@@ -54,7 +55,8 @@ export interface IKpiDashboardToolSource {
 		| 'history'
 		| 'trend'
 		| 'usage-summary'
-		| 'invocations';
+		| 'invocations'
+		| 'activation-kpis';
 	readonly status: string;
 	readonly observedAt?: string;
 	readonly note?: string;
@@ -217,6 +219,15 @@ export interface IKpiDashboardToolOutput {
 		readonly status: string;
 		readonly source: string;
 		readonly items: readonly IKpiDashboardToolFinding[];
+		readonly note?: string;
+	};
+	readonly activation?: {
+		readonly status: string;
+		readonly source: string;
+		readonly sessionCount: number;
+		readonly meanPrecision?: number;
+		readonly meanRecall?: number;
+		readonly meanChurn?: number;
 		readonly note?: string;
 	};
 	readonly bytes: number;

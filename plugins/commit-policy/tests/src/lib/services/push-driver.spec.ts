@@ -9,10 +9,7 @@ import { describe, expect, it } from 'vitest';
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
 import type { ICommitPolicyPush } from '@mcp-vertex/commit-policy/lib/contracts/options';
-import {
-	enforceMainPushGuard,
-	runPushDriver,
-} from '@mcp-vertex/commit-policy/lib/services/push-driver';
+import { runPushDriver } from '@mcp-vertex/commit-policy/lib/services/push-driver';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 
@@ -60,26 +57,11 @@ const basePush = (
 	onCommit: false,
 	force: 'with-lease',
 	protectedBranches: ['main', 'master'],
+	protectedPrefixes: [],
 	...overrides,
 });
 
 describe('runPushDriver', () => {
-	it('enforceMainPushGuard blocks only direct push to main and master', () => {
-		expect(enforceMainPushGuard('main')).toEqual({
-			ok: false,
-			refusal:
-				"push refused: DIRECT_PUSH_TO_MAIN_NOT_ALLOWED — direct push to 'main' is not allowed; cuts the release/publish path. Next: open a PR from a feature branch (release/* or develop).",
-		});
-		expect(enforceMainPushGuard('master')).toEqual({
-			ok: false,
-			refusal:
-				"push refused: DIRECT_PUSH_TO_MASTER_NOT_ALLOWED — direct push to 'master' is not allowed; use a PR from a feature branch instead.",
-		});
-		expect(enforceMainPushGuard('develop')).toEqual({ ok: true });
-		expect(enforceMainPushGuard('agent/copilot')).toEqual({ ok: true });
-		expect(enforceMainPushGuard('release/0.4.0')).toEqual({ ok: true });
-	});
-
 	it('refuses when push.enabled is false', async () => {
 		const { run } = buildPushFake({ currentBranch: 'topic/test' });
 		const result = await runPushDriver(
@@ -92,37 +74,30 @@ describe('runPushDriver', () => {
 		expect(result.refusal).toContain('push.enabled');
 	});
 
-	it('refuses direct push to main even when protectedBranches omits it', async () => {
+	it('refuses direct push to main when protectedBranches includes it', async () => {
 		const { run } = buildPushFake();
 		const result = await runPushDriver(
 			{ remote: 'origin', branch: 'main' },
-			basePush({ protectedBranches: [] }),
+			basePush(),
 			run,
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
-		expect(result.refusal).toContain(
-			"direct push to 'main' is not allowed",
-		);
-		expect(result.refusal).toContain(
-			'open a PR from a feature branch (release/* or develop).',
-		);
+		expect(result.refusal).toContain('BRANCH_PROTECTED');
+		expect(result.refusal).toContain('branch "main" matches policy');
 	});
 
-	it('refuses direct push to master even when protectedBranches omits it', async () => {
+	it('refuses direct push to master when protectedBranches includes it', async () => {
 		const { run, pushes } = buildPushFake();
 		const result = await runPushDriver(
 			{ remote: 'origin', branch: 'master' },
-			basePush({ protectedBranches: [] }),
+			basePush(),
 			run,
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_MASTER_NOT_ALLOWED');
-		expect(result.refusal).toContain(
-			"direct push to 'master' is not allowed",
-		);
+		expect(result.refusal).toContain('BRANCH_PROTECTED');
+		expect(result.refusal).toContain('branch "master" matches policy');
 		expect(pushes.calls.length).toBe(0);
 	});
 
@@ -267,34 +242,30 @@ describe('runPushDriver', () => {
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(result.refusal).toContain('BRANCH_PROTECTED');
 		expect(pushes.calls.length).toBe(0);
 	});
 
-	it('refuses master resolved from the current branch even when protectedBranches is empty', async () => {
+	it('allows master resolved from the current branch when protectedBranches is empty', async () => {
 		const { run, pushes } = buildPushFake({ currentBranch: 'master' });
 		const result = await runPushDriver(
 			{},
 			basePush({ remote: 'origin', protectedBranches: [] }),
 			run,
 		);
-		expect(result.ok).toBe(false);
-		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_MASTER_NOT_ALLOWED');
-		expect(pushes.calls.length).toBe(0);
+		expect(result.ok).toBe(true);
+		expect(pushes.calls.length).toBe(1);
 	});
 
-	it('refuses main resolved from the current branch even when protectedBranches is empty', async () => {
+	it('allows main resolved from the current branch when protectedBranches is empty', async () => {
 		const { run, pushes } = buildPushFake({ currentBranch: 'main' });
 		const result = await runPushDriver(
 			{},
 			basePush({ remote: 'origin', protectedBranches: [] }),
 			run,
 		);
-		expect(result.ok).toBe(false);
-		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
-		expect(pushes.calls.length).toBe(0);
+		expect(result.ok).toBe(true);
+		expect(pushes.calls.length).toBe(1);
 	});
 
 	it('allows direct push to develop when config omits it', async () => {
@@ -339,7 +310,7 @@ describe('runPushDriver', () => {
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('protectedBranches');
+		expect(result.refusal).toContain('BRANCH_PROTECTED');
 		expect(pushes.calls.length).toBe(0);
 	});
 

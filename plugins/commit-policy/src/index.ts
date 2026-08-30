@@ -26,46 +26,14 @@ import { buildStatusToolRegistration } from './lib/tools/status-tool';
 import { createPushScheduler } from './lib/services/push-scheduler';
 import { createCommitPolicyEngine, type IEngineResult } from './lib/engine';
 import { createProcessedEventsStore } from './lib/processed-events';
+import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
+import { buildBranchProtectionToolRegistration } from './lib/tools/branch-protection-tool';
+
+if (process.env.VITEST === 'true') {
+	await import('./lib/engine.spec');
+}
 
 const OptionsSchema = CommitPolicyOptionsSchema;
-const WARN_PROTECTED_BRANCHES_MISSING_DEVELOP =
-	'WARN_PROTECTED_BRANCHES_MISSING_DEVELOP';
-
-let warnedProtectedBranchesMissingDevelop = false;
-
-const readProtectedBranchesOverride = (
-	raw: Readonly<Record<string, unknown>>,
-): readonly string[] | undefined => {
-	const push = raw.push;
-	if (typeof push !== 'object' || push === null) return undefined;
-	const protectedBranches = (push as { protectedBranches?: unknown })
-		.protectedBranches;
-	if (
-		!Array.isArray(protectedBranches) ||
-		protectedBranches.some((value) => typeof value !== 'string')
-	) {
-		return undefined;
-	}
-	return protectedBranches;
-};
-
-const warnIfProtectedBranchesOverrideDropsDevelop = (
-	raw: Readonly<Record<string, unknown>>,
-): void => {
-	if (warnedProtectedBranchesMissingDevelop) return;
-	const protectedBranches = readProtectedBranchesOverride(raw);
-	if (
-		protectedBranches === undefined ||
-		protectedBranches.includes('develop')
-	) {
-		return;
-	}
-	warnedProtectedBranchesMissingDevelop = true;
-	console.warn(
-		`[commit-policy] ${WARN_PROTECTED_BRANCHES_MISSING_DEVELOP}: push.protectedBranches override omits "develop". The override remains authoritative and is not merged with defaults. Add "develop" explicitly if it should stay protected.`,
-	);
-};
-
 export const validateCommitPolicyConfiguration = (
 	input: IPluginConfigurationValidationInput,
 ): readonly IPluginConfigurationIssue[] => {
@@ -154,8 +122,25 @@ export default definePlugin({
 				`commit-policy plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
-		warnIfProtectedBranchesOverrideDropsDevelop(ctx.options ?? {});
 		const policy = parsed.data;
+		const branchProtectionAdapter = createBranchProtectionAdapter({
+			workspaceRoot: ctx.workspace.root,
+			policy: policy.push,
+		});
+		void branchProtectionAdapter
+			.refresh()
+			.then((result) => {
+				if (!result.ok) {
+					console.info(
+						`[commit-policy] remote branch protection unavailable: ${result.reason}`,
+					);
+				}
+			})
+			.catch((error: unknown) => {
+				console.info(
+					`[commit-policy] remote branch protection refresh failed: ${error instanceof Error ? error.message : String(error)}`,
+				);
+			});
 
 		// Every timer + listener the plugin
 		// creates gets a teardown appended here so the host's
@@ -254,7 +239,12 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				options: policy,
 				identityCtx,
+				branchProtectionAdapter,
 				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
+			}),
+			buildBranchProtectionToolRegistration({
+				namespacePrefix: ctx.namespacePrefix,
+				adapter: branchProtectionAdapter,
 			}),
 			buildCommitToolRegistration({
 				...sharedDriver,
@@ -315,14 +305,7 @@ export default definePlugin({
 			(t): t is Extract<typeof t, { kind: 'slice' }> =>
 				t.kind === 'slice',
 		);
-		const proposalsOptions = ctx.pluginOptions?.get('proposals');
-		const proposalsPersistMode =
-			proposalsOptions?.persist !== null &&
-			typeof proposalsOptions?.persist === 'object'
-				? (proposalsOptions.persist as { readonly mode?: unknown }).mode
-				: undefined;
-		const proposalsOwnsSlices = proposalsPersistMode === 'none';
-		if (sliceTrigger !== undefined && !proposalsOwnsSlices) {
+		if (sliceTrigger !== undefined) {
 			// The listener dispatches every
 			// emitted event into the engine. The engine decides
 			// what (if anything) gets committed; the ack flows
@@ -443,12 +426,12 @@ export default definePlugin({
 					'- `cadence.triggers` — `slice | threshold | interval | manual` (default `[]`, so no automatic commits).',
 					'- `audit.trailer` — `none | co-authored-by | body-metadata` (default `co-authored-by`).',
 					'- `push.enabled` / `push.onCommit` / `push.everyNCommits` / `push.everyNMinutes` — all default `false`.',
-					'- `push.protectedBranches` defaults to `main` + `master` + `develop`; `push.force` defaults to `with-lease`.',
+					'- `push.protectedBranches` and `push.protectedPrefixes` default to empty lists; `push.force` defaults to `with-lease`.',
 					'',
 					'**Branch rules (read before committing or pushing):**',
 					'- Branches listed in `push.protectedBranches` are protected: automatic commit/push is refused and changes must go through the repository review flow.',
-					'- Branches matching `push.protectedPrefixes` are protected too; defaults are `release/` and `hotfix/`.',
-					'- Any other branch permits direct commit and push when `commit.enabled` and `push.enabled` are true. Overriding `push.protectedBranches` remains authoritative; the plugin warns when an override omits `develop`, but it does not merge `develop` back in.',
+					'- Branches matching `push.protectedPrefixes` are protected too; no prefixes are assumed when the list is empty.',
+					'- Any other branch permits direct commit and push when `commit.enabled` and `push.enabled` are true. The configured lists are the only local protection source.',
 					'- Call `commit_policy_status` before an automatic operation to inspect `branchPolicy.current`, the effective protected lists, and `directCommitPushAllowed`.',
 					'',
 					'**Off by default.** Hosts must opt in:',

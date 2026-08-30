@@ -104,4 +104,51 @@ describe('detectContention', () => {
 
 		expect(detected.livelocks).toEqual([]);
 	});
+
+	it('does not report contention after it has been resolved', async () => {
+		await noteFileLockContention({
+			kind: 'disjoint',
+			waitingTaskId: 'task-b',
+			waitingAgentId: 'agent-b',
+			holderTaskId: 'task-a',
+			holderAgentId: 'agent-a',
+			files: ['src/disjoint.ts'],
+			now: () => '2026-07-25T10:00:00.000Z',
+			tablePath,
+		});
+		await resolveFileLockContentions({
+			waitingTaskId: 'task-b',
+			tablePath,
+			now: () => '2026-07-25T10:00:01.000Z',
+		});
+
+		const detected = await detectContention({
+			lockPath,
+			fileLockTablePath: tablePath,
+			now: () => new Date('2026-07-25T10:00:02.000Z').getTime(),
+		});
+
+		expect(detected.livelocks).toEqual([]);
+	});
+
+	it('drops unresolved contention once it is inactive outside the 60s sweep window', async () => {
+		await noteFileLockContention({
+			kind: 'disjoint',
+			waitingTaskId: 'task-b',
+			waitingAgentId: 'agent-b',
+			holderTaskId: 'task-a',
+			holderAgentId: 'agent-a',
+			files: ['src/disjoint.ts'],
+			now: () => '2026-07-25T10:00:00.000Z',
+			tablePath,
+		});
+
+		const detected = await detectContention({
+			lockPath,
+			fileLockTablePath: tablePath,
+			now: () => new Date('2026-07-25T10:01:01.000Z').getTime(),
+		});
+
+		expect(detected.livelocks).toEqual([]);
+	});
 });

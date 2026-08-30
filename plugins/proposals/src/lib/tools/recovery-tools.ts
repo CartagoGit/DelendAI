@@ -4,6 +4,7 @@ import { dirname, join, relative } from 'node:path';
 import z from 'zod';
 
 import {
+	planDryRun,
 	toolError,
 	toolJson,
 	toolOk,
@@ -164,9 +165,28 @@ const FORCE_TRANSITION_OUTPUT_SCHEMA = z.object({
 const RECONCILE_FOLDER_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	id: z.string(),
-	changed: z.boolean(),
+	changed: z.boolean().optional(),
 	path: z.string().optional(),
 	dryRun: z.boolean().optional(),
+	wouldChange: z
+		.array(
+			z.object({
+				kind: z.enum(['write', 'delete', 'rename', 'create', 'patch']),
+				path: z.string(),
+				summary: z.string(),
+			}),
+		)
+		.optional(),
+	wouldRun: z
+		.array(
+			z.object({
+				shape: z.enum(['shell', 'network', 'process', 'git', 'mcp']),
+				target: z.string(),
+				summary: z.string(),
+			}),
+		)
+		.optional(),
+	risk: z.enum(['low', 'medium', 'high']).optional(),
 	from: z.string().optional(),
 	to: z.string().optional(),
 	movedTo: z.string().optional(),
@@ -549,10 +569,23 @@ export const runProposalReconcileFolder = async (
 		const filename = found.relPath.split('/').pop() ?? found.relPath;
 		return toolOk({
 			id: args.id,
-			changed: true,
-			dryRun: true,
-			from: found.relPath,
-			to: `${expectedFolder}/${filename}`,
+			...planDryRun({
+				wouldChange: [
+					{
+						kind: 'rename',
+						path: found.relPath,
+						summary: `move proposal ${args.id} to ${expectedFolder}/${filename}`,
+					},
+				],
+				wouldRun: [
+					{
+						shape: 'mcp',
+						target: 'proposal_reconcile_folder',
+						summary: `move ${args.id} only after the dry-run plan is approved`,
+					},
+				],
+				risk: 'medium',
+			}),
 		});
 	}
 	const moved = await moveProposal(

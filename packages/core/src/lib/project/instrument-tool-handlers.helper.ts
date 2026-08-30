@@ -59,6 +59,22 @@ export const instrumentToolHandlers = (
 		if (typeof handler !== 'function') return handler;
 		const fn = handler as (...args: unknown[]) => unknown;
 		return async (...args: unknown[]): Promise<unknown> => {
+			const cancellationContext = (signal: AbortSignal | undefined) => {
+				const error =
+					signal?.reason ?? new Error('tool invocation aborted');
+				const reason =
+					typeof error === 'object' &&
+					error !== null &&
+					typeof (error as { message?: unknown }).message === 'string'
+						? (error as { message: string }).message
+						: String(error).replace(/^Error:\s*/u, '');
+				return {
+					reason: reason || 'tool invocation aborted',
+					nextAction:
+						'Retry the operation or resume from the latest persisted checkpoint.',
+					error,
+				};
+			};
 			const emitHookError = (info: {
 				readonly hookName: PluginHookName;
 				readonly toolName: string;
@@ -89,6 +105,7 @@ export const instrumentToolHandlers = (
 			let result: unknown;
 			let isError = false;
 			let error: unknown;
+			let wasCancelled = false;
 			let onAbort: (() => void) | undefined;
 			if (signal !== undefined && config.onToolCancel) {
 				const onToolCancel = config.onToolCancel;
@@ -96,12 +113,14 @@ export const instrumentToolHandlers = (
 				onAbort = () => {
 					if (cancelReported) return;
 					cancelReported = true;
+					wasCancelled = true;
 					try {
 						void Promise.resolve(
 							onToolCancel(
 								name,
 								hookArgs,
 								performance.now() - start,
+								cancellationContext(signal),
 							),
 						).catch((hookError) => {
 							emitHookError({
@@ -168,6 +187,19 @@ export const instrumentToolHandlers = (
 					return blocked;
 				}
 				result = await fn(...args);
+				if (wasCancelled) {
+					const cancellation = cancellationContext(signal);
+					result = toolError(
+						cancellation.reason,
+						cancellation.nextAction,
+					);
+					injectToolResultMeta(result, {
+						cancelled: true,
+						error: String(cancellation.error),
+					});
+					isError = true;
+					return result;
+				}
 				isError = (result as { isError?: boolean })?.isError === true;
 				if (
 					config.isAgentStuck &&
@@ -211,6 +243,18 @@ export const instrumentToolHandlers = (
 			} catch (err) {
 				isError = true;
 				error = err;
+				if (wasCancelled) {
+					const cancellation = cancellationContext(signal);
+					result = toolError(
+						cancellation.reason,
+						cancellation.nextAction,
+					);
+					injectToolResultMeta(result, {
+						cancelled: true,
+						error: String(err),
+					});
+					return result;
+				}
 				throw err;
 			} finally {
 				if (signal !== undefined && onAbort !== undefined) {

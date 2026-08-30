@@ -49,6 +49,8 @@ export interface IScaffoldedProposal {
 	readonly id: string;
 	/** Conventional filename (e.g. `x00077-short-slug.md`). */
 	readonly filename: string;
+	/** Canonical proposals-dir-relative path, including the kind folder. */
+	readonly relativePath: string;
 	/** Full markdown body (frontmatter + scaffold). */
 	readonly body: string;
 	/** Severity of the originating finding (for caller-side reports). */
@@ -111,6 +113,8 @@ export interface IScaffoldOptions {
 	 * override (e.g. `c` for chore) without forking this module.
 	 */
 	readonly prefix?: string;
+	/** Resolve the proposals-dir-relative folder for each generated kind. */
+	readonly folderForKind?: (kind: IScaffoldedProposal['kind']) => string;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +124,7 @@ export interface IScaffoldOptions {
 const DEFAULT_SLUG_MAX_LENGTH = 60;
 const PROPOSAL_ID_WIDTH = 5;
 const MAX_ID_ALLOCATION_ATTEMPTS = 10_000;
+const DATE_ONLY_LENGTH = 10;
 
 /** Convert a finding title to a stable, filesystem-safe kebab slug. */
 const toSlug = (title: string, maxLen = DEFAULT_SLUG_MAX_LENGTH): string => {
@@ -235,7 +240,7 @@ const renderProposalBody = (
 	files: readonly string[],
 	related: readonly string[],
 	date: string,
-	outputDir: string,
+	filePath: string,
 	inferTrackFn: (files: readonly string[]) => string,
 ): { body: string; filename: string } => {
 	const slug = toSlug(title);
@@ -291,7 +296,7 @@ const renderProposalBody = (
 		'',
 		'<!--',
 		'  Sourced by `audit_run`.',
-		`  Suggested output dir: ${outputDir}/${filename}`,
+		`  Suggested output path: ${filePath}`,
 		'-->',
 		'',
 	];
@@ -304,7 +309,7 @@ const renderPlanBody = (
 	children: readonly IScaffoldedProposal[],
 	related: readonly string[],
 	date: string,
-	outputDir: string,
+	filePath: string,
 ): { body: string; filename: string } => {
 	const filename = `${id}-${toSlug(title)}.md`;
 	const contains =
@@ -359,7 +364,7 @@ const renderPlanBody = (
 		'',
 		'<!--',
 		'  Sourced by an audit of the host project.',
-		`  Suggested output dir: ${outputDir}/${filename}`,
+		`  Suggested output path: ${filePath}`,
 		'-->',
 		'',
 	];
@@ -372,7 +377,7 @@ const renderAuditBody = (
 	consolidation: IConsolidation,
 	planId: string | undefined,
 	date: string,
-	outputDir: string,
+	filePath: string,
 ): { body: string; filename: string } => {
 	const filename = `${id}-${toSlug(title)}.md`;
 	const related = planId !== undefined ? `    - ${planId}` : '    - []';
@@ -419,7 +424,7 @@ const renderAuditBody = (
 		'',
 		'- **Status**: pending',
 		'- **Files**:',
-		`    - ${outputDir}/${filename}`,
+		`    - ${filePath}`,
 		'- **Gate**: bun run lint:proposals',
 		'- **Acceptance**:',
 		'    - The consolidated audit remains available and linked to its implementation work.',
@@ -436,7 +441,7 @@ const renderAuditBody = (
 		'',
 		'<!--',
 		'  Sourced by the audit consolidation pipeline.',
-		`  Suggested output dir: ${outputDir}/${filename}`,
+		`  Suggested output path: ${filePath}`,
 		'-->',
 		'',
 	];
@@ -479,9 +484,17 @@ export const scaffoldProposals = (
 	// inside the loop and the input contract says we must not
 	// mutate the caller's set.
 	const taken: Set<string> = new Set(options.existingIds ?? []);
-	const outputDir = options.outputDir ?? 'docs/proposals/ready';
+	const outputDir = options.outputDir ?? 'docs/mcp-vertex/proposals/ready';
+	const folderForKind =
+		options.folderForKind ??
+		((kind: IScaffoldedProposal['kind']): string => {
+			if (kind === 'audit') return 'audits';
+			if (kind === 'plan') return 'plans';
+			return 'fixes';
+		});
 	const inferTrackFn = options.inferTrack ?? inferTrack;
-	const date = options.date ?? new Date().toISOString().slice(0, 10);
+	const date =
+		options.date ?? new Date().toISOString().slice(0, DATE_ONLY_LENGTH);
 	const auditId = options.auditId ?? allocateId('a', startAt, taken);
 	taken.add(auditId);
 	const out: IScaffoldedProposal[] = [];
@@ -514,12 +527,13 @@ export const scaffoldProposals = (
 			files,
 			related,
 			date,
-			outputDir,
+			`${outputDir}/${folderForKind('fix')}/${id}-${slug}.md`,
 			inferTrackFn,
 		);
 		out.push({
 			id,
 			filename,
+			relativePath: `${folderForKind('fix')}/${filename}`,
 			body,
 			severity: finding.worstSeverity,
 			files,
@@ -545,11 +559,12 @@ export const scaffoldProposals = (
 			linkedChildren,
 			related,
 			date,
-			outputDir,
+			`${outputDir}/${folderForKind('plan')}/${planId}-${toSlug(planTitle)}.md`,
 		);
 		out.unshift({
 			id: planId,
 			filename,
+			relativePath: `${folderForKind('plan')}/${filename}`,
 			body,
 			severity: 'MINOR',
 			files: [],
@@ -566,11 +581,12 @@ export const scaffoldProposals = (
 		consolidation,
 		planId,
 		date,
-		outputDir,
+		`${outputDir}/${folderForKind('audit')}/${auditId}-${toSlug(auditTitle)}.md`,
 	);
 	out.unshift({
 		id: auditId,
 		filename: audit.filename,
+		relativePath: `${folderForKind('audit')}/${audit.filename}`,
 		body: audit.body,
 		severity: 'MINOR',
 		files: [],

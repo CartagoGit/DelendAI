@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	DEFAULT_MEMORY_COST_THRESHOLD,
+	DEFAULT_MEMORY_RECENCY_HALF_LIFE_MS,
+	DEFAULT_MEMORY_USAGE_HALF_COUNT,
 	DEFAULT_MEMORY_UTILITY_WEIGHTS,
+	createMemoryUtilityContext,
 	filterByUtility,
+	resolveMemoryUtilitySettings,
 	utility,
 	type IMemoryEntry,
 	type IMemoryUtilityContext,
@@ -137,6 +141,23 @@ describe('filterByUtility() (f00197)', () => {
 		expect(out.map((s) => s.entry.id)).toEqual(['hot']);
 	});
 
+	it('applies a strict threshold comparison', () => {
+		const exact = entry({ id: 'exact', similarity: 0.4, usageCount: 0 });
+		const score = utility(
+			exact,
+			DEFAULT_MEMORY_UTILITY_WEIGHTS,
+			ctx(),
+		).score;
+		expect(
+			filterByUtility(
+				[exact],
+				DEFAULT_MEMORY_UTILITY_WEIGHTS,
+				ctx(),
+				score,
+			),
+		).toEqual([]);
+	});
+
 	it('returns the survivors best-first', () => {
 		const a = entry({ id: 'a', similarity: 0.9, usageCount: 5 });
 		const b = entry({ id: 'b', similarity: 0.5, usageCount: 2 });
@@ -172,6 +193,77 @@ describe('filterByUtility() (f00197)', () => {
 			filterByUtility([], DEFAULT_MEMORY_UTILITY_WEIGHTS, ctx(), 0),
 		).toEqual([]);
 	});
+
+	it('falls back to the default threshold when a malformed value is passed', () => {
+		const stale = entry({
+			id: 'stale',
+			lastUsedAt: NOW - 365 * DAY,
+			usageCount: 0,
+			similarity: 0,
+		});
+		expect(
+			filterByUtility(
+				[stale],
+				DEFAULT_MEMORY_UTILITY_WEIGHTS,
+				ctx(),
+				Number.NaN,
+			),
+		).toEqual([]);
+	});
+});
+
+describe('memory utility settings helpers (f00197)', () => {
+	it('resolves malformed settings to safe defaults', () => {
+		const resolved = resolveMemoryUtilitySettings({
+			weights: {
+				alpha: Number.NaN,
+				beta: Number.POSITIVE_INFINITY,
+				gamma: 0.9,
+				delta: Number.NEGATIVE_INFINITY,
+			},
+			costThreshold: Number.NaN,
+			recencyHalfLifeMs: 0,
+			usageHalfCount: -10,
+		});
+
+		expect(resolved).toEqual({
+			weights: {
+				alpha: DEFAULT_MEMORY_UTILITY_WEIGHTS.alpha,
+				beta: DEFAULT_MEMORY_UTILITY_WEIGHTS.beta,
+				gamma: 0.9,
+				delta: DEFAULT_MEMORY_UTILITY_WEIGHTS.delta,
+			},
+			costThreshold: DEFAULT_MEMORY_COST_THRESHOLD,
+			recencyHalfLifeMs: 1,
+			usageHalfCount: 1,
+		});
+	});
+
+	it('builds the retrieval context from the batch and explicit tuning', () => {
+		const context = createMemoryUtilityContext(
+			[entry({ sizeBytes: 120 }), entry({ sizeBytes: 900 })],
+			NOW,
+			{
+				recencyHalfLifeMs: 2 * DAY,
+				usageHalfCount: 7,
+			},
+		);
+
+		expect(context).toEqual({
+			now: NOW,
+			maxSizeBytes: 900,
+			recencyHalfLifeMs: 2 * DAY,
+			usageHalfCount: 7,
+		});
+	});
+
+	it('uses the documented defaults when no tuning is provided', () => {
+		const context = createMemoryUtilityContext([entry()], NOW);
+		expect(context.recencyHalfLifeMs).toBe(
+			DEFAULT_MEMORY_RECENCY_HALF_LIFE_MS,
+		);
+		expect(context.usageHalfCount).toBe(DEFAULT_MEMORY_USAGE_HALF_COUNT);
+	});
 });
 
 describe('retrieveByUtility() (f00197)', () => {
@@ -184,6 +276,36 @@ describe('retrieveByUtility() (f00197)', () => {
 			similarity: 0,
 		});
 		const result = retrieveByUtility([hot, stale], { now: NOW });
+		expect(result.matches.map((match) => match.entry.id)).toEqual(['hot']);
+		expect(result.filteredCount).toBe(1);
+	});
+
+	it('accepts config-like nested utility tuning without breaking legacy options', () => {
+		const hot = entry({ id: 'hot', similarity: 0.95, usageCount: 12 });
+		const borderline = entry({
+			id: 'borderline',
+			similarity: 0.2,
+			usageCount: 0,
+			lastUsedAt: NOW - 21 * DAY,
+			sizeBytes: 3_800,
+		});
+
+		const result = retrieveByUtility([hot, borderline], {
+			now: NOW,
+			costThreshold: 0.99,
+			utility: {
+				costThreshold: 0.2,
+				weights: {
+					alpha: 0.35,
+					beta: 0.45,
+					gamma: 0.2,
+					delta: 0.25,
+				},
+				recencyHalfLifeMs: 14 * DAY,
+				usageHalfCount: 4,
+			},
+		});
+
 		expect(result.matches.map((match) => match.entry.id)).toEqual(['hot']);
 		expect(result.filteredCount).toBe(1);
 	});

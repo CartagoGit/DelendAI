@@ -228,6 +228,7 @@ export const createLazyPluginLoader = (
 				loadedAt: Date.now(),
 			};
 			loaded.set(id, entry);
+			failed.delete(id);
 			return entry;
 		} catch (err) {
 			const error = err instanceof Error ? err : new Error(String(err));

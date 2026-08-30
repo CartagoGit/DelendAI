@@ -2,12 +2,14 @@
 id: f00196
 title: "Model-aware presets"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: routing
 date: 2026-08-25
 priority: P2
 parent-plan: q00006
+shipped-in:
+  - 72d967d6
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track L / f00196"
@@ -109,10 +111,13 @@ expuesto al LLM se adapte al modelo en uso.
 
 ### S1 — Model profiles + integración con presets + auto-detección
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/presets/model-profiles.ts`, `packages/core/src/lib/presets/select.ts`, `packages/client/src/services/model-detector.ts`, `packages/core/tests/src/lib/presets/model-profiles.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: suite de model profiles 18/18, typecheck de packages/core y packages/client en verde, y Biome limpio. La selección de perfil y detección de header están integradas sin I/O ni cambios incompatibles.
 ## acceptance
 
 - Perfiles `small/medium/large` con valores razonables.

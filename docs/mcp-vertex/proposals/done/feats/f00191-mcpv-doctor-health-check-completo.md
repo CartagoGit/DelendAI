@@ -121,7 +121,10 @@ permisos y estado de CI.
 - **Status**: pending
 - **Files**: `packages/cli/src/commands/doctor.ts`, `packages/cli/src/commands/doctor-checks/{config,manifests,plugin-graph,deps,token-budgets,branch-protection,git-status,runtime,mcp-handshake,stale-docs,schemas,ports,permissions,ci-status}.ts`, `packages/cli/src/commands/doctor.spec.ts`
 - **Gate**: type
-
+- review-state: changes_requested
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by delivery_verifier — Revisión independiente: solicito cambios. Evidencia empírica: 1) Vitest focalizado pasó: `VITE_CONFIG_NATIVE_IGNORE_WARNING=true bunx vitest run packages/cli/src/commands/doctor.spec.ts packages/cli/src/commands/groups/doctor.spec.ts --reporter=dot` => 2 archivos / 55 tests OK. 2) Biome sobre el slice reclamado pasó: `bunx biome check packages/cli/src/commands/doctor.ts packages/cli/src/commands/doctor.spec.ts packages/cli/src/commands/doctor-checks/*.ts` sin hallazgos. 3) Typecheck de CLI pasó: `bun run --cwd packages/cli typecheck`. Pero el CLI registrado no usa la implementación reclamada en la propuesta: `packages/cli/src/commands/registry.ts` importa `./groups/doctor`, mientras la propuesta S1 reclama `packages/cli/src/commands/doctor.ts` y `doctor-checks/*`. El comportamiento observable del comando activo no coincide con el contrato de la propuesta: al ejecutar `bun packages/cli/src/index.ts doctor --json` en un estado solo-warn, el exit code observado fue `EXIT=4`, no `2` como exige f00191 para P1-only; además el comando activo agrega/omite checks de red bajo `network-surfaces` en vez de exponer `mcp-handshake` y `ci-status` con la semántica prometida. En resumen: la superficie reclamada está testeada y tipada, pero no está cableada al comando de producción y el contrato visible del CLI no coincide con f00191.
 ## acceptance
 
 - `mcpv doctor` ejecutable y reporta score.

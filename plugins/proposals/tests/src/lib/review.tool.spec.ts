@@ -251,4 +251,35 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		expect(record.pid).toBe(process.pid);
 		expect(record.agent).toBe('copilot-minimax-m3');
 	});
+
+	it('gives a recovery path when the requested slice is not declared', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00092',
+			title: 'Missing slice guidance',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const result = parse(
+			await review({
+				proposalId: 'f00092',
+				sliceId: 'stale-slice',
+				action: 'status',
+				agent: 'delivery_verifier',
+			}),
+		);
+
+		expect(result.ok).toBe(false);
+		expect(result.error.nextAction).toContain(
+			'proposal_get { view: "slices", proposalId: "f00092" }',
+		);
+		expect(result.error.nextAction).toContain(
+			'proposal_reconcile_folder { id: "f00092"',
+		);
+		expect(result.error.nextAction).toContain(
+			'proposal_force_transition { id: "f00092", to: "done"',
+		);
+	});
 });

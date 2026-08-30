@@ -8,6 +8,9 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { mkdtemp } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import {
 	createActivationKpis,
@@ -19,6 +22,7 @@ import {
 	serializeKpis,
 	type IActivationKpis,
 } from '../../../../src/lib/observability/activation-kpis';
+import { createActivationKpiSessionStore } from '../../../../src/lib/observability/activation-kpis-session';
 
 describe('activation-kpis (f00198) — pure math', () => {
 	describe('intersectSize', () => {
@@ -290,5 +294,81 @@ describe('activation-kpis (f00198) — persistence round-trip', () => {
 		});
 		expect(k.sessions()).toHaveLength(1);
 		expect(k.sessions()[0]?.taskId).toBe('good');
+	});
+
+	it('hydrateKpis returns an empty store for malformed top-level input', () => {
+		const fromWrongVersion = hydrateKpis({ version: 2, sessions: [] });
+		expect(fromWrongVersion.sessions()).toHaveLength(0);
+
+		const fromGarbage = hydrateKpis('not-json-shape');
+		expect(fromGarbage.sessions()).toHaveLength(0);
+	});
+
+	it('hydrateKpis skips sessions with non-string invoked or expected ids', () => {
+		const k = hydrateKpis({
+			version: 1,
+			sessions: [
+				{
+					taskId: 'good',
+					invoked: ['a'],
+					expected: ['a'],
+					precision: 1,
+					recall: 1,
+					diagnostics: [],
+				},
+				{
+					taskId: 'bad-invoked',
+					invoked: ['a', 1] as unknown as string[],
+					expected: ['a'],
+					precision: 0.5,
+					recall: 1,
+					diagnostics: [],
+				},
+				{
+					taskId: 'bad-expected',
+					invoked: ['a'],
+					expected: ['a', 1] as unknown as string[],
+					precision: 1,
+					recall: 0.5,
+					diagnostics: [],
+				},
+			],
+		});
+		expect(k.sessions()).toHaveLength(1);
+		expect(k.sessions()[0]?.taskId).toBe('good');
+	});
+
+	it('session store records runtime tool ids and persists completed sessions', async () => {
+		let persisted = '';
+		const workspaceRootAbs = await mkdtemp(
+			join(tmpdir(), 'activation-kpis-'),
+		);
+		const store = createActivationKpiSessionStore({
+			workspaceRootAbs,
+			readFile: async () => persisted,
+			writeFile: async (_path: string, content: string) => {
+				persisted = content;
+			},
+		});
+
+		await store.load();
+		store.beginSession({
+			taskId: 'audit',
+			expected: ['overview'],
+		});
+		store.recordInvocation('overview');
+		store.recordInvocation('unrelated');
+
+		const session = await store.finishSession();
+
+		expect(store.path).toBe(
+			join(workspaceRootAbs, '.vscode/mcp-vertex/kpis.json'),
+		);
+		expect(session?.precision).toBe(0.5);
+		expect(hydrateKpis(JSON.parse(persisted)).aggregate()).toMatchObject({
+			sessionCount: 1,
+			meanPrecision: 0.5,
+			meanRecall: 1,
+		});
 	});
 });

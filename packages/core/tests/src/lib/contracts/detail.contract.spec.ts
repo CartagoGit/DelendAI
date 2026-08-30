@@ -75,4 +75,10 @@ describe('detail.contract (f00187)', () => {
 		const _typed: WithDetail = result;
 		expect(_typed).toBeDefined();
 	});
+
+	it('withDetail preserves an existing detail field unchanged', () => {
+		const base = { foo: 1, detail: 'compact' as const };
+		const result = withDetail(base);
+		expect(result.detail).toBe('compact');
+	});
 });

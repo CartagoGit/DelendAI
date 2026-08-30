@@ -74,6 +74,7 @@ describe('commit_policy_status', () => {
 				protectedBranches: readonly string[];
 				protectedPrefixes: readonly string[];
 				directCommitPushAllowed: boolean;
+				remote: null;
 			};
 			summary: string;
 		};
@@ -90,9 +91,10 @@ describe('commit_policy_status', () => {
 		expect(body.push.onCommit).toBe(true);
 		expect(body.branchPolicy).toEqual({
 			current: 'develop',
-			protectedBranches: ['main', 'master'],
-			protectedPrefixes: ['release/', 'hotfix/'],
+			protectedBranches: [],
+			protectedPrefixes: [],
 			directCommitPushAllowed: true,
+			remote: null,
 		});
 		expect(body.summary).toContain('commit=on');
 	});

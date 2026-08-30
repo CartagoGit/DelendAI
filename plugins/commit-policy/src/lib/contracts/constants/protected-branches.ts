@@ -1,24 +1,11 @@
 /**
  * protected-branches.ts — c00145 (Track A.default).
  *
- * Canonical default for `commit-policy.protectedBranches`:
- *
- *   DEFAULT_PROTECTED_BRANCHES  = ['main', 'master']   — always protected.
- *   OPTIONAL_PROTECTED_BRANCHES = ['develop', /^release\//] — only when the
- *     owner opts in explicitly.
- *   NEVER_PROTECTED_BRANCHES    = [/^agent\//, /^worktree\//] — never
- *     protected (agent/worktree isolation).
- *
- * This REVERSES the default introduced by c00131 (`develop` was included),
- * following the external reviewer's retraction: `develop` must stay
- * flexible for the human workflow unless the owner explicitly opts in.
+ * No branch name is protected by default. The configured list is authoritative
+ * so the plugin remains usable in repositories with any branch naming scheme.
  */
 
-/** Branches that are always protected by default. */
-export const DEFAULT_PROTECTED_BRANCHES: readonly string[] = ['main', 'master'];
-
-/** Branches the owner can explicitly add if they want main-equivalent protection. */
-export const OPTIONAL_PROTECTED_BRANCHES: readonly string[] = ['develop'];
+export const DEFAULT_PROTECTED_BRANCHES: readonly string[] = [];
 
 /** Branch patterns never protected by default (nor by opt-in). */
 export const NEVER_PROTECTED_BRANCH_PATTERNS: readonly RegExp[] = [

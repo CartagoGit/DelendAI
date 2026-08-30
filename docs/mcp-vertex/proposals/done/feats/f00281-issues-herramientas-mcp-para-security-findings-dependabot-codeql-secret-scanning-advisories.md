@@ -2,12 +2,13 @@
 id: f00281
 title: "issues: herramientas MCP para security findings (Dependabot, CodeQL, secret scanning, advisories)"
 kind: feat
-status: review
+status: done
 type: proposal
 track: security
 date: 2026-08-29
 priority: P1
 related: [f00251]
+shipped-in: [b8ff9ef6]
 ---
 
 # f00281 — issues: herramientas MCP para security findings de GitHub
@@ -159,7 +160,8 @@ delegate al puerto, toolOk con tier.
     - `docs/mcp-vertex/host-hints/agent-instructions.generated.md` (si
       aplica regeneración)
 - **Gate**: `bun run validate`
-
+- review-state: in_review
+- review-implementer: technical_investigator
 ## dependency graph
 
 S1 → S2, S3 (las tools consumen tipos + cliente). S2 y S3 son

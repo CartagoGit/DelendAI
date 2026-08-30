@@ -13,6 +13,7 @@ import { joinRel } from '@mcp-vertex/core/public';
 export const buildSwarmPaths = (
 	cacheDir: string,
 	docsDir: string,
+	proposalsDir?: string,
 ): IHostPathLayout => ({
 	lockFile: joinRel(cacheDir, 'agents.lock.json'),
 	agentRegistryFile: joinRel(cacheDir, 'subagent-registry.json'),
@@ -31,7 +32,7 @@ export const buildSwarmPaths = (
 	),
 	finishDayReportFile: joinRel(cacheDir, 'agent/finish-day/last-report.json'),
 	finishDayJournalFile: joinRel(cacheDir, 'agent/finish-day/journal.log'),
-	proposalsDir: joinRel(docsDir, 'proposals'),
+	proposalsDir: proposalsDir ?? joinRel(docsDir, 'proposals'),
 	proposalIndexFile: joinRel(cacheDir, 'proposals/index.json'),
 	peerReviewLogFile: joinRel(cacheDir, 'proposals/peer-review.jsonl'),
 	proposalIdCountersFile: joinRel(cacheDir, 'proposal-id-counters.json'),

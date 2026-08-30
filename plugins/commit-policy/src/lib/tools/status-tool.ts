@@ -24,11 +24,13 @@ import { localizedString } from '../contracts/i18n-types';
 import type { IIdentityResolverContext } from '../identity/resolver';
 import { resolveAuthor } from '../identity/resolver';
 import { gitCurrentBranch } from '../services/git-extra';
+import type { BranchProtectionAdapter } from '../services/branch-protection-adapter';
 
 export interface IStatusToolOptions {
 	readonly namespacePrefix: string;
 	readonly options: ICommitPolicyOptions;
 	readonly identityCtx: IIdentityResolverContext;
+	readonly branchProtectionAdapter?: BranchProtectionAdapter | undefined;
 	/** BCP-47 locale tag (`en`, `es`, …). Defaults to English. */
 	readonly locale?: string | undefined;
 }
@@ -84,6 +86,15 @@ const OutputSchema = z.object({
 		protectedBranches: z.array(z.string()),
 		protectedPrefixes: z.array(z.string()),
 		directCommitPushAllowed: z.boolean(),
+		remote: z
+			.object({
+				ok: z.boolean(),
+				provider: z.enum(['github', 'gitlab']).optional(),
+				remoteBranches: z.array(z.string()).optional(),
+				effectiveBranches: z.array(z.string()).optional(),
+				reason: z.string().optional(),
+			})
+			.nullable(),
 	}),
 	locale: z.string(),
 });
@@ -104,6 +115,7 @@ export const runCommitPolicyStatus = async (
 		protected: protectedBranches,
 		protectedPrefixes,
 	});
+	const remoteProtection = options.branchProtectionAdapter?.getLastResult();
 
 	const payload = {
 		commit: {
@@ -163,6 +175,27 @@ export const runCommitPolicyStatus = async (
 			protectedBranches,
 			protectedPrefixes,
 			directCommitPushAllowed: !currentBranchProtected,
+			remote:
+				remoteProtection === undefined
+					? null
+					: remoteProtection.ok
+						? {
+								ok: true,
+								provider: remoteProtection.provider,
+								remoteBranches: [
+									...remoteProtection.remoteBranches,
+								],
+								effectiveBranches: [
+									...remoteProtection.effectiveBranches,
+								],
+							}
+						: {
+								ok: false,
+								...(remoteProtection.provider !== undefined
+									? { provider: remoteProtection.provider }
+									: {}),
+								reason: remoteProtection.reason,
+							},
 		},
 		locale: options.locale ?? 'en',
 	};

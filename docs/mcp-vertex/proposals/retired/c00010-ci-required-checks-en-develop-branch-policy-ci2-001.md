@@ -2,8 +2,8 @@
 id: c00010
 title: "CI — required checks en `develop` branch policy (CI2-001)"
 kind: chore
-status: paused
-paused-reason: "Paused: the develop branch-protection policy is being consolidated under plan q00004; enabling required checks now would conflict with the in-flight landing/ff discipline. Revisit once q00004 closes."
+status: retired
+paused-reason: "Superseded: q00005/c00017/c00018 established that develop remains intentionally unprotected; required checks belong to the protected release/staging flow. Retain this proposal only as historical audit trace."
 type: proposal
 track: ci
 date: 2026-08-25
@@ -22,11 +22,18 @@ related:
     - f00175 # generators
 shipped-in:
   - e1ee275a # ci(track-g): harden develop checks and proposal evidence gate
+superseded-by:
+  - c00017
+  - c00018
 ---
 
 # i00010 — CI: required checks en develop
 
 ## Goal
+
+Historical goal retained for traceability. It is not the current repository
+policy; the active policy is defined by `docs/mcp-vertex/REPO-RULES.md` and
+the successor proposals above.
 
 `develop` continúa sin protección requerida:
 

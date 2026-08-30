@@ -21,6 +21,7 @@ export const PROJECT_KPI_VIEWS = [
 	'errors',
 	'efficiency',
 	'audit',
+	'activation',
 ] as const;
 
 export type TProjectKpiView = (typeof PROJECT_KPI_VIEWS)[number];
