@@ -134,28 +134,28 @@ const readErrorText = (value: unknown): string | null => {
 	return null;
 };
 
-const hasErrorStack = (value: unknown): boolean =>
-	Boolean(
-		value &&
-			typeof value === 'object' &&
-			typeof (value as Record<string, unknown>).stack === 'string' &&
-			(value as Record<string, unknown>).stack.length > 0,
-	);
+const hasErrorStack = (value: unknown): boolean => {
+	if (!value || typeof value !== 'object') return false;
+	const stack = (value as Record<string, unknown>).stack;
+	return typeof stack === 'string' && stack.length > 0;
+};
 
 const publicErrorFingerprint = (event: ILogEvent): string | null => {
 	const errorText = readErrorText(event.meta.error);
 	if (errorText === null) return null;
 	const toolName =
-		typeof event.meta.toolName === 'string' && event.meta.toolName.length > 0
+		typeof event.meta.toolName === 'string' &&
+		event.meta.toolName.length > 0
 			? event.meta.toolName
-			: event.taskId ?? event.kind;
+			: (event.taskId ?? event.kind);
 	return sha1(`${toolName}|${errorText}`);
 };
 
 const publicSummary = (event: ILogEvent): string => {
 	if (readErrorText(event.meta.error) === null) return event.summary;
 	const separator = event.summary.indexOf(' — ');
-	const baseSummary = separator >= 0 ? event.summary.slice(0, separator) : event.summary;
+	const baseSummary =
+		separator >= 0 ? event.summary.slice(0, separator) : event.summary;
 	const elapsedMs = event.meta.elapsedMs;
 	if (
 		typeof elapsedMs === 'number' &&
@@ -218,7 +218,9 @@ const projectLogEvent = (event: ILogEvent, detail: Detail): unknown =>
 		detail,
 	);
 
-const publicIncident = (incident: Awaited<ReturnType<typeof logIncidents>>['incidents'][number]) => ({
+const publicIncident = (
+	incident: Awaited<ReturnType<typeof logIncidents>>['incidents'][number],
+) => ({
 	incidentType: incident.incidentType,
 	toolName: incident.toolName,
 	errorFingerprint: incident.errorFingerprint,
@@ -226,19 +228,21 @@ const publicIncident = (incident: Awaited<ReturnType<typeof logIncidents>>['inci
 	distinctAgents: incident.distinctAgents,
 	firstSeen: incident.firstSeen,
 	lastSeen: incident.lastSeen,
-	sampleSummary:
-		publicSummary(incident.recentEvents.at(-1) ?? incident.recentEvents[0] ?? {
-			ts: incident.firstSeen,
-			kind: 'tool-failed',
-			agent: null,
-			taskId: incident.toolName,
-			outcome: 'failed',
-			severity: 'error',
-			incidentType: incident.incidentType,
-			files: [],
-			summary: incident.sampleSummary,
-			meta: {},
-		}),
+	sampleSummary: publicSummary(
+		incident.recentEvents.at(-1) ??
+			incident.recentEvents[0] ?? {
+				ts: incident.firstSeen,
+				kind: 'tool-failed',
+				agent: null,
+				taskId: incident.toolName,
+				outcome: 'failed',
+				severity: 'error',
+				incidentType: incident.incidentType,
+				files: [],
+				summary: incident.sampleSummary,
+				meta: {},
+			},
+	),
 	recentEvents: compactEvents(incident.recentEvents, 'full'),
 });
 
@@ -751,7 +755,10 @@ export const buildLogToolRegistrations = (
 						agent?: string | undefined;
 						recentLimit?: number | undefined;
 					}) => {
-						const incidents = await logIncidents(stores.errors, args);
+						const incidents = await logIncidents(
+							stores.errors,
+							args,
+						);
 						return toolJson({
 							incidents: incidents.incidents.map((incident) =>
 								publicIncident(incident),
