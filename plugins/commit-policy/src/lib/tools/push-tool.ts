@@ -9,10 +9,11 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
+import { toolError, toolJson, toolOk } from '@mcp-vertex/core/public';
 
 import {
 	BRANCH_PROTECTED_REFUSAL_CODE,
+	classifyRefusal,
 	refusalHasCode,
 } from '../contracts/branch';
 import type { ICommitPolicyOptions } from '../contracts/options';
@@ -85,6 +86,7 @@ const OutputSchema = z.object({
 	remote: z.string().optional(),
 	branch: z.string().optional(),
 	refusal: z.string().optional(),
+	code: z.string().optional(),
 });
 
 export const runCommitPolicyPush = async (
@@ -110,7 +112,10 @@ export const runCommitPolicyPush = async (
 		pushed: result.ok ? result.pushed : false,
 		...(result.ok
 			? { remote: result.remote, branch: result.branch }
-			: { refusal: result.refusal }),
+			: {
+					refusal: result.refusal,
+					code: result.code ?? classifyRefusal(result.refusal),
+				}),
 	});
 	if (!parseResult.success) {
 		return toolError(
@@ -140,7 +145,15 @@ export const runCommitPolicyPush = async (
 				nextAction: pushToolFallbackNextAction(result.refusal),
 			};
 		});
-		return toolError(localized.summary, localized.nextAction);
+		const error = {
+			ok: false as const,
+			error: {
+				reason: localized.summary,
+				nextAction: localized.nextAction,
+				code: result.code ?? classifyRefusal(result.refusal),
+			},
+		};
+		return { ...toolJson(error), isError: true };
 	}
 
 	const successMessage = localizedString(options.locale, (catalog) =>

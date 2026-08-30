@@ -30,7 +30,11 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { appendAuditTrailer, type IAuditAgent } from '../audit/trailer';
-import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
+import {
+	branchProtectedRefusal,
+	classifyRefusal,
+	isBranchProtected,
+} from '../contracts/branch';
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
 import type { IIdentityResolverContext } from '../identity/resolver';
@@ -83,6 +87,8 @@ export interface ICommitDriverInput {
 export interface ICommitDriverResult extends ICommitAndPushResult {
 	/** Optional policy refusal — when set, `committed` is false. */
 	readonly refusal?: string;
+	/** Stable machine-readable refusal category, when refused. */
+	readonly code?: import('../contracts/branch').CommitPolicyRefusalCode;
 	/** Whether `git commit` created a new commit object. */
 	readonly commitCreated?: boolean;
 	/** Whether the operation moved HEAD. */
@@ -874,4 +880,9 @@ const runCommitDriverUnlocked = async (
 export const runCommitDriver = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
-): Promise<ICommitDriverResult> => runCommitDriverUnlocked(input, options);
+): Promise<ICommitDriverResult> => {
+	const result = await runCommitDriverUnlocked(input, options);
+	return result.refusal === undefined
+		? result
+		: { ...result, code: classifyRefusal(result.refusal) };
+};

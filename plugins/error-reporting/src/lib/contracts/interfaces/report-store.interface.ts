@@ -25,6 +25,8 @@ export interface IReportRecord {
 	readonly consecutiveFailureCount: number;
 	/** Earliest ISO timestamp at which another dispatch may be attempted. */
 	readonly nextEligibleAt?: string;
+	/** Expiring reservation held by the process currently dispatching. */
+	readonly dispatchClaimedUntil?: string;
 	/** Cooldown end while the circuit breaker is open. */
 	readonly circuitOpenUntil?: string;
 	/** GitHub issue number, present only when an issue was actually created. */
@@ -67,4 +69,9 @@ export interface IReportStore {
 		input: IReportSuccessInput,
 	): Promise<void>;
 	all(): Promise<readonly IReportRecord[]>;
+	claimDispatch(
+		fingerprint: string,
+		claimedUntil: string,
+		now: string,
+	): Promise<boolean>;
 }

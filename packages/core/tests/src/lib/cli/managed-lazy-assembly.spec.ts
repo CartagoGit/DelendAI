@@ -140,7 +140,7 @@ describe('managed lazy assembly defaults', () => {
 		});
 
 		expect(registered).toBe(1);
-		expect(assembled.loadResult.loaded).toHaveLength(1);
+		expect(assembled.loadResult.loaded).toEqual([]);
 		expect(assembled.startupReport.runtime.moduleLoading).toBe('lazy');
 		const activator =
 			assembled.config.lazyPluginActivators?.get('commit-policy');
@@ -174,6 +174,6 @@ describe('managed lazy assembly defaults', () => {
 		});
 
 		expect(registered).toBe(1);
-		expect(assembled.loadResult.loaded).toHaveLength(1);
+		expect(assembled.loadResult.loaded).toEqual([]);
 	});
 });

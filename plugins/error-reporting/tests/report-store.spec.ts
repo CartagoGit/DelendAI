@@ -84,6 +84,31 @@ describe('createReportStore', () => {
 		expect(record?.nextEligibleAt).toBe('2026-08-24T00:01:00.000Z');
 	});
 
+	it('allows only one concurrent dispatch claim and recovers expired claims', async () => {
+		const store = createReportStore(await makeDir());
+		const claims = await Promise.all([
+			store.claimDispatch(
+				'fp',
+				'2026-08-24T00:05:00.000Z',
+				'2026-08-24T00:00:00.000Z',
+			),
+			store.claimDispatch(
+				'fp',
+				'2026-08-24T00:05:00.000Z',
+				'2026-08-24T00:00:00.000Z',
+			),
+		]);
+
+		expect(claims.filter(Boolean)).toHaveLength(1);
+		expect(
+			await store.claimDispatch(
+				'fp',
+				'2026-08-24T00:10:00.000Z',
+				'2026-08-24T00:06:00.000Z',
+			),
+		).toBe(true);
+	});
+
 	it('migrates legacy signature records and treats success only when an issue exists', async () => {
 		const dir = await makeDir();
 		await import('node:fs/promises').then(({ writeFile }) =>

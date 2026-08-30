@@ -25,6 +25,7 @@ type ILegacyStateRecord = {
 	readonly lastFailureCode?: unknown;
 	readonly consecutiveFailureCount?: unknown;
 	readonly nextEligibleAt?: unknown;
+	readonly dispatchClaimedUntil?: unknown;
 	readonly circuitOpenUntil?: unknown;
 	readonly issueNumber?: unknown;
 	readonly issueUrl?: unknown;
@@ -32,6 +33,12 @@ type ILegacyStateRecord = {
 
 const asIsoOrUndefined = (value: unknown): string | undefined =>
 	typeof value === 'string' && value !== '' ? value : undefined;
+
+const parseIso = (value: string | undefined): number | undefined => {
+	if (value === undefined) return undefined;
+	const parsed = Date.parse(value);
+	return Number.isNaN(parsed) ? undefined : parsed;
+};
 
 const asPositiveInt = (value: unknown): number | undefined => {
 	if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
@@ -66,6 +73,7 @@ const normalizeRecord = (
 	const lastDispatchAt = asIsoOrUndefined(record.lastDispatchAt);
 	const nextEligibleAt = asIsoOrUndefined(record.nextEligibleAt);
 	const circuitOpenUntil = asIsoOrUndefined(record.circuitOpenUntil);
+	const dispatchClaimedUntil = asIsoOrUndefined(record.dispatchClaimedUntil);
 	const lastFailureCode = isSafeReporterFailureCode(record.lastFailureCode)
 		? record.lastFailureCode
 		: undefined;
@@ -100,6 +108,7 @@ const normalizeRecord = (
 		consecutiveFailureCount:
 			asPositiveInt(record.consecutiveFailureCount) ?? 0,
 		...(nextEligibleAt !== undefined ? { nextEligibleAt } : {}),
+		...(dispatchClaimedUntil !== undefined ? { dispatchClaimedUntil } : {}),
 		...(circuitOpenUntil !== undefined ? { circuitOpenUntil } : {}),
 		...(issueNumber !== undefined ? { issueNumber } : {}),
 		...(typeof record.issueUrl === 'string' && record.issueUrl !== ''
@@ -152,6 +161,9 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 		...(previous?.nextEligibleAt !== undefined
 			? { nextEligibleAt: previous.nextEligibleAt }
 			: {}),
+		...(previous?.dispatchClaimedUntil !== undefined
+			? { dispatchClaimedUntil: previous.dispatchClaimedUntil }
+			: {}),
 		...(previous?.circuitOpenUntil !== undefined
 			? { circuitOpenUntil: previous.circuitOpenUntil }
 			: {}),
@@ -169,6 +181,28 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 		},
 		async all() {
 			return Object.values(await readAll(statePath));
+		},
+		async claimDispatch(fingerprint, claimedUntil, now) {
+			let claimed = false;
+			await withFileMutex(statePath, async () => {
+				const state = await readAll(statePath);
+				const previous = state[fingerprint];
+				const activeClaim = parseIso(previous?.dispatchClaimedUntil);
+				if (
+					activeClaim !== undefined &&
+					activeClaim > Date.parse(now)
+				) {
+					return;
+				}
+				const next = nextRecord(fingerprint, previous);
+				state[fingerprint] = {
+					...next,
+					dispatchClaimedUntil: claimedUntil,
+				};
+				await writeState(state);
+				claimed = true;
+			});
+			return claimed;
 		},
 		async recordAttempt(fingerprint, input) {
 			await withFileMutex(statePath, async () => {
@@ -189,8 +223,12 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 				const state = await readAll(statePath);
 				const previous = state[fingerprint];
 				const next = nextRecord(fingerprint, previous);
+				const {
+					dispatchClaimedUntil: _dispatchClaimedUntil,
+					...withoutClaim
+				} = next;
 				state[fingerprint] = {
-					...next,
+					...withoutClaim,
 					lastDispatchAt: input.at,
 					lastFailureCode: input.failureCode,
 					consecutiveFailureCount: next.consecutiveFailureCount + 1,
@@ -207,12 +245,16 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 				const state = await readAll(statePath);
 				const previous = state[fingerprint];
 				const next = nextRecord(fingerprint, previous);
+				const {
+					dispatchClaimedUntil: _dispatchClaimedUntil,
+					...withoutClaim
+				} = next;
 				state[fingerprint] = {
 					fingerprint,
-					classification: next.classification,
-					attemptCount: next.attemptCount,
-					...(next.lastAttemptAt !== undefined
-						? { lastAttemptAt: next.lastAttemptAt }
+					classification: withoutClaim.classification,
+					attemptCount: withoutClaim.attemptCount,
+					...(withoutClaim.lastAttemptAt !== undefined
+						? { lastAttemptAt: withoutClaim.lastAttemptAt }
 						: {}),
 					lastDispatchAt: input.at,
 					lastSuccessAt: input.at,

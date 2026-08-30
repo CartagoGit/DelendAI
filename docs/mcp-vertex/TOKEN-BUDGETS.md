@@ -59,13 +59,13 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | lean | lean | native | managed | tokens-gate | 4 | 49 | 60,144 | 15036 | 50,084 | 4,080 | 16,308 | 33,776 | 8,221 | 1,307 | n/a | within hard | within hard | none |
 | lean | lean | adaptive | managed | dynamic-client | 4 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 567 | n/a | within hard | within hard | none |
 | standard | standard | native | managed | tokens-gate | 19 | 99 | 120,219 | 30055 | 99,097 | 8,669 | 28,685 | 70,412 | 10,007 | 2,865 | n/a | within hard | over warning (9,500B) | none |
-| standard | standard | adaptive | managed | dynamic-client | 19 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 754 | n/a | within hard | within hard | none |
+| standard | standard | adaptive | managed | dynamic-client | 19 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 780 | n/a | within hard | within hard | none |
 | swarm | swarm | native | managed | tokens-gate | 27 | 165 | 194,010 | 48503 | 158,553 | 14,553 | 47,230 | 111,323 | 49,703 | 4,477 | 153 | within hard | within hard | none |
-| swarm | swarm | adaptive | managed | dynamic-client | 27 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 858 | n/a | within hard | within hard | none |
+| swarm | swarm | adaptive | managed | dynamic-client | 27 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 884 | n/a | within hard | within hard | none |
 | full | full | native | managed | tokens-gate | 31 | 172 | 202,692 | 50673 | 165,888 | 15,032 | 50,292 | 115,596 | 49,703 | 4,815 | 153 | within hard | within hard | none |
-| full | full | adaptive | managed | dynamic-client | 31 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 899 | n/a | within hard | within hard | none |
-| vertex | vertex | native | managed | tokens-gate | 38 | 195 | 266,761 | 66691 | 223,136 | 18,506 | 58,890 | 164,246 | 49,703 | 5,804 | 153 | within hard | within hard | none |
-| vertex | vertex | adaptive | managed | dynamic-client | 38 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 1,045 | n/a | within hard | within hard | none |
+| full | full | adaptive | managed | dynamic-client | 31 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 925 | n/a | within hard | within hard | none |
+| vertex | vertex | native | managed | tokens-gate | 38 | 195 | 266,811 | 66703 | 223,186 | 18,506 | 58,890 | 164,296 | 49,703 | 5,804 | 153 | within hard | within hard | none |
+| vertex | vertex | adaptive | managed | dynamic-client | 38 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 1,071 | n/a | within hard | within hard | none |
 | web-app | web-app | native | managed | tokens-gate | 18 | 89 | 104,677 | 26170 | 86,164 | 7,393 | 25,767 | 60,397 | 8,221 | 2,738 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | managed | dynamic-client | 18 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 727 | n/a | n/a | n/a | none |
 | backend-api | backend-api | native | managed | tokens-gate | 16 | 88 | 103,093 | 25774 | 84,773 | 7,350 | 25,746 | 59,027 | 8,221 | 2,602 | n/a | n/a | n/a | none |
@@ -171,7 +171,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | vertex | native | managed | tokens-gate | audit | 4 | 10,099 | 802 | 1,992 | 6,803 | 0 | 108 | 272 | 3.8% |
 | vertex | native | managed | tokens-gate | auto-agent-selector | 5 | 7,327 | 620 | 1,377 | 4,633 | 0 | 135 | 340 | 2.7% |
 | vertex | native | managed | tokens-gate | auto-plugin-selector | 1 | 3,827 | 154 | 1,227 | 2,300 | 0 | 27 | 68 | 1.4% |
-| vertex | native | managed | tokens-gate | commit-policy | 5 | 6,816 | 665 | 1,060 | 4,383 | 0 | 135 | 324 | 2.6% |
+| vertex | native | managed | tokens-gate | commit-policy | 5 | 6,866 | 665 | 1,060 | 4,433 | 0 | 135 | 324 | 2.6% |
 | vertex | native | managed | tokens-gate | completion | 3 | 2,612 | 396 | 704 | 1,129 | 0 | 81 | 204 | 1.0% |
 | vertex | native | managed | tokens-gate | container | 5 | 3,489 | 580 | 1,627 | 687 | 0 | 135 | 276 | 1.3% |
 | vertex | native | managed | tokens-gate | conventions | 2 | 1,962 | 164 | 433 | 1,088 | 0 | 54 | 136 | 0.7% |
@@ -293,7 +293,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | swarm | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | native | managed | tokens-gate | 202,692 | 48943 | 50060 | 50673 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| vertex | native | managed | tokens-gate | 266,761 | 64261 | 65326 | 66691 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| vertex | native | managed | tokens-gate | 266,811 | 64275 | 65340 | 66703 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | vertex | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | native | managed | tokens-gate | 104,677 | 24984 | 25612 | 26170 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
@@ -317,7 +317,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | standard | 4,900 | ok | — | 120,219 | ok | — |
 | swarm | 4,900 | ok | — | 194,010 | ok | — |
 | full | 4,900 | ok | — | 202,692 | ok | — |
-| vertex | 4,900 | ok | — | 266,761 | ok | — |
+| vertex | 4,900 | ok | — | 266,811 | ok | — |
 | web-app | 4,900 | n/a | — | 104,677 | n/a | — |
 | backend-api | 4,900 | n/a | — | 103,093 | n/a | — |
 | cli-tool | 4,900 | n/a | — | 69,205 | n/a | — |
