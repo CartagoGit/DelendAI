@@ -2,7 +2,9 @@
 id: x00263
 title: "AUD-CP-005 — `sliceScoping=true` debe stagear exactamente los archivos del slice"
 kind: fix
-status: ready
+status: done
+shipped-in:
+    - d0b2ab17
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -140,7 +142,7 @@ Si inactivo (default) → refusal.
 
 ### S1 — Driver stagea únicamente `files.paths` y verifica post-stage
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/triggers/slice-listener.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`, `plugins/commit-policy/tests/src/lib/triggers/slice-listener.spec.ts`, `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts`
 - **Gate**: type
 - **Dependency**: `x00260`
@@ -149,7 +151,10 @@ Si inactivo (default) → refusal.
   - "staged ajenos preexistentes → no entran (assertSubset falla)"
   - "slice sin archivos → refusal SLICE_HAS_NO_FILES"
   - "dos agentes dirty simultáneos → cada uno stagea solo los suyos"
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Aprobacion independiente sobre el working tree actual encima de HEAD 6ff19f8d; el commit hash se adjunta solo como referencia del checkout porque la evidencia validada no proviene de un commit del slice. Verifique que commit-driver stagea exactamente sliceContext.files cuando sliceScoping=true, rechaza SLICE_HAS_NO_FILES y detecta CROSS_AGENT_CONTAMINATION mediante el subset check del index cacheado; tambien verifique que slice-listener rehusa slices done sin files. Gates ejecutados en este checkout: vitest enfocado verde y typecheck del plugin verde. No observe cambios fuera del slice que bloqueen esta aprobacion.
 ## acceptance
 
 - `t00018` (cross-agent safe) verde.
