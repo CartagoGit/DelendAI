@@ -2,7 +2,7 @@
 id: f00275
 title: "`mcpv doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría"
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: product
 date: 2026-08-29

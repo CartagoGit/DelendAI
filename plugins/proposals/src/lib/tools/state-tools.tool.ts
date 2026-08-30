@@ -199,7 +199,7 @@ const STATE_DIAGNOSIS_SCHEMA = z
 	})
 	.passthrough();
 
-const STATE_REPAIR_OUTPUT_SCHEMA = z
+export const STATE_REPAIR_OUTPUT_SCHEMA = z
 	.object({
 		mode: z.enum(['dry-run', 'execute']),
 		diagnosis: z.unknown(),
@@ -208,6 +208,10 @@ const STATE_REPAIR_OUTPUT_SCHEMA = z
 		nextAction: optionalString(),
 	})
 	.passthrough();
+
+export const STATE_REPAIR_INPUT_SCHEMA = z.object({
+	mode: z.enum(['dry-run', 'execute']).optional(),
+});
 
 const EMPTY_LOCK = (): ILockFile => ({
 	version: 1,
@@ -559,9 +563,7 @@ export const buildStateRepairRegistration = (
 				outputSchema: STATE_REPAIR_OUTPUT_SCHEMA,
 				description:
 					'Auto-heal stale swarm state. mode:"dry-run" (default) reports what would be removed; mode:"execute" GCs stale locks, expires due queue entries and force-releases orphan assignments (atomic, mutex-guarded). Returns the diagnosis plus what was (or would be) removed.',
-				inputSchema: z.object({
-					mode: z.enum(['dry-run', 'execute']).optional(),
-				}),
+				inputSchema: STATE_REPAIR_INPUT_SCHEMA,
 			},
 			async (args: { mode?: 'dry-run' | 'execute' | undefined }) => {
 				const before = await diagnose(options);

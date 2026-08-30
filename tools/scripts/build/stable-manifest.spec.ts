@@ -18,6 +18,14 @@ describe('stable-manifest builder (f00152 S2)', () => {
 		const names = new Set(manifest.tools.map((tool) => tool.name));
 		for (const descriptor of STABLE_API_TOOLS) {
 			expect(names.has(descriptor.name)).toBe(true);
+			expect(
+				manifest.tools.find((tool) => tool.name === descriptor.name)
+					?.inputSchema,
+			).toEqual(expect.any(Object));
+			expect(
+				manifest.tools.find((tool) => tool.name === descriptor.name)
+					?.outputSchema,
+			).toEqual(expect.any(Object));
 		}
 	});
 

@@ -357,6 +357,52 @@ const SLICE_IN = z.object({
 	acceptance: z.array(z.string()).optional(),
 });
 
+export const CREATE_PROPOSAL_INPUT_SCHEMA = z.object({
+	id: z.string().optional(),
+	kind: z
+		.enum([
+			'feat',
+			'breaking',
+			'fix',
+			'refactor',
+			'perf',
+			'audit',
+			'chore',
+			'docs',
+			'test',
+			'infra',
+			'spike',
+			'legacy',
+			'resume',
+		])
+		.optional(),
+	title: z.string(),
+	goal: z.string().optional(),
+	status: z
+		.enum(['pending', 'ready', 'in_progress', 'in-progress'])
+		.optional(),
+	track: z.string().optional(),
+	why: z.string().optional(),
+	nonGoals: z.array(z.string()).optional(),
+	globalGate: z.enum(['lint', 'type', 'e2e', 'none']).optional(),
+	slices: z.array(SLICE_IN).optional(),
+});
+
+export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
+	ok: z.literal(true),
+	file: z.string(),
+	path: z.string(),
+	disjointnessIssues: z.array(
+		z.object({
+			first: z.string(),
+			second: z.string(),
+			file: z.string(),
+		}),
+	),
+	indexCount: z.number(),
+	redactedSecrets: z.number().int().nonnegative().optional(),
+});
+
 // x00098 S2: emit the canonical slice shape the repo linter validates
 // (`**Status**`/`**Files**`/`**Gate**` bullets); the plan parser reads
 // both this and the legacy lowercase form.
@@ -733,63 +779,10 @@ export const buildCreateProposalRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_create_proposal`,
 			{
-				outputSchema: z.object({
-					ok: z.literal(true),
-					file: z.string(),
-					path: z.string(),
-					disjointnessIssues: z.array(
-						z.object({
-							first: z.string(),
-							second: z.string(),
-							file: z.string(),
-						}),
-					),
-					indexCount: z.number(),
-				}),
+				outputSchema: CREATE_PROPOSAL_OUTPUT_SCHEMA,
 				description:
 					'Create a proposal document with frontmatter, a Goal and a parseable `## Slices` section (one slice per parallelisable, file-disjoint unit). Validates disjointness, writes atomically and re-syncs the index. Returns the file path and any overlap issues.',
-				inputSchema: z.object({
-					id: z.string().optional(),
-					// f00016 S13: when `id` is omitted, `kind` resolves the
-					// prefix and the race-safe allocator picks the next
-					// number. One of the two is required (checked at runtime
-					// — modelling that as an exclusive-or in Zod is more
-					// machinery than the one resulting error message saves).
-					kind: z
-						.enum([
-							'feat',
-							'breaking',
-							'fix',
-							'refactor',
-							'perf',
-							'audit',
-							'chore',
-							'docs',
-							'test',
-							'infra',
-							'spike',
-							'legacy',
-							'resume',
-						])
-						.optional(),
-					title: z.string(),
-					goal: z.string().optional(),
-					status: z
-						.enum([
-							'pending',
-							'ready',
-							'in_progress',
-							'in-progress',
-						])
-						.optional(),
-					track: z.string().optional(),
-					why: z.string().optional(),
-					nonGoals: z.array(z.string()).optional(),
-					globalGate: z
-						.enum(['lint', 'type', 'e2e', 'none'])
-						.optional(),
-					slices: z.array(SLICE_IN).optional(),
-				}),
+				inputSchema: CREATE_PROPOSAL_INPUT_SCHEMA,
 			},
 			async (args: {
 				id?: string | undefined;

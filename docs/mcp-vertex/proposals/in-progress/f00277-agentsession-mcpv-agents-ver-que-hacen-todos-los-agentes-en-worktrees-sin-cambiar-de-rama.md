@@ -2,7 +2,7 @@
 id: f00277
 title: "`AgentSession` + `mcpv agents`: ver qué hacen todos los agentes en worktrees sin cambiar de rama"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-08-29
@@ -113,12 +113,7 @@ mcpv agents
 ### S1 — `AgentSession` derivada por lectura (sin persistencia propia)
 
 - **Status**: pending
-- **Files**:
-    - `packages/core/src/lib/contracts/interfaces/agent-session.interface.ts` (nuevo)
-    - `packages/core/src/lib/agents/derive-agent-sessions.service.ts` (nuevo:
-      compone worktrees + locks + proposals activas)
-    - `packages/core/tests/src/lib/agents/derive-agent-sessions.spec.ts` (nuevo,
-      con un repo git fixture de múltiples worktrees)
+- **Files**: (pendiente de implementación)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/agents/derive-agent-sessions.spec.ts`
 
 ### S2 — `mcpv agents`: comando CLI que renderiza la proyección
@@ -135,11 +130,7 @@ mcpv agents
 ### S3 — Coste estimado por sesión (bytes de superficie activada, tokens gastados)
 
 - **Status**: pending
-- **Files**:
-    - `packages/core/src/lib/agents/derive-agent-sessions.service.ts`
-      (extender con el campo `cost`, leyendo de `plugins/usage-tracking`
-      si el worktree tiene su propio `.cache/mcp-vertex/results/logs/`)
-    - `packages/core/tests/src/lib/agents/agent-session-cost.spec.ts` (nuevo)
+- **Files**: (pendiente de implementación)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/agents/agent-session-cost.spec.ts`
 
 ## dependency graph

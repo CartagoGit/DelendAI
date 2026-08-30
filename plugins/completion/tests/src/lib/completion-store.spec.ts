@@ -30,13 +30,18 @@ describe('completion store', () => {
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	it('recordFileName sanitises unsafe characters', () => {
-		expect(recordFileName('a/b:c')).toBe('a-b-c.json');
-		expect(recordFileName('///')).toBe('task.json');
+		expect(recordFileName('a/b:c')).toMatch(/^a-b-c-[a-f0-9]{12}\.json$/);
+		expect(recordFileName('///')).toMatch(/^task-[a-f0-9]{12}\.json$/);
+	});
+
+	it('recordFileName keeps sanitised task ids distinct', () => {
+		expect(recordFileName('a/b')).not.toBe(recordFileName('a-b'));
+		expect(recordFileName('a/b')).toBe(recordFileName('a/b'));
 	});
 
 	it('recordPath joins the records dir and the safe file name', () => {
 		expect(recordPath('/tmp/records', 'a/b')).toBe(
-			join('/tmp/records', 'a-b.json'),
+			join('/tmp/records', recordFileName('a/b')),
 		);
 	});
 
@@ -61,6 +66,34 @@ describe('completion store', () => {
 		await store.upsert(record({ summary: 'first' }));
 		await store.upsert(record({ summary: 'second' }));
 		expect((await store.list()).map((r) => r.summary)).toEqual(['second']);
+	});
+
+	it('round-trips colliding sanitised task ids independently', async () => {
+		const store = createCompletionStore(dir);
+		await store.upsert(record({ taskId: 'a/b', summary: 'slash' }));
+		await store.upsert(record({ taskId: 'a-b', summary: 'dash' }));
+
+		expect((await store.list()).map((r) => r.taskId).sort()).toEqual([
+			'a-b',
+			'a/b',
+		]);
+		expect(
+			(await store.list({ taskId: 'a/b' })).map((r) => r.summary),
+		).toEqual(['slash']);
+		expect(await store.remove('a/b')).toBe(true);
+		expect((await store.list()).map((r) => r.taskId)).toEqual(['a-b']);
+	});
+
+	it('removes matching legacy records without deleting a colliding task', async () => {
+		const store = createCompletionStore(dir);
+		writeFileSync(
+			join(dir, 'a-b.json'),
+			JSON.stringify(record({ taskId: 'a/b' })),
+		);
+
+		expect(await store.remove('a-b')).toBe(false);
+		expect(await store.remove('a/b')).toBe(true);
+		expect(await store.list()).toEqual([]);
 	});
 
 	it('list filters by taskId and agent', async () => {

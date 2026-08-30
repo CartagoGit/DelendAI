@@ -1,9 +1,10 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { isAbsolute, join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { regenerateSummary } from '@mcp-vertex/usage-tracking/public';
 
 import { persistKpiSnapshotHistory } from '../../src/lib/services/kpi-history.service';
 import {
@@ -98,10 +99,15 @@ const buildSnapshot = (options: {
 	truncated: false,
 });
 
-const setupWorkspace = async (): Promise<string> => {
+const setupWorkspace = async (
+	cacheDirMode: 'relative' | 'absolute' = 'relative',
+): Promise<{ root: string; cacheDir: string }> => {
 	const root = await mkdtemp(join(tmpdir(), 'project-kpis-tool-'));
 	createdRoots.push(root);
-	await mkdir(join(root, CACHE_DIR, 'results/usage-tracking'), {
+	const cacheDir =
+		cacheDirMode === 'absolute' ? join(root, CACHE_DIR) : CACHE_DIR;
+	const cacheDirAbs = isAbsolute(cacheDir) ? cacheDir : join(root, cacheDir);
+	await mkdir(join(cacheDirAbs, 'results/usage-tracking'), {
 		recursive: true,
 	});
 	const records = [
@@ -186,13 +192,19 @@ const setupWorkspace = async (): Promise<string> => {
 		},
 	];
 	await writeFile(
-		join(root, CACHE_DIR, 'results/usage-tracking/invocations.jsonl'),
+		join(cacheDirAbs, 'results/usage-tracking/invocations.jsonl'),
 		`${records.map((record) => JSON.stringify(record)).join('\n')}\n`,
 		'utf8',
 	);
+	await regenerateSummary(
+		join(cacheDirAbs, 'results/usage-tracking/invocations.jsonl'),
+		join(cacheDirAbs, 'results/usage-tracking/usage-summary.json'),
+		7,
+		Date.parse('2026-08-29T12:00:00.000Z'),
+	);
 	await persistKpiSnapshotHistory({
 		workspaceRootAbs: root,
-		cacheDir: CACHE_DIR,
+		cacheDir,
 		now: new Date('2026-08-28T12:00:00.000Z'),
 		snapshot: buildSnapshot({
 			generatedAt: '2026-08-28T12:00:00.000Z',
@@ -205,7 +217,7 @@ const setupWorkspace = async (): Promise<string> => {
 	});
 	await persistKpiSnapshotHistory({
 		workspaceRootAbs: root,
-		cacheDir: CACHE_DIR,
+		cacheDir,
 		now: new Date('2026-08-29T12:00:00.000Z'),
 		snapshot: buildSnapshot({
 			generatedAt: '2026-08-29T12:00:00.000Z',
@@ -216,7 +228,7 @@ const setupWorkspace = async (): Promise<string> => {
 			tokenSavings: 30,
 		}),
 	});
-	return root;
+	return { root, cacheDir };
 };
 
 afterEach(async () => {
@@ -228,7 +240,7 @@ afterEach(async () => {
 
 describe('project_kpis tool', () => {
 	it('returns bounded summary and history views with explicit sources, privacy limits and recommendations', async () => {
-		const root = await setupWorkspace();
+		const { root, cacheDir } = await setupWorkspace();
 
 		const result = await runProjectKpis(
 			{
@@ -240,7 +252,7 @@ describe('project_kpis tool', () => {
 			{
 				namespacePrefix: 'mcp-vertex',
 				workspaceRootAbs: root,
-				cacheDir: CACHE_DIR,
+				cacheDir,
 				maxBytes: 12000,
 				windowDays: 7,
 				now: new Date('2026-08-29T12:00:00.000Z'),
@@ -259,8 +271,41 @@ describe('project_kpis tool', () => {
 		expect(output.breakdowns?.[0]?.dimension).toBe('plugin');
 	});
 
+	it('reads summary, invocations and history when cacheDir is an absolute workspace override', async () => {
+		const { root, cacheDir } = await setupWorkspace('absolute');
+
+		const result = await runProjectKpis(
+			{
+				view: 'summary',
+				detail: 'compact',
+				dimensions: ['plugin'],
+				windowDays: 7,
+			},
+			{
+				namespacePrefix: 'mcp-vertex',
+				workspaceRootAbs: root,
+				cacheDir,
+				maxBytes: 12000,
+				windowDays: 7,
+				now: new Date('2026-08-29T12:00:00.000Z'),
+			},
+		);
+		const output = ProjectKpisOutputSchema.parse(result.structuredContent);
+
+		expect(output.snapshot?.highlights.length).toBeGreaterThan(0);
+		expect(output.history?.entries.length).toBe(2);
+		expect(output.breakdowns?.[0]?.items[0]?.key).toBe('project-health');
+		expect(output.snapshot?.highlights).toContainEqual(
+			expect.objectContaining({
+				key: 'usage.calls',
+				source: '@mcp-vertex/usage-tracking/public#buildSummary',
+				value: 3,
+			}),
+		);
+	});
+
 	it('supports model and error views with window and dimension filters without inventing missing data', async () => {
-		const root = await setupWorkspace();
+		const { root, cacheDir } = await setupWorkspace();
 
 		const modelsResult = await runProjectKpis(
 			{
@@ -272,7 +317,7 @@ describe('project_kpis tool', () => {
 			{
 				namespacePrefix: 'mcp-vertex',
 				workspaceRootAbs: root,
-				cacheDir: CACHE_DIR,
+				cacheDir,
 				maxBytes: 12000,
 				windowDays: 7,
 				now: new Date('2026-08-29T12:00:00.000Z'),
@@ -297,7 +342,7 @@ describe('project_kpis tool', () => {
 			{
 				namespacePrefix: 'mcp-vertex',
 				workspaceRootAbs: root,
-				cacheDir: CACHE_DIR,
+				cacheDir,
 				maxBytes: 12000,
 				windowDays: 7,
 				now: new Date('2026-08-29T12:00:00.000Z'),
@@ -319,11 +364,11 @@ describe('project_kpis tool', () => {
 	});
 
 	it('exports a registration shape ready for index and assembleCliConfig wiring', async () => {
-		const root = await setupWorkspace();
+		const { root, cacheDir } = await setupWorkspace();
 		const tool = buildProjectKpisToolRegistrations({
 			namespacePrefix: 'mcp-vertex',
 			workspaceRootAbs: root,
-			cacheDir: CACHE_DIR,
+			cacheDir,
 			maxBytes: 12000,
 			windowDays: 7,
 			now: new Date('2026-08-29T12:00:00.000Z'),

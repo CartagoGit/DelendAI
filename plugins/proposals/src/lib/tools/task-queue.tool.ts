@@ -21,7 +21,7 @@ const TASK_QUEUE_DIGEST_SCHEMA = z.object({
 	diffSummary: z.string().optional(),
 });
 
-const TASK_QUEUE_OUTPUT_SCHEMA = z.object({
+export const TASK_QUEUE_OUTPUT_SCHEMA = z.object({
 	error: z.string().optional(),
 	taskId: z.string().optional(),
 	status: z.string().optional(),
@@ -47,6 +47,11 @@ const TASK_QUEUE_OUTPUT_SCHEMA = z.object({
 	recommendation: z.string().optional(),
 });
 
+export const TASK_QUEUE_INPUT_SCHEMA = z.object({
+	action: IActionSchema,
+	params: IParamsSchema.optional().default({}),
+});
+
 /**
  * Swarm coordination queue: enqueue/dequeue/subscribe/report. Thin
  * adapter over the (tested) task-queue engine; the plugin injects the
@@ -67,10 +72,7 @@ export const buildTaskQueueRegistration = (
 				outputSchema: TASK_QUEUE_OUTPUT_SCHEMA,
 				description:
 					'Swarm coordination only: enqueue/dequeue/subscribe/report for waitFor, observe, or backpressure. Root orchestrator owns queue writes.',
-				inputSchema: z.object({
-					action: IActionSchema,
-					params: IParamsSchema.optional().default({}),
-				}),
+				inputSchema: TASK_QUEUE_INPUT_SCHEMA,
 			},
 			async (args) => runTaskQueueMcp(args, options.paths),
 		);

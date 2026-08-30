@@ -16,6 +16,7 @@ import {
 	resetStableToolDescriptorRegistryForTests,
 } from '@mcp-vertex/core/lib/api/stable-facade';
 import { PROPOSALS_STABLE_TOOLS } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
+import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
 
 describe('stable-facade (f00152 S2)', () => {
 	beforeEach(() => {
@@ -54,10 +55,10 @@ describe('stable-facade (f00152 S2)', () => {
 		}
 	});
 
-	it('every descriptor has sinceVersion === current SCHEMA_VERSION', () => {
+	it('every descriptor has sinceVersion === current package version', () => {
 		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		for (const descriptor of STABLE_API_TOOLS) {
-			expect(descriptor.sinceVersion).toBe(SCHEMA_VERSION);
+			expect(descriptor.sinceVersion).toBe(MCP_VERTEX_VERSION);
 		}
 	});
 
@@ -111,14 +112,12 @@ describe('stable-manifest (f00152 S2)', () => {
 		expect(names).toEqual([...names].sort());
 	});
 
-	it('buildStableManifest tolerates unbound schemas (returns null)', () => {
+	it('buildStableManifest publishes bound schemas', () => {
 		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		const manifest = buildStableManifest(STABLE_API_TOOLS, '0.1.0');
-		// Today the facade ships unbound (zod schemas are bound at
-		// runtime). The builder must not crash.
 		for (const tool of manifest.tools) {
-			expect(tool.inputSchema).toBeNull();
-			expect(tool.outputSchema).toBeNull();
+			expect(tool.inputSchema).toEqual(expect.any(Object));
+			expect(tool.outputSchema).toEqual(expect.any(Object));
 		}
 	});
 

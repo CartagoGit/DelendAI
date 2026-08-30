@@ -43,7 +43,7 @@ const WORKTREE_ENTRY_OUTPUT_SCHEMA = z.object({
 	locked: z.boolean(),
 });
 
-const AGENT_WORKTREE_OUTPUT_SCHEMA = z.object({
+export const AGENT_WORKTREE_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	action: z.enum(['create', 'list', 'remove']),
 	reason: z.string().optional(),
@@ -72,6 +72,26 @@ const AGENT_WORKTREE_OUTPUT_SCHEMA = z.object({
 	worktrees: z.array(WORKTREE_ENTRY_OUTPUT_SCHEMA).optional(),
 });
 
+export const AGENT_WORKTREE_INPUT_SCHEMA = z.object({
+	action: z.enum(['create', 'list', 'remove']),
+	agent: z.string().optional(),
+	base_branch: z.string().optional(),
+	force: z.boolean().optional(),
+	host: z
+		.enum([
+			'vscode-copilot',
+			'claude-code',
+			'codex-cli',
+			'cursor',
+			'aider',
+			'continue',
+			'unknown',
+		])
+		.optional(),
+	model: z.string().optional(),
+	task_id: z.string().optional(),
+});
+
 /**
  * One git worktree (+ branch `agent/<name>`) per concurrent agent, so two
  * agents working the same repo never share `.git/index` — the failure
@@ -96,29 +116,7 @@ export const buildAgentWorktreeRegistration = (
 					outputSchema: AGENT_WORKTREE_OUTPUT_SCHEMA,
 					description:
 						'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. In 2+ agent sessions this is the required git-isolation path before commit/push work. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`. f00082 S4: when `host`+`model`+`task_id` are all set, the branch is `agent/<host>-<model>-<agent_name>-<task_id>` instead of the historical `agent/<agent_name>`. On a collision, a numeric suffix (`-1`, `-2`, …) is appended automatically.',
-					inputSchema: z.object({
-						action: z.enum(['create', 'list', 'remove']),
-						agent: z.string().optional(),
-						base_branch: z.string().optional(),
-						force: z.boolean().optional(),
-						// f00082 S4: composite identity. All optional; when
-						// all three are set the engine composes a four-field
-						// branch name. The numeric collision suffix is
-						// applied automatically.
-						host: z
-							.enum([
-								'vscode-copilot',
-								'claude-code',
-								'codex-cli',
-								'cursor',
-								'aider',
-								'continue',
-								'unknown',
-							])
-							.optional(),
-						model: z.string().optional(),
-						task_id: z.string().optional(),
-					}),
+					inputSchema: AGENT_WORKTREE_INPUT_SCHEMA,
 				},
 				async (args: {
 					action: 'create' | 'list' | 'remove';
