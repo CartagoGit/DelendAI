@@ -249,6 +249,10 @@ const PushObjectSchema = z.object({
 	remote: z.string().optional(),
 	/** Branch name. Defaults to the current branch. */
 	branch: z.string().optional(),
+	/** Optional provider overrides keyed by remote host for self-hosted forges. */
+	providerByHost: z
+		.record(z.string(), z.enum(['github', 'gitlab', 'unknown']))
+		.optional(),
 });
 
 export const PushSchema = PushObjectSchema.superRefine((value, ctx) => {

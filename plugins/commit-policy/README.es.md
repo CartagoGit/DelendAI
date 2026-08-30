@@ -34,7 +34,7 @@ menos que lo active explícitamente.
         "commit":   { "enabled": true },
         "push":     { "enabled": true, "onCommit": true },
         "cadence":  { "triggers": [{ "kind": "slice" }] },
-        "identity": { "mode": "global" }
+        "identity": { "mode": "explicit", "owner": { "name": "Cartago", "email": "cartago@example.com" } }
       }
     }
   }
@@ -53,13 +53,15 @@ menos que lo active explícitamente.
 | `push.onCommit`                | `false`            | Push inmediato tras cada commit.                                               |
 | `push.force`                   | `"with-lease"`     | `"with-lease" \| "allow" \| "never"`.                                          |
 | `push.protectedBranches`       | `[]`               | Los nombres exactos configurados aquí quedan protegidos; no se asumen nombres. |
+| `push.providerByHost`          | _ninguno_          | Mapa opcional de host a proveedor para remotos GitHub/GitLab autoalojados, por ejemplo `{ "git.example.test": "gitlab" }`. |
 
 La protección remota se actualiza manualmente mediante
 `commit_policy_refresh_branch_protection`. El adaptador usa `push.remote` si
 está configurado, después el remoto upstream actual y finalmente `origin` como
 compatibilidad. Los hosts públicos de GitHub y GitLab se soportan mediante sus
-CLI autenticadas; otros hosts devuelven el estado explícito `unsupported` y
-conservan la configuración local. El refresh no se ejecuta al registrar el
+CLI autenticadas; los hosts autoalojados pueden mapearse con
+`push.providerByHost`; los hosts sin mapear devuelven el estado explícito
+`unsupported` y conservan la configuración local. El refresh no se ejecuta al registrar el
 plugin salvo que el host establezca explícitamente
 `MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true`.
 

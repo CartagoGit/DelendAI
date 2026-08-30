@@ -178,6 +178,30 @@ describe('branch protection adapter', () => {
 		expect(configured.protectedBranches).toEqual(['trunk']);
 	});
 
+	it('supports self-hosted forge hosts through an explicit provider resolver', async () => {
+		const configured = policy(['trunk']);
+		const adapter = createBranchProtectionAdapter({
+			workspaceRoot: '/workspace',
+			policy: configured,
+			resolveProvider: (host) =>
+				host === 'git.example.test' ? 'gitlab' : 'unknown',
+			exec: buildExec(
+				'https://git.example.test/acme/widget.git',
+				'[{"name":"release"}]',
+			),
+		});
+
+		const result = await adapter.refresh();
+
+		expect(result).toMatchObject({
+			ok: true,
+			state: 'fresh',
+			provider: 'gitlab',
+			remoteHost: 'git.example.test',
+			remoteBranches: ['release'],
+		});
+	});
+
 	it('reports refresh errors without dropping the local fallback', async () => {
 		const configured = policy(['trunk']);
 		const adapter = createBranchProtectionAdapter({

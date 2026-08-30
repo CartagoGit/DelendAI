@@ -168,7 +168,10 @@ export const runPushDriver = async (
 
 	const result = await gitPush(run, {
 		remote,
-		branch,
+		// `policy.branch` is the remote destination branch. Use HEAD as the
+		// source so an agent worktree can publish to a differently named
+		// remote branch without requiring a same-named local branch.
+		branch: `HEAD:${branch}`,
 		force: forceModeToGitPush(forceMode),
 		// Defense in depth: this driver already refused protected branches
 		// above, but handing the list to the primitive keeps the guard in
