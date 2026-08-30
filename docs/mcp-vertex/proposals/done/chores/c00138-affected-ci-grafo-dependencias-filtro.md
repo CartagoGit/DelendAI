@@ -2,7 +2,7 @@
 id: c00138
 title: "Affected CI: grafo de dependencias + filtro"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: ci
 date: 2026-08-25
@@ -10,6 +10,8 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
+shipped-in:
+    - f5836e9 # S1 script affected + workflow + tests
     section: "Track G / c00138"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
@@ -129,10 +131,13 @@ function affected(diffFiles, graph): Set<PackageName> {
 
 ### S1 — Script affected + workflow + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/affected.script.ts`, `tools/scripts/ci/affected.spec.ts`, `.github/workflows/affected.yml`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: affected.script.spec + affected-vitest-project-map.spec 6/6 verde; computeAffected cubre el caso de cambio en un plugin; workflow affected.yml existe. Contrato del slice cumplido.
 ## acceptance
 
 - Script ejecutable, output JSON estable.

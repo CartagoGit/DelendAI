@@ -10,28 +10,42 @@
  * Inputs:
  *   --dry-run          print every step without executing.
  *   --only <name>      run a single step. Names are the keys of
- *                       `STEPS` below.
+ *                       the generated step list below. Lint steps accept
+ *                       either `lint:<name>` or the bare `<name>`.
  *   --real             run for real (default is dry-run when the
  *                       script is called from the local CLI; CI
  *                       passes `--real` explicitly).
  *
  * Exit codes:
  *   0  every selected step exited 0.
- *   1  at least one step exited non-zero.
+ *   N  the first non-zero exit code reported by a selected step.
  *   2  unknown --only selector.
  *
  * Adding a step:
- *   Append an entry to `STEPS`. The workflow picks it up
+ *   Append an entry to `STATIC_STEPS`, or add a new lint script under
+ *   `tools/scripts/lint/*.script.ts`. The workflow picks it up
  *   automatically because both call this script.
  */
 
-interface IStep {
+import { readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+
+export interface IStep {
 	readonly name: string;
 	readonly cmd: readonly string[];
 	readonly description: string;
+	readonly aliases?: readonly string[];
 }
 
-const STEPS: readonly IStep[] = [
+interface IMainOptions {
+	readonly cwd?: string;
+	readonly out?: (msg: string) => void;
+	readonly err?: (msg: string) => void;
+	readonly loadSteps?: (cwd: string) => Promise<readonly IStep[]>;
+	readonly runStep?: (step: IStep, cwd: string) => Promise<number>;
+}
+
+const STATIC_STEPS: readonly IStep[] = [
 	{
 		name: 'typecheck',
 		cmd: ['bun', 'run', 'typecheck'],
@@ -43,6 +57,11 @@ const STEPS: readonly IStep[] = [
 		description: 'Biome lint + format check.',
 	},
 	{
+		name: 'validate',
+		cmd: ['bun', 'run', 'validate'],
+		description: 'Integrated pre-merge validation chain.',
+	},
+	{
 		name: 'tokens-dashboard',
 		cmd: ['bun', 'run', 'tokens:dashboard:check'],
 		description: 'Token-budget dashboard within budget.',
@@ -51,36 +70,7 @@ const STEPS: readonly IStep[] = [
 		name: 'tokens-preset-gate',
 		cmd: ['bun', 'run', 'tokens:gate'],
 		description: 'Preset gate (token budget per preset).',
-	},
-	{
-		name: 'check-generated',
-		cmd: ['bun', 'run', 'check:generated'],
-		description: 'Generated artifacts are in sync with their sources.',
-	},
-	{
-		name: 'lint-architecture',
-		cmd: ['bun', 'run', 'lint:architecture-readfile-via-safe-reader'],
-		description: 'Architecture lint (SOLID, file conventions).',
-	},
-	{
-		name: 'lint-privacy',
-		cmd: ['bun', 'run', 'lint:privacy'],
-		description: 'Privacy lint (R1.1–R1.10 invariants).',
-	},
-	{
-		name: 'lint-proposals',
-		cmd: ['bun', 'run', 'lint:proposals'],
-		description: 'Proposals lint (status, ids, drift).',
-	},
-	{
-		name: 'lint-agents',
-		cmd: ['bun', 'run', 'lint:agents'],
-		description: 'Agents + skills lint (no stale paths).',
-	},
-	{
-		name: 'lint-skills',
-		cmd: ['bun', 'run', 'lint:skills'],
-		description: 'Skills drift against the live tool catalog.',
+		aliases: ['tokens:gate'],
 	},
 	{
 		name: 'test',
@@ -89,8 +79,8 @@ const STEPS: readonly IStep[] = [
 	},
 ];
 
-const out = (msg: string) => process.stdout.write(`${msg}\n`);
-const err = (msg: string) => process.stderr.write(`${msg}\n`);
+const defaultOut = (msg: string) => process.stdout.write(`${msg}\n`);
+const defaultErr = (msg: string) => process.stderr.write(`${msg}\n`);
 
 const flag = (argv: readonly string[], name: string): string | undefined => {
 	for (let i = 0; i < argv.length; i += 1) {
@@ -106,31 +96,72 @@ const flag = (argv: readonly string[], name: string): string | undefined => {
 const hasFlag = (argv: readonly string[], name: string): boolean =>
 	argv.some((t) => t === `--${name}` || t.startsWith(`--${name}=`));
 
+const matchesSelector = (step: IStep, selector: string): boolean =>
+	step.name === selector || step.aliases?.includes(selector) === true;
+
+const listLintSteps = async (cwd: string): Promise<readonly IStep[]> => {
+	const lintDir = join(cwd, 'tools/scripts/lint');
+	const files = await readdir(lintDir, { withFileTypes: true });
+	return files
+		.filter((entry) => entry.isFile() && entry.name.endsWith('.script.ts'))
+		.map((entry) => entry.name)
+		.sort((left, right) => left.localeCompare(right))
+		.map((fileName) => {
+			const lintName = fileName.replace(/\.script\.ts$/u, '');
+			return {
+				name: `lint:${lintName}`,
+				aliases: [lintName],
+				cmd: ['bun', `tools/scripts/lint/${fileName}`],
+				description: `Lint script ${fileName}.`,
+			} satisfies IStep;
+		});
+};
+
+export const loadDefaultSteps = async (
+	cwd: string = process.cwd(),
+): Promise<readonly IStep[]> => [
+	...STATIC_STEPS,
+	...(await listLintSteps(cwd)),
+];
+
 /**
  * Run a single step. Returns the child's exit code. Streams
  * stdout + stderr to the parent terminal so failures are visible
  * inline.
  */
-const runStep = async (step: IStep): Promise<number> => {
-	out(`▶ ${step.name} — ${step.description}`);
+const runStep = async (step: IStep, cwd: string): Promise<number> => {
+	defaultOut(`▶ ${step.name} — ${step.description}`);
 	const proc = Bun.spawn(step.cmd as string[], {
+		cwd,
 		stdout: 'inherit',
 		stderr: 'inherit',
 	});
 	const exit = await proc.exited;
-	out(`  ${step.name} exited ${exit}`);
+	defaultOut(`  ${step.name} exited ${exit}`);
 	return exit;
 };
 
-export const main = async (argv: readonly string[]): Promise<number> => {
+export const main = async (
+	argv: readonly string[],
+	options: IMainOptions = {},
+): Promise<number> => {
+	const cwd = options.cwd ?? process.cwd();
+	const out = options.out ?? defaultOut;
+	const err = options.err ?? defaultErr;
+	const executeStep = options.runStep ?? runStep;
+	const availableSteps = await (options.loadSteps ?? loadDefaultSteps)(cwd);
 	const dryRun = hasFlag(argv, 'dry-run') || !hasFlag(argv, 'real');
 	const only = flag(argv, 'only');
 	const steps =
-		only !== undefined ? STEPS.filter((s) => s.name === only) : STEPS;
+		only !== undefined
+			? availableSteps.filter((step) => matchesSelector(step, only))
+			: availableSteps;
 	if (steps.length === 0) {
 		err(`quality-gate: unknown --only "${only}"`);
 		err(
-			`quality-gate: valid names: ${STEPS.map((s) => s.name).join(', ')}`,
+			`quality-gate: valid names: ${availableSteps
+				.map((step) => step.name)
+				.join(', ')}`,
 		);
 		return 2;
 	}
@@ -145,14 +176,12 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		return 0;
 	}
 
-	let worstExit = 0;
 	for (const step of steps) {
-		const code = await runStep(step);
-		if (code !== 0) worstExit = code;
-	}
-	if (worstExit !== 0) {
-		err(`quality-gate: at least one step failed (exit=${worstExit})`);
-		return 1;
+		const code = await executeStep(step, cwd);
+		if (code !== 0) {
+			err(`quality-gate: step ${step.name} failed (exit=${code})`);
+			return code;
+		}
 	}
 	out(`quality-gate: all ${steps.length} step(s) passed ✓`);
 	return 0;

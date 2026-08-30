@@ -2,7 +2,7 @@
 id: c00135
 title: "Separar dashboards adaptive vs native"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -10,6 +10,8 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
+shipped-in:
+    - f5836e9 # S1 modelo por superficie + generador + tests + dashboard entry
     section: "Track E / c00135"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
@@ -127,10 +129,13 @@ artefacto de la mezcla, no reales.
 
 ### S1 — Modelo + generador extendido + tests + dashboard entry
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/budgets/types.ts`, `tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/report/token-budget-dashboard.spec.ts`, `apps/web/src/data/token-budget.json`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: sparrow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: token-budget-dashboard.spec 5/5 verde (separación adaptive/native, null no 0, deficits por surface), typecheck core/tools limpio, token-budget.json generado. Contrato del slice cumplido.
 ## acceptance
 
 - Dashboard expone dos columnas (`adaptive`, `native`) por tool.

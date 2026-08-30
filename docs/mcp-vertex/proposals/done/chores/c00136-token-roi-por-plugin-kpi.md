@@ -2,7 +2,7 @@
 id: c00136
 title: "Token ROI por plugin (KPI)"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -12,6 +12,8 @@ audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track E / c00136"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
+shipped-in:
+    - f5836e9 # S1 módulo ROI + manifest.ts + generador + dashboard
 related:
     - q00006
     - f00186 # TokenBudgetRegistry unificado (provee mediciones)
@@ -149,10 +151,13 @@ el manifest). El KPI es consumible por `auto-plugin-selector`
 
 ### S1 — Módulo ROI + manifest field + dashboard + generador + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/budgets/roi.ts`, `packages/core/src/lib/budgets/manifest.ts`, `packages/core/tests/src/lib/budgets/roi.spec.ts`, `tools/scripts/report/token-roi.script.ts`, `apps/web/src/data/token-roi.json`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: roi.spec 11/11 verde, typecheck core OK, token-roi.json generado por el script. Módulo + manifest.ts + generador + dashboard cumplen el contrato del slice.
 ## acceptance
 
 - `computeROI` produce valores consistentes con la fórmula.

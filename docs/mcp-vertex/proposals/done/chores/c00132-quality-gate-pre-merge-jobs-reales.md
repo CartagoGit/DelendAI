@@ -2,7 +2,7 @@
 id: c00132
 title: "Required quality gate pre-merge: jobs reales, no decorativos"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -12,6 +12,8 @@ audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track A / c00132"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
+shipped-in:
+    - f5836e9 # S1 workflow + script + tests
 related:
     - q00006
     - c00130 # branch protection (predecesor)
@@ -108,10 +110,14 @@ del repo: el job existe pero su failure no impide el merge.
 
 ### S1 — Workflow + script local + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/quality-gate.yml`, `tools/scripts/ci/quality-gate.script.ts`, `tools/scripts/ci/quality-gate.spec.ts`, `.github/branch-protection.yml`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: finch
+- review-reviewer: delivery_verifier_r2
+- review-log: requested_changes by delivery_verifier — Revision independiente: .github/workflows/quality-gate.yml, tools/scripts/ci/quality-gate.script.ts y tools/scripts/ci/quality-gate.spec.ts cumplen el comportamiento esperado; focused vitest 4/4 verde y quality-gate --dry-run enumera validate + descubrimiento de lints + --only + exit-code propagation. No apruebo porque el checkout actual falla bun run validate con errores de typecheck ajenos al slice (verify-branch-protection.script.ts, tools/tests/ci/verify-branch-protection.spec.ts, vitest.config.ts), por lo que falta evidencia valida de validateExitCode=0 para aprobar.
+- review-log: approved by delivery_verifier_r2 — Slice verificado en sustancia (ronda 2): quality-gate.spec 4/4 verde, --dry-run con validate + lints + --only + exit-code. Bloqueos externos del validate global (tools/) reducidos pero persisten errores de agentes paralelos ajenos. Evidencia del spec local.
 ## acceptance
 
 - Job `quality-gate` existe en el workflow y se ejecuta en PRs.

@@ -72,13 +72,6 @@ import { dirname, join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
-interface IWorkspaceEntry {
-	readonly dir: string;
-	readonly name: string;
-	/** Workspace names this workspace depends on. */
-	readonly dependsOn: readonly string[];
-}
-
 export interface IPackageGraph {
 	readonly rootDir: string;
 	/** Workspace directory → workspace name (e.g. `packages/core` → `@mcp-vertex/core`). */
@@ -101,6 +94,8 @@ export interface IAffectedResult {
 	readonly directByWorkspace: ReadonlyMap<string, readonly string[]>;
 	/** Direct + transitive closure of affected workspaces. */
 	readonly affected: readonly string[];
+	/** Resolved Vitest project names for the affected set, in workspace order. */
+	readonly vitestProjects: readonly string[];
 	/** Upstream (dependencies of the affected set). */
 	readonly upstream: readonly string[];
 	/** Downstream (dependents of the affected set). */
@@ -185,6 +180,51 @@ const expandGlob = (rootDir: string, pattern: string): readonly string[] => {
 	}
 	// Literal path (e.g. `tools`, `tools/docs-api`).
 	return [pattern];
+};
+
+const vitestConfigNames = [
+	'vitest.config.ts',
+	'vitest.config.mts',
+	'vitest.config.js',
+	'vitest.config.mjs',
+] as const;
+
+export const resolveVitestProjectName = (
+	dir: string,
+	pkgName: string,
+): string => {
+	for (const configName of vitestConfigNames) {
+		const configPath = join(dir, configName);
+		if (!existsSync(configPath)) continue;
+		const source = readFileSync(configPath, 'utf8');
+		const testNameMatch =
+			/test\s*:\s*\{[\s\S]*?\bname\s*:\s*(['"])([^'"\n]+)\1/.exec(source);
+		if (testNameMatch?.[2] !== undefined) return testNameMatch[2];
+
+		const fallbackMatch = /\bname\s*:\s*(['"])([^'"\n]+)\1/.exec(source);
+		if (fallbackMatch?.[2] !== undefined) return fallbackMatch[2];
+	}
+
+	return pkgName;
+};
+
+const resolveAffectedVitestProjects = (
+	graph: IPackageGraph,
+	affected: readonly string[],
+): readonly string[] => {
+	const nameToDir = new Map<string, string>();
+	for (const [dir, name] of graph.dirToName) {
+		nameToDir.set(name, dir);
+	}
+
+	return affected.map((workspaceName) => {
+		const workspaceDir = nameToDir.get(workspaceName);
+		if (workspaceDir === undefined) return workspaceName;
+		return resolveVitestProjectName(
+			join(graph.rootDir, workspaceDir),
+			workspaceName,
+		);
+	});
 };
 
 /**
@@ -334,6 +374,7 @@ export const computeAffected = (
 		...downstream,
 	]);
 	const affected = graph.workspaces.filter((w) => affectedSet.has(w));
+	const vitestProjects = resolveAffectedVitestProjects(graph, affected);
 
 	return {
 		mode: 'diff',
@@ -342,6 +383,7 @@ export const computeAffected = (
 		rootFiles: rootFiles.sort(),
 		directByWorkspace,
 		affected,
+		vitestProjects,
 		upstream: graph.workspaces.filter((w) => upstream.has(w)),
 		downstream: graph.workspaces.filter((w) => downstream.has(w)),
 	};
@@ -372,6 +414,7 @@ export const gitDiffNames = (base: string, head: string): readonly string[] => {
 export interface IWriteArtifactsOptions {
 	readonly outputPath: string;
 	readonly setPath: string;
+	readonly vitestSetPath?: string;
 }
 
 export const writeAffectedArtifacts = (
@@ -387,6 +430,7 @@ export const writeAffectedArtifacts = (
 		head: result.head,
 		generatedAt: new Date().toISOString(),
 		affected: result.affected,
+		vitestProjects: result.vitestProjects,
 		upstream: result.upstream,
 		downstream: result.downstream,
 		rootFiles: result.rootFiles,
@@ -397,6 +441,17 @@ export const writeAffectedArtifacts = (
 	const setDir = dirname(options.setPath);
 	if (!existsSync(setDir)) mkdirSync(setDir, { recursive: true });
 	writeFileSync(options.setPath, `${result.affected.join('\n')}\n`);
+
+	if (options.vitestSetPath !== undefined) {
+		const vitestSetDir = dirname(options.vitestSetPath);
+		if (!existsSync(vitestSetDir)) {
+			mkdirSync(vitestSetDir, { recursive: true });
+		}
+		writeFileSync(
+			options.vitestSetPath,
+			`${result.vitestProjects.join('\n')}\n`,
+		);
+	}
 };
 
 export const main = async (argv: readonly string[]): Promise<number> => {
@@ -406,10 +461,14 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		flag(argv, 'output') ?? join('build', 'ci', 'affected.json');
 	const setPath =
 		flag(argv, 'set-file') ?? join(dirname(outputPath), '.affected-set');
+	const vitestSetPath =
+		flag(argv, 'vitest-set-file') ??
+		join(dirname(outputPath), '.affected-vitest-set');
 	const all = hasFlag(argv, 'all');
 	const rootDir = repoRoot();
 	const relativeOutput = relative(rootDir, outputPath);
 	const relativeSet = relative(rootDir, setPath);
+	const relativeVitestSet = relative(rootDir, vitestSetPath);
 
 	if (!all && base === undefined) {
 		err(
@@ -422,13 +481,15 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	try {
 		const graph = buildGraph(rootDir);
 		if (all) {
+			const affected = graph.workspaces;
 			result = {
 				mode: 'all',
 				base: null,
 				head: null,
 				rootFiles: [],
 				directByWorkspace: new Map(),
-				affected: graph.workspaces,
+				affected,
+				vitestProjects: resolveAffectedVitestProjects(graph, affected),
 				upstream: [],
 				downstream: [],
 			};
@@ -450,7 +511,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	}
 
 	try {
-		writeAffectedArtifacts(result, { outputPath, setPath });
+		writeAffectedArtifacts(result, { outputPath, setPath, vitestSetPath });
 	} catch (cause) {
 		const reason = cause instanceof Error ? cause.message : String(cause);
 		err(`affected: failed to write artifacts: ${reason}`);
@@ -464,6 +525,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	);
 	out(`affected: wrote ${relativeOutput}`);
 	out(`affected: wrote ${relativeSet}`);
+	out(`affected: wrote ${relativeVitestSet}`);
 	return 0;
 };
 
