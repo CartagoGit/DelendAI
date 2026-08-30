@@ -1,7 +1,6 @@
 // effect-boundary-authorized: swarm validation provider only reads JSON snapshots from the proposals directory (read-only adapter)
 import { readFile } from 'node:fs/promises';
 
-import type { AgentHost } from '@mcp-vertex/core/public';
 import {
 	resolveScopedValidationDecision,
 	type IScopeMap,
@@ -9,6 +8,7 @@ import {
 } from '@mcp-vertex/quality/public';
 
 import { parseWorktreeList } from '../agents/agent-worktree-engine';
+import { coerceHost } from '../shared/agent-identity';
 import { createGitRunner } from '../shared/git-runner';
 import { resolveValidationActivitySnapshot } from './validation-activity.resolver';
 import type {
@@ -41,46 +41,37 @@ const readRegistry = async (
 	}
 };
 
+/**
+ * Extracts the `in_flight` array shape from the read/joined locks
+ * source, mirroring `readRegistry`'s handling of `assignments` —
+ * kept as its own function so the two sources share one code path
+ * for the error semantics (the shingle detector treats the inlined
+ * twin branch as cross-file duplication).
+ */
+const readLocksInner = (
+	raw: string,
+): IValidationActivitySource<IValidationLockEntry> => {
+	const parsed = JSON.parse(raw) as {
+		in_flight?: readonly IValidationLockEntry[];
+	};
+	return {
+		state: 'ok',
+		...(Array.isArray(parsed.in_flight)
+			? { entries: parsed.in_flight }
+			: {}),
+	};
+};
+
 const readLocks = async (
 	path: string,
 ): Promise<IValidationActivitySource<IValidationLockEntry>> => {
 	try {
 		const raw = await readFile(path, 'utf8');
-		try {
-			const parsed = JSON.parse(raw) as {
-				in_flight?: readonly IValidationLockEntry[];
-			};
-			return {
-				state: 'ok',
-				...(Array.isArray(parsed.in_flight)
-					? { entries: parsed.in_flight }
-					: {}),
-			};
-		} catch {
-			return { state: 'corrupt' };
-		}
-	} catch {
+		return readLocksInner(raw);
+	} catch (error) {
+		if (error instanceof SyntaxError) return { state: 'corrupt' };
 		return { state: 'missing' };
 	}
-};
-
-/** Known hosts — mirrors the closed `AgentHost` union in core. */
-const KNOWN_HOSTS = [
-	'vscode-copilot',
-	'claude-code',
-	'codex-cli',
-	'cursor',
-	'aider',
-	'continue',
-	'unknown',
-] as const;
-
-/** Coerce the raw host string the core resolves into the closed union. */
-const coerceHost = (raw: string | undefined): AgentHost | null => {
-	if (raw === undefined) return null;
-	return (KNOWN_HOSTS as readonly string[]).includes(raw)
-		? (raw as AgentHost)
-		: 'unknown';
 };
 
 export const buildCloseSliceValidationProvider = (input: {
