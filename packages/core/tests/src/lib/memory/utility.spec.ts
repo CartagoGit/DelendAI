@@ -9,6 +9,7 @@ import {
 	type IMemoryUtilityContext,
 	type IMemoryUtilityWeights,
 } from '../../../../src/lib/memory/utility';
+import { retrieveByUtility } from '../../../../src/lib/memory/retrieve';
 
 const NOW = 1_700_000_000_000; // fixed clock for determinism
 const HOUR = 60 * 60 * 1_000;
@@ -170,6 +171,33 @@ describe('filterByUtility() (f00197)', () => {
 		expect(
 			filterByUtility([], DEFAULT_MEMORY_UTILITY_WEIGHTS, ctx(), 0),
 		).toEqual([]);
+	});
+});
+
+describe('retrieveByUtility() (f00197)', () => {
+	it('filters low-utility metadata before context injection', () => {
+		const hot = entry({ id: 'hot', usageCount: 100, similarity: 0.95 });
+		const stale = entry({
+			id: 'stale',
+			lastUsedAt: NOW - 365 * DAY,
+			usageCount: 0,
+			similarity: 0,
+		});
+		const result = retrieveByUtility([hot, stale], { now: NOW });
+		expect(result.matches.map((match) => match.entry.id)).toEqual(['hot']);
+		expect(result.filteredCount).toBe(1);
+	});
+
+	it('does not expose memory content fields in the result', () => {
+		const result = retrieveByUtility([entry()], { now: NOW });
+		expect(Object.keys(result.matches[0]?.entry ?? {}).sort()).toEqual([
+			'createdAt',
+			'id',
+			'lastUsedAt',
+			'similarity',
+			'sizeBytes',
+			'usageCount',
+		]);
 	});
 });
 
