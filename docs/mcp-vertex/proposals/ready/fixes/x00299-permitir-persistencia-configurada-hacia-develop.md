@@ -29,16 +29,19 @@ La configuración declara commit-and-push a origin develop, pero push-driver y a
 - global_gate: type
 
 ### S1 — Alinear guards y tests de push en develop
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/push-driver.ts`, `plugins/commit-policy/src/lib/services/push-scheduler.ts`, `plugins/commit-policy/tests/src/lib/services/push-driver.spec.ts`, `plugins/commit-policy/tests/src/lib/services/push-scheduler.spec.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
 - **Gate**: type
 - acceptance:
   - "develop no se rechaza por nombre cuando no está en protectedBranches."
   - "main y master siguen rechazándose."
   - "Los tests cubren allow/deny según configuración."
-
+- review-state: done
+- review-implementer: falcon
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificacion independiente en el checkout actual: push-driver y push-scheduler mantienen guard duro para main/master fuera de protectedBranches; develop solo se rechaza si la configuracion lo incluye. Vitest focalizado verde (33/33) y typecheck del plugin verde sobre el commit de referencia b51172dbd8ab57b033491346d0cba7ab80946def.
 ### S2 — Alinear helper auto-work y documentación
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/tools/auto-work-persist.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/tests/src/lib/tools/auto-work-persist.spec.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`, `plugins/commit-policy/README.es.md`
 - **Gate**: type
@@ -46,7 +49,10 @@ La configuración declara commit-and-push a origin develop, pero push-driver y a
   - "commit-and-push respeta pushTarget origin develop cuando la política lo permite."
   - "No existe guard hardcodeado que desvíe a wip sin declararlo."
   - "La documentación refleja el comportamiento configurado."
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificacion independiente en el checkout actual: maybePersistAfterSlice honra pushTarget configurado y solo rehusa ramas incluidas en la politica efectiva; auto_work ya no sugiere ni inventa desvio a wip/* y la documentacion de commit-policy describe develop como permitido solo cuando no figura en push.protectedBranches. Typecheck del plugin proposals y vitest focalizado verdes en este HEAD, sin bloqueadores externos observables para este slice.
 ## acceptance
 
 - develop no se rechaza por nombre cuando no está en protectedBranches.

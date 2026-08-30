@@ -12,7 +12,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'prompts-pack',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Prompts pack: explain-code, write-tests-for, review-diff, generate-docstrings, security-audit-file, optimize-this — composes existing tools, no model calls of its own.',
 	optionsSchema: OptionsSchema,

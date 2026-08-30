@@ -103,7 +103,10 @@ mcp-vertex-session-*.md
 # FAILS if any `.cache` appears outside the root, so a stray per-folder cache is
 # caught instead of silently ignored. Run mcp-vertex tools from the repo root.
 
-# metrics gate run artifacts (the tracked fallback baseline lives in config/)
+# metrics gate run artifacts. The candidate snapshot now lives under
+# `.cache/mcp-vertex/metrics/candidate.json` (covered by the `.cache/` rule);
+# the tracked fallback baseline lives in config/. The root rules below are
+# legacy protection for pre-migration local copies.
 /metrics-candidate.json
 /metrics-baseline.json
 

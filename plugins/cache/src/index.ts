@@ -58,7 +58,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'cache',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Opt-in cache eviction: declarative TTL/keep-last rules for `.cache/mcp-vertex` + `cache_gc` (dry-run by default). No network, no secrets.',
 	optionsSchema: OptionsSchema,

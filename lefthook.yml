@@ -134,12 +134,12 @@ pre-push:
 
     # c00133 (AUD-P0-003): drift check on every push. Runs every
     # generator and fails when the working tree has uncommitted
-    # drift. Advisory (wrapped with `|| true`) because a clean
-    # diff is the responsibility of the commit, not the push;
-    # the GitHub Actions `drift` workflow is the source of truth.
+    # drift. BLOCKING (no `|| true`) — a stale checked-in generated
+    # artifact is a correctness bug, and this mirrors the GitHub
+    # Actions `drift` workflow.
     # Bypass: LEFTHOOK_BYPASS=1 git push ...
     drift-check:
-      run: bun tools/scripts/gen-all.script.ts --check || true
+      run: bun tools/scripts/gen-all.script.ts --check
 
     # f00086: config-driven branch discipline. ADVISORY (wrapped with
     # `|| true`). With `agentWorktree: false` (this repo), pushing from

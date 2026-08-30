@@ -52,7 +52,7 @@ export interface ILoadPluginsOptions {
 	/** Build the per-plugin context once the plugin's name is known. */
 	readonly buildContext: (
 		pluginName: string,
-		cacheNamespace?: string,
+		cacheNamespace?: string
 	) => IMcpPluginContext;
 	/**
 	 * Injectable importer. **Required** — the core never calls
@@ -92,14 +92,14 @@ export interface ILoadPluginsOptions {
  * uses Node's `require` for activation-time loads.
  */
 export const nodeDynamicImport = async (
-	specifier: string,
+	specifier: string
 ): Promise<unknown> => {
 	const normalized = normalizeImportSpecifier(specifier);
 	// Use `Function` to hide `import()` from the static analyser, but
 	// fall back to the direct form on sandbox failures so callers
 	// (and the test suite) keep working in restricted runtimes.
 	const indirect = new Function('specifier', 'return import(specifier);') as (
-		s: string,
+		s: string
 	) => Promise<unknown>;
 	try {
 		return await indirect(normalized);
@@ -120,13 +120,13 @@ const normalizeImportSpecifier = (specifier: string): string => {
 const withTimeout = async <T>(
 	promise: Promise<T>,
 	ms: number,
-	label: string,
+	label: string
 ): Promise<T> => {
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	const timeout = new Promise<never>((_resolve, reject) => {
 		timer = setTimeout(
 			() => reject(new Error(`${label} timed out after ${ms}ms`)),
-			ms,
+			ms
 		);
 	});
 	try {
@@ -161,7 +161,7 @@ const isPathLikeSpecifier = (specifier: string): boolean =>
 
 const resolveFilesystemSpecifier = (
 	specifier: string,
-	workspaceRoot: string | undefined,
+	workspaceRoot: string | undefined
 ): string => {
 	if (!specifier.startsWith('.')) return specifier;
 	if (workspaceRoot === undefined || workspaceRoot.length === 0) {
@@ -217,7 +217,7 @@ interface IResolvedPlugin {
  *     marked blocked and reported through `errors` + `registerErrors`.
  */
 export const loadPlugins = async (
-	options: ILoadPluginsOptions,
+	options: ILoadPluginsOptions
 ): Promise<IPluginLoadResult> => {
 	const importer = options.import;
 	const timeoutMs = options.timeoutMs ?? 15_000;
@@ -239,7 +239,7 @@ export const loadPlugins = async (
 		seenSpecifiers.add(specifier);
 		const normalizedSpecifier = resolveFilesystemSpecifier(
 			specifier,
-			options.workspaceRoot,
+			options.workspaceRoot
 		);
 		const candidates = resolvePluginSpecifier(normalizedSpecifier);
 		let plugin: IMcpPlugin | undefined;
@@ -250,7 +250,7 @@ export const loadPlugins = async (
 				const mod = await withTimeout(
 					Promise.resolve(importer(candidate)),
 					timeoutMs,
-					`import("${candidate}")`,
+					`import("${candidate}")`
 				);
 				const found = asPlugin(mod);
 				if (found) {
@@ -259,11 +259,11 @@ export const loadPlugins = async (
 					break;
 				}
 				attemptErrors.push(
-					`${candidate}: no default IMcpPlugin export`,
+					`${candidate}: no default IMcpPlugin export`
 				);
 			} catch (error) {
 				attemptErrors.push(
-					`${candidate}: ${error instanceof Error ? error.message : String(error)}`,
+					`${candidate}: ${error instanceof Error ? error.message : String(error)}`
 				);
 			}
 		}
@@ -320,7 +320,7 @@ export const loadPlugins = async (
 	// plugin has passed its own schema and before any register() side effect.
 	// This makes incompatible policies a boot-time error, never a runtime race.
 	const pluginOptions = new Map(
-		resolvedPlugins.map(({ plugin, ctx }) => [plugin.name, ctx.options]),
+		resolvedPlugins.map(({ plugin, ctx }) => [plugin.name, ctx.options])
 	);
 	const enabledPlugins = resolvedPlugins.map(({ plugin }) => plugin.name);
 	const configurationIssues = await validatePluginConfiguration({
@@ -357,7 +357,7 @@ export const loadPlugins = async (
 		].flatMap((path) => {
 			const source = resolveWorkspaceContained(
 				entry.ctx.workspace.root,
-				path.source,
+				path.source
 			);
 			const destinationRel =
 				path.destination === undefined
@@ -365,7 +365,7 @@ export const loadPlugins = async (
 					: path.destination;
 			const destination = resolveWorkspaceContained(
 				entry.ctx.workspace.root,
-				join(canonicalPluginDir, destinationRel),
+				join(canonicalPluginDir, destinationRel)
 			);
 			return source.ok && destination.ok
 				? [

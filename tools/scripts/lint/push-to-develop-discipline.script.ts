@@ -45,6 +45,7 @@ import { isLefthookBypassed } from '../lib/lefthook-bypass';
 import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
 const DEVELOP_BRANCH = 'develop';
+const MAIN_BRANCH = 'main';
 
 /** Branch prefixes that identify agent-driven work rather than the operator. */
 const AGENT_BRANCH_PREFIXES = ['wip/', 'agent/'] as const;
@@ -182,6 +183,20 @@ export const lintPushToDevelop = (
 	input: IPushToDevelopInput,
 ): PushToDevelopResult => {
 	const { remoteBranch, currentBranch, agentWorktreeEnabled = false } = input;
+
+	if (remoteBranch === MAIN_BRANCH) {
+		return {
+			ok: false,
+			blockers: [
+				'pushing directly to `main` — main only receives commits through a pull request (ADR 0018).',
+				'',
+				'next-action:',
+				'  open a pull request from your branch into `main` instead of pushing directly.',
+				'',
+				'  if this is a true emergency release, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+			],
+		};
+	}
 
 	// `develop` is this repo's working branch and is deliberately not
 	// protected: the operator pushes to it directly. What is refused is an

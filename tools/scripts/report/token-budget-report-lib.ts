@@ -81,7 +81,7 @@ export interface IToolListMetrics {
 	readonly toolBreakdowns: readonly IToolBreakdownRow[];
 }
 
-type IToolListEntry = {
+export type IToolListEntry = {
 	readonly name: string;
 	readonly description?: string | undefined;
 	readonly inputSchema?: unknown | undefined;

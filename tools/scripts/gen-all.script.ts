@@ -24,7 +24,7 @@
 
 import { spawn } from 'node:child_process';
 
-interface IStep {
+export interface IStep {
 	readonly name: string;
 	readonly cmd: readonly string[];
 	readonly description: string;
@@ -32,49 +32,64 @@ interface IStep {
 	readonly checkCmd?: readonly string[];
 }
 
-const STEPS: readonly IStep[] = [
+export const STEPS: readonly IStep[] = [
 	{
-		name: 'from-manifests',
+		name: 'agent-catalog',
+		cmd: ['bun', 'tools/scripts/catalog/generate-agent-catalog.script.ts'],
+		description: 'Regenerate the checked-in agent catalog.',
+	},
+	{
+		name: 'plugin-manifests',
 		cmd: ['bun', 'tools/scripts/generate/from-manifests.script.ts'],
-		description: 'Sync manifests into the central registry.',
-	},
-	{
-		name: 'first-party-plugin-index',
-		cmd: [
-			'bun',
-			'tools/scripts/generate/first-party-plugin-index.script.ts',
-		],
-		description: 'Build the first-party plugin index.',
-	},
-	{
-		name: 'web-catalog',
-		cmd: ['bun', 'tools/scripts/generate/web-catalog.script.ts'],
-		description: 'Refresh the web public catalog.',
-	},
-	{
-		name: 'plugin-docs',
-		cmd: ['bun', 'tools/scripts/generate/plugin-docs.script.ts'],
-		description: 'Regenerate per-plugin docs.',
-	},
-	{
-		name: 'permission-matrix',
-		cmd: ['bun', 'tools/scripts/generate/permission-matrix.script.ts'],
-		description: 'Regenerate the permission matrix.',
-	},
-	{
-		name: 'preset-metadata',
-		cmd: ['bun', 'tools/scripts/generate/preset-metadata.script.ts'],
 		checkCmd: [
 			'bun',
-			'tools/scripts/generate/preset-metadata.script.ts',
+			'tools/scripts/generate/from-manifests.script.ts',
 			'--check',
 		],
-		description: 'Refresh preset metadata.',
+		description: 'Regenerate plugin manifests and derived registries.',
+	},
+	{
+		name: 'capability-matrix',
+		cmd: ['bun', 'tools/scripts/gen/capability-matrix.script.ts'],
+		description: 'Regenerate the capability matrix documentation.',
+	},
+	{
+		name: 'agent-md',
+		cmd: ['bun', 'tools/scripts/gen/agent-md.script.ts'],
+		description: 'Regenerate per-package and per-plugin AGENT.md files.',
+	},
+	{
+		name: 'token-budget-dashboard',
+		cmd: ['bun', 'tools/scripts/report/token-budget-dashboard.script.ts'],
+		description: 'Regenerate the token budget dashboard.',
+	},
+	{
+		name: 'host-hints',
+		cmd: ['bun', 'tools/scripts/catalog/render-host-hints.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/catalog/render-host-hints.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the canonical host-hints fragment.',
 	},
 ];
 
-const out = (msg: string) => process.stdout.write(`${msg}\n`);
-const err = (msg: string) => process.stderr.write(`${msg}\n`);
+export interface IGenAllIo {
+	readonly out: (msg: string) => void;
+	readonly err: (msg: string) => void;
+	readonly runCommand: (
+		command: string,
+		args: readonly string[],
+	) => Promise<number>;
+}
+
+const out = (msg: string): void => {
+	process.stdout.write(`${msg}\n`);
+};
+const err = (msg: string): void => {
+	process.stderr.write(`${msg}\n`);
+};
 
 const runChild = (command: string, args: readonly string[]): Promise<number> =>
 	new Promise((resolve) => {
@@ -84,6 +99,12 @@ const runChild = (command: string, args: readonly string[]): Promise<number> =>
 		child.once('error', () => resolve(1));
 		child.once('close', (code) => resolve(code ?? 1));
 	});
+
+const defaultIo = (): IGenAllIo => ({
+	out,
+	err,
+	runCommand: runChild,
+});
 
 const flag = (argv: readonly string[], name: string): string | undefined => {
 	for (let i = 0; i < argv.length; i += 1) {
@@ -99,61 +120,81 @@ const flag = (argv: readonly string[], name: string): string | undefined => {
 const hasFlag = (argv: readonly string[], name: string): boolean =>
 	argv.some((t) => t === `--${name}` || t.startsWith(`--${name}=`));
 
-const runStep = async (step: IStep, check: boolean): Promise<number> => {
-	out(`▶ ${step.name} — ${step.description}`);
+export const selectSteps = (
+	argv: readonly string[],
+): { readonly only?: string; readonly steps: readonly IStep[] } => {
+	const only = flag(argv, 'only');
+	return {
+		...(only !== undefined ? { only } : {}),
+		steps:
+			only !== undefined
+				? STEPS.filter((step) => step.name === only)
+				: STEPS,
+	};
+};
+
+const runStep = async (
+	step: IStep,
+	check: boolean,
+	io: IGenAllIo,
+): Promise<number> => {
+	io.out(`▶ ${step.name} — ${step.description}`);
 	const command = check ? (step.checkCmd ?? step.cmd) : step.cmd;
 	const [executable, ...args] = command;
 	if (executable === undefined) return 1;
-	const exit = await runChild(executable, args);
-	out(`  ${step.name} exited ${exit}`);
+	const exit = await io.runCommand(executable, args);
+	io.out(`  ${step.name} exited ${exit}`);
 	return exit;
 };
 
-const runGitDiffExit = async (): Promise<number> => {
-	out(`▶ drift-check — git diff --exit-code`);
-	return runChild('git', ['diff', '--exit-code']);
+const runGitDiffExit = async (io: IGenAllIo): Promise<number> => {
+	io.out(`▶ drift-check — git diff --exit-code`);
+	return io.runCommand('git', ['diff', '--exit-code']);
 };
 
-export const main = async (argv: readonly string[]): Promise<number> => {
+export const main = async (
+	argv: readonly string[],
+	io: IGenAllIo = defaultIo(),
+): Promise<number> => {
 	const check = hasFlag(argv, 'check');
 	const list = hasFlag(argv, 'list');
-	const only = flag(argv, 'only');
-	const steps =
-		only !== undefined ? STEPS.filter((s) => s.name === only) : STEPS;
+	const { only, steps } = selectSteps(argv);
 	if (steps.length === 0) {
-		err(`gen-all: unknown --only "${only}"`);
-		err(`gen-all: valid names: ${STEPS.map((s) => s.name).join(', ')}`);
+		io.err(`gen-all: unknown --only "${only}"`);
+		io.err(
+			`gen-all: valid names: ${STEPS.map((step) => step.name).join(', ')}`,
+		);
 		return 2;
 	}
 	if (list) {
 		for (const step of steps) {
-			out(`  ${step.name}: ${step.cmd.join(' ')}`);
+			io.out(`  ${step.name}: ${step.cmd.join(' ')}`);
 		}
 		return 0;
 	}
 
-	out(`gen-all: ${steps.length} step(s)${check ? ' + drift-check' : ''}`);
+	io.out(`gen-all: ${steps.length} step(s)${check ? ' + drift-check' : ''}`);
 	let worstExit = 0;
 	for (const step of steps) {
-		const code = await runStep(step, check);
+		const code = await runStep(step, check, io);
 		if (code !== 0) worstExit = code;
 	}
 	if (worstExit !== 0) {
-		err(
+		io.err(
 			`gen-all: at least one generator exited non-zero (exit=${worstExit})`,
 		);
 		return 1;
 	}
 	if (check) {
-		const code = await runGitDiffExit();
+		const code = await runGitDiffExit(io);
 		if (code !== 0) {
-			err(`gen-all: drift detected — see the diff above`);
+			io.err(`gen-all: drift detected — see the diff above`);
 			return 1;
 		}
-		out(`gen-all: no drift detected ✓`);
+		io.out(`gen-all: no drift detected ✓`);
 		return 0;
 	}
-	out(`gen-all: every step passed ✓`);
+	io.out(`gen-all: every step passed ✓`);
 	return 0;
 };
 

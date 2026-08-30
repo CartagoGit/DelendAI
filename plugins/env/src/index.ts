@@ -16,7 +16,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'env',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Environment config validation: env_check flags duplicate/empty/malformed keys and missing required vars in a .env file; env_explains reports which plugin capabilities are unlocked vs blocked. Offline, values never leaked.',
 	optionsSchema: OptionsSchema,

@@ -113,7 +113,7 @@ const EMPTY_PRICING: IPricingTable = {
  */
 export default definePlugin({
 	name: 'usage-tracking',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Records every tool call (agent/plugin/model/extension) to an append-only log and reports aggregate usage + cost.',
 	// Accrued spend/usage history, not derivable cache — deleting it

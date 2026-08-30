@@ -2,6 +2,7 @@ import {
 	createWorkspaceFileReader,
 	definePlugin,
 } from '@mcp-vertex/core/public';
+import { registerAdoptionExtensions } from '@mcp-vertex/core/lib/adopt/adoption-extension-registry';
 import type {
 	IPluginConfigurationIssue,
 	IPluginConfigurationValidationInput,
@@ -65,6 +66,9 @@ import {
 	DEFAULT_PROPOSAL_FOLDER_POLICY,
 	type IProposalFolderPolicy,
 } from './lib/contracts/proposal-folder-policy';
+import { registerProposalsStableTools } from './lib/api/proposals-stable-tools';
+import { buildProposalsAdoptionExtension } from './lib/adoption/proposals-adoption-extension';
+import { registerProposalsWorkflowContribution } from './lib/skills/proposals-workflow-contribution';
 
 /**
  * The proposals workflow plugin. It turns mcp-vertex into a multi-agent
@@ -299,7 +303,7 @@ export const validateProposalConfiguration = (
 
 export default definePlugin({
 	name: 'proposals',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Proposal store + file-level agent locks + persistent task queue (multi-agent swarm coordination).',
 	optionsSchema: PROPOSALS_OPTIONS_SCHEMA,
@@ -314,6 +318,12 @@ export default definePlugin({
 		},
 	},
 	async register(ctx) {
+		registerAdoptionExtensions('proposals', [
+			buildProposalsAdoptionExtension(),
+		]);
+		registerProposalsStableTools();
+		registerProposalsWorkflowContribution();
+
 		// r00003 S9 (F9): validate ctx.options through the SAME schema the
 		// loader declares, so a host misconfig is a structured error here
 		// rather than a silent cast downstream. The narrow per-field casts

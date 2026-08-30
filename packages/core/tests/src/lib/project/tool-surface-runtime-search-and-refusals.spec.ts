@@ -165,9 +165,12 @@ describe('tool-surface-runtime unknown-identifier refusals', () => {
 		).toEqual(expect.not.arrayContaining(['ghost']));
 	});
 
-	it('isToolExposed defaults to true for a name that was never bound', () => {
+	it('getToolExposure reports unknown and isToolExposed stays fail-closed for a name that was never bound', () => {
 		const { runtime } = buildTwoPluginRuntime();
-		expect(runtime.isToolExposed('never-bound-tool-name')).toBe(true);
+		expect(runtime.getToolExposure('never-bound-tool-name')).toBe(
+			'unknown',
+		);
+		expect(runtime.isToolExposed('never-bound-tool-name')).toBe(false);
 	});
 
 	it('resolveRoute returns undefined, without side effects, when no tool matches the domain/action pair', () => {

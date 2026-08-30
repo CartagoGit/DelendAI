@@ -73,7 +73,7 @@ import { resolveStartupReportLevel } from '../startup-report/level';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
 
 const toolOwnerFromOrigin = (
-	origin: 'bundled' | 'user-local' | 'external',
+	origin: 'bundled' | 'user-local' | 'external'
 ): ToolOwner => {
 	switch (origin) {
 		case 'bundled':
@@ -89,8 +89,7 @@ const toolCategoryOf = (input: {
 	readonly packageName: string;
 	readonly tags?: readonly string[] | undefined;
 	readonly effects?:
-		| readonly ('write' | 'spawn' | 'network' | 'destructive')[]
-		| undefined;
+		readonly ('write' | 'spawn' | 'network' | 'destructive')[] | undefined;
 }): SafeToolCategory => {
 	const tags = new Set((input.tags ?? []).map((tag) => tag.toLowerCase()));
 	const effects = new Set(input.effects ?? []);
@@ -132,7 +131,7 @@ export interface IAssembledCliConfig {
 	readonly startupReport: import('../startup-report/model').IStartupReport;
 	/** Rebuild the report after MCP registration exposes the real schemas. */
 	readonly buildStartupReport: (
-		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+		schemaBytesByRegistrationId?: Readonly<Record<string, number>>
 	) => import('../startup-report/model').IStartupReport;
 	readonly startupReportColor: 'auto' | 'always' | 'never';
 	readonly loadResult: IPluginLoadResult;
@@ -194,7 +193,7 @@ export interface IAssembleCliDeps {
  */
 export const assembleCliConfig = async (
 	args: IMcpVertexCliArgs,
-	deps: IAssembleCliDeps = {},
+	deps: IAssembleCliDeps = {}
 ): Promise<IAssembledCliConfig> => {
 	const workspace = createWorkspacePathProvider(args.workspace);
 	const readFile: (absolutePath: string) => Promise<string | undefined> =
@@ -228,13 +227,13 @@ export const assembleCliConfig = async (
 	// "looks-like-a-bare-name" case (a bare string is still valid), so
 	// we run a separate guard for every plugin entry that sets `path`.
 	const pluginPathIssues = Object.entries(fileConfig.plugins ?? {}).flatMap(
-		([name, entry]) => diagnosePluginPathConfig(entry ?? {}, name),
+		([name, entry]) => diagnosePluginPathConfig(entry ?? {}, name)
 	);
 	const configPluginNames = Object.keys(fileConfig.plugins ?? {});
 	const disabledConfigPlugins = new Set(
 		Object.entries(fileConfig.plugins ?? {})
 			.filter(([, entry]) => entry.enabled === false)
-			.map(([name]) => name),
+			.map(([name]) => name)
 	);
 
 	// Precedence for roots: explicit CLI flag > config file > default.
@@ -304,14 +303,14 @@ export const assembleCliConfig = async (
 	// C introduces the opt-in `apply` mode from the config file).
 	const cacheDirContained = resolveWorkspaceContained(
 		workspace.root,
-		cacheDir,
+		cacheDir
 	);
 	if (!cacheDirContained.ok) {
 		// Should never happen — CLI flag > config > default are all
 		// validated upstream — but a hard error here is better than
 		// silently letting a rule with a bad cacheDir escape.
 		throw new Error(
-			`cacheDir escapes workspace: ${cacheDir} (${cacheDirContained.reason})`,
+			`cacheDir escapes workspace: ${cacheDir} (${cacheDirContained.reason})`
 		);
 	}
 	const cacheEvictionRegistry = createCacheEvictionRegistry({
@@ -328,7 +327,7 @@ export const assembleCliConfig = async (
 						{
 							sourceAbs: resolve(
 								workspace.root,
-								DEFAULT_CORE_PATHS.cacheDir,
+								DEFAULT_CORE_PATHS.cacheDir
 							),
 							destinationAbs: cacheDirContained.abs,
 						},
@@ -402,7 +401,7 @@ export const assembleCliConfig = async (
 			identity: commitAuthorIdentity,
 			named: commitAuthorNamed,
 		},
-		createGitConfigReader(createGitRunner(workspace.root)),
+		createGitConfigReader(createGitRunner(workspace.root))
 	);
 
 	// S2 — the sink every plugin's context receives. We
@@ -430,27 +429,27 @@ export const assembleCliConfig = async (
 	});
 	const buildContext = (
 		pluginName: string,
-		cacheNamespace?: string,
+		cacheNamespace?: string
 	): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
 		const pluginOptions = new Map(
 			Object.entries(fileConfig.plugins ?? {}).map(([name, config]) => [
 				name,
 				config.options ?? {},
-			]),
+			])
 		);
 		const pluginCacheDir = joinRel(
 			corePaths.cacheDir,
-			cacheNamespace ? `${cacheNamespace}/${pluginName}` : pluginName,
+			cacheNamespace ? `${cacheNamespace}/${pluginName}` : pluginName
 		);
 		const cachePath = (relativePath = ''): string => {
 			const contained = resolveWorkspaceContained(
 				workspace.root,
-				join(pluginCacheDir, relativePath),
+				join(pluginCacheDir, relativePath)
 			);
 			if (!contained.ok) {
 				throw new Error(
-					`plugin cache path escapes ${pluginCacheDir}: ${relativePath}`,
+					`plugin cache path escapes ${pluginCacheDir}: ${relativePath}`
 				);
 			}
 			return contained.abs;
@@ -533,7 +532,7 @@ export const assembleCliConfig = async (
 					corePaths.cacheDir,
 					plugin.cacheNamespace
 						? `${plugin.cacheNamespace}/${plugin.name}`
-						: plugin.name,
+						: plugin.name
 				);
 				return [
 					...(cacheDir !== DEFAULT_CORE_PATHS.cacheDir
@@ -545,22 +544,22 @@ export const assembleCliConfig = async (
 											DEFAULT_CORE_PATHS.cacheDir,
 											plugin.cacheNamespace
 												? `${plugin.cacheNamespace}/${plugin.name}`
-												: plugin.name,
-										),
+												: plugin.name
+										)
 									),
 									destinationAbs: resolve(
 										workspace.root,
-										target,
+										target
 									),
 								},
 								{
 									sourceAbs: resolve(
 										workspace.root,
-										`.${plugin.name}`,
+										`.${plugin.name}`
 									),
 									destinationAbs: resolve(
 										workspace.root,
-										target,
+										target
 									),
 								},
 							]
@@ -643,8 +642,8 @@ export const assembleCliConfig = async (
 		.filter(
 			(registration) =>
 				!toolSurfaceDescriptors.some(
-					(entry) => entry.registrationId === registration.id,
-				),
+					(entry) => entry.registrationId === registration.id
+				)
 		)
 		.map((registration) => ({
 			registrationId: registration.id,
@@ -659,20 +658,20 @@ export const assembleCliConfig = async (
 		}));
 	const pluginDescriptorsByRegistrationId = new Map(
 		toolSurfaceDescriptors.map(
-			(entry) => [entry.registrationId, entry] as const,
-		),
+			(entry) => [entry.registrationId, entry] as const
+		)
 	);
 	for (const registration of tools) {
 		const descriptor = pluginDescriptorsByRegistrationId.get(
-			registration.id,
+			registration.id
 		);
 		if (descriptor?.pluginId !== undefined) {
 			const loadedPlugin = loadResult.loaded.find(
-				(entry) => entry.plugin.name === descriptor.pluginId,
+				(entry) => entry.plugin.name === descriptor.pluginId
 			);
 			const pluginConfig = pluginConfigFor(
 				fileConfig,
-				descriptor.pluginId,
+				descriptor.pluginId
 			);
 			const origin = classifyOrigin({
 				name: descriptor.pluginId,
@@ -747,7 +746,7 @@ export const assembleCliConfig = async (
 			namespace: plugin.prefix ?? plugin.id,
 			toolRegistrationIds: [],
 			describe: pluginSummaries.find(
-				(summary) => summary.name === plugin.id,
+				(summary) => summary.name === plugin.id
 			)?.describe,
 		});
 	}
@@ -758,7 +757,7 @@ export const assembleCliConfig = async (
 			namespace: entry.namespace,
 			toolRegistrationIds: [],
 			describe: loadResult.loaded.find(
-				(candidate) => candidate.plugin.name === entry.pluginId,
+				(candidate) => candidate.plugin.name === entry.pluginId
 			)?.plugin.describe,
 		};
 		existing.toolRegistrationIds.push(entry.registrationId);
@@ -796,7 +795,7 @@ export const assembleCliConfig = async (
 				...(entry.describe !== undefined
 					? { describe: entry.describe }
 					: {}),
-			}),
+			})
 		),
 	};
 
@@ -814,7 +813,7 @@ export const assembleCliConfig = async (
 				await observer.handler(info);
 			} catch (hookError) {
 				process.stderr.write(
-					`[mcp-vertex] onHookError error (${observer.pluginName}): ${hookError instanceof Error ? hookError.message : String(hookError)}\n`,
+					`[mcp-vertex] onHookError error (${observer.pluginName}): ${hookError instanceof Error ? hookError.message : String(hookError)}\n`
 				);
 			}
 		}
@@ -854,7 +853,7 @@ export const assembleCliConfig = async (
 								await observer.handler(toolName, toolArgs);
 							} catch (e) {
 								process.stderr.write(
-									`[mcp-vertex] onToolStart error: ${e instanceof Error ? e.message : String(e)}\n`,
+									`[mcp-vertex] onToolStart error: ${e instanceof Error ? e.message : String(e)}\n`
 								);
 								await emitHookError({
 									pluginName: observer.pluginName,
@@ -878,11 +877,11 @@ export const assembleCliConfig = async (
 								await observer.handler(
 									toolName,
 									toolArgs,
-									elapsedMs,
+									elapsedMs
 								);
 							} catch (e) {
 								process.stderr.write(
-									`[mcp-vertex] onToolCancel error: ${e instanceof Error ? e.message : String(e)}\n`,
+									`[mcp-vertex] onToolCancel error: ${e instanceof Error ? e.message : String(e)}\n`
 								);
 								await emitHookError({
 									pluginName: observer.pluginName,
@@ -906,7 +905,7 @@ export const assembleCliConfig = async (
 						toolArgs,
 						result,
 						error,
-						elapsedMs,
+						elapsedMs
 					) => {
 						for (const observer of onToolCalls) {
 							try {
@@ -915,11 +914,11 @@ export const assembleCliConfig = async (
 									toolArgs,
 									result,
 									error,
-									elapsedMs,
+									elapsedMs
 								);
 							} catch (e) {
 								process.stderr.write(
-									`[mcp-vertex] onToolCall error: ${e instanceof Error ? e.message : String(e)}\n`,
+									`[mcp-vertex] onToolCall error: ${e instanceof Error ? e.message : String(e)}\n`
 								);
 								await emitHookError({
 									pluginName: observer.pluginName,
@@ -948,7 +947,7 @@ export const assembleCliConfig = async (
 			? {
 					getCheckpointAdvisory: (context) =>
 						selectCheckpointAdvisory(
-							getCheckpointAdvisoryFns.map((fn) => fn(context)),
+							getCheckpointAdvisoryFns.map((fn) => fn(context))
 						),
 				}
 			: {}),
@@ -956,7 +955,7 @@ export const assembleCliConfig = async (
 			? {
 					beforeToolCall: (context) =>
 						mergeCheckpointAdvisories(
-							beforeToolCallFns.map((fn) => fn(context)),
+							beforeToolCallFns.map((fn) => fn(context))
 						),
 				}
 			: {}),
@@ -1000,14 +999,14 @@ export const assembleCliConfig = async (
 					skill.appliesTo.some(
 						(owner) =>
 							owner === '@mcp-vertex/*' ||
-							owner === `@mcp-vertex/${pluginId}`,
-					),
+							owner === `@mcp-vertex/${pluginId}`
+					)
 				)
 				.map((skill) => skill.id),
-		]),
+		])
 	);
 	const buildStartupReport = (
-		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+		schemaBytesByRegistrationId?: Readonly<Record<string, number>>
 	) =>
 		buildStartupReportForAssembly({
 			plan: toolSurfacePlan,
@@ -1017,7 +1016,7 @@ export const assembleCliConfig = async (
 			preset: args.tokens.preset ?? 'custom',
 			configuredPluginIds: effectivePlugins,
 			loadedPluginIds: loadResult.loaded.map(
-				(entry) => entry.plugin.name,
+				(entry) => entry.plugin.name
 			),
 			skillsByPlugin,
 			failedPluginCount: loadResult.errors.length,
@@ -1028,7 +1027,7 @@ export const assembleCliConfig = async (
 					? configurationPlugins.reduce(
 							(total, plugin) =>
 								total + plugin.capabilities.resources,
-							0,
+							0
 						)
 					: 0),
 			moduleLoading,
@@ -1082,7 +1081,7 @@ export const assembleCliConfig = async (
 					code,
 					message,
 					severity,
-				}),
+				})
 			),
 		});
 	}
@@ -1102,7 +1101,7 @@ export const assembleCliConfig = async (
 	// the sweep entirely (empty report).
 	const cacheRunOnBoot = fileConfig.cache?.runOnBoot ?? 'dry-run';
 	const cachePluginLoaded = loadResult.loaded.some(
-		(entry) => entry.plugin.name === 'cache',
+		(entry) => entry.plugin.name === 'cache'
 	);
 	const cacheEvictionApply = cacheRunOnBoot === 'apply' && cachePluginLoaded;
 	const cacheEvictionBootReport: ICacheEvictionReport =
@@ -1118,7 +1117,7 @@ export const assembleCliConfig = async (
 				}
 			: await cacheEvictionRegistry.run({ dryRun: !cacheEvictionApply });
 	const evidenceCleanupReport = await evidenceStore.cleanup(
-		fileConfig.evidence?.cleanup ?? 'on-boot',
+		fileConfig.evidence?.cleanup ?? 'on-boot'
 	);
 
 	return {

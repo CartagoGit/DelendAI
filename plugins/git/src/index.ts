@@ -54,7 +54,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'git',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Read-only git orientation: status, changed files, diff stat, recent log, blame, show and worktree list as structured JSON. Optional (opt-in) write tools: commit and push.',
 	optionsSchema: OptionsSchema,

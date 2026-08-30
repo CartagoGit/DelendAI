@@ -12,9 +12,14 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
+import {
+	registerAdoptionExtensions,
+	resetAdoptionExtensionsForTests,
+} from '@mcp-vertex/core/lib/adopt/adoption-extension-registry';
 import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
 import { createWorkspaceFileReader } from '@mcp-vertex/core/lib/bootstrap/workspace-file-reader';
 import { buildAdoptProjectToolRegistration } from '@mcp-vertex/core/lib/adopt/adopt-project.tool';
+import { buildProposalsAdoptionExtension } from '@mcp-vertex/proposals/lib/adoption/proposals-adoption-extension';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -35,6 +40,7 @@ describe('adopt_project (f00157 S1)', () => {
 	let adopt: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
 
 	beforeEach(async () => {
+		resetAdoptionExtensionsForTests();
 		root = mkdtempSync(join(tmpdir(), 'adopt-project-'));
 		const workspace = createWorkspacePathProvider(root);
 		adopt = await capture(
@@ -49,7 +55,10 @@ describe('adopt_project (f00157 S1)', () => {
 			}),
 		);
 	});
-	afterEach(() => rmSync(root, { recursive: true, force: true }));
+	afterEach(() => {
+		resetAdoptionExtensionsForTests();
+		rmSync(root, { recursive: true, force: true });
+	});
 
 	it('dry-run by default: returns the plan without writing anything', async () => {
 		const result = parse(await adopt({}));
@@ -74,7 +83,7 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(existsSync(join(root, 'mcp-vertex.config.json'))).toBe(false);
 	});
 
-	it('write:true persists config, agent files and the proposals store', async () => {
+	it('write:true without extensions persists config and agent files only', async () => {
 		const result = parse(await adopt({ write: true }));
 		expect(result.ok).toBe(true);
 		expect(result.wrote).toBe(true);
@@ -92,7 +101,22 @@ describe('adopt_project (f00157 S1)', () => {
 		);
 		expect(result.created).toContain('.codex/agents/proposal-guardian.md');
 		expect(result.created).toContain('.github/copilot-instructions.md');
-		// proposals store: README + 7 status folders
+		expect(
+			result.created.filter(
+				(p: string) =>
+					p.startsWith('docs/mcp-vertex/proposals/') &&
+					p.endsWith('.gitkeep'),
+			),
+		).toHaveLength(0);
+	});
+
+	it('write:true with the proposals extension persists the proposals store too', async () => {
+		registerAdoptionExtensions('proposals', [
+			buildProposalsAdoptionExtension(),
+		]);
+		const result = parse(await adopt({ write: true }));
+		expect(result.ok).toBe(true);
+		expect(result.wrote).toBe(true);
 		expect(result.created).toContain('docs/mcp-vertex/proposals/README.md');
 		expect(result.created).toContain(
 			'docs/mcp-vertex/proposals/ready/.gitkeep',
@@ -152,7 +176,26 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(Object.keys(written.plugins).length).toBeGreaterThan(0);
 	});
 
-	it('repo wiring adds proposals + issues and a full-preset launch step', async () => {
+	it('repo wiring stays generic when no plugin-owned adoption extension is loaded', async () => {
+		const result = parse(await adopt({ repo: 'acme/widgets' }));
+		expect(result.ok).toBe(true);
+		expect(result.config.plugins.issues).toBeUndefined();
+		expect(result.config.plugins.proposals).toBeUndefined();
+		const launch = result.residual.find((r: string) =>
+			r.includes('__serve'),
+		);
+		expect(launch).not.toContain('--preset full');
+		expect(
+			result.residual.find((r: string) =>
+				r.includes('GitHub repo provided (acme/widgets)'),
+			),
+		).toBeDefined();
+	});
+
+	it('repo wiring keeps proposals + issues behavior when the proposals extension is loaded', async () => {
+		registerAdoptionExtensions('proposals', [
+			buildProposalsAdoptionExtension(),
+		]);
 		const result = parse(await adopt({ repo: 'acme/widgets' }));
 		expect(result.ok).toBe(true);
 		expect(result.config.plugins.issues.options.repo).toBe('acme/widgets');

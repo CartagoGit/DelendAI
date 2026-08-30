@@ -3,12 +3,12 @@
  * project adoption orchestrator (f00157 S1).
  *
  * Dropping mcp-vertex into a project used to require chaining 5-7
- * disconnected steps: derive config → bootstrap the proposals store →
- * pick a launch shape → generate agents/instructions → wire issues →
+ * disconnected steps: derive config → pick a launch shape → generate
+ * agents/instructions → apply any plugin-owned adoption bootstrap →
  * relaunch. This tool composes the pieces the CORE already owns —
  * config derivation (`deriveConfig` + `mergeDerivedConfig`) and the
- * host/agent scaffold (`scaffold-*` generators) — plus a minimal
- * bootstrap of the canonical proposals store, and returns a verified
+ * host/agent scaffold (`scaffold-*` generators) — plus any loaded
+ * adoption extensions contributed by plugins, and returns a verified
  * checklist with the few residual steps that genuinely need a human or
  * network (launching the host, GitHub auth).
  *
@@ -26,8 +26,9 @@ import z from 'zod';
 import { analyzeProject } from '../bootstrap/analyze-project';
 import { buildAdoptionAssessment } from './adoption-assessment.service';
 import { ADOPTION_ASSESSMENT_SCHEMA } from '../contracts/constants/adoption-assessment-schema.constant';
-import { deriveConfig, type IDerivedConfig } from '../bootstrap/derive-config';
+import { deriveConfig } from '../bootstrap/derive-config';
 import { mergeDerivedConfig } from '../bootstrap/merge-derived-config';
+import { applyAdoptionExtensions } from './adoption-extension-registry';
 import type {
 	IAdoptProjectPlan,
 	IAdoptProjectToolDeps,
@@ -35,43 +36,17 @@ import type {
 } from '../contracts/interfaces/adopt-project.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IScaffoldHostOptions } from '../scaffold/scaffold-host';
-import {
-	buildAgentFiles,
-	buildProposalsStoreFiles,
-} from './adopt-project-write-estimate';
+import { buildAgentFiles } from './adopt-project-write-estimate';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { toolError, toolOk } from '../shared/tool-response';
 import { withFileMutex } from '../shared/with-file-mutex';
 
 const CONFIG_FILENAME = 'mcp-vertex.config.json';
 
-/** Resolved config (mutated clone) with the optional issues wiring. */
-const configWithIssues = (
-	derived: IDerivedConfig,
-	repo: string,
-): { config: Record<string, unknown>; rationale: readonly string[] } => {
-	const config = structuredClone(derived.config) as {
-		$schema: string;
-		cacheDir: string;
-		docsDir: string;
-		plugins: Record<string, { options: Record<string, unknown> }>;
-	};
-	// issues hard-depends on proposals; seed it when absent (lean/minimal).
-	config.plugins.proposals ??= { options: {} };
-	config.plugins.issues = { options: { repo } };
-	return {
-		config: config as unknown as Record<string, unknown>,
-		rationale: [
-			...derived.rationale,
-			`GitHub issues wired for ${repo} — the config loads the proposals + issues plugins; launch with --preset full (or --plugins proposals,issues).`,
-		],
-	};
-};
-
 /**
- * Pure: compute the full adoption plan (config + agent files + proposals
- * store + residual steps) from the project analysis. No I/O here — the
- * tool performs the writes so this stays testable and agnostic.
+ * Pure: compute the full adoption plan (config + generated files +
+ * plugin-contributed adoption steps) from the project analysis. No I/O
+ * here — the tool performs the writes so this stays testable and agnostic.
  */
 export const buildAdoptProjectPlan = (
 	input: IBuildAdoptProjectPlanInput,
@@ -79,16 +54,6 @@ export const buildAdoptProjectPlan = (
 	const derived = deriveConfig(input.analysis, {
 		topLevelDirs: input.topLevelDirs,
 	});
-	const withIssues =
-		input.repo !== undefined
-			? configWithIssues(derived, input.repo)
-			: {
-					config: derived.config as unknown as Record<
-						string,
-						unknown
-					>,
-					rationale: derived.rationale,
-				};
 
 	const hostOptions: IScaffoldHostOptions = {
 		projectName: input.projectName,
@@ -101,26 +66,28 @@ export const buildAdoptProjectPlan = (
 			: {}),
 	};
 
-	const prefix = input.namespacePrefix;
-	const residual: string[] = [
-		`Launch the host: bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset ${
-			input.repo !== undefined ? 'full' : derived.preset
-		}`,
-		input.repo !== undefined
-			? `Verify GitHub issues: run \`${prefix}_setup_github\` and confirm the ${input.repo} tier resolves.`
-			: `(Optional) Wire GitHub issues later: run \`${prefix}_setup_github\`, then set \`plugins.issues.options.repo\` to your \`owner/name\` slug.`,
-		'First proposals-plugin boot regenerates the registry index; or run `sync_proposals` once.',
-	];
+	const plan = applyAdoptionExtensions({
+		derived,
+		request: input,
+		plan: {
+			config: derived.config as unknown as Record<string, unknown>,
+			rationale: derived.rationale,
+			files: [...buildAgentFiles(hostOptions)],
+			residual: [
+				`Launch the host: bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset ${derived.preset}`,
+				input.repo !== undefined
+					? `GitHub repo provided (${input.repo}). Wire plugin-specific adoption explicitly if you want issue ingestion during adoption.`
+					: `(Optional) Wire GitHub issues later: run \`${input.namespacePrefix}_setup_github\`, then set \`plugins.issues.options.repo\` to your \`owner/name\` slug.`,
+			],
+		},
+	});
 
 	return {
 		preset: derived.preset,
-		config: withIssues.config,
-		rationale: withIssues.rationale,
-		files: [
-			...buildAgentFiles(hostOptions),
-			...buildProposalsStoreFiles(input.docsDir),
-		],
-		residual,
+		config: plan.config,
+		rationale: plan.rationale,
+		files: plan.files,
+		residual: plan.residual,
 	};
 };
 
@@ -160,14 +127,14 @@ export const buildAdoptProjectToolRegistration = (
 ): IToolRegistration => ({
 	id: 'adopt_project',
 	summary:
-		'One-call project adoption: derive config + bootstrap the proposals store + generate agents/instructions, returning a verified checklist.',
+		'One-call project adoption: derive config + generate agents/instructions + apply loaded adoption extensions, returning a verified checklist.',
 	tags: ['orientation', 'bootstrap', 'adoption'],
 	register: async (server) => {
 		server.registerTool(
 			`${deps.namespacePrefix}_adopt_project`,
 			{
 				description:
-					'Adopt THIS project for mcp-vertex in one call. Composes the config derivation (init_config), the proposals-store bootstrap, and the host agent/instructions scaffold — writing only what is missing and never overwriting project-owned files. Dry-run by default: returns the resolved config, rationale, the exact file list and the residual manual steps (launch + optional issues). Pass `write: true` to persist. `overwrite: true` replaces an existing config instead of merging; `repo: "owner/name"` wires the GitHub issues plugin.',
+					'Adopt THIS project for mcp-vertex in one call. Composes the config derivation (init_config), the host agent/instructions scaffold, and any adoption extensions contributed by loaded plugins — writing only what is missing and never overwriting project-owned files. Dry-run by default: returns the resolved config, rationale, the exact file list and the residual manual steps. Pass `write: true` to persist. `overwrite: true` replaces an existing config instead of merging; `repo: "owner/name"` is available to explicit adoption extensions that wire GitHub-aware plugins.',
 				inputSchema: z.object({
 					analyze: z.boolean().optional(),
 					write: z.boolean().optional(),
@@ -274,7 +241,7 @@ export const buildAdoptProjectToolRegistration = (
 					),
 				);
 
-				// 2. Agent/instructions + proposals store files — skip any
+				// 2. Generated scaffold + plugin-contributed adoption files — skip any
 				// file the project already owns (project instructions win).
 				const created: string[] = [];
 				const skipped: string[] = [];
