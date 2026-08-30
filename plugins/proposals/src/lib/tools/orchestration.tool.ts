@@ -1,3 +1,4 @@
+// effect-boundary-authorized: delegation error log is a durable append-only adapter
 import { mkdir, open } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
