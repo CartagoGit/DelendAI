@@ -24,7 +24,10 @@ const reason = (
 export const createPluginManager = (
 	router: Pick<
 		ILazyPluginRouter,
-		'pluginState' | 'transitionPlugin' | 'onPluginStateTransition'
+		| 'pluginState'
+		| 'transitionPlugin'
+		| 'onPluginStateTransition'
+		| 'isInitialized'
 	>,
 ): IPluginManager => {
 	const requireState = (pluginId: string): PluginState =>
@@ -55,6 +58,11 @@ export const createPluginManager = (
 			const current = requireState(pluginId);
 			if (current === 'DENIED' || current === 'ACTIVE') return current;
 			if (current === 'UNLOADED') {
+				if (!router.isInitialized()) {
+					throw new Error(
+						`plugin router must be initialized before activating "${pluginId}"`,
+					);
+				}
 				router.transitionPlugin(
 					pluginId,
 					'LOADED_HIDDEN',
