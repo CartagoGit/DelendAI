@@ -124,3 +124,55 @@ export const splitCapability = (input: string): ICapabilityParts | null => {
 		action: input.slice(colon + 1),
 	};
 };
+
+/**
+ * The shape of a single capability method on `ctx.capabilities`.
+ * Both `git.write(args)` and `fs.read(args)` fit this signature —
+ * the enforcement contract is about WHICH keys exist, not the
+ * per-method argument shape. `any` (params + return) is deliberate:
+ * the boundary is intentionally loose so concrete implementations
+ * with their own signatures are assignable; plugins narrow at the
+ * call site (see `CapabilitiesToCtx`).
+ */
+
+export type CapabilityMethod = (...args: any[]) => any;
+
+/**
+ * The subset of `TCapabilityGroup` that has at least one declared
+ * action inside `C`. The `[Extract<...>] extends [never]` tuple
+ * guard stops the union from distributing across `TCapabilityGroup`.
+ */
+type DeclaredGroups<C extends Capability> = {
+	[G in TCapabilityGroup]: [Extract<C, `${G}:${string}`>] extends [never]
+		? never
+		: G;
+}[TCapabilityGroup];
+
+/**
+ * The declared action names for one group within `C`.
+ * `'fs:read' | 'git:write'` yields `{ fs: 'read', git: 'write' }`.
+ */
+type DeclaredActionsInGroup<C extends Capability, G extends TCapabilityGroup> =
+	Extract<C, `${G}:${string}`> extends `${G}:${infer Action}`
+		? Action
+		: never;
+
+/**
+ * f00188 — map a DECLARED capability set to the concrete
+ * `ctx.capabilities` shape. Only granted capabilities exist as
+ * keys; every other group/action is a compile-time error.
+ *
+ * ```ts
+ * type Ctx = CapabilitiesToCtx<'fs:read' | 'git:write'>;
+ * ctx.capabilities.fs.read(...)    // ok
+ * ctx.capabilities.network.fetch() // Property 'network' does not exist
+ * ```
+ *
+ * `CapabilitiesToCtx<never>` — the default — is the empty object
+ * (least privilege when nothing is declared).
+ */
+export type CapabilitiesToCtx<C extends Capability = never> = {
+	readonly [G in DeclaredGroups<C>]: {
+		readonly [A in DeclaredActionsInGroup<C, G>]: CapabilityMethod;
+	};
+};

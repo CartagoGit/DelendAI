@@ -21,6 +21,17 @@
  * `adaptLegacyPlugin` (see `plugin-contract.ts`).
  */
 
+import {
+	createCapabilityContext,
+	parseDeclaredCapabilities,
+	summariseLegacyShimWarning,
+} from '../capabilities/inject';
+import type { ICapabilityImplementationMap } from '../capabilities/inject';
+import type {
+	CapabilitiesToCtx,
+	Capability,
+	ICapabilityRefusal,
+} from '../capabilities/schema';
 import type { IMcpPluginContext } from './plugin-contract';
 
 /**
@@ -37,9 +48,16 @@ export interface IPrepareContext {
 /**
  * Read-only context passed to `activate()`. Includes everything
  * `prepare()` had PLUS capabilities granted by the router.
+ *
+ * `C` is the plugin's DECLARED capability set: `capabilities` is
+ * narrowed to exactly that set (see `CapabilitiesToCtx`), so
+ * accessing an undeclared capability is a compile-time error. The
+ * default (`never`) is the empty context — least privilege when a
+ * plugin author does not opt in to any capability.
  */
-export interface IActivateContext extends IPrepareContext {
-	readonly capabilities: Readonly<Record<string, unknown>>;
+export interface IActivateContext<C extends Capability = never>
+	extends IPrepareContext {
+	readonly capabilities: CapabilitiesToCtx<C>;
 }
 
 /**
@@ -58,10 +76,17 @@ export type ActivePlugin<A> = A;
  * Phased lifecycle contract. A plugin MAY implement this
  * interface instead of (or in addition to) the legacy
  * `register(ctx)` shape — `definePlugin` handles both.
+ *
+ * `C` is the capability set the plugin declares in its manifest; it
+ * narrows `ctx.capabilities` inside `activate()`.
  */
-export interface IPhasedLifecycle<P = unknown, A = unknown> {
+export interface IPhasedLifecycle<
+	P = unknown,
+	A = unknown,
+	C extends Capability = never,
+> {
 	prepare(ctx: IPrepareContext): Promise<P>;
-	activate(prepared: P, ctx: IActivateContext): Promise<A>;
+	activate(prepared: P, ctx: IActivateContext<C>): Promise<A>;
 	dispose(active: A): Promise<void>;
 }
 
@@ -128,16 +153,51 @@ export const safeDispose = async <A extends object>(
  * Compose `prepare` + `activate` so callers don't have to repeat
  * the pattern. Returns the active payload so the caller can
  * pass it to `dispose` later.
+ *
+ * f00188 — the phased boot path. Before running, this resolves the
+ * plugin's DECLARED capabilities off `prepareCtx.manifest`; when a
+ * plugin ships without an explicit `capabilities` array it boots
+ * under the legacy shim (every capability granted) and the warning
+ * is emitted once via `prepareCtx.logger.warn` so the operator sees
+ * it (the `c00137` lint escalates this to an error after migration).
  */
-export const runLifecycle = async <P, A>(
-	lifecycle: IPhasedLifecycle<P, A>,
+export const runLifecycle = async <P, A, C extends Capability = never>(
+	lifecycle: IPhasedLifecycle<P, A, C>,
 	prepareCtx: IPrepareContext,
-	activateCtx: IActivateContext,
+	activateCtx: IActivateContext<C>,
 ): Promise<A> => {
+	const declared = parseDeclaredCapabilities(prepareCtx.manifest);
+	if (declared.length === 0) {
+		prepareCtx.logger.warn(
+			summariseLegacyShimWarning(prepareCtx.name).message,
+		);
+	}
 	const prepared = await lifecycle.prepare(prepareCtx);
 	const active = await lifecycle.activate(prepared, activateCtx);
 	return active;
 };
+
+/**
+ * f00188 — build the `activate()` context from a prepared context,
+ * the plugin's declared capabilities and the runtime's implementation
+ * map. `capabilities` is the runtime enforcement Proxy: declared
+ * capabilities resolve to the real implementation, undeclared ones
+ * return a typed `capability-denied` refusal.
+ *
+ * ```ts
+ * const ctx = buildActivateContext(prepareCtx, ['fs:read'] as const, impl);
+ * const active = await runLifecycle(lifecycle, prepareCtx, ctx);
+ * ```
+ */
+export const buildActivateContext = <C extends Capability>(
+	prepareCtx: IPrepareContext,
+	declared: readonly C[],
+	impl: ICapabilityImplementationMap,
+	onRefuse?: (refusal: ICapabilityRefusal) => void,
+): IActivateContext<C> => ({
+	...prepareCtx,
+	capabilities: createCapabilityContext(declared, impl, onRefuse),
+});
 
 /**
  * Re-export `IMcpPluginContext` so consumers can import the
