@@ -40,6 +40,7 @@
 
 - plugins/project-kpis/tests/src/kpi-history.spec.ts
 - plugins/project-kpis/tests/src/kpi-aggregation.spec.ts
+- plugins/project-kpis/tests/src/audit-report.spec.ts
 - plugins/project-kpis/tests/src/project-kpis.tool.spec.ts
 
 ## Do not

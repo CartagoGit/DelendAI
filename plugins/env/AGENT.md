@@ -41,8 +41,6 @@
 - plugins/env/tests/src/lib/validate/env-schema.spec.ts
 - plugins/env/tests/src/lib/requirements/explain.spec.ts
 - plugins/env/tests/src/lib/requirements/extract.spec.ts
-- plugins/env/tests/src/lib/tools/env-check.tool.spec.ts
-- plugins/env/tests/src/lib/tools/env-explains.tool.spec.ts
 
 ## Do not
 

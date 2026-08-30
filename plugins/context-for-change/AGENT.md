@@ -22,8 +22,6 @@
 - @mcp-vertex/search
 - @mcp-vertex/test-policy
 - @modelcontextprotocol/sdk
-- zod
-- @mcp-vertex/core
 
 ## Writes
 

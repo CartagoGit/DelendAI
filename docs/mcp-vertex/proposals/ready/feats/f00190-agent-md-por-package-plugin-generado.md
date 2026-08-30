@@ -112,7 +112,7 @@ tenga una "puerta de entrada" concisa y verificable.
 
 ### S1 — Generador + drift check + AGENT.md iniciales
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/gen/agent-md.script.ts`, `tools/scripts/gen/agent-md.spec.ts`, `packages/*/AGENT.md` (generados), `plugins/*/AGENT.md` (generados)
 - **Gate**: type
 

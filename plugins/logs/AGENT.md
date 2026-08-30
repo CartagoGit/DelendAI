@@ -21,10 +21,6 @@
 - LOG_SEVERITIES
 - severityForOutcome
 - correlateEvents
-- redactTest
-- subscribeToBus
-- logIncidents
-- logSearch
 
 ## Depends on
 
@@ -47,8 +43,6 @@
 - plugins/logs/tests/tools.spec.ts
 - plugins/logs/tests/subscribe.spec.ts
 - plugins/logs/tests/index.spec.ts
-- plugins/logs/tests/correlate.spec.ts
-- plugins/logs/tests/incidents-search.spec.ts
 
 ## Do not
 

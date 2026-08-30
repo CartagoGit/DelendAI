@@ -21,16 +21,6 @@
 - ModelCatalogError
 - createEvidenceStore
 - EVIDENCE_TYPES
-- buildHostAdapterPack
-- buildHostCapabilityPlan
-- classifyPath
-- DEFAULT_TS_RULES
-- endsWithBasename
-- hasSegment
-- deriveSourceRoots
-- mergeDerivedConfig
-- assembleCliConfig
-- buildConfigurationCenterSnapshot
 
 ## Depends on
 
@@ -50,9 +40,7 @@ _(none)_
 - packages/core/tests/config-schema.spec.ts
 - packages/core/tests/src/public/deprecation.spec.ts
 - packages/core/tests/src/public/public-logs-api.spec.ts
-- packages/core/tests/src/lib/shared/contain-path.spec.ts
-- packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts
-- packages/core/tests/src/lib/shared/truncate-if-too-large.spec.ts
+- packages/core/tests/src/architecture/core-proposals-boundary.spec.ts
 
 ## Do not
 

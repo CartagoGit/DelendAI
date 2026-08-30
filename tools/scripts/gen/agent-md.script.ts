@@ -236,10 +236,10 @@ export const readPluginManifest = async (
 	return obj as IPluginManifestShape;
 };
 
-const MAX_PUBLIC = 24;
-const MAX_DEPS = 12;
-const MAX_TESTS = 6;
-const MAX_HOTSPOTS = 6;
+const MAX_PUBLIC = 14;
+const MAX_DEPS = 8;
+const MAX_TESTS = 4;
+const MAX_HOTSPOTS = 4;
 
 /**
  * Compose the AGENT.md sections for a package or plugin dir.

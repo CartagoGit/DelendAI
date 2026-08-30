@@ -21,7 +21,6 @@
 - runDepsAudit
 - classifyLicense
 - realLicenseDeps
-- scanLicenses
 
 ## Depends on
 
@@ -44,8 +43,6 @@
 - plugins/deps/tests/src/lib/deps-tree.spec.ts
 - plugins/deps/tests/src/lib/write-tools.spec.ts
 - plugins/deps/tests/src/lib/deps.spec.ts
-- plugins/deps/tests/src/lib/audit.spec.ts
-- plugins/deps/tests/src/lib/plugin-options.spec.ts
 
 ## Do not
 

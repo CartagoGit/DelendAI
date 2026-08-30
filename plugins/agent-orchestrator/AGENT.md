@@ -21,16 +21,6 @@
 - createOrchestratorEngine
 - assertPolicyValid
 - SingleModeAdapter
-- LinearModeAdapter
-- SwarmModeAdapter
-- AutoModeAdapter
-- TaskClassifier
-- BudgetTracker
-- LoopDetector
-- FakeDispatchPort
-- LinearDispatcher
-- resolveDispatchPort
-- MissingDispatchPortError
 
 ## Depends on
 
@@ -53,8 +43,6 @@
 - plugins/agent-orchestrator/tests/src/lib/policy/single-mode.spec.ts
 - plugins/agent-orchestrator/tests/src/lib/policy/per-mode-override.spec.ts
 - plugins/agent-orchestrator/tests/src/lib/policy/registry.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/policy/policy.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/policy/swarm-mode.spec.ts
 
 ## Do not
 

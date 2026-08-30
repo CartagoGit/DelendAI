@@ -42,7 +42,6 @@
 - plugins/diagram/tests/src/lib/graph/build-module-graph.spec.ts
 - plugins/diagram/tests/src/lib/tools/diagram-graph.tool.spec.ts
 - plugins/diagram/tests/src/lib/tools/diagram-proposals.tool.spec.ts
-- plugins/diagram/tests/src/lib/erd/build-proposal-dfa.spec.ts
 
 ## Do not
 

@@ -10,6 +10,7 @@
 - default
 - CommitPolicyOptionsSchema
 - resolveAuthor
+- commitWithGuard
 - runCommitDriver
 - runPushDriver
 - appendAuditTrailer
@@ -20,7 +21,6 @@
 - createThresholdTracker
 - createIntervalTimer
 - manualTrigger
-- findTrigger
 
 ## Depends on
 
@@ -40,11 +40,9 @@
 ## Tests
 
 - plugins/commit-policy/tests/src/lifecycle.spec.ts
+- plugins/commit-policy/tests/src/index.spec.ts
 - plugins/commit-policy/tests/src/e2e/dogfood.spec.ts
 - plugins/commit-policy/tests/src/lib/services/push-scheduler.spec.ts
-- plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts
-- plugins/commit-policy/tests/src/lib/services/scope.spec.ts
-- plugins/commit-policy/tests/src/lib/services/push-driver.spec.ts
 
 ## Do not
 

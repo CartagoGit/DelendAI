@@ -39,8 +39,6 @@
 - plugins/test-convention/tests/src/lib/convention.spec.ts
 - plugins/test-convention/tests/src/lib/options-validation.spec.ts
 - plugins/test-convention/tests/src/lib/scan.spec.ts
-- plugins/test-convention/tests/src/lib/suggest.spec.ts
-- plugins/test-convention/tests/src/lib/runners.spec.ts
 
 ## Do not
 
