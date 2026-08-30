@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-30T01:14:19.125Z",
+	"generatedAt": "2026-08-30T02:35:09.983Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1777,7 +1777,7 @@
 				"id": "r00043",
 				"title": "r00043",
 				"track": "architecture",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "refactor"
 			},
 			{
@@ -1907,13 +1907,6 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00260",
-				"title": "x00260",
-				"track": "commit-policy",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00261",
 				"title": "x00261",
 				"track": "commit-policy",
@@ -1935,13 +1928,6 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00264",
-				"title": "x00264",
-				"track": "commit-policy",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00265",
 				"title": "x00265",
 				"track": "commit-policy",
@@ -1956,13 +1942,6 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00268",
-				"title": "x00268",
-				"track": "ci",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00269",
 				"title": "x00269",
 				"track": "commit-policy",
@@ -1973,13 +1952,6 @@
 				"id": "x00270",
 				"title": "x00270",
 				"track": "commit-policy",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00272",
-				"title": "x00272",
-				"track": "governance",
 				"status": "ready",
 				"kind": "fix"
 			},
@@ -2076,11 +2048,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 108,
-			"in-progress": 8,
+			"ready": 103,
+			"in-progress": 9,
 			"review": 0,
 			"paused": 2,
-			"done": 515,
+			"done": 519,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
