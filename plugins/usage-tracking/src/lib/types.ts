@@ -28,6 +28,18 @@ export interface IUsageTokens {
 	readonly totalTokens?: number;
 }
 
+export type TokenAccountingStatus = 'measured' | 'estimated' | 'unavailable';
+
+/** Token baseline comparison reported without storing prompt or response text. */
+export interface ITokenAccounting {
+	readonly baselineTokens: number | null;
+	readonly usedTokens: number | null;
+	readonly tokensSaved: number | null;
+	readonly savingsPercent: number | null;
+	readonly status: TokenAccountingStatus;
+	readonly basis: string;
+}
+
 /** The model that handled a call (only known for orchestrated calls). */
 export interface IModelDescriptor {
 	readonly provider: string;
@@ -46,6 +58,8 @@ export interface IInvocationRecord {
 	readonly tool: string;
 	readonly model: IModelDescriptor | null;
 	readonly usage: IUsageTokens | null;
+	/** Local token accounting; null savings means no defensible baseline existed. */
+	readonly tokenAccounting?: ITokenAccounting;
 	/**
 	 * Bytes returned by the MCP tool. This is a local output-volume measure,
 	 * not an estimate of the host conversation or provider context.
@@ -78,6 +92,7 @@ export interface IRollupBucket {
 	readonly totalTokens: number;
 	readonly costUsd: number;
 	readonly tokensSaved: number;
+	readonly tokenAccounting?: ITokenAccounting;
 	readonly savingsPercent: number;
 	readonly errors: number;
 	/** How many of this bucket's calls auto-bypassed confirmation (S7). */
