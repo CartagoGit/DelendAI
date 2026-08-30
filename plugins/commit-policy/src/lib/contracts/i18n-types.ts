@@ -18,7 +18,10 @@
 /** Locale ids the catalog understands. Add a new entry to ship a new locale. */
 export type Locale = 'en' | 'es';
 
-export type ConventionalHeaderRefusalCode = 'EMPTY_HEADER' | 'MALFORMED_HEADER';
+export type ConventionalHeaderRefusalCode =
+	| 'EMPTY_HEADER'
+	| 'MALFORMED_HEADER'
+	| 'UNKNOWN_TYPE';
 
 interface IStringCatalog {
 	readonly contracts: {
@@ -82,6 +85,8 @@ const english: IStringCatalog = {
 					'Provide a Conventional Commit header like "fix: subject" before auto-scoping it.',
 				MALFORMED_HEADER:
 					'Use the Conventional Commit form "type(scope)!: subject" or "type: subject".',
+				UNKNOWN_TYPE:
+					'Use a supported Conventional Commit type like "feat", "fix", "docs", or "chore".',
 			},
 		},
 	},
@@ -141,6 +146,8 @@ const spanish: IStringCatalog = {
 					'Proporciona primero un header Conventional Commit como "fix: asunto" antes de aplicar auto-scope.',
 				MALFORMED_HEADER:
 					'Usa el formato Conventional Commit "type(scope)!: asunto" o "type: asunto".',
+				UNKNOWN_TYPE:
+					'Usa un tipo Conventional Commit admitido como "feat", "fix", "docs" o "chore".',
 			},
 		},
 	},

@@ -24,23 +24,29 @@
  * the interface is stable.
  */
 
+import { appendAuditTrailer } from './audit/trailer';
 import {
 	branchProtectedRefusal,
 	isBranchProtected,
 	type IBranchPolicy,
 } from './contracts/branch';
+import { resolveAuthor } from './identity/resolver';
 import {
 	computeIdempotencyKey,
 	type IProcessedEventsStore,
 } from './processed-events';
 import {
 	buildScopedMessage,
-	runCommitDriver,
+	commitWithGuard,
 	type ICommitDriverInput,
 	type ICommitDriverOptions,
 } from './services/commit-driver';
 import type { IPushDriverResult } from './services/push-driver';
-import { validateConventionalHeader } from './services/git-extra';
+import {
+	gitDirtyFilePaths,
+	validateConventionalHeader,
+	type ConventionalHeaderStatus,
+} from './services/git-extra';
 import { withGitWriteLock } from './services/git-write-lock';
 
 /**
@@ -96,6 +102,9 @@ export type IEngineRefusalCode =
 	| 'SLICE_HAS_NO_FILES'
 	| 'WORKSPACE_HAS_NO_FILES'
 	| 'BRANCH_PROTECTED'
+	| 'EMPTY_HEADER'
+	| 'MALFORMED_HEADER'
+	| 'UNKNOWN_TYPE'
 	| 'NON_CONVENTIONAL_MESSAGE'
 	| 'CROSS_AGENT_CONTAMINATION'
 	| 'TRIGGER_HAS_NO_FILES'
@@ -106,7 +115,10 @@ export type IEngineResult =
 			readonly ack: 'OK';
 			readonly committed: boolean;
 			readonly pushed: boolean;
+			readonly commitCreated: boolean;
+			readonly headMoved: boolean;
 			readonly commitSha?: string | undefined;
+			readonly warnings?: readonly string[] | undefined;
 			readonly refusal?: string | undefined;
 	  }
 	| {
@@ -119,6 +131,8 @@ export type IEngineResult =
 			readonly reason: string;
 			readonly committed?: boolean;
 			readonly pushed?: boolean;
+			readonly commitCreated?: boolean;
+			readonly headMoved?: boolean;
 			readonly commitSha?: string | undefined;
 	  };
 
@@ -128,6 +142,8 @@ const err = (
 	metadata?: {
 		readonly committed?: boolean;
 		readonly pushed?: boolean;
+		readonly commitCreated?: boolean;
+		readonly headMoved?: boolean;
 		readonly commitSha?: string | undefined;
 	},
 ): IEngineResult => ({
@@ -217,14 +233,15 @@ export const createCommitPolicyEngine = (
 		// message verbatim.
 		const baseMessage = composeMessage(event);
 		const verdict = validateConventionalHeader(baseMessage);
+		const conventionalMessage =
+			verdict.status === 'OK'
+				? undefined
+				: conventionalRefusal(verdict.status, verdict.first);
 		if (
 			verdict.status !== 'OK' &&
 			options.driver.policy.commit.requireConventional
 		) {
-			return err(
-				'NON_CONVENTIONAL_MESSAGE',
-				`${verdict.status}: ${verdict.first}`,
-			);
+			return err(verdict.status, conventionalMessage ?? verdict.status);
 		}
 
 		// Step 4 — files (x00263). Slice events must declare
@@ -257,26 +274,38 @@ export const createCommitPolicyEngine = (
 			}
 		}
 
-		// Step 5 + 6 — delegate to the existing driver. It
-		// owns the staging + post-stage subset check + commit
-		// call; the engine is a pure router. f00183 will swap
-		// the driver for an idempotency-aware variant.
+		// Step 5 + 6 — run the guarded commit path. It stages
+		// the allow-list, enforces the post-stage subset check,
+		// and commits through the isolated index flow when the
+		// workspace metadata is available.
 		const driverInput = toDriverInput(
 			event,
 			baseMessage,
 			options.driver.policy.cadence.sliceScoping &&
 				options.driver.policy.cadence.allowForeignChanges !== true,
 		);
-		const result = await runCommitDriver(driverInput, options.driver);
+		const result = await executeGuardedCommit(
+			driverInput,
+			options.driver,
+			branchName,
+		);
 
 		if (result.refusal !== undefined) {
-			return refusalToEngine(result.refusal);
+			return refusalToEngine(result.refusal, {
+				committed: result.committed,
+				pushed: result.pushed,
+				commitCreated: result.commitCreated,
+				headMoved: result.headMoved,
+				...(result.hash !== undefined
+					? { commitSha: result.hash }
+					: {}),
+			});
 		}
 
 		// Step 7 — push (x00266). Wait for the scheduler so
 		// callers never observe a premature success.
 		const pushed = result.pushed;
-		if (options.onCommitSucceeded !== undefined && result.committed) {
+		if (options.onCommitSucceeded !== undefined && result.commitCreated) {
 			try {
 				const pushResult = await options.onCommitSucceeded();
 				if (
@@ -284,21 +313,32 @@ export const createCommitPolicyEngine = (
 					pushResult !== undefined &&
 					!isPushSuccess(pushResult)
 				) {
-					return err('PUSH_FAILED', pushFailureReason(pushResult), {
-						committed: true,
-						pushed: false,
-						...(result.hash !== undefined
-							? { commitSha: result.hash }
-							: {}),
-					});
+					return err(
+						pushFailureCode(pushResult),
+						pushFailureReason(pushResult),
+						{
+							committed: true,
+							pushed: false,
+							commitCreated: result.commitCreated,
+							headMoved: result.headMoved,
+							...(result.hash !== undefined
+								? { commitSha: result.hash }
+								: {}),
+						},
+					);
 				}
 				if (pushResult !== null && pushResult !== undefined) {
 					return {
 						ack: 'OK',
 						committed: true,
 						pushed: true,
+						commitCreated: result.commitCreated,
+						headMoved: result.headMoved,
 						...(result.hash !== undefined
 							? { commitSha: result.hash }
+							: {}),
+						...(conventionalMessage !== undefined
+							? { warnings: [conventionalMessage] }
 							: {}),
 					};
 				}
@@ -309,6 +349,8 @@ export const createCommitPolicyEngine = (
 					{
 						committed: true,
 						pushed: false,
+						commitCreated: result.commitCreated,
+						headMoved: result.headMoved,
 						...(result.hash !== undefined
 							? { commitSha: result.hash }
 							: {}),
@@ -321,7 +363,7 @@ export const createCommitPolicyEngine = (
 		seen.add(event.eventId);
 		// Persist the key AFTER a successful commit so a
 		// replay sees the marker on the next poll.
-		if (options.processedEvents !== undefined && result.committed) {
+		if (options.processedEvents !== undefined && result.commitCreated) {
 			await options.processedEvents.add(
 				computeIdempotencyKey(event),
 				commitSha ?? 'unknown',
@@ -329,9 +371,14 @@ export const createCommitPolicyEngine = (
 		}
 		return {
 			ack: 'OK',
-			committed: result.committed,
+			committed: result.commitCreated,
 			pushed,
+			commitCreated: result.commitCreated,
+			headMoved: result.headMoved,
 			...(commitSha !== undefined ? { commitSha } : {}),
+			...(conventionalMessage !== undefined
+				? { warnings: [conventionalMessage] }
+				: {}),
 		};
 	};
 
@@ -372,6 +419,25 @@ const pushFailureReason = (value: unknown): string => {
 	}
 	return 'push failed';
 };
+
+const pushFailureCode = (value: unknown): IEngineRefusalCode => {
+	const reason = pushFailureReason(value);
+	if (
+		reason.includes('BRANCH_PROTECTED') ||
+		reason.includes('protectedBranches')
+	) {
+		return 'BRANCH_PROTECTED';
+	}
+	return 'PUSH_FAILED';
+};
+
+const conventionalRefusal = (
+	status: ConventionalHeaderStatus,
+	first: string,
+): string =>
+	first.length > 0
+		? `NON_CONVENTIONAL_MESSAGE: ${status}: ${first}`
+		: `NON_CONVENTIONAL_MESSAGE: ${status}`;
 
 export const buildTriggerCommitMessage = (event: {
 	readonly kind: 'threshold' | 'interval';
@@ -448,31 +514,199 @@ const toDriverInput = (
 	}
 };
 
+const executeGuardedCommit = async (
+	input: ICommitDriverInput,
+	options: ICommitDriverOptions,
+	branchName: string | undefined,
+): Promise<{
+	readonly committed: boolean;
+	readonly pushed: false;
+	readonly commitCreated: boolean;
+	readonly headMoved: boolean;
+	readonly hash?: string | undefined;
+	readonly refusal?: string | undefined;
+}> => {
+	const scopeSliceCommit =
+		options.policy.cadence.sliceScoping &&
+		options.policy.cadence.allowForeignChanges !== true;
+	if (!options.policy.commit.enabled) {
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			refusal: 'commit.enabled is false in plugins.commit-policy.options',
+		};
+	}
+
+	const identity = await resolveAuthor(
+		options.policy.identity,
+		options.identityCtx,
+	);
+	if (!identity.ok) {
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			refusal: identity.reason,
+		};
+	}
+
+	if (branchName === undefined) {
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			refusal:
+				'commit refused: HEAD is detached. Check out a branch first.',
+		};
+	}
+	if (
+		isBranchProtected(branchName, {
+			protected: options.policy.push.protectedBranches,
+			protectedPrefixes: options.policy.push.protectedPrefixes,
+		})
+	) {
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			refusal: branchProtectedRefusal(branchName, {
+				protected: options.policy.push.protectedBranches,
+				protectedPrefixes: options.policy.push.protectedPrefixes,
+			}),
+		};
+	}
+
+	const message =
+		input.sliceContext !== undefined
+			? buildScopedMessage(
+					input.message,
+					input.sliceContext.proposalId,
+					options.policy.commit.autoScopeFromProposal,
+				)
+			: input.message;
+	const finalMessage = appendAuditTrailer(
+		message,
+		options.policy.audit.trailer,
+		options.policy.audit.agentFormat,
+		options.auditAgent,
+	);
+
+	const allowList =
+		input.sliceContext !== undefined && scopeSliceCommit
+			? input.sliceContext.files
+			: (input.files ??
+				(input.triggerContext !== undefined
+					? input.triggerContext.files
+					: input.sliceContext !== undefined
+						? await gitDirtyFilePaths(options.run)
+						: []));
+
+	if (
+		input.sliceContext !== undefined &&
+		scopeSliceCommit &&
+		allowList.length === 0
+	) {
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			refusal: `SLICE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
+		};
+	}
+	if (
+		input.sliceContext !== undefined &&
+		!options.policy.cadence.sliceScoping &&
+		allowList.length === 0
+	) {
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			refusal: `WORKSPACE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
+		};
+	}
+	if (input.triggerContext !== undefined && allowList.length === 0) {
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			refusal: `TRIGGER_HAS_NO_FILES: ${input.triggerContext.kind} fired with zero dirty paths`,
+		};
+	}
+
+	const result = await commitWithGuard({
+		run: options.run,
+		message: finalMessage,
+		authorFlag: identity.author.authorFlag,
+		allowList,
+		enforceSubset:
+			input.triggerContext !== undefined ||
+			(scopeSliceCommit && input.sliceContext !== undefined),
+	});
+	if (!result.committed) {
+		return result;
+	}
+
+	return {
+		committed: result.commitCreated,
+		pushed: false,
+		commitCreated: result.commitCreated,
+		headMoved: result.headMoved,
+		...(result.hash !== undefined ? { hash: result.hash } : {}),
+	};
+};
+
 /**
  * Map driver-level refusal strings back to engine refusal codes.
  * Keeps the driver as a pure adapter while letting the engine
  * expose typed codes to callers / tests.
  */
-const refusalToEngine = (refusal: string): IEngineResult => {
+const refusalToEngine = (
+	refusal: string,
+	metadata?: {
+		readonly committed?: boolean;
+		readonly pushed?: boolean;
+		readonly commitCreated?: boolean;
+		readonly headMoved?: boolean;
+		readonly commitSha?: string | undefined;
+	},
+): IEngineResult => {
 	if (refusal.includes('BRANCH_PROTECTED')) {
-		return err('BRANCH_PROTECTED', refusal);
+		return err('BRANCH_PROTECTED', refusal, metadata);
 	}
 	if (refusal.includes('SLICE_HAS_NO_FILES')) {
-		return err('SLICE_HAS_NO_FILES', refusal);
+		return err('SLICE_HAS_NO_FILES', refusal, metadata);
 	}
 	if (refusal.includes('TRIGGER_HAS_NO_FILES')) {
-		return err('TRIGGER_HAS_NO_FILES', refusal);
+		return err('TRIGGER_HAS_NO_FILES', refusal, metadata);
 	}
 	if (refusal.includes('CROSS_AGENT_CONTAMINATION')) {
-		return err('CROSS_AGENT_CONTAMINATION', refusal);
+		return err('CROSS_AGENT_CONTAMINATION', refusal, metadata);
 	}
 	if (refusal.includes('WORKSPACE_HAS_NO_FILES')) {
-		return err('WORKSPACE_HAS_NO_FILES', refusal);
+		return err('WORKSPACE_HAS_NO_FILES', refusal, metadata);
 	}
 	if (refusal.includes('NON_CONVENTIONAL_MESSAGE')) {
-		return err('NON_CONVENTIONAL_MESSAGE', refusal);
+		if (refusal.includes('EMPTY_HEADER')) {
+			return err('EMPTY_HEADER', refusal, metadata);
+		}
+		if (refusal.includes('MALFORMED_HEADER')) {
+			return err('MALFORMED_HEADER', refusal, metadata);
+		}
+		if (refusal.includes('UNKNOWN_TYPE')) {
+			return err('UNKNOWN_TYPE', refusal, metadata);
+		}
+		return err('NON_CONVENTIONAL_MESSAGE', refusal, metadata);
 	}
 	// Fallback: surface the raw refusal under BRANCH_PROTECTED
 	// slot (engine has no generic code; callers see the reason).
-	return err('BRANCH_PROTECTED', refusal);
+	return err('BRANCH_PROTECTED', refusal, metadata);
 };

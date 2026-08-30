@@ -2,7 +2,7 @@
  * commit-driver.ts — the pure commit engine.
  *
  * Resolves identity → applies audit trailer → calls
- * `commitAndPush` (from `@mcp-vertex/core/public`). Holds NO
+ * `commitWithGuard`. Holds NO
  * knowledge of MCP, tools, or triggers — `commit-tool.ts` and
  * `triggers/*` both consume this surface.
  *
@@ -12,17 +12,25 @@
  * generate (commit disabled, identity empty, protected branch, …).
  */
 
+import { execFile } from 'node:child_process';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import {
+	withFileMutex,
 	gitAdd,
 	gitCommit,
 	gitHeadShortHash,
 	type ICommitAndPushResult,
 	type IGitRunner,
+	type IGitRunResult,
 } from '@mcp-vertex/core/public';
 
 import { appendAuditTrailer, type IAuditAgent } from '../audit/trailer';
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import type { ICommitPolicyOptions } from '../contracts/options';
+import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
 import type { IIdentityResolverContext } from '../identity/resolver';
 import { resolveAuthor } from '../identity/resolver';
 import {
@@ -31,7 +39,6 @@ import {
 	gitDirtyFilePaths,
 	validateConventionalHeader,
 } from './git-extra';
-import { withGitWriteLock } from './git-write-lock';
 
 /**
  * Non-slice trigger context. Threshold and interval events carry
@@ -74,6 +81,16 @@ export interface ICommitDriverInput {
 export interface ICommitDriverResult extends ICommitAndPushResult {
 	/** Optional policy refusal — when set, `committed` is false. */
 	readonly refusal?: string;
+	/** Whether `git commit` created a new commit object. */
+	readonly commitCreated?: boolean;
+	/** Whether the operation moved HEAD. */
+	readonly headMoved?: boolean;
+	/** Full HEAD before the guarded commit path ran. */
+	readonly headBefore?: string | undefined;
+	/** Full HEAD after the guarded commit path finished. */
+	readonly headAfter?: string | undefined;
+	/** Pre-commit trace for stage → validate → commit assertions. */
+	readonly trace?: ICommitTrace | undefined;
 	/** The resolved author at commit time (for audit / output). */
 	readonly resolvedAuthor?:
 		| {
@@ -98,6 +115,46 @@ export interface ICommitDriverOptions {
 	/** Identity snapshot (host + model) used by the audit trailer. */
 	readonly auditAgent: IAuditAgent | null;
 }
+
+export interface ICommitTrace {
+	readonly commitCreated: boolean;
+	readonly headBefore: string;
+	readonly headAfter: string;
+	readonly stagedSetAtPreCommit: readonly string[];
+}
+
+interface ICommitWithGuardArgs {
+	readonly run: IGitRunner;
+	readonly message: string;
+	readonly authorFlag: string;
+	readonly allowList: readonly string[];
+	readonly enforceSubset: boolean;
+	readonly branch?: string;
+	readonly workspaceRoot?: string;
+	readonly gitTimeoutMs?: number;
+}
+
+type ICommitWithGuardResult =
+	| {
+			readonly committed: true;
+			readonly pushed: false;
+			readonly commitCreated: true;
+			readonly headMoved: boolean;
+			readonly headBefore: string;
+			readonly headAfter: string;
+			readonly hash?: string;
+			readonly trace: ICommitTrace;
+	  }
+	| {
+			readonly committed: false;
+			readonly pushed: false;
+			readonly commitCreated: false;
+			readonly headMoved: false;
+			readonly headBefore: string | undefined;
+			readonly headAfter: string | undefined;
+			readonly refusal: string;
+			readonly trace?: ICommitTrace | undefined;
+	  };
 
 /**
  * Pure parse of a Conventional-Commit header line — see AUD-CP-001
@@ -199,6 +256,402 @@ const normalizeRepoPath = (raw: string): string => {
 	return replaced.startsWith('./') ? replaced.slice(2) : replaced;
 };
 
+const gitStdoutTrimmed = async (
+	run: IGitRunner,
+	args: readonly string[],
+): Promise<string | undefined> => {
+	const result = await run(args);
+	if (!result.ok) return undefined;
+	const trimmed = result.output.trim();
+	return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const resetStagedPathsSafely = async (
+	run: IGitRunner,
+	paths: readonly string[],
+): Promise<void> => {
+	if (paths.length === 0) return;
+	const resetResult = await run(['reset', 'HEAD', '--', ...paths]);
+	if (resetResult.ok) return;
+	await run(['rm', '--cached', '--ignore-unmatch', '--', ...paths]);
+};
+
+const resetWholeStageSafely = async (run: IGitRunner): Promise<void> => {
+	const resetResult = await run(['reset', 'HEAD', '--']);
+	if (resetResult.ok) return;
+	const staged = await gitCachedNames(run);
+	if (staged.length === 0) return;
+	await run(['rm', '--cached', '--ignore-unmatch', '--', ...staged]);
+};
+
+const createGitRunnerWithEnv =
+	(cwd: string, env: NodeJS.ProcessEnv, timeoutMs = 60_000): IGitRunner =>
+	(args) =>
+		new Promise<IGitRunResult>((resolve) => {
+			execFile(
+				'git',
+				[...args],
+				{
+					cwd,
+					encoding: 'utf8',
+					env,
+					timeout: timeoutMs,
+					maxBuffer: 8 * 1024 * 1024,
+				},
+				(error, stdout, stderr) => {
+					if (!error) {
+						resolve({ ok: true, output: stdout });
+						return;
+					}
+					const err = error as NodeJS.ErrnoException & {
+						killed?: boolean;
+						signal?: string;
+					};
+					let reason: string;
+					if (err.code === 'ENOENT') {
+						reason = 'git is not installed or not on PATH';
+					} else if (err.killed || err.signal === 'SIGTERM') {
+						reason = `git timed out after ${timeoutMs}ms`;
+					} else {
+						reason =
+							(stderr || err.message || 'git command failed')
+								.trim()
+								.split('\n')[0] ?? 'git command failed';
+					}
+					resolve({ ok: false, output: '', reason });
+				},
+			);
+		});
+
+const parseAuthorFlag = (
+	authorFlag: string,
+): { name: string; email: string } | undefined => {
+	const match = /^(.*)\s<([^<>]+)>$/u.exec(authorFlag.trim());
+	if (match === null) return undefined;
+	const [, rawName, rawEmail] = match;
+	const name = rawName?.trim() ?? '';
+	const email = rawEmail?.trim() ?? '';
+	if (name.length === 0 || email.length === 0) return undefined;
+	return { name, email };
+};
+
+const buildIsolatedGitEnv = (
+	indexPath: string,
+	authorFlag: string,
+): NodeJS.ProcessEnv => {
+	const author = parseAuthorFlag(authorFlag);
+	return {
+		...process.env,
+		GIT_INDEX_FILE: indexPath,
+		...(author === undefined
+			? {}
+			: {
+					GIT_AUTHOR_NAME: author.name,
+					GIT_AUTHOR_EMAIL: author.email,
+					GIT_COMMITTER_NAME: author.name,
+					GIT_COMMITTER_EMAIL: author.email,
+				}),
+	};
+};
+
+const commitWithSharedIndexGuard = async (
+	args: ICommitWithGuardArgs,
+): Promise<ICommitWithGuardResult> => {
+	const headBefore = await gitStdoutTrimmed(args.run, ['rev-parse', 'HEAD']);
+	if (args.allowList.length > 0) {
+		const addResult = await gitAdd(args.run, args.allowList);
+		if (!addResult.ok) {
+			return {
+				committed: false,
+				pushed: false,
+				commitCreated: false,
+				headMoved: false,
+				headBefore,
+				headAfter: headBefore,
+				refusal: `git add failed: ${addResult.reason ?? 'unknown'}`,
+			};
+		}
+	}
+
+	const staged = [...(await gitCachedNames(args.run))];
+	if (args.enforceSubset) {
+		const expected = new Set(args.allowList.map(normalizeRepoPath));
+		const extras = staged.filter(
+			(name) => !expected.has(normalizeRepoPath(name)),
+		);
+		if (extras.length > 0) {
+			await resetWholeStageSafely(args.run);
+			return {
+				committed: false,
+				pushed: false,
+				commitCreated: false,
+				headMoved: false,
+				headBefore,
+				headAfter: headBefore,
+				refusal: `CROSS_AGENT_CONTAMINATION: staged extras not in trigger files=${extras.join(',')}`,
+				trace: {
+					commitCreated: false,
+					headBefore: headBefore ?? '',
+					headAfter: headBefore ?? '',
+					stagedSetAtPreCommit: staged,
+				},
+			};
+		}
+	}
+
+	const commitResult = await gitCommit(args.run, args.message, {
+		authorFlag: args.authorFlag,
+	});
+	if (!commitResult.ok) {
+		await resetStagedPathsSafely(args.run, args.allowList);
+		const reason = commitResult.reason ?? 'unknown';
+		const alreadyClean = /nothing to commit|no changes added/u.test(reason);
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			headBefore,
+			headAfter: headBefore,
+			refusal: alreadyClean
+				? 'nothing to commit (worktree already clean)'
+				: `git commit failed: ${reason}`,
+			trace: {
+				commitCreated: false,
+				headBefore: headBefore ?? '',
+				headAfter: headBefore ?? '',
+				stagedSetAtPreCommit: staged,
+			},
+		};
+	}
+
+	const headAfter =
+		(await gitStdoutTrimmed(args.run, ['rev-parse', 'HEAD'])) ??
+		headBefore ??
+		'';
+	const hash = await gitHeadShortHash(args.run);
+	return {
+		committed: true,
+		pushed: false,
+		commitCreated: true,
+		headMoved: headBefore !== undefined && headAfter !== headBefore,
+		headBefore: headBefore ?? '',
+		headAfter,
+		...(hash !== undefined ? { hash } : {}),
+		trace: {
+			commitCreated: true,
+			headBefore: headBefore ?? '',
+			headAfter,
+			stagedSetAtPreCommit: staged,
+		},
+	};
+};
+
+export const commitWithGuard = async (
+	args: ICommitWithGuardArgs,
+): Promise<ICommitWithGuardResult> => {
+	if (args.workspaceRoot === undefined || args.branch === undefined) {
+		return commitWithSharedIndexGuard(args);
+	}
+
+	const headBefore = await gitStdoutTrimmed(args.run, ['rev-parse', 'HEAD']);
+	const tmpDir = await mkdtemp(join(tmpdir(), 'cp-index-'));
+	const isolatedRun = createGitRunnerWithEnv(
+		args.workspaceRoot,
+		buildIsolatedGitEnv(join(tmpDir, 'index'), args.authorFlag),
+		args.gitTimeoutMs,
+	);
+	const lockPath = join(args.workspaceRoot, '.mcp-vertex', 'index-lock');
+	return await withFileMutex(
+		lockPath,
+		async () => {
+			try {
+				if (headBefore !== undefined) {
+					const readTreeResult = await isolatedRun([
+						'read-tree',
+						'HEAD',
+					]);
+					if (!readTreeResult.ok) {
+						return {
+							committed: false,
+							pushed: false,
+							commitCreated: false,
+							headMoved: false,
+							headBefore,
+							headAfter: headBefore,
+							refusal: `git read-tree failed: ${readTreeResult.reason ?? 'unknown'}`,
+						};
+					}
+				}
+
+				if (args.allowList.length > 0) {
+					const addResult = await gitAdd(isolatedRun, args.allowList);
+					if (!addResult.ok) {
+						return {
+							committed: false,
+							pushed: false,
+							commitCreated: false,
+							headMoved: false,
+							headBefore,
+							headAfter: headBefore,
+							refusal: `git add failed: ${addResult.reason ?? 'unknown'}`,
+						};
+					}
+				}
+
+				const staged = [...(await gitCachedNames(isolatedRun))];
+				if (args.enforceSubset) {
+					const expected = new Set(
+						args.allowList.map(normalizeRepoPath),
+					);
+					const extras = staged.filter(
+						(name) => !expected.has(normalizeRepoPath(name)),
+					);
+					if (extras.length > 0) {
+						await resetWholeStageSafely(isolatedRun);
+						return {
+							committed: false,
+							pushed: false,
+							commitCreated: false,
+							headMoved: false,
+							headBefore,
+							headAfter: headBefore,
+							refusal: `CROSS_AGENT_CONTAMINATION: staged extras not in trigger files=${extras.join(',')}`,
+							trace: {
+								commitCreated: false,
+								headBefore: headBefore ?? '',
+								headAfter: headBefore ?? '',
+								stagedSetAtPreCommit: staged,
+							},
+						};
+					}
+				}
+
+				const writeTreeResult = await isolatedRun(['write-tree']);
+				if (!writeTreeResult.ok) {
+					return {
+						committed: false,
+						pushed: false,
+						commitCreated: false,
+						headMoved: false,
+						headBefore,
+						headAfter: headBefore,
+						refusal: `git write-tree failed: ${writeTreeResult.reason ?? 'unknown'}`,
+					};
+				}
+				const tree = writeTreeResult.output.trim();
+
+				const headTree =
+					headBefore === undefined
+						? undefined
+						: await gitStdoutTrimmed(args.run, [
+								'rev-parse',
+								'HEAD^{tree}',
+							]);
+				if (headTree !== undefined && tree === headTree) {
+					return {
+						committed: false,
+						pushed: false,
+						commitCreated: false,
+						headMoved: false,
+						headBefore,
+						headAfter: headBefore,
+						refusal: 'nothing to commit (worktree already clean)',
+						trace: {
+							commitCreated: false,
+							headBefore: headBefore ?? '',
+							headAfter: headBefore ?? '',
+							stagedSetAtPreCommit: staged,
+						},
+					};
+				}
+
+				const commitTreeArgs =
+					headBefore === undefined
+						? ['commit-tree', tree, '-m', args.message]
+						: [
+								'commit-tree',
+								tree,
+								'-p',
+								headBefore,
+								'-m',
+								args.message,
+							];
+				const commitTreeResult = await isolatedRun(commitTreeArgs);
+				if (!commitTreeResult.ok) {
+					return {
+						committed: false,
+						pushed: false,
+						commitCreated: false,
+						headMoved: false,
+						headBefore,
+						headAfter: headBefore,
+						refusal: `git commit-tree failed: ${commitTreeResult.reason ?? 'unknown'}`,
+						trace: {
+							commitCreated: false,
+							headBefore: headBefore ?? '',
+							headAfter: headBefore ?? '',
+							stagedSetAtPreCommit: staged,
+						},
+					};
+				}
+				const headAfter = commitTreeResult.output.trim();
+
+				const updateRefResult = await isolatedRun(
+					headBefore === undefined
+						? ['update-ref', `refs/heads/${args.branch}`, headAfter]
+						: [
+								'update-ref',
+								`refs/heads/${args.branch}`,
+								headAfter,
+								headBefore,
+							],
+				);
+				if (!updateRefResult.ok) {
+					return {
+						committed: false,
+						pushed: false,
+						commitCreated: false,
+						headMoved: false,
+						headBefore,
+						headAfter: headBefore,
+						refusal: `git update-ref failed: ${updateRefResult.reason ?? 'unknown'}`,
+						trace: {
+							commitCreated: false,
+							headBefore: headBefore ?? '',
+							headAfter: headBefore ?? '',
+							stagedSetAtPreCommit: staged,
+						},
+					};
+				}
+
+				const hash = await gitHeadShortHash(args.run);
+				return {
+					committed: true,
+					pushed: false,
+					commitCreated: true,
+					headMoved:
+						headBefore === undefined || headAfter !== headBefore,
+					headBefore: headBefore ?? '',
+					headAfter,
+					...(hash !== undefined ? { hash } : {}),
+					trace: {
+						commitCreated: true,
+						headBefore: headBefore ?? '',
+						headAfter,
+						stagedSetAtPreCommit: staged,
+					},
+				};
+			} finally {
+				await rm(tmpDir, { recursive: true, force: true }).catch(
+					() => undefined,
+				);
+			}
+		},
+		{ onContention: 'wait', timeoutMs: 120_000, staleMs: 300_000 },
+	);
+};
+
 const runCommitDriverUnlocked = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
@@ -210,6 +663,8 @@ const runCommitDriverUnlocked = async (
 		return {
 			committed: false,
 			pushed: false,
+			commitCreated: false,
+			headMoved: false,
 			refusal: 'commit.enabled is false in plugins.commit-policy.options',
 		};
 	}
@@ -222,6 +677,8 @@ const runCommitDriverUnlocked = async (
 		return {
 			committed: false,
 			pushed: false,
+			commitCreated: false,
+			headMoved: false,
 			refusal: identity.reason,
 		};
 	}
@@ -233,6 +690,8 @@ const runCommitDriverUnlocked = async (
 		return {
 			committed: false,
 			pushed: false,
+			commitCreated: false,
+			headMoved: false,
 			refusal:
 				'commit refused: HEAD is detached. Check out a branch first.',
 		};
@@ -243,17 +702,25 @@ const runCommitDriverUnlocked = async (
 	// which let threshold / interval commits bypass the
 	// `develop` / `main` policy entirely. The same list feeds
 	// the push scheduler (x00266).
+	// c00145: the effective protected list is resolved through
+	// `resolveProtectedBranches` (default main/master; explicit config
+	// wins; agent/worktree branches are never protected).
+	const effectiveProtectedBranches = resolveProtectedBranches(
+		options.policy.push.protectedBranches,
+	);
 	if (
 		isBranchProtected(branch, {
-			protected: options.policy.push.protectedBranches,
+			protected: effectiveProtectedBranches,
 			protectedPrefixes: options.policy.push.protectedPrefixes,
 		})
 	) {
 		return {
 			committed: false,
 			pushed: false,
+			commitCreated: false,
+			headMoved: false,
 			refusal: branchProtectedRefusal(branch ?? '(detached)', {
-				protected: options.policy.push.protectedBranches,
+				protected: effectiveProtectedBranches,
 				protectedPrefixes: options.policy.push.protectedPrefixes,
 			}),
 		};
@@ -280,6 +747,8 @@ const runCommitDriverUnlocked = async (
 			return {
 				committed: false,
 				pushed: false,
+				commitCreated: false,
+				headMoved: false,
 				refusal: `NON_CONVENTIONAL_MESSAGE: ${verdict.status}`,
 			};
 		}
@@ -315,6 +784,8 @@ const runCommitDriverUnlocked = async (
 		return {
 			committed: false,
 			pushed: false,
+			commitCreated: false,
+			headMoved: false,
 			refusal: `SLICE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
 		};
 	}
@@ -326,6 +797,8 @@ const runCommitDriverUnlocked = async (
 		return {
 			committed: false,
 			pushed: false,
+			commitCreated: false,
+			headMoved: false,
 			refusal: `WORKSPACE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
 		};
 	}
@@ -339,64 +812,31 @@ const runCommitDriverUnlocked = async (
 		return {
 			committed: false,
 			pushed: false,
+			commitCreated: false,
+			headMoved: false,
 			refusal: `TRIGGER_HAS_NO_FILES: ${input.triggerContext.kind} fired with zero dirty paths`,
 		};
 	}
 
-	if (files.length > 0) {
-		const addResult = await gitAdd(options.run, files);
-		if (!addResult.ok) {
-			return {
-				committed: false,
-				pushed: false,
-				refusal: `git add failed: ${addResult.reason ?? 'unknown'}`,
-			};
-		}
-	}
-
-	// x00263 / x00264: validate the complete index after staging but
-	// before committing. Checking after `git commit` is too late because
-	// a successful commit clears the index and hides staged extras.
-	if (
-		files.length > 0 &&
-		(input.triggerContext !== undefined ||
-			(scopeSliceCommit && input.sliceContext !== undefined))
-	) {
-		const cached = await gitCachedNames(options.run);
-		const expected = new Set(files.map(normalizeRepoPath));
-		const extras = cached.filter(
-			(name) => !expected.has(normalizeRepoPath(name)),
-		);
-		if (extras.length > 0) {
-			return {
-				committed: false,
-				pushed: false,
-				refusal: `CROSS_AGENT_CONTAMINATION: staged extras not in trigger files=${extras.join(',')}`,
-			};
-		}
-	}
-
-	const commitResult = await gitCommit(options.run, finalMessage, {
+	const result = await commitWithGuard({
+		run: options.run,
+		message: finalMessage,
 		authorFlag: identity.author.authorFlag,
+		allowList: files,
+		branch,
+		enforceSubset:
+			input.triggerContext !== undefined ||
+			(scopeSliceCommit && input.sliceContext !== undefined),
+		...(options.policy.gitTimeoutMs !== undefined
+			? { gitTimeoutMs: options.policy.gitTimeoutMs }
+			: {}),
+		...(options.workspaceRoot !== undefined
+			? { workspaceRoot: options.workspaceRoot }
+			: {}),
 	});
-	if (!commitResult.ok) {
-		const reason = commitResult.reason ?? 'unknown';
-		const alreadyClean = /nothing to commit|no changes added/u.test(reason);
-		return {
-			committed: false,
-			pushed: false,
-			refusal: alreadyClean
-				? 'nothing to commit (worktree already clean)'
-				: `git commit failed: ${reason}`,
-		};
+	if (!result.committed) {
+		return result;
 	}
-
-	const hash = await gitHeadShortHash(options.run);
-	const result: ICommitAndPushResult = {
-		committed: true,
-		pushed: false,
-		...(hash !== undefined ? { hash } : {}),
-	};
 
 	return {
 		...result,
@@ -411,7 +851,4 @@ const runCommitDriverUnlocked = async (
 export const runCommitDriver = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
-): Promise<ICommitDriverResult> =>
-	withGitWriteLock(options.workspaceRoot, options.pluginCacheDir, () =>
-		runCommitDriverUnlocked(input, options),
-	);
+): Promise<ICommitDriverResult> => runCommitDriverUnlocked(input, options);

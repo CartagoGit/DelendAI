@@ -25,8 +25,13 @@ export type {
 	IIdentityResolverContext,
 } from '../lib/identity/resolver';
 
-export { runCommitDriver } from '../lib/services/commit-driver';
+export {
+	commitWithGuard,
+	runCommitDriver,
+} from '../lib/services/commit-driver';
 export type {
+	ICommitTrace as CommitTrace,
+	ICommitTrace,
 	ICommitDriverInput,
 	ICommitDriverOptions,
 	ICommitDriverResult,

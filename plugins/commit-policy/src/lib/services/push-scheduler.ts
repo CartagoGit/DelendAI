@@ -24,10 +24,14 @@
 
 import type { IGitRunner } from '@mcp-vertex/core/public';
 
-import { isBranchProtected } from '../contracts/branch';
+import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import type { ICommitPolicyPush } from '../contracts/options';
 import { gitCurrentBranch } from './git-extra';
-import { runPushDriver, type IPushDriverResult } from './push-driver';
+import {
+	enforceMainPushGuard,
+	runPushDriver,
+	type IPushDriverResult,
+} from './push-driver';
 import { withGitWriteLock } from './git-write-lock';
 
 export interface IPushSchedulerOptions {
@@ -95,13 +99,20 @@ export const createPushScheduler = (
 		if (branch === undefined) {
 			return 'push refused: HEAD is detached; check out a branch before pushing';
 		}
+		const directPushGuard = enforceMainPushGuard(branch);
+		if (!directPushGuard.ok) {
+			return directPushGuard.refusal;
+		}
 		if (
 			isBranchProtected(branch, {
 				protected: options.policy.protectedBranches,
 				protectedPrefixes: options.policy.protectedPrefixes,
 			})
 		) {
-			return `push refused: "${branch}" is in protectedBranches`;
+			return branchProtectedRefusal(branch, {
+				protected: options.policy.protectedBranches,
+				protectedPrefixes: options.policy.protectedPrefixes,
+			});
 		}
 		return null;
 	};
@@ -164,7 +175,8 @@ export const createPushScheduler = (
 				const everyN = options.policy.everyNCommits;
 				const shouldPushByCount =
 					everyN !== undefined && commitsSincePush >= everyN;
-				const shouldPushByCommit = options.policy.onCommit === true;
+				const shouldPushByCommit =
+					options.policy.onCommit === true && everyN === undefined;
 				if (!shouldPushByCommit && !shouldPushByCount) return null;
 				// x00266: when both modes are active, the engine fires
 				// ONE push (not two). The counter is reset below.
