@@ -17,6 +17,8 @@
  */
 import { dirname, join } from 'node:path';
 
+import type { ICommitAuthorResolution } from '@mcp-vertex/core/public';
+
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import type { IGitRunner } from '../shared/git-runner';
@@ -151,6 +153,10 @@ export interface IAuthoringToolOptions {
 	}) => Promise<ICloseSliceValidationDecision>;
 	/** x00298 S3: configured persistence for close_slice. */
 	readonly persist?: IAuthoringPersistConfig;
+	/** Host-resolved author passed to the persistence Git engine. */
+	readonly commitAuthor?: ICommitAuthorResolution | undefined;
+	/** Host effect gateway for close_slice commit/push operations. */
+	readonly persistGit?: IGitRunner | undefined;
 }
 
 export type IIndexedDocResolution =
