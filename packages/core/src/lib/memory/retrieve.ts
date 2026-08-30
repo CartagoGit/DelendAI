@@ -27,7 +27,7 @@ export interface IMemoryRetrievalResult {
 /** Filter already-ranked memory metadata before content injection. */
 export const retrieveByUtility = (
 	entries: readonly IMemoryEntry[],
-	options: IMemoryRetrievalOptions,
+	options: IMemoryRetrievalOptions
 ): IMemoryRetrievalResult => {
 	const settings = resolveMemoryUtilitySettings({
 		...(options.weights === undefined ? {} : { weights: options.weights }),
@@ -47,7 +47,7 @@ export const retrieveByUtility = (
 		entries,
 		settings.weights ?? DEFAULT_MEMORY_UTILITY_WEIGHTS,
 		context,
-		settings.costThreshold ?? DEFAULT_MEMORY_COST_THRESHOLD,
+		settings.costThreshold ?? DEFAULT_MEMORY_COST_THRESHOLD
 	);
 	return {
 		matches,

@@ -37,7 +37,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`deps plugin rejected its options: ${parsed.error.message}`,
+				`deps plugin rejected its options: ${parsed.error.message}`
 			);
 		}
 		const o = parsed.data;

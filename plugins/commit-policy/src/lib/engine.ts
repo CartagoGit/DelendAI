@@ -157,7 +157,7 @@ const err = (
 		readonly commitCreated?: boolean;
 		readonly headMoved?: boolean;
 		readonly commitSha?: string | undefined;
-	},
+	}
 ): IEngineResult => ({
 	ack: 'ERR',
 	code,
@@ -182,7 +182,7 @@ const logPipelineStep = (
 	event: IEngineEvent,
 	step: IPipelineStep,
 	outcome: IPipelineOutcome,
-	details?: Record<string, unknown>,
+	details?: Record<string, unknown>
 ): void => {
 	console.info(
 		JSON.stringify({
@@ -192,7 +192,7 @@ const logPipelineStep = (
 			step,
 			outcome,
 			...(details ?? {}),
-		}),
+		})
 	);
 };
 
@@ -201,8 +201,7 @@ export interface IEngineOptions {
 	readonly branchPolicy: IBranchPolicy;
 	/** Hook fired after a successful commit so the push scheduler can act. */
 	readonly onCommitSucceeded?:
-		| (() => Promise<IPushDriverResult | null>)
-		| undefined;
+		(() => Promise<IPushDriverResult | null>) | undefined;
 	/**
 	 * f00183 (AUD-CP-012): idempotency store. When provided,
 	 * the engine checks `has(key)` BEFORE staging and adds the
@@ -224,13 +223,13 @@ export interface ICommitPolicyEngine {
  * plugin reloads (x00261) don't leak.
  */
 export const createCommitPolicyEngine = (
-	options: IEngineOptions,
+	options: IEngineOptions
 ): ICommitPolicyEngine => {
 	const seen = new Set<string>();
 	let handleTail = Promise.resolve();
 	let generatedEventSequence = 0;
 	const normalizeEvent = (
-		event: IEngineEvent | ITriggerEvent,
+		event: IEngineEvent | ITriggerEvent
 	): IEngineEvent => {
 		if ('eventId' in event) return event;
 		generatedEventSequence += 1;
@@ -263,7 +262,7 @@ export const createCommitPolicyEngine = (
 		const completeStep = (
 			step: IPipelineStep,
 			outcome: IPipelineOutcome,
-			details?: Record<string, unknown>,
+			details?: Record<string, unknown>
 		): void => {
 			completedSteps.add(step);
 			logPipelineStep(event, step, outcome, details);
@@ -286,7 +285,7 @@ export const createCommitPolicyEngine = (
 				readonly commitCreated?: boolean;
 				readonly headMoved?: boolean;
 				readonly commitSha?: string | undefined;
-			},
+			}
 		): IEngineResult => {
 			completeStep(step, 'ERR', { code, reason });
 			return finish(err(code, reason, metadata));
@@ -301,7 +300,7 @@ export const createCommitPolicyEngine = (
 				return failAt(
 					'selector',
 					'INCOMPLETE_SELECTOR',
-					'slice selector missing',
+					'slice selector missing'
 				);
 			}
 		} else if (event.kind === 'manual' && event.slice !== undefined) {
@@ -312,7 +311,7 @@ export const createCommitPolicyEngine = (
 				return failAt(
 					'selector',
 					'INCOMPLETE_SELECTOR',
-					'slice selector missing',
+					'slice selector missing'
 				);
 			}
 		}
@@ -338,14 +337,14 @@ export const createCommitPolicyEngine = (
 				'BRANCH_PROTECTED',
 				branchProtectedRefusal(
 					branchName ?? '(detached)',
-					options.branchPolicy,
-				),
+					options.branchPolicy
+				)
 			);
 		}
 		completeStep(
 			'branch',
 			'OK',
-			branchName !== undefined ? { branch: branchName } : undefined,
+			branchName !== undefined ? { branch: branchName } : undefined
 		);
 
 		// Step 3 — message composition + conventional check
@@ -366,7 +365,7 @@ export const createCommitPolicyEngine = (
 			return failAt(
 				'conventional',
 				verdict.status,
-				conventionalMessage ?? verdict.status,
+				conventionalMessage ?? verdict.status
 			);
 		}
 		completeStep('conventional', 'OK');
@@ -380,7 +379,7 @@ export const createCommitPolicyEngine = (
 			return failAt(
 				'stage',
 				'SLICE_HAS_NO_FILES',
-				`slice ${event.proposalId}-${event.sliceId} declared no files`,
+				`slice ${event.proposalId}-${event.sliceId} declared no files`
 			);
 		}
 		if (
@@ -391,7 +390,7 @@ export const createCommitPolicyEngine = (
 			return failAt(
 				'stage',
 				'TRIGGER_HAS_NO_FILES',
-				`${event.kind} fired with zero dirty paths`,
+				`${event.kind} fired with zero dirty paths`
 			);
 		}
 
@@ -418,12 +417,12 @@ export const createCommitPolicyEngine = (
 			event,
 			baseMessage,
 			options.driver.policy.cadence.sliceScoping &&
-				options.driver.policy.cadence.allowForeignChanges !== true,
+				options.driver.policy.cadence.allowForeignChanges !== true
 		);
 		const result = await executeGuardedCommit(
 			driverInput,
 			options.driver,
-			branchName,
+			branchName
 		);
 
 		if (result.refusal !== undefined) {
@@ -449,7 +448,7 @@ export const createCommitPolicyEngine = (
 		completeStep(
 			'commit',
 			'OK',
-			result.hash !== undefined ? { commitSha: result.hash } : undefined,
+			result.hash !== undefined ? { commitSha: result.hash } : undefined
 		);
 
 		// Step 7 — push (x00266). Wait for the scheduler so
@@ -475,7 +474,7 @@ export const createCommitPolicyEngine = (
 							...(result.hash !== undefined
 								? { commitSha: result.hash }
 								: {}),
-						},
+						}
 					);
 				}
 				if (pushResult !== null && pushResult !== undefined) {
@@ -507,7 +506,7 @@ export const createCommitPolicyEngine = (
 						...(result.hash !== undefined
 							? { commitSha: result.hash }
 							: {}),
-					},
+					}
 				);
 			}
 		}
@@ -520,7 +519,7 @@ export const createCommitPolicyEngine = (
 		if (options.processedEvents !== undefined && result.commitCreated) {
 			await options.processedEvents.add(
 				computeIdempotencyKey(event),
-				commitSha ?? 'unknown',
+				commitSha ?? 'unknown'
 			);
 		}
 		return finish({
@@ -543,12 +542,12 @@ export const createCommitPolicyEngine = (
 				withGitWriteLock(
 					options.driver.workspaceRoot,
 					options.driver.pluginCacheDir,
-					() => handleEvent(normalizedEvent),
+					() => handleEvent(normalizedEvent)
 				);
 			const queued = handleTail.then(handleQueuedEvent);
 			handleTail = queued.then(
 				() => undefined,
-				() => undefined,
+				() => undefined
 			);
 			return queued;
 		},
@@ -589,7 +588,7 @@ const pushFailureCode = (value: unknown): IEngineRefusalCode => {
 
 const conventionalRefusal = (
 	status: ConventionalHeaderStatus,
-	first: string,
+	first: string
 ): string =>
 	first.length > 0
 		? `NON_CONVENTIONAL_MESSAGE: ${status}: ${first}`
@@ -619,7 +618,7 @@ const composeMessage = (event: IEngineEvent): string => {
 			return buildScopedMessage(
 				`feat(${event.proposalId}): commit via slice ${event.sliceId}`,
 				event.proposalId,
-				true,
+				true
 			);
 		case 'threshold':
 		case 'interval':
@@ -632,7 +631,7 @@ const composeMessage = (event: IEngineEvent): string => {
 const toDriverInput = (
 	event: IEngineEvent,
 	message: string,
-	sliceScoping: boolean,
+	sliceScoping: boolean
 ): ICommitDriverInput => {
 	switch (event.kind) {
 		case 'slice':
@@ -673,7 +672,7 @@ const toDriverInput = (
 const executeGuardedCommit = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
-	branchName: string | undefined,
+	branchName: string | undefined
 ): Promise<{
 	readonly committed: boolean;
 	readonly pushed: false;
@@ -697,7 +696,7 @@ const executeGuardedCommit = async (
 
 	const identity = await resolveAuthor(
 		options.policy.identity,
-		options.identityCtx,
+		options.identityCtx
 	);
 	if (!identity.ok) {
 		return {
@@ -742,14 +741,14 @@ const executeGuardedCommit = async (
 			? buildScopedMessage(
 					input.message,
 					input.sliceContext.proposalId,
-					options.policy.commit.autoScopeFromProposal,
+					options.policy.commit.autoScopeFromProposal
 				)
 			: input.message;
 	const finalMessage = appendAuditTrailer(
 		message,
 		options.policy.audit.trailer,
 		options.policy.audit.agentFormat,
-		options.auditAgent,
+		options.auditAgent
 	);
 
 	const allowList =
@@ -833,7 +832,7 @@ const refusalToEngine = (
 		readonly commitCreated?: boolean;
 		readonly headMoved?: boolean;
 		readonly commitSha?: string | undefined;
-	},
+	}
 ): IEngineResult => {
 	if (refusal.includes('BRANCH_PROTECTED')) {
 		return err('BRANCH_PROTECTED', refusal, metadata);

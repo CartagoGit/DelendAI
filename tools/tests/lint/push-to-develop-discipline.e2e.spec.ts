@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 const REPO_ROOT = new URL('../../..', import.meta.url).pathname;
 const SCRIPT = join(
 	REPO_ROOT,
-	'tools/scripts/lint/push-to-develop-discipline.script.ts',
+	'tools/scripts/lint/push-to-develop-discipline.script.ts'
 );
 
 const REMOTE_NAME = 'origin';
@@ -24,7 +24,7 @@ const prePushLine = (localBranch: string, remoteBranch: string): string =>
 
 const runGuard = (
 	stdin: string,
-	env?: Record<string, string>,
+	env?: Record<string, string>
 ): ReturnType<typeof spawnSync> =>
 	spawnSync('bun', [SCRIPT, REMOTE_NAME, REMOTE_URL], {
 		cwd: REPO_ROOT,
@@ -51,7 +51,7 @@ describe('push-to-develop-discipline pre-push e2e', () => {
 
 		expect(result.status).toBe(0);
 		expect(result.stdout).toContain(
-			'push-to-develop-discipline: bypassed (LEFTHOOK_BYPASS=1)',
+			'push-to-develop-discipline: bypassed (LEFTHOOK_BYPASS=1)'
 		);
 		expect(result.stderr).toBe('');
 	});

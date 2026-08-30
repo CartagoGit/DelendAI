@@ -14,8 +14,7 @@ class FakeWebviewPanel {
 	readonly options = { enableScripts: true };
 	visible = true;
 	private messageHandler:
-		| ((message: unknown) => void | Promise<void>)
-		| undefined;
+		((message: unknown) => void | Promise<void>) | undefined;
 	readonly webview = {
 		html: '',
 		options: this.options,
@@ -23,7 +22,7 @@ class FakeWebviewPanel {
 			this.webview.html = html;
 		},
 		onDidReceiveMessage: (
-			handler: (message: unknown) => void | Promise<void>,
+			handler: (message: unknown) => void | Promise<void>
 		) => {
 			this.messageHandler = handler;
 			return { dispose() {} };
@@ -45,7 +44,7 @@ class FakeWebviewPanel {
 
 const baseOutput = (
 	view: IKpiDashboardToolOutput['view'],
-	partial: Partial<IKpiDashboardToolOutput> = {},
+	partial: Partial<IKpiDashboardToolOutput> = {}
 ): IKpiDashboardToolOutput => ({
 	contract: 'project-kpis.view',
 	version: 1,
@@ -466,14 +465,14 @@ describe('KpiDashboardProvider', () => {
 				},
 				namespacePrefix: 'mcp-vertex',
 			},
-			{ windowDays: 7, detail: 'standard' },
+			{ windowDays: 7, detail: 'standard' }
 		);
 
 		expect(calls).toHaveLength(11);
 		expect(
 			result.model.sections.map(
-				(section: (typeof result.model.sections)[number]) => section.id,
-			),
+				(section: (typeof result.model.sections)[number]) => section.id
+			)
 		).toEqual([
 			'health',
 			'delivery',
@@ -490,21 +489,21 @@ describe('KpiDashboardProvider', () => {
 		]);
 		const activation = result.model.sections.find(
 			(section: (typeof result.model.sections)[number]) =>
-				section.id === 'activation',
+				section.id === 'activation'
 		);
 		expect(activation?.metrics.map((metric) => metric.value)).toEqual([
 			4, 0.75, 0.5, 0.25,
 		]);
 		expect(
 			result.model.trends.map(
-				(trend: (typeof result.model.trends)[number]) => trend.id,
-			),
+				(trend: (typeof result.model.trends)[number]) => trend.id
+			)
 		).toEqual(['score', 'coverage', 'tokens-cost', 'calls-errors']);
 		expect(
 			result.model.sections.find(
 				(section: (typeof result.model.sections)[number]) =>
-					section.id === 'quality-coverage',
-			)?.state,
+					section.id === 'quality-coverage'
+			)?.state
 		).toBe('unavailable');
 		expect(result.model.summaryMetrics).toHaveLength(4);
 		expect(result.model.state).toBe('partial');
@@ -558,7 +557,7 @@ describe('KpiDashboardProvider', () => {
 			client: {
 				async request() {
 					throw new Error(
-						'Failed to call MCP tool "mcp-vertex_project_kpis": connection closed',
+						'Failed to call MCP tool "mcp-vertex_project_kpis": connection closed'
 					);
 				},
 			},

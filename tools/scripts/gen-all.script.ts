@@ -80,7 +80,7 @@ export interface IGenAllIo {
 	readonly err: (msg: string) => void;
 	readonly runCommand: (
 		command: string,
-		args: readonly string[],
+		args: readonly string[]
 	) => Promise<number>;
 }
 
@@ -121,7 +121,7 @@ const hasFlag = (argv: readonly string[], name: string): boolean =>
 	argv.some((t) => t === `--${name}` || t.startsWith(`--${name}=`));
 
 export const selectSteps = (
-	argv: readonly string[],
+	argv: readonly string[]
 ): { readonly only?: string; readonly steps: readonly IStep[] } => {
 	const only = flag(argv, 'only');
 	return {
@@ -136,7 +136,7 @@ export const selectSteps = (
 const runStep = async (
 	step: IStep,
 	check: boolean,
-	io: IGenAllIo,
+	io: IGenAllIo
 ): Promise<number> => {
 	io.out(`▶ ${step.name} — ${step.description}`);
 	const command = check ? (step.checkCmd ?? step.cmd) : step.cmd;
@@ -154,7 +154,7 @@ const runGitDiffExit = async (io: IGenAllIo): Promise<number> => {
 
 export const main = async (
 	argv: readonly string[],
-	io: IGenAllIo = defaultIo(),
+	io: IGenAllIo = defaultIo()
 ): Promise<number> => {
 	const check = hasFlag(argv, 'check');
 	const list = hasFlag(argv, 'list');
@@ -162,7 +162,7 @@ export const main = async (
 	if (steps.length === 0) {
 		io.err(`gen-all: unknown --only "${only}"`);
 		io.err(
-			`gen-all: valid names: ${STEPS.map((step) => step.name).join(', ')}`,
+			`gen-all: valid names: ${STEPS.map((step) => step.name).join(', ')}`
 		);
 		return 2;
 	}
@@ -181,7 +181,7 @@ export const main = async (
 	}
 	if (worstExit !== 0) {
 		io.err(
-			`gen-all: at least one generator exited non-zero (exit=${worstExit})`,
+			`gen-all: at least one generator exited non-zero (exit=${worstExit})`
 		);
 		return 1;
 	}

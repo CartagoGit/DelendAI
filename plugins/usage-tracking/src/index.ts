@@ -162,16 +162,16 @@ export default definePlugin({
 		};
 
 		const invocationsPath = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'invocations.jsonl'),
+			joinRel(ctx.pluginCacheDir, 'invocations.jsonl')
 		);
 		const summaryPath = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'usage-summary.json'),
+			joinRel(ctx.pluginCacheDir, 'usage-summary.json')
 		);
 		const hostLifecyclePath = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'host-lifecycle.claude-code.jsonl'),
+			joinRel(ctx.pluginCacheDir, 'host-lifecycle.claude-code.jsonl')
 		);
 		const pricingPath = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'pricing.json'),
+			joinRel(ctx.pluginCacheDir, 'pricing.json')
 		);
 
 		// a00072 S7.b: boot-time hygiene. A 0-byte `.tmp` file older
@@ -186,7 +186,7 @@ export default definePlugin({
 				if (result.removed > 0) {
 					// Debug-only — the lint is the source of truth.
 					console.debug(
-						`[usage-tracking] boot sweep: removed ${result.removed} stale tmp file(s)`,
+						`[usage-tracking] boot sweep: removed ${result.removed} stale tmp file(s)`
 					);
 				}
 			})
@@ -209,7 +209,7 @@ export default definePlugin({
 		const lastModelBySession = new Map<string, IModelDescriptor>();
 		const rememberModel = (
 			sessionId: string,
-			model: IModelDescriptor,
+			model: IModelDescriptor
 		): void => {
 			lastModelBySession.delete(sessionId);
 			lastModelBySession.set(sessionId, model);
@@ -231,7 +231,7 @@ export default definePlugin({
 
 		const costOf = (
 			model: IModelDescriptor | null,
-			usage: IUsageTokens | null,
+			usage: IUsageTokens | null
 		): number | null => {
 			// Subscription providers have no meaningful per-call price (N4).
 			if (model?.kind === 'subscription') return null;
@@ -245,7 +245,7 @@ export default definePlugin({
 			summaryPath,
 			windowDays,
 			Date.now(),
-			limits,
+			limits
 		).catch(() => undefined);
 
 		// Periodic 5-min rollup regeneration from the log (unref'd so it
@@ -272,7 +272,7 @@ export default definePlugin({
 				summaryPath,
 				windowDays,
 				Date.now(),
-				limits,
+				limits
 			).catch(() => undefined);
 		}, summaryIntervalMs);
 		summaryTimer.unref?.();
@@ -284,7 +284,7 @@ export default definePlugin({
 		// stays buffer-agnostic): a confirmed clear first drops the pending
 		// records and waits out any in-flight drain, THEN truncates.
 		const withBufferWipeBarrier = (
-			reg: IToolRegistration,
+			reg: IToolRegistration
 		): IToolRegistration => ({
 			...reg,
 			register: (server) => {
@@ -294,7 +294,7 @@ export default definePlugin({
 					registerTool: (
 						name: string,
 						config: unknown,
-						handler: (args: unknown) => Promise<unknown>,
+						handler: (args: unknown) => Promise<unknown>
 					) =>
 						server.registerTool(
 							name,
@@ -307,7 +307,7 @@ export default definePlugin({
 									await buffer.clear();
 								}
 								return handler(args);
-							}) as never,
+							}) as never
 						),
 				} as unknown as typeof server;
 				return reg.register(intercepted);
@@ -325,7 +325,7 @@ export default definePlugin({
 					notificationServer = server;
 				},
 			}).map((reg) =>
-				reg.id === 'usage_clear' ? withBufferWipeBarrier(reg) : reg,
+				reg.id === 'usage_clear' ? withBufferWipeBarrier(reg) : reg
 			),
 			// Hot-path hooks. `onToolStart` stamps a start time; `onToolCall`
 			// builds the metadata record and enqueues it (non-blocking).
@@ -338,7 +338,7 @@ export default definePlugin({
 				const peerPrefixes = ctx.peerPlugins?.list() ?? [];
 				const sessionId = resolveInvocationSessionId(
 					args,
-					bootSessionId,
+					bootSessionId
 				);
 				const record = buildInvocationRecord({
 					toolName,

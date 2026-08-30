@@ -51,7 +51,7 @@ const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
 	try {
 		raw = (
 			await new SafeWorkspaceReader(dirname(lockPath)).readText(
-				basename(lockPath),
+				basename(lockPath)
 			)
 		).content;
 	} catch {
@@ -71,7 +71,7 @@ const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
 
 const intersect = (
 	left: readonly string[],
-	right: readonly string[],
+	right: readonly string[]
 ): string[] => {
 	const rightSet = new Set(right);
 	return left.filter((file) => rightSet.has(file)).sort();
@@ -79,7 +79,7 @@ const intersect = (
 
 const subtract = (
 	left: readonly string[],
-	right: readonly string[],
+	right: readonly string[]
 ): string[] => {
 	const rightSet = new Set(right);
 	return left.filter((file) => !rightSet.has(file)).sort();
@@ -97,7 +97,7 @@ const noLivelock = (reason: string): ILivelockReport => ({
 const alternating = (
 	events: readonly IContentionEvent[],
 	taskA: string,
-	taskB: string,
+	taskB: string
 ): boolean => {
 	if (events.length < 4) return false;
 	let expected = events[0]?.taskId;
@@ -111,7 +111,7 @@ const alternating = (
 
 const unionFilesForTask = (
 	events: readonly IContentionEvent[],
-	taskId: string,
+	taskId: string
 ): string[] => {
 	const files = new Set<string>();
 	for (const event of events) {
@@ -123,13 +123,13 @@ const unionFilesForTask = (
 
 export const detectLivelock = (
 	events: readonly IContentionEvent[],
-	deps?: IContentionDetectorDeps,
+	deps?: IContentionDetectorDeps
 ): ILivelockReport => {
 	const thresholdMs = deps?.thresholdMs ?? DEFAULT_THRESHOLD_MS;
 	const windowMs = deps?.windowMs ?? DEFAULT_WINDOW_MS;
 	if (events.length < 4) {
 		return noLivelock(
-			`no alternating two-task contention exceeded ${thresholdMs}ms`,
+			`no alternating two-task contention exceeded ${thresholdMs}ms`
 		);
 	}
 
@@ -148,7 +148,7 @@ export const detectLivelock = (
 		.filter((event) => event.outcome !== 'granted');
 	if (relevant.length < 4) {
 		return noLivelock(
-			`no alternating two-task contention exceeded ${thresholdMs}ms in the last ${windowMs}ms`,
+			`no alternating two-task contention exceeded ${thresholdMs}ms in the last ${windowMs}ms`
 		);
 	}
 
@@ -162,7 +162,7 @@ export const detectLivelock = (
 			const taskA = taskIds[leftIndex]!;
 			const taskB = taskIds[rightIndex]!;
 			const pairEvents = relevant.filter(
-				(event) => event.taskId === taskA || event.taskId === taskB,
+				(event) => event.taskId === taskA || event.taskId === taskB
 			);
 			for (let start = 0; start <= pairEvents.length - 4; start += 1) {
 				for (let end = start + 4; end <= pairEvents.length; end += 1) {
@@ -170,7 +170,7 @@ export const detectLivelock = (
 					if (!alternating(segment, taskA, taskB)) continue;
 					const startedAt = Date.parse(segment[0]!.ts);
 					const finishedAt = Date.parse(
-						segment[segment.length - 1]!.ts,
+						segment[segment.length - 1]!.ts
 					);
 					if (finishedAt - startedAt <= thresholdMs) continue;
 					const filesA = unionFilesForTask(segment, taskA);
@@ -182,8 +182,8 @@ export const detectLivelock = (
 					if (
 						!segment.every((event) =>
 							sharedFiles.some((file) =>
-								event.files.includes(file),
-							),
+								event.files.includes(file)
+							)
 						)
 					) {
 						continue;
@@ -199,7 +199,7 @@ export const detectLivelock = (
 	}
 
 	return noLivelock(
-		`no alternating two-task contention exceeded ${thresholdMs}ms in the last ${windowMs}ms`,
+		`no alternating two-task contention exceeded ${thresholdMs}ms in the last ${windowMs}ms`
 	);
 };
 
@@ -209,11 +209,11 @@ export const detectContention = async (
 		readonly lockPath?: string;
 		readonly fileLockTablePath?: string;
 		readonly now?: () => number;
-	} = {},
+	} = {}
 ): Promise<{ livelocks: readonly ILivelockPair[] }> => {
 	const tablePath = deriveFileLockTablePath(
 		opts.lockPath,
-		opts.fileLockTablePath,
+		opts.fileLockTablePath
 	);
 	const lockPath = opts.lockPath ?? defaultLockPathFromTable(tablePath);
 	const table = await listLocks({ tablePath });

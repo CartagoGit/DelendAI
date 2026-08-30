@@ -83,7 +83,7 @@ export default definePlugin({
 			pluginOptions.titleWeight ?? DEFAULT_OPTIONS.titleWeight;
 		const maxNotes = pluginOptions.maxNotes ?? DEFAULT_OPTIONS.maxNotes;
 		const storePathAbs = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'notes.json'),
+			joinRel(ctx.pluginCacheDir, 'notes.json')
 		);
 
 		// f00072 S4: register the per-note TTL sweep as a `custom` rule
@@ -119,7 +119,7 @@ export default definePlugin({
 					{
 						nowMs: Date.now(),
 						maxAgeMs: DEFAULT_CHECKPOINT_MAX_AGE_MS,
-					},
+					}
 				);
 				lastFreshnessAdvisory = refreshed.advisory;
 				lastStoreMtimeMs = refreshed.mtimeMs;
@@ -129,7 +129,7 @@ export default definePlugin({
 		};
 		const freshnessDebouncer = createFreshnessDebouncer(
 			refreshFreshnessAdvisory,
-			{ waitMs: FRESHNESS_DEBOUNCE_WAIT_MS },
+			{ waitMs: FRESHNESS_DEBOUNCE_WAIT_MS }
 		);
 
 		const scheduleIfStoreMtimeChanged = async (): Promise<void> => {
@@ -158,7 +158,7 @@ export default definePlugin({
 			(result as { isError?: unknown }).isError === true;
 
 		const parseToolPayload = (
-			result: unknown,
+			result: unknown
 		): Record<string, unknown> | null => {
 			if (typeof result !== 'object' || result === null) return null;
 			const content = (result as { content?: unknown }).content;
@@ -177,7 +177,7 @@ export default definePlugin({
 
 		const shouldRefreshForMutationEvent = (
 			toolName: string,
-			result: unknown,
+			result: unknown
 		): boolean => {
 			if (isToolErrorResult(result)) return false;
 			return (
@@ -190,7 +190,7 @@ export default definePlugin({
 		const shouldRefreshForCheckpointEvent = (
 			toolName: string,
 			args: unknown,
-			result: unknown,
+			result: unknown
 		): boolean => {
 			if (isToolErrorResult(result)) return false;
 			if (isTool(toolName, 'compact')) {

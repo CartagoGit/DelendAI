@@ -15,7 +15,7 @@ export interface ModelTierHeaderSource {
 
 /** Read a provider tier header, defaulting to medium when absent. */
 export const detectModelTierFromHeaders = (
-	headers: ModelTierHeaders | ModelTierHeaderSource | Headers | undefined,
+	headers: ModelTierHeaders | ModelTierHeaderSource | Headers | undefined
 ): TModelTier => {
 	if (headers === undefined) return 'medium';
 	let value: string | null | undefined;

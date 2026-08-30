@@ -90,14 +90,14 @@ export type IToolListEntry = {
 
 export const classifyToolOwner = (
 	toolName: string,
-	pluginIds: readonly string[],
+	pluginIds: readonly string[]
 ): string => {
 	const qualifiedPrefix = 'mcp-vertex_';
 	const unqualified = toolName.startsWith(qualifiedPrefix)
 		? toolName.slice(qualifiedPrefix.length)
 		: toolName;
 	for (const pluginId of [...pluginIds].sort(
-		(left, right) => right.length - left.length,
+		(left, right) => right.length - left.length
 	)) {
 		if (unqualified.startsWith(`${pluginId}_`)) {
 			return pluginId;
@@ -121,7 +121,7 @@ const emptyOwnerMetrics = (owner: string): IToolOwnerMetrics => ({
 
 export const measureToolListMetrics = (
 	tools: readonly IToolListEntry[],
-	pluginIds: readonly string[],
+	pluginIds: readonly string[]
 ): IToolListMetrics => {
 	const ownerTotals = new Map<string, IToolOwnerMetrics>();
 	const toolBreakdowns: IToolBreakdownRow[] = [];
@@ -131,7 +131,7 @@ export const measureToolListMetrics = (
 		// `IToolListEntry` above narrows the *type*, not the runtime shape,
 		// so any extra field (e.g. `annotations`) is still present here.
 		const breakdown = measureToolComponentBytes(
-			tool as Readonly<Record<string, unknown>>,
+			tool as Readonly<Record<string, unknown>>
 		);
 		toolBreakdowns.push({ owner, ...breakdown });
 		const current = ownerTotals.get(owner) ?? emptyOwnerMetrics(owner);
@@ -164,7 +164,7 @@ export const measureToolListMetrics = (
 		0,
 		...ownerRows
 			.filter((row) => row.owner !== 'core')
-			.map((row) => row.toolsListBytes),
+			.map((row) => row.toolsListBytes)
 	);
 	return {
 		toolCount: tools.length,
@@ -172,27 +172,27 @@ export const measureToolListMetrics = (
 		schemaBytes: ownerRows.reduce((sum, row) => sum + row.schemaBytes, 0),
 		descriptionBytes: ownerRows.reduce(
 			(sum, row) => sum + row.descriptionBytes,
-			0,
+			0
 		),
 		inputSchemaBytes: ownerRows.reduce(
 			(sum, row) => sum + row.inputSchemaBytes,
-			0,
+			0
 		),
 		outputSchemaBytes: ownerRows.reduce(
 			(sum, row) => sum + row.outputSchemaBytes,
-			0,
+			0
 		),
 		annotationsBytes: ownerRows.reduce(
 			(sum, row) => sum + row.annotationsBytes,
-			0,
+			0
 		),
 		otherFieldBytes: ownerRows.reduce(
 			(sum, row) => sum + row.otherFieldBytes,
-			0,
+			0
 		),
 		envelopeBytes: ownerRows.reduce(
 			(sum, row) => sum + row.envelopeBytes,
-			0,
+			0
 		),
 		maxPluginBytes,
 		ownerRows,
@@ -210,11 +210,11 @@ export const createTokenBudgetFixtureWorkspace = (): string => {
 			'# Proposal workflow',
 			'',
 			'Use proposal slices and compact docs.',
-		].join('\n'),
+		].join('\n')
 	);
 	writeFileSync(
 		join(workspace, 'src', 'app.ts'),
-		['export const proposal = "compact search baseline";'].join('\n'),
+		['export const proposal = "compact search baseline";'].join('\n')
 	);
 	mkdirSync(join(workspace, 'docs', 'proposals'), { recursive: true });
 	const skillManifestAbs = join(workspace, ...SKILL_MANIFEST_REL.split('/'));
@@ -233,7 +233,7 @@ export const createTokenBudgetFixtureWorkspace = (): string => {
 					tags: ['metrics', 'compact'],
 				},
 			],
-		}),
+		})
 	);
 	writeFileSync(
 		join(workspace, 'docs', 'proposals', 'index.json'),
@@ -263,7 +263,7 @@ export const createTokenBudgetFixtureWorkspace = (): string => {
 					date: '2026-06-15',
 				},
 			],
-		}),
+		})
 	);
 	return workspace;
 };
@@ -280,7 +280,7 @@ export const connectTokenBudgetClient = async (
 		readonly surfaceMode?: IMcpToolSurfaceMode;
 		readonly clientInfo?: Implementation;
 		readonly capabilities?: ClientCapabilities;
-	},
+	}
 ): Promise<IConnectedBudgetClient> => {
 	const argv = [
 		`--${options.preset === true ? 'preset' : 'plugins'}=${options.pluginList}`,
@@ -301,14 +301,14 @@ export const connectTokenBudgetClient = async (
 	await assembledProject.server.connect(serverTransport);
 	const client = new Client(
 		options.clientInfo ?? DYNAMIC_SURFACE_CLIENT_INFO,
-		{ capabilities: options.capabilities ?? {} },
+		{ capabilities: options.capabilities ?? {} }
 	);
 	await client.connect(clientTransport);
 	return {
 		client,
 		pluginIds: args.plugins,
 		loadErrors: assembledConfig.loadResult.errors.map(
-			(entry) => `${entry.specifier}: ${entry.message}`,
+			(entry) => `${entry.specifier}: ${entry.message}`
 		),
 		close: async () => {
 			await client.close();
@@ -320,7 +320,7 @@ export const connectTokenBudgetClient = async (
 export const measureToolTextBytes = async (
 	client: Client,
 	name: string,
-	args: Record<string, unknown>,
+	args: Record<string, unknown>
 ): Promise<number> => {
 	const result = await client.callTool({ name, arguments: args });
 	const text = (result.content as Array<{ type: string; text?: string }>)[0]
@@ -330,14 +330,14 @@ export const measureToolTextBytes = async (
 
 export const seedAutoWorkReadyProposal = async (
 	workspace: string,
-	client: Client,
+	client: Client
 ): Promise<void> => {
 	const proposalDir = join(
 		workspace,
 		'docs',
 		'mcp-vertex',
 		'proposals',
-		'ready',
+		'ready'
 	);
 	mkdirSync(proposalDir, { recursive: true });
 	writeFileSync(
@@ -362,7 +362,7 @@ title: token budget fixture
 - **Files**: \`src/app.ts\`
 - **Gate**: type
 - **Status**: pending
-`,
+`
 	);
 	await client.callTool({
 		name: 'mcp-vertex_proposals_sync_proposals',
@@ -372,12 +372,12 @@ title: token budget fixture
 
 export const listToolsMetrics = async (
 	client: Client,
-	pluginIds: readonly string[],
+	pluginIds: readonly string[]
 ): Promise<IToolListMetrics> => {
 	const toolList = await client.listTools();
 	return measureToolListMetrics(
 		toolList.tools as readonly IToolListEntry[],
-		pluginIds,
+		pluginIds
 	);
 };
 

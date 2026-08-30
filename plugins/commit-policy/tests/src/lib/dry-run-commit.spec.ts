@@ -38,7 +38,7 @@ const ok = (output: string): IGitRunResult => ({ ok: true, output });
  */
 const buildSpyRunner = (
 	currentBranch: string,
-	record: string[],
+	record: string[]
 ): IGitRunner => {
 	const handler = (args: readonly string[]): Promise<IGitRunResult> => {
 		record.push(args.join(' '));
@@ -50,7 +50,7 @@ const buildSpyRunner = (
 		if (args[0] === 'push') return Promise.resolve(ok('pushed\n'));
 		if (args[0] === 'status')
 			return Promise.resolve(
-				ok(' M packages/core/src/lib/capabilities/schema.ts\n'),
+				ok(' M packages/core/src/lib/capabilities/schema.ts\n')
 			);
 		if (args[0] === 'config')
 			return Promise.resolve(ok('cartago@example.com\n'));
@@ -60,7 +60,7 @@ const buildSpyRunner = (
 };
 
 const buildPolicy = (
-	overrides: Partial<ICommitPolicyOptions> = {},
+	overrides: Partial<ICommitPolicyOptions> = {}
 ): ICommitPolicyOptions => {
 	const base = {
 		commit: {
@@ -133,7 +133,7 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 			(cmd) =>
 				cmd.startsWith('add ') ||
 				cmd.startsWith('commit ') ||
-				cmd.startsWith('push'),
+				cmd.startsWith('push')
 		);
 
 	it('returns a DryRunResult for manual dryRun without executing git', async () => {
@@ -141,7 +141,7 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 		const run = buildSpyRunner('develop', record);
 		const plan = await planCommitPolicyRun(
 			{ kind: 'manual' },
-			baseOptions(run, buildPolicy()),
+			baseOptions(run, buildPolicy())
 		);
 		if (plan.kind !== 'plan') throw new Error('expected plan');
 		expect(plan.plan.dryRun).toBe(true);
@@ -149,10 +149,10 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 		// Manual trigger → no files staged.
 		expect(plan.plan.wouldChange).toEqual([]);
 		expect(
-			plan.plan.wouldRun.some((r) => r.target.includes('git commit')),
+			plan.plan.wouldRun.some((r) => r.target.includes('git commit'))
 		).toBe(true);
 		expect(
-			plan.plan.wouldRun.some((r) => r.target.includes('git push')),
+			plan.plan.wouldRun.some((r) => r.target.includes('git push'))
 		).toBe(false);
 		// Critical: no destructive git operations were executed.
 		expect(destructiveOnly(record)).toEqual([]);
@@ -163,7 +163,7 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 		const run = buildSpyRunner('develop', record);
 		const result = await runCommitPolicyRun(
 			{ kind: 'manual', dryRun: true },
-			baseOptions(run, buildPolicy()),
+			baseOptions(run, buildPolicy())
 		);
 		// The result is a toolOk envelope — the body must be a DryRunResult.
 		const body = result.structuredContent as Record<string, unknown>;
@@ -193,13 +193,13 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 						protectedPrefixes: [],
 						force: 'with-lease',
 					},
-				}),
-			),
+				})
+			)
 		);
 		if (plan.kind !== 'plan') throw new Error('expected plan');
 		expect(plan.plan.risk).toBe('medium');
 		expect(plan.plan.wouldRun.some((r) => r.target === 'git push')).toBe(
-			true,
+			true
 		);
 		// No git operations executed even with push policy enabled.
 		expect(destructiveOnly(record)).toEqual([]);
@@ -210,7 +210,7 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 		const run = buildSpyRunner('main', record); // protected branch
 		const result = await runCommitPolicyRun(
 			{ kind: 'manual', dryRun: true },
-			baseOptions(run, buildPolicy()),
+			baseOptions(run, buildPolicy())
 		);
 		expect(result.isError).toBe(true);
 		const body = result.structuredContent as Record<string, unknown>;
@@ -222,7 +222,7 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 	it('buildRunToolRegistration declares dryRunSupported + effects', () => {
 		const run = buildSpyRunner('develop', []);
 		const registration = buildRunToolRegistration(
-			baseOptions(run, buildPolicy()),
+			baseOptions(run, buildPolicy())
 		);
 		expect(registration.effects).toEqual(['write']);
 		expect(registration.dryRunSupported).toBe(true);
@@ -262,7 +262,7 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 								protectedPrefixes: [],
 								force: 'with-lease',
 							},
-						}),
+						})
 					),
 					workspaceRoot: repo,
 					onCommitSucceeded: async () => {
@@ -274,7 +274,7 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 							branch: 'develop',
 						};
 					},
-				},
+				}
 			);
 			const body = result.structuredContent as Record<string, unknown>;
 			const commit = body.commit as {

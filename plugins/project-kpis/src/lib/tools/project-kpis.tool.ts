@@ -223,17 +223,17 @@ const round = (value: number): number => Number(value.toFixed(6));
 const effectiveWindowDays = (
 	from: string,
 	to: string,
-	fallback: number,
+	fallback: number
 ): number => {
 	const delta = Math.max(
 		1,
-		Math.ceil((parseTime(to) - parseTime(from)) / DAY_MS),
+		Math.ceil((parseTime(to) - parseTime(from)) / DAY_MS)
 	);
 	return Number.isFinite(delta) && delta > 0 ? delta : fallback;
 };
 
 const deriveViewStatus = (
-	states: readonly TKpiViewStatus[],
+	states: readonly TKpiViewStatus[]
 ): TKpiViewStatus => {
 	const filtered = states.filter((state) => state !== undefined);
 	if (filtered.length === 0) return 'unavailable';
@@ -244,7 +244,7 @@ const deriveViewStatus = (
 	if (filtered.some((state) => state === 'partial')) return 'partial';
 	if (
 		filtered.some(
-			(state) => state === 'unavailable' || state === 'not-configured',
+			(state) => state === 'unavailable' || state === 'not-configured'
 		) &&
 		filtered.some((state) => state === 'measured' || state === 'estimated')
 	) {
@@ -266,13 +266,7 @@ const buildDisplayMetric = (input: {
 	readonly label: string;
 	readonly status: TKpiViewStatus;
 	readonly unit:
-		| 'score'
-		| 'count'
-		| 'ratio'
-		| 'tokens'
-		| 'usd'
-		| 'bytes'
-		| 'ms';
+		'score' | 'count' | 'ratio' | 'tokens' | 'usd' | 'bytes' | 'ms';
 	readonly source: string;
 	readonly value?: number;
 	readonly observedAt?: string;
@@ -292,7 +286,7 @@ const highlightFromSnapshot = (
 	key: string,
 	label: string,
 	unit: 'score' | 'count' | 'ratio' | 'tokens' | 'usd',
-	metric: IKpiSnapshot['health']['score'] | IKpiSnapshot['usage']['calls'],
+	metric: IKpiSnapshot['health']['score'] | IKpiSnapshot['usage']['calls']
 ) =>
 	buildDisplayMetric({
 		key,
@@ -310,19 +304,19 @@ const highlightFromSnapshot = (
 const usageSummaryPathOf = (options: IProjectKpisToolOptions): string =>
 	joinRel(
 		joinRel(options.workspaceRootAbs, options.cacheDir),
-		'results/usage-tracking/usage-summary.json',
+		'results/usage-tracking/usage-summary.json'
 	);
 
 const usageInvocationsPathOf = (options: IProjectKpisToolOptions): string =>
 	joinRel(
 		joinRel(options.workspaceRootAbs, options.cacheDir),
-		'results/usage-tracking/invocations.jsonl',
+		'results/usage-tracking/invocations.jsonl'
 	);
 
 const historyPathOf = (options: IProjectKpisToolOptions): string =>
 	joinRel(
 		joinRel(options.workspaceRootAbs, options.cacheDir),
-		'results/project-kpis/history.json',
+		'results/project-kpis/history.json'
 	);
 
 const activationPathOf = (options: IProjectKpisToolOptions): string =>
@@ -343,7 +337,7 @@ const buildSource = (input: {
 });
 
 const normalizeFilter = (
-	filter: IProjectKpisToolArgs['filter'],
+	filter: IProjectKpisToolArgs['filter']
 ): IKpiQueryFilter | undefined => {
 	if (filter === undefined) return undefined;
 	return {
@@ -377,7 +371,7 @@ const toKpiQuery = (query: IResolvedQuery): IKpiQuery => ({
 
 const normalizeQuery = (
 	args: IProjectKpisToolArgs,
-	options: IProjectKpisToolOptions,
+	options: IProjectKpisToolOptions
 ): IResolvedQuery => {
 	const now = options.now ?? new Date();
 	const to = args.to ?? asIsoString(now);
@@ -405,7 +399,7 @@ const normalizeQuery = (
 
 const matchesFilter = (
 	record: IKpiTelemetryRecord,
-	filter: IKpiQueryFilter | undefined,
+	filter: IKpiQueryFilter | undefined
 ): boolean => {
 	if (filter === undefined) return true;
 	if (
@@ -449,7 +443,7 @@ const matchesFilter = (
 
 const filterRecords = (
 	records: readonly IKpiTelemetryRecord[],
-	query: IResolvedQuery,
+	query: IResolvedQuery
 ): IKpiTelemetryRecord[] => {
 	const fromMs = parseTime(query.from);
 	const toMs = parseTime(query.to);
@@ -463,7 +457,7 @@ const filterRecords = (
 
 const aggregateRecords = (
 	records: readonly IKpiTelemetryRecord[],
-	dimension: TKpiDimension,
+	dimension: TKpiDimension
 ) => {
 	const groups = new Map<string, IKpiTelemetryRecord[]>();
 	const keyResolvers: Record<
@@ -501,12 +495,12 @@ const aggregateRecords = (
 			const calls = bucket.length;
 			const successfulCalls = bucket.reduce(
 				(acc, record) => acc + (record.outcome === 'success' ? 1 : 0),
-				0,
+				0
 			);
 			const failedCalls = calls - successfulCalls;
 			const errors = bucket.reduce(
 				(acc, record) => acc + (record.outcome === 'error' ? 1 : 0),
-				0,
+				0
 			);
 			const totalTokens = bucket.reduce(
 				(acc, record) =>
@@ -516,27 +510,27 @@ const aggregateRecords = (
 						record.usage?.inputTokens ??
 						0) +
 					(record.usage?.outputTokens ?? 0),
-				0,
+				0
 			);
 			const costUsd = round(
-				bucket.reduce((acc, record) => acc + (record.costUsd ?? 0), 0),
+				bucket.reduce((acc, record) => acc + (record.costUsd ?? 0), 0)
 			);
 			const tokensSaved = bucket.reduce(
 				(acc, record) => acc + (record.tokensSaved ?? 0),
-				0,
+				0
 			);
 			const latencies = bucket
 				.map((record) => record.latencyMs ?? record.durationMs)
 				.filter(
 					(value): value is number =>
-						typeof value === 'number' && Number.isFinite(value),
+						typeof value === 'number' && Number.isFinite(value)
 				);
 			const averageLatencyMs =
 				latencies.length === 0
 					? null
 					: round(
 							latencies.reduce((acc, value) => acc + value, 0) /
-								latencies.length,
+								latencies.length
 						);
 			return {
 				key,
@@ -561,7 +555,7 @@ const aggregateRecords = (
 
 const buildSummaryBreakdown = (
 	summary: IUsageSummary,
-	dimension: TKpiDimension,
+	dimension: TKpiDimension
 ):
 	| {
 			readonly status: TKpiViewStatus;
@@ -574,7 +568,7 @@ const buildSummaryBreakdown = (
 	const source = '@mcp-vertex/usage-tracking/public#readSummary';
 	const mapBucket = (
 		bucket: IUsageSummary['byPlugin'][number],
-		utilityPer1kTokens?: number,
+		utilityPer1kTokens?: number
 	): IProjectKpisBreakdownItem => ({
 		key: bucket.key,
 		status: 'measured' as const,
@@ -592,14 +586,14 @@ const buildSummaryBreakdown = (
 			summary.pluginKpis.map((plugin) => [
 				plugin.plugin,
 				plugin.utilityPer1kTokens,
-			]),
+			])
 		);
 		return {
 			status: 'measured',
 			source,
 			totalItems: summary.byPlugin.length,
 			items: summary.byPlugin.map((bucket) =>
-				mapBucket(bucket, utilityByPlugin.get(bucket.key)),
+				mapBucket(bucket, utilityByPlugin.get(bucket.key))
 			),
 		};
 	}
@@ -658,7 +652,7 @@ const historyEntriesOf = (history: IKpiHistoryReadResult) =>
 		...(entry.economics.financialSavingsUsd.value !== undefined
 			? {
 					financialSavingsUsd: round(
-						entry.economics.financialSavingsUsd.value,
+						entry.economics.financialSavingsUsd.value
 					),
 				}
 			: {}),
@@ -672,7 +666,7 @@ const issueItemsOf = (records: readonly IKpiTelemetryRecord[]) =>
 		.filter(
 			(record) =>
 				record.outcome === 'error' ||
-				record.errorTelemetry !== undefined,
+				record.errorTelemetry !== undefined
 		)
 		.map((record) => ({
 			ts: record.ts,
@@ -796,7 +790,7 @@ const sourcesOf = (state: IToolSourceState): IProjectKpisOutput['sources'] => {
 const recommendationsOf = (
 	namespacePrefix: string,
 	next: readonly IKpiNextAction[],
-	state: IToolSourceState,
+	state: IToolSourceState
 ): IProjectKpisOutput['recommendations'] => {
 	const recommendations: IProjectKpisRecommendation[] = next.map((item) => ({
 		tool: item.tool,
@@ -827,12 +821,12 @@ const limitationsOf = (state: IToolSourceState): string[] => {
 	];
 	if (!state.invocationsExists) {
 		limitations.push(
-			'Dimension filters and model/error drill-down require the raw invocation log and degrade when only the persisted summary exists.',
+			'Dimension filters and model/error drill-down require the raw invocation log and degrade when only the persisted summary exists.'
 		);
 	}
 	if (!state.historyExists) {
 		limitations.push(
-			'Trend views stay explicit about missing evidence when persisted history has not been configured yet.',
+			'Trend views stay explicit about missing evidence when persisted history has not been configured yet.'
 		);
 	}
 	return limitations;
@@ -840,7 +834,7 @@ const limitationsOf = (state: IToolSourceState): string[] => {
 
 const findingsOf = (
 	state: IToolSourceState,
-	query: IResolvedQuery,
+	query: IResolvedQuery
 ): IProjectKpisFindingsSection => {
 	const findings: IProjectKpisFindingsSection = {
 		status: 'measured',
@@ -870,7 +864,7 @@ const findingsOf = (
 		});
 	}
 	const incongruences = issueItemsOf(state.records).filter(
-		(item) => item.incongruence,
+		(item) => item.incongruence
 	);
 	if (incongruences.length > 0) {
 		findings.items.push({
@@ -918,14 +912,14 @@ const findingsOf = (
 	findings.status = deriveViewStatus(
 		findings.items.length === 0
 			? ['measured']
-			: findings.items.map((item) => item.status),
+			: findings.items.map((item) => item.status)
 	);
 	return findings;
 };
 
 const fitToBudget = (
 	raw: Omit<IProjectKpisOutput, 'bytes' | 'truncated' | 'originalBytes'>,
-	maxBytes: number,
+	maxBytes: number
 ): IProjectKpisOutput => {
 	const direct = truncateIfTooLarge(raw, maxBytes);
 	if (!direct.truncated) {
@@ -1011,7 +1005,7 @@ const fitToBudget = (
 
 const loadState = async (
 	query: IResolvedQuery,
-	options: IProjectKpisToolOptions,
+	options: IProjectKpisToolOptions
 ): Promise<IToolSourceState> => {
 	const pathExists =
 		options.pathExists ??
@@ -1043,7 +1037,7 @@ const loadState = async (
 		: null;
 	const records = invocationsExists
 		? ((await readUsageInvocationsFn(
-				invocationsPathAbs,
+				invocationsPathAbs
 			)) as readonly IKpiTelemetryRecord[])
 		: [];
 	const snapshotReader =
@@ -1122,7 +1116,7 @@ const loadState = async (
 
 const buildBreakdowns = (
 	state: IToolSourceState,
-	query: IResolvedQuery,
+	query: IResolvedQuery
 ): IProjectKpisBreakdown[] => {
 	const limits = DETAIL_LIMITS[query.detail];
 	const filteredRecords = filterRecords(state.records, query);
@@ -1184,11 +1178,11 @@ const buildBreakdowns = (
 
 const buildHistorySection = (
 	state: IToolSourceState,
-	query: IResolvedQuery,
+	query: IResolvedQuery
 ): NonNullable<IProjectKpisOutput['history']> => {
 	const limits = DETAIL_LIMITS[query.detail];
 	const entries = historyEntriesOf(state.history).slice(
-		-limits.historyEntries,
+		-limits.historyEntries
 	);
 	const trends = trendEntriesOf(state.trend).slice(0, limits.highlights);
 	return {
@@ -1212,7 +1206,7 @@ const buildHistorySection = (
 
 const buildSnapshotSection = (
 	state: IToolSourceState,
-	query: IResolvedQuery,
+	query: IResolvedQuery
 ): NonNullable<IProjectKpisOutput['snapshot']> => {
 	const limits = DETAIL_LIMITS[query.detail];
 	const highlights = [
@@ -1220,43 +1214,43 @@ const buildSnapshotSection = (
 			'health.score',
 			'Health score',
 			'score',
-			state.snapshot.health.score,
+			state.snapshot.health.score
 		),
 		highlightFromSnapshot(
 			'usage.calls',
 			'Calls',
 			'count',
-			state.snapshot.usage.calls,
+			state.snapshot.usage.calls
 		),
 		highlightFromSnapshot(
 			'usage.errors',
 			'Errors',
 			'count',
-			state.snapshot.usage.errors,
+			state.snapshot.usage.errors
 		),
 		highlightFromSnapshot(
 			'usage.toolErrorRate',
 			'Tool error rate',
 			'ratio',
-			state.snapshot.usage.toolErrorRate,
+			state.snapshot.usage.toolErrorRate
 		),
 		highlightFromSnapshot(
 			'usage.totalTokens',
 			'Total tokens',
 			'tokens',
-			state.snapshot.usage.totalTokens,
+			state.snapshot.usage.totalTokens
 		),
 		highlightFromSnapshot(
 			'usage.costUsd',
 			'Cost USD',
 			'usd',
-			state.snapshot.usage.costUsd,
+			state.snapshot.usage.costUsd
 		),
 		highlightFromSnapshot(
 			'usage.tokensSaved',
 			'Token savings',
 			'tokens',
-			state.snapshot.usage.tokensSaved,
+			state.snapshot.usage.tokensSaved
 		),
 	].slice(0, limits.highlights);
 	if (query.view === 'efficiency' && state.summary !== null) {
@@ -1279,7 +1273,7 @@ const buildSnapshotSection = (
 				value: state.summary.kpis.memoryCompactionSavingsTokens,
 				observedAt: state.summary.updatedAt,
 				note: state.summary.kpis.memoryCompactionSavingsNote,
-			}),
+			})
 		);
 	}
 	return {
@@ -1299,11 +1293,11 @@ const buildSnapshotSection = (
 
 const buildIssuesSection = (
 	state: IToolSourceState,
-	query: IResolvedQuery,
+	query: IResolvedQuery
 ): IProjectKpisIssuesSection => {
 	const items = issueItemsOf(filterRecords(state.records, query)).slice(
 		0,
-		DETAIL_LIMITS[query.detail].issues,
+		DETAIL_LIMITS[query.detail].issues
 	);
 	return {
 		status:
@@ -1324,7 +1318,7 @@ const buildIssuesSection = (
 const viewSummaryOf = (
 	view: NonNullable<IResolvedQuery['view']>,
 	state: IToolSourceState,
-	status: TKpiViewStatus,
+	status: TKpiViewStatus
 ): string => {
 	const calls = state.snapshot.usage.calls.value;
 	const cost = state.snapshot.usage.costUsd.value;
@@ -1358,7 +1352,7 @@ const stateActivationStatus = (state: IToolSourceState): TKpiViewStatus =>
 
 const buildViewPayload = async (
 	query: IResolvedQuery,
-	options: IProjectKpisToolOptions,
+	options: IProjectKpisToolOptions
 ): Promise<IProjectKpisOutput> => {
 	const state = await loadState(query, options);
 	const snapshot = buildSnapshotSection(state, query);
@@ -1437,7 +1431,7 @@ const buildViewPayload = async (
 		recommendations: recommendationsOf(
 			options.namespacePrefix,
 			state.snapshot.health.next,
-			state,
+			state
 		).slice(0, DETAIL_LIMITS[query.detail].recommendations),
 		...(view === 'audit' ? {} : { snapshot }),
 		...(view === 'activation'
@@ -1484,22 +1478,22 @@ const buildViewPayload = async (
 
 export const runProjectKpis = async (
 	args: IProjectKpisToolArgs,
-	options: IProjectKpisToolOptions,
+	options: IProjectKpisToolOptions
 ) => {
 	const parsed = InputSchema.safeParse(args);
 	if (!parsed.success) {
 		return toolError(
 			parsed.error.message,
-			'Pass view plus optional windowDays/from/to, dimensions, detail and filter values.',
+			'Pass view plus optional windowDays/from/to, dimensions, detail and filter values.'
 		);
 	}
 	return toolJson(
-		await buildViewPayload(normalizeQuery(parsed.data, options), options),
+		await buildViewPayload(normalizeQuery(parsed.data, options), options)
 	);
 };
 
 export const buildProjectKpisToolRegistrations = (
-	options: IProjectKpisToolOptions,
+	options: IProjectKpisToolOptions
 ): IToolRegistration[] => [
 	{
 		id: 'project_kpis',
@@ -1516,7 +1510,7 @@ export const buildProjectKpisToolRegistrations = (
 					outputSchema: ProjectKpisOutputSchema,
 				},
 				async (args: IProjectKpisToolArgs) =>
-					runProjectKpis(args, options),
+					runProjectKpis(args, options)
 			);
 		},
 	},

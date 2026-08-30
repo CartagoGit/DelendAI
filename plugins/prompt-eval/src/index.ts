@@ -34,7 +34,7 @@ const OptionsSchema = z.object({
 					z.literal(4),
 					z.literal(5),
 				]),
-			}),
+			})
 		)
 		.optional(),
 });
@@ -61,12 +61,12 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`prompt-eval plugin rejected its options: ${parsed.error.message}`,
+				`prompt-eval plugin rejected its options: ${parsed.error.message}`
 			);
 		}
 		const providers = parsed.data.providers ?? [];
 		const calibrationStore = hasCalibrationStore(
-			rawOptions.calibrationStore,
+			rawOptions.calibrationStore
 		)
 			? rawOptions.calibrationStore
 			: undefined;
