@@ -67,12 +67,14 @@ Users need to understand both whether their project is progressing and whether t
   - "History supports daily or configurable windows and computes up, down, stable and unknown trends."
   - "Costs separate provider-reported usage, configured price estimates, subscription usage and unavailable values."
   - "Token savings and financial savings are reported only when a baseline and source data exist, including the methodology and confidence status."
-- review-state: in_review
+- review-state: done
 - review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente (revisor distinto del implementador): persistencia atómica de snapshots con writeFileAtomic+mutex y retención, ventanas de historial con tendencias up/down/stable/unknown, economics separando provider-reported/configured-estimate/subscription/unavailable sin inventar ahorros. Suite plugin project-kpis 10/10 (kpi-history 5, kpi-aggregation 2, tool 3), typecheck exit 0. Commit real a8f542fd.
 ### S4 — CLI human JSON watch and audit reports
 - **Status**: pending
 - **DependsOn**: [S1, S2, S3]
-- **Files**: `packages/cli/src/commands/kpis.command.ts`, `packages/cli/src/commands/kpis-renderer.ts`, `packages/cli/src/commands/kpis-options.ts`, `packages/cli/tests/kpis.command.spec.ts`, `packages/cli/README.md`
+- **Files**: `packages/cli/src/commands/kpis.command.ts`, `packages/cli/src/commands/kpis-renderer.ts`, `packages/cli/src/commands/kpis-options.ts`, `packages/cli/src/commands/kpis.command.spec.ts`, `packages/cli/README.md`
 - **Gate**: e2e
 - acceptance:
   - "The CLI exposes summary, history, usage, costs, models, agents, plugins, errors, efficiency and audit views."
