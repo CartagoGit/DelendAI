@@ -2,7 +2,8 @@
 id: f00188
 title: "Capability schema + enforcement en `PluginContext`"
 kind: feat
-status: ready
+status: done
+shipped-in: ["c9688efb"]
 type: proposal
 track: security
 date: 2026-08-25
@@ -146,11 +147,14 @@ booleanos dispersos, no de una declaración verificable.
 
 ### S1 — Schema + injection + enforcement + shim
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/capabilities/schema.ts`, `packages/core/src/lib/capabilities/inject.ts`, `packages/core/src/lib/plugins/lifecycle.ts`, `packages/core/tests/src/lib/capabilities/adversarial.spec.ts`, `packages/core/tests/src/lib/capabilities/shim.spec.ts`
 - **Gate**: type
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot
+- review-reviewer: delivery_verifier_peer
+- review-log: requested_changes by delivery_verifier — Objeción concreta: el slice solo entrega el schema + gate puro (commit 406424bf) pero NO el enforcement que exige la aceptación. Verificado contra el código real: (1) `CapabilitiesToCtx` no existe en código (solo en el doc); (2) `packages/core/src/lib/plugins/lifecycle.ts` (listado en Files del slice) NO fue modificado — `IActivateContext.capabilities` sigue siendo `Readonly<Record<string, unknown>>` sin narrowing tipado ni gate; (3) el refusal runtime ante capacidad no declarada no está cableado en el PluginContext — `createCapabilityContext` (Proxy) solo aparece como comentario en inject.ts, no implementado; (4) `summariseLegacyShimWarning` está exportado pero nada lo invoca en boot, así que un plugin sin capabilities NO arranca con warning. Las 47 pruebas de capabilities y el typecheck de core pasan, pero cubren solo el gate puro aislado, no el contrato del PluginContext. Falta: cablear schema/gate en lifecycle, definir CapabilitiesToCtx, y emitir el warning de shim en boot.
+- review-log: approved by delivery_verifier_peer — Verificación independiente del commit c9688efb (exactamente los 5 archivos del slice f00188 S1) contra las 4 objeciones previas: (1) CapabilitiesToCtx definido en schema.ts — mapea union→shape, default never = vacío/least-privilege; (2) lifecycle.ts modificado: IActivateContext<C> con capabilities: CapabilitiesToCtx<C> (narrowing compile-time) + buildActivateContext; (3) createCapabilityContext Proxy implementado en inject.ts — refusal runtime tipado capability-denied para capacidades no declaradas; (4) summariseLegacyShimWarning invocado en runLifecycle (línea 172) — shim warning en boot. Evidencia empírica: typecheck de packages/core exit 0; tests de capabilities 60/60 (47 baseline + 13 nuevos) y lifecycle.spec 10/10 = 70/70 verdes; suite core completa 247 files / 2267 tests pasan. Caveat: `bun run validate` raíz no verde por WIP ajeno pre-existente (regresión biome-baseline en tool-surface-runtime.exposure.spec.ts de x00287 + noFlatMapIdentity), no causado por este slice.
 ## acceptance
 
 - Schema de capabilities exportado desde `@mcp-vertex/core` (y
