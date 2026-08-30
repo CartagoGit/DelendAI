@@ -2,7 +2,9 @@
 id: x00287
 title: "`isToolExposed` deja de ser fail-open para nombres desconocidos"
 kind: fix
-status: ready
+status: done
+shipped-in:
+    - bc807bb7
 type: proposal
 track: adaptive
 date: 2026-08-29
@@ -106,7 +108,7 @@ isToolExposed(name) = getToolExposure(name) === 'visible'
 
 ### S1 — `getToolExposure` tri-estado + `isToolExposed` fail-closed
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
       (`isToolExposed`, nuevo `getToolExposure`)
@@ -116,17 +118,23 @@ isToolExposed(name) = getToolExposure(name) === 'visible'
       `grep -rln "isToolExposed" packages/core/src/lib/contracts`)
     - `packages/core/tests/src/lib/project/tool-surface-runtime.exposure.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/project/tool-surface-runtime.exposure.spec.ts`
-
+- review-state: done
+- review-implementer: falcon
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificacion independiente en el checkout actual: getToolExposure expone visible/hidden/unknown, emite warning para nombres desconocidos, e isToolExposed queda fail-closed al delegar en getToolExposure === visible. El test focalizado paso 3/3 y bunx tsc --noEmit -p packages/core/tsconfig.json termino sin errores. No observe cambios fuera del slice que bloqueen esta aprobacion.
 ### S2 — Migrar los llamantes internos conocidos a `getToolExposure`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: los ficheros que resulten de
   `grep -rln "\.isToolExposed(" packages/core/src plugins` (a
   determinar exactamente al implementar; no adivinar la lista aquí)
 - **Gate**: `bunx tsc --noEmit -p packages/core` (confirma que ningún
   llamante migrado quedó con un tipo incompatible) seguido de
   `bunx vitest run packages/core/tests/src/lib/project`
-
+- review-state: done
+- review-implementer: sparrow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente en el checkout actual: overview-tool migrado a getToolExposure(...) === 'visible', sin llamantes productivos restantes a isToolExposed en packages/core, y cobertura fail-closed/unknown validada en los specs objetivo. Los cambios ajenos presentes en el workspace no bloquean este slice porque los checks pedidos para packages/core pasan en este estado.
 ## dependency graph
 
 Ninguna. Independiente del resto de `q00011`. Dentro de esta
