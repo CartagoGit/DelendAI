@@ -42,6 +42,31 @@ describe('bootstrapCacheLayout', () => {
 		).toContain('"key"');
 	});
 
+	it('accepts an absolute contained cacheDirAbs', async () => {
+		const workspace = createTestWorkspace('mcp-vertex-cache-');
+		workspaces.push(workspace);
+		const cacheDir = join(workspace, '.runtime/cache');
+		await mkdir(join(workspace, '.commit-policy'));
+		await writeFile(
+			join(workspace, '.commit-policy', 'processed-events.jsonl'),
+			'{"key":"absolute"}\n',
+		);
+
+		const result = await bootstrapCacheLayout({
+			workspaceRootAbs: workspace,
+			cacheDirAbs: cacheDir,
+			createPluginDirs: true,
+		});
+
+		expect(result.cacheDirAbs).toBe(cacheDir);
+		expect(
+			await readFile(
+				join(cacheDir, 'commit-policy', 'processed-events.jsonl'),
+				'utf8',
+			),
+		).toContain('"key":"absolute"');
+	});
+
 	it('preserves an existing canonical directory and is idempotent', async () => {
 		const workspace = createTestWorkspace('mcp-vertex-cache-');
 		workspaces.push(workspace);

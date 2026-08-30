@@ -1,5 +1,5 @@
 import { lstat, mkdir, readdir, rename, rm } from 'node:fs/promises';
-import { dirname, join, relative } from 'node:path';
+import { dirname, isAbsolute, join, relative } from 'node:path';
 
 import { resolveWorkspaceContained } from '../shared/contain-path';
 
@@ -106,7 +106,9 @@ export const bootstrapCacheLayout = async (
 ): Promise<ICacheLayoutBootstrapResult> => {
 	const contained = resolveWorkspaceContained(
 		options.workspaceRootAbs,
-		options.cacheDirAbs,
+		isAbsolute(options.cacheDirAbs)
+			? relative(options.workspaceRootAbs, options.cacheDirAbs)
+			: options.cacheDirAbs,
 	);
 	if (!contained.ok) {
 		throw new Error(

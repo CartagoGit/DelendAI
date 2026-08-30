@@ -325,7 +325,7 @@ export const assembleCliConfig = async (
 	});
 	await bootstrapCacheLayout({
 		workspaceRootAbs: workspace.root,
-		cacheDirAbs: cacheDir,
+		cacheDirAbs: cacheDirContained.abs,
 		createPluginDirs: false,
 		legacyPaths:
 			cacheDir !== DEFAULT_CORE_PATHS.cacheDir
@@ -531,7 +531,7 @@ export const assembleCliConfig = async (
 	const cacheReconcile = (apply: boolean) =>
 		bootstrapCacheLayout({
 			workspaceRootAbs: workspace.root,
-			cacheDirAbs: cacheDir,
+			cacheDirAbs: cacheDirContained.abs,
 			apply,
 			legacyPaths: loadResult.loaded.flatMap(({ plugin }) => {
 				const target = joinRel(
@@ -576,7 +576,7 @@ export const assembleCliConfig = async (
 		});
 	await bootstrapCacheLayout({
 		workspaceRootAbs: workspace.root,
-		cacheDirAbs: cacheDir,
+		cacheDirAbs: cacheDirContained.abs,
 		createPluginDirs: false,
 	});
 
