@@ -67,7 +67,10 @@ import {
 import { locateProposal } from '../proposals/locate';
 import type { IValidateEvidence } from '../services/transition-evidence';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
-import type { IAuthoringToolOptions } from './authoring-options';
+import type {
+	IAuthoringToolOptions,
+	ICloseSliceValidationDecision,
+} from './authoring-options';
 import {
 	maybePersistAfterSlice,
 	type IPersistResult,
@@ -111,6 +114,7 @@ type ICloseSliceThrownError = Error & {
 		readonly findings: readonly string[];
 		readonly summary?: { readonly ok: boolean; readonly scopes: number };
 	};
+	readonly validationDecision?: ICloseSliceValidationDecision;
 };
 
 const isCloseSliceThrownError = (
@@ -268,6 +272,9 @@ export const runCloseSliceValidation = async (
 export const runCloseSliceQualityGate = async (
 	cwd: string,
 	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
+	options: {
+		readonly scopes?: readonly string[];
+	} = {},
 ): Promise<{
 	readonly ok: boolean;
 	readonly severity: 'ok' | 'error';
@@ -280,8 +287,13 @@ export const runCloseSliceQualityGate = async (
 	const result = await runAcceptanceCriteria(
 		[
 			{
-				command:
-					'bun tools/scripts/quality/run-quality.script.ts --json',
+				command: [
+					'bun tools/scripts/quality/run-quality.script.ts',
+					'--json',
+					...(options.scopes ?? []).map(
+						(scope) => `--scope=${scope}`,
+					),
+				].join(' '),
 				expect: 'exit0',
 				timeoutMs,
 			},
@@ -934,6 +946,14 @@ export const buildCloseSliceRegistration = (
 					proposalId: z.string().optional(),
 					sliceId: z.string().optional(),
 					closed: z.boolean().optional(),
+					validationDecision: z
+						.object({
+							mode: z.enum(['scoped', 'full', 'blocked']),
+							resolvedScopes: z.array(z.string()),
+							snapshotId: z.string(),
+							reason: z.string(),
+						})
+						.optional(),
 					lockReleased: z.boolean().optional(),
 					persist: z
 						.object({
@@ -998,6 +1018,9 @@ export const buildCloseSliceRegistration = (
 				}
 				const { entry, docPath } = resolved;
 				const closeSliceOptions = options as ICloseSliceValidateOptions;
+				let validationDecision:
+					| ICloseSliceValidationDecision
+					| undefined;
 				if (args.force !== true) {
 					const validateEvidence =
 						await resolveRecentValidateEvidence({
@@ -1061,12 +1084,51 @@ export const buildCloseSliceRegistration = (
 								`slice "${args.sliceId}" not found in ${entry.file}`,
 							);
 						}
+						if (
+							closeSliceOptions.resolveValidationDecision !==
+							undefined
+						) {
+							const decision =
+								await closeSliceOptions.resolveValidationDecision(
+									{
+										operation: 'close',
+										ownedFiles: slice.files,
+										proposalId: entry.id,
+										sliceId: canonicalSliceId(args.sliceId),
+									},
+								);
+							validationDecision = {
+								mode: decision.mode,
+								resolvedScopes: [...decision.resolvedScopes],
+								snapshotId: decision.snapshotId,
+								reason: decision.reason,
+							};
+							if (decision.mode === 'blocked') {
+								const err: ICloseSliceThrownError =
+									Object.assign(new Error(decision.reason), {
+										kind: 'validation-error' as const,
+										validationDecision,
+									});
+								throw err;
+							}
+						}
 						// a00072 S3.c — quality gate BEFORE flipping status.
 						// If the probe is wired and reports severity=error,
 						// refuse the close. Hosts that do not wire the quality
 						// plugin skip this check entirely.
 						if (typeof options.runQuality === 'function') {
-							const quality = await options.runQuality();
+							const quality = await options.runQuality(
+								validationDecision !== undefined
+									? {
+											scopes: validationDecision.resolvedScopes,
+											mode:
+												validationDecision.mode ===
+												'blocked'
+													? 'full'
+													: validationDecision.mode,
+										}
+									: undefined,
+							);
 							if (quality.severity === 'error') {
 								const err: ICloseSliceThrownError =
 									Object.assign(
@@ -1170,6 +1232,9 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 							validationOutput: String(err.output ?? ''),
+							...(err.validationDecision !== undefined
+								? { validationDecision: err.validationDecision }
+								: {}),
 							...(err.persist !== undefined
 								? { persist: err.persist }
 								: {}),
@@ -1274,6 +1339,9 @@ export const buildCloseSliceRegistration = (
 					lockReleased,
 					persist: persisted,
 					pendingIntegrationBranch,
+					...(validationDecision !== undefined
+						? { validationDecision }
+						: {}),
 				});
 			},
 		);

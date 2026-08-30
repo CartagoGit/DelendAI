@@ -24,6 +24,13 @@ import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
 
+export interface ICloseSliceValidationDecision {
+	readonly mode: 'scoped' | 'full' | 'blocked';
+	readonly resolvedScopes: readonly string[];
+	readonly snapshotId: string;
+	readonly reason: string;
+}
+
 export interface IAuthoringPersistConfig {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
 	readonly messageTemplate?: string;
@@ -124,6 +131,8 @@ export interface IAuthoringToolOptions {
 	 */
 	readonly runQuality?: (input?: {
 		readonly skipWhenValidateEvidenceFresh?: boolean;
+		readonly scopes?: readonly string[];
+		readonly mode?: 'scoped' | 'full';
 	}) => Promise<{
 		readonly ok: boolean;
 		readonly severity: 'ok' | 'error';
@@ -133,6 +142,13 @@ export interface IAuthoringToolOptions {
 			readonly scopes: number;
 		};
 	}>;
+	/** f00386: resolve the validation mode for the current slice. */
+	readonly resolveValidationDecision?: (input: {
+		readonly operation: 'close';
+		readonly ownedFiles: readonly string[];
+		readonly proposalId: string;
+		readonly sliceId: string;
+	}) => Promise<ICloseSliceValidationDecision>;
 	/** x00298 S3: configured persistence for close_slice. */
 	readonly persist?: IAuthoringPersistConfig;
 }
