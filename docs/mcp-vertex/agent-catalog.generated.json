@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-30T02:45:40.883Z",
+	"generatedAt": "2026-08-30T03:05:09.518Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1949,23 +1949,9 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00282",
-				"title": "x00282",
-				"track": "ci",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00287",
 				"title": "x00287",
 				"track": "adaptive",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00289",
-				"title": "x00289",
-				"track": "security",
 				"status": "ready",
 				"kind": "fix"
 			},
@@ -2027,11 +2013,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 100,
+			"ready": 98,
 			"in-progress": 9,
 			"review": 0,
 			"paused": 2,
-			"done": 522,
+			"done": 524,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
