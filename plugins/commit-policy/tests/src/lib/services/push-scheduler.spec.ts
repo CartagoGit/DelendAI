@@ -4,7 +4,7 @@
  * protection, and dispose idempotency.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
@@ -47,6 +47,14 @@ const basePushPolicy = (
 });
 
 describe('push scheduler (x00266)', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('does not push when no mode is enabled', async () => {
 		const pushCount = { n: 0 };
 		const scheduler = createPushScheduler({
@@ -106,15 +114,17 @@ describe('push scheduler (x00266)', () => {
 		expect(await scheduler.onCommitSucceeded()).toBeNull();
 	});
 
-	it('fires ONE push when onCommit + everyNCommits both trigger', async () => {
+	it('suppresses onCommit until everyNCommits closes the window', async () => {
 		const pushCount = { n: 0 };
 		const scheduler = createPushScheduler({
 			run: buildRunner('feature/x', ok('pushed\n')),
-			policy: basePushPolicy({ onCommit: true, everyNCommits: 1 }),
+			policy: basePushPolicy({ onCommit: true, everyNCommits: 3 }),
 			onAttempt: () => {
 				pushCount.n += 1;
 			},
 		});
+		expect(await scheduler.onCommitSucceeded()).toBeNull();
+		expect(await scheduler.onCommitSucceeded()).toBeNull();
 		expect((await scheduler.onCommitSucceeded())?.ok).toBe(true);
 		expect(pushCount.n).toBe(1);
 	});
@@ -134,7 +144,7 @@ describe('push scheduler (x00266)', () => {
 		const result = await scheduler.onCommitSucceeded();
 		expect(result?.ok).toBe(false);
 		if (result?.ok === false)
-			expect(result.refusal).toContain('protectedBranches');
+			expect(result.refusal).toContain('BRANCH_PROTECTED');
 		expect(pushCount.n).toBe(1);
 	});
 
@@ -155,6 +165,27 @@ describe('push scheduler (x00266)', () => {
 		expect(result?.ok).toBe(true);
 		if (result?.ok !== true) return;
 		expect(result.branch).toBe('develop');
+		expect(pushCount.n).toBe(1);
+	});
+
+	it('refuses pushes on master even when config omits it from protectedBranches', async () => {
+		const pushCount = { n: 0 };
+		const scheduler = createPushScheduler({
+			run: buildRunner('master', ok('pushed\n')),
+			policy: basePushPolicy({
+				onCommit: true,
+				protectedBranches: [],
+			}),
+			onAttempt: () => {
+				pushCount.n += 1;
+			},
+		});
+		const result = await scheduler.onCommitSucceeded();
+		expect(result?.ok).toBe(false);
+		if (result?.ok === false)
+			expect(result.refusal).toContain(
+				'DIRECT_PUSH_TO_MASTER_NOT_ALLOWED',
+			);
 		expect(pushCount.n).toBe(1);
 	});
 
@@ -219,6 +250,29 @@ describe('push scheduler (x00266)', () => {
 		});
 		scheduler.start();
 		scheduler.stop();
+	});
+
+	it('pushes once on everyNMinutes and stop() prevents later ticks', async () => {
+		const pushCount = { n: 0 };
+		const scheduler = createPushScheduler({
+			run: buildRunner('feature/x', ok('pushed\n')),
+			policy: basePushPolicy({ everyNMinutes: 1 }),
+			onAttempt: () => {
+				pushCount.n += 1;
+			},
+		});
+
+		scheduler.start();
+		expect(await scheduler.onCommitSucceeded()).toBeNull();
+
+		await vi.advanceTimersByTimeAsync(60_000);
+		await scheduler.flush();
+		expect(pushCount.n).toBe(1);
+
+		scheduler.stop();
+		await vi.advanceTimersByTimeAsync(60_000);
+		await scheduler.flush();
+		expect(pushCount.n).toBe(1);
 	});
 
 	it('serializes concurrent onCommitSucceeded calls', async () => {

@@ -63,7 +63,8 @@ campo `branchPolicy`:
 - Cualquier otra rama permite commit y push directo cuando `commit.enabled` y
   `push.enabled` están activados.
 - En este repositorio, `develop` es la rama de trabajo compartida y permite
-  commit y push directo; `main` es la frontera protegida que requiere revisión.
+  commit y push directo cuando `push.protectedBranches` no la incluye; `main`
+  es la frontera protegida que requiere revisión.
 
 ### Modos de identidad
 
@@ -112,7 +113,9 @@ La `mcp-vertex.config.json` raíz lo activa con:
 
 Es decir: cada vez que un slice transiciona a `done`, el motor commitea como
 el usuario global de git de la máquina y empuja el resultado a `origin/develop`
-(con `--force-with-lease`). Rechaza `main`/`master`.
+(con `--force-with-lease`). Mientras `develop` no aparezca en
+`push.protectedBranches`, ese destino configurado es válido y debe respetarse;
+`main`/`master` siguen rechazados.
 
 ## Licencia
 

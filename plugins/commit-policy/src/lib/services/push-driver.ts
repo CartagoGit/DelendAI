@@ -47,6 +47,7 @@ type IMainPushGuardResolution =
 	| { readonly ok: false; readonly refusal: string };
 
 const DIRECT_PUSH_TO_MAIN_NOT_ALLOWED = 'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED';
+const DIRECT_PUSH_TO_MASTER_NOT_ALLOWED = 'DIRECT_PUSH_TO_MASTER_NOT_ALLOWED';
 
 /**
  * Plain `--force` rewrites shared history irreversibly, so `gitPush`
@@ -99,13 +100,20 @@ const forceModeToGitPush = (mode: ForceMode): IPushForceMode => {
 export const enforceMainPushGuard = (
 	branch: string,
 ): IMainPushGuardResolution => {
-	// Defense in depth: main nunca acepta push directo (x00272). Inline
-	// `branch === 'main'` es la forma canónica ratcheteada por
-	// `lint:commit-push-strictness` — no usar constante intermedia.
+	// Defense in depth: `main` y `master` nunca aceptan push directo.
+	// `develop` queda enteramente bajo la config (`protectedBranches`).
+	// Inline `branch === 'main'` sigue siendo la forma canónica
+	// ratcheteada por `lint:commit-push-strictness`.
 	if (branch === 'main') {
 		return {
 			ok: false,
 			refusal: `push refused: ${DIRECT_PUSH_TO_MAIN_NOT_ALLOWED} — direct push to 'main' is not allowed; cuts the release/publish path. Next: open a PR from a feature branch (release/* or develop).`,
+		};
+	}
+	if (branch === 'master') {
+		return {
+			ok: false,
+			refusal: `push refused: ${DIRECT_PUSH_TO_MASTER_NOT_ALLOWED} — direct push to 'master' is not allowed; use a PR from a feature branch instead.`,
 		};
 	}
 	return { ok: true };

@@ -175,7 +175,9 @@ describe('commit-policy dogfood E2E', () => {
 		const protectedResult = await protectedScheduler.onCommitSucceeded();
 		expect(protectedResult?.ok).toBe(false);
 		if (protectedResult?.ok === false)
-			expect(protectedResult.refusal).toContain('protectedBranches');
+			expect(protectedResult.refusal).toContain(
+				'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED',
+			);
 
 		await git(workspace, 'checkout', '-q', '--detach');
 		const detachedScheduler = createPushScheduler({
@@ -188,6 +190,26 @@ describe('commit-policy dogfood E2E', () => {
 		expect(detachedResult?.ok).toBe(false);
 		if (detachedResult?.ok === false)
 			expect(detachedResult.refusal).toContain('detached');
+	});
+
+	it('permits configured push to develop when develop is not protected', async () => {
+		await git(workspace, 'checkout', '-q', 'develop');
+		const result = await createPushScheduler({
+			run: runner,
+			policy: CommitPolicyOptionsSchema.parse({
+				push: {
+					enabled: true,
+					onCommit: true,
+					force: 'with-lease',
+					protectedBranches: ['main', 'master'],
+					remote: 'origin',
+					branch: 'develop',
+				},
+			}).push,
+		}).pushNow();
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.branch).toBe('develop');
 	});
 
 	it('refuses a commit when commit.enabled is false', async () => {
@@ -238,6 +260,6 @@ describe('commit-policy dogfood E2E', () => {
 		}).pushNow();
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('protectedBranches');
+		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
 	});
 });

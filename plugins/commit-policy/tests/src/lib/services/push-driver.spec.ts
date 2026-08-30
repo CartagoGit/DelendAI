@@ -64,11 +64,16 @@ const basePush = (
 });
 
 describe('runPushDriver', () => {
-	it('enforceMainPushGuard blocks only direct push to main', () => {
+	it('enforceMainPushGuard blocks only direct push to main and master', () => {
 		expect(enforceMainPushGuard('main')).toEqual({
 			ok: false,
 			refusal:
 				"push refused: DIRECT_PUSH_TO_MAIN_NOT_ALLOWED — direct push to 'main' is not allowed; cuts the release/publish path. Next: open a PR from a feature branch (release/* or develop).",
+		});
+		expect(enforceMainPushGuard('master')).toEqual({
+			ok: false,
+			refusal:
+				"push refused: DIRECT_PUSH_TO_MASTER_NOT_ALLOWED — direct push to 'master' is not allowed; use a PR from a feature branch instead.",
 		});
 		expect(enforceMainPushGuard('develop')).toEqual({ ok: true });
 		expect(enforceMainPushGuard('agent/copilot')).toEqual({ ok: true });
@@ -103,6 +108,22 @@ describe('runPushDriver', () => {
 		expect(result.refusal).toContain(
 			'open a PR from a feature branch (release/* or develop).',
 		);
+	});
+
+	it('refuses direct push to master even when protectedBranches omits it', async () => {
+		const { run, pushes } = buildPushFake();
+		const result = await runPushDriver(
+			{ remote: 'origin', branch: 'master' },
+			basePush({ protectedBranches: [] }),
+			run,
+		);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.refusal).toContain('DIRECT_PUSH_TO_MASTER_NOT_ALLOWED');
+		expect(result.refusal).toContain(
+			"direct push to 'master' is not allowed",
+		);
+		expect(pushes.calls.length).toBe(0);
 	});
 
 	it('uses the configured remote + branch when no override is passed', async () => {
@@ -247,6 +268,19 @@ describe('runPushDriver', () => {
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
 		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(pushes.calls.length).toBe(0);
+	});
+
+	it('refuses master resolved from the current branch even when protectedBranches is empty', async () => {
+		const { run, pushes } = buildPushFake({ currentBranch: 'master' });
+		const result = await runPushDriver(
+			{},
+			basePush({ remote: 'origin', protectedBranches: [] }),
+			run,
+		);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.refusal).toContain('DIRECT_PUSH_TO_MASTER_NOT_ALLOWED');
 		expect(pushes.calls.length).toBe(0);
 	});
 
