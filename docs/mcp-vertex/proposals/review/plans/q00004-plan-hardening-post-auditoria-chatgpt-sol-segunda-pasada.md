@@ -202,41 +202,41 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 ### N. Track A — Filesystem security (P1)
 
-| Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                |
-|-----------|-------|-----------|---------------------------------------------------------------------|
-| `x00241`  | fix   | P1        | FS2-001 + FS2-002 (parcial) — `SafeWorkspaceReader` API pública     |
-| `x00242`  | fix   | P1        | FS2-001 — `context-for-change` containment                          |
-| `x00243`  | fix   | P1        | FS2-002 — `impact-analysis` + `tests-for-change` containment        |
-| `c00004`  | chore | P2        | FS2-003 — lint arquitectónico que bloquea nuevos escapes            |
+| Propuesta | ID    | Prioridad | Hallazgos cubiertos                                             |
+| --------- | ----- | --------- | --------------------------------------------------------------- |
+| `x00241`  | fix   | P1        | FS2-001 + FS2-002 (parcial) — `SafeWorkspaceReader` API pública |
+| `x00242`  | fix   | P1        | FS2-001 — `context-for-change` containment                      |
+| `x00243`  | fix   | P1        | FS2-002 — `impact-analysis` + `tests-for-change` containment    |
+| `c00004`  | chore | P2        | FS2-003 — lint arquitectónico que bloquea nuevos escapes        |
 
 **Objetivo del track**: hacer **técnicamente imposible** que un plugin con permiso `filesystem-read` pueda abrir una ruta exterior al workspace. La garantía se centraliza en una API `SafeWorkspaceReader` (Track A) y se blinda con un lint arquitectónico que falla el CI si alguien la esquiva.
 
 ### N. Track B — Concurrency (P1)
 
-| Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                |
-|-----------|-------|-----------|---------------------------------------------------------------------|
-| `t00028`  | test  | P1        | MUT2-001 — test determinista de race de stale reclaim               |
-| `x00244`  | fix   | P1        | MUT2-001 — rediseño del reclaim con lease/generation o equivalente |
-| `t00008`  | test  | P1        | MUT2-001 — property tests sobre la state machine del mutex         |
+| Propuesta | ID   | Prioridad | Hallazgos cubiertos                                                |
+| --------- | ---- | --------- | ------------------------------------------------------------------ |
+| `t00028`  | test | P1        | MUT2-001 — test determinista de race de stale reclaim              |
+| `x00244`  | fix  | P1        | MUT2-001 — rediseño del reclaim con lease/generation o equivalente |
+| `t00008`  | test | P1        | MUT2-001 — property tests sobre la state machine del mutex         |
 
 **Objetivo del track**: reproducir o descartar la race window entre `observation` y `rename` durante stale reclaim. Si se reproduce, rediseñar el reclaim (lease/generation, reclaim marker visible, rename protocol atómico). Nunca dos holders simultáneos bajo heartbeat concurrente, crash, stale reclaim o 3+ contenders.
 
 ### N. Track C — Tokens (P1/P2)
 
-| Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                       |
-|-----------|--------|-----------|---------------------------------------------------------------------------|
-| `c00005`  | infra  | P1        | TOK2-001 + TOK2-002 — gate CI real con ensamblado real del preset swarm   |
-| `c00006`  | infra  | P2        | TOK2-003 — `tokens:dashboard:check` en CI                                 |
-| `r00018`  | refac  | P2        | TOK2-005 — reducción del coste estático de `proposals` (target <40 KB)    |
-| `r00019`  | refac  | P2        | TOK2-004 — estrategia default `adaptive` con benchmark                    |
-| `c00007`  | infra  | P2        | TOK2-006 — presupuesto explícito para `vertex`                            |
+| Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                     |
+| --------- | ----- | --------- | ----------------------------------------------------------------------- |
+| `c00005`  | infra | P1        | TOK2-001 + TOK2-002 — gate CI real con ensamblado real del preset swarm |
+| `c00006`  | infra | P2        | TOK2-003 — `tokens:dashboard:check` en CI                               |
+| `r00018`  | refac | P2        | TOK2-005 — reducción del coste estático de `proposals` (target <40 KB)  |
+| `r00019`  | refac | P2        | TOK2-004 — estrategia default `adaptive` con benchmark                  |
+| `c00007`  | infra | P2        | TOK2-006 — presupuesto explícito para `vertex`                          |
 
 **Objetivo del track**: que el `swarm` real quede **<= hard budget** y preferiblemente **<= warning**; que el CI falle si el preset real supera el techo; que el dashboard tracked esté sincronizado con HEAD; que `proposals` pierda ~50% de su coste estático sin perder tipado estricto.
 
 ### N. Track D — PRIVACY (P0 — MÁXIMO ÉNFASIS LEGAL)
 
-| Propuesta | ID       | Prioridad | Hallazgos cubiertos                                                       |
-|-----------|----------|-----------|---------------------------------------------------------------------------|
+| Propuesta | ID       | Prioridad | Hallazgos cubiertos                                                      |
+| --------- | -------- | --------- | ------------------------------------------------------------------------ |
 | `x00245`  | fix      | P0        | ER2-001 — provenance segura de `toolId` (`ISafeToolIdentity` registry)   |
 | `b00236`  | breaking | P0        | ER2-002 — retirar `internalOnly:false`; reporting imposible por config   |
 | `x00237`  | fix      | P0        | ER2-003 — fuente canónica de `mcpVertexVersion` (build-time injected)    |
@@ -248,41 +248,41 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 ### N. Track E — Manifests (P2)
 
-| Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                |
-|-----------|--------|-----------|---------------------------------------------------------------------|
-| `f00174`  | feat   | P2        | MAN2-001 + MAN2-002 — autodiscovery + manifest obligatorio          |
-| `f00175`  | feat   | P2        | MAN2-003..006 — registry/web/docs/permissions generados             |
-| `c00008`  | infra  | P2        | MAN2-007 — validación manifest ↔ package.json + visibility          |
-| `c00009`  | infra  | P2        | MAN2-008 — validación manifest ↔ preset catalog (gate completo)     |
+| Propuesta | ID    | Prioridad | Hallazgos cubiertos                                             |
+| --------- | ----- | --------- | --------------------------------------------------------------- |
+| `f00174`  | feat  | P2        | MAN2-001 + MAN2-002 — autodiscovery + manifest obligatorio      |
+| `f00175`  | feat  | P2        | MAN2-003..006 — registry/web/docs/permissions generados         |
+| `c00008`  | infra | P2        | MAN2-007 — validación manifest ↔ package.json + visibility      |
+| `c00009`  | infra | P2        | MAN2-008 — validación manifest ↔ preset catalog (gate completo) |
 
 **Objetivo del track**: que `plugin.manifest.ts` sea la **única** fuente para id, package, version, visibility, summary, tags, maturity, permissions, toolPermissions, presets, tokenBudget, dependencies, capabilities. Eliminar `MIGRATED_PLUGIN_IDS`. Registry, web catalog, docs, permission matrix y preset compatibility matrix se generan automáticamente desde manifests.
 
 ### N. Track F — Quality (P2/P3)
 
-| Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                |
-|-----------|--------|-----------|---------------------------------------------------------------------|
-| `x00238`  | fix    | P3        | ADOPT2-001 — `EXACT_ADOPTION_WRITE_ESTIMATE` derivado del plan real |
-| `x00239`  | fix    | P3        | PROC2-001 — edge UTF-8 al recortar chunks de proceso                |
-| `x00240`  | fix    | P3        | MEM2-002 — disposer del plugin cierra `fs.watch` + debounce timer  |
-| `r00020`  | refac  | P2        | PRE2-001 + PRE2-002 — summaries y presupuestos derivados por preset |
+| Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                 |
+| --------- | ----- | --------- | ------------------------------------------------------------------- |
+| `x00238`  | fix   | P3        | ADOPT2-001 — `EXACT_ADOPTION_WRITE_ESTIMATE` derivado del plan real |
+| `x00239`  | fix   | P3        | PROC2-001 — edge UTF-8 al recortar chunks de proceso                |
+| `x00240`  | fix   | P3        | MEM2-002 — disposer del plugin cierra `fs.watch` + debounce timer   |
+| `r00020`  | refac | P2        | PRE2-001 + PRE2-002 — summaries y presupuestos derivados por preset |
 
 **Objetivo del track**: precisión (adoption ya no miente con un 25 fijo), seguridad de bytes en procesos, lifecycle de memory (watcher dispose), y coherencia entre summaries editados y membership real.
 
 ### N. Track G — CI / gobernanza (P2)
 
-| Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                |
-|-----------|--------|-----------|---------------------------------------------------------------------|
-| `c00010`  | infra  | P2        | CI2-001 — required checks en branch policy                         |
-| `c00011`  | infra  | P2        | CI2-003 + CI2-005 — generator checks + workflow run evidence       |
+| Propuesta | ID    | Prioridad | Hallazgos cubiertos                                          |
+| --------- | ----- | --------- | ------------------------------------------------------------ |
+| `c00010`  | infra | P2        | CI2-001 — required checks en branch policy                   |
+| `c00011`  | infra | P2        | CI2-003 + CI2-005 — generator checks + workflow run evidence |
 
 **Objetivo del track**: que ningún agente pueda dejar `develop` en rojo silenciosamente. Required checks mínimos: typecheck, tests, architecture, security, runtime verify, token budget real. Los generadores (manifests, token dashboard, web catalog) deben fallar CI si quedan desincronizados.
 
 ### N. Track H — Surface runtime (P2)
 
-| Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                |
-|-----------|--------|-----------|---------------------------------------------------------------------|
-| `r00021`  | refac  | P2        | SURF2-001 + SURF2-002 — `notifications/tools/list_changed` + bootstrap mínimo |
-| `f00176`  | feat   | P2        | SURF2-003 — surface mode por `clientInfo/capabilities`               |
+| Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                           |
+| --------- | ----- | --------- | ----------------------------------------------------------------------------- |
+| `r00021`  | refac | P2        | SURF2-001 + SURF2-002 — `notifications/tools/list_changed` + bootstrap mínimo |
+| `f00176`  | feat  | P2        | SURF2-003 — surface mode por `clientInfo/capabilities`                        |
 
 **Objetivo del track**: que la activación dinámica sea la experiencia normal, no un fallback. Que el bootstrap exponga solo orientation/discovery/activation/status/routing. Que el surface mode se decida por capacidades declaradas del cliente (no por heurística de nombre).
 
