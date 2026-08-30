@@ -212,7 +212,9 @@ const pushWouldHitProtectedBranch = (
 			(token) =>
 				token === branch ||
 				token.endsWith(`/${branch}`) ||
-				token.endsWith(`\\${branch}`),
+				token.endsWith(`\\${branch}`) ||
+				token.endsWith(`:${branch}`) ||
+				token.endsWith(`:/${branch}`),
 		),
 	);
 };

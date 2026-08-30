@@ -19,6 +19,11 @@ export type IToolAccessState = 'visible' | 'hidden' | 'deactivated';
 
 export type IToolExposureState = 'visible' | 'hidden' | 'unknown';
 
+export interface ISurfaceListChangeBatcher {
+	batch<T>(work: () => Promise<T>): Promise<T>;
+	batchSync<T>(work: () => T): T;
+}
+
 export interface IToolSurfaceDescriptor {
 	readonly registrationId: string;
 	readonly name: string;
@@ -181,6 +186,9 @@ export interface IToolSurfaceRuntime {
 		| undefined;
 	readonly setLazyPluginLoader?:
 		| ((loader: (pluginId: string) => Promise<void>) => void)
+		| undefined;
+	readonly setListChangeBatcher?:
+		| ((batcher: ISurfaceListChangeBatcher) => void)
 		| undefined;
 	deactivatePlugin(identifier: string): IPluginSurfaceChange | null;
 	/**

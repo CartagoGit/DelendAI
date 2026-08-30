@@ -466,7 +466,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 			);
 			const matches = result.proposals.filter((p) => p.id === 'f501');
 			expect(matches).toHaveLength(1);
-			expect(matches[0]?.file).toBe('ready/feats/f501-misfiled.md');
+			expect(matches[0]?.file).toBe('ready/feats/f00501-misfiled.md');
 		});
 
 		// n007 (resume kind): proposals living in kind sub-folders inside
@@ -494,7 +494,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 			);
 			const matches = result.proposals.filter((p) => p.id === 'n001');
 			expect(matches).toHaveLength(1);
-			expect(matches[0]?.file).toBe('done/resumes/n001-handoff.md');
+			expect(matches[0]?.file).toBe('done/resumes/n00001-handoff.md');
 			expect(matches[0]?.status).toBe('done');
 		});
 

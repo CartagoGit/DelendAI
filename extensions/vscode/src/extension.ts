@@ -341,6 +341,17 @@ export const activate = async (
 		handle.register(`sub-${trackSeq++}`, disposable);
 		return disposable;
 	};
+	// Register network-backed commands before the initial overview/status-bar
+	// refresh. A slow or unavailable MCP server must not leave manifest
+	// commands visible but unregistered in the workbench.
+	for (const reg of registerProviderActionCommands({
+		vscode,
+		client,
+		globalState: context.globalState,
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	})) {
+		track(reg);
+	}
 	registerDevelopmentAutoReload(context, vscode, track);
 
 	const overview = new OverviewService(client, namespacePrefix);
@@ -510,17 +521,6 @@ export const activate = async (
 	);
 	track(registerMemorySaveCommand({ vscode, client, memoryTree }));
 	track(registerMemoryForgetCommand({ vscode, client, memoryTree }));
-	// S3: provider dashboard panel + its action commands (pause/
-	// resume/healthcheck/usage report/usage clear-with-modal-confirm).
-	// The panel repaints when these commands run — never by polling.
-	for (const reg of registerProviderActionCommands({
-		vscode,
-		client,
-		globalState: context.globalState,
-		...withPrefix,
-	})) {
-		track(reg);
-	}
 	// S5: external-server activation ack surface (gate decision 5).
 	// The command lists pending acks → QuickPick → accept/reject via the
 	// external_mcp_ack tool; a NON-MODAL toast surfaces them at activation.

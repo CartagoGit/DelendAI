@@ -14,6 +14,7 @@ import type {
 	IToolSurfaceSearchEntry,
 	IToolSurfaceLazyBinding,
 	IToolSurfaceWorkingSetPolicy,
+	ISurfaceListChangeBatcher,
 } from '../contracts/interfaces/tool-surface.interface';
 import {
 	buildDryRunContractViolationResult,
@@ -143,6 +144,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	private readonly loadedPluginIds = new Set<string>();
 	private readonly workingSetPolicy: IToolSurfaceWorkingSetPolicy;
 	private lazyPluginLoader: ((pluginId: string) => Promise<void>) | undefined;
+	private listChangeBatcher: ISurfaceListChangeBatcher | undefined;
 	/**
 	 * Every `bindLazyTool` activator ever handed to this runtime, keyed
 	 * by registrationId, retained FOREVER — even once the tool
@@ -422,11 +424,16 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}
 
 	activatePlugin(identifier: string): IPluginSurfaceChange | null {
-		return this.setPluginState(identifier, true);
+		const activate = () => this.setPluginState(identifier, true);
+		return this.listChangeBatcher?.batchSync(activate) ?? activate();
 	}
 
 	setLazyPluginLoader(loader: (pluginId: string) => Promise<void>): void {
 		this.lazyPluginLoader = loader;
+	}
+
+	setListChangeBatcher(batcher: ISurfaceListChangeBatcher): void {
+		this.listChangeBatcher = batcher;
 	}
 
 	setPluginDisposer(disposer: (pluginId: string) => Promise<void>): void {
@@ -445,12 +452,16 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	): Promise<IPluginSurfaceChange | null> {
 		const plugin = this.pluginIndex.get(identifier);
 		if (plugin === undefined) return null;
-		await this.lazyPluginLoader?.(plugin.id);
-		return this.activatePlugin(identifier);
+		const activate = async () => {
+			await this.lazyPluginLoader?.(plugin.id);
+			return this.activatePlugin(identifier);
+		};
+		return this.listChangeBatcher?.batch(activate) ?? activate();
 	}
 
 	deactivatePlugin(identifier: string): IPluginSurfaceChange | null {
-		return this.setPluginState(identifier, false);
+		const deactivate = () => this.setPluginState(identifier, false);
+		return this.listChangeBatcher?.batchSync(deactivate) ?? deactivate();
 	}
 
 	getProjectContext(input: {

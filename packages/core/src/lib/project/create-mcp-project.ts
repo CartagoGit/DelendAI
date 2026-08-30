@@ -17,6 +17,73 @@ import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resource
 const DISPOSE_DRAIN_TIMEOUT_MS = 5_000;
 const DISPOSE_DRAIN_POLL_MS = 25;
 
+const installListChangeBatching = (
+	server: McpServer,
+): {
+	batch<T>(work: () => Promise<T>): Promise<T>;
+	batchSync<T>(work: () => T): T;
+} => {
+	let depth = 0;
+	let toolsPending = false;
+	let promptsPending = false;
+	let resourcesPending = false;
+	const sendToolListChanged = server.sendToolListChanged.bind(server);
+	const sendPromptListChanged = server.sendPromptListChanged.bind(server);
+	const sendResourceListChanged = server.sendResourceListChanged.bind(server);
+	server.sendToolListChanged = () => {
+		if (depth > 0) {
+			toolsPending = true;
+			return Promise.resolve();
+		}
+		return sendToolListChanged();
+	};
+	server.sendPromptListChanged = () => {
+		if (depth > 0) {
+			promptsPending = true;
+			return Promise.resolve();
+		}
+		return sendPromptListChanged();
+	};
+	server.sendResourceListChanged = () => {
+		if (depth > 0) {
+			resourcesPending = true;
+			return Promise.resolve();
+		}
+		return sendResourceListChanged();
+	};
+	const flush = async (): Promise<void> => {
+		const flushTools = toolsPending;
+		const flushPrompts = promptsPending;
+		const flushResources = resourcesPending;
+		toolsPending = false;
+		promptsPending = false;
+		resourcesPending = false;
+		if (flushTools) await sendToolListChanged();
+		if (flushPrompts) await sendPromptListChanged();
+		if (flushResources) await sendResourceListChanged();
+	};
+	return {
+		async batch<T>(work: () => Promise<T>): Promise<T> {
+			depth += 1;
+			try {
+				return await work();
+			} finally {
+				depth -= 1;
+				if (depth === 0) await flush();
+			}
+		},
+		batchSync<T>(work: () => T): T {
+			depth += 1;
+			try {
+				return work();
+			} finally {
+				depth -= 1;
+				if (depth === 0) void flush();
+			}
+		},
+	};
+};
+
 /**
  * An assembled (but not yet connected) MCP server. `start()` connects
  * the stdio transport; `registrationOrder` exposes the exact tool
@@ -100,6 +167,7 @@ export async function createMcpProject(
 		name: config.metadata.name,
 		version: config.metadata.version,
 	});
+	const withListChangeBatch = installListChangeBatching(server);
 	// Instrument BEFORE registering tools so every handler is wrapped.
 	instrumentToolHandlers(server, config);
 	const toolSurfaceRuntime =
@@ -111,6 +179,9 @@ export async function createMcpProject(
 		config.toolSurfaceRuntime !== undefined
 	) {
 		config.toolSurfaceRuntime.bind(toolSurfaceRuntime);
+	}
+	if (toolSurfaceRuntime !== undefined) {
+		toolSurfaceRuntime.setListChangeBatcher?.(withListChangeBatch);
 	}
 	const knowledgeResourceRegistrations = new Map<string, Promise<void>>();
 	const registerKnowledgeResource = (
@@ -142,6 +213,7 @@ export async function createMcpProject(
 				readonly handler: unknown;
 			}>
 		>();
+		const announcedLazyPlugins = new Set<string>();
 		const drainLazyPluginRegistrations = async (): Promise<void> => {
 			for (const registrations of config.consumeLazyPluginRegistrations?.() ??
 				[]) {
@@ -235,21 +307,45 @@ export async function createMcpProject(
 			toolSurfaceRuntime.setLazyPluginLoader !== undefined
 		) {
 			toolSurfaceRuntime.setLazyPluginLoader(async (pluginId) => {
-				const activatePlugin =
-					config.lazyPluginActivators?.get(pluginId);
-				if (activatePlugin === undefined) return;
-				await activatePlugin();
-				const plugin = config.toolSurfacePlan?.plugins.find(
-					(entry) => entry.id === pluginId,
-				);
-				for (const registrationId of plugin?.toolRegistrationIds ??
-					[]) {
-					const materialize = lazyToolActivators.get(registrationId);
-					if (materialize !== undefined) {
-						await materializeLazyTool(registrationId, materialize);
+				await withListChangeBatch.batch(async () => {
+					const activatePlugin =
+						config.lazyPluginActivators?.get(pluginId);
+					if (activatePlugin === undefined) return;
+					await activatePlugin();
+					const plugin = config.toolSurfacePlan?.plugins.find(
+						(entry) => entry.id === pluginId,
+					);
+					const discoveredToolNames: string[] = [];
+					for (const registrationId of plugin?.toolRegistrationIds ??
+						[]) {
+						const materialize =
+							lazyToolActivators.get(registrationId);
+						if (materialize !== undefined) {
+							await materializeLazyTool(
+								registrationId,
+								materialize,
+							);
+							const descriptor =
+								config.toolSurfacePlan?.descriptors.find(
+									(entry) =>
+										entry.registrationId === registrationId,
+								);
+							if (descriptor !== undefined) {
+								discoveredToolNames.push(descriptor.name);
+							}
+						}
 					}
-				}
-				await drainLazyPluginRegistrations();
+					await drainLazyPluginRegistrations();
+					if (
+						discoveredToolNames.length > 0 &&
+						!announcedLazyPlugins.has(pluginId)
+					) {
+						announcedLazyPlugins.add(pluginId);
+						process.stderr.write(
+							`[surface] plugin-discovered plugin=${pluginId} tools=${discoveredToolNames.length} names=${discoveredToolNames.join(', ')}\n`,
+						);
+					}
+				});
 			});
 		}
 		if (
