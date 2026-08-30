@@ -28,7 +28,12 @@ const registeredHandlers = async () => {
 	await store.appendEvent(
 		normalizeEvent(
 			'tool-failed',
-			{ toolName: 'beta', agent: 'a1' },
+			{
+				toolName: 'beta',
+				agent: 'a1',
+				error: { message: 'boom', stack: 'Error: boom\n    at beta' },
+				summary: 'tool-failed: beta — boom',
+			},
 			new Date('2026-06-20T10:01:00.000Z')
 		)
 	);
@@ -37,7 +42,12 @@ const registeredHandlers = async () => {
 	await errorStore.appendEvent(
 		normalizeEvent(
 			'tool-failed',
-			{ toolName: 'gamma', agent: 'a1', error: 'boom' },
+			{
+				toolName: 'gamma',
+				agent: 'a1',
+				error: 'boom',
+				summary: 'tool-failed: gamma — boom',
+			},
 			new Date('2026-06-20T10:02:00.000Z')
 		)
 	);
@@ -94,10 +104,21 @@ describe('log tools', async () => {
 			})
 		);
 		expect(second.detail).toBe('full');
-		expect(
-			(second.events as Array<{ meta: Record<string, unknown> }>)[0]?.meta
-				.toolName
-		).toBe('beta');
+		const secondEvent = (second.events as Array<{
+			meta: {
+				toolName?: string;
+				error?: Record<string, unknown>;
+			};
+			summary: string;
+		}>)[0];
+		expect(secondEvent?.meta.toolName).toBe('beta');
+		expect(secondEvent?.summary).toBe('tool-failed: beta');
+		expect(secondEvent?.meta.error).toEqual({
+			redacted: true,
+			fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+			hasStack: true,
+		});
+		expect(JSON.stringify(secondEvent)).not.toContain('boom');
 		expect(second.hasMore).toBe(false);
 	});
 
@@ -121,13 +142,23 @@ describe('log tools', async () => {
 			})
 		);
 		expect(detailedTail.detail).toBe('full');
-		expect(
-			(
-				detailedTail.events as Array<{
-					meta: Record<string, unknown>;
-				}>
-			)[0]?.meta.toolName
-		).toBe('beta');
+		const detailedEvent = (
+			detailedTail.events as Array<{
+				meta: {
+					toolName?: string;
+					error?: Record<string, unknown>;
+				};
+				summary: string;
+			}>
+		)[0];
+		expect(detailedEvent?.meta.toolName).toBe('beta');
+		expect(detailedEvent?.summary).toBe('tool-failed: beta');
+		expect(detailedEvent?.meta.error).toEqual({
+			redacted: true,
+			fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+			hasStack: true,
+		});
+		expect(JSON.stringify(detailedEvent)).not.toContain('boom');
 
 		const sub = structured(
 			await handlers.get('logs_subscribe')?.({ limit: 2 })
@@ -157,13 +188,23 @@ describe('log tools', async () => {
 			await handlers.get('logs_errors_tail')?.({ includeMeta: true })
 		);
 		expect(detailed.detail).toBe('full');
-		expect(
-			(
-				detailed.events as Array<{
-					meta: Record<string, unknown>;
-				}>
-			)[0]?.meta.toolName
-		).toBe('gamma');
+		const detailedErrorEvent = (
+			detailed.events as Array<{
+				meta: {
+					toolName?: string;
+					error?: Record<string, unknown>;
+				};
+				summary: string;
+			}>
+		)[0];
+		expect(detailedErrorEvent?.meta.toolName).toBe('gamma');
+		expect(detailedErrorEvent?.summary).toBe('tool-failed: gamma');
+		expect(detailedErrorEvent?.meta.error).toEqual({
+			redacted: true,
+			fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+			hasStack: false,
+		});
+		expect(JSON.stringify(detailedErrorEvent)).not.toContain('boom');
 	});
 
 	it('errors_tail honors includeMeta:false to strip context', async () => {
