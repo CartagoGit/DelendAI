@@ -91,6 +91,7 @@ export interface ILazyPluginRouter {
 	loadToolOwner(toolName: string): Promise<IPluginRouteLoadResult>;
 	loadPromptOwner(promptName: string): Promise<IPluginRouteLoadResult>;
 	loadResourceOwner(resourceUri: string): Promise<IPluginRouteLoadResult>;
+	isInitialized(): boolean;
 	pluginState(pluginId: string): PluginState | undefined;
 	transitionPlugin(
 		pluginId: string,
@@ -428,6 +429,9 @@ export const createLazyPluginRouter = (
 		},
 		loadResourceOwner(resourceUri) {
 			return loadRouteOwner('resource', resourceUri);
+		},
+		isInitialized() {
+			return cache !== undefined;
 		},
 		pluginState(pluginId) {
 			return stateOf(pluginId);
