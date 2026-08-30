@@ -374,10 +374,12 @@ export const activate = async (
 	}
 	let initialClient: McpStdioClient;
 	const connectClient = (): Promise<McpStdioClient> =>
-		(
-			deps.createClient ??
-			(() => createDefaultClient(vscode, startupReportChannel))
-		)();
+		connectWithTimeout(() =>
+			(
+				deps.createClient ??
+				(() => createDefaultClient(vscode, startupReportChannel))
+			)(),
+		);
 	const disconnectedClient = (failure: Error): McpStdioClient =>
 		McpStdioClient.fromTransport({
 			async callTool() {
@@ -400,31 +402,24 @@ export const activate = async (
 			),
 		);
 	} else {
-		try {
-			initialClient = await connectWithTimeout(connectClient);
-		} catch (err) {
-			const failure = err instanceof Error ? err : new Error(String(err));
-			initialClient = McpStdioClient.fromTransport({
-				async callTool() {
-					throw failure;
-				},
-				async listTools() {
-					throw failure;
-				},
-				async close() {},
-			});
-			runSafely(
-				Promise.resolve(
-					vscode.window.showErrorMessage?.(
-						`MCP-Vertex: server unavailable. Use Restart MCP Server to reconnect: ${failure.message}`,
-					),
-				),
-			);
-		}
+		initialClient = disconnectedClient(
+			new Error('MCP server is connecting'),
+		);
 	}
 	const resilient = createResilientClient(initialClient, connectClient);
 	const client = resilient.client;
 	const reconnect = resilient.reconnect;
+	if (isTrusted) {
+		runSafely(
+			reconnect().catch((err: unknown) => {
+				const failure =
+					err instanceof Error ? err : new Error(String(err));
+				return vscode.window.showErrorMessage?.(
+					`MCP-Vertex: server unavailable. Use Restart MCP Server to reconnect: ${failure.message}`,
+				);
+			}),
+		);
+	}
 	void Promise.resolve(
 		context.globalState.update(CLIENT_STATE_KEY, client),
 	).catch(() => {
@@ -446,12 +441,6 @@ export const activate = async (
 			clientClosed = true;
 			return client.close();
 		},
-	});
-	void Promise.resolve(
-		context.globalState.update(CLIENT_STATE_KEY, client),
-	).catch(() => {
-		// Persistence is auxiliary; the live client remains usable when the
-		// host cannot write global state during startup.
 	});
 
 	// S4: `track()` is the single registration seam for every
