@@ -9,6 +9,7 @@ import {
 	extractStepDetails,
 	reproStepFromGh,
 	defaultRunner,
+	normalizeRunId,
 	type GhRunner,
 	type IGitHubRepo,
 } from './local-repro.script';
@@ -23,6 +24,16 @@ const ghFixture: GhRunner = (args) =>
 		: { status: 1, stdout: '', stderr: 'unexpected fixture call' };
 
 describe('local-repro real CI coverage', () => {
+	it('accepts either a numeric run id or a GitHub Actions run URL', () => {
+		expect(normalizeRunId('33281963947')).toBe('33281963947');
+		expect(
+			normalizeRunId(
+				'https://github.com/CartagoGit/mcp-vertex/actions/runs/33281963947',
+			),
+		).toBe('33281963947');
+		expect(normalizeRunId('not-a-run')).toBeNull();
+	});
+
 	it('extracts the top-level command from a real gh log-failed step format', () => {
 		const logs = [
 			'quality-gate\tRun integrated quality gate\t2026-08-29T16:51:08.4698399Z ##[group]Run bun tools/scripts/ci/quality-gate.script.ts --real',
@@ -33,6 +44,26 @@ describe('local-repro real CI coverage', () => {
 
 		expect(extractCommand(logs, 'Run integrated quality gate')).toBe(
 			'bun tools/scripts/ci/quality-gate.script.ts --real',
+		);
+	});
+
+	it('falls back to the final grouped Run block when the failed step name is absent from the raw job log', () => {
+		const logs = [
+			'2026-08-29T23:51:55.8188135Z ##[group]Run bun install --frozen-lockfile',
+			'2026-08-29T23:51:55.8188914Z bun install --frozen-lockfile',
+			'2026-08-29T23:51:55.8246509Z shell: /usr/bin/bash -e {0}',
+			'2026-08-29T23:51:55.8247021Z ##[endgroup]',
+			'2026-08-29T23:51:59.3767257Z ##[group]Run bun tools/scripts/ci/quality-gate.script.ts --real',
+			'2026-08-29T23:51:59.3768000Z bun tools/scripts/ci/quality-gate.script.ts --real',
+			'2026-08-29T23:51:59.4027385Z shell: /usr/bin/bash -e {0}',
+			'2026-08-29T23:57:19.3614041Z ##[error]Process completed with exit code 1.',
+		].join('\n');
+
+		expect(extractStepDetails(logs, 'Run integrated quality gate')).toEqual(
+			{
+				command: 'bun tools/scripts/ci/quality-gate.script.ts --real',
+				workingDirectory: '.',
+			},
 		);
 	});
 
@@ -92,6 +123,20 @@ describe('local-repro real CI coverage', () => {
 			);
 		});
 		expect(selection).toEqual({ runId: '33264054564', source: 'argv' });
+	});
+
+	it('demo falls back to the documented real failed run when gh cannot list runs', () => {
+		const selection = resolveDemoRun([], () => ({
+			status: 1,
+			stdout: '',
+			stderr: 'gh unavailable',
+		}));
+		expect(selection).toEqual({
+			runId: '33281963947',
+			source: 'fixture',
+			name: 'quality-gate',
+			url: 'https://github.com/CartagoGit/mcp-vertex/actions/runs/33281963947',
+		});
 	});
 
 	it('extracts the working directory and writes a deterministic run log with a diff summary', async () => {

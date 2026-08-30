@@ -24,13 +24,6 @@ export interface IThresholdTriggerConfig {
 	readonly files: number;
 }
 
-/** Event emitted when the threshold is met by the current dirty set. */
-export interface ThresholdEvent {
-	readonly kind: 'threshold';
-	readonly dirtyCount: number;
-	readonly files: SliceFiles;
-}
-
 /** Interval-specific config. */
 export interface IIntervalTriggerConfig {
 	readonly kind: 'interval';
@@ -43,7 +36,7 @@ export interface IManualTriggerConfig {
 }
 
 /**
- * x00263 (AUD-CP-005): non-empty list of paths a slice owns.
+ * x00263 (AUD-CP-005): concrete paths attached to a trigger.
  * Always carries the `paths` array — empty arrays are an
  * upstream refusal, never a default. The driver asserts that
  * staged paths ⊆ `paths` after `git add --` runs.
@@ -53,14 +46,10 @@ export interface SliceFiles {
 }
 
 /**
- * Event emitted by a trigger when it fires.
- *
- * x00263: slice events MUST carry `files` when the slice has
- * any. `SLICE_HAS_NO_FILES` is emitted upstream instead of an
- * empty `files` array, so this field is non-empty whenever it
- * is present.
+ * Shared shape for trigger events. Specific trigger kinds tighten
+ * the required fields below.
  */
-export interface ITriggerEvent {
+interface ITriggerEventBase {
 	readonly kind: TriggerKind;
 	readonly proposalId?: string;
 	readonly sliceId?: string;
@@ -68,13 +57,48 @@ export interface ITriggerEvent {
 	readonly dirtyCount?: number;
 	readonly unpushedCount?: number;
 	/**
-	 * x00263: paths the slice owns. Only set on slice events.
-	 * Drivers that receive an event without `files` MUST refuse
-	 * with `SLICE_HAS_NO_FILES` (or honour the explicit skip
-	 * flag) — never stage a superset.
+	 * x00263/x00264: `slice` events carry the paths the slice owns;
+	 * `threshold` and `interval` carry the observed dirty paths.
+	 * Drivers that receive an event without `files` when one is
+	 * required MUST refuse instead of staging a superset.
 	 */
 	readonly files?: SliceFiles;
 }
+
+/** Slice event emitted when a proposal slice reaches a watched status. */
+export interface ISliceEvent extends ITriggerEventBase {
+	readonly kind: 'slice';
+	readonly proposalId: string;
+	readonly sliceId: string;
+	readonly status: string;
+	readonly files: SliceFiles;
+}
+
+/** Threshold event emitted when the dirty set meets the configured size. */
+export interface ThresholdEvent extends ITriggerEventBase {
+	readonly kind: 'threshold';
+	readonly dirtyCount: number;
+	readonly files: SliceFiles;
+}
+
+/** Interval event emitted when enough time elapsed and dirty work exists. */
+export interface IIntervalEvent extends ITriggerEventBase {
+	readonly kind: 'interval';
+	readonly dirtyCount: number;
+	readonly files: SliceFiles;
+}
+
+/** Manual event emitted by an explicit operator request. */
+export interface IManualEvent extends ITriggerEventBase {
+	readonly kind: 'manual';
+}
+
+/** Event emitted by a trigger when it fires. */
+export type ITriggerEvent =
+	| ISliceEvent
+	| ThresholdEvent
+	| IIntervalEvent
+	| IManualEvent;
 
 /** Snapshot of trigger state for status output. */
 export interface ITriggerState {

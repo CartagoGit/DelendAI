@@ -13,6 +13,8 @@
 
 import { spawnSync } from 'node:child_process';
 
+import { normalizeRunId } from './local-repro.script';
+
 interface IRunListEntry {
 	readonly databaseId?: number;
 	readonly conclusion?: string | null;
@@ -22,7 +24,7 @@ interface IRunListEntry {
 
 export interface IDemoRunSelection {
 	readonly runId: string;
-	readonly source: 'argv' | 'gh';
+	readonly source: 'argv' | 'gh' | 'fixture';
 	readonly name?: string;
 	readonly url?: string;
 }
@@ -35,6 +37,13 @@ export interface IDemoGhResult {
 }
 
 export type DemoGhRunner = (args: readonly string[]) => IDemoGhResult;
+
+const DEFAULT_REAL_FAILED_RUN: IDemoRunSelection = {
+	runId: '33281963947',
+	source: 'fixture',
+	name: 'quality-gate',
+	url: 'https://github.com/CartagoGit/mcp-vertex/actions/runs/33281963947',
+};
 
 export const defaultDemoGhRunner: DemoGhRunner = (args) => {
 	const result = spawnSync('gh', [...args], {
@@ -72,8 +81,10 @@ export const resolveDemoRun = (
 	argv: readonly string[],
 	ghRunner: DemoGhRunner = defaultDemoGhRunner,
 ): IDemoRunSelection | null => {
-	const runId = argv[0];
-	if (runId !== undefined && runId.length > 0) {
+	const runInput = argv[0];
+	if (runInput !== undefined && runInput.length > 0) {
+		const runId = normalizeRunId(runInput);
+		if (runId === null) return null;
 		return { runId, source: 'argv' };
 	}
 	const result = ghRunner([
@@ -84,15 +95,18 @@ export const resolveDemoRun = (
 		'--json',
 		'databaseId,conclusion,name,url',
 	]);
-	if (result.status !== 0) return null;
-	return pickLatestFailedRun(result.stdout);
+	if (result.status === 0) {
+		const selected = pickLatestFailedRun(result.stdout);
+		if (selected !== null) return selected;
+	}
+	return DEFAULT_REAL_FAILED_RUN;
 };
 
 export const main = (argv: readonly string[]): number => {
 	const selection = resolveDemoRun(argv);
 	if (selection === null) {
 		console.error(
-			'usage: local-repro.demo.script.ts <run-id> (or configure gh auth so the demo can auto-pick a recent failed run)',
+			'usage: local-repro.demo.script.ts <run-id-or-url> (or configure gh auth so the demo can auto-pick a recent failed run)',
 		);
 		return 2;
 	}
@@ -100,6 +114,14 @@ export const main = (argv: readonly string[]): number => {
 		console.error(
 			`local-repro demo: using recent failed run ${selection.runId}${selection.name !== undefined ? ` (${selection.name})` : ''}`,
 		);
+	}
+	if (selection.source === 'fixture') {
+		console.error(
+			`local-repro demo: using documented real failed run ${selection.runId}${selection.name !== undefined ? ` (${selection.name})` : ''}`,
+		);
+	}
+	if (selection.url !== undefined) {
+		console.error(`local-repro demo: run URL ${selection.url}`);
 	}
 
 	const repo = process.env.LOCAL_REPRO_REPO ?? 'CartagoGit/mcp-vertex';
