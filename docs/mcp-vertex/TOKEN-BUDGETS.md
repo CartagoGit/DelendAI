@@ -46,7 +46,7 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 | search_search | native | 874 | 219 | 2,700 | 3,000 | within hard |
 | docs_docs_list | native | 209 | 53 | 2,200 | 2,500 | within hard |
 | proposals_round_context | native | 153 | 39 | 2,700 | 3,000 | within hard |
-| logs_tail | native | 2,595 | 649 | 5,500 | 6,000 | within hard |
+| logs_tail | native | 2,351 | 588 | 5,500 | 6,000 | within hard |
 
 ## Real preset dashboard
 
