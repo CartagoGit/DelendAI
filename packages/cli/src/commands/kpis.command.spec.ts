@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { EXIT_CODE } from '../src/contracts/constants/exit-code.constant';
+import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
 	ICliCommandContext,
-} from '../src/contracts/interfaces/cli-command.interface';
-import { kpisCommands, runKpisCommandBody } from '../src/commands/kpis.command';
+} from '../contracts/interfaces/cli-command.interface';
+import { kpisCommands, runKpisCommandBody } from './kpis.command';
 
 const snapshot = {
 	contract: 'project-kpis.snapshot',
