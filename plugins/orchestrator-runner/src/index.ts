@@ -66,13 +66,13 @@ export default definePlugin({
 			DEFAULT_OPTIONS.defaultCostPreference;
 
 		const healthcheckPath = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'healthcheck.json'),
+			joinRel(ctx.pluginCacheDir, 'healthcheck.json')
 		);
 		const quotasPath = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'quotas.json'),
+			joinRel(ctx.pluginCacheDir, 'quotas.json')
 		);
 		const rosterDraftPath = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'roster.draft.json'),
+			joinRel(ctx.pluginCacheDir, 'roster.draft.json')
 		);
 		// The confirmed config the bootstrap wizard emits a JSON Patch against.
 		// The wizard READS it to diff (never WRITES it): confirmed intent is
@@ -85,8 +85,8 @@ export default definePlugin({
 		const usageSummaryPath = ctx.workspace.resolve(
 			joinRel(
 				joinRel(ctx.cacheDir, USAGE_TRACKING_PLUGIN),
-				'usage-summary.json',
-			),
+				'usage-summary.json'
+			)
 		);
 
 		// In-memory availability mirror (CRITICAL rule 3: never a per-decision
@@ -111,7 +111,7 @@ export default definePlugin({
 		spendLimits.startRefreshTimer(usageSummaryPath, 60_000);
 		const checkSpend = (
 			decision: IRoutingDecision,
-			strategy: 'rerank' | 'tier-down',
+			strategy: 'rerank' | 'tier-down'
 		) =>
 			spendCheckForDecision(
 				decideSpendGuard({
@@ -120,7 +120,7 @@ export default definePlugin({
 					providers,
 					availabilityOf: (id) => health.get(id),
 				}),
-				decision.targetProvider.id,
+				decision.targetProvider.id
 			);
 
 		const manager = buildDefaultInvocationManager({

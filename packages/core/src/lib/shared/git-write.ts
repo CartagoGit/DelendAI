@@ -72,7 +72,7 @@ export const createGitRunner =
 								.split('\n')[0] ?? 'git command failed';
 					}
 					resolve({ ok: false, output: '', reason });
-				},
+				}
 			);
 		});
 
@@ -83,7 +83,7 @@ export const createGitRunner =
 /** `git add -- <files>`. Never `git add .` — callers always pass an explicit list. */
 export const gitAdd = async (
 	run: IGitRunner,
-	files: readonly string[],
+	files: readonly string[]
 ): Promise<IGitRunResult> => run(['add', '--', ...files]);
 
 export interface ICommitOptions {
@@ -103,7 +103,7 @@ export interface ICommitOptions {
 export const gitCommit = async (
 	run: IGitRunner,
 	message: string,
-	options: ICommitOptions = {},
+	options: ICommitOptions = {}
 ): Promise<IGitRunResult> => {
 	const trimmed = options.authorFlag?.trim();
 	const authorArgs: readonly string[] =
@@ -113,13 +113,13 @@ export const gitCommit = async (
 	return run(
 		options.amend === true
 			? ['commit', '--amend', ...authorArgs, '-m', message]
-			: ['commit', ...authorArgs, '-m', message],
+			: ['commit', ...authorArgs, '-m', message]
 	);
 };
 
 /** `git rev-parse --short HEAD`. Returns `undefined` when the lookup fails. */
 export const gitHeadShortHash = async (
-	run: IGitRunner,
+	run: IGitRunner
 ): Promise<string | undefined> => {
 	const result = await run(['rev-parse', '--short', 'HEAD']);
 	return result.ok ? result.output.trim() : undefined;
@@ -127,7 +127,7 @@ export const gitHeadShortHash = async (
 
 /** Author name of the last commit (`%an`), or `undefined` when unknown. */
 export const gitLastCommitAuthor = async (
-	run: IGitRunner,
+	run: IGitRunner
 ): Promise<string | undefined> => {
 	const result = await run(['log', '-1', '--pretty=format:%an']);
 	const trimmed = result.output.trim();
@@ -152,7 +152,7 @@ export interface IPushOptions {
 }
 
 const hasAuthorization = (
-	authorization: IPushAuthorization | undefined,
+	authorization: IPushAuthorization | undefined
 ): authorization is IPushAuthorization =>
 	authorization !== undefined &&
 	authorization.by.trim().length > 0 &&
@@ -174,7 +174,7 @@ const pushDestinationBranch = (ref: string): string => {
 /** Resolves the branch a force push would actually land on — `options.branch` when given, otherwise the current branch. */
 const resolveForceTargetBranch = async (
 	run: IGitRunner,
-	branch: string | undefined,
+	branch: string | undefined
 ): Promise<string | undefined> => {
 	if (branch !== undefined) return pushDestinationBranch(branch);
 	const head = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
@@ -185,7 +185,7 @@ const MAX_RECORDED_FORCE_PUSH_AUTHORIZATIONS = 200;
 const forcePushAuthorizations: IForcePushAuthorizationRecord[] = [];
 
 const recordForcePushAuthorization = (
-	record: IForcePushAuthorizationRecord,
+	record: IForcePushAuthorizationRecord
 ): void => {
 	forcePushAuthorizations.push(record);
 	if (
@@ -223,7 +223,7 @@ export const clearForcePushAuthorizationsForTests = (): void => {
  */
 export const gitPush = async (
 	run: IGitRunner,
-	options?: IPushOptions,
+	options?: IPushOptions
 ): Promise<IGitRunResult> => {
 	const resolvedOptions: IPushOptions = options ?? { protectedBranches: [] };
 	const force = resolvedOptions.force ?? 'false';
@@ -249,7 +249,7 @@ export const gitPush = async (
 	if (protectedBranches.length > 0) {
 		targetBranch = await resolveForceTargetBranch(
 			run,
-			resolvedOptions.branch,
+			resolvedOptions.branch
 		);
 		if (
 			targetBranch !== undefined &&
@@ -321,7 +321,7 @@ export interface ICommitAndPushResult {
 const buildResult = (
 	committed: boolean,
 	pushed: boolean,
-	extras: { readonly hash?: string; readonly reason?: string } = {},
+	extras: { readonly hash?: string; readonly reason?: string } = {}
 ): ICommitAndPushResult => {
 	const out: {
 		committed: boolean;
@@ -342,7 +342,7 @@ const buildResult = (
  * branch"/"amend ownership" policy — this function only runs git.
  */
 export const commitAndPush = async (
-	options: ICommitAndPushOptions,
+	options: ICommitAndPushOptions
 ): Promise<ICommitAndPushResult> => {
 	const run = options.git;
 

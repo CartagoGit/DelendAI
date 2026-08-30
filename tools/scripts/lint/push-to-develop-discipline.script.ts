@@ -89,7 +89,7 @@ const isAllZeroSha = (sha: string): boolean => /^0+$/.test(sha);
  * `<remote name> <remote url>`.
  */
 export const parsePrePushStdin = (
-	stdin: string,
+	stdin: string
 ): ReadonlyArray<IPrePushRefUpdate> => {
 	const updates: IPrePushRefUpdate[] = [];
 	for (const line of stdin.split('\n')) {
@@ -115,7 +115,7 @@ export const parsePrePushStdin = (
  */
 export const lintPrePushStdinUpdates = (
 	updates: ReadonlyArray<IPrePushRefUpdate>,
-	agentWorktreeEnabled = false,
+	agentWorktreeEnabled = false
 ): PushToDevelopResult => {
 	for (const update of updates) {
 		if (isAllZeroSha(update.localSha)) continue;
@@ -147,7 +147,7 @@ export const lintPrePushStdinUpdates = (
  */
 export const parseGitPushArgs = (
 	argv: readonly string[],
-	currentBranchFallback: string | null,
+	currentBranchFallback: string | null
 ): { readonly remote: string; readonly remoteBranch: string } => {
 	let remote = 'origin';
 	let remoteBranch: string | undefined;
@@ -180,7 +180,7 @@ export const parseGitPushArgs = (
 
 /** Pure decision engine. No I/O, no side effects. */
 export const lintPushToDevelop = (
-	input: IPushToDevelopInput,
+	input: IPushToDevelopInput
 ): PushToDevelopResult => {
 	const { remoteBranch, currentBranch, agentWorktreeEnabled = false } = input;
 
@@ -374,7 +374,7 @@ const main = async (): Promise<number> => {
 	// this script must be the one to check it.
 	if (isLefthookBypassed()) {
 		process.stdout.write(
-			'✓ push-to-develop-discipline: bypassed (LEFTHOOK_BYPASS=1)\n',
+			'✓ push-to-develop-discipline: bypassed (LEFTHOOK_BYPASS=1)\n'
 		);
 		return 0;
 	}
@@ -396,7 +396,7 @@ const main = async (): Promise<number> => {
 	if (stdinUpdates.length > 0) {
 		const result = lintPrePushStdinUpdates(
 			stdinUpdates,
-			agentWorktreeEnabled,
+			agentWorktreeEnabled
 		);
 		const report = formatReport(result);
 		if (result.ok) {
@@ -416,7 +416,7 @@ const main = async (): Promise<number> => {
 	const positionals = rawArgv.filter((a) => !a.startsWith('-'));
 	if (positionals.length === 0) {
 		process.stdout.write(
-			'✓ push-to-develop-discipline: skipped (no push in flight)\n',
+			'✓ push-to-develop-discipline: skipped (no push in flight)\n'
 		);
 		return 0;
 	}

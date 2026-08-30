@@ -29,11 +29,11 @@ describe('affected.script vitest project resolution', () => {
 					"    name: 'short-name',",
 					'  },',
 					'};',
-				].join('\n'),
+				].join('\n')
 			);
 
 			expect(
-				resolveVitestProjectName(tmpDir, '@mcp-vertex/example'),
+				resolveVitestProjectName(tmpDir, '@mcp-vertex/example')
 			).toBe('short-name');
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true });
@@ -52,11 +52,11 @@ describe('affected.script vitest project resolution', () => {
 					"    include: ['tests/**/*.spec.ts'],",
 					'  },',
 					'};',
-				].join('\n'),
+				].join('\n')
 			);
 
 			expect(
-				resolveVitestProjectName(tmpDir, '@mcp-vertex/example'),
+				resolveVitestProjectName(tmpDir, '@mcp-vertex/example')
 			).toBe('@mcp-vertex/example');
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true });
@@ -97,7 +97,7 @@ describe('affected.script artifact writing', () => {
 			});
 
 			const payload = JSON.parse(
-				readFileSync(`${tmpDir}/affected.json`, 'utf8'),
+				readFileSync(`${tmpDir}/affected.json`, 'utf8')
 			) as { affected: string[]; vitestProjects: string[] };
 			expect(payload.affected).toEqual([
 				'@mcp-vertex/git',
@@ -106,10 +106,10 @@ describe('affected.script artifact writing', () => {
 			expect(payload.vitestProjects).toEqual(['git', 'core']);
 
 			expect(readFileSync(`${tmpDir}/.affected-set`, 'utf8').trim()).toBe(
-				'@mcp-vertex/git\n@mcp-vertex/core',
+				'@mcp-vertex/git\n@mcp-vertex/core'
 			);
 			expect(
-				readFileSync(`${tmpDir}/.affected-vitest-set`, 'utf8').trim(),
+				readFileSync(`${tmpDir}/.affected-vitest-set`, 'utf8').trim()
 			).toBe('git\ncore');
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true });

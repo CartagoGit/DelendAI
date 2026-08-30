@@ -49,7 +49,7 @@ branches:
 `;
 
 const makeLive = (
-	overrides: Partial<IGitHubBranchProtectionResponse> = {},
+	overrides: Partial<IGitHubBranchProtectionResponse> = {}
 ): IGitHubBranchProtectionResponse => ({
 	enforce_admins: { enabled: true },
 	required_linear_history: { enabled: true },
@@ -63,7 +63,7 @@ const makeLive = (
 });
 
 const withTempConfig = async (
-	fn: (configPath: string) => Promise<void>,
+	fn: (configPath: string) => Promise<void>
 ): Promise<void> => {
 	const root = mkdtempSync(join(tmpdir(), 'verify-branch-protection-'));
 	const configPath = join(root, 'branch-protection.yml');
@@ -85,7 +85,7 @@ describe('verify-branch-protection', () => {
 				'develop',
 			]);
 			expect(
-				config.branches[0]?.protection.required_status_checks.contexts,
+				config.branches[0]?.protection.required_status_checks.contexts
 			).toEqual([
 				'quality-gate',
 				'tests',
@@ -156,7 +156,7 @@ describe('verify-branch-protection', () => {
 			});
 			expect(result).toBe(1);
 			expect(stderr.join('\n')).toMatch(
-				/missing required checks: governance/,
+				/missing required checks: governance/
 			);
 		});
 	});
@@ -172,7 +172,7 @@ describe('verify-branch-protection', () => {
 				reportUnverified: async () => undefined,
 				fetchProtection: async () => {
 					throw new Error(
-						'GitHub API 429 on main: rate limit exceeded',
+						'GitHub API 429 on main: rate limit exceeded'
 					);
 				},
 			});

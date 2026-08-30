@@ -129,7 +129,7 @@ const listDirs = async (path: string): Promise<readonly string[]> => {
 
 const listFiles = async (
 	path: string,
-	filter: (name: string) => boolean,
+	filter: (name: string) => boolean
 ): Promise<readonly string[]> => {
 	try {
 		const entries = await readdir(path, { withFileTypes: true });
@@ -270,7 +270,7 @@ export const countTests = async (): Promise<ITestCount> => {
 	let testCases = 0;
 	const testsRoot = join(REPO_ROOT, 'packages');
 	const testFiles = (await walkRel(testsRoot)).filter((f) =>
-		f.endsWith('.spec.ts'),
+		f.endsWith('.spec.ts')
 	);
 	for (const file of testFiles) {
 		if (file.includes('node_modules')) continue;
@@ -283,7 +283,7 @@ export const countTests = async (): Promise<ITestCount> => {
 	}
 	// Also walk tools/ for tools/scripts/*.spec.ts files.
 	const toolsTests = (await walkRel(join(REPO_ROOT, 'tools'))).filter((f) =>
-		f.endsWith('.spec.ts'),
+		f.endsWith('.spec.ts')
 	);
 	for (const file of toolsTests) {
 		specFiles += 1;
@@ -315,7 +315,7 @@ export const countProposals = async (): Promise<IProposalCount> => {
 		for (const kind of kinds) {
 			const files = await listFiles(
 				join(statusDir, kind),
-				(n) => n.endsWith('.md') && /^[a-z]\d{3,5}-.*\.md$/.test(n),
+				(n) => n.endsWith('.md') && /^[a-z]\d{3,5}-.*\.md$/.test(n)
 			);
 			if (files.length === 0) continue;
 			total += files.length;
@@ -352,7 +352,7 @@ export const countProposals = async (): Promise<IProposalCount> => {
 };
 
 export const buildSnapshot = async (
-	now: () => Date = () => new Date(),
+	now: () => Date = () => new Date()
 ): Promise<IQuantitativeSnapshot> => {
 	const [plugins, tools, tests, packages, proposals] = await Promise.all([
 		countPlugins(),
@@ -393,7 +393,7 @@ export const formatSnapshot = (snap: IQuantitativeSnapshot): string => {
 /** Render a `<!-- mcp-vertex:begin quantitative -->` block. */
 export const renderBlock = (snap: IQuantitativeSnapshot): string => {
 	return [MARKER_BEGIN, '```', formatSnapshot(snap), '```', MARKER_END].join(
-		'\n',
+		'\n'
 	);
 };
 
@@ -405,19 +405,19 @@ export const renderBlock = (snap: IQuantitativeSnapshot): string => {
  */
 export const updateDocBlock = (
 	docText: string,
-	snap: IQuantitativeSnapshot,
+	snap: IQuantitativeSnapshot
 ): { readonly text: string; readonly changed: boolean } => {
 	// Build a fresh regex per call so `lastIndex` cannot leak across
 	// module-level reuse (the `g` flag carries state).
 	const blockRe = new RegExp(
 		`${escapeForRegex(MARKER_BEGIN)}[\\s\\S]*?${escapeForRegex(MARKER_END)}`,
-		'g',
+		'g'
 	);
 	const currentBlock =
 		docText.match(
 			new RegExp(
-				`${escapeForRegex(MARKER_BEGIN)}[\\s\\S]*?${escapeForRegex(MARKER_END)}`,
-			),
+				`${escapeForRegex(MARKER_BEGIN)}[\\s\\S]*?${escapeForRegex(MARKER_END)}`
+			)
 		)?.[0] ?? '';
 	const currentGeneratedAt = currentBlock?.match(GENERATED_AT_RE)?.[0];
 	const stableSnap =
@@ -426,7 +426,7 @@ export const updateDocBlock = (
 			? (() => {
 					const normalizedCurrent = currentBlock.replace(
 						GENERATED_AT_RE,
-						'Generated at: <<snapshot>>',
+						'Generated at: <<snapshot>>'
 					);
 					const normalizedNext = renderBlock({
 						...snap,
@@ -437,7 +437,7 @@ export const updateDocBlock = (
 								...snap,
 								generatedAt: currentGeneratedAt.replace(
 									'Generated at: ',
-									'',
+									''
 								),
 							}
 						: snap;
@@ -456,7 +456,7 @@ export const updateDocBlock = (
 	if (blockRe.test(docText)) return { text: docText, changed: false };
 	// No existing block: append a §Quantitative facts section.
 	const appendix = ['', '', '## Quantitative facts', '', block, ''].join(
-		'\n',
+		'\n'
 	);
 	return { text: `${docText.trimEnd()}\n${appendix}`, changed: true };
 };
@@ -473,7 +473,7 @@ const absOrJoin = (root: string, p: string): string =>
 	isAbsolute(p) ? p : join(root, p);
 
 export const updateDocs = async (
-	snap: IQuantitativeSnapshot,
+	snap: IQuantitativeSnapshot
 ): Promise<readonly string[]> => {
 	const touched: string[] = [];
 	for (const [relPath, _sectionName] of Object.entries(DEFAULT_DOCS)) {
@@ -491,7 +491,7 @@ export const updateDocs = async (
 
 export const writeSnapshotJson = async (
 	snap: IQuantitativeSnapshot,
-	out: string = join(REPO_ROOT, 'build/inspect/quantitative.json'),
+	out: string = join(REPO_ROOT, 'build/inspect/quantitative.json')
 ): Promise<string> => {
 	const { mkdir } = await import('node:fs/promises');
 	await mkdir(join(REPO_ROOT, 'build/inspect'), { recursive: true });
@@ -509,7 +509,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		const touched = await updateDocs(snap);
 		if (touched.length > 0) {
 			process.stdout.write(
-				`quantitative: embedded ${touched.length} doc block(s)\n`,
+				`quantitative: embedded ${touched.length} doc block(s)\n`
 			);
 		}
 	}

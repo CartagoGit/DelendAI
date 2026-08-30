@@ -537,7 +537,7 @@ const metricStatusLabel = (status: TKpiDashboardMetricStatus): string => {
 const sparklinePath = (
 	values: readonly number[],
 	width: number,
-	height: number,
+	height: number
 ): string => {
 	if (values.length === 0 || width <= 0 || height <= 0) return '';
 	if (values.length === 1) {
@@ -556,7 +556,7 @@ const sparklinePath = (
 	return finite
 		.map(
 			(value, index) =>
-				`${index === 0 ? 'M' : 'L'} ${index * step} ${yOf(value)}`,
+				`${index === 0 ? 'M' : 'L'} ${index * step} ${yOf(value)}`
 		)
 		.join(' ');
 };
@@ -595,7 +595,7 @@ const renderRow = (row: IKpiDashboardRow): string =>
 	</article>`;
 
 const renderSeriesSvg = (
-	series: readonly IKpiDashboardTrendSeries[],
+	series: readonly IKpiDashboardTrendSeries[]
 ): string => {
 	const plotted = series
 		.map((entry, index) => ({
@@ -640,7 +640,7 @@ const renderTrendCard = (card: IKpiDashboardTrendCard): string =>
 						index === 0
 							? 'var(--vscode-charts-blue, #4d8eff)'
 							: 'var(--vscode-charts-yellow, #e0a800)'
-					};"></span>${escapeHtml(entry.label)} · ${escapeHtml(metricStatusLabel(entry.status))}</span>`,
+					};"></span>${escapeHtml(entry.label)} · ${escapeHtml(metricStatusLabel(entry.status))}</span>`
 			)
 			.join('')}</div>
 	</article>`;
@@ -666,14 +666,14 @@ const renderFooterList = (title: string, items: readonly string[]): string => {
 		</div>
 		<ol class="mcpv-kpi-list">${items
 			.map(
-				(item) => `<li class="mcpv-kpi-muted">${escapeHtml(item)}</li>`,
+				(item) => `<li class="mcpv-kpi-muted">${escapeHtml(item)}</li>`
 			)
 			.join('')}</ol>
 	</section>`;
 };
 
 const renderRecommendations = (
-	recommendations: readonly IKpiDashboardRecommendation[],
+	recommendations: readonly IKpiDashboardRecommendation[]
 ): string => {
 	if (recommendations.length === 0) return '';
 	return `<section class="mcpv-kpi-card">
@@ -683,7 +683,7 @@ const renderRecommendations = (
 		<ol class="mcpv-kpi-list">${recommendations
 			.map(
 				(item) =>
-					`<li class="mcpv-kpi-muted"><strong>${escapeHtml(item.priority)}</strong> · ${escapeHtml(item.tool)} · ${escapeHtml(item.reason)}</li>`,
+					`<li class="mcpv-kpi-muted"><strong>${escapeHtml(item.priority)}</strong> · ${escapeHtml(item.tool)} · ${escapeHtml(item.reason)}</li>`
 			)
 			.join('')}</ol>
 	</section>`;
@@ -710,7 +710,7 @@ const bannerSummary = (model: IKpiDashboardModel): string => {
 
 export const renderKpiDashboard = (
 	model: IKpiDashboardModel,
-	options: IRenderKpiDashboardOptions = {},
+	options: IRenderKpiDashboardOptions = {}
 ): string => {
 	const header = renderHeaderBar({
 		brandName: options.brandName ?? 'mcp-vertex KPI Dashboard',
@@ -739,7 +739,7 @@ export const renderKpiDashboard = (
 				${model.windows
 					.map(
 						(option) =>
-							`<button class="mcpv-kpi-button" data-kpi-window-days="${option.days}" data-selected="${option.selected ? 'true' : 'false'}">${escapeHtml(option.label)}</button>`,
+							`<button class="mcpv-kpi-button" data-kpi-window-days="${option.days}" data-selected="${option.selected ? 'true' : 'false'}">${escapeHtml(option.label)}</button>`
 					)
 					.join('')}
 				<button class="mcpv-kpi-button" data-kpi-action="refresh">Refresh</button>

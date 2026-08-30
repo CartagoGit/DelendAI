@@ -42,7 +42,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`search plugin rejected its options: ${parsed.error.message}`,
+				`search plugin rejected its options: ${parsed.error.message}`
 			);
 		}
 		const opts = parsed.data;

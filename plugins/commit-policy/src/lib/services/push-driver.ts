@@ -138,6 +138,14 @@ export const runPushDriver = async (
 		};
 	}
 
+	if (branch === 'main') {
+		return {
+			ok: false,
+			refusal:
+				"DIRECT_PUSH_TO_MAIN_NOT_ALLOWED: direct push to 'main' is not allowed; cuts the release/publish path. Open a PR from a feature branch (release/* or develop).",
+		};
+	}
+
 	if (
 		isBranchProtected(branch, {
 			protected: policy.protectedBranches,

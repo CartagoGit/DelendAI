@@ -103,11 +103,11 @@ export interface IProjectKpisToolOptions {
 	}) => Promise<IKpiHistoryReadResult>;
 	readonly readSnapshot?: (
 		query: IKpiQuery,
-		options: IProjectKpisToolOptions,
+		options: IProjectKpisToolOptions
 	) => Promise<IKpiSnapshot>;
 	readonly readFilteredUsage?: (
 		records: readonly IInvocationRecord[],
 		windowDays: number,
-		nowMs?: number,
+		nowMs?: number
 	) => IUsageSummary;
 }

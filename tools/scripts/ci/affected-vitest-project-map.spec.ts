@@ -25,7 +25,7 @@ const rootProjectPatterns = (() => {
 
 const matchesRootProjectPattern = (
 	workspaceDir: string,
-	pattern: string,
+	pattern: string
 ): boolean => {
 	if (pattern.endsWith('/*')) {
 		const prefix = pattern.slice(0, -2);
@@ -38,7 +38,7 @@ const matchesRootProjectPattern = (
 
 const hasVitestConfig = (workspaceDir: string): boolean =>
 	vitestConfigNames.some((configName) =>
-		existsSync(join(workspaceRoot, workspaceDir, configName)),
+		existsSync(join(workspaceRoot, workspaceDir, configName))
 	);
 
 describe('affected.script workspace Vitest project map', () => {
@@ -48,8 +48,8 @@ describe('affected.script workspace Vitest project map', () => {
 			.filter(
 				([dir]) =>
 					rootProjectPatterns.some((pattern) =>
-						matchesRootProjectPattern(dir, pattern),
-					) && hasVitestConfig(dir),
+						matchesRootProjectPattern(dir, pattern)
+					) && hasVitestConfig(dir)
 			)
 			.map(([dir]) => dir)
 			.sort();
@@ -57,7 +57,7 @@ describe('affected.script workspace Vitest project map', () => {
 			const pkgName = graph.dirToName.get(dir);
 			if (pkgName === undefined) {
 				throw new Error(
-					`Workspace ${dir} is missing from the package graph.`,
+					`Workspace ${dir} is missing from the package graph.`
 				);
 			}
 
@@ -66,7 +66,7 @@ describe('affected.script workspace Vitest project map', () => {
 				pkgName,
 				vitestProject: resolveVitestProjectName(
 					join(workspaceRoot, dir),
-					pkgName,
+					pkgName
 				),
 			};
 		});
@@ -76,7 +76,7 @@ describe('affected.script workspace Vitest project map', () => {
 		for (const { dir, pkgName, vitestProject } of resolvedProjects) {
 			expect(
 				vitestProject.length,
-				`${dir} should resolve a non-empty Vitest project name.`,
+				`${dir} should resolve a non-empty Vitest project name.`
 			).toBeGreaterThan(0);
 			if (pkgName === '@mcp-vertex/core')
 				expect(vitestProject).toBe('core');
@@ -88,7 +88,7 @@ describe('affected.script workspace Vitest project map', () => {
 
 		expect(
 			new Set(resolvedProjects.map(({ vitestProject }) => vitestProject))
-				.size,
+				.size
 		).toBeGreaterThan(0);
 	});
 });

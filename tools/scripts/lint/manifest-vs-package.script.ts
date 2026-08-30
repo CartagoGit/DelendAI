@@ -29,7 +29,7 @@ const RUNTIME_VERSION_FROM_IMPORT_PATTERN =
 
 const readRuntimeVersion = async (
 	root: string,
-	pluginId: string,
+	pluginId: string
 ): Promise<string | undefined> => {
 	const runtimePath = join(root, 'plugins', pluginId, 'src', 'index.ts');
 	const source = await readFile(runtimePath, 'utf8');
@@ -59,7 +59,7 @@ const readRuntimeVersion = async (
 };
 
 export const lintManifestVsPackage = async (
-	root = repoRoot(),
+	root = repoRoot()
 ): Promise<readonly IViolation[]> => {
 	const manifests = await loadAllPluginManifests(root);
 	const violations: IViolation[] = [];
@@ -71,7 +71,7 @@ export const lintManifestVsPackage = async (
 			'plugins',
 			manifest.id,
 			'src',
-			'index.ts',
+			'index.ts'
 		);
 		const packageJson = JSON.parse(await readFile(packagePath, 'utf8')) as {
 			name?: string;
@@ -142,7 +142,7 @@ const main = async (root = resolve(process.cwd())): Promise<number> => {
 	console.error('[manifest-vs-package] Violations found:');
 	for (const violation of violations) {
 		console.error(
-			`  ${violation.plugin}: [${violation.rule}] ${violation.message}`,
+			`  ${violation.plugin}: [${violation.rule}] ${violation.message}`
 		);
 	}
 	return 1;

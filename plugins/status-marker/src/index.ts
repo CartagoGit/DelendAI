@@ -76,7 +76,7 @@ const OptionsSchema = z.object({
 
 /** Type-guard for the structured merge-error envelope. */
 const isMergeError = (
-	value: IEffectiveMarkerTable | IMergeError,
+	value: IEffectiveMarkerTable | IMergeError
 ): value is IMergeError => 'ok' in value && value.ok === false;
 
 export default definePlugin({
@@ -114,7 +114,7 @@ export default definePlugin({
 			throw new Error(
 				`status-marker: invalid markers config — ${merged.error}${
 					merged.detail !== undefined ? ` (${merged.detail})` : ''
-				}`,
+				}`
 			);
 		}
 		const markerTable: IEffectiveMarkerTable =

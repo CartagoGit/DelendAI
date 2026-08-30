@@ -45,7 +45,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`web-fetch plugin rejected its options: ${parsed.error.message}`,
+				`web-fetch plugin rejected its options: ${parsed.error.message}`
 			);
 		}
 		const allowList = parsed.data.allowList ?? [];
