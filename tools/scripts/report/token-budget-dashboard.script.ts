@@ -167,6 +167,16 @@ const presetMarginalBudget = (
 	| undefined => {
 	const toolsListBudget = presetToolsBudget(presetId);
 	if (toolsListBudget === undefined) return undefined;
+	if (
+		typeof toolsListBudget.marginalPluginHard !== 'number' ||
+		!Number.isFinite(toolsListBudget.marginalPluginHard) ||
+		toolsListBudget.marginalPluginHard <= 0 ||
+		typeof toolsListBudget.marginalPluginWarning !== 'number' ||
+		!Number.isFinite(toolsListBudget.marginalPluginWarning) ||
+		toolsListBudget.marginalPluginWarning <= 0
+	) {
+		return undefined;
+	}
 	return {
 		hard: toolsListBudget.marginalPluginHard,
 		warning: toolsListBudget.marginalPluginWarning,
