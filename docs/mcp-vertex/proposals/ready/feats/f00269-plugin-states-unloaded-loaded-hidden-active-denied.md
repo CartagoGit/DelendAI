@@ -142,7 +142,8 @@ router y el plugin manager.
 - **Status**: pending
 - **Files**: `packages/core/src/lib/plugins/states.ts`, `packages/core/src/lib/plugins/router.ts`, `packages/core/src/lib/plugins/plugin-manager.ts`, `packages/core/tests/src/lib/plugins/states.spec.ts`
 - **Gate**: type
-
+- review-state: in_review
+- review-implementer: plugin-states-f00269-main
 ## acceptance
 
 - Cuatro estados implementados con tabla de transiciones.
