@@ -18,12 +18,12 @@ interface IViolation {
 const isPublicScopedPackage = (name: string): boolean =>
 	name.startsWith('@mcp-vertex/');
 
-const RUNTIME_VERSION_PATTERN = /version:\s*['\"]([^'\"]+)['\"]/;
+const RUNTIME_VERSION_PATTERN = /version:\s*['"]([^'"]+)['"]/;
 // x00293 S2 spike: version derived from an imported package.json
 // (e.g. `import apiPackageJson from '../package.json'` + `version:
 // apiPackageJson.version`). Resolves the real file instead of a literal.
 const PKG_JSON_IMPORT_PATTERN =
-	/import\s+([A-Za-z_$][\w$]*)\s+from\s+['\"]([^'\"]*package\.json)['\"]/;
+	/import\s+([A-Za-z_$][\w$]*)\s+from\s+['"]([^'"]*package\.json)['"]/;
 const RUNTIME_VERSION_FROM_IMPORT_PATTERN =
 	/version:\s*([A-Za-z_$][\w$]*)\.version/;
 

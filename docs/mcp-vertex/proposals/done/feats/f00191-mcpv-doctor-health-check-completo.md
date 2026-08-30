@@ -2,12 +2,14 @@
 id: f00191
 title: "`mcpv doctor`: health check completo"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: cli
 date: 2026-08-25
 priority: P1
 parent-plan: q00006
+shipped-in:
+  - 7fa42b77
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track I / f00191"

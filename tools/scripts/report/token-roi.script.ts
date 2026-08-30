@@ -1,6 +1,5 @@
 #!/usr/bin/env bun
 import { join } from 'node:path';
-import { writeFile } from 'node:fs/promises';
 
 import {
 	aggregateROI,
@@ -13,7 +12,6 @@ import {
 
 import { repoRoot } from '../lib/monorepo-paths';
 import { buildValueLookup } from '../../../packages/core/src/lib/budgets/manifest';
-import { createPluginMetrics } from '../../../packages/core/src/lib/observability/plugin-metrics';
 
 export const TOKEN_ROI_OUTPUT_PATH = 'apps/web/src/data/token-roi.json';
 

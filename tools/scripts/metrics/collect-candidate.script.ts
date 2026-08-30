@@ -117,12 +117,12 @@ const parseToolResultJson = (result: unknown): Record<string, unknown> => {
  */
 export const collectPluginMetrics = async (
 	client: Client,
-	tools: ReadonlyArray<{ name: string }>
+	tools: ReadonlyArray<{ name: string }>,
 ): Promise<Record<string, IPluginMetricsSnapshot>> => {
 	const metricsTools = tools.filter((tool) =>
 		PLUGIN_METRICS_TOOL_SUFFIXES.some((suffix) =>
-			tool.name.endsWith(suffix)
-		)
+			tool.name.endsWith(suffix),
+		),
 	);
 	const collected: Record<string, IPluginMetricsSnapshot> = {};
 	for (const tool of metricsTools) {
@@ -131,7 +131,7 @@ export const collectPluginMetrics = async (
 			.catch(() => undefined);
 		if (result === undefined) continue;
 		const parsed = PluginMetricsSnapshotSchema.safeParse(
-			parseToolResultJson(result)
+			parseToolResultJson(result),
 		);
 		if (parsed.success) collected[tool.name] = parsed.data;
 	}
@@ -139,7 +139,7 @@ export const collectPluginMetrics = async (
 };
 
 export const collectCandidateSnapshot = async (
-	outFile: string
+	outFile: string,
 ): Promise<void> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-metrics-gate-'));
 	// Run under bun, not node: only 15 of the ~50 workspace plugins get a
@@ -160,7 +160,7 @@ export const collectCandidateSnapshot = async (
 	});
 	const client = new Client(
 		{ name: 'metrics-gate', version: '0.0.0' },
-		{ capabilities: {} }
+		{ capabilities: {} },
 	);
 
 	try {
@@ -169,7 +169,7 @@ export const collectCandidateSnapshot = async (
 		const metricsTool = tools.find((t) => t.name.endsWith('_metrics'));
 		if (metricsTool === undefined) {
 			throw new Error(
-				'metrics tool not registered — cannot collect a candidate snapshot'
+				'metrics tool not registered — cannot collect a candidate snapshot',
 			);
 		}
 
@@ -177,7 +177,7 @@ export const collectCandidateSnapshot = async (
 		// real per-tool averages rather than a single sample. Keep this list
 		// deliberately narrow and side-effect free.
 		const readOnlyTools = tools.filter((t) =>
-			isTrackedReadOnlyTool(t.name)
+			isTrackedReadOnlyTool(t.name),
 		);
 		for (let i = 0; i < REPEATS; i += 1) {
 			for (const tool of readOnlyTools) {
@@ -198,8 +198,9 @@ export const collectCandidateSnapshot = async (
 		});
 		const parsed = parseToolResultJson(persisted);
 
-		const { writeFileAtomic } =
-			await import('../../../packages/core/src/lib/shared/atomic-write.ts');
+		const { writeFileAtomic } = await import(
+			'../../../packages/core/src/lib/shared/atomic-write.ts'
+		);
 		await writeFileAtomic(
 			outFile,
 			`${JSON.stringify(
@@ -210,8 +211,8 @@ export const collectCandidateSnapshot = async (
 					surface: { toolsMeasured: tools.length },
 				},
 				null,
-				2
-			)}\n`
+				2,
+			)}\n`,
 		);
 	} finally {
 		await client.close().catch(() => undefined);
@@ -232,7 +233,7 @@ if (isMainModule()) {
 		.then(() => console.log(`✓ collect-candidate: wrote ${outFile}`))
 		.catch((err: unknown) => {
 			console.error(
-				`✖ collect-candidate failed: ${err instanceof Error ? err.message : String(err)}`
+				`✖ collect-candidate failed: ${err instanceof Error ? err.message : String(err)}`,
 			);
 			process.exit(1);
 		});

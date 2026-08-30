@@ -296,11 +296,12 @@ export interface IMcpPluginRegistrations {
 				args: unknown,
 				result: unknown,
 				error?: unknown,
-				elapsedMs?: number
+				elapsedMs?: number,
 		  ) => Promise<void> | void)
 		| undefined;
 	readonly onToolStart?:
-		((toolName: string, args: unknown) => Promise<void> | void) | undefined;
+		| ((toolName: string, args: unknown) => Promise<void> | void)
+		| undefined;
 	/**
 	 * f00111 S1: fired when the client aborts an in-flight tool call.
 	 * See `IHostObservability.onToolCancel` for the exact semantics.
@@ -309,17 +310,19 @@ export interface IMcpPluginRegistrations {
 		| ((
 				toolName: string,
 				args: unknown,
-				elapsedMs: number
+				elapsedMs: number,
 		  ) => Promise<void> | void)
 		| undefined;
 	readonly onRegisterError?:
-		((info: IPluginRegisterErrorInfo) => Promise<void> | void) | undefined;
+		| ((info: IPluginRegisterErrorInfo) => Promise<void> | void)
+		| undefined;
 	readonly onHookError?:
-		((info: IPluginHookErrorInfo) => Promise<void> | void) | undefined;
+		| ((info: IPluginHookErrorInfo) => Promise<void> | void)
+		| undefined;
 	readonly isAgentStuck?:
 		| ((
 				toolName: string,
-				args: unknown
+				args: unknown,
 		  ) => { handoffPath: string; suggestedAction: string } | null)
 		| undefined;
 	/**
@@ -432,13 +435,13 @@ export interface IMcpPlugin {
 	 * configuration diagnostic; returning an empty list permits registration.
 	 */
 	readonly validateConfiguration?: (
-		input: IPluginConfigurationValidationInput
+		input: IPluginConfigurationValidationInput,
 	) =>
 		| readonly IPluginConfigurationIssue[]
 		| Promise<readonly IPluginConfigurationIssue[]>;
 	register(
 		ctx: IMcpPluginContext,
-		signal?: AbortSignal
+		signal?: AbortSignal,
 	):
 		| IMcpPluginRegistrations
 		| IPluginRuntime<IMcpPluginRegistrations>
@@ -487,7 +490,7 @@ export const adaptLegacyPlugin = (plugin: IMcpPlugin) => ({
 	prepare: async (ctx: { name: string }) => ({ name: ctx.name, plugin }),
 	activate: async (
 		prepared: { name: string; plugin: IMcpPlugin },
-		_ctx: unknown
+		_ctx: unknown,
 	) => prepared.plugin.register(prepared.plugin as never),
 	dispose: async (_active: unknown) => {
 		// No-op for plugins that don't implement the IPluginRuntime

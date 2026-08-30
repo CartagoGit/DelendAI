@@ -77,7 +77,7 @@ export interface IPushScheduler {
 const SCHEDULER_INTERVAL_MS = (minutes: number): number => minutes * 60_000;
 
 export const createPushScheduler = (
-	options: IPushSchedulerOptions
+	options: IPushSchedulerOptions,
 ): IPushScheduler => {
 	let commitsSincePush = 0;
 	let interval: ReturnType<typeof setInterval> | undefined;
@@ -89,7 +89,7 @@ export const createPushScheduler = (
 		const queued = writeTail.then(operation);
 		writeTail = queued.then(
 			() => undefined,
-			() => undefined
+			() => undefined,
 		);
 		return queued;
 	};
@@ -123,7 +123,7 @@ export const createPushScheduler = (
 			result = await withGitWriteLock(
 				options.workspaceRoot,
 				options.pluginCacheDir,
-				() => runPushDriver({}, options.policy, options.run)
+				() => runPushDriver({}, options.policy, options.run),
 			);
 		} catch (error) {
 			result = {
@@ -138,7 +138,7 @@ export const createPushScheduler = (
 		if (!result.ok) {
 			// Surface the reason for log triage — never throw.
 			console.warn(
-				`[push-scheduler] push failed (${reason}): ${result.refusal}`
+				`[push-scheduler] push failed (${reason}): ${result.refusal}`,
 			);
 		}
 		return result;
@@ -151,7 +151,7 @@ export const createPushScheduler = (
 		if (commitsSincePush === 0) return;
 		if ((await branchRefusal()) !== null) return;
 		await enqueueWrite(() =>
-			push(`everyNMinutes=${options.policy.everyNMinutes ?? 0}`)
+			push(`everyNMinutes=${options.policy.everyNMinutes ?? 0}`),
 		);
 	};
 
@@ -183,7 +183,7 @@ export const createPushScheduler = (
 				return push(
 					shouldPushByCount
 						? `everyNCommits=${everyN}`
-						: 'onCommit=true'
+						: 'onCommit=true',
 				);
 			});
 		},
@@ -202,7 +202,7 @@ export const createPushScheduler = (
 			if (interval !== undefined) return;
 			interval = setInterval(
 				scheduleTick,
-				SCHEDULER_INTERVAL_MS(options.policy.everyNMinutes)
+				SCHEDULER_INTERVAL_MS(options.policy.everyNMinutes),
 			);
 			if (typeof interval.unref === 'function') interval.unref();
 		},
