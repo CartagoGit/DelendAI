@@ -96,7 +96,6 @@ export interface IArtifactProposalSummary {
 }
 
 export interface IGeneratedAgentCatalogArtifact {
-	readonly generatedAt: string;
 	readonly mode: CatalogMode;
 	readonly tools: readonly IToolSummary[];
 	readonly skills: readonly IArtifactSkill[];
@@ -362,13 +361,11 @@ const renderWarnings = (skillIds: readonly string[]): string =>
 
 const buildArtifact = (
 	snapshot: ReturnType<typeof buildCatalog>,
-	generatedAt: string,
 ): IGeneratedAgentCatalogArtifact => {
 	const actionable = snapshot.proposals.filter((proposal) =>
 		ACTIONABLE_PROPOSAL_STATUSES.includes(proposal.status),
 	);
 	return {
-		generatedAt,
 		mode: snapshot.mode,
 		tools: snapshot.tools,
 		skills: snapshot.skills,
@@ -425,34 +422,17 @@ export const buildAgentCatalogArtifact = async (
 	);
 	const current = await io.readText(outputPath);
 	const freshText = `${JSON.stringify(artifact, null, '\t')}\n`;
-	const text =
-		current !== undefined &&
-		stripGeneratedAt(current) === stripGeneratedAt(freshText)
-			? freshText.replace(
-					/"generatedAt": "[^"]*"/u,
-					current.match(/"generatedAt": "[^"]*"/u)?.[0] ??
-						`"generatedAt": "${generatedAt}"`,
-				)
-			: freshText;
+	const text = freshText;
 	return {
 		artifact,
 		text,
 		outputPath,
 		warningsPath,
 		missingSummarySkillIds,
-		// x00105: compare CONTENT, not the timestamp. `generatedAt`
-		// derives from the regenerable cache index's generated_at, which
-		// every sync_proposals (including the server boot inside
-		// validate's own external-install smoke) bumps — a byte-compare
-		// made catalog:check cry stale with zero substantive change.
-		changed: stripGeneratedAt(current ?? '') !== stripGeneratedAt(text),
+		changed: (current ?? '') !== text,
 		generatedAt,
 	};
 };
-
-/** Normalize the volatile timestamp line out of a serialized artifact. */
-const stripGeneratedAt = (text: string): string =>
-	text.replace(/"generatedAt": "[^"]*"/u, '"generatedAt": "<normalized>"');
 
 const writeWarningsArtifact = async (
 	result: IGenerationResult,
