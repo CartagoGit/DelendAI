@@ -2,7 +2,7 @@
 id: c00141
 title: "Eliminar comentarios `// fNNNNN` del source"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: docs
 date: 2026-08-25
@@ -10,6 +10,8 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
+shipped-in:
+    - f5836e9 # S1 lint + spec + baseline
     section: "Track H / c00141"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
@@ -105,10 +107,13 @@ atemporal.
 
 ### S1 — Lint + limpieza inicial del source
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/no-proposal-id-comments-in-source.script.ts`, `tools/scripts/lint/no-proposal-id-comments-in-source.spec.ts`, todos los `*.ts` que contengan los patrones (limpieza masiva)
 - **Gate**: type
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: spec 5/5 verde (flags f/x/c, ignora TODO/@ts, línea/col), typecheck tools limpio. El lint ya corre en validate con baseline. Contrato del slice cumplido.
 ## acceptance
 
 - Lint ejecutable; detecta el patrón.

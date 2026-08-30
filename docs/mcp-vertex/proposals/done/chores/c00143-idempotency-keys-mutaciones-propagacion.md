@@ -2,7 +2,7 @@
 id: c00143
 title: "Idempotency keys para mutaciones (propagación)"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -10,6 +10,8 @@ priority: P2
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
+shipped-in:
+    - f5836e9 # S1 helper withIdempotency + instrumentación commit-policy + tests
     section: "Track N / c00143"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
@@ -104,10 +106,13 @@ resultado sin side effects duplicados.
 
 ### S1 — Helper + instrumentación de mutaciones críticas + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/mutations/idempotency.ts`, `plugins/{commit-policy,git,issues,proposals}/src/lib/**/*.ts` (instrumentación), `packages/core/tests/src/lib/mutations/idempotency.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: idempotency.spec 21/21 verde (misma key sin re-ejecución, keys distintas independientes, TTL/prune), typecheck core limpio, uso en commit-policy. Contrato del slice cumplido.
 ## acceptance
 
 - Helper `withIdempotency` exportado.

@@ -2,7 +2,7 @@
 id: c00134
 title: "Métricas de plugin lifecycle en dashboard"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: lifecycle
 date: 2026-08-25
@@ -12,6 +12,8 @@ audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track D / c00134"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
+shipped-in:
+    - f5836e9 # S1 módulo de métricas + sección del dashboard
 related:
     - q00006
     - f00185 # plugin states (emite los eventos)
@@ -122,10 +124,13 @@ diagnosticar:
 
 ### S1 — Módulo de métricas + sección del dashboard
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/observability/plugin-metrics.ts`, `packages/core/src/lib/plugins/router.ts`, `tools/scripts/report/token-budget-dashboard.script.ts`, `packages/core/tests/src/lib/observability/plugin-metrics.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: falcon
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: plugin-metrics.spec 7/7 verde, typecheck core OK, sección Plugin Lifecycle en dashboard única (sin duplicado) tras regeneración. Módulo + dashboard + spec cumplen el contrato del slice.
 ## acceptance
 
 - Módulo `plugin-metrics.ts` exporta la API.

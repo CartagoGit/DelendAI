@@ -2,7 +2,7 @@
 id: r00043
 title: "`@mcp-vertex/core` deja de conocer el dominio `proposals`"
 kind: refactor
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-30

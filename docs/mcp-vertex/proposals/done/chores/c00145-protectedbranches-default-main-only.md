@@ -2,13 +2,15 @@
 id: c00145
 title: "Track A.default — `commit-policy.protectedBranches` por defecto: `main` y `master`; `develop` solo si el owner lo activa explícitamente"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
 priority: P0
 classification: CONFIRMADO
 parent-plan: q00006
+shipped-in:
+    - f5836e9 # S1 constante+helper + S2 driver + S3 doc
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track A / c00131 (override por retractación del reviewer)"
@@ -164,27 +166,36 @@ if (config.protectedBranches?.includes('develop') && !config.commitPolicy?.inclu
 
 ### S1 — Constante + helper `resolveProtectedBranches`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/contracts/constants/protected-branches.ts`,
   `plugins/commit-policy/src/lib/contracts/constants/protected-branches.spec.ts`.
 - **Gate**: type + test passing
 - **Depends on**: `c00131`.
-
+- review-state: done
+- review-implementer: finch
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: spec 5/5 verde (default main/master sin develop, explicit replace, agent/worktree nunca), typecheck plugin limpio. Constante + helper cumplen el contrato del slice.
 ### S2 — Adopción por driver + warning de config
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `plugins/commit-policy/src/lib/services/commit-driver.ts`,
   `plugins/commit-policy/src/lib/services/commit-driver.spec.ts`.
 - **Gate**: type + test passing
 - **Depends on**: S1 + `c00144`.
-
+- review-state: done
+- review-implementer: owl
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: commit-driver.spec 25/25 verde, typecheck plugin limpio; el driver resuelve la lista efectiva con resolveProtectedBranches. Contrato del slice cumplido.
 ### S3 — Documentar el nuevo default en `GOVERNANCE-BRANCH-PROTECTION.md`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md` (sección "Defaults del plugin").
 - **Gate**: docs lint
-
+- review-state: done
+- review-implementer: sparrow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: doc actualizado con el default local (main/master, develop opt-in, agent/worktree nunca) y referencia a resolveProtectedBranches; lint:content-integrity OK. Contrato del slice cumplido.
 ## acceptance
 
 - `bun run validate` verde; tests del plugin existentes siguen

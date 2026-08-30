@@ -2,7 +2,7 @@
 id: c00131
 title: "Añadir `develop` a `commit-policy.protectedBranches` por defecto"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -12,6 +12,8 @@ audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track A / c00131"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
+shipped-in:
+    - f5836e9 # S1 default + warning + tests
 related:
     - q00006
     - c00130 # documentación operativa (predecesor)
@@ -110,10 +112,13 @@ ausencia de configuración ya no expone `develop` a force-push.
 
 ### S1 — Defaults + warning + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/config/defaults.ts`, `plugins/commit-policy/src/lib/config/validate.ts`, `plugins/commit-policy/tests/src/lib/config/defaults.spec.ts`, `plugins/commit-policy/tests/src/lib/config/validate.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: sparrow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificacion independiente en el checkout actual: options.ts define DEFAULT_PROTECTED_BRANCHES = [main, master, develop] y lo conecta al default efectivo de push.protectedBranches; el override del usuario sigue siendo autoritativo sin fusion implicita; index.ts solo emite WARN_PROTECTED_BRANCHES_MISSING_DEVELOP cuando el override omite develop. Checks ejecutados: plugin typecheck OK; lifecycle spec OK (5/5); push-scheduler spec OK (15/15); smoke parse OK con parsed.push.protectedBranches = [main, master, develop] y override parseado = [main, master].
 ## acceptance
 
 - `DEFAULT_PROTECTED_BRANCHES` contiene `develop`.

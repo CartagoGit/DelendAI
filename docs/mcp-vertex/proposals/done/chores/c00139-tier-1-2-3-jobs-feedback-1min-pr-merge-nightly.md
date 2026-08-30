@@ -2,7 +2,7 @@
 id: c00139
 title: "Tier 1/2/3 jobs (feedback <1 min, PR, merge/nightly)"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: ci
 date: 2026-08-25
@@ -10,6 +10,8 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
+shipped-in:
+    - f5836e9 # S1 workflows tier1/2/3 + budget enforcement
     section: "Track G / c00139"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
@@ -118,10 +120,13 @@ jobs:
 
 ### S1 — Tres workflows + budget enforcement
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/tier1.yml`, `.github/workflows/tier2.yml`, `.github/workflows/tier3.yml`, `tools/scripts/ci/tier-budget.spec.ts`, `tools/scripts/ci/tier-trigger.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: owl
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: tier-trigger.spec + tier-budget.spec 7/7 verde, typecheck tools limpio, workflows tier1/2/3 con triggers y budgets coherentes. Contrato del slice cumplido.
 ## acceptance
 
 - Tres workflows existen y disparan en sus triggers.
