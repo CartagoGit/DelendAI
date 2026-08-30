@@ -171,6 +171,9 @@
 		"usage-tracking": {
 			"options": {}
 		},
+		"project-kpis": {
+			"options": {}
+		},
 		"orchestrator-runner": {
 			"options": {}
 		},
