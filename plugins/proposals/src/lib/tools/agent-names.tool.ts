@@ -25,6 +25,7 @@ import {
 import type { IAgentCanonicalRole } from '../shared/agent-conventions';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import type { IAgentAssignment } from '../shared/agent-registry-store';
+import { coerceHost } from '../shared/agent-identity';
 import { buildAgentTree } from '../shared/agent-tree';
 import {
 	DEFAULT_AGENT_NAME_POOL,
@@ -93,32 +94,6 @@ export interface IAgentNamesArgs {
 // structuredContent derivation always applies.
 const json = (value: unknown, isError = false): IToolTextResult =>
 	isError ? { ...toolJson(value), isError: true } : toolJson(value);
-
-/** f00082 S3: the closed set of known hosts (mirrors core AgentHost). */
-const KNOWN_HOSTS = [
-	'vscode-copilot',
-	'claude-code',
-	'codex-cli',
-	'cursor',
-	'aider',
-	'continue',
-	'unknown',
-] as const;
-
-/**
- * Coerce a caller-supplied host string into the closed `AgentHost`
- * union, falling back to `'unknown'` (lossy-friendly, matching the
- * parser in `agent-identity.ts`). Returns `null` when the caller
- * passed nothing, so the registry stores an explicit `null`.
- */
-const coerceHost = (
-	host: string | undefined,
-): NonNullable<IAgentAssignment['host']> | null => {
-	if (host === undefined) return null;
-	return (KNOWN_HOSTS as readonly string[]).includes(host)
-		? (host as NonNullable<IAgentAssignment['host']>)
-		: 'unknown';
-};
 
 const AGENT_NAMES_OUTPUT_SCHEMA = z
 	.object({
