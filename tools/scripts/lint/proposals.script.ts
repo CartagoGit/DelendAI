@@ -219,9 +219,7 @@ if (import.meta.main) {
 	try {
 		await assertNoLegacyAuditDirectory(repoRoot);
 	} catch (error) {
-		console.error(
-			error instanceof Error ? error.message : String(error),
-		);
+		console.error(error instanceof Error ? error.message : String(error));
 		process.exit(1);
 	}
 	const proposalsDirAbs = join(repoRoot, 'docs', 'mcp-vertex', 'proposals');

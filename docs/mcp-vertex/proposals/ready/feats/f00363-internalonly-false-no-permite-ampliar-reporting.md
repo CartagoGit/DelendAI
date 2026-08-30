@@ -1,0 +1,22 @@
+---
+id: f00363
+title: "`internalOnly:false` no permite ampliar reporting."
+kind: feat
+status: ready
+type: proposal
+track: migrated
+date: 2026-08-30
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#internalonly-false-no-permite-ampliar-reporting
+---
+
+# f00363 — `internalOnly:false` no permite ampliar reporting.
+
+## Goal
+
+Migrated work item: `internalOnly:false` no permite ampliar reporting..
+
+## notes
+
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#internalonly-false-no-permite-ampliar-reporting` by `proposal_adopt`
+  (f00116). The original file was left untouched — retire it once
+  this proposal is the source of truth.
