@@ -157,7 +157,7 @@ describe('logs plugin — register()', () => {
 		expect(rules.map((r) => (r.when as { n: number }).n)).toEqual([3, 3]);
 	});
 
-	it('routes a failed tool call into BOTH streams with agent/files/elapsedMs/stack and a diagnostic summary', async () => {
+	it('routes a failed tool call into BOTH streams while redacting public diagnostics', async () => {
 		const { ctx } = await buildCtx();
 		const result: Registrations = await logsPlugin.register(ctx);
 		const args = { agent: 'copilot-a1', path: 'plugins/logs/src/index.ts' };
@@ -191,13 +191,17 @@ describe('logs plugin — register()', () => {
 			(e) => e.taskId === 'x_broken' && e.kind === 'tool-failed',
 		);
 		expect(failed?.meta.elapsedMs).toBe(123);
-		expect(failed?.meta.error?.message).toBe('boom');
-		expect(failed?.meta.error?.stack).toContain('boom');
+		expect(failed?.meta.error).toEqual({
+			redacted: true,
+			fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+			hasStack: true,
+		});
 		expect(failed?.agent).toBe('copilot-a1');
 		expect(failed?.files).toEqual(['plugins/logs/src/index.ts']);
-		expect(failed?.summary).toBe('tool-failed: x_broken — boom (123ms)');
+		expect(failed?.summary).toBe('tool-failed: x_broken (123ms)');
 		expect(typeof failed?.meta.callId).toBe('string');
 		expect(failed?.meta.callId).toBe(started?.meta.callId);
+		expect(JSON.stringify(failed)).not.toContain('boom');
 
 		const errors = await handlers.get('logs_errors_tail')?.({});
 		const errorEvents = errors?.structuredContent.events as Array<{

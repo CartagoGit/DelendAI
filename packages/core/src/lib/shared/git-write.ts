@@ -17,7 +17,8 @@ import { execFile } from 'node:child_process';
 /** Remove terminal control sequences before exposing git diagnostics. */
 export const stripAnsi = (value: string): string =>
 	value
-		.replace(/[\u001B\u009B][[\]()#;?]*(?:(?:(?:[a-zA-Z\d]*(?:;[-a-zA-Z\d/#&.:=?%@~_]+)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~]))/gu, '')
+		.replace(/[\u001B\u009B]\[[0-?]*[ -/]*[@-~]/gu, '')
+		.replace(/[\u001B\u009B][\]()#;?]*(?:\u0007|\d{1,4}(?:;\d{0,4})*[\dA-PR-TZcf-nq-uy=><~])/gu, '')
 		.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/gu, '');
 
 // The git-runner contract is single-sourced (f00065 slice F). Re-exported here

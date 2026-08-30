@@ -169,12 +169,12 @@ export const logSearch = async (
 export interface ILogIncident {
 	readonly incidentType: string;
 	readonly toolName: string;
+	readonly errorFingerprint: string;
 	readonly count: number;
 	readonly distinctAgents: number;
 	readonly firstSeen: string;
 	readonly lastSeen: string;
 	readonly sampleSummary: string;
-	readonly sampleError: string;
 	readonly recentEvents: readonly ILogEvent[];
 }
 
@@ -236,7 +236,6 @@ export const logIncidents = async (
 	type Cluster = {
 		toolName: string;
 		messageHash: string;
-		message: string;
 		incidentType: string;
 		events: ILogEvent[];
 		agents: Set<string>;
@@ -262,7 +261,6 @@ export const logIncidents = async (
 			clusters.set(key, {
 				toolName,
 				messageHash,
-				message,
 				incidentType: event.incidentType ?? 'unknown',
 				events: [event],
 				agents: new Set(event.agent ? [event.agent] : []),
@@ -283,12 +281,12 @@ export const logIncidents = async (
 		incidents.push({
 			incidentType: cluster.incidentType,
 			toolName: cluster.toolName,
+			errorFingerprint: cluster.messageHash,
 			count: cluster.events.length,
 			distinctAgents: cluster.agents.size,
 			firstSeen: cluster.firstSeen,
 			lastSeen: cluster.lastSeen,
 			sampleSummary: cluster.sampleSummary,
-			sampleError: cluster.message,
 			recentEvents: recent,
 		});
 	}

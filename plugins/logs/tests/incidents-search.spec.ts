@@ -159,6 +159,7 @@ describe('logs_search (f00153 S2)', () => {
 				'tool-failed',
 				{
 					toolName: 'locker',
+					taskId: 'locker',
 					error: {
 						message: 'lock held by another agent',
 						stack: 'Error: at line 42',
@@ -196,11 +197,34 @@ describe('logs_search (f00153 S2)', () => {
 			await handlers.get('logs_search')?.({
 				pattern: 'lock held',
 				scope: 'error',
+				detail: 'full',
 			}),
 		);
-		const events = result.events as Array<{ taskId: string }>;
+		const events = result.events as Array<{
+			taskId: string;
+			summary: string;
+			meta: {
+				toolName?: string;
+				error?: {
+					redacted?: boolean;
+					fingerprint?: string;
+					hasStack?: boolean;
+					message?: string;
+					stack?: string;
+				};
+			};
+		}>;
 		expect(events).toHaveLength(1);
 		expect(events[0]?.taskId).toBe('locker');
+		expect(events[0]?.summary).toBe('tool-failed: locker');
+		expect(events[0]?.meta.toolName).toBe('locker');
+		expect(events[0]?.meta.error?.redacted).toBe(true);
+		expect(events[0]?.meta.error?.hasStack).toBe(true);
+		expect(events[0]?.meta.error?.fingerprint).toMatch(/^[a-f0-9]{16}$/);
+		expect(events[0]?.meta.error).not.toHaveProperty('message');
+		expect(events[0]?.meta.error).not.toHaveProperty('stack');
+		expect(JSON.stringify(result)).not.toContain('lock held by another agent');
+		expect(JSON.stringify(result)).not.toContain('Error: at line 42');
 	});
 
 	it('regex search returns the matching event', async () => {
@@ -249,11 +273,12 @@ describe('logs_incidents (f00153 S3)', () => {
 		const incidents = result.incidents as Array<{
 			toolName: string;
 			incidentType: string;
+			errorFingerprint: string;
 			count: number;
 			distinctAgents: number;
 			firstSeen: string;
 			lastSeen: string;
-			sampleError: string;
+			sampleSummary: string;
 			recentEvents: Array<{ kind: string }>;
 		}>;
 		// Default minCount=2 drops the singleton quality_run cluster; the
@@ -265,7 +290,9 @@ describe('logs_incidents (f00153 S3)', () => {
 		expect(top?.incidentType).toBe('tool-failure');
 		expect(top?.count).toBe(3);
 		expect(top?.distinctAgents).toBe(2);
-		expect(top?.sampleError).toBe('lock held by another agent');
+		expect(top?.errorFingerprint).toMatch(/^[a-f0-9]{16}$/);
+		expect(top?.sampleSummary).toBe('tool-failed: proposals_agent_lock');
+		expect(JSON.stringify(top)).not.toContain('lock held by another agent');
 		expect(top?.recentEvents.length).toBeLessThanOrEqual(5);
 	});
 
