@@ -13,6 +13,7 @@
  */
 
 export interface McpVertexAuditAuditConsolidateOutput {
+	detail: "compact" | "normal" | "full";
 	auditType: "plan" | "valuation";
 	auditsFound: number;
 	skipped: {
@@ -53,6 +54,7 @@ export interface McpVertexAuditAuditConsolidateOutput {
 }
 
 export interface McpVertexAuditAuditPlanOutput {
+	detail: "compact" | "normal" | "full";
 	auditType: "plan" | "valuation";
 	scope: string;
 	mode: "general" | "specific" | "monorepo";
@@ -67,6 +69,7 @@ export interface McpVertexAuditAuditPlanOutput {
 }
 
 export interface McpVertexAuditAuditRunOutput {
+	detail: "compact" | "normal" | "full";
 	auditType: "plan" | "valuation";
 	scope: string;
 	mode: "general" | "specific" | "monorepo";

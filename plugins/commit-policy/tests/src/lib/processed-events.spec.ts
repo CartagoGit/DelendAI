@@ -118,6 +118,31 @@ describe('createProcessedEventsStore', () => {
 		await storeB.dispose();
 	});
 
+	it('merges concurrent writers without losing either idempotency key', async () => {
+		const storeA = createProcessedEventsStore({ workspaceRoot: workspace });
+		const storeB = createProcessedEventsStore({ workspaceRoot: workspace });
+		await Promise.all([
+			storeA.add('writer-a', 'sha-a', 1_000),
+			storeB.add('writer-b', 'sha-b', 2_000),
+		]);
+		const storeC = createProcessedEventsStore({ workspaceRoot: workspace });
+		expect(await storeC.has('writer-a')).toBe(true);
+		expect(await storeC.has('writer-b')).toBe(true);
+	});
+
+	it('reloads persisted idempotency state after a store restart', async () => {
+		const first = createProcessedEventsStore({ workspaceRoot: workspace });
+		expect(await first.has('restart-event')).toBe(false);
+		await first.add('restart-event', 'sha-restart', 1_000);
+		await first.dispose();
+
+		const restarted = createProcessedEventsStore({
+			workspaceRoot: workspace,
+		});
+		expect(await restarted.has('restart-event')).toBe(true);
+		await restarted.dispose();
+	});
+
 	it('prune() removes entries older than ttlMs', async () => {
 		const store = createProcessedEventsStore({
 			workspaceRoot: workspace,

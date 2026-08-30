@@ -25,6 +25,7 @@
 import type { IGitRunner } from '@mcp-vertex/core/public';
 
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
+import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
 import type { ICommitPolicyPush } from '../contracts/options';
 import { gitCurrentBranch, gitUnpushedCommitCount } from './git-extra';
 import { runPushDriver, type IPushDriverResult } from './push-driver';
@@ -97,12 +98,16 @@ export const createPushScheduler = (
 		}
 		if (
 			isBranchProtected(branch, {
-				protected: options.policy.protectedBranches,
+				protected: resolveProtectedBranches(
+					options.policy.protectedBranches,
+				),
 				protectedPrefixes: options.policy.protectedPrefixes,
 			})
 		) {
 			return branchProtectedRefusal(branch, {
-				protected: options.policy.protectedBranches,
+				protected: resolveProtectedBranches(
+					options.policy.protectedBranches,
+				),
 				protectedPrefixes: options.policy.protectedPrefixes,
 			});
 		}

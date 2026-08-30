@@ -73,6 +73,15 @@ describe('parseCliArgs', async () => {
 		expect(args.extra.proposalsDir).toBe('docs/p');
 	});
 
+	it('normalizes relative workspace paths against cwd', async () => {
+		expect(parseCliArgs(['--workspace=.'], '/repo').workspace).toBe(
+			'/repo',
+		);
+		expect(
+			parseCliArgs(['--workspace=packages/app'], '/repo').workspace,
+		).toBe('/repo/packages/app');
+	});
+
 	// N18: plugin presets
 	it('expands --preset=swarm into its plugin set', async () => {
 		const args = parseCliArgs(['--preset=swarm'], '/cwd');

@@ -2,7 +2,7 @@
 id: t00021
 title: "AUD-CP-012/§54 — Idempotency: replay del mismo eventId → un solo commit"
 kind: test
-status: ready
+status: in-progress
 type: proposal
 track: commit-policy
 date: 2026-08-25

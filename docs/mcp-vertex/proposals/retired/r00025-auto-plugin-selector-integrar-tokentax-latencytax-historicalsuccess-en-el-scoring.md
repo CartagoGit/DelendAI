@@ -3,7 +3,7 @@ id: r00025
 title: "auto-plugin-selector — integrar `tokenTax`, `latencyTax`, `historicalSuccess` en el scoring"
 kind: refactor
 type: proposal
-status: done
+status: retired
 track: selection
 date: 2026-08-25
 plan-parent: q00005

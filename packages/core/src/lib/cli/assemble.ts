@@ -71,6 +71,11 @@ import {
 import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import {
+	createJsonlRuntimeEventSink,
+	runtimeEventsPath,
+	runtimeSessionStarted,
+} from '../observability/runtime-events';
 
 const toolOwnerFromOrigin = (
 	origin: 'bundled' | 'user-local' | 'external',
@@ -639,6 +644,13 @@ export const assembleCliConfig = async (
 		resources,
 		cacheReconcile,
 	});
+	const runtimeEventSink = createJsonlRuntimeEventSink(
+		runtimeEventsPath(cacheDir),
+	);
+	runtimeSessionStarted(runtimeEventSink, {
+		mode: initialSurfaceMode,
+		workspace: workspace.root,
+	});
 	const coreSurfaceDescriptors: IToolSurfaceDescriptor[] = tools
 		.filter(
 			(registration) =>
@@ -834,6 +846,7 @@ export const assembleCliConfig = async (
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
+		runtimeEventSink,
 		extraTools: tools,
 		extraPrompts: prompts,
 		extraResources: resources,

@@ -22,6 +22,7 @@ import type { ICommitAuthorResolution } from '@mcp-vertex/core/public';
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import type { IGitRunner } from '../shared/git-runner';
+import type { IAgentNamesToolOptions } from './agent-names.tool';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
@@ -48,6 +49,8 @@ export interface IAuthoringToolOptions {
 	readonly proposalsDirAbs: string;
 	readonly indexPathAbs: string;
 	readonly lockPathAbs: string;
+	/** x00322: registry used to invalidate delegated leases on completion. */
+	readonly agentNames?: IAgentNamesToolOptions;
 	/** Append-only peer-review journal used by proposal_review + done gate. */
 	readonly peerReviewLogPathAbs?: string;
 	/** a00074 S2: per-submit caller identity journal for same-process review detection. */

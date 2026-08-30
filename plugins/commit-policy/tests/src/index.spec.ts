@@ -138,6 +138,21 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 		expect(activeIntervals.size).toBe(0);
 	});
 
+	it('does not start the slice listener when proposals owns persistence', async () => {
+		const runtime = asRuntime(
+			await plugin.register({
+				...buildCtx(workspace),
+				pluginOptions: new Map([
+					['proposals', { persist: { mode: 'commit' } }],
+				]),
+			}),
+		);
+
+		expect(createdIntervals).toBe(1);
+
+		await runtime.dispose();
+	});
+
 	it('reload N times leaves zero active listener handles', async () => {
 		const reloads = 5;
 

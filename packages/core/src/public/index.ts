@@ -967,6 +967,17 @@ export type {
 	PluginEvent,
 	PluginHistogramEvent,
 } from '../lib/observability/plugin-metrics';
+export {
+	createJsonlRuntimeEventSink,
+	runtimeEventsPath,
+	runtimeSessionStarted,
+} from '../lib/observability/runtime-events';
+export type {
+	IRuntimeEvent,
+	IRuntimeEventSink,
+	RuntimeEventInput,
+	RuntimeEventKind,
+} from '../lib/observability/runtime-events';
 // (Track M): cross-plugin activation KPIs.
 export {
 	createActivationKpis,

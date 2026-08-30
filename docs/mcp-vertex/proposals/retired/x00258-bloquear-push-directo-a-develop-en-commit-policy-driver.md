@@ -2,7 +2,7 @@
 id: x00258
 title: "Bloquear push directo a `develop` en `commit-policy` driver"
 kind: fix
-status: done
+status: retired
 type: proposal
 track: governance
 date: 2026-08-25

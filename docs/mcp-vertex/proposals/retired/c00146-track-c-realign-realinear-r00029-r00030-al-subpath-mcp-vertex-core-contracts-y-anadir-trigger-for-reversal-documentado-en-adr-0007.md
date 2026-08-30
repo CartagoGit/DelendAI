@@ -2,7 +2,7 @@
 id: c00146
 title: "Track C.realign — Realinear `r00029`/`r00030` al subpath `@mcp-vertex/core/contracts` y añadir `Trigger for reversal` documentado en ADR 0007"
 kind: chore
-status: done
+status: retired
 type: proposal
 track: architecture
 date: 2026-08-25

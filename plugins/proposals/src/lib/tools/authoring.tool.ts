@@ -15,6 +15,7 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import { runAgentNames } from './agent-names.tool';
 import type { IGitRunner } from '../shared/git-runner';
 import { toolErrorEnvelope } from '../shared/tool-envelope';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
@@ -197,6 +198,7 @@ export const REVIEW_OUTPUT_SCHEMA = z.object({
 		}),
 	),
 	lockReleased: z.boolean(),
+	assignmentReleased: z.boolean(),
 	redactedSecrets: z.number().int().nonnegative(),
 });
 
@@ -902,6 +904,30 @@ const releaseSliceLock = async (
 	return false;
 };
 
+const releaseSliceAssignment = async (
+	options: IAuthoringToolOptions,
+	proposalId: string,
+	sliceId: string,
+): Promise<boolean> => {
+	if (options.agentNames === undefined) return false;
+	const candidates = new Set([
+		`${proposalId}-${canonicalSliceId(sliceId)}`,
+		`${proposalId}-${sliceId}`,
+		sliceId,
+	]);
+	for (const taskId of candidates) {
+		const result = await runAgentNames(
+			{ action: 'release', task_id: taskId },
+			options.agentNames,
+		);
+		const body = JSON.parse(result.content[0]?.text ?? '{}') as {
+			released?: readonly string[];
+		};
+		if (body.released?.includes(taskId) === true) return true;
+	}
+	return false;
+};
+
 /**
  * `close_slice` — mark a slice `done` in the proposal doc AND release its
  * agent lock, atomically. Closes the loop crisply so the next agent sees
@@ -955,6 +981,7 @@ export const buildCloseSliceRegistration = (
 						})
 						.optional(),
 					lockReleased: z.boolean().optional(),
+					assignmentReleased: z.boolean().optional(),
 					persist: z
 						.object({
 							committed: z.boolean(),
@@ -1326,8 +1353,14 @@ export const buildCloseSliceRegistration = (
 				}
 
 				let lockReleased = false;
+				let assignmentReleased = false;
 				if (args.releaseLock !== false) {
 					lockReleased = await releaseSliceLock(
+						options,
+						entry.id,
+						args.sliceId,
+					);
+					assignmentReleased = await releaseSliceAssignment(
 						options,
 						entry.id,
 						args.sliceId,
@@ -1343,6 +1376,7 @@ export const buildCloseSliceRegistration = (
 					sliceId: args.sliceId,
 					closed: true,
 					lockReleased,
+					assignmentReleased,
 					persist: persisted,
 					pendingIntegrationBranch,
 					...(validationDecision !== undefined
@@ -1645,11 +1679,17 @@ export const buildReviewRegistration = (
 
 				// approve/request_changes free the slice (done, or reworkable).
 				let lockReleased = false;
+				let assignmentReleased = false;
 				if (
 					nextStatus === 'done' ||
 					nextStatus === 'changes_requested'
 				) {
 					lockReleased = await releaseSliceLock(
+						options,
+						entry.id,
+						args.sliceId,
+					);
+					assignmentReleased = await releaseSliceAssignment(
 						options,
 						entry.id,
 						args.sliceId,
@@ -1698,6 +1738,7 @@ export const buildReviewRegistration = (
 					reviewer: nextReviewer,
 					rounds: nextRounds,
 					lockReleased,
+					assignmentReleased,
 					redactedSecrets: redactedNote.redactions,
 				});
 			},

@@ -85,6 +85,12 @@
 				"category": "MCP Vertex"
 			},
 			{
+				"command": "mcp-vertex.openRuntimeLog",
+				"title": "Open Runtime Log",
+				"category": "MCP Vertex",
+				"icon": "$(pulse)"
+			},
+			{
 				"command": "mcp-vertex.refresh",
 				"title": "Refresh",
 				"category": "MCP Vertex",
