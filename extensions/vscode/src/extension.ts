@@ -28,10 +28,7 @@ import {
 } from './contracts/constants/settings-state-key.constant';
 import { registerOpenConfigurationCenterCommand } from './commands/open-configuration-center';
 
-import {
-	registerExternalMcpsAckCommand,
-	surfaceExternalMcpsPendingAcks,
-} from './commands/external-mcps-ack';
+import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
 import { registerProviderActionCommands } from './commands/provider-actions';
 import { registerPluginActivationCommand } from './commands/plugin-activation';
@@ -313,7 +310,11 @@ const createResilientClient = (
 		reconnect: async () => {
 			if (reconnecting === undefined) {
 				const connection = connect();
-				ready = connection.then(() => undefined);
+				void connection.catch(() => undefined);
+				ready = connection.then(
+					() => undefined,
+					() => undefined,
+				);
 				reconnecting = connection.then(async (next) => {
 					const previous = current;
 					current = next;
@@ -582,22 +583,6 @@ export const activate = async (
 	// S3: capture the host's actually-loaded plugin set after the views are
 	// registered. A slow MCP overview must not prevent the workbench from
 	// attaching the providers declared by the extension manifest.
-	let loadedPlugins: readonly string[] | undefined;
-	void overview
-		.getOverview({ compact: true })
-		.then((snap) => {
-			const raw = (snap as { plugins?: unknown })?.plugins;
-			if (Array.isArray(raw)) {
-				loadedPlugins = raw.filter(
-					(entry): entry is string =>
-						typeof entry === 'string' && entry.length > 0,
-				);
-			}
-		})
-		.catch(() => {
-			loadedPlugins = undefined;
-		});
-
 	if (statusBarItem !== undefined) {
 		const statusBar = new McpVertexStatusBar(
 			statusBarItem,
@@ -608,11 +593,11 @@ export const activate = async (
 			undefined,
 			namespacePrefix,
 		);
-		runSafely(
-			statusBar.start().catch(() => {
-				statusBar.dispose();
-			}),
-		);
+		try {
+			statusBar.start();
+		} catch {
+			statusBar.dispose();
+		}
 		context.subscriptions.push(statusBar);
 		// S4: route the status bar through the handle so that
 		// `deactivate()` actually disposes it. The `subscriptions` push
@@ -719,7 +704,6 @@ export const activate = async (
 		...withPrefix,
 	};
 	track(registerExternalMcpsAckCommand(externalMcpsAckDeps));
-	runSafely(surfaceExternalMcpsPendingAcks(externalMcpsAckDeps));
 	// Fix #7: `openSettings` renders a webview that posts messages to
 	// `mcp-vertex.saveSettings` / `mcp-vertex.resetSettings`. Those
 	// handlers were never registered, so changes the user made in the
@@ -746,7 +730,6 @@ export const activate = async (
 			vscode,
 			client,
 			globalState: context.globalState,
-			...(loadedPlugins !== undefined ? { loadedPlugins } : {}),
 			...withPrefix,
 		}),
 	);

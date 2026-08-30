@@ -1376,14 +1376,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00266",
-				"title": "f00266",
-				"track": "commit-policy",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00267",
 				"title": "f00267",
 				"track": "commit-policy",
@@ -2681,12 +2673,12 @@
 			}
 		],
 		"byStatus": {
-			"ready": 161,
+			"ready": 160,
 			"in-progress": 16,
 			"review": 0,
 			"paused": 1,
 			"done": 566,
-			"blocked": 1,
+			"blocked": 2,
 			"retired": 11,
 			"unspecified": 0
 		}

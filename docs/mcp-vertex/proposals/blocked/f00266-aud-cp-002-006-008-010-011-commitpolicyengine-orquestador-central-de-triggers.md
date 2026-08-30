@@ -2,7 +2,7 @@
 id: f00266
 title: "AUD-CP-002/006/008/010/011 — `CommitPolicyEngine`: orquestador central de triggers"
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: commit-policy
 date: 2026-08-25

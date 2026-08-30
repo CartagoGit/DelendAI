@@ -17,6 +17,9 @@
 		"Other"
 	],
 	"main": "./dist/extension.js",
+	"extensionKind": [
+		"workspace"
+	],
 	"activationEvents": [
 		"onStartupFinished",
 		"onView:mcp-vertex.tools",
