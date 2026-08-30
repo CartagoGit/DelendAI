@@ -28,6 +28,43 @@ import { createCommitPolicyEngine, type IEngineResult } from './lib/engine';
 import { createProcessedEventsStore } from './lib/processed-events';
 
 const OptionsSchema = CommitPolicyOptionsSchema;
+const WARN_PROTECTED_BRANCHES_MISSING_DEVELOP =
+	'WARN_PROTECTED_BRANCHES_MISSING_DEVELOP';
+
+let warnedProtectedBranchesMissingDevelop = false;
+
+const readProtectedBranchesOverride = (
+	raw: Readonly<Record<string, unknown>>,
+): readonly string[] | undefined => {
+	const push = raw.push;
+	if (typeof push !== 'object' || push === null) return undefined;
+	const protectedBranches = (push as { protectedBranches?: unknown })
+		.protectedBranches;
+	if (
+		!Array.isArray(protectedBranches) ||
+		protectedBranches.some((value) => typeof value !== 'string')
+	) {
+		return undefined;
+	}
+	return protectedBranches;
+};
+
+const warnIfProtectedBranchesOverrideDropsDevelop = (
+	raw: Readonly<Record<string, unknown>>,
+): void => {
+	if (warnedProtectedBranchesMissingDevelop) return;
+	const protectedBranches = readProtectedBranchesOverride(raw);
+	if (
+		protectedBranches === undefined ||
+		protectedBranches.includes('develop')
+	) {
+		return;
+	}
+	warnedProtectedBranchesMissingDevelop = true;
+	console.warn(
+		`[commit-policy] ${WARN_PROTECTED_BRANCHES_MISSING_DEVELOP}: push.protectedBranches override omits "develop". The override remains authoritative and is not merged with defaults. Add "develop" explicitly if it should stay protected.`,
+	);
+};
 
 export const validateCommitPolicyConfiguration = (
 	input: IPluginConfigurationValidationInput,
@@ -117,6 +154,7 @@ export default definePlugin({
 				`commit-policy plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
+		warnIfProtectedBranchesOverrideDropsDevelop(ctx.options ?? {});
 		const policy = parsed.data;
 
 		// Every timer + listener the plugin
@@ -405,12 +443,12 @@ export default definePlugin({
 					'- `cadence.triggers` — `slice | threshold | interval | manual` (default `[]`, so no automatic commits).',
 					'- `audit.trailer` — `none | co-authored-by | body-metadata` (default `co-authored-by`).',
 					'- `push.enabled` / `push.onCommit` / `push.everyNCommits` / `push.everyNMinutes` — all default `false`.',
-					'- `push.protectedBranches` defaults to `main` + `master`; `push.force` defaults to `with-lease`.',
+					'- `push.protectedBranches` defaults to `main` + `master` + `develop`; `push.force` defaults to `with-lease`.',
 					'',
 					'**Branch rules (read before committing or pushing):**',
 					'- Branches listed in `push.protectedBranches` are protected: automatic commit/push is refused and changes must go through the repository review flow.',
 					'- Branches matching `push.protectedPrefixes` are protected too; defaults are `release/` and `hotfix/`.',
-					'- Any other branch permits direct commit and push when `commit.enabled` and `push.enabled` are true. In this repository, `develop` is the shared working branch and is intentionally allowed.',
+					'- Any other branch permits direct commit and push when `commit.enabled` and `push.enabled` are true. Overriding `push.protectedBranches` remains authoritative; the plugin warns when an override omits `develop`, but it does not merge `develop` back in.',
 					'- Call `commit_policy_status` before an automatic operation to inspect `branchPolicy.current`, the effective protected lists, and `directCommitPushAllowed`.',
 					'',
 					'**Off by default.** Hosts must opt in:',

@@ -45,6 +45,9 @@ const buildRunner = (
 	dirty: readonly string[] = [],
 	commits?: string[],
 ): IGitRunner => {
+	let head = 'aaaaaaaa';
+	let staged = [...dirty];
+	let commitCount = 0;
 	const handler = (args: readonly string[]): Promise<IGitRunResult> => {
 		if (args[0] === 'rev-parse' && args.includes('--abbrev-ref')) {
 			return Promise.resolve(
@@ -53,11 +56,44 @@ const buildRunner = (
 					: ok(`${currentBranch}\n`),
 			);
 		}
+		if (args[0] === 'rev-parse' && args[1] === 'HEAD') {
+			return Promise.resolve(ok(`${head}\n`));
+		}
+		if (
+			args[0] === 'rev-parse' &&
+			args[1] === '--short' &&
+			args[2] === 'HEAD'
+		) {
+			return Promise.resolve(ok(`${head.slice(0, 7)}\n`));
+		}
 		if (args[0] === 'commit') {
 			commits?.push(args.join(' '));
+			commitCount += 1;
+			head = `${commitCount}`.padStart(8, '0');
+			staged = [];
 			return Promise.resolve(ok('committed\n'));
 		}
-		if (args[0] === 'add') return Promise.resolve(ok('added\n'));
+		if (args[0] === 'add') {
+			const marker = args.indexOf('--');
+			const additions = (
+				marker >= 0 ? args.slice(marker + 1) : args.slice(1)
+			).filter((path) => path.length > 0);
+			staged = [...new Set([...staged, ...additions])];
+			return Promise.resolve(ok('added\n'));
+		}
+		if (
+			args[0] === 'diff' &&
+			args[1] === '--cached' &&
+			args[2] === '--name-only'
+		) {
+			return Promise.resolve(
+				ok(`${staged.join('\n')}${staged.length > 0 ? '\n' : ''}`),
+			);
+		}
+		if (args[0] === 'reset' && args[1] === 'HEAD' && args[2] === '--') {
+			staged = [];
+			return Promise.resolve(ok('unstaged\n'));
+		}
 		if (args[0] === 'status')
 			return Promise.resolve(
 				ok(`${dirty.map((path) => ` M ${path}`).join('\n')}\n`),
@@ -195,8 +231,102 @@ describe('CommitPolicyEngine (f00182)', () => {
 			eventId: 'e4',
 		});
 		expect(result.ack).toBe('ERR');
-		if (result.ack === 'ERR')
-			expect(result.code).toBe('NON_CONVENTIONAL_MESSAGE');
+		if (result.ack === 'ERR') {
+			expect(result.code).toBe('MALFORMED_HEADER');
+			expect(result.reason).toContain('NON_CONVENTIONAL_MESSAGE');
+			expect(result.reason).toContain('MALFORMED_HEADER');
+		}
+	});
+
+	it('refuses EMPTY_HEADER with the conventional umbrella when requireConventional=true', async () => {
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: buildRunner('feature/x', true),
+				policy: basePolicy(),
+				identityCtx: {
+					run: buildRunner('feature/x', true),
+					envVars: Object.freeze({}),
+				},
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+		});
+		const result = await engine.handle({
+			kind: 'manual',
+			message: '',
+			files: ['only-this.ts'],
+			eventId: 'e4-empty',
+		});
+		expect(result.ack).toBe('ERR');
+		if (result.ack === 'ERR') {
+			expect(result.code).toBe('EMPTY_HEADER');
+			expect(result.reason).toContain('NON_CONVENTIONAL_MESSAGE');
+			expect(result.reason).toContain('EMPTY_HEADER');
+		}
+	});
+
+	it('refuses UNKNOWN_TYPE with the conventional umbrella when requireConventional=true', async () => {
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: buildRunner('feature/x', true),
+				policy: basePolicy(),
+				identityCtx: {
+					run: buildRunner('feature/x', true),
+					envVars: Object.freeze({}),
+				},
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+		});
+		const result = await engine.handle({
+			kind: 'manual',
+			message: 'hola: mundo',
+			files: ['only-this.ts'],
+			eventId: 'e4-unknown',
+		});
+		expect(result.ack).toBe('ERR');
+		if (result.ack === 'ERR') {
+			expect(result.code).toBe('UNKNOWN_TYPE');
+			expect(result.reason).toContain('NON_CONVENTIONAL_MESSAGE');
+			expect(result.reason).toContain('UNKNOWN_TYPE');
+		}
+	});
+
+	it('warns but still commits when requireConventional=false', async () => {
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: buildRunner('feature/x', true),
+				policy: basePolicy({
+					commit: {
+						enabled: true,
+						requireConventional: false,
+						autoScopeFromProposal: true,
+						refuseWhenDisabled: true,
+					},
+				}),
+				identityCtx: {
+					run: buildRunner('feature/x', true),
+					envVars: Object.freeze({}),
+				},
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+		});
+		const result = await engine.handle({
+			kind: 'manual',
+			message: 'hola',
+			files: ['only-this.ts'],
+			eventId: 'e4-warning',
+		});
+		expect(result.ack).toBe('OK');
+		if (result.ack === 'OK') {
+			expect(result.committed).toBe(true);
+			expect(result.commitCreated).toBe(true);
+			expect(result.headMoved).toBe(true);
+			expect(result.warnings).toEqual([
+				'NON_CONVENTIONAL_MESSAGE: MALFORMED_HEADER: hola',
+			]);
+		}
 	});
 
 	it('commits + records eventId on the OK path', async () => {
@@ -226,8 +356,44 @@ describe('CommitPolicyEngine (f00182)', () => {
 		expect(result.ack).toBe('OK');
 		if (result.ack === 'OK') {
 			expect(result.committed).toBe(true);
+			expect(result.commitCreated).toBe(true);
+			expect(result.headMoved).toBe(true);
 		}
 		expect(hookFired).toBe(true);
+	});
+
+	it('surfaces commitCreated=false and headMoved=false on contamination refusal', async () => {
+		const runner = buildRunner('feature/x', true, [
+			'agent-a.ts',
+			'agent-b.ts',
+		]);
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: runner,
+				policy: basePolicy(),
+				identityCtx: {
+					run: runner,
+					envVars: Object.freeze({}),
+				},
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+		});
+
+		const result = await engine.handle({
+			kind: 'slice',
+			proposalId: 'f00181',
+			sliceId: 'S9',
+			files: ['agent-a.ts'],
+			eventId: 'contamination-1',
+		});
+
+		expect(result).toMatchObject({
+			ack: 'ERR',
+			code: 'CROSS_AGENT_CONTAMINATION',
+			commitCreated: false,
+			headMoved: false,
+		});
 	});
 
 	it('uses the shared workspace snapshot when foreign changes are allowed', async () => {
