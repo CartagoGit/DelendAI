@@ -215,29 +215,32 @@ export type {
 	IWriteScaffoldedFilesResult,
 } from '../lib/scaffold/write-scaffolded-files';
 
-// --- plugin authoring (f00089 U4) -------------------------------------------
-// f00089 U4: one client-callable action that authors a complete, correct
+// --- project plugin scaffolding (f00089 U4) ---------------------------------
+// f00089 U4: one client-callable action that creates a complete, correct
 // `IMcpPlugin` from a declarative spec AND registers it on the host by PATH
 // (`plugins.<name>.path` in mcp-vertex.config.json). The target project's
 // LLM calls this to add project-specific plugins without ever reading the
 // mcp-vertex core or its internal plugins. Reuses the f00087 scaffold +
 // writer machinery.
-export { authorPlugin, repairPlugin } from '../lib/scaffold/author-plugin';
+export {
+	createProjectPlugin,
+	repairProjectPlugin,
+} from '../lib/scaffold/project-plugins';
 export { setPluginActivation } from '../lib/services/plugin-activation.service';
 export type {
 	ISetPluginActivationInput,
 	ISetPluginActivationResult,
 } from '../lib/contracts/interfaces/plugin-activation.interface';
 export type {
-	IAuthorPluginOptions,
-	IAuthorPluginRegistration,
-	IAuthorPluginResult,
-	IAuthorPluginSpec,
-	IRepairPluginResult,
+	IProjectPluginOptions,
+	IProjectPluginRegistration,
+	IProjectPluginResult,
+	IProjectPluginSpec,
 	IPluginFieldSpec,
 	IPluginFieldType,
 	IPluginToolSpec,
-} from '../lib/scaffold/author-plugin';
+	IRepairProjectPluginResult,
+} from '../lib/scaffold/project-plugins';
 
 // --- f00193 (Track K / external MCPs): control-plane registry + router ----
 // ships the registry + router that lets the host talk to multiple

@@ -113,7 +113,7 @@ auditoría externa.
 
 ### S1 — Handler devuelve refusals tipados ante selector incompleto/inexistente
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/tools/run-tool.ts`, `plugins/commit-policy/tests/src/lib/tools/run-tool.spec.ts`
 - **Gate**: type
 - **Dependency**: —
@@ -124,7 +124,10 @@ auditoría externa.
   - "sin selector + kind=slice → refusal `SELECTOR_REQUIRED`"
   - "sin selector + kind=manual → ok"
   - "logs estructurados por invocación"
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente aprobada: resolveSliceSelector exige proposalId+sliceId exactos; distingue SELECTOR_REQUIRED e INCOMPLETE_SELECTOR; devuelve SLICE_NOT_FOUND determinista; no selecciona el primer slice elegible; manual sin selector sigue permitido. El logging por invocación ya lo aporta la instrumentación general host/logs con toolName, args, result y elapsedMs. Biome y typecheck verdes; test focalizado 5/5.
 ## acceptance
 
 - Comportamiento determinista: misma entrada → misma salida siempre.

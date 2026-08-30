@@ -180,10 +180,10 @@ check whether the lint supports `--update` and re-run the lint through that
 entrypoint so the script itself rewrites its canonical baseline format. Manual
 edits are the fallback only when no `--update` mode exists.
 
-| Lint / script | `--update` support | Use case |
-| --- | --- | --- |
-| `bun tools/scripts/lint/proposal-files-exist.script.ts` | Yes | Rebaseline known dangling `Files:` references in historical `done/`, `review/` or `in-progress` proposals after an intentional rename or archived path drift. |
-| `bun tools/scripts/lint/proposal-cited-commits.script.ts` | Yes | Rebaseline known orphan commit citations in historical `done/*` proposals when the commit was intentionally rebased away or documented as legacy debt. |
+| Lint / script                                             | `--update` support | Use case                                                                                                                                                      |
+| --------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun tools/scripts/lint/proposal-files-exist.script.ts`   | Yes                | Rebaseline known dangling `Files:` references in historical `done/`, `review/` or `in-progress` proposals after an intentional rename or archived path drift. |
+| `bun tools/scripts/lint/proposal-cited-commits.script.ts` | Yes                | Rebaseline known orphan commit citations in historical `done/*` proposals when the commit was intentionally rebased away or documented as legacy debt.        |
 
 ### 4.b Coexistence with parallel work (c00012)
 

@@ -224,7 +224,7 @@ describe('fingerprint dedup', () => {
 describe('network failure', () => {
 	it('resolves without throwing and counts githubFailures when createIssue throws', async () => {
 		const stderrChunks: string[] = [];
-		const originalWrite = process.stderr.write.bind(process.stderr);
+		const _originalWrite = process.stderr.write.bind(process.stderr);
 		const spy = vi
 			.spyOn(process.stderr, 'write')
 			.mockImplementation((chunk: unknown) => {

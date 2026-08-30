@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { diffScope, formatReport } from './check-agent-md.script';
-import { renderAgentMdBlock } from '../gen/agent-md.script';
 
 describe('diffScope (f00190)', () => {
 	const VENDOR = join(tmpdir(), `check-agent-md-${Date.now()}`);
@@ -74,9 +73,9 @@ describe('diffScope (f00190)', () => {
 		await writeFile(`${VENDOR}/pkg/AGENT.md`, `# header\n\n${corrupted}\n`);
 		const drift = await diffScope(
 			{
-				dir: `${VENDOR}/pkg`.replace(process.cwd() + '/', ''),
+				dir: `${VENDOR}/pkg`.replace(`${process.cwd()}/`, ''),
 				packageJson: `${VENDOR}/pkg/package.json`.replace(
-					process.cwd() + '/',
+					`${process.cwd()}/`,
 					'',
 				),
 				isPlugin: false,

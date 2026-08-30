@@ -10,10 +10,7 @@ import type { ILogIncident } from '@mcp-vertex/logs/public';
 import type { IIncidentProposalToolOptions } from '../contracts/interfaces/incident-proposal-tool-options.interface';
 import type { IIncidentProposalDraft } from '../contracts/interfaces/incident-proposal.interface';
 import type { IncidentSeverity } from '../contracts/interfaces/auto-fix-policy.interface';
-import {
-	buildIncidentProposalWriteSummarySchema,
-	incidentProposalDraftSchema,
-} from '../contracts/schemas/incident-proposal.schema';
+import { buildIncidentProposalWriteSummarySchema } from '../contracts/schemas/incident-proposal.schema';
 import {
 	autoFixPolicy,
 	defaultSeverityForClassification,

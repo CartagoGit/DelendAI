@@ -88,7 +88,7 @@ describe('utility() (f00195)', () => {
 	});
 
 	it('a higher λ picks the cheaper candidate when quality ties', () => {
-		const equalQuality = cand({ quality: 0.9 });
+		const _equalQuality = cand({ quality: 0.9 });
 		const expensive = cand({ quality: 0.9, tokenCost: 80 });
 		const cheap = cand({ quality: 0.9, tokenCost: 20 });
 		const w: IUtilityWeights = { lambda: 1, mu: 0, nu: 0 };

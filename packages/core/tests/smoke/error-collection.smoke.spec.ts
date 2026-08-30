@@ -125,7 +125,7 @@ describe('error-collection end-to-end smoke', () => {
 		// Find the collector-written line (sink: 'logs-error').
 		const collectorLine = lines.find(
 			(l) =>
-				(l['meta'] as Record<string, unknown> | undefined)?.['sink'] ===
+				(l.meta as Record<string, unknown> | undefined)?.sink ===
 				'logs-error',
 		);
 		expect(collectorLine).toBeDefined();

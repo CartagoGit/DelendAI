@@ -38,7 +38,7 @@ describe('withErrorCollection — success path', () => {
 		const collector = createErrorCollector({ sinks: [buf] });
 		const recordSpy = vi.spyOn(collector, 'record');
 
-		const safe = withErrorCollection(async (_args: void) => 'ok', {
+		const safe = withErrorCollection(async (_args: undefined) => 'ok', {
 			toolMeta: TOOL_META,
 			collector,
 		});
@@ -59,7 +59,7 @@ describe('withErrorCollection — error path', () => {
 		const original = new TypeError('expected failure');
 
 		const safe = withErrorCollection(
-			async (_args: void): Promise<void> => {
+			async (_args: undefined): Promise<void> => {
 				throw original;
 			},
 			{ toolMeta: TOOL_META, collector },
@@ -75,7 +75,7 @@ describe('withErrorCollection — error path', () => {
 		const recordSpy = vi.spyOn(collector, 'record');
 
 		const safe = withErrorCollection(
-			async (_args: void): Promise<void> => {
+			async (_args: undefined): Promise<void> => {
 				throw new RangeError('out of range');
 			},
 			{ toolMeta: TOOL_META, collector },
@@ -92,7 +92,7 @@ describe('withErrorCollection — error path', () => {
 		const collector = createErrorCollector({ sinks: [buf] });
 
 		const safe = withErrorCollection(
-			async (_args: void): Promise<void> => {
+			async (_args: undefined): Promise<void> => {
 				throw new Error('boom');
 			},
 			{ toolMeta: TOOL_META, collector },
@@ -117,7 +117,7 @@ describe('withErrorCollection — onError hook', () => {
 		const onError = vi.fn();
 
 		const safe = withErrorCollection(
-			async (_args: void): Promise<void> => {
+			async (_args: undefined): Promise<void> => {
 				throw new TypeError('hook test');
 			},
 			{ toolMeta: TOOL_META, collector, onError },
@@ -137,7 +137,7 @@ describe('withErrorCollection — onError hook', () => {
 		let hookEvent: unknown;
 
 		const safe = withErrorCollection(
-			async (_args: void): Promise<void> => {
+			async (_args: undefined): Promise<void> => {
 				throw new TypeError('same ref');
 			},
 			{
@@ -160,11 +160,14 @@ describe('withErrorCollection — onError hook', () => {
 		const collector = createErrorCollector({ sinks: [buf] });
 		const onError = vi.fn();
 
-		const safe = withErrorCollection(async (_args: void) => 'success', {
-			toolMeta: TOOL_META,
-			collector,
-			onError,
-		});
+		const safe = withErrorCollection(
+			async (_args: undefined) => 'success',
+			{
+				toolMeta: TOOL_META,
+				collector,
+				onError,
+			},
+		);
 
 		await safe(undefined);
 		expect(onError).not.toHaveBeenCalled();
@@ -183,7 +186,7 @@ describe('withErrorCollection — synchronous throws', () => {
 
 		// A handler that throws synchronously before any await.
 		const safe = withErrorCollection(
-			(_args: void): Promise<void> => {
+			(_args: undefined): Promise<void> => {
 				throw syncErr;
 			},
 			{ toolMeta: TOOL_META, collector },

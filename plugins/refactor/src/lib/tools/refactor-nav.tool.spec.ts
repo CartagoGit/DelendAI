@@ -51,13 +51,13 @@ describe('refactor_nav tool (f00123 S1)', () => {
 
 	it('refactor_references returns the right hit count', async () => {
 		const t = collectHandlers();
-		const handler = t['refactor_refactor_references']?.handler as (
+		const handler = t.refactor_refactor_references?.handler as (
 			a: unknown,
 		) => Promise<unknown>;
 		const out = parseToolJson(
 			await handler({ path: 'demo.ts', name: 'greet' }),
 		);
-		const hits = out['hits'] as Array<{
+		const hits = out.hits as Array<{
 			name: string;
 			isDefinition: boolean;
 		}>;
@@ -67,13 +67,13 @@ describe('refactor_nav tool (f00123 S1)', () => {
 
 	it('refactor_definition returns the kind for known symbols', async () => {
 		const t = collectHandlers();
-		const handler = t['refactor_refactor_definition']?.handler as (
+		const handler = t.refactor_refactor_definition?.handler as (
 			a: unknown,
 		) => Promise<unknown>;
 		const out = parseToolJson(
 			await handler({ path: 'demo.ts', name: 'PI' }),
 		);
-		const hit = out['hit'] as { kind: string; name: string } | null;
+		const hit = out.hit as { kind: string; name: string } | null;
 		expect(hit).not.toBeNull();
 		expect(hit?.kind).toBe('variable');
 		expect(hit?.name).toBe('PI');
@@ -81,11 +81,11 @@ describe('refactor_nav tool (f00123 S1)', () => {
 
 	it('refactor_symbols returns only exported top-level decls', async () => {
 		const t = collectHandlers();
-		const handler = t['refactor_refactor_symbols']?.handler as (
+		const handler = t.refactor_refactor_symbols?.handler as (
 			a: unknown,
 		) => Promise<unknown>;
 		const out = parseToolJson(await handler({ path: 'demo.ts' }));
-		const hits = out['hits'] as Array<{ name: string }>;
+		const hits = out.hits as Array<{ name: string }>;
 		const names = hits.map((h) => h.name);
 		expect(names).toEqual(expect.arrayContaining(['PI', 'greet']));
 		expect(names).not.toContain('x');
@@ -97,7 +97,7 @@ describe('refactor_nav tool (f00123 S1)', () => {
 	describe('containment (x00184)', () => {
 		it('rejects an absolute path', async () => {
 			const t = collectHandlers();
-			const handler = t['refactor_refactor_symbols']?.handler as (
+			const handler = t.refactor_refactor_symbols?.handler as (
 				a: unknown,
 			) => Promise<unknown>;
 			const out = (await handler({ path: '/etc/shadow' })) as {
@@ -111,7 +111,7 @@ describe('refactor_nav tool (f00123 S1)', () => {
 
 		it('rejects a path that traverses out via ../..', async () => {
 			const t = collectHandlers();
-			const handler = t['refactor_refactor_references']?.handler as (
+			const handler = t.refactor_refactor_references?.handler as (
 				a: unknown,
 			) => Promise<unknown>;
 			const out = (await handler({
@@ -126,7 +126,7 @@ describe('refactor_nav tool (f00123 S1)', () => {
 
 		it('accepts a workspace-relative path', async () => {
 			const t = collectHandlers();
-			const handler = t['refactor_refactor_definition']?.handler as (
+			const handler = t.refactor_refactor_definition?.handler as (
 				a: unknown,
 			) => Promise<unknown>;
 			const out = (await handler({

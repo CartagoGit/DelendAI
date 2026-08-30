@@ -137,7 +137,7 @@ const buildDecisionYaml = (rows: readonly IMeasurementRow[]): string => {
 		].join('\n');
 	});
 	return [
-		'generatedAt: ' + new Date().toISOString(),
+		`generatedAt: ${new Date().toISOString()}`,
 		'preset: swarm',
 		'decisions:',
 		...decisions,

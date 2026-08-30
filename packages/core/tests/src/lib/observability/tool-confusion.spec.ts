@@ -52,7 +52,7 @@ describe('tool-confusion (f00199) — recordInvocation', () => {
 		const snap = c.snapshot();
 		expect(snap.total).toBe(3);
 		expect(snap.confused).toBe(3);
-		expect(snap.directed['a']?.['b']).toBe(3);
+		expect(snap.directed.a?.b).toBe(3);
 	});
 
 	it('is asymmetric: confusion[a][b] ≠ confusion[b][a]', () => {
@@ -61,8 +61,8 @@ describe('tool-confusion (f00199) — recordInvocation', () => {
 		c.recordInvocation('b', 'a');
 		c.recordInvocation('a', 'b');
 		const snap = c.snapshot();
-		expect(snap.directed['a']?.['b']).toBe(2);
-		expect(snap.directed['b']?.['a']).toBe(1);
+		expect(snap.directed.a?.b).toBe(2);
+		expect(snap.directed.b?.a).toBe(1);
 	});
 });
 
@@ -194,8 +194,8 @@ describe('tool-confusion (f00199) — reset + persistence', () => {
 			confused: 999,
 		});
 		const snap = c.snapshot();
-		expect(snap.directed['good']?.['ok']).toBe(2);
-		expect(snap.directed['bad']).toBeUndefined();
-		expect(snap.directed['badcount']).toBeUndefined();
+		expect(snap.directed.good?.ok).toBe(2);
+		expect(snap.directed.bad).toBeUndefined();
+		expect(snap.directed.badcount).toBeUndefined();
 	});
 });

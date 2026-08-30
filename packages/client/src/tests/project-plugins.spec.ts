@@ -1,5 +1,5 @@
 /**
- * author-plugin.spec.ts — f00089 U4.
+ * project-plugins.spec.ts — f00089 U4.
  *
  * Covers the four behaviours the U4 contract requires:
  *  1. generation from a declarative spec (correct, complete plugin);
@@ -14,9 +14,9 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
-	authorPlugin,
-	repairPlugin,
-	type IAuthorPluginSpec,
+	createProjectPlugin,
+	repairProjectPlugin,
+	type IProjectPluginSpec,
 } from '../public/index';
 
 let workspaceRoot: string;
@@ -36,16 +36,16 @@ const readConfig = async (): Promise<{
 };
 
 beforeEach(async () => {
-	workspaceRoot = await mkdtemp(join(tmpdir(), 'author-plugin-'));
+	workspaceRoot = await mkdtemp(join(tmpdir(), 'project-plugin-'));
 });
 
 afterEach(async () => {
 	await rm(workspaceRoot, { recursive: true, force: true });
 });
 
-describe('authorPlugin — generation from spec', () => {
+describe('createProjectPlugin — generation from spec', () => {
 	it('writes a complete plugin package and registers it by path', async () => {
-		const spec: IAuthorPluginSpec = {
+		const spec: IProjectPluginSpec = {
 			name: 'acme-notes',
 			description: 'Project notes plugin',
 			tools: [
@@ -61,7 +61,7 @@ describe('authorPlugin — generation from spec', () => {
 			],
 		};
 
-		const result = await authorPlugin(spec, { workspaceRoot });
+		const result = await createProjectPlugin(spec, { workspaceRoot });
 
 		// canonical four files land under the client authoring default layout
 		const pkg = await readFile(
@@ -95,7 +95,7 @@ describe('authorPlugin — generation from spec', () => {
 	});
 
 	it('keeps the canonical ping tool when no tools are declared', async () => {
-		const result = await authorPlugin(
+		const result = await createProjectPlugin(
 			{ name: 'pinger', description: 'health only' },
 			{ workspaceRoot },
 		);
@@ -108,9 +108,9 @@ describe('authorPlugin — generation from spec', () => {
 	});
 });
 
-describe('authorPlugin — multiple tools', () => {
+describe('createProjectPlugin — multiple tools', () => {
 	it('emits one registered tool per spec entry with its own schemas', async () => {
-		const spec: IAuthorPluginSpec = {
+		const spec: IProjectPluginSpec = {
 			name: 'multi',
 			description: 'many tools',
 			namespace: 'mx',
@@ -128,7 +128,7 @@ describe('authorPlugin — multiple tools', () => {
 				},
 			],
 		};
-		const result = await authorPlugin(spec, { workspaceRoot });
+		const result = await createProjectPlugin(spec, { workspaceRoot });
 		const index = await readFile(
 			join(result.pluginDir, 'src/index.ts'),
 			'utf8',
@@ -146,19 +146,19 @@ describe('authorPlugin — multiple tools', () => {
 	});
 });
 
-describe('authorPlugin — idempotent, non-destructive registration', () => {
+describe('createProjectPlugin — idempotent, non-destructive registration', () => {
 	it('is unchanged on a second identical run', async () => {
-		const spec: IAuthorPluginSpec = {
+		const spec: IProjectPluginSpec = {
 			name: 'idem',
 			description: 'idempotent',
 		};
-		const first = await authorPlugin(spec, {
+		const first = await createProjectPlugin(spec, {
 			workspaceRoot,
 			keepLegacy: true,
 		});
 		expect(first.registration.action).toBe('added');
 
-		const second = await authorPlugin(spec, {
+		const second = await createProjectPlugin(spec, {
 			workspaceRoot,
 			keepLegacy: true,
 		});
@@ -185,7 +185,7 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 			'utf8',
 		);
 
-		await authorPlugin(
+		await createProjectPlugin(
 			{ name: 'project-x', description: 'project plugin' },
 			{ workspaceRoot },
 		);
@@ -227,7 +227,7 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 			'utf8',
 		);
 
-		const result = await authorPlugin(
+		const result = await createProjectPlugin(
 			{ name: 'widget', description: 'rebuilt widget' },
 			{ workspaceRoot },
 		);
@@ -244,11 +244,11 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 	});
 
 	it('supports multiple project-specific plugins side by side', async () => {
-		await authorPlugin(
+		await createProjectPlugin(
 			{ name: 'alpha', description: 'a' },
 			{ workspaceRoot },
 		);
-		await authorPlugin(
+		await createProjectPlugin(
 			{ name: 'beta', description: 'b' },
 			{ workspaceRoot },
 		);
@@ -266,13 +266,13 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 	});
 });
 
-describe('repairPlugin', () => {
+describe('repairProjectPlugin', () => {
 	it('restores missing scaffold files without overwriting existing files', async () => {
-		const spec: IAuthorPluginSpec = {
+		const spec: IProjectPluginSpec = {
 			name: 'repairable',
 			description: 'repairable plugin',
 		};
-		const authored = await authorPlugin(spec, { workspaceRoot });
+		const authored = await createProjectPlugin(spec, { workspaceRoot });
 		const indexPath = join(authored.pluginDir, 'src/index.ts');
 		const readmePath = join(authored.pluginDir, 'README.md');
 		await rm(readmePath);
@@ -282,7 +282,7 @@ describe('repairPlugin', () => {
 			'utf8',
 		);
 
-		const result = await repairPlugin(spec, { workspaceRoot });
+		const result = await repairProjectPlugin(spec, { workspaceRoot });
 
 		expect(result.repaired).toContain('README.md');
 		expect(result.preserved).toContain('src/index.ts');
@@ -294,7 +294,7 @@ describe('repairPlugin', () => {
 	});
 
 	it('supports an explicit pluginsRoot using the existing layout', async () => {
-		const result = await authorPlugin(
+		const result = await createProjectPlugin(
 			{ name: 'explicit', description: 'explicit root' },
 			{ workspaceRoot, pluginsRoot: 'libs/plugins' },
 		);
@@ -306,10 +306,10 @@ describe('repairPlugin', () => {
 	});
 });
 
-describe('authorPlugin — guards', () => {
+describe('createProjectPlugin — guards', () => {
 	it('rejects a non-absolute workspaceRoot', async () => {
 		await expect(
-			authorPlugin(
+			createProjectPlugin(
 				{ name: 'x', description: 'y' },
 				{ workspaceRoot: 'relative/path' },
 			),

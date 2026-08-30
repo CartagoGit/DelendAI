@@ -34,7 +34,7 @@ export const moduleDisplayName = (relativePath: string): string => {
  * A mermaid-safe node id (letters/digits/underscore). Replaces `/` and
  * `-` with `_` so `src/lib/foo` becomes `src_lib_foo`.
  */
-const nodeId = (display: string): string =>
+const _nodeId = (display: string): string =>
 	display.replace(/[^A-Za-z0-9_]/g, '_');
 
 /**

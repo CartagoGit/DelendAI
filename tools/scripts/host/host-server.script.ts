@@ -47,7 +47,7 @@ const run = async (): Promise<void> => {
 	const forwarded = process.argv.slice(2);
 	if (hasHelpFlag(forwarded)) {
 		process.stdout.write(
-			[
+			`${[
 				'mcp-vertex MCP host',
 				'',
 				'Usage: bun tools/scripts/host/host-server.script.ts [options]',
@@ -57,7 +57,7 @@ const run = async (): Promise<void> => {
 				'  --plugins <a,b>      Plugins to load',
 				'  --surface <mode>     MCP surface mode',
 				'  --help, -h           Show this help',
-			].join('\n') + '\n',
+			].join('\n')}\n`,
 		);
 		return;
 	}

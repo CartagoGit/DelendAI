@@ -40,7 +40,7 @@ const withFixture = async (
 		await mkdir(join(root, 'plugins/search'), { recursive: true });
 		await writeFile(
 			join(root, 'plugins/search/package.json'),
-			JSON.stringify(
+			`${JSON.stringify(
 				{
 					name: '@mcp-vertex/search',
 					version: '0.1.1',
@@ -48,7 +48,7 @@ const withFixture = async (
 				},
 				null,
 				'\t',
-			) + '\n',
+			)}\n`,
 		);
 		await writeFile(
 			join(root, 'plugins/search/plugin.manifest.ts'),
@@ -74,7 +74,7 @@ const withFixture = async (
 		});
 		await writeFile(
 			join(root, 'plugins/context-for-change/package.json'),
-			JSON.stringify(
+			`${JSON.stringify(
 				{
 					name: '@mcp-vertex/context-for-change',
 					version: '0.1.0',
@@ -82,7 +82,7 @@ const withFixture = async (
 				},
 				null,
 				'\t',
-			) + '\n',
+			)}\n`,
 		);
 		await writeFile(
 			join(root, 'plugins/context-for-change/plugin.manifest.ts'),
@@ -108,7 +108,7 @@ const withFixture = async (
 		});
 		await writeFile(
 			join(root, 'plugins/impact-analysis/package.json'),
-			JSON.stringify(
+			`${JSON.stringify(
 				{
 					name: '@mcp-vertex/impact-analysis',
 					version: '0.1.0',
@@ -116,7 +116,7 @@ const withFixture = async (
 				},
 				null,
 				'\t',
-			) + '\n',
+			)}\n`,
 		);
 		await writeFile(
 			join(root, 'plugins/impact-analysis/plugin.manifest.ts'),
@@ -142,7 +142,7 @@ const withFixture = async (
 		});
 		await writeFile(
 			join(root, 'plugins/adaptive-optimizer/package.json'),
-			JSON.stringify(
+			`${JSON.stringify(
 				{
 					name: '@mcp-vertex/adaptive-optimizer',
 					version: '0.1.0',
@@ -150,7 +150,7 @@ const withFixture = async (
 				},
 				null,
 				'\t',
-			) + '\n',
+			)}\n`,
 		);
 		await writeFile(
 			join(root, 'plugins/adaptive-optimizer/plugin.manifest.ts'),
@@ -174,7 +174,7 @@ const withFixture = async (
 		await mkdir(join(root, 'plugins/project-health'), { recursive: true });
 		await writeFile(
 			join(root, 'plugins/project-health/package.json'),
-			JSON.stringify(
+			`${JSON.stringify(
 				{
 					name: '@mcp-vertex/project-health',
 					version: '0.1.0',
@@ -182,7 +182,7 @@ const withFixture = async (
 				},
 				null,
 				'\t',
-			) + '\n',
+			)}\n`,
 		);
 		await writeFile(
 			join(root, 'plugins/project-health/plugin.manifest.ts'),
@@ -206,7 +206,7 @@ const withFixture = async (
 		await mkdir(join(root, 'plugins/quality-policy'), { recursive: true });
 		await writeFile(
 			join(root, 'plugins/quality-policy/package.json'),
-			JSON.stringify(
+			`${JSON.stringify(
 				{
 					name: '@mcp-vertex/quality-policy',
 					version: '0.1.0',
@@ -214,7 +214,7 @@ const withFixture = async (
 				},
 				null,
 				'\t',
-			) + '\n',
+			)}\n`,
 		);
 		await writeFile(
 			join(root, 'plugins/quality-policy/plugin.manifest.ts'),

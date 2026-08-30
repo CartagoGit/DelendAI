@@ -115,7 +115,7 @@ describe('state_health / state_repair [N15]', async () => {
 		mkdirSync(join(dir, '.cache/mcp-vertex'), { recursive: true });
 		writeFileSync(
 			join(dir, '.cache/mcp-vertex/agents.lock.session.jsonl'),
-			[
+			`${[
 				JSON.stringify({
 					ts: '2026-07-26T00:00:00.000Z',
 					agent: 'alpha',
@@ -134,7 +134,7 @@ describe('state_health / state_repair [N15]', async () => {
 					action: 'claim',
 					ok: true,
 				}),
-			].join('\n') + '\n',
+			].join('\n')}\n`,
 		);
 		const handler = await capture(buildStateHealthRegistration(opts));
 		const out = parse(await handler({}));

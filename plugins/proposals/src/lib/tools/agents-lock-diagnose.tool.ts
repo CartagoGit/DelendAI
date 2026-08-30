@@ -12,7 +12,6 @@ import z from 'zod';
 import {
 	listStaleAgentLockTmpFiles,
 	readLock,
-	type IAgentLockTmpFileInfo,
 	type ILockEntry,
 } from '../locks/agent-lock-engine';
 

@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { setMaxListeners } from 'node:events';
 
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
@@ -367,7 +368,13 @@ export async function createMcpProject(
 		server,
 		registrationOrder: ordered.map((registration) => registration.id),
 		async start(): Promise<void> {
-			await server.connect(new StdioServerTransport());
+			const transport = new StdioServerTransport();
+			// The MCP SDK attaches one `drain` listener per pending stdio
+			// write. Startup can legitimately publish more than ten frames
+			// before stdout drains, so the default EventTarget warning is
+			// noisy here even though the listeners are released by `send`.
+			setMaxListeners(0, process.stdout);
+			await server.connect(transport);
 		},
 		async dispose(): Promise<void> {
 			if (disposed) return;

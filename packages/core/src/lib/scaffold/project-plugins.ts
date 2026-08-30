@@ -11,9 +11,16 @@ import { toolError, toolJson } from '../shared/tool-response';
 import { withFileMutex } from '../shared/with-file-mutex';
 import { scaffoldPluginFiles } from './scaffold-host';
 
-export const AUTHOR_EXTERNAL_PLUGIN_INPUT_SCHEMA = z
+const PROJECT_PLUGIN_NAME_SCHEMA = z
+	.string()
+	.trim()
+	.min(1)
+	.describe('Project plugin name or id.');
+
+export const PROJECT_PLUGINS_CREATE_INPUT_SCHEMA = z
 	.object({
-		name: z.string().trim().min(1).describe('Plugin name or id.'),
+		name: PROJECT_PLUGIN_NAME_SCHEMA,
+		mode: z.enum(['create', 'inspect', 'repair']).optional(),
 		description: z
 			.string()
 			.trim()
@@ -26,10 +33,16 @@ export const AUTHOR_EXTERNAL_PLUGIN_INPUT_SCHEMA = z
 			.min(1)
 			.optional()
 			.describe('Optional tool namespace prefix.'),
-		mode: z.enum(['create', 'inspect', 'repair']).optional(),
 		dryRun: z.boolean().optional(),
-		keepLegacy: z.boolean().optional(),
 	})
+	.strict();
+
+export const PROJECT_PLUGINS_INSPECT_INPUT_SCHEMA = z
+	.object({ name: PROJECT_PLUGIN_NAME_SCHEMA })
+	.strict();
+
+export const PROJECT_PLUGINS_REPAIR_INPUT_SCHEMA = z
+	.object({ name: PROJECT_PLUGIN_NAME_SCHEMA })
 	.strict();
 
 const FILE_SCHEMA = z.object({ path: z.string(), content: z.string() });
@@ -48,7 +61,7 @@ const DIAGNOSTIC_SCHEMA = z.object({
 	autoFixable: z.boolean(),
 });
 
-export const AUTHOR_EXTERNAL_PLUGIN_OUTPUT_SCHEMA = z.object({
+export const PROJECT_PLUGINS_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	error: z
 		.object({ reason: z.string(), nextAction: z.string().optional() })
@@ -71,21 +84,27 @@ export const AUTHOR_EXTERNAL_PLUGIN_OUTPUT_SCHEMA = z.object({
 	nextSteps: z.string().optional(),
 });
 
-export type IAuthorExternalPluginArgs = z.input<
-	typeof AUTHOR_EXTERNAL_PLUGIN_INPUT_SCHEMA
+export type IProjectPluginsCreateArgs = z.input<
+	typeof PROJECT_PLUGINS_CREATE_INPUT_SCHEMA
 >;
-export type IAuthorExternalPluginOutput = z.infer<
-	typeof AUTHOR_EXTERNAL_PLUGIN_OUTPUT_SCHEMA
+export type IProjectPluginsInspectArgs = z.input<
+	typeof PROJECT_PLUGINS_INSPECT_INPUT_SCHEMA
+>;
+export type IProjectPluginsRepairArgs = z.input<
+	typeof PROJECT_PLUGINS_REPAIR_INPUT_SCHEMA
+>;
+export type IProjectPluginsOutput = z.infer<
+	typeof PROJECT_PLUGINS_OUTPUT_SCHEMA
 >;
 
-export interface IAuthorExternalPluginOptions {
+export interface IProjectPluginsOptions {
 	readonly namespacePrefix: string;
 	readonly workspace: IWorkspacePathProvider;
 	readonly configFileName?: string;
 	readonly pluginsRoot?: string;
 }
 
-interface IAuthorExternalPluginFiles {
+interface IProjectPluginsFiles {
 	readonly written: readonly string[];
 	readonly preserved: readonly string[];
 	readonly moved: readonly string[];
@@ -94,7 +113,7 @@ interface IAuthorExternalPluginFiles {
 
 type PluginDiagnostic = z.infer<typeof DIAGNOSTIC_SCHEMA>;
 
-const configFileName = (options: IAuthorExternalPluginOptions): string =>
+const configFileName = (options: IProjectPluginsOptions): string =>
 	options.configFileName ?? 'mcp-vertex.config.json';
 
 const pluginIdFor = (name: string): string => {
@@ -107,7 +126,7 @@ const pluginIdFor = (name: string): string => {
 	return id;
 };
 
-const defaultPluginRoot = (options: IAuthorExternalPluginOptions): string =>
+const defaultPluginRoot = (options: IProjectPluginsOptions): string =>
 	options.pluginsRoot ?? 'packages/mcp-vertex/plugins';
 
 const pathExists = async (path: string): Promise<boolean> => {
@@ -262,7 +281,7 @@ const readConfig = async (
 };
 
 const registerPluginPath = async (
-	options: IAuthorExternalPluginOptions,
+	options: IProjectPluginsOptions,
 	pluginId: string,
 	pluginPath: string,
 	dryRun: boolean,
@@ -324,10 +343,9 @@ const registerPluginPath = async (
 const writePluginFiles = async (
 	pluginDir: string,
 	files: readonly { path: string; content: string }[],
-	keepLegacy: boolean,
-	mode: 'create' | 'repair',
+	operation: 'create' | 'repair',
 	dryRun: boolean,
-): Promise<IAuthorExternalPluginFiles> => {
+): Promise<IProjectPluginsFiles> => {
 	const written: string[] = [];
 	const preserved: string[] = [];
 	const moved: string[] = [];
@@ -341,18 +359,13 @@ const writePluginFiles = async (
 	if (dryRun) return { written, preserved, moved, planned };
 	for (const file of planned) {
 		if (await pathExists(file.path)) {
-			if (mode === 'repair') {
+			if (operation === 'repair') {
 				preserved.push(file.path);
 				continue;
 			}
-			if (!keepLegacy) {
-				throw new Error(
-					`plugin scaffold target already exists: ${file.path}; use mode:"repair" or keepLegacy:true`,
-				);
-			}
-			const legacy = `${file.path}.legacy`;
-			await writeFileAtomic(legacy, await readFile(file.path, 'utf8'));
-			moved.push(legacy);
+			throw new Error(
+				`plugin scaffold target already exists: ${file.path}`,
+			);
 		}
 		await writeFileAtomic(file.path, file.content);
 		written.push(file.path);
@@ -415,10 +428,10 @@ const repairPackageMetadata = async (
 	return packagePath;
 };
 
-export const authorExternalPlugin = async (
-	args: IAuthorExternalPluginArgs,
-	options: IAuthorExternalPluginOptions,
-): Promise<IAuthorExternalPluginOutput> => {
+export const runProjectPluginCreate = async (
+	args: IProjectPluginsCreateArgs,
+	options: IProjectPluginsOptions,
+): Promise<IProjectPluginsOutput> => {
 	const pluginId = pluginIdFor(args.name);
 	const namespace = args.namespace ?? pluginId;
 	const description = args.description ?? `TODO: describe ${pluginId}.`;
@@ -431,35 +444,12 @@ export const authorExternalPlugin = async (
 	});
 	const dryRun = args.dryRun ?? false;
 	const diagnostics = await structuralDiagnostics(pluginDir, files);
-	if ((args.mode ?? 'create') === 'inspect') {
-		return {
-			ok: diagnostics.every(
-				(diagnostic) => diagnostic.severity !== 'error',
-			),
-			name: pluginId,
-			namespace,
-			pluginDir,
-			pluginPath: relativePluginPath(options.workspace.root, pluginDir),
-			diagnostics,
-			nextSteps:
-				diagnostics.length === 0
-					? 'Plugin structure is valid.'
-					: 'Apply the auto-fixable findings, then address the remaining structural findings in the plugin entrypoint.',
-		};
-	}
-	const writeMode: 'create' | 'repair' =
-		args.mode === 'repair' ? 'repair' : 'create';
 	const fileResult = await writePluginFiles(
 		pluginDir,
 		files,
-		args.keepLegacy ?? false,
-		writeMode,
+		'create',
 		dryRun,
 	);
-	const repairedMetadata =
-		writeMode === 'repair'
-			? await repairPackageMetadata(pluginDir, files, dryRun)
-			: undefined;
 	const pluginPath = relativePluginPath(options.workspace.root, pluginDir);
 	const registration = await registerPluginPath(
 		options,
@@ -469,11 +459,8 @@ export const authorExternalPlugin = async (
 	);
 	const afterDiagnostics = await structuralDiagnostics(pluginDir, files);
 	const autoFixed = diagnostics
-		.filter(
-			(diagnostic) =>
-				fileResult.written.some((path) => path === diagnostic.path) ||
-				(repairedMetadata !== undefined &&
-					diagnostic.path === repairedMetadata),
+		.filter((diagnostic) =>
+			fileResult.written.some((path) => path === diagnostic.path),
 		)
 		.map((diagnostic) => diagnostic.id);
 	const toolName = `${namespace}_ping`;
@@ -496,26 +483,118 @@ export const authorExternalPlugin = async (
 	};
 };
 
-export const buildAuthorExternalPluginToolRegistration = (
-	options: IAuthorExternalPluginOptions,
+const runProjectPluginInspect = async (
+	args: IProjectPluginsInspectArgs,
+	options: IProjectPluginsOptions,
+): Promise<IProjectPluginsOutput> => {
+	const pluginId = pluginIdFor(args.name);
+	const namespace = pluginId;
+	const pluginDir = options.workspace.resolve(
+		`${defaultPluginRoot(options)}/mcp-vertex_${pluginId}`,
+	);
+	const files = scaffoldPluginFiles({
+		pluginName: pluginId,
+		description: `TODO: describe ${pluginId}.`,
+	});
+	const diagnostics = await structuralDiagnostics(pluginDir, files);
+	return {
+		ok: diagnostics.every((diagnostic) => diagnostic.severity !== 'error'),
+		name: pluginId,
+		namespace,
+		pluginDir,
+		pluginPath: relativePluginPath(options.workspace.root, pluginDir),
+		diagnostics,
+		nextSteps:
+			diagnostics.length === 0
+				? 'Project plugin structure is valid.'
+				: 'Apply the safe structural repairs, then address remaining entrypoint findings.',
+	};
+};
+
+const runProjectPluginRepair = async (
+	args: IProjectPluginsRepairArgs,
+	options: IProjectPluginsOptions,
+): Promise<IProjectPluginsOutput> => {
+	const pluginId = pluginIdFor(args.name);
+	const pluginDir = options.workspace.resolve(
+		`${defaultPluginRoot(options)}/mcp-vertex_${pluginId}`,
+	);
+	const files = scaffoldPluginFiles({
+		pluginName: pluginId,
+		description: `TODO: describe ${pluginId}.`,
+	});
+	const diagnostics = await structuralDiagnostics(pluginDir, files);
+	const fileResult = await writePluginFiles(
+		pluginDir,
+		files,
+		'repair',
+		false,
+	);
+	const repairedMetadata = await repairPackageMetadata(
+		pluginDir,
+		files,
+		false,
+	);
+	const pluginPath = relativePluginPath(options.workspace.root, pluginDir);
+	const registration = await registerPluginPath(
+		options,
+		pluginId,
+		pluginPath,
+		false,
+	);
+	const afterDiagnostics = await structuralDiagnostics(pluginDir, files);
+	return {
+		ok: true,
+		name: pluginId,
+		namespace: pluginId,
+		pluginDir,
+		pluginPath,
+		files: {
+			written: [...fileResult.written],
+			preserved: [...fileResult.preserved],
+			moved: [...fileResult.moved],
+			planned: fileResult.planned.map((file) => ({ ...file })),
+		},
+		registration,
+		diagnostics: afterDiagnostics,
+		autoFixed: diagnostics
+			.filter(
+				(diagnostic) =>
+					fileResult.written.includes(diagnostic.path) ||
+					(repairedMetadata !== undefined &&
+						diagnostic.path === repairedMetadata),
+			)
+			.map((diagnostic) => diagnostic.id),
+		nextSteps: 'Restart the MCP host to load the repaired project plugin.',
+	};
+};
+
+const buildProjectPluginsToolRegistration = <TArgs extends object>(
+	id: string,
+	summary: string,
+	inputSchema: z.ZodType<TArgs>,
+	operation: (
+		args: TArgs,
+		options: IProjectPluginsOptions,
+	) => Promise<IProjectPluginsOutput>,
+	options: IProjectPluginsOptions,
 ): IToolRegistration => ({
-	id: 'author_plugin',
-	summary: 'Create or repair an external plugin and register its local path.',
+	id,
+	summary,
 	tags: ['bootstrap', 'write'],
-	effects: ['write'],
-	dryRunSupported: true,
+	effects: id === 'project_plugins_inspect' ? undefined : ['write'],
+	dryRunSupported: id === 'project_plugins_create',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix}_author_plugin`,
+			`${options.namespacePrefix}_${id}`,
 			{
-				description:
-					'Create or repair a project-owned plugin under packages/mcp-vertex/plugins/mcp-vertex_<name> and register plugins.<name>.path in the project config.',
-				inputSchema: AUTHOR_EXTERNAL_PLUGIN_INPUT_SCHEMA,
-				outputSchema: AUTHOR_EXTERNAL_PLUGIN_OUTPUT_SCHEMA,
+				description: summary,
+				inputSchema,
+				outputSchema: PROJECT_PLUGINS_OUTPUT_SCHEMA,
 			},
-			async (args: IAuthorExternalPluginArgs) => {
+			async (args: TArgs) => {
 				try {
-					return toolJson(await authorExternalPlugin(args, options));
+					return toolJson(await operation(args, options));
 				} catch (error) {
 					return toolError(
 						error instanceof Error ? error.message : String(error),
@@ -526,3 +605,39 @@ export const buildAuthorExternalPluginToolRegistration = (
 		);
 	},
 });
+
+export const buildProjectPluginsCreateToolRegistration = (
+	options: IProjectPluginsOptions,
+): IToolRegistration =>
+	buildProjectPluginsToolRegistration(
+		'project_plugins_create',
+		'Create and register a project-owned plugin under packages/mcp-vertex/plugins/mcp-vertex_<name>.',
+		PROJECT_PLUGINS_CREATE_INPUT_SCHEMA,
+		runProjectPluginCreate,
+		options,
+	);
+
+export const buildProjectPluginsInspectToolRegistration = (
+	options: IProjectPluginsOptions,
+): IToolRegistration =>
+	buildProjectPluginsToolRegistration(
+		'project_plugins_inspect',
+		'Inspect a project-owned plugin structure without writing.',
+		PROJECT_PLUGINS_INSPECT_INPUT_SCHEMA,
+		runProjectPluginInspect,
+		options,
+	);
+
+export const buildProjectPluginsRepairToolRegistration = (
+	options: IProjectPluginsOptions,
+): IToolRegistration =>
+	buildProjectPluginsToolRegistration(
+		'project_plugins_repair',
+		'Repair only safe project plugin structure and preserve implementation logic.',
+		PROJECT_PLUGINS_REPAIR_INPUT_SCHEMA,
+		runProjectPluginRepair,
+		options,
+	);
+
+export const inspectExternalPlugin = runProjectPluginInspect;
+export const repairExternalPlugin = runProjectPluginRepair;

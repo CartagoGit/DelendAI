@@ -22,7 +22,7 @@ const makeWorkspace = async (): Promise<string> => {
 	await mkdir(join(root, 'packages/demo/tests'), { recursive: true });
 	await writeFile(
 		join(root, 'package.json'),
-		JSON.stringify(
+		`${JSON.stringify(
 			{
 				name: 'demo-workspace',
 				scripts: {
@@ -32,7 +32,7 @@ const makeWorkspace = async (): Promise<string> => {
 			},
 			null,
 			2,
-		) + '\n',
+		)}\n`,
 		'utf8',
 	);
 	await writeFile(join(root, 'bun.lock'), 'lockfile\n', 'utf8');

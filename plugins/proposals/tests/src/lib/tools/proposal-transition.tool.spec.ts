@@ -23,7 +23,7 @@ import {
 } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
 import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
 
-const RECENT_VALIDATE_LOG = '/dev/null';
+const _RECENT_VALIDATE_LOG = '/dev/null';
 const RECENT_VALIDATE = {
 	timestamp: new Date().toISOString(),
 	exitCode: 0,

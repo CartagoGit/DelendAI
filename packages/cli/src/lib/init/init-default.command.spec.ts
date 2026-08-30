@@ -301,7 +301,7 @@ describe('init:default (f00103)', () => {
 		// ~2-4s in the test sandbox (env warning lookup); well above
 		// vitest's 5s default. See
 		// `init-render.service.spec.ts` for the same constant.
-		const TEST_TIMEOUT_MS = 30_000;
+		const _TEST_TIMEOUT_MS = 30_000;
 		const stderr = vi
 			.spyOn(process.stderr, 'write')
 			.mockImplementation(() => true);

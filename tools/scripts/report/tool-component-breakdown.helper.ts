@@ -58,14 +58,14 @@ export const measureToolComponentBytes = (
 		(sum, key) => sum + jsonBytes(tool[key]),
 		0,
 	);
-	const name = typeof tool['name'] === 'string' ? tool['name'] : '';
+	const name = typeof tool.name === 'string' ? tool.name : '';
 	return {
 		name,
-		nameBytes: jsonBytes(tool['name']),
-		descriptionBytes: jsonBytes(tool['description']),
-		inputSchemaBytes: jsonBytes(tool['inputSchema']),
-		outputSchemaBytes: jsonBytes(tool['outputSchema']),
-		annotationsBytes: jsonBytes(tool['annotations']),
+		nameBytes: jsonBytes(tool.name),
+		descriptionBytes: jsonBytes(tool.description),
+		inputSchemaBytes: jsonBytes(tool.inputSchema),
+		outputSchemaBytes: jsonBytes(tool.outputSchema),
+		annotationsBytes: jsonBytes(tool.annotations),
 		otherFieldBytes: allValueBytes - knownValueBytes,
 		envelopeBytes: totalBytes - allValueBytes,
 		totalBytes,

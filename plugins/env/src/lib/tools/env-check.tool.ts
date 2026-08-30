@@ -18,7 +18,7 @@ import {
 import type { IEnvCheckToolOptions } from '../contracts/interfaces/env.interface';
 import { runEnvCheck, runEnvCheckWithSchema } from '../env/check-env';
 import { realEnvDeps } from '../env/real-deps';
-import { ENV_SCHEMA, type IEnvSchema } from '../validate/env-schema';
+import type { IEnvSchema } from '../validate/env-schema';
 
 const FINDING = z.object({
 	ruleId: z.string(),

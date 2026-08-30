@@ -63,7 +63,7 @@ const promoteStatus = (
 	const id = idMatch?.[1] ?? '(unknown)';
 	const evidenceMatch = raw.match(/shipped-in:\n((?:\s*-\s+.+\n?)+)/);
 	const evidenceBlock = evidenceMatch?.[1];
-	const resolution = `\n## resolution\n\nPromoted review → done by q00005 closure pass.\n\n- peer-review: deferred to the post-orchestrator peer-review pass (another agent)\n- evidence: ${evidenceBlock !== undefined ? 'the commits in `shipped-in:` anchor the implementation' : 'the implementation pre-exists the q00005 migration and is verifiable via `git log --grep=' + id + '` against the merged work'}\n- closure-gate: requireAllChildrenDone satisfied for plan q00005\n`;
+	const resolution = `\n## resolution\n\nPromoted review → done by q00005 closure pass.\n\n- peer-review: deferred to the post-orchestrator peer-review pass (another agent)\n- evidence: ${evidenceBlock !== undefined ? 'the commits in `shipped-in:` anchor the implementation' : `the implementation pre-exists the q00005 migration and is verifiable via \`git log --grep=${id}\` against the merged work`}\n- closure-gate: requireAllChildrenDone satisfied for plan q00005\n`;
 	const withResolution = `${next}\nresolution:\n  promoted-by: q00005 closure pass\n  peer-review: deferred\n${resolution}`;
 	writeFileSync(filePath, withResolution);
 	return { changed: true, reason: `promoted ${id}` };

@@ -51,7 +51,7 @@ describe('refactor-rename tool', () => {
 			const mock = makeMockServer();
 			await renameTool?.register(mock.server as never);
 
-			const handler = mock.tools['test_refactor_rename']?.handler;
+			const handler = mock.tools.test_refactor_rename?.handler;
 			expect(handler).toBeDefined();
 
 			const result = await handler?.({
@@ -99,7 +99,7 @@ describe('refactor-rename tool', () => {
 			const mock = makeMockServer();
 			await renameTool?.register(mock.server as never);
 
-			const handler = mock.tools['test_refactor_rename']?.handler;
+			const handler = mock.tools.test_refactor_rename?.handler;
 			const result = await handler?.({
 				root: 'root',
 				from: 'bar',
@@ -128,7 +128,7 @@ describe('refactor-rename tool', () => {
 			);
 			const mock = makeMockServer();
 			await renameTool?.register(mock.server as never);
-			const handler = mock.tools['test_refactor_rename']?.handler;
+			const handler = mock.tools.test_refactor_rename?.handler;
 			const result = await handler?.({
 				root: '/etc',
 				from: 'foo',
@@ -148,7 +148,7 @@ describe('refactor-rename tool', () => {
 			);
 			const mock = makeMockServer();
 			await renameTool?.register(mock.server as never);
-			const handler = mock.tools['test_refactor_rename']?.handler;
+			const handler = mock.tools.test_refactor_rename?.handler;
 			const result = await handler?.({
 				root: 'root',
 				from: 'foo',
@@ -189,7 +189,7 @@ describe('refactor-rename tool', () => {
 			const mock = makeMockServer();
 			await applyTool?.register(mock.server as never);
 
-			const handler = mock.tools['test_refactor_apply']?.handler;
+			const handler = mock.tools.test_refactor_apply?.handler;
 			expect(handler).toBeDefined();
 
 			const result = await handler?.({
@@ -246,7 +246,7 @@ describe('refactor-rename tool', () => {
 			);
 			const mock = makeMockServer();
 			await applyTool?.register(mock.server as never);
-			const handler = mock.tools['test_refactor_apply']?.handler;
+			const handler = mock.tools.test_refactor_apply?.handler;
 			const result = await handler?.({
 				root: '/etc',
 				files: [{ path: 'passwd', hunks: [] }],
@@ -273,7 +273,7 @@ describe('refactor-rename tool', () => {
 			const mock = makeMockServer();
 			await applyTool?.register(mock.server as never);
 
-			const handler = mock.tools['test_refactor_apply']?.handler;
+			const handler = mock.tools.test_refactor_apply?.handler;
 			const result = await handler?.({
 				root: 'root',
 				files: [
@@ -306,7 +306,7 @@ describe('refactor-rename tool', () => {
 			const mock = makeMockServer();
 			await applyTool?.register(mock.server as never);
 
-			const handler = mock.tools['test_refactor_apply']?.handler;
+			const handler = mock.tools.test_refactor_apply?.handler;
 			const result = await handler?.({
 				root: 'root',
 				files: [{ path: '/etc/passwd', hunks: [] }],
@@ -346,7 +346,7 @@ describe('refactor-rename tool', () => {
 			const mock = makeMockServer();
 			await applyTool?.register(mock.server as never);
 
-			const handler = mock.tools['test_refactor_apply']?.handler;
+			const handler = mock.tools.test_refactor_apply?.handler;
 			const result = await handler?.({
 				root: 'root',
 				files: [

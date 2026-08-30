@@ -25,7 +25,6 @@ import z from 'zod';
 
 import {
 	SPEND_DETAIL_PROJECTIONS,
-	projectSpendFull,
 	type ISpendFullView,
 } from '../contracts/spend-view.contract';
 

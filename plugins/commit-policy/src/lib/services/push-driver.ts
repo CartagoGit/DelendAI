@@ -42,6 +42,17 @@ type IForceAuthorizationResolution =
 	| { readonly ok: true; readonly authorization?: IPushAuthorization }
 	| { readonly ok: false; readonly refusal: string };
 
+type IMainPushGuardResolution =
+	| { readonly ok: true }
+	| { readonly ok: false; readonly refusal: string };
+
+const MAIN_BRANCH = 'main';
+const DIRECT_PUSH_TO_MAIN_NOT_ALLOWED = 'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED';
+const DIRECT_PUSH_TO_MAIN_MESSAGE =
+	"direct push to 'main' is not allowed; cuts the release/publish path.";
+const DIRECT_PUSH_TO_MAIN_NEXT_ACTION =
+	'open a PR from a feature branch (release/* or develop).';
+
 /**
  * Plain `--force` rewrites shared history irreversibly, so `gitPush`
  * refuses it without an explicit `{ by, reason }` sign-off. Both halves
@@ -90,6 +101,16 @@ const forceModeToGitPush = (mode: ForceMode): IPushForceMode => {
 	}
 };
 
+export const enforceMainPushGuard = (
+	branch: string,
+): IMainPushGuardResolution => {
+	if (branch !== MAIN_BRANCH) return { ok: true };
+	return {
+		ok: false,
+		refusal: `push refused: ${DIRECT_PUSH_TO_MAIN_NOT_ALLOWED} — ${DIRECT_PUSH_TO_MAIN_MESSAGE} Next: ${DIRECT_PUSH_TO_MAIN_NEXT_ACTION}`,
+	};
+};
+
 export const runPushDriver = async (
 	input: IPushDriverInput,
 	policy: ICommitPolicyPush,
@@ -135,6 +156,11 @@ export const runPushDriver = async (
 			refusal:
 				'push refused: could not resolve remote (set push.remote or push to a configured remote)',
 		};
+	}
+
+	const mainPushGuard = enforceMainPushGuard(branch);
+	if (!mainPushGuard.ok) {
+		return { ok: false, refusal: mainPushGuard.refusal };
 	}
 
 	if (policy.protectedBranches.includes(branch)) {

@@ -322,6 +322,18 @@ export const assembleCliConfig = async (
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDir,
 		createPluginDirs: false,
+		legacyPaths:
+			cacheDir !== DEFAULT_CORE_PATHS.cacheDir
+				? [
+						{
+							sourceAbs: resolve(
+								workspace.root,
+								DEFAULT_CORE_PATHS.cacheDir,
+							),
+							destinationAbs: cacheDirContained.abs,
+						},
+					]
+				: [],
 	});
 	const evidenceStore = createEvidenceStore({
 		evidenceRootAbs: join(cacheDirContained.abs, 'evidence'),
@@ -431,7 +443,18 @@ export const assembleCliConfig = async (
 			corePaths.cacheDir,
 			cacheNamespace ? `${cacheNamespace}/${pluginName}` : pluginName,
 		);
-		mkdirSync(resolve(workspace.root, pluginCacheDir), { recursive: true });
+		const cachePath = (relativePath = ''): string => {
+			const contained = resolveWorkspaceContained(
+				workspace.root,
+				join(pluginCacheDir, relativePath),
+			);
+			if (!contained.ok) {
+				throw new Error(
+					`plugin cache path escapes ${pluginCacheDir}: ${relativePath}`,
+				);
+			}
+			return contained.abs;
+		};
 		return {
 			workspace,
 			corePaths,
@@ -442,6 +465,7 @@ export const assembleCliConfig = async (
 			commitAuthor: commitAuthorResolution,
 			...(hostIdentity !== undefined ? { hostIdentity } : {}),
 			pluginCacheDir,
+			cachePath,
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
 			options: pluginConfig.options ?? {},
@@ -499,18 +523,56 @@ export const assembleCliConfig = async (
 		peerRegistry,
 		...(deps.import !== undefined ? { importFn: deps.import } : {}),
 	});
+	const cacheReconcile = (apply: boolean) =>
+		bootstrapCacheLayout({
+			workspaceRootAbs: workspace.root,
+			cacheDirAbs: cacheDir,
+			apply,
+			legacyPaths: loadResult.loaded.flatMap(({ plugin }) => {
+				const target = joinRel(
+					corePaths.cacheDir,
+					plugin.cacheNamespace
+						? `${plugin.cacheNamespace}/${plugin.name}`
+						: plugin.name,
+				);
+				return [
+					...(cacheDir !== DEFAULT_CORE_PATHS.cacheDir
+						? [
+								{
+									sourceAbs: resolve(
+										workspace.root,
+										joinRel(
+											DEFAULT_CORE_PATHS.cacheDir,
+											plugin.cacheNamespace
+												? `${plugin.cacheNamespace}/${plugin.name}`
+												: plugin.name,
+										),
+									),
+									destinationAbs: resolve(
+										workspace.root,
+										target,
+									),
+								},
+								{
+									sourceAbs: resolve(
+										workspace.root,
+										`.${plugin.name}`,
+									),
+									destinationAbs: resolve(
+										workspace.root,
+										target,
+									),
+								},
+							]
+						: []),
+				];
+			}),
+			createPluginDirs: false,
+		});
 	await bootstrapCacheLayout({
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDir,
-		createPluginDirs: true,
-		pluginCacheDirs: loadResult.loaded.map(({ plugin }) =>
-			joinRel(
-				corePaths.cacheDir,
-				plugin.cacheNamespace
-					? `${plugin.cacheNamespace}/${plugin.name}`
-					: plugin.name,
-			),
-		),
+		createPluginDirs: false,
 	});
 
 	const {
@@ -575,6 +637,7 @@ export const assembleCliConfig = async (
 		toolSurfaceRuntime,
 		prompts,
 		resources,
+		cacheReconcile,
 	});
 	const coreSurfaceDescriptors: IToolSurfaceDescriptor[] = tools
 		.filter(

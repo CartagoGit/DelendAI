@@ -25,8 +25,6 @@ describe('McpStdioClient.connect', async () => {
 		}
 
 		class FakeTransport {
-			constructor(_: unknown) {}
-
 			async close(): Promise<void> {}
 		}
 

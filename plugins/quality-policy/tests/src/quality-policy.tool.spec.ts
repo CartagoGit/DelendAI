@@ -22,7 +22,7 @@ const makeWorkspace = async (): Promise<string> => {
 	await mkdir(join(root, 'packages/demo/tests'), { recursive: true });
 	await writeFile(
 		join(root, 'package.json'),
-		JSON.stringify(
+		`${JSON.stringify(
 			{
 				name: 'demo-workspace',
 				scripts: {
@@ -33,12 +33,12 @@ const makeWorkspace = async (): Promise<string> => {
 			},
 			null,
 			2,
-		) + '\n',
+		)}\n`,
 		'utf8',
 	);
 	await writeFile(
 		join(root, 'mcp-vertex.config.json'),
-		JSON.stringify(
+		`${JSON.stringify(
 			{
 				plugins: {
 					'test-policy': {
@@ -48,7 +48,7 @@ const makeWorkspace = async (): Promise<string> => {
 			},
 			null,
 			2,
-		) + '\n',
+		)}\n`,
 		'utf8',
 	);
 	await writeFile(
@@ -58,7 +58,7 @@ const makeWorkspace = async (): Promise<string> => {
 	);
 	await writeFile(
 		join(root, 'tsconfig.base.json'),
-		JSON.stringify(
+		`${JSON.stringify(
 			{
 				compilerOptions: {
 					strict: true,
@@ -69,18 +69,18 @@ const makeWorkspace = async (): Promise<string> => {
 			},
 			null,
 			2,
-		) + '\n',
+		)}\n`,
 		'utf8',
 	);
 	await writeFile(
 		join(root, 'tsconfig.json'),
-		JSON.stringify(
+		`${JSON.stringify(
 			{
 				extends: './tsconfig.base.json',
 			},
 			null,
 			2,
-		) + '\n',
+		)}\n`,
 		'utf8',
 	);
 	await writeFile(

@@ -125,7 +125,8 @@ threshold (mismo helper refactorizado), verifica post-stage subset.
   - "threshold=3, 3 dirty → event con esos 3 files"
   - "threshold=3, 4 dirty → event con los 4 files"
   - "staged ajenos no entran en event.files"
-
+- review-state: in_review
+- review-implementer: crow
 ## acceptance
 
 - `t00019` verde.
