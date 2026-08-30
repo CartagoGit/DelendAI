@@ -6,6 +6,7 @@ import {
 	OverviewService,
 	type IOverview,
 } from '@mcp-vertex/client';
+import { join } from 'node:path';
 import {
 	MEMORY_FORGET_COMMAND,
 	registerMemoryForgetCommand,
@@ -478,14 +479,23 @@ export const activate = async (
 		return disposable;
 	};
 	if (runtimeChannel !== undefined) {
-		const runtimeObserver = new RuntimeObserver(
-			client,
-			runtimeChannel,
-			namespacePrefix,
-			observerIntervalMs(vscode),
-		);
-		runtimeObserver.start();
-		track(runtimeObserver);
+		const workspaceRoot =
+			vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath;
+		if (workspaceRoot !== undefined) {
+			const runtimeObserver = new RuntimeObserver(
+				join(
+					workspaceRoot,
+					'.cache',
+					'mcp-vertex',
+					'runtime',
+					'events.jsonl',
+				),
+				runtimeChannel,
+				observerIntervalMs(vscode),
+			);
+			runtimeObserver.start();
+			track(runtimeObserver);
+		}
 	}
 	track(
 		vscode.commands.registerCommand(OPEN_RUNTIME_LOG_COMMAND, () =>

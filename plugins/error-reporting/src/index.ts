@@ -27,7 +27,10 @@ import {
 	buildSafeReport,
 	extractObservedFailure,
 } from './lib/report-builder.helper';
-import { createReportScheduler } from './lib/report-scheduler.helper';
+import {
+	createReportScheduler,
+	REPORT_DISPATCH_CLAIM_MS,
+} from './lib/report-scheduler.helper';
 import { createReportStore } from './lib/report-store.service';
 import { createSafeReporter } from './lib/reporter.service';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
@@ -142,6 +145,15 @@ export const buildReportErrorHandler = (input: {
 				});
 				return;
 			}
+			const claimed = await input.store.claimDispatch(
+				redactedReport.fingerprint,
+				new Date(nowMs + REPORT_DISPATCH_CLAIM_MS).toISOString(),
+				at,
+			);
+			if (!claimed) {
+				await funnel.increment({ stage: 'deduplicated', at });
+				return;
+			}
 			await funnel.increment({ stage: 'submissionAttempted', at });
 			const outcome =
 				await input.reporter.submitSafeReport(redactedReport);
@@ -166,6 +178,17 @@ export const buildReportErrorHandler = (input: {
 					...(failureState.circuitOpenUntil !== undefined
 						? { circuitOpenUntil: failureState.circuitOpenUntil }
 						: {}),
+				});
+				await input.logs?.log({
+					severity: 'warning',
+					incidentType: 'error-reporting-submission-failed',
+					message: `error-reporting could not submit a classified internal failure (${outcome.failureCode}); the failure was recorded locally for retry.`,
+					context: {
+						failureCode: outcome.failureCode,
+						consecutiveFailureCount:
+							failureState.consecutiveFailureCount,
+						nextEligibleAt: failureState.nextEligibleAt,
+					},
 				});
 				// A JSON file nobody knows to open is not observability
 				// (AUD-G01): once the breaker opens, put it on the record.
@@ -196,6 +219,12 @@ export const buildReportErrorHandler = (input: {
 		} catch {
 			// A reporting failure must never surface into the tool call
 			// that triggered it. Intentionally swallowed.
+			await input.logs?.log({
+				severity: 'warning',
+				incidentType: 'error-reporting-pipeline-failed',
+				message:
+					'error-reporting could not complete its local pipeline; the original tool call was not affected.',
+			});
 		}
 	};
 };

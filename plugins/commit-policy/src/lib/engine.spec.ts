@@ -367,6 +367,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 			onCommitSucceeded: async () => ({
 				ok: false,
 				refusal: 'push refused',
+				code: 'PUSH_FAILED',
 			}),
 		});
 		await expect(

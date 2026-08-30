@@ -8,6 +8,7 @@ import type { IReportRecord } from './contracts/interfaces/report-store.interfac
 import { shouldReport } from './reporter.service';
 
 const ISO_DATE_PREFIX_LENGTH = 10;
+export const REPORT_DISPATCH_CLAIM_MS = 5 * 60_000;
 
 const utcDayOf = (iso: string | undefined): string | undefined =>
 	iso?.slice(0, ISO_DATE_PREFIX_LENGTH);

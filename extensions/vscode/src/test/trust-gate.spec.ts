@@ -187,7 +187,7 @@ describe('registerStartServerUntrusted (x00072 S2)', () => {
 		expect(fp).toMatch(/^[a-f0-9]{64}$/);
 	});
 
-	it('skips the picker when fingerprint already approved (no .mcp.json)', async () => {
+	it('skips the picker when fingerprint already approved', async () => {
 		pickResult = undefined; // picker should not even be invoked
 		await registerStartServerUntrusted(makeContext(), makeVscode(), {
 			createClient: () => {

@@ -25,6 +25,7 @@
 import type { IGitRunner } from '@mcp-vertex/core/public';
 
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
+import { classifyRefusal } from '../contracts/branch';
 import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
 import type { ICommitPolicyPush } from '../contracts/options';
 import { gitCurrentBranch, gitUnpushedCommitCount } from './git-extra';
@@ -126,6 +127,7 @@ export const createPushScheduler = (
 			result = {
 				ok: false,
 				refusal: `push failed: ${error instanceof Error ? error.message : String(error)}`,
+				code: 'PUSH_FAILED',
 			};
 		}
 		if (result.ok) {
@@ -170,7 +172,11 @@ export const createPushScheduler = (
 				commitsSincePush += 1;
 				const refusal = await branchRefusal();
 				if (refusal !== null) {
-					const result: IPushDriverResult = { ok: false, refusal };
+					const result: IPushDriverResult = {
+						ok: false,
+						refusal,
+						code: classifyRefusal(refusal),
+					};
 					onAttempt(result);
 					return result;
 				}

@@ -26,6 +26,56 @@ export interface IBranchPolicy {
 
 export const BRANCH_PROTECTED_REFUSAL_CODE = 'BRANCH_PROTECTED';
 
+export const COMMIT_POLICY_REFUSAL_CODES = [
+	'COMMIT_DISABLED',
+	'IDENTITY_UNRESOLVED',
+	'DETACHED_HEAD',
+	'BRANCH_PROTECTED',
+	'NON_CONVENTIONAL_MESSAGE',
+	'SLICE_HAS_NO_FILES',
+	'WORKSPACE_HAS_NO_FILES',
+	'TRIGGER_HAS_NO_FILES',
+	'CROSS_AGENT_CONTAMINATION',
+	'NOTHING_TO_COMMIT',
+	'GIT_OPERATION_FAILED',
+	'PUSH_DISABLED',
+	'PUSH_TARGET_UNRESOLVED',
+	'PUSH_REMOTE_UNRESOLVED',
+	'FORCE_AUTHORIZATION_REQUIRED',
+	'PUSH_FAILED',
+	'UNKNOWN_REFUSAL',
+] as const;
+
+export type CommitPolicyRefusalCode =
+	(typeof COMMIT_POLICY_REFUSAL_CODES)[number];
+
+export const classifyRefusal = (refusal: string): CommitPolicyRefusalCode => {
+	if (refusal.includes('commit.enabled')) return 'COMMIT_DISABLED';
+	if (refusal.includes('identity.mode')) return 'IDENTITY_UNRESOLVED';
+	if (refusal.includes('HEAD is detached')) return 'DETACHED_HEAD';
+	if (refusal.includes(BRANCH_PROTECTED_REFUSAL_CODE))
+		return 'BRANCH_PROTECTED';
+	if (refusal.includes('NON_CONVENTIONAL_MESSAGE'))
+		return 'NON_CONVENTIONAL_MESSAGE';
+	if (refusal.includes('SLICE_HAS_NO_FILES')) return 'SLICE_HAS_NO_FILES';
+	if (refusal.includes('WORKSPACE_HAS_NO_FILES'))
+		return 'WORKSPACE_HAS_NO_FILES';
+	if (refusal.includes('TRIGGER_HAS_NO_FILES')) return 'TRIGGER_HAS_NO_FILES';
+	if (refusal.includes('CROSS_AGENT_CONTAMINATION'))
+		return 'CROSS_AGENT_CONTAMINATION';
+	if (refusal.includes('nothing to commit')) return 'NOTHING_TO_COMMIT';
+	if (refusal.includes('push.enabled')) return 'PUSH_DISABLED';
+	if (refusal.includes('could not resolve remote/branch'))
+		return 'PUSH_TARGET_UNRESOLVED';
+	if (refusal.includes('could not resolve remote'))
+		return 'PUSH_REMOTE_UNRESOLVED';
+	if (refusal.includes('forceReason') || refusal.includes('plain --force'))
+		return 'FORCE_AUTHORIZATION_REQUIRED';
+	if (refusal.startsWith('push failed:')) return 'PUSH_FAILED';
+	if (refusal.startsWith('git ')) return 'GIT_OPERATION_FAILED';
+	return 'UNKNOWN_REFUSAL';
+};
+
 export const DEFAULT_BRANCH_POLICY: IBranchPolicy = {
 	protected: [],
 	protectedPrefixes: [],
