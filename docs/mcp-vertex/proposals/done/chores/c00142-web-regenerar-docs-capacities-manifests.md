@@ -2,7 +2,9 @@
 id: c00142
 title: "Web: regenerar docs/capacities desde manifests"
 kind: chore
-status: ready
+status: done
+shipped-in:
+    - 64132c3e
 type: proposal
 track: cli
 date: 2026-08-25
@@ -104,7 +106,7 @@ manifests, no mantenidas a mano.
 
 ### S1 — Generador + drift check + aplicación inicial
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/gen/web-pages.script.ts`, `tools/scripts/gen/web-pages.spec.ts`, `apps/web/src/data/pages/{plugins,overview,capabilities}.md` (regenerar bloques), `.github/workflows/tier3.yml` (drift check)
 - **Gate**: type
 
