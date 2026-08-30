@@ -84,7 +84,7 @@ export default definePlugin({
 			// A typo'd mode must fail the boot loudly, not silently fall
 			// back to tdd and hide the host's intent.
 			throw new Error(
-				`test-policy plugin rejected its options: ${parsed.error.message}`,
+				`test-policy plugin rejected its options: ${parsed.error.message}`
 			);
 		}
 		const opts = parsed.data;

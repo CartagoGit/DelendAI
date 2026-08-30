@@ -105,7 +105,7 @@ describe('lintPushToDevelop', () => {
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
 			expect(result.blockers.join('\n')).toContain(
-				'agent/copilot-minimax-m3',
+				'agent/copilot-minimax-m3'
 			);
 			expect(result.blockers.join('\n')).toContain('wip/');
 		}
@@ -188,7 +188,7 @@ describe('parseGitPushArgs', () => {
 				'git@github.com:x/y.git',
 				'refs/heads/develop:refs/heads/develop',
 			],
-			null,
+			null
 		);
 		expect(parsed.remote).toBe('origin');
 		expect(parsed.remoteBranch).toBe('develop');
@@ -215,7 +215,7 @@ describe('parseGitPushArgs', () => {
 	it('parses local→remote refspec (push develop to a feature branch)', () => {
 		const parsed = parseGitPushArgs(
 			['origin', 'git@x', 'refs/heads/develop:refs/heads/feature/x'],
-			null,
+			null
 		);
 		expect(parsed.remoteBranch).toBe('feature/x');
 	});
@@ -223,7 +223,7 @@ describe('parseGitPushArgs', () => {
 	it('skips flags in the positional collection', () => {
 		const parsed = parseGitPushArgs(
 			['--force', 'origin', '--tags', 'develop'],
-			null,
+			null
 		);
 		expect(parsed.remote).toBe('origin');
 		expect(parsed.remoteBranch).toBe('develop');
@@ -241,7 +241,7 @@ describe('parseGitPushArgs', () => {
 describe('parsePrePushStdin', () => {
 	it('parses a single ref-update line', () => {
 		const updates = parsePrePushStdin(
-			'refs/heads/develop aaaa000000000000000000000000000000000a refs/heads/develop bbbb000000000000000000000000000000000b\n',
+			'refs/heads/develop aaaa000000000000000000000000000000000a refs/heads/develop bbbb000000000000000000000000000000000b\n'
 		);
 		expect(updates).toEqual([
 			{
@@ -315,7 +315,7 @@ describe('lintPrePushStdinUpdates', () => {
 					remoteSha: SHA_B,
 				},
 			],
-			true,
+			true
 		);
 		expect(result.ok).toBe(true);
 	});
@@ -330,7 +330,7 @@ describe('lintPrePushStdinUpdates', () => {
 					remoteSha: SHA_B,
 				},
 			],
-			true,
+			true
 		);
 		expect(result.ok).toBe(false);
 	});

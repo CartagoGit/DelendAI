@@ -71,7 +71,7 @@ const metricStatusOf = (value: string): TKpiDashboardMetricStatus =>
 
 const stateFromStatus = (
 	status: string | undefined,
-	fallback: TKpiDashboardViewState = 'unavailable',
+	fallback: TKpiDashboardViewState = 'unavailable'
 ): TKpiDashboardViewState => {
 	if (status === 'measured' || status === 'estimated') return 'ready';
 	if (status === 'partial') return 'partial';
@@ -83,7 +83,7 @@ const stateFromStatus = (
 
 const metricFrom = (
 	metric: IKpiDashboardToolDisplayMetric,
-	overrides: Partial<IKpiDashboardMetric> = {},
+	overrides: Partial<IKpiDashboardMetric> = {}
 ): IKpiDashboardMetric => ({
 	key: metric.key,
 	label: metric.label,
@@ -100,7 +100,7 @@ const metricFrom = (
 
 const displayMetricByKey = (
 	view: IKpiDashboardToolOutput | undefined,
-	key: string,
+	key: string
 ): IKpiDashboardToolDisplayMetric | undefined =>
 	view?.snapshot?.highlights.find((metric) => metric.key === key);
 
@@ -108,8 +108,8 @@ const historyPoints = (
 	entries: readonly IKpiDashboardToolHistoryEntry[],
 	selector: (entry: IKpiDashboardToolHistoryEntry) => number | undefined,
 	statusSelector: (
-		entry: IKpiDashboardToolHistoryEntry,
-	) => TKpiDashboardMetricStatus,
+		entry: IKpiDashboardToolHistoryEntry
+	) => TKpiDashboardMetricStatus
 ): Array<{
 	readonly at: string;
 	readonly label: string;
@@ -127,20 +127,20 @@ const historyPoints = (
 	});
 
 const dayBreakdown = (
-	view: IKpiDashboardToolOutput | undefined,
+	view: IKpiDashboardToolOutput | undefined
 ): IKpiDashboardToolBreakdown | undefined =>
 	view?.breakdowns?.find((breakdown) => breakdown.dimension === 'day');
 
 const firstBreakdown = (
 	view: IKpiDashboardToolOutput | undefined,
-	excludeDimension?: string,
+	excludeDimension?: string
 ): IKpiDashboardToolBreakdown | undefined =>
 	view?.breakdowns?.find(
-		(breakdown) => breakdown.dimension !== excludeDimension,
+		(breakdown) => breakdown.dimension !== excludeDimension
 	);
 
 const rowValuesFromBreakdownItem = (
-	item: IKpiDashboardToolBreakdownItem,
+	item: IKpiDashboardToolBreakdownItem
 ): IKpiDashboardRow['values'] => {
 	const values: Array<IKpiDashboardRow['values'][number]> = [];
 	if (item.calls !== undefined) {
@@ -184,7 +184,7 @@ const rowValuesFromBreakdownItem = (
 
 const rowsFromBreakdown = (
 	breakdown: IKpiDashboardToolBreakdown | undefined,
-	limit = 6,
+	limit = 6
 ): IKpiDashboardRow[] => {
 	if (breakdown === undefined) return [];
 	return breakdown.items.slice(0, limit).map((item) => ({
@@ -201,7 +201,7 @@ const rowsFromBreakdown = (
 
 const rowsFromIssues = (
 	issues: readonly IKpiDashboardToolIssue[] | undefined,
-	limit = 5,
+	limit = 5
 ): IKpiDashboardRow[] =>
 	(issues ?? []).slice(0, limit).map((item, index) => ({
 		key: `issue:${index}:${item.classification}`,
@@ -218,7 +218,7 @@ const rowsFromIssues = (
 
 const rowsFromFindings = (
 	findings: readonly IKpiDashboardToolFinding[] | undefined,
-	limit = 5,
+	limit = 5
 ): IKpiDashboardRow[] =>
 	(findings ?? []).slice(0, limit).map((item) => ({
 		key: `finding:${item.id}`,
@@ -245,7 +245,7 @@ const section = (input: IKpiDashboardSection): IKpiDashboardSection => input;
 
 const buildTrendCards = (
 	historyView: IKpiDashboardToolOutput | undefined,
-	errorsView: IKpiDashboardToolOutput | undefined,
+	errorsView: IKpiDashboardToolOutput | undefined
 ): IKpiDashboardTrendCard[] => {
 	const entries = historyView?.history?.entries ?? [];
 	const dayErrors = dayBreakdown(errorsView);
@@ -278,7 +278,7 @@ const buildTrendCards = (
 					points: historyPoints(
 						entries,
 						(entry) => entry.healthScore,
-						() => 'estimated',
+						() => 'estimated'
 					),
 				},
 			],
@@ -317,7 +317,7 @@ const buildTrendCards = (
 					points: historyPoints(
 						entries,
 						(entry) => entry.totalTokens,
-						() => 'measured',
+						() => 'measured'
 					),
 				},
 				{
@@ -330,7 +330,7 @@ const buildTrendCards = (
 					points: historyPoints(
 						entries,
 						(entry) => entry.costUsd,
-						(entry) => metricStatusOf(entry.costUsdStatus),
+						(entry) => metricStatusOf(entry.costUsdStatus)
 					),
 				},
 			],
@@ -354,7 +354,7 @@ const buildTrendCards = (
 					points: historyPoints(
 						entries,
 						(entry) => entry.calls,
-						() => 'measured',
+						() => 'measured'
 					),
 				},
 				{
@@ -371,7 +371,7 @@ const buildTrendCards = (
 };
 
 const dedupeRecommendations = (
-	views: readonly IKpiDashboardLoadedView[],
+	views: readonly IKpiDashboardLoadedView[]
 ): IKpiDashboardModel['recommendations'] => {
 	const seen = new Set<string>();
 	const items: Array<IKpiDashboardModel['recommendations'][number]> = [];
@@ -387,7 +387,7 @@ const dedupeRecommendations = (
 };
 
 const collectLimitations = (
-	views: readonly IKpiDashboardLoadedView[],
+	views: readonly IKpiDashboardLoadedView[]
 ): string[] => {
 	const seen = new Set<string>();
 	const limitations: string[] = [];
@@ -402,7 +402,7 @@ const collectLimitations = (
 };
 
 const buildSections = (
-	views: ReadonlyMap<TKpiDashboardViewName, IKpiDashboardToolOutput>,
+	views: ReadonlyMap<TKpiDashboardViewName, IKpiDashboardToolOutput>
 ): IKpiDashboardSection[] => {
 	const summaryView = views.get('summary');
 	const usageView = views.get('usage');
@@ -419,27 +419,27 @@ const buildSections = (
 	const errors = displayMetricByKey(summaryView, 'usage.errors');
 	const toolErrorRate = displayMetricByKey(
 		summaryView,
-		'usage.toolErrorRate',
+		'usage.toolErrorRate'
 	);
 	const totalTokens = displayMetricByKey(summaryView, 'usage.totalTokens');
 	const costUsd = displayMetricByKey(summaryView, 'usage.costUsd');
 	const tokenSavings = displayMetricByKey(summaryView, 'usage.tokensSaved');
 	const successRate = displayMetricByKey(
 		efficiencyView,
-		'efficiency.successfulCallRate',
+		'efficiency.successfulCallRate'
 	);
 	const memorySavings = displayMetricByKey(
 		efficiencyView,
-		'efficiency.memoryCompactionSavingsTokens',
+		'efficiency.memoryCompactionSavingsTokens'
 	);
 	const optionalNote = (
-		note: string | undefined,
+		note: string | undefined
 	): { readonly note?: string } => (note === undefined ? {} : { note });
 	const activationMetric = (
 		key: string,
 		label: string,
 		value: number | undefined,
-		unit: IKpiDashboardToolDisplayMetric['unit'],
+		unit: IKpiDashboardToolDisplayMetric['unit']
 	): IKpiDashboardMetric | undefined =>
 		value === undefined
 			? undefined
@@ -449,7 +449,7 @@ const buildSections = (
 					status: metricStatusOf(
 						activationView?.activation?.status ??
 							activationView?.status ??
-							'unavailable',
+							'unavailable'
 					),
 					unit,
 					source:
@@ -497,7 +497,7 @@ const buildSections = (
 			icon: '⌁',
 			state: stateFromStatus(
 				usageView?.status ?? summaryView?.status,
-				'partial',
+				'partial'
 			),
 			note:
 				usageView?.summary ??
@@ -505,7 +505,7 @@ const buildSections = (
 			metrics: [calls, errors, toolErrorRate, totalTokens]
 				.filter(
 					(metric): metric is IKpiDashboardToolDisplayMetric =>
-						metric !== undefined,
+						metric !== undefined
 				)
 				.map((metric) => metricFrom(metric)),
 			rows: rowsFromBreakdown(firstBreakdown(usageView, 'day')),
@@ -516,7 +516,7 @@ const buildSections = (
 			icon: '$',
 			state: stateFromStatus(
 				economicsView?.status ?? summaryView?.status,
-				'partial',
+				'partial'
 			),
 			note:
 				economicsView?.summary ??
@@ -524,7 +524,7 @@ const buildSections = (
 			metrics: [costUsd, tokenSavings]
 				.filter(
 					(metric): metric is IKpiDashboardToolDisplayMetric =>
-						metric !== undefined,
+						metric !== undefined
 				)
 				.map((metric) => metricFrom(metric)),
 			rows: rowsFromBreakdown(firstBreakdown(economicsView)),
@@ -583,7 +583,7 @@ const buildSections = (
 			metrics: [successRate, memorySavings]
 				.filter(
 					(metric): metric is IKpiDashboardToolDisplayMetric =>
-						metric !== undefined,
+						metric !== undefined
 				)
 				.map((metric) => metricFrom(metric)),
 			rows: rowsFromBreakdown(firstBreakdown(efficiencyView)),
@@ -617,28 +617,28 @@ const buildSections = (
 					'activation.sessionCount',
 					'Sessions',
 					activationView?.activation?.sessionCount,
-					'count',
+					'count'
 				),
 				activationMetric(
 					'activation.meanPrecision',
 					'Mean precision',
 					activationView?.activation?.meanPrecision,
-					'ratio',
+					'ratio'
 				),
 				activationMetric(
 					'activation.meanRecall',
 					'Mean recall',
 					activationView?.activation?.meanRecall,
-					'ratio',
+					'ratio'
 				),
 				activationMetric(
 					'activation.meanChurn',
 					'Mean churn',
 					activationView?.activation?.meanChurn,
-					'ratio',
+					'ratio'
 				),
 			].filter(
-				(metric): metric is IKpiDashboardMetric => metric !== undefined,
+				(metric): metric is IKpiDashboardMetric => metric !== undefined
 			),
 			rows: [],
 		}),
@@ -647,7 +647,7 @@ const buildSections = (
 
 const buildModel = (
 	loadedViews: readonly IKpiDashboardLoadedView[],
-	query: IKpiDashboardQuery,
+	query: IKpiDashboardQuery
 ): IKpiDashboardModel => {
 	const available = new Map<TKpiDashboardViewName, IKpiDashboardToolOutput>();
 	for (const view of loadedViews) {
@@ -667,7 +667,7 @@ const buildModel = (
 	]
 		.filter(
 			(metric): metric is IKpiDashboardToolDisplayMetric =>
-				metric !== undefined,
+				metric !== undefined
 		)
 		.map((metric) => metricFrom(metric));
 	const trends = buildTrendCards(historyView, errorsView);
@@ -675,11 +675,11 @@ const buildModel = (
 		.filter((view) => view.error !== undefined)
 		.map((view) => `${view.view}: ${view.error}`);
 	const disconnectedCount = loadedViews.filter(
-		(view) => view.disconnected === true,
+		(view) => view.disconnected === true
 	).length;
 	const loadedCount = available.size;
 	const allSectionsEmpty = sections.every(
-		(item) => item.rows.length === 0 && item.metrics.length === 0,
+		(item) => item.rows.length === 0 && item.metrics.length === 0
 	);
 	const state: TKpiDashboardViewState =
 		loadedCount === 0
@@ -689,11 +689,11 @@ const buildModel = (
 			: allSectionsEmpty
 				? 'empty'
 				: errors.length > 0 ||
-						sections.some(
+					  sections.some(
 							(item) =>
 								item.state === 'partial' ||
-								item.state === 'unavailable',
-						)
+								item.state === 'unavailable'
+					  )
 					? 'partial'
 					: 'ready';
 	return {
@@ -744,11 +744,11 @@ const loadingModel = (query: IKpiDashboardQuery): IKpiDashboardModel => ({
 
 export const buildKpiDashboardModel = async (
 	deps: Pick<IKpiDashboardProviderDeps, 'client' | 'namespacePrefix'>,
-	query: IKpiDashboardQuery,
+	query: IKpiDashboardQuery
 ): Promise<IKpiDashboardResolvedState> => {
 	const tool = formatToolName(deps.namespacePrefix, 'project_kpis');
 	const argsFor = (
-		view: TKpiDashboardViewName,
+		view: TKpiDashboardViewName
 	): {
 		readonly view: TKpiDashboardViewName;
 		readonly detail: TKpiDashboardDetail;
@@ -780,8 +780,8 @@ export const buildKpiDashboardModel = async (
 						disconnected: isDisconnectedError(error),
 					};
 				}
-			},
-		),
+			}
+		)
 	);
 	return {
 		query,
@@ -802,15 +802,15 @@ export class KpiDashboardProvider implements IKpiDashboardProvider {
 		options: Pick<
 			IKpiDashboardProviderDeps,
 			'client' | 'namespacePrefix' | 'defaultQuery'
-		>,
+		>
 	) {
 		this.client = options.client;
 		this.namespacePrefix = options.namespacePrefix;
 		this.query = {
 			windowDays:
 				(options.defaultQuery?.windowDays as
-					| TKpiDashboardWindowDays
-					| undefined) ?? DEFAULT_QUERY.windowDays,
+					TKpiDashboardWindowDays | undefined) ??
+				DEFAULT_QUERY.windowDays,
 			detail: options.defaultQuery?.detail ?? DEFAULT_QUERY.detail,
 		};
 	}
@@ -839,7 +839,7 @@ export class KpiDashboardProvider implements IKpiDashboardProvider {
 	async refresh(): Promise<void> {
 		const token = ++this.refreshToken;
 		this.view?.webview.setHtml(
-			renderKpiDashboard(loadingModel(this.query)),
+			renderKpiDashboard(loadingModel(this.query))
 		);
 		const next = await buildKpiDashboardModel(
 			{
@@ -848,7 +848,7 @@ export class KpiDashboardProvider implements IKpiDashboardProvider {
 					? {}
 					: { namespacePrefix: this.namespacePrefix }),
 			},
-			this.query,
+			this.query
 		);
 		if (token !== this.refreshToken) return;
 		this.lastState = next;
@@ -867,5 +867,5 @@ export const registerKpiDashboardProvider = (deps: IKpiDashboardProviderDeps) =>
 			...(deps.defaultQuery === undefined
 				? {}
 				: { defaultQuery: deps.defaultQuery }),
-		}),
+		})
 	);

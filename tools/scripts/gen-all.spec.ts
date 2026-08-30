@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { main, selectSteps, STEPS, type IGenAllIo } from './gen-all.script.ts';
 
 const createIo = (
-	responses: Record<string, number>,
+	responses: Record<string, number>
 ): {
 	readonly io: IGenAllIo;
 	readonly output: string[];
@@ -36,7 +36,7 @@ describe('gen-all.script', () => {
 			STEPS.map((step) => ({
 				name: step.name,
 				cmd: step.cmd.join(' '),
-			})),
+			}))
 		).toEqual([
 			{
 				name: 'agent-catalog',
@@ -115,7 +115,7 @@ describe('gen-all.script', () => {
 
 		expect(exit).toBe(1);
 		expect(errors).toContain(
-			'gen-all: drift detected — see the diff above',
+			'gen-all: drift detected — see the diff above'
 		);
 	});
 
@@ -137,7 +137,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/catalog/render-host-hints.script.ts --check',
 		]);
 		expect(errors).toContain(
-			'gen-all: at least one generator exited non-zero (exit=2)',
+			'gen-all: at least one generator exited non-zero (exit=2)'
 		);
 		expect(commands).not.toContain('git diff --exit-code');
 	});

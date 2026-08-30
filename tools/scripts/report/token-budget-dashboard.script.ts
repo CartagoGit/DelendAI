@@ -124,7 +124,7 @@ const budgetStatus = (
 				readonly hard: number;
 				readonly warning: number;
 		  }
-		| undefined,
+		| undefined
 ): string => {
 	if (budget === undefined) {
 		return 'n/a';
@@ -139,7 +139,7 @@ const budgetStatus = (
 };
 
 const presetToolsBudget = (
-	presetId: string,
+	presetId: string
 ): IGovernedToolsListBudget | undefined => {
 	const budgets = TOKEN_BUDGETS.presets as Readonly<
 		Record<string, { readonly toolsList: IGovernedToolsListBudget }>
@@ -158,7 +158,7 @@ const presetToolsBudget = (
  * here, which is the one legitimately optional case.
  */
 const presetMarginalBudget = (
-	presetId: string,
+	presetId: string
 ):
 	| {
 			readonly hard: number;
@@ -175,7 +175,7 @@ const presetMarginalBudget = (
 
 const markdownTable = (
 	headers: readonly string[],
-	rows: ReadonlyArray<readonly string[]>,
+	rows: ReadonlyArray<readonly string[]>
 ): string => {
 	const separator = headers.map(() => '---');
 	return [
@@ -201,7 +201,7 @@ const loadActivationKpisMarkdown = async (): Promise<string> => {
 	const jsonText = await readFile(inputPath, 'utf8').catch(() => null);
 	if (jsonText === null) {
 		return renderActivationKpisUnavailable(
-			`No local activation KPI snapshot was found at ${ACTIVATION_KPIS_PATH.join('/')}.`,
+			`No local activation KPI snapshot was found at ${ACTIVATION_KPIS_PATH.join('/')}.`
 		);
 	}
 	let parsed: unknown;
@@ -209,13 +209,13 @@ const loadActivationKpisMarkdown = async (): Promise<string> => {
 		parsed = JSON.parse(jsonText) as unknown;
 	} catch (error: unknown) {
 		return renderActivationKpisUnavailable(
-			`The snapshot at ${ACTIVATION_KPIS_PATH.join('/')} is not valid JSON: ${error instanceof Error ? error.message : String(error)}.`,
+			`The snapshot at ${ACTIVATION_KPIS_PATH.join('/')} is not valid JSON: ${error instanceof Error ? error.message : String(error)}.`
 		);
 	}
 	const kpis = hydrateKpis(parsed);
 	if (kpis.aggregate().sessionCount === 0) {
 		return renderActivationKpisUnavailable(
-			`The snapshot at ${ACTIVATION_KPIS_PATH.join('/')} did not contain any valid activation KPI sessions.`,
+			`The snapshot at ${ACTIVATION_KPIS_PATH.join('/')} did not contain any valid activation KPI sessions.`
 		);
 	}
 	return kpis
@@ -226,7 +226,7 @@ const loadActivationKpisMarkdown = async (): Promise<string> => {
 				'## Activation KPIs',
 				'',
 				`Source snapshot: ${ACTIVATION_KPIS_PATH.join('/')}`,
-			].join('\n'),
+			].join('\n')
 		);
 };
 
@@ -258,7 +258,7 @@ const loadActivationKpisMarkdown = async (): Promise<string> => {
  * in `docs/mcp-vertex/proposals/ready/fixes/x00296-*.md`.
  */
 const measureFixtureSurfaces = async (
-	workspace: string,
+	workspace: string
 ): Promise<IFixtureMeasurements> => {
 	const overviewSurface = await connectTokenBudgetClient(workspace, {
 		pluginList: TOKEN_BUDGETS.fixturePluginIds.join(','),
@@ -280,12 +280,12 @@ const measureFixtureSurfaces = async (
 		const overviewFull = await measureToolTextBytes(
 			overviewSurface.client,
 			'mcp-vertex_overview',
-			{},
+			{}
 		);
 		const overviewCompact = await measureToolTextBytes(
 			overviewSurface.client,
 			'mcp-vertex_overview',
-			{ compact: true },
+			{ compact: true }
 		);
 		// x00296 S2 (AUD-B06): the `native` surface counterpart, measured
 		// on the already-`native` `base` connection (it is also used below
@@ -293,43 +293,43 @@ const measureFixtureSurfaces = async (
 		const overviewFullNative = await measureToolTextBytes(
 			base.client,
 			'mcp-vertex_overview',
-			{},
+			{}
 		);
 		const overviewCompactNative = await measureToolTextBytes(
 			base.client,
 			'mcp-vertex_overview',
-			{ compact: true },
+			{ compact: true }
 		);
 		const autoWorkIdle = await measureToolTextBytes(
 			base.client,
 			'mcp-vertex_proposals_auto_work',
-			{},
+			{}
 		);
 		await seedAutoWorkReadyProposal(workspace, base.client);
 		const autoWorkWorkPlan = await measureToolTextBytes(
 			base.client,
 			'mcp-vertex_proposals_auto_work',
-			{},
+			{}
 		);
 		const agentCatalogCompact = await measureToolTextBytes(
 			catalog.client,
 			'mcp-vertex_agent_catalog',
-			{ mode: 'compact' },
+			{ mode: 'compact' }
 		);
 		const agentCatalogFull = await measureToolTextBytes(
 			catalog.client,
 			'mcp-vertex_agent_catalog',
-			{ mode: 'full' },
+			{ mode: 'full' }
 		);
 		const analyzeCompact = await measureToolTextBytes(
 			base.client,
 			'mcp-vertex_analyze_project',
-			{},
+			{}
 		);
 		const planCompact = await measureToolTextBytes(
 			base.client,
 			'mcp-vertex_plan_mcp_project',
-			{},
+			{}
 		);
 		await extra.client.callTool({
 			name: 'mcp-vertex_search_search',
@@ -342,22 +342,22 @@ const measureFixtureSurfaces = async (
 		const search = await measureToolTextBytes(
 			extra.client,
 			'mcp-vertex_search_search',
-			{ query: 'proposal', maxResults: 5, context: 0 },
+			{ query: 'proposal', maxResults: 5, context: 0 }
 		);
 		const docsList = await measureToolTextBytes(
 			extra.client,
 			'mcp-vertex_docs_docs_list',
-			{ limit: 10 },
+			{ limit: 10 }
 		);
 		const roundContext = await measureToolTextBytes(
 			extra.client,
 			'mcp-vertex_proposals_round_context',
-			{},
+			{}
 		);
 		const logsTail = await measureToolTextBytes(
 			extra.client,
 			'mcp-vertex_logs_tail',
-			{ limit: 10 },
+			{ limit: 10 }
 		);
 		return {
 			overviewFull,
@@ -388,7 +388,7 @@ const measureFixtureSurfaces = async (
 const maybeMeasure = async (
 	connection: IConnectedBudgetClient,
 	toolName: string,
-	args: Record<string, unknown>,
+	args: Record<string, unknown>
 ): Promise<number | null> => {
 	const toolList = await connection.client.listTools();
 	if (!toolList.tools.some((tool) => tool.name === toolName)) {
@@ -400,7 +400,7 @@ const maybeMeasure = async (
 export const measurePresetDashboard = async (
 	workspace: string,
 	presetId: string,
-	measurement: (typeof DASHBOARD_SURFACES)[number],
+	measurement: (typeof DASHBOARD_SURFACES)[number]
 ): Promise<IPresetDashboardRow> => {
 	const preset = PRESET_CATALOG.find((entry) => entry.id === presetId);
 	const connection = await connectTokenBudgetClient(workspace, {
@@ -419,17 +419,17 @@ export const measurePresetDashboard = async (
 		const tools = toolList.tools as readonly IToolListEntry[];
 		const metrics: IToolListMetrics = await listToolsMetrics(
 			connection.client,
-			connection.pluginIds,
+			connection.pluginIds
 		);
 		const overviewCompactBytes = await maybeMeasure(
 			connection,
 			'mcp-vertex_overview',
-			{ compact: true },
+			{ compact: true }
 		);
 		const roundContextBytes = await maybeMeasure(
 			connection,
 			'mcp-vertex_proposals_round_context',
-			{},
+			{}
 		);
 		return {
 			presetId,
@@ -451,7 +451,7 @@ export const measurePresetDashboard = async (
 			ownerRows: metrics.ownerRows,
 			toolBreakdowns: metrics.toolBreakdowns,
 			tokenizerEstimates: buildTokenizerEstimates(
-				toolsListJsonText(tools),
+				toolsListJsonText(tools)
 			),
 		};
 	} finally {
@@ -476,7 +476,7 @@ export interface IPerSurfaceColumn {
 }
 
 const statusFromRow = (
-	row: IPresetDashboardRow | undefined,
+	row: IPresetDashboardRow | undefined
 ): 'ok' | 'warning' | 'breach' | 'n/a' => {
 	if (row === undefined) return 'n/a';
 	const budget = presetToolsBudget(row.presetId);
@@ -487,7 +487,7 @@ const statusFromRow = (
 };
 
 export const buildPerSurfaceColumns = (
-	presetRows: readonly IPresetDashboardRow[],
+	presetRows: readonly IPresetDashboardRow[]
 ): readonly IPerSurfaceColumn[] => {
 	const byPreset = new Map<
 		string,
@@ -538,7 +538,7 @@ const renderGeneratedMarkdown = (
 	generatedAt: string,
 	fixture: IFixtureMeasurements,
 	presetRows: readonly IPresetDashboardRow[],
-	activationKpisMarkdown: string,
+	activationKpisMarkdown: string
 ): string => {
 	// c00135: per-surface columns so the dashboard never mixes adaptive
 	// bytes with native tokens. Each preset gets one row with two
@@ -681,7 +681,7 @@ const renderGeneratedMarkdown = (
 	const pluginRows = presetRows.flatMap((row) => {
 		const presetOwnerTotal = row.ownerRows.reduce(
 			(sum, ownerRow) => sum + ownerRow.toolsListBytes,
-			0,
+			0
 		);
 		return row.ownerRows.map((ownerRow) => [
 			row.presetId,
@@ -710,7 +710,7 @@ const renderGeneratedMarkdown = (
 		row.source,
 		formatInt(row.toolsListBytes),
 		...row.tokenizerEstimates.map((estimate) =>
-			String(estimate.tokenCount),
+			String(estimate.tokenCount)
 		),
 		row.tokenizerEstimates
 			.map((estimate) => estimate.confidence)
@@ -718,7 +718,7 @@ const renderGeneratedMarkdown = (
 	]);
 
 	const topToolsRow = presetRows.find(
-		(row) => row.presetId === 'vertex' && row.surfaceMode === 'native',
+		(row) => row.presetId === 'vertex' && row.surfaceMode === 'native'
 	);
 	const topToolsRows = [...(topToolsRow?.toolBreakdowns ?? [])]
 		.sort((left, right) => right.totalBytes - left.totalBytes)
@@ -747,7 +747,7 @@ const renderGeneratedMarkdown = (
 		})
 		.map(
 			(row) =>
-				`- ${row.presetId} ${row.surfaceMode}/${row.source} tools/list = ${formatInt(row.toolsListBytes)}B, documented hard ceiling = ${formatInt(presetToolsBudget(row.presetId)?.hard ?? 0)}B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.`,
+				`- ${row.presetId} ${row.surfaceMode}/${row.source} tools/list = ${formatInt(row.toolsListBytes)}B, documented hard ceiling = ${formatInt(presetToolsBudget(row.presetId)?.hard ?? 0)}B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.`
 		);
 
 	return [
@@ -775,7 +775,7 @@ const renderGeneratedMarkdown = (
 		`${TOKEN_BUDGETS.bumpPolicy.summary}`,
 		'',
 		...TOKEN_BUDGETS.bumpPolicy.requiredSteps.map(
-			(step, index) => `${index + 1}. ${step}`,
+			(step, index) => `${index + 1}. ${step}`
 		),
 		'',
 		'## Fixture-gated surfaces',
@@ -792,7 +792,7 @@ const renderGeneratedMarkdown = (
 				'Hard',
 				'Status',
 			],
-			fixtureRows,
+			fixtureRows
 		),
 		'',
 		'## Real preset dashboard',
@@ -821,7 +821,7 @@ const renderGeneratedMarkdown = (
 				'Marginal Status',
 				'Load Errors',
 			],
-			presetSummaryRows,
+			presetSummaryRows
 		),
 		'',
 		'## Plugin marginal dashboard — component breakdown by owner',
@@ -845,7 +845,7 @@ const renderGeneratedMarkdown = (
 				'Envelope Bytes',
 				'Share of Preset',
 			],
-			pluginRows,
+			pluginRows
 		),
 		'',
 		'## Top tools by bytes (vertex preset, native surface)',
@@ -865,7 +865,7 @@ const renderGeneratedMarkdown = (
 				'Other Bytes',
 				'Envelope Bytes',
 			],
-			topToolsRows,
+			topToolsRows
 		),
 		'',
 		'## CHECK-007 — tokenizer cost by preset',
@@ -884,7 +884,7 @@ const renderGeneratedMarkdown = (
 				`${TOKENIZER_MODELS[2]} Tokens`,
 				'Confidence (per model, in order above)',
 			],
-			tokenizerSummaryRows,
+			tokenizerSummaryRows
 		),
 		'',
 		'## Documented deficits (kept, not auto-bumped)',
@@ -915,7 +915,7 @@ const renderGeneratedMarkdown = (
 				col.nativeBytes === null ? 'n/a' : formatInt(col.nativeBytes),
 				col.nativeStatus,
 				col.nativeDeficit ?? '—',
-			]),
+			])
 		),
 		'',
 		'Metrics for plugin lifecycle transitions (c00134). Counters are ',
@@ -938,7 +938,7 @@ const renderGeneratedMarkdown = (
 };
 
 export const buildTokenBudgetDashboardMarkdown = async (
-	input: { readonly generatedAt?: string } = {},
+	input: { readonly generatedAt?: string } = {}
 ): Promise<string> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
@@ -951,8 +951,8 @@ export const buildTokenBudgetDashboardMarkdown = async (
 					await measurePresetDashboard(
 						workspace,
 						presetId,
-						measurement,
-					),
+						measurement
+					)
 				);
 			}
 		}
@@ -960,7 +960,7 @@ export const buildTokenBudgetDashboardMarkdown = async (
 			input.generatedAt ?? new Date().toISOString(),
 			fixture,
 			presetRows,
-			activationKpisMarkdown,
+			activationKpisMarkdown
 		)}\n`;
 		return markdown;
 	} finally {
@@ -987,7 +987,7 @@ export const generateTokenBudgetDashboard = async (): Promise<{
 		normalizeGeneratedAt(existing) === normalizeGeneratedAt(fresh)
 			? fresh.replace(
 					/^Generated at: .*$/mu,
-					`Generated at: ${existingGeneratedAt}`,
+					`Generated at: ${existingGeneratedAt}`
 				)
 			: fresh;
 	await withFileMutex(outputPath, async () => {
@@ -1009,7 +1009,7 @@ if (isMainModule()) {
 		})
 		.catch((error: unknown) => {
 			console.error(
-				`token-budget-dashboard failed: ${error instanceof Error ? error.message : String(error)}`,
+				`token-budget-dashboard failed: ${error instanceof Error ? error.message : String(error)}`
 			);
 			return 1;
 		});

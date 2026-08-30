@@ -17,11 +17,11 @@ import { buildGitExtendedToolRegistrations } from './lib/tools/git-extended.tool
  * not, so this refuses loudly instead.
  */
 const requireEffects = (
-	effects: IPluginEffectsCapability | undefined,
+	effects: IPluginEffectsCapability | undefined
 ): IPluginEffectsCapability => {
 	if (effects === undefined) {
 		throw new Error(
-			'git plugin: allowWrite is enabled but the host did not supply ctx.effects — refusing to register unguarded write tools.',
+			'git plugin: allowWrite is enabled but the host did not supply ctx.effects — refusing to register unguarded write tools.'
 		);
 	}
 	return effects;
@@ -62,7 +62,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`git plugin rejected its options: ${parsed.error.message}`,
+				`git plugin rejected its options: ${parsed.error.message}`
 			);
 		}
 		const run = createGitRunner(ctx.workspace.root);

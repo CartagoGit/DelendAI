@@ -176,12 +176,12 @@ proyecto que **todas** las hijas deben respetar obligatoriamente.
 
 **Predecesores**:
 
-| Plan | Pasada | Estado | Notas |
-| --- | --- | --- | --- |
-| `q00003` | 2026-08-24 (43 hijas) | in-progress | auditoría externa original |
-| `q00004` | 2026-08-25 segunda pasada (28 hijas) | review | privacy/filesystem/mutex |
-| `q00005` | 2026-08-25 tercera pasada (33 hijas) | done | universalización de invariantes |
-| `q00006` | **2026-08-25 cuarta pasada (66 hijas)** | **ready** | **ESTE PLAN** |
+| Plan     | Pasada                                  | Estado      | Notas                           |
+| -------- | --------------------------------------- | ----------- | ------------------------------- |
+| `q00003` | 2026-08-24 (43 hijas)                   | in-progress | auditoría externa original      |
+| `q00004` | 2026-08-25 segunda pasada (28 hijas)    | review      | privacy/filesystem/mutex        |
+| `q00005` | 2026-08-25 tercera pasada (33 hijas)    | done        | universalización de invariantes |
+| `q00006` | **2026-08-25 cuarta pasada (66 hijas)** | **ready**   | **ESTE PLAN**                   |
 
 Este plan **NO duplica** trabajo previo: las hijas de `q00003`/`q00004`/`q00005`
 que sigan abiertas continúan ahí. Este plan cubre hallazgos nuevos de la
@@ -515,15 +515,15 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### A.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `c00130` | chore | P0 | Proteger `develop` en GitHub: required status checks + no force-push |
-| `c00131` | chore | P0 | Añadir `develop` a `commit-policy.protectedBranches` por defecto |
-| `c00132` | chore | P0 | Required quality gate pre-merge: jobs reales, no decorativos |
-| `c00133` | chore | P0 | Drift CI: git diff --exit-code para artifacts / manifests / docs generadas |
-| `x00257` | fix | P0 | Eliminar `force-with-lease` para ramas protegidas (defense in depth) |
-| `x00258` | fix | P0 | Bloquear push directo a `develop` en `commit-policy` driver |
-| `v00125` | verification | P0 | Verificar estado real de `develop` (verde + protegida) antes de cerrar este track |
+| ID       | Kind         | Priority | Title                                                                             |
+| -------- | ------------ | -------- | --------------------------------------------------------------------------------- |
+| `c00130` | chore        | P0       | Proteger `develop` en GitHub: required status checks + no force-push              |
+| `c00131` | chore        | P0       | Añadir `develop` a `commit-policy.protectedBranches` por defecto                  |
+| `c00132` | chore        | P0       | Required quality gate pre-merge: jobs reales, no decorativos                      |
+| `c00133` | chore        | P0       | Drift CI: git diff --exit-code para artifacts / manifests / docs generadas        |
+| `x00257` | fix          | P0       | Eliminar `force-with-lease` para ramas protegidas (defense in depth)              |
+| `x00258` | fix          | P0       | Bloquear push directo a `develop` en `commit-policy` driver                       |
+| `v00125` | verification | P0       | Verificar estado real de `develop` (verde + protegida) antes de cerrar este track |
 
 ### A.1 — Detalle por hija
 
@@ -769,23 +769,23 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### B.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `x00259` | fix | P0 | `buildScopedMessage` debe preservar `type`, scope y `!` |
-| `x00260` | fix | P0 | Slice listener: conectar el evento al engine (no descartar) |
-| `x00261` | fix | P0 | Listener: devolver `dispose()` con `stop()` en el plugin |
-| `x00262` | fix | P0 | `commit_policy_run` con `proposalId`+`sliceId` debe seleccionar exactamente ese slice |
-| `x00263` | fix | P0 | `sliceScoping=true` debe stagear **exactamente** los archivos del slice |
-| `x00264` | fix | P1 | Threshold: medir y stagear el mismo conjunto de dirty files |
-| `x00265` | fix | P1 | `requireConventional=true` debe rechazar mensajes no convencionales |
-| `x00266` | fix | P1 | Push policy engine: `onCommit`, `everyNCommits`, `everyNMinutes` |
-| `f00182` | feat | P1 | `CommitPolicyEngine`: orquestador central de triggers |
-| `f00183` | feat | P1 | Idempotency keys para commits automáticos |
-| `t00017` | test | P0 | Conventional Commits parser: property-based + tabla de casos |
-| `t00018` | test | P0 | Slice event staging: cross-agent safe (dos agentes dirty simultáneos) |
-| `t00019` | test | P1 | Threshold staging: reproduce "predicate ≠ action" |
-| `t00020` | test | P1 | Plugin lifecycle: reload/dispose no duplica listeners |
-| `t00021` | test | P1 | Idempotency: replay del mismo eventId → un solo commit |
+| ID       | Kind | Priority | Title                                                                                 |
+| -------- | ---- | -------- | ------------------------------------------------------------------------------------- |
+| `x00259` | fix  | P0       | `buildScopedMessage` debe preservar `type`, scope y `!`                               |
+| `x00260` | fix  | P0       | Slice listener: conectar el evento al engine (no descartar)                           |
+| `x00261` | fix  | P0       | Listener: devolver `dispose()` con `stop()` en el plugin                              |
+| `x00262` | fix  | P0       | `commit_policy_run` con `proposalId`+`sliceId` debe seleccionar exactamente ese slice |
+| `x00263` | fix  | P0       | `sliceScoping=true` debe stagear **exactamente** los archivos del slice               |
+| `x00264` | fix  | P1       | Threshold: medir y stagear el mismo conjunto de dirty files                           |
+| `x00265` | fix  | P1       | `requireConventional=true` debe rechazar mensajes no convencionales                   |
+| `x00266` | fix  | P1       | Push policy engine: `onCommit`, `everyNCommits`, `everyNMinutes`                      |
+| `f00182` | feat | P1       | `CommitPolicyEngine`: orquestador central de triggers                                 |
+| `f00183` | feat | P1       | Idempotency keys para commits automáticos                                             |
+| `t00017` | test | P0       | Conventional Commits parser: property-based + tabla de casos                          |
+| `t00018` | test | P0       | Slice event staging: cross-agent safe (dos agentes dirty simultáneos)                 |
+| `t00019` | test | P1       | Threshold staging: reproduce "predicate ≠ action"                                     |
+| `t00020` | test | P1       | Plugin lifecycle: reload/dispose no duplica listeners                                 |
+| `t00021` | test | P1       | Idempotency: replay del mismo eventId → un solo commit                                |
 
 ### B.1 — Detalle por hija
 
@@ -1243,13 +1243,13 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### C.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `r00027` | refactor | P1 | Inventario + clasificación stable/experimental/internal de `core/public` |
-| `r00028` | refactor | P1 | Subpath exports en `@mcp-vertex/core`: `/contracts`, `/plugin`, `/runtime`, `/node` |
-| `r00029` | refactor | P1 | Extraer `@mcp-vertex/contracts` con tipos puros sin Node |
-| `r00030` | refactor | P1 | `@mcp-vertex/client`: importar de `contracts`, no de `core/public` |
-| `b00237` | breaking | P1 | Deprecar `nodeDynamicImport` exportado por `core/public` |
+| ID       | Kind     | Priority | Title                                                                               |
+| -------- | -------- | -------- | ----------------------------------------------------------------------------------- |
+| `r00027` | refactor | P1       | Inventario + clasificación stable/experimental/internal de `core/public`            |
+| `r00028` | refactor | P1       | Subpath exports en `@mcp-vertex/core`: `/contracts`, `/plugin`, `/runtime`, `/node` |
+| `r00029` | refactor | P1       | Extraer `@mcp-vertex/contracts` con tipos puros sin Node                            |
+| `r00030` | refactor | P1       | `@mcp-vertex/client`: importar de `contracts`, no de `core/public`                  |
+| `b00237` | breaking | P1       | Deprecar `nodeDynamicImport` exportado por `core/public`                            |
 
 ### C.1 — Detalle por hija
 
@@ -1364,11 +1364,11 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### D.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `f00184` | feat | P1 | Lifecycle phases: `prepare()` / `activate()` separadas |
-| `f00185` | feat | P1 | Plugin states: UNLOADED / LOADED_HIDDEN / ACTIVE / DENIED |
-| `c00134` | chore | P2 | Métricas de plugin lifecycle en dashboard |
+| ID       | Kind  | Priority | Title                                                     |
+| -------- | ----- | -------- | --------------------------------------------------------- |
+| `f00184` | feat  | P1       | Lifecycle phases: `prepare()` / `activate()` separadas    |
+| `f00185` | feat  | P1       | Plugin states: UNLOADED / LOADED_HIDDEN / ACTIVE / DENIED |
+| `c00134` | chore | P2       | Métricas de plugin lifecycle en dashboard                 |
 
 ### D.1 — Detalle por hija
 
@@ -1435,14 +1435,14 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### E.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `r00031` | refactor | P1 | Compactar output schema de `proposal_get` (hotspot 51 KB) |
-| `r00032` | refactor | P1 | Compactar output schema de `orchestrator-runner` (hotspot 43 KB) |
-| `f00186` | feat | P1 | `TokenBudgetRegistry` unificado |
-| `f00187` | feat | P1 | `detail: compact \| normal \| full` transversal |
-| `c00135` | chore | P1 | Separar dashboards adaptive vs native |
-| `c00136` | chore | P1 | Token ROI por plugin (KPI) |
+| ID       | Kind     | Priority | Title                                                            |
+| -------- | -------- | -------- | ---------------------------------------------------------------- |
+| `r00031` | refactor | P1       | Compactar output schema de `proposal_get` (hotspot 51 KB)        |
+| `r00032` | refactor | P1       | Compactar output schema de `orchestrator-runner` (hotspot 43 KB) |
+| `f00186` | feat     | P1       | `TokenBudgetRegistry` unificado                                  |
+| `f00187` | feat     | P1       | `detail: compact \| normal \| full` transversal                  |
+| `c00135` | chore    | P1       | Separar dashboards adaptive vs native                            |
+| `c00136` | chore    | P1       | Token ROI por plugin (KPI)                                       |
 
 ### E.1 — Detalle por hija
 
@@ -1536,12 +1536,12 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### F.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `f00188` | feat | P0 | Capability schema + enforcement en `PluginContext` |
-| `f00189` | feat | P1 | `dryRun` transversal para tools con `effects: ['write']` |
-| `c00137` | chore | P1 | Lint de capabilities no declaradas |
-| `d00009` | docs | P2 | Capability matrix documentada |
+| ID       | Kind  | Priority | Title                                                    |
+| -------- | ----- | -------- | -------------------------------------------------------- |
+| `f00188` | feat  | P0       | Capability schema + enforcement en `PluginContext`       |
+| `f00189` | feat  | P1       | `dryRun` transversal para tools con `effects: ['write']` |
+| `c00137` | chore | P1       | Lint de capabilities no declaradas                       |
+| `d00009` | docs  | P2       | Capability matrix documentada                            |
 
 ### F.1 — Detalle por hija
 
@@ -1602,12 +1602,12 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### G.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `c00138` | chore | P1 | Affected CI: grafo de dependencias + filtro |
-| `c00139` | chore | P1 | Tier 1/2/3 jobs (feedback <1 min, PR, merge/nightly) |
-| `x00268` | fix | P1 | Pack smoke: preservar output de fallo |
-| `v00126` | verification | P1 | Verify CI local reproduce fallos reales |
+| ID       | Kind         | Priority | Title                                                |
+| -------- | ------------ | -------- | ---------------------------------------------------- |
+| `c00138` | chore        | P1       | Affected CI: grafo de dependencias + filtro          |
+| `c00139` | chore        | P1       | Tier 1/2/3 jobs (feedback <1 min, PR, merge/nightly) |
+| `x00268` | fix          | P1       | Pack smoke: preservar output de fallo                |
+| `v00126` | verification | P1       | Verify CI local reproduce fallos reales              |
 
 ### G.1 — Detalle por hija
 
@@ -1656,13 +1656,13 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### H.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `c00140` | chore | P1 | Generar datos cuantitativos (plugin count, tool count, etc.) |
-| `c00141` | chore | P1 | Eliminar comentarios `// fNNNNN` del source |
-| `f00190` | feat | P2 | `AGENT.md` por package/plugin (generado) |
-| `d00010` | docs | P2 | `vertex://code-map` resource documentado |
-| `d00011` | docs | P2 | Manual editorial: qué se queda manual vs generado |
+| ID       | Kind  | Priority | Title                                                        |
+| -------- | ----- | -------- | ------------------------------------------------------------ |
+| `c00140` | chore | P1       | Generar datos cuantitativos (plugin count, tool count, etc.) |
+| `c00141` | chore | P1       | Eliminar comentarios `// fNNNNN` del source                  |
+| `f00190` | feat  | P2       | `AGENT.md` por package/plugin (generado)                     |
+| `d00010` | docs  | P2       | `vertex://code-map` resource documentado                     |
+| `d00011` | docs  | P2       | Manual editorial: qué se queda manual vs generado            |
 
 ### H.1 — Detalle por hija
 
@@ -1711,10 +1711,10 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### I.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `f00191` | feat | P1 | `mcpv doctor`: health check completo |
-| `c00142` | chore | P1 | Web: regenerar docs/capacities desde manifests |
+| ID       | Kind  | Priority | Title                                          |
+| -------- | ----- | -------- | ---------------------------------------------- |
+| `f00191` | feat  | P1       | `mcpv doctor`: health check completo           |
+| `c00142` | chore | P1       | Web: regenerar docs/capacities desde manifests |
 
 ### I.1 — Detalle por hija
 
@@ -1745,9 +1745,9 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### J.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `f00192` | feat | P2 | VSCode Agent Timeline view |
+| ID       | Kind | Priority | Title                      |
+| -------- | ---- | -------- | -------------------------- |
+| `f00192` | feat | P2       | VSCode Agent Timeline view |
 
 ### J.1 — Detalle por hija
 
@@ -1771,10 +1771,10 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### K.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `f00193` | feat | P2 | External MCPs como plano de control |
-| `f00194` | feat | P2 | Capability versioning (`requires: { capability: '^2' }`) |
+| ID       | Kind | Priority | Title                                                    |
+| -------- | ---- | -------- | -------------------------------------------------------- |
+| `f00193` | feat | P2       | External MCPs como plano de control                      |
+| `f00194` | feat | P2       | Capability versioning (`requires: { capability: '^2' }`) |
 
 ### K.1 — Detalle por hija
 
@@ -1802,10 +1802,10 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### L.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `f00195` | feat | P2 | Cost-aware routing utility |
-| `f00196` | feat | P2 | Model-aware presets |
+| ID       | Kind | Priority | Title                      |
+| -------- | ---- | -------- | -------------------------- |
+| `f00195` | feat | P2       | Cost-aware routing utility |
+| `f00196` | feat | P2       | Model-aware presets        |
 
 ### L.1 — Detalle por hija
 
@@ -1834,12 +1834,12 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### M.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `f00197` | feat | P2 | Memory utility score |
-| `r00033` | refactor | P2 | Envelopes compartidos (EntityRef, OperationResult, …) |
-| `f00198` | feat | P2 | Activation precision / recall / churn |
-| `f00199` | feat | P2 | Tool confusion rate |
+| ID       | Kind     | Priority | Title                                                 |
+| -------- | -------- | -------- | ----------------------------------------------------- |
+| `f00197` | feat     | P2       | Memory utility score                                  |
+| `r00033` | refactor | P2       | Envelopes compartidos (EntityRef, OperationResult, …) |
+| `f00198` | feat     | P2       | Activation precision / recall / churn                 |
+| `f00199` | feat     | P2       | Tool confusion rate                                   |
 
 ### M.1 — Detalle por hija
 
@@ -1880,11 +1880,11 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### N.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `b00238` | breaking | P2 | Marcar APIs internas como `internal` |
-| `f00200` | feat | P2 | Lazy loading real de plugins |
-| `c00143` | chore | P2 | Idempotency keys para mutaciones (propagación) |
+| ID       | Kind     | Priority | Title                                          |
+| -------- | -------- | -------- | ---------------------------------------------- |
+| `b00238` | breaking | P2       | Marcar APIs internas como `internal`           |
+| `f00200` | feat     | P2       | Lazy loading real de plugins                   |
+| `c00143` | chore    | P2       | Idempotency keys para mutaciones (propagación) |
 
 ### N.1 — Detalle por hija
 
@@ -1920,9 +1920,9 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 
 ### O.0 — Tabla de hijas
 
-| ID | Kind | Priority | Title |
-| --- | --- | --- | --- |
-| `f00201` | feat | P3 | Workflow transactions: plan / execute / compensate |
+| ID       | Kind | Priority | Title                                              |
+| -------- | ---- | -------- | -------------------------------------------------- |
+| `f00201` | feat | P3       | Workflow transactions: plan / execute / compensate |
 
 ### O.1 — Detalle por hija
 
@@ -1944,72 +1944,72 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 Esta tabla es la **fuente viva** que refleja el estado real de las
 hijas. Se actualiza a medida que cada hija avanza (no al final).
 
-| Track | ID | Kind | Priority | Status | SHA evidence | Notas |
-| --- | --- | --- | --- | --- | --- | --- |
-| A | `c00130` | chore | P0 | pending | — | Proteger develop en GitHub |
-| A | `c00131` | chore | P0 | pending | — | default protectedBranches |
-| A | `c00132` | chore | P0 | pending | — | quality gate real |
-| A | `c00133` | chore | P0 | pending | — | drift CI |
-| A | `x00257` | fix | P0 | pending | — | no force en protected |
-| A | `x00258` | fix | P0 | pending | — | bloquear push directo a develop |
-| A | `v00125` | verification | P0 | pending | — | verify develop green |
-| B | `x00259` | fix | P0 | pending | — | buildScopedMessage preservar |
-| B | `x00260` | fix | P0 | pending | — | listener → engine |
-| B | `x00261` | fix | P0 | pending | — | dispose listener |
-| B | `x00262` | fix | P0 | pending | — | selector exacto |
-| B | `x00263` | fix | P0 | pending | — | sliceScoping stagea exactos |
-| B | `x00264` | fix | P1 | pending | — | threshold staging |
-| B | `x00265` | fix | P1 | pending | — | requireConventional |
-| B | `x00266` | fix | P1 | pending | — | push policy engine |
-| B | `f00182` | feat | P1 | pending | — | CommitPolicyEngine |
-| B | `f00183` | feat | P1 | pending | — | idempotency keys |
-| B | `t00017` | test | P0 | pending | — | conventional property-based |
-| B | `t00018` | test | P0 | pending | — | cross-agent staging |
-| B | `t00019` | test | P1 | pending | — | threshold staging |
-| B | `t00020` | test | P1 | pending | — | plugin lifecycle |
-| B | `t00021` | test | P1 | pending | — | idempotency replay |
-| C | `r00027` | refactor | P1 | pending | — | inventario core/public |
-| C | `r00028` | refactor | P1 | pending | — | subpath exports |
-| C | `r00029` | refactor | P1 | pending | — | @mcp-vertex/contracts |
-| C | `r00030` | refactor | P1 | pending | — | client usa contracts |
-| C | `b00237` | breaking | P1 | pending | — | deprecate nodeDynamicImport |
-| D | `f00184` | feat | P1 | pending | — | prepare/activate |
-| D | `f00185` | feat | P1 | pending | — | plugin states |
-| D | `c00134` | chore | P2 | pending | — | métricas lifecycle |
-| E | `r00031` | refactor | P1 | pending | — | proposal_get compact |
-| E | `r00032` | refactor | P1 | pending | — | orchestrator compact |
-| E | `f00186` | feat | P1 | pending | — | TokenBudgetRegistry |
-| E | `f00187` | feat | P1 | pending | — | detail levels |
-| E | `c00135` | chore | P1 | pending | — | dashboards separados |
-| E | `c00136` | chore | P1 | pending | — | token ROI KPI |
-| F | `f00188` | feat | P0 | pending | — | capabilities enforcement |
-| F | `f00189` | feat | P1 | pending | — | dryRun transversal |
-| F | `c00137` | chore | P1 | pending | — | lint capabilities |
-| F | `d00009` | docs | P2 | pending | — | capability matrix |
-| G | `c00138` | chore | P1 | pending | — | affected CI |
-| G | `c00139` | chore | P1 | pending | — | tiers 1/2/3 |
-| G | `x00268` | fix | P1 | pending | — | pack smoke output |
-| G | `v00126` | verification | P1 | pending | — | local repro |
-| H | `c00140` | chore | P1 | pending | — | generar números |
-| H | `c00141` | chore | P1 | pending | — | quitar // fNNNNN |
-| H | `f00190` | feat | P2 | pending | — | AGENT.md por package |
-| H | `d00010` | docs | P2 | pending | — | vertex://code-map |
-| H | `d00011` | docs | P2 | pending | — | manual vs generado |
-| I | `f00191` | feat | P1 | pending | — | mcpv doctor |
-| I | `c00142` | chore | P1 | pending | — | web regenerada |
-| J | `f00192` | feat | P2 | pending | — | Agent Timeline |
-| K | `f00193` | feat | P2 | pending | — | external MCPs router |
-| K | `f00194` | feat | P2 | pending | — | capability versioning |
-| L | `f00195` | feat | P2 | pending | — | routing utility |
-| L | `f00196` | feat | P2 | pending | — | model-aware presets |
-| M | `f00197` | feat | P2 | pending | — | memory utility |
-| M | `r00033` | refactor | P2 | pending | — | envelopes compartidos |
-| M | `f00198` | feat | P2 | pending | — | activation KPIs |
-| M | `f00199` | feat | P2 | pending | — | tool confusion |
-| N | `b00238` | breaking | P2 | pending | — | APIs internal |
-| N | `f00200` | feat | P2 | pending | — | lazy loading real |
-| N | `c00143` | chore | P2 | pending | — | idempotency propagada |
-| O | `f00201` | feat | P3 | pending | — | workflow transactions |
+| Track | ID       | Kind         | Priority | Status  | SHA evidence | Notas                           |
+| ----- | -------- | ------------ | -------- | ------- | ------------ | ------------------------------- |
+| A     | `c00130` | chore        | P0       | pending | —            | Proteger develop en GitHub      |
+| A     | `c00131` | chore        | P0       | pending | —            | default protectedBranches       |
+| A     | `c00132` | chore        | P0       | pending | —            | quality gate real               |
+| A     | `c00133` | chore        | P0       | pending | —            | drift CI                        |
+| A     | `x00257` | fix          | P0       | pending | —            | no force en protected           |
+| A     | `x00258` | fix          | P0       | pending | —            | bloquear push directo a develop |
+| A     | `v00125` | verification | P0       | pending | —            | verify develop green            |
+| B     | `x00259` | fix          | P0       | pending | —            | buildScopedMessage preservar    |
+| B     | `x00260` | fix          | P0       | pending | —            | listener → engine               |
+| B     | `x00261` | fix          | P0       | pending | —            | dispose listener                |
+| B     | `x00262` | fix          | P0       | pending | —            | selector exacto                 |
+| B     | `x00263` | fix          | P0       | pending | —            | sliceScoping stagea exactos     |
+| B     | `x00264` | fix          | P1       | pending | —            | threshold staging               |
+| B     | `x00265` | fix          | P1       | pending | —            | requireConventional             |
+| B     | `x00266` | fix          | P1       | pending | —            | push policy engine              |
+| B     | `f00182` | feat         | P1       | pending | —            | CommitPolicyEngine              |
+| B     | `f00183` | feat         | P1       | pending | —            | idempotency keys                |
+| B     | `t00017` | test         | P0       | pending | —            | conventional property-based     |
+| B     | `t00018` | test         | P0       | pending | —            | cross-agent staging             |
+| B     | `t00019` | test         | P1       | pending | —            | threshold staging               |
+| B     | `t00020` | test         | P1       | pending | —            | plugin lifecycle                |
+| B     | `t00021` | test         | P1       | pending | —            | idempotency replay              |
+| C     | `r00027` | refactor     | P1       | pending | —            | inventario core/public          |
+| C     | `r00028` | refactor     | P1       | pending | —            | subpath exports                 |
+| C     | `r00029` | refactor     | P1       | pending | —            | @mcp-vertex/contracts           |
+| C     | `r00030` | refactor     | P1       | pending | —            | client usa contracts            |
+| C     | `b00237` | breaking     | P1       | pending | —            | deprecate nodeDynamicImport     |
+| D     | `f00184` | feat         | P1       | pending | —            | prepare/activate                |
+| D     | `f00185` | feat         | P1       | pending | —            | plugin states                   |
+| D     | `c00134` | chore        | P2       | pending | —            | métricas lifecycle              |
+| E     | `r00031` | refactor     | P1       | pending | —            | proposal_get compact            |
+| E     | `r00032` | refactor     | P1       | pending | —            | orchestrator compact            |
+| E     | `f00186` | feat         | P1       | pending | —            | TokenBudgetRegistry             |
+| E     | `f00187` | feat         | P1       | pending | —            | detail levels                   |
+| E     | `c00135` | chore        | P1       | pending | —            | dashboards separados            |
+| E     | `c00136` | chore        | P1       | pending | —            | token ROI KPI                   |
+| F     | `f00188` | feat         | P0       | pending | —            | capabilities enforcement        |
+| F     | `f00189` | feat         | P1       | pending | —            | dryRun transversal              |
+| F     | `c00137` | chore        | P1       | pending | —            | lint capabilities               |
+| F     | `d00009` | docs         | P2       | pending | —            | capability matrix               |
+| G     | `c00138` | chore        | P1       | pending | —            | affected CI                     |
+| G     | `c00139` | chore        | P1       | pending | —            | tiers 1/2/3                     |
+| G     | `x00268` | fix          | P1       | pending | —            | pack smoke output               |
+| G     | `v00126` | verification | P1       | pending | —            | local repro                     |
+| H     | `c00140` | chore        | P1       | pending | —            | generar números                 |
+| H     | `c00141` | chore        | P1       | pending | —            | quitar // fNNNNN                |
+| H     | `f00190` | feat         | P2       | pending | —            | AGENT.md por package            |
+| H     | `d00010` | docs         | P2       | pending | —            | vertex://code-map               |
+| H     | `d00011` | docs         | P2       | pending | —            | manual vs generado              |
+| I     | `f00191` | feat         | P1       | pending | —            | mcpv doctor                     |
+| I     | `c00142` | chore        | P1       | pending | —            | web regenerada                  |
+| J     | `f00192` | feat         | P2       | pending | —            | Agent Timeline                  |
+| K     | `f00193` | feat         | P2       | pending | —            | external MCPs router            |
+| K     | `f00194` | feat         | P2       | pending | —            | capability versioning           |
+| L     | `f00195` | feat         | P2       | pending | —            | routing utility                 |
+| L     | `f00196` | feat         | P2       | pending | —            | model-aware presets             |
+| M     | `f00197` | feat         | P2       | pending | —            | memory utility                  |
+| M     | `r00033` | refactor     | P2       | pending | —            | envelopes compartidos           |
+| M     | `f00198` | feat         | P2       | pending | —            | activation KPIs                 |
+| M     | `f00199` | feat         | P2       | pending | —            | tool confusion                  |
+| N     | `b00238` | breaking     | P2       | pending | —            | APIs internal                   |
+| N     | `f00200` | feat         | P2       | pending | —            | lazy loading real               |
+| N     | `c00143` | chore        | P2       | pending | —            | idempotency propagada           |
+| O     | `f00201` | feat         | P3       | pending | —            | workflow transactions           |
 
 **Total:** 66 hijas.
 

@@ -107,7 +107,7 @@ const getNow = (deps: Pick<IFileLockTableDeps, 'now'> = {}): string =>
 
 export const deriveFileLockTablePath = (
 	lockPath?: string,
-	tablePath?: string,
+	tablePath?: string
 ): string => {
 	if (tablePath !== undefined) return tablePath;
 	if (lockPath !== undefined)
@@ -119,7 +119,7 @@ const getTablePath = (deps: { readonly tablePath?: string } = {}): string =>
 	deriveFileLockTablePath(undefined, deps.tablePath);
 
 const getContentionPath = (
-	deps: { readonly tablePath?: string } = {},
+	deps: { readonly tablePath?: string } = {}
 ): string => {
 	const base = getTablePath(deps);
 	return join(dirname(base), 'file-lock-contentions.json');
@@ -140,7 +140,7 @@ const getMutexOpts = (deps: {
 const withMutex = async <T>(
 	_path: string,
 	opts: Parameters<typeof getMutexOpts>[0],
-	fn: () => Promise<T>,
+	fn: () => Promise<T>
 ): Promise<T> => {
 	const mutexOpts = getMutexOpts(opts);
 	return withFileMutex(_path, fn, mutexOpts);
@@ -151,7 +151,7 @@ const normalizeFiles = (files: readonly string[]): string[] =>
 
 const _sameFiles = (
 	left: readonly string[],
-	right: readonly string[],
+	right: readonly string[]
 ): boolean => {
 	if (left.length !== right.length) return false;
 	for (let index = 0; index < left.length; index += 1) {
@@ -165,7 +165,7 @@ const normalizeEntries = (entries: readonly IFileLock[]): IFileLock[] =>
 		(a, b) =>
 			a.file.localeCompare(b.file) ||
 			a.taskId.localeCompare(b.taskId) ||
-			a.agent.localeCompare(b.agent),
+			a.agent.localeCompare(b.agent)
 	);
 
 const entriesToTable = (entries: readonly IFileLock[]): FileLockTable => {
@@ -192,7 +192,7 @@ const coerceTable = (parsed: unknown): FileLockTable => {
 					typeof candidate.taskId === 'string' &&
 					typeof candidate.mtimeIso === 'string'
 				);
-			}),
+			})
 		);
 	}
 	if (parsed === null || typeof parsed !== 'object') return EMPTY_TABLE();
@@ -218,11 +218,11 @@ const coerceTable = (parsed: unknown): FileLockTable => {
 };
 
 const readDocument = async (
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>,
+	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>
 ): Promise<ReturnType<typeof EMPTY_DOCUMENT>> => {
 	try {
 		const raw = await (deps.readTable ?? defaultReadTable)(
-			getTablePath(deps),
+			getTablePath(deps)
 		);
 		const parsed = JSON.parse(raw) as unknown;
 		if (
@@ -256,7 +256,7 @@ const readDocument = async (
 
 const writeDocument = async (
 	doc: ReturnType<typeof EMPTY_DOCUMENT>,
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'writeTableAtomic'>,
+	deps: Pick<IFileLockTableDeps, 'tablePath' | 'writeTableAtomic'>
 ): Promise<void> => {
 	const writer = deps.writeTableAtomic ?? defaultWriteTable;
 	await writer(getTablePath(deps), JSON.stringify(doc, null, 2));
@@ -275,7 +275,7 @@ const isMissingFileErrno = (err: unknown): boolean => {
 };
 
 const readContentions = async (
-	deps: IFileLockTableDeps,
+	deps: IFileLockTableDeps
 ): Promise<readonly IFileLockContention[]> => {
 	const contentionPath = getContentionPath(deps);
 	try {
@@ -286,7 +286,7 @@ const readContentions = async (
 				const nowMs = new Date(getNow(deps)).getTime();
 				return pruneContentions(
 					parsed as readonly IFileLockContention[],
-					Number.isNaN(nowMs) ? Date.now() : nowMs,
+					Number.isNaN(nowMs) ? Date.now() : nowMs
 				);
 			}
 		}
@@ -317,13 +317,13 @@ const readContentions = async (
 	const nowMs = new Date(getNow(deps)).getTime();
 	return pruneContentions(
 		current.contentionHistory,
-		Number.isNaN(nowMs) ? Date.now() : nowMs,
+		Number.isNaN(nowMs) ? Date.now() : nowMs
 	);
 };
 
 const writeContentions = async (
 	records: readonly IFileLockContention[],
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'writeTableAtomic'>,
+	deps: Pick<IFileLockTableDeps, 'tablePath' | 'writeTableAtomic'>
 ): Promise<void> => {
 	const path = getContentionPath(deps);
 	const writer = deps.writeTableAtomic ?? defaultWriteTable;
@@ -332,7 +332,7 @@ const writeContentions = async (
 
 const pruneContentions = (
 	records: readonly IFileLockContention[],
-	nowMs: number,
+	nowMs: number
 ): readonly IFileLockContention[] =>
 	records.filter((r) => {
 		const activityAt = r.resolvedAt ?? r.lastSeenAt;
@@ -342,7 +342,7 @@ const pruneContentions = (
 	});
 
 export const readFileLockEntries = async (
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {},
+	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {}
 ): Promise<readonly IFileLock[]> => {
 	const doc = await readDocument(deps);
 	return Object.entries(doc.locks).map(([file, entry]) => ({
@@ -354,7 +354,7 @@ export const readFileLockEntries = async (
 };
 
 export const readFileLockTable = async (
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {},
+	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {}
 ): Promise<FileLockTable> => {
 	const doc = await readDocument(deps);
 	return doc.locks;
@@ -362,7 +362,7 @@ export const readFileLockTable = async (
 
 export async function addFileLocks(
 	locks: readonly IFileLock[],
-	deps: IFileLockTableDeps,
+	deps: IFileLockTableDeps
 ): Promise<void>;
 export async function addFileLocks(opts: {
 	readonly agentId: string;
@@ -387,7 +387,7 @@ export async function addFileLocks(
 				readonly mutexStaleMs?: number;
 				readonly mutexPollMs?: number;
 		  },
-	second: IFileLockTableDeps = {},
+	second: IFileLockTableDeps = {}
 ): Promise<void> {
 	let deps: IFileLockTableDeps;
 	let entries: readonly IFileLock[];
@@ -438,7 +438,7 @@ export async function addFileLocks(
 				...(deps.tablePath !== undefined
 					? { tablePath: deps.tablePath }
 					: {}),
-			},
+			}
 		);
 	});
 }
@@ -448,7 +448,7 @@ export async function removeFileLocksForTask(
 	deps?: Pick<
 		IFileLockTableDeps,
 		'tablePath' | 'mutexTimeoutMs' | 'mutexStaleMs' | 'mutexPollMs'
-	>,
+	>
 ): Promise<void>;
 export async function removeFileLocksForTask(opts: {
 	readonly taskId: string;
@@ -470,7 +470,7 @@ export async function removeFileLocksForTask(
 	second: Pick<
 		IFileLockTableDeps,
 		'tablePath' | 'mutexTimeoutMs' | 'mutexStaleMs' | 'mutexPollMs'
-	> = {},
+	> = {}
 ): Promise<void> {
 	const opts =
 		typeof first === 'string' ? { taskId: first, ...second } : first;
@@ -496,24 +496,24 @@ export async function removeFileLocksForTask(
 				...(opts.tablePath !== undefined
 					? { tablePath: opts.tablePath }
 					: {}),
-			},
+			}
 		);
 	});
 }
 
 export function findConflictingLocks(
 	files: readonly string[],
-	entries: readonly IFileLock[],
+	entries: readonly IFileLock[]
 ): readonly IFileLock[];
 export function findConflictingLocks(
 	currentTaskId: string,
 	files: readonly string[],
-	deps?: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>,
+	deps?: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>
 ): Promise<readonly IFileLock[]>;
 export function findConflictingLocks(
 	first: string | readonly string[],
 	second: readonly string[] | readonly IFileLock[],
-	third: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {},
+	third: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {}
 ): Promise<readonly IFileLock[]> | readonly IFileLock[] {
 	if (
 		Array.isArray(first) &&
@@ -595,7 +595,7 @@ export const tryAcquireFileLocks = async (opts: {
 				...(opts.tablePath !== undefined
 					? { tablePath: opts.tablePath }
 					: {}),
-			},
+			}
 		);
 	});
 	return { ok: true };
@@ -635,13 +635,13 @@ export const releaseFileLocks = async (opts: {
 				...(opts.tablePath !== undefined
 					? { tablePath: opts.tablePath }
 					: {}),
-			},
+			}
 		);
 	});
 };
 
 export const listLocks = async (
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {},
+	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {}
 ): Promise<FileLockTable> => {
 	const doc = await readDocument(deps);
 	return doc.locks;
@@ -671,7 +671,7 @@ export const noteFileLockContention = async (opts: {
 				entry.waitingTaskId === opts.waitingTaskId &&
 				entry.holderAgentId === opts.holderAgentId &&
 				(entry.holderTaskId ?? '') === (opts.holderTaskId ?? '') &&
-				entry.files.join(',') === files.join(','),
+				entry.files.join(',') === files.join(',')
 		);
 		const next: IFileLockContention =
 			foundIndex === -1
@@ -741,5 +741,5 @@ export const resolveFileLockContentions = async (opts: {
 };
 
 export const listRecentFileLockContentions = async (
-	deps: IFileLockTableDeps = {},
+	deps: IFileLockTableDeps = {}
 ): Promise<readonly IFileLockContention[]> => readContentions(deps);

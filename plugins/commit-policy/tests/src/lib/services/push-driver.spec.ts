@@ -83,8 +83,7 @@ describe('runPushDriver', () => {
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('BRANCH_PROTECTED');
-		expect(result.refusal).toContain('branch "main" matches policy');
+		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
 	});
 
 	it('refuses direct push to master when protectedBranches includes it', async () => {

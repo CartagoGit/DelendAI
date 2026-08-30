@@ -61,7 +61,7 @@ export default definePlugin({
 		const calibrationDir = ctx.workspace.resolve(ctx.pluginCacheDir);
 		const rosterStore = realRosterSnapshotStore(
 			ctx.workspace.resolve(joinRel(ctx.pluginCacheDir, 'roster.json')),
-			defaultTradeoff,
+			defaultTradeoff
 		);
 		return {
 			tools: [

@@ -21,7 +21,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`container plugin rejected its options: ${parsed.error.message}`,
+				`container plugin rejected its options: ${parsed.error.message}`
 			);
 		}
 		return {

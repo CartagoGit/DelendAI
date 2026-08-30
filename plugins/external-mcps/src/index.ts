@@ -67,8 +67,8 @@ export default definePlugin({
 		const options = parsed.success ? parsed.data : OptionsSchema.parse({});
 		const enabledServers = Object.fromEntries(
 			Object.entries(options.servers ?? {}).filter(
-				([, entry]) => entry.enabled !== false,
-			),
+				([, entry]) => entry.enabled !== false
+			)
 		);
 		const registry = new ExternalServerRegistry({
 			servers: enabledServers as Readonly<
@@ -89,7 +89,7 @@ export default definePlugin({
 		// the call with defaults; without this composition the proxy's
 		// fail-closed default refused every call forever.
 		const pendingAcksPath = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'pending-acks.json'),
+			joinRel(ctx.pluginCacheDir, 'pending-acks.json')
 		);
 		const ackStore = createPendingAcksStore(pendingAcksPath);
 		let detectedCache: ReadonlySet<string> | undefined;
