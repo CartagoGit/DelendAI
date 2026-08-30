@@ -2372,7 +2372,7 @@
 				"id": "t00021",
 				"title": "t00021",
 				"track": "commit-policy",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "unspecified"
 			},
 			{
@@ -2502,34 +2502,6 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00306",
-				"title": "x00306",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00307",
-				"title": "x00307",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00308",
-				"title": "x00308",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00309",
-				"title": "x00309",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00321",
 				"title": "x00321",
 				"track": "commit-policy-hardening",
@@ -2538,13 +2510,13 @@
 			}
 		],
 		"byStatus": {
-			"ready": 166,
-			"in-progress": 16,
+			"ready": 161,
+			"in-progress": 17,
 			"review": 0,
 			"paused": 1,
-			"done": 569,
-			"blocked": 0,
-			"retired": 3,
+			"done": 565,
+			"blocked": 1,
+			"retired": 11,
 			"unspecified": 0
 		}
 	}

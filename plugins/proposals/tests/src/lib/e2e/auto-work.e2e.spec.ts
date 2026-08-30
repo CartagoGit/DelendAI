@@ -32,7 +32,7 @@ import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-projec
 import commitPolicyPlugin from '@mcp-vertex/commit-policy';
 import proposalsPlugin from '@mcp-vertex/proposals';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	createAssembledProposalsServer,
@@ -414,11 +414,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		expect(res.structured.persist?.mode).toBe('none');
 	});
 
-	// Blocked until S2's proposals.register wiring reaches close_slice:
-	// auto_work receives persist, while close_slice currently falls back to
-	// mode=none. Keep the real scenario here so the dependency cannot regress
-	// silently when S2 is integrated.
-	it('runs the real managed MCP path through close_slice and verifies the pushed remote ref', async () => {
+	it('closes a slice, then commit-policy pushes the observed done transition', async () => {
 		const managed = await createManagedPersistenceServer();
 		try {
 			const readyDir = join(
@@ -470,7 +466,9 @@ Exercise the configured persistence route over MCP.
 			);
 			const plan = planRaw.structuredContent ?? ({} as AutoWorkOutput);
 			expect(plan.state).toBe('work');
-			expect(plan.persist?.mode).toBe('commit-and-push');
+			// proposals does not persist here. commit-policy owns the slice
+			// transition and observes the done state asynchronously.
+			expect(plan.persist?.mode).toBe('none');
 			expect(plan.claimReady?.sliceId).toBe('S1');
 
 			const closedRaw = await managed.callTool<{
@@ -492,23 +490,39 @@ Exercise the configured persistence route over MCP.
 				ok: true,
 				closed: true,
 				persist: {
-					committed: true,
-					pushed: true,
-					mode: 'commit-and-push',
+					committed: false,
+					pushed: false,
+					mode: 'none',
 				},
 			});
 
-			const head = git(managed.workspace, 'rev-parse', 'HEAD').trim();
-			const remoteHead = git(
-				managed.workspace,
-				'ls-remote',
-				'origin',
-				'refs/heads/wip/x00298-s3',
-			).trim();
-			expect(remoteHead).toBe(`${head}\trefs/heads/wip/x00298-s3`);
-			expect(
-				git(managed.workspace, 'rev-list', '--count', 'HEAD').trim(),
-			).toBe('2');
+			await vi.waitFor(
+				() => {
+					const head = git(
+						managed.workspace,
+						'rev-parse',
+						'HEAD',
+					).trim();
+					const remoteHead = git(
+						managed.workspace,
+						'ls-remote',
+						'origin',
+						'refs/heads/wip/x00298-s3',
+					).trim();
+					expect(remoteHead).toBe(
+						`${head}\trefs/heads/wip/x00298-s3`,
+					);
+					expect(
+						git(
+							managed.workspace,
+							'rev-list',
+							'--count',
+							'HEAD',
+						).trim(),
+					).toBe('2');
+				},
+				{ timeout: 5_000, interval: 100 },
+			);
 		} finally {
 			await managed.close();
 		}

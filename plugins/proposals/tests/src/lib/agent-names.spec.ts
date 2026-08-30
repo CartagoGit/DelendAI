@@ -200,6 +200,37 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 		);
 	});
 
+	it('invalidates the old subscription token when the task is released', async () => {
+		const assigned = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'released-lease',
+					agent_slot: 'orchestrator',
+				},
+				options,
+			),
+		) as { subscription_id: string };
+
+		const released = parse(
+			await runAgentNames(
+				{ action: 'release', task_id: 'released-lease' },
+				options,
+			),
+		) as { released: string[] };
+		expect(released.released).toContain('released-lease');
+
+		const heartbeat = await runAgentNames(
+			{
+				action: 'heartbeat',
+				task_id: 'released-lease',
+				subscription_id: assigned.subscription_id,
+			},
+			options,
+		);
+		expect(heartbeat).toMatchObject({ isError: true });
+	});
+
 	it('expires a pooled subscription automatically when no heartbeat renews it', async () => {
 		const assigned = parse(
 			await runAgentNames(

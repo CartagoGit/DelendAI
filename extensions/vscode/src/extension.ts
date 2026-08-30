@@ -106,6 +106,10 @@ import {
 	type IRuntimeHandle,
 } from './host/runtime-handle';
 import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
+import {
+	RuntimeObserver,
+	observerIntervalMs,
+} from './observability/runtime-observer';
 
 const runSafely = (task: Promise<unknown>): void => {
 	void task.catch(() => undefined);
@@ -152,6 +156,7 @@ export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
 export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
 export const PROPOSALS_VIEW_ID = 'mcp-vertex.proposals';
 export const KPI_VIEW_ID = 'mcp-vertex.kpis';
+export const OPEN_RUNTIME_LOG_COMMAND = 'mcp-vertex.openRuntimeLog';
 export { OPEN_TOOL_DETAIL_COMMAND };
 export { OPEN_AUTO_AGENT_SELECTOR_COMMAND };
 
@@ -250,6 +255,7 @@ export interface IVscodeApi {
 
 export interface IOutputChannel extends IDisposable {
 	append(value: string): void;
+	show?(preserveFocus?: boolean): void;
 }
 
 /**
@@ -378,6 +384,11 @@ export const activate = async (
 	if (startupReportChannel !== undefined) {
 		handle.register('startup-report-channel', startupReportChannel);
 	}
+	const runtimeChannel =
+		vscode.window.createOutputChannel?.('MCP Vertex Runtime');
+	if (runtimeChannel !== undefined) {
+		handle.register('runtime-channel', runtimeChannel);
+	}
 	let initialClient: McpStdioClient;
 	const connectClient = (): Promise<McpStdioClient> =>
 		connectWithTimeout(() =>
@@ -463,6 +474,25 @@ export const activate = async (
 		handle.register(`sub-${trackSeq++}`, disposable);
 		return disposable;
 	};
+	if (runtimeChannel !== undefined) {
+		const runtimeObserver = new RuntimeObserver(
+			client,
+			runtimeChannel,
+			namespacePrefix,
+			observerIntervalMs(vscode),
+		);
+		runtimeObserver.start();
+		track(runtimeObserver);
+	}
+	track(
+		vscode.commands.registerCommand(OPEN_RUNTIME_LOG_COMMAND, () =>
+			runtimeChannel === undefined
+				? vscode.window.showInformationMessage?.(
+						'MCP Vertex runtime log is unavailable in this host.',
+					)
+				: runtimeChannel.show?.(true),
+		),
+	);
 	// Register network-backed commands before the initial overview/status-bar
 	// refresh. A slow or unavailable MCP server must not leave manifest
 	// commands visible but unregistered in the workbench.
@@ -743,11 +773,10 @@ export const deactivate = async (): Promise<void> => {
  *
  *   1. Explicit `mcp-vertex.server.command` / `mcp-vertex.server.args`
  *      workspace settings — the operator always wins.
- *   2. The workspace's checked-in `.mcp.json` `mcpServers.mcp-vertex`
- *      entry — the file `mcpv init` writes, so a freshly-initialised
- *      consumer connects with zero extra configuration (before this,
- *      the default assumed a `"mcp-vertex"` package.json script that
- *      init never creates, and the extension died on connect).
+ *   2. The workspace's checked-in `.vscode/mcp.json` `servers.mcp-vertex`
+ *      or `.mcp.json` `mcpServers.mcp-vertex` entry — the same launch
+ *      configuration used by MCP-aware hosts, so the extension does not
+ *      invent a second server command.
  *   3. `bun run mcp-vertex` — the legacy fallback for workspaces that
  *      wire the server through a package.json script.
  *
@@ -797,9 +826,9 @@ export const resolveServerCommand = async (
 };
 
 /**
- * Read the `mcpServers.mcp-vertex` launch from `<workspace>/.mcp.json`.
- * Relative args in that file (e.g. the repo-local host script) resolve
- * against the workspace root, so the caller must spawn with `cwd: root`.
+ * Read the mcp-vertex launch from the host configuration files supported by
+ * this workspace. Relative args resolve against the workspace root, so the
+ * caller must spawn with `cwd: root`.
  */
 const readWorkspaceMcpJsonLaunch = async (
 	root: string,
@@ -807,27 +836,52 @@ const readWorkspaceMcpJsonLaunch = async (
 	try {
 		const { readFile } = await import('node:fs/promises');
 		const { join } = await import('node:path');
-		const raw = await readFile(join(root, '.mcp.json'), 'utf8');
-		const parsed = JSON.parse(raw) as {
-			readonly mcpServers?: Readonly<
-				Record<
-					string,
-					{ readonly command?: unknown; readonly args?: unknown }
-				>
-			>;
-		};
-		const entry = parsed.mcpServers?.['mcp-vertex'];
-		if (
-			entry !== undefined &&
-			typeof entry.command === 'string' &&
-			entry.command.length > 0 &&
-			Array.isArray(entry.args) &&
-			entry.args.every((a) => typeof a === 'string')
-		) {
-			return { command: entry.command, args: entry.args as string[] };
+		const files = [
+			{
+				path: join(root, '.vscode', 'mcp.json'),
+				key: 'servers' as const,
+			},
+			{
+				path: join(root, '.mcp.json'),
+				key: 'mcpServers' as const,
+			},
+		] as const;
+		for (const file of files) {
+			try {
+				const raw = await readFile(file.path, 'utf8');
+				const parsed = JSON.parse(raw) as {
+					readonly servers?: Readonly<Record<string, unknown>>;
+					readonly mcpServers?: Readonly<Record<string, unknown>>;
+				};
+				const entries = parsed[file.key];
+				const entry = entries?.['mcp-vertex'];
+				if (typeof entry !== 'object' || entry === null) continue;
+				const candidate = entry as {
+					readonly command?: unknown;
+					readonly args?: unknown;
+				};
+				if (
+					typeof candidate.command === 'string' &&
+					candidate.command.length > 0 &&
+					Array.isArray(candidate.args) &&
+					candidate.args.every((a) => typeof a === 'string')
+				) {
+					return {
+						command: candidate.command.replaceAll(
+							'${workspaceFolder}',
+							root,
+						),
+						args: (candidate.args as string[]).map((arg) =>
+							arg.replaceAll('${workspaceFolder}', root),
+						),
+					};
+				}
+			} catch {
+				// Try the next supported host configuration file.
+			}
 		}
 	} catch {
-		// Missing or malformed .mcp.json → fall through to the default.
+		// Missing or malformed host configuration → use the default.
 	}
 	return undefined;
 };

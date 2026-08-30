@@ -311,8 +311,21 @@ export default definePlugin({
 			(t): t is Extract<typeof t, { kind: 'slice' }> =>
 				t.kind === 'slice',
 		);
+		const proposalsOptions = ctx.pluginOptions?.get('proposals');
+		const proposalsPersistMode =
+			typeof proposalsOptions === 'object' &&
+			proposalsOptions !== null &&
+			typeof (proposalsOptions as { persist?: unknown }).persist ===
+				'object'
+				? (
+						proposalsOptions as {
+							persist?: { mode?: unknown };
+						}
+					).persist?.mode
+				: undefined;
 		const proposalsOwnsSlicePersistence =
-			ctx.peerPlugins?.has('proposals') === true;
+			proposalsPersistMode === 'commit' ||
+			proposalsPersistMode === 'commit-and-push';
 		if (sliceTrigger !== undefined && !proposalsOwnsSlicePersistence) {
 			// The listener dispatches every
 			// emitted event into the engine. The engine decides
@@ -467,7 +480,7 @@ export default definePlugin({
 					'        "commit": { "enabled": true },',
 					'        "push":   { "enabled": true, "onCommit": true },',
 					'        "cadence": { "triggers": [{ "kind": "slice" }] },',
-					'        "identity": { "mode": "global" }',
+					'        "identity": { "mode": "explicit", "owner": { "name": "Cartago", "email": "owner@example.com" } },',
 					'      }',
 					'    }',
 					'  }',
@@ -477,7 +490,8 @@ export default definePlugin({
 					'When configured, the slice listener polls the proposals registry',
 					'and commits one slice per `done` transition; the push policy then',
 					'fires per commit when `push.onCommit` is on. For dogfooding on',
-					'this repo, identity resolves to the workstation global git user.',
+					'this repo, identity uses the explicitly configured Cartago owner',
+					'and the configured interval trigger runs every 5 minutes.',
 				].join('\n'),
 			},
 		];

@@ -285,12 +285,16 @@ const runAgentNamesImpl = async (
 			const entry = r.assignments.find((a) => a.task_id === args.task_id);
 			if (!entry) return json({ error: 'unknown task_id' }, true);
 			if (
-				entry.subscription_id !== undefined &&
+				entry.status !== 'active' ||
+				entry.subscription_id === undefined ||
 				entry.subscription_id !== args.subscription_id
 			)
 				return json(
 					{
-						error: 'subscription_id mismatch',
+						error:
+							entry.status === 'active'
+								? 'subscription_id mismatch'
+								: 'task is not active',
 						nextAction:
 							'Reconnect with the subscription_id returned by assign.',
 					},
@@ -311,7 +315,11 @@ const runAgentNamesImpl = async (
 				new Date(at).getTime() +
 					AGENT_CONVENTIONS.cooldown_days * 86_400_000,
 			).toISOString();
-			await store.release(args.task_id, cooldownUntil);
+			const releasedRoot = await store.release(
+				args.task_id,
+				cooldownUntil,
+			);
+			if (!releasedRoot) return json({ released: [] });
 			const r = await store.read();
 			const released = new Set<string>([args.task_id]);
 			let changed = true;
@@ -326,9 +334,17 @@ const runAgentNamesImpl = async (
 						a.status = 'cooldown';
 						a.cooldown_until = cooldownUntil;
 						a.last_seen = at;
+						delete a.subscription_id;
+						delete a.lease_until;
 						released.add(a.task_id);
 						changed = true;
 					}
+				}
+			}
+			for (const a of r.assignments) {
+				if (released.has(a.task_id)) {
+					delete a.subscription_id;
+					delete a.lease_until;
 				}
 			}
 			await store.write(r);

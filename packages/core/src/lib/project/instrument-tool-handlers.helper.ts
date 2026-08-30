@@ -145,6 +145,16 @@ export const instrumentToolHandlers = (
 				if (signal.aborted) onAbort();
 			}
 			try {
+				if (config.runtimeEventSink !== undefined) {
+					void Promise.resolve(
+						config.runtimeEventSink.emit({
+							version: 1,
+							ts: new Date().toISOString(),
+							kind: 'tool.started',
+							toolName: name,
+						}),
+					).catch(() => undefined);
+				}
 				if (config.onToolStart) {
 					try {
 						void Promise.resolve(
@@ -271,6 +281,23 @@ export const instrumentToolHandlers = (
 						cost,
 						isError,
 					});
+				}
+				if (config.runtimeEventSink !== undefined) {
+					void Promise.resolve(
+						config.runtimeEventSink.emit({
+							version: 1,
+							ts: new Date().toISOString(),
+							kind: isError ? 'tool.failed' : 'tool.completed',
+							toolName: name,
+							elapsedMs: ms,
+							error: isError,
+							estimatedTokens4B: isError
+								? estimateErrorCost(result, error)
+										.estimatedTokens.estimatedTokens4B
+								: estimateResultCost(result).estimatedTokens
+										.estimatedTokens4B,
+						}),
+					).catch(() => undefined);
 				}
 				if (config.onToolCall) {
 					try {

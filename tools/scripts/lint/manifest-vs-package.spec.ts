@@ -14,6 +14,7 @@ const writeManifest = async (
 	root: string,
 	pluginId: string,
 	override = '',
+	toolPermissions = '',
 ): Promise<void> => {
 	await writeFile(
 		join(root, 'plugins', pluginId, 'plugin.manifest.ts'),
@@ -27,6 +28,9 @@ const writeManifest = async (
 			"\ttags: ['fixture'],",
 			"\tmaturity: 'stable',",
 			"\tpermissions: ['filesystem-read'],",
+			...(toolPermissions
+				? [`\ttoolPermissions: ${toolPermissions},`]
+				: []),
 			"\tpresets: ['minimal'],",
 			'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
 			"\tdependencies: ['@mcp-vertex/core'],",
@@ -201,6 +205,60 @@ describe('manifest-vs-package lint', () => {
 			const violations = await lintManifestVsPackage(root);
 			expect(violations.some((v) => v.rule === 'MANIFEST-VIS-001')).toBe(
 				true,
+			);
+		});
+	});
+
+	it('flags unknown per-tool permissions for commit-policy', async () => {
+		await withFixture(async (root) => {
+			await mkdir(join(root, 'plugins/commit-policy'), {
+				recursive: true,
+			});
+			await writeJson(join(root, 'plugins/commit-policy/package.json'), {
+				name: '@mcp-vertex/commit-policy',
+				version: '0.1.0',
+				publishConfig: { access: 'public' },
+			});
+			await writeManifest(
+				root,
+				'commit-policy',
+				'',
+				`{ commit_policy_status: ['filesystem-read'], unknown_tool: ['filesystem-read'] }`,
+			);
+			await writeRuntimeIndex(root, 'commit-policy');
+			const violations = await lintManifestVsPackage(root);
+			expect(violations).toContainEqual(
+				expect.objectContaining({
+					plugin: 'commit-policy',
+					rule: 'MANIFEST-TOOL-001',
+				}),
+			);
+		});
+	});
+
+	it('flags missing and incorrect per-tool permissions for commit-policy', async () => {
+		await withFixture(async (root) => {
+			await mkdir(join(root, 'plugins/commit-policy'), {
+				recursive: true,
+			});
+			await writeJson(join(root, 'plugins/commit-policy/package.json'), {
+				name: '@mcp-vertex/commit-policy',
+				version: '0.1.0',
+				publishConfig: { access: 'public' },
+			});
+			await writeManifest(
+				root,
+				'commit-policy',
+				'',
+				`{ commit_policy_status: ['git-write'], commit_policy_commit: ['git-write'], commit_policy_push: ['git-write'], commit_policy_run: ['git-write'] }`,
+			);
+			await writeRuntimeIndex(root, 'commit-policy');
+			const violations = await lintManifestVsPackage(root);
+			expect(violations).toContainEqual(
+				expect.objectContaining({ rule: 'MANIFEST-TOOL-002' }),
+			);
+			expect(violations).toContainEqual(
+				expect.objectContaining({ rule: 'MANIFEST-TOOL-003' }),
 			);
 		});
 	});

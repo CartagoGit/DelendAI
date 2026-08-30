@@ -8,6 +8,7 @@ import {
 	resolvePresetMembers,
 	type IPresetKind,
 } from './preset-catalog';
+import { resolve as resolvePath } from 'node:path';
 
 /**
  * Parsed mcp-vertex CLI invocation. Pure data so the loader and tests
@@ -226,7 +227,7 @@ export const parseCliArgs = (
 		excludePlugins: [...exclude],
 		cacheDir: tokens.cacheDir ?? DEFAULT_CLI_ARGS.cacheDir,
 		docsDir: tokens.docsDir ?? DEFAULT_CLI_ARGS.docsDir,
-		workspace: tokens.workspace ?? cwd,
+		workspace: resolvePath(cwd, tokens.workspace ?? '.'),
 		surfaceMode: parseSurfaceMode(tokens.surface),
 		startupReportLevel: tokens['startup-report'],
 		serverName: tokens.name ?? DEFAULT_CLI_ARGS.serverName,

@@ -4,6 +4,7 @@ import type { IKnowledgeEntry, ISkillEntry } from './knowledge.interface';
 import type { IMcpVertexProjectMetadata } from './project-metadata.interface';
 import type { IStatusCollector } from './status-collector.interface';
 import type { IMetricsRegistry } from '../../metrics/metrics-registry';
+import type { IRuntimeEventSink } from '../../observability/runtime-events';
 import type {
 	IPromptRegistration,
 	IResourceRegistration,
@@ -93,6 +94,8 @@ export interface IHostContent {
 
 /** Solid-ISP: runtime observability seams. */
 export interface IHostObservability {
+	/** Optional host-neutral JSONL/event sink outside MCP stdio. */
+	readonly runtimeEventSink?: IRuntimeEventSink | undefined;
 	/** Host runtime status seams (anything with `collect()`). */
 	readonly statusCollectors?: readonly IStatusCollector[] | undefined;
 	/**

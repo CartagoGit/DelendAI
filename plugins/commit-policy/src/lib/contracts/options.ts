@@ -80,9 +80,8 @@ const EnvIdentitySchema = z.object({ mode: z.literal('env') });
 
 /**
  * `auto` — apply the deterministic priority
- *   env > explicit (if configured elsewhere) > agent > global > repo
- * This is the default for hosts that don't pick a mode and is the
- * one we recommend for dogfooding on a personal workstation.
+ *   env > global > repo > agent
+ * This is the default for hosts that do not pick a mode.
  */
 const AutoIdentitySchema = z.object({ mode: z.literal('auto') });
 

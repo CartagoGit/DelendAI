@@ -17,6 +17,7 @@ import type {
 } from '@mcp-vertex/proposals/lib/shared/git-runner';
 
 import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
+import { runAgentNames } from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
 import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
@@ -67,6 +68,14 @@ describe('proposal authoring (create → board → close)', async () => {
 			// x00052: indexPathAbs moved to the cache root.
 			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			agentNames: {
+				namespacePrefix: 'proposals',
+				registryPathAbs: join(root, '.cache/agent-registry.json'),
+				lockPathAbs: join(root, '.cache/agents.lock.json'),
+				queuePathAbs: join(root, '.cache/agent-queue.json'),
+				closedTasksPathAbs: join(root, '.cache/closed-tasks.json'),
+				workspaceRoot: root,
+			},
 			peerReviewLogPathAbs: join(
 				root,
 				'.cache/mcp-vertex/proposals/peer-review.jsonl',
@@ -330,6 +339,53 @@ describe('proposal authoring (create → board → close)', async () => {
 		const status = await runAgentLockEngine({ action: 'status' }, lockDeps);
 		const statusBody = parse(status);
 		expect(statusBody.active_write_lanes).toBe(0);
+	});
+
+	it('releases the delegated assignment and lease when closing a slice', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		const created = parse(
+			await create({
+				id: 'f00087',
+				title: 'Assignment cleanup',
+				goal: 'regression',
+				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+			}),
+		);
+		expect(created.ok).toBe(true);
+
+		const assigned = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'f00087-S1',
+					agent_slot: 'implementation_runner',
+				},
+				opts.agentNames!,
+			),
+		) as { subscription_id: string };
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const closed = parse(
+			await close({
+				proposalId: 'f00087',
+				sliceId: 's1',
+				validateEvidence: recentValidate(),
+			}),
+		);
+
+		expect(closed).toMatchObject({
+			closed: true,
+			lockReleased: false,
+			assignmentReleased: true,
+		});
+		const heartbeat = await runAgentNames(
+			{
+				action: 'heartbeat',
+				task_id: 'f00087-S1',
+				subscription_id: assigned.subscription_id,
+			},
+			opts.agentNames!,
+		);
+		expect(heartbeat).toMatchObject({ isError: true });
 	});
 
 	it('closes the last slice without appending the done marker outside the slice block', async () => {
