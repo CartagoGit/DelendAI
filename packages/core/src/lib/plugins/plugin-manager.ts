@@ -52,7 +52,15 @@ export const createPluginManager = (
 			);
 		},
 		activate(pluginId, note) {
-			if (requireState(pluginId) === 'DENIED') return 'DENIED';
+			const current = requireState(pluginId);
+			if (current === 'DENIED' || current === 'ACTIVE') return current;
+			if (current === 'UNLOADED') {
+				router.transitionPlugin(
+					pluginId,
+					'LOADED_HIDDEN',
+					reason('MANAGER_ACTIVATE', note),
+				);
+			}
 			return router.transitionPlugin(
 				pluginId,
 				'ACTIVE',

@@ -23,6 +23,7 @@ import {
 	gitAdd,
 	gitCommit,
 	gitHeadShortHash,
+	stripAnsi,
 	type ICommitAndPushResult,
 	type IGitRunner,
 	type IGitRunResult,
@@ -315,7 +316,7 @@ const createGitRunnerWithEnv =
 						reason = `git timed out after ${timeoutMs}ms`;
 					} else {
 						reason =
-							(stderr || err.message || 'git command failed')
+							stripAnsi(stderr || err.message || 'git command failed')
 								.trim()
 								.split('\n')[0] ?? 'git command failed';
 					}

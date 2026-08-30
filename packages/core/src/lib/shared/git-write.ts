@@ -14,6 +14,12 @@
  */
 import { execFile } from 'node:child_process';
 
+/** Remove terminal control sequences before exposing git diagnostics. */
+export const stripAnsi = (value: string): string =>
+	value
+		.replace(/[\u001B\u009B][[\]()#;?]*(?:(?:(?:[a-zA-Z\d]*(?:;[-a-zA-Z\d/#&.:=?%@~_]+)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~]))/gu, '')
+		.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/gu, '');
+
 // The git-runner contract is single-sourced (f00065 slice F). Re-exported here
 // so existing importers of `git-write` keep their import path unchanged.
 export type {
@@ -67,7 +73,7 @@ export const createGitRunner =
 						reason = `git timed out after ${timeoutMs}ms`;
 					} else {
 						reason =
-							(stderr || err.message || 'git command failed')
+							stripAnsi(stderr || err.message || 'git command failed')
 								.trim()
 								.split('\n')[0] ?? 'git command failed';
 					}

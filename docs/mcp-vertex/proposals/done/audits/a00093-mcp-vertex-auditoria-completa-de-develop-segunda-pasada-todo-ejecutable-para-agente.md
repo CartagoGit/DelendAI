@@ -1,17 +1,17 @@
 ---
-audit-id: 2026-08-25-develop-external-audit-chatgpt-sol
-date: 2026-08-25
-source: external (ChatGPT 5.6 Sol, high reasoning, segunda pasada sobre `develop`)
-reviewer: ChatGPT-5.6-Sol (external)
-commit-audited: e1b4cefd39c140913800748fea44c392026ca303
-status: legacy
-classification: external-audit
-language: es
-orchestrator-plan: q00004
-predecessor: 2026-08-24-develop-external-audit.md (q00003)
+id: a00093
+title: "MCP Vertex — Auditoría completa de `develop` (segunda pasada) → TODO ejecutable para agente"
+kind: audit
+status: done
+type: proposal
+track: migrated
+date: 2026-08-30
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md
 ---
 
-# MCP Vertex — Auditoría completa de `develop` (segunda pasada) → TODO ejecutable para agente
+# a00093 — MCP Vertex — Auditoría completa de `develop` (segunda pasada) → TODO ejecutable para agente
+
+## Goal
 
 > **Documento de trabajo generado a partir de una nueva auditoría completa del estado actual de `develop`.**
 >
@@ -3002,3 +3002,9 @@ Mantenibilidad:        9.2+
 Sin añadir ninguna feature nueva.
 
 Ese debería ser el objetivo de esta ronda.
+
+## notes
+
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md` by `proposal_adopt`
+  (f00116). The original file was left untouched — retire it once
+  this proposal is the source of truth.

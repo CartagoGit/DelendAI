@@ -1,17 +1,27 @@
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import {
+	DETAIL_LEVELS,
+	projectDetail,
+	toolError,
+	toolJson,
+	type Detail,
+	type IToolRegistration,
+} from '@mcp-vertex/core/public';
 
 import { PROJECT_HEALTH_DOMAINS } from '../contracts/interfaces/project-health.interface';
 import type {
+	IProjectHealthOutput,
 	IProjectHealthToolArgs,
 	IProjectHealthToolOptions,
 } from '../contracts/interfaces/project-health.interface';
 import { buildProjectHealthPayload } from '../services/project-health.service';
 
+const DetailSchema = z.enum(DETAIL_LEVELS);
+
 const InputSchema = z.object({
 	domain: z.enum(PROJECT_HEALTH_DOMAINS).optional(),
+	detail: DetailSchema.optional(),
 });
 
 const NextActionSchema = z.object({
@@ -20,6 +30,7 @@ const NextActionSchema = z.object({
 });
 
 export const ProjectHealthOutputSchema = z.object({
+	detail: DetailSchema.optional(),
 	score: z.number().int().min(0).max(100).optional(),
 	security: z.number().int().min(0).max(100).optional(),
 	deps: z.number().int().min(0).max(100).optional(),
@@ -35,8 +46,50 @@ export const ProjectHealthOutputSchema = z.object({
 	originalBytes: z.number().optional(),
 });
 
+type ProjectHealthPayload = Omit<
+	IProjectHealthOutput,
+	never
+>;
+
+const projectProjectHealthPayload = (
+	payload: ProjectHealthPayload,
+	detail: Detail,
+): ProjectHealthPayload =>
+	projectDetail(
+		payload,
+		{
+			compact: (full) =>
+				full.domain === undefined
+					? {
+						score: full.score,
+						security: full.security,
+						deps: full.deps,
+						quality: full.quality,
+						debt: full.debt,
+						bytes: full.bytes,
+						truncated: full.truncated,
+						...(full.originalBytes !== undefined
+							? { originalBytes: full.originalBytes }
+							: {}),
+					}
+					: {
+						domain: full.domain,
+						tool: full.tool,
+						hint: full.hint,
+						bytes: full.bytes,
+						truncated: full.truncated,
+						...(full.originalBytes !== undefined
+							? { originalBytes: full.originalBytes }
+							: {}),
+					},
+			normal: (full) => full,
+			full: (full) => full,
+		},
+		detail,
+	) as ProjectHealthPayload;
+
 export const runProjectHealth = async (
-	args: IProjectHealthToolArgs,
+	args: IProjectHealthToolArgs & { detail?: Detail | undefined },
 	options: IProjectHealthToolOptions,
 ) => {
 	const parsed = InputSchema.safeParse(args);
@@ -46,7 +99,17 @@ export const runProjectHealth = async (
 			'Pass domain=summary|security|deps|quality|debt.',
 		);
 	}
-	return toolJson(await buildProjectHealthPayload(parsed.data, options));
+	const payload = await buildProjectHealthPayload(
+		{ domain: parsed.data.domain },
+		options,
+	);
+	if (parsed.data.detail === undefined) {
+		return toolJson(payload);
+	}
+	return toolJson({
+		detail: parsed.data.detail,
+		...projectProjectHealthPayload(payload, parsed.data.detail),
+	});
 };
 
 export const buildProjectHealthToolRegistrations = (
@@ -63,7 +126,7 @@ export const buildProjectHealthToolRegistrations = (
 				{
 					outputSchema: ProjectHealthOutputSchema,
 					description:
-						'Aggregate a cheap project-health summary across security, deps, quality and debt. Summary mode is intentionally heuristic-only; detail modes stay lazy and point at the real domain tools without executing them.',
+							'Aggregate a cheap project-health summary across security, deps, quality and debt. Summary mode is intentionally heuristic-only; detail modes stay lazy and point at the real domain tools without executing them. When `detail` is omitted the tool preserves the legacy payload; `compact` trims routing metadata, while `normal` and `full` keep the same shape.',
 					inputSchema: InputSchema,
 				},
 				async (args) => runProjectHealth(args, options),

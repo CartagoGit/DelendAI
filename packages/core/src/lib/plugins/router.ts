@@ -280,8 +280,12 @@ export const createLazyPluginRouter = (
 			const manifests = await options.discovery.manifests();
 			const manifestScanMs = options.discovery.stats().lastScanMs;
 			const routeCache = buildRouteMaps(manifests);
+			const knownPluginIds = new Set(routeCache.pluginIds);
+			for (const pluginId of pluginStates.keys()) {
+				if (!knownPluginIds.has(pluginId)) pluginStates.delete(pluginId);
+			}
 			for (const pluginId of routeCache.pluginIds) {
-				bindStateMachine(pluginId);
+				bindStateMachine(pluginId, 'ACTIVE');
 			}
 			let failures: readonly IFailedPluginEntry[] = [];
 			let eagerlyLoadedPluginCount = 0;
@@ -428,7 +432,10 @@ export const createLazyPluginRouter = (
 			return stateOf(pluginId);
 		},
 		transitionPlugin(pluginId, to, reason) {
-			bindStateMachine(pluginId).transition(to, reason);
+			if (cache !== undefined && !cache.pluginIds.includes(pluginId)) {
+				throw new Error(`unknown plugin "${pluginId}"`);
+			}
+			bindStateMachine(pluginId, 'UNLOADED').transition(to, reason);
 			return stateOf(pluginId) ?? to;
 		},
 		onPluginStateTransition(listener) {

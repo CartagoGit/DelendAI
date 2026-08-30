@@ -1,4 +1,17 @@
-# MCP Vertex — Auditoría integral de `develop` y TODO maestro de mejora
+---
+id: a00092
+title: "MCP Vertex — Auditoría integral de `develop` y TODO maestro de mejora"
+kind: audit
+status: done
+type: proposal
+track: migrated
+date: 2026-08-30
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md
+---
+
+# a00092 — MCP Vertex — Auditoría integral de `develop` y TODO maestro de mejora
+
+## Goal
 
 > **Documento de trabajo para convertir en propuestas ejecutables**
 >
@@ -3662,3 +3675,9 @@ Y por encima de cualquier otra cosa:
 > **El reporting debe construirse exclusivamente con datos internos de MCP Vertex y ejemplos sintéticos.**
 >
 > **Ante cualquier duda, no se envía.**
+
+## notes
+
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md` by `proposal_adopt`
+  (f00116). The original file was left untouched — retire it once
+  this proposal is the source of truth.

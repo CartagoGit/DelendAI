@@ -870,7 +870,9 @@ export const assembleCliConfig = async (
 					},
 				}
 			: {}),
-		...(moduleLoading === 'lazy' || onToolCancels.length > 0
+		...(moduleLoading === 'lazy' ||
+		onToolCancels.length > 0 ||
+		resolvedLogsSink !== undefined
 			? {
 					onToolCancel: async (
 						toolName,

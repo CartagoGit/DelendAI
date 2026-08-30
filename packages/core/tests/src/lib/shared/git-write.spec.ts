@@ -444,9 +444,9 @@ describe('createGitRunner — error classification against the real execFile pat
 		});
 	}, 10_000);
 
-	it('falls back to the first line of stderr when git fails for another reason', async () => {
+	it('falls back to the first ANSI-free line of stderr when git fails for another reason', async () => {
 		installFakeGit(
-			'#!/bin/sh\necho "fatal: not a git repository" >&2\nexit 128\n',
+			'#!/bin/sh\nprintf "\\033[38;2;5;5;5m fatal: not a git repository\\033[0m\\n" >&2\nexit 128\n',
 		);
 		process.env.PATH = `${fakeBinDir}:${originalPath ?? ''}`;
 		const run = createGitRunner(workDir);

@@ -43,6 +43,22 @@ type IForceAuthorizationResolution =
 	| { readonly ok: true; readonly authorization?: IPushAuthorization }
 	| { readonly ok: false; readonly refusal: string };
 
+type IMainPushGuardResolution =
+	{ readonly ok: true } | { readonly ok: false; readonly refusal: string };
+
+export const enforceMainPushGuard = (
+	branch: string
+): IMainPushGuardResolution => {
+	if (branch === 'main') {
+		return {
+			ok: false,
+			refusal:
+				"DIRECT_PUSH_TO_MAIN_NOT_ALLOWED: direct push to 'main' is not allowed; cuts the release/publish path. Next: open a PR from a feature branch (release/* or develop).",
+		};
+	}
+	return { ok: true };
+};
+
 /**
  * Plain `--force` rewrites shared history irreversibly, so `gitPush`
  * refuses it without an explicit `{ by, reason }` sign-off. Both halves
@@ -55,7 +71,7 @@ type IForceAuthorizationResolution =
 const resolveForceAuthorization = (
 	forceMode: ForceMode,
 	policy: ICommitPolicyPush,
-	authorizedBy: string | undefined,
+	authorizedBy: string | undefined
 ): IForceAuthorizationResolution => {
 	if (forceMode !== 'allow') return { ok: true };
 
@@ -94,7 +110,7 @@ const forceModeToGitPush = (mode: ForceMode): IPushForceMode => {
 export const runPushDriver = async (
 	input: IPushDriverInput,
 	policy: ICommitPolicyPush,
-	run: IGitRunner,
+	run: IGitRunner
 ): Promise<IPushDriverResult> => {
 	if (!policy.enabled) {
 		return {
@@ -138,15 +154,11 @@ export const runPushDriver = async (
 		};
 	}
 
-	if (branch === 'main') {
-		return {
-			ok: false,
-			refusal:
-				"DIRECT_PUSH_TO_MAIN_NOT_ALLOWED: direct push to 'main' is not allowed; cuts the release/publish path. Open a PR from a feature branch (release/* or develop).",
-		};
-	}
+	const mainPushGuard = enforceMainPushGuard(branch);
+	if (!mainPushGuard.ok) return { ok: false, refusal: mainPushGuard.refusal };
 
 	if (
+		policy.protectedBranches.includes(branch) ||
 		isBranchProtected(branch, {
 			protected: policy.protectedBranches,
 			protectedPrefixes: policy.protectedPrefixes,
@@ -165,7 +177,7 @@ export const runPushDriver = async (
 	const authorization = resolveForceAuthorization(
 		forceMode,
 		policy,
-		input.authorizedBy,
+		input.authorizedBy
 	);
 	if (!authorization.ok) return { ok: false, refusal: authorization.refusal };
 
