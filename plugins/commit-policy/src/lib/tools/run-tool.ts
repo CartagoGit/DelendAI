@@ -105,6 +105,29 @@ const OutputSchema = z.union([
 	}),
 ]);
 
+const resolveSliceSelector = (
+	selector:
+		| { readonly proposalId?: string; readonly sliceId?: string }
+		| undefined,
+):
+	| { readonly proposalId: string; readonly sliceId: string }
+	| { readonly refusal: 'SELECTOR_REQUIRED' | 'INCOMPLETE_SELECTOR' } => {
+	const hasProposalField = selector?.proposalId !== undefined;
+	const hasSliceField = selector?.sliceId !== undefined;
+	if (!hasProposalField && !hasSliceField) {
+		return { refusal: 'SELECTOR_REQUIRED' };
+	}
+	if (!hasProposalField || !hasSliceField) {
+		return { refusal: 'INCOMPLETE_SELECTOR' };
+	}
+	const proposalId = selector.proposalId;
+	const sliceId = selector.sliceId;
+	if (proposalId.trim().length === 0 || sliceId.trim().length === 0) {
+		return { refusal: 'INCOMPLETE_SELECTOR' };
+	}
+	return { proposalId, sliceId };
+};
+
 const sliceRefusal = async (
 	options: IRunToolOptions,
 	selector:
@@ -120,22 +143,11 @@ const sliceRefusal = async (
 	// eligible slice". Cross-agent, the implicit behaviour picked
 	// the wrong slice and committed to it; here the operator
 	// (or upstream code) names the exact slice to act on.
-	const hasProposal =
-		selector !== undefined &&
-		selector.proposalId !== undefined &&
-		selector.proposalId.length > 0;
-	const hasSlice =
-		selector !== undefined &&
-		selector.sliceId !== undefined &&
-		selector.sliceId.length > 0;
-	if (!hasProposal && !hasSlice) {
-		return { ok: false, refusal: 'SELECTOR_REQUIRED' };
+	const resolvedSelector = resolveSliceSelector(selector);
+	if ('refusal' in resolvedSelector) {
+		return { ok: false, refusal: resolvedSelector.refusal };
 	}
-	if (hasProposal !== hasSlice) {
-		return { ok: false, refusal: 'INCOMPLETE_SELECTOR' };
-	}
-	const proposalId = selector!.proposalId as string;
-	const sliceId = selector!.sliceId as string;
+	const { proposalId, sliceId } = resolvedSelector;
 	const slices = await readCurrentSliceSnapshot(
 		options.workspaceRoot,
 		options.docsDir,

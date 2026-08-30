@@ -34,7 +34,7 @@ import {
 	statSync,
 	writeFileSync,
 } from 'node:fs';
-import { join, resolve, sep } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import {
 	detectFrozenDrift,
@@ -101,7 +101,7 @@ const collectArchivedProposals = (
 		for (const name of readdirSync(kindDir)) {
 			if (!name.endsWith('.md')) continue;
 			const abs = join(kindDir, name);
-			const stat = statSync(abs);
+			const _stat = statSync(abs);
 			const markdown = readFileSync(abs, 'utf8');
 			const block = extractYamlBlock(markdown);
 			const fm = block === null ? {} : parseFrontmatterBlock(block);

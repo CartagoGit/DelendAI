@@ -364,7 +364,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 			process.stderr.write(msg);
 			return 1;
 		}
-		process.stdout.write(formatFixProposal(proposal) + '\n');
+		process.stdout.write(`${formatFixProposal(proposal)}\n`);
 		return 0;
 	}
 	const files = await walkTsFiles(rootDir, roots);
@@ -416,10 +416,10 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const out = formatReport(result);
 	if (report) {
 		process.stderr.write(
-			'solid-compliance: ' + result.findings.length + ' findings' + '\n',
+			`solid-compliance: ${result.findings.length} findings\n`,
 		);
 	} else {
-		process.stdout.write(out + '\n');
+		process.stdout.write(`${out}\n`);
 	}
 	return result.findings.length === 0 ? 0 : 1;
 };

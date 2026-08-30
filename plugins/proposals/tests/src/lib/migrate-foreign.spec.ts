@@ -57,7 +57,7 @@ describe('migrateForeign (f00116 S2)', () => {
 		expect(entry.source).toBe('docs/rfcs/dark-mode.md');
 		expect(entry.id).toMatch(/^f\d{5}$/);
 		const target = await readFile(join(root, entry.target), 'utf8');
-		expect(target).toContain('id: ' + entry.id);
+		expect(target).toContain(`id: ${entry.id}`);
 		expect(target).toContain('status: ready');
 		expect(target).toContain('Add dark mode');
 		expect(target).toContain('docs/rfcs/dark-mode.md'); // provenance

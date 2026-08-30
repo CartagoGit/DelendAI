@@ -45,7 +45,7 @@ const writeStep = (counters: ICounters, name: string): IStep<number> => ({
 	},
 });
 
-const failWriteStep = (counters: ICounters, name: string): IStep<number> => ({
+const _failWriteStep = (counters: ICounters, name: string): IStep<number> => ({
 	name,
 	effects: ['write'],
 	compensable: true,

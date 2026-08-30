@@ -146,7 +146,7 @@ const isShadowed = (
  * Apply a rename transform to a single file.
  */
 const renameSingleFile = (
-	path: string,
+	_path: string,
 	source: string,
 	from: string,
 	to: string,

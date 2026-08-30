@@ -62,7 +62,7 @@ export const diffScope = async (
 	const expected = renderAgentMdBlock(sections);
 	const trim = (s: string): string => s.replace(/\s+$/, '');
 	if (trim(diskBlock) === trim(expected)) return null;
-	const relPath = absDocPath.startsWith(REPO_ROOT + '/')
+	const relPath = absDocPath.startsWith(`${REPO_ROOT}/`)
 		? absDocPath.slice(REPO_ROOT.length + 1)
 		: absDocPath;
 	return {

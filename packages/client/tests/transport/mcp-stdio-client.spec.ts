@@ -10,6 +10,43 @@ import {
 } from '../../src/public/index';
 
 describe('McpStdioClient', async () => {
+	it('serializes concurrent protocol requests on one transport', async () => {
+		let activeCalls = 0;
+		let maximumActiveCalls = 0;
+		let releaseFirstCall: (() => void) | undefined;
+		const firstCallReleased = new Promise<void>((resolve) => {
+			releaseFirstCall = resolve;
+		});
+
+		const client = McpStdioClient.fromTransport({
+			async callTool(input) {
+				activeCalls += 1;
+				maximumActiveCalls = Math.max(maximumActiveCalls, activeCalls);
+				if (input.name === 'first') await firstCallReleased;
+				activeCalls -= 1;
+				return { structuredContent: { tool: input.name } };
+			},
+		});
+
+		const first = client.request<{ value: 1 }, { tool: string }>('first', {
+			value: 1,
+		});
+		const second = client.request<{ value: 2 }, { tool: string }>(
+			'second',
+			{
+				value: 2,
+			},
+		);
+
+		await Promise.resolve();
+		expect(maximumActiveCalls).toBe(1);
+		releaseFirstCall?.();
+
+		await expect(first).resolves.toEqual({ tool: 'first' });
+		await expect(second).resolves.toEqual({ tool: 'second' });
+		expect(maximumActiveCalls).toBe(1);
+	});
+
 	it('calls a tool through the injected transport and returns structured content', async () => {
 		const calls: Array<{
 			name: string;

@@ -313,7 +313,7 @@ describe('client/node boundary', () => {
 	it('flags node builtin imports outside client/node', () => {
 		const findings = scanText(
 			'import { readFile } from "node:fs/promises";\n',
-			'packages/client/src/lib/scaffold/author-plugin.ts',
+			'packages/client/src/lib/scaffold/project-plugins.ts',
 		);
 		expect(findings).toHaveLength(1);
 		expect(findings[0]?.reason).toBe('node-import');

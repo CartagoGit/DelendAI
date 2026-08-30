@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-30T00:06:02.040Z",
+	"generatedAt": "2026-08-30T01:14:19.125Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -48,9 +48,6 @@
 			"plugin": "audit"
 		},
 		{
-			"name": "mcp-vertex_author_plugin"
-		},
-		{
 			"name": "mcp-vertex_auto-agent-selector_auto_evaluate",
 			"plugin": "auto-agent-selector"
 		},
@@ -73,6 +70,9 @@
 		{
 			"name": "mcp-vertex_auto-plugin-selector_plugins_recommend",
 			"plugin": "auto-plugin-selector"
+		},
+		{
+			"name": "mcp-vertex_cache_reconcile"
 		},
 		{
 			"name": "mcp-vertex_commit-policy_commit_policy_commit",
@@ -516,6 +516,15 @@
 		},
 		{
 			"name": "mcp-vertex_project_context"
+		},
+		{
+			"name": "mcp-vertex_project_plugins_create"
+		},
+		{
+			"name": "mcp-vertex_project_plugins_inspect"
+		},
+		{
+			"name": "mcp-vertex_project_plugins_repair"
 		},
 		{
 			"name": "mcp-vertex_project-health_project_health",
@@ -1765,6 +1774,13 @@
 				"kind": "refactor"
 			},
 			{
+				"id": "r00043",
+				"title": "r00043",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
 				"id": "t00017",
 				"title": "t00017",
 				"track": "commit-policy",
@@ -2060,7 +2076,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 107,
+			"ready": 108,
 			"in-progress": 8,
 			"review": 0,
 			"paused": 2,

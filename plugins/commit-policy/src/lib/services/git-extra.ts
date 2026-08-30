@@ -77,13 +77,16 @@ export const gitDirtyFilePaths = async (
 	for (const raw of result.output.split('\n')) {
 		const line = raw.trimEnd();
 		if (line.length < 4) continue;
-		// Porcelain v1: "XY <path>" (XY = 2 chars + space).
-		// Untracked files use "?? <path>"; rename/copy use "R "
-		// or "C " followed by "<orig> -> <new>"; everything
-		// else uses the raw path.
 		const rest = line.slice(3);
 		if (rest.length === 0) continue;
-		if (line.startsWith('R ') || line.startsWith('C ')) {
+		const isRenameOrCopy =
+			(line[0] === 'R' ||
+				line[0] === 'C' ||
+				line[1] === 'R' ||
+				line[1] === 'C') &&
+			rest.includes('->');
+		if (line[1] === ' ' && !isRenameOrCopy) continue;
+		if (isRenameOrCopy) {
 			const arrow = rest.indexOf('->');
 			const target = arrow >= 0 ? rest.slice(arrow + 2).trim() : rest;
 			if (target.length > 0) paths.push(target);

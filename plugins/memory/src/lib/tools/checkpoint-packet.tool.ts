@@ -16,12 +16,12 @@ import { selectLatestSessionDigest } from '../services/session-digest-recall';
 import { readStore } from '../services/store';
 import { guardCorruptStore } from './tool-guard-corrupt';
 
-const PacketSchema = z.object({
+const _PacketSchema = z.object({
 	digest: z.string(),
 	pointers: z.array(z.string()),
 	nextAction: z.string().nullable(),
 });
-const AdvisorySchema = z.object({
+const _AdvisorySchema = z.object({
 	hostEvent: z.enum(['pre-compact', 'session-end']),
 	freshness: z.object({
 		state: z.enum(['missing', 'fresh', 'stale']),

@@ -15,7 +15,7 @@
  * `git grep`) is a NEW implementation of `ISearchBackend`, never an
  * edit to this file.
  */
-import { basename, join, relative, sep } from 'node:path';
+import { basename, relative, sep } from 'node:path';
 
 import { SafeWorkspaceReader, walkAllowedFiles } from '@mcp-vertex/core/public';
 

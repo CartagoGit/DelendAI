@@ -3,6 +3,7 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from './plugin-contract';
+import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import { registerResolvedPluginsWithLifecycle } from './load-plugins-lifecycle.helper';
@@ -10,6 +11,10 @@ import { normalizePluginOptions } from './plugin-activation-session';
 import { validatePluginConfiguration } from './configuration-compatibility';
 import { resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { join } from 'node:path';
+import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import { resolveWorkspaceContained } from '../shared/contain-path';
+import { basename } from 'node:path';
 
 const fileExists = async (path: string): Promise<boolean> => {
 	try {
@@ -335,6 +340,50 @@ export const loadPlugins = async (
 
 	for (const entry of resolvedPlugins) {
 		entry.ctx = { ...entry.ctx, pluginOptions };
+	}
+
+	for (const entry of resolvedPlugins) {
+		const canonicalPluginDir = entry.ctx.pluginCacheDir;
+		const legacyPaths = [
+			...(entry.ctx.cacheDir !== DEFAULT_CORE_PATHS.cacheDir
+				? [
+						{
+							source: `${DEFAULT_CORE_PATHS.cacheDir}/${entry.plugin.name}`,
+							destination: '',
+						},
+					]
+				: []),
+			...(entry.plugin.legacyCachePaths ?? []),
+		].flatMap((path) => {
+			const source = resolveWorkspaceContained(
+				entry.ctx.workspace.root,
+				path.source,
+			);
+			const destinationRel =
+				path.destination === undefined
+					? basename(path.source)
+					: path.destination;
+			const destination = resolveWorkspaceContained(
+				entry.ctx.workspace.root,
+				join(canonicalPluginDir, destinationRel),
+			);
+			return source.ok && destination.ok
+				? [
+						{
+							sourceAbs: source.abs,
+							destinationAbs: destination.abs,
+						},
+					]
+				: [];
+		});
+		if (legacyPaths.length === 0) continue;
+		await bootstrapCacheLayout({
+			workspaceRootAbs: entry.ctx.workspace.root,
+			cacheDirAbs: entry.ctx.cacheDir,
+			includeBuiltInLegacyPaths: false,
+			createCacheDir: false,
+			legacyPaths,
+		});
 	}
 
 	const lifecycle = await registerResolvedPluginsWithLifecycle({

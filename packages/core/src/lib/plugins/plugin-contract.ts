@@ -60,6 +60,8 @@ export interface IMcpPluginContext {
 	readonly agentWorktreeEnabled?: boolean | undefined;
 	/** This plugin's private cache root: `<cacheDir>/<plugin>`. */
 	readonly pluginCacheDir: string;
+	/** Resolve a path strictly below this plugin's private cache root. */
+	readonly cachePath?: (relativePath?: string) => string;
 	/** This plugin's docs root: `<docsDir>/<plugin>`. */
 	readonly pluginDocsDir: string;
 	/** Tool namespace for this plugin (default: the plugin name). */
@@ -367,6 +369,15 @@ export interface IMcpPlugin {
 	/** Stable plugin id; also the default tool namespace and cache dir. */
 	readonly name: string;
 	readonly version?: string;
+	/**
+	 * Workspace-relative runtime directories/files from older releases.
+	 * The core moves each source into this plugin's `pluginCacheDir` before
+	 * `register()` runs. New plugins should use `ctx.pluginCacheDir` directly.
+	 */
+	readonly legacyCachePaths?: readonly {
+		readonly source: string;
+		readonly destination?: string;
+	}[];
 	/** One-line, model-agnostic description of what the plugin adds. */
 	readonly describe?: string;
 	/**

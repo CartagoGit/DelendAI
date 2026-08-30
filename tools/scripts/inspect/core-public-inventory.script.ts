@@ -67,7 +67,7 @@ const hasFlag = (argv: readonly string[], name: string): boolean =>
  * Map a re-export line to its kind. We only need to tell type
  * re-exports from value re-exports; everything else is opaque.
  */
-const kindOf = (raw: string): IExport['kind'] => {
+const _kindOf = (raw: string): IExport['kind'] => {
 	if (raw.startsWith('export type')) return 'type';
 	if (raw.startsWith('export function')) return 'function';
 	if (raw.startsWith('export class')) return 'class';
@@ -215,7 +215,7 @@ const renderMd = (exports: readonly IExport[]): string => {
 export const main = async (argv: readonly string[]): Promise<number> => {
 	const exports = await parseBarrel();
 	const wantJson = hasFlag(argv, 'json') || !hasFlag(argv, 'md');
-	const wantMd = hasFlag(argv, 'md');
+	const _wantMd = hasFlag(argv, 'md');
 	const outFile = flag(argv, 'out');
 	const payload = wantJson ? renderJson(exports) : renderMd(exports);
 	if (outFile !== undefined) {

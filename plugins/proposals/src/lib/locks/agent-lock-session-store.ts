@@ -8,7 +8,6 @@
  */
 
 import { mkdir } from 'node:fs/promises';
-import { cwd } from 'node:process';
 import { basename, dirname, join } from 'node:path';
 
 import {
@@ -83,7 +82,7 @@ const readSessionLogPrefix = async (path: string): Promise<string> => {
 	}
 };
 
-let cachedBalance: ISessionBalance | null = null;
+let _cachedBalance: ISessionBalance | null = null;
 let cachedPath: string | null = null;
 
 /**
@@ -148,7 +147,7 @@ const updateCache = (
 	balance: ISessionBalance,
 ): ISessionBalance => {
 	cachedPath = path;
-	cachedBalance = balance;
+	_cachedBalance = balance;
 	return balance;
 };
 
@@ -209,6 +208,6 @@ export const resetSessionBalance = async (): Promise<void> => {
 	if (cachedPath !== null) {
 		await mkdir(dirname(cachedPath), { recursive: true });
 	}
-	cachedBalance = null;
+	_cachedBalance = null;
 	cachedPath = null;
 };

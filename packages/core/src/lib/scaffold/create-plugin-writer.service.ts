@@ -1,5 +1,4 @@
 import type { IPluginWiringFs } from '../contracts/interfaces/plugin-wiring.interface';
-import { validateStructuredText } from './scaffold-text-structure.service';
 
 export const createOverlayFs = (
 	baseFs: IPluginWiringFs,
@@ -31,16 +30,16 @@ export const createOverlayFs = (
 	};
 };
 
-const sanitizeSummary = (value: string): string =>
+const _sanitizeSummary = (value: string): string =>
 	value.replace(/\s+/gu, ' ').trim();
 
-const escapeSingleQuotes = (value: string): string =>
+const _escapeSingleQuotes = (value: string): string =>
 	value.replace(/'/gu, "\\'");
 
 const escapeRegex = (value: string): string =>
 	value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 
-const deriveRegistryTags = (pluginId: string): readonly string[] => {
+const _deriveRegistryTags = (pluginId: string): readonly string[] => {
 	const parts = pluginId
 		.split('-')
 		.map((part) => part.trim())

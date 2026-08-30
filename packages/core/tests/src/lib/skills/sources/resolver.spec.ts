@@ -78,7 +78,7 @@ describe('skills/sources/resolver (q00009 / f00262)', () => {
 		// Workspace wins for the shared id.
 		const shared = result.descriptors.find((d) => d.id === 'shared');
 		expect(shared?.source).toBe('workspace');
-		expect(result.winningSources['shared']).toBe('ws');
+		expect(result.winningSources.shared).toBe('ws');
 	});
 
 	it('plugin skills win over package skills for the same id', async () => {

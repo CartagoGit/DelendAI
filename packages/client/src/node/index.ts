@@ -1,17 +1,17 @@
 export {
-	authorPlugin,
-	repairPlugin,
-} from './scaffold/author-plugin';
+	createProjectPlugin,
+	repairProjectPlugin,
+} from './scaffold/project-plugins';
 export type {
-	IAuthorPluginOptions,
-	IAuthorPluginRegistration,
-	IAuthorPluginResult,
-	IAuthorPluginSpec,
+	IProjectPluginOptions,
+	IProjectPluginRegistration,
+	IProjectPluginResult,
+	IProjectPluginSpec,
 	IPluginFieldSpec,
 	IPluginFieldType,
 	IPluginToolSpec,
-	IRepairPluginResult,
-} from './scaffold/author-plugin';
+	IRepairProjectPluginResult,
+} from './scaffold/project-plugins';
 export {
 	writeScaffoldedFiles,
 	writeScaffoldedFilesOrThrow,

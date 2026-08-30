@@ -15,7 +15,7 @@ import {
 } from './lib/closed-frozen-guard.lib';
 import type { IFrozenInputs } from './lib/closed-frozen-guard.lib';
 
-const NOW = new Date('2026-07-26T12:00:00Z');
+const _NOW = new Date('2026-07-26T12:00:00Z');
 const ARCHIVED_AT = '2026-07-15T10:00:00Z';
 const ARCHIVED_HASH = 'a'.repeat(64);
 const EDITED_HASH = 'b'.repeat(64);

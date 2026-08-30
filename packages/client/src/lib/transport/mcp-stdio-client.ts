@@ -206,6 +206,9 @@ export const logHintFromResult = (result: {
 };
 
 export class McpStdioClient {
+	private operationTail: Promise<void> = Promise.resolve();
+	private closePromise: Promise<void> | undefined;
+
 	private constructor(private readonly transport: IMcpTransport) {}
 
 	static fromTransport(transport: IMcpTransport): McpStdioClient {
@@ -271,35 +274,52 @@ export class McpStdioClient {
 		args: TIn,
 		outputSchema?: ZodType<TOut>,
 	): Promise<TOut> {
-		let result: IMcpToolCallResult;
-		try {
-			result = await this.transport.callTool({
-				name: tool,
-				arguments: args,
-			});
-		} catch (error) {
-			throw normalizeTransportError(
-				error,
-				`Failed to call MCP tool "${tool}"`,
-			);
-		}
-		if (result.isError) {
-			throw new McpToolError(
-				`MCP tool "${tool}" returned an error`,
-				result,
-				logHintFromResult(result),
-			);
-		}
-		return parsePayloadFromResult(result, outputSchema);
+		return this.enqueue(async () => {
+			let result: IMcpToolCallResult;
+			try {
+				result = await this.transport.callTool({
+					name: tool,
+					arguments: args,
+				});
+			} catch (error) {
+				throw normalizeTransportError(
+					error,
+					`Failed to call MCP tool "${tool}"`,
+				);
+			}
+			if (result.isError) {
+				throw new McpToolError(
+					`MCP tool "${tool}" returned an error`,
+					result,
+					logHintFromResult(result),
+				);
+			}
+			return parsePayloadFromResult(result, outputSchema);
+		});
 	}
 
 	async listTools(): Promise<readonly IMcpToolDescriptor[]> {
-		const listed = await this.transport.listTools?.();
-		return listed?.tools ?? [];
+		return this.enqueue(async () => {
+			const listed = await this.transport.listTools?.();
+			return listed?.tools ?? [];
+		});
 	}
 
 	async close(): Promise<void> {
-		await this.transport.close?.();
+		this.closePromise ??= this.operationTail.then(
+			() => this.transport.close?.(),
+			() => this.transport.close?.(),
+		);
+		await this.closePromise;
+	}
+
+	private enqueue<T>(operation: () => Promise<T>): Promise<T> {
+		const next = this.operationTail.then(operation, operation);
+		this.operationTail = next.then(
+			() => undefined,
+			() => undefined,
+		);
+		return next;
 	}
 }
 

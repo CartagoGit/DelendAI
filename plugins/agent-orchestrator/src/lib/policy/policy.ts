@@ -40,16 +40,14 @@ export type { IOrchestratorPolicy, IModeOverride } from './types.js';
 
 export class OrchestratorEngine {
 	readonly #registry: ModeRegistry;
-	readonly #classifier: TaskClassifier;
 	readonly #policy: IOrchestratorPolicy;
 
 	constructor(
 		registry: ModeRegistry,
-		classifier: TaskClassifier,
+		_classifier: TaskClassifier,
 		policy: IOrchestratorPolicy,
 	) {
 		this.#registry = registry;
-		this.#classifier = classifier;
 		this.#policy = policy;
 	}
 

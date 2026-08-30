@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { readdir, readFile } from 'node:fs/promises';
-import { isAbsolute, join, relative } from 'node:path';
+import { join, relative } from 'node:path';
 
 const REPO_ROOT = process.cwd();
 const MANIFEST_FILE = 'plugin.manifest.ts';

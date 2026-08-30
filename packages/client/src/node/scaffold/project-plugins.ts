@@ -1,5 +1,5 @@
 /**
- * author-plugin.ts — f00089 U4.
+ * project-plugins.ts — f00089 U4.
  *
  * One client-callable action that lets a *target project's LLM* author a
  * complete, correct `IMcpPlugin` from a declarative spec AND register it on
@@ -48,7 +48,7 @@ export interface IPluginToolSpec {
 	readonly output?: readonly IPluginFieldSpec[];
 }
 
-export interface IAuthorPluginSpec {
+export interface IProjectPluginSpec {
 	readonly name: string;
 	readonly description: string;
 	readonly namespace?: string;
@@ -56,32 +56,32 @@ export interface IAuthorPluginSpec {
 	readonly tools?: readonly IPluginToolSpec[];
 }
 
-export interface IAuthorPluginOptions {
+export interface IProjectPluginOptions {
 	readonly workspaceRoot: string;
 	readonly pluginsRoot?: string;
 	readonly keepLegacy?: boolean;
 	readonly configFileName?: string;
 }
 
-export interface IAuthorPluginRegistration {
+export interface IProjectPluginRegistration {
 	readonly configFile: string;
 	readonly path: string;
 	readonly action: 'added' | 'updated' | 'unchanged';
 	readonly previousPath?: string;
 }
 
-export interface IAuthorPluginResult {
+export interface IProjectPluginResult {
 	readonly name: string;
 	readonly namespace: string;
 	readonly pluginDir: string;
 	readonly pluginPath: string;
 	readonly files: IWriteScaffoldedFilesResult;
-	readonly registration: IAuthorPluginRegistration;
+	readonly registration: IProjectPluginRegistration;
 	readonly tools: readonly string[];
 	readonly nextSteps: string;
 }
 
-export interface IRepairPluginResult extends IAuthorPluginResult {
+export interface IRepairProjectPluginResult extends IProjectPluginResult {
 	readonly repaired: readonly string[];
 	readonly preserved: readonly string[];
 	readonly report: string;
@@ -164,7 +164,7 @@ const renderSpecIndex = (
 };
 
 const generatePluginFiles = (
-	spec: IAuthorPluginSpec,
+	spec: IProjectPluginSpec,
 ): {
 	readonly id: string;
 	readonly files: readonly IScaffoldedFile[];
@@ -225,7 +225,7 @@ const registerPluginPath = async (
 	name: string,
 	pluginPath: string,
 	extra: IMcpVertexPluginConfig | undefined,
-): Promise<IAuthorPluginRegistration> =>
+): Promise<IProjectPluginRegistration> =>
 	withFileMutex(configFile, async () => {
 		let raw: string | undefined;
 		try {
@@ -239,7 +239,7 @@ const registerPluginPath = async (
 		};
 		const existing = plugins[name];
 		const previousPath = existing?.path;
-		const action: IAuthorPluginRegistration['action'] =
+		const action: IProjectPluginRegistration['action'] =
 			existing === undefined
 				? 'added'
 				: previousPath === pluginPath
@@ -272,22 +272,24 @@ const registerPluginPath = async (
 		};
 	});
 
-export const authorPlugin = async (
-	spec: IAuthorPluginSpec,
-	options: IAuthorPluginOptions,
-): Promise<IAuthorPluginResult> => authorPluginInternal(spec, options);
+export const createProjectPlugin = async (
+	spec: IProjectPluginSpec,
+	options: IProjectPluginOptions,
+): Promise<IProjectPluginResult> => projectPluginInternal(spec, options);
 
-const authorPluginInternal = async (
-	spec: IAuthorPluginSpec,
-	options: IAuthorPluginOptions,
-): Promise<IAuthorPluginResult> => {
+const projectPluginInternal = async (
+	spec: IProjectPluginSpec,
+	options: IProjectPluginOptions,
+): Promise<IProjectPluginResult> => {
 	if (!isAbsolute(options.workspaceRoot)) {
 		throw new Error(
-			`authorPlugin: workspaceRoot must be an absolute path, got "${options.workspaceRoot}"`,
+			`createProjectPlugin: workspaceRoot must be an absolute path, got "${options.workspaceRoot}"`,
 		);
 	}
 	if (!spec.name.trim()) {
-		throw new Error('authorPlugin: spec.name must be a non-empty string');
+		throw new Error(
+			'createProjectPlugin: spec.name must be a non-empty string',
+		);
 	}
 
 	const configFileName = options.configFileName ?? DEFAULT_CONFIG_FILENAME;
@@ -340,11 +342,11 @@ const authorPluginInternal = async (
 	};
 };
 
-export const repairPlugin = async (
-	spec: IAuthorPluginSpec,
-	options: IAuthorPluginOptions,
-): Promise<IRepairPluginResult> => {
-	const result = await authorPluginInternal(spec, options);
+export const repairProjectPlugin = async (
+	spec: IProjectPluginSpec,
+	options: IProjectPluginOptions,
+): Promise<IRepairProjectPluginResult> => {
+	const result = await projectPluginInternal(spec, options);
 	const repaired = result.files.written;
 	const preserved = result.files.kept;
 	const registrationState =

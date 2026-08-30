@@ -8,8 +8,9 @@
 # actual evidence of what the smoke check failed on.
 #
 # The new wrapper (`tools/scripts/ci/pack-smoke.script.ts`) captures
-# everything to a temp file, prints it inside `::group::` even
-# on failure, and exits with the inner command's code. The
+# everything to a temp file, includes spawn errors in the output,
+# prints it inside `::group::` even on failure, and exits with the
+# inner command's code. The
 # workflow below is just the runner glue.
 #
 # Triggers:

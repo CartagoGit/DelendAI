@@ -8,9 +8,21 @@ describe('RuntimeHandle', async () => {
 		const disposed: string[] = [];
 		const handle = createRuntimeHandle();
 
-		handle.register('a', { dispose: () => disposed.push('a') });
-		handle.register('b', { dispose: () => disposed.push('b') });
-		handle.register('c', { dispose: () => disposed.push('c') });
+		handle.register('a', {
+			dispose: () => {
+				disposed.push('a');
+			},
+		});
+		handle.register('b', {
+			dispose: () => {
+				disposed.push('b');
+			},
+		});
+		handle.register('c', {
+			dispose: () => {
+				disposed.push('c');
+			},
+		});
 
 		handle.disposeAll();
 
@@ -41,13 +53,21 @@ describe('RuntimeHandle', async () => {
 		const disposed: string[] = [];
 		const handle = createRuntimeHandle();
 
-		handle.register('safe-1', { dispose: () => disposed.push('safe-1') });
+		handle.register('safe-1', {
+			dispose: () => {
+				disposed.push('safe-1');
+			},
+		});
 		handle.register('throws', {
 			dispose: () => {
 				throw new Error('boom');
 			},
 		});
-		handle.register('safe-2', { dispose: () => disposed.push('safe-2') });
+		handle.register('safe-2', {
+			dispose: () => {
+				disposed.push('safe-2');
+			},
+		});
 
 		// disposeAll must not abort on the first throw — deactivate is a
 		// best-effort cleanup, and we still want the rest disposed.
@@ -60,9 +80,21 @@ describe('RuntimeHandle', async () => {
 		const disposed: string[] = [];
 		const handle = createRuntimeHandle();
 
-		handle.register('a', { dispose: () => disposed.push('a') });
-		handle.register('b', { dispose: () => disposed.push('b') });
-		handle.register('c', { dispose: () => disposed.push('c') });
+		handle.register('a', {
+			dispose: () => {
+				disposed.push('a');
+			},
+		});
+		handle.register('b', {
+			dispose: () => {
+				disposed.push('b');
+			},
+		});
+		handle.register('c', {
+			dispose: () => {
+				disposed.push('c');
+			},
+		});
 
 		const removed = handle.disposeOne('b');
 

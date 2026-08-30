@@ -1,14 +1,3 @@
 {
-	"__errors__": 22,
-	"lint/complexity/noUselessConstructor": 1,
-	"lint/complexity/noUselessSwitchCase": 2,
-	"lint/complexity/noUselessTernary": 2,
-	"lint/complexity/useLiteralKeys": 77,
-	"lint/complexity/useOptionalChain": 3,
-	"lint/correctness/noUnusedFunctionParameters": 4,
-	"lint/correctness/noUnusedImports": 36,
-	"lint/correctness/noUnusedPrivateClassMembers": 1,
-	"lint/correctness/noUnusedVariables": 45,
-	"lint/style/useTemplate": 27,
-	"lint/suspicious/noConfusingVoidType": 8
+	"lint/correctness/noUnusedVariables": 2
 }

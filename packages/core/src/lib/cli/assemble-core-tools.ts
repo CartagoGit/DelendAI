@@ -51,7 +51,11 @@ import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalo
 import { buildCodeMapResourceRegistration } from '../code-map/resource';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { buildCreatePluginToolRegistration } from '../scaffold/create-plugin.tool';
-import { buildAuthorExternalPluginToolRegistration } from '../scaffold/author-external-plugin';
+import {
+	buildProjectPluginsCreateToolRegistration,
+	buildProjectPluginsInspectToolRegistration,
+	buildProjectPluginsRepairToolRegistration,
+} from '../scaffold/project-plugins';
 import { buildPluginAddRegistration } from '../registry/plugin-add.tool';
 import { buildPluginSearchRegistration } from '../registry/plugin-search.tool';
 import { buildFsToolRegistrations } from '../shared/fs-tools';
@@ -78,6 +82,7 @@ import {
 import { findUnusedActivePlugins } from '../tools/unused-active-plugins';
 import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
 import { buildVertexRouterToolRegistration } from '../tools/vertex-router.tool';
+import { buildCacheReconcileToolRegistration } from '../tools/cache-reconcile.tool';
 import type { assemblePlugins } from './assemble-plugins';
 import type { assembleSkills } from './assemble-skills';
 
@@ -121,6 +126,11 @@ export interface IAssembleCoreToolsInput {
 	readonly prompts: IPromptRegistration[];
 	/** Mutated in place: knowledge + catalog resources are appended. */
 	readonly resources: IResourceRegistration[];
+	readonly cacheReconcile: (
+		apply: boolean,
+	) => Promise<
+		import('../cache/cache-layout-bootstrap').ICacheLayoutBootstrapResult
+	>;
 }
 
 export interface IAssembleCoreToolsResult {
@@ -161,6 +171,7 @@ export const assembleCoreTools = (
 		toolSurfaceRuntime,
 		prompts,
 		resources,
+		cacheReconcile,
 	} = input;
 	// Core meta-tools. `overview` first so it is the obvious entry point.
 	// `let` so the (lazily called) snapshot closure can read the final list.
@@ -427,7 +438,15 @@ export const assembleCoreTools = (
 			namespacePrefix: corePrefix,
 			workspace,
 		}),
-		buildAuthorExternalPluginToolRegistration({
+		buildProjectPluginsCreateToolRegistration({
+			namespacePrefix: corePrefix,
+			workspace,
+		}),
+		buildProjectPluginsInspectToolRegistration({
+			namespacePrefix: corePrefix,
+			workspace,
+		}),
+		buildProjectPluginsRepairToolRegistration({
 			namespacePrefix: corePrefix,
 			workspace,
 		}),
@@ -452,6 +471,10 @@ export const assembleCoreTools = (
 			namespacePrefix: corePrefix,
 			workspace,
 			reader: createWorkspaceFileReader(workspace),
+		}),
+		buildCacheReconcileToolRegistration({
+			namespacePrefix: corePrefix,
+			reconcile: cacheReconcile,
 		}),
 		// S1: the one-call adoption orchestrator — composes config
 		// derivation + proposals-store bootstrap + host agent scaffold.

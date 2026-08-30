@@ -45,7 +45,10 @@ export const main = (argv: readonly string[]): number => {
 	} finally {
 		closeSync(outputFd);
 	}
-	const output = readFileSync(outputPath, 'utf8');
+	const capturedOutput = readFileSync(outputPath, 'utf8');
+	const output = result.error
+		? `${capturedOutput}${capturedOutput.endsWith('\n') || capturedOutput.length === 0 ? '' : '\n'}pack-smoke: failed to start command: ${result.error.message}\n`
+		: capturedOutput;
 	rmSync(tempDir, { recursive: true, force: true });
 	const status = result.status ?? 1;
 

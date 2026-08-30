@@ -393,16 +393,21 @@ export type {
 	IRegenerateCatalogArgs,
 } from '../lib/scaffold/create-plugin.tool';
 export {
-	authorExternalPlugin,
-	buildAuthorExternalPluginToolRegistration,
-	AUTHOR_EXTERNAL_PLUGIN_INPUT_SCHEMA,
-	AUTHOR_EXTERNAL_PLUGIN_OUTPUT_SCHEMA,
-} from '../lib/scaffold/author-external-plugin';
+	buildProjectPluginsCreateToolRegistration,
+	buildProjectPluginsInspectToolRegistration,
+	buildProjectPluginsRepairToolRegistration,
+	PROJECT_PLUGINS_CREATE_INPUT_SCHEMA,
+	PROJECT_PLUGINS_INSPECT_INPUT_SCHEMA,
+	PROJECT_PLUGINS_REPAIR_INPUT_SCHEMA,
+	PROJECT_PLUGINS_OUTPUT_SCHEMA,
+} from '../lib/scaffold/project-plugins';
 export type {
-	IAuthorExternalPluginArgs,
-	IAuthorExternalPluginOptions,
-	IAuthorExternalPluginOutput,
-} from '../lib/scaffold/author-external-plugin';
+	IProjectPluginsCreateArgs,
+	IProjectPluginsInspectArgs,
+	IProjectPluginsRepairArgs,
+	IProjectPluginsOptions,
+	IProjectPluginsOutput,
+} from '../lib/scaffold/project-plugins';
 export { extractPlugin } from '../lib/scaffold/extract-plugin';
 export type {
 	IExtractedTool,
@@ -509,6 +514,7 @@ export type {
 // core boot sweep runs a dry-run after every plugin has loaded.
 export { createCacheEvictionRegistry } from '../lib/cache/eviction-registry';
 export { bootstrapCacheLayout } from '../lib/cache/cache-layout-bootstrap';
+export { buildCacheReconcileToolRegistration } from '../lib/tools/cache-reconcile.tool';
 export type {
 	ICacheEvictionCustom,
 	ICacheEvictionErrored,
@@ -851,11 +857,7 @@ export {
 	type TokenSurface,
 } from '../lib/budgets/types';
 // — Token ROI per plugin (KPI).
-export {
-	aggregateROI,
-	computeROI,
-	confidenceFor,
-} from '../lib/budgets/roi';
+export { aggregateROI, computeROI, confidenceFor } from '../lib/budgets/roi';
 export type {
 	IComputeRoiInput,
 	IRoiConfidence,
@@ -1007,10 +1009,7 @@ export type {
 	ITimelineLog,
 	TimelineEventKind,
 } from '../lib/observability/timeline';
-export {
-	MigrationError,
-	runMigrations,
-} from '../lib/migrations/migrate';
+export { MigrationError, runMigrations } from '../lib/migrations/migrate';
 export type {
 	IMigrationResult,
 	IMigrator,
@@ -1257,10 +1256,7 @@ export { resolvePlugins } from '../lib/registry/resolve';
 export type * from '../generated/tool-outputs';
 
 // --- f00152 S5 (L3): feature flags ---
-export {
-	coreFeatureFlag,
-	readFeatureFlag,
-} from '../lib/plugins/feature-flags';
+export { coreFeatureFlag, readFeatureFlag } from '../lib/plugins/feature-flags';
 export type {
 	IFeatureFlagEntry,
 	IFeatureFlagSource,

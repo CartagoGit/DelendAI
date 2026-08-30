@@ -39,7 +39,7 @@ import type {
 } from './types';
 
 /** Re-exported from `plan.ts` for the public barrel. */
-export interface IExecuteResult<T> {
+export interface IExecuteResult<_T> {
 	readonly ok: boolean;
 	readonly totalSteps: number;
 	readonly executedSteps: number;

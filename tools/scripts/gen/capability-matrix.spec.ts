@@ -122,7 +122,7 @@ describe('d00009 — capability matrix generator (Track F)', () => {
 	});
 
 	describe('renderMatrix', () => {
-		const fixtureRows: readonly IPluginCapabilityRow[] = [
+		const _fixtureRows: readonly IPluginCapabilityRow[] = [
 			{
 				pluginId: 'alpha',
 				cells: {

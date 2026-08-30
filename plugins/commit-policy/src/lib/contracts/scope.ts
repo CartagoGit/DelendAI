@@ -8,6 +8,7 @@ export interface IParsedConventionalHeader {
 	readonly scope: string | undefined;
 	readonly breaking: boolean;
 	readonly subject: string;
+	/** Original suffix after the subject line, including newline separators. */
 	readonly rest: string;
 }
 
@@ -49,7 +50,40 @@ const hasControlChars = (value: string): boolean =>
 		);
 	});
 
-const normalizeMessage = (raw: string): string => raw.replace(/\r\n?/gu, '\n');
+const splitHeader = (
+	raw: string,
+): {
+	readonly firstLine: string;
+	readonly separator: string;
+	readonly trailing: string;
+} => {
+	const lfIndex = raw.indexOf('\n');
+	if (lfIndex !== -1) {
+		const hasCarriageReturn = lfIndex > 0 && raw[lfIndex - 1] === '\r';
+		return {
+			firstLine: hasCarriageReturn
+				? raw.slice(0, lfIndex - 1)
+				: raw.slice(0, lfIndex),
+			separator: hasCarriageReturn ? '\r\n' : '\n',
+			trailing: raw.slice(lfIndex + 1),
+		};
+	}
+
+	const crIndex = raw.indexOf('\r');
+	if (crIndex !== -1) {
+		return {
+			firstLine: raw.slice(0, crIndex),
+			separator: '\r',
+			trailing: raw.slice(crIndex + 1),
+		};
+	}
+
+	return {
+		firstLine: raw,
+		separator: '',
+		trailing: '',
+	};
+};
 
 const refusal = (
 	raw: string,
@@ -66,10 +100,7 @@ export const parseHeader = (
 	raw: string,
 	locale?: string | undefined,
 ): IConventionalHeaderParseResult => {
-	const normalized = normalizeMessage(raw);
-	const newlineIndex = normalized.indexOf('\n');
-	const firstLine =
-		newlineIndex === -1 ? normalized : normalized.slice(0, newlineIndex);
+	const { firstLine, separator, trailing } = splitHeader(raw);
 	if (firstLine.trim().length === 0) {
 		return refusal(raw, locale, 'EMPTY_HEADER');
 	}
@@ -84,8 +115,6 @@ export const parseHeader = (
 	const scope = match[2];
 	const bang = match[3];
 	const subject = match[4] ?? '';
-	const trailing =
-		newlineIndex === -1 ? '' : normalized.slice(newlineIndex + 1);
 	return {
 		ok: true,
 		value: {
@@ -93,7 +122,7 @@ export const parseHeader = (
 			scope,
 			breaking: bang === '!',
 			subject,
-			rest: trailing.length === 0 ? subject : `${subject}\n${trailing}`,
+			rest: separator.length === 0 ? '' : `${separator}${trailing}`,
 		},
 	};
 };
@@ -115,6 +144,6 @@ export const buildScopedMessage = (
 	const bang = parsed.value.breaking ? '!' : '';
 	return {
 		ok: true,
-		value: `${parsed.value.type}(${options.defaultScope})${bang}: ${parsed.value.rest}`,
+		value: `${parsed.value.type}(${options.defaultScope})${bang}: ${parsed.value.subject}${parsed.value.rest}`,
 	};
 };

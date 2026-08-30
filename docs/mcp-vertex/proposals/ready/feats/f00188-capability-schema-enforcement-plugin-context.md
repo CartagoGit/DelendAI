@@ -149,7 +149,8 @@ booleanos dispersos, no de una declaración verificable.
 - **Status**: pending
 - **Files**: `packages/core/src/lib/capabilities/schema.ts`, `packages/core/src/lib/capabilities/inject.ts`, `packages/core/src/lib/plugins/lifecycle.ts`, `packages/core/tests/src/lib/capabilities/adversarial.spec.ts`, `packages/core/tests/src/lib/capabilities/shim.spec.ts`
 - **Gate**: type
-
+- review-state: in_review
+- review-implementer: github-copilot
 ## acceptance
 
 - Schema de capabilities exportado desde `@mcp-vertex/core` (y

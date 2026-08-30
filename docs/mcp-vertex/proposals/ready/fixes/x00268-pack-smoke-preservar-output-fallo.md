@@ -114,7 +114,8 @@ un `set -euo pipefail` mal combinado con command substitution.
 - **Status**: pending
 - **Files**: `tools/scripts/ci/pack-smoke.script.ts`, `tools/scripts/ci/pack-smoke.spec.ts`, `.github/workflows/pack-smoke.yml`
 - **Gate**: type
-
+- review-state: in_review
+- review-implementer: owl
 ## acceptance
 
 - Script refactorizado preserva output en `::group::`.

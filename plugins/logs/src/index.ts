@@ -6,7 +6,7 @@ import z from 'zod';
 
 import { buildOperationalEventLogKnowledge } from './lib/knowledge/logs-knowledge';
 import { buildErrorCollectorKnowledge } from './lib/knowledge/error-collector';
-import { type LogSeverity, severityForOutcome } from './lib/services/kinds';
+import type { LogSeverity } from './lib/services/kinds';
 import { createLogStore } from './lib/services/log-store';
 import { createLogsErrorSinkAdapter } from './lib/services/error-sink-adapter';
 import {

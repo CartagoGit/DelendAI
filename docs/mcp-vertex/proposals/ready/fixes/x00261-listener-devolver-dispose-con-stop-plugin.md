@@ -127,7 +127,7 @@ interno `trackResource(disposer)` que se registra en una pila y
 
 ### S1 — `register()` devuelve `{ tools, knowledge, dispose }` y `dispose` para todos los handles
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/index.spec.ts`
 - **Gate**: type
 - **Dependency**: —
@@ -136,7 +136,10 @@ interno `trackResource(disposer)` que se registra en una pila y
   - "dispose() llama a sliceListener.stop(), intervalTimer.stop() si existe"
   - "dispose() es idempotente (segunda llamada no falla)"
   - "t00020 verde: reload N veces deja exactamente 1 listener; dispose deja 0"
-
+- review-state: done
+- review-implementer: GitHub
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — PASS independiente: register devuelve dispose idempotente, detiene sliceListener e intervalTimer y las pruebas de reload no dejan handles activos.
 ## acceptance
 
 - `dispose()` invocable tras cualquier estado de `register()`
