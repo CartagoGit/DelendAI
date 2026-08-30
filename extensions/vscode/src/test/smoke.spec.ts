@@ -65,6 +65,16 @@ describe('VS Code extension smoke', async () => {
 					return panel;
 				},
 			},
+			workspace: {
+				getConfiguration: () => ({
+					get<T>(key: string, defaultValue?: T): T | undefined {
+						if (key === 'command') return 'node' as unknown as T;
+						if (key === 'args')
+							return ['server.js'] as unknown as T;
+						return defaultValue;
+					},
+				}),
+			},
 		};
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
@@ -153,6 +163,16 @@ describe('VS Code extension smoke', async () => {
 					return { webview: { html: '' } };
 				},
 			},
+			workspace: {
+				getConfiguration: () => ({
+					get<T>(key: string, defaultValue?: T): T | undefined {
+						if (key === 'command') return 'node' as unknown as T;
+						if (key === 'args')
+							return ['server.js'] as unknown as T;
+						return defaultValue;
+					},
+				}),
+			},
 		};
 		const client = McpStdioClient.fromTransport({
 			async callTool() {
@@ -195,6 +215,16 @@ describe('VS Code extension smoke', async () => {
 				async showErrorMessage() {
 					return undefined;
 				},
+			},
+			workspace: {
+				getConfiguration: () => ({
+					get<T>(key: string, defaultValue?: T): T | undefined {
+						if (key === 'command') return 'node' as unknown as T;
+						if (key === 'args')
+							return ['server.js'] as unknown as T;
+						return defaultValue;
+					},
+				}),
 			},
 		};
 		const connected = McpStdioClient.fromTransport({
@@ -300,7 +330,7 @@ describe('VS Code extension smoke', async () => {
 		expect(calls[0]?.args).toEqual(['run', 'mcp-vertex', '--preset=swarm']);
 	});
 
-	it('createDefaultClient falls back to `bun run mcp-vertex` when no configuration is provided', async () => {
+	it('createDefaultClient refuses to spawn when no configuration is provided', async () => {
 		const calls: Array<{ command: string; args: readonly string[] }> = [];
 		const vscode: IVscodeApi = {
 			ViewColumn: { One: 1 },
@@ -331,14 +361,14 @@ describe('VS Code extension smoke', async () => {
 		}) as typeof McpStdioClient.connect;
 		try {
 			const { createDefaultClient } = await import('../extension');
-			await createDefaultClient(vscode);
+			await expect(createDefaultClient(vscode)).rejects.toThrow(
+				'mcp-vertex.server.command and mcp-vertex.server.args',
+			);
 		} finally {
 			McpStdioClient.connect = originalConnect;
 		}
 
-		expect(calls).toEqual([
-			{ command: 'bun', args: ['run', 'mcp-vertex'] },
-		]);
+		expect(calls).toEqual([]);
 	});
 
 	it('routes child stderr to the VS Code startup-report output channel', async () => {
