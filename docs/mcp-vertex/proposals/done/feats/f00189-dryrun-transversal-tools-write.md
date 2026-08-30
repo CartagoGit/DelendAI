@@ -2,12 +2,15 @@
 id: f00189
 title: "`dryRun` transversal para tools con `effects: ['write']`"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: security
 date: 2026-08-25
 priority: P1
 parent-plan: q00006
+shipped-in:
+    - d4ff3b59
+    - e9cb1bcb
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track F / f00189"
@@ -132,7 +135,10 @@ ejecutarlo.
 - **Files**: `packages/core/src/lib/dry-run/protocol.ts`, `packages/core/src/lib/plugins/router.ts`, `plugins/commit-policy/src/lib/engine.ts` (o equivalente), `packages/core/tests/src/lib/dry-run/protocol.spec.ts`, `packages/core/tests/src/lib/dry-run/router-enforcement.spec.ts`, `plugins/commit-policy/tests/src/lib/dry-run-commit.spec.ts`
 - **Gate**: type
 - **Done notes**: Protocol + router enforcement + commit-policy dry-run implementados. Protocol en `packages/core/src/lib/dry-run/protocol.ts`; enforcement en el router real (`packages/core/src/lib/dry-run/router-enforcement.ts` + `effect-guard.helper.ts`); dry-run de `commit_policy_run` en `plugins/commit-policy/src/lib/tools/run-tool.ts` (`planCommitPolicyRun`). Specs verdes: protocol.spec, router-enforcement.spec, dry-run-commit.spec (19/19).
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: protocol + router enforcement + commit-policy dry-run implementados (d4ff3b59 + e9cb1bcb). Specs de f00189 verdes 19/19 (protocol.spec, router-enforcement.spec, dry-run-commit.spec); typecheck de core y commit-policy sin errores.
 ## acceptance
 
 - Protocol `DryRunOrRun` exportado.
