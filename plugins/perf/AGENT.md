@@ -35,8 +35,6 @@
 - plugins/perf/tests/src/lib/profile/run-profile-capture.spec.ts
 - plugins/perf/tests/src/lib/tools/perf-profile.tool.spec.ts
 - plugins/perf/tests/src/lib/bench/bench-runner.spec.ts
-- plugins/perf/tests/src/lib/bench/bench-comparator.spec.ts
-- plugins/perf/tests/src/lib/check-budgets.spec.ts
 
 ## Do not
 

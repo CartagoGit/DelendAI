@@ -37,8 +37,6 @@
 - plugins/quality/tests/src/lib/runner.spec.ts
 - plugins/quality/tests/src/lib/command-policy.spec.ts
 - plugins/quality/tests/src/lib/quality-complexity.tool.spec.ts
-- plugins/quality/tests/src/lib/quality-coverage.tool.spec.ts
-- plugins/quality/tests/src/lib/complexity.spec.ts
 
 ## Do not
 

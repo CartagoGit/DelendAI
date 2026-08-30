@@ -21,16 +21,6 @@
 - PROPOSAL_SCAN_FOLDERS
 - PROPOSAL_FLAGS
 - DEFAULT_PROPOSAL_FOLDER_POLICY
-- proposalFolderFor
-- proposalFoldersForPolicy
-- buildAgentLockRegistration
-- buildAgentWorktreeRegistration
-- runAgentWorktreeEngine
-- parseWorktreeList
-- createFileMutexWorktreeCoordinator
-- createPassthroughWorktreeCoordinator
-- resolveWorktreeSyncCoordinator
-- buildTaskQueueRegistration
 
 ## Depends on
 
@@ -55,8 +45,6 @@
 - plugins/proposals/tests/src/lib/shared/pending-integration-store.spec.ts
 - plugins/proposals/tests/src/lib/shared/peer-review-log.spec.ts
 - plugins/proposals/tests/src/lib/shared/peer-review-bypass-log.spec.ts
-- plugins/proposals/tests/src/lib/shared/agent-identity.spec.ts
-- plugins/proposals/tests/src/lib/shared/branch-gc-engine.spec.ts
 
 ## Do not
 

@@ -21,9 +21,6 @@
 - buildMemoryToolRegistrations
 - buildCheckpointPacket
 - DEFAULT_CHECKPOINT_PACKET_MAX_DIGEST_CHARS
-- assessCheckpointFreshness
-- DEFAULT_CHECKPOINT_MAX_AGE_MS
-- mapFreshnessToCheckpointAdvisory
 
 ## Depends on
 
@@ -46,8 +43,6 @@
 - plugins/memory/tests/src/lib/checkpoint-advisory.spec.ts
 - plugins/memory/tests/src/lib/session-digest-recall.spec.ts
 - plugins/memory/tests/src/lib/compaction.spec.ts
-- plugins/memory/tests/src/lib/export-import.spec.ts
-- plugins/memory/tests/src/lib/compact-tool.spec.ts
 
 ## Do not
 

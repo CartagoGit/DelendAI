@@ -21,13 +21,6 @@
 - isoDate
 - resolveTarget
 - proposalFilenameFor
-- scaffoldProposals
-- resolveAutoScaffold
-- buildRunRegistration
-- probeAudits
-- probeProposals
-- SEVERITY_ORDER
-- SEVERITY_USER_LABEL
 
 ## Depends on
 
@@ -50,8 +43,6 @@
 - plugins/audit/tests/src/lib/self-audit/file-proposals.spec.ts
 - plugins/audit/tests/src/lib/self-audit/aggregate.spec.ts
 - plugins/audit/tests/src/lib/services/audit-brief.service.spec.ts
-- plugins/audit/tests/src/lib/services/proposal-scaffolder.service.spec.ts
-- plugins/audit/tests/src/lib/services/parse-audit.service.spec.ts
 
 ## Do not
 

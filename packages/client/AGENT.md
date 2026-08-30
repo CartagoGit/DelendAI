@@ -21,16 +21,6 @@
 - KnowledgeNotFoundError
 - KnowledgeService
 - categoryOf
-- MetricsService
-- NotificationsService
-- LogsService
-- NotificationLogsBridge
-- SearchService
-- AgentCatalogService
-- readConfigurationDocument
-- saveConfigurationDocument
-- MemoryService
-- DEFAULT_EXTENSION_SETTINGS
 
 ## Depends on
 
@@ -52,8 +42,6 @@ _(none)_
 - packages/client/tests/services/health.service.spec.ts
 - packages/client/tests/services/memory.service.spec.ts
 - packages/client/tests/services/dashboard-spend.service.spec.ts
-- packages/client/tests/services/logs.service.spec.ts
-- packages/client/tests/services/notifications.service.spec.ts
 
 ## Do not
 

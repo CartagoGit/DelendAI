@@ -21,9 +21,6 @@
 - createEmbedIndexStore
 - resolveEmbedIndexPath
 - discoverEmbeddableFiles
-- hashContent
-- runEmbedPipeline
-- runSearchWithMode
 
 ## Depends on
 
@@ -46,8 +43,6 @@
 - plugins/search/tests/src/lib/services/search.service.spec.ts
 - plugins/search/tests/src/lib/services/search-engine.backends.spec.ts
 - plugins/search/tests/src/lib/services/search-gitignore.service.spec.ts
-- plugins/search/tests/src/lib/services/search-engine.constants.spec.ts
-- plugins/search/tests/src/lib/services/search-regex-glob.service.spec.ts
 
 ## Do not
 
