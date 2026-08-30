@@ -110,7 +110,8 @@ describe('VS Code extension smoke', async () => {
 		// f00119 S6: +1 auto-agent-selector panel command.
 		// f00192 S1: +1 openAgentTimeline command.
 		// KPI sidebar provider adds one lifecycle registration.
-		expect(subscriptions).toHaveLength(34);
+		// Runtime observer log command adds one lifecycle registration.
+		expect(subscriptions).toHaveLength(35);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);
@@ -480,6 +481,100 @@ describe('VS Code extension smoke', async () => {
 					'__serve',
 					'--workspace',
 					'.',
+				],
+				cwd: root,
+			},
+		]);
+	});
+
+	it('createDefaultClient reuses the VS Code .vscode/mcp.json launch', async () => {
+		const { mkdir, mkdtemp, writeFile, rm } = await import(
+			'node:fs/promises'
+		);
+		const { tmpdir } = await import('node:os');
+		const { join } = await import('node:path');
+		const root = await mkdtemp(join(tmpdir(), 'mcpv-vscode-spawn-'));
+		await mkdir(join(root, '.vscode'), { recursive: true });
+		await writeFile(
+			join(root, '.vscode', 'mcp.json'),
+			JSON.stringify({
+				servers: {
+					'mcp-vertex': {
+						type: 'stdio',
+						command: 'bun',
+						args: [
+							'tools/scripts/host/host-server.script.ts',
+							'--workspace=${workspaceFolder}',
+						],
+					},
+				},
+			}),
+		);
+		const calls: Array<{
+			command: string;
+			args: readonly string[];
+			cwd?: string;
+		}> = [];
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand() {
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+			},
+			workspace: {
+				createFileSystemWatcher() {
+					return {
+						onDidChange() {
+							return { dispose() {} };
+						},
+						onDidCreate() {
+							return { dispose() {} };
+						},
+						onDidDelete() {
+							return { dispose() {} };
+						},
+					};
+				},
+				workspaceFolders: [{ uri: { fsPath: root } }],
+			},
+		};
+		const originalConnect = McpStdioClient.connect;
+		McpStdioClient.connect = (async (opts: {
+			command: string;
+			args: readonly string[];
+			cwd?: string;
+		}) => {
+			calls.push({
+				command: opts.command,
+				args: opts.args,
+				...(opts.cwd === undefined ? {} : { cwd: opts.cwd }),
+			});
+			return McpStdioClient.fromTransport({
+				async callTool() {
+					return { structuredContent: overviewFixture };
+				},
+			});
+		}) as typeof McpStdioClient.connect;
+		try {
+			const { createDefaultClient } = await import('../extension');
+			await createDefaultClient(vscode);
+		} finally {
+			McpStdioClient.connect = originalConnect;
+			await rm(root, { recursive: true, force: true });
+		}
+
+		expect(calls).toEqual([
+			{
+				command: 'bun',
+				args: [
+					'tools/scripts/host/host-server.script.ts',
+					`--workspace=${root}`,
 				],
 				cwd: root,
 			},

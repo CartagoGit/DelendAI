@@ -196,6 +196,8 @@ export const createAgentRegistryStore = (path: string): IAgentRegistryStore => {
 			a.status = 'cooldown';
 			a.cooldown_until = cooldown_until;
 			a.last_seen = new Date().toISOString();
+			delete a.subscription_id;
+			delete a.lease_until;
 			await write(r);
 			return true;
 		});

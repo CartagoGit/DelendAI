@@ -227,7 +227,14 @@ export interface McpVertexProposalsCloseSliceOutput {
 	proposalId?: string;
 	sliceId?: string;
 	closed?: boolean;
+	validationDecision?: {
+		mode: "scoped" | "full" | "blocked";
+		resolvedScopes: string[];
+		snapshotId: string;
+		reason: string;
+	};
 	lockReleased?: boolean;
+	assignmentReleased?: boolean;
 	persist?: {
 		committed: boolean;
 		pushed: boolean;
@@ -297,6 +304,10 @@ export interface McpVertexProposalsDelegateOutput {
 	detail?: Record<string, unknown>;
 	agent?: string;
 	reason?: string;
+	errorId?: string;
+	cancelled?: boolean;
+	alternatives?: string[];
+	errorLogged?: boolean;
 	taskId?: string;
 	slot?: string;
 	files?: string[];
@@ -517,9 +528,20 @@ export interface McpVertexProposalsProposalGetOutput {
 export interface McpVertexProposalsProposalReconcileFolderOutput {
 	ok: boolean;
 	id: string;
-	changed: boolean;
+	changed?: boolean;
 	path?: string;
 	dryRun?: boolean;
+	wouldChange?: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
+	}>;
+	wouldRun?: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
+	risk?: "low" | "medium" | "high";
 	from?: string;
 	to?: string;
 	movedTo?: string;
@@ -540,6 +562,7 @@ export interface McpVertexProposalsProposalReviewOutput {
 		note: string;
 	}>;
 	lockReleased: boolean;
+	assignmentReleased: boolean;
 	redactedSecrets: number;
 }
 

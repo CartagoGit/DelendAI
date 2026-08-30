@@ -11,6 +11,9 @@
 /** Forge vendors the adapter can classify a remote URL into. */
 export type ForgeProvider = 'github' | 'gitlab' | 'unknown';
 
+/** Resolves a remote host to a forge provider, including self-hosted hosts. */
+export type ForgeProviderResolver = (remoteHost: string) => ForgeProvider;
+
 /** Lifecycle of the last remote branch-protection refresh. */
 export type BranchProtectionState = 'fresh' | 'stale' | 'unsupported' | 'error';
 

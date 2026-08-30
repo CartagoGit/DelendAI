@@ -336,6 +336,17 @@ export async function createMcpProject(
 						}
 					}
 					await drainLazyPluginRegistrations();
+					if (config.runtimeEventSink !== undefined) {
+						void Promise.resolve(
+							config.runtimeEventSink.emit({
+								version: 1,
+								ts: new Date().toISOString(),
+								kind: 'plugin.activated',
+								pluginName: pluginId,
+								toolCount: discoveredToolNames.length,
+							}),
+						).catch(() => undefined);
+					}
 					if (
 						discoveredToolNames.length > 0 &&
 						!announcedLazyPlugins.has(pluginId)

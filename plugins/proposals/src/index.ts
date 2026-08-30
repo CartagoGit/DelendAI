@@ -380,42 +380,12 @@ export default definePlugin({
 						.protectedBranches
 				: ['main', 'master'];
 		const configuredPersist = parsedOptions.data.persist;
-		const commitPolicy = ctx.pluginOptions?.get('commit-policy') as
-			| Readonly<Record<string, unknown>>
-			| undefined;
-		const commit = commitPolicy?.commit as
-			| Readonly<Record<string, unknown>>
-			| undefined;
-		const cadence = commitPolicy?.cadence as
-			| Readonly<Record<string, unknown>>
-			| undefined;
-		const push = commitPolicy?.push as
-			| Readonly<Record<string, unknown>>
-			| undefined;
-		const commitPolicyOwnsSlicePersistence =
-			commit?.enabled === true &&
-			hasSliceTrigger({ cadence }) &&
-			push?.enabled === true &&
-			push?.onCommit === true;
 		const effectivePersist =
 			configuredPersist !== undefined && configuredPersist.mode !== 'none'
 				? { ...configuredPersist, protectedBranches }
-				: commitPolicyOwnsSlicePersistence
-					? {
-							mode: 'commit-and-push' as const,
-							protectedBranches,
-							allowForeignChanges:
-								cadence?.allowForeignChanges === true,
-							...(push?.remote !== undefined &&
-							typeof push.remote === 'string'
-								? {
-										pushTarget: `${push.remote} HEAD:${String(push.branch ?? 'HEAD')}`,
-									}
-								: {}),
-						}
-					: configuredPersist !== undefined
-						? { ...configuredPersist, protectedBranches }
-						: undefined;
+				: configuredPersist !== undefined
+					? { ...configuredPersist, protectedBranches }
+					: undefined;
 		const microValidationCalls: IObservedToolCall[] = [];
 		const incidentLogStore = createLogStore(
 			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors')),
@@ -476,6 +446,7 @@ export default definePlugin({
 			proposalsDirAbs: abs(layout.proposalsDir),
 			indexPathAbs: abs(layout.proposalIndexFile),
 			lockPathAbs: abs(layout.lockFile),
+			agentNames: agentNamesOptions,
 			peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
 			counterPathAbs: abs(layout.proposalIdCountersFile),
 			layout: {

@@ -2,7 +2,7 @@
 id: f00191
 title: "`mcpv doctor`: health check completo"
 kind: feat
-status: done
+status: retired
 type: proposal
 track: cli
 date: 2026-08-25

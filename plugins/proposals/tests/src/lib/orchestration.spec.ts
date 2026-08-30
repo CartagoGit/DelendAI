@@ -355,6 +355,11 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		expect(out.stage).toBe('worktree');
 		expect(out.reason).toContain('mock failure');
 		expect(out.cancelled).toBe(false);
+		const registry = JSON.parse(readFileSync(opts.registryPathAbs, 'utf8'));
+		expect(registry.assignments).toHaveLength(1);
+		expect(registry.assignments[0].status).toBe('cooldown');
+		expect(registry.assignments[0].subscription_id).toBeUndefined();
+		expect(registry.assignments[0].lease_until).toBeUndefined();
 		expect(out.errorId).toMatch(/^[0-9a-f-]{36}$/);
 		expect(out.alternatives).toEqual([
 			'retry delegate after inspecting agent_names and active locks',

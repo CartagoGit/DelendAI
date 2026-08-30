@@ -25,6 +25,12 @@ export {
 	saveConfigurationDocument,
 } from './services/configuration-center.service';
 export { setPluginActivation } from './services/plugin-activation.service';
+export { readRuntimeEvents } from './runtime-events';
+export type {
+	IRuntimeEvent,
+	IRuntimeEventCursor,
+	RuntimeEventInput,
+} from './runtime-events';
 export type {
 	ISetPluginActivationInput,
 	ISetPluginActivationResult,

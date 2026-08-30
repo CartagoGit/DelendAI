@@ -76,6 +76,7 @@ export interface McpVertexDepsDepsLicensesOutput {
 }
 
 export interface McpVertexDepsDepsListOutput {
+	detail?: "compact" | "normal" | "full";
 	manifest: string;
 	found: boolean;
 	counts: {
@@ -108,6 +109,7 @@ export interface McpVertexDepsDepsOutdatedOutput {
 }
 
 export interface McpVertexDepsDepsPolyglotOutput {
+	detail?: "compact" | "normal" | "full";
 	manifests: {
 		ecosystem: string;
 		manifest: string;

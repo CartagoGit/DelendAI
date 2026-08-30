@@ -1,19 +1,19 @@
 ---
-id: x00307
-title: "Los bugs confirmados tienen regression test."
+id: x00308
+title: "`error-reporting` no puede publicar datos del proyecto."
 kind: fix
-status: ready
+status: retired
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-bugs-confirmados-tienen-regression-test
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#error-reporting-no-puede-publicar-datos-del-proyecto
 ---
 
-# x00307 — Los bugs confirmados tienen regression test.
+# x00308 — `error-reporting` no puede publicar datos del proyecto.
 
 ## Goal
 
-Migrated work item: Los bugs confirmados tienen regression test..
+Migrated work item: `error-reporting` no puede publicar datos del proyecto..
 
 ## why
 
@@ -37,6 +37,6 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-bugs-confirmados-tienen-regression-test` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#error-reporting-no-puede-publicar-datos-del-proyecto` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.

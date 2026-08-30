@@ -13,6 +13,7 @@
  */
 
 export interface McpVertexLogsCorrelateOutput {
+	detail: "compact" | "normal" | "full";
 	chain: unknown[];
 	firstTs: string | null;
 	lastTs: string | null;
@@ -20,6 +21,7 @@ export interface McpVertexLogsCorrelateOutput {
 }
 
 export interface McpVertexLogsErrorsTailOutput {
+	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	oldestTs: string | null;
 	newestTs: string | null;
@@ -38,6 +40,7 @@ export interface McpVertexLogsLogOutput {
 }
 
 export interface McpVertexLogsQueryOutput {
+	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	cursor: string | null;
 	hasMore: boolean;
@@ -49,17 +52,20 @@ export interface McpVertexLogsRedactTestOutput {
 }
 
 export interface McpVertexLogsSearchOutput {
+	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	matched: number;
 	hasMore: boolean;
 }
 
 export interface McpVertexLogsSubscribeOutput {
+	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	stream: "logs";
 }
 
 export interface McpVertexLogsTailOutput {
+	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	oldestTs: string | null;
 	newestTs: string | null;

@@ -95,7 +95,7 @@ campo `branchPolicy`:
 | ----------- | ------------------------------------------------------------------------------------------------------------------ |
 | `slice`     | Un slice de `proposals` transiciona a un estado configurado (por defecto `done`). Sondea el `index.json` cada 1 s. |
 | `threshold` | `git status --porcelain` reporta al menos N archivos sucios (por defecto 10). Solo manual.                         |
-| `interval`  | Han pasado al menos N minutos desde el último disparo y el árbol está sucio. Solo manual.                          |
+| `interval`  | Han pasado al menos N minutos desde el último disparo y el árbol está sucio. Se ejecuta automáticamente cuando se configura. |
 | `manual`    | Siempre disponible, independientemente de `cadence.triggers`.                                                      |
 
 ## Por qué desactivado por defecto

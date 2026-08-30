@@ -1324,6 +1324,7 @@ export interface McpVertexUsageTrackingUsageClearOutput {
 }
 
 export interface McpVertexUsageTrackingUsageReportOutput {
+	detail: "compact" | "normal" | "full";
 	groupBy: "provider" | "plugin" | "agent" | "extension" | "model";
 	windowDays: number;
 	totals: {

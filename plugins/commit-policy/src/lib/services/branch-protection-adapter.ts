@@ -21,12 +21,15 @@ import type {
 	BranchProtectionRefreshResult,
 	BranchProtectionState,
 	ForgeProvider,
+	ForgeProviderResolver,
 	SupportedRemoteRepository,
 } from '../contracts/branch-protection-contracts';
 
 export interface BranchProtectionAdapterOptions {
 	readonly workspaceRoot: string;
 	readonly policy: ICommitPolicyPush;
+	/** Optional host resolver for self-hosted forge installations. */
+	readonly resolveProvider?: ForgeProviderResolver;
 	readonly exec?: (
 		input: Parameters<typeof runExternalTool>[0],
 	) => Promise<IExternalToolRun>;
@@ -174,6 +177,12 @@ const resolveRemoteTarget = async (
 const parseRemoteRepository = (
 	remoteName: string,
 	remoteUrl: string,
+	resolveProvider: ForgeProviderResolver = (host) =>
+		host === 'github.com'
+			? 'github'
+			: host === 'gitlab.com'
+				? 'gitlab'
+				: 'unknown',
 ): RemoteRepository | undefined => {
 	const trimmed = remoteUrl.trim().replace(/\.git$/u, '');
 	const ssh = trimmed.match(/^git@([^:]+):(.+)$/u);
@@ -191,12 +200,7 @@ const parseRemoteRepository = (
 	return {
 		remoteName,
 		remoteHost,
-		provider:
-			remoteHost === 'github.com'
-				? 'github'
-				: remoteHost === 'gitlab.com'
-					? 'gitlab'
-					: 'unknown',
+		provider: resolveProvider(remoteHost),
 		owner,
 		repository,
 	};
@@ -323,6 +327,7 @@ export const createBranchProtectionAdapter = (
 		const repository = parseRemoteRepository(
 			target.target.name,
 			target.target.url,
+			options.resolveProvider,
 		);
 		if (repository === undefined) {
 			lastResult = failure(

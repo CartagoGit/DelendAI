@@ -15,6 +15,28 @@ interface IViolation {
 	readonly message: string;
 }
 
+const REGISTERED_TOOL_IDS: Readonly<Record<string, readonly string[]>> = {
+	'commit-policy': [
+		'commit_policy_status',
+		'commit_policy_refresh_branch_protection',
+		'commit_policy_commit',
+		'commit_policy_push',
+		'commit_policy_run',
+	],
+};
+
+const EXPECTED_TOOL_PERMISSIONS: Readonly<
+	Record<string, Readonly<Record<string, readonly string[]>>>
+> = {
+	'commit-policy': {
+		commit_policy_status: ['git-read'],
+		commit_policy_commit: ['git-write'],
+		commit_policy_push: ['git-write'],
+		commit_policy_run: ['git-write'],
+		commit_policy_refresh_branch_protection: ['network', 'process'],
+	},
+};
+
 const isPublicScopedPackage = (name: string): boolean =>
 	name.startsWith('@mcp-vertex/');
 
@@ -128,6 +150,45 @@ export const lintManifestVsPackage = async (
 				rule: 'MANIFEST-VIS-002',
 				message: `manifest.visibility is private but ${manifest.package} is configured as a public package.`,
 			});
+		}
+		const registeredToolIds = REGISTERED_TOOL_IDS[manifest.id];
+		if (registeredToolIds !== undefined) {
+			const registered = new Set(registeredToolIds);
+			const configured = manifest.toolPermissions ?? {};
+			for (const toolId of Object.keys(configured)) {
+				if (registered.has(toolId)) continue;
+				violations.push({
+					plugin: manifest.id,
+					rule: 'MANIFEST-TOOL-001',
+					message: `toolPermissions contains ${JSON.stringify(toolId)}, but no such tool is registered by ${manifest.id}.`,
+				});
+			}
+			for (const toolId of registeredToolIds) {
+				if (configured[toolId] !== undefined) continue;
+				violations.push({
+					plugin: manifest.id,
+					rule: 'MANIFEST-TOOL-002',
+					message: `toolPermissions is missing the registered tool ${JSON.stringify(toolId)}.`,
+				});
+			}
+			const expectedPermissions = EXPECTED_TOOL_PERMISSIONS[manifest.id];
+			if (expectedPermissions !== undefined) {
+				for (const [toolId, expected] of Object.entries(
+					expectedPermissions,
+				)) {
+					const actual = configured[toolId];
+					if (
+						actual !== undefined &&
+						JSON.stringify([...actual].sort()) !==
+							JSON.stringify([...expected].sort())
+					)
+						violations.push({
+							plugin: manifest.id,
+							rule: 'MANIFEST-TOOL-003',
+							message: `toolPermissions for ${JSON.stringify(toolId)} does not match the declared effect permissions.`,
+						});
+				}
+			}
 		}
 	}
 	return violations;

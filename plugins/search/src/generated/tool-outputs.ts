@@ -13,6 +13,7 @@
  */
 
 export interface McpVertexSearchSearchOutput {
+	detail?: "compact" | "normal" | "full";
 	query: string;
 	count: number;
 	truncated: boolean;

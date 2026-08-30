@@ -177,13 +177,20 @@ export const resolvePluginSpecifier = (specifier: string): string[] => {
 const isPathLikeSpecifier = (specifier: string): boolean =>
 	specifier.startsWith('.') ||
 	specifier.startsWith('/') ||
-	specifier.startsWith('file:');
+	specifier.startsWith('file:') ||
+	specifier.startsWith('plugins/') ||
+	specifier.startsWith('packages/');
 
 const resolveFilesystemSpecifier = (
 	specifier: string,
 	workspaceRoot: string | undefined,
 ): string => {
-	if (!specifier.startsWith('.')) return specifier;
+	if (
+		!specifier.startsWith('.') &&
+		!specifier.startsWith('plugins/') &&
+		!specifier.startsWith('packages/')
+	)
+		return specifier;
 	if (workspaceRoot === undefined || workspaceRoot.length === 0) {
 		return specifier;
 	}

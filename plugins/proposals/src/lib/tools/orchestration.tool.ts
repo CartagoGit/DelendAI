@@ -199,6 +199,17 @@ const delegationFailure = async (input: {
 	readonly agent?: string;
 	readonly detail?: Record<string, unknown>;
 }): Promise<Record<string, unknown>> => {
+	if (input.agent !== undefined && input.stage !== 'assign') {
+		try {
+			await runAgentNames(
+				{ action: 'release', task_id: input.taskId },
+				input.options.agentNames,
+			);
+		} catch {
+			// Preserve the original delegation failure; reconciliation can
+			// recover the assignment if compensation itself is unavailable.
+		}
+	}
 	const errorId = randomUUID();
 	const alternatives = [
 		'retry delegate after inspecting agent_names and active locks',
@@ -428,15 +439,20 @@ export const buildDelegateRegistration = (
 						lockResult.content[0]?.text ?? '{}',
 					) as {
 						blocked?: boolean;
+						error?: string;
 					};
-					if (lock.blocked === true) {
+					if (lockResult.isError === true || lock.blocked === true) {
 						return toolJson(
 							await delegationFailure({
 								options,
 								taskId: args.taskId,
 								stage: 'lock',
 								agent: assigned.agent_name,
-								reason: 'files already locked by a live task',
+								reason:
+									lock.error ??
+									(lock.blocked === true
+										? 'files already locked by a live task'
+										: 'agent lock claim was not completed'),
 								cancelled: false,
 								detail: lock,
 							}),

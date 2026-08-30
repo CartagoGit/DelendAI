@@ -13,6 +13,7 @@
  */
 
 export interface McpVertexProjectHealthProjectHealthOutput {
+	detail?: "compact" | "normal" | "full";
 	score?: number;
 	security?: number;
 	deps?: number;

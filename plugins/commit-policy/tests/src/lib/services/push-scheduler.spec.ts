@@ -272,6 +272,31 @@ describe('push scheduler (x00266)', () => {
 		expect(pushCount.n).toBe(1);
 	});
 
+	it('pushes existing unpushed commits after scheduler restart', async () => {
+		const pushCount = { n: 0 };
+		const run: IGitRunner = (async (args: readonly string[]) => {
+			if (args[0] === 'rev-parse' && args.includes('--abbrev-ref'))
+				return ok('feature/x\n');
+			if (args[0] === 'rev-list') return ok('2\n');
+			if (args[0] === 'push') {
+				pushCount.n += 1;
+				return ok('pushed\n');
+			}
+			return ok('');
+		}) as IGitRunner;
+
+		const scheduler = createPushScheduler({
+			run,
+			policy: basePushPolicy({ everyNMinutes: 1 }),
+		});
+		scheduler.start();
+		await vi.advanceTimersByTimeAsync(60_000);
+		await scheduler.flush();
+
+		expect(pushCount.n).toBe(1);
+		scheduler.stop();
+	});
+
 	it('serializes concurrent onCommitSucceeded calls', async () => {
 		let activePushes = 0;
 		let maxActivePushes = 0;

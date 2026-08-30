@@ -2,7 +2,7 @@
 id: q00005
 title: "Plan hardening post-auditoría externa ChatGPT 5.6 Sol (TERCERA pasada sobre develop) — universalización de invariantes: filesystem, privacidad, mutex, tokens, CI y gobernanza"
 kind: plan
-status: done
+status: retired
 type: plan
 track: develop-audit-hardening-v3
 date: 2026-08-25
