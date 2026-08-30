@@ -123,7 +123,7 @@ const ReportStatusInternalSchema = z
 		destination: z
 			.object({
 				targetRepo: z.string(),
-				source: z.enum(['default', 'operator-configured']),
+				source: z.literal('default'),
 				allowlistedRepos: z.array(z.string()),
 				transport: z.literal('gh issue create'),
 				forwardsProjectHeadersOrEnv: z.literal(false),
@@ -165,11 +165,6 @@ const ReportStatusInternalSchema = z
 		),
 	})
 	.strict();
-
-const targetRepoSourceOf = (
-	targetRepo: string,
-): 'default' | 'operator-configured' =>
-	targetRepo === DEFAULT_TARGET_REPO ? 'default' : 'operator-configured';
 
 const sortIsoDesc = (left?: string, right?: string): number =>
 	(right ?? '').localeCompare(left ?? '');
@@ -256,9 +251,9 @@ const buildOutput = (input: {
 	enabled: input.options.enabled,
 	labels: [...input.options.labels],
 	destination: {
-		targetRepo: input.options.targetRepo,
-		source: targetRepoSourceOf(input.options.targetRepo),
-		allowlistedRepos: [input.options.targetRepo],
+		targetRepo: DEFAULT_TARGET_REPO,
+		source: 'default',
+		allowlistedRepos: [DEFAULT_TARGET_REPO],
 		transport: 'gh issue create',
 		forwardsProjectHeadersOrEnv: false,
 	},

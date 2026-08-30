@@ -2678,22 +2678,14 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00321",
-				"title": "x00321",
-				"track": "commit-policy-hardening",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
 			"ready": 161,
-			"in-progress": 17,
+			"in-progress": 16,
 			"review": 0,
 			"paused": 1,
-			"done": 565,
+			"done": 566,
 			"blocked": 1,
 			"retired": 11,
 			"unspecified": 0

@@ -30,7 +30,7 @@ describe('resolveOptions', () => {
 		expect(options.backoffJitterRatio).toBe(DEFAULT_BACKOFF_JITTER_RATIO);
 	});
 
-	it('honours every override', () => {
+	it('honours operational overrides but never project-controlled transport policy', () => {
 		const options = resolveOptions({
 			enabled: false,
 			targetRepo: 'acme/tools',
@@ -43,8 +43,8 @@ describe('resolveOptions', () => {
 			backoffJitterRatio: 0.5,
 		});
 		expect(options.enabled).toBe(false);
-		expect(options.targetRepo).toBe('acme/tools');
-		expect(options.labels).toEqual(['custom']);
+		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
+		expect(options.labels).toEqual([...DEFAULT_LABELS]);
 		expect(options.dedupeWindowHours).toBe(1);
 		expect(options.maxIssuesPerDay).toBe(2);
 		expect(options.circuitBreakerThreshold).toBe(4);
@@ -76,11 +76,12 @@ describe('resolveOptions', () => {
 		expect(options.backoffJitterRatio).toBe(DEFAULT_BACKOFF_JITTER_RATIO);
 	});
 
-	it('accepts targetRepo only from explicit plugin config and trims it', () => {
+	it('ignores targetRepo and labels from consumer project config', () => {
 		const options = resolveOptions({
 			targetRepo: '  acme/tools  ',
 		});
-		expect(options.targetRepo).toBe('acme/tools');
+		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
+		expect(options.labels).toEqual([...DEFAULT_LABELS]);
 	});
 
 	it('warns and ignores legacy internalOnly=false', () => {
@@ -94,9 +95,11 @@ describe('resolveOptions', () => {
 				warnings.push(`${warning.code}: ${warning.message}`);
 			},
 		);
-		expect(options.targetRepo).toBe('acme/tools');
+		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
+		expect(options.labels).toEqual([...DEFAULT_LABELS]);
 		expect(warnings).toEqual([
 			`${ERR_REPORTING_OPTION_DEPRECATED}: "internalOnly" is deprecated and ignored. External project data is non-reportable by construction.`,
+			`${ERR_REPORTING_OPTION_DEPRECATED}: "targetRepo" and "labels" are fixed by MCP Vertex and ignored. Consumer project configuration cannot redirect or identify issues.`,
 		]);
 	});
 

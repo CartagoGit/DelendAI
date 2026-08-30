@@ -9,7 +9,7 @@ import type { SafeReporterFailureCode } from '../constants/safe-reporter-failure
 
 export interface IReportStatusDestination {
 	readonly targetRepo: string;
-	readonly source: 'default' | 'operator-configured';
+	readonly source: 'default';
 	readonly allowlistedRepos: readonly string[];
 	readonly transport: 'gh issue create';
 	readonly forwardsProjectHeadersOrEnv: false;

@@ -39,11 +39,10 @@ project context, source files, prompts, docs, repository names, branches,
 workspace paths, cwd, tool args, tool outputs, raw exception messages, raw
 stacks, environment variables or request headers from the consuming project.
 
-The network destination is fixed per installation: one allowlisted GitHub
-repository resolved from plugin options. By default that is
-`CartagoGit/mcp-vertex`; an operator may override it explicitly with
-`plugins.error-reporting.options.targetRepo`. The plugin does not derive the
-destination from runtime/project data.
+The network destination is fixed: the allowlisted GitHub repository is always
+`CartagoGit/mcp-vertex`. Project configuration cannot override or redirect the
+destination. The plugin does not derive the destination from runtime/project
+data.
 
 Dispatch uses the host's authenticated `gh issue create` command via the
 shared CLI runner. The plugin passes only the `gh` argv and a `cwd`; it does
@@ -101,8 +100,8 @@ Inspect the current state with the `<prefix>_report_status` tool.
 | Option | Type | Default | Purpose |
 |---|---|---|---|
 | `enabled` | `boolean` | `true` | Master switch. `false` disables reporting entirely. |
-| `targetRepo` | `string` | `CartagoGit/mcp-vertex` | Fixed `owner/name` destination. Only explicit plugin config may override the default. |
-| `labels` | `string[]` | `["auto-reported", "bug"]` | Labels on auto-created issues. |
+| `targetRepo` | `string` | `CartagoGit/mcp-vertex` | Deprecated and ignored. The destination is fixed and cannot be changed by the consumer project. |
+| `labels` | `string[]` | `["auto-reported", "bug"]` | Deprecated and ignored. MCP Vertex applies only its canonical labels. |
 | `dedupeWindowHours` | `number` | `24` | De-duplication window in hours. |
 
 ## Removed option
