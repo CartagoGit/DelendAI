@@ -171,6 +171,7 @@ export interface ILogIncident {
 	readonly toolName: string;
 	readonly errorFingerprint?: string;
 	readonly sampleError: string;
+	readonly hasStack: boolean;
 	readonly count: number;
 	readonly distinctAgents: number;
 	readonly firstSeen: string;
@@ -211,6 +212,12 @@ const toolNameOfEvent = (event: ILogEvent): string => {
 	return event.taskId ?? event.kind;
 };
 
+const hasStackOfEvent = (event: ILogEvent): boolean => {
+	const error = event.meta.error;
+	if (!error || typeof error !== 'object') return false;
+	return typeof (error as Record<string, unknown>).stack === 'string';
+};
+
 const sha1 = (input: string): string =>
 	createHash('sha1').update(input).digest('hex').slice(0, 16);
 
@@ -240,6 +247,7 @@ export const logIncidents = async (
 		incidentType: string;
 		events: ILogEvent[];
 		agents: Set<string>;
+		hasStack: boolean;
 		firstSeen: string;
 		lastSeen: string;
 		sampleSummary: string;
@@ -254,6 +262,7 @@ export const logIncidents = async (
 		if (existing) {
 			existing.events.push(event);
 			if (event.agent) existing.agents.add(event.agent);
+			existing.hasStack ||= hasStackOfEvent(event);
 			if (compareIso(event.ts, existing.firstSeen) < 0)
 				existing.firstSeen = event.ts;
 			if (compareIso(event.ts, existing.lastSeen) > 0)
@@ -265,6 +274,7 @@ export const logIncidents = async (
 				incidentType: event.incidentType ?? 'unknown',
 				events: [event],
 				agents: new Set(event.agent ? [event.agent] : []),
+				hasStack: hasStackOfEvent(event),
 				firstSeen: event.ts,
 				lastSeen: event.ts,
 				sampleSummary: event.summary,
@@ -284,6 +294,7 @@ export const logIncidents = async (
 			toolName: cluster.toolName,
 			errorFingerprint: cluster.messageHash,
 			sampleError: `redacted:${cluster.messageHash}`,
+			hasStack: cluster.hasStack,
 			count: cluster.events.length,
 			distinctAgents: cluster.agents.size,
 			firstSeen: cluster.firstSeen,

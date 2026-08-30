@@ -12,6 +12,7 @@ import {
 const incident = (overrides: Partial<ILogIncident> = {}): ILogIncident => ({
 	incidentType: 'tool-failure',
 	toolName: 'proposals_incident_proposals',
+	hasStack: true,
 	count: 3,
 	distinctAgents: 2,
 	firstSeen: '2026-08-24T10:00:00.000Z',

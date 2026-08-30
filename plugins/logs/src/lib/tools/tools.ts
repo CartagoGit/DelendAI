@@ -167,6 +167,11 @@ const publicSummary = (event: ILogEvent): string => {
 	return baseSummary;
 };
 
+const sanitizeSummaryText = (summary: string): string => {
+	const separator = summary.indexOf(' — ');
+	return separator >= 0 ? summary.slice(0, separator) : summary;
+};
+
 const publicMeta = (event: ILogEvent): Record<string, unknown> => {
 	const meta = { ...event.meta };
 	if (typeof meta.summary === 'string') {
@@ -224,25 +229,17 @@ const publicIncident = (
 	incidentType: incident.incidentType,
 	toolName: incident.toolName,
 	errorFingerprint: incident.errorFingerprint,
+	hasStack: incident.hasStack,
 	count: incident.count,
 	distinctAgents: incident.distinctAgents,
 	firstSeen: incident.firstSeen,
 	lastSeen: incident.lastSeen,
-	sampleSummary: publicSummary(
-		incident.recentEvents.at(-1) ??
-			incident.recentEvents[0] ?? {
-				ts: incident.firstSeen,
-				kind: 'tool-failed',
-				agent: null,
-				taskId: incident.toolName,
-				outcome: 'failed',
-				severity: 'error',
-				incidentType: incident.incidentType,
-				files: [],
-				summary: incident.sampleSummary,
-				meta: {},
-			},
-	),
+	sampleSummary:
+		(incident.recentEvents.at(-1) ?? incident.recentEvents[0])
+			? publicSummary(
+					incident.recentEvents.at(-1) ?? incident.recentEvents[0]!,
+				)
+			: sanitizeSummaryText(incident.sampleSummary),
 	recentEvents: compactEvents(incident.recentEvents, 'full'),
 });
 
