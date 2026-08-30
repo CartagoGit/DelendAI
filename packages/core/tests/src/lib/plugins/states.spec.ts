@@ -243,6 +243,37 @@ describe('f00269 — plugin-manager integration', () => {
 		expect(await router.resolveTool('alpha.tool')).toBeUndefined();
 	});
 
+	it('activate restores a plugin after unload', async () => {
+		const { router } = await createRouterRig();
+		const manager = createPluginManager(router);
+		manager.unload('alpha');
+		expect(manager.activate('alpha')).toBe('ACTIVE');
+		expect(await router.resolveTool('alpha.tool')).toBeDefined();
+	});
+
+	it('hide before initialize starts from UNLOADED', async () => {
+		const loader = createLoader();
+		const discovery = createLazyPluginDiscovery({
+			loader,
+			listPluginIds: async () => ['alpha', 'beta'],
+		});
+		const router = createLazyPluginRouter({
+			loader,
+			discovery,
+			lazy: true,
+		});
+		const manager = createPluginManager(router);
+		expect(manager.hide('alpha')).toBe('LOADED_HIDDEN');
+		expect(router.pluginState('alpha')).toBe('LOADED_HIDDEN');
+	});
+
+	it('does not create state for an unknown plugin after initialize', async () => {
+		const { router } = await createRouterRig();
+		const manager = createPluginManager(router);
+		expect(() => manager.activate('ghost')).toThrow('unknown plugin "ghost"');
+		expect(router.pluginState('ghost')).toBeUndefined();
+	});
+
 	it('deny is absorbing through the manager API', async () => {
 		const { router } = await createRouterRig();
 		const manager = createPluginManager(router);

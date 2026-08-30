@@ -1,7 +1,13 @@
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import {
+	DETAIL_LEVELS,
+	projectDetail,
+	toolError,
+	toolJson,
+	type Detail,
+	type IToolRegistration,
+} from '@mcp-vertex/core/public';
 
 import type { IEmbedder } from '../embed/embedder';
 import { discoverProviders, type IEmbedProviderId } from '../embed/providers';
@@ -9,6 +15,68 @@ import { InvalidSearchPatternError } from '../services/search-engine.service';
 import type { ISearchOptions } from '../services/search-engine.service';
 import type { IApiEmbedderFetch } from '../embed/build-api-embedder';
 import { runSearchWithMode } from './search-semantic.tool';
+
+const DetailSchema = z.enum(DETAIL_LEVELS);
+const AvailableProviderSchema = z.object({
+	id: z.enum(['openai', 'voyage', 'cohere']),
+	present: z.boolean(),
+});
+const SearchHitSchema = z.object({
+	file: z.string(),
+	line: z.number(),
+	text: z.string(),
+	before: z.array(z.string()).optional(),
+	after: z.array(z.string()).optional(),
+});
+const SearchOutputSchema = z.object({
+	detail: DetailSchema.optional(),
+	query: z.string(),
+	count: z.number(),
+	truncated: z.boolean(),
+	scanned: z.number(),
+	usedRg: z.boolean(),
+	rgFallbackReason: z.string().optional(),
+	diagnostic: z.string().optional(),
+	availableProviders: z.array(AvailableProviderSchema),
+	hits: z.array(SearchHitSchema),
+});
+
+type SearchPayload = {
+	readonly query: string;
+	readonly count: number;
+	readonly truncated: boolean;
+	readonly scanned: number;
+	readonly usedRg: boolean;
+	readonly rgFallbackReason?: string;
+	readonly diagnostic?: string;
+	readonly availableProviders: ReturnType<typeof discoverProviders>;
+	readonly hits: Awaited<ReturnType<typeof runSearchWithMode>>['hits'];
+};
+
+const projectSearchPayload = (
+	payload: SearchPayload,
+	detail: Detail,
+): SearchPayload =>
+	projectDetail(
+		payload,
+		{
+			compact: (full) => ({
+				...full,
+				availableProviders: [],
+				hits: [],
+			}),
+			normal: (full) => ({
+				...full,
+				hits: full.hits.map(({ file, line, text }) => ({
+					file,
+					line,
+					text,
+				})),
+			}),
+			full: (full) => full,
+		},
+		detail,
+	) as SearchPayload;
 
 export interface ISearchToolOptions {
 	readonly namespacePrefix: string;
@@ -49,9 +117,10 @@ export const buildSearchToolRegistrations = (
 					`${prefix}_search`,
 					{
 						description:
-							'Search the workspace text files and return matching {file,line,text} hits. `query` is a substring by default, or a JS regex with regex:true. Narrow by path with `include`/`exclude` globs (e.g. "src/**/*.ts"). Pass `context: N` (0-10) for N lines before/after each hit. Pass `preferRg: true` to use the `rg` (ripgrep) binary when available — faster on huge repos; silently falls back to the built-in walker otherwise (see `usedRg`/`rgFallbackReason`). Low-token: results and per-line previews are capped.',
+							'Search the workspace text files and return matching {file,line,text} hits. `query` is a substring by default, or a JS regex with regex:true. Narrow by path with `include`/`exclude` globs (e.g. "src/**/*.ts"). Pass `context: N` (0-10) for N lines before/after each hit. Pass `preferRg: true` to use the `rg` (ripgrep) binary when available — faster on huge repos; silently falls back to the built-in walker otherwise (see `usedRg`/`rgFallbackReason`). Low-token: results and per-line previews are capped. When `detail` is omitted the tool preserves the legacy payload; `compact` removes providers and hit rows, `normal` keeps hit lines without surrounding context, and `full` returns the full context blocks.',
 						inputSchema: z.object({
 							query: z.string(),
+							detail: DetailSchema.optional(),
 							mode: z
 								.enum(['lexical', 'semantic', 'hybrid'])
 								.optional(),
@@ -68,33 +137,11 @@ export const buildSearchToolRegistrations = (
 							context: z.number().int().min(0).max(10).optional(),
 							preferRg: z.boolean().optional(),
 						}),
-						outputSchema: z.object({
-							query: z.string(),
-							count: z.number(),
-							truncated: z.boolean(),
-							scanned: z.number(),
-							usedRg: z.boolean(),
-							rgFallbackReason: z.string().optional(),
-							diagnostic: z.string().optional(),
-							availableProviders: z.array(
-								z.object({
-									id: z.enum(['openai', 'voyage', 'cohere']),
-									present: z.boolean(),
-								}),
-							),
-							hits: z.array(
-								z.object({
-									file: z.string(),
-									line: z.number(),
-									text: z.string(),
-									before: z.array(z.string()).optional(),
-									after: z.array(z.string()).optional(),
-								}),
-							),
-						}),
+						outputSchema: SearchOutputSchema,
 					},
 					async (args: {
 						query: string;
+						detail?: Detail | undefined;
 						mode?: 'lexical' | 'semantic' | 'hybrid' | undefined;
 						consent?: boolean | undefined;
 						providerId?: IEmbedProviderId | undefined;
@@ -174,7 +221,7 @@ export const buildSearchToolRegistrations = (
 										: {}),
 								},
 							);
-							return toolJson({
+							const payload: SearchPayload = {
 								query: result.query,
 								count: result.hits.length,
 								truncated: result.truncated,
@@ -191,6 +238,13 @@ export const buildSearchToolRegistrations = (
 									? { diagnostic: result.diagnostic }
 									: {}),
 								hits: result.hits,
+							};
+							if (args.detail === undefined) {
+								return toolJson(payload);
+							}
+							return toolJson({
+								detail: args.detail,
+								...projectSearchPayload(payload, args.detail),
 							});
 						} catch (err) {
 							if (err instanceof InvalidSearchPatternError) {

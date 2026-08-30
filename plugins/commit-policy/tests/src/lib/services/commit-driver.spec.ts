@@ -799,6 +799,29 @@ describe('runCommitDriver', () => {
 			});
 		});
 
+		it('removes ANSI control sequences from git commit refusal reasons', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'feature/x',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				cached: ['slice-a.ts'],
+				commitFailsWith:
+					'\u001b[38;2;5;5;5mfatal: hook rejected commit\u001b[0m',
+			});
+			const result = await commitWithGuard({
+				run: fake.run,
+				message: 'feat: scoped',
+				authorFlag: 'Cartago <cartago@example.com>',
+				allowList: ['slice-a.ts'],
+				branch: 'feature/x',
+				enforceSubset: true,
+			});
+			expect(result.committed).toBe(false);
+			expect(result.refusal).toBe(
+				'git commit failed: fatal: hook rejected commit'
+			);
+		});
+
 		it('fails fast when the allowList names a missing path under the isolated index flow', async () => {
 			await withTempRepo(async ({ repoDir, git }) => {
 				const headBefore = await runGit(repoDir, ['rev-parse', 'HEAD']);

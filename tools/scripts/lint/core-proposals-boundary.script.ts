@@ -326,7 +326,7 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 		},
 		{
 			file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
-			needle: 'docs/proposals/done/audits',
+			needle: 'docs/mcp-vertex/proposals/done/audits',
 			until: '2027-03-31',
 			classification: 'compatibility',
 			reason: 'Plugin defaults still point audits at the historical proposals docs tree.',

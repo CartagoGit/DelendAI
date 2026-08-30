@@ -262,6 +262,7 @@ const collectMarkdown = async (
 /** Provenance registry: every `migrated-from:` already present in the store. */
 const readMigratedSources = async (
 	proposalsDirAbs: string,
+	onlyKind?: IProposalKind,
 ): Promise<Set<string>> => {
 	const sources = new Set<string>();
 	const reader = new SafeWorkspaceReader(proposalsDirAbs);
@@ -279,6 +280,12 @@ const readMigratedSources = async (
 					)
 					.then((value) => value.content)
 					.catch(() => '');
+				if (
+					onlyKind !== undefined &&
+					!new RegExp(`^kind:\\s*${onlyKind}\\s*$`, 'm').test(text)
+				) {
+					continue;
+				}
 				for (const match of text.matchAll(
 					/^migrated-from:\s*(.+)$/gm,
 				)) {
@@ -341,6 +348,10 @@ export const migrateForeign = async (
 	const migrated: IMigratedEntry[] = [];
 	const skipped: ISkippedEntry[] = [];
 	const alreadyMigrated = await readMigratedSources(options.proposalsDirAbs);
+	const migratedAudits = await readMigratedSources(
+		options.proposalsDirAbs,
+		'audit',
+	);
 
 	const files: string[] = [];
 	for (const root of options.roots) {
@@ -381,8 +392,9 @@ export const migrateForeign = async (
 			continue;
 		}
 
-		const checklist = parseChecklistShape(rel, text);
 		const candidates: ICandidate[] = [];
+		const auditSource = isAuditSource(rel);
+		const checklist = auditSource ? null : parseChecklistShape(rel, text);
 		if (checklist !== null) {
 			candidates.push(...checklist.candidates);
 			skipped.push(...checklist.skipped);
@@ -400,14 +412,26 @@ export const migrateForeign = async (
 		}
 
 		for (const candidate of candidates) {
-			if (alreadyMigrated.has(candidate.source)) {
+			const auditSource = isAuditSource(candidate.source);
+			const alreadyKnown = auditSource
+				? migratedAudits.has(candidate.source)
+				: alreadyMigrated.has(candidate.source);
+			if (alreadyKnown) {
+				if (
+					options.removeMigratedSources &&
+					isAuditSource(candidate.source) &&
+					!candidate.source.includes('#')
+				) {
+					await rm(join(options.workspaceRoot, candidate.source), {
+						force: true,
+					});
+				}
 				skipped.push({
 					source: candidate.source,
 					reason: 'already migrated (provenance found in the store)',
 				});
 				continue;
 			}
-			const auditSource = isAuditSource(candidate.source);
 			const { kind: inferredKind } = kindFor(candidate);
 			const kind = auditSource ? 'audit' : inferredKind;
 			const prefix = PROPOSAL_KINDS[kind].prefix;
@@ -438,6 +462,7 @@ export const migrateForeign = async (
 				});
 			}
 			alreadyMigrated.add(candidate.source);
+			if (auditSource) migratedAudits.add(candidate.source);
 			migrated.push({
 				source: candidate.source,
 				target: relative(options.workspaceRoot, targetAbs),

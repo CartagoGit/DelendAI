@@ -1,4 +1,17 @@
-# Auditoria tecnica integral — mcp-vertex
+---
+id: a00091
+title: "Auditoria tecnica integral — mcp-vertex"
+kind: audit
+status: done
+type: proposal
+track: migrated
+date: 2026-08-30
+migrated-from: docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md
+---
+
+# a00091 — Auditoria tecnica integral — mcp-vertex
+
+## Goal
 
 ## Indice
 1. Snapshot exacto
@@ -459,3 +472,9 @@ q00012
 ## 38. Prompt reutilizable para futura auditoria independiente
 
 Audita de nuevo el snapshot real de `mcp-vertex` sin confiar en este informe. Fija HEAD, working tree, resultados de tests/build/lint y cobertura. Lee codigo real en core, proposals, plugins, extensions, apps y scripts. Verifica source versus dist/generated/runtime, especialmente deprecation inventory, outputSchema de toda herramienta y managed lazy routing. Clasifica cada hallazgo con evidencia de ruta, simbolo, lineas, reproduccion, causa, solucion, tests, severidad, prioridad, esfuerzo y ROI. No edites durante auditoria. Despues crea un plan y propuestas pequenas, y solo entonces ejecuta slices aisladas con gates reproducibles.
+
+## notes
+
+- Migrated from `docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md` by `proposal_adopt`
+  (f00116). The original file was left untouched — retire it once
+  this proposal is the source of truth.
