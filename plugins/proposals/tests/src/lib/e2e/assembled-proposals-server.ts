@@ -63,7 +63,7 @@ export interface IAssembledProposalsServer {
 	/** Call a proposals tool over the real protocol and parse its response. */
 	callTool<T = unknown>(
 		name: string,
-		args?: Record<string, unknown>
+		args?: Record<string, unknown>,
 	): Promise<IAssembledToolResult<T>>;
 	/** Tear down the client, the server, and the workspace. */
 	close: () => Promise<void>;
@@ -89,7 +89,7 @@ export interface ICreateAssembledProposalsServerOptions {
 }
 
 export const createAssembledProposalsServer = async (
-	options: ICreateAssembledProposalsServerOptions = {}
+	options: ICreateAssembledProposalsServerOptions = {},
 ): Promise<IAssembledProposalsServer> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'proposals-e2e-'));
 	const args = parseCliArgs(
@@ -102,7 +102,7 @@ export const createAssembledProposalsServer = async (
 			'--surface=native',
 			...(options.enableAgentWorktree ? ['--agent-worktree=true'] : []),
 		],
-		workspace
+		workspace,
 	);
 	const { config, loadResult } = await assembleCliConfig(args, {
 		// Inject the real proposals plugin (no dynamic resolution in tests).
@@ -122,13 +122,13 @@ export const createAssembledProposalsServer = async (
 	await assembled.server.connect(serverTransport);
 	const client = new McpClient(
 		{ name: 'proposals-e2e-test', version: '0.0.0' },
-		{ capabilities: {} }
+		{ capabilities: {} },
 	);
 	await client.connect(clientTransport);
 
 	const callTool = async <T = unknown>(
 		name: string,
-		toolArgs: Record<string, unknown> = {}
+		toolArgs: Record<string, unknown> = {},
 	): Promise<IAssembledToolResult<T>> => {
 		const raw = await client.callTool({ name, arguments: toolArgs });
 		const first = (

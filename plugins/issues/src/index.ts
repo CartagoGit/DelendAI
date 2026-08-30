@@ -128,7 +128,7 @@ export default definePlugin({
 			deps: createGithubSetupDeps(
 				ctx.workspace.root,
 				DEFAULT_CONFIG_FILENAME,
-				repo !== undefined
+				repo !== undefined,
 			),
 		});
 
@@ -153,11 +153,11 @@ export default definePlugin({
 
 		const contained = resolveWorkspaceContained(
 			ctx.workspace.root,
-			scaffoldDir
+			scaffoldDir,
 		);
 		if (!contained.ok) {
 			throw new Error(
-				`plugin "issues": invalid scaffoldDir option: ${contained.reason}`
+				`plugin "issues": invalid scaffoldDir option: ${contained.reason}`,
 			);
 		}
 

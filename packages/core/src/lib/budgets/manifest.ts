@@ -36,7 +36,7 @@ export const parsePluginValue = (raw: unknown): number | undefined => {
  * "no value declared" (excluded from ROI), never coerced to 0.
  */
 export const buildValueLookup = (
-	entries: readonly { pluginId: string; value: unknown }[]
+	entries: readonly { pluginId: string; value: unknown }[],
 ): { valueFor: (pluginId: string) => number | undefined } => {
 	const byId = new Map<string, number>();
 	for (const entry of entries) {

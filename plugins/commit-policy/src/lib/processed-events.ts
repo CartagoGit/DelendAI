@@ -4,10 +4,11 @@
  *
  * Stores `idempotencyKey → { sha, ts }` records in a JSONL
  * file under `<workspaceRoot>/.commit-policy/processed-events.jsonl`.
- * Reads are in-memory after a one-shot load; writes go through
- * `withFileMutex` so concurrent commits do not corrupt the
- * file. TTL is configurable; expired keys are pruned on boot
- * and after every N adds (debounced).
+ * Reads refresh from disk so long-lived writers observe markers
+ * other processes persisted; writes go through `withFileMutex`
+ * and merge against the latest file contents so concurrent
+ * writers never lose keys. TTL is configurable; expired keys are
+ * pruned after every N adds (debounced).
  *
  * The store holds NO knowledge of MCP, triggers, or the
  * engine — it is a pure key/value layer. The engine owns the
@@ -17,7 +18,7 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { writeFileAtomic } from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import type { IEngineEvent } from './engine';
 
@@ -66,8 +67,8 @@ export const computeIdempotencyKey = (event: IEngineEvent): string => {
 
 /**
  * Create the idempotency store. Safe to call multiple times —
- * each instance owns its own in-memory map and file handle
- * (none, actually — every write flushes to disk).
+ * each instance owns its own in-memory map and refreshes it
+ * from disk before answering.
  */
 export const createProcessedEventsStore = (
 	options: IProcessedEventsOptions,
@@ -77,10 +78,9 @@ export const createProcessedEventsStore = (
 	const pruneEvery = options.pruneEvery ?? DEFAULT_PRUNE_EVERY;
 	const seen = new Map<string, IProcessedRecord>();
 	let addsSincePrune = 0;
-	let loaded = false;
 
-	const load = async (): Promise<void> => {
-		if (loaded) return;
+	const readRecords = async (): Promise<Map<string, IProcessedRecord>> => {
+		const records = new Map<string, IProcessedRecord>();
 		try {
 			const raw = await readFile(filePath, 'utf8');
 			for (const line of raw.split('\n')) {
@@ -95,7 +95,7 @@ export const createProcessedEventsStore = (
 						typeof parsed.sha === 'string' &&
 						typeof parsed.ts === 'number'
 					) {
-						seen.set(parsed.key, {
+						records.set(parsed.key, {
 							key: parsed.key,
 							sha: parsed.sha,
 							ts: parsed.ts,
@@ -108,7 +108,15 @@ export const createProcessedEventsStore = (
 		} catch {
 			// file missing — start empty
 		}
-		loaded = true;
+		return records;
+	};
+
+	const syncSeenFromDisk = async (): Promise<void> => {
+		const records = await readRecords();
+		seen.clear();
+		for (const [key, record] of records) {
+			seen.set(key, record);
+		}
 	};
 
 	const persist = async (): Promise<void> => {
@@ -122,34 +130,37 @@ export const createProcessedEventsStore = (
 
 	return {
 		async has(key) {
-			await load();
+			await syncSeenFromDisk();
 			return seen.has(key);
 		},
 		async add(key, sha, now = Date.now()) {
-			await load();
-			seen.set(key, { key, sha, ts: now });
+			await withFileMutex(filePath, async () => {
+				await syncSeenFromDisk();
+				seen.set(key, { key, sha, ts: now });
+				await persist();
+			});
 			addsSincePrune += 1;
-			await persist();
 			if (addsSincePrune >= pruneEvery) {
-				await this.prune(now);
 				addsSincePrune = 0;
+				await this.prune(now);
 			}
 		},
 		async prune(now = Date.now()) {
-			await load();
-			let removed = 0;
-			for (const [key, rec] of seen) {
-				if (now - rec.ts > ttlMs) {
-					seen.delete(key);
-					removed += 1;
+			return withFileMutex(filePath, async () => {
+				await syncSeenFromDisk();
+				let removed = 0;
+				for (const [key, rec] of seen) {
+					if (now - rec.ts > ttlMs) {
+						seen.delete(key);
+						removed += 1;
+					}
 				}
-			}
-			if (removed > 0) await persist();
-			return removed;
+				if (removed > 0) await persist();
+				return removed;
+			});
 		},
 		async dispose() {
 			seen.clear();
-			loaded = false;
 		},
 	};
 };

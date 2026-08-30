@@ -103,7 +103,7 @@ const realFs: IDoctorFs = {
  * whole doctor run.
  */
 export const runDoctorChecks = async (
-	options: IDoctorRunnerOptions
+	options: IDoctorRunnerOptions,
 ): Promise<IDoctorSection[]> => {
 	const ctx: IDoctorCheckContext = {
 		workspace: options.workspace,

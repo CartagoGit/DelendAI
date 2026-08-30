@@ -24,6 +24,8 @@ export interface IBranchPolicy {
 	readonly protectedPrefixes?: readonly string[] | undefined;
 }
 
+export const BRANCH_PROTECTED_REFUSAL_CODE = 'BRANCH_PROTECTED';
+
 export const DEFAULT_BRANCH_POLICY: IBranchPolicy = {
 	protected: [],
 	protectedPrefixes: [],
@@ -61,4 +63,7 @@ export const branchProtectedRefusal = (
 	branch: string,
 	policy: IBranchPolicy,
 ): string =>
-	`BRANCH_PROTECTED: branch "${branch}" matches policy (exact=${policy.protected.join(',')}, prefixes=${(policy.protectedPrefixes ?? []).join(',')})`;
+	`${BRANCH_PROTECTED_REFUSAL_CODE}: branch "${branch}" matches policy (exact=${policy.protected.join(',')}, prefixes=${(policy.protectedPrefixes ?? []).join(',')})`;
+
+export const refusalHasCode = (refusal: string, code: string): boolean =>
+	refusal.startsWith(`${code}:`);

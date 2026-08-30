@@ -176,6 +176,7 @@
 		"dev:web": "bun tools/scripts/dev/dev.script.ts --web",
 		"dev:ide": "bun tools/scripts/dev/dev.script.ts --ide",
 		"dev:vscode": "bun tools/scripts/dev/dev.script.ts --vscode",
+		"dev:vscode:extension": "bun run --cwd extensions/vscode watch",
 		"lint:agent-branch-naming": "bun tools/scripts/lint/agent-branch-naming.script.ts",
 		"reclaim:orphans": "bun tools/scripts/reclaim/reclaim-orphans.script.ts",
 		"lint:core-version-pin": "bun tools/scripts/lint/core-version-pin.script.ts",

@@ -26,7 +26,7 @@ import type { IGitRunner } from '@mcp-vertex/core/public';
 
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import type { ICommitPolicyPush } from '../contracts/options';
-import { gitCurrentBranch } from './git-extra';
+import { gitCurrentBranch, gitUnpushedCommitCount } from './git-extra';
 import { runPushDriver, type IPushDriverResult } from './push-driver';
 import { withGitWriteLock } from './git-write-lock';
 
@@ -136,15 +136,20 @@ export const createPushScheduler = (
 		return result;
 	};
 
+	const hasPendingAutomaticPush = async (): Promise<boolean> => {
+		if (commitsSincePush > 0) return true;
+		return (await gitUnpushedCommitCount(options.run)) > 0;
+	};
+
 	const tick = async (): Promise<void> => {
-		// Window-based push. Only push when there is at least
-		// one commit since the last push — otherwise the
-		// scheduler would spam empty pushes every interval.
-		if (commitsSincePush === 0) return;
-		if ((await branchRefusal()) !== null) return;
-		await enqueueWrite(() =>
-			push(`everyNMinutes=${options.policy.everyNMinutes ?? 0}`),
-		);
+		await enqueueWrite(async () => {
+			// Re-check inside the serialized lane so a timer tick
+			// queued behind a successful push observes the reset
+			// state and does not emit a duplicate push.
+			if (!(await hasPendingAutomaticPush())) return;
+			if ((await branchRefusal()) !== null) return;
+			await push(`everyNMinutes=${options.policy.everyNMinutes ?? 0}`);
+		});
 	};
 
 	const scheduleTick = (): void => {

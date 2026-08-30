@@ -32,13 +32,13 @@ describe('quality-gate script', () => {
 
 		expect(code).toBe(0);
 		expect(stdout.join('\n')).toContain(
-			'[dry-run] typecheck: bun run typecheck'
+			'[dry-run] typecheck: bun run typecheck',
 		);
 		expect(stdout.join('\n')).toContain(
-			'[dry-run] lint:proposals: bun tools/scripts/lint/proposals.script.ts'
+			'[dry-run] lint:proposals: bun tools/scripts/lint/proposals.script.ts',
 		);
 		expect(stdout.join('\n')).toContain(
-			'[dry-run] validate: bun run validate'
+			'[dry-run] validate: bun run validate',
 		);
 	});
 
@@ -52,7 +52,7 @@ describe('quality-gate script', () => {
 
 		expect(code).toBe(0);
 		expect(stdout.join('\n')).toContain(
-			'[dry-run] lint:proposals: bun tools/scripts/lint/proposals.script.ts'
+			'[dry-run] lint:proposals: bun tools/scripts/lint/proposals.script.ts',
 		);
 		expect(stdout.join('\n')).not.toContain('[dry-run] typecheck:');
 		expect(stdout.join('\n')).not.toContain('[dry-run] validate:');

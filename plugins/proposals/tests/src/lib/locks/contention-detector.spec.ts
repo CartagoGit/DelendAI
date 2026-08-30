@@ -33,7 +33,7 @@ describe('detectContention', () => {
 				version: 1,
 				stale_after_minutes: 10,
 				in_flight: [],
-			})
+			}),
 		);
 	});
 

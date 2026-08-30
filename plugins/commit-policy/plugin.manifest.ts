@@ -31,5 +31,4 @@ export default definePluginManifest({
 	},
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['commit-policy'],
-	startupActivation: true,
 });

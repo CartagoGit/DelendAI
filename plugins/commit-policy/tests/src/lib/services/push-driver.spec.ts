@@ -83,7 +83,8 @@ describe('runPushDriver', () => {
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(result.refusal).toContain('BRANCH_PROTECTED');
+		expect(result.refusal).toContain('branch "main" matches policy');
 	});
 
 	it('refuses direct push to master when protectedBranches includes it', async () => {
@@ -241,7 +242,7 @@ describe('runPushDriver', () => {
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(result.refusal).toContain('BRANCH_PROTECTED');
 		expect(pushes.calls.length).toBe(0);
 	});
 
@@ -256,17 +257,15 @@ describe('runPushDriver', () => {
 		expect(pushes.calls.length).toBe(1);
 	});
 
-	it('refuses main resolved from the current branch even when protectedBranches is empty', async () => {
+	it('allows main resolved from the current branch when protectedBranches is empty', async () => {
 		const { run, pushes } = buildPushFake({ currentBranch: 'main' });
 		const result = await runPushDriver(
 			{},
 			basePush({ remote: 'origin', protectedBranches: [] }),
 			run,
 		);
-		expect(result.ok).toBe(false);
-		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
-		expect(pushes.calls.length).toBe(0);
+		expect(result.ok).toBe(true);
+		expect(pushes.calls.length).toBe(1);
 	});
 
 	it('allows direct push to develop when config omits it', async () => {
@@ -276,6 +275,21 @@ describe('runPushDriver', () => {
 			basePush({
 				remote: 'origin',
 				branch: 'develop',
+			}),
+			run,
+		);
+		expect(result.ok).toBe(true);
+		expect(pushes.calls.length).toBe(1);
+	});
+
+	it('allows agent branches even if config tries to protect them explicitly', async () => {
+		const { run, pushes } = buildPushFake();
+		const result = await runPushDriver(
+			{},
+			basePush({
+				remote: 'origin',
+				branch: 'agent/cp-branch-policy-worker-r2',
+				protectedBranches: ['agent/cp-branch-policy-worker-r2'],
 			}),
 			run,
 		);

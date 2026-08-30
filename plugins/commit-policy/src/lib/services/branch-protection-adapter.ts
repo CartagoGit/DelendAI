@@ -10,19 +10,29 @@ const GIT_TOOL: IExternalTool = { id: 'git', bin: 'git' };
 const GH_TOOL: IExternalTool = { id: 'gh', bin: 'gh' };
 const GLAB_TOOL: IExternalTool = { id: 'glab', bin: 'glab' };
 
-export type ForgeProvider = 'github' | 'gitlab';
+export type ForgeProvider = 'github' | 'gitlab' | 'unknown';
+
+export type BranchProtectionState = 'fresh' | 'stale' | 'unsupported' | 'error';
 
 export type BranchProtectionRefreshResult =
 	| {
 			readonly ok: true;
-			readonly provider: ForgeProvider;
+			readonly state: 'fresh';
+			readonly provider: Exclude<ForgeProvider, 'unknown'>;
+			readonly remoteName: string;
+			readonly remoteHost: string;
 			readonly remoteBranches: readonly string[];
 			readonly effectiveBranches: readonly string[];
 	  }
 	| {
 			readonly ok: false;
+			readonly state: Exclude<BranchProtectionState, 'fresh'>;
 			readonly reason: string;
 			readonly provider?: ForgeProvider;
+			readonly remoteName?: string;
+			readonly remoteHost?: string;
+			readonly remoteBranches: readonly string[];
+			readonly effectiveBranches: readonly string[];
 	  };
 
 export interface BranchProtectionAdapter {
@@ -39,27 +49,174 @@ export interface BranchProtectionAdapterOptions {
 }
 
 interface RemoteRepository {
+	readonly remoteName: string;
+	readonly remoteHost: string;
 	readonly provider: ForgeProvider;
 	readonly owner: string;
 	readonly repository: string;
 }
 
+type SupportedRemoteRepository = RemoteRepository & {
+	readonly provider: Exclude<ForgeProvider, 'unknown'>;
+};
+
+interface RemoteTarget {
+	readonly name: string;
+	readonly url: string;
+}
+
+const trimOrUndefined = (value: string): string | undefined => {
+	const trimmed = value.trim();
+	return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const parseUpstreamRemoteName = (value: string): string | undefined => {
+	const trimmed = value.trim();
+	if (trimmed.length === 0 || trimmed === '@{upstream}') return undefined;
+	if (trimmed.includes('://') || trimmed.startsWith('git@')) return undefined;
+	const slash = trimmed.indexOf('/');
+	if (slash <= 0) return undefined;
+	return trimmed.slice(0, slash);
+};
+
+const readRemoteUrl = async (
+	workspaceRoot: string,
+	remoteName: string,
+	exec: NonNullable<BranchProtectionAdapterOptions['exec']>,
+): Promise<IExternalToolRun> =>
+	exec({
+		tool: GIT_TOOL,
+		args: ['remote', 'get-url', remoteName],
+		cwd: workspaceRoot,
+	});
+
+const resolveRemoteTarget = async (
+	options: BranchProtectionAdapterOptions,
+	exec: NonNullable<BranchProtectionAdapterOptions['exec']>,
+): Promise<
+	| { readonly ok: true; readonly target: RemoteTarget }
+	| {
+			readonly ok: false;
+			readonly state: 'error';
+			readonly reason: string;
+			readonly remoteName?: string;
+	  }
+> => {
+	const configuredRemote = options.policy.remote?.trim();
+	if (configuredRemote !== undefined && configuredRemote.length > 0) {
+		const configuredResult = await readRemoteUrl(
+			options.workspaceRoot,
+			configuredRemote,
+			exec,
+		);
+		if (!configuredResult.ok) {
+			return {
+				ok: false,
+				state: 'error',
+				remoteName: configuredRemote,
+				reason:
+					configuredResult.stderr.trim() ||
+					`Could not read configured remote '${configuredRemote}'.`,
+			};
+		}
+		const remoteUrl = trimOrUndefined(configuredResult.stdout);
+		if (remoteUrl === undefined) {
+			return {
+				ok: false,
+				state: 'error',
+				remoteName: configuredRemote,
+				reason: `Configured remote '${configuredRemote}' has no URL.`,
+			};
+		}
+		return {
+			ok: true,
+			target: { name: configuredRemote, url: remoteUrl },
+		};
+	}
+
+	const upstreamResult = await exec({
+		tool: GIT_TOOL,
+		args: ['rev-parse', '--abbrev-ref', '@{upstream}'],
+		cwd: options.workspaceRoot,
+	});
+	const upstreamRemote = upstreamResult.ok
+		? parseUpstreamRemoteName(upstreamResult.stdout)
+		: undefined;
+	if (upstreamRemote !== undefined) {
+		const upstreamUrlResult = await readRemoteUrl(
+			options.workspaceRoot,
+			upstreamRemote,
+			exec,
+		);
+		if (upstreamUrlResult.ok) {
+			const remoteUrl = trimOrUndefined(upstreamUrlResult.stdout);
+			if (remoteUrl !== undefined) {
+				return {
+					ok: true,
+					target: { name: upstreamRemote, url: remoteUrl },
+				};
+			}
+		}
+	}
+
+	const originResult = await readRemoteUrl(
+		options.workspaceRoot,
+		'origin',
+		exec,
+	);
+	if (!originResult.ok) {
+		return {
+			ok: false,
+			state: 'error',
+			reason:
+				originResult.stderr.trim() ||
+				'Could not resolve a remote URL from push.remote, upstream or origin.',
+			...(upstreamRemote !== undefined
+				? { remoteName: upstreamRemote }
+				: {}),
+		};
+	}
+	const originUrl = trimOrUndefined(originResult.stdout);
+	if (originUrl === undefined) {
+		return {
+			ok: false,
+			state: 'error',
+			remoteName: 'origin',
+			reason: 'The origin remote is empty or missing.',
+		};
+	}
+	return {
+		ok: true,
+		target: { name: 'origin', url: originUrl },
+	};
+};
+
 const parseRemoteRepository = (
+	remoteName: string,
 	remoteUrl: string,
 ): RemoteRepository | undefined => {
 	const trimmed = remoteUrl.trim().replace(/\.git$/u, '');
-	const ssh = trimmed.match(/^git@(github\.com|gitlab\.com):([^/]+)\/(.+)$/u);
-	const https = trimmed.match(
-		/^https?:\/\/(github\.com|gitlab\.com)\/([^/]+)\/(.+)$/u,
-	);
+	const ssh = trimmed.match(/^git@([^:]+):(.+)$/u);
+	const https = trimmed.match(/^https?:\/\/([^/]+)\/(.+)$/u);
 	const match = ssh ?? https;
 	if (match === null) return undefined;
-	const host = match[1];
-	const owner = match[2];
-	const repository = match[3];
-	if (owner === undefined || repository === undefined) return undefined;
+	const remoteHost = match[1]?.toLowerCase();
+	const path = match[2];
+	if (remoteHost === undefined || path === undefined) return undefined;
+	const segments = path.split('/').filter((segment) => segment.length > 0);
+	if (segments.length < 2) return undefined;
+	const owner = segments[0];
+	const repository = segments.slice(1).join('/');
+	if (owner === undefined || repository.length === 0) return undefined;
 	return {
-		provider: host === 'github.com' ? 'github' : 'gitlab',
+		remoteName,
+		remoteHost,
+		provider:
+			remoteHost === 'github.com'
+				? 'github'
+				: remoteHost === 'gitlab.com'
+					? 'gitlab'
+					: 'unknown',
 		owner,
 		repository,
 	};
@@ -67,7 +224,7 @@ const parseRemoteRepository = (
 
 const readProtectedBranches = async (
 	workspaceRoot: string,
-	repository: RemoteRepository,
+	repository: SupportedRemoteRepository,
 	exec: BranchProtectionAdapterOptions['exec'],
 ): Promise<IExternalToolRun> => {
 	const run = exec ?? runExternalTool;
@@ -128,7 +285,6 @@ export const createBranchProtectionAdapter = (
 	const exec = options.exec ?? runExternalTool;
 	const localBranches = new Set(options.policy.protectedBranches);
 	let remoteBranches = new Set<string>();
-	let lastResult: BranchProtectionRefreshResult | undefined;
 
 	const applyEffectiveBranches = (): readonly string[] => {
 		const effectiveBranches = [
@@ -142,41 +298,92 @@ export const createBranchProtectionAdapter = (
 		return effectiveBranches;
 	};
 
+	const failure = (
+		state: Exclude<BranchProtectionState, 'fresh'>,
+		reason: string,
+		metadata?: {
+			readonly provider?: ForgeProvider;
+			readonly remoteName?: string;
+			readonly remoteHost?: string;
+		},
+	): BranchProtectionRefreshResult => ({
+		ok: false,
+		state,
+		reason,
+		...(metadata?.provider !== undefined
+			? { provider: metadata.provider }
+			: {}),
+		...(metadata?.remoteName !== undefined
+			? { remoteName: metadata.remoteName }
+			: {}),
+		...(metadata?.remoteHost !== undefined
+			? { remoteHost: metadata.remoteHost }
+			: {}),
+		remoteBranches: [...remoteBranches],
+		effectiveBranches: applyEffectiveBranches(),
+	});
+
+	let lastResult: BranchProtectionRefreshResult = failure(
+		'stale',
+		'Remote branch protection has not been refreshed yet; local push.protectedBranches remains in effect.',
+	);
+
 	const refresh = async (): Promise<BranchProtectionRefreshResult> => {
 		remoteBranches = new Set();
 		applyEffectiveBranches();
-		const remoteResult = await exec({
-			tool: GIT_TOOL,
-			args: ['remote', 'get-url', 'origin'],
-			cwd: options.workspaceRoot,
-		});
-		const remoteUrl = remoteResult.ok
-			? remoteResult.stdout.trim() || undefined
-			: undefined;
-		const repository =
-			remoteUrl === undefined
-				? undefined
-				: parseRemoteRepository(remoteUrl);
-		if (repository === undefined) {
-			lastResult = {
-				ok: false,
-				reason: 'Could not detect a supported GitHub or GitLab origin remote.',
-			};
+		const target = await resolveRemoteTarget(options, exec);
+		if (!target.ok) {
+			lastResult = failure(target.state, target.reason, {
+				...(target.remoteName !== undefined
+					? { remoteName: target.remoteName }
+					: {}),
+			});
 			return lastResult;
 		}
+		const repository = parseRemoteRepository(
+			target.target.name,
+			target.target.url,
+		);
+		if (repository === undefined) {
+			lastResult = failure(
+				'error',
+				`Could not parse remote URL for '${target.target.name}'.`,
+				{ remoteName: target.target.name },
+			);
+			return lastResult;
+		}
+		if (repository.provider === 'unknown') {
+			lastResult = failure(
+				'unsupported',
+				`Unsupported forge provider for remote '${repository.remoteName}' host: ${repository.remoteHost}`,
+				{
+					provider: repository.provider,
+					remoteName: repository.remoteName,
+					remoteHost: repository.remoteHost,
+				},
+			);
+			return lastResult;
+		}
+		const supportedRepository: SupportedRemoteRepository = {
+			...repository,
+			provider: repository.provider,
+		};
 		const result = await readProtectedBranches(
 			options.workspaceRoot,
-			repository,
+			supportedRepository,
 			options.exec,
 		);
 		if (!result.ok) {
-			lastResult = {
-				ok: false,
-				provider: repository.provider,
-				reason:
-					result.stderr.trim() ||
+			lastResult = failure(
+				'error',
+				result.stderr.trim() ||
 					`${repository.provider} protection query failed`,
-			};
+				{
+					provider: repository.provider,
+					remoteName: repository.remoteName,
+					remoteHost: repository.remoteHost,
+				},
+			);
 			return lastResult;
 		}
 		remoteBranches = new Set(
@@ -185,7 +392,10 @@ export const createBranchProtectionAdapter = (
 		const effectiveBranches = applyEffectiveBranches();
 		lastResult = {
 			ok: true,
+			state: 'fresh',
 			provider: repository.provider,
+			remoteName: repository.remoteName,
+			remoteHost: repository.remoteHost,
 			remoteBranches: [...remoteBranches],
 			effectiveBranches,
 		};

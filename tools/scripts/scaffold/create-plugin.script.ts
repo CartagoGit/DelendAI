@@ -30,6 +30,7 @@ import {
 } from '@mcp-vertex/client';
 import {
 	scaffoldPluginFiles,
+	type IScaffoldedFile,
 	type IScaffoldPluginOptions,
 } from '@mcp-vertex/core/public';
 

@@ -14,6 +14,7 @@ import {
 } from '@mcp-vertex/core/public';
 
 import type { ICommitPolicyPush, ForceMode } from '../contracts/options';
+import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import { gitCurrentBranch, gitUpstream } from './git-extra';
 
@@ -43,22 +44,6 @@ type IForceAuthorizationResolution =
 	| { readonly ok: true; readonly authorization?: IPushAuthorization }
 	| { readonly ok: false; readonly refusal: string };
 
-type IMainPushGuardResolution =
-	{ readonly ok: true } | { readonly ok: false; readonly refusal: string };
-
-export const enforceMainPushGuard = (
-	branch: string
-): IMainPushGuardResolution => {
-	if (branch === 'main') {
-		return {
-			ok: false,
-			refusal:
-				"DIRECT_PUSH_TO_MAIN_NOT_ALLOWED: direct push to 'main' is not allowed; cuts the release/publish path. Next: open a PR from a feature branch (release/* or develop).",
-		};
-	}
-	return { ok: true };
-};
-
 /**
  * Plain `--force` rewrites shared history irreversibly, so `gitPush`
  * refuses it without an explicit `{ by, reason }` sign-off. Both halves
@@ -71,7 +56,7 @@ export const enforceMainPushGuard = (
 const resolveForceAuthorization = (
 	forceMode: ForceMode,
 	policy: ICommitPolicyPush,
-	authorizedBy: string | undefined
+	authorizedBy: string | undefined,
 ): IForceAuthorizationResolution => {
 	if (forceMode !== 'allow') return { ok: true };
 
@@ -110,7 +95,7 @@ const forceModeToGitPush = (mode: ForceMode): IPushForceMode => {
 export const runPushDriver = async (
 	input: IPushDriverInput,
 	policy: ICommitPolicyPush,
-	run: IGitRunner
+	run: IGitRunner,
 ): Promise<IPushDriverResult> => {
 	if (!policy.enabled) {
 		return {
@@ -154,20 +139,20 @@ export const runPushDriver = async (
 		};
 	}
 
-	const mainPushGuard = enforceMainPushGuard(branch);
-	if (!mainPushGuard.ok) return { ok: false, refusal: mainPushGuard.refusal };
+	const effectiveProtectedBranches = resolveProtectedBranches(
+		policy.protectedBranches,
+	);
 
 	if (
-		policy.protectedBranches.includes(branch) ||
 		isBranchProtected(branch, {
-			protected: policy.protectedBranches,
+			protected: effectiveProtectedBranches,
 			protectedPrefixes: policy.protectedPrefixes,
 		})
 	) {
 		return {
 			ok: false,
 			refusal: branchProtectedRefusal(branch, {
-				protected: policy.protectedBranches,
+				protected: effectiveProtectedBranches,
 				protectedPrefixes: policy.protectedPrefixes,
 			}),
 		};
@@ -177,7 +162,7 @@ export const runPushDriver = async (
 	const authorization = resolveForceAuthorization(
 		forceMode,
 		policy,
-		input.authorizedBy
+		input.authorizedBy,
 	);
 	if (!authorization.ok) return { ok: false, refusal: authorization.refusal };
 
@@ -188,7 +173,7 @@ export const runPushDriver = async (
 		// Defense in depth: this driver already refused protected branches
 		// above, but handing the list to the primitive keeps the guard in
 		// place for any future path that reaches `gitPush` differently.
-		protectedBranches: policy.protectedBranches,
+		protectedBranches: effectiveProtectedBranches,
 		...(authorization.authorization !== undefined
 			? { authorization: authorization.authorization }
 			: {}),

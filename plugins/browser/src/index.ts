@@ -47,7 +47,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`browser plugin rejected its options: ${parsed.error.message}`
+				`browser plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
 		const opts = parsed.data;

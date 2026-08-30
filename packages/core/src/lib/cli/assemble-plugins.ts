@@ -57,7 +57,7 @@ import type { IToolSurfaceLazyBinding } from '../contracts/interfaces/tool-surfa
 const idempotentDisposePlugins = (
 	run: () => Promise<
 		readonly { readonly pluginName: string; readonly error: unknown }[]
-	>
+	>,
 ): (() => Promise<
 	readonly { readonly pluginName: string; readonly error: unknown }[]
 >) => {
@@ -186,10 +186,10 @@ const replayRegisterErrors = async (
 	handlers: ReadonlyArray<{
 		readonly pluginName: string;
 		readonly handler: (
-			info: IPluginRegisterErrorInfo
+			info: IPluginRegisterErrorInfo,
 		) => Promise<void> | void;
 	}>,
-	errors: readonly IPluginRegisterErrorInfo[]
+	errors: readonly IPluginRegisterErrorInfo[],
 ): Promise<void> => {
 	for (const info of errors) {
 		for (const observer of handlers) {
@@ -197,7 +197,7 @@ const replayRegisterErrors = async (
 				await observer.handler(info);
 			} catch (error) {
 				process.stderr.write(
-					`[mcp-vertex] onRegisterError error (${observer.pluginName}): ${error instanceof Error ? error.message : String(error)}\n`
+					`[mcp-vertex] onRegisterError error (${observer.pluginName}): ${error instanceof Error ? error.message : String(error)}\n`,
 				);
 			}
 		}
@@ -255,20 +255,20 @@ const tryAssembleManagedLazy = async (input: {
 		pluginIds.map((id) => [
 			id,
 			pluginConfigFor(input.fileConfig, id).prefix ?? id,
-		])
+		]),
 	);
 	const definitions = pluginIds
 		.map((id) => MANAGED_LAZY_PLUGIN_BY_ID.get(id))
 		.filter(
 			(entry): entry is (typeof MANAGED_LAZY_PLUGIN_CATALOG)[number] =>
-				entry !== undefined
+				entry !== undefined,
 		);
 	input.peerRegistry.set(pluginIds);
 	const pluginOptions = new Map(
 		Object.entries(input.fileConfig.plugins ?? {}).map(([name, config]) => [
 			name,
 			config.options ?? {},
-		])
+		]),
 	);
 	const configurationIssues = await validateManagedLazyConfiguration({
 		plugins: definitions,
@@ -339,7 +339,7 @@ const tryAssembleManagedLazy = async (input: {
 			}
 			if (registrations.getCheckpointAdvisory)
 				getCheckpointAdvisoryFns.push(
-					registrations.getCheckpointAdvisory
+					registrations.getCheckpointAdvisory,
 				);
 			if (registrations.beforeToolCall)
 				beforeToolCallFns.push(registrations.beforeToolCall);
@@ -351,8 +351,8 @@ const tryAssembleManagedLazy = async (input: {
 					...registrations.errorSinks.filter(
 						(sink) =>
 							!resolvedErrorSinks.some(
-								(existing) => existing.id === sink.id
-							)
+								(existing) => existing.id === sink.id,
+							),
 					),
 				];
 		},
@@ -368,8 +368,8 @@ const tryAssembleManagedLazy = async (input: {
 	});
 	await Promise.all(
 		configuredStartupPlugins.map((plugin) =>
-			lazyRuntime.activatePlugin(plugin.id)
-		)
+			lazyRuntime.activatePlugin(plugin.id),
+		),
 	);
 	const pluginToolEntries: IOverviewToolEntry[] = [];
 	const toolSurfaceDescriptors: IToolSurfaceDescriptor[] = [];
@@ -424,16 +424,16 @@ const tryAssembleManagedLazy = async (input: {
 			fromConfig: new Set(input.configPluginNames),
 			fromPreset: new Set(input.args.presetPlugins),
 		},
-		contributions
+		contributions,
 	);
 	const activationById = new Map(
-		activationReport.entries.map((entry) => [entry.id, entry])
+		activationReport.entries.map((entry) => [entry.id, entry]),
 	);
 	const configurationPlugins: IConfigurationPlugin[] = pluginIds.map((id) => {
 		const configEntry = pluginConfigFor(input.fileConfig, id);
 		const catalogEntry = MANAGED_LAZY_PLUGIN_BY_ID.get(id);
 		const permissions = FIRST_PARTY_PLUGIN_INDEX.entries.find(
-			(entry) => entry.id === id
+			(entry) => entry.id === id,
 		)?.permissions;
 		return {
 			id,
@@ -527,7 +527,7 @@ const tryAssembleManagedLazy = async (input: {
 };
 
 export const assemblePlugins = async (
-	input: IAssemblePluginsInput
+	input: IAssemblePluginsInput,
 ): Promise<IAssemblePluginsResult> => {
 	const {
 		args,
@@ -546,7 +546,7 @@ export const assemblePlugins = async (
 	// (`loadPlugins` runs the scoped-name fallback chain against it).
 	const resolvedConfigSpecifiers = resolveConfigPluginSpecifiers(
 		fileConfig,
-		args.workspace
+		args.workspace,
 	);
 	const effectivePlugins = [
 		...new Set([...args.plugins, ...resolvedConfigSpecifiers]),
@@ -596,11 +596,11 @@ export const assemblePlugins = async (
 			((specifier) => nodeDynamicImport(specifier, args.workspace)),
 	});
 	const configurationErrors = loadResult.errors.filter(
-		(error) => error.specifier === 'configuration'
+		(error) => error.specifier === 'configuration',
 	);
 	if (configurationErrors.length > 0) {
 		throw new Error(
-			configurationErrors.map((error) => error.message).join('\n\n')
+			configurationErrors.map((error) => error.message).join('\n\n'),
 		);
 	}
 
@@ -615,7 +615,7 @@ export const assemblePlugins = async (
 		!loadResult.loaded.some((p) => p.plugin.name === 'logs')
 	) {
 		process.stderr.write(
-			'[mcp-vertex] --strict-logs: auto-loading the `logs` plugin to persist lifecycle events.\n'
+			'[mcp-vertex] --strict-logs: auto-loading the `logs` plugin to persist lifecycle events.\n',
 		);
 		const autoLoad = await loadPlugins({
 			specifiers: [...effectivePlugins, 'logs'],
@@ -634,7 +634,7 @@ export const assemblePlugins = async (
 		// snapshot `loadResult.loaded` once (f00154 S2 audit).
 		const seen = new Set(loadResult.loaded.map((p) => p.plugin.name));
 		const additions = autoLoad.loaded.filter(
-			(entry) => !seen.has(entry.plugin.name)
+			(entry) => !seen.has(entry.plugin.name),
 		);
 		if (additions.length > 0) {
 			loadResult = {
@@ -674,7 +674,7 @@ export const assemblePlugins = async (
 	const onRegisterErrors: Array<{
 		readonly pluginName: string;
 		readonly handler: (
-			info: IPluginRegisterErrorInfo
+			info: IPluginRegisterErrorInfo,
 		) => Promise<void> | void;
 	}> = [];
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
@@ -800,7 +800,7 @@ export const assemblePlugins = async (
 		configPluginNames.map((name, index) => [
 			resolvedConfigSpecifiers[index] ?? name,
 			name,
-		])
+		]),
 	);
 	const loadedNamesFor = (specifiers: ReadonlySet<string>): Set<string> =>
 		new Set(
@@ -808,9 +808,9 @@ export const assemblePlugins = async (
 				.filter(
 					(entry) =>
 						specifiers.has(entry.specifier) ||
-						specifiers.has(entry.plugin.name)
+						specifiers.has(entry.plugin.name),
 				)
-				.map((entry) => entry.plugin.name)
+				.map((entry) => entry.plugin.name),
 		);
 	const configSourceSpecifiers = new Set([
 		...configPluginNames,
@@ -841,7 +841,7 @@ export const assemblePlugins = async (
 					const entry = pluginConfigFor(fileConfig, name);
 					const resolvedSpecifier =
 						[...configNameBySpecifier.entries()].find(
-							([, configName]) => configName === name
+							([, configName]) => configName === name,
 						)?.[0] ?? `@mcp-vertex/${name}`;
 					return {
 						id: name,
@@ -856,32 +856,32 @@ export const assemblePlugins = async (
 						active: false,
 						toolCount: 0,
 					};
-				})
-			)
+				}),
+			),
 	);
 	const activationById = new Map(
-		activationReport.entries.map((entry) => [entry.id, entry])
+		activationReport.entries.map((entry) => [entry.id, entry]),
 	);
 	const configurationContributionById = new Map(
 		loadResult.loaded.flatMap((entry) =>
 			(entry.registrations.activation ?? [])
 				.filter((item) => item.configuration !== undefined)
-				.map((item) => [item.id, item.configuration!] as const)
-		)
+				.map((item) => [item.id, item.configuration!] as const),
+		),
 	);
 	const loadedByName = new Map(
-		loadResult.loaded.map((entry) => [entry.plugin.name, entry])
+		loadResult.loaded.map((entry) => [entry.plugin.name, entry]),
 	);
 	const firstPartyPermissionsById = new Map(
 		FIRST_PARTY_PLUGIN_INDEX.entries
 			.filter((entry) => entry.permissions !== undefined)
-			.map((entry) => [entry.id, entry.permissions] as const)
+			.map((entry) => [entry.id, entry.permissions] as const),
 	);
 	const configurationPlugins: IConfigurationPlugin[] =
 		activationReport.entries.map((activation) => {
 			const loaded = loadedByName.get(activation.id);
 			const contributed = configurationContributionById.get(
-				activation.id
+				activation.id,
 			);
 			const configName =
 				loaded === undefined

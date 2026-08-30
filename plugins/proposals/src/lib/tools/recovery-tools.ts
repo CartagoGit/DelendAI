@@ -23,7 +23,7 @@ import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
 } from '../proposals/frontmatter-parser';
-import { locateByScan } from '../proposals/locate';
+import { locateProposal as locateSharedProposal } from '../proposals/locate';
 import { setFrontmatterStatus as sharedSetFrontmatterStatus } from '../proposals/proposal-frontmatter-writer';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
@@ -89,6 +89,7 @@ export const createRecoveryEventBuffer = (
 
 export interface IRecoveryToolOptions {
 	readonly namespacePrefix: string;
+	readonly indexPathAbs: string;
 	readonly proposalsDirAbs: string;
 	readonly lockPathAbs: string;
 	readonly agentRegistryPathAbs: string;
@@ -223,13 +224,17 @@ const taskProposalId = (taskId: string): string => {
 };
 
 const locateProposal = async (
-	proposalsDirAbs: string,
+	options: Pick<IRecoveryToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
 	id: string,
 ): Promise<ILocatedProposal | null> => {
-	// Delegate the folder-walking to the shared `locateByScan` (DRY —
-	// same loop body used by 3+ tools). The local wrapper just adds
+	// Use the shared index-first resolver so recovery tools address the
+	// same proposals as proposal_get and proposal_review. The local
+	// wrapper just adds
 	// the `raw` + `frontmatter` fields the recovery tools need.
-	const located = await locateByScan(proposalsDirAbs, id);
+	const located = await locateSharedProposal(id, {
+		indexPathAbs: options.indexPathAbs,
+		proposalsDirAbs: options.proposalsDirAbs,
+	});
 	if (located === null) return null;
 	const raw = (await readTextOrNull(located.absPath)) ?? '';
 	const block = extractYamlBlock(raw);
@@ -239,7 +244,7 @@ const locateProposal = async (
 			: (parseFrontmatterBlock(block) as Record<string, unknown>);
 	return {
 		absPath: located.absPath,
-		relPath: relative(proposalsDirAbs, located.absPath),
+		relPath: relative(options.proposalsDirAbs, located.absPath),
 		folder: located.folder,
 		raw,
 		frontmatter,
@@ -484,7 +489,7 @@ export const runProposalForceTransition = async (
 			`Use one of: ${Object.keys(PROPOSAL_STATUSES).join(', ')}.`,
 		);
 	}
-	const found = await locateProposal(options.proposalsDirAbs, args.id);
+	const found = await locateProposal(options, args.id);
 	if (!found) {
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	}
@@ -541,7 +546,7 @@ export const runProposalReconcileFolder = async (
 	},
 	options: IRecoveryToolOptions,
 ) => {
-	const found = await locateProposal(options.proposalsDirAbs, args.id);
+	const found = await locateProposal(options, args.id);
 	if (!found)
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	if (!isKnownStatus(found.status)) {
@@ -606,7 +611,7 @@ export const runProposalDiagnose = async (
 	},
 	options: IRecoveryToolOptions,
 ) => {
-	const found = await locateProposal(options.proposalsDirAbs, args.id);
+	const found = await locateProposal(options, args.id);
 	if (!found)
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	const lock = await readLock(options.lockPathAbs);

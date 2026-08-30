@@ -159,10 +159,10 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			plugins: Record<string, unknown>;
 		};
 		// x00166: vertex mirrors mcp-vertex.config.json's `plugins` keys
-		// exactly (34 total in the current dogfood snapshot), including
+		// exactly (38 total in the current dogfood snapshot), including
 		// proposals (orchestration/swarm) — no independent-preset chain
 		// inheritance involved, this is just what the live config loads.
-		expect(Object.keys(config.plugins).length).toBe(37);
+		expect(Object.keys(config.plugins).length).toBe(38);
 		for (const required of [
 			'audit',
 			'auto-agent-selector',
@@ -677,7 +677,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			};
 		};
 		expect(parsed.plugins.audit.options.auditDir).toBe(
-			'docs/proposals/done/audits',
+			'docs/mcp-vertex/proposals/done/audits',
 		);
 		expect(parsed.plugins.audit.options.topActions).toBe(5);
 	});

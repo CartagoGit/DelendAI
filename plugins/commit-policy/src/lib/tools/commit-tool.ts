@@ -13,14 +13,37 @@ import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolOk } from '@mcp-vertex/core/public';
 
+import {
+	BRANCH_PROTECTED_REFUSAL_CODE,
+	refusalHasCode,
+} from '../contracts/branch';
 import type { ICommitPolicyOptions } from '../contracts/options';
-import { localizedString } from '../contracts/i18n-types';
+import {
+	localizedScopeRefusalTip,
+	localizedString,
+} from '../contracts/i18n-types';
 import {
 	runCommitDriver,
 	type ICommitDriverInput,
 	type ICommitDriverOptions,
 } from '../services/commit-driver';
 import type { IPushDriverResult } from '../services/push-driver';
+
+const commitToolFallbackNextAction = (refusal: string): string => {
+	if (refusal.includes('HEAD is detached')) {
+		return 'Check out a feature/agent branch and retry the commit.';
+	}
+	if (refusal.includes('nothing to commit')) {
+		return 'Stage or edit at least one allowed file and retry the commit.';
+	}
+	if (refusal.includes('SLICE_HAS_NO_FILES')) {
+		return 'Attach files to the slice or disable slice scoping before retrying.';
+	}
+	if (refusal.includes('TRIGGER_HAS_NO_FILES')) {
+		return 'Only fire the trigger when it has concrete dirty files to commit.';
+	}
+	return 'Inspect the refusal detail, fix the local precondition, and retry the commit.';
+};
 
 export interface ICommitToolOptions extends ICommitDriverOptions {
 	readonly namespacePrefix: string;
@@ -117,7 +140,7 @@ export const runCommitPolicyCommit = async (
 			}
 			if (
 				refusal.includes('protected branch') ||
-				refusal.includes('BRANCH_PROTECTED')
+				refusalHasCode(refusal, BRANCH_PROTECTED_REFUSAL_CODE)
 			) {
 				return {
 					summary: catalog.tools.commit.refuseProtectedBranch({
@@ -126,11 +149,40 @@ export const runCommitPolicyCommit = async (
 					nextAction: catalog.tools.commit.nextActionProtected,
 				};
 			}
+			if (refusal.includes('NON_CONVENTIONAL_MESSAGE')) {
+				const conventionalCode = refusal.includes('EMPTY_HEADER')
+					? 'EMPTY_HEADER'
+					: refusal.includes('UNKNOWN_TYPE')
+						? 'UNKNOWN_TYPE'
+						: 'MALFORMED_HEADER';
+				return {
+					summary: refusal,
+					nextAction: localizedScopeRefusalTip(
+						options.locale,
+						conventionalCode,
+					),
+				};
+			}
+			if (
+				refusal.includes('HEAD is detached') ||
+				refusal.includes('nothing to commit') ||
+				refusal.includes('SLICE_HAS_NO_FILES') ||
+				refusal.includes('TRIGGER_HAS_NO_FILES')
+			) {
+				return {
+					summary: refusal,
+					nextAction: commitToolFallbackNextAction(refusal),
+				};
+			}
 			return {
-				summary: catalog.tools.commit.refuseNoIdentity({
-					mode: options.policy.identity.mode,
-				}),
-				nextAction: catalog.tools.commit.nextActionIdentity,
+				summary: refusal.includes('identity.mode')
+					? catalog.tools.commit.refuseNoIdentity({
+							mode: options.policy.identity.mode,
+						})
+					: refusal,
+				nextAction: refusal.includes('identity.mode')
+					? catalog.tools.commit.nextActionIdentity
+					: commitToolFallbackNextAction(refusal),
 			};
 		});
 		return toolError(localized.summary, localized.nextAction);

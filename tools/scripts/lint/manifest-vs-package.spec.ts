@@ -13,7 +13,7 @@ const writeJson = async (path: string, value: unknown): Promise<void> => {
 const writeManifest = async (
 	root: string,
 	pluginId: string,
-	override = ''
+	override = '',
 ): Promise<void> => {
 	await writeFile(
 		join(root, 'plugins', pluginId, 'plugin.manifest.ts'),
@@ -33,14 +33,14 @@ const writeManifest = async (
 			"\tcapabilities: ['fixture'],",
 			'};\n',
 		].join('\n'),
-		'utf8'
+		'utf8',
 	);
 };
 
 const writeRuntimeIndex = async (
 	root: string,
 	pluginId: string,
-	version = '0.1.0'
+	version = '0.1.0',
 ): Promise<void> => {
 	await mkdir(join(root, 'plugins', pluginId, 'src'), { recursive: true });
 	await writeFile(
@@ -52,13 +52,13 @@ const writeRuntimeIndex = async (
 			'};',
 			'',
 		].join('\n'),
-		'utf8'
+		'utf8',
 	);
 };
 
 const writeImportedRuntimeIndex = async (
 	root: string,
-	pluginId: string
+	pluginId: string,
 ): Promise<void> => {
 	await mkdir(join(root, 'plugins', pluginId, 'src'), { recursive: true });
 	await writeFile(
@@ -72,12 +72,12 @@ const writeImportedRuntimeIndex = async (
 			'};',
 			'',
 		].join('\n'),
-		'utf8'
+		'utf8',
 	);
 };
 
 const withFixture = async (
-	callback: (root: string) => Promise<void>
+	callback: (root: string) => Promise<void>,
 ): Promise<void> => {
 	const root = await mkdtemp(join(tmpdir(), 'manifest-vs-package-'));
 	try {
@@ -111,7 +111,7 @@ describe('manifest-vs-package lint', () => {
 			});
 			const violations = await lintManifestVsPackage(root);
 			expect(violations.some((v) => v.rule === 'MANIFEST-PKG-001')).toBe(
-				true
+				true,
 			);
 		});
 	});
@@ -129,7 +129,7 @@ describe('manifest-vs-package lint', () => {
 					plugin: 'foo',
 					rule: 'MANIFEST-VER-001',
 					message: expect.stringContaining('src/index.ts'),
-				})
+				}),
 			);
 		});
 	});
@@ -143,9 +143,9 @@ describe('manifest-vs-package lint', () => {
 					plugin: 'foo',
 					rule: 'MANIFEST-VER-001',
 					message: expect.stringContaining(
-						'plugin.manifest.ts#version "0.1.0"'
+						'plugin.manifest.ts#version "0.1.0"',
 					),
-				})
+				}),
 			);
 		});
 	});
@@ -163,15 +163,15 @@ describe('manifest-vs-package lint', () => {
 			await writeImportedRuntimeIndex(root, 'foo');
 			const violations = await lintManifestVsPackage(root);
 			const fooViolations = violations.filter(
-				(violation) => violation.plugin === 'foo'
+				(violation) => violation.plugin === 'foo',
 			);
 			expect(fooViolations.length).toBe(1);
 			expect(fooViolations[0]?.rule).toBe('MANIFEST-VER-001');
 			expect(fooViolations[0]?.message).toContain(
-				'src/index.ts#version "0.1.1"'
+				'src/index.ts#version "0.1.1"',
 			);
 			expect(fooViolations[0]?.message).not.toContain(
-				'src/index.ts#version ""'
+				'src/index.ts#version ""',
 			);
 		});
 	});
@@ -196,11 +196,11 @@ describe('manifest-vs-package lint', () => {
 					"\tdependencies: ['@mcp-vertex/core'],",
 					"\tcapabilities: ['fixture'],",
 					'};\n',
-				].join('\n')
+				].join('\n'),
 			);
 			const violations = await lintManifestVsPackage(root);
 			expect(violations.some((v) => v.rule === 'MANIFEST-VIS-001')).toBe(
-				true
+				true,
 			);
 		});
 	});

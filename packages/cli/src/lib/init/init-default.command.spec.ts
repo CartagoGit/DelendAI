@@ -204,9 +204,9 @@ describe('init:default (f00103)', () => {
 		]) {
 			expect(config.plugins[phantom]).toBeUndefined();
 		}
-		// Exactly 36 vertex plugins rendered in the current dogfood snapshot,
+		// Exactly 37 vertex plugins rendered in the current dogfood snapshot,
 		// no extras added.
-		expect(Object.keys(config.plugins).length).toBe(37);
+		expect(Object.keys(config.plugins).length).toBe(38);
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {

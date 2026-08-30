@@ -90,7 +90,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`observability plugin rejected its options: ${parsed.error.message}`
+				`observability plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
 		const source: IErrorSource | undefined =

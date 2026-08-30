@@ -32,11 +32,11 @@ export interface IActivationKpiSessionStoreOptions {
 const DEFAULT_RELATIVE_PATH = join('.vscode', 'mcp-vertex', 'kpis.json');
 
 export const createActivationKpiSessionStore = (
-	options: IActivationKpiSessionStoreOptions
+	options: IActivationKpiSessionStoreOptions,
 ): IActivationKpiSessionStore => {
 	const path = join(
 		options.workspaceRootAbs,
-		options.relativePath ?? DEFAULT_RELATIVE_PATH
+		options.relativePath ?? DEFAULT_RELATIVE_PATH,
 	);
 	const read =
 		options.readFile ??
@@ -76,7 +76,7 @@ export const createActivationKpiSessionStore = (
 			await withFileMutex(path, async () => {
 				await write(
 					path,
-					`${JSON.stringify(serializeKpis(kpis), null, '\t')}\n`
+					`${JSON.stringify(serializeKpis(kpis), null, '\t')}\n`,
 				);
 			});
 			return session;

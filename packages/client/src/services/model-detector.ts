@@ -1,7 +1,25 @@
-import {
-	detectModelTier,
-	type TModelTier,
-} from '@mcp-vertex/core/lib/presets/model-profiles';
+export type TModelTier = 'small' | 'medium' | 'large';
+
+const detectModelTier = (hint: string | null | undefined): TModelTier => {
+	if (!hint) return 'medium';
+	const normalised = hint.toLowerCase().trim();
+	if (
+		normalised === 'small' ||
+		normalised === 'nano' ||
+		normalised === 'mini'
+	) {
+		return 'small';
+	}
+	if (
+		normalised === 'large' ||
+		normalised === 'xl' ||
+		normalised === 'xxl' ||
+		normalised === 'opus'
+	) {
+		return 'large';
+	}
+	return 'medium';
+};
 
 export const MODEL_TIER_HEADER = 'x-model-tier';
 
@@ -15,7 +33,7 @@ export interface ModelTierHeaderSource {
 
 /** Read a provider tier header, defaulting to medium when absent. */
 export const detectModelTierFromHeaders = (
-	headers: ModelTierHeaders | ModelTierHeaderSource | Headers | undefined
+	headers: ModelTierHeaders | ModelTierHeaderSource | Headers | undefined,
 ): TModelTier => {
 	if (headers === undefined) return 'medium';
 	let value: string | null | undefined;

@@ -17,7 +17,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`changelog plugin rejected its options: ${parsed.error.message}`
+				`changelog plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
 		return {
