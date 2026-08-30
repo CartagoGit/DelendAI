@@ -88,7 +88,7 @@ const BudgetOutputSchema = BudgetPolicySchema.omit({ timeoutMs: true }).extend({
 	exhausted: z.boolean(),
 });
 
-const RotationOutputSchema = RotationPolicySchema;
+const _RotationOutputSchema = RotationPolicySchema;
 
 const PlanRefSchema = z.object({
 	mode: OrchestrationModeSchema,

@@ -39,13 +39,16 @@ El runtime registra exactamente una herramienta con `outputSchema`; el E2E no re
 
 ### S1 — Reparar registration y validar runtime
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/close-plan.tool.ts`, `plugins/proposals/tests`, `packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts`
 - Localizar la registration efectiva de `proposals_close_plan`.
 - Actualizar dist/generated artifacts solo si estan stale.
 - Mantener tests de registration y E2E.
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Aprobación independiente: registration directa y managed/lazy exponen outputSchema; la ruta managed/lazy ejecuta callTool real y valida structuredContent; los cuatro escenarios directos están cubiertos; no hay hooks de test en IClosePlanToolOptions ni relajación del E2E.
 ## acceptance
 
 - [ ] `mcp-vertex_proposals_proposals_close_plan` no aparece en `missing outputSchema`.

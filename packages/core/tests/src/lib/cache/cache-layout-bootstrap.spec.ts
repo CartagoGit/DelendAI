@@ -61,4 +61,57 @@ describe('bootstrapCacheLayout', () => {
 			join(workspace, '.runtime/cache/verify-tmp'),
 		);
 	});
+
+	it('reports legacy paths without changing the workspace in dry-run mode', async () => {
+		const workspace = createTestWorkspace('mcp-vertex-cache-');
+		workspaces.push(workspace);
+		const legacy = join(workspace, '.verify-tmp');
+		await mkdir(legacy);
+
+		const result = await bootstrapCacheLayout({
+			workspaceRootAbs: workspace,
+			cacheDirAbs: '.runtime/cache',
+			apply: false,
+		});
+
+		expect(result.pending).toEqual([
+			{
+				from: legacy,
+				to: join(workspace, '.runtime/cache/verify-tmp'),
+			},
+		]);
+		expect(result.migrated).toHaveLength(0);
+	});
+
+	it('moves a legacy file without treating it as a directory', async () => {
+		const workspace = createTestWorkspace('mcp-vertex-cache-');
+		workspaces.push(workspace);
+		const legacy = join(
+			workspace,
+			'.commit-policy',
+			'processed-events.jsonl',
+		);
+		await mkdir(join(workspace, '.commit-policy'), { recursive: true });
+		await writeFile(legacy, '{"key":"file"}\n');
+
+		const result = await bootstrapCacheLayout({
+			workspaceRootAbs: workspace,
+			cacheDirAbs: '.runtime/cache',
+			includeBuiltInLegacyPaths: false,
+			legacyPaths: [
+				{
+					sourceAbs: legacy,
+					destinationAbs: join(
+						workspace,
+						'.runtime/cache/commit-policy/processed-events.jsonl',
+					),
+				},
+			],
+		});
+
+		expect(result.migrated).toHaveLength(1);
+		const target = result.migrated[0]?.to;
+		expect(target).toBeDefined();
+		expect(await readFile(target!, 'utf8')).toContain('"file"');
+	});
 });

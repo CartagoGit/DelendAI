@@ -9,12 +9,9 @@ import {
 import type { ILogToolStores } from '../contracts/interfaces/tools.interface';
 import { correlateEvents } from '../services/correlate';
 import {
-	incidentTypeForKind,
 	INCIDENT_TYPE_PATTERN,
 	isValidIncidentType,
-	KIND_TO_INCIDENT_TYPE,
 	LOG_SEVERITIES,
-	severityForOutcome,
 } from '../services/kinds';
 import { logIncidents, logSearch } from '../services/log-search-incidents';
 import { LOG_OUTCOMES, type LogEventKind } from '../services/normalize-event';
@@ -31,7 +28,7 @@ const DECIMAL_RADIX = 10;
 const SUBSCRIBE_DEFAULT_LIMIT = 50;
 const INCIDENT_TYPE_PATTERN_DOC = '^[a-z][a-z0-9-]{0,63}$';
 const INCIDENT_SUMMARY_PREVIEW_CHARS = 140;
-const LogEventSchema = z.object({
+const _LogEventSchema = z.object({
 	ts: z.string(),
 	kind: z.string(),
 	agent: z.string().nullable(),

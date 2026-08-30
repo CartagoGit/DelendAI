@@ -191,7 +191,7 @@ export const createIdempotencyStore = <T = unknown>(
 // have to reach into `serialize()`/`hydrate()` themselves.
 // ---------------------------------------------------------------------------
 
-export interface IIdempotencyFile<T> {
+export interface IIdempotencyFile<_T> {
 	readonly path: string;
 }
 

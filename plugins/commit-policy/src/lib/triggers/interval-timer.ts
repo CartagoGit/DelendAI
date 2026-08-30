@@ -18,7 +18,7 @@ export interface IIntervalTimer {
 
 export const createIntervalTimer = (
 	run: IGitRunner,
-	config: { readonly minutes: number },
+	_config: { readonly minutes: number },
 ): IIntervalTimer => {
 	let lastFiredAt: number | undefined;
 	return {

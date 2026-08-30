@@ -1,6 +1,6 @@
 import z from 'zod';
 
-const TARGET_REPO_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+const _TARGET_REPO_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 
 /**
  * Options contract for `@mcp-vertex/error-reporting`. Everything is

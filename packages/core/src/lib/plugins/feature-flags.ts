@@ -53,7 +53,7 @@ export const readFeatureFlag = (
 	source: IFeatureFlagSource,
 	key: string,
 ): boolean => {
-	const flags = source.options['featureFlags'];
+	const flags = source.options.featureFlags;
 	if (flags === null || typeof flags !== 'object') return false;
 	const value = (flags as Record<string, unknown>)[key];
 	if (typeof value === 'boolean') return value;

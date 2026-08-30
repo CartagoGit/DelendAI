@@ -12,12 +12,10 @@ import { describe, expect, it } from 'vitest';
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
 import { DashboardService } from '../../src/lib/services/dashboard.service';
 import {
-	agentsFixture,
 	allResponsesFixture,
 	createFakeTransport,
 	metricsFixture,
 	overviewFixture,
-	proposalsFixture,
 } from './dashboard.service.fixtures';
 
 const usageReportFixture = {

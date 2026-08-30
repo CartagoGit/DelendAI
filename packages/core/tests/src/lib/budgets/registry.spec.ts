@@ -1,10 +1,7 @@
 #!/usr/bin/env bun
 import { describe, expect, it } from 'vitest';
 
-import {
-	createTokenBudgetRegistry,
-	TokenBudgetRegistry,
-} from '../../../../src/lib/budgets/registry';
+import { createTokenBudgetRegistry } from '../../../../src/lib/budgets/registry';
 import { createDashboardMockSource } from '../../../../src/lib/budgets/sources/dashboard-mock';
 import { createStaticBytesSource } from '../../../../src/lib/budgets/sources/static-bytes';
 import {

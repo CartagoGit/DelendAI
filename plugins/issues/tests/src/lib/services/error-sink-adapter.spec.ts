@@ -144,7 +144,7 @@ describe('registered sink — draft-only mode', () => {
 
 describe('registered sink — fingerprint dedup', () => {
 	it('calls createIssue only once for the same fingerprint in one hour', async () => {
-		const createIssue = vi.fn().mockResolvedValue({
+		const _createIssue = vi.fn().mockResolvedValue({
 			issueNumber: 99,
 			issueUrl: 'https://example.com/issues/99',
 		});

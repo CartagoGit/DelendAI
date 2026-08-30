@@ -149,7 +149,7 @@ const withMutex = async <T>(
 const normalizeFiles = (files: readonly string[]): string[] =>
 	[...new Set(files)].sort();
 
-const sameFiles = (
+const _sameFiles = (
 	left: readonly string[],
 	right: readonly string[],
 ): boolean => {

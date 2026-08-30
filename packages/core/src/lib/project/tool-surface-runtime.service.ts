@@ -748,13 +748,11 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				reason,
 				...(disposeError !== undefined ? { disposeError } : {}),
 			};
-			process.stderr.write(
-				`[surface] evicted plugin "${namespace}" (${reason})${
-					disposeError !== undefined
-						? ' — dispose failed, relazied anyway'
-						: ''
-				}\n`,
-			);
+			if (disposeError !== undefined) {
+				process.stderr.write(
+					`[surface] evicted plugin "${namespace}" (${reason}) — dispose failed, relazied anyway\n`,
+				);
+			}
 			for (const listener of this.pluginEvictedListeners) {
 				listener(event);
 			}

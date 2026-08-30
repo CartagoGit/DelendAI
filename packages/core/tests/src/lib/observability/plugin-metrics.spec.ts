@@ -38,8 +38,8 @@ describe('c00134 — plugin metrics', () => {
 		m.incr('plugin.invoked', 'git');
 		m.incr('plugin.invoked', 'docs');
 		const s = m.snapshot();
-		expect(s.invokedByPlugin['git']).toBe(2);
-		expect(s.invokedByPlugin['docs']).toBe(1);
+		expect(s.invokedByPlugin.git).toBe(2);
+		expect(s.invokedByPlugin.docs).toBe(1);
 	});
 
 	it('observe accumulates histogram stats', () => {
@@ -59,9 +59,9 @@ describe('c00134 — plugin metrics', () => {
 		m.setStateGauge('LOADED_HIDDEN', 3);
 		m.setStateGauge('DENIED', 1);
 		const s = m.snapshot();
-		expect(s.stateCount['ACTIVE']).toBe(12);
-		expect(s.stateCount['LOADED_HIDDEN']).toBe(3);
-		expect(s.stateCount['DENIED']).toBe(1);
+		expect(s.stateCount.ACTIVE).toBe(12);
+		expect(s.stateCount.LOADED_HIDDEN).toBe(3);
+		expect(s.stateCount.DENIED).toBe(1);
 	});
 
 	it('formatForDashboard emits a Markdown section', () => {

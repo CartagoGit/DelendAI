@@ -1,5 +1,5 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
-import { isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 import { realResolvePath } from '../shared/contain-realpath';
 import { resolveWorkspaceContained } from '../shared/contain-path';

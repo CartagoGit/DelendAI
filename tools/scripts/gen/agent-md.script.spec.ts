@@ -94,7 +94,7 @@ describe('readPackageJson / readPluginManifest', () => {
 		expect(pkg.version).toBe('0.1.0');
 		expect(pkg.description).toBe('A test package.');
 		expect(pkg.main).toBe('./dist/index.js');
-		expect(pkg.dependencies?.['zod']).toBe('^3');
+		expect(pkg.dependencies?.zod).toBe('^3');
 	});
 
 	it('reads a TS plugin manifest via regex (no eval)', async () => {
@@ -145,10 +145,10 @@ describe('composeAgentMd', () => {
 		await rm(VENDOR_ROOT, { recursive: true, force: true });
 	});
 
-	const fakeScope: IAgentScope = {
-		dir: `${VENDOR_ROOT}/packages/example`.replace(process.cwd() + '/', ''),
+	const _fakeScope: IAgentScope = {
+		dir: `${VENDOR_ROOT}/packages/example`.replace(`${process.cwd()}/`, ''),
 		packageJson: `${VENDOR_ROOT}/packages/example/package.json`.replace(
-			process.cwd() + '/',
+			`${process.cwd()}/`,
 			'',
 		),
 		isPlugin: false,

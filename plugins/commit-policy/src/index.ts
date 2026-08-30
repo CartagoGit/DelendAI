@@ -13,6 +13,7 @@ import {
 import { CommitPolicyOptionsSchema } from './lib/contracts/options';
 import type { IIdentityResolverContext } from './lib/identity/resolver';
 import {
+	computeSliceTriggerEventId,
 	createSliceListener,
 	type ITriggerAck,
 	type ITriggerEvent,
@@ -23,7 +24,7 @@ import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStatusToolRegistration } from './lib/tools/status-tool';
 import { createPushScheduler } from './lib/services/push-scheduler';
-import { createCommitPolicyEngine } from './lib/engine';
+import { createCommitPolicyEngine, type IEngineResult } from './lib/engine';
 import { createProcessedEventsStore } from './lib/processed-events';
 
 const OptionsSchema = CommitPolicyOptionsSchema;
@@ -101,6 +102,10 @@ export const validateCommitPolicyConfiguration = (
 export default definePlugin({
 	name: 'commit-policy',
 	version: '0.1.0',
+	legacyCachePaths: [
+		{ source: '.commit-policy/processed-events.jsonl' },
+		{ source: '.cache/mcp-vertex/commit-policy', destination: '.' },
+	],
 	describe:
 		'Commit-authority plugin wrapping @mcp-vertex/git primitives with configurable identity, cadence, audit and push policies. Off by default.',
 	optionsSchema: OptionsSchema,
@@ -167,10 +172,30 @@ export default definePlugin({
 			(t): t is Extract<typeof t, { kind: 'interval' }> =>
 				t.kind === 'interval',
 		);
+		let intervalHandle: ReturnType<typeof setInterval> | undefined;
+		let sliceListener: ReturnType<typeof createSliceListener> | undefined;
+		let disposed = false;
 		const intervalTimer =
 			configuredInterval === undefined
 				? undefined
-				: createIntervalTimer(run, configuredInterval);
+				: (() => {
+						const baseIntervalTimer = createIntervalTimer(
+							run,
+							configuredInterval,
+						);
+						return {
+							check: (sinceMs: number) =>
+								baseIntervalTimer.check(sinceMs),
+							reset: () => baseIntervalTimer.reset(),
+							stop: () => {
+								if (intervalHandle !== undefined) {
+									clearInterval(intervalHandle);
+									intervalHandle = undefined;
+								}
+								baseIntervalTimer.reset();
+							},
+						};
+					})();
 
 		// The push scheduler unifies the
 		// three modes (`onCommit`, `everyNCommits`, `everyNMinutes`)
@@ -280,13 +305,38 @@ export default definePlugin({
 				) {
 					return { ack: 'OK' };
 				}
-				const result = await engine.handle({
-					kind: 'slice',
-					proposalId: event.proposalId,
-					sliceId: event.sliceId,
-					files: event.files.paths,
-					eventId: `${event.proposalId}-${event.sliceId}`,
-				});
+				let result: IEngineResult;
+				try {
+					result = await engine.handle({
+						kind: 'slice',
+						proposalId: event.proposalId,
+						sliceId: event.sliceId,
+						files: event.files.paths,
+						eventId: computeSliceTriggerEventId(event),
+					});
+				} catch (error) {
+					console.info(
+						JSON.stringify({
+							event: 'slice.detected',
+							proposalId: event.proposalId,
+							sliceId: event.sliceId,
+							engine: 'RETRY',
+						}),
+					);
+					throw error;
+				}
+				console.info(
+					JSON.stringify({
+						event: 'slice.detected',
+						proposalId: event.proposalId,
+						sliceId: event.sliceId,
+						engine:
+							result.ack === 'OK' ||
+							result.ack === 'ALREADY_PROCESSED'
+								? 'OK'
+								: 'ERR',
+					}),
+				);
 				// `ALREADY_PROCESSED` is the idempotency win: the
 				// replay produced no commit but the listener must
 				// still ack OK so the pending queue clears.
@@ -295,23 +345,17 @@ export default definePlugin({
 				}
 				return { ack: 'ERR', reason: result.reason };
 			};
-			const listener = createSliceListener(
+			sliceListener = createSliceListener(
 				ctx.workspace.root,
 				ctx.docsDir,
 				sliceTrigger,
 				handler,
 			);
-			listener.start();
-			disposables.push(() => listener.stop());
+			sliceListener.start();
 		}
 
-		const intervalTrigger = policy.cadence.triggers.find(
-			(t): t is Extract<typeof t, { kind: 'interval' }> =>
-				t.kind === 'interval',
-		);
-		if (intervalTrigger !== undefined) {
-			const intervalTimer = createIntervalTimer(run, intervalTrigger);
-			const intervalMs = intervalTrigger.minutes * 60_000;
+		if (configuredInterval !== undefined && intervalTimer !== undefined) {
+			const intervalMs = configuredInterval.minutes * 60_000;
 			let intervalCheckInFlight = false;
 			let intervalEventSequence = 0;
 			const checkInterval = async (): Promise<void> => {
@@ -341,12 +385,11 @@ export default definePlugin({
 					intervalCheckInFlight = false;
 				}
 			};
-			const intervalHandle = setInterval(() => {
+			intervalHandle = setInterval(() => {
 				void checkInterval();
 			}, intervalMs);
 			if (typeof intervalHandle.unref === 'function')
 				intervalHandle.unref();
-			disposables.push(() => clearInterval(intervalHandle));
 		}
 
 		const knowledge = [
@@ -409,7 +452,23 @@ export default definePlugin({
 			// timer it created during `register`. Idempotent: a second
 			// call is a no-op.
 			dispose: () => {
-				for (const teardown of disposables) {
+				if (disposed) return;
+				disposed = true;
+				try {
+					sliceListener?.stop();
+				} catch {
+					// best-effort cleanup — a leaked listener is
+					// better than a refused dispose.
+				}
+				try {
+					intervalTimer?.stop();
+				} catch {
+					// best-effort cleanup — a leaked timer is
+					// better than a refused dispose.
+				}
+				sliceListener = undefined;
+				intervalHandle = undefined;
+				for (const teardown of disposables.splice(0)) {
 					try {
 						teardown();
 					} catch {
@@ -417,7 +476,6 @@ export default definePlugin({
 						// better than a refused dispose.
 					}
 				}
-				disposables.length = 0;
 			},
 			abortable: true,
 		};

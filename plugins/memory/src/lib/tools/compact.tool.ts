@@ -49,7 +49,7 @@ const ContextItemSchema = z.object({
 	drop: z.boolean().optional(),
 });
 
-const TokenAccountingSchema = z.object({
+const _TokenAccountingSchema = z.object({
 	inputEstimate: z.number(),
 	digestEstimate: z.number(),
 	savedEstimate: z.number(),

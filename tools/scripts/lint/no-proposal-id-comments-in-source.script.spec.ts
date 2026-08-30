@@ -104,12 +104,12 @@ describe('no-proposal-id-comments-in-source.script (c00141)', () => {
 
 	it('flags multiple matches on multiple lines', () => {
 		const findings = scanText(
-			[
+			`${[
 				'// a00012: comment one',
 				'export const x = 1;',
 				'// b00034: comment two',
 				'// c00056', // colon-only separator is supported
-			].join('\n') + '\n',
+			].join('\n')}\n`,
 			'/repo/m.ts',
 			'm.ts',
 		);

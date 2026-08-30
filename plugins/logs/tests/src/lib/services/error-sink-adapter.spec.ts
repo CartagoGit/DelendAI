@@ -7,8 +7,8 @@
  * `BufferingErrorSink` receives the same event.
  */
 
-import { mkdtemp, readdir } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { mkdtemp } from 'node:fs/promises';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 

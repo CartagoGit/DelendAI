@@ -293,14 +293,14 @@ const runCommitDriverUnlocked = async (
 	);
 
 	const files =
-		input.files ??
-		(input.triggerContext !== undefined
-			? input.triggerContext.files
-			: input.sliceContext !== undefined
-				? scopeSliceCommit
-					? input.sliceContext.files
-					: await gitDirtyFilePaths(options.run)
-				: []);
+		input.sliceContext !== undefined && scopeSliceCommit
+			? input.sliceContext.files
+			: (input.files ??
+				(input.triggerContext !== undefined
+					? input.triggerContext.files
+					: input.sliceContext !== undefined
+						? await gitDirtyFilePaths(options.run)
+						: []));
 
 	// x00263 (AUD-CP-005): when sliceScoping is on and the slice
 	// declared no files, refuse rather than fall back to

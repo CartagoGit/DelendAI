@@ -180,7 +180,8 @@ codes" del plugin pasa de:
   `plugins/commit-policy/src/lib/services/push-driver.spec.ts`.
 - **Gate**: type + test passing
 - **Depends on**: `x00257`, `c00144`, `c00145`.
-
+- review-state: in_review
+- review-implementer: copilot
 ### S2 — Lint estructural `commit-push-strictness`
 
 - **Status**: pending

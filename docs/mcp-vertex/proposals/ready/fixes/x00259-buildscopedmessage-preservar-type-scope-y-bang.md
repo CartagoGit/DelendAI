@@ -148,7 +148,7 @@ fix(scope)!: x           → fix(scope)!: x           # unchanged
 
 ### S1 — `parseHeader` + `buildScopedMessage` invertible con tabla de casos
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/contracts/i18n-types.ts` (o nuevo `scope.ts`), `plugins/commit-policy/tests/src/lib/contracts/i18n-types.spec.ts` (o `scope.spec.ts`)
 - **Gate**: type
 - **Dependency**: —
@@ -156,7 +156,11 @@ fix(scope)!: x           → fix(scope)!: x           # unchanged
   - "10 casos de la tabla pasan (incluido `fix(core): x` unchanged y `xyz: x` custom)"
   - "`fix!: x` reconstruye con `!` en la posición correcta"
   - "headers inválidos devuelven refusal tipado, no excepción"
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by copilot-reviewer — La implementacion y la validacion estrecha estan bien: 12/12 tests pasaron en plugins/commit-policy/tests/src/lib/contracts/i18n-types.spec.ts y scope.spec.ts, y bun x tsc -p plugins/commit-policy/tsconfig.json --noEmit devolvio exit 0. Pero esta copia del workspace no contiene .git en /home/cartago/_projects/mcp-vertex, asi que no pude inspeccionar el diff real ni verificar de forma independiente que solo hayan cambiado los archivos reclamados por el slice. Hasta que exista trazabilidad VCS en este workspace o se aporte el diff exacto, la aceptacion de revision independiente queda bloqueada.
+- review-log: approved by delivery_verifier — Revisión técnica independiente conforme; la evidencia de ownership se valida contra el diff real del checkout principal, que queda limitado a los cuatro archivos declarados.
 ## acceptance
 
 - Tabla de 10+ casos pasa, incluido property-based de 1000 mensajes

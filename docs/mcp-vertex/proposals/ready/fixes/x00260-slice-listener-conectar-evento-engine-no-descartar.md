@@ -126,7 +126,7 @@ DETECTED ──► engine.handle()
 
 ### S1 — Listener entrega cada evento al engine antes de marcar visto
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/triggers/slice-listener.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/triggers/slice-listener.spec.ts`
 - **Gate**: type
 - **Dependency**: `f00182` (engine)
@@ -135,7 +135,10 @@ DETECTED ──► engine.handle()
   - "engine falla → evento NO se marca visto"
   - "engine éxito → evento se marca visto una sola vez"
   - "replay manual del mismo evento produce un solo handle()"
-
+- review-state: done
+- review-implementer: GitHub
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente PASS: wiring listener→engine, files exactos, retry sin marcar visto en fallo, éxito idempotente y replay sin duplicación; test estrecho y typecheck del plugin verdes.
 ## acceptance
 
 - Cero eventos detectados sin acción correspondiente en

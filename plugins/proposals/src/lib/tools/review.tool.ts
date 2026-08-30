@@ -1,5 +1,3 @@
-import z from 'zod';
-
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import type { IAuthoringToolOptions } from './authoring-options';

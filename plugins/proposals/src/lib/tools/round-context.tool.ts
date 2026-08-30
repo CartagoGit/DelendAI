@@ -44,7 +44,7 @@ export interface IRoundContextOutput {
 	readonly digestPath: string;
 }
 
-const SOURCE_STATE_SCHEMA = z.enum(['ok', 'missing', 'corrupt']);
+const _SOURCE_STATE_SCHEMA = z.enum(['ok', 'missing', 'corrupt']);
 
 const ROUND_CONTEXT_DIGEST_SCHEMA = z
 	.object({

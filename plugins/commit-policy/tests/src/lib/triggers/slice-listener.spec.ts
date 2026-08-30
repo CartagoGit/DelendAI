@@ -82,6 +82,7 @@ describe('slice listener', () => {
 		expect(events[0]?.kind).toBe('slice');
 		expect(events[0]?.proposalId).toBe('f00181');
 		expect(events[0]?.sliceId).toBe('S3');
+		expect(events[0]?.files?.paths).toEqual(['fixture-S3-1.ts']);
 	});
 
 	it('does not re-emit when the status did not change', async () => {
@@ -144,6 +145,43 @@ describe('slice listener', () => {
 		expect(true).toBe(true);
 	});
 
+	it('refuses done slices that do not declare files and never calls the handler', async () => {
+		await writeIndex(workspace, [
+			{
+				id: 'f00181',
+				slices: [
+					{
+						id: 'S3',
+						status: 'pending',
+						files: ['fixture-S3-10.ts'],
+					},
+				],
+			},
+		]);
+		const handle = vi.fn(async () => ({ ack: 'OK' as const }));
+		const listener = createSliceListener(
+			workspace,
+			docsDir,
+			{ kind: 'slice', onStatuses: ['done'] },
+			handle,
+			1000,
+		);
+
+		await listener.check();
+		await writeIndex(workspace, [
+			{
+				id: 'f00181',
+				slices: [{ id: 'S3', status: 'done' }],
+			},
+		]);
+
+		expect(await listener.check()).toEqual([]);
+		expect(handle).not.toHaveBeenCalled();
+		expect(listener.drainRefusals()).toEqual([
+			{ key: 'f00181-S3', reason: 'SLICE_HAS_NO_FILES: f00181-S3' },
+		]);
+	});
+
 	it('start() performs an immediate check before the polling interval', async () => {
 		await writeIndex(workspace, [
 			{
@@ -197,6 +235,68 @@ describe('slice listener', () => {
 	});
 
 	describe('x00260 — handler ack semantics', () => {
+		it('replaying the same event manually calls the handler only once', async () => {
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'pending',
+							files: ['fixture-S3-replay.ts'],
+						},
+					],
+				},
+			]);
+			const handle = vi.fn(async () => ({ ack: 'OK' as const }));
+			const listener = createSliceListener(
+				workspace,
+				docsDir,
+				{ kind: 'slice', onStatuses: ['done'] },
+				handle,
+				1000,
+			);
+
+			await listener.check();
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'done',
+							files: ['fixture-S3-replay.ts'],
+						},
+					],
+				},
+			]);
+			const first = await listener.check();
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'done',
+							files: ['fixture-S3-replay.ts'],
+						},
+					],
+				},
+			]);
+			const replay = await listener.check();
+
+			expect(first).toHaveLength(1);
+			expect(replay).toEqual([]);
+			expect(handle).toHaveBeenCalledTimes(1);
+			expect(handle).toHaveBeenCalledWith({
+				kind: 'slice',
+				proposalId: 'f00181',
+				sliceId: 'S3',
+				status: 'done',
+				files: { paths: ['fixture-S3-replay.ts'] },
+			});
+		});
+
 		it('delivers events to the handler and marks seen on OK', async () => {
 			await writeIndex(workspace, [
 				{
@@ -241,6 +341,69 @@ describe('slice listener', () => {
 			expect(events.length).toBe(1);
 			expect(seen).toEqual(['S3']);
 			// Pending queue drained.
+			expect(listener.drainPending()).toEqual([]);
+		});
+
+		it('retries with the exact current slice files after an engine failure', async () => {
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'pending',
+							files: ['fixture-S3-before-retry.ts'],
+						},
+					],
+				},
+			]);
+			const seenFiles: string[][] = [];
+			let attempts = 0;
+			const listener = createSliceListener(
+				workspace,
+				docsDir,
+				{ kind: 'slice', onStatuses: ['done'] },
+				async (event) => {
+					attempts += 1;
+					seenFiles.push([...(event.files?.paths ?? [])]);
+					return attempts === 1
+						? { ack: 'ERR', reason: 'retry' }
+						: { ack: 'OK' };
+				},
+				1000,
+			);
+			await listener.check();
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'done',
+							files: ['fixture-S3-first-attempt.ts'],
+						},
+					],
+				},
+			]);
+			await listener.check();
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'done',
+							files: ['fixture-S3-second-attempt.ts'],
+						},
+					],
+				},
+			]);
+			await listener.check();
+
+			expect(seenFiles).toEqual([
+				['fixture-S3-first-attempt.ts'],
+				['fixture-S3-second-attempt.ts'],
+			]);
 			expect(listener.drainPending()).toEqual([]);
 		});
 

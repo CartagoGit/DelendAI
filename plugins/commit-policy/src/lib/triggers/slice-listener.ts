@@ -42,34 +42,67 @@ export interface ISliceListenerEmissions {
 	readonly pending: readonly ITriggerEvent[];
 }
 
+type SliceSnapshotEntry = {
+	status: string;
+	proposalId: string;
+	files?: readonly string[];
+};
+
+const getSliceKey = (proposalId: string, sliceId: string): string =>
+	`${proposalId}-${sliceId}`;
+
+const getSliceSlotKey = (event: ITriggerEvent): string =>
+	getSliceKey(event.proposalId ?? '', event.sliceId ?? '');
+
+const buildSliceEventId = (
+	proposalId: string,
+	sliceId: string,
+	status: string,
+	files: readonly string[],
+): string =>
+	JSON.stringify({
+		kind: 'slice',
+		proposalId,
+		sliceId,
+		status,
+		files,
+	});
+
+const getSliceEventId = (event: ITriggerEvent): string =>
+	buildSliceEventId(
+		event.proposalId ?? '',
+		event.sliceId ?? '',
+		event.status ?? '',
+		event.files?.paths ?? [],
+	);
+
+const createSliceEvent = (
+	key: string,
+	entry: SliceSnapshotEntry,
+): ITriggerEvent | ISliceRefusal => {
+	const dash = key.indexOf('-');
+	const sliceId = dash >= 0 ? key.slice(dash + 1) : key;
+	if (entry.files === undefined || entry.files.length === 0) {
+		return {
+			key,
+			reason: `SLICE_HAS_NO_FILES: ${key}`,
+		};
+	}
+	return {
+		kind: 'slice',
+		proposalId: entry.proposalId,
+		sliceId,
+		status: entry.status,
+		files: { paths: [...entry.files] },
+	};
+};
+
 const parseIndex = (
 	raw: string,
 ): {
-	slices: Map<
-		string,
-		{
-			status: string;
-			proposalId: string;
-			/**
-			 * x00263 (AUD-CP-005): paths the slice owns. The
-			 * proposals registry does not always persist this
-			 * field, so the listener treats its absence as a
-			 * refusal (`SLICE_HAS_NO_FILES`) — never as an empty
-			 * implicit skipAdd. Tests that want a clean path
-			 * inject the field directly.
-			 */
-			files?: readonly string[];
-		}
-	>;
+	slices: Map<string, SliceSnapshotEntry>;
 } => {
-	const slices = new Map<
-		string,
-		{
-			status: string;
-			proposalId: string;
-			files?: readonly string[];
-		}
-	>();
+	const slices = new Map<string, SliceSnapshotEntry>();
 	try {
 		const parsed = JSON.parse(raw) as {
 			proposals?: readonly {
@@ -88,7 +121,7 @@ const parseIndex = (
 				const files = (slice.files ?? []).filter(
 					(f): f is string => typeof f === 'string' && f.length > 0,
 				);
-				slices.set(`${proposal.id}-${slice.id}`, {
+				slices.set(getSliceKey(proposal.id, slice.id), {
 					status: slice.status ?? 'unknown',
 					proposalId: proposal.id,
 					...(files.length > 0 ? { files } : {}),
@@ -102,22 +135,8 @@ const parseIndex = (
 };
 
 const diffSlices = (
-	prev: ReadonlyMap<
-		string,
-		{
-			status: string;
-			proposalId: string;
-			files?: readonly string[];
-		}
-	>,
-	curr: ReadonlyMap<
-		string,
-		{
-			status: string;
-			proposalId: string;
-			files?: readonly string[];
-		}
-	>,
+	prev: ReadonlyMap<string, SliceSnapshotEntry>,
+	curr: ReadonlyMap<string, SliceSnapshotEntry>,
 	onStatuses: readonly string[],
 ): {
 	events: ITriggerEvent[];
@@ -132,29 +151,19 @@ const diffSlices = (
 			wasPresent && prior !== undefined && prior.status !== entry.status;
 		if (!wasPresent || statusChanged) {
 			if (!onStatuses.includes(entry.status)) continue;
-			const dash = key.indexOf('-');
-			const sliceId = dash >= 0 ? key.slice(dash + 1) : key;
-			// x00263 (AUD-CP-005): slices without a `files` field
-			// trigger a refusal instead of an implicit empty
-			// skipAdd. The driver must never stage a superset.
-			if (entry.files === undefined || entry.files.length === 0) {
-				refusals.push({
-					key,
-					reason: `SLICE_HAS_NO_FILES: ${key}`,
-				});
+			const candidate = createSliceEvent(key, entry);
+			if ('reason' in candidate) {
+				refusals.push(candidate);
 				continue;
 			}
-			events.push({
-				kind: 'slice',
-				proposalId: entry.proposalId,
-				sliceId,
-				status: entry.status,
-				files: { paths: entry.files },
-			});
+			events.push(candidate);
 		}
 	}
 	return { events, refusals };
 };
+
+export const computeSliceTriggerEventId = (event: ITriggerEvent): string =>
+	getSliceEventId(event);
 
 /**
  * x00263 (AUD-CP-005): a structured refusal from the listener.
@@ -190,33 +199,62 @@ export const createSliceListener = (
 	pollMs: number = DEFAULT_POLL_MS,
 ): ISliceListener => {
 	const indexRel = join(docsDir, 'proposals', 'index.json');
-	let prev = new Map<
-		string,
-		{
-			status: string;
-			proposalId: string;
-			files?: readonly string[];
-		}
-	>();
+	let prev = new Map<string, SliceSnapshotEntry>();
 	let initialized = false;
 	let timer: ReturnType<typeof setInterval> | undefined;
 	let checkInFlight: Promise<readonly ITriggerEvent[]> | undefined;
-	const pending: ITriggerEvent[] = [];
+	const pending = new Map<string, ITriggerEvent>();
+	const acknowledged = new Map<string, string>();
 	const refusals: ISliceRefusal[] = [];
 	const reader = new SafeWorkspaceReader(workspaceRoot);
 
 	/** Apply a single event against the engine; mark seen only on OK. */
 	const deliverOne = async (event: ITriggerEvent): Promise<void> => {
+		const slotKey = getSliceSlotKey(event);
+		const eventId = getSliceEventId(event);
 		try {
 			const ack = await onHandler(event);
 			if (ack.ack === 'OK') {
-				// Event handled: remove from pending queue.
-				const idx = pending.indexOf(event);
-				if (idx >= 0) pending.splice(idx, 1);
+				acknowledged.set(slotKey, eventId);
+				pending.delete(slotKey);
 			}
 			// Otherwise: leave it pending; next poll re-emits.
 		} catch {
 			// Engine threw: keep event pending; next poll re-emits.
+		}
+	};
+
+	const refreshPending = (
+		curr: ReadonlyMap<string, SliceSnapshotEntry>,
+		onStatuses: readonly string[],
+	): void => {
+		for (const [slotKey, event] of pending) {
+			const entry = curr.get(slotKey);
+			if (entry === undefined || !onStatuses.includes(entry.status)) {
+				pending.delete(slotKey);
+				continue;
+			}
+			const candidate = createSliceEvent(slotKey, entry);
+			if ('reason' in candidate) {
+				pending.delete(slotKey);
+				refusals.push(candidate);
+				continue;
+			}
+			if (getSliceEventId(candidate) !== getSliceEventId(event)) {
+				pending.set(slotKey, candidate);
+			}
+		}
+	};
+
+	const pruneAcknowledged = (
+		curr: ReadonlyMap<string, SliceSnapshotEntry>,
+		onStatuses: readonly string[],
+	): void => {
+		for (const slotKey of acknowledged.keys()) {
+			const entry = curr.get(slotKey);
+			if (entry === undefined || !onStatuses.includes(entry.status)) {
+				acknowledged.delete(slotKey);
+			}
 		}
 	};
 
@@ -228,9 +266,8 @@ export const createSliceListener = (
 			return [];
 		}
 		const curr = parseIndex(raw).slices;
-		if (pending.length > 0) {
-			await Promise.all(pending.slice().map(deliverOne));
-		}
+		pruneAcknowledged(curr, config.onStatuses);
+		refreshPending(curr, config.onStatuses);
 		const { events: newEvents, refusals: newRefusals } = initialized
 			? diffSlices(prev, curr, config.onStatuses)
 			: { events: [], refusals: [] };
@@ -238,9 +275,15 @@ export const createSliceListener = (
 		initialized = true;
 		if (newRefusals.length > 0) refusals.push(...newRefusals);
 		if (newEvents.length > 0) {
-			pending.push(...newEvents);
-			// Deliver in parallel; each delivery either marks or leaves.
-			await Promise.all(newEvents.map(deliverOne));
+			for (const event of newEvents) {
+				const slotKey = getSliceSlotKey(event);
+				if (acknowledged.get(slotKey) === getSliceEventId(event))
+					continue;
+				pending.set(slotKey, event);
+			}
+		}
+		if (pending.size > 0) {
+			await Promise.all(Array.from(pending.values(), deliverOne));
 		}
 		return newEvents;
 	};
@@ -259,8 +302,8 @@ export const createSliceListener = (
 		// `deliverOne` on OK; refusals have no auto-clear path,
 		// so the engine must drain them to keep memory bounded.
 		drainPending: () => {
-			const out = pending.slice();
-			pending.length = 0;
+			const out = Array.from(pending.values());
+			pending.clear();
 			return out;
 		},
 		drainRefusals: () => {
@@ -290,16 +333,7 @@ export const createSliceListener = (
 export const readCurrentSliceSnapshot = async (
 	workspaceRoot: string,
 	docsDir: string,
-): Promise<
-	Map<
-		string,
-		{
-			status: string;
-			proposalId: string;
-			files?: readonly string[];
-		}
-	>
-> => {
+): Promise<Map<string, SliceSnapshotEntry>> => {
 	const indexRel = join(docsDir, 'proposals', 'index.json');
 	let raw = '';
 	try {

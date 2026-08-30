@@ -62,14 +62,14 @@ export type OperationResult<T = unknown, E = Refusal> =
 	| OperationSuccess<T, E>
 	| OperationFailure<T, E>;
 
-export interface OperationSuccess<T = unknown, E = Refusal> {
+export interface OperationSuccess<T = unknown, _E = Refusal> {
 	readonly ok: true;
 	readonly value: T;
 	readonly error?: never;
 	readonly envelope?: EnvelopeMeta;
 }
 
-export interface OperationFailure<T = unknown, E = Refusal> {
+export interface OperationFailure<_T = unknown, E = Refusal> {
 	readonly ok: false;
 	readonly value?: never;
 	readonly error: E;

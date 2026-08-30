@@ -11,11 +11,9 @@ import {
 import {
 	ADAPTIVE_OPTIMIZER_MAX_CANDIDATES,
 	ADAPTIVE_OPTIMIZER_MAX_PLUGIN_SET,
-	DEFAULT_ADAPTIVE_OPTIMIZER_MAX_BYTES,
 } from '../contracts/constants/adaptive-optimizer.constant';
 import type {
 	IOptimizeRunRuntimeOptions,
-	IOptimizeRunOutput,
 	IOptimizeRunToolArgs,
 } from '../contracts/interfaces/adaptive-optimizer.interface';
 import { buildOptimizeRunPayload } from '../services/optimize-run.service';

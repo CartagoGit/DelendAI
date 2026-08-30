@@ -187,7 +187,7 @@ const setupWorkspace = async (): Promise<string> => {
 	];
 	await writeFile(
 		join(root, CACHE_DIR, 'results/usage-tracking/invocations.jsonl'),
-		records.map((record) => JSON.stringify(record)).join('\n') + '\n',
+		`${records.map((record) => JSON.stringify(record)).join('\n')}\n`,
 		'utf8',
 	);
 	await persistKpiSnapshotHistory({

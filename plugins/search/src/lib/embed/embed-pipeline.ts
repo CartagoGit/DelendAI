@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { basename, join, relative, sep } from 'node:path';
+import { basename, relative, sep } from 'node:path';
 
 import { SafeWorkspaceReader, walkAllowedFiles } from '@mcp-vertex/core/public';
 

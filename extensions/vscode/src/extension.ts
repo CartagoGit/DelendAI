@@ -307,7 +307,7 @@ export const activate = async (
 		dispose: () => {
 			if (clientClosed) return;
 			clientClosed = true;
-			void client.close();
+			return client.close();
 		},
 	});
 	await context.globalState.update(CLIENT_STATE_KEY, client);
@@ -627,7 +627,7 @@ export const getRuntimeHandle = (): IRuntimeHandle | undefined =>
 export const deactivate = async (): Promise<void> => {
 	const handle = __runtimeHandle;
 	if (handle === undefined) return;
-	handle.disposeAll();
+	await handle.disposeAll();
 	__runtimeHandle = undefined;
 };
 

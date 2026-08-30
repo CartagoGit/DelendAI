@@ -13,7 +13,6 @@
  */
 
 import { createHash } from 'node:crypto';
-import { join } from 'node:path';
 
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 

@@ -10,7 +10,6 @@ import z from 'zod';
 
 import { analyzeIssue, titleForIssue } from '../analysis.helper';
 import { withBotNotice } from '../bot-notice.constant';
-import type { IGhExec } from '../contracts/interfaces/github.interface';
 import type { ITriageToolsOptions } from '../contracts/interfaces/triage-tools.interface';
 import {
 	addComment,
@@ -159,7 +158,7 @@ export const buildTriageRunRegistration = (
 
 				let proposalId = 'pending';
 				let proposalWritten = false;
-				const draft = buildProposalDraft({
+				const _draft = buildProposalDraft({
 					id: proposalId,
 					issueNumber: issue.number,
 					issueUrl: `https://github.com/${options.repo}/issues/${issue.number}`,

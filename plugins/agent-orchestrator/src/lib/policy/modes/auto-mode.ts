@@ -28,7 +28,7 @@ export class AutoModeAdapter implements IModeAdapter {
 		this.#registry = registry;
 	}
 
-	accepts(task: ITask, policy: IOrchestratorPolicy): boolean {
+	accepts(_task: ITask, policy: IOrchestratorPolicy): boolean {
 		return policy.defaultMode === 'auto';
 	}
 

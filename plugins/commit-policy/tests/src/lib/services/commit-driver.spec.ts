@@ -434,6 +434,62 @@ describe('runCommitDriver', () => {
 			expect(result.committed).toBe(true);
 		});
 
+		it('stages exactly sliceContext.files even when top-level files is empty', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				cached: ['slice-a.ts', 'slice-b.ts'],
+			});
+			const result = await runCommitDriver(
+				{
+					message: 'feat: scoped',
+					files: [],
+					sliceContext: {
+						proposalId: 'f00181',
+						sliceId: 'S3',
+						files: ['slice-a.ts', 'slice-b.ts'],
+					},
+				},
+				{
+					run: fake.run,
+					policy: sliceScopingPolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(true);
+			expect(fake.added).toEqual(['slice-a.ts', 'slice-b.ts']);
+		});
+
+		it('ignores a broader top-level files list when slice scoping is enabled', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				cached: ['./slice-a.ts', 'slice-b.ts'],
+			});
+			const result = await runCommitDriver(
+				{
+					message: 'feat: scoped',
+					files: ['slice-a.ts', 'slice-b.ts', 'foreign.ts'],
+					sliceContext: {
+						proposalId: 'f00181',
+						sliceId: 'S3',
+						files: ['./slice-a.ts', 'slice-b.ts'],
+					},
+				},
+				{
+					run: fake.run,
+					policy: sliceScopingPolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(true);
+			expect(fake.added).toEqual(['./slice-a.ts', 'slice-b.ts']);
+		});
+
 		it('captures the whole dirty workspace when sliceScoping is disabled', async () => {
 			const fake = buildFakeGit({
 				currentBranch: 'develop',
