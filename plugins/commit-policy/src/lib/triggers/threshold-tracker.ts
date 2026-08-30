@@ -24,7 +24,7 @@ const toDirtySetKey = (paths: readonly string[]): string =>
 
 export const createThresholdTracker = (
 	run: IGitRunner,
-	config: { readonly files: number },
+	config: { readonly files: number }
 ): IThresholdTracker => {
 	let lastFiredSetKey: string | null = null;
 	return {

@@ -24,21 +24,21 @@ methodology against the repository's own telemetry.
 
 Every metric uses one of these statuses:
 
-| status | meaning |
-| --- | --- |
-| `measured` | observed directly from telemetry or a public adapter. |
-| `estimated` | derived from a configured price or a bounded projection. |
-| `unavailable` | the source exists but did not provide a value in this window. |
-| `not-configured` | the source is not enabled for this project/host. |
+| status           | meaning                                                       |
+| ---------------- | ------------------------------------------------------------- |
+| `measured`       | observed directly from telemetry or a public adapter.         |
+| `estimated`      | derived from a configured price or a bounded projection.      |
+| `unavailable`    | the source exists but did not provide a value in this window. |
+| `not-configured` | the source is not enabled for this project/host.              |
 
 Economics values additionally distinguish the basis of a cost/saving:
 
-| basis | meaning |
-| --- | --- |
-| `provider-reported` | the provider or rollup reported the value directly. |
-| `configured-estimate` | derived from a configured price table or baseline. |
-| `subscription` | covered by a host subscription (not separately billed). |
-| `unavailable` | no evidence exists. |
+| basis                 | meaning                                                 |
+| --------------------- | ------------------------------------------------------- |
+| `provider-reported`   | the provider or rollup reported the value directly.     |
+| `configured-estimate` | derived from a configured price table or baseline.      |
+| `subscription`        | covered by a host subscription (not separately billed). |
+| `unavailable`         | no evidence exists.                                     |
 
 ## Formulas
 
@@ -124,11 +124,11 @@ are labelled `inferred`, never `measured`.
 
 Every saving carries a causality label:
 
-| label | rule |
-| --- | --- |
-| `measured` | direct local observation (e.g. rollup `tokensSaved`). |
+| label      | rule                                                    |
+| ---------- | ------------------------------------------------------- |
+| `measured` | direct local observation (e.g. rollup `tokensSaved`).   |
 | `inferred` | derived from a configured baseline (financial savings). |
-| `unknown` | no baseline and no source evidence. |
+| `unknown`  | no baseline and no source evidence.                     |
 
 An aggregate view reports the strongest available label: `measured` if any
 item is measured, else `inferred` if any is inferred, else `unknown`.

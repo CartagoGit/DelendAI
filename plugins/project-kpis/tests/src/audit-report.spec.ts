@@ -22,7 +22,7 @@ const metric = (
 	unit: IKpiMetric['unit'],
 	source: string,
 	value?: number,
-	note?: string,
+	note?: string
 ): IKpiMetric => ({
 	status,
 	unit,
@@ -62,7 +62,7 @@ const buildSnapshot = (options: {
 		memoryCompactionSavingsTokens: metric(
 			'unavailable',
 			'tokens',
-			'test/usage',
+			'test/usage'
 		),
 		topPlugins: [],
 	},
@@ -258,7 +258,7 @@ describe('buildAuditReport', () => {
 		});
 
 		const finding = report.findings.find(
-			(item) => item.id === 'schema-incongruence',
+			(item) => item.id === 'schema-incongruence'
 		);
 		expect(finding).toBeDefined();
 		expect(finding?.severity).toBe('error');
@@ -284,7 +284,7 @@ describe('buildAuditReport', () => {
 		});
 
 		const finding = report.findings.find(
-			(item) => item.id === 'unexplained-failures',
+			(item) => item.id === 'unexplained-failures'
 		);
 		expect(finding).toBeDefined();
 		expect(finding?.severity).toBe('warning');
@@ -306,7 +306,7 @@ describe('buildAuditReport', () => {
 		});
 
 		const finding = report.findings.find(
-			(item) => item.id === 'model-attribution-missing',
+			(item) => item.id === 'model-attribution-missing'
 		);
 		expect(finding).toBeDefined();
 		expect(finding?.severity).toBe('warning');
@@ -326,7 +326,7 @@ describe('buildAuditReport', () => {
 		});
 
 		const finding = report.findings.find(
-			(item) => item.id === 'stale-snapshot',
+			(item) => item.id === 'stale-snapshot'
 		);
 		expect(finding).toBeDefined();
 		expect(finding?.severity).toBe('warning');
@@ -361,7 +361,7 @@ describe('buildAuditReport', () => {
 		});
 
 		const finding = report.findings.find((item) =>
-			item.id.startsWith('plugin-error-anomaly:'),
+			item.id.startsWith('plugin-error-anomaly:')
 		);
 		expect(finding).toBeDefined();
 		expect(finding?.severity).toBe('warning');
@@ -380,7 +380,7 @@ describe('buildAuditReport', () => {
 		});
 
 		const finding = report.findings.find(
-			(item) => item.id === 'no-local-evidence',
+			(item) => item.id === 'no-local-evidence'
 		);
 		expect(finding).toBeDefined();
 		expect(finding?.status).toBe('not-configured');
@@ -420,7 +420,7 @@ describe('buildEfficiencyAnalysis', () => {
 		});
 
 		const saving = analysis.savings.find(
-			(item) => item.id === 'token-savings',
+			(item) => item.id === 'token-savings'
 		);
 		expect(saving).toBeDefined();
 		expect(saving?.value).toBe(384);
@@ -449,7 +449,7 @@ describe('buildEfficiencyAnalysis', () => {
 		});
 
 		const saving = analysis.savings.find(
-			(item) => item.id === 'manual-baseline-financial-savings',
+			(item) => item.id === 'manual-baseline-financial-savings'
 		);
 		expect(saving).toBeDefined();
 		expect(saving?.causality).toBe('inferred');

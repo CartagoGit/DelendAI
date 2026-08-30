@@ -55,8 +55,9 @@ export interface IPrepareContext {
  * default (`never`) is the empty context — least privilege when a
  * plugin author does not opt in to any capability.
  */
-export interface IActivateContext<C extends Capability = never>
-	extends IPrepareContext {
+export interface IActivateContext<
+	C extends Capability = never,
+> extends IPrepareContext {
 	readonly capabilities: CapabilitiesToCtx<C>;
 }
 
@@ -96,7 +97,7 @@ export interface IPhasedLifecycle<
  * present and callable.
  */
 export const hasPhasedLifecycle = (
-	plugin: unknown,
+	plugin: unknown
 ): plugin is IPhasedLifecycle =>
 	typeof plugin === 'object' &&
 	plugin !== null &&
@@ -129,7 +130,7 @@ const disposalSettlements = new WeakMap<object, Promise<void>>();
  */
 export const safeDispose = async <A extends object>(
 	dispose: ((active: A) => Promise<void>) | undefined,
-	active: A | undefined,
+	active: A | undefined
 ): Promise<void> => {
 	if (dispose === undefined || active === undefined) return;
 	const existingSettlement = disposalSettlements.get(active);
@@ -164,12 +165,12 @@ export const safeDispose = async <A extends object>(
 export const runLifecycle = async <P, A, C extends Capability = never>(
 	lifecycle: IPhasedLifecycle<P, A, C>,
 	prepareCtx: IPrepareContext,
-	activateCtx: IActivateContext<C>,
+	activateCtx: IActivateContext<C>
 ): Promise<A> => {
 	const declared = parseDeclaredCapabilities(prepareCtx.manifest);
 	if (declared.length === 0) {
 		prepareCtx.logger.warn(
-			summariseLegacyShimWarning(prepareCtx.name).message,
+			summariseLegacyShimWarning(prepareCtx.name).message
 		);
 	}
 	const prepared = await lifecycle.prepare(prepareCtx);
@@ -193,7 +194,7 @@ export const buildActivateContext = <C extends Capability>(
 	prepareCtx: IPrepareContext,
 	declared: readonly C[],
 	impl: ICapabilityImplementationMap,
-	onRefuse?: (refusal: ICapabilityRefusal) => void,
+	onRefuse?: (refusal: ICapabilityRefusal) => void
 ): IActivateContext<C> => ({
 	...prepareCtx,
 	capabilities: createCapabilityContext(declared, impl, onRefuse),

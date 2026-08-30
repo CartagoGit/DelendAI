@@ -42,15 +42,15 @@
 
 ## 1. Snapshot exacto
 
-| Campo | Valor |
-|---|---|
-| Proyecto | `mcp-vertex` / monorepo TypeScript + Bun |
-| Rama | `wip/x00298-s1` |
-| HEAD auditado | `9c3ed108` — `fix(proposals): persist x00298 S2 slice results` |
-| Remoto | `origin git@github.com:CartagoGit/mcp-vertex.git` |
-| Fecha | 2026-08-29 |
-| Working tree | Sucio: cambios de varios agentes y archivos no trackeados |
-| Estado remoto relevante | `origin/wip/x00298-s2` apunta al mismo HEAD observado |
+| Campo                   | Valor                                                          |
+| ----------------------- | -------------------------------------------------------------- |
+| Proyecto                | `mcp-vertex` / monorepo TypeScript + Bun                       |
+| Rama                    | `wip/x00298-s1`                                                |
+| HEAD auditado           | `9c3ed108` — `fix(proposals): persist x00298 S2 slice results` |
+| Remoto                  | `origin git@github.com:CartagoGit/mcp-vertex.git`              |
+| Fecha                   | 2026-08-29                                                     |
+| Working tree            | Sucio: cambios de varios agentes y archivos no trackeados      |
+| Estado remoto relevante | `origin/wip/x00298-s2` apunta al mismo HEAD observado          |
 
 El snapshot vinculante es el working tree tal como estaba durante esta pasada, no solamente HEAD. Los cambios locales se consideran preexistentes y no se atribuyen a esta auditoria.
 
@@ -62,19 +62,19 @@ Se priorizaron los cambios activos de `x00298`, los contratos core, la superfici
 
 ## 3. Cobertura y limitaciones
 
-| Area | Cobertura |
-|---|---|
-| Core, CLI, contratos y bootstrap | Parcial dirigida |
-| Proposals, locks, persistencia y cierre | Alta sobre los archivos modificados |
-| Audit, commit-policy y lazy assembly | Alta sobre los archivos modificados |
-| Resto de plugins | Muestreo; no exhaustivo |
-| Extensions/apps/web | Inventario y evidencia historica; no lectura completa |
-| Seguridad automatica | No ejecutada por desfase de routing MCP |
-| Auditor independiente delegado | No disponible: limite de cuota del proveedor |
-| GitHub API, CI remoto y branch protection | No verificables desde este snapshot |
-| Tests | Suite global ejecutada |
-| Build | Ejecutado correctamente |
-| Lint | Ejecutado mediante `bunx biome`; falla |
+| Area                                      | Cobertura                                             |
+| ----------------------------------------- | ----------------------------------------------------- |
+| Core, CLI, contratos y bootstrap          | Parcial dirigida                                      |
+| Proposals, locks, persistencia y cierre   | Alta sobre los archivos modificados                   |
+| Audit, commit-policy y lazy assembly      | Alta sobre los archivos modificados                   |
+| Resto de plugins                          | Muestreo; no exhaustivo                               |
+| Extensions/apps/web                       | Inventario y evidencia historica; no lectura completa |
+| Seguridad automatica                      | No ejecutada por desfase de routing MCP               |
+| Auditor independiente delegado            | No disponible: limite de cuota del proveedor          |
+| GitHub API, CI remoto y branch protection | No verificables desde este snapshot                   |
+| Tests                                     | Suite global ejecutada                                |
+| Build                                     | Ejecutado correctamente                               |
+| Lint                                      | Ejecutado mediante `bunx biome`; falla                |
 
 La superficie MCP anuncio herramientas de auditoria pero una llamada directa inicialmente devolvio `tool not found`; despues el router pudo generar el brief. La activacion de plugins tambien registro el error `Resource knowledge://commit-policy is already registered`, por lo que la salud del propio host MCP tiene una limitacion reproducible.
 
@@ -97,33 +97,33 @@ Bloqueadores actuales: corregir la clasificacion de `nodeDynamicImport`, restaur
 
 ## 6. Puntuaciones
 
-| Dimension | Nota | Justificacion |
-|---|---:|---|
-| Idea/product fit | 8.0 | Producto coherente para hosts MCP y agentes |
-| Producto | 7.5 | Superficie amplia; coste de complejidad alto |
-| Arquitectura | 7.5 | Boundaries claros, pero registry/generated drift |
-| Runtime | 7.0 | Lifecycle trabajado; lazy activation reciente |
-| Modularidad | 8.0 | Plugins y contratos bien separados |
-| APIs/contratos | 6.0 | Falla el contrato runtime de outputSchema |
-| Cliente/SDK | 7.0 | No auditado completamente en esta pasada |
-| Frontend/UI | 6.5 | Aplicable pero solo muestreado |
-| Backend/servicios | N/A | No es un backend distribuido convencional |
-| Datos/persistencia | 7.0 | Filesystem durable con riesgo de integracion |
-| CLI/tooling | 7.0 | Amplio y testeado; lint no verde |
-| Plugins/extensiones | 7.5 | Ecosistema rico; activacion duplicada observada |
-| Testing | 7.5 | 8701/8703 tests pasan, pero dos contratos fallan |
-| CI/CD | 6.0 | No verificable remoto; lint local no verde |
-| Seguridad | 6.5 | Propuestas existentes; scan real no ejecutado |
-| Rendimiento/resiliencia | 7.0 | Costes y timeouts contemplados; falta medicion completa |
-| Observabilidad | 7.5 | Logs de fallos utiles y estructurados |
-| DX | 7.5 | Bootstrap, skills y propuestas bien documentados |
-| Mantenibilidad | 7.0 | Deuda Biome y artefactos generados |
-| Documentacion | 7.5 | Amplia, con riesgo de drift |
-| Governance | 7.0 | Politicas presentes; remoto no verificado |
-| Release readiness | 5.5 | No listo mientras tests/lint fallen |
-| Coste operativo | 6.5 | Superficie grande y activacion lazy mitigan parcialmente |
-| Eficiencia IA/tokens | 7.0 | Existe trabajo explicito de budgets y compactacion |
-| Potencial futuro | 8.5 | Alta extensibilidad y trazabilidad |
+| Dimension               | Nota | Justificacion                                            |
+| ----------------------- | ---: | -------------------------------------------------------- |
+| Idea/product fit        |  8.0 | Producto coherente para hosts MCP y agentes              |
+| Producto                |  7.5 | Superficie amplia; coste de complejidad alto             |
+| Arquitectura            |  7.5 | Boundaries claros, pero registry/generated drift         |
+| Runtime                 |  7.0 | Lifecycle trabajado; lazy activation reciente            |
+| Modularidad             |  8.0 | Plugins y contratos bien separados                       |
+| APIs/contratos          |  6.0 | Falla el contrato runtime de outputSchema                |
+| Cliente/SDK             |  7.0 | No auditado completamente en esta pasada                 |
+| Frontend/UI             |  6.5 | Aplicable pero solo muestreado                           |
+| Backend/servicios       |  N/A | No es un backend distribuido convencional                |
+| Datos/persistencia      |  7.0 | Filesystem durable con riesgo de integracion             |
+| CLI/tooling             |  7.0 | Amplio y testeado; lint no verde                         |
+| Plugins/extensiones     |  7.5 | Ecosistema rico; activacion duplicada observada          |
+| Testing                 |  7.5 | 8701/8703 tests pasan, pero dos contratos fallan         |
+| CI/CD                   |  6.0 | No verificable remoto; lint local no verde               |
+| Seguridad               |  6.5 | Propuestas existentes; scan real no ejecutado            |
+| Rendimiento/resiliencia |  7.0 | Costes y timeouts contemplados; falta medicion completa  |
+| Observabilidad          |  7.5 | Logs de fallos utiles y estructurados                    |
+| DX                      |  7.5 | Bootstrap, skills y propuestas bien documentados         |
+| Mantenibilidad          |  7.0 | Deuda Biome y artefactos generados                       |
+| Documentacion           |  7.5 | Amplia, con riesgo de drift                              |
+| Governance              |  7.0 | Politicas presentes; remoto no verificado                |
+| Release readiness       |  5.5 | No listo mientras tests/lint fallen                      |
+| Coste operativo         |  6.5 | Superficie grande y activacion lazy mitigan parcialmente |
+| Eficiencia IA/tokens    |  7.0 | Existe trabajo explicito de budgets y compactacion       |
+| Potencial futuro        |  8.5 | Alta extensibilidad y trazabilidad                       |
 
 Nota global actual: **7.0/10**, ponderando mas contratos, release readiness, seguridad y runtime que documentacion. Potencial tras P0/P1: **8.2/10**.
 
@@ -359,10 +359,10 @@ Definition of Done: ambos fallos P0 resueltos con tests, build y suite global ve
 
 ## 30. Propuestas hijas
 
-| ID | Objetivo | Hallazgos | Prioridad |
-|---|---|---|---|
-| `x00300` | Clasificar `nodeDynamicImport` como deprecated en inventory | F-001 | P0 |
-| `x00305` | Exponer `outputSchema` efectivo de `proposals_close_plan` | F-002 | P0 |
+| ID       | Objetivo                                                    | Hallazgos | Prioridad |
+| -------- | ----------------------------------------------------------- | --------- | --------- |
+| `x00300` | Clasificar `nodeDynamicImport` como deprecated en inventory | F-001     | P0        |
+| `x00305` | Exponer `outputSchema` efectivo de `proposals_close_plan`   | F-002     | P0        |
 
 ## 31. Estrategia de orquestacion
 
@@ -377,16 +377,16 @@ DAG: `x00300` y `x00305` son paralelizables si se reservan archivos disjuntos; a
 
 ## 33. Metricas antes/despues
 
-| Metrica | Antes |
-|---|---:|
-| Tests | 8701 pass / 2 fail / 2 skipped |
-| Test files | 1087 pass context; 2 fail |
-| Build packages | 56 |
-| Biome | 55 errors / 116 warnings / 130 infos |
-| TypeScript LOC aproximado | 43144 |
-| Proposals total | 527 |
-| Locks activos | 1 |
-| Proposals accionables | 2 |
+| Metrica                   |                                Antes |
+| ------------------------- | -----------------------------------: |
+| Tests                     |       8701 pass / 2 fail / 2 skipped |
+| Test files                |            1087 pass context; 2 fail |
+| Build packages            |                                   56 |
+| Biome                     | 55 errors / 116 warnings / 130 infos |
+| TypeScript LOC aproximado |                                43144 |
+| Proposals total           |                                  527 |
+| Locks activos             |                                    1 |
+| Proposals accionables     |                                    2 |
 
 Despues: repetir exactamente los comandos y publicar solo cifras observadas.
 

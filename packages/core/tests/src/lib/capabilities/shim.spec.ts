@@ -35,7 +35,7 @@ describe('f00188 — capability legacy shim (Track F)', () => {
 
 	it('rejects a manifest whose declared capability is unknown', () => {
 		expect(() =>
-			parseDeclaredCapabilities({ capabilities: ['git:teleport'] }),
+			parseDeclaredCapabilities({ capabilities: ['git:teleport'] })
 		).toThrow(/unknown capability/);
 	});
 
@@ -56,10 +56,10 @@ describe('f00188 — capability legacy shim (Track F)', () => {
 
 	it('shim warning is deterministic: same input ⇒ same message', () => {
 		expect(summariseLegacyShimWarning('p').message).toBe(
-			summariseLegacyShimWarning('p').message,
+			summariseLegacyShimWarning('p').message
 		);
 		expect(summariseLegacyShimWarning('p').message).not.toBe(
-			summariseLegacyShimWarning('q').message,
+			summariseLegacyShimWarning('q').message
 		);
 	});
 
@@ -94,7 +94,7 @@ describe('f00188 — capability legacy shim (Track F)', () => {
 				configResolved: {},
 				logger,
 				capabilities: {},
-			},
+			}
 		);
 		expect(warnings).toHaveLength(1);
 		expect(warnings[0]).toContain('legacy-plugin');
@@ -113,7 +113,7 @@ describe('f00188 — capability legacy shim (Track F)', () => {
 				configResolved: {},
 				logger,
 				capabilities: {},
-			},
+			}
 		);
 		expect(warnings).toHaveLength(0);
 	});
@@ -146,7 +146,7 @@ describe('f00188 — capability legacy shim (Track F)', () => {
 		const ctx = buildActivateContext(
 			{ name: 'p', manifest: {}, configResolved: {}, logger: console },
 			[] as const,
-			{},
+			{}
 		);
 		const read = (
 			ctx.capabilities as unknown as {

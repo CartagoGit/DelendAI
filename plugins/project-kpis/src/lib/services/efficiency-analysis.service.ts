@@ -12,11 +12,7 @@ interface IKpiEfficiencyRecord extends IInvocationRecord {
 }
 
 type TKpiEfficiencyStatus =
-	| 'measured'
-	| 'estimated'
-	| 'partial'
-	| 'unavailable'
-	| 'not-configured';
+	'measured' | 'estimated' | 'partial' | 'unavailable' | 'not-configured';
 
 type TKpiEfficiencyCausality = 'measured' | 'inferred' | 'unknown';
 
@@ -92,7 +88,7 @@ const round = (value: number): number => Number(value.toFixed(6));
 const asIsoString = (value: Date): string => value.toISOString();
 
 const baselineOf = (
-	baseline: NonNullable<IEfficiencyAnalysisOptions['baseline']> | null,
+	baseline: NonNullable<IEfficiencyAnalysisOptions['baseline']> | null
 ): IEfficiencyBaseline => {
 	if (baseline === undefined || baseline === null) {
 		return {
@@ -137,12 +133,12 @@ const baselineOf = (
 
 const observationsOf = (
 	summary: IUsageSummary | null,
-	records: readonly IKpiEfficiencyRecord[],
+	records: readonly IKpiEfficiencyRecord[]
 ): IEfficiencyObservation => {
 	const calls = records.length;
 	const successfulCalls = records.reduce(
 		(acc, record) => acc + (record.outcome === 'success' ? 1 : 0),
-		0,
+		0
 	);
 	const failedCalls = calls - successfulCalls;
 	const totalTokens = records.reduce(
@@ -151,27 +147,27 @@ const observationsOf = (
 			(record.usage?.totalTokens ??
 				(record.usage?.inputTokens ?? 0) +
 					(record.usage?.outputTokens ?? 0)),
-		0,
+		0
 	);
 	const costUsd = round(
-		records.reduce((acc, record) => acc + (record.costUsd ?? 0), 0),
+		records.reduce((acc, record) => acc + (record.costUsd ?? 0), 0)
 	);
 	const tokensSaved = records.reduce(
 		(acc, record) => acc + (record.tokensSaved ?? 0),
-		0,
+		0
 	);
 	const latencies = records
 		.map((record) => record.latencyMs ?? record.durationMs)
 		.filter(
 			(value): value is number =>
-				typeof value === 'number' && Number.isFinite(value),
+				typeof value === 'number' && Number.isFinite(value)
 		);
 	const averageLatencyMs =
 		latencies.length === 0
 			? null
 			: round(
 					latencies.reduce((acc, value) => acc + value, 0) /
-						latencies.length,
+						latencies.length
 				);
 	const tokensPerCall = calls > 0 ? round(totalTokens / calls) : null;
 	const costPerCall = calls > 0 ? round(costUsd / calls) : null;
@@ -186,7 +182,7 @@ const observationsOf = (
 			? null
 			: round(
 					utilityValues.reduce((acc, value) => acc + value, 0) /
-						utilityValues.length,
+						utilityValues.length
 				);
 	return {
 		calls,
@@ -205,7 +201,7 @@ const observationsOf = (
 
 const savingsOf = (
 	observations: IEfficiencyObservation,
-	baseline: IEfficiencyBaseline,
+	baseline: IEfficiencyBaseline
 ): readonly IEfficiencySavingsItem[] => {
 	const savings: IEfficiencySavingsItem[] = [];
 	if (observations.tokensSaved > 0) {
@@ -225,7 +221,7 @@ const savingsOf = (
 		observations.costUsd !== undefined
 	) {
 		const financialSavingsUsd = round(
-			Math.max(0, baseline.manualCostUsd - observations.costUsd),
+			Math.max(0, baseline.manualCostUsd - observations.costUsd)
 		);
 		savings.push({
 			id: 'manual-baseline-financial-savings',
@@ -248,7 +244,7 @@ const savingsOf = (
  * rollup and financial savings only from an explicit configured baseline.
  */
 export const buildEfficiencyAnalysis = (
-	options: IEfficiencyAnalysisOptions,
+	options: IEfficiencyAnalysisOptions
 ): IEfficiencyAnalysis => {
 	const now = options.now ?? new Date();
 	const generatedAt = asIsoString(now);
@@ -271,7 +267,7 @@ export const buildEfficiencyAnalysis = (
 						? 'partial'
 						: 'not-configured';
 	const causality: TKpiEfficiencyCausality = savings.some(
-		(item) => item.causality === 'measured',
+		(item) => item.causality === 'measured'
 	)
 		? 'measured'
 		: savings.some((item) => item.causality === 'inferred')

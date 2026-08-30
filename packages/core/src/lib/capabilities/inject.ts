@@ -46,7 +46,7 @@ import {
  * manifest arrives untyped at the plugin boundary.
  */
 export const parseDeclaredCapabilities = (
-	manifest: unknown,
+	manifest: unknown
 ): readonly Capability[] => {
 	const raw =
 		typeof manifest === 'object' && manifest !== null
@@ -64,7 +64,7 @@ export const parseDeclaredCapabilities = (
  */
 export const resolveCapabilityAccess = (
 	declared: readonly Capability[],
-	requested: string,
+	requested: string
 ): ICapabilityRefusal | null => {
 	if (!isCapability(requested)) {
 		return {
@@ -118,7 +118,7 @@ export interface ILegacyShimWarning {
  * this to an error once the migration window closes.
  */
 export const summariseLegacyShimWarning = (
-	pluginName: string,
+	pluginName: string
 ): ILegacyShimWarning => ({
 	pluginName,
 	granted: CAPABILITIES,
@@ -134,8 +134,7 @@ export const summariseLegacyShimWarning = (
  */
 export interface ICapabilityImplementationMap {
 	readonly [group: string]:
-		| Readonly<Record<string, CapabilityMethod>>
-		| undefined;
+		Readonly<Record<string, CapabilityMethod>> | undefined;
 }
 
 /**
@@ -158,7 +157,7 @@ export interface ICapabilityImplementationMap {
 export const createCapabilityContext = <C extends Capability>(
 	declared: readonly C[],
 	impl: ICapabilityImplementationMap,
-	onRefuse?: (refusal: ICapabilityRefusal) => void,
+	onRefuse?: (refusal: ICapabilityRefusal) => void
 ): CapabilitiesToCtx<C> => {
 	const gate = createCapabilityGate(declared);
 	const groupProxies = new Map<string, Record<string, CapabilityMethod>>();
@@ -181,7 +180,7 @@ export const createCapabilityContext = <C extends Capability>(
 				if (typeof granted === 'function') return granted;
 				return (..._args: readonly unknown[]) => {
 					throw new Error(
-						`capability "${group}:${action}" is granted but no implementation is registered`,
+						`capability "${group}:${action}" is granted but no implementation is registered`
 					);
 				};
 			},
@@ -204,7 +203,7 @@ export const createCapabilityContext = <C extends Capability>(
 		has(_target, groupRaw) {
 			const group = String(groupRaw);
 			return declared.some((capability) =>
-				capability.startsWith(`${group}:`),
+				capability.startsWith(`${group}:`)
 			);
 		},
 	});
