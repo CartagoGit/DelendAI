@@ -169,7 +169,7 @@ export const logSearch = async (
 export interface ILogIncident {
 	readonly incidentType: string;
 	readonly toolName: string;
-	readonly errorFingerprint: string;
+	readonly errorFingerprint?: string;
 	readonly sampleError: string;
 	readonly count: number;
 	readonly distinctAgents: number;
