@@ -290,4 +290,100 @@ status: in-progress
 		expect(result.closed).toBe(true);
 		expect(readFileSync(abs, 'utf8')).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
+
+	it('closes with scoped validation metadata when the resolver permits it', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('none'),
+		);
+		opts = {
+			...opts,
+			resolveValidationDecision: async () => ({
+				mode: 'scoped' as const,
+				resolvedScopes: ['proposals'],
+				snapshotId: 'snapshot-scoped',
+				reason: 'another active actor still exists',
+			}),
+		};
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				force: true,
+			}),
+		);
+		expect(result.ok).toBe(true);
+		expect(result.validationDecision).toMatchObject({
+			mode: 'scoped',
+			resolvedScopes: ['proposals'],
+			snapshotId: 'snapshot-scoped',
+		});
+		expect(readFileSync(abs, 'utf8')).toMatch(/\*\*Status\*\*:\s*done/i);
+	});
+
+	it('blocks close when activity cannot prove a safe validation mode', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('none'),
+		);
+		opts = {
+			...opts,
+			resolveValidationDecision: async () => ({
+				mode: 'blocked' as const,
+				resolvedScopes: [],
+				snapshotId: 'snapshot-blocked',
+				reason: 'current actor is not provably active',
+			}),
+		};
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				force: true,
+			}),
+		);
+		expect(result.ok).toBe(false);
+		expect(result.kind).toBe('validation-error');
+		expect(result.validationDecision).toMatchObject({
+			mode: 'blocked',
+			snapshotId: 'snapshot-blocked',
+		});
+		expect(readFileSync(abs, 'utf8')).toMatch(/\*\*Status\*\*:\s*pending/i);
+	});
+
+	it('passes resolved scopes to the quality probe', async () => {
+		writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('none'),
+		);
+		const calls: Array<{ scopes?: readonly string[]; mode?: string }> = [];
+		opts = {
+			...opts,
+			runQuality: async (input) => {
+				calls.push(input ?? {});
+				return { ok: true, severity: 'ok' as const, findings: [] };
+			},
+			resolveValidationDecision: async () => ({
+				mode: 'scoped' as const,
+				resolvedScopes: ['proposals'],
+				snapshotId: 'snapshot-scoped',
+				reason: 'another active actor still exists',
+			}),
+		};
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				force: true,
+			}),
+		);
+		expect(result.ok).toBe(true);
+		expect(calls).toEqual([{ scopes: ['proposals'], mode: 'scoped' }]);
+	});
 });
