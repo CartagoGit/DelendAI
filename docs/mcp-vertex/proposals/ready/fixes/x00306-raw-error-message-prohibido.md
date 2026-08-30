@@ -26,7 +26,8 @@ Migrated work item: Raw error message prohibido..
   - La respuesta conserva alternativas operativas seguras: summary, toolName, incidentType, fingerprint, hasStack y conteos cuando correspondan.
   - El almacenamiento local JSONL puede conservar el diagnóstico completo sin devolverlo por MCP.
   - Los tests focalizados verifican ausencia del texto crudo y presencia de la alternativa segura.
-
+- review-state: in_review
+- review-implementer: implementation_runner
 ## notes
 
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-error-message-prohibido` by `proposal_adopt`
