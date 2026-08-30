@@ -18,9 +18,21 @@ related:
     - x00257 # eliminar force-with-lease (predecesor)
     - c00131 # protectedBranches por defecto (transitivo)
     - t00018 # tabla property-based del push driver
+    - x00272 # hija que la supersede: bloquea push directo a main, no a develop
+superseded-by: x00272
 ---
 
 # x00258 — Bloquear push directo a `develop` en `commit-policy` driver
+
+> **SUPERSEDED por [x00272](../../ready/fixes/x00272-block-direct-push-to-main-only.md).**
+> Tras la retractación del reviewer externo (ChatGPT 5.6 Sol), el modelo
+> de gobernanza invierte el foco: `main` = rama de release (push directo
+> bloqueado, toda promoción va por PR) y `develop` = rama de integración
+> donde el owner trabaja libremente. Por eso la invariante central de
+> esta propuesta —"rechaza push directo a `develop`"— queda **retirada**
+> y reemplazada por la de x00272: "rechaza push directo a `main`". Este
+> documento se archiva como histórico; el código vigente del driver
+> refleja la invariante de x00272.
 
 ## Goal
 
@@ -151,6 +163,8 @@ esta propuesta anticipaba (`src/lib/drivers/push.ts`): el driver vive en
 - `plugins/commit-policy/tests/src/lib/services/push-driver.spec.ts:252`
   cubre el reason code.
 
-Sigue siendo la política vigente tras la decisión de gobernanza de esa
-misma fecha: `develop` no está protegida en GitHub porque el operador
-programa en ella, pero un agente no aterriza ahí sin pull request.
+Era la política vigente a esa fecha, pero quedó **superseded por
+x00272** (2026-08-25, retractación del reviewer externo): el driver
+ahora bloquea push directo a `main` y deja `develop` libre para el
+workflow del owner. Este documento se conserva como histórico de la
+decisión original; el contrato vigente vive en x00272.
