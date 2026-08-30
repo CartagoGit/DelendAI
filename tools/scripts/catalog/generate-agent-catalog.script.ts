@@ -418,13 +418,22 @@ export const buildAgentCatalogArtifact = async (
 		},
 	});
 	const artifact = buildArtifact(snapshot, generatedAt);
-	const text = `${JSON.stringify(artifact, null, '\t')}\n`;
 	const outputPath = join(options.root, DEFAULT_OUTPUT_PATH);
 	const warningsPath = outputPath.replace(
 		/\.json$/u,
 		DEFAULT_WARNINGS_SUFFIX,
 	);
 	const current = await io.readText(outputPath);
+	const freshText = `${JSON.stringify(artifact, null, '\t')}\n`;
+	const text =
+		current !== undefined &&
+		stripGeneratedAt(current) === stripGeneratedAt(freshText)
+			? freshText.replace(
+					/"generatedAt": "[^"]*"/u,
+					current.match(/"generatedAt": "[^"]*"/u)?.[0] ??
+						`"generatedAt": "${generatedAt}"`,
+				)
+			: freshText;
 	return {
 		artifact,
 		text,
