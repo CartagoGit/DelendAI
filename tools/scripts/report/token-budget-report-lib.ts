@@ -285,6 +285,7 @@ export const connectTokenBudgetClient = async (
 	const argv = [
 		`--${options.preset === true ? 'preset' : 'plugins'}=${options.pluginList}`,
 		`--workspace=${workspace}`,
+		'--cacheDir=.cache/mcp-vertex',
 		...(options.surfaceMode !== undefined
 			? [`--surface=${options.surfaceMode}`]
 			: []),
