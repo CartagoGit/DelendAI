@@ -1,8 +1,12 @@
-import { readFile } from 'node:fs/promises';
+// effect-boundary-authorized: Owns the persisted KPI history store and pairs direct filesystem reads with atomic writes under a file mutex.
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import type {
 	IKpiEconomicsValue,
@@ -100,7 +104,13 @@ const readStore = async (
 			}
 		});
 	const readTextFile =
-		options.readTextFile ?? ((path: string) => readFile(path, 'utf8'));
+		options.readTextFile ??
+		(async (path: string) =>
+			(
+				await new SafeWorkspaceReader(
+					options.workspaceRootAbs,
+				).readText(path)
+			).content);
 	if (!(await pathExists(pathAbs))) {
 		return defaultStore(retentionDays);
 	}

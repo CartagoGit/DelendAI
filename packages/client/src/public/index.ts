@@ -222,7 +222,7 @@ export type {
 // LLM calls this to add project-specific plugins without ever reading the
 // mcp-vertex core or its internal plugins. Reuses the f00087 scaffold +
 // writer machinery.
-export { authorPlugin } from '../lib/scaffold/author-plugin';
+export { authorPlugin, repairPlugin } from '../lib/scaffold/author-plugin';
 export { setPluginActivation } from '../lib/services/plugin-activation.service';
 export type {
 	ISetPluginActivationInput,
@@ -233,6 +233,7 @@ export type {
 	IAuthorPluginRegistration,
 	IAuthorPluginResult,
 	IAuthorPluginSpec,
+	IRepairPluginResult,
 	IPluginFieldSpec,
 	IPluginFieldType,
 	IPluginToolSpec,

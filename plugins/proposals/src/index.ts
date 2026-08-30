@@ -361,12 +361,54 @@ export default definePlugin({
 						.protectedBranches
 				: ['main', 'master'];
 		const configuredPersist = parsedOptions.data.persist;
+		const commitPolicyCommit = commitPolicyOptions?.commit as
+			| { readonly enabled?: unknown }
+			| undefined;
+		const commitPolicyCadence = commitPolicyOptions?.cadence as
+			| {
+					readonly triggers?: readonly { readonly kind?: unknown }[];
+					readonly allowForeignChanges?: unknown;
+			  }
+			| undefined;
+		const commitPolicyPushOptions = commitPolicyOptions?.push as
+			| {
+					readonly enabled?: unknown;
+					readonly onCommit?: unknown;
+					readonly remote?: unknown;
+					readonly branch?: unknown;
+			  }
+			| undefined;
+		const commitPolicySliceTrigger =
+			commitPolicyCadence?.triggers?.some(
+				(trigger) => trigger.kind === 'slice',
+			) === true;
+		const commitPolicyOwnsSlices =
+			configuredPersist?.mode === 'none' &&
+			commitPolicyCommit?.enabled === true &&
+			commitPolicySliceTrigger;
 		const effectivePersist =
-			configuredPersist === undefined
+			configuredPersist === undefined && !commitPolicyOwnsSlices
 				? undefined
 				: {
-						...configuredPersist,
+						...(configuredPersist ?? {}),
+						mode: commitPolicyOwnsSlices
+							? commitPolicyPushOptions?.enabled === true &&
+								commitPolicyPushOptions?.onCommit === true
+								? ('commit-and-push' as const)
+								: ('commit' as const)
+							: (configuredPersist?.mode ?? 'none'),
 						protectedBranches,
+						...(commitPolicyOwnsSlices &&
+						typeof commitPolicyPushOptions?.remote === 'string' &&
+						typeof commitPolicyPushOptions?.branch === 'string'
+							? {
+									pushTarget: `${commitPolicyPushOptions.remote} HEAD:${commitPolicyPushOptions.branch}`,
+								}
+							: {}),
+						...(commitPolicyOwnsSlices &&
+						commitPolicyCadence?.allowForeignChanges === true
+							? { allowForeignChanges: true }
+							: {}),
 					};
 		const microValidationCalls: IObservedToolCall[] = [];
 		const incidentLogStore = createLogStore(
@@ -455,25 +497,23 @@ export default definePlugin({
 							runCloseSliceQualityGate(ctx.workspace.root),
 					}
 				: {}),
-			...(parsedOptions.data.persist !== undefined
+			...(effectivePersist !== undefined
 				? {
 						persist: {
-							mode: parsedOptions.data.persist.mode,
+							mode: effectivePersist.mode,
 							protectedBranches,
-							...(parsedOptions.data.persist.messageTemplate !==
-							undefined
+							...(effectivePersist.allowForeignChanges === true
+								? { allowForeignChanges: true }
+								: {}),
+							...(effectivePersist.messageTemplate !== undefined
 								? {
 										messageTemplate:
-											parsedOptions.data.persist
-												.messageTemplate,
+											effectivePersist.messageTemplate,
 									}
 								: {}),
-							...(parsedOptions.data.persist.pushTarget !==
-							undefined
+							...(effectivePersist.pushTarget !== undefined
 								? {
-										pushTarget:
-											parsedOptions.data.persist
-												.pushTarget,
+										pushTarget: effectivePersist.pushTarget,
 									}
 								: {}),
 						},

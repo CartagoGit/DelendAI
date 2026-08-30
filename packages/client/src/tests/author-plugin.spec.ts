@@ -13,7 +13,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { authorPlugin, type IAuthorPluginSpec } from '../public/index';
+import {
+	authorPlugin,
+	repairPlugin,
+	type IAuthorPluginSpec,
+} from '../public/index';
 
 let workspaceRoot: string;
 
@@ -59,7 +63,7 @@ describe('authorPlugin — generation from spec', () => {
 
 		const result = await authorPlugin(spec, { workspaceRoot });
 
-		// canonical four files land flat under plugins/<id>/
+		// canonical four files land under the client authoring default layout
 		const pkg = await readFile(
 			join(result.pluginDir, 'package.json'),
 			'utf8',
@@ -74,12 +78,17 @@ describe('authorPlugin — generation from spec', () => {
 		expect(index).toContain('outputSchema');
 		expect(index).toContain('_add');
 		// no double-nesting
-		expect(result.pluginDir).toContain(join('plugins', 'acme-notes'));
+		expect(result.pluginDir).toBe(
+			join(
+				workspaceRoot,
+				'packages/mcp-vertex/plugins/mcp-vertex_acme-notes',
+			),
+		);
 
 		// registered by PATH
 		const config = await readConfig();
 		expect(config.plugins?.['acme-notes']?.path).toBe(
-			'./plugins/acme-notes/src/index.ts',
+			'./packages/mcp-vertex/plugins/mcp-vertex_acme-notes/src/index.ts',
 		);
 		expect(result.registration.action).toBe('added');
 		expect(result.tools).toEqual(['acme-notes_add']);
@@ -132,7 +141,7 @@ describe('authorPlugin — multiple tools', () => {
 		const config = await readConfig();
 		expect(config.plugins?.multi?.prefix).toBe('mx');
 		expect(config.plugins?.multi?.path).toBe(
-			'./plugins/multi/src/index.ts',
+			'./packages/mcp-vertex/plugins/mcp-vertex_multi/src/index.ts',
 		);
 	});
 });
@@ -191,7 +200,7 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 		expect(config.cacheDir).toBe('.cache/mv');
 		// new entry added alongside
 		expect(config.plugins?.['project-x']?.path).toBe(
-			'./plugins/project-x/src/index.ts',
+			'./packages/mcp-vertex/plugins/mcp-vertex_project-x/src/index.ts',
 		);
 		expect(Object.keys(config.plugins ?? {}).sort()).toEqual([
 			'project-x',
@@ -230,7 +239,7 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 		expect(config.plugins?.widget).toEqual({
 			prefix: 'wg',
 			options: { k: 'v' },
-			path: './plugins/widget/src/index.ts',
+			path: './packages/mcp-vertex/plugins/mcp-vertex_widget/src/index.ts',
 		});
 	});
 
@@ -249,9 +258,51 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 			'beta',
 		]);
 		expect(config.plugins?.alpha?.path).toBe(
-			'./plugins/alpha/src/index.ts',
+			'./packages/mcp-vertex/plugins/mcp-vertex_alpha/src/index.ts',
 		);
-		expect(config.plugins?.beta?.path).toBe('./plugins/beta/src/index.ts');
+		expect(config.plugins?.beta?.path).toBe(
+			'./packages/mcp-vertex/plugins/mcp-vertex_beta/src/index.ts',
+		);
+	});
+});
+
+describe('repairPlugin', () => {
+	it('restores missing scaffold files without overwriting existing files', async () => {
+		const spec: IAuthorPluginSpec = {
+			name: 'repairable',
+			description: 'repairable plugin',
+		};
+		const authored = await authorPlugin(spec, { workspaceRoot });
+		const indexPath = join(authored.pluginDir, 'src/index.ts');
+		const readmePath = join(authored.pluginDir, 'README.md');
+		await rm(readmePath);
+		await writeFile(
+			indexPath,
+			'// keep this authored implementation\n',
+			'utf8',
+		);
+
+		const result = await repairPlugin(spec, { workspaceRoot });
+
+		expect(result.repaired).toContain('README.md');
+		expect(result.preserved).toContain('src/index.ts');
+		expect(await readFile(indexPath, 'utf8')).toBe(
+			'// keep this authored implementation\n',
+		);
+		expect(result.registration.action).toBe('unchanged');
+		expect(result.report).toContain('created 1 missing file');
+	});
+
+	it('supports an explicit pluginsRoot using the existing layout', async () => {
+		const result = await authorPlugin(
+			{ name: 'explicit', description: 'explicit root' },
+			{ workspaceRoot, pluginsRoot: 'libs/plugins' },
+		);
+
+		expect(result.pluginDir).toBe(
+			join(workspaceRoot, 'libs/plugins/explicit'),
+		);
+		expect(result.pluginPath).toBe('./libs/plugins/explicit/src/index.ts');
 	});
 });
 

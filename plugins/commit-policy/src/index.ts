@@ -156,7 +156,13 @@ export default definePlugin({
 					}
 				: null;
 
-		const sharedDriver = { run, policy, identityCtx, auditAgent };
+		const sharedDriver = {
+			run,
+			policy,
+			identityCtx,
+			auditAgent,
+			pluginCacheDir: ctx.pluginCacheDir,
+		};
 		const configuredInterval = policy.cadence.triggers.find(
 			(t): t is Extract<typeof t, { kind: 'interval' }> =>
 				t.kind === 'interval',
@@ -175,6 +181,7 @@ export default definePlugin({
 			run,
 			policy: policy.push,
 			workspaceRoot: ctx.workspace.root,
+			pluginCacheDir: ctx.pluginCacheDir,
 		});
 		pushScheduler.start();
 		disposables.push(() => pushScheduler.stop());
@@ -198,6 +205,7 @@ export default definePlugin({
 				policy,
 				run,
 				workspaceRoot: ctx.workspace.root,
+				pluginCacheDir: ctx.pluginCacheDir,
 				identityCtx,
 				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
 			}),
@@ -214,11 +222,12 @@ export default definePlugin({
 		];
 
 		// The idempotency store lives at
-		// `<workspaceRoot>/.commit-policy/processed-events.jsonl`.
+		// `<pluginCacheDir>/processed-events.jsonl`.
 		// Created BEFORE the engine so the engine constructor
 		// can receive a reference; disposed by `engine.dispose()`.
 		const processedEvents = createProcessedEventsStore({
 			workspaceRoot: ctx.workspace.root,
+			path: `${ctx.pluginCacheDir}/processed-events.jsonl`,
 		});
 
 		// The central
@@ -243,7 +252,14 @@ export default definePlugin({
 			(t): t is Extract<typeof t, { kind: 'slice' }> =>
 				t.kind === 'slice',
 		);
-		if (sliceTrigger !== undefined) {
+		const proposalsOptions = ctx.pluginOptions?.get('proposals');
+		const proposalsPersistMode =
+			proposalsOptions?.persist !== null &&
+			typeof proposalsOptions?.persist === 'object'
+				? (proposalsOptions.persist as { readonly mode?: unknown }).mode
+				: undefined;
+		const proposalsOwnsSlices = proposalsPersistMode === 'none';
+		if (sliceTrigger !== undefined && !proposalsOwnsSlices) {
 			// The listener dispatches every
 			// emitted event into the engine. The engine decides
 			// what (if anything) gets committed; the ack flows

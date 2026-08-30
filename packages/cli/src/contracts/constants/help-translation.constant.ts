@@ -31,6 +31,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'plugin search': 'Search the first-party + community plugin registry.',
 	'plugin add':
 		'Plan the adopt of a plugin (returns the install + wire + config recipe).',
+	'plugin author':
+		'Create or repair a project-owned external plugin and register its local path.',
 	metrics: 'Show per-tool metrics.',
 	'validate-matrix': 'Show configured validation matrix.',
 	validate: 'Run the root validation gate.',

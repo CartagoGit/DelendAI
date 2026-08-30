@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -39,6 +39,51 @@ const PLUGINS = {
 	'mcp-docs': docsPlugin,
 	'mcp-deps': depsPlugin,
 } as const;
+
+const seedClosePlanFixture = (
+	workspace: string,
+	input: {
+		readonly id: string;
+		readonly status: 'in-progress' | 'done';
+		readonly body?: string;
+	},
+) => {
+	const proposalsDir = join(workspace, 'docs', 'mcp-vertex', 'proposals');
+	const folder = input.status === 'done' ? 'done/plans' : 'in-progress';
+	const file = `${folder}/${input.id}-fixture.md`;
+	mkdirSync(join(proposalsDir, folder), { recursive: true });
+	writeFileSync(
+		join(proposalsDir, file),
+		[
+			'---',
+			`id: ${input.id}`,
+			'type: plan',
+			`status: ${input.status}`,
+			'shippedIn: 0.0.0-test',
+			'---',
+			'',
+			'# fixture',
+			'',
+			input.body ?? '## Goal\n\nok\n',
+		].join('\n'),
+	);
+	mkdirSync(join(workspace, '.cache', 'mcp-vertex', 'proposals'), {
+		recursive: true,
+	});
+	writeFileSync(
+		join(workspace, '.cache', 'mcp-vertex', 'proposals', 'index.json'),
+		JSON.stringify({
+			proposals: [
+				{
+					id: input.id,
+					file,
+					status: input.status,
+					type: 'plan',
+				},
+			],
+		}),
+	);
+};
 
 describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	let workspace = '';
@@ -202,6 +247,111 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 			.map((t) => t.name);
 		expect(missing, 'tools missing an outputSchema').toEqual([]);
 		expect(tools.length).toBeGreaterThan(20);
+	});
+
+	it('exposes proposals_close_plan with outputSchema on the native surface and validates a dry-run success over the protocol', async () => {
+		seedClosePlanFixture(workspace, {
+			id: 'q12345',
+			status: 'in-progress',
+		});
+		const listed = await client.listTools();
+		const closePlan = listed.tools.find(
+			(tool) => tool.name === 'mcp-vertex_proposals_proposals_close_plan',
+		) as { outputSchema?: unknown } | undefined;
+		expect(closePlan?.outputSchema).toBeDefined();
+
+		const result = await client.callTool({
+			name: 'mcp-vertex_proposals_proposals_close_plan',
+			arguments: { planId: 'q12345', dryRun: true },
+		});
+		expect(result.isError, 'close_plan dry-run').toBeFalsy();
+		expect(
+			result.structuredContent as {
+				dryRun: boolean;
+				wouldChange: Array<{ kind: string; summary: string }>;
+			},
+		).toMatchObject({
+			dryRun: true,
+			wouldChange: [
+				{
+					kind: 'rename',
+					summary: 'move q12345 from in-progress to done',
+				},
+			],
+		});
+	});
+
+	it('preserves proposals_close_plan outputSchema through managed lazy activation', async () => {
+		const managedWorkspace = mkdtempSync(join(tmpdir(), 'e2e-os-managed-'));
+		execFileSync('git', ['init', '-q'], { cwd: managedWorkspace });
+		writeFileSync(join(managedWorkspace, 'README.md'), '# managed\n');
+		seedClosePlanFixture(managedWorkspace, {
+			id: 'q54321',
+			status: 'in-progress',
+		});
+		const args = parseCliArgs(
+			[
+				'--plugins=proposals',
+				`--workspace=${managedWorkspace}`,
+				'--surface=managed',
+			],
+			managedWorkspace,
+		);
+		const { config } = await assembleCliConfig(args, {
+			import: async () => ({ default: proposalsPlugin }),
+			readFile: async () => undefined,
+		});
+		const assembled = await createMcpProject(config);
+		const [ct, st] = InMemoryTransport.createLinkedPair();
+		await assembled.server.connect(st);
+		const managedClient = new Client(
+			{ name: 'claude-code', version: '1.0.0' },
+			{ capabilities: {} },
+		);
+		await managedClient.connect(ct);
+		try {
+			const initial = await managedClient.listTools();
+			expect(initial.tools.map((tool) => tool.name)).not.toContain(
+				'mcp-vertex_proposals_proposals_close_plan',
+			);
+
+			const activated = await managedClient.callTool({
+				name: 'mcp-vertex_plugin_activate',
+				arguments: { plugin: 'proposals' },
+			});
+			expect(activated.isError, 'plugin_activate proposals').toBeFalsy();
+
+			const listed = await managedClient.listTools();
+			const closePlan = listed.tools.find(
+				(tool) =>
+					tool.name === 'mcp-vertex_proposals_proposals_close_plan',
+			) as { outputSchema?: unknown } | undefined;
+			expect(closePlan?.outputSchema).toBeDefined();
+
+			const result = await managedClient.callTool({
+				name: 'mcp-vertex_proposals_proposals_close_plan',
+				arguments: { planId: 'q54321', dryRun: true },
+			});
+			expect(result.isError, 'managed close_plan dry-run').toBeFalsy();
+			expect(
+				result.structuredContent as {
+					dryRun: boolean;
+					wouldChange: Array<{ kind: string; summary: string }>;
+				},
+			).toMatchObject({
+				dryRun: true,
+				wouldChange: [
+					{
+						kind: 'rename',
+						summary: 'move q54321 from in-progress to done',
+					},
+				],
+			});
+		} finally {
+			await managedClient.close();
+			await assembled.server.close();
+			rmSync(managedWorkspace, { recursive: true, force: true });
+		}
 	});
 
 	// r00002 S1: the 3 bootstrap tools used to declare

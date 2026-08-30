@@ -71,6 +71,43 @@ export interface McpVertexAnalyzeProjectOutput {
 	[key: string]: unknown;
 }
 
+export interface McpVertexAuthorPluginOutput {
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	name?: string;
+	namespace?: string;
+	pluginDir?: string;
+	pluginPath?: string;
+	files?: {
+		written: string[];
+		preserved: string[];
+		moved: string[];
+		planned: {
+			path: string;
+			content: string;
+		}[];
+	};
+	registration?: {
+		configFile: string;
+		path: string;
+		action: "added" | "updated" | "unchanged";
+		previousPath?: string;
+	};
+	diagnostics?: Array<{
+		id: string;
+		severity: "error" | "warning" | "info";
+		path: string;
+		message: string;
+		action: string;
+		autoFixable: boolean;
+	}>;
+	autoFixed?: string[];
+	nextSteps?: string;
+}
+
 export interface McpVertexBrowserBrowserA11yOutput {
 	url: string;
 	findings: Array<{
@@ -1323,6 +1360,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_adopt_project": McpVertexAdoptProjectOutput;
 	"mcp-vertex_agent_catalog": McpVertexAgentCatalogOutput;
 	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
+	"mcp-vertex_author_plugin": McpVertexAuthorPluginOutput;
 	"mcp-vertex_browser_browser_a11y": McpVertexBrowserBrowserA11yOutput;
 	"mcp-vertex_browser_browser_assert": McpVertexBrowserBrowserAssertOutput;
 	"mcp-vertex_browser_browser_click": McpVertexBrowserBrowserClickOutput;
