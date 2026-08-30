@@ -98,6 +98,7 @@ export interface ISafeReporterConfig {
 	readonly targetRepo: string;
 	readonly labels: readonly string[];
 	readonly workspaceRootAbs: string;
+	readonly networkProbe?: (() => Promise<boolean>) | undefined;
 }
 
 export interface ISafeReporter {

@@ -387,6 +387,7 @@ export const activate = async (
 	if (runtimeChannel !== undefined) {
 		handle.register('runtime-channel', runtimeChannel);
 	}
+	const configuredLaunch = await resolveServerCommand(vscode);
 	let initialClient: McpStdioClient;
 	const connectClient = (): Promise<McpStdioClient> =>
 		connectWithTimeout(() =>
@@ -418,13 +419,17 @@ export const activate = async (
 		);
 	} else {
 		initialClient = disconnectedClient(
-			new Error('MCP server is connecting'),
+			configuredLaunch === undefined
+				? new Error(
+						'No MCP server launch is configured for the mcp-vertex extension',
+					)
+				: new Error('MCP server is connecting'),
 		);
 	}
 	const resilient = createResilientClient(initialClient, connectClient);
 	const client = resilient.client;
 	const reconnect = resilient.reconnect;
-	if (isTrusted) {
+	if (isTrusted && configuredLaunch !== undefined) {
 		runSafely(
 			reconnect().catch((err: unknown) => {
 				const failure =

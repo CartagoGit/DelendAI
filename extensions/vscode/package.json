@@ -23,9 +23,7 @@
 		"onView:mcp-vertex.proposals",
 		"onView:mcp-vertex.memory",
 		"onView:mcp-vertex.kpis",
-		"workspaceContains:**/mcp-vertex.config.json",
-		"workspaceContains:**/.mcp.json",
-		"workspaceContains:**/.vscode/mcp.json"
+		"workspaceContains:**/mcp-vertex.config.json"
 	],
 	"contributes": {
 		"viewsContainers": {
@@ -386,6 +384,11 @@
 						"type": "string"
 					},
 					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Required; provide an array to preserve argument boundaries exactly.",
+					"scope": "machine"
+				},
+				"mcp-vertex.server.cwd": {
+					"type": "string",
+					"markdownDescription": "Working directory for the extension's MCP server process. Leave empty to use the first workspace folder.",
 					"scope": "machine"
 				},
 				"mcp-vertex.server.prefix": {

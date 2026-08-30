@@ -11,6 +11,7 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['network', 'forge-write'],
 	presets: ['standard', 'swarm', 'full', 'vertex'],
+	startupActivation: true,
 	// f00180 S2 / MAN-004 — per-tool permission map. Even though
 	// error-reporting only ships ONE tool today (`report_status`),
 	// declaring the map explicitly documents what the plugin will

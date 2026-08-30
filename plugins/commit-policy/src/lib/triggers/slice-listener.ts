@@ -312,9 +312,7 @@ export const createSliceListener = (
 		} catch {
 			return [];
 		}
-		const curr = (
-			await parseIndex(raw, reader, join(proposalsDir, 'proposals'))
-		).slices;
+		const curr = (await parseIndex(raw, reader, proposalsDir)).slices;
 		pruneAcknowledged(curr, config.onStatuses);
 		refreshPending(curr, config.onStatuses);
 		const { events: newEvents, refusals: newRefusals } = initialized
@@ -400,7 +398,7 @@ export const readCurrentSliceSnapshot = async (
 		await parseIndex(
 			raw,
 			new SafeWorkspaceReader(workspaceRoot),
-			join(proposalsDir, 'proposals'),
+			proposalsDir,
 		)
 	).slices;
 };
