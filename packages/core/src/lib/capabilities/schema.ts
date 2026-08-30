@@ -80,7 +80,7 @@ export const isCapability = (input: unknown): input is Capability =>
 export const parseCapability = (input: unknown): Capability => {
 	if (isCapability(input)) return input;
 	throw new Error(
-		`unknown capability: ${JSON.stringify(input)} (known: ${CAPABILITIES.join(', ')})`,
+		`unknown capability: ${JSON.stringify(input)} (known: ${CAPABILITIES.join(', ')})`
 	);
 };
 
@@ -91,7 +91,7 @@ export const parseCapability = (input: unknown): Capability => {
  * (e.g. the per-tool map + the global array). Pure.
  */
 export const parseCapabilityList = (
-	input: readonly unknown[],
+	input: readonly unknown[]
 ): readonly Capability[] => {
 	const out: Capability[] = [];
 	for (const value of input) {

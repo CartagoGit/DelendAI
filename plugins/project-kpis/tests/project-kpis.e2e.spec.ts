@@ -34,7 +34,7 @@ const metric = (
 	status: TKpiValueStatus,
 	unit: IKpiMetric['unit'],
 	source: string,
-	value?: number,
+	value?: number
 ): IKpiMetric => ({
 	status,
 	unit,
@@ -70,7 +70,7 @@ const buildSnapshot = (generatedAt: string, score: number): IKpiSnapshot => ({
 		memoryCompactionSavingsTokens: metric(
 			'unavailable',
 			'tokens',
-			'test/usage',
+			'test/usage'
 		),
 		topPlugins: [],
 	},
@@ -103,7 +103,7 @@ const setupWorkspace = async (): Promise<string> => {
 
 afterEach(async () => {
 	await Promise.all(
-		createdRoots.splice(0).map((root) => rm(root, { recursive: true })),
+		createdRoots.splice(0).map((root) => rm(root, { recursive: true }))
 	);
 });
 
@@ -181,7 +181,7 @@ describe('project-kpis end-to-end smoke', () => {
 		// No usage telemetry file exists in this workspace, so the view must
 		// say so explicitly rather than reporting misleading zeros.
 		const invocations = output.sources.find(
-			(source) => source.id === 'invocations',
+			(source) => source.id === 'invocations'
 		);
 		expect(invocations?.status).toBe('not-configured');
 		expect(output.privacy.limitations.length).toBeGreaterThan(0);
@@ -192,7 +192,7 @@ describe('project-kpis end-to-end smoke', () => {
 		await writeFile(
 			join(root, '.cache', 'mcp-vertex', 'token.txt'),
 			'super-secret-token-value',
-			'utf8',
+			'utf8'
 		);
 		const tool = buildProjectKpisToolRegistrations({
 			namespacePrefix: 'mcp-vertex',

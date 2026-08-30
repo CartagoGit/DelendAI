@@ -280,6 +280,9 @@ export const buildAdoptRegistration = (
 						proposalsDirAbs: dirAbs,
 						counterPathAbs: options.counterPathAbs,
 						roots: args.migrate.roots,
+						removeMigratedSources: args.migrate.roots.some((root) =>
+							/(?:^|\/)audits(?:\/|$)/u.test(root),
+						),
 					});
 				}
 
