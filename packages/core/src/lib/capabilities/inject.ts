@@ -9,12 +9,12 @@
  *   2. `resolveCapabilityAccess(declared, requested)` — pure
  *      gate: returns `null` when granted, an `ICapabilityRefusal`
  *      when denied. The router and the lint consume this directly.
- *   3. `createCapabilityContext(declared, onRefuse)` — runtime
- *      Proxy that returns a refusal when a plugin tries to use a
- *      capability it did not declare. Plugins that compile against
- *      the typed shape never hit this branch; plugins that bypass
- *      the type system (e.g. via an untyped escape hatch) do, and the refusal
- *      surfaces as a typed envelope.
+ *   3. `createCapabilityContext(declared, impl, onRefuse?)` —
+ *      runtime Proxy that returns a refusal when a plugin tries to
+ *      use a capability it did not declare. Plugins that compile
+ *      against the typed shape never hit this branch; plugins that
+ *      bypass the type system (e.g. via an untyped escape hatch) do,
+ *      and the refusal surfaces as a typed envelope.
  *   4. `summariseLegacyShimWarning(declared, pluginName)` —
  *      produces the warning string emitted at boot when a plugin
  *      ships without an explicit `capabilities` array.
@@ -31,7 +31,9 @@
 
 import {
 	CAPABILITIES,
+	type CapabilitiesToCtx,
 	type Capability,
+	type CapabilityMethod,
 	type ICapabilityRefusal,
 	isCapability,
 	parseCapabilityList,
@@ -40,12 +42,16 @@ import {
 /**
  * Read the `capabilities` field of an arbitrary manifest-shaped
  * object. Pure. Returns `[]` for manifests that omit the field,
- * which is the legacy shim signal.
+ * which is the legacy shim signal. Accepts `unknown` because the
+ * manifest arrives untyped at the plugin boundary.
  */
 export const parseDeclaredCapabilities = (
-	manifest: { readonly capabilities?: readonly unknown[] } | null | undefined,
+	manifest: unknown,
 ): readonly Capability[] => {
-	const raw = manifest?.capabilities;
+	const raw =
+		typeof manifest === 'object' && manifest !== null
+			? (manifest as { readonly capabilities?: unknown }).capabilities
+			: undefined;
 	if (!Array.isArray(raw)) return [];
 	return parseCapabilityList(raw);
 };
@@ -118,3 +124,88 @@ export const summariseLegacyShimWarning = (
 	granted: CAPABILITIES,
 	message: `plugin "${pluginName}" did not declare capabilities; granting all (${CAPABILITIES.length}) under the legacy shim. The lint:capabilities check will reject this on the next migration window — add an explicit capabilities array to the manifest.`,
 });
+
+/**
+ * The implementation surface the runtime can actually perform,
+ * keyed by `<group>.<action>`. Every entry is optional: a host that
+ * has not wired a concrete runner for a capability simply omits it,
+ * and an invoked granted-but-unwired capability throws a loud wiring
+ * error (a host bug, not a plugin bug).
+ */
+export interface ICapabilityImplementationMap {
+	readonly [group: string]:
+		| Readonly<Record<string, CapabilityMethod>>
+		| undefined;
+}
+
+/**
+ * f00188 — runtime enforcement Proxy. Builds the `ctx.capabilities`
+ * object that only exposes the DECLARED subset as callable methods:
+ *
+ *   - granted → the matching implementation from `impl` is returned;
+ *   - denied  → a stub that calls `onRefuse` and returns the typed
+ *               `ICapabilityRefusal` envelope is returned.
+ *
+ * Plugins that compile against `CapabilitiesToCtx<C>` never hit the
+ * denied branch — TypeScript blocks the access. Plugins that bypass
+ * the type system (`as any`, duck typing, an untyped escape hatch)
+ * DO hit it and receive the refusal instead of a generic error.
+ *
+ * A capability that is granted but has no registered implementation
+ * throws a loud wiring error when invoked, so a misconfigured host
+ * cannot silently swallow a granted capability.
+ */
+export const createCapabilityContext = <C extends Capability>(
+	declared: readonly C[],
+	impl: ICapabilityImplementationMap,
+	onRefuse?: (refusal: ICapabilityRefusal) => void,
+): CapabilitiesToCtx<C> => {
+	const gate = createCapabilityGate(declared);
+	const groupProxies = new Map<string, Record<string, CapabilityMethod>>();
+
+	const buildGroup = (group: string): Record<string, CapabilityMethod> => {
+		const cached = groupProxies.get(group);
+		if (cached !== undefined) return cached;
+		const proxy = new Proxy({} as Record<string, CapabilityMethod>, {
+			get(_target, actionRaw) {
+				const action = String(actionRaw);
+				if (action === 'then') return undefined;
+				const refusal = gate(`${group}:${action}`);
+				if (refusal !== null) {
+					return (..._args: readonly unknown[]) => {
+						onRefuse?.(refusal);
+						return refusal;
+					};
+				}
+				const granted = impl[group]?.[action];
+				if (typeof granted === 'function') return granted;
+				return (..._args: readonly unknown[]) => {
+					throw new Error(
+						`capability "${group}:${action}" is granted but no implementation is registered`,
+					);
+				};
+			},
+			has(_target, actionRaw) {
+				return gate(`${group}:${String(actionRaw)}`) === null;
+			},
+		});
+		groupProxies.set(group, proxy);
+		return proxy;
+	};
+
+	return new Proxy({} as CapabilitiesToCtx<C>, {
+		get(_target, groupRaw) {
+			const group = String(groupRaw);
+			// Guard: a Proxy that answers `get('then')` with a function
+			// would be treated as a thenable by `await`/Promise chains.
+			if (group === 'then') return undefined;
+			return buildGroup(group);
+		},
+		has(_target, groupRaw) {
+			const group = String(groupRaw);
+			return declared.some((capability) =>
+				capability.startsWith(`${group}:`),
+			);
+		},
+	});
+};

@@ -14,7 +14,7 @@
  * depend on.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import {
 	CAPABILITIES,
@@ -25,6 +25,12 @@ import {
 	resolveCapabilityAccess,
 	splitCapability,
 } from '@mcp-vertex/core/public';
+
+import { createCapabilityContext } from '../../../../src/lib/capabilities/inject';
+import type {
+	Capability,
+	ICapabilityRefusal,
+} from '../../../../src/lib/capabilities/schema';
 
 describe('f00188 — capability gate adversarial (Track F)', () => {
 	it('rejects an unknown capability token (compile-time unknown literal)', () => {
@@ -120,5 +126,116 @@ describe('f00188 — capability gate adversarial (Track F)', () => {
 		expect(splitCapability('git')).toBeNull();
 		expect(splitCapability(':read')).toBeNull();
 		expect(splitCapability('git:')).toBeNull();
+	});
+
+	// --- f00188 runtime enforcement Proxy (createCapabilityContext) ---
+	// The 4 adversarial scenarios the proposal §5 demands, exercised
+	// against the real Proxy instead of the pure gate. The Proxy IS
+	// the `ctx.capabilities` object — no wrapping `.capabilities` key.
+
+	it('runtime: declared capability resolves to the real implementation', () => {
+		const read = vi.fn((path: string) => `data:${path}`);
+		const ctx = createCapabilityContext(['fs:read'], {
+			fs: { read },
+		});
+		// `fs.read` is typed on CapabilitiesToCtx<'fs:read'> — no cast.
+		expect(ctx.fs.read('/tmp/x')).toBe('data:/tmp/x');
+		expect(read).toHaveBeenCalledWith('/tmp/x');
+	});
+
+	it('runtime: plugin declaring fs:read gets a refusal for git.write', () => {
+		const refusals: ICapabilityRefusal[] = [];
+		const ctx = createCapabilityContext(['fs:read'], {}, (r) =>
+			refusals.push(r),
+		);
+		const result = (
+			ctx as unknown as {
+				git: { write: (args: unknown) => unknown };
+			}
+		).git.write({ path: 'x' });
+		expect(result).toMatchObject({
+			kind: 'capability-denied',
+			capability: 'git:write',
+		});
+		expect(refusals).toHaveLength(1);
+	});
+
+	it('runtime: empty declaration refuses every capability', () => {
+		const ctx = createCapabilityContext([] as Capability[], {});
+		const result = (
+			ctx as unknown as { fs: { read: (args: unknown) => unknown } }
+		).fs.read('/tmp');
+		expect(result).toMatchObject({
+			kind: 'capability-denied',
+			capability: 'fs:read',
+		});
+	});
+
+	it('runtime: full declaration works normally across every group', () => {
+		const ctx = createCapabilityContext(CAPABILITIES, {
+			git: {
+				read: () => 'g',
+				write: () => 'w',
+				push: () => 'p',
+			},
+			fs: { read: () => 'r', write: () => 'f' },
+			network: { fetch: () => 'n' },
+			process: { spawn: () => 's' },
+			memory: { read: () => 'mr', write: () => 'mw' },
+		});
+		expect(ctx.git.write({})).toBe('w');
+		expect(ctx.fs.read('/x')).toBe('r');
+		expect(ctx.network.fetch('u')).toBe('n');
+		expect(ctx.process.spawn('cmd')).toBe('s');
+		expect(ctx.memory.read('k')).toBe('mr');
+	});
+
+	it('runtime: as-any bypass receives the refusal, not a crash', () => {
+		const ctx = createCapabilityContext(['fs:read'], {});
+		const value = (
+			ctx as unknown as { network: { fetch: (args: unknown) => unknown } }
+		).network.fetch('x');
+		expect(value).toMatchObject({
+			kind: 'capability-denied',
+			capability: 'network:fetch',
+		});
+	});
+
+	it('runtime: granted-but-unwired capability throws a loud wiring error', () => {
+		const ctx = createCapabilityContext(['fs:read'], {});
+		const read = (
+			ctx as unknown as { fs: { read: (args: unknown) => unknown } }
+		).fs.read;
+		expect(() => read('/tmp')).toThrow(
+			/granted but no implementation is registered/,
+		);
+	});
+
+	it('runtime: the Proxy is not a thenable (safe to await around)', async () => {
+		const ctx = createCapabilityContext(['fs:read'], {});
+		// `then` must be undefined so `Promise.resolve(ctx)` does not
+		// treat the Proxy as a thenable.
+		expect((ctx as unknown as { then?: unknown }).then).toBeUndefined();
+		await expect(Promise.resolve(ctx)).resolves.toBeDefined();
+	});
+
+	it('type-level: CapabilitiesToCtx exposes only the declared subset', () => {
+		const ctx = createCapabilityContext(['fs:read'] as const, {
+			fs: { read: () => 'ok' },
+		});
+		expectTypeOf(ctx.fs.read).toBeFunction();
+		// @ts-expect-error — git is not part of CapabilitiesToCtx<'fs:read'>
+		ctx.git.write;
+	});
+
+	it('type-level: CapabilitiesToCtx maps a multi-group union to its shape', () => {
+		const ctx = createCapabilityContext(['fs:read', 'git:write'] as const, {
+			fs: { read: () => 'r' },
+			git: { write: () => 'w' },
+		});
+		expectTypeOf(ctx.fs.read).toBeFunction();
+		expectTypeOf(ctx.git.write).toBeFunction();
+		// @ts-expect-error — git.read is not declared, only git.write
+		ctx.git.read;
 	});
 });
