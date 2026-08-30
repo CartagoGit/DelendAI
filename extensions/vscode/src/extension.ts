@@ -282,8 +282,10 @@ const createResilientClient = (
 ): IResilientClient => {
 	let current = initial;
 	let reconnecting: Promise<void> | undefined;
+	let ready: Promise<void> = Promise.resolve();
 	const proxy = McpStdioClient.fromTransport({
 		async callTool(input) {
+			await ready;
 			return {
 				structuredContent: await current.request(
 					input.name,
@@ -292,6 +294,7 @@ const createResilientClient = (
 			};
 		},
 		async listTools() {
+			await ready;
 			return { tools: await current.listTools() };
 		},
 		async close() {
@@ -301,15 +304,18 @@ const createResilientClient = (
 	return {
 		client: proxy,
 		reconnect: async () => {
-			reconnecting ??= connect()
-				.then(async (next) => {
+			if (reconnecting === undefined) {
+				const connection = connect();
+				ready = connection.then(() => undefined);
+				reconnecting = connection.then(async (next) => {
 					const previous = current;
 					current = next;
 					await previous.close();
-				})
-				.finally(() => {
+				});
+				reconnecting = reconnecting.finally(() => {
 					reconnecting = undefined;
 				});
+			}
 			await reconnecting;
 		},
 	};
