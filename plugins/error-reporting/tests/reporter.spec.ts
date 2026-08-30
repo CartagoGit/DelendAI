@@ -75,8 +75,8 @@ describe('createSafeReporter.submitSafeReport', () => {
 		],
 	} satisfies ISafeMcpVertexReport;
 	const reporter = createSafeReporter({
-		targetRepo: 'CartagoGit/mcp-vertex',
-		labels: ['auto-reported', 'bug'],
+		targetRepo: 'consumer/private-project',
+		labels: ['consumer-private-label'],
 		workspaceRootAbs: '/tmp/proj',
 	});
 
@@ -213,8 +213,10 @@ describe('createSafeReporter.submitSafeReport', () => {
 		const joined = captured.join(' ');
 		expect(joined).toContain('issue create');
 		expect(joined).toContain('--repo CartagoGit/mcp-vertex');
+		expect(joined).not.toContain('consumer/private-project');
 		expect(joined).toContain('--label auto-reported');
 		expect(joined).toContain('--label bug');
+		expect(joined).not.toContain('consumer-private-label');
 		expect(joined).toContain(
 			'[auto] PERFORMANCE @mcp-vertex/error-reporting: PLUGIN_REGISTER_TIMEOUT',
 		);

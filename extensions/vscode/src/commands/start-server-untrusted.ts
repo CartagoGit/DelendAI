@@ -46,7 +46,8 @@ export const registerStartServerUntrusted = async (
 		const client = await (
 			deps.createClient ?? (() => createDefaultClient(vscode))
 		)();
-		await context.globalState.update('client', client);
+		await context.globalState.update('mcp-vertex.client', client);
+		await deps.onClientConnected?.(client);
 		return;
 	}
 	const detail = describeLaunch(launch);
@@ -67,7 +68,8 @@ export const registerStartServerUntrusted = async (
 	const client = await (
 		deps.createClient ?? (() => createDefaultClient(vscode))
 	)();
-	await context.globalState.update('client', client);
+	await context.globalState.update('mcp-vertex.client', client);
+	await deps.onClientConnected?.(client);
 	await recordApproval(store, launch);
 	await vscode.window.showInformationMessage?.(
 		'MCP-Vertex: child server started in untrusted workspace.',

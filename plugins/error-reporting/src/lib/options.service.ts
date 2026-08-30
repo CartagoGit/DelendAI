@@ -14,13 +14,14 @@ import type {
 	IErrorReportingOptions,
 } from './contracts/interfaces/options.interface';
 
-const TARGET_REPO_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
-
 export const ERR_REPORTING_OPTION_DEPRECATED =
 	'ERR_REPORTING_OPTION_DEPRECATED' as const;
 
 const LEGACY_INTERNAL_ONLY_MESSAGE =
 	'"internalOnly" is deprecated and ignored. External project data is non-reportable by construction.';
+
+const FIXED_TRANSPORT_POLICY_MESSAGE =
+	'"targetRepo" and "labels" are fixed by MCP Vertex and ignored. Consumer project configuration cannot redirect or identify issues.';
 
 const hasLegacyInternalOnly = (
 	raw: Readonly<Record<string, unknown>>,
@@ -32,31 +33,25 @@ export const resolveOptions = (
 ): IErrorReportingOptions => {
 	const parsed = OptionsSchema.safeParse(raw);
 	const data = parsed.success ? parsed.data : {};
-	const configuredRepo =
-		typeof data.targetRepo === 'string' ? data.targetRepo.trim() : '';
-	const safeConfiguredRepo = TARGET_REPO_PATTERN.test(configuredRepo)
-		? configuredRepo
-		: '';
-	const configuredLabels =
-		Array.isArray(data.labels) && data.labels.length > 0
-			? data.labels.map((label) => label.trim()).filter((l) => l !== '')
-			: [];
 	if (hasLegacyInternalOnly(raw)) {
 		onWarning?.({
 			code: ERR_REPORTING_OPTION_DEPRECATED,
 			message: LEGACY_INTERNAL_ONLY_MESSAGE,
 		});
 	}
+	if ('targetRepo' in raw || 'labels' in raw) {
+		onWarning?.({
+			code: ERR_REPORTING_OPTION_DEPRECATED,
+			message: FIXED_TRANSPORT_POLICY_MESSAGE,
+		});
+	}
 	return {
 		enabled: data.enabled ?? true,
-		targetRepo:
-			safeConfiguredRepo !== ''
-				? safeConfiguredRepo
-				: DEFAULT_TARGET_REPO,
-		labels:
-			configuredLabels.length > 0
-				? configuredLabels
-				: [...DEFAULT_LABELS],
+		// The destination and labels are MCP Vertex-owned transport policy.
+		// Consumer-project configuration must never redirect or identify the
+		// issue, even when legacy options are present.
+		targetRepo: DEFAULT_TARGET_REPO,
+		labels: [...DEFAULT_LABELS],
 		dedupeWindowHours:
 			data.dedupeWindowHours ?? DEFAULT_DEDUPE_WINDOW_HOURS,
 		maxIssuesPerDay: data.maxIssuesPerDay ?? DEFAULT_MAX_ISSUES_PER_DAY,

@@ -23,6 +23,7 @@ import {
 } from './privacy-validator.helper';
 import { McpVertexInternalError } from './mcp-internal-error.helper';
 import { ghIssueExec } from './reporter.service';
+import { DEFAULT_TARGET_REPO } from './contracts/constants/options.constant';
 
 const EMPTY_TOOL_REGISTRY = { get: () => undefined, list: () => new Map() };
 
@@ -214,13 +215,13 @@ export const runErrorReportingSelfTest = async (
 		{ id: 'gh-authenticated', argv: ['auth', 'status'] },
 		{
 			id: 'target-repo-reachable',
-			argv: ['repo', 'view', input.targetRepo, '--json', 'name'],
+			argv: ['repo', 'view', DEFAULT_TARGET_REPO, '--json', 'name'],
 		},
 		{
 			id: 'issue-create-permission-available',
 			argv: [
 				'api',
-				`repos/${input.targetRepo}`,
+				`repos/${DEFAULT_TARGET_REPO}`,
 				'--jq',
 				'.permissions.push',
 			],

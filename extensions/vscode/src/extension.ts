@@ -272,6 +272,7 @@ export interface IConfiguration {
 export interface IActivationDeps {
 	readonly vscode?: IVscodeApi;
 	createClient?: () => Promise<McpStdioClient>;
+	onClientConnected?: (client: McpStdioClient) => Promise<void> | void;
 	/** x00072 SEC-001 S1: trust override for the manual start-server command. */
 	readonly trustOverride?: boolean;
 }
@@ -279,6 +280,7 @@ export interface IActivationDeps {
 interface IResilientClient {
 	readonly client: McpStdioClient;
 	reconnect(): Promise<void>;
+	replace(next: McpStdioClient): Promise<void>;
 }
 
 const createResilientClient = (
@@ -323,6 +325,12 @@ const createResilientClient = (
 			}
 			await reconnecting;
 		},
+		replace: async (next) => {
+			const previous = current;
+			current = next;
+			ready = Promise.resolve();
+			if (previous !== next) await previous.close();
+		},
 	};
 };
 
@@ -344,6 +352,9 @@ export const activate = async (
 	// the next `activate()` starts from a clean slate.
 	const handle: IRuntimeHandle = createRuntimeHandle();
 	const vscode = deps.vscode ?? (await loadVscodeApi());
+	let adoptConnectedClient:
+		| ((client: McpStdioClient) => Promise<void>)
+		| undefined;
 	handle.register(
 		'command:mcp-vertex.startServerUntrusted',
 		vscode.commands.registerCommand(
@@ -356,6 +367,9 @@ export const activate = async (
 					await registerStartServerUntrusted(context, vscode, {
 						...deps,
 						trustOverride: true,
+						onClientConnected: async (next) => {
+							await adoptConnectedClient?.(next);
+						},
 					});
 				} catch (err) {
 					await vscode.window.showErrorMessage?.(
@@ -428,6 +442,7 @@ export const activate = async (
 		);
 	}
 	const resilient = createResilientClient(initialClient, connectClient);
+	adoptConnectedClient = resilient.replace;
 	const client = resilient.client;
 	const reconnect = resilient.reconnect;
 	if (isTrusted && configuredLaunch !== undefined) {
