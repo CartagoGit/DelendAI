@@ -59,7 +59,7 @@ const deriveWorkspaceRoot = (lockPathAbs: string): string => {
 	return basename(parent) === '.cache' ? dirname(parent) : parent;
 };
 
-const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
+export const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	tool: z.string().optional(),
 	action: z.enum(['claim', 'release', 'status', 'gc']).optional(),
 	path: z.string().optional(),
@@ -102,6 +102,17 @@ const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	identity: z.unknown().optional(),
 });
 
+export const AGENT_LOCK_INPUT_SCHEMA = z.object({
+	action: z.enum(['claim', 'release', 'status', 'gc']),
+	task_id: z.string().optional(),
+	agent: z.string().optional(),
+	files: z.array(z.string()).optional(),
+	parent_task_id: z.string().optional(),
+	onContention: z.enum(['steal', 'fail']).optional(),
+	host: z.string().optional(),
+	model: z.string().optional(),
+});
+
 /**
  * Write-ownership lock: claim before editing, release after, status/gc
  * for stale claims. Thin adapter over the (tested) agent-lock engine;
@@ -124,35 +135,7 @@ export const buildAgentLockRegistration = (
 					outputSchema: AGENT_LOCK_OUTPUT_SCHEMA,
 					description:
 						'Write-ownership lock only: claim before editing, release after editing, status/gc for stale claims. Not a task planner.',
-					inputSchema: z.object({
-						action: z.enum(['claim', 'release', 'status', 'gc']),
-						task_id: z.string().optional(),
-						agent: z.string().optional(),
-						files: z.array(z.string()).optional(),
-						parent_task_id: z.string().optional(),
-						/**
-						 * What to do when claim/release/gc contends with a *live*
-						 * holder past the mutex's contention timeout:
-						 * `'steal'` (default) reclaims as before; `'fail'` rejects
-						 * instead of clobbering a slow-but-alive holder.
-						 */
-						onContention: z.enum(['steal', 'fail']).optional(),
-						// f00082 S3: composite-identity fields. Purely
-						// echoed back in the response `identity` block for
-						// attribution; they do not affect lock semantics.
-						host: z
-							.string()
-							.optional()
-							.describe(
-								'f00082: host/IDE driving the agent; re-echoed in the response identity.',
-							),
-						model: z
-							.string()
-							.optional()
-							.describe(
-								'f00082: LLM model name; re-echoed in the response identity.',
-							),
-					}),
+					inputSchema: AGENT_LOCK_INPUT_SCHEMA,
 				},
 				async (args) => {
 					const res = await runAgentLockEngine(args, {

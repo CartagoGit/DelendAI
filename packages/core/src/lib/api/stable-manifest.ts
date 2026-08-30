@@ -14,6 +14,7 @@
  *   - **SRP**: the verifier lives in `verify-stable-manifest.script.ts`,
  *     not here.
  */
+import { z } from 'zod';
 import type { IStableToolDescriptor } from './stable-facade';
 
 /**
@@ -99,8 +100,7 @@ export const buildStableManifest = (
 const schemaToJson = (schema: unknown): unknown => {
 	if (schema === undefined || schema === null) return null;
 	try {
-		const fn = (schema as { toJSONSchema?: () => unknown }).toJSONSchema;
-		if (typeof fn === 'function') return fn.call(schema);
+		return z.toJSONSchema(schema as z.ZodType);
 	} catch {
 		// Fall through to null — the manifest builder is best-effort.
 	}

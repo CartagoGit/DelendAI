@@ -34,6 +34,12 @@ import { runWithDryRunScope } from '../dry-run/dry-run-scope.helper';
 import { recordDryRunViolation } from '../dry-run/dry-run-violation-log.service';
 
 const DEFAULT_SEARCH_LIMIT = 20;
+const SEARCH_SCORE = {
+	exactToolId: 100,
+	namePrefix: 80,
+	tagExact: 60,
+	summarySubstring: 30,
+} as const;
 const DEFAULT_WORKING_SET_POLICY = {
 	idleTtlMs: 5 * 60_000,
 	maxWarmPlugins: 8,
@@ -110,7 +116,7 @@ const matchesFilter = (
 	if (input?.query === undefined || input.query.trim().length === 0) {
 		return true;
 	}
-	const needle = input.query.toLowerCase();
+	const needle = input.query.trim().toLowerCase();
 	return [
 		record.name,
 		record.toolId,
@@ -121,6 +127,51 @@ const matchesFilter = (
 	]
 		.filter((value): value is string => typeof value === 'string')
 		.some((value) => value.toLowerCase().includes(needle));
+};
+
+const scoreCandidate = (
+	record: IBoundToolRecord,
+	query: string | undefined,
+): number => {
+	if (query === undefined) return 0;
+	const needle = query.trim().toLowerCase();
+	if (needle.length === 0) return 0;
+
+	let score = 0;
+	if (record.toolId.toLowerCase() === needle) {
+		score = SEARCH_SCORE.exactToolId;
+	}
+	if (record.name.toLowerCase().startsWith(needle)) {
+		score = Math.max(score, SEARCH_SCORE.namePrefix);
+	}
+	if ((record.tags ?? []).some((tag) => tag.toLowerCase() === needle)) {
+		score = Math.max(score, SEARCH_SCORE.tagExact);
+	}
+	if (record.summary?.toLowerCase().includes(needle) === true) {
+		score = Math.max(score, SEARCH_SCORE.summarySubstring);
+	}
+	return score;
+};
+
+const comparePortableStrings = (left: string, right: string): number => {
+	if (left === right) return 0;
+	return left < right ? -1 : 1;
+};
+
+const compareSearchCandidates = (
+	left: { readonly record: IBoundToolRecord; readonly score: number },
+	right: { readonly record: IBoundToolRecord; readonly score: number },
+): number => {
+	if (left.score !== right.score) return right.score - left.score;
+	const nameOrder = comparePortableStrings(
+		left.record.name,
+		right.record.name,
+	);
+	if (nameOrder !== 0) return nameOrder;
+	return comparePortableStrings(
+		left.record.registrationId,
+		right.record.registrationId,
+	);
 };
 
 class ToolSurfaceRuntime implements IToolSurfaceRuntime {
@@ -369,10 +420,13 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		readonly limit?: number | undefined;
 	}): readonly IToolSurfaceSearchEntry[] {
 		const limit = input?.limit ?? DEFAULT_SEARCH_LIMIT;
+		const query = input?.query;
 		return [...this.recordsByName.values()]
 			.filter((record) => matchesFilter(record, input))
+			.map((record) => ({ record, score: scoreCandidate(record, query) }))
+			.sort(compareSearchCandidates)
 			.slice(0, limit)
-			.map((record) => ({
+			.map(({ record }) => ({
 				registrationId: record.registrationId,
 				name: record.name,
 				toolId: record.toolId,

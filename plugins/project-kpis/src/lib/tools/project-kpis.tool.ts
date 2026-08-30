@@ -3,7 +3,9 @@ import { access } from 'node:fs/promises';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	joinUnderRoot,
 	joinRel,
+	resolveAgainstRoots,
 	toolError,
 	toolJson,
 	truncateIfTooLarge,
@@ -307,23 +309,34 @@ const highlightFromSnapshot = (
 		...(metric.note !== undefined ? { note: metric.note } : {}),
 	});
 
+const cacheDirAbsOf = (options: IProjectKpisToolOptions): string => {
+	const contained = resolveAgainstRoots(
+		options.workspaceRootAbs,
+		[options.workspaceRootAbs],
+		options.cacheDir,
+	);
+	if (!contained.ok) {
+		throw new Error(
+			`Configured project KPI cache directory is outside the workspace: ${contained.reason ?? options.cacheDir}`,
+		);
+	}
+	return contained.abs;
+};
+
 const usageSummaryPathOf = (options: IProjectKpisToolOptions): string =>
-	joinRel(
-		joinRel(options.workspaceRootAbs, options.cacheDir),
+	joinUnderRoot(
+		cacheDirAbsOf(options),
 		'results/usage-tracking/usage-summary.json',
 	);
 
 const usageInvocationsPathOf = (options: IProjectKpisToolOptions): string =>
-	joinRel(
-		joinRel(options.workspaceRootAbs, options.cacheDir),
+	joinUnderRoot(
+		cacheDirAbsOf(options),
 		'results/usage-tracking/invocations.jsonl',
 	);
 
 const historyPathOf = (options: IProjectKpisToolOptions): string =>
-	joinRel(
-		joinRel(options.workspaceRootAbs, options.cacheDir),
-		'results/project-kpis/history.json',
-	);
+	joinUnderRoot(cacheDirAbsOf(options), 'results/project-kpis/history.json');
 
 const activationPathOf = (options: IProjectKpisToolOptions): string =>
 	joinRel(options.workspaceRootAbs, '.vscode/mcp-vertex/kpis.json');

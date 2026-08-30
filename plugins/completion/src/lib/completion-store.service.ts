@@ -1,4 +1,5 @@
-import { readdir, rm } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { readdir, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
@@ -31,12 +32,33 @@ export interface ICompletionStore {
 
 const FILE_UNSAFE = /[^a-zA-Z0-9._-]/g;
 
-/** taskId → filesystem-safe file name; empty/unsafe ids collapse to `task.json`. */
+const sanitisedTaskId = (taskId: string): string =>
+	taskId.replace(FILE_UNSAFE, '-').replace(/^-+|-+$/g, '') || 'task';
+
+const taskIdHash = (taskId: string): string =>
+	createHash('sha256').update(taskId).digest('hex').slice(0, 12);
+
+const legacyRecordFileName = (taskId: string): string =>
+	`${sanitisedTaskId(taskId)}.json`;
+
+/** taskId → stable, filesystem-safe file name with collision-resistant identity. */
 export const recordFileName = (taskId: string): string =>
-	`${taskId.replace(FILE_UNSAFE, '-').replace(/^-+|-+$/g, '') || 'task'}.json`;
+	`${sanitisedTaskId(taskId)}-${taskIdHash(taskId)}.json`;
 
 export const recordPath = (recordsDir: string, taskId: string): string =>
 	join(recordsDir, recordFileName(taskId));
+
+const legacyRecordPath = (recordsDir: string, taskId: string): string =>
+	join(recordsDir, legacyRecordFileName(taskId));
+
+const readRecord = async (path: string): Promise<ICompletionRecord | null> => {
+	try {
+		const parsed: unknown = JSON.parse(await readFile(path, 'utf8'));
+		return isRecord(parsed) ? parsed : null;
+	} catch {
+		return null;
+	}
+};
 
 const isRecord = (value: unknown): value is ICompletionRecord => {
 	if (typeof value !== 'object' || value === null) return false;
@@ -107,11 +129,12 @@ export const createCompletionStore = (
 			await rm(path);
 			return true;
 		} catch (error) {
-			// A missing record is a successful no-op (cleared: false); any
-			// other failure (permissions, I/O) propagates so the caller can
-			// surface a structured error instead of silently claiming false.
-			if ((error as { code?: string }).code === 'ENOENT') return false;
-			throw error;
+			if ((error as { code?: string }).code !== 'ENOENT') throw error;
+			const legacyPath = legacyRecordPath(recordsDir, taskId);
+			const legacyRecord = await readRecord(legacyPath);
+			if (legacyRecord?.taskId !== taskId) return false;
+			await rm(legacyPath);
+			return true;
 		}
 	},
 });

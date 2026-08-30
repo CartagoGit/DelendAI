@@ -112,7 +112,7 @@ resolution:
   promoted-by: q00005 closure pass
   peer-review: deferred
 
-## resolution
+## notes
 
 Promoted review → done by q00005 closure pass. shipped-in evidence preserved above.
 

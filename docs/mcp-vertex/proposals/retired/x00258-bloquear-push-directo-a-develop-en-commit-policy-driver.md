@@ -149,7 +149,7 @@ deben pasar por PR.
 - Tests cubren los 4 casos del plan.
 - `bun run validate` verde.
 
-## Evidence
+## notes
 
 Implementado y verificado el 2026-08-27. La ruta real difiere de la que
 esta propuesta anticipaba (`src/lib/drivers/push.ts`): el driver vive en

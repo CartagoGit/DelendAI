@@ -152,7 +152,7 @@ const RELEASE_ORPHAN_OUTPUT_SCHEMA = z.object({
 	released: z.boolean(),
 });
 
-const FORCE_TRANSITION_OUTPUT_SCHEMA = z.object({
+export const FORCE_TRANSITION_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	id: z.string(),
 	from: z.string(),
@@ -161,6 +161,15 @@ const FORCE_TRANSITION_OUTPUT_SCHEMA = z.object({
 	lockReleased: z.boolean(),
 	movedTo: z.string(),
 	warning: z.string().optional(),
+});
+
+export const FORCE_TRANSITION_INPUT_SCHEMA = z.object({
+	id: z.string().min(1),
+	to: z.string().min(1),
+	reason: z.string().min(1),
+	overrideLockOwner: z.string().optional(),
+	taskId: z.string().optional(),
+	skipPeerReview: z.boolean().optional(),
 });
 
 const RECONCILE_FOLDER_OUTPUT_SCHEMA = z.object({
@@ -764,14 +773,7 @@ export const buildRecoveryToolRegistrations = (
 						description:
 							'Force a proposal to a recovery status with a required reason and optional lock release. a00069 S7: review→done still requires peer approve unless skipPeerReview:true.',
 						outputSchema: FORCE_TRANSITION_OUTPUT_SCHEMA,
-						inputSchema: z.object({
-							id: z.string().min(1),
-							to: z.string().min(1),
-							reason: z.string().min(1),
-							overrideLockOwner: z.string().optional(),
-							taskId: z.string().optional(),
-							skipPeerReview: z.boolean().optional(),
-						}),
+						inputSchema: FORCE_TRANSITION_INPUT_SCHEMA,
 					},
 					async (args) =>
 						runProposalForceTransition(args, withBuffer),

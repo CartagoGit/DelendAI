@@ -2,7 +2,7 @@
 id: f00274
 title: "La extensión VS Code se activa por comando, no sólo por config existente"
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: product
 date: 2026-08-29

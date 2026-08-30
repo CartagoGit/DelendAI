@@ -2,7 +2,7 @@
 id: f00272
 title: "Useful tokens: qué fracción de `tools/list` se usa de verdad"
 kind: feat
-status: in-progress
+status: blocked
 type: proposal
 track: tokens
 date: 2026-08-29
