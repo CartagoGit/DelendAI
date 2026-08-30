@@ -43,6 +43,8 @@ import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-ho
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildProposalGetRegistration } from './lib/tools/proposal-get.tool';
+import { resolveScopes } from '@mcp-vertex/quality/public';
+import { buildCloseSliceValidationProvider } from './lib/swarm/validation-provider';
 import { buildProposalTemplatesResourceRegistration } from './lib/resources/proposal-templates.resource';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
@@ -468,8 +470,47 @@ export default definePlugin({
 				: { requirePeerReview: true }),
 			...((ctx.peerPlugins?.has('quality') ?? false)
 				? {
-						runQuality: () =>
-							runCloseSliceQualityGate(ctx.workspace.root),
+						resolveValidationDecision:
+							buildCloseSliceValidationProvider({
+								workspaceRoot: ctx.workspace.root,
+								registryPathAbs: abs(layout.agentRegistryFile),
+								lockPathAbs: abs(layout.lockFile),
+								worktreesDirAbs: abs(layout.worktreesDir),
+								scopes: await resolveScopes(
+									createWorkspaceFileReader(ctx.workspace),
+									ctx.pluginOptions?.has('quality') === true
+										? {
+												scopes:
+													(
+														ctx.pluginOptions.get(
+															'quality',
+														) as {
+															scopes?: Record<
+																string,
+																readonly string[]
+															>;
+														}
+													).scopes ?? {},
+											}
+										: {},
+								),
+								...(ctx.hostIdentity?.host !== undefined
+									? { host: ctx.hostIdentity.host }
+									: {}),
+								...(ctx.hostIdentity?.model !== undefined
+									? { model: ctx.hostIdentity.model }
+									: {}),
+							}),
+						runQuality: (input) =>
+							runCloseSliceQualityGate(
+								ctx.workspace.root,
+								undefined,
+								{
+									...(input?.scopes !== undefined
+										? { scopes: input.scopes }
+										: {}),
+								},
+							),
 					}
 				: {}),
 			...(effectivePersist !== undefined
