@@ -16,6 +16,12 @@ import {
 	summariseLegacyShimWarning,
 } from '@mcp-vertex/core/public';
 
+import {
+	buildActivateContext,
+	runLifecycle,
+	type IPhasedLifecycle,
+} from '../../../../src/lib/plugins/lifecycle';
+
 describe('f00188 — capability legacy shim (Track F)', () => {
 	it('parses an absent capabilities field as [] (legacy signal)', () => {
 		expect(parseDeclaredCapabilities(undefined)).toEqual([]);
@@ -55,5 +61,101 @@ describe('f00188 — capability legacy shim (Track F)', () => {
 		expect(summariseLegacyShimWarning('p').message).not.toBe(
 			summariseLegacyShimWarning('q').message,
 		);
+	});
+
+	// --- f00188: the warning is emitted at boot (phased activation) ---
+
+	const captureLogger = () => {
+		const warnings: string[] = [];
+		return {
+			logger: {
+				log: () => {},
+				warn: (message: string) => warnings.push(message),
+				error: () => {},
+			},
+			warnings,
+		};
+	};
+
+	const noopLifecycle: IPhasedLifecycle = {
+		prepare: async () => ({}),
+		activate: async () => ({}),
+		dispose: async () => {},
+	};
+
+	it('runLifecycle warns at boot when the plugin declares no capabilities', async () => {
+		const { logger, warnings } = captureLogger();
+		await runLifecycle(
+			noopLifecycle,
+			{ name: 'legacy-plugin', manifest: {}, configResolved: {}, logger },
+			{
+				name: 'legacy-plugin',
+				manifest: {},
+				configResolved: {},
+				logger,
+				capabilities: {},
+			},
+		);
+		expect(warnings).toHaveLength(1);
+		expect(warnings[0]).toContain('legacy-plugin');
+		expect(warnings[0]).toContain('lint:capabilities');
+	});
+
+	it('runLifecycle does NOT warn when the plugin declares capabilities', async () => {
+		const { logger, warnings } = captureLogger();
+		const manifest = { capabilities: ['fs:read'] };
+		await runLifecycle(
+			noopLifecycle,
+			{ name: 'declared-plugin', manifest, configResolved: {}, logger },
+			{
+				name: 'declared-plugin',
+				manifest,
+				configResolved: {},
+				logger,
+				capabilities: {},
+			},
+		);
+		expect(warnings).toHaveLength(0);
+	});
+
+	it('buildActivateContext wires the enforcement Proxy for the declared subset', () => {
+		const prepareCtx = {
+			name: 'p',
+			manifest: { capabilities: ['fs:read'] },
+			configResolved: {},
+			logger: console,
+		};
+		const ctx = buildActivateContext(prepareCtx, ['fs:read'] as const, {
+			fs: { read: () => 'ok' },
+		});
+		// Declared → resolves through the Proxy.
+		expect(ctx.capabilities.fs.read('x')).toBe('ok');
+		// Undeclared → runtime refusal (bypassing the type system).
+		const git = (
+			ctx.capabilities as unknown as {
+				git: { write: (args: unknown) => unknown };
+			}
+		).git.write;
+		expect(git({})).toMatchObject({
+			kind: 'capability-denied',
+			capability: 'git:write',
+		});
+	});
+
+	it('buildActivateContext with no declared capabilities is empty and refusing', () => {
+		const ctx = buildActivateContext(
+			{ name: 'p', manifest: {}, configResolved: {}, logger: console },
+			[] as const,
+			{},
+		);
+		const read = (
+			ctx.capabilities as unknown as {
+				fs: { read: (args: unknown) => unknown };
+			}
+		).fs.read;
+		expect(read('/tmp')).toMatchObject({
+			kind: 'capability-denied',
+			capability: 'fs:read',
+		});
 	});
 });
