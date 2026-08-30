@@ -112,6 +112,61 @@ describe('createSafeReporter.submitSafeReport', () => {
 		}
 	});
 
+	it('does not invoke gh when the network preflight is offline', async () => {
+		let execCalls = 0;
+		const exec: IIssueExec = async () => {
+			execCalls += 1;
+			return {
+				ok: true,
+				code: 0,
+				stdout: 'https://github.com/CartagoGit/mcp-vertex/issues/1\n',
+				stderr: '',
+			};
+		};
+		const offlineReporter = createSafeReporter({
+			targetRepo: 'CartagoGit/mcp-vertex',
+			labels: ['auto-reported', 'bug'],
+			workspaceRootAbs: '/tmp/proj',
+			networkProbe: async () => false,
+		});
+
+		const outcome = await offlineReporter.submitSafeReport(base, exec);
+
+		expect(outcome).toEqual({
+			ok: false,
+			reason: 'GitHub is unreachable; issue creation was not attempted',
+			failureCode: 'NETWORK_UNAVAILABLE',
+		});
+		expect(execCalls).toBe(0);
+	});
+
+	it('allows gh after a reachable GitHub preflight, including auth responses', async () => {
+		let execCalls = 0;
+		const authenticatedReporter = createSafeReporter({
+			targetRepo: 'CartagoGit/mcp-vertex',
+			labels: ['auto-reported', 'bug'],
+			workspaceRootAbs: '/tmp/proj',
+			networkProbe: async () => true,
+		});
+		const exec: IIssueExec = async () => {
+			execCalls += 1;
+			return {
+				ok: true,
+				code: 0,
+				stdout: 'https://github.com/CartagoGit/mcp-vertex/issues/2\n',
+				stderr: '',
+			};
+		};
+
+		const outcome = await authenticatedReporter.submitSafeReport(
+			base,
+			exec,
+		);
+
+		expect(outcome.ok).toBe(true);
+		expect(execCalls).toBe(1);
+	});
+
 	it('flags a missing gh binary explicitly', async () => {
 		const exec: IIssueExec = async () => ({
 			ok: false,

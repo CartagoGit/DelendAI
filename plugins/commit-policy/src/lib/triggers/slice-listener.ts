@@ -248,6 +248,7 @@ export const createSliceListener = (
 	const indexRel = join(indexDir, 'proposals', 'index.json');
 	let prev = new Map<string, SliceSnapshotEntry>();
 	let initialized = false;
+	let indexWasUnavailable = false;
 	let timer: ReturnType<typeof setInterval> | undefined;
 	let checkInFlight: Promise<readonly ITriggerEvent[]> | undefined;
 	const pending = new Map<string, ITriggerEvent>();
@@ -310,16 +311,22 @@ export const createSliceListener = (
 		try {
 			raw = (await reader.readText(indexRel)).content;
 		} catch {
+			indexWasUnavailable = true;
 			return [];
 		}
-		const curr = (await parseIndex(raw, reader, proposalsDir)).slices;
+		const curr = (
+			await parseIndex(raw, reader, join(proposalsDir, 'proposals'))
+		).slices;
 		pruneAcknowledged(curr, config.onStatuses);
 		refreshPending(curr, config.onStatuses);
 		const { events: newEvents, refusals: newRefusals } = initialized
 			? diffSlices(prev, curr, config.onStatuses)
-			: { events: [], refusals: [] };
+			: indexWasUnavailable
+				? diffSlices(new Map(), curr, config.onStatuses)
+				: { events: [], refusals: [] };
 		prev = curr;
 		initialized = true;
+		indexWasUnavailable = false;
 		if (newRefusals.length > 0) refusals.push(...newRefusals);
 		if (newEvents.length > 0) {
 			for (const event of newEvents) {
@@ -398,7 +405,7 @@ export const readCurrentSliceSnapshot = async (
 		await parseIndex(
 			raw,
 			new SafeWorkspaceReader(workspaceRoot),
-			proposalsDir,
+			join(proposalsDir, 'proposals'),
 		)
 	).slices;
 };

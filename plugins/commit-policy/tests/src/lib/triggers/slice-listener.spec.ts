@@ -235,6 +235,34 @@ describe('slice listener', () => {
 		listener.stop();
 	});
 
+	it('processes a configured status when the index appears after startup', async () => {
+		const seen: string[] = [];
+		const listener = createSliceListener(
+			workspace,
+			docsDir,
+			{ kind: 'slice', onStatuses: ['done'] },
+			async (event) => {
+				seen.push(event.sliceId ?? '');
+				return { ack: 'OK' };
+			},
+			1000,
+		);
+
+		expect(await listener.check()).toEqual([]);
+		await writeIndex(workspace, [
+			{
+				id: 'f00181',
+				slices: [
+					{ id: 'S3', status: 'done', files: ['fixture-S3-late.ts'] },
+				],
+			},
+		]);
+
+		const events = await listener.check();
+		expect(events).toHaveLength(1);
+		expect(seen).toEqual(['S3']);
+	});
+
 	it('readCurrentSliceSnapshot returns the latest slice map', async () => {
 		await writeIndex(workspace, [
 			{

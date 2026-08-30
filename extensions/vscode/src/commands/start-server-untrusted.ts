@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-
 import {
 	createDefaultClient,
 	resolveServerCommand,
@@ -44,8 +42,7 @@ export const registerStartServerUntrusted = async (
 		return;
 	}
 	const store = context.globalState as unknown as IFingerprintStore;
-	const mcpJsonBody = await readMcpJsonBody(launch.cwd);
-	if (isLaunchApproved(store, launch, mcpJsonBody)) {
+	if (isLaunchApproved(store, launch)) {
 		const client = await (
 			deps.createClient ?? (() => createDefaultClient(vscode))
 		)();
@@ -71,19 +68,8 @@ export const registerStartServerUntrusted = async (
 		deps.createClient ?? (() => createDefaultClient(vscode))
 	)();
 	await context.globalState.update('client', client);
-	await recordApproval(store, launch, mcpJsonBody);
+	await recordApproval(store, launch);
 	await vscode.window.showInformationMessage?.(
 		'MCP-Vertex: child server started in untrusted workspace.',
 	);
-};
-
-const readMcpJsonBody = async (
-	cwd: string | undefined,
-): Promise<string | undefined> => {
-	if (cwd === undefined) return undefined;
-	try {
-		return await readFile(`${cwd}/.mcp.json`, 'utf8');
-	} catch {
-		return undefined;
-	}
 };
