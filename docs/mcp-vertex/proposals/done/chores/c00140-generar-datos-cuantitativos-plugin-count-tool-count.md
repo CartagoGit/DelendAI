@@ -2,7 +2,7 @@
 id: c00140
 title: "Generar datos cuantitativos (plugin count, tool count, etc.)"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: docs
 date: 2026-08-25
@@ -10,6 +10,8 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
+shipped-in:
+    - f5836e9 # S1 generador quantitative + drift check
     section: "Track H / c00140"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
@@ -123,10 +125,13 @@ More prose.
 
 ### S1 — Script generador + drift check en CI
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/gen/all.script.ts`, `tools/scripts/gen/all.spec.ts`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md` (regenerar bloque), `apps/web/src/data/pages/overview.md` (regenerar bloque), otros `.md` con números cuantitativos
 - **Gate**: type
-
+- review-state: done
+- review-implementer: falcon
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: generador escribe build/inspect/quantitative.json, check-quantitative 0 drift, specs 14/14 verde, typecheck tools limpio. Datos cuantitativos generados desde estado real del repo.
 ## acceptance
 
 - Script regenera bloques `<!-- mcp-vertex:begin/end -->`.

@@ -2,7 +2,7 @@
 id: c00137
 title: "Lint de capabilities no declaradas"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: security
 date: 2026-08-25
@@ -10,6 +10,8 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
+shipped-in:
+    - f5836e9 # S1 lint + whitelist + tests
     section: "Track F / c00137"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
@@ -129,10 +131,13 @@ violaciones.
 
 ### S1 — Lint + whitelist + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/capabilities-declared.script.ts`, `tools/scripts/lint/capabilities-declared.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado: capabilities-declared.spec 20/20 verde y el lint corre OK (53 plugins, 1213 files, 0 capabilities sin declarar). Contrato del slice cumplido.
 ## acceptance
 
 - Lint ejecutable: `bun tools/scripts/lint/capabilities-declared.script.ts`.

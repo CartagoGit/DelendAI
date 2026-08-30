@@ -2,7 +2,7 @@
 id: c00130
 title: "Proteger `develop` en GitHub: required status checks + no force-push"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -12,6 +12,8 @@ audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track A / c00130"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
+shipped-in:
+    - f5836e9 # S1 policy declarativa + doc operativo + verificador
 related:
     - q00006
     - c00131 # protectedBranches por defecto en commit-policy
@@ -138,10 +140,13 @@ El output del plan debe ser triple:
 
 ### S1 — Policy declarativa + documento operativo + verificador
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/branch-protection.yml`, `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`, `tools/scripts/ci/verify-branch-protection.script.ts`, `tools/scripts/ci/verify-branch-protection.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: owl
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revision independiente del checkout f5836e972dac25daebc8bd28613639742b571424: .github/branch-protection.yml valida via el loader de produccion; verify-branch-protection.spec.ts cubre parseo, match sin drift, drift por required checks y fallo claro por rate-limit; el comando focalizado bunx vitest run tools/scripts/ci/verify-branch-protection.spec.ts --reporter=dot paso 5/5. Hay cambios no relacionados en el working tree, pero no aparece un bloqueador externo concreto sobre este slice ni una falla del spec bajo revision.
 ## acceptance
 
 - `.github/branch-protection.yml` declara la policy completa para

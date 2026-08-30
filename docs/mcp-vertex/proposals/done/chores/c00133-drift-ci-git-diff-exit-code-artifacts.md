@@ -2,7 +2,7 @@
 id: c00133
 title: "Drift CI: git diff --exit-code para artifacts / manifests / docs generadas"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -12,6 +12,8 @@ audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track A / c00133"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
+shipped-in:
+    - f5836e9 # S1 compositor gen:all + check + workflow drift
 related:
     - q00006
     - c00132 # quality gate real (predecesor)
@@ -127,10 +129,14 @@ artifacts. Detectar drift **en el PR**, no post-merge.
 
 ### S1 — Compositor gen:all + check + workflow drift
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/gen-all.script.ts`, `tools/scripts/gen-all.spec.ts`, `.github/workflows/drift.yml`, `lefthook.yml`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: finch
+- review-reviewer: delivery_verifier_r2
+- review-log: requested_changes by delivery_verifier — Revision independiente: bunx vitest run tools/scripts/gen-all.spec.ts --reporter=dot pasa 7/7 y .github/workflows/drift.yml parsea con la estructura esperada, pero el gate requerido falla en este checkout por un error propio del slice: tools/scripts/gen-all.script.ts(123,2) TS2375 bajo exactOptionalPropertyTypes=true (`only` se devuelve como string | undefined aunque la propiedad opcional no admite undefined explícito). Hay mucho trabajo paralelo en el checkout, pero no fue necesario para rechazar: el bloqueo es in-slice y aparece tambien en bun run validate -> [typecheck:tools].
+- review-log: approved by delivery_verifier_r2 — Ronda 2: typecheck de gen-all limpio (spread condicional para exactOptionalPropertyTypes), spec 7/7 verde, workflow drift.yml parsea y lefthook pre-push blocking. El validate global falla solo por blockers externos ajenos (agentes paralelos en tools/). Aprobado con evidencia del slice.
 ## acceptance
 
 - `bun run gen:all` ejecuta todos los generadores en orden.
