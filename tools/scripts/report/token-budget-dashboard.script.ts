@@ -276,7 +276,16 @@ const measureFixtureSurfaces = async (
 		pluginList: 'proposals,memory,search,docs,logs',
 		surfaceMode: 'native',
 	});
+	const logs = await connectTokenBudgetClient(workspace, {
+		pluginList: 'logs',
+		surfaceMode: 'native',
+	});
 	try {
+		const logsTail = await measureToolTextBytes(
+			logs.client,
+			'mcp-vertex_logs_tail',
+			{ limit: 1 },
+		);
 		const overviewFull = await measureToolTextBytes(
 			overviewSurface.client,
 			'mcp-vertex_overview',
@@ -354,11 +363,6 @@ const measureFixtureSurfaces = async (
 			'mcp-vertex_proposals_round_context',
 			{},
 		);
-		const logsTail = await measureToolTextBytes(
-			extra.client,
-			'mcp-vertex_logs_tail',
-			{ limit: 10 },
-		);
 		return {
 			overviewFull,
 			overviewCompact,
@@ -381,6 +385,7 @@ const measureFixtureSurfaces = async (
 			base.close(),
 			catalog.close(),
 			extra.close(),
+			logs.close(),
 		]);
 	}
 };
@@ -962,6 +967,7 @@ export const buildTokenBudgetDashboardMarkdown = async (
 		)}\n`;
 		return markdown;
 	} finally {
+		await logs.close();
 		destroyTokenBudgetFixtureWorkspace(workspace);
 	}
 };
