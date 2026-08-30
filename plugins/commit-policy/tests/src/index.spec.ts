@@ -126,9 +126,26 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 
 		const runtime = asRuntime(await plugin.register(buildCtx(workspace)));
 
-		await vi.waitFor(() => {
-			expect(runExternalToolSpy).toHaveBeenCalled();
+		await new Promise<void>((resolve, reject) => {
+			const deadline = Date.now() + 2_000;
+			const poll = (): void => {
+				if (runExternalToolSpy.mock.calls.length > 0) {
+					resolve();
+					return;
+				}
+				if (Date.now() >= deadline) {
+					reject(
+						new Error(
+							'timed out waiting for opt-in branch refresh',
+						),
+					);
+					return;
+				}
+				setTimeout(poll, 10);
+			};
+			poll();
 		});
+		expect(runExternalToolSpy).toHaveBeenCalled();
 		await runtime.dispose();
 	});
 

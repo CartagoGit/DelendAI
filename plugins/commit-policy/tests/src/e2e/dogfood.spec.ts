@@ -17,6 +17,8 @@ import type { IGitRunner } from '@mcp-vertex/core/public';
 import { CommitPolicyOptionsSchema } from '../../../src/lib/contracts/options';
 import { runCommitDriver } from '../../../src/lib/services/commit-driver';
 import { createPushScheduler } from '../../../src/lib/services/push-scheduler';
+import { runCommitPolicyRun } from '../../../src/lib/tools/run-tool';
+import { runCommitPolicyStatus } from '../../../src/lib/tools/status-tool';
 
 const execFileAsync = promisify(execFile);
 const git = (cwd: string, ...args: readonly string[]) =>
@@ -259,5 +261,86 @@ describe('commit-policy dogfood E2E', () => {
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
 		expect(result.refusal).toContain('BRANCH_PROTECTED');
+	});
+
+	it('uses the same configurable branch policy in status, commit and push', async () => {
+		await git(workspace, 'checkout', '-q', '-b', 'release/candidate');
+		const policy = CommitPolicyOptionsSchema.parse({
+			commit: { enabled: true },
+			identity: { mode: 'global' },
+			push: {
+				enabled: true,
+				protectedBranches: ['release/candidate'],
+				remote: 'origin',
+				branch: 'release/candidate',
+			},
+		});
+		const status = await runCommitPolicyStatus({
+			namespacePrefix: 'mcp-vertex',
+			options: policy,
+			identityCtx: { run: runner, envVars: Object.freeze({}) },
+		});
+		const statusBody = status.structuredContent as {
+			branchPolicy: { directCommitPushAllowed: boolean };
+		};
+		expect(statusBody.branchPolicy.directCommitPushAllowed).toBe(false);
+
+		await writeFile(
+			join(workspace, 'protected.ts'),
+			'export const protectedBranch = true;\n',
+			'utf8',
+		);
+		const commitResult = await runCommitDriver(
+			{ message: 'feat: protected branch', files: ['protected.ts'] },
+			{
+				run: runner,
+				policy,
+				identityCtx: { run: runner, envVars: Object.freeze({}) },
+				auditAgent: null,
+			},
+		);
+		expect(commitResult.committed).toBe(false);
+		expect(commitResult.refusal).toContain('BRANCH_PROTECTED');
+
+		const pushResult = await createPushScheduler({
+			run: runner,
+			policy: policy.push,
+		}).pushNow();
+		expect(pushResult.ok).toBe(false);
+		if (!pushResult.ok)
+			expect(pushResult.refusal).toContain('BRANCH_PROTECTED');
+	});
+
+	it('runs dry-run end to end without creating a commit', async () => {
+		const policy = CommitPolicyOptionsSchema.parse({
+			commit: { enabled: true },
+			identity: { mode: 'global' },
+			cadence: { triggers: [{ kind: 'manual' }] },
+			push: { enabled: true, onCommit: true },
+		});
+		const before = await git(workspace, 'rev-parse', 'HEAD');
+		const result = await runCommitPolicyRun(
+			{ kind: 'manual', dryRun: true },
+			{
+				namespacePrefix: 'mcp-vertex',
+				workspaceRoot: workspace,
+				docsDir: 'docs',
+				policy,
+				run: runner,
+				identityCtx: { run: runner, envVars: Object.freeze({}) },
+				auditAgent: null,
+			},
+		);
+		const body = result.structuredContent as {
+			ok: boolean;
+			dryRun: boolean;
+			wouldRun: readonly unknown[];
+		};
+		expect(result.isError).toBeUndefined();
+		expect(body.ok).toBe(true);
+		expect(body.dryRun).toBe(true);
+		expect(body.wouldRun.length).toBeGreaterThan(0);
+		const after = await git(workspace, 'rev-parse', 'HEAD');
+		expect(after.stdout.trim()).toBe(before.stdout.trim());
 	});
 });

@@ -1,5 +1,4 @@
 import { afterAll, describe, expect, it } from 'vitest';
-
 import {
 	parseConfigFile,
 	pluginConfigFor,
@@ -12,6 +11,8 @@ import { diagnoseConfigFile } from '@mcp-vertex/core/lib/plugins/load-config-fil
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-config-');
+const CLI_CACHE_DIR = '.cli';
+const FILE_CACHE_DIR = '.fromfile';
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 describe('parseConfigFile', async () => {
@@ -175,7 +176,7 @@ describe('assembleCliConfig + config file', async () => {
 		const args = parseCliArgs(
 			[
 				'--plugins=demo',
-				'--cacheDir=.cli',
+				`--cacheDir=${CLI_CACHE_DIR}`,
 				`--workspace=${WRITABLE_WORKSPACE}`,
 				'--surface=native',
 			],
@@ -183,9 +184,9 @@ describe('assembleCliConfig + config file', async () => {
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
-			readFile: async () => JSON.stringify({ cacheDir: '.fromfile' }),
+			readFile: async () => JSON.stringify({ cacheDir: FILE_CACHE_DIR }),
 		});
-		expect(config.corePaths?.cacheDir).toBe('.cli');
+		expect(config.corePaths?.cacheDir).toBe(CLI_CACHE_DIR);
 	});
 
 	it('falls back to the config file when the CLI omits the flag', async () => {
@@ -199,9 +200,9 @@ describe('assembleCliConfig + config file', async () => {
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
-			readFile: async () => JSON.stringify({ cacheDir: '.fromfile' }),
+			readFile: async () => JSON.stringify({ cacheDir: FILE_CACHE_DIR }),
 		});
-		expect(config.corePaths?.cacheDir).toBe('.fromfile');
+		expect(config.corePaths?.cacheDir).toBe(FILE_CACHE_DIR);
 	});
 
 	it('loads plugins declared only in the config file', async () => {
