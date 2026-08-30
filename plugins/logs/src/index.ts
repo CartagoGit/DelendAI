@@ -37,7 +37,7 @@ const errorMessageOf = (error: unknown): string | undefined => {
 
 export default definePlugin({
 	name: 'logs',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Persistent append-only, secret-redacted MCP event log with query, tail, subscribe, correlate, curated error-stream and redaction audit tools.',
 	// The log is an accumulated record, not derivable cache — deleting it

@@ -16,6 +16,14 @@ import {
 	checkPermissions,
 	checkRuntime,
 	checkStaleDocs,
+	checkBranchProtection,
+	checkConfig,
+	checkDeps,
+	checkNetworkDependentSurfaces,
+	checkPluginGraph,
+	checkPorts,
+	checkSchemas,
+	checkTokenBudgets,
 } from './checks';
 import type {
 	DoctorCheck,
@@ -37,11 +45,19 @@ export interface IDoctorRunnerOptions {
 }
 
 export const defaultChecks: readonly DoctorCheck[] = [
+	checkConfig,
 	checkManifests,
+	checkPluginGraph,
+	checkDeps,
+	checkTokenBudgets,
+	checkBranchProtection,
 	checkRuntime,
 	checkStaleDocs(),
 	checkGitStatus(),
 	checkPermissions,
+	checkSchemas,
+	checkPorts,
+	checkNetworkDependentSurfaces,
 ];
 
 const realFs: IDoctorFs = {

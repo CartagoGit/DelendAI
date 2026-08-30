@@ -37,6 +37,45 @@ const writeManifest = async (
 	);
 };
 
+const writeRuntimeIndex = async (
+	root: string,
+	pluginId: string,
+	version = '0.1.0',
+): Promise<void> => {
+	await mkdir(join(root, 'plugins', pluginId, 'src'), { recursive: true });
+	await writeFile(
+		join(root, 'plugins', pluginId, 'src', 'index.ts'),
+		[
+			'export default {',
+			`\tname: '${pluginId}',`,
+			`\tversion: '${version}',`,
+			'};',
+			'',
+		].join('\n'),
+		'utf8',
+	);
+};
+
+const writeImportedRuntimeIndex = async (
+	root: string,
+	pluginId: string,
+): Promise<void> => {
+	await mkdir(join(root, 'plugins', pluginId, 'src'), { recursive: true });
+	await writeFile(
+		join(root, 'plugins', pluginId, 'src', 'index.ts'),
+		[
+			"import pluginPackageJson from '../package.json';",
+			'',
+			'export default {',
+			`\tname: '${pluginId}',`,
+			'\tversion: pluginPackageJson.version,',
+			'};',
+			'',
+		].join('\n'),
+		'utf8',
+	);
+};
+
 const withFixture = async (
 	callback: (root: string) => Promise<void>,
 ): Promise<void> => {
@@ -49,6 +88,7 @@ const withFixture = async (
 			publishConfig: { access: 'public' },
 		});
 		await writeManifest(root, 'foo');
+		await writeRuntimeIndex(root, 'foo');
 		await callback(root);
 	} finally {
 		await rm(root, { recursive: true, force: true });
@@ -84,8 +124,54 @@ describe('manifest-vs-package lint', () => {
 				publishConfig: { access: 'public' },
 			});
 			const violations = await lintManifestVsPackage(root);
-			expect(violations.some((v) => v.rule === 'MANIFEST-VER-001')).toBe(
-				true,
+			expect(violations).toContainEqual(
+				expect.objectContaining({
+					plugin: 'foo',
+					rule: 'MANIFEST-VER-001',
+					message: expect.stringContaining('src/index.ts'),
+				}),
+			);
+		});
+	});
+
+	it('flags runtime version mismatch even when package and manifest agree', async () => {
+		await withFixture(async (root) => {
+			await writeRuntimeIndex(root, 'foo', '0.1.1');
+			const violations = await lintManifestVsPackage(root);
+			expect(violations).toContainEqual(
+				expect.objectContaining({
+					plugin: 'foo',
+					rule: 'MANIFEST-VER-001',
+					message: expect.stringContaining(
+						'plugin.manifest.ts#version "0.1.0"',
+					),
+				}),
+			);
+		});
+	});
+
+	it('resolves runtime versions imported from package.json (x00293 spike pattern)', async () => {
+		await withFixture(async (root) => {
+			// Bump package.json so only the (hardcoded 0.1.0) manifest drifts.
+			// The runtime version is imported from package.json and must be
+			// resolved to 0.1.1 — never left as an empty/unknown string.
+			await writeJson(join(root, 'plugins/foo/package.json'), {
+				name: '@mcp-vertex/foo',
+				version: '0.1.1',
+				publishConfig: { access: 'public' },
+			});
+			await writeImportedRuntimeIndex(root, 'foo');
+			const violations = await lintManifestVsPackage(root);
+			const fooViolations = violations.filter(
+				(violation) => violation.plugin === 'foo',
+			);
+			expect(fooViolations.length).toBe(1);
+			expect(fooViolations[0]?.rule).toBe('MANIFEST-VER-001');
+			expect(fooViolations[0]?.message).toContain(
+				'src/index.ts#version "0.1.1"',
+			);
+			expect(fooViolations[0]?.message).not.toContain(
+				'src/index.ts#version ""',
 			);
 		});
 	});

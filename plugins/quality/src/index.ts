@@ -256,7 +256,7 @@ const buildRunQualityToolRegistration = (
  */
 export default definePlugin({
 	name: 'quality',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Run the project quality gates (lint/test/build/typecheck) per scope and return structured pass/fail.',
 	optionsSchema: z.object({

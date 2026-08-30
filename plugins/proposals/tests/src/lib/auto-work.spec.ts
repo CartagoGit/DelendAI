@@ -446,6 +446,13 @@ describe('auto_work (one-call action plan)', async () => {
 			pushTarget: 'origin develop',
 		});
 		expect(out.executionMode).toBe('normal');
+		const sharedCheckoutStep = out.steps.find((s: string) =>
+			s.includes('agentWorktree: false'),
+		);
+		expect(sharedCheckoutStep).toBeDefined();
+		expect(sharedCheckoutStep).toContain('push to the configured target');
+		expect(sharedCheckoutStep).toContain('origin develop');
+		expect(sharedCheckoutStep).not.toContain('wip/');
 	});
 
 	it("x00231: persist 'commit' with agentWorktree off orders commit only (no push mention)", async () => {
@@ -464,8 +471,29 @@ describe('auto_work (one-call action plan)', async () => {
 			s.includes('agentWorktree: false'),
 		);
 		expect(developStep).toBeDefined();
-		expect(developStep).toContain('commit directly on `develop`');
+		expect(developStep).toContain(
+			'commit directly on the shared checkout target selected by the operator',
+		);
 		expect(developStep).not.toContain('push');
+	});
+
+	it('invalid protected persist target does not suggest wip branches', async () => {
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit-and-push', pushTarget: 'origin main' },
+		};
+		writeFileSync(
+			pushOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(pushOptions));
+		expect(out.reason).toBe('invalid-persist-config');
+		expect(out.nextAction).toContain(
+			'explicit non-protected branch target',
+		);
+		expect(out.nextAction).not.toContain('wip/*');
 	});
 
 	it('input.persist overrides config.persist.mode (priority chain, l109 §2)', async () => {

@@ -463,7 +463,10 @@ export const updateDocBlock = (
 
 const DEFAULT_DOCS: Readonly<Record<string, string>> = {
 	'docs/mcp-vertex/AGENT-BOOTSTRAP.md': 'Quantitative facts',
-	'apps/web/src/data/pages/overview.md': 'Quantitative facts',
+	// NOTE: `apps/web/src/data/pages/overview.md` was referenced in the
+	// original c00140 plan but does not exist in this tree — the generator
+	// keeps the registry to only docs that actually ship (missing files
+	// are skipped via the readFile catch below).
 };
 
 const absOrJoin = (root: string, p: string): string =>

@@ -18,7 +18,7 @@ const stripComments = (source: string): string =>
 		.replace(
 			/(^|[^:])\/\/.*$/gm,
 			(match, prefix: string) =>
-				prefix + match.slice(prefix.length).replace(/[^\n]/g, ' '),
+				prefix + match.slice(prefix.length).replace(/[^\n]/g, ' ')
 		);
 
 const WRITE_CALL_RE =
@@ -26,7 +26,7 @@ const WRITE_CALL_RE =
 
 const scanSource = (
 	relPath: string,
-	source: string,
+	source: string
 ): IPluginCachePathViolation[] => {
 	if (
 		!relPath.endsWith('.ts') ||
@@ -40,8 +40,8 @@ const scanSource = (
 		.split('\n')
 		.map((line) =>
 			line.replace(/(['"`])(?:\\.|(?!\1)[\s\S])*\1/g, (match) =>
-				match.replace(/[^\n]/g, ' '),
-			),
+				match.replace(/[^\n]/g, ' ')
+			)
 		);
 	const violations: IPluginCachePathViolation[] = [];
 	for (const [lineIndex, line] of sanitized.split('\n').entries()) {
@@ -76,7 +76,7 @@ const walk = async (root: string, dir: string): Promise<string[]> => {
 };
 
 export const findPluginCachePathViolations = async (
-	root: string,
+	root: string
 ): Promise<IPluginCachePathViolation[]> => {
 	const roots = [join(root, 'plugins')];
 	const files = (
@@ -85,18 +85,18 @@ export const findPluginCachePathViolations = async (
 				(await stat(scanRoot).catch(() => undefined))?.isDirectory() ===
 				true
 					? walk(root, scanRoot)
-					: [],
-			),
+					: []
+			)
 		)
 	).flat();
 	const violations: IPluginCachePathViolation[] = [];
 	for (const file of files) {
 		violations.push(
-			...scanSource(file, await readFile(join(root, file), 'utf8')),
+			...scanSource(file, await readFile(join(root, file), 'utf8'))
 		);
 	}
 	return violations.sort((a, b) =>
-		a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file),
+		a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file)
 	);
 };
 
@@ -107,19 +107,19 @@ if (
 	const violations = await findPluginCachePathViolations(repoRoot());
 	if (violations.length > 0) {
 		console.error(
-			'check-plugin-cache-paths: non-canonical runtime paths found:',
+			'check-plugin-cache-paths: non-canonical runtime paths found:'
 		);
 		for (const violation of violations) {
 			console.error(
-				`  ${violation.file}:${violation.line} ${violation.token}`,
+				`  ${violation.file}:${violation.line} ${violation.token}`
 			);
 		}
 		console.error(
-			'Use ctx.pluginCacheDir, ctx.cacheDir, or a path capability from the core.',
+			'Use ctx.pluginCacheDir, ctx.cacheDir, or a path capability from the core.'
 		);
 		process.exit(1);
 	}
 	console.log(
-		'check-plugin-cache-paths: no non-canonical runtime paths found.',
+		'check-plugin-cache-paths: no non-canonical runtime paths found.'
 	);
 }

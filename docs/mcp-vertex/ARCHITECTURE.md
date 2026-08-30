@@ -58,6 +58,24 @@ graph TD
 
 The dependency arrow only ever points **plugin → core**, never the reverse.
 
+## Core/plugin boundary
+
+The workflow boundary introduced by `r00043` is now explicit: the reusable seam lives in
+`packages/core/src/lib/contracts`, plugin-specific behavior lives in plugin adapters, and
+host-facing orchestration lives in composition/bootstrap surfaces.
+
+```text
+core contracts → plugin adapters → host composition
+```
+
+The practical reading is strict:
+
+- Core contracts define neutral DTOs, registries and runtime seams.
+- Plugin adapters own domain vocabulary such as `proposals` stores, tool ids and compatibility shims.
+- Host composition may still mention a plugin by name when it is describing what a loaded host can do, but that coupling must be explicit, time-boxed and reviewable.
+
+`tools/scripts/inspect/core-proposals-boundary.script.ts` remains the inventory/audit view. The permanent regression guard is `tools/scripts/lint/core-proposals-boundary.script.ts`, which scans `packages/core/src` and rejects any new `proposals` imports, paths or workflow literals unless they are covered by an explicit exception with `until` + reason.
+
 ## Core boundary
 
 `packages/core` is the runtime substrate of MCP Vertex, not the place where every first-party concern lives forever.

@@ -32,7 +32,7 @@ const OptionsSchema = z.object({
  */
 export default definePlugin({
 	name: 'auto-plugin-selector',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Recommends the best plugin set for this project from its signals (manifest, files, git, task). Pure deterministic scorer by default; optional LLM rationale via auto-agent-selector.',
 	optionsSchema: OptionsSchema,

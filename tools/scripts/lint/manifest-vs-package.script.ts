@@ -18,6 +18,46 @@ interface IViolation {
 const isPublicScopedPackage = (name: string): boolean =>
 	name.startsWith('@mcp-vertex/');
 
+const RUNTIME_VERSION_PATTERN = /version:\s*['\"]([^'\"]+)['\"]/;
+// x00293 S2 spike: version derived from an imported package.json
+// (e.g. `import apiPackageJson from '../package.json'` + `version:
+// apiPackageJson.version`). Resolves the real file instead of a literal.
+const PKG_JSON_IMPORT_PATTERN =
+	/import\s+([A-Za-z_$][\w$]*)\s+from\s+['\"]([^'\"]*package\.json)['\"]/;
+const RUNTIME_VERSION_FROM_IMPORT_PATTERN =
+	/version:\s*([A-Za-z_$][\w$]*)\.version/;
+
+const readRuntimeVersion = async (
+	root: string,
+	pluginId: string,
+): Promise<string | undefined> => {
+	const runtimePath = join(root, 'plugins', pluginId, 'src', 'index.ts');
+	const source = await readFile(runtimePath, 'utf8');
+	const literal = RUNTIME_VERSION_PATTERN.exec(source)?.[1];
+	if (literal !== undefined) return literal;
+	// x00293 S2: resolve an imported package.json version (spike pattern).
+	const pkgImport = PKG_JSON_IMPORT_PATTERN.exec(source);
+	const versionRef = RUNTIME_VERSION_FROM_IMPORT_PATTERN.exec(source);
+	if (pkgImport === null || versionRef === null) return undefined;
+	if (
+		pkgImport[1] === undefined ||
+		versionRef[1] === undefined ||
+		pkgImport[2] === undefined
+	)
+		return undefined;
+	if (pkgImport[1] !== versionRef[1]) return undefined;
+	// The import path is relative to `src/index.ts`, so resolve it from there.
+	const packagePath = join(root, 'plugins', pluginId, 'src', pkgImport[2]);
+	try {
+		const packageJson = JSON.parse(await readFile(packagePath, 'utf8')) as {
+			version?: string;
+		};
+		return packageJson.version;
+	} catch {
+		return undefined;
+	}
+};
+
 export const lintManifestVsPackage = async (
 	root = repoRoot(),
 ): Promise<readonly IViolation[]> => {
@@ -26,12 +66,20 @@ export const lintManifestVsPackage = async (
 	for (const rawManifest of manifests) {
 		const manifest = validatePluginManifest(rawManifest);
 		const packagePath = join(root, 'plugins', manifest.id, 'package.json');
+		const runtimePath = join(
+			root,
+			'plugins',
+			manifest.id,
+			'src',
+			'index.ts',
+		);
 		const packageJson = JSON.parse(await readFile(packagePath, 'utf8')) as {
 			name?: string;
 			version?: string;
 			private?: boolean;
 			publishConfig?: { access?: string };
 		};
+		const runtimeVersion = await readRuntimeVersion(root, manifest.id);
 		if (manifest.package !== packageJson.name) {
 			violations.push({
 				plugin: manifest.id,
@@ -39,11 +87,15 @@ export const lintManifestVsPackage = async (
 				message: `manifest.package ${JSON.stringify(manifest.package)} does not match package.json#name ${JSON.stringify(packageJson.name ?? '')}.`,
 			});
 		}
-		if (manifest.version !== packageJson.version) {
+		if (
+			manifest.version !== packageJson.version ||
+			runtimeVersion === undefined ||
+			runtimeVersion !== packageJson.version
+		) {
 			violations.push({
 				plugin: manifest.id,
 				rule: 'MANIFEST-VER-001',
-				message: `manifest.version ${JSON.stringify(manifest.version)} does not match package.json#version ${JSON.stringify(packageJson.version ?? '')}.`,
+				message: `versions diverge across package.json#version ${JSON.stringify(packageJson.version ?? '')}, plugin.manifest.ts#version ${JSON.stringify(manifest.version)}, and src/index.ts#version ${JSON.stringify(runtimeVersion ?? '')} (${runtimePath}).`,
 			});
 		}
 		const expectedVisibility =

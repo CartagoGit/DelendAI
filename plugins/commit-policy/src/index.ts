@@ -34,7 +34,7 @@ const WARN_PROTECTED_BRANCHES_MISSING_DEVELOP =
 let warnedProtectedBranchesMissingDevelop = false;
 
 const readProtectedBranchesOverride = (
-	raw: Readonly<Record<string, unknown>>,
+	raw: Readonly<Record<string, unknown>>
 ): readonly string[] | undefined => {
 	const push = raw.push;
 	if (typeof push !== 'object' || push === null) return undefined;
@@ -50,7 +50,7 @@ const readProtectedBranchesOverride = (
 };
 
 const warnIfProtectedBranchesOverrideDropsDevelop = (
-	raw: Readonly<Record<string, unknown>>,
+	raw: Readonly<Record<string, unknown>>
 ): void => {
 	if (warnedProtectedBranchesMissingDevelop) return;
 	const protectedBranches = readProtectedBranchesOverride(raw);
@@ -62,12 +62,12 @@ const warnIfProtectedBranchesOverrideDropsDevelop = (
 	}
 	warnedProtectedBranchesMissingDevelop = true;
 	console.warn(
-		`[commit-policy] ${WARN_PROTECTED_BRANCHES_MISSING_DEVELOP}: push.protectedBranches override omits "develop". The override remains authoritative and is not merged with defaults. Add "develop" explicitly if it should stay protected.`,
+		`[commit-policy] ${WARN_PROTECTED_BRANCHES_MISSING_DEVELOP}: push.protectedBranches override omits "develop". The override remains authoritative and is not merged with defaults. Add "develop" explicitly if it should stay protected.`
 	);
 };
 
 export const validateCommitPolicyConfiguration = (
-	input: IPluginConfigurationValidationInput,
+	input: IPluginConfigurationValidationInput
 ): readonly IPluginConfigurationIssue[] => {
 	const raw = input.pluginOptions.get('commit-policy');
 	if (raw === undefined) return [];
@@ -151,7 +151,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`commit-policy plugin rejected its options: ${parsed.error.message}`,
+				`commit-policy plugin rejected its options: ${parsed.error.message}`
 			);
 		}
 		warnIfProtectedBranchesOverrideDropsDevelop(ctx.options ?? {});
@@ -164,7 +164,7 @@ export default definePlugin({
 
 		const run = createWriteGitRunner(
 			ctx.workspace.root,
-			policy.gitTimeoutMs,
+			policy.gitTimeoutMs
 		);
 
 		const identityCtx: IIdentityResolverContext = {
@@ -208,7 +208,7 @@ export default definePlugin({
 		};
 		const configuredInterval = policy.cadence.triggers.find(
 			(t): t is Extract<typeof t, { kind: 'interval' }> =>
-				t.kind === 'interval',
+				t.kind === 'interval'
 		);
 		let intervalHandle: ReturnType<typeof setInterval> | undefined;
 		let sliceListener: ReturnType<typeof createSliceListener> | undefined;
@@ -219,7 +219,7 @@ export default definePlugin({
 				: (() => {
 						const baseIntervalTimer = createIntervalTimer(
 							run,
-							configuredInterval,
+							configuredInterval
 						);
 						return {
 							check: (sinceMs: number) =>
@@ -312,8 +312,7 @@ export default definePlugin({
 		disposables.push(() => engine.dispose());
 
 		const sliceTrigger = policy.cadence.triggers.find(
-			(t): t is Extract<typeof t, { kind: 'slice' }> =>
-				t.kind === 'slice',
+			(t): t is Extract<typeof t, { kind: 'slice' }> => t.kind === 'slice'
 		);
 		const proposalsOptions = ctx.pluginOptions?.get('proposals');
 		const proposalsPersistMode =
@@ -328,7 +327,7 @@ export default definePlugin({
 			// what (if anything) gets committed; the ack flows
 			// back so the listener can drain its pending queue.
 			const handler = async (
-				event: ITriggerEvent,
+				event: ITriggerEvent
 			): Promise<ITriggerAck> => {
 				if (event.files === undefined) {
 					// Refusal already surfaced via the listener's
@@ -359,7 +358,7 @@ export default definePlugin({
 							proposalId: event.proposalId,
 							sliceId: event.sliceId,
 							engine: 'RETRY',
-						}),
+						})
 					);
 					throw error;
 				}
@@ -373,7 +372,7 @@ export default definePlugin({
 							result.ack === 'ALREADY_PROCESSED'
 								? 'OK'
 								: 'ERR',
-					}),
+					})
 				);
 				// `ALREADY_PROCESSED` is the idempotency win: the
 				// replay produced no commit but the listener must
@@ -387,7 +386,7 @@ export default definePlugin({
 				ctx.workspace.root,
 				ctx.docsDir,
 				sliceTrigger,
-				handler,
+				handler
 			);
 			sliceListener.start();
 		}
@@ -412,12 +411,12 @@ export default definePlugin({
 					});
 					if (result.ack === 'ERR') {
 						console.warn(
-							`[commit-policy] interval snapshot refused: ${result.reason}`,
+							`[commit-policy] interval snapshot refused: ${result.reason}`
 						);
 					}
 				} catch (error) {
 					console.warn(
-						`[commit-policy] interval snapshot failed: ${error instanceof Error ? error.message : String(error)}`,
+						`[commit-policy] interval snapshot failed: ${error instanceof Error ? error.message : String(error)}`
 					);
 				} finally {
 					intervalCheckInFlight = false;

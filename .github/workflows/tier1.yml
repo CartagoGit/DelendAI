@@ -68,7 +68,8 @@ jobs:
             --base "$BASE_REF" \
             --head  HEAD \
             --output build/ci/affected.json \
-            --set-file build/ci/.affected-set
+            --set-file build/ci/.affected-set \
+            --vitest-set-file build/ci/.affected-vitest-set
 
       - name: Upload affected artifacts
         uses: actions/upload-artifact@v4
@@ -77,6 +78,7 @@ jobs:
           path: |
             build/ci/affected.json
             build/ci/.affected-set
+            build/ci/.affected-vitest-set
           if-no-files-found: error
 
   affected-lint:
@@ -141,18 +143,18 @@ jobs:
 
       - name: Run vitest on affected projects
         # vitest's `--project` flag scopes the run to a single
-        # workspace's project; we walk the affected set line by
-        # line and feed each workspace into `--project`. The set
-        # is empty on workflow_dispatch reruns, so we fall back
-        # to the default (full) run.
+        # workspace's project; we walk the Vitest-specific set
+        # line by line and feed each resolved project name into
+        # `--project`. The set is empty on workflow_dispatch
+        # reruns, so we fall back to the default (full) run.
         run: |
           set -eu
-          if [ -s build/ci/.affected-set ]; then
+          if [ -s build/ci/.affected-vitest-set ]; then
             PROJECTS=""
             while IFS= read -r ws; do
               [ -z "$ws" ] && continue
               PROJECTS="${PROJECTS} --project ${ws}"
-            done < build/ci/.affected-set
+            done < build/ci/.affected-vitest-set
             bunx vitest run ${PROJECTS}
           else
             bunx vitest run

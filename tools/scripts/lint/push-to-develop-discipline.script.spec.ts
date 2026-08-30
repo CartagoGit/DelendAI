@@ -65,24 +65,34 @@ describe('lintPushToDevelop', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('allows develop → origin/main (release merge)', () => {
+	it('blocks develop → origin/main (direct push to main)', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'main',
 			currentBranch: 'develop',
 		});
-		expect(result.ok).toBe(true);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.blockers.join('\n')).toContain('ADR 0018');
+			expect(result.blockers.join('\n')).toContain('LEFTHOOK_BYPASS=1');
+			expect(result.blockers.join('\n')).toContain('`main`');
+		}
 	});
 
-	it('allows main → origin/main (release flow)', () => {
+	it('blocks main → origin/main before any develop-specific rule', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'main',
 			currentBranch: 'main',
 		});
-		expect(result.ok).toBe(true);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.blockers.join('\n')).toContain('ADR 0018');
+			expect(result.blockers.join('\n')).toContain('pull request');
+			expect(result.blockers.join('\n')).not.toContain('into `develop`');
+		}
 	});
 
 	it('blocks agent/x → origin/wip-target (no new branches)', () => {
@@ -325,7 +335,7 @@ describe('lintPrePushStdinUpdates', () => {
 		expect(result.ok).toBe(false);
 	});
 
-	it('allows main pushed to origin/main (release flow)', () => {
+	it('blocks main pushed to origin/main', () => {
 		const result = lintPrePushStdinUpdates([
 			{
 				localRef: 'refs/heads/main',
@@ -334,7 +344,10 @@ describe('lintPrePushStdinUpdates', () => {
 				remoteSha: SHA_B,
 			},
 		]);
-		expect(result.ok).toBe(true);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.blockers.join('\n')).toContain('ADR 0018');
+		}
 	});
 
 	it('does not block a branch delete (all-zero local oid)', () => {

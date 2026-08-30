@@ -148,8 +148,15 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 			// to the explicit full drill-down. Compact remains the default
 			// orientation surface; this ceiling covers the measured full payload
 			// with a bounded margin instead of dropping useful metadata.
-			hard: 9_000,
-			warning: 8_500,
+			// budget-exception-pending: toolPayloads.agentCatalogFull.hard, toolPayloads.agentCatalogFull.warning
+			// budget-exception-expires: 2026-09-30
+			// The core agent roster grew (29 tools + 8 skills now, was
+			// ~24 tools when the 9000B ceiling was calibrated); the full
+			// drill-down payload measures 9519-9778B in the e2e fixture.
+			// Compact (724B) stays well under its own ceiling. Raise covers
+			// the measured payload with margin.
+			hard: 10_500,
+			warning: 9_800,
 			releaseRelativePercent: 20,
 		},
 		autoWork: {

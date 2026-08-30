@@ -26,7 +26,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'docs',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Catalogue + read the project markdown docs (docs_list / docs_read), low-token curated navigation.',
 	optionsSchema: OptionsSchema,

@@ -31,7 +31,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'diagram',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Diagram generation: diagram_deps + diagram_modules (workspace/package structure) + diagram_erd (DB schema) + diagram_proposals (proposal DFA) as mermaid. Offline, pure.',
 	optionsSchema: OptionsSchema,

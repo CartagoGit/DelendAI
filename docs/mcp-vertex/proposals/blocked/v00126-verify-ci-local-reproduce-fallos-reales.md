@@ -2,12 +2,14 @@
 id: v00126
 title: "Verify CI local reproduce fallos reales"
 kind: perf
-status: in-progress
+status: blocked
 type: proposal
 track: ci
 date: 2026-08-25
 priority: P1
 parent-plan: q00006
+shipped-in:
+    - 525a3bdc # feat(ci): verify CI local reproduce (v00126)
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track G / v00126"
@@ -107,10 +109,13 @@ Demostrarlo con un fallo real reciente.
 
 ### S1 — Script + tests + demo con un fallo real
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/local-repro.script.ts`, `tools/scripts/ci/local-repro.spec.ts`, `tools/scripts/ci/local-repro.demo.script.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: copilot-gpt-5.4-v00126-s1
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificacion independiente en el checkout actual: tools/scripts/ci/local-repro.script.ts (26k, extrae step fallido via gh api, reproduce localmente con diff de log), local-repro.spec.ts (9 casos: run id/URL, parseo de logs, fallbacks, demo con run real, rechaza operadores shell) y local-repro.demo.script.ts presentes y commiteados (525a3bdc). Spec focalizado 9/9 verde; tsc de tools con 0 errores en ficheros local-repro (los errores de tools/tsconfig son de ficheros ajenos: per-surface-columns/property-based/vitest.config). Sin asignacion activa a otro agente; revisor fresco.
 ## acceptance
 
 - Script descargable y ejecutable.

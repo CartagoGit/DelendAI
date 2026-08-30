@@ -20,7 +20,7 @@ import { buildConventionsToolRegistrations } from './lib/tools';
 
 export default definePlugin({
 	name: 'conventions',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'File-convention tools: classify repo paths into canonical roles and report convention drift (f00037). Read-only, host-agnostic.',
 	optionsSchema: z.object({

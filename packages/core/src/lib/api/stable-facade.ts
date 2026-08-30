@@ -25,7 +25,10 @@
  */
 import type { ZodTypeAny } from 'zod';
 
-import { SCHEMA_VERSION } from './stable-manifest';
+import {
+	composeStableToolDescriptors,
+	onStableToolRegistryChange,
+} from './stable-facade-registry';
 
 /**
  * The semver guarantee attached to every facade tool. Today the
@@ -64,6 +67,10 @@ export const describeStableTool = (
 	descriptor: IStableToolDescriptor,
 ): IStableToolDescriptor => Object.freeze({ ...descriptor });
 
+/** Core-owned stable descriptors; plugin descriptors come from the registry. */
+export const CORE_STABLE_API_TOOLS: readonly IStableToolDescriptor[] =
+	Object.freeze([]);
+
 /**
  * The Stable API Surface. Order is declaration order; consumers that
  * care about the order should iterate this array directly.
@@ -82,99 +89,24 @@ export const describeStableTool = (
  *     that the manifest never references a tool the descriptor
  *     doesn't list, so leaving a `sinceVersion` ghost is safe.
  */
-export const STABLE_API_TOOLS: readonly IStableToolDescriptor[] = Object.freeze(
-	[
-		describeStableTool({
-			name: 'proposal_transition',
-			plugin: 'proposals',
-			sinceVersion: SCHEMA_VERSION,
-			semverGuarantee: 'additive-only',
-			// Schemas are bound at runtime in `bindStableSchemas()` so this
-			// file does not have to import every plugin's tool module
-			// (which would create a circular dependency between core and
-			// the proposals plugin). The factory below exposes the
-			// descriptor's schema slots for late binding.
-			inputSchema: undefined as unknown as ZodTypeAny,
-			outputSchema: undefined as unknown as ZodTypeAny,
-			summary: 'Move a proposal to a new status against the DFA.',
-		}),
-		describeStableTool({
-			name: 'proposal_create',
-			plugin: 'proposals',
-			sinceVersion: SCHEMA_VERSION,
-			semverGuarantee: 'additive-only',
-			inputSchema: undefined as unknown as ZodTypeAny,
-			outputSchema: undefined as unknown as ZodTypeAny,
-			summary:
-				'Create a new proposal document with frontmatter + slices.',
-		}),
-		describeStableTool({
-			name: 'auto_work',
-			plugin: 'proposals',
-			sinceVersion: SCHEMA_VERSION,
-			semverGuarantee: 'additive-only',
-			inputSchema: undefined as unknown as ZodTypeAny,
-			outputSchema: undefined as unknown as ZodTypeAny,
-			summary:
-				'Resolve the next proposal slice and return an action plan.',
-		}),
-		describeStableTool({
-			name: 'agent_lock',
-			plugin: 'proposals',
-			sinceVersion: SCHEMA_VERSION,
-			semverGuarantee: 'additive-only',
-			inputSchema: undefined as unknown as ZodTypeAny,
-			outputSchema: undefined as unknown as ZodTypeAny,
-			summary: 'Claim file ownership for an agent (cross-process lock).',
-		}),
-		describeStableTool({
-			name: 'agent_worktree',
-			plugin: 'proposals',
-			sinceVersion: SCHEMA_VERSION,
-			semverGuarantee: 'additive-only',
-			inputSchema: undefined as unknown as ZodTypeAny,
-			outputSchema: undefined as unknown as ZodTypeAny,
-			summary: 'Create or manage per-agent git worktrees.',
-		}),
-		describeStableTool({
-			name: 'proposal_review',
-			plugin: 'proposals',
-			sinceVersion: SCHEMA_VERSION,
-			semverGuarantee: 'additive-only',
-			inputSchema: undefined as unknown as ZodTypeAny,
-			outputSchema: undefined as unknown as ZodTypeAny,
-			summary: 'Submit/approve/request-changes on a proposal in review.',
-		}),
-		describeStableTool({
-			name: 'task_queue_enqueue',
-			plugin: 'proposals',
-			sinceVersion: SCHEMA_VERSION,
-			semverGuarantee: 'additive-only',
-			inputSchema: undefined as unknown as ZodTypeAny,
-			outputSchema: undefined as unknown as ZodTypeAny,
-			summary: 'Push a task onto the persistent swarm queue.',
-		}),
-		describeStableTool({
-			name: 'state_repair',
-			plugin: 'proposals',
-			sinceVersion: SCHEMA_VERSION,
-			semverGuarantee: 'additive-only',
-			inputSchema: undefined as unknown as ZodTypeAny,
-			outputSchema: undefined as unknown as ZodTypeAny,
-			summary:
-				'Auto-heal stale locks, queue backpressure, orphan assignments.',
-		}),
-		describeStableTool({
-			name: 'proposal_force_transition',
-			plugin: 'proposals',
-			sinceVersion: SCHEMA_VERSION,
-			semverGuarantee: 'additive-only',
-			inputSchema: undefined as unknown as ZodTypeAny,
-			outputSchema: undefined as unknown as ZodTypeAny,
-			summary: 'Recovery-path transition (skips peer-review lock).',
-		}),
-	],
-);
+const stableApiTools: IStableToolDescriptor[] = [];
+const stableApiToolNames: string[] = [];
+
+const refreshStableFacade = (): void => {
+	const descriptors = composeStableToolDescriptors(CORE_STABLE_API_TOOLS);
+	stableApiTools.splice(0, stableApiTools.length, ...descriptors);
+	stableApiToolNames.splice(
+		0,
+		stableApiToolNames.length,
+		...descriptors.map((descriptor) => descriptor.name),
+	);
+};
+
+refreshStableFacade();
+onStableToolRegistryChange(refreshStableFacade);
+
+export const STABLE_API_TOOLS: readonly IStableToolDescriptor[] =
+	stableApiTools;
 
 /**
  * Find a facade descriptor by tool name. Pure; returns `null` when
@@ -190,6 +122,11 @@ export const findStableDescriptor = (
  * The list of facade tool names, in declaration order. Useful for
  * snapshot-style tests and the deprecation linter.
  */
-export const STABLE_API_TOOL_NAMES: readonly string[] = Object.freeze(
-	STABLE_API_TOOLS.map((descriptor) => descriptor.name),
-);
+export const STABLE_API_TOOL_NAMES: readonly string[] = stableApiToolNames;
+
+export {
+	clearStableToolDescriptorContributions,
+	listRegisteredStableToolDescriptors,
+	registerStableToolDescriptors,
+	resetStableToolDescriptorRegistryForTests,
+} from './stable-facade-registry';

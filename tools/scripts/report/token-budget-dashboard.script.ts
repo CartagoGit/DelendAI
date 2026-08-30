@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
 import {
+	createPluginMetrics,
 	PRESET_CATALOG,
 	TOKEN_BUDGETS,
 	withFileMutex,
@@ -867,6 +868,13 @@ const renderGeneratedMarkdown = (
 				col.nativeDeficit ?? '—',
 			]),
 		),
+		'',
+		'Metrics for plugin lifecycle transitions (c00134). Counters are ',
+		'process-local aggregates; the router emits them on each transition ',
+		'and the dashboard projects the snapshot. All values below start at ',
+		'zero in a fresh process and accumulate over the host run.',
+		'',
+		createPluginMetrics().formatForDashboard(),
 		'',
 		'## Reproduce',
 		'',

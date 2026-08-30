@@ -11,7 +11,7 @@ import {
 
 import {
 	discoverPluginPackages,
-	loadMigratedPluginManifests,
+	loadPluginManifests,
 	type ILoadedPluginManifest,
 	type IPluginPackageRecord,
 } from '../generate/from-manifests.script';
@@ -268,7 +268,7 @@ export const runCatalogGenerator = async (
 		const readmePath = resolve(root, README_PATH);
 		const readme = (await io.readText(readmePath)) ?? '';
 		const packages = await discoverPluginPackages(root, io);
-		const manifests = await loadMigratedPluginManifests(root, io);
+		const manifests = await loadPluginManifests(root, io);
 		const entries = buildCatalogEntries(
 			FIRST_PARTY_PLUGIN_INDEX.entries,
 			packages,
