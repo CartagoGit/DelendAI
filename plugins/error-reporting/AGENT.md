@@ -21,16 +21,6 @@
 - resolveOptions
 - SAFE_REPORTER_FAILURE_CODES
 - classifyInternalError
-- classificationFromEvidence
-- classificationOf
-- buildIssueBody
-- buildIssueTitle
-- isMarkedInternalBoundary
-- isMcpVertexInternal
-- markErrorAsInternalBoundary
-- registerInternalPath
-- registerInternalRuntimePaths
-- resetInternalPathRegistry
 
 ## Depends on
 
@@ -53,8 +43,6 @@
 - plugins/error-reporting/tests/frame-extractor.spec.ts
 - plugins/error-reporting/tests/origin-analyzer.spec.ts
 - plugins/error-reporting/tests/internal-classifier.spec.ts
-- plugins/error-reporting/tests/funnel-reconciliation.spec.ts
-- plugins/error-reporting/tests/privacy-adversarial.spec.ts
 
 ## Do not
 

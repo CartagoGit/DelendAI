@@ -21,16 +21,6 @@
 - sessionTooLongDedupeKey
 - readHostLifecycleEvents
 - summarizeHostLifecycle
-- attributeTool
-- deriveCorePrefix
-- CORE_PLUGIN_KEY
-- buildRecord
-- extractModel
-- extractUsage
-- resolveSessionId
-- bucketBy
-- buildSummary
-- computeTotals
 
 ## Depends on
 
@@ -53,8 +43,6 @@
 - plugins/usage-tracking/tests/e2e/1000-calls-latency.e2e.spec.ts
 - plugins/usage-tracking/tests/src/invocation-telemetry.spec.ts
 - plugins/usage-tracking/tests/src/lib/attribute.spec.ts
-- plugins/usage-tracking/tests/src/lib/plugin.spec.ts
-- plugins/usage-tracking/tests/src/lib/tools.spec.ts
 
 ## Do not
 

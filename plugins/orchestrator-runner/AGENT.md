@@ -21,16 +21,6 @@
 - type ISessionStoreOptions
 - HealthStore
 - buildProviderHealth
-- availabilityFromHealth
-- commandOf
-- installHintFor
-- probeCli
-- type ProbeRunner
-- readQuotaSnapshot
-- type IQuotaSnapshot
-- mergeQuotaSources
-- buildQuotaSnapshot
-- httpHeaderSample
 
 ## Depends on
 
@@ -53,8 +43,6 @@
 - plugins/orchestrator-runner/tests/e2e/fallback-chain.e2e.spec.ts
 - plugins/orchestrator-runner/tests/src/lib/invoke/token.spec.ts
 - plugins/orchestrator-runner/tests/src/lib/invoke/limits-store.spec.ts
-- plugins/orchestrator-runner/tests/src/lib/invoke/fallback.spec.ts
-- plugins/orchestrator-runner/tests/src/lib/invoke/spend-guard.spec.ts
 
 ## Do not
 

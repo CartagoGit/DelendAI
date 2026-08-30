@@ -21,11 +21,6 @@
 - classifyForeignKeyRelationship
 - countRelationships
 - filterSchemaTables
-- isForeignKeyUnique
-- listEntityBlocks
-- renderErd
-- renderErdIntegrity
-- safeEntityName
 
 ## Depends on
 

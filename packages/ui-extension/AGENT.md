@@ -21,16 +21,6 @@
 - renderPanelSessions
 - renderPanelTimes
 - renderPanelTokens
-- renderPanelTools
-- renderPanelHealth
-- renderPanelMemory
-- barChart
-- sparklinePath
-- escapeHtml
-- formatBytes
-- formatDate
-- formatMs
-- formatNumber
 
 ## Depends on
 
@@ -52,8 +42,6 @@ _(none)_
 - packages/ui-extension/tests/webview/csp.spec.ts
 - packages/ui-extension/tests/settings/settings-schema.spec.ts
 - packages/ui-extension/tests/settings/render-settings.spec.ts
-- packages/ui-extension/tests/knowledge/render-knowledge-navigator.spec.ts
-- packages/ui-extension/tests/components/dropdown.spec.ts
 
 ## Do not
 

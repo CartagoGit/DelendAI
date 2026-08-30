@@ -21,16 +21,6 @@
 - commentOnPr
 - createIssue
 - createPr
-- listCommitSubjects
-- readProposalMarkdown
-- buildForgeReadToolRegistrations
-- runForgeCiStatus
-- runForgeIssueList
-- runForgeIssueShow
-- runForgePrList
-- runForgePrShow
-- buildForgeReleaseToolRegistrations
-- runForgeRelease
 
 ## Depends on
 
@@ -53,8 +43,6 @@
 - plugins/forge/tests/src/lib/services/forge.spec.ts
 - plugins/forge/tests/src/lib/services/forge-release.spec.ts
 - plugins/forge/tests/src/lib/services/forge-write.spec.ts
-- plugins/forge/tests/src/lib/plugin-options.spec.ts
-- plugins/forge/tests/src/lib/tools/forge-search.tool.spec.ts
 
 ## Do not
 

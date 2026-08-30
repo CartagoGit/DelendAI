@@ -21,9 +21,6 @@
 - gitBlame
 - gitShow
 - gitWorktreeList
-- buildGitToolRegistrations
-- buildGitWriteToolRegistrations
-- isConventionalCommitMessage
 
 ## Depends on
 
@@ -46,8 +43,6 @@
 - plugins/git/tests/src/lib/git-extended.tool.spec.ts
 - plugins/git/tests/src/lib/git.spec.ts
 - plugins/git/tests/src/lib/write-tools.spec.ts
-- plugins/git/tests/src/lib/changelog.spec.ts
-- plugins/git/tests/src/lib/forge.spec.ts
 
 ## Do not
 

@@ -30,8 +30,6 @@
 - plugins/issues/tests/src/lib/github-client-security.spec.ts
 - plugins/issues/tests/src/lib/github-setup.spec.ts
 - plugins/issues/tests/src/lib/services/error-sink-adapter.spec.ts
-- plugins/issues/tests/src/lib/frontmatter.spec.ts
-- plugins/issues/tests/src/lib/issue-scaffold.spec.ts
 
 ## Do not
 

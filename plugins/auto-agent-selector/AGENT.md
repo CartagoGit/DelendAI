@@ -21,8 +21,6 @@
 - buildAutoEvaluateRegistration
 - KNOWN_APIS
 - KNOWN_CLIS
-- type IKnownApi
-- type IKnownCli
 
 ## Depends on
 
@@ -45,8 +43,6 @@
 - plugins/auto-agent-selector/tests/src/lib/discovery/discover-roster.spec.ts
 - plugins/auto-agent-selector/tests/src/lib/discovery/roster-store.spec.ts
 - plugins/auto-agent-selector/tests/src/lib/routing/rank-providers.spec.ts
-- plugins/auto-agent-selector/tests/src/lib/calibrate/store.spec.ts
-- plugins/auto-agent-selector/tests/src/lib/calibrate/win-rates.spec.ts
 
 ## Do not
 

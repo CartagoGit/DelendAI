@@ -42,8 +42,6 @@
 - plugins/rules/tests/src/lib/plugin.spec.ts
 - plugins/rules/tests/src/lib/rules.spec.ts
 - plugins/rules/tests/src/lib/e2e-polyglot.spec.ts
-- plugins/rules/tests/src/lib/tools/rules-commands.spec.ts
-- plugins/rules/tests/src/lib/tools/rules-tools.spec.ts
 
 ## Do not
 
