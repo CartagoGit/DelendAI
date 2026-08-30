@@ -284,7 +284,7 @@ const measureFixtureSurfaces = async (
 		const logsTail = await measureToolTextBytes(
 			logs.client,
 			'mcp-vertex_logs_tail',
-			{ limit: 1 },
+			{ limit: 1, kindFilter: 'token-budget-fixture-absent' },
 		);
 		const overviewFull = await measureToolTextBytes(
 			overviewSurface.client,
@@ -967,7 +967,6 @@ export const buildTokenBudgetDashboardMarkdown = async (
 		)}\n`;
 		return markdown;
 	} finally {
-		await logs.close();
 		destroyTokenBudgetFixtureWorkspace(workspace);
 	}
 };
