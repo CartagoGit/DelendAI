@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-30T03:09:13.620Z",
+	"generatedAt": "2026-08-30T03:11:16.123Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1645,13 +1645,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00282",
-				"title": "f00282",
-				"track": "project-observability-economics",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "q00008",
 				"title": "q00008",
 				"track": "rail-clean-code-solid-intrinsic",
@@ -2017,11 +2010,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 98,
+			"ready": 97,
 			"in-progress": 9,
 			"review": 0,
 			"paused": 2,
-			"done": 524,
+			"done": 525,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
