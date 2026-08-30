@@ -41,6 +41,30 @@ describe('LogsPluginSink (f00154 S2)', () => {
 		expect(first.taskId).toBe('foo');
 	});
 
+	it('preserves cancellation reason and recovery alternative in the error metadata', async () => {
+		const calls: unknown[] = [];
+		const sink = new LogsPluginSink(async (event) => {
+			calls.push(event);
+		});
+		await sink.record({
+			...sampleEvent,
+			kind: 'tool-cancelled',
+			outcome: 'cancelled',
+			severity: 'notice',
+			incidentType: 'tool-cancelled',
+			summary: 'tool-cancelled: spec_slow: user stopped duplicate work',
+			meta: {
+				reason: 'user stopped duplicate work',
+				nextAction: 'Retry the operation or resume from checkpoint.',
+				error: new Error('user stopped duplicate work'),
+			},
+		});
+		const event = calls[0] as { meta: Record<string, unknown> };
+		expect(event.meta.reason).toBe('user stopped duplicate work');
+		expect(event.meta.nextAction).toContain('Retry');
+		expect(event.meta.error).toBeInstanceOf(Error);
+	});
+
 	it('has id "logs-plugin"', () => {
 		const sink = new LogsPluginSink(async () => {});
 		expect(sink.id).toBe('logs-plugin');

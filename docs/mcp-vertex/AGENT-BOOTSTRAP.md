@@ -265,15 +265,12 @@ interactions.
 
 ## 6. Invariants you must not break
 
-- **Dogfooding watcher is infrastructure, not disposable configuration.**
-  Keep `.vscode/mcp.json` and `.mcp.json` pointed at the repo-local host with
-  `bun --watch tools/scripts/host/host-server.script.ts` and the appropriate
-  workspace argument. This makes the connected MCP server reload when this
-  repository changes, so agents can test the code they just edited. Never
-  remove `--watch`, replace the local launch with a one-shot command, or
-  delete either checked-in client config as cleanup. The
-  `lint:self-host-dogfood` gate must remain green; if the launch needs to
-  change, update its focused test and preserve automatic reload semantics.
+- **The dogfooding host is a one-shot process.** Keep `.vscode/mcp.json` and
+  `.mcp.json` pointed at the repo-local host with
+  `bun tools/scripts/host/host-server.script.ts` and the appropriate workspace
+  argument. A restarted host must be started explicitly so each session has
+  one composition root and one resource registration set. The
+  `lint:self-host-dogfood` gate must remain green.
 - Core stays agnostic. No project vocabulary (role enums, model names,
   folder names) inside `packages/core`. Plugins receive everything
   resolved through `IMcpPluginContext`.
@@ -500,12 +497,12 @@ or have their own config file. Use the same single-pointer pattern:
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-08-30T04:25:40.472Z
+Generated at: 2026-08-30T13:27:42.922Z
 
 Plugins: 53
 Tools: 221
-Test specs: 473 (≈3896 cases)
+Test specs: 475 (≈3942 cases)
 Workspaces: 5 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 496 on disk (ready=84, in-progress=2, review=2, done=408)
+Proposals: 495 on disk (ready=58, in-progress=2, review=1, done=434)
 ```
 <!-- mcp-vertex:end quantitative -->

@@ -15,7 +15,7 @@ const ROOT = resolve(
  *
  *   1. published CLI: `bunx --package @mcp-vertex/cli mcpv __serve --workspace <ws>`
  *   2. repo-local dogfood (while `@mcp-vertex/cli` is unpublished):
- *      `bun --watch tools/scripts/host/host-server.script.ts --workspace=<ws>`
+ *      `bun tools/scripts/host/host-server.script.ts --workspace=<ws>`
  */
 const publishedLaunch = (workspace: string) => ({
 	command: 'bunx',
@@ -37,20 +37,6 @@ const localDogfoodLaunch = (workspace: string) => ({
 	],
 });
 
-/**
- * The watcher is mandatory for the repo-local dogfood launch. An agent
- * editing this repo needs the MCP server it is talking to to pick edits up
- * without a manual restart; dropping `--watch` silently breaks dogfooding.
- */
-const localDogfoodWatchLaunch = (workspace: string) => ({
-	command: 'bun',
-	args: [
-		'--watch',
-		'tools/scripts/host/host-server.script.ts',
-		`--workspace=${workspace}`,
-	],
-});
-
 const expectCanonicalLaunch = (
 	entry: { command?: string; args?: readonly string[] } | undefined,
 	workspace: string,
@@ -59,7 +45,6 @@ const expectCanonicalLaunch = (
 	const accepted = [
 		publishedLaunch(workspace),
 		localDogfoodLaunch(workspace),
-		localDogfoodWatchLaunch(workspace),
 	];
 	const matches = accepted.some(
 		(launch) =>

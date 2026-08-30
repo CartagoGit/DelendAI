@@ -35,6 +35,7 @@ const buildCtx = (workspace: string): IMcpPluginContext => ({
 			],
 		},
 	},
+	pluginOptions: new Map([['proposals', { persist: { mode: 'none' } }]]),
 	args: {},
 });
 

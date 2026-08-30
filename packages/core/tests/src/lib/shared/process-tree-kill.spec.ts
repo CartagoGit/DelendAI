@@ -73,3 +73,33 @@ describeUnixOnly(
 		});
 	},
 );
+
+describeUnixOnly('runArgv abort handling (x00222)', () => {
+	it('aborts promptly and reaps a long-lived descendant', async () => {
+		const controller = new AbortController();
+		const script = [
+			"const { spawn } = require('node:child_process');",
+			"const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });",
+			'process.stdout.write(String(child.pid));',
+			'setInterval(() => {}, 1000);',
+		].join('');
+		const startedAt = Date.now();
+		const pending = runArgv([process.execPath, '-e', script], {
+			signal: controller.signal,
+			maxOutputBytes: 64,
+		});
+		setTimeout(() => {
+			controller.abort();
+		}, 100);
+		const result = await pending;
+		expect(Date.now() - startedAt).toBeLessThan(3000);
+		expect(result.code).toBe(130);
+		expect(result.aborted).toBe(true);
+		expect(result.timedOut).toBe(false);
+		const descendantPid = Number.parseInt(result.stdout.trim(), 10);
+		expect(Number.isFinite(descendantPid)).toBe(true);
+		trackedPids.add(descendantPid);
+		expect(await waitForPidExit(descendantPid)).toBe(true);
+		trackedPids.delete(descendantPid);
+	});
+});

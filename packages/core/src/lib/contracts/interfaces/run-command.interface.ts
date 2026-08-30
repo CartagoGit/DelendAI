@@ -4,6 +4,7 @@ export interface IRunArgvOutcome {
 	readonly stdout: string;
 	readonly stderr: string;
 	readonly timedOut: boolean;
+	readonly aborted?: boolean;
 }
 
 /** Options accepted by the argv-first shared command runner. */
@@ -36,4 +37,9 @@ export interface IRunArgvOptions {
 	 * ignored stdin and never sees the piped content.
 	 */
 	readonly stdin?: string;
+	/**
+	 * Optional abort signal. When aborted, the whole process tree is killed
+	 * and the promise resolves only after the child closes.
+	 */
+	readonly signal?: AbortSignal;
 }

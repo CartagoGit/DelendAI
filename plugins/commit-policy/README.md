@@ -59,20 +59,28 @@ opt in. See "Configuration" below for the exact knobs.
 | `push.everyNCommits`           | _none_               | Push every N commits (alternative to `onCommit`).                                                                                                                           |
 | `push.everyNMinutes`           | _none_               | Push every N minutes if there are unpushed commits.                                                                                                                         |
 | `push.force`                   | `"with-lease"`       | `"with-lease" \| "allow" \| "never"`.                                                                                                                                       |
-| `push.protectedBranches`       | `["main", "master"]` | Push is always refused to these.                                                                                                                                            |
+| `push.protectedBranches`       | `[]`                 | Exact branch names configured here are protected; no names are assumed.                                                                                                     |
 | `push.remote` / `push.branch`  | _none_               | Optional explicit defaults; falls back to upstream / current branch.                                                                                                        |
+
+When the plugin starts, it best-effort checks the `origin` remote with the
+authenticated `gh` or `glab` CLI. Detected protected branches are merged with
+the locally configured list. Use `commit_policy_refresh_branch_protection`
+after changing the repository remote or its forge rules; a failed remote check
+leaves the local configuration active.
 
 ### Branch rules
 
 Before an automatic commit or push, inspect `commit_policy_status` and its
 `branchPolicy` field:
 
-- `main` and `master` are protected by default; automatic commit/push is refused.
-- `release/*` and `hotfix/*` branches are also protected by default.
+- `push.protectedBranches` and `push.protectedPrefixes` are the only local protection source; both default to empty lists.
 - Any other branch permits direct commit and push when `commit.enabled` and
   `push.enabled` are enabled.
-- In this repository, `develop` is the shared working branch and allows direct
-  commit and push; `main` is the protected review boundary.
+- Any branch, including `main`, `develop`, and `master`, permits direct commit and push when it is absent from those configured lists and the relevant switches are enabled.
+The remote provider check is available through
+`commit_policy_refresh_branch_protection`. It supports GitHub and GitLab when
+their authenticated CLI is installed; unsupported remotes and missing auth do
+not replace the local policy.
 
 ### Identity modes
 

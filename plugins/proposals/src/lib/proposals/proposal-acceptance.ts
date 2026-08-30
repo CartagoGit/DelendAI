@@ -45,10 +45,17 @@
 
 import { spawn } from 'node:child_process';
 
-import { killProcessGroup } from '@mcp-vertex/core/public';
+import { killProcessTree } from '@mcp-vertex/core/public';
 
 import type { IAcceptanceCriterion } from './proposal-document';
 import { ProposalParseError } from './proposal-errors';
+
+export type IAcceptanceFailureKind =
+	| 'timeout'
+	| 'aborted'
+	| 'spawn'
+	| 'interactive'
+	| 'exit';
 
 // ---------------------------------------------------------------------------
 // Public response shape
@@ -61,6 +68,10 @@ export interface IAcceptanceResult {
 	readonly actual: string;
 	readonly exitCode: number | null;
 	readonly reason?: string;
+	readonly timedOut?: boolean;
+	readonly aborted?: boolean;
+	readonly failureKind?: IAcceptanceFailureKind;
+	readonly recovery?: readonly string[];
 	readonly durationMs: number;
 }
 
@@ -77,6 +88,11 @@ export interface IAcceptanceRunOptions {
 	 * Omitted → inherits the current process cwd (back-compat).
 	 */
 	readonly cwd?: string;
+	/**
+	 * Optional abort signal. When aborted, the active criterion's whole
+	 * process tree is killed and no later criteria are started.
+	 */
+	readonly signal?: AbortSignal;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,6 +101,35 @@ export interface IAcceptanceRunOptions {
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 const MAX_CAPTURED_BYTES = 64 * 1024; // 64 KiB per stream; truncate beyond.
+const NON_INTERACTIVE_ENV: Readonly<Record<string, string>> = {
+	CI: '1',
+	GIT_TERMINAL_PROMPT: '0',
+	GCM_INTERACTIVE: 'Never',
+	npm_config_yes: 'true',
+	NPM_CONFIG_YES: 'true',
+};
+const INTERACTIVE_PATTERNS = [
+	/\b(password|passphrase|username)\b\s*[:?]/i,
+	/\benter\b[^\n]{0,80}\b(password|passphrase|username|value|y\/n|yes\/no)\b/i,
+	/\b(y\/n|yes\/no)\b/i,
+	/\bcontinue\?/i,
+	/\bwaiting for input\b/i,
+	/\bterminal input\b/i,
+	/\binteractive\b[^\n]{0,80}\b(prompt|mode|login|input)\b/i,
+	/\bprompt\b[^\n]{0,80}\b(password|passphrase|username|input|required)\b/i,
+];
+const TIMEOUT_RECOVERY = [
+	'retry the command with non-interactive flags or explicit argv',
+	'split the gate into smaller commands to isolate the blocking step',
+];
+const ABORT_RECOVERY = [
+	'close the blocked terminal or child process group before retrying',
+	'retry the command after confirming it can run non-interactively',
+];
+const INTERACTIVE_RECOVERY = [
+	'retry the command with non-interactive flags or explicit argv',
+	'split the gate into smaller commands to isolate the prompting step',
+];
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -137,6 +182,7 @@ export const runAcceptanceCriteria = async (
 		//    a `skipIf(!Bun.which('bun'))` guard for that case.
 		const result = await runOne(criterion, options);
 		results.push(result);
+		if (result.aborted === true) break;
 	}
 
 	const allPassed = results.every((r) => r.passed);
@@ -169,6 +215,60 @@ const isValidExpect = (
 const truncateCaptured = (raw: string): string => {
 	if (raw.length <= MAX_CAPTURED_BYTES) return raw;
 	return `${raw.slice(0, MAX_CAPTURED_BYTES)}\n...[truncated ${raw.length - MAX_CAPTURED_BYTES} bytes]`;
+};
+
+const buildSpawnEnv = (): NodeJS.ProcessEnv => ({
+	...process.env,
+	...NON_INTERACTIVE_ENV,
+});
+
+const looksInteractive = (text: string): boolean => {
+	const normalized = text.trim();
+	if (normalized.length === 0) return false;
+	return INTERACTIVE_PATTERNS.some((pattern) => pattern.test(normalized));
+};
+
+const buildFailureMeta = (
+	baseKind: Exclude<IAcceptanceFailureKind, 'interactive'>,
+	context: {
+		readonly actual: string;
+		readonly reason: string;
+	},
+): {
+	readonly failureKind: IAcceptanceFailureKind;
+	readonly recovery: readonly string[];
+} => {
+	if (
+		baseKind !== 'aborted' &&
+		looksInteractive(`${context.reason}\n${context.actual}`)
+	) {
+		return {
+			failureKind: 'interactive',
+			recovery: INTERACTIVE_RECOVERY,
+		};
+	}
+	if (baseKind === 'timeout') {
+		return {
+			failureKind: 'timeout',
+			recovery: TIMEOUT_RECOVERY,
+		};
+	}
+	if (baseKind === 'aborted') {
+		return {
+			failureKind: 'aborted',
+			recovery: ABORT_RECOVERY,
+		};
+	}
+	if (baseKind === 'spawn') {
+		return {
+			failureKind: 'spawn',
+			recovery: INTERACTIVE_RECOVERY,
+		};
+	}
+	return {
+		failureKind: 'exit',
+		recovery: [],
+	};
 };
 
 /**
@@ -244,15 +344,59 @@ const runOne = async (
 	const fail = (
 		reason: string,
 		exitCode: number | null = null,
-	): IAcceptanceResult => ({
-		command: criterion.command,
-		expect: criterion.expect,
-		passed: false,
-		actual: '',
-		exitCode,
-		reason,
-		durationMs: Date.now() - startedAt,
-	});
+		flags?: {
+			readonly timedOut?: boolean;
+			readonly aborted?: boolean;
+			readonly actual?: string;
+			readonly failureKind?: Exclude<
+				IAcceptanceFailureKind,
+				'interactive'
+			>;
+		},
+	): IAcceptanceResult => {
+		const actual = flags?.actual ?? '';
+		const failureMeta = buildFailureMeta(flags?.failureKind ?? 'exit', {
+			actual,
+			reason,
+		});
+		return {
+			command: criterion.command,
+			expect: criterion.expect,
+			passed: false,
+			actual,
+			exitCode,
+			reason,
+			timedOut: flags?.timedOut ?? false,
+			aborted: flags?.aborted ?? false,
+			failureKind: failureMeta.failureKind,
+			recovery: failureMeta.recovery,
+			durationMs: Date.now() - startedAt,
+		};
+	};
+	if (options.signal?.aborted === true) {
+		return fail('aborted before spawn', 130, {
+			timedOut: false,
+			aborted: true,
+			failureKind: 'aborted',
+		});
+	}
+	const bindAbortSignal = (
+		signal: AbortSignal | undefined,
+		onAbort: () => void,
+	): (() => void) => {
+		if (signal === undefined) return () => {};
+		if (signal.aborted) {
+			onAbort();
+			return () => {};
+		}
+		const handleAbort = (): void => {
+			onAbort();
+		};
+		signal.addEventListener('abort', handleAbort, { once: true });
+		return () => {
+			signal.removeEventListener('abort', handleAbort);
+		};
+	};
 
 	// Runtime-agnostic: the command is resolved from PATH by spawn. A
 	// missing binary surfaces as a spawn 'error' (ENOENT) → structured
@@ -266,7 +410,7 @@ const runOne = async (
 		if (useShell) {
 			child = spawn(criterion.command, {
 				...(cwd !== undefined ? { cwd } : {}),
-				env: process.env,
+				env: buildSpawnEnv(),
 				shell: true,
 				detached: true,
 				stdio: ['ignore', 'pipe', 'pipe'],
@@ -279,7 +423,7 @@ const runOne = async (
 			const [cmd, ...args] = argv as [string, ...string[]];
 			child = spawn(cmd, args, {
 				...(cwd !== undefined ? { cwd } : {}),
-				env: process.env,
+				env: buildSpawnEnv(),
 				detached: true,
 				stdio: ['ignore', 'pipe', 'pipe'],
 			});
@@ -287,6 +431,8 @@ const runOne = async (
 	} catch (e) {
 		return fail(
 			`spawn failed: ${e instanceof Error ? e.message : String(e)}`,
+			null,
+			{ failureKind: 'spawn' },
 		);
 	}
 
@@ -305,43 +451,71 @@ const runOne = async (
 		stderr = append(stderr, d);
 	});
 
-	// Race exit against the timeout. On timeout, kill the whole group.
-	let timedOut = false;
+	// Race exit against timeout/abort. Both paths kill the whole tree and the
+	// promise only resolves after the child has fully closed.
+	let stopReason: 'timeout' | 'abort' | undefined;
 	let spawnError: Error | null = null;
 	const exitCode = await new Promise<number | null>((resolve) => {
+		let teardown: Promise<void> | undefined;
+		const stop = (reason: 'timeout' | 'abort'): void => {
+			if (stopReason !== undefined) return;
+			stopReason = reason;
+			teardown = killProcessTree(child.pid);
+		};
+		const disposeAbort = bindAbortSignal(options.signal, () => {
+			stop('abort');
+		});
 		const timer = setTimeout(() => {
-			timedOut = true;
-			killProcessGroup(child.pid);
+			stop('timeout');
 		}, timeoutMs);
 		child.on('error', (err: Error) => {
 			clearTimeout(timer);
+			disposeAbort();
 			spawnError = err;
 			resolve(null);
 		});
-		child.on('close', (code: number | null) => {
+		child.on('close', async (code: number | null) => {
 			clearTimeout(timer);
+			disposeAbort();
+			await teardown;
 			resolve(code);
 		});
 	});
 
 	if (spawnError !== null) {
-		return fail(`spawn failed: ${(spawnError as Error).message}`);
+		return fail(`spawn failed: ${(spawnError as Error).message}`, null, {
+			failureKind: 'spawn',
+		});
 	}
 
 	const stdoutText = truncateCaptured(stdout);
 	const stderrText = truncateCaptured(stderr);
 	const combined = stdoutText + (stderrText ? `\n${stderrText}` : '');
 
-	if (timedOut) {
-		return {
-			command: criterion.command,
-			expect: criterion.expect,
-			passed: false,
-			actual: combined,
-			exitCode: null,
-			reason: `timeout: command did not exit within ${timeoutMs}ms`,
-			durationMs: Date.now() - startedAt,
-		};
+	if (stopReason === 'timeout') {
+		return fail(
+			`timeout: command exceeded ${timeoutMs}ms and the process was terminated`,
+			exitCode ?? 124,
+			{
+				actual: combined,
+				timedOut: true,
+				aborted: false,
+				failureKind: 'timeout',
+			},
+		);
+	}
+
+	if (stopReason === 'abort') {
+		return fail(
+			'aborted: process group was terminated by the caller',
+			exitCode ?? 130,
+			{
+				actual: combined,
+				timedOut: false,
+				aborted: true,
+				failureKind: 'aborted',
+			},
+		);
 	}
 
 	if (criterion.expect === 'contains:') {
@@ -356,29 +530,20 @@ const runOne = async (
 				durationMs: Date.now() - startedAt,
 			};
 		}
-		return {
-			command: criterion.command,
-			expect: criterion.expect,
-			passed: false,
+		return fail(`exit code ${String(exitCode)}`, exitCode, {
 			actual: combined,
-			exitCode,
-			reason: `exit code ${String(exitCode)}`,
-			durationMs: Date.now() - startedAt,
-		};
+			failureKind: 'exit',
+		});
 	}
 
 	if (criterion.expect.startsWith('contains:')) {
 		const needle = criterion.expect.slice('contains:'.length);
 		if (exitCode !== 0) {
-			return {
-				command: criterion.command,
-				expect: criterion.expect,
-				passed: false,
-				actual: combined,
+			return fail(
+				`exit code ${String(exitCode)} (substring not checked)`,
 				exitCode,
-				reason: `exit code ${String(exitCode)} (substring not checked)`,
-				durationMs: Date.now() - startedAt,
-			};
+				{ actual: combined, failureKind: 'exit' },
+			);
 		}
 		if (!combined.includes(needle)) {
 			return {
@@ -412,13 +577,8 @@ const runOne = async (
 			durationMs: Date.now() - startedAt,
 		};
 	}
-	return {
-		command: criterion.command,
-		expect: criterion.expect,
-		passed: false,
+	return fail(`exit code ${String(exitCode)}`, exitCode, {
 		actual: combined,
-		exitCode,
-		reason: `exit code ${String(exitCode)}`,
-		durationMs: Date.now() - startedAt,
-	};
+		failureKind: 'exit',
+	});
 };

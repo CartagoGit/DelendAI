@@ -413,6 +413,7 @@ const buildSections = (
 	const errorsView = views.get('errors');
 	const efficiencyView = views.get('efficiency');
 	const auditView = views.get('audit');
+	const activationView = views.get('activation');
 	const score = displayMetricByKey(summaryView, 'health.score');
 	const calls = displayMetricByKey(summaryView, 'usage.calls');
 	const errors = displayMetricByKey(summaryView, 'usage.errors');
@@ -434,6 +435,27 @@ const buildSections = (
 	const optionalNote = (
 		note: string | undefined,
 	): { readonly note?: string } => (note === undefined ? {} : { note });
+	const activationMetric = (
+		key: string,
+		label: string,
+		value: number | undefined,
+		unit: IKpiDashboardToolDisplayMetric['unit'],
+	): IKpiDashboardMetric | undefined =>
+		value === undefined
+			? undefined
+			: {
+					key,
+					label,
+					status: metricStatusOf(
+						activationView?.activation?.status ??
+							activationView?.status ??
+							'unavailable',
+					),
+					unit,
+					source:
+						activationView?.activation?.source ?? 'activation-kpis',
+					value,
+				};
 	return [
 		section({
 			id: 'health',
@@ -580,6 +602,45 @@ const buildSections = (
 				'Audit findings remain empty until the KPI tool surfaces evidence-backed anomalies.',
 			metrics: [],
 			rows: rowsFromFindings(auditView?.findings?.items),
+		}),
+		section({
+			id: 'activation',
+			title: 'Activation KPIs',
+			icon: '◎',
+			state: stateFromStatus(activationView?.status, 'unavailable'),
+			note:
+				activationView?.activation?.note ??
+				activationView?.summary ??
+				'Activation precision, recall and churn require persisted session evidence.',
+			metrics: [
+				activationMetric(
+					'activation.sessionCount',
+					'Sessions',
+					activationView?.activation?.sessionCount,
+					'count',
+				),
+				activationMetric(
+					'activation.meanPrecision',
+					'Mean precision',
+					activationView?.activation?.meanPrecision,
+					'ratio',
+				),
+				activationMetric(
+					'activation.meanRecall',
+					'Mean recall',
+					activationView?.activation?.meanRecall,
+					'ratio',
+				),
+				activationMetric(
+					'activation.meanChurn',
+					'Mean churn',
+					activationView?.activation?.meanChurn,
+					'ratio',
+				),
+			].filter(
+				(metric): metric is IKpiDashboardMetric => metric !== undefined,
+			),
+			rows: [],
 		}),
 	];
 };

@@ -2,12 +2,14 @@
 id: f00193
 title: "External MCPs como plano de control"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: external-mcps
 date: 2026-08-25
 priority: P2
 parent-plan: q00006
+shipped-in:
+  - 6c17c080
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track K / f00193"
@@ -114,10 +116,13 @@ usuario declara los proveedores disponibles; el cliente enruta.
 
 ### S1 — Registry + router + tests básicos
 
-- **Status**: pending
-- **Files**: `packages/client/src/services/external-mcp/{registry,router,health}.ts`, `packages/client/tests/src/services/external-mcp/router.spec.ts`, `mcp-vertex.config.json` (extender schema con `externalMcps`)
+- **Status**: done
+- **Files**: `packages/client/src/services/external-mcp/{registry,router,health}.ts`, `packages/client/tests/services/external-mcp/{router,registry,health}.spec.ts`, `packages/client/src/node/services/plugin-activation.service.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: las suites external-mcp de router, registry y health pasan 38/38; el typecheck del cliente/workspace pasa. Registry lazy, selección por capability/coste/salud, failover y redacción están cubiertos por la implementación y tests canónicos.
 ## acceptance
 
 - Registry carga múltiples proveedores.

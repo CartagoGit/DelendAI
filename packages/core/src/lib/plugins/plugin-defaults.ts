@@ -89,7 +89,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 		scaffoldDir: 'docs/proposals/retired/issues',
 	},
 	audit: {
-		auditDir: 'docs/proposals/done/audits',
+		auditDir: 'docs/mcp-vertex/proposals/done/audits',
 		topActions: 5,
 		layers: [],
 	},

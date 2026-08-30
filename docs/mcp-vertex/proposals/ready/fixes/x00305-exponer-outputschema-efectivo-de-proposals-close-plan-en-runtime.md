@@ -1,5 +1,5 @@
 ---
-id: x00301
+id: x00305
 title: "Exponer outputSchema efectivo de proposals_close_plan en runtime"
 kind: fix
 status: ready
@@ -11,7 +11,7 @@ parent-plan: q00012
 related: [F-002, x00302]
 ---
 
-# x00301 — Exponer outputSchema efectivo de proposals_close_plan
+# x00305 — Exponer outputSchema efectivo de proposals_close_plan
 
 ## goal
 

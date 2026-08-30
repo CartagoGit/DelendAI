@@ -40,31 +40,38 @@ menos que lo active explícitamente.
 }
 ```
 
-| Knob                           | Por defecto          | Qué controla                                                                 |
-| ------------------------------ | -------------------- | ---------------------------------------------------------------------------- |
-| `commit.enabled`               | `false`              | Interruptor maestro — ningún commit sin `true`.                              |
-| `commit.requireConventional`   | `true`               | Rechaza mensajes que no sean Conventional Commit.                            |
-| `commit.autoScopeFromProposal` | `true`               | Convierte `feat: x` en `feat(<proposalId>): x` cuando hay contexto de slice. |
-| `identity.mode`                | `"global"`           | Uno entre `explicit / agent / repo / global / env / auto`.                   |
-| `cadence.triggers`             | `[]`                 | Array vacío = ningún commit automático; solo funciona `commit_policy_run`.   |
-| `audit.trailer`                | `"co-authored-by"`   | `"none" \| "co-authored-by" \| "body-metadata"`.                             |
-| `push.enabled`                 | `false`              | Interruptor maestro — ningún push sin `true`.                                |
-| `push.onCommit`                | `false`              | Push inmediato tras cada commit.                                             |
-| `push.force`                   | `"with-lease"`       | `"with-lease" \| "allow" \| "never"`.                                        |
-| `push.protectedBranches`       | `["main", "master"]` | Push siempre rechazado a estas ramas.                                        |
+| Knob                           | Por defecto        | Qué controla                                                                   |
+| ------------------------------ | ------------------ | ------------------------------------------------------------------------------ |
+| `commit.enabled`               | `false`            | Interruptor maestro — ningún commit sin `true`.                                |
+| `commit.requireConventional`   | `true`             | Rechaza mensajes que no sean Conventional Commit.                              |
+| `commit.autoScopeFromProposal` | `true`             | Convierte `feat: x` en `feat(<proposalId>): x` cuando hay contexto de slice.   |
+| `identity.mode`                | `"global"`         | Uno entre `explicit / agent / repo / global / env / auto`.                     |
+| `cadence.triggers`             | `[]`               | Array vacío = ningún commit automático; solo funciona `commit_policy_run`.     |
+| `audit.trailer`                | `"co-authored-by"` | `"none" \| "co-authored-by" \| "body-metadata"`.                               |
+| `push.enabled`                 | `false`            | Interruptor maestro — ningún push sin `true`.                                  |
+| `push.onCommit`                | `false`            | Push inmediato tras cada commit.                                               |
+| `push.force`                   | `"with-lease"`     | `"with-lease" \| "allow" \| "never"`.                                          |
+| `push.protectedBranches`       | `[]`               | Los nombres exactos configurados aquí quedan protegidos; no se asumen nombres. |
+
+Al iniciar, el plugin consulta de forma tolerante el remoto `origin` mediante
+la CLI autenticada de `gh` o `glab`. Las ramas protegidas detectadas se unen a
+la lista local. Usa `commit_policy_refresh_branch_protection` después de cambiar
+el remoto o las reglas del proveedor; si la consulta falla, se conserva la
+configuración local.
 
 ### Reglas de ramas
 
 Antes de hacer commit o push automático, consulta `commit_policy_status` y su
 campo `branchPolicy`:
 
-- `main` y `master` están protegidas por defecto; el commit/push automático se rechaza.
-- Las ramas `release/*` y `hotfix/*` también están protegidas por defecto.
+- `push.protectedBranches` y `push.protectedPrefixes` son la única fuente local de protección; ambos empiezan como listas vacías.
 - Cualquier otra rama permite commit y push directo cuando `commit.enabled` y
   `push.enabled` están activados.
-- En este repositorio, `develop` es la rama de trabajo compartida y permite
-  commit y push directo cuando `push.protectedBranches` no la incluye; `main`
-  es la frontera protegida que requiere revisión.
+- Cualquier rama, incluida `main`, `develop` y `master`, permite commit y push directo si no aparece en esas listas configuradas y los interruptores correspondientes están activos.
+- La comprobación remota está disponible mediante
+  `commit_policy_refresh_branch_protection`. Soporta GitHub y GitLab cuando la
+  CLI autenticada está instalada; los remotos no soportados y la falta de
+  autenticación no sustituyen la política local.
 
 ### Modos de identidad
 

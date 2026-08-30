@@ -130,10 +130,13 @@ interface PluginLifecycle<P, A> {
 
 ### S1 — Tipos `prepare/activate/dispose` + adapter de compatibilidad
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/lifecycle.ts`, `packages/core/src/lib/plugins/router.ts`, `packages/core/tests/src/lib/plugins/lifecycle.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente: lifecycle prepare/activate/dispose y el adaptador de compatibilidad están cubiertos por 10/10 tests focalizados; el typecheck de packages/core pasa con salida 0.
 ## acceptance
 
 - API `prepare/activate/dispose` documentada y exportada.

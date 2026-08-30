@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 import {
 	createPluginMetrics,
+	hydrateKpis,
 	PRESET_CATALOG,
 	TOKEN_BUDGETS,
 	withFileMutex,
@@ -107,6 +108,8 @@ export const TOKEN_BUDGET_DASHBOARD_PATH = [
 	'TOKEN-BUDGETS.md',
 ] as const;
 
+const ACTIVATION_KPIS_PATH = ['.vscode', 'mcp-vertex', 'kpis.json'] as const;
+
 const GENERATED_MARKER = [
 	'<!-- generated: token-budget-dashboard.script.ts -->',
 	'<!-- generated — do not edit by hand -->',
@@ -180,6 +183,51 @@ const markdownTable = (
 		`| ${separator.join(' | ')} |`,
 		...rows.map((row) => `| ${row.join(' | ')} |`),
 	].join('\n');
+};
+
+const renderActivationKpisUnavailable = (reason: string): string =>
+	[
+		'## Activation KPIs',
+		'',
+		`Source snapshot: ${ACTIVATION_KPIS_PATH.join('/')}`,
+		'',
+		reason,
+		'',
+		'This dashboard can only render a previously persisted local snapshot. Runtime collection and disk writes must be performed by the caller or host integration that owns the session lifecycle.',
+	].join('\n');
+
+const loadActivationKpisMarkdown = async (): Promise<string> => {
+	const inputPath = join(repoRoot(), ...ACTIVATION_KPIS_PATH);
+	const jsonText = await readFile(inputPath, 'utf8').catch(() => null);
+	if (jsonText === null) {
+		return renderActivationKpisUnavailable(
+			`No local activation KPI snapshot was found at ${ACTIVATION_KPIS_PATH.join('/')}.`,
+		);
+	}
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(jsonText) as unknown;
+	} catch (error: unknown) {
+		return renderActivationKpisUnavailable(
+			`The snapshot at ${ACTIVATION_KPIS_PATH.join('/')} is not valid JSON: ${error instanceof Error ? error.message : String(error)}.`,
+		);
+	}
+	const kpis = hydrateKpis(parsed);
+	if (kpis.aggregate().sessionCount === 0) {
+		return renderActivationKpisUnavailable(
+			`The snapshot at ${ACTIVATION_KPIS_PATH.join('/')} did not contain any valid activation KPI sessions.`,
+		);
+	}
+	return kpis
+		.formatForDashboard()
+		.replace(
+			'## Activation KPIs',
+			[
+				'## Activation KPIs',
+				'',
+				`Source snapshot: ${ACTIVATION_KPIS_PATH.join('/')}`,
+			].join('\n'),
+		);
 };
 
 /**
@@ -490,6 +538,7 @@ const renderGeneratedMarkdown = (
 	generatedAt: string,
 	fixture: IFixtureMeasurements,
 	presetRows: readonly IPresetDashboardRow[],
+	activationKpisMarkdown: string,
 ): string => {
 	// c00135: per-surface columns so the dashboard never mixes adaptive
 	// bytes with native tokens. Each preset gets one row with two
@@ -876,6 +925,8 @@ const renderGeneratedMarkdown = (
 		'',
 		createPluginMetrics().formatForDashboard(),
 		'',
+		activationKpisMarkdown,
+		'',
 		'## Reproduce',
 		'',
 		'```bash',
@@ -892,6 +943,7 @@ export const buildTokenBudgetDashboardMarkdown = async (
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
 		const fixture = await measureFixtureSurfaces(workspace);
+		const activationKpisMarkdown = await loadActivationKpisMarkdown();
 		const presetRows: IPresetDashboardRow[] = [];
 		for (const presetId of TOKEN_BUDGETS.dashboardPresetIds) {
 			for (const measurement of DASHBOARD_SURFACES) {
@@ -908,6 +960,7 @@ export const buildTokenBudgetDashboardMarkdown = async (
 			input.generatedAt ?? new Date().toISOString(),
 			fixture,
 			presetRows,
+			activationKpisMarkdown,
 		)}\n`;
 		return markdown;
 	} finally {

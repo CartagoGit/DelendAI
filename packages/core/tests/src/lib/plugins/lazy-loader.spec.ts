@@ -20,6 +20,9 @@ import {
 	type ILazyPluginLoader,
 	type PluginModuleImporter,
 } from '../../../../src/lib/plugins/lazy-loader';
+import { createLazyPluginDiscovery } from '../../../../src/lib/plugins/discovery';
+import { createLazyPluginRouter } from '../../../../src/lib/plugins/router';
+import type { IMcpPluginContext } from '../../../../src/lib/plugins/plugin-contract';
 import type { IMcpPluginRegistrations } from '../../../../src/lib/plugins/plugin-contract';
 
 interface IFakePlugin {
@@ -49,18 +52,32 @@ interface ITestRig {
 	resolveManifest: (id: string) => Promise<IPluginManifest | undefined>;
 }
 
+const wait = async (ms: number): Promise<void> =>
+	new Promise((resolve) => setTimeout(resolve, ms));
+
+const totalImports = (importCount: ReadonlyMap<string, number>): number =>
+	[...importCount.values()].reduce((sum, count) => sum + count, 0);
+
 const buildRig = (
 	manifestIds: readonly string[] = ['git', 'docs', 'core'],
+	options?: {
+		readonly importDelayMs?: number;
+		readonly onResolveManifest?: () => void;
+	},
 ): ITestRig => {
 	const importCount = new Map<string, number>();
 	const resolveManifest = async (
 		id: string,
 	): Promise<IPluginManifest | undefined> => {
+		options?.onResolveManifest?.();
 		if (!manifestIds.includes(id)) return undefined;
 		return manifest(id);
 	};
 	const importer: PluginModuleImporter = async (specifier: string) => {
 		const id = specifier.replace(/^@mcp-vertex\//, '');
+		if ((options?.importDelayMs ?? 0) > 0) {
+			await wait(options?.importDelayMs ?? 0);
+		}
 		importCount.set(id, (importCount.get(id) ?? 0) + 1);
 		return { default: FAKE_PLUGIN };
 	};
@@ -87,10 +104,100 @@ const buildRig = (
 	return { loader, importCount, resolveManifest };
 };
 
+const buildToolRoutingRig = () => {
+	const importCount = new Map<string, number>();
+	const importer: PluginModuleImporter = async (specifier: string) => {
+		const id = specifier.replace(/^@mcp-vertex\//, '');
+		importCount.set(id, (importCount.get(id) ?? 0) + 1);
+		return {
+			default: {
+				name: id,
+				version: '0.0.0',
+				register: async () =>
+					({
+						tools: [
+							{
+								id: `${id}.tool_a`,
+								register: async (server: {
+									registerTool: (
+										name: string,
+										config: {
+											description?: string;
+											inputSchema?: unknown;
+											outputSchema?: unknown;
+										},
+										handler: unknown,
+									) => unknown;
+								}) => {
+									server.registerTool(
+										`${id}.tool_a`,
+										{ description: `${id} tool a` },
+										async () => ({
+											pluginId: id,
+											tool: 'a',
+										}),
+									);
+								},
+							},
+							{
+								id: `${id}.tool_b`,
+								register: async (server: {
+									registerTool: (
+										name: string,
+										config: {
+											description?: string;
+											inputSchema?: unknown;
+											outputSchema?: unknown;
+										},
+										handler: unknown,
+									) => unknown;
+								}) => {
+									server.registerTool(
+										`${id}.tool_b`,
+										{ description: `${id} tool b` },
+										async () => ({
+											pluginId: id,
+											tool: 'b',
+										}),
+									);
+								},
+							},
+						],
+					}) as IMcpPluginRegistrations,
+			},
+		};
+	};
+	const loader = createLazyPluginLoader({
+		resolveSpecifier: (id) => `@mcp-vertex/${id}`,
+		asPlugin: (mod) => {
+			const candidate =
+				mod && typeof mod === 'object' && 'default' in mod
+					? (mod as { default: unknown }).default
+					: mod;
+			return candidate && typeof candidate === 'object'
+				? (candidate as IFakePlugin)
+				: undefined;
+		},
+		readManifest: async (id) =>
+			['docs', 'search'].includes(id) ? manifest(id) : undefined,
+		import: importer,
+	});
+	const discovery = createLazyPluginDiscovery({
+		loader,
+		listPluginIds: async () => ['docs', 'search'],
+	});
+	const router = createLazyPluginRouter({
+		loader,
+		discovery,
+		buildContext: () => ({}) as IMcpPluginContext,
+	});
+	return { discovery, router, loader, importCount };
+};
+
 describe('lazy-loader (f00200) — boot semantics', () => {
 	it('does NOT import modules on construction', () => {
 		const { importCount } = buildRig();
-		expect([...importCount.values()].reduce((a, b) => a + b, 0)).toBe(0);
+		expect(totalImports(importCount)).toBe(0);
 	});
 
 	it('readManifest reads metadata without importing', async () => {
@@ -221,6 +328,32 @@ describe('lazy-loader (f00200) — state + snapshot + stats', () => {
 		expect(s.firstLoadTotalMs).toBeGreaterThanOrEqual(0);
 		expect(s.manifestsRead).toBeGreaterThanOrEqual(0);
 	});
+
+	it('clears the failed snapshot after a later successful retry', async () => {
+		let shouldFail = true;
+		const loader = createLazyPluginLoader({
+			resolveSpecifier: (id) => `@mcp-vertex/${id}`,
+			asPlugin: (mod) => {
+				const candidate =
+					mod && typeof mod === 'object' && 'default' in mod
+						? (mod as { default: unknown }).default
+						: mod;
+				return candidate as IFakePlugin;
+			},
+			readManifest: async (id) => manifest(id),
+			import: async () => {
+				if (shouldFail) {
+					shouldFail = false;
+					throw new Error('boom once');
+				}
+				return { default: FAKE_PLUGIN };
+			},
+		});
+		await expect(loader.load('git')).rejects.toThrow('boom once');
+		expect(loader.snapshot().failed).toHaveLength(1);
+		await expect(loader.load('git')).resolves.toMatchObject({ id: 'git' });
+		expect(loader.snapshot().failed).toEqual([]);
+	});
 });
 
 describe('lazy-loader (f00200) — unload + reset', () => {
@@ -245,5 +378,141 @@ describe('lazy-loader (f00200) — unload + reset', () => {
 		loader.reset();
 		expect(loader.state('git')).toBe('unloaded');
 		expect(loader.stats().modulesImported).toBe(0);
+	});
+});
+
+describe('lazy-loader (f00200) — discovery + router integration', () => {
+	it('discovers manifests without importing and caches by token', async () => {
+		let cacheToken = 'v1';
+		let manifestReads = 0;
+		const { loader, importCount } = buildRig(['docs', 'git'], {
+			onResolveManifest: () => {
+				manifestReads += 1;
+			},
+		});
+		const discovery = createLazyPluginDiscovery({
+			loader,
+			listPluginIds: async () => ['git', 'docs'],
+			readCacheToken: async () => cacheToken,
+		});
+
+		const first = await discovery.manifests();
+		const second = await discovery.manifests();
+
+		expect(first.map((entry) => entry.id)).toEqual(['docs', 'git']);
+		expect(second).toBe(first);
+		expect(manifestReads).toBe(2);
+		expect(importCount.size).toBe(0);
+		expect(discovery.stats().cacheHits).toBe(1);
+
+		cacheToken = 'v2';
+		discovery.invalidate();
+		await discovery.manifests();
+		expect(manifestReads).toBe(2);
+		expect(discovery.stats().cacheMisses).toBe(2);
+	});
+
+	it('routes the first tool call through the lazy loader on demand', async () => {
+		const { loader, importCount } = buildRig(['git', 'docs'], {
+			importDelayMs: 5,
+		});
+		const discovery = createLazyPluginDiscovery({
+			loader,
+			listPluginIds: async () => ['git', 'docs'],
+		});
+		const router = createLazyPluginRouter({
+			loader,
+			discovery,
+			lazy: true,
+		});
+
+		const boot = await router.initialize();
+		expect(boot.mode).toBe('lazy');
+		expect(boot.eagerlyLoadedPluginCount).toBe(0);
+		expect(importCount.size).toBe(0);
+
+		const firstLoad = await router.loadToolOwner('git.tool_a');
+		expect(firstLoad.route.pluginId).toBe('git');
+		expect(firstLoad.cacheHit).toBe(false);
+		expect(firstLoad.loadMs).toBeGreaterThanOrEqual(0);
+		expect(importCount.get('git')).toBe(1);
+		expect(importCount.get('docs')).toBeUndefined();
+
+		const secondLoad = await router.loadToolOwner('git.tool_a');
+		expect(secondLoad.cacheHit).toBe(true);
+		expect(importCount.get('git')).toBe(1);
+		expect(router.stats().cacheHits).toBe(1);
+	});
+
+	it('activates the owning plugin and returns the routed handler on first use', async () => {
+		const { discovery, router, loader, importCount } =
+			buildToolRoutingRig();
+
+		await expect(
+			discovery.findToolOwner('docs.tool_b'),
+		).resolves.toMatchObject({ id: 'docs' });
+		expect(loader.state('docs')).toBe('unloaded');
+		expect(totalImports(importCount)).toBe(0);
+
+		const firstLoad = await router.loadToolOwner('docs.tool_b');
+
+		expect(firstLoad.route.pluginId).toBe('docs');
+		expect(firstLoad.binding?.description).toBe('docs tool b');
+		expect(loader.state('docs')).toBe('loaded');
+		expect(totalImports(importCount)).toBe(1);
+		expect(firstLoad.binding).toBeDefined();
+		const handler = firstLoad.binding?.handler as
+			| (() => Promise<unknown>)
+			| undefined;
+		expect(handler).toBeDefined();
+		await expect(handler?.()).resolves.toEqual({
+			pluginId: 'docs',
+			tool: 'b',
+		});
+
+		const secondLoad = await router.loadToolOwner('docs.tool_a');
+		expect(secondLoad.binding?.description).toBe('docs tool a');
+		expect(totalImports(importCount)).toBe(1);
+	});
+
+	it('supports eager compatibility mode and measures lower lazy boot cost', async () => {
+		const lazyRig = buildRig(['git', 'docs', 'core'], {
+			importDelayMs: 15,
+		});
+		const eagerRig = buildRig(['git', 'docs', 'core'], {
+			importDelayMs: 15,
+		});
+		const lazyDiscovery = createLazyPluginDiscovery({
+			loader: lazyRig.loader,
+			listPluginIds: async () => ['git', 'docs', 'core'],
+		});
+		const eagerDiscovery = createLazyPluginDiscovery({
+			loader: eagerRig.loader,
+			listPluginIds: async () => ['git', 'docs', 'core'],
+		});
+		const lazyRouter = createLazyPluginRouter({
+			loader: lazyRig.loader,
+			discovery: lazyDiscovery,
+			lazy: true,
+		});
+		const eagerRouter = createLazyPluginRouter({
+			loader: eagerRig.loader,
+			discovery: eagerDiscovery,
+			lazy: false,
+		});
+
+		const lazyBoot = await lazyRouter.initialize();
+		const eagerBoot = await eagerRouter.initialize();
+
+		expect(lazyBoot.bootMs).toBeLessThan(eagerBoot.bootMs);
+		expect(lazyRig.importCount.size).toBe(0);
+		expect(eagerRig.importCount.get('git')).toBe(1);
+		expect(eagerRig.importCount.get('docs')).toBe(1);
+		expect(eagerRig.importCount.get('core')).toBe(1);
+		expect(eagerBoot.eagerlyLoadedPluginCount).toBe(3);
+
+		const firstLazyCall = await lazyRouter.loadToolOwner('core.tool_a');
+		expect(firstLazyCall.loadMs).toBeGreaterThan(0);
+		expect(lazyRig.importCount.get('core')).toBe(1);
 	});
 });

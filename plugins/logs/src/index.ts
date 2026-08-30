@@ -290,7 +290,7 @@ export default definePlugin({
 			// the cancel raced a fast tool or interrupted a slow one. Does
 			// NOT clear `inFlightCallIds`: the completion/failure still
 			// needs the same `callId` when it settles later.
-			onToolCancel: async (toolName, args, elapsedMs) => {
+			onToolCancel: async (toolName, args, elapsedMs, context) => {
 				const key = asCorrelationKey(args);
 				const callId = key ? inFlightCallIds.get(key) : undefined;
 				return appendEvent(
@@ -302,7 +302,15 @@ export default definePlugin({
 						files: extractFilesHint(args, undefined),
 						args,
 						elapsedMs: Math.round(elapsedMs),
-						summary: `tool-cancelled: ${toolName} after ${Math.round(elapsedMs)}ms`,
+						summary: `tool-cancelled: ${toolName} after ${Math.round(elapsedMs)}ms: ${context?.reason ?? 'tool invocation aborted'}`,
+						meta: {
+							cancellationReason:
+								context?.reason ?? 'tool invocation aborted',
+							cancellationNextAction:
+								context?.nextAction ??
+								'Retry the operation or resume from the latest persisted checkpoint.',
+							cancellationError: context?.error,
+						},
 					}),
 				);
 			},

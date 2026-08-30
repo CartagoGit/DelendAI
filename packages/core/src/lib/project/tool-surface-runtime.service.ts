@@ -592,6 +592,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			);
 		}
 		try {
+			this.plan.activationKpis?.recordInvocation(record.toolId);
 			this.touchPlugin(record);
 			const parsed = await safeParseSurfaceArgs(record.inputSchema, args);
 			if (!parsed.ok) {

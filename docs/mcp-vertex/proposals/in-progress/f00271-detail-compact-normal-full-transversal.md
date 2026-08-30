@@ -2,7 +2,7 @@
 id: f00271
 title: "`detail: compact | normal | full` transversal"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -132,7 +132,10 @@ cualquier tool a partir de un solo campo de input.
 - **Status**: pending
 - **Files**: `packages/core/src/lib/contracts/detail.ts`, `packages/core/tests/src/lib/contracts/detail.spec.ts`, `plugins/audit/src/lib/tools/*.ts`, `plugins/usage/src/lib/tools/get.ts`, `plugins/logs/src/lib/tools/get.ts`, `plugins/logs/src/lib/tools/list.ts`
 - **Gate**: type
-
+- review-state: changes_requested
+- review-implementer: GitHub
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by delivery_verifier — Regresión de compatibilidad en logs: query, subscribe, correlate y search resuelven detail omitido a normal, y normal vacía metadata. Sin detail debe conservarse el comportamiento legado con metadata completa; aplicar la proyección nueva solo cuando detail se solicite explícitamente. Mantén includeMeta compatible.
 ### S2 — Adopción en project-health, dependencies, search + lint
 
 - **Status**: pending

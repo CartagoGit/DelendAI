@@ -48,6 +48,7 @@ import {
 	type ConventionalHeaderStatus,
 } from './services/git-extra';
 import { withGitWriteLock } from './services/git-write-lock';
+import type { ITriggerEvent } from './triggers/trigger-types';
 
 /**
  * Discriminated event the engine accepts. Mirrors the trigger
@@ -110,6 +111,17 @@ export type IEngineRefusalCode =
 	| 'TRIGGER_HAS_NO_FILES'
 	| 'PUSH_FAILED';
 
+export const ENGINE_REFUSAL_CODES = [
+	'SLICE_NOT_FOUND',
+	'INCOMPLETE_SELECTOR',
+	'SELECTOR_REQUIRED',
+	'BRANCH_PROTECTED',
+	'NON_CONVENTIONAL_MESSAGE',
+	'SLICE_HAS_NO_FILES',
+	'CROSS_AGENT_CONTAMINATION',
+	'ALREADY_PROCESSED',
+] as const;
+
 export type IEngineResult =
 	| {
 			readonly ack: 'OK';
@@ -153,6 +165,37 @@ const err = (
 	...(metadata ?? {}),
 });
 
+const PIPELINE_STEPS = [
+	'selector',
+	'branch',
+	'conventional',
+	'idempotency',
+	'stage',
+	'commit',
+	'push',
+] as const;
+
+type IPipelineStep = (typeof PIPELINE_STEPS)[number];
+type IPipelineOutcome = 'OK' | 'ERR' | 'SKIP';
+
+const logPipelineStep = (
+	event: IEngineEvent,
+	step: IPipelineStep,
+	outcome: IPipelineOutcome,
+	details?: Record<string, unknown>,
+): void => {
+	console.info(
+		JSON.stringify({
+			event: 'pipeline.step',
+			trigger: event.kind,
+			eventId: event.eventId,
+			step,
+			outcome,
+			...(details ?? {}),
+		}),
+	);
+};
+
 export interface IEngineOptions {
 	readonly driver: ICommitDriverOptions;
 	readonly branchPolicy: IBranchPolicy;
@@ -167,10 +210,11 @@ export interface IEngineOptions {
 	 * is replay-vulnerable (only acceptable for tests).
 	 */
 	readonly processedEvents?: IProcessedEventsStore | undefined;
+	readonly onDispose?: readonly (() => void)[] | undefined;
 }
 
 export interface ICommitPolicyEngine {
-	handle(event: IEngineEvent): Promise<IEngineResult>;
+	handle(event: IEngineEvent | ITriggerEvent): Promise<IEngineResult>;
 	dispose(): void;
 }
 
@@ -184,23 +228,95 @@ export const createCommitPolicyEngine = (
 ): ICommitPolicyEngine => {
 	const seen = new Set<string>();
 	let handleTail = Promise.resolve();
+	let generatedEventSequence = 0;
+	const normalizeEvent = (
+		event: IEngineEvent | ITriggerEvent,
+	): IEngineEvent => {
+		if ('eventId' in event) return event;
+		generatedEventSequence += 1;
+		const eventId = `trigger-${event.kind}-${generatedEventSequence}`;
+		if (event.kind === 'slice') {
+			return {
+				kind: 'slice',
+				proposalId: event.proposalId,
+				sliceId: event.sliceId,
+				files: event.files.paths,
+				eventId,
+			};
+		}
+		if (event.kind === 'threshold' || event.kind === 'interval') {
+			return {
+				kind: event.kind,
+				files: event.files.paths,
+				dirtyCount: event.dirtyCount,
+				eventId,
+			};
+		}
+		return {
+			kind: 'manual',
+			message: 'chore: manual commit-policy snapshot',
+			eventId,
+		};
+	};
 	const handleEvent = async (event: IEngineEvent): Promise<IEngineResult> => {
+		const completedSteps = new Set<IPipelineStep>();
+		const completeStep = (
+			step: IPipelineStep,
+			outcome: IPipelineOutcome,
+			details?: Record<string, unknown>,
+		): void => {
+			completedSteps.add(step);
+			logPipelineStep(event, step, outcome, details);
+		};
+		const finish = (result: IEngineResult): IEngineResult => {
+			for (const step of PIPELINE_STEPS) {
+				if (!completedSteps.has(step)) {
+					logPipelineStep(event, step, 'SKIP');
+				}
+			}
+			return result;
+		};
+		const failAt = (
+			step: IPipelineStep,
+			code: IEngineRefusalCode,
+			reason: string,
+			metadata?: {
+				readonly committed?: boolean;
+				readonly pushed?: boolean;
+				readonly commitCreated?: boolean;
+				readonly headMoved?: boolean;
+				readonly commitSha?: string | undefined;
+			},
+		): IEngineResult => {
+			completeStep(step, 'ERR', { code, reason });
+			return finish(err(code, reason, metadata));
+		};
+
 		// Step 1 — slice selector (x00262). Slice events carry
 		// proposalId + sliceId from the trigger; manual events
 		// may or may not carry them. Threshold / interval
 		// never carry a slice selector.
 		if (event.kind === 'slice') {
 			if (event.proposalId.length === 0 || event.sliceId.length === 0) {
-				return err('INCOMPLETE_SELECTOR', 'slice selector missing');
+				return failAt(
+					'selector',
+					'INCOMPLETE_SELECTOR',
+					'slice selector missing',
+				);
 			}
 		} else if (event.kind === 'manual' && event.slice !== undefined) {
 			if (
 				event.slice.proposalId.length === 0 ||
 				event.slice.sliceId.length === 0
 			) {
-				return err('INCOMPLETE_SELECTOR', 'slice selector missing');
+				return failAt(
+					'selector',
+					'INCOMPLETE_SELECTOR',
+					'slice selector missing',
+				);
 			}
 		}
+		completeStep('selector', 'OK');
 
 		// Step 2 — branch policy (x00267). Unified check; works
 		// for any trigger that could land on a protected
@@ -217,7 +333,8 @@ export const createCommitPolicyEngine = (
 				? branch.output.trim()
 				: undefined;
 		if (isBranchProtected(branchName, options.branchPolicy)) {
-			return err(
+			return failAt(
+				'branch',
 				'BRANCH_PROTECTED',
 				branchProtectedRefusal(
 					branchName ?? '(detached)',
@@ -225,6 +342,11 @@ export const createCommitPolicyEngine = (
 				),
 			);
 		}
+		completeStep(
+			'branch',
+			'OK',
+			branchName !== undefined ? { branch: branchName } : undefined,
+		);
 
 		// Step 3 — message composition + conventional check
 		// (x00265). Threshold / interval use a generic message
@@ -241,15 +363,22 @@ export const createCommitPolicyEngine = (
 			verdict.status !== 'OK' &&
 			options.driver.policy.commit.requireConventional
 		) {
-			return err(verdict.status, conventionalMessage ?? verdict.status);
+			return failAt(
+				'conventional',
+				verdict.status,
+				conventionalMessage ?? verdict.status,
+			);
 		}
+		completeStep('conventional', 'OK');
 
 		// Step 4 — files (x00263). Slice events must declare
 		// non-empty files; threshold / interval carry the
 		// dirty set; manual events may pass files or let the
 		// caller pre-stage.
 		if (event.kind === 'slice' && event.files.length === 0) {
-			return err(
+			completeStep('idempotency', 'SKIP');
+			return failAt(
+				'stage',
 				'SLICE_HAS_NO_FILES',
 				`slice ${event.proposalId}-${event.sliceId} declared no files`,
 			);
@@ -258,7 +387,9 @@ export const createCommitPolicyEngine = (
 			(event.kind === 'threshold' || event.kind === 'interval') &&
 			event.files.length === 0
 		) {
-			return err(
+			completeStep('idempotency', 'SKIP');
+			return failAt(
+				'stage',
 				'TRIGGER_HAS_NO_FILES',
 				`${event.kind} fired with zero dirty paths`,
 			);
@@ -270,9 +401,14 @@ export const createCommitPolicyEngine = (
 		if (options.processedEvents !== undefined) {
 			const key = computeIdempotencyKey(event);
 			if (await options.processedEvents.has(key)) {
-				return { ack: 'ALREADY_PROCESSED', key };
+				completeStep('idempotency', 'OK', {
+					key,
+					ack: 'ALREADY_PROCESSED',
+				});
+				return finish({ ack: 'ALREADY_PROCESSED', key });
 			}
 		}
+		completeStep('idempotency', 'OK');
 
 		// Step 5 + 6 — run the guarded commit path. It stages
 		// the allow-list, enforces the post-stage subset check,
@@ -291,7 +427,7 @@ export const createCommitPolicyEngine = (
 		);
 
 		if (result.refusal !== undefined) {
-			return refusalToEngine(result.refusal, {
+			const refusal = refusalToEngine(result.refusal, {
 				committed: result.committed,
 				pushed: result.pushed,
 				commitCreated: result.commitCreated,
@@ -300,7 +436,21 @@ export const createCommitPolicyEngine = (
 					? { commitSha: result.hash }
 					: {}),
 			});
+			if (refusal.ack !== 'ERR') {
+				return finish(refusal);
+			}
+			completeStep('stage', 'ERR', {
+				code: refusal.code,
+				reason: refusal.reason,
+			});
+			return finish(refusal);
 		}
+		completeStep('stage', 'OK');
+		completeStep(
+			'commit',
+			'OK',
+			result.hash !== undefined ? { commitSha: result.hash } : undefined,
+		);
 
 		// Step 7 — push (x00266). Wait for the scheduler so
 		// callers never observe a premature success.
@@ -313,7 +463,8 @@ export const createCommitPolicyEngine = (
 					pushResult !== undefined &&
 					!isPushSuccess(pushResult)
 				) {
-					return err(
+					return failAt(
+						'push',
 						pushFailureCode(pushResult),
 						pushFailureReason(pushResult),
 						{
@@ -328,7 +479,8 @@ export const createCommitPolicyEngine = (
 					);
 				}
 				if (pushResult !== null && pushResult !== undefined) {
-					return {
+					completeStep('push', 'OK');
+					return finish({
 						ack: 'OK',
 						committed: true,
 						pushed: true,
@@ -340,10 +492,11 @@ export const createCommitPolicyEngine = (
 						...(conventionalMessage !== undefined
 							? { warnings: [conventionalMessage] }
 							: {}),
-					};
+					});
 				}
 			} catch (error) {
-				return err(
+				return failAt(
+					'push',
 					'PUSH_FAILED',
 					`push failed: ${error instanceof Error ? error.message : String(error)}`,
 					{
@@ -358,6 +511,7 @@ export const createCommitPolicyEngine = (
 				);
 			}
 		}
+		completeStep('push', 'SKIP');
 
 		const commitSha = result.hash;
 		seen.add(event.eventId);
@@ -369,7 +523,7 @@ export const createCommitPolicyEngine = (
 				commitSha ?? 'unknown',
 			);
 		}
-		return {
+		return finish({
 			ack: 'OK',
 			committed: result.commitCreated,
 			pushed,
@@ -379,16 +533,17 @@ export const createCommitPolicyEngine = (
 			...(conventionalMessage !== undefined
 				? { warnings: [conventionalMessage] }
 				: {}),
-		};
+		});
 	};
 
 	return {
 		handle(event) {
+			const normalizedEvent = normalizeEvent(event);
 			const handleQueuedEvent = () =>
 				withGitWriteLock(
 					options.driver.workspaceRoot,
 					options.driver.pluginCacheDir,
-					() => handleEvent(event),
+					() => handleEvent(normalizedEvent),
 				);
 			const queued = handleTail.then(handleQueuedEvent);
 			handleTail = queued.then(
@@ -399,6 +554,7 @@ export const createCommitPolicyEngine = (
 		},
 		async dispose() {
 			seen.clear();
+			for (const callback of options.onDispose ?? []) callback();
 			if (options.processedEvents !== undefined) {
 				await options.processedEvents.dispose();
 			}

@@ -190,9 +190,23 @@ describe('recovery tools (f00016 S9)', async () => {
 			),
 		);
 		expect(dryRun).toMatchObject({
-			changed: true,
-			from: 'blocked/f200-test.md',
-			to: 'ready/f200-test.md',
+			dryRun: true,
+			wouldChange: [
+				{
+					kind: 'rename',
+					path: 'blocked/f200-test.md',
+					summary: 'move proposal f200 to ready/f200-test.md',
+				},
+			],
+			wouldRun: [
+				{
+					shape: 'mcp',
+					target: 'proposal_reconcile_folder',
+					summary:
+						'move f200 only after the dry-run plan is approved',
+				},
+			],
+			risk: 'medium',
 		});
 
 		const moved = json(

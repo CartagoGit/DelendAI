@@ -259,15 +259,28 @@ export const serializeKpis = (k: IActivationKpis): IPersistedKpisFile => ({
 	sessions: k.sessions(),
 });
 
-export const hydrateKpis = (data: IPersistedKpisFile): IActivationKpis => {
+const isStringArray = (value: unknown): value is readonly string[] =>
+	Array.isArray(value) && value.every((entry) => typeof entry === 'string');
+
+const isPersistedKpisFile = (value: unknown): value is IPersistedKpisFile => {
+	if (typeof value !== 'object' || value === null) return false;
+	const candidate = value as {
+		readonly version?: unknown;
+		readonly sessions?: unknown;
+	};
+	return candidate.version === 1 && Array.isArray(candidate.sessions);
+};
+
+export const hydrateKpis = (data: unknown): IActivationKpis => {
 	const k = createActivationKpis();
+	if (!isPersistedKpisFile(data)) return k;
 	for (const s of data.sessions) {
 		// Skip sessions whose shape doesn't validate to keep the
 		// loader robust against on-disk corruption.
 		if (
-			typeof s.taskId === 'string' &&
-			Array.isArray(s.invoked) &&
-			Array.isArray(s.expected)
+			typeof s?.taskId === 'string' &&
+			isStringArray(s.invoked) &&
+			isStringArray(s.expected)
 		) {
 			k.recordSession({
 				taskId: s.taskId,

@@ -2,7 +2,7 @@
 id: f00200
 title: "Lazy loading real de plugins"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -107,10 +107,13 @@ ejecutar todos los `prepare()` al boot.
 
 ### S1 — Lazy loader + integración con router + tests + medición
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/lazy-loader.ts`, `packages/core/src/lib/plugins/router.ts`, `packages/core/src/lib/plugins/discovery.ts`, `packages/core/tests/src/lib/plugins/lazy-loader.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente: el lazy loader, router y discovery están cubiertos por 21/21 tests focalizados; el typecheck de packages/core pasa con salida 0. Se conserva el alcance declarado del slice.
 ## acceptance
 
 - Lazy loader carga plugins on-demand.

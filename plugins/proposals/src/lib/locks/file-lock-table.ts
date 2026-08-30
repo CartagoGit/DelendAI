@@ -335,10 +335,10 @@ const pruneContentions = (
 	nowMs: number,
 ): readonly IFileLockContention[] =>
 	records.filter((r) => {
-		if (r.resolvedAt === undefined) return true;
-		const resolvedMs = new Date(r.resolvedAt).getTime();
-		if (Number.isNaN(resolvedMs)) return true;
-		return nowMs - resolvedMs <= CONTENTION_HISTORY_WINDOW_MS;
+		const activityAt = r.resolvedAt ?? r.lastSeenAt;
+		const activityMs = new Date(activityAt).getTime();
+		if (Number.isNaN(activityMs)) return true;
+		return nowMs - activityMs <= CONTENTION_HISTORY_WINDOW_MS;
 	});
 
 export const readFileLockEntries = async (

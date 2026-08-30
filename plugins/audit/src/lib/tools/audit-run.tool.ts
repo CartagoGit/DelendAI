@@ -25,8 +25,10 @@
  */
 
 import {
+	projectDetail,
 	toolJson,
 	writeFileAtomic,
+	type Detail,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 import path from 'node:path';
@@ -97,6 +99,7 @@ export const buildRunRegistration = (
 					outputSchema: RunOutputSchema,
 				},
 				async (args: {
+					detail?: Detail | undefined;
 					scope?: string | undefined;
 					mode?: AuditMode | undefined;
 					projects?: readonly string[] | undefined;
@@ -115,6 +118,7 @@ export const buildRunRegistration = (
 					date?: string | undefined;
 					timeoutMs?: number | undefined;
 				}) => {
+					const detail = args.detail ?? 'normal';
 					// --- 1. Prelude (scope/mode/projects + dirs + brief) -
 					// The prelude fails BEFORE any HTTP call, so a
 					// `toolError` here is cheap and never sees the
@@ -311,7 +315,8 @@ export const buildRunRegistration = (
 						proposalsSummary = { scaffolded: [] };
 					}
 
-					return toolJson({
+					const payload = {
+						auditType,
 						scope,
 						mode,
 						date,
@@ -332,7 +337,24 @@ export const buildRunRegistration = (
 						},
 						proposals: proposalsSummary,
 						projects: [...projects],
-					});
+					};
+					const view = projectDetail(
+						payload,
+						{
+							compact: (full) => ({
+								...full,
+								consolidation: {
+									...full.consolidation,
+									findings: [],
+									markdown: '',
+								},
+							}),
+							normal: (full) => full,
+							full: (full) => full,
+						},
+						detail,
+					) as typeof payload;
+					return toolJson({ detail, ...view });
 				},
 			);
 		},

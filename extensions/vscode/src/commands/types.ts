@@ -14,6 +14,19 @@ export interface IVscodeUri {
 	with(change: { readonly fragment?: string }): IVscodeUri;
 }
 
+export type IPrivateTerminalExecution = object;
+
+export interface IPrivateShellIntegration {
+	executeCommand(commandLine: string): IPrivateTerminalExecution;
+}
+
+export interface IPrivateTerminal {
+	readonly shellIntegration?: IPrivateShellIntegration;
+	sendText(text: string, addNewLine?: boolean): void;
+	show?(preserveFocus?: boolean): void;
+	dispose(): void;
+}
+
 export interface ICommandVscodeApi {
 	readonly ViewColumn: {
 		readonly One: number;
@@ -34,6 +47,23 @@ export interface ICommandVscodeApi {
 		file(path: string): IVscodeUri;
 	};
 	readonly window: {
+		readonly createTerminal?: (options: {
+			readonly name: string;
+			readonly hideFromUser?: boolean;
+			readonly cwd?: string;
+		}) => IPrivateTerminal;
+		readonly onDidChangeTerminalShellIntegration?: (
+			callback: (event: {
+				readonly terminal: IPrivateTerminal;
+				readonly shellIntegration: IPrivateShellIntegration;
+			}) => void,
+		) => IDisposable;
+		readonly onDidEndTerminalShellExecution?: (
+			callback: (event: {
+				readonly execution: IPrivateTerminalExecution;
+				readonly exitCode?: number;
+			}) => void,
+		) => IDisposable;
 		createWebviewPanel(
 			viewType: string,
 			title: string,

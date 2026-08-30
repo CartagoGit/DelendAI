@@ -60,6 +60,10 @@ import {
 	type AuditType,
 	type ILayerConfig,
 } from './audit-brief.service';
+import {
+	canonicalAuditPathMessage,
+	isCanonicalAuditDir,
+} from './audit-path-policy.service';
 
 /**
  * Subset of the `audit_run` input the prelude consumes plus the
@@ -233,6 +237,15 @@ export const runPipelinePrelude = async (
 	const proposalsRel = sanitizeRel(
 		args.proposalsDir ?? input.defaultProposalsDir,
 	);
+	if (!isCanonicalAuditDir(auditRel)) {
+		return {
+			ok: false,
+			error: toolError(
+				`audit dir "${auditRel}" is not allowed: not canonical`,
+				canonicalAuditPathMessage,
+			),
+		};
+	}
 	const auditDirResult = resolveDir(input.workspaceRoot, auditRel);
 	if (!auditDirResult.ok) {
 		return {

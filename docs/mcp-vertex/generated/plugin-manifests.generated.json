@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T22:47:12.159Z",
+	"generatedAt": "2026-08-30T12:50:10.582Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1481,7 +1481,9 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"presets": [],
+			"presets": [
+				"vertex"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -4176,7 +4178,9 @@
 			],
 			"maturity": "experimental",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"vertex"
+			],
 			"capabilities": [
 				"project-kpis",
 				"observability",
@@ -7859,8 +7863,8 @@
 		{
 			"pluginId": "project-kpis",
 			"presetId": "vertex",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{

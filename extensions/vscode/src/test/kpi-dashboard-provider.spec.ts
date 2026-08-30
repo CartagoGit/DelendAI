@@ -439,6 +439,17 @@ const createFixtures = (): Record<string, IKpiDashboardToolOutput> => ({
 			],
 		},
 	}),
+	activation: baseOutput('activation', {
+		summary: 'Activation KPIs measured across 4 sessions.',
+		activation: {
+			status: 'measured',
+			source: 'activation-kpis/.vscode/mcp-vertex/kpis.json',
+			sessionCount: 4,
+			meanPrecision: 0.75,
+			meanRecall: 0.5,
+			meanChurn: 0.25,
+		},
+	}),
 });
 
 describe('KpiDashboardProvider', () => {
@@ -458,7 +469,7 @@ describe('KpiDashboardProvider', () => {
 			{ windowDays: 7, detail: 'standard' },
 		);
 
-		expect(calls).toHaveLength(10);
+		expect(calls).toHaveLength(11);
 		expect(
 			result.model.sections.map(
 				(section: (typeof result.model.sections)[number]) => section.id,
@@ -475,6 +486,14 @@ describe('KpiDashboardProvider', () => {
 			'errors',
 			'efficiency',
 			'audit',
+			'activation',
+		]);
+		const activation = result.model.sections.find(
+			(section: (typeof result.model.sections)[number]) =>
+				section.id === 'activation',
+		);
+		expect(activation?.metrics.map((metric) => metric.value)).toEqual([
+			4, 0.75, 0.5, 0.25,
 		]);
 		expect(
 			result.model.trends.map(

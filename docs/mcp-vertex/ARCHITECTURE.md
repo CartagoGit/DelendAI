@@ -48,13 +48,13 @@ graph TD
 
 ## Layers
 
-| Layer | Path | Responsibility | Depends on |
-|---|---|---|---|
-| **Core runtime** | `packages/core` | Tool registry, plugin loader, bootstrap/scaffold, metrics, shared FS primitives, CLI. **No domain logic.** | only `@modelcontextprotocol/sdk`, `zod` |
-| **Plugins** | `plugins/*` | One capability each, namespaced. Receive `IMcpPluginContext`. | `@mcp-vertex/core/public` |
-| **Site** | `apps/web` | Astro product/docs site, generated from the **live** registry. | core + all plugins (build-time only) |
-| **Examples** | `docs/mcp-vertex/examples/*` | Minimal host, custom plugin, swarm. | core (+ plugins) |
-| **Scripts** | `scripts/*` | build · derive-version · release · type/schema generation. Pure planning split from side-effecting shells. | core |
+| Layer            | Path                         | Responsibility                                                                                             | Depends on                              |
+| ---------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **Core runtime** | `packages/core`              | Tool registry, plugin loader, bootstrap/scaffold, metrics, shared FS primitives, CLI. **No domain logic.** | only `@modelcontextprotocol/sdk`, `zod` |
+| **Plugins**      | `plugins/*`                  | One capability each, namespaced. Receive `IMcpPluginContext`.                                              | `@mcp-vertex/core/public`               |
+| **Site**         | `apps/web`                   | Astro product/docs site, generated from the **live** registry.                                             | core + all plugins (build-time only)    |
+| **Examples**     | `docs/mcp-vertex/examples/*` | Minimal host, custom plugin, swarm.                                                                        | core (+ plugins)                        |
+| **Scripts**      | `scripts/*`                  | build · derive-version · release · type/schema generation. Pure planning split from side-effecting shells. | core                                    |
 
 The dependency arrow only ever points **plugin → core**, never the reverse.
 
@@ -82,24 +82,24 @@ The practical reading is strict:
 
 Core means the invariants that any host or plugin needs at runtime:
 
-| Area | In core | Why it belongs in core |
-|---|---|---|
-| Contracts | `contracts/interfaces`, `contracts/constants` | Shared DTOs, tool contracts and stable runtime vocabulary. |
-| Plugin lifecycle | `definePlugin`, `IMcpPluginContext`, loader/runtime hooks | Every plugin crosses this seam. |
-| Server assembly | `assembleCliConfig`, `createMcpProject`, tool registration order | The runtime that turns config + plugins into one MCP server. |
-| Workspace security | contained-path resolution, atomic writes, mutexes, redaction | Safety invariants must stay centralized and host-agnostic. |
-| Response helpers | checkpoint advisories, output helpers, validation matrix seams | Shared runtime behavior seen by every tool. |
-| Metrics and observability seams | metrics registry, tool wrappers, status collectors | Cross-cutting runtime instrumentation. |
+| Area                            | In core                                                          | Why it belongs in core                                       |
+| ------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------ |
+| Contracts                       | `contracts/interfaces`, `contracts/constants`                    | Shared DTOs, tool contracts and stable runtime vocabulary.   |
+| Plugin lifecycle                | `definePlugin`, `IMcpPluginContext`, loader/runtime hooks        | Every plugin crosses this seam.                              |
+| Server assembly                 | `assembleCliConfig`, `createMcpProject`, tool registration order | The runtime that turns config + plugins into one MCP server. |
+| Workspace security              | contained-path resolution, atomic writes, mutexes, redaction     | Safety invariants must stay centralized and host-agnostic.   |
+| Response helpers                | checkpoint advisories, output helpers, validation matrix seams   | Shared runtime behavior seen by every tool.                  |
+| Metrics and observability seams | metrics registry, tool wrappers, status collectors               | Cross-cutting runtime instrumentation.                       |
 
 Non-core concerns may live in this package today for delivery convenience, but they are conceptually outside the runtime boundary and are candidates for later extraction only when measurements justify it:
 
-| Area | Not core | Why it stays outside the runtime definition |
-|---|---|---|
-| Authoring | scaffolding, plugin creation, blueprint rendering, host file generation | Developer tooling, not runtime invariants. |
-| Setup | install helpers, cross-project setup guides, IDE config writers | Bootstrapping and adoption flows, not request-time behavior. |
-| Analyzer | project analysis, server recommendations, catalogs | Planning/orientation surfaces rather than runtime substrate. |
-| Hosts | host-specific adapters, prompts, generated host hints | Integration packaging around the runtime. |
-| Install/catalog surfaces | registries, first-party plugin catalog, publish wiring | Distribution and product packaging concerns. |
+| Area                     | Not core                                                                | Why it stays outside the runtime definition                  |
+| ------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Authoring                | scaffolding, plugin creation, blueprint rendering, host file generation | Developer tooling, not runtime invariants.                   |
+| Setup                    | install helpers, cross-project setup guides, IDE config writers         | Bootstrapping and adoption flows, not request-time behavior. |
+| Analyzer                 | project analysis, server recommendations, catalogs                      | Planning/orientation surfaces rather than runtime substrate. |
+| Hosts                    | host-specific adapters, prompts, generated host hints                   | Integration packaging around the runtime.                    |
+| Install/catalog surfaces | registries, first-party plugin catalog, publish wiring                  | Distribution and product packaging concerns.                 |
 
 The practical rule is: if a plugin or host must import it to behave correctly at runtime under any workspace, it can belong to core; if it exists to author, install, analyze, scaffold or package that runtime, it is outside the core boundary even when it still ships from this package today.
 
@@ -107,11 +107,11 @@ The practical rule is: if a plugin or host must import it to behave correctly at
 
 CHECK-005 requires data before splitting `@mcp-vertex/core` into more packages. The current repo now measures three entrypoints with [tools/scripts/perf/cold-start.script.ts](tools/scripts/perf/cold-start.script.ts):
 
-| Entrypoint | Purpose | Cold start | Local modules | RSS delta | Bundle size |
-|---|---|---:|---:|---:|---:|
-| `plugin-contract` | Minimal plugin SDK contract | 1.07 ms | 15 | 1.50 MiB | 118 B |
-| `public` | Current public barrel | 120.92 ms | 238 | 57.37 MiB | 511.5 KiB |
-| `cli` | Published CLI entry | 127.54 ms | 179 | 56.31 MiB | 399.4 KiB |
+| Entrypoint        | Purpose                     | Cold start | Local modules | RSS delta | Bundle size |
+| ----------------- | --------------------------- | ---------: | ------------: | --------: | ----------: |
+| `plugin-contract` | Minimal plugin SDK contract |    1.07 ms |            15 |  1.50 MiB |       118 B |
+| `public`          | Current public barrel       |  120.92 ms |           238 | 57.37 MiB |   511.5 KiB |
+| `cli`             | Published CLI entry         |  127.54 ms |           179 | 56.31 MiB |   399.4 KiB |
 
 Measured on 2026-08-24 from a clean Bun process per import (`process.memoryUsage()` + `performance.now()` + bundled output size).
 

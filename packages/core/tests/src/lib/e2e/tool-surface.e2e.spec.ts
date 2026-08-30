@@ -138,6 +138,13 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		expect(
 			(
 				activated.structuredContent as {
+					change: { note?: string };
+				}
+			).change.note,
+		).toContain('Refresh tools/list');
+		expect(
+			(
+				activated.structuredContent as {
 					change: { pluginId: string; changedToolNames: string[] };
 				}
 			).change.pluginId,

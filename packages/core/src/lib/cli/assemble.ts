@@ -872,13 +872,51 @@ export const assembleCliConfig = async (
 			: {}),
 		...(moduleLoading === 'lazy' || onToolCancels.length > 0
 			? {
-					onToolCancel: async (toolName, toolArgs, elapsedMs) => {
+					onToolCancel: async (
+						toolName,
+						toolArgs,
+						elapsedMs,
+						context,
+					) => {
+						const cancellation = context ?? {
+							reason: 'tool invocation aborted',
+							nextAction:
+								'Retry the operation or resume from the latest persisted checkpoint.',
+							error: new Error('tool invocation aborted'),
+						};
+						if (resolvedLogsSink !== undefined) {
+							try {
+								await resolvedLogsSink.record({
+									ts: new Date().toISOString(),
+									kind: 'tool-cancelled',
+									outcome: 'cancelled',
+									severity: 'notice',
+									incidentType: 'tool-cancelled',
+									toolName,
+									taskId: null,
+									agent: null,
+									summary: `tool-cancelled: ${toolName}: ${cancellation.reason}`,
+									meta: {
+										reason: cancellation.reason,
+										nextAction: cancellation.nextAction,
+										elapsedMs,
+										error: String(cancellation.error),
+										args: toolArgs,
+									},
+								});
+							} catch (e) {
+								process.stderr.write(
+									`[mcp-vertex] cancellation log error: ${e instanceof Error ? e.message : String(e)}\n`,
+								);
+							}
+						}
 						for (const observer of onToolCancels) {
 							try {
 								await observer.handler(
 									toolName,
 									toolArgs,
 									elapsedMs,
+									cancellation,
 								);
 							} catch (e) {
 								process.stderr.write(

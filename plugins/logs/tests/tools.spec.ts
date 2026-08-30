@@ -80,14 +80,25 @@ describe('log tools', async () => {
 		const first = structured(
 			await handlers.get('logs_query')?.({ limit: 1 }),
 		);
+		expect(first.detail).toBe('normal');
 		expect(asArray(first.events)).toHaveLength(1);
+		expect(
+			(first.events as Array<{ meta?: Record<string, unknown> }>)[0]
+				?.meta,
+		).toEqual({});
 		expect(first.hasMore).toBe(true);
 		const second = structured(
 			await handlers.get('logs_query')?.({
 				limit: 1,
 				cursor: first.cursor,
+				detail: 'full',
 			}),
 		);
+		expect(second.detail).toBe('full');
+		expect(
+			(second.events as Array<{ meta: Record<string, unknown> }>)[0]?.meta
+				.toolName,
+		).toBe('beta');
 		expect(second.hasMore).toBe(false);
 	});
 
@@ -96,6 +107,7 @@ describe('log tools', async () => {
 		const tail = structured(
 			await handlers.get('logs_tail')?.({ outcomeFilter: 'failed' }),
 		);
+		expect(tail.detail).toBe('normal');
 		expect((tail.events as Array<{ outcome: string }>)[0]?.outcome).toBe(
 			'failed',
 		);
@@ -109,6 +121,7 @@ describe('log tools', async () => {
 				includeMeta: true,
 			}),
 		);
+		expect(detailedTail.detail).toBe('full');
 		expect(
 			(
 				detailedTail.events as Array<{
@@ -120,17 +133,20 @@ describe('log tools', async () => {
 		const sub = structured(
 			await handlers.get('logs_subscribe')?.({ limit: 2 }),
 		);
+		expect(sub.detail).toBe('normal');
 		expect(sub.stream).toBe('logs');
 
 		const corr = structured(
 			await handlers.get('logs_correlate')?.({ agent: 'a1' }),
 		);
+		expect(corr.detail).toBe('normal');
 		expect(corr.firstTs).toBe('2026-06-20T10:00:00.000Z');
 	});
 
 	it('errors_tail reads only the curated error stream, compact by default', async () => {
 		const handlers = await registeredHandlers();
 		const errors = structured(await handlers.get('logs_errors_tail')?.({}));
+		expect(errors.detail).toBe('normal');
 		const events = errors.events as Array<{
 			taskId: string | null;
 			meta: Record<string, unknown>;
@@ -141,6 +157,7 @@ describe('log tools', async () => {
 		const detailed = structured(
 			await handlers.get('logs_errors_tail')?.({ includeMeta: true }),
 		);
+		expect(detailed.detail).toBe('full');
 		expect(
 			(
 				detailed.events as Array<{
@@ -155,10 +172,31 @@ describe('log tools', async () => {
 		const errors = structured(
 			await handlers.get('logs_errors_tail')?.({ includeMeta: false }),
 		);
+		expect(errors.detail).toBe('normal');
 		const events = errors.events as Array<{
 			meta: Record<string, unknown>;
 		}>;
 		expect(events[0]?.meta).toEqual({});
+	});
+
+	it('tail honors compact detail by trimming per-event context', async () => {
+		const handlers = await registeredHandlers();
+		const tail = structured(
+			await handlers.get('logs_tail')?.({
+				outcomeFilter: 'failed',
+				detail: 'compact',
+			}),
+		);
+		expect(tail.detail).toBe('compact');
+		const events = tail.events as Array<Record<string, unknown>>;
+		expect(events[0]).toEqual({
+			ts: '2026-06-20T10:01:00.000Z',
+			kind: 'tool-failed',
+			outcome: 'failed',
+			severity: 'error',
+			incidentType: 'tool-failure',
+			summary: 'tool-failed: beta',
+		});
 	});
 
 	it('redacts canary payloads', async () => {

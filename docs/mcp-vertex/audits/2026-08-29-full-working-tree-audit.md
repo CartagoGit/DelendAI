@@ -353,7 +353,7 @@ Scope: F-001, F-002 y preparacion trazable de F-003/F-004/F-005.
 
 No-scope: reescritura, correccion completa de ReDoS, cambios remotos no verificables y features de producto.
 
-Orden: `x00300` -> `x00301` -> `x00281`/propuestas de routing y activacion.
+Orden: `x00300` -> `x00305` -> `x00281`/propuestas de routing y activacion.
 
 Definition of Done: ambos fallos P0 resueltos con tests, build y suite global verdes; lint resuelto o ratcheted; riesgos F-004/F-005 con propuesta y smoke reproducible.
 
@@ -362,11 +362,11 @@ Definition of Done: ambos fallos P0 resueltos con tests, build y suite global ve
 | ID | Objetivo | Hallazgos | Prioridad |
 |---|---|---|---|
 | `x00300` | Clasificar `nodeDynamicImport` como deprecated en inventory | F-001 | P0 |
-| `x00301` | Exponer `outputSchema` efectivo de `proposals_close_plan` | F-002 | P0 |
+| `x00305` | Exponer `outputSchema` efectivo de `proposals_close_plan` | F-002 | P0 |
 
 ## 31. Estrategia de orquestacion
 
-DAG: `x00300` y `x00301` son paralelizables si se reservan archivos disjuntos; ambos requieren gate dirigido y despues suite global. `x00281` depende de ambos solo como gate de integracion, no por codigo. No se debe tocar simultaneamente `plugins/proposals/src/lib/tools/close-plan.tool.ts` desde `x00298` y `x00301`.
+DAG: `x00300` y `x00305` son paralelizables si se reservan archivos disjuntos; ambos requieren gate dirigido y despues suite global. `x00281` depende de ambos solo como gate de integracion, no por codigo. No se debe tocar simultaneamente `plugins/proposals/src/lib/tools/close-plan.tool.ts` desde `x00298` y `x00305`.
 
 ## 32. Tests y gates requeridos
 

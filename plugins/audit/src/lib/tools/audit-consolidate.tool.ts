@@ -1,13 +1,17 @@
 import { readdir } from 'node:fs/promises';
+import path from 'node:path';
 
 import z from 'zod';
 
 import type { IPeerPluginRegistry } from '@mcp-vertex/core/public';
 import {
+	DETAIL_LEVELS,
+	projectDetail,
 	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
+	type Detail,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
@@ -20,11 +24,42 @@ import {
 	resolveAutoScaffold,
 	type IAutoScaffoldOptions,
 } from '../services/auto-scaffold-proposals.service';
+import {
+	canonicalAuditPathMessage,
+	isCanonicalAuditDir,
+} from '../services/audit-path-policy.service';
 import { parseAuditFiles } from '../services/parse-audit.service';
+
+const DetailSchema = z.enum(DETAIL_LEVELS);
+
+const collectMarkdownFiles = async (
+	root: string,
+	relative = '',
+): Promise<readonly string[]> => {
+	const entries = await readdir(path.join(root, relative), {
+		withFileTypes: true,
+	});
+	const files: string[] = [];
+	for (const entry of entries) {
+		const child =
+			relative.length > 0 ? `${relative}/${entry.name}` : entry.name;
+		if (entry.isDirectory()) {
+			files.push(...(await collectMarkdownFiles(root, child)));
+		} else if (
+			entry.isFile() &&
+			entry.name.endsWith('.md') &&
+			entry.name !== 'README.md'
+		) {
+			files.push(child);
+		}
+	}
+	return files.sort();
+};
 
 // --- output schemas --------------------------------------------------------
 
 const ConsolidationOutputSchema = z.object({
+	detail: DetailSchema,
 	auditType: z.enum(['plan', 'valuation']),
 	auditsFound: z.number(),
 	skipped: z.array(z.object({ path: z.string(), reason: z.string() })),
@@ -88,6 +123,7 @@ const ConsolidationOutputSchema = z.object({
 const MAX_TOP_ACTIONS = 50;
 
 const ConsolidateInputSchema = z.object({
+	detail: DetailSchema.optional(),
 	/** Select an implementation-plan scaffold or normal fix proposals. */
 	auditType: z.enum(['plan', 'valuation']).optional(),
 	/**
@@ -180,16 +216,24 @@ export const buildConsolidateRegistration = (
 					outputSchema: ConsolidationOutputSchema,
 				},
 				async (args: {
+					detail?: Detail | undefined;
 					auditType?: AuditType | undefined;
 					auditDir?: string | undefined;
 					topActions?: number | undefined;
 					autoScaffoldProposals?: boolean | undefined;
 					proposalsDir?: string | undefined;
 				}) => {
+					const detail = args.detail ?? 'normal';
 					const auditType = args.auditType ?? 'plan';
 					const relDir = (
 						args.auditDir ?? options.defaultAuditDir
 					).replace(/^\.\//u, '');
+					if (!isCanonicalAuditDir(relDir)) {
+						return toolError(
+							`audit dir "${relDir}" is not allowed: not canonical`,
+							canonicalAuditPathMessage,
+						);
+					}
 					const contained = resolveWorkspaceContained(
 						options.workspaceRoot,
 						relDir,
@@ -205,16 +249,14 @@ export const buildConsolidateRegistration = (
 					const reader = new SafeWorkspaceReader(absDir);
 					let entries: readonly string[];
 					try {
-						entries = await readdir(absDir);
+						entries = await collectMarkdownFiles(absDir);
 					} catch (err) {
 						return toolError(
 							`cannot read audit dir "${relDir}"`,
 							`Underlying error: ${(err as Error).message}`,
 						);
 					}
-					const mdRel = entries
-						.filter((n) => n.endsWith('.md') && n !== 'README.md')
-						.sort();
+					const mdRel = entries;
 					if (mdRel.length === 0) {
 						return toolError(
 							`no audit files found under "${relDir}"`,
@@ -320,16 +362,33 @@ export const buildConsolidateRegistration = (
 						};
 					}
 
-					return toolJson({
-						auditType,
-						...result,
-						markdown: renderConsolidationMarkdown(result, {
-							...(options.projectName !== undefined
-								? { projectName: options.projectName }
-								: {}),
-						}),
-						proposals: proposalsSummary,
-					});
+					const payload = projectDetail(
+						{
+							auditType,
+							...result,
+							markdown: renderConsolidationMarkdown(result, {
+								...(options.projectName !== undefined
+									? { projectName: options.projectName }
+									: {}),
+							}),
+							proposals: proposalsSummary,
+						},
+						{
+							compact: (full) => ({
+								...full,
+								consensus: [],
+								findings: [],
+								markdown: '',
+							}),
+							normal: (full) => full,
+							full: (full) => full,
+						},
+						detail,
+					) as Omit<
+						z.infer<typeof ConsolidationOutputSchema>,
+						'detail'
+					>;
+					return toolJson({ detail, ...payload });
 				},
 			);
 		},

@@ -70,7 +70,10 @@ import {
 	setFrontmatterField,
 } from '../proposals/proposal-frontmatter-writer';
 import { isPlanProposal } from '../proposals/proposal-type-detector';
-import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import {
+	findDependentProposalStatuses,
+	syncProposalRegistry,
+} from '../proposals/sync-proposal-registry';
 import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
@@ -618,6 +621,21 @@ export const runProposalTransition = async (
 		const shippedInGuard = guardShippedInPresent(frontmatter);
 		if (!shippedInGuard.ok) {
 			return buildCodeError(shippedInGuard.code, shippedInGuard.reason);
+		}
+	}
+
+	if (from === 'review' && finalTo === 'done') {
+		const openDependents = (
+			await findDependentProposalStatuses(
+				options.proposalsDirAbs,
+				args.id,
+			)
+		).filter((dependent) => dependent.status !== 'done');
+		if (openDependents.length > 0) {
+			return toolError(
+				`proposal ${args.id} cannot close before its dependents are done`,
+				`Review and close dependent proposal(s) first: ${openDependents.map((dependent) => `${dependent.id} (${dependent.status})`).join(', ')}. Then retry proposal_transition for ${args.id}.`,
+			);
 		}
 	}
 
