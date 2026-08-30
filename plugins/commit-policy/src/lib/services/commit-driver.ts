@@ -94,6 +94,7 @@ export interface ICommitDriverOptions {
 	readonly policy: ICommitPolicyOptions;
 	readonly identityCtx: IIdentityResolverContext;
 	readonly workspaceRoot?: string | undefined;
+	readonly pluginCacheDir?: string | undefined;
 	/** Identity snapshot (host + model) used by the audit trailer. */
 	readonly auditAgent: IAuditAgent | null;
 }
@@ -411,6 +412,6 @@ export const runCommitDriver = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
 ): Promise<ICommitDriverResult> =>
-	withGitWriteLock(options.workspaceRoot, () =>
+	withGitWriteLock(options.workspaceRoot, options.pluginCacheDir, () =>
 		runCommitDriverUnlocked(input, options),
 	);

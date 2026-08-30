@@ -392,6 +392,17 @@ export type {
 	ICreatePluginToolOptions,
 	IRegenerateCatalogArgs,
 } from '../lib/scaffold/create-plugin.tool';
+export {
+	authorExternalPlugin,
+	buildAuthorExternalPluginToolRegistration,
+	AUTHOR_EXTERNAL_PLUGIN_INPUT_SCHEMA,
+	AUTHOR_EXTERNAL_PLUGIN_OUTPUT_SCHEMA,
+} from '../lib/scaffold/author-external-plugin';
+export type {
+	IAuthorExternalPluginArgs,
+	IAuthorExternalPluginOptions,
+	IAuthorExternalPluginOutput,
+} from '../lib/scaffold/author-external-plugin';
 export { extractPlugin } from '../lib/scaffold/extract-plugin';
 export type {
 	IExtractedTool,
@@ -497,6 +508,7 @@ export type {
 // contribute rules via `ctx.cacheEvictionRegistry.register(rule)`; the
 // core boot sweep runs a dry-run after every plugin has loaded.
 export { createCacheEvictionRegistry } from '../lib/cache/eviction-registry';
+export { bootstrapCacheLayout } from '../lib/cache/cache-layout-bootstrap';
 export type {
 	ICacheEvictionCustom,
 	ICacheEvictionErrored,

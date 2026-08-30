@@ -33,6 +33,7 @@ export default definePlugin({
 				buildPerfProfileRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
+					pluginCacheDir: ctx.pluginCacheDir,
 				}),
 			],
 			knowledge: [

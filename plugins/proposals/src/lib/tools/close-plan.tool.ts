@@ -286,9 +286,9 @@ export const runClosePlan = async (
 		closable: true,
 		blockers: [],
 		preview: {
-			from: 'in-progress',
+			from: located.status,
 			to: 'done',
-			movedFrom: `in-progress/${planId}-...md`,
+			movedFrom: `${located.folder}/${planId}-...md`,
 			movedTo: `done/${planId}-...md`,
 		},
 	});

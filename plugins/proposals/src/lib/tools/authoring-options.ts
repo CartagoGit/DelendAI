@@ -29,6 +29,7 @@ export interface IAuthoringPersistConfig {
 	readonly messageTemplate?: string;
 	readonly pushTarget?: string;
 	readonly protectedBranches?: readonly string[];
+	readonly allowForeignChanges?: boolean;
 }
 
 export interface IAuthoringToolOptions {

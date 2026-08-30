@@ -34,6 +34,7 @@ export interface IPushSchedulerOptions {
 	readonly run: IGitRunner;
 	readonly policy: ICommitPolicyPush;
 	readonly workspaceRoot?: string | undefined;
+	readonly pluginCacheDir?: string | undefined;
 	/**
 	 * Optional hook the host can use to observe each push attempt
 	 * (success, refusal, or runtime error). Defaults to a no-op.
@@ -108,8 +109,10 @@ export const createPushScheduler = (
 	const push = async (reason: string): Promise<IPushDriverResult> => {
 		let result: IPushDriverResult;
 		try {
-			result = await withGitWriteLock(options.workspaceRoot, () =>
-				runPushDriver({}, options.policy, options.run),
+			result = await withGitWriteLock(
+				options.workspaceRoot,
+				options.pluginCacheDir,
+				() => runPushDriver({}, options.policy, options.run),
 			);
 		} catch (error) {
 			result = {

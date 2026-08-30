@@ -337,11 +337,13 @@ export const createCommitPolicyEngine = (
 
 	return {
 		handle(event) {
-			const queued = handleTail.then(() =>
-				withGitWriteLock(options.driver.workspaceRoot, () =>
-					handleEvent(event),
-				),
-			);
+			const handleQueuedEvent = () =>
+				withGitWriteLock(
+					options.driver.workspaceRoot,
+					options.driver.pluginCacheDir,
+					() => handleEvent(event),
+				);
+			const queued = handleTail.then(handleQueuedEvent);
 			handleTail = queued.then(
 				() => undefined,
 				() => undefined,
@@ -379,7 +381,7 @@ export const buildTriggerCommitMessage = (event: {
 	const files = event.files ?? [];
 	if (files.length === 0) {
 		const noun = event.dirtyCount === 1 ? 'file' : 'files';
-		return `chore: update ${event.dirtyCount} ${noun}`;
+		return `chore(snapshot): preserve concurrent agent work (${event.dirtyCount} ${noun})`;
 	}
 	const displayed = files.slice(0, 3);
 	const suffix =

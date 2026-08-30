@@ -92,6 +92,8 @@ export interface IAutoWorkPersistOptions {
 	readonly pushTarget?: string;
 	/** Branches refused by the host's effective commit policy. */
 	readonly protectedBranches?: readonly string[];
+	/** Include every dirty workspace path when the host explicitly allows it. */
+	readonly allowForeignChanges?: boolean;
 	/**
 	 * Working directory of the `git` invocation. Tests inject a temp
 	 * dir; production callers pass `ctx.workspace.root`.
@@ -229,6 +231,25 @@ const resolveGitRunner = (options: IAutoWorkPersistOptions): IGitRunner => {
 	});
 };
 
+const readDirtyPaths = async (run: IGitRunner): Promise<readonly string[]> => {
+	const result = await run([
+		'status',
+		'--porcelain=v1',
+		'--untracked-files=all',
+	]);
+	if (!result.ok) return [];
+	return result.output
+		.split('\n')
+		.map((line) => line.slice(3).trim())
+		.filter((path) => path.length > 0)
+		.map((path) => {
+			const renameSeparator = path.indexOf(' -> ');
+			return renameSeparator >= 0
+				? path.slice(renameSeparator + 4)
+				: path;
+		});
+};
+
 /**
  * Core entry point. See the file-level JSDoc for the contract.
  */
@@ -260,20 +281,23 @@ export const maybePersistAfterSlice = async (
 	}
 
 	const run = resolveGitRunner(options);
+	const filesToPersist = options.allowForeignChanges
+		? await readDirtyPaths(run)
+		: files;
 
 	// Stage the files explicitly. We never `git add .` because that
 	// would silently fold unrelated, unreviewed changes (drift between
 	// `agent_lock.files` and the actual diff) into the slice commit.
 	// Checked here (rather than left to `commitAndPush`) so the empty-file
 	// reason stays this module's own wording ("empty slice").
-	if (files.length === 0) {
+	if (filesToPersist.length === 0) {
 		return persistResult(false, false, mode, {
 			reason: 'no files to commit (empty slice)',
 		});
 	}
 
 	const template = options.messageTemplate ?? DEFAULT_TEMPLATE;
-	const area = inferArea(files);
+	const area = inferArea(filesToPersist);
 	const message = renderCommitMessage(template, area, proposalId, sliceId);
 
 	if (options.commitAuthor?.reason) {
@@ -294,7 +318,7 @@ export const maybePersistAfterSlice = async (
 	const [pushRemote, pushBranch] = pushTarget.split(/\s+/u);
 
 	const result = await commitAndPush({
-		files,
+		files: filesToPersist,
 		message,
 		git: run,
 		...(options.commitAuthor?.authorFlag

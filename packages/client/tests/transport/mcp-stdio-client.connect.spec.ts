@@ -1,11 +1,16 @@
 import packageMetadata from '../../package.json';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import {
+	__resetMcpSdkBindingsForTests,
+	__setMcpSdkBindingsForTests,
+	McpStdioClient,
+} from '../../src/lib/transport/mcp-stdio-client';
 
 describe('McpStdioClient.connect', async () => {
 	afterEach(() => {
-		vi.resetModules();
-		vi.restoreAllMocks();
+		__resetMcpSdkBindingsForTests();
 	});
 
 	it('announces the package version from package metadata', async () => {
@@ -25,16 +30,12 @@ describe('McpStdioClient.connect', async () => {
 			async close(): Promise<void> {}
 		}
 
-		vi.doMock('@modelcontextprotocol/sdk/client/index.js', () => ({
-			Client: FakeClient,
-		}));
-		vi.doMock('@modelcontextprotocol/sdk/client/stdio.js', () => ({
-			StdioClientTransport: FakeTransport,
-		}));
-
-		const { McpStdioClient } = await import(
-			'../../src/lib/transport/mcp-stdio-client'
-		);
+		__setMcpSdkBindingsForTests({
+			ClientCtor:
+				FakeClient as unknown as typeof import('@modelcontextprotocol/sdk/client/index.js').Client,
+			StdioClientTransportCtor:
+				FakeTransport as unknown as typeof import('@modelcontextprotocol/sdk/client/stdio.js').StdioClientTransport,
+		});
 
 		await McpStdioClient.connect({ command: 'bun', stderr: 'ignore' });
 

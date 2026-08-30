@@ -162,6 +162,31 @@ describe('maybePersistAfterSlice', async () => {
 		]);
 	});
 
+	it('includes all dirty files only when foreign changes are allowed', async () => {
+		const runner = fakeRunner([
+			{
+				match: (a) => a[0] === 'status',
+				output: ' M plugins/proposals/src/lib/foo.ts\n?? unrelated.txt\n',
+			},
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'abc1234' },
+		]);
+
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'x00298',
+			'S1',
+			{ mode: 'commit', allowForeignChanges: true, git: runner },
+		);
+
+		expect(result.committed).toBe(true);
+		expect(runner.calls.find((a) => a[0] === 'add')?.slice(2)).toEqual([
+			'plugins/proposals/src/lib/foo.ts',
+			'unrelated.txt',
+		]);
+	});
+
 	it('renders the default template `<area>(<proposalId>): <sliceId>`', async () => {
 		const runner = fakeRunner([
 			{ match: (a) => a[0] === 'add', output: '' },

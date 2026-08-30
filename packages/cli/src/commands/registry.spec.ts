@@ -137,6 +137,7 @@ const EXPECTED_COMMANDS = [
 	'proposals plan',
 	'plugin search',
 	'plugin add',
+	'plugin author',
 	'notification status',
 	'notification await-lock',
 	'kpis',

@@ -1,3 +1,4 @@
+// effect-boundary-authorized: Probes for persisted KPI source artifacts before delegating parsing to the owning usage and history readers.
 import { access } from 'node:fs/promises';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
@@ -54,6 +55,9 @@ import {
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
 const DAY_MS = 86_400_000;
+const ISO_DATE_LENGTH = 10;
+const FULL_DETAIL_LIMIT = 12;
+const EXTENDED_DETAIL_LIMIT = 20;
 
 const InputSchema = z
 	.object({
@@ -176,11 +180,11 @@ const DETAIL_LIMITS: Readonly<
 		recommendations: 5,
 	},
 	full: {
-		highlights: 12,
-		breakdowns: 20,
-		historyEntries: 20,
-		issues: 20,
-		findings: 12,
+		highlights: FULL_DETAIL_LIMIT,
+		breakdowns: EXTENDED_DETAIL_LIMIT,
+		historyEntries: EXTENDED_DETAIL_LIMIT,
+		issues: EXTENDED_DETAIL_LIMIT,
+		findings: FULL_DETAIL_LIMIT,
 		recommendations: 8,
 	},
 };
@@ -455,35 +459,27 @@ const aggregateRecords = (
 	dimension: TKpiDimension,
 ) => {
 	const groups = new Map<string, IKpiTelemetryRecord[]>();
-	const keyOf = (record: IKpiTelemetryRecord): string => {
-		switch (dimension) {
-			case 'provider':
-				return record.model?.provider ?? 'unattributed';
-			case 'plugin':
-				return record.plugin;
-			case 'tool':
-				return `${record.plugin}/${record.tool}`;
-			case 'agent':
-				return record.agent.id;
-			case 'extension':
-				return record.agent.extension;
-			case 'model':
-				return record.model === null
-					? 'unattributed'
-					: `${record.model.provider}/${record.model.modelId}`;
-			case 'requestType':
-				return record.requestType ?? 'unknown';
-			case 'outcome':
-				return record.outcome;
-			case 'error':
-				return (
-					record.errorTelemetry?.classification ??
-					(record.error ? 'tool-error' : 'none')
-				);
-			case 'day':
-				return record.ts.slice(0, 10);
-		}
+	const keyResolvers: Record<
+		TKpiDimension,
+		(record: IKpiTelemetryRecord) => string
+	> = {
+		provider: (record) => record.model?.provider ?? 'unattributed',
+		plugin: (record) => record.plugin,
+		tool: (record) => `${record.plugin}/${record.tool}`,
+		agent: (record) => record.agent.id,
+		extension: (record) => record.agent.extension,
+		model: (record) =>
+			record.model === null
+				? 'unattributed'
+				: `${record.model.provider}/${record.model.modelId}`,
+		requestType: (record) => record.requestType ?? 'unknown',
+		outcome: (record) => record.outcome,
+		error: (record) =>
+			record.errorTelemetry?.classification ??
+			(record.error ? 'tool-error' : 'none'),
+		day: (record) => record.ts.slice(0, ISO_DATE_LENGTH),
 	};
+	const keyOf = keyResolvers[dimension];
 	for (const record of records) {
 		const key = keyOf(record);
 		const existing = groups.get(key);
@@ -1306,29 +1302,20 @@ const viewSummaryOf = (
 	const cost = state.snapshot.usage.costUsd.value;
 	const health = state.snapshot.health.score.value;
 	const historyCount = state.history.entries.length;
-	switch (view) {
-		case 'summary':
-			return `Health=${health ?? 'n/a'} calls=${calls ?? 'n/a'} costUsd=${cost ?? 'n/a'} with ${historyCount} persisted history entr${historyCount === 1 ? 'y' : 'ies'} and status=${status}.`;
-		case 'history':
-			return `History view returned ${historyCount} persisted snapshot entr${historyCount === 1 ? 'y' : 'ies'} with explicit trend status=${status}.`;
-		case 'usage':
-			return `Usage view reports ${calls ?? 'n/a'} call(s), ${state.snapshot.usage.errors.value ?? 'n/a'} error(s) and status=${status}.`;
-		case 'economics':
-			return `Economics view reports cost=${cost ?? 'n/a'} and tokenSavings=${state.snapshot.usage.tokensSaved.value ?? 'n/a'} with status=${status}.`;
-		case 'models':
-			return `Models view uses raw invocation attribution when available and stays explicit about unattributed windows; status=${status}.`;
-		case 'agents':
-			return `Agents view groups observed usage by agent identity within the selected window; status=${status}.`;
-		case 'plugins':
-			return `Plugins view highlights observed plugin activity and utility without inventing missing economics; status=${status}.`;
-		case 'errors':
-			return `Errors view surfaces structured classifications and incongruence evidence only when telemetry exists; status=${status}.`;
-		case 'efficiency':
-			return `Efficiency view reuses measured usage KPIs and leaves unavailable savings or latency fields explicit; status=${status}.`;
-		case 'audit':
-			return `Audit view reports only evidence-backed anomalies and missing-source conditions; status=${status}.`;
-	}
-	return `KPI view status=${status}.`;
+	const entryCount = historyCount === 1 ? 'y' : 'ies';
+	const summaries: Record<TProjectKpiView, string> = {
+		summary: `Health=${health ?? 'n/a'} calls=${calls ?? 'n/a'} costUsd=${cost ?? 'n/a'} with ${historyCount} persisted history entr${entryCount} and status=${status}.`,
+		history: `History view returned ${historyCount} persisted snapshot entr${entryCount} with explicit trend status=${status}.`,
+		usage: `Usage view reports ${calls ?? 'n/a'} call(s), ${state.snapshot.usage.errors.value ?? 'n/a'} error(s) and status=${status}.`,
+		economics: `Economics view reports cost=${cost ?? 'n/a'} and tokenSavings=${state.snapshot.usage.tokensSaved.value ?? 'n/a'} with status=${status}.`,
+		models: `Models view uses raw invocation attribution when available and stays explicit about unattributed windows; status=${status}.`,
+		agents: `Agents view groups observed usage by agent identity within the selected window; status=${status}.`,
+		plugins: `Plugins view highlights observed plugin activity and utility without inventing missing economics; status=${status}.`,
+		errors: `Errors view surfaces structured classifications and incongruence evidence only when telemetry exists; status=${status}.`,
+		efficiency: `Efficiency view reuses measured usage KPIs and leaves unavailable savings or latency fields explicit; status=${status}.`,
+		audit: `Audit view reports only evidence-backed anomalies and missing-source conditions; status=${status}.`,
+	};
+	return summaries[view];
 };
 
 const buildViewPayload = async (
@@ -1342,28 +1329,48 @@ const buildViewPayload = async (
 	const issues = buildIssuesSection(state, query);
 	const findings = findingsOf(state, query);
 	const view = query.view ?? 'summary';
-	const status = (() => {
-		switch (view) {
-			case 'history':
-				return history.status;
-			case 'models':
-			case 'agents':
-			case 'plugins':
-			case 'usage':
-			case 'economics':
-			case 'errors':
-			case 'efficiency':
-				return deriveViewStatus([
-					snapshot.status,
-					...breakdowns.map((breakdown) => breakdown.status),
-					...(view === 'errors' ? [issues.status] : []),
-				]);
-			case 'audit':
-				return findings.status;
-			case 'summary':
-				return deriveViewStatus([snapshot.status, history.status]);
-		}
-	})();
+	const statusResolvers: Record<TProjectKpiView, () => TKpiViewStatus> = {
+		history: () => history.status,
+		models: () =>
+			deriveViewStatus([
+				snapshot.status,
+				...breakdowns.map((item) => item.status),
+			]),
+		agents: () =>
+			deriveViewStatus([
+				snapshot.status,
+				...breakdowns.map((item) => item.status),
+			]),
+		plugins: () =>
+			deriveViewStatus([
+				snapshot.status,
+				...breakdowns.map((item) => item.status),
+			]),
+		usage: () =>
+			deriveViewStatus([
+				snapshot.status,
+				...breakdowns.map((item) => item.status),
+			]),
+		economics: () =>
+			deriveViewStatus([
+				snapshot.status,
+				...breakdowns.map((item) => item.status),
+			]),
+		errors: () =>
+			deriveViewStatus([
+				snapshot.status,
+				...breakdowns.map((item) => item.status),
+				issues.status,
+			]),
+		efficiency: () =>
+			deriveViewStatus([
+				snapshot.status,
+				...breakdowns.map((item) => item.status),
+			]),
+		audit: () => findings.status,
+		summary: () => deriveViewStatus([snapshot.status, history.status]),
+	};
+	const status = statusResolvers[view]();
 	const raw: Omit<
 		IProjectKpisOutput,
 		'bytes' | 'truncated' | 'originalBytes'

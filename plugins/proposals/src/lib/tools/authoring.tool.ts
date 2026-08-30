@@ -1115,6 +1115,10 @@ export const buildCloseSliceRegistration = (
 										}
 									: {}),
 								cwd: options.workspaceRoot,
+								...(configuredPersist.allowForeignChanges ===
+								true
+									? { allowForeignChanges: true }
+									: {}),
 								...(closeSliceOptions.persistGit !== undefined
 									? { git: closeSliceOptions.persistGit }
 									: {}),

@@ -32,6 +32,13 @@
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
+		},
+		"./node": {
+			"@mcp-vertex/source": {
+				"types": "./src/node/index.ts"
+			},
+			"types": "./dist/node/index.d.ts",
+			"import": "./dist/node/index.js"
 		}
 	},
 	"scripts": {
