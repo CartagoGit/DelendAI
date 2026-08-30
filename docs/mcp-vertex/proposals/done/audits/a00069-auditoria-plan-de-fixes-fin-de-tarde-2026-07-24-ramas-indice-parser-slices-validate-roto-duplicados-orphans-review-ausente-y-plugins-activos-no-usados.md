@@ -1839,7 +1839,7 @@ FAIL | usage-tracking | tests/src/lib/record-buffer.spec.ts
 **Esperado vs Actual**: F80 cerró en pasada-9. Re-audit-10 ve **regresiones** en `usage-tracking`. Probable:
 
 - `bbf3b945` (perf metrics-gate integration) no impacta.
-- `8199bd1d` (f00126 S3 profiling capture) **afecta** `record-buffer.spec.ts` si routing cambia.
+- 8199bd1d (f00126 S3 profiling capture; worktree object no longer available) **afecta** `record-buffer.spec.ts` si routing cambia.
 - Posiblemente `c10ec1cb` (logs cacheNamespace) introduce charge-based tracking.
 
 **Slice**: investigate root cause `RecordBuffer.flushes on time window` — fue S10/S11 a00069?
@@ -1881,7 +1881,7 @@ M plugins/prompt-eval/src/public/index.ts
 
 **Slice**: `git add` + commit `feat(f00127): S1 — eval harness + calibrate` antes de proseguir.
 
-### F96 — `bbf3b945` y `8199bd1d` dos commits con subject idéntico — F77 residuo (commit subject dup)
+### F96 — `bbf3b945` y 8199bd1d dos commits con subject idéntico — F77 residuo (commit subject dup)
 
 `git log --oneline`:
 
@@ -1896,11 +1896,11 @@ bbf3b945 feat(f00126): S3 profiling capture + metrics-gate integration
 8199bd1d feat(f00126): S3 profiling capture + metrics-gate integration (worktree)
 ```
 
-**Esperado**: cada commit con subject único. **Actual**: `bbf3b945` y `8199bd1d` tienen **subject idéntico** ("feat(f00126): S3 profiling capture + metrics-gate integration"). El segundo commit (worktree) re-empaquetó lo mismo.
+**Esperado**: cada commit con subject único. **Actual**: `bbf3b945` y 8199bd1d tienen **subject idéntico** ("feat(f00126): S3 profiling capture + metrics-gate integration"). El segundo commit (worktree) re-empaquetó lo mismo y ya no está disponible en las refs locales.
 
-**Esperado vs Actual**: `8199bd1d` añadió "(worktree)" al subject para diferenciar, pero eso **rompe Conventional Commits** (no es Conventional-compliant).
+**Esperado vs Actual**: 8199bd1d añadió "(worktree)" al subject para diferenciar, pero eso **rompe Conventional Commits** (no es Conventional-compliant).
 
-**Slice**: marcar `8199bd1d` como superseded por `bbf3b945` (en realidad `bbf3b945` se publicó desde la main worktree después del worktree).
+**Slice**: marcar 8199bd1d como superseded por `bbf3b945` (en realidad `bbf3b945` se publicó desde la main worktree después del worktree).
 
 ### F97 — `f00126 S3` metrics-gate integration dispara `record-buffer` test failure — F93 evolución
 
@@ -1948,9 +1948,9 @@ bbf3b945 feat(f00126): S3 profiling capture + metrics-gate integration
 
 **Esperado**: worktree merged + cleaned. **Actual**: detached HEAD `@8199bd1d` no mergeado a develop.
 
-**Esperado vs Actual**: `bbf3b945` (develop) re-hace el mismo commit con subject id. `8199bd1d` (worktree) puede ser cherry-pick de develop o un duplicate. **Diferencia**: el trabajo del worktree es ignorado.
+**Esperado vs Actual**: `bbf3b945` (develop) re-hace el mismo commit con subject id. 8199bd1d (worktree) puede ser cherry-pick de develop o un duplicate. **Diferencia**: el trabajo del worktree es ignorado.
 
-**Slice**: identificar y resolver `8199bd1d` vs `bbf3b945` — branch-gc o re-cherry-pick.
+**Slice**: identificar y resolver 8199bd1d vs `bbf3b945` — branch-gc o re-cherry-pick.
 
 ### F102 — `chore(release): pin f00127 S2 as future work` — F46 evolución (F90 residuo)
 
@@ -3253,7 +3253,7 @@ c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
 - **F93** (FATAL regresión): `bun run test` 2 fail en usage-tracking (pricing, record-buffer).
 - **F94** (F87 worsen): bare `bun test` 72 fail (+1 vs pasada-9).
 - **F95** (F86 paralelo): `plugins/prompt-eval/` 7 files untracked.
-- **F96** (F77 residuo): `bbf3b945` y `8199bd1d` subject duplicado.
+- **F96** (F77 residuo): `bbf3b945` y 8199bd1d subject duplicado.
 - **F97** (F93 evolución): `bbf3b945` metrics-gate → `record-buffer` test failure.
 - **F98** (F92 complement): `dd75bd7a` vs `1a20db97` coordinación wire.
 - **F99** (F57/K17): f00127 S1 ↔ auto-agent-selector dependency.
