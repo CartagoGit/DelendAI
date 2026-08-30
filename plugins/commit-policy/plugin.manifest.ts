@@ -9,7 +9,7 @@ export default definePluginManifest({
 		'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 	tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
 	maturity: 'experimental',
-	permissions: ['git-read', 'git-write'],
+	permissions: ['git-read', 'git-write', 'network', 'process'],
 	presets: ['vertex'],
 	// Per-tool permissions: read-only inspection on `_status`, write
 	// effects on `_commit`/`_push`/`_run` (only when the host has
@@ -20,6 +20,7 @@ export default definePluginManifest({
 		commit_policy_commit: ['git-write'],
 		commit_policy_push: ['git-write'],
 		commit_policy_run: ['git-write'],
+		commit_policy_refresh_branch_protection: ['network', 'process'],
 	},
 	tokenBudget: {
 		staticBytes: 4_200,

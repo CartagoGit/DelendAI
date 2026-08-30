@@ -90,9 +90,12 @@ const OutputSchema = z.object({
 		remote: z
 			.object({
 				ok: z.boolean(),
-				provider: z.enum(['github', 'gitlab']).optional(),
-				remoteBranches: z.array(z.string()).optional(),
-				effectiveBranches: z.array(z.string()).optional(),
+				state: z.enum(['fresh', 'stale', 'unsupported', 'error']),
+				provider: z.enum(['github', 'gitlab', 'unknown']).optional(),
+				remoteName: z.string().optional(),
+				remoteHost: z.string().optional(),
+				remoteBranches: z.array(z.string()),
+				effectiveBranches: z.array(z.string()),
 				reason: z.string().optional(),
 			})
 			.nullable(),
@@ -184,7 +187,10 @@ export const runCommitPolicyStatus = async (
 					: remoteProtection.ok
 						? {
 								ok: true,
+								state: remoteProtection.state,
 								provider: remoteProtection.provider,
+								remoteName: remoteProtection.remoteName,
+								remoteHost: remoteProtection.remoteHost,
 								remoteBranches: [
 									...remoteProtection.remoteBranches,
 								],
@@ -194,9 +200,28 @@ export const runCommitPolicyStatus = async (
 							}
 						: {
 								ok: false,
+								state: remoteProtection.state,
 								...(remoteProtection.provider !== undefined
 									? { provider: remoteProtection.provider }
 									: {}),
+								...(remoteProtection.remoteName !== undefined
+									? {
+											remoteName:
+												remoteProtection.remoteName,
+										}
+									: {}),
+								...(remoteProtection.remoteHost !== undefined
+									? {
+											remoteHost:
+												remoteProtection.remoteHost,
+										}
+									: {}),
+								remoteBranches: [
+									...remoteProtection.remoteBranches,
+								],
+								effectiveBranches: [
+									...remoteProtection.effectiveBranches,
+								],
 								reason: remoteProtection.reason,
 							},
 		},
