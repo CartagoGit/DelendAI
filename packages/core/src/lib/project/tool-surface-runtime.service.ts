@@ -5,6 +5,7 @@ import type {
 	IPluginSurfaceChange,
 	IProjectContextSnapshot,
 	IToolAccessState,
+	IToolExposureState,
 	IToolSurfacePlan,
 	IToolSurfaceModeChange,
 	IToolSurfacePluginEvictedEvent,
@@ -36,6 +37,12 @@ const DEFAULT_WORKING_SET_POLICY = {
 	idleTtlMs: 5 * 60_000,
 	maxWarmPlugins: 8,
 } as const;
+
+const warnUnknownToolExposure = (name: string): void => {
+	process.stderr.write(
+		`[surface] warn: unknown tool exposure lookup for "${name}"\n`,
+	);
+};
 
 interface IBoundToolRecord {
 	readonly registrationId: string;
@@ -306,9 +313,17 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		return this.applySurfaceMode(mode);
 	}
 
-	isToolExposed(name: string): boolean {
+	getToolExposure(name: string): IToolExposureState {
 		const record = this.recordsByName.get(name);
-		return record === undefined ? true : isToolVisible(record.access);
+		if (record === undefined) {
+			warnUnknownToolExposure(name);
+			return 'unknown';
+		}
+		return isToolVisible(record.access) ? 'visible' : 'hidden';
+	}
+
+	isToolExposed(name: string): boolean {
+		return this.getToolExposure(name) === 'visible';
 	}
 
 	listToolKnowledgeEntries(): ReadonlyArray<

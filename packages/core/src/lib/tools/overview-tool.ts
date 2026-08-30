@@ -148,8 +148,9 @@ export const buildOverviewToolRegistration = (
 					);
 				}
 				if (runtime !== undefined) {
-					tools = tools.filter((tool) =>
-						runtime.isToolExposed(tool.name),
+					tools = tools.filter(
+						(tool) =>
+							runtime.getToolExposure(tool.name) === 'visible',
 					);
 				}
 				if (args.compact === true) {
