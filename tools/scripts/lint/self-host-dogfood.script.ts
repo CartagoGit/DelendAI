@@ -54,6 +54,11 @@ const localDogfoodLaunch = (workspace: string): ILaunchShape => ({
 	args: [HOST_SCRIPT_REL, `--workspace=${workspace}`],
 });
 
+const localDogfoodWatchLaunch = (workspace: string): ILaunchShape => ({
+	command: 'bun',
+	args: ['--watch', HOST_SCRIPT_REL, `--workspace=${workspace}`],
+});
+
 const sameArgs = (actual: unknown, expected: readonly string[]): boolean =>
 	Array.isArray(actual) &&
 	actual.every((value) => typeof value === 'string') &&
@@ -101,6 +106,7 @@ export const detectSelfHostDogfoodDrift = async (
 		const accepted: readonly ILaunchShape[] = [
 			buildCanonicalLaunch({ workspace: target.workspace }),
 			localDogfoodLaunch(target.workspace),
+			localDogfoodWatchLaunch(target.workspace),
 		];
 		if (!accepted.some((launch) => matchesLaunch(entry, launch))) {
 			findings.push({

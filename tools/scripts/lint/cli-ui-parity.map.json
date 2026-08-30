@@ -135,6 +135,9 @@
 		"mcp-vertex.openAgentTimeline": {
 			"waiver": "VS Code-only observability viewer for the persisted agent timeline; no standalone CLI timeline command is registered yet"
 		},
+		"mcp-vertex.openRuntimeLog": {
+			"waiver": "VS Code-only runtime log viewer; the CLI exposes log querying but no equivalent command opens the persisted viewer"
+		},
 		"mcp-vertex.openDashboard": { "cli": "status" },
 		"mcp-vertex.providers.openDashboard": {
 			"cli": "usage-tracking report",

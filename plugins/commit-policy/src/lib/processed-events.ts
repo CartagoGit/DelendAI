@@ -22,6 +22,15 @@ import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import type { IEngineEvent } from './engine';
 
+export class ProcessedEventsStoreReadError extends Error {
+	readonly code = 'STORE_READ_ERROR';
+
+	constructor(message: string) {
+		super(message);
+		this.name = 'ProcessedEventsStoreReadError';
+	}
+}
+
 export interface IProcessedRecord {
 	readonly key: string;
 	readonly sha: string;
@@ -79,7 +88,9 @@ export const createProcessedEventsStore = (
 	const seen = new Map<string, IProcessedRecord>();
 	let addsSincePrune = 0;
 
-	const readRecords = async (): Promise<Map<string, IProcessedRecord>> => {
+	const readRecords = async (
+		now = Date.now(),
+	): Promise<Map<string, IProcessedRecord>> => {
 		const records = new Map<string, IProcessedRecord>();
 		try {
 			const raw = await readFile(filePath, 'utf8');
@@ -95,24 +106,47 @@ export const createProcessedEventsStore = (
 						typeof parsed.sha === 'string' &&
 						typeof parsed.ts === 'number'
 					) {
-						records.set(parsed.key, {
-							key: parsed.key,
-							sha: parsed.sha,
-							ts: parsed.ts,
-						});
+						if (now - parsed.ts <= ttlMs) {
+							records.set(parsed.key, {
+								key: parsed.key,
+								sha: parsed.sha,
+								ts: parsed.ts,
+							});
+						}
 					}
-				} catch {
-					// corrupt line — skip
+				} catch (error) {
+					throw new ProcessedEventsStoreReadError(
+						`processed-events store contains invalid JSONL: ${
+							error instanceof Error
+								? error.message
+								: String(error)
+						}`,
+					);
 				}
 			}
-		} catch {
-			// file missing — start empty
+		} catch (error) {
+			if (
+				typeof error === 'object' &&
+				error !== null &&
+				'code' in error &&
+				(error as { readonly code?: unknown }).code === 'ENOENT'
+			) {
+				return records;
+			}
+			if (error instanceof ProcessedEventsStoreReadError) {
+				throw error;
+			}
+			throw new ProcessedEventsStoreReadError(
+				`failed to read processed-events store: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			);
 		}
 		return records;
 	};
 
-	const syncSeenFromDisk = async (): Promise<void> => {
-		const records = await readRecords();
+	const syncSeenFromDisk = async (now = Date.now()): Promise<void> => {
+		const records = await readRecords(now);
 		seen.clear();
 		for (const [key, record] of records) {
 			seen.set(key, record);
@@ -135,7 +169,7 @@ export const createProcessedEventsStore = (
 		},
 		async add(key, sha, now = Date.now()) {
 			await withFileMutex(filePath, async () => {
-				await syncSeenFromDisk();
+				await syncSeenFromDisk(now);
 				seen.set(key, { key, sha, ts: now });
 				await persist();
 			});
@@ -147,7 +181,7 @@ export const createProcessedEventsStore = (
 		},
 		async prune(now = Date.now()) {
 			return withFileMutex(filePath, async () => {
-				await syncSeenFromDisk();
+				await syncSeenFromDisk(now);
 				let removed = 0;
 				for (const [key, rec] of seen) {
 					if (now - rec.ts > ttlMs) {
