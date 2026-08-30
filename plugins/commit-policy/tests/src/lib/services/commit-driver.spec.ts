@@ -877,6 +877,32 @@ describe('runCommitDriver', () => {
 				);
 			});
 		});
+
+		it('normalizes serialized rename paths before git add', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				cached: ['docs/migrated.md'],
+			});
+			const result = await runCommitDriver(
+				{
+					message: 'feat: migrate proposal',
+					files: ['docs/original.md -> docs/migrated.md'],
+				},
+				{
+					run: fake.run,
+					policy: basePolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(true);
+			expect(fake.added).toContain('docs/migrated.md');
+			expect(fake.added).not.toContain(
+				'docs/original.md -> docs/migrated.md',
+			);
+		});
 	});
 
 	describe('x00265 — requireConventional rejects non-conventional messages', () => {

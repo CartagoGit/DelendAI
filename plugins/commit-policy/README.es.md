@@ -10,7 +10,7 @@
 `@mcp-vertex/git` ya expone `git_commit` / `git_push`, pero solo como primitivas:
 cada agente tiene que elegir el autor, decidir cuándo empujar y recordar añadir
 un trailer de auditoría. `commit-policy` envuelve esas primitivas con tres
-políticas configurables y expone cuatro herramientas para conducir el motor:
+políticas configurables y expone cinco herramientas para conducir el motor:
 
 | Herramienta            | Propósito                                                                        |
 | ---------------------- | -------------------------------------------------------------------------------- |
@@ -18,6 +18,7 @@ políticas configurables y expone cuatro herramientas para conducir el motor:
 | `commit_policy_commit` | Commit a través del motor (identidad + auditoría + rechazo de ramas protegidas). |
 | `commit_policy_push`   | Push a través del motor (rechazo de ramas protegidas + política de force).       |
 | `commit_policy_run`    | Disparar manualmente cualquier disparador configurado.                           |
+| `commit_policy_refresh_branch_protection` | Actualizar bajo demanda la protección remota de ramas. |
 
 El motor **está desactivado por defecto**: ningún host verá un solo commit a
 menos que lo active explícitamente.
@@ -53,11 +54,14 @@ menos que lo active explícitamente.
 | `push.force`                   | `"with-lease"`     | `"with-lease" \| "allow" \| "never"`.                                          |
 | `push.protectedBranches`       | `[]`               | Los nombres exactos configurados aquí quedan protegidos; no se asumen nombres. |
 
-Al iniciar, el plugin consulta de forma tolerante el remoto `origin` mediante
-la CLI autenticada de `gh` o `glab`. Las ramas protegidas detectadas se unen a
-la lista local. Usa `commit_policy_refresh_branch_protection` después de cambiar
-el remoto o las reglas del proveedor; si la consulta falla, se conserva la
-configuración local.
+La protección remota se actualiza manualmente mediante
+`commit_policy_refresh_branch_protection`. El adaptador usa `push.remote` si
+está configurado, después el remoto upstream actual y finalmente `origin` como
+compatibilidad. Los hosts públicos de GitHub y GitLab se soportan mediante sus
+CLI autenticadas; otros hosts devuelven el estado explícito `unsupported` y
+conservan la configuración local. El refresh no se ejecuta al registrar el
+plugin salvo que el host establezca explícitamente
+`MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true`.
 
 ### Reglas de ramas
 
@@ -69,9 +73,10 @@ campo `branchPolicy`:
   `push.enabled` están activados.
 - Cualquier rama, incluida `main`, `develop` y `master`, permite commit y push directo si no aparece en esas listas configuradas y los interruptores correspondientes están activos.
 - La comprobación remota está disponible mediante
-  `commit_policy_refresh_branch_protection`. Soporta GitHub y GitLab cuando la
-  CLI autenticada está instalada; los remotos no soportados y la falta de
-  autenticación no sustituyen la política local.
+  `commit_policy_refresh_branch_protection`. El resultado incluye `fresh`,
+  `stale`, `unsupported` o `error`, junto con el remoto y las ramas efectivas.
+  Los remotos no soportados y la falta de autenticación no sustituyen la
+  política local.
 
 ### Modos de identidad
 
@@ -88,7 +93,7 @@ campo `branchPolicy`:
 
 | Tipo        | Se dispara cuando                                                                                                  |
 | ----------- | ------------------------------------------------------------------------------------------------------------------ |
-| `slice`     | Un slice de `proposals` transiciona a un estado configurado (por defecto `done`). Sondea el `index.json` cada 5 s. |
+| `slice`     | Un slice de `proposals` transiciona a un estado configurado (por defecto `done`). Sondea el `index.json` cada 1 s. |
 | `threshold` | `git status --porcelain` reporta al menos N archivos sucios (por defecto 10). Solo manual.                         |
 | `interval`  | Han pasado al menos N minutos desde el último disparo y el árbol está sucio. Solo manual.                          |
 | `manual`    | Siempre disponible, independientemente de `cadence.triggers`.                                                      |
@@ -119,10 +124,10 @@ La `mcp-vertex.config.json` raíz lo activa con:
 ```
 
 Es decir: cada vez que un slice transiciona a `done`, el motor commitea como
-el usuario global de git de la máquina y empuja el resultado a `origin/develop`
-(con `--force-with-lease`). Mientras `develop` no aparezca en
-`push.protectedBranches`, ese destino configurado es válido y debe respetarse;
-`main`/`master` siguen rechazados.
+el owner explícito configurado y empuja el resultado a `origin/develop` (con
+`--force-with-lease`). Solo se rechazan las ramas incluidas en
+`push.protectedBranches` o que coincidan con `push.protectedPrefixes`; `main` y
+`master` no reciben un trato especial.
 
 ## Licencia
 
