@@ -51,9 +51,10 @@ interface IIndexedProposal {
 
 const readIndex = async (
 	root: string,
-): Promise<{ proposals: IIndexedProposal[] }> => {
+): Promise<{ count: number; proposals: IIndexedProposal[] }> => {
 	const indexPath = resolve(root, DEFAULT_PATH_LAYOUT.proposalIndexFile);
 	return JSON.parse(await readFile(indexPath, 'utf8')) as {
+		count: number;
 		proposals: IIndexedProposal[];
 	};
 };
@@ -154,6 +155,35 @@ describe('syncProposalRegistry (entry point)', async () => {
 		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT, [], FAKE_GIT_MV);
 		const index = await readIndex(root);
 		expect(index.proposals.map((p) => p.id)).toContain('f904a');
+	});
+
+	it('indexes review proposals in kind subfolders exactly once', async () => {
+		await seed(root, 'review/plans', 'q905-review-plan.md', {
+			id: 'q905',
+			status: 'review',
+			kind: 'plan',
+			title: 'Review plan',
+		});
+		await seed(root, 'review/feats', 'f906-review-feat.md', {
+			id: 'f906',
+			status: 'review',
+			kind: 'feat',
+			title: 'Review feature',
+		});
+
+		const result = await syncProposalRegistry(
+			root,
+			DEFAULT_PATH_LAYOUT,
+			[],
+			FAKE_GIT_MV,
+		);
+		const index = await readIndex(root);
+		const ids = index.proposals.map((p) => p.id);
+
+		expect(result.errors).toEqual([]);
+		expect(index.count).toBe(2);
+		expect(ids).toEqual(expect.arrayContaining(['q905', 'f906']));
+		expect(new Set(ids).size).toBe(ids.length);
 	});
 
 	it('does not report folder drift once the same sync reconciles it', async () => {
