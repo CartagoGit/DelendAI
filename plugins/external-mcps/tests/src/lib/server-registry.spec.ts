@@ -130,7 +130,7 @@ const makeTimerHarness = (): {
 };
 
 const entry = (
-	over: Partial<IRegistryServerEntry> = {}
+	over: Partial<IRegistryServerEntry> = {},
 ): IRegistryServerEntry => ({
 	version: '1.4.2',
 	command: 'stub-mcp',
@@ -157,7 +157,7 @@ const makeHarness = (
 		callTimeoutMs?: number;
 		hostEnv?: Readonly<Record<string, string | undefined>>;
 		now?: () => number;
-	} = {}
+	} = {},
 ): IHarness => {
 	const children: FakeChild[] = [];
 	const spawnCalls: IHarness['spawnCalls'] = [];
@@ -212,7 +212,7 @@ const captureTool = async (reg: IToolRegistration): Promise<ICapturedTool> => {
 		registerTool: (
 			name: string,
 			config: ICapturedTool['config'],
-			handler: ICapturedTool['handler']
+			handler: ICapturedTool['handler'],
 		) => {
 			captured.push({ name, config, handler });
 		},
@@ -264,7 +264,7 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 			{
 				fs: entry({ command: 'npx', args: ['-y', 'pkg@1.4.2'] }),
 			},
-			{ hostEnv: BASE_HOST_ENV }
+			{ hostEnv: BASE_HOST_ENV },
 		);
 		void h.registry.call('fs', 'ping', {});
 		expect(h.spawnCalls[0]).toEqual({
@@ -308,7 +308,7 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 				explicitLazy: entry({ eager: false, command: 'cold-cmd' }),
 				hot: entry({ eager: true, command: 'hot-cmd' }),
 			},
-			{ hostEnv: BASE_HOST_ENV }
+			{ hostEnv: BASE_HOST_ENV },
 		);
 		h.registry.bootEager();
 		expect(h.spawnCalls).toHaveLength(1);
@@ -327,7 +327,7 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 				explicitLazy: entry({ eager: false, command: 'cold-cmd' }),
 				hot: entry({ eager: true, command: 'hot-cmd' }),
 			},
-			{ hostEnv: BASE_HOST_ENV }
+			{ hostEnv: BASE_HOST_ENV },
 		);
 		h.registry.bootEager();
 		expect(h.spawnCalls.map((call) => call.command)).toEqual(['hot-cmd']);
@@ -362,7 +362,7 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 		await pending;
 		const spawnedEnv = h.spawnCalls[0]?.env;
 		expect(Object.keys(spawnedEnv ?? {}).sort()).toEqual(
-			[...BASE_ALLOW_LIST].sort()
+			[...BASE_ALLOW_LIST].sort(),
 		);
 		expect(spawnedEnv).not.toHaveProperty('FOO_DECOY');
 		expect(spawnedEnv).not.toHaveProperty('BAR_DECOY');
@@ -439,7 +439,7 @@ describe('ExternalServerRegistry — failure paths', () => {
 	it('missing required host env fails closed with code:missing-env and does not spawn', async () => {
 		const h = makeHarness(
 			{ fs: entry({ env: { LOG_LEVEL: 'info' } }) },
-			{ hostEnv: BASE_HOST_ENV }
+			{ hostEnv: BASE_HOST_ENV },
 		);
 		const outcome = await h.registry.call('fs', 'read_file', {});
 		expect(outcome).toEqual({
@@ -575,18 +575,18 @@ describe('status tool (compact, literal-precise rows)', () => {
 	it('registers under the plugin namespace and returns schema-exact rows', async () => {
 		const h = makeHarness(
 			{ fs: entry() },
-			{ now: () => Date.UTC(2026, 6, 9, 12, 0, 0) }
+			{ now: () => Date.UTC(2026, 6, 9, 12, 0, 0) },
 		);
 		const tool = await captureTool(
 			buildStatusToolRegistration({
 				namespacePrefix: 'external-mcps',
 				registry: h.registry,
-			})
+			}),
 		);
 		expect(tool.name).toBe('external-mcps_status');
 
 		const cold = StatusOutputSchema.parse(
-			(await tool.handler({})).structuredContent
+			(await tool.handler({})).structuredContent,
 		);
 		expect(cold).toEqual({
 			ok: true,
@@ -597,7 +597,7 @@ describe('status tool (compact, literal-precise rows)', () => {
 		h.children[0]?.reply(0, { result: {} });
 		await pending;
 		const warm = StatusOutputSchema.parse(
-			(await tool.handler({})).structuredContent
+			(await tool.handler({})).structuredContent,
 		);
 		expect(warm.servers).toEqual([
 			{
@@ -622,7 +622,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 				registry: h.registry,
 				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: true,
-			})
+			}),
 		);
 		expect(tool.name).toBe('external-mcps_call');
 		const result = await tool.handler({ server: 'fs', tool: 'read_file' });
@@ -643,7 +643,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: true,
 				hasRecordedAck: (id) => id === 'fs',
-			})
+			}),
 		);
 		const pending = tool.handler({
 			server: 'fs',
@@ -652,7 +652,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 		});
 		h.children[0]?.reply(0, { result: { content: [] } });
 		const payload = CallOutputSchema.parse(
-			(await pending).structuredContent
+			(await pending).structuredContent,
 		);
 		expect(payload).toEqual({ ok: true, result: { content: [] } });
 	});
@@ -665,12 +665,12 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 				registry: h.registry,
 				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: false,
-			})
+			}),
 		);
 		const pending = tool.handler({ server: 'fs', tool: 'ping' });
 		h.children[0]?.reply(0, { result: { pong: true } });
 		expect(
-			CallOutputSchema.parse((await pending).structuredContent)
+			CallOutputSchema.parse((await pending).structuredContent),
 		).toEqual({ ok: true, result: { pong: true } });
 	});
 
@@ -682,7 +682,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 				registry: h.registry,
 				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: true,
-			})
+			}),
 		);
 		const result = await tool.handler({ server: 'gh ', tool: 'x' });
 		const payload = CallOutputSchema.parse(result.structuredContent);
@@ -696,7 +696,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 		expect(stripExtPrefix('fs', 'ext.fs.read_file')).toBe('read_file');
 		expect(stripExtPrefix('fs', 'read_file')).toBe('read_file');
 		expect(stripExtPrefix('fs', 'ext.gh.read_file')).toBe(
-			'ext.gh.read_file'
+			'ext.gh.read_file',
 		);
 
 		const h = makeHarness({ fs: entry() });
@@ -706,7 +706,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 				registry: h.registry,
 				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: false,
-			})
+			}),
 		);
 		const pending = tool.handler({
 			server: 'fs',
@@ -733,7 +733,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 					llmDecidesActivation: false,
 					requireHumanAckWhenLlmDecides: false,
 					hasRecordedAck: () => true,
-				})
+				}),
 			);
 			const result = await tool.handler({
 				server: 'fs',
@@ -762,12 +762,12 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 					registry: h.registry,
 					llmDecidesActivation: false,
 					requireHumanAckWhenLlmDecides: false,
-				})
+				}),
 			);
 			const pending = tool.handler({ server: 'fs', tool: 'ping' });
 			h.children[0]?.reply(1, { result: { pong: true } });
 			const payload = CallOutputSchema.parse(
-				(await pending).structuredContent
+				(await pending).structuredContent,
 			);
 			expect(payload).toEqual({ ok: true, result: { pong: true } });
 			expect(h.spawnCalls).toHaveLength(1); // no second boot
@@ -781,7 +781,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 					registry: h.registry,
 					llmDecidesActivation: true,
 					requireHumanAckWhenLlmDecides: true,
-				})
+				}),
 			);
 			const result = await tool.handler({
 				server: 'fs',

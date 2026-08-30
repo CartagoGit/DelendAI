@@ -127,20 +127,26 @@ export default definePlugin({
 			workspaceRoot: ctx.workspace.root,
 			policy: policy.push,
 		});
-		void branchProtectionAdapter
-			.refresh()
-			.then((result) => {
-				if (!result.ok) {
+		if (
+			process.env
+				.MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER ===
+			'true'
+		) {
+			void branchProtectionAdapter
+				.refresh()
+				.then((result) => {
+					if (!result.ok) {
+						console.info(
+							`[commit-policy] remote branch protection ${result.state}: ${result.reason}`,
+						);
+					}
+				})
+				.catch((error: unknown) => {
 					console.info(
-						`[commit-policy] remote branch protection unavailable: ${result.reason}`,
+						`[commit-policy] remote branch protection refresh failed: ${error instanceof Error ? error.message : String(error)}`,
 					);
-				}
-			})
-			.catch((error: unknown) => {
-				console.info(
-					`[commit-policy] remote branch protection refresh failed: ${error instanceof Error ? error.message : String(error)}`,
-				);
-			});
+				});
+		}
 
 		// Every timer + listener the plugin
 		// creates gets a teardown appended here so the host's
@@ -433,6 +439,7 @@ export default definePlugin({
 					'- Branches matching `push.protectedPrefixes` are protected too; no prefixes are assumed when the list is empty.',
 					'- Any other branch permits direct commit and push when `commit.enabled` and `push.enabled` are true. The configured lists are the only local protection source.',
 					'- Call `commit_policy_status` before an automatic operation to inspect `branchPolicy.current`, the effective protected lists, and `directCommitPushAllowed`.',
+					'- Remote branch protection refresh is manual by default via `commit_policy_refresh_branch_protection`; set `MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true` only when the host explicitly opts into that spawn/network side effect at register time.',
 					'',
 					'**Off by default.** Hosts must opt in:',
 					'',

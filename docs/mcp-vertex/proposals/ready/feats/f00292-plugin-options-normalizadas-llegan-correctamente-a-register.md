@@ -15,6 +15,26 @@ migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.m
 
 Migrated work item: Plugin options normalizadas llegan correctamente a `register`..
 
+## why
+
+Imported from a foreign proposal format so it can be tracked under the canonical proposal workflow.
+
+## non-goals
+
+- Preserve the source document as an independently editable proposal.
+
+## Slices
+
+### S1 — Review migrated proposal
+
+- **Status**: pending
+- **Files**: `TODO`
+- **Gate**: none
+
+## acceptance
+
+- The migrated proposal is reviewed and its files and validation gate are made explicit.
+
 ## notes
 
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#plugin-options-normalizadas-llegan-correctamente-a-register` by `proposal_adopt`

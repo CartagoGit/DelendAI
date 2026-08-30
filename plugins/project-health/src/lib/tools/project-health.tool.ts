@@ -46,10 +46,7 @@ export const ProjectHealthOutputSchema = z.object({
 	originalBytes: z.number().optional(),
 });
 
-type ProjectHealthPayload = Omit<
-	IProjectHealthOutput,
-	never
->;
+type ProjectHealthPayload = Omit<IProjectHealthOutput, never>;
 
 const projectProjectHealthPayload = (
 	payload: ProjectHealthPayload,
@@ -61,27 +58,27 @@ const projectProjectHealthPayload = (
 			compact: (full) =>
 				full.domain === undefined
 					? {
-						score: full.score,
-						security: full.security,
-						deps: full.deps,
-						quality: full.quality,
-						debt: full.debt,
-						bytes: full.bytes,
-						truncated: full.truncated,
-						...(full.originalBytes !== undefined
-							? { originalBytes: full.originalBytes }
-							: {}),
-					}
+							score: full.score,
+							security: full.security,
+							deps: full.deps,
+							quality: full.quality,
+							debt: full.debt,
+							bytes: full.bytes,
+							truncated: full.truncated,
+							...(full.originalBytes !== undefined
+								? { originalBytes: full.originalBytes }
+								: {}),
+						}
 					: {
-						domain: full.domain,
-						tool: full.tool,
-						hint: full.hint,
-						bytes: full.bytes,
-						truncated: full.truncated,
-						...(full.originalBytes !== undefined
-							? { originalBytes: full.originalBytes }
-							: {}),
-					},
+							domain: full.domain,
+							tool: full.tool,
+							hint: full.hint,
+							bytes: full.bytes,
+							truncated: full.truncated,
+							...(full.originalBytes !== undefined
+								? { originalBytes: full.originalBytes }
+								: {}),
+						},
 			normal: (full) => full,
 			full: (full) => full,
 		},
@@ -126,7 +123,7 @@ export const buildProjectHealthToolRegistrations = (
 				{
 					outputSchema: ProjectHealthOutputSchema,
 					description:
-							'Aggregate a cheap project-health summary across security, deps, quality and debt. Summary mode is intentionally heuristic-only; detail modes stay lazy and point at the real domain tools without executing them. When `detail` is omitted the tool preserves the legacy payload; `compact` trims routing metadata, while `normal` and `full` keep the same shape.',
+						'Aggregate a cheap project-health summary across security, deps, quality and debt. Summary mode is intentionally heuristic-only; detail modes stay lazy and point at the real domain tools without executing them. When `detail` is omitted the tool preserves the legacy payload; `compact` trims routing metadata, while `normal` and `full` keep the same shape.',
 					inputSchema: InputSchema,
 				},
 				async (args) => runProjectHealth(args, options),

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-30T13:47:55.546Z",
+	"generatedAt": "2026-08-30T15:36:06.794Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -80,6 +80,10 @@
 		},
 		{
 			"name": "mcp-vertex_commit-policy_commit_policy_push",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_refresh_branch_protection",
 			"plugin": "commit-policy"
 		},
 		{
@@ -1465,13 +1469,6 @@
 			{
 				"id": "f00284",
 				"title": "f00284",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00284",
-				"title": "f00284",
 				"track": "observability",
 				"status": "ready",
 				"kind": "feat"
@@ -2177,6 +2174,34 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00385",
+				"title": "f00385",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00386",
+				"title": "f00386",
+				"track": "parallel-validation",
+				"status": "in-progress",
+				"kind": "feat"
+			},
+			{
+				"id": "f00387",
+				"title": "f00387",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00387",
+				"title": "f00387",
+				"track": "parallel-validation",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "q00006",
 				"title": "q00006",
 				"track": "develop-audit-hardening-v4",
@@ -2464,30 +2489,9 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00303",
-				"title": "x00303",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00304",
-				"title": "x00304",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00304",
 				"title": "x00304",
 				"track": "proposals-commit-persistence",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00305",
-				"title": "x00305",
-				"track": "migrated",
 				"status": "ready",
 				"kind": "fix"
 			},
@@ -2504,14 +2508,42 @@
 				"track": "migrated",
 				"status": "ready",
 				"kind": "fix"
+			},
+			{
+				"id": "x00307",
+				"title": "x00307",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00308",
+				"title": "x00308",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00309",
+				"title": "x00309",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00321",
+				"title": "x00321",
+				"track": "commit-policy-hardening",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 164,
-			"in-progress": 14,
+			"ready": 167,
+			"in-progress": 15,
 			"review": 0,
 			"paused": 1,
-			"done": 565,
+			"done": 569,
 			"blocked": 0,
 			"retired": 3,
 			"unspecified": 0

@@ -27,7 +27,11 @@ export type TKpiAuditFindingSeverity =
 	(typeof KPI_AUDIT_FINDING_SEVERITIES)[number];
 
 export type TKpiAuditStatus =
-	'measured' | 'estimated' | 'partial' | 'unavailable' | 'not-configured';
+	| 'measured'
+	| 'estimated'
+	| 'partial'
+	| 'unavailable'
+	| 'not-configured';
 
 interface IAuditFinding {
 	readonly id: string;
@@ -115,7 +119,7 @@ const errorClassificationOf = (record: IKpiAuditRecord): string | null => {
 };
 
 const errorRateByPlugin = (
-	records: readonly IKpiAuditRecord[]
+	records: readonly IKpiAuditRecord[],
 ): ReadonlyMap<string, { readonly calls: number; readonly errors: number }> => {
 	const groups = new Map<
 		string,
@@ -139,7 +143,7 @@ const errorRateByPlugin = (
  * decide whether to act on it.
  */
 export const buildAuditReport = (
-	options: IAuditReportOptions
+	options: IAuditReportOptions,
 ): IAuditReport => {
 	const now = options.now ?? new Date();
 	const generatedAt = asIsoString(now);
@@ -170,7 +174,7 @@ export const buildAuditReport = (
 	const incongruent = options.records.filter(
 		(record) =>
 			record.errorTelemetry?.incongruence === true ||
-			errorClassificationOf(record) === 'schema-incongruence'
+			errorClassificationOf(record) === 'schema-incongruence',
 	);
 	if (incongruent.length > 0) {
 		findings.push({
@@ -188,7 +192,8 @@ export const buildAuditReport = (
 	// 3. Unexplained failures: error outcomes without a usable classification.
 	const unexplained = options.records.filter(
 		(record) =>
-			record.outcome === 'error' && errorClassificationOf(record) === null
+			record.outcome === 'error' &&
+			errorClassificationOf(record) === null,
 	);
 	if (unexplained.length > 0) {
 		findings.push({
@@ -222,7 +227,7 @@ export const buildAuditReport = (
 	const missingRequestType = options.records.filter(
 		(record) =>
 			(record.requestType ?? record.dimensions?.requestType ?? null) ===
-			null
+			null,
 	);
 	if (
 		options.records.length > 0 &&

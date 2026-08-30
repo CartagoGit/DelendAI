@@ -437,9 +437,9 @@ export const createLazyPluginRouter = (
 			return stateOf(pluginId);
 		},
 		transitionPlugin(pluginId, to, reason) {
-			if (cache === undefined && to === 'ACTIVE') {
+			if (cache === undefined) {
 				throw new Error(
-					`plugin router must be initialized before activating "${pluginId}"`,
+					`plugin router must be initialized before transitioning "${pluginId}"`,
 				);
 			}
 			if (cache !== undefined && !cache.pluginIds.includes(pluginId)) {

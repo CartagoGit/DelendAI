@@ -4,6 +4,7 @@ import {
 	DETAIL_LEVELS,
 	projectDetail,
 	summarizeFindings,
+	toolError,
 	toolJson,
 	worstSeverity,
 	type Detail,
@@ -87,10 +88,19 @@ const DepsListOutputSchema = z.object({
 	counts: SECTION_COUNTS,
 	deps: z.array(DependencyEntrySchema),
 });
+const DepsListInputSchema = z.object({
+	manifest: z.string().optional(),
+	detail: DetailSchema.optional(),
+});
 const DepsPolyglotOutputSchema = z.object({
 	detail: DetailSchema.optional(),
 	manifests: z.array(PolyglotManifestSchema),
 });
+const DepsPolyglotInputSchema = z
+	.object({
+		detail: DetailSchema.optional(),
+	})
+	.strict();
 
 type DepsListPayload = Awaited<ReturnType<typeof listDeps>>;
 type DepsPolyglotPayload = {
@@ -200,26 +210,33 @@ export const buildDepsToolRegistrations = (
 					{
 						description:
 							'List the declared dependencies from package.json across dependencies/devDependencies/peerDependencies/optionalDependencies, each with its version range. Read-only, offline. When `detail` is omitted the tool preserves the legacy payload; `compact` keeps counts while suppressing the dependency rows, and `normal`/`full` return the same shape.',
-						inputSchema: z.object({
-							manifest: z.string().optional(),
-							detail: DetailSchema.optional(),
-						}),
+						inputSchema: DepsListInputSchema,
 						outputSchema: DepsListOutputSchema,
 					},
 					async (args: {
 						manifest?: string | undefined;
 						detail?: Detail | undefined;
 					}) => {
+						const parsed = DepsListInputSchema.safeParse(args);
+						if (!parsed.success) {
+							return toolError(
+								parsed.error.message,
+								'Pass manifest as a string and detail as compact|normal|full.',
+							);
+						}
 						const payload = await listDeps(
 							options.workspaceRootAbs,
-							args.manifest ?? manifest,
+							parsed.data.manifest ?? manifest,
 						);
-						if (args.detail === undefined) {
+						if (parsed.data.detail === undefined) {
 							return toolJson(payload);
 						}
 						return toolJson({
-							detail: args.detail,
-							...projectDepsListPayload(payload, args.detail),
+							detail: parsed.data.detail,
+							...projectDepsListPayload(
+								payload,
+								parsed.data.detail,
+							),
 						});
 					},
 				);
@@ -390,21 +407,31 @@ export const buildDepsToolRegistrations = (
 					{
 						description:
 							'List declared dependencies from whichever of pyproject.toml (PEP 621 `[project] dependencies` and/or Poetry `[tool.poetry.dependencies]`), Cargo.toml ([dependencies]/[dev-dependencies]/[build-dependencies]) and go.mod (require) exist at the workspace root. Each entry has {ecosystem,name,range,section}. Read-only, offline, no CVE database — same contract as deps_list, for non-npm ecosystems. When `detail` is omitted the tool preserves the legacy payload; `compact` keeps the detected manifests while suppressing per-dependency rows, and `normal`/`full` return the same shape.',
-						inputSchema: z.object({
-							detail: DetailSchema.optional(),
-						}).strict(),
+						inputSchema: DepsPolyglotInputSchema,
 						outputSchema: DepsPolyglotOutputSchema,
 					},
 					async (args: { detail?: Detail | undefined }) => {
+						const parsed = DepsPolyglotInputSchema.safeParse(args);
+						if (!parsed.success) {
+							return toolError(
+								parsed.error.message,
+								'Pass detail as compact|normal|full when requesting a projection.',
+							);
+						}
 						const payload = {
-							manifests: await listPolyglotDeps(options.workspaceRootAbs),
+							manifests: await listPolyglotDeps(
+								options.workspaceRootAbs,
+							),
 						};
-						if (args.detail === undefined) {
+						if (parsed.data.detail === undefined) {
 							return toolJson(payload);
 						}
 						return toolJson({
-							detail: args.detail,
-							...projectDepsPolyglotPayload(payload, args.detail),
+							detail: parsed.data.detail,
+							...projectDepsPolyglotPayload(
+								payload,
+								parsed.data.detail,
+							),
 						});
 					},
 				);

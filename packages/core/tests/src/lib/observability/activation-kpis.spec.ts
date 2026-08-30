@@ -86,7 +86,7 @@ describe('activation-kpis (f00198) — pure math', () => {
 			// {a,b} ∩ {b,c} = {b} (1); {a,b} ∪ {b,c} = {a,b,c} (3)
 			expect(jaccardDistance(['a', 'b'], ['b', 'c'])).toBeCloseTo(
 				1 - 1 / 3,
-				10
+				10,
 			);
 		});
 	});
@@ -118,7 +118,7 @@ describe('activation-kpis (f00198) — accumulator', () => {
 		expect(s.precision).toBe(0);
 		expect(s.recall).toBeUndefined();
 		expect(s.diagnostics.map((d) => d.code)).toContain(
-			'KPI-NO-EXPECTATIONS'
+			'KPI-NO-EXPECTATIONS',
 		);
 	});
 
@@ -133,7 +133,7 @@ describe('activation-kpis (f00198) — accumulator', () => {
 		expect(s.precision).toBeUndefined();
 		expect(s.recall).toBe(0);
 		expect(s.diagnostics.map((d) => d.code)).toContain(
-			'KPI-NO-INVOCATIONS'
+			'KPI-NO-INVOCATIONS',
 		);
 	});
 
@@ -341,7 +341,7 @@ describe('activation-kpis (f00198) — persistence round-trip', () => {
 	it('session store records runtime tool ids and persists completed sessions', async () => {
 		let persisted = '';
 		const workspaceRootAbs = await mkdtemp(
-			join(tmpdir(), 'activation-kpis-')
+			join(tmpdir(), 'activation-kpis-'),
 		);
 		const store = createActivationKpiSessionStore({
 			workspaceRootAbs,
@@ -362,7 +362,7 @@ describe('activation-kpis (f00198) — persistence round-trip', () => {
 		const session = await store.finishSession();
 
 		expect(store.path).toBe(
-			join(workspaceRootAbs, '.vscode/mcp-vertex/kpis.json')
+			join(workspaceRootAbs, '.vscode/mcp-vertex/kpis.json'),
 		);
 		expect(session?.precision).toBe(0.5);
 		expect(hydrateKpis(JSON.parse(persisted)).aggregate()).toMatchObject({

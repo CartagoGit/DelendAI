@@ -72,7 +72,7 @@ class FakeChild implements IStdioChildProcess {
 
 	reply(index: number, body: Record<string, unknown>): void {
 		this.emitStdout(
-			`${JSON.stringify({ jsonrpc: '2.0', id: index + 1, ...body })}\n`
+			`${JSON.stringify({ jsonrpc: '2.0', id: index + 1, ...body })}\n`,
 		);
 	}
 }
@@ -87,7 +87,7 @@ const entry = (over: Record<string, unknown> = {}): IServerEntry => ({
 describe('ServerEntrySchema <-> registry contract', () => {
 	it('keeps schema keys aligned with the registry entry contract', () => {
 		expect(Object.keys(ServerEntrySchema.shape).sort()).toEqual(
-			Object.keys(REGISTRY_CONTRACT_KEYS).sort()
+			Object.keys(REGISTRY_CONTRACT_KEYS).sort(),
 		);
 	});
 
@@ -112,7 +112,7 @@ describe('ServerEntrySchema <-> registry contract', () => {
 
 		expect(children).toHaveLength(1);
 		const runningById = Object.fromEntries(
-			registry.status().map(({ id, running }) => [id, running])
+			registry.status().map(({ id, running }) => [id, running]),
 		);
 		expect(runningById).toEqual({
 			cold: false,

@@ -27,7 +27,7 @@ export const main = (argv: readonly string[]): number => {
 	if (argv[0] === '--command') {
 		if (argv.length < 2) {
 			console.error(
-				'pack-smoke.script.ts: --command requires at least one argument'
+				'pack-smoke.script.ts: --command requires at least one argument',
 			);
 			return 2;
 		}

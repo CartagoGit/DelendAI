@@ -26,7 +26,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`refactor plugin rejected its options: ${parsed.error.message}`
+				`refactor plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
 		const opts = parsed.data;

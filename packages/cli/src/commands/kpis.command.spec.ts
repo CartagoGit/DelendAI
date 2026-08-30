@@ -411,7 +411,7 @@ describe('kpis command', () => {
 		const result = await runKpisCommandBody(
 			['--json', '--view=plugins'],
 			ctx,
-			runtime
+			runtime,
 		);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		const report = result.data as {
@@ -427,12 +427,12 @@ describe('kpis command', () => {
 		const models = await runKpisCommandBody(
 			['--json', 'models'],
 			ctx,
-			runtime
+			runtime,
 		);
 		const errors = await runKpisCommandBody(
 			['--json', 'errors'],
 			ctx,
-			runtime
+			runtime,
 		);
 		const modelsReport = models.data as {
 			payload: { tables: { rows: { key: string }[] }[] };
@@ -445,10 +445,10 @@ describe('kpis command', () => {
 		};
 		expect(modelsReport.payload.tables[0]?.rows[0]?.key).toBe('gpt-5.4');
 		expect(
-			errorsReport.payload.metrics.map((metric) => metric.key)
+			errorsReport.payload.metrics.map((metric) => metric.key),
 		).toContain('telemetry.failedCalls');
 		expect(errorsReport.payload.tables[1]?.rows[0]?.classification).toBe(
-			'tool-error'
+			'tool-error',
 		);
 	});
 
@@ -457,7 +457,7 @@ describe('kpis command', () => {
 		const result = await runKpisCommandBody(
 			['--json', '--threshold=health.score>=90'],
 			ctx,
-			runtime
+			runtime,
 		);
 		expect(result.code).toBe(EXIT_CODE.VALIDATION);
 		const report = result.data as {
@@ -478,7 +478,7 @@ describe('kpis command', () => {
 				write: (chunk: string) => writes.push(chunk),
 				maxPasses: 2,
 				isTty: false,
-			}
+			},
 		);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		expect(result.suppressDefaultPrint).toBe(true);

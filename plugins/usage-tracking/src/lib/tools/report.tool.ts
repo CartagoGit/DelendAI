@@ -140,7 +140,7 @@ type UsageReportPayload = Omit<z.infer<typeof OutputSchema>, 'detail'>;
 
 const projectUsageReport = (
 	payload: UsageReportPayload,
-	detail: Detail
+	detail: Detail,
 ): UsageReportPayload =>
 	projectDetail(
 		payload,
@@ -153,7 +153,7 @@ const projectUsageReport = (
 			normal: (full) => full,
 			full: (full) => full,
 		},
-		detail
+		detail,
 	) as UsageReportPayload;
 
 const InputSchema = z.object({
@@ -187,7 +187,7 @@ const matchesFilter = (
 				agent?: string | undefined;
 				outcome?: string | undefined;
 		  }
-		| undefined
+		| undefined,
 ): boolean => {
 	if (!filter) return true;
 	if (filter.provider && record.model?.provider !== filter.provider)
@@ -204,7 +204,7 @@ export interface IReportToolOptions {
 }
 
 export const buildReportToolRegistration = (
-	options: IReportToolOptions
+	options: IReportToolOptions,
 ): IToolRegistration => ({
 	id: 'usage_report',
 	tags: ['usage-tracking', 'lazy'],
@@ -228,25 +228,25 @@ export const buildReportToolRegistration = (
 					1,
 					Math.min(
 						MAX_REPORT_LIMIT,
-						args.limit ?? DEFAULT_REPORT_LIMIT
-					)
+						args.limit ?? DEFAULT_REPORT_LIMIT,
+					),
 				);
 
 				const all = await readInvocations(options.invocationsPath);
 				const windowed = withinWindow(all, windowDays).filter((r) =>
-					matchesFilter(r, args.filter)
+					matchesFilter(r, args.filter),
 				);
 
 				const buckets = bucketBy(windowed, groupBy, sortBy).slice(
 					0,
-					limit
+					limit,
 				);
 
 				const expensiveCalls = [...windowed]
 					.sort(
 						(a, b) =>
 							(b.costUsd ?? 0) - (a.costUsd ?? 0) ||
-							(b.durationMs ?? 0) - (a.durationMs ?? 0)
+							(b.durationMs ?? 0) - (a.durationMs ?? 0),
 					)
 					.slice(0, EXPENSIVE_CALL_LIMIT)
 					.map((r) => ({
@@ -270,14 +270,14 @@ export const buildReportToolRegistration = (
 						kpis: localKpis.kpis,
 						expensiveCalls,
 					},
-					detail
+					detail,
 				);
 
 				return toolJson({
 					detail,
 					...payload,
 				});
-			}
+			},
 		);
 	},
 });

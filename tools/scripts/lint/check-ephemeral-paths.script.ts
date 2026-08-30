@@ -19,7 +19,10 @@ export interface IEphemeralPathViolation {
 	readonly line: number;
 	readonly token: string;
 	readonly kind:
-		'tmpdir-ref' | 'mkdtemp-tmpdir' | 'tmp-write' | 'homedir-write';
+		| 'tmpdir-ref'
+		| 'mkdtemp-tmpdir'
+		| 'tmp-write'
+		| 'homedir-write';
 }
 
 const toRelPosix = (root: string, abs: string): string =>
@@ -42,7 +45,7 @@ const lineNumberAt = (source: string, index: number): number =>
 const isSanctionedIsolatedGitIndexTmpDir = (
 	relPath: string,
 	source: string,
-	token: string
+	token: string,
 ): boolean =>
 	relPath === 'plugins/commit-policy/src/lib/services/commit-driver.ts' &&
 	token.includes('mkdtemp') &&
@@ -57,7 +60,7 @@ const shouldScanFile = (relPath: string): boolean =>
 	!relPath.includes('/__tests__/');
 
 const uniqueViolations = (
-	violations: readonly IEphemeralPathViolation[]
+	violations: readonly IEphemeralPathViolation[],
 ): IEphemeralPathViolation[] => {
 	const seen = new Set<string>();
 	const out: IEphemeralPathViolation[] = [];
@@ -75,7 +78,7 @@ const collectMatches = (
 	relPath: string,
 	regex: RegExp,
 	kind: IEphemeralPathViolation['kind'],
-	filter?: (lineText: string, token: string, index: number) => boolean
+	filter?: (lineText: string, token: string, index: number) => boolean,
 ): IEphemeralPathViolation[] => {
 	const violations: IEphemeralPathViolation[] = [];
 	for (const match of source.matchAll(regex)) {
@@ -91,7 +94,7 @@ const collectMatches = (
 
 export const scanSourceForEphemeralPathViolations = (
 	relPath: string,
-	source: string
+	source: string,
 ): IEphemeralPathViolation[] => {
 	if (!shouldScanFile(relPath)) return [];
 	const sanitized = stripComments(source);
@@ -105,8 +108,8 @@ export const scanSourceForEphemeralPathViolations = (
 			/\bmkdtemp(?:Sync)?\s*\(\s*(?:await\s+)?(?:join\s*\(\s*)?(?:os\.)?tmpdir\s*\(/g,
 			'mkdtemp-tmpdir',
 			(_lineText, token) =>
-				!isSanctionedIsolatedGitIndexTmpDir(relPath, sanitized, token)
-		)
+				!isSanctionedIsolatedGitIndexTmpDir(relPath, sanitized, token),
+		),
 	);
 
 	if (importsNodeOs) {
@@ -116,8 +119,8 @@ export const scanSourceForEphemeralPathViolations = (
 				relPath,
 				/\b(?:os\.)?tmpdir\s*\(/g,
 				'tmpdir-ref',
-				(lineText) => !lineText.includes('mkdtemp')
-			)
+				(lineText) => !lineText.includes('mkdtemp'),
+			),
 		);
 	}
 
@@ -126,8 +129,8 @@ export const scanSourceForEphemeralPathViolations = (
 			sanitized,
 			relPath,
 			/\bwriteFile(?:Sync)?\s*\(\s*(['"`])(?:\/tmp\/|\/var\/tmp\/)[^'"`]*\1/g,
-			'tmp-write'
-		)
+			'tmp-write',
+		),
 	);
 
 	violations.push(
@@ -135,18 +138,18 @@ export const scanSourceForEphemeralPathViolations = (
 			sanitized,
 			relPath,
 			/\bwriteFile(?:Sync)?\s*\(\s*(?:join\s*\(\s*)?os\.homedir\s*\(/g,
-			'homedir-write'
-		)
+			'homedir-write',
+		),
 	);
 
 	return uniqueViolations(violations).sort((a, b) =>
-		a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file)
+		a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file),
 	);
 };
 
 const walkRuntimeFiles = async (
 	root: string,
-	dir: string
+	dir: string,
 ): Promise<string[]> => {
 	const entries = await readdir(dir).catch(() => []);
 	const files: string[] = [];
@@ -176,15 +179,17 @@ const listScanRoots = async (root: string): Promise<string[]> => {
 };
 
 export const findEphemeralPathViolations = async (
-	root: string
+	root: string,
 ): Promise<IEphemeralPathViolation[]> => {
 	const files = (
 		await Promise.all(
-			(await listScanRoots(root)).map(async (scanRoot) => {
+			(
+				await listScanRoots(root)
+			).map(async (scanRoot) => {
 				const st = await stat(scanRoot).catch(() => undefined);
 				if (st?.isDirectory() !== true) return [];
 				return walkRuntimeFiles(root, scanRoot);
-			})
+			}),
 		)
 	).flat();
 
@@ -209,21 +214,21 @@ if (isMainModule()) {
 			console.error(
 				`✖ check-ephemeral-paths: ${violations.length} runtime path violation${
 					violations.length === 1 ? '' : 's'
-				}:`
+				}:`,
 			);
 			for (const violation of violations) {
 				console.error(
-					`  ${violation.file}:${violation.line}  ${violation.token}`
+					`  ${violation.file}:${violation.line}  ${violation.token}`,
 				);
 			}
 			console.error(
-				'  Runtime scratch must resolve through resolveExecPath(ctx, name) or withEphemeralExec(ctx, name, content, fn).'
+				'  Runtime scratch must resolve through resolveExecPath(ctx, name) or withEphemeralExec(ctx, name, content, fn).',
 			);
 			process.exit(1);
 			return;
 		}
 		console.log(
-			'✓ check-ephemeral-paths: runtime code does not use non-canonical ephemeral paths.'
+			'✓ check-ephemeral-paths: runtime code does not use non-canonical ephemeral paths.',
 		);
 	})();
 }

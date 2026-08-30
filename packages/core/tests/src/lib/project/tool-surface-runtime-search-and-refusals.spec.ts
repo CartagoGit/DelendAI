@@ -98,10 +98,10 @@ describe('tool-surface-runtime searchTools filters', () => {
 		const { runtime } = buildTwoPluginRuntime();
 
 		expect(
-			runtime.searchTools({ plugin: 'ALPHA' }).map((entry) => entry.name)
+			runtime.searchTools({ plugin: 'ALPHA' }).map((entry) => entry.name),
 		).toEqual(['alpha_read']);
 		expect(runtime.searchTools({ plugin: 'nonexistent-plugin' })).toEqual(
-			[]
+			[],
 		);
 	});
 
@@ -109,7 +109,7 @@ describe('tool-surface-runtime searchTools filters', () => {
 		const { runtime } = buildTwoPluginRuntime();
 
 		expect(
-			runtime.searchTools({ tag: 'WRITE' }).map((entry) => entry.name)
+			runtime.searchTools({ tag: 'WRITE' }).map((entry) => entry.name),
 		).toEqual(['beta_write']);
 		expect(runtime.searchTools({ tag: 'not-a-real-tag' })).toEqual([]);
 	});
@@ -161,14 +161,14 @@ describe('tool-surface-runtime unknown-identifier refusals', () => {
 		});
 
 		expect(
-			runtime.searchTools().map((entry) => entry.registrationId)
+			runtime.searchTools().map((entry) => entry.registrationId),
 		).toEqual(expect.not.arrayContaining(['ghost']));
 	});
 
 	it('getToolExposure reports unknown and isToolExposed stays fail-closed for a name that was never bound', () => {
 		const { runtime } = buildTwoPluginRuntime();
 		expect(runtime.getToolExposure('never-bound-tool-name')).toBe(
-			'unknown'
+			'unknown',
 		);
 		expect(runtime.isToolExposed('never-bound-tool-name')).toBe(false);
 	});

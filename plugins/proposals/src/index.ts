@@ -771,6 +771,7 @@ export default definePlugin({
 				}),
 				...buildRecoveryToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
+					indexPathAbs: abs(layout.proposalIndexFile),
 					proposalsDirAbs: abs(layout.proposalsDir),
 					lockPathAbs: abs(layout.lockFile),
 					agentRegistryPathAbs: abs(layout.agentRegistryFile),

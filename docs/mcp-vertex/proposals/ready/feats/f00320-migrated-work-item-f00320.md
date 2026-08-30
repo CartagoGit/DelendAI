@@ -1,6 +1,6 @@
 ---
 id: f00320
-title: "Abort."
+title: "Migrated work item f00320"
 kind: feat
 status: ready
 type: proposal
@@ -14,6 +14,26 @@ migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.m
 ## Goal
 
 Migrated work item: Abort..
+
+## why
+
+Imported from a foreign proposal format so it can be tracked under the canonical proposal workflow.
+
+## non-goals
+
+- Preserve the source document as an independently editable proposal.
+
+## Slices
+
+### S1 — Review migrated proposal
+
+- **Status**: pending
+- **Files**: `TODO`
+- **Gate**: none
+
+## acceptance
+
+- The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 

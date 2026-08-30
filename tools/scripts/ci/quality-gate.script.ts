@@ -118,7 +118,7 @@ const listLintSteps = async (cwd: string): Promise<readonly IStep[]> => {
 };
 
 export const loadDefaultSteps = async (
-	cwd: string = process.cwd()
+	cwd: string = process.cwd(),
 ): Promise<readonly IStep[]> => [
 	...STATIC_STEPS,
 	...(await listLintSteps(cwd)),
@@ -143,7 +143,7 @@ const runStep = async (step: IStep, cwd: string): Promise<number> => {
 
 export const main = async (
 	argv: readonly string[],
-	options: IMainOptions = {}
+	options: IMainOptions = {},
 ): Promise<number> => {
 	const cwd = options.cwd ?? process.cwd();
 	const out = options.out ?? defaultOut;
@@ -161,13 +161,13 @@ export const main = async (
 		err(
 			`quality-gate: valid names: ${availableSteps
 				.map((step) => step.name)
-				.join(', ')}`
+				.join(', ')}`,
 		);
 		return 2;
 	}
 
 	out(
-		`quality-gate: ${steps.length} step(s), mode=${dryRun ? 'dry-run' : 'real'}`
+		`quality-gate: ${steps.length} step(s), mode=${dryRun ? 'dry-run' : 'real'}`,
 	);
 	if (dryRun) {
 		for (const step of steps) {

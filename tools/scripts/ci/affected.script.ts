@@ -139,7 +139,7 @@ const readJSON = (path: string): unknown => {
  */
 const expandWorkspaces = (
 	rootDir: string,
-	patterns: readonly string[]
+	patterns: readonly string[],
 ): readonly string[] => {
 	const dirs: string[] = [];
 	for (const pattern of patterns) {
@@ -191,7 +191,7 @@ const vitestConfigNames = [
 
 export const resolveVitestProjectName = (
 	dir: string,
-	pkgName: string
+	pkgName: string,
 ): string => {
 	for (const configName of vitestConfigNames) {
 		const configPath = join(dir, configName);
@@ -210,7 +210,7 @@ export const resolveVitestProjectName = (
 
 const resolveAffectedVitestProjects = (
 	graph: IPackageGraph,
-	affected: readonly string[]
+	affected: readonly string[],
 ): readonly string[] => {
 	const nameToDir = new Map<string, string>();
 	for (const [dir, name] of graph.dirToName) {
@@ -222,7 +222,7 @@ const resolveAffectedVitestProjects = (
 		if (workspaceDir === undefined) return workspaceName;
 		return resolveVitestProjectName(
 			join(graph.rootDir, workspaceDir),
-			workspaceName
+			workspaceName,
 		);
 	});
 };
@@ -297,7 +297,7 @@ export const buildGraph = (rootDir: string): IPackageGraph => {
  */
 export const fileToWorkspace = (
 	graph: IPackageGraph,
-	relFile: string
+	relFile: string,
 ): string | null => {
 	// Longest prefix match so `packages/core/src/foo.ts` lands in
 	// `packages/core`, not `packages` (which isn't a workspace).
@@ -319,7 +319,7 @@ export const fileToWorkspace = (
  */
 export const computeAffected = (
 	files: readonly string[],
-	graph: IPackageGraph
+	graph: IPackageGraph,
 ): IAffectedResult => {
 	const direct = new Set<string>();
 	const rootFiles: string[] = [];
@@ -399,7 +399,7 @@ export const gitDiffNames = (base: string, head: string): readonly string[] => {
 		const stdout = execFileSync(
 			'git',
 			['diff', '--name-only', `${base}..${head}`],
-			{ encoding: 'utf8' }
+			{ encoding: 'utf8' },
 		);
 		return stdout
 			.split('\n')
@@ -419,7 +419,7 @@ export interface IWriteArtifactsOptions {
 
 export const writeAffectedArtifacts = (
 	result: IAffectedResult,
-	options: IWriteArtifactsOptions
+	options: IWriteArtifactsOptions,
 ): void => {
 	const dir = dirname(options.outputPath);
 	if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
@@ -449,7 +449,7 @@ export const writeAffectedArtifacts = (
 		}
 		writeFileSync(
 			options.vitestSetPath,
-			`${result.vitestProjects.join('\n')}\n`
+			`${result.vitestProjects.join('\n')}\n`,
 		);
 	}
 };
@@ -472,7 +472,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 
 	if (!all && base === undefined) {
 		err(
-			'affected: --base <ref> is required (or pass --all for the nightly matrix)'
+			'affected: --base <ref> is required (or pass --all for the nightly matrix)',
 		);
 		return 2;
 	}
@@ -496,7 +496,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		} else {
 			if (base === undefined) {
 				err(
-					'affected: --base <ref> is required (or pass --all for the nightly matrix)'
+					'affected: --base <ref> is required (or pass --all for the nightly matrix)',
 				);
 				return 2;
 			}
@@ -521,7 +521,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	out(
 		`affected: mode=${result.mode} affected=${result.affected.length} ` +
 			`upstream=${result.upstream.length} downstream=${result.downstream.length} ` +
-			`rootFiles=${result.rootFiles.length}`
+			`rootFiles=${result.rootFiles.length}`,
 	);
 	out(`affected: wrote ${relativeOutput}`);
 	out(`affected: wrote ${relativeSet}`);

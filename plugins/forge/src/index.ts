@@ -22,7 +22,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`forge plugin rejected its options: ${parsed.error.message}`
+				`forge plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
 		const readTools = buildForgeReadToolRegistrations({

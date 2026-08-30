@@ -5,8 +5,8 @@
  * Runs against an in-memory fake `IGitRunner` — no real git binary.
  */
 
-import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -80,45 +80,45 @@ const buildFakeGit = (opts: {
 	if (opts.currentBranch !== undefined) {
 		responses.set(
 			'rev-parse\u0000--abbrev-ref\u0000HEAD',
-			ok(`${opts.currentBranch}\n`)
+			ok(`${opts.currentBranch}\n`),
 		);
 	} else {
 		responses.set(
 			'rev-parse\u0000--abbrev-ref\u0000HEAD',
-			fail('not a repo')
+			fail('not a repo'),
 		);
 	}
 	if (opts.globalName !== undefined) {
 		responses.set(
 			'config\u0000--global\u0000user.name',
-			ok(`${opts.globalName}\n`)
+			ok(`${opts.globalName}\n`),
 		);
 	}
 	if (opts.globalEmail !== undefined) {
 		responses.set(
 			'config\u0000--global\u0000user.email',
-			ok(`${opts.globalEmail}\n`)
+			ok(`${opts.globalEmail}\n`),
 		);
 	}
 	responses.set('rev-parse\u0000HEAD', ok(`${headBefore}\n`));
 	responses.set(
 		'rev-parse\u0000--short\u0000HEAD',
-		ok(`${headAfter.slice(0, 7)}\n`)
+		ok(`${headAfter.slice(0, 7)}\n`),
 	);
 	if (opts.cached !== undefined) {
 		responses.set(
 			'diff\u0000--cached\u0000--name-only',
-			ok(`${opts.cached.join('\n')}\n`)
+			ok(`${opts.cached.join('\n')}\n`),
 		);
 	}
 	if (opts.dirty !== undefined) {
 		responses.set(
 			'status\u0000--porcelain=v1',
-			ok(`${opts.dirty.map((path) => ` M ${path}`).join('\n')}\n`)
+			ok(`${opts.dirty.map((path) => ` M ${path}`).join('\n')}\n`),
 		);
 	}
 	const run: IGitRunner = async (
-		args: readonly string[]
+		args: readonly string[],
 	): Promise<IGitRunResult> => {
 		commands.push([...args]);
 		const key = args.join('\u0000');
@@ -178,7 +178,7 @@ const basePolicy = (overrides: Partial<ParsedOptions> = {}): ParsedOptions => ({
 
 const runGit = async (
 	cwd: string,
-	args: readonly string[]
+	args: readonly string[],
 ): Promise<string> => {
 	const { stdout } = await execFileAsync('git', [...args], {
 		cwd,
@@ -193,7 +193,7 @@ const withTempRepo = async (
 		git: IGitRunner;
 		trackedFile: string;
 		lockPath: string;
-	}) => Promise<void>
+	}) => Promise<void>,
 ): Promise<void> => {
 	const repoDir = await mkdtemp(join(tmpdir(), 'commit-driver-spec-'));
 	const trackedFile = join(repoDir, 'slice-a.ts');
@@ -236,7 +236,7 @@ describe('runCommitDriver', () => {
 				}),
 				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 				auditAgent: null,
-			}
+			},
 		);
 		expect(result.committed).toBe(false);
 		expect(result.refusal).toContain('commit.enabled');
@@ -252,7 +252,7 @@ describe('runCommitDriver', () => {
 				policy: basePolicy(),
 				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 				auditAgent: null,
-			}
+			},
 		);
 		expect(result.committed).toBe(false);
 		expect(result.refusal).toMatch(/global|email|name/);
@@ -270,7 +270,7 @@ describe('runCommitDriver', () => {
 				policy: basePolicy(),
 				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 				auditAgent: null,
-			}
+			},
 		);
 		expect(result.committed).toBe(false);
 		expect(result.refusal).toContain('detached');
@@ -296,11 +296,41 @@ describe('runCommitDriver', () => {
 				policy: basePolicy(),
 				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 				auditAgent: null,
-			}
+			},
 		);
 		expect(result.committed).toBe(false);
 		expect(result.refusal).toContain('BRANCH_PROTECTED');
 		expect(result.refusal).toContain('"main"');
+	});
+
+	it('allows commit on main when the effective protected list omits it', async () => {
+		const fake = buildFakeGit({
+			currentBranch: 'main',
+			globalName: 'Cartago',
+			globalEmail: 'cartago@example.com',
+			cached: ['plugins/commit-policy/src/index.ts'],
+		});
+		const result = await runCommitDriver(
+			{
+				message: 'feat(commit-policy): add driver',
+				files: ['plugins/commit-policy/src/index.ts'],
+			},
+			{
+				run: fake.run,
+				policy: basePolicy({
+					push: {
+						enabled: false,
+						onCommit: false,
+						force: 'with-lease',
+						protectedBranches: [],
+					},
+				}),
+				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+				auditAgent: null,
+			},
+		);
+		expect(result.committed).toBe(true);
+		expect(fake.committed.count).toBe(1);
 	});
 
 	it('commits with the resolved global author + audit trailer', async () => {
@@ -320,7 +350,7 @@ describe('runCommitDriver', () => {
 				policy: basePolicy(),
 				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 				auditAgent: { host: 'vscode-copilot', model: 'minimax-m3' },
-			}
+			},
 		);
 		expect(result.committed).toBe(true);
 		expect(result.commitCreated).toBe(true);
@@ -330,7 +360,7 @@ describe('runCommitDriver', () => {
 		const committed = fake.committed.messages[0] ?? '';
 		expect(committed).toContain('feat(commit-policy): add driver');
 		expect(committed).toContain(
-			'Co-authored-by: vscode-copilot/minimax-m3'
+			'Co-authored-by: vscode-copilot/minimax-m3',
 		);
 	});
 
@@ -357,7 +387,7 @@ describe('runCommitDriver', () => {
 				policy: basePolicy(),
 				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 				auditAgent: null,
-			}
+			},
 		);
 		const committed = fake.committed.messages[0] ?? '';
 		expect(committed).toContain('feat(f00181): add commit driver');
@@ -388,7 +418,7 @@ describe('runCommitDriver', () => {
 				policy: basePolicy(),
 				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 				auditAgent: null,
-			}
+			},
 		);
 		const committed = fake.committed.messages[0] ?? '';
 		expect(committed).toContain('fix(core): already scoped');
@@ -411,7 +441,7 @@ describe('runCommitDriver', () => {
 				}),
 				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 				auditAgent: { host: 'vscode-copilot', model: 'minimax-m3' },
-			}
+			},
 		);
 		const committed = fake.committed.messages[0] ?? '';
 		expect(committed).not.toContain('Co-authored-by:');
@@ -450,7 +480,7 @@ describe('runCommitDriver', () => {
 					policy: sliceScopingPolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(false);
 			expect(result.refusal).toContain('SLICE_HAS_NO_FILES');
@@ -485,7 +515,7 @@ describe('runCommitDriver', () => {
 					policy: sliceScopingPolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(false);
 			expect(result.commitCreated).toBe(false);
@@ -521,7 +551,7 @@ describe('runCommitDriver', () => {
 					policy: sliceScopingPolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(true);
 			expect(result.trace?.stagedSetAtPreCommit).toEqual([
@@ -551,7 +581,7 @@ describe('runCommitDriver', () => {
 					policy: sliceScopingPolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(true);
 			expect(result.commitCreated).toBe(true);
@@ -580,7 +610,7 @@ describe('runCommitDriver', () => {
 					policy: sliceScopingPolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(true);
 			expect(result.commitCreated).toBe(true);
@@ -612,7 +642,7 @@ describe('runCommitDriver', () => {
 					},
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(true);
 			expect(result.commitCreated).toBe(true);
@@ -637,7 +667,7 @@ describe('runCommitDriver', () => {
 					policy: basePolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(false);
 			expect(result.commitCreated).toBe(false);
@@ -666,7 +696,7 @@ describe('runCommitDriver', () => {
 					policy: basePolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(false);
 			expect(result.commitCreated).toBe(false);
@@ -696,7 +726,7 @@ describe('runCommitDriver', () => {
 					policy: basePolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(true);
 			expect(result.trace?.stagedSetAtPreCommit).toEqual([
@@ -712,10 +742,10 @@ describe('runCommitDriver', () => {
 				async ({ repoDir, git, trackedFile, lockPath }) => {
 					await writeFile(trackedFile, 'export const value = 2;\n');
 					const realIndexBefore = await readFile(
-						join(repoDir, '.git', 'index')
+						join(repoDir, '.git', 'index'),
 					);
 					const realIndexStatBefore = await stat(
-						join(repoDir, '.git', 'index')
+						join(repoDir, '.git', 'index'),
 					);
 					const headBefore = await runGit(repoDir, [
 						'rev-parse',
@@ -735,7 +765,7 @@ describe('runCommitDriver', () => {
 					expect(result.committed).toBe(true);
 					if (!result.committed) {
 						throw new Error(
-							`unexpected refusal: ${result.refusal}`
+							`unexpected refusal: ${result.refusal}`,
 						);
 					}
 					expect(result.headBefore).toBe(headBefore);
@@ -744,7 +774,7 @@ describe('runCommitDriver', () => {
 						'slice-a.ts',
 					]);
 					expect(await runGit(repoDir, ['rev-parse', 'HEAD'])).toBe(
-						result.headAfter
+						result.headAfter,
 					);
 					expect(
 						await runGit(repoDir, [
@@ -752,23 +782,23 @@ describe('runCommitDriver', () => {
 							'--format=%B',
 							'--no-patch',
 							'HEAD',
-						])
+						]),
 					).toContain('feat: scoped');
 					expect(
-						await readFile(join(repoDir, '.git', 'index'))
+						await readFile(join(repoDir, '.git', 'index')),
 					).toEqual(realIndexBefore);
 					const realIndexStatAfter = await stat(
-						join(repoDir, '.git', 'index')
+						join(repoDir, '.git', 'index'),
 					);
 					expect(realIndexStatAfter.mtimeMs).toBe(
-						realIndexStatBefore.mtimeMs
+						realIndexStatBefore.mtimeMs,
 					);
 					expect(
 						await stat(lockPath)
 							.then(() => true)
-							.catch(() => false)
+							.catch(() => false),
 					).toBe(false);
-				}
+				},
 			);
 		});
 
@@ -794,7 +824,7 @@ describe('runCommitDriver', () => {
 				expect(result.headAfter).toBe(headBefore);
 				expect(result.refusal).toContain('nothing to commit');
 				expect(await runGit(repoDir, ['rev-parse', 'HEAD'])).toBe(
-					headBefore
+					headBefore,
 				);
 			});
 		});
@@ -817,8 +847,11 @@ describe('runCommitDriver', () => {
 				enforceSubset: true,
 			});
 			expect(result.committed).toBe(false);
+			if (result.committed) {
+				throw new Error('expected git commit refusal result');
+			}
 			expect(result.refusal).toBe(
-				'git commit failed: fatal: hook rejected commit'
+				'git commit failed: fatal: hook rejected commit',
 			);
 		});
 
@@ -840,7 +873,7 @@ describe('runCommitDriver', () => {
 				}
 				expect(result.refusal).toContain('git add failed');
 				expect(await runGit(repoDir, ['rev-parse', 'HEAD'])).toBe(
-					headBefore
+					headBefore,
 				);
 			});
 		});
@@ -848,7 +881,7 @@ describe('runCommitDriver', () => {
 
 	describe('x00265 — requireConventional rejects non-conventional messages', () => {
 		const requireConventionalPolicy = (
-			overrides: Partial<ParsedOptions> = {}
+			overrides: Partial<ParsedOptions> = {},
 		): ParsedOptions => ({
 			...basePolicy(),
 			commit: {
@@ -873,7 +906,7 @@ describe('runCommitDriver', () => {
 					policy: requireConventionalPolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(false);
 			expect(result.refusal).toContain('NON_CONVENTIONAL_MESSAGE');
@@ -894,7 +927,7 @@ describe('runCommitDriver', () => {
 					policy: requireConventionalPolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.refusal).toContain('EMPTY_HEADER');
 		});
@@ -912,7 +945,7 @@ describe('runCommitDriver', () => {
 					policy: requireConventionalPolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.refusal).toContain('UNKNOWN_TYPE');
 		});
@@ -930,7 +963,7 @@ describe('runCommitDriver', () => {
 					policy: requireConventionalPolicy(),
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(true);
 		});
@@ -955,7 +988,7 @@ describe('runCommitDriver', () => {
 					},
 					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
 					auditAgent: null,
-				}
+				},
 			);
 			expect(result.committed).toBe(true);
 		});

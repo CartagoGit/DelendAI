@@ -95,7 +95,10 @@ export interface IManualEvent extends ITriggerEventBase {
 
 /** Event emitted by a trigger when it fires. */
 export type ITriggerEvent =
-	ISliceEvent | ThresholdEvent | IIntervalEvent | IManualEvent;
+	| ISliceEvent
+	| ThresholdEvent
+	| IIntervalEvent
+	| IManualEvent;
 
 /** Snapshot of trigger state for status output. */
 export interface ITriggerState {
@@ -112,9 +115,9 @@ export interface ITriggerState {
  */
 export const findTrigger = <K extends TriggerKind>(
 	cadence: ICommitPolicyCadence,
-	kind: K
+	kind: K,
 ): Extract<ICommitPolicyTrigger, { kind: K }> | undefined => {
 	return (cadence.triggers as readonly ICommitPolicyTrigger[]).find(
-		(t): t is Extract<ICommitPolicyTrigger, { kind: K }> => t.kind === kind
+		(t): t is Extract<ICommitPolicyTrigger, { kind: K }> => t.kind === kind,
 	) as Extract<ICommitPolicyTrigger, { kind: K }> | undefined;
 };

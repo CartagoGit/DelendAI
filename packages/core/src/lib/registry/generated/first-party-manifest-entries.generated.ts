@@ -100,7 +100,6 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
 			permissions: ['git-read', 'git-write'],
 			tokenBudgetBytes: 4200,
-			startupActivation: true,
 			toolPermissions: { 'commit_policy_status': ['git-read'], 'commit_policy_commit': ['git-write'], 'commit_policy_push': ['git-write'], 'commit_policy_run': ['git-write'] },
 		},
 		{

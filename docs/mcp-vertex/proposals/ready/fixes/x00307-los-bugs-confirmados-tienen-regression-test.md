@@ -1,5 +1,5 @@
 ---
-id: x00303
+id: x00307
 title: "Los bugs confirmados tienen regression test."
 kind: fix
 status: ready
@@ -9,11 +9,31 @@ date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-bugs-confirmados-tienen-regression-test
 ---
 
-# x00303 — Los bugs confirmados tienen regression test.
+# x00307 — Los bugs confirmados tienen regression test.
 
 ## Goal
 
 Migrated work item: Los bugs confirmados tienen regression test..
+
+## why
+
+Imported from a foreign proposal format so it can be tracked under the canonical proposal workflow.
+
+## non-goals
+
+- Preserve the source document as an independently editable proposal.
+
+## Slices
+
+### S1 — Review migrated proposal
+
+- **Status**: pending
+- **Files**: `TODO`
+- **Gate**: none
+
+## acceptance
+
+- The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 
