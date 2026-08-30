@@ -2,13 +2,15 @@
 id: c00146
 title: "Track C.realign — Realinear `r00029`/`r00030` al subpath `@mcp-vertex/core/contracts` y añadir `Trigger for reversal` documentado en ADR 0007"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
 priority: P1
 classification: CONFIRMADO
 parent-plan: q00006
+shipped-in:
+    - 74d8ddaf
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track C / r00029 (decisión arquitectónica)"
@@ -192,7 +194,10 @@ Editar Track C en el plan para añadir al inicio:
   `docs/mcp-vertex/proposals/ready/refactors/r00029-extraer-contracts-tipos-puros-sin-node.md`.
 - **Gate**: docs lint
 - **Depends on**: `d00012`.
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado S1: r00029 tiene superseded-by: d00012 en frontmatter y bloque SUPERSEDED; lint propuestas 0 fatal. Aprobado.
 ### S2 — Reescribir Goal y Architecture de `r00030`
 
 - **Status**: done
@@ -200,7 +205,10 @@ Editar Track C en el plan para añadir al inicio:
   `docs/mcp-vertex/proposals/ready/refactors/r00030-client-importar-contracts-no-core-public.md`.
 - **Gate**: docs lint
 - **Depends on**: S1 + `r00028`.
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado S2: Goal + Architecture de r00030 apuntan a @mcp-vertex/core/contracts (subpath); sin menciones residuales de @mcp-vertex/contracts fuera del frontmatter related. Aprobado.
 ### S3 — bullet en `b00237` non-goals
 
 - **Status**: done
@@ -208,7 +216,10 @@ Editar Track C en el plan para añadir al inicio:
   `docs/mcp-vertex/proposals/done/breakings/b00237-deprecar-nodedynamicimport-core-public.md`.
 - **Gate**: docs lint
 - **Depends on**: S1.
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado S3: bullet non-goals en b00237 presente con referencia a d00012. Aprobado.
 ### S4 — Anotar Track C en `q00006`
 
 - **Status**: done
@@ -216,7 +227,10 @@ Editar Track C en el plan para añadir al inicio:
   `docs/mcp-vertex/proposals/in-progress/plans/q00006-plan-hardening-post-auditoria-chatgpt-sol-cuarta-pasada.md`.
 - **Gate**: docs lint
 - **Depends on**: S1, S2, S3.
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificado S4: nota arquitectónica Track C en q00006 con referencia a d00012 (ruta correcta). Aprobado.
 ## acceptance
 
 - `bun run validate` verde.
