@@ -227,6 +227,56 @@ const sourceForLazyPlugin = (input: {
 	return 'preset';
 };
 
+/**
+ * Policy-owned plugins must start before the first lazy tool call. A configured
+ * automatic Git policy is a lifecycle guarantee, not a tool the model has to
+ * remember to invoke.
+ */
+export const requiresPolicyStartupActivation = (
+	pluginId: string,
+	options: Readonly<Record<string, unknown>> | undefined,
+): boolean => {
+	if (pluginId !== 'commit-policy' || options === undefined) return false;
+	const commit = options.commit;
+	const cadence = options.cadence;
+	const push = options.push;
+	const commitEnabled =
+		typeof commit === 'object' &&
+		commit !== null &&
+		(commit as { readonly enabled?: unknown }).enabled === true;
+	const triggers =
+		typeof cadence === 'object' && cadence !== null
+			? (cadence as { readonly triggers?: unknown }).triggers
+			: undefined;
+	const automaticTrigger =
+		Array.isArray(triggers) &&
+		triggers.some(
+			(trigger) =>
+				typeof trigger === 'object' &&
+				trigger !== null &&
+				(trigger as { readonly kind?: unknown }).kind !== 'manual',
+		);
+	const pushOnCommit =
+		typeof push === 'object' &&
+		push !== null &&
+		(push as { readonly onCommit?: unknown }).onCommit === true;
+	const pushPeriodic =
+		typeof push === 'object' &&
+		push !== null &&
+		((push as { readonly everyNCommits?: unknown }).everyNCommits !==
+			undefined ||
+			(push as { readonly everyNMinutes?: unknown }).everyNMinutes !==
+				undefined);
+	const pushEnabled =
+		typeof push === 'object' &&
+		push !== null &&
+		(push as { readonly enabled?: unknown }).enabled === true;
+	return (
+		(commitEnabled && automaticTrigger) ||
+		(pushEnabled && (pushOnCommit || pushPeriodic))
+	);
+};
+
 const tryAssembleManagedLazy = async (input: {
 	readonly args: IMcpVertexCliArgs;
 	readonly fileConfig: IMcpVertexConfigFile;
@@ -358,13 +408,15 @@ const tryAssembleManagedLazy = async (input: {
 		},
 	});
 	const configuredStartupPlugins = definitions.filter((plugin) => {
-		if (plugin.startupActivation !== true) return false;
 		const options = pluginConfigFor(input.fileConfig, plugin.id).options;
 		// Startup activation is a lifecycle guarantee, not an opt-in
 		// heuristic. Activate every configured startup plugin before the
 		// first lazy event so malformed options reach the plugin's schema
 		// validation and cannot silently disable its listeners.
-		return options !== undefined;
+		return (
+			(options !== undefined && plugin.startupActivation === true) ||
+			requiresPolicyStartupActivation(plugin.id, options)
+		);
 	});
 	await Promise.all(
 		configuredStartupPlugins.map((plugin) =>

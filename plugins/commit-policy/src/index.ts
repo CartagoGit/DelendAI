@@ -311,7 +311,9 @@ export default definePlugin({
 			(t): t is Extract<typeof t, { kind: 'slice' }> =>
 				t.kind === 'slice',
 		);
-		if (sliceTrigger !== undefined) {
+		const proposalsOwnsSlicePersistence =
+			ctx.peerPlugins?.has('proposals') === true;
+		if (sliceTrigger !== undefined && !proposalsOwnsSlicePersistence) {
 			// The listener dispatches every
 			// emitted event into the engine. The engine decides
 			// what (if anything) gets committed; the ack flows
