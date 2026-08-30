@@ -276,6 +276,7 @@ describe('logs_incidents (f00153 S3)', () => {
 			toolName: string;
 			incidentType: string;
 			errorFingerprint: string;
+			hasStack: boolean;
 			count: number;
 			distinctAgents: number;
 			firstSeen: string;
@@ -293,9 +294,27 @@ describe('logs_incidents (f00153 S3)', () => {
 		expect(top?.count).toBe(3);
 		expect(top?.distinctAgents).toBe(2);
 		expect(top?.errorFingerprint).toMatch(/^[a-f0-9]{16}$/);
+		expect(top?.hasStack).toBe(false);
 		expect(top?.sampleSummary).toBe('tool-failed: proposals_agent_lock');
 		expect(JSON.stringify(top)).not.toContain('lock held by another agent');
 		expect(top?.recentEvents.length).toBeLessThanOrEqual(5);
+	});
+
+	it('keeps incidents redacted when recentLimit removes all recent events', async () => {
+		const result = structured(
+			await handlers.get('logs_incidents')?.({ recentLimit: 0 }),
+		);
+		const incidents = result.incidents as Array<{
+			sampleSummary: string;
+			hasStack: boolean;
+		}>;
+		expect(incidents[0]?.sampleSummary).toBe(
+			'tool-failed: proposals_agent_lock',
+		);
+		expect(incidents[0]?.hasStack).toBe(false);
+		expect(JSON.stringify(result)).not.toContain(
+			'lock held by another agent',
+		);
 	});
 
 	it('honors minCount to drop the surviving cluster as well', async () => {
