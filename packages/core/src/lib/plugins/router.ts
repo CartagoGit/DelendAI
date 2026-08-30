@@ -282,7 +282,8 @@ export const createLazyPluginRouter = (
 			const routeCache = buildRouteMaps(manifests);
 			const knownPluginIds = new Set(routeCache.pluginIds);
 			for (const pluginId of pluginStates.keys()) {
-				if (!knownPluginIds.has(pluginId)) pluginStates.delete(pluginId);
+				if (!knownPluginIds.has(pluginId))
+					pluginStates.delete(pluginId);
 			}
 			for (const pluginId of routeCache.pluginIds) {
 				bindStateMachine(pluginId, 'ACTIVE');
@@ -432,6 +433,11 @@ export const createLazyPluginRouter = (
 			return stateOf(pluginId);
 		},
 		transitionPlugin(pluginId, to, reason) {
+			if (cache === undefined && to === 'ACTIVE') {
+				throw new Error(
+					`plugin router must be initialized before activating "${pluginId}"`,
+				);
+			}
 			if (cache !== undefined && !cache.pluginIds.includes(pluginId)) {
 				throw new Error(`unknown plugin "${pluginId}"`);
 			}

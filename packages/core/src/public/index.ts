@@ -618,6 +618,7 @@ export {
 	clearForcePushAuthorizationsForTests,
 	commitAndPush,
 	createGitRunner as createWriteGitRunner,
+	stripAnsi,
 	gitAdd,
 	gitCommit,
 	gitHeadShortHash,

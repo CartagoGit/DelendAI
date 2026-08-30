@@ -54,6 +54,7 @@ const BACKTICKED_HASH_RE = /`([0-9a-f]{7,40})`/gi;
 // Proposal ids such as `f00067a` are historical document references, not git
 // object names. Keep them out of the commit-citation audit.
 const PROPOSAL_ID_RE = /^[a-z]\d{5}[a-z]$/i;
+const CI_RUN_ID_RE = /^\d{9,}$/;
 
 /** A single orphan citation found in a proposal. */
 export interface IOrphanCitation {
@@ -95,7 +96,11 @@ export const extractCitedHashes = (
 		const line = lines[i] ?? '';
 		for (const match of line.matchAll(BACKTICKED_HASH_RE)) {
 			const hash = match[1];
-			if (hash !== undefined && !PROPOSAL_ID_RE.test(hash)) {
+			if (
+				hash !== undefined &&
+				!PROPOSAL_ID_RE.test(hash) &&
+				!CI_RUN_ID_RE.test(hash)
+			) {
 				out.push({ hash: hash.toLowerCase(), line: i + 1 });
 			}
 		}

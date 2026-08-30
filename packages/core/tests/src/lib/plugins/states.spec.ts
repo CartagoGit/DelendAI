@@ -270,7 +270,27 @@ describe('f00269 — plugin-manager integration', () => {
 	it('does not create state for an unknown plugin after initialize', async () => {
 		const { router } = await createRouterRig();
 		const manager = createPluginManager(router);
-		expect(() => manager.activate('ghost')).toThrow('unknown plugin "ghost"');
+		expect(() => manager.activate('ghost')).toThrow(
+			'unknown plugin "ghost"',
+		);
+		expect(router.pluginState('ghost')).toBeUndefined();
+	});
+
+	it('does not activate an unknown plugin before initialize', () => {
+		const loader = createLoader();
+		const discovery = createLazyPluginDiscovery({
+			loader,
+			listPluginIds: async () => ['alpha', 'beta'],
+		});
+		const router = createLazyPluginRouter({
+			loader,
+			discovery,
+			lazy: true,
+		});
+		const manager = createPluginManager(router);
+		expect(() => manager.activate('ghost')).toThrow(
+			'plugin router must be initialized',
+		);
 		expect(router.pluginState('ghost')).toBeUndefined();
 	});
 
