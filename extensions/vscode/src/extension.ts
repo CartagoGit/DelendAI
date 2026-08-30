@@ -111,6 +111,41 @@ const runSafely = (task: Promise<unknown>): void => {
 	void task.catch(() => undefined);
 };
 
+const CONNECT_TIMEOUT_MS = 10_000;
+
+const connectWithTimeout = async (
+	connect: () => Promise<McpStdioClient>,
+): Promise<McpStdioClient> => {
+	let timedOut = false;
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const attempt = Promise.resolve().then(connect);
+	const lateCleanup = attempt.then(
+		(client) => {
+			if (timedOut) runSafely(client.close());
+			return client;
+		},
+		() => undefined,
+	);
+	try {
+		return await Promise.race([
+			attempt,
+			new Promise<McpStdioClient>((_, reject) => {
+				timer = setTimeout(() => {
+					timedOut = true;
+					reject(
+						new Error(
+							`MCP server connection timed out after ${CONNECT_TIMEOUT_MS}ms`,
+						),
+					);
+				}, CONNECT_TIMEOUT_MS);
+			}),
+		]);
+	} finally {
+		if (timer !== undefined) clearTimeout(timer);
+		void lateCleanup;
+	}
+};
+
 export const CLIENT_STATE_KEY = 'mcp-vertex.client';
 export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
 export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
@@ -366,7 +401,7 @@ export const activate = async (
 		);
 	} else {
 		try {
-			initialClient = await connectClient();
+			initialClient = await connectWithTimeout(connectClient);
 		} catch (err) {
 			const failure = err instanceof Error ? err : new Error(String(err));
 			initialClient = McpStdioClient.fromTransport({
@@ -539,9 +574,14 @@ export const activate = async (
 	// trigger an explicit refresh of the tool tree at activation time so
 	// the UI is at least up-to-date with the live snapshot, even if we
 	// will not receive change events.
-	const watcher = vscode.workspace?.createFileSystemWatcher(
-		'**/mcp-vertex.config.json',
-	);
+	let watcher: IFileSystemWatcher | undefined;
+	try {
+		watcher = vscode.workspace?.createFileSystemWatcher?.(
+			'**/mcp-vertex.config.json',
+		);
+	} catch {
+		watcher = undefined;
+	}
 	if (watcher !== undefined) {
 		track(toolTree.bindConfigWatcher(watcher));
 	} else {
@@ -856,9 +896,14 @@ const registerDevelopmentAutoReload = (
 		?.get<boolean>('development.autoReload', false);
 	const extensionPath = context.extensionPath;
 	if (enabled !== true || extensionPath === undefined) return;
-	const watcher = vscode.workspace?.createFileSystemWatcher(
-		`${extensionPath}/dist/extension.js`,
-	);
+	let watcher: IFileSystemWatcher | undefined;
+	try {
+		watcher = vscode.workspace?.createFileSystemWatcher?.(
+			`${extensionPath}/dist/extension.js`,
+		);
+	} catch {
+		watcher = undefined;
+	}
 	if (watcher === undefined || vscode.commands.executeCommand === undefined)
 		return;
 	let reloadScheduled = false;
