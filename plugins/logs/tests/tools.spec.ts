@@ -51,6 +51,21 @@ const registeredHandlers = async () => {
 			new Date('2026-06-20T10:02:00.000Z'),
 		),
 	);
+	await errorStore.appendEvent(
+		normalizeEvent(
+			'tool-failed',
+			{
+				toolName: 'delta',
+				agent: 'a2',
+				error: {
+					message: 'kaboom',
+					stack: 'Error: kaboom\n    at delta',
+				},
+				summary: 'tool-failed: delta — kaboom',
+			},
+			new Date('2026-06-20T10:03:00.000Z'),
+		),
+	);
 	const handlers = new Map<string, Handler>();
 	const server = {
 		registerTool: (name: string, _schema: unknown, handler: Handler) => {
@@ -184,8 +199,11 @@ describe('log tools', async () => {
 			taskId: string | null;
 			meta: Record<string, unknown>;
 		}>;
-		expect(events).toHaveLength(1);
-		expect(events[0]?.taskId).toBe('gamma');
+		expect(events).toHaveLength(2);
+		expect(events.map((event) => event.taskId).sort()).toEqual([
+			'delta',
+			'gamma',
+		]);
 		expect(events[0]?.meta).toEqual({});
 		const detailed = structured(
 			await handlers.get('logs_errors_tail')?.({ includeMeta: true }),
@@ -220,6 +238,26 @@ describe('log tools', async () => {
 			meta: Record<string, unknown>;
 		}>;
 		expect(events[0]?.meta).toEqual({});
+	});
+
+	it('incidents exposes safe hasStack metadata without raw summaries when recent events are omitted', async () => {
+		const handlers = await registeredHandlers();
+		const incidents = structured(
+			await handlers.get('logs_incidents')?.({
+				minCount: 1,
+				recentLimit: 0,
+			}),
+		);
+		const cluster = (
+			incidents.incidents as Array<{
+				toolName: string;
+				sampleSummary: string;
+				hasStack: boolean;
+			}>
+		).find((entry) => entry.toolName === 'delta');
+		expect(cluster?.sampleSummary).toBe('tool-failed: delta');
+		expect(cluster?.hasStack).toBe(true);
+		expect(JSON.stringify(cluster)).not.toContain('kaboom');
 	});
 
 	it('tail honors compact detail by trimming per-event context', async () => {

@@ -32,6 +32,7 @@ const parse = (response: { content: Array<{ text: string }> }): any =>
 const incident = (): ILogIncident => ({
 	incidentType: 'tool-failure',
 	toolName: 'proposals_incident_proposals',
+	hasStack: true,
 	count: 4,
 	distinctAgents: 2,
 	firstSeen: '2026-08-24T10:00:00.000Z',

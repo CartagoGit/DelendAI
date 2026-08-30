@@ -32,6 +32,7 @@ const parse = (response: { content: Array<{ text: string }> }): any =>
 const incident = (overrides: Partial<ILogIncident> = {}): ILogIncident => ({
 	incidentType: 'tool-failure',
 	toolName: 'proposals_auto_fix_queue',
+	hasStack: true,
 	count: 4,
 	distinctAgents: 2,
 	firstSeen: '2026-08-24T10:00:00.000Z',
