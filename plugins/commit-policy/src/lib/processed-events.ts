@@ -90,6 +90,7 @@ export const createProcessedEventsStore = (
 
 	const readRecords = async (
 		now = Date.now(),
+		includeExpired = false,
 	): Promise<Map<string, IProcessedRecord>> => {
 		const records = new Map<string, IProcessedRecord>();
 		try {
@@ -106,7 +107,7 @@ export const createProcessedEventsStore = (
 						typeof parsed.sha === 'string' &&
 						typeof parsed.ts === 'number'
 					) {
-						if (now - parsed.ts <= ttlMs) {
+						if (includeExpired || now - parsed.ts <= ttlMs) {
 							records.set(parsed.key, {
 								key: parsed.key,
 								sha: parsed.sha,
@@ -145,8 +146,11 @@ export const createProcessedEventsStore = (
 		return records;
 	};
 
-	const syncSeenFromDisk = async (now = Date.now()): Promise<void> => {
-		const records = await readRecords(now);
+	const syncSeenFromDisk = async (
+		now = Date.now(),
+		includeExpired = false,
+	): Promise<void> => {
+		const records = await readRecords(now, includeExpired);
 		seen.clear();
 		for (const [key, record] of records) {
 			seen.set(key, record);
@@ -181,7 +185,7 @@ export const createProcessedEventsStore = (
 		},
 		async prune(now = Date.now()) {
 			return withFileMutex(filePath, async () => {
-				await syncSeenFromDisk(now);
+				await syncSeenFromDisk(now, true);
 				let removed = 0;
 				for (const [key, rec] of seen) {
 					if (now - rec.ts > ttlMs) {

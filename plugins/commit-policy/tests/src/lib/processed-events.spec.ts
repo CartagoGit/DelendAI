@@ -85,6 +85,8 @@ describe('computeIdempotencyKey', () => {
 });
 
 describe('createProcessedEventsStore', () => {
+	const now = Date.now();
+
 	it('returns false for unknown keys', async () => {
 		const store = createProcessedEventsStore({ workspaceRoot: workspace });
 		expect(await store.has('nope')).toBe(false);
@@ -92,13 +94,13 @@ describe('createProcessedEventsStore', () => {
 
 	it('persists a key after add()', async () => {
 		const store = createProcessedEventsStore({ workspaceRoot: workspace });
-		await store.add('commit-policy:f00181:S3:e1', 'abc123', 1_000);
+		await store.add('commit-policy:f00181:S3:e1', 'abc123', now);
 		expect(await store.has('commit-policy:f00181:S3:e1')).toBe(true);
 	});
 
 	it('persists to the JSONL file', async () => {
 		const store = createProcessedEventsStore({ workspaceRoot: workspace });
-		await store.add('k1', 'sha1', 1_000);
+		await store.add('k1', 'sha1', now);
 		const raw = await readFile(
 			join(workspace, '.commit-policy/processed-events.jsonl'),
 			'utf8',
@@ -109,7 +111,7 @@ describe('createProcessedEventsStore', () => {
 
 	it('reloads the in-memory map from disk on next call', async () => {
 		const storeA = createProcessedEventsStore({ workspaceRoot: workspace });
-		await storeA.add('k1', 'sha1', 1_000);
+		await storeA.add('k1', 'sha1', now);
 		// Discard the in-memory cache; a fresh instance should
 		// re-hydrate from the file.
 		await storeA.dispose();
@@ -122,8 +124,8 @@ describe('createProcessedEventsStore', () => {
 		const storeA = createProcessedEventsStore({ workspaceRoot: workspace });
 		const storeB = createProcessedEventsStore({ workspaceRoot: workspace });
 		await Promise.all([
-			storeA.add('writer-a', 'sha-a', 1_000),
-			storeB.add('writer-b', 'sha-b', 2_000),
+			storeA.add('writer-a', 'sha-a', now),
+			storeB.add('writer-b', 'sha-b', now + 1),
 		]);
 		const storeC = createProcessedEventsStore({ workspaceRoot: workspace });
 		expect(await storeC.has('writer-a')).toBe(true);
@@ -133,7 +135,7 @@ describe('createProcessedEventsStore', () => {
 	it('reloads persisted idempotency state after a store restart', async () => {
 		const first = createProcessedEventsStore({ workspaceRoot: workspace });
 		expect(await first.has('restart-event')).toBe(false);
-		await first.add('restart-event', 'sha-restart', 1_000);
+		await first.add('restart-event', 'sha-restart', now);
 		await first.dispose();
 
 		const restarted = createProcessedEventsStore({
@@ -148,11 +150,11 @@ describe('createProcessedEventsStore', () => {
 			workspaceRoot: workspace,
 			ttlMs: 1_000,
 		});
-		await store.add('old', 'sha1', 0);
-		await store.add('new', 'sha2', 2_000);
-		const removed = await store.prune(2_000);
+		await store.add('old', 'sha1', now);
+		const removed = await store.prune(now + 2_000);
 		expect(removed).toBe(1);
 		expect(await store.has('old')).toBe(false);
+		await store.add('new', 'sha2', now + 2_000);
 		expect(await store.has('new')).toBe(true);
 		await store.dispose();
 	});
