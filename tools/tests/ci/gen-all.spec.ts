@@ -20,8 +20,8 @@ describe('gen-all (c00133)', () => {
 		expect(code).toBe(2);
 	});
 
-	it('--only from-manifests filters to a single step', async () => {
-		const code = await main(['--only', 'from-manifests']);
+	it('--only plugin-manifests filters to a single step', async () => {
+		const code = await main(['--only', 'plugin-manifests']);
 		expect(code).toBe(0);
 	});
 });
