@@ -217,8 +217,15 @@ describe('migrateForeign (f00116 S2)', () => {
 		expect(report.migrated).toHaveLength(1);
 		expect(report.migrated[0]!.id).toMatch(/^a\d{5}$/);
 		expect(report.migrated[0]!.target).toContain('done/audits/');
-		expect(existsSync(join(root, 'docs/mcp-vertex/audits/2026-08-30-audit.md'))).toBe(false);
-		const body = await readFile(join(root, report.migrated[0]!.target), 'utf8');
+		expect(
+			existsSync(
+				join(root, 'docs/mcp-vertex/audits/2026-08-30-audit.md'),
+			),
+		).toBe(false);
+		const body = await readFile(
+			join(root, report.migrated[0]!.target),
+			'utf8',
+		);
 		expect(body).toContain('kind: audit');
 		expect(body).toContain('status: done');
 	});

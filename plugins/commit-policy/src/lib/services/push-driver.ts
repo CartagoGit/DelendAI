@@ -55,7 +55,7 @@ type IForceAuthorizationResolution =
 const resolveForceAuthorization = (
 	forceMode: ForceMode,
 	policy: ICommitPolicyPush,
-	authorizedBy: string | undefined
+	authorizedBy: string | undefined,
 ): IForceAuthorizationResolution => {
 	if (forceMode !== 'allow') return { ok: true };
 
@@ -94,7 +94,7 @@ const forceModeToGitPush = (mode: ForceMode): IPushForceMode => {
 export const runPushDriver = async (
 	input: IPushDriverInput,
 	policy: ICommitPolicyPush,
-	run: IGitRunner
+	run: IGitRunner,
 ): Promise<IPushDriverResult> => {
 	if (!policy.enabled) {
 		return {
@@ -138,14 +138,6 @@ export const runPushDriver = async (
 		};
 	}
 
-	if (branch === 'main') {
-		return {
-			ok: false,
-			refusal:
-				"DIRECT_PUSH_TO_MAIN_NOT_ALLOWED: direct push to 'main' is not allowed; cuts the release/publish path. Open a PR from a feature branch (release/* or develop).",
-		};
-	}
-
 	if (
 		isBranchProtected(branch, {
 			protected: policy.protectedBranches,
@@ -165,7 +157,7 @@ export const runPushDriver = async (
 	const authorization = resolveForceAuthorization(
 		forceMode,
 		policy,
-		input.authorizedBy
+		input.authorizedBy,
 	);
 	if (!authorization.ok) return { ok: false, refusal: authorization.refusal };
 
