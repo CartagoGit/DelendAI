@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-30T18:04:29.679Z",
+	"generatedAt": "2026-08-30T22:36:05.228Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -810,7 +810,8 @@
 				"error-reporting",
 				"github",
 				"issues"
-			]
+			],
+			"startupActivation": true
 		},
 		{
 			"id": "external-mcps",
@@ -2527,6 +2528,7 @@
 				"forge-write"
 			],
 			"tokenBudgetBytes": 3500,
+			"startupActivation": true,
 			"toolPermissions": {
 				"report_status": [
 					"network",

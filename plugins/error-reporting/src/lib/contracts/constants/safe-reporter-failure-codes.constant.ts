@@ -13,5 +13,8 @@ export type SafeReporterFailureCode =
 
 export type SafeReporterTransportFailureCode = Extract<
 	SafeReporterFailureCode,
-	'GH_NOT_INSTALLED' | 'GH_EXEC_FAILED' | 'ISSUE_NUMBER_PARSE_FAILED'
+	| 'NETWORK_UNAVAILABLE'
+	| 'GH_NOT_INSTALLED'
+	| 'GH_EXEC_FAILED'
+	| 'ISSUE_NUMBER_PARSE_FAILED'
 >;

@@ -26,8 +26,9 @@ built only from MCP Vertex-owned metadata.
 - **De-duplicated.** A stable fingerprint derived from package, code and safe
   internal frames means the same bug opens one issue per window (default 24h),
   not one per sighting.
-- **Non-blocking.** The report is fire-and-forget and fully guarded. Without
-  `gh`, without auth, or offline, the report is silently dropped and the
+- **Non-blocking.** The report is fire-and-forget and fully guarded. Offline
+  machines are detected before `gh issue create` and no remote command is
+  attempted. Missing `gh` or authentication is recorded locally and the
   server keeps running.
 
 ## Privacy policy

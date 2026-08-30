@@ -192,6 +192,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['error-reporting', 'github', 'issues'],
 			permissions: ['network', 'forge-write'],
 			tokenBudgetBytes: 3500,
+			startupActivation: true,
 			toolPermissions: { 'report_status': ['network', 'forge-write'] },
 		},
 		{
