@@ -70,6 +70,33 @@ describe('threshold tracker', () => {
 		});
 	});
 
+	it('refires when the dirty set changes without changing its count', async () => {
+		const responses: readonly [IGitRunResult, IGitRunResult] = [
+			ok(' M alpha.ts\n M beta.ts\n?? gamma.ts\n'),
+			ok(' M alpha.ts\n M beta.ts\n?? replacement.ts\n'),
+		];
+		let index = 0;
+		const run = buildRunner((args) => {
+			if (args[0] !== 'status')
+				return Promise.resolve(fail('not stubbed'));
+			const next = index === 0 ? responses[0] : responses[1];
+			index += 1;
+			return Promise.resolve(next);
+		});
+		const tracker = createThresholdTracker(run, { files: 3 });
+
+		expect(await tracker.check()).toEqual({
+			kind: 'threshold',
+			dirtyCount: 3,
+			files: { paths: ['alpha.ts', 'beta.ts', 'gamma.ts'] },
+		});
+		expect(await tracker.check()).toEqual({
+			kind: 'threshold',
+			dirtyCount: 3,
+			files: { paths: ['alpha.ts', 'beta.ts', 'replacement.ts'] },
+		});
+	});
+
 	it('excludes unrelated staged-only files from event.files', async () => {
 		const run = buildRunner((args) => {
 			if (args[0] !== 'status')

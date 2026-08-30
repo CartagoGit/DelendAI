@@ -1,5 +1,5 @@
 import { lstat, mkdir, readdir, rename, rm } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 import { resolveWorkspaceContained } from '../shared/contain-path';
 
@@ -73,7 +73,17 @@ const reconcilePath = async (
 	destination: string,
 	apply: boolean,
 ): Promise<boolean> => {
-	if (source === destination || (await isMissing(source))) return false;
+	const destinationRelativeToSource = relative(source, destination);
+	const destinationIsInsideSource =
+		destinationRelativeToSource.length > 0 &&
+		!destinationRelativeToSource.startsWith('..') &&
+		destinationRelativeToSource !== destination;
+	if (
+		source === destination ||
+		destinationIsInsideSource ||
+		(await isMissing(source))
+	)
+		return false;
 	if (await isMissing(destination)) {
 		if (apply) {
 			await mkdir(dirname(destination), { recursive: true });

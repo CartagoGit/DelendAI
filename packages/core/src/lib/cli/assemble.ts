@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { readFile as readFileAsync } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
