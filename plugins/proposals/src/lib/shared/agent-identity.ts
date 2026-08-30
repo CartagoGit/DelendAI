@@ -38,6 +38,31 @@ const HOST_SLUGS: Readonly<Record<AgentHost, string>> = {
 const LAST_RESORT_MODEL_MAX = 8;
 const LAST_RESORT_AGENT_MAX = 12;
 
+/** The closed set of known hosts (mirrors core `AgentHost`). */
+export const KNOWN_HOSTS = [
+	'vscode-copilot',
+	'claude-code',
+	'codex-cli',
+	'cursor',
+	'aider',
+	'continue',
+	'unknown',
+] as const;
+
+/**
+ * Coerce a raw host string (core resolves it as a plain `string` —
+ * see `IResolvedHostIdentity`) into the closed `AgentHost` union,
+ * falling back to `'unknown'` (lossy-friendly, matching
+ * `parseIdentity`). Returns `null` when the caller passed nothing,
+ * so registries can store an explicit `null`.
+ */
+export const coerceHost = (host: string | undefined): AgentHost | null => {
+	if (host === undefined) return null;
+	return (KNOWN_HOSTS as readonly string[]).includes(host)
+		? (host as AgentHost)
+		: 'unknown';
+};
+
 /**
  * Normalise any string to a slug-safe form. Keeps `[a-z0-9-]`,
  * collapses everything else to `-`, trims leading/trailing dashes,

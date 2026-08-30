@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-30T15:36:06.794Z",
+	"generatedAt": "2026-08-30T16:41:51.812Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -2190,14 +2190,14 @@
 			{
 				"id": "f00387",
 				"title": "f00387",
-				"track": "migrated",
+				"track": "parallel-validation",
 				"status": "ready",
 				"kind": "feat"
 			},
 			{
-				"id": "f00387",
-				"title": "f00387",
-				"track": "parallel-validation",
+				"id": "f00388",
+				"title": "f00388",
+				"track": "migrated",
 				"status": "ready",
 				"kind": "feat"
 			},
@@ -2534,13 +2534,13 @@
 				"id": "x00321",
 				"title": "x00321",
 				"track": "commit-policy-hardening",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 167,
-			"in-progress": 15,
+			"ready": 166,
+			"in-progress": 16,
 			"review": 0,
 			"paused": 1,
 			"done": 569,

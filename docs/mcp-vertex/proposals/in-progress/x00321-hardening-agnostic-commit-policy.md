@@ -60,7 +60,7 @@ La auditoría detectó bloqueos hardcodeados de ramas, acoplamiento a gh/glab/or
 
 ### S4 — Completar manifest y contrato MCP
 - **Status**: pending
-- **Files**: `plugins/commit-policy/plugin.manifest.ts`, `plugins/commit-policy/tests/src/lib/dry-run-commit.spec.ts`, `plugins/commit-policy/tests/src/lib/manifest.spec.ts`, `tools/scripts/lint/manifest-vs-package.script.ts`, `tools/scripts/lint/manifest-vs-package.spec.ts`
+- **Files**: `plugins/commit-policy/plugin.manifest.ts`, `plugins/commit-policy/tests/src/lib/dry-run-commit.spec.ts`, `tools/scripts/lint/manifest-vs-package.script.ts`, `tools/scripts/lint/manifest-vs-package.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Todas las herramientas registradas aparecen en el manifest."
