@@ -87,7 +87,6 @@ export interface IContinueProposalArgs {
 const json = toolJson;
 
 const ACTIONABLE = new Set(['pending', 'ready', 'in_progress']);
-const SLICE_GATE_SCHEMA = z.enum(['lint', 'type', 'e2e', 'none']);
 
 const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	kind: z.enum([

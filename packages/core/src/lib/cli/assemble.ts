@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { readFile as readFileAsync } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
@@ -70,6 +70,7 @@ import {
 } from '../shared/checkpoint-advisory';
 import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
+import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
 
 const toolOwnerFromOrigin = (
 	origin: 'bundled' | 'user-local' | 'external',
@@ -317,6 +318,11 @@ export const assembleCliConfig = async (
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
 	});
+	await bootstrapCacheLayout({
+		workspaceRootAbs: workspace.root,
+		cacheDirAbs: cacheDir,
+		createPluginDirs: false,
+	});
 	const evidenceStore = createEvidenceStore({
 		evidenceRootAbs: join(cacheDirContained.abs, 'evidence'),
 		evictionRegistry: cacheEvictionRegistry,
@@ -421,6 +427,11 @@ export const assembleCliConfig = async (
 				config.options ?? {},
 			]),
 		);
+		const pluginCacheDir = joinRel(
+			corePaths.cacheDir,
+			cacheNamespace ? `${cacheNamespace}/${pluginName}` : pluginName,
+		);
+		mkdirSync(resolve(workspace.root, pluginCacheDir), { recursive: true });
 		return {
 			workspace,
 			corePaths,
@@ -430,10 +441,7 @@ export const assembleCliConfig = async (
 			agentWorktreeEnabled,
 			commitAuthor: commitAuthorResolution,
 			...(hostIdentity !== undefined ? { hostIdentity } : {}),
-			pluginCacheDir: joinRel(
-				corePaths.cacheDir,
-				cacheNamespace ? `${cacheNamespace}/${pluginName}` : pluginName,
-			),
+			pluginCacheDir,
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
 			options: pluginConfig.options ?? {},
@@ -490,6 +498,19 @@ export const assembleCliConfig = async (
 		buildContext,
 		peerRegistry,
 		...(deps.import !== undefined ? { importFn: deps.import } : {}),
+	});
+	await bootstrapCacheLayout({
+		workspaceRootAbs: workspace.root,
+		cacheDirAbs: cacheDir,
+		createPluginDirs: true,
+		pluginCacheDirs: loadResult.loaded.map(({ plugin }) =>
+			joinRel(
+				corePaths.cacheDir,
+				plugin.cacheNamespace
+					? `${plugin.cacheNamespace}/${plugin.name}`
+					: plugin.name,
+			),
+		),
 	});
 
 	const {

@@ -25,6 +25,7 @@ export interface IPushToolOptions {
 	readonly policy: ICommitPolicyOptions;
 	readonly run: Parameters<typeof runPushDriver>[2];
 	readonly workspaceRoot?: string | undefined;
+	readonly pluginCacheDir?: string | undefined;
 	/**
 	 * Needed only to name the principal accountable for a plain
 	 * `--force` push. Optional so a host that never enables
@@ -78,8 +79,10 @@ export const runCommitPolicyPush = async (
 		...(args.force !== undefined ? { force: args.force } : {}),
 		...(authorizedBy !== undefined ? { authorizedBy } : {}),
 	};
-	const result = await withGitWriteLock(options.workspaceRoot, () =>
-		runPushDriver(input, options.policy.push, options.run),
+	const result = await withGitWriteLock(
+		options.workspaceRoot,
+		options.pluginCacheDir,
+		() => runPushDriver(input, options.policy.push, options.run),
 	);
 
 	const parseResult = OutputSchema.safeParse({

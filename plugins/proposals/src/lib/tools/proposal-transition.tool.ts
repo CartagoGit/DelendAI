@@ -274,7 +274,10 @@ const resolveTargetFolder = async (
 		.readText(relative(proposalsDirAbs, found.absPath))
 		.then((value) => value.content)
 		.catch(() => '');
-	const kindRaw = readFrontmatterField(raw, 'kind');
+	const kindRaw =
+		readFrontmatterField(raw, 'kind') ??
+		readFrontmatterField(raw, 'type') ??
+		(found.id ? PROPOSAL_KIND_BY_PREFIX[found.id[0] ?? ''] : undefined);
 	const kind =
 		kindRaw !== undefined && isKnownKind(kindRaw) ? kindRaw : undefined;
 	const folder = proposalFolderFor(to, kind, folderPolicy);

@@ -1,17 +1,29 @@
-import {
-	ACTIONABLE_PROPOSAL_STATUSES,
-	buildAgentBootstrapPromptRegistration,
-	type ICatalogSnapshot,
-	type IProposalSummary,
-	type ISkillSummary,
-	type IToolSummary,
-	type McpVertexToolOutputs,
+import type {
+	ICatalogSnapshot,
+	IProposalSummary,
+	ISkillSummary,
+	IToolSummary,
+	McpVertexToolOutputs,
 } from '@mcp-vertex/core/public';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { formatToolName } from './_namespace';
 
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
+const ACTIONABLE_PROPOSAL_STATUSES = new Set<IProposalSummary['status']>([
+	'ready',
+	'in-progress',
+	'paused',
+]);
+const DEFAULT_AGENT_POLICY = {
+	autonomous: true,
+	principles: [
+		'Apply SOLID architecture where it improves ownership and changeability.',
+		'Use good engineering practices and keep the code clear and maintainable.',
+		'Reuse existing code and abstractions before introducing duplication.',
+		'Keep naming, files, and folders homogeneous with the surrounding project.',
+	],
+} as const;
 
 /**
  * v00129 S1 (AUD-B01): `agent_catalog`'s WIRE-DECLARED `outputSchema` is
@@ -137,7 +149,7 @@ const filterProposals = (
 	query?: string,
 ): IProposalSummary[] => {
 	const actionable = proposals.filter((proposal) =>
-		ACTIONABLE_PROPOSAL_STATUSES.includes(proposal.status),
+		ACTIONABLE_PROPOSAL_STATUSES.has(proposal.status),
 	);
 	if (query === undefined || query.trim().length === 0) {
 		return cloneProposals(actionable);
@@ -159,27 +171,31 @@ const filterProposals = (
 };
 
 const promptTextOf = async (snapshot: ICatalogSnapshot): Promise<string> => {
-	let handler: (() => Promise<IAgentBootstrapPromptResult>) | undefined;
-	const registration = buildAgentBootstrapPromptRegistration(
-		snapshot.server.namespacePrefix,
-		{
-			sources: {
-				tools: () => snapshot.tools,
-				skills: () => snapshot.skills,
-				proposals: () => snapshot.proposals,
+	const actionable =
+		snapshot.proposals.length === 0
+			? 'none'
+			: snapshot.proposals.map((proposal) => proposal.id).join(', ');
+	const result: IAgentBootstrapPromptResult = {
+		messages: [
+			{
+				content: {
+					type: 'text',
+					text: [
+						`Working mode: ${DEFAULT_AGENT_POLICY.autonomous ? 'autonomous by default' : 'collaborative / ask before autonomous execution'}.`,
+						'Engineering principles:',
+						...DEFAULT_AGENT_POLICY.principles.map(
+							(principle) => `- ${principle}`,
+						),
+						'1. Call `mcp-vertex_overview` first to map the server and confirm the loaded plugin surface.',
+						'2. Call `mcp-vertex_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
+						'3. Narrow with `section` or `query` before doing work, then pick the matching proposal or skill instead of rereading docs broadly.',
+						'4. To use a skill: call `mcp-vertex_skill` (no args) for the compact list of what each skill is and when to use it, then `mcp-vertex_skill { "id": "<skill-id>" }` to load that one skill body only when you are about to apply it (keeps token cost low).',
+						`Actionable proposals: ${actionable}`,
+					].join('\n'),
+				},
 			},
-			server: snapshot.server,
-		},
-	);
-	await registration.register({
-		registerPrompt(_name: string, _meta: unknown, candidate: unknown) {
-			handler = candidate as () => Promise<IAgentBootstrapPromptResult>;
-		},
-	} as unknown as Parameters<typeof registration.register>[0]);
-	if (handler === undefined) {
-		throw new Error('Agent bootstrap prompt handler was not registered');
-	}
-	const result = await handler();
+		],
+	};
 	return result.messages[0]?.content.text ?? '';
 };
 

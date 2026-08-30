@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T21:44:28.355Z",
+	"generatedAt": "2026-08-30T00:06:02.040Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -46,6 +46,9 @@
 		{
 			"name": "mcp-vertex_audit_self_audit",
 			"plugin": "audit"
+		},
+		{
+			"name": "mcp-vertex_author_plugin"
 		},
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_evaluate",

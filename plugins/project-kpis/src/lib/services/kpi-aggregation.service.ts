@@ -1,3 +1,4 @@
+// effect-boundary-authorized: Reads persisted usage-tracking artifacts to assemble KPI snapshots when source rollups already live on disk.
 import { access } from 'node:fs/promises';
 
 import { truncateIfTooLarge } from '@mcp-vertex/core/public';

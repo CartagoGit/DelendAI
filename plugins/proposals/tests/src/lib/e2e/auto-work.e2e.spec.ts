@@ -73,20 +73,22 @@ const createManagedPersistenceServer = async () => {
 			proposals: {
 				options: {
 					requirePeerReview: false,
-					persist: {
-						mode: 'commit-and-push',
-						pushTarget: 'origin HEAD:wip/x00298-s3',
-					},
+					persist: { mode: 'none' },
 				},
 			},
 			'commit-policy': {
 				options: {
 					commit: { enabled: true },
-					push: { enabled: true },
-					// proposals.persist owns slice commits in this scenario;
-					// commit-policy remains enabled to verify startup activation
-					// without registering a second slice Git owner.
-					cadence: { triggers: [] },
+					push: {
+						enabled: true,
+						onCommit: true,
+						remote: 'origin',
+						branch: 'wip/x00298-s3',
+					},
+					cadence: {
+						triggers: [{ kind: 'slice' }],
+						allowForeignChanges: true,
+					},
 				},
 			},
 		},
@@ -504,6 +506,9 @@ Exercise the configured persistence route over MCP.
 				'refs/heads/wip/x00298-s3',
 			).trim();
 			expect(remoteHead).toBe(`${head}\trefs/heads/wip/x00298-s3`);
+			expect(
+				git(managed.workspace, 'rev-list', '--count', 'HEAD').trim(),
+			).toBe('2');
 		} finally {
 			await managed.close();
 		}

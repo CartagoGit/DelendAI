@@ -16,6 +16,7 @@ import {
 
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, request } from './group-helpers';
+import { pluginAuthorCommand } from './plugin-author';
 
 const formatRecipe = (recipe: IPluginAddRecipe): string => {
 	const lines: string[] = [];
@@ -85,4 +86,5 @@ const pluginAddCommand: ICliCommand = {
 export const pluginsCommands: readonly ICliCommand[] = [
 	pluginSearchCommand,
 	pluginAddCommand,
+	pluginAuthorCommand,
 ];

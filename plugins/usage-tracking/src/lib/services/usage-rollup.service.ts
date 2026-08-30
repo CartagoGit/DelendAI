@@ -1,3 +1,4 @@
+// effect-boundary-authorized: Maintains persisted usage rollups by cleaning orphaned temp siblings around atomic summary writes.
 import { readdir, rm } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
@@ -94,6 +95,7 @@ type InvocationTelemetrySummary = IUsageSummary & {
 };
 
 const MAX_ISSUES = 50;
+const ISO_DATE_LENGTH = 10;
 
 const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
 	const dir = dirname(absPath);
@@ -114,7 +116,7 @@ const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
 const dateKeyOf = (ts: string): string => {
 	const parsed = Date.parse(ts);
 	if (Number.isNaN(parsed)) return 'unknown';
-	return new Date(parsed).toISOString().slice(0, 10);
+	return new Date(parsed).toISOString().slice(0, ISO_DATE_LENGTH);
 };
 
 const latencyOf = (record: IInvocationRecordTelemetry): number | null => {

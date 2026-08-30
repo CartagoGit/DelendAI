@@ -141,3 +141,27 @@ assumes a workspace-root install; the script strips that prefix so
 the CLI output is the cleaner `libs/plugins/demo/` shape). Pass
 `--keep-legacy` to move existing files aside instead of refusing to
 overwrite them.
+
+## Author or repair a plugin in process
+
+The public client also provides `authorPlugin` for generating a declarative
+plugin and registering its module path in the workspace configuration:
+
+```ts
+import { authorPlugin, repairPlugin } from '@mcp-vertex/client';
+
+const spec = {
+  name: 'notes',
+  description: 'Project notes',
+  tools: [{ id: 'add', description: 'Add a note' }],
+};
+
+await authorPlugin(spec, { workspaceRoot: '/path/to/project' });
+await repairPlugin(spec, { workspaceRoot: '/path/to/project' });
+```
+
+Without an explicit `pluginsRoot`, the default layout is
+`packages/mcp-vertex/plugins/mcp-vertex_<plugin-id>` relative to the
+workspace. `repairPlugin` recreates missing generated files, preserves
+existing files, repairs `plugins.<id>.path`, and returns an actionable report.
+MCP tool and CLI surfaces are intentionally deferred to a separate slice.

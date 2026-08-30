@@ -19,6 +19,28 @@ import type {
 	IMcpTransport,
 } from '../contracts/interfaces/mcp-transport.interface';
 
+interface IMcpSdkBindings {
+	readonly ClientCtor: typeof Client;
+	readonly StdioClientTransportCtor: typeof StdioClientTransport;
+}
+
+const defaultSdkBindings = (): IMcpSdkBindings => ({
+	ClientCtor: Client,
+	StdioClientTransportCtor: StdioClientTransport,
+});
+
+let sdkBindings: IMcpSdkBindings = defaultSdkBindings();
+
+export const __setMcpSdkBindingsForTests = (
+	overrides: Partial<IMcpSdkBindings>,
+): void => {
+	sdkBindings = { ...sdkBindings, ...overrides };
+};
+
+export const __resetMcpSdkBindingsForTests = (): void => {
+	sdkBindings = defaultSdkBindings();
+};
+
 class McpTransportError extends Error implements IMcpTransportError {
 	readonly code;
 	readonly kind;
@@ -193,7 +215,7 @@ export class McpStdioClient {
 	static async connect(
 		options: IMcpStdioClientOptions,
 	): Promise<McpStdioClient> {
-		const client = new Client(
+		const client = new sdkBindings.ClientCtor(
 			{
 				name: MCP_VERTEX_CLIENT_NAME,
 				version: MCP_VERTEX_CLIENT_VERSION,
@@ -213,7 +235,9 @@ export class McpStdioClient {
 					? (options.stderr ?? 'inherit')
 					: 'pipe',
 		};
-		const transport = new StdioClientTransport(transportOptions);
+		const transport = new sdkBindings.StdioClientTransportCtor(
+			transportOptions,
+		);
 		if (options.onStderr !== undefined) {
 			transport.stderr?.on('data', (chunk: Buffer | string) => {
 				options.onStderr?.(String(chunk));

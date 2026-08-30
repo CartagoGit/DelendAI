@@ -51,6 +51,7 @@ import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalo
 import { buildCodeMapResourceRegistration } from '../code-map/resource';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { buildCreatePluginToolRegistration } from '../scaffold/create-plugin.tool';
+import { buildAuthorExternalPluginToolRegistration } from '../scaffold/author-external-plugin';
 import { buildPluginAddRegistration } from '../registry/plugin-add.tool';
 import { buildPluginSearchRegistration } from '../registry/plugin-search.tool';
 import { buildFsToolRegistrations } from '../shared/fs-tools';
@@ -423,6 +424,10 @@ export const assembleCoreTools = (
 		// single closure per tool — a nested register would overwrite the
 		// `scaffold` schemas and break `bun run verify:tools`.
 		buildCreatePluginToolRegistration({
+			namespacePrefix: corePrefix,
+			workspace,
+		}),
+		buildAuthorExternalPluginToolRegistration({
 			namespacePrefix: corePrefix,
 			workspace,
 		}),
