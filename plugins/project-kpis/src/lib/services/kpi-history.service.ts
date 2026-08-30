@@ -1,8 +1,9 @@
 // effect-boundary-authorized: Owns the persisted KPI history store and pairs direct filesystem reads with atomic writes under a file mutex.
 import { access } from 'node:fs/promises';
-import { join } from 'node:path';
 
 import {
+	joinUnderRoot,
+	resolveAgainstRoots,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
@@ -28,14 +29,19 @@ export const DEFAULT_KPI_HISTORY_WINDOW_DAYS = 7;
 
 const DAY_MS = 86_400_000;
 
-const resolveHistoryPath = (options: IKpiHistoryStorageOptions): string =>
-	join(
+const resolveHistoryPath = (options: IKpiHistoryStorageOptions): string => {
+	const contained = resolveAgainstRoots(
 		options.workspaceRootAbs,
+		[options.workspaceRootAbs],
 		options.cacheDir,
-		'results',
-		'project-kpis',
-		'history.json',
 	);
+	if (!contained.ok) {
+		throw new Error(
+			`Configured project KPI cache directory is outside the workspace: ${contained.reason ?? options.cacheDir}`,
+		);
+	}
+	return joinUnderRoot(contained.abs, 'results/project-kpis/history.json');
+};
 
 const asIsoString = (value: Date): string => value.toISOString();
 

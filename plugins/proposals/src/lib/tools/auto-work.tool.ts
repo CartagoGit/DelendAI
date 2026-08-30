@@ -842,7 +842,7 @@ export const runAutoWork = async (
 	});
 };
 
-const INPUT_SCHEMA = z
+export const AUTO_WORK_INPUT_SCHEMA = z
 	.object({
 		/**
 		 * Optional per-call override for the persist mode. Resolved with
@@ -875,7 +875,7 @@ const INPUT_SCHEMA = z
 	})
 	.strict();
 
-const AUTO_WORK_OUTPUT_SCHEMA = z.object({
+export const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	state: z.enum(['idle', 'work']),
 	idleStreak: z.number().int().positive().optional(),
 	reason: z.string().optional(),
@@ -1235,7 +1235,7 @@ export const buildAutoWorkRegistration = (
 				outputSchema: AUTO_WORK_OUTPUT_SCHEMA,
 				description:
 					'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → [persist] → release), or an explicit idle state. Low-token: a tight action list, not prose.',
-				inputSchema: INPUT_SCHEMA,
+				inputSchema: AUTO_WORK_INPUT_SCHEMA,
 			},
 			async (args: {
 				persist?: IAutoWorkPersistMode | undefined;

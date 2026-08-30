@@ -295,7 +295,7 @@ const TOOL_ERROR_SCHEMA = z.object({
 	nextHops: z.array(z.string()).optional(),
 });
 
-const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
+export const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	error: TOOL_ERROR_SCHEMA.optional(),
 	id: z.string().optional(),

@@ -96,7 +96,7 @@ workspaces untrusted.
 ### S3 — Tests de integración (trusted, untrusted, modificado, cancelado)
 
 - **Status**: done
-- **Files**: `extensions/vscode/src/test/trust-gate-integration.spec.ts`, `extensions/vscode/src/test/mcp-json-change.integration.spec.ts`
+- **Files**: `extensions/vscode/src/test/trust-gate-integration.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Test 1: `isTrusted=false` → `createClient` NO invocado (mock spy)"

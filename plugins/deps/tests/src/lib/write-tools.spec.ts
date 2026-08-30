@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -96,6 +96,43 @@ describe('packageInstall / packageRunScript (S11, offline fixtures, no network)'
 		const result = await packageRunScript(root, { script: 'missing' });
 		expect(result.ok).toBe(false);
 		expect(result.error).toContain('no script named "missing"');
+	});
+
+	it('validates and runs a script declared only in the nested package', async () => {
+		manifest({ scripts: { rootOnly: 'echo root-script' } });
+		const nested = join(root, 'nested');
+		mkdirSync(nested);
+		writeFileSync(
+			manifestAbsPath(nested),
+			JSON.stringify({ scripts: { nestedOnly: 'echo nested-script' } }),
+			'utf8',
+		);
+
+		const result = await packageRunScript(root, {
+			script: 'nestedOnly',
+			cwd: 'nested',
+		});
+		expect(result.ok).toBe(true);
+		expect(result.code).toBe(0);
+		expect(result.tail).toContain('nested-script');
+	});
+
+	it('rejects a script absent from the nested package', async () => {
+		manifest({ scripts: { rootOnly: 'echo root-script' } });
+		const nested = join(root, 'nested');
+		mkdirSync(nested);
+		writeFileSync(
+			manifestAbsPath(nested),
+			JSON.stringify({ scripts: { nestedOnly: 'echo nested-script' } }),
+			'utf8',
+		);
+
+		const result = await packageRunScript(root, {
+			script: 'rootOnly',
+			cwd: 'nested',
+		});
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('no script named "rootOnly"');
 	});
 });
 

@@ -99,7 +99,10 @@ evicción de plugin   → si (now - activatedAt) < minWarmMs: no evictar
       (`searchTools`, `matchesFilter` → nueva `scoreCandidate`)
     - `packages/core/tests/src/lib/project/tool-surface-runtime.search.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/project/tool-surface-runtime.search.spec.ts`
-
+- review-state: changes_requested
+- review-implementer: copilot
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by delivery_verifier — El ranking usa localeCompare sin locale fijo en el desempate; eso puede variar según ICU/locale del runtime. Cambiar el comparador a un criterio portable independiente del entorno y añadir una regresión con nombres no ASCII o comparación sensible a locale. El resto de la slice está correcto; no aprobar hasta corregir este punto.
 ### S2 — Umbral de confianza con respuesta explícita "no encontrado"
 
 - **Status**: pending

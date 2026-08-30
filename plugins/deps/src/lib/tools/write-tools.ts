@@ -226,7 +226,7 @@ export const packageRunScript = async (
 		);
 	}
 
-	const manifestAbs = manifestAbsPath(workspaceRootAbs);
+	const manifestAbs = manifestAbsPath(contained.abs);
 	if (!(await scriptExists(manifestAbs, options.script))) {
 		return rejected(
 			`rejected: no script named "${options.script}" in package.json`,

@@ -22,6 +22,8 @@ import {
 	STABLE_MANIFEST_REL,
 } from '@mcp-vertex/core/public';
 
+import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
+
 const REPO_ROOT = process.cwd();
 
 const readCorePackageVersion = (): string => {
@@ -37,6 +39,7 @@ const readCorePackageVersion = (): string => {
 };
 
 const main = (): void => {
+	registerStableToolContributions();
 	const packageVersion = readCorePackageVersion();
 	const manifest = buildStableManifest(STABLE_API_TOOLS, packageVersion);
 	const out = `${JSON.stringify(manifest, null, 2)}\n`;

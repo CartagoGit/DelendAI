@@ -1416,14 +1416,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00272",
-				"title": "f00272",
-				"track": "tokens",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00273",
 				"title": "f00273",
 				"track": "adaptive",
@@ -1432,26 +1424,10 @@
 				"date": ""
 			},
 			{
-				"id": "f00274",
-				"title": "f00274",
-				"track": "product",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00275",
-				"title": "f00275",
-				"track": "product",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00277",
 				"title": "f00277",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -2328,6 +2304,46 @@
 				"date": ""
 			},
 			{
+				"id": "f00389",
+				"title": "f00389",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00390",
+				"title": "f00390",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00391",
+				"title": "f00391",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00392",
+				"title": "f00392",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00393",
+				"title": "f00393",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "q00006",
 				"title": "q00006",
 				"track": "develop-audit-hardening-v4",
@@ -2379,6 +2395,14 @@
 				"id": "q00012",
 				"title": "q00012",
 				"track": "audit-stabilization",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00013",
+				"title": "q00013",
+				"track": "master-hardening-release-stabilization",
 				"status": "ready",
 				"kind": "plan",
 				"date": ""
@@ -2484,6 +2508,14 @@
 				"title": "r00043",
 				"track": "architecture",
 				"status": "in-progress",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00044",
+				"title": "r00044",
+				"track": "general",
+				"status": "ready",
 				"kind": "refactor",
 				"date": ""
 			},
@@ -2608,6 +2640,14 @@
 				"date": ""
 			},
 			{
+				"id": "v00133",
+				"title": "v00133",
+				"track": "general",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
 				"id": "x00203",
 				"title": "x00203",
 				"track": "plugins+fix",
@@ -2673,12 +2713,12 @@
 			}
 		],
 		"byStatus": {
-			"ready": 160,
+			"ready": 165,
 			"in-progress": 16,
 			"review": 0,
 			"paused": 1,
 			"done": 566,
-			"blocked": 2,
+			"blocked": 6,
 			"retired": 11,
 			"unspecified": 0
 		}

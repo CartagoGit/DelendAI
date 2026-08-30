@@ -5,6 +5,8 @@
  */
 export { default } from '../index';
 
+export { registerProposalsStableTools } from '../lib/api/proposals-stable-tools';
+
 export {
 	DEFAULT_PATH_LAYOUT,
 	buildSwarmPaths,
