@@ -3178,7 +3178,6 @@
 		"oversized-file:packages/core/src/lib/plugins/preset-catalog.ts:1",
 		"oversized-file:packages/core/src/lib/project/tool-surface-runtime.service.ts:1",
 		"oversized-file:packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts:1",
-		"oversized-file:packages/core/src/lib/scaffold/author-external-plugin.ts:1",
 		"oversized-file:packages/core/src/lib/scaffold/extract-plugin.ts:1",
 		"oversized-file:packages/core/src/lib/scaffold/scaffold-host.ts:1",
 		"oversized-file:packages/core/src/lib/scaffold/scaffold-tool.ts:1",

@@ -111,7 +111,6 @@
 	"packages/cli/src/lib/init/init-host-instructions.service.ts": 2,
 	"packages/cli/src/lib/init/init-host-snapshot.service.ts": 3,
 	"packages/cli/src/lib/server-args.service.ts": 1,
-	"packages/client/src/lib/scaffold/author-plugin.ts": 7,
 	"packages/client/src/lib/scaffold/write-scaffolded-files.ts": 2,
 	"packages/client/src/lib/services/_namespace.ts": 2,
 	"packages/client/src/lib/services/agent-catalog-service.ts": 2,
