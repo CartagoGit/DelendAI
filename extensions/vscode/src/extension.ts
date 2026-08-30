@@ -352,29 +352,25 @@ export const activate = async (
 	})) {
 		track(reg);
 	}
+	const dashboardHost =
+		deps.vscode === undefined
+			? await (async () => {
+					const { createVscodeHostAdapter } = await import(
+						'./host/vscode-host-adapter'
+					);
+					return await createVscodeHostAdapter();
+				})()
+			: createFakeHostFromVscode(deps.vscode);
+	const kpiRegistration = registerKpiDashboardProvider({
+		host: dashboardHost,
+		client,
+		viewId: KPI_VIEW_ID,
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	});
+	if (kpiRegistration !== undefined) track(kpiRegistration);
 	registerDevelopmentAutoReload(context, vscode, track);
 
 	const overview = new OverviewService(client, namespacePrefix);
-	// S3: capture the host's actually-loaded plugin set so the
-	// toolbar can drop action cards whose `requires` is unmet. A
-	// failed overview call (server not yet booted) leaves the set
-	// undefined, and the toolbar's `deps.loadedPlugins ?? []` fallback
-	// then shows every action — same legacy behaviour. The compact
-	// overview projects `plugins: string[]` (one entry per loaded
-	// plugin name) which is exactly what the toolbar's filter needs.
-	let loadedPlugins: readonly string[] | undefined;
-	try {
-		const snap = await overview.getOverview({ compact: true });
-		const raw = (snap as { plugins?: unknown })?.plugins;
-		if (Array.isArray(raw)) {
-			loadedPlugins = raw.filter(
-				(entry): entry is string =>
-					typeof entry === 'string' && entry.length > 0,
-			);
-		}
-	} catch {
-		loadedPlugins = undefined;
-	}
 	const catalog = new AgentCatalogService(
 		client,
 		namespacePrefix === undefined ? {} : { namespacePrefix },
@@ -391,6 +387,51 @@ export const activate = async (
 	} catch {
 		statusBarItem = undefined;
 	}
+
+	const treeRegistration = vscode.window.registerTreeDataProvider?.(
+		TOOLS_VIEW_ID,
+		toolTree,
+	);
+	if (treeRegistration !== undefined) track(treeRegistration);
+	const memoryRegistration = vscode.window.registerTreeDataProvider?.(
+		MEMORY_VIEW_ID,
+		memoryTree,
+	);
+	if (memoryRegistration !== undefined) track(memoryRegistration);
+	// Register views before the first status-bar refresh. The refresh performs
+	// several MCP requests and must not prevent the workbench from attaching
+	// the providers declared by the extension manifest.
+	const proposalsSource = new ProposalsSnapshotSource({
+		client,
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	});
+	const proposalsTree = new ProposalBoardProvider(client, {
+		snapshotSource: proposalsSource,
+		filterStore: createProposalFilterStore(context.globalState),
+	});
+	const proposalsRegistration = vscode.window.registerTreeDataProvider?.(
+		PROPOSALS_VIEW_ID,
+		proposalsTree,
+	);
+	if (proposalsRegistration !== undefined) track(proposalsRegistration);
+
+	// S3: capture the host's actually-loaded plugin set after the views are
+	// registered. A slow MCP overview must not prevent the workbench from
+	// attaching the providers declared by the extension manifest.
+	let loadedPlugins: readonly string[] | undefined;
+	try {
+		const snap = await overview.getOverview({ compact: true });
+		const raw = (snap as { plugins?: unknown })?.plugins;
+		if (Array.isArray(raw)) {
+			loadedPlugins = raw.filter(
+				(entry): entry is string =>
+					typeof entry === 'string' && entry.length > 0,
+			);
+		}
+	} catch {
+		loadedPlugins = undefined;
+	}
+
 	if (statusBarItem !== undefined) {
 		const statusBar = new McpVertexStatusBar(
 			statusBarItem,
@@ -410,38 +451,6 @@ export const activate = async (
 		handle.register('status-bar', statusBar);
 	}
 
-	const treeRegistration = vscode.window.registerTreeDataProvider?.(
-		TOOLS_VIEW_ID,
-		toolTree,
-	);
-	if (treeRegistration !== undefined) track(treeRegistration);
-	const memoryRegistration = vscode.window.registerTreeDataProvider?.(
-		MEMORY_VIEW_ID,
-		memoryTree,
-	);
-	if (memoryRegistration !== undefined) track(memoryRegistration);
-	// S4 (H5): `mcp-vertex.proposals` is declared in
-	// `contributes.views` but had no `TreeDataProvider`, so the view was
-	// permanently empty. Register the existing `ProposalBoardProvider`
-	// (it mirrors `mcp-vertex_proposals_proposal_board`) so the view
-	// renders the live board and each node can route to its proposal via
-	// `mcp-vertex.openProposal` (S5).
-	// S2/S3: one shared read-only snapshot source backs BOTH the
-	// sidebar board and the detail webview, so opening a proposal reuses the
-	// board's cached fetch (one TTL cache, fewer tool calls).
-	const proposalsSource = new ProposalsSnapshotSource({
-		client,
-		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
-	});
-	const proposalsTree = new ProposalBoardProvider(client, {
-		snapshotSource: proposalsSource,
-		filterStore: createProposalFilterStore(context.globalState),
-	});
-	const proposalsRegistration = vscode.window.registerTreeDataProvider?.(
-		PROPOSALS_VIEW_ID,
-		proposalsTree,
-	);
-	if (proposalsRegistration !== undefined) track(proposalsRegistration);
 	// Fix #3: `createFileSystemWatcher` can be absent on stripped hosts
 	// (or in test fakes that omit `workspace`). Previously we silently
 	// skipped, leaving the tree permanently stale. Now we log and
@@ -570,55 +579,18 @@ export const activate = async (
 		}),
 	);
 
-	// Fix #9: previously the dashboard was ONLY registered when
-	// `deps.vscode === undefined` (i.e. the real VS Code runtime).
-	// Hosts that load this same file via the test seams (or future
-	// JetBrains/Zed ports) would silently miss the dashboard command.
-	// We now register it unconditionally — the adapter below is
-	// host-injected when available, and we lazily import the real
-	// VS Code adapter only when no `vscode` was passed.
-	if (deps.vscode === undefined) {
-		const { createVscodeHostAdapter } = await import(
-			'./host/vscode-host-adapter'
-		);
-		const host = await createVscodeHostAdapter();
-		track(
-			registerOpenDashboardCommand({
-				host,
-				client,
-				globalState: context.globalState,
-				...withPrefix,
-				getConfig: () =>
-					context.globalState.get(SETTINGS_STATE_KEY) ??
-					context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
-					{},
-			}),
-		);
-		const kpiRegistration = registerKpiDashboardProvider({
-			host,
+	track(
+		registerOpenDashboardCommand({
+			host: dashboardHost,
 			client,
-			viewId: KPI_VIEW_ID,
-			...(namespacePrefix === undefined ? {} : { namespacePrefix }),
-		});
-		if (kpiRegistration !== undefined) track(kpiRegistration);
-	} else {
-		// Build a host from the injected vscode surface so the dashboard
-		// works the same way it does in production, regardless of which
-		// test fakes / alt hosts are loading this code.
-		const host = createFakeHostFromVscode(deps.vscode);
-		track(
-			registerOpenDashboardCommand({
-				host,
-				client,
-				globalState: context.globalState,
-				...withPrefix,
-				getConfig: () =>
-					context.globalState.get(SETTINGS_STATE_KEY) ??
-					context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
-					{},
-			}),
-		);
-	}
+			globalState: context.globalState,
+			...withPrefix,
+			getConfig: () =>
+				context.globalState.get(SETTINGS_STATE_KEY) ??
+				context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+				{},
+		}),
+	);
 };
 
 // S4: the VS Code runtime calls `deactivate()` with no arguments,
