@@ -2,10 +2,11 @@
 id: f00282
 title: "Project observability economics and KPI intelligence across MCP CLI LLM and VS Code"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: project-observability-economics
 date: 2026-08-29
+shipped-in: ["84f7cd1a", "0e61564c", "dbed1157", "1103f150"]
 ---
 
 # f00282 — Project observability economics and KPI intelligence across MCP CLI LLM and VS Code
@@ -72,7 +73,7 @@ Users need to understand both whether their project is progressing and whether t
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — Verificación independiente (revisor distinto del implementador): persistencia atómica de snapshots con writeFileAtomic+mutex y retención, ventanas de historial con tendencias up/down/stable/unknown, economics separando provider-reported/configured-estimate/subscription/unavailable sin inventar ahorros. Suite plugin project-kpis 10/10 (kpi-history 5, kpi-aggregation 2, tool 3), typecheck exit 0. Commit real a8f542fd.
 ### S4 — CLI human JSON watch and audit reports
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2, S3]
 - **Files**: `packages/cli/src/commands/kpis.command.ts`, `packages/cli/src/commands/kpis-renderer.ts`, `packages/cli/src/commands/kpis-options.ts`, `packages/cli/src/commands/kpis.command.spec.ts`, `packages/cli/README.md`
 - **Gate**: e2e
@@ -81,9 +82,12 @@ Users need to understand both whether their project is progressing and whether t
   - "Human output is scannable and includes metric status, source, period and limitations."
   - "JSON output is stable enough for CI and scripts and contains the same data as the human renderer."
   - "Watch mode refreshes without corrupting output and threshold mode can fail CI based on configured evidence-backed criteria."
-
+- review-state: done
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente (revisor distinto del implementador): CLI expone las 10 vistas requeridas, output humano escaneable con status/source/period/limitations, JSON estable con mismo contrato, watch mode y threshold mode verificados por spec (6 tests). Suite CLI completa 37 archivos/319 tests verdes, typecheck exit 0, cli-coverage 18 comandos cubiertos. Commit real 0e61564c.
 ### S5 — MCP and LLM KPI tools with compact views
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2, S3]
 - **Files**: `plugins/project-kpis/src/lib/tools/project-kpis.tool.ts`, `plugins/project-kpis/src/lib/tools/project-kpis-output.schema.ts`, `plugins/project-kpis/src/lib/contracts/kpi-query.interface.ts`, `plugins/project-kpis/tests/src/project-kpis.tool.spec.ts`
 - **Gate**: e2e
@@ -92,9 +96,12 @@ Users need to understand both whether their project is progressing and whether t
   - "Responses remain bounded and support filters for time window, dimensions and detail level."
   - "The LLM receives explicit data quality status, sources, estimates, privacy limits and recommended next actions."
   - "The tool contract is consumable through the same assembleCliConfig path used by hosts and tests."
-
+- review-state: done
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente (revisor distinto del implementador): la superficie MCP expone las 10 vistas requeridas (incluye economics/audit/efficiency), respuestas bounded con filtros de ventana/dimensión/detalle, y el LLM recibe status/sources/estimates/privacy limits/recommendations. Contrato Zod estricto consumible vía registration shape. Suite plugin 10/10 (tool spec 3/3), typecheck exit 0. Commit real 84f7cd1a.
 ### S6 — VS Code KPI dashboard with graphs and drill-down
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S3, S5]
 - **Files**: `extensions/vscode/src/providers/kpi-dashboard-provider.ts`, `extensions/vscode/src/contracts/interfaces/kpi-dashboard.interface.ts`, `extensions/vscode/src/contracts/constants/kpi-dashboard-message-schema.constant.ts`, `extensions/vscode/src/test/kpi-dashboard-provider.spec.ts`, `packages/ui-extension/src/kpi-dashboard.ts`
 - **Gate**: e2e
@@ -103,9 +110,12 @@ Users need to understand both whether their project is progressing and whether t
   - "At least trend charts exist for overall score, coverage, token usage/cost and calls/errors over time."
   - "The dashboard handles loading, partial data, unavailable metrics, MCP disconnects and empty history without misleading zeros."
   - "The status bar can expose the overall score and period while linking to the dashboard."
-
+- review-state: done
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente (revisor distinto del implementador): dashboard con las secciones requeridas, tendencias (score/coverage/tokens/cost/calls/errors) en ui-extension, manejo honesto de loading/partial/unavailable/disconnected/empty sin ceros engañosos, view mcp-vertex.kpis en package.json + provider registrado en extension.ts + status bar expone KPIs y enlaza al dashboard. Spec 3/3, typecheck extensión exit 0. Commit real 84f7cd1a.
 ### S7 — Audit and efficiency methodology dogfood on mcp-vertex
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2, S3, S4, S5, S6]
 - **Files**: `plugins/project-kpis/src/lib/services/audit-report.service.ts`, `plugins/project-kpis/src/lib/services/efficiency-analysis.service.ts`, `plugins/project-kpis/tests/src/audit-report.spec.ts`, `docs/mcp-vertex/specs/project-observability-economics.md`
 - **Gate**: e2e
@@ -114,9 +124,12 @@ Users need to understand both whether their project is progressing and whether t
   - "The audit view identifies incongruences such as schema/output mismatches, unexplained failures, missing telemetry dimensions, stale snapshots and plugin-level anomalies."
   - "Efficiency analysis compares configured baselines against observed MCP-assisted usage and labels causality as measured, inferred or unknown."
   - "The methodology documents formulas for coverage, delivery, reliability, latency, token efficiency, estimated savings and confidence."
-
+- review-state: done
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente (revisor distinto del implementador): audit-report.service identifica incongruencias schema/resultado, fallos inexplicados, dimensiones de telemetría faltantes, snapshots stale y anomalías por plugin con evidencia por finding; efficiency-analysis compara baselines configurados vs uso observado y etiqueta causalidad measured/inferred/unknown sin inventar precios ni ahorros; metodología documenta fórmulas de coverage/delivery/reliability/latency/token efficiency/estimated savings/confidence. Suite plugin 21/21 (audit-report 11), typecheck 0, build limpio. Commit real dbed1157.
 ### S8 — Configuration i18n quality gates and end-to-end documentation
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S4, S6, S7]
 - **Files**: `mcp-vertex.config.json`, `plugins/project-kpis/plugin.manifest.ts`, `plugins/project-kpis/package.json`, `extensions/vscode/package.json`, `docs/mcp-vertex/PROJECT-OBSERVABILITY.md`, `plugins/project-kpis/tests/project-kpis.e2e.spec.ts`
 - **Gate**: e2e
@@ -125,7 +138,10 @@ Users need to understand both whether their project is progressing and whether t
   - "CLI, MCP and VS Code share the same configuration and schema semantics."
   - "Documentation covers privacy, retention, unavailable metrics, cost methodology, baselines and dogfooding commands."
   - "The full validation suite and an end-to-end smoke pass for the mcp-vertex repository."
-
+- review-state: done
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente (revisor distinto del implementador): plugin loadable desde la configuración del repo sin exponer secretos ni ruido stdout (verify:tools project_kpis ✓ ok, e2e smoke valida que no filtra secretos); CLI/MCP/VS Code comparten contrato de snapshot y semántica de schema; documentación cubre privacy, retention, unavailable metrics, cost methodology, baselines y dogfooding; suite plugin 25/25 (incluye e2e 4), typecheck 0, manifest gates verdes. Commit real 1103f150.
 ## acceptance
 
 - A new project-kpis plugin builds through definePlugin and exposes a versioned typed snapshot contract.
