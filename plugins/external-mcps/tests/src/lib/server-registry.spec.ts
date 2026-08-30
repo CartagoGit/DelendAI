@@ -304,7 +304,8 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 	it('bootEager boots ONLY the eager:true servers at init', () => {
 		const h = makeHarness(
 			{
-				lazy: entry(),
+				defaultLazy: entry(),
+				explicitLazy: entry({ eager: false, command: 'cold-cmd' }),
 				hot: entry({ eager: true, command: 'hot-cmd' }),
 			},
 			{ hostEnv: BASE_HOST_ENV },
@@ -315,7 +316,38 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 		expect(h.spawnCalls[0]?.env).toEqual(BASE_HOST_ENV);
 		const rows = h.registry.status();
 		expect(rows.find((r) => r.id === 'hot')?.running).toBe(true);
-		expect(rows.find((r) => r.id === 'lazy')?.running).toBe(false);
+		expect(rows.find((r) => r.id === 'defaultLazy')?.running).toBe(false);
+		expect(rows.find((r) => r.id === 'explicitLazy')?.running).toBe(false);
+	});
+
+	it('leaves eager:false and omitted entries cold until the first routed call', async () => {
+		const h = makeHarness(
+			{
+				defaultLazy: entry(),
+				explicitLazy: entry({ eager: false, command: 'cold-cmd' }),
+				hot: entry({ eager: true, command: 'hot-cmd' }),
+			},
+			{ hostEnv: BASE_HOST_ENV },
+		);
+		h.registry.bootEager();
+		expect(h.spawnCalls.map((call) => call.command)).toEqual(['hot-cmd']);
+
+		const firstLazy = h.registry.call('explicitLazy', 'ping', {});
+		expect(h.spawnCalls.map((call) => call.command)).toEqual([
+			'hot-cmd',
+			'cold-cmd',
+		]);
+		h.children[1]?.reply(0, { result: { pong: true } });
+		expect(await firstLazy).toEqual({ ok: true, result: { pong: true } });
+
+		const secondLazy = h.registry.call('defaultLazy', 'ping', {});
+		expect(h.spawnCalls.map((call) => call.command)).toEqual([
+			'hot-cmd',
+			'cold-cmd',
+			'stub-mcp',
+		]);
+		h.children[2]?.reply(0, { result: { pong: true } });
+		expect(await secondLazy).toEqual({ ok: true, result: { pong: true } });
 	});
 
 	it('snapshots the spawned env when entry.env is empty so only the base allow-list reaches the child', async () => {

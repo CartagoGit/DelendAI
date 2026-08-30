@@ -29,11 +29,7 @@ export const DEFAULT_THRESHOLDS: IThresholds = {
 };
 
 export type IToolDiffStatus =
-	| 'regression'
-	| 'improved'
-	| 'unchanged'
-	| 'new'
-	| 'removed';
+	'regression' | 'improved' | 'unchanged' | 'new' | 'removed';
 
 export interface IToolDiff {
 	readonly tool: string;
@@ -88,7 +84,7 @@ export interface IDiffReport {
  */
 export const diffPluginMetrics = (
 	baseline: IMetricsSnapshotFile,
-	candidate: IMetricsSnapshotFile,
+	candidate: IMetricsSnapshotFile
 ): readonly IPluginMetricsDiff[] => {
 	const toolNames = new Set([
 		...Object.keys(baseline.pluginMetrics ?? {}),
@@ -123,7 +119,7 @@ const errorRate = (entry: IMetricSnapshotEntry): number | null =>
 
 const pctDelta = (
 	baseline: number | null,
-	candidate: number | null,
+	candidate: number | null
 ): number | null => {
 	if (baseline === null || candidate === null || baseline === 0) return null;
 	return ((candidate - baseline) / baseline) * 100;
@@ -144,7 +140,7 @@ const pctDelta = (
  */
 export const isComparableSurface = (
 	baseline: IMetricsSnapshotFile,
-	candidate: IMetricsSnapshotFile,
+	candidate: IMetricsSnapshotFile
 ): boolean =>
 	baseline.surface !== undefined &&
 	candidate.surface !== undefined &&
@@ -153,7 +149,7 @@ export const isComparableSurface = (
 export const diffSnapshots = (
 	baseline: IMetricsSnapshotFile,
 	candidate: IMetricsSnapshotFile,
-	thresholds: IThresholds = DEFAULT_THRESHOLDS,
+	thresholds: IThresholds = DEFAULT_THRESHOLDS
 ): IDiffReport => {
 	const toolNames = new Set([
 		...Object.keys(baseline.tools),
@@ -279,7 +275,7 @@ export const renderMarkdownReport = (report: IDiffReport): string => {
 				? '—'
 				: `${t.errorRateDelta >= 0 ? '+' : ''}${(t.errorRateDelta * 100).toFixed(1)}pp`;
 		lines.push(
-			`| ${t.tool} | ${t.status} | ${bytesCell} | ${latencyCell} | ${errorCell} |`,
+			`| ${t.tool} | ${t.status} | ${bytesCell} | ${latencyCell} | ${errorCell} |`
 		);
 	}
 	if (report.pluginMetrics.length > 0) {
@@ -288,11 +284,11 @@ export const renderMarkdownReport = (report: IDiffReport): string => {
 			'### Tracked-plugin metrics (obs_runtime_metrics / activation_metrics)',
 			'',
 			'| Tool | Baseline p95 bytes | Candidate p95 bytes |',
-			'| --- | --- | --- |',
+			'| --- | --- | --- |'
 		);
 		for (const p of report.pluginMetrics) {
 			const cell = (
-				snapshot: IPluginMetricsSnapshot | undefined,
+				snapshot: IPluginMetricsSnapshot | undefined
 			): string => {
 				if (snapshot === undefined) return '—';
 				return snapshot.responses.hasSamples
@@ -301,7 +297,7 @@ export const renderMarkdownReport = (report: IDiffReport): string => {
 			};
 			const flag = p.wentSampleless ? ' ⚠️ went sampleless' : '';
 			lines.push(
-				`| ${p.tool}${flag} | ${cell(p.baseline)} | ${cell(p.candidate)} |`,
+				`| ${p.tool}${flag} | ${cell(p.baseline)} | ${cell(p.candidate)} |`
 			);
 		}
 	}
@@ -310,14 +306,14 @@ export const renderMarkdownReport = (report: IDiffReport): string => {
 
 const readThresholdsFromEnv = (): IThresholds => ({
 	tokenDeltaPct: Number(
-		process.env.METRICS_TOKEN_DELTA_PCT ?? DEFAULT_THRESHOLDS.tokenDeltaPct,
+		process.env.METRICS_TOKEN_DELTA_PCT ?? DEFAULT_THRESHOLDS.tokenDeltaPct
 	),
 	latencyDeltaPct: Number(
 		process.env.METRICS_LATENCY_DELTA_PCT ??
-			DEFAULT_THRESHOLDS.latencyDeltaPct,
+			DEFAULT_THRESHOLDS.latencyDeltaPct
 	),
 	bytesDeltaPct: Number(
-		process.env.METRICS_BYTES_DELTA_PCT ?? DEFAULT_THRESHOLDS.bytesDeltaPct,
+		process.env.METRICS_BYTES_DELTA_PCT ?? DEFAULT_THRESHOLDS.bytesDeltaPct
 	),
 });
 
@@ -330,10 +326,11 @@ if (isMainModule()) {
 	const baselinePath =
 		process.env.METRICS_BASELINE_PATH ?? 'metrics-baseline.json';
 	const candidatePath =
-		process.env.METRICS_CANDIDATE_PATH ?? 'metrics-candidate.json';
+		process.env.METRICS_CANDIDATE_PATH ??
+		'.cache/mcp-vertex/metrics/candidate.json';
 	// Repo-tracked fallback so the token-budget gate is armed even before
 	// the first GitHub release publishes a baseline snapshot. Promote a
-	// fresh candidate with `cp metrics-candidate.json config/metrics-baseline.json`.
+	// fresh candidate with `cp .cache/mcp-vertex/metrics/candidate.json config/metrics-baseline.json`.
 	const fallbackBaselinePath = 'config/metrics-baseline.json';
 	const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
@@ -348,11 +345,11 @@ if (isMainModule()) {
 				baselineRaw = await readFile(fallbackBaselinePath, 'utf8');
 				usingFallbackBaseline = true;
 				console.log(
-					`ℹ diff-snapshots: no release baseline at ${baselinePath} — using repo fallback ${fallbackBaselinePath} (bytes/call gate only; latency not comparable across machines).`,
+					`ℹ diff-snapshots: no release baseline at ${baselinePath} — using repo fallback ${fallbackBaselinePath} (bytes/call gate only; latency not comparable across machines).`
 				);
 			} catch {
 				console.log(
-					`ℹ diff-snapshots: no baseline at ${baselinePath} nor ${fallbackBaselinePath} — skipping gate (first release).`,
+					`ℹ diff-snapshots: no baseline at ${baselinePath} nor ${fallbackBaselinePath} — skipping gate (first release).`
 				);
 				return;
 			}
@@ -364,18 +361,18 @@ if (isMainModule()) {
 			baseline = JSON.parse(baselineRaw) as IMetricsSnapshotFile;
 		} catch (err) {
 			console.error(
-				`✖ diff-snapshots: corrupted baseline at ${baselinePath}: ${String(err)}`,
+				`✖ diff-snapshots: corrupted baseline at ${baselinePath}: ${String(err)}`
 			);
 			process.exit(1);
 			return;
 		}
 		try {
 			candidate = JSON.parse(
-				await readFile(candidatePath, 'utf8'),
+				await readFile(candidatePath, 'utf8')
 			) as IMetricsSnapshotFile;
 		} catch (err) {
 			console.error(
-				`✖ diff-snapshots: cannot read candidate at ${candidatePath}: ${String(err)}`,
+				`✖ diff-snapshots: cannot read candidate at ${candidatePath}: ${String(err)}`
 			);
 			process.exit(1);
 			return;
@@ -397,7 +394,7 @@ if (isMainModule()) {
 					`${baseline.surface?.toolsMeasured ?? 'an unrecorded number of'} tools, ` +
 					`this run measured ${candidate.surface?.toolsMeasured ?? 'an unrecorded number'}. ` +
 					'The table above is informational only; no regression is enforced ' +
-					'until a baseline captured from the same surface is published.',
+					'until a baseline captured from the same surface is published.'
 			);
 		}
 		if (summaryPath !== undefined) {
@@ -410,7 +407,7 @@ if (isMainModule()) {
 
 	main().catch((err: unknown) => {
 		console.error(
-			`✖ diff-snapshots failed: ${err instanceof Error ? err.message : String(err)}`,
+			`✖ diff-snapshots failed: ${err instanceof Error ? err.message : String(err)}`
 		);
 		process.exit(1);
 	});

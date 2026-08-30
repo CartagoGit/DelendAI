@@ -25,6 +25,13 @@ export interface IBoundaryFindingRule {
 	readonly destination: TProposedDestination;
 	readonly needle: string;
 	readonly note: string;
+	/**
+	 * Slice id (e.g. `S2`) that removed this coupling from
+	 * `packages/core/src`. A resolved rule that no longer matches the
+	 * tree is expected success; a resolved rule that STILL matches is a
+	 * regression (the refactor did not actually land).
+	 */
+	readonly resolvedBy?: string;
 }
 
 export interface IBoundaryFinding extends IBoundaryFindingRule {
@@ -42,6 +49,8 @@ export interface IBoundaryScanResult {
 	readonly findings: readonly IBoundaryFinding[];
 	readonly unclassified: readonly IBoundaryCandidate[];
 	readonly missing: readonly IBoundaryFindingRule[];
+	readonly resolved: readonly IBoundaryFindingRule[];
+	readonly regressions: readonly IBoundaryFindingRule[];
 	readonly scannedFiles: number;
 }
 
@@ -160,6 +169,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'adapter',
 		needle: 'buildProposalsStoreFiles,',
 		note: 'El bootstrap del store de proposals no debe seguir ensamblado en el core.',
+		resolvedBy: 'S2',
 	},
 	{
 		file: 'packages/core/src/lib/adopt/adopt-project.tool.ts',
@@ -168,6 +178,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'adapter',
 		needle: 'config.plugins.proposals ??= { options: {} };',
 		note: 'La siembra del plugin debe vivir en un adaptador de adopcion.',
+		resolvedBy: 'S2',
 	},
 	{
 		file: 'packages/core/src/lib/adopt/adopt-project.tool.ts',
@@ -176,6 +187,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'adapter',
 		needle: 'the config loads the proposals + issues plugins;',
 		note: 'El texto visible al host sigue describiendo una relacion de plugins concreta.',
+		resolvedBy: 'S2',
 	},
 	{
 		file: 'packages/core/src/lib/adopt/adopt-project.tool.ts',
@@ -184,6 +196,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'adapter',
 		needle: 'sync_proposals',
 		note: 'La instruccion residual debe salir del adaptador del workflow.',
+		resolvedBy: 'S2',
 	},
 	{
 		file: 'packages/core/src/lib/adopt/adopt-project.tool.ts',
@@ -192,6 +205,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'adapter',
 		needle: 'bootstrap the proposals store + generate agents/instructions',
 		note: 'La descripcion publica del tool sigue anunciando el store de proposals como responsabilidad del core.',
+		resolvedBy: 'S2',
 	},
 	{
 		file: 'packages/core/src/lib/adopt/adopt-project.tool.ts',
@@ -200,6 +214,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'adapter',
 		needle: 'the proposals-store bootstrap, and the host agent/instructions scaffold',
 		note: 'La ayuda del tool mantiene el bootstrap del store como detalle del core.',
+		resolvedBy: 'S2',
 	},
 	{
 		file: 'packages/core/src/lib/adopt/adoption-assessment.service.ts',
@@ -217,6 +232,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'composition',
 		needle: "import { readProposalsIndex } from './read-proposals-index';",
 		note: 'La composicion actual importa el lector concreto del indice de proposals.',
+		resolvedBy: 'S4',
 	},
 	{
 		file: 'packages/core/src/lib/cli/assemble-skills.ts',
@@ -225,6 +241,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'composition',
 		needle: 'readonly proposalSummaries: Awaited<ReturnType<typeof readProposalsIndex>>;',
 		note: 'El resultado expuesto por el ensamblado aun tiene vocabulario de proposals.',
+		resolvedBy: 'S4',
 	},
 	{
 		file: 'packages/core/src/lib/cli/assemble-skills.ts',
@@ -233,6 +250,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'composition',
 		needle: 'const proposalSummaries = await readProposalsIndex(',
 		note: 'El overview del core sigue leyendo el indice del plugin en tiempo de ensamblado.',
+		resolvedBy: 'S4',
 	},
 	{
 		file: 'packages/core/src/lib/cli/assemble-skills.ts',
@@ -241,6 +259,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'composition',
 		needle: "const hasProposals = isLoaded('proposals');",
 		note: 'La siguiente accion recomendada aun depende del nombre del plugin.',
+		resolvedBy: 'S4',
 	},
 	{
 		file: 'packages/core/src/lib/cli/assemble-skills.ts',
@@ -257,6 +276,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'composition',
 		needle: 'proposals_auto_work',
 		note: 'La recomendacion publica sigue nombrando directamente la tool del plugin.',
+		resolvedBy: 'S4',
 	},
 	{
 		file: 'packages/core/src/lib/cli/assemble-skills.ts',
@@ -273,6 +293,110 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		destination: 'composition',
 		needle: 'proposalSummaries,',
 		note: 'La composicion sigue propagando proposalSummaries a la capa superior.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/assemble-skills.ts',
+		symbolOrLiteral: 'proposalSummaries compat via workflow state',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: "readonly proposalSummaries: IAssembledWorkflowContributionState['proposalSummaries'];",
+		note: 'El resultado del ensamblado conserva proposalSummaries como compatibilidad de borde hacia la API publica.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/assemble-skills.ts',
+		symbolOrLiteral: 'proposalSummaries assignment',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'const proposalSummaries = workflowState.proposalSummaries;',
+		note: 'La lectura de proposalSummaries queda en el borde del ensamblado para conservar la API publica.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'IProposalSummary import',
+		category: 'import',
+		destination: 'intentional-compat',
+		needle: "import type { IProposalSummary } from '../catalog/agent-discovery-types';",
+		note: 'El ensamblador conserva el tipo del catalogo como compatibilidad del estado ensamblado.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'proposalSummaries carrier field',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'readonly proposalSummaries: readonly IProposalSummary[];',
+		note: 'El carrier agnostico mantiene un campo de compatibilidad para los summaries del catalogo.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'proposalSummaries optional carrier field',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'readonly proposalSummaries?: readonly IProposalSummary[];',
+		note: 'El carrier agnostico conserva el campo opcional por compatibilidad.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'isProposalSummary guard',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'const isProposalSummary = (value: unknown): value is IProposalSummary => {',
+		note: 'El guard de compatibilidad filtra summaries por la forma del catalogo.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'IProposalSummary cast',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'const candidate = value as Partial<IProposalSummary>;',
+		note: 'La proyeccion estructural usa el tipo del catalogo solo para validar la forma.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'IProposalSummary[] return',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: '): readonly IProposalSummary[] => {',
+		note: 'La firma de extraccion devuelve summaries del catalogo por compatibilidad.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'proposalSummaries array check',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'if (!Array.isArray(carrier.proposalSummaries)) return [];',
+		note: 'La validacion del carrier conserva el campo de compatibilidad.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'proposalSummaries freeze',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'return Object.freeze(carrier.proposalSummaries.filter(isProposalSummary));',
+		note: 'El filtrado de summaries usa el guard de compatibilidad.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'proposalSummaries empty fallback',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'proposalSummaries: [],',
+		note: 'El fallback sin proveedores devuelve summaries vacios por compatibilidad.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'proposalSummaries freeze result',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'const proposalSummaries = Object.freeze(',
+		note: 'La materializacion del estado conserva el campo de compatibilidad.',
+	},
+	{
+		file: 'packages/core/src/lib/cli/workflow-contribution-assembly.ts',
+		symbolOrLiteral: 'proposalSummaries returned field',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'proposalSummaries,',
+		note: 'El estado ensamblado devuelve proposalSummaries por compatibilidad con la API publica.',
 	},
 	{
 		file: 'packages/core/src/lib/cli/assemble.ts',
@@ -775,7 +899,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		symbolOrLiteral: 'The proposals plugin is loaded',
 		category: 'message',
 		destination: 'composition',
-		needle: 'The `proposals` plugin is loaded. Resolve the next proposal slice end-to-end:',
+		needle: 'Resolve the next proposal slice end-to-end:',
 		note: 'El cuerpo del prompt cambia comportamiento segun proposals cargado.',
 	},
 	{
@@ -903,7 +1027,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		symbolOrLiteral: 'claim files when proposals plugin loads',
 		category: 'message',
 		destination: 'composition',
-		needle: 'claim files before writing with `${prefix}_agent_lock` and report `lock-conflict` instead of retrying; otherwise work with whatever tools `overview` reports.',
+		needle: 'claim files before writing with ',
 		note: 'Las instrucciones scaffoldeadas siguen condicionando escritura al plugin proposals.',
 	},
 	{
@@ -911,8 +1035,33 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		symbolOrLiteral: 'multi-agent proposal workflow',
 		category: 'message',
 		destination: 'intentional-compat',
-		needle: 'The multi-agent proposal workflow (`${prefix}_auto_work`, `${prefix}_continue_proposal`, `${prefix}_delegate`, `${prefix}_agent_lock`, quality gates via `${prefix}_get_validation_matrix`) is available when the server loads the `proposals` plugin (`mcp-vertex --plugins=proposals`).',
+		needle: 'multi-agent proposal workflow',
 		note: 'Las instrucciones publicadas siguen describiendo proposals como workflow estable visible al host.',
+	},
+	{
+		file: 'packages/core/src/lib/api/stable-facade.ts',
+		symbolOrLiteral: "plugin: 'proposals'",
+		category: 'plugin-name',
+		destination: 'adapter',
+		needle: "plugin: 'proposals',",
+		note: 'La fachada estable del core mantiene descriptores cuyo plugin es proposals; deben pasar a un registro aportado por el plugin.',
+		resolvedBy: 'S3',
+	},
+	{
+		file: 'packages/core/src/lib/tools/agent-catalog-tool.ts',
+		symbolOrLiteral: "section === 'proposals' projection",
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: "proposals: section === 'proposals' ? snapshot.proposals : [],",
+		note: 'La proyeccion por seccion del catalogo conserva proposals como clave publica de compatibilidad.',
+	},
+	{
+		file: 'packages/core/src/lib/catalog/agent-discovery-catalog.ts',
+		symbolOrLiteral: 'const proposals = visibleProposals.map',
+		category: 'type',
+		destination: 'contract',
+		needle: 'const proposals = visibleProposals.map((proposal) =>',
+		note: 'La materializacion del snapshot sigue nombrando proposals como entidad primaria del catalogo.',
 	},
 ];
 
@@ -954,9 +1103,12 @@ const matchRule = (
 	relPath: string,
 	line: string,
 ): IBoundaryFindingRule | undefined =>
-	INVENTORY_RULES.find(
-		(rule) => rule.file === relPath && line.includes(rule.needle),
-	);
+	// Choose the LONGEST matching needle so a specific rule wins over a
+	// shorter substring rule that would otherwise shadow it (e.g.
+	// `proposals: () => proposalSummaries,` vs `proposalSummaries,`).
+	[...INVENTORY_RULES]
+		.filter((rule) => rule.file === relPath && line.includes(rule.needle))
+		.sort((left, right) => right.needle.length - left.needle.length)[0];
 
 export const detectUnclassifiedCandidates = (
 	relPath: string,
@@ -1020,12 +1172,26 @@ export const scanCoreProposalsBoundary = async (
 		};
 	}).filter((finding) => finding.occurrences > 0);
 	const missing = INVENTORY_RULES.filter(
-		(rule) => (occurrences.get(rule)?.count ?? 0) === 0,
+		(rule) =>
+			rule.resolvedBy === undefined &&
+			(occurrences.get(rule)?.count ?? 0) === 0,
+	);
+	const resolved = INVENTORY_RULES.filter(
+		(rule) =>
+			rule.resolvedBy !== undefined &&
+			(occurrences.get(rule)?.count ?? 0) === 0,
+	);
+	const regressions = INVENTORY_RULES.filter(
+		(rule) =>
+			rule.resolvedBy !== undefined &&
+			(occurrences.get(rule)?.count ?? 0) > 0,
 	);
 	return {
 		findings,
 		unclassified,
 		missing,
+		resolved,
+		regressions,
 		scannedFiles: files.length,
 	};
 };
@@ -1044,7 +1210,10 @@ const categoryCounts = (findings: readonly IBoundaryFinding[]) => {
 };
 
 export const renderInventoryMarkdown = (
-	result: Pick<IBoundaryScanResult, 'findings' | 'unclassified' | 'missing'>,
+	result: Pick<
+		IBoundaryScanResult,
+		'findings' | 'unclassified' | 'missing' | 'resolved' | 'regressions'
+	>,
 ): string => {
 	const counts = categoryCounts(result.findings);
 	const lines = [
@@ -1058,6 +1227,8 @@ export const renderInventoryMarkdown = (
 		`- Findings: ${result.findings.length}`,
 		`- Unclassified candidates: ${result.unclassified.length}`,
 		`- Missing expected findings: ${result.missing.length}`,
+		`- Resolved by slices: ${result.resolved.length}`,
+		`- Regressions (resolved rule still present): ${result.regressions.length}`,
 		`- import: ${counts.import}`,
 		`- path: ${counts.path}`,
 		`- plugin-name: ${counts['plugin-name']}`,
@@ -1107,6 +1278,38 @@ export const renderInventoryMarkdown = (
 			);
 		}
 	}
+	if (result.resolved.length > 0) {
+		lines.push(
+			'',
+			'## Resolved findings',
+			'',
+			'Acoplamientos eliminados de packages/core/src por una slice de la propuesta.',
+			'',
+			'| File | Symbol or literal | Category | Resolved by |',
+			'| --- | --- | --- | --- |',
+		);
+		for (const finding of result.resolved) {
+			lines.push(
+				`| ${finding.file} | ${finding.symbolOrLiteral.replaceAll('|', '\\|')} | ${finding.category} | ${finding.resolvedBy ?? ''} |`,
+			);
+		}
+	}
+	if (result.regressions.length > 0) {
+		lines.push(
+			'',
+			'## Regressions',
+			'',
+			'Reglas marcadas como resueltas pero que siguen presentes en packages/core/src.',
+			'',
+			'| File | Symbol or literal | Category | Resolved by |',
+			'| --- | --- | --- | --- |',
+		);
+		for (const finding of result.regressions) {
+			lines.push(
+				`| ${finding.file} | ${finding.symbolOrLiteral.replaceAll('|', '\\|')} | ${finding.category} | ${finding.resolvedBy ?? ''} |`,
+			);
+		}
+	}
 	lines.push('');
 	return lines.join('\n');
 };
@@ -1128,12 +1331,24 @@ const printFailures = (result: IBoundaryScanResult): void => {
 			);
 		}
 	}
+	if (result.regressions.length > 0) {
+		process.stderr.write('Resolved findings still present (regression):\n');
+		for (const finding of result.regressions) {
+			process.stderr.write(
+				`- ${finding.file} :: ${finding.symbolOrLiteral} (${finding.category}, resolvedBy ${finding.resolvedBy ?? '?'})\n`,
+			);
+		}
+	}
 };
 
 export const main = async (): Promise<number> => {
 	const result = await scanCoreProposalsBoundary(REPO_ROOT);
-	process.stdout.write(`${renderInventoryMarkdown(result)}\n`);
-	if (result.unclassified.length > 0 || result.missing.length > 0) {
+	process.stdout.write(renderInventoryMarkdown(result));
+	if (
+		result.unclassified.length > 0 ||
+		result.missing.length > 0 ||
+		result.regressions.length > 0
+	) {
 		printFailures(result);
 		return 1;
 	}

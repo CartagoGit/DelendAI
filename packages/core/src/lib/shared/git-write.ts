@@ -142,11 +142,11 @@ export interface IPushOptions {
 	readonly force?: IPushForceMode;
 	/**
 	 * Branches this push refuses to force into unless `authorization` is
-	 * given — see `gitPush`. Core stays project-agnostic: there is no
-	 * built-in default here, callers supply their own resolved list
-	 * (the `git`/`commit-policy` plugins already compute one).
+	 * given — see `gitPush`. Core stays project-agnostic: callers MUST
+	 * supply their own resolved list, or pass `[]` explicitly to opt out
+	 * of branch protection for this push.
 	 */
-	readonly protectedBranches?: readonly string[];
+	readonly protectedBranches: readonly string[];
 	/** See `IPushAuthorization`. Required to force-push (either mode) past the guards in `gitPush`. */
 	readonly authorization?: IPushAuthorization;
 }
@@ -223,17 +223,20 @@ export const clearForcePushAuthorizationsForTests = (): void => {
  */
 export const gitPush = async (
 	run: IGitRunner,
-	options: IPushOptions = {},
+	options?: IPushOptions,
 ): Promise<IGitRunResult> => {
-	const force = options.force ?? 'false';
+	const resolvedOptions: IPushOptions = options ?? { protectedBranches: [] };
+	const force = resolvedOptions.force ?? 'false';
 	if (force === 'false') {
 		const args = ['push'];
-		if (options.remote !== undefined) args.push(options.remote);
-		if (options.branch !== undefined) args.push(options.branch);
+		if (resolvedOptions.remote !== undefined)
+			args.push(resolvedOptions.remote);
+		if (resolvedOptions.branch !== undefined)
+			args.push(resolvedOptions.branch);
 		return run(args);
 	}
 
-	if (force === 'true' && !hasAuthorization(options.authorization)) {
+	if (force === 'true' && !hasAuthorization(resolvedOptions.authorization)) {
 		return {
 			ok: false,
 			output: '',
@@ -241,14 +244,17 @@ export const gitPush = async (
 		};
 	}
 
-	const protectedBranches = options.protectedBranches ?? [];
+	const protectedBranches = resolvedOptions.protectedBranches;
 	let targetBranch: string | undefined;
 	if (protectedBranches.length > 0) {
-		targetBranch = await resolveForceTargetBranch(run, options.branch);
+		targetBranch = await resolveForceTargetBranch(
+			run,
+			resolvedOptions.branch,
+		);
 		if (
 			targetBranch !== undefined &&
 			protectedBranches.includes(targetBranch) &&
-			!hasAuthorization(options.authorization)
+			!hasAuthorization(resolvedOptions.authorization)
 		) {
 			return {
 				ok: false,
@@ -259,17 +265,17 @@ export const gitPush = async (
 	}
 
 	const args = ['push'];
-	if (options.remote !== undefined) args.push(options.remote);
-	if (options.branch !== undefined) args.push(options.branch);
+	if (resolvedOptions.remote !== undefined) args.push(resolvedOptions.remote);
+	if (resolvedOptions.branch !== undefined) args.push(resolvedOptions.branch);
 	args.push(force === 'with-lease' ? '--force-with-lease' : '--force');
 
 	const result = await run(args);
-	if (result.ok && hasAuthorization(options.authorization)) {
+	if (result.ok && hasAuthorization(resolvedOptions.authorization)) {
 		recordForcePushAuthorization({
 			ts: new Date().toISOString(),
-			by: options.authorization.by.trim(),
-			reason: options.authorization.reason.trim(),
-			branch: targetBranch ?? options.branch,
+			by: resolvedOptions.authorization.by.trim(),
+			reason: resolvedOptions.authorization.reason.trim(),
+			branch: targetBranch ?? resolvedOptions.branch,
 			forceMode: force,
 		});
 	}
@@ -299,7 +305,9 @@ export interface ICommitAndPushOptions {
 	 */
 	readonly authorFlag?: string;
 	/** When set, also pushes after a successful commit. */
-	readonly push?: IPushOptions;
+	readonly push?: Omit<IPushOptions, 'protectedBranches'> & {
+		readonly protectedBranches?: readonly string[];
+	};
 	readonly git: IGitRunner;
 }
 
@@ -375,7 +383,10 @@ export const commitAndPush = async (
 		return buildResult(true, false, hash !== undefined ? { hash } : {});
 	}
 
-	const pushResult = await gitPush(run, options.push);
+	const pushResult = await gitPush(run, {
+		protectedBranches: [],
+		...options.push,
+	});
 	if (!pushResult.ok) {
 		const extras: { hash?: string; reason?: string } = {
 			reason: `git push failed: ${pushResult.reason ?? 'unknown'}`,

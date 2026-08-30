@@ -9,7 +9,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'changelog',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Pure changelog generation + semver-bump inference + release-plan preview (f00131 S1+S2).',
 	optionsSchema: OptionsSchema,
@@ -21,7 +21,6 @@ export default definePlugin({
 			);
 		}
 		return {
-			// S3 will wire tsconfig/vitest/plugin-defaults/publish-order/preset-catalog.
 			tools: [
 				buildChangelogGenerateToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,

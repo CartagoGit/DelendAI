@@ -1,7 +1,7 @@
 # quality-gate.yml — c00132 (AUD-P0-002).
 #
 # Required status check on `develop` and `main` (see
-# `.github/branch-protection.ts`). Runs the integrated quality
+# `.github/branch-protection.yml`). Runs the integrated quality
 # gate locally so a single failure blocks the merge.
 #
 # Triggers:
@@ -43,4 +43,4 @@ jobs:
       # The single source of truth for what "quality gate" means.
       # Adding a step here means it is now required to merge.
       - name: Run integrated quality gate
-        run: bun tools/scripts/ci/quality-gate.script.ts --real
+        run: bun run quality:gate:ci

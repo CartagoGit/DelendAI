@@ -7,6 +7,7 @@
  * S2 (contract validation) and S3 (mock + catalog) are tracked
  * separately under f00130.
  */
+import apiPackageJson from '../package.json';
 import z from 'zod';
 
 import { definePlugin, resolvePresetMembers } from '@mcp-vertex/core/public';
@@ -38,7 +39,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'api',
-	version: '0.1.0',
+	version: apiPackageJson.version,
 	describe:
 		'OpenAPI-aware request building, contract validation and mocking on top of the allow-listed web-fetch engine. Read by default; mutating calls require the same consent web-fetch demands.',
 	optionsSchema: OptionsSchema,

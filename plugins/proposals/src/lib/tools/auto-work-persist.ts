@@ -16,9 +16,9 @@
  * caller can surface it in the `auto_work` JSON output without breaking
  * the rest of the slice-close flow.
  *
- * Safety net: the push to `main` is rejected by default to preserve the
- * "no commit-back loop on main" invariant from `AGENTS.md`. The agent
- * can override `pushTarget` to an explicit branch (e.g. `agent/<name>`).
+ * Safety net: pushes are refused only when the configured target matches
+ * the effective protected-branch policy (default: `main` / `master`).
+ * Explicit non-protected targets such as `origin develop` are honored.
  *
  * @example
  * ```typescript
@@ -29,7 +29,7 @@
  *   {
  *     mode: 'commit-and-push',
  *     cwd: '/abs/repo',
- *     pushTarget: 'origin agent/l109',
+ *     pushTarget: 'origin develop',
  *   },
  * );
  * if (!result.committed) console.warn('persist skipped:', result.reason);

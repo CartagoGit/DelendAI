@@ -8,6 +8,7 @@ import {
 	parsePluginManifest,
 	PRESET_KIND,
 	resolvePresetMembers,
+	resolveTokenBudget,
 	type IPluginManifest,
 	type IPluginRegistryEntry,
 	type IToolPermissionGrant,
@@ -82,7 +83,9 @@ export interface IPluginManifestArtifact {
 	readonly permissionsTable: readonly {
 		readonly id: string;
 		readonly permissions: readonly PermissionCategory[];
-		readonly toolPermissions?: readonly IToolPermissionGrant[] | undefined;
+		readonly toolPermissions?:
+			| Readonly<Record<string, readonly PermissionCategory[]>>
+			| undefined;
 	}[];
 	readonly compatibilityMatrix: readonly ICompatibilityRow[];
 }
@@ -312,7 +315,7 @@ export const buildManifestArtifact = (
 	webCatalog: manifests
 		.filter(({ manifest }) => manifest.visibility === 'public')
 		.map(({ manifest }) => {
-			const tb = manifest.tokenBudget;
+			const tb = resolveTokenBudget(manifest.tokenBudget, '2026-08-30');
 			return {
 				id: manifest.id,
 				package: manifest.package,
@@ -324,21 +327,19 @@ export const buildManifestArtifact = (
 				capabilities: [...manifest.capabilities],
 				permissions: [...manifest.permissions],
 				tokenBudget: {
-					warning: 'caps' in tb ? tb.caps.warning : tb.warning,
-					hard: 'caps' in tb ? tb.caps.hard : tb.hard,
-					releaseRelativePercent:
-						'caps' in tb ? 20 : tb.releaseRelativePercent,
+					warning: tb.caps.warning,
+					hard: tb.caps.hard,
+					releaseRelativePercent: 20,
 				},
 			};
 		}),
 	tokenBudgets: manifests.map(({ manifest }) => {
-		const tb = manifest.tokenBudget;
+		const tb = resolveTokenBudget(manifest.tokenBudget, '2026-08-30');
 		return {
 			id: manifest.id,
-			warning: 'caps' in tb ? tb.caps.warning : tb.warning,
-			hard: 'caps' in tb ? tb.caps.hard : tb.hard,
-			releaseRelativePercent:
-				'caps' in tb ? 20 : tb.releaseRelativePercent,
+			warning: tb.caps.warning,
+			hard: tb.caps.hard,
+			releaseRelativePercent: 20,
 		};
 	}),
 	permissionsTable: manifests.map(({ manifest }) => ({
@@ -622,12 +623,13 @@ const renderPermissionMatrixMarkdown = (
 	artifact: IPluginManifestArtifact,
 ): string => {
 	const rows = artifact.manifests.flatMap((manifest) => {
-		if ((manifest.toolPermissions?.length ?? 0) > 0) {
-			return manifest.toolPermissions!.map((grant) => [
+		const perTool = manifest.toolPermissions;
+		if (perTool !== undefined && Object.keys(perTool).length > 0) {
+			return Object.entries(perTool).map(([tool, perms]) => [
 				manifest.id,
 				manifest.visibility,
-				grant.tool,
-				grant.permissions.join(', '),
+				tool,
+				perms.join(', '),
 			]);
 		}
 		return [

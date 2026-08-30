@@ -667,7 +667,7 @@ export const runAutoWork = async (
 				`persist.mode "commit-and-push" cannot target a protected branch: "${options.persist.pushTarget}"`,
 			],
 			nextAction:
-				'Change persist.pushTarget to a per-agent or wip/* branch, then call auto_work again. No commit-and-push plan was produced.',
+				'Change persist.pushTarget to an explicit non-protected branch target, then call auto_work again. No commit-and-push plan was produced.',
 		});
 	}
 
@@ -714,17 +714,12 @@ export const runAutoWork = async (
 		});
 	}
 	const claimReady = claimReadyResolution.claimReady;
-	// x00231 (refined 2026-08-27): `develop` only lands merges through a
-	// PR now — a direct push there is refused independently by
-	// `commit-policy`'s push driver AND `maybePersistAfterSlice`'s own
-	// guard (mirrors the existing `main` refusal). With the worktree
-	// gate on, agents persist from per-agent branches; with it off
-	// (this repo), they commit on `develop` as before. Shared checkout
-	// mode never manufactures a `wip/*` branch via a refspec; use
-	// `mode: "commit"` and let the operator decide how the commit is
-	// integrated. The push target honours the configured
-	// `persist.pushTarget` and only falls back to a mode-appropriate
-	// default.
+	// x00231 + x00299: persist planning mirrors the effective push policy.
+	// `main`/`master` stay protected by config, but an explicit
+	// `persist.pushTarget` like `origin develop` is valid when the policy
+	// allows it. The plan must not invent an undeclared `wip/*` detour;
+	// it surfaces the configured target verbatim and only falls back to a
+	// mode-appropriate default when no target is configured.
 	const worktreeEnabled = options.agentWorktreeEnabled === true;
 	const pushTargetHint =
 		options.persist?.pushTarget ??
@@ -740,14 +735,12 @@ export const runAutoWork = async (
 						`Persist the slice using its declared files (commit + push): call \`maybePersistAfterSlice(claimReady.files, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "${pushTargetHint}" })\` after validation and before release; do not stage unrelated files. The helper refuses targets listed in the effective protected-branch policy. Treat committed=true/pushed=false as incomplete and never report closed=true.`,
 					];
 
-	// x00051 S3 + x00231: when persist is enabled, the plan must
-	// surface where the persist push goes. With the worktree gate on,
-	// that is the per-agent branch — surface the `agent_worktree
-	// create` step explicitly so a host that runs `auto_work` solo
-	// (without going through `delegate`) still produces it before the
-	// push. With the gate off, agents never create a worktree, but the
-	// no push step is needed. In shared checkout mode, commit-and-push is
-	// rejected before this plan is returned.
+	// x00051 S3 + x00299: when persist is enabled, the plan must surface
+	// where the persist commit/push goes. With the worktree gate on,
+	// `agent_worktree create` stays explicit so solo hosts can satisfy
+	// the isolation requirement before persisting. With the gate off,
+	// the plan stays on the shared branch and, for commit-and-push,
+	// points at the configured target rather than inventing a side branch.
 	const worktreeStep =
 		resolvedMode === 'none'
 			? []
@@ -756,7 +749,9 @@ export const runAutoWork = async (
 						`Ensure per-agent worktree exists before persisting: ${prefix}_agent_worktree { action: "create", agent: "<pending>" } (idempotent — returns the existing worktree if one is present; required when persist mode is "${resolvedMode}"). When the slice is delegated via ${prefix}_delegate this is handled for you; keep the step as a safety net for solo runs.`,
 					]
 				: [
-						`This repo forbids per-agent worktrees (\`agentWorktree: false\`): commit directly on \`develop\` — do NOT create an agent worktree or branch.`,
+						resolvedMode === 'commit-and-push'
+							? `This repo forbids per-agent worktrees (\`agentWorktree: false\`): persist on the shared checkout and push to the configured target (here: \`${pushTargetHint}\`) when the effective protected-branch policy allows it. Do NOT create an agent worktree or invent an intermediate branch.`
+							: 'This repo forbids per-agent worktrees (`agentWorktree: false`): commit directly on the shared checkout target selected by the operator. Do NOT create an agent worktree or branch.',
 					];
 
 	const steps = [

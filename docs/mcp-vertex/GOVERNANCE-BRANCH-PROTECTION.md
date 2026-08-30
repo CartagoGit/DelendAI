@@ -1,156 +1,176 @@
 # Branch protection governance — `develop` & `main`
 
 > **Owner:** repository administrators.
-> **Source of truth:** [`.github/branch-protection.ts`](../../.github/branch-protection.ts).
+> **Source of truth:** [`.github/branch-protection.yml`](../../.github/branch-protection.yml).
 > **Verifier:** [`tools/scripts/ci/verify-branch-protection.script.ts`](../../tools/scripts/ci/verify-branch-protection.script.ts).
 > **Audit refs:** c00130 / AUD-P0-001.
 
 ## Goal
 
-`main` MUST be protected on GitHub with the release checks below. `develop` is
-the repository's open working branch: agents work there directly by default,
-and the configured commit policy publishes completed slices to `develop`.
-Per-agent worktrees are opt-in through `agentWorktree: true`.
+`main` and `develop` MUST have the same GitHub branch-protection rule.
+The policy is declarative in [`.github/branch-protection.yml`](../../.github/branch-protection.yml)
+and operationally applied by a human in the GitHub UI or API.
+The verifier is read-only and fails when the live GitHub rule diverges from
+the committed policy.
 
-1. **Required status checks** matching the names declared in
-   [`.github/branch-protection.ts`](../../.github/branch-protection.ts)
-   — today that is a single aggregate check, `ci-complete`, which
-   `needs` every job in `.github/workflows/ci.yml` and only reports
-   success when all of them do. Naming individual jobs here was
-   brittle (a rename silently drops a job from the required set, a new
-   job silently protects nothing); naming the aggregate instead means
-   this file never drifts from the workflow.
-2. **`enforce_admins: true`** — admins are subject to the same
-   checks (no "I'm an admin so I'll bypass it" loophole).
-3. **`required_linear_history: true`** — merge commits are not
-   allowed; squash or rebase only.
-4. **`allow_force_pushes: false`** — no rewrite of history.
-5. **`allow_deletions: false`** — branches cannot be deleted
-   through the UI/API.
+Required protection for both branches:
 
-Work happens on `develop` directly by default so concurrent agents share a
-visible, reversible snapshot journal. An explicitly configured worktree or
-branch is an opt-in isolated mode. `main` remains the release branch and is protected. The
-`required_checks` field applies only to branches declared as protected in
-`branch-protection.ts`; `develop` intentionally has no GitHub protection rule
-in this repository.
+1. `required_status_checks.strict: true`
+2. Required checks:
+    - `quality-gate`
+    - `tests`
+    - `tokens`
+    - `governance`
+    - `security`
+3. `enforce_admins: true`
+4. `required_linear_history: true`
+5. `allow_force_pushes: false`
+6. `allow_deletions: false`
+7. `restrictions: null`
 
-The verifier (`verify-branch-protection.script.ts`) fetches the
-live GitHub state and exits non-zero when the actual policy
-diverges from the file.
+## Why this is declarative + manual
 
-## Why CI does not apply the policy
+GitHub branch-protection writes require repository administration scope.
+CI must not hold that permission. The repository therefore stores the intended
+policy in version control and verifies the live state, but does not mutate the
+GitHub settings itself.
 
-GitHub exposes branch protection via REST endpoints that require
-the `admin:repo` (and for some settings `repo:invite`) OAuth
-scopes. CI never holds these scopes because they would let a
-malicious workflow write to the repo. The verifier is therefore
-**read-only**: it checks whether the operator-applied policy is
-correct, but never mutates it.
+That split gives two guarantees:
 
-A malicious PR that bypasses CI cannot bypass the gate either —
-the next CI run will catch the drift before any merge happens.
+1. The intended policy is reviewable in Git.
+2. Drift in the GitHub UI/API becomes detectable by CI and local verification.
+
+## Local plugin default (`commit-policy.protectedBranches`)
+
+The `commit-policy` plugin has its own **local** push-protection layer that
+mirrors this GitHub policy. Its default (c00145) is deliberately narrower than
+the GitHub UI rule:
+
+- `main` and `master` are protected by default (matching the release branch).
+- `develop` is **NOT** protected by default — the human/agent workflow keeps
+  `develop` flexible. An owner who wants `develop` treated like `main` must
+  opt in explicitly (add `develop` to `push.protectedBranches` or the
+  `includeDevelop` switch).
+- `agent/*` and `worktree/*` branches are **never** protected (isolation).
+
+The effective list is resolved by `resolveProtectedBranches` in
+`plugins/commit-policy/src/lib/contracts/constants/protected-branches.ts`;
+an explicit config override wins over the default.
 
 ## Operator playbook
 
-### Step 1 — Open the branch protection UI
+### Step 1 — Open GitHub settings
 
 1. Visit <https://github.com/CartagoGit/mcp-vertex/settings/branches>.
-2. Click **Add rule** (or edit the existing rule for `develop` and `main`).
+2. Create or edit one rule for `main`.
+3. Create or edit one rule for `develop`.
 
-### Step 2 — Match the YAML file
+### Step 2 — Match the declarative policy exactly
 
-Match every field in
-[`.github/branch-protection.ts`](../../.github/branch-protection.ts):
+For both `main` and `develop`, configure:
 
-- **Branch name pattern:** `main`.
-- **Require status checks to pass before merging:** ✅ ON.
-- **Require branches to be up to date before merging:** ✅ ON
-  (this is the `strict: true` flag — checks the latest commit).
-- **Required checks:** add every name in `branches[].required_checks`
-  (today: just `ci-complete`). This name MUST match the `name:` field
-  in `.github/workflows/ci.yml` exactly (case-sensitive).
-- **Require a pull request before merging:** ✅ ON for `main`.
-- **Require linear history:** ✅ ON.
-- **Do not allow force pushes:** ✅ ON.
-- **Do not allow deletions:** ✅ ON.
-- **Allow specified actors to bypass pull request requirements:**
-  leave empty.
-- **Enforce admins:** ✅ ON.
+- **Require status checks to pass before merging:** ON
+- **Require branches to be up to date before merging:** ON
+- **Required status checks:** `quality-gate`, `tests`, `tokens`, `governance`, `security`
+- **Require linear history:** ON
+- **Allow force pushes:** OFF
+- **Allow deletions:** OFF
+- **Restrict who can push to matching branches:** OFF / empty
+- **Do not allow bypassing the above settings:** ON for admins
 
-### Step 3 — Run the verifier
+If the UI wording changes, the canonical values still live in
+[`.github/branch-protection.yml`](../../.github/branch-protection.yml).
 
-Locally, with the operator's own GitHub PAT:
+### Step 3 — Apply via API if preferred
+
+With a PAT that can administer the repository:
 
 ```bash
-GITHUB_TOKEN=<your-pat-here> \
-  bun tools/scripts/ci/verify-branch-protection.script.ts \
-    --repo CartagoGit/mcp-vertex
+gh api \
+   --method PUT \
+   -H "Accept: application/vnd.github+json" \
+   repos/CartagoGit/mcp-vertex/branches/main/protection \
+   --input .github/branch-protection-main.payload.json
+
+gh api \
+   --method PUT \
+   -H "Accept: application/vnd.github+json" \
+   repos/CartagoGit/mcp-vertex/branches/develop/protection \
+   --input .github/branch-protection-develop.payload.json
 ```
 
-Expected output:
+Construct each payload from the matching branch entry in
+[`.github/branch-protection.yml`](../../.github/branch-protection.yml).
+The repo deliberately does not store ready-to-post payload files because the
+YAML file is the canonical reviewed source.
+
+### Step 4 — Verify after applying
+
+The verifier defaults to the current repository and reads
+`GITHUB_TOKEN`, `BRANCH_PROTECTION_TOKEN`, or `--token` in that order.
+Use a PAT with repository administration scope if the ambient token cannot read
+protection settings.
+
+```bash
+GITHUB_TOKEN=<admin-pat> \
+   bun tools/scripts/ci/verify-branch-protection.script.ts
+```
+
+Expected success output:
 
 ```text
-verify-branch-protection: 2 branch(es) match the declared policy ✓
+verify-branch-protection: 2 of 2 branch(es) read match the declared policy ✓
 ```
 
-If anything diverges, the script exits 1 and prints a per-branch
-drift detail. Fix the UI to match and re-run.
+To target another repository explicitly:
 
-### Step 4 — Wire the verifier into CI
+```bash
+GITHUB_TOKEN=<admin-pat> \
+   bun tools/scripts/ci/verify-branch-protection.script.ts \
+      --owner CartagoGit \
+      --repo mcp-vertex
+```
 
-Add the verifier to the `quality-gate` job's `Run configured
-quality scopes` step (see [`c00132`](../proposals/ready/chores/c00132-quality-gate-pre-merge-jobs-reales.md)).
-It must run on every PR that touches
-`.github/branch-protection.ts` AND on a daily cron (so manual
-drift in the UI is caught without a code change).
+## CI usage
 
-## When to update the YAML file
+Run the verifier in any governance or nightly workflow that is allowed to use
+an admin-scoped token. A failing run means the live GitHub branch-protection
+state has drifted from the committed policy and must be corrected before the
+repository is treated as compliant.
 
-Update [`branch-protection.ts`](../../.github/branch-protection.ts)
+## Updating the policy
+
+Update [`.github/branch-protection.yml`](../../.github/branch-protection.yml)
 whenever:
 
-- A new required status check is added to the workflows.
-- An existing check is renamed or removed.
-- A new branch needs protection (e.g. a release branch).
+- A required status check is renamed.
+- A required status check is added or removed.
+- A branch should gain or lose the shared protection policy.
 
-The PR adding the change MUST include the verifier's output
-showing both branches still match. The verifier is the contract.
+Every policy change should be followed by a fresh verifier run against the live
+repository settings.
 
-## Failure mode: "the verifier says drift but I just fixed it"
+## Failure modes
 
-Re-run the verifier after a short delay (GitHub API caches the
-protection response for ~30 seconds). If the drift persists:
+If the verifier reports drift immediately after a UI change:
 
-1. Re-read the UI: every check name is exactly the same as in
-   `.github/branch-protection.ts` (case-sensitive, no extra
-   spaces).
-2. Confirm `enforce_admins` is ON, not OFF.
-3. Check the API response manually with `gh api`:
+1. Re-check the exact required-check names for typos or case drift.
+2. Confirm that `Require branches to be up to date before merging` is ON.
+3. Confirm that force-push and deletion exceptions are disabled.
+4. Re-read the API response directly:
 
-   ```bash
-   gh api repos/CartagoGit/mcp-vertex/branches/develop/protection
-   ```
+    ```bash
+    gh api repos/CartagoGit/mcp-vertex/branches/develop/protection
+    gh api repos/CartagoGit/mcp-vertex/branches/main/protection
+    ```
 
-   Compare to the YAML file field-by-field.
-
-## Rollback
-
-If the verifier breaks the gate and blocks a legitimate merge:
-
-1. Open a hotfix PR that:
-   - Removes the failing check from `branch-protection.ts`.
-   - Adds a follow-up TODO proposal to add it back after the
-     underlying issue is fixed.
-2. Get the hotfix reviewed and merged.
-3. Fix the underlying issue, then re-add the check.
-
-Do **not** disable the verifier in CI to make the gate green —
-that defeats the audit goal.
+If the verifier reports an auth or rate-limit problem, that is not policy drift;
+it means the verification run itself lacked enough GitHub API access to assert
+the repository state.
 
 ## Related
 
-- [c00145 — `develop` no está protegida por defecto en `commit-policy`](../proposals/ready/chores/c00145-protectedbranches-default-main-only.md).
-- [x00257 — Eliminar `force-with-lease` para ramas protegidas](../proposals/ready/fixes/x00257-eliminar-force-with-lease-ramas-protegidas.md).
-- [x00299 — Permitir persistencia configurada hacia `develop`](../proposals/ready/fixes/x00299-permitir-persistencia-configurada-hacia-develop.md).
-- [v00125 — Verificar estado real de `develop`](../proposals/ready/verifications/v00125-verificar-estado-real-develop-verde-protegida.md).
+- [c00145 — `develop` no está protegida por defecto en `commit-policy`](../proposals/ready/chores/c00145-protectedbranches-default-main-only.md)
+- [x00257 — Eliminar `force-with-lease` para ramas protegidas](../proposals/ready/fixes/x00257-eliminar-force-with-lease-ramas-protegidas.md)
+- [x00299 — Permitir persistencia configurada hacia `develop`](../proposals/ready/fixes/x00299-permitir-persistencia-configurada-hacia-develop.md)
+- [v00125 — Verificar estado real de `develop`](../proposals/ready/verifications/v00125-verificar-estado-real-develop-verde-protegida.md)

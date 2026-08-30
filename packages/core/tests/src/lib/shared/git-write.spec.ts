@@ -141,6 +141,7 @@ describe('gitPush — force authorization + protected-branch guard', () => {
 			remote: 'origin',
 			branch: 'agent/x',
 			force: 'with-lease',
+			protectedBranches: [],
 		});
 		expect(result.ok).toBe(true);
 		expect(calls[0]).toEqual([
@@ -152,12 +153,42 @@ describe('gitPush — force authorization + protected-branch guard', () => {
 		expect(listForcePushAuthorizations()).toHaveLength(0);
 	});
 
+	it('allows force-with-lease to proceed when the caller explicitly opts out of protected branches', async () => {
+		const { runner, calls } = captureRunner([{ ok: true, output: '' }]);
+		const result = await gitPush(runner, {
+			remote: 'origin',
+			branch: 'main',
+			force: 'with-lease',
+			protectedBranches: [],
+			authorization: {
+				by: 'ops',
+				reason: 'explicit protected-branch opt-out for this push',
+			},
+		});
+		expect(result.ok).toBe(true);
+		expect(calls[0]).toEqual([
+			'push',
+			'origin',
+			'main',
+			'--force-with-lease',
+		]);
+		expect(listForcePushAuthorizations()).toEqual([
+			expect.objectContaining({
+				by: 'ops',
+				reason: 'explicit protected-branch opt-out for this push',
+				branch: 'main',
+				forceMode: 'with-lease',
+			}),
+		]);
+	});
+
 	it('refuses plain force without authorization', async () => {
 		const { runner, calls } = captureRunner([]);
 		const result = await gitPush(runner, {
 			remote: 'origin',
 			branch: 'agent/x',
 			force: 'true',
+			protectedBranches: [],
 		});
 		expect(result.ok).toBe(false);
 		expect(result.reason).toMatch(/plain --force refused/u);
@@ -170,6 +201,7 @@ describe('gitPush — force authorization + protected-branch guard', () => {
 		const result = await gitPush(runner, {
 			branch: 'agent/x',
 			force: 'true',
+			protectedBranches: [],
 			authorization: { by: 'agent-1', reason: '   ' },
 		});
 		expect(result.ok).toBe(false);
@@ -182,6 +214,7 @@ describe('gitPush — force authorization + protected-branch guard', () => {
 			remote: 'origin',
 			branch: 'agent/x',
 			force: 'true',
+			protectedBranches: [],
 			authorization: {
 				by: 'agent-1',
 				reason: 'recover from a bad rebase',
@@ -199,17 +232,29 @@ describe('gitPush — force authorization + protected-branch guard', () => {
 		});
 	});
 
-	it('refuses a force push (with-lease) against a protected branch without authorization', async () => {
+	it('deterministically refuses a force push only when the caller explicitly lists the protected branch', async () => {
 		const { runner, calls } = captureRunner([]);
 		const result = await gitPush(runner, {
 			remote: 'origin',
-			branch: 'develop',
+			branch: 'main',
 			force: 'with-lease',
-			protectedBranches: ['develop', 'main'],
+			protectedBranches: ['main'],
 		});
 		expect(result.ok).toBe(false);
-		expect(result.reason).toMatch(/protected branch/u);
+		expect(result.reason).toBe(
+			'force push refused: "main" is a protected branch — pass options.authorization { by, reason } to override',
+		);
 		expect(calls).toHaveLength(0);
+		expect(listForcePushAuthorizations()).toHaveLength(0);
+	});
+
+	it('rejects force pushes without protectedBranches at compile time', () => {
+		const { runner } = captureRunner([]);
+		if (false) {
+			// @ts-expect-error protectedBranches must be provided explicitly when force is used
+			void gitPush(runner, { force: 'with-lease' });
+		}
+		expect(true).toBe(true);
 	});
 
 	it('refuses a force push against the resolved current branch when protected', async () => {
@@ -249,6 +294,7 @@ describe('gitPush — force authorization + protected-branch guard', () => {
 		const result = await gitPush(runner, {
 			branch: 'develop',
 			force: 'true',
+			protectedBranches: [],
 			authorization: { by: 'agent-1', reason: 'ok' },
 		});
 		expect(result.ok).toBe(true);
@@ -549,7 +595,7 @@ describe('commitAndPush — refusal, failure and fallback paths', () => {
 			files: ['x.ts'],
 			message: 'feat: x',
 			git: runner,
-			push: {},
+			push: { protectedBranches: [] },
 		});
 		expect(result).toEqual({
 			committed: true,
@@ -570,7 +616,7 @@ describe('commitAndPush — refusal, failure and fallback paths', () => {
 			files: ['x.ts'],
 			message: 'feat: x',
 			git: runner,
-			push: {},
+			push: { protectedBranches: [] },
 		});
 		expect(result).toEqual({
 			committed: true,
@@ -591,7 +637,7 @@ describe('commitAndPush — refusal, failure and fallback paths', () => {
 			files: ['x.ts'],
 			message: 'feat: x',
 			git: runner,
-			push: {},
+			push: { protectedBranches: [] },
 		});
 		expect(result).toEqual({ committed: true, pushed: true });
 		expect(result).not.toHaveProperty('hash');
@@ -608,7 +654,7 @@ describe('commitAndPush — refusal, failure and fallback paths', () => {
 			files: ['x.ts'],
 			message: 'feat: x',
 			git: runner,
-			push: {},
+			push: { protectedBranches: [] },
 		});
 		expect(result).toEqual({
 			committed: true,

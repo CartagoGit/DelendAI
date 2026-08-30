@@ -50,7 +50,7 @@ const hasCalibrationStore = (value: unknown): value is ICalibrationStore => {
 
 export default definePlugin({
 	name: 'prompt-eval',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		"Benchmark a prompt across reachable providers on cost × quality using the project's acceptance gate; writes win-rates into auto-agent-selector calibration. Spend-guarded. eval_run currently has no real provider runtime wired in and refuses with a diagnostic — pending orchestrator-runner integration.",
 	optionsSchema: OptionsSchema,

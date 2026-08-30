@@ -22,7 +22,10 @@ import { buildSkillResolver } from '../skills/sources/resolver';
 import { packageSkillSource } from '../skills/sources/package-skill-source';
 import { resolvePackageRoot } from '../skills/sources/package-root';
 import { workspaceSkillSource } from '../skills/sources/workspace-source';
-import { readProposalsIndex } from './read-proposals-index';
+import {
+	assembleWorkflowContributions,
+	type IAssembledWorkflowContributionState,
+} from './workflow-contribution-assembly';
 
 export interface IAssembleSkillsInput {
 	readonly args: IMcpVertexCliArgs;
@@ -51,7 +54,7 @@ export interface IAssembleSkillsResult {
 	readonly skillBundles: Awaited<ReturnType<typeof loadSkills>>;
 	readonly skillCatalog: Awaited<ReturnType<typeof buildSkillCatalog>>;
 	readonly skillSummaries: readonly ISkillSummary[];
-	readonly proposalSummaries: Awaited<ReturnType<typeof readProposalsIndex>>;
+	readonly proposalSummaries: IAssembledWorkflowContributionState['proposalSummaries'];
 	readonly recommendedNextAction: string;
 }
 
@@ -361,14 +364,15 @@ export const assembleSkills = async (
 			},
 		});
 	}
-	const proposalSummaries = await readProposalsIndex(
-		args.workspace,
+	const workflowState = await assembleWorkflowContributions({
+		workspaceRoot: args.workspace,
 		cacheDir,
-		readFile,
-	);
+		corePrefix,
+		readWorkspaceFile: readFile,
+	});
+	const proposalSummaries = workflowState.proposalSummaries;
 	const isLoaded = (name: string): boolean =>
 		loadResult.loaded.some((entry) => entry.plugin.name === name);
-	const hasProposals = isLoaded('proposals');
 	const hasRules = isLoaded('rules');
 	const rulesClause = hasRules
 		? ' ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.'
@@ -385,10 +389,7 @@ export const assembleSkills = async (
 		? `Config mismatch: docsDir "${docsDir}" does not exist in this workspace (see configIssues). Fix mcp-vertex.config.json or scaffold the layout (mcp-vertex init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.`
 		: !configPresent
 			? `Call ${corePrefix}_overview, then ${corePrefix}_adopt_project to self-configure this project (config + agents + proposals store) in one call before starting work.`
-			: (hasProposals
-					? `Call ${corePrefix}_overview, then ${corePrefix}_proposals_auto_work to start working.`
-					: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
-				rulesClause;
+			: workflowState.recommendedNextActionText + rulesClause;
 
 	return {
 		validationMatrix,

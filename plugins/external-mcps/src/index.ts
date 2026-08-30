@@ -37,7 +37,7 @@ import { buildValidateConfigToolRegistration } from './lib/tools/validate-config
 
 export default definePlugin({
 	name: 'external-mcps',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Compose third-party MCP servers under the host: seed-catalog discovery, config dry-run validation, and lazy subprocess boot behind the ext.<server>.<tool> call proxy; human-acked activation lands in S3.',
 	optionsSchema: OptionsSchema,

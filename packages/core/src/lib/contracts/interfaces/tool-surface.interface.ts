@@ -17,6 +17,8 @@ import type { IMcpToolSurfaceMode } from './surface-mode.interface';
  */
 export type IToolAccessState = 'visible' | 'hidden' | 'deactivated';
 
+export type IToolExposureState = 'visible' | 'hidden' | 'unknown';
+
 export interface IToolSurfaceDescriptor {
 	readonly registrationId: string;
 	readonly name: string;
@@ -152,6 +154,8 @@ export interface IToolSurfaceRuntime {
 		original: string | undefined,
 		fallbackSummary: string | undefined,
 	): string | undefined;
+	getToolExposure(name: string): IToolExposureState;
+	/** @deprecated Prefer `getToolExposure` so unknown names stay distinguishable. */
 	isToolExposed(name: string): boolean;
 	listToolKnowledgeEntries(): ReadonlyArray<
 		Pick<IKnowledgeEntry, 'id' | 'title'>

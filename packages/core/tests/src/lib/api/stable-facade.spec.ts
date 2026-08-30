@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	buildStableManifest,
@@ -6,14 +6,33 @@ import {
 	STABLE_MANIFEST_REL,
 } from '@mcp-vertex/core/lib/api/stable-manifest';
 import {
+	CORE_STABLE_API_TOOLS,
 	STABLE_API_TOOLS,
 	STABLE_API_TOOL_NAMES,
+	clearStableToolDescriptorContributions,
 	describeStableTool,
 	findStableDescriptor,
+	registerStableToolDescriptors,
+	resetStableToolDescriptorRegistryForTests,
 } from '@mcp-vertex/core/lib/api/stable-facade';
+import { PROPOSALS_STABLE_TOOLS } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
 
 describe('stable-facade (f00152 S2)', () => {
-	it('exports nine facade tools (proposals surface)', () => {
+	beforeEach(() => {
+		resetStableToolDescriptorRegistryForTests();
+	});
+
+	afterEach(() => {
+		clearStableToolDescriptorContributions();
+	});
+
+	it('exports only core-owned stable tools before plugins contribute', () => {
+		expect(STABLE_API_TOOLS).toEqual(CORE_STABLE_API_TOOLS);
+		expect(STABLE_API_TOOL_NAMES).toEqual([]);
+	});
+
+	it('composes the historical proposals surface when the plugin contributes', () => {
+		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		expect(STABLE_API_TOOL_NAMES).toEqual([
 			'proposal_transition',
 			'proposal_create',
@@ -25,21 +44,25 @@ describe('stable-facade (f00152 S2)', () => {
 			'state_repair',
 			'proposal_force_transition',
 		]);
+		expect(STABLE_API_TOOLS).toHaveLength(9);
 	});
 
 	it('every descriptor is frozen (immutable after declaration)', () => {
+		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		for (const descriptor of STABLE_API_TOOLS) {
 			expect(Object.isFrozen(descriptor)).toBe(true);
 		}
 	});
 
 	it('every descriptor has sinceVersion === current SCHEMA_VERSION', () => {
+		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		for (const descriptor of STABLE_API_TOOLS) {
 			expect(descriptor.sinceVersion).toBe(SCHEMA_VERSION);
 		}
 	});
 
 	it('every descriptor carries the additive-only semver guarantee', () => {
+		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		for (const descriptor of STABLE_API_TOOLS) {
 			expect(descriptor.semverGuarantee).toBe('additive-only');
 		}
@@ -50,6 +73,7 @@ describe('stable-facade (f00152 S2)', () => {
 	});
 
 	it('findStableDescriptor returns the descriptor for a known name', () => {
+		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		const descriptor = findStableDescriptor('auto_work');
 		expect(descriptor).not.toBeNull();
 		expect(descriptor?.plugin).toBe('proposals');
@@ -72,6 +96,7 @@ describe('stable-facade (f00152 S2)', () => {
 
 describe('stable-manifest (f00152 S2)', () => {
 	it('buildStableManifest produces a sorted, deterministic tool list', () => {
+		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		const manifest = buildStableManifest(
 			STABLE_API_TOOLS,
 			'0.1.0',
@@ -87,6 +112,7 @@ describe('stable-manifest (f00152 S2)', () => {
 	});
 
 	it('buildStableManifest tolerates unbound schemas (returns null)', () => {
+		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		const manifest = buildStableManifest(STABLE_API_TOOLS, '0.1.0');
 		// Today the facade ships unbound (zod schemas are bound at
 		// runtime). The builder must not crash.
