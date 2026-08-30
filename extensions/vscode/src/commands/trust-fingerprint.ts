@@ -6,9 +6,8 @@
  * to that explicit launch invalidates the stored fingerprint and forces
  * a re-approval.
  *
- * Pure helpers only — no VS Code imports. Tests cover all four cases
- * (trusted + new fingerprint, trusted + matching fingerprint,
- *  fingerprint-mismatch, .mcp.json drift).
+ * Pure helpers only — no VS Code imports. Tests cover new, matching, and
+ * changed explicit launch fingerprints.
  */
 
 import { createHash } from 'node:crypto';
@@ -30,14 +29,6 @@ export const computeLaunchFingerprint = (launch: IServerLaunch): string => {
 	return createHash('sha256').update(canonical).digest('hex');
 };
 
-/** Hex SHA-256 of the exact `.mcp.json` bytes, when a non-empty body exists. */
-export const computeMcpJsonHash = (
-	body: string | undefined,
-): string | undefined => {
-	if (body === undefined || body.length === 0) return undefined;
-	return createHash('sha256').update(body).digest('hex');
-};
-
 export interface ITrustState {
 	readonly fingerprint: string | undefined;
 }
@@ -54,36 +45,18 @@ const readState = (store: IFingerprintStore): ITrustState => ({
 export const isLaunchApproved = (
 	store: IFingerprintStore,
 	launch: IServerLaunch,
-	mcpJsonBody?: string,
 ): boolean => {
 	const state = readState(store);
-	const expected = createTrustFingerprint(launch, mcpJsonBody);
+	const expected = computeLaunchFingerprint(launch);
 	return state.fingerprint === expected;
 };
 
 export const recordApproval = async (
 	store: IFingerprintStore,
 	launch: IServerLaunch,
-	mcpJsonBody?: string,
 ): Promise<void> => {
-	await store.update(
-		TRUST_FINGERPRINT_KEY,
-		createTrustFingerprint(launch, mcpJsonBody),
-	);
+	await store.update(TRUST_FINGERPRINT_KEY, computeLaunchFingerprint(launch));
 };
-
-const createTrustFingerprint = (
-	launch: IServerLaunch,
-	mcpJsonBody: string | undefined,
-): string =>
-	createHash('sha256')
-		.update(
-			JSON.stringify({
-				launch: computeLaunchFingerprint(launch),
-				mcpJson: computeMcpJsonHash(mcpJsonBody) ?? null,
-			}),
-		)
-		.digest('hex');
 
 /** Erase any cached approval (used by invalidation paths). */
 export const clearApproval = async (

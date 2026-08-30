@@ -414,7 +414,7 @@ const tryAssembleManagedLazy = async (input: {
 		// first lazy event so malformed options reach the plugin's schema
 		// validation and cannot silently disable its listeners.
 		return (
-			(options !== undefined && plugin.startupActivation === true) ||
+			plugin.startupActivation === true ||
 			requiresPolicyStartupActivation(plugin.id, options)
 		);
 	});

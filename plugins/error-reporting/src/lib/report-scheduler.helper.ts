@@ -121,6 +121,7 @@ export const createReportScheduler = (input: {
 	buildFailureState: (
 		record: IReportRecord | undefined,
 		failureCode:
+			| 'NETWORK_UNAVAILABLE'
 			| 'GH_NOT_INSTALLED'
 			| 'GH_EXEC_FAILED'
 			| 'ISSUE_NUMBER_PARSE_FAILED',

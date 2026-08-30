@@ -132,8 +132,17 @@ describe('registerStartServerUntrusted (x00072 S2)', () => {
 			workspace: {
 				isTrusted: false,
 				workspaceFolders: [{ uri: { fsPath: cwd } }],
-				getConfiguration: () => ({
-					get: <T>(_k: string, def?: T): T | undefined => def,
+				getConfiguration: (section?: string) => ({
+					get: <T>(key: string, def?: T): T | undefined => {
+						if (
+							section === 'mcp-vertex.server' &&
+							key === 'command'
+						)
+							return 'bun' as T;
+						if (section === 'mcp-vertex.server' && key === 'args')
+							return ['run', 'mcp-vertex'] as T;
+						return def;
+					},
 				}),
 			},
 		}) as unknown as IVscodeApi;
@@ -218,7 +227,8 @@ describe('registerStartServerUntrusted (x00072 S2)', () => {
 				},
 			});
 		const launch = await resolveServerCommand(cfg);
-		expect(launch).toBeDefined();
+		if (launch === undefined)
+			throw new Error('server launch was not resolved');
 		expect(launch.command).toBe('node');
 		expect(launch.args).toEqual(['server.js']);
 		expect(launch.cwd).toBe(cwd);
