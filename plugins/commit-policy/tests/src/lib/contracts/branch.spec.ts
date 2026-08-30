@@ -18,14 +18,21 @@ const basePolicy = (overrides: Partial<IBranchPolicy> = {}): IBranchPolicy => ({
 });
 
 describe('isBranchProtected', () => {
-	it('returns true for exact matches', () => {
-		expect(isBranchProtected('main', basePolicy())).toBe(true);
-		expect(isBranchProtected('master', basePolicy())).toBe(true);
+	it('does not protect conventional names when lists are empty', () => {
+		expect(isBranchProtected('main', basePolicy())).toBe(false);
+		expect(isBranchProtected('develop', basePolicy())).toBe(false);
+		expect(isBranchProtected('master', basePolicy())).toBe(false);
 	});
 
-	it('returns true for prefix matches', () => {
-		expect(isBranchProtected('release/2025-q3', basePolicy())).toBe(true);
-		expect(isBranchProtected('hotfix/foo', basePolicy())).toBe(true);
+	it('protects only configured exact names and prefixes', () => {
+		const policy = basePolicy({
+			protected: ['develop'],
+			protectedPrefixes: ['release/'],
+		});
+		expect(isBranchProtected('develop', policy)).toBe(true);
+		expect(isBranchProtected('release/2025-q3', policy)).toBe(true);
+		expect(isBranchProtected('main', policy)).toBe(false);
+		expect(isBranchProtected('master', policy)).toBe(false);
 	});
 
 	it('returns false for non-protected branches', () => {
@@ -53,7 +60,7 @@ describe('branchProtectedRefusal', () => {
 		const refusal = branchProtectedRefusal('develop', basePolicy());
 		expect(refusal).toContain('BRANCH_PROTECTED');
 		expect(refusal).toContain('"develop"');
-		expect(refusal).toContain('main,master');
-		expect(refusal).toContain('release/,hotfix/');
+		expect(refusal).toContain('exact=');
+		expect(refusal).toContain('prefixes=');
 	});
 });

@@ -51,6 +51,9 @@ export interface IToolSurfacePlan {
 	readonly workingSet?: IToolSurfaceWorkingSetPolicy | undefined;
 	readonly descriptors: readonly IToolSurfaceDescriptor[];
 	readonly plugins: readonly IToolSurfacePluginDescriptor[];
+	readonly activationKpis?: {
+		recordInvocation(toolId: string): void;
+	};
 }
 
 export interface IToolSurfaceModeChange {

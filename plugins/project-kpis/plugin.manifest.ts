@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['kpi', 'observability', 'economics', 'project-health'],
 	maturity: 'experimental',
 	permissions: ['filesystem-read', 'filesystem-write'],
-	presets: [],
+	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
 		'@mcp-vertex/core',

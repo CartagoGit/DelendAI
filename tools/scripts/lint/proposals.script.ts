@@ -22,6 +22,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { lintProposalMarkdown } from '../../../plugins/proposals/src/lib/proposals/proposal-scaffold-linter';
+import { assertNoLegacyAuditDirectory } from './audit-proposal-path.lib';
 
 // Post-padding, legacy proposals still remain warn-only, but proposal
 // filenames themselves are now expected to use a fixed 5-digit id.
@@ -215,6 +216,14 @@ export const lintProposalsDir = async (
 // CLI ------------------------------------------------------------------------
 if (import.meta.main) {
 	const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
+	try {
+		await assertNoLegacyAuditDirectory(repoRoot);
+	} catch (error) {
+		console.error(
+			error instanceof Error ? error.message : String(error),
+		);
+		process.exit(1);
+	}
 	const proposalsDirAbs = join(repoRoot, 'docs', 'mcp-vertex', 'proposals');
 	const summary = await lintProposalsDir(proposalsDirAbs);
 	const duplicateNote =

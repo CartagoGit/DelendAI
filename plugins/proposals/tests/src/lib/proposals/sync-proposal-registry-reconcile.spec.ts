@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	findDuplicateProposalIds,
 	reconcileBlocked,
+	reconcileCanonicalProposals,
 	reconcileFolders,
 	syncProposalRegistry,
 } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
@@ -54,6 +55,65 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 	afterEach(async () => rm(root, { recursive: true, force: true }));
 
 	describe('reconcileFolders', async () => {
+		it('normalizes a non-canonical name and places it under the configured kind folder', async () => {
+			await writeProposal(root, '', 'x7-old-name.md', {
+				id: 'x7',
+				kind: 'fix',
+				status: 'ready',
+				title: 'Close the broken path',
+			});
+			const result = await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([
+				{
+					id: 'x7',
+					from: 'x7-old-name.md',
+					to: 'ready/fixes/x00007-close-the-broken-path.md',
+				},
+			]);
+			await readFile(
+				join(root, 'ready', 'fixes', 'x00007-close-the-broken-path.md'),
+				'utf8',
+			);
+		});
+
+		it('is idempotent and reports collisions without overwriting the target', async () => {
+			await writeProposal(
+				root,
+				'',
+				'a8-old-name.md',
+				{
+					id: 'a8',
+					kind: 'audit',
+					status: 'ready',
+					title: 'Same audit',
+				},
+				'original\n',
+			);
+			await writeProposal(
+				root,
+				'ready/audits',
+				'a00008-same-audit.md',
+				{
+					id: 'a00008',
+					kind: 'audit',
+					status: 'ready',
+					title: 'Same audit',
+				},
+				'target\n',
+			);
+			const result = await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([]);
+			expect(result.errors[0]).toContain(
+				'canonical proposal collision for a8',
+			);
+			expect(
+				await readFile(
+					join(root, 'ready', 'audits', 'a00008-same-audit.md'),
+					'utf8',
+				),
+			).toContain('target');
+		});
+
 		it('moves a new-system file whose folder disagrees with its status', async () => {
 			await writeProposal(root, 'blocked', 'f300-misfiled.md', {
 				id: 'f300',
@@ -219,6 +279,25 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 			expect(result.resolved).toEqual([{ id: 'f401' }]);
 			const moved = await readFile(
 				join(root, 'ready', 'feats', 'f401-waiting.md'),
+				'utf8',
+			);
+			expect(moved).toContain('status: ready');
+		});
+
+		it('resolves blocked -> ready when the dependency is in review', async () => {
+			await writeProposal(root, 'review', 'f404-dep.md', {
+				id: 'f404',
+				status: 'review',
+			});
+			await writeProposal(root, 'blocked', 'f405-waiting.md', {
+				id: 'f405',
+				status: 'blocked',
+				blocked_by: '[f404]',
+			});
+			const result = await reconcileBlocked(root, FAKE_GIT_MV);
+			expect(result.resolved).toEqual([{ id: 'f405' }]);
+			const moved = await readFile(
+				join(root, 'ready', 'feats', 'f405-waiting.md'),
 				'utf8',
 			);
 			expect(moved).toContain('status: ready');

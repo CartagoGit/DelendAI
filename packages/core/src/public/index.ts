@@ -538,7 +538,10 @@ export type {
 // by the core AFTER `loadPlugins()` returns; at register time it is
 // empty.
 export type { IEvictionRegistryDeps } from '../lib/cache/eviction-registry';
-export { killProcessGroup } from '../lib/commands/process-group';
+export {
+	killProcessGroup,
+	killProcessTree,
+} from '../lib/commands/process-group';
 export type {
 	IRunArgvOptions,
 	IRunArgvOutcome,
@@ -857,6 +860,7 @@ export {
 	type TokenSurface,
 } from '../lib/budgets/types';
 // — Token ROI per plugin (KPI).
+export { buildValueLookup } from '../lib/budgets/manifest';
 export { aggregateROI, computeROI, confidenceFor } from '../lib/budgets/roi';
 export type {
 	IComputeRoiInput,
@@ -972,6 +976,11 @@ export {
 	recall,
 	serializeKpis,
 } from '../lib/observability/activation-kpis';
+export { createActivationKpiSessionStore } from '../lib/observability/activation-kpis-session';
+export type {
+	IActivationKpiSessionStore,
+	IActivationKpiSessionStoreOptions,
+} from '../lib/observability/activation-kpis-session';
 export type {
 	IActivationKpis,
 	IAggregateKpis,

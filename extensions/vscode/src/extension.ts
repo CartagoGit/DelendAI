@@ -87,6 +87,7 @@ import {
 	registerSetupGithubCommand,
 } from './commands/setup-github';
 import { renderJsonHtml } from './commands/types';
+import type { ICommandVscodeApi } from './commands/types';
 import { registerKpiDashboardProvider } from './providers/kpi-dashboard-provider';
 import {
 	type IFileSystemWatcher,
@@ -162,6 +163,15 @@ export interface IVscodeApi {
 		): IDisposable;
 	};
 	readonly window: {
+		readonly createTerminal?: NonNullable<
+			ICommandVscodeApi['window']['createTerminal']
+		>;
+		readonly onDidChangeTerminalShellIntegration?: NonNullable<
+			ICommandVscodeApi['window']['onDidChangeTerminalShellIntegration']
+		>;
+		readonly onDidEndTerminalShellExecution?: NonNullable<
+			ICommandVscodeApi['window']['onDidEndTerminalShellExecution']
+		>;
 		createOutputChannel?(name: string): IOutputChannel;
 		createStatusBarItem?(): IStatusBarItem;
 		registerTreeDataProvider?(

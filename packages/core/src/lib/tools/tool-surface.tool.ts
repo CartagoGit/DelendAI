@@ -151,7 +151,16 @@ const buildPluginSurfaceMutationToolRegistration = (input: {
 						'Call tool_search or project_context to inspect the current surface.',
 					);
 				}
-				return toolJson({ change });
+				return toolJson({
+					change: {
+						...change,
+						...(input.toolId === 'plugin_activate'
+							? {
+									note: 'Plugin activated. Refresh tools/list before invoking a newly visible tool; clients with a cached catalog may otherwise report it as disabled.',
+								}
+							: {}),
+					},
+				});
 			},
 		);
 	},

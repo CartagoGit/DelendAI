@@ -37,6 +37,7 @@ import {
 import { lintProposalMarkdown } from './proposal-scaffold-linter';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { slugFromTitle } from '../shared/string-helpers';
 
 // The legacy 8-status union, PLUS the 2 new-only f00016 statuses
 // (`in-progress` hyphenated, `review`) that the legacy union never had —
@@ -421,6 +422,7 @@ interface INewSystemFile {
 	 * the status folder (no sub-folder).
 	 */
 	readonly kind: IProposalKind | undefined;
+	readonly title?: string;
 }
 
 export interface IProposalFolderDrift {
@@ -451,6 +453,23 @@ export interface IProposalFolderDrift {
 const isNewSystemFilename = (filename: string): boolean => {
 	const prefix = filename[0] ?? '';
 	return prefix !== 'p' && prefix in PROPOSAL_KIND_BY_PREFIX;
+};
+
+const canonicalProposalFilename = (file: INewSystemFile): string | null => {
+	const idMatch = file.id.match(/^([a-z])(\d+)$/iu);
+	if (idMatch === null) return null;
+	const prefix = (idMatch[1] ?? '').toLowerCase();
+	const numericId = Number(idMatch[2]);
+	if (!Number.isSafeInteger(numericId) || numericId < 1) return null;
+	const fallback = `${prefix}${String(numericId).padStart(5, '0')}`;
+	const title = file.title?.trim();
+	const slug = slugFromTitle(
+		title && title.length > 0
+			? title
+			: file.filename.replace(/^[a-z]\d+-/iu, '').replace(/\.md$/iu, ''),
+		fallback,
+	);
+	return `${prefix}${String(numericId).padStart(5, '0')}-${slug}.md`;
 };
 
 /**
@@ -501,6 +520,7 @@ const scanNewSystemFiles = async (
 				: [];
 			const prefix = dirent.name[0] ?? '';
 			const kind = PROPOSAL_KIND_BY_PREFIX[prefix];
+			const title = typeof fm.title === 'string' ? fm.title : undefined;
 			out.push({
 				absPath,
 				folder,
@@ -509,6 +529,7 @@ const scanNewSystemFiles = async (
 				status,
 				blockedBy,
 				kind,
+				...(title !== undefined ? { title } : {}),
 			});
 		}
 	}
@@ -705,6 +726,58 @@ export const reconcileFolders = async (
 };
 
 /**
+ * Renames recognisable new-system proposals to the canonical
+ * `<prefix><5 digits>-<kebab-title>.md` shape and places them in the folder
+ * implied by their status and kind. Legacy `p...` files are intentionally
+ * excluded. Existing targets are reported and never overwritten.
+ */
+export const reconcileCanonicalProposals = async (
+	proposalsDirAbs: string,
+	gitRunner: IGitRunner,
+	folderPolicy?: IProposalFolderPolicy,
+): Promise<{
+	moved: ReadonlyArray<{ id: string; from: string; to: string }>;
+	errors: readonly string[];
+}> => {
+	const files = await scanNewSystemFiles(proposalsDirAbs);
+	const moved: Array<{ id: string; from: string; to: string }> = [];
+	const errors: string[] = [];
+	for (const file of files) {
+		const canonicalFilename = canonicalProposalFilename(file);
+		if (canonicalFilename === null) continue;
+		const expectedFolder = proposalFolderFor(
+			file.status,
+			file.kind,
+			folderPolicy,
+		);
+		const targetAbs = join(
+			proposalsDirAbs,
+			expectedFolder,
+			canonicalFilename,
+		);
+		if (targetAbs === file.absPath) continue;
+		if (
+			await access(targetAbs).then(
+				() => true,
+				() => false,
+			)
+		) {
+			errors.push(
+				`canonical proposal collision for ${file.id}: ${relative(proposalsDirAbs, file.absPath)} -> ${relative(proposalsDirAbs, targetAbs)}`,
+			);
+			continue;
+		}
+		await moveFile(gitRunner, file.absPath, targetAbs);
+		moved.push({
+			id: file.id,
+			from: relative(proposalsDirAbs, file.absPath),
+			to: relative(proposalsDirAbs, targetAbs),
+		});
+	}
+	return { moved, errors };
+};
+
+/**
  * Auto-resolves `blocked` → `ready` (f00016 §4.2) when every entry in
  * `blocked_by` is satisfied: a `self:*` token clears once the scaffold
  * linter (S2) passes on the file; a proposal-id token clears once that
@@ -739,7 +812,10 @@ export const reconcileBlocked = async (
 					});
 					return !lint.ok;
 				}
-				return statusById.get(token) !== 'done';
+				const dependencyStatus = statusById.get(token);
+				return (
+					dependencyStatus !== 'review' && dependencyStatus !== 'done'
+				);
 			});
 			if (stillBlocked) return;
 
@@ -755,6 +831,21 @@ export const reconcileBlocked = async (
 		});
 	}
 	return { resolved };
+};
+
+/**
+ * Find new-system proposals that declare `proposalId` as a dependency.
+ * Their `blocked-by` metadata remains useful after they become ready: it
+ * defines the dependent-first review order for the primary proposal.
+ */
+export const findDependentProposalStatuses = async (
+	proposalsDirAbs: string,
+	proposalId: string,
+): Promise<ReadonlyArray<{ id: string; status: IGlossaryStatus }>> => {
+	const files = await scanNewSystemFiles(proposalsDirAbs);
+	return files
+		.filter((file) => file.blockedBy.includes(proposalId))
+		.map((file) => ({ id: file.id, status: file.status }));
 };
 
 export async function syncProposalRegistry(
@@ -785,6 +876,11 @@ export async function syncProposalRegistry(
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
 		await reconcileAndArchiveCompletedRootProposals(proposalsDir);
+		const canonicalReconciliation = await reconcileCanonicalProposals(
+			proposalsDir,
+			gitRunner,
+			folderPolicy,
+		);
 		// f00016 S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
@@ -848,6 +944,7 @@ export async function syncProposalRegistry(
 		].map((absolute) => ({ absolute }));
 		const entries: IProposalEntry[] = [];
 		const warnings: string[] = [];
+		warnings.push(...canonicalReconciliation.errors);
 		for (const subtree of subtrees) {
 			const result = await scanSubtree(
 				subtree.absolute,

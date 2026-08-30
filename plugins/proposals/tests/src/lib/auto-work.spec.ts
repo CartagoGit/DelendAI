@@ -287,6 +287,48 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.steps[2]).toContain('proposal_transition');
 	});
 
+	it('continues ready work while an unrelated review is pending', async () => {
+		options = {
+			...options,
+			proposalsDirAbs: root,
+			requirePeerReview: true,
+		};
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'a00064',
+						file: 'review/a00064-primary.md',
+						status: 'review',
+					},
+					{
+						id: 'a00065',
+						file: 'ready/a00065-dependent.md',
+						status: 'ready',
+					},
+				],
+			}),
+		);
+		mkdirSync(join(root, 'review'), { recursive: true });
+		mkdirSync(join(root, 'ready'), { recursive: true });
+		writeFileSync(
+			join(root, 'review', 'a00064-primary.md'),
+			'---\nid: a00064\nstatus: review\n---\n',
+			'utf8',
+		);
+		writeFileSync(
+			join(root, 'ready', 'a00065-dependent.md'),
+			'---\nid: a00065\nstatus: ready\nblocked-by: [a00064]\n---\n',
+			'utf8',
+		);
+
+		const out = parse(await runAutoWork(options));
+		expect(out.state).toBe('work');
+		expect(out.proposalId).toBe('a00065');
+		expect(out.next).not.toBe('proposals_proposal_review');
+	});
+
 	it('builds the orchestration policy as a standalone pure helper', async () => {
 		expect(
 			buildAutoWorkOrchestrationPolicy({

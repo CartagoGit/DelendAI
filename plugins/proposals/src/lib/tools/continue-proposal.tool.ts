@@ -545,6 +545,14 @@ export const runContinueProposal = async (
 			nextAction: `Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or wait once with ${options.namespacePrefix}_await_lock / a lock-released notification, then retry the claim path.`,
 		});
 	}
+	// Dependent work must continue while a primary proposal waits for peer
+	// review. Review is still actionable, but it is a lower-priority lane:
+	// only select it when no ready/in-progress proposal remains.
+	const executableFree = free.filter((entry) => {
+		const folderState = folderStateOf(entry.file, options.proposalsDirAbs);
+		return folderState !== 'review';
+	});
+	const selectableFree = executableFree.length > 0 ? executableFree : free;
 	// f00024: kind-based cascade (+ frontmatter override/boost) — the host
 	// may inject a custom resolver (DIP, for tests), otherwise the full
 	// 13-family cascade plus the break-glass override is used.
@@ -556,7 +564,7 @@ export const runContinueProposal = async (
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
 	const activeLocks = await readActiveLocks(options.lockPathAbs);
 	const claimableById = new Map<string, number>();
-	for (const entry of free) {
+	for (const entry of selectableFree) {
 		const docPath = join(
 			options.proposalsDirAbs ?? dirname(options.indexPathAbs),
 			entry.file,
@@ -586,7 +594,7 @@ export const runContinueProposal = async (
 	}
 	// Unset entries keep the serial-work default of 1 (legacy docs
 	// without a `## Slices` section). Missing documents are explicitly 0.
-	const seriallyFree = free.filter(
+	const seriallyFree = selectableFree.filter(
 		(entry) => (claimableById.get(entry.id) ?? 1) > 0,
 	);
 	if (seriallyFree.length === 0) {

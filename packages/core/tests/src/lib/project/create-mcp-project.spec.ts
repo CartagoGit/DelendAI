@@ -170,6 +170,11 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 			toolName: string;
 			args: unknown;
 			elapsedMs: number;
+			context?: {
+				reason: string;
+				nextAction: string;
+				error: unknown;
+			};
 		}> = [];
 		const slowTool: IToolRegistration = {
 			id: 'slow',
@@ -193,13 +198,22 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 		};
 		const { client, close } = await connect({
 			...hostConfig([slowTool]),
-			onToolCancel: (toolName, args, elapsedMs) => {
-				cancels.push({ toolName, args, elapsedMs });
+			onToolCancel: (toolName, args, elapsedMs, context) => {
+				cancels.push({
+					toolName,
+					args,
+					elapsedMs,
+					...(context !== undefined ? { context } : {}),
+				});
 			},
 		});
 		try {
 			const controller = new AbortController();
-			setTimeout(() => controller.abort(), 50);
+			setTimeout(
+				() =>
+					controller.abort(new Error('user stopped duplicate work')),
+				50,
+			);
 			await expect(
 				client.callTool(
 					{ name: 'spec_slow', arguments: { x: 1 } },
@@ -216,6 +230,13 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 			expect(cancels[0]?.args).toEqual({ x: 1 });
 			expect(cancels[0]?.elapsedMs).toBeGreaterThan(0);
 			expect(cancels[0]?.elapsedMs).toBeLessThan(300);
+			expect(cancels[0]?.context?.reason).toBe(
+				'user stopped duplicate work',
+			);
+			expect(cancels[0]?.context?.nextAction).toContain('Retry');
+			expect(String(cancels[0]?.context?.error)).toContain(
+				'user stopped duplicate work',
+			);
 		} finally {
 			await close();
 		}

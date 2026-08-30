@@ -1322,6 +1322,7 @@ export const buildReviewRegistration = (
 					return toolError(resolved.reason, resolved.nextAction);
 				}
 				const { entry, docPath } = resolved;
+				const missingSliceNextAction = `Call ${options.namespacePrefix}_proposal_get { view: "slices", proposalId: "${entry.id}" } and retry with a declared sliceId. If this historical proposal is already done, do not submit a review: run ${options.namespacePrefix}_proposal_reconcile_folder { id: "${entry.id}", reason: "repair historical proposal state" }; if the done state still needs an audited repair, ask the host to approve ${options.namespacePrefix}_proposal_force_transition { id: "${entry.id}", to: "done", reason: "repair historical proposal state", skipPeerReview: true }.`;
 				// x00055 S2: redact the reviewer note...
 				const redactedNote = args.note
 					? redactSecrets(args.note)
@@ -1339,7 +1340,7 @@ export const buildReviewRegistration = (
 					if (m === null) {
 						return toolError(
 							`slice "${args.sliceId}" not found in ${entry.file}`,
-							'Call proposal_board to list slices.',
+							missingSliceNextAction,
 						);
 					}
 					const body = m[2] ?? '';
@@ -1560,10 +1561,12 @@ export const buildReviewRegistration = (
 				} catch (rawErr: unknown) {
 					if (!isToolErrorCarryingError(rawErr)) throw rawErr;
 					if (rawErr.toolError !== undefined) return rawErr.toolError;
-					return toolError(
-						rawErr.message,
-						'Call proposal_board to list slices.',
-					);
+					const nextAction =
+						rawErr.message.includes('slice "') &&
+						rawErr.message.includes('not found')
+							? missingSliceNextAction
+							: 'Call proposal_board to list slices.';
+					return toolError(rawErr.message, nextAction);
 				}
 
 				// approve/request_changes free the slice (done, or reworkable).

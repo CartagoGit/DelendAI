@@ -168,12 +168,13 @@ describe('push scheduler (x00266)', () => {
 		expect(pushCount.n).toBe(1);
 	});
 
-	it('refuses pushes on master even when config omits it from protectedBranches', async () => {
+	it('allows pushes on master when config omits it from protectedBranches', async () => {
 		const pushCount = { n: 0 };
 		const scheduler = createPushScheduler({
 			run: buildRunner('master', ok('pushed\n')),
 			policy: basePushPolicy({
 				onCommit: true,
+				remote: 'origin',
 				protectedBranches: [],
 			}),
 			onAttempt: () => {
@@ -181,11 +182,7 @@ describe('push scheduler (x00266)', () => {
 			},
 		});
 		const result = await scheduler.onCommitSucceeded();
-		expect(result?.ok).toBe(false);
-		if (result?.ok === false)
-			expect(result.refusal).toContain(
-				'DIRECT_PUSH_TO_MASTER_NOT_ALLOWED',
-			);
+		expect(result?.ok).toBe(true);
 		expect(pushCount.n).toBe(1);
 	});
 

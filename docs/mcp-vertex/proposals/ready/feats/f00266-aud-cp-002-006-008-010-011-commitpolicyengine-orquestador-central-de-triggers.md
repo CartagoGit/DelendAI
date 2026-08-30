@@ -205,7 +205,8 @@ El engine es dueño de:
   - "los 8 refusal codes están exportados desde el engine"
   - "engine.dispose() para timers y libera processedEvents"
   - "registros de log estructurados para cada paso del pipeline"
-
+- review-state: in_review
+- review-implementer: github-copilot-gpt-5.4
 ## acceptance
 
 - Tests cubren los 4 tipos de eventos y al menos un caso de error

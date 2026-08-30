@@ -241,6 +241,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'agent-orchestrator' },
 			{ plugin: 'perf' },
 			{ plugin: 'proposals' },
+			{ plugin: 'project-kpis' },
 			{ plugin: 'quality' },
 			{ plugin: 'rules' },
 			{ plugin: 'search' },

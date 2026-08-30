@@ -1,8 +1,11 @@
 import z from 'zod';
 
 import {
+	DETAIL_LEVELS,
+	projectDetail,
 	toolError,
 	toolJson,
+	type Detail,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
@@ -23,10 +26,12 @@ export type { ILogToolStores } from '../contracts/interfaces/tools.interface';
 
 const LogOutcomeSchema = z.enum(LOG_OUTCOMES);
 const LogSeveritySchema = z.enum(LOG_SEVERITIES);
+const DetailSchema = z.enum(DETAIL_LEVELS);
 const LogEventListOutputSchema = z.array(z.unknown());
 const DECIMAL_RADIX = 10;
 const SUBSCRIBE_DEFAULT_LIMIT = 50;
-const INCIDENT_TYPE_PATTERN_DOC = '^[a-z][a-z0-9-]{0,63}$';
+const INCIDENT_TYPE_MAX_LENGTH = 63;
+const INCIDENT_TYPE_PATTERN_DOC = `^[a-z][a-z0-9-]{0,${INCIDENT_TYPE_MAX_LENGTH}}$`;
 const INCIDENT_SUMMARY_PREVIEW_CHARS = 140;
 const _LogEventSchema = z.object({
 	ts: z.string(),
@@ -110,14 +115,45 @@ const tailOptionsFrom = (args: {
 
 const compactEvents = (
 	events: readonly ILogEvent[],
-	includeMeta: boolean | undefined,
-): readonly ILogEvent[] =>
-	includeMeta === true
-		? events
-		: events.map((event) => ({
-				...event,
-				meta: {},
-			}));
+	detail: Detail,
+): readonly unknown[] => events.map((event) => projectLogEvent(event, detail));
+
+const projectLogEventCompact = (
+	event: ILogEvent,
+): Pick<
+	ILogEvent,
+	'ts' | 'kind' | 'outcome' | 'severity' | 'incidentType' | 'summary'
+> => ({
+	ts: event.ts,
+	kind: event.kind,
+	outcome: event.outcome,
+	severity: event.severity,
+	incidentType: event.incidentType,
+	summary: event.summary,
+});
+
+const projectLogEventNormal = (
+	event: ILogEvent,
+): Omit<ILogEvent, 'meta'> & { meta: Record<string, never> } => ({
+	...event,
+	meta: {},
+});
+
+const projectLogEvent = (event: ILogEvent, detail: Detail): unknown =>
+	projectDetail(
+		event,
+		{
+			compact: projectLogEventCompact,
+			normal: projectLogEventNormal,
+			full: (full) => full,
+		},
+		detail,
+	);
+
+const resolveEventDetail = (args: {
+	detail?: Detail | undefined;
+	includeMeta?: boolean | undefined;
+}): Detail => args.detail ?? (args.includeMeta === true ? 'full' : 'normal');
 
 const correlateOptionsFrom = (args: {
 	taskId?: string | undefined;
@@ -152,20 +188,28 @@ export const buildLogToolRegistrations = (
 					`${prefix}_query`,
 					{
 						description:
-							'Query redacted append-only MCP log events. Filters: since, until, kind, agent, taskId, outcome; supports cursor pagination.',
-						inputSchema: QueryInputSchema,
+							'Query redacted append-only MCP log events. Filters: since, until, kind, agent, taskId, outcome; supports cursor pagination. `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged.',
+						inputSchema: QueryInputSchema.extend({
+							detail: DetailSchema.optional(),
+						}),
 						outputSchema: z.object({
+							detail: DetailSchema,
 							events: LogEventListOutputSchema,
 							cursor: z.string().nullable(),
 							hasMore: z.boolean(),
 						}),
 					},
-					async (args: z.infer<typeof QueryInputSchema>) => {
+					async (
+						args: z.infer<typeof QueryInputSchema> & {
+							detail?: Detail | undefined;
+						},
+					) => {
 						const limit = Math.max(
 							1,
 							Math.min(args.limit ?? 100, 1000),
 						);
 						const offset = parseCursor(args.cursor);
+						const detail = resolveEventDetail(args);
 						const events = await store.readRange(
 							queryFilterFrom(args),
 						);
@@ -173,7 +217,8 @@ export const buildLogToolRegistrations = (
 						const nextOffset = offset + page.length;
 						const hasMore = nextOffset < events.length;
 						return toolJson({
-							events: page,
+							detail,
+							events: compactEvents(page, detail),
 							cursor: hasMore ? makeCursor(nextOffset) : null,
 							hasMore,
 						});
@@ -190,14 +235,16 @@ export const buildLogToolRegistrations = (
 					`${prefix}_tail`,
 					{
 						description:
-							'Return the newest redacted MCP log events, optionally filtered by outcome or kind. Omits verbose meta by default; pass includeMeta:true for the full stored event.',
+							'Return the newest redacted MCP log events, optionally filtered by outcome or kind. `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged. Legacy `includeMeta:true` remains supported and resolves to `detail: full` when `detail` is omitted.',
 						inputSchema: z.object({
 							limit: z.number().optional(),
 							outcomeFilter: LogOutcomeSchema.optional(),
 							kindFilter: z.string().optional(),
+							detail: DetailSchema.optional(),
 							includeMeta: z.boolean().optional(),
 						}),
 						outputSchema: z.object({
+							detail: DetailSchema,
 							events: LogEventListOutputSchema,
 							oldestTs: z.string().nullable(),
 							newestTs: z.string().nullable(),
@@ -207,16 +254,19 @@ export const buildLogToolRegistrations = (
 						limit?: number | undefined;
 						outcomeFilter?: LogOutcome | undefined;
 						kindFilter?: string | undefined;
+						detail?: Detail | undefined;
 						includeMeta?: boolean | undefined;
 					}) => {
-						const events = compactEvents(
-							await store.tail(tailOptionsFrom(args)),
-							args.includeMeta,
+						const detail = resolveEventDetail(args);
+						const storedEvents = await store.tail(
+							tailOptionsFrom(args),
 						);
+						const events = compactEvents(storedEvents, detail);
 						return toolJson({
+							detail,
 							events,
-							oldestTs: events[0]?.ts ?? null,
-							newestTs: events.at(-1)?.ts ?? null,
+							oldestTs: storedEvents[0]?.ts ?? null,
+							newestTs: storedEvents.at(-1)?.ts ?? null,
 						});
 					},
 				);
@@ -232,13 +282,15 @@ export const buildLogToolRegistrations = (
 					`${prefix}_errors_tail`,
 					{
 						description:
-							'Return the newest events from the curated error stream (outcome not ok/idle: failed, timed-out, dead, cancelled, unknown). Omits verbose meta by default so a debugging session cannot overflow the host context; pass includeMeta:true only for the one event you are inspecting. Read this BEFORE reading source when auditing or debugging: it points at exactly where execution did not reach the expected state.',
+							'Return the newest events from the curated error stream (outcome not ok/idle: failed, timed-out, dead, cancelled, unknown). `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged. Legacy `includeMeta:true` remains supported and resolves to `detail: full` when `detail` is omitted. Read this BEFORE reading source when auditing or debugging: it points at exactly where execution did not reach the expected state.',
 						inputSchema: z.object({
 							limit: z.number().optional(),
 							kindFilter: z.string().optional(),
+							detail: DetailSchema.optional(),
 							includeMeta: z.boolean().optional(),
 						}),
 						outputSchema: z.object({
+							detail: DetailSchema,
 							events: LogEventListOutputSchema,
 							oldestTs: z.string().nullable(),
 							newestTs: z.string().nullable(),
@@ -247,21 +299,22 @@ export const buildLogToolRegistrations = (
 					async (args: {
 						limit?: number | undefined;
 						kindFilter?: string | undefined;
+						detail?: Detail | undefined;
 						includeMeta?: boolean | undefined;
 					}) => {
-						const events = compactEvents(
-							await stores.errors.tail(
-								tailOptionsFrom({
-									limit: args.limit,
-									kindFilter: args.kindFilter,
-								}),
-							),
-							args.includeMeta,
+						const detail = resolveEventDetail(args);
+						const storedEvents = await stores.errors.tail(
+							tailOptionsFrom({
+								limit: args.limit,
+								kindFilter: args.kindFilter,
+							}),
 						);
+						const events = compactEvents(storedEvents, detail);
 						return toolJson({
+							detail,
 							events,
-							oldestTs: events[0]?.ts ?? null,
-							newestTs: events.at(-1)?.ts ?? null,
+							oldestTs: storedEvents[0]?.ts ?? null,
+							newestTs: storedEvents.at(-1)?.ts ?? null,
 						});
 					},
 				);
@@ -277,13 +330,15 @@ export const buildLogToolRegistrations = (
 					`${prefix}_subscribe`,
 					{
 						description:
-							'Return recent redacted log events matching optional outcome/kind filters. Web SSE endpoints poll this read-only tool.',
+							'Return recent redacted log events matching optional outcome/kind filters. `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged.',
 						inputSchema: z.object({
 							outcomeFilter: LogOutcomeSchema.optional(),
 							kindFilter: z.string().optional(),
 							limit: z.number().optional(),
+							detail: DetailSchema.optional(),
 						}),
 						outputSchema: z.object({
+							detail: DetailSchema,
 							events: LogEventListOutputSchema,
 							stream: z.literal('logs'),
 						}),
@@ -292,17 +347,21 @@ export const buildLogToolRegistrations = (
 						outcomeFilter?: LogOutcome | undefined;
 						kindFilter?: string | undefined;
 						limit?: number | undefined;
-					}) =>
-						toolJson({
+						detail?: Detail | undefined;
+					}) => {
+						const detail = resolveEventDetail(args);
+						const storedEvents = await store.tail(
+							tailOptionsFrom({
+								...args,
+								limit: args.limit ?? SUBSCRIBE_DEFAULT_LIMIT,
+							}),
+						);
+						return toolJson({
+							detail,
 							stream: 'logs' as const,
-							events: await store.tail(
-								tailOptionsFrom({
-									...args,
-									limit:
-										args.limit ?? SUBSCRIBE_DEFAULT_LIMIT,
-								}),
-							),
-						}),
+							events: compactEvents(storedEvents, detail),
+						});
+					},
 				);
 			},
 		},
@@ -316,18 +375,20 @@ export const buildLogToolRegistrations = (
 					`${prefix}_correlate`,
 					{
 						description:
-							'Build a chronological chain for exactly one taskId or agent and return gap detection.',
+							'Build a chronological chain for exactly one taskId or agent and return gap detection. `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged.',
 						inputSchema: z.object({
 							taskId: z.string().optional(),
 							agent: z.string().optional(),
 							since: z.string().optional(),
 							until: z.string().optional(),
+							detail: DetailSchema.optional(),
 						}),
 						// x00107: SUCCESS shape only — the SDK skips schema
 						// validation for `isError` results (`toolError`), so
 						// the strict required fields are correct. (x00105
 						// briefly loosened this; reverted.)
 						outputSchema: z.object({
+							detail: DetailSchema,
 							chain: LogEventListOutputSchema,
 							firstTs: z.string().nullable(),
 							lastTs: z.string().nullable(),
@@ -339,14 +400,19 @@ export const buildLogToolRegistrations = (
 						agent?: string | undefined;
 						since?: string | undefined;
 						until?: string | undefined;
+						detail?: Detail | undefined;
 					}) => {
 						try {
-							return toolJson(
-								await correlateEvents(
-									store,
-									correlateOptionsFrom(args),
-								),
+							const detail = resolveEventDetail(args);
+							const correlation = await correlateEvents(
+								store,
+								correlateOptionsFrom(args),
 							);
+							return toolJson({
+								detail,
+								...correlation,
+								chain: compactEvents(correlation.chain, detail),
+							});
 						} catch (error) {
 							return toolError(
 								'Invalid correlation request',
@@ -471,7 +537,7 @@ export const buildLogToolRegistrations = (
 					`${prefix}_search`,
 					{
 						description:
-							'Search the redacted event log. `pattern` is a substring by default; pass `isRegex:true` for a JavaScript regular expression. `scope` narrows the surface (`summary` | `error` | `args` | `result` | `all`; default `all`). Returns the matched events with `matched` count and `hasMore` pagination.',
+							'Search the redacted event log. `pattern` is a substring by default; pass `isRegex:true` for a JavaScript regular expression. `scope` narrows the surface (`summary` | `error` | `args` | `result` | `all`; default `all`). `detail` defaults to `normal` (stored event with empty meta), `compact` keeps only the incident summary envelope, and `full` returns the stored event unchanged. Returns the matched events with `matched` count and `hasMore` pagination.',
 						inputSchema: z.object({
 							pattern: z.string().min(1),
 							caseSensitive: z.boolean().optional(),
@@ -488,8 +554,10 @@ export const buildLogToolRegistrations = (
 							limit: z.number().optional(),
 							since: z.string().optional(),
 							until: z.string().optional(),
+							detail: DetailSchema.optional(),
 						}),
 						outputSchema: z.object({
+							detail: DetailSchema,
 							events: LogEventListOutputSchema,
 							matched: z.number(),
 							hasMore: z.boolean(),
@@ -509,8 +577,10 @@ export const buildLogToolRegistrations = (
 						limit?: number | undefined;
 						since?: string | undefined;
 						until?: string | undefined;
+						detail?: Detail | undefined;
 					}) => {
 						try {
+							const detail = resolveEventDetail(args);
 							// f00153 S2: search both streams in parallel so a
 							// string appearing in either the main timeline or
 							// the curated error stream is found. Dedupe by
@@ -538,7 +608,8 @@ export const buildLogToolRegistrations = (
 							);
 							const page = events.slice(0, limit);
 							return toolJson({
-								events: page,
+								detail,
+								events: compactEvents(page, detail),
 								matched: events.length,
 								hasMore: events.length > page.length,
 							});

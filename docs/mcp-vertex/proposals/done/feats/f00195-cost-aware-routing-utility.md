@@ -2,12 +2,14 @@
 id: f00195
 title: "Cost-aware routing utility"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: routing
 date: 2026-08-25
 priority: P2
 parent-plan: q00006
+shipped-in:
+  - af2be9ae
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track L / f00195"
@@ -111,10 +113,13 @@ tool, basándose en una fórmula explícita:
 
 ### S1 — Utility function + integración con router + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/routing/utility.ts`, `packages/client/src/services/external-mcp/router.ts`, `packages/core/tests/src/lib/routing/utility.spec.ts`, `mcp-vertex.config.json` schema
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: utility pura y determinista, integración del router y tests sintéticos pasan 29/29; typechecks de core y client en verde. El ranking por coste/latencia/salud está cubierto.
 ## acceptance
 
 - `utility(...)` es pura, determinista.

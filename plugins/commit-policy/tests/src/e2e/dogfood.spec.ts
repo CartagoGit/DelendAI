@@ -175,9 +175,7 @@ describe('commit-policy dogfood E2E', () => {
 		const protectedResult = await protectedScheduler.onCommitSucceeded();
 		expect(protectedResult?.ok).toBe(false);
 		if (protectedResult?.ok === false)
-			expect(protectedResult.refusal).toContain(
-				'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED',
-			);
+			expect(protectedResult.refusal).toContain('BRANCH_PROTECTED');
 
 		await git(workspace, 'checkout', '-q', '--detach');
 		const detachedScheduler = createPushScheduler({
@@ -260,6 +258,6 @@ describe('commit-policy dogfood E2E', () => {
 		}).pushNow();
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(result.refusal).toContain('BRANCH_PROTECTED');
 	});
 });

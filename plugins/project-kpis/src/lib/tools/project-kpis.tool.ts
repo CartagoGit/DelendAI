@@ -8,6 +8,7 @@ import {
 	toolJson,
 	truncateIfTooLarge,
 } from '@mcp-vertex/core/public';
+import { hydrateKpis, type IAggregateKpis } from '@mcp-vertex/core/public';
 import {
 	readInvocations,
 	readSummary,
@@ -139,9 +140,12 @@ interface IToolSourceState {
 	readonly summaryPathAbs: string;
 	readonly invocationsPathAbs: string;
 	readonly historyPathAbs: string;
+	readonly activationPathAbs: string;
 	readonly summaryExists: boolean;
 	readonly invocationsExists: boolean;
 	readonly historyExists: boolean;
+	readonly activationExists: boolean;
+	readonly activation: IAggregateKpis | null;
 	readonly summary: IUsageSummary | null;
 	readonly records: readonly IKpiTelemetryRecord[];
 	readonly history: IKpiHistoryReadResult;
@@ -320,6 +324,9 @@ const historyPathOf = (options: IProjectKpisToolOptions): string =>
 		joinRel(options.workspaceRootAbs, options.cacheDir),
 		'results/project-kpis/history.json',
 	);
+
+const activationPathOf = (options: IProjectKpisToolOptions): string =>
+	joinRel(options.workspaceRootAbs, '.vscode/mcp-vertex/kpis.json');
 
 const buildSource = (input: {
 	readonly id: IProjectKpisSource['id'];
@@ -775,6 +782,14 @@ const sourcesOf = (state: IToolSourceState): IProjectKpisOutput['sources'] => {
 						note: 'At least two persisted history entries are required to compute trends.',
 					}),
 		}),
+		buildSource({
+			id: 'activation-kpis',
+			kind: 'activation-kpis',
+			status: stateActivationStatus(state),
+			...(state.activationExists
+				? {}
+				: { note: 'No persisted activation KPI file was found.' }),
+		}),
 	];
 };
 
@@ -1011,13 +1026,14 @@ const loadState = async (
 	const summaryPathAbs = usageSummaryPathOf(options);
 	const invocationsPathAbs = usageInvocationsPathOf(options);
 	const historyPathAbs = historyPathOf(options);
-	const [summaryExists, invocationsExists, historyExists] = await Promise.all(
-		[
+	const activationPathAbs = activationPathOf(options);
+	const [summaryExists, invocationsExists, historyExists, activationExists] =
+		await Promise.all([
 			pathExists(summaryPathAbs),
 			pathExists(invocationsPathAbs),
 			pathExists(historyPathAbs),
-		],
-	);
+			pathExists(activationPathAbs),
+		]);
 	const now = options.now ?? new Date();
 	const readUsageSummaryFn = options.readUsageSummary ?? readSummary;
 	const readUsageInvocationsFn =
@@ -1072,6 +1088,15 @@ const loadState = async (
 		limit: query.limit,
 		pathExists,
 	});
+	let activation: IAggregateKpis | null = null;
+	if (activationExists) {
+		try {
+			const raw = await Bun.file(activationPathAbs).json();
+			activation = hydrateKpis(raw).aggregate();
+		} catch {
+			activation = null;
+		}
+	}
 	const snapshot = await snapshotReader(toKpiQuery(query), options);
 	const trend = buildKpiTrendReport(history, {
 		windowDays: query.windowDays,
@@ -1080,9 +1105,12 @@ const loadState = async (
 		summaryPathAbs,
 		invocationsPathAbs,
 		historyPathAbs,
+		activationPathAbs,
 		summaryExists,
 		invocationsExists,
 		historyExists,
+		activationExists,
+		activation,
 		summary,
 		records,
 		history,
@@ -1314,9 +1342,19 @@ const viewSummaryOf = (
 		errors: `Errors view surfaces structured classifications and incongruence evidence only when telemetry exists; status=${status}.`,
 		efficiency: `Efficiency view reuses measured usage KPIs and leaves unavailable savings or latency fields explicit; status=${status}.`,
 		audit: `Audit view reports only evidence-backed anomalies and missing-source conditions; status=${status}.`,
+		activation: `Activation view reports precision, recall and churn across ${state.activation?.sessionCount ?? 0} recorded session(s); status=${status}.`,
 	};
 	return summaries[view];
 };
+
+const stateActivationStatus = (state: IToolSourceState): TKpiViewStatus =>
+	state.activationExists
+		? state.activation === null
+			? 'unavailable'
+			: state.activation.sessionCount > 0
+				? 'measured'
+				: 'partial'
+		: 'not-configured';
 
 const buildViewPayload = async (
 	query: IResolvedQuery,
@@ -1368,6 +1406,7 @@ const buildViewPayload = async (
 				...breakdowns.map((item) => item.status),
 			]),
 		audit: () => findings.status,
+		activation: () => stateActivationStatus(state),
 		summary: () => deriveViewStatus([snapshot.status, history.status]),
 	};
 	const status = statusResolvers[view]();
@@ -1401,6 +1440,29 @@ const buildViewPayload = async (
 			state,
 		).slice(0, DETAIL_LIMITS[query.detail].recommendations),
 		...(view === 'audit' ? {} : { snapshot }),
+		...(view === 'activation'
+			? {
+					activation: {
+						status,
+						source: 'activation-kpis/.vscode/mcp-vertex/kpis.json',
+						sessionCount: state.activation?.sessionCount ?? 0,
+						...(state.activation?.meanPrecision !== undefined
+							? { meanPrecision: state.activation.meanPrecision }
+							: {}),
+						...(state.activation?.meanRecall !== undefined
+							? { meanRecall: state.activation.meanRecall }
+							: {}),
+						...(state.activation?.meanChurn !== undefined
+							? { meanChurn: state.activation.meanChurn }
+							: {}),
+						...(state.activation === null
+							? {
+									note: 'Activation KPI file exists but could not be parsed.',
+								}
+							: {}),
+					},
+				}
+			: {}),
 		...(view === 'history' || view === 'summary' || view === 'economics'
 			? { history }
 			: {}),

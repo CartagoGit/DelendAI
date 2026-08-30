@@ -14,6 +14,7 @@ import {
 } from '@mcp-vertex/core/public';
 
 import type { ICommitPolicyPush, ForceMode } from '../contracts/options';
+import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import { gitCurrentBranch, gitUpstream } from './git-extra';
 
 export interface IPushDriverInput {
@@ -41,13 +42,6 @@ export type IPushDriverResult =
 type IForceAuthorizationResolution =
 	| { readonly ok: true; readonly authorization?: IPushAuthorization }
 	| { readonly ok: false; readonly refusal: string };
-
-type IMainPushGuardResolution =
-	| { readonly ok: true }
-	| { readonly ok: false; readonly refusal: string };
-
-const DIRECT_PUSH_TO_MAIN_NOT_ALLOWED = 'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED';
-const DIRECT_PUSH_TO_MASTER_NOT_ALLOWED = 'DIRECT_PUSH_TO_MASTER_NOT_ALLOWED';
 
 /**
  * Plain `--force` rewrites shared history irreversibly, so `gitPush`
@@ -97,28 +91,6 @@ const forceModeToGitPush = (mode: ForceMode): IPushForceMode => {
 	}
 };
 
-export const enforceMainPushGuard = (
-	branch: string,
-): IMainPushGuardResolution => {
-	// Defense in depth: `main` y `master` nunca aceptan push directo.
-	// `develop` queda enteramente bajo la config (`protectedBranches`).
-	// Inline `branch === 'main'` sigue siendo la forma canónica
-	// ratcheteada por `lint:commit-push-strictness`.
-	if (branch === 'main') {
-		return {
-			ok: false,
-			refusal: `push refused: ${DIRECT_PUSH_TO_MAIN_NOT_ALLOWED} — direct push to 'main' is not allowed; cuts the release/publish path. Next: open a PR from a feature branch (release/* or develop).`,
-		};
-	}
-	if (branch === 'master') {
-		return {
-			ok: false,
-			refusal: `push refused: ${DIRECT_PUSH_TO_MASTER_NOT_ALLOWED} — direct push to 'master' is not allowed; use a PR from a feature branch instead.`,
-		};
-	}
-	return { ok: true };
-};
-
 export const runPushDriver = async (
 	input: IPushDriverInput,
 	policy: ICommitPolicyPush,
@@ -166,15 +138,18 @@ export const runPushDriver = async (
 		};
 	}
 
-	const mainPushGuard = enforceMainPushGuard(branch);
-	if (!mainPushGuard.ok) {
-		return { ok: false, refusal: mainPushGuard.refusal };
-	}
-
-	if (policy.protectedBranches.includes(branch)) {
+	if (
+		isBranchProtected(branch, {
+			protected: policy.protectedBranches,
+			protectedPrefixes: policy.protectedPrefixes,
+		})
+	) {
 		return {
 			ok: false,
-			refusal: `push refused: "${branch}" is in protectedBranches`,
+			refusal: branchProtectedRefusal(branch, {
+				protected: policy.protectedBranches,
+				protectedPrefixes: policy.protectedPrefixes,
+			}),
 		};
 	}
 

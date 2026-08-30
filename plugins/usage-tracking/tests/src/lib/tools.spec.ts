@@ -121,11 +121,34 @@ describe('usage-tracking tools', () => {
 			groupBy: 'plugin',
 			sortBy: 'costUsd',
 		});
+		expect(out.detail).toBe('normal');
 		expect((out.totals as { calls: number }).calls).toBe(3);
 		const buckets = out.buckets as Array<{ key: string; costUsd: number }>;
 		expect(buckets[0]?.key).toBe('docs');
 		expect(buckets[0]?.costUsd).toBe(6);
 		expect((out.expensiveCalls as unknown[]).length).toBeGreaterThan(0);
+	});
+
+	it('usage_report honors compact detail by suppressing expensive breakdowns', async () => {
+		writeFileSync(
+			invocationsPath,
+			`${[
+				rec({ plugin: 'proposals', costUsd: 1 }),
+				rec({ plugin: 'docs', costUsd: 4 }),
+			]
+				.map((r) => JSON.stringify(r))
+				.join('\n')}\n`,
+			'utf8',
+		);
+		const report = await captureHandler(regs()[0]!);
+		const out = await parse(report, {
+			groupBy: 'plugin',
+			detail: 'compact',
+		});
+		expect(out.detail).toBe('compact');
+		expect(out.pluginKpis).toEqual([]);
+		expect(out.expensiveCalls).toEqual([]);
+		expect((out.totals as { calls: number }).calls).toBe(2);
 	});
 
 	it('usage_report honours the outcome filter', async () => {
@@ -141,6 +164,7 @@ describe('usage-tracking tools', () => {
 		);
 		const report = await captureHandler(regs()[0]!);
 		const out = await parse(report, { filter: { outcome: 'error' } });
+		expect(out.detail).toBe('normal');
 		expect((out.totals as { calls: number }).calls).toBe(1);
 	});
 

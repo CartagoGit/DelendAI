@@ -89,6 +89,18 @@ export interface IMemoryUtilityContext {
 	readonly usageHalfCount: number;
 }
 
+/**
+ * Retrieval-time tuning. Mirrors the config shape callers can build
+ * from `plugins.memory.options.utility` while staying optional so the
+ * legacy top-level retrieval options remain valid.
+ */
+export interface IMemoryUtilitySettings {
+	readonly weights?: IMemoryUtilityWeights;
+	readonly costThreshold?: number;
+	readonly recencyHalfLifeMs?: number;
+	readonly usageHalfCount?: number;
+}
+
 /** A scored entry, with the components broken out for transparency. */
 export interface IMemoryUtilityScore {
 	readonly entry: IMemoryEntry;
@@ -114,8 +126,75 @@ export const DEFAULT_MEMORY_UTILITY_WEIGHTS: IMemoryUtilityWeights = {
 	delta: 0.1,
 };
 
+export const DEFAULT_MEMORY_RECENCY_HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1_000;
+
+export const DEFAULT_MEMORY_USAGE_HALF_COUNT = 5;
+
 /** Conservative threshold below which a memory is dropped. */
 export const DEFAULT_MEMORY_COST_THRESHOLD = 0.15;
+
+export const resolveMemoryUtilitySettings = (
+	settings?: IMemoryUtilitySettings,
+): {
+	readonly weights: IMemoryUtilityWeights;
+	readonly costThreshold: number;
+	readonly recencyHalfLifeMs: number;
+	readonly usageHalfCount: number;
+} => ({
+	weights: {
+		alpha: finiteOr(
+			settings?.weights?.alpha,
+			DEFAULT_MEMORY_UTILITY_WEIGHTS.alpha,
+		),
+		beta: finiteOr(
+			settings?.weights?.beta,
+			DEFAULT_MEMORY_UTILITY_WEIGHTS.beta,
+		),
+		gamma: finiteOr(
+			settings?.weights?.gamma,
+			DEFAULT_MEMORY_UTILITY_WEIGHTS.gamma,
+		),
+		delta: finiteOr(
+			settings?.weights?.delta,
+			DEFAULT_MEMORY_UTILITY_WEIGHTS.delta,
+		),
+	},
+	costThreshold: finiteOr(
+		settings?.costThreshold,
+		DEFAULT_MEMORY_COST_THRESHOLD,
+	),
+	recencyHalfLifeMs: Math.max(
+		1,
+		finiteOr(
+			settings?.recencyHalfLifeMs,
+			DEFAULT_MEMORY_RECENCY_HALF_LIFE_MS,
+		),
+	),
+	usageHalfCount: Math.max(
+		1,
+		finiteOr(settings?.usageHalfCount, DEFAULT_MEMORY_USAGE_HALF_COUNT),
+	),
+});
+
+export const createMemoryUtilityContext = (
+	entries: readonly Pick<IMemoryEntry, 'sizeBytes'>[],
+	now: number,
+	settings?: Pick<
+		IMemoryUtilitySettings,
+		'recencyHalfLifeMs' | 'usageHalfCount'
+	>,
+): IMemoryUtilityContext => {
+	const resolved = resolveMemoryUtilitySettings(settings);
+	return {
+		now,
+		maxSizeBytes: entries.reduce(
+			(max, entry) => Math.max(max, finiteOr(entry.sizeBytes, 0)),
+			0,
+		),
+		recencyHalfLifeMs: resolved.recencyHalfLifeMs,
+		usageHalfCount: resolved.usageHalfCount,
+	};
+};
 
 /**
  * Compute the utility of one entry. Pure: same inputs → same
@@ -149,7 +228,7 @@ export const utility = (
 
 /**
  * Filter a list of entries by utility: only entries with
- * `score >= costThreshold` are returned, best-first. Stable:
+ * `score > costThreshold` are returned, best-first. Stable:
  * ties keep insertion order.
  */
 export const filterByUtility = (
@@ -159,15 +238,31 @@ export const filterByUtility = (
 	costThreshold: number = DEFAULT_MEMORY_COST_THRESHOLD,
 ): readonly IMemoryUtilityScore[] => {
 	const scored = entries.map((e) => utility(e, weights, context));
+	const threshold = finiteOr(costThreshold, DEFAULT_MEMORY_COST_THRESHOLD);
 	return scored
-		.filter((s) => s.score >= costThreshold)
+		.filter((s) => s.score > threshold)
 		.sort((a, b) => {
 			if (b.score !== a.score) return b.score - a.score;
+			if (b.components.similarity !== a.components.similarity) {
+				return b.components.similarity - a.components.similarity;
+			}
+			if (b.components.recency !== a.components.recency) {
+				return b.components.recency - a.components.recency;
+			}
+			if (b.components.usage !== a.components.usage) {
+				return b.components.usage - a.components.usage;
+			}
+			if (a.components.costBytes !== b.components.costBytes) {
+				return a.components.costBytes - b.components.costBytes;
+			}
 			return 0;
 		});
 };
 
 // --- helpers -----------------------------------------------------------------
+
+const finiteOr = (value: number | undefined, fallback: number): number =>
+	typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 
 const clamp01 = (n: number): number => {
 	if (!Number.isFinite(n)) return 0;

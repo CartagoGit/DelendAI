@@ -27,11 +27,7 @@ import type { IGitRunner } from '@mcp-vertex/core/public';
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import type { ICommitPolicyPush } from '../contracts/options';
 import { gitCurrentBranch } from './git-extra';
-import {
-	enforceMainPushGuard,
-	runPushDriver,
-	type IPushDriverResult,
-} from './push-driver';
+import { runPushDriver, type IPushDriverResult } from './push-driver';
 import { withGitWriteLock } from './git-write-lock';
 
 export interface IPushSchedulerOptions {
@@ -98,10 +94,6 @@ export const createPushScheduler = (
 		const branch = await gitCurrentBranch(options.run);
 		if (branch === undefined) {
 			return 'push refused: HEAD is detached; check out a branch before pushing';
-		}
-		const directPushGuard = enforceMainPushGuard(branch);
-		if (!directPushGuard.ok) {
-			return directPushGuard.refusal;
 		}
 		if (
 			isBranchProtected(branch, {

@@ -2,12 +2,14 @@
 id: f00197
 title: "Memory utility score"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: memory
 date: 2026-08-25
 priority: P2
 parent-plan: q00006
+shipped-in:
+  - 1450cac8
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track M / f00197"
@@ -114,10 +116,13 @@ memorias cuyo `utility > costThreshold`.
 
 ### S1 — Utility function + integración con retrieve + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/memory/utility.ts`, `packages/core/src/lib/memory/retrieve.ts`, `packages/core/tests/src/lib/memory/utility.spec.ts`, `mcp-vertex.config.json` schema
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: utility y retrieval pasan 14/14 tests, typecheck de packages/core y Biome están en verde. El filtro usa solo metadatos, aplica threshold y calcula el coste relativo al lote sin exponer contenido de memorias.
 ## acceptance
 
 - `utility(...)` es pura, determinista.

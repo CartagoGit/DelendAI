@@ -112,6 +112,8 @@ const parse = (r: {
 	content: Array<{ text: string }>;
 }): {
 	ok?: boolean;
+	detail?: 'compact' | 'normal' | 'full';
+	auditType?: 'plan' | 'valuation';
 	error?: { reason: string; nextAction?: string };
 	scope?: string;
 	date?: string;
@@ -152,6 +154,12 @@ const parse = (r: {
 		disabled?: true;
 	};
 } => JSON.parse(r.content[0]?.text ?? '{}');
+
+const proposalFolderForKind = (kind: 'audit' | 'fix' | 'plan'): string => {
+	if (kind === 'audit') return 'audits';
+	if (kind === 'plan') return 'plans';
+	return 'fixes';
+};
 
 /** A canonical mock audit markdown that the consolidator can parse. */
 const mockAudit = (
@@ -301,6 +309,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 				],
 			}),
 		);
+		expect(out).toMatchObject({ detail: 'normal', auditType: 'plan' });
 
 		// 1. Transport saw both URLs.
 		expect(transport.calls).toHaveLength(2);
@@ -367,12 +376,20 @@ describe('audit_run (alcance B, f00077)', async () => {
 		expect(plan?.id).toMatch(/^q\d{5}$/u);
 		expect(proposal?.severity).toBe('FATAL');
 		expect(proposal?.id).toMatch(/^x\d{5}$/u);
-		const proposalsProbe = await probeProposals(
-			join(workspaceRoot, 'docs', 'mcp-vertex', 'proposals', 'ready'),
+		const readyDir = join(
+			workspaceRoot,
+			'docs',
+			'mcp-vertex',
+			'proposals',
+			'ready',
 		);
-		expect(proposalsProbe).toEqual(
-			expect.arrayContaining([plan?.id, proposal?.id]),
+		expect(await probeProposals(join(readyDir, 'plans'))).toContain(
+			plan?.id,
 		);
+		expect(await probeProposals(join(readyDir, 'fixes'))).toContain(
+			proposal?.id,
+		);
+		expect(await readdir(readyDir)).toEqual(['audits', 'fixes', 'plans']);
 
 		// 5. The proposal file body parses and links the audit via
 		// `related` (we did not pass auditId, so the scaffold
@@ -387,6 +404,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 				'mcp-vertex',
 				'proposals',
 				'ready',
+				proposalFolderForKind(proposal?.kind ?? 'fix'),
 				proposal?.filename ?? files[0] ?? '',
 			),
 			'utf8',
@@ -401,6 +419,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 				'mcp-vertex',
 				'proposals',
 				'ready',
+				proposalFolderForKind(plan?.kind ?? 'plan'),
 				plan?.filename ?? '',
 			),
 			'utf8',
@@ -414,12 +433,76 @@ describe('audit_run (alcance B, f00077)', async () => {
 				'mcp-vertex',
 				'proposals',
 				'ready',
+				proposalFolderForKind(audit?.kind ?? 'audit'),
 				audit?.filename ?? '',
 			),
 			'utf8',
 		);
 		expect(auditBody).toContain('kind: audit');
 		expect(auditBody).toContain(`    - ${plan?.id}`);
+	});
+
+	it('supports compact detail by trimming consolidation-heavy fields', async () => {
+		const transport = makeTransport((url, body) => {
+			if (url.includes('api.openai.com')) {
+				return {
+					status: 200,
+					json: {
+						choices: [
+							{
+								message: {
+									content: mockAudit(
+										'gpt-4o',
+										'Plugins read process.cwd at boot',
+									),
+								},
+							},
+						],
+					},
+				};
+			}
+			if (url.includes('api.anthropic.com')) {
+				return {
+					status: 200,
+					json: {
+						content: [
+							{
+								type: 'text',
+								text: mockAudit(
+									'claude-opus-4-8',
+									'Plugins read process.cwd at boot',
+								),
+							},
+						],
+					},
+				};
+			}
+			void body;
+			return { status: 404, json: { error: 'no mock' } };
+		});
+
+		const out = parse(
+			await invoke(buildReg(workspaceRoot, transport), {
+				detail: 'compact',
+				targets: [
+					{
+						provider: 'openai',
+						model: 'gpt-4o',
+						apiKey: 'sk-openai-fixture',
+					},
+					{
+						provider: 'anthropic',
+						model: 'claude-opus-4-8',
+						apiKey: 'sk-anthropic-fixture',
+					},
+				],
+			}),
+		);
+
+		expect(out).toMatchObject({ detail: 'compact', auditType: 'plan' });
+		expect(out.consolidation?.findings).toEqual([]);
+		expect(out.consolidation?.markdown).toBe('');
+		expect(out.consolidation?.topActions.length).toBeGreaterThan(0);
 	});
 
 	// ---- partial failure: 1 success, 1 provider error ----------------

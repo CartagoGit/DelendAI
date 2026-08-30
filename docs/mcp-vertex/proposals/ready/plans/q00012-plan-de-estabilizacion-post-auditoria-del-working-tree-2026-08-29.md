@@ -10,7 +10,7 @@ priority: P0
 contains:
     proposals:
         - { id: x00300, kind: fix, required: true, priority: P0, rationale: "Restaurar la clasificacion deprecated del export nodeDynamicImport en el inventario publico." }
-        - { id: x00301, kind: fix, required: true, priority: P0, rationale: "Restaurar el outputSchema efectivo de proposals_close_plan en el protocolo runtime." }
+        - { id: x00305, kind: fix, required: true, priority: P0, rationale: "Restaurar el outputSchema efectivo de proposals_close_plan en el protocolo runtime." }
 related:
     - x00281
     - x00302
@@ -48,7 +48,7 @@ Una unica composition root debe mantener alineados source, registrations runtime
 - **Status**: pending
 - **Files**: `packages/core`, `plugins/proposals`, `tools/scripts`
 - **Gate**: `bun run test`
-- Ejecutar `x00300` y `x00301` en paralelo con ownership disjunto.
+- Ejecutar `x00300` y `x00305` en paralelo con ownership disjunto.
 - Ejecutar gates dirigidos de cada hija.
 
 ### S2 — Integracion y seguimiento
@@ -65,7 +65,7 @@ Una unica composition root debe mantener alineados source, registrations runtime
 ```mermaid
 graph TD
   x00300[Inventory deprecated] --> integration[Global integration gate]
-  x00301[close_plan outputSchema] --> integration
+  x00305[close_plan outputSchema] --> integration
   integration --> followup[P1 follow-up proposals]
 ```
 

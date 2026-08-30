@@ -21,6 +21,10 @@
 
 import z from 'zod';
 
+import { DETAIL_LEVELS } from '@mcp-vertex/core/public';
+
+const DetailSchema = z.enum(DETAIL_LEVELS);
+
 // ---------------------------------------------------------------------------
 // Output schema
 // ---------------------------------------------------------------------------
@@ -49,6 +53,7 @@ export const ScaffoldedSchema = z.object({
 });
 
 export const RunOutputSchema = z.object({
+	detail: DetailSchema,
 	auditType: z.enum(['plan', 'valuation']),
 	scope: z.string(),
 	mode: z.enum(['general', 'specific', 'monorepo']),
@@ -95,6 +100,7 @@ export const TargetSchema = z.object({
 });
 
 export const RunInputSchema = z.object({
+	detail: DetailSchema.optional(),
 	/**
 	 * Output intent for the audit pipeline. `plan` produces an exhaustive
 	 * implementation plan whose findings are scaffolded as linked proposals;

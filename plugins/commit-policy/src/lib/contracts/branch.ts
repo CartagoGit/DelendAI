@@ -1,17 +1,13 @@
 /**
  * branch.ts — single source of truth for branch protection.
  *
- * x00267 (AUD-CP-009): the previous implementation only enforced
- * branch protection when `sliceContext` was present, so manual,
- * threshold, and interval commits could bypass the `develop` /
- * `main` policy. The unified check below is called from every
- * commit path AND from the push scheduler (x00266).
+ * Branch protection is entirely supplied by the commit-policy push config.
+ * An empty policy protects no branch.
  */
 
 export interface IBranchPolicy {
 	/**
-	 * Exact branch names that always refuse (default
-	 * `['main', 'master']`). Match is case-sensitive and
+	 * Exact branch names that always refuse. Match is case-sensitive and
 	 * whitespace-strict.
 	 */
 	readonly protected: readonly string[];
@@ -19,7 +15,7 @@ export interface IBranchPolicy {
 	 * Prefix-based protection — every branch whose name starts
 	 * with `<prefix>/` is also refused. Useful for repos that
 	 * use long-lived prefix names (`release/2025`, `hotfix/…`).
-	 * Defaults to `['release/', 'hotfix/']`.
+	 * An empty list means no prefix-based protection.
 	 *
 	 * `| undefined` because `exactOptionalPropertyTypes` rejects
 	 * bare optional fields when callers hold a possibly-undefined
@@ -29,8 +25,8 @@ export interface IBranchPolicy {
 }
 
 export const DEFAULT_BRANCH_POLICY: IBranchPolicy = {
-	protected: ['main', 'master'],
-	protectedPrefixes: ['release/', 'hotfix/'],
+	protected: [],
+	protectedPrefixes: [],
 };
 
 /**

@@ -146,7 +146,7 @@ export const buildPushToolRegistration = (
 			`${options.namespacePrefix}_commit_policy_push`,
 			{
 				description:
-					'Pushes remote/branch (defaults to the configured remote + branch, then upstream, then current branch). Refuses to push to a branch in protectedBranches (default: main, master). `force` defaults to the configured policy (`with-lease` by default; `never` omits --force entirely; `allow` uses --force). Write effect.',
+					'Pushes remote/branch (defaults to the configured remote + branch, then upstream, then current branch). Refuses to push to a branch in the configured protectedBranches or protectedPrefixes. Empty protection lists protect no branch. `force` defaults to the configured policy (`with-lease` by default; `never` omits --force entirely; `allow` uses --force). Write effect.',
 				outputSchema: OutputSchema,
 				inputSchema: InputSchema,
 			},

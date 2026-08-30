@@ -56,6 +56,8 @@ export interface IAutoScaffoldOptions {
 	 * today UTC.
 	 */
 	readonly date?: string;
+	/** Resolve the ready subfolder for a generated proposal kind. */
+	readonly folderForKind?: (kind: IScaffoldedProposal['kind']) => string;
 }
 
 export type AutoScaffoldOutcome =
@@ -96,6 +98,9 @@ export const resolveAutoScaffold = async (
 		outputDir: options.proposalsDir,
 		...(options.auditId !== undefined ? { auditId: options.auditId } : {}),
 		...(options.date !== undefined ? { date: options.date } : {}),
+		...(options.folderForKind !== undefined
+			? { folderForKind: options.folderForKind }
+			: {}),
 	});
 	if (records.length === 0) {
 		return { kind: 'scaffolded', records: [] };
@@ -108,9 +113,16 @@ export const resolveAutoScaffold = async (
 	const absDir = path.isAbsolute(options.proposalsDir)
 		? options.proposalsDir
 		: path.join(options.workspaceRoot, options.proposalsDir);
-	await mkdir(absDir, { recursive: true });
 	for (const record of records) {
-		await writeFileAtomic(path.join(absDir, record.filename), record.body);
+		const targetDir = path.join(
+			absDir,
+			record.relativePath.split('/').slice(0, -1).join('/'),
+		);
+		await mkdir(targetDir, { recursive: true });
+		await writeFileAtomic(
+			path.join(targetDir, record.filename),
+			record.body,
+		);
 	}
 	return { kind: 'scaffolded', records };
 };

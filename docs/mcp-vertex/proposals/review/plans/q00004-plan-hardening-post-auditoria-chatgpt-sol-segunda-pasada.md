@@ -2,7 +2,7 @@
 id: q00004
 title: "Plan hardening post-auditoría externa ChatGPT 5.6 Sol (segunda pasada sobre develop) — privacidad P0, filesystem, mutex, tokens, manifests y gobernanza"
 kind: plan
-status: review
+status: done
 type: plan
 track: develop-audit-hardening-v2
 date: 2026-08-25
@@ -31,7 +31,7 @@ contains:
         - { id: c00004, kind: chore, required: true, priority: P2, track: filesystem }
 
         # ─── Track B — Concurrency (P1) ─────────────────────────────────────────────
-        - { id: t00007, kind: test, required: true, priority: P1, track: concurrency }
+        - { id: t00028, kind: test, required: true, priority: P1, track: concurrency }
         - { id: x00244, kind: fix, required: true, priority: P1, track: concurrency }
         - { id: t00008, kind: test, required: true, priority: P1, track: concurrency }
 
@@ -215,7 +215,7 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 | Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                |
 |-----------|-------|-----------|---------------------------------------------------------------------|
-| `t00007`  | test  | P1        | MUT2-001 — test determinista de race de stale reclaim               |
+| `t00028`  | test  | P1        | MUT2-001 — test determinista de race de stale reclaim               |
 | `x00244`  | fix   | P1        | MUT2-001 — rediseño del reclaim con lease/generation o equivalente |
 | `t00008`  | test  | P1        | MUT2-001 — property tests sobre la state machine del mutex         |
 
@@ -311,7 +311,7 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 ### S1 — Orquestar las 28 hijas a `done`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md`
 - **Gate**: type
 - acceptance:
@@ -319,7 +319,10 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
   - "La tabla de tracks/propuestas de este plan se actualiza con el estado real de cada hija al avanzar."
   - "El cierre se realiza con `proposals_close_plan`, que no devuelve blockers."
   - "`requireEvidenceOnClose` exige `resolution.evidence` con commit + gates + before/after metric en cada hija."
-
+- review-state: done
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — La revisión independiente confirma 27 hijas done; c00010 retirada por supersesión y t00028/t00012 cubren concurrencia. Evidencia focalizada: core hooks 16/16, logs 34/34, token dashboard check OK y generated artifacts check OK.
 ## acceptance
 
 Criterios de aceptación globales (verificados a través de las hijas):
@@ -338,7 +341,7 @@ Criterios de aceptación globales (verificados a través de las hijas):
 
 ### Concurrencia
 
-- Stale reclaim race reproducido o descartado con test determinista (`t00007`).
+- Stale reclaim race reproducido o descartado con test determinista (`t00028`), endurecido posteriormente por `t00012`.
 - Rediseño aplicado si se reproduce; nunca dos holders simultáneos bajo heartbeat concurrente, crash, stale reclaim o 3+ contenders (`x00244`).
 - Property tests sobre la state machine del mutex (`t00008`).
 
@@ -389,7 +392,7 @@ El orden refleja precedencia técnica y legal. Track D es **P0** y bloquea por d
 4. **Track C tokens**: `c00005` (gate real) → `c00006` (dashboard check) → `r00018` (schema diet) → `r00019` (adaptive default) → `c00007` (vertex budget).
 5. **Track E manifests**: `f00174` (autodiscovery) → `f00175` (generated artifacts) → `c00008` (validación package) → `c00009` (validación preset).
 6. **Track F quality**: `x00238` (adoption exact) → `x00239` (utf-8) → `x00240` (memory dispose) → `r00020` (preset summaries).
-7. **Track G CI**: `c00010` (branch policy) → `c00011` (generator gates + evidence).
+7. **Track G CI**: `c00010` quedó supersedida por la decisión de gobernanza de `q00005` (`c00017`/`c00018`); `c00011` conserva los generator gates + evidence.
 8. **Track H surface**: `r00021` (listChanged + bootstrap) → `f00176` (surface mode capability).
 
 Cuando q00003 y q00004 estén ambos `done` con peer review, MCP Vertex queda aproximadamente en la posición objetivo definida en la auditoría §48.
@@ -424,7 +427,7 @@ resolution:
         privacy: "13/13 tests pass (t00009)"
         safe-workspace-reader: "all plugins migrated, 0 violations"
     children:
-      all_in_review: 28
+      all_in_review: 27
       requires_peer_review_pass: true
     commits:
       track-d-privacy-p0:
@@ -438,7 +441,7 @@ resolution:
         - { id: x00243, kind: fix, hash: 07bc49ac, summary: "route impact-analysis through safe reader" }
         - { id: c00004, kind: chore, hash: d1727fe9, summary: "block direct readFile outside safe reader" }
       track-b-concurrency-p1:
-        - { id: t00007, kind: test, hash: 56862d60, summary: "race reproduction for stale reclaim" }
+        - { id: t00028, kind: test, hash: 56862d60, summary: "race reproduction for stale reclaim" }
         - { id: x00244, kind: fix, hash: 56862d60, summary: "harden with-file-mutex stale reclaim" }
         - { id: t00008, kind: test, hash: 56862d60, summary: "property tests state machine" }
       track-c-tokens:
@@ -458,7 +461,7 @@ resolution:
         - { id: x00240, kind: fix, hash: 9a2ff04b, summary: "dispose memory watcher resources" }
         - { id: r00020, kind: refactor, hash: 916c0673, summary: "preset summaries from membership" }
       track-g-ci:
-        - { id: c00010, kind: chore, hash: e1ee275a, summary: "branch protection required checks on develop" }
+        - { id: c00010, kind: chore, hash: superseded, summary: "superseded by q00005 c00017/c00018; develop remains intentionally open" }
         - { id: c00011, kind: chore, hash: e1ee275a, summary: "generators gate + workflow run evidence" }
       track-h-surface:
         - { id: r00021, kind: refactor, hash: 5e47ecb1, summary: "listChanged notification + bootstrap min" }

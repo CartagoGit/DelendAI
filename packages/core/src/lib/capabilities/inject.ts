@@ -148,7 +148,7 @@ export interface ICapabilityImplementationMap {
  *
  * Plugins that compile against `CapabilitiesToCtx<C>` never hit the
  * denied branch — TypeScript blocks the access. Plugins that bypass
- * the type system (`as any`, duck typing, an untyped escape hatch)
+ * the type system with an unsafe cast, duck typing, or another untyped escape hatch
  * DO hit it and receive the refusal instead of a generic error.
  *
  * A capability that is granted but has no registered implementation

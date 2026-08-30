@@ -111,10 +111,13 @@ falla, se compensan B y A en orden inverso.
 
 ### S1 — Módulo de transacciones + tests con steps sintéticos
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/transactions/{plan,compensate,types}.ts`, `packages/core/tests/src/lib/transactions/{plan,dry-run}.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente: el plan/execute/compensate transaccional y el dry-run están cubiertos por 27/27 tests focalizados; el typecheck de packages/core pasa con salida 0.
 ## acceptance
 
 - `plan()` y `execute()` con compensación funcionan.

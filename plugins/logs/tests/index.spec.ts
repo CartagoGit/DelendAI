@@ -117,6 +117,7 @@ describe('logs plugin — register()', () => {
 		const handlers = await registerHandlers(result);
 		const query = await handlers.get('logs_query')?.({
 			incidentType: 'lock-conflict',
+			detail: 'full',
 		});
 		const events = query?.structuredContent.events as Array<{
 			incidentType: string | null;

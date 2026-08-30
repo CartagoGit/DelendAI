@@ -2,12 +2,14 @@
 id: f00192
 title: "VSCode Agent Timeline view"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: vscode
 date: 2026-08-25
 priority: P2
 parent-plan: q00006
+shipped-in:
+  - 24900c2c
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track J / f00192"
@@ -99,7 +101,7 @@ evento con su why/cost/inputs/outputs cuando estén disponibles.
 
 ### 4. Tests
 
-- `extensions/vscode/src/views/agent-timeline.spec.ts`:
+- `extensions/vscode/src/test/agent-timeline.spec.ts`:
   - Mock del JSON; verifica render de eventos.
 - `packages/core/tests/src/lib/observability/timeline.spec.ts`:
   - Append + rotación + redacción.
@@ -108,10 +110,13 @@ evento con su why/cost/inputs/outputs cuando estén disponibles.
 
 ### S1 — Source del log + vista webview + tests
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/observability/timeline.ts`, `extensions/vscode/src/views/agent-timeline.ts`, `extensions/vscode/src/views/agent-timeline.spec.ts`, `packages/core/tests/src/lib/observability/timeline.spec.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/observability/timeline.ts`, `extensions/vscode/src/views/agent-timeline.ts`, `extensions/vscode/src/test/agent-timeline.spec.ts`, `packages/core/tests/src/lib/observability/timeline.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: la vista Agent Timeline pasa 18/18, el buffer core pasa 21/21 y el typecheck del workspace pasa. La cobertura fija render, filtros, CSP, escape HTML, redacción y rotación sin sink externo.
 ## acceptance
 
 - Vista "Agent Timeline" abre en VSCode.

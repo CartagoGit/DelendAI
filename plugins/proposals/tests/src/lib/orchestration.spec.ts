@@ -190,6 +190,7 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 	/** Fake git runner that records every arg array the worktree engine saw. */
 	const recordingRunner = (
 		fail: boolean,
+		failureReason = 'mock failure',
 	): IGitRunner & { calls: string[][] } => {
 		const calls: string[][] = [];
 		const runner: IGitRunner = (args) => {
@@ -203,7 +204,7 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 				args[0] === 'rev-parse'
 					? { ok: false, output: '', reason: 'no such ref' }
 					: fail
-						? { ok: false, output: '', reason: 'mock failure' }
+						? { ok: false, output: '', reason: failureReason }
 						: { ok: true, output: '' };
 			return Promise.resolve(result);
 		};
@@ -214,6 +215,43 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		// with zero casts: its two-argument overload returns `T & U`.
 		return Object.assign(runner, { calls });
 	};
+
+	it('surfaces cancellation reason, alternatives, and durable log entry', async () => {
+		const runner = recordingRunner(true, 'operation cancelled by host');
+		const errorLogPath = join(root, 'logs', 'delegate-errors.jsonl');
+		const handler = await capture(
+			buildDelegateRegistration({
+				namespacePrefix: 'proposals',
+				agentNames: opts,
+				lockPathAbs: opts.lockPathAbs,
+				errorLogPathAbs: errorLogPath,
+				worktree: {
+					enabled: true,
+					workspaceRoot: root,
+					run: runner,
+				},
+			}),
+		);
+		const out = parse(
+			await handler({
+				taskId: 'cancelled-task',
+				slot: 'implementation_runner',
+				files: ['src/cancelled.ts'],
+			}),
+		);
+
+		expect(out.ok).toBe(false);
+		expect(out.cancelled).toBe(true);
+		expect(out.reason).toBe('operation cancelled by host');
+		expect(out.alternatives).toHaveLength(3);
+		expect(out.errorLogged).toBe(true);
+		expect(JSON.parse(readFileSync(errorLogPath, 'utf8'))).toMatchObject({
+			kind: 'delegate-error',
+			errorId: out.errorId,
+			taskId: 'cancelled-task',
+			cancelled: true,
+		});
+	});
 
 	it('creates a per-agent worktree when worktree.enabled is true', async () => {
 		const runner = recordingRunner(false);
@@ -292,11 +330,13 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 
 	it('returns stage "worktree" without claiming the lock when worktree create fails', async () => {
 		const runner = recordingRunner(true);
+		const errorLogPath = join(root, 'logs', 'delegate-errors.jsonl');
 		const handler = await capture(
 			buildDelegateRegistration({
 				namespacePrefix: 'proposals',
 				agentNames: opts,
 				lockPathAbs: opts.lockPathAbs,
+				errorLogPathAbs: errorLogPath,
 				worktree: {
 					enabled: true,
 					workspaceRoot: root,
@@ -314,6 +354,22 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		expect(out.ok).toBe(false);
 		expect(out.stage).toBe('worktree');
 		expect(out.reason).toContain('mock failure');
+		expect(out.cancelled).toBe(false);
+		expect(out.errorId).toMatch(/^[0-9a-f-]{36}$/);
+		expect(out.alternatives).toEqual([
+			'retry delegate after inspecting agent_names and active locks',
+			'choose a different claimable slice or disjoint file scope',
+			'call continue_proposal with mode:"plan" before retrying',
+		]);
+		expect(out.errorLogged).toBe(true);
+		const logEntry = JSON.parse(readFileSync(errorLogPath, 'utf8'));
+		expect(logEntry).toMatchObject({
+			kind: 'delegate-error',
+			errorId: out.errorId,
+			taskId: 't1',
+			stage: 'worktree',
+			cancelled: false,
+		});
 		expect(out.locked).toBeUndefined();
 		// Lock file must not exist — the failure short-circuits the
 		// claim step, so no agent holds the files.

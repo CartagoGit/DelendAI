@@ -115,7 +115,8 @@ export interface IKpiDashboardSection {
 		| 'plugins'
 		| 'errors'
 		| 'efficiency'
-		| 'audit';
+		| 'audit'
+		| 'activation';
 	readonly title: string;
 	readonly icon: string;
 	readonly state: TKpiDashboardViewState;

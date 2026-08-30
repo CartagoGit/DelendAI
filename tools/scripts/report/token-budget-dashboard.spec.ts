@@ -18,7 +18,7 @@ import type {
 	IPerSurfaceMeasurement,
 	ITokenReport,
 	Surface,
-} from '../../../packages/core/src/lib/budgets/types';
+} from '@mcp-vertex/core/public';
 
 /** Pure: split a per-tool used measurement into a status per surface. */
 export const surfaceStatus = (

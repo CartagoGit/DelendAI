@@ -92,6 +92,8 @@ import { registerProposalsWorkflowContribution } from './lib/skills/proposals-wo
  * fields, not `ctx.options.X as Y` casts.
  */
 const PROPOSALS_OPTIONS_SCHEMA = z.object({
+	/** Workspace-relative proposal content root. Defaults to <docsDir>/proposals. */
+	proposalsDir: z.string().min(1).optional(),
 	/** Custom symbolic agent-name pool. */
 	namePool: z.array(z.string()).optional(),
 	/** Quality-gate command surfaced by auto_work. */
@@ -101,6 +103,7 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 			mode: z.enum(['none', 'commit', 'commit-and-push']).default('none'),
 			messageTemplate: z.string().optional(),
 			pushTarget: z.string().optional(),
+			allowForeignChanges: z.boolean().optional(),
 			protectedBranches: z.array(z.string()).default(['main', 'master']),
 		})
 		.optional(),
@@ -346,7 +349,11 @@ export default definePlugin({
 		// proposals under `<docsDir>`. Engines that bake DEFAULT_PATH_LAYOUT
 		// receive this layout explicitly (sync/round-context), so a
 		// relocated store stays coherent end to end.
-		const layout = buildSwarmPaths(ctx.cacheDir, ctx.docsDir);
+		const layout = buildSwarmPaths(
+			ctx.cacheDir,
+			ctx.docsDir,
+			parsedOptions.data.proposalsDir,
+		);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
 
@@ -371,54 +378,12 @@ export default definePlugin({
 						.protectedBranches
 				: ['main', 'master'];
 		const configuredPersist = parsedOptions.data.persist;
-		const commitPolicyCommit = commitPolicyOptions?.commit as
-			| { readonly enabled?: unknown }
-			| undefined;
-		const commitPolicyCadence = commitPolicyOptions?.cadence as
-			| {
-					readonly triggers?: readonly { readonly kind?: unknown }[];
-					readonly allowForeignChanges?: unknown;
-			  }
-			| undefined;
-		const commitPolicyPushOptions = commitPolicyOptions?.push as
-			| {
-					readonly enabled?: unknown;
-					readonly onCommit?: unknown;
-					readonly remote?: unknown;
-					readonly branch?: unknown;
-			  }
-			| undefined;
-		const commitPolicySliceTrigger =
-			commitPolicyCadence?.triggers?.some(
-				(trigger) => trigger.kind === 'slice',
-			) === true;
-		const commitPolicyOwnsSlices =
-			configuredPersist?.mode === 'none' &&
-			commitPolicyCommit?.enabled === true &&
-			commitPolicySliceTrigger;
 		const effectivePersist =
-			configuredPersist === undefined && !commitPolicyOwnsSlices
+			configuredPersist === undefined
 				? undefined
 				: {
-						...(configuredPersist ?? {}),
-						mode: commitPolicyOwnsSlices
-							? commitPolicyPushOptions?.enabled === true &&
-								commitPolicyPushOptions?.onCommit === true
-								? ('commit-and-push' as const)
-								: ('commit' as const)
-							: (configuredPersist?.mode ?? 'none'),
+						...configuredPersist,
 						protectedBranches,
-						...(commitPolicyOwnsSlices &&
-						typeof commitPolicyPushOptions?.remote === 'string' &&
-						typeof commitPolicyPushOptions?.branch === 'string'
-							? {
-									pushTarget: `${commitPolicyPushOptions.remote} HEAD:${commitPolicyPushOptions.branch}`,
-								}
-							: {}),
-						...(commitPolicyOwnsSlices &&
-						commitPolicyCadence?.allowForeignChanges === true
-							? { allowForeignChanges: true }
-							: {}),
 					};
 		const microValidationCalls: IObservedToolCall[] = [];
 		const incidentLogStore = createLogStore(
@@ -512,9 +477,6 @@ export default definePlugin({
 						persist: {
 							mode: effectivePersist.mode,
 							protectedBranches,
-							...(effectivePersist.allowForeignChanges === true
-								? { allowForeignChanges: true }
-								: {}),
 							...(effectivePersist.messageTemplate !== undefined
 								? {
 										messageTemplate:

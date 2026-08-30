@@ -581,7 +581,9 @@ export const assemblePlugins = async (
 		peerRegistry,
 		effectivePlugins,
 		buildContext,
-		importFn: importFn ?? nodeDynamicImport,
+		importFn:
+			importFn ??
+			((specifier) => nodeDynamicImport(specifier, args.workspace)),
 	});
 	if (managedLazy !== undefined) return managedLazy;
 
@@ -589,7 +591,9 @@ export const assemblePlugins = async (
 		specifiers: effectivePlugins,
 		workspaceRoot: args.workspace,
 		buildContext,
-		import: importFn ?? nodeDynamicImport,
+		import:
+			importFn ??
+			((specifier) => nodeDynamicImport(specifier, args.workspace)),
 	});
 	const configurationErrors = loadResult.errors.filter(
 		(error) => error.specifier === 'configuration',
@@ -617,7 +621,9 @@ export const assemblePlugins = async (
 			specifiers: [...effectivePlugins, 'logs'],
 			workspaceRoot: args.workspace,
 			buildContext,
-			import: importFn ?? nodeDynamicImport,
+			import:
+				importFn ??
+				((specifier) => nodeDynamicImport(specifier, args.workspace)),
 		});
 		// Merge: every plugin from the original load survives, plus
 		// any from the auto-load that are not already there. We

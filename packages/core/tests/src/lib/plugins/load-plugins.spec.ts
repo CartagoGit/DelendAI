@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 
 import {
 	loadPlugins,
+	nodeDynamicImport,
 	resolvePluginSpecifier,
 } from '@mcp-vertex/core/lib/plugins/load-plugins';
 import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
@@ -33,6 +34,16 @@ describe('resolvePluginSpecifier', async () => {
 	it('uses a path or explicit package verbatim', async () => {
 		expect(resolvePluginSpecifier('./local.ts')).toEqual(['./local.ts']);
 		expect(resolvePluginSpecifier('@scope/pkg')).toEqual(['@scope/pkg']);
+	});
+});
+
+describe('nodeDynamicImport runtime package resolution', async () => {
+	it('loads a local first-party package from dist when a workspace is provided', async () => {
+		const loaded = (await nodeDynamicImport(
+			'@mcp-vertex/proposals',
+			process.cwd(),
+		)) as { default?: { readonly name?: string } };
+		expect(loaded.default?.name).toBe('proposals');
 	});
 });
 

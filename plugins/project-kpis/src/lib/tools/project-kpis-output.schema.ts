@@ -29,6 +29,7 @@ export const ProjectKpisSourceSchema = z
 			'trend',
 			'usage-summary',
 			'invocations',
+			'activation-kpis',
 		]),
 		status: z.enum(KPI_VIEW_STATUSES),
 		observedAt: z.string().optional(),
@@ -186,6 +187,18 @@ export const ProjectKpisFindingsSectionSchema = z
 	})
 	.strict();
 
+export const ProjectKpisActivationSectionSchema = z
+	.object({
+		status: z.enum(KPI_VIEW_STATUSES),
+		source: z.string(),
+		sessionCount: z.number().int().min(0),
+		meanPrecision: z.number().finite().optional(),
+		meanRecall: z.number().finite().optional(),
+		meanChurn: z.number().finite().optional(),
+		note: z.string().optional(),
+	})
+	.strict();
+
 export const ProjectKpisOutputSchema = z
 	.object({
 		contract: z.literal('project-kpis.view'),
@@ -233,6 +246,7 @@ export const ProjectKpisOutputSchema = z
 		breakdowns: z.array(ProjectKpisBreakdownSchema).optional(),
 		issues: ProjectKpisIssuesSectionSchema.optional(),
 		findings: ProjectKpisFindingsSectionSchema.optional(),
+		activation: ProjectKpisActivationSectionSchema.optional(),
 		bytes: z.number().int().positive(),
 		truncated: z.boolean(),
 		originalBytes: z.number().int().positive().optional(),
