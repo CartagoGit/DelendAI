@@ -212,7 +212,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 		expect(result.errors).toEqual([]);
 		const index = await readIndex(root);
 		expect(index.proposals.find((p) => p.id === 'f903')?.file).toBe(
-			'done/feats/f903-drift.md',
+			'done/feats/f00903-drift.md',
 		);
 	});
 

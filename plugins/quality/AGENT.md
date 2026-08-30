@@ -11,6 +11,8 @@
 - createCommandRunner
 - runScope
 - resolveScopes
+- deriveScopedValidationScopes
+- resolveScopedValidationDecision
 - runAllScopes
 - evaluateCommandPolicy
 - commandBinary

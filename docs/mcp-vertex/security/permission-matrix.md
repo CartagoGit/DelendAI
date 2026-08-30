@@ -16,6 +16,7 @@
 | commit-policy | public | commit_policy_commit | git-write |
 | commit-policy | public | commit_policy_push | git-write |
 | commit-policy | public | commit_policy_run | git-write |
+| commit-policy | public | commit_policy_refresh_branch_protection | network, process |
 | completion | public | * | filesystem-read, filesystem-write |
 | container | public | container_inspect | container |
 | container | public | container_logs | container |

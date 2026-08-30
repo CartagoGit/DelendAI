@@ -128,7 +128,7 @@
 | browser | browser, network |  |
 | cache | filesystem-read, filesystem-write |  |
 | changelog | git-read |  |
-| commit-policy | git-read, git-write | commit_policy_status: git-read; commit_policy_commit: git-write; commit_policy_push: git-write; commit_policy_run: git-write |
+| commit-policy | git-read, git-write, network, process | commit_policy_status: git-read; commit_policy_commit: git-write; commit_policy_push: git-write; commit_policy_run: git-write; commit_policy_refresh_branch_protection: network, process |
 | completion | filesystem-read, filesystem-write |  |
 | container | process, container | container_inspect: container; container_logs: container; container_lint: filesystem-read; k8s_apply: container, process; container_build: container, process |
 | context-for-change | filesystem-read |  |

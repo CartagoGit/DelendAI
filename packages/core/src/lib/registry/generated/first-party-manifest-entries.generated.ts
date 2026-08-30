@@ -98,9 +98,9 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/commit-policy',
 			summary: 'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 			tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
-			permissions: ['git-read', 'git-write'],
+			permissions: ['git-read', 'git-write', 'network', 'process'],
 			tokenBudgetBytes: 4200,
-			toolPermissions: { 'commit_policy_status': ['git-read'], 'commit_policy_commit': ['git-write'], 'commit_policy_push': ['git-write'], 'commit_policy_run': ['git-write'] },
+			toolPermissions: { 'commit_policy_status': ['git-read'], 'commit_policy_commit': ['git-write'], 'commit_policy_push': ['git-write'], 'commit_policy_run': ['git-write'], 'commit_policy_refresh_branch_protection': ['network', 'process'] },
 		},
 		{
 			origin: 'first-party',
