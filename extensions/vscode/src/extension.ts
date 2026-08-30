@@ -900,6 +900,7 @@ const registerDevelopmentAutoReload = (
 		if (reloadScheduled) return;
 		reloadScheduled = true;
 		setTimeout(() => {
+			reloadScheduled = false;
 			runSafely(
 				Promise.resolve(
 					vscode.commands?.executeCommand?.(
