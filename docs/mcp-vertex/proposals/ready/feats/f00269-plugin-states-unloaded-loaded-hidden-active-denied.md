@@ -142,8 +142,10 @@ router y el plugin manager.
 - **Status**: pending
 - **Files**: `packages/core/src/lib/plugins/states.ts`, `packages/core/src/lib/plugins/router.ts`, `packages/core/src/lib/plugins/plugin-manager.ts`, `packages/core/tests/src/lib/plugins/states.spec.ts`
 - **Gate**: type
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: plugin-states-f00269-main
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by delivery_verifier — REQUEST_CHANGES: activate() falla tras unload porque intenta UNLOADED -> ACTIVE, transición prohibida. Además hide() antes de initialize puede crear estado ACTIVE implícito y fallar ACTIVE -> LOADED_HIDDEN; debe converger desde UNLOADED o rechazar explícitamente. Añadir tests de regresión para ambos casos y mantener typecheck/tests verdes.
 ## acceptance
 
 - Cuatro estados implementados con tabla de transiciones.

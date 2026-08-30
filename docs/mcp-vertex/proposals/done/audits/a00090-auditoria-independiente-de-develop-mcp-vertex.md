@@ -1,4 +1,17 @@
-# Auditoría independiente de `develop` — mcp-vertex
+---
+id: a00090
+title: "Auditoría independiente de `develop` — mcp-vertex"
+kind: audit
+status: done
+type: proposal
+track: migrated
+date: 2026-08-30
+migrated-from: docs/mcp-vertex/audits/2026-08-27-develop-independent-audit-claude-opus5.md
+---
+
+# a00090 — Auditoría independiente de `develop` — mcp-vertex
+
+## Goal
 
 > Revisión técnica exhaustiva e independiente del repositorio
 > `CartagoGit/mcp-vertex`, rama `develop`, realizada sin reutilizar
@@ -3733,3 +3746,9 @@ producto y economía de tokens. No limites el análisis por brevedad.
 ---
 
 *Fin del informe. Snapshot vinculante: `2cf17373f32b536e0c5154892ceddbb5d490ab37`.*
+
+## notes
+
+- Migrated from `docs/mcp-vertex/audits/2026-08-27-develop-independent-audit-claude-opus5.md` by `proposal_adopt`
+  (f00116). The original file was left untouched — retire it once
+  this proposal is the source of truth.

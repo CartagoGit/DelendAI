@@ -141,7 +141,8 @@ cualquier tool a partir de un solo campo de input.
 - **Status**: pending
 - **Files**: `plugins/project-health/src/lib/tools/get.ts`, `plugins/dependencies/src/lib/tools/list.ts`, `plugins/dependencies/src/lib/tools/get.ts`, `plugins/search/src/lib/tools/query.ts`, `tools/scripts/lint/detail-levels-coverage.script.ts`
 - **Gate**: type
-
+- review-state: in_review
+- review-implementer: copilot-f00271-s2
 ## acceptance
 
 - 8 plugins objetivo aceptan `detail` (incluyendo `proposals` y
