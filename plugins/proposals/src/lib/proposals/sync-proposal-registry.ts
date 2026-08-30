@@ -825,6 +825,12 @@ export async function syncProposalRegistry(
 			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
 				join(proposalsDir, 'ready', sub),
 			),
+			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+				join(proposalsDir, 'review', sub),
+			),
+			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+				join(proposalsDir, 'in-progress', sub),
+			),
 			// f00076 S1: archive sub-folders under `legacy/closed/<kind>/`
 			// mirror the `done/<kind>/` layout so reaped proposals stay
 			// indexed (with `archived: true`) without living in the active
