@@ -53,7 +53,10 @@ const buildHarness = (isTrusted: boolean, cwd: string) => {
 						: undefined,
 				);
 			},
-			createStatusBarItem: () => ({ dispose: () => {} }),
+			createStatusBarItem: () => ({
+				show: () => {},
+				dispose: () => {},
+			}),
 			createWebviewPanel: () => ({ webview: { html: '' } }),
 		},
 		workspace: {

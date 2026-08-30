@@ -101,9 +101,11 @@ export class McpVertexStatusBar {
 		private readonly namespacePrefix?: string,
 	) {}
 
-	async start(): Promise<void> {
+	start(): void {
+		if (this.disposed) return;
 		this.item.command = this.openDashboardCommand;
 		this.item.tooltip = 'mcp-vertex Dashboard (click to open)';
+		this.item.text = '$(mcp-vertex) mcp-vertex';
 		for (const event of STATUS_BAR_EVENT_NAMES) {
 			const handler = (): void => {
 				void this.update();
@@ -118,7 +120,6 @@ export class McpVertexStatusBar {
 				>[1],
 			);
 		}
-		await this.update();
 		this.item.show();
 	}
 
