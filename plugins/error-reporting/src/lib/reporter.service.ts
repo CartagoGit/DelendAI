@@ -11,6 +11,32 @@ import { buildIssueBody, buildIssueTitle } from './signature.helper';
 
 /** `gh` exit code when the binary is not found on PATH. */
 const GH_NOT_FOUND_EXIT = 127;
+const NETWORK_PROBE_URL = 'https://api.github.com/';
+const NETWORK_PROBE_TIMEOUT_MS = 2_000;
+
+const defaultNetworkProbe = async (): Promise<boolean> => {
+	if (typeof fetch !== 'function' || typeof AbortController !== 'function') {
+		return false;
+	}
+	const controller = new AbortController();
+	const timeout = setTimeout(
+		() => controller.abort(),
+		NETWORK_PROBE_TIMEOUT_MS,
+	);
+	try {
+		const response = await fetch(NETWORK_PROBE_URL, {
+			method: 'HEAD',
+			signal: controller.signal,
+		});
+		return (
+			response.ok || response.status === 401 || response.status === 403
+		);
+	} catch {
+		return false;
+	} finally {
+		clearTimeout(timeout);
+	}
+};
 
 /** Production adapter over the shared external-tool runner. */
 export const ghIssueExec: IIssueExec = async (argv, options) =>
@@ -54,6 +80,14 @@ export const createSafeReporter = (
 		report: ISafeMcpVertexReport,
 		exec: IIssueExec = ghIssueExec,
 	): Promise<ISubmitIssueOutcome> => {
+		const connected = await (config.networkProbe ?? defaultNetworkProbe)();
+		if (!connected) {
+			return {
+				ok: false,
+				reason: 'GitHub is unreachable; issue creation was not attempted',
+				failureCode: 'NETWORK_UNAVAILABLE',
+			};
+		}
 		const title = buildIssueTitle(report);
 		const body = buildIssueBody(report);
 		const args: readonly string[] = [
