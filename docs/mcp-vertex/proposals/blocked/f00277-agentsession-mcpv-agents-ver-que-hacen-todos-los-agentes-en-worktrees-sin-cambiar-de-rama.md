@@ -2,7 +2,7 @@
 id: f00277
 title: "`AgentSession` + `mcpv agents`: ver qué hacen todos los agentes en worktrees sin cambiar de rama"
 kind: feat
-status: in-progress
+status: blocked
 type: proposal
 track: trust
 date: 2026-08-29

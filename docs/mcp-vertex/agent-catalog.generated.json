@@ -1424,14 +1424,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00277",
-				"title": "f00277",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00278",
 				"title": "f00278",
 				"track": "trust",
@@ -2714,11 +2706,11 @@
 		],
 		"byStatus": {
 			"ready": 165,
-			"in-progress": 16,
+			"in-progress": 15,
 			"review": 0,
 			"paused": 1,
 			"done": 566,
-			"blocked": 6,
+			"blocked": 7,
 			"retired": 11,
 			"unspecified": 0
 		}

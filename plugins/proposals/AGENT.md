@@ -8,6 +8,7 @@
 ## Public API
 
 - default
+- registerProposalsStableTools
 - DEFAULT_PATH_LAYOUT
 - buildSwarmPaths
 - PROPOSAL_STATUSES
@@ -20,7 +21,6 @@
 - doneFolderFor
 - PROPOSAL_SCAN_FOLDERS
 - PROPOSAL_FLAGS
-- DEFAULT_PROPOSAL_FOLDER_POLICY
 
 ## Depends on
 
