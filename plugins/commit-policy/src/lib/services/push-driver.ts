@@ -17,7 +17,6 @@ import type { ICommitPolicyPush, ForceMode } from '../contracts/options';
 import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
 import {
 	branchProtectedRefusal,
-	classifyRefusal,
 	type CommitPolicyRefusalCode,
 	isBranchProtected,
 } from '../contracts/branch';
