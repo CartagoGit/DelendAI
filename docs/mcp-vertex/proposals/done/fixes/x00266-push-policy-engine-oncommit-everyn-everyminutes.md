@@ -2,7 +2,9 @@
 id: x00266
 title: "AUD-CP-008/009 — Push policy engine: `onCommit`, `everyNCommits`, `everyNMinutes`"
 kind: fix
-status: ready
+status: done
+shipped-in:
+    - e8b4c5c5
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -163,7 +165,7 @@ async commitSucceeded(result: CommitResult) {
 
 ### S1 — `CommitPolicyEngine` orquesta push según policy combinada
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/services/scheduler.ts`, `plugins/commit-policy/tests/src/lib/services/scheduler.spec.ts`
 - **Gate**: type
 - **Dependency**: `f00182`
@@ -173,7 +175,10 @@ async commitSucceeded(result: CommitResult) {
   - "everyNMinutes → scheduler ejecuta una vez, dispose lo para"
   - "combinación onCommit+everyNCommits → un push (no doble)"
   - "push a `develop` → refusal BRANCH_PROTECTED"
-
+- review-state: done
+- review-implementer: sparrow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revision independiente del checkout actual: verificados onCommit=true -> un push por commit; everyNCommits=3 -> push solo tras el tercero; everyNMinutes -> scheduler ejecuta una vez y stop/dispose evita ticks posteriores; onCommit+everyNCommits -> un solo push al cerrar la ventana; push a develop protegido -> refusal BRANCH_PROTECTED. Tests enfocados y typecheck del plugin en verde. Hay cambios fuera del slice en el repo, pero no bloquean esta aprobacion del slice porque el alcance modificado y sus validaciones locales pasan.
 ## acceptance
 
 - Tests cubren las 5 filas de la tabla de la sección Goal.

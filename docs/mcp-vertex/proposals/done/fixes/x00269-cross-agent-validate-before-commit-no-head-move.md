@@ -2,7 +2,9 @@
 id: x00269
 title: "AUD-CP-005.fix — Cross-agent contamination: validate staged subset BEFORE `git commit`; never move HEAD on refusal"
 kind: fix
-status: ready
+status: done
+shipped-in:
+    - 7a253726
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -195,28 +197,37 @@ lo que `t00022` aprovecha para asertar
 
 ### S1 — `commitWithGuard` extraído y único
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/commit-policy/src/lib/services/commit-driver.ts` — añade `commitWithGuard`, refactoriza `commitAndPush` para componerlo.
   - `plugins/commit-policy/src/lib/services/commit-driver.spec.ts` — table-driven: 6 casos (subset ok, subset fail, files vacío, files vacío con `skipStageExplicit`, contamination pre-stage, ref-tipo `libgit2`/`simple-git`).
 - **Gate**: type + property-based
 - **Depends on**: `x00263`, `x00264`, `f00182`
-
+- review-state: done
+- review-implementer: falcon
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificacion independiente en el checkout actual: commitWithGuard es la unica ruta hacia gitCommit dentro del driver, el guard corre antes del commit, la refusal por contaminacion no crea commit ni mueve HEAD, y la traza observable queda expuesta en result.trace. Focused test commit-driver.spec 25/25 verde y typecheck del plugin verde. Hay cambios adyacentes fuera del slice en commit-policy, pero no bloquean esta aprobacion porque el contrato focalizado del slice queda cubierto por prueba y compilacion del plugin.
 ### S2 — `CommitPolicyEngine` adopta `commitWithGuard`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/commit-policy/src/lib/services/engine.ts` — sustituye la rama post-commit por `commitWithGuard`.
   - `plugins/commit-policy/src/lib/services/engine.spec.ts` — actualiza los asserts a `result.commitCreated` / `result.headMoved`.
 - **Gate**: type
 - **Depends on**: S1
-
+- review-state: done
+- review-implementer: owl
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente en el checkout actual: CommitPolicyEngine enruta el commit exclusivamente por commitWithGuard, propaga commitCreated/headMoved en respuestas, usa commitCreated para disparar push e idempotencia, y conserva BRANCH_PROTECTED. Diff relacionado acotado a engine/spec y al commit-driver dependiente del mismo flujo; sin bloqueadores externos para aprobar este slice.
 ### S3 — Reset defensivo y export de `CommitTrace`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/commit-driver.ts`, `plugins/commit-policy/src/public/index.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificacion independiente en el checkout actual: commitWithGuard limpia todo el stage con fallback seguro si falla el subset-check, desstagea solo los paths allowlist con fallback seguro si git commit falla tras stagear, y CommitTrace queda exportado desde la API publica. Validacion enfocada verde: commit-driver.spec 25/25 y typecheck del plugin ok. Hay cambios adyacentes en commit-policy fuera del slice, pero no bloquean esta aprobacion porque no invalidan el contrato focalizado ni la gate requerida.
 ## acceptance
 
 - `t00022` (E2E real Git HEAD unchanged) verde: con staged
