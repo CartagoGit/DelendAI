@@ -46,12 +46,7 @@ type IMainPushGuardResolution =
 	| { readonly ok: true }
 	| { readonly ok: false; readonly refusal: string };
 
-const MAIN_BRANCH = 'main';
 const DIRECT_PUSH_TO_MAIN_NOT_ALLOWED = 'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED';
-const DIRECT_PUSH_TO_MAIN_MESSAGE =
-	"direct push to 'main' is not allowed; cuts the release/publish path.";
-const DIRECT_PUSH_TO_MAIN_NEXT_ACTION =
-	'open a PR from a feature branch (release/* or develop).';
 
 /**
  * Plain `--force` rewrites shared history irreversibly, so `gitPush`
@@ -104,11 +99,16 @@ const forceModeToGitPush = (mode: ForceMode): IPushForceMode => {
 export const enforceMainPushGuard = (
 	branch: string,
 ): IMainPushGuardResolution => {
-	if (branch !== MAIN_BRANCH) return { ok: true };
-	return {
-		ok: false,
-		refusal: `push refused: ${DIRECT_PUSH_TO_MAIN_NOT_ALLOWED} — ${DIRECT_PUSH_TO_MAIN_MESSAGE} Next: ${DIRECT_PUSH_TO_MAIN_NEXT_ACTION}`,
-	};
+	// Defense in depth: main nunca acepta push directo (x00272). Inline
+	// `branch === 'main'` es la forma canónica ratcheteada por
+	// `lint:commit-push-strictness` — no usar constante intermedia.
+	if (branch === 'main') {
+		return {
+			ok: false,
+			refusal: `push refused: ${DIRECT_PUSH_TO_MAIN_NOT_ALLOWED} — direct push to 'main' is not allowed; cuts the release/publish path. Next: open a PR from a feature branch (release/* or develop).`,
+		};
+	}
+	return { ok: true };
 };
 
 export const runPushDriver = async (
