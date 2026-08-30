@@ -54,7 +54,7 @@ const isPureBarrelIndex = (filePath: string): boolean => {
 const pureBarrelCoverageExcludes = COVERAGE_INDEX_ROOTS.flatMap((root) =>
 	listIndexFiles(join(workspaceRoot, root))
 		.filter(isPureBarrelIndex)
-		.map(normalizeWorkspacePath)
+		.map(normalizeWorkspacePath),
 );
 
 export default defineConfig({
