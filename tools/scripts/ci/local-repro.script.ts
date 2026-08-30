@@ -78,8 +78,16 @@ export interface IGhCommandResult {
 
 export type GhRunner = (args: readonly string[]) => IGhCommandResult;
 
+interface ICommandGroup {
+	readonly command: string;
+	readonly start: number;
+	readonly end: number;
+}
+
 const out = (msg: string) => process.stdout.write(`${msg}\n`);
 const err = (msg: string) => process.stderr.write(`${msg}\n`);
+
+const VALUE_FLAGS = new Set(['run-id', 'repo', 'step', 'output']);
 
 const flag = (argv: readonly string[], name: string): string | undefined => {
 	for (let i = 0; i < argv.length; i += 1) {
@@ -95,11 +103,32 @@ const flag = (argv: readonly string[], name: string): string | undefined => {
 const hasFlag = (argv: readonly string[], name: string): boolean =>
 	argv.some((t) => t === `--${name}` || t.startsWith(`--${name}=`));
 
+const positionalArg = (argv: readonly string[]): string | undefined => {
+	for (let index = 0; index < argv.length; index += 1) {
+		const token = argv[index];
+		if (token === undefined) continue;
+		if (!token.startsWith('--')) return token;
+		const equalsIndex = token.indexOf('=');
+		if (equalsIndex === -1) {
+			const flagName = token.slice(2);
+			if (VALUE_FLAGS.has(flagName)) index += 1;
+		}
+	}
+	return undefined;
+};
+
 /**
  * Strip comments + trim a CLI flag. Reused so the parse layer
  * has one consistent definition.
  */
 const trim = (s: string): string => s.trim();
+
+export const normalizeRunId = (value: string): string | null => {
+	const normalized = value.trim();
+	if (/^\d+$/.test(normalized)) return normalized;
+	const urlMatch = normalized.match(/\/actions\/runs\/(\d+)/);
+	return urlMatch?.[1] ?? null;
+};
 
 /**
  * Resolve the GitHub repo the user wants to query. Reads the
@@ -354,6 +383,49 @@ const looksLikeShellCommand = (line: string): boolean =>
 		line,
 	);
 
+const collectCommandGroups = (
+	lines: readonly string[],
+): readonly ICommandGroup[] => {
+	const groups: ICommandGroup[] = [];
+	for (let index = 0; index < lines.length; index += 1) {
+		const message = parseLogLine(lines[index] ?? '').message.trim();
+		const match = message.match(/^##\[group\]Run\s+(.+)$/);
+		if (match?.[1] === undefined) continue;
+		const previous = groups.at(-1);
+		if (previous !== undefined) {
+			groups[groups.length - 1] = { ...previous, end: index };
+		}
+		groups.push({
+			command: trim(match[1]),
+			start: index,
+			end: lines.length,
+		});
+	}
+	return groups;
+};
+
+const findFailureMarkerIndex = (lines: readonly string[]): number =>
+	lines.findIndex((line) =>
+		parseLogLine(line).message.includes(
+			'##[error]Process completed with exit code',
+		),
+	);
+
+const findFallbackCommandGroup = (
+	lines: readonly string[],
+): ICommandGroup | null => {
+	const groups = collectCommandGroups(lines);
+	if (groups.length === 0) return null;
+	const failureIndex = findFailureMarkerIndex(lines);
+	if (failureIndex !== -1) {
+		for (let index = groups.length - 1; index >= 0; index -= 1) {
+			const group = groups[index];
+			if (group !== undefined && group.start < failureIndex) return group;
+		}
+	}
+	return groups.at(-1) ?? null;
+};
+
 /**
  * Pull the actual shell command out of a GitHub Actions log
  * for the failed step. The log has this shape:
@@ -371,6 +443,9 @@ export const extractCommand = (
 	logs: string,
 	stepName: string,
 ): string | null => {
+	const details = extractStepDetails(logs, stepName);
+	if (details !== null) return details.command;
+
 	const lines = logs.split('\n');
 	const parsed = lines.map((line) => parseLogLine(line));
 	const exactStepLines = parsed.filter(
@@ -420,30 +495,50 @@ export const extractStepDetails = (
 	const start = lines.findIndex((line) =>
 		line.toLowerCase().includes(stepName.toLowerCase()),
 	);
-	if (start === -1) return null;
 	let workingDirectory = defaultWorkingDirectory;
 	let command: string | null = null;
-	for (
-		let index = start;
-		index < Math.min(lines.length, start + 40);
-		index += 1
-	) {
-		const parsed = parseLogLine(lines[index] ?? '');
-		const message = parsed.message.trim();
-		const directory = message.match(/^working-directory:\s*(.+)$/i);
-		if (directory?.[1] !== undefined)
-			workingDirectory = directory[1].trim();
-		const groupedCommand = message.match(/^##\[group\]Run\s+(.+)$/);
-		if (groupedCommand?.[1] !== undefined) {
-			command ??= trim(groupedCommand[1]);
-		}
-		if (message.startsWith('##[') || message.startsWith('shell: '))
-			continue;
-		if (looksLikeShellCommand(message)) {
-			command ??= trim(message.replace(/^\$\s+/, ''));
+	if (start !== -1) {
+		for (
+			let index = start;
+			index < Math.min(lines.length, start + 40);
+			index += 1
+		) {
+			const parsed = parseLogLine(lines[index] ?? '');
+			const message = parsed.message.trim();
+			const directory = message.match(/^working-directory:\s*(.+)$/i);
+			if (directory?.[1] !== undefined)
+				workingDirectory = directory[1].trim();
+			const groupedCommand = message.match(/^##\[group\]Run\s+(.+)$/);
+			if (groupedCommand?.[1] !== undefined) {
+				command ??= trim(groupedCommand[1]);
+			}
+			if (message.startsWith('##[') || message.startsWith('shell: '))
+				continue;
+			if (looksLikeShellCommand(message)) {
+				command ??= trim(message.replace(/^\$\s+/, ''));
+			}
 		}
 	}
-	return command === null ? null : { command, workingDirectory };
+	if (command !== null) return { command, workingDirectory };
+
+	const fallback = findFallbackCommandGroup(lines);
+	if (fallback === null) return null;
+	workingDirectory = defaultWorkingDirectory;
+	for (
+		let index = fallback.start;
+		index < Math.min(lines.length, fallback.end + 1, fallback.start + 40);
+		index += 1
+	) {
+		const message = parseLogLine(lines[index] ?? '').message.trim();
+		const directory = message.match(/^working-directory:\s*(.+)$/i);
+		if (directory?.[1] !== undefined) {
+			workingDirectory = directory[1].trim();
+		}
+	}
+	return {
+		command: fallback.command,
+		workingDirectory,
+	};
 };
 
 export interface IRunnerResult {
@@ -640,19 +735,22 @@ export const reproStep = async (
 };
 
 export const main = async (argv: readonly string[]): Promise<number> => {
-	const runId = flag(argv, 'run-id');
+	const runIdInput = flag(argv, 'run-id') ?? positionalArg(argv);
 	const repoArg = flag(argv, 'repo');
 	const stepFilter = flag(argv, 'step');
 	const outputDir = flag(argv, 'output') ?? join('build', 'ci');
 	const dryRun = hasFlag(argv, 'dry-run');
 
-	if (runId === undefined) {
-		err('local-repro: --run-id <id> is required');
+	if (runIdInput === undefined) {
+		err(
+			'local-repro: provide a run id or GitHub Actions run URL via --run-id <id> or as the first positional argument',
+		);
 		return 2;
 	}
-	if (!/^\d+$/.test(runId)) {
+	const runId = normalizeRunId(runIdInput);
+	if (runId === null) {
 		err(
-			`local-repro: --run-id must be a numeric id, got ${JSON.stringify(runId)}`,
+			`local-repro: run id must be a numeric id or GitHub Actions run URL, got ${JSON.stringify(runIdInput)}`,
 		);
 		return 2;
 	}
@@ -692,15 +790,25 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		return 0;
 	}
 
-	if (hasGhCli() === null) {
+	const ghCli = hasGhCli();
+	const token = resolveToken();
+	if (ghCli === null && token === null) {
 		err(
-			'local-repro: `gh` CLI not found on PATH. The script can still run with GITHUB_TOKEN set, but `gh auth token` is the preferred fallback.',
+			'local-repro: neither `gh` CLI nor GITHUB_TOKEN/`gh auth token` is available, so the script cannot download the CI run',
 		);
-		// Continue — the env path still works.
+		return 2;
+	}
+	if (ghCli === null) {
+		err(
+			'local-repro: `gh` CLI not found on PATH; falling back to GitHub REST API with GITHUB_TOKEN/`gh auth token`.',
+		);
 	}
 
 	try {
-		const jobs = fetchRunJobsViaGh(repo, runId);
+		const jobs =
+			ghCli === null
+				? await fetchRunJobs(repo, runId, token)
+				: fetchRunJobsViaGh(repo, runId);
 		const step = selectFailedStep(jobs, stepFilter);
 		if (step === null) {
 			out(
@@ -711,18 +819,25 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		out(
 			`local-repro: will reproduce step "${step.stepName}" (job ${step.jobId} "${step.jobName}")`,
 		);
-		const report = await reproStepFromGh(
-			repo,
-			runId,
-			step,
-			defaultRunner,
-			outputDir,
-		);
+		const report =
+			ghCli === null
+				? await reproStep(repo, runId, step, defaultRunner, outputDir)
+				: await reproStepFromGh(
+						repo,
+						runId,
+						step,
+						defaultRunner,
+						outputDir,
+					);
 		out(`local-repro: extracted command ${JSON.stringify(report.command)}`);
+		out(
+			`local-repro: working-directory ${JSON.stringify(report.workingDirectory)}`,
+		);
 		out(`local-repro: local log written to ${report.localLogPath}`);
 		out(
 			`local-repro: local exit=${report.localStatus} ci exit=${report.ciStatus} matched=${report.matched}`,
 		);
+		out(`local-repro: ${report.diffSummary}`);
 		if (report.matched) {
 			out('local-repro: ✓ failure reproduces locally');
 			return 0;

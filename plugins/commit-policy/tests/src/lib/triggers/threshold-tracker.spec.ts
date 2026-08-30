@@ -70,10 +70,10 @@ describe('threshold tracker', () => {
 		});
 	});
 
-	it('refires when the dirty set changes without changing its count', async () => {
+	it('fires again when the dirty set changes but the count stays at three', async () => {
 		const responses: readonly [IGitRunResult, IGitRunResult] = [
 			ok(' M alpha.ts\n M beta.ts\n?? gamma.ts\n'),
-			ok(' M alpha.ts\n M beta.ts\n?? replacement.ts\n'),
+			ok(' M alpha.ts\n M beta.ts\n?? delta.ts\n'),
 		];
 		let index = 0;
 		const run = buildRunner((args) => {
@@ -84,7 +84,6 @@ describe('threshold tracker', () => {
 			return Promise.resolve(next);
 		});
 		const tracker = createThresholdTracker(run, { files: 3 });
-
 		expect(await tracker.check()).toEqual({
 			kind: 'threshold',
 			dirtyCount: 3,
@@ -93,8 +92,25 @@ describe('threshold tracker', () => {
 		expect(await tracker.check()).toEqual({
 			kind: 'threshold',
 			dirtyCount: 3,
-			files: { paths: ['alpha.ts', 'beta.ts', 'replacement.ts'] },
+			files: { paths: ['alpha.ts', 'beta.ts', 'delta.ts'] },
 		});
+	});
+
+	it('stays idempotent when the same dirty set repeats at the same count', async () => {
+		const run = buildRunner((args) => {
+			if (args[0] !== 'status')
+				return Promise.resolve(fail('not stubbed'));
+			return Promise.resolve(
+				ok(' M alpha.ts\n M beta.ts\n?? gamma.ts\n'),
+			);
+		});
+		const tracker = createThresholdTracker(run, { files: 3 });
+		expect(await tracker.check()).toEqual({
+			kind: 'threshold',
+			dirtyCount: 3,
+			files: { paths: ['alpha.ts', 'beta.ts', 'gamma.ts'] },
+		});
+		expect(await tracker.check()).toBeNull();
 	});
 
 	it('excludes unrelated staged-only files from event.files', async () => {

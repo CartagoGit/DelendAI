@@ -19,28 +19,33 @@ export interface IThresholdTracker {
 	reset(): void;
 }
 
+const toDirtySetKey = (paths: readonly string[]): string =>
+	[...paths].sort().join('\u0000');
+
 export const createThresholdTracker = (
 	run: IGitRunner,
 	config: { readonly files: number },
 ): IThresholdTracker => {
-	let lastFiredSet: string | undefined;
+	let lastFiredSetKey: string | null = null;
 	return {
 		async check() {
 			const paths = await gitDirtyFilePaths(run);
 			const dirty = paths.length;
-			const dirtySet = paths.join('\0');
-			if (dirty >= config.files && dirtySet !== lastFiredSet) {
-				lastFiredSet = dirtySet;
-				return {
-					kind: 'threshold',
-					dirtyCount: dirty,
-					files: { paths },
-				};
+			if (dirty < config.files) {
+				lastFiredSetKey = null;
+				return null;
 			}
-			return null;
+			const dirtySetKey = toDirtySetKey(paths);
+			if (dirtySetKey === lastFiredSetKey) return null;
+			lastFiredSetKey = dirtySetKey;
+			return {
+				kind: 'threshold',
+				dirtyCount: dirty,
+				files: { paths },
+			};
 		},
 		reset() {
-			lastFiredSet = undefined;
+			lastFiredSetKey = null;
 		},
 	};
 };
