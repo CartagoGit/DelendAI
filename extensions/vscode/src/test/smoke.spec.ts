@@ -109,7 +109,8 @@ describe('VS Code extension smoke', async () => {
 		// Configuration Center host command adds one lifecycle-tracked registration.
 		// f00119 S6: +1 auto-agent-selector panel command.
 		// f00192 S1: +1 openAgentTimeline command.
-		expect(subscriptions).toHaveLength(33);
+		// KPI sidebar provider adds one lifecycle registration.
+		expect(subscriptions).toHaveLength(34);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);
@@ -125,6 +126,43 @@ describe('VS Code extension smoke', async () => {
 		expect(panels).toHaveLength(1);
 		expect(panels[0]?.webview.html).toContain('mcp-vertex Overview');
 		expect(panels[0]?.webview.html).toContain('mcp-vertex_overview');
+	});
+
+	it('keeps activation successful when global state persistence rejects', async () => {
+		const context: IExtensionContext = {
+			subscriptions: [],
+			globalState: {
+				get<T>(): T | undefined {
+					return undefined;
+				},
+				update: async () => {
+					throw new Error('state unavailable');
+				},
+			},
+		};
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand() {
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+			},
+		};
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return { structuredContent: overviewFixture };
+			},
+		});
+
+		await expect(
+			activate(context, { vscode, createClient: async () => client }),
+		).resolves.toBeUndefined();
+		await deactivate();
 	});
 
 	// Fix for "Error spawn bun ENOENT" on hosts where `bun` is not on

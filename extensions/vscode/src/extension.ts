@@ -107,6 +107,10 @@ import {
 } from './host/runtime-handle';
 import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
 
+const runSafely = (task: Promise<unknown>): void => {
+	void task.catch(() => undefined);
+};
+
 export const CLIENT_STATE_KEY = 'mcp-vertex.client';
 export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
 export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
@@ -325,7 +329,12 @@ export const activate = async (
 			return client.close();
 		},
 	});
-	await context.globalState.update(CLIENT_STATE_KEY, client);
+	void Promise.resolve(
+		context.globalState.update(CLIENT_STATE_KEY, client),
+	).catch(() => {
+		// Persistence is auxiliary; the live client remains usable when the
+		// host cannot write global state during startup.
+	});
 
 	// S4: `track()` is the single registration seam for every
 	// disposable the extension creates (command subscriptions, tree
@@ -352,22 +361,6 @@ export const activate = async (
 	})) {
 		track(reg);
 	}
-	const dashboardHost =
-		deps.vscode === undefined
-			? await (async () => {
-					const { createVscodeHostAdapter } = await import(
-						'./host/vscode-host-adapter'
-					);
-					return await createVscodeHostAdapter();
-				})()
-			: createFakeHostFromVscode(deps.vscode);
-	const kpiRegistration = registerKpiDashboardProvider({
-		host: dashboardHost,
-		client,
-		viewId: KPI_VIEW_ID,
-		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
-	});
-	if (kpiRegistration !== undefined) track(kpiRegistration);
 	registerDevelopmentAutoReload(context, vscode, track);
 
 	const overview = new OverviewService(client, namespacePrefix);
@@ -419,18 +412,20 @@ export const activate = async (
 	// registered. A slow MCP overview must not prevent the workbench from
 	// attaching the providers declared by the extension manifest.
 	let loadedPlugins: readonly string[] | undefined;
-	try {
-		const snap = await overview.getOverview({ compact: true });
-		const raw = (snap as { plugins?: unknown })?.plugins;
-		if (Array.isArray(raw)) {
-			loadedPlugins = raw.filter(
-				(entry): entry is string =>
-					typeof entry === 'string' && entry.length > 0,
-			);
-		}
-	} catch {
-		loadedPlugins = undefined;
-	}
+	void overview
+		.getOverview({ compact: true })
+		.then((snap) => {
+			const raw = (snap as { plugins?: unknown })?.plugins;
+			if (Array.isArray(raw)) {
+				loadedPlugins = raw.filter(
+					(entry): entry is string =>
+						typeof entry === 'string' && entry.length > 0,
+				);
+			}
+		})
+		.catch(() => {
+			loadedPlugins = undefined;
+		});
 
 	if (statusBarItem !== undefined) {
 		const statusBar = new McpVertexStatusBar(
@@ -442,7 +437,11 @@ export const activate = async (
 			undefined,
 			namespacePrefix,
 		);
-		await statusBar.start();
+		runSafely(
+			statusBar.start().catch(() => {
+				statusBar.dispose();
+			}),
+		);
 		context.subscriptions.push(statusBar);
 		// S4: route the status bar through the handle so that
 		// `deactivate()` actually disposes it. The `subscriptions` push
@@ -540,7 +539,7 @@ export const activate = async (
 		...withPrefix,
 	};
 	track(registerExternalMcpsAckCommand(externalMcpsAckDeps));
-	void surfaceExternalMcpsPendingAcks(externalMcpsAckDeps);
+	runSafely(surfaceExternalMcpsPendingAcks(externalMcpsAckDeps));
 	// Fix #7: `openSettings` renders a webview that posts messages to
 	// `mcp-vertex.saveSettings` / `mcp-vertex.resetSettings`. Those
 	// handlers were never registered, so changes the user made in the
@@ -579,17 +578,15 @@ export const activate = async (
 		}),
 	);
 
-	track(
-		registerOpenDashboardCommand({
-			host: dashboardHost,
+	runSafely(
+		registerDashboardSurfaces(
+			context,
 			client,
-			globalState: context.globalState,
-			...withPrefix,
-			getConfig: () =>
-				context.globalState.get(SETTINGS_STATE_KEY) ??
-				context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
-				{},
-		}),
+			vscode,
+			deps.vscode,
+			namespacePrefix,
+			track,
+		),
 	);
 };
 
@@ -782,14 +779,57 @@ const registerDevelopmentAutoReload = (
 		if (reloadScheduled) return;
 		reloadScheduled = true;
 		setTimeout(() => {
-			void vscode.commands?.executeCommand?.(
-				'workbench.action.reloadWindow',
+			runSafely(
+				Promise.resolve(
+					vscode.commands?.executeCommand?.(
+						'workbench.action.reloadWindow',
+					),
+				),
 			);
 		}, 250);
 	};
 	track({ dispose: () => undefined });
 	track(watcher.onDidChange(reload));
 	track(watcher.onDidCreate(reload));
+};
+
+const registerDashboardSurfaces = async (
+	context: IExtensionContext,
+	client: McpStdioClient,
+	vscode: IVscodeApi,
+	injectedVscode: IVscodeApi | undefined,
+	namespacePrefix: string | undefined,
+	track: (disposable: IDisposable) => IDisposable,
+): Promise<void> => {
+	const host =
+		injectedVscode === undefined
+			? await (async () => {
+					const { createVscodeHostAdapter } = await import(
+						'./host/vscode-host-adapter'
+					);
+					return createVscodeHostAdapter();
+				})()
+			: createFakeHostFromVscode(injectedVscode);
+	track(
+		registerOpenDashboardCommand({
+			host,
+			client,
+			globalState: context.globalState,
+			...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+			getConfig: () =>
+				context.globalState.get(SETTINGS_STATE_KEY) ??
+				context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+				{},
+		}),
+	);
+	const kpiRegistration = registerKpiDashboardProvider({
+		host,
+		client,
+		viewId: KPI_VIEW_ID,
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	});
+	if (kpiRegistration !== undefined) track(kpiRegistration);
+	void vscode;
 };
 
 /**
@@ -874,6 +914,9 @@ const createFakeHostFromVscode = (vscode: IVscodeApi): IHostAdapter => ({
 		// empty, which is the right behaviour for a stub.
 		void section;
 		return {} as T;
+	},
+	registerWebviewViewProvider() {
+		return { dispose() {} };
 	},
 	asWebviewUri(relativePath) {
 		return `vscode-resource:/extension/${relativePath}`;
