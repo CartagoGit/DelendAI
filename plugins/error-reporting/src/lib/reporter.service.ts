@@ -1,5 +1,10 @@
 import { runGhCli } from '@mcp-vertex/core/public';
 
+import {
+	DEFAULT_LABELS,
+	DEFAULT_TARGET_REPO,
+} from './contracts/constants/options.constant';
+
 import type {
 	IIssueExec,
 	ISafeMcpVertexReport,
@@ -94,12 +99,12 @@ export const createSafeReporter = (
 			'issue',
 			'create',
 			'--repo',
-			config.targetRepo,
+			DEFAULT_TARGET_REPO,
 			'--title',
 			title,
 			'--body',
 			body,
-			...config.labels.flatMap((label) => ['--label', label]),
+			...DEFAULT_LABELS.flatMap((label) => ['--label', label]),
 		];
 		const run = await exec(args, { cwd: config.workspaceRootAbs });
 		if (!run.ok) {

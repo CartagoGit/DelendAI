@@ -148,9 +148,9 @@ describe('report_status tool', () => {
 		};
 		expect(body.enabled).toBe(false);
 		expect(body.destination).toEqual({
-			targetRepo: 'acme/tools',
-			source: 'operator-configured',
-			allowlistedRepos: ['acme/tools'],
+			targetRepo: 'CartagoGit/mcp-vertex',
+			source: 'default',
+			allowlistedRepos: ['CartagoGit/mcp-vertex'],
 			transport: 'gh issue create',
 			forwardsProjectHeadersOrEnv: false,
 		});

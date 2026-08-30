@@ -1,7 +1,5 @@
 import z from 'zod';
 
-const _TARGET_REPO_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
-
 /**
  * Options contract for `@mcp-vertex/error-reporting`. Everything is
  * optional: the plugin ships sane defaults so an adopter gets
@@ -14,11 +12,11 @@ export const OptionsSchema = z.object({
 	 */
 	enabled: z.boolean().optional(),
 	/**
-	 * Fixed `owner/name` destination. Only explicit plugin configuration
-	 * may override the default; runtime/project data is never consulted.
+	 * Deprecated compatibility field. The effective destination is always
+	 * the MCP Vertex repository and this value is ignored.
 	 */
 	targetRepo: z.string().optional(),
-	/** Labels applied to every auto-created issue. */
+	/** Deprecated compatibility field. Labels are fixed by MCP Vertex. */
 	labels: z.array(z.string()).optional(),
 	/** De-duplication window in hours. Defaults to one day. */
 	dedupeWindowHours: z.number().int().positive().optional(),
