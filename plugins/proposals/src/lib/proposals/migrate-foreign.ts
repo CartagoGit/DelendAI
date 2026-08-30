@@ -429,7 +429,10 @@ export const migrateForeign = async (
 				renderProposal(id, { ...candidate, status }, kind),
 			);
 			await writeFileAtomic(targetAbs, safeBody);
-			if (options.removeMigratedSources && !candidate.source.includes('#')) {
+			if (
+				options.removeMigratedSources &&
+				!candidate.source.includes('#')
+			) {
 				await rm(join(options.workspaceRoot, candidate.source), {
 					force: true,
 				});
