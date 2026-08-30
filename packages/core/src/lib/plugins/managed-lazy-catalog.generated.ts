@@ -566,6 +566,21 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			},
 		),
 		tools(
+			'project-kpis',
+			'@mcp-vertex/project-kpis',
+			['project_kpis'],
+			[],
+			[],
+			[],
+			[],
+			[],
+			{
+				summary:
+					'Versioned project KPI snapshots and observability views across health, usage, economics and delivery.',
+				tags: ['kpi', 'observability', 'economics', 'project-health'],
+			},
+		),
+		tools(
 			'prompt-eval',
 			'@mcp-vertex/prompt-eval',
 			['eval_run', 'eval_report'],

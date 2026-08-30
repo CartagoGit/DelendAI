@@ -6,8 +6,8 @@ import {
 	filterToolsByProfile,
 	getModelProfile,
 	listModelProfiles,
-	type IModelProfile,
 } from '../../../../src/lib/presets/model-profiles';
+import type { IModelProfile } from '../../../../src/lib/presets/model-profiles';
 
 describe('DEFAULT_MODEL_PROFILES (f00196)', () => {
 	it('declares small / medium / large with the documented numbers', () => {

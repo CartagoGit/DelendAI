@@ -11,7 +11,6 @@ import {
 	resolveTokenBudget,
 	type IPluginManifest,
 	type IPluginRegistryEntry,
-	type IToolPermissionGrant,
 	type PermissionCategory,
 } from '@mcp-vertex/core/public';
 

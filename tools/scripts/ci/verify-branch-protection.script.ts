@@ -65,7 +65,7 @@ import {
 	type IGitHubBranchProtectionResponse,
 	reportUnverifiedBranches,
 } from './lib/github-protection.lib.ts';
-import { parseWorkflowYaml, type YamlValue } from './workflow-yaml.ts';
+import { parseWorkflowYaml } from './workflow-yaml.ts';
 
 const SCRIPT_NAME = 'verify-branch-protection';
 const REPO_ROOT = resolve(fileURLToPath(new URL('../../..', import.meta.url)));

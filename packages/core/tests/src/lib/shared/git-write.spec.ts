@@ -250,10 +250,11 @@ describe('gitPush — force authorization + protected-branch guard', () => {
 
 	it('rejects force pushes without protectedBranches at compile time', () => {
 		const { runner } = captureRunner([]);
-		if (false) {
+		const compileTimeCheck = (): void => {
 			// @ts-expect-error protectedBranches must be provided explicitly when force is used
 			void gitPush(runner, { force: 'with-lease' });
-		}
+		};
+		void compileTimeCheck;
 		expect(true).toBe(true);
 	});
 
