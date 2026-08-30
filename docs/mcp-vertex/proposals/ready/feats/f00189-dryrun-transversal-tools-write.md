@@ -128,9 +128,10 @@ ejecutarlo.
 
 ### S1 — Protocol + router enforcement + commit-policy dry-run
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/dry-run/protocol.ts`, `packages/core/src/lib/plugins/router.ts`, `plugins/commit-policy/src/lib/engine.ts` (o equivalente), `packages/core/tests/src/lib/dry-run/protocol.spec.ts`, `packages/core/tests/src/lib/dry-run/router-enforcement.spec.ts`, `plugins/commit-policy/tests/src/lib/dry-run-commit.spec.ts`
 - **Gate**: type
+- **Done notes**: Protocol + router enforcement + commit-policy dry-run implementados. Protocol en `packages/core/src/lib/dry-run/protocol.ts`; enforcement en el router real (`packages/core/src/lib/dry-run/router-enforcement.ts` + `effect-guard.helper.ts`); dry-run de `commit_policy_run` en `plugins/commit-policy/src/lib/tools/run-tool.ts` (`planCommitPolicyRun`). Specs verdes: protocol.spec, router-enforcement.spec, dry-run-commit.spec (19/19).
 
 ## acceptance
 

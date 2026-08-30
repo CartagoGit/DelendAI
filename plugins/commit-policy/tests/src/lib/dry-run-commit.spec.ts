@@ -15,6 +15,12 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { execFileSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
 import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
@@ -223,39 +229,62 @@ describe('f00189 — commit_policy_run dry-run (Track F)', () => {
 	});
 
 	it('runs the configured push callback after a successful commit', async () => {
-		const record: string[] = [];
-		let pushCalls = 0;
-		const result = await runCommitPolicyRun(
-			{ kind: 'manual' },
-			{
-				...baseOptions(
-					buildSpyRunner('develop', record),
-					buildPolicy({
-						push: {
-							enabled: true,
-							onCommit: true,
-							everyNCommits: 0,
-							everyNMinutes: 0,
-							protectedBranches: ['main', 'master'],
-							protectedPrefixes: [],
-							force: 'with-lease',
-						},
-					}),
-				),
-				onCommitSucceeded: async () => {
-					pushCalls += 1;
-					return {
-						ok: true,
-						pushed: true,
-						remote: 'origin',
-						branch: 'develop',
-					};
+		// x00269: `commitWithGuard` runs the isolated-index path
+		// whenever `workspaceRoot` is set, and that path shells out
+		// to the REAL `git` binary (it cannot be spied). So this test
+		// provisions a real throwaway repo — otherwise `read-tree` /
+		// `write-tree` fail and `committed` stays false.
+		const repo = await mkdtemp(join(tmpdir(), 'dry-run-commit-push-'));
+		try {
+			execFileSync('git', ['init', '-q'], { cwd: repo });
+			execFileSync('git', ['config', 'user.email', 't@t.t'], {
+				cwd: repo,
+			});
+			execFileSync('git', ['config', 'user.name', 'T'], { cwd: repo });
+			writeFileSync(join(repo, 'README.md'), '# init\n');
+			execFileSync('git', ['add', '.'], { cwd: repo });
+			execFileSync('git', ['commit', '-q', '-m', 'init'], { cwd: repo });
+
+			const record: string[] = [];
+			let pushCalls = 0;
+			const result = await runCommitPolicyRun(
+				{ kind: 'manual' },
+				{
+					...baseOptions(
+						buildSpyRunner('develop', record),
+						buildPolicy({
+							push: {
+								enabled: true,
+								onCommit: true,
+								everyNCommits: 0,
+								everyNMinutes: 0,
+								protectedBranches: ['main', 'master'],
+								protectedPrefixes: [],
+								force: 'with-lease',
+							},
+						}),
+					),
+					workspaceRoot: repo,
+					onCommitSucceeded: async () => {
+						pushCalls += 1;
+						return {
+							ok: true,
+							pushed: true,
+							remote: 'origin',
+							branch: 'develop',
+						};
+					},
 				},
-			},
-		);
-		const body = result.structuredContent as Record<string, unknown>;
-		const commit = body.commit as { committed: boolean; pushed: boolean };
-		expect(pushCalls).toBe(1);
-		expect(commit).toMatchObject({ committed: true, pushed: true });
+			);
+			const body = result.structuredContent as Record<string, unknown>;
+			const commit = body.commit as {
+				committed: boolean;
+				pushed: boolean;
+			};
+			expect(pushCalls).toBe(1);
+			expect(commit).toMatchObject({ committed: true, pushed: true });
+		} finally {
+			await rm(repo, { recursive: true, force: true });
+		}
 	});
 });
