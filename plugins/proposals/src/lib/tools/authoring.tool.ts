@@ -1181,6 +1181,12 @@ export const buildCloseSliceRegistration = (
 								true
 									? { allowForeignChanges: true }
 									: {}),
+								...(closeSliceOptions.commitAuthor !== undefined
+									? {
+											commitAuthor:
+												closeSliceOptions.commitAuthor,
+										}
+									: {}),
 								...(closeSliceOptions.persistGit !== undefined
 									? { git: closeSliceOptions.persistGit }
 									: {}),

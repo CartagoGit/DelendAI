@@ -1,35 +1,42 @@
-import {
-	createWorkspaceFileReader,
-	definePlugin,
-} from '@mcp-vertex/core/public';
 import { registerAdoptionExtensions } from '@mcp-vertex/core/lib/adopt/adoption-extension-registry';
 import type {
 	IPluginConfigurationIssue,
 	IPluginConfigurationValidationInput,
 } from '@mcp-vertex/core/public';
+import {
+	createWorkspaceFileReader,
+	definePlugin,
+} from '@mcp-vertex/core/public';
 import { createLogStore, logIncidents } from '@mcp-vertex/logs/public';
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 import z from 'zod';
+import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 
+import { mergeCheckpointAdvisories } from '@mcp-vertex/core/public';
+import { resolveScopes } from '@mcp-vertex/quality/public';
+import { buildProposalsAdoptionExtension } from './lib/adoption/proposals-adoption-extension';
+import { registerProposalsStableTools } from './lib/api/proposals-stable-tools';
 import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';
-import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
+import {
+	DEFAULT_PROPOSAL_FOLDER_POLICY,
+	type IProposalFolderPolicy,
+} from './lib/contracts/proposal-folder-policy';
+import { cleanupStaleAgentLockState } from './lib/locks/agent-lock-engine';
 import { createCallbackLockListener } from './lib/locks/lock-change-listener';
+import { buildProposalTemplatesResourceRegistration } from './lib/resources/proposal-templates.resource';
+import type { IObservedToolCall } from './lib/services/checkpoint-advisory-micro-validation.service';
+import { assessMicroValidationLoop } from './lib/services/checkpoint-advisory-micro-validation.service';
+import { registerProposalsWorkflowContribution } from './lib/skills/proposals-workflow-contribution';
+import { buildCloseSliceValidationProvider } from './lib/swarm/validation-provider';
+import { buildAdoptRegistration } from './lib/tools/adopt.tool';
+import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
+import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
 import { buildAgentWorktreeRegistration } from './lib/tools/agent-worktree.tool';
-import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
-import { buildSwarmHygieneRegistration } from './lib/tools/swarm-hygiene.tool';
-import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
-import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
-import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
-import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
-import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
-import {
-	buildDelegateRegistration,
-	buildPlanRegistration,
-} from './lib/tools/orchestration.tool';
+import { buildAgentsLockDiagnoseRegistration } from './lib/tools/agents-lock-diagnose.tool';
+import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
 import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
@@ -37,40 +44,33 @@ import {
 	buildReviewRegistration,
 	runCloseSliceQualityGate,
 } from './lib/tools/authoring.tool';
-import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
-import { buildAdoptRegistration } from './lib/tools/adopt.tool';
-import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
-import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
+import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
+import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
+import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
+import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
+import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
+import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
+import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
+import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
+import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
+import {
+	buildDelegateRegistration,
+	buildPlanRegistration,
+} from './lib/tools/orchestration.tool';
 import { buildProposalGetRegistration } from './lib/tools/proposal-get.tool';
-import { resolveScopes } from '@mcp-vertex/quality/public';
-import { buildCloseSliceValidationProvider } from './lib/swarm/validation-provider';
-import { buildProposalTemplatesResourceRegistration } from './lib/resources/proposal-templates.resource';
+import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
+import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
-import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
-import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
+import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import {
 	buildStateHealthRegistration,
 	buildStateRepairRegistration,
 	runAutoStateRepairOnBoot,
 } from './lib/tools/state-tools.tool';
-import type { IStateToolOptions } from './lib/tools/state-tools.tool';
-import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
-import { cleanupStaleAgentLockState } from './lib/locks/agent-lock-engine';
-import { buildAgentsLockDiagnoseRegistration } from './lib/tools/agents-lock-diagnose.tool';
-import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
-import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
-import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
-import { mergeCheckpointAdvisories } from '@mcp-vertex/core/public';
-import { assessMicroValidationLoop } from './lib/services/checkpoint-advisory-micro-validation.service';
-import type { IObservedToolCall } from './lib/services/checkpoint-advisory-micro-validation.service';
-import {
-	DEFAULT_PROPOSAL_FOLDER_POLICY,
-	type IProposalFolderPolicy,
-} from './lib/contracts/proposal-folder-policy';
-import { registerProposalsStableTools } from './lib/api/proposals-stable-tools';
-import { buildProposalsAdoptionExtension } from './lib/adoption/proposals-adoption-extension';
-import { registerProposalsWorkflowContribution } from './lib/skills/proposals-workflow-contribution';
+import { buildSwarmHygieneRegistration } from './lib/tools/swarm-hygiene.tool';
+import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
+import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
 
 /**
  * The proposals workflow plugin. It turns mcp-vertex into a multi-agent
@@ -561,6 +561,8 @@ export default definePlugin({
 						},
 					}
 				: {}),
+			commitAuthor: ctx.commitAuthor,
+			persistGit: ctx.effects?.git,
 		};
 
 		return {
