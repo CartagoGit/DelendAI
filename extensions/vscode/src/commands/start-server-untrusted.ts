@@ -23,24 +23,6 @@ interface IQuickPickWindow {
 	): Thenable<ICommandQuickPickItem | undefined>;
 }
 
-const readMcpJsonRaw = async (
-	vscode: IVscodeApi,
-	cwd: string | undefined,
-): Promise<string | undefined> => {
-	void vscode;
-	if (cwd === undefined) return undefined;
-	// a00084 F28: was readFileSync — sync I/O on the interactive command
-	// path, a brief UI freeze on remote filesystems (WSL/SSH) when the
-	// user approves an untrusted server start.
-	const { readFile } = await import('node:fs/promises');
-	const { join } = await import('node:path');
-	try {
-		return await readFile(join(cwd, '.mcp.json'), 'utf8');
-	} catch {
-		return undefined;
-	}
-};
-
 /**
  * x00072 SEC-001 S1: manual start of the stdio child in an untrusted
  * workspace. Re-runs the standard client creation with `trustOverride:
@@ -53,9 +35,14 @@ export const registerStartServerUntrusted = async (
 	deps: IActivationDeps,
 ): Promise<void> => {
 	const launch = await resolveServerCommand(vscode);
+	if (launch === undefined) {
+		await vscode.window.showErrorMessage?.(
+			'Configure mcp-vertex.server.command and mcp-vertex.server.args before starting the MCP server.',
+		);
+		return;
+	}
 	const store = context.globalState as unknown as IFingerprintStore;
-	const mcpJsonRaw = await readMcpJsonRaw(vscode, launch.cwd);
-	if (isLaunchApproved(store, launch, mcpJsonRaw)) {
+	if (isLaunchApproved(store, launch)) {
 		const client = await (
 			deps.createClient ?? (() => createDefaultClient(vscode))
 		)();
@@ -81,7 +68,7 @@ export const registerStartServerUntrusted = async (
 		deps.createClient ?? (() => createDefaultClient(vscode))
 	)();
 	await context.globalState.update('client', client);
-	await recordApproval(store, launch, mcpJsonRaw);
+	await recordApproval(store, launch);
 	await vscode.window.showInformationMessage?.(
 		'MCP-Vertex: child server started in untrusted workspace.',
 	);

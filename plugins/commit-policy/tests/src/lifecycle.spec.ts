@@ -87,6 +87,33 @@ describe('commit-policy lifecycle (x00261)', () => {
 		});
 	});
 
+	it('rejects an enabled push whose configured branch matches a protected prefix', () => {
+		const issues = validateCommitPolicyConfiguration({
+			pluginName: 'commit-policy',
+			enabledPlugins: ['commit-policy'],
+			pluginOptions: new Map([
+				[
+					'commit-policy',
+					{
+						push: {
+							enabled: true,
+							branch: 'release/v1',
+							protectedPrefixes: ['release/'],
+						},
+					},
+				],
+			]),
+		});
+
+		expect(issues[0]).toMatchObject({
+			code: 'PUSH_TARGET_IS_PROTECTED',
+			keys: expect.arrayContaining([
+				'plugins.commit-policy.options.push.branch',
+				'plugins.commit-policy.options.push.protectedPrefixes',
+			]),
+		});
+	});
+
 	it('disables agent stash operations by default', () => {
 		expect(CommitPolicyOptionsSchema.parse({}).stash.enabled).toBe(false);
 		expect(
