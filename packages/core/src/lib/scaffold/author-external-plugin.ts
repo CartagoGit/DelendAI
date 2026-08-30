@@ -97,6 +97,10 @@ export type IProjectPluginsOutput = z.infer<
 	typeof PROJECT_PLUGINS_OUTPUT_SCHEMA
 >;
 
+export type IAuthorExternalPluginArgs = IProjectPluginsCreateArgs;
+export type IAuthorExternalPluginOptions = IProjectPluginsOptions;
+export type IAuthorExternalPluginOutput = IProjectPluginsOutput;
+
 export interface IProjectPluginsOptions {
 	readonly namespacePrefix: string;
 	readonly workspace: IWorkspacePathProvider;
@@ -428,7 +432,7 @@ const repairPackageMetadata = async (
 	return packagePath;
 };
 
-export const runProjectPluginCreate = async (
+const runProjectPluginCreate = async (
 	args: IProjectPluginsCreateArgs,
 	options: IProjectPluginsOptions,
 ): Promise<IProjectPluginsOutput> => {

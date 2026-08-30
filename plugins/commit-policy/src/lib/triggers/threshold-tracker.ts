@@ -12,10 +12,10 @@
 import type { IGitRunner } from '@mcp-vertex/core/public';
 
 import { gitDirtyFilePaths } from '../services/git-extra';
-import type { ITriggerEvent } from './trigger-types';
+import type { ThresholdEvent } from './trigger-types';
 
 export interface IThresholdTracker {
-	check(): Promise<ITriggerEvent | null>;
+	check(): Promise<ThresholdEvent | null>;
 	reset(): void;
 }
 
@@ -23,13 +23,14 @@ export const createThresholdTracker = (
 	run: IGitRunner,
 	config: { readonly files: number },
 ): IThresholdTracker => {
-	let lastFiredCount = -1;
+	let lastFiredSet: string | undefined;
 	return {
 		async check() {
 			const paths = await gitDirtyFilePaths(run);
 			const dirty = paths.length;
-			if (dirty >= config.files && dirty !== lastFiredCount) {
-				lastFiredCount = dirty;
+			const dirtySet = paths.join('\0');
+			if (dirty >= config.files && dirtySet !== lastFiredSet) {
+				lastFiredSet = dirtySet;
 				return {
 					kind: 'threshold',
 					dirtyCount: dirty,
@@ -39,7 +40,7 @@ export const createThresholdTracker = (
 			return null;
 		},
 		reset() {
-			lastFiredCount = -1;
+			lastFiredSet = undefined;
 		},
 	};
 };

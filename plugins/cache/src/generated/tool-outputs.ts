@@ -33,7 +33,21 @@ export interface McpVertexCacheCacheGcOutput {
 	}[];
 }
 
+export interface McpVertexCacheReconcileOutput {
+	cacheDirAbs: string;
+	created: string[];
+	migrated: {
+		from: string;
+		to: string;
+	}[];
+	pending: {
+		from: string;
+		to: string;
+	}[];
+}
+
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface CacheToolOutputs {
 	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
+	"mcp-vertex_cache_reconcile": McpVertexCacheReconcileOutput;
 }

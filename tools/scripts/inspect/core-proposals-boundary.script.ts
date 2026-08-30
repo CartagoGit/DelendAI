@@ -2,6 +2,7 @@
 
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export type TCouplingCategory =
 	| 'import'
@@ -44,7 +45,12 @@ export interface IBoundaryScanResult {
 	readonly scannedFiles: number;
 }
 
-const REPO_ROOT = join(import.meta.dir, '..', '..', '..');
+const REPO_ROOT = join(
+	fileURLToPath(new URL('.', import.meta.url)),
+	'..',
+	'..',
+	'..',
+);
 const DOC_PATH = join(
 	REPO_ROOT,
 	'docs/mcp-vertex/CORE-PROPOSALS-BOUNDARY-INVENTORY.md',

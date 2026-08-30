@@ -24,6 +24,13 @@ export interface IThresholdTriggerConfig {
 	readonly files: number;
 }
 
+/** Event emitted when the threshold is met by the current dirty set. */
+export interface ThresholdEvent {
+	readonly kind: 'threshold';
+	readonly dirtyCount: number;
+	readonly files: SliceFiles;
+}
+
 /** Interval-specific config. */
 export interface IIntervalTriggerConfig {
 	readonly kind: 'interval';

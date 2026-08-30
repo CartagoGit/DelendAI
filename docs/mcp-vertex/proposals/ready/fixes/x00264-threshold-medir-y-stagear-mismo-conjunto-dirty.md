@@ -125,8 +125,10 @@ threshold (mismo helper refactorizado), verifica post-stage subset.
   - "threshold=3, 3 dirty → event con esos 3 files"
   - "threshold=3, 4 dirty → event con los 4 files"
   - "staged ajenos no entran en event.files"
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: crow
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by delivery_verifier — Pedir cambios: el debounce debe distinguir dirty sets distintos con el mismo count; el contrato debe tipar explícitamente ThresholdEvent y documentar files para threshold; revertir o aislar cualquier cambio en interval-timer fuera del perímetro S1. Mantener casos 2/3/4 dirty, staged-only y rename.
 ## acceptance
 
 - `t00019` verde.
