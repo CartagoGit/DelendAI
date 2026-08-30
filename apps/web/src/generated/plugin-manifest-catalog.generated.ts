@@ -271,7 +271,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"permissions": [
 			"git-read",
-			"git-write"
+			"git-write",
+			"network",
+			"process"
 		],
 		"tokenBudget": {
 			"warning": 4800,

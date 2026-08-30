@@ -5,10 +5,7 @@
  */
 export { default } from '../index';
 
-export {
-	createCommandRunner,
-	runScope,
-} from '../lib/services/runner';
+export { createCommandRunner, runScope } from '../lib/services/runner';
 export type {
 	ICommandRunner,
 	ICommandResult,

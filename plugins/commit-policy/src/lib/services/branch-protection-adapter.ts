@@ -10,11 +10,11 @@ const GIT_TOOL: IExternalTool = { id: 'git', bin: 'git' };
 const GH_TOOL: IExternalTool = { id: 'gh', bin: 'gh' };
 const GLAB_TOOL: IExternalTool = { id: 'glab', bin: 'glab' };
 
-export {
-	type BranchProtectionAdapter,
-	type BranchProtectionRefreshResult,
-	type BranchProtectionState,
-	type ForgeProvider,
+export type {
+	BranchProtectionAdapter,
+	BranchProtectionRefreshResult,
+	BranchProtectionState,
+	ForgeProvider,
 } from '../contracts/branch-protection-contracts';
 import type {
 	BranchProtectionAdapter as IBranchProtectionAdapter,

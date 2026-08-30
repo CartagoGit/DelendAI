@@ -2,7 +2,7 @@
 id: x00321
 title: "Hardening agnostic commit policy"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: commit-policy-hardening
 date: 2026-08-30
@@ -37,7 +37,8 @@ La auditoría detectó bloqueos hardcodeados de ramas, acoplamiento a gh/glab/or
   - "Commit, push, scheduler y status consumen la misma decisión de protección."
   - "Las negativas de push y commit tienen códigos estructurados y mensajes accionables."
   - "La suite cubre consistencia status versus ejecución en ramas configurables."
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator
 ### S2 — Abstraer protección de proveedores
 - **Status**: pending
 - **Files**: `plugins/commit-policy/src/lib/services/branch-protection-adapter.ts`, `plugins/commit-policy/src/lib/tools/branch-protection-tool.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/services/branch-protection-adapter.spec.ts`, `plugins/commit-policy/tests/src/index.spec.ts`
@@ -47,7 +48,8 @@ La auditoría detectó bloqueos hardcodeados de ramas, acoplamiento a gh/glab/or
   - "Existe una interfaz/adaptador de proveedor agnóstico con fallback local explícito."
   - "El refresh no ejecuta red/procesos implícitamente durante register salvo opt-in documentado y controlado."
   - "La herramienta, el estado y el manifest pueden representar remoto no soportado, stale y error."
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator
 ### S3 — Endurecer idempotencia y scheduler
 - **Status**: pending
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/services/push-scheduler.ts`, `plugins/commit-policy/src/lib/triggers/interval-timer.ts`, `plugins/commit-policy/src/lib/triggers/threshold-tracker.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`, `plugins/commit-policy/tests/src/lib/services/push-scheduler.spec.ts`
@@ -57,7 +59,8 @@ La auditoría detectó bloqueos hardcodeados de ramas, acoplamiento a gh/glab/or
   - "everyNMinutes detecta commits sin publicar aunque el plugin se reinicie."
   - "Los triggers de commit y push no duplican operaciones ni pierden errores."
   - "Hay tests de concurrencia, reinicio y commits existentes sin publicar."
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator
 ### S4 — Completar manifest y contrato MCP
 - **Status**: pending
 - **Files**: `plugins/commit-policy/plugin.manifest.ts`, `plugins/commit-policy/tests/src/lib/dry-run-commit.spec.ts`, `tools/scripts/lint/manifest-vs-package.script.ts`, `tools/scripts/lint/manifest-vs-package.spec.ts`
@@ -67,7 +70,8 @@ La auditoría detectó bloqueos hardcodeados de ramas, acoplamiento a gh/glab/or
   - "Los efectos network/spawn/write están declarados y verificados."
   - "El contrato dry-run y los permisos de host reflejan los efectos reales."
   - "Los validadores fallan ante drift de herramientas o permisos."
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator
 ### S5 — Alinear documentación y pruebas E2E
 - **Status**: pending
 - **DependsOn**: [S1, S2, S3, S4]
@@ -78,7 +82,8 @@ La auditoría detectó bloqueos hardcodeados de ramas, acoplamiento a gh/glab/or
   - "La prioridad de identidad, intervalos, protección remota y configuración multi-remoto están alineadas."
   - "E2E cubre Git remoto genérico, branch configurable, push, dry-run y fallos estructurados."
   - "No quedan referencias incorrectas a GitHub como requisito universal."
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator
 ## acceptance
 
 - No existe bloqueo hardcodeado para main/master ni nombres de rama fuera de la configuración efectiva.
