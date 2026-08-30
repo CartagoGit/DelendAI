@@ -18,6 +18,7 @@ import type {
 	IInvocationOutcome,
 	IInvocationRecord,
 	IModelDescriptor,
+	ITokenAccounting,
 	IUsageTokens,
 } from './types';
 
@@ -107,6 +108,65 @@ export const extractTokensSaved = (result: unknown): number => {
 	return value === undefined ? 0 : Math.max(0, value);
 };
 
+const tokenTotalOf = (usage: IUsageTokens | null): number | null => {
+	if (usage?.totalTokens !== undefined) return usage.totalTokens;
+	if (usage?.inputTokens !== undefined || usage?.outputTokens !== undefined) {
+		return (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0);
+	}
+	return null;
+};
+
+/** Build token accounting from provider usage plus an explicit operation baseline. */
+export const extractTokenAccounting = (
+	result: unknown,
+	usage: IUsageTokens | null,
+	legacyTokensSaved: number,
+): ITokenAccounting => {
+	const structured = structuredOf(result);
+	const accounting = asRecord(structured?.tokenAccounting);
+	const baseline = asNumber(
+		structured?.baselineTokens ??
+			accounting?.baselineTokens ??
+			accounting?.tokensBefore ??
+			structured?.tokensBefore,
+	);
+	const usedTokens = tokenTotalOf(usage);
+	const reportedSaved = asNumber(
+		accounting?.tokensSaved ?? structured?.tokensSaved,
+	);
+	if (baseline !== undefined && usedTokens !== null) {
+		const tokensSaved = Math.max(0, baseline - usedTokens);
+		return {
+			baselineTokens: baseline,
+			usedTokens,
+			tokensSaved,
+			savingsPercent:
+				baseline === 0 ? 0 : Math.round((100 * tokensSaved) / baseline),
+			status: 'measured',
+			basis: 'explicit baselineTokens/tokensBefore vs provider usage',
+		};
+	}
+	if (reportedSaved !== undefined || legacyTokensSaved > 0) {
+		const tokensSaved = Math.max(0, reportedSaved ?? legacyTokensSaved);
+		return {
+			baselineTokens: null,
+			usedTokens,
+			tokensSaved,
+			savingsPercent: null,
+			status: 'estimated',
+			basis: 'reported tokensSaved without a comparable baseline',
+		};
+	}
+	return {
+		baselineTokens: null,
+		usedTokens,
+		tokensSaved: null,
+		savingsPercent: null,
+		status: 'unavailable',
+		basis: 'no explicit token baseline reported',
+	};
+};
+
 const extractError = (
 	result: unknown,
 	error: unknown,
@@ -151,6 +211,10 @@ export interface IBuildRecordInput {
 	readonly responseBytes?: number | undefined;
 	/** Last model observed for this session; used only for a saving-only call. */
 	readonly fallbackModel?: IModelDescriptor | null | undefined;
+	/** Optional baseline token resolver, keyed by attributed plugin/tool. */
+	readonly baselineTokensOf?:
+		| ((plugin: string, tool: string) => number | undefined)
+		| undefined;
 	/** Injected cost function (bound to the resolved pricing table). */
 	readonly costOf: (
 		model: IModelDescriptor | null,
@@ -167,6 +231,25 @@ export const buildRecord = (input: IBuildRecordInput): IInvocationRecord => {
 	);
 	const usage = extractUsage(input.result);
 	const tokensSaved = extractTokensSaved(input.result);
+	const baselineTokens = input.baselineTokensOf?.(plugin, tool);
+	const tokenAccounting = extractTokenAccounting(
+		baselineTokens === undefined
+			? input.result
+			: {
+					structuredContent: {
+						...((asRecord(input.result)
+							?.structuredContent as Record<
+							string,
+							unknown
+						> | null) ?? {}),
+						tokenAccounting: {
+							baselineTokens,
+						},
+					},
+				},
+		usage,
+		tokensSaved,
+	);
 	const model =
 		extractModel(input.result) ??
 		(tokensSaved > 0 ? (input.fallbackModel ?? null) : null);
@@ -190,11 +273,12 @@ export const buildRecord = (input: IBuildRecordInput): IInvocationRecord => {
 		tool,
 		model,
 		usage,
+		tokenAccounting,
 		...(input.responseBytes !== undefined
 			? { responseBytes: Math.max(0, input.responseBytes) }
 			: {}),
 		costUsd: input.costOf(model, usage),
-		tokensSaved,
+		tokensSaved: tokenAccounting.tokensSaved ?? tokensSaved,
 		durationMs,
 		outcome,
 		fallbackFrom,

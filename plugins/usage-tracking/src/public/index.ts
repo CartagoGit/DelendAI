@@ -34,6 +34,7 @@ export type { IToolAttribution } from '../lib/attribute';
 export {
 	buildRecord,
 	extractModel,
+	extractTokenAccounting,
 	extractUsage,
 	resolveSessionId,
 } from '../lib/record';
@@ -94,6 +95,8 @@ export type {
 	IRollupTotals,
 	IUsageSummary,
 	IUsageTokens,
+	ITokenAccounting,
+	TokenAccountingStatus,
 	ISessionHygieneAdvisory,
 	ISessionHygienePolicy,
 	ISessionHygieneSnapshot,
