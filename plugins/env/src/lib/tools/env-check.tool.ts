@@ -18,6 +18,7 @@ import {
 import type { IEnvCheckToolOptions } from '../contracts/interfaces/env.interface';
 import { runEnvCheck, runEnvCheckWithSchema } from '../env/check-env';
 import { realEnvDeps } from '../env/real-deps';
+import { ENV_SCHEMA } from '../validate/env-schema';
 import type { IEnvSchema } from '../validate/env-schema';
 
 const FINDING = z.object({
@@ -50,6 +51,7 @@ export const buildEnvCheckRegistration = (
 				inputSchema: z.object({
 					path: z.string().optional(),
 					required: z.array(z.string()).optional(),
+					schema: ENV_SCHEMA.optional(),
 				}),
 				outputSchema: z.object({
 					found: z.boolean(),

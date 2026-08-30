@@ -32,7 +32,7 @@ import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-projec
 import commitPolicyPlugin from '@mcp-vertex/commit-policy';
 import proposalsPlugin from '@mcp-vertex/proposals';
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	createAssembledProposalsServer,
@@ -496,8 +496,9 @@ Exercise the configured persistence route over MCP.
 				},
 			});
 
-			await vi.waitFor(
-				() => {
+			const waitForRemoteHead = async (): Promise<void> => {
+				const deadline = Date.now() + 5_000;
+				while (Date.now() < deadline) {
 					const head = git(
 						managed.workspace,
 						'rev-parse',
@@ -509,20 +510,24 @@ Exercise the configured persistence route over MCP.
 						'origin',
 						'refs/heads/wip/x00298-s3',
 					).trim();
-					expect(remoteHead).toBe(
-						`${head}\trefs/heads/wip/x00298-s3`,
-					);
-					expect(
+					if (
+						remoteHead === `${head}\trefs/heads/wip/x00298-s3` &&
 						git(
 							managed.workspace,
 							'rev-list',
 							'--count',
 							'HEAD',
-						).trim(),
-					).toBe('2');
-				},
-				{ timeout: 5_000, interval: 100 },
-			);
+						).trim() === '2'
+					) {
+						return;
+					}
+					await new Promise((resolve) => setTimeout(resolve, 100));
+				}
+				throw new Error(
+					'Timed out waiting for remote branch synchronization',
+				);
+			};
+			await waitForRemoteHead();
 		} finally {
 			await managed.close();
 		}
