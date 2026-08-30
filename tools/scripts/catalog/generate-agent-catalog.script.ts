@@ -362,9 +362,18 @@ const renderWarnings = (skillIds: readonly string[]): string =>
 const buildArtifact = (
 	snapshot: ReturnType<typeof buildCatalog>,
 ): IGeneratedAgentCatalogArtifact => {
-	const actionable = snapshot.proposals.filter((proposal) =>
-		ACTIONABLE_PROPOSAL_STATUSES.includes(proposal.status),
-	);
+	const artifactProposals = snapshot.proposals.map((proposal) => ({
+		...proposal,
+		date: proposal.date ?? '',
+	}));
+	const actionable = snapshot.proposals
+		.filter((proposal) =>
+			ACTIONABLE_PROPOSAL_STATUSES.includes(proposal.status),
+		)
+		.map((proposal) => ({
+			...proposal,
+			date: proposal.date ?? '',
+		}));
 	return {
 		mode: snapshot.mode,
 		tools: snapshot.tools,
@@ -377,7 +386,7 @@ const buildArtifact = (
 					snapshot.proposalStatusCounts[status],
 				]),
 			) as Record<IProposalSummary['status'], number>,
-			...(snapshot.mode === 'full' ? { all: snapshot.proposals } : {}),
+			...(snapshot.mode === 'full' ? { all: artifactProposals } : {}),
 		},
 	};
 };
@@ -414,7 +423,7 @@ export const buildAgentCatalogArtifact = async (
 			namespacePrefix: 'mcp-vertex',
 		},
 	});
-	const artifact = buildArtifact(snapshot, generatedAt);
+	const artifact = buildArtifact(snapshot);
 	const outputPath = join(options.root, DEFAULT_OUTPUT_PATH);
 	const warningsPath = outputPath.replace(
 		/\.json$/u,

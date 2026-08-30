@@ -15,7 +15,12 @@ import {
 
 import type { ICommitPolicyPush, ForceMode } from '../contracts/options';
 import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
-import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
+import {
+	branchProtectedRefusal,
+	classifyRefusal,
+	type CommitPolicyRefusalCode,
+	isBranchProtected,
+} from '../contracts/branch';
 import { gitCurrentBranch, gitUpstream } from './git-extra';
 
 export interface IPushDriverInput {
@@ -38,7 +43,11 @@ export type IPushDriverResult =
 			readonly remote: string;
 			readonly branch: string;
 	  }
-	| { readonly ok: false; readonly refusal: string };
+	| {
+			readonly ok: false;
+			readonly refusal: string;
+			readonly code?: CommitPolicyRefusalCode;
+	  };
 
 type IForceAuthorizationResolution =
 	| { readonly ok: true; readonly authorization?: IPushAuthorization }
@@ -101,6 +110,7 @@ export const runPushDriver = async (
 		return {
 			ok: false,
 			refusal: 'push.enabled is false in plugins.commit-policy.options',
+			code: 'PUSH_DISABLED',
 		};
 	}
 
@@ -124,6 +134,7 @@ export const runPushDriver = async (
 				ok: false,
 				refusal:
 					'push refused: could not resolve remote/branch (no upstream, no current branch)',
+				code: 'PUSH_TARGET_UNRESOLVED',
 			};
 		}
 		if (branch === undefined) {
@@ -136,6 +147,7 @@ export const runPushDriver = async (
 			ok: false,
 			refusal:
 				'push refused: could not resolve remote (set push.remote or push to a configured remote)',
+			code: 'PUSH_REMOTE_UNRESOLVED',
 		};
 	}
 
@@ -155,6 +167,7 @@ export const runPushDriver = async (
 				protected: effectiveProtectedBranches,
 				protectedPrefixes: policy.protectedPrefixes,
 			}),
+			code: 'BRANCH_PROTECTED',
 		};
 	}
 
@@ -164,7 +177,13 @@ export const runPushDriver = async (
 		policy,
 		input.authorizedBy,
 	);
-	if (!authorization.ok) return { ok: false, refusal: authorization.refusal };
+	if (!authorization.ok) {
+		return {
+			ok: false,
+			refusal: authorization.refusal,
+			code: 'FORCE_AUTHORIZATION_REQUIRED',
+		};
+	}
 
 	const result = await gitPush(run, {
 		remote,
@@ -186,6 +205,7 @@ export const runPushDriver = async (
 		return {
 			ok: false,
 			refusal: `push failed: ${result.reason ?? 'unknown'}`,
+			code: 'PUSH_FAILED',
 		};
 	}
 	return { ok: true, pushed: true, remote, branch };

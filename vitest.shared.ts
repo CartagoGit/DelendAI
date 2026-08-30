@@ -788,6 +788,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(client, 'public/index.ts'),
 		},
 		{
+			find: '@mcp-vertex/client/node',
+			replacement: resolve(client, 'node/index.ts'),
+		},
+		{
 			find: /^@mcp-vertex\/client\/lib\/(.*)$/,
 			replacement: `${resolve(client, 'lib')}/$1`,
 		},

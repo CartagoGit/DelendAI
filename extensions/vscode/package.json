@@ -426,7 +426,8 @@
 	},
 	"capabilities": {
 		"untrustedWorkspaces": {
-			"supported": false
+			"supported": true,
+			"description": "The extension does not start the configured server automatically in Restricted Mode. Use the explicit Start Server (Untrusted) command after reviewing and approving the configured launch."
 		}
 	}
 }
