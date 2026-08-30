@@ -2,12 +2,14 @@
 id: f00194
 title: "Capability versioning (`requires: { capability: '^2' }`)"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: external-mcps
 date: 2026-08-25
 priority: P2
 parent-plan: q00006
+shipped-in:
+  - f8cf1260
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track K / f00194"
@@ -119,10 +121,13 @@ disponible y decide si es compatible.
 
 ### S1 — Schema versioning + resolución + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/capabilities/versioning.ts`, `packages/core/src/lib/capabilities/inject.ts`, `packages/core/tests/src/lib/capabilities/versioning.spec.ts`, manifest schemas (extensión)
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: la suite de capability versioning pasa 25/25 y el typecheck de packages/core pasa. La implementación coincide con el alcance funcional del slice y no requiere crear los archivos declarados como manifest extension para este gate.
 ## acceptance
 
 - Schema acepta `requires: { capability: '^x.y.z' }`.

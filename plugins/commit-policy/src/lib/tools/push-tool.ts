@@ -42,13 +42,13 @@ export interface IPushToolOptions {
  */
 const resolveAuthorizedBy = async (
 	options: IPushToolOptions,
-	effectiveForce: ICommitPolicyOptions['push']['force']
+	effectiveForce: ICommitPolicyOptions['push']['force'],
 ): Promise<string | undefined> => {
 	if (effectiveForce !== 'allow') return undefined;
 	if (options.identityCtx === undefined) return undefined;
 	const resolution = await resolveAuthor(
 		options.policy.identity,
-		options.identityCtx
+		options.identityCtx,
 	);
 	return resolution.ok ? resolution.author.displayName : undefined;
 };
@@ -69,7 +69,7 @@ const OutputSchema = z.object({
 
 export const runCommitPolicyPush = async (
 	args: z.infer<typeof InputSchema>,
-	options: IPushToolOptions
+	options: IPushToolOptions,
 ): Promise<ReturnType<typeof toolOk> | ReturnType<typeof toolError>> => {
 	const effectiveForce = args.force ?? options.policy.push.force;
 	const authorizedBy = await resolveAuthorizedBy(options, effectiveForce);
@@ -82,7 +82,7 @@ export const runCommitPolicyPush = async (
 	const result = await withGitWriteLock(
 		options.workspaceRoot,
 		options.pluginCacheDir,
-		() => runPushDriver(input, options.policy.push, options.run)
+		() => runPushDriver(input, options.policy.push, options.run),
 	);
 
 	const parseResult = OutputSchema.safeParse({
@@ -95,7 +95,7 @@ export const runCommitPolicyPush = async (
 	if (!parseResult.success) {
 		return toolError(
 			`commit_policy_push output schema mismatch: ${parseResult.error.message}`,
-			'Report this as a plugin bug.'
+			'Report this as a plugin bug.',
 		);
 	}
 
@@ -124,7 +124,7 @@ export const runCommitPolicyPush = async (
 	}
 
 	const successMessage = localizedString(options.locale, (catalog) =>
-		catalog.tools.push.success({ remote: result.remote })
+		catalog.tools.push.success({ remote: result.remote }),
 	);
 
 	return toolOk({
@@ -134,7 +134,7 @@ export const runCommitPolicyPush = async (
 };
 
 export const buildPushToolRegistration = (
-	options: IPushToolOptions
+	options: IPushToolOptions,
 ): IToolRegistration => ({
 	id: 'commit_policy_push',
 	summary:
@@ -150,7 +150,7 @@ export const buildPushToolRegistration = (
 				outputSchema: OutputSchema,
 				inputSchema: InputSchema,
 			},
-			async (args) => runCommitPolicyPush(args, options)
+			async (args) => runCommitPolicyPush(args, options),
 		);
 	},
 });
