@@ -374,8 +374,7 @@
 			"properties": {
 				"mcp-vertex.server.command": {
 					"type": "string",
-					"default": "bun",
-					"markdownDescription": "Executable used to spawn the MCP server. Override this when `bun` (or your replacement) is not on the `PATH` inherited by VS Code's extension host \u2014 e.g. WSL installs at `~/.bun/bin/bun`. Set to an absolute path to bypass `PATH` lookup entirely.",
+					"markdownDescription": "Executable used to spawn the MCP server for the extension. Required; the extension never infers this from an MCP host configuration.",
 					"scope": "machine"
 				},
 				"mcp-vertex.server.args": {
@@ -386,11 +385,7 @@
 					"items": {
 						"type": "string"
 					},
-					"default": [
-						"run",
-						"mcp-vertex"
-					],
-					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Accepts either a JSON array of strings or a single space-separated string. Defaults to `[\"run\", \"mcp-vertex\"]`.",
+					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Required; provide an array to preserve argument boundaries exactly.",
 					"scope": "machine"
 				},
 				"mcp-vertex.server.prefix": {

@@ -97,16 +97,19 @@ const createSliceEvent = (
 	};
 };
 
-const parseIndex = (
+const parseIndex = async (
 	raw: string,
-): {
+	reader: SafeWorkspaceReader,
+	proposalsDir: string,
+): Promise<{
 	slices: Map<string, SliceSnapshotEntry>;
-} => {
+}> => {
 	const slices = new Map<string, SliceSnapshotEntry>();
 	try {
 		const parsed = JSON.parse(raw) as {
 			proposals?: readonly {
 				id?: string;
+				file?: string;
 				slices?: readonly {
 					id?: string;
 					status?: string;
@@ -116,7 +119,50 @@ const parseIndex = (
 		};
 		for (const proposal of parsed.proposals ?? []) {
 			if (typeof proposal.id !== 'string') continue;
-			for (const slice of proposal.slices ?? []) {
+			let sourceSlices = proposal.slices ?? [];
+			if (
+				sourceSlices.length === 0 &&
+				typeof proposal.file === 'string'
+			) {
+				const markdown = (
+					await reader.readText(join(proposalsDir, proposal.file))
+				).content;
+				const section = markdown.match(
+					/^##(?:\s+\d+\.)?\s*Slices\b[^\n]*$([\s\S]*?)(?=^## (?!#)|\n*$(?![\s\S]))/im,
+				)?.[1];
+				if (section !== undefined) {
+					sourceSlices = [
+						...section.matchAll(
+							/^### (\S+)\s+—\s+[^\n]*$([\s\S]*?)(?=^### |\n*$(?![\s\S]))/gmu,
+						),
+					].map((match) => {
+						const body = match[2] ?? '';
+						const files = [
+							...body.matchAll(
+								/^[-*]\s*(?:files|\*\*Files\*\*):\s*(.+)$/gmu,
+							),
+						].flatMap((fileMatch) =>
+							(fileMatch[1] ?? '')
+								.split(',')
+								.map((file) =>
+									file.trim().replace(/^`|`$/gu, '').trim(),
+								)
+								.filter((file) => file.length > 0),
+						);
+						return {
+							id: match[1] ?? '',
+							status:
+								body
+									.match(
+										/^[-*]\s*(?:status|\*\*Status\*\*):\s*`?([^`\n]+)`?\s*$/mu,
+									)?.[1]
+									?.trim() ?? 'unknown',
+							files,
+						};
+					});
+				}
+			}
+			for (const slice of sourceSlices) {
 				if (typeof slice.id !== 'string') continue;
 				const files = (slice.files ?? []).filter(
 					(f): f is string => typeof f === 'string' && f.length > 0,
@@ -193,12 +239,13 @@ export interface ISliceListener {
 
 export const createSliceListener = (
 	workspaceRoot: string,
-	docsDir: string,
+	indexDir: string,
 	config: ISliceTriggerConfig,
 	onHandler: ITriggerHandler,
 	pollMs: number = DEFAULT_POLL_MS,
+	proposalsDir: string = indexDir,
 ): ISliceListener => {
-	const indexRel = join(docsDir, 'proposals', 'index.json');
+	const indexRel = join(indexDir, 'proposals', 'index.json');
 	let prev = new Map<string, SliceSnapshotEntry>();
 	let initialized = false;
 	let timer: ReturnType<typeof setInterval> | undefined;
@@ -265,7 +312,9 @@ export const createSliceListener = (
 		} catch {
 			return [];
 		}
-		const curr = parseIndex(raw).slices;
+		const curr = (
+			await parseIndex(raw, reader, join(proposalsDir, 'proposals'))
+		).slices;
 		pruneAcknowledged(curr, config.onStatuses);
 		refreshPending(curr, config.onStatuses);
 		const { events: newEvents, refusals: newRefusals } = initialized
@@ -332,9 +381,10 @@ export const createSliceListener = (
 
 export const readCurrentSliceSnapshot = async (
 	workspaceRoot: string,
-	docsDir: string,
+	indexDir: string,
+	proposalsDir: string = indexDir,
 ): Promise<Map<string, SliceSnapshotEntry>> => {
-	const indexRel = join(docsDir, 'proposals', 'index.json');
+	const indexRel = join(indexDir, 'proposals', 'index.json');
 	let raw = '';
 	try {
 		raw = (await new SafeWorkspaceReader(workspaceRoot).readText(indexRel))
@@ -346,5 +396,11 @@ export const readCurrentSliceSnapshot = async (
 			return new Map();
 		}
 	}
-	return parseIndex(raw).slices;
+	return (
+		await parseIndex(
+			raw,
+			new SafeWorkspaceReader(workspaceRoot),
+			join(proposalsDir, 'proposals'),
+		)
+	).slices;
 };

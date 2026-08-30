@@ -645,7 +645,7 @@ export const assembleCliConfig = async (
 		cacheReconcile,
 	});
 	const runtimeEventSink = createJsonlRuntimeEventSink(
-		runtimeEventsPath(cacheDir),
+		runtimeEventsPath(cacheDirContained.abs),
 	);
 	runtimeSessionStarted(runtimeEventSink, {
 		mode: initialSurfaceMode,

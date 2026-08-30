@@ -213,8 +213,24 @@ describe('slice listener', () => {
 		]);
 
 		listener.start();
-		await vi.waitFor(() => {
-			expect(seen).toEqual(['S3']);
+		await new Promise<void>((resolve, reject) => {
+			const deadline = Date.now() + 2_000;
+			const poll = (): void => {
+				if (seen.length === 1 && seen[0] === 'S3') {
+					resolve();
+					return;
+				}
+				if (Date.now() >= deadline) {
+					reject(
+						new Error(
+							`timed out waiting for slice delivery: ${seen.join(',')}`,
+						),
+					);
+					return;
+				}
+				setTimeout(poll, 10);
+			};
+			poll();
 		});
 		listener.stop();
 	});

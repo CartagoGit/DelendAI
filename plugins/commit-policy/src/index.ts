@@ -34,6 +34,24 @@ if (process.env.VITEST === 'true') {
 }
 
 const OptionsSchema = CommitPolicyOptionsSchema;
+
+type ConfiguredForgeProvider = 'github' | 'gitlab' | 'unknown';
+
+const resolveConfiguredProvider = (
+	providers: Readonly<Record<string, ConfiguredForgeProvider>>,
+	host: string,
+): ConfiguredForgeProvider => {
+	const normalizedHost = host.toLowerCase();
+	for (const [configuredHost, provider] of Object.entries(providers)) {
+		if (configuredHost.toLowerCase() === normalizedHost) return provider;
+	}
+	return normalizedHost === 'github.com'
+		? 'github'
+		: normalizedHost === 'gitlab.com'
+			? 'gitlab'
+			: 'unknown';
+};
+
 export const validateCommitPolicyConfiguration = (
 	input: IPluginConfigurationValidationInput,
 ): readonly IPluginConfigurationIssue[] => {
@@ -45,13 +63,26 @@ export const validateCommitPolicyConfiguration = (
 		readonly branch?: unknown;
 		readonly enabled?: unknown;
 		readonly protectedBranches?: unknown;
+		readonly protectedPrefixes?: unknown;
 	};
 	const branch = pushOptions.branch;
+	const protectedBranches = Array.isArray(pushOptions.protectedBranches)
+		? pushOptions.protectedBranches
+		: [];
+	const protectedPrefixes = Array.isArray(pushOptions.protectedPrefixes)
+		? pushOptions.protectedPrefixes.filter(
+				(prefix): prefix is string => typeof prefix === 'string',
+			)
+		: [];
+	const matchesProtectedBranch =
+		typeof branch === 'string' && protectedBranches.includes(branch);
+	const matchesProtectedPrefix =
+		typeof branch === 'string' &&
+		protectedPrefixes.some((prefix) => branch.startsWith(prefix));
 	if (
 		pushOptions.enabled === true &&
 		typeof branch === 'string' &&
-		Array.isArray(pushOptions.protectedBranches) &&
-		pushOptions.protectedBranches.includes(branch)
+		(matchesProtectedBranch || matchesProtectedPrefix)
 	) {
 		return [
 			{
@@ -61,12 +92,22 @@ export const validateCommitPolicyConfiguration = (
 				keys: [
 					'plugins.commit-policy.options.push.enabled',
 					'plugins.commit-policy.options.push.branch',
-					'plugins.commit-policy.options.push.protectedBranches',
+					...(matchesProtectedBranch
+						? [
+								'plugins.commit-policy.options.push.protectedBranches',
+							]
+						: []),
+					...(matchesProtectedPrefix
+						? [
+								'plugins.commit-policy.options.push.protectedPrefixes',
+							]
+						: []),
 				],
 				values: {
 					enabled: pushOptions.enabled,
 					branch,
-					protectedBranches: pushOptions.protectedBranches,
+					protectedBranches,
+					protectedPrefixes,
 				},
 				precedence:
 					'Protected-branch policy wins over automatic push; the host must make the target and protection list compatible.',
@@ -129,19 +170,12 @@ export default definePlugin({
 			...(policy.push.providerByHost !== undefined
 				? {
 						resolveProvider: (host: string) =>
-							(
+							resolveConfiguredProvider(
 								policy.push.providerByHost as Readonly<
-									Record<
-										string,
-										'github' | 'gitlab' | 'unknown'
-									>
-								>
-							)[host] ??
-							(host === 'github.com'
-								? 'github'
-								: host === 'gitlab.com'
-									? 'gitlab'
-									: 'unknown'),
+									Record<string, ConfiguredForgeProvider>
+								>,
+								host,
+							),
 					}
 				: {}),
 		});
@@ -407,9 +441,11 @@ export default definePlugin({
 			};
 			sliceListener = createSliceListener(
 				ctx.workspace.root,
-				ctx.docsDir,
+				ctx.cacheDir,
 				sliceTrigger,
 				handler,
+				undefined,
+				ctx.docsDir,
 			);
 			sliceListener.start();
 		}
