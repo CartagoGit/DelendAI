@@ -18,9 +18,16 @@ related:
     - r00028 # subpath exports de core
     - r00030 # cliente importa de contracts
     - r00033 # envelopes compartidos (Track M)
+superseded-by: d00012
 ---
 
 # r00029 — Extraer `@mcp-vertex/contracts` con tipos puros sin Node
+
+> **SUPERSEDED por [d00012](../../ready/docs/d00012-adr-contracts-subpath-vs-package.md) (ADR 0007).**
+> La decisión arquitectónica —tipos puros como subpath
+> `@mcp-vertex/core/contracts`, no como paquete separado— está
+> registrada en el ADR 0007. El cuerpo de esta propuesta se
+> conserva para trazabilidad.
 
 ## Goal
 
