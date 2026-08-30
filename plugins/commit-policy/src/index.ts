@@ -385,6 +385,21 @@ export default definePlugin({
 			const intervalMs = configuredInterval.minutes * 60_000;
 			let intervalCheckInFlight = false;
 			let intervalEventSequence = 0;
+			let lastIntervalRefusal: { key: string; at: number } | undefined;
+			const reportIntervalRefusal = (reason: string): void => {
+				const normalized = reason.replace(/\s+/gu, ' ').trim();
+				const key = normalized.length > 0 ? normalized : 'unknown';
+				const now = Date.now();
+				if (
+					lastIntervalRefusal?.key === key &&
+					now - lastIntervalRefusal.at < intervalMs
+				)
+					return;
+				lastIntervalRefusal = { key, at: now };
+				console.warn(
+					`[commit-policy] interval snapshot refused\n  cause: ${key}\n  action: automatic commit\n  next check: ${configuredInterval.minutes} minute(s)`,
+				);
+			};
 			const checkInterval = async (): Promise<void> => {
 				if (intervalCheckInFlight) return;
 				intervalCheckInFlight = true;
@@ -400,13 +415,11 @@ export default definePlugin({
 						eventId: `interval-${intervalEventSequence}`,
 					});
 					if (result.ack === 'ERR') {
-						console.warn(
-							`[commit-policy] interval snapshot refused: ${result.reason}`,
-						);
+						reportIntervalRefusal(result.reason);
 					}
 				} catch (error) {
-					console.warn(
-						`[commit-policy] interval snapshot failed: ${error instanceof Error ? error.message : String(error)}`,
+					reportIntervalRefusal(
+						error instanceof Error ? error.message : String(error),
 					);
 				} finally {
 					intervalCheckInFlight = false;

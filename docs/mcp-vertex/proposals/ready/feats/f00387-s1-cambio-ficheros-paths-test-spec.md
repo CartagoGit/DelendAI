@@ -1,5 +1,5 @@
 ---
-id: f00387
+id: f00388
 title: "**S1** — <cambio> · ficheros: `<paths>` · test: `<spec>`"
 kind: feat
 status: ready
@@ -9,7 +9,7 @@ date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/2026-08-27-develop-independent-audit-claude-opus5.md#s1-cambio-ficheros-paths-test-spec
 ---
 
-# f00387 — **S1** — <cambio> · ficheros: `<paths>` · test: `<spec>`
+# f00388 — **S1** — <cambio> · ficheros: `<paths>` · test: `<spec>`
 
 ## Goal
 
