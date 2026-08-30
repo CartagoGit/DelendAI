@@ -223,7 +223,9 @@ describe('logs_search (f00153 S2)', () => {
 		expect(events[0]?.meta.error?.fingerprint).toMatch(/^[a-f0-9]{16}$/);
 		expect(events[0]?.meta.error).not.toHaveProperty('message');
 		expect(events[0]?.meta.error).not.toHaveProperty('stack');
-		expect(JSON.stringify(result)).not.toContain('lock held by another agent');
+		expect(JSON.stringify(result)).not.toContain(
+			'lock held by another agent',
+		);
 		expect(JSON.stringify(result)).not.toContain('Error: at line 42');
 	});
 

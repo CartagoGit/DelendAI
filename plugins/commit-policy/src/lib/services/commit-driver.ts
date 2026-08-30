@@ -406,7 +406,7 @@ const commitWithSharedIndexGuard = async (
 	});
 	if (!commitResult.ok) {
 		await resetStagedPathsSafely(args.run, args.allowList);
-		const reason = commitResult.reason ?? 'unknown';
+		const reason = stripAnsi(commitResult.reason ?? 'unknown');
 		const alreadyClean = /nothing to commit|no changes added/u.test(reason);
 		return {
 			committed: false,

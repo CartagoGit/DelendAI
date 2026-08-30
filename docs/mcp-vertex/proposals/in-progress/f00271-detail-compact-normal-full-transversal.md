@@ -141,8 +141,10 @@ cualquier tool a partir de un solo campo de input.
 - **Status**: pending
 - **Files**: `plugins/project-health/src/lib/tools/get.ts`, `plugins/dependencies/src/lib/tools/list.ts`, `plugins/dependencies/src/lib/tools/get.ts`, `plugins/search/src/lib/tools/query.ts`, `tools/scripts/lint/detail-levels-coverage.script.ts`
 - **Gate**: type
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: copilot-f00271-s2
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by delivery_verifier — Corregir tres puntos: 1) detail-levels-coverage debe evaluar cada tool registrado, no solo el archivo, para no marcar adopciones parciales como completas; 2) cablear el lint advisory en la batería de scripts/validate dentro del alcance permitido o dejar evidencia explícita de por qué requiere una hija separada; 3) añadir tests focalizados para compact/normal/full y schema/runtime en project-health, deps y search, preservando payload legado cuando detail se omite.
 ## acceptance
 
 - 8 plugins objetivo aceptan `detail` (incluyendo `proposals` y

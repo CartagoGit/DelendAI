@@ -170,6 +170,7 @@ export interface ILogIncident {
 	readonly incidentType: string;
 	readonly toolName: string;
 	readonly errorFingerprint: string;
+	readonly sampleError: string;
 	readonly count: number;
 	readonly distinctAgents: number;
 	readonly firstSeen: string;
@@ -282,6 +283,7 @@ export const logIncidents = async (
 			incidentType: cluster.incidentType,
 			toolName: cluster.toolName,
 			errorFingerprint: cluster.messageHash,
+			sampleError: `redacted:${cluster.messageHash}`,
 			count: cluster.events.length,
 			distinctAgents: cluster.agents.size,
 			firstSeen: cluster.firstSeen,
