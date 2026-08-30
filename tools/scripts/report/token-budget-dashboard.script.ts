@@ -535,7 +535,6 @@ export const buildPerSurfaceColumns = (
 };
 
 const renderGeneratedMarkdown = (
-	generatedAt: string,
 	fixture: IFixtureMeasurements,
 	presetRows: readonly IPresetDashboardRow[],
 	activationKpisMarkdown: string,
@@ -755,7 +754,7 @@ const renderGeneratedMarkdown = (
 		'',
 		GENERATED_MARKER,
 		'',
-		`Generated at: ${generatedAt}`,
+		'Generated from the current repository measurements; timestamps are intentionally omitted for deterministic diffs.',
 		'',
 		'This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.',
 		'',
@@ -938,7 +937,7 @@ const renderGeneratedMarkdown = (
 };
 
 export const buildTokenBudgetDashboardMarkdown = async (
-	input: { readonly generatedAt?: string } = {},
+	_input: { readonly generatedAt?: string } = {},
 ): Promise<string> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
@@ -957,7 +956,6 @@ export const buildTokenBudgetDashboardMarkdown = async (
 			}
 		}
 		const markdown = `${renderGeneratedMarkdown(
-			input.generatedAt ?? new Date().toISOString(),
 			fixture,
 			presetRows,
 			activationKpisMarkdown,
@@ -973,27 +971,11 @@ export const generateTokenBudgetDashboard = async (): Promise<{
 	readonly outputPath: string;
 }> => {
 	const outputPath = join(repoRoot(), ...TOKEN_BUDGET_DASHBOARD_PATH);
-	const existing = await readFile(outputPath, 'utf8').catch(() => null);
 	const fresh = await buildTokenBudgetDashboardMarkdown();
-	const normalizeGeneratedAt = (text: string): string =>
-		text.replace(/^Generated at: .*$/mu, 'Generated at: <normalized>');
-	const existingGeneratedAt = existing?.match(/^Generated at: (.*?)$/mu)?.[1];
-	// The timestamp is provenance, not content. Preserve it when the measured
-	// dashboard is unchanged so a routine regeneration does not create a noisy
-	// commit every time the generator runs.
-	const markdown =
-		existing !== null &&
-		existingGeneratedAt !== undefined &&
-		normalizeGeneratedAt(existing) === normalizeGeneratedAt(fresh)
-			? fresh.replace(
-					/^Generated at: .*$/mu,
-					`Generated at: ${existingGeneratedAt}`,
-				)
-			: fresh;
 	await withFileMutex(outputPath, async () => {
-		await writeFileAtomic(outputPath, markdown);
+		await writeFileAtomic(outputPath, fresh);
 	});
-	return { markdown, outputPath };
+	return { markdown: fresh, outputPath };
 };
 
 const isMainModule = (): boolean => {
