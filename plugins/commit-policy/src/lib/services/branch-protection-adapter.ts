@@ -10,35 +10,19 @@ const GIT_TOOL: IExternalTool = { id: 'git', bin: 'git' };
 const GH_TOOL: IExternalTool = { id: 'gh', bin: 'gh' };
 const GLAB_TOOL: IExternalTool = { id: 'glab', bin: 'glab' };
 
-export type ForgeProvider = 'github' | 'gitlab' | 'unknown';
-
-export type BranchProtectionState = 'fresh' | 'stale' | 'unsupported' | 'error';
-
-export type BranchProtectionRefreshResult =
-	| {
-			readonly ok: true;
-			readonly state: 'fresh';
-			readonly provider: Exclude<ForgeProvider, 'unknown'>;
-			readonly remoteName: string;
-			readonly remoteHost: string;
-			readonly remoteBranches: readonly string[];
-			readonly effectiveBranches: readonly string[];
-	  }
-	| {
-			readonly ok: false;
-			readonly state: Exclude<BranchProtectionState, 'fresh'>;
-			readonly reason: string;
-			readonly provider?: ForgeProvider;
-			readonly remoteName?: string;
-			readonly remoteHost?: string;
-			readonly remoteBranches: readonly string[];
-			readonly effectiveBranches: readonly string[];
-	  };
-
-export interface BranchProtectionAdapter {
-	refresh(): Promise<BranchProtectionRefreshResult>;
-	getLastResult(): BranchProtectionRefreshResult | undefined;
-}
+export {
+	type BranchProtectionAdapter,
+	type BranchProtectionRefreshResult,
+	type BranchProtectionState,
+	type ForgeProvider,
+} from '../contracts/branch-protection-contracts';
+import type {
+	BranchProtectionAdapter as IBranchProtectionAdapter,
+	BranchProtectionRefreshResult,
+	BranchProtectionState,
+	ForgeProvider,
+	SupportedRemoteRepository,
+} from '../contracts/branch-protection-contracts';
 
 export interface BranchProtectionAdapterOptions {
 	readonly workspaceRoot: string;
@@ -55,10 +39,6 @@ interface RemoteRepository {
 	readonly owner: string;
 	readonly repository: string;
 }
-
-type SupportedRemoteRepository = RemoteRepository & {
-	readonly provider: Exclude<ForgeProvider, 'unknown'>;
-};
 
 interface RemoteTarget {
 	readonly name: string;
@@ -281,7 +261,7 @@ const parseBranches = (
 
 export const createBranchProtectionAdapter = (
 	options: BranchProtectionAdapterOptions,
-): BranchProtectionAdapter => {
+): IBranchProtectionAdapter => {
 	const exec = options.exec ?? runExternalTool;
 	const localBranches = new Set(options.policy.protectedBranches);
 	let remoteBranches = new Set<string>();

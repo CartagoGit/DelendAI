@@ -254,8 +254,26 @@ export const buildScopedMessage = (
  * Strips a leading `./` and converts `\\` to `/`.
  */
 const normalizeRepoPath = (raw: string): string => {
-	const replaced = raw.replace(/\\/gu, '/');
-	return replaced.startsWith('./') ? replaced.slice(2) : replaced;
+	const replaced = raw.replace(/\\/gu, '/').trim();
+	const arrow = replaced.lastIndexOf(' -> ');
+	const path = arrow >= 0 ? replaced.slice(arrow + 4).trim() : replaced;
+	return path.startsWith('./') ? path.slice(2) : path;
+};
+
+const normalizeStagePath = (raw: string): string => {
+	const replaced = raw.replace(/\\/gu, '/').trim();
+	const arrow = replaced.lastIndexOf(' -> ');
+	return arrow >= 0 ? replaced.slice(arrow + 4).trim() : replaced;
+};
+
+const formatGitFailure = (
+	operation: 'add' | 'commit',
+	reason?: string,
+): string => {
+	const clean = stripAnsi(reason ?? 'unknown')
+		.replace(/\s+/gu, ' ')
+		.trim();
+	return `git ${operation} failed: ${clean.length > 0 ? clean : 'unknown'}`;
 };
 
 const gitStdoutTrimmed = async (
@@ -372,7 +390,7 @@ const commitWithSharedIndexGuard = async (
 				headMoved: false,
 				headBefore,
 				headAfter: headBefore,
-				refusal: `git add failed: ${addResult.reason ?? 'unknown'}`,
+				refusal: formatGitFailure('add', addResult.reason),
 			};
 		}
 	}
@@ -419,7 +437,7 @@ const commitWithSharedIndexGuard = async (
 			headAfter: headBefore,
 			refusal: alreadyClean
 				? 'nothing to commit (worktree already clean)'
-				: `git commit failed: ${reason}`,
+				: formatGitFailure('commit', reason),
 			trace: {
 				commitCreated: false,
 				headBefore: headBefore ?? '',
@@ -498,7 +516,7 @@ export const commitWithGuard = async (
 							headMoved: false,
 							headBefore,
 							headAfter: headBefore,
-							refusal: `git add failed: ${addResult.reason ?? 'unknown'}`,
+							refusal: formatGitFailure('add', addResult.reason),
 						};
 					}
 				}
@@ -822,11 +840,12 @@ const runCommitDriverUnlocked = async (
 		};
 	}
 
+	const normalizedFiles = files.map(normalizeStagePath);
 	const result = await commitWithGuard({
 		run: options.run,
 		message: finalMessage,
 		authorFlag: identity.author.authorFlag,
-		allowList: files,
+		allowList: normalizedFiles,
 		branch,
 		enforceSubset:
 			input.triggerContext !== undefined ||

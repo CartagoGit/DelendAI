@@ -9,7 +9,7 @@
 `@mcp-vertex/git` already exposes `git_commit` / `git_push` — but only as
 primitives: every agent has to choose the author, decide when to push, and
 remember to add an audit trailer. `commit-policy` wraps those primitives with
-three configurable policies and exposes four tools to drive the engine:
+three configurable policies and exposes five tools to drive the engine:
 
 | Tool                   | Purpose                                                                  |
 | ---------------------- | ------------------------------------------------------------------------ |
@@ -17,6 +17,7 @@ three configurable policies and exposes four tools to drive the engine:
 | `commit_policy_commit` | Commit through the engine (identity + audit + protected-branch refusal). |
 | `commit_policy_push`   | Push through the engine (protected-branch refusal + force policy).       |
 | `commit_policy_run`    | Manually fire any configured trigger.                                    |
+| `commit_policy_refresh_branch_protection` | Refresh remote branch protection on demand. |
 
 The engine is **off by default**: no host sees a single commit unless they
 opt in. See "Configuration" below for the exact knobs.
@@ -62,11 +63,14 @@ opt in. See "Configuration" below for the exact knobs.
 | `push.protectedBranches`       | `[]`                 | Exact branch names configured here are protected; no names are assumed.                                                                                                     |
 | `push.remote` / `push.branch`  | _none_               | Optional explicit defaults; falls back to upstream / current branch.                                                                                                        |
 
-When the plugin starts, it best-effort checks the `origin` remote with the
-authenticated `gh` or `glab` CLI. Detected protected branches are merged with
-the locally configured list. Use `commit_policy_refresh_branch_protection`
-after changing the repository remote or its forge rules; a failed remote check
-leaves the local configuration active.
+Remote branch protection is refreshed manually by
+`commit_policy_refresh_branch_protection`. The adapter uses `push.remote` when
+configured, then the current upstream remote, then `origin` as a compatibility
+fallback. GitHub and GitLab public hosts are supported through their
+authenticated CLIs; other hosts return an explicit `unsupported` state and
+leave the local configuration active. The refresh is not executed during
+plugin registration unless the host explicitly sets
+`MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true`.
 
 ### Branch rules
 
@@ -78,9 +82,10 @@ Before an automatic commit or push, inspect `commit_policy_status` and its
   `push.enabled` are enabled.
 - Any branch, including `main`, `develop`, and `master`, permits direct commit and push when it is absent from those configured lists and the relevant switches are enabled.
 The remote provider check is available through
-`commit_policy_refresh_branch_protection`. It supports GitHub and GitLab when
-their authenticated CLI is installed; unsupported remotes and missing auth do
-not replace the local policy.
+`commit_policy_refresh_branch_protection`. Its result includes `fresh`,
+`stale`, `unsupported` or `error`, together with the remote name/host and the
+effective protected branches. Unsupported remotes and missing authentication
+do not replace the local policy.
 
 ### Identity modes
 
@@ -201,8 +206,10 @@ The root `mcp-vertex.config.json` opts in with:
 ```
 
 That means: every time a `proposals` slice transitions to `done`, the engine
-commits as the workstation's global git user and pushes the result to
-`origin/develop` (with `--force-with-lease`). Refuses `main`/`master`.
+commits as the configured explicit owner and pushes the result to
+`origin/develop` (with `--force-with-lease`). Only branches listed in
+`protectedBranches` or matching `protectedPrefixes` are refused; `main` and
+`master` have no special treatment.
 This repository also enables `cadence.allowForeignChanges`, so the snapshot
 may include work from other agents and may be committed before the wider task
 is complete.
