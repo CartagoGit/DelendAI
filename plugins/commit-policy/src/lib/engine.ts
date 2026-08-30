@@ -33,6 +33,7 @@ import {
 import { resolveAuthor } from './identity/resolver';
 import {
 	computeIdempotencyKey,
+	ProcessedEventsStoreReadError,
 	type IProcessedEventsStore,
 } from './processed-events';
 import {
@@ -109,6 +110,7 @@ export type IEngineRefusalCode =
 	| 'NON_CONVENTIONAL_MESSAGE'
 	| 'CROSS_AGENT_CONTAMINATION'
 	| 'TRIGGER_HAS_NO_FILES'
+	| 'STORE_READ_ERROR'
 	| 'PUSH_FAILED';
 
 export const ENGINE_REFUSAL_CODES = [
@@ -400,12 +402,23 @@ export const createCommitPolicyEngine = (
 		// work on `git add --`.
 		if (options.processedEvents !== undefined) {
 			const key = computeIdempotencyKey(event);
-			if (await options.processedEvents.has(key)) {
-				completeStep('idempotency', 'OK', {
-					key,
-					ack: 'ALREADY_PROCESSED',
-				});
-				return finish({ ack: 'ALREADY_PROCESSED', key });
+			try {
+				if (await options.processedEvents.has(key)) {
+					completeStep('idempotency', 'OK', {
+						key,
+						ack: 'ALREADY_PROCESSED',
+					});
+					return finish({ ack: 'ALREADY_PROCESSED', key });
+				}
+			} catch (error) {
+				if (error instanceof ProcessedEventsStoreReadError) {
+					return failAt(
+						'idempotency',
+						'STORE_READ_ERROR',
+						error.message,
+					);
+				}
+				throw error;
 			}
 		}
 		completeStep('idempotency', 'OK');
