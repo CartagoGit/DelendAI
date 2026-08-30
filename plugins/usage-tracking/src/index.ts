@@ -50,6 +50,13 @@ const OptionsSchema = z
 		 */
 		clientMap: z.record(z.string(), ClientMappingSchema).optional(),
 		/**
+		 * Explicit token baselines keyed by `plugin/tool`, then `plugin/*`.
+		 * Baselines are metadata-only and are compared with provider usage.
+		 */
+		tokenBaselines: z
+			.record(z.string(), z.number().nonnegative())
+			.optional(),
+		/**
 		 * Max buffered records before a forced flush. Default 64 (CRITICAL
 		 * C2). Lower to fsync sooner; higher to coalesce more aggressively.
 		 */
@@ -133,6 +140,13 @@ export default definePlugin({
 		const summaryIntervalMs =
 			options.summaryIntervalMs ?? DEFAULT_OPTIONS.summaryIntervalMs;
 		const clientMap = options.clientMap;
+		const tokenBaselines = options.tokenBaselines ?? {};
+		const baselineTokensOf = (
+			plugin: string,
+			tool: string,
+		): number | undefined =>
+			tokenBaselines[`${plugin}/${tool}`] ??
+			tokenBaselines[`${plugin}/*`];
 		const hygieneOptions = options.sessionHygiene;
 		const sessionHygieneEnabled = hygieneOptions?.enabled ?? true;
 		const sessionHygiene = new SessionHygieneMonitor({
@@ -390,6 +404,7 @@ export default definePlugin({
 					endedAt,
 					responseBytes: estimateResultBytes(result ?? {}),
 					fallbackModel: lastModelBySession.get(sessionId),
+					baselineTokensOf,
 					costOf,
 				});
 				if (record.model !== null && record.usage !== null) {
@@ -438,6 +453,9 @@ export default definePlugin({
 						'- Saving tools stamp `tokensSaved` on the same append-only row;',
 						'  model attribution reuses only the last model observed in that',
 						'  session, while older/unattributed rows safely count as zero.',
+						'- `tokenBaselines` compares configured per-tool/plugin baselines',
+						'  with provider-reported usage locally; no extra LLM request is made.',
+						'  Missing usage or baseline is marked unavailable, never guessed.',
 						'- `usage_clear {confirm:true}` wipes the log + summary.',
 						'- The 5-min rollup lives in',
 						`  \`${joinRel(ctx.pluginCacheDir, 'usage-summary.json')}\`.`,

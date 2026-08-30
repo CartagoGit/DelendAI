@@ -83,6 +83,10 @@ export interface IBuildInvocationRecordInput {
 	readonly endedAt: number;
 	readonly responseBytes?: number | undefined;
 	readonly fallbackModel?: IModelDescriptor | null | undefined;
+	/** Optional baseline token resolver, keyed by attributed plugin/tool. */
+	readonly baselineTokensOf?:
+		| ((plugin: string, tool: string) => number | undefined)
+		| undefined;
 	readonly costOf: (
 		model: IModelDescriptor | null,
 		usage: IUsageTokens | null,
