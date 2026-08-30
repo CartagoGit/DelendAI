@@ -33,7 +33,7 @@ opt in. See "Configuration" below for the exact knobs.
         "commit":   { "enabled": true },
         "push":     { "enabled": true, "onCommit": true },
         "cadence":  { "triggers": [{ "kind": "slice" }] },
-        "identity": { "mode": "global" }
+        "identity": { "mode": "explicit", "owner": { "name": "Cartago", "email": "cartago@example.com" } }
       }
     }
   }
@@ -62,13 +62,14 @@ opt in. See "Configuration" below for the exact knobs.
 | `push.force`                   | `"with-lease"`       | `"with-lease" \| "allow" \| "never"`.                                                                                                                                       |
 | `push.protectedBranches`       | `[]`                 | Exact branch names configured here are protected; no names are assumed.                                                                                                     |
 | `push.remote` / `push.branch`  | _none_               | Optional explicit defaults; falls back to upstream / current branch.                                                                                                        |
+| `push.providerByHost`          | _none_               | Optional host-to-provider map for self-hosted GitHub/GitLab remotes, for example `{ "git.example.test": "gitlab" }`.                                                       |
 
 Remote branch protection is refreshed manually by
 `commit_policy_refresh_branch_protection`. The adapter uses `push.remote` when
 configured, then the current upstream remote, then `origin` as a compatibility
 fallback. GitHub and GitLab public hosts are supported through their
-authenticated CLIs; other hosts return an explicit `unsupported` state and
-leave the local configuration active. The refresh is not executed during
+authenticated CLIs; self-hosted hosts can be mapped with `push.providerByHost`;
+unmapped hosts return an explicit `unsupported` state and leave the local configuration active. The refresh is not executed during
 plugin registration unless the host explicitly sets
 `MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true`.
 

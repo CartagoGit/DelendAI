@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import plugin from '@mcp-vertex/commit-policy';
 import * as corePublic from '@mcp-vertex/core/public';
+import { CommitPolicyOptionsSchema } from '@mcp-vertex/commit-policy/lib/contracts/options';
 import type {
 	IMcpPluginContext,
 	IExternalToolRun,
@@ -84,6 +85,18 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 			}
 			nativeClearInterval(interval);
 		}) as typeof clearInterval);
+	});
+
+	it('accepts self-hosted forge provider mappings in public options', () => {
+		const parsed = CommitPolicyOptionsSchema.parse({
+			push: {
+				providerByHost: { 'git.example.test': 'gitlab' },
+			},
+		});
+
+		expect(parsed.push.providerByHost).toEqual({
+			'git.example.test': 'gitlab',
+		});
 	});
 
 	afterEach(async () => {

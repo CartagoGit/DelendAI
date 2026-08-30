@@ -118,7 +118,7 @@ describe('runPushDriver', () => {
 		expect(pushes.calls[0]).toEqual([
 			'push',
 			'origin',
-			'topic/test',
+			'HEAD:topic/test',
 			'--force-with-lease',
 		]);
 	});
@@ -135,7 +135,7 @@ describe('runPushDriver', () => {
 		expect(pushes.calls[0]).toEqual([
 			'push',
 			'origin',
-			'topic/test',
+			'HEAD:topic/test',
 			'--force-with-lease',
 		]);
 	});
@@ -153,7 +153,7 @@ describe('runPushDriver', () => {
 		expect(pushes.calls[0]).toEqual([
 			'push',
 			'origin',
-			'topic/test',
+			'HEAD:topic/test',
 			'--force-with-lease',
 		]);
 	});
@@ -169,7 +169,7 @@ describe('runPushDriver', () => {
 			}),
 			run,
 		);
-		expect(pushes.calls[0]).toEqual(['push', 'origin', 'topic/test']);
+		expect(pushes.calls[0]).toEqual(['push', 'origin', 'HEAD:topic/test']);
 	});
 
 	it('uses --force when force policy is "allow" and the push is authorized', async () => {
@@ -188,7 +188,7 @@ describe('runPushDriver', () => {
 		expect(pushes.calls[0]).toEqual([
 			'push',
 			'origin',
-			'topic/test',
+			'HEAD:topic/test',
 			'--force',
 		]);
 	});

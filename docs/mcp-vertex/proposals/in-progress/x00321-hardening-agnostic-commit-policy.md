@@ -37,8 +37,10 @@ La auditoría detectó bloqueos hardcodeados de ramas, acoplamiento a gh/glab/or
   - "Commit, push, scheduler y status consumen la misma decisión de protección."
   - "Las negativas de push y commit tienen códigos estructurados y mensajes accionables."
   - "La suite cubre consistencia status versus ejecución en ramas configurables."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: copilot-orchestrator
+- review-reviewer: delivery-verifier
+- review-log: requested_changes by delivery-verifier — La implementación pasa 49/49 tests y typecheck, pero no cumple completamente la aceptación: varias negativas de commit/push siguen como texto libre sin código estructurado y falta una prueba directa de consistencia entre status, commit y push para una rama protegida configurable. Añadir códigos reutilizables y mensajes accionables, actualizar las capas tool si hace falta, y cubrir el contrato en tests.
 ### S2 — Abstraer protección de proveedores
 - **Status**: pending
 - **Files**: `plugins/commit-policy/src/lib/services/branch-protection-adapter.ts`, `plugins/commit-policy/src/lib/tools/branch-protection-tool.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/tests/src/lib/services/branch-protection-adapter.spec.ts`, `plugins/commit-policy/tests/src/index.spec.ts`

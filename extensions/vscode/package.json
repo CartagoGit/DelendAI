@@ -18,7 +18,14 @@
 	],
 	"main": "./dist/extension.js",
 	"activationEvents": [
-		"workspaceContains:**/mcp-vertex.config.json"
+		"onStartupFinished",
+		"onView:mcp-vertex.tools",
+		"onView:mcp-vertex.proposals",
+		"onView:mcp-vertex.memory",
+		"onView:mcp-vertex.kpis",
+		"workspaceContains:**/mcp-vertex.config.json",
+		"workspaceContains:**/.mcp.json",
+		"workspaceContains:**/.vscode/mcp.json"
 	],
 	"contributes": {
 		"viewsContainers": {

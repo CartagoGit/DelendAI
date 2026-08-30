@@ -262,4 +262,25 @@ describe('manifest-vs-package lint', () => {
 			);
 		});
 	});
+
+	it('flags a completely missing toolPermissions map for commit-policy', async () => {
+		await withFixture(async (root) => {
+			await mkdir(join(root, 'plugins/commit-policy'), {
+				recursive: true,
+			});
+			await writeJson(join(root, 'plugins/commit-policy/package.json'), {
+				name: '@mcp-vertex/commit-policy',
+				version: '0.1.0',
+				publishConfig: { access: 'public' },
+			});
+			await writeManifest(root, 'commit-policy');
+			await writeRuntimeIndex(root, 'commit-policy');
+			const violations = await lintManifestVsPackage(root);
+			expect(
+				violations.filter(
+					(violation) => violation.rule === 'MANIFEST-TOOL-002',
+				),
+			).toHaveLength(5);
+		});
+	});
 });

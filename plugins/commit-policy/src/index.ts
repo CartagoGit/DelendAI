@@ -126,6 +126,24 @@ export default definePlugin({
 		const branchProtectionAdapter = createBranchProtectionAdapter({
 			workspaceRoot: ctx.workspace.root,
 			policy: policy.push,
+			...(policy.push.providerByHost !== undefined
+				? {
+						resolveProvider: (host: string) =>
+							(
+								policy.push.providerByHost as Readonly<
+									Record<
+										string,
+										'github' | 'gitlab' | 'unknown'
+									>
+								>
+							)[host] ??
+							(host === 'github.com'
+								? 'github'
+								: host === 'gitlab.com'
+									? 'gitlab'
+									: 'unknown'),
+					}
+				: {}),
 		});
 		if (
 			process.env
