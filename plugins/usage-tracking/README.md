@@ -164,18 +164,18 @@ The plugin **never** sniffs `process.env` for vendor-specific variables.
 
 ## Options
 
-| Option | Default | Meaning |
-|---|---|---|
-| `clientMap` | – | `clientInfo.name` → `{kind, extension}` overrides |
-| `tokenBaselines` | – | Explicit token baselines keyed by `plugin/tool` or `plugin/*`; used only when provider usage is available |
-| `maxBatch` | `64` | records buffered before a forced flush |
-| `maxDelayMs` | `250` | max ms a record waits before a flush |
-| `windowDays` | `7` | rollup window for the periodic summary |
-| `summaryIntervalMs` | `300000` | how often the summary is regenerated |
-| `sessionHygiene.enabled` | `true` | emit one-shot local MCP-session advisories |
-| `sessionHygiene.maxSessionAgeMinutes` | `120` | observed MCP activity span before an advisory |
-| `sessionHygiene.maxIdleGapMinutes` | `30` | observed gap between MCP calls before an advisory |
-| `sessionHygiene.maxMcpOutputTokens` | `8000` | estimated MCP response volume before an advisory |
+| Option                                | Default  | Meaning                                                                                                   |
+| ------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| `clientMap`                           | –        | `clientInfo.name` → `{kind, extension}` overrides                                                         |
+| `tokenBaselines`                      | –        | Explicit token baselines keyed by `plugin/tool` or `plugin/*`; used only when provider usage is available |
+| `maxBatch`                            | `64`     | records buffered before a forced flush                                                                    |
+| `maxDelayMs`                          | `250`    | max ms a record waits before a flush                                                                      |
+| `windowDays`                          | `7`      | rollup window for the periodic summary                                                                    |
+| `summaryIntervalMs`                   | `300000` | how often the summary is regenerated                                                                      |
+| `sessionHygiene.enabled`              | `true`   | emit one-shot local MCP-session advisories                                                                |
+| `sessionHygiene.maxSessionAgeMinutes` | `120`    | observed MCP activity span before an advisory                                                             |
+| `sessionHygiene.maxIdleGapMinutes`    | `30`     | observed gap between MCP calls before an advisory                                                         |
+| `sessionHygiene.maxMcpOutputTokens`   | `8000`   | estimated MCP response volume before an advisory                                                          |
 
 ## License
 
