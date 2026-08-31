@@ -479,21 +479,6 @@ export async function releaseSessionSubscriptions(
 		return { releasedTaskIds: [...released] };
 	});
 }
-			(lease) =>
-				typeof lease.host === 'string' &&
-				lease.host === caller.host &&
-				typeof lease.pid === 'number' &&
-				lease.pid === caller.pid,
-		);
-		if (owned.length === 0) return { releasedTaskIds: [] };
-		const released = new Set(owned.map((lease) => lease.taskId));
-		await saveSubscriptionLeases(
-			subscriptionPath,
-			leases.filter((lease) => !released.has(lease.taskId)),
-		);
-		return { releasedTaskIds: [...released] };
-	});
-}
 
 /** Atomically persist the delivered-keys set (kept readable on disk — N11). */
 const saveDeliveredSet = async (
