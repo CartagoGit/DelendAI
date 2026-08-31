@@ -644,6 +644,30 @@ export const activate = async (
 		handle.register(`sub-${trackSeq++}`, disposable);
 		return disposable;
 	};
+	const serverConfigured = configuredLaunch !== undefined;
+	const dashboardRefresh: {
+		current?: DashboardWebviewViewProvider;
+	} = {};
+	// Register the dashboard before network-backed providers and commands.
+	// The dashboard provider renders an unavailable state when MCP is down,
+	// so activation can expose the web app without waiting for connectivity.
+	const dashboardRegistration = registerDashboardSurfaces(
+		context,
+		client,
+		vscode,
+		deps.vscode,
+		namespacePrefix,
+		serverConfigured,
+		track,
+		dashboardRefresh,
+	);
+	void dashboardRegistration.catch(async (error: unknown) => {
+		const message = error instanceof Error ? error.message : String(error);
+		runtimeChannel?.append(`Dashboard registration failed: ${message}\n`);
+		await vscode.window.showErrorMessage?.(
+			`MCP Vertex dashboard could not be registered: ${message}`,
+		);
+	});
 	if (runtimeChannel !== undefined) {
 		const workspaceRoot =
 			vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath;
@@ -691,7 +715,6 @@ export const activate = async (
 		namespacePrefix === undefined ? {} : { namespacePrefix },
 	);
 	const notifications = new NotificationsService(client, namespacePrefix);
-	const serverConfigured = configuredLaunch !== undefined;
 	const toolTree = new ToolTreeDataProvider(
 		overview,
 		catalog,
@@ -786,26 +809,19 @@ export const activate = async (
 	}
 
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
-	const dashboardRefresh: {
-		current?: DashboardWebviewViewProvider;
-	} = {};
 	// detailSink is wired below — see `dashboardProvider` construction —
 	// because the dashboard provider depends on `host`, which is only
 	// resolved after the MCP client connects. We expose a proxy so the
 	// command registrations below can reference it before it has a
 	// concrete implementation.
 	const detailSink = ((kind, model) => {
-		const broker = dashboardProvider.getDetailBroker();
-		return broker.push({ kind, model });
+		const provider = dashboardRefresh.current;
+		return provider === undefined
+			? Promise.resolve(false)
+			: provider.getDetailBroker().push({ kind, model });
 	}) as NonNullable<
 		Parameters<typeof registerOpenToolDetailCommand>[0]['detailSink']
 	>;
-	// `dashboardProvider` itself is constructed right before
-	// `registerWebviewViewProvider` is invoked; until then the
-	// reference used here is intentionally undefined (the typed value
-	// `DashboardWebviewViewProvider | undefined` is satisfied by the
-	// late-bound `dashboardProvider` declared further below).
-	let dashboardProvider!: DashboardWebviewViewProvider;
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
 	track(
 		registerRefreshCommand({
@@ -944,19 +960,6 @@ export const activate = async (
 			client,
 			globalState: context.globalState,
 		}),
-	);
-
-	runSafely(
-		registerDashboardSurfaces(
-			context,
-			client,
-			vscode,
-			deps.vscode,
-			namespacePrefix,
-			serverConfigured,
-			track,
-			dashboardRefresh,
-		),
 	);
 };
 
