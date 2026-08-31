@@ -3422,6 +3422,7 @@
 		"oversized-file:plugins/proposals/tests/src/lib/agents/zombie-reconcile.spec.ts:1",
 		"oversized-file:plugins/proposals/tests/src/lib/authoring.spec.ts:1",
 		"oversized-file:plugins/proposals/tests/src/lib/auto-work.spec.ts:1",
+		"oversized-file:plugins/proposals/tests/src/lib/close-slice-validation.spec.ts:1",
 		"oversized-file:plugins/proposals/tests/src/lib/continue-proposal.spec.ts:1",
 		"oversized-file:plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts:1",
 		"oversized-file:plugins/proposals/tests/src/lib/e2e/proposal-loop.e2e.spec.ts:1",
