@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-30T22:36:05.228Z",
+	"generatedAt": "2026-08-31T07:20:04.205Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -2262,7 +2262,10 @@
 				"process",
 				"network"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2700,
+			"example": {
+				"costQualityTradeoff": 7
+			}
 		},
 		{
 			"origin": "first-party",
@@ -2549,7 +2552,26 @@
 				"network",
 				"process"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2700,
+			"example": {
+				"servers": {
+					"example-server": {
+						"enabled": false,
+						"version": "1.2.3",
+						"command": "npx",
+						"args": [
+							"-y",
+							"@example/mcp-server@1.2.3"
+						],
+						"env": [
+							"EXAMPLE_API_TOKEN"
+						]
+					}
+				},
+				"llmDecidesActivation": true,
+				"requireHumanAckWhenLlmDecides": true,
+				"allowDiscoverySearch": false
+			}
 		},
 		{
 			"origin": "first-party",
@@ -3116,7 +3138,23 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2700,
+			"example": {
+				"markers": {
+					"add": [
+						{
+							"id": "REVIEW",
+							"emoji": "🟪",
+							"requiresReason": true,
+							"locales": {
+								"es": "REVISIÓN",
+								"en": "REVIEW"
+							},
+							"instruction": "Close after a successful code review pass."
+						}
+					]
+				}
+			}
 		},
 		{
 			"origin": "first-party",
@@ -3158,7 +3196,12 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2700,
+			"example": {
+				"mode": "tdd",
+				"extraGuidance": "Protocol behaviour additionally needs an e2e against the in-memory MCP server.",
+				"allowSetTool": true
+			}
 		},
 		{
 			"origin": "first-party",
@@ -3187,7 +3230,13 @@
 			"permissions": [
 				"network"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2700,
+			"example": {
+				"allowList": [
+					"example.com",
+					"*.docs.example.com"
+				]
+			}
 		}
 	],
 	"webCatalog": [

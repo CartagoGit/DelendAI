@@ -390,19 +390,6 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['proposals', 'swarm', 'orchestration'],
 			permissions: ['filesystem-read', 'filesystem-write', 'git-read', 'git-write'],
 			tokenBudgetBytes: 12400,
-			example: {
-				"validationCommand": "bun run validate",
-				"namePool": [
-					"falcon",
-					"owl",
-					"crow",
-					"sparrow",
-					"finch"
-				],
-				"orchestration": {
-					"delegateAfterToolCalls": 3
-				}
-			},
 			toolPermissions: { 'auto_work': ['filesystem-read', 'filesystem-write', 'git-read'], 'plan': ['filesystem-read', 'filesystem-write'], 'delegate': ['filesystem-read', 'filesystem-write'], 'get_proposal_workflow': ['filesystem-read'], 'round_context': ['filesystem-read'], 'agent_lock': ['filesystem-read', 'filesystem-write'], 'agent_worktree': ['filesystem-read', 'filesystem-write', 'git-write'], 'agent_names': ['filesystem-read'], 'branch_status': ['git-read'], 'branch_gc': ['git-read', 'git-write'], 'close_slice': ['filesystem-read', 'filesystem-write'], 'proposal_transition': ['filesystem-read', 'filesystem-write'], 'proposal_review': ['filesystem-read'], 'proposal_adopt': ['filesystem-read', 'filesystem-write', 'git-write'], 'proposal_diagnose': ['filesystem-read'], 'state_health': ['filesystem-read'], 'state_repair': ['filesystem-read', 'filesystem-write'], 'agent_lock_release_orphan': ['filesystem-read', 'filesystem-write'] },
 		},
 		{
