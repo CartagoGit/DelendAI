@@ -110,7 +110,9 @@ export const guardShippedInPresent = (
 		// keep it as a single candidate (e.g. `[ship123]` is one SHA,
 		// not three tokens to split). Otherwise split on whitespace /
 		// commas to extract every individual SHA.
-		if (/^[0-9a-f]{7,40}$/.test(inner)) {
+		if (
+			new RegExp(`^[0-9a-f]{7,${SHIPPED_IN_SHA_LENGTH_MAX}}$`).test(inner)
+		) {
 			candidates.push(inner);
 		} else {
 			for (const token of inner.split(/[\s,]+/u)) {
