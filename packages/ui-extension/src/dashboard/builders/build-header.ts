@@ -29,9 +29,14 @@ const EMPTY_LANG_DICT = {
 const renderLangPicker = (current: string): string => {
 	const currentMeta = languages.find((entry) => entry.code === current);
 	const currentFlag = renderFlagIcon(current);
+	const langLabel = extensionText(
+		EMPTY_LANG_DICT,
+		'header.language',
+		'Language',
+	);
 	return `<label class="mcpv-header__lang-picker">
 		<span class="mcpv-header__lang-flag" aria-hidden="true">${currentFlag}</span>
-		<select name="language" data-header-lang aria-label="Language">
+		<select name="language" data-header-lang aria-label="${langLabel}">
 			${HOST_LANGUAGE_CHOICES.map((code) => {
 				const meta = languages.find((entry) => entry.code === code);
 				const flag = renderFlagIcon(code);
