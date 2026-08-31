@@ -54,7 +54,6 @@ export function buildHeader(
 		brandName: 'mcp-vertex',
 		version: `${escapeHtml(model.server.version)} · ${escapeHtml(model.server.name)}`,
 		actions: `${renderLangPicker(settings.language)}${renderThemeSwitcher(settings.theme)}`,
+		direction,
 	});
 }
-
-void direction;

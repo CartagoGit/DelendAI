@@ -9,6 +9,7 @@ import type {
 	IDashboardAllModels,
 	IExtensionSettings,
 } from '@mcp-vertex/client';
+import { DEFAULT_EXTENSION_SETTINGS } from '@mcp-vertex/client';
 import type { ILangDict } from '@mcp-vertex/shared/i18n';
 import { dashboardCss } from '@mcp-vertex/shared/styles/dashboard/dashboard-css';
 
@@ -426,6 +427,8 @@ export const renderDashboard = (
 		vars?: Readonly<Record<string, string | number>>,
 	) => extensionText(options.lang, key, vars);
 
+	const settings: IExtensionSettings =
+		options.settings ?? DEFAULT_EXTENSION_SETTINGS;
 	const header = buildHeader(model, settings);
 	const kpiStrip = buildKpiStrip(model, options.lang);
 	const tabsBar = buildTabsBar(options.lang);
