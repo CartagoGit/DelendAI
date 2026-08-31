@@ -141,6 +141,21 @@ const run = async (): Promise<void> => {
 	// opt-in tests do.
 	if (process.env.MCP_VERTEX_TEST_READY === '1') {
 		process.stderr.write('[mcp-vertex] signal-handlers-ready\n');
+		// Keep the event loop alive until a signal arrives. Without this,
+		// `start()` can return synchronously when the workspace has 0 plugins,
+		// the loop drains, and the host exits cleanly with code 0 before the
+		// parent sends SIGTERM/SIGINT. The 1ms interval is unref'd after the
+		// handshake so a signal can still tear it down promptly.
+		await new Promise<void>((resolve) => {
+			const keepAlive = setInterval(() => undefined, 1_000);
+			const onExit = (): void => {
+				clearInterval(keepAlive);
+				resolve();
+			};
+			process.once('SIGTERM', onExit);
+			process.once('SIGINT', onExit);
+			process.once('SIGHUP', onExit);
+		});
 	}
 };
 
