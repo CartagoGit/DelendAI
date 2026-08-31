@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { isAbsolute, join, resolve as resolvePath, sep } from 'node:path';
 import z from 'zod';
 
@@ -1837,7 +1837,7 @@ export const buildGitLabArtifactsToolRegistrations = (
 							recursive: true,
 						});
 						const truncated = bytes > maxBytes;
-						await writeFile(
+						await writeFileAtomic(
 							target,
 							Buffer.from(binary.slice(0, maxBytes)),
 						);
