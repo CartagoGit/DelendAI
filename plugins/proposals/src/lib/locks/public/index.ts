@@ -9,7 +9,7 @@ export {
 	resetAgentLockSessionBalance,
 	runAgentLockEngine,
 	sweepStaleAgentLockTmpFiles,
-} from './engine';
+} from '../engine';
 
 export type {
 	IAgentLockAction,
@@ -20,4 +20,4 @@ export type {
 	ILockEntry,
 	ILockFile,
 	IReleaseAuditEntry,
-} from './engine';
+} from '../engine';
