@@ -2,7 +2,7 @@
 id: f00198
 title: "Activation precision / recall / churn"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: observability
 date: 2026-08-25
@@ -20,6 +20,9 @@ related:
     - f00199 # tool confusion rate (sinergia)
     - r00033 # envelopes compartidos
     - c00134 # métricas plugin lifecycle
+last-transition-id: 51b2d676-c5eb-4ad4-a5d8-f6d6df26d447
+last-correlation-id: 51b2d676-c5eb-4ad4-a5d8-f6d6df26d447
+last-transition-from: review
 ---
 
 # f00198 — Activation precision / recall / churn

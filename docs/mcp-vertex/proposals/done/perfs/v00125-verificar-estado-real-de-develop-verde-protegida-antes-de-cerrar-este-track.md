@@ -2,7 +2,7 @@
 id: v00125
 title: "Verificar estado real de `develop` (verde + protegida) antes de cerrar este track"
 kind: perf
-status: in-progress
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -18,6 +18,9 @@ related:
     - c00130 # branch protection (predecesor)
     - c00132 # quality gate real (predecesor)
     - v00126 # verify CI local (sinergia, ambos usan GitHub API)
+last-transition-id: 76ae9cea-a16f-47ac-a7ab-5f0d9579b1f3
+last-correlation-id: 76ae9cea-a16f-47ac-a7ab-5f0d9579b1f3
+last-transition-from: review
 ---
 
 # v00125 — Verificar estado real de `develop` (verde + protegida) antes de cerrar este track

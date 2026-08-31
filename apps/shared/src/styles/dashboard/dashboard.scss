@@ -47,47 +47,87 @@
 // Wrapper
 // ---------------------------------------------------------------------------
 
+.mcpv-shell {
+	display: grid;
+	grid-template-columns: 220px minmax(0, 1fr);
+	gap: var(--mcpv-s-4);
+	align-items: start;
+	margin: 0 var(--mcpv-s-4) var(--mcpv-s-4);
+}
+@media (max-width: 900px) {
+	.mcpv-shell {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
 .mcpv-main {
 	font-family: var(--mcpv-font-prose);
 	font-size: 14px;
 	color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
 	background: var(--mcpv-bg, var(--vscode-editor-background, transparent));
-	padding: var(--mcpv-s-4);
+	padding: var(--mcpv-s-2);
 	min-width: 0;
 }
 
 // ---------------------------------------------------------------------------
-// Dashboard application navigation. The sidebar is primary on wide views
-// and becomes an explicit drawer on narrow webviews.
+// Dashboard application navigation. The sidebar is the first column of the
+// `mcpv-shell` grid; it stays sticky inside that column so it never
+// overlaps the main content. The horizontal tab strip is the second
+// row spanning both columns on wide screens, collapsing into a single
+// column under 900px.
 // ---------------------------------------------------------------------------
 
 .mcpv-app-nav {
 	position: sticky;
 	top: 0;
-	float: left;
-	width: 196px;
-	margin: 0 var(--mcpv-s-4) var(--mcpv-s-4) 0;
+	width: 100%;
 	padding: var(--mcpv-s-3);
 	background: var(--mcpv-bg-card, var(--vscode-sideBar-background, #252526));
 	border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
 	border-radius: var(--mcpv-radius);
-	z-index: 2;
+	max-height: calc(100vh - var(--mcpv-s-6));
+	overflow-y: auto;
+	transition: border-color var(--mcpv-transition-fast),
+		box-shadow var(--mcpv-transition-fast);
 
 	&__group {
 		margin-bottom: var(--mcpv-s-4);
-	}
 
-	&__group h3 {
-		margin: 0 0 var(--mcpv-s-1);
-		font-size: 11px;
-		font-weight: 600;
-		text-transform: uppercase;
-		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		& > summary {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: var(--mcpv-s-1) var(--mcpv-s-2);
+			border-radius: var(--mcpv-radius-sm);
+			cursor: pointer;
+			user-select: none;
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+			transition: background var(--mcpv-transition-fast),
+				color var(--mcpv-transition-fast);
+
+			&:hover {
+				background: var(--mcpv-bg-soft, var(--vscode-list-hoverBackground, transparent));
+				color: var(--mcpv-fg);
+			}
+
+			& > span {
+				transition: transform var(--mcpv-transition-fast);
+			}
+		}
+
+		&:not([open]) > summary > span {
+			transform: rotate(-90deg);
+		}
 	}
 
 	&__items {
 		display: grid;
 		gap: 2px;
+		margin-top: var(--mcpv-s-1);
 	}
 
 	&__item {
@@ -97,15 +137,36 @@
 		background: transparent;
 		color: inherit;
 		font: inherit;
-		text-align: left;
+		text-align: start;
 		padding: var(--mcpv-s-1) var(--mcpv-s-2);
 		cursor: pointer;
+		border-radius: 0 var(--mcpv-radius-sm) var(--mcpv-radius-sm) 0;
+		transition: background var(--mcpv-transition-fast),
+			border-color var(--mcpv-transition-fast),
+			color var(--mcpv-transition-fast);
+
+		& > span {
+			display: inline-block;
+			transform: translateX(0);
+			transition: transform var(--mcpv-transition-fast);
+		}
 	}
 
 	&__item:hover,
+	&__item:focus-visible {
+		background: var(--mcpv-bg-soft, var(--vscode-list-hoverBackground, transparent));
+		color: var(--mcpv-fg);
+
+		& > span {
+			transform: translateX(2px);
+		}
+	}
+
 	&__item[aria-current='page'] {
 		background: var(--mcpv-bg-soft, var(--vscode-list-hoverBackground, transparent));
 		border-left-color: var(--mcpv-brand-blue);
+		color: var(--mcpv-fg);
+		font-weight: 600;
 	}
 
 	&__actions {
@@ -1241,4 +1302,247 @@
 		outline-offset: 2px;
 		border-radius: var(--mcpv-radius-sm);
 	}
+}
+
+// Flag icon inside the language picker — fixed-aspect 24×18 to match the
+// .mcpv-header__lang-flag <svg>.
+.mcpv-header__lang-picker,
+.mcpv-header__theme-picker {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	color: var(--mcpv-fg-muted);
+	background: var(--mcpv-bg-soft);
+	border: 1px solid var(--mcpv-border);
+	border-radius: var(--mcpv-radius-sm);
+	padding: 4px 8px;
+	transition: border-color var(--mcpv-transition-fast),
+		background var(--mcpv-transition-fast);
+
+	&:hover {
+		border-color: var(--mcpv-brand-blue);
+		background: var(--mcpv-bg-card);
+	}
+
+	& select {
+		appearance: none;
+		border: 0;
+		background: transparent;
+		color: var(--mcpv-fg);
+		font: inherit;
+		padding: 0 4px;
+		cursor: pointer;
+	}
+}
+
+.mcpv-header__lang-flag {
+	display: inline-grid;
+	place-items: center;
+	width: 28px;
+	height: 18px;
+	border-radius: 2px;
+	overflow: hidden;
+	background: var(--mcpv-bg);
+	border: 1px solid var(--mcpv-border);
+}
+
+.mcpv-header__lang-flag svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+.mcpv-header__theme-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 18px;
+	height: 18px;
+	color: var(--mcpv-brand-blue);
+	font-size: 16px;
+	line-height: 1;
+}
+
+// Brand badge inside plugin/header cards.
+.mcpv-badge {
+	display: inline-grid;
+	place-items: center;
+	width: var(--mcpv-badge-size, 24px);
+	height: var(--mcpv-badge-size, 24px);
+	border-radius: 6px;
+	flex: 0 0 auto;
+	color: var(--mcpv-fg);
+	transition: transform var(--mcpv-transition-fast);
+
+	& svg {
+		width: 100%;
+		height: 100%;
+		display: block;
+	}
+
+	&--initials {
+		color: #fff;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.4px;
+		text-transform: uppercase;
+	}
+
+	&:hover {
+		transform: translateY(-1px);
+	}
+}
+
+// Smooth panel transitions: fade-in + subtle slide up. Exports in
+// every panel so a tab change feels like navigation, not a swap.
+.mcpv-panel {
+	animation: mcpv-panel-in var(--mcpv-transition-medium, 220ms) ease-out;
+}
+
+@keyframes mcpv-panel-in {
+	0% {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.mcpv-panel[data-active='false'] {
+	display: none;
+}
+
+// Smooth tab change for the active indicator on the horizontal tab strip.
+.mcpv-tab {
+	transition:
+		color var(--mcpv-transition-fast, 120ms),
+		border-color var(--mcpv-transition-fast, 120ms),
+		background var(--mcpv-transition-fast, 120ms);
+}
+
+.mcpv-tab[aria-selected='true']::after {
+	content: '';
+	display: block;
+	height: 2px;
+	margin-top: 2px;
+	background: linear-gradient(
+		90deg,
+		var(--mcpv-brand-blue),
+		var(--mcpv-brand-purple)
+	);
+	border-radius: 999px;
+	animation: mcpv-tab-underline var(--mcpv-transition-medium, 220ms);
+}
+
+@keyframes mcpv-tab-underline {
+	0% { transform: scaleX(0.4); opacity: 0; }
+	100% { transform: scaleX(1); opacity: 1; }
+}
+
+// Button transitions.
+.mcpv-button,
+.mcpv-logs__chip {
+	transition:
+		background var(--mcpv-transition-fast, 120ms),
+		color var(--mcpv-transition-fast, 120ms),
+		border-color var(--mcpv-transition-fast, 120ms),
+		transform var(--mcpv-transition-fast, 120ms),
+		box-shadow var(--mcpv-transition-fast, 120ms);
+}
+
+// Honour the user's "reduced motion" preference at the dashboard level
+// by switching the CSS variable — every animation reads from it.
+:root[data-motion='reduced'] {
+	--mcpv-transition-fast: 0ms;
+	--mcpv-transition-medium: 0ms;
+	--mcpv-transition-slow: 0ms;
+}
+:root {
+	--mcpv-transition-fast: 120ms;
+	--mcpv-transition-medium: 220ms;
+	--mcpv-transition-slow: 320ms;
+}
+
+.mcpv-plugins__name {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--mcpv-s-2);
+}
+.mcpv-plugins__name > code {
+	font-size: 13px;
+}
+
+.mcpv-tabs__action-btn svg,
+.mcpv-header__lang-picker svg,
+.mcpv-header__theme-picker svg {
+	width: 16px;
+	height: 16px;
+	display: block;
+	color: currentColor;
+	fill: currentColor;
+}
+.mcpv-tabs__action-btn {
+	color: var(--mcpv-fg-muted);
+	transition: color var(--mcpv-transition-fast),
+		transform var(--mcpv-transition-fast);
+}
+.mcpv-tabs__action-btn:hover {
+	color: var(--mcpv-brand-blue);
+	transform: scale(1.1);
+}
+
+.mcpv-help {
+	display: grid;
+	gap: var(--mcpv-s-2);
+	max-width: 880px;
+}
+
+.mcpv-help__entry {
+	padding: var(--mcpv-s-3);
+	background: var(--mcpv-bg-card);
+	border: 1px solid var(--mcpv-border);
+	border-radius: var(--mcpv-radius);
+	transition: border-color var(--mcpv-transition-fast);
+
+	& > summary {
+		display: flex;
+		align-items: baseline;
+		gap: var(--mcpv-s-2);
+		cursor: pointer;
+		user-select: none;
+		list-style: none;
+
+		& strong {
+			color: var(--mcpv-brand-blue);
+			font-size: 14px;
+		}
+
+		& span {
+			font-size: 12px;
+		}
+
+		&::-webkit-details-marker { display: none; }
+		&::before {
+			content: '▸';
+			display: inline-grid;
+			place-items: center;
+			width: 14px;
+			color: var(--mcpv-fg-muted);
+			transition: transform var(--mcpv-transition-fast);
+		}
+	}
+
+	&[open] > summary::before { transform: rotate(90deg); }
+
+	& > p {
+		margin: var(--mcpv-s-2) 0 0;
+		padding-left: 22px;
+		color: var(--mcpv-fg-muted);
+		font-size: 13px;
+		line-height: 1.5;
+	}
+
+	&:hover { border-color: var(--mcpv-brand-blue); }
 }

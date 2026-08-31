@@ -53,6 +53,7 @@ describe('@mcp-vertex/gitlab optionsSchema', async () => {
 		expect(
 			plugin.optionsSchema?.safeParse({
 				baseUrl: 'https://gitlab.example/api/v4',
+				allowWrite: true,
 				defaultProject: { projectPath: 'cartago/mcp-vertex' },
 			}).success,
 		).toBe(true);
@@ -91,6 +92,37 @@ describe('@mcp-vertex/gitlab optionsSchema', async () => {
 		expect(() =>
 			plugin.register(baseCtx({ baseUrl: 'not-a-url' })),
 		).toThrow(/rejected its options/);
+	});
+
+	it('adds separate write tools only when allowWrite is enabled', async () => {
+		const previousToken = process.env.GITLAB_TOKEN;
+		process.env.GITLAB_TOKEN = 'test-token';
+		try {
+			const readOnly = await plugin.register(baseCtx());
+			const withWrite = await plugin.register(
+				baseCtx({ allowWrite: true }),
+			);
+
+			expect((withWrite.tools ?? []).length).toBeGreaterThan(
+				(readOnly.tools ?? []).length,
+			);
+			expect(
+				(withWrite.tools ?? []).map((tool) => tool.id).sort(),
+			).toEqual(
+				expect.arrayContaining([
+					'issue_write',
+					'discussion_write',
+					'pipeline_write',
+					'job_write',
+					'release_write',
+				]),
+			);
+			expect(readOnly.knowledge?.[0]?.body).toContain('allowWrite');
+			expect(withWrite.knowledge?.[0]?.body).toContain('confirm:true');
+		} finally {
+			if (previousToken === undefined) delete process.env.GITLAB_TOKEN;
+			else process.env.GITLAB_TOKEN = previousToken;
+		}
 	});
 });
 

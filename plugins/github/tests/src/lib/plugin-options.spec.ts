@@ -50,6 +50,7 @@ describe('@mcp-vertex/github optionsSchema', async () => {
 		expect(
 			plugin.optionsSchema?.safeParse({
 				apiUrl: 'https://api.github.example',
+				allowWrite: true,
 				defaultRepository: {
 					owner: 'cartago',
 					repository: 'mcp-vertex',
@@ -65,7 +66,7 @@ describe('@mcp-vertex/github optionsSchema', async () => {
 		const previousToken = process.env.GITHUB_TOKEN;
 		process.env.GITHUB_TOKEN = 'runtime-secret';
 		try {
-			const regs = await plugin.register(
+			const readOnlyRegs = await plugin.register(
 				baseCtx({
 					apiUrl: 'https://api.github.example',
 					defaultRepository: {
@@ -74,8 +75,18 @@ describe('@mcp-vertex/github optionsSchema', async () => {
 					},
 				}),
 			);
+			const writeRegs = await plugin.register(
+				baseCtx({
+					apiUrl: 'https://api.github.example',
+					allowWrite: true,
+					defaultRepository: {
+						owner: 'cartago',
+						repository: 'mcp-vertex',
+					},
+				}),
+			);
 
-			expect((regs.tools ?? []).map((tool) => tool.id)).toEqual([
+			expect((readOnlyRegs.tools ?? []).map((tool) => tool.id)).toEqual([
 				'context',
 				'repositories_get',
 				'repositories_search',
@@ -100,10 +111,34 @@ describe('@mcp-vertex/github optionsSchema', async () => {
 				'deployments_list',
 				'deployment_statuses',
 			]);
-			expect(regs.tools?.[0]?.summary).toBe('GitHub provider context');
-			expect(regs.knowledge?.[0]?.body).toContain('GITHUB_TOKEN');
-			expect(regs.knowledge?.[0]?.body).toContain('GITHUB_API_URL');
-			expect(regs.knowledge?.[0]?.body).toContain('owner + repository');
+			expect((writeRegs.tools ?? []).map((tool) => tool.id)).toEqual([
+				...(readOnlyRegs.tools ?? []).map((tool) => tool.id),
+				'issue_update',
+				'issue_comment_create',
+				'workflow_dispatch',
+				'repository_dispatch',
+				'release_create',
+				'release_update',
+				'release_delete',
+				'tag_create',
+				'tag_delete',
+			]);
+			expect(readOnlyRegs.tools?.[0]?.summary).toBe(
+				'GitHub provider context',
+			);
+			expect(readOnlyRegs.knowledge?.[0]?.body).toContain('GITHUB_TOKEN');
+			expect(readOnlyRegs.knowledge?.[0]?.body).toContain(
+				'GITHUB_API_URL',
+			);
+			expect(readOnlyRegs.knowledge?.[0]?.body).toContain(
+				'owner + repository',
+			);
+			expect(readOnlyRegs.knowledge?.[0]?.body).toContain(
+				'Write tools are disabled by default',
+			);
+			expect(writeRegs.knowledge?.[0]?.body).toContain(
+				'Every mutation requires confirm:true',
+			);
 		} finally {
 			if (previousToken === undefined) {
 				delete process.env.GITHUB_TOKEN;

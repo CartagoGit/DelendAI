@@ -31,6 +31,7 @@ export interface IGitLabPluginOptions {
 	readonly baseUrl?: string;
 	readonly webUrl?: string;
 	readonly defaultProject?: IGitLabProjectInput;
+	readonly allowWrite?: boolean;
 	readonly timeoutMs?: number;
 	readonly maxRetries?: number;
 	readonly retryBaseDelayMs?: number;
