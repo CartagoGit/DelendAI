@@ -44,20 +44,25 @@ const projectCopy = (viewCopy: IViewCopy): IToolDetail['copy'] => ({
 	enumLabel: viewCopy.enumLabel,
 });
 
-const toShared = (model: IToolDetailViewModel): IToolDetail => ({
-	tool: model.tool,
-	...(model.inputSchema === undefined
-		? {}
-		: { inputSchema: model.inputSchema }),
-	...(model.outputSchema === undefined
-		? {}
-		: { outputSchema: model.outputSchema }),
-	...(model.knowledgeBody === undefined
-		? {}
-		: { knowledgeBody: model.knowledgeBody }),
-	...(model.metrics === undefined ? {} : { metrics: model.metrics }),
-	copy: projectCopy(model.copy ?? viewCopyFor('en')),
-});
+const toShared = (model: IToolDetailViewModel): IToolDetail => {
+	const shared: IToolDetail = {
+		tool: model.tool,
+		copy: projectCopy(model.copy ?? viewCopyFor('en')),
+	};
+	return {
+		...shared,
+		...(model.inputSchema === undefined
+			? {}
+			: { inputSchema: model.inputSchema }),
+		...(model.outputSchema === undefined
+			? {}
+			: { outputSchema: model.outputSchema }),
+		...(model.knowledgeBody === undefined
+			? {}
+			: { knowledgeBody: model.knowledgeBody }),
+		...(model.metrics === undefined ? {} : { metrics: model.metrics }),
+	};
+};
 
 export const renderToolDetailHtml = (model: IToolDetailViewModel): string =>
 	renderSharedToolDetailHtml(toShared(model));
