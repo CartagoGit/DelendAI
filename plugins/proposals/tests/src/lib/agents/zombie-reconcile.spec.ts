@@ -304,7 +304,11 @@ describe('zombie-reconcile', async () => {
 		// `runAgentLockEngine` writes. `host`/`pid` are required so the
 		// pid-mismatch branch recognises the entry as a real prior
 		// claim and the release actually frees it (returning
-		// `removed: 1`).
+		// `removed: 1`). `last_seen` MUST be stale (>10 min before
+		// `now`) so the classify step tags the row as
+		// `stale_with_orphaned_lock` — a fresh lock with a stale
+		// registry row is intentionally NOT classified as a zombie
+		// (the agent could come back any moment).
 		const lockData = {
 			version: 1,
 			stale_after_minutes: 10,
@@ -314,7 +318,7 @@ describe('zombie-reconcile', async () => {
 					agent: 'agent_zombie',
 					ownership: ['packages/proposals/src/foo.ts'],
 					started_at: '2026-06-05T11:00:00.000Z',
-					last_seen: '2026-06-05T11:45:00.000Z',
+					last_seen: '2026-06-05T11:30:00.000Z', // 30 min stale
 					host: 'dead-host',
 					pid: 999999,
 				},
