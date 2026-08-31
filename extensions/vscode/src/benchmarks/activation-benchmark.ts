@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -210,11 +210,18 @@ const readObservedToolCalls = async (
 	}
 	try {
 		const raw = await readFile(path, 'utf8');
+		const lines = raw
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
+		if (lines.length === 0) {
+			return {
+				observedToolCalls: null,
+				observedToolCallsEvidence: 'missing-artifact',
+			};
+		}
 		return {
-			observedToolCalls: raw
-				.split('\n')
-				.map((line) => line.trim())
-				.filter((line) => line.length > 0).length,
+			observedToolCalls: lines.length,
 			observedToolCallsEvidence: 'artifact',
 		};
 	} catch {
@@ -430,9 +437,6 @@ const executeVsCodeScenario = async (
 		request.evidenceDir,
 		`${request.scenario}-${request.iteration}.json`,
 	);
-	if (request.callLogPath !== undefined) {
-		await writeFile(request.callLogPath, '', 'utf8');
-	}
 	const startedAt = performance.now();
 	try {
 		await runTests({

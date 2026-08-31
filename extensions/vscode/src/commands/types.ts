@@ -141,6 +141,12 @@ export interface ICommandDeps {
 		ProposalsSnapshotSource,
 		'fetchProposalDetail'
 	>;
+	/**
+	 * Workspace root, used by the proposal detail webview to read the
+	 * markdown plan file when rendering the full plan content. Omitted →
+	 * the plan card is hidden (every other detail section still renders).
+	 */
+	readonly workspaceRoot?: string;
 }
 
 export const showCommandError = async (

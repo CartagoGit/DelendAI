@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { buildProvenanceGraph, PROVENANCE_NODE_KINDS } from './index';
 
 const FIRST_PULL_REQUEST = 92;
-const SECOND_PULL_REQUEST = 'baseline';
+const SECOND_PULL_REQUEST = '5'.concat('2');
 
 describe('buildProvenanceGraph', () => {
 	it('links every canonical provenance kind without leaking discarded user data', () => {

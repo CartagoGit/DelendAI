@@ -130,7 +130,7 @@ adoptProject (ya existe, sin romper su contrato)
 
 ### S1 — `ProjectProfile` persistido, generado y actualizado incrementalmente
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/adopt/project-profile.service.ts` (nuevo)
     - `packages/core/src/lib/contracts/interfaces/project-profile.interface.ts` (nuevo)
@@ -139,9 +139,11 @@ adoptProject (ya existe, sin romper su contrato)
       sin cambiar el contrato de salida actual del tool)
     - `packages/core/tests/src/lib/adopt/project-profile.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/project-profile.spec.ts`
-- review-state: in_review
-- review-implementer: project-profile-f00280-s1-final
+- review-state: done
+- review-implementer: copilot-orchestrator-f00280-s1-final
+- review-reviewer: delivery-verifier-f00280-s1-final
 - review-log: requested_changes by delivery_verifier — El test pasa 3/3, pero la aceptación no está cubierta: en un monorepo sin perfil previo, persistProjectProfile solo escribe la raíz '.' y no genera workspaces; además preserva entradas obsoletas sin reconciliarlas. Añadir descubrimiento inicial de workspaces y pruebas que lo verifiquen.
+- review-log: approved by delivery-verifier-f00280-s1-final — Verified independently: 1) packages/core/src/lib/adopt/adopt-project.tool.ts now calls discoverProjectProfileWorkspaces when projectType==='monorepo'; 2) packages/core/src/lib/adopt/project-profile.service.ts accepts discoveredWorkspaces in both IBuildProjectProfileInput and IPersistProjectProfileInput, normalizes paths via pathPosix, dedupes, and replaces existing workspaces with the discovered set (reconciliation). 3) Focused tests pass 5/5 covering: dedup of trailing slashes / windows separators / dedup of identical paths, initial discovery populating 3 workspaces from a monorepo fixture, reconciliation removing stale apps/old in favor of newly discovered entries, and deep pattern bounding (depth>32 excluded). 4) Core typecheck green. Acceptance now covered.
 ### S2 — Desglose por área/workspace dentro de un monorepo
 
 - **Status**: pending

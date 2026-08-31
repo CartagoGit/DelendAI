@@ -57,7 +57,7 @@ Los cambios de contratos y efectos secundarios son el mayor riesgo de coordinaci
 - review-reviewer: delivery-verifier-r00044-s2-final
 - review-log: approved by delivery-verifier-r00044-s2-final — Aprobada tras revisión independiente. 128/128 tests focalizados pass, exit code 0, HEAD 8514f99. Containment efectivo y consentimiento fail-closed/opt-in verificados.
 ### S3 — Side-effect transaction and capability grants
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `packages/core/src/lib/transactions`, `plugins/git/src/lib/transactions`, `plugins/forge/src/lib/transactions`, `plugins/commit-policy/src/lib/capabilities`, `plugins/git/tests/transactions`
 - **Gate**: e2e
@@ -65,7 +65,10 @@ Los cambios de contratos y efectos secundarios son el mayor riesgo de coordinaci
   - "plan-preview-approval-execute-receipt lifecycle"
   - "expected-state and idempotency enforced"
   - "capabilities use existing manifests"
-
+- review-state: done
+- review-implementer: falcon
+- review-reviewer: delivery-verifier-r00044-s3-final
+- review-log: approved by delivery-verifier-r00044-s3-final — Cadena approval→execute→receipt auditable: el receipt serializa approver/approvalReceipt/grantedCapabilities, replay reconstruye el approval original y rechaza approval-mismatch. 2/2 tests focales pass, exit code 0, HEAD af2265b.
 ## acceptance
 
 - EXPAND-to-CONTRACT protocol encoded in tools/policies

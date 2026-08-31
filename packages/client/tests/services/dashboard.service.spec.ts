@@ -234,13 +234,13 @@ describe('DashboardService', async () => {
 
 		const plugins = await service.getPluginsModel();
 		const buckets = plugins.rows.map((r) => r.plugin);
-		// Both core tools collapse into the single host bucket…
-		expect(buckets).toContain('mcp-vertex');
+		// Both core tools collapse into the single `core` bucket…
+		expect(buckets).toContain('core');
 		expect(buckets).toContain('proposals');
 		// …and the fabricated `fs` / `agent` buckets are gone.
 		expect(buckets).not.toContain('fs');
 		expect(buckets).not.toContain('agent');
-		const core = plugins.rows.find((r) => r.plugin === 'mcp-vertex');
+		const core = plugins.rows.find((r) => r.plugin === 'core');
 		expect(core?.tools).toBe(2); // fs_read + agent_catalog
 
 		// The per-tool metrics rows carry the authoritative plugin too.
@@ -248,7 +248,7 @@ describe('DashboardService', async () => {
 		const fsRow = metricsModel.rows.find(
 			(r) => r.tool === 'mcp-vertex_fs_read',
 		);
-		expect(fsRow?.plugin).toBe('mcp-vertex');
+		expect(fsRow?.plugin).toBe('core');
 	});
 
 	it('respects injected OverviewService + MetricsService when provided', async () => {
