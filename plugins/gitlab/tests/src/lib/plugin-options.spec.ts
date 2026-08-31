@@ -62,17 +62,29 @@ describe('@mcp-vertex/gitlab optionsSchema', async () => {
 	});
 
 	it('registers cleanly and documents the provider context', async () => {
-		const regs = await plugin.register(
-			baseCtx({
-				baseUrl: 'https://gitlab.example/api/v4',
-				defaultProject: { projectPath: 'cartago/mcp-vertex' },
-			}),
-		);
+		const previousToken = process.env.GITLAB_TOKEN;
+		const previousLegacyToken = process.env.GITLAB_PRIVATE_TOKEN;
+		process.env.GITLAB_TOKEN = 'test-token';
+		delete process.env.GITLAB_PRIVATE_TOKEN;
+		try {
+			const regs = await plugin.register(
+				baseCtx({
+					baseUrl: 'https://gitlab.example/api/v4',
+					defaultProject: { projectPath: 'cartago/mcp-vertex' },
+				}),
+			);
 
-		expect(regs.tools).toEqual([]);
-		expect(regs.knowledge?.[0]?.body).toContain('GITLAB_PRIVATE_TOKEN');
-		expect(regs.knowledge?.[0]?.body).toContain('GITLAB_URL');
-		expect(regs.knowledge?.[0]?.body).toContain('projectId');
+			expect((regs.tools ?? []).length).toBeGreaterThan(0);
+			expect(regs.knowledge?.[0]?.body).toContain('GITLAB_PRIVATE_TOKEN');
+			expect(regs.knowledge?.[0]?.body).toContain('GITLAB_URL');
+			expect(regs.knowledge?.[0]?.body).toContain('projectId');
+		} finally {
+			if (previousToken === undefined) delete process.env.GITLAB_TOKEN;
+			else process.env.GITLAB_TOKEN = previousToken;
+			if (previousLegacyToken === undefined)
+				delete process.env.GITLAB_PRIVATE_TOKEN;
+			else process.env.GITLAB_PRIVATE_TOKEN = previousLegacyToken;
+		}
 	});
 
 	it('throws on invalid options before wiring context', async () => {

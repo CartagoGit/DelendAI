@@ -60,6 +60,28 @@ const RemoteErrorSchema = z
 		keptLines: z.number().int().nullable(),
 	})
 	.strict();
+const PaginationSchema = z
+	.object({
+		page: z.number().int().nullable(),
+		perPage: z.number().int().nullable(),
+		nextPage: z.string().nullable(),
+	})
+	.strict();
+const RateLimitSchema = z
+	.object({
+		limit: z.number().int().nullable(),
+		remaining: z.number().int().nullable(),
+		reset: z.string().nullable(),
+	})
+	.strict();
+const TruncationSchema = z
+	.object({
+		originalBytes: z.number().int().nullable(),
+		keptBytes: z.number().int().nullable(),
+		originalLines: z.number().int().nullable(),
+		keptLines: z.number().int().nullable(),
+	})
+	.strict();
 const ResponseMetaSchema = z
 	.object({
 		status: z.number().int(),
