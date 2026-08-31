@@ -17,6 +17,10 @@ export interface IHeaderBarOptions {
 	readonly langPicker?: string; // pre-rendered HTML string for the language picker
 	readonly actions?: string; // pre-rendered HTML string for the right-hand action strip
 	readonly direction?: 'ltr' | 'rtl';
+	/** Optional connection state — when 'lost', the brand mark renders in
+	 *  the host's error colour instead of the brand gradient so the
+	 *  user notices at a glance that MCP is unreachable. */
+	readonly connection?: 'ok' | 'lost';
 }
 
 /** Inline brand SVG copied from the extension/app logo asset so every host
@@ -51,7 +55,11 @@ export const renderHeaderBar = (opts: IHeaderBarOptions): string => {
 	const right = [opts.actions ?? '', opts.langPicker ?? '']
 		.filter((s) => s.length > 0)
 		.join('');
-	return `<header class="mcpv-header"${opts.direction === 'rtl' ? ' dir="rtl"' : ''}>
+	const stateAttr =
+		opts.connection === 'lost'
+			? ' data-connection="lost"'
+			: ' data-connection="ok"';
+	return `<header class="mcpv-header"${opts.direction === 'rtl' ? ' dir="rtl"' : ''}${stateAttr}>
 	${BRAND_SVG}
 	<div class="mcpv-header__brand">
 		<div class="mcpv-header__name">${escapeHtml(opts.brandName)}</div>

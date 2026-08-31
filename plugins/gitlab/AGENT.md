@@ -26,10 +26,10 @@ _(none)_
 
 ## Tests
 
+- plugins/gitlab/tests/src/lib/tools.spec.ts
+- plugins/gitlab/tests/src/lib/mutations.spec.ts
 - plugins/gitlab/tests/src/lib/client.spec.ts
 - plugins/gitlab/tests/src/lib/plugin-options.spec.ts
-- plugins/gitlab/tests/src/lib/security.spec.ts
-- plugins/gitlab/tests/src/lib/tools.spec.ts
 
 ## Do not
 

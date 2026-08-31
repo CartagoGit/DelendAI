@@ -145,6 +145,31 @@ describe('close_slice validation gate (a00069 S5)', () => {
 		});
 	};
 
+	// `close_slice` calls `syncProposalRegistry`, which can move the file
+	// from `in-progress/` to `done/<kind>/`. Read from the live location
+	// rather than the path that was originally seeded.
+	const readCurrentProposal = (): string => {
+		const proposalsDir = join(root, 'docs/mcp-vertex/proposals');
+		const stack = [proposalsDir];
+		while (stack.length > 0) {
+			const current = stack.pop();
+			if (current === undefined) break;
+			for (const entry of readdirSync(current, {
+				withFileTypes: true,
+			})) {
+				const full = join(current, entry.name);
+				if (entry.isDirectory()) {
+					stack.push(full);
+					continue;
+				}
+				if (!entry.name.endsWith('.md')) continue;
+				const text = readFileSync(full, 'utf8');
+				if (text.includes('id: f00999')) return text;
+			}
+		}
+		throw new Error('f00999 proposal not found');
+	};
+
 	it('returns validate-required and does not flip status when evidence is missing', async () => {
 		await seed(SLICE_DOC('type'));
 		const close = await capture(buildCloseSliceRegistration(optsBase));
@@ -175,7 +200,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 			}),
 		);
 		expect(body.closed).toBe(true);
-		expect(readFileSync(docPath, 'utf8')).toMatch(/- \*\*Status\*\*: done/);
+		expect(readCurrentProposal()).toMatch(/- \*\*Status\*\*: done/);
 	});
 
 	it('rejects stale inline validate evidence', async () => {
