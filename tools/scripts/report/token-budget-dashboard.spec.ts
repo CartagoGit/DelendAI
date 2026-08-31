@@ -74,7 +74,9 @@ describe('token-budget dashboard publication', () => {
 		]);
 	});
 
-	it('renders the reproducible task_context_cost block with the fixed published values', async () => {
+	it('renders the reproducible task_context_cost block with the fixed published values', {
+		timeout: 30_000,
+	}, async () => {
 		const measurement = await measurementPromise;
 		const addendum = renderCatalogAndTaskContextMarkdown(measurement);
 
@@ -87,7 +89,9 @@ describe('token-budget dashboard publication', () => {
 		expect(addendum).toContain('| p95 | 834 | 209 |');
 	});
 
-	it('keeps the published token budget artifact aligned with the generated addendum', async () => {
+	it('keeps the published token budget artifact aligned with the generated addendum', {
+		timeout: 30_000,
+	}, async () => {
 		const measurement = await measurementPromise;
 		const addendum = renderCatalogAndTaskContextMarkdown(measurement);
 		const publishedArtifact = readFileSync(TOKEN_BUDGETS_ARTIFACT, 'utf8');

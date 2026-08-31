@@ -34,7 +34,10 @@ const DEFAULTS: IBranchProtectionConfig['defaults'] = {
 
 // The literal API response for `main` copied from the audit evidence.
 const LIVE_MAIN_FIXTURE = {
-	required_status_checks: { strict: true, contexts: ['ci-complete'] },
+	required_status_checks: {
+		strict: true,
+		contexts: ['ci-complete', 'release-pr-gate'],
+	},
 	enforce_admins: { enabled: true },
 	required_linear_history: { enabled: true },
 	allow_force_pushes: { enabled: false },
@@ -50,6 +53,13 @@ const GREEN_CHECK_RUNS_FIXTURE = {
 			head_sha: 'abc123',
 			html_url: 'https://example.test/checks/1',
 		},
+		{
+			name: 'release-pr-gate',
+			status: 'completed',
+			conclusion: 'success',
+			head_sha: 'abc123',
+			html_url: 'https://example.test/checks/2',
+		},
 	],
 };
 
@@ -62,13 +72,20 @@ const RED_CHECK_RUNS_FIXTURE = {
 			head_sha: 'abc123',
 			html_url: 'https://example.test/checks/1',
 		},
+		{
+			name: 'release-pr-gate',
+			status: 'completed',
+			conclusion: 'success',
+			head_sha: 'abc123',
+			html_url: 'https://example.test/checks/2',
+		},
 	],
 };
 
 const MAIN_POLICY: IBranchProtectionConfig['branches'][number] = {
 	name: 'main',
 	protected: true,
-	required_checks: ['ci-complete'],
+	required_checks: ['ci-complete', 'release-pr-gate'],
 };
 
 describe('inspectBranch + isHealthy', () => {
@@ -259,7 +276,10 @@ describe('main() — three-state verdict', () => {
 				main: true,
 				develop: false,
 			});
-			expect(written.requiredChecks).toEqual(['ci-complete']);
+			expect(written.requiredChecks).toEqual([
+				'ci-complete',
+				'release-pr-gate',
+			]);
 			expect(written.discrepancies).toEqual([]);
 		} finally {
 			restoreFetch();
