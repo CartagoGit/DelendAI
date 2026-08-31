@@ -107,7 +107,7 @@ export const assertSafeBaseUrl = (
  */
 export const validateProviderBaseUrl = (
 	raw: string,
-	provider: 'github' | 'gitlab' | string,
+	_provider: 'github' | 'gitlab' | string,
 	options: IUrlPolicyOptions = {},
 ): string => {
 	assertSafeBaseUrl(raw, options);

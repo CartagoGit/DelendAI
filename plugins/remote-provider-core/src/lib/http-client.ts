@@ -7,7 +7,7 @@ import type {
 	RemoteProviderErrorCode,
 	RemoteProviderId,
 } from '@mcp-vertex/contracts/remote-provider';
-import z from 'zod';
+import type z from 'zod';
 
 export interface IRemoteFetchResponse {
 	readonly ok: boolean;

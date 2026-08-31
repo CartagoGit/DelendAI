@@ -132,7 +132,7 @@ export const shouldFetchNextPage = (
 /** Build a truncation info when artifact or page limits were hit. */
 export const buildArtifactTruncation = (
 	itemsCollected: number,
-	limits: IResponseLimits,
+	_limits: IResponseLimits,
 ): IRemoteTruncationInfo => ({
 	truncated: true,
 	reason: 'server-limit' satisfies RemoteTruncationReason,
