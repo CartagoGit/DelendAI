@@ -18,7 +18,7 @@
  */
 import { promises as fs } from 'node:fs';
 import { homedir } from 'node:os';
-import { isAbsolute, join, normalize, resolve, sep } from 'node:path';
+import { isAbsolute, normalize, resolve, sep } from 'node:path';
 
 import type { IFileReader } from '@mcp-vertex/core/public';
 
@@ -143,10 +143,17 @@ export const createUserHomeReader = (
 				return undefined;
 			}
 			try {
-				return await fs.readFile(
-					join(homeRoot, relativeToHome),
-					'utf8',
-				);
+				const [realHomeRoot, realPath] = await Promise.all([
+					fs.realpath(homeRoot),
+					fs.realpath(abs),
+				]);
+				if (
+					realPath !== realHomeRoot &&
+					!realPath.startsWith(realHomeRoot + sep)
+				) {
+					return undefined;
+				}
+				return await fs.readFile(realPath, 'utf8');
 			} catch {
 				return undefined;
 			}
