@@ -233,6 +233,80 @@ kind: fix
 		expect(out.proposalId ?? out.id).toBeDefined();
 	});
 
+	it('integrates migration ordering and worktree guidance into the real slice-plan flow', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{ id: 'r00044', file: 'r00044.md', status: 'ready' },
+				],
+			}),
+		);
+		writeFileSync(
+			join(root, 'r00044.md'),
+			[
+				'---',
+				'id: r00044',
+				'---',
+				'',
+				'# r00044',
+				'',
+				'## Slices',
+				'',
+				'### S1 — expand',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- migration_phase: expand',
+				'- status: done',
+				'',
+				'### S2 — producers',
+				'- files: plugins/proposals/src/lib/swarm/contract-migration-policy.ts',
+				'- migration_phase: producers',
+				'- status: done',
+				'',
+				'### S3 — regenerate',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- migration_phase: regenerate',
+				'- status: done',
+				'',
+				'### S4 — consumers',
+				'- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+				'- migration_phase: consumers',
+				'- status: done',
+				'',
+				'### S5 — verify fanout',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+				'- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts',
+				'- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts',
+				'- migration_phase: verify',
+				'- gate: type',
+				'',
+				'### S6 — contract cleanup',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- files: plugins/proposals/src/lib/swarm/contract-migration-policy.ts',
+				'- migration_phase: contract',
+				'- gate: type',
+				'',
+			].join('\n'),
+		);
+		const out = parse(
+			await runContinueProposal(
+				{ mode: 'plan', proposalId: 'r00044' },
+				options,
+			),
+		);
+		expect(out.kind).toBe('slice-plan');
+		expect(out.claimableSliceIds).toContain('S5');
+		expect(out.claimableSliceIds).not.toContain('S6');
+		const verifySlice = out.plan.slices.find(
+			(slice: { sliceId: string }) => slice.sliceId === 'S5',
+		);
+		expect(verifySlice.migrationGuidance.phase).toBe('verify');
+		expect(
+			verifySlice.migrationGuidance.worktreeImpactPolicy.isolation,
+		).toBe('agent-worktree');
+	});
+
 	it('skips in_progress proposals locked by another agent (anti-loop) [N9]', async () => {
 		// f1 is in_progress AND locked → must not be re-selected; p2 (free) wins.
 		writeFileSync(

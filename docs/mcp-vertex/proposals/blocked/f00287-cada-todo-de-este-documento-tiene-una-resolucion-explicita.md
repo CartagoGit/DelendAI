@@ -2,7 +2,7 @@
 id: f00287
 title: "Cada TODO de este documento tiene una resolución explícita."
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -30,8 +30,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **Status**: pending
 - **Files**: `TODO`
 - **Gate**: none
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: copilot-orchestrator
+- review-reviewer: proposal_guardian
+- review-log: requested_changes by proposal_guardian — Work item migrado incompleto: S1 declara Files: TODO y gate none; no proporciona archivos ni validación ejecutable. Debe bloquearse o reconstruirse desde la auditoría fuente.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
