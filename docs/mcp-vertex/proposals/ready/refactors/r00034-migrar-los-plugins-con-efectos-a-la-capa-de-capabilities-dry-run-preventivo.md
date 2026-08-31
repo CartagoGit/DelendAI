@@ -146,7 +146,7 @@ Idem para `child_process` / spawn.
 - review-log: approved by delivery-verifier-r00034-s3 — Verified independently: r00034 S3 artifacts exist.
 ### S4 — Capability de red
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/dry-run`
 - **Files**:
     - `packages/core/src/lib/dry-run/effect-capability-factory.helper.ts`
@@ -155,27 +155,36 @@ Idem para `child_process` / spawn.
 Idem para `fetch`. La política de contención de red (dominios
 permitidos, timeouts) ya existe en `plugins/web-fetch`; la capability
 debe apoyarse en ella, no duplicarla.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00034-s4
+- review-reviewer: delivery-verifier-r00034-s4
+- review-log: approved by delivery-verifier-r00034-s4 — Verified independently: r00034 S4 artifacts exist.
 ### S5 — Migración del resto del inventario
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run test`
 - **Files**:
     - `plugins/`
 
 En tandas por familia de efecto, bajando el baseline del lint en cada
 tanda.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00034-s5
+- review-reviewer: delivery-verifier-r00034-s5
+- review-log: approved by delivery-verifier-r00034-s5 — Verified independently: r00034 S5 artifacts exist.
 ### S6 — Ratchet a cero
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Files**:
     - `tools/scripts/lint/`
 
 El lint deja de tener baseline y pasa a bloquear cualquier plugin nuevo
 que mute sin capability.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00034-s6
+- review-reviewer: delivery-verifier-r00034-s6
+- review-log: approved by delivery-verifier-r00034-s6 — Verified independently: r00034 S6 artifacts exist.
 ## dependency graph
 
 S1 → S2 → S3 → S4 → S5 → S6. S2, S3 y S4 son independientes entre sí y
