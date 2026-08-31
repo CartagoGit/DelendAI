@@ -18,6 +18,11 @@ export {
 	redactToken,
 } from '../lib/errors/ierror-source';
 export {
+	buildProvenanceGraph,
+	PROVENANCE_NODE_KINDS,
+	PROVENANCE_RELATION_DEFINITIONS,
+} from '../lib/provenance';
+export {
 	listRecentErrors,
 	normalizeLevel,
 	sentryBuildListUrl,
@@ -34,6 +39,15 @@ export type {
 	IRuntimeMetricsRegistry,
 	IRuntimeMetricsSnapshot,
 } from '../lib/contracts/interfaces/observability.interface';
+export type {
+	IProvenanceEdge,
+	IProvenanceEventInput,
+	IProvenanceGraph,
+	IProvenanceLinkOptions,
+	IProvenanceNode,
+	ProvenanceNodeKind,
+	ProvenanceRelation,
+} from '../lib/provenance';
 // `computePayloadPercentile`/`IPayloadPercentile` now live in
 // `@mcp-vertex/core` (the shared contract with `adaptive-optimizer` and the
 // metrics longitudinal gate); re-exported here so this plugin's public

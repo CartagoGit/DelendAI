@@ -12,6 +12,7 @@ describe('evaluateWorktreeImpactPolicy', async () => {
 		});
 		expect(result.impact).toBe('low');
 		expect(result.isolation).toBe('shared-checkout');
+		expect(result.claimMode).toBe('shared-checkout-ok');
 	});
 
 	it('treats a small expand contract+producer change as medium, not mandatory isolation', async () => {
@@ -24,6 +25,7 @@ describe('evaluateWorktreeImpactPolicy', async () => {
 		});
 		expect(result.impact).toBe('medium');
 		expect(result.isolation).toBe('shared-checkout');
+		expect(result.claimMode).toBe('shared-checkout-ok');
 		expect(result.contractTouchCount).toBe(1);
 		expect(result.areaCount).toBe(2);
 	});
@@ -40,6 +42,7 @@ describe('evaluateWorktreeImpactPolicy', async () => {
 		});
 		expect(result.impact).toBe('high');
 		expect(result.isolation).toBe('agent-worktree');
+		expect(result.claimMode).toBe('requires-agent-worktree');
 		expect(result.reasons.join(' ')).toContain('late migration phase');
 	});
 
@@ -58,6 +61,7 @@ describe('evaluateWorktreeImpactPolicy', async () => {
 		expect(result.fileCount).toBe(6);
 		expect(result.impact).toBe('high');
 		expect(result.isolation).toBe('agent-worktree');
+		expect(result.claimMode).toBe('requires-agent-worktree');
 		expect(result.reasons.join(' ')).toContain('threshold 6');
 	});
 
@@ -72,6 +76,7 @@ describe('evaluateWorktreeImpactPolicy', async () => {
 		});
 		expect(result.impact).toBe('high');
 		expect(result.isolation).toBe('agent-worktree');
+		expect(result.claimMode).toBe('requires-agent-worktree');
 		expect(result.reasons.join(' ')).toContain(
 			'multiple contract surfaces',
 		);
@@ -89,6 +94,7 @@ describe('evaluateWorktreeImpactPolicy', async () => {
 		});
 		expect(result.impact).toBe('high');
 		expect(result.isolation).toBe('agent-worktree');
+		expect(result.claimMode).toBe('requires-agent-worktree');
 		expect(result.reasons.join(' ')).toContain('late migration phase');
 	});
 });

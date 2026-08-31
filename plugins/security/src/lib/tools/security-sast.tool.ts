@@ -2,12 +2,12 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
-	resolveWorkspaceContained,
 	summarizeFindings,
 	toolError,
 	toolJson,
 	worstSeverity,
 } from '@mcp-vertex/core/public';
+import { resolveWorkspaceContainedEffective } from '@mcp-vertex/core/lib/security/effective-containment';
 
 import {
 	detectStack,
@@ -74,7 +74,7 @@ export const buildSecuritySastRegistration = (
 			}) => {
 				let cwd = options.workspaceRootAbs;
 				if (args.cwd !== undefined) {
-					const contained = resolveWorkspaceContained(
+					const contained = await resolveWorkspaceContainedEffective(
 						options.workspaceRootAbs,
 						args.cwd,
 					);
@@ -82,7 +82,7 @@ export const buildSecuritySastRegistration = (
 						return toolError(
 							`cwd "${args.cwd}" is not allowed`,
 							contained.reason ??
-								'cwd must be a workspace-relative path.',
+								'cwd must stay inside the workspace after symlink resolution.',
 						);
 					}
 					cwd = contained.abs;

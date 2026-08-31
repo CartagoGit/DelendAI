@@ -1,3 +1,4 @@
+import { formatToolName } from '@mcp-vertex/client';
 import { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
 import { renderProposalDetailHtml } from '../views/proposal-detail-webview';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
@@ -123,7 +124,13 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 				const board = await deps.client.request<
 					Record<string, never>,
 					IProposalBoardOutput
-				>('mcp-vertex_proposals_proposal_board', {});
+				>(
+					formatToolName(
+						deps.namespacePrefix,
+						'proposals_proposal_board',
+					),
+					{},
+				);
 				const panel = deps.vscode.window.createWebviewPanel(
 					'mcpVertexProposals',
 					'mcp-vertex Proposals',

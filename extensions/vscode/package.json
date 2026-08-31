@@ -375,7 +375,7 @@
 			"properties": {
 				"mcp-vertex.server.command": {
 					"type": "string",
-					"markdownDescription": "Executable used to spawn the MCP server for the extension. Required; the extension never infers this from an MCP host configuration.",
+					"markdownDescription": "Executable used to spawn the MCP server for the extension. Optional when the workspace contains `mcp-vertex.config.json`: the extension then uses `bun run mcp-vertex`.",
 					"scope": "machine"
 				},
 				"mcp-vertex.server.args": {
@@ -386,7 +386,7 @@
 					"items": {
 						"type": "string"
 					},
-					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Required; provide an array to preserve argument boundaries exactly.",
+					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Optional when the workspace contains `mcp-vertex.config.json`; provide an array to preserve argument boundaries exactly.",
 					"scope": "machine"
 				},
 				"mcp-vertex.server.cwd": {
@@ -410,6 +410,7 @@
 	},
 	"scripts": {
 		"type": "tsc --noEmit -p tsconfig.json",
+		"bench:activation": "bun src/benchmarks/run-activation-benchmark.ts",
 		"test": "vitest run",
 		"check:i18n": "bun scripts/check-i18n.ts",
 		"build": "bun scripts/build.ts",

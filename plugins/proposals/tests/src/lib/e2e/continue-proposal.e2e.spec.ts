@@ -60,6 +60,7 @@ interface ContinueProposalOutput {
 				readonly phase: string;
 				readonly worktreeImpactPolicy: {
 					readonly isolation: string;
+					readonly claimMode: string;
 				};
 			};
 		}>;
@@ -307,7 +308,7 @@ describe('e2e: proposals_continue_proposal over the real MCP protocol', async ()
 		});
 		expect(res.ok).toBe(true);
 		expect(res.structured.kind).toBe('slice-plan');
-		expect(res.structured.claimableSliceIds).toContain('S5');
+		expect(res.structured.claimableSliceIds).not.toContain('S5');
 		expect(res.structured.claimableSliceIds).not.toContain('S6');
 		const verifySlice = res.structured.plan?.slices.find(
 			(slice) => slice.sliceId === 'S5',
@@ -316,6 +317,9 @@ describe('e2e: proposals_continue_proposal over the real MCP protocol', async ()
 		expect(
 			verifySlice?.migrationGuidance?.worktreeImpactPolicy.isolation,
 		).toBe('agent-worktree');
+		expect(
+			verifySlice?.migrationGuidance?.worktreeImpactPolicy.claimMode,
+		).toBe('requires-agent-worktree');
 	});
 
 	it('mode:"claim" claims a specific slice and reflects ownership', async () => {

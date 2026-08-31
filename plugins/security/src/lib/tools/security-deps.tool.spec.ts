@@ -1,3 +1,7 @@
+import { mkdtemp, mkdir, rm, symlink } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { captureToolRegistration } from '../../../../../tools/scripts/lib/test-mcp-server';
@@ -318,5 +322,104 @@ describe('security_deps tool', () => {
 			json: 'bun',
 		})) as { error?: unknown };
 		expect(out.error).toBeDefined();
+	});
+
+	it('rejects a symlinked cwd whose real target escapes the workspace', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'security-deps-root-'));
+		const outside = await mkdtemp(join(tmpdir(), 'security-deps-outside-'));
+		try {
+			await symlink(outside, join(root, 'linked-outside'));
+			let reachedListDeps = false;
+			const tool = buildSecurityDepsRegistration(
+				options({
+					workspaceRootAbs: root,
+					listDeps: async () => {
+						reachedListDeps = true;
+						return {
+							manifest: 'package.json',
+							found: true,
+							counts: {
+								dependencies: 0,
+								devDependencies: 0,
+								peerDependencies: 0,
+								optionalDependencies: 0,
+							},
+							deps: [],
+						};
+					},
+					auditExec: async () => {
+						throw new Error('should never be reached');
+					},
+				}),
+			);
+			const captured = await captureToolRegistration(tool);
+			const out = await captured.invokeRaw({
+				cwd: 'linked-outside',
+				json: 'bun',
+			});
+			expect(out.isError).toBe(true);
+			expect(
+				(out.payload as { error?: { reason?: string } }).error?.reason,
+			).toContain('cwd');
+			expect(reachedListDeps).toBe(false);
+		} finally {
+			await rm(root, { recursive: true, force: true });
+			await rm(outside, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects a nested symlinked cwd whose real target escapes the workspace', async () => {
+		const root = await mkdtemp(
+			join(tmpdir(), 'security-deps-nested-root-'),
+		);
+		const outside = await mkdtemp(
+			join(tmpdir(), 'security-deps-nested-outside-'),
+		);
+		try {
+			await mkdir(join(root, 'packages', 'app'), { recursive: true });
+			await symlink(outside, join(root, 'packages', 'app', 'vendor'));
+			const tool = buildSecurityDepsRegistration(
+				options({
+					workspaceRootAbs: root,
+					listDeps: async () => ({
+						manifest: 'package.json',
+						found: true,
+						counts: {
+							dependencies: 0,
+							devDependencies: 0,
+							peerDependencies: 0,
+							optionalDependencies: 0,
+						},
+						deps: [],
+					}),
+					auditExec: async () => {
+						throw new Error('should never be reached');
+					},
+				}),
+			);
+			const captured = await captureToolRegistration(tool);
+			const out = await captured.invokeRaw({
+				cwd: 'packages/app/vendor',
+				json: 'bun',
+			});
+			expect(out.isError).toBe(true);
+			expect(
+				(
+					out.payload as {
+						error?: { reason?: string; nextAction?: string };
+					}
+				).error?.reason,
+			).toContain('cwd');
+			expect(
+				(
+					out.payload as {
+						error?: { reason?: string; nextAction?: string };
+					}
+				).error?.nextAction,
+			).toContain('effective path escapes');
+		} finally {
+			await rm(root, { recursive: true, force: true });
+			await rm(outside, { recursive: true, force: true });
+		}
 	});
 });

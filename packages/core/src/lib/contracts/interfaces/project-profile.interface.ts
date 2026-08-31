@@ -44,6 +44,7 @@ export interface IBuildProjectProfileInput {
 	readonly analysis: IProjectAnalysis;
 	readonly assessment: IAdoptionAssessment;
 	readonly existing?: IProjectProfile;
+	readonly discoveredWorkspaces?: readonly IProjectProfileWorkspace[];
 	readonly now?: Date;
 }
 
@@ -56,6 +57,7 @@ export interface IPersistProjectProfileInput {
 	readonly workspace: IWorkspacePathProvider;
 	readonly analysis: IProjectAnalysis;
 	readonly assessment: IAdoptionAssessment;
+	readonly discoveredWorkspaces?: readonly IProjectProfileWorkspace[];
 	readonly now?: Date;
 }
 

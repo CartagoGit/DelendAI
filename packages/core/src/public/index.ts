@@ -686,6 +686,7 @@ export type {
 export {
 	assertExpectedReleaseState,
 	evaluateReleaseReadiness,
+	releaseStatusCompact,
 	ReleaseStateError,
 } from '../lib/contracts/release-state';
 export type {

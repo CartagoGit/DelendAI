@@ -122,3 +122,22 @@ export const evaluateReleaseReadiness = (
 		blockingGates: Object.freeze(blockingGates),
 	});
 };
+
+export const releaseStatusCompact = (
+	candidate: IReleaseCandidateMetadata,
+	gates?: readonly IReleaseGate[],
+): IReleaseStatusCompact => {
+	const readiness =
+		gates === undefined ? undefined : evaluateReleaseReadiness(gates);
+	return Object.freeze({
+		slug: candidate.slug,
+		branch: candidate.branch,
+		state: candidate.state,
+		sourceDevelopSha: candidate.sourceDevelopSha,
+		baseMainSha: candidate.baseMainSha,
+		fromVersion: candidate.fromVersion,
+		targetVersion: candidate.targetVersion,
+		type: candidate.type,
+		...(readiness === undefined ? {} : { readiness }),
+	});
+};

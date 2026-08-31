@@ -1392,57 +1392,9 @@
 				"date": ""
 			},
 			{
-				"id": "f00277",
-				"title": "f00277",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00280",
 				"title": "f00280",
 				"track": "adoption",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00288",
-				"title": "f00288",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00289",
-				"title": "f00289",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00290",
-				"title": "f00290",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00291",
-				"title": "f00291",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00292",
-				"title": "f00292",
-				"track": "migrated",
 				"status": "ready",
 				"kind": "feat",
 				"date": ""
@@ -2633,12 +2585,12 @@
 			}
 		],
 		"byStatus": {
-			"ready": 156,
-			"in-progress": 15,
+			"ready": 151,
+			"in-progress": 14,
 			"review": 0,
 			"paused": 1,
 			"done": 566,
-			"blocked": 17,
+			"blocked": 23,
 			"retired": 11,
 			"unspecified": 0
 		}

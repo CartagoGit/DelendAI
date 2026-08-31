@@ -42,6 +42,8 @@ const buildVerdict = (
 ): IWorktreeImpactPolicyVerdict => ({
 	impact,
 	isolation: impact === 'high' ? 'agent-worktree' : 'shared-checkout',
+	claimMode:
+		impact === 'high' ? 'requires-agent-worktree' : 'shared-checkout-ok',
 	reasons,
 	fileCount,
 	areaCount,

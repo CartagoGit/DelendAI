@@ -46,7 +46,7 @@ export const resolveOptions = (
 		});
 	}
 	return {
-		enabled: data.enabled ?? true,
+		enabled: data.enabled ?? false,
 		// The destination and labels are MCP Vertex-owned transport policy.
 		// Consumer-project configuration must never redirect or identify the
 		// issue, even when legacy options are present.

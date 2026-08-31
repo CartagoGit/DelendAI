@@ -21,6 +21,8 @@
  * Dry-run by default (`write: false`): returns the full plan without
  * touching disk. Pass `write: true` to persist it.
  */
+import { posix as pathPosix } from 'node:path';
+
 import z from 'zod';
 
 import { analyzeProject } from '../bootstrap/analyze-project';
@@ -34,6 +36,7 @@ import type {
 	IAdoptProjectToolDeps,
 	IBuildAdoptProjectPlanInput,
 } from '../contracts/interfaces/adopt-project.interface';
+import type { IProjectProfileWorkspace } from '../contracts/interfaces/project-profile.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IScaffoldHostOptions } from '../scaffold/scaffold-host';
 import { buildAgentFiles } from './adopt-project-write-estimate';
@@ -124,6 +127,123 @@ const parseExistingConfig = (
 	}
 };
 
+const asRecord = (value: unknown): Record<string, unknown> | undefined => {
+	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+		return undefined;
+	}
+	return value as Record<string, unknown>;
+};
+
+const normalizeWorkspacePath = (value: string): string => {
+	const normalized = pathPosix.normalize(value.replaceAll('\\', '/'));
+	return normalized === '.' ? '.' : normalized.replace(/\/$/, '');
+};
+
+const readWorkspacePatterns = (
+	packageJsonText: string | undefined,
+): string[] => {
+	if (packageJsonText === undefined) return [];
+	try {
+		const parsed: unknown = JSON.parse(packageJsonText);
+		const record = asRecord(parsed);
+		if (record === undefined) return [];
+		if (Array.isArray(record.workspaces)) {
+			return record.workspaces.filter(
+				(entry): entry is string => typeof entry === 'string',
+			);
+		}
+		const workspaceObject = asRecord(record.workspaces);
+		const packages = workspaceObject?.packages;
+		if (!Array.isArray(packages)) return [];
+		return packages.filter(
+			(entry): entry is string => typeof entry === 'string',
+		);
+	} catch {
+		return [];
+	}
+};
+
+const listWorkspaceCandidates = async (
+	reader: IAdoptProjectToolDeps['reader'],
+	packageJsonText: string | undefined,
+): Promise<readonly string[]> => {
+	const candidates = new Set<string>();
+	for (const pattern of readWorkspacePatterns(packageJsonText)) {
+		const normalizedPattern = normalizeWorkspacePath(pattern);
+		if (normalizedPattern === '.' || normalizedPattern === '') continue;
+		if (normalizedPattern.endsWith('/*')) {
+			const baseDir = normalizedPattern.slice(0, -2);
+			for (const child of await reader.listDir(baseDir)) {
+				const candidate = normalizeWorkspacePath(
+					pathPosix.join(baseDir, child),
+				);
+				if (
+					await reader.exists(
+						pathPosix.join(candidate, 'package.json'),
+					)
+				) {
+					candidates.add(candidate);
+				}
+			}
+			continue;
+		}
+		if (
+			await reader.exists(
+				pathPosix.join(normalizedPattern, 'package.json'),
+			)
+		) {
+			candidates.add(normalizedPattern);
+		}
+	}
+	return [...candidates].sort((left, right) => left.localeCompare(right));
+};
+
+const createScopedReader = (
+	reader: IAdoptProjectToolDeps['reader'],
+	workspacePath: string,
+) => ({
+	readFile: (relativePath: string) =>
+		reader.readFile(pathPosix.join(workspacePath, relativePath)),
+	exists: (relativePath: string) =>
+		reader.exists(pathPosix.join(workspacePath, relativePath)),
+	listDir: (relativePath: string) =>
+		reader.listDir(pathPosix.join(workspacePath, relativePath)),
+});
+
+const discoverProjectProfileWorkspaces = async (
+	deps: IAdoptProjectToolDeps,
+): Promise<readonly IProjectProfileWorkspace[]> => {
+	const packageJsonText = await deps.reader.readFile('package.json');
+	const workspacePaths = await listWorkspaceCandidates(
+		deps.reader,
+		packageJsonText,
+	);
+	const discovered: IProjectProfileWorkspace[] = [];
+	for (const workspacePath of workspacePaths) {
+		const scopedReader = createScopedReader(deps.reader, workspacePath);
+		const analysis = await analyzeProject(scopedReader);
+		const topLevelDirs = await scopedReader.listDir('');
+		const assessment = buildAdoptionAssessment(analysis, topLevelDirs, {
+			projectName: analysis.name ?? workspacePath,
+			namespacePrefix: deps.namespacePrefix,
+			mcpServerName: 'mcp-vertex',
+			docsDir: deps.corePaths.docsDir,
+		});
+		discovered.push({
+			path: workspacePath,
+			projectType: analysis.projectType,
+			language: analysis.language,
+			packageManager: analysis.packageManager,
+			...(analysis.framework !== undefined
+				? { framework: analysis.framework }
+				: {}),
+			testRunner: analysis.testRunner,
+			recommendedPluginIds: [...assessment.recommendedPluginIds],
+		});
+	}
+	return discovered;
+};
+
 export const buildAdoptProjectToolRegistration = (
 	deps: IAdoptProjectToolDeps,
 ): IToolRegistration => ({
@@ -161,6 +281,10 @@ export const buildAdoptProjectToolRegistration = (
 			}) => {
 				const analysis = await analyzeProject(deps.reader);
 				const topLevelDirs = await deps.reader.listDir('');
+				const discoveredWorkspaces =
+					analysis.projectType === 'monorepo'
+						? await discoverProjectProfileWorkspaces(deps)
+						: [];
 				const assessment = buildAdoptionAssessment(
 					analysis,
 					topLevelDirs,
@@ -249,6 +373,7 @@ export const buildAdoptProjectToolRegistration = (
 					workspace: deps.workspace,
 					analysis,
 					assessment,
+					discoveredWorkspaces,
 				});
 
 				// 3. Generated scaffold + plugin-contributed adoption files — skip any

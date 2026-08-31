@@ -25,6 +25,10 @@ export type ContractMigrationImpact = 'low' | 'medium' | 'high';
 
 export type WorktreeIsolationMode = 'shared-checkout' | 'agent-worktree';
 
+export type WorktreeClaimMode =
+	| 'shared-checkout-ok'
+	| 'requires-agent-worktree';
+
 export interface IContractMigrationPolicyInput {
 	readonly targetPhase: ContractMigrationPhase;
 	readonly completedPhases?: readonly ContractMigrationPhase[];
@@ -53,6 +57,7 @@ export interface IWorktreeImpactPolicyInput {
 export interface IWorktreeImpactPolicyVerdict {
 	readonly impact: ContractMigrationImpact;
 	readonly isolation: WorktreeIsolationMode;
+	readonly claimMode: WorktreeClaimMode;
 	readonly reasons: readonly string[];
 	readonly fileCount: number;
 	readonly areaCount: number;
