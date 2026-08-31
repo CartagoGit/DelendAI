@@ -49,11 +49,10 @@ export function buildHeader(
 	model: IDashboardAllModels,
 	settings: IExtensionSettings = DEFAULT_EXTENSION_SETTINGS,
 ): string {
-	const direction = rtlLangs.includes(settings.language) ? 'rtl' : 'ltr';
+	void rtlLangs;
 	return renderHeaderBar({
 		brandName: 'mcp-vertex',
 		version: `${escapeHtml(model.server.version)} · ${escapeHtml(model.server.name)}`,
 		actions: `${renderLangPicker(settings.language)}${renderThemeSwitcher(settings.theme)}`,
-		direction,
 	});
 }
