@@ -436,6 +436,7 @@ describe('renderDashboard', async () => {
 	it('embeds the tab-switching client script', async () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toContain('<script>');
+		expect(html).toContain('const root = document.documentElement;');
 		// f00102 S4-real-extract: the client script now selects tabs
 		// via the shared `data-tab-trigger` attribute (stamped by
 		// `renderTabs` in `@mcp-vertex/shared/components/ui/tabs`)

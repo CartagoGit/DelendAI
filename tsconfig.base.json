@@ -84,6 +84,9 @@
 			"@mcp-vertex/remote-provider-core": [
 				"./plugins/remote-provider-core/src/index.ts"
 			],
+			"@mcp-vertex/remote-provider-core/public": [
+				"./plugins/remote-provider-core/src/index.ts"
+			],
 			"@mcp-vertex/remote-provider-core/*": [
 				"./plugins/remote-provider-core/src/*"
 			],
@@ -235,8 +238,10 @@
 			"@mcp-vertex/api/public": ["./plugins/api/src/public/index.ts"],
 			"@mcp-vertex/api/*": ["./plugins/api/src/*"],
 			"@mcp-vertex/github": ["./plugins/github/src/index.ts"],
+			"@mcp-vertex/github/public": ["./plugins/github/src/index.ts"],
 			"@mcp-vertex/github/*": ["./plugins/github/src/*"],
 			"@mcp-vertex/gitlab": ["./plugins/gitlab/src/index.ts"],
+			"@mcp-vertex/gitlab/public": ["./plugins/gitlab/src/index.ts"],
 			"@mcp-vertex/gitlab/*": ["./plugins/gitlab/src/*"],
 			"@mcp-vertex/web-fetch": ["./plugins/web-fetch/src/index.ts"],
 			"@mcp-vertex/web-fetch/public": [

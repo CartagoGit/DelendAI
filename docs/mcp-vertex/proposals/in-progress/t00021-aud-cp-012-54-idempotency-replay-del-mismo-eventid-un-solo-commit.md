@@ -158,7 +158,8 @@ bunx vitest run plugins/commit-policy/tests/src/lib/processed-events.spec.ts
   - "race-condition: 3 handles simultáneos → 1 commit"
   - "persistencia entre restart funciona"
   - "test rojo antes del fix de f00183; verde después"
-
+- review-state: in_review
+- review-implementer: copilot
 ## acceptance
 
 - `bunx vitest run` del archivo verde con 8 casos.

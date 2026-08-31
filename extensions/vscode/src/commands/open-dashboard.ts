@@ -9,7 +9,12 @@ import {
 	DashboardService,
 	EmbedService,
 	DEFAULT_EXTENSION_SETTINGS,
+	LogsService,
+	NotificationsService,
 	SettingsService,
+	type ILogEvent,
+	type ILogOutcome,
+	type ILogQueryFilter,
 	type ISettingsStore,
 	type McpStdioClient,
 } from '@mcp-vertex/client';
@@ -196,6 +201,9 @@ const resolveLang = (deps: IOpenDashboardDeps): Lang => {
 
 export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 	const openDashboardTab = async () => {
+		let logsAbort: AbortController | undefined;
+		let logsSource = 'all';
+		let logsFilter: ILogQueryFilter = {};
 		const lang = resolveLang(deps);
 		const dashboard = new DashboardService({
 			client: deps.client,
@@ -293,6 +301,109 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 				return;
 			}
 			if (parsed.data.command === 'logs') {
+				if (
+					parsed.data.action === 'source' &&
+					parsed.data.source !== undefined
+				) {
+					logsSource = parsed.data.source;
+					return;
+				}
+				if (parsed.data.action === 'filter') {
+					logsFilter = {
+						...logsFilter,
+						...(parsed.data.outcome === undefined
+							? {}
+							: { outcome: parsed.data.outcome }),
+						...(parsed.data.agent === undefined
+							? {}
+							: { agent: parsed.data.agent }),
+						...(parsed.data.taskId === undefined
+							? {}
+							: { taskId: parsed.data.taskId }),
+					};
+					return;
+				}
+				if (parsed.data.action === 'stop') {
+					logsAbort?.abort();
+					logsAbort = undefined;
+					return;
+				}
+				if (
+					parsed.data.action === 'start' ||
+					parsed.data.action === 'refresh'
+				) {
+					logsAbort?.abort();
+					const controller = new AbortController();
+					logsAbort = controller;
+					const service = new LogsService(deps.client);
+					const filter: ILogQueryFilter = {
+						...(logsFilter.outcome
+							? {
+									outcome: logsFilter.outcome as ILogOutcome,
+								}
+							: {}),
+						...(logsFilter.agent
+							? { agent: logsFilter.agent }
+							: {}),
+						...(logsFilter.taskId
+							? { taskId: logsFilter.taskId }
+							: {}),
+					};
+					try {
+						const seed = await service.tail(50, filter);
+						for (const event of seed.events) {
+							if (logsSource !== 'all' && logsSource !== 'server')
+								continue;
+							await panel.webview.postMessage?.({
+								command: 'hostLogEvent',
+								source: 'server',
+								event,
+							});
+						}
+					} catch {
+						// The dashboard remains usable when the logs plugin is unavailable.
+					}
+					const notifications = new NotificationsService(deps.client);
+					notifications.addEventListener('lock-released', (event) => {
+						if (controller.signal.aborted) return;
+						const log: ILogEvent = {
+							ts: new Date().toISOString(),
+							kind: 'notification',
+							agent: event.agent || 'host',
+							taskId: event.taskId,
+							outcome: 'ok',
+							files: event.files ?? [],
+							summary: 'lock released',
+							meta: { source: 'notifications' },
+						};
+						void panel.webview.postMessage?.({
+							command: 'hostLogEvent',
+							source: 'notifications',
+							event: log,
+						});
+					});
+					try {
+						for await (const event of service.subscribe({
+							signal: controller.signal,
+							pollIntervalMs: 1500,
+							maxEvents: 200,
+							...(Object.keys(filter).length === 0
+								? {}
+								: { filter }),
+						})) {
+							if (controller.signal.aborted) return;
+							if (logsSource !== 'all' && logsSource !== 'server')
+								continue;
+							await panel.webview.postMessage?.({
+								command: 'hostLogEvent',
+								source: 'server',
+								event,
+							});
+						}
+					} catch {
+						// Subscription errors are non-fatal; refresh remains available.
+					}
+				}
 				return;
 			}
 			if (parsed.data.command === 'openProposal') {

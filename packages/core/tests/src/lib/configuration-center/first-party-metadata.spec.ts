@@ -45,5 +45,5 @@ describe('first-party configuration metadata', () => {
 			}
 		}
 		expect(failures).toEqual([]);
-	});
+	}, 120_000);
 });

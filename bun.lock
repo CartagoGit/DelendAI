@@ -142,6 +142,15 @@
         "vitest": "4.1.11",
       },
     },
+    "packages/contracts": {
+      "name": "@mcp-vertex/contracts",
+      "version": "0.1.1",
+      "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+      },
+    },
     "packages/core": {
       "name": "@mcp-vertex/core",
       "version": "0.1.1",
@@ -597,6 +606,42 @@
         "@mcp-vertex/core": "^0.1.1",
       },
     },
+    "plugins/github": {
+      "name": "@mcp-vertex/github",
+      "version": "0.1.0",
+      "dependencies": {
+        "@mcp-vertex/contracts": "workspace:*",
+        "@mcp-vertex/remote-provider-core": "workspace:*",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.1",
+      },
+    },
+    "plugins/gitlab": {
+      "name": "@mcp-vertex/gitlab",
+      "version": "0.1.0",
+      "dependencies": {
+        "@mcp-vertex/contracts": "workspace:*",
+        "@mcp-vertex/remote-provider-core": "workspace:*",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.1",
+      },
+    },
     "plugins/i18n": {
       "name": "@mcp-vertex/i18n",
       "version": "0.1.1",
@@ -943,6 +988,23 @@
       },
       "peerDependencies": {
         "typescript": ">=5.0.0",
+      },
+    },
+    "plugins/remote-provider-core": {
+      "name": "@mcp-vertex/remote-provider-core",
+      "version": "0.1.1",
+      "dependencies": {
+        "@mcp-vertex/contracts": "workspace:*",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/rules": {
@@ -1463,6 +1525,8 @@
 
     "@mcp-vertex/context-for-change": ["@mcp-vertex/context-for-change@workspace:plugins/context-for-change"],
 
+    "@mcp-vertex/contracts": ["@mcp-vertex/contracts@workspace:packages/contracts"],
+
     "@mcp-vertex/conventions": ["@mcp-vertex/conventions@workspace:plugins/conventions"],
 
     "@mcp-vertex/core": ["@mcp-vertex/core@workspace:packages/core"],
@@ -1488,6 +1552,10 @@
     "@mcp-vertex/forge": ["@mcp-vertex/forge@workspace:plugins/forge"],
 
     "@mcp-vertex/git": ["@mcp-vertex/git@workspace:plugins/git"],
+
+    "@mcp-vertex/github": ["@mcp-vertex/github@workspace:plugins/github"],
+
+    "@mcp-vertex/gitlab": ["@mcp-vertex/gitlab@workspace:plugins/gitlab"],
 
     "@mcp-vertex/i18n": ["@mcp-vertex/i18n@workspace:plugins/i18n"],
 
@@ -1526,6 +1594,8 @@
     "@mcp-vertex/quality-policy": ["@mcp-vertex/quality-policy@workspace:plugins/quality-policy"],
 
     "@mcp-vertex/refactor": ["@mcp-vertex/refactor@workspace:plugins/refactor"],
+
+    "@mcp-vertex/remote-provider-core": ["@mcp-vertex/remote-provider-core@workspace:plugins/remote-provider-core"],
 
     "@mcp-vertex/rules": ["@mcp-vertex/rules@workspace:plugins/rules"],
 

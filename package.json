@@ -137,6 +137,7 @@
 		"catalog:hints": "bun tools/scripts/catalog/render-host-hints.script.ts",
 		"catalog:hints:check": "bun tools/scripts/catalog/render-host-hints.script.ts --check",
 		"verify:tools": "bun tools/scripts/verify/plugin-tool-verify.script.ts",
+		"verify:remote-provider": "bun tools/scripts/verify/remote-provider-verify.script.ts",
 		"verify:plugin-suites": "bun tools/scripts/verify/plugin-suites-verify.script.ts",
 		"verify:plugin-wiring": "bun tools/scripts/verify/plugin-wiring.script.ts",
 		"verify:plugin-wiring:advisory": "bun tools/scripts/verify/plugin-wiring.script.ts --report",

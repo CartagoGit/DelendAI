@@ -128,7 +128,7 @@ export const renderPanelSettings = (
 	return `<section class="mcpv-panel mcpv-panel--settings${compact ? ' mcpv-panel--compact' : ''}" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" dir="${direction}">
 	<h2 class="mcpv-panel__title">${escapeHtml(text('settings.title', 'Settings'))}</h2>
 	<p class="mcpv-fg-muted">${escapeHtml(text('settings.description', 'Personalize the dashboard and host preferences.'))}</p>
-	<div class="mcpv-settings">
+	<form id="mcpv-dashboard-settings-form" class="mcpv-settings">
 		<section class="mcpv-settings__section" aria-labelledby="settings-section-appearance">
 			<header class="mcpv-settings__section-header">
 				<h3 id="settings-section-appearance">${escapeHtml(text('settings.section.appearance', 'Appearance'))}</h3>
@@ -216,11 +216,11 @@ export const renderPanelSettings = (
 				</div>
 			</div>
 		</section>
-	</div>
-	<p id="mcpv-dashboard-settings-status" class="mcpv-settings-panel__status" role="status" aria-live="polite" hidden></p>
-	<form id="mcpv-dashboard-settings-form" class="mcpv-settings__actions" hidden>
-		<button type="submit" class="mcpv-button mcpv-button--primary">${escapeHtml(copy.save)}</button>
-		<button type="button" data-settings-reset class="mcpv-button">${escapeHtml(copy.reset)}</button>
+		<div class="mcpv-settings__actions">
+			<button type="submit" class="mcpv-button mcpv-button--primary">${escapeHtml(copy.save)}</button>
+			<button type="button" data-settings-reset class="mcpv-button">${escapeHtml(copy.reset)}</button>
+		</div>
 	</form>
+	<p id="mcpv-dashboard-settings-status" class="mcpv-settings-panel__status" role="status" aria-live="polite" hidden></p>
 </section>`;
 };
