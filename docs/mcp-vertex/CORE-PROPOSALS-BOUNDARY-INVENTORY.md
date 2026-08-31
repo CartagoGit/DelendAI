@@ -5,7 +5,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 119
+- Findings: 121
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 13
@@ -13,8 +13,8 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 - import: 1
 - path: 7
 - plugin-name: 12
-- type: 66
-- message: 25
+- type: 67
+- message: 26
 - index-access: 8
 
 ## Findings
@@ -130,6 +130,8 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/tools/agent-catalog-tool.ts | actionable proposals summary | message | intentional-compat | 1 | La descripcion publica menciona proposals como parte del contrato visible. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | IProposalSummary | type | contract | 2 | La tool de catalogo sigue filtrando el dominio proposals de forma nominal. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | matchesProposal | type | contract | 1 | La busqueda compacta sigue modelando proposals como tipo nominal. |
+| packages/core/src/lib/tools/agent-catalog-tool.ts | proposalCount snapshot field | type | intentional-compat | 1 | El snapshot conserva la propiedad proposalCount para que la UI del catalogo siga mostrando el conteo de proposals. |
+| packages/core/src/lib/tools/agent-catalog-tool.ts | proposalCount UI label | message | intentional-compat | 1 | La salida legible al agente sigue exponiendo proposals como termino del contrato visible del catalogo. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | section === 'proposals' projection | type | intentional-compat | 1 | La proyeccion por seccion del catalogo conserva proposals como clave publica de compatibilidad. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | sectionEnum.proposals | plugin-name | intentional-compat | 1 | La seccion publica proposals se mantiene por compatibilidad del catalogo. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | snapshot.proposals filter | type | intentional-compat | 1 | La consulta filtrada conserva proposals como clave publica. |

@@ -1,6 +1,15 @@
 [install]
 hoist = ["vitest", "typescript", "@types/bun", "@types/node", "zod", "@modelcontextprotocol/sdk"]
 
+[run]
+# r00045 S4: force every `bun` invocation to inject the source condition.
+# Without this, `bun tools/scripts/...` resolves `@mcp-vertex/<pkg>` against
+# the per-package `dist/` (now under `build/`) instead of `src/`, and
+# `gen-all --check` runs against stale compiled artefacts. The condition is
+# already declared in `tsconfig.base.json#customConditions`, but tsconfig
+# only affects tsc — bun resolves via its own loader.
+conditions = ["@mcp-vertex/source"]
+
 [test]
 runner = "bun"
 coverage = false

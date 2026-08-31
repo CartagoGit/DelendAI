@@ -1096,6 +1096,22 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		note: 'La ayuda larga mantiene proposals como termino contractual del catalogo.',
 	},
 	{
+		file: 'packages/core/src/lib/tools/agent-catalog-tool.ts',
+		symbolOrLiteral: 'proposalCount UI label',
+		category: 'message',
+		destination: 'intentional-compat',
+		needle: '`${args.toolCount} tools, ${args.skillCount} skills, ${args.proposalCount} proposals',
+		note: 'La salida legible al agente sigue exponiendo proposals como termino del contrato visible del catalogo.',
+	},
+	{
+		file: 'packages/core/src/lib/tools/agent-catalog-tool.ts',
+		symbolOrLiteral: 'proposalCount snapshot field',
+		category: 'type',
+		destination: 'intentional-compat',
+		needle: 'proposalCount: payload.proposals.length,',
+		note: 'El snapshot conserva la propiedad proposalCount para que la UI del catalogo siga mostrando el conteo de proposals.',
+	},
+	{
 		file: 'packages/core/src/lib/scaffold/scaffold-host.ts',
 		symbolOrLiteral: 'claim files when proposals plugin loads',
 		category: 'message',
