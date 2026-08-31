@@ -87,7 +87,7 @@ const capSlug = (value: string): string =>
 /** Slugify the host field through the canonical table. */
 export const slugifyHost = (host: AgentHost | undefined): string => {
 	if (host === undefined) return '';
-	const slug = HOST_SLUGS[host];
+	const slug = HOST_SLUGS[host] ?? '';
 	return capSlug(slug === 'unknown' ? '' : slug);
 };
 
