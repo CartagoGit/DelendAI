@@ -36,35 +36,43 @@ describe('gen-all.script', () => {
 			STEPS.map((step) => ({
 				name: step.name,
 				cmd: step.cmd.join(' '),
+				skipCheck: step.skipCheck ?? false,
 			})),
 		).toEqual([
 			{
 				name: 'proposal-index',
 				cmd: 'bun tools/scripts/proposals/sync-proposal-registry.script.ts',
+				skipCheck: false,
 			},
 			{
 				name: 'agent-catalog',
 				cmd: 'bun tools/scripts/catalog/generate-agent-catalog.script.ts',
+				skipCheck: false,
 			},
 			{
 				name: 'plugin-manifests',
 				cmd: 'bun tools/scripts/generate/from-manifests.script.ts',
+				skipCheck: false,
 			},
 			{
 				name: 'capability-matrix',
 				cmd: 'bun tools/scripts/gen/capability-matrix.script.ts',
+				skipCheck: false,
 			},
 			{
 				name: 'agent-md',
 				cmd: 'bun tools/scripts/gen/agent-md.script.ts',
+				skipCheck: false,
 			},
 			{
 				name: 'token-budget-dashboard',
 				cmd: 'bun tools/scripts/report/token-budget-dashboard.script.ts',
+				skipCheck: true,
 			},
 			{
 				name: 'host-hints',
 				cmd: 'bun tools/scripts/catalog/render-host-hints.script.ts',
+				skipCheck: false,
 			},
 		]);
 	});
@@ -106,7 +114,6 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
-			'bun tools/scripts/report/token-budget-dashboard.script.ts',
 			'bun tools/scripts/catalog/render-host-hints.script.ts --check',
 			'git diff --exit-code',
 		]);
@@ -142,7 +149,6 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
-			'bun tools/scripts/report/token-budget-dashboard.script.ts',
 			'bun tools/scripts/catalog/render-host-hints.script.ts --check',
 		]);
 		expect(errors).toContain(

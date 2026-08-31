@@ -28,6 +28,8 @@ export interface IStep {
 	readonly name: string;
 	readonly cmd: readonly string[];
 	readonly description: string;
+	/** Dynamic reports are generated normally but cannot be drift-checked. */
+	readonly skipCheck?: boolean;
 	/** Read-only generator invocation, when the generator supports it. */
 	readonly checkCmd?: readonly string[];
 }
@@ -70,6 +72,7 @@ export const STEPS: readonly IStep[] = [
 	{
 		name: 'token-budget-dashboard',
 		cmd: ['bun', 'tools/scripts/report/token-budget-dashboard.script.ts'],
+		skipCheck: true,
 		description: 'Regenerate the token budget dashboard.',
 	},
 	{
@@ -148,6 +151,10 @@ const runStep = async (
 	io: IGenAllIo,
 ): Promise<number> => {
 	io.out(`▶ ${step.name} — ${step.description}`);
+	if (check && step.skipCheck === true) {
+		io.out(`  ${step.name} skipped during drift check (dynamic output)`);
+		return 0;
+	}
 	const command = check ? (step.checkCmd ?? step.cmd) : step.cmd;
 	const [executable, ...args] = command;
 	if (executable === undefined) return 1;
