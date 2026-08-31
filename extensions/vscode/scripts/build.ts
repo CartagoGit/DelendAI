@@ -10,7 +10,7 @@ const EXTENSION_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const buildVsCodeExtension = async (
 	outdir = WELL_KNOWN.vscode(),
 ): Promise<BuildOutput> => {
-	await rm(outdir, { recursive: true, force: true });
+	await rm(join(outdir, 'extension.js'), { force: true });
 	return Bun.build({
 		entrypoints: [join(EXTENSION_ROOT, 'src/extension.ts')],
 		target: 'node',

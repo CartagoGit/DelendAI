@@ -314,8 +314,19 @@ const buildPluginsModel = (
  * producing `undefined` at runtime (the exact class of drift x00105
  * hardened the verify gate against).
  */
-type IUsageReportOutput =
-	McpVertexToolOutputs['mcp-vertex_usage-tracking_usage_report'];
+type IUsageReportOutput = {
+	readonly windowDays: number;
+	readonly totals: {
+		readonly costUsd: number;
+		readonly tokensSaved: number;
+		readonly savingsPercent: number;
+	};
+	readonly buckets: readonly {
+		readonly key: string;
+		readonly costUsd: number;
+		readonly calls: number;
+	}[];
+};
 
 const buildSpendModel = (report: IUsageReportOutput): IDashboardSpendModel => ({
 	totalCostUsd: report.totals.costUsd,

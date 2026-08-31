@@ -9,7 +9,7 @@ node_modules/
 
 # Monorepo-wide artifact layout (see AGENTS.md → "Build / dist layout"):
 #   build/<group>/<name>/         — bundler/compiler outputs (typedoc, astrosite, vsce staging…)
-#   dist/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
+#   build/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
 # Per-package dist/ inside packages/*/ and plugins/*/ is intentionally kept
 # tracked — each package.json `main` / `exports` points there, and the
 # publishable surface is what consumers import. Those entries are NOT ignored.
@@ -41,11 +41,8 @@ packages/*/dist/
 apps/*/dist/
 plugins/*/dist/
 
-# Legacy: .vsix artefacts used to be dropped at extensions/vscode/<name>.vsix before
-# the monorepo-wide dist/ convention. Track only the staged
-# dist/extensions/vscode/<version>/<name>.vsix path; treat older top-level .vsix as
-# build artefacts. After the extensions/vscode → extensions/vscode move (f00035),
-# the same rule applies to extensions/*/*.vsix.
+# Legacy: .vsix artefacts used to be dropped at extensions/vscode/<name>.vsix.
+# Active VSIX files are now under build/extensions/vscode/<version>/.
 apps/*/*.vsix
 extensions/*/*.vsix
 
