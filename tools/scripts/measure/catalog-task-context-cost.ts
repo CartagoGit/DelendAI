@@ -1,4 +1,4 @@
-import { TOKEN_BUDGETS } from '../../../packages/core/src/lib/contracts/constants/token-budgets.constant';
+import { TOKEN_BUDGETS } from '@mcp-vertex/core/public';
 
 import {
 	connectTokenBudgetClient,
