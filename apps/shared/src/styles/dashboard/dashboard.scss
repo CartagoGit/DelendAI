@@ -1215,3 +1215,30 @@
 .mcpv-panel--compact .mcpv-status__kpis {
 	gap: var(--mcpv-s-2);
 }
+
+.mcpv-logs__search {
+	display: flex;
+	align-items: center;
+	gap: var(--mcpv-s-2);
+	padding: var(--mcpv-s-2);
+	background: var(--mcpv-bg-card);
+	border: 1px solid var(--mcpv-border);
+	border-radius: var(--mcpv-radius);
+
+	& input {
+		flex: 1;
+		appearance: none;
+		background: transparent;
+		border: 0;
+		color: var(--mcpv-fg);
+		font: inherit;
+		padding: 6px 8px;
+		outline: none;
+	}
+
+	& input:focus-visible {
+		outline: 2px solid var(--mcpv-brand-blue);
+		outline-offset: 2px;
+		border-radius: var(--mcpv-radius-sm);
+	}
+}
