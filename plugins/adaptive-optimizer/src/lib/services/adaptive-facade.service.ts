@@ -2,7 +2,7 @@ import { truncateIfTooLarge } from '@mcp-vertex/core/public';
 import {
 	PROPOSALS_STABLE_TOOL_SURFACE,
 	listProposalAdaptiveFacadePaths,
-} from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
+} from '@mcp-vertex/proposals/public';
 import {
 	indexToolInvocationTelemetry,
 	type IToolInvocationTelemetrySample,
