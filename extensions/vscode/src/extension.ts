@@ -1204,15 +1204,24 @@ const registerDashboardSurfaces = async (
 	dashboardRefresh: { current?: DashboardWebviewViewProvider },
 ): Promise<void> => {
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
-	const host =
-		injectedVscode === undefined
-			? await (async () => {
-					const { createVscodeHostAdapter } = await import(
-						'./host/vscode-host-adapter'
-					);
-					return createVscodeHostAdapter();
-				})()
-			: createFakeHostFromVscode(injectedVscode);
+	let host: IHostAdapter;
+	if (injectedVscode !== undefined) {
+		host = createFakeHostFromVscode(injectedVscode);
+	} else {
+		try {
+			const { createVscodeHostAdapter } = await import(
+				'./host/vscode-host-adapter'
+			);
+			host = createVscodeHostAdapter();
+		} catch (error) {
+			// Keep the canonical dashboard registrable even when an optional
+			// host adapter import fails during extension-host startup.
+			void vscode.window.showErrorMessage?.(
+				`MCP Vertex host adapter unavailable: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			host = createFakeHostFromVscode(vscode);
+		}
+	}
 	track(
 		registerOpenDashboardCommand({
 			host,
