@@ -168,31 +168,53 @@ const listWorkspaceCandidates = async (
 	packageJsonText: string | undefined,
 ): Promise<readonly string[]> => {
 	const candidates = new Set<string>();
+	const expandPattern = async (
+		segments: readonly string[],
+		basePath = '',
+	): Promise<readonly string[]> => {
+		const [segment, ...remaining] = segments;
+		if (segment === undefined) return [basePath];
+		if (segment === '**') {
+			const matches = new Set<string>(
+				await expandPattern(remaining, basePath),
+			);
+			for (const child of await reader.listDir(basePath || '.')) {
+				const childPath = pathPosix.join(basePath, child);
+				for (const match of await expandPattern(segments, childPath)) {
+					matches.add(match);
+				}
+			}
+			return [...matches];
+		}
+		if (segment === '*') {
+			const matches: string[] = [];
+			for (const child of await reader.listDir(basePath || '.')) {
+				matches.push(
+					...(await expandPattern(
+						remaining,
+						pathPosix.join(basePath, child),
+					)),
+				);
+			}
+			return matches;
+		}
+		return expandPattern(remaining, pathPosix.join(basePath, segment));
+	};
 	for (const pattern of readWorkspacePatterns(packageJsonText)) {
 		const normalizedPattern = normalizeWorkspacePath(pattern);
 		if (normalizedPattern === '.' || normalizedPattern === '') continue;
-		if (normalizedPattern.endsWith('/*')) {
-			const baseDir = normalizedPattern.slice(0, -2);
-			for (const child of await reader.listDir(baseDir)) {
-				const candidate = normalizeWorkspacePath(
-					pathPosix.join(baseDir, child),
-				);
-				if (
-					await reader.exists(
-						pathPosix.join(candidate, 'package.json'),
-					)
-				) {
-					candidates.add(candidate);
-				}
+		for (const candidate of await expandPattern(
+			normalizedPattern.split('/'),
+		)) {
+			const normalizedCandidate = normalizeWorkspacePath(candidate);
+			if (
+				normalizedCandidate !== '.' &&
+				(await reader.exists(
+					pathPosix.join(normalizedCandidate, 'package.json'),
+				))
+			) {
+				candidates.add(normalizedCandidate);
 			}
-			continue;
-		}
-		if (
-			await reader.exists(
-				pathPosix.join(normalizedPattern, 'package.json'),
-			)
-		) {
-			candidates.add(normalizedPattern);
 		}
 	}
 	return [...candidates].sort((left, right) => left.localeCompare(right));

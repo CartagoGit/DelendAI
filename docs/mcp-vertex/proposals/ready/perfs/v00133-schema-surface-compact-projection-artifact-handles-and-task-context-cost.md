@@ -44,7 +44,7 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
 - review-log: requested_changes by delivery-verifier-v00133-s1 — La medición se ejecuta, pero el dashboard generado no incorpora task_context_cost y la spec no fija valores reproducidos ni verifica el artefacto publicado. Integrar generación y tests de contrato.
 
 ### S1a — Integrate token budget dashboard publication
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/report/token-budget-dashboard.spec.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
 - **Gate**: type
@@ -52,8 +52,10 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
   - "dashboard incorpora task_context_cost p50/p95 medido por S1"
   - "token-budget-dashboard.spec.ts fija el contrato reproducido del artefacto publicado"
   - "TOKEN-BUDGETS.md se regenera desde la medicion sin tocar release track"
-- review-state: in_review
+- review-state: done
 - review-implementer: crow
+- review-reviewer: delivery-verifier-v00133-s1a-final
+- review-log: approved by delivery-verifier-v00133-s1a-final — Aprobada funcionalmente: dashboard consume directamente la medición reproducible y publica el addendum. La validación focalizada pasó 2/2; el fallo agregado fue externo, en observability provenance, no en este scope.
 ### S2 — Compact projection and result handles
 - **Status**: pending
 - **DependsOn**: [S1, S1a]
