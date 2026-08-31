@@ -186,54 +186,40 @@ describe('subscribe session cleanup mirrors disconnect unsubscribe', async () =>
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	it('releases only leases owned by the caller, leaving other processes untouched', async () => {
-		const { resolveCallerSession } = await import(
-			'@mcp-vertex/proposals/lib/agents/task-queue-engine'
-		);
-		const session = resolveCallerSession();
+		const sessionA = { host: 'host-a', pid: 100 };
+		const sessionB = { host: 'host-b', pid: 200 };
 
-		await subscribe(paths, 'obs', {
-			subscriberId: 'agent-current',
+		overrideCallerSessionForTests(() => sessionA);
+		await subscribe(paths, 'obs-a', {
+			subscriberId: 'agent-a',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+		await subscribe(paths, 'obs-a2', {
+			subscriberId: 'agent-a2',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+		overrideCallerSessionForTests(() => sessionB);
+		await subscribe(paths, 'obs-b', {
+			subscriberId: 'agent-b',
 			now: '2026-08-31T00:00:00.000Z',
 		});
 
-		// Inject a lease owned by another process so we can verify the
-		// session cleanup ignores it.
 		const leasesPath = join(dir, '.subscribe-leases.json');
-		const persisted = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
-			leases: Array<{
-				taskId: string;
-				subscriberId: string;
-				host?: string;
-				pid?: number;
-			}>;
+		const before = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
+			leases: Array<{ taskId: string }>;
 		};
-		persisted.leases.push({
-			taskId: 'peer',
-			subscriberId: 'agent-peer',
-			host: 'other-host',
-			pid: 9999,
-		});
-		writeFileSync(leasesPath, JSON.stringify(persisted, null, '\t'));
+		expect(before.leases).toHaveLength(3);
 
-		const result = await releaseSessionSubscriptions(paths, session);
-		const debugPath = join(
-			dir,
-			'agent-queue',
-			'.subscribe-leases.json.debug.log',
-		);
-		const debugLog = existsSync(debugPath)
-			? readFileSync(debugPath, 'utf8')
-			: '';
-		expect(result.releasedTaskIds, `leases=${debugLog}`).toEqual(['obs']);
+		const result = await releaseSessionSubscriptions(paths, sessionA);
+		expect(result.releasedTaskIds.sort()).toEqual(['obs-a', 'obs-a2']);
 
 		const after = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
 			leases: Array<{ taskId: string; host?: string; pid?: number }>;
 		};
-		expect(after.leases.length).toBeGreaterThanOrEqual(1);
-		const peer = after.leases.find((lease) => lease.taskId === 'peer');
-		expect(peer?.host).toBe('other-host');
-		expect(after.leases.some((lease) => lease.taskId === 'obs')).toBe(
-			false,
-		);
+		expect(after.leases).toHaveLength(1);
+		expect(after.leases[0]?.taskId).toBe('obs-b');
+		expect(after.leases[0]?.host).toBe(sessionB.host);
+
+		overrideCallerSessionForTests(undefined);
 	});
 });
