@@ -784,6 +784,21 @@ export const activate = async (
 	const dashboardRefresh: {
 		current?: DashboardWebviewViewProvider;
 	} = {};
+	const dashboardProvider = new DashboardWebviewViewProvider({
+		host,
+		client,
+		globalState: context.globalState,
+		getConfig: () =>
+			context.globalState.get(SETTINGS_STATE_KEY) ??
+			context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+			{},
+		...withPrefix,
+	});
+	dashboardRefresh.current = dashboardProvider;
+	const dashboardDetailBroker = dashboardProvider.getDetailBroker();
+	const detailSink: NonNullable<
+		Parameters<typeof registerOpenToolDetailCommand>[0]['detailSink']
+	> = (kind, model) => dashboardDetailBroker.push({ kind, model });
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
 	track(
 		registerRefreshCommand({
