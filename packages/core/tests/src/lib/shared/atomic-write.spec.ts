@@ -18,6 +18,14 @@ describe('writeFileAtomic (durable + atomic)', () => {
 		expect(readFileSync(target, 'utf8')).toBe('{"a":1}');
 	});
 
+	it('writes binary content without text encoding', async () => {
+		const dir = scratch();
+		const target = join(dir, 'artifact.zip');
+		const bytes = Uint8Array.from([0, 255, 1, 128]);
+		await writeFileAtomic(target, bytes);
+		expect(readFileSync(target)).toEqual(Buffer.from(bytes));
+	});
+
 	it('overwrites an existing file and leaves NO .tmp sidecar behind', async () => {
 		const dir = scratch();
 		const target = join(dir, 'state.json');

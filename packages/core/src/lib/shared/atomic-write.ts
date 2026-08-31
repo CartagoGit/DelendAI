@@ -50,7 +50,7 @@ const fsyncDir = async (dir: string): Promise<void> => {
 
 export const writeFileAtomic = async (
 	absolutePath: string,
-	content: string,
+	content: string | Uint8Array,
 ): Promise<void> => {
 	const dir = dirname(absolutePath);
 	await mkdir(dir, { recursive: true });
@@ -58,7 +58,7 @@ export const writeFileAtomic = async (
 	try {
 		const handle = await open(tmp, 'w');
 		try {
-			await handle.writeFile(content, 'utf8');
+			await handle.writeFile(content);
 			await handle.sync(); // fsync data before it becomes visible
 		} finally {
 			await handle.close();
