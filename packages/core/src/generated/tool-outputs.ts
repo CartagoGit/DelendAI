@@ -15,6 +15,7 @@
 export interface McpVertexAdoptProjectOutput {
 	ok: true;
 	preset: "lean" | "standard" | "minimal" | "swarm";
+	stage?: "core" | "standard" | "agents" | "specialized";
 	config?: Record<string, unknown>;
 	rationale?: string[];
 	assessment?: {
