@@ -175,7 +175,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 			}),
 		);
 		expect(body.closed).toBe(true);
-		expect(readFileSync(docPath, 'utf8')).toMatch(/- \*\*Status\*\*: done/);
+		expect(readCurrentProposal()).toMatch(/- \*\*Status\*\*: done/);
 	});
 
 	it('rejects stale inline validate evidence', async () => {
