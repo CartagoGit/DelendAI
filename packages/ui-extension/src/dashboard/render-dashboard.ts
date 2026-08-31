@@ -182,6 +182,41 @@ export const renderDashboard = (
 	<title>${escapeHtml(text('dashboard.title'))}</title>
 	<style>${componentCss}</style>
 	<style>${dashboardCss}</style>
+	<style>
+		.mcpv-detail-overlay {
+			position: fixed; inset: 0; z-index: 9999;
+			display: flex; align-items: center; justify-content: center;
+			background: rgba(0, 0, 0, 0.55);
+		}
+		.mcpv-detail-overlay[hidden] { display: none; }
+		.mcpv-detail-overlay__card {
+			background: var(--vscode-editor-background, #1e1e1e);
+			color: var(--vscode-foreground, #ddd);
+			border: 1px solid var(--vscode-panel-border, #444);
+			border-radius: 10px;
+			max-width: 90vw; max-height: 90vh;
+			width: 720px;
+			display: flex; flex-direction: column;
+			box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+		}
+		.mcpv-detail-overlay__head {
+			display: flex; align-items: center; justify-content: space-between;
+			padding: 10px 16px; border-bottom: 1px solid var(--vscode-panel-border, #444);
+		}
+		.mcpv-detail-overlay__head h2 {
+			margin: 0; font-size: 14px; font-weight: 600;
+		}
+		.mcpv-detail-overlay__close {
+			background: transparent; border: 0; color: inherit;
+			font-size: 20px; cursor: pointer; line-height: 1;
+		}
+		.mcpv-detail-overlay__body {
+			padding: 16px; overflow: auto; max-height: calc(90vh - 50px);
+		}
+		.mcpv-detail-overlay__body .tool-detail,
+		.mcpv-detail-overlay__body .card { color: inherit; }
+		.mcpv-detail-overlay__body h1, .mcpv-detail-overlay__body h2 { color: inherit; }
+	</style>
 </head>
 <body>
 	${header}
