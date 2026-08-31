@@ -12,6 +12,9 @@ import {
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from '../commands/open-proposal';
 import { OPEN_TOOL_DETAIL_COMMAND } from '../contracts/constants/open-tool-detail-command.constant';
+import { OPEN_KNOWLEDGE_COMMAND } from '../commands/open-knowledge';
+import { OPEN_SETTINGS_COMMAND } from '../commands/open-settings';
+import { OPEN_CONFIGURATION_CENTER_COMMAND } from '../commands/open-configuration-center';
 import { OPEN_DOCS_COMMAND } from '../commands/open-docs';
 import { REFRESH_COMMAND } from '../commands/refresh';
 import { HOST_LANG_KEY } from '../commands/setup-github';
@@ -96,6 +99,18 @@ export class DashboardWebviewViewProvider {
 			await this.deps.host.executeCommand?.(
 				OPEN_TOOL_DETAIL_COMMAND,
 				parsed.data.name,
+			);
+			return;
+		}
+		if (parsed.data.command === 'openSurface') {
+			const commands = {
+				proposals: OPEN_PROPOSAL_COMMAND,
+				knowledge: OPEN_KNOWLEDGE_COMMAND,
+				configuration: OPEN_CONFIGURATION_CENTER_COMMAND,
+				settings: OPEN_SETTINGS_COMMAND,
+			} as const;
+			await this.deps.host.executeCommand?.(
+				commands[parsed.data.surface],
 			);
 			return;
 		}

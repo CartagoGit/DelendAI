@@ -45,6 +45,13 @@ export function buildTabsBar(lang: ILangDict): string {
 	}));
 	const docsTab = { id: 'docs', label: text('tabDocs') };
 	const refreshHtml = `<button class="mcpv-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}" aria-label="${text('refreshDashboard')}">⟳</button>`;
+	const surfaceActions = `
+		<div class="mcpv-tabs__surface-actions" role="group" aria-label="${text('tabOverview')}">
+			<button class="mcpv-tabs__action-btn" data-surface="proposals" type="button" title="${text('openProposalBoard')}" aria-label="${text('openProposalBoard')}">▤</button>
+			<button class="mcpv-tabs__action-btn" data-surface="knowledge" type="button" title="${text('openKnowledge')}" aria-label="${text('openKnowledge')}">⌘</button>
+			<button class="mcpv-tabs__action-btn" data-surface="configuration" type="button" title="${text('openConfigurationCenter')}" aria-label="${text('openConfigurationCenter')}">⚙</button>
+			<button class="mcpv-tabs__action-btn" data-surface="settings" type="button" title="${text('openSettings')}" aria-label="${text('openSettings')}">☷</button>
+		</div>`;
 	return (
 		`<section class="mcpv-tabs mcpv-tabs--underline">` +
 		renderTabs({
@@ -52,7 +59,7 @@ export function buildTabsBar(lang: ILangDict): string {
 			variant: 'underline',
 			label: text('tabOverview'),
 			idPrefix: '',
-			actionHtml: refreshHtml,
+			actionHtml: `${surfaceActions}${refreshHtml}`,
 		}) +
 		`</section>`
 	);
