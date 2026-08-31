@@ -11,6 +11,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import type {
+	IMcpPlugin,
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from '../../../../src/lib/plugins/plugin-contract.js';
@@ -52,5 +53,14 @@ describe('IMcpPluginContext — f00251 errorCollector field', () => {
 	it('errorCollector is IErrorCollector or undefined', () => {
 		type ActualType = IMcpPluginContext['errorCollector'];
 		expectTypeOf<ActualType>().toEqualTypeOf<IErrorCollector | undefined>();
+	});
+});
+
+describe('IMcpPlugin — example field', () => {
+	it('example is a readonly config object or undefined', () => {
+		type ActualType = IMcpPlugin['example'];
+		expectTypeOf<ActualType>().toEqualTypeOf<
+			Readonly<Record<string, unknown>> | undefined
+		>();
 	});
 });

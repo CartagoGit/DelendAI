@@ -19,6 +19,16 @@ describe('IPluginConfigExample', async () => {
 		};
 		expect(ex.summary).toBeTypeOf('string');
 		expect(ex.options).toEqual({});
+		expect(ex.example).toBeUndefined();
+	});
+
+	it('accepts a machine-readable example alias for consumers', async () => {
+		const ex: IPluginConfigExample = {
+			summary: 'Enable the swarm proposal workflow.',
+			example: { validationCommand: 'bun run validate' },
+			options: { validationCommand: 'bun run validate' },
+		};
+		expect(ex.example).toEqual({ validationCommand: 'bun run validate' });
 	});
 
 	it('accepts an example with arbitrary nested config', async () => {
