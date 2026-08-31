@@ -139,7 +139,8 @@ adoptProject (ya existe, sin romper su contrato)
       sin cambiar el contrato de salida actual del tool)
     - `packages/core/tests/src/lib/adopt/project-profile.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/project-profile.spec.ts`
-
+- review-state: in_review
+- review-implementer: copilot-f00280-s1
 ### S2 — Desglose por área/workspace dentro de un monorepo
 
 - **Status**: pending
