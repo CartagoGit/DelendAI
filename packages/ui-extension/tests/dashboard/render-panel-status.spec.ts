@@ -160,4 +160,28 @@ describe('renderPanelStatus', () => {
 		const html = renderPanelStatus(fixture, dictsByLang.en);
 		expect(html).toContain('mcpv-status__activity--idle');
 	});
+
+	it('renders the savings + error-rate progress rings', () => {
+		const html = renderPanelStatus(fixture, dictsByLang.en);
+		expect(html).toContain('mcpv-status__ring');
+		expect(html).toContain('mcpv-status__ring-svg');
+		expect(html).toMatch(/stroke="var\(--mcpv-brand-purple\)"/);
+		expect(html).toMatch(/stroke="var\(--mcpv-error\)"/);
+	});
+
+	it('renders the latency sparkline when samples are available', () => {
+		const html = renderPanelStatus(
+			{
+				...fixture,
+				metrics: {
+					...fixture.metrics,
+					sparklines: {
+						'mcp-vertex_overview': [1, 2, 3, 4, 5, 6, 7, 8],
+					},
+				},
+			},
+			dictsByLang.en,
+		);
+		expect(html).toContain('mcpv-status__sparkline');
+	});
 });
