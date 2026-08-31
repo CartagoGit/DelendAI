@@ -29,6 +29,14 @@ export interface IPluginConfigExample {
 	 */
 	readonly summary: string;
 	/**
+	 * Machine-readable sample config for consumers that need to
+	 * introspect a ready-to-apply plugin options object without coupling
+	 * themselves to docs-specific field names. Optional for backward
+	 * compatibility; when absent, consumers should fall back to
+	 * {@link options}.
+	 */
+	readonly example?: Readonly<Record<string, unknown>>;
+	/**
 	 * The example config object. Will be serialised with
 	 * `JSON.stringify(value, null, 2)` and rendered as preformatted
 	 * text. The shape MUST match what `mcp-vertex.config.json` accepts
