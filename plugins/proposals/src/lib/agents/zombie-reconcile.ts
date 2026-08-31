@@ -323,11 +323,8 @@ export async function gcZombies(
 			await store.write(registry);
 		}
 		// R-2026-08-31: stash the count so callers can observe it.
-		(
-			report as IZombieReconcileReport & {
-				releasedLockCount: number;
-			}
-		).releasedLockCount = releasedLockCount;
+		(report as { releasedLockCount?: number }).releasedLockCount =
+			releasedLockCount;
 	}
 
 	return report;
