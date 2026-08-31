@@ -21,6 +21,9 @@ import { resolveRecentValidateEvidence } from '../../../plugins/proposals/src/li
 import {
 	appendValidateJournalEntry,
 	buildValidateJournalEntry,
+	formatValidateSummary,
+	parseValidateSteps,
+	runValidateSteps,
 	VALIDATE_JOURNAL_RELATIVE_PATH,
 	VALIDATE_RUN_SCRIPT,
 } from './record-validate-evidence.script';
@@ -172,5 +175,44 @@ describe('appendValidateJournalEntry ↔ resolveRecentValidateEvidence', () => {
 		expect(
 			await resolveRecentValidateEvidence({ workspaceRoot }),
 		).not.toBeNull();
+	});
+});
+
+describe('running every step instead of stopping at the first failure', () => {
+	it('reads the &&-chain as an ordered step list', () => {
+		expect(
+			parseValidateSteps('bun run a && bun run b && bun run c'),
+		).toEqual(['bun run a', 'bun run b', 'bun run c']);
+	});
+
+	it('runs the remaining steps after one fails and reports them all', async () => {
+		const results = await runValidateSteps([
+			'exit 0',
+			'exit 3',
+			'exit 0',
+			'exit 4',
+		]);
+
+		expect(results.map((entry) => entry.exitCode)).toEqual([0, 3, 0, 4]);
+		const summary = formatValidateSummary(results);
+		expect(summary).toContain('2 of 4 steps FAILED');
+		expect(summary).toContain('exit 3');
+		expect(summary).toContain('exit 4');
+	});
+
+	it('stops at the first failure when fail-fast is requested', async () => {
+		const results = await runValidateSteps(['exit 0', 'exit 3', 'exit 0'], {
+			failFast: true,
+		});
+
+		expect(results).toHaveLength(2);
+		expect(results.at(-1)?.exitCode).toBe(3);
+	});
+
+	it('reports a clean run without listing steps', async () => {
+		const results = await runValidateSteps(['exit 0', 'exit 0']);
+		expect(formatValidateSummary(results)).toBe(
+			'[validate] 2/2 steps passed.',
+		);
 	});
 });
