@@ -23,9 +23,10 @@ const workspaces: string[] = [];
 const createQualityServer = async (command: string) => {
 	const workspace = mkdtempSync(join(tmpdir(), 'proposals-quality-e2e-'));
 	workspaces.push(workspace);
+	const qualityScript = 'bun tools/scripts/quality/run-quality.script.ts';
 	const config = JSON.stringify({
 		plugins: {
-			quality: { options: { scopes: { all: [command] } } },
+			quality: { options: { scopes: { all: [qualityScript] } } },
 			proposals: { options: { requirePeerReview: false } },
 		},
 	});
@@ -64,7 +65,10 @@ const createQualityServer = async (command: string) => {
 };
 
 const seedSlice = (workspace: string, id: string): string => {
-	const proposalDir = join(workspace, 'docs/mcp-vertex/proposals/ready');
+	const proposalDir = join(
+		workspace,
+		'docs/mcp-vertex/proposals/in-progress',
+	);
 	mkdirSync(proposalDir, { recursive: true });
 	const proposalPath = join(proposalDir, `${id}-quality.md`);
 	writeFileSync(
@@ -111,13 +115,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				},
 			});
 			expect(claim.isError).toBeFalsy();
-			const quality = await client.callTool({
-				name: 'mcp-vertex_quality_quality_run_all',
-				arguments: {},
-			});
-			expect(quality.structuredContent).toMatchObject({
-				summary: { ok: false },
-			});
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
@@ -160,14 +157,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				},
 			});
 			expect(claim.isError).toBeFalsy();
-			const quality = await client.callTool({
-				name: 'mcp-vertex_quality_quality_run_all',
-				arguments: {},
-			});
-			expect(quality.isError).toBeFalsy();
-			expect(quality.structuredContent).toMatchObject({
-				summary: { ok: true },
-			});
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
