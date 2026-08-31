@@ -285,6 +285,18 @@ const CLIENT_SCRIPT = `
       host?.postMessage({ command: 'logs', action: 'source', source: target.value });
     }
   });
+  document.querySelectorAll('[data-source]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const source = chip.getAttribute('data-source');
+      if (!source) return;
+      logsState.source = source;
+      document.querySelectorAll('[data-source]').forEach((other) => {
+        other.setAttribute('aria-pressed', other === chip ? 'true' : 'false');
+      });
+      setLogsStatus('Filtering source: ' + source);
+      host?.postMessage({ command: 'logs', action: 'source', source });
+    });
+  });
   logsControls?.querySelector('select[name="outcome"]')?.addEventListener('change', (e) => {
     const target = e.target;
     if (target instanceof HTMLSelectElement) {
