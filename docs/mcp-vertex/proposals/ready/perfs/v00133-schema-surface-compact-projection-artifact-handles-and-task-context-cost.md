@@ -38,8 +38,10 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
   - "native/swarm/per-plugin/per-tool bytes measured"
   - "schema breakdown available"
   - "task_context_cost p50/p95 corpus defined and reproducible"
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: crow
+- review-reviewer: delivery-verifier-v00133-s1
+- review-log: requested_changes by delivery-verifier-v00133-s1 — La medición se ejecuta, pero el dashboard generado no incorpora task_context_cost y la spec no fija valores reproducidos ni verifica el artefacto publicado. Integrar generación y tests de contrato.
 ### S2 — Compact projection and result handles
 - **Status**: pending
 - **DependsOn**: [S1]

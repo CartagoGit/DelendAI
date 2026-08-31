@@ -41,9 +41,8 @@ Hace explícita la frontera congelada de release y elimina la dependencia de un 
   - "slug y branch naming validados"
   - "source/base SHA preservados"
   - "tests de inmutabilidad respecto a develop"
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: release-migration-agent
-- review-reviewer: delivery-verifier
 - review-log: requested_changes by delivery-verifier — R1 necesita dos correcciones: assertReleaseMetadata debe validar coherencia branch/type/slug y que targetVersion sea nextVersion(fromVersion,type), además de validar campos relevantes; createReleaseCandidate debe leer main:packages/core/package.json anclado al baseMainSha capturado, no a la referencia móvil main. Tests focalizados deben cubrir ambas carreras/invariantes.
 ## acceptance
 

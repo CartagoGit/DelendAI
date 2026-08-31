@@ -39,8 +39,10 @@ Completa la evolución orientada a agentes sin sustituir capacidades detalladas,
   - "intents orient/plan/claim/progress/close/recover mapean a capabilities existentes"
   - "negotiation compara success/tokens/calls/latency/risk"
   - "detailed surface remains available"
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: falcon
+- review-reviewer: delivery-verifier-f00392-s1
+- review-log: requested_changes by delivery-verifier-f00392-s1 — La facade reduce detailedSurface a name/summary y puede truncarla; la acceptance exige conservar la surface detallada completa. Proyectar todos los campos del contrato estable y cubrirlo con tests.
 ### S2 — Provenance graph and generated documentation truth
 - **Status**: pending
 - **DependsOn**: [S1]
