@@ -149,10 +149,14 @@ describe('commit-policy dogfood E2E', () => {
 			'Co-authored-by: vscode-copilot/minimax-m3',
 		);
 
-		// `--all`: the bare remote's default branch is still `develop` (set
-		// up in beforeEach), so a plain `log` walks only that ref and would
-		// never see a commit pushed to the sibling `topic/e2e-test` branch.
-		const remoteLog = await git(remote, 'log', '--oneline', '--all');
+		// The bare remote keeps `develop` as HEAD, so inspect the exact sibling
+		// ref that was pushed instead of the remote's default branch history.
+		const remoteLog = await git(
+			remote,
+			'log',
+			'topic/e2e-test',
+			'--oneline',
+		);
 		expect(remoteLog.stdout).toContain('feat(f00181): dogfood smoke');
 
 		// The push didn't just succeed — the remote's `topic/e2e-test` ref
