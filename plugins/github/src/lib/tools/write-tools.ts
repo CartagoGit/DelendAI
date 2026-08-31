@@ -4,7 +4,7 @@ import {
 	toolJsonBounded,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
-import type { IRemoteHttpClientDeps } from '../../../../remote-provider-core/src/index';
+import type { IRemoteHttpClientDeps } from '@mcp-vertex/remote-provider-core';
 
 import type { IGitHubProviderContext } from '../config';
 import {

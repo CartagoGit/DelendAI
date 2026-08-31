@@ -76,13 +76,26 @@ export interface IScaffoldHostOptions {
 	readonly mcpServerName?: string;
 }
 
+export interface IScaffoldNamespaceContract {
+	readonly namespacePrefix: string;
+	readonly mcpServerName?: string;
+}
+
+export const defaultMcpServerName = (namespacePrefix: string): string =>
+	`mcp-project-${namespacePrefix}`;
+
+export const resolveScaffoldMcpServerName = (
+	options: IScaffoldNamespaceContract,
+): string =>
+	options.mcpServerName ?? defaultMcpServerName(options.namespacePrefix);
+
 /**
  * The MCP server registration key generated Copilot surfaces (the
  * `.agent.md` `tools:` grant, the instructions file) reference to
  * qualify tool names. See `IScaffoldHostOptions.mcpServerName`.
  */
 const resolveMcpServerName = (options: IScaffoldHostOptions): string =>
-	options.mcpServerName ?? `mcp-project-${options.namespacePrefix}`;
+	resolveScaffoldMcpServerName(options);
 
 const SUBAGENT_SLOTS = [
 	'proposal_guardian',

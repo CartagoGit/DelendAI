@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['remote', 'provider', 'github', 'gitlab'],
 	maturity: 'beta',
 	permissions: ['filesystem-read'],
-	presets: [],
+	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@mcp-vertex/contracts', 'zod'],
 	capabilities: ['remote-provider'],

@@ -46,6 +46,9 @@ export const PLUGIN_DEFAULTS: Readonly<
 		maxBytes: 2000,
 	},
 	forge: {},
+	'remote-provider-core': {},
+	github: {},
+	gitlab: {},
 	deps: {
 		manifest: 'package.json',
 		allowNetwork: false,

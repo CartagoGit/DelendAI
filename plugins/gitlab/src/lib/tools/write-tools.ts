@@ -4,9 +4,14 @@ import type {
 } from '@mcp-vertex/contracts/remote-mutations';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
+import type { IRemoteHttpClientDeps } from '@mcp-vertex/remote-provider-core';
 import z from 'zod';
 
-import type { IGitLabMutationAdapter } from '../mutations';
+import type { IGitLabProviderContext } from '../config';
+import {
+	createGitLabMutationAdapter,
+	type IGitLabMutationAdapter,
+} from '../mutations';
 import {
 	buildMetaOutput,
 	discussionSchema,
@@ -27,57 +32,83 @@ import {
 } from './shared';
 
 const NON_EMPTY = z.string().min(1);
+const providerSchema = z.literal('gitlab');
+const mutationErrorCodeSchema = z.enum([
+	'unauthorized',
+	'forbidden',
+	'not-found',
+	'rate-limited',
+	'timeout',
+	'transient',
+	'api-incompatible',
+	'invalid-response',
+	'invalid-config',
+	'confirmation-required',
+	'duplicate-operation',
+]);
 
-const mutationErrorSchema = z.object({
-	code: z.string(),
-	provider: z.string(),
-	message: z.string(),
-	status: z.number().int().nullable(),
-	requestId: z.string().nullable(),
-	retryAfterSeconds: z.number().nullable(),
-	temporary: z.boolean(),
-	retryable: z.boolean(),
-	details: z
-		.record(
-			z.string(),
-			z.union([z.string(), z.number(), z.boolean(), z.null()]),
-		)
-		.optional(),
-	nextAction: z.string().optional(),
-});
-
-const mutationAuditSchema = z.object({
-	provider: z.string(),
-	actor: z.string(),
-	effect: z.string(),
-	resource: z.string(),
-	timestamp: z.string(),
-	request: z.object({
-		method: z.enum(['POST', 'PUT', 'PATCH', 'DELETE']),
-		path: z.string(),
-	}),
-	remote: z.object({
+const mutationErrorSchema = z
+	.object({
+		code: mutationErrorCodeSchema,
+		provider: providerSchema,
+		message: z.string(),
 		status: z.number().int().nullable(),
 		requestId: z.string().nullable(),
-		attempts: z.number().int().nonnegative(),
-		duplicate: z.boolean(),
-	}),
-	idempotency: z.object({
-		key: z.string().nullable(),
-		replay: z.boolean(),
-	}),
-	details: z
-		.record(
-			z.string(),
-			z.union([z.string(), z.number(), z.boolean(), z.null()]),
-		)
-		.optional(),
-});
+		retryAfterSeconds: z.number().nullable(),
+		temporary: z.boolean(),
+		retryable: z.boolean(),
+		details: z
+			.record(
+				z.string(),
+				z.union([z.string(), z.number(), z.boolean(), z.null()]),
+			)
+			.optional(),
+		nextAction: z.string().optional(),
+	})
+	.strict();
 
-const duplicateSchema = z.object({
-	message: z.string(),
-	existing: z.unknown().optional(),
-});
+const mutationAuditSchema = z
+	.object({
+		provider: providerSchema,
+		actor: z.string(),
+		effect: z.string(),
+		resource: z.string(),
+		timestamp: z.string(),
+		request: z
+			.object({
+				method: z.enum(['POST', 'PUT', 'PATCH', 'DELETE']),
+				path: z.string(),
+			})
+			.strict(),
+		remote: z
+			.object({
+				status: z.number().int().nullable(),
+				requestId: z.string().nullable(),
+				attempts: z.number().int().nonnegative(),
+				duplicate: z.boolean(),
+			})
+			.strict(),
+		idempotency: z
+			.object({
+				key: z.string().nullable(),
+				replay: z.boolean(),
+			})
+			.strict(),
+		details: z
+			.record(
+				z.string(),
+				z.union([z.string(), z.number(), z.boolean(), z.null()]),
+			)
+			.optional(),
+	})
+	.strict();
+
+const duplicateSchema = z
+	.object({
+		message: z.string(),
+		existing: z.unknown().optional(),
+	})
+	.strict();
 
 const mutationCommonSchema = z.object({
 	ok: z.boolean(),
@@ -120,7 +151,9 @@ const PROJECT_FIELDS = {
 
 export interface IGitLabWriteToolOptions {
 	readonly namespacePrefix: string;
-	readonly adapter: IGitLabMutationAdapter;
+	readonly context: IGitLabProviderContext;
+	readonly mutationDeps: IRemoteHttpClientDeps;
+	readonly nowIso?: () => string;
 }
 
 const withCommon = <TData>(
@@ -164,6 +197,13 @@ export const buildGitLabWriteToolRegistrations = (
 	options: IGitLabWriteToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
+	const adapter: IGitLabMutationAdapter = createGitLabMutationAdapter(
+		{
+			context: options.context,
+			...(options.nowIso === undefined ? {} : { nowIso: options.nowIso }),
+		},
+		options.mutationDeps,
+	);
 	return [
 		{
 			id: 'issue_write',
@@ -175,7 +215,7 @@ export const buildGitLabWriteToolRegistrations = (
 					`${prefix}_issue_write`,
 					{
 						description:
-							'Create, update or comment on a GitLab issue. Opt-in via plugins.gitlab.options.allowWrite:true and every mutation requires confirm:true.',
+							'Create, update or comment on a GitLab issue. Opt-in via plugins.gitlab.options.allowWrite:true. Requires confirm:true, emits redacted audit receipts, and never auto-retries.',
 						inputSchema: z
 							.object({
 								action: z.enum(['create', 'update', 'comment']),
@@ -217,7 +257,7 @@ export const buildGitLabWriteToolRegistrations = (
 						if (args.action === 'create') {
 							if (args.title === undefined)
 								throw new Error('title is required for create');
-							const result = await options.adapter.createIssue({
+							const result = await adapter.createIssue({
 								...withOptionalProject(
 									args.projectId,
 									args.projectPath,
@@ -251,7 +291,7 @@ export const buildGitLabWriteToolRegistrations = (
 						if (args.action === 'update') {
 							if (args.iid === undefined)
 								throw new Error('iid is required for update');
-							const result = await options.adapter.updateIssue({
+							const result = await adapter.updateIssue({
 								...args,
 								iid: args.iid,
 							});
@@ -269,9 +309,11 @@ export const buildGitLabWriteToolRegistrations = (
 							throw new Error('iid is required for comment');
 						if (args.body === undefined)
 							throw new Error('body is required for comment');
-						const result = await options.adapter.createIssueComment(
-							{ ...args, iid: args.iid, body: args.body },
-						);
+						const result = await adapter.createIssueComment({
+							...args,
+							iid: args.iid,
+							body: args.body,
+						});
 						return toolJson(
 							withCommon(result, {
 								comment:
@@ -294,7 +336,7 @@ export const buildGitLabWriteToolRegistrations = (
 					`${prefix}_discussion_write`,
 					{
 						description:
-							'Create a new merge request discussion or reply to an existing one. Opt-in via plugins.gitlab.options.allowWrite:true and every mutation requires confirm:true.',
+							'Create a new merge request discussion or reply to an existing one. Opt-in via plugins.gitlab.options.allowWrite:true. Requires confirm:true, emits redacted audit receipts, and never auto-retries.',
 						inputSchema: z
 							.object({
 								action: z.enum(['create', 'reply']),
@@ -323,7 +365,7 @@ export const buildGitLabWriteToolRegistrations = (
 						};
 						if (args.action === 'create') {
 							const result =
-								await options.adapter.createMergeRequestDiscussion(
+								await adapter.createMergeRequestDiscussion(
 									args,
 								);
 							return toolJson(
@@ -341,7 +383,7 @@ export const buildGitLabWriteToolRegistrations = (
 								'discussionId is required for reply',
 							);
 						const result =
-							await options.adapter.replyMergeRequestDiscussion({
+							await adapter.replyMergeRequestDiscussion({
 								...args,
 								discussionId: args.discussionId,
 							});
@@ -367,7 +409,7 @@ export const buildGitLabWriteToolRegistrations = (
 					`${prefix}_pipeline_write`,
 					{
 						description:
-							'Retry or cancel a GitLab pipeline. Opt-in via plugins.gitlab.options.allowWrite:true and every mutation requires confirm:true.',
+							'Retry or cancel a GitLab pipeline. Opt-in via plugins.gitlab.options.allowWrite:true. Requires confirm:true, emits redacted audit receipts, and never auto-retries.',
 						inputSchema: z
 							.object({
 								action: z.enum(['retry', 'cancel']),
@@ -392,8 +434,8 @@ export const buildGitLabWriteToolRegistrations = (
 						};
 						const result =
 							args.action === 'retry'
-								? await options.adapter.retryPipeline(args)
-								: await options.adapter.cancelPipeline(args);
+								? await adapter.retryPipeline(args)
+								: await adapter.cancelPipeline(args);
 						return toolJson(
 							withCommon(result, {
 								pipeline:
@@ -416,7 +458,7 @@ export const buildGitLabWriteToolRegistrations = (
 					`${prefix}_job_write`,
 					{
 						description:
-							'Retry or cancel a GitLab job. Opt-in via plugins.gitlab.options.allowWrite:true and every mutation requires confirm:true.',
+							'Retry or cancel a GitLab job. Opt-in via plugins.gitlab.options.allowWrite:true. Requires confirm:true, emits redacted audit receipts, and never auto-retries.',
 						inputSchema: z
 							.object({
 								action: z.enum(['retry', 'cancel']),
@@ -441,8 +483,8 @@ export const buildGitLabWriteToolRegistrations = (
 						};
 						const result =
 							args.action === 'retry'
-								? await options.adapter.retryJob(args)
-								: await options.adapter.cancelJob(args);
+								? await adapter.retryJob(args)
+								: await adapter.cancelJob(args);
 						return toolJson(
 							withCommon(result, {
 								job:
@@ -465,7 +507,7 @@ export const buildGitLabWriteToolRegistrations = (
 					`${prefix}_release_write`,
 					{
 						description:
-							'Create a GitLab release or repository tag. Opt-in via plugins.gitlab.options.allowWrite:true and every mutation requires confirm:true.',
+							'Create a GitLab release or repository tag. Opt-in via plugins.gitlab.options.allowWrite:true. Requires confirm:true, emits redacted audit receipts, and never auto-retries.',
 						inputSchema: z
 							.object({
 								action: z.enum(['release', 'tag']),
@@ -501,7 +543,7 @@ export const buildGitLabWriteToolRegistrations = (
 						if (args.action === 'tag') {
 							if (args.ref === undefined)
 								throw new Error('ref is required for tag');
-							const result = await options.adapter.createTag({
+							const result = await adapter.createTag({
 								...withOptionalProject(
 									args.projectId,
 									args.projectPath,
@@ -527,8 +569,7 @@ export const buildGitLabWriteToolRegistrations = (
 								}),
 							);
 						}
-						const result =
-							await options.adapter.createRelease(args);
+						const result = await adapter.createRelease(args);
 						return toolJson(
 							withCommon(result, {
 								release:

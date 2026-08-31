@@ -6,6 +6,8 @@ import {
 	NotificationsService,
 	SettingsService,
 	type ILogEvent,
+	type ILogOutcome,
+	type ILogQueryFilter,
 	type ISettingsStore,
 	type McpStdioClient,
 } from '@mcp-vertex/client';
@@ -228,7 +230,7 @@ export class DashboardWebviewViewProvider {
 	private logsAbort: AbortController | undefined;
 	private logsFilter: {
 		source?: string;
-		outcome?: string;
+		outcome?: ILogOutcome;
 		agent?: string;
 		taskId?: string;
 	} = {};
@@ -399,7 +401,7 @@ export class DashboardWebviewViewProvider {
 	private async handleLogsCommand(payload: {
 		action: string;
 		source?: string | undefined;
-		outcome?: string | undefined;
+		outcome?: ILogOutcome | undefined;
 		agent?: string | undefined;
 		taskId?: string | undefined;
 	}): Promise<void> {
@@ -493,32 +495,20 @@ export class DashboardWebviewViewProvider {
 		}
 	}
 
-	private toFilter(): {
-		outcome?: string;
-		agent?: string;
-		taskId?: string;
-	} {
-		const filter: { outcome?: string; agent?: string; taskId?: string } =
-			{};
-		if (
-			this.logsFilter.outcome !== undefined &&
-			this.logsFilter.outcome !== ''
-		) {
-			filter.outcome = this.logsFilter.outcome;
-		}
-		if (
-			this.logsFilter.agent !== undefined &&
+	private toFilter(): ILogQueryFilter {
+		return {
+			...(this.logsFilter.outcome !== undefined
+				? { outcome: this.logsFilter.outcome }
+				: {}),
+			...(this.logsFilter.agent !== undefined &&
 			this.logsFilter.agent !== ''
-		) {
-			filter.agent = this.logsFilter.agent;
-		}
-		if (
-			this.logsFilter.taskId !== undefined &&
+				? { agent: this.logsFilter.agent }
+				: {}),
+			...(this.logsFilter.taskId !== undefined &&
 			this.logsFilter.taskId !== ''
-		) {
-			filter.taskId = this.logsFilter.taskId;
-		}
-		return filter;
+				? { taskId: this.logsFilter.taskId }
+				: {}),
+		};
 	}
 
 	private async pushLogEvent(

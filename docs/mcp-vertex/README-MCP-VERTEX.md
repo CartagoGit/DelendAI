@@ -44,6 +44,13 @@ The four clients we actively dogfood today, in priority order:
 > `mcp-vertex.config.json` once and every client picks up the change on
 > next start.
 
+Host-project scaffolding uses a shared namespace contract: `namespacePrefix`
+controls tool ids (`<prefix>_*`) and `mcpServerName` controls the concrete
+editor registration key those generated agent files reference. When a project
+adopts mcp-vertex into an existing server, pass the real `mcpServerName`
+instead of assuming the greenfield default `mcp-project-<prefix>`; this is the
+contract behind GitHub issue #52.
+
 ### VS Code / GitHub Copilot (`.vscode/mcp.json`)
 
 This is the canonical reference. Other clients reuse the same args:

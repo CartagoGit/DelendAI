@@ -143,7 +143,7 @@ packages/core/                         plugins/proposals/
 
 ### S0 — Inventario ejecutable de acoplamientos core → proposals
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `tools/scripts/inspect/core-proposals-boundary.script.ts` (nuevo)
     - `packages/core/tests/src/architecture/core-proposals-boundary.spec.ts` (nuevo)
@@ -156,7 +156,10 @@ packages/core/                         plugins/proposals/
       propuesto: `contract`, `adapter`, `composition` o `intentional-compat`.
     - El script falla si aparece un acoplamiento nuevo no clasificado en
       `packages/core/src`.
-
+- review-state: done
+- review-implementer: technical-investigator
+- review-reviewer: GitHub Copilot
+- review-log: approved by GitHub Copilot — Revisión limitada a S0. Verificado el inventario comprometido, el script tools/scripts/inspect/core-proposals-boundary.script.ts, la spec packages/core/tests/src/architecture/core-proposals-boundary.spec.ts y el gate manual core-proposals-boundary. Resultados observados: bun tools/scripts/inspect/core-proposals-boundary.script.ts => inventario regenerado sin unclassified ni regressions; bun x vitest run --config ./vitest.config.ts ./tests/src/architecture/core-proposals-boundary.spec.ts (desde packages/core) => 7/7 tests passing; bun tools/scripts/lint/core-proposals-boundary.script.ts => ok, 394 files scanned, 51 explicit exceptions active, 0 expired. No se revisó S1+ ni se editaron archivos ajenos.
 ### S1 — Contratos agnósticos de contribuciones de workflow y adopción
 
 - **Status**: pending

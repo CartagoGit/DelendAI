@@ -54,6 +54,35 @@ If the host also enables the `git` plugin, the agent may combine local context
 GitHub and GitLab **do not depend on** the `git` plugin. The `git` plugin
 contributes local-only context as an independent, opt-in source.
 
+### Diagnostic composition
+
+The shared diagnostic engine lives in `@mcp-vertex/remote-provider-core` and the
+provider-specific adapters live in `@mcp-vertex/github` and `@mcp-vertex/gitlab`.
+Each adapter reuses its plugin's existing read-only HTTP client and translates the
+provider's runs, jobs, logs and artifacts into the common remote-diagnostics model.
+
+- `diagnoseGitHubWorkflow(...)` reconstructs a GitHub Actions workflow run.
+- `diagnoseGitLabPipeline(...)` reconstructs a GitLab pipeline.
+
+Both adapters stay read-only:
+
+- They never dispatch workflows, retry pipelines, comment, cancel or mutate state.
+- They only fetch bounded evidence and let the common engine produce the
+   summary, probable cause and proposed fix.
+- The proposed fix is conceptual diagnostic output, not an instruction to mutate
+   the remote provider automatically.
+
+Optional higher-level composition remains explicit and external to this package:
+
+- `git` may enrich the diagnosis with local branch, diff or worktree context.
+- `logs` may persist or forward the final diagnostic report, but diagnostics do
+   not require that plugin at runtime.
+- `proposals` may capture the proposed fix as tracked follow-up work.
+- `quality` may validate a human-approved fix after diagnosis.
+- `notification` may announce the final result or handoff.
+
+None of those integrations are imported or required by the provider adapters.
+
 ---
 
 ## Security
@@ -77,12 +106,12 @@ are replaced with `[REDACTED]` before any string leaves the plugin boundary
 
 ### Output limits (`limits.ts`)
 
-| Limit          | Default  | Enforcement              |
-|----------------|----------|--------------------------|
-| `maxBytes`     | 512 000  | `applyByteLimit`         |
-| `maxLines`     | 4 000    | `applyLineLimit`         |
-| `maxPages`     | 10       | `shouldFetchNextPage`    |
-| `maxArtifacts` | 500      | `shouldFetchNextPage`    |
+| Limit          | Default | Enforcement           |
+| -------------- | ------- | --------------------- |
+| `maxBytes`     | 512 000 | `applyByteLimit`      |
+| `maxLines`     | 4 000   | `applyLineLimit`      |
+| `maxPages`     | 10      | `shouldFetchNextPage` |
+| `maxArtifacts` | 500     | `shouldFetchNextPage` |
 
 Truncation metadata is always included in the tool response so agents know
 what was omitted.

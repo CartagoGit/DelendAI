@@ -6,7 +6,7 @@ import type {
 import {
 	createRemoteMutationExecutor,
 	type IRemoteHttpClientDeps,
-} from '../../../remote-provider-core/src/index';
+} from '@mcp-vertex/remote-provider-core';
 import z from 'zod';
 
 import type { IGitLabProviderContext } from './config';
