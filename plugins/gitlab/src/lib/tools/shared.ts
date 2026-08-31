@@ -1402,16 +1402,7 @@ export const buildGitLabPipelinesToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args: {
-					action: 'get' | 'list';
-					projectId?: string | number;
-					projectPath?: string;
-					id?: string | number;
-					ref?: string;
-					status?: string;
-					page?: number;
-					perPage?: number;
-				}) => {
+				async (args) => {
 					try {
 						const project = resolveProjectRef(
 							options.context,
