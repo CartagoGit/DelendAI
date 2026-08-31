@@ -423,6 +423,7 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
+		"@vscode/test-electron": "^2.5.2",
 		"@types/vscode": "^1.90.0",
 		"@vscode/vsce": "^3.6.3",
 		"typescript": "7.0.2",
