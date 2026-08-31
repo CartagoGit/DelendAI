@@ -1,11 +1,11 @@
 import {
 	mkdirSync,
 	mkdtempSync,
-	readdirSync,
 	readFileSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
+import { readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -76,18 +76,31 @@ const seedSlice = (workspace: string, id: string): string => {
 	return proposalPath;
 };
 
-const findProposalPath = (workspace: string, id: string): string => {
+const findProposalPath = async (
+	workspace: string,
+	id: string,
+): Promise<string> => {
 	const proposalsDir = join(workspace, 'docs/mcp-vertex/proposals');
-	const relativePath = readdirSync(proposalsDir, { recursive: true }).find(
-		(entry) =>
-			typeof entry === 'string' && entry.endsWith(`${id}-quality.md`),
-	);
-	if (relativePath === undefined) {
-		throw new Error(
-			`proposal ${id} was not found under ${proposalsDir}; entries=${JSON.stringify(readdirSync(proposalsDir, { recursive: true }))}`,
-		);
+	const pending = [proposalsDir];
+	while (pending.length > 0) {
+		const currentDir = pending.pop()!;
+		for (const entry of await readdir(currentDir, {
+			withFileTypes: true,
+		})) {
+			const currentPath = join(currentDir, entry.name);
+			if (entry.isDirectory()) {
+				pending.push(currentPath);
+				continue;
+			}
+			if (
+				entry.name.endsWith('.md') &&
+				readFileSync(currentPath, 'utf8').includes(`id: ${id}`)
+			) {
+				return currentPath;
+			}
+		}
 	}
-	return join(proposalsDir, relativePath);
+	throw new Error(`proposal ${id} was not found under ${proposalsDir}`);
 };
 
 afterEach(async () => {
