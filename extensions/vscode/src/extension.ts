@@ -342,11 +342,16 @@ const createResilientClient = (
 					() => undefined,
 					() => undefined,
 				);
-				reconnecting = connection.then(async (next) => {
-					const previous = current;
-					current = next;
-					await previous.close();
-				});
+				reconnecting = connection.then(
+					async (next) => {
+						const previous = current;
+						current = next;
+						await previous.close();
+					},
+					(error) => {
+						throw error;
+					},
+				);
 				reconnecting = reconnecting.finally(() => {
 					reconnecting = undefined;
 					pendingConnection = undefined;
@@ -475,15 +480,12 @@ export const activate = async (
 	const client = resilient.client;
 	const reconnect = resilient.reconnect;
 	if (isTrusted && configuredLaunch !== undefined) {
-		runSafely(
-			reconnect().catch((err: unknown) => {
-				const failure =
-					err instanceof Error ? err : new Error(String(err));
-				return vscode.window.showErrorMessage?.(
-					`MCP-Vertex: server unavailable. Use Restart MCP Server to reconnect: ${failure.message}`,
-				);
-			}),
-		);
+		void reconnect().catch((err: unknown) => {
+			const failure = err instanceof Error ? err : new Error(String(err));
+			return vscode.window.showErrorMessage?.(
+				`MCP-Vertex: server unavailable. Use Restart MCP Server to reconnect: ${failure.message}`,
+			);
+		});
 	}
 	void Promise.resolve(
 		context.globalState.update(CLIENT_STATE_KEY, client),
