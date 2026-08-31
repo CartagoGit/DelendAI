@@ -38,8 +38,10 @@ Los cambios de contratos y efectos secundarios son el mayor riesgo de coordinaci
   - "EXPAND-to-CONTRACT protocol encoded in tools/policies"
   - "worktree escalation matrix tested"
   - "high fan-out changes receive isolation"
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: crow
+- review-reviewer: delivery-verifier-r00044-s1
+- review-log: requested_changes by delivery-verifier-r00044-s1 — La política de migración y la matriz de impacto existen como helpers, pero no están integradas al flujo real de creación de worktrees; además VERIFY no escala cambios de alto impacto. Conectar enforcement y cubrir VERIFY con tests.
 ### S2 — Symlink containment and network consent
 - **Status**: pending
 - **Files**: `packages/core/src/lib/security`, `plugins/security/src`, `plugins/error-reporting/src`, `plugins/error-reporting/tests`
