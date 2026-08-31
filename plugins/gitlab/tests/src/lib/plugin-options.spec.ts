@@ -18,6 +18,9 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 		pluginCacheDir: '.cache/gitlab',
 		pluginDocsDir: 'docs/gitlab',
 		namespacePrefix: 'gitlab',
+		env: {
+			GITLAB_TOKEN: 'test-token',
+		},
 		options,
 	}) as unknown as IMcpPluginContext;
 

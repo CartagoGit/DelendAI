@@ -431,6 +431,10 @@ const requestFailure = (
 			retryAfterSeconds: null,
 			temporary: false,
 			retryable: false,
+			originalBytes: null,
+			keptBytes: null,
+			originalLines: null,
+			keptLines: null,
 		},
 	};
 };
