@@ -200,6 +200,18 @@ export interface IProposalTransitionToolOptions {
 	 * `proposals.options.requirePeerReview: false`.
 	 */
 	readonly requirePeerReview?: boolean;
+	/**
+	 * When true (default), `→ review` and `→ done` require a passing
+	 * `bun run validate` from the last 24h, journalled to
+	 * `.cache/mcp-vertex/results/logs/validate.jsonl`.
+	 *
+	 * Not every adopter has a validate chain worth blocking on — a docs
+	 * repo, a spike, a project whose CI is the real gate. Those hosts set
+	 * `proposals.options.requireValidateEvidence: false` rather than
+	 * teaching every agent to pass `force: true`, which would disable the
+	 * peer-review and slice-completeness gates along with it.
+	 */
+	readonly requireValidateEvidence?: boolean;
 	/** Folder layout policy per proposal status. */
 	readonly folderPolicy?: IProposalFolderPolicy;
 	readonly peerReviewGateDeps?: IPeerReviewGateDeps;
@@ -713,6 +725,7 @@ export const runProposalTransition = async (
 		!isZeroWorkShortcut &&
 		args.force !== true &&
 		args.skipDfaForPlanClosure !== true &&
+		options.requireValidateEvidence !== false &&
 		(finalTo === 'review' || finalTo === 'done')
 	) {
 		const validateEvidence = await resolveRecentValidateEvidence({
