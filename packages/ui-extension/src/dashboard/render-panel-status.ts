@@ -195,7 +195,7 @@ const renderLatency = (
 		</dl>
 		${
 			sparkPath.length > 0
-				? `<svg class="mcpv-status__sparkline" viewBox="0 0 240 36" preserveAspectRatio="none" aria-label="latency trend" role="img">
+				? `<svg class="mcpv-status__sparkline" viewBox="0 0 240 36" preserveAspectRatio="none" aria-label="${text('dashboard.times.sparkline', 'latency trend')}" role="img">
 				<path d="${sparkPath}" fill="none" stroke="currentColor" stroke-width="1.5" />
 			</svg>`
 				: ''
