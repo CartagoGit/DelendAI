@@ -117,6 +117,7 @@ describe('f00100 S4 — contributes-completeness ratchet', () => {
 		// x00072 SEC-001 S1: start-server-untrusted command is the 33rd.
 		// f00192 S1: openAgentTimeline is the 34th.
 		// Runtime observer log command is the 35th.
-		expect(contributed.length).toBe(36);
+		// `openDashboardTab` (dashboard in an editor tab) is the 37th.
+		expect(contributed.length).toBe(37);
 	});
 });
