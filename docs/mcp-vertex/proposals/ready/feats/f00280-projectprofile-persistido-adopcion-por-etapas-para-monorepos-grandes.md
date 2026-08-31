@@ -150,11 +150,13 @@ adoptProject (ya existe, sin romper su contrato)
 - review-log: approved by delivery-verifier-f00280-s2-verify — Verified independently: S2 implementation present in commit 770a5c83 (feat(adopt): break down assessment by workspace area). Tests pass 2/2: bunx vitest run packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts. Files match proposal: packages/core/src/lib/adopt/adoption-assessment.service.ts (modified), packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts (new). Acceptance covered.
 ### S3 — Adopción por etapas: cuatro perfiles de instalación incremental
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/adopt/adoption-stages.constant.ts`, `packages/core/src/lib/adopt/adopt-project.tool.ts`, `packages/core/tests/src/lib/adopt/adoption-stages.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/adoption-stages.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-orchestrator-f00280-s3
+- review-reviewer: delivery-verifier-f00280-s3
+- review-log: approved by delivery-verifier-f00280-s3 — Verified independently: S3 implementation matches all 3 acceptance criteria. 1) Default stage = `core` (resolveStagePluginIds('core') = ['git','search','docs','memory']; test "omitting stage installs only the core plugin set" passes). 2) Cumulative: test "stage='standard' is cumulative over core" verifies standard ⊃ core. 3) Specialized is sentinel: resolveStagePluginIds('specialized') returns []; test "stage='specialized' preserves the full assessment set" passes. typecheck green; 12/12 new tests pass + 19/19 existing adopt tests pass = 31/31. Acceptance covered.
 ## dependency graph
 
 Independiente del resto de `q00011`. Se relaciona con `f00274`
