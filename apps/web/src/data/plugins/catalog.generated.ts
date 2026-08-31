@@ -117,7 +117,7 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 	{
 		"slug": "error-reporting",
 		"displayName": "Error Reporting",
-		"purpose": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).",
+		"purpose": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.",
 		"category": "integration"
 	},
 	{
@@ -137,6 +137,18 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 		"displayName": "Git",
 		"purpose": "Git wrappers (PR list/view, diff, changelog, extended).",
 		"category": "code-intelligence"
+	},
+	{
+		"slug": "github",
+		"displayName": "Github",
+		"purpose": "GitHub read-only provider context, HTTP client and remote resource tools.",
+		"category": "integration"
+	},
+	{
+		"slug": "gitlab",
+		"displayName": "Gitlab",
+		"purpose": "GitLab read-only provider context, HTTP client and resource tools.",
+		"category": "integration"
 	},
 	{
 		"slug": "i18n",
@@ -244,6 +256,12 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 		"slug": "refactor",
 		"displayName": "Refactor",
 		"purpose": "Refactor primitives (symbols, definition, references, rename, codemod).",
+		"category": "code-intelligence"
+	},
+	{
+		"slug": "remote-provider-core",
+		"displayName": "Remote Provider Core",
+		"purpose": "Shared remote-provider foundation: validated config, injectable HTTP, normalized errors.",
 		"category": "code-intelligence"
 	},
 	{

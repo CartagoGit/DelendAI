@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-31T07:23:35.399Z",
+	"generatedAt": "2026-08-31T12:16:53.519Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -767,7 +767,7 @@
 			"package": "@mcp-vertex/error-reporting",
 			"version": "0.1.0",
 			"visibility": "public",
-			"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).",
+			"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.",
 			"tags": [
 				"error-reporting",
 				"github",
@@ -1007,6 +1007,66 @@
 			"capabilities": [
 				"git",
 				"changelog"
+			]
+		},
+		{
+			"id": "github",
+			"package": "@mcp-vertex/github",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "GitHub read-only provider context, HTTP client and remote resource tools.",
+			"tags": [
+				"github",
+				"provider"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"network"
+			],
+			"presets": [],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@mcp-vertex/contracts",
+				"zod"
+			],
+			"capabilities": [
+				"github",
+				"remote-provider"
+			]
+		},
+		{
+			"id": "gitlab",
+			"package": "@mcp-vertex/gitlab",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "GitLab read-only provider context, HTTP client and resource tools.",
+			"tags": [
+				"gitlab",
+				"provider"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"network"
+			],
+			"presets": [],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@mcp-vertex/contracts",
+				"zod"
+			],
+			"capabilities": [
+				"gitlab",
+				"remote-provider"
 			]
 		},
 		{
@@ -1808,6 +1868,37 @@
 			]
 		},
 		{
+			"id": "remote-provider-core",
+			"package": "@mcp-vertex/remote-provider-core",
+			"version": "0.1.1",
+			"visibility": "public",
+			"summary": "Shared remote-provider foundation: validated config, injectable HTTP, normalized errors.",
+			"tags": [
+				"remote",
+				"provider",
+				"github",
+				"gitlab"
+			],
+			"maturity": "beta",
+			"permissions": [
+				"filesystem-read"
+			],
+			"presets": [],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@mcp-vertex/contracts",
+				"zod"
+			],
+			"capabilities": [
+				"remote-provider"
+			]
+		},
+		{
 			"id": "rules",
 			"package": "@mcp-vertex/rules",
 			"version": "0.1.1",
@@ -2520,7 +2611,7 @@
 			"origin": "first-party",
 			"id": "error-reporting",
 			"package": "@mcp-vertex/error-reporting",
-			"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).",
+			"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.",
 			"tags": [
 				"error-reporting",
 				"github",
@@ -2679,6 +2770,34 @@
 					"git-write"
 				]
 			}
+		},
+		{
+			"origin": "first-party",
+			"id": "github",
+			"package": "@mcp-vertex/github",
+			"summary": "GitHub read-only provider context, HTTP client and remote resource tools.",
+			"tags": [
+				"github",
+				"provider"
+			],
+			"permissions": [
+				"network"
+			],
+			"tokenBudgetBytes": 2700
+		},
+		{
+			"origin": "first-party",
+			"id": "gitlab",
+			"package": "@mcp-vertex/gitlab",
+			"summary": "GitLab read-only provider context, HTTP client and resource tools.",
+			"tags": [
+				"gitlab",
+				"provider"
+			],
+			"permissions": [
+				"network"
+			],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -3079,6 +3198,22 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write"
+			],
+			"tokenBudgetBytes": 2700
+		},
+		{
+			"origin": "first-party",
+			"id": "remote-provider-core",
+			"package": "@mcp-vertex/remote-provider-core",
+			"summary": "Shared remote-provider foundation: validated config, injectable HTTP, normalized errors.",
+			"tags": [
+				"remote",
+				"provider",
+				"github",
+				"gitlab"
+			],
+			"permissions": [
+				"filesystem-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -3812,7 +3947,7 @@
 		{
 			"id": "error-reporting",
 			"package": "@mcp-vertex/error-reporting",
-			"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).",
+			"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.",
 			"tags": [
 				"error-reporting",
 				"github",
@@ -3930,6 +4065,54 @@
 			"tokenBudget": {
 				"warning": 6200,
 				"hard": 6800,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
+			"id": "github",
+			"package": "@mcp-vertex/github",
+			"summary": "GitHub read-only provider context, HTTP client and remote resource tools.",
+			"tags": [
+				"github",
+				"provider"
+			],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": [],
+			"capabilities": [
+				"github",
+				"remote-provider"
+			],
+			"permissions": [
+				"network"
+			],
+			"tokenBudget": {
+				"warning": 2700,
+				"hard": 3000,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
+			"id": "gitlab",
+			"package": "@mcp-vertex/gitlab",
+			"summary": "GitLab read-only provider context, HTTP client and resource tools.",
+			"tags": [
+				"gitlab",
+				"provider"
+			],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": [],
+			"capabilities": [
+				"gitlab",
+				"remote-provider"
+			],
+			"permissions": [
+				"network"
+			],
+			"tokenBudget": {
+				"warning": 2700,
+				"hard": 3000,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4449,6 +4632,31 @@
 			}
 		},
 		{
+			"id": "remote-provider-core",
+			"package": "@mcp-vertex/remote-provider-core",
+			"summary": "Shared remote-provider foundation: validated config, injectable HTTP, normalized errors.",
+			"tags": [
+				"remote",
+				"provider",
+				"github",
+				"gitlab"
+			],
+			"maturity": "beta",
+			"visibility": "public",
+			"presets": [],
+			"capabilities": [
+				"remote-provider"
+			],
+			"permissions": [
+				"filesystem-read"
+			],
+			"tokenBudget": {
+				"warning": 2700,
+				"hard": 3000,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
 			"id": "rules",
 			"package": "@mcp-vertex/rules",
 			"summary": "Lint/type rules engine (frameworks, dogmas, presets).",
@@ -4888,6 +5096,18 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "github",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
+			"id": "gitlab",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "i18n",
 			"warning": 2700,
 			"hard": 3000,
@@ -4997,6 +5217,12 @@
 		},
 		{
 			"id": "refactor",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
+			"id": "remote-provider-core",
 			"warning": 2700,
 			"hard": 3000,
 			"releaseRelativePercent": 20
@@ -5346,6 +5572,18 @@
 			}
 		},
 		{
+			"id": "github",
+			"permissions": [
+				"network"
+			]
+		},
+		{
+			"id": "gitlab",
+			"permissions": [
+				"network"
+			]
+		},
+		{
 			"id": "i18n",
 			"permissions": [
 				"filesystem-read"
@@ -5572,6 +5810,12 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write"
+			]
+		},
+		{
+			"id": "remote-provider-core",
+			"permissions": [
+				"filesystem-read"
 			]
 		},
 		{
@@ -7152,6 +7396,132 @@
 			"matches": true
 		},
 		{
+			"pluginId": "github",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "vertex",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "vertex",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
 			"pluginId": "i18n",
 			"presetId": "minimal",
 			"declared": false,
@@ -8343,6 +8713,69 @@
 		},
 		{
 			"pluginId": "refactor",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "vertex",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
