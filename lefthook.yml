@@ -165,6 +165,15 @@ pre-push:
             use_stdin: true
             run: bun run lint:push-to-develop -- {1} {2} || true
 
+            # f00395 S3: gate bloqueante para ramas release/* y main. Solo se
+            # activa cuando el ref destino es `main` o empieza por `release/`
+            # (el script devuelve 0 sin ejecutar nada si no aplica). Local
+            # atrapa antes de subir, CI confirma en PR. Bypass:
+            # LEFTHOOK_BYPASS=1 git push ...
+            release-pr-gate:
+                use_stdin: true
+                run: bun run lint:release-pr-gate -- {1} {2} || exit 1
+
 # f00086: commit-msg discipline. Advisory locally. The release PR and release
 # workflow still validate Conventional Commits before publishing; intermediate
 # commits may be less formal while work is developed on `develop`.
