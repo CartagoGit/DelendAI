@@ -32,6 +32,11 @@
 import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 
+export const RESERVED_SMOKE_IDENTITY = {
+	name: 'smoke-tester',
+	email: 'smoke@local',
+} as const;
+
 /** Conventional Commits prefix list (kept in sync with `derive-version.ts`). */
 export const CONVENTIONAL_PREFIXES: readonly string[] = [
 	'feat',
@@ -61,6 +66,31 @@ export const MERGE_REVERT_RE = /^(Merge |Revert )/;
 export type CommitMsgResult =
 	| { readonly ok: true; readonly firstLine: string }
 	| { readonly ok: false; readonly blockers: readonly string[] };
+
+export const lintCommitIdentity = (
+	name: string,
+	email: string,
+): CommitMsgResult => {
+	const normalizedName = name.trim().toLowerCase();
+	const normalizedEmail = email.trim().toLowerCase();
+	if (
+		normalizedName !== RESERVED_SMOKE_IDENTITY.name ||
+		normalizedEmail !== RESERVED_SMOKE_IDENTITY.email
+	) {
+		return { ok: true, firstLine: `${name.trim()} <${email.trim()}>` };
+	}
+	return {
+		ok: false,
+		blockers: [
+			'commit identity is the reserved smoke-test identity `smoke-tester <smoke@local>`.',
+			'',
+			'next-action:',
+			'  configure the real repository author before committing:',
+			'  git config user.name "Your Name"',
+			'  git config user.email "you@example.com"',
+		],
+	};
+};
 
 /** Pure classifier over a raw message body. */
 export const lintCommitMessage = (rawMessage: string): CommitMsgResult => {
@@ -131,6 +161,26 @@ export const readLastCommitMessage = (cwd: string): string | null => {
 	return res.stdout ?? '';
 };
 
+export const readConfiguredIdentity = (
+	cwd: string,
+): { readonly name: string; readonly email: string } | null => {
+	const result = spawnSync(
+		'git',
+		['config', '--get-regexp', '^user\\.(name|email)$'],
+		{ cwd, encoding: 'utf8' },
+	);
+	if (result.status !== 0) return null;
+	const values = new Map<string, string>();
+	for (const line of (result.stdout ?? '').split('\n')) {
+		const separator = line.indexOf(' ');
+		if (separator <= 0) continue;
+		values.set(line.slice(0, separator), line.slice(separator + 1));
+	}
+	const name = values.get('user.name');
+	const email = values.get('user.email');
+	return name !== undefined && email !== undefined ? { name, email } : null;
+};
+
 // ---------- CLI shell ----------
 
 interface ICliArgs {
@@ -182,6 +232,17 @@ const formatReport = (result: CommitMsgResult): string => {
 
 const main = async (): Promise<number> => {
 	const args = parseArgs(process.argv.slice(2));
+	const configuredIdentity = readConfiguredIdentity(args.cwd);
+	if (configuredIdentity !== null) {
+		const identityResult = lintCommitIdentity(
+			configuredIdentity.name,
+			configuredIdentity.email,
+		);
+		if (!identityResult.ok) {
+			process.stderr.write(formatReport(identityResult));
+			return 1;
+		}
+	}
 	let message: string;
 	if (args.messageInline !== null) {
 		message = args.messageInline;
