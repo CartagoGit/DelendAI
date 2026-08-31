@@ -154,10 +154,11 @@ describe('e2e: agent catalog', async () => {
 			name: 'mcp-vertex_agent_catalog',
 			arguments: args,
 		});
-		return JSON.parse(
-			(res.content as Array<{ type: string; text: string }>)[0]?.text ??
-				'{}',
-		) as Record<string, unknown>;
+		return (res.structuredContent ??
+			JSON.parse(
+				(res.content as Array<{ type: string; text: string }>)[0]
+					?.text ?? '{}',
+			)) as Record<string, unknown>;
 	};
 
 	it('returns actionable proposals in compact mode and the full registry in full mode', async () => {
