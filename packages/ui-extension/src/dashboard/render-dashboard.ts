@@ -416,6 +416,26 @@ const CLIENT_SCRIPT = `
     logsVisible();
     setLogsStatus('Cleared.');
   });
+  const logsSearch = document.getElementById('mcpv-logs-search');
+  logsSearch?.addEventListener('input', () => {
+    if (!(logsSearch instanceof HTMLInputElement)) return;
+    const needle = logsSearch.value.trim().toLowerCase();
+    if (!logsList) return;
+    for (const row of Array.from(logsList.querySelectorAll('li'))) {
+      const haystack = row.textContent?.toLowerCase() ?? '';
+      row.toggleAttribute('hidden', needle.length > 0 && !haystack.includes(needle));
+    }
+    let visible = 0;
+    for (const row of Array.from(logsList.querySelectorAll('li'))) {
+      if (!row.hasAttribute('hidden')) visible += 1;
+    }
+    if (logsEmpty) {
+      logsEmpty.textContent = needle.length > 0 && visible === 0
+        ? `No events match "${needle}".`
+        : 'No log events match the current filter.';
+      logsEmpty.hidden = visible > 0;
+    }
+  });
   window.addEventListener('message', (event) => {
     const data = event?.data;
     if (!data || data.command !== 'hostLogEvent') return;

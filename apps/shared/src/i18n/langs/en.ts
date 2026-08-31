@@ -636,6 +636,7 @@ const extension = {
 	'logs.resume': 'Resume',
 	'logs.clear': 'Clear',
 	'logs.copyTask': 'Copy task id',
+	'logs.searchPlaceholder': 'Filter visible events',
 	'logs.subscribe.start': 'Start realtime',
 	'logs.subscribe.stop': 'Stop realtime',
 	'logs.subscribe.following': 'Following live events',
