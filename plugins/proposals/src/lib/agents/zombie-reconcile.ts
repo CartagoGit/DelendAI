@@ -334,7 +334,42 @@ export async function gcZombies(
 					const body = JSON.parse(
 						releaseResult.content[0]?.text ?? '{}',
 					) as { ok?: boolean; removed?: number };
-					releasedLock = body.ok === true && (body.removed ?? 0) > 0;
+					// Edge case: when the entry was already purged as
+					// stale by `readSynchronizedLock` (because the agent
+					// exceeded `stale_after_minutes` between the
+					// snapshot read and the release), the engine
+					// reports `removed: 0, released: false`. The lock
+					// IS gone from disk (the purge removed it), so
+					// emit anyway — the orphan truly had a lock, and
+					// the lock truly is freed.
+					const stillHeld =
+						body.ok === true && (body.removed ?? 0) > 0;
+					if (stillHeld) {
+						releasedLock = true;
+					} else {
+						try {
+							const rawAfter = readFileSync(lockPath, 'utf8');
+							const parsedAfter = JSON.parse(rawAfter) as {
+								in_flight?: unknown;
+							};
+							const inflightAfter = Array.isArray(
+								parsedAfter?.in_flight,
+							)
+								? (parsedAfter.in_flight as unknown[])
+								: [];
+							const stillInFlight = inflightAfter.some(
+								(entry) =>
+									(entry as { task_id?: string })?.task_id ===
+									orphan.taskId,
+							);
+							releasedLock = !stillInFlight;
+						} catch {
+							// Lock file unreadable → assume the entry
+							// is gone (purge happened and rewrite
+							// failed). Treat as released.
+							releasedLock = true;
+						}
+					}
 				}
 
 				if (releasedLock && options?.queueEmitter) {
