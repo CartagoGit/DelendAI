@@ -58,3 +58,12 @@ export interface IWorktreeImpactPolicyVerdict {
 	readonly areaCount: number;
 	readonly contractTouchCount: number;
 }
+
+/** Guidance attached to a proposal slice that participates in migration. */
+export interface IContractMigrationSliceGuidance {
+	readonly phase: ContractMigrationPhase;
+	readonly completedPhases: readonly ContractMigrationPhase[];
+	readonly verificationPassed: boolean;
+	readonly migrationPolicy: IContractMigrationPolicyVerdict;
+	readonly worktreeImpactPolicy: IWorktreeImpactPolicyVerdict;
+}

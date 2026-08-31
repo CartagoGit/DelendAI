@@ -683,6 +683,21 @@ export type {
 	ReleaseState,
 	ReleaseType,
 } from '../lib/contracts/release';
+export {
+	assertExpectedReleaseState,
+	evaluateReleaseReadiness,
+	ReleaseStateError,
+} from '../lib/contracts/release-state';
+export type {
+	IExpectedReleaseState,
+	IReleaseGate,
+	IReleasePrepareInput,
+	IReleasePreparation,
+	IReleaseReadiness,
+	IReleaseStatusCompact,
+	ReleasePrepareMode,
+	ReleaseStateErrorCode,
+} from '../lib/contracts/release-state';
 // S1: the canonical multi-model provider contract. Wiki pages
 // 04/05/06/07/08 and both consuming plugins (orchestrator-runner,
 // usage-tracking) import the provider vocabulary from this single file so
