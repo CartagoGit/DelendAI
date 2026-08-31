@@ -8,7 +8,7 @@ export const DASHBOARD_MESSAGE_SCHEMA = z.discriminatedUnion('command', [
 	z
 		.object({
 			command: z.literal('action'),
-			action: z.literal('refresh'),
+			action: z.enum(['refresh', 'expand']),
 		})
 		.strict(),
 	z

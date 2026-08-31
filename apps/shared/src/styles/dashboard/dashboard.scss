@@ -57,6 +57,71 @@
 }
 
 // ---------------------------------------------------------------------------
+// Dashboard application navigation. The sidebar is primary on wide views
+// and becomes an explicit drawer on narrow webviews.
+// ---------------------------------------------------------------------------
+
+.mcpv-app-nav {
+	position: sticky;
+	top: 0;
+	float: left;
+	width: 196px;
+	margin: 0 var(--mcpv-s-4) var(--mcpv-s-4) 0;
+	padding: var(--mcpv-s-3);
+	background: var(--mcpv-bg-card, var(--vscode-sideBar-background, #252526));
+	border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--mcpv-radius);
+	z-index: 2;
+
+	&__group {
+		margin-bottom: var(--mcpv-s-4);
+	}
+
+	&__group h3 {
+		margin: 0 0 var(--mcpv-s-1);
+		font-size: 11px;
+		font-weight: 600;
+		text-transform: uppercase;
+		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+	}
+
+	&__items {
+		display: grid;
+		gap: 2px;
+	}
+
+	&__item {
+		appearance: none;
+		border: 0;
+		border-left: 2px solid transparent;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		padding: var(--mcpv-s-1) var(--mcpv-s-2);
+		cursor: pointer;
+	}
+
+	&__item:hover,
+	&__item[aria-current='page'] {
+		background: var(--mcpv-bg-soft, var(--vscode-list-hoverBackground, transparent));
+		border-left-color: var(--mcpv-brand-blue);
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2px;
+		padding-top: var(--mcpv-s-2);
+		border-top: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+	}
+}
+
+.mcpv-app-nav__mobile {
+	display: none;
+}
+
+// ---------------------------------------------------------------------------
 // Header strip — `mcpv-header` + `&__logo`, `&__brand`, `&__name`,
 // `&__version`, `&__strip`. The block owns its children.
 // ---------------------------------------------------------------------------
@@ -370,5 +435,34 @@
 @media (min-width: bp.$mcpv-bp-md) {
 	.mcpv-panel__grid {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: bp.$mcpv-bp-sm) {
+	.mcpv-app-nav__mobile {
+		display: block;
+		padding: 0 var(--mcpv-s-4) var(--mcpv-s-2);
+	}
+
+	.mcpv-app-nav__menu {
+		appearance: none;
+		border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+		background: var(--mcpv-bg-card, var(--vscode-sideBar-background, #252526));
+		color: inherit;
+		font: inherit;
+		padding: var(--mcpv-s-2) var(--mcpv-s-3);
+		cursor: pointer;
+	}
+
+	.mcpv-app-nav {
+		float: none;
+		position: absolute;
+		display: none;
+		width: calc(100% - (2 * var(--mcpv-s-4)));
+		margin: 0 var(--mcpv-s-4);
+	}
+
+	.mcpv-app-nav.is-open {
+		display: block;
 	}
 }
