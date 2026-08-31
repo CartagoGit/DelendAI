@@ -266,11 +266,17 @@ describe('zombie-reconcile', async () => {
 
 		expect(report1.orphans.length).toBe(1);
 		expect(report2.orphans.length).toBe(0); // Already deleted on first run
-		expect(queueEmitter).toHaveBeenCalledTimes(1); // Emitter only called once
+		// R-2026-08-31: queueEmitter is only invoked when a lock was
+		// actually released. The test fixture has an empty
+		// `in_flight`, so no lock existed and the emitter is not
+		// called. The fixture used to assert one call before the fix;
+		// the new contract surfaces phantom watchdog events that the
+		// engine no longer produces.
+		expect(queueEmitter).toHaveBeenCalledTimes(0);
 	});
 
-	// 7. Backpressure event emission cuando orphans.length >= 1
-	it('Case 7: Backpressure event emission cuando orphans.length >= 1', async () => {
+	// 7. Backpressure event emission cuando un lock real se libera
+	it('Case 7: Backpressure event emission cuando el orphan tenía un lock activo', async () => {
 		const registryData: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -290,22 +296,31 @@ describe('zombie-reconcile', async () => {
 				},
 			],
 		};
+		// R-2026-08-31: the lock entry exists, so the engine actually
+		// releases something; the queueEmitter fires once with the
+		// canonical event taskId.
 		const lockData = {
 			version: 1,
-			in_flight: [],
+			in_flight: [
+				{
+					task_id: 'task-1',
+					agent: 'agent_zombie',
+					started_at: '2026-06-05T11:00:00.000Z',
+				},
+			],
 		};
 
 		const registryPath = createTempPath(
-			'reg',
+			'reg-bp',
 			'subagent-registry.json',
 			JSON.stringify(registryData),
 		);
 		const lockPath = createTempPath(
-			'lock',
+			'lock-bp',
 			'agents.lock.json',
 			JSON.stringify(lockData),
 		);
-		const queuePath = createTempPath('queue', 'queue.json', '{}');
+		const queuePath = createTempPath('queue-bp', 'queue.json', '{}');
 
 		const queueEmitter = vi
 			.fn()
@@ -322,6 +337,54 @@ describe('zombie-reconcile', async () => {
 			expect.stringContaining('zombie-gc-event-'),
 			4,
 		);
+	});
+
+	// R-2026-08-31: orphan WITHOUT a lock does not emit phantom events
+	it('Case 7b: orphan sin lock activo NO emite phantom watchdog events', async () => {
+		const registryData: IAgentRegistry = {
+			version: 1,
+			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
+			assignments: [
+				{
+					task_id: 'task-1',
+					agent_name: 'agent_zombie',
+					agent_slot: 'implementation_runner',
+					parent_task_id: null,
+					depth: 0,
+					topic: 'orphan without lock',
+					adopted: true,
+					assigned_at: '2026-06-05T11:00:00.000Z',
+					last_seen: '2026-06-05T11:45:00.000Z',
+					cooldown_until: null,
+					status: 'cooldown',
+				},
+			],
+		};
+		const registryPath = createTempPath(
+			'reg-nolock',
+			'subagent-registry.json',
+			JSON.stringify(registryData),
+		);
+		const lockPath = createTempPath(
+			'lock-nolock',
+			'agents.lock.json',
+			JSON.stringify({ version: 1, in_flight: [] }),
+		);
+		const queuePath = createTempPath('queue-nolock', 'queue.json', '{}');
+
+		const queueEmitter = vi
+			.fn()
+			.mockImplementation(() => Promise.resolve());
+
+		const report = await gcZombies(registryPath, lockPath, queuePath, {
+			dryRun: false,
+			staleAfterMinutes: 10,
+			now,
+			queueEmitter,
+		});
+		expect(report.orphans.length).toBe(1);
+		expect(report.releasedLockCount).toBe(0);
+		expect(queueEmitter).not.toHaveBeenCalled();
 	});
 
 	// 8. Threshold verde: 0 orphans
