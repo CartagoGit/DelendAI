@@ -112,19 +112,28 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	const namesOptions = (registryPath: string): IAgentNamesToolOptions => ({
+	const namesOptions = (
+		registryPath: string,
+		lockPath: string,
+	): IAgentNamesToolOptions => ({
 		namespacePrefix: 'proposals',
 		registryPathAbs: registryPath,
-		lockPathAbs: join(root, 'agent-lock.json'), // absent: zombies hold no lock
+		lockPathAbs: lockPath,
 		queuePathAbs: queuePath,
 		closedTasksPathAbs: closedTasksPath,
 		workspaceRoot: root,
 	});
 
-	/** One reconcile = one force_release = one watchdog enqueue on the shared queue. */
+	/** One reconcile = one force_release = one watchdog enqueue on the shared queue.
+	 *  R-2026-08-31: the lock fixture MUST contain the matching taskId so the
+	 *  `gcZombies` release actually fires `queueEmitter`. Each zombie
+	 *  gets its own lock file under a unique name so the releases do
+	 *  not race the same in_flight entry. */
 	const reconcileZombie = (index: number): Promise<IToolResult> => {
 		const registryPath = join(root, `registry-${index}.json`);
+		const lockPath = join(root, `agent-lock-${index}.json`);
 		writeFileSync(registryPath, zombieRegistry(`task-${index}`));
+		writeFileSync(lockPath, zombieLock(`task-${index}`));
 		return runAgentNames(
 			{
 				action: 'reconcile',
@@ -132,7 +141,7 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 				stale_after_minutes: 10,
 				now: new Date().toISOString(),
 			},
-			namesOptions(registryPath),
+			namesOptions(registryPath, lockPath),
 		);
 	};
 
