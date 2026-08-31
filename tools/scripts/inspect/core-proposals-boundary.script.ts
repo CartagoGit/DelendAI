@@ -999,6 +999,22 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		note: 'La derivacion transforma el inventario de proposals para construir sesiones.',
 	},
 	{
+		file: 'packages/core/src/lib/adopt/adoption-stages.constant.ts',
+		symbolOrLiteral: 'title: proposals+agents',
+		category: 'message',
+		destination: 'composition',
+		needle: "title: 'proposals+agents',",
+		note: 'La etapa agents del flujo de adopcion enumera el workflow de proposals en su titulo visible.',
+	},
+	{
+		file: 'packages/core/src/lib/adopt/adoption-stages.constant.ts',
+		symbolOrLiteral: 'pluginIds: proposals, agent-orchestrator',
+		category: 'plugin-name',
+		destination: 'composition',
+		needle: "pluginIds: ['proposals', 'agent-orchestrator'],",
+		note: 'La etapa agents del flujo de adopcion activa el plugin proposals por composicion declarativa.',
+	},
+	{
 		file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
 		symbolOrLiteral: 'docs/handoffs',
 		category: 'path',
