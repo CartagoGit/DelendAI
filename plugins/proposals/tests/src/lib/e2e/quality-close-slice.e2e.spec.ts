@@ -163,6 +163,16 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				name: 'mcp-vertex_proposals_agent_lock',
 				arguments: {
 					action: 'claim',
+					task_id: 'f04200-S1',
+					agent: 'quality-e2e',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(claim.isError).toBeFalsy();
+			const claim = await client.callTool({
+				name: 'mcp-vertex_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
 					task_id: 'f04201-S1',
 					agent: 'agent-quality-e2e',
 					files: ['src/quality.ts'],
