@@ -1,4 +1,4 @@
-import { TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { TOKEN_BUDGETS } from '../../../packages/core/src/lib/contracts/constants/token-budgets.constant';
 
 import {
 	connectTokenBudgetClient,
@@ -105,6 +105,10 @@ export interface IMeasureCatalogAndTaskContextCostResult {
 
 const estimateTokens = (bytes: number): number =>
 	Math.ceil(bytes / BYTES_PER_ESTIMATED_TOKEN);
+
+const waitForAsyncFixtureWritesToSettle = async (): Promise<void> => {
+	await new Promise((resolve) => setTimeout(resolve, 50));
+};
 
 const nearestRankPercentileIndex = (
 	sampleCount: number,
@@ -261,6 +265,7 @@ export const measureCatalogAndTaskContextCost =
 				swarmNative.close(),
 				swarmManaged.close(),
 			]);
+			await waitForAsyncFixtureWritesToSettle();
 			destroyTokenBudgetFixtureWorkspace(workspace);
 		}
 	};
