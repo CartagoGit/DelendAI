@@ -51,11 +51,11 @@ describe('catalog-task-context-cost measurement', () => {
 		expect(measurement.catalog.swarmNative).toMatchObject({
 			label: 'swarm native preset',
 			toolCount: 165,
-			toolsListBytes: 194300,
-			estimatedTokens: 48575,
-			schemaBytes: 158843,
-			inputSchemaBytes: 47444,
-			outputSchemaBytes: 111399,
+			toolsListBytes: 194452,
+			estimatedTokens: 48613,
+			schemaBytes: 158995,
+			inputSchemaBytes: 47520,
+			outputSchemaBytes: 111475,
 			maxPluginBytes: 49615,
 		});
 		expect(
