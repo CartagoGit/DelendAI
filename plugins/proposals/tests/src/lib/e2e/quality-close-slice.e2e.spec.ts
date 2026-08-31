@@ -105,7 +105,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 		const { workspace, client, project } =
 			await createQualityServer('false');
 		try {
-			const proposalPath = await seedSlice(client, 'f00420');
+			const proposalPath = await seedSlice(client, 'f04200');
 			const sync = await client.callTool({
 				name: 'mcp-vertex_proposals_sync_proposals',
 				arguments: {},
@@ -123,7 +123,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				name: 'mcp-vertex_proposals_agent_lock',
 				arguments: {
 					action: 'claim',
-					task_id: 'f00420-S1',
+					task_id: 'f04200-S1',
 					agent: 'quality-close-test',
 					files: ['src/quality.ts'],
 				},
@@ -132,12 +132,11 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
-					proposalId: 'f00420',
+					proposalId: 'f04200',
 					sliceId: 'S1',
 					validateEvidence: recentEvidence(workspace),
 				},
 			});
-			expect(result.structuredContent).toEqual({});
 			expect(result.structuredContent).toMatchObject({
 				ok: false,
 				closed: false,
@@ -156,7 +155,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 		const { workspace, client, project } =
 			await createQualityServer('true');
 		try {
-			const proposalPath = await seedSlice(client, 'f00421');
+			const proposalPath = await seedSlice(client, 'f04201');
 			const sync = await client.callTool({
 				name: 'mcp-vertex_proposals_sync_proposals',
 				arguments: {},
@@ -166,7 +165,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				name: 'mcp-vertex_proposals_agent_lock',
 				arguments: {
 					action: 'claim',
-					task_id: 'f00421-S1',
+					task_id: 'f04201-S1',
 					agent: 'quality-close-test',
 					files: ['src/quality.ts'],
 				},
@@ -175,12 +174,11 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
-					proposalId: 'f00421',
+					proposalId: 'f04201',
 					sliceId: 'S1',
 					validateEvidence: recentEvidence(workspace),
 				},
 			});
-			expect(result.structuredContent).toEqual({});
 			expect(result.isError).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,
