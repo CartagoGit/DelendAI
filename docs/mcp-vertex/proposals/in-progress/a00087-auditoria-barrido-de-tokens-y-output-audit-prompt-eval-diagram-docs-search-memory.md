@@ -6,6 +6,7 @@ status: in-progress
 type: proposal
 track: plugin-hardening
 date: 2026-08-24
+shipped-in: [7b205d75f]
 ---
 
 # a00087 — auditoría: barrido de tokens y output (audit, prompt-eval, diagram, docs, search, memory, ...)

@@ -6,6 +6,7 @@ status: in-progress
 type: proposal
 track: parallel-validation
 date: 2026-08-30
+shipped-in: [38bfc58ec]
 ---
 
 # f00386 — Validación selectiva por agente activo y gate full al cerrar el último agente
