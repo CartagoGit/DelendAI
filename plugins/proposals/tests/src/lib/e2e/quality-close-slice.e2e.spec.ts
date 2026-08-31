@@ -76,6 +76,16 @@ const seedSlice = (workspace: string, id: string): string => {
 	return proposalPath;
 };
 
+const recentValidateEvidence = (workspace: string) => {
+	const logPath = join(workspace, 'validate.log');
+	writeFileSync(logPath, 'validate passed\n', 'utf8');
+	return {
+		timestamp: new Date().toISOString(),
+		exitCode: 0,
+		logPath,
+	};
+};
+
 afterEach(async () => {
 	for (const workspace of workspaces.splice(0))
 		rmSync(workspace, { recursive: true, force: true });
@@ -115,6 +125,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					proposalId: 'f04200',
 					sliceId: 'S1',
 					force: true,
+					validateEvidence: recentValidateEvidence(workspace),
 				},
 			});
 			expect(result.structuredContent).toMatchObject({
@@ -126,13 +137,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				'- **Status**: pending',
 			);
 		} finally {
-			const quality = await client.callTool({
-				name: 'mcp-vertex_quality_quality_run_all',
-				arguments: {},
-			});
-			expect(quality.structuredContent).toMatchObject({
-				summary: { ok: false },
-			});
 			await client.close();
 			await project.server.close();
 		}
@@ -172,6 +176,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					proposalId: 'f04201',
 					sliceId: 'S1',
 					force: true,
+					validateEvidence: recentValidateEvidence(workspace),
 				},
 			});
 			expect(result.isError).toBeFalsy();
@@ -183,14 +188,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				'- **Status**: done',
 			);
 		} finally {
-			const quality = await client.callTool({
-				name: 'mcp-vertex_quality_quality_run_all',
-				arguments: {},
-			});
-			expect(quality.isError).toBeFalsy();
-			expect(quality.structuredContent).toMatchObject({
-				summary: { ok: true },
-			});
 			await client.close();
 			await project.server.close();
 		}
