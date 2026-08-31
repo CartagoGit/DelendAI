@@ -1092,10 +1092,6 @@ const buildIssueLikeRegistration = (
 					);
 					const collection =
 						kind === 'issues' ? 'issues' : 'merge_requests';
-					const normalizeCollection =
-						kind === 'issues'
-							? normalizeIssue
-							: normalizeMergeRequest;
 					if (args.action === 'list' || args.action === 'search') {
 						const { data, meta } = await requestArray(
 							options,
