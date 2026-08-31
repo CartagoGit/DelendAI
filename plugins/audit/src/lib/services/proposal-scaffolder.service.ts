@@ -484,7 +484,7 @@ export const scaffoldProposals = (
 	// inside the loop and the input contract says we must not
 	// mutate the caller's set.
 	const taken: Set<string> = new Set(options.existingIds ?? []);
-	const outputDir = options.outputDir ?? 'docs/mcp-vertex/proposals/ready';
+	const outputDir = options.outputDir ?? 'docs/proposals/ready';
 	const folderForKind =
 		options.folderForKind ??
 		((kind: IScaffoldedProposal['kind']): string => {
