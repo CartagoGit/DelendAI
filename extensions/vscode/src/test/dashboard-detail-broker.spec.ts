@@ -95,7 +95,7 @@ describe('DashboardWebviewViewProvider detail broker', () => {
 				getConfiguration: () => ({}) as never,
 				asWebviewUri: (uri: string) => uri,
 			},
-			client: {} as never,
+			client: fakeClient(),
 			getConfig: () => ({}),
 		});
 		const broker: IDashboardDetailBroker = provider.getDetailBroker();
@@ -127,7 +127,7 @@ describe('DashboardWebviewViewProvider detail broker', () => {
 				getConfiguration: () => ({}) as never,
 				asWebviewUri: (uri: string) => uri,
 			},
-			client: {} as never,
+			client: fakeClient(),
 			getConfig: () => ({}),
 		});
 		await provider.resolveWebviewView(view);
@@ -164,7 +164,7 @@ describe('DashboardWebviewViewProvider detail broker', () => {
 				getConfiguration: () => ({}) as never,
 				asWebviewUri: (uri: string) => uri,
 			},
-			client: {} as never,
+			client: fakeClient(),
 			getConfig: () => ({}),
 		});
 		await provider.resolveWebviewView(view);
