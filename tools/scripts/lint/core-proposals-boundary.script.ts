@@ -446,10 +446,10 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 		},
 		{
 			file: 'packages/core/src/lib/adopt/adoption-stages.constant.ts',
-			needle: "'proposals', 'agent-orchestrator'",
+			needle: 'proposals',
 			until: '2027-03-31',
 			classification: 'adapter',
-			reason: 'Adoption stage pluginId list literally names the proposals plugin to mark the stage as adopted; the boundary lint should track the plugin namespace, not block the adoption fixture.',
+			reason: 'Adoption stage pluginId list literally names the proposals plugin to mark the stage as adopted; the boundary lint extracts string literals as bare tokens, so the exception must match the literal itself, not the whole line.',
 			kind: 'literal',
 		},
 	];
