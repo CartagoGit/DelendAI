@@ -75,7 +75,7 @@ describe('@mcp-vertex/github optionsSchema', async () => {
 				}),
 			);
 
-			expect(regs.tools.map((tool) => tool.id)).toEqual([
+			expect((regs.tools ?? []).map((tool) => tool.id)).toEqual([
 				'context',
 				'repositories_get',
 				'repositories_search',
