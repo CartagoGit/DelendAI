@@ -1,8 +1,8 @@
 # `@mcp-vertex/gitlab`
 
-GitLab provider plugin for `@mcp-vertex/core`. This slice only wires the
-configuration and hermetic HTTP client seams for future read-only tools; it
-does not depend on `plugin-git` or on a local checkout.
+GitLab provider plugin for `@mcp-vertex/core`. This slice wires the
+configuration, hermetic HTTP client and read-only resource tools; it does not
+depend on `plugin-git` or on a local checkout.
 
 ## Activation requirements
 
@@ -15,8 +15,17 @@ does not depend on `plugin-git` or on a local checkout.
 4. Provide a default project only when it helps the host, using either a
    numeric project ID or a URL-encoded `namespace/project` path.
 
+## Read tools
+
+The plugin now exposes read-only tools for context, projects, issues, merge
+requests, comments/discussions, commits, ref comparison, pipelines, jobs,
+limited logs, artifacts, releases, tags and deployments. Pagination is
+explicit and search surfaces are bounded.
+
 ## Context
 
 - The plugin stays usable without `git`.
 - The HTTP client is injectable so tests can stay hermetic.
-- Future read tools will reuse the same provider context and base URL.
+- Artifact downloads are confined to the plugin temp dir and are capped by
+  explicit byte limits.
+- The tools never return raw HTTP responses or secret values.
