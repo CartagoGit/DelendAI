@@ -77,8 +77,47 @@ const SHIPPED_IN_MISSING_FIX =
 export const guardShippedInPresent = (
 	proposalFrontmatter: Record<string, unknown>,
 ): IShippedInGuardResult => {
-	const shippedIn = proposalFrontmatter['shipped-in'];
-	if (!Array.isArray(shippedIn)) {
+	const raw = proposalFrontmatter['shipped-in'];
+	// Accept three shapes the repo has historically used:
+	//   1. List form (canonical):
+	//        shipped-in:\n  - abc1234
+	//        shipped-in: [abc1234]
+	//   2. Scalar string form (legacy test fixtures + some proposals):
+	//        shipped-in: abc1234
+	//   3. Bracketed scalar string form (legacy string-typed fixtures):
+	//        shipped-in: '[abc1234]'
+	// The shape-check downstream tolerates any of these by extracting
+	// every 7-40 char hex run.
+	const candidates: string[] = [];
+	if (Array.isArray(raw)) {
+		for (const entry of raw) {
+			if (typeof entry === 'string' && entry.trim().length > 0) {
+				candidates.push(entry.trim());
+			}
+		}
+	} else if (typeof raw === 'string' && raw.trim().length > 0) {
+		const trimmed = raw.trim();
+		// Strip matching [] to handle the legacy `'[abc1234]'` form.
+		const inner =
+			trimmed.startsWith('[') && trimmed.endsWith(']')
+				? trimmed.slice(1, -1)
+				: trimmed;
+		for (const token of inner.split(/[\s,]+/u)) {
+			const t = token.replace(/^[-\s]+/u, '').trim();
+			if (t.length > 0) candidates.push(t);
+		}
+	} else if (raw !== undefined && raw !== null) {
+		// Any non-string/non-array value (number, boolean, object) is
+		// malformed.
+		return {
+			ok: false,
+			code: 'missing-shipped-in',
+			reason: `${SHIPPED_IN_MISSING_REASON} Got malformed value of type ${typeof raw}.`,
+			nextAction: SHIPPED_IN_MISSING_NEXT_ACTION,
+			fix: SHIPPED_IN_MISSING_FIX,
+		};
+	}
+	if (candidates.length === 0) {
 		return {
 			ok: false,
 			code: 'missing-shipped-in',
@@ -87,33 +126,20 @@ export const guardShippedInPresent = (
 			fix: SHIPPED_IN_MISSING_FIX,
 		};
 	}
-	const shas = shippedIn.filter(
-		(value): value is string =>
-			typeof value === 'string' && value.trim().length > 0,
-	);
-	if (shas.length === 0) {
-		return {
-			ok: false,
-			code: 'missing-shipped-in',
-			reason: SHIPPED_IN_MISSING_REASON,
-			nextAction: SHIPPED_IN_MISSING_NEXT_ACTION,
-			fix: SHIPPED_IN_MISSING_FIX,
-		};
-	}
-	// Validate shape: every entry must look like a short or full SHA
-	// (7-40 lowercase hex). A non-SHA like "TBD" or "n/a" used to pass
-	// silently and was the root cause of the in-progress/backlog
+	// Validate shape: every candidate must look like a short or full
+	// SHA (7-40 lowercase hex). A non-SHA like "TBD" or "n/a" used to
+	// pass silently and was the root cause of the in-progress/backlog
 	// regression (agents wrote `shipped-in: [TBD]` and the proposal got
 	// stuck). Cheap shape-check stops that failure mode before the
 	// validator runs downstream.
-	const shapeOk = shas.every((value) =>
-		/^[0-9a-f]{7,40}$/.test(value.trim()),
+	const invalid = candidates.filter(
+		(value) => !/^[0-9a-f]{7,40}$/.test(value),
 	);
-	if (!shapeOk) {
+	if (invalid.length > 0) {
 		return {
 			ok: false,
 			code: 'missing-shipped-in',
-			reason: `${SHIPPED_IN_MISSING_REASON} Got non-SHA entries: [${shas.map((s) => JSON.stringify(s)).join(', ')}].`,
+			reason: `${SHIPPED_IN_MISSING_REASON} Got non-SHA entries: [${invalid.map((s) => JSON.stringify(s)).join(', ')}].`,
 			nextAction: SHIPPED_IN_MISSING_NEXT_ACTION,
 			fix: SHIPPED_IN_MISSING_FIX,
 		};
