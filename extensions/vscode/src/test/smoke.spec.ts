@@ -133,7 +133,7 @@ describe('VS Code extension smoke', async () => {
 		// KPI sidebar provider adds one lifecycle registration.
 		// Runtime observer adds one lifecycle registration in addition to
 		// the runtime log command.
-		expect(subscriptions).toHaveLength(36);
+		expect(subscriptions).toHaveLength(37);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);
