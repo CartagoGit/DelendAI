@@ -28,6 +28,7 @@ import type {
 	INonConformingBranch,
 	IOutOfCacheWorktree,
 	IRescueCandidate,
+	ISmokeResidualBranch,
 	IStaleUnmergedWorktree,
 	ISwarmHygieneOutcome,
 } from '../contracts/interfaces/swarm-hygiene.interface';
@@ -166,14 +167,90 @@ export const runSwarmHygieneEngine = async (
 		return { ok: false, reason: snapshot.reason, baseBranch };
 	}
 
-	// Rescue candidates: ahead > 0 && !mergedIntoBase. The branch
-	// carries work that has not yet reached baseBranch and is at risk
-	// of being lost when the worktree is removed or the session ends.
-	const rescueCandidatesRaw = snapshot.branches.filter(
-		(b) => b.ahead > 0 && !b.mergedIntoBase,
+	// R-2026-08-31: split rescue candidates by liveness. Smoke-residual
+	// branches (reserved `smoke-tester` author OR single-commit recent
+	// with a non-real author) used to block `auto_work` permanently —
+	// the in-tree smoke harness creates them, leaves them behind, and
+	// the orchestrator never had a way to distinguish them from a real
+	// agent that walked away from its worktree. We now classify them
+	// into `smokeResiduals[]` and exclude them from `rescueCandidates[]`,
+	// so the auto_work front-hook only refuses the cascade when there
+	// is genuinely unmerged human work at risk.
+	const classifyRescue = async (
+		b: (typeof snapshot.branches)[number],
+	): Promise<
+		| { kind: 'live'; branch: typeof b }
+		| {
+				kind: 'smoke';
+				reason: ISmokeResidualBranch['reason'];
+				branch: typeof b;
+				authorEmail: string;
+				head: string;
+		  }
+	> => {
+		if (b.ahead <= 0 || b.mergedIntoBase)
+			return { kind: 'live', branch: b };
+		const headResult = await options.run([
+			'log',
+			'-1',
+			'--format=%H|%ae',
+			b.name,
+		]);
+		if (!headResult.ok) {
+			// Cannot read author → treat as live so we err on the safe
+			// side (don't drop real work on the floor).
+			return { kind: 'live', branch: b };
+		}
+		const trimmed = headResult.output.trim();
+		const pipe = trimmed.indexOf('|');
+		if (pipe < 0) return { kind: 'live', branch: b };
+		const head = trimmed.slice(0, pipe).trim();
+		const authorEmail = trimmed.slice(pipe + 1).trim();
+		const normalizedEmail = authorEmail.toLowerCase();
+		if (normalizedEmail === 'smoke@local') {
+			return {
+				kind: 'smoke',
+				reason: 'smoke-author',
+				branch: b,
+				authorEmail,
+				head,
+			};
+		}
+		if (
+			b.ahead === 1 &&
+			b.lastCommitMinutesAgo >= 0 &&
+			b.lastCommitMinutesAgo <= 60
+		) {
+			// Single-commit branch younger than 1h. Almost always a
+			// smoke artifact, but a real agent doing a fast one-shot
+			// is also possible. We surface it as `smoke-residual` so
+			// the operator can decide; the auto_work front-hook
+			// ignores these.
+			return {
+				kind: 'smoke',
+				reason: 'single-commit-recent',
+				branch: b,
+				authorEmail,
+				head,
+			};
+		}
+		return { kind: 'live', branch: b };
+	};
+
+	const classified = await Promise.all(
+		snapshot.branches
+			.filter((b) => b.ahead > 0 && !b.mergedIntoBase)
+			.map(classifyRescue),
 	);
+	const liveBranches = classified.filter((c) => c.kind === 'live');
+	const smokeResidualCandidates = classified.filter(
+		(c) => c.kind === 'smoke',
+	);
+
 	const rescueCandidates: IRescueCandidate[] = [];
-	for (const branch of rescueCandidatesRaw.slice(0, maxRescue)) {
+	for (const entry of liveBranches.slice(0, maxRescue)) {
+		if (entry.kind !== 'live') continue;
+		const branch = entry.branch;
 		const wtPath =
 			branch.worktreePath.length > 0
 				? branch.worktreePath
@@ -196,6 +273,20 @@ export const runSwarmHygieneEngine = async (
 				baseBranch,
 				branch.worktreePath,
 			),
+		});
+	}
+
+	const smokeResiduals: ISmokeResidualBranch[] = [];
+	for (const entry of smokeResidualCandidates.slice(0, maxRescue)) {
+		if (entry.kind !== 'smoke') continue;
+		smokeResiduals.push({
+			branch: entry.branch.name,
+			ahead: entry.branch.ahead,
+			behind: entry.branch.behind,
+			lastCommitMinutesAgo: entry.branch.lastCommitMinutesAgo,
+			authorEmail: entry.authorEmail,
+			head: entry.head,
+			reason: entry.reason,
 		});
 	}
 
@@ -314,6 +405,7 @@ export const runSwarmHygieneEngine = async (
 		generatedAt,
 		rescueCandidates,
 		gcEligible,
+		smokeResiduals,
 		outOfCache: outOfCache.slice(0, maxOut),
 		mainCheckoutBranch: snapshot.mainCheckoutBranch,
 		mainCheckoutDrift: snapshot.mainCheckoutDrift,
@@ -327,6 +419,7 @@ export const runSwarmHygieneEngine = async (
 			pendingIntegrationCount: pendingIntegration.length,
 			nonConformingBranchesCount: nonConformingBranches.length,
 			staleUnmergedCount: staleUnmerged.length,
+			smokeResidualsCount: smokeResiduals.length,
 		},
 	};
 };
