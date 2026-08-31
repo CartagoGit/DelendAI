@@ -42,6 +42,8 @@ export interface IProjectionResult<T> {
 	readonly cursor: string | null;
 	readonly emittedBytes: number;
 	readonly truncated: boolean;
+	readonly truncatedByLimit: boolean;
+	readonly truncatedByBytes: boolean;
 	readonly nextCursor: string | null;
 }
 
@@ -198,6 +200,8 @@ export const projectValue = <T>(
 			cursor,
 			emittedBytes,
 			truncated,
+			truncatedByLimit: limited,
+			truncatedByBytes,
 			nextCursor: truncated ? nextCursor : null,
 		}) as IProjectionResult<T>;
 	}
@@ -220,6 +224,8 @@ export const projectValue = <T>(
 		cursor,
 		emittedBytes: truncated ? 0 : emittedBytes,
 		truncated,
+		truncatedByLimit: false,
+		truncatedByBytes: truncated,
 		nextCursor: null,
 	}) as IProjectionResult<T>;
 };

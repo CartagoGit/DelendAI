@@ -93,10 +93,10 @@ describe('artifact handle — v00133 S2', () => {
 		}
 	});
 
-	it('does not enforce TTL when no clock is provided', () => {
+	it('uses the default clock when ttlMs is provided without an explicit clock', () => {
 		const store = createInMemoryHandleStore<{ readonly v: number }>();
 		const handle = store.open({ v: 1 }, { ttlMs: 100 });
-		expect(handle.expiresAt).toBeNull();
+		expect(handle.expiresAt).not.toBeNull();
 		const read = store.get(handle.handleId, handle.viewerToken);
 		expect(read.status).toBe('ok');
 	});
