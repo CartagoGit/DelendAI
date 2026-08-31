@@ -257,6 +257,12 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		args: Record<string, unknown>,
 	): Promise<number> => {
 		const res = await client.callTool({ name, arguments: args });
+		if (res.structuredContent !== undefined) {
+			return Buffer.byteLength(
+				JSON.stringify(res.structuredContent),
+				'utf8',
+			);
+		}
 		const text = (res.content as Array<{ type: string; text: string }>)[0]
 			?.text;
 		return Buffer.byteLength(text ?? '', 'utf8');
@@ -308,6 +314,12 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 					name,
 					arguments: args,
 				});
+				if (res.structuredContent !== undefined) {
+					return Buffer.byteLength(
+						JSON.stringify(res.structuredContent),
+						'utf8',
+					);
+				}
 				const text = (
 					res.content as Array<{ type: string; text: string }>
 				)[0]?.text;

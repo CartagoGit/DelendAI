@@ -99,7 +99,7 @@ describe('proposal_transition idempotency metadata (r00042 S2)', () => {
 			kind: 'refactor',
 		});
 
-		const first = await runProposalTransition(
+		await runProposalTransition(
 			{
 				id: 'r00043',
 				to: 'in-progress',
@@ -157,7 +157,7 @@ describe('proposal_transition idempotency metadata (r00042 S2)', () => {
 			kind: 'refactor',
 		});
 
-		const first = await runProposalTransition(
+		await runProposalTransition(
 			{
 				id: 'r00044',
 				to: 'in-progress',

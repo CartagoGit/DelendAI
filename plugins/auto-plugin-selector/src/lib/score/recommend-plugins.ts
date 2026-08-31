@@ -42,6 +42,7 @@ const PACK_BONUS = 1;
 const LANGUAGE_BONUS = 0.5;
 const SHAPE_BONUS = 0.5;
 const UNMATCHED_PENALTY = -0.05;
+const MAX_PERMISSION_RISK = 5;
 
 /**
  * r00025 S4 — defaults required by the proposal. They sum to `1.0`
@@ -142,6 +143,7 @@ const scoreOne = (
 	// without per-tool data falls back to the global set, identical
 	// to the pre-f00180 behaviour.
 	const permissionRisk = scorePermissionRiskForManifest(candidate);
+	const normalizedPermissionRisk = permissionRisk / MAX_PERMISSION_RISK;
 	if (permissionRisk > 0) {
 		reasons.add(`permission-risk:${permissionRisk}`);
 	}
@@ -185,7 +187,7 @@ const scoreOne = (
 
 	const utility =
 		matchRaw * weights.match -
-		permissionRisk * weights.permissionRisk -
+		normalizedPermissionRisk * weights.permissionRisk -
 		tokenTaxPenalty -
 		latencyTaxPenalty +
 		historicalBonus;
