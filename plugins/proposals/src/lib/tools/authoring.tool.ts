@@ -1307,6 +1307,9 @@ export const buildCloseSliceRegistration = (
 						};
 						return toolErrorEnvelope(envelope);
 					}
+					if (err instanceof Error) {
+						process.stderr.write(`${err.stack ?? err.message}\n`);
+					}
 					return toolError(
 						err.message,
 						'Call proposal_board to list slices.',
