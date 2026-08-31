@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { CONTRACT_MIGRATION_PHASES } from '@mcp-vertex/core/lib/contracts';
 import {
 	deriveSliceStatuses,
 	parseProposalSlicePlan,
@@ -428,6 +429,25 @@ describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
 				' ',
 			),
 		).toContain('late migration phase');
+	});
+
+	it('reuses the core barrel export for migration phase ordering', async () => {
+		expect(CONTRACT_MIGRATION_PHASES).toEqual([
+			'expand',
+			'producers',
+			'regenerate',
+			'consumers',
+			'verify',
+			'contract',
+		]);
+		const plan = parseProposalSlicePlan(
+			'r00044',
+			DOC_WITH_MIGRATION_PHASES,
+		)!;
+		const verifySlice = plan.slices.find((slice) => slice.sliceId === 'S5');
+		expect(verifySlice?.migrationGuidance?.completedPhases).toEqual(
+			CONTRACT_MIGRATION_PHASES.slice(0, 4),
+		);
 	});
 });
 
