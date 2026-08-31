@@ -73,7 +73,7 @@ export const buildProposalWorkflow = (
 		'One proposal = one markdown file with YAML frontmatter (id, title, kind, status, type, track, date).',
 		'Statuses are hyphenated (ready, in-progress, review, done, paused, blocked, retired) and each proposal lives in its status folder (<proposalsDir>/<status>/...); proposal_transition moves the file when the status changes.',
 		'Cascade order (highest priority first): fix, breaking, audit, chore, feat, refactor, perf, docs, test, infra, spike, legacy, p (legacy alias). A proposal may override its priority via `cascadeOverride` (+ mandatory `cascadeOverrideReason`) or nudge it within its own kind via `cascadeBoost`.',
-		'Claim files with agent_lock before editing; release when the slice closes.',
+		'Claim files with agent_lock before editing; send agent_lock heartbeat while working; release when the slice closes.',
 		'A proposal may declare a `## Slices` section to parallelise disjoint work; each slice lists its files (`- **Files**: `a`, `b``), a gate and a status.',
 		'Adopting a project that already has a proposals folder? Call proposal_adopt — it returns the canonical layout, scans the folder and gives a plan to organize it; then you run the steps.',
 		'2+ agents sharing this repo? Each must call agent_worktree (action: create) once at the start of its session — it isolates the agent into its own git worktree + branch (agent/<name>) so concurrent git add/commit never race on a shared .git/index. List active worktrees with action: list; clean up with action: remove.',

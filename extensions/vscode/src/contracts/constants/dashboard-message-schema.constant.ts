@@ -17,4 +17,10 @@ export const DASHBOARD_MESSAGE_SCHEMA = z.discriminatedUnion('command', [
 			id: z.string().min(1),
 		})
 		.strict(),
+	z
+		.object({
+			command: z.literal('openTool'),
+			name: z.string().min(1),
+		})
+		.strict(),
 ]);
