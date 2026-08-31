@@ -47,7 +47,7 @@ interface IFlags {
 	readonly graceMs: number;
 }
 
-const parseFlags = (argv: readonly string[]): IFlags => {
+export const parseFlags = (argv: readonly string[]): IFlags => {
 	let reclaim = false;
 	let graceMs = DEFAULT_GRACE_MS;
 	for (const arg of argv) {
@@ -63,7 +63,7 @@ const parseFlags = (argv: readonly string[]): IFlags => {
 	return { reclaim, graceMs };
 };
 
-const livePidHoldsLock = (lockPath: string): readonly number[] => {
+export const livePidHoldsLock = (lockPath: string): readonly number[] => {
 	// `fuser` returns the PIDs of processes using the file, one per
 	// line, with a non-zero exit if none. Some distros ship `fuser`
 	// without the file-list output — fall back to `lsof -t`.
@@ -79,7 +79,9 @@ const livePidHoldsLock = (lockPath: string): readonly number[] => {
 		// fall through to lsof
 	}
 	try {
-		const result = spawnSync('lsof', ['-t', lockPath], { encoding: 'utf8' });
+		const result = spawnSync('lsof', ['-t', lockPath], {
+			encoding: 'utf8',
+		});
 		if (result.status === 0) {
 			return (result.stdout ?? '')
 				.split('\n')
