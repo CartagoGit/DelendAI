@@ -172,17 +172,21 @@ export const scanFile = async (
 		if (d > 0) depths.push(d);
 	}
 	if (depths.length > 0) {
-		let unit = depths[0] ?? 1;
-		for (let i = 1; i < depths.length; i += 1) {
-			let a = unit;
-			let b = depths[i] ?? 1;
-			while (b !== 0) {
-				const t = b;
-				b = a % b;
-				a = t;
+		// Pick the unit as the MODE of observed key depths (the depth
+		// that the most keys use). Drift = any key whose depth is not
+		// a multiple of that mode. GCD is wrong here because a file
+		// with two depth-1 keys and one depth-2 key has GCD=1, which
+		// trivially accepts every line — and that's exactly the
+		// scenario the regression took.
+		const counts = new Map<number, number>();
+		for (const d of depths) counts.set(d, (counts.get(d) ?? 0) + 1);
+		let unit = 1;
+		let bestCount = -1;
+		for (const [d, c] of counts) {
+			if (c > bestCount || (c === bestCount && d < unit)) {
+				unit = d;
+				bestCount = c;
 			}
-			unit = a;
-			if (unit === 1) break;
 		}
 		if (unit < 1) unit = 1;
 		for (let idx = 0; idx < stripped.length; idx += 1) {
