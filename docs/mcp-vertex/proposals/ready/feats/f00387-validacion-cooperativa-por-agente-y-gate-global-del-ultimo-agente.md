@@ -38,7 +38,8 @@ El workspace ya dispone de snapshots de actividad y resolvers de scopes, pero co
   - "Las operaciones normales con otros agentes activos ejecutan sólo los scopes derivados de los archivos propios."
   - "close/persistencia final exige full cuando el actor actual es el único activo."
   - "La evidencia distingue scopeCoverage y snapshotId; nunca se reporta scoped como validación global."
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator-f00387-s2-verify
 ### S3 — Observabilidad, configuración y pruebas E2E
 - **Status**: pending
 - **DependsOn**: [S2]
