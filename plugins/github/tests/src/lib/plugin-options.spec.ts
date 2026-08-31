@@ -100,7 +100,7 @@ describe('@mcp-vertex/github optionsSchema', async () => {
 				'deployments_list',
 				'deployment_statuses',
 			]);
-			expect(regs.tools[0]?.summary).toBe('GitHub provider context');
+			expect(regs.tools?.[0]?.summary).toBe('GitHub provider context');
 			expect(regs.knowledge?.[0]?.body).toContain('GITHUB_TOKEN');
 			expect(regs.knowledge?.[0]?.body).toContain('GITHUB_API_URL');
 			expect(regs.knowledge?.[0]?.body).toContain('owner + repository');
