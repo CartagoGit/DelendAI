@@ -1,0 +1,190 @@
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import proposalsPlugin from '@mcp-vertex/proposals';
+import qualityPlugin from '@mcp-vertex/quality';
+
+const workspaces: string[] = [];
+
+const createQualityServer = async (command: string) => {
+	const workspace = mkdtempSync(join(tmpdir(), 'proposals-quality-e2e-'));
+	workspaces.push(workspace);
+	const config = JSON.stringify({
+		plugins: {
+			quality: { options: { scopes: { close: [command] } } },
+			proposals: { options: { requirePeerReview: false } },
+		},
+	});
+	writeFileSync(join(workspace, 'mcp-vertex.config.json'), config, 'utf8');
+	mkdirSync(join(workspace, 'tools/scripts/quality'), { recursive: true });
+	writeFileSync(
+		join(workspace, 'tools/scripts/quality/run-quality.script.ts'),
+		`const ok = ${command === 'true'};\nconsole.log(JSON.stringify({ok, severity: ok ? 'ok' : 'error', findings: ok ? [] : ['close: command failed'], summary: {ok, scopes: 1}}));\nprocess.exit(ok ? 0 : 1);\n`,
+		'utf8',
+	);
+	const args = parseCliArgs(
+		[
+			'--plugins=proposals,quality',
+			`--workspace=${workspace}`,
+			'--surface=native',
+		],
+		workspace,
+	);
+	const { config: hostConfig } = await assembleCliConfig(args, {
+		import: async (specifier) => ({
+			default: specifier.includes('quality')
+				? qualityPlugin
+				: proposalsPlugin,
+		}),
+	});
+	const project = await createMcpProject(hostConfig);
+	const [clientTransport, serverTransport] =
+		InMemoryTransport.createLinkedPair();
+	await project.server.connect(serverTransport);
+	const client = new Client(
+		{ name: 'quality-close-slice-e2e', version: '0.0.0' },
+		{ capabilities: {} },
+	);
+	await client.connect(clientTransport);
+	return { workspace, client, project };
+};
+
+const seedSlice = (workspace: string, id: string): string => {
+	const proposalDir = join(
+		workspace,
+		'docs/mcp-vertex/proposals/in-progress',
+	);
+	mkdirSync(proposalDir, { recursive: true });
+	const proposalPath = join(proposalDir, `${id}-quality.md`);
+	writeFileSync(
+		proposalPath,
+		`---\nid: ${id}\nstatus: in-progress\ntype: proposal\n---\n\n# ${id}\n\n## Slices\n\n### S1 — quality gate\n- **Status**: pending\n- **Files**: \`src/quality.ts\`\n- **Gate**: none\n`,
+		'utf8',
+	);
+	return proposalPath;
+};
+
+const recentEvidence = (workspace: string) => {
+	const logPath = join(workspace, 'validate.log');
+	writeFileSync(logPath, 'quality evidence\n', 'utf8');
+	return {
+		timestamp: new Date().toISOString(),
+		exitCode: 0,
+		logPath,
+	};
+};
+
+afterEach(async () => {
+	for (const workspace of workspaces.splice(0))
+		rmSync(workspace, { recursive: true, force: true });
+});
+
+describe('e2e: proposals close_slice + quality gate', () => {
+	it('keeps the slice pending when the quality scope fails', async () => {
+		const { workspace, client, project } =
+			await createQualityServer('false');
+		try {
+			const proposalPath = seedSlice(workspace, 'f00420');
+			const sync = await client.callTool({
+				name: 'mcp-vertex_proposals_sync_proposals',
+				arguments: {},
+			});
+			expect(sync.isError).toBeFalsy();
+			const scopes = await client.callTool({
+				name: 'mcp-vertex_quality_get_quality_scopes',
+				arguments: {},
+			});
+			expect(scopes.isError).toBeFalsy();
+			expect(scopes.structuredContent).toMatchObject({
+				scopes: expect.objectContaining({ close: expect.any(Array) }),
+			});
+			const claim = await client.callTool({
+				name: 'mcp-vertex_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f00420-S1',
+					agent: 'quality-close-test',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(claim.isError).toBeFalsy();
+			const result = await client.callTool({
+				name: 'mcp-vertex_proposals_close_slice',
+				arguments: {
+					proposalId: 'f00420',
+					sliceId: 'S1',
+					validateEvidence: recentEvidence(workspace),
+				},
+			});
+			console.error('quality-fail result', result.structuredContent);
+			expect(result.structuredContent).toMatchObject({
+				ok: false,
+				closed: false,
+				blockerType: 'quality-failed',
+			});
+			expect(readFileSync(proposalPath, 'utf8')).toContain(
+				'- **Status**: pending',
+			);
+		} finally {
+			await client.close();
+			await project.server.close();
+		}
+	});
+
+	it('marks the slice done when the quality scope passes', async () => {
+		const { workspace, client, project } =
+			await createQualityServer('true');
+		try {
+			const proposalPath = seedSlice(workspace, 'f00421');
+			const sync = await client.callTool({
+				name: 'mcp-vertex_proposals_sync_proposals',
+				arguments: {},
+			});
+			expect(sync.isError).toBeFalsy();
+			const claim = await client.callTool({
+				name: 'mcp-vertex_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f00421-S1',
+					agent: 'quality-close-test',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(claim.isError).toBeFalsy();
+			const result = await client.callTool({
+				name: 'mcp-vertex_proposals_close_slice',
+				arguments: {
+					proposalId: 'f00421',
+					sliceId: 'S1',
+					validateEvidence: recentEvidence(workspace),
+				},
+			});
+			console.error('quality-pass result', result.structuredContent);
+			expect(result.isError).toBeFalsy();
+			expect(result.structuredContent).toMatchObject({
+				ok: true,
+				closed: true,
+			});
+			expect(readFileSync(proposalPath, 'utf8')).toContain(
+				'- **Status**: done',
+			);
+		} finally {
+			await client.close();
+			await project.server.close();
+		}
+	});
+});

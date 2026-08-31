@@ -43,6 +43,12 @@ const initPluginId = z
  * with Enter and still produce a valid bundle.
  */
 export const InitAnswers = z.object({
+	/** Namespace prefix used for generated MCP tools and host agent names. */
+	namespacePrefix: z.string().min(1).default('mcp-vertex'),
+
+	/** Server key used by generated MCP host configuration files. */
+	serverName: z.string().min(1).default('mcp-vertex'),
+
 	/** Resolved preset id. `vertex` is the operator's recommended default
 	 * (snapshot of mcp-vertex.config.json — see `init:default`). */
 	preset: z.enum(PRESET_KIND).default('vertex'),

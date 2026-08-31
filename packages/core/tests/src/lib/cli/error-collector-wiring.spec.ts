@@ -7,8 +7,12 @@
  *   C. Two plugins each with a sink → fan-out reaches both with the same event.
  */
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import z from 'zod';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import type { ICapturedError } from '../../../../src/lib/error-collection/types.js';
 import type { IErrorSink } from '../../../../src/lib/error-collection/sink.interface.js';
@@ -178,5 +182,103 @@ describe('Case C — two plugins each with a distinct errorSink', () => {
 		// Both sinks received the same redacted event.
 		expect(sinkA.events[0]?.fingerprint).toBe(sinkB.events[0]?.fingerprint);
 		expect(sinkA.events[0]?.summary).toBe(sinkB.events[0]?.summary);
+	});
+});
+
+describe('Case D — failing tool observed through the assembled MCP pipeline', () => {
+	it('preserves the MCP error while notifying every onToolCall observer', async () => {
+		const observed: Array<{ toolName: string; error: unknown }> = [];
+		const observerPlugin = {
+			name: 'observer',
+			register: () => ({
+				onToolCall: async (
+					toolName: string,
+					_args: unknown,
+					_result: unknown,
+					error?: unknown,
+				) => {
+					observed.push({ toolName, error });
+				},
+			}),
+		};
+		const failingPlugin = {
+			name: 'failing',
+			register: () => ({
+				tools: [
+					{
+						id: 'fail',
+						register: async (server: unknown) => {
+							(
+								server as {
+									registerTool: (
+										name: string,
+										config: unknown,
+										handler: () => Promise<unknown>,
+									) => unknown;
+								}
+							).registerTool(
+								'fail_tool',
+								{
+									description: 'Always fails',
+									inputSchema: z.object({}),
+									outputSchema: z.object({ ok: z.boolean() }),
+								},
+								async () => {
+									throw new Error(
+										'upstream failure: API_KEY=sk-observed-secret',
+									);
+								},
+							);
+						},
+					},
+				],
+			}),
+		};
+		const { config } = await assembleCliConfig(
+			buildArgs(['failing', 'observer']),
+			{
+				import: async (specifier: string) => ({
+					default: specifier.includes('observer')
+						? observerPlugin
+						: failingPlugin,
+				}),
+				readFile: async () => undefined,
+			},
+		);
+		const project = await createMcpProject(config);
+		const [clientTransport, serverTransport] =
+			InMemoryTransport.createLinkedPair();
+		const client = new Client(
+			{ name: 'error-pipeline-test', version: '0.0.0' },
+			{ capabilities: {} },
+		);
+		try {
+			await project.server.connect(serverTransport);
+			await client.connect(clientTransport);
+			const result = await client.callTool({
+				name: 'fail_tool',
+				arguments: {},
+			});
+			expect(result.isError).toBe(true);
+			for (
+				let attempt = 0;
+				attempt < 10 && observed.length === 0;
+				attempt += 1
+			) {
+				await new Promise((resolve) => setTimeout(resolve, 10));
+			}
+			expect(observed).toHaveLength(1);
+			const firstObserved = observed[0];
+			expect(firstObserved?.toolName).toBe('fail_tool');
+			expect(firstObserved?.error).toBeInstanceOf(Error);
+			if (firstObserved?.error instanceof Error) {
+				expect(firstObserved.error.message).toContain(
+					'upstream failure',
+				);
+			}
+		} finally {
+			await client.close();
+			await project.server.close();
+		}
 	});
 });

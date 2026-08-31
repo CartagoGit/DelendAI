@@ -45,7 +45,10 @@
 			"waiver": "IDE-native: VS Code's built-in SCM view supersedes the read-only git group"
 		},
 		"init": {
-			"waiver": "workspace bootstrap runs before any UI host is configured; shell-only by design"
+			"waiver": "global/project IDE configuration bootstrap; terminal-first setup flow with no interactive UI story planned"
+		},
+		"init:global": {
+			"waiver": "global IDE configuration bootstrap; terminal-first setup flow with no separate interactive UI story planned"
 		},
 		"init:default": {
 			"waiver": "non-interactive bootstrap for scripts and fresh checkouts; shell-only by design"

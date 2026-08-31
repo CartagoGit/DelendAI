@@ -43,6 +43,13 @@
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
+		"./cli": {
+			"@mcp-vertex/source": {
+				"types": "./src/cli.ts"
+			},
+			"types": "./dist/cli.d.ts",
+			"import": "./dist/cli.js"
+		},
 		"./manifest": {
 			"@mcp-vertex/source": {
 				"types": "./src/public/index.ts"

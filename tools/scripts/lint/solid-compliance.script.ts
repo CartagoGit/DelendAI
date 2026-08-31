@@ -223,7 +223,23 @@ export const classifySolidFindings = async (
 		}
 	}
 	const dups = shingleBlocks(dupSources);
-	const dupFilter = dups.filter((d) => d.copies >= minDupCopies);
+	const pluginNameOf = (relPath: string): string | undefined => {
+		const match = /^plugins\/([^/]+)\//.exec(relPath);
+		return match?.[1];
+	};
+	const pluginsByHash = new Map<string, Set<string>>();
+	for (const d of dups) {
+		const pluginName = pluginNameOf(d.relPath);
+		if (pluginName === undefined) continue;
+		const pluginsForHash = pluginsByHash.get(d.hash) ?? new Set();
+		pluginsForHash.add(pluginName);
+		pluginsByHash.set(d.hash, pluginsForHash);
+	}
+	const dupFilter = dups.filter(
+		(d) =>
+			d.copies >= minDupCopies &&
+			(pluginsByHash.get(d.hash)?.size ?? 0) >= 2,
+	);
 	for (const d of dupFilter) {
 		findings.push({
 			id: 'duplicated-cross-plugin',

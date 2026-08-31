@@ -45,6 +45,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	init: 'Interactive workspace bootstrap for mcp-vertex (writes config, .vscode/mcp.json, agent .md, host-instructions).',
 	'init:default':
 		'Non-interactive bootstrap with operator defaults (swarm + overwrite + skills + agents + scaffold).',
+	'init:global':
+		'Install the shared mcp-vertex MCP server into user-level host configurations.',
 	search: 'Search workspace text files.',
 	'docs list': 'List project documentation.',
 	'docs read': 'Read one project documentation file.',
@@ -228,6 +230,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 			init: 'Bootstrap interactivo del workspace para mcp-vertex (escribe config, .vscode/mcp.json, agent .md, host-instructions).',
 			'init:default':
 				'Bootstrap no interactivo con los defaults del operador (swarm + overwrite + skills + agents + scaffold).',
+			'init:global':
+				'Instala el servidor MCP compartido de mcp-vertex en las configuraciones globales de los hosts del usuario.',
 			search: 'Busca en archivos de texto del workspace.',
 			scaffold: 'Genera scaffolds a traves de la herramienta del core.',
 		},
