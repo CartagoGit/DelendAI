@@ -6,7 +6,10 @@ import {
 	measureCatalogAndTaskContextCost,
 	renderCatalogAndTaskContextMarkdown,
 } from '../measure/catalog-task-context-cost';
-import { buildPerSurfaceColumns } from './token-budget-dashboard.script';
+import {
+	buildPerSurfaceColumns,
+	buildTokenBudgetDashboardMarkdown,
+} from './token-budget-dashboard.script';
 
 const TOKEN_BUDGETS_ARTIFACT = new URL(
 	'../../../docs/mcp-vertex/TOKEN-BUDGETS.md',
@@ -87,6 +90,18 @@ describe('token-budget dashboard publication', () => {
 		expect(addendum).toContain('| after logs.tail | 834 | 209 |');
 		expect(addendum).toContain('| p50 | 738 | 185 |');
 		expect(addendum).toContain('| p95 | 834 | 209 |');
+	});
+
+	it('publishes the task_context_cost addendum from the dashboard generator output', {
+		timeout: 30_000,
+	}, async () => {
+		const [measurement, dashboardMarkdown] = await Promise.all([
+			measurementPromise,
+			buildTokenBudgetDashboardMarkdown(),
+		]);
+		const addendum = renderCatalogAndTaskContextMarkdown(measurement);
+
+		expect(dashboardMarkdown).toContain(addendum);
 	});
 
 	it('keeps the published token budget artifact aligned with the generated addendum', {
