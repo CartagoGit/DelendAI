@@ -389,7 +389,7 @@ export const createReleaseCandidate = async (
 	const baseMainSha = await resolveRef(run, 'main');
 	const versionResult = await run([
 		'show',
-		'main:packages/core/package.json',
+		`${baseMainSha}:packages/core/package.json`,
 	]);
 	if (!versionResult.ok)
 		throw new Error(versionResult.reason ?? 'could not read main version');
