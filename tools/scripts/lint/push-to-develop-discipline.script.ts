@@ -46,10 +46,14 @@ import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
 const DEVELOP_BRANCH = 'develop';
 const MAIN_BRANCH = 'main';
+export const RELEASE_BRANCH_PREFIX = 'release/';
 
 /** Branch prefixes that identify agent-driven work rather than the operator. */
 const AGENT_BRANCH_PREFIXES = ['wip/', 'agent/'] as const;
 const AGENT_BRANCH_PREFIX = 'agent/';
+
+export const isReleaseBranch = (branch: string): boolean =>
+	branch.startsWith(RELEASE_BRANCH_PREFIX);
 
 export interface IPushToDevelopInput {
 	readonly cwd: string;
@@ -184,6 +188,25 @@ export const lintPushToDevelop = (
 ): PushToDevelopResult => {
 	const { remoteBranch, currentBranch, agentWorktreeEnabled = false } = input;
 
+	if (
+		remoteBranch === MAIN_BRANCH &&
+		currentBranch !== null &&
+		isReleaseBranch(currentBranch)
+	) {
+		return {
+			ok: false,
+			blockers: [
+				`pushing from \`${currentBranch}\` straight into \`${MAIN_BRANCH}\` — release branches land on main through a pull request, not a direct push.`,
+				'',
+				'next-action:',
+				`  open a pull request from \`${currentBranch}\` into \`${MAIN_BRANCH}\`.`,
+				'  if the release must continue after main, promote main forward through the normal release flow.',
+				'',
+				'  if this is a true emergency release, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+			],
+		};
+	}
+
 	if (remoteBranch === MAIN_BRANCH) {
 		return {
 			ok: false,
@@ -227,6 +250,56 @@ export const lintPushToDevelop = (
 	// Detached HEAD / unknown source: fail-open (mirrors the commit
 	// discipline; release engineers may push from a checked-out tag).
 	if (currentBranch === null || currentBranch === '') {
+		return { ok: true };
+	}
+
+	if (remoteBranch === DEVELOP_BRANCH && isReleaseBranch(currentBranch)) {
+		return {
+			ok: false,
+			blockers: [
+				`pushing from \`${currentBranch}\` straight into \`${DEVELOP_BRANCH}\` — release branches do not merge back into develop directly.`,
+				'',
+				'next-action:',
+				`  merge \`${currentBranch}\` into \`${MAIN_BRANCH}\` first through a pull request.`,
+				`  if develop needs the change, promote it from \`${MAIN_BRANCH}\` using the normal forward flow.`,
+				'',
+				'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+			],
+		};
+	}
+
+	if (isReleaseBranch(remoteBranch)) {
+		if (isReleaseBranch(currentBranch) && currentBranch !== remoteBranch) {
+			return {
+				ok: false,
+				blockers: [
+					`pushing from \`${currentBranch}\` into \`${remoteBranch}\` — one release branch must not merge into another release branch.`,
+					'',
+					'next-action:',
+					`  push \`${currentBranch}\` to its own remote branch, or merge through \`${MAIN_BRANCH}\` if you are closing the release.`,
+					`  only \`${DEVELOP_BRANCH}\` may be promoted into \`${remoteBranch}\`.`,
+					'',
+					'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+				],
+			};
+		}
+		if (currentBranch === remoteBranch) {
+			return { ok: true };
+		}
+		if (currentBranch !== DEVELOP_BRANCH) {
+			return {
+				ok: false,
+				blockers: [
+					`pushing from \`${currentBranch}\` into \`${remoteBranch}\` — release branches only receive promotion from \`${DEVELOP_BRANCH}\`.`,
+					'',
+					'next-action:',
+					`  land the change on \`${DEVELOP_BRANCH}\` first, then promote \`${DEVELOP_BRANCH}\` into \`${remoteBranch}\`.`,
+					`  do not push feature or fix branches straight into \`${remoteBranch}\`.`,
+					'',
+					'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+				],
+			};
+		}
 		return { ok: true };
 	}
 
