@@ -590,6 +590,46 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.nextAction).not.toContain('wip/*');
 	});
 
+	it('blocks develop when persist.protectedBranches marks it protected', async () => {
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: {
+				mode: 'commit-and-push',
+				pushTarget: 'origin develop',
+				protectedBranches: ['main', 'master', 'develop'],
+			},
+		};
+		writeFileSync(
+			pushOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(pushOptions));
+		expect(out.reason).toBe('invalid-persist-config');
+		expect(asArray(out.hygieneBlockers)[0]).toContain('origin develop');
+	});
+
+	it('blocks protected refspec targets such as HEAD:develop', async () => {
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: {
+				mode: 'commit-and-push',
+				pushTarget: 'origin HEAD:develop',
+				protectedBranches: ['main', 'master', 'develop'],
+			},
+		};
+		writeFileSync(
+			pushOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(pushOptions));
+		expect(out.reason).toBe('invalid-persist-config');
+		expect(asArray(out.hygieneBlockers)[0]).toContain('HEAD:develop');
+	});
+
 	it('input.persist overrides config.persist.mode (priority chain, l109 §2)', async () => {
 		const commitOptions: IAutoWorkToolOptions = {
 			...options,
