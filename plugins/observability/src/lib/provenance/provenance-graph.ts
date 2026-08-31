@@ -16,6 +16,10 @@ import {
 const NODE_KIND_ORDER = new Map(
 	PROVENANCE_NODE_KINDS.map((kind, index) => [kind, index]),
 );
+const MAX_AGENT_REF_LENGTH = 63;
+const MAX_COMMIT_REF_LENGTH = 40;
+const MAX_PR_REF_LENGTH = 10;
+const REDACTED_COMMIT_REF = '0000000';
 
 const canonicalize = (
 	kind: ProvenanceNodeKind,
@@ -24,7 +28,10 @@ const canonicalize = (
 	const secretSafe = redactSecrets(raw).text.trim();
 	switch (kind) {
 		case 'agent': {
-			const slug = /^[a-z0-9][a-z0-9-]{0,63}$/iu.test(secretSafe)
+			const slug = new RegExp(
+				`^[a-z0-9][a-z0-9-]{0,${MAX_AGENT_REF_LENGTH}}$`,
+				'iu',
+			).test(secretSafe)
 				? secretSafe.toLowerCase()
 				: 'redacted-agent';
 			return { ref: slug, redacted: slug !== raw.trim() };
@@ -59,7 +66,9 @@ const canonicalize = (
 		}
 		case 'commit': {
 			const match =
-				/([0-9a-f]{7,40})/iu.exec(secretSafe)?.[1] ?? '0000000';
+				new RegExp(`([0-9a-f]{7,${MAX_COMMIT_REF_LENGTH}})`, 'iu').exec(
+					secretSafe,
+				)?.[1] ?? REDACTED_COMMIT_REF;
 			return { ref: match.toLowerCase(), redacted: match !== raw.trim() };
 		}
 		case 'release': {
@@ -69,7 +78,10 @@ const canonicalize = (
 			return { ref: safe, redacted: safe !== raw.trim() };
 		}
 		case 'pr': {
-			const match = /(\d{1,10})/u.exec(secretSafe)?.[1] ?? '0';
+			const match =
+				new RegExp(`(\\d{1,${MAX_PR_REF_LENGTH}})`, 'u').exec(
+					secretSafe,
+				)?.[1] ?? '0';
 			return { ref: match, redacted: match !== raw.trim() };
 		}
 	}

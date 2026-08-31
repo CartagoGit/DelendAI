@@ -1,13 +1,13 @@
 name: CI
 
-# develop is the integration branch (work lands there via PR from wip/*,
-# fix/*, feature/* branches); without it in the triggers, breakage only
-# surfaces when a main release is attempted.
+# The full matrix is the strict release boundary for `main`. Development
+# branches receive lighter feedback from the affected/tier workflows without
+# making every local integration push a required quality event.
 on:
     push:
-        branches: [main, develop]
+        branches: [main]
     pull_request:
-        branches: [main, develop]
+        branches: [main]
 
 # Cancel superseded runs on the same ref to save CI minutes.
 concurrency:
