@@ -758,6 +758,61 @@ export const runProposalTransition = async (
 		}
 	}
 
+	// a00069 S7: review → done requires an independent peer approve unless
+	// the host disabled requirePeerReview or the caller passed force:true.
+	// a00069 S11: force bypass is audited (reason already required + non-empty).
+	const requirePeer = options.requirePeerReview !== false;
+	if (requirePeer && from === 'review' && finalTo === 'done') {
+		if (args.force === true) {
+			recordPeerReviewBypass({
+				proposalId: args.id,
+				reason: args.reason,
+				via: 'force',
+			});
+		} else {
+			const approved =
+				typeof options.peerReviewLogPathAbs === 'string'
+					? await hasIndependentApprovalSinceLastReview(
+							options.peerReviewLogPathAbs,
+							args.id,
+						)
+					: hasIndependentPeerApproval(
+							await new SafeWorkspaceReader(
+								options.proposalsDirAbs,
+							)
+								.readText(
+									relative(
+										options.proposalsDirAbs,
+										found.absPath,
+									),
+								)
+								.then((value) => value.content)
+								.catch(() => ''),
+						);
+			if (!approved) {
+				const envelope = {
+					ok: false as const,
+					error: {
+						code: 'peer-review-missing',
+						blockerType: 'missing-peer-review',
+						reason: 'proposal requires at least one independent peer-review entry in peer-review.jsonl after its latest transition to review before it can move to done',
+						nextAction: `Run ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>" } before ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }. Emergency bypass: force:true (host-approved only).`,
+					},
+				};
+				return {
+					content: [
+						{
+							type: 'text' as const,
+							text: JSON.stringify(envelope),
+						},
+					],
+					structuredContent: envelope,
+					isError: true,
+				};
+			}
+		}
+	}
+
 	if (finalTo === 'done') {
 		const yamlBlock = extractYamlBlock(raw);
 		const frontmatter =
