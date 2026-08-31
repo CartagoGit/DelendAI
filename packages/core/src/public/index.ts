@@ -596,6 +596,11 @@ export {
 	installToTarget,
 	runInstall,
 } from '../lib/install/installer';
+export {
+	detectIsWsl,
+	formatInstallReport,
+	parseInitArgs,
+} from '../lib/cli/run-init';
 export type {
 	IInstallOptions,
 	IInstallReport,
