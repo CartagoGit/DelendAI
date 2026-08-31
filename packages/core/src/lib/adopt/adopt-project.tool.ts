@@ -168,19 +168,30 @@ const listWorkspaceCandidates = async (
 	packageJsonText: string | undefined,
 ): Promise<readonly string[]> => {
 	const candidates = new Set<string>();
+	const visited = new Set<string>();
+	const maxPatternDepth = 32;
 	const expandPattern = async (
 		segments: readonly string[],
 		basePath = '',
+		depth = 0,
 	): Promise<readonly string[]> => {
+		if (depth > maxPatternDepth) return [];
+		const visitKey = `${depth}:${basePath}:${segments.join('/')}`;
+		if (visited.has(visitKey)) return [];
+		visited.add(visitKey);
 		const [segment, ...remaining] = segments;
 		if (segment === undefined) return [basePath];
 		if (segment === '**') {
 			const matches = new Set<string>(
-				await expandPattern(remaining, basePath),
+				await expandPattern(remaining, basePath, depth + 1),
 			);
 			for (const child of await reader.listDir(basePath || '.')) {
 				const childPath = pathPosix.join(basePath, child);
-				for (const match of await expandPattern(segments, childPath)) {
+				for (const match of await expandPattern(
+					segments,
+					childPath,
+					depth + 1,
+				)) {
 					matches.add(match);
 				}
 			}
@@ -193,12 +204,17 @@ const listWorkspaceCandidates = async (
 					...(await expandPattern(
 						remaining,
 						pathPosix.join(basePath, child),
+						depth + 1,
 					)),
 				);
 			}
 			return matches;
 		}
-		return expandPattern(remaining, pathPosix.join(basePath, segment));
+		return expandPattern(
+			remaining,
+			pathPosix.join(basePath, segment),
+			depth + 1,
+		);
 	};
 	for (const pattern of readWorkspacePatterns(packageJsonText)) {
 		const normalizedPattern = normalizeWorkspacePath(pattern);
