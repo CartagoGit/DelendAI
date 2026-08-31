@@ -302,14 +302,18 @@ describe('zombie-reconcile', async () => {
 		};
 		// R-2026-08-31: the lock entry exists, so the engine actually
 		// releases something; the queueEmitter fires once with the
-		// canonical event taskId.
+		// canonical event taskId. `last_seen` MUST be set so
+		// `readSynchronizedLock` does not purge the entry as stale
+		// before `runAgentLockEngine` finds it.
 		const lockData = {
 			version: 1,
+			stale_after_minutes: 10,
 			in_flight: [
 				{
 					task_id: 'task-1',
 					agent: 'agent_zombie',
 					started_at: '2026-06-05T11:00:00.000Z',
+					last_seen: '2026-06-05T11:45:00.000Z',
 				},
 			],
 		};
