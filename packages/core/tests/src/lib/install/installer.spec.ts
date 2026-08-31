@@ -154,4 +154,21 @@ describe('IDE installer (M39)', async () => {
 		expect(report.results.map((r) => r.id)).toEqual(['zed']);
 		expect(report.results[0]?.action).toBe('created');
 	});
+
+	it('globalOnly excludes project-scoped targets even with --all', async () => {
+		const report = await runInstall(env(), { all: true, globalOnly: true });
+		expect(report.results.every((result) => result.id !== 'vscode')).toBe(
+			true,
+		);
+		expect(
+			report.results.every((result) => result.id !== 'claude-code'),
+		).toBe(true);
+		expect(report.results.map((result) => result.id)).toEqual([
+			'cursor-global',
+			'windsurf',
+			'claude-desktop',
+			'antigravity',
+			'zed',
+		]);
+	});
 });
