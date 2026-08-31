@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
