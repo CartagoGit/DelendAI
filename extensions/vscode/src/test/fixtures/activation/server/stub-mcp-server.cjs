@@ -45,11 +45,11 @@ const handleMessage = (message) => {
 					inputSchema: {
 						type: 'object',
 						properties: {
-							compact: { type: 'boolean' }
-						}
-					}
-				}
-			]
+							compact: { type: 'boolean' },
+						},
+					},
+				},
+			],
 		});
 		return;
 	}
@@ -64,7 +64,7 @@ const handleMessage = (message) => {
 					plugins: ['core'],
 					tools: ['mcp-vertex_overview'],
 					knowledge: [],
-					recommendedNextAction: 'Benchmark stub'
+					recommendedNextAction: 'Benchmark stub',
 				}),
 			);
 			return;

@@ -12,7 +12,9 @@ async function run() {
 	}
 	const extension = vscode.extensions.getExtension(extensionId);
 	if (!extension) {
-		throw new Error(`Extension ${extensionId} is not available in the host`);
+		throw new Error(
+			`Extension ${extensionId} is not available in the host`,
+		);
 	}
 	const beforeHeap = process.memoryUsage().heapUsed;
 	const activatedBeforeProbe = extension.isActive;
@@ -23,7 +25,11 @@ async function run() {
 	let workUnits = 0;
 	if (extensionId === 'cartago.mcp-vertex-vscode') {
 		try {
-			const modulePath = join(extension.extensionPath, 'dist', 'extension.js');
+			const modulePath = join(
+				extension.extensionPath,
+				'dist',
+				'extension.js',
+			);
 			const extensionModule = require(modulePath);
 			const handle = extensionModule.getRuntimeHandle?.();
 			if (typeof handle?.count === 'number') {
@@ -56,7 +62,9 @@ async function run() {
 				heapDeltaBytes: afterHeap - beforeHeap,
 				workUnits,
 				activatedBeforeProbe,
-				activationEvents: Array.isArray(extension.packageJSON.activationEvents)
+				activationEvents: Array.isArray(
+					extension.packageJSON.activationEvents,
+				)
 					? extension.packageJSON.activationEvents
 					: [],
 				observedToolCalls,

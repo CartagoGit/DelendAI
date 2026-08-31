@@ -7,5 +7,7 @@
 		"vscode": "^1.90.0"
 	},
 	"main": "./index.cjs",
-	"activationEvents": ["onStartupFinished"]
+	"activationEvents": [
+		"onStartupFinished"
+	]
 }
