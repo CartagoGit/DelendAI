@@ -153,7 +153,8 @@ adoptProject (ya existe, sin romper su contrato)
 - **Status**: pending
 - **Files**: `packages/core/src/lib/adopt/adoption-stages.constant.ts`, `packages/core/src/lib/adopt/adopt-project.tool.ts`, `packages/core/tests/src/lib/adopt/adoption-stages.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/adoption-stages.spec.ts`
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator-f00280-s3
 ## dependency graph
 
 Independiente del resto de `q00011`. Se relaciona con `f00274`
