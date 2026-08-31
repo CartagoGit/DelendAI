@@ -6,6 +6,7 @@ status: in-progress
 type: proposal
 track: error-collection
 date: 2026-08-26
+shipped-in: [4dbb9454]
 slices:
   - id: S1
     status: done

@@ -6,6 +6,7 @@ status: in-progress
 type: proposal
 track: governance
 date: 2026-08-25
+shipped-in: [305515338]
 priority: P0
 parent-plan: q00006
 audit-source:

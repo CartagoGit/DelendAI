@@ -6,6 +6,7 @@ status: in-progress
 type: proposal
 track: plugin-hardening
 date: 2026-08-24
+shipped-in: [ede97e6e2]
 ---
 
 # a00086 — auditoría: barrido de seguridad y privacidad (browser, container, forge, database, api, external-mcps, ...)
