@@ -96,7 +96,8 @@ export const nodeDynamicImport = async (
 ): Promise<unknown> => {
 	const runtimeSpecifier =
 		workspaceRoot !== undefined && specifier.startsWith('@mcp-vertex/')
-			? await resolveLocalFirstPartySource(specifier, workspaceRoot)
+			? ((await resolveLocalFirstPartySource(specifier, workspaceRoot)) ??
+				specifier)
 			: specifier;
 	const normalized = normalizeImportSpecifier(runtimeSpecifier);
 	// Use `Function` to hide `import()` from the static analyser, but
@@ -119,7 +120,7 @@ export const nodeDynamicImport = async (
 const resolveLocalFirstPartySource = async (
 	specifier: string,
 	workspaceRoot: string,
-): Promise<string> => {
+): Promise<string | undefined> => {
 	const packageId = specifier.slice('@mcp-vertex/'.length);
 	if (packageId.includes('/')) return specifier;
 	const candidates = [
@@ -129,9 +130,7 @@ const resolveLocalFirstPartySource = async (
 	for (const candidate of candidates) {
 		if (await fileExists(candidate)) return candidate;
 	}
-	throw new Error(
-		`local first-party plugin source not found for "${specifier}" under "${workspaceRoot}"; expected src/index.ts`,
-	);
+	return undefined;
 };
 
 const normalizeImportSpecifier = (specifier: string): string => {

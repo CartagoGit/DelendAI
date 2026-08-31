@@ -32,6 +32,7 @@ import { registerOpenPluginConfigCommand } from './commands/open-plugin-config';
 
 import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
+import { DashboardWebviewViewProvider } from './providers/dashboard-webview-view-provider';
 import { registerProviderActionCommands } from './commands/provider-actions';
 import { registerPluginActivationCommand } from './commands/plugin-activation';
 import { PLUGIN_ACTIVATION_COMMAND } from './contracts/constants/plugin-activation-command.constant';
@@ -156,6 +157,7 @@ export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
 export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
 export const PROPOSALS_VIEW_ID = 'mcp-vertex.proposals';
 export const KPI_VIEW_ID = 'mcp-vertex.kpis';
+export const DASHBOARD_VIEW_ID = 'mcp-vertex.dashboard';
 export const OPEN_RUNTIME_LOG_COMMAND = 'mcp-vertex.openRuntimeLog';
 export { OPEN_TOOL_DETAIL_COMMAND };
 export { OPEN_AUTO_AGENT_SELECTOR_COMMAND };
@@ -779,6 +781,9 @@ export const activate = async (
 	}
 
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
+	const dashboardRefresh: {
+		current?: DashboardWebviewViewProvider;
+	} = {};
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
 	track(
 		registerRefreshCommand({
@@ -787,6 +792,9 @@ export const activate = async (
 			toolTree,
 			proposalsTree,
 			memoryTree,
+			dashboard: {
+				refresh: () => dashboardRefresh.current?.refresh(),
+			},
 		}),
 	);
 	track(registerRunValidationCommand({ vscode, client }));
@@ -917,6 +925,7 @@ export const activate = async (
 			namespacePrefix,
 			serverConfigured,
 			track,
+			dashboardRefresh,
 		),
 	);
 };
@@ -1159,7 +1168,9 @@ const registerDashboardSurfaces = async (
 	namespacePrefix: string | undefined,
 	serverConfigured: boolean,
 	track: (disposable: IDisposable) => IDisposable,
+	dashboardRefresh: { current?: DashboardWebviewViewProvider },
 ): Promise<void> => {
+	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
 	const host =
 		injectedVscode === undefined
 			? await (async () => {
@@ -1189,6 +1200,22 @@ const registerDashboardSurfaces = async (
 		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
 	});
 	track({ dispose: kpiRegistration.dispose });
+	const dashboardProvider = new DashboardWebviewViewProvider({
+		host,
+		client,
+		globalState: context.globalState,
+		getConfig: () =>
+			context.globalState.get(SETTINGS_STATE_KEY) ??
+			context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+			{},
+		...withPrefix,
+	});
+	dashboardRefresh.current = dashboardProvider;
+	const dashboardRegistration = host.registerWebviewViewProvider?.(
+		DASHBOARD_VIEW_ID,
+		dashboardProvider,
+	);
+	if (dashboardRegistration !== undefined) track(dashboardRegistration);
 	void vscode;
 };
 
