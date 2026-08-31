@@ -123,10 +123,11 @@ class VscodeWebviewPanel implements IWebviewPanel {
 		) => IDisposable;
 		readonly postMessage?: (msg: unknown) => Promise<void>;
 	} {
+		const owner = this;
 		return {
 			options: this.options,
 			get html() {
-				return this._html;
+				return owner._html;
 			},
 			setHtml: (html) => {
 				this._html = html;
@@ -153,7 +154,6 @@ class VscodeWebviewPanel implements IWebviewPanel {
 				await this.panel.webview.postMessage(msg);
 			},
 		};
-		this._html = html;
 	}
 	reveal(viewColumn?: number): void {
 		this.panel.reveal(viewColumn);
@@ -403,10 +403,7 @@ export const createVscodeHostAdapter = (
 			// Match by id (now in `description`); fall back to label so
 			// hosts that override this method without passing id still work.
 			const idDesc = result.description ?? '';
-			return (
-				items.find((i) => i.id === idDesc) ??
-				items.find((i) => i.label === result.label)
-			);
+			return items.find((i) => i.id === idDesc)?.id ?? result.label;
 		},
 
 		async openTextDocument(uri: string) {

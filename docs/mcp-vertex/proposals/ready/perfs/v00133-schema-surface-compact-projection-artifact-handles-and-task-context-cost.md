@@ -38,7 +38,8 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
   - "native/swarm/per-plugin/per-tool bytes measured"
   - "schema breakdown available"
   - "task_context_cost p50/p95 corpus defined and reproducible"
-
+- review-state: in_review
+- review-implementer: crow
 ### S2 — Compact projection and result handles
 - **Status**: pending
 - **DependsOn**: [S1]

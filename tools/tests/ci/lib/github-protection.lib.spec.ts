@@ -20,7 +20,7 @@ import {
 	reportUnverifiedBranches,
 } from '../../../scripts/ci/lib/github-protection.lib.ts';
 
-export const LIVE_MAIN_RESPONSE = {
+const LIVE_MAIN_RESPONSE = {
 	required_status_checks: { strict: true, contexts: ['ci-complete'] },
 	enforce_admins: { enabled: true },
 	required_linear_history: { enabled: true },
@@ -182,7 +182,6 @@ describe('reportUnverifiedBranches + appendGitHubStepSummary', () => {
 
 		const chunks: string[] = [];
 		const originalWrite = process.stdout.write.bind(process.stdout);
-		// @ts-expect-error stubbing stdout for assertion purposes only.
 		process.stdout.write = (chunk: string) => {
 			chunks.push(chunk);
 			return true;

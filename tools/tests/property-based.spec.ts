@@ -46,8 +46,9 @@ const ROOT = resolve('/workspace/root');
 const TRIALS = 40;
 
 const pick = <T>(rng: () => number, values: readonly T[]): T => {
+	if (values.length === 0) throw new Error('pick requires a non-empty list');
 	const index = Math.floor(rng() * values.length);
-	return values[index] ?? values[0];
+	return values[index] ?? values[0]!;
 };
 
 const randomInt = (rng: () => number, maxExclusive: number): number =>
@@ -139,7 +140,8 @@ const baseReport: ISafeMcpVertexReport = {
 	reporterVersion: '0.1.0',
 	mcpVertexVersion: '0.1.0',
 	packageId: '@mcp-vertex/error-reporting',
-	toolId: 'property-based-spec',
+	toolOwner: 'mcp-vertex',
+	toolCategory: 'reporting',
 	errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 	failureClass: 'INTERNAL_TIMEOUT',
 	classification: 'PERFORMANCE',
@@ -298,7 +300,7 @@ describe('property-based privacy validation', () => {
 		for (const marker of privateMarkers) {
 			for (let trial = 0; trial < 8; trial += 1) {
 				const value = ` ${marker.build(rng)}`;
-				const report = {
+				const report: ISafeMcpVertexReport = {
 					...baseReport,
 					syntheticExample: {
 						summary: value,

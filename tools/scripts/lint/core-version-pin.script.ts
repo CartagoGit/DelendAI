@@ -72,26 +72,29 @@ export interface ILoadPublishedVersionsResult {
 	readonly latestCachedVersion: string;
 }
 
-export type ILoadPublishedVersionsFailure = Extract<
+export type ILoadPublishedVersionsFailure = Omit<
 	ICoreVersionPinFailure,
-	{
-		ok: false;
-		code:
-			| 'offline-missing-cache'
-			| 'offline-stale-cache'
-			| 'registry-unavailable'
-			| 'empty-version-list'
-			| 'lockfile-missing-version';
-	}
->;
+	'code'
+> & {
+	readonly code:
+		| 'offline-missing-cache'
+		| 'offline-stale-cache'
+		| 'registry-unavailable'
+		| 'empty-version-list'
+		| 'lockfile-missing-version';
+};
+
+interface ITextWriter {
+	readonly write: (chunk: string) => unknown;
+}
 
 export interface IMainOptions {
 	readonly argv?: readonly string[];
 	readonly now?: number;
 	readonly rootDir?: string;
 	readonly runNpmView?: () => Promise<readonly string[]>;
-	readonly stdout?: Pick<typeof process.stdout, 'write'>;
-	readonly stderr?: Pick<typeof process.stderr, 'write'>;
+	readonly stdout?: ITextWriter;
+	readonly stderr?: ITextWriter;
 }
 
 const compareNumeric = (left: number, right: number): number =>
@@ -422,7 +425,7 @@ export const loadPublishedVersions = async (options: {
 			cachePath,
 			latestCachedVersion:
 				pickLatestPublishedVersion(cached?.versions ?? []) ?? 'n/a',
-			fetchedAt: cached?.fetchedAt,
+			...(cached === null ? {} : { fetchedAt: cached.fetchedAt }),
 			cause: error instanceof Error ? error.message : String(error),
 			message:
 				`[core-version-pin] code: registry-unavailable\n` +

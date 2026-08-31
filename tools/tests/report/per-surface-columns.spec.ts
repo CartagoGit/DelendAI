@@ -24,7 +24,7 @@ const row = (overrides: Record<string, unknown>) =>
 		loadErrors: [],
 		ownerRows: [],
 		...overrides,
-	}) as Parameters<typeof buildPerSurfaceColumns>[0][number];
+	}) as unknown as Parameters<typeof buildPerSurfaceColumns>[0][number];
 
 describe('buildPerSurfaceColumns (c00135)', () => {
 	it('pairs adaptive and native rows of the same preset side-by-side', () => {

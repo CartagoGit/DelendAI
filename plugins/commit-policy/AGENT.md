@@ -9,6 +9,8 @@
 
 - default
 - CommitPolicyOptionsSchema
+- buildReleaseBranch
+- isReleaseBranch
 - resolveAuthor
 - commitWithGuard
 - runCommitDriver
@@ -19,8 +21,6 @@
 - createSliceListener
 - readCurrentSliceSnapshot
 - createThresholdTracker
-- createIntervalTimer
-- manualTrigger
 
 ## Depends on
 

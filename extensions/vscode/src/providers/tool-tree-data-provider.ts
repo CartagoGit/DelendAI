@@ -42,6 +42,7 @@ export class ToolTreeDataProvider {
 			AgentCatalogService,
 			'getSkills' | 'getProposals'
 		>,
+		private readonly serverConfigured = true,
 	) {}
 
 	readonly onDidChangeTreeData = (
@@ -60,34 +61,47 @@ export class ToolTreeDataProvider {
 	}
 
 	async getChildren(element?: IToolTreeNode): Promise<IToolTreeNode[]> {
+		if (!this.serverConfigured) {
+			return element === undefined
+				? [
+						serverNode(
+							'Configure mcp-vertex.server.command and server.args to connect',
+						),
+					]
+				: [];
+		}
 		if (element === undefined) {
-			const nodes: IToolTreeNode[] = [];
-			const skills = await this.skills();
-			if (skills.length > 0) {
-				nodes.push({
-					kind: 'plugin',
-					id: 'plugin:__skills__',
-					label: 'Skills',
-					description: `${skills.length} skills`,
-					collapsibleState: TreeItemCollapsibleState.Collapsed,
-					contextValue: 'mcpVertexSkillGroup',
-					plugin: '__skills__',
-				});
+			try {
+				const nodes: IToolTreeNode[] = [];
+				const skills = await this.skills();
+				if (skills.length > 0) {
+					nodes.push({
+						kind: 'plugin',
+						id: 'plugin:__skills__',
+						label: 'Skills',
+						description: `${skills.length} skills`,
+						collapsibleState: TreeItemCollapsibleState.Collapsed,
+						contextValue: 'mcpVertexSkillGroup',
+						plugin: '__skills__',
+					});
+				}
+				const proposals = await this.proposals();
+				if (proposals.length > 0) {
+					nodes.push({
+						kind: 'plugin',
+						id: 'plugin:__actionable_proposals__',
+						label: 'Actionable proposals',
+						description: `${proposals.length} proposals`,
+						collapsibleState: TreeItemCollapsibleState.Collapsed,
+						contextValue: 'mcpVertexProposalGroup',
+						plugin: '__actionable_proposals__',
+					});
+				}
+				nodes.push(serverNode());
+				return nodes;
+			} catch (error) {
+				return [statusNode(error)];
 			}
-			const proposals = await this.proposals();
-			if (proposals.length > 0) {
-				nodes.push({
-					kind: 'plugin',
-					id: 'plugin:__actionable_proposals__',
-					label: 'Actionable proposals',
-					description: `${proposals.length} proposals`,
-					collapsibleState: TreeItemCollapsibleState.Collapsed,
-					contextValue: 'mcpVertexProposalGroup',
-					plugin: '__actionable_proposals__',
-				});
-			}
-			nodes.push(serverNode());
-			return nodes;
 		}
 		if (element.id === 'plugin:__skills__') {
 			return (await this.skills()).map((skill) => ({
@@ -114,7 +128,12 @@ export class ToolTreeDataProvider {
 			}));
 		}
 		if (element.kind === 'server') {
-			const byPlugin = await this.toolsByPlugin();
+			let byPlugin: Map<string, IToolDescriptor[]>;
+			try {
+				byPlugin = await this.toolsByPlugin();
+			} catch (error) {
+				return [statusNode(error)];
+			}
 			return [...byPlugin.entries()]
 				.sort(([left], [right]) => left.localeCompare(right))
 				.map(([plugin, tools]) => pluginNode(plugin, tools.length));
@@ -165,6 +184,7 @@ export class ToolTreeDataProvider {
 	}
 
 	private async tools(): Promise<readonly IToolDescriptor[]> {
+		if (!this.serverConfigured) return [];
 		this.toolsCache ??= await this.overview.listTools();
 		return this.toolsCache;
 	}
@@ -172,7 +192,7 @@ export class ToolTreeDataProvider {
 	private async skills(): Promise<
 		Awaited<ReturnType<AgentCatalogService['getSkills']>>
 	> {
-		if (this.catalog === undefined) return [];
+		if (!this.serverConfigured || this.catalog === undefined) return [];
 		this.skillsCache ??= await this.catalog.getSkills();
 		return this.skillsCache;
 	}
@@ -180,10 +200,20 @@ export class ToolTreeDataProvider {
 	private async proposals(): Promise<
 		Awaited<ReturnType<AgentCatalogService['getProposals']>>
 	> {
-		if (this.catalog === undefined) return [];
+		if (!this.serverConfigured || this.catalog === undefined) return [];
 		this.proposalsCache ??= await this.catalog.getProposals();
 		return this.proposalsCache;
 	}
 }
+
+const statusNode = (error: unknown): IToolTreeNode => ({
+	kind: 'plugin',
+	id: 'plugin:status',
+	label: `MCP server unavailable: ${
+		error instanceof Error ? error.message : String(error)
+	}`,
+	collapsibleState: TreeItemCollapsibleState.None,
+	contextValue: 'mcpVertexStatus',
+});
 
 export type ITreeItemCollapsibleState = TreeItemCollapsibleState;

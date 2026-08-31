@@ -29,10 +29,11 @@ export interface IToolTreeNode {
 	readonly iconId?: string;
 }
 
-export const serverNode = (): IToolTreeNode => ({
+export const serverNode = (description?: string): IToolTreeNode => ({
 	kind: 'server',
 	id: 'server:mcp-vertex',
 	label: 'mcp-vertex',
+	...(description === undefined ? {} : { description }),
 	collapsibleState: TreeItemCollapsibleState.Expanded,
 	contextValue: 'mcpVertexServer',
 	iconId: SERVER_ICON_ID,

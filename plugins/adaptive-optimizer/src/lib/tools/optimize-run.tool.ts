@@ -18,6 +18,7 @@ import type {
 } from '../contracts/interfaces/adaptive-optimizer.interface';
 import { buildOptimizeRunPayload } from '../services/optimize-run.service';
 import { buildActivationMetricsToolRegistration } from './activation-metrics.tool';
+import { buildAdaptiveFacadeToolRegistration } from './adaptive-facade.tool';
 import { createActivationMetricsRegistry } from '../metrics/activation-metrics-registry';
 import type { IActivationMetricsRegistry } from '../contracts/interfaces/adaptive-optimizer.interface';
 
@@ -120,6 +121,10 @@ export const buildAdaptiveOptimizerToolRegistrations = (
 	const activationMetricsRegistry =
 		options.activationMetricsRegistry ?? createActivationMetricsRegistry();
 	return [
+		buildAdaptiveFacadeToolRegistration({
+			namespacePrefix: options.namespacePrefix,
+			maxBytes: options.maxBytes,
+		}),
 		{
 			id: 'optimize_run',
 			tags: ['optimizer', 'adaptive', 'prompt', 'compact'],

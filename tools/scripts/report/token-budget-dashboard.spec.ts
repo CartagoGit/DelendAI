@@ -21,7 +21,7 @@ import type {
 } from '@mcp-vertex/core/public';
 
 /** Pure: split a per-tool used measurement into a status per surface. */
-export const surfaceStatus = (
+const surfaceStatus = (
 	used: IPerSurfaceMeasurement,
 	budget: IPerSurfaceMeasurement,
 ): Record<Surface, 'ok' | 'breach' | null> => {
@@ -39,7 +39,7 @@ export const surfaceStatus = (
 };
 
 /** Deficits computed independently per surface (no mixed total). */
-export const documentedDeficits = (
+const documentedDeficits = (
 	rows: readonly {
 		readonly toolId: string;
 		readonly used: IPerSurfaceMeasurement;

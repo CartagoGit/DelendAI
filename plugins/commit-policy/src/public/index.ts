@@ -5,6 +5,10 @@
 export { default } from '../index';
 
 export { CommitPolicyOptionsSchema } from '../lib/contracts/options';
+export {
+	buildReleaseBranch,
+	isReleaseBranch,
+} from '../lib/contracts/release-branch';
 export type {
 	ICommitPolicyOptions,
 	ICommitPolicyIdentity,
