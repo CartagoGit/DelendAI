@@ -149,6 +149,12 @@ const parseSchemaSuccess = (
 		isError?: boolean;
 	},
 ) => {
+	if (result.isError !== undefined) {
+		console.error(
+			'parseSchemaSuccess received isError=true, body:',
+			result.content[0]?.text,
+		);
+	}
 	expect(result.isError).toBeUndefined();
 	const body =
 		result.structuredContent ?? JSON.parse(result.content[0]?.text ?? '{}');
