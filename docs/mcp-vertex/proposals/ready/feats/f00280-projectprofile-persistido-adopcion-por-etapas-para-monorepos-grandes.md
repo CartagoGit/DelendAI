@@ -131,13 +131,7 @@ adoptProject (ya existe, sin romper su contrato)
 ### S1 — `ProjectProfile` persistido, generado y actualizado incrementalmente
 
 - **Status**: done
-- **Files**:
-    - `packages/core/src/lib/adopt/project-profile.service.ts` (nuevo)
-    - `packages/core/src/lib/contracts/interfaces/project-profile.interface.ts` (nuevo)
-    - `packages/core/src/lib/adopt/adopt-project.tool.ts` (cablear:
-      `write: true` también persiste `.mcp-vertex/project-profile.json`,
-      sin cambiar el contrato de salida actual del tool)
-    - `packages/core/tests/src/lib/adopt/project-profile.spec.ts` (nuevo)
+- **Files**: `packages/core/src/lib/adopt/project-profile.service.ts`, `packages/core/src/lib/contracts/interfaces/project-profile.interface.ts`, `packages/core/src/lib/adopt/adopt-project.tool.ts`, `packages/core/tests/src/lib/adopt/project-profile.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/project-profile.spec.ts`
 - review-state: done
 - review-implementer: copilot-orchestrator-f00280-s1-final
@@ -147,14 +141,7 @@ adoptProject (ya existe, sin romper su contrato)
 ### S2 — Desglose por área/workspace dentro de un monorepo
 
 - **Status**: pending
-- **Files**:
-    - `packages/core/src/lib/adopt/adoption-assessment.service.ts`
-      (`chooseCandidatePreset` gana un modo de desglose por área
-      cuando `analysis.projectType === 'monorepo'`, en vez de colapsar
-      siempre a `'swarm'`)
-    - `packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts` (nuevo,
-      con un fixture de monorepo de al menos 3 workspaces con
-      frameworks distintos)
+- **Files**: `packages/core/src/lib/adopt/adoption-assessment.service.ts`, `packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts`
 - review-state: changes_requested
 - review-implementer: copilot-orchestrator
@@ -163,14 +150,7 @@ adoptProject (ya existe, sin romper su contrato)
 ### S3 — Adopción por etapas: cuatro perfiles de instalación incremental
 
 - **Status**: pending
-- **Files**:
-    - `packages/core/src/lib/adopt/adoption-stages.constant.ts` (nuevo:
-      `core+git+search+doctor` → `rules+testing+quality` →
-      `proposals+agents` → especializados)
-    - `packages/core/src/lib/adopt/adopt-project.tool.ts` (nuevo
-      parámetro `stage` opcional; por defecto instala sólo la primera
-      etapa si no se especifica, en vez del preset completo)
-    - `packages/core/tests/src/lib/adopt/adoption-stages.spec.ts` (nuevo)
+- **Files**: `packages/core/src/lib/adopt/adoption-stages.constant.ts`, `packages/core/src/lib/adopt/adopt-project.tool.ts`, `packages/core/tests/src/lib/adopt/adoption-stages.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/adoption-stages.spec.ts`
 
 ## dependency graph
