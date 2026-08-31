@@ -409,6 +409,14 @@ export interface IMcpPlugin {
 		};
 	};
 	/**
+	 * Machine-readable sample config for this plugin's `options`, meant
+	 * for consumers that need a direct object to inspect without the docs
+	 * wrapper shape of `configExample`. Existing plugins may omit this and
+	 * only declare `configExample`; consumers should treat that legacy path
+	 * as the fallback source of truth.
+	 */
+	readonly example?: Readonly<Record<string, unknown>>;
+	/**
 	 * Optional example config for the docs site. When present, the
 	 * `/plugins/<slug>` page renders a copy-pasteable JSON snippet with
 	 * the plugin's typical options pre-filled. Plugins without a

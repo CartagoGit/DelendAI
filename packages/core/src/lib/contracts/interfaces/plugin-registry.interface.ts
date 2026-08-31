@@ -52,6 +52,8 @@ export interface IPluginRegistryEntry {
 	readonly toolPermissions?: IPluginToolPermissions | undefined;
 	/** Whether managed/lazy must activate this plugin at boot when configured. */
 	readonly startupActivation?: boolean | undefined;
+	/** Machine-readable sample config derived from the plugin contract. */
+	readonly example?: Readonly<Record<string, unknown>> | undefined;
 }
 
 /** A registry source — a list of entries plus its origin label. */
