@@ -80,4 +80,22 @@ describe('scan/shingle — shingleBlocks', () => {
 		// all-imports and therefore skipped.
 		expect(hits).toHaveLength(0);
 	});
+
+	it('skips duplicated multiline import clauses', () => {
+		const imports = [
+			"import { basename, dirname, join } from 'node:path';",
+			'',
+			"import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';",
+			'',
+			'import {',
+			'  SafeWorkspaceReader,',
+			'  withFileMutex,',
+			"} from '@mcp-vertex/core/public';",
+		].join('\n');
+		const files = new Map<string, string>([
+			['plugins/foo/src/lib/a.ts', imports],
+			['plugins/bar/src/lib/b.ts', imports],
+		]);
+		expect(shingleBlocks(files)).toHaveLength(0);
+	});
 });

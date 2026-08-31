@@ -18,3 +18,4 @@ export * from './envelopes';
 export * from './safety';
 export * from './plugin';
 export * from './routes';
+export * from './remote-provider';

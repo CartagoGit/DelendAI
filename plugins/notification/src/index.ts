@@ -71,6 +71,12 @@ export default definePlugin({
 		const toolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			lockFileAbs: lockPath.abs,
+			agentRegistryFileAbs: ctx.workspace.resolve(
+				joinRel(ctx.cacheDir, 'subagent-registry.json'),
+			),
+			queueFileAbs: ctx.workspace.resolve(
+				joinRel(ctx.cacheDir, 'agent-queue/queue.json'),
+			),
 			handoffDirAbs: handoffPath.abs,
 			handoffDirRel: handoffPath.rel,
 			...(typeof ctx.options.intervalMs === 'number'

@@ -54,6 +54,7 @@ const EXPECTED_COMMANDS = [
 	'config set',
 	'init',
 	'init:default',
+	'init:global',
 	'search',
 	'docs list',
 	'docs read',
