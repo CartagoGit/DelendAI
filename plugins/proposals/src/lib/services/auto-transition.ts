@@ -38,11 +38,19 @@ export const AUTO_TRANSITION_REPAIRS_RELATIVE_PATH = join(
 export const shouldAutoTransitionProposal = (
 	proposalId: string,
 	markdown: string,
+	options: { readonly requirePeerReview?: boolean } = {},
 ): boolean => {
 	const status = readFrontmatterField(markdown, 'status')
 		?.trim()
 		.toLowerCase();
-	if (status !== 'review') return false;
+	const type = readFrontmatterField(markdown, 'type')?.trim().toLowerCase();
+	if (type === 'plan') return false;
+	if (
+		options.requirePeerReview !== false
+			? status !== 'review'
+			: status === 'done' || status === undefined
+	)
+		return false;
 	const plan = parseProposalSlicePlan(proposalId, markdown);
 	if (plan === null || plan.slices.length === 0) return false;
 	return plan.slices.every((slice) => slice.status === 'done');
@@ -51,8 +59,9 @@ export const shouldAutoTransitionProposal = (
 export const markProposalDoneForAutoTransition = (
 	proposalId: string,
 	markdown: string,
+	options: { readonly requirePeerReview?: boolean } = {},
 ): { readonly changed: boolean; readonly markdown: string } => {
-	if (!shouldAutoTransitionProposal(proposalId, markdown)) {
+	if (!shouldAutoTransitionProposal(proposalId, markdown, options)) {
 		return { changed: false, markdown };
 	}
 	return {

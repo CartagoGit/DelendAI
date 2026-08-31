@@ -163,17 +163,72 @@ const fixture: IDashboardAllModels = {
 	tokens: baseTokens,
 	tools: baseTools,
 	plugins: basePlugins,
+	proposals: {
+		total: 0,
+		byStatus: {},
+		rows: [],
+	},
+	kpis: {
+		totals: baseOverview.totals,
+		tokens: { used: 0, saved: 0, savingsPercent: 0 },
+		latency: { totalWallMs: 0, p50Ms: 0, p95Ms: 0 },
+		spend: null,
+	},
+	docs: {
+		pluginLoaded: false,
+		tools: [],
+		knowledge: [],
+		recommendedNextAction: '',
+	},
 	spend: null,
 	sessions: baseSessions,
 	times: baseTimes,
 	agents: baseAgents,
 	memory: {
-		state: 'unavailable',
 		notes: [],
 		total: 0,
 		offset: 0,
 	},
 	health: baseHealth,
+	workspace: {
+		overview: { state: 'ready', data: baseOverview },
+		tools: { state: 'ready', data: baseTools },
+		plugins: { state: 'ready', data: basePlugins },
+		memory: {
+			state: 'unavailable',
+			data: { notes: [], total: 0, offset: 0 },
+		},
+		proposals: {
+			state: 'empty' as const,
+			data: { total: 0, byStatus: {}, rows: [] },
+		},
+		agents: {
+			state: 'ready' as const,
+			data: { agents: [], totalActive: 0 },
+		},
+		kpis: {
+			state: 'empty' as const,
+			data: {
+				totals: baseOverview.totals,
+				tokens: { used: 0, saved: 0, savingsPercent: 0 },
+				latency: { totalWallMs: 0, p50Ms: 0, p95Ms: 0 },
+				spend: null,
+			},
+		},
+		health: {
+			state: 'ready' as const,
+			data: baseHealth,
+		},
+		docs: {
+			state: 'empty',
+			data: {
+				pluginLoaded: false,
+				tools: [],
+				knowledge: [],
+				recommendedNextAction: '',
+			},
+		},
+	},
 	server: {
 		name: 'mcp-vertex',
 		version: '0.1.0',

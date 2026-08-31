@@ -8,6 +8,7 @@
  * future hosts that prefer a DOM-rooted API; today only the string
  * form is used by `@mcp-vertex/shared`-driven webviews).
  */
+import { BRAND_HEX_BLUE, BRAND_HEX_PURPLE } from '@mcp-vertex/shared';
 import { escapeHtml } from '../dashboard/format';
 
 export interface IHeaderBarOptions {
@@ -17,18 +18,27 @@ export interface IHeaderBarOptions {
 	readonly actions?: string; // pre-rendered HTML string for the right-hand action strip
 }
 
-/** Inline brand SVG — single source of truth (no `media/logo.svg` dependency at runtime).
- *  Uses the shared `--mcpv-brand-*` tokens; the host MUST load the shared
- *  stylesheet (via `componentCss`) before this SVG renders. */
+/** Inline brand SVG copied from the extension/app logo asset so every host
+ *  renders the same MCP Vertex mark without a runtime asset dependency. */
 const BRAND_SVG = `<svg class="mcpv-header__logo" viewBox="0 0 64 64" aria-hidden="true">
 	<defs>
-		<linearGradient id="mcpv-brand-gradient" x1="0" y1="0" x2="1" y2="1">
-			<stop offset="0%" stop-color="var(--mcpv-brand-blue)"/>
-			<stop offset="100%" stop-color="var(--mcpv-brand-purple)"/>
+		<linearGradient id="mcpv-brand-gradient" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="${BRAND_HEX_BLUE}"/>
+			<stop offset="1" stop-color="${BRAND_HEX_PURPLE}"/>
 		</linearGradient>
 	</defs>
-	<path d="M32 4 L58 18 L58 46 L32 60 L6 46 L6 18 Z" fill="url(#mcpv-brand-gradient)"/>
-	<path d="M32 14 L48 22 L48 42 L32 50 L16 42 L16 22 Z" fill="var(--mcpv-bg)"/>
+	<path d="M32 4 L56 18 L56 46 L32 60 L8 46 L8 18 Z" fill="none" stroke="url(#mcpv-brand-gradient)" stroke-width="4.5" stroke-linejoin="round"/>
+	<g stroke="url(#mcpv-brand-gradient)" stroke-width="3.5" stroke-linecap="round">
+		<line x1="32" y1="32" x2="32" y2="8"/>
+		<line x1="32" y1="32" x2="11.5" y2="44"/>
+		<line x1="32" y1="32" x2="52.5" y2="44"/>
+	</g>
+	<path d="M32 21 L41 26.5 L41 37.5 L32 43 L23 37.5 L23 26.5 Z" fill="url(#mcpv-brand-gradient)"/>
+	<g fill="url(#mcpv-brand-gradient)">
+		<circle cx="32" cy="8" r="5"/>
+		<circle cx="11.5" cy="44" r="5"/>
+		<circle cx="52.5" cy="44" r="5"/>
+	</g>
 </svg>`;
 
 /**

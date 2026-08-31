@@ -1,4 +1,5 @@
 import {
+	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -24,6 +25,7 @@ import {
 	buildProposalBoardRegistration,
 	buildReviewRegistration,
 	type IAuthoringToolOptions,
+	REVIEW_OUTPUT_SCHEMA,
 } from '@mcp-vertex/proposals/lib/tools/authoring.tool';
 
 const capture = async (
@@ -388,6 +390,32 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(heartbeat).toMatchObject({ isError: true });
 	});
 
+	it('returns a schema-valid review status without releasing ownership', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00088',
+			title: 'Review status contract',
+			goal: 'regression',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const status = parse(
+			await review({
+				proposalId: 'f00088',
+				sliceId: 's1',
+				action: 'status',
+				agent: 'reviewer',
+			}),
+		);
+
+		expect(REVIEW_OUTPUT_SCHEMA.parse(status)).toMatchObject({
+			action: 'status',
+			status: 'none',
+			lockReleased: false,
+			assignmentReleased: false,
+		});
+	});
+
 	it('closes the last slice without appending the done marker outside the slice block', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		await create({
@@ -418,7 +446,13 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(closed.closed).toBe(true);
 
-		const doc = readFileSync(file, 'utf8');
+		const doneFile = proposalPath(
+			opts,
+			'done/feats/f00086-last-slice-close.md',
+		);
+		expect(existsSync(file)).toBe(false);
+		expect(existsSync(doneFile)).toBe(true);
+		const doc = readFileSync(doneFile, 'utf8');
 		const sliceBlock = doc.slice(
 			doc.indexOf('### S1'),
 			doc.indexOf('## Acceptance'),

@@ -4,7 +4,9 @@ import { renderTabs } from '@mcp-vertex/shared/components/ui/tabs';
 import { extensionText } from '../../i18n/extension-text';
 
 export const TABS: ReadonlyArray<{ id: string; label: string }> = [
+	{ id: 'status', label: 'tabStatus' },
 	{ id: 'overview', label: 'tabOverview' },
+	{ id: 'logs', label: 'tabLogs' },
 	{ id: 'metrics', label: 'tabMetrics' },
 	{ id: 'tokens', label: 'tabTokens' },
 	{ id: 'spend', label: 'tabSpend' },
@@ -15,16 +17,21 @@ export const TABS: ReadonlyArray<{ id: string; label: string }> = [
 	{ id: 'agents', label: 'tabAgents' },
 	{ id: 'memory', label: 'tabMemory' },
 	{ id: 'health', label: 'tabHealth' },
+	{ id: 'settings', label: 'tabSettings' },
 ];
 
 const NAV_GROUPS: ReadonlyArray<{
 	readonly label: string;
 	readonly tabs: ReadonlyArray<string>;
 }> = [
-	{ label: 'Workspace', tabs: ['overview', 'tools', 'plugins', 'docs'] },
+	{
+		label: 'Workspace',
+		tabs: ['status', 'overview', 'logs', 'tools', 'plugins', 'docs'],
+	},
 	{ label: 'Operations', tabs: ['sessions', 'agents', 'health'] },
 	{ label: 'Telemetry', tabs: ['metrics', 'tokens', 'spend', 'times'] },
 	{ label: 'Knowledge', tabs: ['memory'] },
+	{ label: 'Preferences', tabs: ['settings'] },
 ];
 
 export function buildTabsBar(lang: ILangDict): string {
@@ -67,7 +74,7 @@ export function buildTabsBar(lang: ILangDict): string {
 		</div>`;
 	const sidebar = NAV_GROUPS.map(
 		(group) =>
-			`<div class="mcpv-app-nav__group"><h3>${group.label}</h3><div class="mcpv-app-nav__items">${group.tabs
+			`<details class="mcpv-app-nav__group" open><summary>${group.label}<span aria-hidden="true">⌄</span></summary><div class="mcpv-app-nav__items">${group.tabs
 				.map((id) => {
 					const tab =
 						id === 'docs'
@@ -77,7 +84,7 @@ export function buildTabsBar(lang: ILangDict): string {
 						? ''
 						: `<button type="button" class="mcpv-app-nav__item" data-sidebar-trigger="${tab.id}" aria-current="${tab.id === 'overview' ? 'page' : 'false'}"><span>${text(tab.label)}</span></button>`;
 				})
-				.join('')}</div></div>`,
+				.join('')}</div></details>`,
 	).join('');
 	return (
 		`<div class="mcpv-app-nav__mobile"><button type="button" class="mcpv-app-nav__menu" data-nav-toggle aria-expanded="false">☰ <span>Menu</span></button></div>` +

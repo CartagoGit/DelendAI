@@ -34,6 +34,23 @@ export const DASHBOARD_MESSAGE_SCHEMA = z.discriminatedUnion('command', [
 			]),
 		})
 		.strict(),
+	z
+		.object({
+			command: z.literal('settings'),
+			action: z.enum(['save', 'reset']),
+			settings: z.record(z.string(), z.unknown()).optional(),
+		})
+		.strict(),
+	z
+		.object({
+			command: z.literal('logs'),
+			action: z.enum(['start', 'stop', 'refresh', 'source', 'filter']),
+			source: z.string().optional(),
+			outcome: z.string().optional(),
+			agent: z.string().optional(),
+			taskId: z.string().optional(),
+		})
+		.strict(),
 ]);
 
 /**
