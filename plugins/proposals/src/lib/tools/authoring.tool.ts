@@ -1041,7 +1041,10 @@ export const buildCloseSliceRegistration = (
 				let validationDecision:
 					| ICloseSliceValidationDecision
 					| undefined;
-				if (args.force !== true) {
+				if (
+					args.force !== true &&
+					options.requireValidateEvidence !== false
+				) {
 					const validateEvidence =
 						await resolveRecentValidateEvidence({
 							workspaceRoot: options.workspaceRoot,

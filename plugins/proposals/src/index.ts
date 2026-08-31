@@ -168,6 +168,15 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 */
 	requirePeerReview: z.boolean().optional(),
 	/**
+	 * Require a passing `bun run validate` (journalled to
+	 * `.cache/mcp-vertex/results/logs/validate.jsonl`) before
+	 * `close_slice` marks a slice done or `proposal_transition` moves a
+	 * proposal to review/done. Default true when omitted. Adopters
+	 * without a validate chain worth blocking on set this to false
+	 * instead of teaching every agent to pass `force: true`.
+	 */
+	requireValidateEvidence: z.boolean().optional(),
+	/**
 	 * a00069 S10: auto-purge orphan registry/queue/lock drift on plugin boot.
 	 * Default true. Set false to keep diagnose-only (manual state_repair).
 	 */
@@ -434,6 +443,12 @@ export default definePlugin({
 							.requirePeerReview as boolean,
 					}
 				: { requirePeerReview: true }),
+			...(typeof ctx.options.requireValidateEvidence === 'boolean'
+				? {
+						requireValidateEvidence: ctx.options
+							.requireValidateEvidence as boolean,
+					}
+				: { requireValidateEvidence: true }),
 			...(qualityPeerConfigured
 				? {
 						resolveValidationDecision:
@@ -653,6 +668,12 @@ export default definePlugin({
 							}
 						: {}),
 					// a00069 S7: short-circuit review/ without peer approve.
+					...(typeof ctx.options.requireValidateEvidence === 'boolean'
+						? {
+								requireValidateEvidence: ctx.options
+									.requireValidateEvidence as boolean,
+							}
+						: { requireValidateEvidence: true }),
 					...(typeof ctx.options.requirePeerReview === 'boolean'
 						? {
 								requirePeerReview: ctx.options
