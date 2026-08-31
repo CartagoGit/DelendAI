@@ -139,6 +139,7 @@ export interface IDeclaredBranchRule {
 
 export interface IDeclaredBranchPolicy {
 	readonly name: string;
+	readonly protected: boolean;
 	readonly protection: IDeclaredBranchRule;
 }
 
@@ -166,6 +167,13 @@ const parseDeclaredBranch = (
 	}
 	return {
 		name: expectString(value.name, `branches[${index}].name`),
+		protected:
+			value.protected === undefined
+				? true
+				: expectBoolean(
+						value.protected,
+						`branches[${index}].protected`,
+					),
 		protection: {
 			required_status_checks: {
 				strict: expectBoolean(
@@ -278,11 +286,21 @@ export const diffBranch = (
 	live: IGitHubBranchProtectionResponse | null,
 ): readonly IDrift[] => {
 	if (live === null) {
+		if (!expected.protected) return [];
 		return [
 			{
 				branch: expected.name,
 				kind: 'MISSING',
 				detail: 'branch has no protection rule on GitHub',
+			},
+		];
+	}
+	if (!expected.protected) {
+		return [
+			{
+				branch: expected.name,
+				kind: 'MISSING',
+				detail: 'branch has a protection rule on GitHub but none is declared',
 			},
 		];
 	}

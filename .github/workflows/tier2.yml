@@ -11,7 +11,7 @@
 # the moment of approval.
 #
 # Triggers:
-#   pull_request to develop/main, ready_for_review.
+#   pull_request to main, ready_for_review.
 #   pull_request synchronize / reopened (re-runs the full
 #     matrix after a force-push; cheap because the matrix
 #     is the same).
@@ -21,7 +21,7 @@ name: tier2
 
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [main]
     types: [ready_for_review, synchronize, reopened]
   workflow_dispatch:
 
