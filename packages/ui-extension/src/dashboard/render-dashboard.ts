@@ -63,6 +63,12 @@ const CLIENT_SCRIPT = `
 	refresh?.addEventListener('click', () => {
 		host?.postMessage({ command: 'action', action: 'refresh' });
 	});
+  document.querySelectorAll('[data-surface]').forEach((surface) => {
+    surface.addEventListener('click', () => {
+      const id = surface.getAttribute('data-surface');
+      if (id) host?.postMessage({ command: 'openSurface', surface: id });
+    });
+  });
 	document.addEventListener('click', (evt) => {
 		const target = evt.target;
 		if (!(target instanceof Element)) return;

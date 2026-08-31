@@ -23,7 +23,8 @@ import { HOST_LANG_KEY } from './setup-github';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
-const OPEN_CONFIGURATION_CENTER_COMMAND = 'mcp-vertex.openConfigurationCenter';
+export const OPEN_CONFIGURATION_CENTER_COMMAND =
+	'mcp-vertex.openConfigurationCenter';
 type ConfigurationCenterStrings =
 	(typeof configurationCenterStringsByLang)[Lang];
 
