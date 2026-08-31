@@ -152,7 +152,6 @@ const parseCostTier = (raw: string | undefined): ISliceCostTier | undefined => {
 
 const parseMigrationPhase = (
 	body: string,
-	title: string,
 ): ContractMigrationPhase | undefined => {
 	const raw =
 		readSliceField(body, 'migration_phase') ??
@@ -164,10 +163,7 @@ const parseMigrationPhase = (
 	) {
 		return normalized as ContractMigrationPhase;
 	}
-	const lowerTitle = title.trim().toLowerCase();
-	return CONTRACT_MIGRATION_PHASES.find((phase) =>
-		new RegExp(`\\b${phase}\\b`, 'u').test(lowerTitle),
-	);
+	return undefined;
 };
 
 const orderedCompletedPhasesFor = (
@@ -348,7 +344,7 @@ export const parseProposalSlicePlan = (
 		const maxCostTier = parseCostTier(
 			readSliceField(body, 'max_cost_tier'),
 		);
-		const migrationPhase = parseMigrationPhase(body, title);
+		const migrationPhase = parseMigrationPhase(body);
 		slices.push({
 			proposalId,
 			sliceId,
