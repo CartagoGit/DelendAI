@@ -88,6 +88,18 @@ export interface IAuthoringToolOptions {
 	 */
 	readonly requirePeerReview?: boolean;
 	/**
+	 * When true (default), `close_slice` refuses to mark a slice done
+	 * without a passing `bun run validate` from the last 24h, journalled
+	 * to `.cache/mcp-vertex/results/logs/validate.jsonl`.
+	 *
+	 * Not every adopter has a validate chain worth blocking on — a docs
+	 * repo, a spike, a project whose CI is the real gate. Those hosts set
+	 * `proposals.options.requireValidateEvidence: false` rather than
+	 * teaching every agent to pass `force: true`, which would disable the
+	 * peer-review and quality gates along with it.
+	 */
+	readonly requireValidateEvidence?: boolean;
+	/**
 	 * f00091 S2: the non-destructive **branch-integration step**. When
 	 * `agentWorktree` is enabled AND the slice was closed on a per-agent
 	 * `agent/*` branch, `close_slice` records that branch into the
