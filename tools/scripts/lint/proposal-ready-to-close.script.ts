@@ -181,7 +181,7 @@ const main = (): number => {
 		?.split('=')[1];
 	const proposalsDirAbs = join(repoRoot(), 'docs', 'mcp-vertex', 'proposals');
 	const findings = scanReadyToClose(proposalsDirAbs, {
-		proposalId: proposalArg,
+		...(proposalArg !== undefined ? { proposalId: proposalArg } : {}),
 	});
 	process.stdout.write(`${render(findings)}\n`);
 	if (strict && findings.length > 0) return 1;
