@@ -3,7 +3,7 @@
  * idempotency store: key computation, persistence, TTL prune.
  */
 
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	computeIdempotencyKey,
 	createProcessedEventsStore,
+	ProcessedEventsStoreReadError,
 } from '@mcp-vertex/commit-policy/lib/processed-events';
 import type { IEngineEvent } from '@mcp-vertex/commit-policy/lib/engine';
 
@@ -157,5 +158,26 @@ describe('createProcessedEventsStore', () => {
 		await store.add('new', 'sha2', now + 2_000);
 		expect(await store.has('new')).toBe(true);
 		await store.dispose();
+	});
+
+	it('rejects corrupt JSONL instead of treating it as an empty store', async () => {
+		const path = '.commit-policy/processed-events.jsonl';
+		await mkdir(join(workspace, '.commit-policy'), { recursive: true });
+		await writeFile(join(workspace, path), '{not-json}\n');
+		const store = createProcessedEventsStore({ workspaceRoot: workspace });
+
+		await expect(store.has('any-key')).rejects.toBeInstanceOf(
+			ProcessedEventsStoreReadError,
+		);
+	});
+
+	it('rejects non-ENOENT read errors', async () => {
+		const path = '.commit-policy/processed-events.jsonl';
+		await mkdir(join(workspace, path), { recursive: true });
+		const store = createProcessedEventsStore({ workspaceRoot: workspace });
+
+		await expect(store.has('any-key')).rejects.toBeInstanceOf(
+			ProcessedEventsStoreReadError,
+		);
 	});
 });

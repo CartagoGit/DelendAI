@@ -2,7 +2,7 @@
 id: f00267
 title: "AUD-CP-012/§54 — Idempotency keys para commits automáticos"
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -168,7 +168,8 @@ Política:
   - "replay del mismo evento → ALREADY_PROCESSED, sin commit"
   - "TTL expirado → vuelve a procesar (según policy)"
   - "I/O error de lectura → STORE_READ_ERROR, no commit"
-
+- review-state: in_review
+- review-implementer: copilot
 ## acceptance
 
 - Tests de `t00021` (replay) pasan.
