@@ -210,6 +210,26 @@ const CLIENT_SCRIPT = `
       postSettings('reset');
     },
   );
+  document.querySelectorAll('[data-settings-compact]').forEach((toggle) => {
+    toggle.addEventListener('change', () => {
+      const settingsPanels = document.querySelectorAll('#panel-settings');
+      settingsPanels.forEach((panel) => {
+        if (toggle instanceof HTMLInputElement && toggle.checked) {
+          panel.classList.add('mcpv-panel--compact');
+        } else {
+          panel.classList.remove('mcpv-panel--compact');
+        }
+      });
+      try {
+        window.localStorage.setItem(
+          'mcpv:dashboard-compact',
+          toggle instanceof HTMLInputElement && toggle.checked ? '1' : '0',
+        );
+      } catch {
+        /* localStorage might be disabled; the visual toggle still works. */
+      }
+    });
+  });
   window.addEventListener('message', (event) => {
     const data = event?.data;
     if (!data || data.command !== 'settingsResult') return;
@@ -224,6 +244,20 @@ const CLIENT_SCRIPT = `
       announceSettings('Settings saved.', false);
     }
   });
+  // Restore the compact-mode toggle from localStorage so the user does
+  // not have to flip it back every reload.
+  try {
+    const stored = window.localStorage.getItem('mcpv:dashboard-compact');
+    const compact = stored === '1';
+    document.querySelectorAll('[data-settings-compact]').forEach((toggle) => {
+      if (toggle instanceof HTMLInputElement) toggle.checked = compact;
+    });
+    document.querySelectorAll('#panel-settings').forEach((panel) => {
+      if (compact) panel.classList.add('mcpv-panel--compact');
+    });
+  } catch {
+    /* localStorage might be disabled in this host; nothing to restore. */
+  }
 
   // ─── Logs panel — realtime subscribe over the host bridge ─────────
   const logsList = document.getElementById('mcpv-logs-list');
