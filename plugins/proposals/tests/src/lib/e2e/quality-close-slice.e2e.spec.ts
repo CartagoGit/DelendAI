@@ -100,6 +100,16 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				state: 'work',
 				proposalId: 'f04200',
 			});
+			const claim = await client.callTool({
+				name: 'mcp-vertex_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f04200-S1',
+					agent: 'agent-quality-e2e',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(claim.isError).toBeFalsy();
 			const quality = await client.callTool({
 				name: 'mcp-vertex_quality_quality_run_all',
 				arguments: {},
@@ -115,11 +125,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
-			if (
-				result.structuredContent?.['blockerType'] !== 'quality-failed'
-			) {
-				expect.fail(JSON.stringify(result));
-			}
 			expect(result.structuredContent).toMatchObject({
 				ok: false,
 				closed: false,
@@ -153,6 +158,16 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				state: 'work',
 				proposalId: 'f04201',
 			});
+			const claim = await client.callTool({
+				name: 'mcp-vertex_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f04201-S1',
+					agent: 'agent-quality-e2e',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(claim.isError).toBeFalsy();
 			const quality = await client.callTool({
 				name: 'mcp-vertex_quality_quality_run_all',
 				arguments: {},
@@ -169,15 +184,19 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
-			if (result.isError === true) {
-				expect.fail(JSON.stringify(result));
-			}
 			expect(result.isError).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,
 				closed: true,
 			});
-			expect(readFileSync(proposalPath, 'utf8')).toContain(
+			expect(
+				readFileSync(
+					join(
+						workspace,
+						'docs/mcp-vertex/proposals/done/f04201-quality.md',
+					),
+					'utf8',
+				),
 				'- **Status**: done',
 			);
 		} finally {
