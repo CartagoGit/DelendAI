@@ -84,9 +84,13 @@ const findProposalPath = async (
 	const pending = [proposalsDir];
 	while (pending.length > 0) {
 		const currentDir = pending.pop()!;
-		for (const entry of await readdir(currentDir, {
-			withFileTypes: true,
-		})) {
+		let entries;
+		try {
+			entries = await readdir(currentDir, { withFileTypes: true });
+		} catch {
+			continue;
+		}
+		for (const entry of entries) {
 			const currentPath = join(currentDir, entry.name);
 			if (entry.isDirectory()) {
 				pending.push(currentPath);
@@ -159,7 +163,10 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				blockerType: 'quality-failed',
 			});
 			expect(
-				readFileSync(findProposalPath(workspace, 'f04200'), 'utf8'),
+				readFileSync(
+					await findProposalPath(workspace, 'f04200'),
+					'utf8',
+				),
 			).toContain('- **Status**: pending');
 		} finally {
 			await client.close();
@@ -218,7 +225,10 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				closed: true,
 			});
 			expect(
-				readFileSync(findProposalPath(workspace, 'f04201'), 'utf8'),
+				readFileSync(
+					await findProposalPath(workspace, 'f04201'),
+					'utf8',
+				),
 			).toContain('- **Status**: done');
 		} finally {
 			await client.close();
