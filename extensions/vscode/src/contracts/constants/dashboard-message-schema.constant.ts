@@ -23,4 +23,15 @@ export const DASHBOARD_MESSAGE_SCHEMA = z.discriminatedUnion('command', [
 			name: z.string().min(1),
 		})
 		.strict(),
+	z
+		.object({
+			command: z.literal('openSurface'),
+			surface: z.enum([
+				'proposals',
+				'knowledge',
+				'configuration',
+				'settings',
+			]),
+		})
+		.strict(),
 ]);
