@@ -2,7 +2,7 @@
 id: f00283
 title: "Auditoría exhaustiva 2026-08-25 — orquestador (Fase 2)"
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: migrated
 date: 2026-08-30

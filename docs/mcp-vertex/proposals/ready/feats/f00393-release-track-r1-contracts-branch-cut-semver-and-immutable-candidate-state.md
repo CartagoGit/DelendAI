@@ -32,7 +32,7 @@ Hace explícita la frontera congelada de release y elimina la dependencia de un 
 - global_gate: type
 
 ### S1 — Release contracts and immutable candidate cut
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/release`, `plugins/git/src/lib`, `plugins/commit-policy/src/lib`, `packages/core/tests`, `plugins/git/tests`
 - **Gate**: type
 - acceptance:
@@ -41,9 +41,11 @@ Hace explícita la frontera congelada de release y elimina la dependencia de un 
   - "slug y branch naming validados"
   - "source/base SHA preservados"
   - "tests de inmutabilidad respecto a develop"
-- review-state: in_review
+- review-state: done
 - review-implementer: release-migration-agent
+- review-reviewer: release-r1-reviewer
 - review-log: requested_changes by delivery-verifier — R1 necesita dos correcciones: assertReleaseMetadata debe validar coherencia branch/type/slug y que targetVersion sea nextVersion(fromVersion,type), además de validar campos relevantes; createReleaseCandidate debe leer main:packages/core/package.json anclado al baseMainSha capturado, no a la referencia móvil main. Tests focalizados deben cubrir ambas carreras/invariantes.
+- review-log: approved by release-r1-reviewer — R1 verificado en segunda ronda: metadata coherente, target SemVer derivado de fromVersion/type y lectura de versión anclada al baseMainSha. Exports y tests focalizados correctos.
 ## acceptance
 
 - State machine tipada

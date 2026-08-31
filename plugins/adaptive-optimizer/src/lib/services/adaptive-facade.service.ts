@@ -1,6 +1,6 @@
 import { truncateIfTooLarge } from '@mcp-vertex/core/public';
 import {
-	PROPOSALS_STABLE_TOOLS,
+	PROPOSALS_STABLE_TOOL_SURFACE,
 	listProposalAdaptiveFacadePaths,
 } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
 import {
@@ -216,10 +216,7 @@ export const buildAdaptiveFacadePayload = (
 			intent: args.intent,
 			preferredPath,
 			alternatives: ranked.slice(1, maxAlternatives + 1),
-			detailedSurface: PROPOSALS_STABLE_TOOLS.map((descriptor) => ({
-				name: descriptor.name,
-				summary: descriptor.summary,
-			})),
+			detailedSurface: PROPOSALS_STABLE_TOOL_SURFACE,
 		},
 		options.maxBytes,
 	);
