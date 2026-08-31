@@ -59,7 +59,6 @@ export const projectProposalsStableTools = (
 	}
 	const fullProjection = projectValue(PROPOSALS_STABLE_TOOL_SURFACE, {
 		...request,
-		maxBytes: undefined,
 	});
 	const handle = options.handleStore.open(
 		fullProjection.value as readonly IStableManifestTool[],

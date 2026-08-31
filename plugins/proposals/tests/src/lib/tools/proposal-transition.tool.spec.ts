@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	hasIndependentPeerApproval,
-	runProposalTransition,
+	runProposalTransition as runProposalTransitionRaw,
 	type IProposalTransitionToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
 import {
@@ -57,6 +57,21 @@ const FAKE_GIT_FAIL: IGitRunner = async (args) => {
 	if (args[0] === 'ls-files') return { ok: true, output: '' };
 	return { ok: false, output: '', reason: 'not a git repository' };
 };
+
+const isErrorResult = (result: unknown): boolean =>
+	typeof result === 'object' &&
+	result !== null &&
+	'isError' in result &&
+	result.isError === true;
+
+type ProposalTransitionResult = Awaited<
+	ReturnType<typeof runProposalTransitionRaw>
+> & { isError?: boolean };
+
+const runProposalTransition = async (
+	...args: Parameters<typeof runProposalTransitionRaw>
+): Promise<ProposalTransitionResult> =>
+	runProposalTransitionRaw(...args) as Promise<ProposalTransitionResult>;
 
 const writeProposal = async (
 	proposalsDirAbs: string,
@@ -108,7 +123,7 @@ describe('proposal_transition', async () => {
 			{ id: 'f00014', to: 'in-progress', reason: '' },
 			options,
 		);
-		expect(result.isError).toBe(true);
+		expect(isErrorResult(result)).toBe(true);
 	});
 
 	it('rejects an unknown target status', async () => {
@@ -116,7 +131,7 @@ describe('proposal_transition', async () => {
 			{ id: 'f00014', to: 'bogus', reason: 'because' },
 			options,
 		);
-		expect(result.isError).toBe(true);
+		expect(isErrorResult(result)).toBe(true);
 	});
 
 	it('returns an error when the id is not found', async () => {
@@ -124,7 +139,7 @@ describe('proposal_transition', async () => {
 			{ id: 'f999', to: 'in-progress', reason: 'because' },
 			options,
 		);
-		expect(result.isError).toBe(true);
+		expect(isErrorResult(result)).toBe(true);
 	});
 
 	it('refuses a proposal whose current status is not on the new state machine (legacy)', async () => {
@@ -136,7 +151,7 @@ describe('proposal_transition', async () => {
 			{ id: 'p001', to: 'in-progress', reason: 'because' },
 			options,
 		);
-		expect(result.isError).toBe(true);
+		expect(isErrorResult(result)).toBe(true);
 	});
 
 	it('moves the file and updates frontmatter on a legal transition (ready -> in-progress)', async () => {
@@ -148,10 +163,10 @@ describe('proposal_transition', async () => {
 			{ id: 'f00014', to: 'in-progress', reason: 'claimed' },
 			options,
 		);
-		if (result.isError === true) {
+		if (isErrorResult(result)) {
 			process.stderr.write(`\n\nDEBUG: ${result.content?.[0]?.text}\n\n`);
 		}
-		expect(result.isError).toBeUndefined();
+		expect(isErrorResult(result)).toBe(false);
 		const body = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(body.from).toBe('ready');
 		expect(body.to).toBe('in-progress');
