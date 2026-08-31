@@ -38,10 +38,10 @@ _(none)_
 
 ## Tests
 
+- packages/client/tests/architecture/no-node-outside-client-node.spec.ts
+- packages/client/tests/e2e/mcp-stdio-client.e2e.spec.ts
 - packages/client/tests/node/runtime-events.spec.ts
-- packages/client/tests/services/dashboard.service.spec.ts
-- packages/client/tests/services/health.service.spec.ts
-- packages/client/tests/services/memory.service.spec.ts
+- packages/client/tests/services/configuration-center.service.spec.ts
 
 ## Do not
 
