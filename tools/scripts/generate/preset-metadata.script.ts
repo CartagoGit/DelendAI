@@ -22,7 +22,6 @@ import { readFile } from 'node:fs/promises';
 
 import {
 	PRESET_KIND,
-	TOKEN_BUDGETS,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -69,12 +68,12 @@ export const orderPresetMetadataEntries = (
 	for (const entry of entries) {
 		if (!PRESET_METADATA_IDS.includes(entry.presetId)) {
 			throw new Error(
-				`preset-metadata: unknown preset id \"${entry.presetId}\" in generated entries`,
+				`preset-metadata: unknown preset id "${entry.presetId}" in generated entries`,
 			);
 		}
 		if (byId.has(entry.presetId)) {
 			throw new Error(
-				`preset-metadata: duplicate preset id \"${entry.presetId}\" in generated entries`,
+				`preset-metadata: duplicate preset id "${entry.presetId}" in generated entries`,
 			);
 		}
 		byId.set(entry.presetId, entry);
