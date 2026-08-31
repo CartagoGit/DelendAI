@@ -124,7 +124,7 @@ const stripJsoncComments = (raw: string): string => {
 	return out;
 };
 
-const scanFile = async (
+export const scanFile = async (
 	absPath: string,
 	relPath: string,
 ): Promise<readonly IViolation[]> => {
