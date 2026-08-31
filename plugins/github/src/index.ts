@@ -1,9 +1,9 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import z from 'zod';
 
-import { buildGitHubToolRegistrations } from './lib/tools';
-import { resolveGitHubProviderContext } from './lib/config';
 import { createGitHubHttpClient } from './lib/client';
+import { resolveGitHubProviderContext } from './lib/config';
+import { buildGitHubToolRegistrations } from './lib/tools';
 
 const RepositorySchema = z
 	.object({
@@ -49,30 +49,22 @@ export default definePlugin({
 				`github plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
+		const providerContext = resolveGitHubProviderContext({
+			env: process.env,
+			options: parsed.data,
+		});
+		const client = createGitHubHttpClient(
+			{ context: providerContext },
+			{ fetchFn: fetch as typeof fetch },
+		);
 
 		return {
-			tools: [],
 			tools: buildGitHubToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
 				workspaceRootAbs: ctx.workspace.root,
 				pluginCacheDir: ctx.pluginCacheDir,
-				context: resolveGitHubProviderContext({
-					env: process.env,
-					...(parsed.data.apiUrl !== undefined
-						? { options: { apiUrl: parsed.data.apiUrl } }
-						: {}),
-				}),
-				client: createGitHubHttpClient(
-					{
-						context: resolveGitHubProviderContext({
-							env: process.env,
-							options: parsed.data,
-						}),
-					},
-					{
-						fetchFn: fetch as typeof fetch,
-					},
-				),
+				context: providerContext,
+				client,
 			}),
 			knowledge: [
 				{
