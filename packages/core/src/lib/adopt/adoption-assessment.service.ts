@@ -15,6 +15,29 @@ import type {
 	IPluginRecommendation,
 } from '../contracts/interfaces/adoption-assessment.interface';
 
+export interface IMonorepoAreaAssessment {
+	readonly workspacePath: string;
+	readonly area: string;
+	readonly candidatePresetId: string;
+	readonly recommendedPluginIds: readonly string[];
+	readonly pluginRecommendations: readonly IPluginRecommendation[];
+	readonly rationale: string;
+	readonly summary: IAdoptionAssessment['summary'] & {
+		readonly framework?: IProjectAnalysis['framework'];
+		readonly testRunner: IProjectAnalysis['testRunner'];
+	};
+}
+
+export type IAdoptionAssessmentWithAreas = IAdoptionAssessment & {
+	readonly areaBreakdown?: readonly IMonorepoAreaAssessment[];
+};
+
+interface IWorkspaceCandidate {
+	readonly workspacePath: string;
+	readonly area: string;
+	readonly entries: readonly string[];
+}
+
 const DOCKER_MARKERS = new Set([
 	'dockerfile',
 	'docker-compose.yml',
@@ -34,6 +57,14 @@ const DATABASE_MARKERS = new Set([
 	'supabase',
 ]);
 const I18N_MARKERS = new Set(['i18n', 'locales']);
+const WORKSPACE_AREA_ROOTS = new Set([
+	'apps',
+	'packages',
+	'libs',
+	'services',
+	'extensions',
+	'tools',
+]);
 const WEB_FRAMEWORKS = new Set([
 	'astro',
 	'next',
@@ -55,6 +86,174 @@ const hasAny = (
 		if (entries.has(marker)) return true;
 	}
 	return false;
+};
+
+const normalizePathEntry = (entry: string): string =>
+	entry.replaceAll('\\', '/').replace(/^\.\//, '').replace(/\/+$/, '');
+
+const tokenizePathEntry = (entry: string): readonly string[] =>
+	normalizePathEntry(entry)
+		.toLowerCase()
+		.split(/[/.@_-]+/)
+		.filter((token) => token.length > 0);
+
+const collectWorkspaceCandidates = (
+	topLevelDirs: readonly string[],
+): readonly IWorkspaceCandidate[] => {
+	const byWorkspace = new Map<
+		string,
+		{ workspacePath: string; area: string; entries: Set<string> }
+	>();
+	for (const rawEntry of topLevelDirs) {
+		const normalized = normalizePathEntry(rawEntry);
+		const segments = normalized
+			.split('/')
+			.filter((segment) => segment.length > 0);
+		const areaSegment = segments[0];
+		const workspaceSegment = segments[1];
+		if (areaSegment === undefined || workspaceSegment === undefined)
+			continue;
+		const area = areaSegment.toLowerCase();
+		if (!WORKSPACE_AREA_ROOTS.has(area)) continue;
+		const workspacePath = `${areaSegment}/${workspaceSegment}`;
+		const key = workspacePath.toLowerCase();
+		const existing = byWorkspace.get(key);
+		if (existing === undefined) {
+			byWorkspace.set(key, {
+				workspacePath,
+				area: areaSegment,
+				entries: new Set([workspacePath, normalized]),
+			});
+			continue;
+		}
+		existing.entries.add(normalized);
+	}
+	return [...byWorkspace.values()]
+		.map((workspace) => ({
+			workspacePath: workspace.workspacePath,
+			area: workspace.area,
+			entries: [...workspace.entries],
+		}))
+		.sort((left, right) =>
+			left.workspacePath.localeCompare(right.workspacePath),
+		);
+};
+
+const toWorkspaceTopLevelDirs = (
+	workspace: IWorkspaceCandidate,
+): readonly string[] => {
+	const scoped = new Set<string>();
+	for (const entry of workspace.entries) {
+		if (entry === workspace.workspacePath) continue;
+		const relative = entry.slice(workspace.workspacePath.length + 1);
+		if (relative.length === 0) continue;
+		scoped.add(relative.split('/')[0] ?? relative);
+	}
+	return [...scoped];
+};
+
+const detectFramework = (
+	workspace: IWorkspaceCandidate,
+): IProjectAnalysis['framework'] | undefined => {
+	for (const token of workspace.entries.flatMap(tokenizePathEntry)) {
+		if (WEB_FRAMEWORKS.has(token)) {
+			return token as IProjectAnalysis['framework'];
+		}
+	}
+	return undefined;
+};
+
+const areaRationaleFor = (
+	workspacePath: string,
+	candidatePresetId: string,
+	analysis: IProjectAnalysis,
+	workspaceEntries: ReadonlySet<string>,
+): string => {
+	if (analysis.framework !== undefined) {
+		return `Workspace ${workspacePath} is eligible for ${candidatePresetId} because it exposes ${analysis.framework} markers.`;
+	}
+	if (analysis.projectType === 'cli') {
+		return `Workspace ${workspacePath} is eligible for ${candidatePresetId} because it reads as a CLI-focused area.`;
+	}
+	if (
+		hasAny(workspaceEntries, DATABASE_MARKERS) ||
+		hasAny(workspaceEntries, DOCKER_MARKERS)
+	) {
+		return `Workspace ${workspacePath} is eligible for ${candidatePresetId} because it exposes backend/data markers.`;
+	}
+	return `Workspace ${workspacePath} stays on the ${candidatePresetId} candidate because no stronger area-specific marker was detected.`;
+};
+
+const buildMonorepoAreaBreakdown = (
+	analysis: IProjectAnalysis,
+	topLevelDirs: readonly string[],
+): readonly IMonorepoAreaAssessment[] | undefined => {
+	if (analysis.projectType !== 'monorepo') return undefined;
+	const workspaces = collectWorkspaceCandidates(topLevelDirs);
+	if (workspaces.length < 3) return undefined;
+	const breakdown = workspaces.map((workspace) => {
+		const workspaceTopLevelDirs = toWorkspaceTopLevelDirs(workspace);
+		const workspaceEntries = toEntrySet(workspaceTopLevelDirs);
+		const framework = detectFramework(workspace);
+		const workspaceNameTokens = tokenizePathEntry(workspace.workspacePath);
+		const projectType: IProjectAnalysis['projectType'] =
+			workspaceNameTokens.includes('cli')
+				? 'cli'
+				: framework !== undefined ||
+						workspace.area.toLowerCase() === 'apps'
+					? 'webapp'
+					: 'library';
+		const workspaceAnalysis: IProjectAnalysis = {
+			...analysis,
+			projectType,
+			framework,
+			monorepoTool: undefined,
+			docsConventions: [],
+		};
+		const candidatePresetId = chooseCandidatePreset(
+			workspaceAnalysis,
+			workspaceEntries,
+			workspaceTopLevelDirs,
+		);
+		const pluginRecommendations = buildPluginRecommendations(
+			workspaceAnalysis,
+			workspaceTopLevelDirs,
+			candidatePresetId,
+		);
+		const recommendedPluginIds = pluginRecommendations
+			.filter((entry) => entry.recommended)
+			.map((entry) => entry.id);
+		return {
+			workspacePath: workspace.workspacePath,
+			area: workspace.area,
+			candidatePresetId,
+			recommendedPluginIds,
+			pluginRecommendations,
+			rationale: areaRationaleFor(
+				workspace.workspacePath,
+				candidatePresetId,
+				workspaceAnalysis,
+				workspaceEntries,
+			),
+			summary: {
+				projectType,
+				language: workspaceAnalysis.language,
+				packageManager: workspaceAnalysis.packageManager,
+				ciProvider: workspaceAnalysis.ciProvider ?? 'unknown',
+				docsConventions: workspaceAnalysis.docsConventions ?? [],
+				testRunner: workspaceAnalysis.testRunner,
+				...(framework !== undefined ? { framework } : {}),
+			},
+		};
+	});
+	const diversity = new Set(
+		breakdown.map(
+			(entry) =>
+				`${entry.candidatePresetId}:${entry.summary.framework ?? entry.summary.projectType}`,
+		),
+	);
+	if (diversity.size <= 1) return undefined;
+	return breakdown;
 };
 
 const chooseCandidatePreset = (
@@ -297,12 +496,13 @@ export const buildAdoptionAssessment = (
 	analysis: IProjectAnalysis,
 	topLevelDirs: readonly string[],
 	_options: IBuildAdoptionAssessmentOptions = {},
-): IAdoptionAssessment => {
+): IAdoptionAssessmentWithAreas => {
 	const recommendedPresetId = chooseCandidatePreset(
 		analysis,
 		toEntrySet(topLevelDirs),
 		topLevelDirs,
 	);
+	const areaBreakdown = buildMonorepoAreaBreakdown(analysis, topLevelDirs);
 	const pluginRecommendations = buildPluginRecommendations(
 		analysis,
 		topLevelDirs,
@@ -317,6 +517,7 @@ export const buildAdoptionAssessment = (
 		pluginRecommendations,
 		conflicts: buildConflicts(analysis, _options),
 		cost: buildCost(recommendedPluginIds),
+		...(areaBreakdown !== undefined ? { areaBreakdown } : {}),
 		summary: {
 			projectType: analysis.projectType,
 			language: analysis.language,
