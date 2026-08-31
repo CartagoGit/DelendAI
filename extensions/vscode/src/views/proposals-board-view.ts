@@ -43,6 +43,8 @@ export const READ_ONLY_TOOLS = [
 	'proposals_proposal_stale_list',
 	// Redacted, point-in-time log tail (detail webview, filtered by proposal).
 	'logs_tail',
+	// Agents currently adopted on proposals (detail webview chips).
+	'proposals_agent_names',
 ] as const;
 
 export type ReadOnlyProposalToolSuffix = (typeof READ_ONLY_TOOLS)[number];

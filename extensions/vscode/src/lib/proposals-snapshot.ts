@@ -75,42 +75,42 @@ export interface IProposalLogEvent {
 
 /** One agent currently adopted on this proposal (filtered from `agent_names`). */
 export interface IProposalAgent {
-        readonly name: string;
-        readonly taskId: string | null;
+	readonly name: string;
+	readonly taskId: string | null;
 }
 
 /** Aggregate progress + ETA derived from slice statuses and log timestamps. */
 export interface IProposalProgress {
-        readonly total: number;
-        readonly done: number;
-        readonly inProgress: number;
-        readonly pending: number;
-        /** Integer percent done (0..100). */
-        readonly percent: number;
-        /** ISO-8601 ETA timestamp, or `undefined` when not enough history. */
-        readonly eta?: string;
-        /** Human-readable ETA description (e.g. "≈ 4h 12m"). */
-        readonly etaLabel?: string;
-        /** Average wall-clock per slice, when at least one slice has finished. */
-        readonly avgSliceMs?: number;
+	readonly total: number;
+	readonly done: number;
+	readonly inProgress: number;
+	readonly pending: number;
+	/** Integer percent done (0..100). */
+	readonly percent: number;
+	/** ISO-8601 ETA timestamp, or `undefined` when not enough history. */
+	readonly eta?: string;
+	/** Human-readable ETA description (e.g. "≈ 4h 12m"). */
+	readonly etaLabel?: string;
+	/** Average wall-clock per slice, when at least one slice has finished. */
+	readonly avgSliceMs?: number;
 }
 
 /** The per-proposal detail model rendered by the detail webview (S3). */
 export interface IProposalDetail {
-        readonly id: string;
-        /** Absent when the id is not on the (actionable) board. */
-        readonly summary?: IProposalSummary;
-        /** The tolerant `proposal_diagnose` bag; absent when the call failed. */
-        readonly diagnose?: Record<string, unknown>;
-        /** Redacted transition / owner log lines for this proposal. */
-        readonly logs: readonly IProposalLogEvent[];
-        /** Full markdown plan content read from the proposal file, when available. */
-        readonly planMarkdown?: string;
-        /** Agents adopted on this proposal (filtered from `agent_names`). */
-        readonly agents: readonly IProposalAgent[];
-        /** Computed progress + ETA. Always present (defaults to zeros). */
-        readonly progress: IProposalProgress;
-};
+	readonly id: string;
+	/** Absent when the id is not on the (actionable) board. */
+	readonly summary?: IProposalSummary;
+	/** The tolerant `proposal_diagnose` bag; absent when the call failed. */
+	readonly diagnose?: Record<string, unknown>;
+	/** Redacted transition / owner log lines for this proposal. */
+	readonly logs: readonly IProposalLogEvent[];
+	/** Full markdown plan content read from the proposal file, when available. */
+	readonly planMarkdown?: string;
+	/** Agents adopted on this proposal (filtered from `agent_names`). */
+	readonly agents?: readonly IProposalAgent[];
+	/** Computed progress + ETA. Always present (defaults to zeros). */
+	readonly progress?: IProposalProgress;
+}
 
 export interface IProposalsSnapshotSourceOptions {
 	readonly client: Pick<McpStdioClient, 'request'>;
@@ -120,26 +120,37 @@ export interface IProposalsSnapshotSourceOptions {
 	readonly ttlMs?: number;
 	/** Injectable clock for deterministic tests. */
 	readonly now?: () => number;
-        /**
-         * Workspace root, used to resolve proposal markdown file paths when
-         * the detail webview wants to render the full plan content. When
-         * omitted, the markdown plan card is silently skipped.
-         */
-        readonly workspaceRoot?: string;
+	/**
+	 * Workspace root, used to resolve proposal markdown file paths when
+	 * the detail webview wants to render the full plan content. When
+	 * omitted, the markdown plan card is silently skipped.
+	 */
+	readonly workspaceRoot?: string;
+}
 
+export const DEFAULT_TTL_MS = 30_000 as const;
+
+export const EMPTY_CHIPS: IProposalsHeaderChips = {
+	locks: 0,
+	stale: 0,
+	queueBackpressure: false,
+	health: 'unknown',
+};
+
+export class ProposalsSnapshotSource {
+	private cached: IProposalsSnapshot | undefined;
 	private readonly client: Pick<McpStdioClient, 'request'>;
 	private readonly namespacePrefix: string | undefined;
 	private readonly ttlMs: number;
 	private readonly now: () => number;
-        private readonly workspaceRoot: string | undefined;
-
-        constructor(options: IProposalsSnapshotSourceOptions) {
-                this.client = options.client;
-                this.namespacePrefix = options.namespacePrefix;
-                this.ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
-                this.now = options.now ?? Date.now;
-                this.workspaceRoot = options.workspaceRoot;
-        }
+	private readonly workspaceRoot: string | undefined;
+	constructor(options: IProposalsSnapshotSourceOptions) {
+		this.client = options.client;
+		this.namespacePrefix = options.namespacePrefix;
+		this.ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
+		this.now = options.now ?? Date.now;
+		this.workspaceRoot = options.workspaceRoot;
+	}
 
 	/** Drop the cache so the next `get()` refetches (explicit refresh). */
 	invalidate(): void {
@@ -279,13 +290,13 @@ const fetchDetailView = async (
 	id: string,
 ): Promise<Record<string, unknown> | undefined> => {
 	try {
-		const raw = await client.request<
-			Record<string, unknown>,
-			unknown
-		>(formatToolName(namespacePrefix, 'proposals_proposal_get'), {
-			proposalId: id,
-			view: 'detail',
-		});
+		const raw = await client.request<Record<string, unknown>, unknown>(
+			formatToolName(namespacePrefix, 'proposals_proposal_get'),
+			{
+				proposalId: id,
+				view: 'detail',
+			},
+		);
 		if (!isRecord(raw)) return undefined;
 		const proposal = isRecord(raw.proposal) ? raw.proposal : undefined;
 		return proposal ?? raw;
@@ -308,7 +319,9 @@ const mergeSummaryWithDetail = (
 		if (!isRecord(slice)) return [];
 		const sliceId = asString(slice.id) ?? asString(slice.sliceId);
 		const sliceStatus =
-			asString(slice.status) ?? summary?.slices.find((s) => s.sliceId === sliceId)?.status ?? 'pending';
+			asString(slice.status) ??
+			summary?.slices.find((s) => s.sliceId === sliceId)?.status ??
+			'pending';
 		if (sliceId === undefined) return [];
 		return [
 			{
@@ -340,8 +353,9 @@ const computeProgress = (
 ): IProposalProgress => {
 	const slices = summary?.slices ?? [];
 	const total = slices.length;
-	const done = slices.filter((s) => /done|complete|finished/i.test(s.status))
-		.length;
+	const done = slices.filter((s) =>
+		/done|complete|finished/i.test(s.status),
+	).length;
 	const inProgress = slices.filter((s) =>
 		/in[- ]?progress|active|running|wip|claimed/i.test(s.status),
 	).length;
@@ -359,8 +373,13 @@ const computeProgress = (
 	if (sliceEvents.length < 2 || done === 0) {
 		return { total, done, inProgress, pending, percent };
 	}
-	const firstTs = sliceEvents[0].ts;
-	const lastTs = sliceEvents[sliceEvents.length - 1].ts;
+	const firstEvent = sliceEvents[0];
+	const lastEvent = sliceEvents[sliceEvents.length - 1];
+	if (firstEvent === undefined || lastEvent === undefined) {
+		return { total, done, inProgress, pending, percent };
+	}
+	const firstTs = firstEvent.ts;
+	const lastTs = lastEvent.ts;
 	const avgSliceMs = Math.max((lastTs - firstTs) / Math.max(done, 1), 0);
 	const remaining = Math.max(total - done, 0);
 	if (remaining === 0) {
@@ -421,7 +440,7 @@ const projectAgentsForProposal = (
 const readProposalMarkdown = async (
 	workspaceRoot: string | undefined,
 	diagnose: unknown,
-	id: string,
+	_id: string,
 ): Promise<string | undefined> => {
 	if (workspaceRoot === undefined || !isRecord(diagnose)) return undefined;
 	const folder = asString(diagnose.folder);
@@ -588,5 +607,3 @@ const safeStringify = (value: unknown): string => {
 		return String(value);
 	}
 };
-
-export { EMPTY_CHIPS, DEFAULT_TTL_MS };
