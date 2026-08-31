@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	TASK_CONTEXT_CORPUS,
+	measureToolResultPayloadBytes,
 	nearestRankPercentile,
 	summarizeBytePercentiles,
 } from '../../../../../../tools/scripts/measure/catalog-task-context-cost';
@@ -39,6 +40,35 @@ describe('catalog-task-context-cost measurement', () => {
 			p50EstimatedTokens: 185,
 			p95EstimatedTokens: 209,
 		});
+	});
+
+	it('prefers structuredContent and falls back to joined text payloads', () => {
+		expect(
+			measureToolResultPayloadBytes({
+				content: [{ type: 'text', text: 'short summary' }],
+				structuredContent: {
+					ok: true,
+					counts: { tools: 29, skills: 8, proposals: 0 },
+				},
+			}),
+		).toBe(
+			Buffer.byteLength(
+				JSON.stringify({
+					ok: true,
+					counts: { tools: 29, skills: 8, proposals: 0 },
+				}),
+				'utf8',
+			),
+		);
+		expect(
+			measureToolResultPayloadBytes({
+				content: [
+					{ type: 'text', text: 'line one' },
+					{ type: 'resource', text: 'ignored' },
+					{ type: 'text', text: 'line two' },
+				],
+			}),
+		).toBe(Buffer.byteLength('line one\nline two', 'utf8'));
 	});
 
 	it('measures catalog payloads and a reproducible swarm task-context corpus', () => {
