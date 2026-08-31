@@ -19,8 +19,6 @@
  * all eight models from it — the per-model public methods fetch their own
  * slices for standalone use, but the batch path never re-fetches.
  */
-import type { McpVertexToolOutputs } from '@mcp-vertex/core/contracts';
-
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { HealthService } from './health.service';
 import type { MetricsService } from './metrics.service';

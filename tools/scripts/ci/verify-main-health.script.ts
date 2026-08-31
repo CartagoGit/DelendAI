@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 
 import z from 'zod';
 
@@ -223,14 +223,14 @@ export const diffDeclaredProtection = (
 	for (const check of expectedChecks) {
 		if (!liveChecks.includes(check)) {
 			diff.push(
-				`${expected.name}: missing required status check \"${check}\"`,
+				`${expected.name}: missing required status check "${check}"`,
 			);
 		}
 	}
 	for (const check of liveChecks) {
 		if (!expectedChecks.includes(check)) {
 			diff.push(
-				`${expected.name}: unexpected live status check \"${check}\"`,
+				`${expected.name}: unexpected live status check "${check}"`,
 			);
 		}
 	}
