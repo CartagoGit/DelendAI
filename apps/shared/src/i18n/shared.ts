@@ -169,15 +169,16 @@ export const settingsTranslations = (
 		title: read('title'),
 		description: read('description'),
 		docsUrl: read('docsUrl'),
-		docsUrlDescription: read('docsUrlDescription'),
+		// The dictionaries spell the helper copy `<field>Help`, not
+		// `<field>Description`. `t()` returns the raw dotted path when a
+		// key is missing, so the old spelling leaked
+		// `extension.settings.docsUrlDescription` straight into the
+		// rendered settings page in every language.
+		docsUrlDescription: read('docsUrlHelp'),
 		allowLocalhostDocsUrl: read('allowLocalhostDocsUrl'),
-		allowLocalhostDocsUrlDescription: read(
-			'allowLocalhostDocsUrlDescription',
-		),
+		allowLocalhostDocsUrlDescription: read('allowLocalhostDocsUrlHelp'),
 		allowPrivateIpsDocsUrl: read('allowPrivateIpsDocsUrl'),
-		allowPrivateIpsDocsUrlDescription: read(
-			'allowPrivateIpsDocsUrlDescription',
-		),
+		allowPrivateIpsDocsUrlDescription: read('allowPrivateIpsDocsUrlHelp'),
 		logLevel: read('logLevel'),
 		theme: read('theme'),
 		language: read('language'),
