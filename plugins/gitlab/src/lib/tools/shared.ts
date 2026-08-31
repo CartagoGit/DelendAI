@@ -5,7 +5,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
 
-import { GitLabRequestError } from '../client';
+import type { GitLabRequestError } from '../client';
 import type { IGitLabProviderContext } from '../config';
 import type { createGitLabHttpClient } from '../client';
 

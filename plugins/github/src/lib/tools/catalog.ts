@@ -11,7 +11,7 @@ import type { IRemoteProviderError } from '@mcp-vertex/contracts/remote-provider
 
 import {
 	GitHubRequestError,
-	createGitHubHttpClient,
+	type createGitHubHttpClient,
 	type IGitHubHttpRequestOptions,
 } from '../client';
 import type { IGitHubProviderContext } from '../config';
