@@ -27,8 +27,8 @@
 | external-mcps | @mcp-vertex/external-mcps | public | stable |  |
 | forge | @mcp-vertex/forge | public | stable | swarm, full, vertex |
 | git | @mcp-vertex/git | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| github | @mcp-vertex/github | public | experimental |  |
-| gitlab | @mcp-vertex/gitlab | public | experimental |  |
+| github | @mcp-vertex/github | public | experimental | full |
+| gitlab | @mcp-vertex/gitlab | public | experimental | full |
 | i18n | @mcp-vertex/i18n | public | stable | standard, swarm, full, vertex, web-app |
 | impact-analysis | @mcp-vertex/impact-analysis | public | experimental | vertex |
 | issues | @mcp-vertex/issues | public | beta | full |
@@ -47,7 +47,7 @@
 | quality | @mcp-vertex/quality | public | stable | standard, swarm, full, vertex, web-app, backend-api |
 | quality-policy | @mcp-vertex/quality-policy | public | experimental | vertex |
 | refactor | @mcp-vertex/refactor | public | stable | standard, swarm, full, web-app, backend-api |
-| remote-provider-core | @mcp-vertex/remote-provider-core | public | beta |  |
+| remote-provider-core | @mcp-vertex/remote-provider-core | public | beta | full |
 | rules | @mcp-vertex/rules | public | stable | standard, swarm, full, vertex, web-app, backend-api |
 | search | @mcp-vertex/search | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | security | @mcp-vertex/security | public | stable | vertex |
@@ -405,7 +405,7 @@
 | github | lean | no | no | yes |
 | github | standard | no | no | yes |
 | github | swarm | no | no | yes |
-| github | full | no | no | yes |
+| github | full | yes | yes | yes |
 | github | vertex | no | no | yes |
 | github | web-app | no | no | yes |
 | github | backend-api | no | no | yes |
@@ -414,7 +414,7 @@
 | gitlab | lean | no | no | yes |
 | gitlab | standard | no | no | yes |
 | gitlab | swarm | no | no | yes |
-| gitlab | full | no | no | yes |
+| gitlab | full | yes | yes | yes |
 | gitlab | vertex | no | no | yes |
 | gitlab | web-app | no | no | yes |
 | gitlab | backend-api | no | no | yes |
@@ -594,7 +594,7 @@
 | remote-provider-core | lean | no | no | yes |
 | remote-provider-core | standard | no | no | yes |
 | remote-provider-core | swarm | no | no | yes |
-| remote-provider-core | full | no | no | yes |
+| remote-provider-core | full | yes | yes | yes |
 | remote-provider-core | vertex | no | no | yes |
 | remote-provider-core | web-app | no | no | yes |
 | remote-provider-core | backend-api | no | no | yes |
