@@ -152,42 +152,20 @@ distinto al de `ci.yml` o si también se elimina).
 ### S1 — Acción compuesta `setup-bun-repo` + adopción en los 4 workflows
 
 - **Status**: pending
-- **Files**:
-    - `.github/actions/setup-bun-repo/action.yml` (nuevo)
-    - `.github/workflows/ci.yml` (18 jobs sustituyen sus 3 pasos por 1 `uses:`)
-    - `.github/workflows/tier1.yml`
-    - `.github/workflows/tier2.yml`
-    - `.github/workflows/tier3.yml`
-- **Gate**: `bun tools/scripts/lint/referenced-scripts-exist.script.ts`
-  (si existe verificación de acciones locales; si no, verificación
-  manual: `act -l` o `gh workflow view` no falla al parsear los YAML)
-  y una ejecución real de `workflow_dispatch` en cada workflow
-  modificado, confirmando que `Setup Bun` + `install` siguen
-  funcionando idénticamente.
+- **Files**: `.github/actions/setup-bun-repo/action.yml`, `.github/workflows/ci.yml`, `.github/workflows/tier1.yml`, `.github/workflows/tier2.yml`, `.github/workflows/tier3.yml`
+- **Gate**: `bun tools/scripts/lint/referenced-scripts-exist.script.ts` (verifica que la acción local exista), validación manual con `act -l` (no falla al parsear YAML) y un run de `workflow_dispatch` por workflow modificado confirmando que `Setup Bun` + `install` siguen idénticos.
 
 ### S2 — Eliminar la duplicación real de `tier2` frente a `ci.yml`
 
 - **Status**: pending
-- **Files**:
-    - `.github/workflows/tier2.yml` (elimina jobs `typecheck`,
-      `lint-full`, `tests`; conserva o elimina `quality-gate` según lo
-      que determine la comparación línea a línea con
-      `ci.yml`/`quality-gate`)
-- **Gate**: abrir un PR de prueba y contar jobs disparados — el mismo
-  comando (`bun run typecheck`, `bunx vitest run` sin scoping,
-  `bun tools/scripts/ci/quality-gate.script.ts --real`) no debe
-  aparecer en el log de más de un workflow para el mismo evento de PR.
+- **Files**: `.github/workflows/tier2.yml`
+- **Gate**: abrir un PR de prueba y contar jobs disparados — el mismo comando (`bun run typecheck`, `bunx vitest run` sin scoping, `bun tools/scripts/ci/quality-gate.script.ts --real`) no debe aparecer en el log de más de un workflow para el mismo evento de PR.
 
 ### S3 — Lint que detecte el mismo comando en dos tiers del mismo evento
 
 - **Status**: pending
-- **Files**:
-    - `tools/scripts/lint/workflow-command-duplication.script.ts` (nuevo)
-    - `tools/scripts/lint/workflow-command-duplication.script.spec.ts` (nuevo)
-    - `package.json` (`lint:workflow-command-duplication` + inserción
-      en `validate`)
-- **Gate**: `bunx vitest run --project tools -- workflow-command-duplication`,
-  `bun tools/scripts/lint/workflow-command-duplication.script.ts`
+- **Files**: `tools/scripts/lint/workflow-command-duplication.script.ts`, `tools/scripts/lint/workflow-command-duplication.script.spec.ts`, `package.json`
+- **Gate**: `bunx vitest run --project tools -- workflow-command-duplication`, `bun tools/scripts/lint/workflow-command-duplication.script.ts`
 
 ## dependency graph
 
