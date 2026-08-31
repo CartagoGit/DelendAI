@@ -1,0 +1,58 @@
+{
+	"name": "@mcp-vertex/remote-provider-core",
+	"version": "0.1.1",
+	"type": "module",
+	"description": "Shared remote-provider foundation for @mcp-vertex: validated provider config, injectable HTTP client and normalized read-only transport errors.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"remote",
+		"provider",
+		"github",
+		"gitlab",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/remote-provider-core"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.1"
+	},
+	"dependencies": {
+		"@mcp-vertex/contracts": "workspace:*",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	}
+}
