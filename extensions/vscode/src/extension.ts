@@ -784,21 +784,23 @@ export const activate = async (
 	const dashboardRefresh: {
 		current?: DashboardWebviewViewProvider;
 	} = {};
-	const dashboardProvider = new DashboardWebviewViewProvider({
-		host,
-		client,
-		globalState: context.globalState,
-		getConfig: () =>
-			context.globalState.get(SETTINGS_STATE_KEY) ??
-			context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
-			{},
-		...withPrefix,
-	});
-	dashboardRefresh.current = dashboardProvider;
-	const dashboardDetailBroker = dashboardProvider.getDetailBroker();
-	const detailSink: NonNullable<
+	// detailSink is wired below — see `dashboardProvider` construction —
+	// because the dashboard provider depends on `host`, which is only
+	// resolved after the MCP client connects. We expose a proxy so the
+	// command registrations below can reference it before it has a
+	// concrete implementation.
+	const detailSink = ((kind, model) => {
+		const broker = dashboardProvider.getDetailBroker();
+		return broker.push({ kind, model });
+	}) as NonNullable<
 		Parameters<typeof registerOpenToolDetailCommand>[0]['detailSink']
-	> = (kind, model) => dashboardDetailBroker.push({ kind, model });
+	>;
+	// `dashboardProvider` itself is constructed right before
+	// `registerWebviewViewProvider` is invoked; until then the
+	// reference used here is intentionally undefined (the typed value
+	// `DashboardWebviewViewProvider | undefined` is satisfied by the
+	// late-bound `dashboardProvider` declared further below).
+	let dashboardProvider!: DashboardWebviewViewProvider;
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
 	track(
 		registerRefreshCommand({
