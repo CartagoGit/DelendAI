@@ -312,6 +312,13 @@ const allowedIdenticalSpanish = new Set([
 	'common.id',
 	// "Nord" is the theme's proper name — identical in every language.
 	'settings.theme.nord',
+	// Loanwords the Spanish copy uses verbatim throughout (see the
+	// `workspace`/`plugins`/`logs` wording across `langs/es.ts`), matching
+	// the already-allowed `tabPlugins` / `kpiPlugins` /
+	// `toolbarCategoryLogs` entries above.
+	'status.pluginsLabel',
+	'tabLogs',
+	'settings.section.workspace',
 ]);
 const spanishStaleEnglish = [...authoredEnglish].flatMap(([key, value]) =>
 	authoredSpanish.get(key) === value && !allowedIdenticalSpanish.has(key)
