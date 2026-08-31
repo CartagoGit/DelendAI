@@ -292,18 +292,22 @@ export async function gcZombies(
 						{ lockPath },
 					);
 					// R-2026-08-31: only emit the watchdog event when we
-					// actually freed a lock. Emitting on every
-					// `force_release` (even when no lock existed) flooded
-					// the queue with phantom events for orphan / lease-
-					// expired / cooldown_null rows whose registry row is
-					// gone but whose task ID is already free. The result
-					// was a backpressure RED threshold with 11+ queued
-					// events that the watchdog could never resolve
-					// because no zombie was actually behind them.
-					releasedLock =
-						releaseResult.ok &&
-						(releaseResult as { released?: boolean }).released ===
-							true;
+					// actually freed a lock. `runAgentLockEngine`'s
+					// release action reports `ok: true` even when no
+					// entry matched — the honest signal is `removed > 0`
+					// (per `releaseSliceLock` in `authoring.tool.ts`).
+					// Emitting on every `force_release` (even when no
+					// lock existed) flooded the queue with phantom
+					// events for orphan / lease-expired / cooldown_null
+					// rows whose registry row is gone but whose task ID
+					// is already free. The result was a backpressure RED
+					// threshold with 11+ queued events that the watchdog
+					// could never resolve because no zombie was actually
+					// behind them.
+					const body = JSON.parse(
+						releaseResult.content[0]?.text ?? '{}',
+					) as { ok?: boolean; removed?: number };
+					releasedLock = body.ok === true && (body.removed ?? 0) > 0;
 				}
 
 				if (releasedLock && options?.queueEmitter) {
