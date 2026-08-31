@@ -17,10 +17,7 @@ export {
 	createMcpProject,
 	planRegistrationOrder,
 } from '../lib/project/create-mcp-project';
-export type {
-	IGracefulShutdownOptions,
-	IMcpVertexProject,
-} from '../contracts';
+export type { IGracefulShutdownOptions, IMcpVertexProject } from '../contracts';
 
 // --- workspace + paths -----------------------------------------------------
 export { DEFAULT_CORE_PATHS } from '../lib/contracts/interfaces/core-paths.interface';
@@ -535,10 +532,7 @@ export type {
 	ICacheEvictionSkipped,
 	ICacheEvictionWhen,
 } from '../lib/contracts/interfaces/cache-eviction.interface';
-export type {
-	ICacheEvictionRegistry,
-	ICacheEvictionRule,
-} from '../contracts';
+export type { ICacheEvictionRegistry, ICacheEvictionRule } from '../contracts';
 
 // --- peer plugins (loaded-set introspection) ------------------------------
 // Plugins that need to gate runtime behaviour on whether another plugin
@@ -645,10 +639,7 @@ export type {
 	IGitRunner as IWriteGitRunner,
 	IGitRunResult as IWriteGitRunResult,
 } from '../lib/shared/git-write';
-export type {
-	ICommitAndPushOptions,
-	ICommitAndPushResult,
-} from '../contracts';
+export type { ICommitAndPushOptions, ICommitAndPushResult } from '../contracts';
 // --- commit author policy (f00082) ---
 export {
 	COMMIT_AUTHOR_MODES,

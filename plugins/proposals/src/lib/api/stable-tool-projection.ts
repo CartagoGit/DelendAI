@@ -58,7 +58,7 @@ export const projectProposalsStableTools = (
 		});
 	}
 	const fullProjection = projectValue(PROPOSALS_STABLE_TOOL_SURFACE, {
-		mode: 'full',
+		...(request.mode !== undefined ? { mode: request.mode } : {}),
 	});
 	const handle = options.handleStore.open(
 		fullProjection.value as readonly IStableManifestTool[],

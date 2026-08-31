@@ -123,7 +123,7 @@ describe('stable-tool projection — v00133 S2', () => {
 		);
 		expect(read.status).toBe('ok');
 		if (read.status === 'ok') {
-			expect(read.value).toEqual(compactRows());
+			expect(read.value).toEqual(surfaceRows());
 		}
 	});
 });
