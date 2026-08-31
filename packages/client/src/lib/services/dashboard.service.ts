@@ -20,6 +20,7 @@
  * slices for standalone use, but the batch path never re-fetches.
  */
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
+import type { IMemoryListResult } from '../contracts/interfaces/memory.interface';
 import { HealthService } from './health.service';
 import type { MetricsService } from './metrics.service';
 import {
@@ -33,6 +34,7 @@ import type {
 	IDashboardAgentsModel,
 	IDashboardAllModels,
 	IDashboardMetricsModel,
+	IDashboardMemoryModel,
 	IDashboardOverviewModel,
 	IDashboardPluginsModel,
 	IDashboardSessionsModel,
@@ -409,6 +411,25 @@ const buildAgentsModel = (
 	totalActive: agents.length,
 });
 
+const unavailableMemoryModel = (): IDashboardMemoryModel => ({
+	state: 'unavailable',
+	notes: [],
+	total: 0,
+	offset: 0,
+});
+
+const buildMemoryModel = (
+	result: IMemoryListResult,
+): IDashboardMemoryModel => ({
+	state: result.total === 0 ? 'empty' : 'ready',
+	notes: result.notes,
+	total: result.total,
+	offset: result.offset,
+	...(result.nextOffset === undefined
+		? {}
+		: { nextOffset: result.nextOffset }),
+});
+
 export class DashboardService {
 	private readonly client: McpStdioClient;
 	private readonly overview: OverviewService | undefined;
@@ -487,6 +508,11 @@ export class DashboardService {
 		return buildAgentsModel(await this.fetchAgentsSafe());
 	}
 
+	async getMemoryModel(): Promise<IDashboardMemoryModel> {
+		const overview = await this.fetchOverview();
+		return this.fetchMemorySafe(overview);
+	}
+
 	async getAllModels(): Promise<IDashboardAllModels> {
 		// Fetch each upstream payload EXACTLY ONCE, then derive all eight
 		// models from the shared data (previously every sub-model re-fetched
@@ -513,7 +539,10 @@ export class DashboardService {
 		// Fetched AFTER overview resolves (needs it to detect the plugin);
 		// never blocks the rest of the dashboard on a slow/absent
 		// usage-tracking round-trip.
-		const spend = await this.fetchSpendSafe(overview);
+		const [spend, memory] = await Promise.all([
+			this.fetchSpendSafe(overview),
+			this.fetchMemorySafe(overview),
+		]);
 		const pluginOf = pluginResolverFrom(overview);
 		const overviewModel = buildOverviewModel(
 			overview,
@@ -531,6 +560,7 @@ export class DashboardService {
 			sessions: buildSessionsModel(proposals),
 			times: buildTimesModel(metrics),
 			agents: buildAgentsModel(agents),
+			memory,
 			health,
 			server: {
 				name: overviewModel.serverName,
@@ -665,6 +695,26 @@ export class DashboardService {
 			return buildSpendModel(report);
 		} catch {
 			return null;
+		}
+	}
+
+	private async fetchMemorySafe(
+		overview: IOverview,
+	): Promise<IDashboardMemoryModel> {
+		const loaded = overview.plugins.some((p) =>
+			typeof p === 'string' ? p === 'memory' : p.name === 'memory',
+		);
+		if (!loaded) return unavailableMemoryModel();
+		try {
+			const result = await this.client.request<
+				{ readonly limit: number },
+				IMemoryListResult
+			>(formatToolName(this.namespacePrefix, 'memory_list'), {
+				limit: 100,
+			});
+			return buildMemoryModel(result);
+		} catch {
+			return unavailableMemoryModel();
 		}
 	}
 

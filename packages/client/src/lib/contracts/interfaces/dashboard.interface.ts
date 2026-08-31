@@ -9,7 +9,11 @@
  * the server.
  */
 import type { IHealthSnapshot } from './health.interface';
+import type { IMemoryListEntry } from './memory.interface';
 import type { IOverview } from './tool-descriptor.interface';
+
+/** Lifecycle state shared by dashboard data sources. */
+export type IDashboardDataState = 'ready' | 'empty' | 'loading' | 'unavailable';
 
 /** Tool-call metric as recorded by `<prefix>_metrics`. */
 export interface IToolMetricRow {
@@ -158,6 +162,15 @@ export interface IDashboardAgentsModel {
 	readonly totalActive: number;
 }
 
+/** Durable memory notes exposed by the server's memory plugin. */
+export interface IDashboardMemoryModel {
+	readonly state: IDashboardDataState;
+	readonly notes: readonly IMemoryListEntry[];
+	readonly total: number;
+	readonly offset: number;
+	readonly nextOffset?: number;
+}
+
 /** One round-trip from `DashboardService.getAllModels`. */
 export interface IDashboardAllModels {
 	readonly overview: IDashboardOverviewModel;
@@ -170,6 +183,7 @@ export interface IDashboardAllModels {
 	readonly sessions: IDashboardSessionsModel;
 	readonly times: IDashboardTimesModel;
 	readonly agents: IDashboardAgentsModel;
+	readonly memory: IDashboardMemoryModel;
 	readonly health: IHealthSnapshot;
 	readonly server: {
 		readonly name: string;
