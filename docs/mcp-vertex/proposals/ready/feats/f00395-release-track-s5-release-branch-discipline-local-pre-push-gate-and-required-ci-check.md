@@ -39,7 +39,7 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
 - docs
 
 ### S1 — Protected branch resolver + push discipline extended to release/*
-- **Status**: todo
+- **Status**: done
 - **Files**:
   - `plugins/commit-policy/src/lib/contracts/constants/protected-branches.ts`
   - `plugins/commit-policy/tests/src/lib/contracts/constants/protected-branches.spec.ts`
@@ -55,9 +55,12 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
   - `push desde develop hacia release/*` se permite solo si la rama release ya existe en remoto (worktree merge); bloquea `release/*` local-only porque ya hay protección R1 (cut).
   - Spec extendidos: 4 casos nuevos, todos verdes.
   - Tests focalizados siguen verdes (no regresión en casos existentes).
-
+- review-state: done
+- review-implementer: copilot-orchestrator-f00395-s1-verify
+- review-reviewer: delivery-verifier-f00395-s1-verify
+- review-log: approved by delivery-verifier-f00395-s1-verify — Verified independently: S1 implementation present in HEAD. Protected branch resolver extended to release/*, push discipline lint + spec both pass (5/5).
 ### S2 — `release-pr-gate` lint script + spec
-- **Status**: todo
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/release-pr-gate.script.ts`
   - `tools/scripts/lint/release-pr-gate.spec.ts`
@@ -75,9 +78,12 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
     - Update con todo verde → return 0.
     - Update con `currentBranch` no release ni main → return 0 (ignorar).
   - Sin dependencias nuevas en runtime.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-f00395-s2-verify
+- review-reviewer: delivery-verifier-f00395-s2-verify
+- review-log: approved by delivery-verifier-f00395-s2-verify — Verified independently: S2 implementation present in HEAD. release-pr-gate lint script + spec both pass (12/12).
 ### S3 — Lefthook wiring (release/* pre-push bloqueante)
-- **Status**: todo
+- **Status**: done
 - **Files**:
   - `lefthook.yml`
 - **Gate**: policy
@@ -86,9 +92,12 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
   - Nuevo comando `release-pr-gate` en `pre-push`, `use_stdin: true`, sin `|| true`.
   - Mantener `push-to-develop-discipline` con `|| true` para develop; pero añadir override: si el destino es `main` o `release/*`, ejecutar el gate bloqueante.
   - Documentación inline en lefthook.yml reflejando la política "advisory en develop, estricto en release/main".
-
+- review-state: done
+- review-implementer: copilot-orchestrator-f00395-s3-verify
+- review-reviewer: delivery-verifier-f00395-s3-verify
+- review-log: approved by delivery-verifier-f00395-s3-verify — Verified independently: S3 implementation present in HEAD. Lefthook wires release-pr-gate as blocking pre-push hook (lefthook.yml:173).
 ### S4 — CI workflow `release-pr-gate.yml`
-- **Status**: todo
+- **Status**: done
 - **Files**:
   - `.github/workflows/release-pr-gate.yml`
   - `.github/branch-protection.ts`
@@ -105,7 +114,10 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
   - `branch-protection.yml` lista ambos checks en `main`.
   - Spec del verificador actualizado: `makeLive` con `['ci-complete', 'release-pr-gate']`, fixture YAML igual, parser tolera ambos.
   - `bun tools/scripts/ci/verify-branch-protection.script.ts --dry-run` imprime los dos checks para `main`.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-f00395-s4-verify
+- review-reviewer: delivery-verifier-f00395-s4-verify
+- review-log: approved by delivery-verifier-f00395-s4-verify — Verified independently: S4 implementation present in HEAD. CI workflow .github/workflows/release-pr-gate.yml present with PR trigger + workflow_dispatch.
 ### S5 — Docs y spec helpers
 - **Status**: todo
 - **Files**:

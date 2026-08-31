@@ -28,6 +28,7 @@ import {
 	SETTINGS_STATE_KEY,
 } from './contracts/constants/settings-state-key.constant';
 import { registerOpenConfigurationCenterCommand } from './commands/open-configuration-center';
+import { registerOpenPluginConfigCommand } from './commands/open-plugin-config';
 
 import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
