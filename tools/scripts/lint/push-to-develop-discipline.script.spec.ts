@@ -27,6 +27,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	isReleaseBranch,
 	lintPrePushStdinUpdates,
 	lintPushToDevelop,
 	parseGitPushArgs,
@@ -111,6 +112,17 @@ describe('lintPushToDevelop', () => {
 		}
 	});
 
+	it('blocks agent/x → origin/develop when the worktree gate is off', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'develop',
+			currentBranch: 'agent/copilot-minimax-m3',
+			agentWorktreeEnabled: false,
+		});
+		expect(result.ok).toBe(false);
+	});
+
 	it('allows agent/x → origin/wip-target when the worktree gate is on', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
@@ -175,6 +187,95 @@ describe('lintPushToDevelop', () => {
 		if (!result.ok) {
 			expect(result.blockers.join('\n')).toContain('LEFTHOOK_BYPASS=1');
 		}
+	});
+});
+
+describe('lintPushToDevelop release branch discipline', () => {
+	it('blocks release/v1 → origin/main', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'main',
+			currentBranch: 'release/v1',
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.blockers.join('\n')).toContain(
+				'release branches land on main through a pull request',
+			);
+		}
+	});
+
+	it('blocks release/v1 → origin/release/v2', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'release/v2',
+			currentBranch: 'release/v1',
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.blockers.join('\n')).toContain(
+				'must not merge into another release branch',
+			);
+		}
+	});
+
+	it('allows release/v1 → origin/release/v1', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'release/v1',
+			currentBranch: 'release/v1',
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('allows develop → origin/release/v1', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'release/v1',
+			currentBranch: 'develop',
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('blocks feature/x → origin/release/v1', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'release/v1',
+			currentBranch: 'feature/x',
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.blockers.join('\n')).toContain(
+				'only receive promotion from `develop`',
+			);
+		}
+	});
+
+	it('blocks release/v1 → origin/develop', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'develop',
+			currentBranch: 'release/v1',
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.blockers.join('\n')).toContain(
+				'do not merge back into develop directly',
+			);
+		}
+	});
+});
+
+describe('isReleaseBranch', () => {
+	it('matches the canonical release/ prefix', () => {
+		expect(isReleaseBranch('release/v1')).toBe(true);
+		expect(isReleaseBranch('develop')).toBe(false);
 	});
 });
 
