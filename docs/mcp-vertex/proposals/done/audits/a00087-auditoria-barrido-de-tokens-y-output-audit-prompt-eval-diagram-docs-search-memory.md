@@ -2,11 +2,14 @@
 id: a00087
 title: "auditoría: barrido de tokens y output (audit, prompt-eval, diagram, docs, search, memory, ...)"
 kind: audit
-status: in-progress
+status: done
 type: proposal
 track: plugin-hardening
 date: 2026-08-24
 shipped-in: [7b205d75f]
+last-transition-id: 79c7c941-855f-4eb3-8da6-807072490ade
+last-correlation-id: 79c7c941-855f-4eb3-8da6-807072490ade
+last-transition-from: review
 ---
 
 # a00087 — auditoría: barrido de tokens y output (audit, prompt-eval, diagram, docs, search, memory, ...)

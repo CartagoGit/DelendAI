@@ -598,10 +598,12 @@ export const renderDashboard = (
 <body>
 	${header}
 	${kpiStrip}
-	${tabsBar}
-	<main class="mcpv-main">
-		${panels}
-	</main>
+	<div class="mcpv-shell">
+		${tabsBar}
+		<main class="mcpv-main">
+			${panels}
+		</main>
+	</div>
 	${footer}
 	<div id="mcpv-detail-overlay" class="mcpv-detail-overlay" role="dialog" aria-modal="true" aria-labelledby="mcpv-detail-overlay-title" data-active="false" hidden>
 		<div class="mcpv-detail-overlay__card">

@@ -51,4 +51,17 @@ describe('buildHeader', () => {
 		expect(html).toContain('value="midnight" selected');
 		expect(html).toContain('value="es" selected');
 	});
+
+	it('embeds the current-language flag as an inline SVG', () => {
+		const html = buildHeader(mockModel, baseSettings);
+		expect(html).toMatch(/<svg[^>]*aria-label="United Kingdom"/);
+	});
+
+	it('embeds the current-language flag when the language changes', () => {
+		const html = buildHeader(mockModel, {
+			...baseSettings,
+			language: 'es',
+		});
+		expect(html).toMatch(/<svg[^>]*aria-label="Spain"/);
+	});
 });

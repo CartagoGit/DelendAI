@@ -20,6 +20,7 @@ import { renderPanelTimes } from '../render-panel-times';
 import { renderPanelAgents } from '../render-panel-agents';
 import { renderPanelHealth } from '../render-panel-health';
 import { renderPanelMemory } from '../render-panel-memory';
+import { renderPanelHelp } from '../render-panel-help';
 import { renderPanelSettings } from '../render-panel-settings';
 
 export interface IBuildPanelsOptions {
@@ -54,6 +55,7 @@ export function buildPanels(
 	const agentsPanel = renderPanelAgents(model.agents, lang);
 	const memoryPanel = renderPanelMemory(model.memory, lang);
 	const healthPanel = renderPanelHealth(model.health, lang);
+	const helpPanel = renderPanelHelp(lang);
 	const settingsPanel = renderPanelSettings(
 		settings ?? {
 			docsUrl: 'https://mcp-vertex.dev',
@@ -92,6 +94,7 @@ export function buildPanels(
 		agentsPanel,
 		memoryPanel,
 		healthPanel,
+		helpPanel,
 		settingsPanel,
 		docsPanel,
 	]

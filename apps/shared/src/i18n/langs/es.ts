@@ -560,6 +560,8 @@ const extension = {
 	'dashboard.tokens.topTools': 'Herramientas principales por tokens',
 	'dashboard.plugins.tokenShareByPlugin': 'Cuota de tokens por plugin',
 	'dashboard.plugins.rollup': 'Resumen',
+	'dashboard.plugins.rollupLead':
+		'Conteo de herramientas, llamadas, tasa de error, latencia y cuota de tokens por plugin.',
 	'dashboard.spend.totalCost': 'Coste total',
 	'dashboard.spend.tokensSaved': 'Tokens ahorrados (real)',
 	'dashboard.spend.savings': 'Ahorro',
@@ -600,6 +602,9 @@ const extension = {
 	'dashboard.memory.durableNotes': '{count} notas persistentes',
 	// d-00018 — Panel Status
 	tabStatus: 'Estado',
+	tabHelp: 'Ayuda',
+	'help.lead':
+		'Un recorrido breve por cada panel del dashboard para que elijas la pestaña correcta sin adivinar.',
 	'status.headline': 'Estado en vivo del servidor MCP de mcp-vertex',
 	'status.currentAction': 'Actividad actual',
 	'status.noCurrentAction': 'No hay llamadas MCP en curso.',

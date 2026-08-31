@@ -2,11 +2,14 @@
 id: a00086
 title: "auditoría: barrido de seguridad y privacidad (browser, container, forge, database, api, external-mcps, ...)"
 kind: audit
-status: in-progress
+status: done
 type: proposal
 track: plugin-hardening
 date: 2026-08-24
 shipped-in: [ede97e6e2]
+last-transition-id: 9cc9aca9-af65-4008-92b7-243af5f527aa
+last-correlation-id: 9cc9aca9-af65-4008-92b7-243af5f527aa
+last-transition-from: review
 ---
 
 # a00086 — auditoría: barrido de seguridad y privacidad (browser, container, forge, database, api, external-mcps, ...)
