@@ -256,26 +256,60 @@
 
 .mcpv-tab {
 	appearance: none;
+	position: relative;
 	background: transparent;
 	border: none;
 	color: var(--mcpv-fg-muted, var(--vscode-tab-inactiveForeground, #858585));
 	padding: var(--mcpv-s-2) var(--mcpv-s-3);
 	font: inherit;
 	cursor: pointer;
-	border-bottom: 2px solid transparent;
 	white-space: nowrap;
 	transition:
 		color var(--mcpv-transition-fast),
-		border-color var(--mcpv-transition-fast);
+		background var(--mcpv-transition-fast);
 
-	&:hover,
+	&::after {
+		content: '';
+		position: absolute;
+		bottom: -2px;
+		left: 0;
+		right: 0;
+		height: 2px;
+		background: linear-gradient(
+			90deg,
+			var(--mcpv-brand-blue),
+			var(--mcpv-brand-purple)
+		);
+		border-radius: 999px;
+		transform: scaleX(0);
+		transform-origin: center;
+		transition: transform var(--mcpv-transition-medium);
+	}
+
+	&:hover {
+		color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
+		background: var(--mcpv-bg-soft, transparent);
+
+		&::after {
+			transform: scaleX(0.3);
+			opacity: 0.4;
+		}
+	}
+
 	&:focus-visible {
 		color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
+		outline: 2px solid var(--mcpv-brand-blue);
+		outline-offset: 2px;
+		border-radius: 4px;
 	}
 
 	&[aria-selected='true'] {
 		color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
-		border-bottom-color: var(--mcpv-brand-blue);
+
+		&::after {
+			transform: scaleX(1);
+			opacity: 1;
+		}
 	}
 }
 
@@ -1416,32 +1450,11 @@
 	display: none;
 }
 
-// Smooth tab change for the active indicator on the horizontal tab strip.
-.mcpv-tab {
-	transition:
-		color var(--mcpv-transition-fast, 120ms),
-		border-color var(--mcpv-transition-fast, 120ms),
-		background var(--mcpv-transition-fast, 120ms);
-}
-
-.mcpv-tab[aria-selected='true']::after {
-	content: '';
-	display: block;
-	height: 2px;
-	margin-top: 2px;
-	background: linear-gradient(
-		90deg,
-		var(--mcpv-brand-blue),
-		var(--mcpv-brand-purple)
-	);
-	border-radius: 999px;
-	animation: mcpv-tab-underline var(--mcpv-transition-medium, 220ms);
-}
-
-@keyframes mcpv-tab-underline {
-	0% { transform: scaleX(0.4); opacity: 0; }
-	100% { transform: scaleX(1); opacity: 1; }
-}
+// Legacy tab underline rule removed — the active indicator now lives in
+// the main `.mcpv-tab` block (gradient + scaleX transition). The
+// selector kept here intentionally for clarity: any stray CSS that
+// targets the old `.mcpv-tab[aria-selected='true']::after` will be a
+// no-op because the new rule is a superset.
 
 // Button transitions.
 .mcpv-button,
