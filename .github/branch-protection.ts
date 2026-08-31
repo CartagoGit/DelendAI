@@ -81,7 +81,7 @@ export const BRANCH_PROTECTION: IBranchProtectionConfig = {
 			// The release branch. Nothing lands here automatically.
 			name: 'main',
 			protected: true,
-			required_checks: ['ci-complete'],
+			required_checks: ['ci-complete', 'release-pr-gate'],
 		},
 	],
 };
