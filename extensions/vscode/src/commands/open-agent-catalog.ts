@@ -129,13 +129,17 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 			const copy = viewCopyFor(
 				resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
 			);
+			const panel = deps.vscode.window.createWebviewPanel(
+				'mcpVertexAgentCatalog',
+				'mcp-vertex Agent Catalog',
+				deps.vscode.ViewColumn.One,
+				{ enableScripts: true },
+			);
+			panel.webview.html = renderTextHtml(
+				'mcp-vertex Agent Catalog',
+				'Loading catalog...',
+			);
 			try {
-				const panel = deps.vscode.window.createWebviewPanel(
-					'mcpVertexAgentCatalog',
-					'mcp-vertex Agent Catalog',
-					deps.vscode.ViewColumn.One,
-					{ enableScripts: true },
-				);
 				panel.webview.html = await loadCatalogHtml(service, copy);
 				panel.webview.onDidReceiveMessage?.(async (raw: unknown) => {
 					const parsed = AGENT_CATALOG_MESSAGE_SCHEMA.safeParse(raw);
@@ -176,8 +180,11 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 				});
 				return panel;
 			} catch (err) {
-				await showCommandError(deps.vscode, 'open agent catalog', err);
-				return undefined;
+				panel.webview.html = renderTextHtml(
+					'mcp-vertex Agent Catalog unavailable',
+					err instanceof Error ? err.message : String(err),
+				);
+				return panel;
 			}
 		},
 	);
