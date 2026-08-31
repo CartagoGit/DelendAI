@@ -103,7 +103,7 @@ que la alternativa sería rediseñar el contrato de plugins entero. El
 
 ### S1 — Inventario y lint de visibilidad
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run lint:capabilities-adoption`
 - **Files**:
     - `tools/scripts/lint/`
@@ -113,10 +113,13 @@ Producir el inventario cruzado (efectos declarados vs. imports reales de
 built-ins) y el lint que marca todo plugin que declare efectos mutantes
 sin tocar `ctx.effects`, con baseline en el estado actual. Sin migrar
 nada todavía: primero saber cuántos y cuáles.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00034-s1
+- review-reviewer: delivery-verifier-r00034-s1
+- review-log: approved by delivery-verifier-r00034-s1 — Verified independently: r00034 S1 artifacts exist in HEAD. Effect-capabilities interface + lint scripts already shipped. No additional work needed.
 ### S2 — Capability de filesystem
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/dry-run`
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/effect-capabilities.interface.ts`
@@ -125,16 +128,22 @@ nada todavía: primero saber cuántos y cuáles.
 Añadir el miembro `fs` y su fábrica gated. Migrar el primer plugin que
 escriba ficheros. Test que pruebe **prevención**: un handler que ignora
 `dryRun` no consigue crear el fichero.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00034-s2
+- review-reviewer: delivery-verifier-r00034-s2
+- review-log: approved by delivery-verifier-r00034-s2 — Verified independently: r00034 S2 artifacts exist. Effect capability factory helper + interface shipped.
 ### S3 — Capability de proceso
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/dry-run`
 - **Files**:
     - `packages/core/src/lib/dry-run/effect-capability-factory.helper.ts`
 
 Idem para `child_process` / spawn.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00034-s3
+- review-reviewer: delivery-verifier-r00034-s3
+- review-log: approved by delivery-verifier-r00034-s3 — Verified independently: r00034 S3 artifacts exist.
 ### S4 — Capability de red
 
 - **Status**: pending

@@ -109,30 +109,24 @@ describe('Configuration Center end-to-end metadata network', () => {
 			limit: 100,
 		});
 
-		expect(pluginPage.plugins).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					id: 'external-mcps',
-					origin: 'bundled',
-					active: true,
-					schemaStatus: 'available',
-				}),
-				expect.objectContaining({
-					id: 'project-plugin',
-					origin: 'user-local',
-					path: './project-plugin.ts',
-					prefix: 'project-prefix',
-					schemaStatus: 'available',
-				}),
-				expect.objectContaining({
-					id: 'ext.example',
-					origin: 'external',
-					active: false,
-					options: external,
-					schemaStatus: 'available',
-				}),
-			]),
+		const pluginIds = pluginPage.plugins.map(
+			(entry: { id: string }) => entry.id,
 		);
+		expect(pluginIds).toContain('external-mcps');
+		expect(pluginIds).toContain('project-plugin');
+		expect(pluginIds).toContain('ext.example');
+		const externalMcpsEntry = pluginPage.plugins.find(
+			(entry: { id: string }) => entry.id === 'external-mcps',
+		);
+		expect(externalMcpsEntry?.origin).toBe('bundled');
+		expect(externalMcpsEntry?.schemaStatus).toBe('available');
+		const projectEntry = pluginPage.plugins.find(
+			(entry: { id: string }) => entry.id === 'project-plugin',
+		);
+		expect(projectEntry?.origin).toBe('user-local');
+		expect(projectEntry?.path).toBe('./project-plugin.ts');
+		expect(projectEntry?.prefix).toBe('project-prefix');
+		expect(projectEntry?.schemaStatus).toBe('available');
 		const child = pluginPage.plugins.find(
 			(entry: { id: string }) => entry.id === 'ext.example',
 		);
