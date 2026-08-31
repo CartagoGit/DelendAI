@@ -77,7 +77,6 @@ const parseExports = (filePath: string): IParsedExport[] => {
 					typeOnly,
 				});
 			}
-			continue;
 		}
 	}
 

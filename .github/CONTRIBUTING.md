@@ -23,10 +23,10 @@ and lint findings without blocking normal development commits or pushes.
 The repo uses [Biome](https://biomejs.dev/) (not Prettier) as its single
 formatter — see [`biome.json`](biome.json). Two scopes:
 
-| Scope | Glob | Commands |
-|---|---|---|
+| Scope                  | Glob          | Commands                                  |
+| ---------------------- | ------------- | ----------------------------------------- |
 | **Front** (Astro site) | `apps/web/**` | `bun run format:web` / `format:web:check` |
-| **Whole repo** | `**` | `bun run format:all` / `format:all:check` |
+| **Whole repo**         | `**`          | `bun run format:all` / `format:all:check` |
 
 Automation:
 
@@ -81,12 +81,12 @@ The push discipline is asymmetric on purpose:
 
 Versioning is **automatic** on push to `main`, derived from commit type:
 
-| Prefix | Bump | Example |
-|---|---|---|
-| `fix:` | patch | `fix(memory): prune expired notes on read` |
-| `feat:` | minor | `feat(search): add context lines` |
-| `feat!:` / `BREAKING CHANGE:` | major | `feat(core)!: rename plugin context field` |
-| `docs:` `chore:` `test:` `refactor:` | none | — |
+| Prefix                               | Bump  | Example                                    |
+| ------------------------------------ | ----- | ------------------------------------------ |
+| `fix:`                               | patch | `fix(memory): prune expired notes on read` |
+| `feat:`                              | minor | `feat(search): add context lines`          |
+| `feat!:` / `BREAKING CHANGE:`        | major | `feat(core)!: rename plugin context field` |
+| `docs:` `chore:` `test:` `refactor:` | none  | —                                          |
 
 Scope with the package/plugin you touched. No manual version bumps.
 

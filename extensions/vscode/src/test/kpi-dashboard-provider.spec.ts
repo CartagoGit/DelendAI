@@ -9,7 +9,9 @@ import type {
 	IKpiDashboardToolOutput,
 } from '../contracts/interfaces/kpi-dashboard.interface';
 
-class FakeWebviewPanel {
+import type { IWebviewPanel } from '@mcp-vertex/ui-extension/public';
+
+class FakeWebviewPanel implements IWebviewPanel {
 	readonly id = 'fake-kpi-webview';
 	readonly options = { enableScripts: true };
 	visible = true;
@@ -547,7 +549,7 @@ describe('KpiDashboardProvider', () => {
 		});
 		const panel = new FakeWebviewPanel();
 
-		await provider.resolveWebviewView(panel as never);
+		await provider.resolveWebviewView(panel);
 		expect(panel.webview.html).toContain('Project KPIs');
 		expect(panel.webview.html).toContain('Coverage trend');
 		expect(panel.webview.html).toContain('Quality &amp; coverage');
@@ -579,7 +581,7 @@ describe('KpiDashboardProvider', () => {
 		});
 		const panel = new FakeWebviewPanel();
 
-		await provider.resolveWebviewView(panel as never);
+		await provider.resolveWebviewView(panel);
 
 		expect(provider.getState()?.model.state).toBe('disconnected');
 		expect(panel.webview.html).toContain('Disconnected');

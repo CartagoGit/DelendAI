@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 import plugin from '@mcp-vertex/proposals';
-import { validateProposalConfiguration } from '@mcp-vertex/proposals';
+import {
+	resolveProposalPersistMode,
+	validateProposalConfiguration,
+} from '@mcp-vertex/proposals';
 import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 const ctx = (): IMcpPluginContext => ({
@@ -23,7 +26,7 @@ const ctx = (): IMcpPluginContext => ({
 });
 
 describe('@mcp-vertex/proposals plugin', async () => {
-	it('rejects duplicate automatic Git ownership between proposals and commit-policy', () => {
+	it('allows commit-policy to own slice persistence over proposals fallback', () => {
 		const issues = validateProposalConfiguration({
 			pluginName: 'proposals',
 			enabledPlugins: ['proposals', 'commit-policy'],
@@ -40,18 +43,7 @@ describe('@mcp-vertex/proposals plugin', async () => {
 			]),
 		});
 
-		expect(issues[0]).toMatchObject({
-			code: 'DUPLICATE_SLICE_GIT_OWNER',
-			keys: expect.arrayContaining([
-				'plugins.proposals.options.persist.mode',
-				'plugins.commit-policy.options.cadence.triggers',
-			]),
-			suggestedConfig: {
-				plugins: {
-					proposals: { options: { persist: { mode: 'none' } } },
-				},
-			},
-		});
+		expect(issues).toEqual([]);
 	});
 
 	it('allows complementary slice ownership when proposals persistence is disabled', () => {
@@ -72,6 +64,59 @@ describe('@mcp-vertex/proposals plugin', async () => {
 		});
 
 		expect(issues).toEqual([]);
+	});
+
+	it.each([
+		['none', undefined, 'none'],
+		['commit', undefined, 'commit'],
+		['commit-and-push', undefined, 'commit-and-push'],
+		['none', { commit: { enabled: true } }, 'none'],
+		['commit', { commit: { enabled: true } }, 'commit'],
+		['commit-and-push', { commit: { enabled: true } }, 'commit-and-push'],
+		[
+			'commit-and-push',
+			{
+				commit: { enabled: true },
+				cadence: { triggers: [{ kind: 'manual' }] },
+			},
+			'commit-and-push',
+		],
+		[
+			'commit-and-push',
+			{
+				commit: { enabled: false },
+				cadence: { triggers: [{ kind: 'slice' }] },
+			},
+			'commit-and-push',
+		],
+		[
+			'none',
+			{
+				commit: { enabled: true },
+				cadence: { triggers: [{ kind: 'slice' }] },
+			},
+			'none',
+		],
+		[
+			'commit',
+			{
+				commit: { enabled: true },
+				cadence: { triggers: [{ kind: 'slice' }] },
+			},
+			'none',
+		],
+		[
+			'commit-and-push',
+			{
+				commit: { enabled: true },
+				cadence: { triggers: [{ kind: 'slice' }] },
+			},
+			'none',
+		],
+	] as const)('resolves %s with %s to %s', (mode, policy, expected) => {
+		expect(resolveProposalPersistMode(mode as never, policy)).toBe(
+			expected,
+		);
 	});
 
 	it('exposes a valid IMcpPlugin identity', async () => {

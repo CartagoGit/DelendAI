@@ -11,13 +11,13 @@ primitives: every agent has to choose the author, decide when to push, and
 remember to add an audit trailer. `commit-policy` wraps those primitives with
 three configurable policies and exposes five tools to drive the engine:
 
-| Tool                   | Purpose                                                                  |
-| ---------------------- | ------------------------------------------------------------------------ |
-| `commit_policy_status` | Read-only snapshot of the effective configuration.                       |
-| `commit_policy_commit` | Commit through the engine (identity + audit + protected-branch refusal). |
-| `commit_policy_push`   | Push through the engine (protected-branch refusal + force policy).       |
-| `commit_policy_run`    | Manually fire any configured trigger.                                    |
-| `commit_policy_refresh_branch_protection` | Refresh remote branch protection on demand. |
+| Tool                                      | Purpose                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| `commit_policy_status`                    | Read-only snapshot of the effective configuration.                       |
+| `commit_policy_commit`                    | Commit through the engine (identity + audit + protected-branch refusal). |
+| `commit_policy_push`                      | Push through the engine (protected-branch refusal + force policy).       |
+| `commit_policy_run`                       | Manually fire any configured trigger.                                    |
+| `commit_policy_refresh_branch_protection` | Refresh remote branch protection on demand.                              |
 
 The engine is **off by default**: no host sees a single commit unless they
 opt in. See "Configuration" below for the exact knobs.
@@ -62,7 +62,7 @@ opt in. See "Configuration" below for the exact knobs.
 | `push.force`                   | `"with-lease"`       | `"with-lease" \| "allow" \| "never"`.                                                                                                                                       |
 | `push.protectedBranches`       | `[]`                 | Exact branch names configured here are protected; no names are assumed.                                                                                                     |
 | `push.remote` / `push.branch`  | _none_               | Optional explicit defaults; falls back to upstream / current branch.                                                                                                        |
-| `push.providerByHost`          | _none_               | Optional host-to-provider map for self-hosted GitHub/GitLab remotes, for example `{ "git.example.test": "gitlab" }`.                                                       |
+| `push.providerByHost`          | _none_               | Optional host-to-provider map for self-hosted GitHub/GitLab remotes, for example `{ "git.example.test": "gitlab" }`.                                                        |
 
 Remote branch protection is refreshed manually by
 `commit_policy_refresh_branch_protection`. The adapter uses `push.remote` when
@@ -124,10 +124,12 @@ blocked before registration when effective options contradict each other.
 Diagnostics name the exact keys and values, state precedence, and include a
 JSON patch for `mcp-vertex.config.json`.
 
-For slice automation, choose exactly one Git owner. If `commit-policy` has an
-enabled `slice` cadence and commit policy, `proposals.persist.mode` must be
-`"none"`; otherwise the core reports `DUPLICATE_SLICE_GIT_OWNER` and does not
-activate either plugin.
+For slice automation, `commit-policy` owns persistence whenever its commit
+policy is enabled with a `slice` cadence. In that case, `proposals` resolves
+its effective persistence mode to `"none"`, even if its configured fallback is
+`"commit"` or `"commit-and-push"`. Without an enabled slice policy,
+`proposals.persist.mode` remains the fallback owner. Both plugins may be
+loaded together, and `commit-policy` also works without `proposals`.
 
 `push.branch` is a branch name, not a refspec. A value such as
 `HEAD:wip/example` is rejected with `INVALID_PUSH_BRANCH_TARGET`. An enabled

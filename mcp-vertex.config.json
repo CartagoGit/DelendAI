@@ -30,7 +30,7 @@
 		"git": {
 			"options": {
 				"allowForge": true,
-				"allowWrite": false,
+				"allowWrite": true,
 				"allowStash": false
 			}
 		},
@@ -112,7 +112,7 @@
 					"delegateAfterToolCalls": 3
 				},
 				"persist": {
-					"mode": "none"
+					"mode": "commit-and-push"
 				}
 			}
 		},
@@ -225,18 +225,30 @@
 		"commit-policy": {
 			"options": {
 				"gitTimeoutMs": 60000,
-				"commit": { "enabled": false },
-				"stash": { "enabled": false },
+				"commit": {
+					"enabled": true
+				},
+				"stash": {
+					"enabled": false
+				},
 				"push": {
-					"enabled": false,
-					"onCommit": false,
+					"enabled": true,
+					"onCommit": true,
 					"force": "with-lease",
 					"protectedBranches": ["main", "master"],
 					"remote": "origin",
 					"branch": "develop"
 				},
 				"cadence": {
-					"triggers": [],
+					"triggers": [
+						{
+							"kind": "slice"
+						},
+						{
+							"kind": "interval",
+							"minutes": 5
+						}
+					],
 					"sliceScoping": false,
 					"allowForeignChanges": true
 				},

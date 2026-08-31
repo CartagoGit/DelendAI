@@ -504,6 +504,7 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 		'../../src/styles/components/_tabs.scss',
 	);
 	const _styles = readFileSync(tabsScssPath, 'utf8');
+	expect(_styles).toContain('.mcpv-tabs');
 
 	// f00102 S2.1 — the tablist markup moved from `Tabs.astro` into
 	// the shared `renderTabs()` at
