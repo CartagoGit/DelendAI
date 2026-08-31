@@ -52,6 +52,8 @@ export type IQueueEventEmitter = (
 
 /** a00069 S6: default TTL for non-adopted / leftover registry rows (7 days). */
 export const DEFAULT_ORPHAN_TTL_MINUTES = 7 * 24 * 60;
+/** Default staleness window for adopted-but-dormant agents. */
+export const DEFAULT_STALE_AFTER_MINUTES = 10;
 
 const loadLockSnapshotLocal = async (
 	lockPath: string,
