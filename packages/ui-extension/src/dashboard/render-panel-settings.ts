@@ -157,6 +157,16 @@ export const renderPanelSettings = (
 				</div>
 				${motionSelect}
 			</div>
+			<div class="mcpv-settings__group mcpv-settings__group--inline">
+				<div class="mcpv-settings__label">
+					<span>${escapeHtml(text('settings.compact.title', 'Compact layout'))}</span>
+					<small>${escapeHtml(text('settings.compact.help', 'Tighten padding across panels for dense workflows.'))}</small>
+				</div>
+				<label class="mcpv-settings__toggle">
+					<input type="checkbox" data-settings-compact ${compact ? ' checked' : ''} />
+					<span>${escapeHtml(text('settings.compact.label', 'Enable compact mode'))}</span>
+				</label>
+			</div>
 		</section>
 		<section class="mcpv-settings__section" aria-labelledby="settings-section-workspace">
 			<header class="mcpv-settings__section-header">

@@ -698,6 +698,10 @@ const extension = {
 	'settings.previewHeading': 'Preview',
 	'settings.previewBody':
 		'This is how the dashboard will look with the selected theme and language.',
+	'settings.compact.title': 'Compact layout',
+	'settings.compact.help':
+		'Tighten padding across panels for dense workflows.',
+	'settings.compact.label': 'Enable compact mode',
 	'knowledge.title': 'mcp-vertex Knowledge',
 	'knowledge.searchPlaceholder': 'Search entries (id or title)…',
 	'knowledge.empty': 'No knowledge entries.',
