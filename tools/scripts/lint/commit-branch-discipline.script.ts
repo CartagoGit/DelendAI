@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
- * commit-branch-discipline.script.ts — f00086 S1 (refined 2026-08-24:
- * config-driven, block only per-agent branches).
+ * commit-branch-discipline.script.ts — f00086 S1 (refined 2026-08-31:
+ * shared checkout permits develop and release/* only).
  *
  * Pre-commit guard. Pure function over
  * `(cwd, stagedFiles, currentBranch, agentWorktreeEnabled)` →
@@ -16,9 +16,8 @@
  *   - Detached HEAD (`null` / empty) → fail-open (release hotfix).
  *   - When `agentWorktree: true` → every branch is allowed: `agent/*`
  *     branches are the expected per-agent isolation shape.
- *   - When `agentWorktree: false` (this repo) → `agent/*` branches are
- *     blocked (agents never branch on their own). User-managed
- *     branches (`wip/*`, `fix/*`, `feature/*`, …) are allowed.
+ *   - When `agentWorktree: false` (this repo) → only `release/*` is an
+ *     additional commit branch; arbitrary working branches are blocked.
  *
  * Default behaviour: **block only `agent/*`** when the worktree gate
  * is off. The agent switches back to `develop` (or a `wip/*` branch)
@@ -30,6 +29,7 @@ import { isLefthookBypassed } from '../lib/lefthook-bypass';
 import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
 const DEVELOP_BRANCH = 'develop';
+const RELEASE_BRANCH_PREFIX = 'release/';
 const AGENT_BRANCH_PREFIX = 'agent/';
 
 export interface ICommitBranchInput {
@@ -69,19 +69,19 @@ export const lintCommitBranch = (
 		return { ok: true };
 	}
 
-	// Gate off: the only branches agents must not create are `agent/*`.
-	// User-managed branches (wip/*, fix/*, feature/*, …) are allowed.
-	if (!currentBranch.startsWith(AGENT_BRANCH_PREFIX)) {
+	// Gate off: develop and operator-created release branches are the only
+	// supported commit locations in this shared-checkout repository.
+	if (currentBranch.startsWith(RELEASE_BRANCH_PREFIX)) {
 		return { ok: true };
 	}
 
 	blockers.push(
-		`committing on \`${currentBranch}\` — per-agent branches are disabled (agentWorktree: false).`,
+		`committing on \`${currentBranch}\` — temporary working branches are disabled (agentWorktree: false).`,
 		'',
 		'next-action:',
 		`  switch back:  git switch ${DEVELOP_BRANCH}`,
-		'  then commit and push on develop (the shared branch).',
-		'  only the operator creates branches; agents never branch on their own.',
+		'  or use a release/<version> branch for the release PR flow.',
+		'  only the operator creates the release branch; agents never branch on their own.',
 		'',
 		'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git commit ...',
 	);

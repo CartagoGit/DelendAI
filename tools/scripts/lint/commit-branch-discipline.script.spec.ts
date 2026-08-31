@@ -1,6 +1,5 @@
 /**
- * f00086 / c00086 V1 — `commit-branch-discipline` pure engine
- * (refined 2026-08-24: config-driven, block only per-agent branches).
+ * f00086 / c00086 V1 — `commit-branch-discipline` pure engine.
  *
  * Pins the rules the pre-commit guard makes:
  *
@@ -8,8 +7,8 @@
  *      can check out a tag and commit a hotfix without a branch).
  *   2. `develop` → always allowed (the shared branch).
  *   3. With `agentWorktree` on → every branch allowed.
- *   4. With `agentWorktree` off → `agent/*` blocked; user-managed
- *      branches (`fix/*`, `feature/*`) allowed.
+ *   4. With `agentWorktree` off → arbitrary working branches are blocked;
+ *      `release/*` remains allowed for the release PR flow.
  *
  * Imports the script as a module so the test never invokes
  * `process.exit` — the `if (import.meta.main)` guard at the bottom
@@ -56,11 +55,20 @@ describe('lintCommitBranch', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('allows a user-managed feature branch (gate off)', () => {
+	it('blocks a user-managed feature branch (gate off)', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['README.md'],
 			currentBranch: 'feature/some-thing',
+		});
+		expect(result.ok).toBe(false);
+	});
+
+	it('allows a release branch (gate off)', () => {
+		const result = lintCommitBranch({
+			...baseInput,
+			stagedFiles: ['README.md'],
+			currentBranch: 'release/0.2.0',
 		});
 		expect(result.ok).toBe(true);
 	});

@@ -4,14 +4,9 @@
 # Install: `bun install` runs `prepare` → `lefthook install` automatically.
 # Skip with `LEFTHOOK=0 git commit ...` or `git commit --no-verify`.
 #
-# Policy: hooks WARN but never BLOCK commit/push — EXCEPT the generated
-# artifact drift guards (`catalog-drift-check`, `bootstrap-canonical-discipline`,
-# `host-hints-fragments-discipline`), which BLOCK because a stale checked-in
-# artifact is a correctness bug, not a style warning.
-# Lefthook 2.x has no native `run_type: warning` option, so every advisory
-# command is wrapped with `|| true`. The command's own output (including
-# errors) is still printed, so violations are visible and
-# `bun run validate` / CI are still the source of truth for the advisory ones.
+# Policy: commit and push discipline is blocking. Formatting and style checks
+# remain advisory; commit naming, branch policy, and push destinations are
+# correctness gates and must fail before Git creates or publishes history.
 #
 # Lefthook is the ONLY owner of `.git/hooks/*` in this repo. The staged-file
 # Biome formatter runs as the `format-staged` command below
@@ -80,20 +75,13 @@ pre-commit:
         stray-files-check:
             run: bun run lint:stray-cache-files || true
 
-        # f00086: config-driven branch discipline. ADVISORY (wrapped with
-        # `|| true`). With `agentWorktree: false` (this repo), committing on
+        # f00086: config-driven branch discipline. BLOCKING. With
+        # `agentWorktree: false` (this repo), committing on
         # an `agent/*` branch warns the agent to switch back to `develop`;
-        # user-managed branches (`fix/*`, `feature/*`) are allowed. Matches
-        # the top-of-file policy: hooks WARN but never BLOCK commit/push.
-        # Real enforcement still happens via:
-        #   - `bun run validate` in CI, which runs `lint:commit-branch`
-        #     and `lint:agent-branch-naming`
-        #   - `push-to-develop-discipline` (pre-push), which blocks pushes
-        #     from `agent/*` branches
-        # Bypass: LEFTHOOK_BYPASS=1 git commit ... (documented in
-        # the warning text).
+        # arbitrary working branches are rejected; release/* is the sole
+        # operator-created branch for the release PR flow.
         commit-branch-discipline:
-            run: bun run lint:commit-branch -- --staged {staged_files} || true
+            run: bun run lint:commit-branch -- --staged {staged_files}
 
         # f00083: anti-duplication guard for the universal bootstrap.
         # BLOCKING (no `|| true`). Runs the canonical-scaffold lint
@@ -141,14 +129,12 @@ pre-push:
         drift-check:
             run: bun tools/scripts/gen-all.script.ts --check
 
-        # f00086: config-driven branch discipline. ADVISORY (wrapped with
-        # `|| true`). With `agentWorktree: false` (this repo), pushing from
+        # f00086: config-driven branch discipline. BLOCKING. With
+        # `agentWorktree: false` (this repo), pushing from
         # an `agent/*` branch warns the agent to switch back to `develop`.
         # `develop → origin/develop` (the shared push), release merges
         # (`develop → main`, `main → main`) and user-managed branches
-        # (`fix/*`, `feature/*`) are all allowed. Matches the top-of-file
-        # policy: hooks WARN but never BLOCK commit/push. Pushing from
-        # `develop` is always allowed — develop has NO push protection.
+        # release/* is allowed only through the release PR gate into main.
         #
         # x00159 S1: `use_stdin: true` is REQUIRED here. Lefthook does not
         # forward git's real stdin to a command by default (it connects a
@@ -163,7 +149,7 @@ pre-push:
         # own `process.stdin.isTTY` guard — see the script's header comment.
         push-to-develop-discipline:
             use_stdin: true
-            run: bun run lint:push-to-develop -- {1} {2} || true
+            run: bun run lint:push-to-develop -- {1} {2}
 
         # f00395 S3: gate bloqueante para ramas release/* y main. Solo se
         # activa cuando el ref destino es `main` o empieza por `release/`
@@ -174,14 +160,13 @@ pre-push:
             use_stdin: true
             run: bun run lint:release-pr-gate -- {1} {2} || exit 1
 
-# f00086: commit-msg discipline. Advisory locally. The release PR and release
-# workflow still validate Conventional Commits before publishing; intermediate
-# commits may be less formal while work is developed on `develop`.
+# f00086: commit-msg discipline. Blocking locally so malformed history cannot
+# be created and deferred to CI or the release workflow.
 commit-msg:
     parallel: false
     commands:
         commit-msg-conventional:
-            run: bun run lint:commit-msg -- {1} || true
+            run: bun run lint:commit-msg -- {1}
 
 # Manual hooks (run with `lefthook run <name>`).
 format_web:
