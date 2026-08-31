@@ -44,7 +44,10 @@ interface IExport {
 	readonly experimentalTag: boolean;
 }
 
-const PUBLIC_BARREL = `${import.meta.dir}/../../../packages/core/src/public/index.ts`;
+const PUBLIC_BARREL = (() => {
+	const here = import.meta.dirname ?? import.meta.dir;
+	return `${here}/../../../packages/core/src/public/index.ts`;
+})();
 
 const out = (msg: string) => process.stdout.write(`${msg}\n`);
 const err = (msg: string) => process.stderr.write(`${msg}\n`);
