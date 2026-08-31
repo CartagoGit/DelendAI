@@ -1,6 +1,15 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { buildStableManifest, STABLE_API_TOOLS } from '@mcp-vertex/core/public';
+import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+
+import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
+
+const REPO_ROOT = process.cwd();
+const STABLE_MANIFEST_PATH = join(REPO_ROOT, 'docs/mcp-vertex/api/stable.json');
 
 describe('stable-manifest builder (f00152 S2)', () => {
 	it('round-trips the facade list without crashing', () => {
@@ -41,5 +50,27 @@ describe('stable-manifest builder (f00152 S2)', () => {
 			'2026-07-26T00:00:00.000Z',
 		);
 		expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+	});
+
+	it('keeps the committed manifest sorted by tool name', () => {
+		registerStableToolContributions();
+		const onDisk = JSON.parse(
+			readFileSync(STABLE_MANIFEST_PATH, 'utf8'),
+		) as ReturnType<typeof buildStableManifest>;
+		const names = onDisk.tools.map((tool) => tool.name);
+		expect(names).toEqual([...names].sort());
+	});
+
+	it('fails when the committed manifest is stale', () => {
+		registerStableToolContributions();
+		const onDisk = JSON.parse(
+			readFileSync(STABLE_MANIFEST_PATH, 'utf8'),
+		) as ReturnType<typeof buildStableManifest>;
+		const fresh = buildStableManifest(
+			STABLE_API_TOOLS,
+			MCP_VERTEX_VERSION,
+			onDisk.version.generatedAt,
+		);
+		expect(onDisk).toEqual(fresh);
 	});
 });
