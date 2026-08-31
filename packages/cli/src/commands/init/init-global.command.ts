@@ -4,8 +4,9 @@ import {
 	detectIsWsl,
 	formatInstallReport,
 	parseInitArgs,
-} from '@mcp-vertex/core/cli';
-import { targetById, type IInstallOptions } from '@mcp-vertex/core/public';
+	targetById,
+	type IInstallOptions,
+} from '@mcp-vertex/core/public';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
 	ICliCommandContext,
