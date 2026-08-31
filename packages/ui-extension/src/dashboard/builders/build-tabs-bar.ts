@@ -66,7 +66,7 @@ export function buildTabsBar(lang: ILangDict): string {
 	const sidebarRefreshHtml = refreshHtml.replace(' id="tab-refresh"', '');
 	const sidebarExpandHtml = expandHtml.replace(' id="tab-expand"', '');
 	const surfaceActions = `
-		<div class="mcpv-tabs__surface-actions" role="group" aria-label="${text('tabOverview')}">
+		<div class="mcpv-tabs__surface-actions" role="group" aria-label="${text('dashboardSections', 'Dashboard sections')}">
 			<button class="mcpv-tabs__action-btn" data-surface="proposals" type="button" title="${text('openProposalBoard')}" aria-label="${text('openProposalBoard')}">▤</button>
 			<button class="mcpv-tabs__action-btn" data-surface="knowledge" type="button" title="${text('openKnowledge')}" aria-label="${text('openKnowledge')}">⌘</button>
 			<button class="mcpv-tabs__action-btn" data-surface="configuration" type="button" title="${text('openConfigurationCenter')}" aria-label="${text('openConfigurationCenter')}">⚙</button>
