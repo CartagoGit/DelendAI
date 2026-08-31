@@ -76,9 +76,9 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 			name: 'mcp-vertex_overview',
 			arguments: {},
 		});
-		const text = (res.content as Array<{ type: string; text: string }>)[0]
-			?.text;
-		const snap = JSON.parse(text ?? '{}');
+		const snap = res.structuredContent as {
+			plugins: Array<{ name: string }>;
+		};
 		expect(snap.plugins.map((p: { name: string }) => p.name)).toContain(
 			'memory',
 		);
