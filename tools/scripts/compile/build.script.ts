@@ -19,12 +19,12 @@ import { spawnSync } from 'node:child_process';
 import {
 	existsSync,
 	mkdtempSync,
-	mkdirSync,
 	readdirSync,
 	readFileSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -54,6 +54,20 @@ const findRepoRoot = (start: string): string => {
 };
 
 const ROOT = findRepoRoot(dirname(fileURLToPath(import.meta.url)));
+
+export const resolveWorkspaceBinary = (
+	binaryName: string,
+	root = ROOT,
+): string =>
+	join(
+		root,
+		'node_modules',
+		'.bin',
+		process.platform === 'win32' ? `${binaryName}.cmd` : binaryName,
+	);
+
+export const createDtsTempDir = (): string =>
+	mkdtempSync(join(tmpdir(), 'mcp-vertex-dts-'));
 
 const discover = (): string[] =>
 	['packages', 'plugins']
@@ -105,6 +119,7 @@ const run = (cmd: string, args: string[], cwd: string): void => {
 
 const buildPackage = (rel: string): void => {
 	const dir = join(ROOT, rel);
+	const workspaceTsc = resolveWorkspaceBinary('tsc');
 	const entries = ['src/index.ts'];
 	if (existsSync(join(dir, 'src/public/index.ts')))
 		entries.push('src/public/index.ts');
@@ -167,9 +182,12 @@ const buildPackage = (rel: string): void => {
 
 	// 2. Type declarations. A throwaway project inherits the base `paths` so
 	//    cross-package `@mcp-vertex/*` types resolve from source.
-	const dtsCacheDir = join(dir, 'node_modules/.cache/mcp-vertex-dts');
-	mkdirSync(dtsCacheDir, { recursive: true });
-	const dtsTempDir = mkdtempSync(join(dtsCacheDir, 'build-'));
+	if (!existsSync(workspaceTsc)) {
+		throw new Error(
+			`Missing workspace TypeScript binary at ${workspaceTsc}; run bun install first.`,
+		);
+	}
+	const dtsTempDir = createDtsTempDir();
 	const dtsConfig = join(dtsTempDir, 'tsconfig.json');
 	// Cross-package `@mcp-vertex/*` types resolve to each dependency's BUILT
 	// `dist/*.d.ts` (declaration inputs — not pulled into this package's
@@ -272,33 +290,39 @@ const buildPackage = (rel: string): void => {
 				'\t',
 			),
 		);
-		run('bunx', ['tsc', '-p', dtsConfig], dir);
+		run(workspaceTsc, ['-p', dtsConfig], dir);
 	} finally {
 		rmSync(dtsTempDir, { recursive: true, force: true });
 	}
 };
 
-const targets =
-	process.argv.slice(2).length > 0 ? process.argv.slice(2) : discover();
-let firstFailure: BuildError | undefined;
-for (const rel of targets) {
-	try {
-		buildPackage(rel);
-	} catch (err) {
-		if (err instanceof BuildError) {
-			if (firstFailure === undefined) firstFailure = err;
-			// Continue so the remaining packages still build (their own
-			// try/finally cleanups still run); we surface the failure
-			// at the end so partial progress is visible to the operator.
-		} else {
-			throw err;
+export const main = (argv: string[]): number => {
+	const targets = argv.length > 0 ? argv : discover();
+	let firstFailure: BuildError | undefined;
+	for (const rel of targets) {
+		try {
+			buildPackage(rel);
+		} catch (err) {
+			if (err instanceof BuildError) {
+				if (firstFailure === undefined) firstFailure = err;
+				// Continue so the remaining packages still build (their own
+				// try/finally cleanups still run); we surface the failure
+				// at the end so partial progress is visible to the operator.
+			} else {
+				throw err;
+			}
 		}
 	}
+	if (firstFailure !== undefined) {
+		console.error(
+			`\n✗ Build failed; first failure exit code ${firstFailure.exitCode}.`,
+		);
+		return firstFailure.exitCode;
+	}
+	console.log(`\n✓ Built ${targets.length} package(s).`);
+	return 0;
+};
+
+if (import.meta.main) {
+	process.exit(main(process.argv.slice(2)));
 }
-if (firstFailure !== undefined) {
-	console.error(
-		`\n✗ Build failed; first failure exit code ${firstFailure.exitCode}.`,
-	);
-	process.exit(firstFailure.exitCode);
-}
-console.log(`\n✓ Built ${targets.length} package(s).`);
