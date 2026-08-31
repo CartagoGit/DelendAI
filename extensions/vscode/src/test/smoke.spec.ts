@@ -131,9 +131,10 @@ describe('VS Code extension smoke', async () => {
 		// f00119 S6: +1 auto-agent-selector panel command.
 		// f00192 S1: +1 openAgentTimeline command.
 		// KPI sidebar provider adds one lifecycle registration.
+		// Main shared dashboard webview view adds one lifecycle registration.
 		// Runtime observer adds one lifecycle registration in addition to
 		// the runtime log command.
-		expect(subscriptions).toHaveLength(37);
+		expect(subscriptions).toHaveLength(38);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);

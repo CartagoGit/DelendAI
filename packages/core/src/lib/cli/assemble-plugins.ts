@@ -343,6 +343,12 @@ const tryAssembleManagedLazy = async (input: {
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
 	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	let resolvedErrorSinks: IErrorSink[] = [];
+	const lazyErrors: Array<{ specifier: string; message: string }> = [];
+	const lazyLoadResult: IPluginLoadResult = {
+		loaded: [],
+		errors: lazyErrors,
+		registerErrors: [],
+	};
 	const prompts: IPromptRegistration[] = [];
 	const resources: IResourceRegistration[] = [];
 	const knowledge: IKnowledgeEntry[] = [];
@@ -406,6 +412,22 @@ const tryAssembleManagedLazy = async (input: {
 					),
 				];
 		},
+		onActivationError: ({ pluginId, resolvedSpecifier, error }) => {
+			const message =
+				error instanceof Error ? error.message : String(error);
+			if (
+				!lazyErrors.some(
+					(entry) =>
+						entry.specifier === pluginId &&
+						entry.message === message,
+				)
+			) {
+				lazyErrors.push({
+					specifier: pluginId,
+					message: `could not activate plugin "${pluginId}" from "${resolvedSpecifier}": ${message}`,
+				});
+			}
+		},
 	});
 	const configuredStartupPlugins = definitions.filter((plugin) => {
 		const options = pluginConfigFor(input.fileConfig, plugin.id).options;
@@ -419,9 +441,14 @@ const tryAssembleManagedLazy = async (input: {
 		);
 	});
 	await Promise.all(
-		configuredStartupPlugins.map((plugin) =>
-			lazyRuntime.activatePlugin(plugin.id),
-		),
+		configuredStartupPlugins.map(async (plugin) => {
+			try {
+				await lazyRuntime.activatePlugin(plugin.id);
+			} catch {
+				// The runtime has already recorded the detailed error. Keep
+				// unrelated startup plugins available.
+			}
+		}),
 	);
 	const pluginToolEntries: IOverviewToolEntry[] = [];
 	const toolSurfaceDescriptors: IToolSurfaceDescriptor[] = [];
@@ -531,7 +558,7 @@ const tryAssembleManagedLazy = async (input: {
 		]);
 	return {
 		effectivePlugins: input.effectivePlugins,
-		loadResult: { loaded: [], errors: [], registerErrors: [] },
+		loadResult: lazyLoadResult,
 		prompts,
 		resources,
 		knowledge,

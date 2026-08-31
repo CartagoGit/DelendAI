@@ -88,6 +88,10 @@ export const buildVitestArgs = (
 	...suites.flatMap((suite) => suite.testFiles),
 ];
 
+export const buildPluginTestCommand = (
+	suite: IPluginTestSuite,
+): readonly string[] => ['run', '--cwd', `plugins/${suite.id}`, 'test'];
+
 export const runPluginSuites = async (
 	workspaceRoot: string,
 ): Promise<number> => {
@@ -101,19 +105,30 @@ export const runPluginSuites = async (
 		0,
 	);
 	process.stdout.write(
-		`plugin-suites: ${suites.length} plugins, ${testFiles} test files\n`,
+		`plugin-suites: ${suites.length} plugins, ${testFiles} test files; isolated processes\n`,
 	);
-	const result = spawnSync('bunx', buildVitestArgs(suites), {
-		cwd: workspaceRoot,
-		stdio: 'inherit',
-	});
-	if (result.error) {
+	const failures: string[] = [];
+	for (const suite of suites) {
+		const result = spawnSync('bun', buildPluginTestCommand(suite), {
+			cwd: workspaceRoot,
+			stdio: 'inherit',
+		});
+		if (result.error) {
+			failures.push(`${suite.id}: ${result.error.message}`);
+			continue;
+		}
+		if ((result.status ?? 1) !== 0) {
+			failures.push(`${suite.id}: exit ${result.status ?? 1}`);
+		}
+	}
+	if (failures.length > 0) {
 		process.stderr.write(
-			`plugin-suites: failed to spawn Vitest: ${result.error.message}\n`,
+			`plugin-suites: ${failures.length} suite(s) failed:\n${failures.map((failure) => `- ${failure}`).join('\n')}\n`,
 		);
 		return 1;
 	}
-	return result.status ?? 1;
+	process.stdout.write(`plugin-suites: all ${suites.length} suites passed\n`);
+	return 0;
 };
 
 if (import.meta.main) {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	buildPluginTestCommand,
 	buildVitestArgs,
 	discoverPluginTestSuites,
 	type IPluginTestSuite,
@@ -43,5 +44,17 @@ describe('plugin suite matrix', () => {
 			'plugins/beta/tests/b.spec.ts',
 			'plugins/beta/tests/c.test.ts',
 		]);
+	});
+
+	it('runs each plugin through its own package test process', () => {
+		expect(
+			buildPluginTestCommand({
+				id: 'proposals',
+				packagePath: '/repo/plugins/proposals/package.json',
+				testFiles: [
+					'plugins/proposals/tests/src/lib/auto-work.spec.ts',
+				],
+			}),
+		).toEqual(['run', '--cwd', 'plugins/proposals', 'test']);
 	});
 });

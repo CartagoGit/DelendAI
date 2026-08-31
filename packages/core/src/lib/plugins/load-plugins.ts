@@ -94,11 +94,11 @@ export const nodeDynamicImport = async (
 	specifier: string,
 	workspaceRoot?: string,
 ): Promise<unknown> => {
-	const runtimeSpecifier =
+	const localSource =
 		workspaceRoot !== undefined && specifier.startsWith('@mcp-vertex/')
-			? ((await resolveLocalFirstPartySource(specifier, workspaceRoot)) ??
-				specifier)
-			: specifier;
+			? await resolveLocalFirstPartySource(specifier, workspaceRoot)
+			: undefined;
+	const runtimeSpecifier = localSource ?? specifier;
 	const normalized = normalizeImportSpecifier(runtimeSpecifier);
 	// Use `Function` to hide `import()` from the static analyser, but
 	// fall back to the direct form on sandbox failures so callers
@@ -111,7 +111,47 @@ export const nodeDynamicImport = async (
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
 		if (/dynamic import callback/i.test(message)) {
-			return await import(normalized);
+			try {
+				return await import(normalized);
+			} catch (fallbackError) {
+				if (localSource === undefined && workspaceRoot !== undefined) {
+					const packageId = specifier.slice('@mcp-vertex/'.length);
+					const expectedPaths = [
+						join(
+							workspaceRoot,
+							'packages',
+							packageId,
+							'src',
+							'index.ts',
+						),
+						join(
+							workspaceRoot,
+							'plugins',
+							packageId,
+							'src',
+							'index.ts',
+						),
+					];
+					const fallbackMessage =
+						fallbackError instanceof Error
+							? fallbackError.message
+							: String(fallbackError);
+					throw new Error(
+						`local first-party plugin source not found for "${specifier}" under "${workspaceRoot}"; expected src/index.ts. Package resolution also failed: ${fallbackMessage}. Checked: ${expectedPaths.join(', ')}`,
+					);
+				}
+				throw fallbackError;
+			}
+		}
+		if (localSource === undefined && workspaceRoot !== undefined) {
+			const packageId = specifier.slice('@mcp-vertex/'.length);
+			const expectedPaths = [
+				join(workspaceRoot, 'packages', packageId, 'src', 'index.ts'),
+				join(workspaceRoot, 'plugins', packageId, 'src', 'index.ts'),
+			];
+			throw new Error(
+				`local first-party plugin source not found for "${specifier}" under "${workspaceRoot}"; expected src/index.ts. Package resolution also failed: ${message}. Checked: ${expectedPaths.join(', ')}`,
+			);
 		}
 		throw err;
 	}

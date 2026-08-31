@@ -84,6 +84,12 @@ export interface IManagedLazyRuntimeOptions {
 		readonly registrations: IMcpPluginRegistrations;
 		readonly resolvedSpecifier: string;
 	}) => void;
+	/** Records an activation failure without stopping unrelated plugins. */
+	readonly onActivationError?: (input: {
+		readonly pluginId: string;
+		readonly resolvedSpecifier: string;
+		readonly error: unknown;
+	}) => void;
 }
 
 export const validateManagedLazyConfiguration = async (options: {
@@ -324,7 +330,17 @@ export const createManagedLazyRuntime = (
 				});
 			}
 			return { tools };
-		})();
+		})().catch((error: unknown) => {
+			const definition = definitionsById.get(pluginId);
+			if (definition !== undefined) {
+				options.onActivationError?.({
+					pluginId,
+					resolvedSpecifier: definition.packageSpecifier,
+					error,
+				});
+			}
+			throw error;
+		});
 		activations.set(pluginId, promise);
 		void promise.then(
 			(value) => {
