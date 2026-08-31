@@ -22,11 +22,12 @@ describe('proposals stable tools', () => {
 		clearStableToolDescriptorContributions();
 	});
 
-	it('preserves the historical nine stable descriptors verbatim', () => {
+	it('preserves the historical ten stable descriptors verbatim', () => {
 		expect(
 			PROPOSALS_STABLE_TOOLS.map((descriptor) => descriptor.name),
 		).toEqual([
 			'proposal_transition',
+			'proposals_close_plan',
 			'proposal_create',
 			'auto_work',
 			'agent_lock',
@@ -52,6 +53,9 @@ describe('proposals stable tools', () => {
 		expect(STABLE_API_TOOLS).toHaveLength(PROPOSALS_STABLE_TOOLS.length);
 		expect(findStableDescriptor('proposal_review')?.summary).toBe(
 			'Submit/approve/request-changes on a proposal in review.',
+		);
+		expect(findStableDescriptor('proposals_close_plan')?.summary).toBe(
+			'Close a plan proposal after checking every blocker.',
 		);
 	});
 
