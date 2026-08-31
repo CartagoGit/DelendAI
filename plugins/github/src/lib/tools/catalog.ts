@@ -1249,6 +1249,7 @@ export const buildGitHubPullRequestsToolRegistrations = (
 						}),
 					]);
 				const pr = prResult.data as Record<string, any>;
+				const prAny = pr as any;
 				return {
 					ok: true as const,
 					provider: 'github' as const,
@@ -1278,12 +1279,12 @@ export const buildGitHubPullRequestsToolRegistrations = (
 									: undefined,
 							),
 							branch:
-								typeof pr.head?.ref === 'string'
-									? pr.head.ref
+								typeof prAny.head?.ref === 'string'
+									? prAny.head.ref
 									: '',
 							baseBranch:
-								typeof pr.base?.ref === 'string'
-									? pr.base.ref
+								typeof prAny.base?.ref === 'string'
+									? prAny.base.ref
 									: undefined,
 							reviewDecision:
 								typeof pr.reviewDecision === 'string'
@@ -1471,6 +1472,7 @@ export const buildGitHubCommitsToolRegistrations = (
 						}),
 					]);
 				const commit = commitResult.data as Record<string, any>;
+				const commitAny = commit as any;
 				return {
 					ok: true as const,
 					provider: 'github' as const,
@@ -1481,13 +1483,14 @@ export const buildGitHubCommitsToolRegistrations = (
 									? commit.sha
 									: args.sha,
 							title:
-								typeof commit.commit?.message === 'string'
-									? (commit.commit.message.split('\n')[0] ??
-										'')
+								typeof commitAny.commit?.message === 'string'
+									? (commitAny.commit.message.split(
+											'\n',
+										)[0] ?? '')
 									: '',
 							message:
-								typeof commit.commit?.message === 'string'
-									? commit.commit.message
+								typeof commitAny.commit?.message === 'string'
+									? commitAny.commit.message
 									: '',
 							author: mapUser(commit.author),
 							committer: mapUser(commit.committer),
@@ -1496,8 +1499,9 @@ export const buildGitHubCommitsToolRegistrations = (
 									? commit.html_url
 									: undefined,
 							date:
-								typeof commit.commit?.author?.date === 'string'
-									? commit.commit.author.date
+								typeof commitAny.commit?.author?.date ===
+								'string'
+									? commitAny.commit.author.date
 									: undefined,
 							files: Array.isArray(commit.files)
 								? commit.files.map((file) => ({
@@ -2472,17 +2476,20 @@ export const buildGitHubReleasesToolRegistrations = (
 					},
 					responseSchema: z.array(z.record(z.string(), z.unknown())),
 				});
-				const tags = result.data.map((tag) => ({
-					name: typeof tag.name === 'string' ? tag.name : '',
-					sha:
-						typeof tag.commit?.sha === 'string'
-							? tag.commit.sha
-							: '',
-					url:
-						typeof tag.commit?.url === 'string'
-							? tag.commit.url
-							: undefined,
-				}));
+				const tags = result.data.map((tag) => {
+					const tagAny = tag as any;
+					return {
+						name: typeof tag.name === 'string' ? tag.name : '',
+						sha:
+							typeof tagAny.commit?.sha === 'string'
+								? tagAny.commit.sha
+								: '',
+						url:
+							typeof tagAny.commit?.url === 'string'
+								? tagAny.commit.url
+								: undefined,
+					};
+				});
 				return {
 					ok: true as const,
 					provider: 'github' as const,
