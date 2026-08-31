@@ -25,6 +25,21 @@ Los agentes necesitan inspeccionar estado remoto de GitHub aunque no exista repo
 - Devolver valores de tokens, secrets o variables protegidas.
 - Usar red real en tests.
 
+## architecture
+
+### Activation and access requirements (English)
+
+To inspect the repository that hosts `mcp-vertex`, enable the `github` plugin and configure the actual GitHub repository explicitly. The plugin works without the `git` plugin, without a local checkout, and without a configured `origin` remote.
+
+- Set `GITHUB_TOKEN` in the process environment. Never place the token in `mcp-vertex.config.json`, source files, proposal files, logs, snapshots, or tool arguments.
+- Set `GITHUB_API_URL` when the repository is hosted on GitHub Enterprise Server; leave it unset for GitHub.com. The configured API host must pass the provider URL policy.
+- Set the default `owner` and `repository` only when useful. Otherwise pass them explicitly to each tool. They must identify the GitHub repository that actually contains `mcp-vertex`; do not rely on the local directory name.
+- Use a read-only token with the minimum repository metadata, contents, issues, pull requests, Actions/checks, releases, deployments, and security visibility permissions needed by the selected tools. Do not assume that every token can write.
+- Enable write capabilities separately only in the later mutation proposal; read-only activation must not expose comments, dispatches, retries, cancellations, tags, releases, or other mutations.
+- If a local checkout is available, enable `git` separately and let a higher-level agent compose GitHub data with the local branch, SHA, diff, or remote URL. GitHub must remain fully functional when `git` is not enabled.
+
+The plugin should report actionable errors for a missing token, unsupported host, 401, 403, 404, 429, timeout, or invalid response without revealing credentials.
+
 ## Slices
 
 - global_gate: type

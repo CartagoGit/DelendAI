@@ -69,7 +69,7 @@
 		"lint:file-conventions": "bun tools/scripts/lint/file-conventions.script.ts --strict --baseline=tools/scripts/lint/file-conventions.baseline.json",
 		"lint:types-in-contracts": "bun tools/scripts/lint/types-in-contracts.script.ts",
 		"lint:no-node-imports-in-contracts": "bun tools/scripts/lint/no-node-imports-in-contracts.script.ts",
-		"lint:no-core-public-types-in-client": "bun tools/scripts/lint/no-core-public-types-in-client.script.ts && bun run lint:no-build-imports-from-src",
+		"lint:no-core-public-types-in-client": "bun tools/scripts/lint/no-core-public-types-in-client.script.ts",
 		"lint:no-build-imports-from-src": "bun tools/scripts/lint/no-build-imports-from-src.script.ts",
 		"lint:workflow-command-duplication": "bun tools/scripts/lint/workflow-command-duplication.script.ts",
 		"lint:release-pr-gate": "bun tools/scripts/lint/release-pr-gate.script.ts",

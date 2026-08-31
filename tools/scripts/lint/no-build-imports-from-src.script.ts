@@ -14,24 +14,32 @@ const JAVASCRIPT_EXTENSIONS = new Set(['.js', '.mjs', '.cjs']);
 const RELATIVE_SOURCE_IMPORT =
 	/^\s*(?:import\s*["']([^"']*src\/[^"']*)["']|(?:import|export)\b.*?\bfrom\s*["']([^"']*src\/[^"']*)["']|.*?require\(\s*["']([^"']*src\/[^"']*)["']\s*\))/;
 
-const isInsideTemplateLiteral = (
+const stripTemplateLiteralContent = (
 	line: string,
 	initiallyInside: boolean,
-): boolean => {
+): { readonly code: string; readonly inside: boolean } => {
 	let inside = initiallyInside;
 	let escaped = false;
+	let code = '';
 	for (const character of line) {
 		if (escaped) {
 			escaped = false;
+			if (!inside) code += character;
 			continue;
 		}
 		if (character === '\\') {
 			escaped = true;
+			if (!inside) code += character;
 			continue;
 		}
-		if (character === '`') inside = !inside;
+		if (character === '`') {
+			inside = !inside;
+			code += ' ';
+			continue;
+		}
+		if (!inside) code += character;
 	}
-	return inside;
+	return { code, inside };
 };
 
 const collectJavaScriptFiles = async (directory: string): Promise<string[]> => {
@@ -61,13 +69,12 @@ export const findBuildImportsFromSrc = async (
 		const source = await readFile(file, 'utf8');
 		let insideTemplateLiteral = false;
 		for (const [index, lineText] of source.split('\n').entries()) {
-			const lineStartsInsideTemplate = insideTemplateLiteral;
-			insideTemplateLiteral = isInsideTemplateLiteral(
+			const stripped = stripTemplateLiteralContent(
 				lineText,
 				insideTemplateLiteral,
 			);
-			if (lineStartsInsideTemplate) continue;
-			const match = lineText.match(RELATIVE_SOURCE_IMPORT);
+			insideTemplateLiteral = stripped.inside;
+			const match = stripped.code.match(RELATIVE_SOURCE_IMPORT);
 			const specifier = match?.[1] ?? match?.[2] ?? match?.[3];
 			if (specifier === undefined || !specifier.startsWith('.')) continue;
 			findings.push({

@@ -25,6 +25,19 @@ Los comentarios, retries, dispatches y cancelaciones tienen efectos externos y n
 - Reintentar automáticamente operaciones mutables.
 - Mover operaciones locales al plugin git.
 
+## architecture
+
+### Activation and access requirements (English)
+
+Mutation tools are a separate capability and must remain disabled unless the host explicitly enables them and the user confirms each operation. Enabling GitHub or GitLab read-only access is not sufficient to enable mutations.
+
+- Configure the provider exactly as described by the GitHub or GitLab read-only proposal, including the real repository/project that hosts `mcp-vertex`.
+- Use a token with the minimum write permission for the selected operation only. Do not use a broad administrator token when a narrower repository or project token is sufficient.
+- Require `confirm: true` for every mutation. The handler must reject the request before making an HTTP call when confirmation is absent or does not match the requested effect.
+- Keep mutation tools separately configured from read-only tools, make their availability visible in the activation result, and never infer write capability from token presence.
+- Record a redacted audit receipt containing provider, repository/project, resource, requested effect, actor, timestamp, and remote result. Never record tokens, secret values, sensitive variables, or authorization headers.
+- Do not require the `git` plugin. A local checkout may be used for optional correlation, but it must not authorize or execute a remote mutation.
+
 ## Slices
 
 - global_gate: type

@@ -25,6 +25,21 @@ Los agentes necesitan inspeccionar estado remoto de GitLab aunque no exista repo
 - Devolver valores de tokens, secrets o variables protegidas.
 - Usar red real en tests.
 
+## architecture
+
+### Activation and access requirements (English)
+
+To inspect the repository that hosts `mcp-vertex`, enable the `gitlab` plugin and configure the actual GitLab project explicitly. The plugin works without the `git` plugin, without a local checkout, and without a configured `origin` remote.
+
+- Set `GITLAB_TOKEN` (or the supported legacy GitLab token variable) in the process environment. Never place the token in `mcp-vertex.config.json`, source files, proposal files, logs, snapshots, or tool arguments.
+- Set `GITLAB_URL` when the project is hosted on GitLab self-managed; leave it unset for GitLab.com. The configured host must pass the provider URL policy.
+- Set a default project only if useful, using the numeric project ID or the URL-encoded namespace/project path. Otherwise pass the project explicitly to each tool. The project must be the GitLab project that actually contains `mcp-vertex`.
+- Use a read-only token with the minimum `read_api` and `read_repository` permissions needed by the selected tools. Do not assume that every token can write.
+- Enable write capabilities separately only in the later mutation proposal; read-only activation must not expose retries, comments, cancellations, tags, releases, or other mutations.
+- If a local checkout is available, enable `git` separately and let a higher-level agent compose GitLab data with the local branch, SHA, diff, or remote URL. GitLab must remain fully functional when `git` is not enabled.
+
+The plugin should report actionable errors for a missing token, unsupported host, 401, 403, 404, 429, timeout, or invalid response without revealing credentials.
+
 ## Slices
 
 - global_gate: type

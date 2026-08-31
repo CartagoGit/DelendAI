@@ -25,6 +25,32 @@ GitLab y GitHub comparten transporte, seguridad y límites operativos, pero sus 
 - Persistir tokens, secretos o respuestas remotas completas.
 - Crear operaciones mutables.
 
+## architecture
+
+### Provider activation requirements (English)
+
+To use a remote provider against the repository that contains `mcp-vertex`, the host must explicitly enable the provider plugin and provide access through environment variables or the host configuration. The provider plugin does not require the `git` plugin, a local checkout, or a configured `origin` remote.
+
+### GitHub
+
+- Enable the `github` plugin in the host configuration.
+- Set `GITHUB_TOKEN` to a token owned by the user or automation identity running mcp-vertex. The token is read at runtime and must never be committed, persisted, logged, or returned by a tool.
+- Set `GITHUB_API_URL` only when using GitHub Enterprise Server; otherwise use the provider default for GitHub.com.
+- Provide the repository as `owner` and `repository`, or configure equivalent defaults. For this repository, use the GitHub owner and repository that actually host `mcp-vertex`; do not infer them from the local folder name.
+- For read-only inspection, grant the minimum repository metadata, issues, pull requests, Actions/checks, contents, releases, deployments, and security visibility permissions required by the selected tools. A token with write permissions is not required for read-only tools.
+
+### GitLab
+
+- Enable the `gitlab` plugin in the host configuration.
+- Set `GITLAB_TOKEN` (or the documented legacy GitLab token variable) to a token owned by the user or automation identity running mcp-vertex. The token is read at runtime and must never be committed, persisted, logged, or returned by a tool.
+- Set `GITLAB_URL` for GitLab self-managed; use the provider default for GitLab.com.
+- Provide the project as a numeric project ID or URL-encoded namespace/project path, or configure an equivalent default. For this repository, use the GitLab project that actually hosts `mcp-vertex`; do not infer it from the local folder name.
+- For read-only inspection, grant the minimum `read_api` and `read_repository` access required by the selected tools. A token with write permissions is not required for read-only tools.
+
+### Local checkout composition
+
+If the host also enables `git`, the agent may combine local context (current branch, commit SHA, diff, remotes, or worktrees) with remote provider data. This is optional composition only: GitHub and GitLab remain usable when `git` is disabled or when no checkout exists.
+
 ## Slices
 
 - global_gate: type
