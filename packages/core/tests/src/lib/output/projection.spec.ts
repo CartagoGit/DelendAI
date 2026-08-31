@@ -32,6 +32,8 @@ describe('projection — v00133 S2', () => {
 		expect(result.mode).toBe('full');
 		expect(result.fields).toBeNull();
 		expect(result.truncated).toBe(false);
+		expect(result.truncatedByLimit).toBe(false);
+		expect(result.truncatedByBytes).toBe(false);
 		expect(result.value).toEqual(source);
 	});
 
@@ -61,14 +63,26 @@ describe('projection — v00133 S2', () => {
 		const rows = Array.from({ length: 50 }, (_, index) =>
 			tool({ id: `tool-${index}` }),
 		);
-		const result = projectValue(rows, { limit: 10, maxBytes: 800 });
+		const result = projectValue(rows, { limit: 10, maxBytes: 128 });
 		expect(result.limit).toBe(10);
 		expect(result.truncated).toBe(true);
+		expect(result.truncatedByLimit).toBe(true);
+		expect(result.truncatedByBytes).toBe(true);
 		expect((result.value as readonly unknown[]).length).toBeLessThanOrEqual(
 			10,
 		);
-		expect(result.emittedBytes).toBeLessThanOrEqual(800);
+		expect(result.emittedBytes).toBeLessThanOrEqual(128);
 		expect(result.nextCursor).toBe('offset:10');
+	});
+
+	it('marks object projections truncatedByBytes when maxBytes is too small', () => {
+		const result = projectValue(tool({ summary: 'x'.repeat(256) }), {
+			maxBytes: 64,
+		});
+		expect(result.truncated).toBe(true);
+		expect(result.truncatedByLimit).toBe(false);
+		expect(result.truncatedByBytes).toBe(true);
+		expect(result.value).toBeNull();
 	});
 
 	it('keeps the cursor opaque and emits it verbatim', () => {

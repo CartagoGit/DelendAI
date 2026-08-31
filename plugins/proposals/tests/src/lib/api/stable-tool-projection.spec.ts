@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IStableManifestTool } from '@mcp-vertex/core/public';
+import {
+	createInMemoryHandleStore,
+	type IStableManifestTool,
+} from '@mcp-vertex/core/public';
 
 import { projectProposalsStableTools } from '@mcp-vertex/proposals/lib/api/stable-tool-projection';
 import { PROPOSALS_STABLE_TOOL_SURFACE } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
@@ -100,5 +103,27 @@ describe('stable-tool projection — v00133 S2', () => {
 		expect(result.limit).toBe(3);
 		expect(limitedRows().length).toBe(3);
 		expect(result.nextCursor).toBe('offset:3');
+	});
+
+	it('returns an artifact handle when projection overflows maxBytes', () => {
+		const store =
+			createInMemoryHandleStore<readonly IStableManifestTool[]>();
+		const result = projectProposalsStableTools(
+			{ mode: 'compact', maxBytes: 256 },
+			{ handleStore: store, handleTtlMs: 1_000 },
+		);
+		expect(result.truncatedByBytes).toBe(true);
+		expect(result.artifact).not.toBeNull();
+		if (result.artifact === null) {
+			throw new Error('expected artifact handle');
+		}
+		const read = store.get(
+			result.artifact.handleId,
+			result.artifact.viewerToken,
+		);
+		expect(read.status).toBe('ok');
+		if (read.status === 'ok') {
+			expect(read.value).toEqual(compactRows());
+		}
 	});
 });

@@ -14,7 +14,13 @@
  * payload they will see.
  */
 
-import { projectValue } from '@mcp-vertex/core/public';
+import {
+	projectValue,
+	type IArtifactHandle,
+	type IHandleStore,
+	type IProjectionResult,
+	type IStableManifestTool,
+} from '@mcp-vertex/core/public';
 
 import { PROPOSALS_STABLE_TOOL_SURFACE } from './proposals-stable-tools';
 
@@ -23,6 +29,55 @@ export type {
 	IProjectionResult,
 } from '@mcp-vertex/core/public';
 
+export interface IProjectionArtifactHandle extends IArtifactHandle {
+	readonly projectedBytes: number;
+}
+
+export interface IStableToolProjectionOptions {
+	readonly handleStore?: IHandleStore<readonly IStableManifestTool[]>;
+	readonly handleTtlMs?: number;
+	readonly handleMaxBytes?: number;
+	readonly handleLabel?: string;
+}
+
+export type IStableToolProjectionResult = IProjectionResult<
+	readonly IStableManifestTool[]
+> & {
+	readonly artifact: IProjectionArtifactHandle | null;
+};
+
 export const projectProposalsStableTools = (
 	request: Parameters<typeof projectValue>[1] = {},
-) => projectValue(PROPOSALS_STABLE_TOOL_SURFACE, request);
+	options: IStableToolProjectionOptions = {},
+): IStableToolProjectionResult => {
+	const projection = projectValue(PROPOSALS_STABLE_TOOL_SURFACE, request);
+	if (!projection.truncatedByBytes || options.handleStore === undefined) {
+		return Object.freeze({
+			...projection,
+			artifact: null,
+		});
+	}
+	const fullProjection = projectValue(PROPOSALS_STABLE_TOOL_SURFACE, {
+		...request,
+		maxBytes: undefined,
+	});
+	const handle = options.handleStore.open(
+		fullProjection.value as readonly IStableManifestTool[],
+		{
+			...(options.handleTtlMs !== undefined
+				? { ttlMs: options.handleTtlMs }
+				: {}),
+			...(options.handleMaxBytes !== undefined
+				? { maxBytes: options.handleMaxBytes }
+				: {}),
+			label: options.handleLabel ?? 'proposals.stable-tool-projection',
+		},
+	);
+	return Object.freeze({
+		...projection,
+		artifact: Object.freeze({
+			...handle,
+			projectedBytes: fullProjection.emittedBytes,
+		}),
+	});
+};

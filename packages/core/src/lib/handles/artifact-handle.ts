@@ -114,9 +114,12 @@ export const createInMemoryHandleStore = <T>(): IHandleStore<T> => {
 			const digest = digestOf(value);
 			const handleId = `h:${digest.slice(0, 12)}:${randomToken(8)}`;
 			const viewerToken = randomToken(32);
-			const ttlClock = options.clock ?? null;
+			const ttlClock =
+				options.ttlMs !== undefined
+					? (options.clock ?? DEFAULT_CLOCK)
+					: null;
 			const expiresAt =
-				options.ttlMs !== undefined && ttlClock !== null
+				ttlClock !== null && options.ttlMs !== undefined
 					? ttlClock.now() + options.ttlMs
 					: null;
 			entries.set(handleId, {
