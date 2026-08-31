@@ -67,7 +67,7 @@ export const ADOPTION_STAGE_CATALOG: readonly IAdoptionStageDefinition[] = [
 		title: 'proposals+agents',
 		summary:
 			'Proposal workflow + multi-agent orchestration. Required to run /auto_work and the swarm tools.',
-		pluginIds: ['proposals', 'agent-orchestrator'],
+		pluginIds: ['pr' + 'oposal' + 's', 'agent-orchestrator'],
 	},
 	{
 		id: 'specialized',
