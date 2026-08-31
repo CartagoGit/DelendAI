@@ -75,7 +75,32 @@ describe('@mcp-vertex/github optionsSchema', async () => {
 				}),
 			);
 
-			expect(regs.tools).toEqual([]);
+			expect(regs.tools.map((tool) => tool.id)).toEqual([
+				'context',
+				'repositories_get',
+				'repositories_search',
+				'repositories_variables',
+				'issues_list',
+				'issues_show',
+				'pull_requests_list',
+				'pull_requests_show',
+				'commits_list',
+				'commits_show',
+				'commit_statuses',
+				'checks_runs',
+				'workflows_list',
+				'workflows_runs',
+				'workflow_run',
+				'jobs_list',
+				'jobs_logs',
+				'artifacts_list',
+				'releases_list',
+				'releases_show',
+				'tags_list',
+				'deployments_list',
+				'deployment_statuses',
+			]);
+			expect(regs.tools[0]?.summary).toBe('GitHub provider context');
 			expect(regs.knowledge?.[0]?.body).toContain('GITHUB_TOKEN');
 			expect(regs.knowledge?.[0]?.body).toContain('GITHUB_API_URL');
 			expect(regs.knowledge?.[0]?.body).toContain('owner + repository');
