@@ -51,6 +51,80 @@ const resolveLang = (deps: IOpenDashboardDeps): Lang => {
 };
 
 export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
+	const openDashboardTab = async () => {
+		const lang = resolveLang(deps);
+		const dashboard = new DashboardService({
+			client: deps.client,
+			...(deps.namespacePrefix === undefined
+				? {}
+				: { namespacePrefix: deps.namespacePrefix }),
+		});
+		const embed = new EmbedService();
+		let models;
+		try {
+			models = await dashboard.getAllModels();
+		} catch {
+			return undefined;
+		}
+		const docsUrl = (() => {
+			try {
+				return embed.resolve(deps.getConfig()).url;
+			} catch {
+				return 'https://mcp-vertex.dev';
+			}
+		})();
+		const html = renderDashboard(models, {
+			docsUrl,
+			refreshCommand: REFRESH_COMMAND,
+			openDocsCommand: OPEN_DASHBOARD_COMMAND,
+			lang: dictsByLang[lang],
+		});
+		const panel = deps.host.createWebviewPanel(
+			'mcpVertexDashboard',
+			'mcp-vertex Dashboard',
+			1,
+			{ enableScripts: true, retainContextWhenHidden: true },
+		);
+		panel.webview.setHtml(html);
+		panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
+			const parsed = DASHBOARD_MESSAGE_SCHEMA.safeParse(msg);
+			if (!parsed.success) return;
+			if (parsed.data.command === 'action') {
+				try {
+					await deps.host.executeCommand?.(
+						parsed.data.action === 'expand'
+							? OPEN_DASHBOARD_TAB_COMMAND
+							: REFRESH_COMMAND,
+					);
+				} catch {
+					// Best-effort in reduced hosts.
+				}
+				return;
+			}
+			if (parsed.data.command === 'openTool') {
+				await deps.host.executeCommand?.(
+					OPEN_TOOL_DETAIL_COMMAND,
+					parsed.data.name,
+				);
+				return;
+			}
+			if (parsed.data.command === 'openSurface') {
+				const commands = {
+					proposals: OPEN_PROPOSAL_COMMAND,
+					knowledge: OPEN_KNOWLEDGE_COMMAND,
+					configuration: OPEN_CONFIGURATION_CENTER_COMMAND,
+					settings: OPEN_SETTINGS_COMMAND,
+				} as const;
+				await deps.host.executeCommand?.(commands[parsed.data.surface]);
+				return;
+			}
+			await deps.host.executeCommand?.(
+				OPEN_PROPOSAL_COMMAND,
+				parsed.data.id,
+			);
+		});
+		return panel;
+	};
 	const focusRegistration = deps.host.registerCommand(
 		OPEN_DASHBOARD_COMMAND,
 		async () => {
@@ -63,103 +137,12 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 				});
 				return;
 			}
-			await deps.host.executeCommand?.(OPEN_DASHBOARD_TAB_COMMAND);
+			await openDashboardTab();
 		},
 	);
 	const tabRegistration = deps.host.registerCommand(
 		OPEN_DASHBOARD_TAB_COMMAND,
-		async () => {
-			const lang = resolveLang(deps);
-			const dashboard = new DashboardService({
-				client: deps.client,
-				...(deps.namespacePrefix === undefined
-					? {}
-					: { namespacePrefix: deps.namespacePrefix }),
-			});
-			const embed = new EmbedService();
-			const models = await dashboard.getAllModels();
-			const docsUrl = (() => {
-				try {
-					return embed.resolve(deps.getConfig()).url;
-				} catch {
-					return 'https://mcp-vertex.dev';
-				}
-			})();
-			const html = renderDashboard(models, {
-				docsUrl,
-				refreshCommand: REFRESH_COMMAND,
-				openDocsCommand: OPEN_DASHBOARD_COMMAND,
-				lang: dictsByLang[lang],
-			});
-			const panel = deps.host.createWebviewPanel(
-				'mcpVertexDashboard',
-				'mcp-vertex Dashboard',
-				1,
-				{
-					enableScripts: true,
-					retainContextWhenHidden: true,
-				},
-			);
-			panel.webview.setHtml(html);
-			// FIX (D1) + (D2): wire the message bridge so the ⟳ tab posts
-			// `{command:'action',action:'refresh'}` (resolved to the host's
-			// REFRESH_COMMAND) and `<a data-proposal="...">` rows in the
-			// Agents/Sessions panels open the matching proposal. Without
-			// this listener both gestures were silent no-ops.
-			panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
-				const parsed = DASHBOARD_MESSAGE_SCHEMA.safeParse(msg);
-				if (!parsed.success) return;
-				if (parsed.data.command === 'action') {
-					try {
-						await deps.host.executeCommand?.(
-							parsed.data.action === 'expand'
-								? OPEN_DASHBOARD_COMMAND
-								: REFRESH_COMMAND,
-						);
-					} catch {
-						// Best-effort: a missing executeCommand is a host
-						// capability gap, not a user error.
-					}
-					return;
-				}
-				if (parsed.data.command === 'openTool') {
-					try {
-						await deps.host.executeCommand?.(
-							OPEN_TOOL_DETAIL_COMMAND,
-							parsed.data.name,
-						);
-					} catch {
-						// Best-effort: the detail command may be unavailable in a reduced host.
-					}
-					return;
-				}
-				if (parsed.data.command === 'openSurface') {
-					const commands = {
-						proposals: OPEN_PROPOSAL_COMMAND,
-						knowledge: OPEN_KNOWLEDGE_COMMAND,
-						configuration: OPEN_CONFIGURATION_CENTER_COMMAND,
-						settings: OPEN_SETTINGS_COMMAND,
-					} as const;
-					try {
-						await deps.host.executeCommand?.(
-							commands[parsed.data.surface],
-						);
-					} catch {
-						// Best-effort in reduced hosts.
-					}
-					return;
-				}
-				try {
-					await deps.host.executeCommand?.(
-						OPEN_PROPOSAL_COMMAND,
-						parsed.data.id,
-					);
-				} catch {
-					// Same: best-effort.
-				}
-			});
-			return panel;
-		},
+		openDashboardTab,
 	);
 	return {
 		dispose: () => {
