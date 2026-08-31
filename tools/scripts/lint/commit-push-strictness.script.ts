@@ -16,7 +16,10 @@ const PUSH_DRIVER_REL = 'plugins/commit-policy/src/lib/services/push-driver.ts';
 
 const DIRECT_PUSH_TO_MAIN_CODE = 'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED';
 const DIRECT_PUSH_TO_DEVELOP_CODE = 'DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED';
-const PROTECTED_BRANCHES_CHECK = 'policy.protectedBranches.includes(branch)';
+const PROTECTED_BRANCHES_ANCHORS: readonly RegExp[] = [
+	/policy\.protectedBranches\.includes\(branch\)/,
+	/isBranchProtected\(\s*branch\s*,\s*\{[^}]*protected:\s*effectiveProtectedBranches/,
+];
 const MAIN_GUARD_PATTERN =
 	/if\s*\(\s*branch\s*===\s*['"]main['"]\s*\)[\s\S]*?DIRECT_PUSH_TO_MAIN_NOT_ALLOWED[\s\S]*?direct push to 'main' is not allowed; cuts the release\/publish path\.[\s\S]*?open a PR from a feature branch \(release\/\* or develop\)\./;
 
@@ -32,12 +35,16 @@ export const findStrictnessViolations = (
 	}
 
 	const mainGuardIdx = pushDriverSource.indexOf(DIRECT_PUSH_TO_MAIN_CODE);
-	const protectedBranchesIdx = pushDriverSource.indexOf(
-		PROTECTED_BRANCHES_CHECK,
+	const protectedBranchesIdx = PROTECTED_BRANCHES_ANCHORS.reduce(
+		(prevIdx, anchor) => {
+			const match = pushDriverSource.search(anchor);
+			return match === -1 ? prevIdx : Math.min(prevIdx, match);
+		},
+		Number.POSITIVE_INFINITY,
 	);
 	if (
 		mainGuardIdx < 0 ||
-		protectedBranchesIdx < 0 ||
+		!Number.isFinite(protectedBranchesIdx) ||
 		mainGuardIdx > protectedBranchesIdx
 	) {
 		violations.push(
