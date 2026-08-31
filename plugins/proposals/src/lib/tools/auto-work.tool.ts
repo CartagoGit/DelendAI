@@ -915,6 +915,11 @@ export const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	hygieneWarnings: z.array(z.string()).optional(),
 	stashes: z.unknown().optional(),
 	rescueCandidates: z.unknown().optional(),
+	// R-2026-08-31: rescue-candidate lookalikes that the engine
+	// classifies as smoke artifacts. Surfaced on the response so the
+	// operator can prune them with `git branch -D` /
+	// `proposals_branch_gc` without gating the cascade.
+	smokeResiduals: z.unknown().optional(),
 	// Strict-mode envelope: when the front-hook blocks, the plan also
 	// sets `ok: false` and `reason: 'hygiene-blocked'`. The fields
 	// below are the structured payload so the orchestrator can render
