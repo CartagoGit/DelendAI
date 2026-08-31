@@ -98,6 +98,8 @@ export const guardShippedInPresent = (
 		for (const entry of raw) {
 			if (typeof entry === 'string' && entry.trim().length > 0) {
 				candidates.push(entry.trim());
+			} else if (typeof entry === 'number' && Number.isFinite(entry)) {
+				candidates.push(String(entry));
 			}
 		}
 	} else if (typeof raw === 'string' && raw.trim().length > 0) {
@@ -119,6 +121,8 @@ export const guardShippedInPresent = (
 				if (t.length > 0) candidates.push(t);
 			}
 		}
+	} else if (typeof raw === 'number' && Number.isFinite(raw)) {
+		candidates.push(String(raw));
 	} else if (raw !== undefined && raw !== null) {
 		// Any non-string/non-array value (number, boolean, object) is
 		// malformed.
