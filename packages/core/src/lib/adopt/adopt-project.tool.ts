@@ -27,6 +27,12 @@ import z from 'zod';
 
 import { analyzeProject } from '../bootstrap/analyze-project';
 import { buildAdoptionAssessment } from './adoption-assessment.service';
+import {
+	ADOPTION_STAGES,
+	DEFAULT_ADOPTION_STAGE,
+	isAdoptionStage,
+	resolveStagePluginIds,
+} from './adoption-stages.constant';
 import { ADOPTION_ASSESSMENT_SCHEMA } from '../contracts/constants/adoption-assessment-schema.constant';
 import { deriveConfig } from '../bootstrap/derive-config';
 import { mergeDerivedConfig } from '../bootstrap/merge-derived-config';
@@ -99,6 +105,7 @@ export const buildAdoptProjectPlan = (
 const OUTPUT_SCHEMA = z.object({
 	ok: z.literal(true),
 	preset: z.enum(['lean', 'standard', 'minimal', 'swarm']),
+	stage: z.enum(ADOPTION_STAGES).optional(),
 	config: z.record(z.string(), z.unknown()).optional(),
 	rationale: z.array(z.string()).optional(),
 	assessment: ADOPTION_ASSESSMENT_SCHEMA.optional(),
@@ -107,6 +114,39 @@ const OUTPUT_SCHEMA = z.object({
 	skipped: z.array(z.string()),
 	residual: z.array(z.string()),
 });
+
+/**
+ * Filter an adoption plan to only the plugin ids that belong to the
+ * chosen cumulative stage (f00280 S3). `specialized` is a sentinel that
+ * leaves the plan intact. The rationale note explains the cap so users
+ * see why plugins were dropped.
+ */
+const applyStageFilter = (
+	plan: IAdoptProjectPlan,
+	stage: (typeof ADOPTION_STAGES)[number],
+): IAdoptProjectPlan => {
+	if (stage === 'specialized') return plan;
+	const allowed = new Set(resolveStagePluginIds(stage));
+	const pluginsRecord =
+		(plan.config.plugins as Record<string, unknown> | undefined) ?? {};
+	const filteredPlugins: Record<string, unknown> = {};
+	const dropped: string[] = [];
+	for (const [id, entry] of Object.entries(pluginsRecord)) {
+		if (allowed.has(id)) {
+			filteredPlugins[id] = entry;
+		} else {
+			dropped.push(id);
+		}
+	}
+	return {
+		...plan,
+		config: { ...plan.config, plugins: filteredPlugins },
+		rationale: [
+			...plan.rationale,
+			`Stage "${stage}" applied: ${dropped.length === 0 ? 'no plugins above stage removed' : `plugins above stage ${stage} deferred: ${dropped.join(', ')}. Run \`${stage === 'core' ? 'standard' : stage === 'standard' ? 'agents' : 'specialized'}\` to add them.`}`,
+		],
+	};
+};
 
 const parseExistingConfig = (
 	text: string | undefined,
@@ -304,6 +344,7 @@ export const buildAdoptProjectToolRegistration = (
 					mcpServerName: z.string().optional(),
 					defaultModel: z.string().optional(),
 					repo: z.string().optional(),
+					stage: z.enum(ADOPTION_STAGES).optional(),
 				}),
 				outputSchema: OUTPUT_SCHEMA,
 			},
@@ -316,7 +357,11 @@ export const buildAdoptProjectToolRegistration = (
 				mcpServerName?: string | undefined;
 				defaultModel?: string | undefined;
 				repo?: string | undefined;
+				stage?: (typeof ADOPTION_STAGES)[number] | undefined;
 			}) => {
+				const stage = isAdoptionStage(args.stage)
+					? args.stage
+					: DEFAULT_ADOPTION_STAGE;
 				const analysis = await analyzeProject(deps.reader);
 				const topLevelDirs = await deps.reader.listDir('');
 				const discoveredWorkspaces =
@@ -339,24 +384,28 @@ export const buildAdoptProjectToolRegistration = (
 						...(args.repo !== undefined ? { repo: args.repo } : {}),
 					},
 				);
-				const plan = buildAdoptProjectPlan({
-					analysis,
-					topLevelDirs,
-					projectName:
-						args.projectName ?? analysis.name ?? 'Workspace',
-					namespacePrefix:
-						args.namespacePrefix ?? deps.namespacePrefix,
-					mcpServerName: args.mcpServerName ?? 'mcp-vertex',
-					docsDir: deps.corePaths.docsDir,
-					...(args.defaultModel !== undefined
-						? { defaultModel: args.defaultModel }
-						: {}),
-					...(args.repo !== undefined ? { repo: args.repo } : {}),
-				});
+				const plan = applyStageFilter(
+					buildAdoptProjectPlan({
+						analysis,
+						topLevelDirs,
+						projectName:
+							args.projectName ?? analysis.name ?? 'Workspace',
+						namespacePrefix:
+							args.namespacePrefix ?? deps.namespacePrefix,
+						mcpServerName: args.mcpServerName ?? 'mcp-vertex',
+						docsDir: deps.corePaths.docsDir,
+						...(args.defaultModel !== undefined
+							? { defaultModel: args.defaultModel }
+							: {}),
+						...(args.repo !== undefined ? { repo: args.repo } : {}),
+					}),
+					stage,
+				);
 
 				if (args.analyze === true) {
 					return toolOk({
 						preset: plan.preset,
+						stage,
 						config: plan.config,
 						rationale: plan.rationale,
 						assessment,
@@ -370,6 +419,7 @@ export const buildAdoptProjectToolRegistration = (
 				if (args.write !== true) {
 					return toolOk({
 						preset: plan.preset,
+						stage,
 						config: plan.config,
 						rationale: plan.rationale,
 						assessment,
@@ -435,6 +485,7 @@ export const buildAdoptProjectToolRegistration = (
 
 				return toolOk({
 					preset: plan.preset,
+					stage,
 					config,
 					rationale: plan.rationale,
 					assessment,

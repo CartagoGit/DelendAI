@@ -85,6 +85,13 @@ export interface IToolDescriptor {
 	readonly summary?: string;
 	readonly tags: readonly string[];
 	readonly effects: readonly IToolEffect[];
+	/**
+	 * Whether the tool is currently hot in the server (true) or
+	 * registered-but-not-loaded (false). Populated from
+	 * `tool_search.active`; defaults to true when the source omits the
+	 * flag so legacy callers (compact overview) stay unaffected.
+	 */
+	readonly loaded?: boolean;
 }
 
 export interface IKnowledgeSummary {

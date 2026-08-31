@@ -119,6 +119,14 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
   - GOVERNANCE explica la asimetría develop flexible / release strict / main protected, y nombra `release-pr-gate` como check visible.
   - Nota de `LEFTHOOK_BYPASS=1` documentada como vía de emergencia para push a `main` o `release/*`.
 
+## dependency graph
+
+- S1 y S2 son file-disjoint y pueden ir en commits separados, pero ambos modifican constantes/lints y comparten convención → mismo agente, commits secuenciales para mantener trazabilidad.
+- S3 depende de S2.
+- S4 depende parcialmente de S2 (mismo nombre `release-pr-gate`).
+- S5 depende de S3/S4 (documenta el estado final).
+- Plan de ejecución: S1 → S2 → S3 → S4 → S5; todos verificados con `bun run typecheck` + suites focalizadas.
+
 ## acceptance
 
 - `bun run typecheck` verde (incluyendo los nuevos scripts).
@@ -127,14 +135,6 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
 - Smoke empírico: ejecutar `git push` simulado contra `release/v1.0.0/initial` con un commit que rompe typecheck → exit 1 con blocker claro.
 - Smoke empírico: ejecutar contra `develop` con typecheck bueno → exit 0 sin bloqueos.
 - Smoke empírico: ejecutar `bun tools/scripts/release/release-plan.ts` y verificar que el flujo R1–R4 sigue pasando (no regresión).
-
-## dependency graph
-
-- S1 y S2 son file-disjoint y pueden ir en commits separados, pero ambos modifican constantes/lints y comparten convención → mismo agente, commits secuenciales para mantener trazabilidad.
-- S3 depende de S2.
-- S4 depende parcialmente de S2 (mismo nombre `release-pr-gate`).
-- S5 depende de S3/S4 (documenta el estado final).
-- Plan de ejecución: S1 → S2 → S3 → S4 → S5; todos verificados con `bun run typecheck` + suites focalizadas.
 
 ## notes
 
