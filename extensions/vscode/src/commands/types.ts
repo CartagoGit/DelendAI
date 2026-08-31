@@ -8,6 +8,8 @@ import type { ICommandQuickPickItem } from '../contracts/interfaces/command-quic
 import type { IDisposable, IWebviewPanel } from '../extension';
 import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
 import type { ToolTreeDataProvider } from '../providers/tool-tree-data-provider';
+import type { IToolDetail } from '@mcp-vertex/ui-extension/webview';
+import type { IProposalDetail } from '@mcp-vertex/ui-extension/webview';
 
 /** Minimal `vscode.Uri` surface this module needs (f00045 S3). */
 export interface IVscodeUri {
@@ -147,6 +149,22 @@ export interface ICommandDeps {
 	 * the plan card is hidden (every other detail section still renders).
 	 */
 	readonly workspaceRoot?: string;
+	/**
+	 * Optional sink for host-agnostic detail models. When supplied, the
+	 * `openToolDetail` and `openProposal` commands prefer to deliver the
+	 * `IToolDetail` / `IProposalDetail` payload through the host shell
+	 * (e.g. the dashboard `WebviewView`) before falling back to opening a
+	 * standalone webview panel. Returning `true` suppresses the fallback
+	 * panel so the dashboard overlay is the only surface.
+	 */
+	readonly detailSink?: (
+		kind: 'tool',
+		model: IToolDetail,
+	) => Promise<boolean> | boolean;
+	readonly proposalDetailSink?: (
+		kind: 'proposal',
+		model: IProposalDetail,
+	) => Promise<boolean> | boolean;
 }
 
 export const showCommandError = async (
