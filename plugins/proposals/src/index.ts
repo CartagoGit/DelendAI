@@ -46,6 +46,7 @@ import {
 } from './lib/tools/authoring.tool';
 import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
+import type { IAutoWorkPersistMode } from './lib/tools/auto-work-persist';
 import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
 import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
 import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
@@ -225,84 +226,35 @@ const hasSliceTrigger = (
 	);
 };
 
+const commitPolicyOwnsSlicePersistence = (
+	options: Readonly<Record<string, unknown>> | undefined,
+): boolean => {
+	if (options === undefined) return false;
+	const commit = options.commit;
+	const commitEnabled =
+		typeof commit === 'object' &&
+		commit !== null &&
+		(commit as { readonly enabled?: unknown }).enabled === true;
+	return commitEnabled && hasSliceTrigger(options);
+};
+
+export const resolveProposalPersistMode = (
+	configuredMode: IAutoWorkPersistMode | undefined,
+	commitPolicyOptions: Readonly<Record<string, unknown>> | undefined,
+): IAutoWorkPersistMode =>
+	commitPolicyOwnsSlicePersistence(commitPolicyOptions)
+		? 'none'
+		: (configuredMode ?? 'none');
+
 /**
- * A slice must have one automatic Git owner. `proposals.persist` mutates Git
- * while closing the slice; `commit-policy` with a slice cadence mutates Git
- * after observing the same transition. The core invokes this before plugin
- * registration so a contradictory persisted config stops the boot clearly.
+ * `commit-policy` owns slice persistence when it is enabled with a slice
+ * trigger. Proposals keeps its configured mode as the fallback for hosts that
+ * do not load that plugin or do not enable its slice cadence.
  */
 export const validateProposalConfiguration = (
 	input: IPluginConfigurationValidationInput,
 ): readonly IPluginConfigurationIssue[] => {
-	const proposals = input.pluginOptions.get('proposals');
-	const commitPolicy = input.pluginOptions.get('commit-policy');
-	if (proposals === undefined || commitPolicy === undefined) return [];
-
-	const persist = proposals.persist;
-	const persistMode =
-		typeof persist === 'object' && persist !== null
-			? (persist as { readonly mode?: unknown }).mode
-			: undefined;
-	const commit = commitPolicy.commit;
-	const push = commitPolicy.push;
-	const commitEnabled =
-		typeof commit === 'object' && commit !== null
-			? (commit as { readonly enabled?: unknown }).enabled === true
-			: false;
-	const sliceCadence = hasSliceTrigger(commitPolicy);
-	const pushEnabled =
-		typeof push === 'object' && push !== null
-			? (push as { readonly enabled?: unknown }).enabled === true
-			: false;
-	const pushOnCommit =
-		typeof push === 'object' && push !== null
-			? (push as { readonly onCommit?: unknown }).onCommit === true
-			: false;
-
-	if (
-		persistMode !== undefined &&
-		persistMode !== 'none' &&
-		commitEnabled &&
-		sliceCadence
-	) {
-		return [
-			{
-				code: 'DUPLICATE_SLICE_GIT_OWNER',
-				message:
-					'Automatic slice persistence is configured in both plugins. Choose one Git owner: proposals.persist or commit-policy.cadence slice trigger; boot is stopped instead of guessing.',
-				keys: [
-					'plugins.proposals.options.persist.mode',
-					'plugins.commit-policy.options.commit.enabled',
-					'plugins.commit-policy.options.cadence.triggers',
-					'plugins.commit-policy.options.push.onCommit',
-				],
-				values: {
-					persistMode,
-					commitEnabled,
-					sliceCadence,
-					pushEnabled,
-					pushOnCommit,
-				},
-				precedence:
-					'Explicit host configuration wins; conflicting automatic owners are never merged implicitly.',
-				suggestedConfig: {
-					plugins: {
-						proposals: { options: { persist: { mode: 'none' } } },
-						'commit-policy': {
-							options: {
-								commit: { enabled: true },
-								cadence: { triggers: [{ kind: 'slice' }] },
-								push: {
-									enabled: pushEnabled,
-									onCommit: pushOnCommit,
-								},
-							},
-						},
-					},
-				},
-			},
-		];
-	}
+	void input;
 	return [];
 };
 
@@ -380,12 +332,20 @@ export default definePlugin({
 						.protectedBranches
 				: ['main', 'master'];
 		const configuredPersist = parsedOptions.data.persist;
+		const effectivePersistMode = resolveProposalPersistMode(
+			configuredPersist?.mode,
+			commitPolicyOptions as
+				| Readonly<Record<string, unknown>>
+				| undefined,
+		);
 		const effectivePersist =
-			configuredPersist !== undefined && configuredPersist.mode !== 'none'
-				? { ...configuredPersist, protectedBranches }
-				: configuredPersist !== undefined
-					? { ...configuredPersist, protectedBranches }
-					: undefined;
+			configuredPersist !== undefined
+				? {
+						...configuredPersist,
+						mode: effectivePersistMode,
+						protectedBranches,
+					}
+				: undefined;
 		const microValidationCalls: IObservedToolCall[] = [];
 		const incidentLogStore = createLogStore(
 			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors')),

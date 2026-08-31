@@ -38,12 +38,18 @@ describe('resolvePluginSpecifier', async () => {
 });
 
 describe('nodeDynamicImport runtime package resolution', async () => {
-	it('loads a local first-party package from dist when a workspace is provided', async () => {
+	it('loads a local first-party package from source when a workspace is provided', async () => {
 		const loaded = (await nodeDynamicImport(
 			'@mcp-vertex/proposals',
 			process.cwd(),
 		)) as { default?: { readonly name?: string } };
 		expect(loaded.default?.name).toBe('proposals');
+	});
+
+	it('does not fall back to compiled artifacts for a missing local package', async () => {
+		await expect(
+			nodeDynamicImport('@mcp-vertex/not-a-local-plugin', process.cwd()),
+		).rejects.toThrow('expected src/index.ts');
 	});
 });
 

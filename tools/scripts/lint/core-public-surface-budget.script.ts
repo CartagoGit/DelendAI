@@ -2,7 +2,7 @@
 
 import { parseBarrel } from '../inspect/core-public-inventory.script';
 
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 747;
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 750;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

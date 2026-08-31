@@ -12,13 +12,13 @@ cada agente tiene que elegir el autor, decidir cuándo empujar y recordar añadi
 un trailer de auditoría. `commit-policy` envuelve esas primitivas con tres
 políticas configurables y expone cinco herramientas para conducir el motor:
 
-| Herramienta            | Propósito                                                                        |
-| ---------------------- | -------------------------------------------------------------------------------- |
-| `commit_policy_status` | Instantánea de solo lectura de la configuración efectiva.                        |
-| `commit_policy_commit` | Commit a través del motor (identidad + auditoría + rechazo de ramas protegidas). |
-| `commit_policy_push`   | Push a través del motor (rechazo de ramas protegidas + política de force).       |
-| `commit_policy_run`    | Disparar manualmente cualquier disparador configurado.                           |
-| `commit_policy_refresh_branch_protection` | Actualizar bajo demanda la protección remota de ramas. |
+| Herramienta                               | Propósito                                                                        |
+| ----------------------------------------- | -------------------------------------------------------------------------------- |
+| `commit_policy_status`                    | Instantánea de solo lectura de la configuración efectiva.                        |
+| `commit_policy_commit`                    | Commit a través del motor (identidad + auditoría + rechazo de ramas protegidas). |
+| `commit_policy_push`                      | Push a través del motor (rechazo de ramas protegidas + política de force).       |
+| `commit_policy_run`                       | Disparar manualmente cualquier disparador configurado.                           |
+| `commit_policy_refresh_branch_protection` | Actualizar bajo demanda la protección remota de ramas.                           |
 
 El motor **está desactivado por defecto**: ningún host verá un solo commit a
 menos que lo active explícitamente.
@@ -41,18 +41,18 @@ menos que lo active explícitamente.
 }
 ```
 
-| Knob                           | Por defecto        | Qué controla                                                                   |
-| ------------------------------ | ------------------ | ------------------------------------------------------------------------------ |
-| `commit.enabled`               | `false`            | Interruptor maestro — ningún commit sin `true`.                                |
-| `commit.requireConventional`   | `true`             | Rechaza mensajes que no sean Conventional Commit.                              |
-| `commit.autoScopeFromProposal` | `true`             | Convierte `feat: x` en `feat(<proposalId>): x` cuando hay contexto de slice.   |
-| `identity.mode`                | `"global"`         | Uno entre `explicit / agent / repo / global / env / auto`.                     |
-| `cadence.triggers`             | `[]`               | Array vacío = ningún commit automático; solo funciona `commit_policy_run`.     |
-| `audit.trailer`                | `"co-authored-by"` | `"none" \| "co-authored-by" \| "body-metadata"`.                               |
-| `push.enabled`                 | `false`            | Interruptor maestro — ningún push sin `true`.                                  |
-| `push.onCommit`                | `false`            | Push inmediato tras cada commit.                                               |
-| `push.force`                   | `"with-lease"`     | `"with-lease" \| "allow" \| "never"`.                                          |
-| `push.protectedBranches`       | `[]`               | Los nombres exactos configurados aquí quedan protegidos; no se asumen nombres. |
+| Knob                           | Por defecto        | Qué controla                                                                                                               |
+| ------------------------------ | ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `commit.enabled`               | `false`            | Interruptor maestro — ningún commit sin `true`.                                                                            |
+| `commit.requireConventional`   | `true`             | Rechaza mensajes que no sean Conventional Commit.                                                                          |
+| `commit.autoScopeFromProposal` | `true`             | Convierte `feat: x` en `feat(<proposalId>): x` cuando hay contexto de slice.                                               |
+| `identity.mode`                | `"global"`         | Uno entre `explicit / agent / repo / global / env / auto`.                                                                 |
+| `cadence.triggers`             | `[]`               | Array vacío = ningún commit automático; solo funciona `commit_policy_run`.                                                 |
+| `audit.trailer`                | `"co-authored-by"` | `"none" \| "co-authored-by" \| "body-metadata"`.                                                                           |
+| `push.enabled`                 | `false`            | Interruptor maestro — ningún push sin `true`.                                                                              |
+| `push.onCommit`                | `false`            | Push inmediato tras cada commit.                                                                                           |
+| `push.force`                   | `"with-lease"`     | `"with-lease" \| "allow" \| "never"`.                                                                                      |
+| `push.protectedBranches`       | `[]`               | Los nombres exactos configurados aquí quedan protegidos; no se asumen nombres.                                             |
 | `push.providerByHost`          | _ninguno_          | Mapa opcional de host a proveedor para remotos GitHub/GitLab autoalojados, por ejemplo `{ "git.example.test": "gitlab" }`. |
 
 La protección remota se actualiza manualmente mediante
@@ -93,12 +93,12 @@ campo `branchPolicy`:
 
 ### Tipos de disparador
 
-| Tipo        | Se dispara cuando                                                                                                  |
-| ----------- | ------------------------------------------------------------------------------------------------------------------ |
-| `slice`     | Un slice de `proposals` transiciona a un estado configurado (por defecto `done`). Sondea el `index.json` cada 1 s. |
-| `threshold` | `git status --porcelain` reporta al menos N archivos sucios (por defecto 10). Solo manual.                         |
+| Tipo        | Se dispara cuando                                                                                                            |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `slice`     | Un slice de `proposals` transiciona a un estado configurado (por defecto `done`). Sondea el `index.json` cada 1 s.           |
+| `threshold` | `git status --porcelain` reporta al menos N archivos sucios (por defecto 10). Solo manual.                                   |
 | `interval`  | Han pasado al menos N minutos desde el último disparo y el árbol está sucio. Se ejecuta automáticamente cuando se configura. |
-| `manual`    | Siempre disponible, independientemente de `cadence.triggers`.                                                      |
+| `manual`    | Siempre disponible, independientemente de `cadence.triggers`.                                                                |
 
 ## Por qué desactivado por defecto
 

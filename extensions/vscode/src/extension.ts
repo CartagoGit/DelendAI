@@ -494,7 +494,7 @@ export const activate = async (
 	// inside the handle on success, and on failure we clear the slot so
 	// the next `activate()` starts from a clean slate.
 	const handle: IRuntimeHandle = createRuntimeHandle();
-	const vscode = deps.vscode ?? (await loadVscodeApi());
+	const vscode = deps.vscode ?? loadVscodeApi();
 	let adoptConnectedClient:
 		| ((client: McpStdioClient) => Promise<void>)
 		| undefined;
@@ -1070,7 +1070,7 @@ export const createDefaultClient = async (
 	vscode?: IVscodeApi,
 	startupReportChannel?: IOutputChannel,
 ): Promise<McpStdioClient> => {
-	const api = vscode ?? (await loadVscodeApi());
+	const api = vscode ?? loadVscodeApi();
 	const launch = await resolveServerCommand(api);
 	if (launch === undefined) {
 		throw new Error(
@@ -1100,8 +1100,16 @@ export const renderOverviewHtml = (overview: IOverview): string => {
 	});
 };
 
-const loadVscodeApi = async (): Promise<IVscodeApi> =>
-	(await import('vscode')) as unknown as IVscodeApi;
+/**
+ * Resolve the `vscode` module. VS Code's Extension Host provides it
+ * as a CommonJS namespace; a synchronous `require` is the portable
+ * lookup (no async bootstrap, no wrapper that hides `default`).
+ * The build script (`scripts/build.ts`) marks `vscode` as `external`
+ * so the call lands on the host runtime export at activation time.
+ */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const loadVscodeApi = (): IVscodeApi =>
+	require('vscode') as unknown as IVscodeApi;
 
 const registerDevelopmentAutoReload = (
 	context: IExtensionContext,

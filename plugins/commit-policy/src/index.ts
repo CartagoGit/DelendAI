@@ -359,22 +359,7 @@ export default definePlugin({
 			(t): t is Extract<typeof t, { kind: 'slice' }> =>
 				t.kind === 'slice',
 		);
-		const proposalsOptions = ctx.pluginOptions?.get('proposals');
-		const proposalsPersistMode =
-			typeof proposalsOptions === 'object' &&
-			proposalsOptions !== null &&
-			typeof (proposalsOptions as { persist?: unknown }).persist ===
-				'object'
-				? (
-						proposalsOptions as {
-							persist?: { mode?: unknown };
-						}
-					).persist?.mode
-				: undefined;
-		const proposalsOwnsSlicePersistence =
-			proposalsPersistMode === 'commit' ||
-			proposalsPersistMode === 'commit-and-push';
-		if (sliceTrigger !== undefined && !proposalsOwnsSlicePersistence) {
+		if (sliceTrigger !== undefined) {
 			// The listener dispatches every
 			// emitted event into the engine. The engine decides
 			// what (if anything) gets committed; the ack flows

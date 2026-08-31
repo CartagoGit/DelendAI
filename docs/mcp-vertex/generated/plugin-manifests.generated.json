@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-31T07:20:04.205Z",
+	"generatedAt": "2026-08-31T07:23:35.399Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -2953,6 +2953,19 @@
 				"git-write"
 			],
 			"tokenBudgetBytes": 12400,
+			"example": {
+				"validationCommand": "bun run validate",
+				"namePool": [
+					"falcon",
+					"owl",
+					"crow",
+					"sparrow",
+					"finch"
+				],
+				"orchestration": {
+					"delegateAfterToolCalls": 3
+				}
+			},
 			"toolPermissions": {
 				"auto_work": [
 					"filesystem-read",
