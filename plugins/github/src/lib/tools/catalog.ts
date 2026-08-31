@@ -1172,36 +1172,61 @@ export const buildGitHubPullRequestsToolRegistrations = (
 					},
 					responseSchema: z.array(z.record(z.string(), z.unknown())),
 				});
-				const items = result.data.map((pr) => ({
-					number: typeof pr.number === 'number' ? pr.number : 0,
-					title: typeof pr.title === 'string' ? pr.title : '',
-					state: typeof pr.state === 'string' ? pr.state : 'unknown',
-					draft: typeof pr.draft === 'boolean' ? pr.draft : false,
-					url:
-						typeof pr.html_url === 'string'
-							? pr.html_url
-							: 'https://github.com',
-					author: mapUser(pr.user),
-					labels: mapLabels(
-						Array.isArray(pr.labels) ? pr.labels : undefined,
-					),
-					branch:
-						typeof prAny.head?.ref === 'string'
-							? prAny.head.ref
-							: '',
-					baseBranch:
-						typeof prAny.base?.ref === 'string'
-							? prAny.base.ref
-							: undefined,
-					reviewDecision:
-						typeof pr.reviewDecision === 'string'
-							? pr.reviewDecision
-							: undefined,
-					mergeable:
-						typeof pr.mergeable_state === 'string'
-							? pr.mergeable_state
-							: undefined,
-				}));
+				const items = result.data.map((pr) => {
+					const prRecord = pr as Record<string, unknown>;
+					const head =
+						prRecord.head && typeof prRecord.head === 'object'
+							? (prRecord.head as Record<string, unknown>)
+							: null;
+					const base =
+						prRecord.base && typeof prRecord.base === 'object'
+							? (prRecord.base as Record<string, unknown>)
+							: null;
+					return {
+						number:
+							typeof prRecord.number === 'number'
+								? prRecord.number
+								: 0,
+						title:
+							typeof prRecord.title === 'string'
+								? prRecord.title
+								: '',
+						state:
+							typeof prRecord.state === 'string'
+								? prRecord.state
+								: 'unknown',
+						draft:
+							typeof prRecord.draft === 'boolean'
+								? prRecord.draft
+								: false,
+						url:
+							typeof prRecord.html_url === 'string'
+								? prRecord.html_url
+								: 'https://github.com',
+						author: mapUser(prRecord.user),
+						labels: mapLabels(
+							Array.isArray(prRecord.labels)
+								? prRecord.labels
+								: undefined,
+						),
+						branch:
+							head && typeof head.ref === 'string'
+								? head.ref
+								: '',
+						baseBranch:
+							base && typeof base.ref === 'string'
+								? base.ref
+								: undefined,
+						reviewDecision:
+							typeof prRecord.reviewDecision === 'string'
+								? prRecord.reviewDecision
+								: undefined,
+						mergeable:
+							typeof prRecord.mergeable_state === 'string'
+								? prRecord.mergeable_state
+								: undefined,
+					};
+				});
 				return {
 					ok: true as const,
 					provider: 'github' as const,
