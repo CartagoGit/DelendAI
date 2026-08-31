@@ -257,7 +257,8 @@ export async function gcZombies(
 	const lockSnapshot = await loadLockSnapshotLocal(lockPath);
 
 	const now = options?.now || new Date();
-	const staleAfterMinutes = options?.staleAfterMinutes ?? 10;
+	const staleAfterMinutes =
+		options?.staleAfterMinutes ?? DEFAULT_STALE_AFTER_MINUTES;
 	const orphanTtlMinutes =
 		options?.orphanTtlMinutes ?? DEFAULT_ORPHAN_TTL_MINUTES;
 
