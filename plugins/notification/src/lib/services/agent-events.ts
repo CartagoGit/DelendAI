@@ -86,6 +86,7 @@ const eventKey = (agent: string, taskId: string): string =>
 export const watchAgentHeartbeat = (
 	options: IWatchAgentHeartbeatOptions,
 ): IAgentHeartbeatWatcher => {
+	const legacyLastSeen = new Map<string, Date>();
 	let emittedState = new Map<string, IAgentEventKind>();
 	let timer: ReturnType<typeof setInterval> | undefined;
 
@@ -117,6 +118,9 @@ export const watchAgentHeartbeat = (
 		emittedState = new Map(
 			[...emittedState].filter(([key]) => claimKeys.has(key)),
 		);
+		for (const key of legacyLastSeen.keys()) {
+			if (!claimKeys.has(key)) legacyLastSeen.delete(key);
+		}
 
 		const out: IAgentEvent[] = [];
 		for (const claim of claims) {
@@ -125,18 +129,57 @@ export const watchAgentHeartbeat = (
 				? Date.parse(claim.lastSeen)
 				: Number.NaN;
 			if (Number.isNaN(persistedLastSeen)) {
-				if (emittedState.has(key)) continue;
-				emittedState.set(key, 'agent-alive');
-				out.push(
-					await emit(
-						'agent-alive',
-						claim.agent,
-						claim.taskId,
-						now,
-						now,
-						0,
-					),
+				const firstSeen = legacyLastSeen.get(key);
+				if (firstSeen === undefined) {
+					legacyLastSeen.set(key, now);
+					if (emittedState.has(key)) continue;
+					emittedState.set(key, 'agent-alive');
+					out.push(
+						await emit(
+							'agent-alive',
+							claim.agent,
+							claim.taskId,
+							now,
+							now,
+							0,
+						),
+					);
+					continue;
+				}
+				const ageMs = Math.max(0, now.getTime() - firstSeen.getTime());
+				const missedBeats = Math.floor(
+					ageMs / Math.max(1, options.heartbeatMs),
 				);
+				if (ageMs >= snapshot.staleAfterMinutes * 60_000) {
+					if (emittedState.get(key) === 'agent-dead') continue;
+					emittedState.set(key, 'agent-dead');
+					out.push(
+						await emit(
+							'agent-dead',
+							claim.agent,
+							claim.taskId,
+							now,
+							firstSeen,
+							missedBeats,
+						),
+					);
+				} else if (
+					ageMs >=
+					AGENT_IDLE_MISSED_BEATS * options.heartbeatMs
+				) {
+					if (emittedState.get(key) === 'agent-idle') continue;
+					emittedState.set(key, 'agent-idle');
+					out.push(
+						await emit(
+							'agent-idle',
+							claim.agent,
+							claim.taskId,
+							now,
+							firstSeen,
+							missedBeats,
+						),
+					);
+				}
 				continue;
 			}
 			const seen = Number.isNaN(persistedLastSeen)

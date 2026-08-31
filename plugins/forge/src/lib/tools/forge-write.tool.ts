@@ -8,6 +8,7 @@ import {
 import {
 	FORGE_ISSUE_CREATE_INPUT_SCHEMA,
 	FORGE_ISSUE_CREATE_OUTPUT_SCHEMA,
+	FORGE_MCP_VERTEX_ISSUE_CREATE_INPUT_SCHEMA,
 	FORGE_PR_COMMENT_INPUT_SCHEMA,
 	FORGE_PR_COMMENT_OUTPUT_SCHEMA,
 	FORGE_PR_CREATE_INPUT_SCHEMA,
@@ -16,11 +17,17 @@ import {
 import type {
 	ICommentPrOptions,
 	ICreateIssueOptions,
+	ICreateMcpVertexIssueOptions,
 	ICreatePrOptions,
 	IForgeWriteExec,
 } from '../contracts/interfaces/forge-write.interface';
 import type { IProposalReadFile } from '../services/forge-write';
-import { commentOnPr, createIssue, createPr } from '../services/forge-write';
+import {
+	commentOnPr,
+	createIssue,
+	createMcpVertexIssue,
+	createPr,
+} from '../services/forge-write';
 
 export interface IForgeWriteToolOptions {
 	readonly namespacePrefix: string;
@@ -56,6 +63,18 @@ export const runForgeIssueCreate = async (
 ) =>
 	toolJsonBounded(
 		await createIssue(options.workspaceRootAbs, args, options.forgeExec),
+	);
+
+export const runForgeMcpVertexIssueCreate = async (
+	args: ICreateMcpVertexIssueOptions,
+	options: IForgeWriteToolOptions,
+) =>
+	toolJsonBounded(
+		await createMcpVertexIssue(
+			options.workspaceRootAbs,
+			args,
+			options.forgeExec,
+		),
 	);
 
 export const buildForgeWriteToolRegistrations = (
@@ -117,6 +136,26 @@ export const buildForgeWriteToolRegistrations = (
 				},
 				async (args: ICreateIssueOptions) =>
 					runForgeIssueCreate(args, options),
+			);
+		},
+	},
+	{
+		id: 'mcp_vertex_issue_create',
+		tags: ['forge', 'issues', 'mcp-vertex', 'network', 'write'],
+		effects: ['write', 'network'],
+		summary:
+			'Create an internal mcp-vertex issue in the canonical mcp-vertex repository.',
+		register: async (server) => {
+			server.registerTool(
+				`${options.namespacePrefix}_mcp_vertex_issue_create`,
+				{
+					description:
+						'Create an issue for an mcp-vertex error or defect in CartagoGit/mcp-vertex. This destination is fixed and does not use the consuming project origin. Requires confirm:true.',
+					inputSchema: FORGE_MCP_VERTEX_ISSUE_CREATE_INPUT_SCHEMA,
+					outputSchema: FORGE_ISSUE_CREATE_OUTPUT_SCHEMA,
+				},
+				async (args: ICreateMcpVertexIssueOptions) =>
+					runForgeMcpVertexIssueCreate(args, options),
 			);
 		},
 	},

@@ -69,6 +69,7 @@ export default definePlugin({
 						'',
 						`Read tools: \`${ctx.namespacePrefix}_pr_list\` / \`${ctx.namespacePrefix}_pr_show\` / \`${ctx.namespacePrefix}_ci_status\` / \`${ctx.namespacePrefix}_issue_list\` / \`${ctx.namespacePrefix}_issue_show\`.`,
 						`Write tools: \`${ctx.namespacePrefix}_pr_create\` / \`${ctx.namespacePrefix}_pr_comment\` / \`${ctx.namespacePrefix}_issue_create\` (each its own tool, not a kind discriminator).`,
+						`For mcp-vertex-owned errors or defects, use \`${ctx.namespacePrefix}_mcp_vertex_issue_create\`; it always posts to \`CartagoGit/mcp-vertex\` and ignores the consuming project's origin.`,
 						`Release tool: \`${ctx.namespacePrefix}_release\` — creates a release from an existing tag.`,
 						`Search tool: \`${ctx.namespacePrefix}_search_code\` — read-only remote code search.`,
 						'',

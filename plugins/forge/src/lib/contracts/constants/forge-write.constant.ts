@@ -34,6 +34,9 @@ export const FORGE_ISSUE_CREATE_INPUT_SCHEMA = z
 	})
 	.strict();
 
+export const FORGE_MCP_VERTEX_ISSUE_CREATE_INPUT_SCHEMA =
+	FORGE_ISSUE_CREATE_INPUT_SCHEMA;
+
 export const FORGE_PR_CREATE_RESULT_SCHEMA = z
 	.object({
 		number: z.number().int().positive(),
