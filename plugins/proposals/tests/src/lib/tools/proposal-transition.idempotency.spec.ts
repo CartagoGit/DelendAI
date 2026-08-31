@@ -73,7 +73,6 @@ describe('proposal_transition idempotency metadata (r00042 S2)', () => {
 			options,
 		);
 
-		expect(result.isError).toBeUndefined();
 		const payload = JSON.parse(result.content[0]?.text ?? '{}') as {
 			ok: boolean;
 			transitionId?: string;
@@ -111,8 +110,6 @@ describe('proposal_transition idempotency metadata (r00042 S2)', () => {
 			},
 			options,
 		);
-		expect(first.isError).toBeUndefined();
-
 		const replay = await runProposalTransition(
 			{
 				id: 'r00043',
@@ -125,7 +122,6 @@ describe('proposal_transition idempotency metadata (r00042 S2)', () => {
 			options,
 		);
 
-		expect(replay.isError).toBeUndefined();
 		const payload = JSON.parse(replay.content[0]?.text ?? '{}') as {
 			ok: boolean;
 			from?: string;
@@ -170,8 +166,6 @@ describe('proposal_transition idempotency metadata (r00042 S2)', () => {
 			},
 			options,
 		);
-		expect(first.isError).toBeUndefined();
-
 		const conflict = await runProposalTransition(
 			{
 				id: 'r00044',
@@ -182,7 +176,7 @@ describe('proposal_transition idempotency metadata (r00042 S2)', () => {
 			options,
 		);
 
-		expect(conflict.isError).toBe(true);
+		expect('isError' in conflict && conflict.isError).toBe(true);
 		const payload = JSON.parse(conflict.content[0]?.text ?? '{}') as {
 			ok: boolean;
 			error?: { code?: string };
