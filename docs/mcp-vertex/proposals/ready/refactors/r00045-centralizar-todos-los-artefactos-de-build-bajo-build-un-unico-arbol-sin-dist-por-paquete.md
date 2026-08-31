@@ -30,7 +30,7 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
 - No convertir el proyecto a `npm` workspaces — se mantiene `bun` workspaces.
 - No eliminar la condition `@mcp-vertex/source` — es el mecanismo que evita el drift en CI y se mantiene.
 - No migrar a un sistema de build distribuido (turborepo/nx) — `bun build` + `tsc --emitDeclarationOnly` sigue siendo el pipeline.
-- No tocar los `extensions/vscode/dist/` — VS Code extension packaging sigue su propio pipeline (`vsce`) y se publica aparte del monorepo.
+- El packaging de VS Code usa `vsce`, pero su staging y artefacto final deben vivir bajo `build/extensions/vscode/`; no debe recrear `extensions/vscode/dist/`.
 - No consolidar extensiones (`extensions/vscode/`) dentro de `apps/` — son dominios distintos con pipelines distintos.
 
 ## Slices
