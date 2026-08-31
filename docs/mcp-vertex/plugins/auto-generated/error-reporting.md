@@ -3,7 +3,7 @@ id: error-reporting
 package: @mcp-vertex/error-reporting
 version: 0.1.0
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-08-31T12:16:53.519Z
 ---
 
 # Error Reporting
@@ -12,7 +12,7 @@ generated: 2026-08-25T01:07:05.846Z
 
 ## Summary
 
-Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).
+Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.
 
 ## Tags
 

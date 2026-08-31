@@ -559,7 +559,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 	{
 		"id": "error-reporting",
 		"package": "@mcp-vertex/error-reporting",
-		"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).",
+		"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.",
 		"tags": [
 			"error-reporting",
 			"github",
@@ -677,6 +677,54 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"tokenBudget": {
 			"warning": 6200,
 			"hard": 6800,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
+		"id": "github",
+		"package": "@mcp-vertex/github",
+		"summary": "GitHub read-only provider context, HTTP client and remote resource tools.",
+		"tags": [
+			"github",
+			"provider"
+		],
+		"maturity": "experimental",
+		"visibility": "public",
+		"presets": [],
+		"capabilities": [
+			"github",
+			"remote-provider"
+		],
+		"permissions": [
+			"network"
+		],
+		"tokenBudget": {
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
+		"id": "gitlab",
+		"package": "@mcp-vertex/gitlab",
+		"summary": "GitLab read-only provider context, HTTP client and resource tools.",
+		"tags": [
+			"gitlab",
+			"provider"
+		],
+		"maturity": "experimental",
+		"visibility": "public",
+		"presets": [],
+		"capabilities": [
+			"gitlab",
+			"remote-provider"
+		],
+		"permissions": [
+			"network"
+		],
+		"tokenBudget": {
+			"warning": 2700,
+			"hard": 3000,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1188,6 +1236,31 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"permissions": [
 			"filesystem-read",
 			"filesystem-write"
+		],
+		"tokenBudget": {
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
+		"id": "remote-provider-core",
+		"package": "@mcp-vertex/remote-provider-core",
+		"summary": "Shared remote-provider foundation: validated config, injectable HTTP, normalized errors.",
+		"tags": [
+			"remote",
+			"provider",
+			"github",
+			"gitlab"
+		],
+		"maturity": "beta",
+		"visibility": "public",
+		"presets": [],
+		"capabilities": [
+			"remote-provider"
+		],
+		"permissions": [
+			"filesystem-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
