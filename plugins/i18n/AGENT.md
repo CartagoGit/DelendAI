@@ -30,10 +30,10 @@
 
 ## Tests
 
-- plugins/i18n/tests/src/lib/validate-interpolation.spec.ts
-- plugins/i18n/tests/src/lib/tools/i18n-validate.tool.spec.ts
-- plugins/i18n/tests/src/lib/tools/i18n-check.tool.spec.ts
 - plugins/i18n/tests/src/lib/check-i18n.spec.ts
+- plugins/i18n/tests/src/lib/tools/i18n-check.tool.spec.ts
+- plugins/i18n/tests/src/lib/tools/i18n-validate.tool.spec.ts
+- plugins/i18n/tests/src/lib/validate-interpolation.spec.ts
 
 ## Do not
 
