@@ -23,9 +23,10 @@ const workspaces: string[] = [];
 const createQualityServer = async (command: string) => {
 	const workspace = mkdtempSync(join(tmpdir(), 'proposals-quality-e2e-'));
 	workspaces.push(workspace);
+	const qualityScript = 'bun tools/scripts/quality/run-quality.script.ts';
 	const config = JSON.stringify({
 		plugins: {
-			quality: { options: { scopes: { all: [command] } } },
+			quality: { options: { scopes: { all: [qualityScript] } } },
 			proposals: { options: { requirePeerReview: false } },
 		},
 	});
@@ -125,6 +126,13 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				'- **Status**: pending',
 			);
 		} finally {
+			const quality = await client.callTool({
+				name: 'mcp-vertex_quality_quality_run_all',
+				arguments: {},
+			});
+			expect(quality.structuredContent).toMatchObject({
+				summary: { ok: false },
+			});
 			await client.close();
 			await project.server.close();
 		}
@@ -175,6 +183,14 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				'- **Status**: done',
 			);
 		} finally {
+			const quality = await client.callTool({
+				name: 'mcp-vertex_quality_quality_run_all',
+				arguments: {},
+			});
+			expect(quality.isError).toBeFalsy();
+			expect(quality.structuredContent).toMatchObject({
+				summary: { ok: true },
+			});
 			await client.close();
 			await project.server.close();
 		}
