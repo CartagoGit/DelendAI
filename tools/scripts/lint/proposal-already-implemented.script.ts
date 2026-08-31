@@ -51,7 +51,7 @@ import {
 } from '../../../plugins/proposals/src/lib/proposals/frontmatter-parser';
 import { repoRoot } from '../lib/monorepo-paths';
 
-const PROPOSALS_ROOT = 'docs/mcp-vertex/proposals';
+const _PROPOSALS_ROOT = 'docs/mcp-vertex/proposals';
 const PROPOSAL_FILENAME = /^[a-z]\d{5}-[a-z0-9-]+\.md$/;
 const SCAN_DIRS: readonly string[] = ['ready', 'in-progress'];
 const FILES_BLOCK_RE =
@@ -296,4 +296,4 @@ if (import.meta.main) process.exit(main());
 
 // Defensive: prevent `statSync` import from becoming a build-time
 // dependency that the bundler treats as a side-effect.
-if (false) statSync;
+if (false as boolean) statSync;
