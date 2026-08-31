@@ -1,0 +1,44 @@
+# setup-bun-repo — r00035 reusable composite action.
+#
+# Encapsulates the steps every workflow in this repo shares:
+#   - checkout
+#   - setup-bun (pin to the version the repo expects)
+#   - bun install --frozen-lockfile
+#
+# Use this action instead of inlining the same four-step preamble in every
+# workflow. Workflows that need a custom bun version or non-frozen install
+# should opt out and inline their own block.
+name: setup-bun-repo
+description: Checkout + setup-bun + frozen install for the mcp-vertex repo.
+
+inputs:
+    bun-version:
+        description: Bun version to install.
+        required: false
+        default: '1.3.14'
+
+runs
+
+:
+    using: composite
+    steps:
+        - name: checkout
+          uses: actions/checkout@v7
+
+        - name: setup-bun
+          uses: oven-sh/setup-bun@v2
+          with:
+              bun-version: ${{ inputs.bun-version }}
+
+        - name: install dependencies
+          shell: bash
+          run: bun install --frozen-lockfile
+
+        - name: cache bun
+          uses: actions/cache@v4
+          with:
+              path: ~/.bun/install/cache
+              key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lockb') }}
+              restore-keys: |
+                  bun-${{ runner.os }}-
+          if: ${{ ! env.ACT }}
