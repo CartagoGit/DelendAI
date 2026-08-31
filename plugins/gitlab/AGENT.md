@@ -12,6 +12,7 @@ _(none)_
 ## Depends on
 
 - @mcp-vertex/contracts
+- @mcp-vertex/remote-provider-core
 - zod
 - @mcp-vertex/core
 
@@ -26,10 +27,10 @@ _(none)_
 
 ## Tests
 
+- plugins/gitlab/tests/diagnostics.spec.ts
+- plugins/gitlab/tests/src/lib/write-tools.spec.ts
 - plugins/gitlab/tests/src/lib/tools.spec.ts
 - plugins/gitlab/tests/src/lib/mutations.spec.ts
-- plugins/gitlab/tests/src/lib/client.spec.ts
-- plugins/gitlab/tests/src/lib/plugin-options.spec.ts
 
 ## Do not
 
