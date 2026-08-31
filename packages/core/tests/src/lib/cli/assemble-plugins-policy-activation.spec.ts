@@ -3,14 +3,31 @@ import { describe, expect, it } from 'vitest';
 import { requiresPolicyStartupActivation } from '@mcp-vertex/core/lib/cli/assemble-plugins';
 
 describe('requiresPolicyStartupActivation', () => {
-	it('activates configured automatic commit-policy triggers before lazy routing', () => {
-		expect(
-			requiresPolicyStartupActivation('commit-policy', {
+	it.each([
+		[
+			'slice',
+			{
 				commit: { enabled: true },
 				cadence: { triggers: [{ kind: 'slice' }] },
-			}),
-		).toBe(true);
-	});
+			},
+		],
+		[
+			'interval',
+			{
+				commit: { enabled: true },
+				cadence: { triggers: [{ kind: 'interval' }] },
+			},
+		],
+		['push on commit', { push: { enabled: true, onCommit: true } }],
+		['periodic push', { push: { enabled: true, everyNMinutes: 5 } }],
+	])(
+		'activates configured automatic %s policies before lazy routing',
+		(_name, options) => {
+			expect(
+				requiresPolicyStartupActivation('commit-policy', options),
+			).toBe(true);
+		},
+	);
 
 	it('activates commit-policy when push-on-commit is configured', () => {
 		expect(
@@ -21,27 +38,27 @@ describe('requiresPolicyStartupActivation', () => {
 		).toBe(true);
 	});
 
-	it('activates commit-policy for periodic automatic pushes', () => {
-		expect(
-			requiresPolicyStartupActivation('commit-policy', {
-				push: { enabled: true, everyNMinutes: 5 },
-			}),
-		).toBe(true);
-	});
-
-	it('does not activate manual-only or disabled policies', () => {
-		expect(
-			requiresPolicyStartupActivation('commit-policy', {
+	it.each([
+		[
+			'manual commit',
+			{
 				commit: { enabled: true },
 				cadence: { triggers: [{ kind: 'manual' }] },
-			}),
-		).toBe(false);
-		expect(
-			requiresPolicyStartupActivation('commit-policy', {
+			},
+		],
+		[
+			'disabled commit',
+			{
 				commit: { enabled: false },
 				cadence: { triggers: [{ kind: 'slice' }] },
-			}),
-		).toBe(false);
+			},
+		],
+		['disabled push', { push: { enabled: false, onCommit: true } }],
+		['empty options', {}],
+	])('does not activate %s policies', (_name, options) => {
+		expect(requiresPolicyStartupActivation('commit-policy', options)).toBe(
+			false,
+		);
 	});
 
 	it('does not apply commit-policy activation rules to another plugin', () => {

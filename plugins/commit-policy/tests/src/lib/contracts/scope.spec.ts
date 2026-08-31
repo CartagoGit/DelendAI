@@ -57,7 +57,11 @@ const mulberry32 = (seed: number): (() => number) => {
 };
 
 const randomItem = <T>(rng: () => number, values: readonly T[]): T =>
-	values[Math.floor(rng() * values.length)] ?? values[0];
+	values[Math.floor(rng() * values.length)] ??
+	values[0] ??
+	(() => {
+		throw new Error('randomItem requires a non-empty values array');
+	})();
 
 const randomCase = (rng: () => number, input: string): string => {
 	const mode = Math.floor(rng() * 3);
