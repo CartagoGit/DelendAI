@@ -23,6 +23,7 @@ import {
 	type IAgentLockDeps,
 	type ILockFile,
 } from '../../../../src/lib/locks/agent-lock-engine';
+import { runAgentLockEngine as runAgentLockEngineFromPublic } from '../../../../src/lib/locks/public';
 import { RELEASE_AUDIT_LOG_RELATIVE_PATH } from '../../../../src/lib/contracts/constants/agents-lock.constants';
 import {
 	readSessionBalance,
@@ -63,6 +64,21 @@ beforeEach(() => {
 
 afterEach(() => {
 	rmSync(workspace, { recursive: true, force: true });
+});
+
+describe('agent lock public surface', async () => {
+	it('re-exports the lock engine from the explicit public entrypoint', async () => {
+		const result = await runAgentLockEngineFromPublic(
+			{
+				action: 'claim',
+				task_id: 'task-public',
+				agent: 'agent-public',
+				files: ['src/public.ts'],
+			},
+			deps(),
+		);
+		expect(body(result).claimed).toBe(true);
+	});
 });
 
 describe('runAgentLockEngine — claim', async () => {
