@@ -193,12 +193,11 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				readFileSync(
 					join(
 						workspace,
-						'docs/mcp-vertex/proposals/done/f04201-quality.md',
+						'docs/mcp-vertex/proposals/done/feats/f04201-quality.md',
 					),
 					'utf8',
 				),
-				'- **Status**: done',
-			);
+			).toContain('- **Status**: done');
 		} finally {
 			await client.close();
 			await project.server.close();
