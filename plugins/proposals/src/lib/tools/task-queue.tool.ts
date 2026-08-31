@@ -5,6 +5,7 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
 	IActionSchema,
 	IParamsSchema,
+	releaseSessionSubscriptions,
 	runTaskQueueMcp,
 } from '../agents/task-queue-engine';
 import type { ITaskQueuePaths } from '../agents/task-queue-engine';
@@ -73,15 +74,35 @@ export const buildTaskQueueRegistration = (
 		'Multi-agent coordination queue: enqueue/dequeue/subscribe/report (waitFor, observe, backpressure).',
 	tags: ['coordination'],
 	register: async (server) => {
+		attachSessionCleanup(server, options.paths);
 		server.registerTool(
 			`${options.namespacePrefix}_task_queue`,
 			{
 				outputSchema: TASK_QUEUE_OUTPUT_SCHEMA,
 				description:
-					'Swarm coordination only: enqueue/dequeue/subscribe/report for waitFor, observe, or backpressure. Root orchestrator owns queue writes.',
+					'Swarm coordination only: enqueue/dequeue/subscribe/report/release-session for waitFor, observe, or backpressure. Root orchestrator owns queue writes.',
 				inputSchema: TASK_QUEUE_INPUT_SCHEMA,
 			},
 			async (args) => runTaskQueueMcp(args, options.paths),
 		);
 	},
 });
+
+type ICloseCapableServer = {
+	readonly server?: {
+		onclose?: (() => void) | undefined;
+	};
+};
+
+const attachSessionCleanup = (
+	server: unknown,
+	paths: ITaskQueuePaths,
+): void => {
+	const transportServer = (server as ICloseCapableServer).server;
+	if (transportServer === undefined) return;
+	const previousOnClose = transportServer.onclose;
+	transportServer.onclose = (): void => {
+		void releaseSessionSubscriptions(paths).catch(() => undefined);
+		previousOnClose?.();
+	};
+};

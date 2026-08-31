@@ -399,9 +399,14 @@ export default definePlugin({
 			runAutoStateRepairOnBoot(stateOptions);
 		}
 
+		const qualityOptions = ctx.pluginOptions?.has('quality')
+			? (ctx.pluginOptions.get('quality') as {
+					scopes?: Record<string, readonly string[]>;
+				})
+			: undefined;
 		const qualityPeerLoaded =
-			ctx.peerPlugins?.has('quality') === true ||
-			ctx.pluginOptions?.has('quality') === true;
+			ctx.peerPlugins?.has('quality') === true &&
+			qualityOptions?.scopes !== undefined;
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRoot: ctx.workspace.root,

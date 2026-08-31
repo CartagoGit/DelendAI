@@ -21,6 +21,7 @@
  */
 
 import { mkdir, stat } from 'node:fs/promises';
+import { hostname } from 'node:os';
 import { basename, dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -126,6 +127,7 @@ export const IActionSchema = z.enum([
 	'dequeue',
 	'subscribe',
 	'report',
+	'release-session',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -171,10 +173,16 @@ export interface IReportAction {
 	readonly params: Record<string, never>;
 }
 
+export interface IReleaseSessionAction {
+	readonly action: 'release-session';
+	readonly params: Record<string, never>;
+}
+
 export type ITaskQueueAction =
 	| IEnqueueAction
 	| IDequeueAction
 	| ISubscribeAction
+	| IReleaseSessionAction
 	| IReportAction;
 
 export interface IEnqueueResult {
@@ -353,6 +361,8 @@ interface ISubscriptionLease {
 	subscriberId: string;
 	subscriptionId: string;
 	leaseUntil: string;
+	host?: string;
+	pid?: number;
 }
 
 const loadSubscriptionLeases = async (
@@ -426,6 +436,64 @@ const loadDeliveredSet = async (sidecarPath: string): Promise<Set<string>> => {
 	}
 	return new Set();
 };
+/**
+ * Resolve the current host/pid for session-aware ownership. The bridge in
+ * `@mcp-vertex/proposals/src/index.ts` overrides this once per boot so every
+ * process tracks its own identity without leaking into other hosts.
+ */
+export const resolveCallerSession = (): { host: string; pid: number } =>
+	resolveCallerSessionImpl();
+
+const resolveCallerSessionImpl = (): { host: string; pid: number } => ({
+	host: hostname(),
+	pid: process.pid,
+});
+
+/**
+ * Release every subscription lease owned by the caller process.
+ * Idempotent: a process that closed once is a no-op on the next call.
+ * The host/pid match keeps one process from stealing another process's
+ * lease; pre-tracking entries (no host/pid) are preserved for the legacy
+ * TTL path.
+ */
+export async function releaseSessionSubscriptions(
+	paths: ITaskQueuePaths,
+	caller: { host: string; pid: number } = resolveCallerSession(),
+): Promise<{ readonly releasedTaskIds: readonly string[] }> {
+	const subscriptionPath = subscriptionSidecarPath(paths.queuePath);
+	return withFileMutex(subscriptionPath, async () => {
+		const leases = await loadSubscriptionLeases(subscriptionPath);
+		const owned = leases.filter(
+			(lease) =>
+				typeof lease.host === 'string' &&
+				lease.host === caller.host &&
+				typeof lease.pid === 'number' &&
+				lease.pid === caller.pid,
+		);
+		if (owned.length === 0) return { releasedTaskIds: [] };
+		const released = new Set(owned.map((lease) => lease.taskId));
+		await saveSubscriptionLeases(
+			subscriptionPath,
+			leases.filter((lease) => !released.has(lease.taskId)),
+		);
+		return { releasedTaskIds: [...released] };
+	});
+}
+			(lease) =>
+				typeof lease.host === 'string' &&
+				lease.host === caller.host &&
+				typeof lease.pid === 'number' &&
+				lease.pid === caller.pid,
+		);
+		if (owned.length === 0) return { releasedTaskIds: [] };
+		const released = new Set(owned.map((lease) => lease.taskId));
+		await saveSubscriptionLeases(
+			subscriptionPath,
+			leases.filter((lease) => !released.has(lease.taskId)),
+		);
+		return { releasedTaskIds: [...released] };
+	});
+}
 
 /** Atomically persist the delivered-keys set (kept readable on disk — N11). */
 const saveDeliveredSet = async (
@@ -654,6 +722,7 @@ export async function runTaskQueueAction(
 				subscriberId: params.subscriberId,
 				subscriptionId,
 				leaseUntil,
+				...resolveCallerSession(),
 			};
 			await saveSubscriptionLeases(subscriptionPath, [
 				...leases.filter((lease) => lease.taskId !== params.taskId),
@@ -702,6 +771,13 @@ export async function runTaskQueueAction(
 				};
 			});
 		});
+	}
+
+	if (action.action === 'release-session') {
+		return (await releaseSessionSubscriptions(
+			paths,
+			resolveCallerSession(),
+		)) as ITaskQueueResult;
 	}
 
 	if (action.action === 'report') {
