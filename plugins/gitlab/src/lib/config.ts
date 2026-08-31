@@ -23,6 +23,10 @@ export interface IGitLabProjectInput {
 	readonly apiUrl?: string;
 }
 
+type MutableGitLabProjectInput = {
+	-readonly [Key in keyof IGitLabProjectInput]?: IGitLabProjectInput[Key];
+};
+
 export interface IGitLabPluginOptions {
 	readonly baseUrl?: string;
 	readonly webUrl?: string;
@@ -146,13 +150,7 @@ const resolveProject = (
 		['env', envProject],
 		['plugin', input.options?.defaultProject],
 	];
-	const merged: {
-		projectId?: string | number;
-		projectPath?: string;
-		displayName?: string;
-		webUrl?: string;
-		apiUrl?: string;
-	} = {};
+	const merged: MutableGitLabProjectInput = {};
 	const sources: ConfigSource[] = [];
 	for (const [source, value] of layers) {
 		if (value === undefined) continue;
