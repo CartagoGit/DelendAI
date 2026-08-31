@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type {
 	IHostAdapterPack,
@@ -88,31 +88,12 @@ describe('runHostCapabilityGate', () => {
 	});
 });
 
-describe('validateOne negative branches via vi.mock', () => {
-	const stubBuilder = (pack: IHostAdapterPack): void => {
-		vi.doMock('@mcp-vertex/core/public', async () => {
-			const actual = await vi.importActual<
-				typeof import('@mcp-vertex/core/public')
-			>('@mcp-vertex/core/public');
-			return { ...actual, buildHostAdapterPack: () => pack };
-		});
-	};
-
-	const runFresh = async () => {
-		// Re-import so the mocked module is honoured.
-		vi.resetModules();
-		const mod: typeof import('./host-capability-packs.script') =
-			await import('./host-capability-packs.script');
-		return mod.runHostCapabilityGate([manualProfile]);
-	};
-
-	afterEach(() => {
-		vi.doUnmock('@mcp-vertex/core/public');
-		vi.resetModules();
-	});
+describe('validateOne negative branches via injected builder', () => {
+	const runWithPack = (pack: IHostAdapterPack) =>
+		runHostCapabilityGate([manualProfile], () => pack);
 
 	it('flags host-loop-without-runner', async () => {
-		stubBuilder({
+		const result = runWithPack({
 			version: 1,
 			hostId: 'manual-profile',
 			actions: [{ kind: 'connect-mcp', mode: 'tools', required: true }],
@@ -122,7 +103,6 @@ describe('validateOne negative branches via vi.mock', () => {
 				fallback: 'handoff-and-new-turn',
 			},
 		});
-		const result = await runFresh();
 		expect(result.ok).toBe(false);
 		expect(
 			result.findings.some(
@@ -132,7 +112,7 @@ describe('validateOne negative branches via vi.mock', () => {
 	});
 
 	it('flags runner-without-host-loop', async () => {
-		stubBuilder({
+		const result = runWithPack({
 			version: 1,
 			hostId: 'manual-profile',
 			actions: [{ kind: 'connect-mcp', mode: 'tools', required: true }],
@@ -142,7 +122,6 @@ describe('validateOne negative branches via vi.mock', () => {
 				fallback: 'handoff-and-new-turn',
 			},
 		});
-		const result = await runFresh();
 		expect(result.ok).toBe(false);
 		expect(
 			result.findings.some(
@@ -152,7 +131,7 @@ describe('validateOne negative branches via vi.mock', () => {
 	});
 
 	it('flags continuation-mode-mismatch', async () => {
-		stubBuilder({
+		const result = runWithPack({
 			version: 1,
 			hostId: 'manual-profile',
 			actions: [
@@ -165,7 +144,6 @@ describe('validateOne negative branches via vi.mock', () => {
 				fallback: 'handoff-and-new-turn',
 			},
 		});
-		const result = await runFresh();
 		expect(result.ok).toBe(false);
 		expect(
 			result.findings.some(
@@ -175,7 +153,7 @@ describe('validateOne negative branches via vi.mock', () => {
 	});
 
 	it('flags bad-version', async () => {
-		stubBuilder({
+		const result = runWithPack({
 			version: 2 as 1,
 			hostId: 'manual-profile',
 			actions: [{ kind: 'connect-mcp', mode: 'tools', required: true }],
@@ -185,7 +163,6 @@ describe('validateOne negative branches via vi.mock', () => {
 				fallback: 'handoff-and-new-turn',
 			},
 		});
-		const result = await runFresh();
 		expect(result.ok).toBe(false);
 		expect(result.findings.some((f) => f.ruleId === 'bad-version')).toBe(
 			true,
@@ -206,8 +183,7 @@ describe('validateOne negative branches via vi.mock', () => {
 				fallback: 'handoff-and-new-turn',
 			},
 		} as unknown as IHostAdapterPack;
-		stubBuilder(offContract);
-		const result = await runFresh();
+		const result = runWithPack(offContract);
 		expect(result.ok).toBe(false);
 		expect(
 			result.findings.some((f) => f.ruleId === 'unknown-action-kind'),
@@ -215,7 +191,7 @@ describe('validateOne negative branches via vi.mock', () => {
 	});
 
 	it('flags missing-mcp-baseline', async () => {
-		stubBuilder({
+		const result = runWithPack({
 			version: 1,
 			hostId: 'manual-profile',
 			actions: [{ kind: 'connect-mcp', mode: 'tools', required: false }],
@@ -225,12 +201,9 @@ describe('validateOne negative branches via vi.mock', () => {
 				fallback: 'handoff-and-new-turn',
 			},
 		});
-		const result = await runFresh();
 		expect(result.ok).toBe(false);
 		expect(
 			result.findings.some((f) => f.ruleId === 'missing-mcp-baseline'),
 		).toBe(true);
 	});
 });
-
-import { afterEach } from 'vitest';

@@ -168,21 +168,37 @@ export const registerProvidersOpenDashboardCommand = (
 	deps.vscode.commands.registerCommand(
 		PROVIDERS_OPEN_DASHBOARD_COMMAND,
 		async () => {
+			const s = stringsFor(deps);
+			const panel = deps.vscode.window.createWebviewPanel(
+				'mcpVertexProviderDashboard',
+				s.title,
+				deps.vscode.ViewColumn.One,
+				{ enableScripts: false },
+			);
+			panel.webview.html = renderProviderDashboardHtml(
+				{
+					providers: buildProviderStatusModel(undefined, null),
+					usage: buildUsageCostModel(undefined, null),
+					modelAttribution: buildModelAttributionModel(undefined),
+				},
+				s,
+			);
+			activePanel = panel;
+			panel.webview.onDidDispose?.(() => {
+				if (activePanel === panel) activePanel = undefined;
+			});
 			try {
-				const s = stringsFor(deps);
 				const model = await fetchViewModel(deps);
-				const panel = deps.vscode.window.createWebviewPanel(
-					'mcpVertexProviderDashboard',
-					s.title,
-					deps.vscode.ViewColumn.One,
-					{ enableScripts: false },
-				);
 				panel.webview.html = renderProviderDashboardHtml(model, s);
-				activePanel = panel;
-				panel.webview.onDidDispose?.(() => {
-					if (activePanel === panel) activePanel = undefined;
-				});
 			} catch (err) {
+				panel.webview.html = renderProviderDashboardHtml(
+					{
+						providers: buildProviderStatusModel(undefined, null),
+						usage: buildUsageCostModel(undefined, null),
+						modelAttribution: buildModelAttributionModel(undefined),
+					},
+					s,
+				);
 				await showCommandError(
 					deps.vscode,
 					'open provider dashboard',

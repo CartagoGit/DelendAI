@@ -82,10 +82,36 @@ export const assertReleaseMetadata = (
 ): IReleaseCandidateMetadata => {
 	if (!SHA.test(metadata.sourceDevelopSha) || !SHA.test(metadata.baseMainSha))
 		throw new Error('release metadata requires valid source and base SHAs');
+	if (!VERSION.test(metadata.fromVersion))
+		throw new Error('release metadata requires a plain fromVersion');
 	if (
-		!VERSION.test(metadata.fromVersion) ||
-		!VERSION.test(metadata.targetVersion)
+		!isReleaseType(metadata.type) ||
+		metadata.branch !== releaseBranch(metadata.type, metadata.slug)
 	)
+		throw new Error('release metadata branch does not match type and slug');
+	if (
+		metadata.targetVersion !==
+		nextVersion(metadata.fromVersion, metadata.type)
+	)
+		throw new Error(
+			'release metadata targetVersion does not match release type',
+		);
+	if (!VERSION.test(metadata.targetVersion))
 		throw new Error('release metadata requires plain X.Y.Z versions');
+	if (!LOWER_KEBAB.test(metadata.slug))
+		throw new Error('release metadata requires a lower-kebab slug');
+	if (metadata.actor.trim() === '')
+		throw new Error('release metadata requires an actor');
+	if (Number.isNaN(Date.parse(metadata.timestamp)))
+		throw new Error('release metadata requires a valid timestamp');
+	if (!RELEASE_STATES.includes(metadata.state))
+		throw new Error('release metadata requires a valid state');
+	if (
+		metadata.includedProposals.some(
+			(proposal) =>
+				typeof proposal !== 'string' || proposal.trim() === '',
+		)
+	)
+		throw new Error('release metadata proposals must be non-empty strings');
 	return metadata;
 };
