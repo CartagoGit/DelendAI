@@ -35,3 +35,33 @@ export const DASHBOARD_MESSAGE_SCHEMA = z.discriminatedUnion('command', [
 		})
 		.strict(),
 ]);
+
+/**
+ * Messages the host pushes INTO the dashboard webview. These are
+ * posted by `DashboardWebviewViewProvider` after a tool/proposal
+ * detail payload has been loaded so the shell renders the detail
+ * inside its own overlay instead of opening a standalone webview
+ * panel.
+ */
+export const DASHBOARD_HOST_MESSAGE_SCHEMA = z.discriminatedUnion('command', [
+	z
+		.object({
+			command: z.literal('hostToolDetail'),
+			model: z.unknown(),
+		})
+		.strict(),
+	z
+		.object({
+			command: z.literal('hostProposalDetail'),
+			model: z.unknown(),
+		})
+		.strict(),
+	z
+		.object({
+			command: z.literal('hostHideDetail'),
+		})
+		.strict(),
+]);
+export type DashboardHostMessage = z.infer<
+	typeof DASHBOARD_HOST_MESSAGE_SCHEMA
+>;
