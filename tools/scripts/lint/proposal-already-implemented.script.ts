@@ -296,4 +296,4 @@ if (import.meta.main) process.exit(main());
 
 // Defensive: prevent `statSync` import from becoming a build-time
 // dependency that the bundler treats as a side-effect.
-if (false) statSync;
+if (false as boolean) statSync;
