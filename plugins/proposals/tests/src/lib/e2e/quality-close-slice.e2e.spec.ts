@@ -68,7 +68,7 @@ const seedSlice = async (client: Client, id: string): Promise<string> => {
 		name: 'mcp-vertex_proposals_create_proposal',
 		arguments: {
 			id,
-			kind: 'fix',
+			kind: 'feat',
 			title: 'quality gate',
 			status: 'in-progress',
 			slices: [
