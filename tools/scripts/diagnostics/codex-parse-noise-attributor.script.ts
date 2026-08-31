@@ -12,9 +12,9 @@
  *
  * This script:
  *   1. Walks every Codex.log under the running VSCode instance
- *      (default `~/.vscode-server/data/logs/**/openai.chatgpt/Codex.log`,
- *      overridable via `--root=<path>`).
- *   2. Finds every line that matches `Failed to parse message` and
+ *      (default: $HOME/.vscode-server/data/logs on a remote,
+ *      overridable via --root=path on the command line).
+ *   2. Finds every line that matches the literal `Failed to parse message` and
  *      extracts the surrounding context (timestamp, channel tag,
  *      and the line *above* the warning — that one almost always
  *      reveals whether the offender is the IPC router, the
