@@ -1,4 +1,5 @@
 import type {
+	IStableManifestTool,
 	IPayloadPercentile,
 	PermissionCategory,
 } from '@mcp-vertex/core/public';
@@ -106,10 +107,7 @@ export interface IAdaptiveFacadeOutput {
 	readonly intent: TAdaptiveFacadeIntent;
 	readonly preferredPath: IAdaptiveFacadeCandidate;
 	readonly alternatives: readonly IAdaptiveFacadeCandidate[];
-	readonly detailedSurface: readonly {
-		readonly name: string;
-		readonly summary: string;
-	}[];
+	readonly detailedSurface: readonly IStableManifestTool[];
 	readonly bytes: number;
 	readonly truncated: boolean;
 }

@@ -53,7 +53,12 @@ const CandidateSchema = z.object({
 
 const DetailedSurfaceSchema = z.object({
 	name: z.string().trim().min(1),
+	plugin: z.string().trim().min(1),
+	sinceVersion: z.string().trim().min(1),
+	semverGuarantee: z.literal('additive-only'),
 	summary: z.string().trim().min(1),
+	inputSchema: z.unknown(),
+	outputSchema: z.unknown(),
 });
 
 const InputSchema = z
