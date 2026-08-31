@@ -70,8 +70,15 @@ console.log(`• packaging ${manifest.name}@${manifest.version}`);
 console.log(`  → ${outDir}`);
 
 const r = spawnSync(
-	'vsce',
-	['package', '--no-dependencies', '--no-git-tag-version', '--out', outDir],
+	'bunx',
+	[
+		'vsce',
+		'package',
+		'--no-dependencies',
+		'--no-git-tag-version',
+		'--out',
+		outDir,
+	],
 	{
 		cwd: stagingDir,
 		stdio: 'inherit',

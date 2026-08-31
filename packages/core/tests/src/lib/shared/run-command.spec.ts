@@ -16,7 +16,7 @@ const isPidAlive = (pid: number): boolean => {
 };
 
 const waitForPidExit = async (pid: number): Promise<boolean> => {
-	for (let attempt = 0; attempt < 20; attempt += 1) {
+	for (let attempt = 0; attempt < 80; attempt += 1) {
 		if (!isPidAlive(pid)) return true;
 		await new Promise((resolve) => setTimeout(resolve, 25));
 	}
