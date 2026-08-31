@@ -62,6 +62,7 @@ import {
 	releasePrepareExecute,
 	releaseValidate,
 } from '../../../../plugins/git/src/lib/release';
+import { prepareReleaseBranch } from '../../../../plugins/git/src/lib/services/git';
 import type { IReleaseCandidateStore } from '../../../../plugins/git/src/lib/release';
 import { createReleaseCandidateStore } from '../../../../plugins/git/src/lib/release';
 import {
@@ -554,6 +555,18 @@ export const runReleaseDogfood = async (
 		mode: 'normal',
 	});
 
+	// Branch workflow contract: the PR head IS the release branch we
+	// just prepared from develop, and its upstream is configured at
+	// `origin/<branch>`. Forge enforces the same contract in
+	// `validateReleasePromotionGit`; the dogfood must echo it back so
+	// the script can never silently produce a PR from the wrong
+	// branch.
+	const prepared = await prepareReleaseBranch(run, baseInput);
+	if (prepared.branch !== candidate.branch)
+		fail(
+			`prepared branch ${prepared.branch} does not match candidate ${candidate.branch}`,
+		);
+
 	// (g)+(h) PR contract. The provider is always mocked — we never call
 	// `gh` from this script.
 	const mock = createMockReleasePrProvider();
@@ -561,8 +574,8 @@ export const runReleaseDogfood = async (
 	const prResult = await createReleasePullRequest({
 		candidate,
 		gates,
-		currentBranch: candidate.branch,
-		upstream: 'origin/develop',
+		currentBranch: prepared.branch,
+		upstream: prepared.upstream,
 		provider,
 	});
 
