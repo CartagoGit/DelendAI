@@ -75,7 +75,7 @@ const _kindOf = (raw: string): IExport['kind'] => {
 	return 'type';
 };
 
-const classify = (name: string, raw: string): IExport['maturity'] => {
+export const classify = (name: string, raw: string): IExport['maturity'] => {
 	const deprecatedTag = /@deprecated\b/.test(raw);
 	const experimentalTag = /@experimental\b/.test(raw);
 	if (deprecatedTag) return 'deprecated';
@@ -100,7 +100,7 @@ const classify = (name: string, raw: string): IExport['maturity'] => {
  * Multi-line re-exports are flattened first so the regex matches
  * once per `from '...';` statement.
  */
-const parseBarrel = async (): Promise<readonly IExport[]> => {
+export const parseBarrel = async (): Promise<readonly IExport[]> => {
 	let raw = '';
 	try {
 		raw = await readFile(PUBLIC_BARREL, 'utf8');
@@ -158,7 +158,7 @@ const parseBarrel = async (): Promise<readonly IExport[]> => {
 	return out;
 };
 
-const renderJson = (exports: readonly IExport[]): string => {
+export const renderJson = (exports: readonly IExport[]): string => {
 	const totals = {
 		stable: 0,
 		experimental: 0,
@@ -178,7 +178,7 @@ const renderJson = (exports: readonly IExport[]): string => {
 	);
 };
 
-const renderMd = (exports: readonly IExport[]): string => {
+export const renderMd = (exports: readonly IExport[]): string => {
 	const totals = {
 		stable: 0,
 		experimental: 0,
