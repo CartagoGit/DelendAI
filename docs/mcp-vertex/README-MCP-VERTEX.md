@@ -146,6 +146,41 @@ client picks up the change on next start.
 
 If this is the first time you are wiring `mcp-vertex` into a repository, start with [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md). It is the canonical guide for choosing the right preset, writing `mcp-vertex.config.json`, and configuring the `issues` plugin for the current GitHub repo without drifting from the documented launch shape.
 
+## Install once for all projects
+
+The CLI can register the same MCP server in the supported global host
+configurations so each project does not need a hand-edited MCP file:
+
+```bash
+mcpv init:global --all
+```
+
+Use `--ide=cursor-global,windsurf,claude-desktop,antigravity,zed` to select
+global targets. The command is deliberately separate from `init`: it never
+writes project-scoped files and rejects project-only ids (`vscode`, `cursor`,
+and `claude-code`), unknown ids, and an empty `--ide=` value. Re-running it is
+idempotent: the `mcp-vertex` entry is merged while unrelated MCP servers and
+settings remain untouched.
+
+The currently supported global targets are:
+
+| Id | Host | Configuration scope |
+|---|---|---|
+| `cursor-global` | Cursor | user home |
+| `windsurf` | Windsurf | user home |
+| `claude-desktop` | Claude Desktop | platform user application data |
+| `antigravity` | Antigravity | user home |
+| `zed` | Zed | platform user application data |
+
+The command installs the MCP connection only. Agent behavior remains
+host-independent because every MCP-capable model receives the same server
+tools and the same canonical bootstrap rules. For project-specific pointer
+files, generated agent adapters, skills, or `mcp-vertex.config.json`, run
+`mcpv init` or `mcpv init:default` in that project. This distinction matters:
+MCP configuration can be global, but instruction-file discovery is still
+defined by each host (for example `AGENTS.md`, `CLAUDE.md`, Copilot agent
+files, Cursor rules, Codex instructions, or Continue configuration).
+
 ## CLI arguments
 
 | Argument | Default | Purpose |
