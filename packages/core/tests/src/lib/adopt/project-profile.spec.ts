@@ -2,6 +2,7 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	readFileSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
@@ -125,6 +126,24 @@ describe('project-profile service (f00280 S1)', () => {
 				},
 				{
 					path: 'apps/web',
+					projectType: 'webapp' as const,
+					language: 'typescript' as const,
+					packageManager: 'bun' as const,
+					framework: 'astro',
+					testRunner: 'vitest' as const,
+					recommendedPluginIds: ['docs'],
+				},
+				{
+					path: 'apps/web/',
+					projectType: 'webapp' as const,
+					language: 'typescript' as const,
+					packageManager: 'bun' as const,
+					framework: 'astro',
+					testRunner: 'vitest' as const,
+					recommendedPluginIds: ['docs'],
+				},
+				{
+					path: 'apps\\web',
 					projectType: 'webapp' as const,
 					language: 'typescript' as const,
 					packageManager: 'bun' as const,
@@ -262,6 +281,25 @@ describe('project-profile service (f00280 S1)', () => {
 			}),
 			'utf8',
 		);
+		mkdirSync(join(root, 'packages/team/apps/docs'), { recursive: true });
+		writeFileSync(
+			join(root, 'packages/team/apps/docs/package.json'),
+			JSON.stringify({
+				name: '@fixture/docs',
+				devDependencies: { vitest: '^3.0.0' },
+				scripts: { test: 'vitest run' },
+			}),
+			'utf8',
+		);
+		const packageJson = JSON.parse(
+			readFileSync(join(root, 'package.json'), 'utf8'),
+		) as Record<string, unknown>;
+		packageJson.workspaces = ['apps/*', 'packages/**/apps/*'];
+		writeFileSync(
+			join(root, 'package.json'),
+			JSON.stringify(packageJson),
+			'utf8',
+		);
 		mkdirSync(join(root, 'apps/old'), { recursive: true });
 		mkdirSync(join(root, '.mcp-vertex'), { recursive: true });
 		writeFileSync(
@@ -333,6 +371,9 @@ describe('project-profile service (f00280 S1)', () => {
 		expect(profile.projectName).toBe('fixture');
 		expect(profile.workspaces[0].path).toBe('.');
 		expect(profile.workspaces[1]).toMatchObject({ path: 'apps/web' });
-		expect(profile.workspaces).toHaveLength(2);
+		expect(profile.workspaces[2]).toMatchObject({
+			path: 'packages/team/apps/docs',
+		});
+		expect(profile.workspaces).toHaveLength(3);
 	});
 });

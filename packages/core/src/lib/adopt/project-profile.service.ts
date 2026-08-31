@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { posix as pathPosix } from 'node:path';
 
 import { writeFileAtomic } from '../shared/atomic-write';
 import { quarantineCorruptFile } from '../shared/quarantine-corrupt-file';
@@ -89,14 +90,21 @@ const rootWorkspaceFrom = (
 	recommendedPluginIds: [...input.assessment.recommendedPluginIds],
 });
 
+const normalizeWorkspacePath = (value: string): string => {
+	const normalized = pathPosix.normalize(value.replaceAll('\\', '/'));
+	return normalized === '.' ? '.' : normalized.replace(/\/$/, '');
+};
+
 const normalizeWorkspaceList = (
 	workspaces: readonly IProjectProfileWorkspace[],
 ): readonly IProjectProfileWorkspace[] => {
 	const deduped = new Map<string, IProjectProfileWorkspace>();
 	for (const workspace of workspaces) {
-		if (workspace.path === '.') continue;
-		deduped.set(workspace.path, {
+		const normalizedPath = normalizeWorkspacePath(workspace.path);
+		if (normalizedPath === '.') continue;
+		deduped.set(normalizedPath, {
 			...workspace,
+			path: normalizedPath,
 			recommendedPluginIds: [...workspace.recommendedPluginIds],
 		});
 	}
