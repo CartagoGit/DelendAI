@@ -1559,10 +1559,12 @@ export const buildGitLabJobsToolRegistrations = (
 							if (args.id === undefined)
 								throw new Error('id is required for log');
 							const startedAt = Date.now();
-							const result = await options.client.request({
-								path: `/projects/${project}/jobs/${String(args.id)}/trace`,
-								parseAs: 'text',
-							});
+							const result = await options.client.request<string>(
+								{
+									path: `/projects/${project}/jobs/${String(args.id)}/trace`,
+									parseAs: 'text',
+								},
+							);
 							const maxBytes = args.maxBytes ?? 64 * 1024;
 							const maxLines = args.maxLines ?? 800;
 							const raw = result.data;
@@ -1704,11 +1706,12 @@ export const buildGitLabArtifactsToolRegistrations = (
 						if (args.jobId === undefined)
 							throw new Error('jobId is required for download');
 						const maxBytes = args.maxBytes ?? 4 * 1024 * 1024;
-						const result = await options.client.request({
-							path: `/projects/${project}/jobs/${String(args.jobId)}/artifacts`,
-							parseAs: 'binary',
-						});
-						const binary = result.data as ArrayBuffer;
+						const result =
+							await options.client.request<ArrayBuffer>({
+								path: `/projects/${project}/jobs/${String(args.jobId)}/artifacts`,
+								parseAs: 'binary',
+							});
+						const binary = result.data;
 						const bytes = binary.byteLength;
 						const tempDir = await ensureTempDir(
 							join(options.pluginTempDir, 'artifacts'),
