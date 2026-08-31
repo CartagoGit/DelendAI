@@ -65,6 +65,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 	background: var(--vscode-editorWidget-background, #161b22);
 	border: 1px solid var(--vscode-widget-border, #30363d); border-radius: 9px;
 }
+.mcpv-config__card--highlight {
+	border-color: var(--vscode-focusBorder, #007fd4);
+	box-shadow: 0 0 0 1px var(--vscode-focusBorder, #007fd4);
+}
 .mcpv-config__card-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 13px; }
 .mcpv-config__card-title { min-width: 0; margin: 0; font-size: 14px; overflow-wrap: anywhere; }
 .mcpv-config__card-meta { margin: 2px 0 0; color: var(--vscode-descriptionForeground, #8b949e); font-size: 11px; }
