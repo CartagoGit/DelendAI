@@ -1,3 +1,7 @@
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { runArgv } from '../../../../src/lib/shared/run-command';
@@ -77,29 +81,51 @@ describeUnixOnly(
 describeUnixOnly('runArgv abort handling (x00222)', () => {
 	it('aborts promptly and reaps a long-lived descendant', async () => {
 		const controller = new AbortController();
+		// The leader announces its descendant's pid through a file, because
+		// the test has to KNOW the descendant exists before it aborts.
+		// Aborting on a fixed 100ms wall clock raced the spawn on a loaded
+		// machine: the process was cancelled before the pid was emitted and
+		// the spec failed on NaN while the reaping under test was fine.
+		const dir = mkdtempSync(join(tmpdir(), 'process-tree-kill-'));
+		const pidFile = join(dir, 'descendant-pid.txt');
 		const script = [
 			"const { spawn } = require('node:child_process');",
+			"const { writeFileSync } = require('node:fs');",
 			"const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });",
+			`writeFileSync(${JSON.stringify(pidFile)}, String(child.pid));`,
 			'process.stdout.write(String(child.pid));',
 			'setInterval(() => {}, 1000);',
 		].join('');
-		const startedAt = Date.now();
 		const pending = runArgv([process.execPath, '-e', script], {
 			signal: controller.signal,
 			maxOutputBytes: 64,
 		});
-		setTimeout(() => {
+		try {
+			let descendantPid = Number.NaN;
+			for (let attempt = 0; attempt < 400; attempt += 1) {
+				if (existsSync(pidFile)) {
+					descendantPid = Number.parseInt(
+						readFileSync(pidFile, 'utf8').trim(),
+						10,
+					);
+					if (Number.isFinite(descendantPid)) break;
+				}
+				await new Promise((resolve) => setTimeout(resolve, 25));
+			}
+			expect(Number.isFinite(descendantPid)).toBe(true);
+			trackedPids.add(descendantPid);
+			// Promptness is measured from the abort — that is the contract.
+			const abortedAt = Date.now();
 			controller.abort();
-		}, 100);
-		const result = await pending;
-		expect(Date.now() - startedAt).toBeLessThan(3000);
-		expect(result.code).toBe(130);
-		expect(result.aborted).toBe(true);
-		expect(result.timedOut).toBe(false);
-		const descendantPid = Number.parseInt(result.stdout.trim(), 10);
-		expect(Number.isFinite(descendantPid)).toBe(true);
-		trackedPids.add(descendantPid);
-		expect(await waitForPidExit(descendantPid)).toBe(true);
-		trackedPids.delete(descendantPid);
+			const result = await pending;
+			expect(Date.now() - abortedAt).toBeLessThan(3000);
+			expect(result.code).toBe(130);
+			expect(result.aborted).toBe(true);
+			expect(result.timedOut).toBe(false);
+			expect(await waitForPidExit(descendantPid)).toBe(true);
+			trackedPids.delete(descendantPid);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });
