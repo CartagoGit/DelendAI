@@ -80,6 +80,19 @@ export const toolJson = (value: unknown): IToolTextResult => ({
 	...(isPlainObject(value) ? { structuredContent: value } : {}),
 });
 
+/**
+ * Structured object payload plus a compact human-readable summary string.
+ * The summary text is JSON-stringified so callers that still parse
+ * `content[0].text` as JSON receive a valid primitive, not raw prose.
+ */
+export const toolJsonWithSummary = (
+	value: Record<string, unknown>,
+	summaryText: string,
+): IToolTextResult => ({
+	content: [{ type: 'text', text: JSON.stringify(summaryText) }],
+	structuredContent: value,
+});
+
 /** Compact success envelope: `{ ok: true, ...data }`. */
 export const toolOk = (data: Record<string, unknown> = {}): IToolTextResult =>
 	toolJson({ ok: true, ...data });

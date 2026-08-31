@@ -71,7 +71,9 @@ const callTool = async (
 		},
 	} as never);
 	const result = await handler!(args);
-	return JSON.parse(result.content[0]?.text ?? '{}');
+	return (
+		result.structuredContent ?? JSON.parse(result.content[0]?.text ?? '{}')
+	);
 };
 
 const assemble = async () => {

@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import { toolOk } from '../shared/tool-response';
+import { toolJsonWithSummary } from '../shared/tool-response';
 import { compactOutputSchema } from '../surface/compact-output-schema.helper';
 import { buildCatalog } from '../catalog/agent-discovery-catalog';
 import type {
@@ -61,6 +61,14 @@ const applySection = (
 		proposals: section === 'proposals' ? snapshot.proposals : [],
 	};
 };
+
+const buildCatalogSummary = (args: {
+	readonly toolCount: number;
+	readonly skillCount: number;
+	readonly proposalCount: number;
+	readonly matches?: number;
+}): string =>
+	`${args.toolCount} tools, ${args.skillCount} skills, ${args.proposalCount} proposals${args.matches !== undefined ? `, ${args.matches} matches` : ''}`;
 
 const countMatches = (snapshot: ICatalogSnapshot): number =>
 	snapshot.tools.length + snapshot.skills.length + snapshot.proposals.length;
@@ -156,10 +164,20 @@ export const buildAgentCatalogToolRegistration = (
 				const payload: TCatalogPayload = isDefaultOrientation
 					? applyOrientationProjection(snapshot)
 					: snapshot;
-				return toolOk({
+				const structured = {
+					ok: true,
 					...(matches !== undefined ? { matches } : {}),
 					...payload,
-				});
+				};
+				return toolJsonWithSummary(
+					structured,
+					buildCatalogSummary({
+						toolCount: payload.tools.length,
+						skillCount: payload.skills.length,
+						proposalCount: payload.proposals.length,
+						...(matches !== undefined ? { matches } : {}),
+					}),
+				);
 			},
 		);
 	},

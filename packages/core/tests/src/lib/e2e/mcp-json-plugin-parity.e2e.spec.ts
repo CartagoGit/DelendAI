@@ -67,9 +67,7 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 			name: 'mcp-vertex_overview',
 			arguments: { compact: true },
 		});
-		const text = (res.content as Array<{ type: string; text: string }>)[0]
-			?.text;
-		const overview = JSON.parse(text ?? '{}') as {
+		const overview = res.structuredContent as {
 			readonly plugins?: readonly string[];
 			readonly pluginDiagnostic?: {
 				readonly requested: readonly string[];
@@ -136,10 +134,7 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 					name: 'mcp-vertex_overview',
 					arguments: { compact: true },
 				});
-				const text = (
-					res.content as Array<{ type: string; text: string }>
-				)[0]?.text;
-				const overview = JSON.parse(text ?? '{}') as {
+				const overview = res.structuredContent as {
 					readonly pluginDiagnostic?: {
 						readonly requested: readonly string[];
 						readonly loaded: readonly string[];
