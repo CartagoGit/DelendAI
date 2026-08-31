@@ -72,6 +72,11 @@ export interface IRatchetReport {
 	readonly checkedKeys: number;
 }
 
+export interface IUpdateViolationBuckets {
+	readonly expired: readonly IRatchetViolation[];
+	readonly undocumented: readonly IRatchetViolation[];
+}
+
 // ---------------------------------------------------------------------------
 // Flatten the contract into `dotted.path -> value` ceiling entries
 // ---------------------------------------------------------------------------
@@ -249,6 +254,17 @@ export const buildRatchetReport = (
 	};
 };
 
+export const classifyUpdateViolations = (
+	violations: readonly IRatchetViolation[],
+): IUpdateViolationBuckets => ({
+	expired: violations.filter(
+		(violation) => violation.kind === 'exception-expired',
+	),
+	undocumented: violations.filter(
+		(violation) => violation.kind === 'raised-without-exception',
+	),
+});
+
 // ---------------------------------------------------------------------------
 // Baseline I/O
 // ---------------------------------------------------------------------------
@@ -324,9 +340,8 @@ const main = async (argv: readonly string[]): Promise<number> => {
 			baseline,
 			exceptions,
 		);
-		const blocking = violations.filter(
-			(violation) => violation.kind === 'exception-expired',
-		);
+		const { expired: blocking, undocumented } =
+			classifyUpdateViolations(violations);
 		if (blocking.length > 0) {
 			console.error(
 				`✖ token-budget-ceiling-ratchet --update refused: ${blocking.length} raise(s) have an expired exception. Revert those ceilings or document a fresh exception first.\n${blocking
@@ -335,9 +350,6 @@ const main = async (argv: readonly string[]): Promise<number> => {
 			);
 			return 1;
 		}
-		const undocumented = violations.filter(
-			(violation) => violation.kind === 'raised-without-exception',
-		);
 		if (undocumented.length > 0) {
 			console.error(
 				`✖ token-budget-ceiling-ratchet --update refused: ${undocumented.length} raise(s) have no documented exception at all. Add \`budget-exception-pending\`/\`budget-exception-expires\` comments before locking in a higher floor.\n${undocumented

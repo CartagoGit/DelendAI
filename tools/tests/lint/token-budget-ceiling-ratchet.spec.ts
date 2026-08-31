@@ -15,6 +15,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	buildRatchetReport,
+	classifyUpdateViolations,
 	flattenTokenBudgetCeilings,
 	parseBudgetExceptions,
 	isExceptionExpired,
@@ -103,6 +104,28 @@ describe('token-budget-ceiling-ratchet', () => {
 	it('holding a ceiling steady never requires an exception', () => {
 		const report = buildRatchetReport(baseline, baseline, []);
 		expect(report.ok).toBe(true);
+	});
+
+	it('classifies an expired exception as a blocking --update refusal', () => {
+		const current: IBudgetCeilingSnapshot = {
+			'presets.minimal.toolsList.hard': 70_000,
+			'presets.minimal.toolsList.warning': 58_000,
+		};
+		const report = buildRatchetReport(
+			current,
+			baseline,
+			[
+				{
+					key: 'presets.minimal.toolsList.hard',
+					expiresOn: '2026-01-01',
+				},
+			],
+			new Date('2026-08-27T00:00:00Z'),
+		);
+		const buckets = classifyUpdateViolations(report.violations);
+		expect(buckets.expired).toHaveLength(1);
+		expect(buckets.undocumented).toHaveLength(0);
+		expect(buckets.expired[0]?.kind).toBe('exception-expired');
 	});
 });
 
