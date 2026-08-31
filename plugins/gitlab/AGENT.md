@@ -3,7 +3,7 @@
 > Below the `<!-- mcp-vertex:begin agent-md -->
 ## Purpose
 
-- GitLab read-only provider context and HTTP client for future tools.
+- GitLab read-only provider context, HTTP client and resource tools.
 
 ## Public API
 

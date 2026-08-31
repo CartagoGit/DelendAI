@@ -109,6 +109,10 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
+			console.log(
+				'close_slice failure payload',
+				result.structuredContent,
+			);
 			expect(result.structuredContent).toMatchObject({
 				ok: false,
 				closed: false,
@@ -151,6 +155,10 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
+			console.log(
+				'close_slice success payload',
+				result.structuredContent,
+			);
 			expect(result.isError).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,

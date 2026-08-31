@@ -14,7 +14,7 @@
 
 export interface McpVertexProposalsAgentLockOutput {
 	tool?: string;
-	action?: "claim" | "release" | "status" | "gc";
+	action?: "claim" | "heartbeat" | "release" | "status" | "gc";
 	path?: string;
 	lock_path?: string;
 	task_id?: string;
@@ -753,6 +753,13 @@ export interface McpVertexProposalsTaskQueueOutput {
 		diffSummary?: string;
 	}[];
 	pendingTargets?: string[];
+	subscriberId?: string;
+	subscriptionId?: string;
+	leaseUntil?: string;
+	renewed?: boolean;
+	blocked?: boolean;
+	blockerType?: string;
+	nextAction?: string;
 	queuedCount?: number;
 	promotedCount?: number;
 	consumedCount?: number;
