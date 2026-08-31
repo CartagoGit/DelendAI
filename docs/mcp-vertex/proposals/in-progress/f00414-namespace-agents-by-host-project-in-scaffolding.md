@@ -84,3 +84,25 @@ El scaffolding actual impone nombres `mcp-vertex-*` y mezcla namespaces entre pr
 - **Issue de origen**: [#52 — Project scaffolding must namespace agents by host project](https://github.com/CartagoGit/mcp-vertex/issues/52)
 - **Cierre automático**: el commit o PR que integre la implementación debe incluir `Closes #52`.
 - **Commit de implementación**: pendiente; registrar aquí el SHA completo cuando el arreglo se implemente.
+
+## Implementación verificada
+
+La ruta real de scaffolding está en `packages/cli/src/lib/init/`, no en los
+globs amplios de esta propuesta. La implementación namespace-aware quedó
+incorporada por trabajo concurrente en estos commits:
+
+- `1bc84572cbd488866aed0b6df65489e55b27f992` — propagación del namespace en
+  render de agentes y configuración MCP.
+- `1cadf6d6153b77bcad9f213c65114649a1321c27` — propagación al writer de
+  `init` y regresiones de fresh-install/merge.
+
+Validación focalizada: 3 archivos de test, 45 tests correctos; typecheck de
+`packages/cli` correcto. El typecheck global queda bloqueado por cambios
+concurrentes ajenos en `plugins/gitlab/src/lib/config.ts`.
+
+No existe una operación independiente `pair` en la ruta de scaffolding
+actual; `fix`/`repair` aparecen como vocabulario de otras superficies, no
+como una segunda operación de initialize que pueda corregirse aquí sin
+inventar archivos o contratos.
+
+Closes #52

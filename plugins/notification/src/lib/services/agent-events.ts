@@ -21,6 +21,7 @@ interface ILockEntryLite {
 }
 
 const AGENT_IDLE_MISSED_BEATS = 10;
+const AGENT_DEAD_MISSED_BEATS = 3;
 
 export interface IAgentHeartbeatWatcher {
 	check(now?: Date): Promise<IAgentEvent[]>;
@@ -150,7 +151,9 @@ export const watchAgentHeartbeat = (
 				const missedBeats = Math.floor(
 					ageMs / Math.max(1, options.heartbeatMs),
 				);
-				if (ageMs >= snapshot.staleAfterMinutes * 60_000) {
+				const deadAfterMs =
+					AGENT_DEAD_MISSED_BEATS * Math.max(1, options.heartbeatMs);
+				if (ageMs >= deadAfterMs) {
 					if (emittedState.get(key) === 'agent-dead') continue;
 					emittedState.set(key, 'agent-dead');
 					out.push(
@@ -165,7 +168,7 @@ export const watchAgentHeartbeat = (
 					);
 				} else if (
 					ageMs >=
-					AGENT_IDLE_MISSED_BEATS * options.heartbeatMs
+					AGENT_IDLE_MISSED_BEATS * Math.max(1, options.heartbeatMs)
 				) {
 					if (emittedState.get(key) === 'agent-idle') continue;
 					emittedState.set(key, 'agent-idle');
@@ -186,7 +189,8 @@ export const watchAgentHeartbeat = (
 				? now
 				: new Date(Math.min(persistedLastSeen, now.getTime()));
 			const ageMs = Math.max(0, now.getTime() - seen.getTime());
-			const deadAfterMs = snapshot.staleAfterMinutes * 60_000;
+			const deadAfterMs =
+				AGENT_DEAD_MISSED_BEATS * Math.max(1, options.heartbeatMs);
 			const missedBeats = Math.floor(
 				ageMs / Math.max(1, options.heartbeatMs),
 			);

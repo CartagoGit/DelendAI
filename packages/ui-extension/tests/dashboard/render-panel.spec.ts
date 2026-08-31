@@ -167,6 +167,12 @@ const fixture: IDashboardAllModels = {
 	sessions: baseSessions,
 	times: baseTimes,
 	agents: baseAgents,
+	memory: {
+		state: 'unavailable',
+		notes: [],
+		total: 0,
+		offset: 0,
+	},
 	health: baseHealth,
 	server: {
 		name: 'mcp-vertex',

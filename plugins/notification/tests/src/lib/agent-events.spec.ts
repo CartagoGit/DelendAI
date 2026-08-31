@@ -97,13 +97,13 @@ describe('agent heartbeat events (f00016 S8)', async () => {
 			lockFile,
 			JSON.stringify({
 				version: 1,
-				stale_after_minutes: 1 / 60,
+				stale_after_minutes: 10,
 				in_flight: [
 					{
 						task_id: 'live',
 						agent: 'falcon',
 						started_at: '2026-06-20T00:00:00.000Z',
-						last_seen: '2026-06-20T00:00:03.000Z',
+						last_seen: '2026-06-20T00:00:50.000Z',
 					},
 					{
 						task_id: 'dead',
