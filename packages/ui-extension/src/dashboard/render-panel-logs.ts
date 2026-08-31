@@ -34,28 +34,37 @@ const SOURCE_KEYS = [
 	'all',
 ] as const;
 
+const SOURCE_ICON: Record<(typeof SOURCE_KEYS)[number], string> = {
+	host: '⚙',
+	server: '⌘',
+	mcp: '⊕',
+	notifications: '✦',
+	errors: '⚠',
+	all: '◎',
+};
+
 const renderSourceOption = (
 	source: (typeof SOURCE_KEYS)[number],
-	current: string,
 	text: (key: string, fallback: string) => string,
-): string =>
-	`<option value="${source}"${source === current ? ' selected' : ''}>${escapeHtml(text(`logs.source.${source}`, source))}</option>`;
+): string => `<label class="mcpv-logs__chip" data-source="${source}" aria-pressed="${source === 'all' ? 'true' : 'false'}">
+	<span class="mcpv-logs__chip-icon" aria-hidden="true">${SOURCE_ICON[source]}</span>
+	<span>${escapeHtml(text(`logs.source.${source}`, source))}</span>
+</label>`;
 
 export const renderPanelLogs = (lang: ILangDict): string => {
 	const text = (key: string, fallback: string): string =>
 		extensionText(lang, key) || fallback;
-	const sourceOptions = SOURCE_KEYS.map((source) =>
-		renderSourceOption(source, 'all', text),
+	const sourceChips = SOURCE_KEYS.map((source) =>
+		renderSourceOption(source, text),
 	).join('');
 	return `<section class="mcpv-panel" id="panel-logs" role="tabpanel" aria-labelledby="tab-logs">
 	<h2 class="mcpv-panel__title">${escapeHtml(text('tabLogs', 'Logs'))}</h2>
 	<p class="mcpv-fg-muted">${escapeHtml(text('logs.lead', 'Realtime redacted stream of MCP events. Switch the source to focus on a slice of the system.'))}</p>
-	<div class="mcpv-logs">
+	<div class="mcpv-logs" id="mcpv-logs-root">
+		<div class="mcpv-logs__source-bar" id="mcpv-logs-sources" role="radiogroup" aria-label="${escapeHtml(text('logs.source', 'Source'))}">
+			${sourceChips}
+		</div>
 		<form class="mcpv-logs__controls" id="mcpv-logs-controls">
-			<label class="mcpv-logs__source">
-				<span>${escapeHtml(text('logs.source', 'Source'))}</span>
-				<select name="source">${sourceOptions}</select>
-			</label>
 			<label class="mcpv-logs__filter">
 				<span>${escapeHtml(text('logs.filter.outcome', 'Outcome'))}</span>
 				<select name="outcome">

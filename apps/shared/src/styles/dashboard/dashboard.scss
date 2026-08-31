@@ -1095,3 +1095,47 @@
 	letter-spacing: 0.5px;
 	color: var(--mcpv-fg);
 }
+
+// Logs source chip bar
+.mcpv-logs__source-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--mcpv-s-1);
+	padding: var(--mcpv-s-2);
+	background: var(--mcpv-bg-card);
+	border: 1px solid var(--mcpv-border);
+	border-radius: var(--mcpv-radius);
+}
+
+.mcpv-logs__chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 12px;
+	font-size: 12px;
+	font-weight: 600;
+	background: var(--mcpv-bg-soft);
+	border: 1px solid var(--mcpv-border);
+	border-radius: 999px;
+	color: var(--mcpv-fg-muted);
+	cursor: pointer;
+	transition: background var(--mcpv-transition-fast),
+		border-color var(--mcpv-transition-fast),
+		color var(--mcpv-transition-fast);
+}
+.mcpv-logs__chip:hover {
+	border-color: var(--mcpv-brand-blue);
+	color: var(--mcpv-fg);
+}
+.mcpv-logs__chip[aria-pressed='true'] {
+	background: linear-gradient(135deg, var(--mcpv-brand-blue), var(--mcpv-brand-purple));
+	color: #fff;
+	border-color: transparent;
+}
+.mcpv-logs__chip-icon {
+	display: inline-grid;
+	place-items: center;
+	width: 18px;
+	height: 18px;
+	font-size: 13px;
+}
