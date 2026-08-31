@@ -1,6 +1,10 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import z from 'zod';
 
+import { buildGitHubToolRegistrations } from './lib/tools';
+import { resolveGitHubProviderContext } from './lib/config';
+import { createGitHubHttpClient } from './lib/client';
+
 const RepositorySchema = z
 	.object({
 		owner: z.string().optional(),
@@ -48,6 +52,28 @@ export default definePlugin({
 
 		return {
 			tools: [],
+			tools: buildGitHubToolRegistrations({
+				namespacePrefix: ctx.namespacePrefix,
+				workspaceRootAbs: ctx.workspace.root,
+				pluginCacheDir: ctx.pluginCacheDir,
+				context: resolveGitHubProviderContext({
+					env: process.env,
+					...(parsed.data.apiUrl !== undefined
+						? { options: { apiUrl: parsed.data.apiUrl } }
+						: {}),
+				}),
+				client: createGitHubHttpClient(
+					{
+						context: resolveGitHubProviderContext({
+							env: process.env,
+							options: parsed.data,
+						}),
+					},
+					{
+						fetchFn: fetch as typeof fetch,
+					},
+				),
+			}),
 			knowledge: [
 				{
 					id: 'github-provider-context',
@@ -55,10 +81,11 @@ export default definePlugin({
 					body: [
 						'# GitHub provider context',
 						'',
-						'This slice exposes the configuration and HTTP client seams for future read-only tools; it does not require plugin-git or a local checkout.',
+						'This plugin exposes the configuration, HTTP client, and read-only GitHub resources; it does not require plugin-git or a local checkout.',
 						'',
 						'Environment: GITHUB_TOKEN, plus optional GITHUB_API_URL for GitHub Enterprise Server.',
 						'Repository: pass a default repository as owner + repository when you want the plugin to have built-in context.',
+						'Read tools: context, repositories, issues, pull requests, commits, checks, workflows, jobs, artifacts, releases, tags and deployments.',
 						'',
 						'The HTTP client is injectable and hermetic for tests.',
 					].join('\n'),

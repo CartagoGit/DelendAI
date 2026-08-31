@@ -159,7 +159,8 @@ export const buildAgentLockRegistration = (
 					if (
 						!res.isError &&
 						options.lockChangeListener !== undefined &&
-						args.action !== 'status'
+						args.action !== 'status' &&
+						args.action !== 'heartbeat'
 					) {
 						options.lockChangeListener.onLockChanged({
 							action: args.action,

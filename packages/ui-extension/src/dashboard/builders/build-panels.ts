@@ -14,6 +14,7 @@ import { renderPanelSessions } from '../render-panel-sessions';
 import { renderPanelTimes } from '../render-panel-times';
 import { renderPanelAgents } from '../render-panel-agents';
 import { renderPanelHealth } from '../render-panel-health';
+import { renderPanelMemory } from '../render-panel-memory';
 
 export function buildPanels(
 	model: IDashboardAllModels,
@@ -37,6 +38,7 @@ export function buildPanels(
 	const sessionsPanel = renderPanelSessions(model.sessions, lang);
 	const timesPanel = renderPanelTimes(model.times, lang);
 	const agentsPanel = renderPanelAgents(model.agents, lang);
+	const memoryPanel = renderPanelMemory(model.memory, lang);
 	const healthPanel = renderPanelHealth(model.health, lang);
 
 	const docsPanel = `
@@ -59,6 +61,7 @@ export function buildPanels(
 		sessionsPanel,
 		timesPanel,
 		agentsPanel,
+		memoryPanel,
 		healthPanel,
 		docsPanel,
 	]
