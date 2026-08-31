@@ -6,7 +6,7 @@ export default definePluginManifest({
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
-		'GitLab read-only provider context and HTTP client for future tools.',
+		'GitLab read-only provider context, HTTP client and resource tools.',
 	tags: ['gitlab', 'provider'],
 	maturity: 'experimental',
 	permissions: ['network'],

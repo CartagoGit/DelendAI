@@ -1,5 +1,10 @@
 import { definePlugin } from '@mcp-vertex/core/public';
+import { isAbsolute } from 'node:path';
 import z from 'zod';
+
+import { createGitLabHttpClient } from './lib/client';
+import { buildGitLabToolRegistrations } from './lib/tools/shared';
+import { resolveGitLabProviderContext } from './lib/config';
 
 const ProjectSchema = z
 	.object({
@@ -29,6 +34,18 @@ const OptionsSchema = z
 	})
 	.strict();
 
+const toRemoteFetchResponse = async (response: Response) => ({
+	ok: response.ok,
+	status: response.status,
+	headers: {
+		get(name: string): string | null {
+			return response.headers.get(name);
+		},
+	},
+	text: async () => response.text(),
+	arrayBuffer: async () => response.arrayBuffer(),
+});
+
 export { createGitLabHttpClient } from './lib/client';
 export { resolveGitLabProviderContext } from './lib/config';
 export type { IGitLabPluginOptions } from './lib/config';
@@ -46,22 +63,42 @@ export default definePlugin({
 				`gitlab plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
+		const pluginCacheDir = isAbsolute(ctx.pluginCacheDir)
+			? ctx.pluginCacheDir
+			: ctx.workspace.resolve(ctx.pluginCacheDir);
+		const providerContext = resolveGitLabProviderContext({
+			env: process.env,
+			options: parsed.data,
+		});
+		const client = createGitLabHttpClient(
+			{ context: providerContext },
+			{
+				fetchFn: async (url, init) =>
+					toRemoteFetchResponse(await fetch(url, init)),
+			},
+		);
 
 		return {
-			tools: [],
+			tools: buildGitLabToolRegistrations({
+				namespacePrefix: ctx.namespacePrefix,
+				context: providerContext,
+				client,
+				pluginTempDir: pluginCacheDir,
+			}),
 			knowledge: [
 				{
 					id: 'gitlab-provider-context',
-					title: 'GitLab provider context',
+					title: 'GitLab provider context and read tools',
 					body: [
-						'# GitLab provider context',
+						'# GitLab provider context and read tools',
 						'',
-						'This slice exposes the configuration and HTTP client seams for future read-only tools; it does not require plugin-git or a local checkout.',
+						'This slice exposes read-only GitLab resources without depending on plugin-git or a local checkout.',
 						'',
 						'Environment: GITLAB_TOKEN or the legacy GITLAB_PRIVATE_TOKEN, plus optional GITLAB_URL for self-managed instances.',
-						'Project: pass a default project as projectId or projectPath when you want the plugin to have a built-in context.',
+						'Project: pass a default project as projectId or projectPath when you want the plugin to have built-in context.',
+						'Artifacts are downloaded only into the plugin temp dir and are capped by explicit byte limits.',
 						'',
-						'The HTTP client is injectable and hermetic for tests.',
+						'Each tool returns compact normalized output with explicit pagination metadata and no raw HTTP payloads.',
 					].join('\n'),
 				},
 			],
