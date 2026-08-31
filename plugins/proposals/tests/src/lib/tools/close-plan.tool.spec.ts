@@ -149,9 +149,6 @@ const parseSchemaSuccess = (
 		isError?: boolean;
 	},
 ) => {
-	if (result.isError === true) {
-		console.error('close-plan error:', result.content[0]?.text);
-	}
 	expect(result.isError).toBeUndefined();
 	const body =
 		result.structuredContent ?? JSON.parse(result.content[0]?.text ?? '{}');
@@ -280,7 +277,7 @@ describe('proposals_close_plan dryRun contract', () => {
 			options,
 			buildPlanMarkdown({
 				status: 'review',
-				shippedIn: '0.0.0-test',
+				shippedIn: 'abcdef1',
 			}),
 			'review',
 		);
