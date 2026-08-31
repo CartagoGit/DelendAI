@@ -40,8 +40,10 @@ La frontera remota y la policy deben convertir el modelo de release en una opera
   - "metadata y gates validados"
   - "emergency bypass exige reason y receipt"
   - "adapters provider-specific no se duplican"
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: release-r3-s1
+- review-reviewer: delivery-verifier-r3
+- review-log: requested_changes by delivery-verifier-r3 — Corregir Forge: invocar assertReleaseMetadata sobre candidate antes de crear/listar PR; validar que la respuesta de provider.createPullRequest tenga headBranch igual a candidate.branch y baseBranch exactamente main; añadir error estructurado missing-upstream coherente con Git; cubrir metadata inválida y provider que devuelve base incorrecta en tests.
 ## acceptance
 
 - Solo release/* -> main en flujo normal
