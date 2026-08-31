@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { livePidHoldsLock, parseFlags } from './git-stale-lock.script.ts';
 import {
-	livePidHoldsLock,
-	parseFlags,
-} from './git-stale-lock.script.ts';
-import { closeSync, openSync, statSync, utimesSync, writeFileSync } from 'node:fs';
+	closeSync,
+	openSync,
+	statSync,
+	utimesSync,
+	writeFileSync,
+} from 'node:fs';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -34,8 +37,14 @@ describe('git-stale-lock lint', () => {
 
 	it('parses flags', () => {
 		expect(parseFlags([])).toEqual({ reclaim: false, graceMs: 30_000 });
-		expect(parseFlags(['--reclaim'])).toEqual({ reclaim: true, graceMs: 30_000 });
-		expect(parseFlags(['--grace-ms=1000'])).toEqual({ reclaim: false, graceMs: 1000 });
+		expect(parseFlags(['--reclaim'])).toEqual({
+			reclaim: true,
+			graceMs: 30_000,
+		});
+		expect(parseFlags(['--grace-ms=1000'])).toEqual({
+			reclaim: false,
+			graceMs: 1000,
+		});
 	});
 
 	it('returns the test runner pid when holding a real file', () => {
