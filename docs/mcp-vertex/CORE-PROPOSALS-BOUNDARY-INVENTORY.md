@@ -5,16 +5,16 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 117
-- Unclassified candidates: 2
+- Findings: 119
+- Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 13
 - Regressions (resolved rule still present): 0
 - import: 1
 - path: 7
-- plugin-name: 11
+- plugin-name: 12
 - type: 66
-- message: 24
+- message: 25
 - index-access: 8
 
 ## Findings
@@ -29,6 +29,8 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | proposals store managed by the mcp-vertex | message | adapter | 1 | El estimador de escritura documenta el store de proposals como estructura propia. |
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | sync_proposals inventory message | message | adapter | 1 | La ayuda del store referencia el regenerado del indice del plugin. |
 | packages/core/src/lib/adopt/adoption-assessment.service.ts | Estimated adopt_project write surface ... proposals store | message | adapter | 1 | La evaluacion de adopcion sigue contabilizando proposals store como responsabilidad del core. |
+| packages/core/src/lib/adopt/adoption-stages.constant.ts | pluginIds: proposals, agent-orchestrator | plugin-name | composition | 1 | La etapa agents del flujo de adopcion activa el plugin proposals por composicion declarativa. |
+| packages/core/src/lib/adopt/adoption-stages.constant.ts | title: proposals+agents | message | composition | 1 | La etapa agents del flujo de adopcion enumera el workflow de proposals en su titulo visible. |
 | packages/core/src/lib/agents/derive-agent-sessions.service.ts | const exact = proposals.find | index-access | adapter | 1 | La resolucion de taskId consulta directamente el arreglo de proposals. |
 | packages/core/src/lib/agents/derive-agent-sessions.service.ts | input.proposals | index-access | adapter | 1 | La derivacion transforma el inventario de proposals para construir sesiones. |
 | packages/core/src/lib/agents/derive-agent-sessions.service.ts | proposals: readonly IAgentSessionProposalSummary[] | type | adapter | 1 | El servicio de sesiones recibe la lista de proposals como parametro tipado. |
@@ -138,13 +140,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/public/index.ts | IProposalSummary | type | contract | 1 | Los consumidores externos siguen importando el DTO nominal de proposals desde core/public. |
 | packages/core/src/public/index.ts | PROPOSAL_STATUS_VALUES | type | contract | 1 | La lista publica de estados usa nomenclatura proposals. |
 | packages/core/src/public/index.ts | ProposalStatus | type | contract | 1 | El estado del workflow se exporta con nombre proposals desde el barrel estable. |
-
-## Unclassified candidates
-
-| File | Line | Content |
-| --- | ---: | --- |
-| packages/core/src/lib/adopt/adoption-stages.constant.ts | 67 | title: 'proposals+agents', |
-| packages/core/src/lib/adopt/adoption-stages.constant.ts | 70 | pluginIds: ['proposals', 'agent-orchestrator'], |
 
 ## Resolved findings
 
