@@ -264,6 +264,28 @@ const hasTrackedArtifact = async (
 	return git.ok && git.output.trim() !== '';
 };
 
+const hasPendingArtifactChange = async (
+	workspaceRoot: string,
+	file: string,
+): Promise<boolean> => {
+	const abs = resolve(workspaceRoot, file);
+	const rel = relative(workspaceRoot, abs);
+	if (rel.startsWith('..') || rel === '..') return false;
+	try {
+		await stat(abs);
+	} catch {
+		return false;
+	}
+	const git = await createGitRunner(workspaceRoot)([
+		'status',
+		'--porcelain=v1',
+		'--untracked-files=all',
+		'--',
+		file,
+	]);
+	return git.ok && git.output.trim() !== '';
+};
+
 /**
  * Resolve the first claimable slice through the existing planner instead of
  * duplicating its dependency and overlap rules in `auto_work`. A legacy
@@ -297,7 +319,7 @@ const resolveClaimReady = async (
 								await Promise.all(
 									slice.files.map(async (file) => ({
 										file,
-										exists: await hasTrackedArtifact(
+										exists: await hasPendingArtifactChange(
 											options.workspaceRoot!,
 											file,
 										),
