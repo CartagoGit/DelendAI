@@ -28,7 +28,7 @@ export interface McpVertexQualityQualityRunAllOutput {
 }
 
 export interface McpVertexQualityRunQualityOutput {
-	ok: boolean;
+	ok?: boolean;
 	[key: string]: unknown;
 }
 

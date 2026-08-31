@@ -10,7 +10,10 @@
  * summary — this just maps its entries into the scorer's
  * `IPluginCandidate` shape instead of duplicating the list.
  */
-import { FIRST_PARTY_PLUGIN_INDEX } from '@mcp-vertex/core/public';
+import {
+	FIRST_PARTY_PLUGIN_INDEX,
+	resolveTokenBudget,
+} from '@mcp-vertex/core/public';
 
 import type { IPluginCandidate } from '../contracts/interfaces/plugin-fit.interface';
 
@@ -29,8 +32,9 @@ export const firstPartyPluginCandidates = (): readonly IPluginCandidate[] =>
 		...(entry.tokenBudgetBytes === undefined
 			? {}
 			: {
-					tokenBudget: {
-						staticBytes: entry.tokenBudgetBytes,
-					},
+					tokenBudget: resolveTokenBudget(
+						entry.tokenBudgetBytes,
+						'2026-08-31',
+					),
 				}),
 	}));
