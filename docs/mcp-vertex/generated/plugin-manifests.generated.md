@@ -27,6 +27,8 @@
 | external-mcps | @mcp-vertex/external-mcps | public | stable |  |
 | forge | @mcp-vertex/forge | public | stable | swarm, full, vertex |
 | git | @mcp-vertex/git | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
+| github | @mcp-vertex/github | public | experimental |  |
+| gitlab | @mcp-vertex/gitlab | public | experimental |  |
 | i18n | @mcp-vertex/i18n | public | stable | standard, swarm, full, vertex, web-app |
 | impact-analysis | @mcp-vertex/impact-analysis | public | experimental | vertex |
 | issues | @mcp-vertex/issues | public | beta | full |
@@ -45,6 +47,7 @@
 | quality | @mcp-vertex/quality | public | stable | standard, swarm, full, vertex, web-app, backend-api |
 | quality-policy | @mcp-vertex/quality-policy | public | experimental | vertex |
 | refactor | @mcp-vertex/refactor | public | stable | standard, swarm, full, web-app, backend-api |
+| remote-provider-core | @mcp-vertex/remote-provider-core | public | beta |  |
 | rules | @mcp-vertex/rules | public | stable | standard, swarm, full, vertex, web-app, backend-api |
 | search | @mcp-vertex/search | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | security | @mcp-vertex/security | public | stable | vertex |
@@ -84,6 +87,8 @@
 | external-mcps | 2700 | 3000 | 20 |
 | forge | 7400 | 8200 | 20 |
 | git | 6200 | 6800 | 20 |
+| github | 2700 | 3000 | 20 |
+| gitlab | 2700 | 3000 | 20 |
 | i18n | 2700 | 3000 | 20 |
 | impact-analysis | 2700 | 3000 | 20 |
 | issues | 5300 | 5900 | 20 |
@@ -103,6 +108,7 @@
 | quality | 9000 | 9800 | 20 |
 | quality-policy | 2700 | 3000 | 20 |
 | refactor | 2700 | 3000 | 20 |
+| remote-provider-core | 2700 | 3000 | 20 |
 | rules | 2700 | 3000 | 20 |
 | search | 2700 | 3000 | 20 |
 | security | 2700 | 3000 | 20 |
@@ -142,6 +148,8 @@
 | external-mcps | network, process |  |
 | forge | forge-read, forge-write, network | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |
 | git | git-read, git-write | status: git-read; changed: git-read; diff: git-read; log: git-read; blame: git-read; show: git-read; worktree: git-read; changelog: git-read; commit: git-write; push: git-write |
+| github | network |  |
+| gitlab | network |  |
 | i18n | filesystem-read |  |
 | impact-analysis | filesystem-read |  |
 | issues | forge-read, forge-write, network | issues_list: forge-read, network; issues_fetch: forge-read, network; issues_analyze: forge-read; issues_ingest: forge-read, network; issues_resolve: forge-write, network; setup_github: forge-write, network, secrets |
@@ -161,6 +169,7 @@
 | quality | filesystem-read, process |  |
 | quality-policy | filesystem-read |  |
 | refactor | filesystem-read, filesystem-write |  |
+| remote-provider-core | filesystem-read |  |
 | rules | filesystem-read |  |
 | search | filesystem-read |  |
 | security | filesystem-read, env-read |  |
@@ -392,6 +401,24 @@
 | git | web-app | yes | yes | yes |
 | git | backend-api | yes | yes | yes |
 | git | cli-tool | yes | yes | yes |
+| github | minimal | no | no | yes |
+| github | lean | no | no | yes |
+| github | standard | no | no | yes |
+| github | swarm | no | no | yes |
+| github | full | no | no | yes |
+| github | vertex | no | no | yes |
+| github | web-app | no | no | yes |
+| github | backend-api | no | no | yes |
+| github | cli-tool | no | no | yes |
+| gitlab | minimal | no | no | yes |
+| gitlab | lean | no | no | yes |
+| gitlab | standard | no | no | yes |
+| gitlab | swarm | no | no | yes |
+| gitlab | full | no | no | yes |
+| gitlab | vertex | no | no | yes |
+| gitlab | web-app | no | no | yes |
+| gitlab | backend-api | no | no | yes |
+| gitlab | cli-tool | no | no | yes |
 | i18n | minimal | no | no | yes |
 | i18n | lean | no | no | yes |
 | i18n | standard | yes | yes | yes |
@@ -563,6 +590,15 @@
 | refactor | web-app | yes | yes | yes |
 | refactor | backend-api | yes | yes | yes |
 | refactor | cli-tool | no | no | yes |
+| remote-provider-core | minimal | no | no | yes |
+| remote-provider-core | lean | no | no | yes |
+| remote-provider-core | standard | no | no | yes |
+| remote-provider-core | swarm | no | no | yes |
+| remote-provider-core | full | no | no | yes |
+| remote-provider-core | vertex | no | no | yes |
+| remote-provider-core | web-app | no | no | yes |
+| remote-provider-core | backend-api | no | no | yes |
+| remote-provider-core | cli-tool | no | no | yes |
 | rules | minimal | no | no | yes |
 | rules | lean | no | no | yes |
 | rules | standard | yes | yes | yes |

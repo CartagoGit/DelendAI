@@ -52,6 +52,8 @@
 | git | public | changelog | git-read |
 | git | public | commit | git-write |
 | git | public | push | git-write |
+| github | public | * | network |
+| gitlab | public | * | network |
 | i18n | public | * | filesystem-read |
 | impact-analysis | public | * | filesystem-read |
 | issues | public | issues_list | forge-read, network |
@@ -93,6 +95,7 @@
 | quality | public | * | filesystem-read, process |
 | quality-policy | public | * | filesystem-read |
 | refactor | public | * | filesystem-read, filesystem-write |
+| remote-provider-core | public | * | filesystem-read |
 | rules | public | * | filesystem-read |
 | search | public | * | filesystem-read |
 | security | public | * | filesystem-read, env-read |
