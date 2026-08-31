@@ -151,59 +151,59 @@ export const scanFile = async (
 		}
 	}
 
-	// Rule 2: INDENT-DRIFT — for every JSON-key line, the leading
-	// whitespace must match a depth that is a multiple of an indent
-	// unit found elsewhere in the file. We pick the unit as the
-	// minimum positive indent-step of all keys in the same file
-	// (tabs collapse to 1 in the unit sense — biome's `indentStyle`
-	// is tab, so the unit is `tab`).
+	// Rule 2: INDENT-DRIFT — a JSON key whose indent depth does
+	// not match the structural depth expected from the open
+	// braces/brackets before it on the same line(s). We walk a
+	// brace-stack over the comment-stripped source and flag any
+	// key whose indent depth is NOT equal to the stack height.
+	// This is the exact "two tabs where its peers use three"
+	// failure mode: a key line that dropped a tab relative to its
+	// enclosing block.
 	const keyRx = /^([ \t]*)(?:"(?:[^"\\]|\\.)*"|\d+)\s*:/;
-	const depthOf = (line: string): number => {
-		const match = keyRx.exec(line);
-		if (!match) return -1;
-		const leading = match[1] ?? '';
+	const structuralDepth = (lineIndex: number): number => {
 		let depth = 0;
-		for (const ch of leading) if (ch === '\t') depth += 1;
+		let inString = false;
+		let escaped = false;
+		for (let i = 0; i < lineIndex; i += 1) {
+			const line = stripped[i] ?? '';
+			for (let j = 0; j < line.length; j += 1) {
+				const ch = line[j] ?? '';
+				const next = line[j + 1] ?? '';
+				if (inString) {
+					if (escaped) escaped = false;
+					else if (ch === '\\') escaped = true;
+					else if (ch === '"') inString = false;
+					continue;
+				}
+				if (ch === '"') {
+					inString = true;
+				} else if (ch === '{' || ch === '[') {
+					depth += 1;
+				} else if (ch === '}' || ch === ']') {
+					depth -= 1;
+				}
+				void next;
+			}
+		}
 		return depth;
 	};
-	const depths: number[] = [];
-	for (const strippedLine of stripped) {
-		const d = depthOf(strippedLine);
-		if (d > 0) depths.push(d);
-	}
-	if (depths.length > 0) {
-		// Pick the unit as the MODE of observed key depths (the depth
-		// that the most keys use). Drift = any key whose depth is not
-		// a multiple of that mode. GCD is wrong here because a file
-		// with two depth-1 keys and one depth-2 key has GCD=1, which
-		// trivially accepts every line — and that's exactly the
-		// scenario the regression took.
-		const counts = new Map<number, number>();
-		for (const d of depths) counts.set(d, (counts.get(d) ?? 0) + 1);
-		let unit = 1;
-		let bestCount = -1;
-		for (const [d, c] of counts) {
-			if (c > bestCount || (c === bestCount && d < unit)) {
-				unit = d;
-				bestCount = c;
-			}
-		}
-		if (unit < 1) unit = 1;
-		for (let idx = 0; idx < stripped.length; idx += 1) {
-			const strippedLine = stripped[idx] ?? '';
-			const depth = depthOf(strippedLine);
-			if (depth <= 0) continue;
-			if (depth % unit !== 0) {
-				violations.push({
-					file: relPath,
-					line: idx + 1,
-					rule: 'INDENT-DRIFT',
-					message: `leading indent depth ${depth} is not a multiple of the file's indent unit ${unit}`,
-				});
-			}
+	for (let idx = 0; idx < stripped.length; idx += 1) {
+		const strippedLine = stripped[idx] ?? '';
+		const match = keyRx.exec(strippedLine);
+		if (!match) continue;
+		const leading = match[1] ?? '';
+		let indent = 0;
+		for (const ch of leading) if (ch === '\t') indent += 1;
+		const expected = structuralDepth(idx);
+		if (indent !== expected) {
+			violations.push({
+				file: relPath,
+				line: idx + 1,
+				rule: 'INDENT-DRIFT',
+				message: `leading indent ${indent} tab(s) does not match structural depth ${expected} (open braces/brackets before this line)`,
+			});
 		}
 	}
-
 	// Rule 3: JSONC-COMMA — `},` or `],` immediately followed by a
 	// key-bearing line below, but the trailing comma was already on a
 	// line that ALSO contains an entry to its left. This is the
