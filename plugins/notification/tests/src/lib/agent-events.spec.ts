@@ -103,7 +103,7 @@ describe('agent heartbeat events (f00016 S8)', async () => {
 						task_id: 'live',
 						agent: 'falcon',
 						started_at: '2026-06-20T00:00:00.000Z',
-						last_seen: '2026-06-20T00:00:50.000Z',
+						last_seen: '2026-06-20T00:00:59.000Z',
 					},
 					{
 						task_id: 'dead',
@@ -127,14 +127,12 @@ describe('agent heartbeat events (f00016 S8)', async () => {
 			new Date('2026-06-20T00:01:00.000Z'),
 		);
 
-		expect(events).toHaveLength(2);
-		expect(events.find((event) => event.taskId === 'live')).toMatchObject({
-			kind: 'agent-idle',
-		});
+		expect(events).toHaveLength(1);
+		expect(events.find((event) => event.taskId === 'live')).toBeUndefined();
 		expect(events.find((event) => event.taskId === 'dead')).toMatchObject({
 			kind: 'agent-dead',
 		});
-		expect(seen.map((event) => event.taskId)).toEqual(['live', 'dead']);
+		expect(seen.map((event) => event.taskId)).toEqual(['dead']);
 	});
 
 	it('bridge forwards lifecycle events through the server logging channel', async () => {

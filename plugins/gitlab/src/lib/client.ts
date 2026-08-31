@@ -1,4 +1,4 @@
-import z from 'zod';
+import type { ZodType } from 'zod';
 
 import type {
 	IRemotePaginationMeta,
@@ -60,7 +60,7 @@ export interface IGitLabHttpRequestOptions<TResponse> {
 	readonly headers?: Readonly<Record<string, string>>;
 	readonly body?: string;
 	readonly parseAs?: 'json' | 'text';
-	readonly responseSchema?: z.ZodType<TResponse>;
+	readonly responseSchema?: ZodType<TResponse>;
 	readonly compatibilityCheck?: (
 		payload: unknown,
 		response: IRemoteFetchResponse,
