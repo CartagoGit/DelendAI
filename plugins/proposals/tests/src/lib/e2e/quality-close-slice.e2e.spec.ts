@@ -78,9 +78,11 @@ const seedSlice = (workspace: string, id: string): string => {
 
 const findProposalPath = (workspace: string, id: string): string => {
 	const proposalsDir = join(workspace, 'docs/mcp-vertex/proposals');
-	const relativePath = readdirSync(proposalsDir, { recursive: true }).find(
+	const entries = readdirSync(proposalsDir, { recursive: true }).filter(
+		(entry): entry is string => typeof entry === 'string',
+	);
+	const relativePath = entries.find(
 		(entry) =>
-			typeof entry === 'string' &&
 			entry.endsWith('.md') &&
 			readFileSync(join(proposalsDir, entry), 'utf8').includes(
 				`id: ${id}`,

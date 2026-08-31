@@ -93,7 +93,11 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) =>
 			if (!parsed.success) return;
 			if (parsed.data.command === 'action') {
 				try {
-					await deps.host.executeCommand?.(REFRESH_COMMAND);
+					await deps.host.executeCommand?.(
+						parsed.data.action === 'expand'
+							? OPEN_DASHBOARD_COMMAND
+							: REFRESH_COMMAND,
+					);
 				} catch {
 					// Best-effort: a missing executeCommand is a host
 					// capability gap, not a user error.
