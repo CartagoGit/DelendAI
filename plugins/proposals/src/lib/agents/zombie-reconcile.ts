@@ -267,6 +267,7 @@ export async function gcZombies(
 
 	if (options?.dryRun !== true && report.orphans.length > 0) {
 		let mutated = false;
+		let releasedLockCount = 0;
 		for (const orphan of report.orphans) {
 			if (orphan.recommendedAction === 'force_release') {
 				const before = registry.assignments.length;
@@ -280,8 +281,9 @@ export async function gcZombies(
 				const lockEntry = lockSnapshot.in_flight.find(
 					(entry) => entry.task_id === orphan.taskId,
 				);
+				let releasedLock = false;
 				if (lockEntry !== undefined) {
-					await runAgentLockEngine(
+					const releaseResult = await runAgentLockEngine(
 						{
 							action: 'release',
 							task_id: orphan.taskId,
@@ -289,17 +291,37 @@ export async function gcZombies(
 						},
 						{ lockPath },
 					);
+					// R-2026-08-31: only emit the watchdog event when we
+					// actually freed a lock. Emitting on every
+					// `force_release` (even when no lock existed) flooded
+					// the queue with phantom events for orphan / lease-
+					// expired / cooldown_null rows whose registry row is
+					// gone but whose task ID is already free. The result
+					// was a backpressure RED threshold with 11+ queued
+					// events that the watchdog could never resolve
+					// because no zombie was actually behind them.
+					releasedLock =
+						releaseResult.ok &&
+						(releaseResult as { released?: boolean }).released ===
+							true;
 				}
 
-				if (options?.queueEmitter) {
+				if (releasedLock && options?.queueEmitter) {
 					const eventTaskId = `zombie-gc-event-${orphan.taskId}`;
 					await options.queueEmitter(eventTaskId, 4);
+					releasedLockCount += 1;
 				}
 			}
 		}
 		if (mutated) {
 			await store.write(registry);
 		}
+		// R-2026-08-31: stash the count so callers can observe it.
+		(
+			report as IZombieReconcileReport & {
+				readonly releasedLockCount?: number;
+			}
+		).releasedLockCount = releasedLockCount;
 	}
 
 	return report;
