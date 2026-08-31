@@ -30,7 +30,11 @@ import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 const STALE_LAST_SEEN = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
-/** A registry whose single adopted assignment is a stale, lock-less zombie. */
+/** A registry whose single adopted assignment is a stale zombie with
+ *  a lock entry — R-2026-08-31: `gcZombies` only emits the watchdog
+ *  event when the orphan actually held a lock, so the test fixtures
+ *  must include a real lock entry for the reconcile path to fire
+ *  `queueEmitter`. */
 const zombieRegistry = (taskId: string): string =>
 	JSON.stringify({
 		version: 2,
@@ -48,6 +52,25 @@ const zombieRegistry = (taskId: string): string =>
 				last_seen: STALE_LAST_SEEN,
 				cooldown_until: null,
 				status: 'active',
+			},
+		],
+	});
+
+/** A lock file with the matching taskId so the reconcile path
+ *  actually frees a lock and triggers the watchdog event. */
+const zombieLock = (taskId: string): string =>
+	JSON.stringify({
+		version: 1,
+		stale_after_minutes: 10,
+		in_flight: [
+			{
+				task_id: taskId,
+				agent: 'vega',
+				ownership: ['packages/proposals/src/queue-race.ts'],
+				started_at: STALE_LAST_SEEN,
+				last_seen: STALE_LAST_SEEN,
+				host: 'dead-host',
+				pid: 999999,
 			},
 		],
 	});
