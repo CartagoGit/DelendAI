@@ -48,6 +48,34 @@ export interface IQuantitativeDrift {
 	readonly diffLines: readonly string[];
 }
 
+/**
+ * Lines whose value changes without any code change, normalized on BOTH
+ * sides before the equality check.
+ *
+ * `Generated at:` was always volatile by design. `Proposals:` is the
+ * dangerous one: it moves every time a proposal changes status, which is
+ * exactly the operation this gate guards. Because `check:quantitative`
+ * runs inside `bun run validate`, and a passing `validate` is the
+ * evidence `close_slice` / `proposal_transition` demand, counting
+ * proposals here made closing a proposal invalidate the gate that lets
+ * you close a proposal — a deadlock that stranded 128 fully-implemented
+ * proposals in `ready/`.
+ *
+ * The generator still writes the real counts (the block carries a
+ * `Generated at:` stamp and is a snapshot, not a live view); the drift
+ * check just stops treating a moved count as a broken generator.
+ */
+const VOLATILE_LINES: readonly (readonly [RegExp, string])[] = [
+	[/(Generated at: )[^\n]+/, '$1<<snapshot>>'],
+	[/(Proposals: )[^\n]+/, '$1<<snapshot>>'],
+];
+
+const normalizeVolatile = (text: string): string =>
+	VOLATILE_LINES.reduce(
+		(acc, [pattern, replacement]) => acc.replace(pattern, replacement),
+		text,
+	);
+
 const MARKER_BEGIN = '<!-- mcp-vertex:begin quantitative -->';
 const MARKER_END = '<!-- mcp-vertex:end quantitative -->';
 
@@ -117,23 +145,22 @@ export const diffDoc = (
 			],
 		};
 	}
-	// The embedded `Generated at:` line changes on every regen by
-	// design; normalize it before the equality check so a fresh
-	// `now()` doesn't trigger a spurious drift.
-	const normalizedDoc = docText.replace(
-		/(Generated at: )[^\n]+/,
-		'$1<<snapshot>>',
-	);
+	// Normalize every volatile line (see VOLATILE_LINES) on both sides so
+	// a fresh `now()` or a proposal that merely changed status does not
+	// register as generator drift.
+	const normalizedDoc = normalizeVolatile(docText);
 	const normalizedSnap: IQuantitativeSnapshot = {
 		...snap,
 		generatedAt: '<<snapshot>>',
 	};
 	const { text: refreshed } = updateDocBlock(normalizedDoc, normalizedSnap);
-	if (refreshed === normalizedDoc) return null;
+	if (normalizeVolatile(refreshed) === normalizedDoc) return null;
 	const startIdx = docText.indexOf(MARKER_BEGIN);
 	const endIdx = docText.indexOf(MARKER_END) + MARKER_END.length;
-	const diskBlock = docText.slice(startIdx, endIdx);
-	const expectedBlock = renderBlockForCompare(normalizedSnap);
+	const diskBlock = normalizeVolatile(docText.slice(startIdx, endIdx));
+	const expectedBlock = normalizeVolatile(
+		renderBlockForCompare(normalizedSnap),
+	);
 	return {
 		relPath: '',
 		onDiskLen: diskBlock.length,
