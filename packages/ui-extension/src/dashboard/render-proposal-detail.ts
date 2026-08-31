@@ -87,9 +87,9 @@ const headerCard = (
 		detail.summary?.status ?? asText(detail.diagnose?.status) ?? '—';
 	const folder = asText(detail.diagnose?.folder);
 	const owners = Array.isArray(detail.diagnose?.lockOwners)
-		? (detail.diagnose?.lockOwners as readonly unknown[]).filter(
-				(o): o is string => typeof o === 'string',
-			)
+		? (
+				detail.diagnose as { lockOwners: readonly unknown[] }
+			).lockOwners.filter((o): o is string => typeof o === 'string')
 		: [];
 	const claimable = detail.summary?.claimableSliceIds.length ?? 0;
 	return `<section class="card">
