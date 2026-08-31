@@ -125,7 +125,7 @@ export const renderPanelSettings = (
 		HOST_LOG_LEVELS,
 		(value) => copy.option('logLevel', value),
 	);
-	return `<section class="mcpv-panel" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" dir="${direction}">
+	return `<section class="mcpv-panel mcpv-panel--settings${compact ? ' mcpv-panel--compact' : ''}" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" dir="${direction}">
 	<h2 class="mcpv-panel__title">${escapeHtml(text('settings.title', 'Settings'))}</h2>
 	<p class="mcpv-fg-muted">${escapeHtml(text('settings.description', 'Personalize the dashboard and host preferences.'))}</p>
 	<div class="mcpv-settings">
