@@ -321,6 +321,7 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 			    "a.ts",
 			  ],
 			  "statusAfter": [
+			    "?? proposals/index.json",
 			    "A  a.ts",
 			  ],
 			}
