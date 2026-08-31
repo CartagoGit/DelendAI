@@ -9,6 +9,15 @@ import plugin from '@mcp-vertex/quality';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
+const jsonSchemaBytesOf = (schema: unknown): number => {
+	const candidate = schema as { toJSONSchema?: () => unknown };
+	const json =
+		typeof candidate?.toJSONSchema === 'function'
+			? candidate.toJSONSchema()
+			: schema;
+	return Buffer.byteLength(JSON.stringify(json), 'utf8');
+};
+
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],
 	exists: async (p) => p in files,
@@ -125,6 +134,48 @@ describe('run_quality dryRun (a00085 #4)', async () => {
 });
 
 describe('quality plugin', async () => {
+	it('declares compact outputSchema projections for the registered quality tools', async () => {
+		const reg = await plugin.register({
+			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
+			pluginCacheDir: '.cache/mcp-vertex/quality',
+			pluginDocsDir: 'docs/mcp-vertex/quality',
+			namespacePrefix: 'quality',
+			options: {},
+			args: {},
+		} satisfies IMcpPluginContext);
+		const schemas = new Map<string, unknown>();
+		const fakeServer = createFakeToolServer({
+			onRegisterTool: (call) => {
+				schemas.set(
+					call.name,
+					(call.config as { outputSchema?: unknown }).outputSchema,
+				);
+			},
+		});
+		for (const tool of reg.tools ?? []) {
+			await tool.register(fakeServer);
+		}
+		expect(
+			jsonSchemaBytesOf(schemas.get('quality_get_quality_scopes')),
+		).toBeLessThanOrEqual(200);
+		expect(
+			jsonSchemaBytesOf(schemas.get('quality_run_quality')),
+		).toBeLessThanOrEqual(200);
+		expect(
+			jsonSchemaBytesOf(schemas.get('quality_quality_cancel')),
+		).toBeLessThanOrEqual(200);
+		expect(
+			jsonSchemaBytesOf(schemas.get('quality_quality_run_all')),
+		).toBeLessThanOrEqual(200);
+	});
+
 	it('registers the quality tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },

@@ -24,6 +24,15 @@ import { SessionHygieneMonitor } from '../../../src/lib/session-hygiene';
 import { buildUsageTrackingToolRegistrations } from '../../../src/lib/tools';
 import type { IInvocationRecord } from '../../../src/lib/types';
 
+const jsonSchemaBytesOf = (schema: unknown): number => {
+	const candidate = schema as { toJSONSchema?: () => unknown };
+	const json =
+		typeof candidate?.toJSONSchema === 'function'
+			? candidate.toJSONSchema()
+			: schema;
+	return Buffer.byteLength(JSON.stringify(json), 'utf8');
+};
+
 type Handler = (a: unknown) => Promise<{
 	content: Array<{ text: string }>;
 	isError?: boolean;
@@ -38,6 +47,21 @@ const captureHandler = async (reg: IToolRegistration): Promise<Handler> => {
 	} as never);
 	if (!handler) throw new Error('handler not registered');
 	return handler;
+};
+
+const captureOutputSchema = async (
+	reg: IToolRegistration,
+): Promise<unknown> => {
+	let outputSchema: unknown;
+	await reg.register({
+		registerTool: (
+			_name: string,
+			config: { outputSchema?: unknown },
+		): void => {
+			outputSchema = config.outputSchema;
+		},
+	} as never);
+	return outputSchema;
 };
 
 const parse = async (
@@ -97,6 +121,13 @@ describe('usage-tracking tools', () => {
 			'usage_clear',
 			'session_hygiene',
 		]);
+	});
+
+	it('declares compact outputSchema projections for usage_report and session_hygiene', async () => {
+		const reportSchema = await captureOutputSchema(regs()[0]!);
+		const hygieneSchema = await captureOutputSchema(regs()[2]!);
+		expect(jsonSchemaBytesOf(reportSchema)).toBeLessThanOrEqual(200);
+		expect(jsonSchemaBytesOf(hygieneSchema)).toBeLessThanOrEqual(200);
 	});
 
 	it('usage_report rolls up by the requested axis + returns expensive calls', async () => {

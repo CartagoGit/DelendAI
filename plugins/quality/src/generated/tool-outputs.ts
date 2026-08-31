@@ -13,61 +13,24 @@
  */
 
 export interface McpVertexQualityGetQualityScopesOutput {
-	scopes: Record<string, {
-		command: string;
-		expect?: string;
-	}[]>;
+	ok?: boolean;
+	[key: string]: unknown;
 }
 
 export interface McpVertexQualityQualityCancelOutput {
-	cancelled: number[];
-	count: number;
+	ok?: boolean;
+	[key: string]: unknown;
 }
 
 export interface McpVertexQualityQualityRunAllOutput {
-	results: {
-		scope: string;
-		ok: boolean;
-		duration: number;
-		errors: string[];
-	}[];
-	summary: {
-		ok: boolean;
-		scopes: number;
-	};
+	ok?: boolean;
+	[key: string]: unknown;
 }
 
 export interface McpVertexQualityRunQualityOutput {
-	scope?: string;
 	ok: boolean;
-	dryRun?: boolean;
-	commands?: string[];
-	results?: {
-		command: string;
-		ok: boolean;
-		code: number;
-		timedOut: boolean;
-		tail: string;
-	}[];
-	severities?: {
-		critical: number;
-		high: number;
-		medium: number;
-		low: number;
-		info: number;
-	};
-	worst?: "critical" | "high" | "medium" | "low" | "info" | "none";
-	findings?: Array<{
-		ruleId: string;
-		severity: "critical" | "high" | "medium" | "low" | "info";
-		message: string;
-		location?: {
-			file: string;
-			line?: number;
-			endLine?: number;
-		};
-		fix?: string;
-	}>;
+	ok?: boolean;
+	[key: string]: unknown;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
