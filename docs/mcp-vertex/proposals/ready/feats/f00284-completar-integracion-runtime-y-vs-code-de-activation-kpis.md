@@ -36,7 +36,8 @@ f00198 tiene la lógica pura y el dashboard CLI, pero la revisión independiente
   - "Conectar los eventos runtime existentes con activation KPIs sin abrir una vía paralela."
   - "Persistir el snapshot local en .vscode/mcp-vertex/kpis.json mediante una escritura segura y testeable."
   - "Mantener la privacidad local y validar la serialización/hidratación."
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator
 ### S2 — Vista Activation KPIs en VS Code
 - **Status**: pending
 - **DependsOn**: [S1]
