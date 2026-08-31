@@ -430,6 +430,16 @@ const buildMemoryModel = (
 		: { nextOffset: result.nextOffset }),
 });
 
+const isMemoryListResult = (value: unknown): value is IMemoryListResult => {
+	if (typeof value !== 'object' || value === null) return false;
+	const result = value as Partial<IMemoryListResult>;
+	return (
+		Array.isArray(result.notes) &&
+		typeof result.total === 'number' &&
+		typeof result.offset === 'number'
+	);
+};
+
 export class DashboardService {
 	private readonly client: McpStdioClient;
 	private readonly overview: OverviewService | undefined;
@@ -706,13 +716,15 @@ export class DashboardService {
 		);
 		if (!loaded) return unavailableMemoryModel();
 		try {
-			const result = await this.client.request<
+			const result: unknown = await this.client.request<
 				{ readonly limit: number },
-				IMemoryListResult
+				unknown
 			>(formatToolName(this.namespacePrefix, 'memory_list'), {
 				limit: 100,
 			});
-			return buildMemoryModel(result);
+			return isMemoryListResult(result)
+				? buildMemoryModel(result)
+				: unavailableMemoryModel();
 		} catch {
 			return unavailableMemoryModel();
 		}

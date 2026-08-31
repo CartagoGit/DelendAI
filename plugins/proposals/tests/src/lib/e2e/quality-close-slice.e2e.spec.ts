@@ -25,7 +25,7 @@ const createQualityServer = async (command: string) => {
 	workspaces.push(workspace);
 	const config = JSON.stringify({
 		plugins: {
-			quality: { options: { scopes: { close: [command] } } },
+			quality: { options: { scopes: { all: [command] } } },
 			proposals: { options: { requirePeerReview: false } },
 		},
 	});
@@ -119,7 +119,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
-			expect(result.structuredContent).toEqual({});
 			expect(result.structuredContent).toMatchObject({
 				ok: false,
 				closed: false,
@@ -152,7 +151,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
-			expect(result.structuredContent).toEqual({});
 			expect(result.isError).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,
