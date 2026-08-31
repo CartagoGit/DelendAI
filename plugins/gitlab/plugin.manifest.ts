@@ -1,4 +1,4 @@
-import { definePluginManifest } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
 
 export default definePluginManifest({
 	id: 'gitlab',
@@ -11,6 +11,7 @@ export default definePluginManifest({
 	maturity: 'experimental',
 	permissions: ['network'],
 	presets: [],
+	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@mcp-vertex/contracts', 'zod'],
 	capabilities: ['gitlab', 'remote-provider'],
 });
