@@ -211,7 +211,7 @@ describe('subscribe session cleanup mirrors disconnect unsubscribe', async () =>
 		expect(before.leases).toHaveLength(3);
 
 		const result = await releaseSessionSubscriptions(paths, sessionA);
-		expect(result.releasedTaskIds.sort()).toEqual(['obs-a', 'obs-a2']);
+		expect([...result.releasedTaskIds].sort()).toEqual(['obs-a', 'obs-a2']);
 
 		const after = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
 			leases: Array<{ taskId: string; host?: string; pid?: number }>;
