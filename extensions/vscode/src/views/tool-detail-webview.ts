@@ -4,6 +4,7 @@ import {
 	renderToolDetailHtml as renderSharedToolDetailHtml,
 	type IRenderableSchema,
 	type IToolDetail,
+	type IToolDetailCopy,
 } from '@mcp-vertex/ui-extension/webview';
 
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
@@ -24,7 +25,7 @@ export interface IToolDetailViewModel {
  * mapping inside the extension means the shared renderer can stay
  * free of VS Code vocabulary.
  */
-const projectCopy = (viewCopy: IViewCopy): IToolDetail['copy'] => ({
+const projectCopy = (viewCopy: IViewCopy): IToolDetailCopy => ({
 	lang: viewCopy.lang,
 	knowledge: viewCopy.knowledge,
 	inputSchema: viewCopy.inputSchema,
