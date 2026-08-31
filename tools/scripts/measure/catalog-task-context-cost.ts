@@ -4,6 +4,7 @@ import {
 	connectTokenBudgetClient,
 	createTokenBudgetFixtureWorkspace,
 	destroyTokenBudgetFixtureWorkspace,
+	jsonBytes,
 	listToolsMetrics,
 	measureToolTextBytes,
 	type IToolBreakdownRow,
@@ -63,7 +64,7 @@ export interface IBytePercentileSummary {
 	readonly p95EstimatedTokens: number;
 }
 
-export interface ICatalogTextMeasurement {
+export interface ICatalogPayloadMeasurement {
 	readonly compactBytes: number;
 	readonly compactEstimatedTokens: number;
 	readonly fullBytes: number;
@@ -96,7 +97,7 @@ export interface ITaskContextCostMeasurement extends IBytePercentileSummary {
 
 export interface IMeasureCatalogAndTaskContextCostResult {
 	readonly catalog: {
-		readonly agentCatalog: ICatalogTextMeasurement;
+		readonly agentCatalog: ICatalogPayloadMeasurement;
 		readonly nativeCore: ICatalogBreakdownMeasurement;
 		readonly swarmNative: ICatalogBreakdownMeasurement;
 	};
@@ -176,6 +177,15 @@ const measureProjectContextBytes = async (
 ): Promise<number> =>
 	measureToolTextBytes(client, 'mcp-vertex_vertex', PROJECT_CONTEXT_ROUTE);
 
+const measureToolStructuredContentBytes = async (
+	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
+	name: string,
+	args: Record<string, unknown>,
+): Promise<number> => {
+	const result = await client.callTool({ name, arguments: args });
+	return jsonBytes(result.structuredContent ?? null);
+};
+
 const measureTaskContextCost = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
 ): Promise<ITaskContextCostMeasurement> => {
@@ -224,12 +234,12 @@ export const measureCatalogAndTaskContextCost =
 			surfaceMode: 'managed',
 		});
 		try {
-			const compactBytes = await measureToolTextBytes(
+			const compactBytes = await measureToolStructuredContentBytes(
 				nativeCore.client,
 				'mcp-vertex_agent_catalog',
 				{ mode: 'compact' },
 			);
-			const fullBytes = await measureToolTextBytes(
+			const fullBytes = await measureToolStructuredContentBytes(
 				nativeCore.client,
 				'mcp-vertex_agent_catalog',
 				{ mode: 'full' },
@@ -290,7 +300,7 @@ export const renderCatalogAndTaskContextMarkdown = (
 	[
 		'## Catalog and task context cost addendum',
 		'',
-		'Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` against the same synthetic fixture workspace used by the token budget suite. The existing real-preset, plugin-marginal and top-tool tables below remain the schema breakdown source; this addendum pins the extra S1 measurements for `agent_catalog` text payloads and routed `project_context` task context snapshots.',
+		'Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` against the same synthetic fixture workspace used by the token budget suite. The existing real-preset, plugin-marginal and top-tool tables below remain the schema breakdown source; this addendum pins the extra S1 measurements for `agent_catalog` structured payloads and routed `project_context` task context snapshots.',
 		'',
 		markdownTable(
 			['Catalog payload', 'Surface', 'Bytes', 'Est. Tokens'],
