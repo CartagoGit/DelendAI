@@ -17,7 +17,9 @@ export {
 	type ContractMigrationImpact,
 	type IContractMigrationPolicyInput,
 	type IContractMigrationPolicyVerdict,
+	type IContractMigrationSliceGuidance,
 	type IWorktreeImpactPolicyInput,
 	type IWorktreeImpactPolicyVerdict,
+	type WorktreeClaimMode,
 	type WorktreeIsolationMode,
 } from './interfaces/contract-migration.interface';
