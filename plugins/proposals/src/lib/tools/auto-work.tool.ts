@@ -386,10 +386,12 @@ const buildPeerReviewPlan = (input: {
 	readonly namespacePrefix: string;
 	readonly proposalId: string;
 	readonly file: string;
+	readonly persistMode?: IAutoWorkPersistMode;
 }) => ({
 	state: 'work' as const,
 	proposalId: input.proposalId,
 	file: input.file,
+	persist: { mode: input.persistMode ?? 'none' },
 	next: `${input.namespacePrefix}_proposal_review`,
 	nextAction: `Peer-review gate (F149). Call ${input.namespacePrefix}_proposal_review { action: "approve", proposalId: "${input.proposalId}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>" } before ${input.namespacePrefix}_proposal_transition { id: "${input.proposalId}", to: "done", reason } .`,
 	steps: [
@@ -593,6 +595,7 @@ export const runAutoWork = async (
 		status?: string;
 		reason?: string;
 		nextAction?: string;
+		action?: 'close';
 		pickedFromPaused?: boolean;
 	};
 	const requirePeer = options.requirePeerReview !== false;
@@ -605,11 +608,16 @@ export const runAutoWork = async (
 		const pendingReview = await findReviewPendingPeerApproval(options);
 		if (pendingReview !== null) {
 			consecutiveIdle = 0;
+			const peerReviewPersistMode =
+				options.inputPersist ?? options.persist?.mode;
 			return json(
 				buildPeerReviewPlan({
 					namespacePrefix: options.namespacePrefix,
 					proposalId: pendingReview.proposalId,
 					file: pendingReview.file,
+					...(peerReviewPersistMode !== undefined
+						? { persistMode: peerReviewPersistMode }
+						: {}),
 				}),
 			);
 		}
@@ -635,6 +643,25 @@ export const runAutoWork = async (
 							next.nextAction ??
 							'Create a proposal under the proposals dir; only run sync_proposals after creating/renaming proposal files or after the last open slice of a proposal is closed.',
 					}),
+		});
+	}
+	if (next.action === 'close') {
+		consecutiveIdle = 0;
+		return json({
+			state: 'work',
+			proposalId: next.proposalId,
+			file: next.file,
+			action: 'close',
+			persist: {
+				mode: options.inputPersist ?? options.persist?.mode ?? 'none',
+			},
+			nextAction: next.nextAction,
+			steps: [
+				'All declared slices are already done; do not claim another slice.',
+				next.nextAction ??
+					'Complete the proposal closure transition with its required evidence and peer-review gates.',
+				`Re-run ${options.namespacePrefix}_auto_work after the proposal reaches done.`,
+			],
 		});
 	}
 
@@ -665,11 +692,16 @@ export const runAutoWork = async (
 			approved = false;
 		}
 		if (!approved) {
+			const peerReviewPersistMode =
+				options.inputPersist ?? options.persist?.mode;
 			return json(
 				buildPeerReviewPlan({
 					namespacePrefix: options.namespacePrefix,
 					proposalId: next.proposalId,
 					file: next.file,
+					...(peerReviewPersistMode !== undefined
+						? { persistMode: peerReviewPersistMode }
+						: {}),
 				}),
 			);
 		}
@@ -921,6 +953,7 @@ export const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	validationCommand: z.string().optional(),
 	persist: z.unknown().optional(),
 	claimReady: z.unknown().optional(),
+	action: z.enum(['close']).optional(),
 	steps: z.array(z.string()).optional(),
 	// f00073: optional array of warnings about other agents' branch /
 	// worktree state. Empty when the swarm is clean.

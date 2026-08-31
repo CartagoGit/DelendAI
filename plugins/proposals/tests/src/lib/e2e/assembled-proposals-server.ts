@@ -84,6 +84,8 @@ export interface ICreateAssembledProposalsServerOptions {
 	 * enables it.
 	 */
 	readonly enableAgentWorktree?: boolean;
+	/** Override the proposals peer-review gate in the assembled plugin. */
+	readonly requirePeerReview?: boolean;
 	/** Load proposals through the production Node/Bun runtime importer. */
 	readonly useRuntimeImporter?: boolean;
 }
@@ -114,7 +116,20 @@ export const createAssembledProposalsServer = async (
 			: async () => ({ default: proposalsPlugin }),
 		// No on-disk config file: the harness owns the workspace, the
 		// plugin receives pure defaults from ctx.corePaths.
-		readFile: async () => undefined,
+		readFile: async (path) =>
+			path.endsWith('mcp-vertex.config.json') &&
+			options.requirePeerReview !== undefined
+				? JSON.stringify({
+						plugins: {
+							proposals: {
+								options: {
+									requirePeerReview:
+										options.requirePeerReview,
+								},
+							},
+						},
+					})
+				: undefined,
 	});
 	const assembled = await createMcpProject(config);
 	const [clientTransport, serverTransport] =

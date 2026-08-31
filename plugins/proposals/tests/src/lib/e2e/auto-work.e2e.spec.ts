@@ -57,7 +57,6 @@ const createManagedPersistenceServer = async () => {
 	git(workspace, 'commit', '-q', '-m', 'test: seed');
 	git(workspace, 'remote', 'add', 'origin', bareRemote);
 	git(workspace, 'push', '-q', '-u', 'origin', 'HEAD');
-	writeFileSync(join(workspace, 'tracked.txt'), 'persisted\n', 'utf8');
 
 	const args = parseCliArgs(
 		[
@@ -116,12 +115,28 @@ const createManagedPersistenceServer = async () => {
 	return {
 		workspace,
 		client,
-		callTool: async <T>(name: string, args: Record<string, unknown> = {}) =>
-			client.callTool({ name, arguments: args }) as Promise<{
+		callTool: async <T>(
+			name: string,
+			args: Record<string, unknown> = {},
+		) => {
+			const raw = (await client.callTool({
+				name,
+				arguments: args,
+			})) as {
 				isError?: boolean;
 				content: Array<{ text?: string }>;
 				structuredContent?: T;
-			}>,
+			};
+			const first = raw.content[0];
+			return {
+				...raw,
+				structuredContent:
+					(raw.structuredContent &&
+					Object.keys(raw.structuredContent).length > 0
+						? raw.structuredContent
+						: undefined) ?? (JSON.parse(first?.text ?? '{}') as T),
+			};
+		},
 		close: async () => {
 			await client.close();
 			await assembled.server.close();
@@ -470,6 +485,11 @@ Exercise the configured persistence route over MCP.
 			// transition and observes the done state asynchronously.
 			expect(plan.persist?.mode).toBe('none');
 			expect(plan.claimReady?.sliceId).toBe('S1');
+			writeFileSync(
+				join(managed.workspace, 'tracked.txt'),
+				'persisted\n',
+				'utf8',
+			);
 
 			const closedRaw = await managed.callTool<{
 				ok: boolean;

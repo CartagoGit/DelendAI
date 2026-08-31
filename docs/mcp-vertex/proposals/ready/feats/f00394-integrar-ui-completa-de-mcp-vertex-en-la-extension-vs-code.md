@@ -29,13 +29,16 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
 - global_gate: e2e
 
 ### S1 — Modelo completo de workspace
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/client/src/lib/contracts/interfaces/dashboard.interface.ts`, `packages/client/src/lib/services/dashboard.service.ts`
 - **Gate**: type
 - acceptance:
   - "El modelo del dashboard contiene overview, tools, plugins, memory, proposals, agents, KPIs, health y docs con estados ready, empty, loading y unavailable."
   - "DashboardService obtiene los datos reales mediante el cliente MCP y respeta el namespace prefix sin duplicar llamadas innecesarias."
-
+- review-state: done
+- review-implementer: sparrow
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente aprobada tras reparar la compatibilidad pública: loading queda en el wrapper workspace, memory legacy no exige state, snapshot y namespace se mantienen. Evidencia: typecheck y tests focalizados verdes.
 ### S2 — Shell unico de UI compartida
 - **Status**: pending
 - **DependsOn**: [S1]

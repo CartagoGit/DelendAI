@@ -19,3 +19,4 @@ export {
 	themes,
 } from '../i18n/shared';
 export type { ILangDict, ILangMeta, Lang, Theme } from '../i18n/shared';
+export { BRAND_HEX_BLUE, BRAND_HEX_PURPLE } from '../lib/brand';

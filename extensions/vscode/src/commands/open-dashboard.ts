@@ -8,10 +8,15 @@
 import {
 	DashboardService,
 	EmbedService,
+	DEFAULT_EXTENSION_SETTINGS,
+	SettingsService,
+	type ISettingsStore,
 	type McpStdioClient,
 } from '@mcp-vertex/client';
+import type { IDashboardAllModels } from '@mcp-vertex/client';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { renderDashboard } from '@mcp-vertex/ui-extension/public';
+import { withCsp } from '@mcp-vertex/ui-extension/webview';
 
 import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
 
@@ -27,6 +32,144 @@ import { HOST_LANG_KEY } from './setup-github';
 export const OPEN_DASHBOARD_COMMAND = 'mcp-vertex.openDashboard';
 export const OPEN_DASHBOARD_TAB_COMMAND = 'mcp-vertex.openDashboardTab';
 
+const unavailableDashboard = (error: unknown): IDashboardAllModels => {
+	const message = error instanceof Error ? error.message : String(error);
+	const now = new Date().toISOString();
+	const totals = {
+		tools: 0,
+		plugins: 0,
+		proposals: 0,
+		calls: 0,
+		errors: 0,
+		totalMs: 0,
+		tokens: 0,
+		tokensSaved: 0,
+		savingsPercent: 0,
+		agents: 0,
+	};
+	return {
+		overview: {
+			serverName: 'mcp-vertex',
+			serverVersion: 'unavailable',
+			namespacePrefix: 'mcp-vertex',
+			plugins: [],
+			tools: [],
+			knowledgeIds: [],
+			recommendedNextAction: `MCP server unavailable: ${message}`,
+			totals,
+		},
+		metrics: {
+			totals: { calls: 0, errors: 0, totalMs: 0, totalBytes: 0 },
+			rows: [],
+			sparklines: {},
+			collectedAt: now,
+		},
+		tokens: {
+			tokensUsed: 0,
+			tokensSaved: 0,
+			savingsPercent: 0,
+			topByTokens: [],
+			history: [],
+		},
+		tools: { rows: [], sortBy: 'calls', sortDir: 'desc' },
+		plugins: { rows: [] },
+		proposals: { total: 0, byStatus: {}, rows: [] },
+		kpis: {
+			totals,
+			tokens: { used: 0, saved: 0, savingsPercent: 0 },
+			latency: { totalWallMs: 0, p50Ms: 0, p95Ms: 0 },
+			spend: null,
+		},
+		docs: {
+			pluginLoaded: false,
+			tools: [],
+			knowledge: [],
+			recommendedNextAction: `MCP server unavailable: ${message}`,
+		},
+		spend: null,
+		sessions: { total: 0, byStatus: {}, rows: [] },
+		times: { totalWallMs: 0, p50Ms: 0, p95Ms: 0, histogram: [] },
+		agents: { agents: [], totalActive: 0 },
+		memory: { state: 'unavailable', notes: [], total: 0, offset: 0 },
+		health: {
+			healthy: false,
+			locksActive: 0,
+			queue: null,
+			orphans: 0,
+			orphansThreshold: 'unknown',
+			stale: [],
+			staleCount: 0,
+			agents: [],
+			fetchedAt: now,
+		},
+		workspace: {
+			overview: {
+				state: 'unavailable',
+				data: {
+					serverName: 'mcp-vertex',
+					serverVersion: 'unavailable',
+					namespacePrefix: 'mcp-vertex',
+					plugins: [],
+					tools: [],
+					knowledgeIds: [],
+					recommendedNextAction: `MCP server unavailable: ${message}`,
+					totals,
+				},
+			},
+			tools: {
+				state: 'unavailable',
+				data: { rows: [], sortBy: 'calls', sortDir: 'desc' },
+			},
+			plugins: { state: 'unavailable', data: { rows: [] } },
+			memory: {
+				state: 'unavailable',
+				data: { state: 'unavailable', notes: [], total: 0, offset: 0 },
+			},
+			proposals: {
+				state: 'unavailable',
+				data: { total: 0, byStatus: {}, rows: [] },
+			},
+			agents: {
+				state: 'unavailable',
+				data: { agents: [], totalActive: 0 },
+			},
+			kpis: {
+				state: 'unavailable',
+				data: {
+					totals,
+					tokens: { used: 0, saved: 0, savingsPercent: 0 },
+					latency: { totalWallMs: 0, p50Ms: 0, p95Ms: 0 },
+					spend: null,
+				},
+			},
+			health: {
+				state: 'unavailable',
+				data: {
+					healthy: false,
+					locksActive: 0,
+					queue: null,
+					orphans: 0,
+					orphansThreshold: 'unknown',
+					stale: [],
+					staleCount: 0,
+					agents: [],
+					fetchedAt: now,
+				},
+			},
+			docs: {
+				state: 'unavailable',
+				data: {
+					pluginLoaded: false,
+					tools: [],
+					knowledge: [],
+					recommendedNextAction: `MCP server unavailable: ${message}`,
+				},
+			},
+		},
+		server: { name: 'mcp-vertex', version: 'unavailable', fetchedAt: now },
+	};
+};
+
 export interface IOpenDashboardDeps {
 	readonly host: IHostAdapter;
 	readonly client: McpStdioClient;
@@ -34,6 +177,7 @@ export interface IOpenDashboardDeps {
 		get<T>(key: string): T | undefined;
 		update(key: string, value: unknown): Thenable<void> | Promise<void>;
 	};
+	readonly settingsStore?: ISettingsStore;
 	readonly getConfig: () => {
 		readonly extension?: { readonly docsUrl?: string };
 	};
@@ -60,11 +204,11 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 				: { namespacePrefix: deps.namespacePrefix }),
 		});
 		const embed = new EmbedService();
-		let models;
+		let models: IDashboardAllModels;
 		try {
 			models = await dashboard.getAllModels();
-		} catch {
-			return undefined;
+		} catch (error) {
+			models = unavailableDashboard(error);
 		}
 		const docsUrl = (() => {
 			try {
@@ -73,12 +217,19 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 				return 'https://mcp-vertex.dev';
 			}
 		})();
-		const html = renderDashboard(models, {
-			docsUrl,
-			refreshCommand: REFRESH_COMMAND,
-			openDocsCommand: OPEN_DASHBOARD_COMMAND,
-			lang: dictsByLang[lang],
-		});
+		const settings = deps.settingsStore
+			? await new SettingsService(deps.settingsStore).get()
+			: undefined;
+		const html = withCsp(
+			'dashboard',
+			renderDashboard(models, {
+				docsUrl,
+				refreshCommand: REFRESH_COMMAND,
+				openDocsCommand: OPEN_DASHBOARD_COMMAND,
+				lang: dictsByLang[lang],
+				...(settings === undefined ? {} : { settings }),
+			}),
+		);
 		const panel = deps.host.createWebviewPanel(
 			'mcpVertexDashboard',
 			'mcp-vertex Dashboard',
@@ -118,10 +269,39 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 				await deps.host.executeCommand?.(commands[parsed.data.surface]);
 				return;
 			}
-			await deps.host.executeCommand?.(
-				OPEN_PROPOSAL_COMMAND,
-				parsed.data.id,
-			);
+			if (parsed.data.command === 'settings') {
+				if (deps.settingsStore === undefined) return;
+				try {
+					const service = new SettingsService(deps.settingsStore);
+					const settings =
+						parsed.data.action === 'reset'
+							? await service.set(DEFAULT_EXTENSION_SETTINGS)
+							: await service.set(parsed.data.settings ?? {});
+					await panel.webview.postMessage?.({
+						command: 'settingsResult',
+						settings,
+					});
+				} catch (error) {
+					await panel.webview.postMessage?.({
+						command: 'settingsResult',
+						error:
+							error instanceof Error
+								? error.message
+								: String(error),
+					});
+				}
+				return;
+			}
+			if (parsed.data.command === 'logs') {
+				return;
+			}
+			if (parsed.data.command === 'openProposal') {
+				await deps.host.executeCommand?.(
+					OPEN_PROPOSAL_COMMAND,
+					parsed.data.id,
+				);
+				return;
+			}
 		});
 		return panel;
 	};
@@ -129,13 +309,15 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 		OPEN_DASHBOARD_COMMAND,
 		async () => {
 			if (deps.host.executeCommand !== undefined) {
-				await deps.host.executeCommand(
-					'workbench.view.extension.mcp-vertex',
-				);
-				await deps.host.executeCommand('workbench.action.focusView', {
-					viewId: 'mcp-vertex.dashboard',
-				});
-				return;
+				try {
+					await deps.host.executeCommand(
+						'workbench.action.openView',
+						'mcp-vertex.dashboard',
+					);
+					return;
+				} catch {
+					// Fall through to the full-panel fallback.
+				}
 			}
 			await openDashboardTab();
 		},

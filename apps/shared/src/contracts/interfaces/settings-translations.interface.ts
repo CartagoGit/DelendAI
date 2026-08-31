@@ -20,7 +20,7 @@ export interface ISettingsTranslations {
 	readonly saveError: string;
 	readonly resetError: string;
 	readonly option: (
-		group: 'logLevel' | 'theme' | 'motion',
+		group: 'logLevel' | 'theme' | 'motion' | 'language',
 		value: string,
 	) => string;
 }

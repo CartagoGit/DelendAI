@@ -1222,11 +1222,13 @@ const registerDashboardSurfaces = async (
 			host = createFakeHostFromVscode(vscode);
 		}
 	}
+	const settingsStore = createExtensionSettingsStore(context.globalState);
 	track(
 		registerOpenDashboardCommand({
 			host,
 			client,
 			globalState: context.globalState,
+			settingsStore,
 			...(namespacePrefix === undefined ? {} : { namespacePrefix }),
 			getConfig: () =>
 				context.globalState.get(SETTINGS_STATE_KEY) ??
@@ -1242,6 +1244,7 @@ const registerDashboardSurfaces = async (
 			context.globalState.get(SETTINGS_STATE_KEY) ??
 			context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
 			{},
+		settingsStore,
 		...withPrefix,
 	});
 	dashboardRefresh.current = dashboardProvider;

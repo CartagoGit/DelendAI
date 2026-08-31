@@ -282,6 +282,26 @@ const truncateText = (value: unknown, maxChars: number): string | null => {
 	return text.length <= maxChars ? text : `${text.slice(0, maxChars)}...`;
 };
 
+const truncateUtf8Bytes = (value: string, maxBytes: number): string => {
+	let kept = '';
+	let usedBytes = 0;
+	for (const symbol of value) {
+		const symbolBytes = Buffer.byteLength(symbol, 'utf8');
+		if (usedBytes + symbolBytes > maxBytes) break;
+		kept += symbol;
+		usedBytes += symbolBytes;
+	}
+	return kept;
+};
+
+const sanitizeArtifactFileName = (value: string): string => {
+	const sanitized = value
+		.replace(/[^a-zA-Z0-9._-]+/g, '_')
+		.replace(/\.{2,}/g, '_')
+		.replace(/^\.+/, '');
+	return sanitized.length > 0 ? sanitized : 'artifact.zip';
+};
+
 const normalizeUser = (value: unknown): z.infer<typeof userSchema> | null => {
 	const raw = value as Record<string, unknown> | null;
 	if (raw === null || typeof raw !== 'object') return null;
@@ -1174,6 +1194,7 @@ const buildIssueLikeRegistration = (
 						const { data, meta } = await requestArray(
 							options,
 							`/projects/${project}/${collection}/${item}/${suffix}`,
+							pageQuery(args.page, args.perPage),
 						);
 						return toolResponse({
 							action: args.action,
@@ -1189,6 +1210,14 @@ const buildIssueLikeRegistration = (
 										),
 									}),
 							meta: buildMetaOutput(meta),
+							nextPage:
+								(
+									meta as {
+										pagination: {
+											nextPage: string | null;
+										} | null;
+									}
+								).pagination?.nextPage ?? null,
 						});
 					}
 					if (args.iid === undefined) {
@@ -1648,9 +1677,7 @@ export const buildGitLabJobsToolRegistrations = (
 							const truncatedByBytes = bytes > maxBytes;
 							const truncatedByLines = lines.length > maxLines;
 							const keep = lines.slice(0, maxLines).join('\n');
-							const text = truncatedByBytes
-								? keep.slice(0, maxBytes)
-								: keep;
+							const text = truncateUtf8Bytes(keep, maxBytes);
 							return toolResponse({
 								action: args.action,
 								log: {
@@ -1672,16 +1699,14 @@ export const buildGitLabJobsToolRegistrations = (
 								meta: buildMetaOutput(result.meta),
 							});
 						}
+						const jobsPath =
+							args.pipelineId !== undefined
+								? `/projects/${project}/pipelines/${String(args.pipelineId)}/jobs`
+								: `/projects/${project}/jobs`;
 						const { data, meta } = await requestArray(
 							options,
-							`/projects/${project}/jobs`,
+							jobsPath,
 							{
-								...(args.pipelineId !== undefined
-									? {
-											scope: 'pipeline',
-											pipeline_id: args.pipelineId,
-										}
-									: {}),
 								...(args.status !== undefined
 									? { status: args.status }
 									: {}),
@@ -1795,9 +1820,9 @@ export const buildGitLabArtifactsToolRegistrations = (
 						const tempDir = await ensureTempDir(
 							join(options.pluginTempDir, 'artifacts'),
 						);
-						const fileName = (
-							args.filename ?? `job-${String(args.jobId)}.zip`
-						).replace(/[^a-zA-Z0-9._-]+/g, '_');
+						const fileName = sanitizeArtifactFileName(
+							args.filename ?? `job-${String(args.jobId)}.zip`,
+						);
 						const target = safeJoin(
 							tempDir,
 							String(project),
