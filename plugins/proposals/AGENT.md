@@ -9,6 +9,9 @@
 
 - default
 - registerProposalsStableTools
+- PROPOSALS_STABLE_TOOL_SURFACE
+- PROPOSAL_ADAPTIVE_FACADE_INTENTS
+- listProposalAdaptiveFacadePaths
 - DEFAULT_PATH_LAYOUT
 - buildSwarmPaths
 - PROPOSAL_STATUSES
@@ -18,9 +21,6 @@
 - PROPOSAL_PREFIX_BY_KIND
 - PROPOSAL_KIND_BY_PREFIX
 - KIND_TO_DONE_SUBFOLDER
-- doneFolderFor
-- PROPOSAL_SCAN_FOLDERS
-- PROPOSAL_FLAGS
 
 ## Depends on
 

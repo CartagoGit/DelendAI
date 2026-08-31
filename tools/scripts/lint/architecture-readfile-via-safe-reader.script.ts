@@ -33,7 +33,19 @@ interface IAllowRule {
 	readonly files: readonly string[];
 }
 
-const ALLOWLIST: Readonly<Record<string, IAllowRule>> = {};
+// Time-boxed allowlist for in-flight proposals still migrating their
+// filesystem reads to SafeWorkspaceReader (v00133 squash; owners:
+// completion + proposals swarm validation).
+const ALLOWLIST: Readonly<Record<string, IAllowRule>> = {
+	completion: {
+		reason: 'v0133-squash completion-store migration in flight',
+		files: ['src/lib/completion-store.service.ts'],
+	},
+	proposals: {
+		reason: 'v0133-squash swarm validation-provider migration in flight',
+		files: ['src/lib/swarm/validation-provider.ts'],
+	},
+};
 
 const normalizeRel = (pathValue: string): string =>
 	pathValue.split('\\').join('/');

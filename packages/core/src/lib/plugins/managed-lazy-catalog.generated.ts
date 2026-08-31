@@ -49,7 +49,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'adaptive-optimizer',
 			'@mcp-vertex/adaptive-optimizer',
-			['optimize_run', 'activation_metrics'],
+			['adaptive_facade', 'optimize_run', 'activation_metrics'],
 			[],
 			[],
 			[],
@@ -329,7 +329,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			['report_status'],
 			[],
 			[],
-			['error-reporting-surface'],
+			['error-reporting-surface', 'error-reporting-disabled'],
 			[],
 			[],
 			{

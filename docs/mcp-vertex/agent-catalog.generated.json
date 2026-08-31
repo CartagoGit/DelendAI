@@ -6,6 +6,10 @@
 			"plugin": "adaptive-optimizer"
 		},
 		{
+			"name": "mcp-vertex_adaptive-optimizer_adaptive_facade",
+			"plugin": "adaptive-optimizer"
+		},
+		{
 			"name": "mcp-vertex_adaptive-optimizer_optimize_run",
 			"plugin": "adaptive-optimizer"
 		},
