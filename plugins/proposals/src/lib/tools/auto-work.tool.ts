@@ -26,16 +26,16 @@ import { readJsonOrNull } from '../proposals/index-reader';
 /**
  * Optional persistence step the orchestrator can opt into at slice
  * close time. Three modes — `'none'` (default, no git), `'commit'`,
- * `'commit-and-push'`. See l109 §2 for the rationale; the helper
- * itself lives in `auto-work-persist.ts` and is invoked by the
- * orchestrator, not by `auto_work` (which only renders the plan).
+ * `'commit-and-push'`. See l109 §2 for the rationale; the actual git
+ * mutation happens inside `close_slice`, while `auto_work` remains a
+ * read-only planner that surfaces the configured persistence contract.
  */
 export interface IAutoWorkPersistConfig {
 	readonly mode: IAutoWorkPersistMode;
 	/**
 	 * Conventional-Commits template. Default:
-	 * `<area>(<proposalId>): <sliceId>`. Forwarded to
-	 * `maybePersistAfterSlice`.
+	 * `<area>(<proposalId>): <sliceId>`. Forwarded to the
+	 * `close_slice` persistence step.
 	 */
 	readonly messageTemplate?: string;
 	/**
@@ -399,9 +399,10 @@ export const buildAutoWorkOrchestrationPolicy = (options: {
  * is actionable it returns an explicit idle state.
  *
  * When `options.persist.mode !== 'none'` the plan includes an extra
- * step that tells the orchestrator to invoke
- * `maybePersistAfterSlice(...)` after validation and before release. The persist
- * itself is NOT executed inside this tool — `auto_work` is read-only
+ * step that tells the orchestrator to complete the slice via
+ * `close_slice`, which performs the configured persistence after
+ * validation and before release. The persist itself is NOT executed
+ * inside this tool — `auto_work` is read-only
  * with respect to the workspace filesystem and git; it only renders
  * a plan. See l109 s3.
  */
@@ -736,10 +737,10 @@ export const runAutoWork = async (
 			? []
 			: resolvedMode === 'commit'
 				? [
-						'Persist the slice using its declared files: call `maybePersistAfterSlice(claimReady.files, <proposalId>, <sliceId>, { mode: "commit" })` after validation and before release; do not stage unrelated files.',
+						`Persist the slice via ${prefix}_close_slice { proposalId, sliceId, validateEvidence } after validation and before release; close_slice stages only the declared slice files, applies persist mode "commit", and exposes the typed persist result in its response. Do not stage unrelated files.`,
 					]
 				: [
-						`Persist the slice using its declared files (commit + push): call \`maybePersistAfterSlice(claimReady.files, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "${pushTargetHint}" })\` after validation and before release; do not stage unrelated files. The helper refuses targets listed in the effective protected-branch policy. Treat committed=true/pushed=false as incomplete and never report closed=true.`,
+						`Persist the slice via ${prefix}_close_slice { proposalId, sliceId, validateEvidence } after validation and before release; close_slice stages only the declared slice files, applies persist mode "commit-and-push", and must verify push target "${pushTargetHint}" before reporting closed=true. Treat committed=true/pushed=false as incomplete and never report closed=true. The persist block in the response carries mode, committed, pushed, and hash/reason when present.`,
 					];
 
 	// x00051 S3 + x00299: when persist is enabled, the plan must surface
