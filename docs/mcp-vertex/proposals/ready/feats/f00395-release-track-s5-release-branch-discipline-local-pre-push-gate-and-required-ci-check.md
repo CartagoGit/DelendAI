@@ -128,16 +128,16 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
 - Smoke empírico: ejecutar contra `develop` con typecheck bueno → exit 0 sin bloqueos.
 - Smoke empírico: ejecutar `bun tools/scripts/release/release-plan.ts` y verificar que el flujo R1–R4 sigue pasando (no regresión).
 
-## rollback
-
-- S1: revertir `protected-branches.ts` y `push-to-develop-discipline.script.ts`. S2–S4 son aditivos: remover los archivos y revertir lefthook.yml.
-- S4: quitar el check `release-pr-gate` de `branch-protection.ts/yml`. El `ci-complete` sigue protegiendo main.
-- S5: git revert del commit de docs.
-
-## Parallelizable
+## dependency graph
 
 - S1 y S2 son file-disjoint y pueden ir en commits separados, pero ambos modifican constantes/lints y comparten convención → mismo agente, commits secuenciales para mantener trazabilidad.
 - S3 depende de S2.
 - S4 depende parcialmente de S2 (mismo nombre `release-pr-gate`).
 - S5 depende de S3/S4 (documenta el estado final).
 - Plan de ejecución: S1 → S2 → S3 → S4 → S5; todos verificados con `bun run typecheck` + suites focalizadas.
+
+## notes
+
+- S1: revertir `protected-branches.ts` y `push-to-develop-discipline.script.ts`. S2–S4 son aditivos: remover los archivos y revertir lefthook.yml.
+- S4: quitar el check `release-pr-gate` de `branch-protection.ts/yml`. El `ci-complete` sigue protegiendo main.
+- S5: git revert del commit de docs.
