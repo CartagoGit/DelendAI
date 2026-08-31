@@ -399,6 +399,9 @@ export default definePlugin({
 			runAutoStateRepairOnBoot(stateOptions);
 		}
 
+		const qualityPeerLoaded =
+			ctx.peerPlugins?.has('quality') === true ||
+			ctx.pluginOptions?.has('quality') === true;
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRoot: ctx.workspace.root,
@@ -428,7 +431,7 @@ export default definePlugin({
 							.requirePeerReview as boolean,
 					}
 				: { requirePeerReview: true }),
-			...((ctx.peerPlugins?.has('quality') ?? false)
+			...(qualityPeerLoaded
 				? {
 						resolveValidationDecision:
 							buildCloseSliceValidationProvider({

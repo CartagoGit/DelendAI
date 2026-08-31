@@ -10,12 +10,12 @@ built only from MCP Vertex-owned metadata.
 ## Status
 
 **Implemented.** Ships in the `standard` preset (therefore also `swarm` and
-`full`) and in the `vertex` preset. **Enabled by default** and opt-out.
+`full`) and in the `vertex` preset. **Disabled by default** and opt-in.
 
 ## Behaviour
 
-- **Intrinsic & enabled by default.** Loaded with the standard preset; no
-  config needed.
+- **Intrinsic & disabled by default.** Loaded with the standard preset; set
+  `plugins.error-reporting.options.enabled = true` to enable dispatch.
 - **External project data is non-reportable by construction.** The reporter
   accepts only mcp-vertex-internal failures backed by typed internal errors
   or `@mcp-vertex/*` frame evidence. A host project's own errors are never
@@ -99,7 +99,7 @@ Inspect the current state with the `<prefix>_report_status` tool.
 
 | Option              | Type       | Default                    | Purpose                                                                                         |
 | ------------------- | ---------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
-| `enabled`           | `boolean`  | `true`                     | Master switch. `false` disables reporting entirely.                                             |
+| `enabled`           | `boolean`  | `false`                    | Master switch. `true` explicitly enables reporting.                                               |
 | `targetRepo`        | `string`   | `CartagoGit/mcp-vertex`    | Deprecated and ignored. The destination is fixed and cannot be changed by the consumer project. |
 | `labels`            | `string[]` | `["auto-reported", "bug"]` | Deprecated and ignored. MCP Vertex applies only its canonical labels.                           |
 | `dedupeWindowHours` | `number`   | `24`                       | De-duplication window in hours.                                                                 |

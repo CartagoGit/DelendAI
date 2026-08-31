@@ -1,5 +1,5 @@
 ---
-id: f00414
+id: f00415
 title: "Diagnóstico reutilizable de pipelines y workflows remotos"
 kind: feat
 status: ready
@@ -8,7 +8,7 @@ track: remote-ci-diagnostics
 date: 2026-08-31
 ---
 
-# f00414 — Diagnóstico reutilizable de pipelines y workflows remotos
+# f00415 — Diagnóstico reutilizable de pipelines y workflows remotos
 
 ## Goal
 
@@ -57,7 +57,7 @@ The diagnostic result must identify whether evidence is complete, partial, or un
 
 ### S2 — Adaptadores GitLab/GitHub e integración conceptual
 - **Status**: pending
-- **DependsOn**: [f00411:S2, f00412:S2, f00414:S1]
+- **DependsOn**: [f00411:S2, f00412:S2, f00415:S1]
 - **Files**: `plugins/gitlab/src/lib/diagnostics.ts`, `plugins/github/src/lib/diagnostics.ts`, `plugins/remote-provider-core/README.md`, `docs/mcp-vertex/remote-providers.md`
 - **Gate**: type
 - acceptance:

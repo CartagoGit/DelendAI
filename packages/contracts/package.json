@@ -62,6 +62,13 @@
 			"types": "./dist/routes.d.ts",
 			"import": "./dist/routes.js"
 		},
+		"./remote-provider": {
+			"@mcp-vertex/source": {
+				"types": "./src/remote-provider.ts"
+			},
+			"types": "./dist/remote-provider.d.ts",
+			"import": "./dist/remote-provider.js"
+		},
 		"./primitives": {
 			"@mcp-vertex/source": {
 				"types": "./src/primitives.ts"

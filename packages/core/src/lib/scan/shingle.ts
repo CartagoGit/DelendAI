@@ -25,6 +25,28 @@ export interface IShingleOptions {
 	readonly minBlockChars?: number;
 }
 
+const isImportOnlyBlock = (lines: readonly string[]): boolean => {
+	let insideImport = false;
+	let sawImport = false;
+	for (const line of lines) {
+		const trimmed = line.trim();
+		if (trimmed.length === 0) continue;
+		if (trimmed.startsWith('import ')) {
+			sawImport = true;
+			insideImport = !trimmed.includes(' from ');
+			continue;
+		}
+		if (insideImport) {
+			if (trimmed.includes(' from ')) {
+				insideImport = false;
+			}
+			continue;
+		}
+		return false;
+	}
+	return sawImport;
+};
+
 /**
  * Detect N-line blocks duplicated across two or more files.
  * Returns one hit per (file, line) pair with the number of distinct
@@ -48,11 +70,10 @@ export const shingleBlocks = (
 				.join('\n')
 				.trim();
 			if (block.length < minChars) continue;
-			// Skip blocks that are mostly imports (>75% of lines start with `import`).
-			const importCount = lines
-				.slice(i, i + blockLines)
-				.filter((l) => /^\s*import\s/.test(l)).length;
-			if (importCount / blockLines > 0.75) continue;
+			const blockLinesSlice = lines.slice(i, i + blockLines);
+			// Import clauses may span several lines, so count the
+			// whole clause instead of only lines starting with import.
+			if (isImportOnlyBlock(blockLinesSlice)) continue;
 			const hash = fnv1a(block);
 			const arr = allHashes.get(hash) ?? [];
 			arr.push({

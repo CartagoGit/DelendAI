@@ -369,6 +369,109 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		}
 	});
 
+	it('coordinates proposals locks with notification await_lock over MCP', async () => {
+		const claimed = await client.callTool({
+			name: 'mcp-vertex_proposals_agent_lock',
+			arguments: {
+				action: 'claim',
+				task_id: 'task-owner',
+				agent: 'agent-owner',
+				files: ['src/shared.ts'],
+				onContention: 'fail',
+			},
+		});
+		expect(claimed.isError, 'initial lock claim').toBeFalsy();
+		expect((claimed.structuredContent as { ok?: boolean }).ok).toBe(true);
+
+		const conflict = await client.callTool({
+			name: 'mcp-vertex_proposals_agent_lock',
+			arguments: {
+				action: 'claim',
+				task_id: 'task-waiter',
+				agent: 'agent-waiter',
+				files: ['src/shared.ts'],
+				onContention: 'fail',
+			},
+		});
+		expect(conflict.isError, 'lock conflict response').toBeFalsy();
+		expect(
+			(
+				conflict.structuredContent as {
+					blocked?: boolean;
+					conflicting_task?: string;
+				}
+			).blocked,
+		).toBe(true);
+		expect(
+			(conflict.structuredContent as { conflicting_task?: string })
+				.conflicting_task,
+		).toBe('task-owner');
+
+		const waiting = client.callTool({
+			name: 'mcp-vertex_notification_await_lock',
+			arguments: { taskId: 'task-owner', timeoutMs: 2_000 },
+		});
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const released = await client.callTool({
+			name: 'mcp-vertex_proposals_agent_lock',
+			arguments: {
+				action: 'release',
+				task_id: 'task-owner',
+				agent: 'agent-owner',
+			},
+		});
+		expect(released.isError, 'lock release response').toBeFalsy();
+		expect((released.structuredContent as { ok?: boolean }).ok).toBe(true);
+
+		const waited = await waiting;
+		expect(waited.isError, 'await_lock response').toBeFalsy();
+		expect(waited.structuredContent).toMatchObject({
+			taskId: 'task-owner',
+			released: true,
+			timedOut: false,
+			alreadyFree: false,
+		});
+
+		const retried = await client.callTool({
+			name: 'mcp-vertex_proposals_agent_lock',
+			arguments: {
+				action: 'claim',
+				task_id: 'task-waiter',
+				agent: 'agent-waiter',
+				files: ['src/shared.ts'],
+				onContention: 'fail',
+			},
+		});
+		expect(retried.isError, 'retry after await_lock').toBeFalsy();
+		expect((retried.structuredContent as { ok?: boolean }).ok).toBe(true);
+
+		const timedOut = await client.callTool({
+			name: 'mcp-vertex_notification_await_lock',
+			arguments: { taskId: 'task-waiter', timeoutMs: 1_000 },
+		});
+		expect(timedOut.isError, 'await_lock timeout response').toBeFalsy();
+		expect(timedOut.structuredContent).toMatchObject({
+			taskId: 'task-waiter',
+			released: false,
+			timedOut: true,
+			alreadyFree: false,
+		});
+
+		const finalRelease = await client.callTool({
+			name: 'mcp-vertex_proposals_agent_lock',
+			arguments: {
+				action: 'release',
+				task_id: 'task-waiter',
+				agent: 'agent-waiter',
+			},
+		});
+		expect(finalRelease.isError, 'final lock release response').toBeFalsy();
+		expect((finalRelease.structuredContent as { ok?: boolean }).ok).toBe(
+			true,
+		);
+	});
+
 	// r00002 S1: the 3 bootstrap tools used to declare
 	// `z.object({}).catchall(z.unknown())` (a00026-H3). Their outputSchema
 	// is now derived from IProjectAnalysis/IServerPlan/IScaffoldedFile/

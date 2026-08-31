@@ -10,6 +10,11 @@ import { runCli } from './lib/cli/run-cli';
  */
 export { assembleCliConfig } from './lib/cli/assemble';
 export { runCli } from './lib/cli/run-cli';
+export {
+	detectIsWsl,
+	formatInstallReport,
+	parseInitArgs,
+} from './lib/cli/run-init';
 export type {
 	IAssembleCliDeps,
 	IAssembledCliConfig,

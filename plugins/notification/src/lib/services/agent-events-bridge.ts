@@ -205,26 +205,20 @@ export const startAgentEventsBridge = (
 		...(options.intervalMs !== undefined
 			? { intervalMs: options.intervalMs }
 			: {}),
-		onEvent: (event) => {
+		onEvent: async (event) => {
 			events.push(event);
 			if (events.length > 200) events.shift();
 			if (
 				event.kind === 'agent-dead' &&
 				options.autoReleaseDeadAgents !== false
 			) {
-				void releaseDeadClaim(
-					options.lockFileAbs,
-					event,
-					options,
-				).catch(() => undefined);
+				await releaseDeadClaim(options.lockFileAbs, event, options);
 			}
 			if (
 				event.kind === 'agent-dead' &&
 				options.onAgentDead !== undefined
 			) {
-				void Promise.resolve(options.onAgentDead(event)).catch(
-					() => undefined,
-				);
+				await Promise.resolve(options.onAgentDead(event));
 			}
 			safeSendLoggingMessage(server, {
 				level: event.kind === 'agent-dead' ? 'warning' : 'info',

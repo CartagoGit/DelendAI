@@ -56,7 +56,7 @@ If the host also enables `git`, the agent may combine local context (current bra
 - global_gate: type
 
 ### S1 — Contratos, configuración y cliente HTTP hermético
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/contracts/src/remote-provider.ts`, `plugins/remote-provider-core/src/index.ts`, `plugins/remote-provider-core/src/lib/http-client.ts`, `plugins/remote-provider-core/src/lib/config.ts`, `plugins/remote-provider-core/tests/http-client.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -64,9 +64,12 @@ If the host also enables `git`, the agent may combine local context (current bra
   - "fetch, reloj y backoff inyectables; tests sin red real."
   - "Diferencia 401, 403, 404, 429, timeout, transitorio, incompatibilidad de API y respuesta inválida."
   - "Precedencia explícita de configuración y tokens nunca persistidos."
-
+- review-state: done
+- review-implementer: finch
+- review-reviewer: delivery-verifier-f00410-s1
+- review-log: approved by delivery-verifier-f00410-s1 — Independent verification: the shared remote-provider contract and HTTP client pass the focused test suite and both package typechecks. Retry boundary is covered, including maxRetries=0 and maxRetries=1. No provider-specific or git-dependent behavior was introduced.
 ### S2 — Redacción, límites, SSRF y documentación de frontera
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/remote-provider-core/src/lib/redaction.ts`, `plugins/remote-provider-core/src/lib/limits.ts`, `plugins/remote-provider-core/src/lib/url-policy.ts`, `plugins/remote-provider-core/tests/security.spec.ts`, `plugins/remote-provider-core/README.md`
 - **Gate**: type
@@ -76,7 +79,10 @@ If the host also enables `git`, the agent may combine local context (current bra
   - "URLs configurables protegidas contra SSRF y hosts de GitLab self-managed/GitHub Enterprise validados."
   - "Retries solo para errores transitorios; ninguna operación mutable se reintenta automáticamente."
   - "La documentación afirma: GitLab y GitHub no dependen del plugin git; git solo aporta contexto local genérico de forma opcional."
-
+- review-state: done
+- review-implementer: finch
+- review-reviewer: delivery-verifier-f00410-s2
+- review-log: approved by delivery-verifier-f00410-s2 — Independent verification: security, limits, redaction, URL policy and English activation documentation passed 42 focused tests. Package typechecks and diff check are clean. Commit 46173fed9b465053bf43f29456164bac9cdbfae1 contains the implementation.
 ## acceptance
 
 - Tipos compartidos para proveedor, proyecto/repositorio, refs, paginación, rate limits, errores normalizados y resultados truncados.

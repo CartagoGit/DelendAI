@@ -1,17 +1,17 @@
 {
-	"name": "@mcp-vertex/error-reporting",
+	"name": "@mcp-vertex/gitlab",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Automatic mcp-vertex error reporting to GitHub: detects tool failures whose stack/message originates inside mcp-vertex itself and opens a detailed, de-duplicated issue on the target repository after explicit opt-in with plugins.error-reporting.options.enabled = true.",
+	"description": "GitLab read-only provider plugin for @mcp-vertex/core: configuration, provider context and hermetic HTTP client for future read tools. Load with `mcp-vertex --plugins=gitlab`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",
-		"error-reporting",
-		"github",
-		"issues",
-		"telemetry",
+		"gitlab",
+		"provider",
+		"agent",
+		"ai",
 		"cartago",
 		"plugin"
 	],
@@ -29,24 +29,23 @@
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
-		"./public": {
+		"./lib/*": {
 			"@mcp-vertex/source": {
-				"types": "./src/public/index.ts"
+				"types": "./src/lib/*"
 			},
-			"types": "./dist/public/index.d.ts",
-			"import": "./dist/public/index.js"
+			"types": "./dist/lib/*"
 		}
 	},
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
-		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/error-reporting"
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/gitlab"
 	},
 	"peerDependencies": {
 		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.29.0",
+		"@mcp-vertex/contracts": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

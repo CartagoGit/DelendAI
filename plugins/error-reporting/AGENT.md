@@ -3,7 +3,7 @@
 > Below the `<!-- mcp-vertex:begin agent-md -->
 ## Purpose
 
-- Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).
+- Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.
 
 ## Public API
 
