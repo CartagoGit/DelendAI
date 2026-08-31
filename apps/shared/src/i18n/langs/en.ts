@@ -609,6 +609,7 @@ const extension = {
 	'status.queueDepth': 'Queue depth',
 	'status.recommendedNextAction': 'Recommended next action',
 	'status.serverLabel': 'Server',
+	'status.callsPerMinute': 'Calls / minute',
 	'status.versionLabel': 'Version',
 	'status.pluginsLabel': 'Plugins',
 	'status.toolsLabel': 'Tools',

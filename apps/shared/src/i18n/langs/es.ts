@@ -615,6 +615,7 @@ const extension = {
 	'status.queueDepth': 'Cola',
 	'status.recommendedNextAction': 'Siguiente acción recomendada',
 	'status.serverLabel': 'Servidor',
+	'status.callsPerMinute': 'Llamadas / minuto',
 	'status.versionLabel': 'Versión',
 	'status.pluginsLabel': 'Plugins',
 	'status.toolsLabel': 'Herramientas',
