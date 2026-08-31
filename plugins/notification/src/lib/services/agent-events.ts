@@ -153,7 +153,23 @@ export const watchAgentHeartbeat = (
 				);
 				const deadAfterMs =
 					AGENT_DEAD_MISSED_BEATS * Math.max(1, options.heartbeatMs);
-				if (ageMs >= deadAfterMs) {
+				if (
+					ageMs >=
+					AGENT_IDLE_MISSED_BEATS * Math.max(1, options.heartbeatMs)
+				) {
+					if (emittedState.get(key) === 'agent-idle') continue;
+					emittedState.set(key, 'agent-idle');
+					out.push(
+						await emit(
+							'agent-idle',
+							claim.agent,
+							claim.taskId,
+							now,
+							firstSeen,
+							missedBeats,
+						),
+					);
+				} else if (ageMs >= deadAfterMs) {
 					if (emittedState.get(key) === 'agent-dead') continue;
 					emittedState.set(key, 'agent-dead');
 					out.push(
