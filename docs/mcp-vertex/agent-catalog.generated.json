@@ -1264,30 +1264,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "a00086",
-				"title": "a00086",
-				"track": "plugin-hardening",
-				"status": "in-progress",
-				"kind": "audit",
-				"date": ""
-			},
-			{
-				"id": "a00087",
-				"title": "a00087",
-				"track": "plugin-hardening",
-				"status": "in-progress",
-				"kind": "audit",
-				"date": ""
-			},
-			{
-				"id": "a00088",
-				"title": "a00088",
-				"track": "plugin-hardening",
-				"status": "in-progress",
-				"kind": "audit",
-				"date": ""
-			},
-			{
 				"id": "d00009",
 				"title": "d00009",
 				"track": "security",
@@ -1352,34 +1328,10 @@
 				"date": ""
 			},
 			{
-				"id": "f00198",
-				"title": "f00198",
-				"track": "observability",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00200",
-				"title": "f00200",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00201",
 				"title": "f00201",
 				"track": "transactions",
 				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00251",
-				"title": "f00251",
-				"track": "error-collection",
-				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -2152,14 +2104,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00386",
-				"title": "f00386",
-				"track": "parallel-validation",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00387",
 				"title": "f00387",
 				"track": "parallel-validation",
@@ -2536,14 +2480,6 @@
 				"date": ""
 			},
 			{
-				"id": "v00125",
-				"title": "v00125",
-				"track": "governance",
-				"status": "in-progress",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "v00126",
 				"title": "v00126",
 				"track": "ci",
@@ -2600,22 +2536,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00203",
-				"title": "x00203",
-				"track": "plugins+fix",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00204",
-				"title": "x00204",
-				"track": "plugins+fix",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00261",
 				"title": "x00261",
 				"track": "commit-policy",
@@ -2666,10 +2586,10 @@
 		],
 		"byStatus": {
 			"ready": 159,
-			"in-progress": 15,
+			"in-progress": 5,
 			"review": 0,
 			"paused": 1,
-			"done": 566,
+			"done": 576,
 			"blocked": 23,
 			"retired": 11,
 			"unspecified": 0
