@@ -143,23 +143,26 @@ export const attributeLog = async (
 	return noise;
 };
 
-const EXPLANATION = `[ATTRIBUTED] The literal string "Failed to parse message: \\"\\\\n\\"" comes from the
-[ATTRIBUTED] OpenAI Codex VSCode extension
-[ATTRIBUTED] (publisher: openai, id: openai.chatgpt, version 26.x).
-[ATTRIBUTED] Its minified bundle ships only the literal, so the warning is
-[ATTRIBUTED] intentionally opaque. The Codex bundle parses JSON-RPC frames
-[ATTRIBUTED] arriving on either the IPC router (extension-host ↔ native),
-[ATTRIBUTED] the CodexMcpConnection (MCP stdio ↔ native codex binary), or a
-[ATTRIBUTED] generic StreamHandler. An empty frame (`\\n`) is silently dropped
-[ATTRIBUTED] and the parser logs this warning instead of failing hard.
-[ATTRIBUTED]
-[ATTRIBUTED] This is NOT emitted by mcp-vertex or by GitHub Copilot Chat.
-[ATTRIBUTED] To silence it permanently:
-[ATTRIBUTED]   1. Uninstall the extension:  code --uninstall-extension openai.chatgpt
-[ATTRIBUTED]   2. Or disable it workspace-only via the VSCode command palette
-[ATTRIBUTED]      "Extensions: Disable Workspace Extension" → Codex.
-[ATTRIBUTED] Original warning follows:
-`;
+const EXPLANATION_LINES: readonly string[] = [
+	'[ATTRIBUTED] The literal string "Failed to parse message: newline" comes from the',
+	'[ATTRIBUTED] OpenAI Codex VSCode extension',
+	'[ATTRIBUTED] (publisher openai, id openai.chatgpt, version 26.x).',
+	'[ATTRIBUTED] Its minified bundle ships only the literal, so the warning is',
+	'[ATTRIBUTED] intentionally opaque. The Codex bundle parses JSON-RPC frames',
+	'[ATTRIBUTED] arriving on either the IPC router (extension-host to native),',
+	'[ATTRIBUTED] the CodexMcpConnection (MCP stdio to native codex binary), or a',
+	'[ATTRIBUTED] generic StreamHandler. An empty JSON-RPC frame (a single newline)',
+	'[ATTRIBUTED] is silently dropped and the parser logs this warning instead of',
+	'[ATTRIBUTED] failing hard.',
+	'[ATTRIBUTED]',
+	'[ATTRIBUTED] This is NOT emitted by mcp-vertex or by GitHub Copilot Chat.',
+	'[ATTRIBUTED] To silence it permanently:',
+	'[ATTRIBUTED]   1. Uninstall the extension:  code --uninstall-extension openai.chatgpt',
+	'[ATTRIBUTED]   2. Or disable it workspace-only via the VSCode command palette',
+	'[ATTRIBUTED]      Extensions: Disable Workspace Extension -> Codex.',
+	'[ATTRIBUTED] Original warning follows:',
+];
+const EXPLANATION = EXPLANATION_LINES.join('\n');
 
 const rewriteLog = async (
 	logPath: string,
