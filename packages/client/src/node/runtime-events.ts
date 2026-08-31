@@ -1,6 +1,9 @@
 import { open } from 'node:fs/promises';
 
-import type { IRuntimeEvent } from '@mcp-vertex/core/contracts';
+import type {
+	IRuntimeEvent,
+	RuntimeEventInput,
+} from '@mcp-vertex/core/contracts';
 
 export interface IRuntimeEventCursor {
 	readonly offset: number;
@@ -75,4 +78,7 @@ export const readRuntimeEvents = async (
 	}
 };
 
-export type { IRuntimeEvent } from '@mcp-vertex/core/contracts';
+export type {
+	IRuntimeEvent,
+	RuntimeEventInput,
+} from '@mcp-vertex/core/contracts';

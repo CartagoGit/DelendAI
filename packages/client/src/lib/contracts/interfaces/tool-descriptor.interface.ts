@@ -1,4 +1,4 @@
-import type { IToolEffect } from '@mcp-vertex/core/public';
+import type { IToolEffect } from '@mcp-vertex/core/contracts';
 
 // f00065 slice F: `IToolEffect` is single-sourced in core; re-export it so this
 // module's existing importers keep their import path.
