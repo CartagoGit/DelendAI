@@ -69,6 +69,11 @@
 	min-width: 0;
 }
 
+.mcpv-content {
+	min-width: 0;
+	display: contents;
+}
+
 // ---------------------------------------------------------------------------
 // Dashboard application navigation. The sidebar is the first column of the
 // `mcpv-shell` grid; it stays sticky inside that column so it never
@@ -237,6 +242,9 @@
 .mcpv-tabs {
 	padding: 0 var(--mcpv-s-4);
 	overflow-x: auto;
+	grid-column: 2;
+	grid-row: 1;
+	display: none;
 
 	&__bar {
 		min-width: max-content;
@@ -557,6 +565,17 @@
 		display: none;
 		width: calc(100% - (2 * var(--mcpv-s-4)));
 		margin: 0 var(--mcpv-s-4);
+	}
+
+	.mcpv-tabs {
+		display: block;
+		grid-column: 1;
+		grid-row: 2;
+	}
+
+	.mcpv-main {
+		grid-column: 1;
+		grid-row: 3;
 	}
 
 	.mcpv-app-nav.is-open {

@@ -1,4 +1,5 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import { defaultMcpServerName } from '../scaffold/scaffold-host';
 import { stripPackageScope, toKebabCase } from '../shared/string-normalize';
 import type { IProjectAnalysis } from './analyze-project';
 import { resolveAdoptionStrategy } from './adoption-strategy';
@@ -80,7 +81,8 @@ export const recommendServerPlan = (
 	const catalog = resolvePatternCatalog(options.patternOverrides);
 	const pattern = catalog[analysis.projectType];
 	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
-	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
+	const serverName =
+		options.serverName ?? defaultMcpServerName(namespacePrefix);
 	const targetDir = options.targetDir ?? defaultTargetDir(analysis);
 	const cacheDir = options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const docsDir = options.docsDir ?? DEFAULT_CORE_PATHS.docsDir;

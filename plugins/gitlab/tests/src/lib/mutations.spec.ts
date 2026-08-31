@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IRemoteFetchResponse,
 	RemoteFetchFn,
-} from '../../../../remote-provider-core/src/index';
+} from '@mcp-vertex/remote-provider-core';
 
 import { createGitLabMutationAdapter } from '../../../src/lib/mutations';
 import { buildGitLabWriteToolRegistrations } from '../../../src/lib/tools/write-tools';
@@ -259,8 +259,107 @@ describe('gitlab mutable adapters (f00413 S2)', () => {
 		});
 	});
 
+	it('classifies duplicate release creation without retrying', async () => {
+		let calls = 0;
+		const adapter = createAdapter(async () => {
+			calls += 1;
+			return response(
+				409,
+				JSON.stringify({
+					message:
+						'Release v1.2.3 has already been taken secret-token',
+				}),
+				{
+					'x-request-id': 'req-release-dup',
+				},
+			);
+		});
+
+		const result = await adapter.createRelease({
+			actor: 'copilot',
+			confirm: true,
+			tagName: 'v1.2.3',
+			name: 'v1.2.3',
+			description: 'contains secret-token',
+		});
+
+		expect(calls).toBe(1);
+		expect(result).toMatchObject({
+			ok: true,
+			outcome: 'duplicate',
+			duplicate: { message: 'release already exists remotely' },
+			audit: {
+				remote: {
+					duplicate: true,
+					requestId: 'req-release-dup',
+					status: 409,
+				},
+			},
+		});
+		expect(JSON.stringify(result)).not.toContain('secret-token');
+	});
+
+	it('replays retry pipeline with the default idempotency key without a second write', async () => {
+		let calls = 0;
+		const adapter = createAdapter(async () => {
+			calls += 1;
+			return response(
+				200,
+				JSON.stringify({
+					id: 44,
+					status: 'pending',
+					ref: 'main',
+					sha: 'abc123',
+				}),
+				{ 'x-request-id': 'req-pipeline-idempotent' },
+			);
+		});
+
+		const args = {
+			actor: 'copilot',
+			confirm: true,
+			id: 44,
+		};
+		const first = await adapter.retryPipeline(args);
+		const replay = await adapter.retryPipeline(args);
+
+		expect(calls).toBe(1);
+		expect(first).toMatchObject({
+			ok: true,
+			outcome: 'applied',
+			data: {
+				id: 44,
+				status: 'pending',
+			},
+		});
+		expect(replay).toMatchObject({
+			ok: true,
+			outcome: 'duplicate',
+			idempotentReplay: true,
+			duplicate: {
+				message:
+					'idempotency key already completed this remote mutation',
+				existing: {
+					id: 44,
+					status: 'pending',
+				},
+			},
+			audit: {
+				idempotency: {
+					key: 'gitlab:pipeline:retry:group/repo:44',
+					replay: true,
+				},
+				remote: {
+					attempts: 1,
+					duplicate: true,
+					status: 200,
+				},
+			},
+		});
+	});
+
 	it('registers the isolated write-tool surface and returns normalized outputs', async () => {
-		const adapter = createAdapter(async (url) => {
+		const fetchFn: RemoteFetchFn = async (url) => {
 			if (url.endsWith('/pipelines/44/retry')) {
 				return response(
 					200,
@@ -303,11 +402,36 @@ describe('gitlab mutable adapters (f00413 S2)', () => {
 					},
 				}),
 			);
-		});
+		};
 		const server = new FakeServer();
 		for (const registration of buildGitLabWriteToolRegistrations({
 			namespacePrefix: 'gitlab',
-			adapter,
+			context: {
+				provider: 'gitlab',
+				token: 'secret-token',
+				apiBaseUrl: 'https://gitlab.example/api/v4',
+				webBaseUrl: 'https://gitlab.example',
+				host: 'gitlab.example',
+				project: {
+					provider: 'gitlab',
+					host: 'gitlab.example',
+					projectPath: 'group/repo',
+					displayName: 'group/repo',
+					webUrl: 'https://gitlab.example/group/repo',
+					apiUrl: 'https://gitlab.example/api/v4/projects/group%2Frepo',
+				},
+				timeoutMs: 15_000,
+				maxRetries: 0,
+				retryBaseDelayMs: 250,
+				sources: {
+					token: 'env:GITLAB_TOKEN',
+					apiBaseUrl: 'default',
+					webBaseUrl: 'default',
+					project: ['plugin'],
+				},
+			},
+			mutationDeps: { fetchFn },
+			nowIso: () => '2026-08-31T12:00:00.000Z',
 		})) {
 			await registration.register(server as never);
 		}

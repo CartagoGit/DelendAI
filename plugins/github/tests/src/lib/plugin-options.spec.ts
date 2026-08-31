@@ -148,6 +148,61 @@ describe('@mcp-vertex/github optionsSchema', async () => {
 		}
 	});
 
+	it('keeps mutable tool registration opt-in only', async () => {
+		const previousToken = process.env.GITHUB_TOKEN;
+		process.env.GITHUB_TOKEN = 'runtime-secret';
+		try {
+			const readOnlyRegs = await plugin.register(
+				baseCtx({
+					defaultRepository: {
+						owner: 'cartago',
+						repository: 'mcp-vertex',
+					},
+				}),
+			);
+			const writeRegs = await plugin.register(
+				baseCtx({
+					allowWrite: true,
+					defaultRepository: {
+						owner: 'cartago',
+						repository: 'mcp-vertex',
+					},
+				}),
+			);
+
+			expect(
+				(readOnlyRegs.tools ?? []).some(
+					(tool) =>
+						tool.id.includes('issue_') ||
+						tool.id.includes('dispatch') ||
+						tool.id.includes('release_') ||
+						tool.id.includes('tag_'),
+				),
+			).toBe(false);
+			expect(
+				(writeRegs.tools ?? [])
+					.filter((tool) => tool.effects?.includes('write'))
+					.map((tool) => tool.id),
+			).toEqual([
+				'issue_update',
+				'issue_comment_create',
+				'workflow_dispatch',
+				'repository_dispatch',
+				'release_create',
+				'release_update',
+				'release_delete',
+				'tag_create',
+				'tag_delete',
+			]);
+		} finally {
+			if (previousToken === undefined) {
+				delete process.env.GITHUB_TOKEN;
+			} else {
+				process.env.GITHUB_TOKEN = previousToken;
+			}
+		}
+	});
+
 	it('throws on invalid options before wiring context', async () => {
 		const previousToken = process.env.GITHUB_TOKEN;
 		process.env.GITHUB_TOKEN = 'runtime-secret';

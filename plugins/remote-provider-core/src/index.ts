@@ -6,6 +6,7 @@ export * from './lib/http-client';
 export * from './lib/redaction';
 export * from './lib/limits';
 export * from './lib/mutations';
+export * from './lib/diagnostics';
 export * from './lib/url-policy';
 
 const OptionsSchema = z.object({});

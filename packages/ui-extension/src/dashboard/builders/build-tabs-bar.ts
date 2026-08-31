@@ -99,14 +99,14 @@ export function buildTabsBar(lang: ILangDict): string {
 							: TABS.find((item) => item.id === id);
 					return tab === undefined
 						? ''
-						: `<button type="button" class="mcpv-app-nav__item" data-sidebar-trigger="${tab.id}" aria-current="${tab.id === 'overview' ? 'page' : 'false'}"><span>${text(tab.label)}</span></button>`;
+						: `<button type="button" class="mcpv-app-nav__item" data-sidebar-trigger="${tab.id}" aria-current="${tab.id === TABS[0]?.id ? 'page' : 'false'}"><span>${text(tab.label)}</span></button>`;
 				})
 				.join('')}</div></details>`,
 	).join('');
 	return (
 		`<div class="mcpv-app-nav__mobile"><button type="button" class="mcpv-app-nav__menu" data-nav-toggle aria-expanded="false">☰ <span>Menu</span></button></div>` +
 		`<aside class="mcpv-app-nav" data-nav-panel aria-label="${text('dashboardSections', 'Dashboard sections')}">${sidebar}<div class="mcpv-app-nav__actions">${surfaceActions}${sidebarRefreshHtml}${sidebarExpandHtml}</div></aside>` +
-		`<section class="mcpv-tabs mcpv-tabs--underline">` +
+		`<div class="mcpv-content"><section class="mcpv-tabs mcpv-tabs--underline">` +
 		renderTabs({
 			tabs: [...tabItems, docsTab],
 			variant: 'underline',
@@ -114,6 +114,6 @@ export function buildTabsBar(lang: ILangDict): string {
 			idPrefix: '',
 			actionHtml: `${surfaceActions}${refreshHtml}${expandHtml}`,
 		}) +
-		`</section>`
+		`</section></div>`
 	);
 }
