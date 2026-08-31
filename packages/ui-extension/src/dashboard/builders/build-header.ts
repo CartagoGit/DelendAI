@@ -32,7 +32,7 @@ const renderThemeSwitcher = (current: string): string => {
 		'solarized',
 		'nord',
 	] as const;
-	return `<label class="mcpv-header__theme-picker" title="Theme">
+	return `<label class="mcpv-header__theme-picker" title="${text('header.theme', 'Theme')}">
 		<span aria-hidden="true">◐</span>
 		<select name="theme" data-header-theme>
 			${themes
