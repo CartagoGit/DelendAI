@@ -1,0 +1,102 @@
+[
+	{
+		"input": "feat: x",
+		"expected": "feat(f00181): x"
+	},
+	{
+		"input": "fix: x",
+		"expected": "fix(f00181): x"
+	},
+	{
+		"input": "fix!: x",
+		"expected": "fix(f00181)!: x"
+	},
+	{
+		"input": "fix(core): x",
+		"expected": "fix(core): x"
+	},
+	{
+		"input": "fix(core)!: x",
+		"expected": "fix(core)!: x"
+	},
+	{
+		"input": "chore: x",
+		"expected": "chore(f00181): x"
+	},
+	{
+		"input": "refactor: x",
+		"expected": "refactor(f00181): x"
+	},
+	{
+		"input": "perf: x",
+		"expected": "perf(f00181): x"
+	},
+	{
+		"input": "xyz: x",
+		"expected": "xyz(f00181): x"
+	},
+	{
+		"input": "feat(deps): bump x",
+		"expected": "feat(deps): bump x"
+	},
+	{
+		"input": "feat: corrección ñ",
+		"expected": "feat(f00181): corrección ñ"
+	},
+	{
+		"input": "fix: 🎉 x",
+		"expected": "fix(f00181): 🎉 x"
+	},
+	{
+		"input": "FEAT: x",
+		"expected": "FEAT(f00181): x"
+	},
+	{
+		"input": "FeAt: Mixed Case Subject",
+		"expected": "FeAt(f00181): Mixed Case Subject"
+	},
+	{
+		"input": "docs(api-v2): trailing spaces  ",
+		"expected": "docs(api-v2): trailing spaces  "
+	},
+	{
+		"input": "build.release: ship it",
+		"expected": "build.release(f00181): ship it"
+	},
+	{
+		"input": "test(UI)!: preserve scope",
+		"expected": "test(UI)!: preserve scope"
+	},
+	{
+		"input": "fix: x\n\nDetailed explanation here.\n\nCo-authored-by: agent <agent@example.com>",
+		"expected": "fix(f00181): x\n\nDetailed explanation here.\n\nCo-authored-by: agent <agent@example.com>"
+	},
+	{
+		"input": "fix!: x\r\n\r\nDetailed explanation here.\r\n\r\nCo-authored-by: agent <agent@example.com>",
+		"expected": "fix(f00181)!: x\r\n\r\nDetailed explanation here.\r\n\r\nCo-authored-by: agent <agent@example.com>"
+	},
+	{
+		"input": "hola",
+		"refusal": "MALFORMED_HEADER"
+	},
+	{
+		"input": ":",
+		"refusal": "MALFORMED_HEADER"
+	},
+	{
+		"input": "",
+		"refusal": "EMPTY_HEADER"
+	},
+	{
+		"input": "feat!!: x",
+		"refusal": "MALFORMED_HEADER"
+	},
+	{
+		"input": " feat: x",
+		"refusal": "MALFORMED_HEADER"
+	},
+	{
+		"input": "feat(scope: x",
+		"refusal": "MALFORMED_HEADER"
+	}
+]
