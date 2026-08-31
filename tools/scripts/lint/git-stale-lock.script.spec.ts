@@ -21,7 +21,7 @@ const makeFreshLock = (dir: string): string => {
 };
 
 const ageLock = (lockPath: string, ms: number): void => {
-	const st = statSync(lockPath);
+	const _st = statSync(lockPath);
 	const past = new Date(Date.now() - ms);
 	utimesSync(lockPath, past, past);
 };
