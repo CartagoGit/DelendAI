@@ -1546,3 +1546,19 @@
 
 	&:hover { border-color: var(--mcpv-brand-blue); }
 }
+
+.mcpv-header[data-connection='lost'] .mcpv-header__logo {
+	filter: hue-rotate(-25deg) saturate(1.4);
+	opacity: 0.6;
+}
+.mcpv-header[data-connection='lost'] .mcpv-header__name {
+	color: var(--mcpv-error);
+}
+.mcpv-header__logo {
+	transition: filter var(--mcpv-transition-medium),
+		opacity var(--mcpv-transition-medium),
+		transform var(--mcpv-transition-medium);
+}
+.mcpv-header__logo:hover {
+	transform: scale(1.05) rotate(-2deg);
+}
