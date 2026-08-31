@@ -939,7 +939,16 @@ export const buildGitLabProjectsToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args) => {
+				async (rawArgs: unknown) => {
+					const args = rawArgs as {
+						action: 'get' | 'list' | 'search' | 'variables';
+						projectId?: string | number | undefined;
+						projectPath?: string | undefined;
+						query?: string | undefined;
+						page?: number | undefined;
+						perPage?: number | undefined;
+						environmentScope?: string | undefined;
+					};
 					try {
 						if (
 							args.action === 'list' ||
@@ -1743,7 +1752,15 @@ export const buildGitLabArtifactsToolRegistrations = (
 						meta: responseMetaSchema.optional(),
 					}),
 				},
-				async (args) => {
+				async (rawArgs: unknown) => {
+					const args = rawArgs as {
+						action: 'list' | 'download';
+						projectId?: string | number | undefined;
+						projectPath?: string | undefined;
+						jobId?: string | number | undefined;
+						filename?: string | undefined;
+						maxBytes?: number | undefined;
+					};
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1858,7 +1875,15 @@ export const buildGitLabReleasesToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args) => {
+				async (rawArgs: unknown) => {
+					const args = rawArgs as {
+						action: 'list' | 'get' | 'tags';
+						projectId?: string | number | undefined;
+						projectPath?: string | undefined;
+						tagName?: string | undefined;
+						page?: number | undefined;
+						perPage?: number | undefined;
+					};
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1972,7 +1997,16 @@ export const buildGitLabDeploymentsToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args) => {
+				async (rawArgs: unknown) => {
+					const args = rawArgs as {
+						action: 'get' | 'list';
+						projectId?: string | number | undefined;
+						projectPath?: string | undefined;
+						id?: string | number | undefined;
+						environment?: string | undefined;
+						page?: number | undefined;
+						perPage?: number | undefined;
+					};
 					try {
 						const project = resolveProjectRef(
 							options.context,
