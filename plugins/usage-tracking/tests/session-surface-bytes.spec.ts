@@ -114,7 +114,18 @@ describe('usage-tracking tools/list served bytes', () => {
 			registrations.tools?.map((registration) => registration.id),
 		).toEqual(['usage_report', 'usage_clear', 'session_hygiene']);
 
-		const requestHandlers = (
+		// Re-read the live handler Map on every call: `registerTool`
+		// rebuilds the consolidated `tools/list` handler, so a
+		// reference captured earlier would go stale.
+		const getRequestHandlers = (): {
+			_requestHandlers?: Map<
+				string,
+				(
+					request: unknown,
+					extra: { sessionId?: string },
+				) => Promise<{ tools: unknown[] }>
+			>;
+		} =>
 			server.server as unknown as {
 				_requestHandlers?: Map<
 					string,
@@ -123,13 +134,15 @@ describe('usage-tracking tools/list served bytes', () => {
 						extra: { sessionId?: string },
 					) => Promise<{ tools: unknown[] }>
 				>;
-			}
-		)._requestHandlers;
+			};
 		const listTools = (
 			request: unknown,
 			extra: { sessionId?: string },
 		): Promise<{ tools: unknown[] }> | undefined =>
-			requestHandlers?.get('tools/list')?.(request, extra);
+			getRequestHandlers()._requestHandlers?.get('tools/list')?.(
+				request,
+				extra,
+			);
 
 		// The observer is installed when the plugin's own tool is
 		// registered, so the first observable snapshot already

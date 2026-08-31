@@ -124,12 +124,6 @@ const run = async (): Promise<void> => {
 	process.on('SIGTERM', () => onSignal(143));
 	process.on('SIGINT', () => onSignal(130));
 	process.on('SIGHUP', () => onSignal(129));
-	// Deterministic e2e handshake. Tests opt in explicitly so production hosts
-	// do not gain banner noise, and signals are never sent based on a timer that
-	// can expire before cold plugin assembly reaches this point.
-	if (process.env.MCP_VERTEX_TEST_READY === '1') {
-		process.stderr.write('[mcp-vertex] signal-handlers-ready\n');
-	}
 	process.on('beforeExit', () => {
 		// beforeExit fires when the event loop drains naturally;
 		// gracefulShutdown's idempotent guard makes the no-op safe
@@ -138,6 +132,16 @@ const run = async (): Promise<void> => {
 	});
 
 	await assembled.start();
+
+	// Deterministic e2e handshake — emitted AFTER `start()` resolves so the
+	// test never races a child whose event loop has already drained. An empty
+	// workspace + 0 plugins can make `start()` return synchronously, in which
+	// case the child would exit cleanly with code 0 before the parent has a
+	// chance to send SIGTERM. Production hosts never see this marker; only
+	// opt-in tests do.
+	if (process.env.MCP_VERTEX_TEST_READY === '1') {
+		process.stderr.write('[mcp-vertex] signal-handlers-ready\n');
+	}
 };
 
 // a00083 F26: a terminal `.catch` so a rejected boot surfaces as a

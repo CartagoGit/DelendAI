@@ -260,7 +260,10 @@ describe('commit-policy dogfood E2E', () => {
 		}).pushNow();
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('BRANCH_PROTECTED');
+		// x00272 (Track A): direct push to `main` is hard-blocked regardless
+		// of the protectedBranches config — the refusal codes as
+		// DIRECT_PUSH_TO_MAIN_NOT_ALLOWED (a defense-in-depth layer).
+		expect(result.code).toBe('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
 	});
 
 	it('uses the same configurable branch policy in status, commit and push', async () => {

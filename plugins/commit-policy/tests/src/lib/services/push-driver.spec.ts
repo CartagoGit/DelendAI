@@ -83,8 +83,14 @@ describe('runPushDriver', () => {
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('BRANCH_PROTECTED');
-		expect(result.refusal).toContain('branch "main" matches policy');
+		// x00272 (Track A): direct push to `main` is hard-blocked BEFORE
+		// the protectedBranches override check, so the refusal codes as
+		// DIRECT_PUSH_TO_MAIN_NOT_ALLOWED (a defense-in-depth layer that
+		// no config override can enable).
+		expect(result.code).toBe('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(result.refusal).toContain(
+			"direct push to 'main' is not allowed",
+		);
 	});
 
 	it('refuses direct push to master when protectedBranches includes it', async () => {
@@ -242,7 +248,9 @@ describe('runPushDriver', () => {
 		);
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
-		expect(result.refusal).toContain('BRANCH_PROTECTED');
+		// x00272 (Track A): even with an authorized force push, `main` is
+		// hard-blocked before any other policy layer runs.
+		expect(result.code).toBe('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
 		expect(pushes.calls.length).toBe(0);
 	});
 
@@ -257,15 +265,19 @@ describe('runPushDriver', () => {
 		expect(pushes.calls.length).toBe(1);
 	});
 
-	it('allows main resolved from the current branch when protectedBranches is empty', async () => {
+	it('refuses direct push to main even when protectedBranches is empty (x00272)', async () => {
 		const { run, pushes } = buildPushFake({ currentBranch: 'main' });
 		const result = await runPushDriver(
 			{},
 			basePush({ remote: 'origin', protectedBranches: [] }),
 			run,
 		);
-		expect(result.ok).toBe(true);
-		expect(pushes.calls.length).toBe(1);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		// x00272 (Track A): direct push to `main` is hard-blocked regardless
+		// of protectedBranches — config cannot re-enable the release path.
+		expect(result.code).toBe('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
+		expect(pushes.calls.length).toBe(0);
 	});
 
 	it('allows direct push to develop when config omits it', async () => {

@@ -15,6 +15,11 @@ export {
 	PROPOSAL_ADAPTIVE_FACADE_INTENTS,
 	listProposalAdaptiveFacadePaths,
 } from '../lib/api/proposals-stable-tools';
+export type { IStableManifestTool } from '@mcp-vertex/core/public';
+export type {
+	IProposalAdaptiveFacadePath,
+	TProposalAdaptiveFacadeIntent,
+} from '../lib/api/proposals-stable-tools';
 
 export {
 	DEFAULT_PATH_LAYOUT,

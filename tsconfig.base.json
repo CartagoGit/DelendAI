@@ -54,6 +54,8 @@
 				"./packages/ui-extension/src/public/index.ts"
 			],
 			"@mcp-vertex/ide/*": ["./packages/ui-extension/src/*"],
+			"@mcp-vertex/contracts": ["./packages/contracts/src/index.ts"],
+			"@mcp-vertex/contracts/*": ["./packages/contracts/src/*"],
 			"@mcp-vertex/proposals": ["./plugins/proposals/src/index.ts"],
 			"@mcp-vertex/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"
