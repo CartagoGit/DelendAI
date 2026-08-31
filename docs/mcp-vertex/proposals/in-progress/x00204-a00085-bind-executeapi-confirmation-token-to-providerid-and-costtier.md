@@ -6,6 +6,7 @@ status: in-progress
 type: proposal
 track: plugins+fix
 date: 2026-08-23
+shipped-in: [5fcfdd59b]
 related:
   - a00085
 acceptance:

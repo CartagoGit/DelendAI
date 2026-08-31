@@ -6,6 +6,7 @@ status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-25
+shipped-in: [2eece76d9]
 priority: P2
 parent-plan: q00006
 audit-source:

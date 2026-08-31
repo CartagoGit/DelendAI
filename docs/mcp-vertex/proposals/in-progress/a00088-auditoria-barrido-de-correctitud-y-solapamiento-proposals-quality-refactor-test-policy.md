@@ -6,6 +6,7 @@ status: in-progress
 type: proposal
 track: plugin-hardening
 date: 2026-08-24
+shipped-in: [38b8591d7]
 ---
 
 # a00088 — auditoría: barrido de correctitud y solapamiento (proposals, quality, refactor, test-policy, ...)
