@@ -27,6 +27,7 @@ export const FORGE_RELEASE_RESULT_SCHEMA = z
 		provider: FORGE_PROVIDER_SCHEMA,
 		tag: z.string(),
 		url: z.string(),
+		id: z.string().optional(),
 		// The service actually emits `name` (matching `IForgeReleaseSuccess.name`
 		// and the `gh release view --json name` field). Earlier revisions of
 		// this schema named the slot `title`, which made `toolJsonBounded`

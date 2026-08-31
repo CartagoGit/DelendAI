@@ -39,6 +39,10 @@ describe('gen-all.script', () => {
 			})),
 		).toEqual([
 			{
+				name: 'proposal-index',
+				cmd: 'bun tools/scripts/proposals/sync-proposal-registry.script.ts',
+			},
+			{
 				name: 'agent-catalog',
 				cmd: 'bun tools/scripts/catalog/generate-agent-catalog.script.ts',
 			},
@@ -83,6 +87,7 @@ describe('gen-all.script', () => {
 
 	it('--check uses step-specific check commands and runs git diff last', async () => {
 		const { io, commands } = createIo({
+			'bun tools/scripts/proposals/sync-proposal-registry.script.ts': 0,
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts': 0,
 			'bun tools/scripts/generate/from-manifests.script.ts --check': 0,
 			'bun tools/scripts/gen/capability-matrix.script.ts': 0,
@@ -96,6 +101,7 @@ describe('gen-all.script', () => {
 
 		expect(exit).toBe(0);
 		expect(commands).toEqual([
+			'bun tools/scripts/proposals/sync-proposal-registry.script.ts',
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts',
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
@@ -108,6 +114,7 @@ describe('gen-all.script', () => {
 
 	it('--check exits 1 when git diff reports drift', async () => {
 		const { io, errors } = createIo({
+			'bun tools/scripts/proposals/sync-proposal-registry.script.ts': 0,
 			'git diff --exit-code': 1,
 		});
 
@@ -121,6 +128,7 @@ describe('gen-all.script', () => {
 
 	it('returns 1 when a generator fails and skips git diff', async () => {
 		const { io, commands, errors } = createIo({
+			'bun tools/scripts/proposals/sync-proposal-registry.script.ts': 0,
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts': 0,
 			'bun tools/scripts/generate/from-manifests.script.ts --check': 2,
 		});
@@ -129,6 +137,7 @@ describe('gen-all.script', () => {
 
 		expect(exit).toBe(1);
 		expect(commands).toEqual([
+			'bun tools/scripts/proposals/sync-proposal-registry.script.ts',
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts',
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
