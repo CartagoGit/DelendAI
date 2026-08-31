@@ -105,6 +105,9 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 						);
 						return;
 					}
+					const sinkHandled =
+						(await deps.detailSink?.('proposal', detail)) === true;
+					if (sinkHandled) return;
 					const panel = deps.vscode.window.createWebviewPanel(
 						'mcpVertexProposals',
 						`mcp-vertex Proposal ${check.proposalId}`,
