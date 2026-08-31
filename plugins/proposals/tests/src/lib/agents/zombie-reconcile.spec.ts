@@ -193,8 +193,12 @@ describe('zombie-reconcile', async () => {
 
 		expect(report.orphans.length).toBe(1);
 		expect(report.orphans[0]!.agentName).toBe('agent_zombie');
-		expect(queueEmitter).toHaveBeenCalledTimes(1);
-		expect(queueEmitter).toHaveBeenCalledWith('zombie-gc-event-task-1', 4);
+		// R-2026-08-31: the orphan registry row was deleted, but no
+		// lock was freed (in_flight was empty). The watchdog event is
+		// intentionally NOT emitted — `releasedLockCount === 0`
+		// documents the new contract.
+		expect(report.releasedLockCount).toBe(0);
+		expect(queueEmitter).toHaveBeenCalledTimes(0);
 
 		// Verify registry actually updated (entry removed)
 		const store = createAgentRegistryStore(registryPath);
