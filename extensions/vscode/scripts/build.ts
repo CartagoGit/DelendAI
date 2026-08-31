@@ -3,11 +3,12 @@ import { rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scssPlugin } from '../../../tools/scripts/compile/scss-plugin';
+import { WELL_KNOWN } from '../../../tools/scripts/lib/monorepo-paths.ts';
 
 const EXTENSION_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 export const buildVsCodeExtension = async (
-	outdir = join(EXTENSION_ROOT, 'dist'),
+	outdir = WELL_KNOWN.vscode(),
 ): Promise<BuildOutput> => {
 	await rm(outdir, { recursive: true, force: true });
 	return Bun.build({

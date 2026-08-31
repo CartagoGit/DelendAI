@@ -9,6 +9,8 @@ import { describe, expect, it } from 'vitest';
 import { join, sep } from 'node:path';
 import {
 	buildDir,
+	buildArtifactPath,
+	buildVersionDir,
 	buildTopLevel,
 	distArtifactPath,
 	distVersionDir,
@@ -60,6 +62,22 @@ describe('monorepo-paths', async () => {
 			expect(buildDir('apps', 'web')).toBe(
 				`${repoRoot()}/build/apps/web`,
 			);
+		});
+	});
+
+	describe('buildVersionDir', async () => {
+		it('places versioned build output under build/<group>/<name>/<version>', async () => {
+			expect(buildVersionDir('extensions', 'vscode', '0.2.0')).toBe(
+				`${repoRoot()}/build/extensions/vscode/0.2.0`,
+			);
+		});
+	});
+
+	describe('buildArtifactPath', async () => {
+		it('joins the versioned build dir and artifact', async () => {
+			expect(
+				buildArtifactPath('extensions', 'vscode', '0.2.0', 'x.vsix'),
+			).toBe(`${repoRoot()}/build/extensions/vscode/0.2.0/x.vsix`);
 		});
 	});
 
@@ -129,9 +147,9 @@ describe('monorepo-paths', async () => {
 			);
 		});
 
-		it('vscodeVsix is rooted under dist/extensions/vscode/<version>', async () => {
+		it('vscodeVsix is rooted under build/extensions/vscode/<version>', async () => {
 			expect(WELL_KNOWN.vscodeVsix('0.2.0')).toBe(
-				`${repoRoot()}/dist/extensions/vscode/0.2.0/mcp-vertex-vscode-0.2.0.vsix`,
+				`${repoRoot()}/build/extensions/vscode/0.2.0/mcp-vertex-vscode-0.2.0.vsix`,
 			);
 		});
 	});

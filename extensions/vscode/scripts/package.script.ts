@@ -16,7 +16,7 @@ import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-	distVersionDir,
+	buildVersionDir,
 	readJSON,
 } from '../../../tools/scripts/lib/monorepo-paths.ts';
 
@@ -29,7 +29,7 @@ if (!manifest.version) {
 	process.exit(1);
 }
 
-const outDir = distVersionDir('extensions', 'vscode', manifest.version);
+const outDir = buildVersionDir('extensions', 'vscode', manifest.version);
 mkdirSync(outDir, { recursive: true });
 
 console.log(`• packaging ${manifest.name}@${manifest.version}`);
