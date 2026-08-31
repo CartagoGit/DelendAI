@@ -20,6 +20,8 @@ export {
 	gitShow,
 	gitWorktreeList,
 	prepareReleaseBranch,
+	mergeReleaseFixToDevelop,
+	openPromotionPr,
 	createReleaseCandidate,
 } from '../lib/services/git';
 export type {
@@ -39,6 +41,11 @@ export type {
 	IPreparedReleaseBranch,
 	IPrepareReleaseBranchInput,
 } from '../lib/contracts/interfaces/prepared-release-branch.interface';
+export type {
+	IMergeReleaseFixInput,
+	IPromotionReady,
+	IReleaseFixMerged,
+} from '../lib/contracts/interfaces/release-cycle.interface';
 export { buildGitToolRegistrations } from '../lib/tools';
 export type { IGitToolOptions } from '../lib/tools';
 export {

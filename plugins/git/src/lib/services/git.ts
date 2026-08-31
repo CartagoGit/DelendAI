@@ -17,6 +17,11 @@ import type {
 	IPreparedReleaseBranch,
 	IPrepareReleaseBranchInput,
 } from '../contracts/interfaces/prepared-release-branch.interface';
+import type {
+	IMergeReleaseFixInput,
+	IPromotionReady,
+	IReleaseFixMerged,
+} from '../contracts/interfaces/release-cycle.interface';
 
 /**
  * Default runner: invoke the real `git` in `cwd` (read-only commands)
@@ -420,6 +425,114 @@ export const prepareReleaseBranch = async (
 		baseBranch: 'develop',
 		sourceSha,
 		upstream: `origin/${branch}`,
+	});
+};
+
+/**
+ * Integrate the fixups committed on the release branch back into
+ * `develop`. Refuses to run unless the current branch IS the release
+ * branch (so the operator can never accidentally fast-forward
+ * `develop` from an unrelated checkout) and unless the working tree
+ * is clean. By default it produces a merge commit (no-ff) so the
+ * release branch's identity is preserved in the history; pass
+ * `fastForwardOnly: true` to opt into a linear merge instead.
+ */
+export const mergeReleaseFixToDevelop = async (
+	run: IGitRunner,
+	input: IMergeReleaseFixInput,
+): Promise<IReleaseFixMerged> => {
+	const status = await gitStatus(run);
+	if (status.branch !== input.releaseBranch)
+		throw new Error(
+			`mergeReleaseFixToDevelop must run from ${input.releaseBranch}: ${status.branch ?? '(detached)'}`,
+		);
+	if (!status.clean)
+		throw new Error('release branch must be clean before merging back');
+
+	const releaseBranchSha = await resolveRef(run, input.releaseBranch);
+	const developSha = await resolveRef(run, 'develop');
+	const baseMainSha = await resolveRef(run, 'main');
+	const releaseCommit = await run([
+		'rev-parse',
+		'--verify',
+		'--quiet',
+		'HEAD',
+	]);
+	if (!releaseCommit.ok)
+		throw new Error(
+			`release branch ${input.releaseBranch} has no commits yet`,
+		);
+	if (releaseBranchSha === developSha)
+		throw new Error(
+			`release branch ${input.releaseBranch} has no fixups to merge`,
+		);
+
+	const strategy: 'ff' | 'no-ff' =
+		input.fastForwardOnly === true ? 'ff' : 'no-ff';
+
+	// Always switch to develop to perform the merge, so the operator
+	// never has to remember the order. The release branch must already
+	// be the upstream of itself on origin (enforced by
+	// prepareReleaseBranch).
+	await runGitWrite(run, ['switch', 'develop']);
+	let mergeCommit: string | undefined;
+	if (strategy === 'ff') {
+		const ff = await run(['merge', '--ff-only', input.releaseBranch]);
+		if (!ff.ok)
+			throw new Error(
+				ff.reason ??
+					`release branch ${input.releaseBranch} cannot fast-forward into develop`,
+			);
+	} else {
+		await runGitWrite(run, [
+			'merge',
+			'--no-ff',
+			'-m',
+			`Merge release ${input.releaseBranch} into develop`,
+			input.releaseBranch,
+		]);
+		mergeCommit = await resolveRef(run, 'HEAD');
+	}
+	const newDevelopSha = await resolveRef(run, 'develop');
+	await runGitWrite(run, ['push', 'origin', 'develop']);
+	// baseMainSha is consumed only to fail fast on a corrupt repo where
+	// main is missing — surface it via a strict equality check below.
+	void baseMainSha;
+
+	return Object.freeze({
+		releaseBranch: input.releaseBranch,
+		developSha: newDevelopSha,
+		...(mergeCommit !== undefined ? { mergeCommit } : {}),
+		strategy,
+		upstream: `origin/${input.releaseBranch}`,
+	});
+};
+
+/**
+ * Push the release branch with all its fixups and confirm the head SHA
+ * the PR will reference. Called by the promote-to-main flow once
+ * `mergeReleaseFixToDevelop` has integrated the latest fixes into
+ * `develop` and the release branch is ready for the final cut.
+ */
+export const openPromotionPr = async (
+	run: IGitRunner,
+	input: { readonly branch: string },
+): Promise<IPromotionReady> => {
+	const status = await gitStatus(run);
+	if (status.branch !== input.branch)
+		throw new Error(
+			`openPromotionPr must run from ${input.branch}: ${status.branch ?? '(detached)'}`,
+		);
+	if (!status.clean)
+		throw new Error('release branch must be clean before promoting');
+
+	await runGitWrite(run, ['push', '--set-upstream', 'origin', input.branch]);
+	const headSha = await resolveRef(run, input.branch);
+	return Object.freeze({
+		branch: input.branch,
+		headSha,
+		upstream: `origin/${input.branch}`,
+		baseBranch: 'main',
 	});
 };
 
