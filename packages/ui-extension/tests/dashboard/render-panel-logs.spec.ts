@@ -45,8 +45,9 @@ describe('renderPanelLogs', () => {
 		expect(html).toContain('mcpv-logs__empty');
 	});
 
-	it('renders icons per source', () => {
+	it('renders the detail overlay shell', () => {
 		const html = renderPanelLogs(dictsByLang.en);
-		expect(html).toContain('mcpv-logs__chip-icon');
+		expect(html).toContain('mcpv-logs__detail');
+		expect(html).toContain('data-logs-action="close-detail"');
 	});
 });
