@@ -296,7 +296,7 @@ kind: fix
 			),
 		);
 		expect(out.kind).toBe('slice-plan');
-		expect(out.claimableSliceIds).toContain('S5');
+		expect(out.claimableSliceIds).not.toContain('S5');
 		expect(out.claimableSliceIds).not.toContain('S6');
 		const verifySlice = out.plan.slices.find(
 			(slice: { sliceId: string }) => slice.sliceId === 'S5',
@@ -305,6 +305,9 @@ kind: fix
 		expect(
 			verifySlice.migrationGuidance.worktreeImpactPolicy.isolation,
 		).toBe('agent-worktree');
+		expect(
+			verifySlice.migrationGuidance.worktreeImpactPolicy.claimMode,
+		).toBe('requires-agent-worktree');
 	});
 
 	it('skips in_progress proposals locked by another agent (anti-loop) [N9]', async () => {

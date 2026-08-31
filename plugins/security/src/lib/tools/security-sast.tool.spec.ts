@@ -1,3 +1,7 @@
+import { mkdtemp, mkdir, rm, symlink } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { captureToolRegistration } from '../../../../../tools/scripts/lib/test-mcp-server';
@@ -128,5 +132,96 @@ describe('security_sast tool', () => {
 		);
 		const out = await captured.invokeRaw({ runner: 'semgrep' });
 		expect(out.isError).toBe(true);
+	});
+
+	it('rejects a symlinked cwd whose real target escapes the workspace', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'security-sast-root-'));
+		const outside = await mkdtemp(join(tmpdir(), 'security-sast-outside-'));
+		try {
+			await symlink(outside, join(root, 'linked-outside'));
+			let reachedDetectStack = false;
+			const captured = await captureToolRegistration(
+				buildSecuritySastRegistration(
+					options({
+						workspaceRootAbs: root,
+						detectStack: async () => {
+							reachedDetectStack = true;
+							return {
+								pack: 'typescript',
+								languages: ['typescript', 'generic'],
+								files: ['src/db.ts'],
+							};
+						},
+						runSastRunner: async () => ({
+							source: 'fallback',
+							scanned: 0,
+							findings: [],
+						}),
+					}),
+				),
+			);
+			const out = await captured.invokeRaw({
+				cwd: 'linked-outside',
+			});
+			expect(out.isError).toBe(true);
+			expect(
+				(out.payload as { error?: { reason?: string } }).error?.reason,
+			).toContain('cwd');
+			expect(reachedDetectStack).toBe(false);
+		} finally {
+			await rm(root, { recursive: true, force: true });
+			await rm(outside, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects a nested symlinked cwd whose real target escapes the workspace', async () => {
+		const root = await mkdtemp(
+			join(tmpdir(), 'security-sast-nested-root-'),
+		);
+		const outside = await mkdtemp(
+			join(tmpdir(), 'security-sast-nested-outside-'),
+		);
+		try {
+			await mkdir(join(root, 'workspace', 'src'), { recursive: true });
+			await symlink(outside, join(root, 'workspace', 'src', 'generated'));
+			const captured = await captureToolRegistration(
+				buildSecuritySastRegistration(
+					options({
+						workspaceRootAbs: root,
+						detectStack: async () => ({
+							pack: 'typescript',
+							languages: ['typescript', 'generic'],
+							files: ['src/db.ts'],
+						}),
+						runSastRunner: async () => ({
+							source: 'fallback',
+							scanned: 0,
+							findings: [],
+						}),
+					}),
+				),
+			);
+			const out = await captured.invokeRaw({
+				cwd: 'workspace/src/generated',
+			});
+			expect(out.isError).toBe(true);
+			expect(
+				(
+					out.payload as {
+						error?: { reason?: string; nextAction?: string };
+					}
+				).error?.reason,
+			).toContain('cwd');
+			expect(
+				(
+					out.payload as {
+						error?: { reason?: string; nextAction?: string };
+					}
+				).error?.nextAction,
+			).toContain('effective path escapes');
+		} finally {
+			await rm(root, { recursive: true, force: true });
+			await rm(outside, { recursive: true, force: true });
+		}
 	});
 });

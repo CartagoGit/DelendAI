@@ -70,6 +70,7 @@ export interface IClaimValidation {
 		| 'overlap-in-progress'
 		| 'already-done'
 		| 'already-in-progress'
+		| 'isolation-required'
 		| 'migration-phase-blocked';
 }
 
@@ -529,6 +530,16 @@ export const validateClaim = (
 				blockers.length > 0
 					? blockers
 					: `slice "${sliceId}" cannot start ${slice.migrationGuidance.phase} yet`,
+		};
+	}
+	if (
+		slice.migrationGuidance?.worktreeImpactPolicy.claimMode ===
+		'requires-agent-worktree'
+	) {
+		return {
+			ok: false,
+			blockerType: 'isolation-required',
+			reason: `slice "${sliceId}" is ${slice.migrationGuidance.phase} with high fan-out and requires agent-worktree isolation before claim. Use an isolated orchestration path (delegate or create an agent/<name> worktree) instead of the shared checkout.`,
 		};
 	}
 	const mine = new Set(slice.files);

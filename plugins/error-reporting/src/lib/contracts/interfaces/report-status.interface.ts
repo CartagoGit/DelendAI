@@ -58,7 +58,7 @@ export interface IReportStatusOutput {
 	readonly transmittedFields: IReportStatusTransmittedFieldCatalog;
 	readonly projectContextSent: false;
 	readonly privacyStatement: string;
-	readonly disableConfig: 'plugins.error-reporting.options.enabled = false';
+	readonly enableConfig: 'plugins.error-reporting.options.enabled = true';
 	readonly health: IReportStatusHealth;
 	readonly funnel: IFunnelCounters;
 	readonly recentReports: readonly IReportStatusRecentReport[];

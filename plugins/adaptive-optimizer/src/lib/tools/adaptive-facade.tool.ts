@@ -2,7 +2,6 @@ import z from 'zod';
 
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
 import { PROPOSAL_ADAPTIVE_FACADE_INTENTS } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
-import { DEFAULT_ADAPTIVE_OPTIMIZER_MAX_BYTES } from '../contracts/constants/adaptive-optimizer.constant';
 
 import type {
 	IAdaptiveFacadeRuntimeOptions,
@@ -13,8 +12,6 @@ import { buildAdaptiveFacadePayload } from '../services/adaptive-facade.service'
 interface IAdaptiveFacadeToolOptions extends IAdaptiveFacadeRuntimeOptions {
 	readonly namespacePrefix: string;
 }
-
-const MIN_DEFAULT_ADAPTIVE_FACADE_BYTES = 16_384;
 
 const AdaptiveFacadeIntentSchema = z.enum(PROPOSAL_ADAPTIVE_FACADE_INTENTS);
 
@@ -70,6 +67,7 @@ const InputSchema = z
 		task: z.string().trim().min(1).optional(),
 		history: z.array(HistoryEntrySchema).max(250).optional(),
 		maxAlternatives: z.number().int().min(1).max(10).optional(),
+		maxBytes: z.number().int().positive().optional(),
 	})
 	.strict();
 
@@ -84,19 +82,15 @@ export const AdaptiveFacadeOutputSchema = z.object({
 
 export const runAdaptiveFacade = async (
 	args: IAdaptiveFacadeToolArgs,
-	options: IAdaptiveFacadeToolOptions,
+	_options: IAdaptiveFacadeToolOptions,
 ) => {
 	const parsed = InputSchema.safeParse(args);
 	if (!parsed.success) {
 		throw new Error(parsed.error.message);
 	}
-	const maxBytes =
-		options.maxBytes === DEFAULT_ADAPTIVE_OPTIMIZER_MAX_BYTES
-			? MIN_DEFAULT_ADAPTIVE_FACADE_BYTES
-			: options.maxBytes;
 	return toolJson(
 		buildAdaptiveFacadePayload(parsed.data, {
-			maxBytes,
+			maxBytes: parsed.data.maxBytes,
 		}),
 	);
 };

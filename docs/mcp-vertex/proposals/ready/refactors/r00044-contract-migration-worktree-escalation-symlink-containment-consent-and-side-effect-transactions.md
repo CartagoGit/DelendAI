@@ -31,26 +31,31 @@ Los cambios de contratos y efectos secundarios son el mayor riesgo de coordinaci
 - global_gate: e2e
 
 ### S1 — Migration protocol and impact-based worktrees
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts`, `plugins/proposals/src/lib/agents`, `plugins/proposals/src/lib/swarm`, `plugins/proposals/tests`
 - **Gate**: type
 - acceptance:
   - "EXPAND-to-CONTRACT protocol encoded in tools/policies"
   - "worktree escalation matrix tested"
   - "high fan-out changes receive isolation"
-- review-state: changes_requested
+- review-state: done
 - review-implementer: crow
-- review-reviewer: delivery-verifier-r00044-s1
+- review-reviewer: delivery-verifier-r00044-final
 - review-log: requested_changes by delivery-verifier-r00044-s1 — La política de migración y la matriz de impacto existen como helpers, pero no están integradas al flujo real de creación de worktrees; además VERIFY no escala cambios de alto impacto. Conectar enforcement y cubrir VERIFY con tests.
+- review-log: requested_changes by delivery-verifier-r00044-s1-r2 — El planner integra la guidance, pero el runtime de orchestration/auto-work aún crea worktrees solo por gate global y no consume el verdict de impacto. Añadir enforcement runtime y prueba que VERIFY de alto impacto exige aislamiento.
+- review-log: approved by delivery-verifier-r00044-final — Aprobada tras tercera verificación independiente. Runtime de claim/orchestration impide shared checkout para VERIFY/high fan-out; protocolo y matriz integrados. 93/93 tests focalizados pass, validate exit 0, HEAD 8514f99.
 ### S2 — Symlink containment and network consent
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/security`, `plugins/security/src`, `plugins/error-reporting/src`, `plugins/error-reporting/tests`
 - **Gate**: e2e
 - acceptance:
   - "effective target containment blocks escapes"
   - "reporting defaults fail-closed and explicit opt-in"
   - "adversarial security tests pass"
-
+- review-state: done
+- review-implementer: owl
+- review-reviewer: delivery-verifier-r00044-s2-final
+- review-log: approved by delivery-verifier-r00044-s2-final — Aprobada tras revisión independiente. 128/128 tests focalizados pass, exit code 0, HEAD 8514f99. Containment efectivo y consentimiento fail-closed/opt-in verificados.
 ### S3 — Side-effect transaction and capability grants
 - **Status**: pending
 - **DependsOn**: [S1, S2]

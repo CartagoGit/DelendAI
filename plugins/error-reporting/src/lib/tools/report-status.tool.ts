@@ -140,8 +140,8 @@ const ReportStatusInternalSchema = z
 			.strict(),
 		projectContextSent: z.literal(false),
 		privacyStatement: z.string(),
-		disableConfig: z.literal(
-			'plugins.error-reporting.options.enabled = false',
+		enableConfig: z.literal(
+			'plugins.error-reporting.options.enabled = true',
 		),
 		health: HealthSchema,
 		funnel: FunnelSchema,
@@ -267,7 +267,7 @@ const buildOutput = (input: {
 	projectContextSent: false,
 	privacyStatement:
 		'Only the safe ISafeMcpVertexReport DTO and the issue body derived from it are transmitted. No host-project content is sent: no message, stack, args, workspace, paths, repo names, prompts, env, headers or tool outputs.',
-	disableConfig: 'plugins.error-reporting.options.enabled = false',
+	enableConfig: 'plugins.error-reporting.options.enabled = true',
 	health: input.health,
 	funnel: input.funnel,
 	recentReports: input.recentReports,

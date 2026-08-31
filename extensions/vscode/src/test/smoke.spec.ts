@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { McpStdioClient, type IOverview } from '@mcp-vertex/client';
 
@@ -13,6 +16,7 @@ import {
 	OPEN_TOOL_DETAIL_COMMAND,
 	renderOverviewHtml,
 	REFRESH_COMMAND,
+	resolveServerCommand,
 	RUN_VALIDATION_COMMAND,
 	SHOW_METRICS_COMMAND,
 	SHOW_OVERVIEW_COMMAND,
@@ -379,6 +383,115 @@ describe('VS Code extension smoke', async () => {
 		}
 
 		expect(calls).toEqual([]);
+	});
+
+	it('resolveServerCommand prefers the workspace MCP launch configuration', async () => {
+		const workspaceRoot = join(process.cwd(), '../..');
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand() {
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+			},
+			workspace: {
+				workspaceFolders: [{ uri: { fsPath: workspaceRoot } }],
+				createFileSystemWatcher() {
+					return {
+						onDidChange() {
+							return { dispose() {} };
+						},
+						onDidCreate() {
+							return { dispose() {} };
+						},
+						onDidDelete() {
+							return { dispose() {} };
+						},
+						dispose() {},
+					};
+				},
+				getConfiguration() {
+					return {
+						get<T>(_key: string, defaultValue?: T): T | undefined {
+							return defaultValue;
+						},
+					};
+				},
+			},
+		};
+
+		const launch = await resolveServerCommand(vscode);
+		expect(launch).toEqual({
+			command: 'bun',
+			args: ['tools/scripts/host/host-server.script.ts', '--workspace=.'],
+			cwd: workspaceRoot,
+		});
+	});
+
+	it('resolveServerCommand falls back to bun for a configured workspace without .mcp.json', async () => {
+		const workspaceRoot = await mkdtemp(
+			join(tmpdir(), 'mcp-vertex-vscode-'),
+		);
+		await writeFile(
+			join(workspaceRoot, 'mcp-vertex.config.json'),
+			'{}\n',
+			'utf8',
+		);
+		try {
+			const vscode: IVscodeApi = {
+				ViewColumn: { One: 1 },
+				commands: {
+					registerCommand() {
+						return { dispose() {} };
+					},
+				},
+				window: {
+					createWebviewPanel() {
+						return { webview: { html: '' } };
+					},
+				},
+				workspace: {
+					workspaceFolders: [{ uri: { fsPath: workspaceRoot } }],
+					createFileSystemWatcher() {
+						return {
+							onDidChange() {
+								return { dispose() {} };
+							},
+							onDidCreate() {
+								return { dispose() {} };
+							},
+							onDidDelete() {
+								return { dispose() {} };
+							},
+							dispose() {},
+						};
+					},
+					getConfiguration() {
+						return {
+							get<T>(
+								_key: string,
+								defaultValue?: T,
+							): T | undefined {
+								return defaultValue;
+							},
+						};
+					},
+				},
+			};
+
+			expect(await resolveServerCommand(vscode)).toEqual({
+				command: 'bun',
+				args: ['run', 'mcp-vertex'],
+				cwd: workspaceRoot,
+			});
+		} finally {
+			await rm(workspaceRoot, { recursive: true, force: true });
+		}
 	});
 
 	it('routes child stderr to the VS Code startup-report output channel', async () => {

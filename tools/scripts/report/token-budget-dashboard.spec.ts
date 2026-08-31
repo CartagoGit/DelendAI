@@ -1,118 +1,97 @@
-/**
- * token-budget-dashboard.spec.ts — c00135 (Track E).
- *
- * Verifies the per-surface separation contract of the token budget
- * dashboard:
- *   - `adaptive` (bytes, serialized outputSchema) and `native`
- *     (estimated prompt tokens) are independent columns.
- *   - A tool with only adaptive data shows `native: null` (never 0).
- *   - A tool with only native data shows `adaptive: null`.
- *   - "Documented deficits" reports breaches per surface (not on a
- *     mixed total), so false positives from mixing disappear.
- *
- * The model types live in `packages/core/src/lib/budgets/types.ts`.
- */
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
-import type {
-	IPerSurfaceMeasurement,
-	ITokenReport,
-	Surface,
-} from '@mcp-vertex/core/public';
+import {
+	measureCatalogAndTaskContextCost,
+	renderCatalogAndTaskContextMarkdown,
+} from '../measure/catalog-task-context-cost';
+import { buildPerSurfaceColumns } from './token-budget-dashboard.script';
 
-/** Pure: split a per-tool used measurement into a status per surface. */
-const surfaceStatus = (
-	used: IPerSurfaceMeasurement,
-	budget: IPerSurfaceMeasurement,
-): Record<Surface, 'ok' | 'breach' | null> => {
-	const status: Record<Surface, 'ok' | 'breach' | null> = {
-		adaptive: null,
-		native: null,
-	};
-	for (const surface of ['adaptive', 'native'] as const) {
-		const usedValue = used[surface];
-		const budgetValue = budget[surface];
-		if (usedValue === undefined || budgetValue === undefined) continue;
-		status[surface] = usedValue > budgetValue ? 'breach' : 'ok';
-	}
-	return status;
-};
+const TOKEN_BUDGETS_ARTIFACT = new URL(
+	'../../../docs/mcp-vertex/TOKEN-BUDGETS.md',
+	import.meta.url,
+);
+const measurementPromise = measureCatalogAndTaskContextCost();
 
-/** Deficits computed independently per surface (no mixed total). */
-const documentedDeficits = (
-	rows: readonly {
-		readonly toolId: string;
-		readonly used: IPerSurfaceMeasurement;
-		readonly budget: IPerSurfaceMeasurement;
-	}[],
-): readonly {
-	readonly tool: string;
-	readonly surface: Surface;
-	readonly ratio: number;
-}[] => {
-	const deficits: { tool: string; surface: Surface; ratio: number }[] = [];
-	for (const row of rows) {
-		for (const surface of ['adaptive', 'native'] as const) {
-			const used = row.used[surface];
-			const budget = row.budget[surface];
-			if (used === undefined || budget === undefined) continue;
-			if (used > budget) {
-				deficits.push({
-					tool: row.toolId,
-					surface,
-					ratio: used / budget,
-				});
-			}
-		}
-	}
-	return deficits;
-};
-
-describe('c00135 — dashboard surface separation', () => {
-	it('a tool with only adaptive data leaves native as null (not 0)', () => {
-		const status = surfaceStatus({ adaptive: 800 }, { adaptive: 4096 });
-		expect(status.adaptive).toBe('ok');
-		expect(status.native).toBeNull();
-	});
-
-	it('a tool with only native data leaves adaptive as null', () => {
-		const status = surfaceStatus({ native: 2100 }, { native: 12000 });
-		expect(status.native).toBe('ok');
-		expect(status.adaptive).toBeNull();
-	});
-
-	it('reports a real adaptive breach without inventing a native one', () => {
-		const status = surfaceStatus({ adaptive: 5000 }, { adaptive: 4096 });
-		expect(status.adaptive).toBe('breach');
-		expect(status.native).toBeNull();
-	});
-
-	it('documented deficits are computed per surface (no mixed total)', () => {
-		const deficits = documentedDeficits([
+describe('token-budget dashboard publication', () => {
+	it('builds the per-surface summary without inventing missing measurements', () => {
+		const rows = buildPerSurfaceColumns([
 			{
-				toolId: 'proposals.get',
-				used: { adaptive: 5000, native: 2100 },
-				budget: { adaptive: 4096, native: 12000 },
+				presetId: 'demo',
+				title: 'demo',
+				surfaceMode: 'adaptive',
+				runtimeSurface: 'managed',
+				source: 'dynamic-client',
+				pluginCount: 1,
+				toolCount: 1,
+				toolsListBytes: 800,
+				schemaBytes: 600,
+				descriptionBytes: 80,
+				inputSchemaBytes: 200,
+				outputSchemaBytes: 400,
+				maxPluginBytes: 600,
+				overviewCompactBytes: 200,
+				roundContextBytes: null,
+				loadErrors: [],
+				ownerRows: [],
+				toolBreakdowns: [],
+				tokenizerEstimates: [],
+			},
+			{
+				presetId: 'demo',
+				title: 'demo',
+				surfaceMode: 'native',
+				runtimeSurface: 'managed',
+				source: 'tokens-gate',
+				pluginCount: 1,
+				toolCount: 1,
+				toolsListBytes: 1200,
+				schemaBytes: 900,
+				descriptionBytes: 120,
+				inputSchemaBytes: 300,
+				outputSchemaBytes: 600,
+				maxPluginBytes: 700,
+				overviewCompactBytes: 220,
+				roundContextBytes: 180,
+				loadErrors: [],
+				ownerRows: [],
+				toolBreakdowns: [],
+				tokenizerEstimates: [],
 			},
 		]);
-		expect(deficits).toHaveLength(1);
-		expect(deficits[0]).toMatchObject({
-			tool: 'proposals.get',
-			surface: 'adaptive',
-		});
-		expect(deficits[0]!.ratio).toBeCloseTo(5000 / 4096, 3);
+
+		expect(rows).toEqual([
+			{
+				presetId: 'demo',
+				adaptiveBytes: 800,
+				adaptiveStatus: 'n/a',
+				nativeBytes: 1200,
+				nativeStatus: 'n/a',
+				adaptiveDeficit: null,
+				nativeDeficit: null,
+			},
+		]);
 	});
 
-	it('the report type exposes per-surface measurements and deficits', () => {
-		// Type-level assertion: ITokenReport must carry documentedDeficits.
-		const report: ITokenReport = {
-			toolId: 'proposals.get',
-			measurements: [],
-			documentedDeficits: [
-				{ surface: 'schema', ratio: 1.4, bytes: 5600, budget: 4096 },
-			],
-			generatedAt: '2026-08-30T00:00:00.000Z',
-		};
-		expect(report.documentedDeficits[0]?.surface).toBe('schema');
+	it('renders the reproducible task_context_cost block with the fixed published values', async () => {
+		const measurement = await measurementPromise;
+		const addendum = renderCatalogAndTaskContextMarkdown(measurement);
+
+		expect(addendum).toContain('## Catalog and task context cost addendum');
+		expect(addendum).toContain('| cold start | 682 | 171 |');
+		expect(addendum).toContain('| after search.search | 738 | 185 |');
+		expect(addendum).toContain('| after docs.docs_list | 786 | 197 |');
+		expect(addendum).toContain('| after logs.tail | 834 | 209 |');
+		expect(addendum).toContain('| p50 | 738 | 185 |');
+		expect(addendum).toContain('| p95 | 834 | 209 |');
+	});
+
+	it('keeps the published token budget artifact aligned with the generated addendum', async () => {
+		const measurement = await measurementPromise;
+		const addendum = renderCatalogAndTaskContextMarkdown(measurement);
+		const publishedArtifact = readFileSync(TOKEN_BUDGETS_ARTIFACT, 'utf8');
+
+		expect(publishedArtifact).toContain(addendum);
 	});
 });

@@ -32,7 +32,7 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
 
 ### S1 — Measure catalog and task context cost
 - **Status**: pending
-- **Files**: `tools/scripts/measure`, `packages/core/tests/src/lib/token`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
+- **Files**: `tools/scripts/measure`, `packages/core/tests/src/lib/token`
 - **Gate**: type
 - acceptance:
   - "native/swarm/per-plugin/per-tool bytes measured"
@@ -42,9 +42,21 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
 - review-implementer: crow
 - review-reviewer: delivery-verifier-v00133-s1
 - review-log: requested_changes by delivery-verifier-v00133-s1 — La medición se ejecuta, pero el dashboard generado no incorpora task_context_cost y la spec no fija valores reproducidos ni verifica el artefacto publicado. Integrar generación y tests de contrato.
-### S2 — Compact projection and result handles
+
+### S1a — Integrate token budget dashboard publication
 - **Status**: pending
 - **DependsOn**: [S1]
+- **Files**: `tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/report/token-budget-dashboard.spec.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
+- **Gate**: type
+- acceptance:
+  - "dashboard incorpora task_context_cost p50/p95 medido por S1"
+  - "token-budget-dashboard.spec.ts fija el contrato reproducido del artefacto publicado"
+  - "TOKEN-BUDGETS.md se regenera desde la medicion sin tocar release track"
+- review-state: in_review
+- review-implementer: crow
+### S2 — Compact projection and result handles
+- **Status**: pending
+- **DependsOn**: [S1, S1a]
 - **Files**: `packages/core/src/lib/contracts/output`, `packages/core/src/lib/handles`, `plugins/proposals/src/lib/api`, `plugins/orchestrator-runner/src`
 - **Gate**: e2e
 - acceptance:
@@ -58,7 +70,14 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
 - native/swarm/per-plugin/per-tool bytes measured
 - schema breakdown available
 - task_context_cost p50/p95 corpus defined and reproducible
+- dashboard incorpora task_context_cost p50/p95 medido y publicado con spec reproducible
 - compact/full and fields/limit/cursor/maxBytes contracts
 - large result chaining through bounded handles
 - authorization/redaction/expiry tests
 - full fallback remains compatible
+
+## transition
+
+- S1 queda explicitamente acotada a la medicion reproducible de catalog/task_context_cost para mantener una salida pequena y verificable.
+- S1a absorbe la integracion de `tools/scripts/report/token-budget-dashboard.script.ts`, su spec y `docs/mcp-vertex/TOKEN-BUDGETS.md` para dar ownership valido al dashboard sin abrir release track.
+- S2 pasa a depender de S1 y S1a para que la evolucion de projection/handles arranque sobre baseline y artefacto ya fijados.

@@ -40,7 +40,8 @@ La frontera remota y la policy deben convertir el modelo de release en una opera
   - "metadata y gates validados"
   - "emergency bypass exige reason y receipt"
   - "adapters provider-specific no se duplican"
-
+- review-state: in_review
+- review-implementer: release-r3-s1
 ## acceptance
 
 - Solo release/* -> main en flujo normal

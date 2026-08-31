@@ -102,10 +102,10 @@ describe('web-pages.script.ts (c00142)', () => {
 			spawn: makeSpawn(0, ''),
 		});
 		expect(exit).toBe(0);
-		// 5 generator spawns + 1 `git diff --exit-code`.
-		expect(calls.length).toBe(6);
+		// 6 generator spawns + 1 `git diff --exit-code`.
+		expect(calls.length).toBe(7);
 		expect(calls[0]?.cmd[0]).toBe('bun');
-		expect(calls[5]?.cmd.slice(0, 3)).toEqual([
+		expect(calls[6]?.cmd.slice(0, 3)).toEqual([
 			'git',
 			'diff',
 			'--exit-code',
@@ -154,6 +154,26 @@ describe('web-pages.script.ts (c00142)', () => {
 		expect(text).toContain('skills:');
 		expect(text).toContain('from-manifests:');
 		expect(text).toContain('web-catalog:');
+		expect(text).toContain('observability-provenance:');
+	});
+
+	it('attributes provenance doc drift to the observability-provenance step', async () => {
+		const stderr = captureStderr();
+		const exit = await run({
+			argv: ['--check'],
+			spawn: makeSpawn(
+				1,
+				' M docs/mcp-vertex/generated/observability-provenance.generated.md\n',
+			),
+		});
+		const text = stderr.text();
+		stderr.restore();
+		expect(exit).toBe(1);
+		expect(text).toContain('observability-provenance drifted');
+		expect(text).toContain(
+			'docs/mcp-vertex/generated/observability-provenance.generated.md',
+		);
+		expect(text).toContain('provenance-truth.script.ts');
 	});
 
 	it('runs only the named step with --only', async () => {

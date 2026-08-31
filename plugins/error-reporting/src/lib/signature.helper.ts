@@ -148,10 +148,10 @@ export const buildIssueBody = (report: ISafeMcpVertexReport): string => {
 		JSON.stringify(report, null, 2),
 		'```',
 		'',
-		'## How to disable',
+		'## How to enable',
 		'',
 		'```jsonc',
-		'{ "plugins": { "error-reporting": { "options": { "enabled": false } } } }',
+		'{ "plugins": { "error-reporting": { "options": { "enabled": true } } } }',
 		'```',
 	);
 	return `${lines.join('\n').trim()}\n`;

@@ -17,7 +17,7 @@ import {
 describe('resolveOptions', () => {
 	it('applies the intrinsic defaults when nothing is configured', () => {
 		const options = resolveOptions({});
-		expect(options.enabled).toBe(true);
+		expect(options.enabled).toBe(false);
 		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
 		expect(options.labels).toEqual([...DEFAULT_LABELS]);
 		expect(options.dedupeWindowHours).toBe(24);
@@ -32,7 +32,7 @@ describe('resolveOptions', () => {
 
 	it('honours operational overrides but never project-controlled transport policy', () => {
 		const options = resolveOptions({
-			enabled: false,
+			enabled: true,
 			targetRepo: 'acme/tools',
 			labels: ['custom'],
 			dedupeWindowHours: 1,
@@ -42,7 +42,7 @@ describe('resolveOptions', () => {
 			backoffMaxMs: 5_000,
 			backoffJitterRatio: 0.5,
 		});
-		expect(options.enabled).toBe(false);
+		expect(options.enabled).toBe(true);
 		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
 		expect(options.labels).toEqual([...DEFAULT_LABELS]);
 		expect(options.dedupeWindowHours).toBe(1);
@@ -64,7 +64,7 @@ describe('resolveOptions', () => {
 			backoffMaxMs: -1,
 			backoffJitterRatio: 5,
 		});
-		expect(options.enabled).toBe(true);
+		expect(options.enabled).toBe(false);
 		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
 		expect(options.dedupeWindowHours).toBe(24);
 		expect(options.maxIssuesPerDay).toBe(DEFAULT_MAX_ISSUES_PER_DAY);
@@ -120,12 +120,19 @@ describe('resolveOptions', () => {
 		const warnings: string[] = [];
 		resolveOptions(
 			{
-				enabled: false,
+				enabled: true,
 			},
 			(warning) => {
 				warnings.push(warning.code);
 			},
 		);
 		expect(warnings).toEqual([]);
+	});
+
+	it('requires explicit opt-in before any network reporting is enabled', () => {
+		const disabled = resolveOptions({});
+		expect(disabled.enabled).toBe(false);
+		const enabled = resolveOptions({ enabled: true });
+		expect(enabled.enabled).toBe(true);
 	});
 });

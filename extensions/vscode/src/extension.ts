@@ -300,6 +300,7 @@ interface IResilientClient {
 const createResilientClient = (
 	initial: McpStdioClient,
 	connect: () => Promise<McpStdioClient>,
+	namespacePrefix?: string,
 ): IResilientClient => {
 	let current = initial;
 	let reconnecting: Promise<void> | undefined;
@@ -308,6 +309,75 @@ const createResilientClient = (
 	const proxy = McpStdioClient.fromTransport({
 		async callTool(input) {
 			await ready;
+			const directTools = new Set([
+				'overview',
+				'tool_search',
+				'plugin_activate',
+				'plugin_deactivate',
+				'status',
+				'vertex',
+			]);
+			const prefix = namespacePrefix?.trim()
+				? namespacePrefix.trim().replace(/_?$/, '_')
+				: 'mcp-vertex_';
+			const suffix = input.name.startsWith(prefix)
+				? input.name.slice(prefix.length)
+				: undefined;
+			if (suffix !== undefined && !directTools.has(suffix)) {
+				const router = `${prefix}vertex`;
+				const firstSeparator = suffix.indexOf('_');
+				const candidates =
+					firstSeparator === -1
+						? [{ domain: 'core', action: suffix }]
+						: [
+								{ domain: 'core', action: suffix },
+								{
+									domain: suffix.slice(0, firstSeparator),
+									action: suffix.slice(firstSeparator + 1),
+								},
+							];
+				for (const candidate of candidates) {
+					try {
+						const routed = await current.request<
+							{
+								readonly domain: string;
+								readonly action: string;
+								readonly args: Readonly<
+									Record<string, unknown>
+								>;
+							},
+							{
+								readonly routed?: boolean;
+								readonly isError?: boolean;
+								readonly text?: string;
+								readonly structuredContent?: unknown;
+							}
+						>(router, {
+							domain: candidate.domain,
+							action: candidate.action,
+							args: (input.arguments ?? {}) as Readonly<
+								Record<string, unknown>
+							>,
+						});
+						if (routed.isError === true) {
+							throw new Error(
+								routed.text ??
+									`MCP tool "${input.name}" returned an error`,
+							);
+						}
+						if (routed.structuredContent !== undefined) {
+							return {
+								structuredContent: routed.structuredContent,
+							};
+						}
+						return { structuredContent: routed };
+					} catch (error) {
+						if (candidate === candidates[candidates.length - 1]) {
+							throw error;
+						}
+					}
+				}
+			}
 			return {
 				structuredContent: await current.request(
 					input.name,
@@ -481,7 +551,11 @@ export const activate = async (
 				: new Error('MCP server is connecting'),
 		);
 	}
-	const resilient = createResilientClient(initialClient, connectClient);
+	const resilient = createResilientClient(
+		initialClient,
+		connectClient,
+		resolveNamespacePrefix(vscode),
+	);
 	adoptConnectedClient = resilient.replace;
 	const client = resilient.client;
 	const reconnect = resilient.reconnect;
@@ -856,6 +930,9 @@ export const resolveServerCommand = async (
 			resolvedCommand = discovered.command;
 			args = discovered.args;
 			resolvedCwd = discovered.cwd;
+		} else if (await hasProjectConfig(root)) {
+			resolvedCommand = 'bun';
+			args = ['run', 'mcp-vertex'];
 		}
 	}
 	if (
@@ -911,6 +988,15 @@ const readWorkspaceMcpLaunch = async (
 		};
 	} catch {
 		return undefined;
+	}
+};
+
+const hasProjectConfig = async (root: string): Promise<boolean> => {
+	try {
+		await readFile(join(root, 'mcp-vertex.config.json'), 'utf8');
+		return true;
+	} catch {
+		return false;
 	}
 };
 

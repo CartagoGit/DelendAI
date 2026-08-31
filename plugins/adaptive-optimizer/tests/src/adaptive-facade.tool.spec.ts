@@ -100,6 +100,7 @@ describe('adaptive_facade', () => {
 		const output = AdaptiveFacadeOutputSchema.parse(
 			result.structuredContent,
 		);
+		expect(output.truncated).toBe(false);
 		expect(output.detailedSurface).toEqual(PROPOSALS_STABLE_TOOL_SURFACE);
 		expect(output.detailedSurface).toEqual(
 			expect.arrayContaining([
@@ -116,10 +117,10 @@ describe('adaptive_facade', () => {
 		);
 	});
 
-	it('keeps fallback truncation while retaining full stable-surface entries', async () => {
+	it('truncates only when the caller provides an explicit byte budget', async () => {
 		const result = await runAdaptiveFacade(
-			{ intent: 'recover', maxAlternatives: 2 },
-			{ namespacePrefix: 'mcp-vertex', maxBytes: 700 },
+			{ intent: 'recover', maxAlternatives: 2, maxBytes: 700 },
+			defaultFacadeOptions,
 		);
 		const output = AdaptiveFacadeOutputSchema.parse(
 			result.structuredContent,

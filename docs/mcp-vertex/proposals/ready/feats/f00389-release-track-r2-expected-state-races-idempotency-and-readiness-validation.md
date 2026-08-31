@@ -31,7 +31,7 @@ El candidato debe ser seguro frente a cambios de main/develop y reintentos concu
 - global_gate: e2e
 
 ### S1 — Expected-state release preparation and validation
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/release-state`, `plugins/git/src/lib/release`, `plugins/forge/src/lib/release`, `packages/core/tests/release`, `plugins/git/tests/release`
 - **Gate**: e2e
 - acceptance:
@@ -39,7 +39,11 @@ El candidato debe ser seguro frente a cambios de main/develop y reintentos concu
   - "races patch/patch y minor/patch cubiertas"
   - "readiness no permite gates fallando"
   - "reintento idempotente no duplica bump"
-
+- review-state: done
+- review-implementer: release-r2-readiness
+- review-reviewer: release-r2-reviewer
+- review-log: requested_changes by delivery-verifier — REQUEST_CHANGES: (1) releasePrepare hace assertNoCollision(list) y luego store.put() en operaciones separadas; IReleaseCandidateStore no tiene reserva atómica, por lo que dos execute concurrentes pueden pasar ambas la comprobación y crear dos candidatos para el mismo target. Falta una prueba que fuerce la ventana TOCTOU y verifique un único candidato. (2) restart no está resuelto: tras un candidato state=aborted, una nueva idempotencyKey con el mismo slug devuelve el candidato abortado con created=false en vez de crear/re reservar un candidato reiniciado, contradiciendo el requisito abandoned/restarted release. Añadir tests explícitos para restart y concurrencia, y ajustar el contrato/implementación. Cobertura ejecutada: 7 tests focalizados, 0 fallos; tsc global bloqueado por error preexistente en plugins/proposals/tests/src/lib/e2e/continue-proposal.e2e.spec.ts:320 (claimMode ausente).
+- review-log: approved by release-r2-reviewer — R2 aprobado tras reparación: reserva atómica síncrona, retry idempotente, restart aborted con nueva key, dry-run sin efectos, stale expected-state, matriz de carreras y readiness/status compactos verificados.
 ## acceptance
 
 - dryRun y execute rechazan expected-state obsoleto

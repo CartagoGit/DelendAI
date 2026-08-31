@@ -32,17 +32,19 @@ Completa la evolución orientada a agentes sin sustituir capacidades detalladas,
 - global_gate: e2e
 
 ### S1 — Adaptive facade and preferred-path evaluation
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/adaptive-optimizer/src`, `plugins/proposals/src/lib/api`, `plugins/usage-tracking/src`, `plugins/adaptive-optimizer/tests`
 - **Gate**: e2e
 - acceptance:
   - "intents orient/plan/claim/progress/close/recover mapean a capabilities existentes"
   - "negotiation compara success/tokens/calls/latency/risk"
   - "detailed surface remains available"
-- review-state: changes_requested
+- review-state: done
 - review-implementer: falcon
-- review-reviewer: delivery-verifier-f00392-s1
+- review-reviewer: delivery-verifier-f00392-final
 - review-log: requested_changes by delivery-verifier-f00392-s1 — La facade reduce detailedSurface a name/summary y puede truncarla; la acceptance exige conservar la surface detallada completa. Proyectar todos los campos del contrato estable y cubrirlo con tests.
+- review-log: requested_changes by delivery-verifier-f00392-s1-r2 — La surface detallada ya conserva todos los campos, pero la tool aplica maxBytes implícito 16384 y puede truncar sin presupuesto explícito del llamador. Hacer el truncado opt-in o documentar/validar un contrato explícito, con test nominal sin truncado.
+- review-log: approved by delivery-verifier-f00392-final — Aprobada tras tercera verificación independiente. detailedSurface completa por defecto; maxBytes solo opt-in; intents, negociación y fallback cubiertos. 12/12 tests focalizados pass, validate exit 0, HEAD 8514f99.
 ### S2 — Provenance graph and generated documentation truth
 - **Status**: pending
 - **DependsOn**: [S1]
@@ -53,7 +55,10 @@ Completa la evolución orientada a agentes sin sustituir capacidades detalladas,
   - "redaction excludes user data"
   - "counts/lists generated from source of truth"
   - "drift check passes"
-
+- review-state: changes_requested
+- review-implementer: finch
+- review-reviewer: delivery-verifier-f00392-s2
+- review-log: requested_changes by delivery-verifier-f00392-s2 — La documentación de provenance usa TOOL_PATHS/TEST_PATHS/SAMPLE_GRAPH manuales y omite obs_health aunque el plugin registra cuatro tools. Derivar counts/lists desde el registry real y cubrir la discrepancia con tests.
 ### S3 — VS Code activation benchmark
 - **Status**: pending
 - **Files**: `extensions/vscode/src/benchmarks`, `extensions/vscode/src/test`, `extensions/vscode/package.json`
@@ -63,7 +68,10 @@ Completa la evolución orientada a agentes sin sustituir capacidades detalladas,
   - "onStartupFinished decision has threshold evidence"
   - "workspace no-MCP and MCP cases covered"
   - "lazy fallback documented"
-
+- review-state: changes_requested
+- review-implementer: sparrow
+- review-reviewer: delivery-verifier-f00392-s3
+- review-log: requested_changes by delivery-verifier-f00392-s3 — El benchmark es una simulación en Bun: no lanza extension host, no abre workspaces no-MCP/MCP ni mide activación real, memoria real o calls observadas. Añadir harness operativo reproducible y documentación explícita del lazy fallback.
 ## acceptance
 
 - intents orient/plan/claim/progress/close/recover mapean a capabilities existentes

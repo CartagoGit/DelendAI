@@ -231,7 +231,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		expect(title.length).toBeLessThanOrEqual(180);
 	});
 
-	it('renders safe DTO detail and opt-out instructions', () => {
+	it('renders safe DTO detail and opt-in instructions', () => {
 		const body = buildIssueBody(report);
 		expect(body).toContain('Automatic error report');
 		expect(body).toContain('PLUGIN_REGISTER_TIMEOUT');
@@ -240,7 +240,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		expect(body).toContain('EXAMPLE-001');
 		expect(body).toContain('Tool owner');
 		expect(body).not.toContain('Error: boom');
-		expect(body).toContain('"enabled": false');
+		expect(body).toContain('"enabled": true');
 	});
 });
 

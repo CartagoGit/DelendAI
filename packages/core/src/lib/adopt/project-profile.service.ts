@@ -89,14 +89,32 @@ const rootWorkspaceFrom = (
 	recommendedPluginIds: [...input.assessment.recommendedPluginIds],
 });
 
+const normalizeWorkspaceList = (
+	workspaces: readonly IProjectProfileWorkspace[],
+): readonly IProjectProfileWorkspace[] => {
+	const deduped = new Map<string, IProjectProfileWorkspace>();
+	for (const workspace of workspaces) {
+		if (workspace.path === '.') continue;
+		deduped.set(workspace.path, {
+			...workspace,
+			recommendedPluginIds: [...workspace.recommendedPluginIds],
+		});
+	}
+	return [...deduped.values()].sort((left, right) =>
+		left.path.localeCompare(right.path),
+	);
+};
+
 const mergeWorkspaces = (
 	rootWorkspace: IProjectProfileWorkspace,
 	existing: IProjectProfile | undefined,
+	discoveredWorkspaces: readonly IProjectProfileWorkspace[] | undefined,
 ): readonly IProjectProfileWorkspace[] => {
-	const preserved = (existing?.workspaces ?? []).filter(
-		(workspace) => workspace.path !== '.',
-	);
-	return [rootWorkspace, ...preserved];
+	const workspaces =
+		discoveredWorkspaces !== undefined
+			? normalizeWorkspaceList(discoveredWorkspaces)
+			: normalizeWorkspaceList(existing?.workspaces ?? []);
+	return [rootWorkspace, ...workspaces];
 };
 
 const loadProjectProfileAbsolute = async (
@@ -154,7 +172,11 @@ export const buildProjectProfile = (
 		signals: [...input.analysis.signals],
 		recommendedPresetId: input.assessment.recommendedPresetId,
 		recommendedPluginIds: [...input.assessment.recommendedPluginIds],
-		workspaces: mergeWorkspaces(rootWorkspaceFrom(input), input.existing),
+		workspaces: mergeWorkspaces(
+			rootWorkspaceFrom(input),
+			input.existing,
+			input.discoveredWorkspaces,
+		),
 	};
 };
 
@@ -187,6 +209,9 @@ export const persistProjectProfile = async (
 			assessment: input.assessment,
 			...(loaded.profile !== undefined
 				? { existing: loaded.profile }
+				: {}),
+			...(input.discoveredWorkspaces !== undefined
+				? { discoveredWorkspaces: input.discoveredWorkspaces }
 				: {}),
 			...(input.now !== undefined ? { now: input.now } : {}),
 		});

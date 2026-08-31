@@ -126,10 +126,20 @@ const buildSignals = (
 	};
 };
 
+const responseByteSize = (payload: unknown): number =>
+	Buffer.byteLength(JSON.stringify(payload), 'utf8');
+
 const finalizeOutput = (
 	raw: Omit<IAdaptiveFacadeOutput, 'bytes' | 'truncated'>,
-	maxBytes: number,
+	maxBytes?: number,
 ): IAdaptiveFacadeOutput => {
+	if (maxBytes === undefined) {
+		return {
+			...raw,
+			bytes: responseByteSize(raw),
+			truncated: false,
+		};
+	}
 	const direct = truncateIfTooLarge(raw, maxBytes);
 	if (!direct.truncated) {
 		return { ...raw, bytes: direct.finalBytes, truncated: false };

@@ -30,7 +30,7 @@
 		"git": {
 			"options": {
 				"allowForge": true,
-				"allowWrite": true,
+				"allowWrite": false,
 				"allowStash": false
 			}
 		},
@@ -225,21 +225,18 @@
 		"commit-policy": {
 			"options": {
 				"gitTimeoutMs": 60000,
-				"commit": { "enabled": true },
+				"commit": { "enabled": false },
 				"stash": { "enabled": false },
 				"push": {
-					"enabled": true,
-					"onCommit": true,
+					"enabled": false,
+					"onCommit": false,
 					"force": "with-lease",
 					"protectedBranches": ["main", "master"],
 					"remote": "origin",
 					"branch": "develop"
 				},
 				"cadence": {
-					"triggers": [
-						{ "kind": "slice" },
-						{ "kind": "interval", "minutes": 5 }
-					],
+					"triggers": [],
 					"sliceScoping": false,
 					"allowForeignChanges": true
 				},

@@ -270,8 +270,8 @@ export const buildObservedFailureHandler = (input: {
 };
 
 /**
- * Intrinsic, opt-out automatic error reporting. Ships in the `standard`
- * preset so every adopter is a live sensor for mcp-vertex bugs. The
+ * Explicit opt-in automatic error reporting. When enabled, the plugin
+ * observes tool-call failures so an adopter can report mcp-vertex bugs. The
  * plugin observes tool-call failures through the same lifecycle hook
  * the `logs` plugin uses; when a failure originates inside mcp-vertex,
  * it asynchronously opens (or de-duplicates) an issue on the target
@@ -282,7 +282,7 @@ export default definePlugin({
 	name: 'error-reporting',
 	version: '0.1.0',
 	describe:
-		'Intrinsic automatic error reporting: opens de-duplicated GitHub issues for mcp-vertex-internal failures. Enabled by default; opt out with options.enabled = false.',
+		'Explicit opt-in automatic error reporting: when options.enabled = true, opens de-duplicated GitHub issues for mcp-vertex-internal failures.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		registerInternalRuntimePaths(import.meta.url);
@@ -369,10 +369,10 @@ export default definePlugin({
 						title: 'error-reporting is disabled',
 						body: [
 							'`@mcp-vertex/error-reporting` is loaded but disabled',
-							'(`plugins.error-reporting.options.enabled = false`).',
+							'by default until explicit operator opt-in.',
 							'',
-							'Set it to `true` (or remove the option) to re-enable',
-							'automatic reporting of mcp-vertex-internal failures.',
+							'Set `plugins.error-reporting.options.enabled = true` to',
+							'enable automatic reporting of mcp-vertex-internal failures.',
 						].join('\n'),
 					},
 				],
