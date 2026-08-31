@@ -1182,3 +1182,23 @@
 
 	& h3 { margin: 0; font-size: 14px; font-weight: 600; }
 }
+
+.mcpv-status__ring {
+	display: grid;
+	gap: var(--mcpv-s-1);
+	padding: var(--mcpv-s-3);
+	background: var(--mcpv-bg-card);
+	border: 1px solid var(--mcpv-border);
+	border-radius: var(--mcpv-radius);
+	text-align: center;
+
+	& h4 {
+		margin: 0;
+		font-size: 12px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		color: var(--mcpv-fg-muted);
+	}
+
+	& svg { display: block; margin: 0 auto; width: 64px; height: 64px; color: var(--mcpv-fg); }
+}

@@ -14,6 +14,7 @@ import type { ILangDict } from '@mcp-vertex/shared/i18n';
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatMs, formatNumber } from './format';
 import { sparklinePath } from './sparkline';
+import { progressRing } from './progress-ring';
 
 const renderServerIdentity = (
 	model: IDashboardAllModels,
@@ -85,6 +86,14 @@ const renderKpis = (
 	text: (key: string, fallback: string) => string,
 ): string => {
 	const totals = model.overview.totals;
+	const tokensSavedPercent = Math.max(
+		0,
+		Math.min(100, totals.savingsPercent),
+	);
+	const tokensRingPath = progressRing(tokensSavedPercent, 100, 64);
+	const errorRate =
+		totals.calls > 0 ? Math.round((totals.errors / totals.calls) * 100) : 0;
+	const errorRingPath = progressRing(Math.min(errorRate, 100), 100, 64);
 	const cards: Array<{ label: string; value: string; hint: string }> = [
 		{
 			label: text('status.toolsLabel', 'Tools'),
@@ -117,7 +126,43 @@ const renderKpis = (
 			hint: text('dashboard.health.threshold', 'Threshold'),
 		},
 	];
+	const ringCard = (
+		title: string,
+		percent: number,
+		arc: string,
+		colour: string,
+		caption: string,
+	): string => `<article class="mcpv-status__ring">
+		<h4>${escapeHtml(title)}</h4>
+		<svg viewBox="0 0 64 64" class="mcpv-status__ring-svg" role="img" aria-label="${escapeHtml(title)}">
+			<circle cx="32" cy="32" r="28" stroke="var(--mcpv-bg-soft)" stroke-width="6" fill="none" />
+			${
+				arc.length > 0
+					? `<path d="${arc}" stroke="${colour}" stroke-width="6" fill="none" stroke-linecap="round" />`
+					: ''
+			}
+			<text x="32" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">${percent}%</text>
+		</svg>
+		<p class="mcpv-kpi__hint">${escapeHtml(caption)}</p>
+	</article>`;
 	return `<div class="mcpv-status__kpis">
+		${ringCard(
+			text('dashboard.tokens.savings', 'Savings'),
+			tokensSavedPercent,
+			tokensRingPath,
+			'var(--mcpv-brand-purple)',
+			text(
+				'dashboard.tokens.savedHint',
+				'Tokens saved vs compact:false baseline',
+			),
+		)}
+		${ringCard(
+			text('dashboard.metrics.totalErrors', 'Errors'),
+			errorRate,
+			errorRingPath,
+			'var(--mcpv-error)',
+			text('dashboard.metrics.totalErrors', 'Errors as % of total calls'),
+		)}
 		${cards
 			.map(
 				(card) => `<article class="mcpv-status__kpi">
