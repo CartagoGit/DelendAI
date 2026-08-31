@@ -471,14 +471,29 @@ const buildValidateRequiredEnvelope = () => ({
 	nextAction: 'bun run validate' as const,
 });
 
-const buildCodeError = (code: string, reason: string) => {
-	const envelope = {
+const buildCodeError = (
+	code: string,
+	reason: string,
+	nextAction?: string,
+	fix?: string,
+) => {
+	const envelope: {
+		ok: false;
+		error: {
+			code: string;
+			reason: string;
+			nextAction?: string;
+			fix?: string;
+		};
+	} = {
 		ok: false as const,
 		error: {
 			code,
 			reason,
 		},
 	};
+	if (nextAction !== undefined) envelope.error.nextAction = nextAction;
+	if (fix !== undefined) envelope.error.fix = fix;
 	return {
 		content: [
 			{
@@ -736,7 +751,12 @@ export const runProposalTransition = async (
 				: (parseFrontmatterBlock(yamlBlock) as Record<string, unknown>);
 		const shippedInGuard = guardShippedInPresent(frontmatter);
 		if (!shippedInGuard.ok) {
-			return buildCodeError(shippedInGuard.code, shippedInGuard.reason);
+			return buildCodeError(
+				shippedInGuard.code,
+				shippedInGuard.reason,
+				shippedInGuard.nextAction,
+				shippedInGuard.fix,
+			);
 		}
 	}
 
