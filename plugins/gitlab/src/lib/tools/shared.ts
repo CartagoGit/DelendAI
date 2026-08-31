@@ -7,6 +7,7 @@ import { toolError, toolJson } from '@mcp-vertex/core/public';
 
 import { GitLabRequestError } from '../client';
 import type { IGitLabProviderContext } from '../config';
+import type { createGitLabHttpClient } from '../client';
 
 const OBJECT_SCHEMA = z.object({}).passthrough();
 const ARRAY_SCHEMA = z.array(OBJECT_SCHEMA);
