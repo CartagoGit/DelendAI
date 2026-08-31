@@ -168,8 +168,8 @@ const createSliceHandler = (repo: ITempGitRepo, delivered: ITriggerEvent[]) => {
 		delivered.push(event);
 		const result = await engine.handle({
 			kind: 'slice',
-			proposalId: event.proposalId,
-			sliceId: event.sliceId,
+			proposalId: event.proposalId ?? '',
+			sliceId: event.sliceId ?? '',
 			files: event.files?.paths ?? [],
 			eventId: computeSliceTriggerEventId(event),
 		});

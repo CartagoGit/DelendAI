@@ -819,6 +819,9 @@ const executeGuardedCommit = async (
 		enforceSubset:
 			input.triggerContext !== undefined ||
 			(scopeSliceCommit && input.sliceContext !== undefined),
+		workspaceRoot: options.workspaceRoot,
+		branch: branchName,
+		gitTimeoutMs: options.policy.gitTimeoutMs,
 	});
 	if (!result.committed) {
 		return result;
