@@ -23,10 +23,9 @@ const workspaces: string[] = [];
 const createQualityServer = async (command: string) => {
 	const workspace = mkdtempSync(join(tmpdir(), 'proposals-quality-e2e-'));
 	workspaces.push(workspace);
-	const qualityScript = 'bun tools/scripts/quality/run-quality.script.ts';
 	const config = JSON.stringify({
 		plugins: {
-			quality: { options: { scopes: { all: [qualityScript] } } },
+			quality: { options: { scopes: { all: [command] } } },
 			proposals: { options: { requirePeerReview: false } },
 		},
 	});
@@ -65,28 +64,15 @@ const createQualityServer = async (command: string) => {
 };
 
 const seedSlice = (workspace: string, id: string): string => {
-	const proposalDir = join(
-		workspace,
-		'docs/mcp-vertex/proposals/in-progress',
-	);
+	const proposalDir = join(workspace, 'docs/mcp-vertex/proposals/ready');
 	mkdirSync(proposalDir, { recursive: true });
 	const proposalPath = join(proposalDir, `${id}-quality.md`);
 	writeFileSync(
 		proposalPath,
-		`---\nid: ${id}\nstatus: in-progress\ntype: proposal\ntrack: plugins/proposals+tests\ndate: 2026-08-31\nkind: feat\ntitle: quality gate\n---\n\n# ${id} — quality gate\n\n## goal\n\nExercise the quality gate.\n\n## Slices\n\n- global_gate: none\n\n### S1 — quality gate\n- **Status**: pending\n- **Files**: \`src/quality.ts\`\n- **Gate**: none\n`,
+		`---\nid: ${id}\nstatus: ready\ntype: proposal\ntrack: plugins/proposals+tests\ndate: 2026-08-31\nkind: feat\ntitle: quality gate\n---\n\n# ${id} — quality gate\n\n## goal\n\nExercise the quality gate.\n\n## Slices\n\n- global_gate: none\n\n### S1 — quality gate\n- **Status**: pending\n- **Files**: \`src/quality.ts\`\n- **Gate**: none\n`,
 		'utf8',
 	);
 	return proposalPath;
-};
-
-const recentValidateEvidence = (workspace: string) => {
-	const logPath = join(workspace, 'validate.log');
-	writeFileSync(logPath, 'validate passed\n', 'utf8');
-	return {
-		timestamp: new Date().toISOString(),
-		exitCode: 0,
-		logPath,
-	};
 };
 
 afterEach(async () => {
@@ -115,6 +101,13 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				},
 			});
 			expect(claim.isError).toBeFalsy();
+			const quality = await client.callTool({
+				name: 'mcp-vertex_quality_quality_run_all',
+				arguments: {},
+			});
+			expect(quality.structuredContent).toMatchObject({
+				summary: { ok: false },
+			});
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
@@ -157,6 +150,14 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				},
 			});
 			expect(claim.isError).toBeFalsy();
+			const quality = await client.callTool({
+				name: 'mcp-vertex_quality_quality_run_all',
+				arguments: {},
+			});
+			expect(quality.isError).toBeFalsy();
+			expect(quality.structuredContent).toMatchObject({
+				summary: { ok: true },
+			});
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
