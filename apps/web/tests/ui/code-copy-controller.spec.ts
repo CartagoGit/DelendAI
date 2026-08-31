@@ -36,7 +36,7 @@ const makeButton = (text: string): FakeButton => {
 	return button;
 };
 
-const installDom = (button: FakeButton) => {
+const installDom = (_button: FakeButton) => {
 	const previousNavigator = Object.getOwnPropertyDescriptor(
 		globalThis,
 		'navigator',
