@@ -76,12 +76,14 @@ describe('renderToolDetail (shared)', () => {
 			},
 			copy: {
 				...DEFAULT_TOOL_DETAIL_COPY,
+				calls: 'llamadas',
 				callSingular: 'llamada',
+				errorSingular: 'error',
 				errors: 'errores',
 				max: 'máx',
 			},
 		});
-		expect(html).toContain('2 llamada');
+		expect(html).toContain('2 llamadas');
 		expect(html).toContain('0 errores');
 		expect(html).toContain('máx 30ms');
 	});

@@ -441,13 +441,30 @@ const loadDeliveredSet = async (sidecarPath: string): Promise<Set<string>> => {
  * `@mcp-vertex/proposals/src/index.ts` overrides this once per boot so every
  * process tracks its own identity without leaking into other hosts.
  */
-export const resolveCallerSession = (): { host: string; pid: number } =>
-	resolveCallerSessionImpl();
+export const resolveCallerSession = (): { host: string; pid: number } => {
+	const override = callerSessionOverrideForTests();
+	if (override !== undefined) return override;
+	return resolveCallerSessionImpl();
+};
 
 const resolveCallerSessionImpl = (): { host: string; pid: number } => ({
 	host: hostname(),
 	pid: process.pid,
 });
+
+let callerSessionOverride:
+	| (() => { host: string; pid: number } | undefined)
+	| undefined;
+
+export const callerSessionOverrideForTests = ():
+	| { host: string; pid: number }
+	| undefined => callerSessionOverride?.();
+
+export const overrideCallerSessionForTests = (
+	factory?: () => { host: string; pid: number } | undefined,
+): void => {
+	callerSessionOverride = factory;
+};
 
 /**
  * Release every subscription lease owned by the caller process.
