@@ -7,11 +7,11 @@ import {
 	type IToolDescriptor,
 	type IToolEffect,
 } from '@mcp-vertex/client';
+import { renderToolDetailHtml } from '@mcp-vertex/ui-extension/webview';
 import type { IToolDetail } from '@mcp-vertex/ui-extension/webview';
 import type { IToolDetailCopy } from '@mcp-vertex/ui-extension/webview';
 
 import type { IRenderableSchema } from '../views/render-output-schema';
-import { renderToolDetailHtml } from '../views/tool-detail-webview';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 import { OPEN_TOOL_DETAIL_COMMAND } from '../contracts/constants/open-tool-detail-command.constant';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
@@ -147,7 +147,7 @@ export const buildToolDetailHtml = async (
 			),
 		),
 	};
-	return { html: renderToolDetailHtml(model), model };
+	return { html: renderSharedToolDetailHtml(model), model };
 };
 
 /**
