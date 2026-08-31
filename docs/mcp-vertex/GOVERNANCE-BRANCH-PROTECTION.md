@@ -17,11 +17,8 @@ Required protection for `main`:
 
 1. `required_status_checks.strict: true`
 2. Required checks:
-    - `quality-gate`
-    - `tests`
-    - `tokens`
-    - `governance`
-    - `security`
+   - `ci-complete` (full CI matrix)
+   - `release-pr-gate` (typecheck + lint re-run, mirrors the local pre-push gate)
 3. `enforce_admins: true`
 4. `required_linear_history: true`
 5. `allow_force_pushes: false`
@@ -71,7 +68,7 @@ For `main`, configure:
 
 - **Require status checks to pass before merging:** ON
 - **Require branches to be up to date before merging:** ON
-- **Required status checks:** `quality-gate`, `tests`, `tokens`, `governance`, `security`
+- **Required status checks:** `ci-complete`, `release-pr-gate`
 - **Require linear history:** ON
 - **Allow force pushes:** OFF
 - **Allow deletions:** OFF
@@ -170,6 +167,21 @@ If the verifier reports drift immediately after a UI change:
 If the verifier reports an auth or rate-limit problem, that is not policy drift;
 it means the verification run itself lacked enough GitHub API access to assert
 the repository state.
+
+## Release-branch discipline
+
+Ramas `release/{patch|minor|major}/{kebab-slug}` se tratan igual que `main`:
+
+- Push directo a `release/*` o `main` está bloqueado localmente por
+   `tools/scripts/lint/push-to-develop-discipline.script.ts` y por
+   `tools/scripts/lint/release-pr-gate.script.ts`.
+- Push desde `release/*` hacia cualquier destino que no sea `main` está
+   bloqueado (release no anida ni se mergea a develop directamente).
+- El gate `release-pr-gate` corre en `lefthook` (pre-push) **bloqueante**
+   para `release/*` y `main`, y vuelve a correr en CI como
+   `.github/workflows/release-pr-gate.yml`.
+
+Bypass de emergencia: `LEFTHOOK_BYPASS=1 git push …`. CI re-confirma.
 
 ## Related
 
