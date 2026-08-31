@@ -53,6 +53,7 @@ export function buildHeader(
 	return renderHeaderBar({
 		brandName: 'mcp-vertex',
 		version: `${escapeHtml(model.server.version)} · ${escapeHtml(model.server.name)}`,
+		direction: rtlLangs.includes(settings.language) ? 'rtl' : 'ltr',
 		actions: `${renderLangPicker(settings.language)}${renderThemeSwitcher(settings.theme)}`,
 	});
 }
