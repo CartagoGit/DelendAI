@@ -1225,14 +1225,6 @@ const registerDashboardSurfaces = async (
 				{},
 		}),
 	);
-	const kpiRegistration = registerKpiDashboardProvider({
-		host,
-		client,
-		serverConfigured,
-		viewId: KPI_VIEW_ID,
-		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
-	});
-	track({ dispose: kpiRegistration.dispose });
 	const dashboardProvider = new DashboardWebviewViewProvider({
 		host,
 		client,
@@ -1244,20 +1236,21 @@ const registerDashboardSurfaces = async (
 		...withPrefix,
 	});
 	dashboardRefresh.current = dashboardProvider;
-	const dashboardDetailBroker = dashboardProvider.getDetailBroker();
-	const _detailSink = (async (kind: 'tool' | 'proposal', model: unknown) => {
-		if (kind === 'tool') {
-			return dashboardDetailBroker.push({ kind, model });
-		}
-		return dashboardDetailBroker.push({ kind, model });
-	}) as unknown as NonNullable<
-		Parameters<typeof registerOpenToolDetailCommand>[0]['detailSink']
-	>;
 	const dashboardRegistration = host.registerWebviewViewProvider?.(
 		DASHBOARD_VIEW_ID,
 		dashboardProvider,
 	);
 	if (dashboardRegistration !== undefined) track(dashboardRegistration);
+	// Secondary panels are registered only after the canonical dashboard.
+	// A failure in KPI wiring must never make the main web app disappear.
+	const kpiRegistration = registerKpiDashboardProvider({
+		host,
+		client,
+		serverConfigured,
+		viewId: KPI_VIEW_ID,
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	});
+	track({ dispose: kpiRegistration.dispose });
 	void vscode;
 };
 
