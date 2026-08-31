@@ -17,7 +17,10 @@ import { createGitRunner } from '../shared/git-runner';
 import { runBranchStatusEngine } from '../shared/branch-status-engine';
 import { runBranchGcEngine } from '../shared/branch-gc-engine';
 import { runSwarmHygieneEngine } from '../shared/swarm-hygiene-engine';
-import type { IRescueCandidate } from '../contracts/interfaces/swarm-hygiene.interface';
+import type {
+	IRescueCandidate,
+	ISmokeResidualBranch,
+} from '../contracts/interfaces/swarm-hygiene.interface';
 import { runStashSnapshot, type IStashEntry } from '../shared/stash-snapshot';
 import { detectAgentLoop, type IToolCall } from '../agents/agent-loop-detector';
 import { hasPeerApprovedReview } from '../swarm/proposal-review';
@@ -547,6 +550,7 @@ export const runAutoWork = async (
 				: {}),
 			stashes: [...hygiene.stashes],
 			rescueCandidates: [...hygiene.rescueCandidates],
+			smokeResiduals: [...hygiene.smokeResiduals],
 			blockers: [...hygiene.hygieneBlockers],
 			nextAction:
 				'Resolve the hygiene blockers above (pop stashes, cherry-pick rescue branches, or pass forceHygieneBypass:true) and call auto_work again. The slice-selection cascade was NOT run.',
@@ -1206,9 +1210,13 @@ export const collectHygieneFrontHook = async (
 			runStashSnapshot({ run, workspaceRoot }),
 		]);
 		const rescueCandidates = hygiene.ok ? hygiene.rescueCandidates : [];
+		const smokeResiduals = hygiene.ok ? hygiene.smokeResiduals : [];
 		const gcEligible = hygiene.ok ? hygiene.gcEligible : [];
 		const outOfCache = hygiene.ok ? hygiene.outOfCache : [];
 
+		// R-2026-08-31: smoke-residuals do NOT count as rescue-candidate
+		// blockers. They are surfaced on the response so the operator
+		// can prune them, but they never gate the cascade.
 		const rescueBlocked = rescueCandidates.length > 0;
 		const stashBlocked = stashes.length > 0;
 		const executionMode: IHygieneFrontHook['executionMode'] =
@@ -1223,7 +1231,10 @@ export const collectHygieneFrontHook = async (
 			...stashBlockersFor(stashes),
 		];
 		const hygieneActions = gcActionsFor(gcEligible);
-		const hygieneWarnings = outOfCacheWarningsFor(outOfCache);
+		const hygieneWarnings = [
+			...outOfCacheWarningsFor(outOfCache),
+			...smokeResidualWarningsFor(smokeResiduals),
+		];
 
 		return {
 			executionMode,
@@ -1231,6 +1242,7 @@ export const collectHygieneFrontHook = async (
 			hygieneActions,
 			hygieneWarnings,
 			rescueCandidates,
+			smokeResiduals,
 			gcEligibleCount: gcEligible.length,
 			outOfCacheCount: outOfCache.length,
 			stashes,
