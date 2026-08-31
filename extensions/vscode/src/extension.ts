@@ -661,7 +661,7 @@ export const activate = async (
 		track,
 		dashboardRefresh,
 	);
-	void dashboardRegistration.catch(async (error: unknown) => {
+	await dashboardRegistration.catch(async (error: unknown) => {
 		const message = error instanceof Error ? error.message : String(error);
 		runtimeChannel?.append(`Dashboard registration failed: ${message}\n`);
 		await vscode.window.showErrorMessage?.(
