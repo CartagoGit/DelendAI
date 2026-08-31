@@ -78,7 +78,9 @@ describe('token-budget dashboard publication', () => {
 	});
 
 	it('renders the reproducible task_context_cost block with the fixed published values', {
-		timeout: 30_000,
+		// The project-wide ceiling in `tools/vitest.config.ts` applies; a
+		// narrower per-test timeout here made a busy machine look like a hang.
+		timeout: 120_000,
 	}, async () => {
 		const measurement = await measurementPromise;
 		const addendum = renderCatalogAndTaskContextMarkdown(measurement);
@@ -93,7 +95,9 @@ describe('token-budget dashboard publication', () => {
 	});
 
 	it('publishes the task_context_cost addendum from the dashboard generator output', {
-		timeout: 30_000,
+		// The project-wide ceiling in `tools/vitest.config.ts` applies; a
+		// narrower per-test timeout here made a busy machine look like a hang.
+		timeout: 120_000,
 	}, async () => {
 		const [measurement, dashboardMarkdown] = await Promise.all([
 			measurementPromise,
@@ -105,7 +109,9 @@ describe('token-budget dashboard publication', () => {
 	});
 
 	it('keeps the published token budget artifact aligned with the generated addendum', {
-		timeout: 30_000,
+		// The project-wide ceiling in `tools/vitest.config.ts` applies; a
+		// narrower per-test timeout here made a busy machine look like a hang.
+		timeout: 120_000,
 	}, async () => {
 		const measurement = await measurementPromise;
 		const addendum = renderCatalogAndTaskContextMarkdown(measurement);
