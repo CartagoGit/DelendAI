@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import z from 'zod';
@@ -700,7 +700,7 @@ const writeJsonWithinCache = async (
 			'github artifact path must stay inside the plugin cache dir',
 		);
 	await mkdir(resolve(target, '..'), { recursive: true });
-	await writeFile(target, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+	await writeFileAtomic(target, `${JSON.stringify(value, null, 2)}\n`);
 	return target;
 };
 const queryFrom = (args: {
