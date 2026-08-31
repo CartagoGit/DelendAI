@@ -2,11 +2,8 @@
 	"servers": {
 		"mcp-vertex": {
 			"type": "stdio",
-			"command": "bun",
-			"args": [
-				"tools/scripts/host/host-server.script.ts",
-				"--workspace=${workspaceFolder}"
-			]
+			"command": "npx",
+			"args": ["-y", "@mcp-vertex/core", "--preset=standard"]
 		}
 	}
 }

@@ -2212,6 +2212,14 @@
 				"date": ""
 			},
 			{
+				"id": "f00394",
+				"title": "f00394",
+				"track": "vscode-shared-ui",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "f00395",
 				"title": "f00395",
 				"track": "general",
@@ -2254,6 +2262,14 @@
 			{
 				"id": "f00414",
 				"title": "f00414",
+				"track": "scaffolding+agents+error-reporting",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00415",
+				"title": "f00415",
 				"track": "remote-ci-diagnostics",
 				"status": "ready",
 				"kind": "feat",
@@ -2645,8 +2661,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 158,
-			"in-progress": 14,
+			"ready": 159,
+			"in-progress": 15,
 			"review": 0,
 			"paused": 1,
 			"done": 566,
