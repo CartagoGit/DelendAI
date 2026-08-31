@@ -8,6 +8,7 @@ import {
 	type IToolEffect,
 } from '@mcp-vertex/client';
 import type { IToolDetail } from '@mcp-vertex/ui-extension/webview';
+import type { IToolDetailCopy } from '@mcp-vertex/ui-extension/webview';
 
 import type { IRenderableSchema } from '../views/render-output-schema';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
@@ -155,7 +156,7 @@ export const buildToolDetailHtml = async (
  * the subset we need so the dashboard shell can render the same
  * detail without importing VS Code vocabulary.
  */
-const projectToolDetailCopy = (copy: IViewCopy): IToolDetail['copy'] => ({
+const projectToolDetailCopy = (copy: IViewCopy): IToolDetailCopy => ({
 	lang: copy.lang,
 	knowledge: copy.knowledge,
 	inputSchema: copy.inputSchema,
