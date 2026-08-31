@@ -166,6 +166,25 @@ describe('renderPanelStatus', () => {
 		expect(html).toContain('mcpv-status__ring');
 		expect(html).toContain('mcpv-status__ring-svg');
 		expect(html).toMatch(/stroke="var\(--mcpv-brand-purple\)"/);
+		// The default fixture has zero errors so the error ring stays empty.
+		// Assert the ring container is present even if the arc is skipped.
+		expect(html).toContain('mcpv-status__ring');
+	});
+
+	it('renders the full error ring when error rate > 0', () => {
+		const html = renderPanelStatus(
+			{
+				...fixture,
+				overview: {
+					...fixture.overview,
+					totals: {
+						...fixture.overview.totals,
+						errors: 6,
+					},
+				},
+			},
+			dictsByLang.en,
+		);
 		expect(html).toMatch(/stroke="var\(--mcpv-error\)"/);
 	});
 
