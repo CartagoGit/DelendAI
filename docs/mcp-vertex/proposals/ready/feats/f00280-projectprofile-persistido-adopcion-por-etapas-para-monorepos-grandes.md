@@ -140,13 +140,14 @@ adoptProject (ya existe, sin romper su contrato)
 - review-log: approved by delivery-verifier-f00280-s1-final — Verified independently: 1) packages/core/src/lib/adopt/adopt-project.tool.ts now calls discoverProjectProfileWorkspaces when projectType==='monorepo'; 2) packages/core/src/lib/adopt/project-profile.service.ts accepts discoveredWorkspaces in both IBuildProjectProfileInput and IPersistProjectProfileInput, normalizes paths via pathPosix, dedupes, and replaces existing workspaces with the discovered set (reconciliation). 3) Focused tests pass 5/5 covering: dedup of trailing slashes / windows separators / dedup of identical paths, initial discovery populating 3 workspaces from a monorepo fixture, reconciliation removing stale apps/old in favor of newly discovered entries, and deep pattern bounding (depth>32 excluded). 4) Core typecheck green. Acceptance now covered.
 ### S2 — Desglose por área/workspace dentro de un monorepo
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/adopt/adoption-assessment.service.ts`, `packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts`
-- review-state: changes_requested
-- review-implementer: copilot-orchestrator
-- review-reviewer: proposal-guardian-f00280-s2
+- review-state: done
+- review-implementer: copilot-orchestrator-f00280-s2-verify
+- review-reviewer: delivery-verifier-f00280-s2-verify
 - review-log: requested_changes by proposal-guardian-f00280-s2 — No hay implementación ni test verificable de desglose de monorepos tras dos delegaciones. La acceptance exige comportamiento para monorepos heterogéneos y un guardarraíl homogéneo; debe reconstruirse antes de aprobar.
+- review-log: approved by delivery-verifier-f00280-s2-verify — Verified independently: S2 implementation present in commit 770a5c83 (feat(adopt): break down assessment by workspace area). Tests pass 2/2: bunx vitest run packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts. Files match proposal: packages/core/src/lib/adopt/adoption-assessment.service.ts (modified), packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts (new). Acceptance covered.
 ### S3 — Adopción por etapas: cuatro perfiles de instalación incremental
 
 - **Status**: pending
