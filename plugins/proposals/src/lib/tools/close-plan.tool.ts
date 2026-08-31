@@ -51,7 +51,7 @@ export interface IClosePlanArgs {
 	readonly reason?: string | undefined;
 }
 
-const CLOSE_PLAN_INPUT_SCHEMA = z.object({
+export const CLOSE_PLAN_INPUT_SCHEMA = z.object({
 	planId: z.string().min(1).optional(),
 	proposalId: z.string().min(1).optional(),
 	dryRun: z.boolean().optional(),
@@ -70,7 +70,7 @@ const CLOSE_PLAN_INPUT_SCHEMA = z.object({
 // attempt) — into one strict object whose variant fields are optional.
 // Handlers still emit exactly one shape or the other, and `strict()` keeps
 // the envelope honest.
-const CLOSE_PLAN_OUTPUT_SCHEMA = z
+export const CLOSE_PLAN_OUTPUT_SCHEMA = z
 	.object({
 		dryRun: z.boolean(),
 		// preflight-preview variant

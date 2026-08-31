@@ -25,6 +25,10 @@ import {
 	AGENT_WORKTREE_INPUT_SCHEMA,
 	AGENT_WORKTREE_OUTPUT_SCHEMA,
 } from '../tools/agent-worktree.tool';
+import {
+	CLOSE_PLAN_INPUT_SCHEMA,
+	CLOSE_PLAN_OUTPUT_SCHEMA,
+} from '../tools/close-plan.tool';
 import { PROPOSAL_TRANSITION_INPUT_SCHEMA } from '../contracts/proposal-transition-input.contract';
 import { PROPOSAL_TRANSITION_OUTPUT_SCHEMA } from '../tools/proposal-transition.tool';
 import {
@@ -50,6 +54,15 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 			inputSchema: PROPOSAL_TRANSITION_INPUT_SCHEMA,
 			outputSchema: PROPOSAL_TRANSITION_OUTPUT_SCHEMA,
 			summary: 'Move a proposal to a new status against the DFA.',
+		}),
+		describeStableTool({
+			name: 'proposals_close_plan',
+			plugin: 'proposals',
+			sinceVersion: MCP_VERTEX_VERSION,
+			semverGuarantee: 'additive-only',
+			inputSchema: CLOSE_PLAN_INPUT_SCHEMA,
+			outputSchema: CLOSE_PLAN_OUTPUT_SCHEMA,
+			summary: 'Close a plan proposal after checking every blocker.',
 		}),
 		describeStableTool({
 			name: 'proposal_create',

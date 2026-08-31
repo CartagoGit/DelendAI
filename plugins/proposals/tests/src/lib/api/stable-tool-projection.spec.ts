@@ -30,6 +30,24 @@ describe('stable-tool projection — v00133 S2', () => {
 		expect(result.value).toEqual(PROPOSALS_STABLE_TOOL_SURFACE);
 	});
 
+	it('keeps proposals_close_plan serializable with a non-null outputSchema', () => {
+		const closePlan = surfaceRows().find(
+			(row) => row.name === 'proposals_close_plan',
+		) as
+			| (IStableManifestTool & {
+					outputSchema?: {
+						type?: string;
+						properties?: Record<string, unknown>;
+					};
+			  })
+			| undefined;
+
+		expect(closePlan).toBeDefined();
+		expect(closePlan?.outputSchema).not.toBeNull();
+		expect(closePlan?.outputSchema?.type).toBe('object');
+		expect(closePlan?.outputSchema?.properties).toHaveProperty('dryRun');
+	});
+
 	it('runs over the serializable detailed surface, not the internal descriptors', () => {
 		const rows = surfaceRows();
 		expect(rows.length).toBe(PROPOSALS_STABLE_TOOL_SURFACE.length);
