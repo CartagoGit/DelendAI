@@ -12,6 +12,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import {
+	createInMemoryHandleStore,
+	type IHandleStore,
+} from '@mcp-vertex/core/public';
 import { createFakeToolServer, fakePartial } from '@mcp-vertex/test-kit/public';
 
 import { buildInvokeRegistration } from '../../../../src/lib/tools/invoke.tool';
@@ -29,6 +33,7 @@ interface IHandlerResult {
 type ToolHandler = (args: {
 	task: string;
 	detail?: 'compact' | 'normal' | 'full';
+	maxBytes?: number;
 }) => Promise<IHandlerResult>;
 
 const jsonSchemaBytesOf = (schema: unknown): number => {
@@ -94,7 +99,15 @@ const outputFixture = (): IInvokeOutput => ({
 	userMessage: 'done',
 });
 
-const capture = async (): Promise<{
+const capture = async (
+	options: {
+		readonly resultHandleStore?: IHandleStore<
+			NonNullable<IInvokeOutput['result']>
+		>;
+		readonly resultHandleTtlMs?: number;
+		readonly resultHandleMaxBytes?: number;
+	} = {},
+): Promise<{
 	readonly outputSchema: unknown;
 	readonly handler: ToolHandler;
 }> => {
@@ -112,6 +125,7 @@ const capture = async (): Promise<{
 		manager: fakePartial<InvocationManager>({
 			invoke: async () => outputFixture(),
 		}),
+		...options,
 	});
 	await registration.register(server);
 	if (handler === undefined) throw new Error('handler was not registered');
@@ -191,5 +205,39 @@ describe('invoke tool', () => {
 			kind: 'cli',
 			command: 'run-fast',
 		});
+	});
+
+	it('returns a bounded resultArtifact handle when maxBytes truncates the execution result', async () => {
+		const store =
+			createInMemoryHandleStore<NonNullable<IInvokeOutput['result']>>();
+		const { handler } = await capture({
+			resultHandleStore: store,
+			resultHandleTtlMs: 1_000,
+		});
+		const result = await handler({ task: 'Do the task', maxBytes: 64 });
+		expect(result.structuredContent?.level).toBe('compact');
+		expect(result.structuredContent?.result).toBeNull();
+		expect(result.structuredContent?.resultProjection).toEqual({
+			maxBytes: 64,
+			emittedBytes: 0,
+			truncated: true,
+			truncatedByBytes: true,
+			truncatedByLimit: false,
+		});
+		const artifact = result.structuredContent?.resultArtifact as
+			| {
+					readonly handleId: string;
+					readonly viewerToken: string;
+			  }
+			| undefined;
+		expect(artifact).toBeDefined();
+		const read = store.get(
+			artifact?.handleId ?? '',
+			artifact?.viewerToken ?? '',
+		);
+		expect(read.status).toBe('ok');
+		if (read.status === 'ok') {
+			expect(read.value).toEqual(outputFixture().result);
+		}
 	});
 });

@@ -9,9 +9,12 @@
  */
 import {
 	compactOutputSchema,
+	projectValue,
 	projectDetail,
 	toolJson,
 	type DetailProjections,
+	type IArtifactHandle,
+	type IHandleStore,
 	type IRoutingDecision,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
@@ -23,6 +26,11 @@ import { CapabilityTagSchema } from '../schemas';
 export interface IInvokeToolOptions {
 	readonly namespacePrefix: string;
 	readonly manager: InvocationManager;
+	readonly resultHandleStore?: IHandleStore<
+		NonNullable<IInvokeOutput['result']>
+	>;
+	readonly resultHandleTtlMs?: number;
+	readonly resultHandleMaxBytes?: number;
 }
 
 type TDetailLevel = 'compact' | 'normal' | 'full';
@@ -66,6 +74,10 @@ type IInvokeCompactView = Omit<IInvokeOutput, 'decision'> & {
 type IInvokeNormalView = Omit<IInvokeOutput, 'decision'> & {
 	readonly decision: IRoutingDecisionNormalView;
 };
+
+interface IInvokeResultArtifact extends IArtifactHandle {
+	readonly projectedBytes: number;
+}
 
 const DetailSchema = z.enum(['compact', 'normal', 'full']);
 
@@ -133,6 +145,7 @@ const InputSchema = z.object({
 	timeoutMs: z.number().int().min(1).optional(),
 	fallbackStrategy: z.enum(['rerank', 'tier-down']).optional(),
 	detail: DetailSchema.optional(),
+	maxBytes: z.number().int().min(1).optional(),
 });
 
 export const buildInvokeRegistration = (
@@ -148,7 +161,7 @@ export const buildInvokeRegistration = (
 			`${options.namespacePrefix}_invoke`,
 			{
 				description:
-					"Execute a task on the best-scored provider and return its structured result. Plans a fallback chain (rerank|tier-down), enforces a wall-clock timeout that fires the per-kind cancellation ladder, and — CRITICAL SAFETY — never spends the user's API money unless executeApi is on AND a one-time signed confirmation token (from an MCP elicitation) authorises THAT invocation. With executeApi:false, api/cli routes return an 'execution-disabled' error and a handoff instead of spending. Pass detail:'compact'|'normal'|'full' to control only the embedded routing decision: compact (default) keeps the chosen route lean, normal adds alternate summaries plus the scoring trace, and full restores the legacy full decision payload. The execution result itself is unchanged across levels.",
+					"Execute a task on the best-scored provider and return its structured result. Plans a fallback chain (rerank|tier-down), enforces a wall-clock timeout that fires the per-kind cancellation ladder, and — CRITICAL SAFETY — never spends the user's API money unless executeApi is on AND a one-time signed confirmation token (from an MCP elicitation) authorises THAT invocation. With executeApi:false, api/cli routes return an 'execution-disabled' error and a handoff instead of spending. Pass detail:'compact'|'normal'|'full' to control only the embedded routing decision: compact (default) keeps the chosen route lean, normal adds alternate summaries plus the scoring trace, and full restores the legacy full decision payload. Pass maxBytes to bound the returned execution result; when a handle store is configured, oversized results also include a bounded resultArtifact handle for follow-up chaining.",
 				inputSchema: InputSchema,
 				// v00130 (AUD-B01): `InvokeOutputSchema` (the full, exported
 				// Zod shape) is not used as a runtime response validator
@@ -190,8 +203,49 @@ export const buildInvokeRegistration = (
 					INVOKE_DETAIL_PROJECTIONS,
 					level,
 				) as IInvokeCompactView | IInvokeNormalView | IInvokeOutput;
+				if (args.maxBytes === undefined || view.result === undefined) {
+					return toolJson({
+						...view,
+						level,
+					});
+				}
+				const resultProjection = projectValue(view.result, {
+					mode: 'full',
+					maxBytes: args.maxBytes,
+				});
+				let resultArtifact: IInvokeResultArtifact | null = null;
+				if (
+					resultProjection.truncatedByBytes &&
+					options.resultHandleStore !== undefined
+				) {
+					const handle = options.resultHandleStore.open(view.result, {
+						...(options.resultHandleTtlMs !== undefined
+							? { ttlMs: options.resultHandleTtlMs }
+							: {}),
+						...(options.resultHandleMaxBytes !== undefined
+							? { maxBytes: options.resultHandleMaxBytes }
+							: {}),
+						label: 'orchestrator-runner.invoke.result',
+					});
+					resultArtifact = Object.freeze({
+						...handle,
+						projectedBytes: Buffer.byteLength(
+							JSON.stringify(view.result),
+							'utf8',
+						),
+					});
+				}
 				return toolJson({
 					...view,
+					result: resultProjection.value as IInvokeOutput['result'],
+					resultProjection: {
+						maxBytes: args.maxBytes,
+						emittedBytes: resultProjection.emittedBytes,
+						truncated: resultProjection.truncated,
+						truncatedByBytes: resultProjection.truncatedByBytes,
+						truncatedByLimit: resultProjection.truncatedByLimit,
+					},
+					...(resultArtifact !== null ? { resultArtifact } : {}),
 					level,
 				});
 			},
