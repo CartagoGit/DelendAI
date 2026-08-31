@@ -3,7 +3,7 @@
  * central orchestrator that every trigger dispatches through.
  */
 
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -18,7 +18,10 @@ import {
 	createCommitPolicyEngine,
 	type IEngineEvent,
 } from '@mcp-vertex/commit-policy/lib/engine';
-import { createProcessedEventsStore } from '@mcp-vertex/commit-policy/lib/processed-events';
+import {
+	computeIdempotencyKey,
+	createProcessedEventsStore,
+} from '@mcp-vertex/commit-policy/lib/processed-events';
 
 let workspace = '';
 
@@ -645,6 +648,86 @@ describe('CommitPolicyEngine (f00182)', () => {
 		// short-circuits before staging.
 		expect(commitCount).toBe(1);
 		await store.dispose();
+		await engine.dispose();
+	});
+
+	it('allows an expired marker to be processed again', async () => {
+		const event: IEngineEvent = {
+			kind: 'manual',
+			message: 'feat: process expired marker',
+			files: ['only-this.ts'],
+			eventId: 'expired-1',
+		};
+		const store = createProcessedEventsStore({
+			workspaceRoot: workspace,
+			ttlMs: 1_000,
+		});
+		await store.add(
+			computeIdempotencyKey(event),
+			'old-sha',
+			Date.now() - 2_000,
+		);
+		const calls: string[] = [];
+		const runner: IGitRunner = (async (
+			args: readonly string[],
+		): Promise<IGitRunResult> => {
+			calls.push(args[0] ?? '');
+			return buildRunner('feature/x', true)(args);
+		}) as IGitRunner;
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: runner,
+				policy: basePolicy(),
+				identityCtx: { run: runner, envVars: Object.freeze({}) },
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			processedEvents: store,
+		});
+
+		const result = await engine.handle(event);
+
+		expect(result.ack).toBe('OK');
+		expect(calls).toContain('add');
+		expect(calls).toContain('commit');
+		await engine.dispose();
+	});
+
+	it('refuses before staging when the processed-events store is corrupt', async () => {
+		const path = join(workspace, '.commit-policy/processed-events.jsonl');
+		await mkdir(join(workspace, '.commit-policy'), { recursive: true });
+		await writeFile(path, '{not-json}\n');
+		const calls: string[] = [];
+		const baseRunner = buildRunner('feature/x', true);
+		const runner: IGitRunner = (async (
+			args: readonly string[],
+		): Promise<IGitRunResult> => {
+			calls.push(args[0] ?? '');
+			return baseRunner(args);
+		}) as IGitRunner;
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: runner,
+				policy: basePolicy(),
+				identityCtx: { run: runner, envVars: Object.freeze({}) },
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			processedEvents: createProcessedEventsStore({
+				workspaceRoot: workspace,
+			}),
+		});
+
+		const result = await engine.handle({
+			kind: 'manual',
+			message: 'feat: refuse corrupt store',
+			files: ['only-this.ts'],
+			eventId: 'corrupt-store-1',
+		});
+
+		expect(result).toMatchObject({ ack: 'ERR', code: 'STORE_READ_ERROR' });
+		expect(calls).not.toContain('add');
+		expect(calls).not.toContain('commit');
 		await engine.dispose();
 	});
 });

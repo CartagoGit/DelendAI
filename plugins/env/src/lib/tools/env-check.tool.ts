@@ -67,11 +67,7 @@ export const buildEnvCheckRegistration = (
 					worst: z.string(),
 				}),
 			},
-			async (args: {
-				path?: string | undefined;
-				required?: string[] | undefined;
-				schema?: IEnvSchema | undefined;
-			}) => {
+			async (args) => {
 				const path = args.path ?? '.env';
 				if (options.deps === undefined) {
 					const contained = resolveWorkspaceContained(
@@ -88,7 +84,37 @@ export const buildEnvCheckRegistration = (
 				}
 				const deps =
 					options.deps ?? realEnvDeps(options.workspaceRootAbs);
-				const schema = args.schema;
+				const schema: IEnvSchema | undefined =
+					args.schema === undefined
+						? undefined
+						: {
+								vars: Object.fromEntries(
+									Object.entries(args.schema.vars).map(
+										([key, value]) => [
+											key,
+											{
+												type: value.type,
+												...(value.enum === undefined
+													? {}
+													: { enum: value.enum }),
+												...(value.required === undefined
+													? {}
+													: {
+															required:
+																value.required,
+														}),
+												...(value.description ===
+												undefined
+													? {}
+													: {
+															description:
+																value.description,
+														}),
+											},
+										],
+									),
+								),
+							};
 				const { found, findings } =
 					schema !== undefined
 						? await runEnvCheckWithSchema(
