@@ -429,7 +429,9 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(persistSteps).toHaveLength(1);
 		expect(persistSteps[0]).toContain('proposals_close_slice');
 		expect(persistSteps[0]).toContain('persist mode "commit"');
-		expect(persistSteps[0]).not.toContain('maybePersistAfterSlice');
+		expect(persistSteps[0]).toContain(
+			'Hosts must not call maybePersistAfterSlice directly',
+		);
 		expect(persistSteps[0]).toContain('do not stage unrelated files');
 	});
 
@@ -461,7 +463,9 @@ describe('auto_work (one-call action plan)', async () => {
 			'committed=true/pushed=false as incomplete',
 		);
 		expect(persistSteps[0]).toContain('persist block in the response');
-		expect(persistSteps[0]).not.toContain('maybePersistAfterSlice');
+		expect(persistSteps[0]).toContain(
+			'Hosts must not call maybePersistAfterSlice directly',
+		);
 	});
 
 	it("x00051 S3: persist mode 'commit' prepends an explicit agent_worktree create step", async () => {
