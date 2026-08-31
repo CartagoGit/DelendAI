@@ -300,11 +300,11 @@ describe('zombie-reconcile', async () => {
 				},
 			],
 		};
-		// R-2026-08-31: the lock entry exists, so the engine actually
-		// releases something; the queueEmitter fires once with the
-		// canonical event taskId. `last_seen` MUST be set so
-		// `readSynchronizedLock` does not purge the entry as stale
-		// before `runAgentLockEngine` finds it.
+		// R-2026-08-31: the lock fixture uses the same shape
+		// `runAgentLockEngine` writes. `host`/`pid` are required so the
+		// pid-mismatch branch recognises the entry as a real prior
+		// claim and the release actually frees it (returning
+		// `removed: 1`).
 		const lockData = {
 			version: 1,
 			stale_after_minutes: 10,
@@ -312,8 +312,11 @@ describe('zombie-reconcile', async () => {
 				{
 					task_id: 'task-1',
 					agent: 'agent_zombie',
+					ownership: ['packages/proposals/src/foo.ts'],
 					started_at: '2026-06-05T11:00:00.000Z',
 					last_seen: '2026-06-05T11:45:00.000Z',
+					host: 'dead-host',
+					pid: 999999,
 				},
 			],
 		};
@@ -334,13 +337,17 @@ describe('zombie-reconcile', async () => {
 			.fn()
 			.mockImplementation(() => Promise.resolve());
 
-		await gcZombies(registryPath, lockPath, queuePath, {
+		const report = await gcZombies(registryPath, lockPath, queuePath, {
 			dryRun: false,
 			staleAfterMinutes: 10,
 			now,
 			queueEmitter,
 		});
 
+		// The orphan registry row was deleted; `releasedLockCount`
+		// is incremented because the entry was freed. The watchdog
+		// event fires once with the canonical taskId shape.
+		expect(report.releasedLockCount).toBe(1);
 		expect(queueEmitter).toHaveBeenCalledWith(
 			expect.stringContaining('zombie-gc-event-'),
 			4,
