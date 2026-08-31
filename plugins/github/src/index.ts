@@ -4,6 +4,7 @@ import z from 'zod';
 import { createGitHubHttpClient } from './lib/client';
 import { resolveGitHubProviderContext } from './lib/config';
 import { buildGitHubToolRegistrations } from './lib/tools';
+import type { IGitHubPluginOptions } from './lib/config';
 
 const RepositorySchema = z
 	.object({
@@ -49,9 +50,29 @@ export default definePlugin({
 				`github plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
+		const pluginOptions = {
+			...(parsed.data.apiUrl !== undefined
+				? { apiUrl: parsed.data.apiUrl }
+				: {}),
+			...(parsed.data.webUrl !== undefined
+				? { webUrl: parsed.data.webUrl }
+				: {}),
+			...(parsed.data.defaultRepository !== undefined
+				? { defaultRepository: parsed.data.defaultRepository }
+				: {}),
+			...(parsed.data.timeoutMs !== undefined
+				? { timeoutMs: parsed.data.timeoutMs }
+				: {}),
+			...(parsed.data.maxRetries !== undefined
+				? { maxRetries: parsed.data.maxRetries }
+				: {}),
+			...(parsed.data.retryBaseDelayMs !== undefined
+				? { retryBaseDelayMs: parsed.data.retryBaseDelayMs }
+				: {}),
+		} satisfies IGitHubPluginOptions;
 		const providerContext = resolveGitHubProviderContext({
 			env: process.env,
-			options: parsed.data,
+			options: pluginOptions,
 		});
 		const client = createGitHubHttpClient(
 			{ context: providerContext },

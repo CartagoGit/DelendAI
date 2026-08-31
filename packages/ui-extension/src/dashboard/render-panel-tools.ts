@@ -33,7 +33,7 @@ export const renderPanelTools = (
 					: [r.avgMs, r.avgMs, r.maxMs, r.avgMs, r.avgMs, r.avgMs];
 			const d = sparklinePath(samples, SPARK_W, SPARK_H);
 			return `<tr data-tool="${escapeHtml(r.tool)}" data-plugin="${escapeHtml(r.plugin)}" data-calls="${r.calls}" data-errors="${r.errors}" data-avgms="${r.avgMs}" data-tokens="${r.tokens}">
-				<td><code>${escapeHtml(r.tool)}</code></td>
+				<td><a href="#" data-tool-name="${escapeHtml(r.tool)}"><code>${escapeHtml(r.tool)}</code></a></td>
 				<td><code>${escapeHtml(r.plugin)}</code></td>
 				<td class="mcpv-num">${formatNumber(r.calls)}</td>
 				<td class="mcpv-num">${formatNumber(r.errors)}</td>

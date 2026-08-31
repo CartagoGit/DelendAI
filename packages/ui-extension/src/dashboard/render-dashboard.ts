@@ -66,6 +66,13 @@ const CLIENT_SCRIPT = `
 	document.addEventListener('click', (evt) => {
 		const target = evt.target;
 		if (!(target instanceof Element)) return;
+    const tool = target.closest('[data-tool-name]');
+    const toolName = tool?.getAttribute('data-tool-name');
+    if (toolName) {
+      evt.preventDefault();
+      host?.postMessage({ command: 'openTool', name: toolName });
+      return;
+    }
 		const proposal = target.closest('[data-proposal]');
 		const id = proposal?.getAttribute('data-proposal');
 		if (!id) return;
