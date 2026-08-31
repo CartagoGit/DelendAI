@@ -11,6 +11,7 @@ import type {
 import type {
 	ICommentPrOptions,
 	ICreateIssueOptions,
+	ICreateMcpVertexIssueOptions,
 	ICreatePrOptions,
 	IIssueCreateResult,
 	IPrCommentResult,
@@ -271,6 +272,8 @@ const repoPathFor = (
 const gitlabProjectId = (repoPath: string): string =>
 	encodeURIComponent(repoPath);
 
+const MCP_VERTEX_REPOSITORY = 'CartagoGit/mcp-vertex';
+
 const parsePrCreateResult = (
 	payload: Record<string, unknown>,
 	body: string,
@@ -515,4 +518,56 @@ export const createIssue = async (
 				response.provider,
 			)
 		: { ok: true, provider: response.provider, data: { issue } };
+};
+
+export const createMcpVertexIssue = async (
+	_workspaceRootAbs: string,
+	options: ICreateMcpVertexIssueOptions,
+	exec: IForgeWriteExec = runExternalTool,
+): Promise<IIssueCreateResult> => {
+	if (options.confirm !== true) return failure('confirm: true required');
+	const labels = (options.labels ?? [])
+		.map((label) => label.trim())
+		.filter((label) => label !== '');
+	const body = trimOrEmpty(options.body);
+	const run = await exec({
+		tool: {
+			id: 'gh',
+			bin: 'gh',
+			installHints: [
+				{ manager: 'brew', command: 'brew install gh' },
+				{ manager: 'apt', command: 'sudo apt install gh' },
+			],
+		},
+		args: [
+			'api',
+			`repos/${MCP_VERTEX_REPOSITORY}/issues`,
+			'--method',
+			'POST',
+			'-f',
+			`title=${trimOrEmpty(options.title)}`,
+			'-f',
+			`body=${body}`,
+			...labels.flatMap((label) => ['-f', `labels[]=${label}`]),
+		],
+		cwd: _workspaceRootAbs,
+		maxOutputBytes: 128 * 1024,
+	});
+	if (!run.ok) {
+		return failure(
+			trimOrEmpty(run.stderr) || 'gh request failed',
+			'github',
+		);
+	}
+	const payload = parseJsonRecord(run.stdout || run.stderr);
+	if (payload === undefined) {
+		return failure(
+			'Could not parse the forge write response payload.',
+			'github',
+		);
+	}
+	const issue = parseIssueCreateResult(payload, body, labels);
+	return issue === undefined
+		? failure('Could not parse the created issue payload.', 'github')
+		: { ok: true, provider: 'github', data: { issue } };
 };

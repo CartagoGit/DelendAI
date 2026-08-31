@@ -63,19 +63,26 @@ const createQualityServer = async (command: string) => {
 	return { workspace, client, project };
 };
 
-const seedSlice = (workspace: string, id: string): string => {
-	const proposalDir = join(
-		workspace,
-		'docs/mcp-vertex/proposals/in-progress',
-	);
-	mkdirSync(proposalDir, { recursive: true });
-	const proposalPath = join(proposalDir, `${id}-quality.md`);
-	writeFileSync(
-		proposalPath,
-		`---\nid: ${id}\nstatus: in-progress\ntype: proposal\n---\n\n# ${id}\n\n## Slices\n\n### S1 — quality gate\n- **Status**: pending\n- **Files**: \`src/quality.ts\`\n- **Gate**: none\n`,
-		'utf8',
-	);
-	return proposalPath;
+const seedSlice = async (client: Client, id: string): Promise<string> => {
+	const created = await client.callTool({
+		name: 'mcp-vertex_proposals_create_proposal',
+		arguments: {
+			id,
+			kind: 'fix',
+			title: 'quality gate',
+			status: 'in-progress',
+			slices: [
+				{
+					sliceId: 'S1',
+					title: 'quality gate',
+					files: ['src/quality.ts'],
+					gate: 'none',
+				},
+			],
+		},
+	});
+	expect(created.isError).toBeFalsy();
+	return (created.structuredContent as { file: string }).file;
 };
 
 const recentEvidence = (workspace: string) => {
@@ -98,7 +105,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 		const { workspace, client, project } =
 			await createQualityServer('false');
 		try {
-			const proposalPath = seedSlice(workspace, 'f00420');
+			const proposalPath = await seedSlice(client, 'f00420');
 			const sync = await client.callTool({
 				name: 'mcp-vertex_proposals_sync_proposals',
 				arguments: {},
@@ -149,7 +156,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 		const { workspace, client, project } =
 			await createQualityServer('true');
 		try {
-			const proposalPath = seedSlice(workspace, 'f00421');
+			const proposalPath = await seedSlice(client, 'f00421');
 			const sync = await client.callTool({
 				name: 'mcp-vertex_proposals_sync_proposals',
 				arguments: {},
