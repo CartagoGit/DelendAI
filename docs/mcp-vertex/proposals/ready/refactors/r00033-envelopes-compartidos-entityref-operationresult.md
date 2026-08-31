@@ -129,10 +129,13 @@ y el core devuelven resultados al LLM: `EntityRef`,
 
 ### S1 — Envelopes en contracts + adopción en proposals + docs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/contracts/src/envelopes.ts`, `packages/contracts/tests/src/envelopes.spec.ts`, `plugins/proposals/src/lib/returns.ts` (migración ejemplo), `docs/mcp-vertex/ENVELOPES.md`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00033-s1
+- review-reviewer: delivery-verifier-r00033-s1
+- review-log: approved by delivery-verifier-r00033-s1 — Verified independently: r00033 S1 acceptance covered. Envelopes exist in @mcp-vertex/contracts (IToolOkEnvelope, IToolErrorEnvelope, IToolEnvelope, ICheckpointAdvisory, ICheckpointAdvisoryEnvelope). 5/5 envelope tests pass. typecheck green.
 ## acceptance
 
 - Envelopes definidos y exportados.

@@ -24,6 +24,7 @@ _(none)_
 ## Tests
 
 - packages/contracts/tests/src/no-node-imports.spec.ts
+- packages/contracts/tests/src/envelopes.spec.ts
 
 ## Do not
 
