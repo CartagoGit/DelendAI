@@ -385,7 +385,9 @@ describe('renderPanelAgents', async () => {
 describe('renderDashboard', async () => {
 	it('composes header, KPI strip, 8 tabs + 8 panels + Docs + footer', async () => {
 		const html = renderDashboard(fixture, opts);
-		expect(html).toMatch(/<header class="mcpv-header">/);
+		expect(html).toMatch(
+			/<header class="mcpv-header"[^>]*data-connection="ok"/,
+		);
 		expect(html).toContain('mcpv-kpis');
 		expect(html).toContain('mcpv-tabs');
 		expect(html).toContain('tab-overview');
