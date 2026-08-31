@@ -705,6 +705,10 @@ const extension = {
 	'settings.previewHeading': 'Vista previa',
 	'settings.previewBody':
 		'Así se verá el panel con el tema y el idioma seleccionados.',
+	'settings.compact.title': 'Diseño compacto',
+	'settings.compact.help':
+		'Reduce el padding entre paneles para flujos de trabajo densos.',
+	'settings.compact.label': 'Activar modo compacto',
 	'knowledge.title': 'Conocimiento de mcp-vertex',
 	'knowledge.searchPlaceholder':
 		'Buscar entradas por identificador o título…',
