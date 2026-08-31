@@ -225,7 +225,7 @@ describe('proposal_transition', async () => {
 					status: from,
 				};
 				if (to === 'done') {
-					frontmatter['shipped-in'] = '[abc123]';
+					frontmatter['shipped-in'] = '[abc1234]';
 				}
 				if (to === 'paused') {
 					frontmatter['paused-reason'] = 'matrix test pause reason';
