@@ -5,7 +5,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
 
-import type { GitLabRequestError, createGitLabHttpClient } from '../client';
+import { GitLabRequestError } from '../client';
 import type { IGitLabProviderContext } from '../config';
 
 const OBJECT_SCHEMA = z.object({}).passthrough();
@@ -252,8 +252,6 @@ export interface IGitLabToolSuiteOptions {
 	readonly client: ReturnType<typeof createGitLabHttpClient>;
 	readonly pluginTempDir: string;
 }
-
-type ToolResult = ReturnType<typeof toolJson>;
 
 const toText = (value: unknown): string =>
 	typeof value === 'string' ? value : '';
@@ -779,7 +777,7 @@ const requestArray = async (
 	};
 };
 
-const toolResponse = <T>(value: T): ToolResult => toolJson(value);
+const toolResponse = <T>(value: T) => toolJson(value);
 
 const buildContextOutput = (options: IGitLabToolSuiteOptions) => ({
 	provider: options.context.provider,
@@ -1083,7 +1081,22 @@ const buildIssueLikeRegistration = (
 					nextPage: z.union([z.string(), z.null()]).optional(),
 				}),
 			},
-			async (args) => {
+			async (rawArgs: unknown) => {
+				const args = rawArgs as {
+					action:
+						| 'get'
+						| 'list'
+						| 'search'
+						| 'comments'
+						| 'discussions';
+					projectId?: string | number | undefined;
+					projectPath?: string | undefined;
+					iid?: string | number | undefined;
+					query?: string | undefined;
+					state?: 'opened' | 'closed' | 'all' | undefined;
+					page?: number | undefined;
+					perPage?: number | undefined;
+				};
 				try {
 					const project = resolveProjectRef(
 						options.context,
@@ -1113,10 +1126,14 @@ const buildIssueLikeRegistration = (
 						return toolResponse({
 							action: args.action,
 							...(kind === 'issues'
-								? { issues: data.map(normalizeIssue) }
+								? {
+										issues: data.map((item) =>
+											normalizeIssue(item),
+										),
+									}
 								: {
-										mergeRequests: data.map(
-											normalizeMergeRequest,
+										mergeRequests: data.map((item) =>
+											normalizeMergeRequest(item),
 										),
 									}),
 							meta: buildMetaOutput(meta),
@@ -1151,10 +1168,15 @@ const buildIssueLikeRegistration = (
 						return toolResponse({
 							action: args.action,
 							...(args.action === 'comments'
-								? { comments: data.map(normalizeNote) }
+								? {
+										comments: data.map((item) =>
+											normalizeNote(item),
+										),
+									}
 								: {
-										discussions:
-											data.map(normalizeDiscussion),
+										discussions: data.map((item) =>
+											normalizeDiscussion(item),
+										),
 									}),
 							meta: buildMetaOutput(meta),
 						});
@@ -1241,7 +1263,17 @@ export const buildGitLabCommitsToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args) => {
+				async (rawArgs: unknown) => {
+					const args = rawArgs as {
+						action: 'get' | 'list' | 'search';
+						projectId?: string | number | undefined;
+						projectPath?: string | undefined;
+						sha?: string | undefined;
+						refName?: string | undefined;
+						query?: string | undefined;
+						page?: number | undefined;
+						perPage?: number | undefined;
+					};
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1329,7 +1361,13 @@ export const buildGitLabRefsToolRegistrations = (
 						meta: responseMetaSchema.optional(),
 					}),
 				},
-				async (args) => {
+				async (rawArgs: unknown) => {
+					const args = rawArgs as {
+						projectId?: string | number | undefined;
+						projectPath?: string | undefined;
+						from: string;
+						to: string;
+					};
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1402,7 +1440,17 @@ export const buildGitLabPipelinesToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args) => {
+				async (rawArgs: unknown) => {
+					const args = rawArgs as {
+						action: 'get' | 'list';
+						projectId?: string | number | undefined;
+						projectPath?: string | undefined;
+						id?: string | number | undefined;
+						ref?: string | undefined;
+						status?: string | undefined;
+						page?: number | undefined;
+						perPage?: number | undefined;
+					};
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1535,7 +1583,20 @@ export const buildGitLabJobsToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args) => {
+				async (rawArgs: unknown) => {
+					const args = rawArgs as {
+						action: 'get' | 'list' | 'log';
+						projectId?: string | number | undefined;
+						projectPath?: string | undefined;
+						id?: string | number | undefined;
+						pipelineId?: string | number | undefined;
+						status?: string | undefined;
+						page?: number | undefined;
+						perPage?: number | undefined;
+						maxBytes?: number | undefined;
+						maxLines?: number | undefined;
+						maxDurationMs?: number | undefined;
+					};
 					try {
 						const project = resolveProjectRef(
 							options.context,
