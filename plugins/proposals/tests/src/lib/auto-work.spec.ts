@@ -427,8 +427,9 @@ describe('auto_work (one-call action plan)', async () => {
 			s.includes('Persist the slice'),
 		);
 		expect(persistSteps).toHaveLength(1);
-		expect(persistSteps[0]).toContain('mode: "commit"');
-		expect(persistSteps[0]).toContain('claimReady.files');
+		expect(persistSteps[0]).toContain('proposals_close_slice');
+		expect(persistSteps[0]).toContain('persist mode "commit"');
+		expect(persistSteps[0]).not.toContain('maybePersistAfterSlice');
 		expect(persistSteps[0]).toContain('do not stage unrelated files');
 	});
 
@@ -451,13 +452,16 @@ describe('auto_work (one-call action plan)', async () => {
 			s.includes('Persist the slice'),
 		);
 		expect(persistSteps).toHaveLength(1);
-		expect(persistSteps[0]).toContain('commit + push');
+		expect(persistSteps[0]).toContain('proposals_close_slice');
+		expect(persistSteps[0]).toContain('persist mode "commit-and-push"');
+		expect(persistSteps[0]).toContain(
+			'verify push target "origin agent/p1"',
+		);
 		expect(persistSteps[0]).toContain(
 			'committed=true/pushed=false as incomplete',
 		);
-		expect(persistSteps[0]).toContain(
-			'refuses targets listed in the effective protected-branch policy',
-		);
+		expect(persistSteps[0]).toContain('persist block in the response');
+		expect(persistSteps[0]).not.toContain('maybePersistAfterSlice');
 	});
 
 	it("x00051 S3: persist mode 'commit' prepends an explicit agent_worktree create step", async () => {
