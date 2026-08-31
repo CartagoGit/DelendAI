@@ -135,6 +135,12 @@ jobs:
             - name: Install dependencies
               run: bun install --frozen-lockfile
 
+            # Affected suites resolve workspace package exports that point at
+            # dist/. Build them before Vitest so a clean runner matches local
+            # development and does not fail with MODULE_NOT_FOUND.
+            - name: Build dist
+              run: bun run build
+
             - name: Download affected set
               uses: actions/download-artifact@v4
               with:
