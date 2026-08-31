@@ -1,5 +1,5 @@
-import { join } from 'node:path';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
@@ -91,6 +91,7 @@ export const createFunnelCounterStore = (
 			return readAll(statePath);
 		},
 		async increment(event: IFunnelCounterEvent): Promise<void> {
+			await mkdir(dirname(statePath), { recursive: true });
 			await withFileMutex(statePath, async () => {
 				const current = await readAll(statePath);
 				// A successful dispatch closes any open circuit and clears

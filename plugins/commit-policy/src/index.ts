@@ -29,10 +29,6 @@ import { createProcessedEventsStore } from './lib/processed-events';
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { buildBranchProtectionToolRegistration } from './lib/tools/branch-protection-tool';
 
-if (process.env.VITEST === 'true') {
-	await import('./lib/engine.spec');
-}
-
 const OptionsSchema = CommitPolicyOptionsSchema;
 
 type ConfiguredForgeProvider = 'github' | 'gitlab' | 'unknown';
