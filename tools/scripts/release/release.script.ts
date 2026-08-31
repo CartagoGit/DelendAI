@@ -63,6 +63,7 @@ import {
 } from './publish-tarballs.ts';
 import {
 	packRewrittenTarball,
+	rewriteWorkspaceDeps,
 	stageBuildForPublish,
 	type IWorkspaceDepsPlan,
 } from '../publish/workspace-deps.ts';
@@ -303,6 +304,7 @@ async function publishAll(
 			const buildDir = join(ROOT, 'build', group, name, pkg.version);
 			const stageDir = join(stagingRoot, dir);
 			await stageBuildForPublish(join(ROOT, dir), buildDir, stageDir);
+			await rewriteWorkspaceDeps(stageDir, workspacePlan);
 			stagedDirs.push(stageDir);
 		}
 
