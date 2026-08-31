@@ -149,6 +149,9 @@ const parseSchemaSuccess = (
 		isError?: boolean;
 	},
 ) => {
+	if (result.isError === true) {
+		console.error('close-plan error:', result.content[0]?.text);
+	}
 	expect(result.isError).toBeUndefined();
 	const body =
 		result.structuredContent ?? JSON.parse(result.content[0]?.text ?? '{}');
