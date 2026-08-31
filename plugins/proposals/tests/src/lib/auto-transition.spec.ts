@@ -92,7 +92,7 @@ title: Auto move
 kind: feat
 status: review
 type: proposal
-shipped-in: [ship123]
+shipped-in: [30551533]
 ---
 
 ## Slices
