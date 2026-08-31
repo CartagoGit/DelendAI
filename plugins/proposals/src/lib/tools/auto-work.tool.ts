@@ -319,7 +319,7 @@ const resolveClaimReady = async (
 								await Promise.all(
 									slice.files.map(async (file) => ({
 										file,
-										exists: await hasPendingArtifactChange(
+										exists: await hasTrackedArtifact(
 											options.workspaceRoot!,
 											file,
 										),
@@ -353,7 +353,7 @@ const resolveClaimReady = async (
 							await Promise.all(
 								slice.files.map(async (file) => ({
 									file,
-									exists: await hasTrackedArtifact(
+									exists: await hasPendingArtifactChange(
 										options.workspaceRoot!,
 										file,
 									),
