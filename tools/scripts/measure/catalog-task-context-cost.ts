@@ -104,6 +104,14 @@ export interface IMeasureCatalogAndTaskContextCostResult {
 	readonly taskContext: ITaskContextCostMeasurement;
 }
 
+interface IToolResultLike {
+	readonly structuredContent?: unknown;
+	readonly content?: readonly {
+		readonly type?: string;
+		readonly text?: string;
+	}[];
+}
+
 const estimateTokens = (bytes: number): number =>
 	Math.ceil(bytes / BYTES_PER_ESTIMATED_TOKEN);
 
@@ -172,18 +180,36 @@ const toCatalogBreakdown = (
 		.slice(0, 10),
 });
 
+export const measureToolResultPayloadBytes = (
+	result: IToolResultLike,
+): number => {
+	if (result.structuredContent !== undefined) {
+		return jsonBytes(result.structuredContent);
+	}
+	const text = (result.content ?? [])
+		.filter(
+			(
+				entry,
+			): entry is { readonly type: string; readonly text: string } =>
+				entry.type === 'text' && typeof entry.text === 'string',
+		)
+		.map((entry) => entry.text)
+		.join('\n');
+	return Buffer.byteLength(text, 'utf8');
+};
+
 const measureProjectContextBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
 ): Promise<number> =>
-	measureToolTextBytes(client, 'mcp-vertex_vertex', PROJECT_CONTEXT_ROUTE);
+	measureToolResultBytes(client, 'mcp-vertex_vertex', PROJECT_CONTEXT_ROUTE);
 
-const measureToolStructuredContentBytes = async (
+const measureToolResultBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
 	name: string,
 	args: Record<string, unknown>,
 ): Promise<number> => {
 	const result = await client.callTool({ name, arguments: args });
-	return jsonBytes(result.structuredContent ?? null);
+	return measureToolResultPayloadBytes(result);
 };
 
 const measureTaskContextCost = async (
@@ -234,12 +260,12 @@ export const measureCatalogAndTaskContextCost =
 			surfaceMode: 'managed',
 		});
 		try {
-			const compactBytes = await measureToolStructuredContentBytes(
+			const compactBytes = await measureToolResultBytes(
 				nativeCore.client,
 				'mcp-vertex_agent_catalog',
 				{ mode: 'compact' },
 			);
-			const fullBytes = await measureToolStructuredContentBytes(
+			const fullBytes = await measureToolResultBytes(
 				nativeCore.client,
 				'mcp-vertex_agent_catalog',
 				{ mode: 'full' },
@@ -300,7 +326,7 @@ export const renderCatalogAndTaskContextMarkdown = (
 	[
 		'## Catalog and task context cost addendum',
 		'',
-		'Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` against the same synthetic fixture workspace used by the token budget suite. The existing real-preset, plugin-marginal and top-tool tables below remain the schema breakdown source; this addendum pins the extra S1 measurements for `agent_catalog` structured payloads and routed `project_context` task context snapshots.',
+		'Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` against the same synthetic fixture workspace used by the token budget suite. Result bytes are computed from `structuredContent` when present and fall back to concatenated text content otherwise, so compact structured responses and classic text tools are measured on the same reproducible basis. The existing real-preset, plugin-marginal and top-tool tables below remain the schema breakdown source; this addendum pins the extra S1 measurements for `agent_catalog` payloads and routed `project_context` task context snapshots.',
 		'',
 		markdownTable(
 			['Catalog payload', 'Surface', 'Bytes', 'Est. Tokens'],
