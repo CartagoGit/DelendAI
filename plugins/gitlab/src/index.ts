@@ -4,7 +4,10 @@ import z from 'zod';
 
 import { createGitLabHttpClient } from './lib/client';
 import { buildGitLabToolRegistrations } from './lib/tools/shared';
-import { resolveGitLabProviderContext } from './lib/config';
+import {
+	resolveGitLabProviderContext,
+	type IGitLabPluginOptions,
+} from './lib/config';
 
 const ProjectSchema = z
 	.object({
@@ -66,9 +69,29 @@ export default definePlugin({
 		const pluginCacheDir = isAbsolute(ctx.pluginCacheDir)
 			? ctx.pluginCacheDir
 			: ctx.workspace.resolve(ctx.pluginCacheDir);
+		const pluginOptions = {
+			...(parsed.data.baseUrl !== undefined
+				? { baseUrl: parsed.data.baseUrl }
+				: {}),
+			...(parsed.data.webUrl !== undefined
+				? { webUrl: parsed.data.webUrl }
+				: {}),
+			...(parsed.data.defaultProject !== undefined
+				? { defaultProject: parsed.data.defaultProject }
+				: {}),
+			...(parsed.data.timeoutMs !== undefined
+				? { timeoutMs: parsed.data.timeoutMs }
+				: {}),
+			...(parsed.data.maxRetries !== undefined
+				? { maxRetries: parsed.data.maxRetries }
+				: {}),
+			...(parsed.data.retryBaseDelayMs !== undefined
+				? { retryBaseDelayMs: parsed.data.retryBaseDelayMs }
+				: {}),
+		} satisfies IGitLabPluginOptions;
 		const providerContext = resolveGitLabProviderContext({
 			env: process.env,
-			options: parsed.data,
+			options: pluginOptions,
 		});
 		const client = createGitLabHttpClient(
 			{ context: providerContext },
