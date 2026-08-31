@@ -520,7 +520,7 @@ const normalizeError = (error: unknown): IRemoteProviderError =>
 				temporary: false,
 				retryable: false,
 			};
-const failureEnvelope = (error: unknown) => ({
+const _failureEnvelope = (error: unknown) => ({
 	ok: false as const,
 	provider: 'github' as const,
 	error: normalizeError(error),

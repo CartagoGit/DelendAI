@@ -64,18 +64,18 @@ describe('redactEnv', () => {
 			PRIVATE_KEY: 'priv',
 			GITLAB_TOKEN: 'glpat-xyz',
 		});
-		expect(result['GITHUB_TOKEN']).toBe('[REDACTED]');
-		expect(result['API_KEY']).toBe('[REDACTED]');
-		expect(result['HOME']).toBe('/home/user');
-		expect(result['PRIVATE_KEY']).toBe('[REDACTED]');
-		expect(result['GITLAB_TOKEN']).toBe('[REDACTED]');
+		expect(result.GITHUB_TOKEN).toBe('[REDACTED]');
+		expect(result.API_KEY).toBe('[REDACTED]');
+		expect(result.HOME).toBe('/home/user');
+		expect(result.PRIVATE_KEY).toBe('[REDACTED]');
+		expect(result.GITLAB_TOKEN).toBe('[REDACTED]');
 	});
 
 	it('does not mutate original object', () => {
 		const env = { GITHUB_TOKEN: 'secret', PATH: '/usr/bin' };
 		const result = redactEnv(env);
-		expect(env['GITHUB_TOKEN']).toBe('secret');
-		expect(result['GITHUB_TOKEN']).toBe('[REDACTED]');
+		expect(env.GITHUB_TOKEN).toBe('secret');
+		expect(result.GITHUB_TOKEN).toBe('[REDACTED]');
 	});
 });
 
@@ -85,7 +85,7 @@ describe('redactHeaders', () => {
 			Authorization: 'Bearer glpat-abc',
 			'content-type': 'application/json',
 		});
-		expect(result['Authorization']).toBe('[REDACTED]');
+		expect(result.Authorization).toBe('[REDACTED]');
 		expect(result['content-type']).toBe('application/json');
 	});
 
@@ -106,8 +106,8 @@ describe('redactRecord', () => {
 			{ msg: 'contains secret', count: 42 },
 			redact,
 		);
-		expect(result['msg']).toBe('contains [REDACTED]');
-		expect(result['count']).toBe(42);
+		expect(result.msg).toBe('contains [REDACTED]');
+		expect(result.count).toBe(42);
 	});
 });
 
@@ -288,9 +288,9 @@ describe('validateProviderBaseUrl', () => {
 
 describe('PROVIDER_DEFAULT_BASE_URLS', () => {
 	it('contains github and gitlab defaults', () => {
-		expect(PROVIDER_DEFAULT_BASE_URLS['github']).toBe(
+		expect(PROVIDER_DEFAULT_BASE_URLS.github).toBe(
 			'https://api.github.com',
 		);
-		expect(PROVIDER_DEFAULT_BASE_URLS['gitlab']).toBe('https://gitlab.com');
+		expect(PROVIDER_DEFAULT_BASE_URLS.gitlab).toBe('https://gitlab.com');
 	});
 });

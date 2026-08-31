@@ -1237,7 +1237,7 @@ const registerDashboardSurfaces = async (
 	});
 	dashboardRefresh.current = dashboardProvider;
 	const dashboardDetailBroker = dashboardProvider.getDetailBroker();
-	const detailSink = (async (kind: 'tool' | 'proposal', model: unknown) => {
+	const _detailSink = (async (kind: 'tool' | 'proposal', model: unknown) => {
 		if (kind === 'tool') {
 			return dashboardDetailBroker.push({ kind, model });
 		}
