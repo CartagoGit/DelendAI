@@ -1,45 +1,36 @@
 #!/usr/bin/env bun
-/**
- * codex-parse-noise-attributor.script.ts
- *
- * Decodes the cryptic '[warning] Failed to parse message: "\n"' lines
- * that the OpenAI Codex VSCode extension emits into its per-instance
- * 'Codex.log'. The bundle inside 'openai.chatgpt-*/out/extension.js'
- * is minified and ships only the literal string, so the warning is
- * useless on its own — the user only sees the symptom and has no way
- * to know that the source is the Codex WebSocket / IPC router (not
- * mcp-vertex, not Copilot Chat).
- *
- * This script:
- *   1. Walks every Codex.log under the running VSCode instance
- *      (default: $HOME/.vscode-server/data/logs on a remote,
- *      overridable via --root=path on the command line).
- *   2. Finds every line that matches the literal 'Failed to parse message' and
- *      extracts the surrounding context (timestamp, channel tag,
- *      and the line *above* the warning — that one almost always
- *      reveals whether the offender is the IPC router, the
- *      CodexMcpConnection stream, or the Codex native binary
- *      'bin/linux-x86_64/codex' talking JSON-RPC over stdio).
- *   3. Prints a one-line attribution per cluster: which extension
- *      emitted the warning, which log file, which channel, and the
- *      most recent preceding log line so the user can see what the
- *      server was doing when the bad frame arrived.
- *   4. With '--rewrite', copies the log to '<log>.attributed' and
- *      replaces every offending line with a multi-line, English
- *      explanation that names the source and links to the relevant
- *      docs (so a reader who opens the file later has the answer
- *      inline).
- *
- * Exit codes:
- *   0 — no noise detected (or rewrite finished cleanly)
- *   1 — noise detected (dry-run only)
- *   2 — IO error
- *
- * Usage:
- *   bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts
- *   bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts --rewrite
- *   bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts --root=/custom/path
- */
+//
+// codex-parse-noise-attributor.script.ts
+//
+// Decodes the cryptic 'Failed to parse message' warnings that the OpenAI
+// Codex VSCode extension emits into its per-instance Codex.log. The
+// bundle inside the openai.chatgpt extension is minified and ships
+// only the literal string, so the warning is useless on its own. The
+// user only sees the symptom and has no way to know that the source
+// is the Codex IPC / WebSocket router (not mcp-vertex, not Copilot).
+//
+// This script walks every Codex.log under the running VSCode instance
+// (default HOME/.vscode-server/data/logs, overridable via --root=path),
+// finds every line that matches the literal warning, and prints a
+// one-line attribution per cluster: which extension emitted it, which
+// log file, which channel, and the most recent preceding log line so
+// the user can see what the server was doing when the bad frame
+// arrived.
+//
+// With --rewrite, the script copies the log to <log>.attributed and
+// replaces every offending line with a multi-line English explanation
+// that names the source and gives the user the uninstall command.
+//
+// Exit codes:
+//   0 — no noise detected (or rewrite finished cleanly)
+//   1 — noise detected (dry-run only)
+//   2 — IO error
+//
+// Usage:
+//   bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts
+//   bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts --rewrite
+//   bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts --root=/custom/path
+
 import { existsSync } from 'node:fs';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
@@ -49,29 +40,27 @@ const homeDir = (): string => homedir();
 
 const NOISE_RX = /Failed to parse message/;
 const TIMESTAMP_RX = /^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(\w+)\]/;
-const CHANNEL_HINT_RX = /\[(IpcRouter|IpcClient|CodexMcpConnection|CodexMcpServer|CodexNative|StreamHandler)\]/;
+const CHANNEL_HINT_RX =
+	/\[(IpcRouter|IpcClient|CodexMcpConnection|CodexMcpServer|CodexNative|StreamHandler)\]/;
 
 interface IFlag {
 	readonly rewrite: boolean;
 	readonly root: string;
 }
 
-const parseFlags = (argv: readonly string[]): IFlag => {
+export const parseFlags = (argv: readonly string[]): IFlag => {
 	let rewrite = false;
 	let root = join(homeDir(), '.vscode-server', 'data', 'logs');
 	for (const arg of argv) {
 		if (arg === '--rewrite') rewrite = true;
-		else if (arg.startsWith('--root='))
+		else if (arg.startsWith('--root=')) {
 			root = arg.slice('--root='.length);
+		}
 	}
 	return { rewrite, root };
 };
 
-export { parseFlags };
-
-const discoverLogs = async (
-	rootDir: string,
-): Promise<readonly string[]> => {
+const discoverLogs = async (rootDir: string): Promise<readonly string[]> => {
 	if (!existsSync(rootDir)) return [];
 	const out: string[] = [];
 	const walk = async (dir: string): Promise<void> => {
@@ -118,7 +107,7 @@ export const attributeLog = async (
 		const ts = tsMatch?.[1] ?? '<unknown>';
 		const level = tsMatch?.[2] ?? '<unknown>';
 		// Walk backwards to find the most recent preceding line that
-		// actually carries a channel tag — that's the line the
+		// actually carries a channel tag — that is the line the
 		// warning's stack was anchored to in the bundle.
 		let channel = '<unknown>';
 		let preceding = '';
@@ -208,7 +197,6 @@ const main = async (): Promise<void> => {
 		return;
 	}
 	let totalNoise = 0;
-	let totalChannels = 0;
 	const channelCounts = new Map<string, number>();
 	for (const log of logs) {
 		const noise = await attributeLog(log);
@@ -216,9 +204,10 @@ const main = async (): Promise<void> => {
 		console.log(`\n  ${log}`);
 		console.log(`  ${noise.length} noise line(s):`);
 		for (const n of noise) {
-			const ctx = n.precedingLine.length > 0
-				? n.precedingLine.slice(0, 100)
-				: '(no preceding channel line in the last 30 lines)';
+			const ctx =
+				n.precedingLine.length > 0
+					? n.precedingLine.slice(0, 100)
+					: '(no preceding channel line in the last 30 lines)';
 			console.log(
 				`    ${n.timestamp} [${n.level}] channel=${n.channel} ctx="${ctx}…"`,
 			);
@@ -226,12 +215,11 @@ const main = async (): Promise<void> => {
 				n.channel,
 				(channelCounts.get(n.channel) ?? 0) + 1,
 			);
-			totalChannels += 1;
 		}
 		totalNoise += noise.length;
 		if (flags.rewrite) {
 			await rewriteLog(log, noise);
-			console.log(`    → wrote ${log}.attributed`);
+			console.log(`    -> wrote ${log}.attributed`);
 		}
 	}
 	console.log('\n[codex-parse-noise-attributor] summary:');
@@ -239,7 +227,9 @@ const main = async (): Promise<void> => {
 	console.log(`  noise lines:    ${totalNoise}`);
 	if (channelCounts.size > 0) {
 		console.log('  by channel:');
-		for (const [channel, count] of [...channelCounts.entries()].sort(([, a], [, b]) => b - a)) {
+		for (const [channel, count] of [...channelCounts.entries()].sort(
+			([, a], [, b]) => b - a,
+		)) {
 			console.log(`    ${channel.padEnd(20)} ${count}`);
 		}
 	}
