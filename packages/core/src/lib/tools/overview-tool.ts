@@ -7,7 +7,7 @@ import type {
 	IToolEffect,
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
-import { toolJson } from '../shared/tool-response';
+import { toolJsonWithSummary } from '../shared/tool-response';
 import { compactOutputSchema } from '../surface/compact-output-schema.helper';
 
 export interface IOverviewToolEntry {
@@ -99,6 +99,21 @@ const compactSummary = (summary: string | undefined): string | undefined => {
 	return `${summary.slice(0, MAX_OVERVIEW_SUMMARY_CHARS - 3)}...`;
 };
 
+const countGroupedTools = (groupedTools: Record<string, string[]>): number =>
+	Object.values(groupedTools).reduce(
+		(total, group) => total + group.length,
+		0,
+	);
+
+const buildOverviewSummary = (args: {
+	readonly compact: boolean;
+	readonly pluginCount: number;
+	readonly toolCount: number;
+	readonly knowledgeCount: number;
+	readonly activationIncluded: boolean;
+}): string =>
+	`${args.compact ? 'compact ' : ''}overview: ${args.pluginCount} plugins, ${args.toolCount} tools, ${args.knowledgeCount} knowledge ids${args.activationIncluded ? ', activation included' : ''}`;
+
 /**
  * The single cold-start entry point. One call returns the whole map of
  * the server — identity, loaded plugins, every tool with a one-line
@@ -176,7 +191,7 @@ export const buildOverviewToolRegistration = (
 						bucket.push(stem);
 						groupedTools[group] = bucket;
 					}
-					return toolJson({
+					const payload = {
 						server: snap.server,
 						namespacePrefix: snap.namespacePrefix,
 						// S1: config problems survive compact mode — a
@@ -247,9 +262,21 @@ export const buildOverviewToolRegistration = (
 								})()
 							: {}),
 						recommendedNextAction: snap.recommendedNextAction,
-					});
+					};
+					return toolJsonWithSummary(
+						payload,
+						buildOverviewSummary({
+							compact: true,
+							pluginCount: snap.plugins.length,
+							toolCount: countGroupedTools(groupedTools),
+							knowledgeCount: snap.knowledge.length,
+							activationIncluded:
+								args.activation === true &&
+								snap.activationReport !== undefined,
+						}),
+					);
 				}
-				return toolJson({
+				const payload = {
 					server: snap.server,
 					namespacePrefix: snap.namespacePrefix,
 					...(snap.configIssues !== undefined
@@ -333,7 +360,19 @@ export const buildOverviewToolRegistration = (
 							})()
 						: {}),
 					recommendedNextAction: snap.recommendedNextAction,
-				});
+				};
+				return toolJsonWithSummary(
+					payload,
+					buildOverviewSummary({
+						compact: false,
+						pluginCount: snap.plugins.length,
+						toolCount: tools.length,
+						knowledgeCount: snap.knowledge.length,
+						activationIncluded:
+							args.activation === true &&
+							snap.activationReport !== undefined,
+					}),
+				);
 			},
 		);
 	},

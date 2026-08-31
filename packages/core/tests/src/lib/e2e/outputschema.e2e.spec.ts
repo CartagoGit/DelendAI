@@ -233,6 +233,21 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		expect(effOf('mcp-vertex_overview')).toBeUndefined();
 	});
 
+	it('overview keeps the full payload in structuredContent and a compact summary in text', async () => {
+		const res = await client.callTool({
+			name: 'mcp-vertex_overview',
+			arguments: {},
+		});
+		const text = (res.content as Array<{ text?: string }>)[0]?.text ?? '';
+		expect(JSON.parse(text)).toMatch(
+			/^overview: \d+ plugins, \d+ tools, \d+ knowledge ids/,
+		);
+		expect(text).not.toBe(JSON.stringify(res.structuredContent));
+		expect(
+			(res.structuredContent as { server?: unknown }).server,
+		).toBeDefined();
+	});
+
 	// M24: every public tool must declare an outputSchema (a permissive
 	// catchall object is allowed for action-multiplexed tools, but `undefined`
 	// is not). This guard fails the build the moment a new tool ships without one.

@@ -847,6 +847,7 @@ export {
 	toolError,
 	toolErrorWithLogHint,
 	toolJson,
+	toolJsonWithSummary,
 	toolJsonBounded,
 	toolOk,
 	truncateIfTooLarge,
