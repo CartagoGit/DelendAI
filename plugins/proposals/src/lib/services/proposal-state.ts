@@ -74,6 +74,10 @@ const SHIPPED_IN_MISSING_NEXT_ACTION =
 const SHIPPED_IN_MISSING_FIX =
 	'edit frontmatter: append `shipped-in: ["<sha>"]` (replace `<sha>` with the commit that landed the slice).';
 
+/** 7-40 hex chars: short SHA (7) to full SHA-1 (40). The window covers
+ *  any reasonable commit identifier without accepting noisy strings. */
+const SHIPPED_IN_SHA_LENGTH_MAX = 40;
+
 export const guardShippedInPresent = (
 	proposalFrontmatter: Record<string, unknown>,
 ): IShippedInGuardResult => {
@@ -141,7 +145,10 @@ export const guardShippedInPresent = (
 	// stuck). Cheap shape-check stops that failure mode before the
 	// validator runs downstream.
 	const invalid = candidates.filter(
-		(value) => !/^[0-9a-f]{7,40}$/.test(value),
+		(value) =>
+			!new RegExp(`^[0-9a-f]{7,${SHIPPED_IN_SHA_LENGTH_MAX}}$`).test(
+				value,
+			),
 	);
 	if (invalid.length > 0) {
 		return {
