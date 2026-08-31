@@ -594,6 +594,10 @@ export interface McpVertexProposalsProposalTransitionOutput {
 	from?: string;
 	to?: string;
 	reason?: string;
+	transitionId?: string;
+	correlationId?: string;
+	idempotencyKey?: string;
+	idempotentReplay?: boolean;
 	movedFrom?: string;
 	movedTo?: string;
 	warning?: string;

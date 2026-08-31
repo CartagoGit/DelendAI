@@ -9,7 +9,6 @@
 import z from 'zod';
 
 import {
-	compactOutputSchema,
 	DETAIL_LEVELS,
 	projectDetail,
 	toolJson,
@@ -218,7 +217,7 @@ export const buildReportToolRegistration = (
 			{
 				description: `Report recorded tool usage grouped by provider, plugin, agent, extension or model. Returns spend, tokens used, attributable tokens saved and savings percent plus the top-${EXPENSIVE_CALL_LIMIT} most expensive calls. Group by \`model\` to see which LLM spent and saved what (calls with no model land in an \`unattributed\` bucket). Reads the append-only log on demand; no message content is ever recorded or returned. \`detail\` defaults to \`normal\`; \`compact\` suppresses the expensive-call list and plugin KPI breakdown while preserving totals and buckets.`,
 				inputSchema: InputSchema,
-				outputSchema: compactOutputSchema(),
+				outputSchema: OutputSchema,
 			},
 			async (args: z.infer<typeof InputSchema>) => {
 				const detail = args.detail ?? 'normal';

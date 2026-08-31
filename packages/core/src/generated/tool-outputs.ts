@@ -1269,54 +1269,8 @@ export interface McpVertexToolSearchOutput {
 }
 
 export interface McpVertexUsageTrackingSessionHygieneOutput {
-	observedMcpOnly: true;
-	hostLifecycle: {
-		observedHostOnly: true;
-		source: "claude-code-command-hooks";
-		sessions: Array<{
-			hostSessionId: string;
-			observedHostOnly: true;
-			firstActivityAt: string;
-			lastActivityAt: string;
-			observedElapsedMs: number;
-			turnCount: number;
-			preCompactCount: number;
-			postCompactCount: number;
-			sessionEndCount: number;
-			lastEvent: "turn" | "pre-compact" | "post-compact" | "session-end";
-			explicitMcpSessionIdMatch: boolean;
-			matchingMcpCalls: number;
-		}>;
-	};
-	policy: {
-		maxSessionAgeMs: number;
-		maxIdleGapMs: number;
-		maxMcpOutputTokens: number;
-	};
-	current: Array<{
-		sessionId: string;
-		observedMcpOnly: true;
-		firstActivityAt: string;
-		lastActivityAt: string;
-		observedElapsedMs: number;
-		largestIdleGapMs: number;
-		calls: number;
-		responseBytes: number;
-		estimatedMcpOutputTokens: number;
-		reasons: Array<"session-age" | "idle-gap" | "mcp-output-volume">;
-	}>;
-	sessions: Array<{
-		sessionId: string;
-		observedMcpOnly: true;
-		firstActivityAt: string;
-		lastActivityAt: string;
-		observedElapsedMs: number;
-		largestIdleGapMs: number;
-		calls: number;
-		responseBytes: number;
-		estimatedMcpOutputTokens: number;
-		reasons: Array<"session-age" | "idle-gap" | "mcp-output-volume">;
-	}>;
+	ok?: boolean;
+	[key: string]: unknown;
 }
 
 export interface McpVertexUsageTrackingUsageClearOutput {
