@@ -243,10 +243,47 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 			f.relPath.startsWith('.github/agents/'),
 		);
 		for (const file of githubFiles) {
-			expect(file.content).toContain('mcp-vertex/*');
+			expect(file.content).toContain('acme/*');
 			expect(file.content).not.toContain('search_search');
 			expect(file.content).not.toContain('acme_search_search');
 		}
+	});
+
+	it('uses the namespace for agent files and the configured MCP server key', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers(
+				{
+					namespacePrefix: 'acme',
+					serverName: 'acme-tools',
+				},
+				'/tmp/example-ws',
+			),
+		);
+		const github = bundle.files.find((file) =>
+			file.relPath.startsWith('.github/agents/'),
+		);
+		const claude = bundle.files.find((file) =>
+			file.relPath.startsWith('.claude/agents/'),
+		);
+		const codex = bundle.files.find((file) =>
+			file.relPath.startsWith('.codex/agents/'),
+		);
+		const vscode = JSON.parse(
+			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
+				?.content ?? '{}',
+		) as { servers: Record<string, unknown> };
+		const generic = JSON.parse(
+			bundle.files.find((file) => file.relPath === '.mcp.json')
+				?.content ?? '{}',
+		) as { mcpServers: Record<string, unknown> };
+
+		expect(github?.relPath).toContain('.github/agents/acme-');
+		expect(claude?.relPath).toContain('.claude/agents/acme-');
+		expect(codex?.relPath).toContain('.codex/agents/acme-');
+		expect(github?.content).toContain('name: acme-');
+		expect(github?.content).toContain('acme-tools/*');
+		expect(vscode.servers['acme-tools']).toBeDefined();
+		expect(generic.mcpServers['acme-tools']).toBeDefined();
 	});
 });
 
