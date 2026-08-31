@@ -1,6 +1,14 @@
 import { spawn } from 'node:child_process';
-import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import {
+	cp,
+	mkdir,
+	readdir,
+	readFile,
+	rename,
+	rm,
+	writeFile,
+} from 'node:fs/promises';
+import { basename, dirname, join, resolve } from 'node:path';
 
 /**
  * Maps each rewritable `@mcp-vertex/*` package name to the version its OWN
@@ -19,6 +27,24 @@ export interface IRewriteResult {
 	readonly rewritten: Readonly<Record<string, unknown>>;
 	readonly changedKeys: readonly string[];
 }
+
+/**
+ * Stage the centralized build output under the package-local `dist/` path
+ * required by npm package exports. The source package is never modified.
+ */
+export const stageBuildForPublish = async (
+	pkgDir: string,
+	buildDir: string,
+	stageDir: string,
+): Promise<void> => {
+	await cp(pkgDir, stageDir, {
+		recursive: true,
+		filter: (source) => !SKIP_DIRS.has(basename(source)),
+	});
+	await rm(join(stageDir, 'dist'), { recursive: true, force: true });
+	await mkdir(join(stageDir, 'dist'), { recursive: true });
+	await cp(buildDir, join(stageDir, 'dist'), { recursive: true });
+};
 
 const DEP_SECTIONS = [
 	'dependencies',

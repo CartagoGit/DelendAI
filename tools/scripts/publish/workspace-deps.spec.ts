@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
 	findWorkspaceConsumers,
 	rewriteWorkspaceDeps,
+	stageBuildForPublish,
 	type IWorkspaceDepsPlan,
 } from './workspace-deps.ts';
 
@@ -45,6 +46,42 @@ afterEach(async () => {
 });
 
 describe('workspace-deps', () => {
+	it('stages centralized build output as package-local dist without copying build inputs', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			files: ['dist', 'README.md'],
+		});
+		await writeFile(join(pkgDir, 'README.md'), 'fixture\n', 'utf8');
+		const buildDir = join(root, 'build', 'packages', 'fixture', '1.0.0');
+		await mkdir(buildDir, { recursive: true });
+		await writeFile(join(buildDir, 'index.js'), 'export {}\n', 'utf8');
+		const stageDir = join(root, 'stage');
+
+		await stageBuildForPublish(pkgDir, buildDir, stageDir);
+
+		expect(await readFile(join(stageDir, 'dist', 'index.js'), 'utf8')).toBe(
+			'export {}\n',
+		);
+		expect(await readFile(join(stageDir, 'README.md'), 'utf8')).toBe(
+			'fixture\n',
+		);
+		await expect(
+			readFile(
+				join(
+					stageDir,
+					'build',
+					'packages',
+					'fixture',
+					'1.0.0',
+					'index.js',
+				),
+				'utf8',
+			),
+		).rejects.toMatchObject({ code: 'ENOENT' });
+	});
+
 	it('version-major rewrites workspace:* to the target version', async () => {
 		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
 		createdDirs.push(root);
