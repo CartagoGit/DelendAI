@@ -23,18 +23,13 @@
  * auto-promoter only touches 'queued' entries.
  */
 
-import { basename, dirname } from 'node:path';
-
-import {
-	SafeWorkspaceReader,
-	writeFileAtomic,
-	withFileMutex,
-} from '@mcp-vertex/core/public';
+import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
 
 import type {
 	IPersistentTaskEntry,
 	IPersistentTaskQueue,
 } from './persistent-task-queue';
+import { loadOrEmptyQueue } from './task-queue-engine';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -69,34 +64,6 @@ const persistQueueUnlocked = async (
 // loadOrEmptyQueue
 // ---------------------------------------------------------------------------
 
-const loadOrEmptyQueue = async (
-	queuePath: string,
-): Promise<IPersistentTaskQueue> => {
-	let raw: string;
-	try {
-		raw = (
-			await new SafeWorkspaceReader(dirname(queuePath)).readText(
-				basename(queuePath),
-			)
-		).content;
-	} catch {
-		// Missing/unreadable queue → empty.
-		return { version: 1, entries: [] };
-	}
-	try {
-		const parsed = JSON.parse(raw) as {
-			version?: number;
-			entries?: unknown[];
-		};
-		if (!parsed || !Array.isArray(parsed.entries)) {
-			return { version: 1, entries: [] };
-		}
-		return parsed as IPersistentTaskQueue;
-	} catch {
-		return { version: 1, entries: [] };
-	}
-};
-
 // ---------------------------------------------------------------------------
 // promoteOnRelease
 // ---------------------------------------------------------------------------
@@ -105,7 +72,12 @@ export const promoteOnRelease = async (
 	params: IPromoteOnReleaseParams,
 ): Promise<IPromoteOnReleaseResult> => {
 	return withFileMutex(params.queuePath, async () => {
-		const queue = await loadOrEmptyQueue(params.queuePath);
+		let queue: IPersistentTaskQueue;
+		try {
+			queue = await loadOrEmptyQueue(params.queuePath);
+		} catch {
+			queue = { version: 1, entries: [] };
+		}
 		if (queue.entries.length === 0) {
 			return { promotedCount: 0, promotedTaskIds: [], skippedCount: 0 };
 		}

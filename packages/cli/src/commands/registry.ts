@@ -385,6 +385,18 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
+		name: 'init:global',
+		summary:
+			'Install the shared mcp-vertex MCP server into the user-level host configurations.',
+		usage: 'init:global [--all] [--ide=<ids>] [--via=<runner>] [--preset=<name>]',
+		async run(args, ctx) {
+			const { runGlobalInit } = await import(
+				'./init/init-global.command'
+			);
+			return runGlobalInit(args, ctx);
+		},
+	},
+	{
 		name: 'search',
 		summary: 'Search workspace text files.',
 		async run(args, ctx) {
