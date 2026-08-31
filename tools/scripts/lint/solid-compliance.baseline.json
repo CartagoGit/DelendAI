@@ -4226,6 +4226,7 @@
 		"magic-number-in-plugin:plugins/proposals/src/lib/proposals/proposal-narrative-patterns.ts:88",
 		"magic-number-in-plugin:plugins/proposals/src/lib/proposals/sync-proposal-registry.ts:148",
 		"magic-number-in-plugin:plugins/proposals/src/lib/services/proposal-state.ts:110",
+		"magic-number-in-plugin:plugins/proposals/src/lib/services/proposal-state.ts:136",
 		"magic-number-in-plugin:plugins/proposals/src/lib/services/proposal-state.ts:70",
 		"magic-number-in-plugin:plugins/proposals/src/lib/services/transition-evidence.ts:103",
 		"magic-number-in-plugin:plugins/proposals/src/lib/shared/agent-conventions.ts:34",
