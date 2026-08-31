@@ -302,6 +302,12 @@ export const mockDashboardModel: IDashboardAllModels = {
 		],
 		totalActive: 2,
 	},
+	memory: {
+		state: 'unavailable',
+		notes: [],
+		total: 0,
+		offset: 0,
+	},
 	health: {
 		healthy: true,
 		locksActive: 1,
