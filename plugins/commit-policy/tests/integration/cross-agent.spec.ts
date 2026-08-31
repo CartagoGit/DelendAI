@@ -251,7 +251,7 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 		`);
 	});
 
-	it('keeps listener A independent while listener B commits only B files', async () => {
+	it('keeps commits isolated while listeners observe the shared proposal registry', async () => {
 		const repo = await createRepo();
 		const deliveredA: ITriggerEvent[] = [];
 		const deliveredB: ITriggerEvent[] = [];
@@ -328,7 +328,10 @@ describe('cross-agent slice staging (t00018 S1)', () => {
 		`);
 		expect(headAfterA).not.toBe(headBeforeA);
 		expect(await readCommitFiles(repo, headAfterA)).toEqual(['a.ts']);
-		expect(deliveredA.map((event) => event.proposalId)).toEqual(['p-a']);
+		expect(deliveredA.map((event) => event.proposalId)).toEqual([
+			'p-a',
+			'p-b',
+		]);
 		expect(deliveredB.map((event) => event.proposalId)).toEqual(['p-b']);
 
 		a.listener.stop();
