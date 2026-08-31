@@ -6,6 +6,7 @@ import type {
 	IToolRegistration,
 } from '@mcp-vertex/core/public';
 import {
+	compactOutputSchema,
 	toolError,
 	toolJson,
 	withIncidentLogging,
@@ -61,17 +62,7 @@ export const buildQualityToolRegistrations = (
 						description:
 							'List the quality-gate scopes and the commands each runs. Read-only.',
 						inputSchema: z.object({}).strict(),
-						outputSchema: z.object({
-							scopes: z.record(
-								z.string(),
-								z.array(
-									z.object({
-										command: z.string(),
-										expect: z.string().optional(),
-									}),
-								),
-							),
-						}),
+						outputSchema: compactOutputSchema(),
 					},
 					async () => toolJson({ scopes: await scopesOf(options) }),
 				);
@@ -90,19 +81,7 @@ export const buildQualityToolRegistrations = (
 						description:
 							'Execute a quality scope’s commands and return a structured pass/fail report (per command: ok, exit code, output tail). Without `scope`, runs the first/`all` scope. This DOES execute the project’s commands.',
 						inputSchema: z.object({ scope: z.string().optional() }),
-						outputSchema: z.object({
-							scope: z.string(),
-							ok: z.boolean(),
-							results: z.array(
-								z.object({
-									command: z.string(),
-									ok: z.boolean(),
-									code: z.number(),
-									timedOut: z.boolean(),
-									tail: z.string(),
-								}),
-							),
-						}),
+						outputSchema: compactOutputSchema(),
 					},
 					withIncidentLogging(
 						{ incidentType: 'quality-failure' },
@@ -157,10 +136,7 @@ export const buildQualityToolRegistrations = (
 						description:
 							'Abort quality commands currently running in this server. With `pid`, cancels only that one; otherwise cancels every in-flight run (SIGKILL on the whole process group). Returns the cancelled PIDs. Use when a run_quality scope is taking too long.',
 						inputSchema: z.object({ pid: z.number().optional() }),
-						outputSchema: z.object({
-							cancelled: z.array(z.number()),
-							count: z.number(),
-						}),
+						outputSchema: compactOutputSchema(),
 					},
 					async (args: { pid?: number | undefined }) => {
 						const cancelled = cancelActiveRuns(args.pid);
