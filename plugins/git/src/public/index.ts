@@ -19,6 +19,7 @@ export {
 	gitBlame,
 	gitShow,
 	gitWorktreeList,
+	prepareReleaseBranch,
 	createReleaseCandidate,
 } from '../lib/services/git';
 export type {
@@ -34,6 +35,10 @@ export type {
 	IGitShowResult,
 	IGitWorktreeEntry,
 } from '../lib/services/git';
+export type {
+	IPreparedReleaseBranch,
+	IPrepareReleaseBranchInput,
+} from '../lib/contracts/interfaces/prepared-release-branch.interface';
 export { buildGitToolRegistrations } from '../lib/tools';
 export type { IGitToolOptions } from '../lib/tools';
 export {

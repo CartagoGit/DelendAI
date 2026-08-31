@@ -13,6 +13,11 @@ import {
 	type ReleaseType,
 } from '@mcp-vertex/core/public';
 
+import type {
+	IPreparedReleaseBranch,
+	IPrepareReleaseBranchInput,
+} from '../contracts/interfaces/prepared-release-branch.interface';
+
 /**
  * Default runner: invoke the real `git` in `cwd` (read-only commands)
  * via async `execFile`, so a slow/hanging git never blocks the MCP
@@ -367,6 +372,57 @@ export const gitWorktreeList = async (
 ): Promise<readonly IGitWorktreeEntry[]> =>
 	parseWorktreeList((await run(['worktree', 'list', '--porcelain'])).output);
 
+const runGitWrite = async (
+	run: IGitRunner,
+	args: readonly string[],
+): Promise<void> => {
+	const result = await run(args);
+	if (!result.ok)
+		throw new Error(
+			result.reason ?? `git command failed: ${args.join(' ')}`,
+		);
+};
+
+/** Create or reuse the release branch from the clean develop checkout. */
+export const prepareReleaseBranch = async (
+	run: IGitRunner,
+	input: IPrepareReleaseBranchInput,
+): Promise<IPreparedReleaseBranch> => {
+	const status = await gitStatus(run);
+	if (status.branch !== 'develop')
+		throw new Error(
+			`release branch must be prepared from develop: ${status.branch ?? '(detached)'}`,
+		);
+	if (!status.clean)
+		throw new Error('release branch requires a clean working tree');
+
+	const branch = releaseBranch(input.type, input.slug);
+	const sourceSha = await resolveRef(run, 'develop');
+	const existing = await run([
+		'rev-parse',
+		'--verify',
+		'--quiet',
+		`refs/heads/${branch}`,
+	]);
+	if (!existing.ok) {
+		await runGitWrite(run, ['switch', '--create', branch, 'develop']);
+	} else {
+		await runGitWrite(run, ['switch', branch]);
+		const branchSha = await resolveRef(run, branch);
+		if (branchSha !== sourceSha)
+			throw new Error(
+				`release branch ${branch} does not point at develop ${sourceSha}`,
+			);
+	}
+	await runGitWrite(run, ['push', '--set-upstream', 'origin', branch]);
+	return Object.freeze({
+		branch,
+		baseBranch: 'develop',
+		sourceSha,
+		upstream: `origin/${branch}`,
+	});
+};
+
 const resolveRef = async (run: IGitRunner, ref: string): Promise<string> => {
 	const result = await run(['rev-parse', ref]);
 	if (!result.ok || result.output.trim() === '')
@@ -385,7 +441,8 @@ export const createReleaseCandidate = async (
 		readonly includedProposals?: readonly string[];
 	},
 ): Promise<IReleaseCandidateMetadata> => {
-	const sourceDevelopSha = await resolveRef(run, 'develop');
+	const preparedBranch = await prepareReleaseBranch(run, input);
+	const sourceDevelopSha = preparedBranch.sourceSha;
 	const baseMainSha = await resolveRef(run, 'main');
 	const versionResult = await run([
 		'show',

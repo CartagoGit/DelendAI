@@ -44,7 +44,8 @@ const mainPackageJson = `${JSON.stringify({ name: '@mcp-vertex/core', version: M
 
 /**
  * Standard `IGitRunner` mock for the dry-run path. The release contract
- * resolves `develop` + `main` SHAs and reads `<mainSha>:packages/core/
+ * resolves `develop` + `main` SHAs, prepares the canonical release branch
+ * from a clean `develop` checkout, and reads `<mainSha>:packages/core/
  * package.json`. The script never calls git for anything else in this
  * branch of the flow.
  */
@@ -52,6 +53,9 @@ const buildDryRunGitRunner = (): IGitRunner => {
 	const commands: string[][] = [];
 	return async (args): Promise<IGitRunResult> => {
 		commands.push([...args]);
+		if (args[0] === 'status') {
+			return { ok: true, output: '## develop...origin/develop\n' };
+		}
 		if (args[0] === 'rev-parse' && args[1] === 'develop') {
 			return { ok: true, output: `${SOURCE_DEVELOP_SHA}\n` };
 		}
@@ -59,16 +63,19 @@ const buildDryRunGitRunner = (): IGitRunner => {
 			return { ok: true, output: `${BASE_MAIN_SHA}\n` };
 		}
 		if (
+			args[0] === 'rev-parse' &&
+			args[1] === '--verify' &&
+			args[2] === '--quiet'
+		) {
+			return { ok: false, output: '', reason: 'missing branch' };
+		}
+		if (
 			args[0] === 'show' &&
 			args[1] === `${BASE_MAIN_SHA}:packages/core/package.json`
 		) {
 			return { ok: true, output: mainPackageJson };
 		}
-		return {
-			ok: false,
-			output: '',
-			reason: `unexpected git command: ${args.join(' ')}`,
-		};
+		return { ok: true, output: '' };
 	};
 };
 
@@ -293,6 +300,69 @@ describe('dogfood.script — release track dogfooding', () => {
 			);
 			expect(providerSpy.listPullRequests).toHaveBeenCalledTimes(1);
 			expect(providerSpy.createPullRequest).toHaveBeenCalledTimes(1);
+		});
+
+		it('asks the PR provider for the prepared release branch, not develop', async () => {
+			const providerSpy: IReleasePrProvider = {
+				listPullRequests: vi.fn(async () => []),
+				createPullRequest: vi.fn(async (input) =>
+					Object.freeze({
+						number: 7,
+						url: 'https://example.test/pr/7',
+						title: input.title,
+						headBranch: input.headBranch,
+						baseBranch: input.baseBranch,
+					}),
+				),
+			};
+			await runReleaseDogfood(
+				buildInput({
+					flags: parseDogfoodFlags(['--execute', '--confirm-pr']),
+					provider: providerSpy,
+				}),
+			);
+			expect(providerSpy.createPullRequest).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headBranch: `release/minor/${SLUG}`,
+					baseBranch: 'main',
+				}),
+			);
+			expect(providerSpy.listPullRequests).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headBranch: `release/minor/${SLUG}`,
+					baseBranch: 'main',
+				}),
+			);
+		});
+	});
+
+	describe('release branch workflow guard', () => {
+		it('refuses to prepare a release branch from a non-develop checkout', async () => {
+			const wrongSource: IGitRunner = async (args) => {
+				if (args[0] === 'status') {
+					return { ok: true, output: '## feature/wrong\n' };
+				}
+				if (args[0] === 'rev-parse' && args[1] === 'develop') {
+					return { ok: true, output: `${SOURCE_DEVELOP_SHA}\n` };
+				}
+				if (args[0] === 'rev-parse' && args[1] === 'main') {
+					return { ok: true, output: `${BASE_MAIN_SHA}\n` };
+				}
+				if (
+					args[0] === 'show' &&
+					args[1] === `${BASE_MAIN_SHA}:packages/core/package.json`
+				) {
+					return { ok: true, output: mainPackageJson };
+				}
+				return {
+					ok: false,
+					output: '',
+					reason: `unexpected git command: ${args.join(' ')}`,
+				};
+			};
+			await expect(
+				runReleaseDogfood(buildInput({ run: wrongSource })),
+			).rejects.toThrowError(/prepared from develop/);
 		});
 	});
 
