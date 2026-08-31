@@ -80,7 +80,7 @@ const findProposalPath = (workspace: string, id: string): string => {
 	const proposalsDir = join(workspace, 'docs/mcp-vertex/proposals');
 	const relativePath = readdirSync(proposalsDir, { recursive: true }).find(
 		(entry) =>
-			typeof entry === 'string' && entry.endsWith(`/${id}-quality.md`),
+			typeof entry === 'string' && entry.endsWith(`${id}-quality.md`),
 	);
 	if (relativePath === undefined) {
 		throw new Error(`proposal ${id} was not found under ${proposalsDir}`);
