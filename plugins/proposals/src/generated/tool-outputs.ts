@@ -161,6 +161,7 @@ export interface McpVertexProposalsAutoWorkOutput {
 	hygieneWarnings?: string[];
 	stashes?: unknown;
 	rescueCandidates?: unknown;
+	smokeResiduals?: unknown;
 	ok?: boolean;
 	blockers?: string[];
 }

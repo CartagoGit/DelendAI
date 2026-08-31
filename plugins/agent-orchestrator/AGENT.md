@@ -40,9 +40,9 @@
 ## Tests
 
 - plugins/agent-orchestrator/tests/src/index.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/policy/single-mode.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/policy/per-mode-override.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/policy/registry.spec.ts
+- plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts
+- plugins/agent-orchestrator/tests/src/lib/classifier/regression.spec.ts
+- plugins/agent-orchestrator/tests/src/lib/classifier/task-classifier.spec.ts
 
 ## Do not
 

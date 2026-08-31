@@ -38,9 +38,9 @@
 
 ## Tests
 
-- plugins/security/tests/src/lib/scan-secrets.spec.ts
+- plugins/security/tests/src/lib/run-audit.spec.ts
 - plugins/security/tests/src/lib/run-scan.spec.ts
-- plugins/security/tests/src/lib/tools/security-sast.tool.spec.ts
+- plugins/security/tests/src/lib/scan-secrets.spec.ts
 - plugins/security/tests/src/lib/tools/security-gate.spec.ts
 
 ## Do not

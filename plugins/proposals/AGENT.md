@@ -41,10 +41,10 @@
 
 ## Tests
 
-- plugins/proposals/tests/src/lib/shared/branch-status-engine.spec.ts
-- plugins/proposals/tests/src/lib/shared/pending-integration-store.spec.ts
-- plugins/proposals/tests/src/lib/shared/peer-review-log.spec.ts
-- plugins/proposals/tests/src/lib/shared/peer-review-bypass-log.spec.ts
+- plugins/proposals/tests/src/lib/adopt-apply.spec.ts
+- plugins/proposals/tests/src/lib/adopt-orientation.spec.ts
+- plugins/proposals/tests/src/lib/adopt-tool.spec.ts
+- plugins/proposals/tests/src/lib/adopt.spec.ts
 
 ## Do not
 

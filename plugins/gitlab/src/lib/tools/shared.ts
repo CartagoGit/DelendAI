@@ -1,9 +1,9 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { isAbsolute, join, resolve as resolvePath, sep } from 'node:path';
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import { toolError, toolJson, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import type { GitLabRequestError } from '../client';
 import type { IGitLabProviderContext } from '../config';
@@ -1808,7 +1808,7 @@ export const buildGitLabArtifactsToolRegistrations = (
 							recursive: true,
 						});
 						const truncated = bytes > maxBytes;
-						await writeFile(
+						await writeFileAtomic(
 							target,
 							Buffer.from(binary.slice(0, maxBytes)),
 						);

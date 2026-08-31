@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/usage-tracking/tests/token-tax.spec.ts
-- plugins/usage-tracking/tests/session-surface-bytes.spec.ts
 - plugins/usage-tracking/tests/e2e/1000-calls-latency.e2e.spec.ts
+- plugins/usage-tracking/tests/session-surface-bytes.spec.ts
 - plugins/usage-tracking/tests/src/invocation-telemetry.spec.ts
+- plugins/usage-tracking/tests/src/lib/attribute.spec.ts
 
 ## Do not
 
