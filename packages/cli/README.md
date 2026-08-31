@@ -40,19 +40,19 @@ expressions such as --threshold=health.score>=80 or
 (and 11 other locales) renders the same help translated. Every plugin
 tool has a 1:1 subcommand — the CLI is pure delegation, no domain logic.
 
-| Group | Commands |
-|---|---|
-| **core** | `status`, `overview`, `plugin list/inspect`, `metrics`, `validate`, `validate-matrix`, `config show/get/set/doctor/schema`, `init`, `init:default`, `init:global`, `search`, `scaffold` |
-| **fs / knowledge / project** | `fs read/write`, `knowledge`, `project analyze/plan/create` |
-| **git** | `git status/changed/diff/log/blame/show/worktree` |
-| **memory** | `memory save/recall/list/forget/export/import` |
-| **deps / rules / test-convention** | `deps list/check/polyglot`, `rules get/check/apply`, `test-convention get/suggest/scan` |
-| **quality / audit / logs** | `quality scopes/run/cancel/run-all`, `audit plan/consolidate`, `logs query/tail/subscribe/correlate/redact-test` |
-| **docs** | `docs list/read/search` |
-| **proposals** | `proposals auto-work/continue/create/close-slice/transition/board/status/health/agent-names/lock/worktree/stale-list/round-context/workflow/diagnose/adopt/force-transition/reconcile-folder/state-repair/release-orphan/review/sync/task-queue/delegate/plan` |
-| **notification / web-fetch / status-marker** | `notification status/await-lock`, `web-fetch`, `status-marker close/validate/ping` |
-| **conventions** | `conventions check/plan/apply` |
-| **doctor / completion** | `doctor` (sectioned health, exit 0/1/2), `completion bash\|zsh\|fish` |
+| Group                                        | Commands                                                                                                                                                                                                                                                       |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **core**                                     | `status`, `overview`, `plugin list/inspect`, `metrics`, `validate`, `validate-matrix`, `config show/get/set/doctor/schema`, `init`, `init:default`, `init:global`, `search`, `scaffold`                                                                        |
+| **fs / knowledge / project**                 | `fs read/write`, `knowledge`, `project analyze/plan/create`                                                                                                                                                                                                    |
+| **git**                                      | `git status/changed/diff/log/blame/show/worktree`                                                                                                                                                                                                              |
+| **memory**                                   | `memory save/recall/list/forget/export/import`                                                                                                                                                                                                                 |
+| **deps / rules / test-convention**           | `deps list/check/polyglot`, `rules get/check/apply`, `test-convention get/suggest/scan`                                                                                                                                                                        |
+| **quality / audit / logs**                   | `quality scopes/run/cancel/run-all`, `audit plan/consolidate`, `logs query/tail/subscribe/correlate/redact-test`                                                                                                                                               |
+| **docs**                                     | `docs list/read/search`                                                                                                                                                                                                                                        |
+| **proposals**                                | `proposals auto-work/continue/create/close-slice/transition/board/status/health/agent-names/lock/worktree/stale-list/round-context/workflow/diagnose/adopt/force-transition/reconcile-folder/state-repair/release-orphan/review/sync/task-queue/delegate/plan` |
+| **notification / web-fetch / status-marker** | `notification status/await-lock`, `web-fetch`, `status-marker close/validate/ping`                                                                                                                                                                             |
+| **conventions**                              | `conventions check/plan/apply`                                                                                                                                                                                                                                 |
+| **doctor / completion**                      | `doctor` (sectioned health, exit 0/1/2), `completion bash\|zsh\|fish`                                                                                                                                                                                          |
 
 `mcpv doctor --json` returns `{ status, sections }` for CI. `eval "$(mcpv
 completion bash)"` installs shell completion derived from the live
