@@ -803,6 +803,7 @@ export const activate = async (
 			vscode,
 			client,
 			proposalsSource,
+			detailSink,
 			...withPrefix,
 		}),
 	);
@@ -851,7 +852,14 @@ export const activate = async (
 	// command gives the user the same editor with the deep-link
 	// `pluginId` so they land on the right card.
 	track(registerOpenPluginConfigCommand({ vscode, client, ...withPrefix }));
-	track(registerOpenToolDetailCommand({ vscode, client, ...withPrefix }));
+	track(
+		registerOpenToolDetailCommand({
+			vscode,
+			client,
+			detailSink,
+			...withPrefix,
+		}),
+	);
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
 	track(
@@ -1211,6 +1219,15 @@ const registerDashboardSurfaces = async (
 		...withPrefix,
 	});
 	dashboardRefresh.current = dashboardProvider;
+	const dashboardDetailBroker = dashboardProvider.getDetailBroker();
+	const detailSink = (async (kind: 'tool' | 'proposal', model: unknown) => {
+		if (kind === 'tool') {
+			return dashboardDetailBroker.push({ kind, model });
+		}
+		return dashboardDetailBroker.push({ kind, model });
+	}) as unknown as NonNullable<
+		Parameters<typeof registerOpenToolDetailCommand>[0]['detailSink']
+	>;
 	const dashboardRegistration = host.registerWebviewViewProvider?.(
 		DASHBOARD_VIEW_ID,
 		dashboardProvider,

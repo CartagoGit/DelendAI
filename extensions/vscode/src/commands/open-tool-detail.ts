@@ -147,7 +147,7 @@ export const buildToolDetailHtml = async (
 			),
 		),
 	};
-	return { html: renderSharedToolDetailHtml(model), model };
+	return { html: renderToolDetailHtml(model), model };
 };
 
 /**
