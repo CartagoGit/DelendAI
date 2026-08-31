@@ -13,6 +13,7 @@ export const TABS: ReadonlyArray<{ id: string; label: string }> = [
 	{ id: 'sessions', label: 'tabSessions' },
 	{ id: 'times', label: 'tabTimes' },
 	{ id: 'agents', label: 'tabAgents' },
+	{ id: 'memory', label: 'tabMemory' },
 	{ id: 'health', label: 'tabHealth' },
 ];
 
