@@ -16,35 +16,6 @@ import type {
 	ISessionHygieneSnapshot,
 } from '../types';
 
-const ReasonSchema = z.enum(['session-age', 'idle-gap', 'mcp-output-volume']);
-const SnapshotSchema = z.object({
-	sessionId: z.string(),
-	observedMcpOnly: z.literal(true),
-	firstActivityAt: z.string(),
-	lastActivityAt: z.string(),
-	observedElapsedMs: z.number(),
-	largestIdleGapMs: z.number(),
-	calls: z.number(),
-	responseBytes: z.number(),
-	estimatedMcpOutputTokens: z.number(),
-	reasons: z.array(ReasonSchema),
-});
-
-const HostSessionSchema = z.object({
-	hostSessionId: z.string(),
-	observedHostOnly: z.literal(true),
-	firstActivityAt: z.string(),
-	lastActivityAt: z.string(),
-	observedElapsedMs: z.number(),
-	turnCount: z.number(),
-	preCompactCount: z.number(),
-	postCompactCount: z.number(),
-	sessionEndCount: z.number(),
-	lastEvent: z.enum(['turn', 'pre-compact', 'post-compact', 'session-end']),
-	explicitMcpSessionIdMatch: z.boolean(),
-	matchingMcpCalls: z.number(),
-});
-
 export interface ISessionHygieneToolOptions {
 	readonly namespacePrefix: string;
 	readonly invocationsPath: string;

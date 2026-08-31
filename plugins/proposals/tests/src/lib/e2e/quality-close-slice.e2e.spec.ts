@@ -63,26 +63,16 @@ const createQualityServer = async (command: string) => {
 	return { workspace, client, project };
 };
 
-const seedSlice = async (client: Client, id: string): Promise<string> => {
-	const created = await client.callTool({
-		name: 'mcp-vertex_proposals_create_proposal',
-		arguments: {
-			id,
-			kind: 'feat',
-			title: 'quality gate',
-			status: 'in-progress',
-			slices: [
-				{
-					sliceId: 'S1',
-					title: 'quality gate',
-					files: ['src/quality.ts'],
-					gate: 'none',
-				},
-			],
-		},
-	});
-	expect(created.isError).toBeFalsy();
-	return (created.structuredContent as { file: string }).file;
+const seedSlice = (workspace: string, id: string): string => {
+	const proposalDir = join(workspace, 'docs/mcp-vertex/proposals/ready');
+	mkdirSync(proposalDir, { recursive: true });
+	const proposalPath = join(proposalDir, `${id}-quality.md`);
+	writeFileSync(
+		proposalPath,
+		`---\nid: ${id}\nstatus: ready\ntype: proposal\ntrack: plugins/proposals+tests\ndate: 2026-08-31\nkind: feat\ntitle: quality gate\n---\n\n# ${id} — quality gate\n\n## goal\n\nExercise the quality gate.\n\n## Slices\n\n- global_gate: none\n\n### S1 — quality gate\n- **Status**: pending\n- **Files**: \`src/quality.ts\`\n- **Gate**: none\n`,
+		'utf8',
+	);
+	return proposalPath;
 };
 
 afterEach(async () => {
@@ -94,7 +84,10 @@ describe('e2e: proposals close_slice + quality gate', () => {
 	it('keeps the slice pending when the quality scope fails', async () => {
 		const { client, project } = await createQualityServer('false');
 		try {
-			const proposalPath = await seedSlice(client, 'f04200');
+			const proposalPath = seedSlice(
+				(client as unknown as { workspace: string }).workspace,
+				'f04200',
+			);
 			const sync = await client.callTool({
 				name: 'mcp-vertex_proposals_sync_proposals',
 				arguments: {},
