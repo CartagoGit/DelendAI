@@ -334,7 +334,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			[],
 			{
 				summary:
-					'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).',
+					'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.',
 				tags: ['error-reporting', 'github', 'issues'],
 				startupActivation: true,
 			},
@@ -351,6 +351,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'pr_create',
 				'pr_comment',
 				'issue_create',
+				'mcp_vertex_issue_create',
 				'release',
 				'search_code',
 			],
