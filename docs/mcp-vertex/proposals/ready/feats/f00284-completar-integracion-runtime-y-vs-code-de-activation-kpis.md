@@ -36,8 +36,10 @@ f00198 tiene la lógica pura y el dashboard CLI, pero la revisión independiente
   - "Conectar los eventos runtime existentes con activation KPIs sin abrir una vía paralela."
   - "Persistir el snapshot local en .vscode/mcp-vertex/kpis.json mediante una escritura segura y testeable."
   - "Mantener la privacidad local y validar la serialización/hidratación."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: copilot-orchestrator
+- review-reviewer: proposal_guardian
+- review-log: requested_changes by proposal_guardian — Gate focalizado no verde: 1 test falla y 30 pasan. session-surface-bytes.spec.ts espera longitud 1, pero la respuesta observada contiene 2 registros. Corregir implementación o expectativa y repetir el gate antes de aprobar.
 ### S2 — Vista Activation KPIs en VS Code
 - **Status**: pending
 - **DependsOn**: [S1]

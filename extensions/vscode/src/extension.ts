@@ -335,15 +335,8 @@ const createResilientClient = (
 		client: proxy,
 		reconnect: async () => {
 			if (reconnecting !== undefined) {
-				const activeReconnect = reconnecting;
-				try {
-					await activeReconnect;
-					return;
-				} catch {
-					if (reconnecting === activeReconnect) {
-						reconnecting = undefined;
-					}
-				}
+				await reconnecting;
+				return;
 			}
 			const connection = Promise.resolve().then(connect);
 			pendingConnection = connection;
@@ -351,16 +344,17 @@ const createResilientClient = (
 				() => undefined,
 				() => undefined,
 			);
-			const nextReconnect = connection.then(async (next) => {
+			const operation = connection.then(async (next) => {
 				const previous = current;
 				current = next;
 				await previous.close();
 			});
-			reconnecting = nextReconnect.finally(() => {
+			reconnecting = operation;
+			const cleanup = (): void => {
 				pendingConnection = undefined;
-				if (reconnecting === nextReconnect) reconnecting = undefined;
-			});
-			void reconnecting.catch(() => undefined);
+				if (reconnecting === operation) reconnecting = undefined;
+			};
+			void operation.then(cleanup, cleanup);
 			await reconnecting;
 		},
 		replace: async (next) => {
