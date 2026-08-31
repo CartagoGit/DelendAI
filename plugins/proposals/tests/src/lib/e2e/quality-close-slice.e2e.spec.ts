@@ -75,6 +75,16 @@ const seedSlice = (workspace: string, id: string): string => {
 	return proposalPath;
 };
 
+const recentValidateEvidence = (workspace: string) => {
+	const logPath = join(workspace, 'validate.log');
+	writeFileSync(logPath, 'validate passed\n', 'utf8');
+	return {
+		timestamp: new Date().toISOString(),
+		exitCode: 0,
+		logPath,
+	};
+};
+
 afterEach(async () => {
 	for (const workspace of workspaces.splice(0))
 		rmSync(workspace, { recursive: true, force: true });
