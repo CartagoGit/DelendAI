@@ -304,7 +304,19 @@ export async function gcZombies(
 							task_id: orphan.taskId,
 							agent: lockEntry.agent,
 						},
-						{ lockPath },
+						{
+							lockPath,
+							// Forward `now` so the lock engine's stale
+							// filter uses the same instant the
+							// reconcile was running with (tests inject
+							// historical timestamps; production uses
+							// the default `Date.now()`).
+							...(options?.now !== undefined
+								? {
+										now: () => options.now!.toISOString(),
+									}
+								: {}),
+						},
 					);
 					// R-2026-08-31: only emit the watchdog event when we
 					// actually freed a lock. `runAgentLockEngine`'s
