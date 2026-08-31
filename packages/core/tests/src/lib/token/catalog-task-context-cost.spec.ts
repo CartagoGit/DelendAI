@@ -41,11 +41,11 @@ describe('catalog-task-context-cost measurement', () => {
 		expect(measurement.catalog.nativeCore).toMatchObject({
 			label: 'native core catalog',
 			toolCount: 28,
-			toolsListBytes: 42616,
-			estimatedTokens: 10654,
-			schemaBytes: 36356,
-			inputSchemaBytes: 11457,
-			outputSchemaBytes: 24899,
+			toolsListBytes: 42768,
+			estimatedTokens: 10692,
+			schemaBytes: 36508,
+			inputSchemaBytes: 11533,
+			outputSchemaBytes: 24975,
 			maxPluginBytes: 0,
 		});
 		expect(measurement.catalog.swarmNative).toMatchObject({
