@@ -125,8 +125,10 @@ class VscodeWebviewPanel implements IWebviewPanel {
 	} {
 		return {
 			options: this.options,
-			html: this._html,
-			setHtml: (html: string) => {
+			get html() {
+				return this._html;
+			},
+			setHtml: (html) => {
 				this._html = html;
 				this.panel.webview.html = html;
 			},
@@ -148,14 +150,10 @@ class VscodeWebviewPanel implements IWebviewPanel {
 				});
 			},
 			postMessage: async (msg) => {
-				// VS Code's `postMessage` returns `Thenable<boolean>`. The
-				// `IWebviewPanel` contract pins it to `Promise<void>` so
-				// host fakes that don't model a real message bus can stay
-				// trivially `{ postMessage: async () => {} }`. We await and
-				// swallow the boolean here.
 				await this.panel.webview.postMessage(msg);
 			},
 		};
+		this._html = html;
 	}
 	reveal(viewColumn?: number): void {
 		this.panel.reveal(viewColumn);
@@ -405,7 +403,10 @@ export const createVscodeHostAdapter = (
 			// Match by id (now in `description`); fall back to label so
 			// hosts that override this method without passing id still work.
 			const idDesc = result.description ?? '';
-			return items.find((i) => i.id === idDesc)?.id ?? result.label;
+			return (
+				items.find((i) => i.id === idDesc) ??
+				items.find((i) => i.label === result.label)
+			);
 		},
 
 		async openTextDocument(uri: string) {

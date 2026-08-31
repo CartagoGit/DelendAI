@@ -2,7 +2,7 @@
 id: f00273
 title: "Ranking, umbral de confianza e histéresis en `tool_search`"
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: adaptive
 date: 2026-08-29

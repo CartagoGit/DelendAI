@@ -2,7 +2,7 @@
 id: f00270
 title: "`TokenBudgetRegistry` unificado"
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: tokens
 date: 2026-08-25

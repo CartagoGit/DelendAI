@@ -69,9 +69,8 @@ export const verifyDevBundles = async (
 			format: 'esm',
 			minify: false,
 			plugins: [scssPlugin],
-			external: BROWSER_BUILD_EXTERNALS,
+			external: [...BROWSER_BUILD_EXTERNALS],
 			splitting: true,
-			write: false,
 		});
 		if (!result.success) {
 			failures.push({

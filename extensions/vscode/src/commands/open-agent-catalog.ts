@@ -120,7 +120,12 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(
 		OPEN_AGENT_CATALOG_COMMAND,
 		async () => {
-			const service = new AgentCatalogService(deps.client);
+			const service = new AgentCatalogService(
+				deps.client,
+				deps.namespacePrefix === undefined
+					? {}
+					: { namespacePrefix: deps.namespacePrefix },
+			);
 			const copy = viewCopyFor(
 				resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
 			);

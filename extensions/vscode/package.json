@@ -220,7 +220,7 @@
 				"command": "mcp-vertex.providers.healthcheck",
 				"title": "Refresh Provider Healthcheck",
 				"category": "MCP Vertex",
-				"icon": "$(refresh)"
+				"icon": "$(pulse)"
 			},
 			{
 				"command": "mcp-vertex.providers.pause",

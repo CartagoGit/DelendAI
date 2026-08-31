@@ -143,7 +143,7 @@ export const parseWhitelist = (
 				trimmed,
 			);
 			if (match !== null) {
-				pending = match[1]
+				pending = (match[1] ?? '')
 					.split(',')
 					.map((entry) => entry.trim())
 					.filter((entry) => entry.length > 0);

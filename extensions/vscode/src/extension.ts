@@ -7,6 +7,7 @@ import {
 	type IOverview,
 } from '@mcp-vertex/client';
 import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import {
 	MEMORY_FORGET_COMMAND,
 	registerMemoryForgetCommand,
@@ -239,6 +240,22 @@ export interface IVscodeApi {
 			message: string,
 			...actions: readonly string[]
 		): Thenable<string | undefined>;
+		showQuickPick?(
+			items: ReadonlyArray<{
+				readonly id: string;
+				readonly label: string;
+				readonly description?: string;
+				readonly detail?: string;
+			}>,
+		): Thenable<
+			| {
+					readonly id: string;
+					readonly label: string;
+					readonly description?: string;
+					readonly detail?: string;
+			  }
+			| undefined
+		>;
 	};
 	readonly workspace?: {
 		createFileSystemWatcher(pattern: string): IFileSystemWatcher;
@@ -541,8 +558,16 @@ export const activate = async (
 		namespacePrefix === undefined ? {} : { namespacePrefix },
 	);
 	const notifications = new NotificationsService(client, namespacePrefix);
-	const toolTree = new ToolTreeDataProvider(overview, catalog);
-	const memoryTree = new MemoryTreeDataProvider(new MemoryService(client));
+	const serverConfigured = configuredLaunch !== undefined;
+	const toolTree = new ToolTreeDataProvider(
+		overview,
+		catalog,
+		serverConfigured,
+	);
+	const memoryTree = new MemoryTreeDataProvider(
+		new MemoryService(client),
+		serverConfigured,
+	);
 	// Fix #4: wrap `createStatusBarItem` in try/catch — a strict host can
 	// throw when no workbench is ready, and we do not want a failed
 	// status bar to abort the rest of activation.
@@ -571,6 +596,7 @@ export const activate = async (
 		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
 	});
 	const proposalsTree = new ProposalBoardProvider(client, {
+		serverConfigured,
 		snapshotSource: proposalsSource,
 		filterStore: createProposalFilterStore(context.globalState),
 	});
@@ -748,6 +774,7 @@ export const activate = async (
 			vscode,
 			deps.vscode,
 			namespacePrefix,
+			serverConfigured,
 			track,
 		),
 	);
@@ -790,28 +817,82 @@ export const resolveServerCommand = async (
 	const command = config?.get<string>('command');
 	const rawArgs = config?.get<unknown>('args');
 	const configCwd = config?.get<string>('cwd');
-	const args =
+	const explicitArgs =
 		Array.isArray(rawArgs) && rawArgs.every((a) => typeof a === 'string')
 			? (rawArgs as readonly string[])
 			: typeof rawArgs === 'string' && rawArgs.trim().length > 0
 				? rawArgs.trim().split(/\s+/)
 				: undefined;
+	let resolvedCommand = command;
+	let args = explicitArgs;
+	let resolvedCwd = configCwd;
 	if (
-		typeof command !== 'string' ||
-		command.trim().length === 0 ||
-		args === undefined
+		(typeof resolvedCommand !== 'string' ||
+			resolvedCommand.trim().length === 0 ||
+			args === undefined) &&
+		root !== undefined
 	) {
-		return undefined;
+		const discovered = await readWorkspaceMcpLaunch(root);
+		if (discovered !== undefined) {
+			resolvedCommand = discovered.command;
+			args = discovered.args;
+			resolvedCwd = discovered.cwd;
+		}
 	}
+	if (
+		typeof resolvedCommand !== 'string' ||
+		resolvedCommand.trim().length === 0 ||
+		args === undefined
+	)
+		return undefined;
 	const cwd =
-		typeof configCwd === 'string' && configCwd.trim().length > 0
-			? configCwd.trim()
+		typeof resolvedCwd === 'string' && resolvedCwd.trim().length > 0
+			? resolvedCwd.trim()
 			: root;
 	return {
-		command: command.trim(),
+		command: resolvedCommand.trim(),
 		args,
 		...(cwd === undefined ? {} : { cwd }),
 	};
+};
+
+interface IWorkspaceMcpLaunch {
+	readonly command: string;
+	readonly args: readonly string[];
+	readonly cwd?: string;
+}
+
+const readWorkspaceMcpLaunch = async (
+	root: string,
+): Promise<IWorkspaceMcpLaunch | undefined> => {
+	try {
+		const raw = JSON.parse(
+			await readFile(join(root, '.mcp.json'), 'utf8'),
+		) as {
+			readonly mcpServers?: Record<string, unknown>;
+			readonly servers?: Record<string, unknown>;
+		};
+		const entry = (raw.mcpServers ?? raw.servers)?.['mcp-vertex'];
+		if (entry === null || typeof entry !== 'object') return undefined;
+		const value = entry as {
+			readonly command?: unknown;
+			readonly args?: unknown;
+			readonly cwd?: unknown;
+		};
+		if (
+			typeof value.command !== 'string' ||
+			!Array.isArray(value.args) ||
+			!value.args.every((arg) => typeof arg === 'string')
+		)
+			return undefined;
+		return {
+			command: value.command,
+			args: value.args,
+			...(typeof value.cwd === 'string' ? { cwd: value.cwd } : {}),
+		};
+	} catch {
+		return undefined;
+	}
 };
 
 /**
@@ -915,6 +996,7 @@ const registerDashboardSurfaces = async (
 	vscode: IVscodeApi,
 	injectedVscode: IVscodeApi | undefined,
 	namespacePrefix: string | undefined,
+	serverConfigured: boolean,
 	track: (disposable: IDisposable) => IDisposable,
 ): Promise<void> => {
 	const host =
@@ -941,6 +1023,7 @@ const registerDashboardSurfaces = async (
 	const kpiRegistration = registerKpiDashboardProvider({
 		host,
 		client,
+		serverConfigured,
 		viewId: KPI_VIEW_ID,
 		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
 	});

@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: general
 date: 2026-08-30
+related:
+  - q00013 # master coordination plan
 ---
 
 # f00391 — Release track R4: finalize, reconciliation, hotfix and end-to-end promotion

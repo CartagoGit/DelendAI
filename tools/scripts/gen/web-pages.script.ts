@@ -56,6 +56,29 @@ interface IStep {
 	readonly refresh: string;
 }
 
+export interface ISpawnedProcess {
+	readonly exited: Promise<number>;
+	readonly stdout?: ReturnType<typeof Bun.spawn>['stdout'];
+	readonly stderr?: ReturnType<typeof Bun.spawn>['stderr'];
+}
+
+export type SpawnFn = (
+	cmd: readonly string[],
+	options: {
+		readonly stdout: 'inherit' | 'pipe';
+		readonly stderr: 'inherit' | 'pipe';
+	},
+) => ISpawnedProcess;
+
+const spawnWithBun: SpawnFn = (cmd, options) => {
+	const process = Bun.spawn([...cmd], options);
+	return {
+		exited: process.exited,
+		...(process.stdout === undefined ? {} : { stdout: process.stdout }),
+		...(process.stderr === undefined ? {} : { stderr: process.stderr }),
+	};
+};
+
 const STEPS: readonly IStep[] = [
 	{
 		name: 'pages',
@@ -126,30 +149,27 @@ const flagValue = (
 	return undefined;
 };
 
-const runStep = async (
-	step: IStep,
-	spawnFn: typeof Bun.spawn,
-): Promise<number> => {
+const runStep = async (step: IStep, spawnFn: SpawnFn): Promise<number> => {
 	out(`▶ ${step.name} — ${step.label}`);
-	const proc = spawnFn(step.cmd as string[], {
+	const proc = spawnFn(step.cmd, {
 		stdout: 'inherit',
 		stderr: 'inherit',
-	}) as ReturnType<typeof Bun.spawn>;
+	});
 	const exit = await proc.exited;
 	out(`  ${step.name} exited ${exit}`);
 	return exit;
 };
 
-const runGitDiff = async (spawnFn: typeof Bun.spawn): Promise<number> => {
+const runGitDiff = async (spawnFn: SpawnFn): Promise<number> => {
 	out(`▶ drift-check — git diff --exit-code`);
 	const proc = spawnFn(['git', 'diff', '--exit-code'], {
 		stdout: 'inherit',
 		stderr: 'inherit',
-	}) as ReturnType<typeof Bun.spawn>;
+	});
 	return proc.exited;
 };
 
-const reportDrift = async (spawnFn: typeof Bun.spawn): Promise<number> => {
+const reportDrift = async (spawnFn: SpawnFn): Promise<number> => {
 	// When `git diff --exit-code` returns non-zero the stdout is the
 	// diff. We pipe that through `git status --porcelain` so the
 	// per-file report lines up with what a human would see in
@@ -158,7 +178,7 @@ const reportDrift = async (spawnFn: typeof Bun.spawn): Promise<number> => {
 	const status = spawnFn(['git', 'status', '--porcelain'], {
 		stdout: 'pipe',
 		stderr: 'pipe',
-	}) as ReturnType<typeof Bun.spawn>;
+	});
 	const exit = await status.exited;
 	if (exit !== 0) return exit;
 	const stdout = status.stdout;
@@ -218,11 +238,11 @@ const reportDrift = async (spawnFn: typeof Bun.spawn): Promise<number> => {
  */
 export interface IRunOptions {
 	readonly argv: readonly string[];
-	readonly spawn?: typeof Bun.spawn;
+	readonly spawn?: SpawnFn;
 }
 
 export const run = async (options: IRunOptions): Promise<number> => {
-	const spawnFn: typeof Bun.spawn = options.spawn ?? Bun.spawn;
+	const spawnFn: SpawnFn = options.spawn ?? spawnWithBun;
 	const check = hasFlag(options.argv, 'check');
 	const list = hasFlag(options.argv, 'list');
 	const only = flagValue(options.argv, 'only');

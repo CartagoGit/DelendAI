@@ -1392,42 +1392,10 @@
 				"date": ""
 			},
 			{
-				"id": "f00270",
-				"title": "f00270",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00271",
-				"title": "f00271",
-				"track": "tokens",
+				"id": "f00277",
+				"title": "f00277",
+				"track": "trust",
 				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00273",
-				"title": "f00273",
-				"track": "adaptive",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00278",
-				"title": "f00278",
-				"track": "trust",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00279",
-				"title": "f00279",
-				"track": "trust",
-				"status": "ready",
 				"kind": "feat",
 				"date": ""
 			},
@@ -2632,6 +2600,14 @@
 				"date": ""
 			},
 			{
+				"id": "v00134",
+				"title": "v00134",
+				"track": "general",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
 				"id": "x00203",
 				"title": "x00203",
 				"track": "plugins+fix",
@@ -2697,12 +2673,12 @@
 			}
 		],
 		"byStatus": {
-			"ready": 164,
+			"ready": 161,
 			"in-progress": 15,
 			"review": 0,
 			"paused": 1,
 			"done": 566,
-			"blocked": 8,
+			"blocked": 12,
 			"retired": 11,
 			"unspecified": 0
 		}

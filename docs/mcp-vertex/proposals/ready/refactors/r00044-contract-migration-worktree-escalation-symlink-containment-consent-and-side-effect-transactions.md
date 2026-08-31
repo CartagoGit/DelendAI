@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: general
 date: 2026-08-30
+related:
+  - q00013 # master coordination plan
 ---
 
 # r00044 — Contract migration, worktree escalation, symlink containment, consent and side-effect transactions

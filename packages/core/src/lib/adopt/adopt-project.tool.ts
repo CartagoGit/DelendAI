@@ -37,9 +37,11 @@ import type {
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IScaffoldHostOptions } from '../scaffold/scaffold-host';
 import { buildAgentFiles } from './adopt-project-write-estimate';
+import { persistProjectProfile } from './project-profile.service';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { toolError, toolOk } from '../shared/tool-response';
 import { withFileMutex } from '../shared/with-file-mutex';
+import { PROJECT_PROFILE_FILENAME } from '../contracts/interfaces/project-profile.interface';
 
 const CONFIG_FILENAME = 'mcp-vertex.config.json';
 
@@ -241,10 +243,21 @@ export const buildAdoptProjectToolRegistration = (
 					),
 				);
 
-				// 2. Generated scaffold + plugin-contributed adoption files — skip any
+				// 2. Persist the derived project profile so later tools can reuse
+				// the current analysis instead of rediscovering the workspace.
+				const profileWrite = await persistProjectProfile({
+					workspace: deps.workspace,
+					analysis,
+					assessment,
+				});
+
+				// 3. Generated scaffold + plugin-contributed adoption files — skip any
 				// file the project already owns (project instructions win).
 				const created: string[] = [];
 				const skipped: string[] = [];
+				if (profileWrite.created) {
+					created.push(PROJECT_PROFILE_FILENAME);
+				}
 				for (const file of plan.files) {
 					if (await deps.reader.exists(file.path)) {
 						skipped.push(file.path);

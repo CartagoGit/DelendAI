@@ -129,8 +129,14 @@ const main = (): number => {
 	) {
 		// The fresh build always has a fresh timestamp; we can't byte-compare
 		// directly. Instead we compare structurally ignoring the timestamp.
-		const onDiskNoTs = JSON.parse(onDiskJson) as { tools: unknown };
-		const freshNoTs = JSON.parse(freshJson) as { tools: unknown };
+		const onDiskNoTs = JSON.parse(onDiskJson) as {
+			tools: unknown;
+			version: unknown;
+		};
+		const freshNoTs = JSON.parse(freshJson) as {
+			tools: unknown;
+			version: unknown;
+		};
 		if (
 			JSON.stringify(onDiskNoTs.tools) !== JSON.stringify(freshNoTs.tools)
 		) {
