@@ -137,8 +137,7 @@ const buildDryRunGitRunner = (): IGitRunner => {
 		if (args[0] === 'show') {
 			if (
 				args[1] === `${BASE_MAIN_SHA}:packages/core/package.json` ||
-				(args[1] !== undefined &&
-					args[1].endsWith('packages/core/package.json'))
+				args[1]?.endsWith('packages/core/package.json')
 			) {
 				return { ok: true, output: mainPackageJson };
 			}

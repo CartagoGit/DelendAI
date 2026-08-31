@@ -27,7 +27,6 @@ const EMPTY_LANG_DICT = {
 } as unknown as ILangDict;
 
 const renderLangPicker = (current: string): string => {
-	const currentMeta = languages.find((entry) => entry.code === current);
 	const currentFlag = renderFlagIcon(current);
 	const langLabel = extensionText(
 		EMPTY_LANG_DICT,
@@ -39,7 +38,6 @@ const renderLangPicker = (current: string): string => {
 		<select name="language" data-header-lang aria-label="${langLabel}">
 			${HOST_LANGUAGE_CHOICES.map((code) => {
 				const meta = languages.find((entry) => entry.code === code);
-				const flag = renderFlagIcon(code);
 				const selected = code === current ? ' selected' : '';
 				return `<option value="${escapeHtml(code)}"${selected} data-flag="${escapeHtml(code)}">${escapeHtml(meta?.label ?? code)} · ${escapeHtml(code)}</option>`;
 			}).join('')}

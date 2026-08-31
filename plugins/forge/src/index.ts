@@ -45,29 +45,6 @@ export default definePlugin({
 				`forge plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
-		const cycle = {
-			...(parsed.data.releaseCycle?.releaseSourceBranch !== undefined
-				? {
-						releaseSourceBranch:
-							parsed.data.releaseCycle.releaseSourceBranch,
-					}
-				: {}),
-			...(parsed.data.releaseCycle?.releaseTargetBranch !== undefined
-				? {
-						releaseTargetBranch:
-							parsed.data.releaseCycle.releaseTargetBranch,
-					}
-				: {}),
-			...(parsed.data.releaseCycle?.integrationBranch !== undefined
-				? {
-						integrationBranch:
-							parsed.data.releaseCycle.integrationBranch,
-					}
-				: {}),
-			...(parsed.data.releaseCycle?.remote !== undefined
-				? { remote: parsed.data.releaseCycle.remote }
-				: {}),
-		};
 		const readTools = buildForgeReadToolRegistrations({
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRootAbs: ctx.workspace.root,
