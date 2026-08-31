@@ -758,6 +758,46 @@ export const cleanupStaleAgentLockState = async (
 		getMutexOptions({}, deps),
 	);
 
+/**
+ * Release every claim owned by the current host process.
+ *
+ * This is the explicit session-close path: when the MCP transport closes,
+ * callers can release immediately instead of waiting for heartbeat TTL GC.
+ * The host/pid match prevents one process from deleting another process's
+ * active claims, and the operation is idempotent when called more than once.
+ */
+export const releaseAgentSessionClaims = async (
+	deps: IAgentLockDeps = {},
+): Promise<{ readonly releasedTaskIds: readonly string[] }> => {
+	const caller = resolveCallerHostId(deps);
+	return withFileMutex(
+		getFileLockTablePath(deps),
+		async () => {
+			const raw = await loadLock(deps);
+			const owned = raw.in_flight.filter(
+				(entry) =>
+					typeof entry.host === 'string' &&
+					entry.host === caller.host &&
+					typeof entry.pid === 'number' &&
+					entry.pid === caller.pid,
+			);
+			if (owned.length === 0) return { releasedTaskIds: [] };
+			const releasedTaskIds = owned.map((entry) => entry.task_id);
+			await pruneFileLocksForTasks(releasedTaskIds, deps);
+			const released = new Set(releasedTaskIds);
+			const cleaned: ILockFile = {
+				...raw,
+				in_flight: raw.in_flight.filter(
+					(entry) => !released.has(entry.task_id),
+				),
+			};
+			await writeLock(cleaned, deps);
+			return { releasedTaskIds };
+		},
+		getMutexOptions({}, deps),
+	);
+};
+
 const findOverlap = (a: string[], b: string[]): string[] => {
 	const setB = new Set(b);
 	return a.filter((path) => setB.has(path));

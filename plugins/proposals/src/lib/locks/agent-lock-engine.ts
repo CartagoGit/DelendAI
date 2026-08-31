@@ -5,6 +5,7 @@ export {
 	getAgentLockSessionBalance,
 	listStaleAgentLockTmpFiles,
 	readLock,
+	releaseAgentSessionClaims,
 	removeStale,
 	resetAgentLockSessionBalance,
 	runAgentLockEngine,

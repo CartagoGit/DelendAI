@@ -9,6 +9,7 @@ import { dirname, basename } from 'node:path';
 
 import {
 	getAgentLockSessionBalance,
+	releaseAgentSessionClaims,
 	runAgentLockEngine,
 } from '../locks/agent-lock-engine';
 import type { ILockChangeListener } from '../locks/lock-change-listener';
@@ -57,6 +58,24 @@ export interface IAgentLockToolOptions {
 const deriveWorkspaceRoot = (lockPathAbs: string): string => {
 	const parent = dirname(lockPathAbs);
 	return basename(parent) === '.cache' ? dirname(parent) : parent;
+};
+
+type ICloseCapableServer = {
+	readonly server?: {
+		onclose?: (() => void) | undefined;
+	};
+};
+
+const attachSessionCleanup = (server: unknown, lockPathAbs: string): void => {
+	const transportServer = (server as ICloseCapableServer).server;
+	if (transportServer === undefined) return;
+	const previousOnClose = transportServer.onclose;
+	transportServer.onclose = (): void => {
+		void releaseAgentSessionClaims({ lockPath: lockPathAbs }).catch(
+			() => undefined,
+		);
+		previousOnClose?.();
+	};
 };
 
 export const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
@@ -131,6 +150,7 @@ export const buildAgentLockRegistration = (
 			'Claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc). The write-ownership primitive.',
 		tags: ['coordination'],
 		register: async (server) => {
+			attachSessionCleanup(server, options.lockPathAbs);
 			server.registerTool(
 				toolName,
 				{
