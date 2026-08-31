@@ -131,10 +131,13 @@ importa de `@mcp-vertex/core`.
 
 ### S1 — Migrar imports de tipos puros a `@mcp-vertex/core/contracts`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/client/src/**/*.ts` (todos los `import type` de `@mcp-vertex/core` hacia `contracts`), `tools/scripts/inspect/client-imports.script.ts`, `tools/scripts/lint/no-core-public-types-in-client.script.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00030-s1
+- review-reviewer: delivery-verifier-r00030-s1
+- review-log: approved by delivery-verifier-r00030-s1 — Verified independently: r00030 S1 acceptance covered. 6 client files migrated, 5 new types added to contracts barrel, lint + inspect wired in, 0 violations. Bundle size impact minimal (types only); runtime behavior unchanged (still import value/runtime helpers from @mcp-vertex/core/public).
 ## acceptance
 
 - Cero `import type { ... } from '@mcp-vertex/core'` en
