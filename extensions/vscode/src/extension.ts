@@ -1,3 +1,7 @@
+// MUST be the first import — see the file header for the rationale.
+// Keeping it on a single line avoids any chance of a stray
+// transformation reordering it past a `zod` import.
+import './shims/node22-navigator';
 import {
 	AgentCatalogService,
 	McpStdioClient,
