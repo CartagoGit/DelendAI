@@ -428,6 +428,30 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 			reason: 'The overview tool still documents compact grouping with a proposals example.',
 			kind: 'literal',
 		},
+		{
+			file: 'packages/core/src/lib/contracts/release/index.ts',
+			needle: 'release metadata proposals must be non-empty strings',
+			until: '2027-03-31',
+			classification: 'compatibility',
+			reason: 'The release contract surfaces the human-readable error in the validator message; the term is generic English for "proposal items" in the metadata map and does not bind to the proposals plugin.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/adopt/adoption-stages.constant.ts',
+			needle: 'proposals+agents',
+			until: '2027-03-31',
+			classification: 'adapter',
+			reason: 'Adoption stage title groups the proposals and agent-orchestrator plugins in the day-to-day workflow stage; the title is a human-readable label for adoption copy.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/adopt/adoption-stages.constant.ts',
+			needle: "'proposals'",
+			until: '2027-03-31',
+			classification: 'adapter',
+			reason: 'Adoption stage pluginId list literally names the proposals plugin to mark the stage as adopted; the boundary lint should track the plugin namespace, not block the adoption fixture.',
+			kind: 'literal',
+		},
 	];
 
 const stripComments = (source: string): string =>
