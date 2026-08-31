@@ -5,17 +5,17 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 111
-- Unclassified candidates: 0
+- Findings: 117
+- Unclassified candidates: 2
 - Missing expected findings: 0
-- Resolved by slices: 12
+- Resolved by slices: 13
 - Regressions (resolved rule still present): 0
 - import: 1
 - path: 7
 - plugin-name: 11
-- type: 64
-- message: 23
-- index-access: 5
+- type: 66
+- message: 24
+- index-access: 8
 
 ## Findings
 
@@ -29,6 +29,10 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | proposals store managed by the mcp-vertex | message | adapter | 1 | El estimador de escritura documenta el store de proposals como estructura propia. |
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | sync_proposals inventory message | message | adapter | 1 | La ayuda del store referencia el regenerado del indice del plugin. |
 | packages/core/src/lib/adopt/adoption-assessment.service.ts | Estimated adopt_project write surface ... proposals store | message | adapter | 1 | La evaluacion de adopcion sigue contabilizando proposals store como responsabilidad del core. |
+| packages/core/src/lib/agents/derive-agent-sessions.service.ts | const exact = proposals.find | index-access | adapter | 1 | La resolucion de taskId consulta directamente el arreglo de proposals. |
+| packages/core/src/lib/agents/derive-agent-sessions.service.ts | input.proposals | index-access | adapter | 1 | La derivacion transforma el inventario de proposals para construir sesiones. |
+| packages/core/src/lib/agents/derive-agent-sessions.service.ts | proposals: readonly IAgentSessionProposalSummary[] | type | adapter | 1 | El servicio de sesiones recibe la lista de proposals como parametro tipado. |
+| packages/core/src/lib/agents/derive-agent-sessions.service.ts | return proposals.filter taskId prefix | index-access | adapter | 1 | El fallback de resolucion filtra y ordena sobre la lista de proposals. |
 | packages/core/src/lib/bootstrap/body-content/prompt-bodies.ts | The proposals plugin is loaded | message | composition | 1 | El cuerpo del prompt cambia comportamiento segun proposals cargado. |
 | packages/core/src/lib/bootstrap/build-blueprint.ts | plugins.includes('proposals') | plugin-name | composition | 1 | La composicion del blueprint activa subagentes segun el plugin proposals. |
 | packages/core/src/lib/bootstrap/derive-config.ts | proposal workflow (proposals + coordination) | message | composition | 1 | La racionalidad del preset swarm sigue describiendo proposals por nombre. |
@@ -100,9 +104,11 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | proposalSummaries returned field | type | intentional-compat | 1 | El estado ensamblado devuelve proposalSummaries por compatibilidad con la API publica. |
 | packages/core/src/lib/contracts/constants/token-budgets.constant.ts | fixturePluginIds: ['proposals', 'memory'] | plugin-name | intentional-compat | 1 | Los fixtures de presupuesto siguen nombrando proposals como plugin representativo. |
 | packages/core/src/lib/contracts/file-conventions.contract.ts | folderRule('proposal', 'proposals') | path | contract | 1 | La convencion de ficheros publica el plural proposals como layout nominal. |
+| packages/core/src/lib/contracts/interfaces/agent-session.interface.ts | proposals: readonly IAgentSessionProposalSummary[] | type | contract | 1 | La derivacion de sesiones de agentes consume resumenes de proposals como entrada contractual. |
+| packages/core/src/lib/contracts/release/index.ts | release metadata proposals must be non-empty strings | message | adapter | 1 | La validacion de metadata de release nombra el dominio proposals en su mensaje de error. |
 | packages/core/src/lib/knowledge/host-onboarding.knowledge.ts | docs/mcp-vertex/proposals/ | path | adapter | 1 | La knowledge base de onboarding sigue senalando la ruta concreta del store proposals. |
 | packages/core/src/lib/plugins/diagnose-workspace-layout.ts | proposals layout resolve under docsDir | message | composition | 1 | El diagnostico del workspace sigue asumiendo el layout proposals desde el core. |
-| packages/core/src/lib/plugins/plugin-defaults.ts | docs/proposals/done/audits | path | adapter | 1 | La ruta por defecto de auditorias sigue anclada al arbol proposals. |
+| packages/core/src/lib/plugins/plugin-defaults.ts | docs/mcp-vertex/proposals/done/audits | path | adapter | 1 | La ruta por defecto de auditorias sigue anclada al arbol proposals. |
 | packages/core/src/lib/plugins/plugin-defaults.ts | docs/proposals/retired/issues | path | adapter | 1 | Los defaults de issues apuntan a un layout proposals concreto. |
 | packages/core/src/lib/plugins/plugin-defaults.ts | pluginDefaults.proposals | plugin-name | composition | 1 | Los defaults de plugins reservan un bloque nominal para proposals. |
 | packages/core/src/lib/plugins/preset-catalog.ts | { plugin: proposals } | plugin-name | composition | 2 | El catalogo de presets describe proposals como plugin concreto de composicion. |
@@ -133,6 +139,13 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/public/index.ts | PROPOSAL_STATUS_VALUES | type | contract | 1 | La lista publica de estados usa nomenclatura proposals. |
 | packages/core/src/public/index.ts | ProposalStatus | type | contract | 1 | El estado del workflow se exporta con nombre proposals desde el barrel estable. |
 
+## Unclassified candidates
+
+| File | Line | Content |
+| --- | ---: | --- |
+| packages/core/src/lib/adopt/adoption-stages.constant.ts | 67 | title: 'proposals+agents', |
+| packages/core/src/lib/adopt/adoption-stages.constant.ts | 70 | pluginIds: ['proposals', 'agent-orchestrator'], |
+
 ## Resolved findings
 
 Acoplamientos eliminados de packages/core/src por una slice de la propuesta.
@@ -150,4 +163,5 @@ Acoplamientos eliminados de packages/core/src por una slice de la propuesta.
 | packages/core/src/lib/cli/assemble-skills.ts | readProposalsIndex() | index-access | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | isLoaded proposals | plugin-name | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | proposals_auto_work | message | S4 |
+| packages/core/src/lib/plugins/plugin-defaults.ts | docs/handoffs | path | S2 |
 | packages/core/src/lib/api/stable-facade.ts | plugin: 'proposals' | plugin-name | S3 |
