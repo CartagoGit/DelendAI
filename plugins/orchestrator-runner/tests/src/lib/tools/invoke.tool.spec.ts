@@ -50,7 +50,7 @@ const outputFixture = (): IInvokeOutput => ({
 			modelId: 'steady-model',
 			contextWindow: 128_000,
 			costTier: 2,
-			strengths: ['coding'],
+			strengths: ['fast-iteration'],
 			weaknesses: [],
 		},
 		mode: 'implement',
@@ -68,7 +68,7 @@ const outputFixture = (): IInvokeOutput => ({
 					modelId: 'fast-model',
 					contextWindow: 128_000,
 					costTier: 1,
-					strengths: ['coding'],
+					strengths: ['fast-iteration'],
 					weaknesses: [],
 				},
 				mode: 'implement',
@@ -182,7 +182,7 @@ describe('invoke tool', () => {
 			unknown
 		>;
 		const providerView = decision.targetProvider as Record<string, unknown>;
-		expect(providerView.strengths).toEqual(['coding']);
+		expect(providerView.strengths).toEqual(['fast-iteration']);
 		expect(providerView.weaknesses).toEqual([]);
 		const alternates = decision.alternates as Array<
 			Record<string, unknown>

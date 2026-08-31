@@ -18,6 +18,7 @@ import { createFakeToolServer, fakePartial } from '@mcp-vertex/test-kit/public';
 import { buildAdviseRoutingRegistration } from '../../../../src/lib/tools/advise-routing.tool';
 import type { SessionStore } from '../../../../src/lib/router/session';
 import type { HealthStore } from '../../../../src/lib/healthcheck/store';
+import type { CapabilityTag } from '@mcp-vertex/core/public';
 
 interface IHandlerResult {
 	readonly structuredContent?: Record<string, unknown>;
@@ -43,7 +44,7 @@ const jsonSchemaBytesOf = (schema: unknown): number => {
 const provider = (
 	id: string,
 	costTier: 1 | 2 | 3 | 4 | 5,
-	strengths: string[],
+	strengths: readonly CapabilityTag[],
 ) => ({
 	id,
 	kind: 'cli' as const,
@@ -71,12 +72,12 @@ const capture = async (): Promise<{
 	const registration = buildAdviseRoutingRegistration({
 		namespacePrefix: 'mcp',
 		providers: [
-			provider('fast', 1, ['coding']),
-			provider('steady', 2, ['coding']),
-			provider('deep', 4, ['analysis']),
+			provider('fast', 1, ['fast-iteration']),
+			provider('steady', 2, ['fast-iteration']),
+			provider('deep', 4, ['reasoning']),
 		],
 		health: fakePartial<HealthStore>({
-			get: () => ({ state: 'available' }),
+			get: (id: string) => ({ id, state: 'available' }),
 		}),
 		sessions: fakePartial<SessionStore>({
 			get: () => undefined,
@@ -168,7 +169,7 @@ describe('advise_routing tool', () => {
 			unknown
 		>;
 		const providerView = decision.targetProvider as Record<string, unknown>;
-		expect(providerView.strengths).toEqual(['coding']);
+		expect(providerView.strengths).toEqual(['fast-iteration']);
 		expect(providerView.weaknesses).toEqual([]);
 		const alternates = decision.alternates as Array<
 			Record<string, unknown>
