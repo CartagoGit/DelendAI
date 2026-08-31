@@ -98,6 +98,15 @@ export const createRelease = async (
 	const tag = trimOrEmpty(options.tag);
 	if (tag === '') return failure('tag is required');
 	const notes = trimOrEmpty(options.notes);
+	const notesFromFile = trimOrEmpty(options.notesFile);
+	const target = trimOrEmpty(options.target);
+	if (notes !== '' && notesFromFile !== '') {
+		return failure(
+			'notes and notesFile are mutually exclusive (pass only one)',
+		);
+	}
+	const draftFlag = options.draft === true;
+	const prereleaseFlag = options.prerelease === true;
 	const createRun = await runForge(
 		cwd,
 		{
@@ -105,13 +114,22 @@ export const createRelease = async (
 				'release',
 				'create',
 				tag,
-				...(notes === '' ? [] : ['--notes', notes]),
+				...(notes !== '' ? ['--notes', notes] : []),
+				...(notesFromFile !== ''
+					? ['--notes-file', notesFromFile]
+					: []),
+				...(target !== '' ? ['--target', target] : []),
+				...(draftFlag ? ['--draft'] : []),
+				...(prereleaseFlag ? ['--prerelease'] : []),
 			],
 			gitlab: [
 				'release',
 				'create',
 				tag,
-				...(notes === '' ? [] : ['--notes', notes]),
+				...(notes !== '' ? ['--notes', notes] : []),
+				...(notesFromFile !== ''
+					? ['--notes-file', notesFromFile]
+					: []),
 			],
 		},
 		exec,
