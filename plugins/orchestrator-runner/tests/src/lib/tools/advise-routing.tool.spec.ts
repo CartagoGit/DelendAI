@@ -72,9 +72,9 @@ const capture = async (): Promise<{
 	const registration = buildAdviseRoutingRegistration({
 		namespacePrefix: 'mcp',
 		providers: [
-			provider('fast', 1, ['fast-iteration']),
-			provider('steady', 2, ['fast-iteration']),
-			provider('deep', 4, ['reasoning']),
+			provider('fast', 1, ['fast-iteration'] as const),
+			provider('steady', 2, ['fast-iteration'] as const),
+			provider('deep', 4, ['reasoning'] as const),
 		],
 		health: fakePartial<HealthStore>({
 			get: (id: string) => ({ id, state: 'available' }),

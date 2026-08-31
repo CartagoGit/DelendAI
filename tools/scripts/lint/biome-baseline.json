@@ -1,3 +1,6 @@
 {
-	"__errors__": 1
+	"__errors__": 1,
+	"lint/correctness/noUnusedImports": 1,
+	"lint/correctness/noUnusedVariables": 2,
+	"lint/suspicious/noUselessEscapeInString": 2
 }
