@@ -67,6 +67,20 @@ export type {
 	IToolDetailCopy,
 } from '../contracts/interfaces/tool-detail.interface';
 export type { IRenderableSchema } from '../contracts/interfaces/renderable-schema.interface';
+export {
+	renderProposalDetailBody,
+	renderProposalDetailHtml,
+	DEFAULT_PROPOSAL_DETAIL_COPY,
+} from '../dashboard/render-proposal-detail';
+export type {
+	IProposalAgent,
+	IProposalDetail,
+	IProposalDetailCopy,
+	IProposalLogEvent,
+	IProposalProgress,
+	IProposalSliceSummary,
+	IProposalSummary,
+} from '../contracts/interfaces/proposal-detail.interface';
 export { barChart } from '../dashboard/bar-chart';
 export type { IBarDatum } from '../dashboard/bar-chart';
 export { sparklinePath } from '../dashboard/sparkline';
