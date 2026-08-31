@@ -136,10 +136,13 @@ internos juntos.
 
 ### S1 — `exports` map + barrels por concern
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/package.json`, `packages/core/src/contracts/index.ts`, `packages/core/src/plugin/index.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/node/index.ts`, `packages/core/tests/src/exports/subpaths.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00028-s1
+- review-reviewer: delivery-verifier-r00028-s1
+- review-log: approved by delivery-verifier-r00028-s1 — Verified independently: 5 entrypoints declared, 4 subpath barrels resolve, contracts is type-only. 8/8 tests pass.
 ## acceptance
 
 - `package.json#exports` declara los 5 entrypoints.
