@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { basename, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import z from 'zod';
 
@@ -7,7 +7,6 @@ import {
 	toolJsonBounded,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
-import type { IRemoteProviderError } from '@mcp-vertex/contracts/remote-provider';
 
 import {
 	GitHubRequestError,
@@ -38,7 +37,7 @@ const ErrorCodeSchema = z.enum([
 	'invalid-response',
 	'invalid-config',
 ]);
-const ErrorValueSchema = z.union([
+const _ErrorValueSchema = z.union([
 	z.string(),
 	z.number(),
 	z.boolean(),
@@ -137,7 +136,7 @@ const RepoSelectorSchema = z
 		repository: z.string().min(1).optional(),
 	})
 	.strict();
-const PagingSchema = z
+const _PagingSchema = z
 	.object({
 		page: z.number().int().positive().max(100000).optional(),
 		perPage: z.number().int().positive().max(100).optional(),
@@ -150,7 +149,7 @@ const UserSchema = z
 		login: z.string(),
 	})
 	.strict();
-const LabelSchema = z
+const _LabelSchema = z
 	.object({
 		name: z.string(),
 	})
@@ -523,7 +522,7 @@ const registerLocalTool = (
 	},
 });
 
-const paginationFrom = (
+const _paginationFrom = (
 	meta: NonNullable<
 		Awaited<ReturnType<GitHubHttpClient['request']>>['meta']['pagination']
 	>,
@@ -604,7 +603,7 @@ const ensureCacheDir = (options: IGitHubToolOptions): string =>
 		? resolve(options.workspaceRootAbs, '.mcp-vertex-cache', 'github')
 		: resolve(options.workspaceRootAbs, options.pluginCacheDir);
 
-const pageQuery = (args: {
+const _pageQuery = (args: {
 	page?: number;
 	perPage?: number;
 	limit?: number;
@@ -621,7 +620,7 @@ const firstText = (value: unknown): string | undefined => {
 	return typeof record.text === 'string' ? record.text : undefined;
 };
 
-const requestJson = async <T>(
+const _requestJson = async <T>(
 	client: IGitHubToolOptions['client'],
 	request: IGitHubHttpRequestOptions<T>,
 ): Promise<Awaited<ReturnType<IGitHubToolOptions['client']['request']>>> =>
@@ -632,8 +631,10 @@ const appendPageItems = <T>(target: T[], source: T[]) => {
 	return target;
 };
 
-const resolveListLimit = (args: { limit?: number; perPage?: number }): number =>
-	args.limit ?? args.perPage ?? 20;
+const _resolveListLimit = (args: {
+	limit?: number;
+	perPage?: number;
+}): number => args.limit ?? args.perPage ?? 20;
 
 const pruneToLimit = <T>(items: T[], limit: number): T[] =>
 	items.length > limit ? items.slice(0, limit) : items;

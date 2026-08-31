@@ -30,7 +30,7 @@ import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
 const DEVELOP_BRANCH = 'develop';
 const RELEASE_BRANCH_PREFIX = 'release/';
-const AGENT_BRANCH_PREFIX = 'agent/';
+const _AGENT_BRANCH_PREFIX = 'agent/';
 
 export interface ICommitBranchInput {
 	readonly cwd: string;
