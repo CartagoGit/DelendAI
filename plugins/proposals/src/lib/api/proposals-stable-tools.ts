@@ -1,8 +1,11 @@
+import { z } from 'zod';
+
 import {
 	describeStableTool,
 	registerStableToolDescriptors,
 	type IStableToolDescriptor,
 } from '@mcp-vertex/core/lib/api/stable-facade';
+import type { IStableManifestTool } from '@mcp-vertex/core/public';
 import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
 import {
 	CREATE_PROPOSAL_INPUT_SCHEMA,
@@ -124,6 +127,33 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 			summary: 'Recovery-path transition (skips peer-review lock).',
 		}),
 	]);
+
+const schemaToJson = (schema: unknown): unknown => {
+	if (schema === undefined || schema === null) {
+		return null;
+	}
+	try {
+		return z.toJSONSchema(schema as z.ZodType);
+	} catch {
+		return null;
+	}
+};
+
+const toStableToolSurfaceEntry = (
+	descriptor: IStableToolDescriptor,
+): IStableManifestTool =>
+	Object.freeze({
+		name: descriptor.name,
+		plugin: descriptor.plugin,
+		sinceVersion: descriptor.sinceVersion,
+		semverGuarantee: descriptor.semverGuarantee,
+		summary: descriptor.summary,
+		inputSchema: schemaToJson(descriptor.inputSchema),
+		outputSchema: schemaToJson(descriptor.outputSchema),
+	});
+
+export const PROPOSALS_STABLE_TOOL_SURFACE: readonly IStableManifestTool[] =
+	Object.freeze(PROPOSALS_STABLE_TOOLS.map(toStableToolSurfaceEntry));
 
 export const PROPOSAL_ADAPTIVE_FACADE_INTENTS = [
 	'orient',

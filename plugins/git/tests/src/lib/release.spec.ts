@@ -6,9 +6,9 @@ import type { IGitRunner } from '../../../src/lib/services/git';
 describe('release candidate cut', () => {
 	it('uses main version and preserves source/base SHAs when develop advances', async () => {
 		let developSha = '1111111';
-		const commands: Array<readonly string[]> = [];
+		const commands: readonly string[][] = [];
 		const run: IGitRunner = async (args) => {
-			commands.push(args);
+			(commands as string[][]).push([...args]);
 			if (args[0] === 'rev-parse' && args[1] === 'develop')
 				return { ok: true, output: `${developSha}\n` };
 			if (args[0] === 'rev-parse' && args[1] === 'main')

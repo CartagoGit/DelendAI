@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { PROPOSALS_STABLE_TOOLS } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
+import { PROPOSALS_STABLE_TOOL_SURFACE } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
 
 import {
 	AdaptiveFacadeOutputSchema,
@@ -29,7 +29,9 @@ describe('adaptive_facade', () => {
 				output.preferredPath.toolName,
 				...output.alternatives.map((candidate) => candidate.toolName),
 			];
-			expect(routedTools).toEqual(expect.arrayContaining(expectedTools));
+			expect(routedTools).toEqual(
+				expect.arrayContaining([...expectedTools]),
+			);
 			expect(output.preferredPath.intent).toBe(intent);
 		},
 	);
@@ -92,14 +94,40 @@ describe('adaptive_facade', () => {
 		const output = AdaptiveFacadeOutputSchema.parse(
 			result.structuredContent,
 		);
-		expect(output.detailedSurface).toHaveLength(
-			PROPOSALS_STABLE_TOOLS.length,
-		);
+		expect(output.detailedSurface).toEqual(PROPOSALS_STABLE_TOOL_SURFACE);
 		expect(output.detailedSurface).toEqual(
 			expect.arrayContaining([
-				expect.objectContaining({ name: 'proposal_create' }),
+				expect.objectContaining({
+					name: 'proposal_create',
+					plugin: 'proposals',
+					sinceVersion: expect.any(String),
+					semverGuarantee: 'additive-only',
+					inputSchema: expect.anything(),
+					outputSchema: expect.anything(),
+				}),
 				expect.objectContaining({ name: 'agent_worktree' }),
 			]),
+		);
+	});
+
+	it('keeps fallback truncation while retaining full stable-surface entries', async () => {
+		const result = await runAdaptiveFacade(
+			{ intent: 'recover', maxAlternatives: 2 },
+			{ namespacePrefix: 'mcp-vertex', maxBytes: 700 },
+		);
+		const output = AdaptiveFacadeOutputSchema.parse(
+			result.structuredContent,
+		);
+		expect(output.truncated).toBe(true);
+		expect(output.alternatives).toEqual([]);
+		expect(output.detailedSurface).toEqual(
+			PROPOSALS_STABLE_TOOL_SURFACE.slice(0, 4),
+		);
+		expect(output.detailedSurface[0]).toEqual(
+			expect.objectContaining({
+				inputSchema: expect.anything(),
+				outputSchema: expect.anything(),
+			}),
 		);
 	});
 });

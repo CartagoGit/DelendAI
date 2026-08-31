@@ -364,6 +364,34 @@ No local activation KPI snapshot was found at .vscode/mcp-vertex/kpis.json.
 
 This dashboard can only render a previously persisted local snapshot. Runtime collection and disk writes must be performed by the caller or host integration that owns the session lifecycle.
 
+## Catalog and task context cost addendum
+
+Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` against the same synthetic fixture workspace used by the token budget suite. The existing real-preset, plugin-marginal and top-tool tables below remain the schema breakdown source; this addendum pins the extra S1 measurements for `agent_catalog` text payloads and routed `project_context` task context snapshots.
+
+| Catalog payload | Surface | Bytes | Est. Tokens |
+| --- | --- | --- | --- |
+| agent_catalog compact | native | 743 | 186 |
+| agent_catalog full | native | 9,519 | 2,380 |
+
+| Catalog breakdown snapshot | Tools | Tools/List Bytes | Schema Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes |
+| --- | --- | --- | --- | --- | --- | --- |
+| native core catalog | 28 | 42,616 | 36,356 | 11,457 | 24,899 | 0 |
+| swarm native preset | 165 | 194,300 | 158,843 | 47,444 | 111,399 | 49,615 |
+
+Task context corpus: `cold start -> search.search -> docs.docs_list -> logs.tail`, measured as `mcp-vertex_vertex { domain: "core", action: "project_context" }` on the `swarm` preset under `managed`.
+
+| Task context sample | Bytes | Est. Tokens |
+| --- | --- | --- |
+| cold start | 682 | 171 |
+| after search.search | 738 | 185 |
+| after docs.docs_list | 786 | 197 |
+| after logs.tail | 834 | 209 |
+
+| Percentile | Bytes | Est. Tokens |
+| --- | --- | --- |
+| p50 | 738 | 185 |
+| p95 | 834 | 209 |
+
 ## Reproduce
 
 ```bash
