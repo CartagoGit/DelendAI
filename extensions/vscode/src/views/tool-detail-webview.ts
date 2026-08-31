@@ -1,7 +1,5 @@
 import type { IMetricsSnapshot, IToolDescriptor } from '@mcp-vertex/client';
 import {
-	DEFAULT_DENY,
-	injectCspMeta,
 	renderToolDetailBody as renderSharedToolDetailBody,
 	renderToolDetailHtml as renderSharedToolDetailHtml,
 	type IRenderableSchema,
