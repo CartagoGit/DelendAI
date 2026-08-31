@@ -95,6 +95,13 @@ export const renderPanelLogs = (lang: ILangDict): string => {
 		</form>
 		<ol class="mcpv-logs__list" id="mcpv-logs-list" aria-live="polite"></ol>
 		<p class="mcpv-logs__empty" id="mcpv-logs-empty">${escapeHtml(text('logs.empty', 'No log events match the current filter.'))}</p>
+		<div class="mcpv-logs__detail" id="mcpv-logs-detail" hidden role="dialog" aria-modal="true" aria-labelledby="mcpv-logs-detail-title">
+			<header class="mcpv-logs__detail-head">
+				<h3 id="mcpv-logs-detail-title"></h3>
+				<button type="button" class="mcpv-button" data-logs-action="close-detail">×</button>
+			</header>
+			<dl class="mcpv-logs__detail-body" id="mcpv-logs-detail-body"></dl>
+		</div>
 	</div>
 </section>`;
 };

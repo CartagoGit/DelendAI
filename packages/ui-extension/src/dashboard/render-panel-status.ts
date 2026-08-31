@@ -13,6 +13,7 @@ import type { ILangDict } from '@mcp-vertex/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatMs, formatNumber } from './format';
+import { sparklinePath } from './sparkline';
 
 const renderServerIdentity = (
 	model: IDashboardAllModels,
@@ -133,7 +134,9 @@ const renderLatency = (
 	model: IDashboardAllModels,
 	text: (key: string, fallback: string) => string,
 ): string => {
-	const { times } = model;
+	const { times, metrics } = model;
+	const samples = metrics.sparklines['mcp-vertex_overview'] ?? [];
+	const sparkPath = sparklinePath(samples, 240, 36);
 	return `<article class="mcpv-status__panel">
 		<h4>${escapeHtml(text('dashboard.times.totalWall', 'Total wall'))}</h4>
 		<p class="mcpv-kpi__value">${escapeHtml(formatMs(times.totalWallMs))}</p>
@@ -145,6 +148,13 @@ const renderLatency = (
 			<dt>${escapeHtml(text('dashboard.times.slowestTool', 'Slowest tool'))}</dt>
 			<dd><code>${escapeHtml(times.slowestTool?.tool ?? '—')}</code> · ${escapeHtml(formatMs(times.slowestTool?.maxMs ?? 0))}</dd>
 		</dl>
+		${
+			sparkPath.length > 0
+				? `<svg class="mcpv-status__sparkline" viewBox="0 0 240 36" preserveAspectRatio="none" aria-label="latency trend" role="img">
+				<path d="${sparkPath}" fill="none" stroke="currentColor" stroke-width="1.5" />
+			</svg>`
+				: ''
+		}
 	</article>`;
 };
 
