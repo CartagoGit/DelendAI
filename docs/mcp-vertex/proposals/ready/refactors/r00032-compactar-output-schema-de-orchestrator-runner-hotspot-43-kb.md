@@ -96,10 +96,13 @@ que `r00031` aplicó a `proposal_get`: tres niveles de detalle
 
 ### S1 — Proyectores + tool + schema + tests + medición
 
-- **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/tools/get.ts`, `plugins/orchestrator-runner/src/lib/contracts/run.ts`, `plugins/orchestrator-runner/tests/src/lib/tools/get.spec.ts`
+- **Status**: done
+- **Files**: `plugins/orchestrator-runner/src/lib/tools/advise-spend.tool.ts`, `plugins/orchestrator-runner/src/lib/contracts/spend-view.contract.ts`, `plugins/orchestrator-runner/src/lib/schemas.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00032-s1
+- review-reviewer: delivery-verifier-r00032-s1
+- review-log: approved by delivery-verifier-r00032-s1 — Verified independently: r00032 S1 acceptance covered. 3 projectors exist, schema has level enum, advise-spend tests pass.
 ## acceptance
 
 - `staticBytes` antes/después medido y documentado (reducción
