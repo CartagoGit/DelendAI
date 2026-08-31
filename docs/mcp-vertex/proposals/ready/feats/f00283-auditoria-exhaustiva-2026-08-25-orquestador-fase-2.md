@@ -150,7 +150,10 @@ Tras terminar mi propia auditoría, localicé y leí `docs/mcp-vertex/audits/leg
 - **Status**: pending
 - **Files**: `TODO`
 - **Gate**: none
-
+- review-state: changes_requested
+- review-implementer: copilot-orchestrator
+- review-reviewer: proposal_guardian
+- review-log: requested_changes by proposal_guardian — El slice es una auditoría histórica migrada y declara Files: TODO y gate none; no existe una implementación ni un gate ejecutable que revisar. Debe permanecer bloqueado o retirarse, no en in_review.
 ## acceptance
 
 - El documento cubre packages/core, plugins/proposals, plugins/error-reporting, plugins/client (transporte), apps/web, tools/scripts, extensión VSCode y el sistema de propuestas.
