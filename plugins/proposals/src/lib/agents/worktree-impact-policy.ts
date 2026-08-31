@@ -12,6 +12,7 @@ const LATE_PHASE_FILE_THRESHOLD = 4;
 const LATE_PHASES: ReadonlySet<ContractMigrationPhase> = new Set([
 	'regenerate',
 	'consumers',
+	'verify',
 	'contract',
 ]);
 
