@@ -904,7 +904,7 @@ export default definePlugin({
 						'- `auto_work` — one call: the next proposal + an ordered action plan.',
 						'- `auto_work.orchestration` — context policy: keep the main thread compact; inspect plan/delegate for non-trivial slices.',
 						'- `continue_proposal` — next proposal (mode "auto"), or a parallel slice plan/claim (modes "plan"/"claim").',
-						'- `agent_lock` — claim files before editing, release after (claim/release/status/gc).',
+						'- `agent_lock` — claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc).',
 						'- `get_proposal_workflow` — families, locations, naming, template.',
 						'- `sync_proposals` — rebuild the index after creating/renaming proposal files.',
 						'- `agent_names` — name the whole agent tree, orchestrator included.',

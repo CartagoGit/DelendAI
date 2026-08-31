@@ -11,6 +11,7 @@ import {
 } from '@mcp-vertex/ui-extension/public';
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from '../commands/open-proposal';
+import { OPEN_TOOL_DETAIL_COMMAND } from '../contracts/constants/open-tool-detail-command.constant';
 import { OPEN_DOCS_COMMAND } from '../commands/open-docs';
 import { REFRESH_COMMAND } from '../commands/refresh';
 import { HOST_LANG_KEY } from '../commands/setup-github';
@@ -89,6 +90,13 @@ export class DashboardWebviewViewProvider {
 		if (!parsed.success) return;
 		if (parsed.data.command === 'action') {
 			await this.deps.host.executeCommand?.(REFRESH_COMMAND);
+			return;
+		}
+		if (parsed.data.command === 'openTool') {
+			await this.deps.host.executeCommand?.(
+				OPEN_TOOL_DETAIL_COMMAND,
+				parsed.data.name,
+			);
 			return;
 		}
 		await this.deps.host.executeCommand?.(

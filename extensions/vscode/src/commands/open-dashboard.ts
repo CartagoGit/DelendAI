@@ -17,6 +17,7 @@ import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
 
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from './open-proposal';
+import { OPEN_TOOL_DETAIL_COMMAND } from '../contracts/constants/open-tool-detail-command.constant';
 import { REFRESH_COMMAND } from './refresh';
 import { HOST_LANG_KEY } from './setup-github';
 
@@ -93,6 +94,17 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) =>
 				} catch {
 					// Best-effort: a missing executeCommand is a host
 					// capability gap, not a user error.
+				}
+				return;
+			}
+			if (parsed.data.command === 'openTool') {
+				try {
+					await deps.host.executeCommand?.(
+						OPEN_TOOL_DETAIL_COMMAND,
+						parsed.data.name,
+					);
+				} catch {
+					// Best-effort: the detail command may be unavailable in a reduced host.
 				}
 				return;
 			}

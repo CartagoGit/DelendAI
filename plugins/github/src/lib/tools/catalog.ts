@@ -9,16 +9,21 @@ import {
 } from '@mcp-vertex/core/public';
 import type { IRemoteProviderError } from '@mcp-vertex/contracts/remote-provider';
 
-import type { IGitHubHttpClient, IGitHubHttpRequestOptions } from '../client';
-import { GitHubRequestError } from '../client';
+import {
+	GitHubRequestError,
+	createGitHubHttpClient,
+	type IGitHubHttpRequestOptions,
+} from '../client';
 import type { IGitHubProviderContext } from '../config';
+
+type GitHubHttpClient = ReturnType<typeof createGitHubHttpClient>;
 
 export interface IGitHubToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRootAbs: string;
 	readonly pluginCacheDir?: string;
 	readonly context: IGitHubProviderContext;
-	readonly client: Pick<IGitHubHttpClient, 'request'>;
+	readonly client: Pick<GitHubHttpClient, 'request'>;
 }
 
 const ProviderSchema = z.literal('github');
@@ -473,13 +478,13 @@ const wrapLocal = async <T>(fn: () => Promise<T>) => {
 	}
 };
 
-const registerRemoteTool = <TInput, TOutput>(
+const registerRemoteTool = (
 	options: IGitHubToolOptions,
 	id: string,
 	description: string,
-	inputSchema: z.ZodType<TInput>,
-	outputSchema: z.ZodType<TOutput>,
-	handler: (args: TInput) => Promise<TOutput>,
+	inputSchema: z.ZodTypeAny,
+	outputSchema: z.ZodTypeAny,
+	handler: (args: any) => Promise<any>,
 	tags: readonly string[],
 	summary: string,
 ): IToolRegistration => ({
@@ -491,19 +496,19 @@ const registerRemoteTool = <TInput, TOutput>(
 		server.registerTool(
 			`${options.namespacePrefix}_${id}`,
 			{ description, inputSchema, outputSchema },
-			async (args: TInput) =>
+			async (args: unknown) =>
 				toolJsonBounded(await wrapRemote(() => handler(args))),
 		);
 	},
 });
 
-const registerLocalTool = <TInput, TOutput>(
+const registerLocalTool = (
 	options: IGitHubToolOptions,
 	id: string,
 	description: string,
-	inputSchema: z.ZodType<TInput>,
-	outputSchema: z.ZodType<TOutput>,
-	handler: (args: TInput) => Promise<TOutput>,
+	inputSchema: z.ZodTypeAny,
+	outputSchema: z.ZodTypeAny,
+	handler: (args: any) => Promise<any>,
 	summary: string,
 ): IToolRegistration => ({
 	id,
@@ -513,7 +518,7 @@ const registerLocalTool = <TInput, TOutput>(
 		server.registerTool(
 			`${options.namespacePrefix}_${id}`,
 			{ description, inputSchema, outputSchema },
-			async (args: TInput) =>
+			async (args: unknown) =>
 				toolJsonBounded(await wrapLocal(() => handler(args))),
 		);
 	},
@@ -576,8 +581,7 @@ const textLimit = (args: {
 const ensureContainedPath = (rootAbs: string, relativePath: string): string => {
 	const resolvedRoot = resolve(rootAbs);
 	const target = resolve(resolvedRoot, relativePath);
-	const normalizedRoot = `${resolvedRoot}${basename(resolvedRoot).length > 0 ? '/' : ''}`;
-	if (target !== resolvedRoot && !target.startsWith(normalizedRoot)) {
+	if (target !== resolvedRoot && !target.startsWith(`${resolvedRoot}/`)) {
 		throw new Error(
 			'github artifact path must stay inside the plugin cache dir',
 		);
