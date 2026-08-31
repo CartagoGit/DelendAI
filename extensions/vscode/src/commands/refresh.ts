@@ -10,6 +10,7 @@ export const REFRESH_COMMAND = 'mcp-vertex.refresh';
  */
 export interface IRefreshExtras {
 	readonly memoryTree?: { refresh(): void };
+	readonly dashboard?: { refresh(): Promise<void> | void };
 	readonly kpiDashboard?: { refresh(): Promise<void> | void };
 	readonly providerActions?: { refresh(): Promise<void> | void };
 }
@@ -21,6 +22,7 @@ export const registerRefreshCommand = (deps: ICommandDeps & IRefreshExtras) =>
 		// snapshot so the sidebar reflects the latest state.
 		deps.proposalsTree?.refresh();
 		deps.memoryTree?.refresh();
+		await Promise.resolve(deps.dashboard?.refresh()).catch(() => undefined);
 		// Dashboard panels have their own refresh methods; awaiting
 		// them keeps the toast accurate (the user only sees the
 		// confirmation after every surface finished repainting).

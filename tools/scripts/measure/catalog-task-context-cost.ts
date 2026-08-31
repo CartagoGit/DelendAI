@@ -6,7 +6,6 @@ import {
 	destroyTokenBudgetFixtureWorkspace,
 	jsonBytes,
 	listToolsMetrics,
-	measureToolTextBytes,
 	type IToolBreakdownRow,
 	type IToolListMetrics,
 	type IToolOwnerMetrics,
@@ -208,7 +207,10 @@ const measureToolResultBytes = async (
 	name: string,
 	args: Record<string, unknown>,
 ): Promise<number> => {
-	const result = (await client.callTool({ name, arguments: args })) as unknown as IToolResultLike;
+	const result = (await client.callTool({
+		name,
+		arguments: args,
+	})) as unknown as IToolResultLike;
 	return measureToolResultPayloadBytes(result as IToolResultLike);
 };
 

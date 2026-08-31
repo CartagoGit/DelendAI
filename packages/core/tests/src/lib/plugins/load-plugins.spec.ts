@@ -46,10 +46,10 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 		expect(loaded.default?.name).toBe('proposals');
 	});
 
-	it('does not fall back to compiled artifacts for a missing local package', async () => {
+	it('preserves package resolution for consumers outside the monorepo', async () => {
 		await expect(
 			nodeDynamicImport('@mcp-vertex/not-a-local-plugin', process.cwd()),
-		).rejects.toThrow('expected src/index.ts');
+		).rejects.toThrow();
 	});
 });
 

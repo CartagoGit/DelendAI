@@ -308,6 +308,12 @@ const buildPackage = (rel: string): void => {
 						emitDeclarationOnly: true,
 						outDir: outRoot,
 						rootDir: join(dir, 'src'),
+						// The throwaway tsconfig lives in /tmp; without an
+						// explicit typeRoots tsc searches /tmp/node_modules/@types
+						// and never finds @types/bun or @types/node. Point at the
+						// workspace node_modules so `types: ["bun", "node"]`
+						// (inherited from tsconfig.base.json) resolves.
+						typeRoots: [join(ROOT, 'node_modules/@types')],
 						paths: corePaths,
 					},
 					include: [
