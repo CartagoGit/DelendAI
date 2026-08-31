@@ -2,9 +2,9 @@
 /**
  * codex-parse-noise-attributor.script.ts
  *
- * Decodes the cryptic `[warning] Failed to parse message: "\n"` lines
+ * Decodes the cryptic '[warning] Failed to parse message: "\n"' lines
  * that the OpenAI Codex VSCode extension emits into its per-instance
- * `Codex.log`. The bundle inside `openai.chatgpt-*/out/extension.js`
+ * 'Codex.log'. The bundle inside 'openai.chatgpt-*/out/extension.js'
  * is minified and ships only the literal string, so the warning is
  * useless on its own — the user only sees the symptom and has no way
  * to know that the source is the Codex WebSocket / IPC router (not
@@ -14,17 +14,17 @@
  *   1. Walks every Codex.log under the running VSCode instance
  *      (default: $HOME/.vscode-server/data/logs on a remote,
  *      overridable via --root=path on the command line).
- *   2. Finds every line that matches the literal `Failed to parse message` and
+ *   2. Finds every line that matches the literal 'Failed to parse message' and
  *      extracts the surrounding context (timestamp, channel tag,
  *      and the line *above* the warning — that one almost always
  *      reveals whether the offender is the IPC router, the
  *      CodexMcpConnection stream, or the Codex native binary
- *      `bin/linux-x86_64/codex` talking JSON-RPC over stdio).
+ *      'bin/linux-x86_64/codex' talking JSON-RPC over stdio).
  *   3. Prints a one-line attribution per cluster: which extension
  *      emitted the warning, which log file, which channel, and the
  *      most recent preceding log line so the user can see what the
  *      server was doing when the bad frame arrived.
- *   4. With `--rewrite`, copies the log to `<log>.attributed` and
+ *   4. With '--rewrite', copies the log to '<log>.attributed' and
  *      replaces every offending line with a multi-line, English
  *      explanation that names the source and links to the relevant
  *      docs (so a reader who opens the file later has the answer
