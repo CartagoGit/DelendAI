@@ -41,6 +41,7 @@ describe('scssPlugin', () => {
 		const resolved = resolveCallback({
 			path: './fixture.scss?raw',
 			resolveDir: directory,
+			importer: join(directory, 'consumer.ts'),
 		}) as { path: string; namespace: string };
 		expect(resolved).toEqual({
 			path: join(directory, 'fixture.scss'),

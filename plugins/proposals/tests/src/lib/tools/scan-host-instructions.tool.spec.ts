@@ -7,6 +7,9 @@
  * containment guard.
  */
 import { describe, expect, it, vi } from 'vitest';
+import { mkdtemp, mkdir, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import {
 	createUserHomeReader,
@@ -174,5 +177,21 @@ describe('createUserHomeReader', () => {
 		expect(
 			await reader.readHome('.definitely-not-here-f00094'),
 		).toBeUndefined();
+	});
+
+	it('rejects a symlink that resolves outside the home root', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'home-reader-'));
+		const home = join(root, 'home');
+		const outside = join(root, 'outside');
+		await mkdir(home);
+		await mkdir(outside);
+		await writeFile(
+			join(outside, 'config.toml'),
+			'SYNTHETIC-EXTERNAL-DATA',
+		);
+		await symlink(outside, join(home, '.codex'));
+
+		const reader = createUserHomeReader(home);
+		expect(await reader.readHome('.codex/config.toml')).toBeUndefined();
 	});
 });
