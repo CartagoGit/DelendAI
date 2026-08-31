@@ -8,8 +8,10 @@ import type { ICommandQuickPickItem } from '../contracts/interfaces/command-quic
 import type { IDisposable, IWebviewPanel } from '../extension';
 import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
 import type { ToolTreeDataProvider } from '../providers/tool-tree-data-provider';
-import type { IToolDetail } from '@mcp-vertex/ui-extension/webview';
-import type { IProposalDetail } from '@mcp-vertex/ui-extension/webview';
+import type {
+	IProposalDetail,
+	IToolDetail,
+} from '@mcp-vertex/ui-extension/webview';
 
 /** Minimal `vscode.Uri` surface this module needs (f00045 S3). */
 export interface IVscodeUri {
@@ -158,12 +160,8 @@ export interface ICommandDeps {
 	 * panel so the dashboard overlay is the only surface.
 	 */
 	readonly detailSink?: (
-		kind: 'tool',
-		model: IToolDetail,
-	) => Promise<boolean> | boolean;
-	readonly proposalDetailSink?: (
-		kind: 'proposal',
-		model: IProposalDetail,
+		kind: 'tool' | 'proposal',
+		model: IToolDetail | IProposalDetail,
 	) => Promise<boolean> | boolean;
 }
 
