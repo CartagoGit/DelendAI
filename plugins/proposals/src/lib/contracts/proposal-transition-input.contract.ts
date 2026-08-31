@@ -16,6 +16,9 @@ export interface IProposalTransitionArgs {
 	readonly id: string;
 	readonly to: string;
 	readonly reason: string;
+	readonly transitionId?: string | undefined;
+	readonly correlationId?: string | undefined;
+	readonly idempotencyKey?: string | undefined;
 	readonly agent?: string | undefined;
 	readonly force?: boolean | undefined;
 	readonly validateEvidence?:
@@ -28,6 +31,9 @@ export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
 		id: z.string().min(1),
 		to: z.enum(PROPOSAL_TRANSITION_STATUS_VALUES),
 		reason: z.string().min(1),
+		transitionId: z.string().min(1).optional(),
+		correlationId: z.string().min(1).optional(),
+		idempotencyKey: z.string().min(1).optional(),
 		agent: z.string().optional(),
 		force: z.boolean().optional(),
 		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
