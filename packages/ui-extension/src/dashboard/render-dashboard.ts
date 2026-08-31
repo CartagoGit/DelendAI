@@ -245,6 +245,8 @@ const CLIENT_SCRIPT = `
     const row = document.createElement('li');
     row.className = 'mcpv-logs__row';
     row.setAttribute('data-outcome', payload.outcome ?? 'unknown');
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
     const ts = document.createElement('span');
     ts.className = 'mcpv-logs__ts';
     ts.textContent = payload.ts ? new Date(payload.ts).toISOString().slice(11, 19) : '';
@@ -261,7 +263,8 @@ const CLIENT_SCRIPT = `
     copy.className = 'mcpv-logs__copy';
     copy.title = 'Copy task id';
     copy.textContent = '#';
-    copy.addEventListener('click', () => {
+    copy.addEventListener('click', (evt) => {
+      evt.stopPropagation();
       if (payload.taskId && navigator.clipboard) {
         navigator.clipboard.writeText(payload.taskId).catch(() => {});
       }
@@ -271,12 +274,59 @@ const CLIENT_SCRIPT = `
     row.appendChild(agent);
     row.appendChild(summary);
     row.appendChild(copy);
+    row.addEventListener('click', () => openLogDetail(payload));
+    row.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter' || evt.key === ' ') {
+        evt.preventDefault();
+        openLogDetail(payload);
+      }
+    });
     logsList.appendChild(row);
     if (logsState.followTail) {
       logsList.scrollTop = logsList.scrollHeight;
     }
     logsVisible();
   }
+  const logsDetail = document.getElementById('mcpv-logs-detail');
+  const logsDetailTitle = document.getElementById('mcpv-logs-detail-title');
+  const logsDetailBody = document.getElementById('mcpv-logs-detail-body');
+  function openLogDetail(payload) {
+    if (!logsDetail || !logsDetailTitle || !logsDetailBody) return;
+    logsDetailTitle.textContent = payload.kind ?? 'event';
+    const rows = [];
+    const fields = ['ts', 'kind', 'agent', 'taskId', 'outcome', 'summary'];
+    for (const field of fields) {
+      const value = payload[field];
+      if (value === undefined || value === null || value === '') continue;
+      const dt = document.createElement('dt');
+      dt.textContent = field;
+      const dd = document.createElement('dd');
+      dd.textContent = String(value);
+      rows.push(dt, dd);
+    }
+    if (payload.files && payload.files.length > 0) {
+      const dt = document.createElement('dt');
+      dt.textContent = 'files';
+      const dd = document.createElement('dd');
+      dd.textContent = payload.files.join(', ');
+      rows.push(dt, dd);
+    }
+    if (payload.meta && Object.keys(payload.meta).length > 0) {
+      const dt = document.createElement('dt');
+      dt.textContent = 'meta';
+      const dd = document.createElement('dd');
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(payload.meta, null, 2);
+      dd.appendChild(pre);
+      rows.push(dt, dd);
+    }
+    logsDetailBody.replaceChildren(...rows);
+    logsDetail.removeAttribute('hidden');
+  }
+  function closeLogDetail() {
+    if (logsDetail) logsDetail.setAttribute('hidden', '');
+  }
+  document.querySelector('[data-logs-action="close-detail"]')?.addEventListener('click', closeLogDetail);
   logsControls?.querySelector('select[name="source"]')?.addEventListener('change', (e) => {
     const target = e.target;
     if (target instanceof HTMLSelectElement) {
