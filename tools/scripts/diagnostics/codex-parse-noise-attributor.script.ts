@@ -42,9 +42,10 @@
  */
 import { existsSync } from 'node:fs';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-import { homeDir } from '../lib/monorepo-paths.ts';
+const homeDir = (): string => homedir();
 
 const NOISE_RX = /Failed to parse message/;
 const TIMESTAMP_RX = /^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(\w+)\]/;
@@ -65,6 +66,8 @@ const parseFlags = (argv: readonly string[]): IFlag => {
 	}
 	return { rewrite, root };
 };
+
+export { parseFlags };
 
 const discoverLogs = async (
 	rootDir: string,
@@ -102,7 +105,7 @@ interface IAttributedNoise {
 	readonly rawWarningLine: string;
 }
 
-const attributeLog = async (
+export const attributeLog = async (
 	logPath: string,
 ): Promise<readonly IAttributedNoise[]> => {
 	const raw = await readFile(logPath, 'utf8');
