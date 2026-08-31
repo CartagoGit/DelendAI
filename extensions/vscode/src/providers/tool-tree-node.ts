@@ -55,6 +55,11 @@ export const pluginNode = (
 	collapsibleState: TreeItemCollapsibleState.Collapsed,
 	contextValue: 'mcpVertexPlugin',
 	plugin,
+	command: {
+		command: 'mcp-vertex.openPluginConfig',
+		title: 'Open Plugin Configuration',
+		arguments: [plugin],
+	},
 	iconId: iconIdForPlugin(plugin),
 });
 
