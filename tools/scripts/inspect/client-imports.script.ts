@@ -91,7 +91,7 @@ const parseImportClause = (
 	};
 
 	const namedMatch = clause.match(/\{([\s\S]*)\}/u);
-	if (namedMatch !== null) {
+	if (namedMatch !== null && namedMatch[1] !== undefined) {
 		for (const entry of namedMatch[1].split(',')) {
 			const trimmed = entry.trim();
 			if (trimmed.length === 0) continue;

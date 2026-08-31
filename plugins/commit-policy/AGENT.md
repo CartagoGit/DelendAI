@@ -39,10 +39,10 @@
 
 ## Tests
 
+- plugins/commit-policy/tests/integration/cross-agent.spec.ts
 - plugins/commit-policy/tests/src/lifecycle.spec.ts
 - plugins/commit-policy/tests/src/index.spec.ts
 - plugins/commit-policy/tests/src/e2e/dogfood.spec.ts
-- plugins/commit-policy/tests/src/lib/services/push-scheduler.spec.ts
 
 ## Do not
 
