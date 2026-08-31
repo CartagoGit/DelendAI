@@ -31,7 +31,7 @@ La frontera remota y la policy deben convertir el modelo de release en una opera
 - global_gate: e2e
 
 ### S1 — Release PR creation and promotion policy
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/git/src/lib/release-pr`, `plugins/forge/src/lib/release-pr`, `plugins/commit-policy/src/lib/branch-policy`, `plugins/git/tests/release-pr`, `plugins/forge/tests/release-pr`
 - **Gate**: e2e
 - acceptance:
@@ -40,9 +40,11 @@ La frontera remota y la policy deben convertir el modelo de release en una opera
   - "metadata y gates validados"
   - "emergency bypass exige reason y receipt"
   - "adapters provider-specific no se duplican"
-- review-state: in_review
+- review-state: done
 - review-implementer: release-r3-s1
+- review-reviewer: delivery-verifier-independent-r3
 - review-log: requested_changes by delivery-verifier-r3 — Corregir Forge: invocar assertReleaseMetadata sobre candidate antes de crear/listar PR; validar que la respuesta de provider.createPullRequest tenga headBranch igual a candidate.branch y baseBranch exactamente main; añadir error estructurado missing-upstream coherente con Git; cubrir metadata inválida y provider que devuelve base incorrecta en tests.
+- review-log: approved by delivery-verifier-independent-r3 — PASS: Forge valida assertReleaseMetadata(candidate) antes de cualquier llamada al provider; la respuesta de createPullRequest exige headBranch === candidate.branch y baseBranch === main mediante provider-contract; upstream ausente produce missing-upstream estructurado. Tests cubren metadata invalida antes del provider y provider con base incorrecta. Git mantiene branch/base/upstream checks y commit-policy mantiene develop->main bloqueado en normal y bypass de emergencia con reason, capability y receipt. El commit revisado es 5cb9433f; no hay cambios locales en el alcance.
 ## acceptance
 
 - Solo release/* -> main en flujo normal

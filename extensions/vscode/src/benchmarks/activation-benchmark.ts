@@ -209,7 +209,9 @@ const summarizeScenario = (
 ): IActivationSummary => ({
 	scenario,
 	iterations: samples.length,
-	medianStartupReadyMs: median(samples.map((sample) => sample.startupReadyMs)),
+	medianStartupReadyMs: median(
+		samples.map((sample) => sample.startupReadyMs),
+	),
 	p95StartupReadyMs: percentile(
 		samples.map((sample) => sample.startupReadyMs),
 		0.95,
@@ -245,15 +247,15 @@ const classifyHarnessLimitation = (
 			normalized.includes('cannot find module'))
 			? 'missing-official-harness'
 			: normalized.includes('getaddrinfo') ||
-				  normalized.includes('download') ||
-				  normalized.includes('fetch failed')
+					normalized.includes('download') ||
+					normalized.includes('fetch failed')
 				? 'vscode-download-blocked'
 				: normalized.includes('libgtk') ||
-				    normalized.includes('sandbox') ||
-				    normalized.includes('display') ||
-				    normalized.includes('x server')
-				  ? 'vscode-runtime-unavailable'
-				  : 'scenario-probe-failed';
+						normalized.includes('sandbox') ||
+						normalized.includes('display') ||
+						normalized.includes('x server')
+					? 'vscode-runtime-unavailable'
+					: 'scenario-probe-failed';
 	return {
 		phase,
 		reason,
@@ -392,7 +394,9 @@ const executeVsCodeScenario = async (
 	}
 	let probe: IScenarioProbeFile;
 	try {
-		probe = JSON.parse(await readFile(outputFile, 'utf8')) as IScenarioProbeFile;
+		probe = JSON.parse(
+			await readFile(outputFile, 'utf8'),
+		) as IScenarioProbeFile;
 	} catch (error) {
 		throw classifyHarnessLimitation(
 			error instanceof Error ? error.message : String(error),
@@ -456,12 +460,18 @@ export const runActivationBenchmark = async (
 					control: null,
 					workspaceNoMcp: null,
 					workspaceMcp: null,
-					decision: createInsufficientEvidenceDecision(manifest, limitation),
+					decision: createInsufficientEvidenceDecision(
+						manifest,
+						limitation,
+					),
 				};
 			}
 		}
 
-		const samples = new Map<TActivationScenario, IActivationScenarioSample[]>();
+		const samples = new Map<
+			TActivationScenario,
+			IActivationScenarioSample[]
+		>();
 		for (const scenario of ACTIVATION_SCENARIOS) {
 			samples.set(scenario, []);
 		}
@@ -506,10 +516,12 @@ export const runActivationBenchmark = async (
 						'message' in error
 							? (error as IActivationHarnessLimitation)
 							: classifyHarnessLimitation(
-								error instanceof Error ? error.message : String(error),
-								'launch',
-								scenario,
-							);
+									error instanceof Error
+										? error.message
+										: String(error),
+									'launch',
+									scenario,
+								);
 					return {
 						harness: {
 							mode: 'limitation',
@@ -523,13 +535,19 @@ export const runActivationBenchmark = async (
 						control: null,
 						workspaceNoMcp: null,
 						workspaceMcp: null,
-						decision: createInsufficientEvidenceDecision(manifest, limitation),
+						decision: createInsufficientEvidenceDecision(
+							manifest,
+							limitation,
+						),
 					};
 				}
 			}
 		}
 
-		const control = summarizeScenario('control', samples.get('control') ?? []);
+		const control = summarizeScenario(
+			'control',
+			samples.get('control') ?? [],
+		);
 		const workspaceNoMcp = summarizeScenario(
 			'workspace-no-mcp',
 			samples.get('workspace-no-mcp') ?? [],
