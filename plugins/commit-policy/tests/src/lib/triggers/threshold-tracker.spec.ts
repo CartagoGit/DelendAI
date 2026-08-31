@@ -214,6 +214,29 @@ describe('threshold tracker', () => {
 });
 
 describe('threshold tracker — end-to-end staging contract at the git boundary', () => {
+	it.skip('historical repro: buggy staging from the cached index would violate predicate != action', async () => {
+		const { runner } = buildMiniGit([
+			['staged-only.ts', { x: 'A', y: ' ' }],
+			['alpha.ts', { x: ' ', y: 'M' }],
+			['beta.ts', { x: ' ', y: 'M' }],
+			['gamma.ts', { x: '?', y: '?' }],
+		]);
+		const tracker = createThresholdTracker(runner, { files: 3 });
+		const fired = await tracker.check();
+		expect(fired?.files?.paths).toEqual([
+			'alpha.ts',
+			'beta.ts',
+			'gamma.ts',
+		]);
+		if (fired === null) return;
+
+		// Historical bug shape: staging what was already cached would drag
+		// foreign staged files into the action instead of using event.files.
+		const buggyActionPaths = await gitCachedNames(runner);
+		expect(buggyActionPaths).toEqual(['staged-only.ts']);
+		expect(buggyActionPaths).not.toEqual(fired.files.paths);
+	});
+
 	it('stages exactly the fired dirty set and the post-stage subset check passes', async () => {
 		const { runner } = buildMiniGit([
 			['alpha.ts', { x: ' ', y: 'M' }],
