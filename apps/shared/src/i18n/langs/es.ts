@@ -642,6 +642,7 @@ const extension = {
 	'logs.resume': 'Reanudar',
 	'logs.clear': 'Limpiar',
 	'logs.copyTask': 'Copiar id de tarea',
+	'logs.searchPlaceholder': 'Filtrar eventos visibles',
 	'logs.subscribe.start': 'Iniciar tiempo real',
 	'logs.subscribe.stop': 'Detener tiempo real',
 	'logs.subscribe.following': 'Siguiendo eventos en vivo',

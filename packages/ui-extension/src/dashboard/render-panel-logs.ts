@@ -61,6 +61,10 @@ export const renderPanelLogs = (lang: ILangDict): string => {
 	<h2 class="mcpv-panel__title">${escapeHtml(text('tabLogs', 'Logs'))}</h2>
 	<p class="mcpv-fg-muted">${escapeHtml(text('logs.lead', 'Realtime redacted stream of MCP events. Switch the source to focus on a slice of the system.'))}</p>
 	<div class="mcpv-logs" id="mcpv-logs-root">
+		<div class="mcpv-logs__search">
+			<span aria-hidden="true">🔎</span>
+			<input type="search" id="mcpv-logs-search" placeholder="${escapeHtml(text('logs.searchPlaceholder', 'Filter visible events'))}" />
+		</div>
 		<div class="mcpv-logs__source-bar" id="mcpv-logs-sources" role="radiogroup" aria-label="${escapeHtml(text('logs.source', 'Source'))}">
 			${sourceChips}
 		</div>
