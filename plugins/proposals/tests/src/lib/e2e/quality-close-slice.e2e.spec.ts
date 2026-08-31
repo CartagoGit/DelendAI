@@ -91,16 +91,15 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				arguments: {},
 			});
 			expect(sync.isError).toBeFalsy();
-			const claim = await client.callTool({
-				name: 'mcp-vertex_proposals_agent_lock',
-				arguments: {
-					action: 'claim',
-					task_id: 'f04200-S1',
-					agent: 'quality-close-test',
-					files: ['src/quality.ts'],
-				},
+			const plan = await client.callTool({
+				name: 'mcp-vertex_proposals_auto_work',
+				arguments: {},
 			});
-			expect(claim.isError).toBeFalsy();
+			expect(plan.isError).toBeFalsy();
+			expect(plan.structuredContent).toMatchObject({
+				state: 'work',
+				proposalId: 'f04200',
+			});
 			const quality = await client.callTool({
 				name: 'mcp-vertex_quality_quality_run_all',
 				arguments: {},
@@ -116,7 +115,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
-			expect(JSON.stringify(result)).toBe('__close_failure_diagnostic__');
 			expect(result.structuredContent).toMatchObject({
 				ok: false,
 				closed: false,
@@ -141,16 +139,15 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				arguments: {},
 			});
 			expect(sync.isError).toBeFalsy();
-			const claim = await client.callTool({
-				name: 'mcp-vertex_proposals_agent_lock',
-				arguments: {
-					action: 'claim',
-					task_id: 'f04201-S1',
-					agent: 'quality-close-test',
-					files: ['src/quality.ts'],
-				},
+			const plan = await client.callTool({
+				name: 'mcp-vertex_proposals_auto_work',
+				arguments: {},
 			});
-			expect(claim.isError).toBeFalsy();
+			expect(plan.isError).toBeFalsy();
+			expect(plan.structuredContent).toMatchObject({
+				state: 'work',
+				proposalId: 'f04201',
+			});
 			const quality = await client.callTool({
 				name: 'mcp-vertex_quality_quality_run_all',
 				arguments: {},
@@ -167,7 +164,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
-			expect(JSON.stringify(result)).toBe('__close_success_diagnostic__');
 			expect(result.isError).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,
