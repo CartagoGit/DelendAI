@@ -231,7 +231,11 @@ export class DashboardWebviewViewProvider {
 		const parsed = DASHBOARD_MESSAGE_SCHEMA.safeParse(message);
 		if (!parsed.success) return;
 		if (parsed.data.command === 'action') {
-			await this.deps.host.executeCommand?.(REFRESH_COMMAND);
+			await this.deps.host.executeCommand?.(
+				parsed.data.action === 'expand'
+					? 'mcp-vertex.openDashboard'
+					: REFRESH_COMMAND,
+			);
 			return;
 		}
 		if (parsed.data.command === 'openTool') {
