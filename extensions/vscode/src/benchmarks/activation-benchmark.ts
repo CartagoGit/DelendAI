@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -54,7 +54,8 @@ export interface IActivationScenarioSample {
 	readonly heapUsedBytes: number;
 	readonly heapDeltaBytes: number;
 	readonly workUnits: number;
-	readonly observedToolCalls: number;
+	readonly observedToolCalls: number | null;
+	readonly observedToolCallsEvidence: 'artifact' | 'missing-artifact';
 	readonly activatedBeforeProbe: boolean;
 	readonly activationEvents: readonly string[];
 	readonly limitation: null;
@@ -69,7 +70,8 @@ export interface IActivationSummary {
 	readonly medianHeapUsedBytes: number;
 	readonly medianHeapDeltaBytes: number;
 	readonly medianWorkUnits: number;
-	readonly totalObservedToolCalls: number;
+	readonly totalObservedToolCalls: number | null;
+	readonly missingObservedToolCallEvidenceCount: number;
 	readonly activatedBeforeProbeCount: number;
 	readonly samples: readonly IActivationScenarioSample[];
 }
@@ -130,8 +132,15 @@ interface IScenarioProbeFile {
 	readonly heapUsedBytes: number;
 	readonly heapDeltaBytes: number;
 	readonly workUnits: number;
+	readonly observedToolCalls?: number | null;
+	readonly observedToolCallsEvidence?: 'artifact' | 'missing-artifact';
 	readonly activatedBeforeProbe: boolean;
 	readonly activationEvents: readonly string[];
+}
+
+interface IObservedToolCallEvidence {
+	readonly observedToolCalls: number | null;
+	readonly observedToolCallsEvidence: 'artifact' | 'missing-artifact';
 }
 
 type TRunTests = (input: {
@@ -190,50 +199,75 @@ export const analyzeActivationEvents = (
 	};
 };
 
-const countObservedToolCalls = async (path?: string): Promise<number> => {
-	if (path === undefined) return 0;
+const readObservedToolCalls = async (
+	path?: string,
+): Promise<IObservedToolCallEvidence> => {
+	if (path === undefined) {
+		return {
+			observedToolCalls: null,
+			observedToolCallsEvidence: 'missing-artifact',
+		};
+	}
 	try {
 		const raw = await readFile(path, 'utf8');
-		return raw
-			.split('\n')
-			.map((line) => line.trim())
-			.filter((line) => line.length > 0).length;
+		return {
+			observedToolCalls: raw
+				.split('\n')
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0).length,
+			observedToolCallsEvidence: 'artifact',
+		};
 	} catch {
-		return 0;
+		return {
+			observedToolCalls: null,
+			observedToolCallsEvidence: 'missing-artifact',
+		};
 	}
 };
 
 const summarizeScenario = (
 	scenario: TActivationScenario,
 	samples: readonly IActivationScenarioSample[],
-): IActivationSummary => ({
-	scenario,
-	iterations: samples.length,
-	medianStartupReadyMs: median(
-		samples.map((sample) => sample.startupReadyMs),
-	),
-	p95StartupReadyMs: percentile(
-		samples.map((sample) => sample.startupReadyMs),
-		0.95,
-	),
-	medianActivationProbeMs: median(
-		samples.map((sample) => sample.activationProbeMs ?? 0),
-	),
-	medianHeapUsedBytes: median(samples.map((sample) => sample.heapUsedBytes)),
-	medianHeapDeltaBytes: median(
-		samples.map((sample) => sample.heapDeltaBytes),
-	),
-	medianWorkUnits: median(samples.map((sample) => sample.workUnits)),
-	totalObservedToolCalls: samples.reduce(
-		(count, sample) => count + sample.observedToolCalls,
-		0,
-	),
-	activatedBeforeProbeCount: samples.reduce(
-		(count, sample) => count + (sample.activatedBeforeProbe ? 1 : 0),
-		0,
-	),
-	samples,
-});
+): IActivationSummary => {
+	const missingObservedToolCallEvidenceCount = samples.filter(
+		(sample) => sample.observedToolCallsEvidence !== 'artifact',
+	).length;
+	return {
+		scenario,
+		iterations: samples.length,
+		medianStartupReadyMs: median(
+			samples.map((sample) => sample.startupReadyMs),
+		),
+		p95StartupReadyMs: percentile(
+			samples.map((sample) => sample.startupReadyMs),
+			0.95,
+		),
+		medianActivationProbeMs: median(
+			samples.map((sample) => sample.activationProbeMs ?? 0),
+		),
+		medianHeapUsedBytes: median(
+			samples.map((sample) => sample.heapUsedBytes),
+		),
+		medianHeapDeltaBytes: median(
+			samples.map((sample) => sample.heapDeltaBytes),
+		),
+		medianWorkUnits: median(samples.map((sample) => sample.workUnits)),
+		totalObservedToolCalls:
+			missingObservedToolCallEvidenceCount === 0
+				? samples.reduce(
+						(count, sample) =>
+							count + (sample.observedToolCalls ?? 0),
+						0,
+					)
+				: null,
+		missingObservedToolCallEvidenceCount,
+		activatedBeforeProbeCount: samples.reduce(
+			(count, sample) => count + (sample.activatedBeforeProbe ? 1 : 0),
+			0,
+		),
+		samples,
+	};
+};
 
 const classifyHarnessLimitation = (
 	message: string,
@@ -279,23 +313,58 @@ const createInsufficientEvidenceDecision = (
 	rationale: `The benchmark attempted the official @vscode/test-electron harness but stopped during ${limitation.phase}: ${limitation.message}. No real VS Code activation evidence was collected, so this run cannot justify onStartupFinished; ${manifest.fallbackDocumentation}`,
 });
 
+const createMissingObservedCallsDecision = (
+	manifest: IActivationManifestEvidence,
+	summaries: readonly IActivationSummary[],
+): IActivationDecision => {
+	const missingScenarios = summaries
+		.filter((summary) => summary.missingObservedToolCallEvidenceCount > 0)
+		.map((summary) => summary.scenario);
+	return {
+		status: 'insufficient-evidence',
+		keepOnStartupFinished: null,
+		startupBudgetMs: STARTUP_ACTIVATION_BUDGET_MS,
+		startupWorkBudget: STARTUP_ACTIVATION_WORK_BUDGET,
+		startupOverheadMs: null,
+		startupWorkUnits: null,
+		lazyFallbackReady: manifest.lazyFallbackEvents.length > 0,
+		lazyFallbackEvents: manifest.lazyFallbackEvents,
+		rationale: `The official @vscode/test-electron harness ran, but observedToolCalls evidence is missing for ${missingScenarios.join(', ')}. The benchmark must observe control, no-MCP, and MCP scenarios from a real instrumentation artifact before it can justify onStartupFinished; ${manifest.fallbackDocumentation}`,
+	};
+};
+
 export const decideActivationStrategy = (
 	control: IActivationSummary,
 	workspaceNoMcp: IActivationSummary,
 	workspaceMcp: IActivationSummary,
 	manifest: IActivationManifestEvidence,
 ): IActivationDecision => {
+	if (
+		control.missingObservedToolCallEvidenceCount > 0 ||
+		workspaceNoMcp.missingObservedToolCallEvidenceCount > 0 ||
+		workspaceMcp.missingObservedToolCallEvidenceCount > 0
+	) {
+		return createMissingObservedCallsDecision(manifest, [
+			control,
+			workspaceNoMcp,
+			workspaceMcp,
+		]);
+	}
 	const startupOverheadMs = Math.max(
 		0,
 		workspaceNoMcp.medianStartupReadyMs - control.medianStartupReadyMs,
 	);
 	const startupWorkUnits = workspaceNoMcp.medianWorkUnits;
+	const workspaceNoMcpObservedToolCalls =
+		workspaceNoMcp.totalObservedToolCalls ?? 0;
+	const workspaceMcpObservedToolCalls =
+		workspaceMcp.totalObservedToolCalls ?? 0;
 	const lazyFallbackReady = manifest.lazyFallbackEvents.length > 0;
 	const keepOnStartupFinished =
 		manifest.startupEventPresent &&
 		lazyFallbackReady &&
-		workspaceNoMcp.totalObservedToolCalls === 0 &&
-		workspaceMcp.totalObservedToolCalls > 0 &&
+		workspaceNoMcpObservedToolCalls === 0 &&
+		workspaceMcpObservedToolCalls > 0 &&
 		startupOverheadMs <= STARTUP_ACTIVATION_BUDGET_MS &&
 		startupWorkUnits <= STARTUP_ACTIVATION_WORK_BUDGET;
 	return {
@@ -361,6 +430,9 @@ const executeVsCodeScenario = async (
 		request.evidenceDir,
 		`${request.scenario}-${request.iteration}.json`,
 	);
+	if (request.callLogPath !== undefined) {
+		await writeFile(request.callLogPath, '', 'utf8');
+	}
 	const startedAt = performance.now();
 	try {
 		await runTests({
@@ -404,6 +476,9 @@ const executeVsCodeScenario = async (
 			request.scenario,
 		);
 	}
+	const observedToolCallEvidence = await readObservedToolCalls(
+		request.callLogPath,
+	);
 	return {
 		scenario: request.scenario,
 		startupReadyMs: performance.now() - startedAt,
@@ -411,7 +486,12 @@ const executeVsCodeScenario = async (
 		heapUsedBytes: probe.heapUsedBytes,
 		heapDeltaBytes: probe.heapDeltaBytes,
 		workUnits: probe.workUnits,
-		observedToolCalls: await countObservedToolCalls(request.callLogPath),
+		observedToolCalls:
+			probe.observedToolCalls ??
+			observedToolCallEvidence.observedToolCalls,
+		observedToolCallsEvidence:
+			probe.observedToolCallsEvidence ??
+			observedToolCallEvidence.observedToolCallsEvidence,
 		activatedBeforeProbe: probe.activatedBeforeProbe,
 		activationEvents: probe.activationEvents,
 		limitation: null,
@@ -496,14 +576,10 @@ export const runActivationBenchmark = async (
 								: defaultMcpWorkspacePath,
 					integrationRunnerPath,
 					evidenceDir,
-					...(scenario === 'workspace-mcp'
-						? {
-								callLogPath: join(
-									evidenceDir,
-									`${scenario}-${iteration}.jsonl`,
-								),
-							}
-						: {}),
+					callLogPath: join(
+						evidenceDir,
+						`${scenario}-${iteration}.jsonl`,
+					),
 				};
 				try {
 					samples.get(scenario)?.push(await executeScenario(request));

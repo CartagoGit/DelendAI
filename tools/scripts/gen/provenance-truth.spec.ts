@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import plugin from '../../../plugins/observability/src/index';
 import {
+	buildProvenanceGraph,
+	PROVENANCE_NODE_KINDS,
+	PROVENANCE_RELATION_DEFINITIONS,
+} from '../../../plugins/observability/src/public';
+import {
 	buildProvenanceTruthSnapshot,
 	listObservabilityValidationTestPaths,
 	renderProvenanceTruthMarkdown,
@@ -38,6 +43,20 @@ const createPluginContext = () =>
 	}) as never;
 
 describe('provenance-truth.script.ts', () => {
+	it('keeps the provenance public contract importable from source in a clean checkout', () => {
+		expect(buildProvenanceGraph).toBeTypeOf('function');
+		expect(PROVENANCE_NODE_KINDS).toContain('agent');
+		expect(PROVENANCE_RELATION_DEFINITIONS).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					from: 'proposal',
+					relation: 'contains',
+					to: 'slice',
+				}),
+			]),
+		);
+	});
+
 	it('renders generated truth from the provenance source-of-truth contract', () => {
 		const snapshot = buildProvenanceTruthSnapshot();
 		const markdown = renderProvenanceTruthMarkdown(snapshot);

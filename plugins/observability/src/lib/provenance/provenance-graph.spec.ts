@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { buildProvenanceGraph, PROVENANCE_NODE_KINDS } from './index';
 
+const FIRST_PULL_REQUEST = 92;
+const SECOND_PULL_REQUEST = 'baseline';
+
 describe('buildProvenanceGraph', () => {
 	it('links every canonical provenance kind without leaking discarded user data', () => {
 		const graph = buildProvenanceGraph({
@@ -14,7 +17,7 @@ describe('buildProvenanceGraph', () => {
 			],
 			commitShas: ['8514f99deadbeef'],
 			releaseTags: ['release/patch/provenance-truth'],
-			pullRequests: [92],
+			pullRequests: [FIRST_PULL_REQUEST],
 			userData: ['secret-token', 'finch@example.com'],
 		});
 
@@ -42,7 +45,7 @@ describe('buildProvenanceGraph', () => {
 				],
 				commitShas: ['8514f99'],
 				releaseTags: ['v0.1.1'],
-				pullRequests: ['52'],
+				pullRequests: [SECOND_PULL_REQUEST],
 			},
 			{
 				repoUrl: 'https://github.com/CartagoGit/mcp-vertex',
@@ -83,8 +86,8 @@ describe('buildProvenanceGraph', () => {
 		expect(hrefById['release:v0.1.1']).toBe(
 			'https://github.com/CartagoGit/mcp-vertex/releases/tag/v0.1.1',
 		);
-		expect(hrefById['pr:52']).toBe(
-			'https://github.com/CartagoGit/mcp-vertex/pull/52',
+		expect(hrefById[`pr:${SECOND_PULL_REQUEST}`]).toBe(
+			`https://github.com/CartagoGit/mcp-vertex/pull/${SECOND_PULL_REQUEST}`,
 		);
 	});
 });

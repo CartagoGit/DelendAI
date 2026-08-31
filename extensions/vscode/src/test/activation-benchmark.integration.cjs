@@ -39,7 +39,8 @@ async function run() {
 			workUnits = 0;
 		}
 	}
-	let observedToolCalls = 0;
+	let observedToolCalls = null;
+	let observedToolCallsEvidence = 'missing-artifact';
 	const callLogPath = process.env.MCP_VERTEX_BENCH_CALL_LOG;
 	if (callLogPath) {
 		try {
@@ -48,8 +49,10 @@ async function run() {
 				.split('\n')
 				.map((line) => line.trim())
 				.filter((line) => line.length > 0).length;
+			observedToolCallsEvidence = 'artifact';
 		} catch {
-			observedToolCalls = 0;
+			observedToolCalls = null;
+			observedToolCallsEvidence = 'missing-artifact';
 		}
 	}
 	await writeFile(
@@ -68,6 +71,7 @@ async function run() {
 					? extension.packageJSON.activationEvents
 					: [],
 				observedToolCalls,
+				observedToolCallsEvidence,
 			},
 			null,
 			2,

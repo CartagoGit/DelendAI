@@ -15,7 +15,7 @@ import {
 	PROVENANCE_RELATION_DEFINITIONS,
 	type IProvenanceEventInput,
 	type IProvenanceGraph,
-} from '@mcp-vertex/observability/public';
+} from '../../../plugins/observability/src/public';
 
 const OUTPUT_REL =
 	'docs/mcp-vertex/generated/observability-provenance.generated.md';
