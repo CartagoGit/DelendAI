@@ -76,4 +76,19 @@ describe('evaluateWorktreeImpactPolicy', async () => {
 			'multiple contract surfaces',
 		);
 	});
+
+	it('escalates verify fan-out once verification spans contract and consumer surfaces', async () => {
+		const result = evaluateWorktreeImpactPolicy({
+			phase: 'verify',
+			touchedPaths: [
+				'packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+				'plugins/proposals/src/lib/agents/agent-worktree-engine.ts',
+				'plugins/proposals/tests/src/lib/continue-proposal.spec.ts',
+			],
+		});
+		expect(result.impact).toBe('high');
+		expect(result.isolation).toBe('agent-worktree');
+		expect(result.reasons.join(' ')).toContain('late migration phase');
+	});
 });
