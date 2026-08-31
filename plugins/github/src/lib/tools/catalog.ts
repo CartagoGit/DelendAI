@@ -54,39 +54,6 @@ const RemoteErrorSchema = z
 		retryAfterSeconds: z.number().nullable(),
 		temporary: z.boolean(),
 		retryable: z.boolean(),
-				const items = result.data.map((pr) => {
-					const prAny = pr as any;
-					return {
-						number: typeof pr.number === 'number' ? pr.number : 0,
-						title: typeof pr.title === 'string' ? pr.title : '',
-						state: typeof pr.state === 'string' ? pr.state : 'unknown',
-						draft: typeof pr.draft === 'boolean' ? pr.draft : false,
-						url:
-							typeof pr.html_url === 'string'
-								? pr.html_url
-								: 'https://github.com',
-						author: mapUser(pr.user),
-						labels: mapLabels(
-							Array.isArray(pr.labels) ? pr.labels : undefined,
-						),
-						branch:
-							typeof prAny.head?.ref === 'string'
-								? prAny.head.ref
-								: '',
-						baseBranch:
-							typeof prAny.base?.ref === 'string'
-								? prAny.base.ref
-								: undefined,
-						reviewDecision:
-							typeof pr.reviewDecision === 'string'
-								? pr.reviewDecision
-								: undefined,
-						mergeable:
-							typeof pr.mergeable_state === 'string'
-								? pr.mergeable_state
-								: undefined,
-					};
-				});
 		originalBytes: z.number().int().nullable(),
 		keptBytes: z.number().int().nullable(),
 		originalLines: z.number().int().nullable(),
