@@ -25,6 +25,21 @@ El valor principal para el agente no es solo listar ejecuciones: necesita locali
 - Hacer que el diagnóstico dependa de logs, proposals, quality o notification.
 - Descargar artefactos o logs sin límites.
 
+## architecture
+
+### Activation and access requirements (English)
+
+The diagnostic flow requires one configured remote provider and does not require the `git` plugin or a local checkout. To diagnose the repository that hosts `mcp-vertex`, configure the real GitHub `owner/repository` or GitLab `project` explicitly, together with the provider token and API URL required by the corresponding provider proposal.
+
+- GitHub requires `GITHUB_TOKEN`; GitHub Enterprise Server may additionally require `GITHUB_API_URL`.
+- GitLab requires `GITLAB_TOKEN` or the supported legacy token variable; GitLab self-managed may additionally require `GITLAB_URL`.
+- Use the smallest read-only permissions needed to retrieve the selected run, failed jobs, bounded logs, checks, reviews, commits, and artifact metadata. The diagnostic flow must not require write permissions.
+- Keep tokens in the process environment or approved secret injection mechanism. Never put them in configuration committed to the repository, prompts, proposals, logs, snapshots, evidence, or diagnostic output.
+- If `git` is enabled and a checkout exists, the orchestrator may add local branch, SHA, diff, and remote context. This improves correlation but is optional and must not block remote-only diagnosis.
+- Any retry, comment, dispatch, cancellation, or other corrective action remains outside diagnosis and requires the separate mutation capability plus explicit confirmation.
+
+The diagnostic result must identify whether evidence is complete, partial, or unavailable and must preserve useful web/API links without exposing credentials.
+
 ## Slices
 
 - global_gate: type
