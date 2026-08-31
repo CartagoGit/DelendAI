@@ -1117,10 +1117,11 @@ const buildIssueLikeRegistration = (
 						return toolResponse({
 							action: args.action,
 							...(kind === 'issues'
-								? { issues: data.map(normalizeCollection) }
+								? { issues: data.map(normalizeIssue) }
 								: {
-										mergeRequests:
-											data.map(normalizeCollection),
+										mergeRequests: data.map(
+											normalizeMergeRequest,
+										),
 									}),
 							meta: buildMetaOutput(meta),
 							nextPage:
