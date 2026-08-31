@@ -22,11 +22,16 @@ import { renderPanelHealth } from '../render-panel-health';
 import { renderPanelMemory } from '../render-panel-memory';
 import { renderPanelSettings } from '../render-panel-settings';
 
+export interface IBuildPanelsOptions {
+	readonly compact?: boolean;
+}
+
 export function buildPanels(
 	model: IDashboardAllModels,
 	lang: ILangDict,
 	docsUrl: string,
 	settings?: IExtensionSettings,
+	options: IBuildPanelsOptions = {},
 ): string {
 	const text = (
 		key: string,
