@@ -29,9 +29,14 @@ import {
 const subscribe = (
 	paths: ITaskQueuePaths,
 	taskId: string,
+	params: {
+		subscriberId?: string;
+		subscriptionId?: string;
+		now?: string;
+	} = {},
 ): Promise<ISubscribeActionResult> =>
 	runTaskQueueAction(
-		{ action: 'subscribe', params: { taskId } },
+		{ action: 'subscribe', params: { taskId, ...params } },
 		paths,
 	) as Promise<ISubscribeActionResult>;
 
@@ -117,5 +122,47 @@ describe('subscribe idempotency persists across sessions (M6)', async () => {
 			delivered: string[];
 		};
 		expect(persisted.delivered).toEqual(['obs2::dep1', 'obs::dep1']); // sorted
+	});
+
+	it('allows one subscriber, renews its lease, and rejects a second subscriber', async () => {
+		const first = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-a',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+		expect(first.subscriberId).toBe('agent-a');
+		expect(first.renewed).toBe(false);
+
+		const renewed = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-a',
+			subscriptionId: first.subscriptionId,
+			now: '2026-08-31T00:01:00.000Z',
+		});
+		expect(renewed.renewed).toBe(true);
+		expect(renewed.subscriptionId).toBe(first.subscriptionId);
+
+		const second = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-b',
+			now: '2026-08-31T00:02:00.000Z',
+		});
+		expect(second).toMatchObject({
+			blocked: true,
+			blockerType: 'subscription-conflict',
+		});
+	});
+
+	it('releases an abandoned subscription after its lease expires', async () => {
+		const first = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-a',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+		const replacement = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-b',
+			now: '2026-08-31T00:10:01.000Z',
+		});
+		expect(replacement).toMatchObject({
+			subscriberId: 'agent-b',
+			renewed: false,
+		});
+		expect(replacement.subscriptionId).not.toBe(first.subscriptionId);
 	});
 });

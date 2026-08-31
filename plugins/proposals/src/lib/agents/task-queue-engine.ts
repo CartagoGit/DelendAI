@@ -22,6 +22,7 @@
 
 import { mkdir, stat } from 'node:fs/promises';
 import { basename, dirname, resolve } from 'node:path';
+import { randomUUID } from 'node:crypto';
 
 import z from 'zod';
 
@@ -103,6 +104,9 @@ const IDequeueParamsSchema = z.object({
 const ISubscribeParamsSchema = z.object({
 	taskId: z.string().min(1),
 	since: z.string().optional(),
+	subscriberId: z.string().min(1).optional().default('anonymous'),
+	subscriptionId: z.string().min(1).optional(),
+	now: z.string().optional(),
 });
 
 const IReportParamsSchema = z.object({}).strict();
@@ -194,6 +198,18 @@ export interface IDequeueResult {
 export interface ISubscribeActionResult {
 	readonly digests: IClosedTaskDigest[];
 	readonly pendingTargets: string[];
+	readonly subscriberId: string;
+	readonly subscriptionId: string;
+	readonly leaseUntil: string;
+	readonly renewed: boolean;
+}
+
+export interface ISubscribeBlockedResult {
+	readonly blocked: true;
+	readonly blockerType: 'subscription-conflict';
+	readonly subscriberId: string;
+	readonly leaseUntil: string;
+	readonly nextAction: string;
 }
 
 export interface IReportResult extends IBackpressureReport {
@@ -204,6 +220,7 @@ export type ITaskQueueResult =
 	| IEnqueueResult
 	| IDequeueResult
 	| ISubscribeActionResult
+	| ISubscribeBlockedResult
 	| IReportResult;
 
 // ---------------------------------------------------------------------------
@@ -230,7 +247,7 @@ const ensureQueueFile = async (queuePath: string): Promise<void> => {
  * Internal: load the queue. Missing/empty → empty queue.
  * Corrupt JSON → rename to .corrupt-<ts> backup and throw.
  */
-const loadOrEmptyQueue = async (
+export const loadOrEmptyQueue = async (
 	queuePath: string,
 ): Promise<IPersistentTaskQueue> => {
 	let raw: string;
@@ -279,24 +296,31 @@ const computePosition = (
 // Recommendation logic
 // ---------------------------------------------------------------------------
 
+const RED_QUEUE_LENGTH_THRESHOLD = 16;
+const RED_OLDEST_AGE_MINUTES_THRESHOLD = 240;
+const RED_WAITER_ORPHANS_THRESHOLD = 3;
+const AMBER_QUEUE_LENGTH_THRESHOLD = 8;
+const AMBER_OLDEST_AGE_MINUTES_THRESHOLD = 120;
+const AMBER_WAITER_ORPHANS_THRESHOLD = 1;
+
 const buildRecommendation = (report: IBackpressureReport): string => {
 	if (report.threshold === 'red') {
 		const parts: string[] = [];
-		if (report.queueLength >= 16)
+		if (report.queueLength >= RED_QUEUE_LENGTH_THRESHOLD)
 			parts.push(`${report.queueLength} queued entries`);
-		if (report.oldestAgeMinutes >= 240)
+		if (report.oldestAgeMinutes >= RED_OLDEST_AGE_MINUTES_THRESHOLD)
 			parts.push(`oldest age ${report.oldestAgeMinutes}min`);
-		if (report.waiterOrphans >= 3)
+		if (report.waiterOrphans >= RED_WAITER_ORPHANS_THRESHOLD)
 			parts.push(`${report.waiterOrphans} orphaned waiters`);
 		return `red threshold: ${parts.join(', ')}; consider cancelling stale entries or escalating to user`;
 	}
 	if (report.threshold === 'amber') {
 		const parts: string[] = [];
-		if (report.queueLength >= 8)
+		if (report.queueLength >= AMBER_QUEUE_LENGTH_THRESHOLD)
 			parts.push(`${report.queueLength} queued entries`);
-		if (report.oldestAgeMinutes >= 120)
+		if (report.oldestAgeMinutes >= AMBER_OLDEST_AGE_MINUTES_THRESHOLD)
 			parts.push(`oldest age ${report.oldestAgeMinutes}min`);
-		if (report.waiterOrphans >= 1)
+		if (report.waiterOrphans >= AMBER_WAITER_ORPHANS_THRESHOLD)
 			parts.push(`${report.waiterOrphans} orphaned waiter(s)`);
 		return `amber threshold: ${parts.join(', ')}; monitor and consider promoting waiters`;
 	}
@@ -318,6 +342,57 @@ const deliveredKey = (taskId: string, observedTaskId: string): string =>
 /** Sidecar path for the delivered-digests set, derived from the queue path. */
 const deliveredSidecarPath = (queuePath: string): string =>
 	resolve(dirname(queuePath), '.subscribe-delivered.json');
+
+const subscriptionSidecarPath = (queuePath: string): string =>
+	resolve(dirname(queuePath), '.subscribe-leases.json');
+
+const SUBSCRIPTION_LEASE_MS = 10 * 60_000;
+
+interface ISubscriptionLease {
+	taskId: string;
+	subscriberId: string;
+	subscriptionId: string;
+	leaseUntil: string;
+}
+
+const loadSubscriptionLeases = async (
+	path: string,
+): Promise<ISubscriptionLease[]> => {
+	try {
+		const raw = (
+			await new SafeWorkspaceReader(dirname(path)).readText(
+				basename(path),
+			)
+		).content;
+		const parsed = JSON.parse(raw) as { leases?: unknown };
+		return Array.isArray(parsed.leases)
+			? parsed.leases.filter(
+					(value): value is ISubscriptionLease =>
+						typeof value === 'object' &&
+						value !== null &&
+						typeof (value as ISubscriptionLease).taskId ===
+							'string' &&
+						typeof (value as ISubscriptionLease).subscriberId ===
+							'string' &&
+						typeof (value as ISubscriptionLease).subscriptionId ===
+							'string' &&
+						typeof (value as ISubscriptionLease).leaseUntil ===
+							'string',
+				)
+			: [];
+	} catch (error: unknown) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+		return [];
+	}
+};
+
+const saveSubscriptionLeases = async (
+	path: string,
+	leases: readonly ISubscriptionLease[],
+): Promise<void> => {
+	await mkdir(dirname(path), { recursive: true });
+	await writeFileAtomic(path, `${JSON.stringify({ leases }, null, 2)}\n`);
+};
 
 /**
  * Load the persisted delivered-keys set. Missing/empty → empty set. Corrupt
@@ -533,51 +608,99 @@ export async function runTaskQueueAction(
 
 	if (action.action === 'subscribe') {
 		const params = ISubscribeParamsSchema.parse(action.params);
+		const now = params.now ? new Date(params.now) : new Date();
+		const nowMs = now.getTime();
+		if (Number.isNaN(nowMs))
+			throw new TaskQueueActionError(
+				'subscribe',
+				'now must be an ISO date',
+			);
 
-		await ensureQueueFile(paths.queuePath);
-		const queue = await loadOrEmptyQueue(paths.queuePath);
-		const closed = await readClosedTasks(paths.closedTasksPath);
-		const closedMap = new Map(closed.map((c) => [c.taskId, c]));
-
-		const entry = queue.entries.find((e) => e.taskId === params.taskId);
-		const observeTargets = entry?.observe ?? [];
-
-		// The delivered-set read-modify-write runs under a mutex so two
-		// concurrent subscribers can never both deliver the same digest
-		// (and the set is persisted, so a restart does not re-deliver — M6).
-		const sidecarPath = deliveredSidecarPath(paths.queuePath);
-		return await withFileMutex(sidecarPath, async () => {
-			const delivered = await loadDeliveredSet(sidecarPath);
-			const digests: IClosedTaskDigest[] = [];
-			const pendingTargets: string[] = [];
-			let mutated = false;
-
-			for (const target of observeTargets) {
-				const key = deliveredKey(params.taskId, target);
-				if (delivered.has(key)) {
-					// Already delivered (this session or a previous one) — skip.
-					continue;
-				}
-				const c = closedMap.get(target);
-				if (c) {
-					digests.push({
-						taskId: c.taskId,
-						closedAt: c.closedAt,
-						...(c.filesOwned && c.filesOwned.length > 0
-							? {
-									diffSummary: `Files: ${c.filesOwned.join(', ')}`,
-								}
-							: {}),
-					});
-					delivered.add(key);
-					mutated = true;
-				} else {
-					pendingTargets.push(target);
-				}
+		const subscriptionPath = subscriptionSidecarPath(paths.queuePath);
+		return await withFileMutex(subscriptionPath, async () => {
+			await ensureQueueFile(paths.queuePath);
+			const queue = await loadOrEmptyQueue(paths.queuePath);
+			const closed = await readClosedTasks(paths.closedTasksPath);
+			const closedMap = new Map(closed.map((c) => [c.taskId, c]));
+			const entry = queue.entries.find((e) => e.taskId === params.taskId);
+			const observeTargets = entry?.observe ?? [];
+			const leases = (
+				await loadSubscriptionLeases(subscriptionPath)
+			).filter((lease) => Date.parse(lease.leaseUntil) > nowMs);
+			const current = leases.find(
+				(lease) => lease.taskId === params.taskId,
+			);
+			if (
+				current !== undefined &&
+				(current.subscriberId !== params.subscriberId ||
+					(params.subscriptionId !== undefined &&
+						current.subscriptionId !== params.subscriptionId))
+			) {
+				return {
+					blocked: true,
+					blockerType: 'subscription-conflict',
+					subscriberId: params.subscriberId,
+					leaseUntil: current.leaseUntil,
+					nextAction:
+						'Wait for the subscription lease to expire, or reconnect with the owning subscriberId and subscriptionId.',
+				};
 			}
+			const subscriptionId = current?.subscriptionId ?? randomUUID();
+			const leaseUntil = new Date(
+				nowMs + SUBSCRIPTION_LEASE_MS,
+			).toISOString();
+			const nextLease: ISubscriptionLease = {
+				taskId: params.taskId,
+				subscriberId: params.subscriberId,
+				subscriptionId,
+				leaseUntil,
+			};
+			await saveSubscriptionLeases(subscriptionPath, [
+				...leases.filter((lease) => lease.taskId !== params.taskId),
+				nextLease,
+			]);
 
-			if (mutated) await saveDeliveredSet(sidecarPath, delivered);
-			return { digests, pendingTargets };
+			const sidecarPath = deliveredSidecarPath(paths.queuePath);
+			return await withFileMutex(sidecarPath, async () => {
+				const delivered = await loadDeliveredSet(sidecarPath);
+				const digests: IClosedTaskDigest[] = [];
+				const pendingTargets: string[] = [];
+				let mutated = false;
+
+				for (const target of observeTargets) {
+					const key = deliveredKey(params.taskId, target);
+					if (delivered.has(key)) {
+						// Already delivered (this session or a previous one) — skip.
+						continue;
+					}
+					const c = closedMap.get(target);
+					if (c) {
+						digests.push({
+							taskId: c.taskId,
+							closedAt: c.closedAt,
+							...(c.filesOwned && c.filesOwned.length > 0
+								? {
+										diffSummary: `Files: ${c.filesOwned.join(', ')}`,
+									}
+								: {}),
+						});
+						delivered.add(key);
+						mutated = true;
+					} else {
+						pendingTargets.push(target);
+					}
+				}
+
+				if (mutated) await saveDeliveredSet(sidecarPath, delivered);
+				return {
+					digests,
+					pendingTargets,
+					subscriberId: params.subscriberId,
+					subscriptionId,
+					leaseUntil,
+					renewed: current !== undefined,
+				};
+			});
 		});
 	}
 

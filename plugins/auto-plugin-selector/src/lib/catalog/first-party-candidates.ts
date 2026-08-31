@@ -17,7 +17,10 @@ import {
 
 import type { IPluginCandidate } from '../contracts/interfaces/plugin-fit.interface';
 
-const TOKEN_BUDGET_MEASURED_AT = '2026-08-31';
+const ISO_DATE_LENGTH = 10;
+const TOKEN_BUDGET_MEASURED_AT = new Date()
+	.toISOString()
+	.slice(0, ISO_DATE_LENGTH);
 
 export const firstPartyPluginCandidates = (): readonly IPluginCandidate[] =>
 	FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => ({
