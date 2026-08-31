@@ -86,9 +86,16 @@ const renderSelect = (
 ): string =>
 	`<select name="${escapeHtml(name)}" class="mcpv-settings__select">${values.map((value) => selectOption(value, current, resolveLabel(value))).join('')}</select>`;
 
+export interface IRenderPanelSettingsOptions {
+	readonly settings: IExtensionSettings;
+	readonly lang: ILangDict;
+	readonly compact?: boolean;
+}
+
 export const renderPanelSettings = (
 	settings: IExtensionSettings,
 	lang: ILangDict,
+	compact = false,
 ): string => {
 	const text = (key: string, fallback: string): string =>
 		extensionText(lang, key) || fallback;
