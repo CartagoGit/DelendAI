@@ -1,10 +1,6 @@
 # AGENT.md — plugin `plugins/gitlab`
 
-> Below the `<!-- mcp-vertex:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- mcp-vertex:begin agent-md -->
+> Below the `<!-- mcp-vertex:begin agent-md -->
 ## Purpose
 
 - GitLab read-only provider context and HTTP client for future tools.

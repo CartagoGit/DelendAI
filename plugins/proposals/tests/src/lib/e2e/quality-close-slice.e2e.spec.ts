@@ -130,7 +130,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					validateEvidence: recentEvidence(workspace),
 				},
 			});
-			console.error('quality-fail result', result.structuredContent);
+			expect(result.structuredContent).toEqual({});
 			expect(result.structuredContent).toMatchObject({
 				ok: false,
 				closed: false,
@@ -173,7 +173,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					validateEvidence: recentEvidence(workspace),
 				},
 			});
-			console.error('quality-pass result', result.structuredContent);
+			expect(result.structuredContent).toEqual({});
 			expect(result.isError).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,
