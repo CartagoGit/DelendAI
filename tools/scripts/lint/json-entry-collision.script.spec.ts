@@ -71,20 +71,19 @@ describe('json-entry-collision lint', () => {
 				[
 					'{',
 					'\t"compilerOptions": {',
-					'\t\t"paths": {',
-					// 2 tabs while every other key uses 3 tabs.
-					'\t\t"@mcp-vertex/stale": ["./plugins/stale/src/index.ts"],',
-					'\t\t\t"@mcp-vertex/foo": ["./plugins/foo/src/index.ts"]',
+					// Sibling uses 2 tabs.
+					'\t\t"mode": "strict",',
+					// This key uses 3 tabs while its peers use 2 — drift.
+					'\t\t\t"@mcp-vertex/stale": ["./plugins/stale/src/index.ts"],',
 					'\t\t}',
-					'\t}',
 					'}',
 					'',
 				].join('\n'),
 				'utf8',
 			);
 			const result = await scanFile(file, 'bad-indent.json');
-			const rules = result.map((v) => v.rule);
-			expect(rules).toContain('INDENT-DRIFT');
+			const drift = result.filter((v) => v.rule === 'INDENT-DRIFT');
+			expect(drift.length).toBeGreaterThan(0);
 		});
 	});
 
