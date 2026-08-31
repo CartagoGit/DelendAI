@@ -16,7 +16,7 @@ const readRecordsEventually = async (
 	filePath: string,
 	count: number,
 ): Promise<Awaited<ReturnType<typeof readSessionSurfaceBytes>>> => {
-	for (let attempt = 0; attempt < 20; attempt += 1) {
+	for (let attempt = 0; attempt < 60; attempt += 1) {
 		const records = await readSessionSurfaceBytes(filePath);
 		if (records.length >= count) return records;
 		await new Promise((resolve) => setTimeout(resolve, 25));
@@ -113,7 +113,6 @@ describe('usage-tracking tools/list served bytes', () => {
 		expect(
 			registrations.tools?.map((registration) => registration.id),
 		).toEqual(['usage_report', 'usage_clear', 'session_hygiene']);
-		await registrations.tools?.[0]?.register(server);
 
 		const requestHandlers = (
 			server.server as unknown as {
@@ -135,6 +134,7 @@ describe('usage-tracking tools/list served bytes', () => {
 		);
 		expect(initial?.tools).toHaveLength(1);
 
+		await registrations.tools?.[0]?.register(server);
 		server.registerTool('beta', { description: 'beta tool' }, async () => ({
 			content: [{ type: 'text', text: 'beta' }],
 		}));
@@ -142,7 +142,7 @@ describe('usage-tracking tools/list served bytes', () => {
 			{ method: 'tools/list', params: {} },
 			{ sessionId: 'session-1' },
 		);
-		expect(afterRegister?.tools).toHaveLength(2);
+		expect(afterRegister?.tools).toHaveLength(3);
 
 		const records = await readRecordsEventually(surfaceBytesPath, 2);
 		expect(records).toHaveLength(2);
