@@ -123,10 +123,11 @@ const CLIENT_SCRIPT = `
   window.addEventListener('message', (event) => {
     const data = event && event.data;
     if (!data || typeof data !== 'object') return;
-    if (data.command === 'hostToolDetail' && data.model && typeof RENDER_TOOL_BODY === 'function') {
-      showOverlay(data.model.tool && data.model.tool.name || 'Tool', RENDER_TOOL_BODY(data.model));
-    } else if (data.command === 'hostProposalDetail' && data.model && typeof RENDER_PROPOSAL_BODY === 'function') {
-      showOverlay(data.model.id || 'Proposal', RENDER_PROPOSAL_BODY(data.model));
+    const detail = window.__MCPV_DASHBOARD_DETAIL__ || {};
+    if (data.command === 'hostToolDetail' && data.model && typeof detail.RENDER_TOOL_BODY === 'function') {
+      showOverlay((data.model.tool && data.model.tool.name) || 'Tool', detail.RENDER_TOOL_BODY(data.model));
+    } else if (data.command === 'hostProposalDetail' && data.model && typeof detail.RENDER_PROPOSAL_BODY === 'function') {
+      showOverlay(data.model.id || 'Proposal', detail.RENDER_PROPOSAL_BODY(data.model));
     } else if (data.command === 'hostHideDetail') {
       hideOverlay();
     }
