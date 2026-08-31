@@ -206,6 +206,24 @@ describe('project-profile service (f00280 S1)', () => {
 					recommendedPluginIds: ['search'],
 				},
 				{
+					path: 'apps/web/',
+					projectType: 'webapp' as const,
+					language: 'typescript' as const,
+					packageManager: 'bun' as const,
+					framework: 'astro',
+					testRunner: 'vitest' as const,
+					recommendedPluginIds: ['docs'],
+				},
+				{
+					path: 'apps\\web',
+					projectType: 'webapp' as const,
+					language: 'typescript' as const,
+					packageManager: 'bun' as const,
+					framework: 'astro',
+					testRunner: 'vitest' as const,
+					recommendedPluginIds: ['docs'],
+				},
+				{
 					path: 'apps/web',
 					projectType: 'webapp' as const,
 					language: 'typescript' as const,
@@ -375,5 +393,59 @@ describe('project-profile service (f00280 S1)', () => {
 			path: 'packages/team/apps/docs',
 		});
 		expect(profile.workspaces).toHaveLength(3);
+	});
+	it('bounds deep workspace pattern expansion', async () => {
+		writeFileSync(
+			join(root, 'package.json'),
+			JSON.stringify({
+				name: 'deep-fixture',
+				workspaces: ['**/apps/*'],
+				scripts: { test: 'vitest run' },
+			}),
+			'utf8',
+		);
+		let nestedPath = root;
+		for (let index = 0; index < 40; index += 1) {
+			nestedPath = join(nestedPath, `level-${index}`);
+			mkdirSync(nestedPath, { recursive: true });
+		}
+		mkdirSync(join(nestedPath, 'apps/deep'), { recursive: true });
+		writeFileSync(
+			join(nestedPath, 'apps/deep/package.json'),
+			JSON.stringify({
+				name: '@deep/deep',
+				scripts: { test: 'vitest run' },
+			}),
+			'utf8',
+		);
+
+		const workspace = createWorkspacePathProvider(root);
+		const adopt = await capture(
+			buildAdoptProjectToolRegistration({
+				namespacePrefix: 'mcp-vertex',
+				workspace,
+				corePaths: {
+					cacheDir: '.cache/mcp-vertex',
+					docsDir: 'docs/mcp-vertex',
+				},
+				reader: createWorkspaceFileReader(workspace),
+			}),
+		);
+
+		const result = parse(await adopt({ write: true }));
+		expect(result.ok).toBe(true);
+		const profile = JSON.parse(
+			await readFile(
+				join(root, '.mcp-vertex/project-profile.json'),
+				'utf8',
+			),
+		);
+		expect(profile.workspaces).toHaveLength(1);
+		expect(profile.workspaces[0].path).toBe('.');
+		expect(
+			profile.workspaces.some((workspace: { path: string }) =>
+				workspace.path.includes('apps/deep'),
+			),
+		).toBe(false);
 	});
 });
