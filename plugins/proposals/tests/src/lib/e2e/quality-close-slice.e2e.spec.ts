@@ -85,16 +85,6 @@ const seedSlice = async (client: Client, id: string): Promise<string> => {
 	return (created.structuredContent as { file: string }).file;
 };
 
-const recentEvidence = (workspace: string) => {
-	const logPath = join(workspace, 'validate.log');
-	writeFileSync(logPath, 'quality evidence\n', 'utf8');
-	return {
-		timestamp: new Date().toISOString(),
-		exitCode: 0,
-		logPath,
-	};
-};
-
 afterEach(async () => {
 	for (const workspace of workspaces.splice(0))
 		rmSync(workspace, { recursive: true, force: true });
@@ -102,8 +92,7 @@ afterEach(async () => {
 
 describe('e2e: proposals close_slice + quality gate', () => {
 	it('keeps the slice pending when the quality scope fails', async () => {
-		const { workspace, client, project } =
-			await createQualityServer('false');
+		const { client, project } = await createQualityServer('false');
 		try {
 			const proposalPath = await seedSlice(client, 'f04200');
 			const sync = await client.callTool({
@@ -111,6 +100,16 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				arguments: {},
 			});
 			expect(sync.isError).toBeFalsy();
+			const claim = await client.callTool({
+				name: 'mcp-vertex_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f04200-S1',
+					agent: 'quality-close-test',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(claim.isError).toBeFalsy();
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
@@ -134,8 +133,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 	});
 
 	it('marks the slice done when the quality scope passes', async () => {
-		const { workspace, client, project } =
-			await createQualityServer('true');
+		const { client, project } = await createQualityServer('true');
 		try {
 			const proposalPath = await seedSlice(client, 'f04201');
 			const sync = await client.callTool({
@@ -143,6 +141,16 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				arguments: {},
 			});
 			expect(sync.isError).toBeFalsy();
+			const claim = await client.callTool({
+				name: 'mcp-vertex_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f04201-S1',
+					agent: 'quality-close-test',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(claim.isError).toBeFalsy();
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
