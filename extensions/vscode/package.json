@@ -328,7 +328,6 @@
 					"when": "view == mcp-vertex.tools && viewItem == mcpVertexPlugin",
 					"group": "configure"
 				}
-			]
 			],
 			"commandPalette": [
 				{

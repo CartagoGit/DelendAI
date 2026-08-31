@@ -119,7 +119,7 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
 - review-reviewer: delivery-verifier-f00395-s4-verify
 - review-log: approved by delivery-verifier-f00395-s4-verify — Verified independently: S4 implementation present in HEAD. CI workflow .github/workflows/release-pr-gate.yml present with PR trigger + workflow_dispatch.
 ### S5 — Docs y spec helpers
-- **Status**: todo
+- **Status**: done
 - **Files**:
   - `.github/CONTRIBUTING.md`
   - `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`
@@ -130,7 +130,10 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
   - CONTRIBUTING describe el flujo: cortar `release/<propuesta>`, trabajar, gate pre-push local bloqueante, PR a main, merge, sync main → develop.
   - GOVERNANCE explica la asimetría develop flexible / release strict / main protected, y nombra `release-pr-gate` como check visible.
   - Nota de `LEFTHOOK_BYPASS=1` documentada como vía de emergencia para push a `main` o `release/*`.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-f00395-s5-verify
+- review-reviewer: delivery-verifier-f00395-s5-verify
+- review-log: approved by delivery-verifier-f00395-s5-verify — Verified independently: S5 docs implementation in commit 35e229f6. CONTRIBUTING.md + GOVERNANCE-BRANCH-PROTECTION.md updated with release flow + LEFTHOOK_BYPASS=1 note.
 ## dependency graph
 
 - S1 y S2 son file-disjoint y pueden ir en commits separados, pero ambos modifican constantes/lints y comparten convención → mismo agente, commits secuenciales para mantener trazabilidad.

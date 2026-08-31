@@ -836,6 +836,13 @@ export const activate = async (
 			...withPrefix,
 		}),
 	);
+	// Right-click on a plugin in the Tools tree → open the
+	// configuration center filtered by that plugin's id. The
+	// configuration center is the schema-driven editor with
+	// inputs / selects / checks for every plugin field; this
+	// command gives the user the same editor with the deep-link
+	// `pluginId` so they land on the right card.
+	track(registerOpenPluginConfigCommand({ vscode, client, ...withPrefix }));
 	track(registerOpenToolDetailCommand({ vscode, client, ...withPrefix }));
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
