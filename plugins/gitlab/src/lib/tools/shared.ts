@@ -698,7 +698,7 @@ const pageQuery = (
 	...(perPage !== undefined ? { per_page: perPage } : {}),
 });
 
-const compactMeta = (meta: {
+const _compactMeta = (meta: {
 	readonly pagination: unknown;
 	readonly rateLimit: unknown;
 	readonly truncated: unknown;
