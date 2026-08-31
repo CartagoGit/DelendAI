@@ -87,7 +87,7 @@ const headerCard = (
 		detail.summary?.status ?? asText(detail.diagnose?.status) ?? '—';
 	const folder = asText(detail.diagnose?.folder);
 	const owners = Array.isArray(detail.diagnose?.lockOwners)
-		? detail.diagnose?.lockOwners.filter(
+		? (detail.diagnose?.lockOwners as readonly unknown[]).filter(
 				(o): o is string => typeof o === 'string',
 			)
 		: [];
@@ -139,7 +139,7 @@ const agentsCard = (
 	}
 	const rows = agents
 		.map(
-			(agent) =>
+			(agent: IProposalDetail['agents'][number]) =>
 				`<li><strong>${escapeHtml(agent.name)}</strong>${
 					agent.taskId === null
 						? ''
@@ -229,7 +229,13 @@ const slicesCard = (
 	}
 	const rows = slices
 		.map(
-			(s) => `<tr>
+			(
+				s: IProposalDetail['summary'] extends infer S
+					? S extends { slices: readonly (infer Item)[] }
+						? Item
+						: never
+					: never,
+			) => `<tr>
 				<td><code>${escapeHtml(s.sliceId)}</code></td>
 				<td>${badge(s.status)}</td>
 				<td>${s.owner === null ? '<span class="muted">—</span>' : escapeHtml(s.owner)}</td>
@@ -276,7 +282,7 @@ const logsCard = (
 	}
 	const rows = detail.logs
 		.map(
-			(e) => `<tr>
+			(e: IProposalDetail['logs'][number]) => `<tr>
 				<td class="ts">${escapeHtml(e.ts)}</td>
 				<td><code>${escapeHtml(e.kind)}</code></td>
 				<td>${e.agent === null ? '<span class="muted">—</span>' : escapeHtml(e.agent)}</td>
