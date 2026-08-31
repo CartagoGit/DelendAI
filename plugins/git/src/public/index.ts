@@ -19,8 +19,10 @@ export {
 	gitBlame,
 	gitShow,
 	gitWorktreeList,
+	resolveReleaseCycleConfig,
 	prepareReleaseBranch,
-	mergeReleaseFixToDevelop,
+	mergeReleaseFixToIntegration,
+	rehydrateIntegrationFromRelease,
 	openPromotionPr,
 	createReleaseCandidate,
 } from '../lib/services/git';
@@ -41,9 +43,13 @@ export type {
 	IPreparedReleaseBranch,
 	IPrepareReleaseBranchInput,
 } from '../lib/contracts/interfaces/prepared-release-branch.interface';
+export { DEFAULT_RELEASE_CYCLE_CONFIG } from '../lib/contracts/interfaces/release-cycle.interface';
 export type {
 	IMergeReleaseFixInput,
+	IRehydrateIntegrationInput,
 	IPromotionReady,
+	IIntegrationRehydrated,
+	IReleaseCycleConfig,
 	IReleaseFixMerged,
 } from '../lib/contracts/interfaces/release-cycle.interface';
 export { buildGitToolRegistrations } from '../lib/tools';

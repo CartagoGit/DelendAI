@@ -62,7 +62,10 @@ import {
 	releasePrepareExecute,
 	releaseValidate,
 } from '../../../../plugins/git/src/lib/release';
-import { prepareReleaseBranch } from '../../../../plugins/git/src/lib/services/git';
+import {
+	prepareReleaseBranch,
+	rehydrateIntegrationFromRelease,
+} from '../../../../plugins/git/src/lib/services/git';
 import type { IReleaseCandidateStore } from '../../../../plugins/git/src/lib/release';
 import { createReleaseCandidateStore } from '../../../../plugins/git/src/lib/release';
 import {
@@ -408,6 +411,7 @@ export interface IDogfoodResult {
 		readonly branch: string;
 		readonly target: 'main';
 	};
+	readonly rehydrateReceipt: { readonly integrationSha: string } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -579,6 +583,22 @@ export const runReleaseDogfood = async (
 		provider,
 	});
 
+	// (h.5) Integration rehydrate — the only sanctioned way to bring
+	// `develop` in sync with the release branch after the PR has been
+	// merged into `main`. The operation pushes to `develop` directly
+	// (no PR), so it is also safe to exercise in the dry-run path as
+	// long as the runner reports `currentBranch === candidate.branch`
+	// and `clean === true`.
+	let rehydrateReceipt: { readonly integrationSha: string } | null = null;
+	if (flags.simulateMerge) {
+		const integrated = await rehydrateIntegrationFromRelease(run, {
+			releaseBranch: candidate.branch,
+		});
+		rehydrateReceipt = Object.freeze({
+			integrationSha: integrated.integrationSha,
+		});
+	}
+
 	// (i) Finalize. Only runs under --simulate-merge; otherwise we
 	// capture the explicit "user must approve merge" reason.
 	let finalizeReceipt: IReleaseReceipt | null = null;
@@ -677,6 +697,7 @@ export const runReleaseDogfood = async (
 			branch: policy.sourceBranch,
 			target: policy.targetBranch,
 		}),
+		rehydrateReceipt,
 	});
 };
 

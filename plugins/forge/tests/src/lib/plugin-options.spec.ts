@@ -37,9 +37,28 @@ describe('@mcp-vertex/forge optionsSchema', async () => {
 		]);
 	});
 
+	it('accepts a custom releaseCycle override', async () => {
+		const regs = await plugin.register(
+			baseCtx({
+				releaseCycle: {
+					releaseSourceBranch: 'main',
+					releaseTargetBranch: 'production',
+					integrationBranch: 'develop',
+					remote: 'upstream',
+				},
+			}),
+		);
+		expect(regs.tools?.length).toBe(11);
+	});
+
 	it('throws on invalid options', async () => {
 		expect(() =>
 			plugin.register(baseCtx({ defaultTimeoutMs: 'oops' })),
+		).toThrow(/rejected its options/);
+		expect(() =>
+			plugin.register(
+				baseCtx({ releaseCycle: { releaseTargetBranch: '' } }),
+			),
 		).toThrow(/rejected its options/);
 	});
 });
