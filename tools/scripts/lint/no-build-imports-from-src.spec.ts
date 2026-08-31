@@ -61,4 +61,12 @@ describe('no-build-imports-from-src', () => {
 
 		expect(await findBuildImportsFromSrc(directory)).toEqual([]);
 	});
+
+	it('ignores source-looking imports embedded in a template literal', async () => {
+		const directory = await createFixture(
+			"const fixture = `import { helper } from '../src/helper.js'`;\n",
+		);
+
+		expect(await findBuildImportsFromSrc(directory)).toEqual([]);
+	});
 });
