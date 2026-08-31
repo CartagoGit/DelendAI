@@ -9,6 +9,17 @@ import { languages, rtlLangs } from '@mcp-vertex/shared/i18n';
 import { renderHeaderBar } from '../../components';
 import { extensionText } from '../../i18n/extension-text';
 import { escapeHtml } from '../format';
+import type { ILangDict } from '@mcp-vertex/shared/i18n';
+
+// Empty placeholder dict used solely to resolve a single fallback
+// string for static labels that don't depend on the active
+// language. The resolver returns the fallback when no key matches.
+const EMPTY_LANG_DICT = {
+	site: {},
+	extension: {},
+	dev: {},
+	tools: {},
+} as unknown as ILangDict;
 
 const renderLangPicker = (current: string): string => {
 	const currentMeta = languages.find((entry) => entry.code === current);
@@ -33,16 +44,7 @@ const renderThemeSwitcher = (current: string): string => {
 		'solarized',
 		'nord',
 	] as const;
-	const themeTitle = extensionText(
-		{
-			site: {} as never,
-			extension: { 'header.theme': 'Theme' },
-			dev: {} as never,
-			tools: {},
-		},
-		'header.theme',
-		'Theme',
-	);
+	const themeTitle = extensionText(EMPTY_LANG_DICT, 'header.theme', 'Theme');
 	return `<label class="mcpv-header__theme-picker" title="${themeTitle}">
 		<span aria-hidden="true">◐</span>
 		<select name="theme" data-header-theme>
