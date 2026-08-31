@@ -52,7 +52,18 @@ describe('secondary webview content i18n', () => {
 
 	it('renders proposal and tool empty states in Spanish', () => {
 		const proposal = renderProposalDetailHtml(
-			{ id: 'f00108', logs: [] },
+			{
+				id: 'f00108',
+				logs: [],
+				agents: [],
+				progress: {
+					total: 0,
+					done: 0,
+					inProgress: 0,
+					pending: 0,
+					percent: 0,
+				},
+			},
 			es,
 		);
 		expect(proposal).toContain('No hay diagnóstico disponible.');
