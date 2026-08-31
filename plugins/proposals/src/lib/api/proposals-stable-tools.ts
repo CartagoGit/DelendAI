@@ -133,7 +133,7 @@ const schemaToJson = (schema: unknown): unknown => {
 		return null;
 	}
 	try {
-		return z.toJSONSchema(schema as z.ZodType);
+		return JSON.parse(JSON.stringify(z.toJSONSchema(schema as z.ZodType)));
 	} catch {
 		return null;
 	}
