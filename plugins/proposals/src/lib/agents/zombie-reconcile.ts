@@ -348,7 +348,7 @@ export async function gcZombies(
 						releasedLock = true;
 					} else {
 						try {
-							const rawAfter = readFileSync(lockPath, 'utf8');
+							const rawAfter = await readFile(lockPath, 'utf8');
 							const parsedAfter = JSON.parse(rawAfter) as {
 								in_flight?: unknown;
 							};

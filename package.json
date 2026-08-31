@@ -61,6 +61,8 @@
 		"lint:tsconfig-paths-coverage": "bun tools/scripts/lint/tsconfig-paths-coverage.script.ts",
 		"lint:json-entry-collision": "bun tools/scripts/lint/json-entry-collision.script.ts",
 		"lint:git-stale-lock": "bun tools/scripts/lint/git-stale-lock.script.ts",
+		"diagnostics:codex-parse-noise": "bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts",
+		"diagnostics:codex-parse-noise:rewrite": "bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts --rewrite",
 		"lint:tools": "bun tools/scripts/lint/no-shell-python.script.ts",
 		"lint:audit-ids": "bun tools/scripts/lint/audit-ids.script.ts",
 		"lint:setup": "bun tools/scripts/lint/preset-drift.script.ts",
