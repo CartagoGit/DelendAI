@@ -21,6 +21,7 @@ import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
 import {
+	PRESET_KIND,
 	TOKEN_BUDGETS,
 	withFileMutex,
 	writeFileAtomic,
@@ -47,8 +48,10 @@ const ESTIMATOR_ID = 'heuristic-4-bytes-per-token';
 
 const NATIVE_SURFACE = DASHBOARD_SURFACES[0];
 
-interface IGeneratedPresetEntry {
-	readonly presetId: string;
+export const PRESET_METADATA_IDS = [...PRESET_KIND] as const;
+
+export interface IGeneratedPresetEntry {
+	readonly presetId: (typeof PRESET_METADATA_IDS)[number];
 	readonly measurementSurface: 'native' | 'adaptive';
 	readonly measuredAt: string;
 	readonly toolCount: number;
@@ -56,13 +59,46 @@ interface IGeneratedPresetEntry {
 	readonly estimatedTokens: number;
 }
 
+export const orderPresetMetadataEntries = (
+	entries: readonly IGeneratedPresetEntry[],
+): readonly IGeneratedPresetEntry[] => {
+	const byId = new Map<
+		IGeneratedPresetEntry['presetId'],
+		IGeneratedPresetEntry
+	>();
+	for (const entry of entries) {
+		if (!PRESET_METADATA_IDS.includes(entry.presetId)) {
+			throw new Error(
+				`preset-metadata: unknown preset id \"${entry.presetId}\" in generated entries`,
+			);
+		}
+		if (byId.has(entry.presetId)) {
+			throw new Error(
+				`preset-metadata: duplicate preset id \"${entry.presetId}\" in generated entries`,
+			);
+		}
+		byId.set(entry.presetId, entry);
+	}
+
+	const missing = PRESET_METADATA_IDS.filter(
+		(presetId) => !byId.has(presetId),
+	);
+	if (missing.length > 0) {
+		throw new Error(
+			`preset-metadata: missing generated entries for ${missing.join(', ')}`,
+		);
+	}
+
+	return PRESET_METADATA_IDS.map((presetId) => byId.get(presetId)!);
+};
+
 const measureAllPresets = async (
 	measuredAt = new Date().toISOString(),
 ): Promise<readonly IGeneratedPresetEntry[]> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
 		const entries: IGeneratedPresetEntry[] = [];
-		for (const presetId of TOKEN_BUDGETS.dashboardPresetIds) {
+		for (const presetId of PRESET_METADATA_IDS) {
 			const row = await measurePresetDashboard(
 				workspace,
 				presetId,
@@ -119,9 +155,14 @@ export const normalizeMeasuredAt = (text: string): string =>
 	text.replace(/measuredAt: '.*?'/gu, "measuredAt: '<normalized>'");
 
 export const buildPresetMetadataSource = async (
-	input: { readonly measuredAt?: string } = {},
+	input: {
+		readonly measuredAt?: string;
+		readonly entries?: readonly IGeneratedPresetEntry[];
+	} = {},
 ): Promise<string> => {
-	const entries = await measureAllPresets(input.measuredAt);
+	const entries = orderPresetMetadataEntries(
+		input.entries ?? (await measureAllPresets(input.measuredAt)),
+	);
 	return [
 		'/**',
 		' * preset-metadata.generated.ts — GENERATED, do not edit by hand.',
