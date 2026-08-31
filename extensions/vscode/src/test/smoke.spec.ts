@@ -386,51 +386,81 @@ describe('VS Code extension smoke', async () => {
 	});
 
 	it('resolveServerCommand prefers the workspace MCP launch configuration', async () => {
-		const workspaceRoot = join(process.cwd(), '../..');
-		const vscode: IVscodeApi = {
-			ViewColumn: { One: 1 },
-			commands: {
-				registerCommand() {
-					return { dispose() {} };
+		// Hermetic: the workspace gets its own canonical `.mcp.json`
+		// instead of depending on the live repo root, where concurrent
+		// workers may change the file under test.
+		const workspaceRoot = await mkdtemp(
+			join(tmpdir(), 'mcp-vertex-vscode-launch-'),
+		);
+		await writeFile(
+			join(workspaceRoot, '.mcp.json'),
+			JSON.stringify({
+				mcpServers: {
+					'mcp-vertex': {
+						command: 'bun',
+						args: [
+							'tools/scripts/host/host-server.script.ts',
+							'--workspace=.',
+						],
+					},
 				},
-			},
-			window: {
-				createWebviewPanel() {
-					return { webview: { html: '' } };
+			}),
+			'utf8',
+		);
+		try {
+			const vscode: IVscodeApi = {
+				ViewColumn: { One: 1 },
+				commands: {
+					registerCommand() {
+						return { dispose() {} };
+					},
 				},
-			},
-			workspace: {
-				workspaceFolders: [{ uri: { fsPath: workspaceRoot } }],
-				createFileSystemWatcher() {
-					return {
-						onDidChange() {
-							return { dispose() {} };
-						},
-						onDidCreate() {
-							return { dispose() {} };
-						},
-						onDidDelete() {
-							return { dispose() {} };
-						},
-						dispose() {},
-					};
+				window: {
+					createWebviewPanel() {
+						return { webview: { html: '' } };
+					},
 				},
-				getConfiguration() {
-					return {
-						get<T>(_key: string, defaultValue?: T): T | undefined {
-							return defaultValue;
-						},
-					};
+				workspace: {
+					workspaceFolders: [{ uri: { fsPath: workspaceRoot } }],
+					createFileSystemWatcher() {
+						return {
+							onDidChange() {
+								return { dispose() {} };
+							},
+							onDidCreate() {
+								return { dispose() {} };
+							},
+							onDidDelete() {
+								return { dispose() {} };
+							},
+							dispose() {},
+						};
+					},
+					getConfiguration() {
+						return {
+							get<T>(
+								_key: string,
+								defaultValue?: T,
+							): T | undefined {
+								return defaultValue;
+							},
+						};
+					},
 				},
-			},
-		};
+			};
 
-		const launch = await resolveServerCommand(vscode);
-		expect(launch).toEqual({
-			command: 'bun',
-			args: ['tools/scripts/host/host-server.script.ts', '--workspace=.'],
-			cwd: workspaceRoot,
-		});
+			const launch = await resolveServerCommand(vscode);
+			expect(launch).toEqual({
+				command: 'bun',
+				args: [
+					'tools/scripts/host/host-server.script.ts',
+					'--workspace=.',
+				],
+				cwd: workspaceRoot,
+			});
+		} finally {
+			await rm(workspaceRoot, { recursive: true, force: true });
+		}
 	});
 
 	it('resolveServerCommand falls back to bun for a configured workspace without .mcp.json', async () => {

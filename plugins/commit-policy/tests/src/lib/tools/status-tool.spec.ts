@@ -89,9 +89,11 @@ describe('commit_policy_status', () => {
 		]);
 		expect(body.push.enabled).toBe(true);
 		expect(body.push.onCommit).toBe(true);
+		// The v2 default protects `main` literally and ships the
+		// `release/*` pattern serialized as a regexp token.
 		expect(body.branchPolicy).toEqual({
 			current: 'develop',
-			protectedBranches: [],
+			protectedBranches: ['/^release\\//'],
 			protectedPrefixes: [],
 			directCommitPushAllowed: true,
 			remote: null,
