@@ -258,6 +258,10 @@
 			"plugin": "forge"
 		},
 		{
+			"name": "mcp-vertex_forge_mcp_vertex_issue_create",
+			"plugin": "forge"
+		},
+		{
 			"name": "mcp-vertex_forge_pr_comment",
 			"plugin": "forge"
 		},
