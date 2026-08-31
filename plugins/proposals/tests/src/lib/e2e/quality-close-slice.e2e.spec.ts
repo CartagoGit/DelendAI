@@ -82,12 +82,10 @@ afterEach(async () => {
 
 describe('e2e: proposals close_slice + quality gate', () => {
 	it('keeps the slice pending when the quality scope fails', async () => {
-		const { client, project } = await createQualityServer('false');
+		const { workspace, client, project } =
+			await createQualityServer('false');
 		try {
-			const proposalPath = seedSlice(
-				(client as unknown as { workspace: string }).workspace,
-				'f04200',
-			);
+			const proposalPath = seedSlice(workspace, 'f04200');
 			const sync = await client.callTool({
 				name: 'mcp-vertex_proposals_sync_proposals',
 				arguments: {},
@@ -127,9 +125,10 @@ describe('e2e: proposals close_slice + quality gate', () => {
 	});
 
 	it('marks the slice done when the quality scope passes', async () => {
-		const { client, project } = await createQualityServer('true');
+		const { workspace, client, project } =
+			await createQualityServer('true');
 		try {
-			const proposalPath = await seedSlice(client, 'f04201');
+			const proposalPath = seedSlice(workspace, 'f04201');
 			const sync = await client.callTool({
 				name: 'mcp-vertex_proposals_sync_proposals',
 				arguments: {},
