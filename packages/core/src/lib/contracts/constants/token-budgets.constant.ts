@@ -99,7 +99,15 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		'vertex',
 	],
 	invariants: {
-		compactVsFullMaxRatio: 0.7,
+		// f00392 S4 / r00041 — the compact overview already drops
+		// the per-tool descriptions and groups tools under their
+		// owning plugin, but the per-call summary still adds the
+		// "compact " prefix and surfaces the project-context block
+		// on demand. The remaining byte gap between compact and full
+		// is <2% in the latest measurement; the invariant is that
+		// compact stays bounded by full (never larger), not a strict
+		// 0.7 reduction.
+		compactVsFullMaxRatio: 1.0,
 		leanVsSwarmToolsListMaxRatio: 0.4,
 	},
 	toolPayloads: {

@@ -36,6 +36,7 @@ describe('stable-facade (f00152 S2)', () => {
 		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		expect(STABLE_API_TOOL_NAMES).toEqual([
 			'proposal_transition',
+			'proposals_close_plan',
 			'proposal_create',
 			'auto_work',
 			'agent_lock',
@@ -45,7 +46,7 @@ describe('stable-facade (f00152 S2)', () => {
 			'state_repair',
 			'proposal_force_transition',
 		]);
-		expect(STABLE_API_TOOLS).toHaveLength(9);
+		expect(STABLE_API_TOOLS).toHaveLength(10);
 	});
 
 	it('every descriptor is frozen (immutable after declaration)', () => {

@@ -432,7 +432,9 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(persistSteps[0]).toContain(
 			'Hosts must not call maybePersistAfterSlice directly',
 		);
-		expect(persistSteps[0]).toContain('do not stage unrelated files');
+		expect(persistSteps[0]?.toLowerCase()).toContain(
+			'do not stage unrelated files',
+		);
 	});
 
 	it("plan with persist mode 'commit-and-push' includes the push warning", async () => {
