@@ -181,6 +181,12 @@
 				"icon": "$(settings-gear)"
 			},
 			{
+				"command": "mcp-vertex.openPluginConfig",
+				"title": "Configure Plugin",
+				"category": "MCP Vertex",
+				"icon": "$(settings-gear)"
+			},
+			{
 				"command": "mcp-vertex.saveSettings",
 				"title": "Save Settings",
 				"category": "MCP Vertex"
@@ -305,6 +311,24 @@
 					"when": "view == mcp-vertex.tools && viewItem == mcpVertexTool",
 					"group": "inline"
 				}
+			],
+			"view/item/context": [
+				{
+					"command": "mcp-vertex.openToolDetail",
+					"when": "view == mcp-vertex.tools && viewItem == mcpVertexTool",
+					"group": "inline"
+				},
+				{
+					"command": "mcp-vertex.openPluginConfig",
+					"when": "view == mcp-vertex.tools && viewItem == mcpVertexPlugin",
+					"group": "configure"
+				},
+				{
+					"command": "mcp-vertex.plugins.activation",
+					"when": "view == mcp-vertex.tools && viewItem == mcpVertexPlugin",
+					"group": "configure"
+				}
+			]
 			],
 			"commandPalette": [
 				{

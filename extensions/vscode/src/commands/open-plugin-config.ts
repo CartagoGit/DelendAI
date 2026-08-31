@@ -162,6 +162,7 @@ export const registerOpenPluginConfigCommand = (deps: ICommandDeps) =>
 				return panel;
 			} catch (err) {
 				await showCommandError(deps.vscode, 'open plugin config', err);
+				return;
 			}
 		},
 	);
