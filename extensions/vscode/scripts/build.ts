@@ -13,7 +13,7 @@ export const buildVsCodeExtension = async (
 	return Bun.build({
 		entrypoints: [join(EXTENSION_ROOT, 'src/extension.ts')],
 		target: 'node',
-		format: 'cjs',
+		format: 'esm',
 		external: ['vscode'],
 		outdir,
 		plugins: [scssPlugin],
