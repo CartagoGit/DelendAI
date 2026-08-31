@@ -31,78 +31,97 @@ const canonicalize = (
 			const slug = new RegExp(
 				`^[a-z0-9][a-z0-9-]{0,${MAX_AGENT_REF_LENGTH}}$`,
 				'iu',
+			const MAX_TOOL_REF_LENGTH = 127;
+			const MAX_RELEASE_REF_LENGTH = 128;
 			).test(secretSafe)
+			const REDACTED_PR_REF = '0';
+
+			type CanonicalizeFn = (
+				secretSafe: string,
+				raw: string,
+			) => { readonly ref: string; readonly redacted: boolean };
+
+			const canonicalizeResult = (
+				ref: string,
+				raw: string,
+			): { readonly ref: string; readonly redacted: boolean } => ({
+				ref,
+				redacted: ref !== raw.trim(),
+			});
+
+			const CANONICALIZERS: Readonly<
+				Record<ProvenanceNodeKind, CanonicalizeFn>
+			> = {
+				agent: (secretSafe) => {
+					const slug = new RegExp(
+						`^[a-z0-9][a-z0-9-]{0,${MAX_AGENT_REF_LENGTH}}$`,
+						'iu',
+					).test(secretSafe)
+						? secretSafe.toLowerCase()
+						: 'redacted-agent';
+					return { ref: slug, redacted: slug !== secretSafe };
+				},
+				proposal: (secretSafe) =>
+					canonicalizeResult(
+						/^[a-z]\d{3,5}$/iu.test(secretSafe)
+							? secretSafe.toLowerCase()
+							: 'redacted-proposal',
+						secretSafe,
+					),
+				slice: (secretSafe) =>
+					canonicalizeResult(
+						/^s\d+$/iu.test(secretSafe) ? secretSafe.toUpperCase() : 'S0',
+						secretSafe,
+					),
+				tool: (secretSafe) =>
+					canonicalizeResult(
+						new RegExp(`^[a-z][a-z0-9_]{0,${MAX_TOOL_REF_LENGTH}}$`, 'u').test(
+							secretSafe,
+						)
+							? secretSafe
+							: 'redacted_tool',
+						secretSafe,
+					),
+				test: (secretSafe) => {
+					const normalized = secretSafe.replace(/\\/g, '/');
+					const safe =
+						/^[A-Za-z0-9._/-]+$/u.test(normalized) &&
+						!normalized.startsWith('/') &&
+						!normalized.includes('..')
+							? normalized
+							: basename(normalized) || 'redacted.spec.ts';
+					return canonicalizeResult(safe, secretSafe);
+				},
+				commit: (secretSafe) => {
+					const match =
+						new RegExp(`([0-9a-f]{7,${MAX_COMMIT_REF_LENGTH}})`, 'iu').exec(
+							secretSafe,
+						)?.[1] ?? REDACTED_COMMIT_REF;
+					return canonicalizeResult(match.toLowerCase(), secretSafe);
+				},
+				release: (secretSafe) =>
+					canonicalizeResult(
+						new RegExp(`^[A-Za-z0-9._/-]{1,${MAX_RELEASE_REF_LENGTH}}$`, 'u').test(
+							secretSafe,
+						)
+							? secretSafe
+							: 'unreleased',
+						secretSafe,
+					),
+				pr: (secretSafe) => {
+					const match =
+						new RegExp(`(\\d{1,${MAX_PR_REF_LENGTH}})`, 'u').exec(secretSafe)
+							?.[1] ?? REDACTED_PR_REF;
+					return canonicalizeResult(match, secretSafe);
+				},
+			};
 				? secretSafe.toLowerCase()
 				: 'redacted-agent';
 			return { ref: slug, redacted: slug !== raw.trim() };
 		}
 		case 'proposal': {
 			const match = /^[a-z]\d{3,5}$/iu.test(secretSafe)
-				? secretSafe.toLowerCase()
-				: 'redacted-proposal';
-			return { ref: match, redacted: match !== raw.trim() };
-		}
-		case 'slice': {
-			const match = /^s\d+$/iu.test(secretSafe)
-				? secretSafe.toUpperCase()
-				: 'S0';
-			return { ref: match, redacted: match !== raw.trim() };
-		}
-		case 'tool': {
-			const id = /^[a-z][a-z0-9_]{0,127}$/u.test(secretSafe)
-				? secretSafe
-				: 'redacted_tool';
-			return { ref: id, redacted: id !== raw.trim() };
-		}
-		case 'test': {
-			const normalized = secretSafe.replace(/\\/g, '/');
-			const safe =
-				/^[A-Za-z0-9._/-]+$/u.test(normalized) &&
-				!normalized.startsWith('/') &&
-				!normalized.includes('..')
-					? normalized
-					: basename(normalized) || 'redacted.spec.ts';
-			return { ref: safe, redacted: safe !== raw.trim() };
-		}
-		case 'commit': {
-			const match =
-				new RegExp(`([0-9a-f]{7,${MAX_COMMIT_REF_LENGTH}})`, 'iu').exec(
-					secretSafe,
-				)?.[1] ?? REDACTED_COMMIT_REF;
-			return { ref: match.toLowerCase(), redacted: match !== raw.trim() };
-		}
-		case 'release': {
-			const safe = /^[A-Za-z0-9._/-]{1,128}$/u.test(secretSafe)
-				? secretSafe
-				: 'unreleased';
-			return { ref: safe, redacted: safe !== raw.trim() };
-		}
-		case 'pr': {
-			const match =
-				new RegExp(`(\\d{1,${MAX_PR_REF_LENGTH}})`, 'u').exec(
-					secretSafe,
-				)?.[1] ?? '0';
-			return { ref: match, redacted: match !== raw.trim() };
-		}
-	}
-};
-
-const buildHref = (
-	kind: ProvenanceNodeKind,
-	ref: string,
-	options: IProvenanceLinkOptions,
-): string | null => {
-	const repoUrl = options.repoUrl?.replace(/\/$/, '');
-	switch (kind) {
-		case 'agent':
-			return null;
-		case 'proposal':
-			return options.proposalPaths?.[ref] ?? null;
-		case 'slice': {
-			const proposalPath =
-				options.proposalPaths?.[ref] ??
-				options.proposalPaths?.[ref.split(':')[0] ?? ''];
-			return proposalPath === undefined ? null : `${proposalPath}#slices`;
+				return CANONICALIZERS[kind](secretSafe, raw);
 		}
 		case 'tool':
 			return options.toolPaths?.[ref] ?? null;

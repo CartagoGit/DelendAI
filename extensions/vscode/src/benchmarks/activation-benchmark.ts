@@ -1,85 +1,160 @@
+import { spawnSync } from 'node:child_process';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { fileURLToPath } from 'node:url';
 
 export const STARTUP_ACTIVATION_BUDGET_MS = 25;
 export const STARTUP_ACTIVATION_WORK_BUDGET = 80;
 
-export interface IActivationSample {
-	readonly durationMs: number;
-	readonly heapDeltaBytes: number;
-	readonly workUnits: number;
-	readonly clientConnects: number;
-}
+const here = dirname(fileURLToPath(import.meta.url));
+const defaultExtensionRoot = resolve(here, '../..');
+const defaultIntegrationRunnerPath = resolve(
+	defaultExtensionRoot,
+	'src/test/activation-benchmark.integration.cjs',
+);
+const defaultControlExtensionPath = resolve(
+	defaultExtensionRoot,
+	'src/test/fixtures/activation/control-extension',
+);
+const defaultControlWorkspacePath = resolve(
+	defaultExtensionRoot,
+	'src/test/fixtures/activation/control-workspace',
+);
+const defaultNoMcpWorkspacePath = resolve(
+	defaultExtensionRoot,
+	'src/test/fixtures/activation/no-mcp-workspace',
+);
+const defaultMcpWorkspacePath = resolve(
+	defaultExtensionRoot,
+	'src/test/fixtures/activation/mcp-workspace',
+);
+const requireFromHere = createRequire(import.meta.url);
 
-export interface IActivationSummary {
-	readonly scenario: 'control' | 'workspace-no-mcp' | 'workspace-mcp';
-	readonly iterations: number;
-	readonly medianMs: number;
-	readonly p95Ms: number;
-	readonly medianHeapDeltaBytes: number;
-	readonly medianWorkUnits: number;
-	readonly totalClientConnects: number;
-	readonly samples: readonly IActivationSample[];
-}
+export const ACTIVATION_SCENARIOS = [
+	'control',
+	'workspace-no-mcp',
+	'workspace-mcp',
+] as const;
+
+export type TActivationScenario = (typeof ACTIVATION_SCENARIOS)[number];
 
 export interface IActivationManifestEvidence {
 	readonly startupEventPresent: boolean;
 	readonly lazyFallbackEvents: readonly string[];
+	readonly fallbackDocumentation: string;
+}
+
+export interface IActivationScenarioSample {
+	readonly scenario: TActivationScenario;
+	readonly startupReadyMs: number;
+	readonly activationProbeMs: number | null;
+	readonly heapUsedBytes: number;
+	readonly heapDeltaBytes: number;
+	readonly workUnits: number;
+	readonly observedToolCalls: number;
+	readonly activatedBeforeProbe: boolean;
+	readonly activationEvents: readonly string[];
+	readonly limitation: null;
+}
+
+export interface IActivationSummary {
+	readonly scenario: TActivationScenario;
+	readonly iterations: number;
+	readonly medianStartupReadyMs: number;
+	readonly p95StartupReadyMs: number;
+	readonly medianActivationProbeMs: number;
+	readonly medianHeapUsedBytes: number;
+	readonly medianHeapDeltaBytes: number;
+	readonly medianWorkUnits: number;
+	readonly totalObservedToolCalls: number;
+	readonly activatedBeforeProbeCount: number;
+	readonly samples: readonly IActivationScenarioSample[];
+}
+
+export interface IActivationHarnessLimitation {
+	readonly phase: 'dependency' | 'build' | 'launch' | 'probe';
+	readonly reason:
+		| 'missing-official-harness'
+		| 'vscode-download-blocked'
+		| 'vscode-runtime-unavailable'
+		| 'scenario-probe-failed';
+	readonly message: string;
+	readonly scenario?: TActivationScenario;
 }
 
 export interface IActivationDecision {
-	readonly keepOnStartupFinished: boolean;
+	readonly status: 'measured' | 'insufficient-evidence';
+	readonly keepOnStartupFinished: boolean | null;
 	readonly startupBudgetMs: number;
 	readonly startupWorkBudget: number;
-	readonly startupOverheadMs: number;
-	readonly startupWorkUnits: number;
+	readonly startupOverheadMs: number | null;
+	readonly startupWorkUnits: number | null;
 	readonly lazyFallbackReady: boolean;
 	readonly lazyFallbackEvents: readonly string[];
 	readonly rationale: string;
 }
 
 export interface IActivationBenchmarkReport {
-	readonly control: IActivationSummary;
-	readonly workspaceNoMcp: IActivationSummary;
-	readonly workspaceMcp: IActivationSummary;
+	readonly harness: {
+		readonly mode: 'official-vscode-test-electron' | 'limitation';
+		readonly officialHarness: '@vscode/test-electron';
+		readonly iterations: number;
+		readonly runner: string;
+		readonly evidenceDir?: string;
+		readonly limitation?: IActivationHarnessLimitation;
+	};
 	readonly manifest: IActivationManifestEvidence;
+	readonly control: IActivationSummary | null;
+	readonly workspaceNoMcp: IActivationSummary | null;
+	readonly workspaceMcp: IActivationSummary | null;
 	readonly decision: IActivationDecision;
 }
 
-interface IWorkloadProfile {
-	readonly scenario: Exclude<IActivationSummary['scenario'], 'control'>;
-	readonly warmupIterations: number;
-	readonly eventLoopPasses: number;
-	readonly allocationBatchSize: number;
-	readonly stringPasses: number;
-	readonly workUnits: number;
-	readonly clientConnects: number;
+interface IScenarioBenchmarkRequest {
+	readonly scenario: TActivationScenario;
+	readonly iteration: number;
+	readonly extensionDevelopmentPath: string;
+	readonly extensionId: string;
+	readonly workspacePath: string;
+	readonly integrationRunnerPath: string;
+	readonly evidenceDir: string;
+	readonly callLogPath?: string;
 }
 
-const WORKLOADS: Record<
-	Exclude<IActivationSummary['scenario'], 'control'>,
-	IWorkloadProfile
-> = {
-	'workspace-no-mcp': {
-		scenario: 'workspace-no-mcp',
-		warmupIterations: 2,
-		eventLoopPasses: 6,
-		allocationBatchSize: 24,
-		stringPasses: 80,
-		workUnits: 46,
-		clientConnects: 0,
-	},
-	'workspace-mcp': {
-		scenario: 'workspace-mcp',
-		warmupIterations: 2,
-		eventLoopPasses: 8,
-		allocationBatchSize: 36,
-		stringPasses: 112,
-		workUnits: 62,
-		clientConnects: 1,
-	},
-};
+interface IScenarioProbeFile {
+	readonly scenario: TActivationScenario;
+	readonly activationProbeMs: number | null;
+	readonly heapUsedBytes: number;
+	readonly heapDeltaBytes: number;
+	readonly workUnits: number;
+	readonly activatedBeforeProbe: boolean;
+	readonly activationEvents: readonly string[];
+}
+
+type TRunTests = (input: {
+	extensionDevelopmentPath: string;
+	extensionTestsPath: string;
+	launchArgs: readonly string[];
+	extensionTestsEnv: NodeJS.ProcessEnv;
+}) => Promise<void>;
+
+export interface IActivationBenchmarkOptions {
+	readonly iterations?: number;
+	readonly activationEvents?: readonly string[];
+	readonly extensionRoot?: string;
+	readonly integrationRunnerPath?: string;
+	readonly keepEvidence?: boolean;
+	readonly build?: boolean;
+	readonly executeScenario?: (
+		request: IScenarioBenchmarkRequest,
+	) => Promise<IActivationScenarioSample>;
+}
 
 const median = (values: readonly number[]): number => {
+	if (values.length === 0) return 0;
 	const sorted = [...values].sort((left, right) => left - right);
 	const middle = Math.floor(sorted.length / 2);
 	return sorted.length % 2 === 0
@@ -97,114 +172,109 @@ const percentile = (values: readonly number[], ratio: number): number => {
 	return sorted[index] ?? 0;
 };
 
-const executeSyntheticWorkload = async (
-	profile: IWorkloadProfile,
-): Promise<IActivationSample> => {
-	const beforeHeap = process.memoryUsage().heapUsed;
-	const startedAt = performance.now();
-	let checksum = 0;
-	for (let pass = 0; pass < profile.eventLoopPasses; pass += 1) {
-		await Promise.resolve();
-		checksum += pass;
-	}
-	const allocations = Array.from(
-		{ length: profile.allocationBatchSize },
-		(_value, index) => ({
-			index,
-			label: `${profile.scenario}:${index}`,
-			enabled: profile.clientConnects > 0,
-		}),
-	);
-	for (let index = 0; index < profile.stringPasses; index += 1) {
-		checksum += `${profile.scenario}:${index}`.length;
-	}
-	checksum += allocations.length;
-	const durationMs = performance.now() - startedAt + checksum * 0.00001;
-	const afterHeap = process.memoryUsage().heapUsed;
-	return {
-		durationMs,
-		heapDeltaBytes: afterHeap - beforeHeap,
-		workUnits: profile.workUnits,
-		clientConnects: profile.clientConnects,
-	};
-};
-
-const runControlScenario = async (
-	iterations: number,
-): Promise<IActivationSummary> => {
-	const samples: IActivationSample[] = [];
-	for (let index = 0; index < iterations; index += 1) {
-		const beforeHeap = process.memoryUsage().heapUsed;
-		const startedAt = performance.now();
-		await Promise.resolve();
-		const durationMs = performance.now() - startedAt;
-		const afterHeap = process.memoryUsage().heapUsed;
-		samples.push({
-			durationMs,
-			heapDeltaBytes: afterHeap - beforeHeap,
-			workUnits: 0,
-			clientConnects: 0,
-		});
-	}
-	return {
-		scenario: 'control',
-		iterations,
-		medianMs: median(samples.map((sample) => sample.durationMs)),
-		p95Ms: percentile(
-			samples.map((sample) => sample.durationMs),
-			0.95,
-		),
-		medianHeapDeltaBytes: median(
-			samples.map((sample) => sample.heapDeltaBytes),
-		),
-		medianWorkUnits: 0,
-		totalClientConnects: 0,
-		samples,
-	};
-};
-
-const runScenario = async (
-	profile: IWorkloadProfile,
-	iterations: number,
-	warmupIterations: number,
-): Promise<IActivationSummary> => {
-	const warmups = Math.max(profile.warmupIterations, warmupIterations);
-	for (let index = 0; index < warmups; index += 1) {
-		await executeSyntheticWorkload(profile);
-	}
-	const samples: IActivationSample[] = [];
-	for (let index = 0; index < iterations; index += 1) {
-		samples.push(await executeSyntheticWorkload(profile));
-	}
-	return {
-		scenario: profile.scenario,
-		iterations,
-		medianMs: median(samples.map((sample) => sample.durationMs)),
-		p95Ms: percentile(
-			samples.map((sample) => sample.durationMs),
-			0.95,
-		),
-		medianHeapDeltaBytes: median(
-			samples.map((sample) => sample.heapDeltaBytes),
-		),
-		medianWorkUnits: median(samples.map((sample) => sample.workUnits)),
-		totalClientConnects: samples.reduce(
-			(count, sample) => count + sample.clientConnects,
-			0,
-		),
-		samples,
-	};
-};
-
 export const analyzeActivationEvents = (
 	activationEvents: readonly string[],
-): IActivationManifestEvidence => ({
-	startupEventPresent: activationEvents.includes('onStartupFinished'),
-	lazyFallbackEvents: activationEvents.filter(
+): IActivationManifestEvidence => {
+	const lazyFallbackEvents = activationEvents.filter(
 		(event) =>
 			event.startsWith('onView:') ||
 			event.startsWith('workspaceContains:'),
+	);
+	return {
+		startupEventPresent: activationEvents.includes('onStartupFinished'),
+		lazyFallbackEvents,
+		fallbackDocumentation:
+			lazyFallbackEvents.length > 0
+				? `Lazy fallback remains declared through ${lazyFallbackEvents.join(', ')} while onStartupFinished covers eager startup.`
+				: 'No lazy fallback activation event is declared in the manifest.',
+	};
+};
+
+const countObservedToolCalls = async (path?: string): Promise<number> => {
+	if (path === undefined) return 0;
+	try {
+		const raw = await readFile(path, 'utf8');
+		return raw
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0).length;
+	} catch {
+		return 0;
+	}
+};
+
+const summarizeScenario = (
+	scenario: TActivationScenario,
+	samples: readonly IActivationScenarioSample[],
+): IActivationSummary => ({
+	scenario,
+	iterations: samples.length,
+	medianStartupReadyMs: median(samples.map((sample) => sample.startupReadyMs)),
+	p95StartupReadyMs: percentile(
+		samples.map((sample) => sample.startupReadyMs),
+		0.95,
 	),
+	medianActivationProbeMs: median(
+		samples.map((sample) => sample.activationProbeMs ?? 0),
+	),
+	medianHeapUsedBytes: median(samples.map((sample) => sample.heapUsedBytes)),
+	medianHeapDeltaBytes: median(
+		samples.map((sample) => sample.heapDeltaBytes),
+	),
+	medianWorkUnits: median(samples.map((sample) => sample.workUnits)),
+	totalObservedToolCalls: samples.reduce(
+		(count, sample) => count + sample.observedToolCalls,
+		0,
+	),
+	activatedBeforeProbeCount: samples.reduce(
+		(count, sample) => count + (sample.activatedBeforeProbe ? 1 : 0),
+		0,
+	),
+	samples,
+});
+
+const classifyHarnessLimitation = (
+	message: string,
+	phase: IActivationHarnessLimitation['phase'],
+	scenario?: TActivationScenario,
+): IActivationHarnessLimitation => {
+	const normalized = message.toLowerCase();
+	const reason =
+		normalized.includes('@vscode/test-electron') &&
+		(normalized.includes('cannot find package') ||
+			normalized.includes('cannot find module'))
+			? 'missing-official-harness'
+			: normalized.includes('getaddrinfo') ||
+				  normalized.includes('download') ||
+				  normalized.includes('fetch failed')
+				? 'vscode-download-blocked'
+				: normalized.includes('libgtk') ||
+				    normalized.includes('sandbox') ||
+				    normalized.includes('display') ||
+				    normalized.includes('x server')
+				  ? 'vscode-runtime-unavailable'
+				  : 'scenario-probe-failed';
+	return {
+		phase,
+		reason,
+		message,
+		...(scenario === undefined ? {} : { scenario }),
+	};
+};
+
+const createInsufficientEvidenceDecision = (
+	manifest: IActivationManifestEvidence,
+	limitation: IActivationHarnessLimitation,
+): IActivationDecision => ({
+	status: 'insufficient-evidence',
+	keepOnStartupFinished: null,
+	startupBudgetMs: STARTUP_ACTIVATION_BUDGET_MS,
+	startupWorkBudget: STARTUP_ACTIVATION_WORK_BUDGET,
+	startupOverheadMs: null,
+	startupWorkUnits: null,
+	lazyFallbackReady: manifest.lazyFallbackEvents.length > 0,
+	lazyFallbackEvents: manifest.lazyFallbackEvents,
+	rationale: `The benchmark attempted the official @vscode/test-electron harness but stopped during ${limitation.phase}: ${limitation.message}. No real VS Code activation evidence was collected, so this run cannot justify onStartupFinished; ${manifest.fallbackDocumentation}`,
 });
 
 export const decideActivationStrategy = (
@@ -215,17 +285,19 @@ export const decideActivationStrategy = (
 ): IActivationDecision => {
 	const startupOverheadMs = Math.max(
 		0,
-		workspaceNoMcp.medianMs - control.medianMs,
+		workspaceNoMcp.medianStartupReadyMs - control.medianStartupReadyMs,
 	);
 	const startupWorkUnits = workspaceNoMcp.medianWorkUnits;
 	const lazyFallbackReady = manifest.lazyFallbackEvents.length > 0;
 	const keepOnStartupFinished =
 		manifest.startupEventPresent &&
 		lazyFallbackReady &&
-		workspaceMcp.totalClientConnects > 0 &&
+		workspaceNoMcp.totalObservedToolCalls === 0 &&
+		workspaceMcp.totalObservedToolCalls > 0 &&
 		startupOverheadMs <= STARTUP_ACTIVATION_BUDGET_MS &&
 		startupWorkUnits <= STARTUP_ACTIVATION_WORK_BUDGET;
 	return {
+		status: 'measured',
 		keepOnStartupFinished,
 		startupBudgetMs: STARTUP_ACTIVATION_BUDGET_MS,
 		startupWorkBudget: STARTUP_ACTIVATION_WORK_BUDGET,
@@ -234,38 +306,258 @@ export const decideActivationStrategy = (
 		lazyFallbackReady,
 		lazyFallbackEvents: manifest.lazyFallbackEvents,
 		rationale: keepOnStartupFinished
-			? 'onStartupFinished stays within the startup budget, while onView/workspaceContains remain available as lazy fallbacks when the extension is not needed immediately.'
-			: 'Startup activation exceeds the benchmark budget or lacks lazy fallback coverage; prefer lazy activation until the startup cost is reduced.',
+			? `Official VS Code extension-host measurements stayed within the startup budget, the no-MCP workspace made no observed MCP calls, the MCP workspace did, and ${manifest.fallbackDocumentation}`
+			: `Official VS Code extension-host measurements do not yet support onStartupFinished under the configured budgets or observed-call expectations; ${manifest.fallbackDocumentation}`,
+	};
+};
+
+const readActivationEventsFromManifest = async (
+	manifestPath: string,
+): Promise<readonly string[]> => {
+	const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as {
+		activationEvents?: readonly string[];
+	};
+	return manifest.activationEvents ?? [];
+};
+
+const buildExtensionBundle = (extensionRoot: string): void => {
+	const result = spawnSync('bun', ['run', 'build'], {
+		cwd: extensionRoot,
+		encoding: 'utf8',
+		stdio: 'pipe',
+	});
+	if (result.status === 0) return;
+	const stderr = result.stderr?.trim();
+	const stdout = result.stdout?.trim();
+	throw new Error(stderr || stdout || 'bun run build failed');
+};
+
+const executeVsCodeScenario = async (
+	request: IScenarioBenchmarkRequest,
+): Promise<IActivationScenarioSample> => {
+	let runTests: TRunTests | null = null;
+	try {
+		const loaded = requireFromHere('@vscode/test-electron') as {
+			runTests?: TRunTests;
+		};
+		runTests = loaded.runTests ?? null;
+	} catch (error) {
+		throw classifyHarnessLimitation(
+			error instanceof Error ? error.message : String(error),
+			'dependency',
+			request.scenario,
+		);
+	}
+	if (runTests === null) {
+		throw classifyHarnessLimitation(
+			'@vscode/test-electron did not expose runTests',
+			'dependency',
+			request.scenario,
+		);
+	}
+	const outputFile = join(
+		request.evidenceDir,
+		`${request.scenario}-${request.iteration}.json`,
+	);
+	const startedAt = performance.now();
+	try {
+		await runTests({
+			extensionDevelopmentPath: request.extensionDevelopmentPath,
+			extensionTestsPath: request.integrationRunnerPath,
+			launchArgs: [request.workspacePath, '--disable-workspace-trust'],
+			extensionTestsEnv: {
+				...process.env,
+				MCP_VERTEX_BENCH_OUTPUT_FILE: outputFile,
+				MCP_VERTEX_BENCH_EXTENSION_ID: request.extensionId,
+				MCP_VERTEX_BENCH_SCENARIO: request.scenario,
+				...(request.callLogPath === undefined
+					? {}
+					: { MCP_VERTEX_BENCH_CALL_LOG: request.callLogPath }),
+			},
+		});
+	} catch (error) {
+		if (
+			typeof error === 'object' &&
+			error !== null &&
+			'phase' in error &&
+			'reason' in error
+		) {
+			throw error;
+		}
+		throw classifyHarnessLimitation(
+			error instanceof Error ? error.message : String(error),
+			'launch',
+			request.scenario,
+		);
+	}
+	let probe: IScenarioProbeFile;
+	try {
+		probe = JSON.parse(await readFile(outputFile, 'utf8')) as IScenarioProbeFile;
+	} catch (error) {
+		throw classifyHarnessLimitation(
+			error instanceof Error ? error.message : String(error),
+			'probe',
+			request.scenario,
+		);
+	}
+	return {
+		scenario: request.scenario,
+		startupReadyMs: performance.now() - startedAt,
+		activationProbeMs: probe.activationProbeMs,
+		heapUsedBytes: probe.heapUsedBytes,
+		heapDeltaBytes: probe.heapDeltaBytes,
+		workUnits: probe.workUnits,
+		observedToolCalls: await countObservedToolCalls(request.callLogPath),
+		activatedBeforeProbe: probe.activatedBeforeProbe,
+		activationEvents: probe.activationEvents,
+		limitation: null,
 	};
 };
 
 export const runActivationBenchmark = async (
-	activationEvents: readonly string[],
-	iterations = 9,
-	warmupIterations = 2,
+	options: IActivationBenchmarkOptions = {},
 ): Promise<IActivationBenchmarkReport> => {
+	const extensionRoot = options.extensionRoot ?? defaultExtensionRoot;
+	const manifestPath = resolve(extensionRoot, 'package.json');
+	const activationEvents =
+		options.activationEvents ??
+		(await readActivationEventsFromManifest(manifestPath));
 	const manifest = analyzeActivationEvents(activationEvents);
-	const control = await runControlScenario(iterations);
-	const workspaceNoMcp = await runScenario(
-		WORKLOADS['workspace-no-mcp'],
-		iterations,
-		warmupIterations,
+	const iterations = Math.max(1, options.iterations ?? 3);
+	const integrationRunnerPath =
+		options.integrationRunnerPath ?? defaultIntegrationRunnerPath;
+	const executeScenario = options.executeScenario ?? executeVsCodeScenario;
+	const evidenceDir = await mkdtemp(
+		join(tmpdir(), 'mcp-vertex-vscode-activation-benchmark-'),
 	);
-	const workspaceMcp = await runScenario(
-		WORKLOADS['workspace-mcp'],
-		iterations,
-		warmupIterations,
-	);
-	return {
-		control,
-		workspaceNoMcp,
-		workspaceMcp,
-		manifest,
-		decision: decideActivationStrategy(
+	const cleanup = async (): Promise<void> => {
+		if (options.keepEvidence === true) return;
+		await rm(evidenceDir, { recursive: true, force: true });
+	};
+	try {
+		if (options.build !== false) {
+			try {
+				buildExtensionBundle(extensionRoot);
+			} catch (error) {
+				const limitation = classifyHarnessLimitation(
+					error instanceof Error ? error.message : String(error),
+					'build',
+				);
+				return {
+					harness: {
+						mode: 'limitation',
+						officialHarness: '@vscode/test-electron',
+						iterations,
+						runner: integrationRunnerPath,
+						evidenceDir,
+						limitation,
+					},
+					manifest,
+					control: null,
+					workspaceNoMcp: null,
+					workspaceMcp: null,
+					decision: createInsufficientEvidenceDecision(manifest, limitation),
+				};
+			}
+		}
+
+		const samples = new Map<TActivationScenario, IActivationScenarioSample[]>();
+		for (const scenario of ACTIVATION_SCENARIOS) {
+			samples.set(scenario, []);
+		}
+		for (let iteration = 1; iteration <= iterations; iteration += 1) {
+			for (const scenario of ACTIVATION_SCENARIOS) {
+				const request: IScenarioBenchmarkRequest = {
+					scenario,
+					iteration,
+					extensionDevelopmentPath:
+						scenario === 'control'
+							? defaultControlExtensionPath
+							: extensionRoot,
+					extensionId:
+						scenario === 'control'
+							? 'cartago.mcp-vertex-benchmark-control'
+							: 'cartago.mcp-vertex-vscode',
+					workspacePath:
+						scenario === 'control'
+							? defaultControlWorkspacePath
+							: scenario === 'workspace-no-mcp'
+								? defaultNoMcpWorkspacePath
+								: defaultMcpWorkspacePath,
+					integrationRunnerPath,
+					evidenceDir,
+					...(scenario === 'workspace-mcp'
+						? {
+								callLogPath: join(
+									evidenceDir,
+									`${scenario}-${iteration}.jsonl`,
+								),
+							}
+						: {}),
+				};
+				try {
+					samples.get(scenario)?.push(await executeScenario(request));
+				} catch (error) {
+					const limitation =
+						typeof error === 'object' &&
+						error !== null &&
+						'phase' in error &&
+						'reason' in error &&
+						'message' in error
+							? (error as IActivationHarnessLimitation)
+							: classifyHarnessLimitation(
+								error instanceof Error ? error.message : String(error),
+								'launch',
+								scenario,
+							);
+					return {
+						harness: {
+							mode: 'limitation',
+							officialHarness: '@vscode/test-electron',
+							iterations,
+							runner: integrationRunnerPath,
+							evidenceDir,
+							limitation,
+						},
+						manifest,
+						control: null,
+						workspaceNoMcp: null,
+						workspaceMcp: null,
+						decision: createInsufficientEvidenceDecision(manifest, limitation),
+					};
+				}
+			}
+		}
+
+		const control = summarizeScenario('control', samples.get('control') ?? []);
+		const workspaceNoMcp = summarizeScenario(
+			'workspace-no-mcp',
+			samples.get('workspace-no-mcp') ?? [],
+		);
+		const workspaceMcp = summarizeScenario(
+			'workspace-mcp',
+			samples.get('workspace-mcp') ?? [],
+		);
+		return {
+			harness: {
+				mode: 'official-vscode-test-electron',
+				officialHarness: '@vscode/test-electron',
+				iterations,
+				runner: integrationRunnerPath,
+				evidenceDir,
+			},
+			manifest,
 			control,
 			workspaceNoMcp,
 			workspaceMcp,
-			manifest,
-		),
-	};
+			decision: decideActivationStrategy(
+				control,
+				workspaceNoMcp,
+				workspaceMcp,
+				manifest,
+			),
+		};
+	} finally {
+		await cleanup();
+	}
 };

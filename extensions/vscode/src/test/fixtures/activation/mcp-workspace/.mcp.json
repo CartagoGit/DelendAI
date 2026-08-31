@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"mcp-vertex": {
+			"command": "node",
+			"args": ["../server/stub-mcp-server.cjs"]
+		}
+	}
+}
