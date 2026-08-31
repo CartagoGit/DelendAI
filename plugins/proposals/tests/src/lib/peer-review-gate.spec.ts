@@ -235,7 +235,7 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 				opts,
 			),
 		);
-		console.error('TEMP peer gate body', body);
+		if (body.ok !== true) throw new Error(JSON.stringify(body));
 		expect(body.ok).toBe(true);
 	});
 
