@@ -130,12 +130,12 @@ class VscodeWebviewPanel implements IWebviewPanel {
 				return owner._html;
 			},
 			setHtml: (html) => {
-				this._html = html;
-				this.panel.webview.html = html;
+				owner._html = html;
+				owner.panel.webview.html = html;
 			},
 			onDidReceiveMessage: (cb) => {
-				this.messageListeners.add(cb);
-				const sub = this.panel.webview.onDidReceiveMessage((msg) => {
+				owner.messageListeners.add(cb);
+				const sub = owner.panel.webview.onDidReceiveMessage((msg) => {
 					void Promise.resolve(cb(msg)).catch((e: unknown) => {
 						console.error(
 							'[mcp-vertex] onDidReceiveMessage handler threw:',
@@ -145,13 +145,13 @@ class VscodeWebviewPanel implements IWebviewPanel {
 				});
 				return new VscodeDisposable({
 					dispose: () => {
-						this.messageListeners.delete(cb);
+						owner.messageListeners.delete(cb);
 						sub.dispose();
 					},
 				});
 			},
 			postMessage: async (msg) => {
-				await this.panel.webview.postMessage(msg);
+				await owner.panel.webview.postMessage(msg);
 			},
 		};
 	}

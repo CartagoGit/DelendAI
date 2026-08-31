@@ -197,6 +197,58 @@ describe('auto_work (one-call action plan)', async () => {
 		);
 	});
 
+	it('withholds claimReady when VERIFY fan-out requires agent-worktree isolation', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p44-x', file: 'p44.md', status: 'pending' }],
+			}),
+		);
+		writeFileSync(
+			join(root, 'p44.md'),
+			[
+				'# p44-x',
+				'',
+				'## Slices',
+				'',
+				'### S1 — expand',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- migration_phase: expand',
+				'- status: done',
+				'',
+				'### S2 — producers',
+				'- files: plugins/proposals/src/lib/swarm/contract-migration-policy.ts',
+				'- migration_phase: producers',
+				'- status: done',
+				'',
+				'### S3 — regenerate',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- migration_phase: regenerate',
+				'- status: done',
+				'',
+				'### S4 — consumers',
+				'- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+				'- migration_phase: consumers',
+				'- status: done',
+				'',
+				'### S5 — verify fanout',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+				'- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts',
+				'- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts',
+				'- migration_phase: verify',
+				'- gate: type',
+			].join('\n'),
+		);
+
+		const out = parse(await runAutoWork(options));
+		expect(out.state).toBe('idle');
+		expect(out.reason).toBe(
+			'every actionable proposal is currently covered by live slice claims or ownership overlap',
+		);
+		expect(out.claimReady).toBeUndefined();
+	});
+
 	it('surfaces a compact orchestration policy for non-trivial slices', async () => {
 		writeFileSync(
 			options.indexPathAbs,

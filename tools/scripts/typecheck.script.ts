@@ -49,7 +49,18 @@ const RELAXED_PROJECT = 'tsconfig.relax.json';
 const TOOLS_PROJECT = 'tools/tsconfig.json';
 const TOOLS_BASELINE_REL = 'tools/tsconfig.baseline.json';
 
-function resolveProject(): string {
+interface ITscResult {
+	readonly status: number;
+	readonly output: string;
+}
+
+type TscOutputMode = 'inherit' | 'capture';
+
+interface ITypecheckOptions {
+	readonly outputMode?: TscOutputMode;
+}
+
+const resolveProject = (): string => {
 	const value = process.env[RELAX_ENV];
 	const enabled = value === '1' || value === 'true';
 	const project = enabled ? RELAXED_PROJECT : DEFAULT_PROJECT;
@@ -63,7 +74,7 @@ function resolveProject(): string {
 		);
 	}
 	return project;
-}
+};
 
 /**
  * Run `tsc --noEmit -p <projectPath>` and capture combined stdout+stderr.
@@ -74,16 +85,23 @@ function resolveProject(): string {
 function runTsc(
 	rootDir: string,
 	projectPath: string,
-): { readonly status: number; readonly output: string } {
+	options: ITypecheckOptions = {},
+): ITscResult {
+	const outputMode = options.outputMode ?? 'capture';
 	const result = spawnSync('bunx', ['tsc', '--noEmit', '-p', projectPath], {
 		cwd: rootDir,
-		encoding: 'utf8',
+		...(outputMode === 'inherit'
+			? { stdio: 'inherit' as const }
+			: { encoding: 'utf8' as const }),
 	});
 	if (result.error) {
 		console.error(
 			`[typecheck] failed to spawn tsc: ${result.error.message}`,
 		);
 		return { status: 1, output: '' };
+	}
+	if (outputMode === 'inherit') {
+		return { status: result.status ?? 1, output: '' };
 	}
 	const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
 	return { status: result.status ?? 1, output };
@@ -154,12 +172,25 @@ const totalCount = (counts: Record<string, number>): number =>
  * Run `tsc -p tools/tsconfig.json` and apply the ratchet. Returns the
  * process exit code for this step (0 = clean or fully baselined).
  */
-function runToolsTypecheck(rootDir: string): number {
+const hasUpdateFlag = (args: readonly string[]): boolean =>
+	args.includes('--update');
+
+function runToolsTypecheck(rootDir: string, args: readonly string[]): number {
 	const projectPath = resolve(rootDir, TOOLS_PROJECT);
-	const { output } = runTsc(rootDir, projectPath);
+	const result = runTsc(rootDir, projectPath);
+	const { output } = result;
 	const current = parseTscErrorsByFile(output);
 
-	if (process.argv.includes('--update')) {
+	if (result.status !== 0 && Object.keys(current).length === 0) {
+		console.error(
+			output.length > 0
+				? output
+				: '[typecheck:tools] tsc failed without parseable diagnostics.',
+		);
+		return 1;
+	}
+
+	if (hasUpdateFlag(args)) {
 		writeToolsBaseline(rootDir, current);
 		console.log(
 			`[typecheck:tools] baseline updated — ${Object.keys(current).length} file(s), ${totalCount(current)} error(s).`,
@@ -328,36 +359,21 @@ export const findUncoveredWorkspaces = (
 	return uncovered;
 };
 
-function main(): void {
+export const runTypecheck = (
+	args: readonly string[] = process.argv.slice(2),
+): number => {
 	const rootDir = repoRoot();
 	const projectPath = resolve(rootDir, resolveProject());
-	const mainResult = spawnSync(
-		'bunx',
-		['tsc', '--noEmit', '-p', projectPath],
-		{
-			stdio: 'inherit',
-			cwd: rootDir,
-		},
-	);
-
-	if (mainResult.error) {
-		console.error(
-			`[typecheck] failed to spawn tsc: ${mainResult.error.message}`,
-		);
-		process.exit(1);
-	}
-
-	const mainStatus = mainResult.status ?? 1;
+	const mainStatus = runTsc(rootDir, projectPath, {
+		outputMode: 'inherit',
+	}).status;
 	if (mainStatus !== 0) {
 		// The root project has zero tolerance for errors — no baseline,
 		// no ratchet. Fail fast without even running the tools/ pass.
-		process.exit(mainStatus);
+		return mainStatus;
 	}
 
-	const toolsStatus = runToolsTypecheck(rootDir);
-	process.exit(toolsStatus);
-}
+	return runToolsTypecheck(rootDir, args);
+};
 
-if (import.meta.main) {
-	main();
-}
+if (import.meta.main) process.exit(runTypecheck());

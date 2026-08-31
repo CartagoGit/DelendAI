@@ -139,6 +139,17 @@ describe('project-profile service (f00280 S1)', () => {
 			analysis,
 			assessment,
 			existing,
+			discoveredWorkspaces: [
+				{
+					path: 'apps/web',
+					projectType: 'webapp' as const,
+					language: 'typescript' as const,
+					packageManager: 'bun' as const,
+					framework: 'astro',
+					testRunner: 'vitest' as const,
+					recommendedPluginIds: ['docs'],
+				},
+			],
 			now: new Date('2026-08-31T12:00:00.000Z'),
 		});
 
@@ -159,6 +170,40 @@ describe('project-profile service (f00280 S1)', () => {
 		expect(profile.workspaces[1]).toMatchObject({
 			path: 'apps/web',
 			recommendedPluginIds: ['docs'],
+		});
+	});
+
+	it('builds a profile from discovered workspaces on first persistence', () => {
+		const profile = buildProjectProfile({
+			analysis,
+			assessment,
+			discoveredWorkspaces: [
+				{
+					path: 'apps/shared',
+					projectType: 'library' as const,
+					language: 'typescript' as const,
+					packageManager: 'bun' as const,
+					testRunner: 'vitest' as const,
+					recommendedPluginIds: ['search'],
+				},
+				{
+					path: 'apps/web',
+					projectType: 'webapp' as const,
+					language: 'typescript' as const,
+					packageManager: 'bun' as const,
+					framework: 'astro',
+					testRunner: 'vitest' as const,
+					recommendedPluginIds: ['docs'],
+				},
+			],
+			now: new Date('2026-08-31T12:00:00.000Z'),
+		});
+
+		expect(profile.workspaces).toHaveLength(3);
+		expect(profile.workspaces[1]).toMatchObject({ path: 'apps/shared' });
+		expect(profile.workspaces[2]).toMatchObject({
+			path: 'apps/web',
+			framework: 'astro',
 		});
 	});
 
@@ -206,6 +251,18 @@ describe('project-profile service (f00280 S1)', () => {
 			}),
 			'utf8',
 		);
+		mkdirSync(join(root, 'apps/web'), { recursive: true });
+		writeFileSync(
+			join(root, 'apps/web/package.json'),
+			JSON.stringify({
+				name: '@fixture/web',
+				dependencies: { astro: '^5.0.0' },
+				devDependencies: { vitest: '^3.0.0' },
+				scripts: { test: 'vitest run' },
+			}),
+			'utf8',
+		);
+		mkdirSync(join(root, 'apps/old'), { recursive: true });
 		mkdirSync(join(root, '.mcp-vertex'), { recursive: true });
 		writeFileSync(
 			join(root, '.mcp-vertex/project-profile.json'),
@@ -229,6 +286,14 @@ describe('project-profile service (f00280 S1)', () => {
 				recommendedPresetId: 'swarm',
 				recommendedPluginIds: ['git'],
 				workspaces: [
+					{
+						path: 'apps/old',
+						projectType: 'library',
+						language: 'typescript',
+						packageManager: 'bun',
+						testRunner: 'vitest',
+						recommendedPluginIds: ['search'],
+					},
 					{
 						path: 'apps/web',
 						projectType: 'webapp',
@@ -267,9 +332,7 @@ describe('project-profile service (f00280 S1)', () => {
 		expect(profile.createdAt).toBe('2026-08-01T00:00:00.000Z');
 		expect(profile.projectName).toBe('fixture');
 		expect(profile.workspaces[0].path).toBe('.');
-		expect(profile.workspaces[1]).toMatchObject({
-			path: 'apps/web',
-			recommendedPluginIds: ['docs'],
-		});
+		expect(profile.workspaces[1]).toMatchObject({ path: 'apps/web' });
+		expect(profile.workspaces).toHaveLength(2);
 	});
 });

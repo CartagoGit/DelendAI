@@ -10,6 +10,9 @@
 - authHeaderFor
 - dispatchFetch
 - redactToken
+- buildProvenanceGraph
+- PROVENANCE_NODE_KINDS
+- PROVENANCE_RELATION_DEFINITIONS
 - listRecentErrors
 - normalizeLevel
 - sentryBuildListUrl
@@ -18,7 +21,6 @@
 - buildObsHealthToolRegistration
 - buildObsRuntimeMetricsToolRegistration
 - createRuntimeMetricsRegistry
-- computePayloadPercentile
 
 ## Depends on
 

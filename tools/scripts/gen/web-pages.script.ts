@@ -29,6 +29,9 @@
  *   5. `tools/scripts/generate/web-catalog.script.ts`
  *      → docs/mcp-vertex/plugins/auto-generated/*.md
  *      (the per-plugin doc pages)
+ *   6. `tools/scripts/gen/provenance-truth.script.ts`
+ *      → docs/mcp-vertex/generated/observability-provenance.generated.md
+ *      (the observability provenance graph contract + example links)
  *
  * Flags:
  *   --check       Run every generator, then `git diff --exit-code`.
@@ -120,6 +123,15 @@ const STEPS: readonly IStep[] = [
 		cmd: ['bun', 'tools/scripts/generate/web-catalog.script.ts'],
 		outputs: ['docs/mcp-vertex/plugins/auto-generated/'],
 		refresh: 'bun tools/scripts/generate/web-catalog.script.ts',
+	},
+	{
+		name: 'observability-provenance',
+		label: 'observability provenance generated truth',
+		cmd: ['bun', 'tools/scripts/gen/provenance-truth.script.ts'],
+		outputs: [
+			'docs/mcp-vertex/generated/observability-provenance.generated.md',
+		],
+		refresh: 'bun tools/scripts/gen/provenance-truth.script.ts',
 	},
 ];
 

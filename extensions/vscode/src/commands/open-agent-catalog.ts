@@ -1,4 +1,4 @@
-import { AgentCatalogService } from '@mcp-vertex/client';
+import { AgentCatalogService, formatToolName } from '@mcp-vertex/client';
 
 import { AGENT_CATALOG_MESSAGE_SCHEMA } from '../contracts/constants/agent-catalog-message-schema.constant';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
@@ -95,12 +95,13 @@ export const openSkillPreview = async (
 export const openProposalPreview = async (
 	deps: Pick<ICommandDeps, 'client' | 'vscode'>,
 	id: string,
+	namespacePrefix?: string,
 ): Promise<void> => {
 	try {
 		const board = await deps.client.request<
 			Record<string, never>,
 			IProposalBoardOutput
-		>('mcp-vertex_proposals_proposal_board', {});
+		>(formatToolName(namespacePrefix, 'proposals_proposal_board'), {});
 		const proposal = board.proposals.find((entry) => entry.id === id);
 		if (proposal === undefined) {
 			throw new Error(`proposal "${id}" not found`);
@@ -174,7 +175,11 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 						return;
 					}
 					if (message.command === 'openProposal') {
-						await openProposalPreview(deps, message.id);
+						await openProposalPreview(
+							deps,
+							message.id,
+							deps.namespacePrefix,
+						);
 						return;
 					}
 				});

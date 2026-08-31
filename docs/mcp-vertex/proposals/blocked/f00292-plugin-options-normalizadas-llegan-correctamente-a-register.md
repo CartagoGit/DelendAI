@@ -2,7 +2,7 @@
 id: f00292
 title: "Plugin options normalizadas llegan correctamente a `register`."
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -30,7 +30,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **Status**: pending
 - **Files**: `TODO`
 - **Gate**: none
-
+- review-state: changes_requested
+- review-implementer: copilot-orchestrator
+- review-reviewer: proposal-guardian-f00292
+- review-log: requested_changes by proposal-guardian-f00292 — No se puede validar ni implementar este slice: la ficha sólo contiene Files: TODO y Gate: none. Debe reconstruirse desde la auditoría fuente con archivos, alcance, acceptance y gate concretos antes de volver a ready.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

@@ -2,7 +2,7 @@
 id: f00277
 title: "`AgentSession` + `mcpv agents`: ver qué hacen todos los agentes en worktrees sin cambiar de rama"
 kind: feat
-status: in-progress
+status: blocked
 type: proposal
 track: trust
 date: 2026-08-29
@@ -115,7 +115,10 @@ mcpv agents
 - **Status**: pending
 - **Files**: (pendiente de implementación)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/agents/derive-agent-sessions.spec.ts`
-
+- review-state: changes_requested
+- review-implementer: agent-session-f00277-s1-repair
+- review-reviewer: copilot-reviewer-f00277-s1
+- review-log: requested_changes by copilot-reviewer-f00277-s1 — Tests focalizados y typecheck de core pasan, pero S1 queda incompleto como entidad de primera clase: la nueva API sólo existe bajo src/lib y no se exporta en la superficie estable del paquete. packages/core/src/public/index.ts:1-3 declara que esa barrel es la ONLY stable import surface, y packages/core/package.json expone ./public como punto de entrada público. Sin reexportar deriveAgentSessions y los tipos IAgentSession* desde packages/core/src/public/index.ts, el slice no queda consumible por clientes como packages/cli que importan desde @mcp-vertex/core/public. Solicito añadir esa integración pública o justificar contractualmente por qué S1 debe seguir siendo interna.
 ### S2 — `mcpv agents`: comando CLI que renderiza la proyección
 
 - **Status**: pending

@@ -155,7 +155,10 @@ adoptProject (ya existe, sin romper su contrato)
       con un fixture de monorepo de al menos 3 workspaces con
       frameworks distintos)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/adoption-assessment.monorepo-areas.spec.ts`
-
+- review-state: changes_requested
+- review-implementer: copilot-orchestrator
+- review-reviewer: proposal-guardian-f00280-s2
+- review-log: requested_changes by proposal-guardian-f00280-s2 — No hay implementación ni test verificable de desglose de monorepos tras dos delegaciones. La acceptance exige comportamiento para monorepos heterogéneos y un guardarraíl homogéneo; debe reconstruirse antes de aprobar.
 ### S3 — Adopción por etapas: cuatro perfiles de instalación incremental
 
 - **Status**: pending

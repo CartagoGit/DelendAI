@@ -117,10 +117,11 @@ export interface IAdaptiveFacadeToolArgs {
 	readonly task?: string | undefined;
 	readonly history?: readonly IAdaptiveFacadeHistoryEntry[] | undefined;
 	readonly maxAlternatives?: number | undefined;
+	readonly maxBytes?: number | undefined;
 }
 
 export interface IAdaptiveFacadeRuntimeOptions {
-	readonly maxBytes: number;
+	readonly maxBytes?: number | undefined;
 }
 
 export interface IOptimizeRunRuntimeOptions {

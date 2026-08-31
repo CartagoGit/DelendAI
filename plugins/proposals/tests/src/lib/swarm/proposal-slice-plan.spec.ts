@@ -421,6 +421,9 @@ describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
 			verifySlice?.migrationGuidance?.worktreeImpactPolicy.isolation,
 		).toBe('agent-worktree');
 		expect(
+			verifySlice?.migrationGuidance?.worktreeImpactPolicy.claimMode,
+		).toBe('requires-agent-worktree');
+		expect(
 			verifySlice?.migrationGuidance?.worktreeImpactPolicy.reasons.join(
 				' ',
 			),
@@ -497,7 +500,7 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 		);
 	});
 
-	it('blocks contract claims until verify is done when migration phases are declared', async () => {
+	it('blocks contract claims until verify is done, then still requires isolation for high-impact phases', async () => {
 		const plan = parseProposalSlicePlan(
 			'r00044',
 			DOC_WITH_MIGRATION_PHASES,
@@ -512,9 +515,21 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 			DOC_WITH_VERIFY_DONE,
 		)!;
 		expect(validateClaim(verified, 'S6')).toEqual({
-			ok: true,
-			blockerType: 'none',
-			reason: 'claimable',
+			ok: false,
+			blockerType: 'isolation-required',
+			reason: 'slice "S6" is contract with high fan-out and requires agent-worktree isolation before claim. Use an isolated orchestration path (delegate or create an agent/<name> worktree) instead of the shared checkout.',
+		});
+	});
+
+	it('blocks verify claims that require agent-worktree isolation', async () => {
+		const plan = parseProposalSlicePlan(
+			'r00044',
+			DOC_WITH_MIGRATION_PHASES,
+		)!;
+		expect(validateClaim(plan, 'S5')).toEqual({
+			ok: false,
+			blockerType: 'isolation-required',
+			reason: 'slice "S5" is verify with high fan-out and requires agent-worktree isolation before claim. Use an isolated orchestration path (delegate or create an agent/<name> worktree) instead of the shared checkout.',
 		});
 	});
 });

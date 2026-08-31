@@ -16,6 +16,10 @@ import {
 
 import { repoRoot } from '../lib/monorepo-paths';
 import {
+	measureCatalogAndTaskContextCost,
+	renderCatalogAndTaskContextMarkdown,
+} from '../measure/catalog-task-context-cost';
+import {
 	asPresetId,
 	connectTokenBudgetClient,
 	createTokenBudgetFixtureWorkspace,
@@ -552,6 +556,7 @@ export const buildPerSurfaceColumns = (
 const renderGeneratedMarkdown = (
 	fixture: IFixtureMeasurements,
 	presetRows: readonly IPresetDashboardRow[],
+	taskContextAddendum: string,
 	activationKpisMarkdown: string,
 ): string => {
 	// c00135: per-surface columns so the dashboard never mixes adaptive
@@ -809,6 +814,8 @@ const renderGeneratedMarkdown = (
 			fixtureRows,
 		),
 		'',
+		taskContextAddendum,
+		'',
 		'## Real preset dashboard',
 		'',
 		'This dashboard measures the real preset assemblies through the actual plugin loader. Each preset is reported twice: `native / tokens-gate` (the full-surface measurement baseline) and explicit `adaptive / dynamic-client` (the compact bootstrap measurement). `Runtime Surface` is shown separately because ordinary MCP-Vertex execution defaults to `managed`; `native` here does not mean that the server is running native.',
@@ -956,7 +963,13 @@ export const buildTokenBudgetDashboardMarkdown = async (
 ): Promise<string> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
-		const fixture = await measureFixtureSurfaces(workspace);
+		const [fixture, taskContextMeasurement] = await Promise.all([
+			measureFixtureSurfaces(workspace),
+			measureCatalogAndTaskContextCost(),
+		]);
+		const taskContextAddendum = renderCatalogAndTaskContextMarkdown(
+			taskContextMeasurement,
+		);
 		const activationKpisMarkdown = await loadActivationKpisMarkdown();
 		const presetRows: IPresetDashboardRow[] = [];
 		for (const presetId of TOKEN_BUDGETS.dashboardPresetIds) {
@@ -973,6 +986,7 @@ export const buildTokenBudgetDashboardMarkdown = async (
 		const markdown = `${renderGeneratedMarkdown(
 			fixture,
 			presetRows,
+			taskContextAddendum,
 			activationKpisMarkdown,
 		)}\n`;
 		return markdown;

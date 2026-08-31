@@ -11,17 +11,9 @@ import z from 'zod';
 
 import { definePlugin } from '@mcp-vertex/core/public';
 
-import { realReadLocalCorrelateDeps } from './lib/correlate';
-import { buildObsErrorsToolRegistration } from './lib/tools/obs-errors.tool';
-import { buildObsCorrelateToolRegistration } from './lib/tools/obs-correlate.tool';
-import { buildObsHealthToolRegistration } from './lib/tools/obs-health.tool';
-import { buildObsRuntimeMetricsToolRegistration } from './lib/tools/obs-runtime-metrics.tool';
 import { createRuntimeMetricsRegistry } from './lib/metrics/runtime-metrics-registry';
-import {
-	listRecentErrors,
-	sentryBuildListUrl,
-	sentryParseList,
-} from './lib/errors/list-errors';
+import { buildObservabilityToolRegistrations } from './lib/tools/registry';
+import { sentryBuildListUrl, sentryParseList } from './lib/errors/list-errors';
 import type { IErrorSource } from './lib/errors/ierror-source';
 
 const SENTRY_HOSTS = ['sentry.io', '.sentry.io', '.ingest.sentry.io'] as const;
@@ -97,40 +89,11 @@ export default definePlugin({
 			parsed.data?.source ?? sourceFromEnv();
 		const runtimeMetricsRegistry = createRuntimeMetricsRegistry();
 		return {
-			tools: [
-				buildObsErrorsToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					...(source === undefined ? {} : { source }),
-				}),
-				buildObsCorrelateToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					...(source === undefined
-						? {}
-						: {
-								issueReader: async () =>
-									(
-										await listRecentErrors(source, {
-											limit: 100,
-										})
-									).issues,
-							}),
-					localDeps: realReadLocalCorrelateDeps(ctx.workspace.root),
-				}),
-				// Fully implemented and tested (obs_trace +
-				// obs_release_health), but never wired into this registration
-				// — completely unreachable by any host.
-				buildObsHealthToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRootAbs: ctx.workspace.root,
-					metricsRegistry: runtimeMetricsRegistry,
-				}),
-				// The manifest's own summary promises a "metrics"
-				// surface; nothing backed it until this tool existed.
-				buildObsRuntimeMetricsToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					registry: runtimeMetricsRegistry,
-				}),
-			],
+			tools: buildObservabilityToolRegistrations({
+				ctx,
+				metricsRegistry: runtimeMetricsRegistry,
+				...(source === undefined ? {} : { source }),
+			}),
 			knowledge: [
 				{
 					id: 'observability-correlate-usage',
