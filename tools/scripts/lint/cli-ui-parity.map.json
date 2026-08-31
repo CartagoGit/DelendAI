@@ -171,6 +171,10 @@
 		"mcp-vertex.openDashboard": {
 			"cli": "status"
 		},
+		"mcp-vertex.openDashboardTab": {
+			"cli": "status",
+			"note": "same dashboard as mcp-vertex.openDashboard, opened in an editor tab instead of the side panel; one CLI counterpart serves both placements"
+		},
 		"mcp-vertex.providers.openDashboard": {
 			"cli": "usage-tracking report",
 			"note": "f00098 S3: the panel's usage card is the report; the provider half wraps agent tools (healthcheck_providers/get_quota) with no CLI group"
