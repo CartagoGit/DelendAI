@@ -12,6 +12,7 @@ import {
 } from '@mcp-vertex/ui-extension/public';
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from '../commands/open-proposal';
+import { OPEN_DASHBOARD_TAB_COMMAND } from '../commands/open-dashboard';
 import { OPEN_TOOL_DETAIL_COMMAND } from '../contracts/constants/open-tool-detail-command.constant';
 import { OPEN_KNOWLEDGE_COMMAND } from '../commands/open-knowledge';
 import { OPEN_SETTINGS_COMMAND } from '../commands/open-settings';
@@ -233,7 +234,7 @@ export class DashboardWebviewViewProvider {
 		if (parsed.data.command === 'action') {
 			await this.deps.host.executeCommand?.(
 				parsed.data.action === 'expand'
-					? 'mcp-vertex.openDashboard'
+					? OPEN_DASHBOARD_TAB_COMMAND
 					: REFRESH_COMMAND,
 			);
 			return;
