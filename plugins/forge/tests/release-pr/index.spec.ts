@@ -101,6 +101,48 @@ describe('release PR forge contract', () => {
 		);
 	});
 
+	it('rejects invalid release metadata before calling the provider', async () => {
+		const { provider, created } = makeProvider();
+		await expect(
+			createReleasePullRequest({
+				candidate: { ...candidate, targetVersion: '9.9.9' },
+				currentBranch: candidate.branch,
+				upstream: 'origin/release/patch/august-cut',
+				gates: [],
+				provider,
+			}),
+		).rejects.toThrowError(/targetVersion/);
+		expect(created).toHaveLength(0);
+	});
+
+	it('rejects a provider response with an unexpected base branch', async () => {
+		const { provider } = makeProvider();
+		provider.createPullRequest = async (input) =>
+			({
+				number: 51,
+				url: 'https://forge.example/pr/51',
+				title: 'Release 1.4.3',
+				headBranch: input.headBranch,
+				baseBranch: 'develop',
+			}) as IReleasePrRecord;
+		await expect(
+			createReleasePullRequest({
+				candidate,
+				currentBranch: candidate.branch,
+				upstream: 'origin/release/patch/august-cut',
+				gates: [],
+				provider,
+			}),
+		).rejects.toThrowError(
+			expect.objectContaining({
+				code: 'provider-contract',
+				details: expect.objectContaining({
+					actualBaseBranch: 'develop',
+				}),
+			}),
+		);
+	});
+
 	it('rejects a provider call from the wrong branch or without upstream', async () => {
 		const { provider } = makeProvider();
 		await expect(
@@ -122,7 +164,7 @@ describe('release PR forge contract', () => {
 				provider,
 			}),
 		).rejects.toThrowError(
-			expect.objectContaining({ code: 'wrong-branch' }),
+			expect.objectContaining({ code: 'missing-upstream' }),
 		);
 	});
 });

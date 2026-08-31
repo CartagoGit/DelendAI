@@ -1,4 +1,5 @@
 import {
+	assertReleaseMetadata,
 	evaluateReleaseReadiness,
 	type IReleaseCandidateMetadata,
 	type IReleaseGate,
@@ -42,17 +43,30 @@ export interface IReleasePrResult {
 }
 
 export class ReleasePrContractError extends Error {
-	readonly code: 'wrong-branch' | 'wrong-base' | 'readiness-blocked';
+	readonly code:
+		| 'wrong-branch'
+		| 'wrong-base'
+		| 'invalid-metadata'
+		| 'missing-upstream'
+		| 'readiness-blocked'
+		| 'provider-contract';
+	readonly details?: Readonly<Record<string, string>>;
 
-	constructor(code: ReleasePrContractError['code'], message: string) {
+	constructor(
+		code: ReleasePrContractError['code'],
+		message: string,
+		details?: Readonly<Record<string, string>>,
+	) {
 		super(message);
 		this.name = 'ReleasePrContractError';
 		this.code = code;
+		if (details !== undefined) this.details = details;
 	}
 }
 
 const RELEASE_BRANCH =
 	/^release\/(patch|minor|major)\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const ANTECEDENT_PR_NUMBER = 50;
 
 export const buildReleasePrDescription = (
 	candidate: IReleaseCandidateMetadata,
@@ -71,7 +85,7 @@ export const buildReleasePrDescription = (
 		`Version: ${candidate.fromVersion} -> ${candidate.targetVersion}`,
 		`Release type: ${candidate.type}`,
 		`Gates: ${gates || 'none'}`,
-		'Antecedent: PR #50 used develop as its source; this release flow keeps the candidate branch explicit.',
+		`Antecedent: PR #${ANTECEDENT_PR_NUMBER} used develop as its source; this release flow keeps the candidate branch explicit.`,
 	].join('\n');
 };
 
@@ -82,6 +96,14 @@ export const createReleasePullRequest = async ({
 	upstream,
 	provider,
 }: ICreateReleasePrInput): Promise<IReleasePrResult> => {
+	try {
+		assertReleaseMetadata(candidate);
+	} catch (error) {
+		throw new ReleasePrContractError(
+			'invalid-metadata',
+			error instanceof Error ? error.message : 'invalid release metadata',
+		);
+	}
 	if (
 		!RELEASE_BRANCH.test(currentBranch) ||
 		currentBranch !== candidate.branch
@@ -97,7 +119,7 @@ export const createReleasePullRequest = async ({
 		);
 	if (upstream?.trim() === undefined || upstream.trim() === '')
 		throw new ReleasePrContractError(
-			'wrong-branch',
+			'missing-upstream',
 			'release PR branch must have an upstream',
 		);
 	const readiness = evaluateReleaseReadiness(gates);
@@ -128,5 +150,16 @@ export const createReleasePullRequest = async ({
 		headBranch: candidate.branch,
 		baseBranch: 'main',
 	});
+	if (pr.headBranch !== candidate.branch || pr.baseBranch !== 'main')
+		throw new ReleasePrContractError(
+			'provider-contract',
+			'provider returned a release PR with unexpected branches',
+			{
+				expectedHeadBranch: candidate.branch,
+				expectedBaseBranch: 'main',
+				actualHeadBranch: pr.headBranch,
+				actualBaseBranch: pr.baseBranch,
+			},
+		);
 	return Object.freeze({ created: true, pr, readiness, description });
 };

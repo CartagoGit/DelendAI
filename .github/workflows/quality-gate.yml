@@ -1,11 +1,10 @@
 # quality-gate.yml — c00132 (AUD-P0-002).
 #
-# Required status check on `develop` and `main` (see
-# `.github/branch-protection.yml`). Runs the integrated quality
-# gate locally so a single failure blocks the merge.
+# Required status check on `main` (see `.github/branch-protection.yml`). Runs
+# the integrated quality gate so a release PR cannot merge with regressions.
 #
 # Triggers:
-#   pull_request to develop/main.
+#   pull_request to main.
 #   merge_group (queue).
 #   workflow_dispatch (manual reruns).
 
@@ -13,7 +12,7 @@ name: quality-gate
 
 on:
     pull_request:
-        branches: [develop, main]
+        branches: [main]
     merge_group:
     workflow_dispatch:
 

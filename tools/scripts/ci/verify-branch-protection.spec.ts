@@ -17,21 +17,19 @@ import {
 const CONFIG_YAML = `version: 1
 branches:
   - name: main
+		protected: true
     protection:
       required_status_checks:
         strict: true
         contexts:
-          - quality-gate
-          - tests
-          - tokens
-          - governance
-          - security
+					- ci-complete
       enforce_admins: true
       required_linear_history: true
       allow_force_pushes: false
       allow_deletions: false
       restrictions: null
   - name: develop
+		protected: true
     protection:
       required_status_checks:
         strict: true
@@ -57,7 +55,7 @@ const makeLive = (
 	allow_deletions: { enabled: false },
 	required_status_checks: {
 		strict: true,
-		contexts: ['quality-gate', 'tests', 'tokens', 'governance', 'security'],
+		contexts: ['ci-complete'],
 	},
 	...overrides,
 });
@@ -101,6 +99,18 @@ describe('verify-branch-protection', () => {
 			const config = await loadDeclaredBranchProtectionConfig(configPath);
 			const drifts = diffBranch(config.branches[0]!, makeLive());
 			expect(drifts).toEqual([]);
+		});
+	});
+
+	it('accepts an intentionally unprotected branch', async () => {
+		await withTempConfig(async (configPath) => {
+			const config = await loadDeclaredBranchProtectionConfig(configPath);
+			const develop = {
+				...config.branches[1]!,
+				protected: false,
+			};
+			expect(diffBranch(develop, null)).toEqual([]);
+			expect(diffBranch(develop, makeLive())).toHaveLength(1);
 		});
 	});
 

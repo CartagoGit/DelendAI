@@ -18,6 +18,7 @@ import type { IErrorSource } from './lib/errors/ierror-source';
 
 const SENTRY_HOSTS = ['sentry.io', '.sentry.io', '.ingest.sentry.io'] as const;
 const DATADOG_HOSTS = ['api.datadoghq.com', 'api.datadoghq.eu'] as const;
+const DEFAULT_CORRELATION_WINDOW_MINUTES = 1440;
 
 /** Resolve a vendor id to its default `IErrorSource` from env. */
 const sourceFromEnv = (): IErrorSource | undefined => {
@@ -103,7 +104,7 @@ export default definePlugin({
 						'',
 						'Use `obs_correlate` after `obs_errors` when a remote issue title needs a local execution trail.',
 						'It reads recent issues from the configured observability source, scans local JSONL logs under `.cache/mcp-vertex/results/logs/` and `.cache/mcp-vertex/results/logs-errors/`, and returns every issue x log-line pair whose line mentions the same exception title or context inside the requested window.',
-						'`sinceMinutes` defaults to 1440 (24h). Output includes the local file path, line number, and a one-line summary you can pivot on before calling into the logs plugin for deeper timeline work.',
+						`\`sinceMinutes\` defaults to ${DEFAULT_CORRELATION_WINDOW_MINUTES} (24h). Output includes the local file path, line number, and a one-line summary you can pivot on before calling into the logs plugin for deeper timeline work.`,
 					].join('\n'),
 				},
 			],
