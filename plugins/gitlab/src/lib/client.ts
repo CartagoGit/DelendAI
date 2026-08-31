@@ -17,6 +17,7 @@ export interface IRemoteFetchResponse {
 	readonly status: number;
 	readonly headers: { get(name: string): string | null };
 	text(): Promise<string>;
+	arrayBuffer?(): Promise<ArrayBuffer>;
 }
 
 export type RemoteFetchFn = (
@@ -59,7 +60,7 @@ export interface IGitLabHttpRequestOptions<TResponse> {
 	>;
 	readonly headers?: Readonly<Record<string, string>>;
 	readonly body?: string;
-	readonly parseAs?: 'json' | 'text';
+	readonly parseAs?: 'json' | 'text' | 'binary';
 	readonly responseSchema?: ZodType<TResponse>;
 	readonly compatibilityCheck?: (
 		payload: unknown,
@@ -408,6 +409,21 @@ const parseResponseBody = async <TResponse>(
 	response: IRemoteFetchResponse,
 	request: IGitLabHttpRequestOptions<TResponse>,
 ): Promise<TResponse> => {
+	if (request.parseAs === 'binary') {
+		if (response.arrayBuffer === undefined) {
+			throw new GitLabRequestError({
+				code: 'invalid-response',
+				provider,
+				message: `${provider} returned a response that cannot be read as binary`,
+				status: response.status,
+				requestId: extractRequestId(response.headers),
+				retryAfterSeconds: null,
+				temporary: false,
+				retryable: false,
+			});
+		}
+		return (await response.arrayBuffer()) as TResponse;
+	}
 	if (request.parseAs === 'text') {
 		return (await response.text()) as TResponse;
 	}
