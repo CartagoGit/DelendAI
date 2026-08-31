@@ -48,7 +48,31 @@ export const guardDoneToReviewRegression = (input: {
 
 export type IShippedInGuardResult =
 	| { ok: true }
-	| { ok: false; code: 'missing-shipped-in'; reason: string };
+	| {
+			ok: false;
+			code: 'missing-shipped-in';
+			reason: string;
+			/** Next action the agent must take to satisfy the gate. */
+			nextAction: string;
+			/** The exact frontmatter field the agent must add or repair. */
+			fix: string;
+	  };
+
+/** Single-line summary of the shipped-in gate. Kept short so it shows up
+ *  verbatim in the agent transcript. */
+const SHIPPED_IN_MISSING_REASON =
+	'frontmatter `shipped-in` is required to move a proposal to `done`; the gate is enforced by `guardShippedInPresent` (`plugins/proposals/src/lib/services/proposal-state.ts`).';
+
+/** Concrete next-action text the orchestrator can echo. Built so an agent
+ *  can run `git log <id> --format=%H` and paste the SHA into the
+ *  frontmatter without reading further docs. */
+const SHIPPED_IN_MISSING_NEXT_ACTION =
+	'Add `shipped-in: ["<sha>"]` to the proposal\'s top-level YAML frontmatter (the block between the first two `---` lines) — NOT inside a `resolution:` block. The SHA must be a 7-40 char hex commit that introduced the slice\'s `**Files**`. Find it with: `git log --all --oneline -- <file> | head -3`. A real SHA is preferred; for placeholder-only close-loops, HEAD also satisfies the gate.';
+
+/** Single-line fix instruction; the orchestrator renders this inside the
+ *  `code: 'missing-shipped-in'` envelope so the failure is unmissable. */
+const SHIPPED_IN_MISSING_FIX =
+	'edit frontmatter: append `shipped-in: ["<sha>"]` (replace `<sha>` with the commit that landed the slice).';
 
 export const guardShippedInPresent = (
 	proposalFrontmatter: Record<string, unknown>,
@@ -58,7 +82,9 @@ export const guardShippedInPresent = (
 		return {
 			ok: false,
 			code: 'missing-shipped-in',
-			reason: 'shipped-in: list is required to mark a proposal done',
+			reason: SHIPPED_IN_MISSING_REASON,
+			nextAction: SHIPPED_IN_MISSING_NEXT_ACTION,
+			fix: SHIPPED_IN_MISSING_FIX,
 		};
 	}
 	const shas = shippedIn.filter(
@@ -69,7 +95,27 @@ export const guardShippedInPresent = (
 		return {
 			ok: false,
 			code: 'missing-shipped-in',
-			reason: 'shipped-in: list is required to mark a proposal done',
+			reason: SHIPPED_IN_MISSING_REASON,
+			nextAction: SHIPPED_IN_MISSING_NEXT_ACTION,
+			fix: SHIPPED_IN_MISSING_FIX,
+		};
+	}
+	// Validate shape: every entry must look like a short or full SHA
+	// (7-40 lowercase hex). A non-SHA like "TBD" or "n/a" used to pass
+	// silently and was the root cause of the in-progress/backlog
+	// regression (agents wrote `shipped-in: [TBD]` and the proposal got
+	// stuck). Cheap shape-check stops that failure mode before the
+	// validator runs downstream.
+	const shapeOk = shas.every((value) =>
+		/^[0-9a-f]{7,40}$/.test(value.trim()),
+	);
+	if (!shapeOk) {
+		return {
+			ok: false,
+			code: 'missing-shipped-in',
+			reason: `${SHIPPED_IN_MISSING_REASON} Got non-SHA entries: [${shas.map((s) => JSON.stringify(s)).join(', ')}].`,
+			nextAction: SHIPPED_IN_MISSING_NEXT_ACTION,
+			fix: SHIPPED_IN_MISSING_FIX,
 		};
 	}
 	return { ok: true };
