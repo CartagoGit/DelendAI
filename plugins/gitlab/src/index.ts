@@ -77,7 +77,46 @@ export default definePlugin({
 				? { webUrl: parsed.data.webUrl }
 				: {}),
 			...(parsed.data.defaultProject !== undefined
-				? { defaultProject: parsed.data.defaultProject }
+				? {
+						defaultProject: {
+							...(parsed.data.defaultProject.projectId !==
+							undefined
+								? {
+										projectId:
+											parsed.data.defaultProject
+												.projectId,
+									}
+								: {}),
+							...(parsed.data.defaultProject.projectPath !==
+							undefined
+								? {
+										projectPath:
+											parsed.data.defaultProject
+												.projectPath,
+									}
+								: {}),
+							...(parsed.data.defaultProject.displayName !==
+							undefined
+								? {
+										displayName:
+											parsed.data.defaultProject
+												.displayName,
+									}
+								: {}),
+							...(parsed.data.defaultProject.webUrl !== undefined
+								? {
+										webUrl: parsed.data.defaultProject
+											.webUrl,
+									}
+								: {}),
+							...(parsed.data.defaultProject.apiUrl !== undefined
+								? {
+										apiUrl: parsed.data.defaultProject
+											.apiUrl,
+									}
+								: {}),
+						},
+					}
 				: {}),
 			...(parsed.data.timeoutMs !== undefined
 				? { timeoutMs: parsed.data.timeoutMs }
