@@ -2,7 +2,7 @@
 id: x00204
 title: "a00085: bind executeApi confirmation token to providerId and costTier"
 kind: fix
-status: in-progress
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-08-23
@@ -11,6 +11,9 @@ related:
   - a00085
 acceptance:
   - { command: bunx vitest run plugins/orchestrator-runner/tests/src/lib/invoke/token.spec.ts plugins/notification/tests/src/lib/notification.spec.ts packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts packages/client/tests/transport/mcp-stdio-client.spec.ts, expect: exit0 }
+last-transition-id: 68d65379-a2b3-4da7-8a04-5886791827b1
+last-correlation-id: 68d65379-a2b3-4da7-8a04-5886791827b1
+last-transition-from: review
 ---
 
 # x00204 — a00085: bind executeApi confirmation token + remaining BAD follow-ups

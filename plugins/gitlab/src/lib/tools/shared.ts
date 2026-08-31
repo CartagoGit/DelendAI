@@ -383,7 +383,7 @@ const normalizeVariable = (value: unknown): z.infer<typeof variableSchema> => {
 	};
 };
 
-const normalizeNote = (value: unknown): z.infer<typeof noteSchema> => {
+export const normalizeNote = (value: unknown): z.infer<typeof noteSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		id: raw.id as number | string,
@@ -397,7 +397,7 @@ const normalizeNote = (value: unknown): z.infer<typeof noteSchema> => {
 	};
 };
 
-const normalizeDiscussion = (
+export const normalizeDiscussion = (
 	value: unknown,
 ): z.infer<typeof discussionSchema> => {
 	const raw = value as Record<string, unknown>;
@@ -409,7 +409,7 @@ const normalizeDiscussion = (
 	};
 };
 
-const normalizeIssue = (value: unknown): z.infer<typeof issueSchema> => {
+export const normalizeIssue = (value: unknown): z.infer<typeof issueSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		id: raw.id as number | string,
@@ -521,7 +521,9 @@ const normalizeCommit = (value: unknown): z.infer<typeof commitSchema> => {
 	};
 };
 
-const normalizePipeline = (value: unknown): z.infer<typeof pipelineSchema> => {
+export const normalizePipeline = (
+	value: unknown,
+): z.infer<typeof pipelineSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		id: raw.id as number | string,
@@ -539,7 +541,7 @@ const normalizePipeline = (value: unknown): z.infer<typeof pipelineSchema> => {
 	};
 };
 
-const normalizeJob = (value: unknown): z.infer<typeof jobSchema> => {
+export const normalizeJob = (value: unknown): z.infer<typeof jobSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		id: raw.id as number | string,
@@ -570,7 +572,9 @@ const normalizeJob = (value: unknown): z.infer<typeof jobSchema> => {
 	};
 };
 
-const normalizeRelease = (value: unknown): z.infer<typeof releaseSchema> => {
+export const normalizeRelease = (
+	value: unknown,
+): z.infer<typeof releaseSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		tagName: toNonEmpty(raw.tag_name) ?? toNonEmpty(raw.tagName) ?? '',
@@ -590,7 +594,7 @@ const normalizeRelease = (value: unknown): z.infer<typeof releaseSchema> => {
 	};
 };
 
-const normalizeTag = (value: unknown): z.infer<typeof tagSchema> => {
+export const normalizeTag = (value: unknown): z.infer<typeof tagSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		name: toNonEmpty(raw.name) ?? '',
@@ -692,7 +696,7 @@ const normalizeArtifact = (value: unknown): z.infer<typeof artifactSchema> => {
 	};
 };
 
-const resolveProjectRef = (
+export const resolveProjectRef = (
 	context: IGitLabProviderContext,
 	projectId?: string | number,
 	projectPath?: string,
@@ -852,7 +856,7 @@ const buildPaginationOutput = (meta: unknown) => {
 			};
 };
 
-const buildMetaOutput = (meta: unknown) => {
+export const buildMetaOutput = (meta: unknown) => {
 	const raw = meta as {
 		status: number;
 		requestId: string | null;

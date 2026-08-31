@@ -20,3 +20,15 @@ export {
 } from '../i18n/shared';
 export type { ILangDict, ILangMeta, Lang, Theme } from '../i18n/shared';
 export { BRAND_HEX_BLUE, BRAND_HEX_PURPLE } from '../lib/brand';
+export {
+	allBrandCodes,
+	allFlagCodes,
+	BRAND_ICONS,
+	FLAGS,
+	FLAG_NAMES,
+	hasBrandIcon,
+	hasFlagIcon,
+	languageFlag,
+	renderBrandIcon,
+	renderFlagIcon,
+} from '../components/ui/brand-icons';

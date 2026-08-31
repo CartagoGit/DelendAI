@@ -12,3 +12,4 @@ export {
 	buildGitLabReleasesToolRegistrations,
 	buildGitLabToolRegistrations,
 } from './shared';
+export { buildGitLabWriteToolRegistrations } from './write-tools';

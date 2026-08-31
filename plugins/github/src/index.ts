@@ -3,7 +3,10 @@ import z from 'zod';
 
 import { createGitHubHttpClient } from './lib/client';
 import { resolveGitHubProviderContext } from './lib/config';
-import { buildGitHubToolRegistrations } from './lib/tools';
+import {
+	buildGitHubToolRegistrations,
+	buildGitHubWriteToolRegistrations,
+} from './lib/tools';
 import type { IGitHubPluginOptions } from './lib/config';
 
 const RepositorySchema = z
@@ -30,6 +33,7 @@ const OptionsSchema = z
 		timeoutMs: z.number().int().positive().max(120000).optional(),
 		maxRetries: z.number().int().min(0).max(5).optional(),
 		retryBaseDelayMs: z.number().int().min(0).max(60000).optional(),
+		allowWrite: z.boolean().optional(),
 	})
 	.strict();
 
@@ -106,11 +110,15 @@ export default definePlugin({
 			...(parsed.data.retryBaseDelayMs !== undefined
 				? { retryBaseDelayMs: parsed.data.retryBaseDelayMs }
 				: {}),
+			...(parsed.data.allowWrite !== undefined
+				? { allowWrite: parsed.data.allowWrite }
+				: {}),
 		} satisfies IGitHubPluginOptions;
 		const providerContext = resolveGitHubProviderContext({
 			env: process.env,
 			options: pluginOptions,
 		});
+		const allowWrite = parsed.data.allowWrite === true;
 		const client = createGitHubHttpClient(
 			{ context: providerContext },
 			{ fetchFn: fetch as typeof fetch },
@@ -123,7 +131,17 @@ export default definePlugin({
 				pluginCacheDir: ctx.pluginCacheDir,
 				context: providerContext,
 				client,
-			}),
+			}).concat(
+				allowWrite
+					? buildGitHubWriteToolRegistrations({
+							namespacePrefix: ctx.namespacePrefix,
+							context: providerContext,
+							mutationDeps: {
+								fetchFn: fetch as typeof fetch,
+							},
+						})
+					: [],
+			),
 			knowledge: [
 				{
 					id: 'github-provider-context',
@@ -136,6 +154,9 @@ export default definePlugin({
 						'Environment: GITHUB_TOKEN, plus optional GITHUB_API_URL for GitHub Enterprise Server.',
 						'Repository: pass a default repository as owner + repository when you want the plugin to have built-in context.',
 						'Read tools: context, repositories, issues, pull requests, commits, checks, workflows, jobs, artifacts, releases, tags and deployments.',
+						allowWrite
+							? 'Write tools: issue update/comment, workflow dispatches, release create/update/delete, and tag create/delete. Every mutation requires confirm:true.'
+							: 'Write tools are disabled by default. Opt in with {"plugins":{"github":{"options":{"allowWrite":true}}}}; every mutation still requires confirm:true.',
 						'',
 						'The HTTP client is injectable and hermetic for tests.',
 					].join('\n'),

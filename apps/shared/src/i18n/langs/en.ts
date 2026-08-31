@@ -554,6 +554,8 @@ const extension = {
 	'dashboard.tokens.topTools': 'Top tools by tokens',
 	'dashboard.plugins.tokenShareByPlugin': 'Token share by plugin',
 	'dashboard.plugins.rollup': 'Rollup',
+	'dashboard.plugins.rollupLead':
+		'Per-plugin tool count, calls, error rate, latency and token share.',
 	'dashboard.spend.totalCost': 'Total cost',
 	'dashboard.spend.tokensSaved': 'Tokens saved (real)',
 	'dashboard.spend.savings': 'Savings',
@@ -594,6 +596,9 @@ const extension = {
 	'dashboard.memory.durableNotes': '{count} durable note(s)',
 	// d-00018 — Status panel
 	tabStatus: 'Status',
+	tabHelp: 'Help',
+	'help.lead':
+		'A short tour of every dashboard panel so you can pick the right tab without guessing.',
 	'status.headline': 'Live state of the mcp-vertex MCP server',
 	'status.currentAction': 'Current activity',
 	'status.noCurrentAction': 'No MCP call is in flight right now.',

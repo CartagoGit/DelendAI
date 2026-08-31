@@ -35,6 +35,7 @@ export interface IGitHubPluginOptions {
 	readonly timeoutMs?: number;
 	readonly maxRetries?: number;
 	readonly retryBaseDelayMs?: number;
+	readonly allowWrite?: boolean;
 }
 
 export interface IGitHubConfigInput {

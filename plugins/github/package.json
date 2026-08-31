@@ -46,6 +46,7 @@
 	},
 	"dependencies": {
 		"@mcp-vertex/contracts": "workspace:*",
+		"@mcp-vertex/remote-provider-core": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

@@ -2,7 +2,7 @@
 id: f00251
 title: "Core agnostic error collector linked to logs + issues plugins"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: error-collection
 date: 2026-08-26
@@ -37,6 +37,9 @@ tests:
   unit: 224
   integration: 224
 coverage: "224/224 error-collection specs green; 28/28 spec files green; bun run validate exit non-zero on pre-existing client typecheck drift (f00193) and 16 unrelated vitest suites — none from f00251"
+last-transition-id: 1bb33a8d-bbb6-48e9-8d00-032b812d2f49
+last-correlation-id: 1bb33a8d-bbb6-48e9-8d00-032b812d2f49
+last-transition-from: review
 ---
 
 # f00251 — Core agnostic error collector linked to logs + issues plugins

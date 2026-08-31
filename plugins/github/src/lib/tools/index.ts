@@ -12,3 +12,4 @@ export {
 	buildGitHubToolRegistrations,
 	buildGitHubWorkflowsToolRegistrations,
 } from './catalog';
+export { buildGitHubWriteToolRegistrations } from './write-tools';

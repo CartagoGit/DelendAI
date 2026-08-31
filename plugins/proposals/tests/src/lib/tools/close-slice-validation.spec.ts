@@ -81,6 +81,30 @@ const writeProposal = (
 	return abs;
 };
 
+/**
+ * Resolve the on-disk path of a proposal by reading the registry
+ * index. `close_slice` calls `syncProposalRegistry`, which may move
+ * the file from `in-progress/` to `done/<kind>/` after writing the
+ * new status. The test must read from the live location, not the
+ * one it wrote.
+ */
+const readProposal = (
+	opts: IAuthoringToolOptions,
+	proposalId: string,
+	fallbackAbs: string,
+): string => {
+	const indexRaw = readFileSync(opts.indexPathAbs, 'utf8');
+	const index = JSON.parse(indexRaw) as {
+		proposals: Array<{ id: string; file: string }>;
+	};
+	const entry = index.proposals.find(
+		(p) => p.id === proposalId || p.id.startsWith(`${proposalId}-`),
+	);
+	return entry === undefined
+		? fallbackAbs
+		: join(opts.proposalsDirAbs, entry.file);
+};
+
 describe('sliceRequiresValidation (a00069 S5 pure helper)', () => {
 	it('skips gate: none / lint and empty blocks', () => {
 		expect(sliceRequiresValidation('- **Gate**: none\n')).toBe(false);
@@ -202,7 +226,7 @@ status: in-progress
 		expect(result.ok).toBe(false);
 		expect(result.blockerType).toBe('validate-required');
 		expect(result.error?.reason ?? '').toMatch(/validate evidence/i);
-		const body = readFileSync(abs, 'utf8');
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toContain('**Status**: pending');
 		expect(body).not.toMatch(/\*\*Status\*\*:\s*done/i);
 	});
@@ -223,7 +247,7 @@ status: in-progress
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
-		const body = readFileSync(abs, 'utf8');
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
@@ -243,7 +267,7 @@ status: in-progress
 		);
 		expect(result.ok).toBe(false);
 		expect(result.blockerType).toBe('validate-required');
-		const body = readFileSync(abs, 'utf8');
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toMatch(/\*\*Status\*\*:\s*pending/i);
 	});
 
@@ -272,7 +296,7 @@ status: in-progress
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
-		const body = readFileSync(abs, 'utf8');
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
@@ -288,7 +312,9 @@ status: in-progress
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
-		expect(readFileSync(abs, 'utf8')).toMatch(/\*\*Status\*\*:\s*done/i);
+		expect(readFileSync(readProposal(opts, 'f00001', abs), 'utf8')).toMatch(
+			/\*\*Status\*\*:\s*done/i,
+		);
 	});
 
 	it('closes with scoped validation metadata when the resolver permits it', async () => {
@@ -320,7 +346,9 @@ status: in-progress
 			resolvedScopes: ['proposals'],
 			snapshotId: 'snapshot-scoped',
 		});
-		expect(readFileSync(abs, 'utf8')).toMatch(/\*\*Status\*\*:\s*done/i);
+		expect(readFileSync(readProposal(opts, 'f00001', abs), 'utf8')).toMatch(
+			/\*\*Status\*\*:\s*done/i,
+		);
 	});
 
 	it('blocks close when activity cannot prove a safe validation mode', async () => {
@@ -352,7 +380,9 @@ status: in-progress
 			mode: 'blocked',
 			snapshotId: 'snapshot-blocked',
 		});
-		expect(readFileSync(abs, 'utf8')).toMatch(/\*\*Status\*\*:\s*pending/i);
+		expect(readFileSync(readProposal(opts, 'f00001', abs), 'utf8')).toMatch(
+			/\*\*Status\*\*:\s*pending/i,
+		);
 	});
 
 	it('passes resolved scopes to the quality probe', async () => {
