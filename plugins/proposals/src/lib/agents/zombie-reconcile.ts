@@ -108,7 +108,7 @@ export function classifyZombies(
 		}>;
 	},
 	now?: Date,
-	staleAfterMinutes = 10,
+	staleAfterMinutes = DEFAULT_STALE_AFTER_MINUTES,
 	/**
 	 * a00069 S6: TTL for non-adopted assignments (and how long a
 	 * `status: orphan` row may linger before force-release when last_seen
