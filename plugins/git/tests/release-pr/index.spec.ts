@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	ReleasePromotionGitError,
-	validateReleasePromotionGit,
-} from '../../src/lib/release-pr';
+import { validateReleasePromotionGit } from '../../src/lib/release-pr';
+import type { ReleasePromotionGitError } from '../../src/lib/release-pr';
 
 describe('release PR git contract', () => {
 	it('accepts a release branch with main as base and upstream', () => {

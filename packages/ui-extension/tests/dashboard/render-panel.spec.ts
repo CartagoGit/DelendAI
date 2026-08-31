@@ -295,6 +295,23 @@ describe('renderPanelAgents', async () => {
 		expect(html).toContain('implementation_runner');
 	});
 
+	it('normalises object-shaped current proposals to their id', async () => {
+		const html = renderPanelAgents(
+			{
+				agents: [
+					{
+						name: 'implementation_runner',
+						currentProposal: { id: 'f00001' },
+					},
+				],
+				totalActive: 1,
+			},
+			dictsByLang.en,
+		);
+		expect(html).toContain('data-proposal="f00001"');
+		expect(html).not.toContain('[object Object]');
+	});
+
 	it('shows the empty-state row when no agents', async () => {
 		const html = renderPanelAgents(
 			{ agents: [], totalActive: 0 },
