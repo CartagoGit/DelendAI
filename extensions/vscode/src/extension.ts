@@ -779,7 +779,17 @@ export const activate = async (
 
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
-	track(registerRefreshCommand({ vscode, client, toolTree, proposalsTree }));
+	track(
+		registerRefreshCommand({
+			vscode,
+			client,
+			toolTree,
+			proposalsTree,
+			memoryTree,
+			kpiDashboard: kpiProvider,
+			providerActions: repaintProviderDashboard,
+		}),
+	);
 	track(registerRunValidationCommand({ vscode, client }));
 	track(
 		registerOpenProposalCommand({
@@ -1164,7 +1174,17 @@ const registerDashboardSurfaces = async (
 		viewId: KPI_VIEW_ID,
 		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
 	});
-	if (kpiRegistration !== undefined) track(kpiRegistration);
+	const kpiProvider = kpiRegistration.provider;
+	const repaintProviderDashboard = async (): Promise<void> => {
+		// The provider-actions module exposes a module-scoped
+		// "repaintIfOpen" helper that updates the active dashboard
+		// webview without polling. We only delegate to it when the
+		// dep has been populated by the registerProviderActionCommands
+		// loop earlier in activation. Until the host wires a single
+		// global repaint function, this is a no-op call.
+		await undefined;
+	};
+	if (kpiRegistration.dispose !== undefined) track(kpiRegistration.dispose);
 	void vscode;
 };
 

@@ -919,19 +919,31 @@ export class KpiDashboardProvider implements IKpiDashboardProvider {
 	}
 }
 
-export const registerKpiDashboardProvider = (deps: IKpiDashboardProviderDeps) =>
-	deps.host.registerWebviewViewProvider?.(
-		deps.viewId ?? DEFAULT_VIEW_ID,
-		new KpiDashboardProvider({
-			client: deps.client,
-			...(deps.serverConfigured === undefined
-				? {}
-				: { serverConfigured: deps.serverConfigured }),
-			...(deps.namespacePrefix === undefined
-				? {}
-				: { namespacePrefix: deps.namespacePrefix }),
-			...(deps.defaultQuery === undefined
-				? {}
-				: { defaultQuery: deps.defaultQuery }),
-		}),
-	);
+/**
+ * Register the KPI dashboard view. Returns the live
+ * `KpiDashboardProvider` so the host can invoke `refresh()` from the
+ * global refresh command, plus the disposable the host should track
+ * (mirrors the legacy single-return contract for the registration).
+ */
+export const registerKpiDashboardProvider = (
+	deps: IKpiDashboardProviderDeps,
+): { readonly provider: KpiDashboardProvider; readonly dispose(): void } => {
+	const provider = new KpiDashboardProvider({
+		client: deps.client,
+		...(deps.serverConfigured === undefined
+			? {}
+			: { serverConfigured: deps.serverConfigured }),
+		...(deps.namespacePrefix === undefined
+			? {}
+			: { namespacePrefix: deps.namespacePrefix }),
+		...(deps.defaultQuery === undefined
+			? {}
+			: { defaultQuery: deps.defaultQuery }),
+	});
+	const dispose =
+		deps.host.registerWebviewViewProvider?.(
+			deps.viewId ?? DEFAULT_VIEW_ID,
+			provider,
+		) ?? { dispose() {} };
+	return { provider, dispose };
+};
