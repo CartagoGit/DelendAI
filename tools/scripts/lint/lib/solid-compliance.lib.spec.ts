@@ -129,3 +129,70 @@ describe('acceptance: re-introducing a known catch-swallow surfaces as exactly o
 		expect(one).toEqual([reintroduced]);
 	});
 });
+
+describe('line-insensitive budget matching', () => {
+	it('still baselines a finding whose line number drifted', () => {
+		// One baselined finding, now reported 40 lines lower because an
+		// unrelated import was added above it. Under exact-line matching
+		// this looked like a brand-new violation and failed the gate.
+		const { newFindings, baselinedCount } = partitionSolidFindings(
+			[
+				finding({
+					id: 'magic-number-in-plugin',
+					relPath: 'plugins/a/src/x.ts',
+					line: 140,
+				}),
+			],
+			{ entries: ['magic-number-in-plugin:plugins/a/src/x.ts:100'] },
+		);
+		expect(newFindings).toEqual([]);
+		expect(baselinedCount).toBe(1);
+	});
+
+	it('still fails when a file gains an extra finding of the same rule', () => {
+		const { newFindings } = partitionSolidFindings(
+			[
+				finding({
+					id: 'magic-number-in-plugin',
+					relPath: 'plugins/a/src/x.ts',
+					line: 10,
+				}),
+				finding({
+					id: 'magic-number-in-plugin',
+					relPath: 'plugins/a/src/x.ts',
+					line: 20,
+				}),
+			],
+			{ entries: ['magic-number-in-plugin:plugins/a/src/x.ts:100'] },
+		);
+		expect(newFindings).toHaveLength(1);
+	});
+
+	it('does not let one rule budget another rule in the same file', () => {
+		const { newFindings } = partitionSolidFindings(
+			[
+				finding({
+					id: 'catch-swallow',
+					relPath: 'plugins/a/src/x.ts',
+					line: 10,
+				}),
+			],
+			{ entries: ['magic-number-in-plugin:plugins/a/src/x.ts:10'] },
+		);
+		expect(newFindings).toHaveLength(1);
+	});
+
+	it('does not let one file budget another file', () => {
+		const { newFindings } = partitionSolidFindings(
+			[
+				finding({
+					id: 'catch-swallow',
+					relPath: 'plugins/b/src/y.ts',
+					line: 10,
+				}),
+			],
+			{ entries: ['catch-swallow:plugins/a/src/x.ts:10'] },
+		);
+		expect(newFindings).toHaveLength(1);
+	});
+});
