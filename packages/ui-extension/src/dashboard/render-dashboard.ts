@@ -192,15 +192,10 @@ export const renderDashboard = (
 		vars?: Readonly<Record<string, string | number>>,
 	) => extensionText(options.lang, key, vars);
 
-	const header = buildHeader(model);
+	const header = buildHeader(model, settings);
 	const kpiStrip = buildKpiStrip(model, options.lang);
 	const tabsBar = buildTabsBar(options.lang);
-	const panels = buildPanels(
-		model,
-		options.lang,
-		options.docsUrl,
-		options.settings,
-	);
+	const panels = buildPanels(model, options.lang, options.docsUrl, settings);
 	const footer = buildFooter(model, options, options.lang);
 
 	return `<!DOCTYPE html>
