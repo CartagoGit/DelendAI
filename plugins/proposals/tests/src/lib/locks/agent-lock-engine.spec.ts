@@ -225,6 +225,60 @@ describe('runAgentLockEngine — claim', async () => {
 });
 
 describe('runAgentLockEngine — release / status', async () => {
+	it('heartbeat refreshes a long-running claim without changing ownership', async () => {
+		await run(
+			{
+				action: 'claim',
+				task_id: 'task-A',
+				agent: 'agent-A',
+				files: ['src/a.ts'],
+			},
+			{ now: () => '2026-08-31T00:00:00.000Z' },
+		);
+		const before = readLockFile().in_flight[0];
+		const result = await run(
+			{
+				action: 'heartbeat',
+				task_id: 'task-A',
+				agent: 'agent-A',
+			},
+			{ now: () => '2026-08-31T00:05:00.000Z' },
+		);
+		const after = readLockFile().in_flight[0];
+
+		expect(body(result)).toMatchObject({
+			ok: true,
+			refreshed: true,
+			action: 'heartbeat',
+		});
+		expect(after?.ownership).toEqual(before?.ownership);
+		expect(after?.last_seen).toBe('2026-08-31T00:05:00.000Z');
+	});
+
+	it('heartbeat rejects a different agent and an unknown task', async () => {
+		await run({
+			action: 'claim',
+			task_id: 'task-A',
+			agent: 'agent-A',
+			files: ['src/a.ts'],
+		});
+		const mismatch = await run({
+			action: 'heartbeat',
+			task_id: 'task-A',
+			agent: 'agent-B',
+		});
+		const missing = await run({
+			action: 'heartbeat',
+			task_id: 'missing',
+			agent: 'agent-A',
+		});
+
+		expect(mismatch.isError).toBe(true);
+		expect(body(mismatch).blockerType).toBe('invalid-input');
+		expect(missing.isError).toBe(true);
+		expect(body(missing).blockerType).toBe('invalid-input');
+	});
+
 	it('release removes the task from the in-flight set', async () => {
 		await run({
 			action: 'claim',
