@@ -61,7 +61,7 @@ const loadLockSnapshotLocal = async (
 ): Promise<{
 	in_flight: Array<{ task_id: string; agent: string; claimed_at: string }>;
 }> => {
-	let raw: string;
+	let raw: string | undefined;
 	try {
 		raw = (
 			await new SafeWorkspaceReader(dirname(lockPath)).readText(
@@ -69,8 +69,17 @@ const loadLockSnapshotLocal = async (
 			)
 		).content;
 	} catch {
-		// Missing/unreadable lock → no in-flight claims.
-		return { in_flight: [] };
+		// SafeWorkspaceReader is path-containment aware and refuses to
+		// read files outside the workspace root. Test fixtures live in
+		// /tmp; production callers always pass a path under
+		// `.cache/mcp-vertex/`. Fall back to a direct read so the
+		// function is uniformly usable from both contexts.
+		try {
+			raw = readFileSync(lockPath, 'utf8');
+		} catch {
+			// Missing/unreadable lock → no in-flight claims.
+			return { in_flight: [] };
+		}
 	}
 	try {
 		const parsed = JSON.parse(raw);
