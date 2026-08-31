@@ -253,7 +253,7 @@ export interface IGitLabToolSuiteOptions {
 	readonly pluginTempDir: string;
 }
 
-type ToolResult<T> = ReturnType<typeof toolJson<T>>;
+type ToolResult = ReturnType<typeof toolJson>;
 
 const toText = (value: unknown): string =>
 	typeof value === 'string' ? value : '';
@@ -775,8 +775,7 @@ const requestArray = async (
 	};
 };
 
-const toolResponse = <T>(value: T): ReturnType<typeof toolJson<T>> =>
-	toolJson(value);
+const toolResponse = <T>(value: T): ToolResult => toolJson(value);
 
 const buildContextOutput = (options: IGitLabToolSuiteOptions) => ({
 	provider: options.context.provider,
