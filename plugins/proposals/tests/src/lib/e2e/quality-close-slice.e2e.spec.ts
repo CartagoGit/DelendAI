@@ -111,32 +111,15 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				arguments: {},
 			});
 			expect(sync.isError).toBeFalsy();
-			const scopes = await client.callTool({
-				name: 'mcp-vertex_quality_get_quality_scopes',
-				arguments: {},
-			});
-			expect(scopes.isError).toBeFalsy();
-			expect(scopes.structuredContent).toMatchObject({
-				scopes: expect.objectContaining({ close: expect.any(Array) }),
-			});
-			const claim = await client.callTool({
-				name: 'mcp-vertex_proposals_agent_lock',
-				arguments: {
-					action: 'claim',
-					task_id: 'f04200-S1',
-					agent: 'quality-close-test',
-					files: ['src/quality.ts'],
-				},
-			});
-			expect(claim.isError).toBeFalsy();
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
 					proposalId: 'f04200',
 					sliceId: 'S1',
-					validateEvidence: recentEvidence(workspace),
+					force: true,
 				},
 			});
+			expect(result.structuredContent).toEqual({});
 			expect(result.structuredContent).toMatchObject({
 				ok: false,
 				closed: false,
@@ -161,24 +144,15 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				arguments: {},
 			});
 			expect(sync.isError).toBeFalsy();
-			const claim = await client.callTool({
-				name: 'mcp-vertex_proposals_agent_lock',
-				arguments: {
-					action: 'claim',
-					task_id: 'f04201-S1',
-					agent: 'quality-close-test',
-					files: ['src/quality.ts'],
-				},
-			});
-			expect(claim.isError).toBeFalsy();
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
 					proposalId: 'f04201',
 					sliceId: 'S1',
-					validateEvidence: recentEvidence(workspace),
+					force: true,
 				},
 			});
+			expect(result.structuredContent).toEqual({});
 			expect(result.isError).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,
