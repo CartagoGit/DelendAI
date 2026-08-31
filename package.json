@@ -70,6 +70,7 @@
 		"lint:types-in-contracts": "bun tools/scripts/lint/types-in-contracts.script.ts",
 		"lint:no-node-imports-in-contracts": "bun tools/scripts/lint/no-node-imports-in-contracts.script.ts",
 		"lint:no-core-public-types-in-client": "bun tools/scripts/lint/no-core-public-types-in-client.script.ts",
+		"lint:release-pr-gate": "bun tools/scripts/lint/release-pr-gate.script.ts",
 		"lint:test-unsafe-casts": "bun tools/scripts/lint/test-unsafe-casts.script.ts",
 		"lint:type-naming": "bun tools/scripts/lint/type-naming.script.ts",
 		"lint:effect-boundaries": "bun tools/scripts/lint/effect-boundaries.script.ts",

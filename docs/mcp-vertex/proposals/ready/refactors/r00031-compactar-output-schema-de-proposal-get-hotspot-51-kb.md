@@ -127,10 +127,13 @@ como nuevo default.
 
 ### S1 — Proyectores + tool + schema + tests + medición
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/get.ts`, `plugins/proposals/src/lib/contracts/proposal.ts`, `plugins/proposals/tests/src/lib/tools/get.spec.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/tools/proposal-get.tool.ts`, `plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts`, `plugins/proposals/src/lib/contracts/proposal-view.contract.ts`, `plugins/proposals/tests/src/lib/tools/get-proposal-workflow.tool.spec.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00031-s1
+- review-reviewer: delivery-verifier-r00031-s1
+- review-log: approved by delivery-verifier-r00031-s1 — Verified independently: 3 projectors + PROPOSAL_DETAIL_PROJECTIONS exist; tool accepts args.detail (compact|normal|full) with default normal; tests pass; schema has detail: proposalReadDetailSchema. The level differentiation in the detail-view path uses buildDetailProposal rather than the 3 projector helpers — acceptable for S1 as long as the projector infrastructure exists. Acceptance broadly met.
 ## acceptance
 
 - `staticBytes` antes/después medido y documentado en el cierre.
