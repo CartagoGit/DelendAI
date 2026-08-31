@@ -106,10 +106,18 @@ export interface IProposalDetail {
 	readonly logs: readonly IProposalLogEvent[];
 	/** Full markdown plan content read from the proposal file, when available. */
 	readonly planMarkdown?: string;
-	/** Agents adopted on this proposal (filtered from `agent_names`). */
-	readonly agents?: readonly IProposalAgent[];
-	/** Computed progress + ETA. Always present (defaults to zeros). */
-	readonly progress?: IProposalProgress;
+	/**
+	 * Agents adopted on this proposal (filtered from `agent_names`).
+	 * Required: the snapshot layer always returns an array, possibly
+	 * empty, so the renderer does not need to handle `undefined`.
+	 */
+	readonly agents: readonly IProposalAgent[];
+	/**
+	 * Computed progress + ETA. Required: the snapshot layer always
+	 * returns a (possibly zero) projection so the renderer can render
+	 * the progress bar without defensive `?? {}` ladders.
+	 */
+	readonly progress: IProposalProgress;
 }
 
 export interface IProposalsSnapshotSourceOptions {
