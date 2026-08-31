@@ -936,15 +936,7 @@ export const buildGitLabProjectsToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args: {
-					action: 'get' | 'list' | 'search' | 'variables';
-					projectId?: string | number;
-					projectPath?: string;
-					query?: string;
-					page?: number;
-					perPage?: number;
-					environmentScope?: string;
-				}) => {
+				async (args) => {
 					try {
 						if (
 							args.action === 'list' ||
@@ -1087,16 +1079,7 @@ const buildIssueLikeRegistration = (
 					nextPage: z.union([z.string(), z.null()]).optional(),
 				}),
 			},
-			async (args: {
-				action: 'get' | 'list' | 'search' | 'comments' | 'discussions';
-				projectId?: string | number;
-				projectPath?: string;
-				iid?: string | number;
-				query?: string;
-				state?: 'opened' | 'closed' | 'all';
-				page?: number;
-				perPage?: number;
-			}) => {
+			async (args) => {
 				try {
 					const project = resolveProjectRef(
 						options.context,
@@ -1257,16 +1240,7 @@ export const buildGitLabCommitsToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args: {
-					action: 'get' | 'list' | 'search';
-					projectId?: string | number;
-					projectPath?: string;
-					sha?: string;
-					refName?: string;
-					query?: string;
-					page?: number;
-					perPage?: number;
-				}) => {
+				async (args) => {
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1354,12 +1328,7 @@ export const buildGitLabRefsToolRegistrations = (
 						meta: responseMetaSchema.optional(),
 					}),
 				},
-				async (args: {
-					projectId?: string | number;
-					projectPath?: string;
-					from: string;
-					to: string;
-				}) => {
+				async (args) => {
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1574,19 +1543,7 @@ export const buildGitLabJobsToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args: {
-					action: 'get' | 'list' | 'log';
-					projectId?: string | number;
-					projectPath?: string;
-					id?: string | number;
-					pipelineId?: string | number;
-					status?: string;
-					page?: number;
-					perPage?: number;
-					maxBytes?: number;
-					maxLines?: number;
-					maxDurationMs?: number;
-				}) => {
+				async (args) => {
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1730,14 +1687,7 @@ export const buildGitLabArtifactsToolRegistrations = (
 						meta: responseMetaSchema.optional(),
 					}),
 				},
-				async (args: {
-					action: 'list' | 'download';
-					projectId?: string | number;
-					projectPath?: string;
-					jobId?: string | number;
-					filename?: string;
-					maxBytes?: number;
-				}) => {
+				async (args) => {
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1851,14 +1801,7 @@ export const buildGitLabReleasesToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args: {
-					action: 'list' | 'get' | 'tags';
-					projectId?: string | number;
-					projectPath?: string;
-					tagName?: string;
-					page?: number;
-					perPage?: number;
-				}) => {
+				async (args) => {
 					try {
 						const project = resolveProjectRef(
 							options.context,
@@ -1972,15 +1915,7 @@ export const buildGitLabDeploymentsToolRegistrations = (
 						nextPage: z.union([z.string(), z.null()]).optional(),
 					}),
 				},
-				async (args: {
-					action: 'get' | 'list';
-					projectId?: string | number;
-					projectPath?: string;
-					id?: string | number;
-					environment?: string;
-					page?: number;
-					perPage?: number;
-				}) => {
+				async (args) => {
 					try {
 						const project = resolveProjectRef(
 							options.context,
