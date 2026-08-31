@@ -7,6 +7,15 @@ export { default } from '../index';
 
 export { registerProposalsStableTools } from '../lib/api/proposals-stable-tools';
 
+// Stable adaptive-facade contract pins. R13 closed the `./lib/*`
+// wildcard exports, so cross-plugin consumers must import these
+// through the public barrel instead of deep `lib/` paths.
+export {
+	PROPOSALS_STABLE_TOOL_SURFACE,
+	PROPOSAL_ADAPTIVE_FACADE_INTENTS,
+	listProposalAdaptiveFacadePaths,
+} from '../lib/api/proposals-stable-tools';
+
 export {
 	DEFAULT_PATH_LAYOUT,
 	buildSwarmPaths,
