@@ -460,6 +460,14 @@ describe('KpiDashboardProvider', () => {
 			{
 				client: {
 					async request(_tool, args) {
+						if (
+							_tool === 'mcp-vertex_tool_search' ||
+							(args as { view?: string }).view === undefined
+						) {
+							return {
+								entries: [{ pluginId: 'project-kpis' }],
+							};
+						}
 						calls.push(String((args as { view: string }).view));
 						return fixtures[(args as { view: string }).view]!;
 					},
@@ -520,6 +528,9 @@ describe('KpiDashboardProvider', () => {
 						view: string;
 						windowDays: number;
 					};
+					if (request.view === undefined) {
+						return { entries: [{ pluginId: 'project-kpis' }] };
+					}
 					calls.push({
 						view: request.view,
 						windowDays: request.windowDays,
@@ -556,7 +567,10 @@ describe('KpiDashboardProvider', () => {
 	it('surfaces a disconnected state when every KPI view fails at the transport layer', async () => {
 		const provider = new KpiDashboardProvider({
 			client: {
-				async request() {
+				async request(_tool, args) {
+					if ((args as { view?: string }).view === undefined) {
+						return { entries: [{ pluginId: 'project-kpis' }] };
+					}
 					throw new Error(
 						'Failed to call MCP tool "mcp-vertex_project_kpis": connection closed',
 					);

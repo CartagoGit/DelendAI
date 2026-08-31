@@ -107,7 +107,7 @@ describe('usage-tracking tools/list served bytes', () => {
 				join(workspace, 'results/usage-tracking', relativePath),
 			pluginDocsDir: 'docs/mcp-vertex/usage-tracking',
 			namespacePrefix: 'mcp-vertex_usage-tracking',
-			options: { maxBatch: 1, maxDelayMs: 1 },
+			options: { maxBatch: 1, maxDelayMs: 10 },
 			args: {},
 		} as Parameters<typeof usageTrackingPlugin.register>[0]);
 		expect(
@@ -125,20 +125,26 @@ describe('usage-tracking tools/list served bytes', () => {
 				>;
 			}
 		)._requestHandlers;
-		const listTools = requestHandlers?.get('tools/list');
-		expect(listTools).toBeDefined();
+		const listTools = (
+			request: unknown,
+			extra: { sessionId?: string },
+		): Promise<{ tools: unknown[] }> | undefined =>
+			requestHandlers?.get('tools/list')?.(request, extra);
 
-		const initial = await listTools?.(
+		// The observer is installed when the plugin's own tool is
+		// registered, so the first observable snapshot already
+		// includes alpha + usage_report.
+		await registrations.tools?.[0]?.register(server);
+		const initial = await listTools(
 			{ method: 'tools/list', params: {} },
 			{ sessionId: 'session-1' },
 		);
-		expect(initial?.tools).toHaveLength(1);
+		expect(initial?.tools).toHaveLength(2);
 
-		await registrations.tools?.[0]?.register(server);
 		server.registerTool('beta', { description: 'beta tool' }, async () => ({
 			content: [{ type: 'text', text: 'beta' }],
 		}));
-		const afterRegister = await listTools?.(
+		const afterRegister = await listTools(
 			{ method: 'tools/list', params: {} },
 			{ sessionId: 'session-1' },
 		);
