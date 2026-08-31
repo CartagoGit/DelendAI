@@ -23,6 +23,8 @@ export interface IZombieReconcileReport {
 	readonly orphans: readonly IZombieOrphanEntry[];
 	readonly threshold: IZombieThreshold;
 	readonly recommendation: string;
+	/** R-2026-08-31: count of stale locks released during this reconcile. */
+	readonly releasedLockCount?: number;
 }
 
 export type IZombieThreshold = 'green' | 'yellow' | 'red';
