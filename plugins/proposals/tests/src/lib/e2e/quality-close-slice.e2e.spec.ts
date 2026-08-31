@@ -101,6 +101,13 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				},
 			});
 			expect(claim.isError).toBeFalsy();
+			const quality = await client.callTool({
+				name: 'mcp-vertex_quality_quality_run_all',
+				arguments: {},
+			});
+			expect(quality.structuredContent).toMatchObject({
+				summary: { ok: false },
+			});
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
@@ -109,7 +116,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
-			throw new Error(JSON.stringify(result.structuredContent));
 			expect(result.structuredContent).toMatchObject({
 				ok: false,
 				closed: false,
@@ -144,6 +150,14 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				},
 			});
 			expect(claim.isError).toBeFalsy();
+			const quality = await client.callTool({
+				name: 'mcp-vertex_quality_quality_run_all',
+				arguments: {},
+			});
+			expect(quality.isError).toBeFalsy();
+			expect(quality.structuredContent).toMatchObject({
+				summary: { ok: true },
+			});
 			const result = await client.callTool({
 				name: 'mcp-vertex_proposals_close_slice',
 				arguments: {
@@ -152,7 +166,6 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
-			throw new Error(JSON.stringify(result.structuredContent));
 			expect(result.isError).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,
