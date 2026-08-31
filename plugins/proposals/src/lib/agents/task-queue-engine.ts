@@ -759,10 +759,14 @@ export async function runTaskQueueAction(
 	}
 
 	if (action.action === 'release-session') {
-		return (await releaseSessionSubscriptions(
+		const released = await releaseSessionSubscriptions(
 			paths,
 			resolveCallerSession(),
-		)) as ITaskQueueResult;
+		);
+		return {
+			status: 'released-session',
+			releasedTaskIds: released.releasedTaskIds,
+		} as unknown as ITaskQueueResult;
 	}
 
 	if (action.action === 'report') {
