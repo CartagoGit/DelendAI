@@ -376,6 +376,8 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'show',
 				'worktree',
 				'changelog',
+				'commit',
+				'push',
 				'pr_list',
 				'pr_view',
 			],
