@@ -27,6 +27,7 @@ _(none)_
 ## Tests
 
 - plugins/remote-provider-core/tests/http-client.spec.ts
+- plugins/remote-provider-core/tests/mutations.spec.ts
 - plugins/remote-provider-core/tests/security.spec.ts
 
 ## Do not
