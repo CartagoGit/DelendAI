@@ -146,10 +146,13 @@ Un símbolo pertenece a `@mcp-vertex/contracts` sí y solo sí:
 
 ### S1 — Crear `@mcp-vertex/contracts` con tipos puros iniciales
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/contracts/package.json`, `packages/contracts/tsconfig.json`, `packages/contracts/src/index.ts`, `packages/contracts/src/{plugin,capabilities,envelopes,safety,routes,primitives}.ts`, `packages/contracts/tests/src/no-node-imports.spec.ts`, `tools/scripts/lint/no-node-imports-in-contracts.script.ts`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00029-s1
+- review-reviewer: delivery-verifier-r00029-s1
+- review-log: approved by delivery-verifier-r00029-s1 — Verified independently: r00029 S1 acceptance covered. (1) packages/contracts/ exists with package.json + tsconfig + 6 subpath source files (primitives, capabilities, envelopes, safety, plugin, routes) + barrel index.ts. (2) Lint passes (0 violations). (3) Build emits dist. (4) Spec passes. (5) Package has no @mcp-vertex/core dependency (forbidden by lint). (6) typecheck green.
 ## acceptance
 
 - `packages/contracts/` es un paquete publicable (su `package.json`
