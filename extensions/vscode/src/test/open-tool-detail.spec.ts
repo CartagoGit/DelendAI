@@ -78,7 +78,7 @@ const createClient = () =>
 
 describe('mcp-vertex.openToolDetail', () => {
 	it('renders schemas and metrics for a selected tool', async () => {
-		const html = await buildToolDetailHtml(
+		const { html, model } = await buildToolDetailHtml(
 			{ client: createClient() },
 			'mcp-vertex_proposals_proposal_board',
 		);
@@ -88,6 +88,7 @@ describe('mcp-vertex.openToolDetail', () => {
 		expect(html).toContain('Output schema');
 		expect(html).toContain('2 calls, 0 errors, max 20ms');
 		expect(html).toContain('proposals');
+		expect(model.tool.name).toBe('mcp-vertex_proposals_proposal_board');
 	});
 
 	it('registers the command and opens a webview panel', async () => {
