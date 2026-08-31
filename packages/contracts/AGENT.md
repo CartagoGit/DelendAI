@@ -1,10 +1,6 @@
 # AGENT.md — package `packages/contracts`
 
-> Below the `<!-- mcp-vertex:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- mcp-vertex:begin agent-md -->
+> Below the `<!-- mcp-vertex:begin agent-md -->
 ## Purpose
 
 - Pure-TypeScript type-only contracts shared across the mcp-vertex ecosystem. NO Node imports, NO @mcp-vertex/core dependency. Plugins and external consumers can depend on this package without dragging in the runtime weight of `@mcp-vertex/core`.
