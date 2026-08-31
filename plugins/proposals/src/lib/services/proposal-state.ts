@@ -102,9 +102,17 @@ export const guardShippedInPresent = (
 			trimmed.startsWith('[') && trimmed.endsWith(']')
 				? trimmed.slice(1, -1)
 				: trimmed;
-		for (const token of inner.split(/[\s,]+/u)) {
-			const t = token.replace(/^[-\s]+/u, '').trim();
-			if (t.length > 0) candidates.push(t);
+		// If the bracket-stripped string is itself a valid 7-40 hex SHA,
+		// keep it as a single candidate (e.g. `[ship123]` is one SHA,
+		// not three tokens to split). Otherwise split on whitespace /
+		// commas to extract every individual SHA.
+		if (/^[0-9a-f]{7,40}$/.test(inner)) {
+			candidates.push(inner);
+		} else {
+			for (const token of inner.split(/[\s,]+/u)) {
+				const t = token.replace(/^[-\s]+/u, '').trim();
+				if (t.length > 0) candidates.push(t);
+			}
 		}
 	} else if (raw !== undefined && raw !== null) {
 		// Any non-string/non-array value (number, boolean, object) is
