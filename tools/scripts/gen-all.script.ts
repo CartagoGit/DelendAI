@@ -34,6 +34,15 @@ export interface IStep {
 
 export const STEPS: readonly IStep[] = [
 	{
+		name: 'proposal-index',
+		cmd: [
+			'bun',
+			'tools/scripts/proposals/sync-proposal-registry.script.ts',
+		],
+		description:
+			'Regenerate the ignored proposal index used by the catalog.',
+	},
+	{
 		name: 'agent-catalog',
 		cmd: ['bun', 'tools/scripts/catalog/generate-agent-catalog.script.ts'],
 		description: 'Regenerate the checked-in agent catalog.',

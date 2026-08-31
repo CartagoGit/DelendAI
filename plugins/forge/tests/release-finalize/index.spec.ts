@@ -119,7 +119,8 @@ describe('release finalize', () => {
 	it('uses the branch field as headBranch fallback', async () => {
 		const basePr = pr('MERGED');
 		const { headBranch: _ignored, ...prShape } = basePr;
-		const finalPrShape: IForgePullRequestDetail = prShape as IForgePullRequestDetail;
+		const finalPrShape: IForgePullRequestDetail =
+			prShape as IForgePullRequestDetail;
 		const receipt = await finalizeRelease(
 			async () => finalPrShape,
 			candidate,
@@ -133,18 +134,14 @@ describe('release finalize', () => {
 			'7',
 		);
 		expect(receipt.operation).toBe('finalize');
-		expect(receipt.details?.['pullRequest']).toBe('7');
+		expect(receipt.details?.pullRequest).toBe('7');
 	});
 
 	// MUY-ALTA #9: SHAs undefined when the PR detail lacks
 	// `mergeCommitSha`/`headSha` raises a specific error.
 	it('rejects finalize when forge omits mergeCommitSha', async () => {
 		const basePr = pr('MERGED');
-		const {
-			headSha: _h,
-			mergeCommitSha: _m,
-			...prShapeRest
-		} = basePr;
+		const { headSha: _h, mergeCommitSha: _m, ...prShapeRest } = basePr;
 		const finalPrShape: IForgePullRequestDetail =
 			prShapeRest as IForgePullRequestDetail;
 		await expect(
@@ -180,6 +177,8 @@ describe('release finalize', () => {
 				'agent',
 				'7',
 			),
-		).rejects.toThrow('release PR must target main from the candidate branch');
+		).rejects.toThrow(
+			'release PR must target main from the candidate branch',
+		);
 	});
 });

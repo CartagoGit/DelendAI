@@ -264,7 +264,12 @@ describe('createRelease', () => {
 		};
 		const result = await createRelease(
 			'/repo',
-			{ tag: 'v1.0.0', notes: 'a', notesFile: 'CHANGELOG.md', confirm: true },
+			{
+				tag: 'v1.0.0',
+				notes: 'a',
+				notesFile: 'CHANGELOG.md',
+				confirm: true,
+			},
 			exec,
 		);
 		expect(result.ok).toBe(false);
@@ -305,8 +310,7 @@ describe('createRelease', () => {
 				ok: true,
 				code: 0,
 				stdout: '',
-				stderr:
-					'{"url":"https://example/r","id":"9","name":"v1.0.0","tagName":"v1.0.0","isDraft":false,"isPrerelease":false}',
+				stderr: '{"url":"https://example/r","id":"9","name":"v1.0.0","tagName":"v1.0.0","isDraft":false,"isPrerelease":false}',
 				timedOut: false,
 				unavailable: false,
 			};

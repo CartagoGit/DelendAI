@@ -197,11 +197,11 @@ describe('release PR forge contract', () => {
 	});
 
 	// MUY-ALTA #3: documents that the `wrong-base` branch is dead code, because
-// `assertReleaseMetadata` runs the SHA regex (`/^[0-9a-f]{7,64}$/i`) before
-// release-pr checks `baseMainSha.trim() === ''`. A whitespace-only SHA fails
-// `invalid-metadata` first. This test pins that ordering as the observable
-// contract — and documents the latent redundancy so a future refactor that
-// removes `assertReleaseMetadata` cannot silently change the verdict.
+	// `assertReleaseMetadata` runs the SHA regex (`/^[0-9a-f]{7,64}$/i`) before
+	// release-pr checks `baseMainSha.trim() === ''`. A whitespace-only SHA fails
+	// `invalid-metadata` first. This test pins that ordering as the observable
+	// contract — and documents the latent redundancy so a future refactor that
+	// removes `assertReleaseMetadata` cannot silently change the verdict.
 	it('treats a whitespace-only baseMainSha as invalid-metadata (SHA regex gate first)', async () => {
 		const { provider } = makeProvider();
 		await expect(

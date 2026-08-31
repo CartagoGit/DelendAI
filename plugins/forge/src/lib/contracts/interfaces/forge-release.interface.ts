@@ -20,6 +20,7 @@ export interface IForgeReleaseSuccess {
 	readonly url: string;
 	readonly id: string;
 	readonly name: string;
+	readonly title?: string | undefined;
 	readonly tag: string;
 	readonly draft: boolean;
 	readonly prerelease: boolean;
