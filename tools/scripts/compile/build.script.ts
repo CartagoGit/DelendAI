@@ -132,11 +132,15 @@ const buildPackage = (rel: string): void => {
 		name?: string;
 		version?: string;
 		bin?: unknown;
+		dependencies?: Record<string, string>;
+		peerDependencies?: Record<string, string>;
 	} = existsSync(pkgJsonPath)
 		? (JSON.parse(readFileSync(pkgJsonPath, 'utf8')) as {
 				name?: string;
 				version?: string;
 				bin?: unknown;
+				dependencies?: Record<string, string>;
+				peerDependencies?: Record<string, string>;
 			})
 		: {};
 	if (!pkgMeta.version) {
@@ -222,40 +226,59 @@ const buildPackage = (rel: string): void => {
 	const dtsTempDir = createDtsTempDir();
 	const dtsConfig = join(dtsTempDir, 'tsconfig.json');
 	// Cross-package `@mcp-vertex/*` types resolve to each dependency's BUILT
-	// `dist/*.d.ts` (declaration inputs — not pulled into this package's
-	// program, so no `rootDir` violation). Build order guarantees the
-	// dependency's dist exists: rank 0 first (core), then rank 1 (other
-	// packages), then rank 2 (plugins) in alphabetical order.
-	const builtDepPaths = (pkg: string): Record<string, string[]> => ({
-		[`@mcp-vertex/${pkg}`]: [
-			join(ROOT, `build/packages/${pkg}/${pkgMeta.version}/index.d.ts`),
-		],
-		[`@mcp-vertex/${pkg}/public`]: [
-			join(
-				ROOT,
-				`build/packages/${pkg}/${pkgMeta.version}/public/index.d.ts`,
-			),
-		],
-		// Deep imports (e.g. apps/shared → @mcp-vertex/client/lib/contracts/…)
-		// resolve file-by-file against the built declarations.
-		[`@mcp-vertex/${pkg}/lib/*`]: [
-			join(ROOT, `build/packages/${pkg}/${pkgMeta.version}/lib/*`),
-		],
-	});
-	const builtPluginPaths = (plugin: string): Record<string, string[]> => ({
-		[`@mcp-vertex/${plugin}`]: [
-			join(ROOT, `build/plugins/${plugin}/${pkgMeta.version}/index.d.ts`),
-		],
-		[`@mcp-vertex/${plugin}/public`]: [
-			join(
-				ROOT,
-				`build/plugins/${plugin}/${pkgMeta.version}/public/index.d.ts`,
-			),
-		],
-		[`@mcp-vertex/${plugin}/lib/*`]: [
-			join(ROOT, `build/plugins/${plugin}/${pkgMeta.version}/lib/*`),
-		],
-	});
+	// declaration tree (declaration inputs — not pulled into this package's
+	// program, so no `rootDir` violation). Each dependency can have a
+	// different version, so read its own package.json instead of reusing the
+	// current package's version.
+	const dependencyVersion = (group: string, name: string): string => {
+		const dependencyPackageJson = join(ROOT, group, name, 'package.json');
+		const dependencyMeta = JSON.parse(
+			readFileSync(dependencyPackageJson, 'utf8'),
+		) as { version?: unknown };
+		if (typeof dependencyMeta.version !== 'string') {
+			throw new BuildError(
+				`build: ${dependencyPackageJson} does not declare a string version`,
+				1,
+			);
+		}
+		return dependencyMeta.version;
+	};
+	const builtDepPaths = (pkg: string): Record<string, string[]> => {
+		const version = dependencyVersion('packages', pkg);
+		return {
+			[`@mcp-vertex/${pkg}`]: [
+				join(ROOT, `build/packages/${pkg}/${version}/index.d.ts`),
+			],
+			[`@mcp-vertex/${pkg}/public`]: [
+				join(
+					ROOT,
+					`build/packages/${pkg}/${version}/public/index.d.ts`,
+				),
+			],
+			// Deep imports (e.g. apps/shared → @mcp-vertex/client/lib/contracts/…)
+			// resolve file-by-file against the built declarations.
+			[`@mcp-vertex/${pkg}/lib/*`]: [
+				join(ROOT, `build/packages/${pkg}/${version}/lib/*`),
+			],
+		};
+	};
+	const builtPluginPaths = (plugin: string): Record<string, string[]> => {
+		const version = dependencyVersion('plugins', plugin);
+		return {
+			[`@mcp-vertex/${plugin}`]: [
+				join(ROOT, `build/plugins/${plugin}/${version}/index.d.ts`),
+			],
+			[`@mcp-vertex/${plugin}/public`]: [
+				join(
+					ROOT,
+					`build/plugins/${plugin}/${version}/public/index.d.ts`,
+				),
+			],
+			[`@mcp-vertex/${plugin}/lib/*`]: [
+				join(ROOT, `build/plugins/${plugin}/${version}/lib/*`),
+			],
+		};
+	};
 	// Introspect package.json so plugin-to-plugin deep imports (e.g.
 	// auto-plugin-selector → auto-agent-selector/lib/ranking/*) resolve to
 	// the BUILT .d.ts files of the dependency plugin. Build order guarantees
@@ -263,12 +286,8 @@ const buildPackage = (rel: string): void => {
 	// rank 2 (plugins), so e.g. `auto-agent-selector` builds before
 	// `auto-plugin-selector`.
 	const mcpDeps = new Set<string>();
-	const depPkgMeta = pkgMeta as unknown as {
-		dependencies?: Record<string, string>;
-		peerDependencies?: Record<string, string>;
-	};
 	for (const section of ['dependencies', 'peerDependencies'] as const) {
-		const map = depPkgMeta[section] ?? {};
+		const map = pkgMeta[section] ?? {};
 		for (const dep of Object.keys(map)) {
 			if (dep.startsWith('@mcp-vertex/')) {
 				mcpDeps.add(dep.replace(/^@mcp-vertex\//, ''));
