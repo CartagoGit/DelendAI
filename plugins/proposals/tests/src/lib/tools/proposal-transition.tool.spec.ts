@@ -287,7 +287,7 @@ describe('proposal_transition', async () => {
 					id,
 					kind,
 					status: 'review',
-					'shipped-in': '[ship123]',
+					'shipped-in': '[30551533]',
 				});
 				const result = await runProposalTransition(
 					{
@@ -315,7 +315,7 @@ describe('proposal_transition', async () => {
 			await writeProposal(root, 'review', 'f70001-no-kind.md', {
 				id: 'f70001',
 				status: 'review',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -339,7 +339,7 @@ describe('proposal_transition', async () => {
 				id: 'l70002',
 				kind: 'legacy',
 				status: 'review',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -437,7 +437,7 @@ describe('proposal_transition', async () => {
 				id: 'f90001',
 				status: 'ready',
 				kind: 'feat',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{ id: 'f90001', to: 'done', reason: 'shortcut' },
@@ -461,7 +461,7 @@ describe('proposal_transition', async () => {
 				'id: f90002',
 				'kind: feat',
 				'status: review',
-				'shipped-in: [ship123]',
+				'shipped-in: [30551533]',
 				'---',
 				'',
 				'## Slices',
@@ -534,7 +534,7 @@ describe('proposal_transition', async () => {
 				id: 'f90003',
 				status: 'review',
 				kind: 'feat',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -636,7 +636,7 @@ describe('proposal_transition', async () => {
 			await writeProposal(root, 'ready', 'f91005-close.md', {
 				id: 'f91005',
 				status: 'ready',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{ id: 'f91005', to: 'done', reason: 'retro close' },
@@ -654,7 +654,7 @@ describe('proposal_transition', async () => {
 			await writeProposal(root, 'ready', 'f91006-close.md', {
 				id: 'f91006',
 				status: 'ready',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -701,7 +701,7 @@ describe('proposal_transition', async () => {
 				id: 'a00067',
 				status: 'ready',
 				kind: 'audit',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -762,7 +762,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			id: 'f00970',
 			status: 'review',
 			type: 'feat',
-			'shipped-in': '[ship123]',
+			'shipped-in': '[30551533]',
 		});
 		const result = await runProposalTransition(
 			{
@@ -788,7 +788,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 				id: 'f00971',
 				status: 'review',
 				type: 'feat',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			},
 			[
 				'## Slices',
@@ -995,7 +995,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 				id: 'f00974',
 				status: 'review',
 				type: 'feat',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			},
 			[
 				'## Slices',
@@ -1048,7 +1048,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			id: 'f00972',
 			status: 'review',
 			type: 'feat',
-			'shipped-in': '[ship123]',
+			'shipped-in': '[30551533]',
 		});
 		const result = await runProposalTransition(
 			{ id: 'f00972', to: 'done', reason: 'emergency', force: true },
@@ -1065,7 +1065,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			id: 'f00973',
 			status: 'review',
 			type: 'feat',
-			'shipped-in': '[ship123]',
+			'shipped-in': '[30551533]',
 		});
 		const result = await runProposalTransition(
 			{
