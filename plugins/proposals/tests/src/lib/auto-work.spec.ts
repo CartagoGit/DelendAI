@@ -156,7 +156,60 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.claimReady).toBeUndefined();
 	});
 
-	it('does not re-claim a pending slice whose declared artifacts are already tracked', async () => {
+	it('keeps a pending slice claimable when its declared artifacts are tracked but clean', async () => {
+		options = { ...options, workspaceRoot: root };
+		execFileSync('git', ['-C', root, 'init'], { stdio: 'ignore' });
+		execFileSync('git', [
+			'-C',
+			root,
+			'config',
+			'user.email',
+			'test@example.com',
+		]);
+		execFileSync('git', ['-C', root, 'config', 'user.name', 'Test User']);
+		mkdirSync(join(root, 'src'), { recursive: true });
+		writeFileSync(
+			join(root, 'src', 'implemented.ts'),
+			'export const done = true;\n',
+		);
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p3-x', file: 'p3.md', status: 'pending' }],
+			}),
+		);
+		writeFileSync(
+			join(root, 'p3.md'),
+			`# p3-x
+
+## Slices
+
+### S1 — already implemented
+- **Files**: \`src/implemented.ts\`
+- **Gate**: type
+- **Status**: pending
+`,
+		);
+		execFileSync('git', ['-C', root, 'add', 'src/implemented.ts'], {
+			stdio: 'ignore',
+		});
+		execFileSync(
+			'git',
+			['-C', root, 'commit', '-m', 'test: seed artifact'],
+			{
+				stdio: 'ignore',
+			},
+		);
+
+		const out = parse(await runAutoWork(options));
+		expect(out.claimReady).toMatchObject({
+			sliceId: 'S1',
+			files: ['src/implemented.ts'],
+		});
+		expect(out.reason).toBeUndefined();
+	});
+
+	it('does not re-claim a pending slice whose declared artifacts have local changes', async () => {
 		options = { ...options, workspaceRoot: root };
 		execFileSync('git', ['-C', root, 'init'], { stdio: 'ignore' });
 		mkdirSync(join(root, 'src'), { recursive: true });
