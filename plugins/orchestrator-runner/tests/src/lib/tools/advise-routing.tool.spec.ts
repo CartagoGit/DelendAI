@@ -19,6 +19,18 @@ import { buildAdviseRoutingRegistration } from '../../../../src/lib/tools/advise
 import type { SessionStore } from '../../../../src/lib/router/session';
 import type { HealthStore } from '../../../../src/lib/healthcheck/store';
 
+interface IHandlerResult {
+	readonly structuredContent?: Record<string, unknown>;
+	readonly isError?: boolean;
+	readonly content?: ReadonlyArray<{ type: string; text?: string }>;
+}
+
+type ToolHandler = (args: {
+	taskDescription: string;
+	detail?: 'compact' | 'normal' | 'full';
+	sessionId?: string;
+}) => Promise<IHandlerResult>;
+
 const jsonSchemaBytesOf = (schema: unknown): number => {
 	const candidate = schema as { toJSONSchema?: () => unknown };
 	const json =
@@ -28,24 +40,143 @@ const jsonSchemaBytesOf = (schema: unknown): number => {
 	return Buffer.byteLength(JSON.stringify(json), 'utf8');
 };
 
+const provider = (
+	id: string,
+	costTier: 1 | 2 | 3 | 4 | 5,
+	strengths: string[],
+) => ({
+	id,
+	kind: 'cli' as const,
+	invoke: { kind: 'cli' as const, command: `run-${id}` },
+	modelId: `${id}-model`,
+	contextWindow: 128_000,
+	costTier,
+	strengths,
+	weaknesses: [],
+});
+
+const capture = async (): Promise<{
+	readonly outputSchema: unknown;
+	readonly handler: ToolHandler;
+}> => {
+	let outputSchema: unknown;
+	let handler: ToolHandler | undefined;
+	const server = createFakeToolServer({
+		onRegisterTool: (call) => {
+			outputSchema = (call.config as { outputSchema?: unknown })
+				.outputSchema;
+			handler = call.handler as ToolHandler;
+		},
+	});
+	const registration = buildAdviseRoutingRegistration({
+		namespacePrefix: 'mcp',
+		providers: [
+			provider('fast', 1, ['coding']),
+			provider('steady', 2, ['coding']),
+			provider('deep', 4, ['analysis']),
+		],
+		health: fakePartial<HealthStore>({
+			get: () => ({ state: 'available' }),
+		}),
+		sessions: fakePartial<SessionStore>({
+			get: () => undefined,
+			set: () => {},
+		}),
+		defaultCostPreference: 'balanced',
+		loopDetector: {
+			isAgentStuck: () => ({
+				handoffPath: 'format_handoff',
+				suggestedAction: 'handoff now',
+			}),
+		},
+	});
+	await registration.register(server);
+	if (handler === undefined) throw new Error('handler was not registered');
+	return { outputSchema, handler };
+};
+
 describe('advise_routing tool', () => {
 	it('declares a compact outputSchema, not the full AdviseRoutingOutputSchema shape', async () => {
-		let outputSchema: unknown;
-		const server = createFakeToolServer({
-			onRegisterTool: (call) => {
-				outputSchema = (call.config as { outputSchema?: unknown })
-					.outputSchema;
-			},
-		});
-		const registration = buildAdviseRoutingRegistration({
-			namespacePrefix: 'mcp',
-			providers: [],
-			health: fakePartial<HealthStore>({}),
-			sessions: fakePartial<SessionStore>({}),
-			defaultCostPreference: 'balanced',
-		});
-		await registration.register(server);
+		const { outputSchema } = await capture();
 		expect(outputSchema).toBeDefined();
 		expect(jsonSchemaBytesOf(outputSchema)).toBeLessThanOrEqual(200);
+	});
+
+	it('defaults to compact detail and omits alternates plus scoringTrace from the decision', async () => {
+		const { handler } = await capture();
+		const result = await handler({
+			taskDescription: 'Implement coding task',
+			sessionId: 'sess-1',
+		});
+		expect(result.structuredContent?.level).toBe('compact');
+		const decision = result.structuredContent?.decision as Record<
+			string,
+			unknown
+		>;
+		expect(decision.targetProvider).toEqual({
+			id: 'steady',
+			kind: 'cli',
+			modelId: 'steady-model',
+			costTier: 2,
+			contextWindow: 128000,
+		});
+		expect(decision).not.toHaveProperty('alternates');
+		expect(decision).not.toHaveProperty('scoringTrace');
+		expect(result.structuredContent?.loopWarning).toEqual({
+			handoffPath: 'format_handoff',
+			suggestedAction: 'handoff now',
+		});
+	});
+
+	it('normal detail adds alternate summaries and the scoring trace', async () => {
+		const { handler } = await capture();
+		const result = await handler({
+			taskDescription: 'Implement coding task',
+			detail: 'normal',
+			sessionId: 'sess-2',
+		});
+		expect(result.structuredContent?.level).toBe('normal');
+		const decision = result.structuredContent?.decision as Record<
+			string,
+			unknown
+		>;
+		expect(decision).toHaveProperty('alternates');
+		expect(decision).toHaveProperty('scoringTrace');
+		const alternates = decision.alternates as Array<
+			Record<string, unknown>
+		>;
+		expect(alternates[0]?.targetProvider).toEqual({
+			id: 'fast',
+			kind: 'cli',
+			modelId: 'fast-model',
+			costTier: 1,
+			contextWindow: 128000,
+		});
+		expect(alternates[0]).not.toHaveProperty('invoke');
+	});
+
+	it('full detail restores the legacy full decision payload', async () => {
+		const { handler } = await capture();
+		const result = await handler({
+			taskDescription: 'Implement coding task',
+			detail: 'full',
+			sessionId: 'sess-3',
+		});
+		expect(result.structuredContent?.level).toBe('full');
+		const decision = result.structuredContent?.decision as Record<
+			string,
+			unknown
+		>;
+		const providerView = decision.targetProvider as Record<string, unknown>;
+		expect(providerView.strengths).toEqual(['coding']);
+		expect(providerView.weaknesses).toEqual([]);
+		const alternates = decision.alternates as Array<
+			Record<string, unknown>
+		>;
+		expect(alternates[0]?.invoke).toEqual({
+			kind: 'cli',
+			command: 'run-fast',
+		});
+		expect(decision).toHaveProperty('scoringTrace');
 	});
 });
