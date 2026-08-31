@@ -17,6 +17,8 @@ import {
 
 import type { IPluginCandidate } from '../contracts/interfaces/plugin-fit.interface';
 
+const TOKEN_BUDGET_MEASURED_AT = '2026-08-31';
+
 export const firstPartyPluginCandidates = (): readonly IPluginCandidate[] =>
 	FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => ({
 		id: entry.id,
@@ -34,7 +36,7 @@ export const firstPartyPluginCandidates = (): readonly IPluginCandidate[] =>
 			: {
 					tokenBudget: resolveTokenBudget(
 						entry.tokenBudgetBytes,
-						'2026-08-31',
+						TOKEN_BUDGET_MEASURED_AT,
 					),
 				}),
 	}));
