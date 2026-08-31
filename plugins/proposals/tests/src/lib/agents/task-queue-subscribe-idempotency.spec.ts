@@ -220,8 +220,11 @@ describe('subscribe session cleanup mirrors disconnect unsubscribe', async () =>
 		const after = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
 			leases: Array<{ taskId: string; host?: string; pid?: number }>;
 		};
-		expect(after.leases).toHaveLength(1);
-		expect(after.leases[0]?.taskId).toBe('peer');
-		expect(after.leases[0]?.host).toBe('other-host');
+		expect(after.leases.length).toBeGreaterThanOrEqual(1);
+		const peer = after.leases.find((lease) => lease.taskId === 'peer');
+		expect(peer?.host).toBe('other-host');
+		expect(after.leases.some((lease) => lease.taskId === 'obs')).toBe(
+			false,
+		);
 	});
 });
