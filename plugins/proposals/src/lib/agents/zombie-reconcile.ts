@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
@@ -75,7 +75,7 @@ const loadLockSnapshotLocal = async (
 		// `.cache/mcp-vertex/`. Fall back to a direct read so the
 		// function is uniformly usable from both contexts.
 		try {
-			raw = readFileSync(lockPath, 'utf8');
+			raw = await readFile(lockPath, 'utf8');
 		} catch {
 			// Missing/unreadable lock → no in-flight claims.
 			return { in_flight: [] };

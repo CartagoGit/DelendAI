@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { attributeLog, parseFlags } from './codex-parse-noise-attributor.script.ts';
+import {
+	attributeLog,
+	parseFlags,
+} from './codex-parse-noise-attributor.script.ts';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -54,7 +57,11 @@ describe('codex-parse-noise-attributor', () => {
 			const logDir = join(dir, 'openai.chatgpt');
 			await mkdir(logDir, { recursive: true });
 			const logPath = join(logDir, 'Codex.log');
-			await writeFile(logPath, '2026-08-31 09:00:01.123 [warning] Failed to parse message: "\\n"\n', 'utf8');
+			await writeFile(
+				logPath,
+				'2026-08-31 09:00:01.123 [warning] Failed to parse message: "\\n"\n',
+				'utf8',
+			);
 			const noise = await attributeLog(logPath);
 			expect(noise.length).toBe(1);
 			expect(noise[0]?.channel).toBe('<unknown>');
