@@ -95,6 +95,240 @@ const CLIENT_SCRIPT = `
       if (id) host?.postMessage({ command: 'openSurface', surface: id });
     });
   });
+
+  // ─── Settings bridge ─────────────────────────────────────────────
+  const settingsForm = document.getElementById('mcpv-dashboard-settings-form');
+  const settingsStatus = document.getElementById('mcpv-dashboard-settings-status');
+  const RTL = new Set(['ar']);
+  function applyTheme(theme) {
+    if (!theme) return;
+    root.setAttribute('data-theme', theme);
+  }
+  function applyLanguage(language) {
+    if (!language) return;
+    root.setAttribute('lang', language);
+    root.setAttribute('dir', RTL.has(language) ? 'rtl' : 'ltr');
+    const preview = document.querySelector('.mcpv-settings__preview');
+    if (preview) preview.setAttribute('dir', RTL.has(language) ? 'rtl' : 'ltr');
+    document.querySelectorAll('[data-lang-card]').forEach((card) => {
+      card.setAttribute('aria-pressed',
+        card.getAttribute('data-lang-card') === language ? 'true' : 'false');
+    });
+    const select = document.querySelector('select[name="language"]');
+    if (select instanceof HTMLSelectElement) select.value = language;
+    const headerSelect = document.querySelector('[data-header-lang]');
+    if (headerSelect instanceof HTMLSelectElement) headerSelect.value = language;
+  }
+  function applyMotion(motion) {
+    if (!motion) return;
+    root.setAttribute('data-motion', motion);
+    const select = document.querySelector('select[name="motion"]');
+    if (select instanceof HTMLSelectElement) select.value = motion;
+  }
+  function readSettings() {
+    const out = {};
+    new FormData(settingsForm ?? document.createElement('form')).forEach(
+      (value, key) => { out[key] = value; },
+    );
+    const allowLocalhost = document.querySelector('input[name="allowLocalhost"]');
+    const allowPrivateIps = document.querySelector('input[name="allowPrivateIps"]');
+    out.allowLocalhost = allowLocalhost instanceof HTMLInputElement ? allowLocalhost.checked : false;
+    out.allowPrivateIps = allowPrivateIps instanceof HTMLInputElement ? allowPrivateIps.checked : false;
+    return out;
+  }
+  function postSettings(action) {
+    if (!host) return;
+    const payload = { command: 'settings', action };
+    if (action === 'save') payload.settings = readSettings();
+    host.postMessage(payload);
+  }
+  function announceSettings(message, isError) {
+    if (!settingsStatus) return;
+    settingsStatus.textContent = message;
+    settingsStatus.hidden = false;
+    settingsStatus.setAttribute('data-error', isError ? 'true' : 'false');
+  }
+  document.querySelectorAll('[data-theme-card]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const theme = card.getAttribute('data-theme-card');
+      if (!theme) return;
+      document.querySelectorAll('[data-theme-card]').forEach((c) =>
+        c.setAttribute('aria-pressed', c === card ? 'true' : 'false'));
+      applyTheme(theme);
+      const preview = document.querySelector('.mcpv-settings__preview');
+      if (preview) preview.setAttribute('data-theme-preview', theme);
+      postSettings('save');
+    });
+  });
+  document.querySelectorAll('[data-lang-card]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const language = card.getAttribute('data-lang-card');
+      if (!language) return;
+      applyLanguage(language);
+      postSettings('save');
+    });
+  });
+  document.querySelectorAll(
+    'select[name="theme"], select[name="motion"], select[name="logLevel"], [data-header-lang], [data-header-theme]',
+  ).forEach((select) => {
+    select.addEventListener('change', () => {
+      if (!(select instanceof HTMLSelectElement)) return;
+      const name = select.getAttribute('name') ?? '';
+      if (name === 'theme' || select.hasAttribute('data-header-theme')) {
+        applyTheme(select.value);
+      } else if (name === 'motion') {
+        applyMotion(select.value);
+      } else if (select.hasAttribute('data-header-lang')) {
+        applyLanguage(select.value);
+      }
+      postSettings('save');
+    });
+  });
+  document.querySelectorAll('input[name="docsUrl"]').forEach((input) => {
+    input.addEventListener('change', () => postSettings('save'));
+  });
+  document.querySelectorAll(
+    'input[name="allowLocalhost"], input[name="allowPrivateIps"]',
+  ).forEach((input) => {
+    input.addEventListener('change', () => postSettings('save'));
+  });
+  settingsForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!host) {
+      announceSettings('Settings are unavailable in this preview.', true);
+      return;
+    }
+    announceSettings('Saving settings...', false);
+    postSettings('save');
+  });
+  settingsForm?.querySelector('[data-settings-reset]')?.addEventListener(
+    'click',
+    () => {
+      if (!host) return;
+      announceSettings('Resetting settings...', false);
+      postSettings('reset');
+    },
+  );
+  window.addEventListener('message', (event) => {
+    const data = event?.data;
+    if (!data || data.command !== 'settingsResult') return;
+    if (data.settings) {
+      applyTheme(data.settings.theme);
+      applyLanguage(data.settings.language);
+      applyMotion(data.settings.motion);
+    }
+    if (data.error) {
+      announceSettings(String(data.error), true);
+    } else {
+      announceSettings('Settings saved.', false);
+    }
+  });
+
+  // ─── Logs panel — realtime subscribe over the host bridge ─────────
+  const logsList = document.getElementById('mcpv-logs-list');
+  const logsEmpty = document.getElementById('mcpv-logs-empty');
+  const logsStatus = document.getElementById('mcpv-logs-status');
+  const logsControls = document.getElementById('mcpv-logs-controls');
+  const logsState = { paused: false, source: 'all', followTail: true };
+  function setLogsStatus(text) {
+    if (logsStatus) logsStatus.textContent = text;
+  }
+  function logsVisible() {
+    if (!logsList || !logsEmpty) return false;
+    const any = logsList.children.length > 0;
+    logsEmpty.hidden = any;
+    return any;
+  }
+  function appendLogRow(payload) {
+    if (!logsList) return;
+    const row = document.createElement('li');
+    row.className = 'mcpv-logs__row';
+    row.setAttribute('data-outcome', payload.outcome ?? 'unknown');
+    const ts = document.createElement('span');
+    ts.className = 'mcpv-logs__ts';
+    ts.textContent = payload.ts ? new Date(payload.ts).toISOString().slice(11, 19) : '';
+    const kind = document.createElement('span');
+    kind.className = 'mcpv-logs__kind';
+    kind.textContent = payload.kind ?? '';
+    const agent = document.createElement('span');
+    agent.textContent = payload.agent ?? '';
+    const summary = document.createElement('span');
+    summary.className = 'mcpv-logs__summary';
+    summary.textContent = payload.summary ?? '';
+    const copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = 'mcpv-logs__copy';
+    copy.title = 'Copy task id';
+    copy.textContent = '#';
+    copy.addEventListener('click', () => {
+      if (payload.taskId && navigator.clipboard) {
+        navigator.clipboard.writeText(payload.taskId).catch(() => {});
+      }
+    });
+    row.appendChild(ts);
+    row.appendChild(kind);
+    row.appendChild(agent);
+    row.appendChild(summary);
+    row.appendChild(copy);
+    logsList.appendChild(row);
+    if (logsState.followTail) {
+      logsList.scrollTop = logsList.scrollHeight;
+    }
+    logsVisible();
+  }
+  logsControls?.querySelector('select[name="source"]')?.addEventListener('change', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLSelectElement) {
+      logsState.source = target.value;
+      setLogsStatus('Filtering source: ' + target.value);
+      host?.postMessage({ command: 'logs', action: 'source', source: target.value });
+    }
+  });
+  logsControls?.querySelector('select[name="outcome"]')?.addEventListener('change', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLSelectElement) {
+      host?.postMessage({ command: 'logs', action: 'filter', outcome: target.value });
+    }
+  });
+  logsControls?.querySelector('input[name="agent"]')?.addEventListener('change', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLInputElement) {
+      host?.postMessage({ command: 'logs', action: 'filter', agent: target.value });
+    }
+  });
+  logsControls?.querySelector('input[name="task"]')?.addEventListener('change', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLInputElement) {
+      host?.postMessage({ command: 'logs', action: 'filter', taskId: target.value });
+    }
+  });
+  logsControls?.querySelector('[data-logs-action="refresh"]')?.addEventListener('click', () => {
+    host?.postMessage({ command: 'logs', action: 'refresh' });
+  });
+  const toggleLiveBtn = logsControls?.querySelector('[data-logs-action="toggle-live"]');
+  toggleLiveBtn?.addEventListener('click', () => {
+    logsState.paused = !logsState.paused;
+    if (toggleLiveBtn) {
+      toggleLiveBtn.textContent = logsState.paused ? 'Resume realtime' : 'Pause realtime';
+    }
+    setLogsStatus(logsState.paused ? 'Realtime paused' : 'Following live events');
+    host?.postMessage({ command: 'logs', action: logsState.paused ? 'stop' : 'start' });
+  });
+  logsControls?.querySelector('[data-logs-action="clear"]')?.addEventListener('click', () => {
+    if (logsList) logsList.replaceChildren();
+    logsVisible();
+    setLogsStatus('Cleared.');
+  });
+  window.addEventListener('message', (event) => {
+    const data = event?.data;
+    if (!data || data.command !== 'hostLogEvent') return;
+    if (logsState.paused) return;
+    if (logsState.source !== 'all' && data.source && logsState.source !== data.source) return;
+    appendLogRow(data.event ?? {});
+  });
+  setLogsStatus('Realtime paused');
+  logsVisible();
+
 	document.addEventListener('click', (evt) => {
 		const target = evt.target;
 		if (!(target instanceof Element)) return;
