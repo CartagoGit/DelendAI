@@ -99,6 +99,7 @@ export const isAdoptionStage = (value: unknown): value is AdoptionStage =>
 export const resolveStagePluginIds = (
 	stage: AdoptionStage,
 ): readonly string[] => {
+	if (stage === 'specialized') return [];
 	const result = new Set<string>();
 	for (const def of ADOPTION_STAGE_CATALOG) {
 		for (const id of def.pluginIds) {

@@ -99,6 +99,26 @@ const progressCard = (detail: IProposalDetail): string => {
 };
 
 const agentsCard = (detail: IProposalDetail): string => {
+	const agents = detail.agents ?? [];
+	if (agents.length === 0) {
+		return `<section class="card">
+			<h2>${escapeHtml(enCopy.agents)} (0)</h2>
+			<p class="muted">${escapeHtml(enCopy.noAgents)}</p>
+		</section>`;
+	}
+	const rows = agents
+		.map(
+			(agent) =>
+				`<li><strong>${escapeHtml(agent.name)}</strong>${agent.taskId === null ? '' : ` <span class="muted">on ${escapeHtml(agent.taskId)}</span>`}</li>`,
+		)
+		.join('');
+	return `<section class="card">
+		<h2>${escapeHtml(enCopy.agents)} (${agents.length})</h2>
+		<ul class="agents">${rows}</ul>
+	</section>`;
+};
+
+const agentsCard = (detail: IProposalDetail): string => {
 	if (detail.agents.length === 0) {
 		return `<section class="card">
 			<h2>${escapeHtml(enCopy.agents)} (0)</h2>

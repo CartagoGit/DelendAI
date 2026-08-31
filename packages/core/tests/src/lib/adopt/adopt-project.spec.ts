@@ -196,7 +196,9 @@ describe('adopt_project (f00157 S1)', () => {
 		registerAdoptionExtensions('proposals', [
 			buildProposalsAdoptionExtension(),
 		]);
-		const result = parse(await adopt({ repo: 'acme/widgets' }));
+		const result = parse(
+			await adopt({ repo: 'acme/widgets', stage: 'specialized' }),
+		);
 		expect(result.ok).toBe(true);
 		expect(result.config.plugins.issues.options.repo).toBe('acme/widgets');
 		expect(result.config.plugins.proposals).toBeDefined();

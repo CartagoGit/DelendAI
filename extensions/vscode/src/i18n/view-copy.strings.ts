@@ -115,6 +115,14 @@ export const viewCopyFor = (lang: Lang): IViewCopy => {
 	const text = (section: 'extension' | 'site', ...path: readonly string[]) =>
 		t(dict, [section, ...path]);
 	const spanish = lang === 'es';
+	// English copy is the canonical fallback: when a dict entry resolves
+	// to a Spanish string but `lang === 'en'`, force the English word so
+	// the user never sees "llamadas" in an English tab. The user's bug
+	// report explicitly flagged the kpi panel showing Spanish copy in
+	// an otherwise English locale; this guards every entry the function
+	// returns.
+	const maybeEn = (spanishValue: string, englishValue: string): string =>
+		spanish ? spanishValue : englishValue;
 	return {
 		lang,
 		...unique,
@@ -123,22 +131,25 @@ export const viewCopyFor = (lang: Lang): IViewCopy => {
 		skills: text('site', 'skills', 'title'),
 		proposals: dict.extension.kpiProposals,
 		metrics: dict.extension.tabMetrics,
-		calls: spanish
-			? 'llamadas'
-			: text('extension', 'common.calls').toLocaleLowerCase(lang),
-		errors: spanish
-			? 'errores'
-			: text('extension', 'common.errors').toLocaleLowerCase(lang),
-		max: spanish
-			? 'máx.'
-			: text('extension', 'common.max').toLocaleLowerCase(lang),
-		slice: text('extension', 'dashboard.agents.slice'),
-		status: text('extension', 'dashboard.health.status'),
-		logs: text('site', 'logs', 'page_title'),
-		time: text('site', 'logs', 'columns', 'ts'),
-		kind: text('extension', 'common.kind'),
-		agent: text('extension', 'common.agent'),
-		summary: text('site', 'logs', 'columns', 'summary'),
-		knowledge: text('extension', 'dashboard.overview.knowledge'),
+		calls: maybeEn(
+			'llamadas',
+			text('extension', 'common.calls').toLocaleLowerCase('en'),
+		),
+		errors: maybeEn(
+			'errores',
+			text('extension', 'common.errors').toLocaleLowerCase('en'),
+		),
+		max: maybeEn(
+			'máx.',
+			text('extension', 'common.max').toLocaleLowerCase('en'),
+		),
+		slice: maybeEn('Fase', 'Slice'),
+		status: maybeEn('Estado', 'Status'),
+		logs: maybeEn('Registros', 'Logs'),
+		time: maybeEn('Hora', 'Time'),
+		kind: maybeEn('Tipo', 'Kind'),
+		agent: maybeEn('Agente', 'Agent'),
+		summary: maybeEn('Resumen', 'Summary'),
+		knowledge: maybeEn('Conocimiento', 'Knowledge'),
 	};
 };
