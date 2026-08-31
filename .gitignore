@@ -20,13 +20,26 @@ node_modules/
 # since it was created (f00152). Found via the CI reality-gate investigation
 # in q00005's Track D (x00251/x00252 follow-up); root-cause fixed here rather
 # than baselined away.
+#
+# r00045 S1: the canonical build tree is now `/build/{group}/{name}/{version}/`.
+# Every package and plugin compiles into this single tree; `npm publish` (and
+# any extension like `vsce`) reads its own slice from there. Per-package
+# `dist/` directories are no longer produced — old ones in the repo are
+# gitignored by `/dist/` below and can be wiped with `git clean -fdx dist/`.
 /build/
-dist/
+/dist/
 
 # Legacy per-package build output name (pre-convention). Safe to remove.
 packages/*/build/
 apps/*/build/
 plugins/*/build/
+
+# r00045 S1: every per-package `dist/` is now a legacy artefact (build
+# output is centralised under `/build/`). Keep these entries until the
+# migration completes; they will be removed in a follow-up cleanup.
+packages/*/dist/
+apps/*/dist/
+plugins/*/dist/
 
 # Legacy: .vsix artefacts used to be dropped at extensions/vscode/<name>.vsix before
 # the monorepo-wide dist/ convention. Track only the staged

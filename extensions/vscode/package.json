@@ -38,6 +38,11 @@
 		"views": {
 			"mcp-vertex": [
 				{
+					"id": "mcp-vertex.dashboard",
+					"name": "Dashboard",
+					"icon": "media/logo.svg"
+				},
+				{
 					"id": "mcp-vertex.tools",
 					"name": "Tools",
 					"icon": "media/logo.svg"
