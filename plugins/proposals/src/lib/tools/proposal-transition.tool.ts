@@ -743,6 +743,21 @@ export const runProposalTransition = async (
 		);
 	}
 
+	if (from === 'review' && finalTo === 'done') {
+		const openDependents = (
+			await findDependentProposalStatuses(
+				options.proposalsDirAbs,
+				args.id,
+			)
+		).filter((dependent) => dependent.status !== 'done');
+		if (openDependents.length > 0) {
+			return toolError(
+				`proposal ${args.id} cannot close before its dependents are done`,
+				`Review and close dependent proposal(s) first: ${openDependents.map((dependent) => `${dependent.id} (${dependent.status})`).join(', ')}. Then retry proposal_transition for ${args.id}.`,
+			);
+		}
+	}
+
 	if (finalTo === 'done') {
 		const yamlBlock = extractYamlBlock(raw);
 		const frontmatter =
@@ -756,21 +771,6 @@ export const runProposalTransition = async (
 				shippedInGuard.reason,
 				shippedInGuard.nextAction,
 				shippedInGuard.fix,
-			);
-		}
-	}
-
-	if (from === 'review' && finalTo === 'done') {
-		const openDependents = (
-			await findDependentProposalStatuses(
-				options.proposalsDirAbs,
-				args.id,
-			)
-		).filter((dependent) => dependent.status !== 'done');
-		if (openDependents.length > 0) {
-			return toolError(
-				`proposal ${args.id} cannot close before its dependents are done`,
-				`Review and close dependent proposal(s) first: ${openDependents.map((dependent) => `${dependent.id} (${dependent.status})`).join(', ')}. Then retry proposal_transition for ${args.id}.`,
 			);
 		}
 	}
