@@ -1054,6 +1054,7 @@ export interface IHygieneFrontHook {
 	readonly hygieneActions: readonly string[];
 	readonly hygieneWarnings: readonly string[];
 	readonly rescueCandidates: readonly IRescueCandidate[];
+	readonly smokeResiduals: readonly ISmokeResidualBranch[];
 	readonly gcEligibleCount: number;
 	readonly outOfCacheCount: number;
 	readonly stashes: readonly IStashEntry[];
@@ -1065,6 +1066,7 @@ const emptyHygieneFrontHook: IHygieneFrontHook = {
 	hygieneActions: [],
 	hygieneWarnings: [],
 	rescueCandidates: [],
+	smokeResiduals: [],
 	gcEligibleCount: 0,
 	outOfCacheCount: 0,
 	stashes: [],
@@ -1089,6 +1091,22 @@ const rescueBlockersFor = (
 		);
 	}
 	return blockers;
+};
+
+/**
+ * R-2026-08-31: smoke-residual lines are surfaced as **warnings**, not
+ * blockers. They are rescue-candidate lookalikes (single-commit recent
+ * or authored by the reserved `smoke-tester` identity) that the swarm
+ * left behind; the auto_work cascade must proceed so the operator can
+ * decide whether to delete them.
+ */
+const smokeResidualWarningsFor = (
+	smokeResiduals: readonly ISmokeResidualBranch[],
+): string[] => {
+	if (smokeResiduals.length === 0) return [];
+	return [
+		`${smokeResiduals.length} smoke-residual branch(es) detected (excluded from rescue-candidate block): delete with \`git branch -D <branch>\` or run \`proposals_branch_gc { dryRun: false }\` once older than the GC threshold.`,
+	];
 };
 
 /**

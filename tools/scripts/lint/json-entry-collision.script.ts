@@ -157,37 +157,46 @@ export const scanFile = async (
 	// minimum positive indent-step of all keys in the same file
 	// (tabs collapse to 1 in the unit sense — biome's `indentStyle`
 	// is tab, so the unit is `tab`).
-	const keyLineIndents: number[] = [];
 	const keyRx = /^([ \t]*)(?:"(?:[^"\\]|\\.)*"|\d+)\s*:/;
+	const depthOf = (line: string): number => {
+		const match = keyRx.exec(line);
+		if (!match) return -1;
+		const leading = match[1] ?? '';
+		let depth = 0;
+		for (const ch of leading) if (ch === '\t') depth += 1;
+		return depth;
+	};
+	const depths: number[] = [];
 	for (const strippedLine of stripped) {
-		const match = keyRx.exec(strippedLine);
-		if (!match) continue;
-		const leading = match[1] ?? '';
-		const asTabs = leading.replace(/\t/g, '1').replace(/ /g, '0');
-		let depth = 0;
-		for (const ch of asTabs) depth += ch.charCodeAt(0) - 48;
-		keyLineIndents.push(depth);
+		const d = depthOf(strippedLine);
+		if (d > 0) depths.push(d);
 	}
-	const minDepth =
-		keyLineIndents.length > 0 ? Math.min(...keyLineIndents) : 1;
-	const unit = minDepth > 0 ? minDepth : 1;
-	if (unit === 0) return violations;
-	for (let idx = 0; idx < lines.length; idx += 1) {
-		const strippedLine = stripped[idx] ?? '';
-		const match = keyRx.exec(strippedLine);
-		if (!match) continue;
-		const leading = match[1] ?? '';
-		const asTabs = leading.replace(/\t/g, '1').replace(/ /g, '0');
-		let depth = 0;
-		for (const ch of asTabs) depth += ch.charCodeAt(0) - 48;
-		if (depth === 0) continue;
-		if (depth % unit !== 0) {
-			violations.push({
-				file: relPath,
-				line: idx + 1,
-				rule: 'INDENT-DRIFT',
-				message: `leading indent depth ${depth} is not a multiple of the file's indent unit ${unit}`,
-			});
+	if (depths.length > 0) {
+		let unit = depths[0] ?? 1;
+		for (let i = 1; i < depths.length; i += 1) {
+			let a = unit;
+			let b = depths[i] ?? 1;
+			while (b !== 0) {
+				const t = b;
+				b = a % b;
+				a = t;
+			}
+			unit = a;
+			if (unit === 1) break;
+		}
+		if (unit < 1) unit = 1;
+		for (let idx = 0; idx < stripped.length; idx += 1) {
+			const strippedLine = stripped[idx] ?? '';
+			const depth = depthOf(strippedLine);
+			if (depth <= 0) continue;
+			if (depth % unit !== 0) {
+				violations.push({
+					file: relPath,
+					line: idx + 1,
+					rule: 'INDENT-DRIFT',
+					message: `leading indent depth ${depth} is not a multiple of the file's indent unit ${unit}`,
+				});
+			}
 		}
 	}
 
