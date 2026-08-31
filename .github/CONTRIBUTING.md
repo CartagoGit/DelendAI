@@ -55,6 +55,28 @@ make this a habit — CI will catch it.
 5. `bun run validate` is recommended during development. It is mandatory for a
    PR targeting `main`, including the release PR from `develop` into `main`.
 
+## Release flow
+
+1. Branch from `develop` using `release/<propuesta>` (or `release/vX.Y.Z/<slug>`).
+2. Each commit on a `release/*` branch runs the `release-pr-gate`:
+   - Conventional Commits on the commit message.
+   - `bun run typecheck` clean.
+   - `bun run lint` (Biome) clean.
+   The gate is **blocking** in `lefthook` for `release/*` and `main`; pushes
+   are aborted if any of those fail. Use `LEFTHOOK_BYPASS=1 git push …` only
+   for emergencies — CI will re-check.
+3. Open a pull request `release/<propuesta> → main`. The PR triggers two
+   checks: `ci-complete` (full matrix) and `release-pr-gate` (local gate
+   re-run in CI). Both must be green.
+4. Merge into `main` (squash or merge commit, never fast-forward with a
+   dirty history). After merge, sync `main → develop` so the release
+   commits land in the journal too.
+
+The push discipline is asymmetric on purpose:
+- `develop` accepts any push (it's a snapshot journal).
+- `release/*` and `main` are protected locally and on GitHub.
+- `agent/*` branches never protect themselves.
+
 ## Commit messages — Conventional Commits
 
 Versioning is **automatic** on push to `main`, derived from commit type:
