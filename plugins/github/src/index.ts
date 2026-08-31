@@ -58,7 +58,44 @@ export default definePlugin({
 				? { webUrl: parsed.data.webUrl }
 				: {}),
 			...(parsed.data.defaultRepository !== undefined
-				? { defaultRepository: parsed.data.defaultRepository }
+				? {
+						defaultRepository: {
+							...(parsed.data.defaultRepository.owner !==
+							undefined
+								? { owner: parsed.data.defaultRepository.owner }
+								: {}),
+							...(parsed.data.defaultRepository.repository !==
+							undefined
+								? {
+										repository:
+											parsed.data.defaultRepository
+												.repository,
+									}
+								: {}),
+							...(parsed.data.defaultRepository.displayName !==
+							undefined
+								? {
+										displayName:
+											parsed.data.defaultRepository
+												.displayName,
+									}
+								: {}),
+							...(parsed.data.defaultRepository.webUrl !==
+							undefined
+								? {
+										webUrl: parsed.data.defaultRepository
+											.webUrl,
+									}
+								: {}),
+							...(parsed.data.defaultRepository.apiUrl !==
+							undefined
+								? {
+										apiUrl: parsed.data.defaultRepository
+											.apiUrl,
+									}
+								: {}),
+						},
+					}
 				: {}),
 			...(parsed.data.timeoutMs !== undefined
 				? { timeoutMs: parsed.data.timeoutMs }
