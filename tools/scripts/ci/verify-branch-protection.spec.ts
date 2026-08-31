@@ -24,6 +24,7 @@ const CONFIG_YAML = [
 	'        strict: true',
 	'        contexts:',
 	'          - ci-complete',
+	'          - release-pr-gate',
 	'      enforce_admins: true',
 	'      required_linear_history: true',
 	'      allow_force_pushes: false',
@@ -52,7 +53,7 @@ const makeLive = (
 	allow_deletions: { enabled: false },
 	required_status_checks: {
 		strict: true,
-		contexts: ['ci-complete'],
+		contexts: ['ci-complete', 'release-pr-gate'],
 	},
 	...overrides,
 });
@@ -81,7 +82,7 @@ describe('verify-branch-protection', () => {
 			]);
 			expect(
 				config.branches[0]?.protection.required_status_checks.contexts,
-			).toEqual(['ci-complete']);
+			).toEqual(['ci-complete', 'release-pr-gate']);
 		});
 	});
 
@@ -89,6 +90,22 @@ describe('verify-branch-protection', () => {
 		await withTempConfig(async (configPath) => {
 			const config = await loadDeclaredBranchProtectionConfig(configPath);
 			const drifts = diffBranch(config.branches[0]!, makeLive());
+			expect(drifts).toEqual([]);
+		});
+	});
+
+	it('treats required checks as a set, not an ordered list', async () => {
+		await withTempConfig(async (configPath) => {
+			const config = await loadDeclaredBranchProtectionConfig(configPath);
+			const drifts = diffBranch(
+				config.branches[0]!,
+				makeLive({
+					required_status_checks: {
+						strict: true,
+						contexts: ['release-pr-gate', 'ci-complete'],
+					},
+				}),
+			);
 			expect(drifts).toEqual([]);
 		});
 	});
@@ -115,9 +132,19 @@ describe('verify-branch-protection', () => {
 				out: (msg) => stdout.push(msg),
 				err: (msg) => stderr.push(msg),
 				reportUnverified: async () => undefined,
-				fetchProtection: async (): Promise<IProtectionFetchResult> => ({
+				fetchProtection: async ({
+					branch,
+				}): Promise<IProtectionFetchResult> => ({
 					kind: 'live',
-					data: makeLive(),
+					data:
+						branch === 'main'
+							? makeLive()
+							: makeLive({
+									required_status_checks: {
+										strict: true,
+										contexts: ['ci-complete'],
+									},
+								}),
 				}),
 			});
 			expect(result).toBe(0);
@@ -152,12 +179,17 @@ describe('verify-branch-protection', () => {
 										],
 									},
 								})
-							: makeLive(),
+							: makeLive({
+									required_status_checks: {
+										strict: true,
+										contexts: ['ci-complete'],
+									},
+								}),
 				}),
 			});
 			expect(result).toBe(1);
 			expect(stderr.join('\n')).toMatch(
-				/missing required checks: ci-complete/,
+				/missing required checks: ci-complete, release-pr-gate/,
 			);
 		});
 	});
