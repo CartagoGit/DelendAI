@@ -150,7 +150,7 @@ export interface IDashboardTimesModel {
 export interface IDashboardAgentsModel {
 	readonly agents: readonly {
 		readonly name: string;
-		readonly currentProposal?: string;
+		readonly currentProposal?: string | { readonly id: string };
 		readonly currentSlice?: string;
 		readonly lockHeld?: string;
 		readonly lastHeartbeat?: string;

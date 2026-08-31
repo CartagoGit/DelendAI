@@ -299,10 +299,6 @@
 			"plugin": "git"
 		},
 		{
-			"name": "mcp-vertex_git_commit",
-			"plugin": "git"
-		},
-		{
 			"name": "mcp-vertex_git_diff",
 			"plugin": "git"
 		},
@@ -316,10 +312,6 @@
 		},
 		{
 			"name": "mcp-vertex_git_pr_view",
-			"plugin": "git"
-		},
-		{
-			"name": "mcp-vertex_git_push",
 			"plugin": "git"
 		},
 		{
