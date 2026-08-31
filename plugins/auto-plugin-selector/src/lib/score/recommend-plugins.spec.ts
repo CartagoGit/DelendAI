@@ -46,6 +46,21 @@ describe('recommendPlugins', () => {
 		expect(fits).toEqual([]);
 	});
 
+	it('recommends a bundled candidate with a declared read permission', () => {
+		const signals: IProjectSignals = {
+			pack: 'generic',
+			languages: ['plugins', 'catalog', 'routing'],
+		};
+		const fits = recommendPlugins(signals, [
+			cand({
+				id: 'catalog',
+				tags: ['plugins', 'catalog', 'routing'],
+				permissions: ['filesystem-read'],
+			}),
+		]);
+		expect(fits[0]?.plugin.id).toBe('catalog');
+	});
+
 	it('ranks a pack-matched plugin first', () => {
 		const signals: IProjectSignals = {
 			pack: 'typescript',

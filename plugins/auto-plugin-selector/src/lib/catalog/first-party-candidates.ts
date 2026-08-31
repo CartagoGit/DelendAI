@@ -23,10 +23,14 @@ export const firstPartyPluginCandidates = (): readonly IPluginCandidate[] =>
 			? {}
 			: { permissions: entry.permissions }),
 		origin: entry.origin,
-		// r00025 S1: forward `tokenBudgetBytes` from the registry so the
-		// token-tax signal has data to work with. We map it to the
-		// legacy `number` form (`scoreTokenTax` understands all three).
+		// r00025 S1: preserve the registry field's byte unit. The scorer's
+		// structured form keeps static surface bytes distinct from a legacy
+		// token-count budget.
 		...(entry.tokenBudgetBytes === undefined
 			? {}
-			: { tokenBudget: entry.tokenBudgetBytes }),
+			: {
+					tokenBudget: {
+						staticBytes: entry.tokenBudgetBytes,
+					},
+				}),
 	}));
