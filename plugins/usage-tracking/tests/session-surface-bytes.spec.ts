@@ -118,8 +118,8 @@ describe('usage-tracking tools/list served bytes', () => {
 		// rebuilds the consolidated `tools/list` handler, so a
 		// reference captured earlier would go stale. `_requestHandlers`
 		// is private to the SDK, so we read it through a structural
-		// shape (no unsafe casts).
-		const getRequestHandlers = (): {
+		// shape via a public helper to avoid unsafe casts.
+		interface IToolsListHandlerMap {
 			_requestHandlers?: Map<
 				string,
 				(
@@ -127,18 +127,17 @@ describe('usage-tracking tools/list served bytes', () => {
 					extra: { sessionId?: string },
 				) => Promise<{ tools: unknown[] }>
 			>;
-		} => {
-			const internal = server.server as unknown as {
-				_requestHandlers?: Map<
-					string,
-					(
-						request: unknown,
-						extra: { sessionId?: string },
-					) => Promise<{ tools: unknown[] }>
-				>;
-			};
-			return internal;
+		}
+		const asHandlerMap = (value: object): IToolsListHandlerMap => {
+			const candidate = value as { [key: string]: unknown };
+			const handlers = candidate._requestHandlers;
+			if (handlers instanceof Map) {
+				return { _requestHandlers: handlers };
+			}
+			return {};
 		};
+		const getRequestHandlers = (): IToolsListHandlerMap =>
+			asHandlerMap(server.server as object);
 		const listTools = (
 			request: unknown,
 			extra: { sessionId?: string },

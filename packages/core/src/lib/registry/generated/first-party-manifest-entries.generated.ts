@@ -55,6 +55,9 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['routing', 'agents'],
 			permissions: ['process', 'network'],
 			tokenBudgetBytes: 2700,
+			example: {
+				"costQualityTradeoff": 7
+			},
 		},
 		{
 			origin: 'first-party',
@@ -203,6 +206,25 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['external-mcps', 'composition'],
 			permissions: ['network', 'process'],
 			tokenBudgetBytes: 2700,
+			example: {
+				"servers": {
+					"example-server": {
+						"enabled": false,
+						"version": "1.2.3",
+						"command": "npx",
+						"args": [
+							"-y",
+							"@example/mcp-server@1.2.3"
+						],
+						"env": [
+							"EXAMPLE_API_TOKEN"
+						]
+					}
+				},
+				"llmDecidesActivation": true,
+				"requireHumanAckWhenLlmDecides": true,
+				"allowDiscoverySearch": false
+			},
 		},
 		{
 			origin: 'first-party',
@@ -368,6 +390,19 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['proposals', 'swarm', 'orchestration'],
 			permissions: ['filesystem-read', 'filesystem-write', 'git-read', 'git-write'],
 			tokenBudgetBytes: 12400,
+			example: {
+				"validationCommand": "bun run validate",
+				"namePool": [
+					"falcon",
+					"owl",
+					"crow",
+					"sparrow",
+					"finch"
+				],
+				"orchestration": {
+					"delegateAfterToolCalls": 3
+				}
+			},
 			toolPermissions: { 'auto_work': ['filesystem-read', 'filesystem-write', 'git-read'], 'plan': ['filesystem-read', 'filesystem-write'], 'delegate': ['filesystem-read', 'filesystem-write'], 'get_proposal_workflow': ['filesystem-read'], 'round_context': ['filesystem-read'], 'agent_lock': ['filesystem-read', 'filesystem-write'], 'agent_worktree': ['filesystem-read', 'filesystem-write', 'git-write'], 'agent_names': ['filesystem-read'], 'branch_status': ['git-read'], 'branch_gc': ['git-read', 'git-write'], 'close_slice': ['filesystem-read', 'filesystem-write'], 'proposal_transition': ['filesystem-read', 'filesystem-write'], 'proposal_review': ['filesystem-read'], 'proposal_adopt': ['filesystem-read', 'filesystem-write', 'git-write'], 'proposal_diagnose': ['filesystem-read'], 'state_health': ['filesystem-read'], 'state_repair': ['filesystem-read', 'filesystem-write'], 'agent_lock_release_orphan': ['filesystem-read', 'filesystem-write'] },
 		},
 		{
@@ -441,6 +476,22 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['status-marker', 'closure'],
 			permissions: ['filesystem-read'],
 			tokenBudgetBytes: 2700,
+			example: {
+				"markers": {
+					"add": [
+						{
+							"id": "REVIEW",
+							"emoji": "🟪",
+							"requiresReason": true,
+							"locales": {
+								"es": "REVISIÓN",
+								"en": "REVIEW"
+							},
+							"instruction": "Close after a successful code review pass."
+						}
+					]
+				}
+			},
 		},
 		{
 			origin: 'first-party',
@@ -468,6 +519,11 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['tests', 'policy'],
 			permissions: ['filesystem-read', 'filesystem-write'],
 			tokenBudgetBytes: 2700,
+			example: {
+				"mode": "tdd",
+				"extraGuidance": "Protocol behaviour additionally needs an e2e against the in-memory MCP server.",
+				"allowSetTool": true
+			},
 		},
 		{
 			origin: 'first-party',
@@ -486,5 +542,11 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['web', 'fetch'],
 			permissions: ['network'],
 			tokenBudgetBytes: 2700,
+			example: {
+				"allowList": [
+					"example.com",
+					"*.docs.example.com"
+				]
+			},
 		}
 	];
