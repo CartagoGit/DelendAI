@@ -5,15 +5,21 @@ import { dictsByLang } from '@mcp-vertex/shared/i18n';
 import { renderPanelLogs } from '../../src/dashboard/render-panel-logs';
 
 describe('renderPanelLogs', () => {
-	it('renders the panel shell + source selector', () => {
+	it('renders the panel shell + source chip bar', () => {
 		const html = renderPanelLogs(dictsByLang.en);
 		expect(html).toContain('panel-logs');
 		expect(html).toContain('mcpv-logs__list');
-		expect(html).toContain('name="source"');
-		expect(html).toContain('value="host"');
-		expect(html).toContain('value="server"');
-		expect(html).toContain('value="notifications"');
-		expect(html).toContain('value="errors"');
+		expect(html).toContain('mcpv-logs__source-bar');
+		expect(html).toContain('data-source="host"');
+		expect(html).toContain('data-source="server"');
+		expect(html).toContain('data-source="notifications"');
+		expect(html).toContain('data-source="errors"');
+		expect(html).toContain('data-source="all"');
+	});
+
+	it('marks the `all` source chip as pressed by default', () => {
+		const html = renderPanelLogs(dictsByLang.en);
+		expect(html).toContain('data-source="all" aria-pressed="true"');
 	});
 
 	it('renders the realtime toggle, refresh and clear buttons', () => {
@@ -37,5 +43,10 @@ describe('renderPanelLogs', () => {
 	it('renders the empty placeholder', () => {
 		const html = renderPanelLogs(dictsByLang.en);
 		expect(html).toContain('mcpv-logs__empty');
+	});
+
+	it('renders icons per source', () => {
+		const html = renderPanelLogs(dictsByLang.en);
+		expect(html).toContain('mcpv-logs__chip-icon');
 	});
 });
