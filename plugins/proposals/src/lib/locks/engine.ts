@@ -38,7 +38,12 @@ import {
 	type ISessionBalance,
 } from './agent-lock-session-store';
 
-export type IAgentLockAction = 'claim' | 'release' | 'status' | 'gc';
+export type IAgentLockAction =
+	| 'claim'
+	| 'heartbeat'
+	| 'release'
+	| 'status'
+	| 'gc';
 
 export type IAgentLockArgs = {
 	action: IAgentLockAction;
@@ -771,6 +776,12 @@ const validateArgs = (
 	if (args.action === 'release' && !args.task_id) {
 		return { ok: false, error: 'release requires task_id' };
 	}
+	if (args.action === 'heartbeat' && (!args.task_id || !args.agent)) {
+		return {
+			ok: false,
+			error: 'heartbeat requires task_id and agent',
+		};
+	}
 	return { ok: true, value: args };
 };
 
@@ -1230,6 +1241,64 @@ async function executeLockAction(
 			active_write_lanes: lock.in_flight.length,
 			summary: `${lock.in_flight.length} active write lane(s)`,
 			...lock,
+		});
+	}
+
+	if (args.action === 'heartbeat') {
+		const lock = await readSynchronizedLock(deps);
+		const taskId = args.task_id as string;
+		const agent = args.agent as string;
+		const existing = lock.in_flight.find(
+			(entry) => entry.task_id === taskId,
+		);
+		if (existing === undefined) {
+			return lockResult(
+				{
+					tool: toolName,
+					action: 'heartbeat',
+					task_id: taskId,
+					agent,
+					path: lockFileLabel,
+					lock_path: lockPath,
+					error: `heartbeat refused: no active claim for ${taskId}`,
+					blockerType: 'invalid-input',
+					nextAction:
+						'Claim the files first, then send periodic heartbeats while working.',
+					summary: `heartbeat refused: no active claim for ${taskId}`,
+				},
+				{ isError: true },
+			);
+		}
+		if (existing.agent !== agent) {
+			return lockResult(
+				{
+					tool: toolName,
+					action: 'heartbeat',
+					task_id: taskId,
+					agent,
+					path: lockFileLabel,
+					lock_path: lockPath,
+					error: `heartbeat refused: caller agent "${agent}" does not match the recorded holder agent "${existing.agent}"`,
+					blockerType: 'invalid-input',
+					nextAction:
+						'Use the agent name that originally claimed the lock.',
+					summary: `heartbeat refused: agent mismatch for ${taskId}`,
+				},
+				{ isError: true },
+			);
+		}
+		existing.last_seen = getNow(deps);
+		await writeLockWithMutex(lock, args, deps);
+		return lockResult({
+			tool: toolName,
+			action: 'heartbeat',
+			task_id: taskId,
+			agent,
+			path: lockFileLabel,
+			lock_path: lockPath,
+			refreshed: true,
+			last_seen: existing.last_seen,
+			summary: `heartbeat refreshed ${taskId}`,
 		});
 	}
 
