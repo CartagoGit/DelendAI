@@ -17,6 +17,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	claimWithFileLocks,
 	getAgentLockSessionBalance,
+	releaseAgentSessionClaims,
 	resetAgentLockSessionBalance,
 	runAgentLockEngine,
 	type IAgentLockArgs,
@@ -225,6 +226,37 @@ describe('runAgentLockEngine — claim', async () => {
 });
 
 describe('runAgentLockEngine — release / status', async () => {
+	it('session cleanup releases only claims owned by the closing host process', async () => {
+		await run(
+			{
+				action: 'claim',
+				task_id: 'owned-task',
+				agent: 'agent-A',
+				files: ['src/owned.ts'],
+			},
+			{ nowHostId: () => ({ host: 'host-a', pid: 100 }) },
+		);
+		await run(
+			{
+				action: 'claim',
+				task_id: 'other-task',
+				agent: 'agent-B',
+				files: ['src/other.ts'],
+			},
+			{ nowHostId: () => ({ host: 'host-b', pid: 200 }) },
+		);
+
+		const result = await releaseAgentSessionClaims({
+			lockPath,
+			nowHostId: () => ({ host: 'host-a', pid: 100 }),
+		});
+
+		expect(result.releasedTaskIds).toEqual(['owned-task']);
+		expect(readLockFile().in_flight.map((entry) => entry.task_id)).toEqual([
+			'other-task',
+		]);
+	});
+
 	it('heartbeat refreshes a long-running claim without changing ownership', async () => {
 		await run(
 			{
