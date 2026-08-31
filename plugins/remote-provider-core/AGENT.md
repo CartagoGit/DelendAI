@@ -1,10 +1,6 @@
 # AGENT.md — plugin `plugins/remote-provider-core`
 
-> Below the `<!-- mcp-vertex:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- mcp-vertex:begin agent-md -->
+> Below the `<!-- mcp-vertex:begin agent-md -->
 ## Purpose
 
 - Shared remote-provider foundation: validated config, injectable HTTP, normalized errors.
