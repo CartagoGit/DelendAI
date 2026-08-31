@@ -161,4 +161,5 @@ export type { PluginOrigin } from '../lib/contracts/interfaces/plugin-origin.int
 export type {
 	IRuntimeEvent,
 	IRuntimeEventSink,
+	RuntimeEventInput,
 } from '../lib/observability/runtime-events';
