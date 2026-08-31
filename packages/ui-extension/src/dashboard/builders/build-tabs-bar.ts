@@ -54,8 +54,10 @@ export function buildTabsBar(lang: ILangDict): string {
 		label: text(tab.label),
 	}));
 	const docsTab = { id: 'docs', label: text('tabDocs') };
-	const refreshHtml = `<button class="mcpv-tabs__action-btn" data-action="refresh" type="button" title="${text('refreshDashboard')}" aria-label="${text('refreshDashboard')}">⟳</button>`;
-	const expandHtml = `<button class="mcpv-tabs__action-btn" data-action="expand" type="button" title="Open dashboard in a tab" aria-label="Open dashboard in a tab">↗</button>`;
+	const refreshHtml = `<button class="mcpv-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}" aria-label="${text('refreshDashboard')}">⟳</button>`;
+	const expandHtml = `<button class="mcpv-tabs__action-btn" id="tab-expand" data-action="expand" type="button" title="Open dashboard in a tab" aria-label="Open dashboard in a tab">↗</button>`;
+	const sidebarRefreshHtml = refreshHtml.replace(' id="tab-refresh"', '');
+	const sidebarExpandHtml = expandHtml.replace(' id="tab-expand"', '');
 	const surfaceActions = `
 		<div class="mcpv-tabs__surface-actions" role="group" aria-label="${text('tabOverview')}">
 			<button class="mcpv-tabs__action-btn" data-surface="proposals" type="button" title="${text('openProposalBoard')}" aria-label="${text('openProposalBoard')}">▤</button>
@@ -79,7 +81,7 @@ export function buildTabsBar(lang: ILangDict): string {
 	).join('');
 	return (
 		`<div class="mcpv-app-nav__mobile"><button type="button" class="mcpv-app-nav__menu" data-nav-toggle aria-expanded="false">☰ <span>Menu</span></button></div>` +
-		`<aside class="mcpv-app-nav" data-nav-panel aria-label="Dashboard sections">${sidebar}<div class="mcpv-app-nav__actions">${surfaceActions}${refreshHtml}${expandHtml}</div></aside>` +
+		`<aside class="mcpv-app-nav" data-nav-panel aria-label="Dashboard sections">${sidebar}<div class="mcpv-app-nav__actions">${surfaceActions}${sidebarRefreshHtml}${sidebarExpandHtml}</div></aside>` +
 		`<section class="mcpv-tabs mcpv-tabs--underline">` +
 		renderTabs({
 			tabs: [...tabItems, docsTab],
