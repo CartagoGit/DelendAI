@@ -235,6 +235,7 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 				opts,
 			),
 		);
+		console.error('DEBUG body:', JSON.stringify(body, null, 2));
 		expect(body.ok).toBe(true);
 	});
 
