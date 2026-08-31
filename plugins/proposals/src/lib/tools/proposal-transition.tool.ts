@@ -31,6 +31,7 @@
  *   cleanly without needing a feature flag.
  */
 
+import { randomUUID } from 'node:crypto';
 import { access, mkdir, rename } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 
@@ -302,6 +303,10 @@ export const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	from: z.string().optional(),
 	to: z.string().optional(),
 	reason: z.string().optional(),
+	transitionId: z.string().optional(),
+	correlationId: z.string().optional(),
+	idempotencyKey: z.string().optional(),
+	idempotentReplay: z.boolean().optional(),
 	movedFrom: z.string().optional(),
 	movedTo: z.string().optional(),
 	warning: z.string().optional(),
@@ -319,6 +324,97 @@ const isFreshValidateEvidence = (
 	const tsMs = Date.parse(evidence.timestamp);
 	if (Number.isNaN(tsMs)) return false;
 	return tsMs >= nowMs - VALIDATE_EVIDENCE_WINDOW_MS;
+};
+
+const LAST_TRANSITION_ID_FIELD = 'last-transition-id';
+const LAST_CORRELATION_ID_FIELD = 'last-correlation-id';
+const LAST_IDEMPOTENCY_KEY_FIELD = 'last-idempotency-key';
+const LAST_TRANSITION_FROM_FIELD = 'last-transition-from';
+
+interface IStoredTransitionMetadata {
+	readonly transitionId: string | undefined;
+	readonly correlationId: string | undefined;
+	readonly idempotencyKey: string | undefined;
+	readonly from: string | undefined;
+}
+
+interface IResolvedTransitionMetadata {
+	readonly transitionId: string;
+	readonly correlationId: string;
+	readonly idempotencyKey: string | undefined;
+}
+
+const normalizeOptionalString = (
+	value: string | undefined,
+): string | undefined => {
+	const trimmed = value?.trim();
+	return trimmed && trimmed.length > 0 ? trimmed : undefined;
+};
+
+const resolveTransitionMetadata = (
+	args: IProposalTransitionArgs,
+): IResolvedTransitionMetadata => {
+	const transitionId =
+		normalizeOptionalString(args.transitionId) ?? randomUUID();
+	const correlationId =
+		normalizeOptionalString(args.correlationId) ?? transitionId;
+	return {
+		transitionId,
+		correlationId,
+		idempotencyKey: normalizeOptionalString(args.idempotencyKey),
+	};
+};
+
+const readStoredTransitionMetadata = (
+	raw: string,
+): IStoredTransitionMetadata => ({
+	transitionId: readFrontmatterField(raw, LAST_TRANSITION_ID_FIELD),
+	correlationId: readFrontmatterField(raw, LAST_CORRELATION_ID_FIELD),
+	idempotencyKey: readFrontmatterField(raw, LAST_IDEMPOTENCY_KEY_FIELD),
+	from: readFrontmatterField(raw, LAST_TRANSITION_FROM_FIELD),
+});
+
+const buildIdempotentReplayResult = (input: {
+	readonly proposalId: string;
+	readonly currentStatus: string;
+	readonly reason: string;
+	readonly relativePath: string;
+	readonly metadata: IStoredTransitionMetadata;
+}) => {
+	const envelope = {
+		ok: true as const,
+		id: input.proposalId,
+		from: input.metadata.from ?? input.currentStatus,
+		to: input.currentStatus,
+		reason: input.reason,
+		transitionId: input.metadata.transitionId,
+		correlationId:
+			input.metadata.correlationId ?? input.metadata.transitionId,
+		idempotencyKey: input.metadata.idempotencyKey,
+		idempotentReplay: true,
+		movedTo: input.relativePath,
+		warning:
+			'idempotent replay detected; the transition was already applied and no new mutation ran.',
+	};
+	return {
+		content: [{ type: 'text' as const, text: JSON.stringify(envelope) }],
+		structuredContent: envelope,
+	};
+};
+
+const setFrontmatterMetadataField = (
+	raw: string,
+	fieldName: string,
+	newValue: string,
+): string => {
+	const existing = readFrontmatterField(raw, fieldName);
+	if (existing !== undefined) {
+		return setFrontmatterField(raw, fieldName, newValue);
+	}
+	return raw.replace(
+		/^(---\r?\n[\s\S]*?)(\r?\n---)/,
+		`$1\n${fieldName}: ${newValue}$2`,
+	);
 };
 
 const toValidateEvidence = (
@@ -460,6 +556,8 @@ export const runProposalTransition = async (
 		.readText(relative(options.proposalsDirAbs, found.absPath))
 		.then((value) => value.content)
 		.catch(() => '');
+	const transitionMetadata = resolveTransitionMetadata(args);
+	const storedTransitionMetadata = readStoredTransitionMetadata(raw);
 
 	let finalTo = to;
 	let depId: string | undefined;
@@ -491,6 +589,26 @@ export const runProposalTransition = async (
 				);
 			}
 		}
+	}
+
+	if (
+		transitionMetadata.idempotencyKey !== undefined &&
+		storedTransitionMetadata.idempotencyKey ===
+			transitionMetadata.idempotencyKey
+	) {
+		if (found.status === finalTo) {
+			return buildIdempotentReplayResult({
+				proposalId: args.id,
+				currentStatus: found.status,
+				reason: args.reason,
+				relativePath: relative(options.proposalsDirAbs, found.absPath),
+				metadata: storedTransitionMetadata,
+			});
+		}
+		return buildCodeError(
+			'idempotency-key-conflict',
+			`idempotencyKey "${transitionMetadata.idempotencyKey}" was already applied to ${args.id} and cannot be reused for a different target status`,
+		);
 	}
 
 	const regressionGuard = guardDoneToReviewRegression({
@@ -714,7 +832,15 @@ export const runProposalTransition = async (
 	// a00069 S3: applyTransition rewrites self-`**Files**` paths and
 	// regenerates the index (when indexPathAbs is set) before returning.
 	const result = await applyTransition(
-		{ id: args.id, from, to: finalTo, reason: args.reason },
+		{
+			id: args.id,
+			from,
+			to: finalTo,
+			reason: args.reason,
+			transitionId: transitionMetadata.transitionId,
+			correlationId: transitionMetadata.correlationId,
+			idempotencyKey: transitionMetadata.idempotencyKey,
+		},
 		found,
 		options,
 		depId,
@@ -861,6 +987,9 @@ interface IApplyArgs {
 	readonly from: string;
 	readonly to: IProposalStatus;
 	readonly reason: string;
+	readonly transitionId: string;
+	readonly correlationId: string;
+	readonly idempotencyKey: string | undefined;
 }
 
 const applyTransition = async (
@@ -892,6 +1021,28 @@ const applyTransition = async (
 			)
 		).content;
 		let updated = setFrontmatterStatus(current, args.to);
+		updated = setFrontmatterMetadataField(
+			updated,
+			LAST_TRANSITION_ID_FIELD,
+			args.transitionId,
+		);
+		updated = setFrontmatterMetadataField(
+			updated,
+			LAST_CORRELATION_ID_FIELD,
+			args.correlationId,
+		);
+		updated = setFrontmatterMetadataField(
+			updated,
+			LAST_TRANSITION_FROM_FIELD,
+			args.from,
+		);
+		if (args.idempotencyKey !== undefined) {
+			updated = setFrontmatterMetadataField(
+				updated,
+				LAST_IDEMPOTENCY_KEY_FIELD,
+				args.idempotencyKey,
+			);
+		}
 		if (args.to === 'blocked' && depId) {
 			updated = setFrontmatterField(updated, 'blocked-by', `[${depId}]`);
 		}
@@ -981,6 +1132,10 @@ const applyTransition = async (
 		from: args.from,
 		to: args.to,
 		reason: args.reason,
+		transitionId: args.transitionId,
+		correlationId: args.correlationId,
+		idempotencyKey: args.idempotencyKey,
+		idempotentReplay: false,
 		movedFrom: movedFromRel,
 		movedTo: movedToRel,
 		indexSynced,
