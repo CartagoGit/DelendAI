@@ -83,7 +83,7 @@ El scaffolding actual impone nombres `mcp-vertex-*` y mezcla namespaces entre pr
 
 - **Issue de origen**: [#52 — Project scaffolding must namespace agents by host project](https://github.com/CartagoGit/mcp-vertex/issues/52)
 - **Cierre automático**: el commit o PR que integre la implementación debe incluir `Closes #52`.
-- **Commit de implementación**: pendiente; registrar aquí el SHA completo cuando el arreglo se implemente.
+- **Commit de implementación**: `3d672fcab3ecc50edc206445ce518e30c7b7afd8`.
 
 ## Implementación verificada
 
