@@ -87,8 +87,10 @@
 	border-radius: var(--mcpv-radius);
 	max-height: calc(100vh - var(--mcpv-s-6));
 	overflow-y: auto;
+	pointer-events: auto;
 	transition: border-color var(--mcpv-transition-fast),
 		box-shadow var(--mcpv-transition-fast);
+	z-index: 1;
 
 	&__group {
 		margin-bottom: var(--mcpv-s-4);
