@@ -667,6 +667,22 @@ export type {
 	AgentHost,
 	IAgentIdentity,
 } from '../lib/contracts/interfaces/agent-identity.interface';
+export {
+	assertReleaseMetadata,
+	assertReleaseSlug,
+	assertReleaseType,
+	releaseBranch,
+	RELEASE_STATES,
+	RELEASE_TYPES,
+	slugifyRelease,
+	isReleaseType,
+	nextVersion,
+} from '../lib/contracts/release';
+export type {
+	IReleaseCandidateMetadata,
+	ReleaseState,
+	ReleaseType,
+} from '../lib/contracts/release';
 // S1: the canonical multi-model provider contract. Wiki pages
 // 04/05/06/07/08 and both consuming plugins (orchestrator-runner,
 // usage-tracking) import the provider vocabulary from this single file so

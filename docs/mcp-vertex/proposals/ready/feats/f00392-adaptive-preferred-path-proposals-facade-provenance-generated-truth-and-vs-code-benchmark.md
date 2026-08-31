@@ -39,7 +39,8 @@ Completa la evolución orientada a agentes sin sustituir capacidades detalladas,
   - "intents orient/plan/claim/progress/close/recover mapean a capabilities existentes"
   - "negotiation compara success/tokens/calls/latency/risk"
   - "detailed surface remains available"
-
+- review-state: in_review
+- review-implementer: falcon
 ### S2 — Provenance graph and generated documentation truth
 - **Status**: pending
 - **DependsOn**: [S1]

@@ -8,6 +8,9 @@
 ## Public API
 
 - default
+- AdaptiveFacadeOutputSchema
+- buildAdaptiveFacadeToolRegistration
+- runAdaptiveFacade
 - buildAdaptiveOptimizerToolRegistrations
 - OptimizeRunOutputSchema
 - runOptimizeRun
@@ -39,6 +42,7 @@
 ## Tests
 
 - plugins/adaptive-optimizer/tests/src/optimize-run.tool.spec.ts
+- plugins/adaptive-optimizer/tests/src/adaptive-facade.tool.spec.ts
 - plugins/adaptive-optimizer/tests/src/activation-metrics.tool.spec.ts
 - plugins/adaptive-optimizer/tests/src/optimization-scoring.spec.ts
 

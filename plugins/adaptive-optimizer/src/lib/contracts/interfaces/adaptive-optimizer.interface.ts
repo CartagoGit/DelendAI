@@ -65,6 +65,66 @@ export interface IAdaptiveOptimizerPluginOptions {
 	readonly maxBytes?: number | undefined;
 }
 
+export type TAdaptiveFacadeIntent =
+	| 'orient'
+	| 'plan'
+	| 'claim'
+	| 'progress'
+	| 'close'
+	| 'recover';
+
+export type TAdaptiveFacadeEffect = 'read' | 'write' | 'recovery';
+
+export interface IAdaptiveFacadeHistoryEntry {
+	readonly tool: string;
+	readonly outcome: 'success' | 'error' | 'timeout' | 'fallback';
+	readonly totalTokens?: number | undefined;
+	readonly inputTokens?: number | undefined;
+	readonly outputTokens?: number | undefined;
+	readonly durationMs?: number | undefined;
+}
+
+export interface IAdaptiveFacadeMetrics {
+	readonly successRate: number;
+	readonly tokenCost: number;
+	readonly callCount: number;
+	readonly latencyMs: number;
+	readonly sideEffectRisk: number;
+	readonly usedObservedHistory: boolean;
+}
+
+export interface IAdaptiveFacadeCandidate extends IOptimizationScore {
+	readonly intent: TAdaptiveFacadeIntent;
+	readonly toolName: string;
+	readonly plugin: 'proposals';
+	readonly effect: TAdaptiveFacadeEffect;
+	readonly summary: string;
+	readonly metrics: IAdaptiveFacadeMetrics;
+}
+
+export interface IAdaptiveFacadeOutput {
+	readonly intent: TAdaptiveFacadeIntent;
+	readonly preferredPath: IAdaptiveFacadeCandidate;
+	readonly alternatives: readonly IAdaptiveFacadeCandidate[];
+	readonly detailedSurface: readonly {
+		readonly name: string;
+		readonly summary: string;
+	}[];
+	readonly bytes: number;
+	readonly truncated: boolean;
+}
+
+export interface IAdaptiveFacadeToolArgs {
+	readonly intent: TAdaptiveFacadeIntent;
+	readonly task?: string | undefined;
+	readonly history?: readonly IAdaptiveFacadeHistoryEntry[] | undefined;
+	readonly maxAlternatives?: number | undefined;
+}
+
+export interface IAdaptiveFacadeRuntimeOptions {
+	readonly maxBytes: number;
+}
+
 export interface IOptimizeRunRuntimeOptions {
 	readonly workspaceRootAbs: string;
 	readonly maxBytes: number;

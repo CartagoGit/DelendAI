@@ -243,6 +243,7 @@ export interface IKpiDashboardQuery {
 export interface IKpiDashboardProviderDeps {
 	readonly host: Pick<IHostAdapter, 'registerWebviewViewProvider'>;
 	readonly client: Pick<McpStdioClient, 'request'>;
+	readonly serverConfigured?: boolean;
 	readonly namespacePrefix?: string;
 	readonly viewId?: string;
 	readonly defaultQuery?: Partial<IKpiDashboardQuery>;

@@ -19,6 +19,7 @@ export {
 	gitBlame,
 	gitShow,
 	gitWorktreeList,
+	createReleaseCandidate,
 } from '../lib/services/git';
 export type {
 	IGitRunner,

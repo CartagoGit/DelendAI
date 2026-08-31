@@ -742,6 +742,13 @@ const loadingModel = (query: IKpiDashboardQuery): IKpiDashboardModel => ({
 	errors: [],
 });
 
+const notConfiguredModel = (query: IKpiDashboardQuery): IKpiDashboardModel => ({
+	...loadingModel(query),
+	state: 'unavailable',
+	summary:
+		'Configure mcp-vertex.server.command and server.args to load project KPIs.',
+});
+
 export const buildKpiDashboardModel = async (
 	deps: Pick<IKpiDashboardProviderDeps, 'client' | 'namespacePrefix'>,
 	query: IKpiDashboardQuery,
@@ -797,15 +804,17 @@ export class KpiDashboardProvider implements IKpiDashboardProvider {
 	private refreshToken = 0;
 	private readonly client: IKpiDashboardProviderDeps['client'];
 	private readonly namespacePrefix: string | undefined;
+	private readonly serverConfigured: boolean;
 
 	constructor(
 		options: Pick<
 			IKpiDashboardProviderDeps,
-			'client' | 'namespacePrefix' | 'defaultQuery'
+			'client' | 'namespacePrefix' | 'defaultQuery' | 'serverConfigured'
 		>,
 	) {
 		this.client = options.client;
 		this.namespacePrefix = options.namespacePrefix;
+		this.serverConfigured = options.serverConfigured ?? true;
 		this.query = {
 			windowDays:
 				(options.defaultQuery?.windowDays as
@@ -821,7 +830,13 @@ export class KpiDashboardProvider implements IKpiDashboardProvider {
 
 	async resolveWebviewView(webview: IWebviewPanel): Promise<void> {
 		this.view = webview;
-		this.view.webview.setHtml(renderKpiDashboard(loadingModel(this.query)));
+		this.view.webview.setHtml(
+			renderKpiDashboard(
+				this.serverConfigured
+					? loadingModel(this.query)
+					: notConfiguredModel(this.query),
+			),
+		);
 		this.view.webview.onDidReceiveMessage?.(async (message: unknown) => {
 			const parsed = KPI_DASHBOARD_MESSAGE_SCHEMA.safeParse(message);
 			if (!parsed.success) return;
@@ -837,6 +852,17 @@ export class KpiDashboardProvider implements IKpiDashboardProvider {
 	}
 
 	async refresh(): Promise<void> {
+		if (!this.serverConfigured) {
+			this.lastState = {
+				query: this.query,
+				loadedViews: [],
+				model: notConfiguredModel(this.query),
+			};
+			this.view?.webview.setHtml(
+				renderKpiDashboard(this.lastState.model),
+			);
+			return;
+		}
 		const token = ++this.refreshToken;
 		this.view?.webview.setHtml(
 			renderKpiDashboard(loadingModel(this.query)),
@@ -861,6 +887,9 @@ export const registerKpiDashboardProvider = (deps: IKpiDashboardProviderDeps) =>
 		deps.viewId ?? DEFAULT_VIEW_ID,
 		new KpiDashboardProvider({
 			client: deps.client,
+			...(deps.serverConfigured === undefined
+				? {}
+				: { serverConfigured: deps.serverConfigured }),
 			...(deps.namespacePrefix === undefined
 				? {}
 				: { namespacePrefix: deps.namespacePrefix }),

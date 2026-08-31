@@ -125,6 +125,138 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		}),
 	]);
 
+export const PROPOSAL_ADAPTIVE_FACADE_INTENTS = [
+	'orient',
+	'plan',
+	'claim',
+	'progress',
+	'close',
+	'recover',
+] as const;
+
+export type TProposalAdaptiveFacadeIntent =
+	(typeof PROPOSAL_ADAPTIVE_FACADE_INTENTS)[number];
+
+export type TProposalAdaptiveFacadeEffect = 'read' | 'write' | 'recovery';
+
+export interface IProposalAdaptiveFacadePath {
+	readonly intent: TProposalAdaptiveFacadeIntent;
+	readonly toolName: string;
+	readonly effect: TProposalAdaptiveFacadeEffect;
+	readonly expectedCalls: number;
+	readonly intentFit: number;
+	readonly sideEffectRisk: number;
+	readonly summary: string;
+}
+
+const stableToolSummaryByName = new Map(
+	PROPOSALS_STABLE_TOOLS.map((descriptor) => [
+		descriptor.name,
+		descriptor.summary,
+	]),
+);
+
+const describeAdaptiveFacadePath = (
+	path: Omit<IProposalAdaptiveFacadePath, 'summary'>,
+): IProposalAdaptiveFacadePath =>
+	Object.freeze({
+		...path,
+		summary: stableToolSummaryByName.get(path.toolName) ?? path.toolName,
+	});
+
+export const PROPOSALS_ADAPTIVE_FACADE_PATHS: readonly IProposalAdaptiveFacadePath[] =
+	Object.freeze([
+		describeAdaptiveFacadePath({
+			intent: 'orient',
+			toolName: 'auto_work',
+			effect: 'read',
+			expectedCalls: 1,
+			intentFit: 1,
+			sideEffectRisk: 0.02,
+		}),
+		describeAdaptiveFacadePath({
+			intent: 'plan',
+			toolName: 'auto_work',
+			effect: 'read',
+			expectedCalls: 1,
+			intentFit: 1,
+			sideEffectRisk: 0.02,
+		}),
+		describeAdaptiveFacadePath({
+			intent: 'claim',
+			toolName: 'agent_lock',
+			effect: 'write',
+			expectedCalls: 1,
+			intentFit: 1,
+			sideEffectRisk: 0.42,
+		}),
+		describeAdaptiveFacadePath({
+			intent: 'claim',
+			toolName: 'agent_worktree',
+			effect: 'write',
+			expectedCalls: 2,
+			intentFit: 0.76,
+			sideEffectRisk: 0.28,
+		}),
+		describeAdaptiveFacadePath({
+			intent: 'progress',
+			toolName: 'proposal_review',
+			effect: 'write',
+			expectedCalls: 1,
+			intentFit: 1,
+			sideEffectRisk: 0.4,
+		}),
+		describeAdaptiveFacadePath({
+			intent: 'progress',
+			toolName: 'task_queue_enqueue',
+			effect: 'write',
+			expectedCalls: 1,
+			intentFit: 0.74,
+			sideEffectRisk: 0.22,
+		}),
+		describeAdaptiveFacadePath({
+			intent: 'close',
+			toolName: 'proposal_transition',
+			effect: 'write',
+			expectedCalls: 1,
+			intentFit: 1,
+			sideEffectRisk: 0.54,
+		}),
+		describeAdaptiveFacadePath({
+			intent: 'close',
+			toolName: 'proposal_review',
+			effect: 'write',
+			expectedCalls: 2,
+			intentFit: 0.84,
+			sideEffectRisk: 0.36,
+		}),
+		describeAdaptiveFacadePath({
+			intent: 'recover',
+			toolName: 'state_repair',
+			effect: 'recovery',
+			expectedCalls: 1,
+			intentFit: 1,
+			sideEffectRisk: 0.66,
+		}),
+		describeAdaptiveFacadePath({
+			intent: 'recover',
+			toolName: 'proposal_force_transition',
+			effect: 'recovery',
+			expectedCalls: 1,
+			intentFit: 0.9,
+			sideEffectRisk: 0.92,
+		}),
+	]);
+
+export const listProposalAdaptiveFacadePaths = (
+	intent?: TProposalAdaptiveFacadeIntent,
+): readonly IProposalAdaptiveFacadePath[] =>
+	intent === undefined
+		? PROPOSALS_ADAPTIVE_FACADE_PATHS
+		: PROPOSALS_ADAPTIVE_FACADE_PATHS.filter(
+				(path) => path.intent === intent,
+			);
+
 /** Register the proposals stable facade contribution once the plugin loads. */
 export const registerProposalsStableTools =
 	(): readonly IStableToolDescriptor[] =>

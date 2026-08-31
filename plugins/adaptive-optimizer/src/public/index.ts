@@ -6,6 +6,11 @@
 export { default } from '../index';
 
 export {
+	AdaptiveFacadeOutputSchema,
+	buildAdaptiveFacadeToolRegistration,
+	runAdaptiveFacade,
+} from '../lib/tools/adaptive-facade.tool';
+export {
 	buildAdaptiveOptimizerToolRegistrations,
 	OptimizeRunOutputSchema,
 	runOptimizeRun,
@@ -25,6 +30,12 @@ export { computePayloadPercentile } from '@mcp-vertex/core/public';
 export type { IPayloadPercentile } from '@mcp-vertex/core/public';
 export { scoreOptimizationCandidate } from '../lib/services/optimization-scoring.service';
 export type {
+	IAdaptiveFacadeCandidate,
+	IAdaptiveFacadeHistoryEntry,
+	IAdaptiveFacadeMetrics,
+	IAdaptiveFacadeOutput,
+	IAdaptiveFacadeRuntimeOptions,
+	IAdaptiveFacadeToolArgs,
 	IAdaptiveOptimizerPluginOptions,
 	IOptimizationCandidate,
 	IOptimizationRankedCandidate,
@@ -34,6 +45,8 @@ export type {
 	IOptimizeRunOutput,
 	IOptimizeRunRuntimeOptions,
 	IOptimizeRunToolArgs,
+	TAdaptiveFacadeEffect,
+	TAdaptiveFacadeIntent,
 } from '../lib/contracts/interfaces/adaptive-optimizer.interface';
 
 // --- generated tool-output types ---

@@ -11,3 +11,13 @@ export type {
 	IAdoptionExtension,
 	IAdoptionStep,
 } from './interfaces/adoption-extension.interface';
+export {
+	CONTRACT_MIGRATION_PHASES,
+	type ContractMigrationPhase,
+	type ContractMigrationImpact,
+	type IContractMigrationPolicyInput,
+	type IContractMigrationPolicyVerdict,
+	type IWorktreeImpactPolicyInput,
+	type IWorktreeImpactPolicyVerdict,
+	type WorktreeIsolationMode,
+} from './interfaces/contract-migration.interface';

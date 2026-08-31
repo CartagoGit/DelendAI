@@ -55,6 +55,7 @@ describe('activation_metrics', () => {
 		});
 		expect(registrations.map((r) => r.id).sort()).toEqual([
 			'activation_metrics',
+			'adaptive_facade',
 			'optimize_run',
 		]);
 	});
