@@ -109,6 +109,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		'plugins/adaptive-optimizer/src',
 	);
 	const projectHealth = resolve(workspaceRoot, 'plugins/project-health/src');
+	const projectKpis = resolve(workspaceRoot, 'plugins/project-kpis/src');
 	const qualityPolicy = resolve(workspaceRoot, 'plugins/quality-policy/src');
 	const commitPolicy = resolve(workspaceRoot, 'plugins/commit-policy/src');
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
@@ -180,6 +181,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/project-health',
 			replacement: resolve(projectHealth, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/project-kpis/public',
+			replacement: resolve(projectKpis, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/project-kpis\/lib\/(.*)$/,
+			replacement: `${resolve(projectKpis, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/project-kpis',
+			replacement: resolve(projectKpis, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/quality-policy/public',
