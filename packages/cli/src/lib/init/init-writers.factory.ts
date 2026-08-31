@@ -212,6 +212,7 @@ const writeMcpJson = async (
 	kind: 'servers' | 'mcpServers',
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
+	serverName = 'mcp-vertex',
 ): Promise<IMcpJsonWriteResult> => {
 	const path = `${workspace}/${relPath}`;
 	if (mode === 'skip') return { kind: 'skipped', path };
@@ -222,7 +223,7 @@ const writeMcpJson = async (
 		// `mcp-vertex` server. The merge would have nothing to merge
 		// against, so we skip it.
 		const content = `${JSON.stringify(
-			{ [kind]: { 'mcp-vertex': renderMcpVertexServerEntry(launch) } },
+			{ [kind]: { [serverName]: renderMcpVertexServerEntry(launch) } },
 			null,
 			'\t',
 		)}\n`;
@@ -236,7 +237,12 @@ const writeMcpJson = async (
 
 	// File exists — read, merge, write.
 	const existing = await readFile(path, 'utf8');
-	const merged = mergeMcpVertexServerEntry(launch, existing, kind);
+	const merged = mergeMcpVertexServerEntry(
+		launch,
+		existing,
+		kind,
+		serverName,
+	);
 	if (merged === undefined) {
 		// Refused to merge: existing content isn't a JSON object.
 		// Leave it alone and surface `exists` so the operator knows
@@ -255,7 +261,7 @@ const writeMcpJson = async (
 		const servers = parsed[kind];
 		if (servers !== null && typeof servers === 'object') {
 			preserved = Object.keys(servers as Record<string, unknown>).filter(
-				(name) => name !== 'mcp-vertex',
+				(name) => name !== serverName,
 			);
 		}
 	} catch {
@@ -270,15 +276,31 @@ export const writeVscodeMcpJson = (
 	workspace: string,
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
+	serverName = 'mcp-vertex',
 ): Promise<IMcpJsonWriteResult> =>
-	writeMcpJson(workspace, '.vscode/mcp.json', 'servers', launch, mode);
+	writeMcpJson(
+		workspace,
+		'.vscode/mcp.json',
+		'servers',
+		launch,
+		mode,
+		serverName,
+	);
 
 export const writeGenericMcpJson = (
 	workspace: string,
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
+	serverName = 'mcp-vertex',
 ): Promise<IMcpJsonWriteResult> =>
-	writeMcpJson(workspace, '.mcp.json', 'mcpServers', launch, mode);
+	writeMcpJson(
+		workspace,
+		'.mcp.json',
+		'mcpServers',
+		launch,
+		mode,
+		serverName,
+	);
 
 /** Append-or-overwrite semantics for a generic file inside the workspace. */
 export const writeWorkspaceText = async (

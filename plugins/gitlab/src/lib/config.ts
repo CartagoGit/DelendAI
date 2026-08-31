@@ -127,16 +127,14 @@ const resolveProject = (
 		input.env.GITLAB_PROJECT_ID !== undefined ||
 		input.env.GITLAB_PROJECT_PATH !== undefined
 			? {
-					projectId:
-						input.env.GITLAB_PROJECT_ID !== undefined &&
-						input.env.GITLAB_PROJECT_ID.trim() !== ''
-							? input.env.GITLAB_PROJECT_ID.trim()
-							: undefined,
-					projectPath:
-						input.env.GITLAB_PROJECT_PATH !== undefined &&
-						input.env.GITLAB_PROJECT_PATH.trim() !== ''
-							? input.env.GITLAB_PROJECT_PATH.trim()
-							: undefined,
+					...(input.env.GITLAB_PROJECT_ID !== undefined &&
+					input.env.GITLAB_PROJECT_ID.trim() !== ''
+						? { projectId: input.env.GITLAB_PROJECT_ID.trim() }
+						: {}),
+					...(input.env.GITLAB_PROJECT_PATH !== undefined &&
+					input.env.GITLAB_PROJECT_PATH.trim() !== ''
+						? { projectPath: input.env.GITLAB_PROJECT_PATH.trim() }
+						: {}),
 				}
 			: undefined;
 	const layers: readonly [ConfigSource, IGitLabProjectInput | undefined][] = [
@@ -144,7 +142,7 @@ const resolveProject = (
 		['env', envProject],
 		['plugin', input.options?.defaultProject],
 	];
-	const merged: Record<string, string | number | undefined> = {};
+	const merged: IGitLabProjectInput = {};
 	const sources: ConfigSource[] = [];
 	for (const [source, value] of layers) {
 		if (value === undefined) continue;
@@ -163,8 +161,12 @@ const resolveProject = (
 				merged.projectId !== undefined
 					? String(merged.projectId)
 					: undefined,
-			projectPath: merged.projectPath,
-			displayName: merged.displayName,
+			...(merged.projectPath !== undefined
+				? { projectPath: merged.projectPath }
+				: {}),
+			...(merged.displayName !== undefined
+				? { displayName: merged.displayName }
+				: {}),
 			webUrl: merged.webUrl ?? webBaseUrl,
 			apiUrl: merged.apiUrl ?? apiBaseUrl,
 		},

@@ -5,6 +5,7 @@ import type { IRunExternalToolInput } from '@mcp-vertex/core/public';
 import {
 	buildForgeWriteToolRegistrations,
 	runForgeIssueCreate,
+	runForgeMcpVertexIssueCreate,
 	runForgePrComment,
 	runForgePrCreate,
 } from '../../../../src/lib/tools/forge-write.tool';
@@ -121,7 +122,12 @@ describe('forge write tools', () => {
 	it('builds the three write registrations', () => {
 		expect(
 			buildForgeWriteToolRegistrations(options).map((tool) => tool.id),
-		).toEqual(['pr_create', 'pr_comment', 'issue_create']);
+		).toEqual([
+			'pr_create',
+			'pr_comment',
+			'issue_create',
+			'mcp_vertex_issue_create',
+		]);
 	});
 
 	it('refuses forge_pr_create without confirm:true and succeeds with it', async () => {
@@ -189,6 +195,46 @@ describe('forge write tools', () => {
 		expect(body.ok).toBe(true);
 		expect(body.data.issue.number).toBe(42);
 		expect(body.data.issue.labels).toEqual(['triage']);
+	});
+
+	it('posts mcp-vertex issues to the canonical repository', async () => {
+		const calls: string[][] = [];
+		const exec: IForgeWriteExec = async (input) => {
+			calls.push([...input.args]);
+			if (input.tool.bin !== 'gh') {
+				throw new Error(
+					'internal issue creation must not inspect origin',
+				);
+			}
+			return {
+				ok: true,
+				code: 0,
+				stdout: JSON.stringify({
+					number: 99,
+					title: 'internal failure',
+					html_url:
+						'https://github.com/CartagoGit/mcp-vertex/issues/99',
+					labels: [{ name: 'bug' }],
+				}),
+				stderr: '',
+				timedOut: false,
+				unavailable: false,
+			};
+		};
+		const result = await runForgeMcpVertexIssueCreate(
+			{ title: 'internal failure', confirm: true },
+			{ ...options, forgeExec: exec },
+		);
+		const body = result.structuredContent as {
+			ok: boolean;
+			data: { issue: { url: string } };
+		};
+		expect(body.ok).toBe(true);
+		expect(body.data.issue.url).toContain(
+			'https://github.com/CartagoGit/mcp-vertex/issues/99',
+		);
+		expect(calls).toHaveLength(1);
+		expect(calls[0]).toContain('repos/CartagoGit/mcp-vertex/issues');
 	});
 
 	it('registers forge_pr_comment under the prefixed name', async () => {
