@@ -48,11 +48,74 @@ const resolveDocsUrl = (
 	}
 };
 
+/**
+ * `IDashboardDetailBroker` is the host-side channel that lets commands
+ * push host-agnostic detail payloads (tool/proposal) into the dashboard
+ * shell overlay. When the broker accepts a payload (returns `true`),
+ * the calling command suppresses its standalone-webview fallback so the
+ * dashboard overlay becomes the only surface.
+ */
+export interface IDashboardDetailBroker {
+	readonly push: (
+		payload:
+			| { readonly kind: 'tool'; readonly model: unknown }
+			| { readonly kind: 'proposal'; readonly model: unknown },
+	) => Promise<boolean>;
+	readonly hide: () => Promise<boolean>;
+}
+
 export class DashboardWebviewViewProvider {
 	private view: IWebviewPanel | undefined;
 	private refreshToken = 0;
+	/**
+	 * `detailBroker` lets the `ICommandDeps.detailSink` push a payload
+	 * into the dashboard overlay instead of opening a standalone webview
+	 * panel. The provider exposes it through `getDetailBroker()` so the
+	 * activation flow can wire it into the command deps.
+	 */
+	private readonly detailBroker: IDashboardDetailBroker;
 
-	constructor(private readonly deps: IDashboardWebviewViewProviderDeps) {}
+	constructor(private readonly deps: IDashboardWebviewViewProviderDeps) {
+		this.detailBroker = {
+			push: (payload) => this.pushDetail(payload),
+			hide: () => this.hideDetail(),
+		};
+	}
+
+	getDetailBroker(): IDashboardDetailBroker {
+		return this.detailBroker;
+	}
+
+	private async pushDetail(
+		payload:
+			| { readonly kind: 'tool'; readonly model: unknown }
+			| { readonly kind: 'proposal'; readonly model: unknown },
+	): Promise<boolean> {
+		const view = this.view;
+		if (view === undefined) return false;
+		const command =
+			payload.kind === 'tool' ? 'hostToolDetail' : 'hostProposalDetail';
+		try {
+			await view.webview.postMessage?.({
+				command,
+				model: payload.model,
+			});
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	private async hideDetail(): Promise<boolean> {
+		const view = this.view;
+		if (view === undefined) return false;
+		try {
+			await view.webview.postMessage?.({ command: 'hostHideDetail' });
+			return true;
+		} catch {
+			return false;
+		}
+	}
 
 	async resolveWebviewView(view: IWebviewPanel): Promise<void> {
 		this.view = view;
