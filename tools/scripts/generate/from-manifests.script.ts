@@ -199,6 +199,9 @@ const manifestFromModule = (
 const pluginFromModule = (
 	module: Record<string, unknown>,
 ): Pick<IMcpPlugin, 'example' | 'configExample'> | undefined => {
+	if (module === undefined) {
+		return undefined;
+	}
 	const candidate = module.default;
 	if (candidate === null || typeof candidate !== 'object') {
 		return undefined;
@@ -280,6 +283,13 @@ export const loadPluginManifests = async (
 		const mod = (await import(
 			`${pathToFileURL(absPath).href}?t=${Date.now()}`
 		)) as Record<string, unknown>;
+		// The runtime `IMcpPlugin` import (used to surface `example` /
+		// `configExample` in the generated registry) is best-effort:
+		// the manifest is the source of truth and a plugin may not
+		// ship a runtime entry in the first-party registry fixture
+		// during tests. Failures fall back to `plugin: undefined`,
+		// which keeps the build deterministic without coupling the
+		// generator to each plugin's runtime surface.
 		const pluginIndexPath = resolve(
 			root,
 			'plugins',
@@ -287,13 +297,18 @@ export const loadPluginManifests = async (
 			'src',
 			'index.ts',
 		);
-		const pluginMod = (await import(
-			`${pathToFileURL(pluginIndexPath).href}?t=${Date.now()}`
-		)) as Record<string, unknown>;
+		let pluginMod: Record<string, unknown> | undefined;
+		try {
+			pluginMod = (await import(
+				`${pathToFileURL(pluginIndexPath).href}?t=${Date.now()}`
+			)) as Record<string, unknown>;
+		} catch {
+			pluginMod = undefined;
+		}
 		loaded.push({
 			...pkg,
 			manifest: manifestFromModule(mod),
-			plugin: pluginFromModule(pluginMod),
+			plugin: pluginFromModule(pluginMod ?? {}),
 		});
 	}
 	return loaded.sort((left, right) => left.id.localeCompare(right.id));
