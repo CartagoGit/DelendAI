@@ -41,7 +41,8 @@ Hace explícita la frontera congelada de release y elimina la dependencia de un 
   - "slug y branch naming validados"
   - "source/base SHA preservados"
   - "tests de inmutabilidad respecto a develop"
-
+- review-state: in_review
+- review-implementer: release-migration-agent
 ## acceptance
 
 - State machine tipada

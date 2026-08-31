@@ -125,9 +125,7 @@ const importedReadFileNames = (source: string): ReadonlySet<string> => {
 					trimmed,
 				);
 			if (aliasMatch === null) continue;
-			const importedName = aliasMatch[1];
-			if (importedName === undefined) continue;
-			names.add(aliasMatch[2] ?? importedName);
+			names.add(aliasMatch[2] ?? aliasMatch[1] ?? '');
 		}
 	}
 	return names;

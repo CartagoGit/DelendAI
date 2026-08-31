@@ -51,6 +51,10 @@ export {
 } from '../lib/rollup';
 export type { IBuildSummaryOptions } from '../lib/rollup';
 export { extractAutoBypassed, countAutoBypassed } from '../lib/auto-bypass';
+export type {
+	IToolInvocationTelemetrySample,
+	IToolInvocationTelemetrySummary,
+} from '../lib/preferred-path-metrics';
 export {
 	computeLimitsStatus,
 	emptyLimitsStatus,
@@ -105,3 +109,7 @@ export type {
 	SortBy,
 	SpendBreachScope,
 } from '../lib/types';
+export {
+	indexToolInvocationTelemetry,
+	summarizeToolInvocationTelemetry,
+} from '../lib/preferred-path-metrics';

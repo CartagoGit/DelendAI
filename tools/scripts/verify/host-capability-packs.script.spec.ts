@@ -1,13 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { IHostAdapterPack } from '@mcp-vertex/core/public';
+import type {
+	IHostAdapterPack,
+	IHostCapabilityProfile,
+} from '@mcp-vertex/core/public';
 
 import {
 	CANONICAL_PROFILES,
 	runHostCapabilityGate,
 } from './host-capability-packs.script';
 
-const manualProfile = {
+const manualProfile: IHostCapabilityProfile = {
 	id: 'manual-profile',
 	capabilities: {
 		mcp: { tools: true, prompts: false, resources: false },
@@ -97,7 +100,9 @@ describe('validateOne negative branches via vi.mock', () => {
 
 	const runFresh = async () => {
 		// Re-import so the mocked module is honoured.
-		const mod = await import('./host-capability-packs.script?fresh');
+		vi.resetModules();
+		const mod: typeof import('./host-capability-packs.script') =
+			await import('./host-capability-packs.script');
 		return mod.runHostCapabilityGate([manualProfile]);
 	};
 

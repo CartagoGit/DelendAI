@@ -272,7 +272,18 @@ export const readVerifyPackageInput = async (
 		root,
 		pkgDir,
 		packageJson,
-		registryEntries: FIRST_PARTY_PLUGIN_INDEX.entries,
+		registryEntries: FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => ({
+			id: entry.id,
+			package: entry.package,
+			summary: entry.summary,
+			...(entry.permissions === undefined
+				? {}
+				: {
+						permissions: entry.permissions.map((permission) =>
+							String(permission),
+						),
+					}),
+		})),
 		...(sourceManifest !== undefined ? { sourceManifest } : {}),
 		...(packedFiles !== undefined ? { packedFiles } : {}),
 	};

@@ -319,6 +319,9 @@ const createResilientClient = (
 			return { tools: await current.listTools() };
 		},
 		async close() {
+			if (reconnecting !== undefined) {
+				await reconnecting.catch(() => undefined);
+			}
 			await current.close();
 		},
 	});
