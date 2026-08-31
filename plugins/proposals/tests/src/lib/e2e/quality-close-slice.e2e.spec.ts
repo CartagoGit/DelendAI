@@ -75,34 +75,17 @@ const seedSlice = (workspace: string, id: string): string => {
 	return proposalPath;
 };
 
-const findProposalPath = (
-	workspace: string,
-	id: string,
-): string => {
+const findProposalPath = (workspace: string, id: string): string => {
 	const proposalsDir = join(workspace, 'docs/mcp-vertex/proposals');
-	const pending = [proposalsDir];
-	while (pending.length > 0) {
-		const currentDir = pending.pop()!;
-		let entries;
-		try {
-			entries = await readdir(currentDir, { withFileTypes: true });
-		} catch {
-			continue;
-		}
-		for (const entry of entries) {
-			const currentPath = join(currentDir, entry.name);
-			if (entry.isDirectory()) {
-				pending.push(currentPath);
-				continue;
-			}
-			if (
-				entry.name.endsWith('.md') &&
-				readFileSync(currentPath, 'utf8').includes(`id: ${id}`)
-			) {
-				return currentPath;
-			}
-		}
-	}
+	const relativePath = readdirSync(proposalsDir, { recursive: true }).find(
+		(entry) =>
+			typeof entry === 'string' &&
+			entry.endsWith('.md') &&
+			readFileSync(join(proposalsDir, entry), 'utf8').includes(
+				`id: ${id}`,
+			),
+	);
+	if (relativePath !== undefined) return join(proposalsDir, relativePath);
 	throw new Error(`proposal ${id} was not found under ${proposalsDir}`);
 };
 
