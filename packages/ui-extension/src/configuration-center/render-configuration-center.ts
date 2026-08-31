@@ -217,7 +217,11 @@ export const renderConfigurationCenter = (
 	const pluginBody =
 		model.plugins.length === 0
 			? `<p class="mcpv-config__empty">${attr(model.copy.empty)}</p>`
-			: `<div class="mcpv-config__grid">${model.plugins.map((entry) => renderPlugin(entry, model)).join('')}</div>`;
+			: `<div class="mcpv-config__grid">${model.plugins
+					.map((entry) =>
+						renderPlugin(entry, model, options.pluginId),
+					)
+					.join('')}</div>`;
 	const providerBody =
 		model.providers.length === 0
 			? `<p class="mcpv-config__empty">${attr(model.copy.empty)}</p>`
