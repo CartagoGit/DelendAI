@@ -17,6 +17,8 @@ import { buildKpiStrip } from './builders/build-kpi-strip';
 import { buildTabsBar } from './builders/build-tabs-bar';
 import { buildPanels } from './builders/build-panels';
 import { buildFooter } from './builders/build-footer';
+import { renderToolDetailBody } from './render-tool-detail';
+import { renderProposalDetailBody } from './render-proposal-detail';
 
 export interface IRenderDashboardOptions {
 	readonly docsUrl: string;
@@ -86,6 +88,49 @@ const CLIENT_SCRIPT = `
 		host?.postMessage({ command: 'openProposal', id });
 	});
   const toolsTable = document.querySelector('.mcpv-tools-table');
+  // ── Host-pushed detail overlay ────────────────────────────────────
+  // The dashboard provider can push hostToolDetail / hostProposalDetail
+  // / hostHideDetail payloads so a click on a tool/proposal row opens
+  // the detail inside the shell instead of a native webview panel.
+  // The renderers are imported eagerly below as RENDER_TOOL_BODY and
+  // RENDER_PROPOSAL_BODY.
+  const overlay = document.getElementById('mcpv-detail-overlay');
+  const overlayBody = document.getElementById('mcpv-detail-overlay-body');
+  const overlayTitle = document.getElementById('mcpv-detail-overlay-title');
+  function showOverlay(title, html) {
+    if (!overlay || !overlayBody || !overlayTitle) return;
+    overlayTitle.textContent = title;
+    overlayBody.innerHTML = html;
+    overlay.setAttribute('data-active', 'true');
+    overlay.removeAttribute('hidden');
+  }
+  function hideOverlay() {
+    if (!overlay) return;
+    overlay.setAttribute('data-active', 'false');
+    overlay.setAttribute('hidden', '');
+    if (overlayBody) overlayBody.innerHTML = '';
+  }
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) hideOverlay();
+    });
+    const closeBtn = overlay.querySelector('[data-detail-close]');
+    if (closeBtn) closeBtn.addEventListener('click', hideOverlay);
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hideOverlay();
+  });
+  window.addEventListener('message', (event) => {
+    const data = event && event.data;
+    if (!data || typeof data !== 'object') return;
+    if (data.command === 'hostToolDetail' && data.model && typeof RENDER_TOOL_BODY === 'function') {
+      showOverlay(data.model.tool && data.model.tool.name || 'Tool', RENDER_TOOL_BODY(data.model));
+    } else if (data.command === 'hostProposalDetail' && data.model && typeof RENDER_PROPOSAL_BODY === 'function') {
+      showOverlay(data.model.id || 'Proposal', RENDER_PROPOSAL_BODY(data.model));
+    } else if (data.command === 'hostHideDetail') {
+      hideOverlay();
+    }
+  });
   if (toolsTable) {
     const tbody = toolsTable.querySelector('tbody');
     const headers = toolsTable.querySelectorAll('th[data-sort]');
@@ -145,7 +190,17 @@ export const renderDashboard = (
 		${panels}
 	</main>
 	${footer}
+	<div id="mcpv-detail-overlay" class="mcpv-detail-overlay" role="dialog" aria-modal="true" aria-labelledby="mcpv-detail-overlay-title" data-active="false" hidden>
+		<div class="mcpv-detail-overlay__card">
+			<header class="mcpv-detail-overlay__head">
+				<h2 id="mcpv-detail-overlay-title">Detail</h2>
+				<button type="button" class="mcpv-detail-overlay__close" data-detail-close aria-label="Close">×</button>
+			</header>
+			<div id="mcpv-detail-overlay-body" class="mcpv-detail-overlay__body"></div>
+		</div>
+	</div>
 	<script>${CLIENT_SCRIPT}</script>
+	<script>window.__MCPV_DASHBOARD_DETAIL__ = { RENDER_TOOL_BODY: ${renderToolDetailBody.toString()}, RENDER_PROPOSAL_BODY: ${renderProposalDetailBody.toString()} };</script>
 	${renderRuntime()}
 </body>
 </html>`;
