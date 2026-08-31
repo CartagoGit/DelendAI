@@ -16,6 +16,7 @@ export interface IHeaderBarOptions {
 	readonly version: string;
 	readonly langPicker?: string; // pre-rendered HTML string for the language picker
 	readonly actions?: string; // pre-rendered HTML string for the right-hand action strip
+	readonly direction?: 'ltr' | 'rtl';
 }
 
 /** Inline brand SVG copied from the extension/app logo asset so every host
@@ -50,7 +51,7 @@ export const renderHeaderBar = (opts: IHeaderBarOptions): string => {
 	const right = [opts.actions ?? '', opts.langPicker ?? '']
 		.filter((s) => s.length > 0)
 		.join('');
-	return `<header class="mcpv-header">
+	return `<header class="mcpv-header"${opts.direction === 'rtl' ? ' dir="rtl"' : ''}>
 	${BRAND_SVG}
 	<div class="mcpv-header__brand">
 		<div class="mcpv-header__name">${escapeHtml(opts.brandName)}</div>
