@@ -106,7 +106,11 @@ export const captureToolRegistration = async (
 			const out = (await invoke(a)) as {
 				content?: Array<{ text?: string }>;
 				isError?: boolean;
+				structuredContent?: unknown;
 			};
+			if (out.structuredContent !== undefined) {
+				return out.structuredContent;
+			}
 			const text = out?.content?.[0]?.text;
 			if (text === undefined) return out;
 			try {
@@ -126,7 +130,14 @@ export const captureToolRegistration = async (
 			const out = (await invoke(a)) as {
 				content?: Array<{ text?: string }>;
 				isError?: boolean;
+				structuredContent?: unknown;
 			};
+			if (out.structuredContent !== undefined) {
+				return {
+					payload: out.structuredContent,
+					isError: out.isError === true,
+				};
+			}
 			const text = out?.content?.[0]?.text;
 			let payload: unknown = out;
 			if (text !== undefined) {

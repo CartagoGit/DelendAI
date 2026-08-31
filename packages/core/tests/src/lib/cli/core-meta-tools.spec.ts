@@ -73,7 +73,10 @@ const callTool = async (
 			handler = h;
 		},
 	} as never);
-	const result = await handler!(args);
+	const result = (await handler!(args)) as {
+		content: Array<{ text: string }>;
+		structuredContent?: unknown;
+	};
 	return (
 		result.structuredContent ?? JSON.parse(result.content[0]?.text ?? '{}')
 	);
