@@ -431,7 +431,7 @@ const CLIENT_SCRIPT = `
     }
     if (logsEmpty) {
       logsEmpty.textContent = needle.length > 0 && visible === 0
-        ? `No events match "${needle}".`
+        ? 'No events match "' + needle + '".'
         : 'No log events match the current filter.';
       logsEmpty.hidden = visible > 0;
     }
