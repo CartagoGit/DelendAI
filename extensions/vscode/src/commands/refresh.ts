@@ -14,9 +14,7 @@ export interface IRefreshExtras {
 	readonly providerActions?: { refresh(): Promise<void> | void };
 }
 
-export const registerRefreshCommand = (
-	deps: ICommandDeps & IRefreshExtras,
-) =>
+export const registerRefreshCommand = (deps: ICommandDeps & IRefreshExtras) =>
 	deps.vscode.commands.registerCommand(REFRESH_COMMAND, async () => {
 		deps.toolTree?.refresh();
 		// f00097 S4: a global refresh also invalidates the proposals board
@@ -27,7 +25,9 @@ export const registerRefreshCommand = (
 		// them keeps the toast accurate (the user only sees the
 		// confirmation after every surface finished repainting).
 		await Promise.all([
-			Promise.resolve(deps.kpiDashboard?.refresh()).catch(() => undefined),
+			Promise.resolve(deps.kpiDashboard?.refresh()).catch(
+				() => undefined,
+			),
 			Promise.resolve(deps.providerActions?.refresh()).catch(
 				() => undefined,
 			),

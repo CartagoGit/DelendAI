@@ -922,12 +922,14 @@ export class KpiDashboardProvider implements IKpiDashboardProvider {
 /**
  * Register the KPI dashboard view. Returns the live
  * `KpiDashboardProvider` so the host can invoke `refresh()` from the
- * global refresh command, plus the disposable the host should track
- * (mirrors the legacy single-return contract for the registration).
+ * global refresh command, plus the disposable the host should track.
  */
 export const registerKpiDashboardProvider = (
 	deps: IKpiDashboardProviderDeps,
-): { readonly provider: KpiDashboardProvider; readonly dispose(): void } => {
+): {
+	readonly provider: KpiDashboardProvider;
+	readonly dispose: () => void;
+} => {
 	const provider = new KpiDashboardProvider({
 		client: deps.client,
 		...(deps.serverConfigured === undefined
@@ -940,10 +942,12 @@ export const registerKpiDashboardProvider = (
 			? {}
 			: { defaultQuery: deps.defaultQuery }),
 	});
-	const dispose =
-		deps.host.registerWebviewViewProvider?.(
-			deps.viewId ?? DEFAULT_VIEW_ID,
-			provider,
-		) ?? { dispose() {} };
+	const registration = deps.host.registerWebviewViewProvider?.(
+		deps.viewId ?? DEFAULT_VIEW_ID,
+		provider,
+	);
+	const dispose = (): void => {
+		registration?.dispose?.();
+	};
 	return { provider, dispose };
 };
