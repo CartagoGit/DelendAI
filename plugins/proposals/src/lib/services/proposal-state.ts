@@ -92,6 +92,7 @@ export const guardShippedInPresent = (
 	//        shipped-in: '[abc1234]'
 	// The shape-check downstream tolerates any of these by extracting
 	// every 7-40 char hex run.
+	const shaRe = new RegExp(`^[0-9a-f]{7,${SHIPPED_IN_SHA_LENGTH_MAX}}$`);
 	const candidates: string[] = [];
 	if (Array.isArray(raw)) {
 		for (const entry of raw) {
@@ -110,9 +111,7 @@ export const guardShippedInPresent = (
 		// keep it as a single candidate (e.g. `[ship123]` is one SHA,
 		// not three tokens to split). Otherwise split on whitespace /
 		// commas to extract every individual SHA.
-		if (
-			new RegExp(`^[0-9a-f]{7,${SHIPPED_IN_SHA_LENGTH_MAX}}$`).test(inner)
-		) {
+		if (shaRe.test(inner)) {
 			candidates.push(inner);
 		} else {
 			for (const token of inner.split(/[\s,]+/u)) {
