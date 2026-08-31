@@ -6,9 +6,8 @@ import {
 	CONFIG_FILE_SCHEMA,
 	DEFAULT_CONFIG_FILENAME,
 	redactSecrets,
-	withFileMutex,
-	writeFileAtomic,
 } from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/runtime';
 
 import type {
 	ConfigurationEdit,

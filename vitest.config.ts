@@ -143,12 +143,23 @@ export default defineConfig({
 			// 2026-08-29: re-measured again (see RATCHET POLICY note above) —
 			// a large batch of new tests landed since t00004 and the old
 			// floors (80/67/79/81) had drifted 2-4pt under the real numbers.
-			// Tightened to measured − 1.0pt, floored.
+			// Tightened to measured − 1.0pt, floored. t00030 also adds
+			// stricter branch floors for the core risk slices that carried
+			// the audit's P0/P1 bug fixes.
 			thresholds: {
 				statements: 82,
 				branches: 69,
 				functions: 83,
 				lines: 83,
+				'packages/core/src/lib/plugins/**': {
+					branches: 80,
+				},
+				'packages/core/src/lib/dry-run/**': {
+					branches: 80,
+				},
+				'packages/core/src/lib/project/**': {
+					branches: 80,
+				},
 			},
 		},
 	},
