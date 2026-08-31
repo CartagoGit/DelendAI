@@ -44,9 +44,16 @@ describe('codex-parse-noise-attributor', () => {
 			await writeFile(logPath, sampleLog, 'utf8');
 			const noise = await attributeLog(logPath);
 			expect(noise.length).toBe(3);
-			// All three are preceded by an [IpcRouter] line in this fixture.
+			// Fixture has CodexMcpConnection (line 1) followed by IpcRouter
+			// (line 2). The 3 noise lines, walking backwards, hit IpcRouter,
+			// IpcRouter, and CodexMcpConnection respectively.
+			const channels = noise.map((n) => n.channel);
+			expect(channels).toEqual([
+				'IpcRouter',
+				'CodexMcpConnection',
+				'CodexMcpConnection',
+			]);
 			for (const n of noise) {
-				expect(n.channel).toBe('IpcRouter');
 				expect(n.timestamp).toMatch(/^2026-08-31/);
 			}
 		});
