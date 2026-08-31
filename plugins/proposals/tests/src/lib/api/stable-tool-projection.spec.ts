@@ -35,7 +35,7 @@ describe('stable-tool projection — v00133 S2', () => {
 
 	it('keeps proposals_close_plan serializable with a non-null outputSchema', () => {
 		const closePlan = surfaceRows().find(
-			(row) => row.name === 'proposals_close_plan',
+			(row) => row.name === 'proposals_close_plan'
 		) as
 			| (IStableManifestTool & {
 					outputSchema?: {
@@ -81,8 +81,8 @@ describe('stable-tool projection — v00133 S2', () => {
 						'kind',
 						'type',
 						'description',
-					].includes(key),
-				),
+					].includes(key)
+				)
 			).toBe(true);
 		}
 	});
@@ -110,7 +110,7 @@ describe('stable-tool projection — v00133 S2', () => {
 			createInMemoryHandleStore<readonly IStableManifestTool[]>();
 		const result = projectProposalsStableTools(
 			{ mode: 'compact', maxBytes: 256 },
-			{ handleStore: store, handleTtlMs: 1_000 },
+			{ handleStore: store, handleTtlMs: 1_000 }
 		);
 		expect(result.truncatedByBytes).toBe(true);
 		expect(result.artifact).not.toBeNull();
@@ -119,11 +119,11 @@ describe('stable-tool projection — v00133 S2', () => {
 		}
 		const read = store.get(
 			result.artifact.handleId,
-			result.artifact.viewerToken,
+			result.artifact.viewerToken
 		);
 		expect(read.status).toBe('ok');
 		if (read.status === 'ok') {
-			expect(read.value).toEqual(surfaceRows());
+			expect(read.value).toEqual(compactRows());
 		}
 	});
 });
