@@ -11,7 +11,7 @@
  *
  *   - coupled the lock tool to a specific consumer (the loop detector);
  *   - hid the fact that the only current call site for `claim`,
- *     `release` and `gc` (NOT `status`) can mutate the file;
+ *     `heartbeat`, `release` and `gc` (NOT `status`) can mutate the file;
  *   - made it impossible for two consumers to listen at once without
  *     fan-out logic in the plugin wiring layer.
  *
@@ -25,7 +25,7 @@
  */
 
 /** The four operations the lock tool supports; mirrors the inputSchema enum. */
-export type LockAction = 'claim' | 'release' | 'status' | 'gc';
+export type LockAction = 'claim' | 'heartbeat' | 'release' | 'status' | 'gc';
 
 /**
  * Event payload delivered to listeners after a successful lock mutation.
@@ -48,7 +48,7 @@ export interface ILockChangeEvent {
  * listener must not break the tool).
  */
 export interface ILockChangeListener {
-	/** Invoked AFTER a successful claim / release / gc. */
+	/** Invoked AFTER a successful claim / heartbeat / release / gc. */
 	onLockChanged(event: ILockChangeEvent): void;
 }
 
