@@ -65,6 +65,7 @@ export function buildPanels(
 			motion: 'system',
 		},
 		lang,
+		options.compact ?? false,
 	);
 
 	const docsPanel = `
