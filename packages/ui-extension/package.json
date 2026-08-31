@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/ui-extension",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"type": "module",
 	"private": true,
 	"license": "BSD-3-Clause",

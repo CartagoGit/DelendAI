@@ -2,7 +2,7 @@
 	"name": "mcp-vertex-vscode",
 	"displayName": "MCP Vertex for VS Code",
 	"description": "VS Code host implementation that consumes @mcp-vertex/ui-extension to render the dashboard and panels inside the IDE.",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"publisher": "cartago",
 	"private": true,
 	"license": "BSD-3-Clause",
