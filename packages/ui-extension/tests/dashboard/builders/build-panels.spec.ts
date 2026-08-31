@@ -52,6 +52,7 @@ describe('buildPanels', () => {
 				histogram: [],
 			},
 			agents: { agents: [], totalActive: 0 },
+			memory: { state: 'empty', notes: [], total: 0, offset: 0 },
 			health: {
 				healthy: true,
 				locksActive: 0,
