@@ -588,6 +588,8 @@ const extension = {
 	'dashboard.health.activeAgents': 'Active agents',
 	'dashboard.health.noneActiveAgents': 'No active agents.',
 	'dashboard.memory.none': 'No memory notes.',
+	'dashboard.memory.unavailable':
+		'Memory is unavailable because the memory plugin is not loaded.',
 	'dashboard.memory.title': 'Memory',
 	'dashboard.memory.durableNotes': '{count} durable note(s)',
 	'settings.title': 'mcp-vertex Settings',

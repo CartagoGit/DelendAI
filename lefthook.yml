@@ -130,11 +130,10 @@ pre-push:
             run: bun tools/scripts/gen-all.script.ts --check
 
         # f00086: config-driven branch discipline. BLOCKING. With
-        # `agentWorktree: false` (this repo), pushing from
-        # an `agent/*` branch warns the agent to switch back to `develop`.
-        # `develop → origin/develop` (the shared push), release merges
-        # (`develop → main`, `main → main`) and user-managed branches
-        # release/* is allowed only through the release PR gate into main.
+        # `agentWorktree: false` (this repo), temporary agent/user branches
+        # are not valid working locations. Normal work stays on develop;
+        # release/* is the sole operator-created branch and reaches main
+        # only through a pull request.
         #
         # x00159 S1: `use_stdin: true` is REQUIRED here. Lefthook does not
         # forward git's real stdin to a command by default (it connects a

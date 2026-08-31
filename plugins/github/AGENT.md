@@ -3,7 +3,7 @@
 > Below the `<!-- mcp-vertex:begin agent-md -->
 ## Purpose
 
-- GitHub read-only provider context and HTTP client for future tools.
+- GitHub read-only provider context, HTTP client and remote resource tools.
 
 ## Public API
 

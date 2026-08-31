@@ -140,6 +140,8 @@ export type { IDashboardServiceOptions } from '../lib/services/dashboard.service
 export type {
 	IDashboardAgentsModel,
 	IDashboardAllModels,
+	IDashboardDataState,
+	IDashboardMemoryModel,
 	IDashboardMetricsModel,
 	IDashboardOverviewModel,
 	IDashboardPluginsModel,

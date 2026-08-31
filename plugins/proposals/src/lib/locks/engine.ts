@@ -569,10 +569,13 @@ const writeLock = async (
 	await writeFileAtomic(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
 };
 
-export const removeStale = (lock: ILockFile): ILockFile => ({
+export const removeStale = (
+	lock: ILockFile,
+	nowMs = Date.now(),
+): ILockFile => ({
 	...lock,
 	in_flight: lock.in_flight.filter(
-		(entry) => !isLockEntryStale(entry, lock.stale_after_minutes),
+		(entry) => !isLockEntryStale(entry, lock.stale_after_minutes, nowMs),
 	),
 });
 
@@ -690,7 +693,8 @@ const readSynchronizedLock = async (
 	deps: IAgentLockDeps,
 ): Promise<ILockFile> => {
 	const raw = await loadLock(deps);
-	const cleaned = removeStale(raw);
+	const nowMs = Date.parse(getNow(deps));
+	const cleaned = removeStale(raw, Number.isNaN(nowMs) ? Date.now() : nowMs);
 	const activeTaskIds = new Set(
 		cleaned.in_flight.map((entry) => entry.task_id),
 	);

@@ -594,6 +594,8 @@ const extension = {
 	'dashboard.health.activeAgents': 'Agentes activos',
 	'dashboard.health.noneActiveAgents': 'No hay agentes activos.',
 	'dashboard.memory.none': 'No hay notas de memoria.',
+	'dashboard.memory.unavailable':
+		'La memoria no está disponible porque el plugin de memoria no está cargado.',
 	'dashboard.memory.title': 'Memoria',
 	'dashboard.memory.durableNotes': '{count} notas persistentes',
 	'settings.title': 'Ajustes de mcp-vertex',
