@@ -50,12 +50,12 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 
 ## Catalog and task context cost addendum
 
-Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` against the same synthetic fixture workspace used by the token budget suite. The existing real-preset, plugin-marginal and top-tool tables below remain the schema breakdown source; this addendum pins the extra S1 measurements for `agent_catalog` text payloads and routed `project_context` task context snapshots.
+Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` against the same synthetic fixture workspace used by the token budget suite. The existing real-preset, plugin-marginal and top-tool tables below remain the schema breakdown source; this addendum pins the extra S1 measurements for `agent_catalog` structured payloads and routed `project_context` task context snapshots.
 
 | Catalog payload | Surface | Bytes | Est. Tokens |
 | --- | --- | --- | --- |
-| agent_catalog compact | native | 32 | 8 |
-| agent_catalog full | native | 33 | 9 |
+| agent_catalog compact | native | 743 | 186 |
+| agent_catalog full | native | 9,519 | 2,380 |
 
 | Catalog breakdown snapshot | Tools | Tools/List Bytes | Schema Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes |
 | --- | --- | --- | --- | --- | --- | --- |
