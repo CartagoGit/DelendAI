@@ -128,7 +128,13 @@ export class ToolTreeDataProvider {
 			}));
 		}
 		if (element.kind === 'server') {
-			let byPlugin: Map<string, IToolDescriptor[]>;
+			let byPlugin: Map<
+				string,
+				{
+					readonly tools: readonly IToolDescriptor[];
+					readonly loaded: boolean;
+				}
+			>;
 			try {
 				byPlugin = await this.toolsByPlugin();
 			} catch (error) {
@@ -136,14 +142,27 @@ export class ToolTreeDataProvider {
 			}
 			return [...byPlugin.entries()]
 				.sort(([left], [right]) => left.localeCompare(right))
-				.map(([plugin, tools]) => pluginNode(plugin, tools.length));
+				.map(([plugin, bucket]) =>
+					pluginNode(plugin, bucket.tools.length, {
+						loaded: bucket.loaded,
+					}),
+				);
 		}
 		if (element.kind === 'plugin' && element.plugin !== undefined) {
-			const tools =
-				(await this.toolsByPlugin()).get(element.plugin) ?? [];
-			return [...tools]
-				.sort((left, right) => left.name.localeCompare(right.name))
-				.map((tool) => toolNode(tool));
+			const bucket =
+				(await this.toolsByPlugin()).get(element.plugin) ?? null;
+			if (bucket === null) return [];
+			// Sort lazy tools together but show eager tools first so the
+			// user sees the active surface without expanding anything.
+			const sorted = [...bucket.tools].sort((left, right) => {
+				const ll = left.loaded ?? true;
+				const rl = right.loaded ?? true;
+				if (ll === rl) return left.name.localeCompare(right.name);
+				return ll ? -1 : 1;
+			});
+			return sorted.map((tool) =>
+				toolNode(tool, { loaded: tool.loaded ?? true }),
+			);
 		}
 		return [];
 	}
@@ -172,12 +191,29 @@ export class ToolTreeDataProvider {
 		};
 	}
 
-	private async toolsByPlugin(): Promise<Map<string, IToolDescriptor[]>> {
+	private async toolsByPlugin(): Promise<
+		Map<
+			string,
+			{
+				readonly tools: readonly IToolDescriptor[];
+				readonly loaded: boolean;
+			}
+		>
+	> {
 		const tools = await this.tools();
-		const byPlugin = new Map<string, IToolDescriptor[]>();
+		const byPlugin = new Map<
+			string,
+			{ tools: IToolDescriptor[]; loaded: boolean }
+		>();
 		for (const tool of tools) {
-			const bucket = byPlugin.get(tool.plugin) ?? [];
-			bucket.push(tool);
+			const bucket =
+				byPlugin.get(tool.plugin) ??
+				({ tools: [], loaded: true } as {
+					tools: IToolDescriptor[];
+					loaded: boolean;
+				});
+			bucket.tools.push(tool);
+			if (tool.loaded === false) bucket.loaded = false;
 			byPlugin.set(tool.plugin, bucket);
 		}
 		return byPlugin;
