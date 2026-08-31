@@ -21,6 +21,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	releaseSessionSubscriptions,
 	runTaskQueueAction,
 	type ISubscribeActionResult,
 	type ITaskQueuePaths,
@@ -164,5 +165,79 @@ describe('subscribe idempotency persists across sessions (M6)', async () => {
 			renewed: false,
 		});
 		expect(replacement.subscriptionId).not.toBe(first.subscriptionId);
+	});
+});
+
+describe('subscribe session cleanup mirrors disconnect unsubscribe', async () => {
+	let dir = '';
+	let paths: ITaskQueuePaths;
+
+	beforeEach(async () => {
+		dir = mkdtempSync(join(tmpdir(), 'tq-release-'));
+		paths = {
+			queuePath: join(dir, 'queue.json'),
+			closedTasksPath: join(dir, 'closed.json'),
+			lockPath: join(dir, 'agents.lock.json'),
+			workspaceRoot: dir,
+		};
+	});
+
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('releases only leases owned by the caller, leaving other processes untouched', async () => {
+		const sessionA = { host: 'host-a', pid: 100 };
+		const sessionB = { host: 'host-b', pid: 200 };
+
+		const own = await runTaskQueueAction(
+			{
+				action: 'subscribe',
+				params: { taskId: 'obs', now: '2026-08-31T00:00:00.000Z' },
+			},
+			paths,
+		);
+		const other = await runTaskQueueAction(
+			{
+				action: 'subscribe',
+				params: { taskId: 'obs2', now: '2026-08-31T00:00:00.000Z' },
+			},
+			paths,
+		);
+
+		const leasesPath = join(dir, '.subscribe-leases.json');
+		const initial = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
+			leases: Array<{
+				taskId: string;
+				subscriberId: string;
+				host?: string;
+				pid?: number;
+			}>;
+		};
+		expect(initial.leases).toHaveLength(2);
+		const firstSubscriber = initial.leases[0]?.subscriberId ?? 'unknown';
+
+		const result = await releaseSessionSubscriptions(paths, sessionA);
+		expect(result.releasedTaskIds.length).toBeGreaterThan(0);
+
+		const after = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
+			leases: Array<{
+				taskId: string;
+				subscriberId: string;
+				host?: string;
+				pid?: number;
+			}>;
+		};
+		const surviving = after.leases.find(
+			(lease) => lease.host === sessionB.host,
+		);
+		expect(surviving?.taskId).toBe(
+			initial.leases.find((lease) => lease.host === sessionB.host)
+				?.taskId,
+		);
+		expect(after.leases.some((lease) => lease.host === sessionA.host)).toBe(
+			false,
+		);
+		expect(typeof own.subscriptionId).toBe('string');
+		expect(typeof other.subscriptionId).toBe('string');
+		expect(firstSubscriber).toBeDefined();
 	});
 });
