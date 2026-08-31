@@ -42,7 +42,7 @@ tool has a 1:1 subcommand — the CLI is pure delegation, no domain logic.
 
 | Group | Commands |
 |---|---|
-| **core** | `status`, `overview`, `plugin list/inspect`, `metrics`, `validate`, `validate-matrix`, `config show/get/set/doctor/schema`, `init`, `search`, `scaffold` |
+| **core** | `status`, `overview`, `plugin list/inspect`, `metrics`, `validate`, `validate-matrix`, `config show/get/set/doctor/schema`, `init`, `init:default`, `init:global`, `search`, `scaffold` |
 | **fs / knowledge / project** | `fs read/write`, `knowledge`, `project analyze/plan/create` |
 | **git** | `git status/changed/diff/log/blame/show/worktree` |
 | **memory** | `memory save/recall/list/forget/export/import` |
@@ -78,6 +78,40 @@ bun run cli -- --workspace "$tmp" init
 bun run cli -- --workspace "$tmp" config set plugins.docs.options.roots='["docs"]'
 bun run cli -- --workspace "$tmp" scaffold tool --name=demo --out=demo.tool.ts
 ```
+
+### Global host setup
+
+Use `init:global` once per user account to merge the shared `mcp-vertex` server
+into every supported global host configuration. It does not write project files
+such as `.vscode/mcp.json`, `.cursor/mcp.json`, or `.mcp.json`.
+
+```bash
+# Install into all supported global hosts for the current platform.
+mcpv init:global --all
+
+# Install only selected global targets.
+mcpv init:global --ide=cursor-global,windsurf,claude-desktop,antigravity,zed
+```
+
+The valid global target ids are `cursor-global`, `windsurf`,
+`claude-desktop`, `antigravity`, and `zed`. Project-only ids such as `vscode`,
+`cursor`, and `claude-code` are rejected by `init:global`; use `init` with an
+explicit `--ide=<id>` for those. An empty or unknown `--ide` value is also an
+error and never falls back to project autodetection.
+
+The installer merges only the `mcp-vertex` entry and preserves unrelated MCP
+servers and host settings. Runner and preset flags are shared with `init`, for
+example `--via=bunx --preset=swarm`. On WSL, the command writes to the Linux
+home by default; Windows-side applications may require an explicit target path
+or host-native setup.
+
+`init:global` installs the MCP connection, not a second copy of agent rules.
+All agents should follow the canonical bootstrap at
+`docs/mcp-vertex/AGENT-BOOTSTRAP.md`; use `init` or `init:default` inside a
+project when that project needs host-specific pointer files and generated
+agent adapters. MCP provides the same server tools to Claude, Copilot, Cursor,
+Codex, Continue, Aider, and other MCP-capable hosts, while each host retains
+its own instruction-file convention.
 
 ## Transport
 
