@@ -18,6 +18,16 @@ export const buildVsCodeExtension = async (
 		external: ['vscode'],
 		outdir,
 		plugins: [scssPlugin],
+		// Bun's tree-shaker drops top-level side-effect imports for ESM
+		// bundles, so the navigator shim (which mutates `globalThis`
+		// at import time) would never run before `zod` evaluates
+		// `typeof navigator`. The `banner` runs at the very top of
+		// the bundle, before any module body — guaranteed to fire on
+		// extension host startup. Keep it dependency-free.
+		banner: [
+			'/* mcp-vertex: node22 navigator shim — must stay first */',
+			'try { Object.defineProperty(globalThis, "navigator", { value: undefined, writable: true, configurable: true }); } catch (_) { /* ignore */ }',
+		].join('\n'),
 	});
 };
 
