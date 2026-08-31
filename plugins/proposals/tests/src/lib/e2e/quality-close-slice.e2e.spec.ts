@@ -202,9 +202,9 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				ok: true,
 				closed: true,
 			});
-			expect(readFileSync(proposalPath, 'utf8')).toContain(
-				'- **Status**: done',
-			);
+			expect(
+				readFileSync(findProposalPath(workspace, 'f04201'), 'utf8'),
+			).toContain('- **Status**: done');
 		} finally {
 			await client.close();
 			await project.server.close();
