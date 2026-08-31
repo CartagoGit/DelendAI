@@ -42,6 +42,16 @@
 					"name": "Dashboard",
 					"type": "webview",
 					"icon": "media/logo.svg"
+				},
+				{
+					"id": "mcp-vertex.proposals",
+					"name": "Proposals",
+					"type": "tree"
+				},
+				{
+					"id": "mcp-vertex.memory",
+					"name": "Memory",
+					"type": "tree"
 				}
 			]
 		},
