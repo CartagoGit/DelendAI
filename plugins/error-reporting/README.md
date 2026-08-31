@@ -99,7 +99,7 @@ Inspect the current state with the `<prefix>_report_status` tool.
 
 | Option              | Type       | Default                    | Purpose                                                                                         |
 | ------------------- | ---------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
-| `enabled`           | `boolean`  | `false`                    | Master switch. `true` explicitly enables reporting.                                               |
+| `enabled`           | `boolean`  | `false`                    | Master switch. `true` explicitly enables reporting.                                             |
 | `targetRepo`        | `string`   | `CartagoGit/mcp-vertex`    | Deprecated and ignored. The destination is fixed and cannot be changed by the consumer project. |
 | `labels`            | `string[]` | `["auto-reported", "bug"]` | Deprecated and ignored. MCP Vertex applies only its canonical labels.                           |
 | `dedupeWindowHours` | `number`   | `24`                       | De-duplication window in hours.                                                                 |
