@@ -190,9 +190,14 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 
 	it('serialized transactions keep the one-entry-per-taskId parser invariant', async () => {
 		// The same zombie reconciled twice concurrently must not append a
-		// duplicate taskId (parseQueue hard-fails on duplicates).
+		// duplicate taskId (parseQueue hard-fails on duplicates). Both
+		// reconciles must share the same lock file so each one releases
+		// the same taskId; the queue emitter fires once because the
+		// second reconcile finds the lock already gone.
 		const registryPath = join(root, 'registry-dup.json');
+		const lockPath = join(root, 'agent-lock-dup.json');
 		writeFileSync(registryPath, zombieRegistry('task-dup'));
+		writeFileSync(lockPath, zombieLock('task-dup'));
 		const args = {
 			action: 'reconcile',
 			dry_run: false,
@@ -200,8 +205,8 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 			now: new Date().toISOString(),
 		} as const;
 		await Promise.all([
-			runAgentNames(args, namesOptions(registryPath)),
-			runAgentNames(args, namesOptions(registryPath)),
+			runAgentNames(args, namesOptions(registryPath, lockPath)),
+			runAgentNames(args, namesOptions(registryPath, lockPath)),
 		]);
 
 		// parseQueue itself enforces the invariant — it throws on duplicates.
