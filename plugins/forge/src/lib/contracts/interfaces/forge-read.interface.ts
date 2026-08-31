@@ -50,6 +50,10 @@ export interface IForgePullRequestDetail extends IForgePullRequestSummary {
 	readonly mergeable: string;
 	readonly reviewDecision: string;
 	readonly checks: readonly IForgeCheck[];
+	readonly headBranch?: string;
+	readonly baseBranch?: string;
+	readonly headSha?: string;
+	readonly mergeCommitSha?: string;
 }
 
 export interface IForgeWorkflowJob {
