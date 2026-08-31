@@ -2,7 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import { compactOutputSchema, toolJson } from '@mcp-vertex/core/public';
 
 import { analyzeSessionHygiene } from '../session-hygiene';
 import { readInvocations } from '../rollup';
@@ -73,21 +73,7 @@ export const buildSessionHygieneToolRegistration = (
 				inputSchema: z.object({
 					limit: z.number().int().positive().max(100).optional(),
 				}),
-				outputSchema: z.object({
-					observedMcpOnly: z.literal(true),
-					hostLifecycle: z.object({
-						observedHostOnly: z.literal(true),
-						source: z.literal('claude-code-command-hooks'),
-						sessions: z.array(HostSessionSchema),
-					}),
-					policy: z.object({
-						maxSessionAgeMs: z.number(),
-						maxIdleGapMs: z.number(),
-						maxMcpOutputTokens: z.number(),
-					}),
-					current: z.array(SnapshotSchema),
-					sessions: z.array(SnapshotSchema),
-				}),
+				outputSchema: compactOutputSchema(),
 			},
 			async (args: { limit?: number | undefined }) => {
 				const limit = args.limit ?? 20;
