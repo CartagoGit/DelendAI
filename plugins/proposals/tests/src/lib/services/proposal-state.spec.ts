@@ -91,7 +91,9 @@ describe('proposal-state guards', () => {
 
 	it('accepts a non-empty shipped-in list', () => {
 		expect(
-			guardShippedInPresent({ 'shipped-in': ['abc123', 'def456'] }),
+			guardShippedInPresent({
+				'shipped-in': ['30551533', '051b12d5'],
+			}),
 		).toEqual({ ok: true });
 	});
 
