@@ -1,11 +1,11 @@
-import type { IMemoryListResult } from '@mcp-vertex/client';
+import type { IDashboardMemoryModel } from '@mcp-vertex/client';
 import type { ILangDict } from '@mcp-vertex/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatNumber } from './format';
 
 export const renderPanelMemory = (
-	model: IMemoryListResult,
+	model: IDashboardMemoryModel,
 	lang: ILangDict,
 ): string => {
 	const text = (
@@ -13,17 +13,19 @@ export const renderPanelMemory = (
 		vars?: Readonly<Record<string, string | number>>,
 	) => extensionText(lang, key, vars);
 	const rows =
-		model.notes.length === 0
-			? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.none'))}</td></tr>`
-			: model.notes
-					.map(
-						(note) => `<tr>
+		model.state === 'unavailable'
+			? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.unavailable'))}</td></tr>`
+			: model.notes.length === 0
+				? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.none'))}</td></tr>`
+				: model.notes
+						.map(
+							(note) => `<tr>
 			<td><code>${escapeHtml(note.id)}</code></td>
 			<td>${escapeHtml(note.title)}</td>
 			<td>${note.tags.map((tag) => `<code>${escapeHtml(tag)}</code>`).join(' ')}</td>
 		</tr>`,
-					)
-					.join('');
+						)
+						.join('');
 	return `
 <section class="mcpv-panel" id="panel-memory" role="tabpanel" aria-labelledby="tab-memory">
 	<h2 class="mcpv-panel__title">${escapeHtml(text('dashboard.memory.title'))}</h2>
