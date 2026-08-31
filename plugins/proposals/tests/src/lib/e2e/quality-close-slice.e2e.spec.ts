@@ -189,15 +189,9 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				ok: true,
 				closed: true,
 			});
-			expect(
-				readFileSync(
-					join(
-						workspace,
-						'docs/mcp-vertex/proposals/done/feats/f04201-quality.md',
-					),
-					'utf8',
-				),
-			).toContain('- **Status**: done');
+			expect(readFileSync(proposalPath, 'utf8')).toContain(
+				'- **Status**: done',
+			);
 		} finally {
 			await client.close();
 			await project.server.close();
