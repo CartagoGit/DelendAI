@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-31T12:16:53.519Z",
+	"generatedAt": "2026-08-31T21:30:02.436Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1023,7 +1023,9 @@
 			"permissions": [
 				"network"
 			],
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -1053,7 +1055,9 @@
 			"permissions": [
 				"network"
 			],
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -1883,7 +1887,9 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -4078,7 +4084,9 @@
 			],
 			"maturity": "experimental",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"capabilities": [
 				"github",
 				"remote-provider"
@@ -4102,7 +4110,9 @@
 			],
 			"maturity": "experimental",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"capabilities": [
 				"gitlab",
 				"remote-provider"
@@ -4643,7 +4653,9 @@
 			],
 			"maturity": "beta",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"capabilities": [
 				"remote-provider"
 			],
@@ -7426,8 +7438,8 @@
 		{
 			"pluginId": "github",
 			"presetId": "full",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -7489,8 +7501,8 @@
 		{
 			"pluginId": "gitlab",
 			"presetId": "full",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -8749,8 +8761,8 @@
 		{
 			"pluginId": "remote-provider-core",
 			"presetId": "full",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
