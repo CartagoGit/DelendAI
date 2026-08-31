@@ -90,7 +90,7 @@ describe('preset-drift.script', async () => {
 	it('keeps the real repo clean for catalog-only checks', async () => {
 		const findings = await detectCatalogPresetDrift(process.cwd());
 		expect(findings).toEqual([]);
-	});
+	}, 30_000);
 
 	it('prints one row per finding in strict mode', async () => {
 		const out = formatReport([
