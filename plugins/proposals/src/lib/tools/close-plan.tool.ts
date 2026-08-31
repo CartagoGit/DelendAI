@@ -273,7 +273,12 @@ export const runClosePlan = async (
 		{ id: planId, to: 'done', reason },
 		options,
 	);
-	if (result.isError === true) {
+	if (
+		typeof result === 'object' &&
+		result !== null &&
+		'isError' in result &&
+		result.isError === true
+	) {
 		const text = result.content?.[0]?.text ?? 'transition failed';
 		return toolError(
 			text,

@@ -49,7 +49,9 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 	it('preserves package resolution for consumers outside the monorepo', async () => {
 		await expect(
 			nodeDynamicImport('@mcp-vertex/not-a-local-plugin', process.cwd()),
-		).rejects.toThrow();
+		).rejects.toThrow(
+			/local first-party plugin source not found.*Package resolution also failed/,
+		);
 	});
 });
 
