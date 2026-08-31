@@ -7,6 +7,10 @@ import type {
 export interface IForgeReleaseOptions {
 	readonly tag: string;
 	readonly notes?: string | undefined;
+	readonly notesFile?: string | undefined;
+	readonly target?: string | undefined;
+	readonly prerelease?: boolean | undefined;
+	readonly draft?: boolean | undefined;
 	readonly confirm?: boolean | undefined;
 }
 
