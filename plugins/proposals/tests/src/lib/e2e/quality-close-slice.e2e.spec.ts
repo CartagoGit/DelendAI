@@ -83,7 +83,9 @@ const findProposalPath = (workspace: string, id: string): string => {
 			typeof entry === 'string' && entry.endsWith(`${id}-quality.md`),
 	);
 	if (relativePath === undefined) {
-		throw new Error(`proposal ${id} was not found under ${proposalsDir}`);
+		throw new Error(
+			`proposal ${id} was not found under ${proposalsDir}; entries=${JSON.stringify(readdirSync(proposalsDir, { recursive: true }))}`,
+		);
 	}
 	return join(proposalsDir, relativePath);
 };
