@@ -9,11 +9,43 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { McpStdioClient } from '@mcp-vertex/client';
+
 import {
 	DashboardWebviewViewProvider,
 	type IDashboardDetailBroker,
 } from '../providers/dashboard-webview-view-provider';
 import type { IWebviewPanel } from '@mcp-vertex/ui-extension/public';
+
+const fakeClient = (): McpStdioClient =>
+	McpStdioClient.fromTransport({
+		async callTool(input) {
+			if (input.name === 'mcp-vertex_overview') {
+				return {
+					structuredContent: {
+						namespacePrefix: 'mcp-vertex',
+						server: { name: 'mcp-vertex', version: '0.1.0' },
+						plugins: ['core'],
+						tools: ['mcp-vertex_overview'],
+						knowledge: [],
+						recommendedNextAction: 'OK',
+					},
+				};
+			}
+			if (input.name === 'mcp-vertex_metrics') {
+				return { structuredContent: { tools: {}, totals: {} } };
+			}
+			if (input.name === 'mcp-vertex_health') {
+				return {
+					structuredContent: { healthy: true, stale: [] },
+				};
+			}
+			return { structuredContent: {} };
+		},
+		async listTools() {
+			return { tools: [] };
+		},
+	});
 
 const makeView = (): {
 	view: IWebviewPanel;
