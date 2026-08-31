@@ -48,7 +48,11 @@ describe('activation benchmark', () => {
 
 	it('summarizes real-host measurements and decides from control/no-MCP/MCP evidence', async () => {
 		const queue = [
-			sample('control', { startupReadyMs: 12, heapDeltaBytes: 100, workUnits: 0 }),
+			sample('control', {
+				startupReadyMs: 12,
+				heapDeltaBytes: 100,
+				workUnits: 0,
+			}),
 			sample('workspace-no-mcp', {
 				startupReadyMs: 30,
 				heapDeltaBytes: 180,
@@ -61,7 +65,11 @@ describe('activation benchmark', () => {
 				workUnits: 20,
 				observedToolCalls: 2,
 			}),
-			sample('control', { startupReadyMs: 10, heapDeltaBytes: 96, workUnits: 0 }),
+			sample('control', {
+				startupReadyMs: 10,
+				heapDeltaBytes: 96,
+				workUnits: 0,
+			}),
 			sample('workspace-no-mcp', {
 				startupReadyMs: 31,
 				heapDeltaBytes: 176,
