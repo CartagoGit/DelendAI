@@ -30,7 +30,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **Status**: pending
 - **Files**: `TODO`
 - **Gate**: none
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
