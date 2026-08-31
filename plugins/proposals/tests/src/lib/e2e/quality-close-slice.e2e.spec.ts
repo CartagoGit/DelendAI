@@ -75,10 +75,10 @@ const seedSlice = (workspace: string, id: string): string => {
 	return proposalPath;
 };
 
-const findProposalPath = async (
+const findProposalPath = (
 	workspace: string,
 	id: string,
-): Promise<string> => {
+): string => {
 	const proposalsDir = join(workspace, 'docs/mcp-vertex/proposals');
 	const pending = [proposalsDir];
 	while (pending.length > 0) {
