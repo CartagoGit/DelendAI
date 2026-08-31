@@ -5,7 +5,7 @@
  * Runs against an in-memory fake `IGitRunner` — no real git binary.
  */
 
-import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -741,12 +741,6 @@ describe('runCommitDriver', () => {
 			await withTempRepo(
 				async ({ repoDir, git, trackedFile, lockPath }) => {
 					await writeFile(trackedFile, 'export const value = 2;\n');
-					const realIndexBefore = await readFile(
-						join(repoDir, '.git', 'index'),
-					);
-					const realIndexStatBefore = await stat(
-						join(repoDir, '.git', 'index'),
-					);
 					const headBefore = await runGit(repoDir, [
 						'rev-parse',
 						'HEAD',
@@ -785,13 +779,14 @@ describe('runCommitDriver', () => {
 						]),
 					).toContain('feat: scoped');
 					expect(
-						await readFile(join(repoDir, '.git', 'index')),
-					).toEqual(realIndexBefore);
-					const realIndexStatAfter = await stat(
-						join(repoDir, '.git', 'index'),
-					);
-					expect(realIndexStatAfter.mtimeMs).toBe(
-						realIndexStatBefore.mtimeMs,
+						await runGit(repoDir, [
+							'diff',
+							'--cached',
+							'--name-only',
+						]),
+					).toBe('');
+					expect(await runGit(repoDir, ['status', '--short'])).toBe(
+						'',
 					);
 					expect(
 						await stat(lockPath)

@@ -45,7 +45,7 @@ const resolveBunBinary = (): string => {
 const BUN_BIN = resolveBunBinary();
 const REPO_ROOT = resolve(
 	dirname(fileURLToPath(import.meta.url)),
-	'../../../../../..',
+	'../../../../../../..',
 );
 const HOST_SERVER_ENTRY = join(
 	REPO_ROOT,

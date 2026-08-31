@@ -310,6 +310,15 @@ const resetWholeStageSafely = async (run: IGitRunner): Promise<void> => {
 	await run(['rm', '--cached', '--ignore-unmatch', '--', ...staged]);
 };
 
+const preserveRealIndexAfterIsolatedCommit = async (
+	run: IGitRunner,
+	stagedPaths: readonly string[],
+): Promise<void> => {
+	const resetResult = await run(['read-tree', 'HEAD']);
+	if (!resetResult.ok || stagedPaths.length === 0) return;
+	await gitAdd(run, stagedPaths);
+};
+
 const createGitRunnerWithEnv =
 	(cwd: string, env: NodeJS.ProcessEnv, timeoutMs = 60_000): IGitRunner =>
 	(args) =>
@@ -652,6 +661,17 @@ export const commitWithGuard = async (
 						},
 					};
 				}
+
+				const realStagedPaths = await gitCachedNames(args.run);
+				await preserveRealIndexAfterIsolatedCommit(
+					args.run,
+					realStagedPaths.filter(
+						(path) =>
+							!staged.some(
+								(isolatedPath) => isolatedPath === path,
+							),
+					),
+				);
 
 				const hash = await gitHeadShortHash(args.run);
 				return {
