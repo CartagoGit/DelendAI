@@ -66,7 +66,7 @@ const IGNORE_FILES = new Set([
 	'apps/web/src/data/skills.json',
 ]);
 
-const isJsonLike = (name: string): boolean =>
+const _isJsonLike = (name: string): boolean =>
 	name.endsWith('.json') || name.endsWith('.jsonc');
 
 interface IViolation {
