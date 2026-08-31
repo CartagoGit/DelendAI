@@ -300,6 +300,43 @@ describe('runBranchStatusEngine', () => {
 		expect(result.summary.outOfCacheWorktrees).toBe(1);
 	});
 
+	it('does not flag the main checkout as outOfCache', async () => {
+		const runner: IGitRunner = makeRunner([
+			[['branch', '--list', 'agent/*'], { ok: true, output: '' }],
+			[
+				['worktree', 'list', '--porcelain'],
+				{
+					ok: true,
+					output: [
+						`worktree ${workspaceRoot}`,
+						'HEAD abc1234',
+						'branch refs/heads/develop',
+						'',
+						'worktree /home/cartago/_projects/mcp-vertex/.worktrees/orion',
+						'HEAD def5678',
+						'branch refs/heads/agent/orion',
+					].join('\n'),
+				},
+			],
+		]);
+		const tailRunner: IGitRunner = async () => ({ ok: true, output: '' });
+		const composite: IGitRunner = async (args) => {
+			const match = await runner(args);
+			if (match.ok || match.output.length > 0) return match;
+			return tailRunner(args);
+		};
+		const result = await runBranchStatusEngine({
+			run: composite,
+			workspaceRoot,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.worktrees[0]?.outOfCache).toBe(false);
+		expect(result.worktrees[1]?.outOfCache).toBe(true);
+		expect(result.summary.outOfCacheWorktrees).toBe(1);
+	});
+
 	it('flags drift when the main checkout branch left baseBranch', async () => {
 		const runner: IGitRunner = makeRunner([
 			[['branch', '--list', 'agent/*'], { ok: true, output: '' }],

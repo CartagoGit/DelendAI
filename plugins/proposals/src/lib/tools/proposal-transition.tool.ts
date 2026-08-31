@@ -80,6 +80,7 @@ import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
 import { rewriteStaleProposalSelfPaths } from '../proposals/rewrite-stale-self-paths';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
+import { recordPlanClosureBypass } from '../shared/plan-closure-bypass-log';
 import {
 	hasIndependentApprovalSinceLastReview,
 	recordProposalEnteredReview,
@@ -649,7 +650,21 @@ export const runProposalTransition = async (
 		(from === 'ready' || from === 'pending') && finalTo === 'done';
 	const skipsDfa =
 		(from === 'done' && finalTo === 'review' && args.force === true) ||
-		isZeroWorkShortcut;
+		isZeroWorkShortcut ||
+		args.skipDfaForPlanClosure === true;
+	// a00072 S4 (plan-closure shortcut): every skip is audited with the
+	// proposal id, caller reason, and `via: 'plan-closure-shortcut'`
+	// marker — same shape as `recordPeerReviewBypass`. Only the
+	// `proposals_close_plan` wrapper sets this flag (after a successful
+	// closure preflight); the compat layer strips it from MCP callers,
+	// so only audited wrapper invocations ever reach this branch.
+	if (args.skipDfaForPlanClosure === true) {
+		recordPlanClosureBypass({
+			proposalId: args.id,
+			reason: args.reason,
+			...(args.agent !== undefined ? { agent: args.agent } : {}),
+		});
+	}
 	if (!skipsDfa) {
 		const dfaRejection = validateTransition(
 			args.id,
@@ -697,6 +712,7 @@ export const runProposalTransition = async (
 	if (
 		!isZeroWorkShortcut &&
 		args.force !== true &&
+		args.skipDfaForPlanClosure !== true &&
 		(finalTo === 'review' || finalTo === 'done')
 	) {
 		const validateEvidence = await resolveRecentValidateEvidence({
@@ -722,6 +738,7 @@ export const runProposalTransition = async (
 	if (
 		isCiEnvironment() &&
 		args.force !== true &&
+		args.skipDfaForPlanClosure !== true &&
 		(finalTo === 'review' || finalTo === 'done') &&
 		!hasProposalCiEvidence(raw)
 	) {
@@ -734,6 +751,7 @@ export const runProposalTransition = async (
 	if (
 		isCiEnvironment() &&
 		args.force !== true &&
+		args.skipDfaForPlanClosure !== true &&
 		(finalTo === 'review' || finalTo === 'done') &&
 		!hasExactCiCommitEvidence(raw)
 	) {

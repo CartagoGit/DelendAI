@@ -153,6 +153,7 @@ export interface McpVertexProposalsAutoWorkOutput {
 	validationCommand?: string;
 	persist?: unknown;
 	claimReady?: unknown;
+	action?: "close";
 	steps?: string[];
 	branchStatusWarnings?: string[];
 	executionMode?: "normal" | "confirm-required" | "blocked";
@@ -161,6 +162,7 @@ export interface McpVertexProposalsAutoWorkOutput {
 	hygieneWarnings?: string[];
 	stashes?: unknown;
 	rescueCandidates?: unknown;
+	smokeResiduals?: unknown;
 	ok?: boolean;
 	blockers?: string[];
 }
@@ -276,6 +278,7 @@ export interface McpVertexProposalsContinueProposalOutput {
 	plan?: unknown;
 	disjointnessIssues?: unknown;
 	claimableSliceIds?: string[];
+	action?: "close";
 	sliceId?: string;
 	validation?: unknown;
 	slice?: unknown | null;

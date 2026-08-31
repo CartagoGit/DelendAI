@@ -10,6 +10,10 @@ const workspaceRoot = resolve(here, '../..');
 export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
+		// The proposal state tools and peer-review bypass audit share
+		// process-local buffers. Running their files concurrently lets one
+		// spec reset another spec's audit state mid-assertion.
+		fileParallelism: false,
 		// Concurrency/IO tests can exceed the 5s default under heavy
 		// parallel-suite CPU load; widen so CI is not flaky (a real hang
 		// still fails — assertions are the contract, not the wait).

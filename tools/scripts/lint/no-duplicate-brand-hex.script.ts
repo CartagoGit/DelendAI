@@ -36,6 +36,10 @@ const ALLOWED_FILES: readonly string[] = [
 	// variables; `shared.ts` references them in a comment for documentation.
 	'apps/shared/src/styles/_themes.scss',
 	'apps/shared/src/i18n/shared.ts',
+	// TS mirror of the same hex literals — the only TypeScript file
+	// permitted to mention them, used by inline SVG assets that can't
+	// read CSS variables.
+	'apps/shared/src/lib/brand.ts',
 	// The lint itself enumerates the brand hexes literally; that is the
 	// whole point of the script.
 	'tools/scripts/lint/no-duplicate-brand-hex.script.ts',

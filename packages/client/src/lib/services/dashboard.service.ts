@@ -20,8 +20,12 @@
  * slices for standalone use, but the batch path never re-fetches.
  */
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
+import type {
+	IHealthSnapshot,
+	IServerProposalStaleList,
+	IServerStateHealth,
+} from '../contracts/interfaces/health.interface';
 import type { IMemoryListResult } from '../contracts/interfaces/memory.interface';
-import { HealthService } from './health.service';
 import type { MetricsService } from './metrics.service';
 import {
 	normalizeCompactTools,
@@ -31,8 +35,11 @@ import {
 import { formatToolName } from './_namespace';
 import type { IOverview } from '../contracts/interfaces/tool-descriptor.interface';
 import type {
+	IDashboardDataState,
 	IDashboardAgentsModel,
 	IDashboardAllModels,
+	IDashboardDocsModel,
+	IDashboardKpisModel,
 	IDashboardMetricsModel,
 	IDashboardMemoryModel,
 	IDashboardOverviewModel,
@@ -43,6 +50,8 @@ import type {
 	IDashboardTokensModel,
 	IDashboardToolsModel,
 	IDashboardTotals,
+	IDashboardWorkspaceModel,
+	IDashboardWorkspaceSection,
 	IToolMetricRow,
 } from '../contracts/interfaces/dashboard.interface';
 
@@ -108,6 +117,21 @@ interface IProposalRow {
 	readonly track: string;
 }
 
+interface IDataResult<T> {
+	readonly state: IDashboardDataState;
+	readonly value: T;
+}
+
+interface IDashboardBatchSnapshot {
+	readonly overview: IOverview;
+	readonly metrics: IMetricsSnap;
+	readonly proposals: IDataResult<readonly IProposalRow[]>;
+	readonly agents: IDataResult<readonly string[]>;
+	readonly health: IDataResult<IHealthSnapshot>;
+	readonly spend: IDashboardSpendModel | null;
+	readonly memory: IDataResult<IDashboardMemoryModel>;
+}
+
 const buildRow = (
 	tool: string,
 	m: {
@@ -142,6 +166,24 @@ const emptyTotals: IDashboardTotals = {
 	savingsPercent: 0,
 	agents: 0,
 };
+
+const isPluginLoaded = (overview: IOverview, plugin: string): boolean =>
+	overview.plugins.some((entry) =>
+		typeof entry === 'string' ? entry === plugin : entry.name === plugin,
+	);
+
+const isPluginDefinitelyUnavailable = (
+	overview: IOverview,
+	plugin: string,
+): boolean => overview.plugins.length > 0 && !isPluginLoaded(overview, plugin);
+
+const stateFromCount = (count: number): IDashboardDataState =>
+	count === 0 ? 'empty' : 'ready';
+
+const section = <T>(
+	state: IDashboardDataState,
+	data: T,
+): IDashboardWorkspaceSection<T> => ({ state, data });
 
 // --- Pure model builders (functions of already-fetched payloads) ---------
 
@@ -411,8 +453,38 @@ const buildAgentsModel = (
 	totalActive: agents.length,
 });
 
+const emptySessionsModel = (): IDashboardSessionsModel => ({
+	total: 0,
+	byStatus: {},
+	rows: [],
+});
+
+const emptyAgentsModel = (): IDashboardAgentsModel => ({
+	agents: [],
+	totalActive: 0,
+});
+
+const unavailableHealthSnapshot = (): IHealthSnapshot => ({
+	healthy: false,
+	locksActive: 0,
+	queue: null,
+	orphans: 0,
+	orphansThreshold: 'unknown',
+	stale: [],
+	staleCount: 0,
+	agents: [],
+	fetchedAt: new Date().toISOString(),
+});
+
 const unavailableMemoryModel = (): IDashboardMemoryModel => ({
 	state: 'unavailable',
+	notes: [],
+	total: 0,
+	offset: 0,
+});
+
+const loadingMemoryModel = (): IDashboardMemoryModel => ({
+	state: 'loading',
 	notes: [],
 	total: 0,
 	offset: 0,
@@ -440,6 +512,174 @@ const isMemoryListResult = (value: unknown): value is IMemoryListResult => {
 	);
 };
 
+const buildDocsModel = (overview: IOverview): IDashboardDocsModel => {
+	const tools = normalizeCompactTools(
+		overview.tools,
+		overview.namespacePrefix,
+	)
+		.filter((tool) => tool.plugin === 'docs')
+		.map((tool) => tool.name);
+	return {
+		pluginLoaded: isPluginLoaded(overview, 'docs'),
+		tools,
+		knowledge: overview.knowledge.map((entry) =>
+			typeof entry === 'string'
+				? { id: entry }
+				: { id: entry.id, title: entry.title },
+		),
+		recommendedNextAction: overview.recommendedNextAction,
+	};
+};
+
+const buildKpisModel = (
+	totals: IDashboardTotals,
+	tokens: IDashboardTokensModel,
+	times: IDashboardTimesModel,
+	spend: IDashboardSpendModel | null,
+): IDashboardKpisModel => ({
+	totals,
+	tokens: {
+		used: tokens.tokensUsed,
+		saved: tokens.tokensSaved,
+		savingsPercent: tokens.savingsPercent,
+	},
+	latency: {
+		totalWallMs: times.totalWallMs,
+		p50Ms: times.p50Ms,
+		p95Ms: times.p95Ms,
+	},
+	spend,
+});
+
+const buildHealthSnapshot = (
+	stateHealth: IServerStateHealth | null,
+	staleList: IServerProposalStaleList | null,
+	agents: readonly string[],
+): IHealthSnapshot => {
+	const stale =
+		staleList?.ok === true && Array.isArray(staleList.zombies)
+			? staleList.zombies
+			: [];
+	return {
+		healthy: stateHealth?.healthy === true,
+		locksActive: stateHealth?.locks.active ?? 0,
+		queue:
+			stateHealth?.queue === undefined || stateHealth.queue === null
+				? null
+				: {
+						length: stateHealth.queue.queueLength,
+						queued: stateHealth.queue.queuedCount,
+						orphans: stateHealth.queue.waiterOrphans,
+						oldestAgeMinutes: stateHealth.queue.oldestAgeMinutes,
+						threshold: stateHealth.queue.threshold,
+					},
+		orphans: stateHealth?.registry.orphans ?? 0,
+		orphansThreshold: stateHealth?.registry.threshold ?? 'unknown',
+		stale,
+		staleCount: stale.length,
+		agents,
+		fetchedAt: new Date().toISOString(),
+	};
+};
+
+const buildWorkspaceModel = (input: {
+	overview: IDashboardOverviewModel;
+	tools: IDashboardToolsModel;
+	plugins: IDashboardPluginsModel;
+	memory: IDashboardMemoryModel;
+	proposals: IDashboardSessionsModel;
+	agents: IDashboardAgentsModel;
+	kpis: IDashboardKpisModel;
+	health: IHealthSnapshot;
+	docs: IDashboardDocsModel;
+	proposalState: IDashboardDataState;
+	agentState: IDashboardDataState;
+	healthState: IDashboardDataState;
+	memoryState: IDashboardDataState;
+}): IDashboardWorkspaceModel => ({
+	overview: section('ready', input.overview),
+	tools: section(stateFromCount(input.tools.rows.length), input.tools),
+	plugins: section(
+		stateFromCount(input.overview.plugins.length),
+		input.plugins,
+	),
+	memory: section(input.memoryState, input.memory),
+	proposals: section(input.proposalState, input.proposals),
+	agents: section(input.agentState, input.agents),
+	kpis: section(
+		input.overview.totals.tools === 0 &&
+			input.overview.totals.plugins === 0 &&
+			input.overview.totals.proposals === 0 &&
+			input.overview.totals.agents === 0
+			? 'empty'
+			: 'ready',
+		input.kpis,
+	),
+	health: section(input.healthState, input.health),
+	docs: section(
+		input.docs.tools.length > 0 || input.docs.knowledge.length > 0
+			? 'ready'
+			: input.docs.pluginLoaded
+				? 'empty'
+				: 'unavailable',
+		input.docs,
+	),
+});
+
+const buildLoadingWorkspaceModel = (
+	namespacePrefix = 'mcp-vertex',
+): IDashboardWorkspaceModel => {
+	const overview: IDashboardOverviewModel = {
+		serverName: '',
+		serverVersion: '',
+		namespacePrefix,
+		plugins: [],
+		tools: [],
+		knowledgeIds: [],
+		recommendedNextAction: '',
+		totals: createEmptyTotals(),
+	};
+	const tools: IDashboardToolsModel = {
+		rows: [],
+		sortBy: 'calls',
+		sortDir: 'desc',
+	};
+	const plugins: IDashboardPluginsModel = { rows: [] };
+	const proposals = emptySessionsModel();
+	const agents = emptyAgentsModel();
+	const tokens: IDashboardTokensModel = {
+		tokensUsed: 0,
+		tokensSaved: 0,
+		savingsPercent: 0,
+		topByTokens: [],
+		history: [],
+	};
+	const times: IDashboardTimesModel = {
+		totalWallMs: 0,
+		p50Ms: 0,
+		p95Ms: 0,
+		histogram: [],
+	};
+	const docs: IDashboardDocsModel = {
+		pluginLoaded: false,
+		tools: [],
+		knowledge: [],
+		recommendedNextAction: '',
+	};
+	const kpis = buildKpisModel(overview.totals, tokens, times, null);
+	return {
+		overview: section('loading', overview),
+		tools: section('loading', tools),
+		plugins: section('loading', plugins),
+		memory: section('loading', loadingMemoryModel()),
+		proposals: section('loading', proposals),
+		agents: section('loading', agents),
+		kpis: section('loading', kpis),
+		health: section('loading', unavailableHealthSnapshot()),
+		docs: section('loading', docs),
+	};
+};
+
 export class DashboardService {
 	private readonly client: McpStdioClient;
 	private readonly overview: OverviewService | undefined;
@@ -454,11 +694,11 @@ export class DashboardService {
 	}
 
 	async getOverviewModel(): Promise<IDashboardOverviewModel> {
-		const [overview, metrics, proposals, agents] = await Promise.all([
-			this.fetchOverview(),
+		const overview = await this.fetchOverview();
+		const [metrics, proposals, agents] = await Promise.all([
 			this.snapshotMetrics(),
-			this.fetchProposalsSafe(),
-			this.fetchAgentsSafe(),
+			this.fetchProposalsSafe(overview),
+			this.fetchAgentsSafe(overview),
 		]);
 		return buildOverviewModel(overview, metrics, proposals, agents);
 	}
@@ -496,7 +736,8 @@ export class DashboardService {
 	}
 
 	async getSessionsModel(): Promise<IDashboardSessionsModel> {
-		return buildSessionsModel(await this.fetchProposalsSafe());
+		const overview = await this.fetchOverview();
+		return buildSessionsModel(await this.fetchProposalsSafe(overview));
 	}
 
 	/**
@@ -515,68 +756,111 @@ export class DashboardService {
 	}
 
 	async getAgentsModel(): Promise<IDashboardAgentsModel> {
-		return buildAgentsModel(await this.fetchAgentsSafe());
+		const overview = await this.fetchOverview();
+		return buildAgentsModel(await this.fetchAgentsSafe(overview));
 	}
 
 	async getMemoryModel(): Promise<IDashboardMemoryModel> {
 		const overview = await this.fetchOverview();
-		return this.fetchMemorySafe(overview);
+		return (await this.fetchMemorySafe(overview)).value;
+	}
+
+	getLoadingWorkspaceModel(): IDashboardWorkspaceModel {
+		return buildLoadingWorkspaceModel(this.namespacePrefix);
+	}
+
+	async getWorkspaceModel(): Promise<IDashboardWorkspaceModel> {
+		return (await this.getAllModels()).workspace;
 	}
 
 	async getAllModels(): Promise<IDashboardAllModels> {
-		// Fetch each upstream payload EXACTLY ONCE, then derive all eight
-		// models from the shared data (previously every sub-model re-fetched
-		// its own metrics/overview/proposals/agents — up to ~5 redundant
-		// metrics round-trips per dashboard open).
-		const [overview, metrics, proposals, agents, health] =
-			await Promise.all([
-				this.fetchOverview(),
-				this.snapshotMetrics(),
-				this.fetchProposalsSafe(),
-				this.fetchAgentsSafe(),
-				new HealthService(this.client).snapshot().catch(() => ({
-					healthy: false,
-					locksActive: 0,
-					queue: null,
-					orphans: 0,
-					orphansThreshold: 'unknown',
-					stale: [],
-					staleCount: 0,
-					agents: [],
-					fetchedAt: new Date().toISOString(),
-				})),
-			]);
-		// Fetched AFTER overview resolves (needs it to detect the plugin);
-		// never blocks the rest of the dashboard on a slow/absent
-		// usage-tracking round-trip.
-		const [spend, memory] = await Promise.all([
-			this.fetchSpendSafe(overview),
-			this.fetchMemorySafe(overview),
-		]);
-		const pluginOf = pluginResolverFrom(overview);
+		const batch = await this.collectBatchSnapshot();
+		const pluginOf = pluginResolverFrom(batch.overview);
 		const overviewModel = buildOverviewModel(
-			overview,
-			metrics,
-			proposals,
-			agents,
+			batch.overview,
+			batch.metrics,
+			batch.proposals.value,
+			batch.agents.value,
 		);
+		const toolsModel = buildToolsModel(batch.metrics, pluginOf);
+		const pluginsModel = buildPluginsModel(batch.metrics, pluginOf);
+		const proposalsModel = buildSessionsModel(batch.proposals.value);
+		const timesModel = buildTimesModel(batch.metrics);
+		const agentsModel = buildAgentsModel(batch.agents.value);
+		const docsModel = buildDocsModel(batch.overview);
+		const tokensModel = buildTokensModel(batch.metrics, pluginOf);
+		const kpisModel = buildKpisModel(
+			overviewModel.totals,
+			tokensModel,
+			timesModel,
+			batch.spend,
+		);
+		const workspace = buildWorkspaceModel({
+			overview: overviewModel,
+			tools: toolsModel,
+			plugins: pluginsModel,
+			memory: batch.memory.value,
+			proposals: proposalsModel,
+			agents: agentsModel,
+			kpis: kpisModel,
+			health: batch.health.value,
+			docs: docsModel,
+			proposalState: batch.proposals.state,
+			agentState: batch.agents.state,
+			healthState: batch.health.state,
+			memoryState: batch.memory.state,
+		});
 		return {
 			overview: overviewModel,
-			metrics: buildMetricsModel(metrics, pluginOf),
-			tokens: buildTokensModel(metrics, pluginOf),
-			tools: buildToolsModel(metrics, pluginOf),
-			plugins: buildPluginsModel(metrics, pluginOf),
-			spend,
-			sessions: buildSessionsModel(proposals),
-			times: buildTimesModel(metrics),
-			agents: buildAgentsModel(agents),
-			memory,
-			health,
+			metrics: buildMetricsModel(batch.metrics, pluginOf),
+			tokens: tokensModel,
+			tools: toolsModel,
+			plugins: pluginsModel,
+			proposals: proposalsModel,
+			kpis: kpisModel,
+			docs: docsModel,
+			spend: batch.spend,
+			sessions: proposalsModel,
+			times: timesModel,
+			agents: agentsModel,
+			memory: batch.memory.value,
+			health: batch.health.value,
+			workspace,
 			server: {
 				name: overviewModel.serverName,
 				version: overviewModel.serverVersion,
 				fetchedAt: new Date().toISOString(),
 			},
+		};
+	}
+
+	/**
+	 * Collect every upstream payload at most once for a `getAllModels` batch.
+	 * Future focused tests can assert transport call counts against this single
+	 * snapshot boundary without depending on downstream model builders.
+	 */
+	private async collectBatchSnapshot(): Promise<IDashboardBatchSnapshot> {
+		const [overview, metrics] = await Promise.all([
+			this.fetchOverview(),
+			this.snapshotMetrics(),
+		]);
+		const [proposals, agents] = await Promise.all([
+			this.fetchProposalsResult(overview),
+			this.fetchAgentsResult(overview),
+		]);
+		const [health, spend, memory] = await Promise.all([
+			this.fetchHealthResult(overview, agents.value),
+			this.fetchSpendSafe(overview),
+			this.fetchMemorySafe(overview),
+		]);
+		return {
+			overview,
+			metrics,
+			proposals,
+			agents,
+			health,
+			spend,
+			memory,
 		};
 	}
 
@@ -642,7 +926,12 @@ export class DashboardService {
 		};
 	}
 
-	private async fetchProposalsSafe(): Promise<readonly IProposalRow[]> {
+	private async fetchProposalsResult(
+		overview: IOverview,
+	): Promise<IDataResult<readonly IProposalRow[]>> {
+		if (isPluginDefinitelyUnavailable(overview, 'proposals')) {
+			return { state: 'unavailable', value: [] };
+		}
 		try {
 			const result = await this.client.request<
 				Record<string, never>,
@@ -661,15 +950,28 @@ export class DashboardService {
 				),
 				{},
 			);
-			return result.proposals.map((p) => ({
+			const proposals = result.proposals.map((p) => ({
 				id: p.id,
 				title: p.title ?? '',
 				status: p.status,
 				track: p.track ?? '',
 			}));
+			return {
+				state: stateFromCount(proposals.length),
+				value: proposals,
+			};
 		} catch {
-			return [];
+			return { state: 'unavailable', value: [] };
 		}
+	}
+
+	private async fetchProposalsSafe(
+		overview?: IOverview,
+	): Promise<readonly IProposalRow[]> {
+		const source = await this.fetchProposalsResult(
+			overview ?? (await this.fetchOverview()),
+		);
+		return source.value;
 	}
 
 	/**
@@ -710,11 +1012,13 @@ export class DashboardService {
 
 	private async fetchMemorySafe(
 		overview: IOverview,
-	): Promise<IDashboardMemoryModel> {
-		const loaded = overview.plugins.some((p) =>
-			typeof p === 'string' ? p === 'memory' : p.name === 'memory',
-		);
-		if (!loaded) return unavailableMemoryModel();
+	): Promise<IDataResult<IDashboardMemoryModel>> {
+		if (isPluginDefinitelyUnavailable(overview, 'memory')) {
+			return {
+				state: 'unavailable',
+				value: unavailableMemoryModel(),
+			};
+		}
 		try {
 			const result: unknown = await this.client.request<
 				{ readonly limit: number },
@@ -723,14 +1027,28 @@ export class DashboardService {
 				limit: 100,
 			});
 			return isMemoryListResult(result)
-				? buildMemoryModel(result)
-				: unavailableMemoryModel();
+				? {
+						state: result.total === 0 ? 'empty' : 'ready',
+						value: buildMemoryModel(result),
+					}
+				: {
+						state: 'unavailable',
+						value: unavailableMemoryModel(),
+					};
 		} catch {
-			return unavailableMemoryModel();
+			return {
+				state: 'unavailable',
+				value: unavailableMemoryModel(),
+			};
 		}
 	}
 
-	private async fetchAgentsSafe(): Promise<readonly string[]> {
+	private async fetchAgentsResult(
+		overview: IOverview,
+	): Promise<IDataResult<readonly string[]>> {
+		if (isPluginDefinitelyUnavailable(overview, 'proposals')) {
+			return { state: 'unavailable', value: [] };
+		}
 		try {
 			const result = await this.client.request<
 				{ readonly action: 'list' },
@@ -745,18 +1063,70 @@ export class DashboardService {
 				action: 'list',
 			});
 			if (Array.isArray(result.agents)) {
-				return result.agents.map((a) => a.name);
+				const agents = result.agents.map((a) => a.name);
+				return { state: stateFromCount(agents.length), value: agents };
 			}
 			if (Array.isArray(result.assignments)) {
-				return result.assignments
+				const agents = result.assignments
 					.filter(
 						(a) => a.status === undefined || a.status === 'active',
 					)
 					.map((a) => a.agent_name);
+				return { state: stateFromCount(agents.length), value: agents };
 			}
-			return [];
+			return { state: 'empty', value: [] };
 		} catch {
-			return [];
+			return { state: 'unavailable', value: [] };
+		}
+	}
+
+	private async fetchAgentsSafe(
+		overview?: IOverview,
+	): Promise<readonly string[]> {
+		const source = await this.fetchAgentsResult(
+			overview ?? (await this.fetchOverview()),
+		);
+		return source.value;
+	}
+
+	private async fetchHealthResult(
+		overview: IOverview,
+		agents: readonly string[],
+	): Promise<IDataResult<IHealthSnapshot>> {
+		if (isPluginDefinitelyUnavailable(overview, 'proposals')) {
+			return {
+				state: 'unavailable',
+				value: unavailableHealthSnapshot(),
+			};
+		}
+		try {
+			const [stateHealth, staleList] = await Promise.all([
+				this.client.request<Record<string, never>, IServerStateHealth>(
+					formatToolName(
+						overview.namespacePrefix,
+						'proposals_state_health',
+					),
+					{},
+				),
+				this.client
+					.request<Record<string, never>, IServerProposalStaleList>(
+						formatToolName(
+							overview.namespacePrefix,
+							'proposals_proposal_stale_list',
+						),
+						{},
+					)
+					.catch(() => null),
+			]);
+			return {
+				state: 'ready',
+				value: buildHealthSnapshot(stateHealth, staleList, agents),
+			};
+		} catch {
+			return {
+				state: 'unavailable',
+				value: unavailableHealthSnapshot(),
+			};
 		}
 	}
 }

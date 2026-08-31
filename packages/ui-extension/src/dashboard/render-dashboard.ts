@@ -5,7 +5,10 @@
  *
  * Pure: returns a single HTML string.
  */
-import type { IDashboardAllModels } from '@mcp-vertex/client';
+import type {
+	IDashboardAllModels,
+	IExtensionSettings,
+} from '@mcp-vertex/client';
 import type { ILangDict } from '@mcp-vertex/shared/i18n';
 import { dashboardCss } from '@mcp-vertex/shared/styles/dashboard/dashboard-css';
 
@@ -25,6 +28,7 @@ export interface IRenderDashboardOptions {
 	readonly refreshCommand: string;
 	readonly openDocsCommand: string;
 	readonly lang: ILangDict;
+	readonly settings?: IExtensionSettings;
 }
 
 const CLIENT_SCRIPT = `
@@ -191,7 +195,12 @@ export const renderDashboard = (
 	const header = buildHeader(model);
 	const kpiStrip = buildKpiStrip(model, options.lang);
 	const tabsBar = buildTabsBar(options.lang);
-	const panels = buildPanels(model, options.lang, options.docsUrl);
+	const panels = buildPanels(
+		model,
+		options.lang,
+		options.docsUrl,
+		options.settings,
+	);
 	const footer = buildFooter(model, options, options.lang);
 
 	return `<!DOCTYPE html>

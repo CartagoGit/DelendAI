@@ -1234,10 +1234,21 @@ export const buildCloseSliceRegistration = (
 						}
 						persisted = persistResult;
 						const block = flipSliceStatusDone(rawBlock);
-						const nextContent = md.replace(
+						const sliceClosedContent = md.replace(
 							blockRe,
 							`${m[1]}${block}`,
 						);
+						const prepared = markProposalDoneForAutoTransition(
+							entry.id,
+							sliceClosedContent,
+							options.requirePeerReview === undefined
+								? {}
+								: {
+										requirePeerReview:
+											options.requirePeerReview,
+									},
+						);
+						const nextContent = prepared.markdown;
 						await writeFileAtomic(docPath, nextContent);
 					});
 				} catch (rawErr: unknown) {
@@ -1457,6 +1468,7 @@ export const buildReviewRegistration = (
 						reviewer: state.reviewer,
 						rounds: state.rounds,
 						lockReleased: false,
+						assignmentReleased: false,
 						redactedSecrets: 0,
 					});
 				}
