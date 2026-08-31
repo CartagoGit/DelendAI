@@ -64,7 +64,10 @@ const callTool = async (
 	tool: IToolRegistration,
 	args: unknown = {},
 ): Promise<any> => {
-	let handler: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
+	let handler: (a: unknown) => Promise<{
+		content: Array<{ text: string }>;
+		structuredContent?: unknown;
+	}>;
 	await tool.register({
 		registerTool: (_n: string, _d: unknown, h: typeof handler) => {
 			handler = h;
