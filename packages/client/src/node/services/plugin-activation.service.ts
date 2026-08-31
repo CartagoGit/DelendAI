@@ -3,12 +3,13 @@ import { isAbsolute } from 'node:path';
 
 import {
 	DEFAULT_CONFIG_FILENAME,
-	type IMcpVertexConfigFile,
-	type IMcpVertexPluginConfig,
-	type PluginOrigin,
 	resolveWorkspaceContained,
-	withFileMutex,
-	writeFileAtomic,
+} from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/runtime';
+import type {
+	IMcpVertexConfigFile,
+	IMcpVertexPluginConfig,
+	PluginOrigin,
 } from '@mcp-vertex/core/public';
 import type {
 	ISetPluginActivationInput,
