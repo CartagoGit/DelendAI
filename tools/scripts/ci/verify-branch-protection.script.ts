@@ -353,13 +353,10 @@ export const diffBranch = (
 			detail: `allow_deletions must be ${expectedProtection.allow_deletions} (got ${live.allow_deletions.enabled})`,
 		});
 	}
-	const liveChecks = requiredStatusChecks?.contexts ?? [];
-	const expectedChecks = new Set(
-		expectedProtection.required_status_checks.contexts,
-	);
-	const missing = expectedProtection.required_status_checks.contexts.filter(
-		(c) => !liveChecks.includes(c),
-	);
+	const declaredChecks = expectedProtection.required_status_checks.contexts;
+	const liveChecks = [...new Set(requiredStatusChecks?.contexts ?? [])];
+	const expectedChecks = new Set(declaredChecks);
+	const missing = declaredChecks.filter((c) => !liveChecks.includes(c));
 	if (missing.length > 0) {
 		drifts.push({
 			branch: expected.name,
