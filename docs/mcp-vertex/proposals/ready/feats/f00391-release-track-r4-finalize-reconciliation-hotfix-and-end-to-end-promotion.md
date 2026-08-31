@@ -40,7 +40,12 @@ Cierra el ciclo de release sin perder trazabilidad ni cambios posteriores de dev
   - "hotfix usa release/patch/{slug} con source=main"
   - "E2E cut->stabilize->PR->finalize->reconcile"
   - "abort y rollback dejan receipt"
-
+- review-state: in_review
+- review-implementer: copilot
+- dogfood-runbook: tools/scripts/release/dogfood/dogfood.script.ts
+- dogfood-result: prepare dry-run + execute OK (idempotent), readiness gating OK, finalize blocked awaiting MERGED, hotfix/reconcile receipts OK, gh pr create runbook printed.
+- candidate-sha: develop=af2265b4bdda2e520351e0f4324d3a4d3f193bc6 main=0a2ed223838372c15501bf5c6c2e43fce6640338 fromVersion=0.1.1 targetVersion=0.2.0 type=minor slug=cli-typed-forge-boundary branch=release/minor/cli-typed-forge-boundary
+- closure-gate-blocker: mcp-vertex_proposals_* surface disabled by host; transition must be applied when re-enabled.
 ## acceptance
 
 - finalize exige readiness y no mergea silenciosamente

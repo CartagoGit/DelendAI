@@ -14,37 +14,34 @@ import {
 	run,
 } from './verify-branch-protection.script.ts';
 
-const CONFIG_YAML = `version: 1
-branches:
-  - name: main
-		protected: true
-    protection:
-      required_status_checks:
-        strict: true
-        contexts:
-					- ci-complete
-      enforce_admins: true
-      required_linear_history: true
-      allow_force_pushes: false
-      allow_deletions: false
-      restrictions: null
-  - name: develop
-		protected: true
-    protection:
-      required_status_checks:
-        strict: true
-        contexts:
-          - quality-gate
-          - tests
-          - tokens
-          - governance
-          - security
-      enforce_admins: true
-      required_linear_history: true
-      allow_force_pushes: false
-      allow_deletions: false
-      restrictions: null
-`;
+const CONFIG_YAML = [
+	'version: 1',
+	'branches:',
+	'  - name: main',
+	'    protected: true',
+	'    protection:',
+	'      required_status_checks:',
+	'        strict: true',
+	'        contexts:',
+	'          - ci-complete',
+	'      enforce_admins: true',
+	'      required_linear_history: true',
+	'      allow_force_pushes: false',
+	'      allow_deletions: false',
+	'      restrictions: null',
+	'  - name: develop',
+	'    protected: true',
+	'    protection:',
+	'      required_status_checks:',
+	'        strict: true',
+	'        contexts:',
+	'          - ci-complete',
+	'      enforce_admins: true',
+	'      required_linear_history: true',
+	'      allow_force_pushes: false',
+	'      allow_deletions: false',
+	'      restrictions: null',
+].join('\n');
 
 const makeLive = (
 	overrides: Partial<IGitHubBranchProtectionResponse> = {},
@@ -84,13 +81,7 @@ describe('verify-branch-protection', () => {
 			]);
 			expect(
 				config.branches[0]?.protection.required_status_checks.contexts,
-			).toEqual([
-				'quality-gate',
-				'tests',
-				'tokens',
-				'governance',
-				'security',
-			]);
+			).toEqual(['ci-complete']);
 		});
 	});
 
@@ -166,7 +157,7 @@ describe('verify-branch-protection', () => {
 			});
 			expect(result).toBe(1);
 			expect(stderr.join('\n')).toMatch(
-				/missing required checks: governance/,
+				/missing required checks: ci-complete/,
 			);
 		});
 	});

@@ -31,6 +31,21 @@ export type { IMcpToolSurfaceMode } from '../lib/contracts/interfaces/surface-mo
 export type { IWorkspacePathProvider } from '../lib/contracts/interfaces/workspace-paths.interface';
 export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
 
+// --- projection + handles (v00133 S2) ------------------------------------
+export { projectValue } from '../lib/contracts/output/projection';
+export type {
+	IProjectionRequest,
+	IProjectionResult,
+	TProjectionMode,
+} from '../lib/contracts/output/projection';
+export { createInMemoryHandleStore } from '../lib/handles/artifact-handle';
+export type {
+	IArtifactHandle,
+	IHandleOptions,
+	IHandleStore,
+	THandleReadResult,
+} from '../lib/handles/artifact-handle';
+
 // --- contracts -------------------------------------------------------------
 export type {
 	IHostCapabilities,
@@ -699,6 +714,17 @@ export type {
 	ReleasePrepareMode,
 	ReleaseStateErrorCode,
 } from '../lib/contracts/release-state';
+export {
+	assertExpectedFinalReleaseState,
+	buildReleaseReceipt,
+} from '../lib/contracts/release-finalize';
+export type {
+	IExpectedFinalReleaseState,
+	IHotfixInput,
+	IReleaseFinalizeInput,
+	IReleaseReceipt,
+	IReleaseReconciliationInput,
+} from '../lib/contracts/release-finalize';
 // S1: the canonical multi-model provider contract. Wiki pages
 // 04/05/06/07/08 and both consuming plugins (orchestrator-runner,
 // usage-tracking) import the provider vocabulary from this single file so

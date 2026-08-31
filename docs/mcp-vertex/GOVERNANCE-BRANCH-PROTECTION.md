@@ -7,13 +7,13 @@
 
 ## Goal
 
-`main` and `develop` MUST have the same GitHub branch-protection rule.
+`develop` is the open working branch. `main` is the protected release boundary.
 The policy is declarative in [`.github/branch-protection.yml`](../../.github/branch-protection.yml)
 and operationally applied by a human in the GitHub UI or API.
 The verifier is read-only and fails when the live GitHub rule diverges from
 the committed policy.
 
-Required protection for both branches:
+Required protection for `main`:
 
 1. `required_status_checks.strict: true`
 2. Required checks:
@@ -67,7 +67,7 @@ an explicit config override wins over the default.
 
 ### Step 2 — Match the declarative policy exactly
 
-For both `main` and `develop`, configure:
+For `main`, configure:
 
 - **Require status checks to pass before merging:** ON
 - **Require branches to be up to date before merging:** ON
@@ -78,6 +78,9 @@ For both `main` and `develop`, configure:
 - **Restrict who can push to matching branches:** OFF / empty
 - **Do not allow bypassing the above settings:** ON for admins
 
+For `develop`, leave required status checks, admin enforcement and linear
+history disabled. This keeps ordinary development commits and pushes flexible;
+CI may still provide advisory feedback through the development workflows.
 If the UI wording changes, the canonical values still live in
 [`.github/branch-protection.yml`](../../.github/branch-protection.yml).
 

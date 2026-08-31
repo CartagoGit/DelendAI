@@ -23,12 +23,96 @@
  * in `compensate.ts`. Types live in `types.ts`.
  */
 
+import { createHash } from 'node:crypto';
+
 import type {
 	IExecuteOptions,
 	IStep,
+	ITransactionCapabilityGrant,
+	ITransactionExpectedState,
 	ITransactionPlan,
+	ITransactionPlanOptions,
 	ITransactionResult,
 } from './types';
+
+const EMPTY_CAPABILITY_GRANT: ITransactionCapabilityGrant = Object.freeze({
+	permissions: Object.freeze([]) as readonly [],
+	approvalRequired: false,
+	source: 'manual',
+});
+
+const normalizeExpectedState = (
+	state: ITransactionExpectedState | undefined,
+): ITransactionExpectedState | undefined => {
+	if (state === undefined) return undefined;
+	const entries = Object.entries(state.values ?? {}).sort(([left], [right]) =>
+		left.localeCompare(right),
+	);
+	return Object.freeze({
+		...(typeof state.revision === 'string' && state.revision.trim() !== ''
+			? { revision: state.revision.trim() }
+			: {}),
+		...(entries.length > 0
+			? {
+					values: Object.freeze(
+						Object.fromEntries(entries),
+					) as Readonly<
+						Record<string, string | number | boolean | null>
+					>,
+				}
+			: {}),
+	});
+};
+
+const normalizeCapabilityGrant = (
+	grant: ITransactionCapabilityGrant | undefined,
+): ITransactionCapabilityGrant => {
+	if (grant === undefined) return EMPTY_CAPABILITY_GRANT;
+	const permissions = Object.freeze(
+		[...grant.permissions].sort((left, right) => left.localeCompare(right)),
+	) as ITransactionCapabilityGrant['permissions'];
+	return Object.freeze({
+		...(grant.pluginId !== undefined ? { pluginId: grant.pluginId } : {}),
+		...(grant.toolId !== undefined ? { toolId: grant.toolId } : {}),
+		permissions,
+		approvalRequired:
+			grant.approvalRequired === true || permissions.length > 0,
+		...(grant.source !== undefined ? { source: grant.source } : {}),
+	});
+};
+
+const computePlanFingerprint = <T>(input: {
+	readonly steps: readonly IStep<T>[];
+	readonly options: ITransactionPlanOptions;
+	readonly capabilityGrant: ITransactionCapabilityGrant;
+	readonly expectedState: ITransactionExpectedState | undefined;
+}): string =>
+	createHash('sha256')
+		.update(
+			JSON.stringify({
+				steps: input.steps.map((step) => ({
+					name: step.name,
+					fingerprint: step.fingerprint ?? null,
+					effects: [...step.effects],
+					compensable: step.compensable,
+				})),
+				meta: {
+					id: input.options.id?.trim() || null,
+					idempotencyKey:
+						input.options.idempotencyKey?.trim() || null,
+					expectedState: input.expectedState ?? null,
+					capabilityGrant: {
+						pluginId: input.capabilityGrant.pluginId ?? null,
+						toolId: input.capabilityGrant.toolId ?? null,
+						permissions: [...input.capabilityGrant.permissions],
+						approvalRequired:
+							input.capabilityGrant.approvalRequired,
+						source: input.capabilityGrant.source ?? null,
+					},
+				},
+			}),
+		)
+		.digest('hex');
 
 /**
  * Validate a single step. Returns the first issue found, or
@@ -59,15 +143,25 @@ const validateStep = <T>(step: IStep<T>, index: number): string | null => {
 	return null;
 };
 
-/**
- * Build an immutable descriptor for a transaction. Throws on the
- * first structural issue so a typo surfaces at composition, not
- * at execution. The returned object is deep-frozen so a caller
- * cannot mutate the plan between `plan()` and `execute()`.
- */
-export const plan = <T>(steps: readonly IStep<T>[]): ITransactionPlan<T> => {
+export const plan = <T>(
+	steps: readonly IStep<T>[],
+	options: ITransactionPlanOptions = {},
+): ITransactionPlan<T> => {
 	if (!Array.isArray(steps)) {
 		throw new TypeError('plan(): steps must be an array');
+	}
+	if (options.id !== undefined && options.id.trim() === '') {
+		throw new TypeError(
+			'plan(): id must be a non-empty string when present',
+		);
+	}
+	if (
+		options.idempotencyKey !== undefined &&
+		options.idempotencyKey.trim() === ''
+	) {
+		throw new TypeError(
+			'plan(): idempotencyKey must be a non-empty string when present',
+		);
 	}
 	const seenNames = new Set<string>();
 	for (const [index, step] of steps.entries()) {
@@ -87,8 +181,25 @@ export const plan = <T>(steps: readonly IStep<T>[]): ITransactionPlan<T> => {
 	// is enough to make them effectively read-only from the
 	// caller's perspective.
 	const frozenSteps = steps.map((s) => Object.freeze({ ...s }));
+	const expectedState = normalizeExpectedState(options.expectedState);
+	const capabilityGrant = normalizeCapabilityGrant(options.capabilityGrant);
+	const meta = Object.freeze({
+		...(options.id !== undefined ? { id: options.id.trim() } : {}),
+		fingerprint: computePlanFingerprint({
+			steps: frozenSteps,
+			options,
+			capabilityGrant,
+			expectedState,
+		}),
+		...(options.idempotencyKey !== undefined
+			? { idempotencyKey: options.idempotencyKey.trim() }
+			: {}),
+		...(expectedState !== undefined ? { expectedState } : {}),
+		capabilityGrant,
+	});
 	return Object.freeze({
 		steps: Object.freeze(frozenSteps) as readonly IStep<T>[],
+		meta,
 	});
 };
 
@@ -154,5 +265,5 @@ import { execute as runExecute } from './executor';
  */
 export const execute = <T>(
 	plan: ITransactionPlan<T>,
-	options: IExecuteOptions = {},
+	options: IExecuteOptions<T> = {},
 ): Promise<ITransactionResult<T>> => runExecute(plan, options);

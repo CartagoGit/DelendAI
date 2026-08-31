@@ -754,6 +754,43 @@ export const buildKpiDashboardModel = async (
 	query: IKpiDashboardQuery,
 ): Promise<IKpiDashboardResolvedState> => {
 	const tool = formatToolName(deps.namespacePrefix, 'project_kpis');
+	// S3: detect whether the KPI plugin is even loaded. The dashboard
+	// contract is owned by `project-kpis`, which is opt-in via
+	// `mcp-vertex.config.json`. In a workspace that did not enable it,
+	// the proxy still resolves the tool name but the server returns
+	// `Tool … not found`. Probe once, surface a clear English
+	// unavailable state, and skip the per-view fan-out so the user
+	// does not see five identical "tool not found" errors.
+	let toolAvailable = true;
+	try {
+		const probe = await deps.client.request<
+			{ readonly limit?: number },
+			{ readonly entries: readonly unknown[] }
+		>(formatToolName(deps.namespacePrefix, 'tool_search'), {
+			limit: 100,
+		});
+		toolAvailable =
+			Array.isArray(probe.entries) &&
+			probe.entries.some(
+				(entry) =>
+					(entry as { readonly pluginId?: string }).pluginId ===
+					'project-kpis',
+			);
+	} catch {
+		toolAvailable = false;
+	}
+	if (!toolAvailable) {
+		const unavailableModel: IKpiDashboardResolvedState = {
+			query,
+			model: {
+				...notConfiguredModel(query),
+				summary:
+					'The project-kpis plugin is not enabled in this workspace. Add it under plugins in mcp-vertex.config.json or open the Configuration Center to see usage_report and observability metrics instead.',
+			},
+			loadedViews: [],
+		};
+		return unavailableModel;
+	}
 	const argsFor = (
 		view: TKpiDashboardViewName,
 	): {

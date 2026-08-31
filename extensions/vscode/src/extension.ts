@@ -325,18 +325,50 @@ const createResilientClient = (
 				: undefined;
 			if (suffix !== undefined && !directTools.has(suffix)) {
 				const router = `${prefix}vertex`;
+				// Build a candidate ladder so calls like
+				//   mcp-vertex_project_kpis      (single underscore)
+				//   mcp-vertex_project_kpis_now  (two underscores)
+				// all reach the right domain/action. The router stores
+				// tools under `<prefix>_<plugin>_<stem>` where `<plugin>`
+				// uses a hyphen (e.g. project-kpis). So:
+				//   • `core` covers tools registered without a plugin.
+				//   • `<hyphen-plug>` covers the canonical kebab plugin id.
+				//   • For two-or-more underscores, also try splitting the
+				//     rightmost `_` (e.g. `kpis_history`).
+				const candidates: Array<{
+					readonly domain: string;
+					readonly action: string;
+				}> = [{ domain: 'core', action: suffix }];
 				const firstSeparator = suffix.indexOf('_');
-				const candidates =
-					firstSeparator === -1
-						? [{ domain: 'core', action: suffix }]
-						: [
-								{ domain: 'core', action: suffix },
-								{
-									domain: suffix.slice(0, firstSeparator),
-									action: suffix.slice(firstSeparator + 1),
-								},
-							];
-				for (const candidate of candidates) {
+				if (firstSeparator !== -1) {
+					const left = suffix.slice(0, firstSeparator);
+					const right = suffix.slice(firstSeparator + 1);
+					candidates.push(
+						{ domain: left, action: right },
+						{ domain: left.replaceAll('-', '_'), action: right },
+						{ domain: `${left}-plugin`, action: right },
+						// The kebab-plugin id with the FULL action — matches
+						// tools like `project-kpis.project_kpis` whose plugin
+						// name has a hyphen and the underscore lives inside
+						// the tool stem.
+						{ domain: left.replaceAll('_', '-'), action: suffix },
+					);
+					const lastSeparator = suffix.lastIndexOf('_');
+					if (lastSeparator !== firstSeparator) {
+						candidates.push({
+							domain: suffix.slice(0, lastSeparator),
+							action: suffix.slice(lastSeparator + 1),
+						});
+					}
+				}
+				const seen = new Set<string>();
+				const ladder = candidates.filter((c) => {
+					const key = `${c.domain}::${c.action}`;
+					if (seen.has(key)) return false;
+					seen.add(key);
+					return true;
+				});
+				for (const candidate of ladder) {
 					try {
 						const routed = await current.request<
 							{
@@ -372,7 +404,7 @@ const createResilientClient = (
 						}
 						return { structuredContent: routed };
 					} catch (error) {
-						if (candidate === candidates[candidates.length - 1]) {
+						if (candidate === ladder[ladder.length - 1]) {
 							throw error;
 						}
 					}

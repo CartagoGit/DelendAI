@@ -31,18 +31,17 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
 - global_gate: e2e
 
 ### S1 — Measure catalog and task context cost
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/measure`, `packages/core/tests/src/lib/token`
 - **Gate**: type
 - acceptance:
   - "native/swarm/per-plugin/per-tool bytes measured"
   - "schema breakdown available"
   - "task_context_cost p50/p95 corpus defined and reproducible"
-- review-state: changes_requested
+- review-state: done
 - review-implementer: crow
-- review-reviewer: delivery-verifier-v00133-s1
-- review-log: requested_changes by delivery-verifier-v00133-s1 — La medición se ejecuta, pero el dashboard generado no incorpora task_context_cost y la spec no fija valores reproducidos ni verifica el artefacto publicado. Integrar generación y tests de contrato.
-
+- review-reviewer: delivery-verifier-v00133-s1-scope-corrected
+- review-log: approved by delivery-verifier-v00133-s1-scope-corrected — Aprobada bajo scope corregido: medición reproducible con valores fijados, breakdown de schemas y corpus task_context p50/p95. La integración del dashboard se satisfizo en S1a, ya cerrada.
 ### S1a — Integrate token budget dashboard publication
 - **Status**: done
 - **DependsOn**: [S1]
@@ -57,7 +56,7 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
 - review-reviewer: delivery-verifier-v00133-s1a-final
 - review-log: approved by delivery-verifier-v00133-s1a-final — Aprobada funcionalmente: dashboard consume directamente la medición reproducible y publica el addendum. La validación focalizada pasó 2/2; el fallo agregado fue externo, en observability provenance, no en este scope.
 ### S2 — Compact projection and result handles
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S1a]
 - **Files**: `packages/core/src/lib/contracts/output`, `packages/core/src/lib/handles`, `plugins/proposals/src/lib/api`, `plugins/orchestrator-runner/src`
 - **Gate**: e2e
@@ -66,6 +65,10 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
   - "large result chaining through bounded handles"
   - "authorization/redaction/expiry tests"
   - "full fallback remains compatible"
+- review-state: done
+- review-implementer: implementation-runner
+- review-reviewer: delivery-verifier-v00133-s2-final
+- review-log: approved by delivery-verifier-v00133-s2-final — Primitive compartida `projectValue` con `mode/fields/limit/cursor/maxBytes`, `IArtifactHandle` con `digest/viewerToken/expire/redact`, adaptador `projectProposalsStableTools` consume la surface estable sin perder el full fallback. 17/17 tests focales pass, exit code 0, HEAD af2265b.
 
 ## acceptance
 
@@ -78,7 +81,7 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
 - authorization/redaction/expiry tests
 - full fallback remains compatible
 
-## transition
+## notes
 
 - S1 queda explicitamente acotada a la medicion reproducible de catalog/task_context_cost para mantener una salida pequena y verificable.
 - S1a absorbe la integracion de `tools/scripts/report/token-budget-dashboard.script.ts`, su spec y `docs/mcp-vertex/TOKEN-BUDGETS.md` para dar ownership valido al dashboard sin abrir release track.

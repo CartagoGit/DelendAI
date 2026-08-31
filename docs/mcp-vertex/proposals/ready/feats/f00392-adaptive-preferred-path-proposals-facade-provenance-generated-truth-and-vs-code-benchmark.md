@@ -46,7 +46,7 @@ Completa la evolución orientada a agentes sin sustituir capacidades detalladas,
 - review-log: requested_changes by delivery-verifier-f00392-s1-r2 — La surface detallada ya conserva todos los campos, pero la tool aplica maxBytes implícito 16384 y puede truncar sin presupuesto explícito del llamador. Hacer el truncado opt-in o documentar/validar un contrato explícito, con test nominal sin truncado.
 - review-log: approved by delivery-verifier-f00392-final — Aprobada tras tercera verificación independiente. detailedSurface completa por defecto; maxBytes solo opt-in; intents, negociación y fallback cubiertos. 12/12 tests focalizados pass, validate exit 0, HEAD 8514f99.
 ### S2 — Provenance graph and generated documentation truth
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/observability/src`, `tools/scripts/gen`, `docs/mcp-vertex/generated`, `plugins/observability/tests`
 - **Gate**: type
@@ -55,12 +55,13 @@ Completa la evolución orientada a agentes sin sustituir capacidades detalladas,
   - "redaction excludes user data"
   - "counts/lists generated from source of truth"
   - "drift check passes"
-- review-state: changes_requested
-- review-implementer: finch
-- review-reviewer: delivery-verifier-f00392-s2
+- review-state: done
+- review-implementer: crow
+- review-reviewer: delivery-verifier-f00392-s2-final
 - review-log: requested_changes by delivery-verifier-f00392-s2 — La documentación de provenance usa TOOL_PATHS/TEST_PATHS/SAMPLE_GRAPH manuales y omite obs_health aunque el plugin registra cuatro tools. Derivar counts/lists desde el registry real y cubrir la discrepancia con tests.
+- review-log: approved by delivery-verifier-f00392-s2-final — `bun install --frozen-lockfile` reproducible tras regenerar el lockfile, drift sin cambios en docs/mcp-vertex/generated/observability-provenance.generated.md y 7/7 tests focales pass, exit code 0, HEAD af2265b.
 ### S3 — VS Code activation benchmark
-- **Status**: pending
+- **Status**: done
 - **Files**: `extensions/vscode/src/benchmarks`, `extensions/vscode/src/test`, `extensions/vscode/package.json`
 - **Gate**: e2e
 - acceptance:
@@ -68,10 +69,12 @@ Completa la evolución orientada a agentes sin sustituir capacidades detalladas,
   - "onStartupFinished decision has threshold evidence"
   - "workspace no-MCP and MCP cases covered"
   - "lazy fallback documented"
-- review-state: changes_requested
+- review-state: done
 - review-implementer: sparrow
-- review-reviewer: delivery-verifier-f00392-s3
+- review-reviewer: delivery-verifier-f00392-s3-final
 - review-log: requested_changes by delivery-verifier-f00392-s3 — El benchmark es una simulación en Bun: no lanza extension host, no abre workspaces no-MCP/MCP ni mide activación real, memoria real o calls observadas. Añadir harness operativo reproducible y documentación explícita del lazy fallback.
+- review-log: requested_changes by delivery-verifier-f00392-s3-r2 — El benchmark crea un archivo de calls vacío antes de lanzar VS Code y luego lo lee como artefacto válido, lo que fusiona "artefacto ausente" con "cero observadas". Hacer artefactos explícitos y fixtures reales control/no-MCP distintas del MCP.
+- review-log: approved by delivery-verifier-f00392-s3-final — Runner real activation-benchmark.integration.cjs y classificador central activation-benchmark.ts distinguen archivo vacío (missing-artifact) de artefacto poblado (artifact con N calls). Spec cubre el caso de call-log vacío con insufficient-evidence. 5/5 tests focales pass, exit code 0, HEAD af2265b.
 ## acceptance
 
 - intents orient/plan/claim/progress/close/recover mapean a capabilities existentes

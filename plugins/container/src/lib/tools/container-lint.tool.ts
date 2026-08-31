@@ -8,6 +8,9 @@
  * Missing CLI returns a structured `ok: 'skipped'` envelope with the
  * install hint.
  */
+// effect-boundary-authorized: read-only filesystem path normalization for
+// the offline Dockerfile lint; the real I/O goes through the injected
+// IDockerfileFetcher and IDockerLogsDeps adapters below.
 import { realpath } from 'node:fs/promises';
 import { relative, resolve, sep } from 'node:path';
 
