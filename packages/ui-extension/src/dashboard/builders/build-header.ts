@@ -59,7 +59,7 @@ const renderThemeSwitcher = (current: string): string => {
 	const themeTitle = extensionText(EMPTY_LANG_DICT, 'header.theme', 'Theme');
 	return `<label class="mcpv-header__theme-picker" title="${themeTitle}">
 		<span class="mcpv-header__theme-icon" aria-hidden="true">◐</span>
-		<select name="theme" data-header-theme aria-label="Theme">
+		<select name="theme" data-header-theme aria-label="${themeTitle}">
 			${themes
 				.map(
 					(theme) =>
