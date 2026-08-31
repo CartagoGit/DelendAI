@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: general
 date: 2026-08-30
+related:
+  - q00013 # master coordination plan
 ---
 
 # f00390 — Release track R3: release PR, git-forge boundary and normal-promotion enforcement

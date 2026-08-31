@@ -6,6 +6,30 @@ status: ready
 type: plan
 track: master-hardening-release-stabilization
 date: 2026-08-30
+related:
+  - f00393 # RELEASE TRACK R1, reservado a release-migration-agent
+  - f00389 # RELEASE TRACK R2, reservado a release-migration-agent
+  - f00390 # RELEASE TRACK R3, reservado a release-migration-agent
+  - f00391 # RELEASE TRACK R4, reservado a release-migration-agent
+  - r00044 # contract migration, containment, consent and transactions
+  - v00133 # schema surface, projections, handles and context cost
+  - f00392 # adaptive facade, provenance, generated truth and VS Code benchmark
+contains:
+  proposals:
+    - { id: f00393, kind: feat, required: true, priority: P0, track: release-r1 }
+    - { id: f00389, kind: feat, required: true, priority: P0, track: release-r2 }
+    - { id: f00390, kind: feat, required: true, priority: P0, track: release-r3 }
+    - { id: f00391, kind: feat, required: true, priority: P0, track: release-r4 }
+    - { id: r00044, kind: refactor, required: true, priority: P1, track: contracts-security }
+    - { id: v00133, kind: perf, required: true, priority: P1, track: tokens-surface }
+    - { id: f00392, kind: feat, required: true, priority: P1, track: adaptive-governance }
+closureGate:
+  requirePeerReview: true
+  requireAllSlicesDone: true
+  requireAllChildrenDone: true
+  requireEvidenceOnClose: true
+  requireDevelopGreen: true
+globalGate: type
 ---
 
 # q00013 — MCP Vertex Hardening, Release Stabilization, Token Efficiency & Autonomous Engineering Plan
@@ -32,7 +56,7 @@ La promoción develop -> main era móvil y obsoleta. El programa necesita una fr
 
 ### S1 — Coordinar árbol completo y validar cierre
 - **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/ready/plans/q00013-coordination.md`
+- **Files**: `docs/mcp-vertex/proposals/ready/plans/q00013-mcp-vertex-hardening-release-stabilization-token-efficiency-autonomous-engineering-plan.md`
 - **Gate**: none
 - acceptance:
   - "PR #50 cerrado sin merge y provenance registrado"

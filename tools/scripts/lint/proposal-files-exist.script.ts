@@ -43,7 +43,8 @@ const FILES_BLOCK_RE =
 
 const extractPathCandidates = (block: string): string[] =>
 	[...block.matchAll(/`([^`]+)`/g)]
-		.map((m) => m[1].trim())
+		.map((m) => m[1] ?? '')
+		.map((path) => path.trim())
 		.filter((p) => {
 			if (p.length < 4) return false;
 			if (!p.includes('/')) return false;
@@ -75,7 +76,7 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 			const text = readFileSync(proposalAbs, 'utf8');
 			const missing: string[] = [];
 			for (const m of text.matchAll(FILES_BLOCK_RE)) {
-				for (const p of extractPathCandidates(m[1])) {
+				for (const p of extractPathCandidates(m[1] ?? '')) {
 					if (p.startsWith(`${PROPOSALS_ROOT}/ready/`)) continue;
 					const base = stripLineRefs(p);
 					if (!existsSync(join(root, base))) missing.push(p);

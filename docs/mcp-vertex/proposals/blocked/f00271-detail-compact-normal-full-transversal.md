@@ -2,7 +2,7 @@
 id: f00271
 title: "`detail: compact | normal | full` transversal"
 kind: feat
-status: in-progress
+status: blocked
 type: proposal
 track: tokens
 date: 2026-08-25

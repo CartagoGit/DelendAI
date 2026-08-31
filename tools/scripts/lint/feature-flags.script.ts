@@ -76,6 +76,15 @@ export const parseFeatureFlagCatalog = (
 			continue;
 		}
 		const [nameCell, sinceCell, defaultCell, removalCell, ...rest] = cells;
+		if (
+			nameCell === undefined ||
+			sinceCell === undefined ||
+			defaultCell === undefined ||
+			removalCell === undefined
+		) {
+			errors.push(`line ${index + 1}: incomplete feature flag row`);
+			continue;
+		}
 		const name = (nameCell.match(/`([^`]+)`/) ?? [])[1] ?? '';
 		if (name === '') {
 			errors.push(`line ${index + 1}: missing flag name`);

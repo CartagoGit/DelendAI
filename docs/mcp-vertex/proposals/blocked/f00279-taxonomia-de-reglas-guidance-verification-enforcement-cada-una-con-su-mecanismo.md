@@ -2,7 +2,7 @@
 id: f00279
 title: "Taxonomía de reglas guidance/verification/enforcement, cada una con su mecanismo"
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: trust
 date: 2026-08-29

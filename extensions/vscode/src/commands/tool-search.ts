@@ -132,7 +132,12 @@ export const registerToolSearchCommand = (deps: ICommandDeps) =>
 		TOOL_SEARCH_COMMAND,
 		async (rawArgs?: unknown) => {
 			const query = initialQueryOf(rawArgs);
-			const catalog = new AgentCatalogService(deps.client);
+			const catalog = new AgentCatalogService(
+				deps.client,
+				deps.namespacePrefix === undefined
+					? {}
+					: { namespacePrefix: deps.namespacePrefix },
+			);
 			let items: IQuickPickItem[] = [];
 			try {
 				const results = await catalog.search(query);

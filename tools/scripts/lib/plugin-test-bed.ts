@@ -173,7 +173,10 @@ export const assemblePluginForTest = async (
 		config,
 		tools,
 		promptsCount: config.extraPrompts?.length ?? 0,
-		skillsCount: config.extraSkills?.length ?? 0,
+		skillsCount: loadResult.loaded.reduce(
+			(total, entry) => total + (entry.registrations.skills?.length ?? 0),
+			0,
+		),
 		loadErrors: loadResult.errors.map((error) => error.message),
 	};
 };
