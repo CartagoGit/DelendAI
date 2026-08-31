@@ -144,7 +144,9 @@ const persistTargetHitsProtectedBranch = (
 			(branch) =>
 				token === branch ||
 				token.endsWith(`/${branch}`) ||
-				token.endsWith(`\\${branch}`),
+				token.endsWith(`\\${branch}`) ||
+				token.endsWith(`:${branch}`) ||
+				token.endsWith(`:/${branch}`),
 		),
 	);
 };
@@ -656,7 +658,10 @@ export const runAutoWork = async (
 	if (
 		resolvedMode === 'commit-and-push' &&
 		options.persist?.pushTarget !== undefined &&
-		persistTargetHitsProtectedBranch(options.persist.pushTarget)
+		persistTargetHitsProtectedBranch(
+			options.persist.pushTarget,
+			options.persist.protectedBranches,
+		)
 	) {
 		return json({
 			state: 'work',
