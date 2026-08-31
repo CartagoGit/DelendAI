@@ -208,8 +208,8 @@ const measureToolResultBytes = async (
 	name: string,
 	args: Record<string, unknown>,
 ): Promise<number> => {
-	const result = await client.callTool({ name, arguments: args });
-	return measureToolResultPayloadBytes(result);
+	const result = (await client.callTool({ name, arguments: args })) as unknown as IToolResultLike;
+	return measureToolResultPayloadBytes(result as IToolResultLike);
 };
 
 const measureTaskContextCost = async (
