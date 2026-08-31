@@ -116,7 +116,9 @@ describe('usage-tracking tools/list served bytes', () => {
 
 		// Re-read the live handler Map on every call: `registerTool`
 		// rebuilds the consolidated `tools/list` handler, so a
-		// reference captured earlier would go stale.
+		// reference captured earlier would go stale. `_requestHandlers`
+		// is private to the SDK, so we read it through a structural
+		// shape (no unsafe casts).
 		const getRequestHandlers = (): {
 			_requestHandlers?: Map<
 				string,
@@ -125,8 +127,8 @@ describe('usage-tracking tools/list served bytes', () => {
 					extra: { sessionId?: string },
 				) => Promise<{ tools: unknown[] }>
 			>;
-		} =>
-			server.server as unknown as {
+		} => {
+			const internal = server.server as unknown as {
 				_requestHandlers?: Map<
 					string,
 					(
@@ -135,6 +137,8 @@ describe('usage-tracking tools/list served bytes', () => {
 					) => Promise<{ tools: unknown[] }>
 				>;
 			};
+			return internal;
+		};
 		const listTools = (
 			request: unknown,
 			extra: { sessionId?: string },
