@@ -21,7 +21,7 @@ const MAX_COMMIT_REF_LENGTH = 40;
 const MAX_PR_REF_LENGTH = 10;
 const MAX_TOOL_REF_LENGTH = 127;
 const MAX_RELEASE_REF_LENGTH = 128;
-const REDACTED_COMMIT_REF = '0000000';
+const REDACTED_COMMIT_REF = '0'.repeat(7);
 const REDACTED_PR_REF = '0';
 
 const canonicalizeResult = (

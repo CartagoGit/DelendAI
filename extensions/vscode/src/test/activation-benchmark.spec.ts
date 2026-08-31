@@ -25,6 +25,7 @@ const sample = (
 	heapDeltaBytes: 256,
 	workUnits: 12,
 	observedToolCalls: 0,
+	observedToolCallsEvidence: 'artifact',
 	activatedBeforeProbe: true,
 	activationEvents: manifestEvents,
 	limitation: null,
@@ -97,8 +98,16 @@ describe('activation benchmark', () => {
 
 		expect(report.harness.mode).toBe('official-vscode-test-electron');
 		expect(report.control?.iterations).toBe(2);
+		expect(report.control?.totalObservedToolCalls).toBe(0);
+		expect(report.control?.missingObservedToolCallEvidenceCount).toBe(0);
 		expect(report.workspaceNoMcp?.totalObservedToolCalls).toBe(0);
+		expect(
+			report.workspaceNoMcp?.missingObservedToolCallEvidenceCount,
+		).toBe(0);
 		expect(report.workspaceMcp?.totalObservedToolCalls).toBe(5);
+		expect(report.workspaceMcp?.missingObservedToolCallEvidenceCount).toBe(
+			0,
+		);
 		expect(report.decision.status).toBe('measured');
 		expect(report.decision.keepOnStartupFinished).toBe(true);
 		expect(report.decision.startupOverheadMs).toBeLessThanOrEqual(
@@ -110,6 +119,45 @@ describe('activation benchmark', () => {
 		expect(report.decision.rationale).toContain(
 			'Official VS Code extension-host measurements',
 		);
+	});
+
+	it('classifies insufficient evidence when no-MCP lacks a real observedToolCalls artifact', async () => {
+		const queue = [
+			sample('control', {
+				startupReadyMs: 12,
+				workUnits: 0,
+			}),
+			sample('workspace-no-mcp', {
+				startupReadyMs: 29,
+				observedToolCalls: null,
+				observedToolCallsEvidence: 'missing-artifact',
+			}),
+			sample('workspace-mcp', {
+				startupReadyMs: 33,
+				observedToolCalls: 2,
+			}),
+		];
+		const report = await runActivationBenchmark({
+			activationEvents: manifestEvents,
+			iterations: 1,
+			build: false,
+			keepEvidence: true,
+			executeScenario: async () => {
+				const next = queue.shift();
+				if (next === undefined) throw new Error('missing test sample');
+				return next;
+			},
+		});
+
+		expect(report.harness.mode).toBe('official-vscode-test-electron');
+		expect(report.workspaceNoMcp?.totalObservedToolCalls).toBeNull();
+		expect(
+			report.workspaceNoMcp?.missingObservedToolCallEvidenceCount,
+		).toBe(1);
+		expect(report.decision.status).toBe('insufficient-evidence');
+		expect(report.decision.keepOnStartupFinished).toBeNull();
+		expect(report.decision.rationale).toContain('workspace-no-mcp');
+		expect(report.decision.rationale).toContain('observedToolCalls');
 	});
 
 	it('returns explicit limitation evidence when the official harness cannot run', async () => {
