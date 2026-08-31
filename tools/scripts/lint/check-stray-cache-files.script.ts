@@ -62,6 +62,7 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	'logs-errors',
 	'proposals',
 	'rules',
+	'runtime',
 	'skills',
 	'state',
 	'verify',
@@ -389,6 +390,11 @@ const SANCTIONED_ROOT_FILES: ReadonlySet<string> = new Set([
 	// Dotfile config — auto-discovered by their respective tools.
 	'.gitignore',
 	'.mcp.json',
+	// Tracked placeholder file — no extension on purpose. Originally a
+	// scratch sentinel for the proposals registry that the workspace
+	// tools leave in place; tracked in git (empty blob) so `git status`
+	// stays clean across worktrees that share `.cache/`.
+	'proposals',
 ]);
 
 /**

@@ -60,7 +60,8 @@ const RE =
 const inspectOne = async (file: string): Promise<readonly IImportRow[]> => {
 	const text = await readFile(file, 'utf8');
 	const rows: IImportRow[] = [];
-	for (const [match, typeMarker, namedRaw, specifier] of text.matchAll(RE)) {
+	for (const match of text.matchAll(RE)) {
+		const [, typeMarker, namedRaw, specifier] = match;
 		const symbols = (namedRaw ?? '')
 			.split(',')
 			.map(
@@ -73,8 +74,8 @@ const inspectOne = async (file: string): Promise<readonly IImportRow[]> => {
 			.filter((s) => s.length > 0 && s !== 'type');
 		rows.push({
 			file: relative(process.cwd(), file),
-			line: text.slice(0, match.index ?? 0).split('\n').length,
-			specifier,
+			line: text.slice(0, text.indexOf(match[0])).split('\n').length,
+			specifier: specifier ?? '',
 			symbols,
 			typeOnly: typeMarker !== undefined,
 		});
@@ -98,7 +99,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	}
 	if (wantJson) {
 		process.stdout.write(
-			JSON.stringify(
+			`${JSON.stringify(
 				{
 					generatedAt: new Date().toISOString(),
 					totals: { total, typeOnly, value, files: files.length },
@@ -107,7 +108,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 				},
 				null,
 				2,
-			) + '\n',
+			)}\n`,
 		);
 		return 0;
 	}

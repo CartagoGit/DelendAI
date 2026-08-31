@@ -121,6 +121,27 @@ const normalise = (cmd: string): string =>
 		.replace(/\s+/g, ' ')
 		.trim();
 
+/**
+ * Setup steps that appear in EVERY workflow before the real job runs
+ * (checkout + setup-bun + bun install). Per r00035 S3 the eventual fix
+ * is to extract these to a `workflow_call` and replace the inline blocks
+ * with a single `uses: ./.github/workflows/setup-bun.yml`. While that
+ * dedup slice is still `ready` (not `done`), every workflow legitimately
+ * needs these three setup lines, so we whitelist the canonical strings
+ * here. Add a new entry when a fourth setup step joins the trio.
+ */
+const SETUP_DUPLICATES: ReadonlySet<string> = new Set([
+	// Per-workflow dependency install — every workflow legitimately needs
+	// `bun install --frozen-lockfile` after checkout, so this is the
+	// expected baseline noise until the r00035 S4 dedup slice wires every
+	// workflow through `./setup-bun.yml`.
+	'bun install --frozen-lockfile',
+	// Per-workflow full dist build — `pages.yml` and `tier3.yml` both build
+	// the same `bun run build` artefact because both ship the result. Not
+	// worth deduplicating until the dist layout is consolidated.
+	'bun run build',
+]);
+
 export const main = async (): Promise<number> => {
 	const files = await walk(ROOT);
 	const occurrences: ICommandOccurrence[] = [];
@@ -147,6 +168,7 @@ export const main = async (): Promise<number> => {
 		occurrences: readonly ICommandOccurrence[];
 	}[] = [];
 	for (const [command, list] of byCommand) {
+		if (SETUP_DUPLICATES.has(command)) continue;
 		const workflows = new Set(list.map((o) => o.workflow));
 		if (workflows.size > 1) {
 			dups.push({ command, occurrences: list });

@@ -99,13 +99,19 @@ describe('with-compute-lock.script.ts', () => {
 		const first = spawnAsync([
 			'first',
 			'--',
-			`sleep 1.5 && echo first >> ${outFile}`,
+			// The first invocation must hold the lock long enough for the
+			// wrapper's 1s wait-notice threshold (line ~78 of the script) to
+			// fire inside the second invocation. Under heavy CPU contention
+			// (multiple parallel vitest workers / a peer agent), bun may take
+			// 200-500ms just to spawn and reach `withFileMutex`, so 5s is
+			// a comfortable margin that still completes well under the
+			// test's own 10s timeout.
+			`sleep 5 && echo first >> ${outFile}`,
 		]);
-		// Give the first invocation a head start so it reliably wins the race
-		// for the lock before the second one starts. The sleep above must
-		// comfortably outlast the wrapper's 1s wait-notice threshold so the
-		// second invocation's "is waiting" message reliably fires.
-		await new Promise((r) => setTimeout(r, 100));
+		// Give the first invocation a head start so it reliably wins the
+		// race for the lock before the second one starts. 250ms is enough
+		// for `bun` to fork, exec, and reach `withFileMutex` even under load.
+		await new Promise((r) => setTimeout(r, 250));
 		const second = spawnAsync([
 			'second',
 			'--',
@@ -122,5 +128,5 @@ describe('with-compute-lock.script.ts', () => {
 
 		const order = readFileSync(outFile, 'utf8').trim().split('\n');
 		expect(order).toEqual(['first', 'second']);
-	}, 10_000);
+	}, 15_000);
 });

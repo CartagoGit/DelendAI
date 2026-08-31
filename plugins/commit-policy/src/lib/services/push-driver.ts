@@ -154,6 +154,19 @@ export const runPushDriver = async (
 		policy.protectedBranches,
 	);
 
+	// Hard-coded `main` refusal — must stay AHEAD of the
+	// `protectedBranches` override check (enforced by
+	// lint:commit-push-strictness): no config override may enable a
+	// direct push to the release/publish branch.
+	if (branch === 'main') {
+		return {
+			code: 'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED',
+			ok: false,
+			refusal:
+				"push refused: direct push to 'main' is not allowed; cuts the release/publish path. open a PR from a feature branch (release/* or develop).",
+		};
+	}
+
 	if (
 		isBranchProtected(branch, {
 			protected: effectiveProtectedBranches,

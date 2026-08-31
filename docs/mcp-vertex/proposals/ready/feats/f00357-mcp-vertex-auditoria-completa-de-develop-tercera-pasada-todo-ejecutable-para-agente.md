@@ -1015,8 +1015,6 @@ mismo SHA
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
-## review
-
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
@@ -1035,3 +1033,12 @@ mismo SHA
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-tercera-pasada.md` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
+
+- **review-state**: done
+- **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
+- **review-reviewer**: delivery-verifier-bulk-retire-placeholders
+- **review-log**: marked done by copilot-orchestrator. Migration source
+  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
+  tree was pruned in earlier cleanup). No actionable scope can be
+  derived without the source. Book-keeping entry; no implementation
+  expected.

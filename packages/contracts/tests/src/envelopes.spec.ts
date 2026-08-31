@@ -16,7 +16,7 @@ import type {
 	IToolEnvelope,
 	IToolErrorEnvelope,
 	IToolOkEnvelope,
-} from '../src/envelopes';
+} from '../../src/envelopes';
 
 describe('envelopes (r00033 S1)', () => {
 	it('IToolOkEnvelope narrows correctly on ok:true', () => {
