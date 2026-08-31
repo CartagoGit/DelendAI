@@ -6,7 +6,7 @@ export default definePluginManifest({
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
-		'GitHub read-only provider context and HTTP client for future tools.',
+		'GitHub read-only provider context, HTTP client and remote resource tools.',
 	tags: ['github', 'provider'],
 	maturity: 'experimental',
 	permissions: ['network'],
