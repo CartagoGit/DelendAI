@@ -12,7 +12,10 @@ import {
 	type IContractMigrationSliceGuidance,
 } from '@mcp-vertex/core/lib/contracts/interfaces/contract-migration.interface';
 import { CAPABILITY_TAGS, type CapabilityTag } from '@mcp-vertex/core/public';
+
+import { evaluateWorktreeImpactPolicy } from '../agents/worktree-impact-policy';
 import { expandDeclaredFiles } from '../proposals/expand-declared-files';
+import { evaluateContractMigrationPolicy } from './contract-migration-policy';
 
 export type ISliceGate = 'lint' | 'type' | 'e2e' | 'none';
 
@@ -32,6 +35,8 @@ export interface IProposalSliceContract {
 	readonly gate: ISliceGate;
 	readonly status: ISliceStatus;
 	readonly acceptanceCriteria: readonly string[];
+	readonly migrationPhase?: ContractMigrationPhase;
+	readonly migrationGuidance?: IContractMigrationSliceGuidance;
 	/**
 	 * f00067 S2 (routing hints, all optional — default "no preference").
 	 * A slice can steer the multi-model orchestrator toward a provider
@@ -64,7 +69,8 @@ export interface IClaimValidation {
 		| 'deps-not-done'
 		| 'overlap-in-progress'
 		| 'already-done'
-		| 'already-in-progress';
+		| 'already-in-progress'
+		| 'migration-phase-blocked';
 }
 
 const GATES: readonly ISliceGate[] = ['lint', 'type', 'e2e', 'none'];
@@ -76,6 +82,9 @@ const asGate = (value: string | undefined): ISliceGate =>
 		: 'none';
 
 const CAPABILITY_TAG_SET: ReadonlySet<string> = new Set(CAPABILITY_TAGS);
+const CONTRACT_MIGRATION_PHASE_SET: ReadonlySet<string> = new Set(
+	CONTRACT_MIGRATION_PHASES,
+);
 
 const FILES_FIELD_RE = /^[-*]\s*(?:files|\*\*Files\*\*):[ \t]*(.*)$/u;
 
@@ -140,6 +149,72 @@ const parseCostTier = (raw: string | undefined): ISliceCostTier | undefined => {
 	const n = Number.parseInt(raw.trim(), DECIMAL_RADIX);
 	return n >= 1 && n <= 5 ? (n as ISliceCostTier) : undefined;
 };
+
+const parseMigrationPhase = (
+	body: string,
+	title: string,
+): ContractMigrationPhase | undefined => {
+	const raw =
+		readSliceField(body, 'migration_phase') ??
+		readSliceField(body, 'phase');
+	const normalized = raw?.trim().toLowerCase();
+	if (
+		normalized !== undefined &&
+		CONTRACT_MIGRATION_PHASE_SET.has(normalized)
+	) {
+		return normalized as ContractMigrationPhase;
+	}
+	const lowerTitle = title.trim().toLowerCase();
+	return CONTRACT_MIGRATION_PHASES.find((phase) =>
+		new RegExp(`\\b${phase}\\b`, 'u').test(lowerTitle),
+	);
+};
+
+const orderedCompletedPhasesFor = (
+	slices: readonly IProposalSliceContract[],
+	targetPhase: ContractMigrationPhase,
+): readonly ContractMigrationPhase[] => {
+	const targetIndex = CONTRACT_MIGRATION_PHASES.indexOf(targetPhase);
+	const donePhases = new Set<ContractMigrationPhase>(
+		slices.flatMap((slice) =>
+			slice.status === 'done' && slice.migrationPhase !== undefined
+				? [slice.migrationPhase]
+				: [],
+		),
+	);
+	return CONTRACT_MIGRATION_PHASES.filter(
+		(phase, index) => index < targetIndex && donePhases.has(phase),
+	);
+};
+
+const attachMigrationGuidance = (
+	slices: readonly IProposalSliceContract[],
+): readonly IProposalSliceContract[] =>
+	slices.map((slice) => {
+		if (slice.migrationPhase === undefined) return slice;
+		const completedPhases = orderedCompletedPhasesFor(
+			slices,
+			slice.migrationPhase,
+		);
+		const verificationPassed = completedPhases.includes('verify');
+		return {
+			...slice,
+			migrationGuidance: {
+				phase: slice.migrationPhase,
+				completedPhases,
+				verificationPassed,
+				migrationPolicy: evaluateContractMigrationPolicy({
+					targetPhase: slice.migrationPhase,
+					completedPhases,
+					verificationPassed,
+				}),
+				worktreeImpactPolicy: evaluateWorktreeImpactPolicy({
+					phase: slice.migrationPhase,
+					touchedPaths: slice.files,
+				}),
+			},
+		};
+	});
 
 const readRawFilesBlocks = (body: string): readonly string[] => {
 	const blocks: string[] = [];
@@ -273,6 +348,7 @@ export const parseProposalSlicePlan = (
 		const maxCostTier = parseCostTier(
 			readSliceField(body, 'max_cost_tier'),
 		);
+		const migrationPhase = parseMigrationPhase(body, title);
 		slices.push({
 			proposalId,
 			sliceId,
@@ -283,13 +359,18 @@ export const parseProposalSlicePlan = (
 			gate,
 			status: docDone ? 'done' : 'pending',
 			acceptanceCriteria,
+			...(migrationPhase !== undefined ? { migrationPhase } : {}),
 			...(requiresCapability.length > 0 ? { requiresCapability } : {}),
 			...(preferredProvider !== undefined ? { preferredProvider } : {}),
 			...(maxCostTier !== undefined ? { maxCostTier } : {}),
 		});
 	}
 	if (slices.length === 0) return null;
-	return { proposalId, slices, globalGate };
+	return {
+		proposalId,
+		slices: attachMigrationGuidance(slices),
+		globalGate,
+	};
 };
 
 /** Pairs of slices whose `files` overlap (forbidden by construction). */
@@ -440,6 +521,18 @@ export const validateClaim = (
 			ok: false,
 			blockerType: 'deps-not-done',
 			reason: `slice "${sliceId}" depends on [${missingDeps.join(', ')}] which are not done`,
+		};
+	}
+	if (slice.migrationGuidance?.migrationPolicy.ok === false) {
+		const blockers =
+			slice.migrationGuidance.migrationPolicy.blockers.join(' ');
+		return {
+			ok: false,
+			blockerType: 'migration-phase-blocked',
+			reason:
+				blockers.length > 0
+					? blockers
+					: `slice "${sliceId}" cannot start ${slice.migrationGuidance.phase} yet`,
 		};
 	}
 	const mine = new Set(slice.files);
