@@ -1202,3 +1202,16 @@
 
 	& svg { display: block; margin: 0 auto; width: 64px; height: 64px; color: var(--mcpv-fg); }
 }
+
+// Compact dashboard mode: tighter padding on cards + panels. Opt-in via
+// the .mcpv-panel--compact modifier emitted by the settings panel.
+.mcpv-panel--compact .mcpv-settings__section,
+.mcpv-panel--compact .mcpv-status__panel,
+.mcpv-panel--compact .mcpv-status__kpi,
+.mcpv-panel--compact .mcpv-status__ring,
+.mcpv-panel--compact .mcpv-card {
+	padding: var(--mcpv-s-2);
+}
+.mcpv-panel--compact .mcpv-status__kpis {
+	gap: var(--mcpv-s-2);
+}
