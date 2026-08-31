@@ -266,6 +266,12 @@ const toNonEmpty = (value: unknown): string | undefined => {
 const toNumber = (value: unknown): number | null =>
 	typeof value === 'number' && Number.isFinite(value) ? value : null;
 
+const toId = (value: unknown): string | number | null => {
+	if (typeof value === 'string') return value.length > 0 ? value : null;
+	if (typeof value === 'number' && Number.isFinite(value)) return value;
+	return null;
+};
+
 const toBoolean = (value: unknown): boolean => value === true;
 
 const toArray = (value: unknown): readonly unknown[] =>
@@ -315,9 +321,7 @@ const normalizeProject = (value: unknown): z.infer<typeof projectSchema> => {
 		namespace:
 			raw.namespace && typeof raw.namespace === 'object'
 				? {
-						id:
-							(raw.namespace as Record<string, unknown>).id ??
-							null,
+						id: toId((raw.namespace as Record<string, unknown>).id),
 						fullPath:
 							toNonEmpty(
 								(raw.namespace as Record<string, unknown>)
@@ -611,9 +615,9 @@ const normalizeDeployment = (
 		environment:
 			raw.environment && typeof raw.environment === 'object'
 				? {
-						id:
-							(raw.environment as Record<string, unknown>).id ??
-							null,
+						id: toId(
+							(raw.environment as Record<string, unknown>).id,
+						),
 						name:
 							toNonEmpty(
 								(raw.environment as Record<string, unknown>)

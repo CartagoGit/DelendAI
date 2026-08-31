@@ -185,26 +185,20 @@ describe('subscribe session cleanup mirrors disconnect unsubscribe', async () =>
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	it('releases only leases owned by the caller, leaving other processes untouched', async () => {
-		const sessionA = { host: 'host-a', pid: 100 };
-		const sessionB = { host: 'host-b', pid: 200 };
-
-		const own = await runTaskQueueAction(
-			{
-				action: 'subscribe',
-				params: { taskId: 'obs', now: '2026-08-31T00:00:00.000Z' },
-			},
-			paths,
+		const { resolveCallerSession } = await import(
+			'@mcp-vertex/proposals/lib/agents/task-queue-engine'
 		);
-		const other = await runTaskQueueAction(
-			{
-				action: 'subscribe',
-				params: { taskId: 'obs2', now: '2026-08-31T00:00:00.000Z' },
-			},
-			paths,
-		);
+		const session = resolveCallerSession();
 
+		await subscribe(paths, 'obs', {
+			subscriberId: 'agent-current',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+
+		// Inject a lease owned by another process so we can verify the
+		// session cleanup ignores it.
 		const leasesPath = join(dir, '.subscribe-leases.json');
-		const initial = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
+		const persisted = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
 			leases: Array<{
 				taskId: string;
 				subscriberId: string;
@@ -212,32 +206,22 @@ describe('subscribe session cleanup mirrors disconnect unsubscribe', async () =>
 				pid?: number;
 			}>;
 		};
-		expect(initial.leases).toHaveLength(2);
-		const firstSubscriber = initial.leases[0]?.subscriberId ?? 'unknown';
+		persisted.leases.push({
+			taskId: 'peer',
+			subscriberId: 'agent-peer',
+			host: 'other-host',
+			pid: 9999,
+		});
+		writeFileSync(leasesPath, JSON.stringify(persisted, null, '\t'));
 
-		const result = await releaseSessionSubscriptions(paths, sessionA);
-		expect(result.releasedTaskIds.length).toBeGreaterThan(0);
+		const result = await releaseSessionSubscriptions(paths, session);
+		expect(result.releasedTaskIds).toEqual(['obs']);
 
 		const after = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
-			leases: Array<{
-				taskId: string;
-				subscriberId: string;
-				host?: string;
-				pid?: number;
-			}>;
+			leases: Array<{ taskId: string; host?: string; pid?: number }>;
 		};
-		const surviving = after.leases.find(
-			(lease) => lease.host === sessionB.host,
-		);
-		expect(surviving?.taskId).toBe(
-			initial.leases.find((lease) => lease.host === sessionB.host)
-				?.taskId,
-		);
-		expect(after.leases.some((lease) => lease.host === sessionA.host)).toBe(
-			false,
-		);
-		expect(typeof own.subscriptionId).toBe('string');
-		expect(typeof other.subscriptionId).toBe('string');
-		expect(firstSubscriber).toBeDefined();
+		expect(after.leases).toHaveLength(1);
+		expect(after.leases[0]?.taskId).toBe('peer');
+		expect(after.leases[0]?.host).toBe('other-host');
 	});
 });

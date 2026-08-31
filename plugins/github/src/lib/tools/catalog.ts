@@ -1185,10 +1185,13 @@ export const buildGitHubPullRequestsToolRegistrations = (
 					labels: mapLabels(
 						Array.isArray(pr.labels) ? pr.labels : undefined,
 					),
-					branch: typeof pr.head?.ref === 'string' ? pr.head.ref : '',
+					branch:
+						typeof prAny.head?.ref === 'string'
+							? prAny.head.ref
+							: '',
 					baseBranch:
-						typeof pr.base?.ref === 'string'
-							? pr.base.ref
+						typeof prAny.base?.ref === 'string'
+							? prAny.base.ref
 							: undefined,
 					reviewDecision:
 						typeof pr.reviewDecision === 'string'
@@ -1409,27 +1412,31 @@ export const buildGitHubCommitsToolRegistrations = (
 					},
 					responseSchema: z.array(z.record(z.string(), z.unknown())),
 				});
-				const items = result.data.map((commit) => ({
-					sha: typeof commit.sha === 'string' ? commit.sha : '',
-					title:
-						typeof commit.commit?.message === 'string'
-							? (commit.commit.message.split('\n')[0] ?? '')
-							: '',
-					message:
-						typeof commit.commit?.message === 'string'
-							? commit.commit.message
-							: '',
-					author: mapUser(commit.author),
-					committer: mapUser(commit.committer),
-					url:
-						typeof commit.html_url === 'string'
-							? commit.html_url
-							: undefined,
-					date:
-						typeof commit.commit?.author?.date === 'string'
-							? commit.commit.author.date
-							: undefined,
-				}));
+				const items = result.data.map((commit) => {
+					const commitAny = commit as any;
+					return {
+						sha: typeof commit.sha === 'string' ? commit.sha : '',
+						title:
+							typeof commitAny.commit?.message === 'string'
+								? (commitAny.commit.message.split('\n')[0] ??
+									'')
+								: '',
+						message:
+							typeof commitAny.commit?.message === 'string'
+								? commitAny.commit.message
+								: '',
+						author: mapUser(commit.author),
+						committer: mapUser(commit.committer),
+						url:
+							typeof commit.html_url === 'string'
+								? commit.html_url
+								: undefined,
+						date:
+							typeof commitAny.commit?.author?.date === 'string'
+								? commitAny.commit.author.date
+								: undefined,
+					};
+				});
 				return {
 					ok: true as const,
 					provider: 'github' as const,
