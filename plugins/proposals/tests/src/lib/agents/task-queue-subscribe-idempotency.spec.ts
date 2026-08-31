@@ -215,17 +215,15 @@ describe('subscribe session cleanup mirrors disconnect unsubscribe', async () =>
 		writeFileSync(leasesPath, JSON.stringify(persisted, null, '\t'));
 
 		const result = await releaseSessionSubscriptions(paths, session);
-		if (process.env['DEBUG_SESSION_CLEANUP'] === '1') {
-			const debugPath = join(
-				dir,
-				'agent-queue',
-				'.subscribe-leases.json.debug.log',
-			);
-			if (existsSync(debugPath)) {
-				console.error(readFileSync(debugPath, 'utf8'));
-			}
-		}
-		expect(result.releasedTaskIds).toEqual(['obs']);
+		const debugPath = join(
+			dir,
+			'agent-queue',
+			'.subscribe-leases.json.debug.log',
+		);
+		const debugLog = existsSync(debugPath)
+			? readFileSync(debugPath, 'utf8')
+			: '';
+		expect(result.releasedTaskIds, `leases=${debugLog}`).toEqual(['obs']);
 
 		const after = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
 			leases: Array<{ taskId: string; host?: string; pid?: number }>;
