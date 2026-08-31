@@ -22,11 +22,39 @@ import {
 	appendValidateJournalEntry,
 	buildValidateJournalEntry,
 	VALIDATE_JOURNAL_RELATIVE_PATH,
+	VALIDATE_RUN_SCRIPT,
 } from './record-validate-evidence.script';
 
 describe('validate-evidence journal path', () => {
 	it('writes to the exact path the proposals gate reads', () => {
 		expect(VALIDATE_JOURNAL_RELATIVE_PATH).toBe(VALIDATE_LOG_RELATIVE_PATH);
+	});
+});
+
+describe('package.json wiring', () => {
+	/**
+	 * The journal only gets written if `bun run validate` actually goes
+	 * through this wrapper. The previous incarnation of the gate was
+	 * orphaned precisely because nothing asserted the wiring, so a
+	 * package.json edit could silently re-break the closing loop.
+	 */
+	it('routes `validate` through the recorder and keeps the raw chain as `validate:run`', async () => {
+		const { readFileSync } = await import('node:fs');
+		const manifest = JSON.parse(
+			readFileSync(
+				join(import.meta.dirname, '../../../package.json'),
+				'utf8',
+			),
+		) as { scripts: Record<string, string> };
+
+		expect(manifest.scripts.validate).toContain(
+			'record-validate-evidence.script.ts',
+		);
+		expect(manifest.scripts[VALIDATE_RUN_SCRIPT]).toBeTypeOf('string');
+		// The wrapper must not recurse into itself.
+		expect(manifest.scripts[VALIDATE_RUN_SCRIPT]).not.toContain(
+			'record-validate-evidence',
+		);
 	});
 });
 
