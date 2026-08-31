@@ -90,8 +90,8 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | standard | standard | adaptive | managed | dynamic-client | 19 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
 | swarm | swarm | native | managed | tokens-gate | 27 | 166 | 193,678 | 48420 | 157,987 | 14,665 | 48,031 | 109,956 | 50,347 | 59 | 153 | within hard | within hard | none |
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
-| full | full | native | managed | tokens-gate | 31 | 173 | 202,360 | 50590 | 165,322 | 15,144 | 51,093 | 114,229 | 50,347 | 59 | 153 | within hard | within hard | none |
-| full | full | adaptive | managed | dynamic-client | 31 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
+| full | full | native | managed | tokens-gate | 34 | 173 | 202,360 | 50590 | 165,322 | 15,144 | 51,093 | 114,229 | 50,347 | 59 | 153 | within hard | within hard | none |
+| full | full | adaptive | managed | dynamic-client | 34 | 9 | 9,359 | 2340 | 7,372 | 863 | 2,018 | 5,354 | 4,456 | 57 | n/a | within hard | within hard | none |
 | vertex | vertex | native | managed | tokens-gate | 38 | 197 | 262,834 | 65709 | 218,705 | 18,745 | 60,720 | 157,985 | 50,347 | 59 | 153 | within hard | within hard | none |
 | vertex | vertex | adaptive | managed | dynamic-client | 38 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
 | web-app | web-app | native | managed | tokens-gate | 18 | 89 | 103,208 | 25802 | 84,695 | 7,393 | 26,221 | 58,474 | 8,221 | 58 | n/a | n/a | n/a | none |
@@ -193,7 +193,8 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | full | native | managed | tokens-gate | issues | 1 | 915 | 65 | 85 | 638 | 0 | 27 | 68 | 0.5% |
 | full | native | managed | tokens-gate | api | 3 | 4,019 | 205 | 1,914 | 1,552 | 0 | 81 | 188 | 2.0% |
 | full | native | managed | tokens-gate | prompt-eval | 2 | 2,757 | 139 | 754 | 1,605 | 0 | 54 | 136 | 1.4% |
-| full | adaptive | managed | dynamic-client | core | 6 | 4,893 | 526 | 1,020 | 2,636 | 0 | 162 | 408 | 100.0% |
+| full | adaptive | managed | dynamic-client | core | 6 | 4,893 | 526 | 1,020 | 2,636 | 0 | 162 | 408 | 52.3% |
+| full | adaptive | managed | dynamic-client | agent-orchestrator | 3 | 4,456 | 337 | 998 | 2,718 | 0 | 81 | 204 | 47.7% |
 | vertex | native | managed | tokens-gate | core | 28 | 42,739 | 2,839 | 11,533 | 24,975 | 0 | 756 | 1,904 | 16.3% |
 | vertex | native | managed | tokens-gate | adaptive-optimizer | 3 | 8,050 | 354 | 2,112 | 5,158 | 0 | 81 | 204 | 3.1% |
 | vertex | native | managed | tokens-gate | audit | 4 | 10,099 | 802 | 1,992 | 6,803 | 0 | 108 | 272 | 3.8% |
@@ -320,7 +321,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | swarm | native | managed | tokens-gate | 193,678 | 46722 | 47820 | 48420 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | swarm | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | native | managed | tokens-gate | 202,360 | 48878 | 50017 | 50590 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| full | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| full | adaptive | managed | dynamic-client | 9,359 | 2255 | 2309 | 2340 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | vertex | native | managed | tokens-gate | 262,834 | 63312 | 64420 | 65709 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | vertex | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | native | managed | tokens-gate | 103,208 | 24635 | 25277 | 25802 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
@@ -344,7 +345,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | lean | 4,900 | ok | — | 60,296 | ok | — |
 | standard | 4,900 | ok | — | 118,750 | ok | — |
 | swarm | 4,900 | ok | — | 193,678 | ok | — |
-| full | 4,900 | ok | — | 202,360 | ok | — |
+| full | 9,359 | ok | — | 202,360 | ok | — |
 | vertex | 4,900 | ok | — | 262,834 | ok | — |
 | web-app | 4,900 | n/a | — | 103,208 | n/a | — |
 | backend-api | 4,900 | n/a | — | 101,624 | n/a | — |
