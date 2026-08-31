@@ -95,7 +95,11 @@
 			"options": {}
 		},
 		"quality": {
-			"options": {}
+			"options": {
+				"scopes": {
+					"all": ["bun run build"]
+				}
+			}
 		},
 		"deps": {
 			"options": {
