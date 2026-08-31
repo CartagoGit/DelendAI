@@ -15,6 +15,7 @@ import type {
 	IMcpPluginContext,
 	IExternalToolRun,
 } from '@mcp-vertex/core/public';
+import type { ISliceListener } from '@mcp-vertex/commit-policy/lib/triggers/slice-listener';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({
 	workspace: {
@@ -117,6 +118,23 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 		await runtime.dispose();
 	});
 
+	it('registers and disposes without proposals loaded', async () => {
+		const runtime = asRuntime(
+			await plugin.register({
+				...buildCtx(workspace),
+				options: {
+					commit: { enabled: true },
+					cadence: {
+						triggers: [{ kind: 'slice', onStatuses: ['done'] }],
+					},
+				},
+			}),
+		);
+
+		expect(typeof runtime.dispose).toBe('function');
+		await runtime.dispose();
+	});
+
 	it('register() refreshes remote branch protection when the opt-in env var is true', async () => {
 		process.env.MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER =
 			'true';
@@ -168,7 +186,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 		expect(activeIntervals.size).toBe(0);
 	});
 
-	it('does not start the slice listener when proposals owns persistence', async () => {
+	it('keeps the slice listener independent from proposals persistence', async () => {
 		const runtime = asRuntime(
 			await plugin.register({
 				...buildCtx(workspace),
@@ -178,8 +196,24 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 			}),
 		);
 
-		expect(createdIntervals).toBe(1);
+		expect(createdIntervals).toBe(2);
 
+		await runtime.dispose();
+	});
+
+	it('handles a missing proposals index when running standalone', async () => {
+		await rm(
+			join(workspace, 'docs', 'mcp-vertex', 'proposals', 'index.json'),
+			{ force: true },
+		);
+		const runtime = asRuntime(
+			await plugin.register({
+				...buildCtx(workspace),
+				pluginOptions: new Map(),
+			}),
+		);
+
+		expect(typeof runtime.dispose).toBe('function');
 		await runtime.dispose();
 	});
 
@@ -196,6 +230,58 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 
 		expect(createdIntervals).toBe(reloads * 2);
 		expect(activeIntervals.size).toBe(0);
+	});
+
+	it('reusing the same slice listener across two registers still disposes each runtime only once', async () => {
+		const start = vi.fn();
+		const stop = vi.fn();
+		const sharedListener: ISliceListener = {
+			check: async () => [],
+			drainPending: () => [],
+			drainRefusals: () => [],
+			start,
+			stop,
+		};
+
+		vi.resetModules();
+		vi.doMock(
+			'@mcp-vertex/commit-policy/lib/triggers/slice-listener',
+			async () => {
+				const actual = await vi.importActual<
+					typeof import('@mcp-vertex/commit-policy/lib/triggers/slice-listener')
+				>('@mcp-vertex/commit-policy/lib/triggers/slice-listener');
+				return {
+					...actual,
+					createSliceListener: vi.fn(() => sharedListener),
+				};
+			},
+		);
+
+		try {
+			const { default: reloadedPlugin } = await import(
+				'@mcp-vertex/commit-policy'
+			);
+			const firstRuntime = asRuntime(
+				await reloadedPlugin.register(buildCtx(workspace)),
+			);
+			const secondRuntime = asRuntime(
+				await reloadedPlugin.register(buildCtx(workspace)),
+			);
+
+			expect(start).toHaveBeenCalledTimes(2);
+
+			await firstRuntime.dispose();
+			await firstRuntime.dispose();
+			expect(stop).toHaveBeenCalledTimes(1);
+
+			await secondRuntime.dispose();
+			expect(stop).toHaveBeenCalledTimes(2);
+		} finally {
+			vi.doUnmock(
+				'@mcp-vertex/commit-policy/lib/triggers/slice-listener',
+			);
+			vi.resetModules();
+		}
 	});
 });
 
