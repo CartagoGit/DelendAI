@@ -5,6 +5,7 @@ import z from 'zod';
 
 import {
 	toolJsonBounded,
+	writeFileAtomic,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 import type { IRemoteProviderError } from '@mcp-vertex/contracts/remote-provider';

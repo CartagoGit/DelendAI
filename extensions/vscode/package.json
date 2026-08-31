@@ -81,6 +81,12 @@
 				"icon": "$(dashboard)"
 			},
 			{
+				"command": "mcp-vertex.openDashboardTab",
+				"title": "Open Dashboard in Editor Tab",
+				"category": "MCP Vertex",
+				"icon": "$(dashboard)"
+			},
+			{
 				"command": "mcp-vertex.showOverview",
 				"title": "Show Overview",
 				"category": "MCP Vertex"
