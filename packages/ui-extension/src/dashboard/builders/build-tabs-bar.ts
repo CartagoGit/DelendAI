@@ -37,8 +37,9 @@ const NAV_GROUPS: ReadonlyArray<{
 export function buildTabsBar(lang: ILangDict): string {
 	const text = (
 		key: string,
+		fallbackOrVars?: string | Readonly<Record<string, string | number>>,
 		vars?: Readonly<Record<string, string | number>>,
-	) => extensionText(lang, key, vars);
+	) => extensionText(lang, key, fallbackOrVars, vars);
 	// WAI-ARIA tabs (H27): the tablist uses a roving tabindex —
 	// only the selected tab is in the tab order (tabindex="0"); the
 	// rest are `-1` and reachable via ArrowLeft/ArrowRight (wired in
@@ -88,7 +89,7 @@ export function buildTabsBar(lang: ILangDict): string {
 	).join('');
 	return (
 		`<div class="mcpv-app-nav__mobile"><button type="button" class="mcpv-app-nav__menu" data-nav-toggle aria-expanded="false">☰ <span>Menu</span></button></div>` +
-		`<aside class="mcpv-app-nav" data-nav-panel aria-label="Dashboard sections">${sidebar}<div class="mcpv-app-nav__actions">${surfaceActions}${sidebarRefreshHtml}${sidebarExpandHtml}</div></aside>` +
+		`<aside class="mcpv-app-nav" data-nav-panel aria-label="${text('dashboardSections', 'Dashboard sections')}">${sidebar}<div class="mcpv-app-nav__actions">${surfaceActions}${sidebarRefreshHtml}${sidebarExpandHtml}</div></aside>` +
 		`<section class="mcpv-tabs mcpv-tabs--underline">` +
 		renderTabs({
 			tabs: [...tabItems, docsTab],

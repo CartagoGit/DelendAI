@@ -7,6 +7,7 @@ import {
 import { languages, rtlLangs } from '@mcp-vertex/shared/i18n';
 
 import { renderHeaderBar } from '../../components';
+import { extensionText } from '../../i18n/extension-text';
 import { escapeHtml } from '../format';
 
 const renderLangPicker = (current: string): string => {
@@ -32,7 +33,17 @@ const renderThemeSwitcher = (current: string): string => {
 		'solarized',
 		'nord',
 	] as const;
-	return `<label class="mcpv-header__theme-picker" title="${text('header.theme', 'Theme')}">
+	const themeTitle = extensionText(
+		{
+			site: {} as never,
+			extension: { 'header.theme': 'Theme' },
+			dev: {} as never,
+			tools: {},
+		},
+		'header.theme',
+		'Theme',
+	);
+	return `<label class="mcpv-header__theme-picker" title="${themeTitle}">
 		<span aria-hidden="true">◐</span>
 		<select name="theme" data-header-theme>
 			${themes
