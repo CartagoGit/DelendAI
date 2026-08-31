@@ -32,7 +32,7 @@ id: f00888
 title: peer review fixture
 status: review
 type: feature
-shipped-in: [ship123]
+shipped-in: [30551533]
 ---
 
 # peer review fixture
