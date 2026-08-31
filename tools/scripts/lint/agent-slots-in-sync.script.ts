@@ -79,6 +79,7 @@ const main = async (): Promise<void> => {
 		fail(
 			`could not locate AGENT_SLOTS array in ${sourceOfTruthPath}; the single source of truth file may be malformed.`,
 		);
+		return;
 	}
 	const sourceOfTruth = parseSlots(sourceOfTruthMatch[1] ?? '');
 	if (sourceOfTruth.length === 0) {
@@ -100,6 +101,7 @@ const main = async (): Promise<void> => {
 			fail(
 				`could not locate the slot array in ${target.label}; the file may have been refactored and this lint needs an update.`,
 			);
+			return;
 		}
 		const slots = parseSlots(match[1] ?? '');
 		if (slots.length !== target.expectedSize) {

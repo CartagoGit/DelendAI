@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: general
 date: 2026-08-30
+related:
+  - q00013 # master coordination plan
 ---
 
 # f00389 — Release track R2: expected state, races, idempotency and readiness validation

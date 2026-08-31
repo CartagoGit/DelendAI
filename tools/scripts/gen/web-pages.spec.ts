@@ -12,7 +12,7 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { run } from './web-pages.script';
+import { run, type ISpawnedProcess, type SpawnFn } from './web-pages.script';
 
 interface IRecordedCall {
 	readonly cmd: readonly string[];
@@ -23,13 +23,15 @@ let stdoutText = '';
 
 const makeSpawn =
 	(diffExit: number, statusPorcelain: string) =>
-	(cmd: readonly string[]): unknown => {
+	(
+		_cmd: readonly string[],
+		_options: Parameters<SpawnFn>[1],
+	): ISpawnedProcess => {
+		const cmd = _cmd;
 		calls.push({ cmd });
 		if (cmd[0] === 'git' && cmd[1] === 'diff' && cmd[2] === '--exit-code') {
 			return {
 				exited: Promise.resolve(diffExit),
-				stdout: undefined,
-				stderr: undefined,
 			};
 		}
 		if (
@@ -39,21 +41,23 @@ const makeSpawn =
 		) {
 			return {
 				exited: Promise.resolve(0),
-				stdout: new ReadableStream<Uint8Array>({
+				stdout: new ReadableStream<Uint8Array<ArrayBuffer>>({
 					start(controller) {
-						controller.enqueue(
-							new TextEncoder().encode(statusPorcelain),
+						const encoded = new TextEncoder().encode(
+							statusPorcelain,
 						);
+						const bytes = new Uint8Array(
+							new ArrayBuffer(encoded.byteLength),
+						);
+						bytes.set(encoded);
+						controller.enqueue(bytes);
 						controller.close();
 					},
 				}),
-				stderr: undefined,
 			};
 		}
 		return {
 			exited: Promise.resolve(stdoutText === 'fail' ? 1 : 0),
-			stdout: undefined,
-			stderr: undefined,
 		};
 	};
 
@@ -95,7 +99,7 @@ describe('web-pages.script.ts (c00142)', () => {
 	it('runs every step in --check mode and exits 0 when fresh', async () => {
 		const exit = await run({
 			argv: ['--check'],
-			spawn: makeSpawn(0, '') as typeof Bun.spawn,
+			spawn: makeSpawn(0, ''),
 		});
 		expect(exit).toBe(0);
 		// 5 generator spawns + 1 `git diff --exit-code`.
@@ -115,7 +119,7 @@ describe('web-pages.script.ts (c00142)', () => {
 			spawn: makeSpawn(
 				1,
 				' M apps/web/src/data/manifests/capabilities.json\n M apps/web/src/data/manifests/pages.json\n',
-			) as typeof Bun.spawn,
+			),
 		});
 		const text = stderr.text();
 		stderr.restore();
@@ -130,7 +134,7 @@ describe('web-pages.script.ts (c00142)', () => {
 	it('exits 2 for an unknown --only selector', async () => {
 		const exit = await run({
 			argv: ['--only', 'bogus'],
-			spawn: makeSpawn(0, '') as typeof Bun.spawn,
+			spawn: makeSpawn(0, ''),
 		});
 		expect(exit).toBe(2);
 		expect(calls).toHaveLength(0);
@@ -140,7 +144,7 @@ describe('web-pages.script.ts (c00142)', () => {
 		const stdout = captureStdout();
 		const exit = await run({
 			argv: ['--list'],
-			spawn: makeSpawn(0, '') as typeof Bun.spawn,
+			spawn: makeSpawn(0, ''),
 		});
 		const text = stdout.text();
 		stdout.restore();
@@ -155,7 +159,7 @@ describe('web-pages.script.ts (c00142)', () => {
 	it('runs only the named step with --only', async () => {
 		const exit = await run({
 			argv: ['--only', 'pages'],
-			spawn: makeSpawn(0, '') as typeof Bun.spawn,
+			spawn: makeSpawn(0, ''),
 		});
 		expect(exit).toBe(0);
 		expect(calls).toHaveLength(1);
@@ -167,20 +171,18 @@ describe('web-pages.script.ts (c00142)', () => {
 		// Tag the capabilities step to fail by name. Our fake doesn't
 		// inspect cmd args, so we encode the desired exit into
 		// stdoutText — simpler: build a custom fake here.
-		const customSpawn = (cmd: readonly string[]): unknown => {
+		const customSpawn: SpawnFn = (cmd, _options) => {
 			calls.push({ cmd });
 			const wantsFail =
 				cmd[0] === 'bun' &&
 				cmd[1] === 'apps/web/scripts/gen-capabilities.ts';
 			return {
 				exited: Promise.resolve(wantsFail ? 2 : 0),
-				stdout: undefined,
-				stderr: undefined,
 			};
 		};
 		const exit = await run({
 			argv: [],
-			spawn: customSpawn as typeof Bun.spawn,
+			spawn: customSpawn,
 		});
 		const text = stderr.text();
 		stderr.restore();

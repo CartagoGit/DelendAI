@@ -129,8 +129,8 @@ export const scanValidator = (text: string): readonly IDetection[] => {
 	while (true) {
 		const match = STOPWORD_ARRAY_PATTERN.exec(text);
 		if (match === null) break;
-		const [whole, name, body] = match;
-		const entries = body
+		const [, name, body] = match;
+		const entries = (body ?? '')
 			.split(',')
 			.map((entry) =>
 				entry
@@ -150,9 +150,6 @@ export const scanValidator = (text: string): readonly IDetection[] => {
 			reason: 'new stopword array detected — PRIV-002 forbids adding "looks like a company name" heuristics',
 			excerpt: `${name} = [${entries.slice(0, 6).join(', ')}${entries.length > 6 ? ', ...' : ''}]`,
 		});
-		// Preserve the whole match for compatibility; lint only uses
-		// the first iteration so this is defensive.
-		void whole;
 	}
 	return findings;
 };

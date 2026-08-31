@@ -2,7 +2,7 @@
 id: f00278
 title: "`WorkIntent` + completion gates: intent vs. actual con deriva determinista"
 kind: feat
-status: ready
+status: blocked
 type: proposal
 track: trust
 date: 2026-08-29

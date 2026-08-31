@@ -59,7 +59,7 @@ const PROPOSAL_KINDS = [
 const frontmatter = (content: string): Record<string, string> => {
 	const match = /^---\n([\s\S]+?)\n---/.exec(content);
 	if (match === null) return {};
-	const lines = match[1].split('\n');
+	const lines = (match[1] ?? '').split('\n');
 	const out: Record<string, string> = {};
 	for (const line of lines) {
 		const colonIdx = line.indexOf(':');

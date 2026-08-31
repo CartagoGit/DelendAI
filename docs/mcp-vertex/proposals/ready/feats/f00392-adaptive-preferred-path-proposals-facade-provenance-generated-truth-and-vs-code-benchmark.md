@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: general
 date: 2026-08-30
+related:
+  - q00013 # master coordination plan
 ---
 
 # f00392 — Adaptive preferred path, proposals facade, provenance, generated truth and VS Code benchmark
