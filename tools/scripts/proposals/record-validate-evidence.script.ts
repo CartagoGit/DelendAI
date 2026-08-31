@@ -22,9 +22,16 @@
  * red tree keeps the proposal-closing tools blocked — the intended
  * behaviour, now driven by a recorded fact instead of an assertion.
  *
- * The script is transparent: stdio is inherited and the child's exit
- * code is propagated verbatim, so `bun run validate` behaves exactly as
- * it did before for every existing caller (CI, lefthook, humans).
+ * It also runs the chain's steps INDIVIDUALLY and reports every failure
+ * at the end, instead of executing one `&&` expression that stops at the
+ * first broken thing. A full pass here takes ~10 minutes, so fail-fast
+ * meant one blocker discovered per pass — twelve independent breakages
+ * cost twelve passes. Pass `--fail-fast` (or set
+ * `MCP_VERTEX_VALIDATE_FAIL_FAST=1`) to restore stop-at-first-failure.
+ *
+ * stdio is inherited and the exit code is 0 only when every step passed,
+ * so `bun run validate` stays a drop-in for every existing caller (CI,
+ * lefthook, humans).
  */
 import { spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
