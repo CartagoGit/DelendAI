@@ -123,53 +123,69 @@ const resolveProject = (
 	readonly project: IRemoteProjectCoordinates | null;
 	readonly source: readonly ConfigSource[];
 } => {
-	const envProject =
-		input.env.GITLAB_PROJECT_ID !== undefined ||
-		input.env.GITLAB_PROJECT_PATH !== undefined
-			? {
-					...(input.env.GITLAB_PROJECT_ID !== undefined &&
-					input.env.GITLAB_PROJECT_ID.trim() !== ''
-						? { projectId: input.env.GITLAB_PROJECT_ID.trim() }
-						: {}),
-					...(input.env.GITLAB_PROJECT_PATH !== undefined &&
-					input.env.GITLAB_PROJECT_PATH.trim() !== ''
-						? { projectPath: input.env.GITLAB_PROJECT_PATH.trim() }
-						: {}),
-				}
-			: undefined;
+	const envProject: IGitLabProjectInput | undefined = (() => {
+		const projectId =
+			input.env.GITLAB_PROJECT_ID !== undefined &&
+			input.env.GITLAB_PROJECT_ID.trim() !== ''
+				? input.env.GITLAB_PROJECT_ID.trim()
+				: undefined;
+		const projectPath =
+			input.env.GITLAB_PROJECT_PATH !== undefined &&
+			input.env.GITLAB_PROJECT_PATH.trim() !== ''
+				? input.env.GITLAB_PROJECT_PATH.trim()
+				: undefined;
+		if (projectId === undefined && projectPath === undefined)
+			return undefined;
+		return {
+			...(projectId !== undefined ? { projectId } : {}),
+			...(projectPath !== undefined ? { projectPath } : {}),
+		};
+	})();
 	const layers: readonly [ConfigSource, IGitLabProjectInput | undefined][] = [
 		['default', undefined],
 		['env', envProject],
 		['plugin', input.options?.defaultProject],
 	];
-	const merged: IGitLabProjectInput = {};
+	const merged: {
+		projectId?: string | number;
+		projectPath?: string;
+		displayName?: string;
+		webUrl?: string;
+		apiUrl?: string;
+	} = {};
 	const sources: ConfigSource[] = [];
 	for (const [source, value] of layers) {
 		if (value === undefined) continue;
-		Object.assign(merged, value);
+		if (value.projectId !== undefined) merged.projectId = value.projectId;
+		if (value.projectPath !== undefined)
+			merged.projectPath = value.projectPath;
+		if (value.displayName !== undefined)
+			merged.displayName = value.displayName;
+		if (value.webUrl !== undefined) merged.webUrl = value.webUrl;
+		if (value.apiUrl !== undefined) merged.apiUrl = value.apiUrl;
 		sources.push(source);
 	}
 	if (Object.keys(merged).length === 0) {
 		return { project: null, source: sources };
 	}
 	const webBaseUrl = deriveWebBaseUrl(apiBaseUrl);
+	const project: IRemoteProjectCoordinates = {
+		provider: 'gitlab',
+		host: new URL(apiBaseUrl).hostname,
+		...(merged.projectId !== undefined
+			? { projectId: String(merged.projectId) }
+			: {}),
+		...(merged.projectPath !== undefined
+			? { projectPath: merged.projectPath }
+			: {}),
+		...(merged.displayName !== undefined
+			? { displayName: merged.displayName }
+			: {}),
+		webUrl: merged.webUrl ?? webBaseUrl,
+		apiUrl: merged.apiUrl ?? apiBaseUrl,
+	};
 	return {
-		project: {
-			provider: 'gitlab',
-			host: new URL(apiBaseUrl).hostname,
-			projectId:
-				merged.projectId !== undefined
-					? String(merged.projectId)
-					: undefined,
-			...(merged.projectPath !== undefined
-				? { projectPath: merged.projectPath }
-				: {}),
-			...(merged.displayName !== undefined
-				? { displayName: merged.displayName }
-				: {}),
-			webUrl: merged.webUrl ?? webBaseUrl,
-			apiUrl: merged.apiUrl ?? apiBaseUrl,
-		},
+		project,
 		source: sources,
 	};
 };
