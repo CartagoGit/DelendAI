@@ -139,9 +139,8 @@ adoptProject (ya existe, sin romper su contrato)
       sin cambiar el contrato de salida actual del tool)
     - `packages/core/tests/src/lib/adopt/project-profile.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/project-profile.spec.ts`
-- review-state: changes_requested
-- review-implementer: copilot-f00280-s1
-- review-reviewer: delivery_verifier
+- review-state: in_review
+- review-implementer: project-profile-f00280-s1-final
 - review-log: requested_changes by delivery_verifier — El test pasa 3/3, pero la aceptación no está cubierta: en un monorepo sin perfil previo, persistProjectProfile solo escribe la raíz '.' y no genera workspaces; además preserva entradas obsoletas sin reconciliarlas. Añadir descubrimiento inicial de workspaces y pruebas que lo verifiquen.
 ### S2 — Desglose por área/workspace dentro de un monorepo
 
