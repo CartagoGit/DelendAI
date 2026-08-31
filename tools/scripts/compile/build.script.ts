@@ -2,13 +2,21 @@
 /**
  * Build driver (M3 — publishable runtime).
  *
- * Each package publishes compiled `dist/`:
- *  - `.js`  bundled with `bun build` (ESM, target node, deps kept external),
- *           so it runs under Node/npm/pnpm/yarn, Deno and bun alike. The
- *           bundler resolves the project's extensionless ("bundler"
- *           moduleResolution) imports that Node ESM could not.
- *  - `.d.ts` emitted by `tsc --emitDeclarationOnly` (cross-package types
- *           resolve via the base `paths`).
+ * r00045 S1: every artefact lives under one canonical tree:
+ *
+ *     build/{group}/{name}/{version}/
+ *
+ * where {group} ∈ {packages, plugins}, {name} is the workspace folder,
+ * and {version} is read from the package's own package.json. The old
+ * per-package `dist/` is gone; per-package `package.json#main`/`#exports`
+ * now point into `build/{group}/{name}/{version}/`.
+ *
+ * - `.js`  bundled with `bun build` (ESM, target node, deps kept external),
+ *          so it runs under Node/npm/pnpm/yarn, Deno and bun alike. The
+ *          bundler resolves the project's extensionless ("bundler"
+ *          moduleResolution) imports that Node ESM could not.
+ * - `.d.ts` emitted by `tsc --emitDeclarationOnly` (cross-package types
+ *          resolve via the base `paths`).
  *
  * Dev/tests keep using `src` directly via the vitest aliases — this build is
  * only for what ends up on the registry.
@@ -119,6 +127,32 @@ const run = (cmd: string, args: string[], cwd: string): void => {
 
 const buildPackage = (rel: string): void => {
 	const dir = join(ROOT, rel);
+	const pkgJsonPath = join(dir, 'package.json');
+	const pkgMeta: {
+		name?: string;
+		version?: string;
+		bin?: unknown;
+	} = existsSync(pkgJsonPath)
+		? (JSON.parse(readFileSync(pkgJsonPath, 'utf8')) as {
+				name?: string;
+				version?: string;
+				bin?: unknown;
+			})
+		: {};
+	if (!pkgMeta.version) {
+		throw new BuildError(
+			`build: ${rel}/package.json does not declare a version; cannot compute build/<group>/<name>/<version>/ output dir`,
+			1,
+		);
+	}
+
+	// r00045 S1: emit under build/{group}/{name}/{version}/ instead of
+	// per-package dist/. The version comes from package.json so it stays
+	// in sync with `npm publish` and the `package.json#exports` paths.
+	const group = rel.startsWith('packages/') ? 'packages' : 'plugins';
+	const name = rel.split('/').slice(1).join('/');
+	const outRoot = join(ROOT, 'build', group, name, pkgMeta.version);
+
 	const workspaceTsc = resolveWorkspaceBinary('tsc');
 	const entries = ['src/index.ts'];
 	if (existsSync(join(dir, 'src/public/index.ts')))
@@ -144,17 +178,15 @@ const buildPackage = (rel: string): void => {
 	// undefined when bun loads the bundle as ESM (type: "module").
 	// Library packages (no `bin`) keep `--target node` so they remain
 	// portable across Node/Deno/bun.
-	const pkgJsonPath = join(dir, 'package.json');
-	const hasBin = existsSync(pkgJsonPath)
-		? (JSON.parse(readFileSync(pkgJsonPath, 'utf8')) as { bin?: unknown })
-				.bin !== undefined
-		: false;
+	const hasBin = pkgMeta.bin !== undefined;
 	const target = hasBin ? 'bun' : 'node';
 
 	console.log(
-		`\n• ${rel} → dist (${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}, target=${target}${hasBin ? ', bin detected' : ''})`,
+		`\n• ${rel} → build/${group}/${name}/${pkgMeta.version} (${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}, target=${target}${hasBin ? ', bin detected' : ''})`,
 	);
-	rmSync(join(dir, 'dist'), { recursive: true, force: true });
+	// Idempotency: wipe the entire version-dir so a re-run doesn't leave
+	// stale files from a previous version when version bumped.
+	rmSync(outRoot, { recursive: true, force: true });
 
 	// 1. JS bundles (deps external; bundler-style imports resolved here).
 	//    a00065: routed through `bundle-js.ts` (a `Bun.build()` wrapper)
@@ -174,7 +206,7 @@ const buildPackage = (rel: string): void => {
 			'--root',
 			'src',
 			'--outdir',
-			'dist',
+			outRoot,
 			...entries.flatMap((e) => ['--entry', e]),
 		],
 		dir,
@@ -195,25 +227,33 @@ const buildPackage = (rel: string): void => {
 	// dependency's dist exists: rank 0 first (core), then rank 1 (other
 	// packages), then rank 2 (plugins) in alphabetical order.
 	const builtDepPaths = (pkg: string): Record<string, string[]> => ({
-		[`@mcp-vertex/${pkg}`]: [join(ROOT, `packages/${pkg}/dist/index.d.ts`)],
+		[`@mcp-vertex/${pkg}`]: [
+			join(ROOT, `build/packages/${pkg}/${pkgMeta.version}/index.d.ts`),
+		],
 		[`@mcp-vertex/${pkg}/public`]: [
-			join(ROOT, `packages/${pkg}/dist/public/index.d.ts`),
+			join(
+				ROOT,
+				`build/packages/${pkg}/${pkgMeta.version}/public/index.d.ts`,
+			),
 		],
 		// Deep imports (e.g. apps/shared → @mcp-vertex/client/lib/contracts/…)
 		// resolve file-by-file against the built declarations.
 		[`@mcp-vertex/${pkg}/lib/*`]: [
-			join(ROOT, `packages/${pkg}/dist/lib/*`),
+			join(ROOT, `build/packages/${pkg}/${pkgMeta.version}/lib/*`),
 		],
 	});
 	const builtPluginPaths = (plugin: string): Record<string, string[]> => ({
 		[`@mcp-vertex/${plugin}`]: [
-			join(ROOT, `plugins/${plugin}/dist/index.d.ts`),
+			join(ROOT, `build/plugins/${plugin}/${pkgMeta.version}/index.d.ts`),
 		],
 		[`@mcp-vertex/${plugin}/public`]: [
-			join(ROOT, `plugins/${plugin}/dist/public/index.d.ts`),
+			join(
+				ROOT,
+				`build/plugins/${plugin}/${pkgMeta.version}/public/index.d.ts`,
+			),
 		],
 		[`@mcp-vertex/${plugin}/lib/*`]: [
-			join(ROOT, `plugins/${plugin}/dist/lib/*`),
+			join(ROOT, `build/plugins/${plugin}/${pkgMeta.version}/lib/*`),
 		],
 	});
 	// Introspect package.json so plugin-to-plugin deep imports (e.g.
@@ -222,14 +262,13 @@ const buildPackage = (rel: string): void => {
 	// the dependency's dist exists: discover() sorts alphabetically within
 	// rank 2 (plugins), so e.g. `auto-agent-selector` builds before
 	// `auto-plugin-selector`.
-	const pkgMeta: {
-		name?: string;
+	const mcpDeps = new Set<string>();
+	const depPkgMeta = pkgMeta as unknown as {
 		dependencies?: Record<string, string>;
 		peerDependencies?: Record<string, string>;
-	} = JSON.parse(readFileSync(pkgJsonPath, 'utf8'));
-	const mcpDeps = new Set<string>();
+	};
 	for (const section of ['dependencies', 'peerDependencies'] as const) {
-		const map = pkgMeta[section] ?? {};
+		const map = depPkgMeta[section] ?? {};
 		for (const dep of Object.keys(map)) {
 			if (dep.startsWith('@mcp-vertex/')) {
 				mcpDeps.add(dep.replace(/^@mcp-vertex\//, ''));
@@ -249,11 +288,10 @@ const buildPackage = (rel: string): void => {
 		}
 	}
 	// apps/shared (compiled into the ui-extension dts program) imports
-	// @mcp-vertex/client deep paths; client's dist is built before
-	// ui-extension (alphabetical within rank 1).
-	// This block is now redundant (the dep introspection above picks up
-	// client), kept for clarity that ui-extension's dist must exist before
-	// building it.
+	// @mcp-vertex/client deep paths; client's build is produced before
+	// ui-extension (alphabetical within rank 1). This block is now
+	// redundant (the dep introspection above picks up client), kept for
+	// clarity that ui-extension's build dir must exist before building it.
 	// All work that touches the throwaway `dtsTempDir` lives inside the
 	// try/finally so a failure in `writeFileSync`, `JSON.stringify`, or
 	// `run` cleans up the tempdir. `run` throws `BuildError` instead of
@@ -268,7 +306,7 @@ const buildPackage = (rel: string): void => {
 						noEmit: false,
 						declaration: true,
 						emitDeclarationOnly: true,
-						outDir: join(dir, 'dist'),
+						outDir: outRoot,
 						rootDir: join(dir, 'src'),
 						paths: corePaths,
 					},
