@@ -69,10 +69,13 @@ export function buildHeader(
 	model: IDashboardAllModels,
 	settings: IExtensionSettings = DEFAULT_EXTENSION_SETTINGS,
 ): string {
+	const connection: 'ok' | 'lost' =
+		model.server.version === 'unavailable' ? 'lost' : 'ok';
 	return renderHeaderBar({
 		brandName: 'mcp-vertex',
 		version: `${escapeHtml(model.server.version)} · ${escapeHtml(model.server.name)}`,
 		direction: rtlLangs.includes(settings.language) ? 'rtl' : 'ltr',
+		connection,
 		actions: `${renderLangPicker(settings.language)}${renderThemeSwitcher(settings.theme)}`,
 	});
 }
