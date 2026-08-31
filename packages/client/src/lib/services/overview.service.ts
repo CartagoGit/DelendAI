@@ -84,6 +84,7 @@ export const normalizeToolSearchEntries = (
 		...(entry.summary === undefined ? {} : { summary: entry.summary }),
 		tags: [...(entry.tags ?? [])],
 		effects: [],
+		loaded: entry.active,
 	}));
 
 export interface IOverviewOptions {
