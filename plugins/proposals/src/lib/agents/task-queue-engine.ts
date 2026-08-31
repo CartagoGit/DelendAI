@@ -463,6 +463,13 @@ export async function releaseSessionSubscriptions(
 	const subscriptionPath = subscriptionSidecarPath(paths.queuePath);
 	return withFileMutex(subscriptionPath, async () => {
 		const leases = await loadSubscriptionLeases(subscriptionPath);
+		if (process.env['DEBUG_SESSION_CLEANUP'] === '1') {
+			const debugPath = `${subscriptionPath}.debug.log`;
+			await writeFileAtomic(
+				debugPath,
+				`caller=${JSON.stringify(caller)}\nleases=${JSON.stringify(leases)}\n`,
+			);
+		}
 		const owned = leases.filter(
 			(lease) =>
 				typeof lease.host === 'string' &&
