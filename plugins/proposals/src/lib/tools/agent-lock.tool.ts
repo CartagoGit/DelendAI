@@ -61,7 +61,9 @@ const deriveWorkspaceRoot = (lockPathAbs: string): string => {
 
 export const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	tool: z.string().optional(),
-	action: z.enum(['claim', 'release', 'status', 'gc']).optional(),
+	action: z
+		.enum(['claim', 'heartbeat', 'release', 'status', 'gc'])
+		.optional(),
 	path: z.string().optional(),
 	lock_path: z.string().optional(),
 	task_id: z.string().optional(),
@@ -103,7 +105,7 @@ export const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 });
 
 export const AGENT_LOCK_INPUT_SCHEMA = z.object({
-	action: z.enum(['claim', 'release', 'status', 'gc']),
+	action: z.enum(['claim', 'heartbeat', 'release', 'status', 'gc']),
 	task_id: z.string().optional(),
 	agent: z.string().optional(),
 	files: z.array(z.string()).optional(),
@@ -126,7 +128,7 @@ export const buildAgentLockRegistration = (
 		id: 'agent_lock',
 		effects: ['write'],
 		summary:
-			'Claim files before editing, release after (claim/release/status/gc). The write-ownership primitive.',
+			'Claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc). The write-ownership primitive.',
 		tags: ['coordination'],
 		register: async (server) => {
 			server.registerTool(
