@@ -3,7 +3,7 @@ id: github
 package: @mcp-vertex/github
 version: 0.1.0
 maturity: experimental
-generated: 2026-08-31T12:16:53.519Z
+generated: 2026-08-31T21:30:02.436Z
 ---
 
 # Github
@@ -21,7 +21,7 @@ GitHub read-only provider context, HTTP client and remote resource tools.
 
 ## Presets
 
-- none
+- full
 
 ## Permissions
 
