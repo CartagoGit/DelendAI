@@ -9,7 +9,9 @@ import {
 	PRESET_KIND,
 	resolvePresetMembers,
 	resolveTokenBudget,
+	type IPluginConfigExample,
 	type IPluginManifest,
+	type IMcpPlugin,
 	type IPluginRegistryEntry,
 	type PermissionCategory,
 } from '@mcp-vertex/core/public';
@@ -43,6 +45,7 @@ export interface IPluginPackageRecord {
 
 export interface ILoadedPluginManifest extends IPluginPackageRecord {
 	readonly manifest: IPluginManifest;
+	readonly plugin?: Pick<IMcpPlugin, 'example' | 'configExample'> | undefined;
 }
 
 export interface ICompatibilityRow {
@@ -193,6 +196,40 @@ const manifestFromModule = (
 	throw new Error('module does not export a valid plugin manifest');
 };
 
+const pluginFromModule = (
+	module: Record<string, unknown>,
+): Pick<IMcpPlugin, 'example' | 'configExample'> | undefined => {
+	const candidate = module.default;
+	if (candidate === null || typeof candidate !== 'object') {
+		return undefined;
+	}
+	const plugin = candidate as Partial<IMcpPlugin>;
+	if (typeof plugin.name !== 'string') {
+		return undefined;
+	}
+	return {
+		...(plugin.example === undefined ? {} : { example: plugin.example }),
+		...(plugin.configExample === undefined
+			? {}
+			: { configExample: plugin.configExample }),
+	};
+};
+
+const resolveExample = (
+	plugin: Pick<IMcpPlugin, 'example' | 'configExample'> | undefined,
+): Readonly<Record<string, unknown>> | undefined => {
+	if (plugin?.example !== undefined) {
+		return plugin.example;
+	}
+	const configExample = plugin?.configExample as
+		| IPluginConfigExample
+		| undefined;
+	if (configExample?.example !== undefined) {
+		return configExample.example;
+	}
+	return configExample?.options;
+};
+
 export const discoverPluginPackages = async (
 	root: string,
 	io: Pick<IGeneratorIo, 'readText'> = defaultIo(),
@@ -243,9 +280,20 @@ export const loadPluginManifests = async (
 		const mod = (await import(
 			`${pathToFileURL(absPath).href}?t=${Date.now()}`
 		)) as Record<string, unknown>;
+		const pluginIndexPath = resolve(
+			root,
+			'plugins',
+			pluginId,
+			'src',
+			'index.ts',
+		);
+		const pluginMod = (await import(
+			`${pathToFileURL(pluginIndexPath).href}?t=${Date.now()}`
+		)) as Record<string, unknown>;
 		loaded.push({
 			...pkg,
 			manifest: manifestFromModule(mod),
+			plugin: pluginFromModule(pluginMod),
 		});
 	}
 	return loaded.sort((left, right) => left.id.localeCompare(right.id));
@@ -254,7 +302,7 @@ export const loadPluginManifests = async (
 export const buildGeneratedFirstPartyEntries = (
 	manifests: readonly ILoadedPluginManifest[],
 ): readonly IPluginRegistryEntry[] =>
-	manifests.map(({ manifest }) => {
+	manifests.map(({ manifest, plugin }) => {
 		const tb = manifest.tokenBudget;
 		// f00179 S2: prefer the new shape's `staticBytes`; fall back to
 		// the legacy `warning` ceiling. A bare number is the
@@ -276,6 +324,9 @@ export const buildGeneratedFirstPartyEntries = (
 			...(manifest.startupActivation === undefined
 				? {}
 				: { startupActivation: manifest.startupActivation }),
+			...(resolveExample(plugin) === undefined
+				? {}
+				: { example: resolveExample(plugin) }),
 			...(manifest.toolPermissions === undefined
 				? {}
 				: { toolPermissions: manifest.toolPermissions }),
@@ -377,6 +428,11 @@ const renderRegistryEntry = (entry: IPluginRegistryEntry): string => {
 	}
 	if (entry.startupActivation === true) {
 		lines.push('\t\t\tstartupActivation: true,');
+	}
+	if (entry.example !== undefined) {
+		lines.push(
+			`\t\t\texample: ${JSON.stringify(entry.example, null, '\t').replaceAll('\n', '\n\t\t\t')},`,
+		);
 	}
 	if (entry.toolPermissions !== undefined) {
 		const entries = Object.entries(entry.toolPermissions)
