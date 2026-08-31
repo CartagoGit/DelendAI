@@ -77,10 +77,11 @@ const CLIENT_SCRIPT = `
     const open = navPanel?.classList.toggle('is-open') ?? false;
     navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
-	const refresh = document.querySelector('[data-action="refresh"]');
-	refresh?.addEventListener('click', () => {
-		host?.postMessage({ command: 'action', action: 'refresh' });
-	});
+  document.querySelectorAll('[data-action="refresh"]').forEach((button) => {
+    button.addEventListener('click', () => {
+      host?.postMessage({ command: 'action', action: 'refresh' });
+    });
+  });
   document.querySelectorAll('[data-action="expand"]').forEach((button) => {
     button.addEventListener('click', () => host?.postMessage({ command: 'action', action: 'expand' }));
   });
