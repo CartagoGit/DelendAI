@@ -436,13 +436,6 @@ export const activate = async (
 	}
 	const configuredLaunch = await resolveServerCommand(vscode);
 	let initialClient: McpStdioClient;
-	const connectClient = (): Promise<McpStdioClient> =>
-		connectWithTimeout(() =>
-			(
-				deps.createClient ??
-				(() => createDefaultClient(vscode, startupReportChannel))
-			)(),
-		);
 	const disconnectedClient = (failure: Error): McpStdioClient =>
 		McpStdioClient.fromTransport({
 			async callTool() {
@@ -453,6 +446,13 @@ export const activate = async (
 			},
 			async close() {},
 		});
+	const connectClient = (): Promise<McpStdioClient> =>
+		connectWithTimeout(() =>
+			(
+				deps.createClient ??
+				(() => createDefaultClient(vscode, startupReportChannel))
+			)(),
+		);
 	if (!isTrusted) {
 		initialClient = disconnectedClient(
 			new Error('workspace is untrusted; MCP server was not started'),

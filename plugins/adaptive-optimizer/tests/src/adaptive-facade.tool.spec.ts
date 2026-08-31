@@ -2,10 +2,16 @@ import { describe, expect, it } from 'vitest';
 
 import { PROPOSALS_STABLE_TOOL_SURFACE } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
 
+import { DEFAULT_ADAPTIVE_OPTIMIZER_MAX_BYTES } from '../../src/lib/contracts/constants/adaptive-optimizer.constant';
 import {
 	AdaptiveFacadeOutputSchema,
 	runAdaptiveFacade,
 } from '../../src/public/index';
+
+const defaultFacadeOptions = {
+	namespacePrefix: 'mcp-vertex',
+	maxBytes: DEFAULT_ADAPTIVE_OPTIMIZER_MAX_BYTES,
+} as const;
 
 describe('adaptive_facade', () => {
 	it.each([
@@ -20,7 +26,7 @@ describe('adaptive_facade', () => {
 		async (intent, expectedTools) => {
 			const result = await runAdaptiveFacade(
 				{ intent },
-				{ namespacePrefix: 'mcp-vertex', maxBytes: 4096 },
+				defaultFacadeOptions,
 			);
 			const output = AdaptiveFacadeOutputSchema.parse(
 				result.structuredContent,
@@ -67,7 +73,7 @@ describe('adaptive_facade', () => {
 					},
 				],
 			},
-			{ namespacePrefix: 'mcp-vertex', maxBytes: 4096 },
+			defaultFacadeOptions,
 		);
 		const output = AdaptiveFacadeOutputSchema.parse(
 			result.structuredContent,
@@ -89,7 +95,7 @@ describe('adaptive_facade', () => {
 	it('preserves the detailed proposals surface alongside the adaptive recommendation', async () => {
 		const result = await runAdaptiveFacade(
 			{ intent: 'recover', maxAlternatives: 2 },
-			{ namespacePrefix: 'mcp-vertex', maxBytes: 4096 },
+			defaultFacadeOptions,
 		);
 		const output = AdaptiveFacadeOutputSchema.parse(
 			result.structuredContent,

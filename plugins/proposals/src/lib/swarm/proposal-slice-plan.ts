@@ -6,6 +6,11 @@
 // an explicit `- status: done` line in the doc — no sidecar files, no
 // index.json changes (non-goal).
 
+import {
+	CONTRACT_MIGRATION_PHASES,
+	type ContractMigrationPhase,
+	type IContractMigrationSliceGuidance,
+} from '@mcp-vertex/core/lib/contracts/interfaces/contract-migration.interface';
 import { CAPABILITY_TAGS, type CapabilityTag } from '@mcp-vertex/core/public';
 import { expandDeclaredFiles } from '../proposals/expand-declared-files';
 
