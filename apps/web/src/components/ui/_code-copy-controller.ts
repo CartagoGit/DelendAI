@@ -50,7 +50,20 @@ const copy = async (text: string): Promise<boolean> => {
 			return true;
 		}
 	} catch {
+		// Continue with the legacy path when the browser rejects clipboard access.
+	}
+	try {
+		const textarea = document.createElement('textarea');
+		textarea.value = text;
+		textarea.setAttribute('readonly', '');
+		textarea.style.position = 'fixed';
+		textarea.style.left = '-9999px';
+		document.body.appendChild(textarea);
+		textarea.select();
+		const copied = document.execCommand('copy');
+		document.body.removeChild(textarea);
+		return copied;
+	} catch {
 		return false;
 	}
-	return false;
 };

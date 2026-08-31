@@ -1133,7 +1133,7 @@ const registerDevelopmentAutoReload = (
 	let watcher: IFileSystemWatcher | undefined;
 	try {
 		watcher = vscode.workspace?.createFileSystemWatcher?.(
-			`${extensionPath}/dist/extension.js`,
+			`${extensionPath}/extension.js`,
 		);
 	} catch {
 		watcher = undefined;
