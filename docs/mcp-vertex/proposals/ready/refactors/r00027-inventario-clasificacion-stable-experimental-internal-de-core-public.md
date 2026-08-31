@@ -157,10 +157,13 @@ subpath exports o de marcar APIs como `@internal` se vuelve guesswork.
 
 ### S1 — Script de inspección + tabla generada
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/inspect/core-public-inventory.script.ts`, `tools/scripts/inspect/core-public-inventory.spec.ts`, `docs/mcp-vertex/CORE-PUBLIC-API-INVENTORY.md` (generado, revisión inicial), `build/inspect/core-public-inventory.json` (generado)
 - **Gate**: type
-
+- review-state: done
+- review-implementer: copilot-orchestrator-r00027-s1
+- review-reviewer: delivery-verifier-r00027-s1
+- review-log: approved by delivery-verifier-r00027-s1 — Verified independently: S1 acceptance covered. 16 tests pass (11 unit on pure helpers + 5 integration that spawn the script). Acceptance: script runs without params, JSON stable across runs (excluding generatedAt), MD table has one row per export, totals reconcile.
 ## acceptance
 
 - Script ejecutable sin parámetros.

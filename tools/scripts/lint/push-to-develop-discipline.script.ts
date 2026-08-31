@@ -77,7 +77,7 @@ export interface IPrePushRefUpdate {
 
 const REFS_HEADS_PREFIX = 'refs/heads/';
 
-const stripRefsHeadsPrefix = (ref: string): string =>
+export const stripRefsHeadsPrefix = (ref: string): string =>
 	ref.startsWith(REFS_HEADS_PREFIX)
 		? ref.slice(REFS_HEADS_PREFIX.length)
 		: ref;
