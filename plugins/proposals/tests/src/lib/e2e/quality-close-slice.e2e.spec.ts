@@ -125,6 +125,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
+			if (result.isError === true) expect.fail(JSON.stringify(result));
 			expect(result.structuredContent).toMatchObject({
 				ok: false,
 				closed: false,
@@ -184,6 +185,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 					force: true,
 				},
 			});
+			if (result.isError === true) expect.fail(JSON.stringify(result));
 			expect(result.isError).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,
