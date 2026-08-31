@@ -8,15 +8,15 @@ human-facing companion.
 
 ```bash
 bun install
-bun run validate   # typecheck + lint + tests — must be green
+bun run validate   # recommended locally; required before a PR reaches main
 ```
 
 Requires [Bun](https://bun.sh) for development. The published packages run under
 Node (and Deno/bun); the dev toolchain is Bun-only.
 
 `bun install` also installs the git hooks via `lefthook install` (the
-`prepare` script). They format staged files on commit and run a full format
-check on push.
+`prepare` script). They format staged files on commit and report format, type
+and lint findings without blocking normal development commits or pushes.
 
 ## Formatting
 
@@ -34,7 +34,9 @@ Automation:
   [`.vscode/settings.json`](.vscode/settings.json) — Biome formats on save.
 - **Pre-commit** (via `lefthook`): reformats staged files in the matching
   scope and re-stages them. Fast and surgical.
-- **Pre-push**: runs `format:all:check`; push fails if anything is unformatted.
+- **Pre-push**: runs `format:all:check`, SCSS lint and drift checks. Formatting
+   and lint findings are advisory locally; pushes to `develop` are not blocked
+   by those quality findings.
 - **CI**: `bun run lint` runs `biome ci`, which includes format checks.
 
 Skip hooks with `LEFTHOOK=0 git commit …` or `git commit --no-verify`. Don't
@@ -50,7 +52,8 @@ make this a habit — CI will catch it.
 4. If you changed a tool's surface, run `bun run types:generate`. If you changed
    site copy, add the keys for **every** language in `apps/web/src/i18n/ui.ts`
    (`bun --cwd apps/web run check:i18n` enforces it).
-5. `bun run validate` must be green before you open a PR.
+5. `bun run validate` is recommended during development. It is mandatory for a
+   PR targeting `main`, including the release PR from `develop` into `main`.
 
 ## Commit messages — Conventional Commits
 

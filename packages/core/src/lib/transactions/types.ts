@@ -16,6 +16,7 @@
  */
 
 import type { IToolEffect } from '../contracts/interfaces/tool-registration.interface';
+import type { PermissionCategory } from '../contracts/interfaces/permission.interface';
 
 /**
  * Re-export of `IToolEffect` under a transaction-friendly alias so
@@ -34,6 +35,78 @@ export type StepEffect = IToolEffect;
  * effects, so a caller can render a single confirmation prompt.
  */
 export type TTransactionRisk = 'low' | 'medium' | 'high';
+
+export type TransactionStateValue = string | number | boolean | null;
+
+export type TTransactionReceiptStage =
+	| 'preview'
+	| 'approval-required'
+	| 'executed'
+	| 'replayed'
+	| 'failed';
+
+export interface ITransactionExpectedState {
+	readonly revision?: string;
+	readonly values?: Readonly<Record<string, TransactionStateValue>>;
+}
+
+export interface ITransactionCapabilityGrant {
+	readonly pluginId?: string;
+	readonly toolId?: string;
+	readonly permissions: readonly PermissionCategory[];
+	readonly approvalRequired: boolean;
+	readonly source?: 'manifest-tool' | 'manifest-plugin' | 'merged' | 'manual';
+}
+
+export interface ITransactionMetadata {
+	readonly id?: string;
+	readonly fingerprint: string;
+	readonly idempotencyKey?: string;
+	readonly expectedState?: ITransactionExpectedState;
+	readonly capabilityGrant: ITransactionCapabilityGrant;
+}
+
+export interface ITransactionApproval {
+	readonly granted: boolean;
+	readonly capabilities?: readonly PermissionCategory[];
+	readonly approver?: string;
+	readonly receipt?: string;
+}
+
+export interface ITransactionReceipt {
+	readonly stage: TTransactionReceiptStage;
+	readonly planId?: string;
+	readonly planFingerprint: string;
+	readonly idempotencyKey?: string;
+	readonly expectedState?: ITransactionExpectedState;
+	readonly approvalRequired: boolean;
+	readonly approved: boolean;
+	readonly approver?: string;
+	readonly approvalReceipt?: string;
+	readonly requiredCapabilities: readonly PermissionCategory[];
+	readonly grantedCapabilities: readonly PermissionCategory[];
+	readonly replayed: boolean;
+	readonly executedSteps: number;
+	readonly totalSteps: number;
+}
+
+export interface ITransactionStoredReceipt<T> {
+	readonly key: string;
+	readonly planFingerprint: string;
+	readonly result: ITransactionResult<T>;
+}
+
+export interface ITransactionReceiptStore<T> {
+	get(key: string): Promise<ITransactionStoredReceipt<T> | undefined>;
+	put(record: ITransactionStoredReceipt<T>): Promise<void>;
+}
+
+export interface ITransactionPlanOptions {
+	readonly id?: string;
+	readonly idempotencyKey?: string;
+	readonly expectedState?: ITransactionExpectedState;
+	readonly capabilityGrant?: ITransactionCapabilityGrant;
+}
 
 /**
  * Mapping from a step's declared `effects` to a risk level.
@@ -113,6 +186,8 @@ export interface ICompensationRecord {
 export interface IStep<T> {
 	/** Human-readable name, surfaced in logs and the LLM trace. */
 	readonly name: string;
+	/** Optional deterministic identity for the step's input arguments. */
+	readonly fingerprint?: string | undefined;
 	/** Declared side effects. Required (use `[]` for pure steps). */
 	readonly effects: readonly StepEffect[];
 	/** Whether `compensate` is meaningfully defined. Pure signal:
@@ -134,6 +209,7 @@ export interface IStep<T> {
  */
 export interface ITransactionPlan<T> {
 	readonly steps: readonly IStep<T>[];
+	readonly meta: ITransactionMetadata;
 }
 
 /**
@@ -156,6 +232,7 @@ export interface ITransactionResult<T> {
 	readonly executedSteps: number;
 	/** Total step count in the plan. */
 	readonly totalSteps: number;
+	readonly receipt: ITransactionReceipt;
 	/** Set when `ok` is `false`. */
 	readonly error?: ITransactionError;
 	/** Step names that ran in forward direction, in order. */
@@ -163,14 +240,26 @@ export interface ITransactionResult<T> {
 }
 
 export interface ITransactionError {
+	readonly code:
+		| 'approval-required'
+		| 'approval-mismatch'
+		| 'approval-mismatch'
+		| 'expected-state-mismatch'
+		| 'idempotency-key-conflict'
+		| 'step-failed';
 	readonly step: string;
 	readonly stepIndex: number;
 	readonly cause: unknown;
+	readonly expectedState?: ITransactionExpectedState | undefined;
+	readonly actualState?: ITransactionExpectedState | undefined;
 }
 
 /**
  * Options for `execute()`. The only knob right now is `dryRun`.
  */
-export interface IExecuteOptions {
+export interface IExecuteOptions<T = unknown> {
 	readonly dryRun?: boolean;
+	readonly approval?: ITransactionApproval;
+	readonly currentState?: ITransactionExpectedState | undefined;
+	readonly receiptStore?: ITransactionReceiptStore<T>;
 }

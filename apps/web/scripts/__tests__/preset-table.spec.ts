@@ -42,15 +42,15 @@ describe('preset-table', () => {
 			// f00177 / MAN-001: `changelog` removed from `full`/`cli-tool`
 			// (private, never published to npm) drops the total to 42 — it
 			// was the only preset-visible use of that column.
-			expect(ids.length).toBe(45);
+			expect(ids.length).toBe(46);
 			const tail = ids.slice(-12);
 			expect(new Set(tail)).toEqual(
 				new Set([
-					'auto-plugin-selector',
 					'commit-policy',
 					'context-for-change',
 					'impact-analysis',
 					'project-health',
+					'project-kpis',
 					'quality-policy',
 					'link-check',
 					'orchestrator-runner',
@@ -84,7 +84,7 @@ describe('preset-table', () => {
 			// mcp-vertex.config.json
 			// (including `proposals`, the orchestration plugin —
 			// previously excluded, a stale drift).
-			expect(vertex?.effective.length).toBe(37);
+			expect(vertex?.effective.length).toBe(38);
 			expect(vertex?.effective).toContain('perf');
 			expect(vertex?.effective).toContain('audit');
 			expect(vertex?.effective).toContain('auto-agent-selector');

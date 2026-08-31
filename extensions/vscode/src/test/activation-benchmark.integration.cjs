@@ -45,11 +45,14 @@ async function run() {
 	if (callLogPath) {
 		try {
 			const raw = await readFile(callLogPath, 'utf8');
-			observedToolCalls = raw
+			const lines = raw
 				.split('\n')
 				.map((line) => line.trim())
-				.filter((line) => line.length > 0).length;
-			observedToolCallsEvidence = 'artifact';
+				.filter((line) => line.length > 0);
+			if (lines.length > 0) {
+				observedToolCalls = lines.length;
+				observedToolCallsEvidence = 'artifact';
+			}
 		} catch {
 			observedToolCalls = null;
 			observedToolCallsEvidence = 'missing-artifact';

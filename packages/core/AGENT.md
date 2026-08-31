@@ -15,12 +15,12 @@
 - isMcpToolSurfaceMode
 - MCP_TOOL_SURFACE_MODE
 - createWorkspacePathProvider
+- projectValue
+- createInMemoryHandleStore
 - DEFAULT_MODEL_CATALOG_LIMIT
 - InMemoryModelCatalog
 - MAX_MODEL_CATALOG_LIMIT
 - ModelCatalogError
-- createEvidenceStore
-- EVIDENCE_TYPES
 
 ## Depends on
 

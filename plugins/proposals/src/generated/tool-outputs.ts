@@ -296,6 +296,7 @@ export interface McpVertexProposalsCreateProposalOutput {
 		file: string;
 	}[];
 	indexCount: number;
+	redactedSecrets?: number;
 }
 
 export interface McpVertexProposalsDelegateOutput {

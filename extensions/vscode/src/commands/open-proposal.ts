@@ -84,6 +84,9 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 							...(deps.namespacePrefix === undefined
 								? {}
 								: { namespacePrefix: deps.namespacePrefix }),
+							...(deps.workspaceRoot === undefined
+								? {}
+								: { workspaceRoot: deps.workspaceRoot }),
 						});
 					const detail = await source.fetchProposalDetail(
 						check.proposalId,

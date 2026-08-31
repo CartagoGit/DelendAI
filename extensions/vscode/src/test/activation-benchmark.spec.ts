@@ -1,3 +1,6 @@
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -189,5 +192,56 @@ describe('activation benchmark', () => {
 		expect(report.decision.rationale).toContain(
 			'No real VS Code activation evidence',
 		);
+	});
+
+	it('treats an empty call-log artifact as missing evidence instead of zero observed calls', async () => {
+		const tmp = mkdtempSync(join(tmpdir(), 'mcp-vertex-bench-empty-'));
+		const emptyLog = join(tmp, 'empty.jsonl');
+		writeFileSync(emptyLog, '', 'utf8');
+		const queue = [
+			sample('control', {
+				startupReadyMs: 12,
+				workUnits: 0,
+				observedToolCalls: null,
+				observedToolCallsEvidence: 'missing-artifact',
+			}),
+			sample('workspace-no-mcp', {
+				startupReadyMs: 29,
+				observedToolCalls: null,
+				observedToolCallsEvidence: 'missing-artifact',
+			}),
+			sample('workspace-mcp', {
+				startupReadyMs: 33,
+				observedToolCalls: 2,
+				observedToolCallsEvidence: 'artifact',
+			}),
+		];
+		try {
+			const report = await runActivationBenchmark({
+				activationEvents: manifestEvents,
+				iterations: 1,
+				build: false,
+				keepEvidence: true,
+				executeScenario: async (request) => {
+					const next = queue.shift();
+					if (next === undefined) {
+						throw new Error('missing test sample');
+					}
+					if (request.callLogPath !== undefined) {
+						writeFileSync(request.callLogPath, '', 'utf8');
+					}
+					return next;
+				},
+			});
+
+			expect(report.workspaceNoMcp?.totalObservedToolCalls).toBeNull();
+			expect(
+				report.workspaceNoMcp?.missingObservedToolCallEvidenceCount,
+			).toBe(1);
+			expect(report.decision.status).toBe('insufficient-evidence');
+			expect(report.decision.keepOnStartupFinished).toBeNull();
+		} finally {
+			rmSync(tmp, { recursive: true, force: true });
+		}
 	});
 });
