@@ -410,15 +410,14 @@ const mapRepo = (
 		typeof value.open_issues_count === 'number'
 			? value.open_issues_count
 			: undefined,
-	license:
-		typeof value.license === 'object' &&
-		value.license !== null &&
-		'spdx_id' in value.license
-			? typeof (value.license as Record<string, unknown>).spdx_id ===
-				'string'
-				? (value.license as Record<string, unknown>).spdx_id
-				: null
-			: undefined,
+	license: (() => {
+		const license = value.license;
+		if (license === undefined) return undefined;
+		if (license === null) return null;
+		if (typeof license !== 'object') return undefined;
+		const record = license as Record<string, any>;
+		return typeof record.spdx_id === 'string' ? record.spdx_id : null;
+	})(),
 	updatedAt:
 		typeof value.updated_at === 'string' ? value.updated_at : undefined,
 });
@@ -443,7 +442,11 @@ const requestFailure = (
 	error: z.infer<typeof RemoteErrorSchema>;
 } => {
 	if (error instanceof GitHubRequestError) {
-		return { ok: false, provider: 'github', error: error.remoteError };
+		return {
+			ok: false,
+			provider: 'github',
+			error: error.remoteError as z.infer<typeof RemoteErrorSchema>,
+		};
 	}
 	const message = error instanceof Error ? error.message : String(error);
 	return {
@@ -526,7 +529,7 @@ const registerLocalTool = (
 
 const paginationFrom = (
 	meta: NonNullable<
-		Awaited<ReturnType<IGitHubHttpClient['request']>>['meta']['pagination']
+		Awaited<ReturnType<GitHubHttpClient['request']>>['meta']['pagination']
 	>,
 ) => ({
 	page: meta.page,
@@ -782,7 +785,7 @@ export const buildGitHubRepositoriesToolRegistrations = (
 					})
 					.then((result) => ({
 						...result,
-						data: mapRepo(result.data as Record<string, unknown>),
+						data: mapRepo(result.data as Record<string, any>),
 					}));
 			},
 			['github', 'repositories'],
@@ -838,7 +841,7 @@ export const buildGitHubRepositoriesToolRegistrations = (
 					appendPageItems(
 						items,
 						result.data.items.map((item) =>
-							mapRepo(item as Record<string, unknown>),
+							mapRepo(item as Record<string, any>),
 						),
 					);
 					const nextPage = result.meta.pagination?.nextPage;
@@ -1063,7 +1066,7 @@ export const buildGitHubIssuesToolRegistrations = (
 					query: { per_page: 100, page: 1 },
 					responseSchema: z.array(z.record(z.string(), z.unknown())),
 				});
-				const issue = issueResult.data as Record<string, unknown>;
+				const issue = issueResult.data as Record<string, any>;
 				return {
 					ok: true as const,
 					provider: 'github' as const,
@@ -1245,7 +1248,7 @@ export const buildGitHubPullRequestsToolRegistrations = (
 							),
 						}),
 					]);
-				const pr = prResult.data as Record<string, unknown>;
+				const pr = prResult.data as Record<string, any>;
 				return {
 					ok: true as const,
 					provider: 'github' as const,
@@ -1467,7 +1470,7 @@ export const buildGitHubCommitsToolRegistrations = (
 							responseSchema: z.record(z.string(), z.unknown()),
 						}),
 					]);
-				const commit = commitResult.data as Record<string, unknown>;
+				const commit = commitResult.data as Record<string, any>;
 				return {
 					ok: true as const,
 					provider: 'github' as const,
@@ -1945,7 +1948,7 @@ export const buildGitHubWorkflowsToolRegistrations = (
 						responseSchema: z.record(z.string(), z.unknown()),
 					}),
 				]);
-				const run = runResult.data as Record<string, unknown>;
+				const run = runResult.data as Record<string, any>;
 				return {
 					ok: true as const,
 					provider: 'github' as const,
@@ -2400,7 +2403,7 @@ export const buildGitHubReleasesToolRegistrations = (
 					path: `/repos/${repo.owner}/${repo.repository}/releases/${args.releaseId}`,
 					responseSchema: z.record(z.string(), z.unknown()),
 				});
-				const release = result.data as Record<string, unknown>;
+				const release = result.data as Record<string, any>;
 				return {
 					ok: true as const,
 					provider: 'github' as const,
