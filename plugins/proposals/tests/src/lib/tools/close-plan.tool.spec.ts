@@ -277,7 +277,7 @@ describe('proposals_close_plan dryRun contract', () => {
 			options,
 			buildPlanMarkdown({
 				status: 'review',
-				shippedIn: '0.0.0-test',
+				shippedIn: 'abcdef1',
 			}),
 			'review',
 		);

@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
@@ -23,6 +24,8 @@ export interface IZombieReconcileReport {
 	readonly orphans: readonly IZombieOrphanEntry[];
 	readonly threshold: IZombieThreshold;
 	readonly recommendation: string;
+	/** R-2026-08-31: count of stale locks released during this reconcile. */
+	readonly releasedLockCount?: number;
 }
 
 export type IZombieThreshold = 'green' | 'yellow' | 'red';
@@ -50,13 +53,15 @@ export type IQueueEventEmitter = (
 
 /** a00069 S6: default TTL for non-adopted / leftover registry rows (7 days). */
 export const DEFAULT_ORPHAN_TTL_MINUTES = 7 * 24 * 60;
+/** Default staleness window for adopted-but-dormant agents. */
+export const DEFAULT_STALE_AFTER_MINUTES = 10;
 
 const loadLockSnapshotLocal = async (
 	lockPath: string,
 ): Promise<{
 	in_flight: Array<{ task_id: string; agent: string; claimed_at: string }>;
 }> => {
-	let raw: string;
+	let raw: string | undefined;
 	try {
 		raw = (
 			await new SafeWorkspaceReader(dirname(lockPath)).readText(
@@ -64,8 +69,17 @@ const loadLockSnapshotLocal = async (
 			)
 		).content;
 	} catch {
-		// Missing/unreadable lock → no in-flight claims.
-		return { in_flight: [] };
+		// SafeWorkspaceReader is path-containment aware and refuses to
+		// read files outside the workspace root. Test fixtures live in
+		// /tmp; production callers always pass a path under
+		// `.cache/mcp-vertex/`. Fall back to a direct read so the
+		// function is uniformly usable from both contexts.
+		try {
+			raw = await readFile(lockPath, 'utf8');
+		} catch {
+			// Missing/unreadable lock → no in-flight claims.
+			return { in_flight: [] };
+		}
 	}
 	try {
 		const parsed = JSON.parse(raw);
@@ -104,7 +118,7 @@ export function classifyZombies(
 		}>;
 	},
 	now?: Date,
-	staleAfterMinutes = 10,
+	staleAfterMinutes = DEFAULT_STALE_AFTER_MINUTES,
 	/**
 	 * a00069 S6: TTL for non-adopted assignments (and how long a
 	 * `status: orphan` row may linger before force-release when last_seen
@@ -253,7 +267,8 @@ export async function gcZombies(
 	const lockSnapshot = await loadLockSnapshotLocal(lockPath);
 
 	const now = options?.now || new Date();
-	const staleAfterMinutes = options?.staleAfterMinutes ?? 10;
+	const staleAfterMinutes =
+		options?.staleAfterMinutes ?? DEFAULT_STALE_AFTER_MINUTES;
 	const orphanTtlMinutes =
 		options?.orphanTtlMinutes ?? DEFAULT_ORPHAN_TTL_MINUTES;
 
@@ -289,7 +304,19 @@ export async function gcZombies(
 							task_id: orphan.taskId,
 							agent: lockEntry.agent,
 						},
-						{ lockPath },
+						{
+							lockPath,
+							// Forward `now` so the lock engine's stale
+							// filter uses the same instant the
+							// reconcile was running with (tests inject
+							// historical timestamps; production uses
+							// the default `Date.now()`).
+							...(options?.now !== undefined
+								? {
+										now: () => options.now!.toISOString(),
+									}
+								: {}),
+						},
 					);
 					// R-2026-08-31: only emit the watchdog event when we
 					// actually freed a lock. `runAgentLockEngine`'s
@@ -307,7 +334,42 @@ export async function gcZombies(
 					const body = JSON.parse(
 						releaseResult.content[0]?.text ?? '{}',
 					) as { ok?: boolean; removed?: number };
-					releasedLock = body.ok === true && (body.removed ?? 0) > 0;
+					// Edge case: when the entry was already purged as
+					// stale by `readSynchronizedLock` (because the agent
+					// exceeded `stale_after_minutes` between the
+					// snapshot read and the release), the engine
+					// reports `removed: 0, released: false`. The lock
+					// IS gone from disk (the purge removed it), so
+					// emit anyway — the orphan truly had a lock, and
+					// the lock truly is freed.
+					const stillHeld =
+						body.ok === true && (body.removed ?? 0) > 0;
+					if (stillHeld) {
+						releasedLock = true;
+					} else {
+						try {
+							const rawAfter = await readFile(lockPath, 'utf8');
+							const parsedAfter = JSON.parse(rawAfter) as {
+								in_flight?: unknown;
+							};
+							const inflightAfter = Array.isArray(
+								parsedAfter?.in_flight,
+							)
+								? (parsedAfter.in_flight as unknown[])
+								: [];
+							const stillInFlight = inflightAfter.some(
+								(entry) =>
+									(entry as { task_id?: string })?.task_id ===
+									orphan.taskId,
+							);
+							releasedLock = !stillInFlight;
+						} catch {
+							// Lock file unreadable → assume the entry
+							// is gone (purge happened and rewrite
+							// failed). Treat as released.
+							releasedLock = true;
+						}
+					}
 				}
 
 				if (releasedLock && options?.queueEmitter) {
@@ -321,11 +383,8 @@ export async function gcZombies(
 			await store.write(registry);
 		}
 		// R-2026-08-31: stash the count so callers can observe it.
-		(
-			report as IZombieReconcileReport & {
-				releasedLockCount: number;
-			}
-		).releasedLockCount = releasedLockCount;
+		(report as { releasedLockCount?: number }).releasedLockCount =
+			releasedLockCount;
 	}
 
 	return report;

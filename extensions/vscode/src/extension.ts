@@ -1,3 +1,8 @@
+// MUST be the first import — see the file header for the rationale.
+// The named import keeps the shim module alive in Bun's tree-shaker
+// (which would otherwise elide a side-effect-only import).
+import { NAVIGATOR_PATCH_MARKER } from './shims/node22-navigator';
+void NAVIGATOR_PATCH_MARKER;
 import {
 	AgentCatalogService,
 	McpStdioClient,
@@ -639,6 +644,30 @@ export const activate = async (
 		handle.register(`sub-${trackSeq++}`, disposable);
 		return disposable;
 	};
+	const serverConfigured = configuredLaunch !== undefined;
+	const dashboardRefresh: {
+		current?: DashboardWebviewViewProvider;
+	} = {};
+	// Register the dashboard before network-backed providers and commands.
+	// The dashboard provider renders an unavailable state when MCP is down,
+	// so activation can expose the web app without waiting for connectivity.
+	const dashboardRegistration = registerDashboardSurfaces(
+		context,
+		client,
+		vscode,
+		deps.vscode,
+		namespacePrefix,
+		serverConfigured,
+		track,
+		dashboardRefresh,
+	);
+	void dashboardRegistration.catch(async (error: unknown) => {
+		const message = error instanceof Error ? error.message : String(error);
+		runtimeChannel?.append(`Dashboard registration failed: ${message}\n`);
+		await vscode.window.showErrorMessage?.(
+			`MCP Vertex dashboard could not be registered: ${message}`,
+		);
+	});
 	if (runtimeChannel !== undefined) {
 		const workspaceRoot =
 			vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath;
@@ -686,7 +715,6 @@ export const activate = async (
 		namespacePrefix === undefined ? {} : { namespacePrefix },
 	);
 	const notifications = new NotificationsService(client, namespacePrefix);
-	const serverConfigured = configuredLaunch !== undefined;
 	const toolTree = new ToolTreeDataProvider(
 		overview,
 		catalog,
@@ -781,26 +809,19 @@ export const activate = async (
 	}
 
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
-	const dashboardRefresh: {
-		current?: DashboardWebviewViewProvider;
-	} = {};
 	// detailSink is wired below — see `dashboardProvider` construction —
 	// because the dashboard provider depends on `host`, which is only
 	// resolved after the MCP client connects. We expose a proxy so the
 	// command registrations below can reference it before it has a
 	// concrete implementation.
 	const detailSink = ((kind, model) => {
-		const broker = dashboardProvider.getDetailBroker();
-		return broker.push({ kind, model });
+		const provider = dashboardRefresh.current;
+		return provider === undefined
+			? Promise.resolve(false)
+			: provider.getDetailBroker().push({ kind, model });
 	}) as NonNullable<
 		Parameters<typeof registerOpenToolDetailCommand>[0]['detailSink']
 	>;
-	// `dashboardProvider` itself is constructed right before
-	// `registerWebviewViewProvider` is invoked; until then the
-	// reference used here is intentionally undefined (the typed value
-	// `DashboardWebviewViewProvider | undefined` is satisfied by the
-	// late-bound `dashboardProvider` declared further below).
-	let dashboardProvider!: DashboardWebviewViewProvider;
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
 	track(
 		registerRefreshCommand({
@@ -939,19 +960,6 @@ export const activate = async (
 			client,
 			globalState: context.globalState,
 		}),
-	);
-
-	runSafely(
-		registerDashboardSurfaces(
-			context,
-			client,
-			vscode,
-			deps.vscode,
-			namespacePrefix,
-			serverConfigured,
-			track,
-			dashboardRefresh,
-		),
 	);
 };
 
@@ -1196,15 +1204,24 @@ const registerDashboardSurfaces = async (
 	dashboardRefresh: { current?: DashboardWebviewViewProvider },
 ): Promise<void> => {
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
-	const host =
-		injectedVscode === undefined
-			? await (async () => {
-					const { createVscodeHostAdapter } = await import(
-						'./host/vscode-host-adapter'
-					);
-					return createVscodeHostAdapter();
-				})()
-			: createFakeHostFromVscode(injectedVscode);
+	let host: IHostAdapter;
+	if (injectedVscode !== undefined) {
+		host = createFakeHostFromVscode(injectedVscode);
+	} else {
+		try {
+			const { createVscodeHostAdapter } = await import(
+				'./host/vscode-host-adapter'
+			);
+			host = createVscodeHostAdapter();
+		} catch (error) {
+			// Keep the canonical dashboard registrable even when an optional
+			// host adapter import fails during extension-host startup.
+			void vscode.window.showErrorMessage?.(
+				`MCP Vertex host adapter unavailable: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			host = createFakeHostFromVscode(vscode);
+		}
+	}
 	track(
 		registerOpenDashboardCommand({
 			host,
@@ -1217,14 +1234,6 @@ const registerDashboardSurfaces = async (
 				{},
 		}),
 	);
-	const kpiRegistration = registerKpiDashboardProvider({
-		host,
-		client,
-		serverConfigured,
-		viewId: KPI_VIEW_ID,
-		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
-	});
-	track({ dispose: kpiRegistration.dispose });
 	const dashboardProvider = new DashboardWebviewViewProvider({
 		host,
 		client,
@@ -1236,20 +1245,21 @@ const registerDashboardSurfaces = async (
 		...withPrefix,
 	});
 	dashboardRefresh.current = dashboardProvider;
-	const dashboardDetailBroker = dashboardProvider.getDetailBroker();
-	const _detailSink = (async (kind: 'tool' | 'proposal', model: unknown) => {
-		if (kind === 'tool') {
-			return dashboardDetailBroker.push({ kind, model });
-		}
-		return dashboardDetailBroker.push({ kind, model });
-	}) as unknown as NonNullable<
-		Parameters<typeof registerOpenToolDetailCommand>[0]['detailSink']
-	>;
 	const dashboardRegistration = host.registerWebviewViewProvider?.(
 		DASHBOARD_VIEW_ID,
 		dashboardProvider,
 	);
 	if (dashboardRegistration !== undefined) track(dashboardRegistration);
+	// Secondary panels are registered only after the canonical dashboard.
+	// A failure in KPI wiring must never make the main web app disappear.
+	const kpiRegistration = registerKpiDashboardProvider({
+		host,
+		client,
+		serverConfigured,
+		viewId: KPI_VIEW_ID,
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	});
+	track({ dispose: kpiRegistration.dispose });
 	void vscode;
 };
 

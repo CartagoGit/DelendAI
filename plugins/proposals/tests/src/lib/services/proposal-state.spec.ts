@@ -91,32 +91,64 @@ describe('proposal-state guards', () => {
 
 	it('accepts a non-empty shipped-in list', () => {
 		expect(
-			guardShippedInPresent({ 'shipped-in': ['abc123', 'def456'] }),
+			guardShippedInPresent({
+				'shipped-in': ['30551533', '051b12d5'],
+			}),
 		).toEqual({ ok: true });
 	});
 
 	it('rejects missing shipped-in', () => {
-		expect(guardShippedInPresent({})).toEqual({
+		expect(guardShippedInPresent({})).toMatchObject({
 			ok: false,
 			code: 'missing-shipped-in',
-			reason: 'shipped-in: list is required to mark a proposal done',
 		});
+		expect(guardShippedInPresent({})).toHaveProperty('nextAction');
+		expect(guardShippedInPresent({})).toHaveProperty('fix');
 	});
 
 	it('rejects empty shipped-in lists', () => {
-		expect(guardShippedInPresent({ 'shipped-in': [] })).toEqual({
+		expect(guardShippedInPresent({ 'shipped-in': [] })).toMatchObject({
 			ok: false,
 			code: 'missing-shipped-in',
-			reason: 'shipped-in: list is required to mark a proposal done',
 		});
+		expect(guardShippedInPresent({ 'shipped-in': [] })).toHaveProperty(
+			'nextAction',
+		);
+		expect(guardShippedInPresent({ 'shipped-in': [] })).toHaveProperty(
+			'fix',
+		);
 	});
 
 	it('rejects shipped-in lists without non-empty strings', () => {
-		expect(guardShippedInPresent({ 'shipped-in': ['   ', ''] })).toEqual({
-			ok: false,
-			code: 'missing-shipped-in',
-			reason: 'shipped-in: list is required to mark a proposal done',
+		expect(
+			guardShippedInPresent({ 'shipped-in': ['   ', ''] }),
+		).toMatchObject({ ok: false, code: 'missing-shipped-in' });
+	});
+
+	it('rejects shipped-in lists whose entries are not 7-40 char hex SHAs', () => {
+		const out = guardShippedInPresent({
+			'shipped-in': ['TBD', 'n/a', 'coming-soon'],
 		});
+		expect(out.ok).toBe(false);
+		if (out.ok) return;
+		expect(out.code).toBe('missing-shipped-in');
+		expect(out.reason).toMatch(/non-SHA entries/);
+		expect(out.nextAction).toMatch(/Add `shipped-in:/);
+		expect(out.fix).toMatch(/append `shipped-in:/);
+	});
+
+	it('accepts a single 7-char SHA', () => {
+		expect(guardShippedInPresent({ 'shipped-in': ['30551533'] })).toEqual({
+			ok: true,
+		});
+	});
+
+	it('accepts a full 40-char SHA', () => {
+		expect(
+			guardShippedInPresent({
+				'shipped-in': ['0123456789abcdef0123456789abcdef01234567'],
+			}),
+		).toEqual({ ok: true });
 	});
 
 	it('appends one JSONL line for a forced regression', async () => {

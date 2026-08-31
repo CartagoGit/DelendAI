@@ -193,8 +193,12 @@ describe('zombie-reconcile', async () => {
 
 		expect(report.orphans.length).toBe(1);
 		expect(report.orphans[0]!.agentName).toBe('agent_zombie');
-		expect(queueEmitter).toHaveBeenCalledTimes(1);
-		expect(queueEmitter).toHaveBeenCalledWith('zombie-gc-event-task-1', 4);
+		// R-2026-08-31: the orphan registry row was deleted, but no
+		// lock was freed (in_flight was empty). The watchdog event is
+		// intentionally NOT emitted — `releasedLockCount === 0`
+		// documents the new contract.
+		expect(report.releasedLockCount).toBe(0);
+		expect(queueEmitter).toHaveBeenCalledTimes(0);
 
 		// Verify registry actually updated (entry removed)
 		const store = createAgentRegistryStore(registryPath);
@@ -266,11 +270,17 @@ describe('zombie-reconcile', async () => {
 
 		expect(report1.orphans.length).toBe(1);
 		expect(report2.orphans.length).toBe(0); // Already deleted on first run
-		expect(queueEmitter).toHaveBeenCalledTimes(1); // Emitter only called once
+		// R-2026-08-31: queueEmitter is only invoked when a lock was
+		// actually released. The test fixture has an empty
+		// `in_flight`, so no lock existed and the emitter is not
+		// called. The fixture used to assert one call before the fix;
+		// the new contract surfaces phantom watchdog events that the
+		// engine no longer produces.
+		expect(queueEmitter).toHaveBeenCalledTimes(0);
 	});
 
-	// 7. Backpressure event emission cuando orphans.length >= 1
-	it('Case 7: Backpressure event emission cuando orphans.length >= 1', async () => {
+	// 7. Backpressure event emission cuando un lock real se libera
+	it('Case 7: Backpressure event emission cuando el orphan tenía un lock activo', async () => {
 		const registryData: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -290,38 +300,110 @@ describe('zombie-reconcile', async () => {
 				},
 			],
 		};
+		// R-2026-08-31: the lock fixture uses the same shape
+		// `runAgentLockEngine` writes. `host`/`pid` are required so the
+		// pid-mismatch branch recognises the entry as a real prior
+		// claim and the release actually frees it (returning
+		// `removed: 1`). `last_seen` MUST be stale (>10 min before
+		// `now`) so the classify step tags the row as
+		// `stale_with_orphaned_lock` — a fresh lock with a stale
+		// registry row is intentionally NOT classified as a zombie
+		// (the agent could come back any moment).
 		const lockData = {
 			version: 1,
-			in_flight: [],
+			stale_after_minutes: 10,
+			in_flight: [
+				{
+					task_id: 'task-1',
+					agent: 'agent_zombie',
+					ownership: ['packages/proposals/src/foo.ts'],
+					started_at: '2026-06-05T11:00:00.000Z',
+					last_seen: '2026-06-05T11:30:00.000Z', // 30 min stale
+					host: 'dead-host',
+					pid: 999999,
+				},
+			],
 		};
 
 		const registryPath = createTempPath(
-			'reg',
+			'reg-bp',
 			'subagent-registry.json',
 			JSON.stringify(registryData),
 		);
 		const lockPath = createTempPath(
-			'lock',
+			'lock-bp',
 			'agents.lock.json',
 			JSON.stringify(lockData),
 		);
-		const queuePath = createTempPath('queue', 'queue.json', '{}');
+		const queuePath = createTempPath('queue-bp', 'queue.json', '{}');
 
 		const queueEmitter = vi
 			.fn()
 			.mockImplementation(() => Promise.resolve());
 
-		await gcZombies(registryPath, lockPath, queuePath, {
+		const report = await gcZombies(registryPath, lockPath, queuePath, {
 			dryRun: false,
 			staleAfterMinutes: 10,
 			now,
 			queueEmitter,
 		});
 
+		// The orphan registry row was deleted; `releasedLockCount`
+		// is incremented because the entry was freed. The watchdog
+		// event fires once with the canonical taskId shape.
+		expect(report.releasedLockCount).toBe(1);
 		expect(queueEmitter).toHaveBeenCalledWith(
 			expect.stringContaining('zombie-gc-event-'),
 			4,
 		);
+	});
+
+	// R-2026-08-31: orphan WITHOUT a lock does not emit phantom events
+	it('Case 7b: orphan sin lock activo NO emite phantom watchdog events', async () => {
+		const registryData: IAgentRegistry = {
+			version: 1,
+			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
+			assignments: [
+				{
+					task_id: 'task-1',
+					agent_name: 'agent_zombie',
+					agent_slot: 'implementation_runner',
+					parent_task_id: null,
+					depth: 0,
+					topic: 'orphan without lock',
+					adopted: true,
+					assigned_at: '2026-06-05T11:00:00.000Z',
+					last_seen: '2026-06-05T11:45:00.000Z',
+					cooldown_until: null,
+					status: 'cooldown',
+				},
+			],
+		};
+		const registryPath = createTempPath(
+			'reg-nolock',
+			'subagent-registry.json',
+			JSON.stringify(registryData),
+		);
+		const lockPath = createTempPath(
+			'lock-nolock',
+			'agents.lock.json',
+			JSON.stringify({ version: 1, in_flight: [] }),
+		);
+		const queuePath = createTempPath('queue-nolock', 'queue.json', '{}');
+
+		const queueEmitter = vi
+			.fn()
+			.mockImplementation(() => Promise.resolve());
+
+		const report = await gcZombies(registryPath, lockPath, queuePath, {
+			dryRun: false,
+			staleAfterMinutes: 10,
+			now,
+			queueEmitter,
+		});
+		expect(report.orphans.length).toBe(1);
+		expect(report.releasedLockCount).toBe(0);
+		expect(queueEmitter).not.toHaveBeenCalled();
 	});
 
 	// 8. Threshold verde: 0 orphans

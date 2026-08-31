@@ -743,23 +743,6 @@ export const runProposalTransition = async (
 		);
 	}
 
-	if (finalTo === 'done') {
-		const yamlBlock = extractYamlBlock(raw);
-		const frontmatter =
-			yamlBlock === null
-				? {}
-				: (parseFrontmatterBlock(yamlBlock) as Record<string, unknown>);
-		const shippedInGuard = guardShippedInPresent(frontmatter);
-		if (!shippedInGuard.ok) {
-			return buildCodeError(
-				shippedInGuard.code,
-				shippedInGuard.reason,
-				shippedInGuard.nextAction,
-				shippedInGuard.fix,
-			);
-		}
-	}
-
 	if (from === 'review' && finalTo === 'done') {
 		const openDependents = (
 			await findDependentProposalStatuses(
@@ -827,6 +810,23 @@ export const runProposalTransition = async (
 					isError: true,
 				};
 			}
+		}
+	}
+
+	if (finalTo === 'done') {
+		const yamlBlock = extractYamlBlock(raw);
+		const frontmatter =
+			yamlBlock === null
+				? {}
+				: (parseFrontmatterBlock(yamlBlock) as Record<string, unknown>);
+		const shippedInGuard = guardShippedInPresent(frontmatter);
+		if (!shippedInGuard.ok) {
+			return buildCodeError(
+				shippedInGuard.code,
+				shippedInGuard.reason,
+				shippedInGuard.nextAction,
+				shippedInGuard.fix,
+			);
 		}
 	}
 

@@ -17,6 +17,16 @@ export const TABS: ReadonlyArray<{ id: string; label: string }> = [
 	{ id: 'health', label: 'tabHealth' },
 ];
 
+const NAV_GROUPS: ReadonlyArray<{
+	readonly label: string;
+	readonly tabs: ReadonlyArray<string>;
+}> = [
+	{ label: 'Workspace', tabs: ['overview', 'tools', 'plugins', 'docs'] },
+	{ label: 'Operations', tabs: ['sessions', 'agents', 'health'] },
+	{ label: 'Telemetry', tabs: ['metrics', 'tokens', 'spend', 'times'] },
+	{ label: 'Knowledge', tabs: ['memory'] },
+];
+
 export function buildTabsBar(lang: ILangDict): string {
 	const text = (
 		key: string,
@@ -45,6 +55,9 @@ export function buildTabsBar(lang: ILangDict): string {
 	}));
 	const docsTab = { id: 'docs', label: text('tabDocs') };
 	const refreshHtml = `<button class="mcpv-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}" aria-label="${text('refreshDashboard')}">⟳</button>`;
+	const expandHtml = `<button class="mcpv-tabs__action-btn" id="tab-expand" data-action="expand" type="button" title="Open dashboard in a tab" aria-label="Open dashboard in a tab">↗</button>`;
+	const sidebarRefreshHtml = refreshHtml.replace(' id="tab-refresh"', '');
+	const sidebarExpandHtml = expandHtml.replace(' id="tab-expand"', '');
 	const surfaceActions = `
 		<div class="mcpv-tabs__surface-actions" role="group" aria-label="${text('tabOverview')}">
 			<button class="mcpv-tabs__action-btn" data-surface="proposals" type="button" title="${text('openProposalBoard')}" aria-label="${text('openProposalBoard')}">▤</button>
@@ -52,14 +65,30 @@ export function buildTabsBar(lang: ILangDict): string {
 			<button class="mcpv-tabs__action-btn" data-surface="configuration" type="button" title="${text('openConfigurationCenter')}" aria-label="${text('openConfigurationCenter')}">⚙</button>
 			<button class="mcpv-tabs__action-btn" data-surface="settings" type="button" title="${text('openSettings')}" aria-label="${text('openSettings')}">☷</button>
 		</div>`;
+	const sidebar = NAV_GROUPS.map(
+		(group) =>
+			`<div class="mcpv-app-nav__group"><h3>${group.label}</h3><div class="mcpv-app-nav__items">${group.tabs
+				.map((id) => {
+					const tab =
+						id === 'docs'
+							? docsTab
+							: TABS.find((item) => item.id === id);
+					return tab === undefined
+						? ''
+						: `<button type="button" class="mcpv-app-nav__item" data-sidebar-trigger="${tab.id}" aria-current="${tab.id === 'overview' ? 'page' : 'false'}"><span>${text(tab.label)}</span></button>`;
+				})
+				.join('')}</div></div>`,
+	).join('');
 	return (
+		`<div class="mcpv-app-nav__mobile"><button type="button" class="mcpv-app-nav__menu" data-nav-toggle aria-expanded="false">☰ <span>Menu</span></button></div>` +
+		`<aside class="mcpv-app-nav" data-nav-panel aria-label="Dashboard sections">${sidebar}<div class="mcpv-app-nav__actions">${surfaceActions}${sidebarRefreshHtml}${sidebarExpandHtml}</div></aside>` +
 		`<section class="mcpv-tabs mcpv-tabs--underline">` +
 		renderTabs({
 			tabs: [...tabItems, docsTab],
 			variant: 'underline',
 			label: text('tabOverview'),
 			idPrefix: '',
-			actionHtml: `${surfaceActions}${refreshHtml}`,
+			actionHtml: `${surfaceActions}${refreshHtml}${expandHtml}`,
 		}) +
 		`</section>`
 	);

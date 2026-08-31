@@ -3,6 +3,7 @@ import {
 	EmbedService,
 	type McpStdioClient,
 } from '@mcp-vertex/client';
+import type { IDashboardAllModels } from '@mcp-vertex/client';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import {
 	renderDashboard,
@@ -63,6 +64,76 @@ export interface IDashboardDetailBroker {
 	) => Promise<boolean>;
 	readonly hide: () => Promise<boolean>;
 }
+
+const unavailableDashboard = (error: unknown): IDashboardAllModels => {
+	const message = error instanceof Error ? error.message : String(error);
+	const now = new Date().toISOString();
+	const emptyTotals = {
+		tools: 0,
+		plugins: 0,
+		proposals: 0,
+		calls: 0,
+		errors: 0,
+		totalMs: 0,
+		tokens: 0,
+		tokensSaved: 0,
+		savingsPercent: 0,
+		agents: 0,
+	};
+	return {
+		overview: {
+			serverName: 'mcp-vertex',
+			serverVersion: 'unavailable',
+			namespacePrefix: 'mcp-vertex',
+			plugins: [],
+			tools: [],
+			knowledgeIds: [],
+			recommendedNextAction: `MCP server unavailable: ${message}`,
+			totals: emptyTotals,
+		},
+		metrics: {
+			totals: { calls: 0, errors: 0, totalMs: 0, totalBytes: 0 },
+			rows: [],
+			sparklines: {},
+			collectedAt: now,
+		},
+		tokens: {
+			tokensUsed: 0,
+			tokensSaved: 0,
+			savingsPercent: 0,
+			topByTokens: [],
+			history: [],
+		},
+		tools: { rows: [], sortBy: 'calls', sortDir: 'desc' },
+		plugins: { rows: [] },
+		spend: null,
+		sessions: { total: 0, byStatus: {}, rows: [] },
+		times: {
+			totalWallMs: 0,
+			p50Ms: 0,
+			p95Ms: 0,
+			histogram: [],
+		},
+		agents: { agents: [], totalActive: 0 },
+		memory: { state: 'unavailable', notes: [], total: 0, offset: 0 },
+		health: {
+			healthy: false,
+			locksActive: 0,
+			queue: null,
+			orphans: 0,
+			orphansThreshold: 'unknown',
+			stale: [],
+			staleCount: 0,
+			agents: [],
+			fetchedAt: now,
+		},
+		server: {
+			name: 'mcp-vertex',
+			version: 'unavailable',
+			fetchedAt: now,
+		},
+	};
+};
 
 export class DashboardWebviewViewProvider {
 	private view: IWebviewPanel | undefined;
@@ -138,7 +209,12 @@ export class DashboardWebviewViewProvider {
 				? {}
 				: { namespacePrefix: this.deps.namespacePrefix }),
 		});
-		const models = await dashboard.getAllModels();
+		let models: IDashboardAllModels;
+		try {
+			models = await dashboard.getAllModels();
+		} catch (error) {
+			models = unavailableDashboard(error);
+		}
 		if (token !== this.refreshToken || this.view !== view) return;
 		const lang = resolveLang(this.deps);
 		view.webview.setHtml(
@@ -155,7 +231,11 @@ export class DashboardWebviewViewProvider {
 		const parsed = DASHBOARD_MESSAGE_SCHEMA.safeParse(message);
 		if (!parsed.success) return;
 		if (parsed.data.command === 'action') {
-			await this.deps.host.executeCommand?.(REFRESH_COMMAND);
+			await this.deps.host.executeCommand?.(
+				parsed.data.action === 'expand'
+					? 'mcp-vertex.openDashboard'
+					: REFRESH_COMMAND,
+			);
 			return;
 		}
 		if (parsed.data.command === 'openTool') {

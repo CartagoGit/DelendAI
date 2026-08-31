@@ -462,7 +462,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			file,
 			readFileSync(file, 'utf8').replace(
 				'status: ready',
-				'status: ready\nshipped-in: [ship123]',
+				'status: ready\nshipped-in: [30551533]',
 			),
 			'utf8',
 		);

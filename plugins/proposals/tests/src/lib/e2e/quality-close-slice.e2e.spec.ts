@@ -1,6 +1,7 @@
 import {
 	mkdirSync,
 	mkdtempSync,
+	readdirSync,
 	readFileSync,
 	rmSync,
 	writeFileSync,
@@ -75,6 +76,22 @@ const seedSlice = (workspace: string, id: string): string => {
 	return proposalPath;
 };
 
+const findProposalPath = (workspace: string, id: string): string => {
+	const proposalsDir = join(workspace, 'docs/mcp-vertex/proposals');
+	const entries = readdirSync(proposalsDir, { recursive: true }).filter(
+		(entry): entry is string => typeof entry === 'string',
+	);
+	const relativePath = entries.find(
+		(entry) =>
+			entry.endsWith('.md') &&
+			readFileSync(join(proposalsDir, entry), 'utf8').includes(
+				`id: ${id}`,
+			),
+	);
+	if (relativePath !== undefined) return join(proposalsDir, relativePath);
+	throw new Error(`proposal ${id} was not found under ${proposalsDir}`);
+};
+
 afterEach(async () => {
 	for (const workspace of workspaces.splice(0))
 		rmSync(workspace, { recursive: true, force: true });
@@ -85,7 +102,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 		const { workspace, client, project } =
 			await createQualityServer('false');
 		try {
-			const proposalPath = seedSlice(workspace, 'f04200');
+			seedSlice(workspace, 'f04200');
 			const sync = await client.callTool({
 				name: 'mcp-vertex_proposals_sync_proposals',
 				arguments: {},
@@ -100,6 +117,16 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				state: 'work',
 				proposalId: 'f04200',
 			});
+			const sliceClaim = await client.callTool({
+				name: 'mcp-vertex_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f04200-S1',
+					agent: 'agent-quality-e2e',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(sliceClaim.isError).toBeFalsy();
 			const quality = await client.callTool({
 				name: 'mcp-vertex_quality_quality_run_all',
 				arguments: {},
@@ -120,9 +147,12 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				closed: false,
 				blockerType: 'quality-failed',
 			});
-			expect(readFileSync(proposalPath, 'utf8')).toContain(
-				'- **Status**: pending',
-			);
+			expect(
+				readFileSync(
+					await findProposalPath(workspace, 'f04200'),
+					'utf8',
+				),
+			).toContain('- **Status**: pending');
 		} finally {
 			await client.close();
 			await project.server.close();
@@ -133,7 +163,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 		const { workspace, client, project } =
 			await createQualityServer('true');
 		try {
-			const proposalPath = seedSlice(workspace, 'f04201');
+			seedSlice(workspace, 'f04201');
 			const sync = await client.callTool({
 				name: 'mcp-vertex_proposals_sync_proposals',
 				arguments: {},
@@ -148,6 +178,16 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				state: 'work',
 				proposalId: 'f04201',
 			});
+			const sliceClaim = await client.callTool({
+				name: 'mcp-vertex_proposals_agent_lock',
+				arguments: {
+					action: 'claim',
+					task_id: 'f04201-S1',
+					agent: 'agent-quality-e2e',
+					files: ['src/quality.ts'],
+				},
+			});
+			expect(sliceClaim.isError).toBeFalsy();
 			const quality = await client.callTool({
 				name: 'mcp-vertex_quality_quality_run_all',
 				arguments: {},
@@ -169,9 +209,12 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				ok: true,
 				closed: true,
 			});
-			expect(readFileSync(proposalPath, 'utf8')).toContain(
-				'- **Status**: done',
-			);
+			expect(
+				readFileSync(
+					await findProposalPath(workspace, 'f04201'),
+					'utf8',
+				),
+			).toContain('- **Status**: done');
 		} finally {
 			await client.close();
 			await project.server.close();
