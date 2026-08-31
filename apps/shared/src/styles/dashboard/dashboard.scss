@@ -1577,3 +1577,28 @@
 .mcpv-header__logo:hover {
 	transform: scale(1.05) rotate(-2deg);
 }
+
+.mcpv-settings-panel__status {
+	animation: mcpv-status-toast var(--mcpv-transition-medium) ease-out;
+}
+
+@keyframes mcpv-status-toast {
+	0% {
+		opacity: 0;
+		transform: translateY(-4px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.mcpv-settings-panel__status[data-error='true'] {
+	animation: mcpv-status-toast-shake var(--mcpv-transition-medium) ease-out;
+}
+
+@keyframes mcpv-status-toast-shake {
+	0%, 100% { transform: translateX(0); }
+	25% { transform: translateX(-3px); }
+	75% { transform: translateX(3px); }
+}
