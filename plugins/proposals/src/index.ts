@@ -404,9 +404,7 @@ export default definePlugin({
 					scopes?: Record<string, readonly string[]>;
 				})
 			: undefined;
-		const qualityPeerLoaded =
-			ctx.peerPlugins?.has('quality') === true &&
-			qualityOptions?.scopes !== undefined;
+		const qualityPeerConfigured = qualityOptions?.scopes !== undefined;
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRoot: ctx.workspace.root,
@@ -436,7 +434,7 @@ export default definePlugin({
 							.requirePeerReview as boolean,
 					}
 				: { requirePeerReview: true }),
-			...(qualityPeerLoaded
+			...(qualityPeerConfigured
 				? {
 						resolveValidationDecision:
 							buildCloseSliceValidationProvider({
