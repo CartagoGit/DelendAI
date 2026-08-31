@@ -2220,6 +2220,46 @@
 				"date": ""
 			},
 			{
+				"id": "f00410",
+				"title": "f00410",
+				"track": "remote-providers-foundation",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00411",
+				"title": "f00411",
+				"track": "gitlab-read-only",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00412",
+				"title": "f00412",
+				"track": "github-read-only",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00413",
+				"title": "f00413",
+				"track": "remote-provider-mutations",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00414",
+				"title": "f00414",
+				"track": "remote-ci-diagnostics",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "q00006",
 				"title": "q00006",
 				"track": "develop-audit-hardening-v4",
@@ -2605,7 +2645,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 153,
+			"ready": 158,
 			"in-progress": 14,
 			"review": 0,
 			"paused": 1,
