@@ -2,16 +2,16 @@
 id: f00392
 title: "Adaptive preferred path, proposals facade, provenance, generated truth and VS Code benchmark"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
 shipped-in: ["8514f99f7", "af2265b4b"]
-last-transition-id: bf494b73-2057-4e90-ad3d-de06ede5f714
-last-correlation-id: bf494b73-2057-4e90-ad3d-de06ede5f714
-last-transition-from: in-progress
+last-transition-id: 4c5c69a9-dbac-4a14-b57e-8876fee191fb
+last-correlation-id: 4c5c69a9-dbac-4a14-b57e-8876fee191fb
+last-transition-from: review
 ---
 
 # f00392 — Adaptive preferred path, proposals facade, provenance, generated truth and VS Code benchmark
@@ -52,7 +52,7 @@ Completa la evolución orientada a agentes sin sustituir capacidades detalladas,
 ### S2 — Provenance graph and generated documentation truth
 - **Status**: done
 - **DependsOn**: [S1]
-- **Files**: `plugins/observability/src`, `tools/scripts/gen`, `docs/mcp-vertex/generated`, `plugins/observability/tests`
+- **Files**: `plugins/observability/src`, `tools/scripts/gen`, `docs/mcp-vertex/generated`, `plugins/observability/src/lib/provenance/provenance-graph.spec.ts`
 - **Gate**: type
 - acceptance:
   - "graph links agent/proposal/slice/tool/test/commit/release/PR"

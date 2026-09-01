@@ -449,12 +449,17 @@ export const updateDocBlock = (
 						'Generated at: ',
 						'',
 					),
-					...(currentProposalsLine !== undefined
-						? { proposalsLineOverride: currentProposalsLine }
-						: {}),
 				}
 			: snap;
-	const block = renderBlock(stableSnap);
+	const rendered = renderBlock(stableSnap);
+	// Restore the on-disk proposal counts too when nothing substantive
+	// moved, so the block is byte-identical and the drift check stays
+	// quiet. `renderBlock` builds them from the snapshot, so this is the
+	// one place that can hold them still.
+	const block =
+		substantivelyUnchanged && currentProposalsLine !== undefined
+			? rendered.replace(PROPOSALS_LINE_RE, currentProposalsLine)
+			: rendered;
 	const replaced = docText.replace(blockRe, block);
 	if (replaced !== docText) return { text: replaced, changed: true };
 	// `replace` returned `docText` unchanged. Two possible reasons:
