@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico
+shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
 last-transition-id: 5a802f44-92b5-499e-a907-d2f6cb7d10ef
 last-correlation-id: 5a802f44-92b5-499e-a907-d2f6cb7d10ef
 last-transition-from: in-progress
@@ -31,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `review/f00306-los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00306-los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

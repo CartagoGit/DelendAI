@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-results-prohibidos
+shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
 last-transition-id: 6939dce9-4f79-4793-af50-6d0e28ff252b
 last-correlation-id: 6939dce9-4f79-4793-af50-6d0e28ff252b
 last-transition-from: in-progress
@@ -31,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `review/f00309-raw-results-prohibidos.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00309-raw-results-prohibidos.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
