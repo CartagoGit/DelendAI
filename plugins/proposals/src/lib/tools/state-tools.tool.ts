@@ -32,6 +32,17 @@ const fileExists = async (path: string): Promise<boolean> =>
 		.then(() => true)
 		.catch(() => false);
 
+const countDueQueueEntries = (
+	entries: readonly { status: string; expiresAt?: string }[],
+	now = Date.now(),
+): number =>
+	entries.filter(
+		(entry) =>
+			entry.status === 'queued' &&
+			typeof entry.expiresAt === 'string' &&
+			Date.parse(entry.expiresAt) < now,
+	).length;
+
 /** In-flight claim count straight from the lock file (0 if missing/corrupt). */
 const rawInFlightCount = async (lockPath: string): Promise<number> => {
 	const parsed = await readJsonOrNull<{ in_flight?: unknown[] }>(lockPath);
@@ -128,6 +139,7 @@ interface IStateDiagnosis {
 	readonly queue: {
 		readonly queueLength: number;
 		readonly queuedCount: number;
+		readonly dueQueueEntries: number;
 		readonly waiterOrphans: number;
 		readonly oldestAgeMinutes: number;
 		readonly threshold: string;
@@ -343,6 +355,7 @@ const diagnose = async (
 		queue = {
 			queueLength: report.queueLength,
 			queuedCount: report.queuedCount,
+			dueQueueEntries: countDueQueueEntries(loaded.entries),
 			waiterOrphans: report.waiterOrphans,
 			oldestAgeMinutes: report.oldestAgeMinutes,
 			threshold: report.threshold,
@@ -573,7 +586,7 @@ export const buildStateRepairRegistration = (
 						diagnosis: before,
 						wouldRepair: {
 							staleLocks: before.stale.count,
-							dueQueueEntries: before.queue?.queuedCount ?? 0,
+							dueQueueEntries: before.queue?.dueQueueEntries ?? 0,
 							orphanAssignments: before.registry.orphans,
 						},
 						nextAction:

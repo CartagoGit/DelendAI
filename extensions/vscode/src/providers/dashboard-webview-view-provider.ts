@@ -1,6 +1,14 @@
 import {
 	DashboardService,
 	EmbedService,
+	DEFAULT_EXTENSION_SETTINGS,
+	LogsService,
+	NotificationsService,
+	SettingsService,
+	type ILogEvent,
+	type ILogOutcome,
+	type ILogQueryFilter,
+	type ISettingsStore,
 	type McpStdioClient,
 } from '@mcp-vertex/client';
 import type { IDashboardAllModels } from '@mcp-vertex/client';
@@ -10,8 +18,10 @@ import {
 	type IHostAdapter,
 	type IWebviewPanel,
 } from '@mcp-vertex/ui-extension/public';
+import { withCsp } from '@mcp-vertex/ui-extension/webview';
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from '../commands/open-proposal';
+import { OPEN_DASHBOARD_TAB_COMMAND } from '../commands/open-dashboard';
 import { OPEN_TOOL_DETAIL_COMMAND } from '../contracts/constants/open-tool-detail-command.constant';
 import { OPEN_KNOWLEDGE_COMMAND } from '../commands/open-knowledge';
 import { OPEN_SETTINGS_COMMAND } from '../commands/open-settings';
@@ -25,7 +35,9 @@ export interface IDashboardWebviewViewProviderDeps {
 	readonly client: McpStdioClient;
 	readonly globalState?: {
 		get<T>(key: string): T | undefined;
+		update?(key: string, value: unknown): Thenable<void> | Promise<void>;
 	};
+	readonly settingsStore?: ISettingsStore;
 	readonly getConfig: () => {
 		readonly extension?: { readonly docsUrl?: string };
 	};
@@ -106,6 +118,19 @@ const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 		},
 		tools: { rows: [], sortBy: 'calls', sortDir: 'desc' },
 		plugins: { rows: [] },
+		proposals: { total: 0, byStatus: {}, rows: [] },
+		kpis: {
+			totals: emptyTotals,
+			tokens: { used: 0, saved: 0, savingsPercent: 0 },
+			latency: { totalWallMs: 0, p50Ms: 0, p95Ms: 0 },
+			spend: null,
+		},
+		docs: {
+			pluginLoaded: false,
+			tools: [],
+			knowledge: [],
+			recommendedNextAction: `MCP server unavailable: ${message}`,
+		},
 		spend: null,
 		sessions: { total: 0, byStatus: {}, rows: [] },
 		times: {
@@ -127,6 +152,70 @@ const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 			agents: [],
 			fetchedAt: now,
 		},
+		workspace: {
+			overview: {
+				state: 'unavailable',
+				data: {
+					serverName: 'mcp-vertex',
+					serverVersion: 'unavailable',
+					namespacePrefix: 'mcp-vertex',
+					plugins: [],
+					tools: [],
+					knowledgeIds: [],
+					recommendedNextAction: `MCP server unavailable: ${message}`,
+					totals: emptyTotals,
+				},
+			},
+			tools: {
+				state: 'unavailable',
+				data: { rows: [], sortBy: 'calls', sortDir: 'desc' },
+			},
+			plugins: { state: 'unavailable', data: { rows: [] } },
+			memory: {
+				state: 'unavailable',
+				data: { state: 'unavailable', notes: [], total: 0, offset: 0 },
+			},
+			proposals: {
+				state: 'unavailable',
+				data: { total: 0, byStatus: {}, rows: [] },
+			},
+			agents: {
+				state: 'unavailable',
+				data: { agents: [], totalActive: 0 },
+			},
+			kpis: {
+				state: 'unavailable',
+				data: {
+					totals: emptyTotals,
+					tokens: { used: 0, saved: 0, savingsPercent: 0 },
+					latency: { totalWallMs: 0, p50Ms: 0, p95Ms: 0 },
+					spend: null,
+				},
+			},
+			health: {
+				state: 'unavailable',
+				data: {
+					healthy: false,
+					locksActive: 0,
+					queue: null,
+					orphans: 0,
+					orphansThreshold: 'unknown',
+					stale: [],
+					staleCount: 0,
+					agents: [],
+					fetchedAt: now,
+				},
+			},
+			docs: {
+				state: 'unavailable',
+				data: {
+					pluginLoaded: false,
+					tools: [],
+					knowledge: [],
+					recommendedNextAction: `MCP server unavailable: ${message}`,
+				},
+			},
+		},
 		server: {
 			name: 'mcp-vertex',
 			version: 'unavailable',
@@ -138,6 +227,13 @@ const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 export class DashboardWebviewViewProvider {
 	private view: IWebviewPanel | undefined;
 	private refreshToken = 0;
+	private logsAbort: AbortController | undefined;
+	private logsFilter: {
+		source?: string;
+		outcome?: ILogOutcome;
+		agent?: string;
+		taskId?: string;
+	} = {};
 	/**
 	 * `detailBroker` lets the `ICommandDeps.detailSink` push a payload
 	 * into the dashboard overlay instead of opening a standalone webview
@@ -217,13 +313,20 @@ export class DashboardWebviewViewProvider {
 		}
 		if (token !== this.refreshToken || this.view !== view) return;
 		const lang = resolveLang(this.deps);
+		const settings = this.deps.settingsStore
+			? await new SettingsService(this.deps.settingsStore).get()
+			: DEFAULT_EXTENSION_SETTINGS;
 		view.webview.setHtml(
-			renderDashboard(models, {
-				docsUrl: resolveDocsUrl(this.deps.getConfig),
-				refreshCommand: REFRESH_COMMAND,
-				openDocsCommand: OPEN_DOCS_COMMAND,
-				lang: dictsByLang[lang],
-			}),
+			withCsp(
+				'dashboard',
+				renderDashboard(models, {
+					docsUrl: resolveDocsUrl(this.deps.getConfig),
+					refreshCommand: REFRESH_COMMAND,
+					openDocsCommand: OPEN_DOCS_COMMAND,
+					lang: dictsByLang[lang],
+					settings,
+				}),
+			),
 		);
 	}
 
@@ -233,7 +336,7 @@ export class DashboardWebviewViewProvider {
 		if (parsed.data.command === 'action') {
 			await this.deps.host.executeCommand?.(
 				parsed.data.action === 'expand'
-					? 'mcp-vertex.openDashboard'
+					? OPEN_DASHBOARD_TAB_COMMAND
 					: REFRESH_COMMAND,
 			);
 			return;
@@ -257,9 +360,171 @@ export class DashboardWebviewViewProvider {
 			);
 			return;
 		}
+		if (parsed.data.command === 'settings') {
+			if (
+				this.deps.settingsStore === undefined ||
+				this.view === undefined
+			)
+				return;
+			try {
+				const service = new SettingsService(this.deps.settingsStore);
+				const settings =
+					parsed.data.action === 'reset'
+						? await service.set(DEFAULT_EXTENSION_SETTINGS)
+						: await service.set(parsed.data.settings ?? {});
+				await this.view.webview.postMessage?.({
+					command: 'settingsResult',
+					settings,
+				});
+			} catch (error) {
+				await this.view.webview.postMessage?.({
+					command: 'settingsResult',
+					error:
+						error instanceof Error ? error.message : String(error),
+				});
+			}
+			return;
+		}
+		if (parsed.data.command === 'logs') {
+			await this.handleLogsCommand(parsed.data);
+			return;
+		}
+		if (parsed.data.command !== 'openProposal') {
+			return;
+		}
 		await this.deps.host.executeCommand?.(
 			OPEN_PROPOSAL_COMMAND,
 			parsed.data.id,
 		);
+	}
+
+	private async handleLogsCommand(payload: {
+		action: string;
+		source?: string | undefined;
+		outcome?: ILogOutcome | undefined;
+		agent?: string | undefined;
+		taskId?: string | undefined;
+	}): Promise<void> {
+		if (payload.action === 'source' && payload.source !== undefined) {
+			this.logsFilter.source = payload.source;
+			return;
+		}
+		if (payload.action === 'filter') {
+			const next = { ...this.logsFilter };
+			if (payload.outcome !== undefined) next.outcome = payload.outcome;
+			else delete next.outcome;
+			if (payload.agent !== undefined) next.agent = payload.agent;
+			else delete next.agent;
+			if (payload.taskId !== undefined) next.taskId = payload.taskId;
+			else delete next.taskId;
+			this.logsFilter = next;
+			return;
+		}
+		if (payload.action === 'stop') {
+			this.logsAbort?.abort();
+			this.logsAbort = undefined;
+			return;
+		}
+		if (payload.action === 'start' || payload.action === 'refresh') {
+			await this.startLogStream();
+		}
+	}
+
+	private async startLogStream(): Promise<void> {
+		if (this.deps.client === undefined) return;
+		this.logsAbort?.abort();
+		const controller = new AbortController();
+		this.logsAbort = controller;
+		const service = new LogsService(this.deps.client);
+		// Seed with the most recent events so the user has context.
+		try {
+			const tailFilter = this.toFilter();
+			const seed = await service.tail(
+				50,
+				Object.keys(tailFilter).length === 0
+					? {}
+					: (tailFilter as Parameters<typeof service.tail>[1]),
+			);
+			for (const event of seed.events) {
+				await this.pushLogEvent(event, 'server');
+			}
+		} catch {
+			// MCP may not have the logs plugin loaded; fall back to
+			// NotificationsService host events only.
+		}
+		const notifications = new NotificationsService(this.deps.client);
+		notifications.addEventListener('lock-released', (event) => {
+			if (controller.signal.aborted) return;
+			const log: ILogEvent = {
+				ts: new Date().toISOString(),
+				kind: 'notification',
+				agent: event.agent || 'host',
+				taskId: event.taskId,
+				outcome: 'ok',
+				files: event.files ?? [],
+				summary: 'lock released',
+				meta: { source: 'notifications' },
+			};
+			void this.pushLogEvent(log, 'notifications');
+		});
+		try {
+			const filter = this.toFilter();
+			const subscribeOptions: {
+				signal: AbortSignal;
+				pollIntervalMs: number;
+				maxEvents: number;
+				filter?: Parameters<LogsService['subscribe']>[0] extends infer T
+					? T extends { filter?: infer F }
+						? F
+						: never
+					: never;
+			} = {
+				signal: controller.signal,
+				pollIntervalMs: 1500,
+				maxEvents: 200,
+			};
+			if (Object.keys(filter).length > 0) {
+				subscribeOptions.filter = filter as never;
+			}
+			for await (const event of service.subscribe(subscribeOptions)) {
+				if (controller.signal.aborted) return;
+				await this.pushLogEvent(event, 'server');
+			}
+		} catch {
+			// Subscribe errors are non-fatal; the user can retry.
+		}
+	}
+
+	private toFilter(): ILogQueryFilter {
+		return {
+			...(this.logsFilter.outcome !== undefined
+				? { outcome: this.logsFilter.outcome }
+				: {}),
+			...(this.logsFilter.agent !== undefined &&
+			this.logsFilter.agent !== ''
+				? { agent: this.logsFilter.agent }
+				: {}),
+			...(this.logsFilter.taskId !== undefined &&
+			this.logsFilter.taskId !== ''
+				? { taskId: this.logsFilter.taskId }
+				: {}),
+		};
+	}
+
+	private async pushLogEvent(
+		event: ILogEvent,
+		source: 'server' | 'notifications' | 'host' | 'mcp' | 'errors',
+	): Promise<void> {
+		const view = this.view;
+		if (view === undefined) return;
+		try {
+			await view.webview.postMessage?.({
+				command: 'hostLogEvent',
+				source,
+				event,
+			});
+		} catch {
+			// Best-effort: the panel may have been disposed mid-write.
+		}
 	}
 }

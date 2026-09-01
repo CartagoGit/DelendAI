@@ -69,6 +69,20 @@
 			"types": "./dist/remote-provider.d.ts",
 			"import": "./dist/remote-provider.js"
 		},
+		"./remote-mutations": {
+			"@mcp-vertex/source": {
+				"types": "./src/remote-mutations.ts"
+			},
+			"types": "./dist/remote-mutations.d.ts",
+			"import": "./dist/remote-mutations.js"
+		},
+		"./remote-diagnostics": {
+			"@mcp-vertex/source": {
+				"types": "./src/remote-diagnostics.ts"
+			},
+			"types": "./dist/remote-diagnostics.d.ts",
+			"import": "./dist/remote-diagnostics.js"
+		},
 		"./primitives": {
 			"@mcp-vertex/source": {
 				"types": "./src/primitives.ts"

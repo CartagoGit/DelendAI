@@ -190,6 +190,9 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'api' },
+			{ plugin: 'remote-provider-core' },
+			{ plugin: 'github' },
+			{ plugin: 'gitlab' },
 			{ plugin: 'prompt-eval' },
 			{ plugin: 'agent-orchestrator' },
 			// `changelog` removed — private, unpublished.

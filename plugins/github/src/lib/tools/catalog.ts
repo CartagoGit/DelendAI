@@ -24,6 +24,93 @@ export interface IGitHubToolOptions {
 }
 
 const providerSchema = z.literal('github');
+
+const redactToken = (value: string, token: string): string => {
+	if (token.length === 0 || value.length === 0) return value;
+	return value
+		.split(`Bearer ${token}`)
+		.join('Bearer [REDACTED]')
+		.split(token)
+		.join('[REDACTED]');
+};
+
+const sanitizeDetails = (
+	details:
+		| Readonly<Record<string, string | number | boolean | null>>
+		| undefined,
+	token: string,
+) => {
+	if (details === undefined) return undefined;
+	return Object.fromEntries(
+		Object.entries(details).map(([key, value]) => [
+			key,
+			typeof value === 'string' ? redactToken(value, token) : value,
+		]),
+	);
+};
+const paginationSchema = z
+	.object({
+		page: z.number().int().nullable(),
+		perPage: z.number().int().nullable(),
+		nextPage: z.string().nullable(),
+		previousPage: z.string().nullable(),
+		total: z.number().int().nullable(),
+		totalPages: z.number().int().nullable(),
+		hasMore: z.boolean(),
+	})
+	.nullable();
+const rateLimitSchema = z
+	.object({
+		limit: z.number().int().nullable(),
+		remaining: z.number().int().nullable(),
+		resetAt: z.string().nullable(),
+		retryAfterSeconds: z.number().nullable(),
+		scope: z.string(),
+		source: z.string(),
+	})
+	.nullable();
+const truncationSchema = z
+	.object({
+		truncated: z.boolean(),
+		reason: z.string().nullable(),
+		originalBytes: z.number().int().nullable(),
+		keptBytes: z.number().int().nullable(),
+		originalLines: z.number().int().nullable(),
+		keptLines: z.number().int().nullable(),
+	})
+	.nullable();
+const responseMetaSchema = z
+	.object({
+		status: z.number().int(),
+		requestId: z.string().nullable(),
+		durationMs: z.number().nonnegative(),
+		attempts: z.number().int().positive(),
+		pagination: paginationSchema,
+		rateLimit: rateLimitSchema,
+		truncated: truncationSchema,
+	})
+	.strict();
+const repositoryCoordinatesSchema = z
+	.object({
+		provider: providerSchema,
+		host: z.string(),
+		owner: z.string().optional(),
+		repository: z.string().optional(),
+		projectId: z.union([z.string(), z.number()]).optional(),
+		projectPath: z.string().optional(),
+		displayName: z.string().optional(),
+		webUrl: z.string().url().optional(),
+		apiUrl: z.string().url().optional(),
+	})
+	.strict();
+const contextSourcesSchema = z
+	.object({
+		token: z.string(),
+		apiBaseUrl: z.enum(['plugin', 'env', 'default']),
+		webBaseUrl: z.enum(['plugin', 'env', 'default']),
+		repository: z.array(z.enum(['plugin', 'env', 'default'])),
+	})
+	.strict();
 const errorSchema = z
 	.object({
 		code: z.enum([
@@ -59,7 +146,25 @@ const envelopeSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
 				ok: z.literal(true),
 				provider: providerSchema,
 				data: dataSchema,
-				meta: z.any(),
+				meta: responseMetaSchema,
+			})
+			.strict(),
+		z
+			.object({
+				ok: z.literal(false),
+				provider: providerSchema.optional(),
+				error: errorSchema,
+			})
+			.strict(),
+	]);
+
+const localEnvelopeSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
+	z.union([
+		z
+			.object({
+				ok: z.literal(true),
+				provider: providerSchema,
+				data: dataSchema,
 			})
 			.strict(),
 		z
@@ -289,6 +394,18 @@ const variableSchema = z
 		visibility: z.string().optional(),
 	})
 	.strict();
+const pagedCollectionSchema = <T extends z.ZodTypeAny>(
+	field: string,
+	item: T,
+) =>
+	z
+		.object({
+			[field]: z.array(item),
+			page: z.number().int(),
+			perPage: z.number().int(),
+			nextPage: z.string().nullable(),
+		})
+		.strict();
 
 const asRecord = (value: unknown): Record<string, any> =>
 	value && typeof value === 'object' ? (value as Record<string, any>) : {};
@@ -508,23 +625,65 @@ const resolveRepo = (
 		throw new Error('github tool requires owner and repository');
 	return { owner, repository };
 };
-const normalizeError = (error: unknown): IRemoteProviderError =>
-	error instanceof GitHubRequestError
-		? error.remoteError
-		: {
-				code: 'invalid-response',
-				provider: 'github',
-				message: error instanceof Error ? error.message : String(error),
-				status: null,
-				requestId: null,
-				retryAfterSeconds: null,
-				temporary: false,
-				retryable: false,
-			};
-const _failureEnvelope = (error: unknown) => ({
+const normalizeError = (
+	error: unknown,
+	token: string,
+): IRemoteProviderError => {
+	if (error instanceof GitHubRequestError) {
+		const remote = error.remoteError;
+		const base: IRemoteProviderError = {
+			code: remote.code,
+			provider: remote.provider,
+			status: remote.status,
+			requestId: remote.requestId,
+			retryAfterSeconds: remote.retryAfterSeconds,
+			temporary: remote.temporary,
+			retryable: remote.retryable,
+			message: redactToken(remote.message, token),
+		};
+		return remote.details === undefined
+			? base
+			: {
+					...base,
+					details: sanitizeDetails(remote.details, token) as Readonly<
+						Record<string, string | number | boolean | null>
+					>,
+				};
+	}
+	if (
+		error instanceof Error &&
+		(error.message.includes('requires owner and repository') ||
+			error.message.includes('must stay inside the plugin cache dir'))
+	) {
+		return {
+			code: 'invalid-config',
+			provider: 'github',
+			message: redactToken(error.message, token),
+			status: null,
+			requestId: null,
+			retryAfterSeconds: null,
+			temporary: false,
+			retryable: false,
+		};
+	}
+	return {
+		code: 'invalid-response',
+		provider: 'github',
+		message: redactToken(
+			error instanceof Error ? error.message : String(error),
+			token,
+		),
+		status: null,
+		requestId: null,
+		retryAfterSeconds: null,
+		temporary: false,
+		retryable: false,
+	};
+};
+const _failureEnvelope = (error: unknown, token: string) => ({
 	ok: false as const,
 	provider: 'github' as const,
-	error: normalizeError(error),
+	error: normalizeError(error, token),
 });
 const cacheRoot = (options: IGitHubToolOptions): string =>
 	options.pluginCacheDir === undefined
@@ -572,7 +731,15 @@ const registerRemoteTool = (
 		server.registerTool(
 			`${options.namespacePrefix}_${id}`,
 			{ description, inputSchema, outputSchema },
-			async (args: unknown) => toolJsonBounded(await handler(args)),
+			async (args: unknown) => {
+				try {
+					return toolJsonBounded(await handler(args));
+				} catch (error) {
+					return toolJsonBounded(
+						_failureEnvelope(error, options.context.token),
+					);
+				}
+			},
 		);
 	},
 });
@@ -592,7 +759,15 @@ const registerLocalTool = (
 		server.registerTool(
 			`${options.namespacePrefix}_${id}`,
 			{ description, inputSchema, outputSchema },
-			async (args: unknown) => toolJsonBounded(await handler(args)),
+			async (args: unknown) => {
+				try {
+					return toolJsonBounded(await handler(args));
+				} catch (error) {
+					return toolJsonBounded(
+						_failureEnvelope(error, options.context.token),
+					);
+				}
+			},
 		);
 	},
 });
@@ -609,15 +784,15 @@ export const buildGitHubContextToolRegistrations = (
 				detail: z.enum(['compact', 'normal', 'full']).optional(),
 			})
 			.strict(),
-		envelopeSchema(
+		localEnvelopeSchema(
 			z
 				.object({
 					provider: providerSchema,
 					host: z.string(),
-					apiBaseUrl: z.string(),
-					webBaseUrl: z.string(),
-					repository: z.any().nullable(),
-					sources: z.any(),
+					apiBaseUrl: z.string().url(),
+					webBaseUrl: z.string().url(),
+					repository: repositoryCoordinatesSchema.nullable(),
+					sources: contextSourcesSchema,
 					readOnly: z.boolean(),
 					capabilities: z.array(z.string()),
 				})
@@ -693,15 +868,9 @@ export const buildGitHubRepositoriesToolRegistrations = (
 			})
 			.strict(),
 		envelopeSchema(
-			z
-				.object({
-					repositories: z.array(repositorySchema),
-					page: z.number().int(),
-					perPage: z.number().int(),
-					nextPage: z.string().nullable(),
-					totalCount: z.number().int().nullable(),
-				})
-				.strict(),
+			pagedCollectionSchema('repositories', repositorySchema).extend({
+				totalCount: z.number().int().nullable(),
+			}),
 		),
 		async (args) => {
 			const perPage = args.perPage ?? args.limit ?? 20;
@@ -735,16 +904,7 @@ export const buildGitHubRepositoriesToolRegistrations = (
 		'repositories_variables',
 		'List repository variable metadata without values.',
 		repoSelectorSchema.extend(pagingSchema.shape).strict(),
-		envelopeSchema(
-			z
-				.object({
-					variables: z.array(variableSchema),
-					page: z.number().int(),
-					perPage: z.number().int(),
-					nextPage: z.string().nullable(),
-				})
-				.strict(),
-		),
+		envelopeSchema(pagedCollectionSchema('variables', variableSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
 			const perPage = args.perPage ?? args.limit ?? 20;
@@ -785,16 +945,7 @@ export const buildGitHubIssuesToolRegistrations = (
 				...pagingSchema.shape,
 			})
 			.strict(),
-		envelopeSchema(
-			z
-				.object({
-					issues: z.array(issueSchema),
-					page: z.number().int(),
-					perPage: z.number().int(),
-					nextPage: z.string().nullable(),
-				})
-				.strict(),
-		),
+		envelopeSchema(pagedCollectionSchema('issues', issueSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
 			const perPage = args.perPage ?? args.limit ?? 20;
@@ -902,14 +1053,7 @@ export const buildGitHubPullRequestsToolRegistrations = (
 			})
 			.strict(),
 		envelopeSchema(
-			z
-				.object({
-					pullRequests: z.array(pullRequestSchema),
-					page: z.number().int(),
-					perPage: z.number().int(),
-					nextPage: z.string().nullable(),
-				})
-				.strict(),
+			pagedCollectionSchema('pullRequests', pullRequestSchema),
 		),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
@@ -1021,16 +1165,7 @@ export const buildGitHubCommitsToolRegistrations = (
 				...pagingSchema.shape,
 			})
 			.strict(),
-		envelopeSchema(
-			z
-				.object({
-					commits: z.array(commitSchema),
-					page: z.number().int(),
-					perPage: z.number().int(),
-					nextPage: z.string().nullable(),
-				})
-				.strict(),
-		),
+		envelopeSchema(pagedCollectionSchema('commits', commitSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
 			const perPage = args.perPage ?? args.limit ?? 20;
@@ -1177,16 +1312,15 @@ export const buildGitHubChecksToolRegistrations = (
 		repoSelectorSchema
 			.extend({ ref: z.string().min(1), ...pagingSchema.shape })
 			.strict(),
-		envelopeSchema(
-			z.object({ checkRuns: z.array(checkRunSchema) }).strict(),
-		),
+		envelopeSchema(pagedCollectionSchema('checkRuns', checkRunSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
+			const perPage = args.perPage ?? args.limit ?? 20;
 			const result = await options.client.request({
 				path: `/repos/${repo.owner}/${repo.repository}/commits/${args.ref}/check-runs`,
 				query: queryFrom({
 					page: args.page,
-					perPage: args.perPage ?? args.limit ?? 20,
+					perPage,
 				}),
 				responseSchema: z.record(z.string(), z.unknown()),
 			});
@@ -1211,6 +1345,9 @@ export const buildGitHubChecksToolRegistrations = (
 							),
 						}),
 					),
+					page: result.meta.pagination?.page ?? args.page ?? 1,
+					perPage: result.meta.pagination?.perPage ?? perPage,
+					nextPage: result.meta.pagination?.nextPage ?? null,
 				},
 				meta: result.meta,
 			};
@@ -1227,14 +1364,14 @@ export const buildGitHubWorkflowsToolRegistrations = (
 		options,
 		'workflows_list',
 		'List workflow definitions.',
-		repoSelectorSchema.strict(),
-		envelopeSchema(
-			z.object({ workflows: z.array(workflowSchema) }).strict(),
-		),
+		repoSelectorSchema.extend(pagingSchema.shape).strict(),
+		envelopeSchema(pagedCollectionSchema('workflows', workflowSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
+			const perPage = args.perPage ?? args.limit ?? 20;
 			const result = await options.client.request({
 				path: `/repos/${repo.owner}/${repo.repository}/actions/workflows`,
+				query: queryFrom({ page: args.page, perPage }),
 				responseSchema: z.record(z.string(), z.unknown()),
 			});
 			return {
@@ -1244,6 +1381,9 @@ export const buildGitHubWorkflowsToolRegistrations = (
 					workflows: asArray(asRecord(result.data).workflows).map(
 						mapWorkflow,
 					),
+					page: result.meta.pagination?.page ?? args.page ?? 1,
+					perPage: result.meta.pagination?.perPage ?? perPage,
+					nextPage: result.meta.pagination?.nextPage ?? null,
 				},
 				meta: result.meta,
 			};
@@ -1265,9 +1405,10 @@ export const buildGitHubWorkflowsToolRegistrations = (
 				...pagingSchema.shape,
 			})
 			.strict(),
-		envelopeSchema(z.object({ runs: z.array(workflowRunSchema) }).strict()),
+		envelopeSchema(pagedCollectionSchema('runs', workflowRunSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
+			const perPage = args.perPage ?? args.limit ?? 20;
 			const path =
 				args.workflowId !== undefined
 					? `/repos/${repo.owner}/${repo.repository}/actions/workflows/${args.workflowId}/runs`
@@ -1279,7 +1420,7 @@ export const buildGitHubWorkflowsToolRegistrations = (
 					status: args.status,
 					...queryFrom({
 						page: args.page,
-						perPage: args.perPage ?? args.limit ?? 20,
+						perPage,
 					}),
 				},
 				responseSchema: z.record(z.string(), z.unknown()),
@@ -1291,6 +1432,9 @@ export const buildGitHubWorkflowsToolRegistrations = (
 					runs: asArray(asRecord(result.data).workflow_runs).map(
 						mapWorkflowRun,
 					),
+					page: result.meta.pagination?.page ?? args.page ?? 1,
+					perPage: result.meta.pagination?.perPage ?? perPage,
+					nextPage: result.meta.pagination?.nextPage ?? null,
 				},
 				meta: result.meta,
 			};
@@ -1355,19 +1499,27 @@ export const buildGitHubJobsToolRegistrations = (
 					z.string().min(1),
 					z.number().int().positive(),
 				]),
+				...pagingSchema.shape,
 			})
 			.strict(),
-		envelopeSchema(z.object({ jobs: z.array(jobSchema) }).strict()),
+		envelopeSchema(pagedCollectionSchema('jobs', jobSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
+			const perPage = args.perPage ?? args.limit ?? 20;
 			const result = await options.client.request({
 				path: `/repos/${repo.owner}/${repo.repository}/actions/runs/${args.runId}/jobs`,
+				query: queryFrom({ page: args.page, perPage }),
 				responseSchema: z.record(z.string(), z.unknown()),
 			});
 			return {
 				ok: true as const,
 				provider: 'github' as const,
-				data: { jobs: asArray(asRecord(result.data).jobs).map(mapJob) },
+				data: {
+					jobs: asArray(asRecord(result.data).jobs).map(mapJob),
+					page: result.meta.pagination?.page ?? args.page ?? 1,
+					perPage: result.meta.pagination?.perPage ?? perPage,
+					nextPage: result.meta.pagination?.nextPage ?? null,
+				},
 				meta: result.meta,
 			};
 		},
@@ -1487,15 +1639,9 @@ export const buildGitHubArtifactsToolRegistrations = (
 			})
 			.strict(),
 		envelopeSchema(
-			z
-				.object({
-					artifacts: z.array(artifactSchema),
-					page: z.number().int(),
-					perPage: z.number().int(),
-					nextPage: z.string().nullable(),
-					snapshotPath: z.string().optional(),
-				})
-				.strict(),
+			pagedCollectionSchema('artifacts', artifactSchema).extend({
+				snapshotPath: z.string().optional(),
+			}),
 		),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
@@ -1549,16 +1695,7 @@ export const buildGitHubReleasesToolRegistrations = (
 		'releases_list',
 		'List releases with explicit paging.',
 		repoSelectorSchema.extend(pagingSchema.shape).strict(),
-		envelopeSchema(
-			z
-				.object({
-					releases: z.array(releaseSchema),
-					page: z.number().int(),
-					perPage: z.number().int(),
-					nextPage: z.string().nullable(),
-				})
-				.strict(),
-		),
+		envelopeSchema(pagedCollectionSchema('releases', releaseSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
 			const perPage = args.perPage ?? args.limit ?? 20;
@@ -1616,16 +1753,7 @@ export const buildGitHubReleasesToolRegistrations = (
 		'tags_list',
 		'List tags.',
 		repoSelectorSchema.extend(pagingSchema.shape).strict(),
-		envelopeSchema(
-			z
-				.object({
-					tags: z.array(tagSchema),
-					page: z.number().int(),
-					perPage: z.number().int(),
-					nextPage: z.string().nullable(),
-				})
-				.strict(),
-		),
+		envelopeSchema(pagedCollectionSchema('tags', tagSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
 			const perPage = args.perPage ?? args.limit ?? 20;
@@ -1659,16 +1787,7 @@ export const buildGitHubDeploymentsToolRegistrations = (
 		'deployments_list',
 		'List deployments.',
 		repoSelectorSchema.extend(pagingSchema.shape).strict(),
-		envelopeSchema(
-			z
-				.object({
-					deployments: z.array(deploymentSchema),
-					page: z.number().int(),
-					perPage: z.number().int(),
-					nextPage: z.string().nullable(),
-				})
-				.strict(),
-		),
+		envelopeSchema(pagedCollectionSchema('deployments', deploymentSchema)),
 		async (args) => {
 			const repo = resolveRepo(options.context, args);
 			const perPage = args.perPage ?? args.limit ?? 20;

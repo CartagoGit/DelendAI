@@ -252,6 +252,31 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		expect(record.agent).toBe('copilot-minimax-m3');
 	});
 
+	it('reports that status does not release the delegated assignment', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00093',
+			title: 'Review status contract',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const result = parse(
+			await review({
+				proposalId: 'f00093',
+				sliceId: 's1',
+				action: 'status',
+				agent: 'delivery_verifier',
+			}),
+		);
+
+		expect(result).toMatchObject({
+			ok: true,
+			lockReleased: false,
+			assignmentReleased: false,
+		});
+	});
+
 	it('gives a recovery path when the requested slice is not declared', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await capture(buildCreateProposalRegistration(opts));

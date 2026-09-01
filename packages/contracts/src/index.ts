@@ -19,3 +19,5 @@ export * from './safety';
 export * from './plugin';
 export * from './routes';
 export * from './remote-provider';
+export * from './remote-mutations';
+export * from './remote-diagnostics';

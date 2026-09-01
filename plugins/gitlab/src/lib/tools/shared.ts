@@ -282,6 +282,26 @@ const truncateText = (value: unknown, maxChars: number): string | null => {
 	return text.length <= maxChars ? text : `${text.slice(0, maxChars)}...`;
 };
 
+const truncateUtf8Bytes = (value: string, maxBytes: number): string => {
+	let kept = '';
+	let usedBytes = 0;
+	for (const symbol of value) {
+		const symbolBytes = Buffer.byteLength(symbol, 'utf8');
+		if (usedBytes + symbolBytes > maxBytes) break;
+		kept += symbol;
+		usedBytes += symbolBytes;
+	}
+	return kept;
+};
+
+const sanitizeArtifactFileName = (value: string): string => {
+	const sanitized = value
+		.replace(/[^a-zA-Z0-9._-]+/g, '_')
+		.replace(/\.{2,}/g, '_')
+		.replace(/^\.+/, '');
+	return sanitized.length > 0 ? sanitized : 'artifact.zip';
+};
+
 const normalizeUser = (value: unknown): z.infer<typeof userSchema> | null => {
 	const raw = value as Record<string, unknown> | null;
 	if (raw === null || typeof raw !== 'object') return null;
@@ -363,7 +383,7 @@ const normalizeVariable = (value: unknown): z.infer<typeof variableSchema> => {
 	};
 };
 
-const normalizeNote = (value: unknown): z.infer<typeof noteSchema> => {
+export const normalizeNote = (value: unknown): z.infer<typeof noteSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		id: raw.id as number | string,
@@ -377,7 +397,7 @@ const normalizeNote = (value: unknown): z.infer<typeof noteSchema> => {
 	};
 };
 
-const normalizeDiscussion = (
+export const normalizeDiscussion = (
 	value: unknown,
 ): z.infer<typeof discussionSchema> => {
 	const raw = value as Record<string, unknown>;
@@ -389,7 +409,7 @@ const normalizeDiscussion = (
 	};
 };
 
-const normalizeIssue = (value: unknown): z.infer<typeof issueSchema> => {
+export const normalizeIssue = (value: unknown): z.infer<typeof issueSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		id: raw.id as number | string,
@@ -501,7 +521,9 @@ const normalizeCommit = (value: unknown): z.infer<typeof commitSchema> => {
 	};
 };
 
-const normalizePipeline = (value: unknown): z.infer<typeof pipelineSchema> => {
+export const normalizePipeline = (
+	value: unknown,
+): z.infer<typeof pipelineSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		id: raw.id as number | string,
@@ -519,7 +541,7 @@ const normalizePipeline = (value: unknown): z.infer<typeof pipelineSchema> => {
 	};
 };
 
-const normalizeJob = (value: unknown): z.infer<typeof jobSchema> => {
+export const normalizeJob = (value: unknown): z.infer<typeof jobSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		id: raw.id as number | string,
@@ -550,7 +572,9 @@ const normalizeJob = (value: unknown): z.infer<typeof jobSchema> => {
 	};
 };
 
-const normalizeRelease = (value: unknown): z.infer<typeof releaseSchema> => {
+export const normalizeRelease = (
+	value: unknown,
+): z.infer<typeof releaseSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		tagName: toNonEmpty(raw.tag_name) ?? toNonEmpty(raw.tagName) ?? '',
@@ -570,7 +594,7 @@ const normalizeRelease = (value: unknown): z.infer<typeof releaseSchema> => {
 	};
 };
 
-const normalizeTag = (value: unknown): z.infer<typeof tagSchema> => {
+export const normalizeTag = (value: unknown): z.infer<typeof tagSchema> => {
 	const raw = value as Record<string, unknown>;
 	return {
 		name: toNonEmpty(raw.name) ?? '',
@@ -672,7 +696,7 @@ const normalizeArtifact = (value: unknown): z.infer<typeof artifactSchema> => {
 	};
 };
 
-const resolveProjectRef = (
+export const resolveProjectRef = (
 	context: IGitLabProviderContext,
 	projectId?: string | number,
 	projectPath?: string,
@@ -832,7 +856,7 @@ const buildPaginationOutput = (meta: unknown) => {
 			};
 };
 
-const buildMetaOutput = (meta: unknown) => {
+export const buildMetaOutput = (meta: unknown) => {
 	const raw = meta as {
 		status: number;
 		requestId: string | null;
@@ -1174,6 +1198,7 @@ const buildIssueLikeRegistration = (
 						const { data, meta } = await requestArray(
 							options,
 							`/projects/${project}/${collection}/${item}/${suffix}`,
+							pageQuery(args.page, args.perPage),
 						);
 						return toolResponse({
 							action: args.action,
@@ -1189,6 +1214,14 @@ const buildIssueLikeRegistration = (
 										),
 									}),
 							meta: buildMetaOutput(meta),
+							nextPage:
+								(
+									meta as {
+										pagination: {
+											nextPage: string | null;
+										} | null;
+									}
+								).pagination?.nextPage ?? null,
 						});
 					}
 					if (args.iid === undefined) {
@@ -1648,9 +1681,7 @@ export const buildGitLabJobsToolRegistrations = (
 							const truncatedByBytes = bytes > maxBytes;
 							const truncatedByLines = lines.length > maxLines;
 							const keep = lines.slice(0, maxLines).join('\n');
-							const text = truncatedByBytes
-								? keep.slice(0, maxBytes)
-								: keep;
+							const text = truncateUtf8Bytes(keep, maxBytes);
 							return toolResponse({
 								action: args.action,
 								log: {
@@ -1672,16 +1703,14 @@ export const buildGitLabJobsToolRegistrations = (
 								meta: buildMetaOutput(result.meta),
 							});
 						}
+						const jobsPath =
+							args.pipelineId !== undefined
+								? `/projects/${project}/pipelines/${String(args.pipelineId)}/jobs`
+								: `/projects/${project}/jobs`;
 						const { data, meta } = await requestArray(
 							options,
-							`/projects/${project}/jobs`,
+							jobsPath,
 							{
-								...(args.pipelineId !== undefined
-									? {
-											scope: 'pipeline',
-											pipeline_id: args.pipelineId,
-										}
-									: {}),
 								...(args.status !== undefined
 									? { status: args.status }
 									: {}),
@@ -1795,9 +1824,9 @@ export const buildGitLabArtifactsToolRegistrations = (
 						const tempDir = await ensureTempDir(
 							join(options.pluginTempDir, 'artifacts'),
 						);
-						const fileName = (
-							args.filename ?? `job-${String(args.jobId)}.zip`
-						).replace(/[^a-zA-Z0-9._-]+/g, '_');
+						const fileName = sanitizeArtifactFileName(
+							args.filename ?? `job-${String(args.jobId)}.zip`,
+						);
 						const target = safeJoin(
 							tempDir,
 							String(project),

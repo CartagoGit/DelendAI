@@ -40,27 +40,18 @@
 				{
 					"id": "mcp-vertex.dashboard",
 					"name": "Dashboard",
-					"icon": "media/logo.svg"
-				},
-				{
-					"id": "mcp-vertex.tools",
-					"name": "Tools",
+					"type": "webview",
 					"icon": "media/logo.svg"
 				},
 				{
 					"id": "mcp-vertex.proposals",
 					"name": "Proposals",
-					"icon": "media/logo.svg"
+					"type": "tree"
 				},
 				{
 					"id": "mcp-vertex.memory",
 					"name": "Memory",
-					"icon": "media/logo.svg"
-				},
-				{
-					"id": "mcp-vertex.kpis",
-					"name": "Project KPIs",
-					"icon": "media/logo.svg"
+					"type": "tree"
 				}
 			]
 		},
@@ -86,6 +77,12 @@
 			{
 				"command": "mcp-vertex.openDashboard",
 				"title": "Open Dashboard",
+				"category": "MCP Vertex",
+				"icon": "$(dashboard)"
+			},
+			{
+				"command": "mcp-vertex.openDashboardTab",
+				"title": "Open Dashboard in Editor Tab",
 				"category": "MCP Vertex",
 				"icon": "$(dashboard)"
 			},

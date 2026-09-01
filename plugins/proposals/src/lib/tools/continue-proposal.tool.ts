@@ -23,6 +23,10 @@ import {
 import { buildCascadeSummary } from '../cascade/cascade-summary';
 import { buildDefaultCascadeChain } from '../cascade/cascade-chain';
 import { blockedByFor } from '../proposals/blocked-by';
+import {
+	extractYamlBlock,
+	parseFrontmatterBlock,
+} from '../proposals/frontmatter-parser';
 import { DEFAULT_STALE_AFTER_MINUTES } from '../shared/branch-tool-helpers';
 import type { IProposalIndexEntry } from '../proposals/index-reader';
 import {
@@ -108,6 +112,7 @@ const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	plan: z.unknown().optional(),
 	disjointnessIssues: z.unknown().optional(),
 	claimableSliceIds: z.array(z.string()).optional(),
+	action: z.enum(['close']).optional(),
 	sliceId: z.string().optional(),
 	validation: z.unknown().optional(),
 	slice: z.unknown().nullable().optional(),
@@ -459,7 +464,7 @@ export const runContinueProposal = async (
 		const lockResult = await runAgentLockEngine(
 			{
 				action: 'claim',
-				task_id: args.sliceId,
+				task_id: `${doc.id}-${args.sliceId}`,
 				agent,
 				files: [...slice.files],
 			},
@@ -564,6 +569,7 @@ export const runContinueProposal = async (
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
 	const activeLocks = await readActiveLocks(options.lockPathAbs);
 	const claimableById = new Map<string, number>();
+	const closureReadyById = new Set<string>();
 	for (const entry of selectableFree) {
 		const docPath = join(
 			options.proposalsDirAbs ?? dirname(options.indexPathAbs),
@@ -583,14 +589,81 @@ export const runContinueProposal = async (
 			continue;
 		}
 		const parsedPlan = parseProposalSlicePlan(entry.id, markdown);
-		if (parsedPlan === null) continue;
-		const derivedPlan = deriveSliceStatuses(parsedPlan, activeLocks);
+		const yamlBlock = extractYamlBlock(markdown);
+		const frontmatter =
+			yamlBlock === null ? null : parseFrontmatterBlock(yamlBlock);
+		const isPlan = frontmatter?.type === 'plan';
+		const derivedPlan =
+			parsedPlan === null
+				? null
+				: deriveSliceStatuses(parsedPlan, activeLocks);
+		const allOwnSlicesDone =
+			derivedPlan === null ||
+			derivedPlan.slices.length === 0 ||
+			derivedPlan.slices.every((slice) => slice.status === 'done');
+		if (
+			isPlan &&
+			allOwnSlicesDone &&
+			(await blockedByFor(entry, options.indexPathAbs)).length === 0
+		) {
+			closureReadyById.add(entry.id);
+		}
+		if (derivedPlan === null) continue;
+		if (
+			derivedPlan.slices.length > 0 &&
+			derivedPlan.slices.every((slice) => slice.status === 'done') &&
+			entry.status !== 'done' &&
+			!isPlan
+		) {
+			closureReadyById.add(entry.id);
+		}
 		claimableById.set(
 			entry.id,
 			derivedPlan.slices.filter(
 				(slice) => validateClaim(derivedPlan, slice.sliceId).ok,
 			).length,
 		);
+	}
+	const closureReady = selectableFree.filter((entry) =>
+		closureReadyById.has(entry.id),
+	);
+	if (closureReady.length > 0) {
+		const next = [...closureReady].sort((a, b) =>
+			a.id.localeCompare(b.id),
+		)[0]!;
+		const isReview =
+			folderStateOf(next.file, options.proposalsDirAbs) === 'review';
+		const markdown = await readTextOrNull(
+			join(
+				options.proposalsDirAbs ?? dirname(options.indexPathAbs),
+				next.file,
+			),
+		);
+		const yamlBlock = markdown === null ? null : extractYamlBlock(markdown);
+		const frontmatter =
+			yamlBlock === null ? null : parseFrontmatterBlock(yamlBlock);
+		const isPlan = frontmatter?.type === 'plan';
+		return json({
+			kind: 'next-proposal',
+			proposalId: next.id,
+			file: next.file,
+			status: next.status,
+			action: 'close',
+			nextAction: isPlan
+				? `${options.namespacePrefix}_proposals_close_plan { planId: "${next.id}", reason }`
+				: isReview
+					? `${options.namespacePrefix}_proposal_transition { id: "${next.id}", to: "done", reason }`
+					: `${options.namespacePrefix}_proposal_transition { id: "${next.id}", to: "review", reason, validateEvidence }`,
+			relaunchCommand: `${options.namespacePrefix}_continue_proposal { proposalId: "${next.id}", mode: "plan" }`,
+			guide: [
+				'All declared slices are done; do not claim another slice.',
+				isPlan
+					? 'Run the plan closure preflight; it will close the plan only when every required child, sub-plan, own slice, and review gate is satisfied.'
+					: isReview
+						? 'Complete the final proposal transition to done after the peer-review and evidence gates pass.'
+						: 'Move the proposal to review with validation evidence, then complete peer review and transition it to done.',
+			],
+		});
 	}
 	// Unset entries keep the serial-work default of 1 (legacy docs
 	// without a `## Slices` section). Missing documents are explicitly 0.

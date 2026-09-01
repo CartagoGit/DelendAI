@@ -394,6 +394,36 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			},
 		),
 		tools(
+			'github',
+			'@mcp-vertex/github',
+			[],
+			[],
+			[],
+			['github-provider-context'],
+			[],
+			[],
+			{
+				summary:
+					'GitHub read-only provider context, HTTP client and remote resource tools.',
+				tags: ['github', 'provider'],
+			},
+		),
+		tools(
+			'gitlab',
+			'@mcp-vertex/gitlab',
+			[],
+			[],
+			[],
+			['gitlab-provider-context'],
+			[],
+			[],
+			{
+				summary:
+					'GitLab read-only provider context, HTTP client and resource tools.',
+				tags: ['gitlab', 'provider'],
+			},
+		),
+		tools(
 			'i18n',
 			'@mcp-vertex/i18n',
 			['i18n_check', 'i18n_validate'],
@@ -723,6 +753,21 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Refactor primitives (symbols, definition, references, rename, codemod).',
 				tags: ['refactor'],
+			},
+		),
+		tools(
+			'remote-provider-core',
+			'@mcp-vertex/remote-provider-core',
+			[],
+			[],
+			[],
+			['remote-provider-core-overview'],
+			[],
+			[],
+			{
+				summary:
+					'Shared remote-provider foundation: validated config, injectable HTTP, normalized errors.',
+				tags: ['remote', 'provider', 'github', 'gitlab'],
 			},
 		),
 		tools(

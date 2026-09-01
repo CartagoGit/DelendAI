@@ -235,6 +235,54 @@ export const mockDashboardModel: IDashboardAllModels = {
 			},
 		],
 	},
+	proposals: {
+		total: 2,
+		byStatus: { in_progress: 2, ready: 4, done: 17 },
+		rows: [
+			{
+				id: 'p111',
+				title: 'Memory store concurrency spec',
+				status: 'in_progress',
+				track: 'memory',
+				agent: 'claude-code',
+				slice: 's4',
+			},
+			{
+				id: 'p112',
+				title: 'Local aliases web/web consolidation',
+				status: 'in_progress',
+				track: 'web',
+				agent: 'copilot',
+				slice: 's2',
+			},
+		],
+	},
+	kpis: {
+		totals: {
+			tools: 47,
+			plugins: 9,
+			proposals: 23,
+			calls: 1284,
+			errors: 4,
+			totalMs: 38_211,
+			tokens: 1_842_331,
+			tokensSaved: 412_900,
+			savingsPercent: 22,
+			agents: 3,
+		},
+		tokens: { used: 1_842_331, saved: 412_900, savingsPercent: 22 },
+		latency: { totalWallMs: 38_211, p50Ms: 22, p95Ms: 230 },
+		spend: null,
+	},
+	docs: {
+		pluginLoaded: true,
+		tools: ['mcp-vertex_docs_search', 'mcp-vertex_docs_open'],
+		knowledge: [
+			{ id: 'p001-overview', title: 'Overview' },
+			{ id: 'p002-arch', title: 'Architecture' },
+		],
+		recommendedNextAction: 'Open the documentation panel.',
+	},
 	// f00118 S1/S2: real spend telemetry, populated when usage-tracking is
 	// loaded (null otherwise). The dev preview exercises the populated case
 	// so the Spend panel always has something to render.
@@ -324,6 +372,111 @@ export const mockDashboardModel: IDashboardAllModels = {
 		staleCount: 0,
 		agents: ['claude-code', 'copilot', 'gemini'],
 		fetchedAt: '2026-06-21T11:30:00Z',
+	},
+	workspace: {
+		overview: {
+			state: 'ready',
+			data: {
+				serverName: 'mcp-vertex',
+				serverVersion: '0.42.0',
+				namespacePrefix: 'mcp-vertex',
+				plugins: [
+					{ name: 'core', version: '0.42.0' },
+					{ name: 'memory', version: '0.9.1' },
+					{ name: 'proposals', version: '1.2.0' },
+				],
+				tools: [
+					{ name: 'mcp-vertex_overview', plugin: 'core' },
+					{ name: 'mcp-vertex_search', plugin: 'search' },
+					{ name: 'mcp-vertex_proposals_board', plugin: 'proposals' },
+					{ name: 'mcp-vertex_memory_recall', plugin: 'memory' },
+				],
+				knowledgeIds: ['p001-overview', 'p002-arch', 'p003-styleguide'],
+				recommendedNextAction: 'Pick a slice from the Proposals tab.',
+				totals: {
+					tools: 47,
+					plugins: 9,
+					proposals: 23,
+					calls: 1284,
+					errors: 4,
+					totalMs: 38_211,
+					tokens: 1_842_331,
+					tokensSaved: 412_900,
+					savingsPercent: 22,
+					agents: 3,
+				},
+			},
+		},
+		tools: {
+			state: 'ready',
+			data: { rows: [], sortBy: 'calls', sortDir: 'desc' },
+		},
+		plugins: { state: 'ready', data: { rows: [] } },
+		memory: {
+			state: 'unavailable',
+			data: { state: 'unavailable', notes: [], total: 0, offset: 0 },
+		},
+		proposals: {
+			state: 'ready',
+			data: {
+				total: 2,
+				byStatus: { in_progress: 2, ready: 4, done: 17 },
+				rows: [],
+			},
+		},
+		agents: { state: 'ready', data: { agents: [], totalActive: 0 } },
+		kpis: {
+			state: 'ready',
+			data: {
+				totals: {
+					tools: 47,
+					plugins: 9,
+					proposals: 23,
+					calls: 1284,
+					errors: 4,
+					totalMs: 38_211,
+					tokens: 1_842_331,
+					tokensSaved: 412_900,
+					savingsPercent: 22,
+					agents: 3,
+				},
+				tokens: { used: 1_842_331, saved: 412_900, savingsPercent: 22 },
+				latency: { totalWallMs: 38_211, p50Ms: 22, p95Ms: 230 },
+				spend: null,
+			},
+		},
+		health: {
+			state: 'ready',
+			data: {
+				healthy: true,
+				locksActive: 1,
+				queue: {
+					length: 0,
+					queued: 0,
+					orphans: 0,
+					oldestAgeMinutes: 0,
+					threshold: '30m',
+				},
+				orphans: 0,
+				orphansThreshold: '30m',
+				stale: [],
+				staleCount: 0,
+				agents: ['claude-code', 'copilot', 'gemini'],
+				fetchedAt: '2026-06-21T11:30:00Z',
+			},
+		},
+		docs: {
+			state: 'ready',
+			data: {
+				pluginLoaded: true,
+				tools: ['mcp-vertex_docs_search', 'mcp-vertex_docs_open'],
+				knowledge: [
+					{ id: 'p001-overview', title: 'Overview' },
+					{ id: 'p002-arch', title: 'Architecture' },
+				],
+				recommendedNextAction: 'Open the documentation panel.',
+			},
+		},
 	},
 	server: {
 		name: 'mcp-vertex',

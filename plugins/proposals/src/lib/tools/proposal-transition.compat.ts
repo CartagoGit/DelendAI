@@ -63,6 +63,30 @@ export type ProposalTransitionCompatResult =
 	  };
 
 /**
+ * Strip fields that MUST never reach `runProposalTransition` from a
+ * public MCP caller. Today the only such field is
+ * `skipDfaForPlanClosure` — the wrapper-only flag that lets a verified
+ * plan land on `done` without first passing through `review/`.
+ *
+ * `runProposalTransitionCompat` is the public boundary for
+ * `<prefix>_proposal_transition`; everything inside this file is the
+ * wire surface. Public callers MUST NOT be able to bypass the DFA,
+ * so we strip before the compat parse. Internal callers
+ * (`proposals_close_plan`) call `runProposalTransition` directly and
+ * keep the field intact — see the wrapper's
+ * `skipDfaForPlanClosure: true` forwarding.
+ */
+const stripPublicOnlyFields = (input: unknown): unknown => {
+	if (input === null || typeof input !== 'object') return input;
+	const out: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(input)) {
+		if (key === 'skipDfaForPlanClosure') continue;
+		out[key] = value;
+	}
+	return out;
+};
+
+/**
  * Run proposal_transition through the compat window. The handler
  * always sees the v2 shape (translated if necessary).
  */
@@ -70,7 +94,8 @@ export const runProposalTransitionCompat = async (
 	args: unknown,
 	options: IProposalTransitionToolOptions,
 ): Promise<ProposalTransitionCompatResult> => {
-	const parsed = parseWithCompatWindow(PROPOSAL_TRANSITION_COMPAT, args);
+	const sanitized = stripPublicOnlyFields(args);
+	const parsed = parseWithCompatWindow(PROPOSAL_TRANSITION_COMPAT, sanitized);
 	if (!parsed.ok) {
 		return {
 			ok: false,

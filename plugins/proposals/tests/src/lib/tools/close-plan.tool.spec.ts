@@ -367,4 +367,81 @@ describe('proposals_close_plan dryRun contract', () => {
 		expect(await readFile(fixture.absPath, 'utf8')).toBe(before);
 		closureSpy.mockRestore();
 	});
+
+	// a00072 S4 — `proposals_close_plan` is the q00001 wrapper that
+	// runs the closure preflight and, when closable, transitions the
+	// plan to `done` with `skipDfaForPlanClosure: true`. Regression:
+	// the wrapper MUST produce a non-error result for a plan whose
+	// only contained proposal is already `done` and the plan is in
+	// `in-progress` — the realistic flow after a child proposal
+	// reaches `done` via the review→approve cycle.
+	it('closes a plan with one done contained proposal (a00072 S4)', async () => {
+		const planMarkdown = buildPlanMarkdown({ shippedIn: 'abcdef1' });
+		await writePlan(options, planMarkdown);
+		// Pre-flight reports the contained proposal is done; own slice is done.
+		const closureSpy = vi
+			.spyOn(planClosureEngine, 'evaluatePlanClosure')
+			.mockResolvedValueOnce({
+				planId: 'q99999',
+				closable: true,
+				reasons: [],
+				children: [
+					{
+						ref: 'f09995',
+						kind: 'proposal',
+						status: 'done',
+						peerReviewed: true,
+					},
+				],
+				depth: 1,
+			});
+		const gitCalls: string[][] = [];
+		const gitRunner: IGitRunner = async (args) => {
+			gitCalls.push([...args]);
+			if (args[0] === 'ls-files') {
+				return {
+					ok: false,
+					output: '',
+					reason: 'not tracked',
+				} satisfies IGitRunResult;
+			}
+			return { ok: true, output: '' } satisfies IGitRunResult;
+		};
+		await seedRecentValidateLog(root);
+		const { definition, handler } = await capture({
+			...options,
+			gitRunner,
+		});
+		const result = await handler({
+			planId: 'q99999',
+			reason: 'contained proposal is done',
+		});
+		const body = parseSchemaSuccess(definition.outputSchema, result);
+
+		expect(body).toMatchObject({
+			ok: true,
+			planId: 'q99999',
+			dryRun: false,
+			closable: true,
+			blockers: [],
+			preview: { from: 'in-progress', to: 'done' },
+		});
+		// The wrapper actually moved the file — proves the DFA shortcut
+		// reached `runProposalTransition`'s positive branch.
+		const moved = await readFile(
+			join(options.proposalsDirAbs, 'done/plans/q99999-fixture.md'),
+			'utf8',
+		);
+		expect(moved).toContain('status: done');
+		// One of `mv <from> <to>` (tracked) or `add <newPath>` (untracked
+		// + plain rename fallback) MUST have run, both proving the
+		// wrapper actually moved the plan file out of `in-progress/`.
+		expect(
+			gitCalls.some((c) => {
+				if (c[0] !== 'mv' && c[0] !== 'add') return false;
+				return c.some((arg) => String(arg).includes('q99999'));
+			}),
+		).toBe(true);
+		closureSpy.mockRestore();
+	});
 });

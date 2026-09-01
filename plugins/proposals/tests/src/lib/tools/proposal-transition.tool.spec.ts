@@ -9,7 +9,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	hasIndependentPeerApproval,
@@ -22,6 +22,12 @@ import {
 	STATUS_TO_FOLDER,
 } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
 import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
+import * as planClosureGuardModule from '@mcp-vertex/proposals/lib/swarm/plan-closure-guard';
+import {
+	getPlanClosureBypassCount,
+	listPlanClosureBypasses,
+	resetPlanClosureBypassLog,
+} from '@mcp-vertex/proposals/lib/shared/plan-closure-bypass-log';
 
 const _RECENT_VALIDATE_LOG = '/dev/null';
 const RECENT_VALIDATE = {
@@ -310,6 +316,49 @@ describe('proposal_transition', async () => {
 				).rejects.toThrow();
 			});
 		}
+
+		it('requireValidateEvidence:false lets a host opt out of the gate', async () => {
+			// Hosts without a validate chain worth blocking on switch the
+			// gate off in config instead of passing `force: true`, which
+			// would also disable the peer-review and dependent gates.
+			await writeProposal(root, 'review', 'f70002-no-validate.md', {
+				id: 'f70002',
+				status: 'review',
+				'shipped-in': '[30551533]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f70002',
+					to: 'done',
+					reason: 'host opted out of the validate gate',
+				},
+				{ ...options, requireValidateEvidence: false },
+			);
+			expect(result.isError).toBeUndefined();
+			expect(
+				await readFile(
+					join(root, 'done', 'f70002-no-validate.md'),
+					'utf8',
+				),
+			).toContain('status: done');
+		});
+
+		it('still refuses without evidence when the gate is left on', async () => {
+			await writeProposal(root, 'review', 'f70003-needs-validate.md', {
+				id: 'f70003',
+				status: 'review',
+				'shipped-in': '[30551533]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f70003',
+					to: 'done',
+					reason: 'no evidence supplied',
+				},
+				options,
+			);
+			expect(result.isError).toBe(true);
+		});
 
 		it('falls back to `done/` (no sub-folder) when kind is missing', async () => {
 			await writeProposal(root, 'review', 'f70001-no-kind.md', {
@@ -1100,5 +1149,202 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		const body = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(body.ok).toBe(true);
 		expect(body.to).toBe('review');
+	});
+});
+
+// a00072 S4 — plan-closure DFA shortcut (`skipDfaForPlanClosure`).
+// The wrapper `proposals_close_plan` runs the closure preflight and,
+// when closable, forwards the verified plan to `runProposalTransition`
+// with `skipDfaForPlanClosure: true`. The flag must reach the
+// positive branch (skipping the strict `in-progress → done` DFA
+// edge) AND audit the skip with proposal id + caller reason.
+describe('a00072 S4 — plan-closure DFA shortcut', () => {
+	let root = '';
+	let options: IProposalTransitionToolOptions;
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'transition-s4-'));
+		const validateEvidence = await recentValidateWithLog(root);
+		const indexPathAbs = join(
+			root,
+			'.cache',
+			'mcp-vertex',
+			'proposals',
+			'index.json',
+		);
+		await mkdir(dirname(indexPathAbs), { recursive: true });
+		await writeFile(
+			indexPathAbs,
+			JSON.stringify({ proposals: [] }),
+			'utf8',
+		);
+		options = {
+			namespacePrefix: 'proposals',
+			proposalsDirAbs: root,
+			workspaceRoot: root,
+			indexPathAbs,
+			gitRunner: FAKE_GIT_MV,
+			peerReviewLogPathAbs: join(
+				root,
+				'.cache',
+				'mcp-vertex',
+				'peer-review.jsonl',
+			),
+			requirePeerReview: false,
+			validateEvidenceDeps: {
+				readValidateLog: async () => [
+					{
+						timestamp: validateEvidence.timestamp,
+						ts: validateEvidence.timestamp,
+						result: 'pass',
+						exitCode: 0,
+						logPath: validateEvidence.logPath,
+					},
+				],
+			},
+		};
+		resetPlanClosureBypassLog();
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	it('lands a verified plan in done/ when skipDfaForPlanClosure:true and the closure guard is clear', async () => {
+		await writeProposal(
+			root,
+			'in-progress',
+			'q80001-verified-plan.md',
+			{
+				id: 'q80001',
+				status: 'in-progress',
+				type: 'plan',
+				kind: 'plan',
+				'shipped-in': '[abcdef1]',
+			},
+			['## Slices', '', '### S1 — work', '- **Status**: done', ''].join(
+				'\n',
+			),
+		);
+		const guardSpy = vi
+			.spyOn(planClosureGuardModule, 'runPlanClosureGuard')
+			.mockResolvedValue({ closable: true });
+
+		const result = await runProposalTransition(
+			{
+				id: 'q80001',
+				to: 'done',
+				reason: 'all children and slices are done',
+				skipDfaForPlanClosure: true,
+			},
+			options,
+		);
+
+		expect(result.isError).toBeUndefined();
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.ok).toBe(true);
+		expect(body.from).toBe('in-progress');
+		expect(body.to).toBe('done');
+		expect(body.movedTo).toBe('done/plans/q80001-verified-plan.md');
+
+		// The shortcut MUST be audited — proposal id, caller's reason,
+		// via:'plan-closure-shortcut' marker.
+		expect(getPlanClosureBypassCount()).toBe(1);
+		const events = listPlanClosureBypasses();
+		expect(events[0]).toMatchObject({
+			kind: 'plan-closure-bypassed',
+			proposalId: 'q80001',
+			reason: 'all children and slices are done',
+			via: 'plan-closure-shortcut',
+		});
+		guardSpy.mockRestore();
+	});
+
+	it('rejects in-progress → done without the shortcut flag', async () => {
+		await writeProposal(
+			root,
+			'in-progress',
+			'q80002-strict-plan.md',
+			{
+				id: 'q80002',
+				status: 'in-progress',
+				type: 'plan',
+				kind: 'plan',
+				'shipped-in': '[abcdef1]',
+			},
+			['## Slices', '', '### S1 — work', '- **Status**: done', ''].join(
+				'\n',
+			),
+		);
+		const guardSpy = vi
+			.spyOn(planClosureGuardModule, 'runPlanClosureGuard')
+			.mockResolvedValue({ closable: true });
+
+		const result = await runProposalTransition(
+			{
+				id: 'q80002',
+				to: 'done',
+				reason: 'no shortcut flag',
+			},
+			options,
+		);
+
+		expect(result.isError).toBe(true);
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.error.reason).toBe(
+			'illegal transition: "in-progress" → "done"',
+		);
+
+		// Without the flag, no audit entry is recorded.
+		expect(getPlanClosureBypassCount()).toBe(0);
+		guardSpy.mockRestore();
+	});
+
+	it('still rejects when the closure guard reports blockers (skipDfaForPlanClosure does NOT bypass q00001)', async () => {
+		// Slice is done so the slice-completeness gate passes; the
+		// closure guard is the only gate that can reject after that.
+		await writeProposal(
+			root,
+			'in-progress',
+			'q80003-blocked-plan.md',
+			{
+				id: 'q80003',
+				status: 'in-progress',
+				type: 'plan',
+				kind: 'plan',
+				'shipped-in': '[abcdef1]',
+			},
+			['## Slices', '', '### S1 — work', '- **Status**: done', ''].join(
+				'\n',
+			),
+		);
+		const guardSpy = vi
+			.spyOn(planClosureGuardModule, 'runPlanClosureGuard')
+			.mockResolvedValue({
+				closable: false,
+				blockerLines: [
+					"  - [proposal/not-done] Proposal f09995 is 'in-progress'",
+				],
+				blockerCount: 1,
+			});
+
+		const result = await runProposalTransition(
+			{
+				id: 'q80003',
+				to: 'done',
+				reason: 'attempting with blocker present',
+				skipDfaForPlanClosure: true,
+			},
+			options,
+		);
+
+		expect(result.isError).toBe(true);
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(String(body.error.reason)).toContain(
+			'plan q80003 is not closable',
+		);
+		// The audit entry is still recorded: the shortcut was requested,
+		// the guard rejected, but the caller bypassed the DFA edge so
+		// it MUST appear in the log.
+		expect(getPlanClosureBypassCount()).toBe(1);
+		guardSpy.mockRestore();
 	});
 });

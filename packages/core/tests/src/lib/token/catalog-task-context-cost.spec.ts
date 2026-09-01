@@ -84,7 +84,7 @@ describe('catalog-task-context-cost measurement', () => {
 			'| native core catalog | 28 | 42,768 | 36,508 | 11,533 | 24,975 | 0 |',
 		);
 		expect(output).toContain(
-			'| swarm native preset | 166 | 193,547 | 157,856 | 47,988 | 109,868 | 50,216 |',
+			'| swarm native preset | 166 | 193,678 | 157,987 | 48,031 | 109,956 | 50,347 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);

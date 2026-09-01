@@ -173,6 +173,10 @@ describe('auto_work (one-call action plan)', async () => {
 			'export const done = true;\n',
 		);
 		writeFileSync(
+			join(root, 'src', 'existing-service.ts'),
+			'export const service = true;\n',
+		);
+		writeFileSync(
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p3-x', file: 'p3.md', status: 'pending' }],
@@ -185,14 +189,22 @@ describe('auto_work (one-call action plan)', async () => {
 ## Slices
 
 ### S1 — already implemented
-- **Files**: \`src/implemented.ts\`
+- **Files**: \`src/implemented.ts\`, \`src/existing-service.ts\`
 - **Gate**: type
 - **Status**: pending
 `,
 		);
-		execFileSync('git', ['-C', root, 'add', 'src/implemented.ts'], {
-			stdio: 'ignore',
-		});
+		execFileSync(
+			'git',
+			[
+				'-C',
+				root,
+				'add',
+				'src/implemented.ts',
+				'src/existing-service.ts',
+			],
+			{ stdio: 'ignore' },
+		);
 		execFileSync(
 			'git',
 			['-C', root, 'commit', '-m', 'test: seed artifact'],
@@ -204,7 +216,7 @@ describe('auto_work (one-call action plan)', async () => {
 		const out = parse(await runAutoWork(options));
 		expect(out.claimReady).toMatchObject({
 			sliceId: 'S1',
-			files: ['src/implemented.ts'],
+			files: ['src/implemented.ts', 'src/existing-service.ts'],
 		});
 		expect(out.reason).toBeUndefined();
 	});

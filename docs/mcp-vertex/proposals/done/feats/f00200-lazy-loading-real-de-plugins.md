@@ -2,10 +2,11 @@
 id: f00200
 title: "Lazy loading real de plugins"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
+shipped-in: [2eece76d9]
 priority: P2
 parent-plan: q00006
 audit-source:
@@ -17,6 +18,9 @@ related:
     - f00184 # lifecycle phases (lazy se aplica en activate)
     - f00200 # (esta propuesta)
     - r00028 # subpath exports (sinergia)
+last-transition-id: 5f2171b8-4eb7-4a96-b66d-a339a483a32a
+last-correlation-id: 5f2171b8-4eb7-4a96-b66d-a339a483a32a
+last-transition-from: review
 ---
 
 # f00200 — Lazy loading real de plugins

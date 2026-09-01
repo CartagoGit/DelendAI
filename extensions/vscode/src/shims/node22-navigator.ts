@@ -20,17 +20,28 @@
  * an IIFE and export a sentinel that callers can reference to keep
  * the module alive.
  */
-const globalRef = globalThis as typeof globalThis & {
+declare global {
+	interface GlobalThis {
+		navigator?: unknown;
+		__mcpVertexNode22NavigatorPatched?: boolean;
+	}
+}
+
+type INode22NavigatorPatchedGlobal = typeof globalThis & {
 	__mcpVertexNode22NavigatorPatched?: boolean;
 };
+
 (function patchNavigator(): void {
+	if (typeof globalThis === 'undefined') return;
 	try {
-		Object.defineProperty(globalRef, 'navigator', {
+		Object.defineProperty(globalThis, 'navigator', {
 			value: undefined,
 			writable: true,
 			configurable: true,
 		});
-		globalRef.__mcpVertexNode22NavigatorPatched = true;
+		(
+			globalThis as INode22NavigatorPatchedGlobal
+		).__mcpVertexNode22NavigatorPatched = true;
 	} catch {
 		// If defineProperty is blocked (rare), swallow — the worst case
 		// is the original zod failure, which we have already raised
@@ -38,4 +49,5 @@ const globalRef = globalThis as typeof globalThis & {
 	}
 })();
 export const NAVIGATOR_PATCH_MARKER =
-	globalRef.__mcpVertexNode22NavigatorPatched === true;
+	(globalThis as INode22NavigatorPatchedGlobal)
+		.__mcpVertexNode22NavigatorPatched === true;

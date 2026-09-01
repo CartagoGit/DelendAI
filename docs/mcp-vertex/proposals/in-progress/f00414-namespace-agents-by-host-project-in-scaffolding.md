@@ -36,7 +36,8 @@ El scaffolding actual impone nombres `mcp-vertex-*` y mezcla namespaces entre pr
   - "Definir un contrato compartido para scaffolding, naming de agentes y namespace MCP."
   - "Resolver el namespace del proyecto host sin asumir `mcp-vertex-*` como valor global."
   - "Documentar la referencia a GitHub issue #52."
-
+- review-state: in_review
+- review-implementer: copilot-implementation-runner
 ### S2 — Host-specific adapters and stale artifact cleanup
 - **Status**: pending
 - **Files**: `.github/agents/**`, `.claude/agents/**`, `.codex/agents/**`, `extensions/vscode/**`, `apps/shared/**`

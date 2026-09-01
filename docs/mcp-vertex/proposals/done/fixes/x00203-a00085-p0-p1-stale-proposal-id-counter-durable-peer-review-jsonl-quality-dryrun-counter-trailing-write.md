@@ -2,15 +2,19 @@
 id: x00203
 title: "a00085 P0/P1: stale proposal-id counter, durable peer-review JSONL, quality dryRun, counter trailing write"
 kind: fix
-status: in-progress
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-08-23
+shipped-in: [5fcfdd59b]
 related:
   - a00085
 acceptance:
   - { command: bun run test -- plugins/proposals/tests/src/lib/proposals/proposal-id-allocator.spec.ts plugins/proposals/tests/src/lib/shared/peer-review-log.spec.ts plugins/quality/tests/src/lib/quality.spec.ts, expect: exit0 }
   - { command: bun run lint:proposals, expect: exit0 }
+last-transition-id: 48c1589f-3ca1-4744-94d5-5bbcd15fc2c7
+last-correlation-id: 48c1589f-3ca1-4744-94d5-5bbcd15fc2c7
+last-transition-from: review
 ---
 
 # x00203 — a00085 P0/P1: allocator, counters, peer-review JSONL, quality dryRun

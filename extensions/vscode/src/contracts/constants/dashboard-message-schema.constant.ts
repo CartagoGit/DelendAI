@@ -34,6 +34,33 @@ export const DASHBOARD_MESSAGE_SCHEMA = z.discriminatedUnion('command', [
 			]),
 		})
 		.strict(),
+	z
+		.object({
+			command: z.literal('settings'),
+			action: z.enum(['save', 'reset']),
+			settings: z.record(z.string(), z.unknown()).optional(),
+		})
+		.strict(),
+	z
+		.object({
+			command: z.literal('logs'),
+			action: z.enum(['start', 'stop', 'refresh', 'source', 'filter']),
+			source: z.string().optional(),
+			outcome: z
+				.enum([
+					'ok',
+					'failed',
+					'timed-out',
+					'cancelled',
+					'dead',
+					'idle',
+					'unknown',
+				])
+				.optional(),
+			agent: z.string().optional(),
+			taskId: z.string().optional(),
+		})
+		.strict(),
 ]);
 
 /**
@@ -59,6 +86,20 @@ export const DASHBOARD_HOST_MESSAGE_SCHEMA = z.discriminatedUnion('command', [
 	z
 		.object({
 			command: z.literal('hostHideDetail'),
+		})
+		.strict(),
+	z
+		.object({
+			command: z.literal('settingsResult'),
+			settings: z.unknown().optional(),
+			error: z.string().optional(),
+		})
+		.strict(),
+	z
+		.object({
+			command: z.literal('hostLogEvent'),
+			source: z.string(),
+			event: z.unknown(),
 		})
 		.strict(),
 ]);

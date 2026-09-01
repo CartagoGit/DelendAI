@@ -5,7 +5,11 @@
  *
  * Pure: returns a single HTML string.
  */
-import type { IDashboardAllModels } from '@mcp-vertex/client';
+import type {
+	IDashboardAllModels,
+	IExtensionSettings,
+} from '@mcp-vertex/client';
+import { DEFAULT_EXTENSION_SETTINGS } from '@mcp-vertex/client';
 import type { ILangDict } from '@mcp-vertex/shared/i18n';
 import { dashboardCss } from '@mcp-vertex/shared/styles/dashboard/dashboard-css';
 
@@ -25,12 +29,14 @@ export interface IRenderDashboardOptions {
 	readonly refreshCommand: string;
 	readonly openDocsCommand: string;
 	readonly lang: ILangDict;
+	readonly settings?: IExtensionSettings;
 }
 
 const CLIENT_SCRIPT = `
 (function () {
 	const host =
 		typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
+  const root = document.documentElement;
   const panels = document.querySelectorAll('.mcpv-panel');
   // Only real tabs participate in selection + the roving tabindex; the
   // refresh button is an action (no role="tab"), so it is excluded
@@ -88,9 +94,369 @@ const CLIENT_SCRIPT = `
   document.querySelectorAll('[data-surface]').forEach((surface) => {
     surface.addEventListener('click', () => {
       const id = surface.getAttribute('data-surface');
+      const internalTarget = {
+        proposals: 'sessions',
+        knowledge: 'memory',
+        configuration: 'settings',
+        settings: 'settings',
+      }[id ?? ''];
+      if (internalTarget) {
+        activateTarget(internalTarget);
+        return;
+      }
       if (id) host?.postMessage({ command: 'openSurface', surface: id });
     });
   });
+
+  // ─── Settings bridge ─────────────────────────────────────────────
+  const settingsForm = document.getElementById('mcpv-dashboard-settings-form');
+  const settingsStatus = document.getElementById('mcpv-dashboard-settings-status');
+  const RTL = new Set(['ar']);
+  function applyTheme(theme) {
+    if (!theme) return;
+    root.setAttribute('data-theme', theme);
+  }
+  function applyLanguage(language) {
+    if (!language) return;
+    root.setAttribute('lang', language);
+    root.setAttribute('dir', RTL.has(language) ? 'rtl' : 'ltr');
+    const preview = document.querySelector('.mcpv-settings__preview');
+    if (preview) preview.setAttribute('dir', RTL.has(language) ? 'rtl' : 'ltr');
+    document.querySelectorAll('[data-lang-card]').forEach((card) => {
+      card.setAttribute('aria-pressed',
+        card.getAttribute('data-lang-card') === language ? 'true' : 'false');
+    });
+    const select = document.querySelector('select[name="language"]');
+    if (select instanceof HTMLSelectElement) select.value = language;
+    const headerSelect = document.querySelector('[data-header-lang]');
+    if (headerSelect instanceof HTMLSelectElement) headerSelect.value = language;
+  }
+  function applyMotion(motion) {
+    if (!motion) return;
+    root.setAttribute('data-motion', motion);
+    const select = document.querySelector('select[name="motion"]');
+    if (select instanceof HTMLSelectElement) select.value = motion;
+  }
+  function readSettings() {
+    const out = {};
+    new FormData(settingsForm ?? document.createElement('form')).forEach(
+      (value, key) => { out[key] = value; },
+    );
+    const allowLocalhost = document.querySelector('input[name="allowLocalhost"]');
+    const allowPrivateIps = document.querySelector('input[name="allowPrivateIps"]');
+    out.allowLocalhost = allowLocalhost instanceof HTMLInputElement ? allowLocalhost.checked : false;
+    out.allowPrivateIps = allowPrivateIps instanceof HTMLInputElement ? allowPrivateIps.checked : false;
+    return out;
+  }
+  function postSettings(action) {
+    if (!host) return;
+    const payload = { command: 'settings', action };
+    if (action === 'save') payload.settings = readSettings();
+    host.postMessage(payload);
+  }
+  function announceSettings(message, isError) {
+    if (!settingsStatus) return;
+    settingsStatus.textContent = message;
+    settingsStatus.hidden = false;
+    settingsStatus.setAttribute('data-error', isError ? 'true' : 'false');
+  }
+  document.querySelectorAll('[data-theme-card]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const theme = card.getAttribute('data-theme-card');
+      if (!theme) return;
+      document.querySelectorAll('[data-theme-card]').forEach((c) =>
+        c.setAttribute('aria-pressed', c === card ? 'true' : 'false'));
+      applyTheme(theme);
+      const preview = document.querySelector('.mcpv-settings__preview');
+      if (preview) preview.setAttribute('data-theme-preview', theme);
+      postSettings('save');
+    });
+  });
+  document.querySelectorAll('[data-lang-card]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const language = card.getAttribute('data-lang-card');
+      if (!language) return;
+      applyLanguage(language);
+      postSettings('save');
+    });
+  });
+  document.querySelectorAll(
+    'select[name="theme"], select[name="motion"], select[name="logLevel"], [data-header-lang], [data-header-theme]',
+  ).forEach((select) => {
+    select.addEventListener('change', () => {
+      if (!(select instanceof HTMLSelectElement)) return;
+      const name = select.getAttribute('name') ?? '';
+      if (name === 'theme' || select.hasAttribute('data-header-theme')) {
+        applyTheme(select.value);
+      } else if (name === 'motion') {
+        applyMotion(select.value);
+      } else if (select.hasAttribute('data-header-lang')) {
+        applyLanguage(select.value);
+      }
+      postSettings('save');
+    });
+  });
+  document.querySelectorAll('input[name="docsUrl"]').forEach((input) => {
+    input.addEventListener('change', () => postSettings('save'));
+  });
+  document.querySelectorAll(
+    'input[name="allowLocalhost"], input[name="allowPrivateIps"]',
+  ).forEach((input) => {
+    input.addEventListener('change', () => postSettings('save'));
+  });
+  settingsForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!host) {
+      announceSettings('Settings are unavailable in this preview.', true);
+      return;
+    }
+    announceSettings('Saving settings...', false);
+    postSettings('save');
+  });
+  settingsForm?.querySelector('[data-settings-reset]')?.addEventListener(
+    'click',
+    () => {
+      if (!host) return;
+      announceSettings('Resetting settings...', false);
+      postSettings('reset');
+    },
+  );
+  document.querySelectorAll('[data-settings-compact]').forEach((toggle) => {
+    toggle.addEventListener('change', () => {
+      const settingsPanels = document.querySelectorAll('#panel-settings');
+      settingsPanels.forEach((panel) => {
+        if (toggle instanceof HTMLInputElement && toggle.checked) {
+          panel.classList.add('mcpv-panel--compact');
+        } else {
+          panel.classList.remove('mcpv-panel--compact');
+        }
+      });
+      try {
+        window.localStorage.setItem(
+          'mcpv:dashboard-compact',
+          toggle instanceof HTMLInputElement && toggle.checked ? '1' : '0',
+        );
+      } catch {
+        /* localStorage might be disabled; the visual toggle still works. */
+      }
+    });
+  });
+  window.addEventListener('message', (event) => {
+    const data = event?.data;
+    if (!data || data.command !== 'settingsResult') return;
+    if (data.settings) {
+      applyTheme(data.settings.theme);
+      applyLanguage(data.settings.language);
+      applyMotion(data.settings.motion);
+    }
+    if (data.error) {
+      announceSettings(String(data.error), true);
+    } else {
+      announceSettings('Settings saved.', false);
+    }
+  });
+  // Restore the compact-mode toggle from localStorage so the user does
+  // not have to flip it back every reload.
+  try {
+    const stored = window.localStorage.getItem('mcpv:dashboard-compact');
+    const compact = stored === '1';
+    document.querySelectorAll('[data-settings-compact]').forEach((toggle) => {
+      if (toggle instanceof HTMLInputElement) toggle.checked = compact;
+    });
+    document.querySelectorAll('#panel-settings').forEach((panel) => {
+      if (compact) panel.classList.add('mcpv-panel--compact');
+    });
+  } catch {
+    /* localStorage might be disabled in this host; nothing to restore. */
+  }
+
+  // ─── Logs panel — realtime subscribe over the host bridge ─────────
+  const logsList = document.getElementById('mcpv-logs-list');
+  const logsEmpty = document.getElementById('mcpv-logs-empty');
+  const logsStatus = document.getElementById('mcpv-logs-status');
+  const logsControls = document.getElementById('mcpv-logs-controls');
+  const logsState = { paused: false, source: 'all', followTail: true };
+  function setLogsStatus(text) {
+    if (logsStatus) logsStatus.textContent = text;
+  }
+  function logsVisible() {
+    if (!logsList || !logsEmpty) return false;
+    const any = logsList.children.length > 0;
+    logsEmpty.hidden = any;
+    return any;
+  }
+  function appendLogRow(payload) {
+    if (!logsList) return;
+    const row = document.createElement('li');
+    row.className = 'mcpv-logs__row';
+    row.setAttribute('data-outcome', payload.outcome ?? 'unknown');
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    const ts = document.createElement('span');
+    ts.className = 'mcpv-logs__ts';
+    ts.textContent = payload.ts ? new Date(payload.ts).toISOString().slice(11, 19) : '';
+    const kind = document.createElement('span');
+    kind.className = 'mcpv-logs__kind';
+    kind.textContent = payload.kind ?? '';
+    const agent = document.createElement('span');
+    agent.textContent = payload.agent ?? '';
+    const summary = document.createElement('span');
+    summary.className = 'mcpv-logs__summary';
+    summary.textContent = payload.summary ?? '';
+    const copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = 'mcpv-logs__copy';
+    copy.title = 'Copy task id';
+    copy.textContent = '#';
+    copy.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      if (payload.taskId && navigator.clipboard) {
+        navigator.clipboard.writeText(payload.taskId).catch(() => {});
+      }
+    });
+    row.appendChild(ts);
+    row.appendChild(kind);
+    row.appendChild(agent);
+    row.appendChild(summary);
+    row.appendChild(copy);
+    row.addEventListener('click', () => openLogDetail(payload));
+    row.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter' || evt.key === ' ') {
+        evt.preventDefault();
+        openLogDetail(payload);
+      }
+    });
+    logsList.appendChild(row);
+    if (logsState.followTail) {
+      logsList.scrollTop = logsList.scrollHeight;
+    }
+    logsVisible();
+  }
+  const logsDetail = document.getElementById('mcpv-logs-detail');
+  const logsDetailTitle = document.getElementById('mcpv-logs-detail-title');
+  const logsDetailBody = document.getElementById('mcpv-logs-detail-body');
+  function openLogDetail(payload) {
+    if (!logsDetail || !logsDetailTitle || !logsDetailBody) return;
+    logsDetailTitle.textContent = payload.kind ?? 'event';
+    const rows = [];
+    const fields = ['ts', 'kind', 'agent', 'taskId', 'outcome', 'summary'];
+    for (const field of fields) {
+      const value = payload[field];
+      if (value === undefined || value === null || value === '') continue;
+      const dt = document.createElement('dt');
+      dt.textContent = field;
+      const dd = document.createElement('dd');
+      dd.textContent = String(value);
+      rows.push(dt, dd);
+    }
+    if (payload.files && payload.files.length > 0) {
+      const dt = document.createElement('dt');
+      dt.textContent = 'files';
+      const dd = document.createElement('dd');
+      dd.textContent = payload.files.join(', ');
+      rows.push(dt, dd);
+    }
+    if (payload.meta && Object.keys(payload.meta).length > 0) {
+      const dt = document.createElement('dt');
+      dt.textContent = 'meta';
+      const dd = document.createElement('dd');
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(payload.meta, null, 2);
+      dd.appendChild(pre);
+      rows.push(dt, dd);
+    }
+    logsDetailBody.replaceChildren(...rows);
+    logsDetail.removeAttribute('hidden');
+  }
+  function closeLogDetail() {
+    if (logsDetail) logsDetail.setAttribute('hidden', '');
+  }
+  document.querySelector('[data-logs-action="close-detail"]')?.addEventListener('click', closeLogDetail);
+  logsControls?.querySelector('select[name="source"]')?.addEventListener('change', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLSelectElement) {
+      logsState.source = target.value;
+      setLogsStatus('Filtering source: ' + target.value);
+      host?.postMessage({ command: 'logs', action: 'source', source: target.value });
+    }
+  });
+  document.querySelectorAll('[data-source]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const source = chip.getAttribute('data-source');
+      if (!source) return;
+      logsState.source = source;
+      document.querySelectorAll('[data-source]').forEach((other) => {
+        other.setAttribute('aria-pressed', other === chip ? 'true' : 'false');
+      });
+      setLogsStatus('Filtering source: ' + source);
+      host?.postMessage({ command: 'logs', action: 'source', source });
+    });
+  });
+  logsControls?.querySelector('select[name="outcome"]')?.addEventListener('change', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLSelectElement) {
+      host?.postMessage({ command: 'logs', action: 'filter', outcome: target.value });
+    }
+  });
+  logsControls?.querySelector('input[name="agent"]')?.addEventListener('change', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLInputElement) {
+      host?.postMessage({ command: 'logs', action: 'filter', agent: target.value });
+    }
+  });
+  logsControls?.querySelector('input[name="task"]')?.addEventListener('change', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLInputElement) {
+      host?.postMessage({ command: 'logs', action: 'filter', taskId: target.value });
+    }
+  });
+  logsControls?.querySelector('[data-logs-action="refresh"]')?.addEventListener('click', () => {
+    host?.postMessage({ command: 'logs', action: 'refresh' });
+  });
+  const toggleLiveBtn = logsControls?.querySelector('[data-logs-action="toggle-live"]');
+  toggleLiveBtn?.addEventListener('click', () => {
+    logsState.paused = !logsState.paused;
+    if (toggleLiveBtn) {
+      toggleLiveBtn.textContent = logsState.paused ? 'Resume realtime' : 'Pause realtime';
+    }
+    setLogsStatus(logsState.paused ? 'Realtime paused' : 'Following live events');
+    host?.postMessage({ command: 'logs', action: logsState.paused ? 'stop' : 'start' });
+  });
+  logsControls?.querySelector('[data-logs-action="clear"]')?.addEventListener('click', () => {
+    if (logsList) logsList.replaceChildren();
+    logsVisible();
+    setLogsStatus('Cleared.');
+  });
+  const logsSearch = document.getElementById('mcpv-logs-search');
+  logsSearch?.addEventListener('input', () => {
+    if (!(logsSearch instanceof HTMLInputElement)) return;
+    const needle = logsSearch.value.trim().toLowerCase();
+    if (!logsList) return;
+    for (const row of Array.from(logsList.querySelectorAll('li'))) {
+      const haystack = row.textContent?.toLowerCase() ?? '';
+      row.toggleAttribute('hidden', needle.length > 0 && !haystack.includes(needle));
+    }
+    let visible = 0;
+    for (const row of Array.from(logsList.querySelectorAll('li'))) {
+      if (!row.hasAttribute('hidden')) visible += 1;
+    }
+    if (logsEmpty) {
+      logsEmpty.textContent = needle.length > 0 && visible === 0
+        ? 'No events match "' + needle + '".'
+        : 'No log events match the current filter.';
+      logsEmpty.hidden = visible > 0;
+    }
+  });
+  window.addEventListener('message', (event) => {
+    const data = event?.data;
+    if (!data || data.command !== 'hostLogEvent') return;
+    if (logsState.paused) return;
+    if (logsState.source !== 'all' && data.source && logsState.source !== data.source) return;
+    appendLogRow(data.event ?? {});
+  });
+  setLogsStatus('Realtime paused');
+  logsVisible();
+
 	document.addEventListener('click', (evt) => {
 		const target = evt.target;
 		if (!(target instanceof Element)) return;
@@ -188,10 +554,12 @@ export const renderDashboard = (
 		vars?: Readonly<Record<string, string | number>>,
 	) => extensionText(options.lang, key, vars);
 
-	const header = buildHeader(model);
+	const settings: IExtensionSettings =
+		options.settings ?? DEFAULT_EXTENSION_SETTINGS;
+	const header = buildHeader(model, settings);
 	const kpiStrip = buildKpiStrip(model, options.lang);
 	const tabsBar = buildTabsBar(options.lang);
-	const panels = buildPanels(model, options.lang, options.docsUrl);
+	const panels = buildPanels(model, options.lang, options.docsUrl, settings);
 	const footer = buildFooter(model, options, options.lang);
 
 	return `<!DOCTYPE html>
@@ -241,10 +609,12 @@ export const renderDashboard = (
 <body>
 	${header}
 	${kpiStrip}
-	${tabsBar}
-	<main class="mcpv-main">
-		${panels}
-	</main>
+	<div class="mcpv-shell">
+    ${tabsBar}
+    <main class="mcpv-main">
+      ${panels}
+    </main>
+	</div>
 	${footer}
 	<div id="mcpv-detail-overlay" class="mcpv-detail-overlay" role="dialog" aria-modal="true" aria-labelledby="mcpv-detail-overlay-title" data-active="false" hidden>
 		<div class="mcpv-detail-overlay__card">

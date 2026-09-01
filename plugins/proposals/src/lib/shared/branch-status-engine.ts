@@ -354,11 +354,12 @@ export const runBranchStatusEngine = async (
 			branch.length > 0 ? branch : 'HEAD',
 			now,
 		);
+		const isMainCheckout = resolve(path) === resolve(options.workspaceRoot);
 		worktrees.push({
 			path,
 			head,
 			branch,
-			outOfCache: !isUnderDir(path, canonicalDir),
+			outOfCache: !isMainCheckout && !isUnderDir(path, canonicalDir),
 			dirtyFiles: counts.dirty,
 			untrackedFiles: counts.untracked,
 			ageLabel: ageLabelFor(ageMin),

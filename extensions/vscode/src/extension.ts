@@ -661,7 +661,7 @@ export const activate = async (
 		track,
 		dashboardRefresh,
 	);
-	void dashboardRegistration.catch(async (error: unknown) => {
+	await dashboardRegistration.catch(async (error: unknown) => {
 		const message = error instanceof Error ? error.message : String(error);
 		runtimeChannel?.append(`Dashboard registration failed: ${message}\n`);
 		await vscode.window.showErrorMessage?.(
@@ -1222,11 +1222,13 @@ const registerDashboardSurfaces = async (
 			host = createFakeHostFromVscode(vscode);
 		}
 	}
+	const settingsStore = createExtensionSettingsStore(context.globalState);
 	track(
 		registerOpenDashboardCommand({
 			host,
 			client,
 			globalState: context.globalState,
+			settingsStore,
 			...(namespacePrefix === undefined ? {} : { namespacePrefix }),
 			getConfig: () =>
 				context.globalState.get(SETTINGS_STATE_KEY) ??
@@ -1242,6 +1244,7 @@ const registerDashboardSurfaces = async (
 			context.globalState.get(SETTINGS_STATE_KEY) ??
 			context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
 			{},
+		settingsStore,
 		...withPrefix,
 	});
 	dashboardRefresh.current = dashboardProvider;

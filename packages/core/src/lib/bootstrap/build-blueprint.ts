@@ -1,4 +1,5 @@
 import {
+	defaultMcpServerName,
 	scaffoldAgentFile,
 	scaffoldClaudeAgentFile,
 	scaffoldCodexAgentFile,
@@ -211,7 +212,8 @@ export const buildServerBlueprint = (
 		analysis.projectType
 	];
 	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
-	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
+	const serverName =
+		options.serverName ?? defaultMcpServerName(namespacePrefix);
 	const targetDir = options.targetDir ?? defaultTargetDir(analysis);
 	const tests = options.tests ?? true;
 	const plugins = pattern.recommendedPlugins;

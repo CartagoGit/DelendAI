@@ -29,6 +29,24 @@ export type RemoteFetchFn = (
 	},
 ) => Promise<IRemoteFetchResponse>;
 
+export const toRemoteFetchResponse = (
+	response: Response,
+): IRemoteFetchResponse => ({
+	ok: response.ok,
+	status: response.status,
+	headers: {
+		get(name: string): string | null {
+			return response.headers.get(name);
+		},
+	},
+	text: async () => response.text(),
+});
+
+export const createGitHubRemoteFetchFn =
+	(fetchFn: typeof fetch): RemoteFetchFn =>
+	async (url, init) =>
+		toRemoteFetchResponse(await fetchFn(url, init));
+
 export interface IGitHubHttpClientDeps {
 	readonly fetchFn: RemoteFetchFn;
 	readonly now?: () => number;
@@ -77,6 +95,15 @@ const compatibilityHint =
 	/(unsupported|deprecated api|unsupported api|preview|incompatible|unknown version)/i;
 const transientHint =
 	/(econnreset|econnrefused|eai_again|enotfound|network|socket|fetch failed|temporar)/i;
+
+const redactToken = (value: string, token: string): string => {
+	if (token.length === 0 || value.length === 0) return value;
+	return value
+		.split(`Bearer ${token}`)
+		.join('Bearer [REDACTED]')
+		.split(token)
+		.join('[REDACTED]');
+};
 
 const header = (
 	headers: { get(name: string): string | null },
@@ -244,6 +271,7 @@ const isAbortLike = (error: unknown): boolean => {
 const createThrownError = (
 	provider: RemoteProviderId,
 	error: unknown,
+	token: string,
 ): IRemoteProviderError => {
 	if (isAbortLike(error)) {
 		return createError({
@@ -258,6 +286,7 @@ const createThrownError = (
 		});
 	}
 	const message = error instanceof Error ? error.message : String(error);
+	const sanitizedMessage = redactToken(message, token);
 	return createError({
 		code: transientHint.test(message) ? 'transient' : 'invalid-response',
 		provider,
@@ -269,7 +298,7 @@ const createThrownError = (
 		retryAfterSeconds: null,
 		temporary: transientHint.test(message),
 		retryable: transientHint.test(message),
-		details: { cause: message },
+		details: { cause: sanitizedMessage },
 	});
 };
 
@@ -277,11 +306,13 @@ const createHttpError = (
 	provider: RemoteProviderId,
 	response: IRemoteFetchResponse,
 	body: string,
+	token: string,
 ): IRemoteProviderError => {
 	const requestId = extractRequestId(response.headers);
 	const retryAfterSeconds = parseNumber(
 		header(response.headers, 'retry-after'),
 	);
+	const sanitizedBody = redactToken(body, token);
 	if (response.status === 401) {
 		return createError({
 			code: 'unauthorized',
@@ -370,7 +401,9 @@ const createHttpError = (
 		retryAfterSeconds,
 		temporary: false,
 		retryable: false,
-		...(body === '' ? {} : { details: { bodySample: body.slice(0, 200) } }),
+		...(sanitizedBody === ''
+			? {}
+			: { details: { bodySample: sanitizedBody.slice(0, 200) } }),
 	});
 };
 
@@ -536,6 +569,7 @@ export const createGitHubHttpClient = (
 							'github',
 							response,
 							body,
+							options.context.token,
 						);
 						if (
 							normalized.retryable &&
@@ -572,7 +606,11 @@ export const createGitHubHttpClient = (
 					const normalized =
 						error instanceof GitHubRequestError
 							? error.remoteError
-							: createThrownError('github', error);
+							: createThrownError(
+									'github',
+									error,
+									options.context.token,
+								);
 					if (
 						normalized.retryable &&
 						attempts <= maxRetries &&

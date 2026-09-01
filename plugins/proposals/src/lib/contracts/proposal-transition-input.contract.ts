@@ -21,6 +21,14 @@ export interface IProposalTransitionArgs {
 	readonly idempotencyKey?: string | undefined;
 	readonly agent?: string | undefined;
 	readonly force?: boolean | undefined;
+	/**
+	 * q00001: when true, `proposal_transition` skips the strict DFA edge
+	 * check between `from` and `to`. Used only by `proposals_close_plan`
+	 * after a successful preflight, so a verified plan can land directly
+	 * on `done` from any of the legal plan-status folders. Public callers
+	 * MUST NOT pass this; the wrapper sets it.
+	 */
+	readonly skipDfaForPlanClosure?: boolean | undefined;
 	readonly validateEvidence?:
 		| z.infer<typeof VALIDATE_EVIDENCE_SCHEMA>
 		| undefined;
@@ -36,6 +44,7 @@ export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
 		idempotencyKey: z.string().min(1).optional(),
 		agent: z.string().optional(),
 		force: z.boolean().optional(),
+		skipDfaForPlanClosure: z.boolean().optional(),
 		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
 	})
 	.strict();

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
 import {
 	runContinueProposal,
 	type IContinueProposalToolOptions,
@@ -22,6 +23,9 @@ const parse = (result: {
 	expect(result.structuredContent).toEqual(value);
 	return value;
 };
+
+const parseTextOnly = (result: { content: Array<{ text: string }> }): any =>
+	JSON.parse(result.content[0]?.text ?? '{}');
 
 describe('continue_proposal (serial cascade)', async () => {
 	let root = '';
@@ -352,6 +356,120 @@ kind: fix
 		expect(out.nextAction).toContain('Do NOT retry');
 		expect(out.nextAction).toContain('proposals_await_lock');
 		expect(out.nextAction).toContain('lock-released');
+	});
+
+	it('uses a composite task_id per proposal when claiming the same sliceId and release matches that id', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{ id: 'f00091-alpha', file: 'f00091.md', status: 'ready' },
+					{ id: 'f00092-beta', file: 'f00092.md', status: 'ready' },
+				],
+			}),
+		);
+		writeFileSync(
+			join(root, 'f00091.md'),
+			[
+				'# f00091-alpha',
+				'',
+				'## Slices',
+				'',
+				'### S1 — independent',
+				'- **Files**: `src/alpha.ts`',
+				'- **Gate**: none',
+				'- **Status**: pending',
+			].join('\n'),
+		);
+		writeFileSync(
+			join(root, 'f00092.md'),
+			[
+				'# f00092-beta',
+				'',
+				'## Slices',
+				'',
+				'### S1 — independent',
+				'- **Files**: `src/beta.ts`',
+				'- **Gate**: none',
+				'- **Status**: pending',
+			].join('\n'),
+		);
+
+		const firstClaim = parse(
+			await runContinueProposal(
+				{
+					proposalId: 'f00091-alpha',
+					mode: 'claim',
+					sliceId: 'S1',
+					agentName: 'falcon',
+				},
+				options,
+			),
+		);
+		expect(firstClaim.kind).toBe('slice-claim');
+
+		const secondClaim = parse(
+			await runContinueProposal(
+				{
+					proposalId: 'f00092-beta',
+					mode: 'claim',
+					sliceId: 'S1',
+					agentName: 'owl',
+				},
+				options,
+			),
+		);
+		expect(secondClaim.kind).toBe('slice-claim');
+
+		const deps = {
+			lockPath: options.lockPathAbs,
+			toolName: 'proposals_agent_lock',
+		};
+		const lockStatus = parseTextOnly(
+			await runAgentLockEngine({ action: 'status' }, deps),
+		);
+		expect(lockStatus.in_flight).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					task_id: 'f00091-alpha-S1',
+					agent: 'falcon',
+				}),
+				expect.objectContaining({
+					task_id: 'f00092-beta-S1',
+					agent: 'owl',
+				}),
+			]),
+		);
+
+		await runAgentLockEngine(
+			{ action: 'release', task_id: 'f00091-alpha-S1' },
+			deps,
+		);
+		const afterFirstRelease = parseTextOnly(
+			await runAgentLockEngine({ action: 'status' }, deps),
+		);
+		expect(afterFirstRelease.in_flight).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					task_id: 'f00092-beta-S1',
+					agent: 'owl',
+				}),
+			]),
+		);
+		expect(afterFirstRelease.in_flight).not.toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ task_id: 'f00091-alpha-S1' }),
+			]),
+		);
+
+		await runAgentLockEngine(
+			{ action: 'release', task_id: 'f00092-beta-S1' },
+			deps,
+		);
+		const afterSecondRelease = parseTextOnly(
+			await runAgentLockEngine({ action: 'status' }, deps),
+		);
+		expect(afterSecondRelease.active_write_lanes).toBe(0);
 	});
 
 	it('skips a ready proposal whose slices exist but none are claimable because live ownership already covers them', async () => {

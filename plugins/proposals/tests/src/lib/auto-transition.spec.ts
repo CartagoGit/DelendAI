@@ -164,4 +164,46 @@ type: proposal
 		expect(prepared.changed).toBe(false);
 		expect(prepared.markdown).toContain('status: review');
 	});
+
+	it('marks a non-plan proposal done without review when the host disables the gate', () => {
+		const markdown = `---
+id: f00091
+kind: feat
+status: in-progress
+type: proposal
+---
+
+## Slices
+
+### S1 — one
+- **Status**: done
+- **Files**: [src/a.ts]
+`;
+		const prepared = markProposalDoneForAutoTransition('f00091', markdown, {
+			requirePeerReview: false,
+		});
+		expect(prepared.changed).toBe(true);
+		expect(prepared.markdown).toContain('status: done');
+	});
+
+	it('never auto-transitions a plan through the proposal shortcut', () => {
+		const markdown = `---
+id: q00091
+kind: plan
+status: review
+type: plan
+---
+
+## Slices
+
+### S1 — one
+- **Status**: done
+- **Files**: [src/a.ts]
+`;
+		expect(
+			shouldAutoTransitionProposal('q00091', markdown, {
+				requirePeerReview: false,
+			}),
+		).toBe(false);
+	});
 });

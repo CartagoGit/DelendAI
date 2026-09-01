@@ -112,6 +112,18 @@ export type {
 export { barChart } from '../dashboard/bar-chart';
 export type { IBarDatum } from '../dashboard/bar-chart';
 export { sparklinePath } from '../dashboard/sparkline';
+export { progressRing } from '../dashboard/progress-ring';
+export {
+	renderBrandIcon,
+	renderFlagIcon,
+	hasBrandIcon,
+	hasFlagIcon,
+	languageFlag,
+	allBrandCodes,
+	allFlagCodes,
+	FLAG_NAMES,
+} from '../dashboard/brand-icons';
+export { renderPluginBadge } from '../dashboard/plugin-badge';
 export {
 	escapeHtml,
 	formatBytes,

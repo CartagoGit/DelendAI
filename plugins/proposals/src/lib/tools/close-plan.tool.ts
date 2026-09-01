@@ -270,7 +270,16 @@ export const runClosePlan = async (
 		);
 	}
 	const result = await runProposalTransition(
-		{ id: planId, to: 'done', reason },
+		{
+			id: planId,
+			to: 'done',
+			reason,
+			// The preflight above already verified every child, sub-plan,
+			// and own slice is closable. Allow the DFA shortcut so the
+			// verified plan can land on `done` without first passing
+			// through `review/`.
+			skipDfaForPlanClosure: true,
+		},
 		options,
 	);
 	if (

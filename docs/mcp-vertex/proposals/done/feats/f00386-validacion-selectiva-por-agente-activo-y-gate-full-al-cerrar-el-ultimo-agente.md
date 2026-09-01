@@ -2,10 +2,14 @@
 id: f00386
 title: "Validación selectiva por agente activo y gate full al cerrar el último agente"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: parallel-validation
 date: 2026-08-30
+shipped-in: [38bfc58ec]
+last-transition-id: 770202a6-2e28-4bd1-8029-1522203c48c5
+last-correlation-id: 770202a6-2e28-4bd1-8029-1522203c48c5
+last-transition-from: review
 ---
 
 # f00386 — Validación selectiva por agente activo y gate full al cerrar el último agente
