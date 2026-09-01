@@ -2,13 +2,16 @@
 id: v00133
 title: "Schema surface, compact projection, artifact handles and task context cost"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
 shipped-in: ["fdb49852b"]
+last-transition-id: a5253974-d251-4774-acdd-ca37d596e36e
+last-correlation-id: a5253974-d251-4774-acdd-ca37d596e36e
+last-transition-from: ready
 ---
 
 # v00133 — Schema surface, compact projection, artifact handles and task context cost
