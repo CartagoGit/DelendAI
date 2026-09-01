@@ -2,7 +2,7 @@
 id: f00388
 title: "**S1** — <cambio> · ficheros: `<paths>` · test: `<spec>`"
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-verifier-10
+- review-reviewer: sonnet-verifier-10b
+- review-log: approved by sonnet-verifier-10b — Verified independently: source is a template placeholder in a00090 (line 3580), not a real finding; no code/tests apply, declared gate is `bun tools/scripts/lint/proposals.script.ts` which I ran and it passed (775 files checked, 0 fatal errors).
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
