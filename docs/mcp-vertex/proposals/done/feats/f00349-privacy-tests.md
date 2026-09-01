@@ -2,12 +2,15 @@
 id: f00349
 title: "privacy tests."
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#privacy-tests
 shipped-in: ["e746316dc"]
+last-transition-id: e532e734-252a-40a0-af13-f043147d9252
+last-correlation-id: e532e734-252a-40a0-af13-f043147d9252
+last-transition-from: in-progress
 ---
 
 # f00349 — privacy tests.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00349-privacy-tests.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00349-privacy-tests.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -41,7 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-verifier-7
+- review-log: approved by sonnet-verifier-7 — Independently verified against a00092 section 2 ER-007; plugins/error-reporting/tests/privacy-adversarial*.spec.ts (shipped in e746316dc, t00005) implement the adversarial privacy suite. Ran the suite: passing.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
