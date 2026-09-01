@@ -2,15 +2,15 @@
 id: f00344
 title: "no manual drift."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#no-manual-drift
 shipped-in: ["82c54bccc"]
-last-transition-id: 432796aa-086e-48c8-a81c-22ddd54c67ac
-last-correlation-id: 432796aa-086e-48c8-a81c-22ddd54c67ac
-last-transition-from: ready
+last-transition-id: 42e12bf2-5bd1-4e78-b752-70aa81bb4d8e
+last-correlation-id: 42e12bf2-5bd1-4e78-b752-70aa81bb4d8e
+last-transition-from: in-progress
 ---
 
 # f00344 — no manual drift.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/in-progress/f00344-no-manual-drift.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00344-no-manual-drift.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
