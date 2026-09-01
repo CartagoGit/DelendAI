@@ -2,7 +2,7 @@
 id: f00305
 title: "Existe una política de versiones del monorepo."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-reviewer-2
+- review-log: approved by sonnet-reviewer-2 — Verified independently: migration source is NOT gone - survives in done/audits/a00092 (TODO VER-001: allowlist for TS/SDK version drift, VER-002: lint:dependency-versions). The underlying finding was already fully shipped, separately, under proposal c00128 (docs/mcp-vertex/proposals/done/chores/c00128-...): docs/mcp-vertex/DEPENDENCY-VERSIONS.md is the documented single source of truth for governed dependency versions (typescript, @modelcontextprotocol/sdk, zod, bun) with a defaults+exceptions table, and package.json wires 'lint:dependency-versions' to tools/scripts/lint/dependency-versions.script.ts, which reads that doc directly. A monorepo version policy genuinely exists.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

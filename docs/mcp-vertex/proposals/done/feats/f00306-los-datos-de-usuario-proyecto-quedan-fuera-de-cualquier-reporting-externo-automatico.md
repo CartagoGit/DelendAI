@@ -2,7 +2,7 @@
 id: f00306
 title: "Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,7 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-reviewer-2
+- review-log: approved by sonnet-reviewer-2 — Verified independently: migration source is NOT gone - survives in done/audits/a00092 (Section 1 privacy invariant + ER-002/003/004/007). Checked plugins/error-reporting: ISafeMcpVertexReport DTO (reporter.interface.ts) carries only packageId/safeToolId/errorCode/failureClass/fingerprint/mcpFrames/syntheticExample - no message/stack/args/cwd/path/repo fields; privacy-validator.helper.ts blocks absolute-path/windows-path/url-not-allowlisted/email/ip/uuid/token/git-metadata/branch-name/json/xml/sql fragments by construction. Ran the adversarial privacy suites: tests/privacy-adversarial.spec.ts, tests/privacy-validator.spec.ts, tests/privacy-adversarial-llm-suffix-spoofing.spec.ts -> 19/19 passed.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
