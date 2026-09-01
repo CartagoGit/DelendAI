@@ -1472,14 +1472,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00347",
-				"title": "f00347",
-				"track": "migrated",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00348",
 				"title": "f00348",
 				"track": "migrated",
@@ -2162,10 +2154,10 @@
 		],
 		"byStatus": {
 			"ready": 105,
-			"in-progress": 6,
-			"review": 13,
+			"in-progress": 5,
+			"review": 12,
 			"paused": 1,
-			"done": 616,
+			"done": 618,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0
