@@ -2,7 +2,7 @@
 id: f00312
 title: "Solo internal frames."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 checklist: 'Solo internal frames', internal-classifier/frame-extractor design) is shipped: frame-extractor.helper.ts maintains an internalPathRegistry (mcp-scope/monorepo-root/package-root prefixes) and only frames matching @mcp-vertex/* package boundaries are kept and rewritten to package-relative form; internal-classifier.helper.ts + origin-analyzer.helper.ts gate whether a failure even counts as internal before any frame is considered. Ran privacy-validator.spec.ts + privacy-adversarial*.spec.ts: 23 tests pass, exit 0.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

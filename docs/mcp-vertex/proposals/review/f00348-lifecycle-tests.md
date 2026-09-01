@@ -2,12 +2,15 @@
 id: f00348
 title: "lifecycle tests."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#lifecycle-tests
 shipped-in: ["1e432f998"]
+last-transition-id: ea69aaf6-9125-4540-8f36-c5ca864969c8
+last-correlation-id: ea69aaf6-9125-4540-8f36-c5ca864969c8
+last-transition-from: in-progress
 ---
 
 # f00348 — lifecycle tests.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00348-lifecycle-tests.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00348-lifecycle-tests.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -41,7 +44,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
