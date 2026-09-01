@@ -2,7 +2,7 @@
 id: f00316
 title: "Adversarial tests."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,7 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 ER-007 / checklist 'Adversarial tests') is shipped: plugins/error-reporting/tests/privacy-adversarial.spec.ts and privacy-adversarial-llm-suffix-spoofing.spec.ts specifically try to smuggle private data past the validator (spoofed suffixes, disguised paths/tokens/etc). Ran the full adversarial suite: privacy-validator.spec.ts + privacy-adversarial.spec.ts + privacy-adversarial-llm-suffix-spoofing.spec.ts + synthetic-example.builder.spec.ts = 23 tests, all pass, exit 0.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

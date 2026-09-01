@@ -2,15 +2,15 @@
 id: f00351
 title: "impact_analyze."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#impact-analyze
 shipped-in: ["832f5674e"]
-last-transition-id: 06b8a311-6e20-4100-b38d-74c6f8750f79
-last-correlation-id: 06b8a311-6e20-4100-b38d-74c6f8750f79
-last-transition-from: ready
+last-transition-id: 0c2c3d38-ae47-418c-9ac8-22c30d6be7fc
+last-correlation-id: 0c2c3d38-ae47-418c-9ac8-22c30d6be7fc
+last-transition-from: in-progress
 ---
 
 # f00351 — impact_analyze.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/in-progress/f00351-impact-analyze.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00351-impact-analyze.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -44,7 +44,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
