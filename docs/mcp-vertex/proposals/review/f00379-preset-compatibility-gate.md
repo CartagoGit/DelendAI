@@ -1,19 +1,23 @@
 ---
-id: f00378
-title: "permissions generated."
+id: f00379
+title: "preset compatibility gate."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#permissions-generated
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#preset-compatibility-gate
+shipped-in: ["82c54bcc"]
+last-transition-id: 17f1fe0c-7d76-45c6-985a-9dfffd38955a
+last-correlation-id: 17f1fe0c-7d76-45c6-985a-9dfffd38955a
+last-transition-from: in-progress
 ---
 
-# f00378 — permissions generated.
+# f00379 — preset compatibility gate.
 
 ## Goal
 
-Migrated work item: permissions generated..
+Migrated work item: preset compatibility gate..
 
 ## why
 
@@ -28,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00378-permissions-generated.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00379-preset-compatibility-gate.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,9 +51,19 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#permissions-generated` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#preset-compatibility-gate` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
+
+### Independently verified 2026-09-01
+
+The prior `review-log` below was false. Source recovered from commit
+`11130767c`: MAN2-008, "validar manifest vs preset catalog" as a CI
+gate. This is exactly `c00009` ("lint: manifest vs preset catalog —
+compatibility matrix completa como gate CI (MAN2-008)"), already
+`done`, shipped in `82c54bcc`. Verified directly by running
+`bun tools/scripts/lint/manifest-vs-presets.script.ts` myself: "OK."
+Closing on that evidence, not on the placeholder review-log.
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders

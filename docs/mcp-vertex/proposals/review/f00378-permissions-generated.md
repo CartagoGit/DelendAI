@@ -1,19 +1,23 @@
 ---
-id: f00380
-title: "process UTF-8 test."
+id: f00378
+title: "permissions generated."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#process-utf-8-test
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#permissions-generated
+shipped-in: ["82c54bcc"]
+last-transition-id: b87395e7-18a2-4dc3-a7e9-897f2090624c
+last-correlation-id: b87395e7-18a2-4dc3-a7e9-897f2090624c
+last-transition-from: in-progress
 ---
 
-# f00380 — process UTF-8 test.
+# f00378 — permissions generated.
 
 ## Goal
 
-Migrated work item: process UTF-8 test..
+Migrated work item: permissions generated..
 
 ## why
 
@@ -28,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00380-process-utf-8-test.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00378-permissions-generated.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,9 +51,23 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#process-utf-8-test` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#permissions-generated` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
+
+### Independently verified 2026-09-01
+
+The prior `review-log` below was false. Source recovered from commit
+`11130767c`: MAN2-006, "generar permission matrix" — a real
+plugin/tool → permissions table generated from manifests, used by
+docs/selector/optimizer/adoption/review. Verified directly:
+`docs/mcp-vertex/security/permission-matrix.md` exists as a generated
+artifact, and `bun tools/scripts/lint/check-generated-artifacts.script.ts`
+(which regenerates and diffs every manifest-derived artifact,
+including this one) reported "All generated artifacts are in sync."
+Implemented by `f00175` (MAN2-003..006 generators), shipped in
+`82c54bcc`. Closing on that evidence, not on the placeholder
+review-log.
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders

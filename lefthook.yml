@@ -74,8 +74,18 @@ pre-commit:
                     - 'docs/mcp-vertex/agent-catalog.generated.json'
                     - 'plugins/*/src/**'
                     - 'packages/core/src/**'
-            run: 'if [ -f .cache/mcp-vertex/proposals/index.json ]; then bun run catalog:check; else echo "catalog-drift-check: skipped (proposal index not present yet)"; fi'
-            stage_fixed: false
+            # REGENERATE, don't just assert. The catalog embeds live
+            # proposal counts, so it goes stale the moment any agent moves
+            # a proposal — and with a swarm closing proposals continuously
+            # the check was red for everyone within minutes of any commit.
+            # Since `catalog:check` runs inside `bun run validate`, and a
+            # passing validate is the evidence `close_slice` /
+            # `proposal_transition` require, a stale generated artifact
+            # blocked every OTHER proposal from closing. A generated file
+            # should be regenerated at commit time; the validate-time check
+            # stays as the backstop for a host that bypassed the hook.
+            run: 'if [ -f .cache/mcp-vertex/proposals/index.json ]; then bun run sync:proposals >/dev/null && bun tools/scripts/catalog/generate-agent-catalog.script.ts --mode=compact >/dev/null; else echo "catalog-drift-check: skipped (proposal index not present yet)"; fi'
+            stage_fixed: true
 
         host-hints-drift-check:
             glob_filter:

@@ -1,20 +1,23 @@
 ---
-id: f00383
-title: "preset summaries coherentes."
+id: f00375
+title: "registry generado."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#preset-summaries-coherentes
-shipped-in: ["916c0673"]
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#registry-generado
+shipped-in: ["82c54bcc"]
+last-transition-id: 4140865c-7307-43c1-b707-9b344f08571f
+last-correlation-id: 4140865c-7307-43c1-b707-9b344f08571f
+last-transition-from: in-progress
 ---
 
-# f00383 — preset summaries coherentes.
+# f00375 — registry generado.
 
 ## Goal
 
-Migrated work item: preset summaries coherentes..
+Migrated work item: registry generado..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00383-preset-summaries-coherentes.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00375-registry-generado.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,27 +51,26 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#preset-summaries-coherentes` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#registry-generado` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
 ### Independently verified 2026-09-01
 
-The prior `review-log` below was false. Source recovered from commit
-`11130767c`: PRE2-001, preset summaries must reflect real membership
-(the audit specifically calls out `backend-api` naming plugins that
-aren't actually members); no summary should be hand-written listing
-plugins independently of the real preset definition. Verified
-directly: `packages/core/src/lib/plugins/preset-derived.ts` exports
-`derivePresetSummary({ id, resolvedMembers, independent })`, which
-builds the summary text purely from the preset's actual resolved
-member list (with a `+N more` preview beyond 6); `preset-catalog.ts`
-calls it for every preset, `backend-api` included, instead of storing
-a manual string. Ran the catalog's own test myself: `bunx vitest run
-tests/src/lib/plugins/preset-catalog.spec.ts` → 24 passed. Shipped by
-`r00020` ("presets summaries y presupuestos derivados del membership
-real — PRE2-001/PRE2-002"), commit `916c0673`. Closing on that
-evidence, not on the placeholder review-log.
+The prior `review-log` below ("migration source no longer present ...
+no actionable scope") was false — the source is MAN2-003 ("generar
+`FIRST_PARTY_PLUGIN_INDEX` completo", recovered from commit
+`11130767c`: eliminate the manual+generated mix, target a fully
+generated registry). This was already implemented by `f00175`
+("generators: registry, web catalog, docs y permission matrix
+generados desde manifests (MAN2-003..006)"), shipped in `82c54bcc`.
+Verified directly: `packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts`
+exists and is derived from plugin manifests, and
+`bun tools/scripts/lint/check-generated-artifacts.script.ts` (which
+regenerates the manifests-derived artifacts including this registry
+and diffs against the tracked copy) reports "All generated artifacts
+are in sync." Closing on that evidence, not on the placeholder
+review-log.
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
