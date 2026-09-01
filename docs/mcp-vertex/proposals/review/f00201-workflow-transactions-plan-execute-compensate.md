@@ -5,6 +5,7 @@ kind: feat
 status: review
 type: proposal
 track: transactions
+shipped-in: ["60f6ba5f7"]
 date: 2026-08-25
 priority: P3
 parent-plan: q00006

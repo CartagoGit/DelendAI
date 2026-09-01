@@ -113,11 +113,10 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
 - bun run build.script.ts build packages/core sale con exit 0 y el árbol bajo `build/packages/core/<version>/` contiene `index.js`, `public/index.js`, `contracts/index.js`, `runtime/index.js`, `plugin/index.js`, `node/index.js`, `version.js` y sus `.d.ts`
 - Las 57 entradas `package.json#main` con valor `./dist/...` se reducen a 0 (verificable con `rg '"\\./dist' packages plugins extensions apps -l`)
 - .gitignore deja de ignorar `dist/` raíz y `packages/*/dist/`, `plugins/*/dist/` (siguen ignorados por la nueva entrada `/build/`)
-- Todos los `packages/*/package.json` y `plugins/*/package.json` declaran `"main": "./build/<group>/<name>/<version>/index.js"` con paths relativos al package.json (no absolutos)
-- Cada `exports["."]` resuelve a `./build/<group>/<name>/<version>/index.js` (import) y `./build/<group>/<name>/<version>/index.d.ts` (types), con la rama `@mcp-vertex/source` preservada apuntando a `./src/...`
-- Cada `exports["./public"]` apunta a `./build/<group>/<name>/<version>/public/index.js`
-- `bun pm ls` sigue reconociendo los 57 workspaces con la misma jerarquía
-- Script `tools/scripts/migrate-package-exports.script.ts --check` retorna exit 0 sobre todo el monorepo (validación de que no quedó ningún `./dist/` literal)
+- Los manifests de `packages/*/package.json` y `plugins/*/package.json` NO cambian: siguen declarando `"main": "./dist/index.js"` y `exports["."] → "./dist/..."`, con la rama `@mcp-vertex/source` apuntando a `./src/...` (corregido 2026-09-01: ver nota en S2 — `./build/...` relativo al package.json no puede resolver, Node/npm no permiten `exports` fuera del directorio del paquete)
+- `stageBuildForPublish(pkgDir, buildDir, stageDir)` copia el paquete a un directorio de staging, elimina cualquier `dist/` heredado y copia allí el contenido de `build/<group>/<name>/<version>/` como `dist/`
+- `release.script.ts`, `tools/scripts/smoke/pack.script.ts` y `tools/scripts/verify/external-install-smoke.script.ts` empaquetan siempre la copia de staging, nunca `packages/<name>/` ni `plugins/<name>/` directamente
+- `bun tools/scripts/ci/pack-smoke.script.ts --real` y `bun run verify:external-install` salen con exit 0 en un checkout sin ningún `dist/` preexistente (solo `build/` recién generado por `bun run build`)
 - Lint escanea `build/**/*.js` (excluyendo `node_modules`) y reporta cualquier `import ... from '../src/'` o `require('../src/')` que cruce desde un artefacto de build hacia código fuente
 - Permite imports relativos que permanezcan dentro del propio `build/<group>/<name>/<version>/`
 - Permite imports `@mcp-vertex/<otro>` (que resuelven a otro artefacto `build/`)
