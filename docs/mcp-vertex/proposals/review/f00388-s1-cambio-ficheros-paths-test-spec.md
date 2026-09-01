@@ -44,7 +44,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: in_review
+- review-implementer: sonnet-verifier-10
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
