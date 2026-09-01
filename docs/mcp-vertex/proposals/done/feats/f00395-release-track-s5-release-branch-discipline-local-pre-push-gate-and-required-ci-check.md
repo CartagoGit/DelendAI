@@ -127,7 +127,7 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
 - **Files**:
   - `.github/CONTRIBUTING.md`
   - `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`
-  - `docs/mcp-vertex/proposals/AGENT-BOOTSTRAP.md` (sólo si el bootstrap referencia branch discipline)
+  - `docs/mcp-vertex/AGENT-BOOTSTRAP.md` (sólo si el bootstrap referencia branch discipline)
 - **Gate**: type
 - **Owner**: implementation-runner
 - acceptance:
