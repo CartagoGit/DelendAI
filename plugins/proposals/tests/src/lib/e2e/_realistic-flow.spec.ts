@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	createAssembledProposalsServer,
 	type IAssembledProposalsServer,
-} from '/home/cartago/_projects/mcp-vertex/plugins/proposals/tests/src/lib/e2e/assembled-proposals-server';
+} from './assembled-proposals-server';
 import { afterEach, beforeEach } from 'vitest';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
