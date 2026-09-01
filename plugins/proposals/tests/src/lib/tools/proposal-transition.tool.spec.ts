@@ -317,6 +317,49 @@ describe('proposal_transition', async () => {
 			});
 		}
 
+		it('requireValidateEvidence:false lets a host opt out of the gate', async () => {
+			// Hosts without a validate chain worth blocking on switch the
+			// gate off in config instead of passing `force: true`, which
+			// would also disable the peer-review and dependent gates.
+			await writeProposal(root, 'review', 'f70002-no-validate.md', {
+				id: 'f70002',
+				status: 'review',
+				'shipped-in': '[30551533]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f70002',
+					to: 'done',
+					reason: 'host opted out of the validate gate',
+				},
+				{ ...options, requireValidateEvidence: false },
+			);
+			expect(result.isError).toBeUndefined();
+			expect(
+				await readFile(
+					join(root, 'done', 'f70002-no-validate.md'),
+					'utf8',
+				),
+			).toContain('status: done');
+		});
+
+		it('still refuses without evidence when the gate is left on', async () => {
+			await writeProposal(root, 'review', 'f70003-needs-validate.md', {
+				id: 'f70003',
+				status: 'review',
+				'shipped-in': '[30551533]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f70003',
+					to: 'done',
+					reason: 'no evidence supplied',
+				},
+				options,
+			);
+			expect(result.isError).toBe(true);
+		});
+
 		it('falls back to `done/` (no sub-folder) when kind is missing', async () => {
 			await writeProposal(root, 'review', 'f70001-no-kind.md', {
 				id: 'f70001',
