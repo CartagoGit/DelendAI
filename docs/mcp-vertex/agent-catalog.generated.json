@@ -2288,22 +2288,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00029",
-				"title": "r00029",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
-				"id": "r00030",
-				"title": "r00030",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00031",
 				"title": "r00031",
 				"track": "tokens",
@@ -2512,22 +2496,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00262",
-				"title": "x00262",
-				"track": "commit-policy",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00299",
-				"title": "x00299",
-				"track": "governance",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00303",
 				"title": "x00303",
 				"track": "proposals-commit-persistence",
@@ -2553,11 +2521,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 155,
+			"ready": 151,
 			"in-progress": 5,
 			"review": 0,
 			"paused": 1,
-			"done": 581,
+			"done": 585,
 			"blocked": 23,
 			"retired": 11,
 			"unspecified": 0

@@ -2,11 +2,14 @@
 id: x00299
 title: "Permitir persistencia configurada hacia develop"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: governance
 date: 2026-08-29
-shipped-in: ["0c0be56d6 # feat(core): enforce cross-plugin configuration compatibility, develop push guard"]
+shipped-in: ["0c0be56d6 # feat(core): enforce cross-plugin configuration compatibility (develop push guard)"]
+last-transition-id: 20c296c2-26dc-4894-b4d2-da37e77cbb2e
+last-correlation-id: 20c296c2-26dc-4894-b4d2-da37e77cbb2e
+last-transition-from: review
 ---
 
 # x00261 — Permitir persistencia configurada hacia develop

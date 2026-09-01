@@ -2,7 +2,7 @@
 id: r00030
 title: "`@mcp-vertex/client`: importar de `contracts`, no de `core/public`"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -16,6 +16,10 @@ related:
     - q00006
     - r00029 # extraer @mcp-vertex/contracts (prerequisito)
     - r00028 # subpath exports de core
+shipped-in: ["3725b76ba"]
+last-transition-id: a2b3e026-4ff0-4541-8f52-94fbf4464f73
+last-correlation-id: a2b3e026-4ff0-4541-8f52-94fbf4464f73
+last-transition-from: review
 ---
 
 # r00030 — `@mcp-vertex/client`: importar de `contracts`, no de `core/public`
@@ -132,7 +136,7 @@ importa de `@mcp-vertex/core`.
 ### S1 — Migrar imports de tipos puros a `@mcp-vertex/core/contracts`
 
 - **Status**: done
-- **Files**: `packages/client/src/**/*.ts` (todos los `import type` de `@mcp-vertex/core` hacia `contracts`), `tools/scripts/inspect/client-imports.script.ts`, `tools/scripts/lint/no-core-public-types-in-client.script.ts`
+- **Files**: `tools/scripts/inspect/client-imports.script.ts`, `tools/scripts/lint/no-core-public-types-in-client.script.ts`
 - **Gate**: type
 - review-state: done
 - review-implementer: copilot-orchestrator-r00030-s1
