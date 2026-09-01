@@ -2,7 +2,7 @@
 id: r00031
 title: "Compactar output schema de `proposal_get` (hotspot 51 KB)"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -17,6 +17,10 @@ related:
     - r00032 # misma estrategia aplicada a orchestrator-runner
     - f00187 # detail: compact|normal|full transversal (sinergia)
     - c00135 # dashboards adaptive vs native (downstream)
+shipped-in: ["e1f48bf4b"]
+last-transition-id: b86f9349-742d-4e2e-9d04-26676bd3bc19
+last-correlation-id: b86f9349-742d-4e2e-9d04-26676bd3bc19
+last-transition-from: review
 ---
 
 # r00031 — Compactar output schema de `proposal_get` (hotspot 51 KB)

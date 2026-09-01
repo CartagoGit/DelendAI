@@ -2288,14 +2288,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00031",
-				"title": "r00031",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00032",
 				"title": "r00032",
 				"track": "tokens",
@@ -2510,22 +2502,14 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00305",
-				"title": "x00305",
-				"track": "audit-stabilization",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 151,
+			"ready": 149,
 			"in-progress": 5,
-			"review": 0,
+			"review": 1,
 			"paused": 1,
-			"done": 585,
+			"done": 586,
 			"blocked": 23,
 			"retired": 11,
 			"unspecified": 0

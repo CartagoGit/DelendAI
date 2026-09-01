@@ -2,7 +2,7 @@
 id: x00305
 title: "Exponer outputSchema efectivo de proposals_close_plan en runtime"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: audit-stabilization
 priority: P0
@@ -10,6 +10,9 @@ date: 2026-08-29
 parent-plan: q00012
 related: [F-002, x00302]
 shipped-in: ["b8d35225d # fix(proposals): expose close-plan outputSchema at runtime"]
+last-transition-id: 695e7194-7c44-48e5-bfa3-77d1f3c23532
+last-correlation-id: 695e7194-7c44-48e5-bfa3-77d1f3c23532
+last-transition-from: in-progress
 ---
 
 # x00305 — Exponer outputSchema efectivo de proposals_close_plan
