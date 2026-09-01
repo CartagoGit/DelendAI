@@ -1,4 +1,5 @@
 import { dirname, join } from 'node:path';
+import type { IClosureHop } from '../contracts/interfaces/closure-hop.interface';
 
 import z from 'zod';
 
@@ -150,15 +151,6 @@ const folderStateOf = (
 	const slash = folder.indexOf('/');
 	return slash === -1 ? folder : folder.slice(0, slash);
 };
-
-export interface IClosureHop {
-	/** The status to transition to next. Always a legal DFA edge. */
-	readonly to: 'in-progress' | 'review' | 'done';
-	/** Whether that hop's gate asks for validate evidence. */
-	readonly needsValidateEvidence: boolean;
-	/** One line telling the caller why this hop and what follows. */
-	readonly guide: string;
-}
 
 /**
  * The next legal hop toward `done` for a proposal whose slices are all
