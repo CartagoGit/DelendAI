@@ -1592,14 +1592,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00410",
-				"title": "f00410",
-				"track": "remote-providers-foundation",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00411",
 				"title": "f00411",
 				"track": "gitlab-read-only",
@@ -1897,11 +1889,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 73,
+			"ready": 72,
 			"in-progress": 5,
 			"review": 15,
 			"paused": 1,
-			"done": 647,
+			"done": 648,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0
