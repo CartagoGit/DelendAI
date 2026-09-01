@@ -37,6 +37,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 import {
 	packRewrittenTarball,
+	stageBuildForPublish,
 	type IWorkspaceDepsPlan,
 } from '../publish/workspace-deps.ts';
 import { PUBLISH_ORDER } from '../release/release-plan';

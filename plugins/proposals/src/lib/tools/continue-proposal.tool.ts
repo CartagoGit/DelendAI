@@ -631,8 +631,16 @@ export const runContinueProposal = async (
 		const next = [...closureReady].sort((a, b) =>
 			a.id.localeCompare(b.id),
 		)[0]!;
-		const isReview =
-			folderStateOf(next.file, options.proposalsDirAbs) === 'review';
+		// The cascade must recommend a hop the DFA actually allows.
+		// `PROPOSAL_STATUS_TRANSITIONS` has no `ready → review` edge — the
+		// path is `ready → in-progress → review → done`. Recommending the
+		// illegal jump is what stranded 128 fully-implemented proposals in
+		// `ready/`: `auto_work` told the agent to run it, the transition
+		// refused, the agent re-asked and got the very same instruction.
+		// An unreachable next step is worse than no next step, because a
+		// well-behaved agent loops on it forever.
+		const folderState = folderStateOf(next.file, options.proposalsDirAbs);
+		const closureHop = nextClosureHop(folderState);
 		const markdown = await readTextOrNull(
 			join(
 				options.proposalsDirAbs ?? dirname(options.indexPathAbs),
@@ -651,17 +659,13 @@ export const runContinueProposal = async (
 			action: 'close',
 			nextAction: isPlan
 				? `${options.namespacePrefix}_proposals_close_plan { planId: "${next.id}", reason }`
-				: isReview
-					? `${options.namespacePrefix}_proposal_transition { id: "${next.id}", to: "done", reason }`
-					: `${options.namespacePrefix}_proposal_transition { id: "${next.id}", to: "review", reason, validateEvidence }`,
+				: `${options.namespacePrefix}_proposal_transition { id: "${next.id}", to: "${closureHop.to}", reason${closureHop.needsValidateEvidence ? ', validateEvidence' : ''} }`,
 			relaunchCommand: `${options.namespacePrefix}_continue_proposal { proposalId: "${next.id}", mode: "plan" }`,
 			guide: [
 				'All declared slices are done; do not claim another slice.',
 				isPlan
 					? 'Run the plan closure preflight; it will close the plan only when every required child, sub-plan, own slice, and review gate is satisfied.'
-					: isReview
-						? 'Complete the final proposal transition to done after the peer-review and evidence gates pass.'
-						: 'Move the proposal to review with validation evidence, then complete peer review and transition it to done.',
+					: closureHop.guide,
 			],
 		});
 	}
