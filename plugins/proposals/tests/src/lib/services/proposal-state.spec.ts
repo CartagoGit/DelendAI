@@ -97,6 +97,32 @@ describe('proposal-state guards', () => {
 		).toEqual({ ok: true });
 	});
 
+	it('accepts a SHA carrying the YAML inline comment authors actually write', () => {
+		// `shipped-in: ["525a3bdc # feat(ci): verify CI local reproduce"]`
+		// is idiomatic YAML and common in this repo. The comment is part
+		// of the parsed string, and the anchored SHA test rejected it —
+		// so the note explaining what the commit did was enough to block
+		// the proposal from closing.
+		expect(
+			guardShippedInPresent({
+				'shipped-in': [
+					'525a3bdc # feat(ci): verify CI local reproduce',
+				],
+			}),
+		).toEqual({ ok: true });
+		expect(
+			guardShippedInPresent({
+				'shipped-in': '30551533 # landed the engine',
+			}),
+		).toEqual({ ok: true });
+	});
+
+	it('still rejects an entry that is only a comment', () => {
+		expect(
+			guardShippedInPresent({ 'shipped-in': ['# not a sha'] }),
+		).toMatchObject({ ok: false, code: 'missing-shipped-in' });
+	});
+
 	it('rejects missing shipped-in', () => {
 		expect(guardShippedInPresent({})).toMatchObject({
 			ok: false,

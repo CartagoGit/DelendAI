@@ -2480,14 +2480,6 @@
 				"date": ""
 			},
 			{
-				"id": "v00126",
-				"title": "v00126",
-				"track": "ci",
-				"status": "ready",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "v00127",
 				"title": "v00127",
 				"track": "governance",
@@ -2585,11 +2577,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 159,
+			"ready": 158,
 			"in-progress": 5,
 			"review": 0,
 			"paused": 1,
-			"done": 577,
+			"done": 578,
 			"blocked": 23,
 			"retired": 11,
 			"unspecified": 0

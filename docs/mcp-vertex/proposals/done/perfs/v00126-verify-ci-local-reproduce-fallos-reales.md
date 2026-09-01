@@ -2,7 +2,7 @@
 id: v00126
 title: "Verify CI local reproduce fallos reales"
 kind: perf
-status: ready
+status: done
 type: proposal
 track: ci
 date: 2026-08-25
@@ -20,6 +20,9 @@ related:
     - c00138 # affected CI (este verifier lo aprovecha)
     - c00139 # tier jobs (este verifier reproduce cualquier tier)
     - f00191 # mcpv doctor (incluye verificación de CI)
+last-transition-id: 6b4029ad-43c4-4f5e-9c3a-0054d7d45165
+last-correlation-id: 6b4029ad-43c4-4f5e-9c3a-0054d7d45165
+last-transition-from: review
 ---
 
 # v00126 — Verify CI local reproduce fallos reales

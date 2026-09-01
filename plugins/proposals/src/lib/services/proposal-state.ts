@@ -93,17 +93,28 @@ export const guardShippedInPresent = (
 	// The shape-check downstream tolerates any of these by extracting
 	// every 7-40 char hex run.
 	const shaRe = new RegExp(`^[0-9a-f]{7,${SHIPPED_IN_SHA_LENGTH_MAX}}$`);
+	// YAML allows a trailing `# ...` comment after a value, and authors
+	// use it constantly to say what the SHA landed:
+	//   shipped-in: ["525a3bdc # feat(ci): verify CI local reproduce"]
+	// The comment is part of the string once parsed, and the anchored
+	// SHA test then rejected an otherwise perfectly good SHA — the note
+	// explaining the commit was enough to block the proposal from
+	// closing. Strip it, which is also what this function's own doc
+	// comment above already promises ("extracting every 7-40 char hex
+	// run").
+	const stripInlineComment = (value: string): string =>
+		value.split('#')[0]?.trim() ?? '';
 	const candidates: string[] = [];
 	if (Array.isArray(raw)) {
 		for (const entry of raw) {
 			if (typeof entry === 'string' && entry.trim().length > 0) {
-				candidates.push(entry.trim());
+				candidates.push(stripInlineComment(entry));
 			} else if (typeof entry === 'number' && Number.isFinite(entry)) {
 				candidates.push(String(entry));
 			}
 		}
 	} else if (typeof raw === 'string' && raw.trim().length > 0) {
-		const trimmed = raw.trim();
+		const trimmed = stripInlineComment(raw);
 		// Strip matching [] to handle the legacy `'[abc1234]'` form.
 		const inner =
 			trimmed.startsWith('[') && trimmed.endsWith(']')
@@ -134,6 +145,11 @@ export const guardShippedInPresent = (
 			fix: SHIPPED_IN_MISSING_FIX,
 		};
 	}
+	const nonEmptyCandidates = candidates.filter(
+		(entry) => entry.trim().length > 0,
+	);
+	candidates.length = 0;
+	candidates.push(...nonEmptyCandidates);
 	if (candidates.length === 0) {
 		return {
 			ok: false,
