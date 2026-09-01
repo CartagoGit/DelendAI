@@ -151,6 +151,53 @@ const folderStateOf = (
 	return slash === -1 ? folder : folder.slice(0, slash);
 };
 
+export interface IClosureHop {
+	/** The status to transition to next. Always a legal DFA edge. */
+	readonly to: 'in-progress' | 'review' | 'done';
+	/** Whether that hop's gate asks for validate evidence. */
+	readonly needsValidateEvidence: boolean;
+	/** One line telling the caller why this hop and what follows. */
+	readonly guide: string;
+}
+
+/**
+ * The next legal hop toward `done` for a proposal whose slices are all
+ * finished.
+ *
+ * `PROPOSAL_STATUS_TRANSITIONS` allows `ready → in-progress → review →
+ * done` and has NO `ready → review` edge. The cascade used to recommend
+ * that missing edge for anything not already in `review/`, so every
+ * proposal sitting in `ready/` with its slices done produced an
+ * instruction the transition tool then refused — and the agent, doing
+ * exactly as told, asked again and got the same impossible step. Keeping
+ * the routing next to the DFA it must satisfy is the point of this
+ * function: a recommendation that cannot be executed is a loop, not a
+ * plan.
+ */
+export const nextClosureHop = (folderState: string | null): IClosureHop => {
+	if (folderState === 'review') {
+		return {
+			to: 'done',
+			needsValidateEvidence: false,
+			guide: 'Complete the final proposal transition to done after the peer-review and evidence gates pass.',
+		};
+	}
+	if (folderState === 'in-progress') {
+		return {
+			to: 'review',
+			needsValidateEvidence: true,
+			guide: 'Move the proposal to review with validation evidence, then complete peer review and transition it to done.',
+		};
+	}
+	// `ready` (and any unexpected folder) must pass through in-progress
+	// first; the next auto_work call picks it up from there.
+	return {
+		to: 'in-progress',
+		needsValidateEvidence: false,
+		guide: 'Open the proposal (ready → in-progress) first; `ready → review` is not a legal transition. Then move it to review with validation evidence, and finally to done.',
+	};
+};
+
 /**
  * Same dual signal as S5's `isNewSystemFilename` (status alone isn't
  * safe — `ready` is the *default* status `create_proposal` writes for

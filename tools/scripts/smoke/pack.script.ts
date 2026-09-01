@@ -108,16 +108,65 @@ export const assertPublishablePackagesArePacked = (): void => {
 };
 
 /**
+ * r00045 S1 moved the build driver's output off per-package `dist/` onto a
+ * single `build/{group}/{name}/{version}/` tree — manifests still declare
+ * `"main": "./dist/index.js"` (npm/Node forbid `exports` escaping the
+ * package directory with `../build`), per the proposal's design note: the
+ * publish pipeline (see `release.script.ts`) materialises that `dist/` in a
+ * per-package STAGING COPY at publish time, never in the workspace itself.
+ * This smoke has to reproduce exactly that staging step before packing —
+ * packing the raw workspace dir (as it did before this fix) packs a
+ * manifest whose `./dist/...` entrypoint was never written anywhere.
+ */
+const computeBuildDir = (dir: string, version: string): string => {
+	const group = dir.startsWith('packages/') ? 'packages' : 'plugins';
+	const name = dir.slice(dir.indexOf('/') + 1);
+	return join(ROOT, 'build', group, name, version);
+};
+
+/**
+ * Stage every packed package's slice of `build/` into a per-package `dist/`
+ * under a throwaway staging root, mirroring `release.script.ts`'s real
+ * publish flow (`stageBuildForPublish`). Returns dir → staged absolute path
+ * so callers pack/inspect the STAGED copy, never the workspace original.
+ */
+const stagePackedPackages = async (
+	stagingRoot: string,
+): Promise<ReadonlyMap<string, string>> => {
+	const staged = new Map<string, string>();
+	for (const dir of PACKED_PACKAGE_DIRS) {
+		const pkg = readPackageJson(dir);
+		if (typeof pkg.version !== 'string') {
+			throw new Error(`${dir}/package.json is missing a version`);
+		}
+		const buildDir = computeBuildDir(dir, pkg.version);
+		const stageDir = join(stagingRoot, dir);
+		await stageBuildForPublish(join(ROOT, dir), buildDir, stageDir);
+		staged.set(dir, stageDir);
+	}
+	return staged;
+};
+
+/**
  * A tarball is only meaningful if the entrypoints its manifest advertises
  * actually exist. Packing an unbuilt package produces a tarball that
  * installs fine and then dies at require time with a MODULE_NOT_FOUND
  * that names a path inside a temp dir — evidence that points nowhere near
- * the missing build step. Fail here, naming the package and the file.
+ * the missing build step. Checked against the STAGED copy (post
+ * `stagePackedPackages`) so this fails the same way the real publish would:
+ * naming the package and the file that `bun run build` never produced.
  */
-export const assertPackedEntrypointsExist = (): void => {
+export const assertPackedEntrypointsExist = (
+	stagedDirs: ReadonlyMap<string, string>,
+): void => {
 	const missing: string[] = [];
 	for (const dir of PACKED_PACKAGE_DIRS) {
 		const pkg = readPackageJson(dir);
+		const stageDir = stagedDirs.get(dir);
+		if (stageDir === undefined) {
+			missing.push(`${dir} → (not staged)`);
+			continue;
+		}
 		const targets = [
 			...(typeof pkg.main === 'string' ? [pkg.main] : []),
 			...(typeof pkg.bin === 'string'
@@ -125,7 +174,7 @@ export const assertPackedEntrypointsExist = (): void => {
 				: Object.values(pkg.bin ?? {})),
 		];
 		for (const target of targets) {
-			if (!existsSync(join(ROOT, dir, target))) {
+			if (!existsSync(join(stageDir, target))) {
 				missing.push(`${dir} → ${target}`);
 			}
 		}
@@ -306,13 +355,19 @@ const runSmokeAgainstWorkdir = async (
 	}
 };
 
-const runPackageSmoke = async (): Promise<void> => {
+const runPackageSmoke = async (
+	stagedDirs: ReadonlyMap<string, string>,
+): Promise<void> => {
 	const proj = mkdtempSync(join(tmpdir(), 'mcp-pack-'));
 	try {
 		const tarballs: string[] = [];
 		for (const pkgDir of PACKED_PACKAGE_DIRS) {
+			const stageDir = stagedDirs.get(pkgDir);
+			if (stageDir === undefined) {
+				throw new Error(`${pkgDir} was not staged before packing`);
+			}
 			tarballs.push(
-				await packRewrittenTarball(join(ROOT, pkgDir), WORKSPACE_PLAN, {
+				await packRewrittenTarball(stageDir, WORKSPACE_PLAN, {
 					outDir: proj,
 				}),
 			);
