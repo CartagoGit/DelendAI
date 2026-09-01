@@ -2,11 +2,14 @@
 id: f00410
 title: "Contrato común para proveedores remotos GitLab y GitHub"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: remote-providers-foundation
 date: 2026-08-31
 shipped-in: ["46173fed9"]
+last-transition-id: 1f134843-8f18-49b5-8a21-78ba08302418
+last-correlation-id: 1f134843-8f18-49b5-8a21-78ba08302418
+last-transition-from: ready
 ---
 
 # f00410 — Contrato común para proveedores remotos GitLab y GitHub
