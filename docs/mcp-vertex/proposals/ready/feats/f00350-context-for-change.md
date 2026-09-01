@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#context-for-change
+shipped-in: ["1a17dbb57"]
 ---
 
 # f00350 — context_for_change.
@@ -50,6 +51,20 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#context-for-change` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
+
+### Verified 2026-09-01
+
+- The prior review-log's premise was false: a00092 is present and this
+  title maps to §23 IDEA-001 (`context_for_change` tool). Verified
+  against the current codebase: `plugins/context-for-change/` is a full
+  first-party plugin (manifest, tool, service, tests), landed in
+  `1a17dbb57` (feat(f00165): plugin context-for-change — contexto de
+  cambio combinado y compacto). Ran its tests directly:
+  `bun run vitest run plugins/context-for-change` → passed (included in
+  the 10-file/45-test run below, alongside the other three sibling
+  plugins from this batch).
+- Closing on this evidence, not on the "no actionable scope" claim.
+
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
