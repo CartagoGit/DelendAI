@@ -44,7 +44,7 @@ Cerrar la disciplina de las ramas `release/{patch|minor|major}/{kebab-slug}` con
   - `plugins/commit-policy/src/lib/contracts/constants/protected-branches.ts`
   - `plugins/commit-policy/tests/src/lib/contracts/constants/protected-branches.spec.ts`
   - `tools/scripts/lint/push-to-develop-discipline.script.ts`
-  - `tools/scripts/lint/push-to-develop-discipline.spec.ts`
+  - `tools/scripts/lint/push-to-develop-discipline.script.spec.ts`
 - **Gate**: type, e2e
 - **Owner**: implementation-runner
 - acceptance:
