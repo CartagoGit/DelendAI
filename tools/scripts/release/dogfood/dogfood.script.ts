@@ -62,6 +62,10 @@ import {
 	releasePrepareExecute,
 	releaseValidate,
 } from '../../../../plugins/git/src/lib/release';
+import {
+	prepareReleaseBranch,
+	rehydrateIntegrationFromRelease,
+} from '../../../../plugins/git/src/lib/services/git';
 import type { IReleaseCandidateStore } from '../../../../plugins/git/src/lib/release';
 import { createReleaseCandidateStore } from '../../../../plugins/git/src/lib/release';
 import {
@@ -407,6 +411,7 @@ export interface IDogfoodResult {
 		readonly branch: string;
 		readonly target: 'main';
 	};
+	readonly rehydrateReceipt: { readonly integrationSha: string } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -554,6 +559,18 @@ export const runReleaseDogfood = async (
 		mode: 'normal',
 	});
 
+	// Branch workflow contract: the PR head IS the release branch we
+	// just prepared from develop, and its upstream is configured at
+	// `origin/<branch>`. Forge enforces the same contract in
+	// `validateReleasePromotionGit`; the dogfood must echo it back so
+	// the script can never silently produce a PR from the wrong
+	// branch.
+	const prepared = await prepareReleaseBranch(run, baseInput);
+	if (prepared.branch !== candidate.branch)
+		fail(
+			`prepared branch ${prepared.branch} does not match candidate ${candidate.branch}`,
+		);
+
 	// (g)+(h) PR contract. The provider is always mocked — we never call
 	// `gh` from this script.
 	const mock = createMockReleasePrProvider();
@@ -561,10 +578,26 @@ export const runReleaseDogfood = async (
 	const prResult = await createReleasePullRequest({
 		candidate,
 		gates,
-		currentBranch: candidate.branch,
-		upstream: 'origin/develop',
+		currentBranch: prepared.branch,
+		upstream: prepared.upstream,
 		provider,
 	});
+
+	// (h.5) Integration rehydrate — the only sanctioned way to bring
+	// `develop` in sync with the release branch after the PR has been
+	// merged into `main`. The operation pushes to `develop` directly
+	// (no PR), so it is also safe to exercise in the dry-run path as
+	// long as the runner reports `currentBranch === candidate.branch`
+	// and `clean === true`.
+	let rehydrateReceipt: { readonly integrationSha: string } | null = null;
+	if (flags.simulateMerge) {
+		const integrated = await rehydrateIntegrationFromRelease(run, {
+			releaseBranch: candidate.branch,
+		});
+		rehydrateReceipt = Object.freeze({
+			integrationSha: integrated.integrationSha,
+		});
+	}
 
 	// (i) Finalize. Only runs under --simulate-merge; otherwise we
 	// capture the explicit "user must approve merge" reason.
@@ -664,6 +697,7 @@ export const runReleaseDogfood = async (
 			branch: policy.sourceBranch,
 			target: policy.targetBranch,
 		}),
+		rehydrateReceipt,
 	});
 };
 

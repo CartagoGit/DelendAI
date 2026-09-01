@@ -23,7 +23,7 @@ const candidate = {
 const makeProvider = (existing: readonly IReleasePrRecord[] = []) => {
 	const created: Array<{
 		headBranch: string;
-		baseBranch: 'main';
+		baseBranch: string;
 		body: string;
 	}> = [];
 	const provider: IReleasePrProvider = {
@@ -345,5 +345,79 @@ describe('release PR forge contract', () => {
 				provider,
 			}),
 		).rejects.toThrowError(/upstream timeout/);
+	});
+
+	// Custom releaseTargetBranch: the provider receives the configured
+	// base branch instead of the hard-coded `main` default.
+	it('uses the configured releaseTargetBranch instead of hard-coded main', async () => {
+		const created: Array<{
+			headBranch: string;
+			baseBranch: string;
+			body: string;
+		}> = [];
+		const provider: IReleasePrProvider = {
+			listPullRequests: async () => [],
+			createPullRequest: async (input) => {
+				created.push(input);
+				return {
+					number: 60,
+					url: 'https://forge.example/pr/60',
+					title: input.title,
+					headBranch: input.headBranch,
+					baseBranch: input.baseBranch,
+				};
+			},
+		};
+		const result = await createReleasePullRequest({
+			candidate,
+			currentBranch: candidate.branch,
+			upstream: `origin/${candidate.branch}`,
+			gates: [{ name: 'tests', status: 'passed' }],
+			provider,
+			options: { releaseTargetBranch: 'production' },
+		});
+		expect(result.created).toBe(true);
+		expect(result.pr.baseBranch).toBe('production');
+		expect(created[0]?.baseBranch).toBe('production');
+	});
+
+	// Hard rule: PRs MUST target the release branch, never the
+	// integration branch. Defaults reject this case so the
+	// `release/** → main` flow is the only sanctioned shape.
+	it('rejects when the candidate branch is itself configured as the integration branch', async () => {
+		const { provider } = makeProvider();
+		await expect(
+			createReleasePullRequest({
+				candidate,
+				currentBranch: candidate.branch,
+				upstream: `origin/${candidate.branch}`,
+				gates: [{ name: 'tests', status: 'passed' }],
+				provider,
+				// Force the integration branch to be the release branch
+				// itself; the contract MUST reject that configuration.
+				options: { integrationBranch: candidate.branch },
+			}),
+		).rejects.toThrowError(
+			expect.objectContaining({ code: 'integration-base-forbidden' }),
+		);
+	});
+
+	it('still rejects when the integration branch matches the candidate even with a custom target', async () => {
+		const { provider } = makeProvider();
+		await expect(
+			createReleasePullRequest({
+				candidate,
+				currentBranch: candidate.branch,
+				upstream: `origin/${candidate.branch}`,
+				gates: [{ name: 'tests', status: 'passed' }],
+				provider,
+				options: {
+					releaseTargetBranch: 'production',
+					integrationBranch: candidate.branch,
+				},
+			}),
+		).rejects.toThrowError(
+			expect.objectContaining({ code: 'integration-base-forbidden' }),
+		);
 	});
 });

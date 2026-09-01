@@ -13,6 +13,20 @@ import {
 	type ReleaseType,
 } from '@mcp-vertex/core/public';
 
+import type {
+	IPreparedReleaseBranch,
+	IPrepareReleaseBranchInput,
+} from '../contracts/interfaces/prepared-release-branch.interface';
+import {
+	DEFAULT_RELEASE_CYCLE_CONFIG,
+	type IMergeReleaseFixInput,
+	type IPromotionReady,
+	type IIntegrationRehydrated,
+	type IRehydrateIntegrationInput,
+	type IReleaseCycleConfig,
+	type IReleaseFixMerged,
+} from '../contracts/interfaces/release-cycle.interface';
+
 /**
  * Default runner: invoke the real `git` in `cwd` (read-only commands)
  * via async `execFile`, so a slow/hanging git never blocks the MCP
@@ -367,6 +381,263 @@ export const gitWorktreeList = async (
 ): Promise<readonly IGitWorktreeEntry[]> =>
 	parseWorktreeList((await run(['worktree', 'list', '--porcelain'])).output);
 
+const runGitWrite = async (
+	run: IGitRunner,
+	args: readonly string[],
+): Promise<void> => {
+	const result = await run(args);
+	if (!result.ok)
+		throw new Error(
+			result.reason ?? `git command failed: ${args.join(' ')}`,
+		);
+};
+
+/** Build a release-cycle config from a partial override (defaults applied). */
+export const resolveReleaseCycleConfig = (
+	override?: Partial<IReleaseCycleConfig>,
+): IReleaseCycleConfig =>
+	Object.freeze({
+		releaseSourceBranch:
+			override?.releaseSourceBranch ??
+			DEFAULT_RELEASE_CYCLE_CONFIG.releaseSourceBranch,
+		releaseTargetBranch:
+			override?.releaseTargetBranch ??
+			DEFAULT_RELEASE_CYCLE_CONFIG.releaseTargetBranch,
+		integrationBranch:
+			override?.integrationBranch ??
+			DEFAULT_RELEASE_CYCLE_CONFIG.integrationBranch,
+		remote: override?.remote ?? DEFAULT_RELEASE_CYCLE_CONFIG.remote,
+	});
+
+/** Create or reuse the release branch from a clean release-source checkout. */
+export const prepareReleaseBranch = async (
+	run: IGitRunner,
+	input: IPrepareReleaseBranchInput & {
+		readonly config?: Partial<IReleaseCycleConfig>;
+	},
+): Promise<IPreparedReleaseBranch> => {
+	const config = resolveReleaseCycleConfig(input.config);
+	const status = await gitStatus(run);
+	if (status.branch !== config.releaseSourceBranch)
+		throw new Error(
+			`release branch must be prepared from ${config.releaseSourceBranch}: ${status.branch ?? '(detached)'}`,
+		);
+	if (!status.clean)
+		throw new Error('release branch requires a clean working tree');
+
+	const branch = releaseBranch(input.type, input.slug);
+	const sourceSha = await resolveRef(run, config.releaseSourceBranch);
+	const existing = await run([
+		'rev-parse',
+		'--verify',
+		'--quiet',
+		`refs/heads/${branch}`,
+	]);
+	if (!existing.ok) {
+		await runGitWrite(run, [
+			'switch',
+			'--create',
+			branch,
+			config.releaseSourceBranch,
+		]);
+	} else {
+		await runGitWrite(run, ['switch', branch]);
+		const branchSha = await resolveRef(run, branch);
+		if (branchSha !== sourceSha)
+			throw new Error(
+				`release branch ${branch} does not point at ${config.releaseSourceBranch} ${sourceSha}`,
+			);
+	}
+	await runGitWrite(run, ['push', '--set-upstream', config.remote, branch]);
+	return Object.freeze({
+		branch,
+		baseBranch: 'develop',
+		sourceSha,
+		upstream: `${config.remote}/${branch}`,
+	});
+};
+
+/**
+ * Integrate the fixups committed on the release branch back into the
+ * configured integration branch. Refuses to run unless the current
+ * branch IS the release branch (so the operator can never accidentally
+ * fast-forward from an unrelated checkout) and unless the working tree
+ * is clean. By default it produces a merge commit (no-ff) so the
+ * release branch's identity is preserved in history; pass
+ * `fastForwardOnly: true` to opt into a linear merge.
+ *
+ * The integration branch is the one configured via `IReleaseCycleConfig`.
+ * This operation MUST never push to `releaseTargetBranch` — the target
+ * branch is reserved for the PR contract.
+ */
+export const mergeReleaseFixToIntegration = async (
+	run: IGitRunner,
+	input: IMergeReleaseFixInput & {
+		readonly config?: Partial<IReleaseCycleConfig>;
+	},
+): Promise<IReleaseFixMerged> => {
+	const config = resolveReleaseCycleConfig(input.config);
+	if (config.integrationBranch === config.releaseTargetBranch)
+		throw new Error(
+			`integration branch must differ from release target ${config.releaseTargetBranch}`,
+		);
+	const status = await gitStatus(run);
+	if (status.branch !== input.releaseBranch)
+		throw new Error(
+			`mergeReleaseFixToIntegration must run from ${input.releaseBranch}: ${status.branch ?? '(detached)'}`,
+		);
+	if (!status.clean)
+		throw new Error('release branch must be clean before merging back');
+
+	const releaseBranchSha = await resolveRef(run, input.releaseBranch);
+	const integrationSha = await resolveRef(run, config.integrationBranch);
+	// Touch the target branch ref so a corrupt repo fails fast — the
+	// integration branch must exist on the remote too.
+	const targetSha = await resolveRef(run, config.releaseTargetBranch);
+	void targetSha;
+	if (releaseBranchSha === integrationSha)
+		throw new Error(
+			`release branch ${input.releaseBranch} has no fixups to merge`,
+		);
+
+	const strategy: 'ff' | 'no-ff' =
+		input.fastForwardOnly === true ? 'ff' : 'no-ff';
+
+	await runGitWrite(run, ['switch', config.integrationBranch]);
+	let mergeCommit: string | undefined;
+	if (strategy === 'ff') {
+		const ff = await run(['merge', '--ff-only', input.releaseBranch]);
+		if (!ff.ok)
+			throw new Error(
+				ff.reason ??
+					`release branch ${input.releaseBranch} cannot fast-forward into ${config.integrationBranch}`,
+			);
+	} else {
+		await runGitWrite(run, [
+			'merge',
+			'--no-ff',
+			'-m',
+			`Merge release ${input.releaseBranch} into ${config.integrationBranch}`,
+			input.releaseBranch,
+		]);
+		mergeCommit = await resolveRef(run, 'HEAD');
+	}
+	const newIntegrationSha = await resolveRef(run, config.integrationBranch);
+	await runGitWrite(run, ['push', config.remote, config.integrationBranch]);
+
+	return Object.freeze({
+		releaseBranch: input.releaseBranch,
+		integrationBranch: config.integrationBranch,
+		integrationSha: newIntegrationSha,
+		...(mergeCommit !== undefined ? { mergeCommit } : {}),
+		strategy,
+		upstream: `${config.remote}/${input.releaseBranch}`,
+	});
+};
+
+/**
+ * Hydrate the integration branch from the release branch AFTER the
+ * release PR merged into `releaseTargetBranch`. This is the ONLY
+ * sanctioned way to keep the integration branch in sync with the
+ * release branch — opening a PR against the integration branch is
+ * forbidden by the release contract.
+ *
+ * - `strategy: 'rebase'` replays the release branch commits on top of
+ *   the integration branch (linear history).
+ * - `strategy: 'merge'` creates an explicit merge commit preserving
+ *   the release branch identity.
+ */
+export const rehydrateIntegrationFromRelease = async (
+	run: IGitRunner,
+	input: IRehydrateIntegrationInput & {
+		readonly config?: Partial<IReleaseCycleConfig>;
+	},
+): Promise<IIntegrationRehydrated> => {
+	const config = resolveReleaseCycleConfig(input.config);
+	if (config.integrationBranch === config.releaseTargetBranch)
+		throw new Error(
+			`integration branch must differ from release target ${config.releaseTargetBranch}`,
+		);
+	const status = await gitStatus(run);
+	if (status.branch !== input.releaseBranch)
+		throw new Error(
+			`rehydrateIntegrationFromRelease must run from ${input.releaseBranch}: ${status.branch ?? '(detached)'}`,
+		);
+	if (!status.clean)
+		throw new Error(
+			`release branch ${input.releaseBranch} must be clean before rehydrating`,
+		);
+	// Refresh the integration branch ref so we rebase/merge against
+	// the latest remote tip, not a stale local pointer.
+	await runGitWrite(run, ['fetch', config.remote, config.integrationBranch]);
+	const releaseBranchSha = await resolveRef(run, input.releaseBranch);
+	const integrationSha = await resolveRef(run, config.integrationBranch);
+	if (releaseBranchSha === integrationSha)
+		throw new Error(
+			`release branch ${input.releaseBranch} has nothing to rehydrate into ${config.integrationBranch}`,
+		);
+	void releaseBranchSha;
+	const strategy: 'rebase' | 'merge' = input.strategy ?? 'rebase';
+	await runGitWrite(run, ['switch', config.integrationBranch]);
+	if (strategy === 'rebase') {
+		await runGitWrite(run, ['rebase', input.releaseBranch]);
+	} else {
+		await runGitWrite(run, [
+			'merge',
+			'--no-ff',
+			'-m',
+			`Rehydrate ${config.integrationBranch} from release ${input.releaseBranch}`,
+			input.releaseBranch,
+		]);
+	}
+	const newIntegrationSha = await resolveRef(run, config.integrationBranch);
+	await runGitWrite(run, ['push', config.remote, config.integrationBranch]);
+
+	return Object.freeze({
+		releaseBranch: input.releaseBranch,
+		integrationBranch: config.integrationBranch,
+		integrationSha: newIntegrationSha,
+		strategy,
+		upstream: `${config.remote}/${input.releaseBranch}`,
+	});
+};
+
+/**
+ * Push the release branch with all its fixups and confirm the head SHA
+ * the PR will reference. Called by the promote-to-main flow once the
+ * release branch is ready for the final cut.
+ */
+export const openPromotionPr = async (
+	run: IGitRunner,
+	input: {
+		readonly branch: string;
+		readonly config?: Partial<IReleaseCycleConfig>;
+	},
+): Promise<IPromotionReady> => {
+	const config = resolveReleaseCycleConfig(input.config);
+	const status = await gitStatus(run);
+	if (status.branch !== input.branch)
+		throw new Error(
+			`openPromotionPr must run from ${input.branch}: ${status.branch ?? '(detached)'}`,
+		);
+	if (!status.clean)
+		throw new Error('release branch must be clean before promoting');
+
+	await runGitWrite(run, [
+		'push',
+		'--set-upstream',
+		config.remote,
+		input.branch,
+	]);
+	const headSha = await resolveRef(run, input.branch);
+	return Object.freeze({
+		branch: input.branch,
+		headSha,
+		upstream: `${config.remote}/${input.branch}`,
+		baseBranch: config.releaseTargetBranch,
+	});
+};
+
 const resolveRef = async (run: IGitRunner, ref: string): Promise<string> => {
 	const result = await run(['rev-parse', ref]);
 	if (!result.ok || result.output.trim() === '')
@@ -385,7 +656,8 @@ export const createReleaseCandidate = async (
 		readonly includedProposals?: readonly string[];
 	},
 ): Promise<IReleaseCandidateMetadata> => {
-	const sourceDevelopSha = await resolveRef(run, 'develop');
+	const preparedBranch = await prepareReleaseBranch(run, input);
+	const sourceDevelopSha = preparedBranch.sourceSha;
 	const baseMainSha = await resolveRef(run, 'main');
 	const versionResult = await run([
 		'show',

@@ -14,6 +14,39 @@ export interface IReleasePrRecord {
 	readonly baseBranch: string;
 }
 
+/**
+ * Per-PR options. Hosts can override the default target branch
+ * (`releaseTargetBranch`, default `main`) and explicitly opt out of
+ * the integration branch via `rejectIntegrationBase: false` only when
+ * they have a real reason to open a PR against `integrationBranch`.
+ */
+export interface IReleasePrOptions {
+	readonly releaseTargetBranch: string;
+	readonly integrationBranch: string;
+	readonly rejectIntegrationBase?: boolean;
+}
+
+export const DEFAULT_RELEASE_PR_OPTIONS: IReleasePrOptions = Object.freeze({
+	releaseTargetBranch: 'main',
+	integrationBranch: 'develop',
+	rejectIntegrationBase: true,
+});
+
+export const resolveReleasePrOptions = (
+	override?: Partial<IReleasePrOptions>,
+): IReleasePrOptions =>
+	Object.freeze({
+		releaseTargetBranch:
+			override?.releaseTargetBranch ??
+			DEFAULT_RELEASE_PR_OPTIONS.releaseTargetBranch,
+		integrationBranch:
+			override?.integrationBranch ??
+			DEFAULT_RELEASE_PR_OPTIONS.integrationBranch,
+		...(override?.rejectIntegrationBase !== undefined
+			? { rejectIntegrationBase: override.rejectIntegrationBase }
+			: {}),
+	});
+
 export interface IReleasePrProvider {
 	listPullRequests(input: {
 		readonly headBranch: string;
@@ -23,7 +56,7 @@ export interface IReleasePrProvider {
 		readonly title: string;
 		readonly body: string;
 		readonly headBranch: string;
-		readonly baseBranch: 'main';
+		readonly baseBranch: string;
 	}): Promise<IReleasePrRecord>;
 }
 
@@ -33,6 +66,7 @@ export interface ICreateReleasePrInput {
 	readonly currentBranch: string;
 	readonly upstream?: string | undefined;
 	readonly provider: IReleasePrProvider;
+	readonly options?: Partial<IReleasePrOptions>;
 }
 
 export interface IReleasePrResult {
@@ -49,7 +83,8 @@ export class ReleasePrContractError extends Error {
 		| 'invalid-metadata'
 		| 'missing-upstream'
 		| 'readiness-blocked'
-		| 'provider-contract';
+		| 'provider-contract'
+		| 'integration-base-forbidden';
 	readonly details?: Readonly<Record<string, string>>;
 
 	constructor(
@@ -95,7 +130,9 @@ export const createReleasePullRequest = async ({
 	currentBranch,
 	upstream,
 	provider,
+	options,
 }: ICreateReleasePrInput): Promise<IReleasePrResult> => {
+	const resolved = resolveReleasePrOptions(options);
 	try {
 		assertReleaseMetadata(candidate);
 	} catch (error) {
@@ -104,6 +141,17 @@ export const createReleasePullRequest = async ({
 			error instanceof Error ? error.message : 'invalid release metadata',
 		);
 	}
+	// Forbidden-shape check fires BEFORE the branch-match check so a
+	// caller that pointed the contract at the integration branch gets
+	// the most specific error instead of `wrong-branch`.
+	if (
+		resolved.rejectIntegrationBase !== false &&
+		resolved.integrationBranch === candidate.branch
+	)
+		throw new ReleasePrContractError(
+			'integration-base-forbidden',
+			`release PR source must not be the integration branch: ${resolved.integrationBranch}`,
+		);
 	if (
 		!RELEASE_BRANCH.test(currentBranch) ||
 		currentBranch !== candidate.branch
@@ -112,10 +160,13 @@ export const createReleasePullRequest = async ({
 			'wrong-branch',
 			`release PR branch must match candidate: ${candidate.branch}`,
 		);
-	if (candidate.baseMainSha.trim() === '' || candidate.branch === 'main')
+	if (
+		candidate.baseMainSha.trim() === '' ||
+		candidate.branch === resolved.releaseTargetBranch
+	)
 		throw new ReleasePrContractError(
 			'wrong-base',
-			'release PR target must be main',
+			`release PR source must not be the release target: ${resolved.releaseTargetBranch}`,
 		);
 	if (upstream?.trim() === undefined || upstream.trim() === '')
 		throw new ReleasePrContractError(
@@ -132,10 +183,12 @@ export const createReleasePullRequest = async ({
 	const existing = (
 		await provider.listPullRequests({
 			headBranch: candidate.branch,
-			baseBranch: 'main',
+			baseBranch: resolved.releaseTargetBranch,
 		})
 	).find(
-		(pr) => pr.headBranch === candidate.branch && pr.baseBranch === 'main',
+		(pr) =>
+			pr.headBranch === candidate.branch &&
+			pr.baseBranch === resolved.releaseTargetBranch,
 	);
 	if (existing !== undefined)
 		return Object.freeze({
@@ -148,15 +201,18 @@ export const createReleasePullRequest = async ({
 		title: `Release ${candidate.targetVersion}`,
 		body: description,
 		headBranch: candidate.branch,
-		baseBranch: 'main',
+		baseBranch: resolved.releaseTargetBranch,
 	});
-	if (pr.headBranch !== candidate.branch || pr.baseBranch !== 'main')
+	if (
+		pr.headBranch !== candidate.branch ||
+		pr.baseBranch !== resolved.releaseTargetBranch
+	)
 		throw new ReleasePrContractError(
 			'provider-contract',
 			'provider returned a release PR with unexpected branches',
 			{
 				expectedHeadBranch: candidate.branch,
-				expectedBaseBranch: 'main',
+				expectedBaseBranch: resolved.releaseTargetBranch,
 				actualHeadBranch: pr.headBranch,
 				actualBaseBranch: pr.baseBranch,
 			},
