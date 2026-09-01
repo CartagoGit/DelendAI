@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#stale-reclaim-race-reproducido-o-descartado-con-test-determinista
+shipped-in: ["7bb6d35138db047d35491c68eebfd2435b897b12"]
 ---
 
 # f00365 — stale reclaim race reproducido o descartado con test determinista.

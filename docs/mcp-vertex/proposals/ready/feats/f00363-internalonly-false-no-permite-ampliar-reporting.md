@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#internalonly-false-no-permite-ampliar-reporting
+shipped-in: ["d98e052811910af27c7dee379ed418631d1c2578"]
 ---
 
 # f00363 — `internalOnly:false` no permite ampliar reporting.

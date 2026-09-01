@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#impact-analysis-no-abre-rutas-exteriores
+shipped-in: ["b3c72f6006054fbc89c856a45a4b81272ea5705a"]
 ---
 
 # f00360 — impact-analysis no abre rutas exteriores.

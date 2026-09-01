@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#privacy-adversarial-suite-verde
+shipped-in: ["e746316dca20027867ce1d8efee9248dde60c17e"]
 ---
 
 # f00364 — privacy adversarial suite verde.

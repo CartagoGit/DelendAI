@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#symlink-escape-bloqueado
+shipped-in: ["9819d8fe1e0637c998706e9eec31d1e6c2235fdb"]
 ---
 
 # f00361 — symlink escape bloqueado.

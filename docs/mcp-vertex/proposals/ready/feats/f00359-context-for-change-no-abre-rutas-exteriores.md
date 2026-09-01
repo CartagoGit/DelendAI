@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#context-for-change-no-abre-rutas-exteriores
+shipped-in: ["7eea421dff14018cc8af78d6239d32dba9b7470d"]
 ---
 
 # f00359 — context-for-change no abre rutas exteriores.

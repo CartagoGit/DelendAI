@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#criterio-ejecutable
+shipped-in: ["07225dbf7c6215d7ca73f404a4aad37752e5f937"]
 ---
 
 # f00358 — criterio ejecutable

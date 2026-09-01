@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#reporter-no-envia-tool-ids-externos
+shipped-in: ["0d546d5eb59311e697f66cc89d5be736de144ad3"]
 ---
 
 # f00362 — reporter no envía tool ids externos.
