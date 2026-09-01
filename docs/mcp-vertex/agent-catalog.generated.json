@@ -2478,20 +2478,12 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
-			},
-			{
-				"id": "x00303",
-				"title": "x00303",
-				"track": "proposals-commit-persistence",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 147,
+			"ready": 146,
 			"in-progress": 5,
-			"review": 1,
+			"review": 2,
 			"paused": 1,
 			"done": 587,
 			"blocked": 23,
