@@ -1947,9 +1947,9 @@
 		"byStatus": {
 			"ready": 79,
 			"in-progress": 5,
-			"review": 16,
+			"review": 15,
 			"paused": 1,
-			"done": 640,
+			"done": 641,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0
