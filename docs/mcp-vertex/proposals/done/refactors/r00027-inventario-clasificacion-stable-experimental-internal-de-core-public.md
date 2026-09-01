@@ -2,7 +2,7 @@
 id: r00027
 title: "Inventario + clasificación stable/experimental/internal de `core/public`"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -17,7 +17,10 @@ related:
     - r00028 # subpath exports (depende del inventario)
     - r00029 # extraer @mcp-vertex/contracts (depende del inventario)
     - b00238 # APIs internas marcadas como internal (Track N)
-shipped-in: ["1a0ed8afd"] # export inventory helpers + add spec (S1)
+shipped-in: ["1a0ed8afd"]
+last-transition-id: f6705830-2344-4af1-81ff-d69a189d21e2
+last-correlation-id: f6705830-2344-4af1-81ff-d69a189d21e2
+last-transition-from: review
 ---
 
 # r00027 — Inventario + clasificación stable/experimental/internal de `core/public`
@@ -159,7 +162,7 @@ subpath exports o de marcar APIs como `@internal` se vuelve guesswork.
 ### S1 — Script de inspección + tabla generada
 
 - **Status**: done
-- **Files**: `tools/scripts/inspect/core-public-inventory.script.ts`, `tools/scripts/inspect/core-public-inventory.spec.ts`, `docs/mcp-vertex/CORE-PUBLIC-API-INVENTORY.md` (generado, revisión inicial), `build/inspect/core-public-inventory.json` (generado)
+- **Files**: `tools/scripts/inspect/core-public-inventory.script.ts`, `tools/scripts/inspect/core-public-inventory.script.spec.ts`, `tools/tests/inspect/core-public-inventory.spec.ts`, `docs/mcp-vertex/CORE-PUBLIC-API-INVENTORY.md` (generado, revisión inicial), `build/inspect/core-public-inventory.json` (generado)
 - **Gate**: type
 - review-state: done
 - review-implementer: copilot-orchestrator-r00027-s1
