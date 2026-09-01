@@ -49,16 +49,38 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "Las 57 entradas `package.json#main` con valor `./dist/...` se reducen a 0 (verificable con `rg '"\\./dist' packages plugins extensions apps -l`)"
   - ".gitignore deja de ignorar `dist/` raíz y `packages/*/dist/`, `plugins/*/dist/` (siguen ignorados por la nueva entrada `/build/`)"
 
-### S2 — package.json main/exports apuntan al árbol `build/` canónico
+### S2 — staging de publicación materializa `dist/` desde `build/` (manifests se quedan en `./dist/...`)
 - **Status**: pending
-- **Files**: `packages/*/package.json`, `plugins/*/package.json`, `tools/scripts/migrate-package-exports.script.ts`, `tools/scripts/migrate-package-exports.script.spec.ts`
+- **Files**: `tools/scripts/publish/workspace-deps.ts`, `tools/scripts/release/release.script.ts`, `tools/scripts/smoke/pack.script.ts`, `tools/scripts/verify/external-install-smoke.script.ts`
 - **Gate**: e2e
+- **Corrección (2026-09-01):** el texto original de este slice pedía reescribir
+  `packages/*/package.json` / `plugins/*/package.json` para que `"main"` /
+  `exports` apuntaran a `./build/<group>/<name>/<version>/index.js`. Eso
+  contradice la Nota de diseño del Goal (arriba): Node/npm no permiten que
+  `package.json#exports` escape del directorio del paquete con `../build`
+  — `./build/...` relativo a `packages/github/package.json` resolvería a
+  `packages/github/build/...`, que no existe (el build vive en la raíz del
+  repo bajo `build/plugins/github/<version>/`). Los manifests SE QUEDAN
+  declarando `"main": "./dist/index.js"` / `exports["."] → "./dist/..."`
+  sin cambios; lo que existía como una laguna real es que nada
+  materializaba ese `dist/` fuera de `release.script.ts` — el smoke
+  (`pack.script.ts`, `external-install-smoke.script.ts`) empaquetaba el
+  directorio de workspace crudo, cuyo `package.json` promete `./dist/...`
+  pero nunca lo tiene en disco desde que S1 movió el build a `build/`. Ya
+  arreglado: ambos scripts ahora llaman a
+  `stageBuildForPublish(pkgDir, buildDir, stageDir)` (existente en
+  `workspace-deps.ts`, ya usado por `release.script.ts`) para copiar el
+  paquete a un staging temporal, materializar su slice de `build/` como
+  `dist/` allí, y empaquetar (`npm pack` vía `packRewrittenTarball`) esa
+  copia — nunca el workspace real. Ningún `dist/` persistente se escribe
+  bajo `packages/*` ni `plugins/*`.
 - acceptance:
-  - "Todos los `packages/*/package.json` y `plugins/*/package.json` declaran `"main": "./build/<group>/<name>/<version>/index.js"` con paths relativos al package.json (no absolutos)"
-  - "Cada `exports["."]` resuelve a `./build/<group>/<name>/<version>/index.js` (import) y `./build/<group>/<name>/<version>/index.d.ts` (types), con la rama `@mcp-vertex/source` preservada apuntando a `./src/...`"
-  - "Cada `exports["./public"]` apunta a `./build/<group>/<name>/<version>/public/index.js`"
-  - "`bun pm ls` sigue reconociendo los 57 workspaces con la misma jerarquía"
-  - "Script `tools/scripts/migrate-package-exports.script.ts --check` retorna exit 0 sobre todo el monorepo (validación de que no quedó ningún `./dist/` literal)"
+  - "Los manifests de `packages/*/package.json` y `plugins/*/package.json` NO cambian: siguen declarando `"main": "./dist/index.js"` y `exports["."] → "./dist/..."`, con la rama `@mcp-vertex/source` apuntando a `./src/...`"
+  - "`stageBuildForPublish(pkgDir, buildDir, stageDir)` copia el paquete a un directorio de staging, elimina cualquier `dist/` heredado y copia allí el contenido de `build/<group>/<name>/<version>/` como `dist/`"
+  - "`release.script.ts` (publish real), `tools/scripts/smoke/pack.script.ts` (pack-smoke) y `tools/scripts/verify/external-install-smoke.script.ts` empaquetan SIEMPRE la copia de staging, nunca `packages/<name>/` ni `plugins/<name>/` directamente"
+  - "`bun tools/scripts/ci/pack-smoke.script.ts --real` sale con exit 0 en un checkout sin ningún `dist/` preexistente (solo `build/` recién generado por `bun run build`)"
+  - "`bun run verify:external-install` sale con exit 0 bajo la misma condición"
+  - "`git status` no muestra ningún `packages/*/dist/` ni `plugins/*/dist/` tras correr el pack-smoke o el publish real — el único `dist/` que existe en cualquier momento vive dentro de un directorio de staging bajo `tmpdir()`, borrado al terminar"
 
 ### S3 — lint:no-build-imports-from-src — anti-fuga entre `build/` y `src/`
 - **Status**: pending
