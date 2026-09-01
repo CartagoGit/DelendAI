@@ -2288,14 +2288,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00027",
-				"title": "r00027",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00028",
 				"title": "r00028",
 				"track": "architecture",
@@ -2577,11 +2569,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 158,
+			"ready": 157,
 			"in-progress": 5,
 			"review": 0,
 			"paused": 1,
-			"done": 578,
+			"done": 579,
 			"blocked": 23,
 			"retired": 11,
 			"unspecified": 0
