@@ -42,7 +42,12 @@ export const rewriteStaleProposalSelfPaths = (
 	const escaped = escapeRegExp(oldRelPath);
 	// Match optional backticks around the path so both
 	// `- **Files**: \`ready/f.md\`` and `- files: ready/f.md` rewrite.
-	const token = new RegExp(`(\`?)${escaped}(\`?)`, 'g');
+	// The lookbehind stops a proposals-dir-relative form (`ready/x.md`)
+	// from matching INSIDE an already repo-root-relative one
+	// (`docs/mcp-vertex/proposals/ready/x.md`), which would splice the
+	// prefix in twice. It lets the caller run both forms through this
+	// helper in one pass without them corrupting each other.
+	const token = new RegExp(`(?<![A-Za-z0-9_/.-])(\`?)${escaped}(\`?)`, 'g');
 	let replacements = 0;
 	const lines = markdown.split('\n');
 	const rewritten = lines.map((line) => {

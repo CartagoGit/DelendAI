@@ -2,12 +2,15 @@
 id: f00318
 title: "Zod parsed data."
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#zod-parsed-data
+last-transition-id: 2e67a349-2a99-4795-b374-d187c988312e
+last-correlation-id: 2e67a349-2a99-4795-b374-d187c988312e
+last-transition-from: ready
 ---
 
 # f00318 — Zod parsed data.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00318-zod-parsed-data.md`
+- **Files**: `in-progress/f00318-zod-parsed-data.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

@@ -1113,12 +1113,32 @@ const applyTransition = async (
 		// slice plans do not keep pointing at the pre-transition location
 		// (e.g. ready/… after a move to done/feats/…).
 		if (moved) {
-			const rewritten = rewriteStaleProposalSelfPaths(updated, {
-				oldRelPath: movedFromRel,
-				newRelPath: movedToRel,
+			// `**Files**` entries are resolved against the REPO ROOT — every
+			// other entry in these lists is repo-root-relative
+			// (`packages/core/src/…`). Rewriting a self-path to the
+			// proposals-dir-relative form (`review/f00293-x.md`) therefore
+			// produced a path the very next gate could not resolve: the
+			// transition broke the document it had just moved, and the
+			// following `→ done` failed with `missing-declared-files`.
+			//
+			// Both spellings are normalised to the repo-root form; the
+			// helper's lookbehind keeps the short pass from matching inside
+			// an already-rewritten long path.
+			const movedFromRepoRel = relative(
+				options.workspaceRoot,
+				found.absPath,
+			);
+			const movedToRepoRel = relative(options.workspaceRoot, newAbsPath);
+			const longPass = rewriteStaleProposalSelfPaths(updated, {
+				oldRelPath: movedFromRepoRel,
+				newRelPath: movedToRepoRel,
 			});
-			updated = rewritten.markdown;
-			filesRewritten = rewritten.replacements;
+			const shortPass = rewriteStaleProposalSelfPaths(longPass.markdown, {
+				oldRelPath: movedFromRel,
+				newRelPath: movedToRepoRel,
+			});
+			updated = shortPass.markdown;
+			filesRewritten = longPass.replacements + shortPass.replacements;
 		}
 		await writeFileAtomic(found.absPath, updated);
 
