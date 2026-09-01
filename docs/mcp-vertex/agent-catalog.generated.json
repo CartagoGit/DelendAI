@@ -1592,14 +1592,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00387",
-				"title": "f00387",
-				"track": "parallel-validation",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00388",
 				"title": "f00388",
 				"track": "migrated",
@@ -1969,11 +1961,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 82,
+			"ready": 81,
 			"in-progress": 5,
 			"review": 14,
 			"paused": 1,
-			"done": 639,
+			"done": 640,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0
