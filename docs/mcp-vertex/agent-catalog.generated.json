@@ -1344,14 +1344,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00280",
-				"title": "f00280",
-				"track": "adoption",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00330",
 				"title": "f00330",
 				"track": "migrated",
@@ -1882,10 +1874,10 @@
 		],
 		"byStatus": {
 			"ready": 70,
-			"in-progress": 6,
+			"in-progress": 5,
 			"review": 15,
 			"paused": 1,
-			"done": 649,
+			"done": 650,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0

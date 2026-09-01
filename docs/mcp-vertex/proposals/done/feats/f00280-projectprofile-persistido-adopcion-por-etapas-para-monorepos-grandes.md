@@ -2,7 +2,7 @@
 id: f00280
 title: "`ProjectProfile` persistido + adopción por etapas para monorepos grandes"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: adoption
 date: 2026-08-29
@@ -14,9 +14,9 @@ audit-source:
 priority: P1
 related: [q00011, f00274]
 shipped-in: ["5330b742a", "770a5c83"]
-last-transition-id: 15e326c0-a109-48ec-9318-e4f7b0849c9f
-last-correlation-id: 15e326c0-a109-48ec-9318-e4f7b0849c9f
-last-transition-from: ready
+last-transition-id: 0e4e169e-b7eb-468b-9898-dd7ed166d3c9
+last-correlation-id: 0e4e169e-b7eb-468b-9898-dd7ed166d3c9
+last-transition-from: review
 ---
 
 # f00280 — `ProjectProfile` persistido + adopción por etapas para monorepos grandes
