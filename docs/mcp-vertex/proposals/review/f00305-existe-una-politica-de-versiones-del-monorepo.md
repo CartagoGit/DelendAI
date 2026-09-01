@@ -2,11 +2,15 @@
 id: f00305
 title: "Existe una política de versiones del monorepo."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#existe-una-politica-de-versiones-del-monorepo
+shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
+last-transition-id: b171b6bf-3e87-4fce-baef-be97ecc82266
+last-correlation-id: b171b6bf-3e87-4fce-baef-be97ecc82266
+last-transition-from: in-progress
 ---
 
 # f00305 — Existe una política de versiones del monorepo.
@@ -28,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00305-existe-una-politica-de-versiones-del-monorepo.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00305-existe-una-politica-de-versiones-del-monorepo.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

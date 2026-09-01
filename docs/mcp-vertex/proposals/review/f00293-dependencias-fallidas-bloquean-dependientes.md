@@ -2,11 +2,15 @@
 id: f00293
 title: "Dependencias fallidas bloquean dependientes."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
+shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#dependencias-fallidas-bloquean-dependientes
+last-transition-id: fc20d51b-0e80-418d-be75-31d87f6e8106
+last-correlation-id: fc20d51b-0e80-418d-be75-31d87f6e8106
+last-transition-from: in-progress
 ---
 
 # f00293 — Dependencias fallidas bloquean dependientes.
@@ -28,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00293-dependencias-fallidas-bloquean-dependientes.md`
+- **Files**: `review/f00293-dependencias-fallidas-bloquean-dependientes.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

@@ -6,6 +6,7 @@ status: ready
 type: proposal
 track: migrated
 date: 2026-08-30
+shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#la-coverage-no-excluye-wiring-real-sin-motivo
 ---
 
