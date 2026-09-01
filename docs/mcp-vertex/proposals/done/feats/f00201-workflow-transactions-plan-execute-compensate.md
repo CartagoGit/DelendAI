@@ -2,7 +2,7 @@
 id: f00201
 title: "Workflow transactions: plan / execute / compensate"
 kind: feat
-status: review
+status: done
 type: proposal
 track: transactions
 shipped-in: ["60f6ba5f7"]
@@ -17,9 +17,9 @@ related:
     - q00006
     - c00143 # idempotency keys (sinergia para retries)
     - f00189 # dryRun transversal (transacciones usan dryRun primero)
-last-transition-id: c88a555a-c581-4ea4-83ef-59d27a80a39b
-last-correlation-id: c88a555a-c581-4ea4-83ef-59d27a80a39b
-last-transition-from: in-progress
+last-transition-id: b9693e6a-0575-444a-91cb-d0d5082b3363
+last-correlation-id: b9693e6a-0575-444a-91cb-d0d5082b3363
+last-transition-from: review
 ---
 
 # f00201 — Workflow transactions: plan / execute / compensate
