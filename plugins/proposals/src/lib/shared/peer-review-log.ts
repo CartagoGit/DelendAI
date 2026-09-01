@@ -69,13 +69,64 @@ export type IPeerReviewLogEntry =
 	| IPeerReviewTransitionLogEntry
 	| IPeerReviewActionLogEntry;
 
+/**
+ * `appendPeerReviewJsonl` deliberately accepts two shapes into one file
+ * (see its doc comment): the typed camel-case entries written here, and
+ * the snake_case journal `proposal_review` writes from the authoring
+ * tool — `{ ts, proposal_id, slice_id, agent, verdict }`.
+ *
+ * The reader only ever understood the first, and silently produced
+ * entries with `kind: undefined` for the second, which every predicate
+ * then filtered out. Real independent approvals sat in the log, on disk,
+ * invisible to the gate that was refusing to close the proposal because
+ * it could not find them.
+ *
+ * The snake_case entry carries no `implementer`, because independence is
+ * enforced at WRITE time by `checkApproveIdentity` (reviewer ≠
+ * submitter, recorded in `review-identity.jsonl`). An entry that exists
+ * was therefore already validated as independent, which is exactly what
+ * the empty-implementer branch of the predicate below assumes.
+ */
+const normalizeLegacyReviewEntry = (
+	value: Record<string, unknown>,
+): IPeerReviewLogEntry | null => {
+	const proposalId = value.proposal_id;
+	const verdict = value.verdict;
+	const agent = value.agent;
+	const ts = value.ts;
+	if (
+		typeof proposalId !== 'string' ||
+		typeof ts !== 'string' ||
+		typeof agent !== 'string' ||
+		(verdict !== 'approved' && verdict !== 'request_changes')
+	) {
+		return null;
+	}
+	return {
+		kind: 'review',
+		ts,
+		proposalId,
+		sliceId: typeof value.slice_id === 'string' ? value.slice_id : '',
+		action: verdict === 'approved' ? 'approve' : 'request_changes',
+		reviewer: agent,
+		verdict,
+	} as IPeerReviewLogEntry;
+};
+
 const parseEntry = (line: string): IPeerReviewLogEntry | null => {
 	if (line.trim() === '') return null;
+	let value: unknown;
 	try {
-		return JSON.parse(line) as IPeerReviewLogEntry;
+		value = JSON.parse(line);
 	} catch {
 		return null;
 	}
+	if (value === null || typeof value !== 'object') return null;
+	const record = value as Record<string, unknown>;
+	if (typeof record.kind === 'string') {
+		return record as unknown as IPeerReviewLogEntry;
+	}
+	return normalizeLegacyReviewEntry(record);
 };
 
 /**
