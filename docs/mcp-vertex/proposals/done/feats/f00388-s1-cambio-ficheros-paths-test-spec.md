@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00388-s1-cambio-ficheros-paths-test-spec.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00388-s1-cambio-ficheros-paths-test-spec.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
