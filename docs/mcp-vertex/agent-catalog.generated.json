@@ -1587,7 +1587,7 @@
 				"id": "f00391",
 				"title": "f00391",
 				"track": "general",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1929,11 +1929,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 77,
-			"in-progress": 5,
-			"review": 16,
+			"ready": 76,
+			"in-progress": 6,
+			"review": 15,
 			"paused": 1,
-			"done": 642,
+			"done": 643,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0
