@@ -189,7 +189,13 @@ export const readValidateSteps = async (
 const runShellStep = async (step: string): Promise<number> =>
 	new Promise((resolve) => {
 		const child = spawn(step, {
-			stdio: 'inherit',
+			// stdin is deliberately NOT inherited. A validate step has no
+			// business reading stdin, and one of them (the pre-push
+			// discipline lint) probes `readFileSync(0)` for git's pre-push
+			// ref-update protocol. Inheriting a pipe that never closes made
+			// that step hang forever instead of failing — invisible while
+			// the chain was one `&&` expression that never reached it.
+			stdio: ['ignore', 'inherit', 'inherit'],
 			shell: true,
 			// The steps are package scripts; run them from the repo root so
 			// nested `bun run` calls resolve the same manifest.

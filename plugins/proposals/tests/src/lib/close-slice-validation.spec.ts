@@ -244,6 +244,28 @@ describe('close_slice validation gate (a00069 S5)', () => {
 		expect(body.closed).toBe(true);
 	});
 
+	it('requireValidateEvidence:false lets a host opt out of the gate entirely', async () => {
+		// A host without a validate chain worth blocking on must be able to
+		// switch the gate off in config, instead of teaching every agent to
+		// pass `force: true` — which would also disable the peer-review and
+		// quality gates.
+		await seed(SLICE_DOC('none', ['bun test']));
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...optsBase,
+				requireValidateEvidence: false,
+			}),
+		);
+		const body = parse(
+			await close({
+				proposalId: 'f00999',
+				sliceId: 's1',
+				releaseLock: false,
+			}),
+		);
+		expect(body.closed).toBe(true);
+	});
+
 	it('force:true suppresses the validate-required rejection', async () => {
 		await seed(SLICE_DOC('none', ['bun test']));
 		const close = await capture(buildCloseSliceRegistration(optsBase));
