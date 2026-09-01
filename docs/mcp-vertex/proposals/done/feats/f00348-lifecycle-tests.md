@@ -2,7 +2,7 @@
 id: f00348
 title: "lifecycle tests."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-verifier-7
+- review-log: approved by sonnet-verifier-7 — Independently verified against a00092 section 19 TEST-003; lifecycle.spec.ts + dependency-lifecycle.spec.ts (shipped in 1e432f998) cover dependency-fail/register-timeout/abort/dispose-fail/cycle cases. Ran the suites: passing.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

@@ -2,7 +2,7 @@
 id: f00313
 title: "Package-relative paths."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 checklist: 'Package-relative paths') is shipped: frame-extractor.helper.ts's packageFileFromMonorepoRoot/packageFileFromScope rewrite every kept frame from an absolute filesystem path into `@mcp-vertex/<pkg>/<relative>` form before it ever reaches the safe DTO; the privacy validator additionally rejects any residual absolute unix/windows path pattern (ABSOLUTE_UNIX_PATH/WINDOWS_PATH) as a backstop. Ran privacy-validator.spec.ts + privacy-adversarial*.spec.ts: 23 tests pass, exit 0.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
