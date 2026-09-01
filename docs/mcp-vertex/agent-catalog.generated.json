@@ -1939,9 +1939,9 @@
 		"byStatus": {
 			"ready": 78,
 			"in-progress": 5,
-			"review": 16,
+			"review": 15,
 			"paused": 1,
-			"done": 641,
+			"done": 642,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0
