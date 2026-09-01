@@ -1,20 +1,23 @@
 ---
-id: f00324
-title: "Stale-lock CAS/revalidation."
+id: f00328
+title: "combined stdout/stderr policy."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#stale-lock-cas-revalidation
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#combined-stdout-stderr-policy
+last-transition-id: 8bcf54c6-afcb-47f6-80be-8513d7c88d8b
+last-correlation-id: 8bcf54c6-afcb-47f6-80be-8513d7c88d8b
+last-transition-from: in-progress
 ---
 
-# f00324 — Stale-lock CAS/revalidation.
+# f00328 — combined stdout/stderr policy.
 
 ## Goal
 
-Migrated work item: Stale-lock CAS/revalidation..
+Migrated work item: combined stdout/stderr policy..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00324-stale-lock-cas-revalidation.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00328-combined-stdout-stderr-policy.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#stale-lock-cas-revalidation` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#combined-stdout-stderr-policy` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

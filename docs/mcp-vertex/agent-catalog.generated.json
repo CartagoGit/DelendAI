@@ -1360,14 +1360,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00324",
-				"title": "f00324",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00325",
 				"title": "f00325",
 				"track": "migrated",
@@ -1378,30 +1370,6 @@
 			{
 				"id": "f00326",
 				"title": "f00326",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00327",
-				"title": "f00327",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00328",
-				"title": "f00328",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00329",
-				"title": "f00329",
 				"track": "migrated",
 				"status": "ready",
 				"kind": "feat",
@@ -2233,11 +2201,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 115,
+			"ready": 111,
 			"in-progress": 5,
-			"review": 25,
+			"review": 27,
 			"paused": 1,
-			"done": 595,
+			"done": 597,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0

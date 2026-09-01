@@ -1,20 +1,23 @@
 ---
-id: f00328
-title: "combined stdout/stderr policy."
+id: f00329
+title: "process-tree termination."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#combined-stdout-stderr-policy
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#process-tree-termination
+last-transition-id: 40cb4235-27fc-47ac-8d3e-91124ef636c0
+last-correlation-id: 40cb4235-27fc-47ac-8d3e-91124ef636c0
+last-transition-from: in-progress
 ---
 
-# f00328 — combined stdout/stderr policy.
+# f00329 — process-tree termination.
 
 ## Goal
 
-Migrated work item: combined stdout/stderr policy..
+Migrated work item: process-tree termination..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00328-combined-stdout-stderr-policy.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00329-process-tree-termination.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#combined-stdout-stderr-policy` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#process-tree-termination` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

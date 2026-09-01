@@ -1,20 +1,23 @@
 ---
-id: f00329
-title: "process-tree termination."
+id: f00324
+title: "Stale-lock CAS/revalidation."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#process-tree-termination
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#stale-lock-cas-revalidation
+last-transition-id: 8130812c-7c53-4e67-9d6b-8bd4f3ad16f7
+last-correlation-id: 8130812c-7c53-4e67-9d6b-8bd4f3ad16f7
+last-transition-from: in-progress
 ---
 
-# f00329 — process-tree termination.
+# f00324 — Stale-lock CAS/revalidation.
 
 ## Goal
 
-Migrated work item: process-tree termination..
+Migrated work item: Stale-lock CAS/revalidation..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00329-process-tree-termination.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00324-stale-lock-cas-revalidation.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#process-tree-termination` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#stale-lock-cas-revalidation` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
