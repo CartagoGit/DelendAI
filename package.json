@@ -207,7 +207,7 @@
 		"archive:proposals:status": "bun tools/scripts/archive/proposals-status.script.ts"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.9",
+		"@biomejs/biome": "2.5.11",
 		"@mcp-vertex/conventions": "workspace:*",
 		"@mcp-vertex/diagram": "workspace:*",
 		"@mcp-vertex/env": "workspace:*",
