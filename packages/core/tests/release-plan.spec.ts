@@ -82,7 +82,10 @@ describe('PUBLISH_ORDER', async () => {
 	const root = resolve(import.meta.dirname, '../../..');
 
 	it('publishes core, client and the executable CLI in dependency order', () => {
-		expect(PUBLISH_ORDER.slice(0, 3)).toEqual([
+		// `packages/contracts` is a leaf that `github`, `gitlab` and
+		// `remote-provider-core` depend on, so it packs before everything.
+		expect(PUBLISH_ORDER.slice(0, 4)).toEqual([
+			'packages/contracts',
 			'packages/core',
 			'packages/client',
 			'packages/cli',
