@@ -2,15 +2,15 @@
 id: f00329
 title: "process-tree termination."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#process-tree-termination
-last-transition-id: 40cb4235-27fc-47ac-8d3e-91124ef636c0
-last-correlation-id: 40cb4235-27fc-47ac-8d3e-91124ef636c0
-last-transition-from: in-progress
+last-transition-id: 13833e26-3259-418d-abdf-a2328849b520
+last-correlation-id: 13833e26-3259-418d-abdf-a2328849b520
+last-transition-from: review
 ---
 
 # f00329 — process-tree termination.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00329-process-tree-termination.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00329-process-tree-termination.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

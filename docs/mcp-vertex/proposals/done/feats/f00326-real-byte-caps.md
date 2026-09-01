@@ -1,23 +1,23 @@
 ---
-id: f00327
-title: "chunk truncation."
+id: f00326
+title: "Real byte caps."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#chunk-truncation
-last-transition-id: 5d0e736f-a5e1-4f3d-a922-cca60daed6c2
-last-correlation-id: 5d0e736f-a5e1-4f3d-a922-cca60daed6c2
-last-transition-from: in-progress
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#real-byte-caps
+last-transition-id: 9a3bc94a-43d4-4b98-b559-8bd265efd082
+last-correlation-id: 9a3bc94a-43d4-4b98-b559-8bd265efd082
+last-transition-from: review
 ---
 
-# f00327 — chunk truncation.
+# f00326 — Real byte caps.
 
 ## Goal
 
-Migrated work item: chunk truncation..
+Migrated work item: Real byte caps..
 
 ## why
 
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00327-chunk-truncation.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00326-real-byte-caps.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -43,7 +43,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   verification, 2026-09-01. The original bulk-close claimed the migration
   source was gone; it is present at
   `docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md`.
-  Checked against the real code instead: chunk truncation is live in `run-command.ts` (per-chunk Buffer collector trimmed against the remaining budget); `run-command-bytes.spec.ts` passes.
+  Checked against the real code instead: real byte caps are live in `packages/core/src/lib/shared/run-command.ts` (`maxOutputBytes` + `remainingBytes` trimming to the exact remaining budget); `run-command-bytes.spec.ts` passes.
 
 ## acceptance
 
@@ -51,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#chunk-truncation` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#real-byte-caps` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

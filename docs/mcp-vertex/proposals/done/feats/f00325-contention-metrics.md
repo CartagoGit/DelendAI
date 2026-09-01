@@ -2,15 +2,15 @@
 id: f00325
 title: "contention metrics."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#contention-metrics
-last-transition-id: b54266d8-8d63-48f8-b39e-edeeccc6c73a
-last-correlation-id: b54266d8-8d63-48f8-b39e-edeeccc6c73a
-last-transition-from: in-progress
+last-transition-id: 62ac6ac7-a288-4b9c-9b5f-fdefe7968292
+last-correlation-id: 62ac6ac7-a288-4b9c-9b5f-fdefe7968292
+last-transition-from: review
 ---
 
 # f00325 — contention metrics.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00325-contention-metrics.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00325-contention-metrics.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

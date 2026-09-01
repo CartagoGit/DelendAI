@@ -104,11 +104,21 @@ export const guardShippedInPresent = (
 	// run").
 	const stripInlineComment = (value: string): string =>
 		value.split('#')[0]?.trim() ?? '';
+	// When the frontmatter is read as a raw line rather than parsed YAML,
+	// a list value arrives as the literal text `["abc1234"]` — brackets
+	// stripped below, but the quotes survive into the candidate and the
+	// anchored SHA test then rejects a perfectly good SHA. The quoting is
+	// how everyone writes this field, so accept it.
+	const stripQuotes = (value: string): string =>
+		value
+			.replace(/^['"]+/, '')
+			.replace(/['"]+$/, '')
+			.trim();
 	const candidates: string[] = [];
 	if (Array.isArray(raw)) {
 		for (const entry of raw) {
 			if (typeof entry === 'string' && entry.trim().length > 0) {
-				candidates.push(stripInlineComment(entry));
+				candidates.push(stripQuotes(stripInlineComment(entry)));
 			} else if (typeof entry === 'number' && Number.isFinite(entry)) {
 				candidates.push(String(entry));
 			}
@@ -124,11 +134,11 @@ export const guardShippedInPresent = (
 		// keep it as a single candidate (e.g. `[ship123]` is one SHA,
 		// not three tokens to split). Otherwise split on whitespace /
 		// commas to extract every individual SHA.
-		if (shaRe.test(inner)) {
-			candidates.push(inner);
+		if (shaRe.test(stripQuotes(inner))) {
+			candidates.push(stripQuotes(inner));
 		} else {
 			for (const token of inner.split(/[\s,]+/u)) {
-				const t = token.replace(/^[-\s]+/u, '').trim();
+				const t = stripQuotes(token.replace(/^[-\s]+/u, '').trim());
 				if (t.length > 0) candidates.push(t);
 			}
 		}

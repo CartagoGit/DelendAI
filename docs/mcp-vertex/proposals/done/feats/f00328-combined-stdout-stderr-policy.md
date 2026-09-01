@@ -2,15 +2,15 @@
 id: f00328
 title: "combined stdout/stderr policy."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#combined-stdout-stderr-policy
-last-transition-id: 8bcf54c6-afcb-47f6-80be-8513d7c88d8b
-last-correlation-id: 8bcf54c6-afcb-47f6-80be-8513d7c88d8b
-last-transition-from: in-progress
+last-transition-id: b1a691c7-c4d7-4dff-9c31-6e71fd550efd
+last-correlation-id: b1a691c7-c4d7-4dff-9c31-6e71fd550efd
+last-transition-from: review
 ---
 
 # f00328 — combined stdout/stderr policy.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00328-combined-stdout-stderr-policy.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00328-combined-stdout-stderr-policy.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

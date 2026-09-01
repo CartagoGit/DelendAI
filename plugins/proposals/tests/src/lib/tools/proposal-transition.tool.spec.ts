@@ -360,6 +360,33 @@ describe('proposal_transition', async () => {
 			expect(result.isError).toBe(true);
 		});
 
+		it('reads a review record written with the bolded markdown spelling', () => {
+			// 237 documents write `- review-implementer:` and 94 write
+			// `- **review-implementer**:`. Reading only the first made every
+			// review record in those 94 invisible, so a genuinely
+			// peer-approved proposal was refused for lack of the approval
+			// sitting in its own document.
+			expect(
+				hasIndependentPeerApproval(
+					[
+						'- **review-implementer**: copilot-orchestrator',
+						'- **review-log**: approved by claude-opus5-orchestrator — checked',
+					].join('\n'),
+				),
+			).toBe(true);
+		});
+
+		it('still refuses a bolded self-approval', () => {
+			expect(
+				hasIndependentPeerApproval(
+					[
+						'- **review-implementer**: copilot-orchestrator',
+						'- **review-log**: approved by copilot-orchestrator — same agent',
+					].join('\n'),
+				),
+			).toBe(false);
+		});
+
 		it('falls back to `done/` (no sub-folder) when kind is missing', async () => {
 			await writeProposal(root, 'review', 'f70001-no-kind.md', {
 				id: 'f70001',

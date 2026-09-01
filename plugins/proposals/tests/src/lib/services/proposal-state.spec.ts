@@ -117,6 +117,22 @@ describe('proposal-state guards', () => {
 		).toEqual({ ok: true });
 	});
 
+	it('accepts a raw-frontmatter list value, quotes and trailing comment included', () => {
+		// When the frontmatter arrives as a raw line rather than parsed
+		// YAML the value is the literal text `["abc1234"]  # note`. The
+		// quotes survived into the candidate and the anchored SHA test
+		// rejected it, so six verified proposals could not close.
+		expect(
+			guardShippedInPresent({
+				'shipped-in':
+					'["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk close',
+			}),
+		).toEqual({ ok: true });
+		expect(guardShippedInPresent({ 'shipped-in': '"30551533"' })).toEqual({
+			ok: true,
+		});
+	});
+
 	it('still rejects an entry that is only a comment', () => {
 		expect(
 			guardShippedInPresent({ 'shipped-in': ['# not a sha'] }),

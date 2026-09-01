@@ -1,23 +1,23 @@
 ---
-id: f00324
-title: "Stale-lock CAS/revalidation."
+id: f00327
+title: "chunk truncation."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#stale-lock-cas-revalidation
-last-transition-id: 8130812c-7c53-4e67-9d6b-8bd4f3ad16f7
-last-correlation-id: 8130812c-7c53-4e67-9d6b-8bd4f3ad16f7
-last-transition-from: in-progress
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#chunk-truncation
+last-transition-id: 3a888c56-62f5-4dc4-b0fa-5c369dc674d2
+last-correlation-id: 3a888c56-62f5-4dc4-b0fa-5c369dc674d2
+last-transition-from: review
 ---
 
-# f00324 — Stale-lock CAS/revalidation.
+# f00327 — chunk truncation.
 
 ## Goal
 
-Migrated work item: Stale-lock CAS/revalidation..
+Migrated work item: chunk truncation..
 
 ## why
 
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00324-stale-lock-cas-revalidation.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00327-chunk-truncation.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -43,7 +43,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   verification, 2026-09-01. The original bulk-close claimed the migration
   source was gone; it is present at
   `docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md`.
-  Checked against the real code instead: the stale-lock CAS/revalidation the audit asked for is live in `packages/core/src/lib/shared/with-file-mutex.ts` (generation-token lease + heartbeat revalidation, 17 references); `with-file-mutex-reclaim.spec.ts` and `with-file-mutex.race.spec.ts` pass.
+  Checked against the real code instead: chunk truncation is live in `run-command.ts` (per-chunk Buffer collector trimmed against the remaining budget); `run-command-bytes.spec.ts` passes.
 
 ## acceptance
 
@@ -51,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#stale-lock-cas-revalidation` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#chunk-truncation` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
