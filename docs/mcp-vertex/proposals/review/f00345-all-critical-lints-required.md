@@ -2,12 +2,15 @@
 id: f00345
 title: "all critical lints required."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#all-critical-lints-required
 shipped-in: ["305515338"]
+last-transition-id: 0bcbab9e-80c9-459c-92dd-2eccc5131f22
+last-correlation-id: 0bcbab9e-80c9-459c-92dd-2eccc5131f22
+last-transition-from: in-progress
 ---
 
 # f00345 — all critical lints required.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00345-all-critical-lints-required.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00345-all-critical-lints-required.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -41,7 +44,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: in_review
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

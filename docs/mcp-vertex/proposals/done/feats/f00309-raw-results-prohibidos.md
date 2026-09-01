@@ -2,7 +2,7 @@
 id: f00309
 title: "Raw results prohibidos."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 checklist: 'Raw results prohibidos') is shipped: ISafeMcpVertexReport in plugins/error-reporting/src/lib/contracts/interfaces/reporter.interface.ts has no raw tool-result field at all; only typed safe fields (reporterVersion, safeToolId, toolOwner, toolCategory, errorCode, failureClass, classification, fingerprint, mcpFrames, syntheticExample, environmentClass). knowledge/error-reporting.ts explicitly documents 'result' as one of the fields that is 'Never sent'. privacy-validator.helper.ts additionally rejects any string that looks like a JSON/XML/SQL fragment leaking through. Ran privacy-validator.spec.ts + privacy-adversarial*.spec.ts: 23 tests pass, exit 0.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
