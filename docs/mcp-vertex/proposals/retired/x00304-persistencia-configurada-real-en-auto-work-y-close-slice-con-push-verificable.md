@@ -2,10 +2,13 @@
 id: x00304
 title: "Persistencia configurada real en auto_work y close_slice con push verificable"
 kind: fix
-status: ready
+status: retired
 type: proposal
 track: proposals-commit-persistence
 date: 2026-08-29
+last-transition-id: fa96496a-fdfe-4000-9a34-eee08518ad64
+last-correlation-id: fa96496a-fdfe-4000-9a34-eee08518ad64
+last-transition-from: ready
 ---
 
 # x00304 — Persistencia configurada real en auto_work y close_slice con push verificable

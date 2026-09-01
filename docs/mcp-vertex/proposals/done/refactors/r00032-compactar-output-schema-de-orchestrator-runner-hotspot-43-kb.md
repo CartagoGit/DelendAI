@@ -2,7 +2,7 @@
 id: r00032
 title: "Compactar output schema de `orchestrator-runner` (hotspot 43 KB)"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -16,6 +16,10 @@ related:
     - q00006
     - r00031 # misma estrategia aplicada a proposal_get (canary)
     - f00187 # detail: compact|normal|full transversal
+shipped-in: ["4c7a23ba8"]
+last-transition-id: beb0d7bd-98d6-4577-8941-66c78133402b
+last-correlation-id: beb0d7bd-98d6-4577-8941-66c78133402b
+last-transition-from: review
 ---
 
 # r00032 — Compactar output schema de `orchestrator-runner` (hotspot 43 KB)

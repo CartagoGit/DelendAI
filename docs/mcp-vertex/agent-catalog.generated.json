@@ -2288,14 +2288,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00032",
-				"title": "r00032",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00033",
 				"title": "r00033",
 				"track": "contracts",
@@ -2494,24 +2486,16 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00304",
-				"title": "x00304",
-				"track": "proposals-commit-persistence",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 149,
+			"ready": 147,
 			"in-progress": 5,
 			"review": 1,
 			"paused": 1,
-			"done": 586,
+			"done": 587,
 			"blocked": 23,
-			"retired": 11,
+			"retired": 12,
 			"unspecified": 0
 		}
 	}
