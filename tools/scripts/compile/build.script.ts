@@ -25,6 +25,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import {
+	cpSync,
 	existsSync,
 	mkdtempSync,
 	readdirSync,
@@ -357,6 +358,32 @@ const buildPackage = (rel: string): void => {
 	} finally {
 		rmSync(dtsTempDir, { recursive: true, force: true });
 	}
+
+	// Mirror the canonical tree into the package's own `dist/`.
+	//
+	// r00045 made `build/{group}/{name}/{version}/` the single build
+	// output — correct — but every one of the 62 manifests still declares
+	// `"main": "./dist/index.js"`, and Node/npm do not allow `exports` to
+	// escape the package directory with `../build` (r00045's own design
+	// note says so). Nothing repointed them, so the moment the last stale
+	// `dist/` was cleaned up, EVERY by-package-name import broke:
+	// `Failed to resolve entry for package "@mcp-vertex/agent-orchestrator"`.
+	//
+	// The mirror is a copy, not a second build: `build/` stays the thing
+	// that gets built and the thing CI cleans, and `dist/` is the
+	// gitignored view of it that the declared entrypoints resolve to.
+	mirrorBuildIntoPackageDist(outRoot, join(dir, 'dist'));
+};
+
+/**
+ * Copy the canonical build output into the package's declared `dist/`.
+ * Replaces any previous mirror so a removed entrypoint cannot survive as
+ * a stale file that makes a broken package look resolvable.
+ */
+const mirrorBuildIntoPackageDist = (outRoot: string, distDir: string): void => {
+	if (!existsSync(outRoot)) return;
+	rmSync(distDir, { recursive: true, force: true });
+	cpSync(outRoot, distDir, { recursive: true });
 };
 
 export const main = (argv: string[]): number => {

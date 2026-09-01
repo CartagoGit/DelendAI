@@ -126,6 +126,16 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	);
 	const issuesTriage = resolve(workspaceRoot, 'plugins/issues-triage/src');
 	const container = resolve(workspaceRoot, 'plugins/container/src');
+	// `audit-orchestrator` imports `@mcp-vertex/agent-orchestrator/public`,
+	// and this table is the only thing that makes a cross-plugin public
+	// import resolvable under vitest. A missing entry is not a soft
+	// failure: the importing plugin's whole spec file dies with "Cannot
+	// find package", which is how `first-party-metadata.spec.ts` started
+	// failing. `preset-drift` already flags the gap.
+	const agentOrchestrator = resolve(
+		workspaceRoot,
+		'plugins/agent-orchestrator/src',
+	);
 	const client = resolve(workspaceRoot, 'packages/client/src');
 	const cli = resolve(workspaceRoot, 'packages/cli/src');
 	const testKit = resolve(workspaceRoot, 'packages/test-kit/src');
@@ -163,6 +173,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/impact-analysis',
 			replacement: resolve(impactAnalysis, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/agent-orchestrator/public',
+			replacement: resolve(agentOrchestrator, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/agent-orchestrator\/lib\/(.*)$/,
+			replacement: `${resolve(agentOrchestrator, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/agent-orchestrator',
+			replacement: resolve(agentOrchestrator, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/adaptive-optimizer/public',
