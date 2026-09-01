@@ -2,11 +2,14 @@
 id: x00303
 title: "Persistencia configurada real en auto_work y close_slice con push verificable"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: proposals-commit-persistence
 date: 2026-08-29
 shipped-in: ["d2e53cae8 # S1 runner", "9c3ed108a # S2 close_slice persist", "645c623d7 # S3/S4 managed-lazy merge + engine wait-for-push"]
+last-transition-id: 9c9648a3-022b-4f7d-a882-7de9f618a849
+last-correlation-id: 9c9648a3-022b-4f7d-a882-7de9f618a849
+last-transition-from: in-progress
 ---
 
 # x00303 — Persistencia configurada real en auto_work y close_slice con push verificable
