@@ -58,19 +58,22 @@ The prior `review-log` below ("migration source no longer present ...
 no actionable scope") was false — the source section (TOK2-004,
 "estrategia default de `surfaceMode`") is recoverable from commit
 `11130767c` and asks for a data-driven, documented decision on
-whether the default `surfaceMode` should move from `native` to
-`adaptive`. That decision was made and documented independently of
-this proposal: `r00026` (commit `58ef6288a`, "default adaptive for
-plain MCP clients") flipped the default, and
+whether the default `surfaceMode` should move away from `native`.
+That decision was made and documented independently of this
+proposal, twice: `r00026` (commit `58ef6288a`) flipped the default to
+`adaptive`, documented in
 `docs/mcp-vertex/adr/0016-surface-policy-adaptive-default.md`
-(landed in `11d31317f`) records the reasoning
-(`decideSurfaceModeFromCapabilities()` priority: explicit mode >
-`mcp-vertex/surface` capability > `adaptive` default for plain
-clients). Verified by reading the ADR and confirming
+(landed `11d31317f`); the decision was then revisited and the default
+moved again to `managed`, documented in
+`docs/mcp-vertex/adr/0017-surface-policy-managed-default.md`
+("Accepted", 2026-08-26), which ADR 0016 itself references as its
+successor. Verified by reading both ADRs and confirming
 `decideSurfaceModeFromCapabilities` in
-`packages/core/src/lib/project/tool-surface-runtime.service.ts`
-matches its documented priority order. Closing on that evidence, not
-on the placeholder review-log.
+`packages/core/src/lib/surface/decide-mode.ts` implements exactly the
+priority order ADR 0017 documents (explicit mode > known host profile
+> `mcp-vertex/surface` listChanged signal -> `managed` > default
+`native` fallback for unknown/no-signal clients). Closing on that
+evidence, not on the placeholder review-log.
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
