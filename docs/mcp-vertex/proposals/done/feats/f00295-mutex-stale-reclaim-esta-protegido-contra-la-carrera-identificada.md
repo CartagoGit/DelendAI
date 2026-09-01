@@ -2,7 +2,7 @@
 id: f00295
 title: "Mutex stale reclaim está protegido contra la carrera identificada."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,7 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-reviewer-2
+- review-log: approved by sonnet-reviewer-2 — Verified independently: migration source is NOT gone - survives in done/audits/a00092 (TODO MX-001: stale-lock reclaim race with waiter-observes-stale/holder-heartbeat/waiter-reclaim scenario). Checked packages/core/src/lib/shared/with-file-mutex.ts: generation-token lease payload, heartbeat revalidation before reclaim. Ran the exact race tests: with-file-mutex-reclaim.spec.ts ('does not reclaim when a holder heartbeats between stale observation and reclaim') + with-file-mutex.race.spec.ts (MUT2-001, 'does not open a third-contender window when a holder heartbeats after stale observation') -> 4/4 passed.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

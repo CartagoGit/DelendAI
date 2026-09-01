@@ -1,23 +1,23 @@
 ---
-id: f00318
-title: "Zod parsed data."
+id: f00294
+title: "Timeouts de plugin tienen cancelación/cleanup."
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: migrated
-shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#zod-parsed-data
-last-transition-id: 2e67a349-2a99-4795-b374-d187c988312e
-last-correlation-id: 2e67a349-2a99-4795-b374-d187c988312e
-last-transition-from: ready
+shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#timeouts-de-plugin-tienen-cancelacion-cleanup
+last-transition-id: 32ba8dde-1c05-4922-b17f-9afe9b2e722f
+last-correlation-id: 32ba8dde-1c05-4922-b17f-9afe9b2e722f
+last-transition-from: in-progress
 ---
 
-# f00318 — Zod parsed data.
+# f00294 — Timeouts de plugin tienen cancelación/cleanup.
 
 ## Goal
 
-Migrated work item: Zod parsed data..
+Migrated work item: Timeouts de plugin tienen cancelación/cleanup..
 
 ## why
 
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `in-progress/f00318-zod-parsed-data.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00294-timeouts-de-plugin-tienen-cancelacion-cleanup.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -44,14 +44,17 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-reviewer-2
+- review-log: approved by sonnet-reviewer-2 — Verified independently: migration source is NOT gone - survives in done/audits/a00092 (TODO PL-005 timeout-cancelable, PL-006 dispose()). Checked packages/core/src/lib/plugins/lifecycle.ts (safeDispose, WeakMap-memoised idempotent dispose) and load-plugins-runtime.helper.ts (abortable flag, formatRegisterAbortMessage for 'timeout'/'signal', disposeLoadedPlugins on abort/failure). Ran targeted vitest suite for dependency-graph + load-plugins: 23/23 passed.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#zod-parsed-data` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#timeouts-de-plugin-tienen-cancelacion-cleanup` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
