@@ -2,7 +2,7 @@
 id: f00300
 title: "Registry/presets/docs no dependen de sincronización manual."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 REG-002/REG-003 + section 21 MAN-001..007, manual arrays replaced by plugin.manifest.ts + generators for registry/web/docs/token-budgets/permissions) is shipped, done under a different proposal id: r00016 (registry: plugin manifests como unica fuente de verdad y generadores derivados, status done) explicitly cites and closes REG-002/003/004, MAN-001..010, DOC-003. Verified: 56 plugin.manifest.ts files exist (e.g. plugins/browser, plugins/security), define-plugin-manifest.ts + permissions.schema.ts + generated artifacts docs/mcp-vertex/generated/plugin-manifests.generated.{md,json} + apps/web/src/generated/plugin-manifest-catalog.generated.ts. Ran define-plugin-manifest.spec.ts + plugin-manifest.script.spec.ts: 25 tests pass, exit 0.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

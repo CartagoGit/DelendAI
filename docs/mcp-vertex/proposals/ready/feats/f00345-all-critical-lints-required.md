@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#all-critical-lints-required
+shipped-in: ["305515338"]
 ---
 
 # f00345 — all critical lints required.
@@ -50,6 +51,18 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#all-critical-lints-required` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
+
+### Verified 2026-09-01
+
+- The prior review-log's premise was false: a00092 is present and this
+  title maps to §18 CI-001 ("Asegurar que los lints arquitectónicos son
+  required checks"). Verified against the current codebase: `.github/workflows/quality-gate.yml`
+  (created in `305515338`, fix(governance): c00130 + c00132 + c00133 +
+  v00125 — Track A governance) documents that adding a step there makes
+  it required to merge, mapping local `bun run validate` lints onto
+  required CI jobs.
+- Closing on this evidence, not on the "no actionable scope" claim.
+
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
