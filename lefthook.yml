@@ -84,7 +84,13 @@ pre-commit:
             # blocked every OTHER proposal from closing. A generated file
             # should be regenerated at commit time; the validate-time check
             # stays as the backstop for a host that bypassed the hook.
-            run: 'if [ -f .cache/mcp-vertex/proposals/index.json ]; then bun run sync:proposals >/dev/null && bun tools/scripts/catalog/generate-agent-catalog.script.ts --mode=compact >/dev/null; else echo "catalog-drift-check: skipped (proposal index not present yet)"; fi'
+            #
+            # The id counter is reseeded here for the same reason:
+            # `lint:proposal-id-drift` compares it against the highest id on
+            # disk, so it falls behind the moment anyone authors a proposal,
+            # and it lives in gitignored per-machine state that no commit
+            # could ever carry.
+            run: 'if [ -f .cache/mcp-vertex/proposals/index.json ]; then bun run sync:proposals >/dev/null && bun tools/scripts/proposals/sync-proposal-counters.script.ts >/dev/null && bun tools/scripts/catalog/generate-agent-catalog.script.ts --mode=compact >/dev/null; else echo "catalog-drift-check: skipped (proposal index not present yet)"; fi'
             stage_fixed: true
 
         host-hints-drift-check:
