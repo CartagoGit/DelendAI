@@ -1856,14 +1856,6 @@
 				"date": ""
 			},
 			{
-				"id": "v00133",
-				"title": "v00133",
-				"track": "general",
-				"status": "ready",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "v00134",
 				"title": "v00134",
 				"track": "general",
@@ -1873,11 +1865,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 70,
+			"ready": 69,
 			"in-progress": 5,
 			"review": 15,
 			"paused": 1,
-			"done": 650,
+			"done": 651,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0
