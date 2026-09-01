@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `review/f00303-el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00303-el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

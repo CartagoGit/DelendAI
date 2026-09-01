@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `review/f00296-todas-las-metricas-llamadas-bytes-son-utf-8-bytes-reales.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00296-todas-las-metricas-llamadas-bytes-son-utf-8-bytes-reales.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

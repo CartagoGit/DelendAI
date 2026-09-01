@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `review/f00300-registry-presets-docs-no-dependen-de-sincronizacion-manual.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00300-registry-presets-docs-no-dependen-de-sincronizacion-manual.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

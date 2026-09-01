@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#adversarial-tests
+shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
 last-transition-id: 85808666-2618-4120-b3af-cf6bfc5db5da
 last-correlation-id: 85808666-2618-4120-b3af-cf6bfc5db5da
 last-transition-from: in-progress
@@ -31,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `review/f00316-adversarial-tests.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00316-adversarial-tests.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

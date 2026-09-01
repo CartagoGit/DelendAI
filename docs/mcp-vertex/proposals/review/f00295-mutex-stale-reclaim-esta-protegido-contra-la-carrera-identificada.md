@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `review/f00295-mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00295-mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
