@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#decision-de-default-adaptive-documentada
+shipped-in: ["58ef6288", "11d31317"]
 ---
 
 # f00372 — decisión de default adaptive documentada.
@@ -50,6 +51,26 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#decision-de-default-adaptive-documentada` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
+
+### Independently verified 2026-09-01
+
+The prior `review-log` below ("migration source no longer present ...
+no actionable scope") was false — the source section (TOK2-004,
+"estrategia default de `surfaceMode`") is recoverable from commit
+`11130767c` and asks for a data-driven, documented decision on
+whether the default `surfaceMode` should move from `native` to
+`adaptive`. That decision was made and documented independently of
+this proposal: `r00026` (commit `58ef6288a`, "default adaptive for
+plain MCP clients") flipped the default, and
+`docs/mcp-vertex/adr/0016-surface-policy-adaptive-default.md`
+(landed in `11d31317f`) records the reasoning
+(`decideSurfaceModeFromCapabilities()` priority: explicit mode >
+`mcp-vertex/surface` capability > `adaptive` default for plain
+clients). Verified by reading the ADR and confirming
+`decideSurfaceModeFromCapabilities` in
+`packages/core/src/lib/project/tool-surface-runtime.service.ts`
+matches its documented priority order. Closing on that evidence, not
+on the placeholder review-log.
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders

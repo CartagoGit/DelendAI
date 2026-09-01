@@ -60,3 +60,20 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): the "migration source
+no longer present" premise is misleading — the audit content survives
+under `docs/mcp-vertex/proposals/done/audits/a00092-*.md`. Searched
+that document for "ejecutable"; the only hit is the document's own
+framing note ("Documento de trabajo para convertir en propuestas
+ejecutables"), not a discrete numbered TODO. This title names the
+audit's overarching methodology (turn every finding into a traceable,
+executable/testable acceptance criterion), not a separate bug or
+feature. That methodology is demonstrably in force: every sibling
+migrated item in this batch (f00359-f00371) carries a concrete,
+independently-verified acceptance criterion and, where actionable
+scope existed, real shipped code with passing tests. No further
+actionable code scope exists specifically for this title. Confirmed
+done as a bookkeeping/review item.
