@@ -1,20 +1,23 @@
 ---
-id: f00347
-title: "wiring coverage."
+id: f00312
+title: "Solo internal frames."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#wiring-coverage
-shipped-in: ["87f3f269f"]
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#solo-internal-frames
+shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
+last-transition-id: 5f347e5e-a09b-4170-8e1a-3690d8fd53aa
+last-correlation-id: 5f347e5e-a09b-4170-8e1a-3690d8fd53aa
+last-transition-from: in-progress
 ---
 
-# f00347 — wiring coverage.
+# f00312 — Solo internal frames.
 
 ## Goal
 
-Migrated work item: wiring coverage..
+Migrated work item: Solo internal frames..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00347-wiring-coverage.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00312-solo-internal-frames.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -41,31 +44,17 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: in_review
+- review-implementer: sonnet-reviewer-6
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#wiring-coverage` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#solo-internal-frames` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
-
-### Verified 2026-09-01
-
-- The prior review-log's premise was false: a00092 is present and this
-  title maps to §19 TEST-001 ("Revisar exclusión global de `index.ts`" —
-  a lot of real wiring code lives in barrel files, so excluding all
-  `index.ts` from coverage hides it; propose excluding only pure-barrel
-  files by detection). Verified against the current codebase:
-  `vitest.config.ts` implements exactly this — `isPureBarrelIndex()`
-  statically detects barrel-only `index.ts` files and only those are
-  coverage-excluded (`pureBarrelCoverageExcludes`), landed in `87f3f269f`
-  (test(t00006): cobertura — barrels por detección, apps/web y
-  property-based).
-- Closing on this evidence, not on the "no actionable scope" claim.
-
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
