@@ -2,7 +2,7 @@
 id: f00304
 title: "Existe una política de permisos de plugins."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 section 21 MAN-007 / permissions field in the manifest schema, existe una politica de permisos de plugins) is shipped: packages/core/src/lib/manifest/permissions.schema.ts defines a canonical PERMISSION_CATEGORIES enum + a per-tool toolPermissionsSchema (unique keys, non-empty category subsets); packages/cli/src/lib/doctor/checks/permissions.check.ts statically validates every plugin.manifest.ts's permissions array against that canonical set and flags unknown ones as silent capability loss; docs/mcp-vertex/generated/plugin-manifests.generated.md/.json publish the resulting permission catalog per plugin. This is the permission policy the finding asked for.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

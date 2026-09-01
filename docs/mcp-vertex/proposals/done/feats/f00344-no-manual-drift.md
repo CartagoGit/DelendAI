@@ -2,7 +2,7 @@
 id: f00344
 title: "no manual drift."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-verifier-7
+- review-log: approved by sonnet-verifier-7 — Independently verified against a00092 section 10 (REG-002/003/004) and the current codebase; the manifest-vs-package lint (shipped in 82c54bccc) enforces exactly the described invariant.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

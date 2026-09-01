@@ -35,7 +35,7 @@ describe('staleSelfPathsFor', () => {
 			'- notes: see docs/mcp-vertex/proposals/review/f00299-token-budgets.md',
 			'- also docs/mcp-vertex/proposals/ready/feats/f00299-token-budgets.md',
 		].join('\n');
-		expect(staleSelfPathsFor(text, CURRENT).sort()).toEqual([
+		expect([...staleSelfPathsFor(text, CURRENT)].sort()).toEqual([
 			'docs/mcp-vertex/proposals/ready/feats/f00299-token-budgets.md',
 			'docs/mcp-vertex/proposals/review/f00299-token-budgets.md',
 		]);
