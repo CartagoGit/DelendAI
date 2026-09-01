@@ -1,20 +1,23 @@
 ---
-id: f00298
-title: "`tools/list` tiene budget visible por preset/plugin."
+id: f00304
+title: "Existe una política de permisos de plugins."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#tools-list-tiene-budget-visible-por-preset-plugin
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#existe-una-politica-de-permisos-de-plugins
+last-transition-id: e8d1571c-5966-4cc5-8db7-80f838881764
+last-correlation-id: e8d1571c-5966-4cc5-8db7-80f838881764
+last-transition-from: in-progress
 ---
 
-# f00298 — `tools/list` tiene budget visible por preset/plugin.
+# f00304 — Existe una política de permisos de plugins.
 
 ## Goal
 
-Migrated work item: `tools/list` tiene budget visible por preset/plugin..
+Migrated work item: Existe una política de permisos de plugins..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00298-tools-list-tiene-budget-visible-por-preset-plugin.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00304-existe-una-politica-de-permisos-de-plugins.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#tools-list-tiene-budget-visible-por-preset-plugin` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#existe-una-politica-de-permisos-de-plugins` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

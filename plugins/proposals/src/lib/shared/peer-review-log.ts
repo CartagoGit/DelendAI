@@ -222,6 +222,33 @@ export const readPeerReviewLog = async (
 		.filter((entry): entry is IPeerReviewLogEntry => entry !== null);
 };
 
+/**
+ * Whether the log holds ANY review verdict for this proposal.
+ *
+ * The log lives under `.cache/`, which is gitignored, disposable,
+ * per-worktree state. The proposal document — which carries
+ * `review-implementer:` and `review-log: approved by …` per slice — is
+ * the committed record. Gating a committed decision on disposable local
+ * state means a fresh clone, a CI runner, or simply a different worktree
+ * can never close a proposal that was genuinely reviewed, because the
+ * only tool that writes the log refuses to re-review an already-approved
+ * slice.
+ *
+ * So the log stays authoritative wherever it has something to say, and
+ * callers fall back to the document only when it has nothing at all for
+ * this proposal. Returns `false` on a missing/unreadable log, which is
+ * exactly the "nothing to say" case.
+ */
+export const logHasAnyReviewVerdictFor = async (
+	logPathAbs: string,
+	proposalId: string,
+): Promise<boolean> => {
+	const entries = await readPeerReviewLog(logPathAbs).catch(() => []);
+	return entries.some(
+		(entry) => entry.kind === 'review' && entry.proposalId === proposalId,
+	);
+};
+
 export const hasIndependentApprovalSinceLastReview = async (
 	logPathAbs: string,
 	proposalId: string,

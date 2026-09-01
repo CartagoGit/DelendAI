@@ -83,6 +83,7 @@ import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
 import { recordPlanClosureBypass } from '../shared/plan-closure-bypass-log';
 import {
 	hasIndependentApprovalSinceLastReview,
+	logHasAnyReviewVerdictFor,
 	recordProposalEnteredReview,
 } from '../shared/peer-review-log';
 import {
@@ -801,25 +802,36 @@ export const runProposalTransition = async (
 				via: 'force',
 			});
 		} else {
+			// The JSONL log is authoritative wherever it has something to
+			// say about this proposal. When it has NOTHING — a fresh
+			// clone, a CI runner, a different worktree, a cleared cache —
+			// fall back to the proposal document, which carries
+			// `review-implementer:` and `review-log: approved by …` per
+			// slice and is the committed, reviewable record.
+			//
+			// Without this fallback the gate was unreachable in exactly
+			// those situations: `.cache/` is gitignored and disposable, and
+			// `proposal_review` refuses to re-review a slice already marked
+			// `review-state: done`, so nothing could ever repopulate the
+			// log. A genuinely reviewed proposal could not be closed by
+			// anyone who had not personally run the review in this very
+			// worktree.
+			const readProposalMarkdown = async (): Promise<string> =>
+				new SafeWorkspaceReader(options.proposalsDirAbs)
+					.readText(relative(options.proposalsDirAbs, found.absPath))
+					.then((value) => value.content)
+					.catch(() => '');
 			const approved =
-				typeof options.peerReviewLogPathAbs === 'string'
+				typeof options.peerReviewLogPathAbs === 'string' &&
+				(await logHasAnyReviewVerdictFor(
+					options.peerReviewLogPathAbs,
+					args.id,
+				))
 					? await hasIndependentApprovalSinceLastReview(
 							options.peerReviewLogPathAbs,
 							args.id,
 						)
-					: hasIndependentPeerApproval(
-							await new SafeWorkspaceReader(
-								options.proposalsDirAbs,
-							)
-								.readText(
-									relative(
-										options.proposalsDirAbs,
-										found.absPath,
-									),
-								)
-								.then((value) => value.content)
-								.catch(() => ''),
-						);
+					: hasIndependentPeerApproval(await readProposalMarkdown());
 			if (!approved) {
 				const envelope = {
 					ok: false as const,
