@@ -1584,14 +1584,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00391",
-				"title": "f00391",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00392",
 				"title": "f00392",
 				"track": "general",
@@ -1930,10 +1922,10 @@
 		],
 		"byStatus": {
 			"ready": 76,
-			"in-progress": 6,
+			"in-progress": 5,
 			"review": 15,
 			"paused": 1,
-			"done": 643,
+			"done": 644,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0

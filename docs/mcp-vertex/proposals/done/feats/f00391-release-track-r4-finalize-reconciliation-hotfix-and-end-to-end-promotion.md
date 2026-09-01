@@ -2,16 +2,16 @@
 id: f00391
 title: "Release track R4: finalize, reconciliation, hotfix and end-to-end promotion"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
 shipped-in: ["3b8e1baec"]
-last-transition-id: 95d25ac6-1290-4cb1-9db7-77b964557a47
-last-correlation-id: 95d25ac6-1290-4cb1-9db7-77b964557a47
-last-transition-from: ready
+last-transition-id: db50801e-f22c-4852-8861-260d4e6ba6be
+last-correlation-id: db50801e-f22c-4852-8861-260d4e6ba6be
+last-transition-from: review
 ---
 
 # f00391 — Release track R4: finalize, reconciliation, hotfix and end-to-end promotion
