@@ -2,7 +2,7 @@
 id: f00310
 title: "Raw project logs prohibidos."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 checklist: 'Raw project logs prohibidos') is shipped: the reporter accepts only mcp-vertex-internal failures backed by typed internal errors or @mcp-vertex/* frame evidence (knowledge/error-reporting.ts: 'External project data is non-reportable by construction'); the safe DTO has no cwd/workspace/repo/log field, and knowledge doc lists 'workspace, cwd' among fields 'Never sent'. frame-extractor.helper.ts strips any non-@mcp-vertex frame before a stack is ever considered. Ran privacy-validator.spec.ts + privacy-adversarial*.spec.ts: 23 tests pass, exit 0.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

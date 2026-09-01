@@ -2,7 +2,7 @@
 id: f00345
 title: "all critical lints required."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-verifier-7
+- review-log: approved by sonnet-verifier-7 — Independently verified against a00092 section 18 CI-001; .github/workflows/quality-gate.yml (shipped in 305515338) documents required-check mapping for lints.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
