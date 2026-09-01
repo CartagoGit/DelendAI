@@ -52,6 +52,23 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
+### Independently verified 2026-09-01
+
+The prior `review-log` below ("migration source no longer present ...
+no actionable scope") was false — the source is MAN2-003 ("generar
+`FIRST_PARTY_PLUGIN_INDEX` completo", recovered from commit
+`11130767c`: eliminate the manual+generated mix, target a fully
+generated registry). This was already implemented by `f00175`
+("generators: registry, web catalog, docs y permission matrix
+generados desde manifests (MAN2-003..006)"), shipped in `82c54bcc`.
+Verified directly: `packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts`
+exists and is derived from plugin manifests, and
+`bun tools/scripts/lint/check-generated-artifacts.script.ts` (which
+regenerates the manifests-derived artifacts including this registry
+and diffs against the tracked copy) reports "All generated artifacts
+are in sync." Closing on that evidence, not on the placeholder
+review-log.
+
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
