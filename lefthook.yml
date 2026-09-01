@@ -29,6 +29,25 @@ pre-commit:
             run: bun tools/scripts/hooks/pre-commit.ts || true
             stage_fixed: false
 
+        # Regenerate the quantitative snapshot embedded in
+        # AGENT-BOOTSTRAP.md and re-stage it. `check:quantitative` (in
+        # `bun run validate`) compares that block, and its numbers move
+        # whenever anyone adds a spec or a tool — which, with a swarm of
+        # agents committing continuously, means the gate goes red for
+        # everyone minutes after any commit. A generated artifact should be
+        # REGENERATED at commit time, not asserted after the fact; the
+        # validate-time check stays as the backstop for a host that
+        # bypassed the hook. Never blocks.
+        quantitative-refresh:
+            glob_filter:
+                items:
+                    - '**/*.spec.ts'
+                    - 'plugins/*/src/**'
+                    - 'packages/core/src/**'
+                    - 'docs/mcp-vertex/AGENT-BOOTSTRAP.md'
+            run: bun tools/scripts/gen/quantitative.script.ts >/dev/null 2>&1 || true
+            stage_fixed: true
+
         # Validate BEM + nested SCSS rules on staged SCSS files. Advisory:
         # violations are printed but do NOT block the commit; the same
         # check runs in `bun run validate` and CI.
