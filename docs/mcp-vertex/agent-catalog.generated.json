@@ -2187,9 +2187,9 @@
 		"byStatus": {
 			"ready": 109,
 			"in-progress": 5,
-			"review": 23,
+			"review": 22,
 			"paused": 1,
-			"done": 603,
+			"done": 604,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0
