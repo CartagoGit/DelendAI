@@ -2,13 +2,16 @@
 id: f00393
 title: "Release track R1: contracts, branch cut, SemVer and immutable candidate state"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
 shipped-in: ["1c2fe9115"]
+last-transition-id: 95e989d3-0a06-4a95-b9c7-861f420a77f8
+last-correlation-id: 95e989d3-0a06-4a95-b9c7-861f420a77f8
+last-transition-from: ready
 ---
 
 # f00393 — Release track R1: contracts, branch cut, SemVer and immutable candidate state
