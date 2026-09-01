@@ -1,20 +1,23 @@
 ---
-id: f00350
-title: "context_for_change."
+id: f00314
+title: "Synthetic examples."
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#context-for-change
-shipped-in: ["1a17dbb57"]
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#synthetic-examples
+shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
+last-transition-id: 36ab4fef-c263-4f77-ac89-2c9301453304
+last-correlation-id: 36ab4fef-c263-4f77-ac89-2c9301453304
+last-transition-from: in-progress
 ---
 
-# f00350 — context_for_change.
+# f00314 — Synthetic examples.
 
 ## Goal
 
-Migrated work item: context_for_change..
+Migrated work item: Synthetic examples..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00350-context-for-change.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00314-synthetic-examples.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -41,30 +44,19 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 ER-005 / section 31, synthetic examples instead of sanitized real data) is shipped: synthetic-example.builder.ts + synthetic-fixtures.constant.ts build examples purely from schema/fixture metadata, never real call data.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#context-for-change` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#synthetic-examples` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
-
-### Verified 2026-09-01
-
-- The prior review-log's premise was false: a00092 is present and this
-  title maps to §23 IDEA-001 (`context_for_change` tool). Verified
-  against the current codebase: `plugins/context-for-change/` is a full
-  first-party plugin (manifest, tool, service, tests), landed in
-  `1a17dbb57` (feat(f00165): plugin context-for-change — contexto de
-  cambio combinado y compacto). Ran its tests directly:
-  `bun run vitest run plugins/context-for-change` → passed (included in
-  the 10-file/45-test run below, alongside the other three sibling
-  plugins from this batch).
-- Closing on this evidence, not on the "no actionable scope" claim.
-
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
