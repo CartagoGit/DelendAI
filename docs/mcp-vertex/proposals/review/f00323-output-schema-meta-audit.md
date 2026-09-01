@@ -1,20 +1,23 @@
 ---
-id: f00320
-title: "Migrated work item f00320"
+id: f00323
+title: "Output schema/meta audit."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#abort
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#output-schema-meta-audit
+last-transition-id: 162005e2-b077-48d8-98ad-f483f5974a83
+last-correlation-id: 162005e2-b077-48d8-98ad-f483f5974a83
+last-transition-from: in-progress
 ---
 
-# f00320 — Abort.
+# f00323 — Output schema/meta audit.
 
 ## Goal
 
-Migrated work item: Abort..
+Migrated work item: Output schema/meta audit..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00320-migrated-work-item-f00320.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00323-output-schema-meta-audit.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#abort` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#output-schema-meta-audit` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

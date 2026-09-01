@@ -1,20 +1,23 @@
 ---
-id: f00322
-title: "Rollback."
+id: f00321
+title: "Dispose."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#rollback
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#dispose
+last-transition-id: b9acf1e0-607e-4575-8c54-d95530c65c3d
+last-correlation-id: b9acf1e0-607e-4575-8c54-d95530c65c3d
+last-transition-from: in-progress
 ---
 
-# f00322 — Rollback.
+# f00321 — Dispose.
 
 ## Goal
 
-Migrated work item: Rollback..
+Migrated work item: Dispose..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00322-rollback.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00321-dispose.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#rollback` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#dispose` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

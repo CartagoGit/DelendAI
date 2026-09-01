@@ -2,7 +2,7 @@
 id: f00308
 title: "Raw args prohibidos."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,7 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-reviewer-2
+- review-log: approved by sonnet-reviewer-2 — Verified independently: migration source is NOT gone - survives in done/audits/a00092 (TODO ER-001 acceptance: the module calling gh issue create must not accept Error/args/stack/workspace/cwd or arbitrary host strings, only a pre-sanitized safe DTO). Checked ISafeMcpVertexReport (reporter.interface.ts): fields are reporterVersion/mcpVertexVersion/packageId/safeToolId/toolOwner/toolCategory/errorCode/failureClass/classification/fingerprint/mcpFrames/syntheticExample/environmentClass - no message/stack/args field exists on the type at all, so raw args cannot reach the transport by construction. Ran the adversarial privacy suites (19/19 passed) which include payloads attempting to smuggle raw strings/paths/tokens.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

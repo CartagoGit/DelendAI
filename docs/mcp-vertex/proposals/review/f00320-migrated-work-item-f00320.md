@@ -1,20 +1,23 @@
 ---
-id: f00319
-title: "Dependency lifecycle."
+id: f00320
+title: "Migrated work item f00320"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#dependency-lifecycle
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#abort
+last-transition-id: 6c4567d2-ce01-471d-b64a-3f41223e153d
+last-correlation-id: 6c4567d2-ce01-471d-b64a-3f41223e153d
+last-transition-from: in-progress
 ---
 
-# f00319 — Dependency lifecycle.
+# f00320 — Abort.
 
 ## Goal
 
-Migrated work item: Dependency lifecycle..
+Migrated work item: Abort..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00319-dependency-lifecycle.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00320-migrated-work-item-f00320.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#dependency-lifecycle` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#abort` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
