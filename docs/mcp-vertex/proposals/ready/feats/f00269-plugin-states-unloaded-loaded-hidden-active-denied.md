@@ -17,6 +17,7 @@ related:
     - f00268 # lifecycle phases (prerequisito)
     - c00134 # métricas de lifecycle (Track D)
     - f00188 # capability enforcement (Track F)
+shipped-in: ["4162e9ab8"]
 ---
 
 # f00269 — Plugin states: UNLOADED / LOADED_HIDDEN / ACTIVE / DENIED
