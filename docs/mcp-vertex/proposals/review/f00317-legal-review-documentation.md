@@ -2,15 +2,15 @@
 id: f00317
 title: "Legal review/documentation."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#legal-review-documentation
-last-transition-id: 3fd1a167-008f-45de-b909-60e3c17ce35b
-last-correlation-id: 3fd1a167-008f-45de-b909-60e3c17ce35b
-last-transition-from: ready
+last-transition-id: f58f0023-824d-4285-b586-92ca5e08a6fd
+last-correlation-id: f58f0023-824d-4285-b586-92ca5e08a6fd
+last-transition-from: in-progress
 ---
 
 # f00317 — Legal review/documentation.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `in-progress/f00317-legal-review-documentation.md`
+- **Files**: `review/f00317-legal-review-documentation.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
