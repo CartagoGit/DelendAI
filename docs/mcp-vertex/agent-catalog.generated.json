@@ -1576,96 +1576,8 @@
 				"date": ""
 			},
 			{
-				"id": "f00373",
-				"title": "f00373",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00374",
-				"title": "f00374",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00375",
-				"title": "f00375",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00376",
-				"title": "f00376",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00377",
-				"title": "f00377",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00378",
-				"title": "f00378",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00379",
-				"title": "f00379",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00380",
-				"title": "f00380",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00381",
-				"title": "f00381",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00382",
-				"title": "f00382",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00383",
 				"title": "f00383",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00384",
-				"title": "f00384",
 				"track": "migrated",
 				"status": "ready",
 				"kind": "feat",
@@ -2057,9 +1969,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 93,
+			"ready": 82,
 			"in-progress": 5,
-			"review": 3,
+			"review": 13,
 			"paused": 1,
 			"done": 639,
 			"blocked": 23,
