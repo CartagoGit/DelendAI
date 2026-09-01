@@ -6,6 +6,7 @@ status: ready
 type: proposal
 track: remote-providers-foundation
 date: 2026-08-31
+shipped-in: ["46173fed9"]
 ---
 
 # f00410 — Contrato común para proveedores remotos GitLab y GitHub
