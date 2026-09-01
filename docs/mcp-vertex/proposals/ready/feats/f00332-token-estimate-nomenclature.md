@@ -27,7 +27,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `ready/feats/f00332-token-estimate-nomenclature.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
@@ -59,3 +59,21 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Reopened 2026-09-01
+
+Verified against the record instead of trusting the review-log. The
+review-log's claim that "no actionable scope can be derived without
+the source" does not hold up: the migration source,
+`docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md`,
+was never actually gone — it existed in git history at commit
+`e83d7da0f` (2026-08-24) and was only removed from the working tree in
+`b08aae828` (2026-08-30, the same day this proposal was generated). It
+was recoverable with a single `git show
+e83d7da0f:docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md`
+the entire time, and it contains substantive, specific content for
+this item: TODO MET-001, which spells out the exact naming problem (`~4 bytes/token` rule conflated with real token counts) and proposes concrete field names (contentTextBytes, wireEstimateBytes), lines ~937-977. This was closed as a bulk book-keeping no-op
+alongside dozens of siblings without anyone re-running that one `git
+show`. Reopening S1 to `pending`; the real next step is to derive an
+actual scope/acceptance for "token-estimate-nomenclature" from the recovered source
+before this proposal can be marked done.
