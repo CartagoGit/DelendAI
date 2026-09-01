@@ -420,28 +420,39 @@ export const updateDocBlock = (
 			),
 		)?.[0] ?? '';
 	const currentGeneratedAt = currentBlock?.match(GENERATED_AT_RE)?.[0];
+	// Volatile lines: values that move without any code change.
+	// `Generated at:` is a timestamp; `Proposals:` counts a directory that
+	// every agent mutates continuously. Rewriting either of them on a run
+	// that changed nothing real makes `gen-all --check` report drift, and
+	// that check gates `git push` — so during an active proposal drain the
+	// pre-push hook became unwinnable: the counts moved between generating
+	// the block and diffing it. Preserve the on-disk values whenever the
+	// substantive facts are unchanged, so a regeneration is a no-op unless
+	// something real moved.
+	const PROPOSALS_LINE_RE = /(Proposals: )[^\n]+/;
+	const normalizeVolatile = (text: string): string =>
+		text
+			.replace(GENERATED_AT_RE, 'Generated at: <<snapshot>>')
+			.replace(PROPOSALS_LINE_RE, '$1<<snapshot>>');
+	const currentProposalsLine = currentBlock?.match(PROPOSALS_LINE_RE)?.[0];
+	const substantivelyUnchanged =
+		currentBlock !== '' &&
+		normalizeVolatile(currentBlock) ===
+			normalizeVolatile(renderBlock({ ...snap, generatedAt: 'x' }));
 	const stableSnap =
+		substantivelyUnchanged &&
 		currentGeneratedAt !== undefined &&
 		currentGeneratedAt !== 'Generated at: <<snapshot>>'
-			? (() => {
-					const normalizedCurrent = currentBlock.replace(
-						GENERATED_AT_RE,
-						'Generated at: <<snapshot>>',
-					);
-					const normalizedNext = renderBlock({
-						...snap,
-						generatedAt: '<<snapshot>>',
-					}).replace(GENERATED_AT_RE, 'Generated at: <<snapshot>>');
-					return normalizedCurrent === normalizedNext
-						? {
-								...snap,
-								generatedAt: currentGeneratedAt.replace(
-									'Generated at: ',
-									'',
-								),
-							}
-						: snap;
-				})()
+			? {
+					...snap,
+					generatedAt: currentGeneratedAt.replace(
+						'Generated at: ',
+						'',
+					),
+					...(currentProposalsLine !== undefined
+						? { proposalsLineOverride: currentProposalsLine }
+						: {}),
+				}
 			: snap;
 	const block = renderBlock(stableSnap);
 	const replaced = docText.replace(blockRe, block);
