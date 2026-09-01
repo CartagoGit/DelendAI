@@ -19,7 +19,11 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 import { buildCanonicalLaunch } from '../../../packages/cli/src/lib/server-args.service';
 import { PUBLISH_ORDER } from '../release/release-plan';
-import { stageBuildForPublish } from '../publish/workspace-deps.ts';
+import {
+	packRewrittenTarball,
+	stageBuildForPublish,
+	type IWorkspaceDepsPlan,
+} from '../publish/workspace-deps.ts';
 
 const ROOT = resolve(import.meta.dir, '../../..');
 const TIMEOUT_MS = 30_000;
