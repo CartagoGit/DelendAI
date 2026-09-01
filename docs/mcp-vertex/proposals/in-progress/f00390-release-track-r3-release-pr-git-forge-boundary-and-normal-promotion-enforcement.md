@@ -2,13 +2,16 @@
 id: f00390
 title: "Release track R3: release PR, git-forge boundary and normal-promotion enforcement"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
 shipped-in: ["5cb9433f2"]
+last-transition-id: 73684e62-0596-4bae-b283-7c61ebabae05
+last-correlation-id: 73684e62-0596-4bae-b283-7c61ebabae05
+last-transition-from: ready
 ---
 
 # f00390 — Release track R3: release PR, git-forge boundary and normal-promotion enforcement
