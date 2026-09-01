@@ -2,13 +2,16 @@
 id: f00389
 title: "Release track R2: expected state, races, idempotency and readiness validation"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
 shipped-in: ["8514f99f7"]
+last-transition-id: 919250b3-2a1a-436e-bd55-045d24a6139c
+last-correlation-id: 919250b3-2a1a-436e-bd55-045d24a6139c
+last-transition-from: in-progress
 ---
 
 # f00389 — Release track R2: expected state, races, idempotency and readiness validation
