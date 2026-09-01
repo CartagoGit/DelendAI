@@ -9,6 +9,7 @@ priority: P0
 date: 2026-08-29
 parent-plan: q00012
 related: [F-002, x00302]
+shipped-in: ["b8d35225d"] # fix(proposals): expose close-plan outputSchema at runtime (x00305)
 ---
 
 # x00305 — Exponer outputSchema efectivo de proposals_close_plan

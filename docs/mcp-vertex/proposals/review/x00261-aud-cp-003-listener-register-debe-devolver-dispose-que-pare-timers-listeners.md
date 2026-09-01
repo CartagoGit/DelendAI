@@ -2,7 +2,7 @@
 id: x00261
 title: "AUD-CP-003 — Listener: `register()` debe devolver `dispose()` que pare timers/listeners"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -20,6 +20,9 @@ related:
     - t00020 # reload/dispose N veces deja 1 listener
     - x00266 # scheduler requiere lifecycle-clean
     - f00182 # engine (posee timers internos, debe soportar stop)
+last-transition-id: dfe9aaf7-5bfb-4a40-925c-5cdfe3d18fe7
+last-correlation-id: dfe9aaf7-5bfb-4a40-925c-5cdfe3d18fe7
+last-transition-from: in-progress
 ---
 
 # x00261 — AUD-CP-003: `register()` debe devolver `dispose()` con `stop()` para listeners y timers

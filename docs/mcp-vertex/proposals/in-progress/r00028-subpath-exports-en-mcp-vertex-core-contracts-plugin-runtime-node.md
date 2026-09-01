@@ -17,6 +17,7 @@ related:
     - r00027 # inventario necesario para decidir qué entra en cada subpath
     - r00029 # extraer @mcp-vertex/contracts es prerequisito lógico
     - r00030 # cliente importa de contracts
+shipped-in: ["10bb11612"]
 ---
 
 # r00028 — Subpath exports en `@mcp-vertex/core`: `/contracts`, `/plugin`, `/runtime`, `/node`

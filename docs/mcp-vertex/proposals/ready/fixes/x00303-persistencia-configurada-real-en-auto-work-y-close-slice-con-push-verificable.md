@@ -6,6 +6,7 @@ status: ready
 type: proposal
 track: proposals-commit-persistence
 date: 2026-08-29
+shipped-in: ["d2e53cae8", "9c3ed108a", "645c623d7"] # S1 runner, S2 close_slice persist, S3/S4 managed-lazy + engine wait-for-push merge
 ---
 
 # x00303 — Persistencia configurada real en auto_work y close_slice con push verificable
