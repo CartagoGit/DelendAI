@@ -59,13 +59,21 @@ const SKIPPED_DIRECTORIES = new Set([
 export const isAbsoluteLocalSpecifier = (specifier: string): boolean =>
 	specifier.startsWith('/') || /^[A-Za-z]:[\\/]/.test(specifier);
 
+/**
+ * Every pattern is anchored so that no quote may appear before the
+ * keyword. A real import statement (including the `} from '…'` line of a
+ * multi-line one) never has one; a fixture *describing* an import inside
+ * a test's string literal always does. Without the anchor this lint
+ * flagged its own spec.
+ */
 const SPECIFIER_PATTERNS: readonly RegExp[] = [
-	// import … from '<spec>'   /   export … from '<spec>'
-	/\b(?:import|export)\b[^'"]*?\bfrom\s*['"]([^'"]+)['"]/,
+	// import … from '<spec>'   /   export … from '<spec>'   (incl. the
+	// closing `} from '…'` line of a multi-line import)
+	/^[^'"]*\bfrom\s*['"]([^'"]+)['"]/,
 	// import '<spec>'  (side-effect import)
 	/^\s*import\s*['"]([^'"]+)['"]/,
 	// import('<spec>')  /  require('<spec>')
-	/\b(?:import|require)\s*\(\s*['"]([^'"]+)['"]\s*\)/,
+	/^[^'"]*\b(?:import|require)\s*\(\s*['"]([^'"]+)['"]\s*\)/,
 ];
 
 /** Pure: every absolute-local specifier in one file's text. */
