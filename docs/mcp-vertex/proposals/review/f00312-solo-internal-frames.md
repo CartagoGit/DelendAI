@@ -1,22 +1,22 @@
 ---
-id: f00306
-title: "Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático."
+id: f00312
+title: "Solo internal frames."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico
-last-transition-id: b6d9f61b-5bf0-4a26-a092-d41493368042
-last-correlation-id: b6d9f61b-5bf0-4a26-a092-d41493368042
-last-transition-from: ready
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#solo-internal-frames
+last-transition-id: 5f347e5e-a09b-4170-8e1a-3690d8fd53aa
+last-correlation-id: 5f347e5e-a09b-4170-8e1a-3690d8fd53aa
+last-transition-from: in-progress
 ---
 
-# f00306 — Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático.
+# f00312 — Solo internal frames.
 
 ## Goal
 
-Migrated work item: Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático..
+Migrated work item: Solo internal frames..
 
 ## why
 
@@ -31,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `in-progress/f00306-los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico.md`
+- **Files**: `review/f00312-solo-internal-frames.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -50,7 +50,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#solo-internal-frames` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

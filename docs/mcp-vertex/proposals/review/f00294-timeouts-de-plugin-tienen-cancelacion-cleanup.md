@@ -1,20 +1,23 @@
 ---
-id: f00297
-title: "Process output caps son caps reales."
+id: f00294
+title: "Timeouts de plugin tienen cancelación/cleanup."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#process-output-caps-son-caps-reales
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#timeouts-de-plugin-tienen-cancelacion-cleanup
+last-transition-id: 32ba8dde-1c05-4922-b17f-9afe9b2e722f
+last-correlation-id: 32ba8dde-1c05-4922-b17f-9afe9b2e722f
+last-transition-from: in-progress
 ---
 
-# f00297 — Process output caps son caps reales.
+# f00294 — Timeouts de plugin tienen cancelación/cleanup.
 
 ## Goal
 
-Migrated work item: Process output caps son caps reales..
+Migrated work item: Timeouts de plugin tienen cancelación/cleanup..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00297-process-output-caps-son-caps-reales.md`
+- **Files**: `review/f00294-timeouts-de-plugin-tienen-cancelacion-cleanup.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#process-output-caps-son-caps-reales` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#timeouts-de-plugin-tienen-cancelacion-cleanup` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

@@ -1,19 +1,23 @@
 ---
-id: f00312
-title: "Solo internal frames."
+id: f00302
+title: "La coverage no excluye wiring real sin motivo."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#solo-internal-frames
+shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#la-coverage-no-excluye-wiring-real-sin-motivo
+last-transition-id: 442ca719-2a41-4516-baf9-3819942ef667
+last-correlation-id: 442ca719-2a41-4516-baf9-3819942ef667
+last-transition-from: in-progress
 ---
 
-# f00312 — Solo internal frames.
+# f00302 — La coverage no excluye wiring real sin motivo.
 
 ## Goal
 
-Migrated work item: Solo internal frames..
+Migrated work item: La coverage no excluye wiring real sin motivo..
 
 ## why
 
@@ -28,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00312-solo-internal-frames.md`
+- **Files**: `review/f00302-la-coverage-no-excluye-wiring-real-sin-motivo.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#solo-internal-frames` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#la-coverage-no-excluye-wiring-real-sin-motivo` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

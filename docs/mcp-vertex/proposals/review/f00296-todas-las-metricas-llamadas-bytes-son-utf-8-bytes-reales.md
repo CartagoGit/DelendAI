@@ -1,20 +1,23 @@
 ---
-id: f00303
-title: "El runtime tiene una estrategia clara de activación dinámica."
+id: f00296
+title: "Todas las métricas llamadas bytes son UTF-8 bytes reales."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#todas-las-metricas-llamadas-bytes-son-utf-8-bytes-reales
+last-transition-id: beef49ae-3e54-4a6f-9a06-503edb7e615a
+last-correlation-id: beef49ae-3e54-4a6f-9a06-503edb7e615a
+last-transition-from: in-progress
 ---
 
-# f00303 — El runtime tiene una estrategia clara de activación dinámica.
+# f00296 — Todas las métricas llamadas bytes son UTF-8 bytes reales.
 
 ## Goal
 
-Migrated work item: El runtime tiene una estrategia clara de activación dinámica..
+Migrated work item: Todas las métricas llamadas bytes son UTF-8 bytes reales..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00303-el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica.md`
+- **Files**: `review/f00296-todas-las-metricas-llamadas-bytes-son-utf-8-bytes-reales.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#todas-las-metricas-llamadas-bytes-son-utf-8-bytes-reales` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

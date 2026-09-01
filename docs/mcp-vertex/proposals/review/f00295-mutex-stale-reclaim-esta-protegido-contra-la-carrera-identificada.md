@@ -1,19 +1,23 @@
 ---
-id: f00310
-title: "Raw project logs prohibidos."
+id: f00295
+title: "Mutex stale reclaim está protegido contra la carrera identificada."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-project-logs-prohibidos
+shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada
+last-transition-id: 2cf75ae2-1a77-45ef-bfdf-6c588d6e2e40
+last-correlation-id: 2cf75ae2-1a77-45ef-bfdf-6c588d6e2e40
+last-transition-from: in-progress
 ---
 
-# f00310 — Raw project logs prohibidos.
+# f00295 — Mutex stale reclaim está protegido contra la carrera identificada.
 
 ## Goal
 
-Migrated work item: Raw project logs prohibidos..
+Migrated work item: Mutex stale reclaim está protegido contra la carrera identificada..
 
 ## why
 
@@ -28,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00310-raw-project-logs-prohibidos.md`
+- **Files**: `review/f00295-mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-project-logs-prohibidos` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

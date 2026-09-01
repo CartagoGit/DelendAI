@@ -1,20 +1,23 @@
 ---
-id: f00300
-title: "Registry/presets/docs no dependen de sincronización manual."
+id: f00303
+title: "El runtime tiene una estrategia clara de activación dinámica."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#registry-presets-docs-no-dependen-de-sincronizacion-manual
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica
+last-transition-id: f4552766-8b22-466d-a310-d795f94ad852
+last-correlation-id: f4552766-8b22-466d-a310-d795f94ad852
+last-transition-from: in-progress
 ---
 
-# f00300 — Registry/presets/docs no dependen de sincronización manual.
+# f00303 — El runtime tiene una estrategia clara de activación dinámica.
 
 ## Goal
 
-Migrated work item: Registry/presets/docs no dependen de sincronización manual..
+Migrated work item: El runtime tiene una estrategia clara de activación dinámica..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00300-registry-presets-docs-no-dependen-de-sincronizacion-manual.md`
+- **Files**: `review/f00303-el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#registry-presets-docs-no-dependen-de-sincronizacion-manual` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

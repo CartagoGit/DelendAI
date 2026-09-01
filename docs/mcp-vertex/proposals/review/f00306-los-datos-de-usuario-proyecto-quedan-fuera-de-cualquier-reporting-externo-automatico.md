@@ -1,19 +1,22 @@
 ---
-id: f00316
-title: "Adversarial tests."
+id: f00306
+title: "Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#adversarial-tests
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico
+last-transition-id: 5a802f44-92b5-499e-a907-d2f6cb7d10ef
+last-correlation-id: 5a802f44-92b5-499e-a907-d2f6cb7d10ef
+last-transition-from: in-progress
 ---
 
-# f00316 — Adversarial tests.
+# f00306 — Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático.
 
 ## Goal
 
-Migrated work item: Adversarial tests..
+Migrated work item: Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático..
 
 ## why
 
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00316-adversarial-tests.md`
+- **Files**: `review/f00306-los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,7 +50,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#adversarial-tests` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

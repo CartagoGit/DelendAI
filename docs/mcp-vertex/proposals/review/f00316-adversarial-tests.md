@@ -1,19 +1,22 @@
 ---
-id: f00315
-title: "Privacy validator."
+id: f00316
+title: "Adversarial tests."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#privacy-validator
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#adversarial-tests
+last-transition-id: 85808666-2618-4120-b3af-cf6bfc5db5da
+last-correlation-id: 85808666-2618-4120-b3af-cf6bfc5db5da
+last-transition-from: in-progress
 ---
 
-# f00315 — Privacy validator.
+# f00316 — Adversarial tests.
 
 ## Goal
 
-Migrated work item: Privacy validator..
+Migrated work item: Adversarial tests..
 
 ## why
 
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00315-privacy-validator.md`
+- **Files**: `review/f00316-adversarial-tests.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,7 +50,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#privacy-validator` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#adversarial-tests` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

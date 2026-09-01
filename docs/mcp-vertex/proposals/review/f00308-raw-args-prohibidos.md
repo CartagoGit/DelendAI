@@ -1,20 +1,22 @@
 ---
-id: f00302
-title: "La coverage no excluye wiring real sin motivo."
+id: f00308
+title: "Raw args prohibidos."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#la-coverage-no-excluye-wiring-real-sin-motivo
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-args-prohibidos
+last-transition-id: 6016b501-96c1-4c4d-95cf-3ae0c0fbece8
+last-correlation-id: 6016b501-96c1-4c4d-95cf-3ae0c0fbece8
+last-transition-from: in-progress
 ---
 
-# f00302 — La coverage no excluye wiring real sin motivo.
+# f00308 — Raw args prohibidos.
 
 ## Goal
 
-Migrated work item: La coverage no excluye wiring real sin motivo..
+Migrated work item: Raw args prohibidos..
 
 ## why
 
@@ -29,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00302-la-coverage-no-excluye-wiring-real-sin-motivo.md`
+- **Files**: `review/f00308-raw-args-prohibidos.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +50,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#la-coverage-no-excluye-wiring-real-sin-motivo` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-args-prohibidos` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

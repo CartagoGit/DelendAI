@@ -129,7 +129,7 @@ y el core devuelven resultados al LLM: `EntityRef`,
 
 ### S1 — Envelopes en contracts + adopción en proposals + docs
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `packages/contracts/src/envelopes.ts`, `packages/contracts/tests/src/envelopes.spec.ts`, `plugins/proposals/src/lib/returns.ts` (migración ejemplo), `docs/mcp-vertex/ENVELOPES.md`
 - **Gate**: type
 - review-state: done
@@ -143,3 +143,15 @@ y el core devuelven resultados al LLM: `EntityRef`,
 - Tests verdes.
 - Doc `ENVELOPES.md` con ejemplos.
 - Otros plugins no se rompen.
+
+## Notes
+
+### Reopened 2026-09-01 — slices were marked done without the work
+
+An independent verification pass against the declared `**Files**` and
+`acceptance:` bullets found the work absent:
+
+S1 declares `plugins/proposals/src/lib/returns.ts`, which does not exist; the plugin has zero references to `OperationResult`/`EntityRef`. What shipped in `packages/contracts/src/envelopes.ts` is a narrower API than this proposal specifies.
+
+Every slice is back to `pending`. The `review-log` entries that approved
+them are not trustworthy for this proposal.

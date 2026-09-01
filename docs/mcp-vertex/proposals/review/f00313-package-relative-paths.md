@@ -1,19 +1,22 @@
 ---
-id: f00311
-title: "Raw stack prohibido."
+id: f00313
+title: "Package-relative paths."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-stack-prohibido
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#package-relative-paths
+last-transition-id: 2e644d88-1094-42ab-9d68-7792a2ca7847
+last-correlation-id: 2e644d88-1094-42ab-9d68-7792a2ca7847
+last-transition-from: in-progress
 ---
 
-# f00311 — Raw stack prohibido.
+# f00313 — Package-relative paths.
 
 ## Goal
 
-Migrated work item: Raw stack prohibido..
+Migrated work item: Package-relative paths..
 
 ## why
 
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00311-raw-stack-prohibido.md`
+- **Files**: `review/f00313-package-relative-paths.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,7 +50,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-stack-prohibido` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#package-relative-paths` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

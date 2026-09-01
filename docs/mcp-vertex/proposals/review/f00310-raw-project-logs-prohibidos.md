@@ -1,19 +1,22 @@
 ---
-id: f00313
-title: "Package-relative paths."
+id: f00310
+title: "Raw project logs prohibidos."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#package-relative-paths
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-project-logs-prohibidos
+last-transition-id: c4f04d62-0225-46c7-8e65-1d0cf6d23629
+last-correlation-id: c4f04d62-0225-46c7-8e65-1d0cf6d23629
+last-transition-from: in-progress
 ---
 
-# f00313 — Package-relative paths.
+# f00310 — Raw project logs prohibidos.
 
 ## Goal
 
-Migrated work item: Package-relative paths..
+Migrated work item: Raw project logs prohibidos..
 
 ## why
 
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00313-package-relative-paths.md`
+- **Files**: `review/f00310-raw-project-logs-prohibidos.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,7 +50,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#package-relative-paths` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-project-logs-prohibidos` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

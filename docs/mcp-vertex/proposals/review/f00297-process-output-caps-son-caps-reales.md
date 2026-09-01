@@ -1,20 +1,23 @@
 ---
-id: f00295
-title: "Mutex stale reclaim está protegido contra la carrera identificada."
+id: f00297
+title: "Process output caps son caps reales."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#process-output-caps-son-caps-reales
+last-transition-id: 07727079-d92d-4d1d-9490-d4c9123b2c36
+last-correlation-id: 07727079-d92d-4d1d-9490-d4c9123b2c36
+last-transition-from: in-progress
 ---
 
-# f00295 — Mutex stale reclaim está protegido contra la carrera identificada.
+# f00297 — Process output caps son caps reales.
 
 ## Goal
 
-Migrated work item: Mutex stale reclaim está protegido contra la carrera identificada..
+Migrated work item: Process output caps son caps reales..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00295-mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada.md`
+- **Files**: `review/f00297-process-output-caps-son-caps-reales.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#process-output-caps-son-caps-reales` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

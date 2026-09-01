@@ -1,22 +1,23 @@
 ---
-id: f00307
-title: "Reporting default-on, pero MCP-only."
+id: f00301
+title: "CI obliga los gates arquitectónicos importantes."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#reporting-default-on-pero-mcp-only
-last-transition-id: 35c78115-da01-4f4f-8812-c0b7f82382f6
-last-correlation-id: 35c78115-da01-4f4f-8812-c0b7f82382f6
-last-transition-from: ready
+shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#ci-obliga-los-gates-arquitectonicos-importantes
+last-transition-id: 26ca652e-0059-4852-8988-dd424ac87759
+last-correlation-id: 26ca652e-0059-4852-8988-dd424ac87759
+last-transition-from: in-progress
 ---
 
-# f00307 — Reporting default-on, pero MCP-only.
+# f00301 — CI obliga los gates arquitectónicos importantes.
 
 ## Goal
 
-Migrated work item: Reporting default-on, pero MCP-only..
+Migrated work item: CI obliga los gates arquitectónicos importantes..
 
 ## why
 
@@ -31,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `in-progress/f00307-reporting-default-on-pero-mcp-only.md`
+- **Files**: `review/f00301-ci-obliga-los-gates-arquitectonicos-importantes.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -50,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#reporting-default-on-pero-mcp-only` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#ci-obliga-los-gates-arquitectonicos-importantes` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

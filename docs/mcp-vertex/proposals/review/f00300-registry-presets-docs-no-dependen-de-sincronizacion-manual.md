@@ -1,20 +1,23 @@
 ---
-id: f00294
-title: "Timeouts de plugin tienen cancelación/cleanup."
+id: f00300
+title: "Registry/presets/docs no dependen de sincronización manual."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#timeouts-de-plugin-tienen-cancelacion-cleanup
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#registry-presets-docs-no-dependen-de-sincronizacion-manual
+last-transition-id: aa13b2ba-6ac0-409f-8199-f39cb52eaaab
+last-correlation-id: aa13b2ba-6ac0-409f-8199-f39cb52eaaab
+last-transition-from: in-progress
 ---
 
-# f00294 — Timeouts de plugin tienen cancelación/cleanup.
+# f00300 — Registry/presets/docs no dependen de sincronización manual.
 
 ## Goal
 
-Migrated work item: Timeouts de plugin tienen cancelación/cleanup..
+Migrated work item: Registry/presets/docs no dependen de sincronización manual..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00294-timeouts-de-plugin-tienen-cancelacion-cleanup.md`
+- **Files**: `review/f00300-registry-presets-docs-no-dependen-de-sincronizacion-manual.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#timeouts-de-plugin-tienen-cancelacion-cleanup` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#registry-presets-docs-no-dependen-de-sincronizacion-manual` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

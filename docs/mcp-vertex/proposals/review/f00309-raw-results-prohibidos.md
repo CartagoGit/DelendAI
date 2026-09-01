@@ -2,11 +2,14 @@
 id: f00309
 title: "Raw results prohibidos."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-results-prohibidos
+last-transition-id: 6939dce9-4f79-4793-af50-6d0e28ff252b
+last-correlation-id: 6939dce9-4f79-4793-af50-6d0e28ff252b
+last-transition-from: in-progress
 ---
 
 # f00309 — Raw results prohibidos.
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00309-raw-results-prohibidos.md`
+- **Files**: `review/f00309-raw-results-prohibidos.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

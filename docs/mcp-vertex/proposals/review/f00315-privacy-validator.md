@@ -1,22 +1,22 @@
 ---
-id: f00308
-title: "Raw args prohibidos."
+id: f00315
+title: "Privacy validator."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-args-prohibidos
-last-transition-id: 65739b9f-07bc-4157-9a6f-20eb36393b0e
-last-correlation-id: 65739b9f-07bc-4157-9a6f-20eb36393b0e
-last-transition-from: ready
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#privacy-validator
+last-transition-id: cc6fbba9-5273-4fab-a3c3-a605d0800b26
+last-correlation-id: cc6fbba9-5273-4fab-a3c3-a605d0800b26
+last-transition-from: in-progress
 ---
 
-# f00308 — Raw args prohibidos.
+# f00315 — Privacy validator.
 
 ## Goal
 
-Migrated work item: Raw args prohibidos..
+Migrated work item: Privacy validator..
 
 ## why
 
@@ -31,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `in-progress/f00308-raw-args-prohibidos.md`
+- **Files**: `review/f00315-privacy-validator.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -50,7 +50,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-args-prohibidos` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#privacy-validator` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

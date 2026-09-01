@@ -1360,38 +1360,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00294",
-				"title": "f00294",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00295",
-				"title": "f00295",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00296",
-				"title": "f00296",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00297",
-				"title": "f00297",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00298",
 				"title": "f00298",
 				"track": "migrated",
@@ -1408,128 +1376,8 @@
 				"date": ""
 			},
 			{
-				"id": "f00300",
-				"title": "f00300",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00301",
-				"title": "f00301",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00302",
-				"title": "f00302",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00303",
-				"title": "f00303",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00304",
 				"title": "f00304",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00306",
-				"title": "f00306",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00307",
-				"title": "f00307",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00308",
-				"title": "f00308",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00309",
-				"title": "f00309",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00310",
-				"title": "f00310",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00311",
-				"title": "f00311",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00312",
-				"title": "f00312",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00313",
-				"title": "f00313",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00314",
-				"title": "f00314",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00315",
-				"title": "f00315",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00316",
-				"title": "f00316",
 				"track": "migrated",
 				"status": "ready",
 				"kind": "feat",
@@ -2465,9 +2313,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 144,
+			"ready": 125,
 			"in-progress": 5,
-			"review": 4,
+			"review": 23,
 			"paused": 1,
 			"done": 587,
 			"blocked": 23,
