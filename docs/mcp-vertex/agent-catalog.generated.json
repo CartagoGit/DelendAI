@@ -1592,14 +1592,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00395",
-				"title": "f00395",
-				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00410",
 				"title": "f00410",
 				"track": "remote-providers-foundation",
@@ -1905,11 +1897,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 74,
+			"ready": 73,
 			"in-progress": 5,
 			"review": 15,
 			"paused": 1,
-			"done": 646,
+			"done": 647,
 			"blocked": 23,
 			"retired": 12,
 			"unspecified": 0
