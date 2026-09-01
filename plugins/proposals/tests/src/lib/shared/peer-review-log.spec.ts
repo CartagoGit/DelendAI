@@ -266,6 +266,51 @@ describe('peer-review-log (x00154 S6)', () => {
 			).toBe(true);
 		});
 
+		it('sees the snake_case journal proposal_review actually writes', async () => {
+			// `appendPeerReviewJsonl` takes two shapes into one file: the
+			// typed camel-case entries, and the snake_case journal the
+			// authoring tool writes on approve. The reader only understood
+			// the first and silently dropped the second, so real
+			// independent approvals sat on disk invisible to the gate that
+			// was refusing to close the proposal for lack of them.
+			await appendPeerReviewJsonl(logPathAbs, {
+				ts: '2026-08-30T12:04:48.967Z',
+				proposal_id: 'f00999',
+				slice_id: 'S1',
+				agent: 'delivery_verifier',
+				verdict: 'approved',
+				note: 'independent review',
+			});
+
+			const entries = await readPeerReviewLog(logPathAbs);
+			expect(entries).toHaveLength(1);
+			expect(entries[0]?.kind).toBe('review');
+
+			expect(
+				await hasIndependentApprovalSinceLastReview(
+					logPathAbs,
+					'f00999',
+				),
+			).toBe(true);
+		});
+
+		it('does not accept a snake_case request_changes as an approval', async () => {
+			await appendPeerReviewJsonl(logPathAbs, {
+				ts: '2026-08-30T12:04:48.967Z',
+				proposal_id: 'f00999',
+				slice_id: 'S1',
+				agent: 'delivery_verifier',
+				verdict: 'request_changes',
+			});
+
+			expect(
+				await hasIndependentApprovalSinceLastReview(
+					logPathAbs,
+					'f00999',
+				),
+			).toBe(false);
+		});
+
 		it('never accepts a self-approval, whatever the timing', async () => {
 			await recordProposalReviewAction({
 				logPathAbs,

@@ -149,18 +149,46 @@ const main = async (): Promise<void> => {
 		// escaping the package directory with `../build`) — per the
 		// proposal's design note, the publish pipeline stages that
 		// `build/` slice into a per-package `dist/` in a throwaway COPY
-		// before packing. `bun pm pack` against the raw workspace dir (as
-		// this used to do) packs a manifest whose `./dist/...` entrypoint
-		// was never written on disk, so the installed `mcpv` bin resolves
-		// to nothing.
+		// before packing, exactly as `release.script.ts` does. Packing the
+		// raw workspace dir (as this used to do) packs a manifest whose
+		// `./dist/...` entrypoint was never written on disk, so the
+		// installed `mcpv` bin resolves to nothing.
+		//
+		// The staged copy also can't be packed with `bun pm pack` (as
+		// before): bun resolves `workspace:*` ranges by walking up to the
+		// monorepo's workspace root, which a `/tmp` staging copy isn't part
+		// of. `packRewrittenTarball` sidesteps that entirely — it rewrites
+		// `workspace:*` to the dependency's real version itself (the same
+		// helper `release.script.ts`'s npm publish path and
+		// `pack.script.ts`'s pack-smoke use) and packs with plain `npm
+		// pack`, which needs no workspace context.
 		const stagingDir = join(scratch, 'staging');
 		mkdirSync(stagingDir, { recursive: true });
+		const manifests = new Map(
+			PUBLISH_ORDER.map(
+				(packageDir) =>
+					[
+						packageDir,
+						readJson<IPackageManifest>(
+							join(ROOT, packageDir, 'package.json'),
+						),
+					] as const,
+			),
+		);
+		const workspacePlan: IWorkspaceDepsPlan = {
+			packageVersions: new Map(
+				[...manifests.values()].map(
+					(manifest) => [manifest.name, manifest.version] as const,
+				),
+			),
+		};
 		const dependencies: Record<string, string> = {};
 		for (const packageDir of PUBLISH_ORDER) {
 			const absoluteDir = join(ROOT, packageDir);
-			const manifest = readJson<IPackageManifest>(
-				join(absoluteDir, 'package.json'),
-			);
+			const manifest = manifests.get(packageDir);
+			if (manifest === undefined) {
+				throw new Error(`missing manifest for ${packageDir}`);
+			}
 			const group = packageDir.startsWith('packages/')
 				? 'packages'
 				: 'plugins';
@@ -169,20 +197,12 @@ const main = async (): Promise<void> => {
 			const stageDir = join(stagingDir, packageDir);
 			await stageBuildForPublish(absoluteDir, buildDir, stageDir);
 
-			const filename = `${manifest.name.replace('@', '').replace('/', '-')}.tgz`;
-			run(
-				'bun',
-				[
-					'pm',
-					'pack',
-					'--filename',
-					join(tarballsDir, filename),
-					'--ignore-scripts',
-					'--quiet',
-				],
+			const tarballPath = await packRewrittenTarball(
 				stageDir,
+				workspacePlan,
+				{ outDir: tarballsDir },
 			);
-			dependencies[manifest.name] = `file:${join(tarballsDir, filename)}`;
+			dependencies[manifest.name] = `file:${tarballPath}`;
 		}
 
 		mkdirSync(project, { recursive: true });
