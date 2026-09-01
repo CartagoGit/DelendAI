@@ -6,7 +6,7 @@ status: retired
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-bugs-confirmados-tienen-regression-test
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#los-bugs-confirmados-tienen-regression-test
 ---
 
 # x00307 — Los bugs confirmados tienen regression test.

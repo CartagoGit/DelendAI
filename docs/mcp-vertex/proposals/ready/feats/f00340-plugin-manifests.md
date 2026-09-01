@@ -6,7 +6,7 @@ status: ready
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#plugin-manifests
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#plugin-manifests
 ---
 
 # f00340 — plugin manifests.

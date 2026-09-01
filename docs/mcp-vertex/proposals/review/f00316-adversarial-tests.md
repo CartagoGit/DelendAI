@@ -6,7 +6,7 @@ status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#adversarial-tests
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#adversarial-tests
 shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
 last-transition-id: 85808666-2618-4120-b3af-cf6bfc5db5da
 last-correlation-id: 85808666-2618-4120-b3af-cf6bfc5db5da

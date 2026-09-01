@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#tools-list-tiene-budget-visible-por-preset-plugin
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#tools-list-tiene-budget-visible-por-preset-plugin
 last-transition-id: b3db7e33-0035-4cb9-853c-ecd8fcad54f9
 last-correlation-id: b3db7e33-0035-4cb9-853c-ecd8fcad54f9
 last-transition-from: in-progress

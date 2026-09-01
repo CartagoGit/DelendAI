@@ -6,7 +6,7 @@ status: blocked
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#plugin-options-normalizadas-llegan-correctamente-a-register
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#plugin-options-normalizadas-llegan-correctamente-a-register
 ---
 
 # f00292 — Plugin options normalizadas llegan correctamente a `register`.

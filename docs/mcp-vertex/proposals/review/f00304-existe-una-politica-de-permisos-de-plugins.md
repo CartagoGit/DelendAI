@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#existe-una-politica-de-permisos-de-plugins
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#existe-una-politica-de-permisos-de-plugins
 last-transition-id: e8d1571c-5966-4cc5-8db7-80f838881764
 last-correlation-id: e8d1571c-5966-4cc5-8db7-80f838881764
 last-transition-from: in-progress

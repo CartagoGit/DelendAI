@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#registry-presets-docs-no-dependen-de-sincronizacion-manual
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#registry-presets-docs-no-dependen-de-sincronizacion-manual
 last-transition-id: aa13b2ba-6ac0-409f-8199-f39cb52eaaab
 last-correlation-id: aa13b2ba-6ac0-409f-8199-f39cb52eaaab
 last-transition-from: in-progress

@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#token-budgets-se-genera
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#token-budgets-se-genera
 last-transition-id: 969edf05-bfe7-4518-a23f-3eeca2dc834d
 last-correlation-id: 969edf05-bfe7-4518-a23f-3eeca2dc834d
 last-transition-from: in-progress

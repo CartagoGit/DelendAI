@@ -6,7 +6,7 @@ status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#package-relative-paths
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#package-relative-paths
 shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
 last-transition-id: 2e644d88-1094-42ab-9d68-7792a2ca7847
 last-correlation-id: 2e644d88-1094-42ab-9d68-7792a2ca7847

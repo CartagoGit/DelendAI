@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#el-runtime-tiene-una-estrategia-clara-de-activacion-dinamica
 last-transition-id: f4552766-8b22-466d-a310-d795f94ad852
 last-correlation-id: f4552766-8b22-466d-a310-d795f94ad852
 last-transition-from: in-progress

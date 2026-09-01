@@ -6,7 +6,7 @@ status: done
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#existe-una-politica-de-versiones-del-monorepo
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#existe-una-politica-de-versiones-del-monorepo
 shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
 last-transition-id: b171b6bf-3e87-4fce-baef-be97ecc82266
 last-correlation-id: b171b6bf-3e87-4fce-baef-be97ecc82266

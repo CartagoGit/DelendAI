@@ -6,7 +6,7 @@ status: done
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-args-prohibidos
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#raw-args-prohibidos
 shipped-in: ["07225dbf7"] # migration commit that created this proposal file; no code change required (book-keeping only)
 last-transition-id: 6016b501-96c1-4c4d-95cf-3ae0c0fbece8
 last-correlation-id: 6016b501-96c1-4c4d-95cf-3ae0c0fbece8

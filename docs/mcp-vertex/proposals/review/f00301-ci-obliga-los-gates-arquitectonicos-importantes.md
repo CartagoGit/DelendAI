@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#ci-obliga-los-gates-arquitectonicos-importantes
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#ci-obliga-los-gates-arquitectonicos-importantes
 last-transition-id: 26ca652e-0059-4852-8988-dd424ac87759
 last-correlation-id: 26ca652e-0059-4852-8988-dd424ac87759
 last-transition-from: in-progress

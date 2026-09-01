@@ -6,7 +6,7 @@ status: blocked
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-reportes-automaticos-usan-unicamente-un-dto-seguro
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#los-reportes-automaticos-usan-unicamente-un-dto-seguro
 ---
 
 # f00289 — Los reportes automáticos usan únicamente un DTO seguro.

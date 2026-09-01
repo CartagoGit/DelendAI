@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#mutex-stale-reclaim-esta-protegido-contra-la-carrera-identificada
 last-transition-id: 2cf75ae2-1a77-45ef-bfdf-6c588d6e2e40
 last-correlation-id: 2cf75ae2-1a77-45ef-bfdf-6c588d6e2e40
 last-transition-from: in-progress

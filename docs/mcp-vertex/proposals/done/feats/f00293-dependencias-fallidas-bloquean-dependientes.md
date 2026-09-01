@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#dependencias-fallidas-bloquean-dependientes
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#dependencias-fallidas-bloquean-dependientes
 last-transition-id: fc20d51b-0e80-418d-be75-31d87f6e8106
 last-correlation-id: fc20d51b-0e80-418d-be75-31d87f6e8106
 last-transition-from: in-progress

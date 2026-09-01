@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#la-coverage-no-excluye-wiring-real-sin-motivo
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#la-coverage-no-excluye-wiring-real-sin-motivo
 last-transition-id: 442ca719-2a41-4516-baf9-3819942ef667
 last-correlation-id: 442ca719-2a41-4516-baf9-3819942ef667
 last-transition-from: in-progress

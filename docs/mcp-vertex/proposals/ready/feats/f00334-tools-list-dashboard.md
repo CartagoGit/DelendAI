@@ -6,7 +6,7 @@ status: ready
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#tools-list-dashboard
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#tools-list-dashboard
 ---
 
 # f00334 — `tools/list` dashboard.

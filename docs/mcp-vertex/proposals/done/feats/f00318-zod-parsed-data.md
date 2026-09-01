@@ -2,12 +2,12 @@
 id: f00318
 title: "Zod parsed data."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#zod-parsed-data
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#zod-parsed-data
 last-transition-id: e84eea37-114e-4c81-8f75-1313dcf9eb66
 last-correlation-id: e84eea37-114e-4c81-8f75-1313dcf9eb66
 last-transition-from: in-progress
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
-- review-implementer: sonnet-reviewer-5
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-reviewer-5
+- review-log: approved by sonnet-reviewer-5 — Independent review: audit TODO PL-001 (apply Zod parsed.data instead of raw ctx.options) is shipped in packages/core/src/lib/plugins/plugin-activation-session.ts normalizePluginOptions() via proposal x00217 (commit cb2b700eb, done, merged into develop).
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

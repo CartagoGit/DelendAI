@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#todas-las-metricas-llamadas-bytes-son-utf-8-bytes-reales
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#todas-las-metricas-llamadas-bytes-son-utf-8-bytes-reales
 last-transition-id: beef49ae-3e54-4a6f-9a06-503edb7e615a
 last-correlation-id: beef49ae-3e54-4a6f-9a06-503edb7e615a
 last-transition-from: in-progress

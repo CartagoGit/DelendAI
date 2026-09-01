@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#rollback
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#rollback
 last-transition-id: f4e28e5d-3668-4e7e-8c76-2410646cfc7c
 last-correlation-id: f4e28e5d-3668-4e7e-8c76-2410646cfc7c
 last-transition-from: in-progress

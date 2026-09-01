@@ -7,7 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#timeouts-de-plugin-tienen-cancelacion-cleanup
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#timeouts-de-plugin-tienen-cancelacion-cleanup
 last-transition-id: 32ba8dde-1c05-4922-b17f-9afe9b2e722f
 last-correlation-id: 32ba8dde-1c05-4922-b17f-9afe9b2e722f
 last-transition-from: in-progress
