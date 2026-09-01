@@ -2,12 +2,15 @@
 id: f00357
 title: "MCP Vertex — Auditoría completa de `develop` (TERCERA pasada) → TODO ejecutable para agente"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-tercera-pasada.md
 shipped-in: ["f00dbf926"]
+last-transition-id: c7c50d11-ae8b-451a-af5e-d427a6af5779
+last-correlation-id: c7c50d11-ae8b-451a-af5e-d427a6af5779
+last-transition-from: in-progress
 ---
 
 # f00357 — MCP Vertex — Auditoría completa de `develop` (TERCERA pasada) → TODO ejecutable para agente
@@ -1012,7 +1015,7 @@ mismo SHA
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00357-mcp-vertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00357-mcp-vertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -1024,7 +1027,10 @@ mismo SHA
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-verifier-7
+- review-log: approved by sonnet-verifier-7 — Independently verified: legacy source dir is genuinely gone but this file preserves the full audit inline; its audit-source is declared by q00005 (status: retired, 33 done children) — the actionable scope was fully derived and closed.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

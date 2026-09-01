@@ -2,12 +2,15 @@
 id: f00353
 title: "project_health."
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#project-health
 shipped-in: ["1b7f7b556"]
+last-transition-id: ad138c66-3f7c-477f-81cf-c91d5d69160b
+last-correlation-id: ad138c66-3f7c-477f-81cf-c91d5d69160b
+last-transition-from: in-progress
 ---
 
 # f00353 — project_health.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00353-project-health.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00353-project-health.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -41,7 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-verifier-7
+- review-log: approved by sonnet-verifier-7 — Independently verified against a00092 section 23 IDEA-004; plugins/project-health is a full first-party plugin shipped in 1b7f7b556 (f00166). Ran its tests: passing.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

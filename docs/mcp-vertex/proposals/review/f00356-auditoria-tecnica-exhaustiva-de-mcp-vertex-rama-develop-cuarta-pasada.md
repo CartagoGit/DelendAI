@@ -2,12 +2,15 @@
 id: f00356
 title: "Auditoría técnica exhaustiva de MCP Vertex — rama `develop` (cuarta pasada)"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
 shipped-in: ["07225dbf7"]
+last-transition-id: 2780db07-1199-4a2a-8a87-822cd65abcda
+last-correlation-id: 2780db07-1199-4a2a-8a87-822cd65abcda
+last-transition-from: in-progress
 ---
 
 # f00356 — Auditoría técnica exhaustiva de MCP Vertex — rama `develop` (cuarta pasada)
@@ -1392,7 +1395,7 @@ automatizaciones para que los mismos problemas no regresen.
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00356-auditoria-tecnica-exhaustiva-de-mcp-vertex-rama-develop-cuarta-pasada.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00356-auditoria-tecnica-exhaustiva-de-mcp-vertex-rama-develop-cuarta-pasada.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -1404,7 +1407,10 @@ automatizaciones para que los mismos problemas no regresen.
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-verifier-7
+- review-log: approved by sonnet-verifier-7 — Independently verified: legacy source dir is genuinely gone but this file preserves the full audit inline; its audit-source is declared by q00006 (in-progress plan, 15 tracks A-O, dozens of real child proposals). Closing this bookkeeping wrapper only — q00006 itself remains in-progress and unaffected.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
