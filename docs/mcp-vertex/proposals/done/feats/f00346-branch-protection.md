@@ -2,7 +2,7 @@
 id: f00346
 title: "branch protection."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,7 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-verifier-7
+- review-log: approved by sonnet-verifier-7 — Independently verified against a00092 section 18 CI-004/CI-005; branch-protection.yml + verify-branch-protection/verify-develop-health/verify-main-health scripts (e1ee275a4, 305515338) shipped and tested: 4 files/48 tests passing.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

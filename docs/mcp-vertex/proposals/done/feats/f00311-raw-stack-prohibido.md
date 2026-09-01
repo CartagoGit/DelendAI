@@ -2,7 +2,7 @@
 id: f00311
 title: "Raw stack prohibido."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 checklist: 'Raw stack prohibido', ER-004) is shipped: knowledge/error-reporting.ts states 'Raw message, stack, args, result, cwd and repo/workspace data are not part of the public report contract' and lists 'message, stack' among fields Never sent. The safe DTO carries only `mcpFrames: ISafeMcpFrame[]` (produced by frame-extractor.helper.ts), never the raw Error.stack string. Ran privacy-validator.spec.ts + privacy-adversarial*.spec.ts: 23 tests pass, exit 0.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
