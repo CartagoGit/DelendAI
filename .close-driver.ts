@@ -4,10 +4,10 @@
  */
 import { resolve } from 'node:path';
 import { runProposalTransition } from './plugins/proposals/src/lib/tools/proposal-transition.tool';
-import { defaultPathLayout } from './plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
+import { buildSwarmPaths } from './plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 
 const root = process.cwd();
-const layout = defaultPathLayout('.cache/mcp-vertex', 'docs/mcp-vertex');
+const layout = buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
 const abs = (p: string) => resolve(root, p);
 
 const options = {
