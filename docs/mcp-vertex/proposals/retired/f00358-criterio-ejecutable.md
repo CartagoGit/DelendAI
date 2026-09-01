@@ -82,8 +82,6 @@ scope existed, real shipped code with passing tests. No further
 actionable code scope exists specifically for this title. Confirmed
 done as a bookkeeping/review item.
 
-## Notes
-
 ### Retired 2026-09-01 — the migrated anchor is a template row, not a finding
 
 `migrated-from` points at `#criterio-ejecutable` in
