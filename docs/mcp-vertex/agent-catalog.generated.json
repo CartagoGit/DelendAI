@@ -1472,14 +1472,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00358",
-				"title": "f00358",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00359",
 				"title": "f00359",
 				"track": "migrated",
@@ -1578,14 +1570,6 @@
 			{
 				"id": "f00371",
 				"title": "f00371",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00372",
-				"title": "f00372",
 				"track": "migrated",
 				"status": "ready",
 				"kind": "feat",
@@ -2073,9 +2057,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 95,
+			"ready": 93,
 			"in-progress": 5,
-			"review": 1,
+			"review": 3,
 			"paused": 1,
 			"done": 639,
 			"blocked": 23,
