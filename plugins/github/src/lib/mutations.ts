@@ -10,7 +10,7 @@ import type { IRemoteProviderError } from '@mcp-vertex/contracts/remote-provider
 import {
 	createRemoteMutationExecutor,
 	type IRemoteHttpClientDeps,
-} from '../../../remote-provider-core/src/index';
+} from '@mcp-vertex/remote-provider-core';
 
 import type { IGitHubProviderContext } from './config';
 

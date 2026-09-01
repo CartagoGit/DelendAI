@@ -3,7 +3,7 @@ id: remote-provider-core
 package: @mcp-vertex/remote-provider-core
 version: 0.1.1
 maturity: beta
-generated: 2026-08-31T12:16:53.519Z
+generated: 2026-08-31T21:30:02.436Z
 ---
 
 # Remote Provider Core
@@ -23,7 +23,7 @@ Shared remote-provider foundation: validated config, injectable HTTP, normalized
 
 ## Presets
 
-- none
+- full
 
 ## Permissions
 

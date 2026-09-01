@@ -8,7 +8,6 @@
  * future hosts that prefer a DOM-rooted API; today only the string
  * form is used by `@mcp-vertex/shared`-driven webviews).
  */
-import { BRAND_HEX_BLUE, BRAND_HEX_PURPLE } from '@mcp-vertex/shared';
 import { escapeHtml } from '../dashboard/format';
 
 export interface IHeaderBarOptions {
@@ -28,8 +27,8 @@ export interface IHeaderBarOptions {
 const BRAND_SVG = `<svg class="mcpv-header__logo" viewBox="0 0 64 64" aria-hidden="true">
 	<defs>
 		<linearGradient id="mcpv-brand-gradient" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
-			<stop offset="0" stop-color="${BRAND_HEX_BLUE}"/>
-			<stop offset="1" stop-color="${BRAND_HEX_PURPLE}"/>
+			<stop offset="0" stop-color="var(--mcpv-brand-blue)"/>
+			<stop offset="1" stop-color="var(--mcpv-brand-purple)"/>
 		</linearGradient>
 	</defs>
 	<path d="M32 4 L56 18 L56 46 L32 60 L8 46 L8 18 Z" fill="none" stroke="url(#mcpv-brand-gradient)" stroke-width="4.5" stroke-linejoin="round"/>
@@ -55,10 +54,15 @@ export const renderHeaderBar = (opts: IHeaderBarOptions): string => {
 	const right = [opts.actions ?? '', opts.langPicker ?? '']
 		.filter((s) => s.length > 0)
 		.join('');
+	// Only stamp the attribute when the caller actually reported a
+	// connection state. The stylesheet keys solely off
+	// `[data-connection='lost']`, so an unconditional `="ok"` added
+	// nothing but noise to the opening tag for every host that does not
+	// track connectivity at all.
 	const stateAttr =
-		opts.connection === 'lost'
-			? ' data-connection="lost"'
-			: ' data-connection="ok"';
+		opts.connection === undefined
+			? ''
+			: ` data-connection="${opts.connection}"`;
 	return `<header class="mcpv-header"${opts.direction === 'rtl' ? ' dir="rtl"' : ''}${stateAttr}>
 	${BRAND_SVG}
 	<div class="mcpv-header__brand">

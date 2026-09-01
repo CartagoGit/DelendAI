@@ -1,8 +1,9 @@
 # `@mcp-vertex/gitlab`
 
-GitLab read-only provider for `@mcp-vertex/core`. It works against GitLab.com
-and GitLab self-managed without `plugin-git`, without a local checkout and
-without requiring a configured `origin` remote.
+GitLab provider for `@mcp-vertex/core`. The default surface is read-only, while
+remote mutations are a separate opt-in capability disabled by default. It works
+against GitLab.com and GitLab self-managed without `plugin-git`, without a
+local checkout and without requiring a configured `origin` remote.
 
 ## Activation
 
@@ -20,7 +21,7 @@ only, never the token value.
 
 ## Read-only surface
 
-The current surface is read-only and exposes typed `inputSchema` and
+The default surface is read-only and exposes typed `inputSchema` and
 `outputSchema` contracts for:
 
 - provider context
@@ -34,7 +35,44 @@ The current surface is read-only and exposes typed `inputSchema` and
 - releases, tags and deployments
 
 All tools return compact normalized payloads. They do not expose raw HTTP
-responses, mutation affordances or secret values.
+responses or secret values.
+
+## Opt-in remote mutations
+
+Write tools remain unavailable unless the host explicitly enables
+`plugins.gitlab.options.allowWrite: true`. A writable token alone is not enough
+to expose mutation handlers.
+
+Operational invariants:
+
+- every mutation requires `confirm: true`; missing confirmation is rejected
+   before any HTTP request is sent
+- mutable requests never auto-retry, including 401, 403 and 429
+- audit receipts are redacted and keep only provider, actor, effect, resource,
+   timestamp, remote status and idempotency metadata
+- duplicate tags and releases are normalized as typed `duplicate` results
+- idempotency keys prevent accidental repeated writes for retry/cancel, tag and
+   release flows
+- these tools do not write secrets, CI/CD variable values or authorization
+   material
+
+Minimum write permissions:
+
+- issues and notes: minimum project issue write scope
+- merge request discussions: minimum merge request discussion or note write scope
+- pipeline or job retry/cancel: minimum CI job or pipeline action scope
+- releases and repository tags: minimum release or repository write scope
+
+Operational rollback:
+
+- issue or discussion mutations require a new corrective mutation; there is no
+   implicit rollback
+- pipeline or job retry/cancel is external side effect; compensate from GitLab
+   operations instead of expecting automatic undo
+- duplicate release or tag creation returns a typed `duplicate` result rather
+   than issuing another write
+- an incorrect release or tag must be corrected with a later explicit mutation
+   under a fresh confirmation
 
 ## Limits and truncation
 
@@ -50,7 +88,8 @@ responses, mutation affordances or secret values.
 ## Errors and permissions
 
 Use a read-only token with the minimum `read_api` and `read_repository`
-permissions required by the selected tools.
+permissions required by the selected tools. If you enable mutations, prefer a
+separate token or the narrowest write scope required for that specific action.
 
 The client normalizes and returns actionable failures for:
 

@@ -242,14 +242,28 @@ export const loadBaseline = async (
 	return map;
 };
 
-const matchesBaseline = (
+/**
+ * Per-file budget: how many baselined comments a file is allowed to
+ * still carry.
+ *
+ * The baseline records `path:line`, but matching on the exact line made
+ * the lint fail on edits that changed nothing but line offsets —
+ * removing three lines near the top of a file "reintroduced" every
+ * baselined comment below it. With many agents committing concurrently
+ * that is not an edge case, it is the normal state, and because
+ * `bun run validate` is the evidence `close_slice` /
+ * `proposal_transition` require, a red lint here blocked every proposal
+ * from closing. A file may carry as many baselined comments as the
+ * baseline recorded, no more — so a genuinely NEW comment still fails.
+ */
+export const buildBaselineBudget = (
 	baseline: ReadonlyMap<string, ReadonlySet<number>>,
-	relPath: string,
-	line: number,
-): boolean => {
-	const set = baseline.get(relPath);
-	if (set === undefined) return false;
-	return set.has(line);
+): Map<string, number> => {
+	const budget = new Map<string, number>();
+	for (const [path, lines] of baseline) {
+		budget.set(path, lines.size);
+	}
+	return budget;
 };
 
 export const detectProposalIdComments = async (
@@ -271,6 +285,7 @@ export const detectProposalIdComments = async (
 			),
 	);
 	const all: IProposalIdCommentFinding[] = [];
+	const remaining = buildBaselineBudget(baseline);
 	let suppressed = 0;
 	for (const root of roots) {
 		// `isAbsolute` lets tests pass an arbitrary /tmp/... root without it
@@ -283,8 +298,10 @@ export const detectProposalIdComments = async (
 			if (content.length === 0) continue;
 			const findings = scanText(content, file, rel);
 			for (const f of findings) {
-				if (matchesBaseline(baseline, rel, f.line)) {
-					suppressed += findings.length;
+				const left = remaining.get(rel) ?? 0;
+				if (left > 0) {
+					remaining.set(rel, left - 1);
+					suppressed += 1;
 					continue;
 				}
 				all.push(f);

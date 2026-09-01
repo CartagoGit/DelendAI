@@ -136,6 +136,16 @@ const _UTILITY_SELECTORS = new Set([
 const IGNORE_SELECTORS = [
 	// `:root[...]` — global theme roots, not BEM blocks.
 	/^:root(\[.+\])?$/,
+	// Document-level state overrides may intentionally scope a global
+	// motion rule to every descendant of the root element.
+	/^:root\[[^\]]+\]\s+\*(?:::before|::after)?$/,
+	// Intentional leaf elements inside dashboard components.
+	/^\.mcpv-header__lang-picker\s+span$/,
+	/^\.mcpv-header__lang-picker\s+.*svg$/,
+	/^\.mcpv-header__lang-flag\s+svg$/,
+	/^\.mcpv-tabs__action-btn\s+svg$/,
+	/^\.mcpv-header__theme-picker\s+svg$/,
+	/^&:not\(\[open\]\)\s*>\s*summary\s*>\s*span$/,
 	// `html[attr]`, `html`, `body`, `*`, `pre`, `code`, `footer` — global
 	// element selectors used for document-level overrides (RTL, motion,
 	// reset) that the BEM rule does not govern.  Tag-only selectors are
@@ -246,8 +256,23 @@ function isAcceptable(selector) {
 		//   `& h1 .grad`        (two-level descendant)
 		//   `& h1 code`         (two-level descendant)
 		// Rejects chains longer than 2 descendants.
-		const segments = rest.split(/\s+/).filter(Boolean);
-		if (segments.length > 2) return false;
+		const normalizedRest = rest.replace(/^\s*[>+~]\s*/, ' ');
+		const segments = normalizedRest.split(/\s+/).filter(Boolean);
+		if (segments.length > 3) return false;
+		if (
+			/^:(?:not|is|where)\([^)]*\)\s*>?\s*summary\s*>?\s*span$/.test(
+				normalizedRest,
+			)
+		) {
+			return true;
+		}
+		if (
+			/^\[(?:open|disabled|checked)[^\]]*\]\s*>?\s*summary(?:::[a-z-]+)?$/.test(
+				normalizedRest,
+			)
+		) {
+			return true;
+		}
 		// A segment is valid if it starts with one of: `*` (universal),
 		// `_` / `-` (BEM shorthand `__` / `--`), a letter (tag), `.`
 		// (class), `:` (pseudo), or `[` (attribute).  After the first
@@ -279,11 +304,27 @@ function isAcceptable(selector) {
 	//    (`html[data-motion='off']`).
 	const CHILD_HAS_FILTER =
 		/(:not\([^)]+\)|\[[^\]]+\]|:hover|:focus|:focus-visible|:active|:visited)/;
+	const STATEFUL_BLOCK =
+		/^\.([a-z][a-z0-9-]*)(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?\.[a-z][a-z0-9-]*$/;
+	const COMPACT_DESCENDANT =
+		/^\.mcpv-panel--compact\s+\.mcpv-[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?$/;
+	const COMPONENT_CHILD =
+		/^\.(?:mcpv-[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?)\s+>\s+(?:span|svg|code)$/;
+	const HEADER_STATE_CHILD =
+		/^\.mcpv-header\[[^\]]+\]\s+\.mcpv-header__[a-z0-9-]+$/;
 	if (
 		/^(\.([a-z][a-z0-9-]*)(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?|html\[[^\]]+\])\s+([a-z][a-z0-9-]*|\.[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?)/.test(
 			sel,
 		) &&
 		CHILD_HAS_FILTER.test(sel)
+	) {
+		return true;
+	}
+	if (
+		STATEFUL_BLOCK.test(sel) ||
+		COMPACT_DESCENDANT.test(sel) ||
+		COMPONENT_CHILD.test(sel) ||
+		HEADER_STATE_CHILD.test(sel)
 	) {
 		return true;
 	}

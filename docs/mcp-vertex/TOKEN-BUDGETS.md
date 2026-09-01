@@ -90,8 +90,8 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | standard | standard | adaptive | managed | dynamic-client | 19 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
 | swarm | swarm | native | managed | tokens-gate | 27 | 166 | 193,678 | 48420 | 157,987 | 14,665 | 48,031 | 109,956 | 50,347 | 59 | 153 | within hard | within hard | none |
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
-| full | full | native | managed | tokens-gate | 31 | 173 | 202,360 | 50590 | 165,322 | 15,144 | 51,093 | 114,229 | 50,347 | 59 | 153 | within hard | within hard | none |
-| full | full | adaptive | managed | dynamic-client | 31 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
+| full | full | native | managed | tokens-gate | 34 | 173 | 202,360 | 50590 | 165,322 | 15,144 | 51,093 | 114,229 | 50,347 | 59 | 153 | within hard | within hard | none |
+| full | full | adaptive | managed | dynamic-client | 34 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
 | vertex | vertex | native | managed | tokens-gate | 38 | 197 | 262,834 | 65709 | 218,705 | 18,745 | 60,720 | 157,985 | 50,347 | 59 | 153 | within hard | within hard | none |
 | vertex | vertex | adaptive | managed | dynamic-client | 38 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
 | web-app | web-app | native | managed | tokens-gate | 18 | 89 | 103,208 | 25802 | 84,695 | 7,393 | 26,221 | 58,474 | 8,221 | 58 | n/a | n/a | n/a | none |

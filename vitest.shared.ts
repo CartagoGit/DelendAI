@@ -46,6 +46,12 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const memory = resolve(workspaceRoot, 'plugins/memory/src');
 	const git = resolve(workspaceRoot, 'plugins/git/src');
 	const forge = resolve(workspaceRoot, 'plugins/forge/src');
+	const remoteProviderCore = resolve(
+		workspaceRoot,
+		'plugins/remote-provider-core/src',
+	);
+	const github = resolve(workspaceRoot, 'plugins/github/src');
+	const gitlab = resolve(workspaceRoot, 'plugins/gitlab/src');
 	const quality = resolve(workspaceRoot, 'plugins/quality/src');
 	const refactor = resolve(workspaceRoot, 'plugins/refactor/src');
 	const search = resolve(workspaceRoot, 'plugins/search/src');
@@ -350,6 +356,30 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/forge',
 			replacement: resolve(forge, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/remote-provider-core/public',
+			replacement: resolve(remoteProviderCore, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/remote-provider-core',
+			replacement: resolve(remoteProviderCore, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/gitlab/public',
+			replacement: resolve(gitlab, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/gitlab',
+			replacement: resolve(gitlab, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/github/public',
+			replacement: resolve(github, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/github',
+			replacement: resolve(github, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/quality/public',

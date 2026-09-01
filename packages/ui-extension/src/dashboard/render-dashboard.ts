@@ -36,6 +36,7 @@ const CLIENT_SCRIPT = `
 (function () {
 	const host =
 		typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
+  const root = document.documentElement;
   const panels = document.querySelectorAll('.mcpv-panel');
   // Only real tabs participate in selection + the roving tabindex; the
   // refresh button is an action (no role="tab"), so it is excluded
@@ -93,6 +94,16 @@ const CLIENT_SCRIPT = `
   document.querySelectorAll('[data-surface]').forEach((surface) => {
     surface.addEventListener('click', () => {
       const id = surface.getAttribute('data-surface');
+      const internalTarget = {
+        proposals: 'sessions',
+        knowledge: 'memory',
+        configuration: 'settings',
+        settings: 'settings',
+      }[id ?? ''];
+      if (internalTarget) {
+        activateTarget(internalTarget);
+        return;
+      }
       if (id) host?.postMessage({ command: 'openSurface', surface: id });
     });
   });
@@ -599,10 +610,10 @@ export const renderDashboard = (
 	${header}
 	${kpiStrip}
 	<div class="mcpv-shell">
-		${tabsBar}
-		<main class="mcpv-main">
-			${panels}
-		</main>
+    ${tabsBar}
+    <main class="mcpv-main">
+      ${panels}
+    </main>
 	</div>
 	${footer}
 	<div id="mcpv-detail-overlay" class="mcpv-detail-overlay" role="dialog" aria-modal="true" aria-labelledby="mcpv-detail-overlay-title" data-active="false" hidden>

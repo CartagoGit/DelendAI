@@ -7,7 +7,7 @@
  * they run under vitest without a Bun global (unlike the integration spec).
  */
 
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -224,13 +224,22 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 		'aborts promptly and reaps descendants of a long-lived criterion',
 		async () => {
 			const controller = new AbortController();
+			// The criterion announces its descendant's pid through a file
+			// rather than stdout, because the test has to KNOW the
+			// descendant exists before it aborts. Aborting on a fixed
+			// 100ms wall clock raced the spawn on a loaded machine: the
+			// run was cancelled before the pid was ever written, `actual`
+			// came back empty, and the spec failed on a NaN pid while the
+			// behaviour under test was perfectly fine.
+			const pidFile = join(dir, 'descendant-pid.txt');
 			const script = [
 				"const { spawn } = require('node:child_process');",
+				"const { writeFileSync } = require('node:fs');",
 				"const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });",
+				`writeFileSync(${JSON.stringify(pidFile)}, String(child.pid));`,
 				'process.stdout.write(String(child.pid));',
 				'setInterval(() => {}, 1000);',
 			].join(' ');
-			const startedAt = Date.now();
 			const pending = runAcceptanceCriteria(
 				[
 					{
@@ -240,11 +249,25 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 				],
 				{ signal: controller.signal },
 			);
-			setTimeout(() => {
-				controller.abort();
-			}, 100);
+			// Wait for the descendant to exist, then abort. Promptness is
+			// measured from the abort, which is what the contract is about.
+			let spawnedPid = Number.NaN;
+			for (let attempt = 0; attempt < 400; attempt += 1) {
+				if (existsSync(pidFile)) {
+					spawnedPid = Number.parseInt(
+						readFileSync(pidFile, 'utf8').trim(),
+						10,
+					);
+					if (Number.isFinite(spawnedPid)) break;
+				}
+				await new Promise((resolve) => setTimeout(resolve, 25));
+			}
+			expect(Number.isFinite(spawnedPid)).toBe(true);
+			trackedPids.add(spawnedPid);
+			const abortedAt = Date.now();
+			controller.abort();
 			const res = await pending;
-			expect(Date.now() - startedAt).toBeLessThan(3000);
+			expect(Date.now() - abortedAt).toBeLessThan(3000);
 			expect(res.allPassed).toBe(false);
 			expect(res.results[0]?.aborted).toBe(true);
 			expect(res.results[0]?.timedOut).toBe(false);
@@ -253,14 +276,8 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 			expect(res.results[0]?.recovery).toContain(
 				'close the blocked terminal or child process group before retrying',
 			);
-			const descendantPid = Number.parseInt(
-				res.results[0]?.actual.trim() ?? '',
-				10,
-			);
-			expect(Number.isFinite(descendantPid)).toBe(true);
-			trackedPids.add(descendantPid);
-			expect(await waitForPidExit(descendantPid)).toBe(true);
-			trackedPids.delete(descendantPid);
+			expect(await waitForPidExit(spawnedPid)).toBe(true);
+			trackedPids.delete(spawnedPid);
 		},
 	);
 

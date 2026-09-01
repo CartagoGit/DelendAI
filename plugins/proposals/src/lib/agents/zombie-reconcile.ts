@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { realpath } from 'node:fs/promises';
 import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
@@ -56,30 +56,39 @@ export const DEFAULT_ORPHAN_TTL_MINUTES = 7 * 24 * 60;
 /** Default staleness window for adopted-but-dormant agents. */
 export const DEFAULT_STALE_AFTER_MINUTES = 10;
 
+/**
+ * Read a lock file through `SafeWorkspaceReader`, rooted at the lock's
+ * own realpath'd directory. Returns `null` when the file is missing or
+ * unreadable — callers treat that as "no lock on disk".
+ */
+const readLockText = async (lockPath: string): Promise<string | null> => {
+	try {
+		const rootAbs = await realpath(dirname(lockPath)).catch(() =>
+			dirname(lockPath),
+		);
+		return (
+			await new SafeWorkspaceReader(rootAbs).readText(basename(lockPath))
+		).content;
+	} catch {
+		return null;
+	}
+};
+
 const loadLockSnapshotLocal = async (
 	lockPath: string,
 ): Promise<{
 	in_flight: Array<{ task_id: string; agent: string; claimed_at: string }>;
 }> => {
-	let raw: string | undefined;
-	try {
-		raw = (
-			await new SafeWorkspaceReader(dirname(lockPath)).readText(
-				basename(lockPath),
-			)
-		).content;
-	} catch {
-		// SafeWorkspaceReader is path-containment aware and refuses to
-		// read files outside the workspace root. Test fixtures live in
-		// /tmp; production callers always pass a path under
-		// `.cache/mcp-vertex/`. Fall back to a direct read so the
-		// function is uniformly usable from both contexts.
-		try {
-			raw = await readFile(lockPath, 'utf8');
-		} catch {
-			// Missing/unreadable lock → no in-flight claims.
-			return { in_flight: [] };
-		}
+	// The reader is rooted at the lock's own directory, so containment is
+	// satisfied by construction — but only once the root is a REAL path.
+	// Test fixtures live under `/tmp`, which is a symlink on some hosts,
+	// and the realpath-validated containment check then sees the resolved
+	// file escape the unresolved root. Resolving the root first keeps a
+	// single read path (no `node:fs` fallback, per the architecture lint).
+	const raw = await readLockText(lockPath);
+	if (raw === null) {
+		// Missing/unreadable lock → no in-flight claims.
+		return { in_flight: [] };
 	}
 	try {
 		const parsed = JSON.parse(raw);
@@ -348,7 +357,14 @@ export async function gcZombies(
 						releasedLock = true;
 					} else {
 						try {
-							const rawAfter = await readFile(lockPath, 'utf8');
+							const rawAfter = await readLockText(lockPath);
+							if (rawAfter === null) {
+								// Lock file unreadable → assume the entry
+								// is gone (purge happened and rewrite
+								// failed). Treat as released.
+								releasedLock = true;
+								continue;
+							}
 							const parsedAfter = JSON.parse(rawAfter) as {
 								in_flight?: unknown;
 							};

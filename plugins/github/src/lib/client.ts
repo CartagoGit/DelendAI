@@ -29,6 +29,24 @@ export type RemoteFetchFn = (
 	},
 ) => Promise<IRemoteFetchResponse>;
 
+export const toRemoteFetchResponse = (
+	response: Response,
+): IRemoteFetchResponse => ({
+	ok: response.ok,
+	status: response.status,
+	headers: {
+		get(name: string): string | null {
+			return response.headers.get(name);
+		},
+	},
+	text: async () => response.text(),
+});
+
+export const createGitHubRemoteFetchFn =
+	(fetchFn: typeof fetch): RemoteFetchFn =>
+	async (url, init) =>
+		toRemoteFetchResponse(await fetchFn(url, init));
+
 export interface IGitHubHttpClientDeps {
 	readonly fetchFn: RemoteFetchFn;
 	readonly now?: () => number;

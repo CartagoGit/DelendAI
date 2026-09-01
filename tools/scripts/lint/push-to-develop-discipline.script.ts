@@ -38,7 +38,6 @@
  * contract first; the argv-based parsing stays only as a fallback
  * for direct/manual invocation (and the existing unit tests).
  */
-import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
@@ -431,10 +430,57 @@ const formatReport = (result: PushToDevelopResult): string => {
  * probing it would block waiting for keyboard input — so it short-
  * circuits to empty rather than calling `readFileSync(0, ...)`.
  */
-const readStdinRefUpdates = (): ReadonlyArray<IPrePushRefUpdate> => {
+const STDIN_PROBE_TIMEOUT_MS = 2_000;
+
+/**
+ * Read git's pre-push ref-update protocol from stdin, if any.
+ *
+ * A TTY never carries ref updates, so it short-circuits. Everything else
+ * used to go straight to `readFileSync(0)`, which blocks until EOF — and
+ * an inherited pipe that nobody ever closes (a CI runner, a task runner
+ * spawning this as one of many steps) has no EOF. The script then hung
+ * forever instead of reporting anything, which is strictly worse than a
+ * failure: nothing downstream can tell a hang from slow work.
+ *
+ * Reading with a deadline keeps the real hook exact — git writes the ref
+ * updates and closes stdin immediately, so EOF arrives in microseconds —
+ * while a stdin that never closes degrades to "no ref updates" instead of
+ * a hang.
+ */
+const readStdinRefUpdates = async (): Promise<
+	ReadonlyArray<IPrePushRefUpdate>
+> => {
 	if (process.stdin.isTTY) return [];
+	const raw = await new Promise<string>((resolve) => {
+		let buffer = '';
+		let settled = false;
+		const finish = (value: string): void => {
+			if (settled) return;
+			settled = true;
+			process.stdin.removeAllListeners('data');
+			process.stdin.removeAllListeners('end');
+			process.stdin.removeAllListeners('error');
+			process.stdin.pause();
+			resolve(value);
+		};
+		const timer = setTimeout(() => finish(buffer), STDIN_PROBE_TIMEOUT_MS);
+		timer.unref?.();
+		process.stdin.setEncoding('utf8');
+		process.stdin.on('data', (chunk: string) => {
+			buffer += chunk;
+		});
+		process.stdin.on('end', () => {
+			clearTimeout(timer);
+			finish(buffer);
+		});
+		process.stdin.on('error', () => {
+			clearTimeout(timer);
+			finish('');
+		});
+		process.stdin.resume();
+	});
 	try {
-		return parsePrePushStdin(readFileSync(0, 'utf8'));
+		return parsePrePushStdin(raw);
 	} catch {
 		return [];
 	}
@@ -465,7 +511,7 @@ const main = async (): Promise<number> => {
 	// <remote oid>` per updated ref). The lefthook argv `{3}` template
 	// has no refspec to substitute for a plain `git push` and used to
 	// ship as the literal string `"{3}"`, silently defeating the guard.
-	const stdinUpdates = readStdinRefUpdates();
+	const stdinUpdates = await readStdinRefUpdates();
 	if (stdinUpdates.length > 0) {
 		const result = lintPrePushStdinUpdates(
 			stdinUpdates,

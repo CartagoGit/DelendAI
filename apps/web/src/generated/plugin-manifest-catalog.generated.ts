@@ -690,7 +690,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "experimental",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"full"
+		],
 		"capabilities": [
 			"github",
 			"remote-provider"
@@ -714,7 +716,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "experimental",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"full"
+		],
 		"capabilities": [
 			"gitlab",
 			"remote-provider"
@@ -1255,7 +1259,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "beta",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"full"
+		],
 		"capabilities": [
 			"remote-provider"
 		],
