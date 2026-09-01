@@ -64,6 +64,14 @@ const walkMarkdown = (absDir: string, out: string[]): void => {
 	}
 };
 
+/**
+ * Paths that only ever exist at runtime: the plugin cache/results tree.
+ * They are gitignored by design, so their absence in a clean checkout is
+ * correct, not drift.
+ */
+export const isRuntimeStatePath = (candidate: string): boolean =>
+	candidate.startsWith('.cache/') || candidate.includes('/.cache/');
+
 /** Returns `{ relProposalPath: [missingPath, ...] }` for proposals with dangling Files: refs. */
 export const scanMissingFiles = (root: string): Record<string, string[]> => {
 	const result: Record<string, string[]> = {};
@@ -78,6 +86,13 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 			for (const m of text.matchAll(FILES_BLOCK_RE)) {
 				for (const p of extractPathCandidates(m[1] ?? '')) {
 					if (p.startsWith(`${PROPOSALS_ROOT}/ready/`)) continue;
+					// Runtime state under the cache dir is generated at
+					// use time and is gitignored, so it exists on the
+					// machine that ran the slice and never in a fresh
+					// checkout. Asserting it made this lint pass locally
+					// and fail in CI — the split that hides a break from
+					// the only person who can fix it.
+					if (isRuntimeStatePath(p)) continue;
 					const base = stripLineRefs(p);
 					if (!existsSync(join(root, base))) missing.push(p);
 				}
