@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/2026-08-27-develop-independent-audit-claude-opus5.md#s1-cambio-ficheros-paths-test-spec
+shipped-in: ["1bcc6f491"]
 ---
 
 # f00388 — **S1** — <cambio> · ficheros: `<paths>` · test: `<spec>`
