@@ -2,7 +2,7 @@
 id: f00315
 title: "Privacy validator."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,7 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 ER-006, blocking privacy gate before any send) is shipped: privacy-validator.helper.ts's validateSafeReport walks every leaf of the outbound ISafeMcpVertexReport and rejects it if any string matches PRIVACY_VALIDATOR_BLOCKED_CLASSES (absolute/windows paths, urls, email, ip, uuid, token, git metadata, branch names, json/xml/sql fragments, over-length strings). reporter.service.ts calls this before dispatch. Ran privacy-validator.spec.ts (dedicated suite): tests pass, exit 0.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

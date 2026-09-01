@@ -2,12 +2,15 @@
 id: f00351
 title: "impact_analyze."
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#impact-analyze
 shipped-in: ["832f5674e"]
+last-transition-id: 06b8a311-6e20-4100-b38d-74c6f8750f79
+last-correlation-id: 06b8a311-6e20-4100-b38d-74c6f8750f79
+last-transition-from: ready
 ---
 
 # f00351 — impact_analyze.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00351-impact-analyze.md`
+- **Files**: `docs/mcp-vertex/proposals/in-progress/f00351-impact-analyze.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
