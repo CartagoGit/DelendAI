@@ -139,12 +139,32 @@ const main = async (): Promise<void> => {
 			ROOT,
 		);
 
+		// r00045 S1: `bun run build` writes only under `build/{group}/{name}/
+		// {version}/` now, never a per-package `dist/`. Manifests still
+		// declare `"main"/"bin": "./dist/..."` (npm/Node forbid `exports`
+		// escaping the package directory with `../build`) — per the
+		// proposal's design note, the publish pipeline stages that
+		// `build/` slice into a per-package `dist/` in a throwaway COPY
+		// before packing. `bun pm pack` against the raw workspace dir (as
+		// this used to do) packs a manifest whose `./dist/...` entrypoint
+		// was never written on disk, so the installed `mcpv` bin resolves
+		// to nothing.
+		const stagingDir = join(scratch, 'staging');
+		mkdirSync(stagingDir, { recursive: true });
 		const dependencies: Record<string, string> = {};
 		for (const packageDir of PUBLISH_ORDER) {
 			const absoluteDir = join(ROOT, packageDir);
 			const manifest = readJson<IPackageManifest>(
 				join(absoluteDir, 'package.json'),
 			);
+			const group = packageDir.startsWith('packages/')
+				? 'packages'
+				: 'plugins';
+			const name = packageDir.slice(packageDir.indexOf('/') + 1);
+			const buildDir = join(ROOT, 'build', group, name, manifest.version);
+			const stageDir = join(stagingDir, packageDir);
+			await stageBuildForPublish(absoluteDir, buildDir, stageDir);
+
 			const filename = `${manifest.name.replace('@', '').replace('/', '-')}.tgz`;
 			run(
 				'bun',
@@ -156,7 +176,7 @@ const main = async (): Promise<void> => {
 					'--ignore-scripts',
 					'--quiet',
 				],
-				absoluteDir,
+				stageDir,
 			);
 			dependencies[manifest.name] = `file:${join(tarballsDir, filename)}`;
 		}
