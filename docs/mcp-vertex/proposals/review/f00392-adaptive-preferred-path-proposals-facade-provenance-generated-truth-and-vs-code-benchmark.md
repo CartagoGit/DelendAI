@@ -2,13 +2,16 @@
 id: f00392
 title: "Adaptive preferred path, proposals facade, provenance, generated truth and VS Code benchmark"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
 shipped-in: ["8514f99f7", "af2265b4b"]
+last-transition-id: bf494b73-2057-4e90-ad3d-de06ede5f714
+last-correlation-id: bf494b73-2057-4e90-ad3d-de06ede5f714
+last-transition-from: in-progress
 ---
 
 # f00392 — Adaptive preferred path, proposals facade, provenance, generated truth and VS Code benchmark
