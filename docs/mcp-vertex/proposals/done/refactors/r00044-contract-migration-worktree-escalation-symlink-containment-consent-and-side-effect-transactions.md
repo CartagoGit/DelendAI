@@ -2,16 +2,16 @@
 id: r00044
 title: "Contract migration, worktree escalation, symlink containment, consent and side-effect transactions"
 kind: refactor
-status: in-progress
+status: done
 type: proposal
 track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
 shipped-in: ["657398dfb"]
-last-transition-id: ecdd38a8-f12c-4425-a25d-7f3c90cba167
-last-correlation-id: ecdd38a8-f12c-4425-a25d-7f3c90cba167
-last-transition-from: ready
+last-transition-id: c762ede3-b2d5-4588-97cf-bba110b61b21
+last-correlation-id: c762ede3-b2d5-4588-97cf-bba110b61b21
+last-transition-from: review
 ---
 
 # r00044 — Contract migration, worktree escalation, symlink containment, consent and side-effect transactions
