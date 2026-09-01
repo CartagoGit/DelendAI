@@ -2,7 +2,7 @@
 id: f00293
 title: "Dependencias fallidas bloquean dependientes."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-reviewer-2
+- review-log: approved by sonnet-reviewer-2 — Verified independently: migration source is NOT actually gone (review-log claim false) - survives in done/audits/a00092 (TODO PL-003/PL-004). Real claim checked: load-plugins-lifecycle.helper.ts + dependency-graph.service.ts implement blockDependentsForFailure/cycle detection exactly as required. Ran targeted vitest suite: 23/23 passed incl. 'blockDependentsForFailure propagates blocked transitively' and 'does NOT call register() of a plugin whose dependsOn is unmet'.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
