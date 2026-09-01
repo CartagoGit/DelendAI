@@ -8,6 +8,7 @@ track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
+shipped-in: ["5cb9433f2"]
 ---
 
 # f00390 — Release track R3: release PR, git-forge boundary and normal-promotion enforcement
