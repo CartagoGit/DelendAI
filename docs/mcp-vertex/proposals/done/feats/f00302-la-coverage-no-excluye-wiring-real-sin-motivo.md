@@ -2,7 +2,7 @@
 id: f00302
 title: "La coverage no excluye wiring real sin motivo."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 TEST-001, coverage should not blanket-exclude index.ts; real wiring lives there) is shipped: vitest.config.ts excludes only index.ts files that parse as pure re-export barrels (isPureBarrelIndex/PURE_BARREL_STATEMENT/pureBarrelCoverageExcludes), measuring any index.ts with real logic. This is exactly the audit's proposed fix.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
