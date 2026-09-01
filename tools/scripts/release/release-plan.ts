@@ -14,6 +14,11 @@
  * from referring to packages absent from the release.
  */
 export const PUBLISH_ORDER: readonly string[] = [
+	// Leaf contracts package: `github`, `gitlab` and
+	// `remote-provider-core` declare it as a dependency, so it must be
+	// packed and installed before them or an external install resolves
+	// `@mcp-vertex/contracts` from the registry and 404s.
+	'packages/contracts',
 	'packages/core',
 	'packages/client',
 	'packages/cli',
