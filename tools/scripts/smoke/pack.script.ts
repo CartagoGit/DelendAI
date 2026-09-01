@@ -400,19 +400,24 @@ const runPackageSmoke = async (
 	}
 };
 
-const runPresetsSmoke = async (presetIds: readonly string[]): Promise<void> => {
+const runPresetsSmoke = async (
+	presetIds: readonly string[],
+	stagedDirs: ReadonlyMap<string, string>,
+): Promise<void> => {
 	const failures: Array<{ preset: string; error: string }> = [];
 	for (const presetId of presetIds) {
 		const proj = mkdtempSync(join(tmpdir(), `mcp-pack-${presetId}-`));
 		try {
 			const tarballs: string[] = [];
 			for (const pkgDir of PACKED_PACKAGE_DIRS) {
+				const stageDir = stagedDirs.get(pkgDir);
+				if (stageDir === undefined) {
+					throw new Error(`${pkgDir} was not staged before packing`);
+				}
 				tarballs.push(
-					await packRewrittenTarball(
-						join(ROOT, pkgDir),
-						WORKSPACE_PLAN,
-						{ outDir: proj },
-					),
+					await packRewrittenTarball(stageDir, WORKSPACE_PLAN, {
+						outDir: proj,
+					}),
 				);
 			}
 			try {
