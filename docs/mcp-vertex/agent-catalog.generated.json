@@ -1347,7 +1347,7 @@
 				"id": "f00280",
 				"title": "f00280",
 				"track": "adoption",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1881,8 +1881,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 71,
-			"in-progress": 5,
+			"ready": 70,
+			"in-progress": 6,
 			"review": 15,
 			"paused": 1,
 			"done": 649,
