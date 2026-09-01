@@ -167,5 +167,129 @@ describe('peer-review-log (x00154 S6)', () => {
 			expect(onDisk.endsWith('\n')).toBe(true);
 			expect(onDisk.trim().length).toBeGreaterThan(0);
 		});
+
+		it('accepts slice approvals earned BEFORE the first entry into review', async () => {
+			// This is the normal shape of a first closure: slices are
+			// reviewed while the proposal is still `in-progress`, and only
+			// once every slice is approved does it become closure-ready and
+			// move to review. Rejecting those approvals left no reachable
+			// path to `done` — `proposal_review` refuses to re-approve an
+			// already-approved slice — and stranded 128 proposals.
+			await recordProposalReviewAction({
+				logPathAbs,
+				proposalId: 'f00999',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'bob',
+				verdict: 'approved',
+				ts: '2026-07-25T09:00:00.000Z',
+			});
+			await recordProposalEnteredReview({
+				logPathAbs,
+				proposalId: 'f00999',
+				from: 'in-progress',
+				ts: '2026-07-25T10:00:00.000Z',
+			});
+
+			expect(
+				await hasIndependentApprovalSinceLastReview(
+					logPathAbs,
+					'f00999',
+				),
+			).toBe(true);
+		});
+
+		it('still rejects a stale approval once the proposal was RE-OPENED', async () => {
+			// Two entries into review can only happen by leaving review in
+			// between, i.e. the work was re-opened and changed. The old
+			// approval must not carry over to the new round.
+			await recordProposalEnteredReview({
+				logPathAbs,
+				proposalId: 'f00999',
+				from: 'in-progress',
+				ts: '2026-07-25T10:00:00.000Z',
+			});
+			await recordProposalReviewAction({
+				logPathAbs,
+				proposalId: 'f00999',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'bob',
+				verdict: 'approved',
+				ts: '2026-07-25T10:01:00.000Z',
+			});
+			await recordProposalEnteredReview({
+				logPathAbs,
+				proposalId: 'f00999',
+				from: 'in-progress',
+				ts: '2026-07-25T12:00:00.000Z',
+			});
+
+			expect(
+				await hasIndependentApprovalSinceLastReview(
+					logPathAbs,
+					'f00999',
+				),
+			).toBe(false);
+		});
+
+		it('accepts a fresh approval after the re-opening', async () => {
+			for (const ts of [
+				'2026-07-25T10:00:00.000Z',
+				'2026-07-25T12:00:00.000Z',
+			]) {
+				await recordProposalEnteredReview({
+					logPathAbs,
+					proposalId: 'f00999',
+					from: 'in-progress',
+					ts,
+				});
+			}
+			await recordProposalReviewAction({
+				logPathAbs,
+				proposalId: 'f00999',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'bob',
+				verdict: 'approved',
+				ts: '2026-07-25T12:30:00.000Z',
+			});
+
+			expect(
+				await hasIndependentApprovalSinceLastReview(
+					logPathAbs,
+					'f00999',
+				),
+			).toBe(true);
+		});
+
+		it('never accepts a self-approval, whatever the timing', async () => {
+			await recordProposalReviewAction({
+				logPathAbs,
+				proposalId: 'f00999',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'alice',
+				verdict: 'approved',
+				ts: '2026-07-25T09:00:00.000Z',
+			});
+			await recordProposalEnteredReview({
+				logPathAbs,
+				proposalId: 'f00999',
+				from: 'in-progress',
+				ts: '2026-07-25T10:00:00.000Z',
+			});
+
+			expect(
+				await hasIndependentApprovalSinceLastReview(
+					logPathAbs,
+					'f00999',
+				),
+			).toBe(false);
+		});
 	});
 });
