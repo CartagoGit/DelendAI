@@ -1,19 +1,22 @@
 ---
-id: f00306
-title: "Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático."
+id: f00308
+title: "Raw args prohibidos."
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-args-prohibidos
+last-transition-id: 65739b9f-07bc-4157-9a6f-20eb36393b0e
+last-correlation-id: 65739b9f-07bc-4157-9a6f-20eb36393b0e
+last-transition-from: ready
 ---
 
-# f00306 — Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático.
+# f00308 — Raw args prohibidos.
 
 ## Goal
 
-Migrated work item: Los datos de usuario/proyecto quedan fuera de cualquier reporting externo automático..
+Migrated work item: Raw args prohibidos..
 
 ## why
 
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00306-los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico.md`
+- **Files**: `in-progress/f00308-raw-args-prohibidos.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,7 +50,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#los-datos-de-usuario-proyecto-quedan-fuera-de-cualquier-reporting-externo-automatico` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#raw-args-prohibidos` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 

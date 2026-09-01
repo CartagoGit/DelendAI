@@ -2,11 +2,14 @@
 id: f00307
 title: "Reporting default-on, pero MCP-only."
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#reporting-default-on-pero-mcp-only
+last-transition-id: 35c78115-da01-4f4f-8812-c0b7f82382f6
+last-correlation-id: 35c78115-da01-4f4f-8812-c0b7f82382f6
+last-transition-from: ready
 ---
 
 # f00307 — Reporting default-on, pero MCP-only.
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00307-reporting-default-on-pero-mcp-only.md`
+- **Files**: `in-progress/f00307-reporting-default-on-pero-mcp-only.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
