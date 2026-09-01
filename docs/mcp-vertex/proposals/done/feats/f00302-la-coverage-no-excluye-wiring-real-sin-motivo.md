@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00302-la-coverage-no-excluye-wiring-real-sin-motivo.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00302-la-coverage-no-excluye-wiring-real-sin-motivo.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
