@@ -178,18 +178,34 @@ export const hasIndependentApprovalSinceLastReview = async (
 	const entries = (await readPeerReviewLog(logPathAbs)).filter(
 		(entry) => entry.proposalId === proposalId,
 	);
-	let lastReviewTs: string | undefined;
-	for (const entry of entries) {
-		if (entry.kind === 'transition' && entry.to === 'review') {
-			if (lastReviewTs === undefined || entry.ts > lastReviewTs) {
-				lastReviewTs = entry.ts;
-			}
-		}
-	}
+	// The recency cut-off exists to stop a RE-OPENED proposal from reusing
+	// the approval it earned before the changes that re-opened it. It must
+	// therefore key on a re-opening, not on entering review at all.
+	//
+	// The log only records transitions INTO review, so a re-opening is
+	// exactly a SECOND such entry: you cannot enter review twice without
+	// leaving it in between. On a first pass there is only one, and every
+	// slice approval necessarily predates it — slices are approved while
+	// the proposal is still `ready`/`in-progress`, and only once they are
+	// all approved does it become closure-ready.
+	//
+	// Cutting off at the first entry therefore rejected every approval a
+	// first-time closure could possibly have, and `proposal_review` refuses
+	// to re-approve an already-approved slice, so nothing could satisfy the
+	// gate: 128 proposals with every slice done and approved were stranded
+	// behind a requirement with no reachable path.
+	const reviewEntryTimestamps = entries
+		.filter((entry) => entry.kind === 'transition' && entry.to === 'review')
+		.map((entry) => entry.ts)
+		.sort();
+	const reopenedAt =
+		reviewEntryTimestamps.length > 1
+			? reviewEntryTimestamps.at(-1)
+			: undefined;
 	return entries.some((entry) => {
 		if (entry.kind !== 'review') return false;
 		if (entry.verdict !== 'approved') return false;
-		if (lastReviewTs !== undefined && entry.ts < lastReviewTs) return false;
+		if (reopenedAt !== undefined && entry.ts < reopenedAt) return false;
 		const reviewer = entry.reviewer?.trim().toLowerCase() ?? '';
 		const implementer = entry.implementer?.trim().toLowerCase() ?? '';
 		if (reviewer.length === 0) return false;
