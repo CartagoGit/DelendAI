@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#token-dashboard-tracked-esta-fresco
+shipped-in: ["82c54bccc94ab11c524f187c671da854e522ab7d"]
 ---
 
 # f00369 — token dashboard tracked está fresco.

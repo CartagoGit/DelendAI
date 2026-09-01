@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard
+shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
 ---
 
 # f00368 — CI falla si real swarm > hard.

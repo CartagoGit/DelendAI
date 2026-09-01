@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#nunca-dos-holders-simultaneos
+shipped-in: ["7bb6d35138db047d35491c68eebfd2435b897b12"]
 ---
 
 # f00366 — nunca dos holders simultáneos.
