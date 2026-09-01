@@ -130,7 +130,7 @@ interface PluginLifecycle<P, A> {
 
 ### S1 — Tipos `prepare/activate/dispose` + adapter de compatibilidad
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `packages/core/src/lib/plugins/lifecycle.ts`, `packages/core/src/lib/plugins/router.ts`, `packages/core/tests/src/lib/plugins/lifecycle.spec.ts`
 - **Gate**: type
 - review-state: done
@@ -145,3 +145,53 @@ interface PluginLifecycle<P, A> {
   rollback de activaciones previas, `dispose` idempotente.
 - Plugins existentes siguen funcionando sin cambios.
 - `bun run validate` verde.
+
+## Notes
+
+### Reopened 2026-09-01
+
+Independent re-verification found the S1 review-log's "10/10 tests +
+typecheck green" claim true but insufficient — it verified the
+`lifecycle.ts` module in isolation and never checked that it is
+actually wired into the plugin boot path, which is what the
+proposal's own architecture section and Files list (which names
+`router.ts`) require:
+
+- `packages/core/src/lib/plugins/router.ts` still calls
+  `entry.plugin.register(...)` exclusively (line 361) and contains
+  zero references to `prepare`, `activate`, or `lifecycle` —
+  confirmed via `grep -n "prepare\|activate\b"
+  packages/core/src/lib/plugins/router.ts` (no matches). The
+  "Router" section of this proposal's architecture explicitly
+  requires the boot sequence to become
+  `prepare() → resolve capabilities → activate()`; that never
+  happened.
+- The described "adapter de compatibilidad" —
+  `definePlugin({ register(ctx) {...} })` wrapped internally into
+  `prepare = () => ({})` / `activate = register` — does not exist.
+  The real `definePlugin` in
+  `packages/core/src/lib/plugins/plugin-contract.ts:486` is
+  `export const definePlugin = (plugin: IMcpPlugin): IMcpPlugin =>
+  plugin;` — a pure passthrough with no lifecycle translation.
+- `grep -rln "PreparedPlugin\|ActivePlugin\|IPluginLifecycle"
+  packages plugins --include="*.ts"` (excluding lifecycle.ts/spec)
+  turns up nothing relevant — every other `ActivePlugin` hit is an
+  unrelated pre-existing "list of active plugins" concept, not this
+  contract's type.
+- `lifecycle.ts` itself was first added by an earlier, unrelated
+  commit (`1e432f998 feat(lifecycle): f00184 + f00185 + c00134 —
+  Track D`), not by work done for f00268; f00268's S1 appears to
+  have pointed at that pre-existing, still-orphaned module rather
+  than completing the router integration it claims.
+
+Net effect: the 10 focused tests genuinely pass and typecheck is
+green, but the actual behavior this proposal exists to deliver — a
+router that boots plugins through `prepare()` then `activate()`, and
+a `definePlugin` adapter that lets legacy `register()` plugins
+participate — is not present anywhere in production code. Reopening
+S1 as pending. To close for real: wire `router.ts` to call
+`prepare()`/`activate()` per plugin (or explicitly narrow the
+acceptance/architecture text if the router integration is being
+deferred to a later proposal), and make `definePlugin` actually
+perform the `register` → `prepare`/`activate` translation described
+in architecture §2.
