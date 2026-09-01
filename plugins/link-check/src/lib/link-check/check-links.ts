@@ -16,11 +16,53 @@ import type {
 } from '../contracts/interfaces/link-check.interface';
 
 /** A `[text](target)` link that is not an image, capturing the target. */
-const LINK = /(?<!!)\[[^\]]*\]\(\s*([^)]*?)\s*\)/g;
+const LINK = /(?<!!)\[[^\]]*\]\(\s*([^)]*)\)/gu;
 /** An ATX heading line (`# … ######`). */
-const HEADING = /^(#{1,6})\s+(.*?)(?:\s+#+)?\s*$/;
+const HEADING = /^(#{1,6})\s+(.*)$/u;
 /** A fenced-code delimiter (``` or ~~~). */
-const FENCE = /^\s*(```|~~~)/;
+const FENCE = /^\s*(```|~~~)/u;
+
+const isWhitespace = (character: string | undefined): boolean =>
+	character === ' ' ||
+	character === '\t' ||
+	character === '\n' ||
+	character === '\r' ||
+	character === '\f' ||
+	character === '\v';
+
+const stripClosingHeadingSequence = (raw: string): string => {
+	let end = raw.length;
+	while (end > 0 && isWhitespace(raw[end - 1])) {
+		end -= 1;
+	}
+
+	let hashesStart = end;
+	while (hashesStart > 0 && raw[hashesStart - 1] === '#') {
+		hashesStart -= 1;
+	}
+
+	if (hashesStart < end) {
+		let whitespaceStart = hashesStart;
+		while (whitespaceStart > 0 && isWhitespace(raw[whitespaceStart - 1])) {
+			whitespaceStart -= 1;
+		}
+		if (whitespaceStart < hashesStart) {
+			end = whitespaceStart;
+		}
+	}
+
+	return raw.slice(0, end);
+};
+
+const stripOptionalLinkTitle = (raw: string): string => {
+	const trimmed = raw.trim();
+	for (let index = 0; index < trimmed.length; index += 1) {
+		if (isWhitespace(trimmed[index])) {
+			return trimmed.slice(0, index);
+		}
+	}
+	return trimmed;
+};
 
 /**
  * GitHub-style heading → anchor slug. Pure.
@@ -61,7 +103,7 @@ export const headingAnchors = (content: string): Set<string> => {
 		if (inFence) continue;
 		const match = HEADING.exec(line);
 		if (match === null) continue;
-		const base = slugify(match[2] ?? '');
+		const base = slugify(stripClosingHeadingSequence(match[2] ?? ''));
 		if (base === '') continue;
 		const seen = counts.get(base) ?? 0;
 		counts.set(base, seen + 1);
@@ -86,7 +128,7 @@ export const extractLinks = (content: string): IExtractedLink[] => {
 		let match: RegExpExecArray | null = LINK.exec(line);
 		while (match !== null) {
 			// Strip an optional link title: `path "title"` → `path`.
-			const target = (match[1] ?? '').split(/\s+/)[0] ?? '';
+			const target = stripOptionalLinkTitle(match[1] ?? '');
 			links.push({ target, line: index + 1 });
 			match = LINK.exec(line);
 		}

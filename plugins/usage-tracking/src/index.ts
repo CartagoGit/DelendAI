@@ -12,14 +12,21 @@ import z from 'zod';
 import { deriveCorePrefix } from './lib/attribute';
 import { cleanupStaleTmpFiles } from './lib/cleanup-stale-tmp';
 import { detectAgent } from './lib/detect-agent';
-import { buildRecord, resolveSessionId } from './lib/record';
 import { RecordBuffer } from './lib/record-buffer';
-import { regenerateSummary } from './lib/rollup';
+import {
+	installSessionSurfaceBytesObserver,
+	SessionSurfaceBytesService,
+} from './lib/session-surface-bytes.service';
 import {
 	DEFAULT_SESSION_HYGIENE_POLICY,
 	SessionHygieneMonitor,
 } from './lib/session-hygiene';
 import { SessionTooLongAdvisorySource } from './lib/services/checkpoint-advisory.service';
+import {
+	buildInvocationRecord,
+	resolveInvocationSessionId,
+} from './lib/services/invocation-recorder.service';
+import { regenerateUsageSummary } from './lib/services/usage-rollup.service';
 import { StartClock } from './lib/start-clock';
 import {
 	computeCostUsd,
@@ -42,6 +49,13 @@ const OptionsSchema = z
 		 * can be named without a code change (CRITICAL N6).
 		 */
 		clientMap: z.record(z.string(), ClientMappingSchema).optional(),
+		/**
+		 * Explicit token baselines keyed by `plugin/tool`, then `plugin/*`.
+		 * Baselines are metadata-only and are compared with provider usage.
+		 */
+		tokenBaselines: z
+			.record(z.string(), z.number().nonnegative())
+			.optional(),
 		/**
 		 * Max buffered records before a forced flush. Default 64 (CRITICAL
 		 * C2). Lower to fsync sooner; higher to coalesce more aggressively.
@@ -110,7 +124,7 @@ const EMPTY_PRICING: IPricingTable = {
  */
 export default definePlugin({
 	name: 'usage-tracking',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Records every tool call (agent/plugin/model/extension) to an append-only log and reports aggregate usage + cost.',
 	// Accrued spend/usage history, not derivable cache — deleting it
@@ -126,6 +140,13 @@ export default definePlugin({
 		const summaryIntervalMs =
 			options.summaryIntervalMs ?? DEFAULT_OPTIONS.summaryIntervalMs;
 		const clientMap = options.clientMap;
+		const tokenBaselines = options.tokenBaselines ?? {};
+		const baselineTokensOf = (
+			plugin: string,
+			tool: string,
+		): number | undefined =>
+			tokenBaselines[`${plugin}/${tool}`] ??
+			tokenBaselines[`${plugin}/*`];
 		const hygieneOptions = options.sessionHygiene;
 		const sessionHygieneEnabled = hygieneOptions?.enabled ?? true;
 		const sessionHygiene = new SessionHygieneMonitor({
@@ -167,6 +188,9 @@ export default definePlugin({
 		const hostLifecyclePath = ctx.workspace.resolve(
 			joinRel(ctx.pluginCacheDir, 'host-lifecycle.claude-code.jsonl'),
 		);
+		const sessionSurfaceBytesPath = ctx.workspace.resolve(
+			joinRel(ctx.pluginCacheDir, 'session-surface-bytes.jsonl'),
+		);
 		const pricingPath = ctx.workspace.resolve(
 			joinRel(ctx.pluginCacheDir, 'pricing.json'),
 		);
@@ -196,6 +220,14 @@ export default definePlugin({
 			// incident stream, not just stderr.
 			logs: ctx.logs,
 		});
+		const sessionSurfaceBytes = new SessionSurfaceBytesService(
+			sessionSurfaceBytesPath,
+			{
+				maxBatch,
+				maxDelayMs,
+				logs: ctx.logs,
+			},
+		);
 		const clock = new StartClock();
 		const corePrefix = deriveCorePrefix(ctx.namespacePrefix);
 		// Boot-scoped identity: the host declared its client once at
@@ -237,7 +269,7 @@ export default definePlugin({
 
 		// Prime the summary once at boot so `limitsStatus` (S7) is available
 		// to the orchestrator's spend guard well before the first 5-min tick.
-		void regenerateSummary(
+		void regenerateUsageSummary(
 			invocationsPath,
 			summaryPath,
 			windowDays,
@@ -264,7 +296,7 @@ export default definePlugin({
 		// was added here since no test in this repo currently re-registers
 		// the plugin without a fresh process.
 		const summaryTimer = setInterval(() => {
-			void regenerateSummary(
+			void regenerateUsageSummary(
 				invocationsPath,
 				summaryPath,
 				windowDays,
@@ -311,19 +343,40 @@ export default definePlugin({
 			},
 		});
 
+		const tools = buildUsageTrackingToolRegistrations({
+			namespacePrefix: ctx.namespacePrefix,
+			invocationsPath,
+			summaryPath,
+			hostLifecyclePath,
+			sessionHygiene,
+			onServer: (server) => {
+				notificationServer = server;
+			},
+		}).map((reg) =>
+			reg.id === 'usage_clear' ? withBufferWipeBarrier(reg) : reg,
+		);
+		const firstTool = tools[0];
+		const instrumentedTools =
+			firstTool === undefined
+				? tools
+				: tools.map((reg) =>
+						reg.id !== firstTool.id
+							? reg
+							: {
+									...reg,
+									register: async (server: McpServer) => {
+										installSessionSurfaceBytesObserver({
+											server,
+											service: sessionSurfaceBytes,
+											defaultSessionId: bootSessionId,
+										});
+										await reg.register(server);
+									},
+								},
+					);
+
 		return {
-			tools: buildUsageTrackingToolRegistrations({
-				namespacePrefix: ctx.namespacePrefix,
-				invocationsPath,
-				summaryPath,
-				hostLifecyclePath,
-				sessionHygiene,
-				onServer: (server) => {
-					notificationServer = server;
-				},
-			}).map((reg) =>
-				reg.id === 'usage_clear' ? withBufferWipeBarrier(reg) : reg,
-			),
+			tools: instrumentedTools,
 			// Hot-path hooks. `onToolStart` stamps a start time; `onToolCall`
 			// builds the metadata record and enqueues it (non-blocking).
 			onToolStart: (toolName) => {
@@ -333,12 +386,16 @@ export default definePlugin({
 				const endedAt = Date.now();
 				const startedAt = clock.take(toolName);
 				const peerPrefixes = ctx.peerPlugins?.list() ?? [];
-				const sessionId = resolveSessionId(args, bootSessionId);
-				const record = buildRecord({
+				const sessionId = resolveInvocationSessionId(
+					args,
+					bootSessionId,
+				);
+				const record = buildInvocationRecord({
 					toolName,
 					corePrefix,
 					peerPrefixes,
 					agent,
+					host: ctx.hostIdentity?.host,
 					sessionId,
 					args,
 					result,
@@ -347,6 +404,7 @@ export default definePlugin({
 					endedAt,
 					responseBytes: estimateResultBytes(result ?? {}),
 					fallbackModel: lastModelBySession.get(sessionId),
+					baselineTokensOf,
 					costOf,
 				});
 				if (record.model !== null && record.usage !== null) {
@@ -390,10 +448,14 @@ export default definePlugin({
 						'  metadata only — no message content, secrets redacted).',
 						'- `usage_report {groupBy, windowDays, filter, sortBy, limit}`',
 						'  groups spend and attributable savings by provider / plugin /',
-						'  agent / extension / model and lists the top-10 expensive calls.',
+						'  agent / extension / model and tracks request type / outcome /',
+						'  iteration / latency telemetry in the persisted summary.',
 						'- Saving tools stamp `tokensSaved` on the same append-only row;',
 						'  model attribution reuses only the last model observed in that',
 						'  session, while older/unattributed rows safely count as zero.',
+						'- `tokenBaselines` compares configured per-tool/plugin baselines',
+						'  with provider-reported usage locally; no extra LLM request is made.',
+						'  Missing usage or baseline is marked unavailable, never guessed.',
 						'- `usage_clear {confirm:true}` wipes the log + summary.',
 						'- The 5-min rollup lives in',
 						`  \`${joinRel(ctx.pluginCacheDir, 'usage-summary.json')}\`.`,

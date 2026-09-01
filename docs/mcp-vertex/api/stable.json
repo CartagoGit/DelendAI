@@ -2,89 +2,1366 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-07-30T11:07:02.766Z"
+		"generatedAt": "2026-08-31T21:57:15.145Z"
 	},
 	"tools": [
 		{
 			"name": "agent_lock",
 			"plugin": "proposals",
-			"sinceVersion": "1",
+			"sinceVersion": "0.1.1",
 			"semverGuarantee": "additive-only",
 			"summary": "Claim file ownership for an agent (cross-process lock).",
-			"inputSchema": null,
-			"outputSchema": null
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string",
+						"enum": [
+							"claim",
+							"heartbeat",
+							"release",
+							"status",
+							"gc"
+						]
+					},
+					"task_id": {
+						"type": "string"
+					},
+					"agent": {
+						"type": "string"
+					},
+					"files": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"parent_task_id": {
+						"type": "string"
+					},
+					"onContention": {
+						"type": "string",
+						"enum": ["steal", "fail"]
+					},
+					"host": {
+						"type": "string"
+					},
+					"model": {
+						"type": "string"
+					}
+				},
+				"required": ["action"],
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"tool": {
+						"type": "string"
+					},
+					"action": {
+						"type": "string",
+						"enum": [
+							"claim",
+							"heartbeat",
+							"release",
+							"status",
+							"gc"
+						]
+					},
+					"path": {
+						"type": "string"
+					},
+					"lock_path": {
+						"type": "string"
+					},
+					"task_id": {
+						"type": "string"
+					},
+					"agent": {
+						"type": "string"
+					},
+					"error": {},
+					"blockerType": {
+						"type": "string"
+					},
+					"nextAction": {
+						"type": "string"
+					},
+					"summary": {
+						"type": "string"
+					},
+					"refreshed": {
+						"type": "boolean"
+					},
+					"ownership_count": {
+						"type": "number"
+					},
+					"cross_process_release": {
+						"type": "boolean"
+					},
+					"original_pid": {
+						"type": "number"
+					},
+					"blocked": {
+						"type": "boolean"
+					},
+					"blocked_reason": {
+						"type": "string"
+					},
+					"conflicting_task": {
+						"type": "string"
+					},
+					"conflicting_agent": {
+						"type": "string"
+					},
+					"overlapping_files": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"claimed": {
+						"type": "boolean"
+					},
+					"removed": {
+						"type": "number"
+					},
+					"exists": {
+						"type": "boolean"
+					},
+					"active_write_lanes": {
+						"type": "number"
+					},
+					"dropped": {
+						"type": "number"
+					},
+					"version": {
+						"type": "number"
+					},
+					"stale_after_minutes": {
+						"type": "number"
+					},
+					"in_flight": {},
+					"ok": {
+						"type": "boolean"
+					},
+					"session": {},
+					"identity": {}
+				},
+				"required": ["ok"],
+				"additionalProperties": false
+			}
 		},
 		{
 			"name": "agent_worktree",
 			"plugin": "proposals",
-			"sinceVersion": "1",
+			"sinceVersion": "0.1.1",
 			"semverGuarantee": "additive-only",
 			"summary": "Create or manage per-agent git worktrees.",
-			"inputSchema": null,
-			"outputSchema": null
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string",
+						"enum": ["create", "list", "remove"]
+					},
+					"agent": {
+						"type": "string"
+					},
+					"base_branch": {
+						"type": "string"
+					},
+					"force": {
+						"type": "boolean"
+					},
+					"host": {
+						"type": "string",
+						"enum": [
+							"vscode-copilot",
+							"claude-code",
+							"codex-cli",
+							"cursor",
+							"aider",
+							"continue",
+							"unknown"
+						]
+					},
+					"model": {
+						"type": "string"
+					},
+					"task_id": {
+						"type": "string"
+					}
+				},
+				"required": ["action"],
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"ok": {
+						"type": "boolean"
+					},
+					"action": {
+						"type": "string",
+						"enum": ["create", "list", "remove"]
+					},
+					"reason": {
+						"type": "string"
+					},
+					"path": {
+						"type": "string"
+					},
+					"branch": {
+						"type": "string"
+					},
+					"created": {
+						"type": "boolean"
+					},
+					"removed": {
+						"type": "boolean"
+					},
+					"strandedPurge": {
+						"type": "object",
+						"properties": {
+							"dryRun": {
+								"type": "boolean"
+							},
+							"candidates": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"branch": {
+											"type": "string"
+										},
+										"ahead": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 9007199254740991
+										},
+										"behind": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 9007199254740991
+										},
+										"lastCommitIso": {
+											"type": "string"
+										},
+										"worktreePath": {
+											"anyOf": [
+												{
+													"type": "string"
+												},
+												{
+													"type": "null"
+												}
+											]
+										}
+									},
+									"required": [
+										"branch",
+										"ahead",
+										"behind",
+										"lastCommitIso",
+										"worktreePath"
+									],
+									"additionalProperties": false
+								}
+							},
+							"deleted": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"skipped": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"branch": {
+											"type": "string"
+										},
+										"reason": {
+											"type": "string"
+										}
+									},
+									"required": ["branch", "reason"],
+									"additionalProperties": false
+								}
+							}
+						},
+						"required": [
+							"dryRun",
+							"candidates",
+							"deleted",
+							"skipped"
+						],
+						"additionalProperties": false
+					},
+					"worktrees": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"path": {
+									"type": "string"
+								},
+								"head": {
+									"type": "string"
+								},
+								"branch": {
+									"type": "string"
+								},
+								"detached": {
+									"type": "boolean"
+								},
+								"locked": {
+									"type": "boolean"
+								}
+							},
+							"required": ["path", "head", "detached", "locked"],
+							"additionalProperties": false
+						}
+					}
+				},
+				"required": ["ok", "action"],
+				"additionalProperties": false
+			}
 		},
 		{
 			"name": "auto_work",
 			"plugin": "proposals",
-			"sinceVersion": "1",
+			"sinceVersion": "0.1.1",
 			"semverGuarantee": "additive-only",
 			"summary": "Resolve the next proposal slice and return an action plan.",
-			"inputSchema": null,
-			"outputSchema": null
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"persist": {
+						"type": "string",
+						"enum": ["none", "commit", "commit-and-push"]
+					},
+					"includePaused": {
+						"type": "boolean"
+					},
+					"forceHygieneBypass": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"state": {
+						"type": "string",
+						"enum": ["idle", "work"]
+					},
+					"idleStreak": {
+						"type": "integer",
+						"exclusiveMinimum": 0,
+						"maximum": 9007199254740991
+					},
+					"reason": {
+						"type": "string"
+					},
+					"stop": {
+						"type": "boolean",
+						"const": true
+					},
+					"handoffPath": {
+						"type": "string"
+					},
+					"nextAction": {
+						"type": "string"
+					},
+					"proposalId": {
+						"type": "string"
+					},
+					"file": {
+						"type": "string"
+					},
+					"pickedFromPaused": {
+						"type": "boolean",
+						"const": true
+					},
+					"orchestration": {},
+					"validationCommand": {
+						"type": "string"
+					},
+					"persist": {},
+					"claimReady": {},
+					"action": {
+						"type": "string",
+						"enum": ["close"]
+					},
+					"steps": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"branchStatusWarnings": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"executionMode": {
+						"type": "string",
+						"enum": ["normal", "confirm-required", "blocked"]
+					},
+					"hygieneBlockers": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"hygieneActions": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"hygieneWarnings": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"stashes": {},
+					"rescueCandidates": {},
+					"smokeResiduals": {},
+					"ok": {
+						"type": "boolean"
+					},
+					"blockers": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"required": ["state"],
+				"additionalProperties": false
+			}
 		},
 		{
 			"name": "proposal_create",
 			"plugin": "proposals",
-			"sinceVersion": "1",
+			"sinceVersion": "0.1.1",
 			"semverGuarantee": "additive-only",
 			"summary": "Create a new proposal document with frontmatter + slices.",
-			"inputSchema": null,
-			"outputSchema": null
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"kind": {
+						"type": "string",
+						"enum": [
+							"feat",
+							"breaking",
+							"fix",
+							"refactor",
+							"perf",
+							"audit",
+							"chore",
+							"docs",
+							"test",
+							"infra",
+							"spike",
+							"legacy",
+							"resume"
+						]
+					},
+					"title": {
+						"type": "string"
+					},
+					"goal": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"pending",
+							"ready",
+							"in_progress",
+							"in-progress"
+						]
+					},
+					"track": {
+						"type": "string"
+					},
+					"why": {
+						"type": "string"
+					},
+					"nonGoals": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"globalGate": {
+						"type": "string",
+						"enum": ["lint", "type", "e2e", "none"]
+					},
+					"slices": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"sliceId": {
+									"type": "string"
+								},
+								"title": {
+									"type": "string"
+								},
+								"files": {
+									"type": "array",
+									"items": {
+										"type": "string"
+									}
+								},
+								"gate": {
+									"type": "string",
+									"enum": ["lint", "type", "e2e", "none"]
+								},
+								"dependsOn": {
+									"type": "array",
+									"items": {
+										"type": "string"
+									}
+								},
+								"acceptance": {
+									"type": "array",
+									"items": {
+										"type": "string"
+									}
+								}
+							},
+							"required": ["sliceId", "files"],
+							"additionalProperties": false
+						}
+					}
+				},
+				"required": ["title"],
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"ok": {
+						"type": "boolean",
+						"const": true
+					},
+					"file": {
+						"type": "string"
+					},
+					"path": {
+						"type": "string"
+					},
+					"disjointnessIssues": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"first": {
+									"type": "string"
+								},
+								"second": {
+									"type": "string"
+								},
+								"file": {
+									"type": "string"
+								}
+							},
+							"required": ["first", "second", "file"],
+							"additionalProperties": false
+						}
+					},
+					"indexCount": {
+						"type": "number"
+					},
+					"redactedSecrets": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					}
+				},
+				"required": [
+					"ok",
+					"file",
+					"path",
+					"disjointnessIssues",
+					"indexCount"
+				],
+				"additionalProperties": false
+			}
 		},
 		{
 			"name": "proposal_force_transition",
 			"plugin": "proposals",
-			"sinceVersion": "1",
+			"sinceVersion": "0.1.1",
 			"semverGuarantee": "additive-only",
 			"summary": "Recovery-path transition (skips peer-review lock).",
-			"inputSchema": null,
-			"outputSchema": null
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"minLength": 1
+					},
+					"to": {
+						"type": "string",
+						"minLength": 1
+					},
+					"reason": {
+						"type": "string",
+						"minLength": 1
+					},
+					"overrideLockOwner": {
+						"type": "string"
+					},
+					"taskId": {
+						"type": "string"
+					},
+					"skipPeerReview": {
+						"type": "boolean"
+					}
+				},
+				"required": ["id", "to", "reason"],
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"ok": {
+						"type": "boolean"
+					},
+					"id": {
+						"type": "string"
+					},
+					"from": {
+						"type": "string"
+					},
+					"to": {
+						"type": "string"
+					},
+					"reason": {
+						"type": "string"
+					},
+					"lockReleased": {
+						"type": "boolean"
+					},
+					"movedTo": {
+						"type": "string"
+					},
+					"warning": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"ok",
+					"id",
+					"from",
+					"to",
+					"reason",
+					"lockReleased",
+					"movedTo"
+				],
+				"additionalProperties": false
+			}
 		},
 		{
 			"name": "proposal_review",
 			"plugin": "proposals",
-			"sinceVersion": "1",
+			"sinceVersion": "0.1.1",
 			"semverGuarantee": "additive-only",
 			"summary": "Submit/approve/request-changes on a proposal in review.",
-			"inputSchema": null,
-			"outputSchema": null
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"proposalId": {
+						"type": "string"
+					},
+					"sliceId": {
+						"type": "string"
+					},
+					"action": {
+						"type": "string",
+						"enum": [
+							"submit",
+							"approve",
+							"request_changes",
+							"status"
+						]
+					},
+					"agent": {
+						"type": "string",
+						"minLength": 1
+					},
+					"note": {
+						"type": "string"
+					},
+					"evidence": {
+						"type": "object",
+						"properties": {
+							"commitHash": {
+								"type": "string",
+								"pattern": "^[0-9a-f]{7,40}$"
+							},
+							"validateExitCode": {
+								"type": "integer",
+								"minimum": -9007199254740991,
+								"maximum": 9007199254740991
+							},
+							"testsPassing": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 9007199254740991
+							},
+							"testsTotal": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 9007199254740991
+							}
+						},
+						"required": [
+							"commitHash",
+							"validateExitCode",
+							"testsPassing",
+							"testsTotal"
+						],
+						"additionalProperties": false
+					}
+				},
+				"required": ["proposalId", "sliceId", "action", "agent"],
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"ok": {
+						"type": "boolean",
+						"const": true
+					},
+					"proposalId": {
+						"type": "string"
+					},
+					"sliceId": {
+						"type": "string"
+					},
+					"action": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"none",
+							"in_review",
+							"changes_requested",
+							"done"
+						]
+					},
+					"implementer": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"reviewer": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"rounds": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"verdict": {
+									"type": "string",
+									"enum": ["requested_changes", "approved"]
+								},
+								"agent": {
+									"type": "string"
+								},
+								"note": {
+									"type": "string"
+								}
+							},
+							"required": ["verdict", "agent", "note"],
+							"additionalProperties": false
+						}
+					},
+					"lockReleased": {
+						"type": "boolean"
+					},
+					"assignmentReleased": {
+						"type": "boolean"
+					},
+					"redactedSecrets": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					}
+				},
+				"required": [
+					"ok",
+					"proposalId",
+					"sliceId",
+					"action",
+					"status",
+					"implementer",
+					"reviewer",
+					"rounds",
+					"lockReleased",
+					"assignmentReleased",
+					"redactedSecrets"
+				],
+				"additionalProperties": false
+			}
 		},
 		{
 			"name": "proposal_transition",
 			"plugin": "proposals",
-			"sinceVersion": "1",
+			"sinceVersion": "0.1.1",
 			"semverGuarantee": "additive-only",
 			"summary": "Move a proposal to a new status against the DFA.",
-			"inputSchema": null,
-			"outputSchema": null
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"minLength": 1
+					},
+					"to": {
+						"type": "string",
+						"enum": [
+							"ready",
+							"in-progress",
+							"review",
+							"done",
+							"paused",
+							"blocked",
+							"retired"
+						]
+					},
+					"reason": {
+						"type": "string",
+						"minLength": 1
+					},
+					"transitionId": {
+						"type": "string",
+						"minLength": 1
+					},
+					"correlationId": {
+						"type": "string",
+						"minLength": 1
+					},
+					"idempotencyKey": {
+						"type": "string",
+						"minLength": 1
+					},
+					"agent": {
+						"type": "string"
+					},
+					"force": {
+						"type": "boolean"
+					},
+					"skipDfaForPlanClosure": {
+						"type": "boolean"
+					},
+					"validateEvidence": {
+						"type": "object",
+						"properties": {
+							"timestamp": {
+								"type": "string",
+								"minLength": 1
+							},
+							"exitCode": {
+								"type": "integer",
+								"minimum": -9007199254740991,
+								"maximum": 9007199254740991
+							},
+							"logPath": {
+								"type": "string",
+								"minLength": 1
+							}
+						},
+						"required": ["timestamp", "exitCode"],
+						"additionalProperties": false
+					}
+				},
+				"required": ["id", "to", "reason"],
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"ok": {
+						"type": "boolean"
+					},
+					"error": {
+						"type": "object",
+						"properties": {
+							"reason": {
+								"type": "string"
+							},
+							"nextAction": {
+								"type": "string"
+							},
+							"code": {
+								"type": "string"
+							},
+							"blockerType": {
+								"type": "string"
+							},
+							"nextHops": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							}
+						},
+						"required": ["reason"],
+						"additionalProperties": false
+					},
+					"id": {
+						"type": "string"
+					},
+					"from": {
+						"type": "string"
+					},
+					"to": {
+						"type": "string"
+					},
+					"reason": {
+						"type": "string"
+					},
+					"transitionId": {
+						"type": "string"
+					},
+					"correlationId": {
+						"type": "string"
+					},
+					"idempotencyKey": {
+						"type": "string"
+					},
+					"idempotentReplay": {
+						"type": "boolean"
+					},
+					"movedFrom": {
+						"type": "string"
+					},
+					"movedTo": {
+						"type": "string"
+					},
+					"warning": {
+						"type": "string"
+					},
+					"indexSynced": {
+						"type": "boolean"
+					},
+					"filesRewritten": {
+						"type": "number"
+					}
+				},
+				"required": ["ok"],
+				"additionalProperties": false
+			}
+		},
+		{
+			"name": "proposals_close_plan",
+			"plugin": "proposals",
+			"sinceVersion": "0.1.1",
+			"semverGuarantee": "additive-only",
+			"summary": "Close a plan proposal after checking every blocker.",
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"planId": {
+						"type": "string",
+						"minLength": 1
+					},
+					"proposalId": {
+						"type": "string",
+						"minLength": 1
+					},
+					"dryRun": {
+						"type": "boolean"
+					},
+					"reason": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"dryRun": {
+						"type": "boolean"
+					},
+					"wouldChange": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"kind": {
+									"type": "string",
+									"enum": [
+										"write",
+										"delete",
+										"rename",
+										"create",
+										"patch"
+									]
+								},
+								"path": {
+									"type": "string"
+								},
+								"summary": {
+									"type": "string"
+								}
+							},
+							"required": ["kind", "path", "summary"],
+							"additionalProperties": false
+						}
+					},
+					"wouldRun": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"shape": {
+									"type": "string",
+									"enum": [
+										"shell",
+										"network",
+										"process",
+										"git",
+										"mcp"
+									]
+								},
+								"target": {
+									"type": "string"
+								},
+								"summary": {
+									"type": "string"
+								}
+							},
+							"required": ["shape", "target", "summary"],
+							"additionalProperties": false
+						}
+					},
+					"risk": {
+						"type": "string",
+						"enum": ["low", "medium", "high"]
+					},
+					"note": {
+						"type": "string"
+					},
+					"ok": {
+						"type": "boolean"
+					},
+					"planId": {
+						"type": "string"
+					},
+					"closable": {
+						"type": "boolean"
+					},
+					"blockers": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"ref": {
+									"type": "string"
+								},
+								"kind": {
+									"type": "string",
+									"enum": ["proposal", "plan", "slice"]
+								},
+								"code": {
+									"type": "string",
+									"enum": [
+										"not-done",
+										"not-peer-reviewed",
+										"self-cycle",
+										"unknown-ref"
+									]
+								},
+								"message": {
+									"type": "string"
+								}
+							},
+							"required": ["ref", "kind", "code", "message"],
+							"additionalProperties": false
+						}
+					},
+					"preview": {
+						"type": "object",
+						"properties": {
+							"from": {
+								"type": "string"
+							},
+							"to": {
+								"type": "string"
+							},
+							"movedFrom": {
+								"type": "string"
+							},
+							"movedTo": {
+								"type": "string"
+							}
+						},
+						"required": ["from", "to"],
+						"additionalProperties": false
+					},
+					"error": {
+						"type": "object",
+						"properties": {
+							"reason": {
+								"type": "string"
+							},
+							"nextAction": {
+								"type": "string"
+							}
+						},
+						"required": ["reason"],
+						"additionalProperties": false
+					}
+				},
+				"required": ["dryRun"],
+				"additionalProperties": false
+			}
 		},
 		{
 			"name": "state_repair",
 			"plugin": "proposals",
-			"sinceVersion": "1",
+			"sinceVersion": "0.1.1",
 			"semverGuarantee": "additive-only",
 			"summary": "Auto-heal stale locks, queue backpressure, orphan assignments.",
-			"inputSchema": null,
-			"outputSchema": null
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["dry-run", "execute"]
+					}
+				},
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["dry-run", "execute"]
+					},
+					"diagnosis": {},
+					"wouldRepair": {},
+					"repaired": {},
+					"nextAction": {
+						"type": "string"
+					}
+				},
+				"required": ["mode", "diagnosis"],
+				"additionalProperties": {}
+			}
 		},
 		{
 			"name": "task_queue_enqueue",
 			"plugin": "proposals",
-			"sinceVersion": "1",
+			"sinceVersion": "0.1.1",
 			"semverGuarantee": "additive-only",
 			"summary": "Push a task onto the persistent swarm queue.",
-			"inputSchema": null,
-			"outputSchema": null
+			"inputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string",
+						"enum": [
+							"enqueue",
+							"dequeue",
+							"subscribe",
+							"report",
+							"release-session"
+						]
+					},
+					"params": {
+						"default": {},
+						"type": "object",
+						"propertyNames": {
+							"type": "string"
+						},
+						"additionalProperties": {}
+					}
+				},
+				"required": ["action", "params"],
+				"additionalProperties": false
+			},
+			"outputSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"error": {
+						"type": "string"
+					},
+					"taskId": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string"
+					},
+					"queueLength": {
+						"type": "number"
+					},
+					"position": {
+						"type": "number"
+					},
+					"consumedAt": {
+						"type": "string"
+					},
+					"digest": {
+						"type": "object",
+						"properties": {
+							"digests": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"taskId": {
+											"type": "string"
+										},
+										"closedAt": {
+											"type": "string"
+										},
+										"diffSummary": {
+											"type": "string"
+										}
+									},
+									"required": ["taskId", "closedAt"],
+									"additionalProperties": false
+								}
+							}
+						},
+						"required": ["digests"],
+						"additionalProperties": false
+					},
+					"digests": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"taskId": {
+									"type": "string"
+								},
+								"closedAt": {
+									"type": "string"
+								},
+								"diffSummary": {
+									"type": "string"
+								}
+							},
+							"required": ["taskId", "closedAt"],
+							"additionalProperties": false
+						}
+					},
+					"pendingTargets": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"subscriberId": {
+						"type": "string"
+					},
+					"subscriptionId": {
+						"type": "string"
+					},
+					"leaseUntil": {
+						"type": "string"
+					},
+					"renewed": {
+						"type": "boolean"
+					},
+					"blocked": {
+						"type": "boolean"
+					},
+					"blockerType": {
+						"type": "string"
+					},
+					"nextAction": {
+						"type": "string"
+					},
+					"queuedCount": {
+						"type": "number"
+					},
+					"promotedCount": {
+						"type": "number"
+					},
+					"consumedCount": {
+						"type": "number"
+					},
+					"cancelledCount": {
+						"type": "number"
+					},
+					"expiredCount": {
+						"type": "number"
+					},
+					"waiterOrphans": {
+						"type": "number"
+					},
+					"oldestAgeMinutes": {
+						"type": "number"
+					},
+					"releaseSignalBacklog": {
+						"type": "number"
+					},
+					"threshold": {
+						"type": "string"
+					},
+					"recommendation": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false
+			}
 		}
 	]
 }

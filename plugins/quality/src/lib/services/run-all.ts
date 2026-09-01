@@ -6,6 +6,7 @@ import type {
 	IToolRegistration,
 } from '@mcp-vertex/core/public';
 import {
+	compactOutputSchema,
 	toolError,
 	toolJson,
 	withIncidentLogging,
@@ -123,20 +124,7 @@ export const buildRunAllToolRegistration = (
 				description:
 					'Run every configured quality scope (lint/test/build/typecheck/…) in turn and return one aggregated report: per-scope {scope, ok, duration, errors[]} plus a global summary.ok. Use this instead of calling run_quality once per scope. This DOES execute the project’s commands.',
 				inputSchema: z.object({}),
-				outputSchema: z.object({
-					results: z.array(
-						z.object({
-							scope: z.string(),
-							ok: z.boolean(),
-							duration: z.number(),
-							errors: z.array(z.string()),
-						}),
-					),
-					summary: z.object({
-						ok: z.boolean(),
-						scopes: z.number(),
-					}),
-				}),
+				outputSchema: compactOutputSchema(),
 			},
 			withIncidentLogging(
 				{ incidentType: 'quality-failure' },

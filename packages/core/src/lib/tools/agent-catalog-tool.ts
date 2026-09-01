@@ -1,8 +1,8 @@
 import z from 'zod';
 
-import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import { toolOk } from '../shared/tool-response';
+import { toolJsonWithSummary } from '../shared/tool-response';
+import { compactOutputSchema } from '../surface/compact-output-schema.helper';
 import { buildCatalog } from '../catalog/agent-discovery-catalog';
 import type {
 	CatalogSection,
@@ -21,111 +21,6 @@ export interface ICatalogToolOptions {
 }
 
 const sectionEnum = z.enum(['tools', 'skills', 'proposals']);
-const proposalStatusEnum = z.enum([
-	'ready',
-	'in-progress',
-	'review',
-	'paused',
-	'done',
-	'blocked',
-	'retired',
-	'unspecified',
-]);
-const proposalKindEnum = z.enum([
-	'feat',
-	'fix',
-	'refactor',
-	'chore',
-	'docs',
-	'plan',
-	'audit',
-	'unspecified',
-]);
-
-const toolSummarySchema = z.object({
-	name: z.string(),
-	plugin: z.string().optional(),
-	summary: z.string().optional(),
-	tags: z.array(z.string()).optional(),
-	effects: z
-		.array(z.enum(['write', 'spawn', 'network', 'destructive']))
-		.optional(),
-});
-
-// version / minCoreVersion / summary / appliesTo / bodyPath are optional
-// because the default compact orientation call returns a lean {id, tags}
-// projection; section:"skills" or a query returns the full entries.
-const skillSummarySchema = z.object({
-	id: z.string(),
-	version: z.string().optional(),
-	minCoreVersion: z.string().optional(),
-	summary: z.string().optional(),
-	appliesTo: z.array(z.string()).optional(),
-	tags: z.array(z.string()),
-	bodyPath: z.string().optional(),
-});
-
-const proposalSummarySchema = z.object({
-	id: z.string(),
-	title: z.string(),
-	track: z.string(),
-	status: proposalStatusEnum,
-	kind: proposalKindEnum,
-	date: z.string().optional(),
-});
-
-// f00067a S2: lean projection of the config file's root `providers`
-// roster. Mirrors IProviderSummary — `reachable` here is the boot-time
-// conservative value; live availability is the orchestrator-runner's
-// `healthcheck_providers` tool.
-const providerSummarySchema = z.object({
-	id: z.string(),
-	kind: z.enum(['api', 'subscription', 'cli', 'mcp-server']),
-	modelId: z.string(),
-	// Literal union (not `.int().min(1).max(5)`) so the generated SDK type
-	// stays assignable to the contract's `CostTier` (1|2|3|4|5).
-	costTier: z.union([
-		z.literal(1),
-		z.literal(2),
-		z.literal(3),
-		z.literal(4),
-		z.literal(5),
-	]),
-	reachable: z.boolean(),
-	strengths: z.array(z.enum(CAPABILITY_TAGS)),
-});
-
-const snapshotSchema = z.object({
-	ok: z.boolean().optional(),
-	matches: z.number().int().nonnegative().optional(),
-	server: z.object({
-		name: z.string(),
-		version: z.string(),
-		namespacePrefix: z.string(),
-	}),
-	generatedAt: z.string(),
-	mode: z.enum(['compact', 'full']),
-	counts: z.object({
-		tools: z.number().int().nonnegative(),
-		skills: z.number().int().nonnegative(),
-		proposals: z.number().int().nonnegative(),
-	}),
-	proposalStatusCounts: z.object({
-		ready: z.number().int().nonnegative(),
-		'in-progress': z.number().int().nonnegative(),
-		review: z.number().int().nonnegative(),
-		paused: z.number().int().nonnegative(),
-		done: z.number().int().nonnegative(),
-		blocked: z.number().int().nonnegative(),
-		retired: z.number().int().nonnegative(),
-		unspecified: z.number().int().nonnegative(),
-	}),
-	tools: z.array(toolSummarySchema),
-	skills: z.array(skillSummarySchema),
-	proposals: z.array(proposalSummarySchema),
-	// Present only when the workspace configures a provider roster.
-	providers: z.array(providerSummarySchema).optional(),
-});
 
 const lowerIncludes = (haystack: string | undefined, needle: string): boolean =>
 	haystack?.toLocaleLowerCase().includes(needle) ?? false;
@@ -166,6 +61,14 @@ const applySection = (
 		proposals: section === 'proposals' ? snapshot.proposals : [],
 	};
 };
+
+const buildCatalogSummary = (args: {
+	readonly toolCount: number;
+	readonly skillCount: number;
+	readonly proposalCount: number;
+	readonly matches?: number;
+}): string =>
+	`${args.toolCount} tools, ${args.skillCount} skills, ${args.proposalCount} proposals${args.matches !== undefined ? `, ${args.matches} matches` : ''}`;
 
 const countMatches = (snapshot: ICatalogSnapshot): number =>
 	snapshot.tools.length + snapshot.skills.length + snapshot.proposals.length;
@@ -234,7 +137,12 @@ export const buildAgentCatalogToolRegistration = (
 					section: sectionEnum.optional(),
 					query: z.string().optional(),
 				}),
-				outputSchema: snapshotSchema,
+				// v00129 S1 (AUD-B01): the full nested catalog snapshot
+				// schema cost ~3.5 KB per tools/list entry for a shape the
+				// model needs only after calling — and this tool is in the
+				// bootstrap set every preset always sends. See
+				// compact-output-schema.ts.
+				outputSchema: compactOutputSchema(),
 			},
 			async (args: {
 				mode?: 'compact' | 'full' | undefined;
@@ -256,10 +164,20 @@ export const buildAgentCatalogToolRegistration = (
 				const payload: TCatalogPayload = isDefaultOrientation
 					? applyOrientationProjection(snapshot)
 					: snapshot;
-				return toolOk({
+				const structured = {
+					ok: true,
 					...(matches !== undefined ? { matches } : {}),
 					...payload,
-				});
+				};
+				return toolJsonWithSummary(
+					structured,
+					buildCatalogSummary({
+						toolCount: payload.tools.length,
+						skillCount: payload.skills.length,
+						proposalCount: payload.proposals.length,
+						...(matches !== undefined ? { matches } : {}),
+					}),
+				);
 			},
 		);
 	},

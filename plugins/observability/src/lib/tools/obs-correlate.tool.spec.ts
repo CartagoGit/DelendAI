@@ -6,26 +6,7 @@ import type {
 } from '../correlate';
 import type { IObsIssue } from '../errors/ierror-source';
 import { buildObsCorrelateToolRegistration } from './obs-correlate.tool';
-
-class FakeServer {
-	tools: Record<string, { handler: (args: unknown) => Promise<unknown> }> =
-		{};
-
-	registerTool(
-		name: string,
-		_meta: unknown,
-		handler: (args: unknown) => Promise<unknown>,
-	) {
-		this.tools[name] = { handler };
-	}
-}
-
-const parseOk = (value: unknown): Record<string, unknown> => {
-	const text =
-		(value as { content: Array<{ text: string }> }).content[0]?.text ??
-		'{}';
-	return JSON.parse(text) as Record<string, unknown>;
-};
+import { FakeServer, parseOk } from '../testing/tool-spec-server.helper';
 
 const issues: readonly IObsIssue[] = [
 	{
@@ -62,7 +43,7 @@ const build = () => {
 		now: () => new Date('2026-07-25T12:00:00.000Z'),
 	});
 	const server = new FakeServer();
-	void registration.register(server as never);
+	void registration.register(server.asServer);
 	return server.tools;
 };
 

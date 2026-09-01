@@ -25,7 +25,9 @@
 		"types": ["bun", "node"],
 		"paths": {
 			"@mcp-vertex/core": ["./packages/core/src/index.ts"],
+			"@mcp-vertex/core/version": ["./packages/core/src/version.ts"],
 			"@mcp-vertex/core/public": ["./packages/core/src/public/index.ts"],
+			"@mcp-vertex/core/cli": ["./packages/core/src/cli.ts"],
 			"@mcp-vertex/core/*": ["./packages/core/src/*"],
 			"@mcp-vertex/client": ["./packages/client/src/index.ts"],
 			"@mcp-vertex/client/public": [
@@ -34,6 +36,11 @@
 			"@mcp-vertex/client/*": ["./packages/client/src/*"],
 			"@mcp-vertex/cli": ["./packages/cli/src/index.ts"],
 			"@mcp-vertex/cli/*": ["./packages/cli/src/*"],
+			"@mcp-vertex/test-kit": ["./packages/test-kit/src/index.ts"],
+			"@mcp-vertex/test-kit/public": [
+				"./packages/test-kit/src/public/index.ts"
+			],
+			"@mcp-vertex/test-kit/*": ["./packages/test-kit/src/*"],
 			"@mcp-vertex/ui-extension": [
 				"./packages/ui-extension/src/index.ts"
 			],
@@ -48,6 +55,8 @@
 				"./packages/ui-extension/src/public/index.ts"
 			],
 			"@mcp-vertex/ide/*": ["./packages/ui-extension/src/*"],
+			"@mcp-vertex/contracts": ["./packages/contracts/src/index.ts"],
+			"@mcp-vertex/contracts/*": ["./packages/contracts/src/*"],
 			"@mcp-vertex/proposals": ["./plugins/proposals/src/index.ts"],
 			"@mcp-vertex/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"
@@ -72,6 +81,15 @@
 			"@mcp-vertex/forge": ["./plugins/forge/src/index.ts"],
 			"@mcp-vertex/forge/public": ["./plugins/forge/src/public/index.ts"],
 			"@mcp-vertex/forge/*": ["./plugins/forge/src/*"],
+			"@mcp-vertex/remote-provider-core": [
+				"./plugins/remote-provider-core/src/index.ts"
+			],
+			"@mcp-vertex/remote-provider-core/public": [
+				"./plugins/remote-provider-core/src/index.ts"
+			],
+			"@mcp-vertex/remote-provider-core/*": [
+				"./plugins/remote-provider-core/src/*"
+			],
 			"@mcp-vertex/quality": ["./plugins/quality/src/index.ts"],
 			"@mcp-vertex/quality/public": [
 				"./plugins/quality/src/public/index.ts"
@@ -163,9 +181,39 @@
 			"@mcp-vertex/test-convention/*": [
 				"./plugins/test-convention/src/*"
 			],
+			"@mcp-vertex/test-policy": ["./plugins/test-policy/src/index.ts"],
+			"@mcp-vertex/test-policy/public": [
+				"./plugins/test-policy/src/public/index.ts"
+			],
+			"@mcp-vertex/test-policy/*": ["./plugins/test-policy/src/*"],
+			"@mcp-vertex/usage-tracking": [
+				"./plugins/usage-tracking/src/index.ts"
+			],
+			"@mcp-vertex/usage-tracking/public": [
+				"./plugins/usage-tracking/src/public/index.ts"
+			],
+			"@mcp-vertex/usage-tracking/*": ["./plugins/usage-tracking/src/*"],
+			"@mcp-vertex/orchestrator-runner": [
+				"./plugins/orchestrator-runner/src/index.ts"
+			],
+			"@mcp-vertex/orchestrator-runner/public": [
+				"./plugins/orchestrator-runner/src/public/index.ts"
+			],
+			"@mcp-vertex/orchestrator-runner/*": [
+				"./plugins/orchestrator-runner/src/*"
+			],
 			"@mcp-vertex/audit": ["./plugins/audit/src/index.ts"],
 			"@mcp-vertex/audit/public": ["./plugins/audit/src/public/index.ts"],
 			"@mcp-vertex/audit/*": ["./plugins/audit/src/*"],
+			"@mcp-vertex/audit-orchestrator": [
+				"./plugins/audit-orchestrator/src/index.ts"
+			],
+			"@mcp-vertex/audit-orchestrator/public": [
+				"./plugins/audit-orchestrator/src/public/index.ts"
+			],
+			"@mcp-vertex/audit-orchestrator/*": [
+				"./plugins/audit-orchestrator/src/*"
+			],
 			"@mcp-vertex/browser": ["./plugins/browser/src/index.ts"],
 			"@mcp-vertex/browser/public": [
 				"./plugins/browser/src/public/index.ts"
@@ -189,6 +237,12 @@
 			"@mcp-vertex/api": ["./plugins/api/src/index.ts"],
 			"@mcp-vertex/api/public": ["./plugins/api/src/public/index.ts"],
 			"@mcp-vertex/api/*": ["./plugins/api/src/*"],
+			"@mcp-vertex/github": ["./plugins/github/src/index.ts"],
+			"@mcp-vertex/github/public": ["./plugins/github/src/index.ts"],
+			"@mcp-vertex/github/*": ["./plugins/github/src/*"],
+			"@mcp-vertex/gitlab": ["./plugins/gitlab/src/index.ts"],
+			"@mcp-vertex/gitlab/public": ["./plugins/gitlab/src/index.ts"],
+			"@mcp-vertex/gitlab/*": ["./plugins/gitlab/src/*"],
 			"@mcp-vertex/web-fetch": ["./plugins/web-fetch/src/index.ts"],
 			"@mcp-vertex/web-fetch/public": [
 				"./plugins/web-fetch/src/public/index.ts"
@@ -220,11 +274,78 @@
 			"@mcp-vertex/cache": ["./plugins/cache/src/index.ts"],
 			"@mcp-vertex/cache/public": ["./plugins/cache/src/public/index.ts"],
 			"@mcp-vertex/cache/*": ["./plugins/cache/src/*"],
+			"@mcp-vertex/context-for-change": [
+				"./plugins/context-for-change/src/index.ts"
+			],
+			"@mcp-vertex/context-for-change/public": [
+				"./plugins/context-for-change/src/public/index.ts"
+			],
+			"@mcp-vertex/context-for-change/*": [
+				"./plugins/context-for-change/src/*"
+			],
+			"@mcp-vertex/impact-analysis": [
+				"./plugins/impact-analysis/src/index.ts"
+			],
+			"@mcp-vertex/impact-analysis/public": [
+				"./plugins/impact-analysis/src/public/index.ts"
+			],
+			"@mcp-vertex/impact-analysis/*": [
+				"./plugins/impact-analysis/src/*"
+			],
+			"@mcp-vertex/agent-orchestrator": [
+				"./plugins/agent-orchestrator/src/index.ts"
+			],
+			"@mcp-vertex/agent-orchestrator/public": [
+				"./plugins/agent-orchestrator/src/public/index.ts"
+			],
+			"@mcp-vertex/agent-orchestrator/*": [
+				"./plugins/agent-orchestrator/src/*"
+			],
+			"@mcp-vertex/adaptive-optimizer": [
+				"./plugins/adaptive-optimizer/src/index.ts"
+			],
+			"@mcp-vertex/adaptive-optimizer/public": [
+				"./plugins/adaptive-optimizer/src/public/index.ts"
+			],
+			"@mcp-vertex/adaptive-optimizer/*": [
+				"./plugins/adaptive-optimizer/src/*"
+			],
+			"@mcp-vertex/project-health": [
+				"./plugins/project-health/src/index.ts"
+			],
+			"@mcp-vertex/project-health/public": [
+				"./plugins/project-health/src/public/index.ts"
+			],
+			"@mcp-vertex/project-health/*": ["./plugins/project-health/src/*"],
+			"@mcp-vertex/quality-policy": [
+				"./plugins/quality-policy/src/index.ts"
+			],
+			"@mcp-vertex/quality-policy/public": [
+				"./plugins/quality-policy/src/public/index.ts"
+			],
+			"@mcp-vertex/quality-policy/*": ["./plugins/quality-policy/src/*"],
+			"@mcp-vertex/project-kpis": ["./plugins/project-kpis/src/index.ts"],
+			"@mcp-vertex/project-kpis/public": [
+				"./plugins/project-kpis/src/public/index.ts"
+			],
+			"@mcp-vertex/project-kpis/*": ["./plugins/project-kpis/src/*"],
+			"@mcp-vertex/commit-policy": [
+				"./plugins/commit-policy/src/index.ts"
+			],
+			"@mcp-vertex/commit-policy/public": [
+				"./plugins/commit-policy/src/public/index.ts"
+			],
+			"@mcp-vertex/commit-policy/*": ["./plugins/commit-policy/src/*"],
 			"@mcp-vertex/changelog": ["./plugins/changelog/src/index.ts"],
 			"@mcp-vertex/changelog/public": [
 				"./plugins/changelog/src/public/index.ts"
 			],
 			"@mcp-vertex/changelog/*": ["./plugins/changelog/src/*"],
+			"@mcp-vertex/completion": ["./plugins/completion/src/index.ts"],
+			"@mcp-vertex/completion/public": [
+				"./plugins/completion/src/public/index.ts"
+			],
+			"@mcp-vertex/completion/*": ["./plugins/completion/src/*"],
 			"@mcp-vertex/error-reporting": [
 				"./plugins/error-reporting/src/index.ts"
 			],
@@ -240,7 +361,11 @@
 			"@mcp-vertex/issues-triage/public": [
 				"./plugins/issues-triage/src/public/index.ts"
 			],
-			"@mcp-vertex/issues-triage/*": ["./plugins/issues-triage/src/*"]
+			"@mcp-vertex/issues-triage/*": ["./plugins/issues-triage/src/*"],
+			"@mcp-vertex/external-mcps": [
+				"./plugins/external-mcps/src/index.ts"
+			],
+			"@mcp-vertex/external-mcps/*": ["./plugins/external-mcps/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]

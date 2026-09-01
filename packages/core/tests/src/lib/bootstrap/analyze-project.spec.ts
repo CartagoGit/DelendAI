@@ -7,7 +7,18 @@ import { recommendServerPlan } from '@mcp-vertex/core/lib/bootstrap/recommend-pl
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],
 	exists: async (p) => p in files,
-	listDir: async () => [],
+	listDir: async (p) => {
+		const prefix = p === '' ? '' : `${p}/`;
+		const entries = new Set<string>();
+		for (const key of Object.keys(files)) {
+			if (!key.startsWith(prefix)) continue;
+			const remainder = key.slice(prefix.length);
+			if (remainder.length === 0) continue;
+			const head = remainder.split('/')[0];
+			if (head !== undefined && head.length > 0) entries.add(head);
+		}
+		return [...entries];
+	},
 });
 
 describe('analyzeProject', async () => {
@@ -27,6 +38,7 @@ describe('analyzeProject', async () => {
 		expect(analysis.language).toBe('typescript');
 		expect(analysis.testRunner).toBe('vitest');
 		expect(analysis.hasMcpProject).toBe(false);
+		expect(analysis.ciProvider).toBe('unknown');
 	});
 
 	it('detects a web app and an existing MCP server', async () => {
@@ -65,7 +77,10 @@ describe('analyzeProject', async () => {
 		expect(analysis.language).toBe('rust');
 		expect(analysis.projectType).toBe('cli');
 		expect(analysis.ci).toContain('gitlab-ci');
+		expect(analysis.ciProvider).toBe('gitlab-ci');
 		expect(analysis.agentConfigs).toContain('CLAUDE.md');
+		expect(analysis.docsConventions).toEqual([]);
+		expect(analysis.conflicts).toEqual([]);
 	});
 
 	it('detects monorepo tooling (nx/turbo)', async () => {
@@ -88,6 +103,56 @@ describe('analyzeProject', async () => {
 		const plan = await recommendServerPlan(analysis);
 		expect(plan.namespacePrefix).toBe('mcp-vertex');
 		expect(plan.targetDir).toBe('packages/core');
+	});
+
+	it('detects mature monorepo adoption signals: ci, docs and scaffold conflicts', async () => {
+		const analysis = await analyzeProject(
+			reader({
+				'package.json': JSON.stringify({
+					name: '@acme/platform',
+					workspaces: ['packages/*'],
+					dependencies: { astro: '^5' },
+					scripts: {
+						validate: 'bun run validate',
+						lint: 'biome check .',
+						test: 'vitest run',
+					},
+				}),
+				'README.md': '# Platform',
+				'CONTRIBUTING.md': '# Contributing',
+				'astro.config.mjs': 'export default {}',
+				'.github/workflows/ci.yml': 'name: ci',
+				'.vscode/mcp.json': '{}',
+				'mcp-vertex.config.json': '{}',
+			}),
+		);
+		expect(analysis.projectType).toBe('monorepo');
+		expect(analysis.ciProvider).toBe('github-actions');
+		expect(analysis.docsConventions).toEqual([
+			'README.md',
+			'root-markdown',
+			'docs-site:astro',
+		]);
+		expect(analysis.conflicts).toEqual([
+			'script:validate',
+			'script:lint',
+			'script:test',
+			'config:mcp-vertex.config.json',
+			'config:.vscode/mcp.json',
+		]);
+	});
+
+	it('degrades cleanly for non-TS repos without docs or scaffold conflicts', async () => {
+		const analysis = await analyzeProject(
+			reader({
+				'go.mod': 'module example.com/service',
+				'cmd/main.go': 'package main',
+			}),
+		);
+		expect(analysis.language).toBe('go');
+		expect(analysis.ciProvider).toBe('unknown');
+		expect(analysis.docsConventions).toEqual([]);
+		expect(analysis.conflicts).toEqual([]);
 	});
 });
 

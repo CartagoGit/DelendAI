@@ -1,3 +1,4 @@
+import { formatToolName } from '@mcp-vertex/client';
 import { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
 import { renderProposalDetailHtml } from '../views/proposal-detail-webview';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
@@ -83,6 +84,9 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 							...(deps.namespacePrefix === undefined
 								? {}
 								: { namespacePrefix: deps.namespacePrefix }),
+							...(deps.workspaceRoot === undefined
+								? {}
+								: { workspaceRoot: deps.workspaceRoot }),
 						});
 					const detail = await source.fetchProposalDetail(
 						check.proposalId,
@@ -101,6 +105,9 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 						);
 						return;
 					}
+					const sinkHandled =
+						(await deps.detailSink?.('proposal', detail)) === true;
+					if (sinkHandled) return;
 					const panel = deps.vscode.window.createWebviewPanel(
 						'mcpVertexProposals',
 						`mcp-vertex Proposal ${check.proposalId}`,
@@ -123,7 +130,13 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 				const board = await deps.client.request<
 					Record<string, never>,
 					IProposalBoardOutput
-				>('mcp-vertex_proposals_proposal_board', {});
+				>(
+					formatToolName(
+						deps.namespacePrefix,
+						'proposals_proposal_board',
+					),
+					{},
+				);
 				const panel = deps.vscode.window.createWebviewPanel(
 					'mcpVertexProposals',
 					'mcp-vertex Proposals',

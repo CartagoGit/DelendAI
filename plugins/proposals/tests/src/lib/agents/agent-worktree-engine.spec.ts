@@ -198,6 +198,53 @@ describe('runAgentWorktreeEngine — create', async () => {
 			reason: 'fatal: branch already checked out',
 		});
 	});
+
+	it('keeps create output exact for punctuation-heavy agent names', async () => {
+		const { run } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
+			if (args[0] === 'branch' && args[1] === '--list') return ok('');
+			if (args[0] === 'rev-parse') return fail('not a valid ref');
+			if (args[0] === 'worktree' && args[1] === 'add') return ok('');
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+
+		const result = await runAgentWorktreeEngine(
+			{ action: 'create', agent: '  Orion +++ Beta  ' },
+			{ run, workspaceRoot: '/repo' },
+		);
+
+		expect(result).toEqual({
+			ok: true,
+			action: 'create',
+			path: '/repo/.worktrees/orion-beta',
+			branch: 'agent/orion-beta',
+			created: true,
+		});
+	});
+
+	it('normalizes a 300+ char punctuation run without changing the final slug', async () => {
+		const noisyAgent = `${' + '.repeat(170)}Orion${' + '.repeat(170)}`;
+		const { run } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
+			if (args[0] === 'branch' && args[1] === '--list') return ok('');
+			if (args[0] === 'rev-parse') return fail('not a valid ref');
+			if (args[0] === 'worktree' && args[1] === 'add') return ok('');
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+
+		const result = await runAgentWorktreeEngine(
+			{ action: 'create', agent: noisyAgent },
+			{ run, workspaceRoot: '/repo' },
+		);
+
+		expect(result).toEqual({
+			ok: true,
+			action: 'create',
+			path: '/repo/.worktrees/orion',
+			branch: 'agent/orion',
+			created: true,
+		});
+	});
 });
 
 describe('runAgentWorktreeEngine — remove', async () => {

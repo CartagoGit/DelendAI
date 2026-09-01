@@ -5,10 +5,7 @@
  */
 export { default } from '../index';
 
-export {
-	createCommandRunner,
-	runScope,
-} from '../lib/services/runner';
+export { createCommandRunner, runScope } from '../lib/services/runner';
 export type {
 	ICommandRunner,
 	ICommandResult,
@@ -17,6 +14,17 @@ export type {
 } from '../lib/services/runner';
 export { resolveScopes } from '../lib/services/scopes';
 export type { IScopeMap } from '../lib/services/scopes';
+// f00386: scoped-vs-full validation decision surface for peer plugins.
+export {
+	deriveScopedValidationScopes,
+	resolveScopedValidationDecision,
+} from '../lib/services/scoped-validation.resolver';
+export type {
+	IScopedValidationDecision,
+	IScopedValidationInput,
+	IScopedValidationMode,
+	IScopedValidationOperation,
+} from '../lib/services/scoped-validation.types';
 export { runAllScopes } from '../lib/services/run-all';
 export type {
 	IQualityAllResult,

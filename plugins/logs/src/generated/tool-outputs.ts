@@ -12,96 +12,74 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface LogsCorrelateOutput {
-	chain: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+export interface McpVertexLogsCorrelateOutput {
+	detail: "compact" | "normal" | "full";
+	chain: unknown[];
 	firstTs: string | null;
 	lastTs: string | null;
-	gaps: {
-		startTs: string;
-		endTs: string;
-		durationMs: number;
-	}[];
+	gaps: unknown;
 }
 
-export interface LogsErrorsTailOutput {
-	events: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+export interface McpVertexLogsErrorsTailOutput {
+	detail: "compact" | "normal" | "full";
+	events: unknown[];
 	oldestTs: string | null;
 	newestTs: string | null;
 }
 
-export interface LogsQueryOutput {
-	events: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+export interface McpVertexLogsIncidentsOutput {
+	incidents: unknown;
+	totalIncidents: number;
+}
+
+export interface McpVertexLogsLogOutput {
+	ok: true;
+	ts: string;
+	incidentType: string;
+	severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+}
+
+export interface McpVertexLogsQueryOutput {
+	detail: "compact" | "normal" | "full";
+	events: unknown[];
 	cursor: string | null;
 	hasMore: boolean;
 }
 
-export interface LogsRedactTestOutput {
+export interface McpVertexLogsRedactTestOutput {
 	detected: string[];
 	redacted: string;
 }
 
-export interface LogsSubscribeOutput {
-	events: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+export interface McpVertexLogsSearchOutput {
+	detail: "compact" | "normal" | "full";
+	events: unknown[];
+	matched: number;
+	hasMore: boolean;
+}
+
+export interface McpVertexLogsSubscribeOutput {
+	detail: "compact" | "normal" | "full";
+	events: unknown[];
 	stream: "logs";
 }
 
-export interface LogsTailOutput {
-	events: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+export interface McpVertexLogsTailOutput {
+	detail: "compact" | "normal" | "full";
+	events: unknown[];
 	oldestTs: string | null;
 	newestTs: string | null;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface LogsToolOutputs {
-	"logs_correlate": LogsCorrelateOutput;
-	"logs_errors_tail": LogsErrorsTailOutput;
-	"logs_query": LogsQueryOutput;
-	"logs_redact_test": LogsRedactTestOutput;
-	"logs_subscribe": LogsSubscribeOutput;
-	"logs_tail": LogsTailOutput;
+	"mcp-vertex_logs_correlate": McpVertexLogsCorrelateOutput;
+	"mcp-vertex_logs_errors_tail": McpVertexLogsErrorsTailOutput;
+	"mcp-vertex_logs_incidents": McpVertexLogsIncidentsOutput;
+	"mcp-vertex_logs_log": McpVertexLogsLogOutput;
+	"mcp-vertex_logs_query": McpVertexLogsQueryOutput;
+	"mcp-vertex_logs_redact_test": McpVertexLogsRedactTestOutput;
+	"mcp-vertex_logs_search": McpVertexLogsSearchOutput;
+	"mcp-vertex_logs_subscribe": McpVertexLogsSubscribeOutput;
+	"mcp-vertex_logs_tail": McpVertexLogsTailOutput;
 }

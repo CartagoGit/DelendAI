@@ -9,7 +9,7 @@
 		"watch": "typedoc --options ../../config/typedoc.json --skipErrorChecking --watch"
 	},
 	"devDependencies": {
-		"typedoc": "0.28.19",
-		"typescript": "6.0.2"
+		"typedoc": "0.28.20",
+		"typescript": "6.0.3"
 	}
 }

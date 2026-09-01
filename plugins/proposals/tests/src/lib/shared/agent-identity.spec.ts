@@ -49,6 +49,15 @@ describe('slugify', () => {
 		expect(slugify('   ')).toBe('unknown');
 		expect(slugify('!!!')).toBe('unknown');
 	});
+
+	it('keeps the exact slug for a representative punctuation-heavy input', () => {
+		expect(slugify('  Orion +++ Beta  ')).toBe('orion-beta');
+	});
+
+	it('normalizes a 300+ char punctuation run without changing the terminal token', () => {
+		const noisy = `${' + '.repeat(170)}Orion${' + '.repeat(170)}`;
+		expect(slugify(noisy)).toBe('orion');
+	});
 });
 
 describe('slugifyHost', () => {

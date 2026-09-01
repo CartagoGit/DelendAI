@@ -143,6 +143,11 @@ export const assemblePluginForTest = async (
 		[
 			`--plugins=${options.pluginName}`,
 			`--workspace=${options.workspaceRoot}`,
+			// The bed verifies a plugin's complete registration, including
+			// tools hidden by the managed bootstrap surface. Native is
+			// explicit here so this harness does not mistake exposure policy
+			// for a plugin load failure.
+			'--surface=native',
 		],
 		options.workspaceRoot,
 	);
@@ -168,7 +173,10 @@ export const assemblePluginForTest = async (
 		config,
 		tools,
 		promptsCount: config.extraPrompts?.length ?? 0,
-		skillsCount: config.extraSkills?.length ?? 0,
+		skillsCount: loadResult.loaded.reduce(
+			(total, entry) => total + (entry.registrations.skills?.length ?? 0),
+			0,
+		),
 		loadErrors: loadResult.errors.map((error) => error.message),
 	};
 };

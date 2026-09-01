@@ -1,5 +1,4 @@
-import { AgentCatalogService } from '@mcp-vertex/client';
-import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
+import { AgentCatalogService, formatToolName } from '@mcp-vertex/client';
 
 import { AGENT_CATALOG_MESSAGE_SCHEMA } from '../contracts/constants/agent-catalog-message-schema.constant';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
@@ -11,8 +10,12 @@ import { escapeHtml, renderJsonHtml, showCommandError } from './types';
 
 export const OPEN_AGENT_CATALOG_COMMAND = 'mcp-vertex.openAgentCatalog';
 
-type IProposalBoardOutput =
-	McpVertexToolOutputs['mcp-vertex_proposals_proposal_board'];
+type IProposalBoardOutput = {
+	readonly proposals: readonly {
+		readonly id: string;
+		readonly [key: string]: unknown;
+	}[];
+};
 
 const renderTextHtml = (title: string, body: string): string => `<!DOCTYPE html>
 <html lang="en">
@@ -92,12 +95,13 @@ export const openSkillPreview = async (
 export const openProposalPreview = async (
 	deps: Pick<ICommandDeps, 'client' | 'vscode'>,
 	id: string,
+	namespacePrefix?: string,
 ): Promise<void> => {
 	try {
 		const board = await deps.client.request<
 			Record<string, never>,
 			IProposalBoardOutput
-		>('mcp-vertex_proposals_proposal_board', {});
+		>(formatToolName(namespacePrefix, 'proposals_proposal_board'), {});
 		const proposal = board.proposals.find((entry) => entry.id === id);
 		if (proposal === undefined) {
 			throw new Error(`proposal "${id}" not found`);
@@ -117,17 +121,26 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(
 		OPEN_AGENT_CATALOG_COMMAND,
 		async () => {
-			const service = new AgentCatalogService(deps.client);
+			const service = new AgentCatalogService(
+				deps.client,
+				deps.namespacePrefix === undefined
+					? {}
+					: { namespacePrefix: deps.namespacePrefix },
+			);
 			const copy = viewCopyFor(
 				resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
 			);
+			const panel = deps.vscode.window.createWebviewPanel(
+				'mcpVertexAgentCatalog',
+				'mcp-vertex Agent Catalog',
+				deps.vscode.ViewColumn.One,
+				{ enableScripts: true },
+			);
+			panel.webview.html = renderTextHtml(
+				'mcp-vertex Agent Catalog',
+				'Loading catalog...',
+			);
 			try {
-				const panel = deps.vscode.window.createWebviewPanel(
-					'mcpVertexAgentCatalog',
-					'mcp-vertex Agent Catalog',
-					deps.vscode.ViewColumn.One,
-					{ enableScripts: true },
-				);
 				panel.webview.html = await loadCatalogHtml(service, copy);
 				panel.webview.onDidReceiveMessage?.(async (raw: unknown) => {
 					const parsed = AGENT_CATALOG_MESSAGE_SCHEMA.safeParse(raw);
@@ -162,14 +175,21 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 						return;
 					}
 					if (message.command === 'openProposal') {
-						await openProposalPreview(deps, message.id);
+						await openProposalPreview(
+							deps,
+							message.id,
+							deps.namespacePrefix,
+						);
 						return;
 					}
 				});
 				return panel;
 			} catch (err) {
-				await showCommandError(deps.vscode, 'open agent catalog', err);
-				return undefined;
+				panel.webview.html = renderTextHtml(
+					'mcp-vertex Agent Catalog unavailable',
+					err instanceof Error ? err.message : String(err),
+				);
+				return panel;
 			}
 		},
 	);

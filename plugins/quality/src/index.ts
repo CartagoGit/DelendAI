@@ -1,4 +1,5 @@
 import {
+	compactOutputSchema,
 	createWorkspaceFileReader,
 	definePlugin,
 	toolError,
@@ -51,20 +52,6 @@ const plannerOutputSchema = z.object({
 	}),
 	worst: z.enum([...FINDING_SEVERITIES, 'none']),
 	findings: z.array(qualityFindingSchema),
-});
-
-const legacyRunQualityOutputSchema = z.object({
-	scope: z.string(),
-	ok: z.boolean(),
-	results: z.array(
-		z.object({
-			command: z.string(),
-			ok: z.boolean(),
-			code: z.number(),
-			timedOut: z.boolean(),
-			tail: z.string(),
-		}),
-	),
 });
 
 export interface IValidateOutputSnapshot {
@@ -165,34 +152,10 @@ const buildRunQualityToolRegistration = (
 					dryRun: z.boolean().optional(),
 					severities: z.array(z.enum(FINDING_SEVERITIES)).optional(),
 				}),
-				outputSchema: z.object({
-					scope: z.string().optional(),
-					ok: z.boolean(),
-					dryRun: z.boolean().optional(),
-					commands: z.array(z.string()).optional(),
-					results: z
-						.array(
-							z.object({
-								command: z.string(),
-								ok: z.boolean(),
-								code: z.number(),
-								timedOut: z.boolean(),
-								tail: z.string(),
-							}),
-						)
-						.optional(),
-					severities: z
-						.object({
-							critical: z.number(),
-							high: z.number(),
-							medium: z.number(),
-							low: z.number(),
-							info: z.number(),
-						})
-						.optional(),
-					worst: z.enum([...FINDING_SEVERITIES, 'none']).optional(),
-					findings: z.array(qualityFindingSchema).optional(),
-				}),
+				// v00131: the handler never validates its return payload against
+				// this declared wire schema, so `tools/list` can advertise the
+				// compact envelope while preserving the real structuredContent.
+				outputSchema: compactOutputSchema(),
 			},
 			async (args: {
 				scope?: string | undefined;
@@ -270,7 +233,7 @@ const buildRunQualityToolRegistration = (
  */
 export default definePlugin({
 	name: 'quality',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Run the project quality gates (lint/test/build/typecheck) per scope and return structured pass/fail.',
 	optionsSchema: z.object({

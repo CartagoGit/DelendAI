@@ -18,6 +18,7 @@
 	"main": "./dist/index.js",
 	"files": [
 		"dist",
+		"skills",
 		"README.md",
 		"LICENSE"
 	],
@@ -46,14 +47,19 @@
 		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
+		"@mcp-vertex/error-reporting": "workspace:*",
+		"@mcp-vertex/logs": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@mcp-vertex/core": "workspace:*",
+		"@mcp-vertex/error-reporting": "workspace:*",
+		"@mcp-vertex/logs": "workspace:*",
+		"@mcp-vertex/test-kit": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.10"
+		"vitest": "4.1.11"
 	},
 	"publishConfig": {
 		"access": "public"

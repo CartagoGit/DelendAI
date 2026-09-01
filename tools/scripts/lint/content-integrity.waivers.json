@@ -10,5 +10,17 @@
 		"kind": "text",
 		"literal": "@mcp-vertex",
 		"reason": "Canonical package scope and product wordmark."
+	},
+	{
+		"file": "packages/ui-extension/src/dashboard/render-dashboard.ts",
+		"kind": "text",
+		"literal": "Detail",
+		"reason": "Dialog heading — overlay title is provided by i18n in the host extension that owns the dashboard copy."
+	},
+	{
+		"file": "packages/ui-extension/src/dashboard/render-dashboard.ts",
+		"kind": "attribute",
+		"literal": "Close",
+		"reason": "Close-button aria-label — overlay copy is provided by i18n in the host extension that owns the dashboard copy."
 	}
 ]

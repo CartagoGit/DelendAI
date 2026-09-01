@@ -29,12 +29,61 @@
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
+		"./version": {
+			"@mcp-vertex/source": {
+				"types": "./src/version.ts"
+			},
+			"types": "./dist/version.d.ts",
+			"import": "./dist/version.js"
+		},
 		"./public": {
 			"@mcp-vertex/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
+		},
+		"./cli": {
+			"@mcp-vertex/source": {
+				"types": "./src/cli.ts"
+			},
+			"types": "./dist/cli.d.ts",
+			"import": "./dist/cli.js"
+		},
+		"./manifest": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		},
+		"./contracts": {
+			"@mcp-vertex/source": {
+				"types": "./src/contracts/index.ts"
+			},
+			"types": "./dist/contracts/index.d.ts",
+			"import": "./dist/contracts/index.js"
+		},
+		"./runtime": {
+			"@mcp-vertex/source": {
+				"types": "./src/runtime/index.ts"
+			},
+			"types": "./dist/runtime/index.d.ts",
+			"import": "./dist/runtime/index.js"
+		},
+		"./plugin": {
+			"@mcp-vertex/source": {
+				"types": "./src/plugin/index.ts"
+			},
+			"types": "./dist/plugin/index.d.ts",
+			"import": "./dist/plugin/index.js"
+		},
+		"./node": {
+			"@mcp-vertex/source": {
+				"types": "./src/node/index.ts"
+			},
+			"types": "./dist/node/index.d.ts",
+			"import": "./dist/node/index.js"
 		}
 	},
 	"scripts": {
@@ -49,7 +98,7 @@
 	"devDependencies": {
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.10"
+		"vitest": "4.1.11"
 	},
 	"publishConfig": {
 		"access": "public"

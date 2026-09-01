@@ -46,6 +46,12 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const memory = resolve(workspaceRoot, 'plugins/memory/src');
 	const git = resolve(workspaceRoot, 'plugins/git/src');
 	const forge = resolve(workspaceRoot, 'plugins/forge/src');
+	const remoteProviderCore = resolve(
+		workspaceRoot,
+		'plugins/remote-provider-core/src',
+	);
+	const github = resolve(workspaceRoot, 'plugins/github/src');
+	const gitlab = resolve(workspaceRoot, 'plugins/gitlab/src');
 	const quality = resolve(workspaceRoot, 'plugins/quality/src');
 	const refactor = resolve(workspaceRoot, 'plugins/refactor/src');
 	const search = resolve(workspaceRoot, 'plugins/search/src');
@@ -65,18 +71,23 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const promptEval = resolve(workspaceRoot, 'plugins/prompt-eval/src');
 	const notification = resolve(workspaceRoot, 'plugins/notification/src');
 	const observability = resolve(workspaceRoot, 'plugins/observability/src');
+	const orchestratorRunner = resolve(
+		workspaceRoot,
+		'plugins/orchestrator-runner/src',
+	);
 	const statusMarker = resolve(workspaceRoot, 'plugins/status-marker/src');
 	const testConvention = resolve(
 		workspaceRoot,
 		'plugins/test-convention/src',
 	);
+	const testPolicy = resolve(workspaceRoot, 'plugins/test-policy/src');
+	const usageTracking = resolve(workspaceRoot, 'plugins/usage-tracking/src');
 	// x00189: token-budget.e2e imports `@mcp-vertex/test-policy` (it
 	// is the only plugin used by a core spec that wasn't already in
 	// the alias list). Without this entry the test resolves through
 	// the package's published `main` (which points at `dist/index.js`)
 	// and the bundled dist still uses the broken `import { z } from
 	// 'zod'` form, surfacing the rolldown interop bug at test time.
-	const testPolicy = resolve(workspaceRoot, 'plugins/test-policy/src');
 	const webFetch = resolve(workspaceRoot, 'plugins/web-fetch/src');
 	const autoAgentSelector = resolve(
 		workspaceRoot,
@@ -91,7 +102,24 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const database = resolve(workspaceRoot, 'plugins/database/src');
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
+	const contextForChange = resolve(
+		workspaceRoot,
+		'plugins/context-for-change/src',
+	);
+	const impactAnalysis = resolve(
+		workspaceRoot,
+		'plugins/impact-analysis/src',
+	);
+	const adaptiveOptimizer = resolve(
+		workspaceRoot,
+		'plugins/adaptive-optimizer/src',
+	);
+	const projectHealth = resolve(workspaceRoot, 'plugins/project-health/src');
+	const projectKpis = resolve(workspaceRoot, 'plugins/project-kpis/src');
+	const qualityPolicy = resolve(workspaceRoot, 'plugins/quality-policy/src');
+	const commitPolicy = resolve(workspaceRoot, 'plugins/commit-policy/src');
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
+	const completion = resolve(workspaceRoot, 'plugins/completion/src');
 	const errorReporting = resolve(
 		workspaceRoot,
 		'plugins/error-reporting/src',
@@ -100,9 +128,102 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const container = resolve(workspaceRoot, 'plugins/container/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
 	const cli = resolve(workspaceRoot, 'packages/cli/src');
+	const testKit = resolve(workspaceRoot, 'packages/test-kit/src');
 	const shared = resolve(workspaceRoot, 'apps/shared/src');
 	return [
 		{ find: '@mcp-vertex/cli', replacement: resolve(cli, 'index.ts') },
+		{
+			find: '@mcp-vertex/test-kit/public',
+			replacement: resolve(testKit, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/test-kit',
+			replacement: resolve(testKit, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/context-for-change/public',
+			replacement: resolve(contextForChange, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/context-for-change\/lib\/(.*)$/,
+			replacement: `${resolve(contextForChange, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/context-for-change',
+			replacement: resolve(contextForChange, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/impact-analysis/public',
+			replacement: resolve(impactAnalysis, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/impact-analysis\/lib\/(.*)$/,
+			replacement: `${resolve(impactAnalysis, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/impact-analysis',
+			replacement: resolve(impactAnalysis, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/adaptive-optimizer/public',
+			replacement: resolve(adaptiveOptimizer, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/adaptive-optimizer\/lib\/(.*)$/,
+			replacement: `${resolve(adaptiveOptimizer, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/adaptive-optimizer',
+			replacement: resolve(adaptiveOptimizer, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/project-health/public',
+			replacement: resolve(projectHealth, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/project-health\/lib\/(.*)$/,
+			replacement: `${resolve(projectHealth, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/project-health',
+			replacement: resolve(projectHealth, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/project-kpis/public',
+			replacement: resolve(projectKpis, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/project-kpis\/lib\/(.*)$/,
+			replacement: `${resolve(projectKpis, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/project-kpis',
+			replacement: resolve(projectKpis, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/quality-policy/public',
+			replacement: resolve(qualityPolicy, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/quality-policy\/lib\/(.*)$/,
+			replacement: `${resolve(qualityPolicy, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/quality-policy',
+			replacement: resolve(qualityPolicy, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/commit-policy/public',
+			replacement: resolve(commitPolicy, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/commit-policy\/lib\/(.*)$/,
+			replacement: `${resolve(commitPolicy, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/commit-policy',
+			replacement: resolve(commitPolicy, 'index.ts'),
+		},
 		{
 			find: '@mcp-vertex/shared/i18n',
 			replacement: resolve(shared, 'i18n/index.ts'),
@@ -136,8 +257,28 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(shared, 'public/index.ts'),
 		},
 		{
+			find: '@mcp-vertex/core/version',
+			replacement: resolve(core, 'version.ts'),
+		},
+		{
 			find: '@mcp-vertex/core/public',
 			replacement: resolve(core, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/core/contracts',
+			replacement: resolve(core, 'contracts/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/core/runtime',
+			replacement: resolve(core, 'runtime/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/core/plugin',
+			replacement: resolve(core, 'plugin/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/core/node',
+			replacement: resolve(core, 'node/index.ts'),
 		},
 		{
 			find: /^@mcp-vertex\/core\/lib\/(.*)$/,
@@ -215,6 +356,30 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/forge',
 			replacement: resolve(forge, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/remote-provider-core/public',
+			replacement: resolve(remoteProviderCore, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/remote-provider-core',
+			replacement: resolve(remoteProviderCore, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/gitlab/public',
+			replacement: resolve(gitlab, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/gitlab',
+			replacement: resolve(gitlab, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/github/public',
+			replacement: resolve(github, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/github',
+			replacement: resolve(github, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/quality/public',
@@ -506,6 +671,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(testPolicy, 'index.ts'),
 		},
 		{
+			find: '@mcp-vertex/usage-tracking/public',
+			replacement: resolve(usageTracking, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/usage-tracking\/lib\/(.*)$/,
+			replacement: `${resolve(usageTracking, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/usage-tracking',
+			replacement: resolve(usageTracking, 'index.ts'),
+		},
+		{
 			find: '@mcp-vertex/auto-agent-selector/public',
 			replacement: resolve(autoAgentSelector, 'public/index.ts'),
 		},
@@ -528,6 +705,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/auto-plugin-selector',
 			replacement: resolve(autoPluginSelector, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/orchestrator-runner/public',
+			replacement: resolve(orchestratorRunner, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/orchestrator-runner\/lib\/(.*)$/,
+			replacement: `${resolve(orchestratorRunner, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/orchestrator-runner',
+			replacement: resolve(orchestratorRunner, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/api/public',
@@ -602,6 +791,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(changelog, 'index.ts'),
 		},
 		{
+			find: '@mcp-vertex/completion/public',
+			replacement: resolve(completion, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/completion\/lib\/(.*)$/,
+			replacement: `${resolve(completion, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/completion',
+			replacement: resolve(completion, 'index.ts'),
+		},
+		{
 			find: '@mcp-vertex/error-reporting/public',
 			replacement: resolve(errorReporting, 'public/index.ts'),
 		},
@@ -628,6 +829,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/client/public',
 			replacement: resolve(client, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/client/node',
+			replacement: resolve(client, 'node/index.ts'),
 		},
 		{
 			find: /^@mcp-vertex\/client\/lib\/(.*)$/,

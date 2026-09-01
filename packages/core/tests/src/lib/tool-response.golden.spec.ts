@@ -51,8 +51,44 @@ import {
 	SERVER_BLUEPRINT_SCHEMA,
 	SERVER_PLAN_SCHEMA,
 } from '@mcp-vertex/core/lib/bootstrap/bootstrap-tool';
+import { ADOPTION_STRATEGY_SCHEMA } from '@mcp-vertex/core/lib/contracts/constants/adoption-strategy-schema.constant';
 import { MetricSchema } from '@mcp-vertex/core/lib/metrics/metrics-tool';
 import { SCAFFOLD_REPORT_SCHEMA } from '@mcp-vertex/core/lib/scaffold/scaffold-tool';
+
+const TOOL_COST_SCHEMA = z.object({
+	contentTextBytes: z.number(),
+	structuredJsonBytes: z.number(),
+	wireEstimateBytes: z.number(),
+	estimatedTokens: z.object({
+		estimatedTokens4B: z.number(),
+		actualModelTokens: z.number().optional(),
+	}),
+});
+
+const PLAN_COMPACT_SUMMARY_SCHEMA = z.object({
+	serverName: z.string(),
+	namespacePrefix: z.string(),
+	targetDir: z.string(),
+	projectType: z.string(),
+	plugins: z.array(z.string()),
+	counts: z.object({
+		tools: z.number(),
+		prompts: z.number(),
+		skills: z.number(),
+		agents: z.number(),
+	}),
+	tests: z.boolean(),
+	hasExistingServer: z.boolean(),
+	adoptionStrategy: ADOPTION_STRATEGY_SCHEMA,
+});
+
+const PLAN_COMPACT_DETAIL_SCHEMA = z.object({
+	section: z.enum(['tools', 'prompts', 'skills', 'agents', 'files', 'notes']),
+	cursor: z.number(),
+	nextCursor: z.number().nullable(),
+	total: z.number(),
+	items: z.array(z.unknown()),
+});
 
 /**
  * The set of host-core tool `outputSchema`s to pin. Each entry is the
@@ -72,8 +108,10 @@ const CORE_TOOL_SCHEMAS = {
 	}),
 	create_project: MCP_PROJECT_SKELETON_SCHEMA,
 	plan_mcp_project: z.object({
-		blueprint: SERVER_BLUEPRINT_SCHEMA,
-		files: z.array(SCAFFOLDED_FILE_SCHEMA),
+		blueprint: SERVER_BLUEPRINT_SCHEMA.optional(),
+		files: z.array(SCAFFOLDED_FILE_SCHEMA).optional(),
+		summary: PLAN_COMPACT_SUMMARY_SCHEMA.optional(),
+		detail: PLAN_COMPACT_DETAIL_SCHEMA.optional(),
 	}),
 	scaffold: SCAFFOLD_REPORT_SCHEMA,
 	metrics: z.object({
@@ -83,6 +121,7 @@ const CORE_TOOL_SCHEMAS = {
 			errors: z.number(),
 			totalMs: z.number(),
 			totalBytes: z.number(),
+			cost: TOOL_COST_SCHEMA,
 		}),
 		persistedTo: z.string().optional(),
 		snapshots: z.number().optional(),
@@ -251,17 +290,17 @@ describe('r00001 S0 — core outputSchema golden snapshot', async () => {
 		 */
 		const EXPECTED_FINGERPRINTS: Readonly<Record<string, string>> = {
 			analyze_project:
-				'd31363fcbbdba0f0dcaea08ad4d6098874d9ea63d832980f8a2987331376b1cd',
+				'0cc64460cec6928836ab42573c789735e52ae3210b5fe6595182ea5ece27d7dd',
 			create_project:
 				'43761bcac35e09be864140f7f36191a84eb71ff45f8374e358e5e16dc5a4b6f3',
 			plan_mcp_project:
-				// f00110: blueprint now carries the explicit per-capability
-				// replace/merge/preserve adoption contract.
-				'd3770218e20b5d5454bb07f120926352217ea3fac9ea3af94828ab8d9211b36d',
+				// x00101 + r00014: plan defaults to a compact paged summary and
+				// only emits the exhaustive blueprint/files payload on opt-in.
+				'2494fd2f72da988cc2ae5d51c5b82dd190f29232919d34789a08f57c9568e665',
 			scaffold:
 				'd2f13f06246544b123f1b3dcc98c68e0159ed91002df748df86ad72343a49ffc',
 			metrics:
-				'6a620df97c35aff8faa9f4ceb9c1dacfa1d520ef3abe1b9ae338f898254bb000',
+				'f81e96e3832567b1c3ed3a95b7ff7a4c5ea4a0b68e7f95a16e0b76659e566ce1',
 		};
 
 		for (const [toolId, expected] of Object.entries(

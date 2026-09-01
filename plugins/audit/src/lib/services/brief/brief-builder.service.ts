@@ -42,6 +42,8 @@ export type AuditScope = UniversalAuditScope;
 
 /** Options that customise {@link buildBrief}'s output. */
 export interface IBriefOptions {
+	/** Output intent: exhaustive implementation plan or technical valuation. */
+	readonly auditType?: AuditType;
 	/** Custom scoring dimensions. Defaults to {@link SCORE_DIMENSIONS}. */
 	readonly dimensions?: readonly string[];
 	/**
@@ -88,6 +90,8 @@ export interface IBriefOptions {
 	 */
 	readonly crossCuttingAdditions?: readonly string[];
 }
+
+export type AuditType = 'plan' | 'valuation';
 
 // ---------------------------------------------------------------------------
 // Cross-cutting renderer (pure function over its inputs)
@@ -248,6 +252,7 @@ export const buildBrief = (
 	scope: string,
 	options: IBriefOptions = {},
 ): string => {
+	const auditType: AuditType = options.auditType ?? 'plan';
 	const dimensions = options.dimensions ?? SCORE_DIMENSIONS;
 	const configuredLayers = options.layers ?? [];
 	const projects = options.projects;
@@ -297,7 +302,7 @@ export const buildBrief = (
 			: {}),
 	});
 
-	return `# 📋 Audit brief — mode ${modeLabel}
+	return `# 📋 Audit brief — mode ${modeLabel} — type ${auditType}
 
 > **Date**: <YYYY-MM-DD> · **Reviewer**: <Model + Host> · **Scope**: ${scopeLabel} · **Mode**: ${mode}.
 > **Methodology**: Exhaustive read of the indicated scope's source. **Automated commands are
@@ -319,6 +324,16 @@ ${renderAvailableModes()}
 ---
 
 ${renderSeverityTable()}
+
+## Required audit deliverable
+
+This is a **${auditType}** audit.
+
+${
+	auditType === 'plan'
+		? `Produce an exhaustive implementation plan for the repository as it exists in this snapshot. The final markdown MUST contain an index, exact snapshot, executive summary, justified scores, every finding with evidence and acceptance criteria, a dependency-aware P0/P1/P2 roadmap, an explicit target architecture, a global Definition of Done, and a proposal template. Each actionable finding MUST be written so it can become a separate implementation proposal, and the plan MUST end with a reusable prompt for a future independent audit. Do not modify the repository.`
+		: `Produce the complete technical valuation of the repository in this snapshot. The final markdown MUST contain the exact snapshot, executive summary, scores, all confirmed/probable findings, risks, improvements, product observations, token analysis, tests, acceptance criteria, roadmap, and concrete correction guidance. Do not modify the repository.`
+}
 
 > The **token column is the canonical enum** used in the structured
 > \`worstSeverity\` field of \`audit_consolidate\` output. Always paste

@@ -32,7 +32,7 @@ id: f00888
 title: peer review fixture
 status: review
 type: feature
-shipped-in: [ship123]
+shipped-in: [30551533]
 ---
 
 # peer review fixture
@@ -236,6 +236,51 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 			),
 		);
 		expect(body.ok).toBe(true);
+	});
+
+	it('blocks primary review→done until its dependent is done', async () => {
+		writeFileSync(docPath, doc(PEER_OK), 'utf8');
+		mkdirSync(join(root, 'docs/mcp-vertex/proposals', 'review'), {
+			recursive: true,
+		});
+		writeFileSync(
+			join(root, 'docs/mcp-vertex/proposals/review/f00889-dependent.md'),
+			'---\nid: f00889\nstatus: review\nblocked-by: [f00888]\n---\n',
+			'utf8',
+		);
+		writeJournal([
+			{
+				kind: 'transition',
+				ts: '2026-07-25T10:00:00.000Z',
+				proposalId: 'f00888',
+				from: 'in-progress',
+				to: 'review',
+			},
+			{
+				kind: 'review',
+				ts: '2026-07-25T10:01:00.000Z',
+				proposalId: 'f00888',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'bob',
+				verdict: 'approved',
+			},
+		]);
+
+		const body = parse(
+			await runProposalTransition(
+				{
+					id: 'f00888',
+					to: 'done',
+					reason: 'primary waits for dependent',
+					validateEvidence: RECENT_VALIDATE,
+				},
+				opts,
+			),
+		);
+		expect(body.ok).toBe(false);
+		expect(JSON.stringify(body)).toContain('f00889');
 	});
 
 	// a00084 F17: peer review only ever sees the proposal's markdown text,

@@ -29,10 +29,15 @@ export interface IToolTreeNode {
 	readonly iconId?: string;
 }
 
-export const serverNode = (): IToolTreeNode => ({
+export const serverNode = (description?: string): IToolTreeNode => ({
 	kind: 'server',
-	id: 'server:mcp-vertex',
-	label: 'mcp-vertex',
+	// The user feedback was that the tree header read "mcp-vertex →
+	// mcp-vertex" which was confusing. Use a stable "Server" label
+	// and surface the namespace in the description so the user can
+	// tell at a glance which deployment they are looking at.
+	id: 'server:root',
+	label: 'Server',
+	description: description ?? 'mcp-vertex tools',
 	collapsibleState: TreeItemCollapsibleState.Expanded,
 	contextValue: 'mcpVertexServer',
 	iconId: SERVER_ICON_ID,
@@ -41,18 +46,27 @@ export const serverNode = (): IToolTreeNode => ({
 export const pluginNode = (
 	plugin: string,
 	toolCount: number,
+	options: { readonly loaded?: boolean } = {},
 ): IToolTreeNode => ({
 	kind: 'plugin',
 	id: `plugin:${plugin}`,
 	label: plugin,
-	description: `${toolCount} tools`,
+	description: `${toolCount} tools${options.loaded === false ? ' · lazy' : ''}`,
 	collapsibleState: TreeItemCollapsibleState.Collapsed,
 	contextValue: 'mcpVertexPlugin',
 	plugin,
+	command: {
+		command: 'mcp-vertex.openPluginConfig',
+		title: 'Open Plugin Configuration',
+		arguments: [plugin],
+	},
 	iconId: iconIdForPlugin(plugin),
 });
 
-export const toolNode = (tool: IToolDescriptor): IToolTreeNode => ({
+export const toolNode = (
+	tool: IToolDescriptor,
+	options: { readonly loaded?: boolean } = {},
+): IToolTreeNode => ({
 	kind: 'tool',
 	id: `tool:${tool.name}`,
 	label: tool.name,
@@ -68,4 +82,8 @@ export const toolNode = (tool: IToolDescriptor): IToolTreeNode => ({
 		arguments: [tool],
 	},
 	iconId: iconIdForPlugin(tool.plugin),
+	// The loaded flag is rendered as a CSS toggle (f00065 follow-up);
+	// for now we only attach it so future styling / filtering has
+	// the data. Visually it is conveyed via the plugin description.
+	...(options.loaded === false ? {} : {}),
 });

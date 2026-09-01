@@ -159,7 +159,11 @@ describe('main (focused CLI behavior)', () => {
 			rootDir: root,
 			now: NOW,
 			stdout: { write: () => undefined },
-			stderr: { write: (chunk: string) => void (stderr += chunk) },
+			stderr: {
+				write: (chunk: string) => {
+					stderr += chunk;
+				},
+			},
 		});
 		expect(exitCode).toBe(1);
 		expect(stderr).toContain('offline-stale-cache');
@@ -181,7 +185,11 @@ describe('main (focused CLI behavior)', () => {
 			argv: ['bun', 'core-version-pin.script.ts', '--offline'],
 			rootDir: root,
 			now: NOW,
-			stdout: { write: (chunk: string) => void (stdout += chunk) },
+			stdout: {
+				write: (chunk: string) => {
+					stdout += chunk;
+				},
+			},
 			stderr: { write: () => undefined },
 		});
 		expect(exitCode).toBe(0);
@@ -206,7 +214,11 @@ describe('main (focused CLI behavior)', () => {
 			runNpmView: async () => {
 				throw new Error('npm 404');
 			},
-			stdout: { write: (chunk: string) => void (stdout += chunk) },
+			stdout: {
+				write: (chunk: string) => {
+					stdout += chunk;
+				},
+			},
 			stderr: { write: () => undefined },
 		});
 		expect(exitCode).toBe(0);

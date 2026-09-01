@@ -1,11 +1,12 @@
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
-import type { ICommitAuthorResolution } from '../shared/commit-author';
+import type { ICommitAuthorResolution } from '../contracts/interfaces/commit-author.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
 import type { IPluginConfigExample } from '../contracts/interfaces/plugin-config-example.interface';
 import type {
 	IKnowledgeEntry,
 	ISkillEntry,
 } from '../contracts/interfaces/knowledge.interface';
+import type { IToolIdentityRegistry } from '../contracts/interfaces/safe-tool-identity.interface';
 import type {
 	IPromptRegistration,
 	IResourceRegistration,
@@ -14,11 +15,19 @@ import type {
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { ICacheEvictionRegistry } from '../contracts/interfaces/cache-eviction.interface';
 import type { IActivationContribution } from '../contracts/interfaces/activation-report.interface';
+import type {
+	IPluginHookErrorInfo,
+	IPluginRegisterErrorInfo,
+} from '../contracts/interfaces/plugin-lifecycle-error.interface';
+import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
+import type { IErrorSink } from '../error-collection/sink.interface';
+import type { IErrorCollector } from '../error-collection/collector.interface';
+import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
  * pure: given this context it returns the artefacts to expose. It must
- * not call `process.cwd()` or read CLI args directly — everything it
+ * not read the process working directory or CLI args directly - everything it
  * needs is here, already resolved, so the same plugin behaves
  * identically under any agent, model or host.
  */
@@ -51,6 +60,8 @@ export interface IMcpPluginContext {
 	readonly agentWorktreeEnabled?: boolean | undefined;
 	/** This plugin's private cache root: `<cacheDir>/<plugin>`. */
 	readonly pluginCacheDir: string;
+	/** Resolve a path strictly below this plugin's private cache root. */
+	readonly cachePath?: (relativePath?: string) => string;
 	/** This plugin's docs root: `<docsDir>/<plugin>`. */
 	readonly pluginDocsDir: string;
 	/** Tool namespace for this plugin (default: the plugin name). */
@@ -62,6 +73,15 @@ export interface IMcpPluginContext {
 	 * file (or no entry for this plugin) is present.
 	 */
 	readonly options: Readonly<Record<string, unknown>>;
+	/**
+	 * Effective options for every plugin selected in this boot. This is a
+	 * read-only configuration view for cross-plugin compatibility checks;
+	 * plugins must never mutate or reinterpret another plugin's options.
+	 */
+	readonly pluginOptions?: ReadonlyMap<
+		string,
+		Readonly<Record<string, unknown>>
+	>;
 	/** Extra global CLI args not consumed by the core, e.g. `--foo=x`. */
 	readonly args: Readonly<Record<string, string>>;
 	/**
@@ -137,6 +157,37 @@ export interface IMcpPluginContext {
 	 * redacted JSON lines to stderr so no event is silently dropped.
 	 */
 	readonly logsSink?: ILogsSink | undefined;
+	/**
+	 * f00251 — the error collector the host has assembled from every
+	 * plugin's errorSinks. When no plugin contributes one, the core
+	 * injects a ConsoleErrorSink fallback so the field is never
+	 * undefined in production hosts.
+	 */
+	readonly errorCollector?: IErrorCollector | undefined;
+	/**
+	 * Read-only registry of public-safe tool provenance. The core populates it
+	 * after assembling the tool surface; plugins must not infer provenance from
+	 * arbitrary tool-name strings.
+	 */
+	readonly toolRegistry?: IToolIdentityRegistry | undefined;
+	/**
+	 * Dry-run-gated mutating capabilities. A plugin that writes git
+	 * history (or, as this
+	 * surface grows, the filesystem/network/spawn) MUST obtain that
+	 * capability from here rather than importing `node:child_process` /
+	 * `node:fs` / `fetch` directly: every method on `effects` refuses to
+	 * run its real effect while the CURRENT tool call's `args.dryRun` is
+	 * `true`, even if the plugin's own handler never reads that flag
+	 * (see `dry-run/effect-guard.helper.ts` and
+	 * `dry-run/dry-run-scope.helper.ts`). Optional on the contract for
+	 * backward-compat with test fixtures that build a context literal by
+	 * hand — production hosts (the CLI's `assemble.ts`) always supply a
+	 * concrete value. A plugin that requires it (e.g. `git`'s write
+	 * tools) should refuse to register its mutating tools rather than
+	 * silently falling back to an unguarded capability when this is
+	 * absent.
+	 */
+	readonly effects?: IPluginEffectsCapability | undefined;
 }
 
 /**
@@ -260,7 +311,18 @@ export interface IMcpPluginRegistrations {
 				toolName: string,
 				args: unknown,
 				elapsedMs: number,
+				context?: {
+					readonly reason: string;
+					readonly nextAction: string;
+					readonly error: unknown;
+				},
 		  ) => Promise<void> | void)
+		| undefined;
+	readonly onRegisterError?:
+		| ((info: IPluginRegisterErrorInfo) => Promise<void> | void)
+		| undefined;
+	readonly onHookError?:
+		| ((info: IPluginHookErrorInfo) => Promise<void> | void)
 		| undefined;
 	readonly isAgentStuck?:
 		| ((
@@ -293,6 +355,13 @@ export interface IMcpPluginRegistrations {
 	 * core picks the first one that registers.
 	 */
 	readonly logsSink?: ILogsSink | undefined;
+	/**
+	 * f00251 — the error sinks a plugin wants the core to fan-out to.
+	 * Multiple sinks coexist (logs, issues, SIEM). The core aggregates
+	 * every plugin's errorSinks and exposes a single IErrorCollector
+	 * built from them via IMcpPluginContext.errorCollector.
+	 */
+	readonly errorSinks?: readonly IErrorSink[] | undefined;
 }
 
 /**
@@ -305,17 +374,26 @@ export interface IMcpPlugin {
 	/** Stable plugin id; also the default tool namespace and cache dir. */
 	readonly name: string;
 	readonly version?: string;
+	/**
+	 * Workspace-relative runtime directories/files from older releases.
+	 * The core moves each source into this plugin's `pluginCacheDir` before
+	 * `register()` runs. New plugins should use `ctx.pluginCacheDir` directly.
+	 */
+	readonly legacyCachePaths?: readonly {
+		readonly source: string;
+		readonly destination?: string;
+	}[];
 	/** One-line, model-agnostic description of what the plugin adds. */
 	readonly describe?: string;
 	/**
 	 * Other plugin ids (by `name`) this plugin requires to be present in
 	 * the same load set. Additive/optional: most plugins have no
-	 * dependencies. The loader (`load-plugins.ts`) refuses the entire
-	 * batch — no partial registration — if any loaded plugin names a
-	 * dependency that is not also being loaded, collecting every missing
-	 * dependency into a single combined error instead of failing one at
-	 * a time. Declaring this is the plugin's job; enforcing it is the
-	 * loader's (see `checkPluginDependencies`).
+	 * dependencies. The loader (`load-plugins.ts`) builds a dependency
+	 * graph, registers plugins in topological order, and blocks a plugin
+	 * before `register()` if one of its hard dependencies is missing,
+	 * failed, or is itself blocked. Cycles abort the batch before any
+	 * side effects run. Declaring this is the plugin's job; enforcing it
+	 * is the loader's.
 	 */
 	readonly dependsOn?: readonly string[];
 	/**
@@ -330,6 +408,14 @@ export interface IMcpPlugin {
 			error?: unknown;
 		};
 	};
+	/**
+	 * Machine-readable sample config for this plugin's `options`, meant
+	 * for consumers that need a direct object to inspect without the docs
+	 * wrapper shape of `configExample`. Existing plugins may omit this and
+	 * only declare `configExample`; consumers should treat that legacy path
+	 * as the fallback source of truth.
+	 */
+	readonly example?: Readonly<Record<string, unknown>>;
 	/**
 	 * Optional example config for the docs site. When present, the
 	 * `/plugins/<slug>` page renders a copy-pasteable JSON snippet with
@@ -355,10 +441,73 @@ export interface IMcpPlugin {
 	 * the only three plugins that currently declare this.
 	 */
 	readonly cacheNamespace?: 'results';
+	/**
+	 * Optional cross-plugin configuration validator. It runs after every
+	 * selected plugin has passed its own schema and before any plugin is
+	 * registered. Returning issues blocks the whole boot with an actionable
+	 * configuration diagnostic; returning an empty list permits registration.
+	 */
+	readonly validateConfiguration?: (
+		input: IPluginConfigurationValidationInput,
+	) =>
+		| readonly IPluginConfigurationIssue[]
+		| Promise<readonly IPluginConfigurationIssue[]>;
 	register(
 		ctx: IMcpPluginContext,
-	): IMcpPluginRegistrations | Promise<IMcpPluginRegistrations>;
+		signal?: AbortSignal,
+	):
+		| IMcpPluginRegistrations
+		| IPluginRuntime<IMcpPluginRegistrations>
+		| Promise<
+				| IMcpPluginRegistrations
+				| IPluginRuntime<IMcpPluginRegistrations>
+		  >;
+}
+
+export interface IPluginConfigurationValidationInput {
+	readonly pluginName: string;
+	readonly pluginOptions: ReadonlyMap<
+		string,
+		Readonly<Record<string, unknown>>
+	>;
+	readonly enabledPlugins: readonly string[];
+}
+
+export interface IPluginConfigurationIssue {
+	readonly code: string;
+	readonly message: string;
+	readonly keys: readonly string[];
+	readonly values?: Readonly<Record<string, unknown>>;
+	readonly precedence?: string;
+	readonly suggestedConfig?: Readonly<Record<string, unknown>>;
 }
 
 /** Identity helper for type-safe plugin authoring and inference. */
 export const definePlugin = (plugin: IMcpPlugin): IMcpPlugin => plugin;
+
+/**
+ * f00184 (Track D): adapt a legacy `register(ctx)` plugin to the
+ * phased lifecycle. The adapter maps:
+ *
+ *   prepare()   → returns `{ name }` from the plugin object.
+ *   activate()  → calls the legacy `register(ctx)` and returns
+ *                 the resolved registrations (or IPluginRuntime).
+ *   dispose()   → calls `dispose` when the activated payload is
+ *                 an IPluginRuntime (legacy plugins without
+ *                 `dispose` get a no-op).
+ *
+ * Plugins that already implement `prepare/activate/dispose`
+ * bypass the adapter entirely (see `hasPhasedLifecycle`).
+ */
+export const adaptLegacyPlugin = (plugin: IMcpPlugin) => ({
+	prepare: async (ctx: { name: string }) => ({ name: ctx.name, plugin }),
+	activate: async (
+		prepared: { name: string; plugin: IMcpPlugin },
+		_ctx: unknown,
+	) => prepared.plugin.register(prepared.plugin as never),
+	dispose: async (_active: unknown) => {
+		// No-op for plugins that don't implement the IPluginRuntime
+		// contract. Hosts that DO implement it (x00261) get the
+		// runtime.dispose() call via the IPluginRuntime type.
+	},
+});

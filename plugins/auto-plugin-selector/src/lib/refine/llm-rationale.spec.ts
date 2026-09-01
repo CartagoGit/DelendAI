@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildLlmRationale } from '@mcp-vertex/auto-plugin-selector/lib/refine/llm-rationale';
-import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/lib/contracts/interfaces/roster.interface';
+import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/public';
 import type {
 	IPluginFit,
 	IProjectSignals,
@@ -23,7 +23,7 @@ const cand = (
 	costTier: over.costTier ?? 1,
 });
 
-const fit = (id: string, score: number): IPluginFit => ({
+const pluginFit = (id: string, score: number): IPluginFit => ({
 	plugin: { id, tags: [], summary: `${id} plugin` },
 	fitScore: score,
 	reasons: ['pack:typescript'],
@@ -37,7 +37,7 @@ const SIGNALS: IProjectSignals = {
 
 describe('buildLlmRationale', () => {
 	it('returns reachable=false when the roster is empty', () => {
-		const decision = buildLlmRationale(SIGNALS, [fit('a', 1)], []);
+		const decision = buildLlmRationale(SIGNALS, [pluginFit('a', 1)], []);
 		expect(decision.reachable).toBe(false);
 		expect(decision.providerId).toBeUndefined();
 		expect(decision.prompt).toBeUndefined();
@@ -46,7 +46,7 @@ describe('buildLlmRationale', () => {
 	it('picks the cheapest-capable provider when the dial leans cheaper (8/10)', () => {
 		const decision = buildLlmRationale(
 			SIGNALS,
-			[fit('a', 1)],
+			[pluginFit('a', 1)],
 			[
 				cand({ id: 'expensive', vendor: 'a', costTier: 5 }),
 				cand({ id: 'cheap', vendor: 'b', costTier: 1 }),
@@ -63,7 +63,7 @@ describe('buildLlmRationale', () => {
 	it('honors a pinned provider when reachable', () => {
 		const decision = buildLlmRationale(
 			SIGNALS,
-			[fit('a', 1)],
+			[pluginFit('a', 1)],
 			[
 				cand({ id: 'cheap', vendor: 'a', costTier: 1 }),
 				cand({ id: 'pinned', vendor: 'b', costTier: 5 }),
@@ -77,7 +77,7 @@ describe('buildLlmRationale', () => {
 	it('falls back to the cheapest when the pinned id is not in the roster', () => {
 		const decision = buildLlmRationale(
 			SIGNALS,
-			[fit('a', 1)],
+			[pluginFit('a', 1)],
 			[cand({ id: 'cheap', costTier: 1 })],
 			{ pinnedId: 'missing' },
 		);
@@ -87,12 +87,12 @@ describe('buildLlmRationale', () => {
 	it('produces a deterministic prompt for the same input', () => {
 		const a = buildLlmRationale(
 			SIGNALS,
-			[fit('a', 1), fit('b', 0.5)],
+			[pluginFit('a', 1), pluginFit('b', 0.5)],
 			[cand({ id: 'p', costTier: 2 })],
 		);
 		const b = buildLlmRationale(
 			SIGNALS,
-			[fit('a', 1), fit('b', 0.5)],
+			[pluginFit('a', 1), pluginFit('b', 0.5)],
 			[cand({ id: 'p', costTier: 2 })],
 		);
 		expect(a.prompt).toBe(b.prompt);
@@ -110,12 +110,12 @@ describe('buildLlmRationale', () => {
 	it('is pure (same input -> same decision object reference-equal content)', () => {
 		const a = buildLlmRationale(
 			SIGNALS,
-			[fit('a', 1)],
+			[pluginFit('a', 1)],
 			[cand({ id: 'p' })],
 		);
 		const b = buildLlmRationale(
 			SIGNALS,
-			[fit('a', 1)],
+			[pluginFit('a', 1)],
 			[cand({ id: 'p' })],
 		);
 		expect(a.providerId).toBe(b.providerId);

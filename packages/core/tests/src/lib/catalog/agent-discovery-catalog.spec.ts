@@ -113,10 +113,22 @@ const sourcesWithProviders: ICatalogSources = {
 const fixedNow = () => new Date('2026-06-25T00:00:00.000Z');
 
 const parseTextResult = (result: unknown): Record<string, unknown> => {
+	const structured = (
+		result as { structuredContent?: Record<string, unknown> }
+	).structuredContent;
+	if (structured !== undefined) return structured;
 	const text = (result as { content: Array<{ type: string; text: string }> })
 		.content[0]?.text;
 	return JSON.parse(text ?? '{}') as Record<string, unknown>;
 };
+
+const textOf = (result: unknown): string =>
+	(result as { content: Array<{ type: string; text: string }> }).content[0]
+		?.text ?? '';
+
+const structuredOf = (result: unknown): Record<string, unknown> =>
+	(result as { structuredContent: Record<string, unknown> })
+		.structuredContent;
 
 const registerToolHandler = async () => {
 	let handler:
@@ -260,6 +272,17 @@ describe('buildCatalog', async () => {
 		expect(result.skills).toEqual([]);
 		expect(result.proposals).toEqual([]);
 		expect(result.counts).toEqual({ tools: 2, skills: 2, proposals: 2 });
+	});
+
+	it('returns a compact text summary while keeping the full structured catalog', async () => {
+		const handler = await registerToolHandler();
+		const result = await handler({ mode: 'full' });
+		const summary = JSON.parse(textOf(result));
+		const structured = structuredOf(result);
+
+		expect(summary).toBe('2 tools, 2 skills, 3 proposals');
+		expect(structured.ok).toBe(true);
+		expect(textOf(result)).not.toBe(JSON.stringify(structured));
 	});
 
 	it('surfaces the provider roster in full mode, sorted by id with lean fields only', async () => {

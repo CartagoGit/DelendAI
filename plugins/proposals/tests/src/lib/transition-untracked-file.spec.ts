@@ -11,6 +11,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import {
+	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -188,7 +189,7 @@ describe('proposal_transition on fresh vs tracked files (x00106 S2)', () => {
 			'type: proposal',
 			'track: general',
 			'kind: feat',
-			'shipped-in: [ship123]',
+			'shipped-in: [30551533]',
 			'---',
 			'',
 			'# f00004',
@@ -225,6 +226,9 @@ describe('proposal_transition on fresh vs tracked files (x00106 S2)', () => {
 		expect(result.filesRewritten).toBe(1);
 		expect(result.indexSynced).toBe(true);
 		expect(result.movedTo).toBe('done/feats/f00004-self.md');
+		expect(existsSync(join(proposalsDirAbs, 'done/feats/.gitkeep'))).toBe(
+			true,
+		);
 		const moved = readFileSync(
 			join(proposalsDirAbs, 'done/feats/f00004-self.md'),
 			'utf8',

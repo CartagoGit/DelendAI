@@ -75,9 +75,7 @@ const isCacheFresh = (
 	cacheStat: ICacheStatLike | null,
 	now: number,
 ): cacheStat is ICacheStatLike =>
-	cacheStat !== null &&
-	cacheStat.isFile() &&
-	now - cacheStat.mtimeMs < CACHE_TTL_MS;
+	cacheStat?.isFile() === true && now - cacheStat.mtimeMs < CACHE_TTL_MS;
 
 const isSkillSource = (value: unknown): value is TSkillSource =>
 	value === 'plugin' || value === 'core' || value === 'web';
@@ -180,9 +178,7 @@ export const loadSkill = async (
 				source: candidate.source,
 				sourcePath: candidate.sourcePath,
 			};
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return null;
 };

@@ -47,4 +47,28 @@ describe('scan/catch-swallow — detectCatchSwallow', () => {
 		const body = 'export const a = 1;\nexport const b = 2;';
 		expect(detectCatchSwallow(body)).toHaveLength(0);
 	});
+
+	it('preserves exact snippets for empty and comment-only catches', () => {
+		const body = [
+			'try {',
+			'  run();',
+			'} catch {}',
+			'try {',
+			'  runAgain();',
+			'} catch (error) {',
+			'  /* swallow */',
+			'}',
+		].join('\n');
+		expect(detectCatchSwallow(body)).toEqual([
+			{ line: 3, snippet: 'catch {}' },
+			{ line: 6, snippet: 'catch (error) { /* swallow */ }' },
+		]);
+	});
+
+	it('does not backtrack pathologically on a long unterminated catch header', () => {
+		const body = `try {} catch${' '.repeat(40_000)}(${`error${' '.repeat(40_000)}`}`;
+		const started = Date.now();
+		expect(detectCatchSwallow(body)).toEqual([]);
+		expect(Date.now() - started).toBeLessThan(500);
+	});
 });

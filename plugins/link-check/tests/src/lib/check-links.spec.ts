@@ -41,6 +41,25 @@ describe('headingAnchors', () => {
 		expect(anchors).toEqual(new Set(['intro', 'setup', 'setup-1', 'done']));
 	});
 
+	it('preserves the current anchor extraction on representative markdown', () => {
+		const fixture = [
+			'# Intro ###',
+			'See [doc](./guide.md#part-one "Title") and [self](#intro) and ![img](./img.png)',
+			'## Part One ##',
+			'[empty]()',
+			'```',
+			'[fake](./nope.md)',
+			'```',
+			'### OpenAPI / Swagger ###',
+		].join('\n');
+
+		expect([...headingAnchors(fixture)]).toEqual([
+			'intro',
+			'part-one',
+			'openapi--swagger',
+		]);
+	});
+
 	it('ignores headings inside code fences', () => {
 		const anchors = headingAnchors(
 			['# Real', '```', '# Fake', '```'].join('\n'),
@@ -64,6 +83,35 @@ describe('extractLinks', () => {
 			{ target: './a.md', line: 1 },
 			{ target: '../b.md#sec', line: 5 },
 		]);
+	});
+
+	it('preserves the current extracted-link output on representative markdown', () => {
+		const fixture = [
+			'# Intro ###',
+			'See [doc](./guide.md#part-one "Title") and [self](#intro) and ![img](./img.png)',
+			'## Part One ##',
+			'[empty]()',
+			'```',
+			'[fake](./nope.md)',
+			'```',
+			'### OpenAPI / Swagger ###',
+		].join('\n');
+
+		expect(extractLinks(fixture)).toEqual([
+			{ target: './guide.md#part-one', line: 2 },
+			{ target: '#intro', line: 2 },
+			{ target: '', line: 4 },
+		]);
+	});
+
+	it('handles long unmatched links and long closing heading runs without backtracking', () => {
+		const longSpaces = ' '.repeat(360);
+		const longHashes = '#'.repeat(360);
+
+		expect(extractLinks(`[slow](./guide.md${longSpaces}`)).toEqual([]);
+		expect([
+			...headingAnchors(`# Stable Heading${longSpaces}${longHashes}`),
+		]).toEqual(['stable-heading']);
 	});
 });
 

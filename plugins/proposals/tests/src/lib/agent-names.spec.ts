@@ -153,6 +153,112 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 		expect(a.model).toBeNull();
 	});
 
+	it('creates a renewable subscription lease and requires its token', async () => {
+		const assigned = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'leased',
+					agent_slot: 'orchestrator',
+				},
+				options,
+			),
+		) as {
+			subscription_id: string;
+			lease_until: string;
+			last_seen: string;
+		};
+		expect(assigned.subscription_id).toMatch(/^[0-9a-f-]{36}$/);
+		expect(Date.parse(assigned.lease_until)).toBeGreaterThan(
+			Date.parse(assigned.last_seen),
+		);
+
+		const rejected = await runAgentNames(
+			{
+				action: 'heartbeat',
+				task_id: 'leased',
+				subscription_id: 'wrong-token',
+			},
+			options,
+		);
+		expect(rejected).toMatchObject({ isError: true });
+
+		const renewed = parse(
+			await runAgentNames(
+				{
+					action: 'heartbeat',
+					task_id: 'leased',
+					subscription_id: assigned.subscription_id,
+					now: new Date(Date.now() + 1_000).toISOString(),
+				},
+				options,
+			),
+		) as { subscription_id: string; lease_until: string };
+		expect(renewed.subscription_id).toBe(assigned.subscription_id);
+		expect(Date.parse(renewed.lease_until)).toBeGreaterThan(
+			Date.parse(assigned.lease_until),
+		);
+	});
+
+	it('invalidates the old subscription token when the task is released', async () => {
+		const assigned = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'released-lease',
+					agent_slot: 'orchestrator',
+				},
+				options,
+			),
+		) as { subscription_id: string };
+
+		const released = parse(
+			await runAgentNames(
+				{ action: 'release', task_id: 'released-lease' },
+				options,
+			),
+		) as { released: string[] };
+		expect(released.released).toContain('released-lease');
+
+		const heartbeat = await runAgentNames(
+			{
+				action: 'heartbeat',
+				task_id: 'released-lease',
+				subscription_id: assigned.subscription_id,
+			},
+			options,
+		);
+		expect(heartbeat).toMatchObject({ isError: true });
+	});
+
+	it('expires a pooled subscription automatically when no heartbeat renews it', async () => {
+		const assigned = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'expired',
+					agent_slot: 'orchestrator',
+					now: '2026-08-29T00:00:00.000Z',
+				},
+				{ ...options, pool: ['solo'] },
+			),
+		) as { lease_until: string };
+		expect(assigned.lease_until).toBe('2026-08-29T00:10:00.000Z');
+
+		const next = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'replacement',
+					agent_slot: 'orchestrator',
+					now: '2026-08-29T00:10:01.000Z',
+				},
+				{ ...options, pool: ['solo'] },
+			),
+		) as { agent_name: string };
+		expect(next.agent_name).toBe('solo');
+	});
+
 	it('f00082 S3: defaults host/model from options.defaultIdentity when the caller omits them', async () => {
 		const a = parse(
 			await runAgentNames(

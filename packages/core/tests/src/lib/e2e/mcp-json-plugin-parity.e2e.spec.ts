@@ -27,7 +27,13 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 			}),
 			'utf8',
 		);
-		const args = parseCliArgs([`--workspace=${workspace}`], workspace);
+		// r00026 (TOK-004): pin native — this suite is about
+		// mcp.json/config plugin-loading parity, not surface negotiation
+		// (adaptive is now the default for a plain client).
+		const args = parseCliArgs(
+			[`--workspace=${workspace}`, '--surface=native'],
+			workspace,
+		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: memoryPlugin }),
 		});
@@ -61,9 +67,7 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 			name: 'mcp-vertex_overview',
 			arguments: { compact: true },
 		});
-		const text = (res.content as Array<{ type: string; text: string }>)[0]
-			?.text;
-		const overview = JSON.parse(text ?? '{}') as {
+		const overview = res.structuredContent as {
 			readonly plugins?: readonly string[];
 			readonly pluginDiagnostic?: {
 				readonly requested: readonly string[];
@@ -99,7 +103,7 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 				'utf8',
 			);
 			const args = parseCliArgs(
-				[`--workspace=${badWorkspace}`],
+				[`--workspace=${badWorkspace}`, '--surface=native'],
 				badWorkspace,
 			);
 			const { config } = await assembleCliConfig(args, {
@@ -130,10 +134,7 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 					name: 'mcp-vertex_overview',
 					arguments: { compact: true },
 				});
-				const text = (
-					res.content as Array<{ type: string; text: string }>
-				)[0]?.text;
-				const overview = JSON.parse(text ?? '{}') as {
+				const overview = res.structuredContent as {
 					readonly pluginDiagnostic?: {
 						readonly requested: readonly string[];
 						readonly loaded: readonly string[];

@@ -13,13 +13,20 @@ import {
 	type IReadReleaseHealthDeps,
 	type IReadTracesDeps,
 } from '../traces';
+import type { IRuntimeMetricsRegistry } from '../contracts/interfaces/observability.interface';
 
 export interface IObsHealthToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRootAbs?: string;
 	readonly tracesDeps?: IReadTracesDeps;
 	readonly releaseHealthDeps?: IReadReleaseHealthDeps;
+	/** Optional — when present, both handlers record their response size for `obs_runtime_metrics`. */
+	readonly metricsRegistry?: IRuntimeMetricsRegistry;
 }
+
+/** Wire-payload byte size, matching what an MCP client actually receives. */
+const responseByteSize = (payload: unknown): number =>
+	Buffer.byteLength(JSON.stringify(payload), 'utf8');
 
 const SEVERITY = z.enum(['critical', 'high', 'medium', 'low', 'info']);
 
@@ -125,12 +132,16 @@ export const buildObsHealthToolRegistration = (
 					});
 					const groups = groupRecordsByTrace(records);
 					const severity = summarizeTraceGroups(groups);
-					return toolJson({
+					const payload = {
 						sampleSize: records.length,
 						groups,
 						summary: severity.summary,
 						worst: severity.worst,
-					});
+					};
+					options.metricsRegistry?.recordResponseBytes(
+						responseByteSize(payload),
+					);
+					return toolJson(payload);
 				} catch (error) {
 					return toolError((error as Error).message);
 				}
@@ -159,11 +170,15 @@ export const buildObsHealthToolRegistration = (
 					});
 					const versions = computeReleaseHealth(records);
 					const severity = summarizeReleaseHealth(versions);
-					return toolJson({
+					const payload = {
 						versions,
 						summary: severity.summary,
 						worst: severity.worst,
-					});
+					};
+					options.metricsRegistry?.recordResponseBytes(
+						responseByteSize(payload),
+					);
+					return toolJson(payload);
 				} catch (error) {
 					return toolError((error as Error).message);
 				}

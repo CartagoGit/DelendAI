@@ -1,7 +1,10 @@
-import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
-import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	writeFileAtomic,
+	withFileMutex,
+} from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 
@@ -93,7 +96,8 @@ const EMPTY_DOCUMENT = (): {
 });
 
 const defaultReadTable = async (path: string): Promise<string> =>
-	readFile(path, 'utf8');
+	(await new SafeWorkspaceReader(dirname(path)).readText(basename(path)))
+		.content;
 
 const defaultWriteTable = async (path: string, body: string): Promise<void> =>
 	writeFileAtomic(path, body);
@@ -145,7 +149,7 @@ const withMutex = async <T>(
 const normalizeFiles = (files: readonly string[]): string[] =>
 	[...new Set(files)].sort();
 
-const sameFiles = (
+const _sameFiles = (
 	left: readonly string[],
 	right: readonly string[],
 ): boolean => {
@@ -331,10 +335,10 @@ const pruneContentions = (
 	nowMs: number,
 ): readonly IFileLockContention[] =>
 	records.filter((r) => {
-		if (r.resolvedAt === undefined) return true;
-		const resolvedMs = new Date(r.resolvedAt).getTime();
-		if (Number.isNaN(resolvedMs)) return true;
-		return nowMs - resolvedMs <= CONTENTION_HISTORY_WINDOW_MS;
+		const activityAt = r.resolvedAt ?? r.lastSeenAt;
+		const activityMs = new Date(activityAt).getTime();
+		if (Number.isNaN(activityMs)) return true;
+		return nowMs - activityMs <= CONTENTION_HISTORY_WINDOW_MS;
 	});
 
 export const readFileLockEntries = async (

@@ -4,8 +4,23 @@
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs/mcp-vertex",
 	"agentWorktree": false,
+	"core": {
+		"agentPolicy": {
+			"autonomous": true,
+			"principles": [
+				"Apply SOLID architecture where it improves ownership and changeability.",
+				"Use good engineering practices and keep the code clear and maintainable.",
+				"Reuse existing code and abstractions before introducing duplication.",
+				"Keep naming, files, and folders homogeneous with the surrounding project."
+			]
+		}
+	},
 	"commitAuthor": {
 		"mode": "git"
+	},
+	"surfaceMode": "managed",
+	"managedSurface": {
+		"loading": "lazy"
 	},
 	"convention": {
 		"pluginPathsRoot": "packages",
@@ -15,7 +30,8 @@
 		"git": {
 			"options": {
 				"allowForge": true,
-				"allowWrite": true
+				"allowWrite": true,
+				"allowStash": false
 			}
 		},
 		"forge": {
@@ -32,6 +48,32 @@
 					"build",
 					".git"
 				]
+			}
+		},
+		"context-for-change": {
+			"options": {
+				"docsRoots": ["docs/mcp-vertex", "README.md"],
+				"maxBytes": 3000
+			}
+		},
+		"impact-analysis": {
+			"options": {
+				"maxBytes": 3000
+			}
+		},
+		"project-health": {
+			"options": {
+				"maxBytes": 2000
+			}
+		},
+		"quality-policy": {
+			"options": {
+				"maxBytes": 2000
+			}
+		},
+		"adaptive-optimizer": {
+			"options": {
+				"maxBytes": 2000
 			}
 		},
 		"memory": {
@@ -53,7 +95,11 @@
 			"options": {}
 		},
 		"quality": {
-			"options": {}
+			"options": {
+				"scopes": {
+					"all": ["bun run build"]
+				}
+			}
 		},
 		"deps": {
 			"options": {
@@ -68,6 +114,9 @@
 				"namePool": ["falcon", "owl", "crow", "sparrow", "finch"],
 				"orchestration": {
 					"delegateAfterToolCalls": 3
+				},
+				"persist": {
+					"mode": "commit-and-push"
 				}
 			}
 		},
@@ -76,6 +125,9 @@
 				"intervalMs": 2000,
 				"heartbeatMs": 30000
 			}
+		},
+		"completion": {
+			"options": {}
 		},
 		"logs": {
 			"options": {
@@ -97,9 +149,6 @@
 			}
 		},
 		"security": {
-			"options": {}
-		},
-		"prompts-pack": {
 			"options": {}
 		},
 		"diagram": {
@@ -126,12 +175,49 @@
 		"usage-tracking": {
 			"options": {}
 		},
+		"project-kpis": {
+			"options": {}
+		},
 		"orchestrator-runner": {
 			"options": {}
+		},
+		"agent-orchestrator": {
+			"options": {
+				"policy": {
+					"defaultMode": "auto",
+					"defaults": {
+						"budget": {
+							"maxTokensOrchestrator": 200000,
+							"maxTokensPerSubagent": 50000,
+							"timeoutMs": 0
+						},
+						"rotation": {
+							"maxIterationsPerSubagent": 3,
+							"allow": [
+								"token-budget-exhausted",
+								"schema-violation",
+								"repeated-output",
+								"error-storm"
+							]
+						}
+					}
+				}
+			}
 		},
 		"auto-agent-selector": {
 			"options": {
 				"costQualityTradeoff": 8
+			}
+		},
+		"auto-plugin-selector": {
+			"options": {
+				"weights": {
+					"match": 0.2,
+					"tokenTax": 0.25,
+					"latencyTax": 0.15,
+					"historicalSuccess": 0.2,
+					"permissionRisk": 0.2
+				}
 			}
 		},
 		"container": {
@@ -139,6 +225,49 @@
 		},
 		"audit": {
 			"options": {}
+		},
+		"commit-policy": {
+			"options": {
+				"gitTimeoutMs": 60000,
+				"commit": {
+					"enabled": true
+				},
+				"stash": {
+					"enabled": false
+				},
+				"push": {
+					"enabled": true,
+					"onCommit": true,
+					"force": "with-lease",
+					"protectedBranches": ["main", "master"],
+					"remote": "origin",
+					"branch": "develop"
+				},
+				"cadence": {
+					"triggers": [
+						{
+							"kind": "slice"
+						},
+						{
+							"kind": "interval",
+							"minutes": 5
+						}
+					],
+					"sliceScoping": false,
+					"allowForeignChanges": true
+				},
+				"identity": {
+					"mode": "explicit",
+					"owner": {
+						"name": "Cartago",
+						"email": "cartago.relaxingcup@gmail.com"
+					}
+				},
+				"audit": {
+					"trailer": "co-authored-by",
+					"agentFormat": "${host}/${model}"
+				}
+			}
 		}
 	}
 }

@@ -19,7 +19,9 @@
  * Map through the engine.
  */
 
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type { IProposalFrontmatter } from '../proposals/proposal-document';
 import { parseProposalDocument } from '../proposals/proposal-document';
@@ -123,7 +125,11 @@ const readIndex = async (
 ): Promise<ReadonlyMap<string, IIndexEntry>> => {
 	let raw: string;
 	try {
-		raw = await readFile(indexPathAbs, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(indexPathAbs)).readText(
+				basename(indexPathAbs),
+			)
+		).content;
 	} catch {
 		return new Map();
 	}
@@ -244,7 +250,11 @@ export const readOwnSliceStatusesFromDisk = async (
 ): Promise<ReadonlyMap<string, string>> => {
 	let raw: string;
 	try {
-		raw = await readFile(planMarkdownPath, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(planMarkdownPath)).readText(
+				basename(planMarkdownPath),
+			)
+		).content;
 	} catch {
 		return new Map();
 	}

@@ -216,6 +216,35 @@ Scope: global
 ### Zed
 
 File: settings.json
+
+## Install once for all projects
+
+The CLI can merge the same MCP server into the supported global host
+configurations, so each repository does not need its own hand-written MCP
+file:
+
+```bash
+mcpv init:global --all
+```
+
+To select only specific global hosts, use:
+
+```bash
+mcpv init:global --ide=cursor-global,windsurf,claude-desktop,antigravity,zed
+```
+
+The command is intentionally separate from `init`: it never writes project
+files such as `.vscode/mcp.json`, `.cursor/mcp.json`, or `.mcp.json`. It
+preserves unrelated MCP servers and host settings, and is safe to run again.
+Project-only targets (`vscode`, `cursor`, and `claude-code`), unknown ids, and
+an empty `--ide=` value are rejected instead of falling back to autodetection.
+
+`init:global` installs the MCP connection, not a second copy of agent rules.
+The same MCP tools and canonical bootstrap are available to any MCP-capable
+host, including Copilot, Claude, Cursor, Codex, Continue, and Aider. Run
+`mcpv init` or `mcpv init:default` inside a repository when that host needs
+project-local instruction pointers, generated agent adapters, skills, or a
+project-specific `mcp-vertex.config.json`.
 Scope: global
 
 ```json

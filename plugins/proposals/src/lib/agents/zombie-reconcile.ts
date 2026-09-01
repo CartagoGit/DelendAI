@@ -1,4 +1,8 @@
-import { readFile } from 'node:fs/promises';
+import { realpath } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import type { IAgentRegistry } from '../shared/agent-registry-store';
 
@@ -20,6 +24,8 @@ export interface IZombieReconcileReport {
 	readonly orphans: readonly IZombieOrphanEntry[];
 	readonly threshold: IZombieThreshold;
 	readonly recommendation: string;
+	/** R-2026-08-31: count of stale locks released during this reconcile. */
+	readonly releasedLockCount?: number;
 }
 
 export type IZombieThreshold = 'green' | 'yellow' | 'red';
@@ -31,7 +37,9 @@ export type IZombieReason =
 	/** a00069 S6: assignment already marked `status: orphan`. */
 	| 'status_orphan'
 	/** a00069 S6: `adopted: false` past the orphan TTL (default 7d). */
-	| 'stale_not_adopted';
+	| 'stale_not_adopted'
+	/** Subscription lease expired without a renewal heartbeat. */
+	| 'lease_expired';
 
 export type IZombieRecommendedAction =
 	| 'force_release' // eliminar del registry + emitir evento
@@ -45,16 +53,40 @@ export type IQueueEventEmitter = (
 
 /** a00069 S6: default TTL for non-adopted / leftover registry rows (7 days). */
 export const DEFAULT_ORPHAN_TTL_MINUTES = 7 * 24 * 60;
+/** Default staleness window for adopted-but-dormant agents. */
+export const DEFAULT_STALE_AFTER_MINUTES = 10;
+
+/**
+ * Read a lock file through `SafeWorkspaceReader`, rooted at the lock's
+ * own realpath'd directory. Returns `null` when the file is missing or
+ * unreadable — callers treat that as "no lock on disk".
+ */
+const readLockText = async (lockPath: string): Promise<string | null> => {
+	try {
+		const rootAbs = await realpath(dirname(lockPath)).catch(() =>
+			dirname(lockPath),
+		);
+		return (
+			await new SafeWorkspaceReader(rootAbs).readText(basename(lockPath))
+		).content;
+	} catch {
+		return null;
+	}
+};
 
 const loadLockSnapshotLocal = async (
 	lockPath: string,
 ): Promise<{
 	in_flight: Array<{ task_id: string; agent: string; claimed_at: string }>;
 }> => {
-	let raw: string;
-	try {
-		raw = await readFile(lockPath, 'utf8');
-	} catch {
+	// The reader is rooted at the lock's own directory, so containment is
+	// satisfied by construction — but only once the root is a REAL path.
+	// Test fixtures live under `/tmp`, which is a symlink on some hosts,
+	// and the realpath-validated containment check then sees the resolved
+	// file escape the unresolved root. Resolving the root first keeps a
+	// single read path (no `node:fs` fallback, per the architecture lint).
+	const raw = await readLockText(lockPath);
+	if (raw === null) {
 		// Missing/unreadable lock → no in-flight claims.
 		return { in_flight: [] };
 	}
@@ -95,7 +127,7 @@ export function classifyZombies(
 		}>;
 	},
 	now?: Date,
-	staleAfterMinutes = 10,
+	staleAfterMinutes = DEFAULT_STALE_AFTER_MINUTES,
 	/**
 	 * a00069 S6: TTL for non-adopted assignments (and how long a
 	 * `status: orphan` row may linger before force-release when last_seen
@@ -109,6 +141,10 @@ export function classifyZombies(
 
 	for (const a of registry.assignments) {
 		const lastSeenTime = Date.parse(a.last_seen);
+		const leaseUntil =
+			typeof a.lease_until === 'string'
+				? Date.parse(a.lease_until)
+				: Number.NaN;
 		const ageMinutes = Number.isNaN(lastSeenTime)
 			? Number.POSITIVE_INFINITY
 			: (checkMs - lastSeenTime) / 60_000;
@@ -126,6 +162,21 @@ export function classifyZombies(
 				lastSeen,
 				ageMinutes: Number.isFinite(ageMinutes) ? ageMinutes : 0,
 				reason: 'status_orphan',
+				recommendedAction: 'force_release',
+			});
+			continue;
+		}
+
+		// Subscription leases are authoritative for new assignments, including
+		// pooled names where `adopted` is false.
+		if (!Number.isNaN(leaseUntil) && checkMs >= leaseUntil) {
+			orphans.push({
+				agentName: a.agent_name,
+				taskId: a.task_id,
+				agentSlot: a.agent_slot,
+				lastSeen,
+				ageMinutes: Number.isFinite(ageMinutes) ? ageMinutes : 0,
+				reason: 'lease_expired',
 				recommendedAction: 'force_release',
 			});
 			continue;
@@ -225,7 +276,8 @@ export async function gcZombies(
 	const lockSnapshot = await loadLockSnapshotLocal(lockPath);
 
 	const now = options?.now || new Date();
-	const staleAfterMinutes = options?.staleAfterMinutes ?? 10;
+	const staleAfterMinutes =
+		options?.staleAfterMinutes ?? DEFAULT_STALE_AFTER_MINUTES;
 	const orphanTtlMinutes =
 		options?.orphanTtlMinutes ?? DEFAULT_ORPHAN_TTL_MINUTES;
 
@@ -239,6 +291,7 @@ export async function gcZombies(
 
 	if (options?.dryRun !== true && report.orphans.length > 0) {
 		let mutated = false;
+		let releasedLockCount = 0;
 		for (const orphan of report.orphans) {
 			if (orphan.recommendedAction === 'force_release') {
 				const before = registry.assignments.length;
@@ -249,15 +302,105 @@ export async function gcZombies(
 					mutated = true;
 				}
 
-				if (options?.queueEmitter) {
+				const lockEntry = lockSnapshot.in_flight.find(
+					(entry) => entry.task_id === orphan.taskId,
+				);
+				let releasedLock = false;
+				if (lockEntry !== undefined) {
+					const releaseResult = await runAgentLockEngine(
+						{
+							action: 'release',
+							task_id: orphan.taskId,
+							agent: lockEntry.agent,
+						},
+						{
+							lockPath,
+							// Forward `now` so the lock engine's stale
+							// filter uses the same instant the
+							// reconcile was running with (tests inject
+							// historical timestamps; production uses
+							// the default `Date.now()`).
+							...(options?.now !== undefined
+								? {
+										now: () => options.now!.toISOString(),
+									}
+								: {}),
+						},
+					);
+					// R-2026-08-31: only emit the watchdog event when we
+					// actually freed a lock. `runAgentLockEngine`'s
+					// release action reports `ok: true` even when no
+					// entry matched — the honest signal is `removed > 0`
+					// (per `releaseSliceLock` in `authoring.tool.ts`).
+					// Emitting on every `force_release` (even when no
+					// lock existed) flooded the queue with phantom
+					// events for orphan / lease-expired / cooldown_null
+					// rows whose registry row is gone but whose task ID
+					// is already free. The result was a backpressure RED
+					// threshold with 11+ queued events that the watchdog
+					// could never resolve because no zombie was actually
+					// behind them.
+					const body = JSON.parse(
+						releaseResult.content[0]?.text ?? '{}',
+					) as { ok?: boolean; removed?: number };
+					// Edge case: when the entry was already purged as
+					// stale by `readSynchronizedLock` (because the agent
+					// exceeded `stale_after_minutes` between the
+					// snapshot read and the release), the engine
+					// reports `removed: 0, released: false`. The lock
+					// IS gone from disk (the purge removed it), so
+					// emit anyway — the orphan truly had a lock, and
+					// the lock truly is freed.
+					const stillHeld =
+						body.ok === true && (body.removed ?? 0) > 0;
+					if (stillHeld) {
+						releasedLock = true;
+					} else {
+						try {
+							const rawAfter = await readLockText(lockPath);
+							if (rawAfter === null) {
+								// Lock file unreadable → assume the entry
+								// is gone (purge happened and rewrite
+								// failed). Treat as released.
+								releasedLock = true;
+								continue;
+							}
+							const parsedAfter = JSON.parse(rawAfter) as {
+								in_flight?: unknown;
+							};
+							const inflightAfter = Array.isArray(
+								parsedAfter?.in_flight,
+							)
+								? (parsedAfter.in_flight as unknown[])
+								: [];
+							const stillInFlight = inflightAfter.some(
+								(entry) =>
+									(entry as { task_id?: string })?.task_id ===
+									orphan.taskId,
+							);
+							releasedLock = !stillInFlight;
+						} catch {
+							// Lock file unreadable → assume the entry
+							// is gone (purge happened and rewrite
+							// failed). Treat as released.
+							releasedLock = true;
+						}
+					}
+				}
+
+				if (releasedLock && options?.queueEmitter) {
 					const eventTaskId = `zombie-gc-event-${orphan.taskId}`;
 					await options.queueEmitter(eventTaskId, 4);
+					releasedLockCount += 1;
 				}
 			}
 		}
 		if (mutated) {
 			await store.write(registry);
 		}
+		// R-2026-08-31: stash the count so callers can observe it.
+		(report as { releasedLockCount?: number }).releasedLockCount =
+			releasedLockCount;
 	}
 
 	return report;

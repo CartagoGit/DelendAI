@@ -4,6 +4,7 @@ import type {
 	IRunExternalToolInput,
 	FindingSeverity,
 	IFinding,
+	ProjectPackKind,
 } from '@mcp-vertex/core/public';
 
 export type SastLanguage =
@@ -23,14 +24,7 @@ export interface ISastRule {
 }
 
 export interface IDetectedStack {
-	readonly pack:
-		| 'generic'
-		| 'javascript'
-		| 'typescript'
-		| 'python'
-		| 'go'
-		| 'rust'
-		| 'mixed';
+	readonly pack: ProjectPackKind;
 	readonly languages: readonly SastLanguage[];
 	readonly files: readonly string[];
 }

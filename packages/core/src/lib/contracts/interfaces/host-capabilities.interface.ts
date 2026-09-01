@@ -27,7 +27,7 @@ export type THostContinuationCapability = 'manual' | 'host-loop';
 export interface IHostCapabilities {
 	/** Every adapter pack requires this MCP baseline. */
 	readonly mcp: {
-		readonly tools: true;
+		readonly tools: boolean;
 		readonly prompts: boolean;
 		readonly resources: boolean;
 	};

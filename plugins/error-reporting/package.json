@@ -2,7 +2,7 @@
 	"name": "@mcp-vertex/error-reporting",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Automatic mcp-vertex error reporting to GitHub: detects tool failures whose stack/message originates inside mcp-vertex itself and opens a detailed, de-duplicated issue on the target repository. Enabled by default, disable with plugins.error-reporting.options.enabled = false.",
+	"description": "Automatic mcp-vertex error reporting to GitHub: detects tool failures whose stack/message originates inside mcp-vertex itself and opens a detailed, de-duplicated issue on the target repository after explicit opt-in with plugins.error-reporting.options.enabled = true.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -53,7 +53,7 @@
 		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.10"
+		"vitest": "4.1.11"
 	},
 	"publishConfig": {
 		"access": "public"

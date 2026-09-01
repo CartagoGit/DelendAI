@@ -1,3 +1,9 @@
+import { DEFAULT_MAX_RESPONSE_BYTES } from '../contracts/constants/response-byte-budget.constant';
+import type {
+	ITruncatedEnvelope,
+	ITruncationResult,
+} from '../contracts/interfaces/truncation.interface';
+
 /**
  * Shared tool-response helpers. All tools should return COMPACT JSON
  * (no pretty-printing) to minimise tokens, and a consistent envelope
@@ -41,6 +47,29 @@ export interface IToolErrorLogHint {
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);
 
+const ensureToolResultMeta = (
+	result: unknown,
+): Record<string, unknown> | null => {
+	if (!isPlainObject(result)) return null;
+	const existing = result._meta;
+	if (isPlainObject(existing)) return existing;
+	const meta: Record<string, unknown> = {};
+	result._meta = meta;
+	return meta;
+};
+
+export const injectToolResultMeta = (
+	result: unknown,
+	metaEntries: Record<string, unknown>,
+): void => {
+	const meta = ensureToolResultMeta(result);
+	if (meta === null) return;
+	for (const [key, value] of Object.entries(metaEntries)) {
+		if (value === undefined) continue;
+		meta[key] = value;
+	}
+};
+
 /**
  * Compact JSON text result (no envelope). Use for raw structured data.
  * Object payloads are also surfaced as `structuredContent` so modern MCP
@@ -49,6 +78,19 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 export const toolJson = (value: unknown): IToolTextResult => ({
 	content: [{ type: 'text', text: JSON.stringify(value) }],
 	...(isPlainObject(value) ? { structuredContent: value } : {}),
+});
+
+/**
+ * Structured object payload plus a compact human-readable summary string.
+ * The summary text is JSON-stringified so callers that still parse
+ * `content[0].text` as JSON receive a valid primitive, not raw prose.
+ */
+export const toolJsonWithSummary = (
+	value: Record<string, unknown>,
+	summaryText: string,
+): IToolTextResult => ({
+	content: [{ type: 'text', text: JSON.stringify(summaryText) }],
+	structuredContent: value,
 });
 
 /** Compact success envelope: `{ ok: true, ...data }`. */
@@ -100,21 +142,170 @@ export const toolErrorWithLogHint = (
 	};
 };
 
-/** Default byte ceiling for a single tool response (256 KiB). Aligns with
- * the `token-budgets` table — a compact JSON payload under this size
- * stays under the measured per-tool budget for every preset we ship. */
-export const DEFAULT_MAX_RESPONSE_BYTES = 256 * 1024;
-
-export interface ITruncationResult<T> {
-	/** The (possibly truncated) value to surface to the agent. */
-	readonly value: T;
-	/** True when the value was truncated to fit under `maxBytes`. */
-	readonly truncated: boolean;
-	/** Original byte length of the serialised value. */
-	readonly originalBytes: number;
-	/** Byte length of the truncated value (`<= maxBytes`). */
-	readonly finalBytes: number;
+interface ITruncatedPreviewString {
+	readonly kind: 'string';
+	readonly totalChars: number;
+	readonly preview?: string;
+	readonly truncated?: true;
 }
+
+interface ITruncatedPreviewArray {
+	readonly kind: 'array';
+	readonly length: number;
+	readonly items?: readonly unknown[];
+	readonly remainingItems?: number;
+}
+
+interface ITruncatedPreviewObject {
+	readonly kind: 'object';
+	readonly totalKeys: number;
+	readonly keys?: readonly string[];
+	readonly sample?: Readonly<Record<string, unknown>>;
+	readonly remainingKeys?: number;
+}
+
+interface ITruncatedPreviewScalar {
+	readonly kind:
+		| 'number'
+		| 'boolean'
+		| 'null'
+		| 'bigint'
+		| 'undefined'
+		| 'function'
+		| 'symbol';
+	readonly value?: boolean | number | string;
+}
+
+type TruncatedPreview =
+	| ITruncatedPreviewString
+	| ITruncatedPreviewArray
+	| ITruncatedPreviewObject
+	| ITruncatedPreviewScalar;
+
+const byteLengthUtf8 = (input: string): number =>
+	Buffer.byteLength(input, 'utf8');
+
+const takeCodePoints = (value: string, limit: number): string =>
+	Array.from(value).slice(0, Math.max(0, limit)).join('');
+
+const describeScalar = (value: unknown): ITruncatedPreviewScalar => {
+	if (value === null) return { kind: 'null' };
+	if (typeof value === 'number') return { kind: 'number', value };
+	if (typeof value === 'boolean') return { kind: 'boolean', value };
+	if (typeof value === 'bigint') {
+		return { kind: 'bigint', value: value.toString() };
+	}
+	if (typeof value === 'undefined') return { kind: 'undefined' };
+	if (typeof value === 'function') return { kind: 'function' };
+	return { kind: 'symbol', value: String(value) };
+};
+
+const previewLeaf = (value: unknown): unknown => {
+	if (typeof value === 'string') {
+		const totalChars = Array.from(value).length;
+		const preview = takeCodePoints(value, 16);
+		return {
+			kind: 'string',
+			totalChars,
+			...(preview.length === 0 ? {} : { preview }),
+			...(preview === value ? {} : { truncated: true as const }),
+		} satisfies ITruncatedPreviewString;
+	}
+	if (Array.isArray(value)) {
+		return {
+			kind: 'array',
+			length: value.length,
+		} satisfies ITruncatedPreviewArray;
+	}
+	if (isPlainObject(value)) {
+		return {
+			kind: 'object',
+			totalKeys: Object.keys(value).length,
+		} satisfies ITruncatedPreviewObject;
+	}
+	return describeScalar(value);
+};
+
+const buildPreview = (
+	value: unknown,
+	detailBudget: number,
+): TruncatedPreview => {
+	if (typeof value === 'string') {
+		const totalChars = Array.from(value).length;
+		const preview = takeCodePoints(value, detailBudget);
+		return {
+			kind: 'string',
+			totalChars,
+			...(preview.length === 0 ? {} : { preview }),
+			...(preview === value ? {} : { truncated: true as const }),
+		};
+	}
+	if (Array.isArray(value)) {
+		const visibleCount = Math.min(detailBudget, value.length);
+		const items = value.slice(0, visibleCount).map(previewLeaf);
+		return {
+			kind: 'array',
+			length: value.length,
+			...(items.length === 0 ? {} : { items }),
+			...(visibleCount < value.length
+				? { remainingItems: value.length - visibleCount }
+				: {}),
+		};
+	}
+	if (isPlainObject(value)) {
+		const keys = Object.keys(value);
+		const visibleKeys = keys.slice(0, Math.min(detailBudget, keys.length));
+		const sampleEntries = visibleKeys.map(
+			(key) => [key, previewLeaf(value[key])] as const,
+		);
+		return {
+			kind: 'object',
+			totalKeys: keys.length,
+			...(visibleKeys.length === 0 ? {} : { keys: visibleKeys }),
+			...(sampleEntries.length === 0
+				? {}
+				: { sample: Object.fromEntries(sampleEntries) }),
+			...(visibleKeys.length < keys.length
+				? { remainingKeys: keys.length - visibleKeys.length }
+				: {}),
+		};
+	}
+	return describeScalar(value);
+};
+
+const previewSearchUpperBound = (value: unknown): number => {
+	if (typeof value === 'string') return Array.from(value).length;
+	if (Array.isArray(value)) return value.length;
+	if (isPlainObject(value)) return Object.keys(value).length;
+	return 1;
+};
+
+const buildEnvelope = (
+	originalBytes: number,
+	maxBytes: number,
+	head: TruncatedPreview,
+	clamped?: true,
+): { readonly envelope: ITruncatedEnvelope; readonly finalBytes: number } => {
+	let finalBytes = 0;
+	while (true) {
+		const envelope = {
+			__truncated: true as const,
+			originalBytes,
+			maxBytes,
+			finalBytes,
+			head,
+			...(clamped === true ? { clamped: true as const } : {}),
+		};
+		const nextBytes = byteLengthUtf8(JSON.stringify(envelope));
+		if (nextBytes === finalBytes) {
+			return {
+				envelope: envelope as ITruncatedEnvelope,
+				finalBytes: nextBytes,
+			};
+		}
+		finalBytes = nextBytes;
+	}
+};
 
 /**
  * Pure: serialize `value` to JSON and emit a `{ __truncated, head, … }`
@@ -125,20 +316,20 @@ export interface ITruncationResult<T> {
  * The marker keeps the shape valid JSON so clients that ignore the
  * marker still parse the response without crashing.
  *
- * Implementation note — we never slice the JSON string at an
- * arbitrary offset (that produces invalid JSON when the cut lands
- * mid-string or mid-escape). Instead we serialise the full payload,
- * verify the byte count, and only when over budget we emit a fresh
- * envelope that holds the original value under `head` (so the caller
- * can still consume the structured data without re-parsing fragile
- * substrings).
+ * Implementation note — we never slice the JSON string at an arbitrary
+ * offset (that produces invalid JSON when the cut lands mid-string or
+ * mid-escape). Instead we emit a fresh envelope whose `head` is a safe
+ * structural preview, then binary-search the maximum preview detail
+ * that still fits. If even the minimum honest envelope does not fit,
+ * we return that minimum envelope with `clamped: true` and the real
+ * `finalBytes`.
  */
 export const truncateIfTooLarge = <T>(
 	value: T,
 	maxBytes: number = DEFAULT_MAX_RESPONSE_BYTES,
 ): ITruncationResult<T | ITruncatedEnvelope> => {
 	const serialised = JSON.stringify(value);
-	const originalBytes = Buffer.byteLength(serialised, 'utf8');
+	const originalBytes = byteLengthUtf8(serialised);
 	if (originalBytes <= maxBytes) {
 		return {
 			value,
@@ -147,54 +338,47 @@ export const truncateIfTooLarge = <T>(
 			finalBytes: originalBytes,
 		};
 	}
-	// Iteratively shrink `head` until the envelope (base + escaped head)
-	// fits under `maxBytes`. Convergence is guaranteed because every
-	// iteration removes at least one byte from `head`, and the
-	// degenerate case (headBudget = 0) terminates with an empty head.
-	const baseShape = {
-		__truncated: true,
-		originalBytes,
-		maxBytes,
-		head: '',
-	} as const;
-	let envelopeSize = Buffer.byteLength(JSON.stringify(baseShape), 'utf8');
-	let headBudget = Math.max(0, maxBytes - envelopeSize - 1);
-	while (headBudget > 0) {
-		const candidate = {
-			__truncated: true,
+	const minimalHead = buildPreview(value, 0);
+	const minimumEnvelope = buildEnvelope(originalBytes, maxBytes, minimalHead);
+	if (minimumEnvelope.finalBytes > maxBytes) {
+		const clampedEnvelope = buildEnvelope(
 			originalBytes,
 			maxBytes,
-			head: serialised.slice(0, headBudget),
+			minimalHead,
+			true,
+		);
+		return {
+			value: clampedEnvelope.envelope,
+			truncated: true,
+			originalBytes,
+			finalBytes: clampedEnvelope.finalBytes,
+			clamped: true,
 		};
-		const size = Buffer.byteLength(JSON.stringify(candidate), 'utf8');
-		if (size <= maxBytes) {
-			envelopeSize = size;
-			break;
-		}
-		headBudget = Math.max(0, headBudget - 1);
 	}
-	const envelope = {
-		__truncated: true,
-		originalBytes,
-		maxBytes,
-		head: serialised.slice(0, headBudget),
-	};
-	const finalSerialised = JSON.stringify(envelope);
-	const truncatedValue = JSON.parse(finalSerialised) as ITruncatedEnvelope;
+	let bestEnvelope = minimumEnvelope;
+	let low = 0;
+	let high = previewSearchUpperBound(value);
+	while (low <= high) {
+		const mid = Math.floor((low + high) / 2);
+		const candidate = buildEnvelope(
+			originalBytes,
+			maxBytes,
+			buildPreview(value, mid),
+		);
+		if (candidate.finalBytes <= maxBytes) {
+			bestEnvelope = candidate;
+			low = mid + 1;
+			continue;
+		}
+		high = mid - 1;
+	}
 	return {
-		value: truncatedValue,
+		value: bestEnvelope.envelope,
 		truncated: true,
 		originalBytes,
-		finalBytes: Buffer.byteLength(finalSerialised, 'utf8'),
+		finalBytes: bestEnvelope.finalBytes,
 	};
 };
-
-export interface ITruncatedEnvelope {
-	readonly __truncated: true;
-	readonly originalBytes: number;
-	readonly maxBytes: number;
-	readonly head?: unknown;
-}
 
 /** Convenience wrapper that combines `toolJson` with `truncateIfTooLarge`.
  * Use when a tool\'s output is potentially unbounded (full file dumps,

@@ -3,8 +3,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { discoverAndPersistRoster } from '../discovery/discover-roster';
-import { realDiscoveryDeps } from '../discovery/real-deps';
+import { discoverRosterForTool } from '../discovery/real-deps';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
 import type { IRosterSnapshotStore } from '../discovery/roster-store';
 
@@ -62,8 +61,8 @@ export const buildAutoStatusRegistration = (options: {
 					outputSchema: OUTPUT_SCHEMA,
 				},
 				async () => {
-					const roster = await discoverAndPersistRoster(
-						options.deps ?? realDiscoveryDeps(),
+					const roster = await discoverRosterForTool(
+						options.deps,
 						options.rosterStore,
 					);
 					return toolJson({

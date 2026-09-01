@@ -76,6 +76,77 @@ export const setFrontmatterField = (
 	return replaceFrontmatterBlock(raw, replaced);
 };
 
+const countIndent = (line: string): number => {
+	let indent = 0;
+	for (const ch of line) {
+		if (ch !== ' ') break;
+		indent++;
+	}
+	return indent;
+};
+
+/**
+ * Replace a top-level frontmatter field with a block value.
+ *
+ * Example:
+ *   fieldName = "evidence"
+ *   blockLines = ["commit: abc", "ci-runs:", "  - name: CI"]
+ *
+ * becomes:
+ *   evidence:
+ *     commit: abc
+ *     ci-runs:
+ *       - name: CI
+ */
+export const setFrontmatterBlockField = (
+	raw: string,
+	fieldName: string,
+	blockLines: readonly string[],
+): string => {
+	if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(fieldName)) return raw;
+	if (blockLines.length === 0) return raw;
+	const block = extractFrontmatterBlock(raw);
+	if (block === null) return raw;
+
+	const lines = block.split('\n');
+	const fieldPattern = new RegExp(`^${fieldName}:(?:\\s.*)?$`);
+	const fieldIndex = lines.findIndex((line, index) => {
+		if (index === 0 || index === lines.length - 1) return false;
+		return fieldPattern.test(line);
+	});
+	const replacement = [
+		`${fieldName}:`,
+		...blockLines.map((line) => `  ${line}`),
+	];
+
+	if (fieldIndex !== -1) {
+		let fieldEnd = fieldIndex + 1;
+		while (fieldEnd < lines.length - 1) {
+			const current = lines[fieldEnd] ?? '';
+			if (current.trim() === '') {
+				fieldEnd++;
+				continue;
+			}
+			if (countIndent(current) === 0) break;
+			fieldEnd++;
+		}
+		const replaced = [
+			...lines.slice(0, fieldIndex),
+			...replacement,
+			...lines.slice(fieldEnd),
+		].join('\n');
+		return replaceFrontmatterBlock(raw, replaced);
+	}
+
+	const insertAt = Math.max(lines.length - 1, 1);
+	const replaced = [
+		...lines.slice(0, insertAt),
+		...replacement,
+		...lines.slice(insertAt),
+	].join('\n');
+	return replaceFrontmatterBlock(raw, replaced);
+};
+
 /**
  * Read a single frontmatter field's value. Returns `undefined` when
  * the field is absent, the frontmatter block is missing, or the

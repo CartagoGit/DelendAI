@@ -9,13 +9,20 @@
 import type { z } from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import { resolveAdoptionStrategy } from './adoption-strategy';
+import { buildBlueprintFiles } from './build-blueprint';
+import type { IBlueprintArtifact, IServerBlueprint } from './build-blueprint';
 import {
 	scaffoldClientFiles,
 	scaffoldHostProject,
 	scaffoldPluginFiles,
 } from '../scaffold/scaffold-host';
 import { scaffoldExtensionHostFiles } from '../scaffold/scaffold-extension-host';
-import { CREATE_INPUT_SCHEMA, MCP_PROJECT_SKELETON_SCHEMA } from './schemas';
+import {
+	CREATE_INPUT_SCHEMA,
+	type BLUEPRINT_ARTIFACT_SCHEMA,
+	MCP_PROJECT_SKELETON_SCHEMA,
+} from './schemas';
 import { toolJson } from '../shared/tool-response';
 
 export interface ICreateToolDeps {
@@ -23,6 +30,22 @@ export interface ICreateToolDeps {
 }
 
 const json = (value: unknown) => toolJson(value);
+
+const hasBlueprintPayload = (
+	args: z.infer<typeof CREATE_INPUT_SCHEMA>,
+): boolean => args.blueprint !== undefined;
+
+const normalizeArtifacts = (
+	artifacts: readonly z.infer<typeof BLUEPRINT_ARTIFACT_SCHEMA>[] | undefined,
+): readonly IBlueprintArtifact[] =>
+	(artifacts ?? []).map((artifact) => ({
+		name: artifact.name,
+		description: artifact.description,
+		...(artifact.body === undefined ? {} : { body: artifact.body }),
+		...(artifact.whenToUse === undefined
+			? {}
+			: { whenToUse: [...artifact.whenToUse] }),
+	}));
 
 export const buildCreateToolRegistration = (
 	deps: ICreateToolDeps,
@@ -75,12 +98,67 @@ export const buildCreateToolRegistration = (
 						});
 						return json({ kind: 'extension-host', files });
 					}
+					if (hasBlueprintPayload(args)) {
+						const blueprintInput = args.blueprint;
+						const serverName =
+							blueprintInput?.serverName ??
+							args.serverName ??
+							args.projectName ??
+							`mcp-project-${namespacePrefix}`;
+						const blueprint: IServerBlueprint = {
+							serverName,
+							namespacePrefix:
+								blueprintInput?.namespacePrefix ??
+								namespacePrefix,
+							targetDir:
+								blueprintInput?.targetDir ??
+								args.targetDir ??
+								'.',
+							projectType:
+								blueprintInput?.projectType ?? 'generic',
+							plugins: blueprintInput?.plugins ?? [],
+							tools: normalizeArtifacts(blueprintInput?.tools),
+							prompts: normalizeArtifacts(
+								blueprintInput?.prompts,
+							),
+							skills: normalizeArtifacts(blueprintInput?.skills),
+							agents: blueprintInput?.agents ?? [],
+							tests: blueprintInput?.tests ?? true,
+							hasExistingServer:
+								blueprintInput?.hasExistingServer ?? false,
+							adoptionStrategy:
+								blueprintInput?.adoptionStrategy ??
+								resolveAdoptionStrategy(
+									{},
+									{
+										hasExistingMcpProject: false,
+									},
+								),
+							defaults: blueprintInput?.defaults ?? {
+								keepLegacy: false,
+								reasons: ['blueprint provided by caller'],
+								warnings: [],
+							},
+							notes: blueprintInput?.notes ?? [],
+						};
+						const files = buildBlueprintFiles(
+							blueprint,
+							args.projectPackageName,
+						);
+						return json({ kind: 'host', files });
+					}
 					const files = scaffoldHostProject({
 						projectName: args.projectName ?? namespacePrefix,
 						namespacePrefix,
 						projectPackageName:
 							args.projectPackageName ??
 							`@${namespacePrefix}/mcp-project`,
+						...(args.targetDir === undefined
+							? {}
+							: { targetDir: args.targetDir }),
+						...(args.serverName === undefined
+							? {}
+							: { mcpServerName: args.serverName }),
 					});
 					return json({ kind: 'host', files });
 				},

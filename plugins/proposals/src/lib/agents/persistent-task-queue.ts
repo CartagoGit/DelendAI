@@ -7,11 +7,12 @@
  * Depends on: Zod (already in stack), Bun.write (built-in), fs/promises.
  */
 
-import { readFile, stat } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { stat } from 'node:fs/promises';
+import { basename, dirname, resolve } from 'node:path';
 
 import {
 	quarantineCorruptFile,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -257,7 +258,11 @@ export const parseQueue = async (
 ): Promise<IPersistentTaskQueue> => {
 	let raw: string;
 	try {
-		raw = await readFile(absolutePath, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(absolutePath)).readText(
+				basename(absolutePath),
+			)
+		).content;
 	} catch (err) {
 		throw new TaskQueueParseError(
 			'PARSE_ERROR',
@@ -365,7 +370,11 @@ export const parseQueue = async (
 	// Load closedTasks to validate observe[]
 	let closedTaskIds: Set<string> = new Set();
 	try {
-		const ctRaw = await readFile(closedTasksPath, 'utf8');
+		const ctRaw = (
+			await new SafeWorkspaceReader(dirname(closedTasksPath)).readText(
+				basename(closedTasksPath),
+			)
+		).content;
 		const ctParsed = JSON.parse(ctRaw) as Array<{ taskId: string }>;
 		if (Array.isArray(ctParsed)) {
 			closedTaskIds = new Set(ctParsed.map((t) => t.taskId));
@@ -829,7 +838,11 @@ export const loadLockSnapshot = async (
 	let in_flight: ILockEntry[] = [];
 
 	try {
-		const raw = await readFile(lockPath, 'utf8');
+		const raw = (
+			await new SafeWorkspaceReader(dirname(lockPath)).readText(
+				basename(lockPath),
+			)
+		).content;
 		const parsed = JSON.parse(raw) as unknown;
 		const result = LockFileSchema.safeParse(parsed);
 		if (result.success) {
@@ -844,7 +857,11 @@ export const loadLockSnapshot = async (
 	if (closedTasksPath) {
 		try {
 			const sixtySecondsAgo = Date.now() - 60_000;
-			const raw = await readFile(closedTasksPath, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(
+					dirname(closedTasksPath),
+				).readText(basename(closedTasksPath))
+			).content;
 			const parsed = JSON.parse(raw) as unknown;
 			if (Array.isArray(parsed)) {
 				const validated = parsed

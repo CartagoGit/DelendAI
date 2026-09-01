@@ -10,8 +10,8 @@
  *     file under a temporary `auditDir`.
  *  4. The consolidator deduplicates the findings (a shared
  *     "FATAL" finding shows up once with `seenBy: [a, b]`).
- *  5. The proposal scaffolder writes one fix proposal per
- *     actionable severity under a temporary `proposalsDir`.
+ *  5. The proposal scaffolder writes a native plan plus one fix
+ *     proposal per actionable severity under a temporary `proposalsDir`.
  *  6. Output schema surfaces `saved`, `failed`, `consolidation`,
  *     and `scaffolded` arrays.
  *
@@ -112,6 +112,8 @@ const parse = (r: {
 	content: Array<{ text: string }>;
 }): {
 	ok?: boolean;
+	detail?: 'compact' | 'normal' | 'full';
+	auditType?: 'plan' | 'valuation';
 	error?: { reason: string; nextAction?: string };
 	scope?: string;
 	date?: string;
@@ -146,11 +148,18 @@ const parse = (r: {
 			filename: string;
 			severity: string;
 			files: string[];
+			kind: 'audit' | 'fix' | 'plan';
 		}>;
 		skipped?: string;
 		disabled?: true;
 	};
 } => JSON.parse(r.content[0]?.text ?? '{}');
+
+const proposalFolderForKind = (kind: 'audit' | 'fix' | 'plan'): string => {
+	if (kind === 'audit') return 'audits';
+	if (kind === 'plan') return 'plans';
+	return 'fixes';
+};
 
 /** A canonical mock audit markdown that the consolidator can parse. */
 const mockAudit = (
@@ -300,6 +309,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 				],
 			}),
 		);
+		expect(out).toMatchObject({ detail: 'normal', auditType: 'plan' });
 
 		// 1. Transport saw both URLs.
 		expect(transport.calls).toHaveLength(2);
@@ -357,15 +367,29 @@ describe('audit_run (alcance B, f00077)', async () => {
 			'Plugins read process.cwd at boot',
 		]);
 
-		// 4. Exactly one scaffolded proposal was written (FATAL).
-		expect(out.proposals?.scaffolded ?? []).toHaveLength(1);
-		const proposal = out.proposals?.scaffolded?.[0];
+		// 4. An audit record, native plan, and linked child proposal were written.
+		expect(out.proposals?.scaffolded ?? []).toHaveLength(3);
+		const audit = out.proposals?.scaffolded?.[0];
+		const plan = out.proposals?.scaffolded?.[1];
+		const proposal = out.proposals?.scaffolded?.[2];
+		expect(audit?.id).toMatch(/^a\d{5}$/u);
+		expect(plan?.id).toMatch(/^q\d{5}$/u);
 		expect(proposal?.severity).toBe('FATAL');
 		expect(proposal?.id).toMatch(/^x\d{5}$/u);
-		const proposalsProbe = await probeProposals(
-			join(workspaceRoot, 'docs', 'mcp-vertex', 'proposals', 'ready'),
+		const readyDir = join(
+			workspaceRoot,
+			'docs',
+			'mcp-vertex',
+			'proposals',
+			'ready',
 		);
-		expect(proposalsProbe).toEqual([proposal?.id]);
+		expect(await probeProposals(join(readyDir, 'plans'))).toContain(
+			plan?.id,
+		);
+		expect(await probeProposals(join(readyDir, 'fixes'))).toContain(
+			proposal?.id,
+		);
+		expect(await readdir(readyDir)).toEqual(['audits', 'fixes', 'plans']);
 
 		// 5. The proposal file body parses and links the audit via
 		// `related` (we did not pass auditId, so the scaffold
@@ -380,13 +404,105 @@ describe('audit_run (alcance B, f00077)', async () => {
 				'mcp-vertex',
 				'proposals',
 				'ready',
-				files[0] ?? '',
+				proposalFolderForKind(proposal?.kind ?? 'fix'),
+				proposal?.filename ?? files[0] ?? '',
 			),
 			'utf8',
 		);
 		expect(body).toContain(`id: ${proposal?.id}`);
 		expect(body).toContain('kind: fix');
 		expect(body).toContain('Plugins read process.cwd at boot');
+		const planBody = await readFile(
+			join(
+				workspaceRoot,
+				'docs',
+				'mcp-vertex',
+				'proposals',
+				'ready',
+				proposalFolderForKind(plan?.kind ?? 'plan'),
+				plan?.filename ?? '',
+			),
+			'utf8',
+		);
+		expect(planBody).toContain('type: plan');
+		expect(planBody).toContain(`id: ${proposal?.id}`);
+		const auditBody = await readFile(
+			join(
+				workspaceRoot,
+				'docs',
+				'mcp-vertex',
+				'proposals',
+				'ready',
+				proposalFolderForKind(audit?.kind ?? 'audit'),
+				audit?.filename ?? '',
+			),
+			'utf8',
+		);
+		expect(auditBody).toContain('kind: audit');
+		expect(auditBody).toContain(`    - ${plan?.id}`);
+	});
+
+	it('supports compact detail by trimming consolidation-heavy fields', async () => {
+		const transport = makeTransport((url, body) => {
+			if (url.includes('api.openai.com')) {
+				return {
+					status: 200,
+					json: {
+						choices: [
+							{
+								message: {
+									content: mockAudit(
+										'gpt-4o',
+										'Plugins read process.cwd at boot',
+									),
+								},
+							},
+						],
+					},
+				};
+			}
+			if (url.includes('api.anthropic.com')) {
+				return {
+					status: 200,
+					json: {
+						content: [
+							{
+								type: 'text',
+								text: mockAudit(
+									'claude-opus-4-8',
+									'Plugins read process.cwd at boot',
+								),
+							},
+						],
+					},
+				};
+			}
+			void body;
+			return { status: 404, json: { error: 'no mock' } };
+		});
+
+		const out = parse(
+			await invoke(buildReg(workspaceRoot, transport), {
+				detail: 'compact',
+				targets: [
+					{
+						provider: 'openai',
+						model: 'gpt-4o',
+						apiKey: 'sk-openai-fixture',
+					},
+					{
+						provider: 'anthropic',
+						model: 'claude-opus-4-8',
+						apiKey: 'sk-anthropic-fixture',
+					},
+				],
+			}),
+		);
+
+		expect(out).toMatchObject({ detail: 'compact', auditType: 'plan' });
+		expect(out.consolidation?.findings).toEqual([]);
+		expect(out.consolidation?.markdown).toBe('');
+		expect(out.consolidation?.topActions.length).toBeGreaterThan(0);
 	});
 
 	// ---- partial failure: 1 success, 1 provider error ----------------
@@ -440,9 +556,11 @@ describe('audit_run (alcance B, f00077)', async () => {
 		expect(out.failed?.[0]?.error).toContain('401');
 		// The openai key MUST be redacted out of the failure error.
 		expect(out.failed?.[0]?.error).not.toContain('sk-bad');
-		// One MUY_MAL scaffolded proposal.
-		expect(out.proposals?.scaffolded ?? []).toHaveLength(1);
-		expect(out.proposals?.scaffolded?.[0]?.severity).toBe('BAD');
+		// One audit record, one plan, and one MUY_MAL child proposal.
+		expect(out.proposals?.scaffolded ?? []).toHaveLength(3);
+		expect(out.proposals?.scaffolded?.[0]?.id).toMatch(/^a\d{5}$/u);
+		expect(out.proposals?.scaffolded?.[1]?.id).toMatch(/^q\d{5}$/u);
+		expect(out.proposals?.scaffolded?.[2]?.severity).toBe('BAD');
 	});
 
 	// ---- no actionable findings: scaffold is empty -------------------
@@ -474,7 +592,9 @@ describe('audit_run (alcance B, f00077)', async () => {
 		);
 		expect(out.saved ?? []).toHaveLength(1);
 		// OK is not actionable; the scaffolder must skip it.
-		expect(out.proposals?.scaffolded ?? []).toEqual([]);
+		expect(out.proposals?.scaffolded ?? []).toHaveLength(1);
+		expect(out.proposals?.scaffolded?.[0]?.kind).toBe('audit');
+		expect(out.proposals?.scaffolded?.[0]?.id).toMatch(/^a\d{5}$/u);
 	});
 
 	// ---- scope rejection ---------------------------------------------
@@ -590,6 +710,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 		expect(transport.calls[0]?.url).toContain('gemini-2.5-pro');
 		expect(transport.calls[0]?.url).toContain('key=AIza-fixture-key');
 		expect(transport.calls[0]?.headers.authorization).toBeUndefined();
+		expect(out.proposals?.scaffolded?.[0]?.kind).toBe('audit');
 		expect(out.proposals?.scaffolded?.[0]?.severity).toBe('MINOR');
 	});
 
@@ -638,6 +759,8 @@ describe('audit_run (alcance B, f00077)', async () => {
 				],
 			}),
 		);
-		expect(out.proposals?.scaffolded?.[0]?.id).toBe('x00003');
+		expect(out.proposals?.scaffolded?.[0]?.id).toBe('a00001');
+		expect(out.proposals?.scaffolded?.[1]?.id).toBe('q00001');
+		expect(out.proposals?.scaffolded?.[2]?.id).toBe('x00003');
 	});
 });

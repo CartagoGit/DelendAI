@@ -8,6 +8,7 @@
  * guaranteed to agree on what "wired" means.
  */
 import type {
+	IPluginWiringDiagnostic,
 	IPluginWiringFs,
 	IPluginWiringPoint,
 	IPluginWiringReport,
@@ -20,6 +21,8 @@ const RELEASE_PLAN_FILE = 'tools/scripts/release/release-plan.ts';
 const PRESET_CATALOG_FILE = 'packages/core/src/lib/plugins/preset-catalog.ts';
 const CATALOG_ARTIFACT = 'docs/mcp-vertex/agent-catalog.generated.json';
 const HOST_CONFIG_FILE = 'mcp-vertex.config.json';
+const FIRST_PARTY_INDEX_FILE =
+	'packages/core/src/lib/registry/first-party-index.ts';
 
 const escapeRegex = (value: string): string =>
 	value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
@@ -174,6 +177,43 @@ const isPluginLoadedByHost = (
 	return probe.test(hostConfigText);
 };
 
+const isPluginIndexed = (indexText: string, pluginId: string): boolean =>
+	new RegExp(`id:\\s*['"]${escapeRegex(pluginId)}['"]`, 'u').test(indexText);
+
+const buildLoadDiagnostics = async (
+	pluginId: string,
+	fs: IPluginWiringFs,
+	hostConfigText: string | undefined,
+	indexText: string | undefined,
+): Promise<readonly IPluginWiringDiagnostic[]> => {
+	const pluginExists = await fs.pathExists(
+		`plugins/${pluginId}/src/index.ts`,
+	);
+	if (
+		!pluginExists ||
+		indexText === undefined ||
+		!isPluginIndexed(indexText, pluginId)
+	) {
+		return [];
+	}
+	if (
+		hostConfigText !== undefined &&
+		isPluginLoadedByHost(hostConfigText, pluginId)
+	) {
+		return [];
+	}
+	return [
+		{
+			pluginId,
+			reason:
+				hostConfigText === undefined
+					? `${pluginId} exists on disk and is indexed, but the host has no ${HOST_CONFIG_FILE}, so the plugin is not loaded.`
+					: `${pluginId} exists on disk and is indexed, but ${HOST_CONFIG_FILE} does not load it.`,
+			fixHint: `Add "plugins.${pluginId}" to ${HOST_CONFIG_FILE} (or scaffold the host config) so the plugin is loaded at startup.`,
+		},
+	];
+};
+
 /**
  * Run every checker for one plugin id and produce a verdict. The doctor
  * reads the three source files it owns (`tsconfig.base.json`,
@@ -200,6 +240,9 @@ export const diagnosePluginWiring = async (
 		fs.readFile(PRESET_CATALOG_FILE),
 		fs.readFile(CATALOG_ARTIFACT),
 	]);
+	const indexText = (await fs.pathExists(FIRST_PARTY_INDEX_FILE))
+		? await fs.readFile(FIRST_PARTY_INDEX_FILE)
+		: undefined;
 	// The catalog-regen check is **only** skipped when the host config
 	// explicitly opts the plugin out (the plugin is registered as a
 	// first-class plugin but not loaded — opt-in by the host). When
@@ -208,9 +251,13 @@ export const diagnosePluginWiring = async (
 	// `create_plugin` is meant to leave a half-wired plugin only when
 	// `dryRun: true` is set.
 	const hostExists = await fs.pathExists(HOST_CONFIG_FILE);
-	const isOptIn = hostExists
-		? !isPluginLoadedByHost(await fs.readFile(HOST_CONFIG_FILE), pluginId)
-		: false;
+	const hostConfigText = hostExists
+		? await fs.readFile(HOST_CONFIG_FILE)
+		: undefined;
+	const isOptIn =
+		hostConfigText !== undefined
+			? !isPluginLoadedByHost(hostConfigText, pluginId)
+			: false;
 	const points: IPluginWiringPoint[] = [
 		await checkTsconfigBase(fs, pluginId),
 		await checkVitestShared(fs, pluginId),
@@ -226,13 +273,20 @@ export const diagnosePluginWiring = async (
 				}
 			: checkCatalogRegenFromText(catalogText, pluginId),
 	];
+	const loadDiagnostics = await buildLoadDiagnostics(
+		pluginId,
+		fs,
+		hostConfigText,
+		indexText,
+	);
 	const missing = points
 		.filter((point) => !point.wired)
 		.map((point) => point.id);
 	return {
 		pluginId,
 		points,
-		fullyWired: missing.length === 0,
+		loadDiagnostics,
+		fullyWired: missing.length === 0 && loadDiagnostics.length === 0,
 		missing,
 	};
 };

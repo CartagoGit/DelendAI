@@ -16,7 +16,6 @@
  * source of truth for each tool's contract.
  */
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { IStandaloneCoreToolsOptions } from '../contracts/interfaces/standalone-core-tools.interface';
 import { buildBootstrapToolRegistrations } from '../bootstrap/bootstrap-tool';
 import type { IOverviewSnapshot } from '../tools/overview-tool';
@@ -54,6 +53,11 @@ export const buildStandaloneCoreToolRegistrations = (
 	const snapshot = (): IOverviewSnapshot => ({
 		server: { name: serverName, version: serverVersion },
 		namespacePrefix,
+		// Surface mode + counts come from
+		// getProjectContext, which requires a workspaceRoot. The
+		// standalone scaffold passes an empty string when no
+		// workspace is configured; the runtime tolerates it.
+		workspaceRoot: '',
 		corePaths,
 		plugins: [],
 		tools: tools.map((registration) => ({

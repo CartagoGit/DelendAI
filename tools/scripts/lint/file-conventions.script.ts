@@ -13,7 +13,7 @@
  *   bun tools/scripts/lint/file-conventions.script.ts --baseline=<path>       # ratchet: only NEW unmatched files fail
  *   bun tools/scripts/lint/file-conventions.script.ts --write-baseline=<path> # accept today's unmatched files as the floor
  *
- * Architecture (matches no-preset-drift.script.ts):
+ * Architecture (matches preset-drift.script.ts):
  *   - `IRoleFinding` (interface) — one row in the report.
  *   - `walkAndClassify(rootDir, scanRoots)` (pure engine over the
  *     filesystem) — returns findings for every `.ts`/`.tsx` file

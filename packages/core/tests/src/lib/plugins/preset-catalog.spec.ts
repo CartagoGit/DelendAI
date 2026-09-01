@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 import {
 	PRESET_CATALOG,
 	PRESET_KIND,
 	resolvePresetMembers,
 } from '@mcp-vertex/core/lib/plugins/preset-catalog';
+import apiPlugin from '../../../../../../plugins/api/src/index';
+
+const repoRootFromSpec = (): string => {
+	const here = new URL(import.meta.url).pathname;
+	const specDir = here.replace(/\/[^/]*$/, '');
+	return join(specDir, '..', '..', '..', '..', '..', '..');
+};
 
 describe('PRESET_CATALOG', async () => {
 	it('lists presets in ⊇ order: minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool', async () => {
@@ -27,23 +36,33 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// lean: 4 members, independent essentials preset
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
-		// standard: adds 13 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env, f00137 added skills-pack, f00138 added prompts-pack)
-		expect(PRESET_CATALOG[2]?.members.length).toBe(14);
-		// swarm: adds 7 on top of standard (f00121 S3 added forge)
-		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
-		// full: adds 2 host-only + api + changelog on top of swarm
-		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
-		// vertex: 28 members, exactly mirroring mcp-vertex.config.json's
+		// standard: adds 17 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env, f00137 added skills-pack, f00138 added prompts-pack, f00158 added error-reporting, x00230 added auto-agent-selector, q00007 added agent-orchestrator)
+		expect(PRESET_CATALOG[2]?.members.length).toBe(17);
+		// swarm: adds 9 on top of standard (f00121 S3 added forge,
+		// completion added by the completion plugin)
+		expect(PRESET_CATALOG[3]?.members.length).toBe(9);
+		// full: adds 2 host-only + api + prompt-eval + orchestrator on top of
+		// swarm, plus the three remote-provider plugins
+		// (remote-provider-core, github, gitlab)
+		// (f00177 / MAN-001: `changelog` removed — `private: true`, never
+		// published to npm, cannot be a member of a preset an external
+		// adopter installs)
+		expect(PRESET_CATALOG[4]?.members.length).toBe(8);
+		// vertex: 38 members, exactly mirroring mcp-vertex.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
-		// missing 17 real ones, including `proposals`).
-		expect(PRESET_CATALOG[5]?.members.length).toBe(28);
+		// missing 17 real ones, including `proposals`; f00165 added
+		// context-for-change; f00169 adds impact-analysis; f00166 adds
+		// project-health; f00167 adds quality-policy; f00168 adds
+		// adaptive-optimizer.
+		expect(PRESET_CATALOG[5]?.members.length).toBe(38);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
 		const lean = PRESET_CATALOG[1];
 		expect(lean?.id).toBe('lean');
 		expect(lean?.independent).toBe(true);
+		expect(lean?.role).toBe('habitual-work');
 		expect(lean?.members.map((m) => m.plugin)).toEqual([
 			'git',
 			'search',
@@ -84,6 +103,7 @@ describe('PRESET_CATALOG', async () => {
 		const vertex = PRESET_CATALOG[5];
 		expect(vertex).toBeDefined();
 		expect(vertex?.independent).toBe(true);
+		expect(vertex?.role).toBe('mcp-vertex-dogfood');
 	});
 
 	it('marks every stack pack (web-app, backend-api, cli-tool) as independent', async () => {
@@ -95,7 +115,7 @@ describe('PRESET_CATALOG', async () => {
 	});
 
 	it('stack packs resolve to exactly their own members (no chain accumulation)', async () => {
-		// `standard` resolves to 16 plugins. None of those should leak
+		// `standard` resolves to 19 plugins. None of those should leak
 		// into `web-app` just because `web-app` is added after them in
 		// the catalog order.
 		const standardResolved = resolvePresetMembers('standard');
@@ -110,10 +130,7 @@ describe('PRESET_CATALOG', async () => {
 	it('every catalog plugin id corresponds to a real package on disk', async () => {
 		const { stat } = await import('node:fs/promises');
 		const { join } = await import('node:path');
-		// The repo root is 4 levels up from this spec: tests/src/lib/plugins → src.
-		const here = new URL(import.meta.url).pathname;
-		const specDir = here.replace(/\/[^/]*$/, '');
-		const repoRoot = join(specDir, '..', '..', '..', '..', '..', '..');
+		const repoRoot = repoRootFromSpec();
 		const ids = new Set<string>();
 		for (const def of PRESET_CATALOG) {
 			for (const member of def.members) ids.add(member.plugin);
@@ -134,6 +151,60 @@ describe('PRESET_CATALOG', async () => {
 				`plugin id "${id}" has no package.json under plugins/ or packages/`,
 			).toBe(true);
 		}
+	});
+
+	it('keeps the api plugin catalog aligned with backend-api preset membership', async () => {
+		const registration = await apiPlugin.register({
+			namespacePrefix: 'api',
+			options: {},
+			cacheDir: '.cache/mcp-vertex',
+			pluginCacheDir: '.cache/mcp-vertex/api',
+			pluginDocsDir: 'docs/plugins/api',
+			workspace: {
+				root: '/workspace',
+				resolve: (path: string) => `/workspace/${path}`,
+			},
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
+			keepLegacy: false,
+			agentWorktreeEnabled: false,
+			commitAuthor: {
+				mode: 'workspace-config',
+				identity: 'Copilot',
+				named: 'Copilot',
+			},
+			args: [],
+			cacheEvictionRegistry: {
+				register: () => undefined,
+			},
+			peerPlugins: {},
+		} as never);
+		const knowledge = registration.knowledge?.find(
+			(entry) => entry.id === 'api-plugin-catalog',
+		);
+		expect(knowledge).toBeDefined();
+		const expectedLine = `- \`backend-api\` — the preset currently ships ${resolvePresetMembers(
+			'backend-api',
+		)
+			.map((plugin) => `\`${plugin}\``)
+			.join(', ')
+			.replace(
+				/, ([^,]+)$/u,
+				', and $1',
+			)}; it does not include \`api\` by default.`;
+		expect(knowledge?.body).toContain(expectedLine);
+	});
+
+	it('derives backend-api summary from actual membership without stale opt-in claims', async () => {
+		const backendApi = PRESET_CATALOG.find(
+			(definition) => definition.id === 'backend-api',
+		);
+		expect(backendApi).toBeDefined();
+		expect(backendApi?.summary).toContain('16 plugins');
+		expect(backendApi?.summary).not.toContain('audit');
+		expect(backendApi?.summary).not.toContain('perf');
 	});
 });
 
@@ -179,14 +250,24 @@ describe('resolvePresetMembers', async () => {
 			'diagram',
 			'env',
 			'skills-pack',
+			'error-reporting',
+			'auto-agent-selector',
+			'agent-orchestrator',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(23);
-		expect(resolvePresetMembers('full').length).toBe(27);
+		expect(resolvePresetMembers('swarm').length).toBe(27);
+		// f00177 / MAN-001: `changelog` removed from `full` (private,
+		// never published to npm); the three remote-provider plugins
+		// (remote-provider-core, github, gitlab) raise it back to 34.
+		expect(resolvePresetMembers('full').length).toBe(34);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
 	it('resolves standard = minimal + memory/docs/rules/quality/refactor/deps/test-policy/database/diagram/container/env', async () => {
 		const resolved = resolvePresetMembers('standard');
+		expect(
+			PRESET_CATALOG.find((definition) => definition.id === 'standard')
+				?.role,
+		).toBe('adaptive-task-aware');
 		expect(resolved).toContain('git');
 		expect(resolved).toContain('search');
 		expect(resolved).toContain('memory');
@@ -202,7 +283,9 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('env');
 		expect(resolved).toContain('skills-pack');
 		expect(resolved).toContain('prompts-pack');
-		expect(resolved.length).toBe(16);
+		expect(resolved).toContain('error-reporting');
+		expect(resolved).toContain('auto-agent-selector');
+		expect(resolved.length).toBe(19);
 	});
 
 	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', async () => {
@@ -226,59 +309,78 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('notification');
 	});
 
-	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
-		// x00166: vertex mirrors mcp-vertex.config.json's `plugins` keys
-		// exactly (28 total) — verified live against the root config
-		// 2026-07-29. Previously missing 17 real plugins (including
-		// `proposals`, the orchestration engine every mcp-vertex adopter
-		// needs) and listing 6 phantom ones that were never actually
-		// loaded.
+	it('resolves vertex to ONLY the plugin keys from the live root config', async () => {
 		const resolved = resolvePresetMembers('vertex');
-		expect(resolved.length).toBe(28);
-		for (const required of [
-			'audit',
-			'auto-agent-selector',
+		const config = JSON.parse(
+			await readFile(
+				join(repoRootFromSpec(), 'mcp-vertex.config.json'),
+				'utf8',
+			),
+		) as {
+			plugins?: Readonly<Record<string, unknown>>;
+		};
+		expect([...resolved].sort()).toEqual(
+			Object.keys(config.plugins ?? {}).sort(),
+		);
+	});
+
+	it('documents the canonical preset roles from PRE-004', async () => {
+		expect(
+			PRESET_CATALOG.slice(0, 5).map((definition) => definition.role),
+		).toEqual([
+			'orientation',
+			'habitual-work',
+			'adaptive-task-aware',
+			'multi-agent',
+			'diagnostic',
+		]);
+	});
+
+	it('declares measured budget metadata for every preset', async () => {
+		for (const definition of PRESET_CATALOG) {
+			expect(definition.budget.toolCount.source).toBe('measured-runtime');
+			expect(definition.budget.toolCount.value).toBeGreaterThan(0);
+			expect(definition.budget.schemaBytes.source).toBe(
+				'measured-runtime',
+			);
+			expect(definition.budget.schemaBytes.value).toBeGreaterThan(0);
+			expect(definition.budget.coldStartTokens.source).toBe(
+				'estimated-from-schema-bytes',
+			);
+			expect(definition.budget.coldStartTokens.value).toBeGreaterThan(0);
+			expect(
+				definition.budget.coldStartTokens.bytesPerEstimatedToken,
+			).toBe(4);
+			expect(definition.budget.permissions.source).toBe(
+				'measured-tool-effects',
+			);
+			expect(definition.budget.permissions.values.length).toBeGreaterThan(
+				0,
+			);
+			expect(definition.budget.capabilities.source).toBe('role-profile');
+			expect(
+				definition.budget.capabilities.values.length,
+			).toBeGreaterThan(0);
+		}
+	});
+
+	it('derives budget permissions from effective preset membership', async () => {
+		const standard = PRESET_CATALOG.find(
+			(definition) => definition.id === 'standard',
+		);
+		expect(standard).toBeDefined();
+		expect(standard?.budget.permissions.values).toEqual([
 			'container',
-			'conventions',
-			'deps',
-			'diagram',
-			'docs',
-			'env',
-			'forge',
-			'git',
-			'i18n',
-			'link-check',
-			'logs',
-			'memory',
-			'notification',
-			'orchestrator-runner',
-			'perf',
-			'prompts-pack',
-			'proposals',
-			'quality',
-			'rules',
-			'search',
-			'security',
-			'status-marker',
-			'tech-debt',
-			'test-convention',
-			'test-policy',
-			'usage-tracking',
-		]) {
-			expect(resolved).toContain(required);
-		}
-		// Phantom plugins the old (stale) definition listed but that
-		// were never actually loaded by the live config.
-		for (const phantom of [
-			'web-fetch',
-			'issues',
-			'refactor',
-			'api',
-			'prompt-eval',
 			'database',
-		]) {
-			expect(resolved).not.toContain(phantom);
-		}
+			'env-read',
+			'filesystem-read',
+			'filesystem-write',
+			'forge-write',
+			'git-read',
+			'git-write',
+			'network',
+			'process',
+		]);
 	});
 
 	it('preserves the ⊇ chain ordering for chain presets', async () => {

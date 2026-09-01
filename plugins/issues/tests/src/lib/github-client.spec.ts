@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { ISpawn } from '../../../src/lib/contracts';
 import { fetchIssue, listIssues } from '../../../src/lib/github-client';
-import type { IFetchFn, ISpawnSync } from '../../../src/lib/github-client';
+import type { IFetchFn, ISpawnSync } from '../../../src/lib/contracts';
 
 const encode = (s: string): Uint8Array => new TextEncoder().encode(s);
 

@@ -9,7 +9,7 @@
  * The module also derives two paths the operator would otherwise have
  * to hand-edit:
  *
- *   - `pluginPathsRoot` — where `tools/scripts/create-plugin.ts` (f00087
+ *   - `pluginPathsRoot` — where `tools/scripts/scaffold/create-plugin.script.ts` (f00087
  *     S2) writes new plugin skeletons; the default depends on the
  *     detected monorepo / framework shape.
  *   - `hostEntryPath` — where the canonical `host-server.script.ts`
@@ -22,13 +22,13 @@
  * `IFileReader` so every branch is deterministic.
  */
 
+import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import type {
 	IInitDetection,
 	ISourceRoot,
 } from '../../contracts/interfaces/init.interface';
-import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
 
 import {
 	analyzeProject,

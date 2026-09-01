@@ -105,12 +105,17 @@ A Bun monorepo:
   loop.
 - Swarm proposals workflow. If a proposals task needs more than 3 tool
   calls, touches multiple files, or requires repeated MCP reads, delegate
-  it instead of keeping it on the main thread. **Branching is
-  config-driven.** With `agentWorktree: false` in
-  `mcp-vertex.config.json` (this repo's setting) agents never create
-  `agent/*` worktrees or branches — they commit and push directly on
-  `develop` and share the git history; the operator may still create
-  manual branches (`fix/*`, `feature/*`). When the gate is on and an
+  it instead of keeping it on the main thread. **Agents land on
+  `develop` through a pull request; the operator does not have to.**
+  `develop` is the branch this repo is programmed on and is deliberately
+  NOT protected — the operator pushes to it directly. With
+  `agentWorktree: false` in `mcp-vertex.config.json` (this repo's
+  setting) agents never create `agent/*` worktrees or per-agent branches
+  — they work on a `wip/*` branch off `develop`, commit there, push it,
+  and open a PR the operator reviews and decides on. `main` is the
+  protected branch: nothing lands there automatically. The operator may
+  still create manual branches (`fix/*`, `feature/*`) alongside
+  `wip/*`. When the gate is on and an
   agent works in a worktree, it must never `git switch` the shared
   checkout: the main checkout stays on `develop` and the worktree is
   merged + removed before its branch disappears. `branch_status` and
@@ -118,6 +123,17 @@ A Bun monorepo:
   was switched. On claim conflict, wait for `lock-released` or
   `await_lock` instead of polling; `proposals_sync_proposals` runs only
   after the last open slice of that proposal is closed.
+- **No orphaned branches or stashes — always reconcile.** Before closing
+  any work (or a session), run `bun run reclaim:orphans` (report) and
+  reconcile every listed orphan: if a stranded branch or stash adds
+  value, merge it into `develop` and fix discrepancies/bugs until it is
+  100% functional (`git switch develop && git merge --no-ff <branch>` →
+  validate → commit → `git branch -D <branch>`); if it adds no value,
+  delete it as-is (`git branch -D <branch>` / `git stash drop <ref>`).
+  `bun run reclaim:orphans --apply` deletes only the provably-lossless
+  branches (`ahead === 0`); `needs-review` branches and stashes are
+  never auto-deleted. This is a repo-level policy, not a plugin
+  behaviour: mcp-vertex does not enforce it on other repos.
 - `auto_work` ↔ loop detector ↔ idle-streak. Calling `auto_work` three
   times in a row is NOT a loop; it's the orchestrator polling for work.
   The detector is wired into `auto_work` but disabled by default for

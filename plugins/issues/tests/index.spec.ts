@@ -152,23 +152,27 @@ describe('issues plugin — UX guard when `repo` is missing', async () => {
 		expect(result.knowledge?.[0]?.id).toBe('issues-needs-repo-config');
 	});
 
-	it('registers the 5 `issues_*` tools + setup_github when `repo` is provided', async () => {
+	it('registers the 9 `issues_*` tools + setup_github when `repo` is provided', async () => {
 		const result = await unwrap(
 			issuesPlugin.register(buildCtx({ repo: 'CartagoGit/mcp-vertex' })),
 		);
-		expect(result.tools ?? []).toHaveLength(6);
+		expect(result.tools ?? []).toHaveLength(10);
 		const toolIds = (result.tools ?? []).map((t) => t.id).sort();
 		expect(toolIds).toEqual([
 			'issues_analyze',
 			'issues_fetch',
 			'issues_ingest',
 			'issues_list',
+			'issues_list_advisories',
+			'issues_list_code_scanning',
+			'issues_list_dependabot',
+			'issues_list_secret_scanning',
 			'issues_resolve',
 			'setup_github',
 		]);
-		// No knowledge entry when fully configured — the hint is
-		// irrelevant and would just be noise.
-		expect(result.knowledge).toBeUndefined();
+		// f00251 S5: error-collector knowledge entry is published when fully configured.
+		expect(result.knowledge).toHaveLength(1);
+		expect(result.knowledge?.[0]?.id).toBe('issues-error-collector');
 	});
 
 	it('throws on invalid `scaffoldDir` (workspace escape)', async () => {

@@ -35,7 +35,7 @@ describe('ToolTreeDataProvider', async () => {
 		const [server] = await provider.getChildren();
 		expect(server).toMatchObject({
 			kind: 'server',
-			label: 'mcp-vertex',
+			label: 'Server',
 			collapsibleState: TreeItemCollapsibleState.Expanded,
 		});
 

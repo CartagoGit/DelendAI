@@ -159,10 +159,10 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			plugins: Record<string, unknown>;
 		};
 		// x00166: vertex mirrors mcp-vertex.config.json's `plugins` keys
-		// exactly (28 total), including proposals (orchestration/swarm)
-		// — no independent-preset chain inheritance involved, this is
-		// just what the live config actually loads.
-		expect(Object.keys(config.plugins).length).toBe(28);
+		// exactly (38 total in the current dogfood snapshot), including
+		// proposals (orchestration/swarm) — no independent-preset chain
+		// inheritance involved, this is just what the live config loads.
+		expect(Object.keys(config.plugins).length).toBe(38);
 		for (const required of [
 			'audit',
 			'auto-agent-selector',
@@ -172,6 +172,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			'diagram',
 			'docs',
 			'env',
+			'error-reporting',
 			'forge',
 			'git',
 			'i18n',
@@ -181,7 +182,6 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			'notification',
 			'orchestrator-runner',
 			'perf',
-			'prompts-pack',
 			'proposals',
 			'quality',
 			'rules',
@@ -243,10 +243,47 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 			f.relPath.startsWith('.github/agents/'),
 		);
 		for (const file of githubFiles) {
-			expect(file.content).toContain('mcp-vertex/*');
+			expect(file.content).toContain('acme/*');
 			expect(file.content).not.toContain('search_search');
 			expect(file.content).not.toContain('acme_search_search');
 		}
+	});
+
+	it('uses the namespace for agent files and the configured MCP server key', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers(
+				{
+					namespacePrefix: 'acme',
+					serverName: 'acme-tools',
+				},
+				'/tmp/example-ws',
+			),
+		);
+		const github = bundle.files.find((file) =>
+			file.relPath.startsWith('.github/agents/'),
+		);
+		const claude = bundle.files.find((file) =>
+			file.relPath.startsWith('.claude/agents/'),
+		);
+		const codex = bundle.files.find((file) =>
+			file.relPath.startsWith('.codex/agents/'),
+		);
+		const vscode = JSON.parse(
+			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
+				?.content ?? '{}',
+		) as { servers: Record<string, unknown> };
+		const generic = JSON.parse(
+			bundle.files.find((file) => file.relPath === '.mcp.json')
+				?.content ?? '{}',
+		) as { mcpServers: Record<string, unknown> };
+
+		expect(github?.relPath).toContain('.github/agents/acme-');
+		expect(claude?.relPath).toContain('.claude/agents/acme-');
+		expect(codex?.relPath).toContain('.codex/agents/acme-');
+		expect(github?.content).toContain('name: acme-');
+		expect(github?.content).toContain('acme-tools/*');
+		expect(vscode.servers['acme-tools']).toBeDefined();
+		expect(generic.mcpServers['acme-tools']).toBeDefined();
 	});
 });
 
@@ -677,7 +714,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			};
 		};
 		expect(parsed.plugins.audit.options.auditDir).toBe(
-			'docs/proposals/done/audits',
+			'docs/mcp-vertex/proposals/done/audits',
 		);
 		expect(parsed.plugins.audit.options.topActions).toBe(5);
 	});

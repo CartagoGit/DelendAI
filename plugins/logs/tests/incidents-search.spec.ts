@@ -15,6 +15,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createLogStore } from '../src/lib/services/log-store';
 import { normalizeEvent } from '../src/lib/services/normalize-event';
 import { buildLogToolRegistrations } from '../src/lib/tools/tools';
+import { asArray } from '@mcp-vertex/test-kit/public';
 
 type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 type Registered = Map<string, Handler>;
@@ -107,6 +108,7 @@ describe('logs_log (f00153 S2)', () => {
 		const query = structured(
 			await handlers.get('logs_query')?.({
 				incidentType: 'lock-conflict',
+				detail: 'full',
 			}),
 		);
 		const events = query.events as Array<{
@@ -157,6 +159,7 @@ describe('logs_search (f00153 S2)', () => {
 				'tool-failed',
 				{
 					toolName: 'locker',
+					taskId: 'locker',
 					error: {
 						message: 'lock held by another agent',
 						stack: 'Error: at line 42',
@@ -194,11 +197,36 @@ describe('logs_search (f00153 S2)', () => {
 			await handlers.get('logs_search')?.({
 				pattern: 'lock held',
 				scope: 'error',
+				detail: 'full',
 			}),
 		);
-		const events = result.events as Array<{ taskId: string }>;
+		const events = result.events as Array<{
+			taskId: string;
+			summary: string;
+			meta: {
+				toolName?: string;
+				error?: {
+					redacted?: boolean;
+					fingerprint?: string;
+					hasStack?: boolean;
+					message?: string;
+					stack?: string;
+				};
+			};
+		}>;
 		expect(events).toHaveLength(1);
 		expect(events[0]?.taskId).toBe('locker');
+		expect(events[0]?.summary).toBe('tool-failed: locker');
+		expect(events[0]?.meta.toolName).toBe('locker');
+		expect(events[0]?.meta.error?.redacted).toBe(true);
+		expect(events[0]?.meta.error?.hasStack).toBe(true);
+		expect(events[0]?.meta.error?.fingerprint).toMatch(/^[a-f0-9]{16}$/);
+		expect(events[0]?.meta.error).not.toHaveProperty('message');
+		expect(events[0]?.meta.error).not.toHaveProperty('stack');
+		expect(JSON.stringify(result)).not.toContain(
+			'lock held by another agent',
+		);
+		expect(JSON.stringify(result)).not.toContain('Error: at line 42');
 	});
 
 	it('regex search returns the matching event', async () => {
@@ -208,7 +236,7 @@ describe('logs_search (f00153 S2)', () => {
 				isRegex: true,
 			}),
 		);
-		const events = result.events as unknown[];
+		const events = asArray(result.events);
 		expect(events.length).toBe(2);
 	});
 
@@ -247,11 +275,13 @@ describe('logs_incidents (f00153 S3)', () => {
 		const incidents = result.incidents as Array<{
 			toolName: string;
 			incidentType: string;
+			errorFingerprint: string;
+			hasStack: boolean;
 			count: number;
 			distinctAgents: number;
 			firstSeen: string;
 			lastSeen: string;
-			sampleError: string;
+			sampleSummary: string;
 			recentEvents: Array<{ kind: string }>;
 		}>;
 		// Default minCount=2 drops the singleton quality_run cluster; the
@@ -263,8 +293,28 @@ describe('logs_incidents (f00153 S3)', () => {
 		expect(top?.incidentType).toBe('tool-failure');
 		expect(top?.count).toBe(3);
 		expect(top?.distinctAgents).toBe(2);
-		expect(top?.sampleError).toBe('lock held by another agent');
+		expect(top?.errorFingerprint).toMatch(/^[a-f0-9]{16}$/);
+		expect(top?.hasStack).toBe(false);
+		expect(top?.sampleSummary).toBe('tool-failed: proposals_agent_lock');
+		expect(JSON.stringify(top)).not.toContain('lock held by another agent');
 		expect(top?.recentEvents.length).toBeLessThanOrEqual(5);
+	});
+
+	it('keeps incidents redacted when recentLimit removes all recent events', async () => {
+		const result = structured(
+			await handlers.get('logs_incidents')?.({ recentLimit: 0 }),
+		);
+		const incidents = result.incidents as Array<{
+			sampleSummary: string;
+			hasStack: boolean;
+		}>;
+		expect(incidents[0]?.sampleSummary).toBe(
+			'tool-failed: proposals_agent_lock',
+		);
+		expect(incidents[0]?.hasStack).toBe(false);
+		expect(JSON.stringify(result)).not.toContain(
+			'lock held by another agent',
+		);
 	});
 
 	it('honors minCount to drop the surviving cluster as well', async () => {

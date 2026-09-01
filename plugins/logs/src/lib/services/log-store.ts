@@ -1,7 +1,7 @@
-import { mkdir, open, readdir, readFile } from 'node:fs/promises';
+import { mkdir, open, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { withFileMutex } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, withFileMutex } from '@mcp-vertex/core/public';
 
 import type { ILogStoreOptions } from '../contracts/interfaces/log-store.interface';
 import {
@@ -180,6 +180,7 @@ export const createLogStore = async (
 ): Promise<ILogStore> => {
 	const fileFor = (event: ILogEvent): string =>
 		join(logsDir, `${dayFromTs(event.ts)}.jsonl`);
+	const reader = new SafeWorkspaceReader(logsDir);
 
 	const readAllFiles = async (dayRange?: {
 		readonly startDay?: string;
@@ -205,7 +206,9 @@ export const createLogStore = async (
 			const file = join(logsDir, name);
 			const content = await withFileMutex(
 				file,
-				async () => await readFile(file, 'utf8').catch(() => ''),
+				async () =>
+					(await reader.readText(name).catch(() => ({ content: '' })))
+						.content,
 				// a00085 #6: readers wait for the writer (never steal).
 				{ onContention: 'wait', timeoutMs: 10_000 },
 			);

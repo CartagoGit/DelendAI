@@ -39,6 +39,15 @@ describe('migrateForeign (f00116 S2)', () => {
 			roots,
 		});
 
+	const runAuditMigration = async (roots: readonly string[]) =>
+		migrateForeign({
+			workspaceRoot: root,
+			proposalsDirAbs,
+			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
+			roots,
+			removeMigratedSources: true,
+		});
+
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'migrate-foreign-'));
 		proposalsDirAbs = join(root, 'docs/mcp-vertex/proposals');
@@ -57,7 +66,7 @@ describe('migrateForeign (f00116 S2)', () => {
 		expect(entry.source).toBe('docs/rfcs/dark-mode.md');
 		expect(entry.id).toMatch(/^f\d{5}$/);
 		const target = await readFile(join(root, entry.target), 'utf8');
-		expect(target).toContain('id: ' + entry.id);
+		expect(target).toContain(`id: ${entry.id}`);
 		expect(target).toContain('status: ready');
 		expect(target).toContain('Add dark mode');
 		expect(target).toContain('docs/rfcs/dark-mode.md'); // provenance
@@ -197,5 +206,27 @@ describe('migrateForeign (f00116 S2)', () => {
 		const report = await run(['planning']);
 		// A docs kind (d prefix) even though the title says "fix".
 		expect(report.migrated[0]!.id).toMatch(/^d\d{5}$/);
+	});
+
+	it('archives audit reports as done/audits proposals and removes the source', async () => {
+		write(
+			'docs/mcp-vertex/audits/2026-08-30-audit.md',
+			'# Full project audit\n\nEvidence and findings.\n',
+		);
+		const report = await runAuditMigration(['docs/mcp-vertex/audits']);
+		expect(report.migrated).toHaveLength(1);
+		expect(report.migrated[0]!.id).toMatch(/^a\d{5}$/);
+		expect(report.migrated[0]!.target).toContain('done/audits/');
+		expect(
+			existsSync(
+				join(root, 'docs/mcp-vertex/audits/2026-08-30-audit.md'),
+			),
+		).toBe(false);
+		const body = await readFile(
+			join(root, report.migrated[0]!.target),
+			'utf8',
+		);
+		expect(body).toContain('kind: audit');
+		expect(body).toContain('status: done');
 	});
 });

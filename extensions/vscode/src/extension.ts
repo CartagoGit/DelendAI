@@ -1,3 +1,8 @@
+// MUST be the first import — see the file header for the rationale.
+// The named import keeps the shim module alive in Bun's tree-shaker
+// (which would otherwise elide a side-effect-only import).
+import { NAVIGATOR_PATCH_MARKER } from './shims/node22-navigator';
+void NAVIGATOR_PATCH_MARKER;
 import {
 	AgentCatalogService,
 	McpStdioClient,
@@ -6,6 +11,8 @@ import {
 	OverviewService,
 	type IOverview,
 } from '@mcp-vertex/client';
+import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import {
 	MEMORY_FORGET_COMMAND,
 	registerMemoryForgetCommand,
@@ -26,12 +33,11 @@ import {
 	SETTINGS_STATE_KEY,
 } from './contracts/constants/settings-state-key.constant';
 import { registerOpenConfigurationCenterCommand } from './commands/open-configuration-center';
+import { registerOpenPluginConfigCommand } from './commands/open-plugin-config';
 
-import {
-	registerExternalMcpsAckCommand,
-	surfaceExternalMcpsPendingAcks,
-} from './commands/external-mcps-ack';
+import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
+import { DashboardWebviewViewProvider } from './providers/dashboard-webview-view-provider';
 import { registerProviderActionCommands } from './commands/provider-actions';
 import { registerPluginActivationCommand } from './commands/plugin-activation';
 import { PLUGIN_ACTIVATION_COMMAND } from './contracts/constants/plugin-activation-command.constant';
@@ -41,6 +47,7 @@ import {
 } from './commands/open-docs';
 import { registerOpenDocsApiCommand } from './commands/open-docs-api';
 import { registerOpenAgentCatalogCommand } from './commands/open-agent-catalog';
+import { registerOpenAgentTimelineCommand } from './commands/open-agent-timeline';
 import {
 	OPEN_AUTO_AGENT_SELECTOR_COMMAND,
 	registerOpenAutoAgentSelectorCommand,
@@ -86,6 +93,8 @@ import {
 	registerSetupGithubCommand,
 } from './commands/setup-github';
 import { renderJsonHtml } from './commands/types';
+import type { ICommandVscodeApi } from './commands/types';
+import { registerKpiDashboardProvider } from './providers/kpi-dashboard-provider';
 import {
 	type IFileSystemWatcher,
 	ToolTreeDataProvider,
@@ -103,12 +112,58 @@ import {
 	type IRuntimeHandle,
 } from './host/runtime-handle';
 import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
+import {
+	RuntimeObserver,
+	observerIntervalMs,
+} from './observability/runtime-observer';
+
+const runSafely = (task: Promise<unknown>): void => {
+	void task.catch(() => undefined);
+};
+
+const CONNECT_TIMEOUT_MS = 10_000;
+
+const connectWithTimeout = async (
+	connect: () => Promise<McpStdioClient>,
+): Promise<McpStdioClient> => {
+	let timedOut = false;
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const attempt = Promise.resolve().then(connect);
+	const lateCleanup = attempt.then(
+		(client) => {
+			if (timedOut) runSafely(client.close());
+			return client;
+		},
+		() => undefined,
+	);
+	try {
+		return await Promise.race([
+			attempt,
+			new Promise<McpStdioClient>((_, reject) => {
+				timer = setTimeout(() => {
+					timedOut = true;
+					reject(
+						new Error(
+							`MCP server connection timed out after ${CONNECT_TIMEOUT_MS}ms`,
+						),
+					);
+				}, CONNECT_TIMEOUT_MS);
+			}),
+		]);
+	} finally {
+		if (timer !== undefined) clearTimeout(timer);
+		void lateCleanup;
+	}
+};
 
 export const CLIENT_STATE_KEY = 'mcp-vertex.client';
 export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
 export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
 export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
 export const PROPOSALS_VIEW_ID = 'mcp-vertex.proposals';
+export const KPI_VIEW_ID = 'mcp-vertex.kpis';
+export const DASHBOARD_VIEW_ID = 'mcp-vertex.dashboard';
+export const OPEN_RUNTIME_LOG_COMMAND = 'mcp-vertex.openRuntimeLog';
 export { OPEN_TOOL_DETAIL_COMMAND };
 export { OPEN_AUTO_AGENT_SELECTOR_COMMAND };
 
@@ -117,6 +172,7 @@ export interface IDisposable {
 }
 
 export interface IExtensionContext {
+	readonly extensionPath?: string;
 	readonly subscriptions: IDisposable[];
 	readonly globalState: {
 		get<T>(key: string): T | undefined;
@@ -157,8 +213,22 @@ export interface IVscodeApi {
 			command: string,
 			callback: (...args: readonly unknown[]) => unknown,
 		): IDisposable;
+		executeCommand?<T>(
+			command: string,
+			...args: readonly unknown[]
+		): Thenable<T>;
 	};
 	readonly window: {
+		readonly createTerminal?: NonNullable<
+			ICommandVscodeApi['window']['createTerminal']
+		>;
+		readonly onDidChangeTerminalShellIntegration?: NonNullable<
+			ICommandVscodeApi['window']['onDidChangeTerminalShellIntegration']
+		>;
+		readonly onDidEndTerminalShellExecution?: NonNullable<
+			ICommandVscodeApi['window']['onDidEndTerminalShellExecution']
+		>;
+		createOutputChannel?(name: string): IOutputChannel;
 		createStatusBarItem?(): IStatusBarItem;
 		registerTreeDataProvider?(
 			viewId: string,
@@ -178,6 +248,22 @@ export interface IVscodeApi {
 			message: string,
 			...actions: readonly string[]
 		): Thenable<string | undefined>;
+		showQuickPick?(
+			items: ReadonlyArray<{
+				readonly id: string;
+				readonly label: string;
+				readonly description?: string;
+				readonly detail?: string;
+			}>,
+		): Thenable<
+			| {
+					readonly id: string;
+					readonly label: string;
+					readonly description?: string;
+					readonly detail?: string;
+			  }
+			| undefined
+		>;
 	};
 	readonly workspace?: {
 		createFileSystemWatcher(pattern: string): IFileSystemWatcher;
@@ -190,12 +276,15 @@ export interface IVscodeApi {
 	};
 }
 
+export interface IOutputChannel extends IDisposable {
+	append(value: string): void;
+	show?(preserveFocus?: boolean): void;
+}
+
 /**
  * Minimal subset of `vscode.WorkspaceConfiguration` we actually read.
- * `get<T>(key, defaultValue)` returns the configured value or the
- * fallback. Hosts that do not expose a configuration surface can
- * omit `workspace.getConfiguration` entirely — the spawn resolver
- * then falls back to the bundled defaults (`bun run mcp-vertex`).
+ * The extension never invents a server command when these settings are
+ * absent; hosts without a configuration surface remain disconnected.
  */
 export interface IConfiguration {
 	get<T>(key: string): T | undefined;
@@ -205,15 +294,201 @@ export interface IConfiguration {
 export interface IActivationDeps {
 	readonly vscode?: IVscodeApi;
 	createClient?: () => Promise<McpStdioClient>;
+	onClientConnected?: (client: McpStdioClient) => Promise<void> | void;
 	/** x00072 SEC-001 S1: trust override for the manual start-server command. */
 	readonly trustOverride?: boolean;
 }
+
+interface IResilientClient {
+	readonly client: McpStdioClient;
+	reconnect(): Promise<void>;
+	replace(next: McpStdioClient): Promise<void>;
+}
+
+const createResilientClient = (
+	initial: McpStdioClient,
+	connect: () => Promise<McpStdioClient>,
+	namespacePrefix?: string,
+): IResilientClient => {
+	let current = initial;
+	let reconnecting: Promise<void> | undefined;
+	let pendingConnection: Promise<McpStdioClient> | undefined;
+	let ready: Promise<void> = Promise.resolve();
+	const proxy = McpStdioClient.fromTransport({
+		async callTool(input) {
+			await ready;
+			const directTools = new Set([
+				'overview',
+				'tool_search',
+				'plugin_activate',
+				'plugin_deactivate',
+				'status',
+				'vertex',
+			]);
+			const prefix = namespacePrefix?.trim()
+				? namespacePrefix.trim().replace(/_?$/, '_')
+				: 'mcp-vertex_';
+			const suffix = input.name.startsWith(prefix)
+				? input.name.slice(prefix.length)
+				: undefined;
+			if (suffix !== undefined && !directTools.has(suffix)) {
+				const router = `${prefix}vertex`;
+				// Build a candidate ladder so calls like
+				//   mcp-vertex_project_kpis      (single underscore)
+				//   mcp-vertex_project_kpis_now  (two underscores)
+				// all reach the right domain/action. The router stores
+				// tools under `<prefix>_<plugin>_<stem>` where `<plugin>`
+				// uses a hyphen (e.g. project-kpis). So:
+				//   • `core` covers tools registered without a plugin.
+				//   • `<hyphen-plug>` covers the canonical kebab plugin id.
+				//   • For two-or-more underscores, also try splitting the
+				//     rightmost `_` (e.g. `kpis_history`).
+				const candidates: Array<{
+					readonly domain: string;
+					readonly action: string;
+				}> = [{ domain: 'core', action: suffix }];
+				const firstSeparator = suffix.indexOf('_');
+				if (firstSeparator !== -1) {
+					const left = suffix.slice(0, firstSeparator);
+					const right = suffix.slice(firstSeparator + 1);
+					candidates.push(
+						{ domain: left, action: right },
+						{ domain: left.replaceAll('-', '_'), action: right },
+						{ domain: `${left}-plugin`, action: right },
+						// The kebab-plugin id with the FULL action — matches
+						// tools like `project-kpis.project_kpis` whose plugin
+						// name has a hyphen and the underscore lives inside
+						// the tool stem.
+						{ domain: left.replaceAll('_', '-'), action: suffix },
+					);
+					const lastSeparator = suffix.lastIndexOf('_');
+					if (lastSeparator !== firstSeparator) {
+						candidates.push({
+							domain: suffix.slice(0, lastSeparator),
+							action: suffix.slice(lastSeparator + 1),
+						});
+					}
+				}
+				const seen = new Set<string>();
+				const ladder = candidates.filter((c) => {
+					const key = `${c.domain}::${c.action}`;
+					if (seen.has(key)) return false;
+					seen.add(key);
+					return true;
+				});
+				for (const candidate of ladder) {
+					try {
+						const routed = await current.request<
+							{
+								readonly domain: string;
+								readonly action: string;
+								readonly args: Readonly<
+									Record<string, unknown>
+								>;
+							},
+							{
+								readonly routed?: boolean;
+								readonly isError?: boolean;
+								readonly text?: string;
+								readonly structuredContent?: unknown;
+							}
+						>(router, {
+							domain: candidate.domain,
+							action: candidate.action,
+							args: (input.arguments ?? {}) as Readonly<
+								Record<string, unknown>
+							>,
+						});
+						if (routed.isError === true) {
+							throw new Error(
+								routed.text ??
+									`MCP tool "${input.name}" returned an error`,
+							);
+						}
+						if (routed.structuredContent !== undefined) {
+							return {
+								structuredContent: routed.structuredContent,
+							};
+						}
+						return { structuredContent: routed };
+					} catch (error) {
+						if (candidate === ladder[ladder.length - 1]) {
+							throw error;
+						}
+					}
+				}
+			}
+			return {
+				structuredContent: await current.request(
+					input.name,
+					input.arguments ?? {},
+				),
+			};
+		},
+		async listTools() {
+			await ready;
+			return { tools: await current.listTools() };
+		},
+		async close() {
+			if (pendingConnection !== undefined) {
+				await pendingConnection
+					.then((next) => next.close())
+					.catch(() => undefined);
+			}
+			if (reconnecting !== undefined) {
+				await reconnecting.catch(() => undefined);
+			}
+			await current.close();
+		},
+	});
+	return {
+		client: proxy,
+		reconnect: async () => {
+			if (reconnecting !== undefined) {
+				const activeReconnect = reconnecting;
+				try {
+					await activeReconnect;
+					return;
+				} catch {
+					if (reconnecting === activeReconnect) {
+						reconnecting = undefined;
+					}
+				}
+			}
+			const connection = Promise.resolve().then(connect);
+			pendingConnection = connection;
+			ready = connection.then(
+				() => undefined,
+				() => undefined,
+			);
+			const operation = connection.then(async (next) => {
+				const previous = current;
+				current = next;
+				await previous.close();
+			});
+			reconnecting = operation;
+			const cleanup = (): void => {
+				pendingConnection = undefined;
+				if (reconnecting === operation) reconnecting = undefined;
+			};
+			void operation.then(cleanup, cleanup);
+			void operation.catch(() => undefined);
+			await operation;
+		},
+		replace: async (next) => {
+			const previous = current;
+			current = next;
+			ready = Promise.resolve();
+			if (previous !== next) await previous.close();
+		},
+	};
+};
 
 export const activate = async (
 	context: IExtensionContext,
 	deps: IActivationDeps = {},
 ): Promise<void> => {
-	// r00003 S4: every disposable the extension creates will be tracked
+	// S4: every disposable the extension creates will be tracked
 	// through this handle. `deactivate()` (called by VS Code with no
 	// arguments) drains it. Tests can read `getRuntimeHandle()` to
 	// assert which disposables were registered and in what order.
@@ -226,7 +501,10 @@ export const activate = async (
 	// inside the handle on success, and on failure we clear the slot so
 	// the next `activate()` starts from a clean slate.
 	const handle: IRuntimeHandle = createRuntimeHandle();
-	const vscode = deps.vscode ?? (await loadVscodeApi());
+	const vscode = deps.vscode ?? loadVscodeApi();
+	let adoptConnectedClient:
+		| ((client: McpStdioClient) => Promise<void>)
+		| undefined;
 	handle.register(
 		'command:mcp-vertex.startServerUntrusted',
 		vscode.commands.registerCommand(
@@ -239,6 +517,9 @@ export const activate = async (
 					await registerStartServerUntrusted(context, vscode, {
 						...deps,
 						trustOverride: true,
+						onClientConnected: async (next) => {
+							await adoptConnectedClient?.(next);
+						},
 					});
 				} catch (err) {
 					await vscode.window.showErrorMessage?.(
@@ -248,12 +529,12 @@ export const activate = async (
 			},
 		),
 	);
-	// f00081 S2: resolve the host's tool-name namespace from
+	// S2: resolve the host's tool-name namespace from
 	// `mcp-vertex.server.prefix` once, and thread it into every service so
 	// a `--prefix=acme` deployment calls `acme_*` tools instead of silently
 	// failing. `undefined` keeps the default `mcp-vertex_` behaviour.
 	const namespacePrefix = resolveNamespacePrefix(vscode);
-	// x00072 SEC-001 S1: refuse to spawn the stdio child when the
+	// SEC-001 S1: refuse to spawn the stdio child when the
 	// workspace is not trusted. The UI/services still register so the user
 	// can see the host; the manual `start-server` command bypasses the gate
 	// via `deps.trustOverride`.
@@ -261,22 +542,77 @@ export const activate = async (
 		deps.trustOverride === true
 			? true
 			: (vscode.workspace?.isTrusted ?? true);
-	if (!isTrusted) {
-		await vscode.window.showInformationMessage?.(
-			'MCP-Vertex: workspace is untrusted — child server NOT started. Run `MCP-Vertex: Start Server (Untrusted)` to start manually.',
+	const startupReportChannel =
+		vscode.window.createOutputChannel?.('MCP Vertex');
+	if (startupReportChannel !== undefined) {
+		handle.register('startup-report-channel', startupReportChannel);
+	}
+	const runtimeChannel =
+		vscode.window.createOutputChannel?.('MCP Vertex Runtime');
+	if (runtimeChannel !== undefined) {
+		handle.register('runtime-channel', runtimeChannel);
+	}
+	const configuredLaunch = await resolveServerCommand(vscode);
+	let initialClient: McpStdioClient;
+	const disconnectedClient = (failure: Error): McpStdioClient =>
+		McpStdioClient.fromTransport({
+			async callTool() {
+				throw failure;
+			},
+			async listTools() {
+				throw failure;
+			},
+			async close() {},
+		});
+	const connectClient = (): Promise<McpStdioClient> =>
+		connectWithTimeout(() =>
+			(
+				deps.createClient ??
+				(() => createDefaultClient(vscode, startupReportChannel))
+			)(),
 		);
-		setRuntimeHandle(handle);
-		return;
+	if (!isTrusted) {
+		initialClient = disconnectedClient(
+			new Error('workspace is untrusted; MCP server was not started'),
+		);
+		runSafely(
+			Promise.resolve(
+				vscode.window.showInformationMessage?.(
+					'MCP-Vertex: workspace is untrusted — child server NOT started. Run `MCP-Vertex: Start Server (Untrusted)` to start manually.',
+				),
+			),
+		);
+	} else {
+		initialClient = disconnectedClient(
+			configuredLaunch === undefined
+				? new Error(
+						'No MCP server launch is configured for the mcp-vertex extension',
+					)
+				: new Error('MCP server is connecting'),
+		);
 	}
-	let client: McpStdioClient;
-	try {
-		client = await (deps.createClient ?? createDefaultClient)(vscode);
-	} catch (err) {
-		// Best-effort: surface the failure but never leave a stale handle
-		// for a future activation to inherit.
-		setRuntimeHandle(undefined);
-		throw err;
+	const resilient = createResilientClient(
+		initialClient,
+		connectClient,
+		resolveNamespacePrefix(vscode),
+	);
+	adoptConnectedClient = resilient.replace;
+	const client = resilient.client;
+	const reconnect = resilient.reconnect;
+	if (isTrusted && configuredLaunch !== undefined) {
+		void reconnect()
+			.then(
+				() => undefined,
+				() => undefined,
+			)
+			.catch(() => undefined);
 	}
+	void Promise.resolve(
+		context.globalState.update(CLIENT_STATE_KEY, client),
+	).catch(() => {
+		// Persistence is auxiliary; the live client remains usable when the
+		// host cannot write global state during startup.
+	});
 	// Only NOW is the handle fully wired — client + services can safely
 	// register disposables that depend on it.
 	setRuntimeHandle(handle);
@@ -290,12 +626,11 @@ export const activate = async (
 		dispose: () => {
 			if (clientClosed) return;
 			clientClosed = true;
-			void client.close();
+			return client.close();
 		},
 	});
-	await context.globalState.update(CLIENT_STATE_KEY, client);
 
-	// r00003 S4: `track()` is the single registration seam for every
+	// S4: `track()` is the single registration seam for every
 	// disposable the extension creates (command subscriptions, tree
 	// providers, watchers, the dashboard webview). It pushes onto
 	// `context.subscriptions` (so VS Code's own lifecycle observer still
@@ -309,35 +644,86 @@ export const activate = async (
 		handle.register(`sub-${trackSeq++}`, disposable);
 		return disposable;
 	};
+	const serverConfigured = configuredLaunch !== undefined;
+	const dashboardRefresh: {
+		current?: DashboardWebviewViewProvider;
+	} = {};
+	// Register the dashboard before network-backed providers and commands.
+	// The dashboard provider renders an unavailable state when MCP is down,
+	// so activation can expose the web app without waiting for connectivity.
+	const dashboardRegistration = registerDashboardSurfaces(
+		context,
+		client,
+		vscode,
+		deps.vscode,
+		namespacePrefix,
+		serverConfigured,
+		track,
+		dashboardRefresh,
+	);
+	await dashboardRegistration.catch(async (error: unknown) => {
+		const message = error instanceof Error ? error.message : String(error);
+		runtimeChannel?.append(`Dashboard registration failed: ${message}\n`);
+		await vscode.window.showErrorMessage?.(
+			`MCP Vertex dashboard could not be registered: ${message}`,
+		);
+	});
+	if (runtimeChannel !== undefined) {
+		const workspaceRoot =
+			vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath;
+		if (workspaceRoot !== undefined) {
+			const runtimeObserver = new RuntimeObserver(
+				join(
+					workspaceRoot,
+					'.cache',
+					'mcp-vertex',
+					'runtime',
+					'events.jsonl',
+				),
+				runtimeChannel,
+				observerIntervalMs(vscode),
+			);
+			runtimeObserver.start();
+			track(runtimeObserver);
+		}
+	}
+	track(
+		vscode.commands.registerCommand(OPEN_RUNTIME_LOG_COMMAND, () =>
+			runtimeChannel === undefined
+				? vscode.window.showInformationMessage?.(
+						'MCP Vertex runtime log is unavailable in this host.',
+					)
+				: runtimeChannel.show?.(true),
+		),
+	);
+	// Register network-backed commands before the initial overview/status-bar
+	// refresh. A slow or unavailable MCP server must not leave manifest
+	// commands visible but unregistered in the workbench.
+	for (const reg of registerProviderActionCommands({
+		vscode,
+		client,
+		globalState: context.globalState,
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	})) {
+		track(reg);
+	}
+	registerDevelopmentAutoReload(context, vscode, track);
 
 	const overview = new OverviewService(client, namespacePrefix);
-	// f00059 S3: capture the host's actually-loaded plugin set so the
-	// toolbar can drop action cards whose `requires` is unmet. A
-	// failed overview call (server not yet booted) leaves the set
-	// undefined, and the toolbar's `deps.loadedPlugins ?? []` fallback
-	// then shows every action — same legacy behaviour. The compact
-	// overview projects `plugins: string[]` (one entry per loaded
-	// plugin name) which is exactly what the toolbar's filter needs.
-	let loadedPlugins: readonly string[] | undefined;
-	try {
-		const snap = await overview.getOverview({ compact: true });
-		const raw = (snap as { plugins?: unknown })?.plugins;
-		if (Array.isArray(raw)) {
-			loadedPlugins = raw.filter(
-				(entry): entry is string =>
-					typeof entry === 'string' && entry.length > 0,
-			);
-		}
-	} catch {
-		loadedPlugins = undefined;
-	}
 	const catalog = new AgentCatalogService(
 		client,
 		namespacePrefix === undefined ? {} : { namespacePrefix },
 	);
 	const notifications = new NotificationsService(client, namespacePrefix);
-	const toolTree = new ToolTreeDataProvider(overview, catalog);
-	const memoryTree = new MemoryTreeDataProvider(new MemoryService(client));
+	const toolTree = new ToolTreeDataProvider(
+		overview,
+		catalog,
+		serverConfigured,
+	);
+	const memoryTree = new MemoryTreeDataProvider(
+		new MemoryService(client),
+		serverConfigured,
+	);
 	// Fix #4: wrap `createStatusBarItem` in try/catch — a strict host can
 	// throw when no workbench is ready, and we do not want a failed
 	// status bar to abort the rest of activation.
@@ -346,24 +732,6 @@ export const activate = async (
 		statusBarItem = vscode.window.createStatusBarItem?.();
 	} catch {
 		statusBarItem = undefined;
-	}
-	if (statusBarItem !== undefined) {
-		const statusBar = new McpVertexStatusBar(
-			statusBarItem,
-			overview,
-			client,
-			notifications,
-			undefined,
-			undefined,
-			namespacePrefix,
-		);
-		await statusBar.start();
-		context.subscriptions.push(statusBar);
-		// r00003 S4: route the status bar through the handle so that
-		// `deactivate()` actually disposes it. The `subscriptions` push
-		// remains for VS Code's own lifecycle observer (so the test that
-		// checks `subscriptions.length === 13` keeps passing).
-		handle.register('status-bar', statusBar);
 	}
 
 	const treeRegistration = vscode.window.registerTreeDataProvider?.(
@@ -376,20 +744,15 @@ export const activate = async (
 		memoryTree,
 	);
 	if (memoryRegistration !== undefined) track(memoryRegistration);
-	// f00079 S4 (a00040 H5): `mcp-vertex.proposals` is declared in
-	// `contributes.views` but had no `TreeDataProvider`, so the view was
-	// permanently empty. Register the existing `ProposalBoardProvider`
-	// (it mirrors `mcp-vertex_proposals_proposal_board`) so the view
-	// renders the live board and each node can route to its proposal via
-	// `mcp-vertex.openProposal` (S5).
-	// f00097 S2/S3: one shared read-only snapshot source backs BOTH the
-	// sidebar board and the detail webview, so opening a proposal reuses the
-	// board's cached fetch (one TTL cache, fewer tool calls).
+	// Register views before the first status-bar refresh. The refresh performs
+	// several MCP requests and must not prevent the workbench from attaching
+	// the providers declared by the extension manifest.
 	const proposalsSource = new ProposalsSnapshotSource({
 		client,
 		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
 	});
 	const proposalsTree = new ProposalBoardProvider(client, {
+		serverConfigured,
 		snapshotSource: proposalsSource,
 		filterStore: createProposalFilterStore(context.globalState),
 	});
@@ -398,15 +761,47 @@ export const activate = async (
 		proposalsTree,
 	);
 	if (proposalsRegistration !== undefined) track(proposalsRegistration);
+
+	// S3: capture the host's actually-loaded plugin set after the views are
+	// registered. A slow MCP overview must not prevent the workbench from
+	// attaching the providers declared by the extension manifest.
+	if (statusBarItem !== undefined) {
+		const statusBar = new McpVertexStatusBar(
+			statusBarItem,
+			overview,
+			client,
+			notifications,
+			undefined,
+			undefined,
+			namespacePrefix,
+		);
+		try {
+			statusBar.start();
+		} catch {
+			statusBar.dispose();
+		}
+		context.subscriptions.push(statusBar);
+		// S4: route the status bar through the handle so that
+		// `deactivate()` actually disposes it. The `subscriptions` push
+		// remains for VS Code's own lifecycle observer (so the test that
+		// checks `subscriptions.length === 13` keeps passing).
+		handle.register('status-bar', statusBar);
+	}
+
 	// Fix #3: `createFileSystemWatcher` can be absent on stripped hosts
 	// (or in test fakes that omit `workspace`). Previously we silently
 	// skipped, leaving the tree permanently stale. Now we log and
 	// trigger an explicit refresh of the tool tree at activation time so
 	// the UI is at least up-to-date with the live snapshot, even if we
 	// will not receive change events.
-	const watcher = vscode.workspace?.createFileSystemWatcher(
-		'**/mcp-vertex.config.json',
-	);
+	let watcher: IFileSystemWatcher | undefined;
+	try {
+		watcher = vscode.workspace?.createFileSystemWatcher?.(
+			'**/mcp-vertex.config.json',
+		);
+	} catch {
+		watcher = undefined;
+	}
 	if (watcher !== undefined) {
 		track(toolTree.bindConfigWatcher(watcher));
 	} else {
@@ -414,18 +809,43 @@ export const activate = async (
 	}
 
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
+	// detailSink is wired below — see `dashboardProvider` construction —
+	// because the dashboard provider depends on `host`, which is only
+	// resolved after the MCP client connects. We expose a proxy so the
+	// command registrations below can reference it before it has a
+	// concrete implementation.
+	const detailSink = ((kind, model) => {
+		const provider = dashboardRefresh.current;
+		return provider === undefined
+			? Promise.resolve(false)
+			: provider.getDetailBroker().push({ kind, model });
+	}) as NonNullable<
+		Parameters<typeof registerOpenToolDetailCommand>[0]['detailSink']
+	>;
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
-	track(registerRefreshCommand({ vscode, client, toolTree, proposalsTree }));
+	track(
+		registerRefreshCommand({
+			vscode,
+			client,
+			toolTree,
+			proposalsTree,
+			memoryTree,
+			dashboard: {
+				refresh: () => dashboardRefresh.current?.refresh(),
+			},
+		}),
+	);
 	track(registerRunValidationCommand({ vscode, client }));
 	track(
 		registerOpenProposalCommand({
 			vscode,
 			client,
 			proposalsSource,
+			detailSink,
 			...withPrefix,
 		}),
 	);
-	// f00097 S4: the board's own refresh (also on the view title bar) and the
+	// S4: the board's own refresh (also on the view title bar) and the
 	// banner's "Copy error" action.
 	track(registerProposalsRefreshCommand({ vscode, client, proposalsTree }));
 	track(registerProposalsCopyErrorCommand({ vscode, client }));
@@ -435,10 +855,21 @@ export const activate = async (
 	// a thin host wrapper around `EmbedService` (no client request), so
 	// it only needs `vscode`.
 	track(registerOpenDocsCommand({ vscode }));
-	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
+	// S6: surface the canonical docs/how-to-use/API from the IDE.
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
-	// f00119 S6: surface the auto-agent-selector plugin's roster +
+	// S1: VSCode Agent Timeline view. Reads
+	// `.vscode/mcp-vertex/timeline.json` (written by the core
+	// `TimelineBuffer`) and renders a vertical timeline of
+	// claim/activate/change/test/cost/commit/close events.
+	track(
+		registerOpenAgentTimelineCommand({
+			vscode,
+			workspaceRoot:
+				vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath ?? null,
+		}),
+	);
+	// S6: surface the auto-agent-selector plugin's roster +
 	// recommendation so the user can review (and pin via the CLI /
 	// configuration-center) without leaving the IDE.
 	track(
@@ -452,10 +883,28 @@ export const activate = async (
 			...withPrefix,
 		}),
 	);
-	track(registerOpenToolDetailCommand({ vscode, client, ...withPrefix }));
+	// Right-click on a plugin in the Tools tree → open the
+	// configuration center filtered by that plugin's id. The
+	// configuration center is the schema-driven editor with
+	// inputs / selects / checks for every plugin field; this
+	// command gives the user the same editor with the deep-link
+	// `pluginId` so they land on the right card.
+	track(registerOpenPluginConfigCommand({ vscode, client, ...withPrefix }));
+	track(
+		registerOpenToolDetailCommand({
+			vscode,
+			client,
+			detailSink,
+			...withPrefix,
+		}),
+	);
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
-	track(registerRestartServerCommand(vscode));
+	track(
+		registerRestartServerCommand(vscode, {
+			restartFn: reconnect,
+		}),
+	);
 	track(
 		registerPluginActivationCommand({
 			vscode,
@@ -466,18 +915,7 @@ export const activate = async (
 	);
 	track(registerMemorySaveCommand({ vscode, client, memoryTree }));
 	track(registerMemoryForgetCommand({ vscode, client, memoryTree }));
-	// f00098 S3: provider dashboard panel + its action commands (pause/
-	// resume/healthcheck/usage report/usage clear-with-modal-confirm).
-	// The panel repaints when these commands run — never by polling.
-	for (const reg of registerProviderActionCommands({
-		vscode,
-		client,
-		globalState: context.globalState,
-		...withPrefix,
-	})) {
-		track(reg);
-	}
-	// f00068 S5: external-server activation ack surface (gate decision 5).
+	// S5: external-server activation ack surface (gate decision 5).
 	// The command lists pending acks → QuickPick → accept/reject via the
 	// external_mcp_ack tool; a NON-MODAL toast surfaces them at activation.
 	const externalMcpsAckDeps = {
@@ -487,13 +925,12 @@ export const activate = async (
 		...withPrefix,
 	};
 	track(registerExternalMcpsAckCommand(externalMcpsAckDeps));
-	void surfaceExternalMcpsPendingAcks(externalMcpsAckDeps);
 	// Fix #7: `openSettings` renders a webview that posts messages to
 	// `mcp-vertex.saveSettings` / `mcp-vertex.resetSettings`. Those
 	// handlers were never registered, so changes the user made in the
 	// webview were silently dropped. We now wire them to the same
 	// `SettingsService` + `ISettingsStore` used by `openSettings`.
-	// f00079 S3 (a00040 H4): back the settings store with
+	// S3 (H4): back the settings store with
 	// `context.globalState` so the user's choices survive a window
 	// reload instead of living in module-scope memory.
 	const settingsStore = createExtensionSettingsStore(context.globalState);
@@ -514,7 +951,6 @@ export const activate = async (
 			vscode,
 			client,
 			globalState: context.globalState,
-			...(loadedPlugins !== undefined ? { loadedPlugins } : {}),
 			...withPrefix,
 		}),
 	);
@@ -525,52 +961,9 @@ export const activate = async (
 			globalState: context.globalState,
 		}),
 	);
-
-	// Fix #9: previously the dashboard was ONLY registered when
-	// `deps.vscode === undefined` (i.e. the real VS Code runtime).
-	// Hosts that load this same file via the test seams (or future
-	// JetBrains/Zed ports) would silently miss the dashboard command.
-	// We now register it unconditionally — the adapter below is
-	// host-injected when available, and we lazily import the real
-	// VS Code adapter only when no `vscode` was passed.
-	if (deps.vscode === undefined) {
-		const { createVscodeHostAdapter } = await import(
-			'./host/vscode-host-adapter'
-		);
-		const host = await createVscodeHostAdapter();
-		track(
-			registerOpenDashboardCommand({
-				host,
-				client,
-				globalState: context.globalState,
-				...withPrefix,
-				getConfig: () =>
-					context.globalState.get(SETTINGS_STATE_KEY) ??
-					context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
-					{},
-			}),
-		);
-	} else {
-		// Build a host from the injected vscode surface so the dashboard
-		// works the same way it does in production, regardless of which
-		// test fakes / alt hosts are loading this code.
-		const host = createFakeHostFromVscode(deps.vscode);
-		track(
-			registerOpenDashboardCommand({
-				host,
-				client,
-				globalState: context.globalState,
-				...withPrefix,
-				getConfig: () =>
-					context.globalState.get(SETTINGS_STATE_KEY) ??
-					context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
-					{},
-			}),
-		);
-	}
 };
 
-// r00003 S4: the VS Code runtime calls `deactivate()` with no arguments,
+// S4: the VS Code runtime calls `deactivate()` with no arguments,
 // so we cannot rely on the host passing the activation context back.
 // The only safe bridge between two top-level exports of this file is a
 // module-level handle slot. VS Code only allows one activation per
@@ -592,102 +985,109 @@ export const getRuntimeHandle = (): IRuntimeHandle | undefined =>
 export const deactivate = async (): Promise<void> => {
 	const handle = __runtimeHandle;
 	if (handle === undefined) return;
-	handle.disposeAll();
+	await handle.disposeAll();
 	__runtimeHandle = undefined;
 };
 
-/**
- * Resolve the server launch, in precedence order (x00102 S1):
- *
- *   1. Explicit `mcp-vertex.server.command` / `mcp-vertex.server.args`
- *      workspace settings — the operator always wins.
- *   2. The workspace's checked-in `.mcp.json` `mcpServers.mcp-vertex`
- *      entry — the file `mcpv init` writes, so a freshly-initialised
- *      consumer connects with zero extra configuration (before this,
- *      the default assumed a `"mcp-vertex"` package.json script that
- *      init never creates, and the extension died on connect).
- *   3. `bun run mcp-vertex` — the legacy fallback for workspaces that
- *      wire the server through a package.json script.
- *
- * `args` in the settings accept either a JSON array (typed verbatim in
- * settings.json) or a space-separated string — the latter is friendlier
- * for the common single-script case while still letting power users
- * pass flags via `["run", "mcp-vertex", "--preset=swarm"]`.
- */
+/** Resolve only the explicit server launch configured for this extension. */
 export const resolveServerCommand = async (
 	vscode: IVscodeApi,
-): Promise<{ command: string; args: readonly string[]; cwd?: string }> => {
-	const defaults = { command: 'bun', args: ['run', 'mcp-vertex'] } as const;
+): Promise<
+	{ command: string; args: readonly string[]; cwd?: string } | undefined
+> => {
 	const root = vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath;
 	const config = vscode.workspace?.getConfiguration?.('mcp-vertex.server');
 	const command = config?.get<string>('command');
 	const rawArgs = config?.get<unknown>('args');
 	const configCwd = config?.get<string>('cwd');
-	const args =
+	const explicitArgs =
 		Array.isArray(rawArgs) && rawArgs.every((a) => typeof a === 'string')
 			? (rawArgs as readonly string[])
 			: typeof rawArgs === 'string' && rawArgs.trim().length > 0
 				? rawArgs.trim().split(/\s+/)
 				: undefined;
-	const cwd =
-		typeof configCwd === 'string' && configCwd.trim().length > 0
-			? configCwd.trim()
-			: root;
+	let resolvedCommand = command;
+	let args = explicitArgs;
+	let resolvedCwd = configCwd;
 	if (
-		(typeof command === 'string' && command.length > 0) ||
-		args !== undefined
+		(typeof resolvedCommand !== 'string' ||
+			resolvedCommand.trim().length === 0 ||
+			args === undefined) &&
+		root !== undefined
 	) {
-		return {
-			command: command ?? defaults.command,
-			args: args ?? defaults.args,
-			...(cwd === undefined ? {} : { cwd }),
-		};
+		const discovered = await readWorkspaceMcpLaunch(root);
+		if (discovered !== undefined) {
+			resolvedCommand = discovered.command;
+			args = discovered.args;
+			resolvedCwd = discovered.cwd;
+		} else if (await hasProjectConfig(root)) {
+			resolvedCommand = 'bun';
+			args = ['run', 'mcp-vertex'];
+		}
 	}
-	const fromMcpJson =
-		root === undefined ? undefined : await readWorkspaceMcpJsonLaunch(root);
-	if (fromMcpJson !== undefined) {
-		return { ...fromMcpJson, ...(cwd === undefined ? {} : { cwd }) };
-	}
+	if (
+		typeof resolvedCommand !== 'string' ||
+		resolvedCommand.trim().length === 0 ||
+		args === undefined
+	)
+		return undefined;
+	const cwd =
+		typeof resolvedCwd === 'string' && resolvedCwd.trim().length > 0
+			? resolvedCwd.trim()
+			: root;
 	return {
-		...defaults,
+		command: resolvedCommand.trim(),
+		args,
 		...(cwd === undefined ? {} : { cwd }),
 	};
 };
 
-/**
- * Read the `mcpServers.mcp-vertex` launch from `<workspace>/.mcp.json`.
- * Relative args in that file (e.g. the repo-local host script) resolve
- * against the workspace root, so the caller must spawn with `cwd: root`.
- */
-const readWorkspaceMcpJsonLaunch = async (
+interface IWorkspaceMcpLaunch {
+	readonly command: string;
+	readonly args: readonly string[];
+	readonly cwd?: string;
+}
+
+const readWorkspaceMcpLaunch = async (
 	root: string,
-): Promise<{ command: string; args: readonly string[] } | undefined> => {
+): Promise<IWorkspaceMcpLaunch | undefined> => {
 	try {
-		const { readFile } = await import('node:fs/promises');
-		const { join } = await import('node:path');
-		const raw = await readFile(join(root, '.mcp.json'), 'utf8');
-		const parsed = JSON.parse(raw) as {
-			readonly mcpServers?: Readonly<
-				Record<
-					string,
-					{ readonly command?: unknown; readonly args?: unknown }
-				>
-			>;
+		const raw = JSON.parse(
+			await readFile(join(root, '.mcp.json'), 'utf8'),
+		) as {
+			readonly mcpServers?: Record<string, unknown>;
+			readonly servers?: Record<string, unknown>;
 		};
-		const entry = parsed.mcpServers?.['mcp-vertex'];
+		const entry = (raw.mcpServers ?? raw.servers)?.['mcp-vertex'];
+		if (entry === null || typeof entry !== 'object') return undefined;
+		const value = entry as {
+			readonly command?: unknown;
+			readonly args?: unknown;
+			readonly cwd?: unknown;
+		};
 		if (
-			entry !== undefined &&
-			typeof entry.command === 'string' &&
-			entry.command.length > 0 &&
-			Array.isArray(entry.args) &&
-			entry.args.every((a) => typeof a === 'string')
-		) {
-			return { command: entry.command, args: entry.args as string[] };
-		}
+			typeof value.command !== 'string' ||
+			!Array.isArray(value.args) ||
+			!value.args.every((arg) => typeof arg === 'string')
+		)
+			return undefined;
+		return {
+			command: value.command,
+			args: value.args,
+			...(typeof value.cwd === 'string' ? { cwd: value.cwd } : {}),
+		};
 	} catch {
-		// Missing or malformed .mcp.json → fall through to the default.
+		return undefined;
 	}
-	return undefined;
+};
+
+const hasProjectConfig = async (root: string): Promise<boolean> => {
+	try {
+		await readFile(join(root, 'mcp-vertex.config.json'), 'utf8');
+		return true;
+	} catch {
+		return false;
+	}
 };
 
 /**
@@ -710,13 +1110,26 @@ export const resolveNamespacePrefix = (
 
 export const createDefaultClient = async (
 	vscode?: IVscodeApi,
+	startupReportChannel?: IOutputChannel,
 ): Promise<McpStdioClient> => {
-	const api = vscode ?? (await loadVscodeApi());
-	const { command, args, cwd } = await resolveServerCommand(api);
+	const api = vscode ?? loadVscodeApi();
+	const launch = await resolveServerCommand(api);
+	if (launch === undefined) {
+		throw new Error(
+			'Configure mcp-vertex.server.command and mcp-vertex.server.args before starting the MCP server.',
+		);
+	}
+	const { command, args, cwd } = launch;
 	return McpStdioClient.connect({
 		command,
 		args,
 		...(cwd === undefined ? {} : { cwd }),
+		...(startupReportChannel === undefined
+			? {}
+			: {
+					onStderr: (chunk: string) =>
+						startupReportChannel.append(chunk),
+				}),
 	});
 };
 
@@ -729,8 +1142,129 @@ export const renderOverviewHtml = (overview: IOverview): string => {
 	});
 };
 
-const loadVscodeApi = async (): Promise<IVscodeApi> =>
-	(await import('vscode')) as unknown as IVscodeApi;
+/**
+ * Resolve the `vscode` module. VS Code's Extension Host provides it
+ * as a CommonJS namespace; a synchronous `require` is the portable
+ * lookup (no async bootstrap, no wrapper that hides `default`).
+ * The build script (`scripts/build.ts`) marks `vscode` as `external`
+ * so the call lands on the host runtime export at activation time.
+ */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const loadVscodeApi = (): IVscodeApi =>
+	require('vscode') as unknown as IVscodeApi;
+
+const registerDevelopmentAutoReload = (
+	context: IExtensionContext,
+	vscode: IVscodeApi,
+	track: (disposable: IDisposable) => IDisposable,
+): void => {
+	const enabled = vscode.workspace
+		?.getConfiguration?.('mcp-vertex')
+		?.get<boolean>('development.autoReload', false);
+	const extensionPath = context.extensionPath;
+	if (enabled !== true || extensionPath === undefined) return;
+	let watcher: IFileSystemWatcher | undefined;
+	try {
+		watcher = vscode.workspace?.createFileSystemWatcher?.(
+			`${extensionPath}/extension.js`,
+		);
+	} catch {
+		watcher = undefined;
+	}
+	if (watcher === undefined || vscode.commands.executeCommand === undefined)
+		return;
+	let reloadScheduled = false;
+	const reload = (): void => {
+		if (reloadScheduled) return;
+		reloadScheduled = true;
+		setTimeout(() => {
+			reloadScheduled = false;
+			runSafely(
+				Promise.resolve(
+					vscode.commands?.executeCommand?.(
+						'workbench.action.reloadWindow',
+					),
+				),
+			);
+		}, 250);
+	};
+	track({ dispose: () => undefined });
+	track(watcher.onDidChange(reload));
+	track(watcher.onDidCreate(reload));
+};
+
+const registerDashboardSurfaces = async (
+	context: IExtensionContext,
+	client: McpStdioClient,
+	vscode: IVscodeApi,
+	injectedVscode: IVscodeApi | undefined,
+	namespacePrefix: string | undefined,
+	serverConfigured: boolean,
+	track: (disposable: IDisposable) => IDisposable,
+	dashboardRefresh: { current?: DashboardWebviewViewProvider },
+): Promise<void> => {
+	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
+	let host: IHostAdapter;
+	if (injectedVscode !== undefined) {
+		host = createFakeHostFromVscode(injectedVscode);
+	} else {
+		try {
+			const { createVscodeHostAdapter } = await import(
+				'./host/vscode-host-adapter'
+			);
+			host = createVscodeHostAdapter();
+		} catch (error) {
+			// Keep the canonical dashboard registrable even when an optional
+			// host adapter import fails during extension-host startup.
+			void vscode.window.showErrorMessage?.(
+				`MCP Vertex host adapter unavailable: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			host = createFakeHostFromVscode(vscode);
+		}
+	}
+	const settingsStore = createExtensionSettingsStore(context.globalState);
+	track(
+		registerOpenDashboardCommand({
+			host,
+			client,
+			globalState: context.globalState,
+			settingsStore,
+			...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+			getConfig: () =>
+				context.globalState.get(SETTINGS_STATE_KEY) ??
+				context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+				{},
+		}),
+	);
+	const dashboardProvider = new DashboardWebviewViewProvider({
+		host,
+		client,
+		globalState: context.globalState,
+		getConfig: () =>
+			context.globalState.get(SETTINGS_STATE_KEY) ??
+			context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+			{},
+		settingsStore,
+		...withPrefix,
+	});
+	dashboardRefresh.current = dashboardProvider;
+	const dashboardRegistration = host.registerWebviewViewProvider?.(
+		DASHBOARD_VIEW_ID,
+		dashboardProvider,
+	);
+	if (dashboardRegistration !== undefined) track(dashboardRegistration);
+	// Secondary panels are registered only after the canonical dashboard.
+	// A failure in KPI wiring must never make the main web app disappear.
+	const kpiRegistration = registerKpiDashboardProvider({
+		host,
+		client,
+		serverConfigured,
+		viewId: KPI_VIEW_ID,
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	});
+	track({ dispose: kpiRegistration.dispose });
+	void vscode;
+};
 
 /**
  * `createFakeHostFromVscode` — minimal adapter that lets the dashboard
@@ -814,6 +1348,9 @@ const createFakeHostFromVscode = (vscode: IVscodeApi): IHostAdapter => ({
 		// empty, which is the right behaviour for a stub.
 		void section;
 		return {} as T;
+	},
+	registerWebviewViewProvider() {
+		return { dispose() {} };
 	},
 	asWebviewUri(relativePath) {
 		return `vscode-resource:/extension/${relativePath}`;

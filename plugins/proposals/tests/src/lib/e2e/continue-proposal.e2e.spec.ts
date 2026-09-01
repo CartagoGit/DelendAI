@@ -55,6 +55,14 @@ interface ContinueProposalOutput {
 			readonly sliceId: string;
 			readonly title: string;
 			readonly status: string;
+			readonly migrationPhase?: string;
+			readonly migrationGuidance?: {
+				readonly phase: string;
+				readonly worktreeImpactPolicy: {
+					readonly isolation: string;
+					readonly claimMode: string;
+				};
+			};
 		}>;
 	};
 	readonly claimableSliceIds?: readonly string[];
@@ -92,7 +100,13 @@ const seedProposal = async (
 		title: string;
 		folder?: 'ready' | 'in-progress';
 		status?: string;
-		slices?: ReadonlyArray<{ id: string; title: string; status?: string }>;
+		slices?: ReadonlyArray<{
+			id: string;
+			title: string;
+			status?: string;
+			files?: readonly string[];
+			extraLines?: readonly string[];
+		}>;
 	},
 ): Promise<{ file: string; relPath: string }> => {
 	const folder = proposal.folder ?? 'ready';
@@ -105,10 +119,17 @@ const seedProposal = async (
 	const slicesBlock =
 		proposal.slices && proposal.slices.length > 0
 			? `\n## Slices\n\n- global_gate: type\n\n${proposal.slices
-					.map(
-						(s) =>
-							`### ${s.id} — ${s.title}\n- **Files**: plugins/proposals/src/lib/${s.id.toLowerCase()}-${slugify(s.title)}.ts\n- **Status**: ${s.status ?? 'pending'}\n- **Gate**: type\n`,
-					)
+					.map((s) => {
+						const files = (
+							s.files ?? [
+								`plugins/proposals/src/lib/${s.id.toLowerCase()}-${slugify(s.title)}.ts`,
+							]
+						)
+							.map((file) => `- **Files**: ${file}`)
+							.join('\n');
+						const extra = (s.extraLines ?? []).join('\n');
+						return `### ${s.id} — ${s.title}\n${files}\n- **Status**: ${s.status ?? 'pending'}\n- **Gate**: type${extra.length > 0 ? `\n${extra}` : ''}\n`;
+					})
 					.join('\n')}`
 			: '\n## goal\n\nSeed for the continue_proposal e2e harness.\n';
 
@@ -215,6 +236,90 @@ describe('e2e: proposals_continue_proposal over the real MCP protocol', async ()
 		]);
 		// Both pending slices with no dependsOn are claimable.
 		expect(res.structured.claimableSliceIds).toEqual(['S1', 'S2']);
+	});
+
+	it('mode:"plan" exposes migration guidance and keeps contract unclaimable until verify lands', async () => {
+		await seedProposal(harness, {
+			id: 'r00044',
+			title: 'migration flow',
+			slices: [
+				{
+					id: 'S1',
+					title: 'expand',
+					status: 'done',
+					extraLines: ['- migration_phase: expand'],
+					files: [
+						'packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+					],
+				},
+				{
+					id: 'S2',
+					title: 'producers',
+					status: 'done',
+					extraLines: ['- migration_phase: producers'],
+					files: [
+						'plugins/proposals/src/lib/swarm/contract-migration-policy.ts',
+					],
+				},
+				{
+					id: 'S3',
+					title: 'regenerate',
+					status: 'done',
+					extraLines: ['- migration_phase: regenerate'],
+					files: [
+						'packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+					],
+				},
+				{
+					id: 'S4',
+					title: 'consumers',
+					status: 'done',
+					extraLines: ['- migration_phase: consumers'],
+					files: [
+						'plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+					],
+				},
+				{
+					id: 'S5',
+					title: 'verify fanout',
+					extraLines: ['- migration_phase: verify'],
+					files: [
+						'packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+						'plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+						'plugins/proposals/src/lib/agents/agent-worktree-engine.ts',
+						'plugins/proposals/tests/src/lib/continue-proposal.spec.ts',
+					],
+				},
+				{
+					id: 'S6',
+					title: 'contract cleanup',
+					extraLines: ['- migration_phase: contract'],
+					files: [
+						'packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+						'plugins/proposals/src/lib/swarm/contract-migration-policy.ts',
+					],
+				},
+			],
+		});
+
+		const res = await callContinue(harness, {
+			proposalId: 'r00044',
+			mode: 'plan',
+		});
+		expect(res.ok).toBe(true);
+		expect(res.structured.kind).toBe('slice-plan');
+		expect(res.structured.claimableSliceIds).not.toContain('S5');
+		expect(res.structured.claimableSliceIds).not.toContain('S6');
+		const verifySlice = res.structured.plan?.slices.find(
+			(slice) => slice.sliceId === 'S5',
+		);
+		expect(verifySlice?.migrationGuidance?.phase).toBe('verify');
+		expect(
+			verifySlice?.migrationGuidance?.worktreeImpactPolicy.isolation,
+		).toBe('agent-worktree');
+		expect(
+			verifySlice?.migrationGuidance?.worktreeImpactPolicy.claimMode,
+		).toBe('requires-agent-worktree');
 	});
 
 	it('mode:"claim" claims a specific slice and reflects ownership', async () => {

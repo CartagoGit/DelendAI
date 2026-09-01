@@ -108,6 +108,117 @@ export const normaliseColumnType = (raw: string): IColumnType => {
 	return 'unknown';
 };
 
+const ASCII_UPPER_A = 65;
+const ASCII_UPPER_Z = 90;
+const ASCII_LOWER_A = 97;
+const ASCII_LOWER_Z = 122;
+const ASCII_ZERO = 48;
+const ASCII_NINE = 57;
+const CHAR_PLUS = 43;
+const CHAR_HYPHEN = 45;
+const CHAR_DOT = 46;
+const CHAR_TAB = 9;
+const CHAR_LINE_FEED = 10;
+const CHAR_VERTICAL_TAB = 11;
+const CHAR_FORM_FEED = 12;
+const CHAR_CARRIAGE_RETURN = 13;
+const CHAR_SPACE = 32;
+const CHAR_SLASH = 47;
+const CHAR_AMPERSAND = 38;
+
+const isAsciiLetter = (code: number): boolean =>
+	(code >= ASCII_UPPER_A && code <= ASCII_UPPER_Z) ||
+	(code >= ASCII_LOWER_A && code <= ASCII_LOWER_Z);
+
+const isSchemeChar = (code: number): boolean =>
+	isAsciiLetter(code) ||
+	(code >= ASCII_ZERO && code <= ASCII_NINE) ||
+	code === CHAR_PLUS ||
+	code === CHAR_HYPHEN ||
+	code === CHAR_DOT;
+
+const isWhitespaceCode = (code: number): boolean =>
+	code === CHAR_TAB ||
+	code === CHAR_LINE_FEED ||
+	code === CHAR_VERTICAL_TAB ||
+	code === CHAR_FORM_FEED ||
+	code === CHAR_CARRIAGE_RETURN ||
+	code === CHAR_SPACE;
+
+const redactAuthorityCredentials = (message: string): string => {
+	let out = '';
+	let cursor = 0;
+	while (cursor < message.length) {
+		const schemeSep = message.indexOf('://', cursor);
+		if (schemeSep < 0) return out + message.slice(cursor);
+
+		let schemeStart = schemeSep;
+		while (
+			schemeStart > cursor &&
+			isSchemeChar(message.charCodeAt(schemeStart - 1))
+		) {
+			schemeStart -= 1;
+		}
+		if (
+			schemeStart === schemeSep ||
+			!isAsciiLetter(message.charCodeAt(schemeStart))
+		) {
+			out += message.slice(cursor, schemeSep + 3);
+			cursor = schemeSep + 3;
+			continue;
+		}
+
+		const authorityStart = schemeSep + 3;
+		let authorityEnd = message.length;
+		for (let index = authorityStart; index < message.length; index += 1) {
+			const code = message.charCodeAt(index);
+			if (code === CHAR_SLASH || isWhitespaceCode(code)) {
+				authorityEnd = index;
+				break;
+			}
+		}
+		const atIndex = message.indexOf('@', authorityStart);
+		if (atIndex < 0 || atIndex >= authorityEnd) {
+			out += message.slice(cursor, authorityEnd);
+			cursor = authorityEnd;
+			continue;
+		}
+
+		out += message.slice(cursor, authorityStart);
+		out += '***@';
+		cursor = atIndex + 1;
+	}
+	return out;
+};
+
+const findPasswordParam = (text: string, from: number): number => {
+	const lower = text.toLowerCase();
+	const queryIndex = lower.indexOf('?password=', from);
+	const ampIndex = lower.indexOf('&password=', from);
+	if (queryIndex < 0) return ampIndex;
+	if (ampIndex < 0) return queryIndex;
+	return Math.min(queryIndex, ampIndex);
+};
+
+const redactPasswordParams = (message: string): string => {
+	let out = '';
+	let cursor = 0;
+	for (;;) {
+		const start = findPasswordParam(message, cursor);
+		if (start < 0) return out + message.slice(cursor);
+		const valueStart = start + '?password='.length;
+		out += message.slice(cursor, valueStart);
+		let valueEnd = valueStart;
+		while (valueEnd < message.length) {
+			const code = message.charCodeAt(valueEnd);
+			if (code === CHAR_AMPERSAND || isWhitespaceCode(code)) break;
+			valueEnd += 1;
+		}
+		out += '***';
+		cursor = valueEnd;
+	}
+};
+
 /**
  * Redact credentials from any DSN that ends up in an error message.
  * Covers:
@@ -118,9 +229,7 @@ export const normaliseColumnType = (raw: string): IColumnType => {
  * DSN never leaks via the MCP boundary.
  */
 export const redactDsn = (message: string): string => {
-	return message
-		.replace(/([a-z][a-z0-9+.-]*:\/\/)[^@/\s]+@/gi, '$1***@')
-		.replace(/((?:\?|&)password=)[^&\s]*/gi, '$1***');
+	return redactPasswordParams(redactAuthorityCredentials(message));
 };
 
 /**
@@ -157,4 +266,4 @@ export const buildSchema = async (
 
 /** Convenience: log everything on a single line, used by debug envelopes. */
 export const formatSchemaOneLine = (schema: IDatabaseSchema): string =>
-	`${schema.driver}:` + schema.tables.map((t) => t.name).join(',');
+	`${schema.driver}:${schema.tables.map((t) => t.name).join(',')}`;

@@ -6,6 +6,7 @@ import {
 	type IConfigurationArtifact,
 	type IConfigurationCenterResult,
 	type IConfigurationPlugin,
+	type ISaveConfigurationDocumentInput,
 } from '@mcp-vertex/client/public';
 import type { IConfigurationCenterSource } from '@mcp-vertex/ui-extension/public';
 
@@ -112,14 +113,10 @@ const fetchConfigurationCenterOnce = async (
 	}
 };
 
-export interface IConfigurationCenterSaveRequest {
-	readonly expectedDigest: string;
-	readonly edits: readonly {
-		readonly action: 'set' | 'delete';
-		readonly path: readonly (string | number)[];
-		readonly value?: unknown;
-	}[];
-}
+export type IConfigurationCenterSaveRequest = Omit<
+	ISaveConfigurationDocumentInput,
+	'workspaceRoot'
+>;
 
 export const isConfigurationCenterSaveRequest = (
 	value: unknown,

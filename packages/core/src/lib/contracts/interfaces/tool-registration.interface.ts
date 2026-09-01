@@ -55,6 +55,15 @@ export interface IToolRegistration {
 	 */
 	readonly effects?: readonly IToolEffect[] | undefined;
 	/**
+	 * f00189 (Track F / security): when `true`, the tool honours
+	 * the transversal `dryRun` protocol — accepts `args.dryRun`
+	 * and returns an `IDryRunResult` instead of executing side
+	 * effects. Tools with `effects` other than `[]` MUST set
+	 * this to `true`; the manifest loader emits a warning at
+	 * boot when the flag is missing.
+	 */
+	readonly dryRunSupported?: boolean | undefined;
+	/**
 	 * When present, the registration is for a tool that has been deprecated
 	 * (f00057 S11): the registration's handler still runs but must return a
 	 * `{ ok: false, error: { reason: 'deprecated', replacement, since } }`

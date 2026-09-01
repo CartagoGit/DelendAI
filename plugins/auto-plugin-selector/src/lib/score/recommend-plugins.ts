@@ -1,50 +1,61 @@
-/**
- * recommend-plugins.ts — f00142 S1: the pure plugin-fit scorer.
- *
- * Given the project shape (`IProjectSignals`) and a list of
- * candidate plugins (`IPluginCandidate[]`), score every candidate
- * against the signals and return a ranked `IPluginFit[]`. The
- * scoring is fully deterministic, has no fs / network / subprocess
- * dependencies, and is unit-testable on fixture project shapes.
- *
- * Scoring rules (per candidate):
- *
- *  - **Pack bonus**: when the candidate's tags include the signal's
- *    `pack` value, contribute `+1`.
- *  - **Language bonus**: when the candidate's tags intersect with
- *    `signals.languages`, contribute `+0.5` per matching language.
- *  - **Project-shape bonus**: `hasDocsSite` matches `docs-site`;
- *    `isCliTool` matches `cli`; `hasBackend` matches `backend`;
- *    `hasTests` matches `tests`. Each contributes `+0.5`.
- *  - **Penalty**: every tag on the candidate that matched nothing
- *    contributes `-0.05` (mild so it doesn't crush a candidate with
- *    mostly-fitting tags and one stray tag).
- *
- * Aggregation:
- *  - Normalize so the top plugin always scores `1.0`. Others are
- *    `rawScore / topRawScore`.
- *  - Sort by `fitScore` DESC; ties broken by `id` ASC.
- *  - Apply `minScore` (default `0`) then `limit` (default
- *    `candidates.length`).
- */
+import { scorePermissionRiskForManifest } from './permission-risk.ts';
+
+import type {
+	IRecommendPluginsWeights,
+	IUsageAggregation,
+} from '../contracts/interfaces/plugin-fit.interface';
 import type {
 	IPluginCandidate,
 	IPluginFit,
 	IProjectSignals,
 	IRecommendPluginsOptions,
 } from '../contracts/interfaces/plugin-fit.interface';
+import { scoreHistoricalSuccess } from './historical-success';
+import { scoreLatencyTax } from './latency-tax';
+import { scoreTokenTax } from './token-tax';
+
+/**
+ * Fully-resolved weights: every key is a concrete `number`. We keep
+ * this distinct from `Required<IRecommendPluginsWeights>` because
+ * `exactOptionalPropertyTypes` does not let `Required<T>` strip the
+ * explicit `| undefined` from optional-with-undefined keys, so we
+ * define the resolved shape directly to make downstream math clean.
+ */
+type ResolvedWeights = {
+	readonly match: number;
+	readonly tokenTax: number;
+	readonly latencyTax: number;
+	readonly historicalSuccess: number;
+	readonly permissionRisk: number;
+};
 
 export type {
 	IPluginCandidate,
 	IPluginFit,
 	IProjectSignals,
 	IRecommendPluginsOptions,
+	IRecommendPluginsWeights,
+	IUsageAggregation,
 } from '../contracts/interfaces/plugin-fit.interface';
 
 const PACK_BONUS = 1;
 const LANGUAGE_BONUS = 0.5;
 const SHAPE_BONUS = 0.5;
 const UNMATCHED_PENALTY = -0.05;
+const MAX_PERMISSION_RISK = 5;
+
+/**
+ * r00025 S4 — defaults required by the proposal. They sum to `1.0`
+ * so the scorer remains calibrated when the host does not provide a
+ * custom weights block.
+ */
+const DEFAULT_WEIGHTS: ResolvedWeights = {
+	match: 0.2,
+	tokenTax: 0.25,
+	latencyTax: 0.15,
+	historicalSuccess: 0.2,
+	permissionRisk: 0.2,
+};
 
 const SHAPE_MAP: Readonly<
 	Record<
@@ -61,17 +72,37 @@ const SHAPE_MAP: Readonly<
 	hasTests: 'tests',
 };
 
+/** Resolve the effective weights by overlaying the host's overrides. */
+const resolveWeights = (
+	override: IRecommendPluginsWeights | undefined,
+): ResolvedWeights => ({
+	match: override?.match ?? DEFAULT_WEIGHTS.match,
+	tokenTax: override?.tokenTax ?? DEFAULT_WEIGHTS.tokenTax,
+	latencyTax: override?.latencyTax ?? DEFAULT_WEIGHTS.latencyTax,
+	historicalSuccess:
+		override?.historicalSuccess ?? DEFAULT_WEIGHTS.historicalSuccess,
+	permissionRisk: override?.permissionRisk ?? DEFAULT_WEIGHTS.permissionRisk,
+});
+
+/** Look up the usage aggregate for a candidate id (or empty on miss). */
+const lookupUsage = (
+	aggregations: ReadonlyMap<string, IUsageAggregation> | undefined,
+	id: string,
+): IUsageAggregation => aggregations?.get(id) ?? {};
+
 const scoreOne = (
 	signals: IProjectSignals,
 	candidate: IPluginCandidate,
-): { raw: number; reasons: string[]; unmatched: string[] } => {
+	weights: ResolvedWeights,
+	usage: IUsageAggregation,
+): { utility: number; reasons: string[]; unmatched: string[] } => {
 	const reasons = new Set<string>();
 	const matchedTags = new Set<string>();
-	let raw = 0;
+	let matchRaw = 0;
 
 	// Pack bonus
 	if (candidate.tags.includes(signals.pack)) {
-		raw += PACK_BONUS;
+		matchRaw += PACK_BONUS;
 		reasons.add(`pack:${signals.pack}`);
 		matchedTags.add(signals.pack);
 	}
@@ -80,7 +111,7 @@ const scoreOne = (
 	const langSet = new Set(signals.languages);
 	for (const tag of candidate.tags) {
 		if (langSet.has(tag)) {
-			raw += LANGUAGE_BONUS;
+			matchRaw += LANGUAGE_BONUS;
 			reasons.add(`language:${tag}`);
 			matchedTags.add(tag);
 		}
@@ -90,7 +121,7 @@ const scoreOne = (
 	for (const [field, tag] of Object.entries(SHAPE_MAP)) {
 		if (signals[field as keyof typeof SHAPE_MAP] === true) {
 			if (candidate.tags.includes(tag)) {
-				raw += SHAPE_BONUS;
+				matchRaw += SHAPE_BONUS;
 				reasons.add(`${field}:${tag}`);
 				matchedTags.add(tag);
 			}
@@ -101,13 +132,68 @@ const scoreOne = (
 	const unmatched: string[] = [];
 	for (const tag of candidate.tags) {
 		if (!matchedTags.has(tag)) {
-			raw += UNMATCHED_PENALTY;
+			matchRaw += UNMATCHED_PENALTY;
 			unmatched.push(tag);
 		}
 	}
 
+	// f00180 S3 / MAN-004: per-tool permission map. The new helper
+	// unifies the legacy global `permissions` array and the new
+	// `toolPermissions` map into a single risk score; the manifest
+	// without per-tool data falls back to the global set, identical
+	// to the pre-f00180 behaviour.
+	const permissionRisk = scorePermissionRiskForManifest(candidate);
+	const normalizedPermissionRisk = permissionRisk / MAX_PERMISSION_RISK;
+	if (permissionRisk > 0) {
+		reasons.add(`permission-risk:${permissionRisk}`);
+	}
+
+	// r00025 S1 — token-tax signal. When the candidate did not
+	// declare a budget (cold start for this plugin) we record the
+	// neutral value in `reasons` for transparency but contribute 0
+	// to the utility, so an unknown cost never demotes a match.
+	const hasTokenBudget =
+		candidate.tokenBudget !== undefined && candidate.tokenBudget !== null;
+	const tokenTaxScore = scoreTokenTax({ tokenBudget: candidate.tokenBudget });
+	const tokenTaxPenalty = hasTokenBudget
+		? (1 - tokenTaxScore) * weights.tokenTax
+		: 0;
+	reasons.add(`token-tax:${tokenTaxScore.toFixed(2)}`);
+
+	// r00025 S2 — latency-tax signal. Same cold-start rule: skip the
+	// contribution when usage-tracking has no observation yet.
+	const hasLatencyObservation =
+		usage.p95LatencyMs !== null &&
+		usage.p95LatencyMs !== undefined &&
+		Number.isFinite(usage.p95LatencyMs) &&
+		(usage.observedCalls ?? 0) > 0;
+	const latencyTaxScore = scoreLatencyTax(usage);
+	const latencyTaxPenalty = hasLatencyObservation
+		? (1 - latencyTaxScore) * weights.latencyTax
+		: 0;
+	reasons.add(`latency-tax:${latencyTaxScore.toFixed(2)}`);
+
+	// r00025 S3 — historical-success signal. Same cold-start rule.
+	const hasSuccessObservation =
+		usage.successRate !== null &&
+		usage.successRate !== undefined &&
+		Number.isFinite(usage.successRate) &&
+		(usage.observedCalls ?? 0) > 0;
+	const historicalScore = scoreHistoricalSuccess(usage);
+	const historicalBonus = hasSuccessObservation
+		? historicalScore * weights.historicalSuccess
+		: 0;
+	reasons.add(`historical-success:${historicalScore.toFixed(2)}`);
+
+	const utility =
+		matchRaw * weights.match -
+		normalizedPermissionRisk * weights.permissionRisk -
+		tokenTaxPenalty -
+		latencyTaxPenalty +
+		historicalBonus;
+
 	return {
-		raw,
+		utility,
 		reasons: [...reasons].sort(),
 		unmatched: unmatched.sort(),
 	};
@@ -124,23 +210,30 @@ export const recommendPlugins = (
 ): readonly IPluginFit[] => {
 	const limit = options.limit ?? candidates.length;
 	const minScore = options.minScore ?? 0;
+	const weights = resolveWeights(options.weights);
+	const aggregations = options.usageAggregations;
 
-	// Score every candidate; collect raw scores for normalization.
 	const scored = candidates.map((plugin) => {
-		const { raw, reasons, unmatched } = scoreOne(signals, plugin);
-		return { plugin, raw, reasons, unmatched };
+		const usage = lookupUsage(aggregations, plugin.id);
+		const { utility, reasons, unmatched } = scoreOne(
+			signals,
+			plugin,
+			weights,
+			usage,
+		);
+		return { plugin, utility, reasons, unmatched };
 	});
 
-	// Top raw score drives normalization (top = 1.0). When every
+	// Top utility drives normalization (top = 1.0). When every
 	// candidate scored <= 0 the result is an empty array — there is
 	// no positive top to normalize against.
-	const topRaw = Math.max(0, ...scored.map((s) => s.raw));
-	if (topRaw === 0) return [];
+	const topUtility = Math.max(0, ...scored.map((s) => s.utility));
+	if (topUtility === 0) return [];
 
 	const normalized: IPluginFit[] = scored
-		.map(({ plugin, raw, reasons, unmatched }) => ({
+		.map(({ plugin, utility, reasons, unmatched }) => ({
 			plugin,
-			fitScore: raw <= 0 ? 0 : raw / topRaw,
+			fitScore: utility <= 0 ? 0 : utility / topUtility,
 			reasons,
 			unmatchedTags: unmatched,
 		}))

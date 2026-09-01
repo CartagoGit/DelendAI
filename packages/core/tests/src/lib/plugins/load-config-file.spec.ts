@@ -1,5 +1,4 @@
-import { describe, expect, it } from 'vitest';
-
+import { afterAll, describe, expect, it } from 'vitest';
 import {
 	parseConfigFile,
 	pluginConfigFor,
@@ -8,6 +7,13 @@ import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { runDoctor } from '@mcp-vertex/core/lib/cli/run-cli';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { diagnoseConfigFile } from '@mcp-vertex/core/lib/plugins/load-config-file';
+
+import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
+
+const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-config-');
+const CLI_CACHE_DIR = '.cli';
+const FILE_CACHE_DIR = '.fromfile';
+afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 describe('parseConfigFile', async () => {
 	it('returns {} for missing or invalid JSON', async () => {
@@ -71,8 +77,12 @@ describe('assembleCliConfig + config file', async () => {
 
 	it('passes prefix + options from the config file to the plugin', async () => {
 		const args = parseCliArgs(
-			['--plugins=demo', '--workspace=/ws'],
-			'/cwd',
+			[
+				'--plugins=demo',
+				`--workspace=${WRITABLE_WORKSPACE}`,
+				'--surface=native',
+			],
+			WRITABLE_WORKSPACE,
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
@@ -94,8 +104,12 @@ describe('assembleCliConfig + config file', async () => {
 
 	it('an enabled:false config override suppresses a preset plugin', async () => {
 		const args = parseCliArgs(
-			['--preset=minimal', '--workspace=/ws'],
-			'/cwd',
+			[
+				'--preset=minimal',
+				`--workspace=${WRITABLE_WORKSPACE}`,
+				'--surface=native',
+			],
+			WRITABLE_WORKSPACE,
 		);
 		const attempted: string[] = [];
 		const { loadResult } = await assembleCliConfig(args, {
@@ -122,7 +136,14 @@ describe('assembleCliConfig + config file', async () => {
 
 	it('resolves keepLegacy false by default and propagates true to plugins and core scaffold', async () => {
 		const missing = await assembleCliConfig(
-			parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd'),
+			parseCliArgs(
+				[
+					'--plugins=demo',
+					`--workspace=${WRITABLE_WORKSPACE}`,
+					'--surface=native',
+				],
+				WRITABLE_WORKSPACE,
+			),
 			{
 				import: async () => ({ default: fakePlugin }),
 				readFile: async () => undefined,
@@ -131,7 +152,14 @@ describe('assembleCliConfig + config file', async () => {
 		expect(missing.config.keepLegacy).toBe(false);
 
 		const explicit = await assembleCliConfig(
-			parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd'),
+			parseCliArgs(
+				[
+					'--plugins=demo',
+					`--workspace=${WRITABLE_WORKSPACE}`,
+					'--surface=native',
+				],
+				WRITABLE_WORKSPACE,
+			),
 			{
 				import: async () => ({ default: fakePlugin }),
 				readFile: async () => JSON.stringify({ keepLegacy: true }),
@@ -146,30 +174,42 @@ describe('assembleCliConfig + config file', async () => {
 
 	it('lets an explicit CLI flag win over the config file', async () => {
 		const args = parseCliArgs(
-			['--plugins=demo', '--cacheDir=.cli', '--workspace=/ws'],
-			'/cwd',
+			[
+				'--plugins=demo',
+				`--cacheDir=${CLI_CACHE_DIR}`,
+				`--workspace=${WRITABLE_WORKSPACE}`,
+				'--surface=native',
+			],
+			WRITABLE_WORKSPACE,
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
-			readFile: async () => JSON.stringify({ cacheDir: '.fromfile' }),
+			readFile: async () => JSON.stringify({ cacheDir: FILE_CACHE_DIR }),
 		});
-		expect(config.corePaths?.cacheDir).toBe('.cli');
+		expect(config.corePaths?.cacheDir).toBe(CLI_CACHE_DIR);
 	});
 
 	it('falls back to the config file when the CLI omits the flag', async () => {
 		const args = parseCliArgs(
-			['--plugins=demo', '--workspace=/ws'],
-			'/cwd',
+			[
+				'--plugins=demo',
+				`--workspace=${WRITABLE_WORKSPACE}`,
+				'--surface=native',
+			],
+			WRITABLE_WORKSPACE,
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
-			readFile: async () => JSON.stringify({ cacheDir: '.fromfile' }),
+			readFile: async () => JSON.stringify({ cacheDir: FILE_CACHE_DIR }),
 		});
-		expect(config.corePaths?.cacheDir).toBe('.fromfile');
+		expect(config.corePaths?.cacheDir).toBe(FILE_CACHE_DIR);
 	});
 
 	it('loads plugins declared only in the config file', async () => {
-		const args = parseCliArgs(['--workspace=/ws'], '/cwd');
+		const args = parseCliArgs(
+			[`--workspace=${WRITABLE_WORKSPACE}`, '--surface=native'],
+			WRITABLE_WORKSPACE,
+		);
 		const { config, loadResult } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
 			readFile: async () =>
@@ -189,8 +229,12 @@ describe('assembleCliConfig + config file', async () => {
 
 	it('applies exclude-plugins to config-file plugins too', async () => {
 		const args = parseCliArgs(
-			['--workspace=/ws', '--exclude-plugins=demo'],
-			'/cwd',
+			[
+				`--workspace=${WRITABLE_WORKSPACE}`,
+				'--surface=native',
+				'--exclude-plugins=demo',
+			],
+			WRITABLE_WORKSPACE,
 		);
 		const { loadResult } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
@@ -225,8 +269,12 @@ describe('runDoctor', async () => {
 	const demoPlugin = { name: 'demo', register: () => ({}) };
 	it('reports loaded plugins, errors and counts without starting stdio', async () => {
 		const args = parseCliArgs(
-			['--plugins=demo,nope', '--workspace=/ws'],
-			'/cwd',
+			[
+				'--plugins=demo,nope',
+				`--workspace=${WRITABLE_WORKSPACE}`,
+				'--surface=native',
+			],
+			WRITABLE_WORKSPACE,
 		);
 		const report = await runDoctor(args, {
 			import: async (specifier: string) => {
@@ -258,8 +306,12 @@ describe('plugin optionsSchema validation', async () => {
 
 	it('rejects a plugin whose options fail its schema', async () => {
 		const args = parseCliArgs(
-			['--plugins=strict', '--workspace=/ws'],
-			'/cwd',
+			[
+				'--plugins=strict',
+				`--workspace=${WRITABLE_WORKSPACE}`,
+				'--surface=native',
+			],
+			WRITABLE_WORKSPACE,
 		);
 		const { loadResult } = await assembleCliConfig(args, {
 			import: async () => ({ default: strictPlugin }),

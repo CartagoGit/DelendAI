@@ -1,10 +1,31 @@
 import { definePlugin } from '@mcp-vertex/core/public';
+import type { IPluginEffectsCapability } from '@mcp-vertex/core/public';
 import z from 'zod';
 
 import { createGitRunner } from './lib/services/git';
 import { buildGitToolRegistrations } from './lib/tools';
 import { buildGitWriteToolRegistrations } from './lib/tools/write-tools';
 import { buildGitForgeToolRegistrations } from './lib/tools/forge-tools';
+import { buildGitExtendedToolRegistrations } from './lib/tools/git-extended.tool';
+
+/**
+ * Narrow `ctx.effects` to a concrete value or throw. The write tools'
+ * ENTIRE dry-run guarantee rests on running through
+ * `ctx.effects.git` (see `write-tools.ts`) instead of a plain
+ * `IGitRunner` — silently falling back to one when the host omitted
+ * `ctx.effects` would look like the guarantee still holds when it does
+ * not, so this refuses loudly instead.
+ */
+const requireEffects = (
+	effects: IPluginEffectsCapability | undefined,
+): IPluginEffectsCapability => {
+	if (effects === undefined) {
+		throw new Error(
+			'git plugin: allowWrite is enabled but the host did not supply ctx.effects — refusing to register unguarded write tools.',
+		);
+	}
+	return effects;
+};
 
 /**
  * Read-only git orientation, PLUS opt-in write tools. Exposes
@@ -28,11 +49,12 @@ import { buildGitForgeToolRegistrations } from './lib/tools/forge-tools';
 const OptionsSchema = z.object({
 	allowWrite: z.boolean().optional(),
 	allowForge: z.boolean().optional(),
+	allowStash: z.boolean().optional(),
 });
 
 export default definePlugin({
 	name: 'git',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Read-only git orientation: status, changed files, diff stat, recent log, blame, show and worktree list as structured JSON. Optional (opt-in) write tools: commit and push.',
 	optionsSchema: OptionsSchema,
@@ -46,14 +68,23 @@ export default definePlugin({
 		const run = createGitRunner(ctx.workspace.root);
 		const allowWrite = parsed.data.allowWrite === true;
 		const allowForge = parsed.data.allowForge === true;
+		const allowStash = parsed.data.allowStash === true;
 		const readTools = buildGitToolRegistrations({
 			namespacePrefix: ctx.namespacePrefix,
 			run,
 		});
+		// Write tools MUST run
+		// through the host's dry-run-gated `ctx.effects.git`, never the
+		// plain `run` above — that is what makes `dryRun: true` refuse the
+		// mutation even if `runGitCommit`/`runGitPush` never look at the
+		// flag themselves. Fail closed rather than silently falling back
+		// to the unguarded runner: a host that wires `allowWrite: true`
+		// without wiring `ctx.effects` has a broken capability contract,
+		// not a reason to run unprotected.
 		const writeTools = allowWrite
 			? buildGitWriteToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
-					run,
+					run: requireEffects(ctx.effects).git,
 					commitAuthor: ctx.commitAuthor,
 				})
 			: [];
@@ -63,8 +94,19 @@ export default definePlugin({
 					workspaceRootAbs: ctx.workspace.root,
 				})
 			: [];
+		const extendedTools = allowStash
+			? buildGitExtendedToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+				})
+			: [];
 		return {
-			tools: [...readTools, ...writeTools, ...forgeTools],
+			tools: [
+				...readTools,
+				...writeTools,
+				...forgeTools,
+				...extendedTools,
+			],
 			knowledge: [
 				{
 					id: 'git-orientation',

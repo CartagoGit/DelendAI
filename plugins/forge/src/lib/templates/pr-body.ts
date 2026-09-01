@@ -75,7 +75,7 @@ const inferScope = (
 ): string | undefined => {
 	const branchTokens = (branch ?? '')
 		.toLowerCase()
-		.split(/[\/_\-.]+/u)
+		.split(/[/_\-.]+/u)
 		.map((token) => token.trim())
 		.filter((token) => token.length > 0)
 		.filter((token) => !GENERIC_BRANCH_TOKENS.has(token))

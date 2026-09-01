@@ -16,9 +16,9 @@
  * caller can surface it in the `auto_work` JSON output without breaking
  * the rest of the slice-close flow.
  *
- * Safety net: the push to `main` is rejected by default to preserve the
- * "no commit-back loop on main" invariant from `AGENTS.md`. The agent
- * can override `pushTarget` to an explicit branch (e.g. `agent/<name>`).
+ * Safety net: pushes are refused only when the configured target matches
+ * the effective protected-branch policy (default: `main` / `master`).
+ * Explicit non-protected targets such as `origin develop` are honored.
  *
  * @example
  * ```typescript
@@ -29,7 +29,7 @@
  *   {
  *     mode: 'commit-and-push',
  *     cwd: '/abs/repo',
- *     pushTarget: 'origin agent/l109',
+ *     pushTarget: 'origin develop',
  *   },
  * );
  * if (!result.committed) console.warn('persist skipped:', result.reason);
@@ -43,7 +43,7 @@ import {
 	type ICommitAuthorResolution,
 } from '@mcp-vertex/core/public';
 
-import type { IGitRunner } from '../shared/git-runner';
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { assessStaleAcceptance } from '../services/checkpoint-advisory-stale-acceptance.service';
 import type { ISliceAcceptanceEvidence } from '../services/slice-acceptance-evidence.service';
 
@@ -71,6 +71,8 @@ export type IAutoWorkPersistMode = 'none' | 'commit' | 'commit-and-push';
 export interface IAutoWorkPersistOptions {
 	/** Persist mode. `'none'` is a hard default; no git is touched. */
 	readonly mode: IAutoWorkPersistMode;
+	/** Host-scoped worktree capability resolved at boot. */
+	readonly agentWorktreeEnabled?: boolean;
 	/**
 	 * Conventional-Commits template. Placeholders:
 	 * - `<area>`         — first path segment of the first changed file
@@ -88,6 +90,10 @@ export interface IAutoWorkPersistOptions {
 	 * for worktrees.
 	 */
 	readonly pushTarget?: string;
+	/** Branches refused by the host's effective commit policy. */
+	readonly protectedBranches?: readonly string[];
+	/** Include every dirty workspace path when the host explicitly allows it. */
+	readonly allowForeignChanges?: boolean;
 	/**
 	 * Working directory of the `git` invocation. Tests inject a temp
 	 * dir; production callers pass `ctx.workspace.root`.
@@ -150,6 +156,7 @@ export interface IPersistResult {
 
 const DEFAULT_TEMPLATE = '<area>(<proposalId>): <sliceId>';
 const DEFAULT_PUSH_TARGET = 'origin HEAD';
+const MISSING_CWD_REASON = 'git runner requires an explicit workspace cwd';
 
 /**
  * Try to detect the conventional `area/` segment from the first file
@@ -195,10 +202,20 @@ export const renderCommitMessage = (
  * case-sensitive on purpose — `Main` is a different branch and the
  * host's typo class of bug is exactly what we want to surface.
  */
-const pushWouldHitMain = (pushTarget: string): boolean => {
+const pushWouldHitProtectedBranch = (
+	pushTarget: string,
+	protectedBranches: readonly string[],
+): string | undefined => {
 	const tokens = pushTarget.split(/\s+/u);
-	return tokens.some(
-		(t) => t === 'main' || t.endsWith('/main') || t.endsWith('\\main'),
+	return protectedBranches.find((branch) =>
+		tokens.some(
+			(token) =>
+				token === branch ||
+				token.endsWith(`/${branch}`) ||
+				token.endsWith(`\\${branch}`) ||
+				token.endsWith(`:${branch}`) ||
+				token.endsWith(`:/${branch}`),
+		),
 	);
 };
 
@@ -208,16 +225,31 @@ const pushWouldHitMain = (pushTarget: string): boolean => {
  */
 const resolveGitRunner = (options: IAutoWorkPersistOptions): IGitRunner => {
 	if (options.git) return options.git;
-	// Lazy import to keep `auto-work-persist` decoupled from
-	// `child_process` for unit tests that always inject `options.git`.
-	// Falls back to a no-op runner that always reports "git missing" so
-	// callers see the right `IPersistResult.reason` instead of an
-	// unhandled crash.
+	if (options.cwd !== undefined) return createGitRunner(options.cwd);
 	return async () => ({
 		ok: false,
 		output: '',
-		reason: 'git runner not provided and no default available',
+		reason: MISSING_CWD_REASON,
 	});
+};
+
+const readDirtyPaths = async (run: IGitRunner): Promise<readonly string[]> => {
+	const result = await run([
+		'status',
+		'--porcelain=v1',
+		'--untracked-files=all',
+	]);
+	if (!result.ok) return [];
+	return result.output
+		.split('\n')
+		.map((line) => line.slice(3).trim())
+		.filter((path) => path.length > 0)
+		.map((path) => {
+			const renameSeparator = path.indexOf(' -> ');
+			return renameSeparator >= 0
+				? path.slice(renameSeparator + 4)
+				: path;
+		});
 };
 
 /**
@@ -251,20 +283,23 @@ export const maybePersistAfterSlice = async (
 	}
 
 	const run = resolveGitRunner(options);
+	const filesToPersist = options.allowForeignChanges
+		? await readDirtyPaths(run)
+		: files;
 
 	// Stage the files explicitly. We never `git add .` because that
 	// would silently fold unrelated, unreviewed changes (drift between
 	// `agent_lock.files` and the actual diff) into the slice commit.
 	// Checked here (rather than left to `commitAndPush`) so the empty-file
 	// reason stays this module's own wording ("empty slice").
-	if (files.length === 0) {
+	if (filesToPersist.length === 0) {
 		return persistResult(false, false, mode, {
 			reason: 'no files to commit (empty slice)',
 		});
 	}
 
 	const template = options.messageTemplate ?? DEFAULT_TEMPLATE;
-	const area = inferArea(files);
+	const area = inferArea(filesToPersist);
 	const message = renderCommitMessage(template, area, proposalId, sliceId);
 
 	if (options.commitAuthor?.reason) {
@@ -273,24 +308,25 @@ export const maybePersistAfterSlice = async (
 		});
 	}
 
-	// `mode === 'commit-and-push'` with a `pushTarget` that would hit
-	// `main` is special-cased BEFORE calling the shared engine: the
-	// commit still happens, but the push step is skipped entirely (the
-	// engine is never told to push), preserving the exact "refusing to
-	// push to main automatically" reason this module has always reported.
+	// A target is refused only when it matches the effective host policy.
 	const pushTarget = options.pushTarget ?? DEFAULT_PUSH_TARGET;
-	const wouldHitMain =
-		mode === 'commit-and-push' && pushWouldHitMain(pushTarget);
+	const protectedBranches = options.protectedBranches ?? ['main', 'master'];
+	const protectedBranch = pushWouldHitProtectedBranch(
+		pushTarget,
+		protectedBranches,
+	);
+	const pushRefused =
+		mode === 'commit-and-push' && protectedBranch !== undefined;
 	const [pushRemote, pushBranch] = pushTarget.split(/\s+/u);
 
 	const result = await commitAndPush({
-		files,
+		files: filesToPersist,
 		message,
 		git: run,
 		...(options.commitAuthor?.authorFlag
 			? { authorFlag: options.commitAuthor.authorFlag }
 			: {}),
-		...(mode === 'commit-and-push' && !wouldHitMain
+		...(mode === 'commit-and-push' && !pushRefused
 			? {
 					push: {
 						...(pushRemote !== undefined
@@ -310,16 +346,24 @@ export const maybePersistAfterSlice = async (
 		});
 	}
 
-	if (mode === 'commit-and-push' && wouldHitMain) {
-		// Safety net: never push to main automatically. The commit is
-		// already done; we just refuse to push and explain why.
+	if (mode === 'commit-and-push' && pushRefused) {
+		// Safety net: the effective host policy wins over persistence.
 		return persistResult(true, false, mode, {
-			reason: 'refusing to push to main automatically',
+			reason: `refusing to push to ${protectedBranch} automatically`,
 			...(result.hash !== undefined ? { hash: result.hash } : {}),
 		});
 	}
 
-	return persistResult(true, result.pushed, mode, {
+	if (mode === 'commit-and-push' && result.pushed !== true) {
+		return persistResult(true, false, mode, {
+			reason:
+				result.reason ??
+				'commit completed but push was not confirmed; persistence is incomplete',
+			...(result.hash !== undefined ? { hash: result.hash } : {}),
+		});
+	}
+
+	return persistResult(true, mode === 'commit-and-push', mode, {
 		...(result.hash !== undefined ? { hash: result.hash } : {}),
 		...(result.reason !== undefined ? { reason: result.reason } : {}),
 	});

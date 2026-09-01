@@ -31,6 +31,9 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'plugin search': 'Search the first-party + community plugin registry.',
 	'plugin add':
 		'Plan the adopt of a plugin (returns the install + wire + config recipe).',
+	'project-plugin create': 'Create and register a project plugin.',
+	'project-plugin inspect': 'Inspect a project plugin without writing.',
+	'project-plugin repair': 'Repair safe project plugin structure.',
 	metrics: 'Show per-tool metrics.',
 	'validate-matrix': 'Show configured validation matrix.',
 	validate: 'Run the root validation gate.',
@@ -42,6 +45,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	init: 'Interactive workspace bootstrap for mcp-vertex (writes config, .vscode/mcp.json, agent .md, host-instructions).',
 	'init:default':
 		'Non-interactive bootstrap with operator defaults (swarm + overwrite + skills + agents + scaffold).',
+	'init:global':
+		'Install the shared mcp-vertex MCP server into user-level host configurations.',
 	search: 'Search workspace text files.',
 	'docs list': 'List project documentation.',
 	'docs read': 'Read one project documentation file.',
@@ -102,6 +107,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'fs write':
 		'Write a workspace file (atomic by default, never outside the root).',
 	knowledge: 'List knowledge entries, or print one by id.',
+	adopt: 'Assess or scaffold mcp-vertex adoption for the current project.',
 	'project analyze':
 		'Inspect the project and recommend an MCP server plan (read-only).',
 	'project plan':
@@ -179,6 +185,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Report recorded tool usage/cost grouped by provider, plugin, agent or extension.',
 	'usage-tracking clear':
 		'Clear the recorded usage log + summary (destructive; requires --confirm).',
+	kpis: 'Show project health, usage, economics, efficiency and audit KPIs.',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
@@ -223,6 +230,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 			init: 'Bootstrap interactivo del workspace para mcp-vertex (escribe config, .vscode/mcp.json, agent .md, host-instructions).',
 			'init:default':
 				'Bootstrap no interactivo con los defaults del operador (swarm + overwrite + skills + agents + scaffold).',
+			'init:global':
+				'Instala el servidor MCP compartido de mcp-vertex en las configuraciones globales de los hosts del usuario.',
 			search: 'Busca en archivos de texto del workspace.',
 			scaffold: 'Genera scaffolds a traves de la herramienta del core.',
 		},

@@ -1,4 +1,5 @@
 import z from 'zod';
+import { randomUUID } from 'node:crypto';
 
 import type {
 	IResolvedHostIdentity,
@@ -24,6 +25,7 @@ import {
 import type { IAgentCanonicalRole } from '../shared/agent-conventions';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import type { IAgentAssignment } from '../shared/agent-registry-store';
+import { coerceHost } from '../shared/agent-identity';
 import { buildAgentTree } from '../shared/agent-tree';
 import {
 	DEFAULT_AGENT_NAME_POOL,
@@ -77,6 +79,7 @@ export interface IAgentNamesArgs {
 	readonly parent_task_id?: string | null | undefined;
 	readonly topic?: string | undefined;
 	readonly now?: string | undefined;
+	readonly subscription_id?: string | undefined;
 	readonly dry_run?: boolean | undefined;
 	readonly stale_after_minutes?: number | undefined;
 	/** f00082 S3: composite-identity fields, persisted on assign. */
@@ -92,115 +95,25 @@ export interface IAgentNamesArgs {
 const json = (value: unknown, isError = false): IToolTextResult =>
 	isError ? { ...toolJson(value), isError: true } : toolJson(value);
 
-const AGENT_ASSIGNMENT_SCHEMA = z.object({
-	task_id: z.string(),
-	agent_name: z.string(),
-	agent_slot: z.string(),
-	parent_task_id: z.string().nullable(),
-	depth: z.number(),
-	topic: z.string(),
-	adopted: z.boolean(),
-	assigned_at: z.string(),
-	last_seen: z.string(),
-	cooldown_until: z.string().nullable(),
-	status: z.enum(['active', 'cooldown', 'orphan']),
-	host: z.string().nullable().optional(),
-	model: z.string().nullable().optional(),
-	children: z.array(z.unknown()).optional(),
-});
-
-/** f00082 S3: the closed set of known hosts (mirrors core AgentHost). */
-const KNOWN_HOSTS = [
-	'vscode-copilot',
-	'claude-code',
-	'codex-cli',
-	'cursor',
-	'aider',
-	'continue',
-	'unknown',
-] as const;
-
-/**
- * Coerce a caller-supplied host string into the closed `AgentHost`
- * union, falling back to `'unknown'` (lossy-friendly, matching the
- * parser in `agent-identity.ts`). Returns `null` when the caller
- * passed nothing, so the registry stores an explicit `null`.
- */
-const coerceHost = (
-	host: string | undefined,
-): NonNullable<IAgentAssignment['host']> | null => {
-	if (host === undefined) return null;
-	return (KNOWN_HOSTS as readonly string[]).includes(host)
-		? (host as NonNullable<IAgentAssignment['host']>)
-		: 'unknown';
-};
-
-const AGENT_ADOPTION_SCHEMA = z.object({
-	name: z.string(),
-	task_id: z.string(),
-});
-
-const ZOMBIE_ORPHAN_SCHEMA = z.object({
-	agentName: z.string(),
-	taskId: z.string(),
-	agentSlot: z.string(),
-	lastSeen: z.string(),
-	ageMinutes: z.number(),
-	reason: z.enum([
-		'cooldown_null',
-		'stale_no_lock',
-		'stale_with_orphaned_lock',
-		// a00069 S6
-		'status_orphan',
-		'stale_not_adopted',
-	]),
-	recommendedAction: z.enum(['force_release', 'extend_cooldown', 'escalate']),
-});
-
-const AGENT_NAMES_OUTPUT_SCHEMA = z.object({
-	error: z.string().optional(),
-	backup: z.string().nullable().optional(),
-	nextAction: z.string().optional(),
-	summary: z
-		.object({
-			active: z.number(),
-			cooldown: z.number(),
-			orphan: z.number(),
-			adopted: z.number(),
-		})
-		.optional(),
-	assignments: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
-	adopted: z.array(AGENT_ADOPTION_SCHEMA).optional(),
-	tree: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
-	agent: z.string().optional(),
-	status: z.string().optional(),
-	in_cooldown: z.boolean().optional(),
-	task_id: z.string().optional(),
-	released: z.array(z.string()).optional(),
-	promoted: z.number().optional(),
-	freed: z.number().optional(),
-	blocked: z.boolean().optional(),
-	blockerType: z.string().optional(),
-	reason: z.string().optional(),
-	depth: z.number().optional(),
-	max_depth: z.number().optional(),
-	allowed: z.array(z.string()).optional(),
-	pool_size: z.number().optional(),
-	agent_name: z.string().optional(),
-	agent_slot: z.string().optional(),
-	parent_task_id: z.string().nullable().optional(),
-	topic: z.string().optional(),
-	assigned_at: z.string().optional(),
-	last_seen: z.string().optional(),
-	cooldown_until: z.string().nullable().optional(),
-	host: z.string().nullable().optional(),
-	model: z.string().nullable().optional(),
-	scannedAt: z.string().optional(),
-	staleAfterMinutes: z.number().optional(),
-	orphans: z.array(ZOMBIE_ORPHAN_SCHEMA).optional(),
-	threshold: z.enum(['green', 'yellow', 'red']).optional(),
-	recommendation: z.string().optional(),
-});
+const AGENT_NAMES_OUTPUT_SCHEMA = z
+	.object({
+		error: z.string().optional(),
+		nextAction: z.string().optional(),
+		blocked: z.boolean().optional(),
+		blockerType: z.string().optional(),
+		reason: z.string().optional(),
+		agent: z.string().optional(),
+		status: z.string().optional(),
+		task_id: z.string().optional(),
+		agent_name: z.string().optional(),
+		agent_slot: z.string().optional(),
+		summary: z.unknown().optional(),
+		released: z.array(z.string()).optional(),
+		assignments: z.unknown().optional(),
+		tree: z.unknown().optional(),
+		adopted: z.unknown().optional(),
+	})
+	.passthrough();
 
 const isCanonicalRole = (value: string): value is IAgentCanonicalRole =>
 	(AGENT_CANONICAL_ROLES as readonly string[]).includes(value);
@@ -371,7 +284,27 @@ const runAgentNamesImpl = async (
 			const r = await store.read();
 			const entry = r.assignments.find((a) => a.task_id === args.task_id);
 			if (!entry) return json({ error: 'unknown task_id' }, true);
+			if (
+				entry.status !== 'active' ||
+				entry.subscription_id === undefined ||
+				entry.subscription_id !== args.subscription_id
+			)
+				return json(
+					{
+						error:
+							entry.status === 'active'
+								? 'subscription_id mismatch'
+								: 'task is not active',
+						nextAction:
+							'Reconnect with the subscription_id returned by assign.',
+					},
+					true,
+				);
 			entry.last_seen = at;
+			entry.lease_until = new Date(
+				new Date(at).getTime() +
+					AGENT_CONVENTIONS.lease_minutes * 60_000,
+			).toISOString();
 			await store.write(r);
 			return json(entry);
 		}
@@ -382,7 +315,11 @@ const runAgentNamesImpl = async (
 				new Date(at).getTime() +
 					AGENT_CONVENTIONS.cooldown_days * 86_400_000,
 			).toISOString();
-			await store.release(args.task_id, cooldownUntil);
+			const releasedRoot = await store.release(
+				args.task_id,
+				cooldownUntil,
+			);
+			if (!releasedRoot) return json({ released: [] });
 			const r = await store.read();
 			const released = new Set<string>([args.task_id]);
 			let changed = true;
@@ -397,9 +334,17 @@ const runAgentNamesImpl = async (
 						a.status = 'cooldown';
 						a.cooldown_until = cooldownUntil;
 						a.last_seen = at;
+						delete a.subscription_id;
+						delete a.lease_until;
 						released.add(a.task_id);
 						changed = true;
 					}
+				}
+			}
+			for (const a of r.assignments) {
+				if (released.has(a.task_id)) {
+					delete a.subscription_id;
+					delete a.lease_until;
 				}
 			}
 			await store.write(r);
@@ -479,6 +424,15 @@ const runAgentNamesImpl = async (
 					},
 					true,
 				);
+			await gcZombies(
+				options.registryPathAbs,
+				options.lockPathAbs,
+				options.queuePathAbs,
+				{
+					dryRun: false,
+					now: new Date(at),
+				},
+			);
 			const r = await store.read();
 			const parent = args.parent_task_id
 				? (r.assignments.find(
@@ -553,6 +507,11 @@ const runAgentNamesImpl = async (
 				adopted,
 				assigned_at: at,
 				last_seen: at,
+				subscription_id: randomUUID(),
+				lease_until: new Date(
+					new Date(at).getTime() +
+						AGENT_CONVENTIONS.lease_minutes * 60_000,
+				).toISOString(),
 				cooldown_until: null,
 				status: 'active',
 				host: coerceHost(args.host ?? options.defaultIdentity?.host),
@@ -602,6 +561,7 @@ export const buildAgentNamesRegistration = (
 					now: z.string().optional(),
 					dry_run: z.boolean().optional(),
 					stale_after_minutes: z.number().optional(),
+					subscription_id: z.string().optional(),
 					host: z
 						.string()
 						.optional()

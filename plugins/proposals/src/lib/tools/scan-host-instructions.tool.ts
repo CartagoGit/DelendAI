@@ -18,9 +18,7 @@
  */
 import { promises as fs } from 'node:fs';
 import { homedir } from 'node:os';
-import { isAbsolute, join, normalize, resolve, sep } from 'node:path';
-
-import z from 'zod';
+import { isAbsolute, normalize, resolve, sep } from 'node:path';
 
 import type { IFileReader } from '@mcp-vertex/core/public';
 
@@ -145,46 +143,20 @@ export const createUserHomeReader = (
 				return undefined;
 			}
 			try {
-				return await fs.readFile(
-					join(homeRoot, relativeToHome),
-					'utf8',
-				);
+				const [realHomeRoot, realPath] = await Promise.all([
+					fs.realpath(homeRoot),
+					fs.realpath(abs),
+				]);
+				if (
+					realPath !== realHomeRoot &&
+					!realPath.startsWith(realHomeRoot + sep)
+				) {
+					return undefined;
+				}
+				return await fs.readFile(realPath, 'utf8');
 			} catch {
 				return undefined;
 			}
 		},
 	};
 };
-
-/**
- * x00154 S4: explicit input/output schemas for the scanner helper. The
- * scanner itself is consumed by `inherit-host-instructions.tool.ts` —
- * these constants declare the helper's API surface so this `.tool.ts`
- * file satisfies the bootstrap §6 invariant (`Every public tool declares
- * an outputSchema` — extended here to the helper layer that any future
- * `scan_host_instructions` tool would wrap). Mirrors the
- * {@link IHostInstructionsInventory} contract.
- */
-export const inputSchema = z.object({
-	readers: z.object({
-		repo: z.custom<IFileReader>(),
-		home: z.custom<IUserHomeReader>().optional(),
-	}),
-	options: z.object({
-		scope: z.enum(['repo', 'all']),
-	}),
-});
-
-export const outputSchema = z.object({
-	scope: z.enum(['repo', 'all']),
-	files: z.array(
-		z.object({
-			path: z.string(),
-			surface: z.enum(['in-repo', 'user-home']),
-			present: z.boolean(),
-			canonical: z.boolean(),
-			content: z.string(),
-		}),
-	),
-	totalNonCanonical: z.number(),
-});

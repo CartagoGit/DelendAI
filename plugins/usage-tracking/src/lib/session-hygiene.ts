@@ -12,13 +12,14 @@ import type {
 	ISessionHygieneSnapshot,
 	SessionHygieneReason,
 } from './types';
+import { BYTES_PER_TOKEN } from './contracts/constants/bytes-per-token.constant';
 
-/** Approximation used by the repository's token-budget documentation. */
-const BYTES_PER_TOKEN = 4;
+const DEFAULT_SESSION_AGE_HOURS = 2;
+const DEFAULT_IDLE_GAP_MINUTES = 30;
 
 export const DEFAULT_SESSION_HYGIENE_POLICY: ISessionHygienePolicy = {
-	maxSessionAgeMs: 2 * 60 * 60 * 1000,
-	maxIdleGapMs: 30 * 60 * 1000,
+	maxSessionAgeMs: DEFAULT_SESSION_AGE_HOURS * 60 * 60 * 1000,
+	maxIdleGapMs: DEFAULT_IDLE_GAP_MINUTES * 60 * 1000,
 	maxMcpOutputTokens: 8_000,
 };
 

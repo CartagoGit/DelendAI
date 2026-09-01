@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,6 +35,12 @@ import {
 const resolveBunBinary = (): string => {
 	const override = process.env.MCP_VERTEX_TEST_BUN;
 	if (override !== undefined && override !== '') return override;
+	// Hardcode the Linux Bun path: the cross-mount PATH exposed to
+	// vitest under WSL picks up the Windows Bun first (which resolves
+	// the host script via a path only valid in the Linux checkout).
+	// Pin the canonical Linux Bun so the e2e spawn stays stable.
+	const LINUX_BUN = '/home/cartago/.bun/bin/bun';
+	if (existsSync(LINUX_BUN)) return LINUX_BUN;
 	const probe = spawnSync('which', ['bun'], { encoding: 'utf8' });
 	if (probe.status === 0 && probe.stdout.trim() !== '') {
 		return probe.stdout.trim();
@@ -272,7 +278,17 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 	it('exits with code 143 within 2s of SIGTERM (no zombie)', async () => {
 		const child = spawn(
 			BUN_BIN,
-			[HOST_SERVER_ENTRY, `--workspace=${workspace}`],
+			[
+				HOST_SERVER_ENTRY,
+				`--workspace=${workspace}`,
+				// The host defaults to `--preset=swarm`; an empty workspace
+				// cannot resolve the first-party plugin sources that
+				// preset expects, so the test picks the explicit empty
+				// surface instead. `parseCliArgs` honours the explicit
+				// selection and bypasses the swarm fallback.
+				'--preset=custom',
+				'--plugins=',
+			],
 			{
 				cwd: REPO_ROOT,
 				// stderr is piped for the readiness handshake and never
@@ -309,7 +325,12 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 	it('exits with code 130 within 2s of SIGINT (Ctrl+C)', async () => {
 		const child = spawn(
 			BUN_BIN,
-			[HOST_SERVER_ENTRY, `--workspace=${workspace}`],
+			[
+				HOST_SERVER_ENTRY,
+				`--workspace=${workspace}`,
+				'--preset=custom',
+				'--plugins=',
+			],
 			{
 				cwd: REPO_ROOT,
 				// See SIGTERM test for rationale: stderr stays local to the test.
@@ -342,7 +363,12 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 	it('survives a double SIGTERM without crashing or double-closing', async () => {
 		const child = spawn(
 			BUN_BIN,
-			[HOST_SERVER_ENTRY, `--workspace=${workspace}`],
+			[
+				HOST_SERVER_ENTRY,
+				`--workspace=${workspace}`,
+				'--preset=custom',
+				'--plugins=',
+			],
 			{
 				cwd: REPO_ROOT,
 				// stderr is piped because the assertion at the end of

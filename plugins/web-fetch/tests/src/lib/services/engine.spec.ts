@@ -277,3 +277,65 @@ describe('webFetch numeric bounds sanitization (a00065 S6)', () => {
 		);
 	});
 });
+
+describe('webFetch allow-list port enforcement (x00233)', () => {
+	it('rejects a non-default port when only the host is allow-listed', async () => {
+		const result = await webFetch(
+			{
+				url: 'http://example.com:6379/data',
+				allowList: ['example.com'],
+			},
+			async () => streamResponse([encode('blocked')]),
+		);
+
+		expect(result).toEqual({
+			ok: false,
+			reason: 'blocked-host',
+			detail: 'example.com:6379',
+		});
+	});
+
+	it('accepts the default web ports when the allow-list names only the host', async () => {
+		const result = await webFetch(
+			{
+				url: 'https://example.com/data',
+				allowList: ['example.com'],
+			},
+			async () => streamResponse([encode('ok')]),
+		);
+
+		expect(result.ok).toBe(true);
+	});
+
+	it('accepts an explicit host:port allow-list entry', async () => {
+		const result = await webFetch(
+			{
+				url: 'http://example.com:6379/data',
+				allowList: ['example.com:6379'],
+			},
+			async () => streamResponse([encode('ok')]),
+		);
+
+		expect(result.ok).toBe(true);
+	});
+
+	it('keeps wildcard support, including wildcard + explicit port entries', async () => {
+		const wildcard = await webFetch(
+			{
+				url: 'https://docs.example.com/data',
+				allowList: ['*.example.com'],
+			},
+			async () => streamResponse([encode('ok')]),
+		);
+		expect(wildcard.ok).toBe(true);
+
+		const wildcardPort = await webFetch(
+			{
+				url: 'http://docs.example.com:8080/data',
+				allowList: ['*.example.com:8080'],
+			},
+			async () => streamResponse([encode('ok')]),
+		);
+		expect(wildcardPort.ok).toBe(true);
+	});
+});

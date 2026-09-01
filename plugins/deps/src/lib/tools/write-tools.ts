@@ -1,11 +1,11 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
 	resolveWorkspaceContained,
+	SafeWorkspaceReader,
 	runCommand,
 	toolError,
 	toolJson,
@@ -186,7 +186,11 @@ const scriptExists = async (
 	script: string,
 ): Promise<boolean> => {
 	try {
-		const raw = await readFile(manifestAbs, 'utf8');
+		const raw = (
+			await new SafeWorkspaceReader(dirname(manifestAbs)).readText(
+				'package.json',
+			)
+		).content;
 		const parsed = JSON.parse(raw) as { scripts?: Record<string, unknown> };
 		return typeof parsed.scripts?.[script] === 'string';
 	} catch {
@@ -222,7 +226,7 @@ export const packageRunScript = async (
 		);
 	}
 
-	const manifestAbs = manifestAbsPath(workspaceRootAbs);
+	const manifestAbs = manifestAbsPath(contained.abs);
 	if (!(await scriptExists(manifestAbs, options.script))) {
 		return rejected(
 			`rejected: no script named "${options.script}" in package.json`,

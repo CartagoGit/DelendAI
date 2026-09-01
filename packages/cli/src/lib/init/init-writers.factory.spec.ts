@@ -17,7 +17,7 @@ import {
 	writeFile as fsWriteFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 import {
 	writeGenericMcpJson,
@@ -92,5 +92,45 @@ describe('init-writers.factory (f00084 S2)', () => {
 		await expect(
 			readFile(join(workspace, '.vscode/mcp.json'), 'utf8'),
 		).rejects.toThrow();
+	});
+
+	it('preserves and upserts a configured server name during merge', async () => {
+		await mkdir(join(workspace, '.vscode'), { recursive: true });
+		await fsWriteFile(
+			join(workspace, '.vscode/mcp.json'),
+			'{"servers":{"filesystem":{"command":"fs","args":["x"]}}}\n',
+			'utf8',
+		);
+
+		const result = await writeVscodeMcpJson(
+			workspace,
+			launch,
+			'append',
+			'acme-tools',
+		);
+
+		expect(result.kind).toBe('merged');
+		const onDisk = JSON.parse(
+			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8'),
+		) as { servers: Record<string, unknown> };
+		expect(Object.keys(onDisk.servers).sort()).toEqual([
+			'acme-tools',
+			'filesystem',
+		]);
+	});
+
+	it('writes the configured server name on a fresh install', async () => {
+		const result = await writeVscodeMcpJson(
+			workspace,
+			launch,
+			'append',
+			'acme-tools',
+		);
+
+		expect(result.kind).toBe('written');
+		const onDisk = JSON.parse(
+			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8'),
+		) as { servers: Record<string, unknown> };
+		expect(Object.keys(onDisk.servers)).toEqual(['acme-tools']);
 	});
 });

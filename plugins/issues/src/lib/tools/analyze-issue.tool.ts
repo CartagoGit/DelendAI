@@ -32,10 +32,11 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
+import { toolOk } from '@mcp-vertex/core/public';
 
+import type { IGithubClient } from '../contracts';
 import { loadOrIngestScaffold } from './ingest-issue.tool';
-import type { IGithubClient } from './list-issues.tool';
+import { issueNumberToolError } from './issues-tool.shared';
 
 export interface IAnalyzeIssueToolOptions {
 	readonly namespacePrefix: string;
@@ -83,6 +84,9 @@ const REPRO_PATTERN = /repro steps|steps to reproduce/i;
 const FEATURE_REQUEST_PATTERN = /would be nice if|feature request/i;
 /** Matches plausible repo-relative path segments, e.g. `plugins/issues`, `apps/web/src`. */
 const PATH_SEGMENT_PATTERN = /\b([a-z0-9._-]+\/[a-z0-9._/-]+)\b/gi;
+const SHORT_BODY_CONFIDENCE_THRESHOLD = 80;
+const MEDIUM_BODY_CONFIDENCE_THRESHOLD = 300;
+const LONG_BODY_CONFIDENCE_THRESHOLD = 800;
 
 const kindFromLabels = (labels: readonly string[]): IIssueDraftKind | null => {
 	for (const label of labels) {
@@ -96,9 +100,9 @@ const kindFromLabels = (labels: readonly string[]): IIssueDraftKind | null => {
 /** Body length → confidence ceiling: short bodies can never earn high confidence. */
 const confidenceCeiling = (body: string): number => {
 	const length = body.trim().length;
-	if (length < 80) return 0.3;
-	if (length < 300) return 0.55;
-	if (length < 800) return 0.75;
+	if (length < SHORT_BODY_CONFIDENCE_THRESHOLD) return 0.3;
+	if (length < MEDIUM_BODY_CONFIDENCE_THRESHOLD) return 0.55;
+	if (length < LONG_BODY_CONFIDENCE_THRESHOLD) return 0.75;
 	return 0.9;
 };
 
@@ -224,10 +228,7 @@ export const runAnalyzeIssue = async (
 		const draft = buildDraft(labels, title, scaffold.body);
 		return toolOk({ draft, sourceFile: filePath });
 	} catch (error) {
-		return toolError(
-			error instanceof Error ? error.message : String(error),
-			'Check the issue number / repo configuration / gh auth status.',
-		);
+		return issueNumberToolError(error);
 	}
 };
 

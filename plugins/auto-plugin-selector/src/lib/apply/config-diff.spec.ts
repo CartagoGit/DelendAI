@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { buildConfigDiff } from '@mcp-vertex/auto-plugin-selector/lib/apply/config-diff';
 import type { IPluginFit } from '@mcp-vertex/auto-plugin-selector/lib/contracts/interfaces/plugin-fit.interface';
 
-const fit = (
+const pluginFit = (
 	id: string,
 	score: number,
 	reasons: readonly string[] = [],
@@ -26,7 +26,10 @@ describe('buildConfigDiff', () => {
 	});
 
 	it('classifies a recommended but-not-current plugin as "add"', () => {
-		const diff = buildConfigDiff([], [fit('a', 1, ['pack:typescript'])]);
+		const diff = buildConfigDiff(
+			[],
+			[pluginFit('a', 1, ['pack:typescript'])],
+		);
 		expect(diff.adds).toHaveLength(1);
 		expect(diff.adds[0]?.kind).toBe('add');
 		expect(diff.adds[0]?.pluginId).toBe('a');
@@ -47,7 +50,7 @@ describe('buildConfigDiff', () => {
 	it('classifies an intersection plugin as "keep"', () => {
 		const diff = buildConfigDiff(
 			['typescript'],
-			[fit('typescript', 1, ['pack:typescript'])],
+			[pluginFit('typescript', 1, ['pack:typescript'])],
 		);
 		expect(diff.adds).toHaveLength(0);
 		expect(diff.removes).toHaveLength(0);
@@ -60,8 +63,8 @@ describe('buildConfigDiff', () => {
 		const diff = buildConfigDiff(
 			['typescript', 'legacy'],
 			[
-				fit('typescript', 1, ['pack:typescript']),
-				fit('new', 0.5, ['language:python']),
+				pluginFit('typescript', 1, ['pack:typescript']),
+				pluginFit('new', 0.5, ['language:python']),
 			],
 		);
 		expect(diff.adds.map((s) => s.pluginId)).toEqual(['new']);
@@ -72,7 +75,12 @@ describe('buildConfigDiff', () => {
 	it('orders adds by fitScore desc, then id asc', () => {
 		const diff = buildConfigDiff(
 			[],
-			[fit('z', 0.5), fit('a', 0.5), fit('high', 1.0), fit('mid', 0.7)],
+			[
+				pluginFit('z', 0.5),
+				pluginFit('a', 0.5),
+				pluginFit('high', 1.0),
+				pluginFit('mid', 0.7),
+			],
 		);
 		expect(diff.adds.map((s) => s.pluginId)).toEqual([
 			'high',
@@ -90,7 +98,7 @@ describe('buildConfigDiff', () => {
 	it('steps are adds → removes → keeps', () => {
 		const diff = buildConfigDiff(
 			['legacy', 'typescript'],
-			[fit('typescript', 1), fit('new', 0.5)],
+			[pluginFit('typescript', 1), pluginFit('new', 0.5)],
 		);
 		const kinds = diff.steps.map((s) => s.kind);
 		expect(kinds.indexOf('add')).toBeLessThan(kinds.indexOf('remove'));
@@ -98,8 +106,8 @@ describe('buildConfigDiff', () => {
 	});
 
 	it('is pure (same input -> same output)', () => {
-		const a = buildConfigDiff(['typescript'], [fit('typescript', 1)]);
-		const b = buildConfigDiff(['typescript'], [fit('typescript', 1)]);
+		const a = buildConfigDiff(['typescript'], [pluginFit('typescript', 1)]);
+		const b = buildConfigDiff(['typescript'], [pluginFit('typescript', 1)]);
 		expect(a).toEqual(b);
 	});
 
@@ -108,7 +116,7 @@ describe('buildConfigDiff', () => {
 		// diff builder resolves the last-seen fit for the id (Map.set wins).
 		const diff = buildConfigDiff(
 			[],
-			[fit('a', 0.5, ['first']), fit('a', 0.9, ['second'])],
+			[pluginFit('a', 0.5, ['first']), pluginFit('a', 0.9, ['second'])],
 		);
 		expect(diff.adds).toHaveLength(1);
 		expect(diff.adds[0]?.fit?.fitScore).toBe(0.9);

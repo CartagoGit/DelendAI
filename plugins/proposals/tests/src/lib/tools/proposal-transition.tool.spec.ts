@@ -9,11 +9,11 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	hasIndependentPeerApproval,
-	runProposalTransition,
+	runProposalTransition as runProposalTransitionRaw,
 	type IProposalTransitionToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
 import {
@@ -22,8 +22,14 @@ import {
 	STATUS_TO_FOLDER,
 } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
 import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
+import * as planClosureGuardModule from '@mcp-vertex/proposals/lib/swarm/plan-closure-guard';
+import {
+	getPlanClosureBypassCount,
+	listPlanClosureBypasses,
+	resetPlanClosureBypassLog,
+} from '@mcp-vertex/proposals/lib/shared/plan-closure-bypass-log';
 
-const RECENT_VALIDATE_LOG = '/dev/null';
+const _RECENT_VALIDATE_LOG = '/dev/null';
 const RECENT_VALIDATE = {
 	timestamp: new Date().toISOString(),
 	exitCode: 0,
@@ -57,6 +63,21 @@ const FAKE_GIT_FAIL: IGitRunner = async (args) => {
 	if (args[0] === 'ls-files') return { ok: true, output: '' };
 	return { ok: false, output: '', reason: 'not a git repository' };
 };
+
+const isErrorResult = (result: unknown): boolean =>
+	typeof result === 'object' &&
+	result !== null &&
+	'isError' in result &&
+	result.isError === true;
+
+type ProposalTransitionResult = Awaited<
+	ReturnType<typeof runProposalTransitionRaw>
+> & { isError?: boolean };
+
+const runProposalTransition = async (
+	...args: Parameters<typeof runProposalTransitionRaw>
+): Promise<ProposalTransitionResult> =>
+	runProposalTransitionRaw(...args) as Promise<ProposalTransitionResult>;
 
 const writeProposal = async (
 	proposalsDirAbs: string,
@@ -108,7 +129,7 @@ describe('proposal_transition', async () => {
 			{ id: 'f00014', to: 'in-progress', reason: '' },
 			options,
 		);
-		expect(result.isError).toBe(true);
+		expect(isErrorResult(result)).toBe(true);
 	});
 
 	it('rejects an unknown target status', async () => {
@@ -116,7 +137,7 @@ describe('proposal_transition', async () => {
 			{ id: 'f00014', to: 'bogus', reason: 'because' },
 			options,
 		);
-		expect(result.isError).toBe(true);
+		expect(isErrorResult(result)).toBe(true);
 	});
 
 	it('returns an error when the id is not found', async () => {
@@ -124,7 +145,7 @@ describe('proposal_transition', async () => {
 			{ id: 'f999', to: 'in-progress', reason: 'because' },
 			options,
 		);
-		expect(result.isError).toBe(true);
+		expect(isErrorResult(result)).toBe(true);
 	});
 
 	it('refuses a proposal whose current status is not on the new state machine (legacy)', async () => {
@@ -136,7 +157,7 @@ describe('proposal_transition', async () => {
 			{ id: 'p001', to: 'in-progress', reason: 'because' },
 			options,
 		);
-		expect(result.isError).toBe(true);
+		expect(isErrorResult(result)).toBe(true);
 	});
 
 	it('moves the file and updates frontmatter on a legal transition (ready -> in-progress)', async () => {
@@ -148,10 +169,10 @@ describe('proposal_transition', async () => {
 			{ id: 'f00014', to: 'in-progress', reason: 'claimed' },
 			options,
 		);
-		if (result.isError === true) {
+		if (isErrorResult(result)) {
 			process.stderr.write(`\n\nDEBUG: ${result.content?.[0]?.text}\n\n`);
 		}
-		expect(result.isError).toBeUndefined();
+		expect(isErrorResult(result)).toBe(false);
 		const body = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(body.from).toBe('ready');
 		expect(body.to).toBe('in-progress');
@@ -210,7 +231,7 @@ describe('proposal_transition', async () => {
 					status: from,
 				};
 				if (to === 'done') {
-					frontmatter['shipped-in'] = '[abc123]';
+					frontmatter['shipped-in'] = '[abc1234]';
 				}
 				if (to === 'paused') {
 					frontmatter['paused-reason'] = 'matrix test pause reason';
@@ -272,7 +293,7 @@ describe('proposal_transition', async () => {
 					id,
 					kind,
 					status: 'review',
-					'shipped-in': '[ship123]',
+					'shipped-in': '[30551533]',
 				});
 				const result = await runProposalTransition(
 					{
@@ -296,11 +317,54 @@ describe('proposal_transition', async () => {
 			});
 		}
 
+		it('requireValidateEvidence:false lets a host opt out of the gate', async () => {
+			// Hosts without a validate chain worth blocking on switch the
+			// gate off in config instead of passing `force: true`, which
+			// would also disable the peer-review and dependent gates.
+			await writeProposal(root, 'review', 'f70002-no-validate.md', {
+				id: 'f70002',
+				status: 'review',
+				'shipped-in': '[30551533]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f70002',
+					to: 'done',
+					reason: 'host opted out of the validate gate',
+				},
+				{ ...options, requireValidateEvidence: false },
+			);
+			expect(result.isError).toBeUndefined();
+			expect(
+				await readFile(
+					join(root, 'done', 'f70002-no-validate.md'),
+					'utf8',
+				),
+			).toContain('status: done');
+		});
+
+		it('still refuses without evidence when the gate is left on', async () => {
+			await writeProposal(root, 'review', 'f70003-needs-validate.md', {
+				id: 'f70003',
+				status: 'review',
+				'shipped-in': '[30551533]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f70003',
+					to: 'done',
+					reason: 'no evidence supplied',
+				},
+				options,
+			);
+			expect(result.isError).toBe(true);
+		});
+
 		it('falls back to `done/` (no sub-folder) when kind is missing', async () => {
 			await writeProposal(root, 'review', 'f70001-no-kind.md', {
 				id: 'f70001',
 				status: 'review',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -324,7 +388,7 @@ describe('proposal_transition', async () => {
 				id: 'l70002',
 				kind: 'legacy',
 				status: 'review',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -422,7 +486,7 @@ describe('proposal_transition', async () => {
 				id: 'f90001',
 				status: 'ready',
 				kind: 'feat',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{ id: 'f90001', to: 'done', reason: 'shortcut' },
@@ -446,7 +510,7 @@ describe('proposal_transition', async () => {
 				'id: f90002',
 				'kind: feat',
 				'status: review',
-				'shipped-in: [ship123]',
+				'shipped-in: [30551533]',
 				'---',
 				'',
 				'## Slices',
@@ -519,7 +583,7 @@ describe('proposal_transition', async () => {
 				id: 'f90003',
 				status: 'review',
 				kind: 'feat',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -621,7 +685,7 @@ describe('proposal_transition', async () => {
 			await writeProposal(root, 'ready', 'f91005-close.md', {
 				id: 'f91005',
 				status: 'ready',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{ id: 'f91005', to: 'done', reason: 'retro close' },
@@ -639,7 +703,7 @@ describe('proposal_transition', async () => {
 			await writeProposal(root, 'ready', 'f91006-close.md', {
 				id: 'f91006',
 				status: 'ready',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -686,7 +750,7 @@ describe('proposal_transition', async () => {
 				id: 'a00067',
 				status: 'ready',
 				kind: 'audit',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -747,7 +811,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			id: 'f00970',
 			status: 'review',
 			type: 'feat',
-			'shipped-in': '[ship123]',
+			'shipped-in': '[30551533]',
 		});
 		const result = await runProposalTransition(
 			{
@@ -773,7 +837,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 				id: 'f00971',
 				status: 'review',
 				type: 'feat',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			},
 			[
 				'## Slices',
@@ -821,6 +885,156 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		expect(body.to).toBe('done');
 	});
 
+	it('requires attached CI evidence before in-progress → review in CI', async () => {
+		const previousCi = process.env.CI;
+		const previousSha = process.env.GITHUB_SHA;
+		process.env.CI = 'true';
+		process.env.GITHUB_SHA = 'feedface1234';
+		try {
+			await writeProposal(root, 'in-progress', 'f00972-ci-review.md', {
+				id: 'f00972',
+				status: 'in-progress',
+				type: 'feat',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f00972',
+					to: 'review',
+					reason: 'ready for review',
+					validateEvidence: RECENT_VALIDATE,
+				},
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('missing-ci-evidence');
+		} finally {
+			if (previousCi === undefined) {
+				delete process.env.CI;
+			} else {
+				process.env.CI = previousCi;
+			}
+			if (previousSha === undefined) {
+				delete process.env.GITHUB_SHA;
+			} else {
+				process.env.GITHUB_SHA = previousSha;
+			}
+		}
+	});
+
+	it('rejects in-progress → review in CI when evidence.commit does not match GITHUB_SHA', async () => {
+		const previousCi = process.env.CI;
+		const previousSha = process.env.GITHUB_SHA;
+		process.env.CI = 'true';
+		process.env.GITHUB_SHA = 'feedface1234';
+		try {
+			const validateEvidence = await recentValidateWithLog(root);
+			const dir = join(root, 'in-progress');
+			await mkdir(dir, { recursive: true });
+			await writeFile(
+				join(dir, 'f00973-ci-review.md'),
+				[
+					'---',
+					'id: f00973',
+					'status: in-progress',
+					'type: feat',
+					'evidence:',
+					'  commit: "abc123"',
+					'  ci-runs:',
+					'    - name: "CI"',
+					'      status: "success"',
+					'      runId: "101"',
+					'---',
+					'',
+					'## Goal',
+					'',
+					'p.',
+				].join('\n'),
+				'utf8',
+			);
+			const result = await runProposalTransition(
+				{
+					id: 'f00973',
+					to: 'review',
+					reason: 'ready for review',
+					validateEvidence,
+				},
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('ci-evidence-sha-mismatch');
+		} finally {
+			if (previousCi === undefined) {
+				delete process.env.CI;
+			} else {
+				process.env.CI = previousCi;
+			}
+			if (previousSha === undefined) {
+				delete process.env.GITHUB_SHA;
+			} else {
+				process.env.GITHUB_SHA = previousSha;
+			}
+		}
+	});
+
+	it('allows in-progress → review in CI when frontmatter evidence matches GITHUB_SHA', async () => {
+		const previousCi = process.env.CI;
+		const previousSha = process.env.GITHUB_SHA;
+		process.env.CI = 'true';
+		process.env.GITHUB_SHA = 'feedface1234';
+		try {
+			const validateEvidence = await recentValidateWithLog(root);
+			const dir = join(root, 'in-progress');
+			await mkdir(dir, { recursive: true });
+			await writeFile(
+				join(dir, 'f00973-ci-review.md'),
+				[
+					'---',
+					'id: f00973',
+					'status: in-progress',
+					'type: feat',
+					'evidence:',
+					'  commit: "feedface1234"',
+					'  ci-runs:',
+					'    - name: "CI"',
+					'      status: "success"',
+					'      runId: "101"',
+					'---',
+					'',
+					'## Goal',
+					'',
+					'p.',
+				].join('\n'),
+				'utf8',
+			);
+			const result = await runProposalTransition(
+				{
+					id: 'f00973',
+					to: 'review',
+					reason: 'ready for review',
+					validateEvidence,
+				},
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.ok).toBe(true);
+			expect(body.to).toBe('review');
+		} finally {
+			if (previousCi === undefined) {
+				delete process.env.CI;
+			} else {
+				process.env.CI = previousCi;
+			}
+			if (previousSha === undefined) {
+				delete process.env.GITHUB_SHA;
+			} else {
+				process.env.GITHUB_SHA = previousSha;
+			}
+		}
+	});
+
 	it('a00063: rejects review → done when the only approval is self-review', async () => {
 		await writeProposal(
 			root,
@@ -830,7 +1044,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 				id: 'f00974',
 				status: 'review',
 				type: 'feat',
-				'shipped-in': '[ship123]',
+				'shipped-in': '[30551533]',
 			},
 			[
 				'## Slices',
@@ -883,7 +1097,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			id: 'f00972',
 			status: 'review',
 			type: 'feat',
-			'shipped-in': '[ship123]',
+			'shipped-in': '[30551533]',
 		});
 		const result = await runProposalTransition(
 			{ id: 'f00972', to: 'done', reason: 'emergency', force: true },
@@ -900,7 +1114,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			id: 'f00973',
 			status: 'review',
 			type: 'feat',
-			'shipped-in': '[ship123]',
+			'shipped-in': '[30551533]',
 		});
 		const result = await runProposalTransition(
 			{
@@ -935,5 +1149,202 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		const body = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(body.ok).toBe(true);
 		expect(body.to).toBe('review');
+	});
+});
+
+// a00072 S4 — plan-closure DFA shortcut (`skipDfaForPlanClosure`).
+// The wrapper `proposals_close_plan` runs the closure preflight and,
+// when closable, forwards the verified plan to `runProposalTransition`
+// with `skipDfaForPlanClosure: true`. The flag must reach the
+// positive branch (skipping the strict `in-progress → done` DFA
+// edge) AND audit the skip with proposal id + caller reason.
+describe('a00072 S4 — plan-closure DFA shortcut', () => {
+	let root = '';
+	let options: IProposalTransitionToolOptions;
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'transition-s4-'));
+		const validateEvidence = await recentValidateWithLog(root);
+		const indexPathAbs = join(
+			root,
+			'.cache',
+			'mcp-vertex',
+			'proposals',
+			'index.json',
+		);
+		await mkdir(dirname(indexPathAbs), { recursive: true });
+		await writeFile(
+			indexPathAbs,
+			JSON.stringify({ proposals: [] }),
+			'utf8',
+		);
+		options = {
+			namespacePrefix: 'proposals',
+			proposalsDirAbs: root,
+			workspaceRoot: root,
+			indexPathAbs,
+			gitRunner: FAKE_GIT_MV,
+			peerReviewLogPathAbs: join(
+				root,
+				'.cache',
+				'mcp-vertex',
+				'peer-review.jsonl',
+			),
+			requirePeerReview: false,
+			validateEvidenceDeps: {
+				readValidateLog: async () => [
+					{
+						timestamp: validateEvidence.timestamp,
+						ts: validateEvidence.timestamp,
+						result: 'pass',
+						exitCode: 0,
+						logPath: validateEvidence.logPath,
+					},
+				],
+			},
+		};
+		resetPlanClosureBypassLog();
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	it('lands a verified plan in done/ when skipDfaForPlanClosure:true and the closure guard is clear', async () => {
+		await writeProposal(
+			root,
+			'in-progress',
+			'q80001-verified-plan.md',
+			{
+				id: 'q80001',
+				status: 'in-progress',
+				type: 'plan',
+				kind: 'plan',
+				'shipped-in': '[abcdef1]',
+			},
+			['## Slices', '', '### S1 — work', '- **Status**: done', ''].join(
+				'\n',
+			),
+		);
+		const guardSpy = vi
+			.spyOn(planClosureGuardModule, 'runPlanClosureGuard')
+			.mockResolvedValue({ closable: true });
+
+		const result = await runProposalTransition(
+			{
+				id: 'q80001',
+				to: 'done',
+				reason: 'all children and slices are done',
+				skipDfaForPlanClosure: true,
+			},
+			options,
+		);
+
+		expect(result.isError).toBeUndefined();
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.ok).toBe(true);
+		expect(body.from).toBe('in-progress');
+		expect(body.to).toBe('done');
+		expect(body.movedTo).toBe('done/plans/q80001-verified-plan.md');
+
+		// The shortcut MUST be audited — proposal id, caller's reason,
+		// via:'plan-closure-shortcut' marker.
+		expect(getPlanClosureBypassCount()).toBe(1);
+		const events = listPlanClosureBypasses();
+		expect(events[0]).toMatchObject({
+			kind: 'plan-closure-bypassed',
+			proposalId: 'q80001',
+			reason: 'all children and slices are done',
+			via: 'plan-closure-shortcut',
+		});
+		guardSpy.mockRestore();
+	});
+
+	it('rejects in-progress → done without the shortcut flag', async () => {
+		await writeProposal(
+			root,
+			'in-progress',
+			'q80002-strict-plan.md',
+			{
+				id: 'q80002',
+				status: 'in-progress',
+				type: 'plan',
+				kind: 'plan',
+				'shipped-in': '[abcdef1]',
+			},
+			['## Slices', '', '### S1 — work', '- **Status**: done', ''].join(
+				'\n',
+			),
+		);
+		const guardSpy = vi
+			.spyOn(planClosureGuardModule, 'runPlanClosureGuard')
+			.mockResolvedValue({ closable: true });
+
+		const result = await runProposalTransition(
+			{
+				id: 'q80002',
+				to: 'done',
+				reason: 'no shortcut flag',
+			},
+			options,
+		);
+
+		expect(result.isError).toBe(true);
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.error.reason).toBe(
+			'illegal transition: "in-progress" → "done"',
+		);
+
+		// Without the flag, no audit entry is recorded.
+		expect(getPlanClosureBypassCount()).toBe(0);
+		guardSpy.mockRestore();
+	});
+
+	it('still rejects when the closure guard reports blockers (skipDfaForPlanClosure does NOT bypass q00001)', async () => {
+		// Slice is done so the slice-completeness gate passes; the
+		// closure guard is the only gate that can reject after that.
+		await writeProposal(
+			root,
+			'in-progress',
+			'q80003-blocked-plan.md',
+			{
+				id: 'q80003',
+				status: 'in-progress',
+				type: 'plan',
+				kind: 'plan',
+				'shipped-in': '[abcdef1]',
+			},
+			['## Slices', '', '### S1 — work', '- **Status**: done', ''].join(
+				'\n',
+			),
+		);
+		const guardSpy = vi
+			.spyOn(planClosureGuardModule, 'runPlanClosureGuard')
+			.mockResolvedValue({
+				closable: false,
+				blockerLines: [
+					"  - [proposal/not-done] Proposal f09995 is 'in-progress'",
+				],
+				blockerCount: 1,
+			});
+
+		const result = await runProposalTransition(
+			{
+				id: 'q80003',
+				to: 'done',
+				reason: 'attempting with blocker present',
+				skipDfaForPlanClosure: true,
+			},
+			options,
+		);
+
+		expect(result.isError).toBe(true);
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(String(body.error.reason)).toContain(
+			'plan q80003 is not closable',
+		);
+		// The audit entry is still recorded: the shortcut was requested,
+		// the guard rejected, but the caller bypassed the DFA edge so
+		// it MUST appear in the log.
+		expect(getPlanClosureBypassCount()).toBe(1);
+		guardSpy.mockRestore();
 	});
 });

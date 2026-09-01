@@ -106,7 +106,22 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 				auditDir: 'docs/mcp-vertex/proposals/done/audits',
 			}),
 		);
+		expect(out.detail).toBe('normal');
 		expect(out.auditsFound).toBe(1);
+	});
+
+	it('supports compact detail by trimming consensus, findings and markdown', async () => {
+		const out = parse(
+			await invoke(buildReg(), {
+				auditDir: 'docs/mcp-vertex/proposals/done/audits',
+				detail: 'compact',
+			}),
+		);
+		expect(out.detail).toBe('compact');
+		expect(out.consensus).toEqual([]);
+		expect(out.findings).toEqual([]);
+		expect(out.markdown).toBe('');
+		expect(out.topActions.length).toBeGreaterThan(0);
 	});
 
 	it('rejects a "../" escape attempt', async () => {
@@ -170,8 +185,20 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 				autoScaffoldProposals: true,
 			}),
 		);
-		expect(out.proposals.scaffolded).toHaveLength(1);
+		expect(out.proposals.scaffolded).toHaveLength(3);
+		expect(out.proposals.scaffolded[0]?.id).toMatch(/^a\d{5}$/u);
+		expect(out.proposals.scaffolded[1]?.id).toMatch(/^q\d{5}$/u);
+		expect(out.proposals.scaffolded[2]?.id).toMatch(/^x\d{5}$/u);
 		const written = await readdir(join(workspaceRoot, proposalsDir));
-		expect(written).toEqual([out.proposals.scaffolded[0].filename]);
+		expect(written.sort()).toEqual(['audits', 'fixes', 'plans']);
+		const nestedCounts = await Promise.all(
+			written.map(
+				async (entry) =>
+					(
+						await readdir(join(workspaceRoot, proposalsDir, entry))
+					).filter((name) => name.endsWith('.md')).length,
+			),
+		);
+		expect(nestedCounts.reduce((sum, count) => sum + count, 0)).toBe(3);
 	});
 });

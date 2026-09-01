@@ -7,11 +7,12 @@
  * summary), and projects it onto every plugin's `IMcpPluginContext` as
  * `agentWorktreeEnabled`.
  */
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 /**
  * A capture plugin: records the context it was registered with so the
@@ -34,8 +35,19 @@ const fileReader =
 	async (_path: string): Promise<string | undefined> =>
 		file;
 
+const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-assemble-');
+afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
+
 const baseArgs = (extra: readonly string[] = []) =>
-	parseCliArgs(['--workspace=/ws', '--plugins=capture', ...extra], '/ws');
+	parseCliArgs(
+		[
+			`--workspace=${WRITABLE_WORKSPACE}`,
+			'--surface=native',
+			'--plugins=capture',
+			...extra,
+		],
+		WRITABLE_WORKSPACE,
+	);
 
 describe('assembleCliConfig — agentWorktree gate (f00052 S4)', async () => {
 	it('defaults to false when neither CLI nor file specifies it', async () => {

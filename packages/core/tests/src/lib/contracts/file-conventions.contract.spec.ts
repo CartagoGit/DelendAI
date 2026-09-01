@@ -98,6 +98,12 @@ describe('file-conventions.contract (f00057 S8)', async () => {
 			'service',
 		);
 	});
+
+	it('classifies metacharacter-heavy literal paths without changing the result', async () => {
+		expect(classifyPath('pkg/src/lib/services/[demo](x)+.service.ts')).toBe(
+			'service',
+		);
+	});
 });
 
 describe('helper role (f00093)', async () => {
@@ -120,6 +126,10 @@ describe('helper role (f00093)', async () => {
 
 	it('classifies a bare foo.helper.ts (no folder) as `helper` (suffix rule)', async () => {
 		expect(classifyPath('pkg/src/lib/foo.helper.ts')).toBe('helper');
+	});
+
+	it('classifies a bare foo.schema.ts (no folder) as `helper` (suffix rule)', async () => {
+		expect(classifyPath('pkg/src/lib/foo.schema.ts')).toBe('helper');
 	});
 
 	it('does NOT steal service-shaped files (foo.service.ts stays `service`)', async () => {

@@ -1,4 +1,5 @@
 import {
+	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -11,14 +12,20 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type {
+	IGitRunResult,
+	IGitRunner,
+} from '@mcp-vertex/proposals/lib/shared/git-runner';
 
 import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
+import { runAgentNames } from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
 import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
 	buildProposalBoardRegistration,
 	buildReviewRegistration,
 	type IAuthoringToolOptions,
+	REVIEW_OUTPUT_SCHEMA,
 } from '@mcp-vertex/proposals/lib/tools/authoring.tool';
 
 const capture = async (
@@ -34,6 +41,16 @@ const capture = async (
 };
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
+
+const proposalPath = (opts: IAuthoringToolOptions, file: string): string =>
+	join(opts.proposalsDirAbs, ...file.split('/'));
+
+const APPROVE_EVIDENCE = {
+	commitHash: 'abc1234',
+	validateExitCode: 0,
+	testsPassing: 2,
+	testsTotal: 2,
+} as const;
 
 const recentValidate = () => ({
 	timestamp: new Date().toISOString(),
@@ -53,6 +70,14 @@ describe('proposal authoring (create → board → close)', async () => {
 			// x00052: indexPathAbs moved to the cache root.
 			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			agentNames: {
+				namespacePrefix: 'proposals',
+				registryPathAbs: join(root, '.cache/agent-registry.json'),
+				lockPathAbs: join(root, '.cache/agents.lock.json'),
+				queuePathAbs: join(root, '.cache/agent-queue.json'),
+				closedTasksPathAbs: join(root, '.cache/closed-tasks.json'),
+				workspaceRoot: root,
+			},
 			peerReviewLogPathAbs: join(
 				root,
 				'.cache/mcp-vertex/proposals/peer-review.jsonl',
@@ -81,13 +106,13 @@ describe('proposal authoring (create → board → close)', async () => {
 			await create({ kind: 'feat', title: 'Auto allocated' }),
 		);
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('ready/f00001-auto-allocated.md');
+		expect(created.file).toBe('ready/feats/f00001-auto-allocated.md');
 
 		// A second call with the same kind continues the sequence, not f00001 again.
 		const second = parse(
 			await create({ kind: 'feat', title: 'Second one' }),
 		);
-		expect(second.file).toBe('ready/f00002-second-one.md');
+		expect(second.file).toBe('ready/feats/f00002-second-one.md');
 	});
 
 	// x00157 S1: kebab() strips ALL non-ASCII characters, so a title
@@ -100,8 +125,8 @@ describe('proposal authoring (create → board → close)', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		const created = parse(await create({ kind: 'feat', title: '提案' }));
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('ready/f00001-f00001.md');
-		expect(created.file).not.toBe('ready/f00001-.md');
+		expect(created.file).toBe('ready/feats/f00001-f00001.md');
+		expect(created.file).not.toBe('ready/feats/f00001-.md');
 	});
 
 	it('errors clearly when neither id nor kind is provided', async () => {
@@ -135,7 +160,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('ready/f00081-add-login.md');
+		expect(created.file).toBe('ready/feats/f00081-add-login.md');
 
 		const board = await capture(buildProposalBoardRegistration(opts));
 		const view = parse(await board({}));
@@ -160,11 +185,83 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(closed.closed).toBe(true);
-		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'ready', 'f00081-add-login.md'),
-			'utf8',
-		);
+		const doc = readFileSync(proposalPath(opts, created.file), 'utf8');
 		expect(doc).toMatch(/### S1[\s\S]*?- \*\*Status\*\*: done/);
+	});
+
+	it('returns a typed no-op persistence result when mode is none', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00088',
+			title: 'No-op persist',
+			slices: [{ sliceId: 's1', files: ['src/no-op.ts'] }],
+		});
+
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00088',
+				sliceId: 's1',
+				releaseLock: false,
+				validateEvidence: recentValidate(),
+			}),
+		);
+		expect(result.closed).toBe(true);
+		expect(result.persist).toEqual({
+			committed: false,
+			pushed: false,
+			mode: 'none',
+		});
+	});
+
+	it('does not close or release when commit-and-push is incomplete', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		const created = parse(
+			await create({
+				id: 'f00089',
+				title: 'Incomplete push',
+				slices: [{ sliceId: 's1', files: ['src/incomplete.ts'] }],
+			}),
+		);
+		const runner: IGitRunner = async (
+			args: readonly string[],
+		): Promise<IGitRunResult> => {
+			if (args[0] === 'add' || args[0] === 'commit') {
+				return { ok: true, output: '' };
+			}
+			if (args[0] === 'rev-parse') {
+				return { ok: true, output: 'abc1234' };
+			}
+			return { ok: false, output: '', reason: 'push rejected' };
+		};
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...opts,
+				persist: {
+					mode: 'commit-and-push',
+					pushTarget: 'origin wip/f00089',
+				},
+				agentWorktreeEnabled: true,
+				persistGit: runner,
+			} as IAuthoringToolOptions),
+		);
+		const result = parse(
+			await close({
+				proposalId: 'f00089',
+				sliceId: 's1',
+				validateEvidence: recentValidate(),
+			}),
+		);
+		expect(result.closed).toBe(false);
+		expect(result.persist).toMatchObject({
+			committed: true,
+			pushed: false,
+			mode: 'commit-and-push',
+		});
+		expect(result.lockReleased).toBeUndefined();
+		expect(readFileSync(proposalPath(opts, created.file), 'utf8')).toMatch(
+			/- \*\*Status\*\*: pending/,
+		);
 	});
 
 	it('refuses close_slice until a distinct agent has approved the slice', async () => {
@@ -192,16 +289,9 @@ describe('proposal authoring (create → board → close)', async () => {
 		});
 		expect(refused).toMatchObject({ isError: true });
 		expect(parse(refused).blockerType).toBe('peer-review-required');
-		expect(
-			readFileSync(
-				join(
-					opts.proposalsDirAbs,
-					'ready',
-					'f00083-peer-review-gate.md',
-				),
-				'utf8',
-			),
-		).toMatch(/- \*\*Status\*\*: pending/);
+		expect(readFileSync(proposalPath(opts, created.file), 'utf8')).toMatch(
+			/- \*\*Status\*\*: pending/,
+		);
 	});
 
 	// x00157 S3-adjacent finding: `close_slice` released by the bare
@@ -253,6 +343,79 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(statusBody.active_write_lanes).toBe(0);
 	});
 
+	it('releases the delegated assignment and lease when closing a slice', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		const created = parse(
+			await create({
+				id: 'f00087',
+				title: 'Assignment cleanup',
+				goal: 'regression',
+				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+			}),
+		);
+		expect(created.ok).toBe(true);
+
+		const assigned = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'f00087-S1',
+					agent_slot: 'implementation_runner',
+				},
+				opts.agentNames!,
+			),
+		) as { subscription_id: string };
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const closed = parse(
+			await close({
+				proposalId: 'f00087',
+				sliceId: 's1',
+				validateEvidence: recentValidate(),
+			}),
+		);
+
+		expect(closed).toMatchObject({
+			closed: true,
+			lockReleased: false,
+			assignmentReleased: true,
+		});
+		const heartbeat = await runAgentNames(
+			{
+				action: 'heartbeat',
+				task_id: 'f00087-S1',
+				subscription_id: assigned.subscription_id,
+			},
+			opts.agentNames!,
+		);
+		expect(heartbeat).toMatchObject({ isError: true });
+	});
+
+	it('returns a schema-valid review status without releasing ownership', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00088',
+			title: 'Review status contract',
+			goal: 'regression',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const status = parse(
+			await review({
+				proposalId: 'f00088',
+				sliceId: 's1',
+				action: 'status',
+				agent: 'reviewer',
+			}),
+		);
+
+		expect(REVIEW_OUTPUT_SCHEMA.parse(status)).toMatchObject({
+			action: 'status',
+			status: 'none',
+			lockReleased: false,
+			assignmentReleased: false,
+		});
+	});
+
 	it('closes the last slice without appending the done marker outside the slice block', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		await create({
@@ -261,10 +424,9 @@ describe('proposal authoring (create → board → close)', async () => {
 			goal: 'close final slice cleanly',
 			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
 		});
-		const file = join(
-			opts.proposalsDirAbs,
-			'ready',
-			'f00086-last-slice-close.md',
+		const file = proposalPath(
+			opts,
+			'ready/feats/f00086-last-slice-close.md',
 		);
 		const original = readFileSync(file, 'utf8');
 		const withAcceptance = original.replace(
@@ -284,7 +446,13 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(closed.closed).toBe(true);
 
-		const doc = readFileSync(file, 'utf8');
+		const doneFile = proposalPath(
+			opts,
+			'done/feats/f00086-last-slice-close.md',
+		);
+		expect(existsSync(file)).toBe(false);
+		expect(existsSync(doneFile)).toBe(true);
+		const doc = readFileSync(doneFile, 'utf8');
 		const sliceBlock = doc.slice(
 			doc.indexOf('### S1'),
 			doc.indexOf('## Acceptance'),
@@ -307,29 +475,28 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(created.ok).toBe(true);
 		expect(created.redactedSecrets).toBeGreaterThan(0);
-		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'ready', 'f00083-wire-api.md'),
-			'utf8',
-		);
+		const doc = readFileSync(proposalPath(opts, created.file), 'utf8');
 		expect(doc).not.toContain('s3cr3tValue123');
 		expect(doc).toContain('[REDACTED]');
 	});
 
 	it('runs a peer-review loop: submit → request_changes (by another) → resubmit → approve → done (M35)', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
-		await create({
-			id: 'f00084',
-			title: 'Review me',
-			goal: 'work',
-			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
-		});
+		const created = parse(
+			await create({
+				id: 'f00084',
+				title: 'Review me',
+				goal: 'work',
+				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+			}),
+		);
 		const review = await capture(buildReviewRegistration(opts));
-		const file = join(opts.proposalsDirAbs, 'ready', 'f00084-review-me.md');
+		const file = proposalPath(opts, created.file);
 		writeFileSync(
 			file,
 			readFileSync(file, 'utf8').replace(
 				'status: ready',
-				'status: ready\nshipped-in: [ship123]',
+				'status: ready\nshipped-in: [30551533]',
 			),
 			'utf8',
 		);
@@ -391,6 +558,7 @@ describe('proposal authoring (create → board → close)', async () => {
 				sliceId: 's1',
 				action: 'approve',
 				agent: 'owl',
+				evidence: APPROVE_EVIDENCE,
 			}),
 		);
 		expect(approved.status).toBe('done');
@@ -436,7 +604,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(r.status).toBe('in_review');
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'ready', 'f00085-meta.md'),
+			proposalPath(opts, 'ready/feats/f00085-meta.md'),
 			'utf8',
 		);
 		// The literal a.b block got the review line; the earlier axb block did NOT.
@@ -622,7 +790,7 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 		expect(result.ok).toBe(true);
 		expect(result.redactedSecrets).toBeGreaterThan(0);
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'ready', 'f00081-review-me.md'),
+			proposalPath(opts, 'ready/feats/f00081-review-me.md'),
 			'utf8',
 		);
 		expect(doc).not.toContain('sk_live_abcdef0123456789');

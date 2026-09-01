@@ -81,6 +81,14 @@ const runCli = async (
 		const timer = setTimeout(() => {
 			timedOut = true;
 			child.kill('SIGTERM');
+			if (settled) return;
+			settled = true;
+			clearTimeout(timer);
+			reject(
+				new Error(
+					`${cli} timed out after ${options.timeoutMs ?? 15000}ms`,
+				),
+			);
 		}, options.timeoutMs ?? 15000);
 		child.stdout?.on('data', (chunk: Buffer | string) => {
 			stdoutChunks.push(
@@ -112,14 +120,7 @@ const runCli = async (
 			const stderr = redactForgeOutput(
 				Buffer.concat(stderrChunks).toString(),
 			);
-			if (timedOut) {
-				reject(
-					new Error(
-						`${cli} timed out after ${options.timeoutMs ?? 15000}ms`,
-					),
-				);
-				return;
-			}
+			if (timedOut) return;
 			if ((code ?? 1) !== 0) {
 				reject(
 					new Error(

@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 import plugin from '@mcp-vertex/proposals';
+import {
+	resolveProposalPersistMode,
+	validateProposalConfiguration,
+} from '@mcp-vertex/proposals';
+import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 const ctx = (): IMcpPluginContext => ({
 	workspace: {
@@ -21,6 +26,99 @@ const ctx = (): IMcpPluginContext => ({
 });
 
 describe('@mcp-vertex/proposals plugin', async () => {
+	it('allows commit-policy to own slice persistence over proposals fallback', () => {
+		const issues = validateProposalConfiguration({
+			pluginName: 'proposals',
+			enabledPlugins: ['proposals', 'commit-policy'],
+			pluginOptions: new Map([
+				['proposals', { persist: { mode: 'commit' } }],
+				[
+					'commit-policy',
+					{
+						commit: { enabled: true },
+						cadence: { triggers: [{ kind: 'slice' }] },
+						push: { enabled: true, onCommit: true },
+					},
+				],
+			]),
+		});
+
+		expect(issues).toEqual([]);
+	});
+
+	it('allows complementary slice ownership when proposals persistence is disabled', () => {
+		const issues = validateProposalConfiguration({
+			pluginName: 'proposals',
+			enabledPlugins: ['proposals', 'commit-policy'],
+			pluginOptions: new Map([
+				['proposals', { persist: { mode: 'none' } }],
+				[
+					'commit-policy',
+					{
+						commit: { enabled: true },
+						cadence: { triggers: [{ kind: 'slice' }] },
+						push: { enabled: true, onCommit: true },
+					},
+				],
+			]),
+		});
+
+		expect(issues).toEqual([]);
+	});
+
+	it.each([
+		['none', undefined, 'none'],
+		['commit', undefined, 'commit'],
+		['commit-and-push', undefined, 'commit-and-push'],
+		['none', { commit: { enabled: true } }, 'none'],
+		['commit', { commit: { enabled: true } }, 'commit'],
+		['commit-and-push', { commit: { enabled: true } }, 'commit-and-push'],
+		[
+			'commit-and-push',
+			{
+				commit: { enabled: true },
+				cadence: { triggers: [{ kind: 'manual' }] },
+			},
+			'commit-and-push',
+		],
+		[
+			'commit-and-push',
+			{
+				commit: { enabled: false },
+				cadence: { triggers: [{ kind: 'slice' }] },
+			},
+			'commit-and-push',
+		],
+		[
+			'none',
+			{
+				commit: { enabled: true },
+				cadence: { triggers: [{ kind: 'slice' }] },
+			},
+			'none',
+		],
+		[
+			'commit',
+			{
+				commit: { enabled: true },
+				cadence: { triggers: [{ kind: 'slice' }] },
+			},
+			'none',
+		],
+		[
+			'commit-and-push',
+			{
+				commit: { enabled: true },
+				cadence: { triggers: [{ kind: 'slice' }] },
+			},
+			'none',
+		],
+	] as const)('resolves %s with %s to %s', (mode, policy, expected) => {
+		expect(resolveProposalPersistMode(mode as never, policy)).toBe(
+			expected,
+		);
+	});
+
 	it('exposes a valid IMcpPlugin identity', async () => {
 		expect(plugin.name).toBe('proposals');
 		expect(typeof plugin.register).toBe('function');
@@ -38,6 +136,7 @@ describe('@mcp-vertex/proposals plugin', async () => {
 			'task_queue',
 			'sync_proposals',
 			'get_proposal_workflow',
+			'proposal_get',
 			'round_context',
 			'agent_names',
 			'continue_proposal',
@@ -52,6 +151,8 @@ describe('@mcp-vertex/proposals plugin', async () => {
 			'proposal_board',
 			'proposal_adopt',
 			'inherit_host_instructions',
+			'incident_proposals',
+			'auto_fix_queue',
 			'state_health',
 			'state_repair',
 			'compact_status',
@@ -68,15 +169,9 @@ describe('@mcp-vertex/proposals plugin', async () => {
 
 	it('namespaces tool registration by the context prefix', async () => {
 		const names: string[] = [];
-		const fakeServer = {
-			registerTool: (name: string) => {
-				names.push(name);
-			},
-		} as unknown as Parameters<
-			NonNullable<
-				Awaited<ReturnType<typeof plugin.register>>['tools']
-			>[number]['register']
-		>[0];
+		const fakeServer = createFakeToolServer({
+			onRegisterTool: (call) => names.push(call.name),
+		});
 		const registrations = await plugin.register({
 			...ctx(),
 			namespacePrefix: 'work',
@@ -94,6 +189,7 @@ describe('@mcp-vertex/proposals plugin', async () => {
 			'work_task_queue',
 			'work_sync_proposals',
 			'work_get_proposal_workflow',
+			'work_proposal_get',
 			'work_round_context',
 			'work_agent_names',
 			'work_continue_proposal',
@@ -108,6 +204,8 @@ describe('@mcp-vertex/proposals plugin', async () => {
 			'work_proposal_board',
 			'work_proposal_adopt',
 			'work_inherit_host_instructions',
+			'work_incident_proposals',
+			'work_auto_fix_queue',
 			'work_state_health',
 			'work_state_repair',
 			'work_compact_status',
@@ -130,15 +228,11 @@ describe('@mcp-vertex/proposals plugin', async () => {
 			isError?: boolean;
 		}>;
 		let handler: ToolHandler | undefined;
-		const fakeServer = {
-			registerTool: (_name: string, _schema: unknown, h: ToolHandler) => {
-				handler = h;
+		const fakeServer = createFakeToolServer({
+			onRegisterTool: (call) => {
+				handler = call.handler as ToolHandler;
 			},
-		} as unknown as Parameters<
-			NonNullable<
-				Awaited<ReturnType<typeof plugin.register>>['tools']
-			>[number]['register']
-		>[0];
+		});
 		const registrations = await plugin.register(ctx());
 		const worktree = registrations.tools?.find(
 			(t) => t.id === 'agent_worktree',

@@ -73,7 +73,11 @@ describe('external-mcps ack ↔ call composition (x00097 S1)', () => {
 				resolve: (rel: string) => join(workspaceRoot, rel),
 			},
 		} as unknown as Parameters<typeof plugin.register>[0];
-		const regs = await plugin.register(ctx);
+		const reg = await plugin.register(ctx);
+		// AUD-D05: `register()` now returns `{ registrations, dispose }` so
+		// the loader can retain `dispose` — unwrap the same way
+		// `normalizePluginRuntimeInternal` does.
+		const regs = 'registrations' in reg ? reg.registrations : reg;
 		return registerAll(regs.tools ?? []);
 	};
 

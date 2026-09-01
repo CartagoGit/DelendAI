@@ -1,8 +1,12 @@
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { hostname as readHostname } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 export interface IReviewIdentity {
 	readonly host: string;
@@ -34,7 +38,7 @@ export type IApproveIdentityCheckResult =
 	| { ok: true; submitter: IReviewIdentityRecord }
 	| {
 			ok: false;
-			reason: 'missing-submit-identity' | 'same-process-approve';
+			reason: 'missing-submit-identity' | 'self-approve';
 			nextAction: string;
 			submitter?: IReviewIdentityRecord;
 	  };
@@ -75,8 +79,10 @@ const parseIdentityLine = (line: string): IReviewIdentityRecord | null => {
 export const createReviewIdentityDeps = (): IReviewIdentityDeps => {
 	return {
 		appendLine: async (path, line) => {
-			const existing = await readFile(path, 'utf8').catch(
-				(error: unknown) => {
+			const existing = await new SafeWorkspaceReader(dirname(path))
+				.readText(basename(path))
+				.then((value) => value.content)
+				.catch((error: unknown) => {
 					if (
 						error &&
 						typeof error === 'object' &&
@@ -86,8 +92,7 @@ export const createReviewIdentityDeps = (): IReviewIdentityDeps => {
 						return '';
 					}
 					throw error;
-				},
-			);
+				});
 			const prefix =
 				existing === '' || existing.endsWith('\n')
 					? existing
@@ -98,17 +103,20 @@ export const createReviewIdentityDeps = (): IReviewIdentityDeps => {
 			await mkdir(path, { recursive: true });
 		},
 		readText: async (path) =>
-			readFile(path, 'utf8').catch((error: unknown) => {
-				if (
-					error &&
-					typeof error === 'object' &&
-					'code' in error &&
-					error.code === 'ENOENT'
-				) {
-					return '';
-				}
-				throw error;
-			}),
+			new SafeWorkspaceReader(dirname(path))
+				.readText(basename(path))
+				.then((value) => value.content)
+				.catch((error: unknown) => {
+					if (
+						error &&
+						typeof error === 'object' &&
+						'code' in error &&
+						error.code === 'ENOENT'
+					) {
+						return '';
+					}
+					throw error;
+				}),
 		now: () => new Date().toISOString(),
 		hostname: () => readHostname(),
 		pid: () => process.pid,
@@ -192,14 +200,19 @@ export const checkApproveIdentity = async (input: {
 				'submit the slice for review before approving it so the implementer identity is recorded',
 		};
 	}
-	if (
-		submitter.host === input.approver.host &&
-		submitter.pid === input.approver.pid
-	) {
+	// f00157-fix: independence is keyed on the AGENT, not the process. A
+	// single-host orchestration hands the review to a differently-named
+	// agent (a subagent), which must count as a legitimate peer. Only a
+	// self-approval (the same agent that submitted the slice) is refused.
+	const sameAgent =
+		submitter.agent.trim().toLowerCase() ===
+		input.approver.agent.trim().toLowerCase();
+	if (sameAgent) {
 		return {
 			ok: false,
-			reason: 'same-process-approve',
-			nextAction: 'a different MCP host / PID must call approve',
+			reason: 'self-approve',
+			nextAction:
+				'a different agent must call approve — the implementer submits and a different agent approves the slice',
 			submitter,
 		};
 	}

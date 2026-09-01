@@ -1,5 +1,7 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type {
 	IDetectedStack,
@@ -38,7 +40,9 @@ const languageFromPath = (path: string): SastLanguage | undefined => {
 
 const readManifestDeps = async (cwd: string): Promise<readonly string[]> => {
 	try {
-		const raw = await readFile(join(cwd, 'package.json'), 'utf8');
+		const raw = (
+			await new SafeWorkspaceReader(cwd).readText('package.json')
+		).content;
 		const json = JSON.parse(raw) as {
 			dependencies?: Record<string, string>;
 			devDependencies?: Record<string, string>;

@@ -65,10 +65,45 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 	// f00072 S2 — opt-in cache eviction plugin (not in any preset;
 	// harvested so `cache_gc`'s outputSchema gets a typed SDK module).
 	cache: { dir: 'plugins/cache', label: 'Cache' },
+	'context-for-change': {
+		dir: 'plugins/context-for-change',
+		label: 'ContextForChange',
+	},
+	'impact-analysis': {
+		dir: 'plugins/impact-analysis',
+		label: 'ImpactAnalysis',
+	},
+	'adaptive-optimizer': {
+		dir: 'plugins/adaptive-optimizer',
+		label: 'AdaptiveOptimizer',
+	},
+	'project-health': {
+		dir: 'plugins/project-health',
+		label: 'ProjectHealth',
+	},
+	'quality-policy': {
+		dir: 'plugins/quality-policy',
+		label: 'QualityPolicy',
+	},
 };
 
 /** Relative path (from a package dir) of the generated module. */
 export const GENERATED_REL_PATH = 'src/generated/tool-outputs.ts';
+
+const PLUGIN_ROUTE_PREFIXES = Object.keys(PACKAGE_ROUTES)
+	.filter((prefix) => prefix !== 'mcp-vertex')
+	.sort((left, right) => right.length - left.length);
+
+const packagePrefixForTool = (toolName: string): string => {
+	if (!toolName.startsWith('mcp-vertex_')) {
+		return toolName.split('_')[0] ?? '';
+	}
+	const unqualified = toolName.slice('mcp-vertex_'.length);
+	const pluginPrefix = PLUGIN_ROUTE_PREFIXES.find((prefix) =>
+		unqualified.startsWith(`${prefix}_`),
+	);
+	return pluginPrefix ?? 'mcp-vertex';
+};
 
 const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
@@ -273,7 +308,7 @@ export const buildPackageModules = (
 ): Map<string, string> => {
 	const byPrefix = new Map<string, IHarvestedTool[]>();
 	for (const tool of tools) {
-		const prefix = tool.name.split('_')[0] ?? '';
+		const prefix = packagePrefixForTool(tool.name);
 		const bucket = byPrefix.get(prefix);
 		if (bucket) bucket.push(tool);
 		else byPrefix.set(prefix, [tool]);

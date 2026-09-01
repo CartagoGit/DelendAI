@@ -1,4 +1,4 @@
-import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
+import type { McpVertexToolOutputs } from '@mcp-vertex/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 

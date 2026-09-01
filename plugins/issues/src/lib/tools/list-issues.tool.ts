@@ -14,49 +14,21 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
-
-import type {
-	IFetchIssueResult,
-	IListIssuesOptions,
-	IListIssuesResult,
-} from '../github-client';
+import type { IListIssuesArgs, IListIssuesToolOptions } from '../contracts';
 import type { IGithubIssueSummary } from '../contracts';
 
-export interface IGithubClient {
-	fetchIssue(number: number): Promise<IFetchIssueResult>;
-	listIssues(opts?: IListIssuesOptions): Promise<IListIssuesResult>;
-}
-
-export interface IListIssuesToolOptions {
-	readonly namespacePrefix: string;
-	readonly githubClient: IGithubClient;
-}
-
-export interface IListIssuesArgs {
-	readonly state?: 'open' | 'closed' | 'all' | undefined;
-	readonly labels?: readonly string[] | undefined;
-	readonly limit?: number | undefined;
-}
-
-const ISSUE_SUMMARY_SCHEMA = z.object({
-	number: z.number(),
-	title: z.string(),
-	state: z.enum(['open', 'closed']),
-	labels: z.array(z.string()),
-	author: z.string(),
-	url: z.string(),
-	createdAt: z.string(),
-	updatedAt: z.string(),
-	commentsCount: z.number(),
-});
+import {
+	githubClientToolError,
+	githubTieredCollectionOk,
+} from './github-list.tool-helpers';
+import { issueSummarySchema } from './issues-tool.shared';
 
 const LIST_ISSUES_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	error: z
 		.object({ reason: z.string(), nextAction: z.string().optional() })
 		.optional(),
-	issues: z.array(ISSUE_SUMMARY_SCHEMA).optional(),
+	issues: z.array(issueSummarySchema).optional(),
 	tier: z.enum(['gh', 'rest-authed', 'rest-anon']).optional(),
 });
 
@@ -70,15 +42,13 @@ export const runListIssues = async (
 			...(args.labels !== undefined ? { labels: args.labels } : {}),
 			...(args.limit !== undefined ? { limit: args.limit } : {}),
 		});
-		return toolOk({
-			issues: result.issues as IGithubIssueSummary[],
-			tier: result.tier,
-		});
-	} catch (error) {
-		return toolError(
-			error instanceof Error ? error.message : String(error),
-			'Check repo configuration / network connectivity / gh auth status.',
+		return githubTieredCollectionOk(
+			'issues',
+			result.issues as IGithubIssueSummary[],
+			result.tier,
 		);
+	} catch (error) {
+		return githubClientToolError(error);
 	}
 };
 

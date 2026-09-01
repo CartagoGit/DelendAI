@@ -8,6 +8,18 @@
  * Slow (does an npm install); run after `bun run build`.
  *
  *   bun tools/scripts/smoke/pack.script.ts
+ *   bun tools/scripts/smoke/pack.script.ts --presets=minimal,lean,standard,...
+ *
+ * Two modes (mutually exclusive):
+ *  - DEFAULT: per-package smoke — install every packed tarball into a
+ *    single throwaway project and assert every packed plugin loads
+ *    + the spot-checked tools resolve.
+ *  - `--presets=<list>` (f00178, MAN-002): per-preset smoke — for each
+ *    preset in the list, create a throwaway project that has a
+ *    `mcp-vertex.config.json` activating that preset, `npm install`
+ *    the tarballs into it, boot the installed CLI against the config,
+ *    listTools, call `mcp-vertex_overview`, exit cleanly. Presets are
+ *    derived from `PRESET_CATALOG` (no hardcoded list).
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -28,13 +40,21 @@ import {
 	type IWorkspaceDepsPlan,
 } from '../publish/workspace-deps.ts';
 import { PUBLISH_ORDER } from '../release/release-plan';
+import {
+	deriveDistributablePresets,
+	parsePresetsArg,
+} from './pack-presets.preset-list.ts';
 
 const ROOT = resolve('.');
 
 interface IPackageJson {
 	readonly name?: string;
+	readonly version?: string;
 	readonly private?: boolean;
 	readonly files?: unknown;
+	readonly main?: string;
+	/** npm allows either a single path or a name → path map. */
+	readonly bin?: string | Readonly<Record<string, string>>;
 }
 
 const readPackageJson = (dir: string): IPackageJson => {
@@ -69,18 +89,52 @@ const PACKED_PACKAGE_DIRS = discoverPublishablePackageDirs();
 // Invariant: every publishable package in the release order must be packed.
 // A package that is in PUBLISH_ORDER but drops out of the publishable filter
 // is a release-vs-smoke drift — fail loudly here instead of shipping a
-// tarball nobody installed.
-const missingFromPack = PUBLISH_ORDER.filter((dir) => {
-	if (!existsSync(join(ROOT, dir, 'package.json'))) return false;
-	const pkg = readPackageJson(dir);
-	if (pkg.private === true) return false; // legitimately unpublished
-	return !PACKED_PACKAGE_DIRS.includes(dir);
-});
-if (missingFromPack.length > 0) {
-	throw new Error(
-		`pack smoke: publishable packages in PUBLISH_ORDER are not being packed: ${missingFromPack.join(', ')}`,
-	);
-}
+// tarball nobody installed. Extracted as a callable so the unit spec can
+// exercise it without spinning up a throwaway project, and so the throw
+// only fires when the script is actually executed (not when imported).
+export const assertPublishablePackagesArePacked = (): void => {
+	const missingFromPack = PUBLISH_ORDER.filter((dir) => {
+		if (!existsSync(join(ROOT, dir, 'package.json'))) return false;
+		const pkg = readPackageJson(dir);
+		if (pkg.private === true) return false; // legitimately unpublished
+		return !PACKED_PACKAGE_DIRS.includes(dir);
+	});
+	if (missingFromPack.length > 0) {
+		throw new Error(
+			`pack smoke: publishable packages in PUBLISH_ORDER are not being packed: ${missingFromPack.join(', ')}`,
+		);
+	}
+};
+
+/**
+ * A tarball is only meaningful if the entrypoints its manifest advertises
+ * actually exist. Packing an unbuilt package produces a tarball that
+ * installs fine and then dies at require time with a MODULE_NOT_FOUND
+ * that names a path inside a temp dir — evidence that points nowhere near
+ * the missing build step. Fail here, naming the package and the file.
+ */
+export const assertPackedEntrypointsExist = (): void => {
+	const missing: string[] = [];
+	for (const dir of PACKED_PACKAGE_DIRS) {
+		const pkg = readPackageJson(dir);
+		const targets = [
+			...(typeof pkg.main === 'string' ? [pkg.main] : []),
+			...(typeof pkg.bin === 'string'
+				? [pkg.bin]
+				: Object.values(pkg.bin ?? {})),
+		];
+		for (const target of targets) {
+			if (!existsSync(join(ROOT, dir, target))) {
+				missing.push(`${dir} → ${target}`);
+			}
+		}
+	}
+	if (missing.length > 0) {
+		throw new Error(
+			`pack smoke: packed package(s) are missing their declared entrypoint — run \`bun run build\` first:\n  ${missing.join('\n  ')}`,
+		);
+	}
+};
 
 const PLUGIN_IDS = PACKED_PACKAGE_DIRS.filter((dir) =>
 	dir.startsWith('plugins/'),
@@ -128,22 +182,132 @@ const run = (cmd: string, args: string[], cwd: string): string =>
 		stdio: ['ignore', 'pipe', 'inherit'],
 	});
 
-/** The monorepo version every intra-repo `workspace:*` dep resolves to. */
-const MONOREPO_VERSION = (readPackageJson('.') as { version?: string }).version;
-
+/**
+ * Every intra-repo `workspace:` dep resolves to the version the DEPENDED-ON
+ * package's own `package.json` currently declares — never the root
+ * manifest's version, which is under no obligation to match any individual
+ * package. A dependency that has independently bumped ahead of root
+ * previously produced an unsatisfiable installed set here.
+ */
 const WORKSPACE_PLAN: IWorkspaceDepsPlan = {
-	targetVersion: MONOREPO_VERSION ?? '*',
-	mcpVertexPackages: new Set(
-		PACKED_PACKAGE_DIRS.map((dir) => readPackageJson(dir).name).filter(
-			(name): name is string => typeof name === 'string',
-		),
+	packageVersions: new Map(
+		PACKED_PACKAGE_DIRS.map((dir) => {
+			const pkg = readPackageJson(dir);
+			if (typeof pkg.name !== 'string') {
+				throw new Error(`${dir}/package.json is missing a name`);
+			}
+			if (typeof pkg.version !== 'string') {
+				throw new Error(`${dir}/package.json is missing a version`);
+			}
+			return [pkg.name, pkg.version] as const;
+		}),
 	),
 };
 
-const main = async (): Promise<void> => {
+interface IPresetsCliArgs {
+	readonly mode: 'presets' | 'package';
+	readonly presetIds: readonly string[];
+}
+
+/**
+ * Parse the CLI args we accept. Today: a single optional
+ * `--presets=<csv>` flag. Anything else is treated as default package
+ * mode. Exported separately so the spec can drive it without spawning
+ * a throwaway project.
+ */
+export const parseCliArgs = (argv: readonly string[]): IPresetsCliArgs => {
+	let presetsRaw: string | undefined;
+	for (const arg of argv) {
+		if (arg.startsWith('--presets=')) {
+			presetsRaw = arg.slice('--presets='.length);
+			continue;
+		}
+		throw new Error(
+			`pack smoke: unknown CLI flag "${arg}" (supported: --presets=<list>)`,
+		);
+	}
+	if (presetsRaw === undefined) return { mode: 'package', presetIds: [] };
+	const parsed = parsePresetsArg(presetsRaw);
+	const ids = parsed.length === 0 ? deriveDistributablePresets() : parsed;
+	return { mode: 'presets', presetIds: ids };
+};
+
+interface IRunSmokeOpts {
+	readonly workdir: string;
+	readonly tarballs: readonly string[];
+	readonly configJson: Record<string, unknown> | null;
+	readonly extraServerArgs?: readonly string[];
+}
+
+/**
+ * Run one smoke cycle against a throwaway project. Either no
+ * `mcp-vertex.config.json` (default package smoke, all packed
+ * plugins enabled) or an explicit preset-driven config (per-preset
+ * smoke). When `configJson` is `null`, the CLI auto-resolves every
+ * packed plugin; when present, the CLI uses the explicit config.
+ */
+const runSmokeAgainstWorkdir = async (
+	opts: IRunSmokeOpts,
+): Promise<{ toolCount: number; overviewPlugins: readonly string[] }> => {
+	const { workdir, tarballs, configJson, extraServerArgs } = opts;
+	writeFileSync(
+		join(workdir, 'package.json'),
+		JSON.stringify({ name: 'smoke', private: true }, null, 2),
+	);
+	if (configJson !== null) {
+		writeFileSync(
+			join(workdir, 'mcp-vertex.config.json'),
+			JSON.stringify(configJson, null, 2),
+		);
+	}
+	run('npm', ['install', '--no-audit', '--no-fund', ...tarballs], workdir);
+
+	const workspace = join(workdir, 'ws');
+	const serverArgs = [
+		join(workdir, 'node_modules/@mcp-vertex/cli/dist/index.js'),
+		'__serve',
+		...(extraServerArgs ?? []),
+		`--workspace=${workspace}`,
+	];
+	const transport = new StdioClientTransport({
+		command: 'node',
+		args: serverArgs,
+	});
+	const client = new Client(
+		{ name: 'smoke-pack', version: '0.0.0' },
+		{ capabilities: {} },
+	);
+	try {
+		await client.connect(transport);
+		const { tools } = await client.listTools();
+		const names = new Set(tools.map((t) => t.name));
+		for (const required of REQUIRED_TOOLS) {
+			if (!names.has(required)) {
+				throw new Error(
+					`installed CLI missing "${required}" (plugin failed to resolve under node)`,
+				);
+			}
+		}
+		const overviewRes = await client.callTool({
+			name: 'mcp-vertex_overview',
+			arguments: { compact: true },
+		});
+		const overview = JSON.parse(
+			(overviewRes.content as Array<{ text?: string }>)?.[0]?.text ??
+				'{}',
+		) as { plugins?: Array<string | { name: string }> };
+		const loaded = (overview.plugins ?? []).map((p) =>
+			typeof p === 'string' ? p : p.name,
+		);
+		return { toolCount: tools.length, overviewPlugins: loaded };
+	} finally {
+		await client.close().catch(() => undefined);
+	}
+};
+
+const runPackageSmoke = async (): Promise<void> => {
 	const proj = mkdtempSync(join(tmpdir(), 'mcp-pack-'));
 	try {
-		// Pack each package (with workspace:* deps resolved) into the project.
 		const tarballs: string[] = [];
 		for (const pkgDir of PACKED_PACKAGE_DIRS) {
 			tarballs.push(
@@ -152,102 +316,94 @@ const main = async (): Promise<void> => {
 				}),
 			);
 		}
-
-		// Clean project that installs the tarballs (peer dep @mcp-vertex/core is
-		// satisfied by the core tarball; sdk/zod come from the registry).
-		writeFileSync(
-			join(proj, 'package.json'),
-			JSON.stringify({ name: 'smoke', private: true }, null, 2),
-		);
-		run('npm', ['install', '--no-audit', '--no-fund', ...tarballs], proj);
-
-		// a00065 S4: prove the `@mcp-vertex/cli` package's `bin` entry
-		// (`mcpv`) resolves under plain node module resolution — the
-		// canonical launch path a real adopter uses, not just the direct
-		// `core/dist/cli.js` path. `npm install` links bins into
-		// `node_modules/.bin`; invoking it proves the shebang + main resolve
-		// and that `@mcp-vertex/cli` located `@mcp-vertex/core` from tarballs.
-		const mcpvBin = join(proj, 'node_modules/.bin/mcpv');
-		if (!existsSync(mcpvBin)) {
-			throw new Error(
-				'installed @mcp-vertex/cli did not link its `mcpv` bin — the cli tarball is missing or its bin field is broken',
-			);
-		}
-		const version = run(mcpvBin, ['--version'], proj).trim();
-		if (!/\d+\.\d+\.\d+/.test(version)) {
-			throw new Error(
-				`\`mcpv --version\` returned an unexpected value: ${JSON.stringify(version)}`,
-			);
-		}
-
-		// Drive the INSTALLED CLI over stdio with real plugins — via the
-		// `mcpv __serve` entry (the cli package), proving the whole
-		// cli→core→plugins chain resolves from tarballs under node.
-		const workspace = join(proj, 'ws');
-		const transport = new StdioClientTransport({
-			command: 'node',
-			args: [
-				join(proj, 'node_modules/@mcp-vertex/cli/dist/index.js'),
-				'__serve',
+		const result = await runSmokeAgainstWorkdir({
+			workdir: proj,
+			tarballs,
+			configJson: null,
+			// The default `managed` surface hides most plugin tools behind
+			// the `vertex` router and only lists a curated bootstrap subset,
+			// so a REQUIRED_TOOLS check against `listTools()` would mistake
+			// that exposure policy for "the plugin failed to resolve under
+			// node". `--surface=native` lists every registered tool
+			// directly (see `tools/scripts/lib/plugin-test-bed.ts`, which
+			// does the same for the same reason), which is what this smoke
+			// actually needs to verify: the plugin loaded and its tools are
+			// wired, not the default LLM-facing exposure policy.
+			extraServerArgs: [
 				`--plugins=${PLUGIN_IDS.join(',')}`,
-				`--workspace=${workspace}`,
+				'--surface=native',
 			],
 		});
-		const client = new Client(
-			{ name: 'smoke-pack', version: '0.0.0' },
-			{ capabilities: {} },
+		console.log(
+			`✓ pack smoke: mcpv bin + installed-from-tarball CLI serves ${result.toolCount} tools under node ` +
+				`(${PACKED_PACKAGE_DIRS.length} packed packages incl. client+cli, ` +
+				`all ${PLUGIN_IDS.length} plugins in overview.plugins).`,
 		);
-		try {
-			await client.connect(transport);
-			const { tools } = await client.listTools();
-			const names = new Set(tools.map((t) => t.name));
-			for (const required of REQUIRED_TOOLS) {
-				if (!names.has(required)) {
-					throw new Error(
-						`installed CLI missing "${required}" (plugin failed to resolve under node)`,
-					);
-				}
-			}
-			// a00065 S4: prove EVERY packed plugin actually loaded — not just
-			// the spot-checked ones. `overview.plugins` is the loaded set; a
-			// tarball that installed but failed to import (a bad workspace:*
-			// rewrite, a missing dep) would be absent here even if some other
-			// plugin's spot-check tool happened to be present.
-			const overviewRes = await client.callTool({
-				name: 'mcp-vertex_overview',
-				arguments: { compact: true },
-			});
-			const overview = JSON.parse(
-				(overviewRes.content as Array<{ text?: string }>)?.[0]?.text ??
-					'{}',
-			) as { plugins?: Array<string | { name: string }> };
-			const loaded = new Set(
-				(overview.plugins ?? []).map((p) =>
-					typeof p === 'string' ? p : p.name,
-				),
-			);
-			const notLoaded = PLUGIN_IDS.filter((id) => !loaded.has(id));
-			if (notLoaded.length > 0) {
-				throw new Error(
-					`installed-from-tarball plugins did not load under node: ${notLoaded.join(', ')} (packed but not in overview.plugins — a resolution/import failure)`,
-				);
-			}
-			console.log(
-				`✓ pack smoke: mcpv bin (${version}) + installed-from-tarball CLI serves ${tools.length} tools under node ` +
-					`(${PACKED_PACKAGE_DIRS.length} packed packages incl. client+cli, ` +
-					`all ${PLUGIN_IDS.length} plugins in overview.plugins).`,
-			);
-		} finally {
-			await client.close().catch(() => undefined);
-		}
 	} finally {
 		rmSync(proj, { recursive: true, force: true });
 	}
 };
 
-main().catch((err: unknown) => {
-	console.error(
-		`✖ pack smoke failed: ${err instanceof Error ? err.message : String(err)}`,
-	);
-	process.exit(1);
-});
+const runPresetsSmoke = async (presetIds: readonly string[]): Promise<void> => {
+	const failures: Array<{ preset: string; error: string }> = [];
+	for (const presetId of presetIds) {
+		const proj = mkdtempSync(join(tmpdir(), `mcp-pack-${presetId}-`));
+		try {
+			const tarballs: string[] = [];
+			for (const pkgDir of PACKED_PACKAGE_DIRS) {
+				tarballs.push(
+					await packRewrittenTarball(
+						join(ROOT, pkgDir),
+						WORKSPACE_PLAN,
+						{ outDir: proj },
+					),
+				);
+			}
+			try {
+				await runSmokeAgainstWorkdir({
+					workdir: proj,
+					tarballs,
+					configJson: { preset: presetId },
+				});
+				console.log(
+					`✓ preset smoke: "${presetId}" install + boot + listTools + callOverview ok.`,
+				);
+			} catch (err) {
+				const message =
+					err instanceof Error ? err.message : String(err);
+				failures.push({ preset: presetId, error: message });
+				console.error(
+					`✖ preset smoke: "${presetId}" failed: ${message}`,
+				);
+			}
+		} finally {
+			rmSync(proj, { recursive: true, force: true });
+		}
+	}
+	if (failures.length > 0) {
+		throw new Error(
+			`pack smoke --presets: ${failures.length}/${presetIds.length} presets failed: ` +
+				failures.map((f) => `${f.preset} (${f.error})`).join('; '),
+		);
+	}
+};
+
+const main = async (): Promise<void> => {
+	assertPublishablePackagesArePacked();
+	assertPackedEntrypointsExist();
+	const args = parseCliArgs(process.argv.slice(2));
+	if (args.mode === 'presets') {
+		await runPresetsSmoke(args.presetIds);
+		return;
+	}
+	await runPackageSmoke();
+};
+
+if (import.meta.main === true) {
+	main().catch((err: unknown) => {
+		console.error(
+			`✖ pack smoke failed: ${err instanceof Error ? err.message : String(err)}`,
+		);
+		process.exit(1);
+	});
+}

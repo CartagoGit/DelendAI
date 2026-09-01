@@ -20,7 +20,9 @@ const inferSchemaType = (
 	return undefined;
 };
 
-const detectValueType = (value: unknown): IJsonSchemaPrimitive | 'unknown' => {
+export const detectValueType = (
+	value: unknown,
+): IJsonSchemaPrimitive | 'unknown' => {
 	if (value === null) return 'null';
 	if (Array.isArray(value)) return 'array';
 	if (isPlainObject(value)) return 'object';

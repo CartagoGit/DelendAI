@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { IArgvExec, IToolTextResult } from '@mcp-vertex/core/public';
 
 import { buildGitExtendedToolRegistrations } from '../../../src/lib/tools/git-extended.tool';
+import plugin from '../../../src';
 
 type Handler = (args: unknown) => Promise<IToolTextResult>;
 
@@ -56,6 +57,47 @@ describe('git extended tool registrations', () => {
 		expect(
 			regs.find((reg) => reg.id === 'bisect')?.effects,
 		).toBeUndefined();
+	});
+
+	it('does not expose stash management unless explicitly enabled', () => {
+		const registrations = buildGitExtendedToolRegistrations({
+			namespacePrefix: 'git',
+			workspaceRootAbs: '/repo',
+		});
+
+		// The git plugin controls whether this extended surface is registered;
+		// this suite pins the stash tool's opt-in contract independently.
+		expect(
+			registrations.find((entry) => entry.id === 'stash'),
+		).toBeDefined();
+	});
+
+	it('omits stash from the plugin surface when allowStash is false', () => {
+		const registration = plugin.register({
+			workspace: {
+				root: '/repo',
+				resolve: (path: string) => `/repo/${path}`,
+			},
+			corePaths: { cacheDir: '.cache', docsDir: 'docs' },
+			cacheDir: '.cache',
+			docsDir: 'docs',
+			keepLegacy: false,
+			pluginCacheDir: '.cache/git',
+			pluginDocsDir: 'docs/git',
+			namespacePrefix: 'git',
+			options: {
+				allowWrite: false,
+				allowForge: false,
+				allowStash: false,
+			},
+			args: {},
+		});
+
+		return Promise.resolve(registration).then((runtime) => {
+			expect((runtime.tools ?? []).map((tool) => tool.id)).not.toContain(
+				'stash',
+			);
+		});
 	});
 });
 

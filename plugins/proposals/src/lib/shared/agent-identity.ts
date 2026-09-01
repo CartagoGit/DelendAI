@@ -35,6 +35,33 @@ const HOST_SLUGS: Readonly<Record<AgentHost, string>> = {
 	continue: 'continue',
 	unknown: 'unknown',
 };
+const LAST_RESORT_MODEL_MAX = 8;
+const LAST_RESORT_AGENT_MAX = 12;
+
+/** The closed set of known hosts (mirrors core `AgentHost`). */
+export const KNOWN_HOSTS = [
+	'vscode-copilot',
+	'claude-code',
+	'codex-cli',
+	'cursor',
+	'aider',
+	'continue',
+	'unknown',
+] as const;
+
+/**
+ * Coerce a raw host string (core resolves it as a plain `string` —
+ * see `IResolvedHostIdentity`) into the closed `AgentHost` union,
+ * falling back to `'unknown'` (lossy-friendly, matching
+ * `parseIdentity`). Returns `null` when the caller passed nothing,
+ * so registries can store an explicit `null`.
+ */
+export const coerceHost = (host: string | undefined): AgentHost | null => {
+	if (host === undefined) return null;
+	return (KNOWN_HOSTS as readonly string[]).includes(host)
+		? (host as AgentHost)
+		: 'unknown';
+};
 
 /**
  * Normalise any string to a slug-safe form. Keeps `[a-z0-9-]`,
@@ -44,7 +71,10 @@ const HOST_SLUGS: Readonly<Record<AgentHost, string>> = {
  */
 export const slugify = (value: string): string => {
 	const trimmed = value.trim().toLowerCase();
-	const slug = trimmed.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+	const slug = trimmed
+		.replace(/[^a-z0-9]+/gu, '-')
+		.replace(/^-+/u, '')
+		.replace(/-+$/u, '');
 	return slug.length > 0 ? slug : 'unknown';
 };
 
@@ -57,7 +87,7 @@ const capSlug = (value: string): string =>
 /** Slugify the host field through the canonical table. */
 export const slugifyHost = (host: AgentHost | undefined): string => {
 	if (host === undefined) return '';
-	const slug = HOST_SLUGS[host];
+	const slug = HOST_SLUGS[host] ?? '';
 	return capSlug(slug === 'unknown' ? '' : slug);
 };
 
@@ -128,7 +158,7 @@ export const composeIdentity = (identity: IAgentIdentity): string => {
 			return composite;
 	}
 	if (model.length > 0) {
-		const trimmedModel = capSlug(model).slice(0, 8);
+		const trimmedModel = capSlug(model).slice(0, LAST_RESORT_MODEL_MAX);
 		composite = tryCompose(trimmedModel, task);
 		if (composite.length <= AGENT_IDENTITY_LIMITS.composite)
 			return composite;
@@ -136,7 +166,7 @@ export const composeIdentity = (identity: IAgentIdentity): string => {
 	// Last resort: trim the agent_name (the required field). The
 	// composite is then `<host>-<agent_short>-<task>` and stays
 	// unique because host + task are still in there.
-	const trimmedAgent = capSlug(agent).slice(0, 12);
+	const trimmedAgent = capSlug(agent).slice(0, LAST_RESORT_AGENT_MAX);
 	const parts = [host, trimmedAgent, task].filter((p) => p.length > 0);
 	return parts.join('-');
 };

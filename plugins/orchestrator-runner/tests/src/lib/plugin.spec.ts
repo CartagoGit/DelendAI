@@ -40,7 +40,7 @@ describe('orchestrator-runner plugin', () => {
 
 	it('declares its identity and the usage-tracking hard dependency (I15)', () => {
 		expect(plugin.name).toBe('orchestrator-runner');
-		expect(plugin.version).toBe('0.1.0');
+		expect(plugin.version).toBe('0.1.1');
 		expect(plugin.dependsOn).toContain('usage-tracking');
 	});
 

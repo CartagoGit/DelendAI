@@ -7,8 +7,9 @@ const IDENT = '[A-Za-z_$][A-Za-z0-9_$]*';
 
 const listMatches = (source: string, pattern: RegExp): string[] => {
 	const values = new Set<string>();
-	let match: RegExpExecArray | null;
-	while ((match = pattern.exec(source)) !== null) {
+	while (true) {
+		const match = pattern.exec(source);
+		if (match === null) break;
 		const value = match[1]?.trim();
 		if (value) values.add(value);
 	}

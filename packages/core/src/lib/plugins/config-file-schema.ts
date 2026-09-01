@@ -20,8 +20,11 @@
  * reported as a schema violation instead of being silently ignored.
  */
 import z from 'zod';
+import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
+import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
+import { MCP_TOOL_SURFACE_MODE } from '../contracts/interfaces/surface-mode.interface';
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
-import { COMMIT_AUTHOR_MODES } from '../shared/commit-author';
+import { STARTUP_REPORT_LEVEL_INPUTS } from '../startup-report/level';
 
 /** Kebab-case provider id: `claude-sonnet`, `gpt-5-codex`, … */
 const PROVIDER_ID_PATTERN = /^[a-z][a-z0-9-]+$/;
@@ -51,7 +54,7 @@ const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
 	z
 		.object({
 			kind: z.literal('subscription'),
-			// x00183 (F7): any non-empty id is accepted — core no longer
+			// (F7): any non-empty id is accepted — core no longer
 			// closes this to the hosts it happened to know about at
 			// authoring time. orchestrator-runner owns validating it
 			// against the hosts it can actually drive.
@@ -103,23 +106,84 @@ const PROVIDER_ENTRY_SCHEMA = z
 	})
 	.strict();
 
+const PLUGIN_REGISTRY_ENTRY_SCHEMA = z
+	.object({
+		id: z.string(),
+		package: z.string(),
+		summary: z.string(),
+		tags: z.array(z.string()),
+		origin: z.enum(['first-party', 'community']),
+		permissions: z.array(z.enum(PERMISSION_CATEGORIES)).optional(),
+		defaultPreset: z
+			.enum(['minimal', 'lean', 'standard', 'swarm', 'full', 'vertex'])
+			.optional(),
+	})
+	.strict();
+
+const PLUGIN_REGISTRY_SOURCE_SCHEMA = z
+	.object({
+		origin: z.literal('community'),
+		entries: z.array(PLUGIN_REGISTRY_ENTRY_SCHEMA),
+	})
+	.strict();
+
 /** Structural schema for the config file (used by `--check`). */
 export const CONFIG_FILE_SCHEMA = z
 	.object({
 		$schema: z.string().optional(),
 		cacheDir: z.string().optional(),
 		docsDir: z.string().optional(),
+		surfaceMode: z.enum(MCP_TOOL_SURFACE_MODE).optional(),
+		startupReport: z
+			.object({
+				level: z.enum(STARTUP_REPORT_LEVEL_INPUTS).optional(),
+				color: z.enum(['auto', 'always', 'never']).optional(),
+			})
+			.strict()
+			.optional(),
+		managedSurface: z
+			.object({
+				loading: z.enum(['lazy', 'eager']).optional(),
+				idleTtlMs: z.number().int().nonnegative().nullable().optional(),
+				maxWarmPlugins: z
+					.number()
+					.int()
+					.nonnegative()
+					.nullable()
+					.optional(),
+			})
+			.strict()
+			.optional(),
+		evidence: z
+			.object({
+				retentionDays: z.number().int().min(1).optional(),
+				cleanup: z.enum(['on-boot', 'dry-run', 'off']).optional(),
+			})
+			.strict()
+			.optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
-		// f00152 S5 (L3 — feature flags): optional top-level feature
+		core: z
+			.object({
+				agentPolicy: z
+					.object({
+						autonomous: z.boolean().optional(),
+						principles: z.array(z.string().min(1)).optional(),
+					})
+					.strict()
+					.optional(),
+			})
+			.strict()
+			.optional(),
+		// S5 (L3 — feature flags): optional top-level feature
 		// flags block. Default-off; see `docs/mcp-vertex/api/feature-flags.md`.
 		// Per-plugin flags live under `plugins.<name>.options.featureFlags`.
 		featureFlags: z.record(z.string(), z.boolean()).optional(),
-		// f00088 S4 — operator-chosen source/conventions block.
+		// S4 — operator-chosen source/conventions block.
 		// The `init` command emits this when its S1 detector picks
 		// a non-default `pluginPathsRoot` (e.g. `libs/` for Angular
 		// or Nx, `packages/` for workspaces). Downstream tooling
-		// (`tools/scripts/create-plugin.ts`, host-entry resolver
+		// (`tools/scripts/scaffold/create-plugin.script.ts`, host-entry resolver
 		// hints) reads it instead of having to re-discover the
 		// project's layout. The loader ignores it; the schema
 		// accepts it for the strict-config validator.
@@ -130,7 +194,7 @@ export const CONFIG_FILE_SCHEMA = z
 			})
 			.strict()
 			.optional(),
-		// f00089 U5 — native authorized-roots filesystem allowlist.
+		// U5 — native authorized-roots filesystem allowlist.
 		// Extra absolute roots the operator authorizes for `fs_read` /
 		// `fs_write` beyond the workspace root. Default `[]` (off): with
 		// no entries the native fs tools keep their single-root,
@@ -177,13 +241,21 @@ export const CONFIG_FILE_SCHEMA = z
 						.optional(),
 					prefix: z.string().optional(),
 					options: z.record(z.string(), z.unknown()).optional(),
-					// f00087 S1: explicit module path for a local plugin.
+					// S1: explicit module path for a local plugin.
 					// Relative paths resolve against the workspace root;
 					// absolute paths and `file:`/`./`/`/`-prefixed values
 					// are forwarded verbatim to `loadPlugins`.
 					path: z.string().optional(),
 				}),
 			)
+			.optional(),
+		pluginRegistry: z
+			.object({
+				communitySources: z
+					.array(PLUGIN_REGISTRY_SOURCE_SCHEMA)
+					.optional(),
+			})
+			.strict()
 			.optional(),
 		// f00067a S1 — root-level provider roster for the multi-model
 		// orchestrator (wiki/07). Optional + additive: a config without
@@ -212,7 +284,7 @@ export const CONFIG_FILE_SCHEMA = z
 			// source of truth for `--check`).
 			.meta({ uniqueItems: true })
 			.optional(),
-		// f00072 S3 — cache eviction policy. Additive + backward
+		// S3 — cache eviction policy. Additive + backward
 		// compatible: a config without this block defaults to
 		// `runOnBoot: 'dry-run'` (the boot sweep only logs a report).
 		cache: z
@@ -268,7 +340,7 @@ export const CONFIG_FILE_SCHEMA = z
 			})
 			.strict()
 			.optional(),
-		// f00152 S1 (L1 — version pin): optional semver string pinning the
+		// S1 (L1 — version pin): optional semver string pinning the
 		// self-host agent to a specific published `@mcp-vertex/core`
 		// version. When omitted, the lint treats the pin as the latest
 		// published tag (`'latest-published'` sentinel). Strict semver

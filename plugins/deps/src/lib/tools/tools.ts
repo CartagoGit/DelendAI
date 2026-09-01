@@ -1,10 +1,15 @@
 import z from 'zod';
 
-import type { IArgvExec, IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	DETAIL_LEVELS,
+	projectDetail,
 	summarizeFindings,
+	toolError,
 	toolJson,
 	worstSeverity,
+	type Detail,
+	type IArgvExec,
+	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
 import {
@@ -58,6 +63,86 @@ const SECTION_COUNTS = z.object({
 	peerDependencies: z.number(),
 	optionalDependencies: z.number(),
 });
+
+const DetailSchema = z.enum(DETAIL_LEVELS);
+const DependencyEntrySchema = z.object({
+	name: z.string(),
+	range: z.string(),
+	section: z.string(),
+});
+const PolyglotDependencyEntrySchema = z.object({
+	ecosystem: z.string(),
+	name: z.string(),
+	range: z.string(),
+	section: z.string(),
+});
+const PolyglotManifestSchema = z.object({
+	ecosystem: z.string(),
+	manifest: z.string(),
+	deps: z.array(PolyglotDependencyEntrySchema),
+});
+const DepsListOutputSchema = z.object({
+	detail: DetailSchema.optional(),
+	manifest: z.string(),
+	found: z.boolean(),
+	counts: SECTION_COUNTS,
+	deps: z.array(DependencyEntrySchema),
+});
+const DepsListInputSchema = z.object({
+	manifest: z.string().optional(),
+	detail: DetailSchema.optional(),
+});
+const DepsPolyglotOutputSchema = z.object({
+	detail: DetailSchema.optional(),
+	manifests: z.array(PolyglotManifestSchema),
+});
+const DepsPolyglotInputSchema = z
+	.object({
+		detail: DetailSchema.optional(),
+	})
+	.strict();
+
+type DepsListPayload = Awaited<ReturnType<typeof listDeps>>;
+type DepsPolyglotPayload = {
+	readonly manifests: Awaited<ReturnType<typeof listPolyglotDeps>>;
+};
+
+const projectDepsListPayload = (
+	payload: DepsListPayload,
+	detail: Detail,
+): DepsListPayload =>
+	projectDetail(
+		payload,
+		{
+			compact: (full) => ({
+				...full,
+				deps: [],
+			}),
+			normal: (full) => full,
+			full: (full) => full,
+		},
+		detail,
+	) as DepsListPayload;
+
+const projectDepsPolyglotPayload = (
+	payload: DepsPolyglotPayload,
+	detail: Detail,
+): DepsPolyglotPayload =>
+	projectDetail(
+		payload,
+		{
+			compact: (full) => ({
+				...full,
+				manifests: full.manifests.map((manifest) => ({
+					...manifest,
+					deps: [],
+				})),
+			}),
+			normal: (full) => full,
+			full: (full) => full,
+		},
+		detail,
+	) as DepsPolyglotPayload;
 
 // r00012 shared finding shape, projected as the `deps_audit` output.
 const AUDIT_FINDING = z.object({
@@ -124,30 +209,36 @@ export const buildDepsToolRegistrations = (
 					`${prefix}_deps_list`,
 					{
 						description:
-							'List the declared dependencies from package.json across dependencies/devDependencies/peerDependencies/optionalDependencies, each with its version range. Read-only, offline.',
-						inputSchema: z.object({
-							manifest: z.string().optional(),
-						}),
-						outputSchema: z.object({
-							manifest: z.string(),
-							found: z.boolean(),
-							counts: SECTION_COUNTS,
-							deps: z.array(
-								z.object({
-									name: z.string(),
-									range: z.string(),
-									section: z.string(),
-								}),
-							),
-						}),
+							'List the declared dependencies from package.json across dependencies/devDependencies/peerDependencies/optionalDependencies, each with its version range. Read-only, offline. When `detail` is omitted the tool preserves the legacy payload; `compact` keeps counts while suppressing the dependency rows, and `normal`/`full` return the same shape.',
+						inputSchema: DepsListInputSchema,
+						outputSchema: DepsListOutputSchema,
 					},
-					async (args: { manifest?: string | undefined }) =>
-						toolJson(
-							await listDeps(
-								options.workspaceRootAbs,
-								args.manifest ?? manifest,
+					async (args: {
+						manifest?: string | undefined;
+						detail?: Detail | undefined;
+					}) => {
+						const parsed = DepsListInputSchema.safeParse(args);
+						if (!parsed.success) {
+							return toolError(
+								parsed.error.message,
+								'Pass manifest as a string and detail as compact|normal|full.',
+							);
+						}
+						const payload = await listDeps(
+							options.workspaceRootAbs,
+							parsed.data.manifest ?? manifest,
+						);
+						if (parsed.data.detail === undefined) {
+							return toolJson(payload);
+						}
+						return toolJson({
+							detail: parsed.data.detail,
+							...projectDepsListPayload(
+								payload,
+								parsed.data.detail,
 							),
-						),
+						});
+					},
 				);
 			},
 		},
@@ -315,31 +406,34 @@ export const buildDepsToolRegistrations = (
 					`${prefix}_deps_polyglot`,
 					{
 						description:
-							'List declared dependencies from whichever of pyproject.toml (PEP 621 `[project] dependencies` and/or Poetry `[tool.poetry.dependencies]`), Cargo.toml ([dependencies]/[dev-dependencies]/[build-dependencies]) and go.mod (require) exist at the workspace root. Each entry has {ecosystem,name,range,section}. Read-only, offline, no CVE database — same contract as deps_list, for non-npm ecosystems.',
-						inputSchema: z.object({}).strict(),
-						outputSchema: z.object({
-							manifests: z.array(
-								z.object({
-									ecosystem: z.string(),
-									manifest: z.string(),
-									deps: z.array(
-										z.object({
-											ecosystem: z.string(),
-											name: z.string(),
-											range: z.string(),
-											section: z.string(),
-										}),
-									),
-								}),
-							),
-						}),
+							'List declared dependencies from whichever of pyproject.toml (PEP 621 `[project] dependencies` and/or Poetry `[tool.poetry.dependencies]`), Cargo.toml ([dependencies]/[dev-dependencies]/[build-dependencies]) and go.mod (require) exist at the workspace root. Each entry has {ecosystem,name,range,section}. Read-only, offline, no CVE database — same contract as deps_list, for non-npm ecosystems. When `detail` is omitted the tool preserves the legacy payload; `compact` keeps the detected manifests while suppressing per-dependency rows, and `normal`/`full` return the same shape.',
+						inputSchema: DepsPolyglotInputSchema,
+						outputSchema: DepsPolyglotOutputSchema,
 					},
-					async () =>
-						toolJson({
+					async (args: { detail?: Detail | undefined }) => {
+						const parsed = DepsPolyglotInputSchema.safeParse(args);
+						if (!parsed.success) {
+							return toolError(
+								parsed.error.message,
+								'Pass detail as compact|normal|full when requesting a projection.',
+							);
+						}
+						const payload = {
 							manifests: await listPolyglotDeps(
 								options.workspaceRootAbs,
 							),
-						}),
+						};
+						if (parsed.data.detail === undefined) {
+							return toolJson(payload);
+						}
+						return toolJson({
+							detail: parsed.data.detail,
+							...projectDepsPolyglotPayload(
+								payload,
+								parsed.data.detail,
+							),
+						});
+					},
 				);
 			},
 		},

@@ -23,6 +23,10 @@ export interface INotifyToolOptions {
 	readonly namespacePrefix: string;
 	/** Absolute path of the shared lock file to watch. */
 	readonly lockFileAbs: string;
+	/** Absolute path of the spawned-agent registry to reconcile on death. */
+	readonly agentRegistryFileAbs?: string;
+	/** Absolute path of the task queue whose subscription lease is released. */
+	readonly queueFileAbs?: string;
 	/** Absolute path of the handoff directory to watch. */
 	readonly handoffDirAbs: string;
 	/** Workspace-relative path of the handoff directory. */
@@ -32,6 +36,26 @@ export interface INotifyToolOptions {
 	/** Heartbeat interval used to classify agent alive/idle/dead. Default 10000. */
 	readonly heartbeatMs?: number;
 }
+
+type ICloseCapableServer = {
+	readonly server?: {
+		onclose?: (() => void) | undefined;
+	};
+};
+
+const attachCloseHandler = (server: McpServer, handler: () => void): void => {
+	const closeCapable = server as McpServer & ICloseCapableServer;
+	const transportServer = closeCapable.server;
+	if (transportServer === undefined) return;
+	const previousOnClose = transportServer.onclose;
+	transportServer.onclose = (): void => {
+		handler();
+		previousOnClose?.();
+	};
+};
+
+const DEFAULT_AWAIT_LOCK_TIMEOUT_MS = 30_000;
+const MAX_AWAIT_LOCK_TIMEOUT_MS = 120_000;
 
 /**
  * `<prefix>_notify_status` — and the side effect that matters: it starts
@@ -107,6 +131,12 @@ export const buildNotifyRegistration = (
 			agentEventsBridge = startAgentEventsBridge(server, {
 				namespacePrefix: options.namespacePrefix,
 				lockFileAbs: options.lockFileAbs,
+				...(options.agentRegistryFileAbs !== undefined
+					? { agentRegistryFileAbs: options.agentRegistryFileAbs }
+					: {}),
+				...(options.queueFileAbs !== undefined
+					? { queueFileAbs: options.queueFileAbs }
+					: {}),
 				heartbeatMs: options.heartbeatMs ?? 10_000,
 				...(options.intervalMs !== undefined
 					? { intervalMs: options.intervalMs }
@@ -114,13 +144,11 @@ export const buildNotifyRegistration = (
 			});
 
 			// Tear the watcher down with the server so we don't leak timers.
-			const previousOnClose = server.server.onclose;
-			server.server.onclose = (): void => {
+			attachCloseHandler(server, () => {
 				watcher?.stop();
 				handoffWatcher?.stop();
 				agentEventsBridge?.close();
-				previousOnClose?.();
-			};
+			});
 
 			server.registerTool(
 				`${options.namespacePrefix}_notify_status`,
@@ -170,18 +198,15 @@ export const buildAwaitLockRegistration = (
 			'Wait until a task lock is released (or timeout), so agents stop polling agent_lock status.',
 		tags: ['coordination', 'lazy'],
 		register: async (server: McpServer) => {
-			const previousOnClose = server.server.onclose;
-			server.server.onclose = (): void => {
+			attachCloseHandler(server, () => {
 				for (const ac of pending) ac.abort();
 				pending.clear();
-				previousOnClose?.();
-			};
+			});
 
 			server.registerTool(
 				`${options.namespacePrefix}_await_lock`,
 				{
-					description:
-						'Block until the lock for `taskId` is released (no longer in-flight) or `timeoutMs` elapses (default 30000, max 120000), then return {taskId,released,timedOut,alreadyFree,waitedMs}. Use this after agent_lock returns lock-conflict: wait once, then retry the claim — do NOT poll agent_lock status in a loop.',
+					description: `Block until the lock for \`taskId\` is released (no longer in-flight) or \`timeoutMs\` elapses (default ${DEFAULT_AWAIT_LOCK_TIMEOUT_MS}, max ${MAX_AWAIT_LOCK_TIMEOUT_MS}), then return {taskId,released,timedOut,alreadyFree,waitedMs}. Use this after agent_lock returns lock-conflict: wait once, then retry the claim — do NOT poll agent_lock status in a loop.`,
 					inputSchema: z.object({
 						taskId: z.string().min(1),
 						timeoutMs: z.number().optional(),

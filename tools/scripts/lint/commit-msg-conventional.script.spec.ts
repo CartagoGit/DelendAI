@@ -17,7 +17,22 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { lintCommitMessage } from './commit-msg-conventional.script';
+import {
+	lintCommitIdentity,
+	lintCommitMessage,
+} from './commit-msg-conventional.script';
+
+describe('lintCommitIdentity', () => {
+	it('blocks the reserved smoke-test identity', () => {
+		const result = lintCommitIdentity('smoke-tester', 'smoke@local');
+		expect(result.ok).toBe(false);
+	});
+
+	it('allows the configured human repository identity', () => {
+		const result = lintCommitIdentity('Cartago', 'cartago@example.com');
+		expect(result.ok).toBe(true);
+	});
+});
 
 describe('lintCommitMessage', () => {
 	it('allows a plain conventional feat() commit', () => {

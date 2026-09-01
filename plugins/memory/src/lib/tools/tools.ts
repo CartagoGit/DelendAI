@@ -1,27 +1,23 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import {
-	CorruptFileError,
-	toolError,
-	toolJson,
-	toolOk,
-} from '@mcp-vertex/core/public';
-import type { IToolTextResult } from '@mcp-vertex/core/public';
+import { toolError, toolJson, toolOk } from '@mcp-vertex/core/public';
 
 import {
 	exportNotes,
+	recordSessionDigestReuse,
 	importNotes,
 	readStore,
 	recall,
+	selectLatestSessionDigestForRecall,
 	removeNote,
 	saveNote,
 } from '../services/store';
 import { NoteQuotaExceededError } from '../services/store-records';
-import { selectLatestSessionDigest } from '../services/session-digest-recall';
 import { buildCompactToolRegistration } from './compact.tool';
 import { buildCompactionCheckToolRegistration } from './compaction-check.tool';
 import { buildCheckpointPacketToolRegistration } from './checkpoint-packet.tool';
+import { guardCorruptStore } from './tool-guard-corrupt';
 
 // MCP modern outputSchema shapes (N16). Error envelopes are exempt from
 // SDK validation (isError:true), so these describe only the success path.
@@ -55,23 +51,17 @@ const SessionDigestSchema = z.object({
  * never silently reads (or overwrites) an empty store. Other errors
  * propagate to the SDK unchanged.
  */
-const guardCorrupt = async (
-	fn: () => IToolTextResult | Promise<IToolTextResult>,
-): Promise<IToolTextResult> => {
-	try {
-		return await fn();
-	} catch (err) {
-		if (err instanceof CorruptFileError) {
-			return toolError(
-				`memory store is corrupt: ${err.message}`,
-				err.backupPath
-					? `The corrupt file was preserved at "${err.backupPath}". Inspect or delete it, then retry.`
-					: 'Could not back up the corrupt store; inspect it manually before retrying.',
-			);
-		}
-		throw err;
-	}
-};
+const MAX_TITLE_LENGTH = 200;
+const MAX_BODY_LENGTH = 8000;
+const MAX_TAG_COUNT = 20;
+const MAX_TAG_LENGTH = 50;
+const DEFAULT_RECALL_LIMIT = 10;
+const MAX_RECALL_LIMIT = 50;
+const DEFAULT_LIST_LIMIT = 50;
+const MAX_LIST_LIMIT = 200;
+const MAX_IMPORT_PAYLOAD_BYTES = 5_000_000;
+const MIN_PAGE_LIMIT = 1;
+const MIN_OFFSET = 0;
 
 export interface IMemoryToolOptions {
 	readonly namespacePrefix: string;
@@ -150,24 +140,30 @@ export const buildMemoryToolRegistrations = (
 						tags?: string[] | undefined;
 						ttlSeconds?: number | undefined;
 					}) => {
-						if (args.title.length > 200) {
+						if (args.title.length > MAX_TITLE_LENGTH) {
 							return toolError(
-								'title too long (max 200 chars)',
+								`title too long (max ${MAX_TITLE_LENGTH} chars)`,
 								'Shorten the title; put detail in the body.',
 							);
 						}
-						if (args.body.length > 8000) {
+						if (args.body.length > MAX_BODY_LENGTH) {
 							return toolError(
-								'body too long (max 8000 chars)',
+								`body too long (max ${MAX_BODY_LENGTH} chars)`,
 								'Summarise first; durable memory is for reusable notes, not logs or raw turn-by-turn traces.',
 							);
 						}
-						if ((args.tags?.length ?? 0) > 20) {
-							return toolError('too many tags (max 20)');
-						}
-						if (args.tags?.some((tag) => tag.length > 50)) {
+						if ((args.tags?.length ?? 0) > MAX_TAG_COUNT) {
 							return toolError(
-								'tag too long (max 50 chars each)',
+								`too many tags (max ${MAX_TAG_COUNT})`,
+							);
+						}
+						if (
+							args.tags?.some(
+								(tag) => tag.length > MAX_TAG_LENGTH,
+							)
+						) {
+							return toolError(
+								`tag too long (max ${MAX_TAG_LENGTH} chars each)`,
 								'Use short, keyword-like tags.',
 							);
 						}
@@ -181,7 +177,7 @@ export const buildMemoryToolRegistrations = (
 								'Omit ttlSeconds for a permanent note.',
 							);
 						}
-						return guardCorrupt(async () => {
+						return guardCorruptStore(async () => {
 							// Total-store quota: bound the note count so a runaway
 							// agent can't grow the store unboundedly. Updates to an
 							// existing note are always allowed.
@@ -246,37 +242,42 @@ export const buildMemoryToolRegistrations = (
 						tags?: string[] | undefined;
 						limit?: number | undefined;
 					}) =>
-						guardCorrupt(async () => {
-							// Recall matches (query/tags-ranked) and the full store
-							// in parallel; the digest is selected from ALL notes so
-							// it surfaces on any recall, not only when it matches the
-							// query. One extra read of the same small JSON file.
-							const [notes, all] = await Promise.all([
-								recall(options.storePathAbs, {
-									...(args.query !== undefined
-										? { query: args.query }
-										: {}),
-									...(args.tags ? { tags: args.tags } : {}),
-									bm25K1: options.bm25K1,
-									bm25B: options.bm25B,
-									titleWeight: options.titleWeight,
-									limit: Math.max(
-										1,
-										Math.min(
-											50,
-											Math.floor(args.limit ?? 10),
+						guardCorruptStore(async () => {
+							// Read the complete store before starting the ranked read.
+							// Both operations used to run in parallel; when corruption
+							// was detected, Promise.all returned the first error while
+							// the second quarantine could still be in flight and race a
+							// caller that recreated the store path. The extra read is
+							// cheap for this small durable store, and sequencing it makes
+							// corruption handling deterministic.
+							const all = await readStore(options.storePathAbs);
+							const notes = await recall(options.storePathAbs, {
+								...(args.query !== undefined
+									? { query: args.query }
+									: {}),
+								...(args.tags ? { tags: args.tags } : {}),
+								bm25K1: options.bm25K1,
+								bm25B: options.bm25B,
+								titleWeight: options.titleWeight,
+								limit: Math.max(
+									MIN_PAGE_LIMIT,
+									Math.min(
+										MAX_RECALL_LIMIT,
+										Math.floor(
+											args.limit ?? DEFAULT_RECALL_LIMIT,
 										),
 									),
-								}),
-								readStore(options.storePathAbs),
-							]);
-							const sessionDigest = selectLatestSessionDigest(
-								all.map((note) => ({
-									title: note.title,
-									body: note.body,
-									createdAt: note.createdAt,
-								})),
-							);
+								),
+							});
+							const sessionDigest =
+								selectLatestSessionDigestForRecall(
+									all.map((note) => ({
+										title: note.title,
+										body: note.body,
+										createdAt: note.createdAt,
+									})),
+								);
+							recordSessionDigestReuse(sessionDigest);
 							return toolJson({
 								notes,
 								...(sessionDigest === null
@@ -295,8 +296,7 @@ export const buildMemoryToolRegistrations = (
 				server.registerTool(
 					`${prefix}_list`,
 					{
-						description:
-							'List durable notes as a cheap index {id,title,tags}, newest first. Paginated: `limit` (default 50, max 200) + `offset`. Returns {notes,total,offset,nextOffset}. Read a body with memory_recall only when the index suggests the note is relevant.',
+						description: `List durable notes as a cheap index {id,title,tags}, newest first. Paginated: \`limit\` (default ${DEFAULT_LIST_LIMIT}, max ${MAX_LIST_LIMIT}) + \`offset\`. Returns {notes,total,offset,nextOffset}. Read a body with memory_recall only when the index suggests the note is relevant.`,
 						inputSchema: z.object({
 							limit: z.number().optional(),
 							offset: z.number().optional(),
@@ -312,18 +312,23 @@ export const buildMemoryToolRegistrations = (
 						limit?: number | undefined;
 						offset?: number | undefined;
 					}) =>
-						guardCorrupt(async () => {
+						guardCorruptStore(async () => {
 							const all = (await readStore(options.storePathAbs))
 								.slice()
 								.sort((a, b) =>
 									b.updatedAt.localeCompare(a.updatedAt),
 								);
 							const limit = Math.max(
-								1,
-								Math.min(200, Math.floor(args.limit ?? 50)),
+								MIN_PAGE_LIMIT,
+								Math.min(
+									MAX_LIST_LIMIT,
+									Math.floor(
+										args.limit ?? DEFAULT_LIST_LIMIT,
+									),
+								),
 							);
 							const offset = Math.max(
-								0,
+								MIN_OFFSET,
 								Math.floor(args.offset ?? 0),
 							);
 							const page = all.slice(offset, offset + limit);
@@ -361,7 +366,7 @@ export const buildMemoryToolRegistrations = (
 						}),
 					},
 					async (args: { id: string }) =>
-						guardCorrupt(async () => {
+						guardCorruptStore(async () => {
 							const removed = await removeNote(
 								options.storePathAbs,
 								args.id,
@@ -401,7 +406,7 @@ export const buildMemoryToolRegistrations = (
 						format?: 'json' | 'ndjson' | undefined;
 						includeExpired?: boolean | undefined;
 					}) =>
-						guardCorrupt(async () => {
+						guardCorruptStore(async () => {
 							const format = args.format ?? 'json';
 							const { payload, count } = await exportNotes(
 								options.storePathAbs,
@@ -456,13 +461,13 @@ export const buildMemoryToolRegistrations = (
 						mode?: 'replace' | 'merge' | undefined;
 						conflict?: 'overwrite' | 'skip' | 'merge' | undefined;
 					}) => {
-						if (args.payload.length > 5_000_000) {
+						if (args.payload.length > MAX_IMPORT_PAYLOAD_BYTES) {
 							return toolError(
 								'payload too large (max 5MB)',
 								'Split the import into smaller batches.',
 							);
 						}
-						return guardCorrupt(async () => {
+						return guardCorruptStore(async () => {
 							try {
 								// a00083 F10: forward the configured maxNotes
 								// so a single import can't blow past the

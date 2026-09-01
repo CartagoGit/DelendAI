@@ -17,6 +17,24 @@
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
 			"recordedAt": "2026-07-26T15:40:35.023Z"
+		},
+		{
+			"hash": "8199bd1d",
+			"proposals": [
+				"docs/mcp-vertex/proposals/done/fixes/x00153-fix-logs-agent-lock-tail-session-state.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-08-24T23:44:46.361Z"
+		},
+		{
+			"hash": "8199bd1d",
+			"proposals": [
+				"docs/mcp-vertex/proposals/done/audits/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-08-24T23:44:46.361Z"
 		}
 	]
 }

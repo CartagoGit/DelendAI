@@ -33,7 +33,7 @@ import { buildOrchestratorRunnerToolRegistrations } from './lib/tools';
 
 export default definePlugin({
 	name: 'orchestrator-runner',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Healthchecks installed model providers, scores them against a task, and advises which provider to route to. Headless (no spend). Requires the usage-tracking plugin.',
 	// CRITICAL I15 (layer 1, authoritative): the loader refuses the whole

@@ -20,7 +20,29 @@
 			"@mcp-vertex/core/public": [
 				"../../packages/core/src/public/index.ts"
 			],
-			"@mcp-vertex/core/*": ["../../packages/core/src/*"]
+			"@mcp-vertex/core/*": ["../../packages/core/src/*"],
+			"@mcp-vertex/proposals": ["../../plugins/proposals/src/index.ts"],
+			"@mcp-vertex/proposals/public": [
+				"../../plugins/proposals/src/public/index.ts"
+			],
+			"@mcp-vertex/rules": ["../../plugins/rules/src/index.ts"],
+			"@mcp-vertex/memory": ["../../plugins/memory/src/index.ts"],
+			"@mcp-vertex/git": ["../../plugins/git/src/index.ts"],
+			"@mcp-vertex/quality": ["../../plugins/quality/src/index.ts"],
+			"@mcp-vertex/search": ["../../plugins/search/src/index.ts"],
+			"@mcp-vertex/notification": [
+				"../../plugins/notification/src/index.ts"
+			],
+			"@mcp-vertex/status-marker": [
+				"../../plugins/status-marker/src/index.ts"
+			],
+			"@mcp-vertex/test-convention": [
+				"../../plugins/test-convention/src/index.ts"
+			],
+			"@mcp-vertex/audit": ["../../plugins/audit/src/index.ts"],
+			"@mcp-vertex/docs": ["../../plugins/docs/src/index.ts"],
+			"@mcp-vertex/deps": ["../../plugins/deps/src/index.ts"],
+			"@mcp-vertex/logs": ["../../plugins/logs/src/index.ts"]
 		}
 	}
 }

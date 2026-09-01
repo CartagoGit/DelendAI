@@ -213,7 +213,7 @@ declared settings in the editor.
 
 ### S4 — VS Code Configuration Center host and project adapters
 - **Status**: done
-- **Files**: `extensions/vscode/src/commands/open-configuration-center.ts` (command + webview host in one module, not a separate `views/` file), `extensions/vscode/src/contracts/interfaces/configuration-center-message.interface.ts`, `extensions/vscode/src/contracts/constants/configuration-center-message-schema.constant.ts`, `extensions/vscode/src/i18n/configuration-center.strings.ts`, `extensions/vscode/package.json`
+- **Files**: `extensions/vscode/src/commands/open-configuration-center.ts` (command + webview host in one module, not a separate views/ file), `extensions/vscode/src/contracts/interfaces/configuration-center-message.interface.ts`, `extensions/vscode/src/contracts/constants/configuration-center-message-schema.constant.ts`, `extensions/vscode/src/i18n/configuration-center.strings.ts`, `extensions/vscode/package.json`
 - **DependsOn**: [S3]
 - **Gate**: type
 - **Progress (2026-07-13)**:
@@ -306,7 +306,7 @@ declared settings in the editor.
 
 ### S7 — Configuration Center user and author documentation
 - **Status**: done
-- **Files**: `docs/mcp-vertex/CONFIGURATION-CENTER.md`, `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`, `apps/web/src/data/pages/configuration-center/*.md`, `apps/web/src/data/manifests/pages.json`
+- **Files**: `docs/mcp-vertex/CONFIGURATION-CENTER.md`, `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`, `apps/web/src/data/pages/configuration-center/*.md` (registered in apps/web/src/data/manifests/pages.json, generated + gitignored, not a Files: entry)
 - **DependsOn**: [S6]
 - **Gate**: lint
 - **Evidence**:

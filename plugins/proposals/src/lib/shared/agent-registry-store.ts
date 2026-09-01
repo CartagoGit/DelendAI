@@ -1,9 +1,10 @@
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
 import {
 	CorruptFileError,
 	quarantineCorruptFile,
 	runMigrations,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -23,6 +24,10 @@ export type IAgentAssignment = {
 	adopted: boolean;
 	assigned_at: string;
 	last_seen: string;
+	/** Unique session lease token; absent only on pre-subscription records. */
+	subscription_id?: string;
+	/** Lease expiry; renewed by a matching heartbeat. */
+	lease_until?: string;
 	cooldown_until: string | null;
 	status: IAgentAssignmentStatus;
 	/**
@@ -117,7 +122,11 @@ export const createAgentRegistryStore = (path: string): IAgentRegistryStore => {
 	const read = async (): Promise<IAgentRegistry> => {
 		let raw: string;
 		try {
-			raw = await readFile(path, 'utf8');
+			raw = (
+				await new SafeWorkspaceReader(dirname(path)).readText(
+					basename(path),
+				)
+			).content;
 		} catch (err: unknown) {
 			if ((err as NodeJS.ErrnoException).code === 'ENOENT')
 				return emptyRegistry();
@@ -187,6 +196,8 @@ export const createAgentRegistryStore = (path: string): IAgentRegistryStore => {
 			a.status = 'cooldown';
 			a.cooldown_until = cooldown_until;
 			a.last_seen = new Date().toISOString();
+			delete a.subscription_id;
+			delete a.lease_until;
 			await write(r);
 			return true;
 		});

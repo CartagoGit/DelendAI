@@ -56,6 +56,12 @@ import browserPlugin from '@mcp-vertex/browser';
 import refactorPlugin from '@mcp-vertex/refactor';
 import promptEvalPlugin from '@mcp-vertex/prompt-eval';
 import observabilityPlugin from '@mcp-vertex/observability';
+import completionPlugin from '@mcp-vertex/completion';
+import contextForChangePlugin from '@mcp-vertex/context-for-change';
+import impactAnalysisPlugin from '@mcp-vertex/impact-analysis';
+import adaptiveOptimizerPlugin from '@mcp-vertex/adaptive-optimizer';
+import projectHealthPlugin from '@mcp-vertex/project-health';
+import qualityPolicyPlugin from '@mcp-vertex/quality-policy';
 
 import {
 	buildPackageModules,
@@ -93,11 +99,20 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-refactor': refactorPlugin,
 	'mcp-prompt-eval': promptEvalPlugin,
 	'mcp-observability': observabilityPlugin,
+	'mcp-completion': completionPlugin,
+	'mcp-context-for-change': contextForChangePlugin,
+	'mcp-impact-analysis': impactAnalysisPlugin,
+	'mcp-adaptive-optimizer': adaptiveOptimizerPlugin,
+	'mcp-project-health': projectHealthPlugin,
+	'mcp-quality-policy': qualityPolicyPlugin,
 };
 
-const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
+const PLUGIN_SPECIFIER_ENTRIES = Object.entries(PLUGIN_SPECIFIERS).sort(
+	(left, right) => right[0].length - left[0].length,
+);
 
+const PLUGIN_LIST =
+	'proposals,rules,memory,git,quality,search,notification,completion,context-for-change,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,impact-analysis,adaptive-optimizer,project-health,quality-policy,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability,agent-orchestrator';
 /**
  * Assemble the reference server with every plugin and harvest each
  * tool's output JSON Schema. Closes the server before returning so no
@@ -106,12 +121,16 @@ const PLUGIN_LIST =
 export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 	const harvestWorkspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-types-'));
 	const args = parseCliArgs(
-		[`--plugins=${PLUGIN_LIST}`, `--workspace=${harvestWorkspace}`],
+		[
+			`--plugins=${PLUGIN_LIST}`,
+			`--workspace=${harvestWorkspace}`,
+			'--surface=native',
+		],
 		REPO_ROOT,
 	);
 	const { config } = await assembleCliConfig(args, {
 		import: async (specifier: string) => {
-			const hit = Object.entries(PLUGIN_SPECIFIERS).find(([key]) =>
+			const hit = PLUGIN_SPECIFIER_ENTRIES.find(([key]) =>
 				specifier.includes(key),
 			);
 			return { default: hit ? hit[1] : undefined };

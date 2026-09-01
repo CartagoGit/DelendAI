@@ -1,7 +1,18 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
-import { mkdir, open, readFile, rm, stat, utimes } from 'node:fs/promises';
+import {
+	mkdir,
+	open,
+	readFile,
+	rename,
+	rm,
+	stat,
+	writeFile,
+} from 'node:fs/promises';
 import { dirname } from 'node:path';
+
+import type { IMutexMetricsCollector } from '../contracts/interfaces/mutex-metrics.interface';
+import { getNoopMutexMetricsCollector } from './mutex-metrics.helper';
 
 /**
  * Reentrance tracker: tracks the set of lock paths currently held by this
@@ -73,7 +84,45 @@ export interface IFileMutexOptions {
 	 * of this option, so the deadlock-avoidance property is preserved either way.
 	 */
 	readonly onContention?: 'steal' | 'fail' | 'wait';
+	/** Optional aggregate-only collector for contention metrics. */
+	readonly metrics?: IMutexMetricsCollector;
 }
+
+interface IObservedLockLease {
+	readonly acquiredAt: number;
+	readonly generation: number;
+	readonly heartbeatAt: number;
+	readonly mtimeMs: number;
+	readonly token: string;
+}
+
+interface IWithFileMutexTestHooks {
+	afterObserveStale?(lease: IObservedLockLease): Promise<void> | void;
+	afterHeartbeat?(lease: IObservedLockLease): Promise<void> | void;
+	afterReclaimRename?(context: {
+		readonly reclaimPath: string;
+		readonly observedLease: IObservedLockLease;
+	}): Promise<void> | void;
+}
+
+interface ILockLeasePayload {
+	readonly acquiredAt: number;
+	readonly generation: number;
+	readonly heartbeatAt: number;
+	readonly token: string;
+}
+
+let withFileMutexTestHooks: IWithFileMutexTestHooks | undefined;
+
+export const __setWithFileMutexTestHooks = (
+	hooks: IWithFileMutexTestHooks | undefined,
+): void => {
+	withFileMutexTestHooks = hooks;
+};
+
+export const __resetWithFileMutexTestHooks = (): void => {
+	withFileMutexTestHooks = undefined;
+};
 
 /** Thrown by `withFileMutex` under `onContention: 'fail'` when a live holder
  * keeps the lock past `timeoutMs`. Lets a caller back off instead of stealing. */
@@ -90,6 +139,179 @@ export class LockContentionError extends Error {
 const sleep = (ms: number): Promise<void> =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
+const RECLAIM_GRACE_MS = 50;
+
+const isLockLeasePayload = (value: unknown): value is ILockLeasePayload => {
+	if (typeof value !== 'object' || value === null) {
+		return false;
+	}
+	const candidate = value as Record<string, unknown>;
+	return (
+		typeof candidate.token === 'string' &&
+		typeof candidate.acquiredAt === 'number' &&
+		Number.isFinite(candidate.acquiredAt) &&
+		typeof candidate.heartbeatAt === 'number' &&
+		Number.isFinite(candidate.heartbeatAt) &&
+		typeof candidate.generation === 'number' &&
+		Number.isInteger(candidate.generation) &&
+		candidate.generation >= 0
+	);
+};
+
+const createLeasePayload = (
+	token: string,
+	nowMs: number,
+	previous?: IObservedLockLease,
+): ILockLeasePayload => ({
+	acquiredAt: previous?.acquiredAt ?? nowMs,
+	generation: previous?.generation ?? 0,
+	heartbeatAt: nowMs,
+	token,
+});
+
+const serializeLeasePayload = (lease: ILockLeasePayload): string =>
+	JSON.stringify(lease);
+
+const parseObservedLockLease = (
+	raw: string,
+	mtimeMs: number,
+): IObservedLockLease => {
+	try {
+		const parsed = JSON.parse(raw) as unknown;
+		if (isLockLeasePayload(parsed)) {
+			return {
+				acquiredAt: parsed.acquiredAt,
+				generation: parsed.generation,
+				heartbeatAt: parsed.heartbeatAt,
+				mtimeMs,
+				token: parsed.token,
+			};
+		}
+	} catch {
+		// Legacy sidecars and transient partial writes fall back to the
+		// historical token + mtime semantics.
+	}
+
+	return {
+		acquiredAt: mtimeMs,
+		generation: 0,
+		heartbeatAt: mtimeMs,
+		mtimeMs,
+		token: raw,
+	};
+};
+
+const isSameLeaseObservation = (
+	left: IObservedLockLease,
+	right: IObservedLockLease,
+): boolean =>
+	left.token === right.token &&
+	left.generation === right.generation &&
+	left.heartbeatAt === right.heartbeatAt;
+
+const isLeaseStale = (
+	lease: IObservedLockLease,
+	nowMs: number,
+	staleMs: number,
+): boolean => nowMs - lease.heartbeatAt > staleMs;
+
+const writeLeaseToHandle = async (
+	handle: Awaited<ReturnType<typeof open>>,
+	lease: ILockLeasePayload,
+): Promise<void> => {
+	await handle.truncate(0);
+	await handle.write(serializeLeasePayload(lease), 0, 'utf8');
+};
+
+const observeLockLease = async (
+	path: string,
+): Promise<IObservedLockLease | undefined> => {
+	try {
+		const [contents, info] = await Promise.all([
+			readFile(path, 'utf8'),
+			stat(path),
+		]);
+		return parseObservedLockLease(contents, info.mtimeMs);
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+			return undefined;
+		}
+		throw error;
+	}
+};
+
+const removeIfOwned = async (
+	path: string,
+	expectedToken: string,
+): Promise<void> => {
+	try {
+		const current = await observeLockLease(path);
+		if (current?.token === expectedToken) {
+			await rm(path, { force: true });
+		}
+	} catch {
+		return;
+	}
+};
+
+const refreshLeaseHeartbeat = async (
+	lockPath: string,
+	token: string,
+): Promise<void> => {
+	let handle: Awaited<ReturnType<typeof open>> | undefined;
+	try {
+		handle = await open(lockPath, 'r+');
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+			return;
+		}
+		throw error;
+	}
+
+	try {
+		const [contents, info] = await Promise.all([
+			handle.readFile({ encoding: 'utf8' }),
+			handle.stat(),
+		]);
+		const current = parseObservedLockLease(contents, info.mtimeMs);
+		if (current.token !== token) {
+			return;
+		}
+		const nextLease: ILockLeasePayload = {
+			acquiredAt: current.acquiredAt,
+			generation: current.generation + 1,
+			heartbeatAt: Date.now(),
+			token,
+		};
+		await writeLeaseToHandle(handle, nextLease);
+		await withFileMutexTestHooks?.afterHeartbeat?.({
+			...nextLease,
+			mtimeMs: nextLease.heartbeatAt,
+		});
+	} finally {
+		await handle.close();
+	}
+};
+
+const restoreReclaimPath = async (
+	reclaimPath: string,
+	lockPath: string,
+): Promise<void> => {
+	try {
+		await rename(reclaimPath, lockPath);
+	} catch (error) {
+		const code = (error as NodeJS.ErrnoException).code;
+		if (code === 'ENOENT') {
+			return;
+		}
+		if (code === 'EEXIST') {
+			await rm(reclaimPath, { force: true }).catch(() => undefined);
+			return;
+		}
+		throw error;
+	}
+};
+
 export const withFileMutex = async <T>(
 	targetPath: string,
 	fn: () => Promise<T>,
@@ -101,7 +323,12 @@ export const withFileMutex = async <T>(
 	const pollMs = options.pollMs ?? 25;
 	const heartbeatMs =
 		options.heartbeatMs ?? Math.max(50, Math.floor(staleMs / 3));
+	const metrics = options.metrics ?? getNoopMutexMetricsCollector();
 	const lockPath = `${targetPath}.mutex`;
+	const reclaimGraceMs = Math.max(
+		pollMs,
+		Math.min(RECLAIM_GRACE_MS, staleMs),
+	);
 	// Unique per acquisition: identifies *this* holder so release never
 	// deletes a lock that was stolen and is now owned by someone else.
 	const token = `${process.pid}\n${Date.now()}\n${randomUUID()}`;
@@ -110,7 +337,7 @@ export const withFileMutex = async <T>(
 	// filesystem mutex entirely. The outer holder still owns the critical
 	// section, so nested calls are safe.
 	const held = lockStack.getStore();
-	if (held !== undefined && held.has(lockPath)) {
+	if (held?.has(lockPath) === true) {
 		return await fn();
 	}
 
@@ -121,24 +348,150 @@ export const withFileMutex = async <T>(
 
 	const deadline = Date.now() + timeoutMs;
 	let acquired = false;
+	let contentionObserved = false;
+	let waitStartedAt: number | undefined;
 	for (;;) {
 		try {
+			const nowMs = Date.now();
+			const initialLease = createLeasePayload(token, nowMs);
 			const handle = await open(lockPath, 'wx');
 			try {
-				await handle.writeFile(token);
+				await handle.writeFile(serializeLeasePayload(initialLease));
 			} finally {
 				await handle.close();
 			}
 			acquired = true;
+			if (waitStartedAt !== undefined) {
+				metrics.recordWaitMs(Date.now() - waitStartedAt);
+			}
 			break;
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+			if (!contentionObserved) {
+				contentionObserved = true;
+				waitStartedAt = Date.now();
+				metrics.recordContention();
+			}
 			// Held by another writer. Steal it if it looks abandoned.
 			try {
-				const info = await stat(lockPath);
-				if (Date.now() - info.mtimeMs > staleMs) {
-					await rm(lockPath, { force: true });
+				const observedLease = await observeLockLease(lockPath);
+				if (observedLease === undefined) {
 					continue;
+				}
+				if (isLeaseStale(observedLease, Date.now(), staleMs)) {
+					await withFileMutexTestHooks?.afterObserveStale?.(
+						observedLease,
+					);
+					// A stale observation must survive a visible grace/recheck round
+					// before we rename the lock away. That closes the window where a
+					// live holder refreshed after observation and a third contender
+					// could otherwise slip into an empty lock path.
+					const markerPath = `${lockPath}.reclaim-marker.${process.pid}.${randomUUID()}`;
+					await writeFile(
+						markerPath,
+						JSON.stringify({
+							observedAt: Date.now(),
+							observedGeneration: observedLease.generation,
+							observedHeartbeatAt: observedLease.heartbeatAt,
+							observedToken: observedLease.token,
+						}),
+					);
+					try {
+						await sleep(reclaimGraceMs);
+						const recheckedLease = await observeLockLease(lockPath);
+						if (recheckedLease === undefined) {
+							continue;
+						}
+						if (
+							!isLeaseStale(
+								recheckedLease,
+								Date.now(),
+								staleMs,
+							) ||
+							!isSameLeaseObservation(
+								recheckedLease,
+								observedLease,
+							)
+						) {
+							continue;
+						}
+
+						const reclaimPath = `${lockPath}.reclaim.${process.pid}.${randomUUID()}`;
+						await rename(lockPath, reclaimPath);
+						await withFileMutexTestHooks?.afterReclaimRename?.({
+							reclaimPath,
+							observedLease: recheckedLease,
+						});
+						const revalidatedLease =
+							await observeLockLease(reclaimPath);
+						if (
+							revalidatedLease !== undefined &&
+							isSameLeaseObservation(
+								revalidatedLease,
+								recheckedLease,
+							)
+						) {
+							try {
+								const handle = await open(lockPath, 'wx');
+								try {
+									await handle.writeFile(
+										serializeLeasePayload(
+											createLeasePayload(
+												token,
+												Date.now(),
+											),
+										),
+									);
+								} finally {
+									await handle.close();
+								}
+							} catch (guardError) {
+								if (
+									(guardError as NodeJS.ErrnoException)
+										.code !== 'EEXIST'
+								) {
+									throw guardError;
+								}
+								await rm(reclaimPath, { force: true }).catch(
+									() => undefined,
+								);
+								continue;
+							}
+
+							try {
+								await rm(reclaimPath, { force: true }).catch(
+									() => undefined,
+								);
+								metrics.recordStaleReclaim();
+								acquired = true;
+								if (waitStartedAt !== undefined) {
+									metrics.recordWaitMs(
+										Date.now() - waitStartedAt,
+									);
+								}
+								break;
+							} catch (commitError) {
+								await removeIfOwned(lockPath, token);
+								await restoreReclaimPath(reclaimPath, lockPath);
+								throw commitError;
+							}
+						}
+
+						await restoreReclaimPath(reclaimPath, lockPath);
+						continue;
+					} catch (reclaimError) {
+						if (
+							(reclaimError as NodeJS.ErrnoException).code ===
+							'ENOENT'
+						) {
+							continue;
+						}
+						throw reclaimError;
+					} finally {
+						await rm(markerPath, { force: true }).catch(
+							() => undefined,
+						);
+					}
 				}
 			} catch {
 				// The sidecar vanished between open and stat: retry now.
@@ -152,6 +505,10 @@ export const withFileMutex = async <T>(
 				// because the ownership token stops the old holder deleting the
 				// lock we create next, but able to clobber the peer's work.
 				if (onContention === 'fail' || onContention === 'wait') {
+					if (waitStartedAt !== undefined) {
+						metrics.recordWaitMs(Date.now() - waitStartedAt);
+					}
+					metrics.recordFailedAcquisition();
 					throw new LockContentionError(lockPath, timeoutMs);
 				}
 				await rm(lockPath, { force: true }).catch(() => undefined);
@@ -162,9 +519,26 @@ export const withFileMutex = async <T>(
 	}
 
 	// Keep the lock fresh so a slow-but-alive holder is not declared stale.
+	//
+	// The tick must not overlap itself. `refreshLeaseHeartbeat` is a
+	// read-modify-write (open → read generation → write generation + 1), and
+	// a single `open`/`write` round trip routinely outlives `heartbeatMs`
+	// under load. Two overlapping ticks then both read generation G and both
+	// write G + 1, so the generation stops being monotonic — and two
+	// concurrent writes to the same lease file can leave it partially
+	// written, which parses back as an empty token. Both outcomes make a
+	// live holder look stale to a reclaimer, which is precisely how two
+	// holders end up inside the lock at once. Skipping a tick is safe: the
+	// in-flight refresh is already writing a newer heartbeatAt.
+	let heartbeatInFlight = false;
 	const heartbeat = setInterval(() => {
-		const now = new Date();
-		void utimes(lockPath, now, now).catch(() => undefined);
+		if (heartbeatInFlight) return;
+		heartbeatInFlight = true;
+		void refreshLeaseHeartbeat(lockPath, token)
+			.catch(() => undefined)
+			.finally(() => {
+				heartbeatInFlight = false;
+			});
 	}, heartbeatMs);
 	heartbeat.unref?.();
 
@@ -184,8 +558,10 @@ export const withFileMutex = async <T>(
 				// Remove the lock only if it is still ours. If a stealer replaced
 				// it, deleting it would unprotect the new holder.
 				try {
-					const current = await readFile(lockPath, 'utf8');
-					if (current === token) await rm(lockPath, { force: true });
+					const current = await observeLockLease(lockPath);
+					if (current?.token === token) {
+						await rm(lockPath, { force: true });
+					}
 				} catch (releaseError) {
 					// f00154 S2 audit: only ENOENT (file gone — stolen and
 					// released by another holder) is benign. Other errors

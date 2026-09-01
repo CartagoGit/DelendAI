@@ -12,13 +12,19 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface SearchSearchOutput {
+export interface McpVertexSearchSearchOutput {
+	detail?: "compact" | "normal" | "full";
 	query: string;
 	count: number;
 	truncated: boolean;
 	scanned: number;
 	usedRg: boolean;
 	rgFallbackReason?: string;
+	diagnostic?: string;
+	availableProviders: Array<{
+		id: "openai" | "voyage" | "cohere";
+		present: boolean;
+	}>;
 	hits: {
 		file: string;
 		line: number;
@@ -30,5 +36,5 @@ export interface SearchSearchOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface SearchToolOutputs {
-	"search_search": SearchSearchOutput;
+	"mcp-vertex_search_search": McpVertexSearchSearchOutput;
 }

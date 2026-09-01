@@ -117,5 +117,11 @@ export const configurationCenterScript = (): string => `
     }
   });
   markDirty();
+  // Scroll to a plugin deep-linked via ?pluginId or via the
+  // config-plugin-<id> id present in the DOM. Keeps the
+  // right-click "Configure plugin" UX anchored instead of forcing
+  // the user to scroll through the whole grid.
+  var deepLink = root.querySelector('.mcpv-config__card--highlight');
+  if (deepLink) deepLink.scrollIntoView({ behavior: 'smooth', block: 'start' });
 })();
 `;

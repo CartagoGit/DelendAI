@@ -8,8 +8,10 @@ import {
 	runIngestIssue,
 	type IIngestIssueToolOptions,
 } from '../../../../src/lib/tools/ingest-issue.tool';
-import type { IGithubClient } from '../../../../src/lib/tools/list-issues.tool';
-import type { IFetchIssueResult } from '../../../../src/lib/github-client';
+import type {
+	IFetchIssueResult,
+	IGithubClient,
+} from '../../../../src/lib/contracts';
 
 const buildFetchResult = (
 	number: number,
@@ -50,6 +52,13 @@ describe('issues_ingest', async () => {
 				return buildFetchResult(number);
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IIngestIssueToolOptions = {
 			namespacePrefix: 'issues',
@@ -82,6 +91,13 @@ describe('issues_ingest', async () => {
 				return buildFetchResult(number);
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IIngestIssueToolOptions = {
 			namespacePrefix: 'issues',
@@ -114,6 +130,13 @@ describe('issues_ingest', async () => {
 				});
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IIngestIssueToolOptions = {
 			namespacePrefix: 'issues',
@@ -138,6 +161,13 @@ describe('issues_ingest', async () => {
 				throw new Error('issue not found');
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IIngestIssueToolOptions = {
 			namespacePrefix: 'issues',

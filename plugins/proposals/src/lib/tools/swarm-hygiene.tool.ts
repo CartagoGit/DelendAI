@@ -1,11 +1,19 @@
-import { execFile } from 'node:child_process';
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
-import type { IGitRunner, IGitRunResult } from '../shared/git-runner';
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { runSwarmHygieneEngine } from '../shared/swarm-hygiene-engine';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
+import {
+	resolveBaseBranchAndStaleMinutes,
+	toolJsonWithErrorFlag,
+} from '../shared/branch-tool-helpers';
+import {
+	optionalBoolean,
+	optionalString,
+	optionalUnknown,
+} from '../shared/tool-schema-shortcuts';
 
 export interface ISwarmHygieneToolOptions {
 	readonly namespacePrefix: string;
@@ -32,85 +40,23 @@ export interface ISwarmHygieneToolOptions {
 	readonly staleBehindThreshold?: number;
 }
 
-const RESCUE_CANDIDATE = z.object({
-	branch: z.string(),
-	ahead: z.number().int().nonnegative(),
-	behind: z.number().int().nonnegative(),
-	lastCommitMinutesAgo: z.number().int(),
-	worktreePath: z.string(),
-	diffStat: z.string(),
-	cherryPickHint: z.string(),
-});
-
-const GC_ELIGIBLE = z.object({
-	path: z.string(),
-	branch: z.string(),
-	reason: z.enum([
-		'merged-and-clean',
-		'merged-and-clean-with-force',
-		'behind-only',
-		'no-branch',
-	]),
-	dirtyFiles: z.number().int().nonnegative(),
-	untrackedFiles: z.number().int().nonnegative(),
-	outOfCache: z.boolean(),
-	ageLabel: z.string(),
-});
-
-const OUT_OF_CACHE = z.object({
-	path: z.string(),
-	branch: z.string(),
-	head: z.string(),
-	lastCommitMinutesAgo: z.number().int(),
-});
-
-const PENDING_INTEGRATION = z.object({
-	branch: z.string(),
-	worktreePath: z.string(),
-	sliceId: z.string(),
-	proposalId: z.string(),
-	recordedAt: z.string(),
-});
-
-const NON_CONFORMING_BRANCH = z.object({
-	path: z.string(),
-	branch: z.string(),
-	head: z.string(),
-	reason: z.enum(['non-agent-prefix']),
-});
-
-const STALE_UNMERGED = z.object({
-	path: z.string(),
-	branch: z.string(),
-	ahead: z.number().int().nonnegative(),
-	behind: z.number().int().nonnegative(),
-	lastCommitMinutesAgo: z.number().int(),
-});
-
-const SUMMARY = z.object({
-	rescueCandidatesCount: z.number().int().nonnegative(),
-	gcEligibleCount: z.number().int().nonnegative(),
-	outOfCacheCount: z.number().int().nonnegative(),
-	pendingIntegrationCount: z.number().int().nonnegative(),
-	nonConformingBranchesCount: z.number().int().nonnegative(),
-	staleUnmergedCount: z.number().int().nonnegative(),
-});
-
-const SWARM_HYGIENE_OUTPUT_SCHEMA = z.object({
-	ok: z.boolean(),
-	reason: z.string().optional(),
-	baseBranch: z.string().optional(),
-	generatedAt: z.string().optional(),
-	rescueCandidates: z.array(RESCUE_CANDIDATE).optional(),
-	gcEligible: z.array(GC_ELIGIBLE).optional(),
-	outOfCache: z.array(OUT_OF_CACHE).optional(),
-	mainCheckoutBranch: z.string().optional(),
-	mainCheckoutDrift: z.boolean().optional(),
-	pendingIntegration: z.array(PENDING_INTEGRATION).optional(),
-	nonConformingBranches: z.array(NON_CONFORMING_BRANCH).optional(),
-	staleUnmerged: z.array(STALE_UNMERGED).optional(),
-	summary: SUMMARY.optional(),
-});
+const SWARM_HYGIENE_OUTPUT_SCHEMA = z
+	.object({
+		ok: z.boolean(),
+		reason: optionalString(),
+		baseBranch: optionalString(),
+		generatedAt: optionalString(),
+		rescueCandidates: optionalUnknown(),
+		gcEligible: optionalUnknown(),
+		outOfCache: optionalUnknown(),
+		mainCheckoutBranch: optionalString(),
+		mainCheckoutDrift: optionalBoolean(),
+		pendingIntegration: optionalUnknown(),
+		nonConformingBranches: optionalUnknown(),
+		staleUnmerged: optionalUnknown(),
+		summary: optionalUnknown(),
+	})
+	.passthrough();
 
 /**
  * Read-only swarm hygiene snapshot. Composes three queries the
@@ -164,18 +110,12 @@ export const buildSwarmHygieneRegistration = (
 					const engineOptions = {
 						run:
 							options.run ??
-							createDefaultRunner(options.workspaceRoot),
+							createGitRunner(options.workspaceRoot),
 						workspaceRoot: options.workspaceRoot,
-						...(args.baseBranch !== undefined
-							? { baseBranch: args.baseBranch }
-							: options.defaultBaseBranch !== undefined
-								? { baseBranch: options.defaultBaseBranch }
-								: {}),
-						...(args.staleMinutes !== undefined
-							? { staleMinutes: args.staleMinutes }
-							: options.defaultStaleMinutes !== undefined
-								? { staleMinutes: options.defaultStaleMinutes }
-								: {}),
+						...resolveBaseBranchAndStaleMinutes(args, {
+							baseBranch: options.defaultBaseBranch,
+							staleMinutes: options.defaultStaleMinutes,
+						}),
 						...(args.force !== undefined
 							? { force: args.force }
 							: {}),
@@ -208,51 +148,9 @@ export const buildSwarmHygieneRegistration = (
 							: {}),
 					};
 					const result = await runSwarmHygieneEngine(engineOptions);
-					return {
-						content: [
-							{
-								type: 'text' as const,
-								text: JSON.stringify(result),
-							},
-						],
-						structuredContent: result as unknown as Record<
-							string,
-							unknown
-						>,
-						...(result.ok ? {} : { isError: true }),
-					};
+					return toolJsonWithErrorFlag(result);
 				},
 			);
 		},
 	};
 };
-
-const createDefaultRunner =
-	(cwd: string): IGitRunner =>
-	(args) =>
-		new Promise<IGitRunResult>((resolve) => {
-			execFile(
-				'git',
-				[...args],
-				{
-					cwd,
-					encoding: 'utf8',
-					timeout: 15_000,
-					maxBuffer: 8 * 1024 * 1024,
-				},
-				(error, stdout, stderr) => {
-					if (!error) {
-						resolve({ ok: true, output: stdout });
-						return;
-					}
-					resolve({
-						ok: false,
-						output: '',
-						reason:
-							(stderr || error.message || 'git command failed')
-								.trim()
-								.split('\n')[0] ?? 'git command failed',
-					});
-				},
-			);
-		});

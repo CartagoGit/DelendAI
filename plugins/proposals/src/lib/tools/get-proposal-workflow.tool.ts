@@ -18,8 +18,7 @@ export const buildGetProposalWorkflowRegistration = (
 	options: IGetProposalWorkflowToolOptions,
 ): IToolRegistration => ({
 	id: 'get_proposal_workflow',
-	summary:
-		'Returns families, locations, naming, rules and the proposal template (as JSON).',
+	summary: 'Read proposal workflow conventions and template.',
 	tags: ['orientation', 'lazy'],
 	register: async (server) => {
 		server.registerTool(
@@ -42,7 +41,7 @@ export const buildGetProposalWorkflowRegistration = (
 					template: z.string(),
 				}),
 				description:
-					'Returns the proposal workflow as structured JSON: families (prefix, kind, description and cascade priority — 12 active kinds + the legacy `p` alias), file locations, naming, rules and the canonical markdown template. Read-only.',
+					'Read proposal workflow conventions, rules, and template.',
 			},
 			async () => {
 				const workflow = buildProposalWorkflow(

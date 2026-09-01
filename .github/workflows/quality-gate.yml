@@ -1,0 +1,45 @@
+# quality-gate.yml — c00132 (AUD-P0-002).
+#
+# Required status check on `main` (see `.github/branch-protection.yml`). Runs
+# the integrated quality gate so a release PR cannot merge with regressions.
+#
+# Triggers:
+#   pull_request to main.
+#   merge_group (queue).
+#   workflow_dispatch (manual reruns).
+
+name: quality-gate
+
+on:
+    pull_request:
+        branches: [main]
+    merge_group:
+    workflow_dispatch:
+
+concurrency:
+    group: quality-gate-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+jobs:
+    quality-gate:
+        name: quality-gate
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            # The single source of truth for what "quality gate" means.
+            # Adding a step here means it is now required to merge.
+            - name: Run integrated quality gate
+              run: bun run quality:gate:ci

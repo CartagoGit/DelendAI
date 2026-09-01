@@ -1,19 +1,17 @@
 import { randomUUID } from 'node:crypto';
-import { readFile, rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import {
 	probeTool,
 	realProbeDeps,
+	SafeWorkspaceReader,
 	resolveExecPath,
 	runExternalTool,
 	writeFileAtomic,
 	type IExternalTool,
 	type IExternalToolRun,
 	type IMcpPluginContext,
-	type IProbeDeps,
-	type IRunExternalToolInput,
-	type IFinding,
 	redactSecrets,
 } from '@mcp-vertex/core/public';
 
@@ -79,6 +77,9 @@ const IGNORE_SEGMENTS = [
 	'/build/',
 	'/.cache/',
 ];
+const DEFAULT_EXEC_TIMEOUT_MS = 30_000;
+const MAX_EXEC_OUTPUT_BYTES = 4 * 1024 * 1024;
+const MIN_REDACTABLE_SECRET_LENGTH = 12;
 
 export class MissingCliError extends Error {
 	readonly cli: 'semgrep' | 'ast-grep';
@@ -198,10 +199,13 @@ const runCli = async (
 		tool,
 		args,
 		cwd: input.cwd,
-		timeoutMs: input.timeoutMs ?? 30_000,
-		maxOutputBytes: 4 * 1024 * 1024,
+		timeoutMs: input.timeoutMs ?? DEFAULT_EXEC_TIMEOUT_MS,
+		maxOutputBytes: MAX_EXEC_OUTPUT_BYTES,
 		redact: [
-			/\b(?:api[_-]?key|secret|token|password)\b\s*[:=]\s*['"][A-Za-z0-9_\-/+=]{12,}['"]/giu,
+			new RegExp(
+				`\\b(?:api[_-]?key|secret|token|password)\\b\\s*[:=]\\s*['"][A-Za-z0-9_\\-/+=]{${MIN_REDACTABLE_SECRET_LENGTH},}['"]`,
+				'giu',
+			),
 		],
 	});
 
@@ -327,7 +331,11 @@ const runInlineRegex = async (
 		input.readTextFile ??
 		(async (absolutePath: string) => {
 			try {
-				return await readFile(absolutePath, 'utf8');
+				const reader = new SafeWorkspaceReader(input.cwd);
+				const relativePath = absolutePath.startsWith(`${input.cwd}/`)
+					? absolutePath.slice(input.cwd.length + 1)
+					: absolutePath;
+				return (await reader.readText(relativePath)).content;
 			} catch {
 				return undefined;
 			}

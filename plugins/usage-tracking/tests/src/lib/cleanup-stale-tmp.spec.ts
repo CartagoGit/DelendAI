@@ -103,7 +103,7 @@ describe('cleanupStaleTmpFiles (a00072 S7.b)', () => {
 		writeFileSync(tmpPath, '', 'utf8');
 		// File mtime is "now". Inject a future-time clock so the file
 		// is exactly 5 minutes old relative to the fake clock.
-		const now = 0;
+		const _now = 0;
 		await backdate(tmpPath, 0); // mtime = (real now - 0) = now-ish
 		const fakeNowAt = Date.now();
 		const result = await cleanupStaleTmpFiles({

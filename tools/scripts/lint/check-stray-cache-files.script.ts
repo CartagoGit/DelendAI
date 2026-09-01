@@ -35,6 +35,7 @@
  *                         only, full context; see plugins/logs)
  *       memory/          (agent memory store)
  *       usage-tracking/  (accrued spend/usage history)
+ *     evidence/       (typed runtime evidence, partitioned by evidence type)
  *     <pluginCacheDir>/exec/ (f00080 ephemeral exec paths per plugin)
  *     .worktrees/<agent>/    (per-agent git worktrees, NOT code)
  *
@@ -56,10 +57,12 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	'bootstrap',
 	'drift',
 	'exec',
+	'evidence',
 	'handoff',
 	'logs-errors',
 	'proposals',
 	'rules',
+	'runtime',
 	'skills',
 	'state',
 	'verify',
@@ -81,6 +84,7 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
  */
 const SANCTIONED_SUBPATH_PREFIXES: readonly string[] = [
 	'verify/',
+	'evidence/',
 	'handoff/',
 	'results/logs/',
 	'results/logs-errors/',
@@ -386,6 +390,11 @@ const SANCTIONED_ROOT_FILES: ReadonlySet<string> = new Set([
 	// Dotfile config — auto-discovered by their respective tools.
 	'.gitignore',
 	'.mcp.json',
+	// Tracked placeholder file — no extension on purpose. Originally a
+	// scratch sentinel for the proposals registry that the workspace
+	// tools leave in place; tracked in git (empty blob) so `git status`
+	// stays clean across worktrees that share `.cache/`.
+	'proposals',
 ]);
 
 /**

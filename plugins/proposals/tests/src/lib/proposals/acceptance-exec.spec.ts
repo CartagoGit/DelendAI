@@ -7,7 +7,7 @@
  * they run under vitest without a Bun global (unlike the integration spec).
  */
 
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -18,6 +18,28 @@ import {
 	tokenizeArgv,
 	commandNeedsShell,
 } from '@mcp-vertex/proposals/lib/proposals/proposal-acceptance';
+
+const itUnixOnly = process.platform === 'win32' ? it.skip : it;
+const trackedPids = new Set<number>();
+const nodeEvalCommand = (source: string): string =>
+	`${JSON.stringify(process.execPath)} -e ${JSON.stringify(source)}`;
+
+const isPidAlive = (pid: number): boolean => {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch (error) {
+		return (error as NodeJS.ErrnoException).code !== 'ESRCH';
+	}
+};
+
+const waitForPidExit = async (pid: number): Promise<boolean> => {
+	for (let attempt = 0; attempt < 80; attempt += 1) {
+		if (!isPidAlive(pid)) return true;
+		await new Promise((resolve) => setTimeout(resolve, 25));
+	}
+	return !isPidAlive(pid);
+};
 
 describe('tokenizeArgv (M8 quote-aware parser)', async () => {
 	it('keeps a double-quoted argument with spaces as one token', async () => {
@@ -52,7 +74,17 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'accept-exec-'));
 	});
-	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+	afterEach(() => {
+		rmSync(dir, { recursive: true, force: true });
+		for (const pid of trackedPids) {
+			try {
+				process.kill(pid, 'SIGKILL');
+			} catch {
+				// best-effort cleanup for a failed assertion path
+			}
+		}
+		trackedPids.clear();
+	});
 
 	it('runs the command in the injected cwd', async () => {
 		const marker = dir.split('/').pop()!;
@@ -62,6 +94,46 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 		);
 		expect(res.allPassed).toBe(true);
 		expect(res.results[0]?.actual).toContain(marker);
+	});
+
+	it('spawns with a non-interactive env without losing existing variables', async () => {
+		const existingKey = 'ACCEPTANCE_TEST_EXISTING';
+		const previousValue = process.env[existingKey];
+		process.env[existingKey] = 'keep-me';
+		try {
+			const res = await runAcceptanceCriteria([
+				{
+					command: nodeEvalCommand(
+						[
+							'process.stdout.write(JSON.stringify({',
+							'CI: process.env.CI,',
+							'GIT_TERMINAL_PROMPT: process.env.GIT_TERMINAL_PROMPT,',
+							'GCM_INTERACTIVE: process.env.GCM_INTERACTIVE,',
+							'npm_config_yes: process.env.npm_config_yes,',
+							'NPM_CONFIG_YES: process.env.NPM_CONFIG_YES,',
+							'preserved: process.env.ACCEPTANCE_TEST_EXISTING,',
+							'}));',
+						].join(' '),
+					),
+					expect: 'exit0',
+				},
+			]);
+			expect(res.allPassed).toBe(true);
+			const payload = JSON.parse(
+				res.results[0]?.actual ?? '{}',
+			) as Record<string, string>;
+			expect(payload).toMatchObject({
+				CI: '1',
+				GIT_TERMINAL_PROMPT: '0',
+				GCM_INTERACTIVE: 'Never',
+				npm_config_yes: 'true',
+				NPM_CONFIG_YES: 'true',
+				preserved: 'keep-me',
+			});
+		} finally {
+			if (previousValue === undefined) delete process.env[existingKey];
+			else process.env[existingKey] = previousValue;
+		}
 	});
 
 	it('respects quotes: a spaced argument stays a single token', async () => {
@@ -96,8 +168,38 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 		]);
 		expect(res.allPassed).toBe(false);
 		expect(res.results[0]?.reason ?? '').toMatch(/timeout/i);
+		expect(res.results[0]?.reason ?? '').toMatch(/terminated/i);
+		expect(res.results[0]?.failureKind).toBe('timeout');
+		expect(res.results[0]?.recovery).toContain(
+			'retry the command with non-interactive flags or explicit argv',
+		);
 		// It returned because of the kill, not because sleep finished.
 		expect(Date.now() - startedAt).toBeLessThan(3000);
+	});
+
+	it('classifies prompting output as interactive without treating normal output as interactive', async () => {
+		const interactive = await runAcceptanceCriteria([
+			{
+				command: nodeEvalCommand(
+					"process.stderr.write('Enter password: '); process.exit(1);",
+				),
+				expect: 'exit0',
+			},
+		]);
+		expect(interactive.results[0]?.failureKind).toBe('interactive');
+		expect(interactive.results[0]?.recovery).toContain(
+			'retry the command with non-interactive flags or explicit argv',
+		);
+
+		const normal = await runAcceptanceCriteria([
+			{
+				command: nodeEvalCommand(
+					"process.stderr.write('promptly failed without a prompt'); process.exit(1);",
+				),
+				expect: 'exit0',
+			},
+		]);
+		expect(normal.results[0]?.failureKind).toBe('exit');
 	});
 
 	it('kills descendants of a shell pipeline on timeout (no zombie writes)', async () => {
@@ -116,5 +218,75 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 		// Wait past when the descendant WOULD have written the marker.
 		await new Promise((r) => setTimeout(r, 1500));
 		expect(existsSync(marker)).toBe(false);
+	});
+
+	itUnixOnly(
+		'aborts promptly and reaps descendants of a long-lived criterion',
+		async () => {
+			const controller = new AbortController();
+			// The criterion announces its descendant's pid through a file
+			// rather than stdout, because the test has to KNOW the
+			// descendant exists before it aborts. Aborting on a fixed
+			// 100ms wall clock raced the spawn on a loaded machine: the
+			// run was cancelled before the pid was ever written, `actual`
+			// came back empty, and the spec failed on a NaN pid while the
+			// behaviour under test was perfectly fine.
+			const pidFile = join(dir, 'descendant-pid.txt');
+			const script = [
+				"const { spawn } = require('node:child_process');",
+				"const { writeFileSync } = require('node:fs');",
+				"const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });",
+				`writeFileSync(${JSON.stringify(pidFile)}, String(child.pid));`,
+				'process.stdout.write(String(child.pid));',
+				'setInterval(() => {}, 1000);',
+			].join(' ');
+			const pending = runAcceptanceCriteria(
+				[
+					{
+						command: `${process.execPath} -e ${JSON.stringify(script)}`,
+						expect: 'exit0',
+					},
+				],
+				{ signal: controller.signal },
+			);
+			// Wait for the descendant to exist, then abort. Promptness is
+			// measured from the abort, which is what the contract is about.
+			let spawnedPid = Number.NaN;
+			for (let attempt = 0; attempt < 400; attempt += 1) {
+				if (existsSync(pidFile)) {
+					spawnedPid = Number.parseInt(
+						readFileSync(pidFile, 'utf8').trim(),
+						10,
+					);
+					if (Number.isFinite(spawnedPid)) break;
+				}
+				await new Promise((resolve) => setTimeout(resolve, 25));
+			}
+			expect(Number.isFinite(spawnedPid)).toBe(true);
+			trackedPids.add(spawnedPid);
+			const abortedAt = Date.now();
+			controller.abort();
+			const res = await pending;
+			expect(Date.now() - abortedAt).toBeLessThan(3000);
+			expect(res.allPassed).toBe(false);
+			expect(res.results[0]?.aborted).toBe(true);
+			expect(res.results[0]?.timedOut).toBe(false);
+			expect(res.results[0]?.reason ?? '').toMatch(/abort/i);
+			expect(res.results[0]?.failureKind).toBe('aborted');
+			expect(res.results[0]?.recovery).toContain(
+				'close the blocked terminal or child process group before retrying',
+			);
+			expect(await waitForPidExit(spawnedPid)).toBe(true);
+			trackedPids.delete(spawnedPid);
+		},
+	);
+
+	it('keeps successful results backward-compatible for existing consumers', async () => {
+		const res = await runAcceptanceCriteria([
+			{ command: 'printf ok', expect: 'contains:ok' },
+		]);
+		expect(res.allPassed).toBe(true);
+		expect(res.results[0]?.failureKind).toBeUndefined();
+		expect(res.results[0]?.recovery).toBeUndefined();
 	});
 });

@@ -1,0 +1,16 @@
+{
+	"$schema": "https://mcp-vertex.dev/schemas/develop-health.v1.json",
+	"lastVerifiedAt": null,
+	"ciStatus": "red",
+	"protectedBranches": {
+		"main": null,
+		"develop": null
+	},
+	"requiredChecks": ["ci-complete"],
+	"discrepancies": [
+		"develop: branch protection could not be verified with the token in use",
+		"main: branch protection could not be verified with the token in use",
+		"develop: check-run \"ci-complete\" concluded failure"
+	],
+	"note": "Auto-populated by bun tools/scripts/ci/verify-develop-health.script.ts."
+}

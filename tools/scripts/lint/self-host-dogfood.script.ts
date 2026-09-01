@@ -5,8 +5,8 @@
  *   1. the published-package launch `mcpv init` emits for external
  *      consumers (`bunx --package @mcp-vertex/cli mcpv __serve …`), or
  *   2. the repo-local dogfood launch that runs the host from source
- *      (`bun tools/scripts/host/host-server.script.ts --workspace=…`)
- *      — required while `@mcp-vertex/cli` is not published to npm
+ *      (`bun tools/scripts/host/host-server.script.ts --workspace=…`) while
+ *      `@mcp-vertex/cli` is not published to npm
  *      (see commit "fix(launch): workspace mcp.json launches the local
  *      host source, not the unpublished npm package").
  *
@@ -52,6 +52,11 @@ const CONFIGS = [
 const localDogfoodLaunch = (workspace: string): ILaunchShape => ({
 	command: 'bun',
 	args: [HOST_SCRIPT_REL, `--workspace=${workspace}`],
+});
+
+const localDogfoodWatchLaunch = (workspace: string): ILaunchShape => ({
+	command: 'bun',
+	args: ['--watch', HOST_SCRIPT_REL, `--workspace=${workspace}`],
 });
 
 const sameArgs = (actual: unknown, expected: readonly string[]): boolean =>
@@ -101,6 +106,7 @@ export const detectSelfHostDogfoodDrift = async (
 		const accepted: readonly ILaunchShape[] = [
 			buildCanonicalLaunch({ workspace: target.workspace }),
 			localDogfoodLaunch(target.workspace),
+			localDogfoodWatchLaunch(target.workspace),
 		];
 		if (!accepted.some((launch) => matchesLaunch(entry, launch))) {
 			findings.push({

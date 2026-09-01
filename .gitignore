@@ -9,23 +9,40 @@ node_modules/
 
 # Monorepo-wide artifact layout (see AGENTS.md → "Build / dist layout"):
 #   build/<group>/<name>/         — bundler/compiler outputs (typedoc, astrosite, vsce staging…)
-#   dist/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
+#   build/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
 # Per-package dist/ inside packages/*/ and plugins/*/ is intentionally kept
 # tracked — each package.json `main` / `exports` points there, and the
 # publishable surface is what consumers import. Those entries are NOT ignored.
-build/
-dist/
+#
+# Anchored to repo root (`/build/`): an unanchored `build/` also matched
+# `tools/scripts/build/` — a real, wired-in (`package.json#build:stable-manifest`)
+# SOURCE directory, not a build-output one — silently excluding it from git
+# since it was created (f00152). Found via the CI reality-gate investigation
+# in q00005's Track D (x00251/x00252 follow-up); root-cause fixed here rather
+# than baselined away.
+#
+# r00045 S1: the canonical build tree is now `/build/{group}/{name}/{version}/`.
+# Every package and plugin compiles into this single tree; `npm publish` (and
+# any extension like `vsce`) reads its own slice from there. Per-package
+# `dist/` directories are no longer produced — old ones in the repo are
+# gitignored by `/dist/` below and can be wiped with `git clean -fdx dist/`.
+/build/
+/dist/
 
 # Legacy per-package build output name (pre-convention). Safe to remove.
 packages/*/build/
 apps/*/build/
 plugins/*/build/
 
-# Legacy: .vsix artefacts used to be dropped at extensions/vscode/<name>.vsix before
-# the monorepo-wide dist/ convention. Track only the staged
-# dist/extensions/vscode/<version>/<name>.vsix path; treat older top-level .vsix as
-# build artefacts. After the extensions/vscode → extensions/vscode move (f00035),
-# the same rule applies to extensions/*/*.vsix.
+# r00045 S1: every per-package `dist/` is now a legacy artefact (build
+# output is centralised under `/build/`). Keep these entries until the
+# migration completes; they will be removed in a follow-up cleanup.
+packages/*/dist/
+apps/*/dist/
+plugins/*/dist/
+
+# Legacy: .vsix artefacts used to be dropped at extensions/vscode/<name>.vsix.
+# Active VSIX files are now under build/extensions/vscode/<version>/.
 apps/*/*.vsix
 extensions/*/*.vsix
 
@@ -96,7 +113,10 @@ mcp-vertex-session-*.md
 # FAILS if any `.cache` appears outside the root, so a stray per-folder cache is
 # caught instead of silently ignored. Run mcp-vertex tools from the repo root.
 
-# metrics gate run artifacts (the tracked fallback baseline lives in config/)
+# metrics gate run artifacts. The candidate snapshot now lives under
+# `.cache/mcp-vertex/metrics/candidate.json` (covered by the `.cache/` rule);
+# the tracked fallback baseline lives in config/. The root rules below are
+# legacy protection for pre-migration local copies.
 /metrics-candidate.json
 /metrics-baseline.json
 

@@ -14,6 +14,19 @@
  */
 import { execFile } from 'node:child_process';
 
+const ANSI_ESCAPE = String.fromCodePoint(0x1b);
+const ANSI_CSI_PATTERN = new RegExp(
+	`[${ANSI_ESCAPE}\u009b]\\[[0-?]*[ -/]*[@-~]`,
+	'gu',
+);
+const ANSI_OSC_PATTERN = new RegExp(
+	`[${ANSI_ESCAPE}\u009b][\\]()#;?]*(?:${String.fromCodePoint(0x07)}|\\d{1,4}(?:;\\d{0,4})*[\\dA-PR-TZcf-nq-uy=><~])`,
+	'gu',
+);
+
+export const stripAnsi = (value: string): string =>
+	value.replace(ANSI_CSI_PATTERN, '').replace(ANSI_OSC_PATTERN, '');
+
 // The git-runner contract is single-sourced (f00065 slice F). Re-exported here
 // so existing importers of `git-write` keep their import path unchanged.
 export type {
@@ -24,6 +37,14 @@ import type {
 	IGitRunResult,
 	IGitRunner,
 } from '../contracts/interfaces/git-runner.interface';
+export type {
+	IForcePushAuthorizationRecord,
+	IPushAuthorization,
+} from '../contracts/interfaces/force-push-authorization.interface';
+import type {
+	IForcePushAuthorizationRecord,
+	IPushAuthorization,
+} from '../contracts/interfaces/force-push-authorization.interface';
 
 /**
  * Default runner: invoke the real `git` in `cwd` via async `execFile`, so
@@ -31,7 +52,7 @@ import type {
  * throws: failures come back as `{ ok: false, reason }`.
  */
 export const createGitRunner =
-	(cwd: string, timeoutMs = 15_000): IGitRunner =>
+	(cwd: string, timeoutMs = 60_000): IGitRunner =>
 	(args) =>
 		new Promise<IGitRunResult>((resolve) => {
 			execFile(
@@ -59,7 +80,9 @@ export const createGitRunner =
 						reason = `git timed out after ${timeoutMs}ms`;
 					} else {
 						reason =
-							(stderr || err.message || 'git command failed')
+							stripAnsi(
+								stderr || err.message || 'git command failed',
+							)
 								.trim()
 								.split('\n')[0] ?? 'git command failed';
 					}
@@ -132,25 +155,146 @@ export interface IPushOptions {
 	readonly remote?: string;
 	readonly branch?: string;
 	readonly force?: IPushForceMode;
+	/**
+	 * Branches this push refuses to force into unless `authorization` is
+	 * given — see `gitPush`. Core stays project-agnostic: callers MUST
+	 * supply their own resolved list, or pass `[]` explicitly to opt out
+	 * of branch protection for this push.
+	 */
+	readonly protectedBranches: readonly string[];
+	/** See `IPushAuthorization`. Required to force-push (either mode) past the guards in `gitPush`. */
+	readonly authorization?: IPushAuthorization;
 }
+
+const hasAuthorization = (
+	authorization: IPushAuthorization | undefined,
+): authorization is IPushAuthorization =>
+	authorization !== undefined &&
+	authorization.by.trim().length > 0 &&
+	authorization.reason.trim().length > 0;
+
+/**
+ * Resolve a `src:dst` refspec / `refs/heads/`-prefixed branch down to its
+ * bare destination name, so a protected-branch check compares against
+ * what will actually be updated on the remote.
+ */
+const pushDestinationBranch = (ref: string): string => {
+	const colon = ref.indexOf(':');
+	const dst = colon >= 0 ? ref.slice(colon + 1) : ref;
+	return dst.startsWith('refs/heads/')
+		? dst.slice('refs/heads/'.length)
+		: dst;
+};
+
+/** Resolves the branch a force push would actually land on — `options.branch` when given, otherwise the current branch. */
+const resolveForceTargetBranch = async (
+	run: IGitRunner,
+	branch: string | undefined,
+): Promise<string | undefined> => {
+	if (branch !== undefined) return pushDestinationBranch(branch);
+	const head = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+	return head.ok ? head.output.trim() : undefined;
+};
+
+const MAX_RECORDED_FORCE_PUSH_AUTHORIZATIONS = 200;
+const forcePushAuthorizations: IForcePushAuthorizationRecord[] = [];
+
+const recordForcePushAuthorization = (
+	record: IForcePushAuthorizationRecord,
+): void => {
+	forcePushAuthorizations.push(record);
+	if (
+		forcePushAuthorizations.length > MAX_RECORDED_FORCE_PUSH_AUTHORIZATIONS
+	) {
+		forcePushAuthorizations.shift();
+	}
+};
+
+/** Recent authorized force pushes, oldest first. For introspection/tests. */
+export const listForcePushAuthorizations =
+	(): readonly IForcePushAuthorizationRecord[] => [
+		...forcePushAuthorizations,
+	];
+
+/** Test-only: clears the in-memory audit buffer between specs. */
+export const clearForcePushAuthorizationsForTests = (): void => {
+	forcePushAuthorizations.length = 0;
+};
 
 /**
  * `git push [<remote> [<branch>]] [--force-with-lease|--force]`.
+ *
  * `force: 'with-lease'` maps to `--force-with-lease` (the safe option —
- * fails if the remote tip moved since the last fetch); `force: 'true'`
- * maps to plain `--force` and is NEVER the default — a caller must opt
- * in explicitly. `force` omitted/`'false'` pushes without any force flag.
+ * fails if the remote tip moved since the last fetch) and needs no
+ * authorization UNLESS the target is in `protectedBranches`. Plain
+ * `force: 'true'` maps to `--force` and ALWAYS needs `authorization`,
+ * regardless of branch — a caller opting into the unsafe mode is not,
+ * by itself, consent for an irreversible rewrite of shared history.
+ * `force` omitted/`'false'` pushes without any force flag and is
+ * unaffected by either guard.
+ *
+ * A successful authorized force push is recorded via
+ * `listForcePushAuthorizations()` (see above).
  */
 export const gitPush = async (
 	run: IGitRunner,
-	options: IPushOptions = {},
+	options?: IPushOptions,
 ): Promise<IGitRunResult> => {
+	const resolvedOptions: IPushOptions = options ?? { protectedBranches: [] };
+	const force = resolvedOptions.force ?? 'false';
+	if (force === 'false') {
+		const args = ['push'];
+		if (resolvedOptions.remote !== undefined)
+			args.push(resolvedOptions.remote);
+		if (resolvedOptions.branch !== undefined)
+			args.push(resolvedOptions.branch);
+		return run(args);
+	}
+
+	if (force === 'true' && !hasAuthorization(resolvedOptions.authorization)) {
+		return {
+			ok: false,
+			output: '',
+			reason: 'plain --force refused: pass options.authorization { by, reason }, or use force:"with-lease" (fails safely instead of overwriting unseen commits)',
+		};
+	}
+
+	const protectedBranches = resolvedOptions.protectedBranches;
+	let targetBranch: string | undefined;
+	if (protectedBranches.length > 0) {
+		targetBranch = await resolveForceTargetBranch(
+			run,
+			resolvedOptions.branch,
+		);
+		if (
+			targetBranch !== undefined &&
+			protectedBranches.includes(targetBranch) &&
+			!hasAuthorization(resolvedOptions.authorization)
+		) {
+			return {
+				ok: false,
+				output: '',
+				reason: `force push refused: "${targetBranch}" is a protected branch — pass options.authorization { by, reason } to override`,
+			};
+		}
+	}
+
 	const args = ['push'];
-	if (options.remote !== undefined) args.push(options.remote);
-	if (options.branch !== undefined) args.push(options.branch);
-	if (options.force === 'with-lease') args.push('--force-with-lease');
-	else if (options.force === 'true') args.push('--force');
-	return run(args);
+	if (resolvedOptions.remote !== undefined) args.push(resolvedOptions.remote);
+	if (resolvedOptions.branch !== undefined) args.push(resolvedOptions.branch);
+	args.push(force === 'with-lease' ? '--force-with-lease' : '--force');
+
+	const result = await run(args);
+	if (result.ok && hasAuthorization(resolvedOptions.authorization)) {
+		recordForcePushAuthorization({
+			ts: new Date().toISOString(),
+			by: resolvedOptions.authorization.by.trim(),
+			reason: resolvedOptions.authorization.reason.trim(),
+			branch: targetBranch ?? resolvedOptions.branch,
+			forceMode: force,
+		});
+	}
+	return result;
 };
 
 // ---------------------------------------------------------------------------
@@ -176,7 +320,9 @@ export interface ICommitAndPushOptions {
 	 */
 	readonly authorFlag?: string;
 	/** When set, also pushes after a successful commit. */
-	readonly push?: IPushOptions;
+	readonly push?: Omit<IPushOptions, 'protectedBranches'> & {
+		readonly protectedBranches?: readonly string[];
+	};
 	readonly git: IGitRunner;
 }
 
@@ -252,7 +398,10 @@ export const commitAndPush = async (
 		return buildResult(true, false, hash !== undefined ? { hash } : {});
 	}
 
-	const pushResult = await gitPush(run, options.push);
+	const pushResult = await gitPush(run, {
+		protectedBranches: [],
+		...options.push,
+	});
 	if (!pushResult.ok) {
 		const extras: { hash?: string; reason?: string } = {
 			reason: `git push failed: ${pushResult.reason ?? 'unknown'}`,

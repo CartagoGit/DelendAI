@@ -37,7 +37,7 @@ import { buildValidateConfigToolRegistration } from './lib/tools/validate-config
 
 export default definePlugin({
 	name: 'external-mcps',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Compose third-party MCP servers under the host: seed-catalog discovery, config dry-run validation, and lazy subprocess boot behind the ext.<server>.<tool> call proxy; human-acked activation lands in S3.',
 	optionsSchema: OptionsSchema,
@@ -101,55 +101,71 @@ export default definePlugin({
 			return detectedCache;
 		};
 		return {
-			activation: Object.keys(options.servers ?? {})
-				.sort()
-				.map((id) => ({
-					id: `ext.${id}`,
-					origin: 'external' as const,
-					source: 'config' as const,
-					active: options.servers?.[id]?.enabled !== false,
-					// Child tools stay behind one shared `call` proxy, so each
-					// declared server adds zero direct tools to the host prompt.
-					toolCount: 0,
-					configuration: {
-						options: options.servers?.[id] ?? {},
-						optionsSchema: ServerEntrySchema,
-						configExample: options.servers?.[id] ?? {},
-					},
-				})),
-			tools: [
-				buildCatalogToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					detect,
-				}),
-				buildValidateConfigToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-				}),
-				buildDiscoverToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					allowDiscoverySearch: options.allowDiscoverySearch,
-				}),
-				buildSuggestToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					options: ctx.options,
-					detect,
-				}),
-				buildAckToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					pendingAcksPath,
-				}),
-				buildStatusToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					registry,
-				}),
-				buildCallToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					registry,
-					requireHumanAckWhenLlmDecides:
-						options.requireHumanAckWhenLlmDecides,
-					hasRecordedAck: (serverId) => ackStore.isAcked(serverId),
-				}),
-			],
+			// AUD-D05: `registrations` wraps the plugin's usual surface so
+			// this return value is recognised as an `IPluginRuntime` (the
+			// loader's `normalizePluginRuntimeInternal` keys off the
+			// presence of a `registrations` property) — a flat object with a
+			// bare `dispose` alongside `tools`/`activation` would be silently
+			// treated as plain registrations and lose `dispose` exactly like
+			// AUD-E01.c. The servers this plugin boots are third-party MCP
+			// subprocesses with their own sockets/fds; `ExternalServerRegistry`
+			// already knows how to close every one of them (`closeAll`, itself
+			// idempotent) — the only thing missing was a `dispose` for the
+			// host to call it through.
+			registrations: {
+				activation: Object.keys(options.servers ?? {})
+					.sort()
+					.map((id) => ({
+						id: `ext.${id}`,
+						origin: 'external' as const,
+						source: 'config' as const,
+						active: options.servers?.[id]?.enabled !== false,
+						// Child tools stay behind one shared `call` proxy, so each
+						// declared server adds zero direct tools to the host prompt.
+						toolCount: 0,
+						configuration: {
+							options: options.servers?.[id] ?? {},
+							optionsSchema: ServerEntrySchema,
+							configExample: options.servers?.[id] ?? {},
+						},
+					})),
+				tools: [
+					buildCatalogToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						detect,
+					}),
+					buildValidateConfigToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+					}),
+					buildDiscoverToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						allowDiscoverySearch: options.allowDiscoverySearch,
+					}),
+					buildSuggestToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						options: ctx.options,
+						detect,
+					}),
+					buildAckToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						pendingAcksPath,
+					}),
+					buildStatusToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						registry,
+					}),
+					buildCallToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						registry,
+						llmDecidesActivation: options.llmDecidesActivation,
+						requireHumanAckWhenLlmDecides:
+							options.requireHumanAckWhenLlmDecides,
+						hasRecordedAck: (serverId) =>
+							ackStore.isAcked(serverId),
+					}),
+				],
+			},
+			dispose: async () => registry.closeAll(),
 		};
 	},
 });

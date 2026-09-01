@@ -135,6 +135,24 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 			),
 		);
 	}
+	if (answers.preset === 'vertex' || answers.preset === 'standard') {
+		lines.push('');
+		lines.push(enabled ? subheading('Error reporting') : 'Error reporting');
+		lines.push(
+			enabled
+				? hint(
+						'enabled by default; offline machines never attempt issue creation',
+					)
+				: 'enabled by default; offline machines never attempt issue creation',
+		);
+		lines.push(
+			enabled
+				? hint(
+						'disable with plugins.error-reporting.options.enabled = false',
+					)
+				: 'disable with plugins.error-reporting.options.enabled = false',
+		);
+	}
 
 	// Files block — one tick per path, color-coded by kind.
 	lines.push('');

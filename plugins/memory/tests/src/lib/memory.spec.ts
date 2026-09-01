@@ -9,11 +9,20 @@ import {
 import { basename, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { watchMock } = vi.hoisted(() => ({ watchMock: vi.fn() }));
+
+vi.mock('node:fs', async () => ({
+	...(await vi.importActual<typeof import('node:fs')>('node:fs')),
+	watch: watchMock,
+}));
 
 import {
+	getRecallMetricsSnapshot,
 	readStore,
 	recall,
+	resetRecallMetrics,
 	removeNote,
 	saveNote,
 } from '@mcp-vertex/memory/lib/services/store';
@@ -95,6 +104,7 @@ describe('memory store', async () => {
 	// dropped tail. Wires the pure `selectLatestSessionDigest` into the live
 	// recall tool.
 	it('recall surfaces the latest session digest (f00090 S3)', async () => {
+		resetRecallMetrics();
 		const regs = buildMemoryToolRegistrations({
 			namespacePrefix: 'memory',
 			storePathAbs: store,
@@ -138,6 +148,11 @@ describe('memory store', async () => {
 		expect(out.sessionDigest?.body).toBe('fresh working state');
 		// The digest surfaces even though the query matched a different note.
 		expect(out.notes.some((n) => n.title === 'A plain note')).toBe(true);
+		const metrics = getRecallMetricsSnapshot();
+		expect(metrics.recallCalls).toBe(2);
+		expect(metrics.notesReturned).toBe(2);
+		expect(metrics.digestReused).toBe(1);
+		expect(metrics.bytesAvoided).toBeGreaterThan(0);
 	});
 
 	// f00090 S2: the compaction-check tool is the live surface of the pure
@@ -434,6 +449,10 @@ describe('memory store — corrupt ≠ empty (M10)', async () => {
 });
 
 describe('memory plugin', async () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('registers the memory tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
@@ -465,5 +484,80 @@ describe('memory plugin', async () => {
 		// The registered MCP names are single-prefixed (`memory_save`, …),
 		// not double-prefixed (`memory_memory_save`). [e2e regression guard]
 		expect(reg.knowledge?.[0]?.id).toBe('memory-usage');
+	});
+
+	it('disposes the watcher lifecycle and cancels pending debounce timers', async () => {
+		vi.useFakeTimers();
+		const dir = mkdtempSync(join(tmpdir(), 'mem-plugin-'));
+
+		// t00016 (MEM-001 regression guard) — pin that the watcher the
+		// plugin creates is the one being closed on dispose. We spy on
+		// `fs.watch` BEFORE register() runs, capture the FSWatcher the
+		// plugin takes ownership of, and assert `close()` was called on
+		// the SAME instance after dispose. The ESM live binding for
+		// `import { watch } from 'node:fs'` inside the plugin reflects
+		// the spied implementation; if the plugin ever stops using
+		// `fs.watch` (or stops calling dispose on the returned watcher)
+		// the assertion fails.
+		const closeSpy = vi.fn();
+		const unrefSpy = vi.fn();
+		watchMock.mockClear();
+		watchMock.mockImplementation((() => ({
+			close: closeSpy,
+			unref: unrefSpy,
+		})) as unknown as typeof import('node:fs').watch);
+		try {
+			const ctx = {
+				workspace: {
+					root: dir,
+					resolve: (p: string) => join(dir, p),
+				},
+				corePaths: {
+					cacheDir: '.cache/mcp-vertex',
+					docsDir: 'docs/mcp-vertex',
+				},
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+				keepLegacy: false,
+				pluginCacheDir: '.cache/mcp-vertex/memory',
+				pluginDocsDir: 'docs/mcp-vertex/memory',
+				namespacePrefix: 'memory',
+				options: {},
+				args: {},
+			} satisfies IMcpPluginContext;
+			const reg = await plugin.register(ctx);
+
+			// The plugin must have created exactly one watcher (the store
+			// watcher). The primitive's `unref?.()` call right after
+			// `watch(...)` is the regression marker for "non-blocking
+			// watcher installed".
+			expect(watchMock).toHaveBeenCalledTimes(1);
+			expect(unrefSpy).toHaveBeenCalledTimes(1);
+			expect(closeSpy).not.toHaveBeenCalled();
+
+			reg.onToolCall?.(
+				'memory_save',
+				{ title: 'session-digest:test' },
+				{
+					content: [{ text: JSON.stringify({ persisted: true }) }],
+				},
+			);
+			// freshnessDebouncer.schedule() set a pending setTimeout.
+			expect(vi.getTimerCount()).toBeGreaterThan(0);
+
+			if ('dispose' in reg) {
+				await reg.dispose?.();
+				// Second dispose must be idempotent — calling close on the
+				// already-closed watcher is the historical leak vector.
+				await reg.dispose?.();
+			}
+			// freshnessDebouncer.cancel() cleared the pending timer.
+			expect(vi.getTimerCount()).toBe(0);
+			// storeWatcher.dispose() closed the underlying fs.watch handle.
+			expect(closeSpy).toHaveBeenCalledTimes(1);
+		} finally {
+			watchMock.mockReset();
+			rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });

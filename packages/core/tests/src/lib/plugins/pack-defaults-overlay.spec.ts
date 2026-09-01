@@ -84,7 +84,10 @@ describe('mergePackDefaults', () => {
 		expect(merged.search).toEqual({
 			hybridWeights: { bm25: 0.8, vector: 0.2 },
 		});
-		expect(merged.changelog).toEqual({ strictCommits: true });
+		// f00177 / MAN-001: `changelog` overlay removed with the plugin
+		// itself — `changelog` is `private: true` and no longer a member
+		// of the `cli-tool` preset.
+		expect(merged.changelog).toBeUndefined();
 	});
 
 	it('does not mutate the overlay table (clones every option)', () => {

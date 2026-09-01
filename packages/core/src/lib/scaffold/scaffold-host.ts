@@ -9,6 +9,8 @@
 // generated scaffold tool; proposal-workflow tools are shown as
 // conditional on loading the `proposals` plugin.
 
+import { toKebabCase } from '../shared/string-normalize';
+
 export interface IScaffoldedFile {
 	readonly path: string;
 	readonly content: string;
@@ -74,13 +76,26 @@ export interface IScaffoldHostOptions {
 	readonly mcpServerName?: string;
 }
 
+export interface IScaffoldNamespaceContract {
+	readonly namespacePrefix: string;
+	readonly mcpServerName?: string;
+}
+
+export const defaultMcpServerName = (namespacePrefix: string): string =>
+	`mcp-project-${namespacePrefix}`;
+
+export const resolveScaffoldMcpServerName = (
+	options: IScaffoldNamespaceContract,
+): string =>
+	options.mcpServerName ?? defaultMcpServerName(options.namespacePrefix);
+
 /**
  * The MCP server registration key generated Copilot surfaces (the
  * `.agent.md` `tools:` grant, the instructions file) reference to
  * qualify tool names. See `IScaffoldHostOptions.mcpServerName`.
  */
 const resolveMcpServerName = (options: IScaffoldHostOptions): string =>
-	options.mcpServerName ?? `mcp-project-${options.namespacePrefix}`;
+	resolveScaffoldMcpServerName(options);
 
 const SUBAGENT_SLOTS = [
 	'proposal_guardian',
@@ -93,12 +108,7 @@ export type IScaffoldAgentSlot =
 	| 'orchestrator'
 	| (typeof SUBAGENT_SLOTS)[number];
 
-const kebab = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+const kebab = (value: string): string => toKebabCase(value);
 
 const pascal = (value: string): string =>
 	kebab(value)
@@ -248,11 +258,11 @@ export const scaffoldSkillFile = (
 	const bullets =
 		whenToUse.length > 0
 			? whenToUse.map((entry) => `- ${entry}`).join('\n')
-			: '- TODO: describe when an agent should read this skill.';
+			: `- Before working on ${name} in this project.`;
 	const bodySection =
 		body !== undefined && body.length > 0
 			? body
-			: '2. TODO: the skill body.';
+			: `- \`${prefix}_overview\` is the source of truth; this skill records the project-specific conventions for ${name}.`;
 	return {
 		path: targetPath(targetDir, `src/lib/skills/${prefix}-${id}.md`),
 		content: `---
@@ -274,7 +284,7 @@ ${bodySection}
 
 ## Checklist
 
-- [ ] TODO
+- [ ] \`${prefix}_overview\` is the first call of the session.
 `,
 	};
 };
@@ -552,7 +562,7 @@ void startServer();
 		content: `${JSON.stringify(
 			{
 				servers: {
-					[`mcp-project-${options.namespacePrefix}`]: {
+					[resolveMcpServerName(options)]: {
 						command: 'bun',
 						args: ['--watch', 'run', 'src/index.ts'],
 						cwd:
@@ -670,7 +680,7 @@ export const scaffoldCodexConfigFile = (
 	return {
 		path: '.codex/config.toml',
 		content: `# Codex CLI MCP server registration (mirrors .vscode/mcp.json).
-[mcp_servers.mcp-project-${options.namespacePrefix}]
+[mcp_servers.${resolveMcpServerName(options)}]
 command = "bun"
 args = ["--watch", "run", "src/index.ts"]
 cwd = "${targetDir === '.' ? '.' : targetDir}"

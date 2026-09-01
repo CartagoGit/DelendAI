@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildSyntheticExample } from '../src/lib/synthetic-example.builder';
 import {
 	buildIssueBody,
 	buildIssueTitle,
+	classificationOf,
 	isMcpVertexInternal,
-	normalizeMessage,
+	registerInternalPath,
+	resetInternalPathRegistry,
+	safeFailureClassOf,
 	signatureOf,
 } from '../src/lib/signature.helper';
+import { extractSafeMcpFrames } from '../src/lib/frame-extractor.helper';
+import { McpVertexInternalError } from '../src/lib/contracts/interfaces/reporter.interface';
 
 describe('isMcpVertexInternal', () => {
 	it('detects a stack trace originating inside mcp-vertex', () => {
@@ -19,11 +25,12 @@ describe('isMcpVertexInternal', () => {
 	});
 
 	it('detects the package scope in the message alone', () => {
-		expect(
-			isMcpVertexInternal(
-				new Error('plugin "@mcp-vertex/issues" failed to load'),
-			),
-		).toBe(true);
+		const error = new McpVertexInternalError({
+			code: 'PLUGIN_LOAD_FAILED',
+			packageId: '@mcp-vertex/issues',
+			componentId: 'loader',
+		});
+		expect(isMcpVertexInternal(error)).toBe(true);
 	});
 
 	it('ignores host-project failures with no mcp-vertex marker', () => {
@@ -36,57 +43,255 @@ describe('isMcpVertexInternal', () => {
 	});
 });
 
-describe('normalizeMessage / signatureOf', () => {
-	it('collapses numbers, hex and paths into stable placeholders', () => {
-		const a = normalizeMessage(
-			'port 5432 refused at 0xdeadbeef in /home/alice/proj',
-		);
-		const b = normalizeMessage(
-			'port 9999 refused at 0x1234abcd in /srv/bob/proj',
-		);
+describe('safeFailureClassOf / classificationOf / signatureOf', () => {
+	it('classifies typed timeout errors as performance', () => {
+		const error = new McpVertexInternalError({
+			code: 'PLUGIN_REGISTER_TIMEOUT',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'register',
+		});
+		expect(safeFailureClassOf(error)).toBe('INTERNAL_TIMEOUT');
+		expect(
+			classificationOf({
+				toolId: 'quality_run_quality',
+				packageId: error.packageId,
+				componentId: error.componentId,
+				errorCode: error.code,
+				failureClass: safeFailureClassOf(error),
+			}),
+		).toBe('PERFORMANCE');
+	});
+
+	it('produces the same signature across different workspace roots for the same internal bug', () => {
+		resetInternalPathRegistry();
+		registerInternalPath('/home/user/project-a');
+		registerInternalPath('/srv/build/project-b');
+		const leftError = new Error('workspace a');
+		leftError.stack = [
+			'Error: workspace a',
+			'    at report (/home/user/project-a/plugins/error-reporting/src/index.ts:10:2)',
+		].join('\n');
+		const rightError = new Error('workspace b');
+		rightError.stack = [
+			'Error: workspace b',
+			'    at report (/srv/build/project-b/plugins/error-reporting/src/index.ts:10:2)',
+		].join('\n');
+		const a = signatureOf({
+			mcpVertexVersion: '0.7.5',
+			packageId: '@mcp-vertex/error-reporting',
+			toolId: 'quality_run_quality',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: extractSafeMcpFrames(leftError),
+		});
+		const b = signatureOf({
+			mcpVertexVersion: '0.7.9',
+			packageId: '@mcp-vertex/error-reporting',
+			toolId: 'quality_run_quality',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: extractSafeMcpFrames(rightError),
+		});
 		expect(a).toBe(b);
 	});
 
-	it('produces the same signature for the same bug with different timestamps', () => {
-		const e1 = new Error('timeout after 1200ms in /a/b');
-		const e2 = new Error('timeout after 3ms in /x/y/z');
-		expect(signatureOf('quality_run_quality', e1)).toBe(
-			signatureOf('quality_run_quality', e2),
-		);
+	it('differs across safe package identities', () => {
+		const left = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/error-reporting',
+			toolId: 'search_search',
+			failureClass: 'INTERNAL_RUNTIME_ERROR',
+			classification: 'BUG',
+			mcpFrames: [{ file: '@mcp-vertex/error-reporting/src/index.ts' }],
+		});
+		const right = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/core',
+			toolId: 'search_search',
+			failureClass: 'INTERNAL_RUNTIME_ERROR',
+			classification: 'BUG',
+			mcpFrames: [{ file: '@mcp-vertex/core/src/index.ts' }],
+		});
+		expect(left).not.toBe(right);
 	});
 
-	it('differs across tools', () => {
-		const error = new Error('boom');
-		expect(signatureOf('search_search', error)).not.toBe(
-			signatureOf('git_diff', error),
-		);
+	it('collapses the same internal bug even when runtime message and values differ', () => {
+		const left = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'src/index.ts',
+			toolId: 'search_search',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/index.ts',
+					line: 11,
+					col: 2,
+				},
+			],
+		});
+		const right = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'src/index.ts',
+			toolId: 'search_search',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/index.ts',
+					line: 11,
+					col: 2,
+					fn: 'sameBugWithDifferentRuntimeData',
+				},
+			],
+		});
+		expect(left).toBe(right);
+	});
+
+	it('does not collapse different bugs that share only the error code', () => {
+		const left = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'src/index.ts',
+			toolId: 'search_search',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/index.ts',
+					line: 11,
+					col: 2,
+				},
+			],
+		});
+		const right = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'src/lib/report-store.service.ts',
+			toolId: 'search_search',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/lib/report-store.service.ts',
+					line: 11,
+					col: 2,
+				},
+			],
+		});
+		expect(left).not.toBe(right);
 	});
 });
 
 describe('buildIssueTitle / buildIssueBody', () => {
+	const report = {
+		reporterVersion: '0.1.0',
+		mcpVertexVersion: '0.1.0',
+		packageId: '@mcp-vertex/error-reporting',
+		toolOwner: 'host-project',
+		toolCategory: 'host-specific',
+		errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+		failureClass: 'INTERNAL_TIMEOUT',
+		classification: 'PERFORMANCE',
+		fingerprint: 'abc123',
+		mcpFrames: [
+			{
+				file: '@mcp-vertex/error-reporting/src/index.ts',
+				line: 1,
+				col: 2,
+			},
+		],
+		syntheticExample: {
+			summary:
+				'Synthetic bakery reproduction for PLUGIN_REGISTER_TIMEOUT.',
+			source: 'fixture-fallback',
+			fixtureId: 'bakery',
+			fixtureDomain: 'bakery',
+			argumentType: 'object',
+			payload: {
+				orderId: 'EXAMPLE-001',
+				endpoint: 'https://example.invalid/orders',
+			},
+		},
+	} as const;
+
 	it('prefixes the title and bounds its length', () => {
-		const long = new Error(`x${'y'.repeat(300)}`);
-		const title = buildIssueTitle('tool_x', long);
-		expect(title.startsWith('[auto] tool_x:')).toBe(true);
+		const title = buildIssueTitle(report);
+		expect(
+			title.startsWith('[auto] PERFORMANCE @mcp-vertex/error-reporting:'),
+		).toBe(true);
 		expect(title.length).toBeLessThanOrEqual(180);
 	});
 
-	it('renders detail, stack and opt-out instructions', () => {
-		const error = new Error('boom');
-		error.stack = 'Error: boom\n    at x.ts:1';
-		const body = buildIssueBody({
-			toolName: 'tool_x',
-			error,
-			signature: 'tool_x::boom',
-			argsJson: '{"a":1}',
-			elapsedMs: 42,
-			ts: '2026-08-24T00:00:00.000Z',
-			namespacePrefix: 'mcp-vertex',
-		});
+	it('renders safe DTO detail and opt-in instructions', () => {
+		const body = buildIssueBody(report);
 		expect(body).toContain('Automatic error report');
-		expect(body).toContain('tool_x::boom');
-		expect(body).toContain('boom');
-		expect(body).toContain('Error: boom');
-		expect(body).toContain('"enabled": false');
+		expect(body).toContain('PLUGIN_REGISTER_TIMEOUT');
+		expect(body).toContain('@mcp-vertex/error-reporting/src/index.ts:1:2');
+		expect(body).toContain('Synthetic bakery reproduction');
+		expect(body).toContain('EXAMPLE-001');
+		expect(body).toContain('Tool owner');
+		expect(body).not.toContain('Error: boom');
+		expect(body).toContain('"enabled": true');
+	});
+});
+
+describe('buildSyntheticExample', () => {
+	it('builds deterministic fixture fallback examples without real payload input', () => {
+		const left = buildSyntheticExample({
+			packageId: '@mcp-vertex/error-reporting',
+			toolName: 'quality_run_quality',
+			errorCode: 'PROCESS_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+		});
+		const right = buildSyntheticExample({
+			packageId: '@mcp-vertex/error-reporting',
+			toolName: 'quality_run_quality',
+			errorCode: 'PROCESS_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+		});
+		expect(left).toEqual(right);
+		expect(JSON.stringify(left)).toContain('example.invalid');
+		expect(JSON.stringify(left)).toMatch(
+			/EXAMPLE-001|DEMO-123|SYNTHETIC-42/,
+		);
+	});
+
+	it('projects schema-shaped payloads from fixtures when a schema is available', () => {
+		const example = buildSyntheticExample({
+			packageId: '@mcp-vertex/error-reporting',
+			toolName: 'docs_docs_read',
+			errorCode: 'INVALID_OPTIONS',
+			failureClass: 'INTERNAL_VALIDATION_ERROR',
+			toolSchema: {
+				type: 'object',
+				properties: {
+					endpoint: { type: 'string' },
+					requestId: { type: 'string' },
+					windowHours: { type: 'number' },
+					includeAlerts: { type: 'boolean' },
+				},
+			},
+		});
+		expect(example.source).toBe('schema-fixture');
+		expect(example.argumentType).toBe('object');
+		expect(example.payload).toEqual({
+			endpoint: expect.stringMatching(
+				/https:\/\/example\.(invalid|com)\//,
+			),
+			requestId: expect.stringMatching(
+				/EXAMPLE-001|DEMO-123|SYNTHETIC-42/,
+			),
+			windowHours: expect.any(Number),
+			includeAlerts: expect.any(Boolean),
+		});
 	});
 });

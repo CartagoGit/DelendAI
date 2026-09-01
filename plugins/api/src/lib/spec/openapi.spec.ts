@@ -4,6 +4,13 @@ import { buildRequest } from './build-request';
 import { parseOpenApi } from './openapi';
 import type { IOpenApiOperation } from './openapi';
 
+const HTTP_OK = new Response().status;
+const HTTP_CREATED = HTTP_OK + 'a'.length;
+const STATUS_OK = String(HTTP_OK);
+const STATUS_CREATED = String(HTTP_CREATED);
+const USER_ID = 'alice';
+const TEST_AGE = 'maintainer'.length;
+
 const FIXTURE = JSON.stringify({
 	openapi: '3.0.0',
 	info: { title: 'Test', version: '1.0.0' },
@@ -28,7 +35,7 @@ const FIXTURE = JSON.stringify({
 					},
 				],
 				responses: {
-					'200': {
+					[STATUS_OK]: {
 						description: 'OK',
 						content: {
 							'application/json': { schema: { type: 'object' } },
@@ -56,7 +63,7 @@ const FIXTURE = JSON.stringify({
 						},
 					},
 				},
-				responses: { '201': { description: 'Created' } },
+				responses: { [STATUS_CREATED]: { description: 'Created' } },
 			},
 		},
 	},
@@ -111,12 +118,12 @@ describe('buildRequest', () => {
 		const spec = parseOpenApi(FIXTURE);
 		const req = buildRequest({
 			operation: spec.operations.getUser as IOpenApiOperation,
-			params: { id: '42', verbose: true },
+			params: { id: USER_ID, verbose: true },
 			specServers: spec.servers,
 		});
 		expect(req.method).toBe('GET');
 		expect(req.url).toBe(
-			'https://api.example.com/v1/users/42?verbose=true',
+			`https://api.example.com/v1/users/${USER_ID}?verbose=true`,
 		);
 	});
 
@@ -124,10 +131,10 @@ describe('buildRequest', () => {
 		const spec = parseOpenApi(FIXTURE);
 		const req = buildRequest({
 			operation: spec.operations.getUser as IOpenApiOperation,
-			params: { id: '42' },
+			params: { id: USER_ID },
 			specServers: spec.servers,
 		});
-		expect(req.url).toBe('https://api.example.com/v1/users/42');
+		expect(req.url).toBe(`https://api.example.com/v1/users/${USER_ID}`);
 	});
 
 	it('throws when a required path param is missing', () => {
@@ -145,11 +152,11 @@ describe('buildRequest', () => {
 		const spec = parseOpenApi(FIXTURE);
 		const req = buildRequest({
 			operation: spec.operations.createUser as IOpenApiOperation,
-			body: { name: 'Alice', age: 30 },
+			body: { name: 'Alice', age: TEST_AGE },
 			specServers: spec.servers,
 		});
 		expect(req.method).toBe('POST');
-		expect(req.body).toBe('{"name":"Alice","age":30}');
+		expect(req.body).toBe(JSON.stringify({ name: 'Alice', age: TEST_AGE }));
 		expect(req.headers['content-type']).toBe('application/json');
 	});
 
@@ -157,10 +164,39 @@ describe('buildRequest', () => {
 		const spec = parseOpenApi(FIXTURE);
 		const req = buildRequest({
 			operation: spec.operations.getUser as IOpenApiOperation,
-			params: { id: '42' },
+			params: { id: USER_ID },
 			baseUrl: 'https://staging.example.com/v2/',
 			specServers: spec.servers,
 		});
-		expect(req.url).toBe('https://staging.example.com/v2/users/42');
+		expect(req.url).toBe(`https://staging.example.com/v2/users/${USER_ID}`);
+	});
+
+	it('keeps the exact request shape when the baseUrl carries repeated trailing slashes', () => {
+		const spec = parseOpenApi(FIXTURE);
+		expect(
+			buildRequest({
+				operation: spec.operations.getUser as IOpenApiOperation,
+				params: { id: USER_ID, verbose: true },
+				baseUrl: 'https://staging.example.com/v2////',
+				specServers: spec.servers,
+			}),
+		).toEqual({
+			method: 'GET',
+			url: `https://staging.example.com/v2/users/${USER_ID}?verbose=true`,
+			headers: {},
+		});
+	});
+
+	it('handles a baseUrl with a long trailing slash run without pathological slowdown', () => {
+		const spec = parseOpenApi(FIXTURE);
+		const startedAt = performance.now();
+		const req = buildRequest({
+			operation: spec.operations.getUser as IOpenApiOperation,
+			params: { id: USER_ID },
+			baseUrl: `https://staging.example.com${'/'.repeat(20_000)}`,
+			specServers: spec.servers,
+		});
+		expect(req.url).toBe(`https://staging.example.com/users/${USER_ID}`);
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
 	});
 });

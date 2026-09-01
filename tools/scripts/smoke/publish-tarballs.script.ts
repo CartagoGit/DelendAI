@@ -112,8 +112,16 @@ const selectBinName = (
 	return first;
 };
 
-const collectWorkspacePackageNames = async (): Promise<ReadonlySet<string>> => {
-	const names = await Promise.all(
+/**
+ * Every intra-repo `workspace:` dep must resolve to the DEPENDED-ON
+ * package's own version, read from that package's own `package.json` — not
+ * the root manifest's version, which carries no guarantee of matching any
+ * individual package.
+ */
+const collectWorkspacePackageVersions = async (): Promise<
+	ReadonlyMap<string, string>
+> => {
+	const entries = await Promise.all(
 		PUBLISH_ORDER.map(async (dir) => {
 			const pkg = await readJson<IPackageJson>(
 				join(ROOT, dir, 'package.json'),
@@ -121,10 +129,13 @@ const collectWorkspacePackageNames = async (): Promise<ReadonlySet<string>> => {
 			if (typeof pkg.name !== 'string') {
 				throw new Error(`${dir} is missing a package name`);
 			}
-			return pkg.name;
+			if (typeof pkg.version !== 'string') {
+				throw new Error(`${dir} is missing a package version`);
+			}
+			return [pkg.name, pkg.version] as const;
 		}),
 	);
-	return new Set(names);
+	return new Map(entries);
 };
 
 const isRegistryUnavailable = (error: CommandFailure): boolean => {
@@ -135,11 +146,6 @@ const isRegistryUnavailable = (error: CommandFailure): boolean => {
 };
 
 const main = async (): Promise<void> => {
-	const rootPkg = await readJson<IPackageJson>(join(ROOT, 'package.json'));
-	if (typeof rootPkg.version !== 'string' || rootPkg.version.length === 0) {
-		throw new Error('root package.json is missing a release version');
-	}
-
 	const candidatePkg = await readJson<IPackageJson>(
 		join(CANDIDATE_DIR, 'package.json'),
 	);
@@ -153,8 +159,7 @@ const main = async (): Promise<void> => {
 	}
 
 	const plan: IWorkspaceDepsPlan = {
-		targetVersion: rootPkg.version,
-		mcpVertexPackages: await collectWorkspacePackageNames(),
+		packageVersions: await collectWorkspacePackageVersions(),
 	};
 	const binName = selectBinName(candidatePkg.bin, candidatePkg.name);
 	const scratch = await mkdtemp(join(tmpdir(), 'mcp-vertex-publish-smoke-'));

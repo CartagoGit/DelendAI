@@ -32,7 +32,7 @@ export interface IEnvExplainsToolOptions extends IEnvCheckToolOptions {
 	readonly requirements?: readonly IEnvRequirement[];
 }
 
-const REQUIREMENT = z.object({
+const _REQUIREMENT = z.object({
 	var: z.string(),
 	plugin: z.string(),
 	capability: z.string(),

@@ -1,0 +1,83 @@
+#!/usr/bin/env bun
+
+import { parseBarrel } from '../inspect/core-public-inventory.script';
+
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 750;
+
+export interface ICorePublicSurfaceBudgetReport {
+	readonly ok: boolean;
+	readonly actual: number;
+	readonly max: number;
+	readonly excess: number;
+	readonly message: string;
+}
+
+interface IMainOptions {
+	readonly argv?: readonly string[];
+	readonly countExports?: () => Promise<number>;
+	readonly stdout?: Pick<typeof process.stdout, 'write'>;
+	readonly stderr?: Pick<typeof process.stderr, 'write'>;
+}
+
+const parseMax = (argv: readonly string[]): number | null => {
+	for (const token of argv) {
+		if (!token.startsWith('--max=')) continue;
+		const raw = token.slice('--max='.length).trim();
+		const value = Number(raw);
+		if (!Number.isInteger(value) || value < 0) return null;
+		return value;
+	}
+	return DEFAULT_MAX_CORE_PUBLIC_EXPORTS;
+};
+
+export const evaluateCorePublicSurfaceBudget = (
+	actual: number,
+	max: number,
+): ICorePublicSurfaceBudgetReport => {
+	const excess = Math.max(0, actual - max);
+	if (actual <= max) {
+		return {
+			ok: true,
+			actual,
+			max,
+			excess,
+			message: `core-public-surface-budget: ${actual}/${max} exports within budget.`,
+		};
+	}
+	return {
+		ok: false,
+		actual,
+		max,
+		excess,
+		message: `core-public-surface-budget: ${actual} exports exceeds budget ${max} by ${excess}. Reduce packages/core/src/public/index.ts or raise the limit deliberately.`,
+	};
+};
+
+export const countCorePublicExports = async (): Promise<number> => {
+	const exports = await parseBarrel();
+	return exports.length;
+};
+
+export const main = async ({
+	argv = process.argv.slice(2),
+	countExports = countCorePublicExports,
+	stdout = process.stdout,
+	stderr = process.stderr,
+}: IMainOptions = {}): Promise<number> => {
+	const max = parseMax(argv);
+	if (max === null) {
+		stderr.write(
+			'core-public-surface-budget: invalid --max value; expected a non-negative integer.\n',
+		);
+		return 2;
+	}
+	const actual = await countExports();
+	const report = evaluateCorePublicSurfaceBudget(actual, max);
+	const writer = report.ok ? stdout : stderr;
+	writer.write(`${report.message}\n`);
+	return report.ok ? 0 : 1;
+};
+
+if (import.meta.main) {
+	process.exit(await main());
+}

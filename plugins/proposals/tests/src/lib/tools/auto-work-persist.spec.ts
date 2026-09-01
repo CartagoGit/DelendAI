@@ -12,12 +12,16 @@
  * 4. Every failure mode is reported as `{ committed, pushed, reason }`
  *    — the helper NEVER throws.
  */
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import type {
 	IGitRunResult,
 	IGitRunner,
 } from '@mcp-vertex/proposals/lib/shared/git-runner';
+import { createGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
 import {
 	maybePersistAfterSlice,
 	renderCommitMessage,
@@ -60,7 +64,62 @@ const fakeRunner = (
 	return fn;
 };
 
+describe('createGitRunner', async () => {
+	it('reports a real git command error', async () => {
+		const result = await createGitRunner(process.cwd())([
+			'not-a-real-subcommand',
+		]);
+
+		expect(result.ok).toBe(false);
+		expect(result.reason).toMatch(/not-a-real-subcommand|unknown/u);
+	});
+
+	it('reports a real git timeout', async () => {
+		const cwd = await mkdtemp(join(tmpdir(), 'x00298-git-runner-'));
+		try {
+			const runner = createGitRunner(cwd);
+			const init = await runner(['init']);
+			expect(init.ok).toBe(true);
+
+			const result = await createGitRunner(
+				cwd,
+				10,
+			)(['cat-file', '--batch']);
+
+			expect(result.ok).toBe(false);
+			expect(result.reason).toContain('timed out');
+		} finally {
+			await rm(cwd, { recursive: true, force: true });
+		}
+	});
+});
+
 describe('maybePersistAfterSlice', async () => {
+	it('uses the real async runner by default', async () => {
+		const result = await createGitRunner(process.cwd())(['--version']);
+
+		expect(result.ok).toBe(true);
+		expect(result.output).toMatch(/git version/u);
+	});
+
+	it('uses an injected runner instead of spawning git', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'inject01' },
+		]);
+
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'x00298',
+			'S1',
+			{ mode: 'commit', git: runner },
+		);
+
+		expect(result.hash).toBe('inject01');
+		expect(runner.calls.length).toBe(3);
+	});
+
 	it("mode 'none' is a hard no-op (no git calls)", async () => {
 		const runner = fakeRunner([
 			{
@@ -103,6 +162,31 @@ describe('maybePersistAfterSlice', async () => {
 		]);
 	});
 
+	it('includes all dirty files only when foreign changes are allowed', async () => {
+		const runner = fakeRunner([
+			{
+				match: (a) => a[0] === 'status',
+				output: ' M plugins/proposals/src/lib/foo.ts\n?? unrelated.txt\n',
+			},
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'abc1234' },
+		]);
+
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'x00298',
+			'S1',
+			{ mode: 'commit', allowForeignChanges: true, git: runner },
+		);
+
+		expect(result.committed).toBe(true);
+		expect(runner.calls.find((a) => a[0] === 'add')?.slice(2)).toEqual([
+			'plugins/proposals/src/lib/foo.ts',
+			'unrelated.txt',
+		]);
+	});
+
 	it('renders the default template `<area>(<proposalId>): <sliceId>`', async () => {
 		const runner = fakeRunner([
 			{ match: (a) => a[0] === 'add', output: '' },
@@ -141,7 +225,12 @@ describe('maybePersistAfterSlice', async () => {
 			['plugins/proposals/src/lib/foo.ts'],
 			'l109',
 			's2',
-			{ mode: 'commit-and-push', pushTarget: 'origin main', git: runner },
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin main',
+				agentWorktreeEnabled: true,
+				git: runner,
+			},
 		);
 		expect(result.committed).toBe(true);
 		expect(result.pushed).toBe(false);
@@ -149,7 +238,86 @@ describe('maybePersistAfterSlice', async () => {
 		expect(runner.calls.some((a) => a[0] === 'push')).toBe(false);
 	});
 
-	it("mode 'commit-and-push' pushes when target is not main", async () => {
+	it('pushes to `develop` when it is not in the protected-branch policy', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'abc1234' },
+			{ match: (a) => a[0] === 'push', output: '' },
+		]);
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'l109',
+			's2',
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin develop',
+				agentWorktreeEnabled: true,
+				protectedBranches: ['main', 'master'],
+				git: runner,
+			},
+		);
+		expect(result.committed).toBe(true);
+		expect(result.pushed).toBe(true);
+		expect(runner.calls.some((a) => a[0] === 'push')).toBe(true);
+	});
+
+	it('allows commit-and-push in shared checkout when the target is not protected', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'abc1234' },
+			{ match: (a) => a[0] === 'push', output: '' },
+		]);
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'x00298',
+			'S1',
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin develop',
+				agentWorktreeEnabled: false,
+				protectedBranches: ['main', 'master'],
+				git: runner,
+			},
+		);
+
+		expect(result.committed).toBe(true);
+		expect(result.pushed).toBe(true);
+	});
+
+	it('allows an explicit branch refspec when agentWorktree is enabled', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'worktree01' },
+			{ match: (a) => a[0] === 'push', output: '' },
+		]);
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'x00298',
+			'S1',
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin HEAD:agent/x00298-S1',
+				agentWorktreeEnabled: true,
+				git: runner,
+			},
+		);
+
+		expect(result).toMatchObject({
+			committed: true,
+			pushed: true,
+			hash: 'worktree01',
+		});
+		expect(runner.calls.find((a) => a[0] === 'push')).toEqual([
+			'push',
+			'origin',
+			'HEAD:agent/x00298-S1',
+		]);
+	});
+
+	it("mode 'commit-and-push' pushes when target is a wip/* branch (not main or develop)", async () => {
 		const runner = fakeRunner([
 			{ match: (a) => a[0] === 'add', output: '' },
 			{ match: (a) => a[0] === 'commit', output: '' },
@@ -163,6 +331,7 @@ describe('maybePersistAfterSlice', async () => {
 			{
 				mode: 'commit-and-push',
 				pushTarget: 'origin agent/l109',
+				agentWorktreeEnabled: true,
 				git: runner,
 			},
 		);
@@ -229,6 +398,7 @@ describe('maybePersistAfterSlice', async () => {
 			{
 				mode: 'commit-and-push',
 				pushTarget: 'origin agent/l109',
+				agentWorktreeEnabled: true,
 				git: runner,
 			},
 		);
@@ -237,6 +407,41 @@ describe('maybePersistAfterSlice', async () => {
 		expect(result.hash).toBe('abc1234');
 		expect(result.reason).toContain('git push failed');
 	});
+
+	it.each([
+		['rejected', 'remote rejected: non-fast-forward'],
+		['error', 'remote unavailable'],
+		['timeout', 'git timed out after 15000ms'],
+	])(
+		'surfaces a push %s as incomplete, not success',
+		async (_kind, reason) => {
+			const runner = fakeRunner([
+				{ match: (a) => a[0] === 'add', output: '' },
+				{ match: (a) => a[0] === 'commit', output: '' },
+				{ match: (a) => a[0] === 'rev-parse', output: 'pushfail' },
+				{ match: (a) => a[0] === 'push', ok: false, reason },
+			]);
+
+			const result = await maybePersistAfterSlice(
+				['plugins/proposals/src/lib/foo.ts'],
+				'x00298',
+				'S1',
+				{
+					mode: 'commit-and-push',
+					pushTarget: 'origin agent/x00298',
+					agentWorktreeEnabled: true,
+					git: runner,
+				},
+			);
+
+			expect(result).toMatchObject({
+				committed: true,
+				pushed: false,
+				hash: 'pushfail',
+			});
+			expect(result.reason).toContain(reason);
+		},
+	);
 
 	it('returns early when the file list is empty (no `git add` issued)', async () => {
 		const runner = fakeRunner([
@@ -394,6 +599,7 @@ describe('f00156 S7 stale-acceptance persist guard', async () => {
 			{
 				mode: 'commit-and-push',
 				pushTarget: 'origin agent/f00156',
+				agentWorktreeEnabled: true,
 				git: runner,
 				acceptanceEvidence: {
 					sliceId: 'S7',
@@ -425,6 +631,7 @@ describe('f00156 S7 stale-acceptance persist guard', async () => {
 			{
 				mode: 'commit-and-push',
 				pushTarget: 'origin agent/f00156',
+				agentWorktreeEnabled: true,
 				git: runner,
 				acceptanceEvidence: {
 					sliceId: 'S7',

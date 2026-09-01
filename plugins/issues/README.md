@@ -22,10 +22,13 @@ proposal — without ever embedding an LLM client in the MCP server itself.
 
 ## Status
 
-**Implemented and shipped.** The 5 `issues_*` tools
-(`issues_list`, `issues_fetch`, `issues_ingest`, `issues_analyze`,
-`issues_resolve`) are all wired in `src/index.ts#register(ctx)` and
-register conditionally on the `repo` option being set.
+**Implemented and shipped.** The 9 `issues_*` tools — the five issue-lifecycle
+tools (`issues_list`, `issues_fetch`, `issues_ingest`, `issues_analyze`,
+`issues_resolve`) plus four read-only GitHub security tools
+(`issues_list_dependabot`, `issues_list_code_scanning`,
+`issues_list_secret_scanning`, `issues_list_advisories`) — are all wired in
+`src/index.ts#register(ctx)` and register conditionally on the `repo` option
+being set.
 
 The recommended setup path is `mcp-vertex setup-github`, which detects the
 repo from `git remote get-url origin`, asks you to confirm it, and writes the
@@ -39,9 +42,14 @@ need it.
 | `issues_ingest` | Fetch + write a scaffold file under `docs/mcp-vertex/proposals/retired/issues/`. | `src/lib/tools/ingest-issue.tool.ts` |
 | `issues_analyze` | Mechanical pre-analysis (labels, linked PRs, comments count). | `src/lib/tools/analyze-issue.tool.ts` |
 | `issues_resolve` | Record promotion or dismissal in scaffold frontmatter. | `src/lib/tools/resolve-issue.tool.ts` |
+| `issues_list_dependabot` | List Dependabot alerts (read-only). | `src/lib/tools/list-dependabot.tool.ts` |
+| `issues_list_code_scanning` | List code-scanning (CodeQL) alerts (read-only). | `src/lib/tools/list-code-scanning.tool.ts` |
+| `issues_list_secret_scanning` | List secret-scanning alerts (read-only). | `src/lib/tools/list-secret-scanning.tool.ts` |
+| `issues_list_advisories` | List repository security advisories (read-only). | `src/lib/tools/list-advisories.tool.ts` |
 
 See `docs/mcp-vertex/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md`
-for the full design.
+for the full design, and `docs/mcp-vertex/proposals/in-progress/feats/f00281-issues-herramientas-security-findings-github.md`
+for the security-findings tools.
 
 ## Load it
 

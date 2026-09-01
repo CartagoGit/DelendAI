@@ -25,8 +25,17 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 
 	beforeEach(async () => {
 		workspace = mkdtempSync(join(tmpdir(), 'e2e-'));
+		// r00026 (TOK-004) made `adaptive` the default surface for a plain
+		// client — this suite is about the core+plugin wire protocol, not
+		// surface-mode negotiation (that's covered by
+		// `tool-surface.e2e.spec.ts`), so it pins `native` explicitly to
+		// keep every tool directly callable without an activation dance.
 		const args = parseCliArgs(
-			['--plugins=memory', `--workspace=${workspace}`],
+			[
+				'--plugins=memory',
+				`--workspace=${workspace}`,
+				'--surface=native',
+			],
 			workspace,
 		);
 		const { config } = await assembleCliConfig(args, {
@@ -67,9 +76,9 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 			name: 'mcp-vertex_overview',
 			arguments: {},
 		});
-		const text = (res.content as Array<{ type: string; text: string }>)[0]
-			?.text;
-		const snap = JSON.parse(text ?? '{}');
+		const snap = res.structuredContent as {
+			plugins: Array<{ name: string }>;
+		};
 		expect(snap.plugins.map((p: { name: string }) => p.name)).toContain(
 			'memory',
 		);

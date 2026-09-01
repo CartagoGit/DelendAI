@@ -21,6 +21,7 @@ import { resolveToolsNamespacePrefix } from '../../../scripts/load-tools-i18n';
 import { mcpVertexOverviewI18n } from '#I18N/tools/mcp-vertex_overview';
 import { proposalsAutoWorkI18n } from '#I18N/tools/mcp-vertex_proposals_auto_work';
 import { memorySaveI18n } from '#I18N/tools/mcp-vertex_memory_save';
+import { agentOrchestratorPlanI18n } from '#I18N/tools/mcp-vertex_agent-orchestrator_plan';
 import { auditPlanI18n } from '#I18N/tools/mcp-vertex_audit_plan';
 import { auditConsolidateI18n } from '#I18N/tools/mcp-vertex_audit_consolidate';
 import { depsDepsListI18n } from '#I18N/tools/mcp-vertex_deps_deps_list';
@@ -158,6 +159,10 @@ export const registerKnowledgeI18n = (
 registerToolI18n('mcp-vertex_overview', mcpVertexOverviewI18n);
 registerToolI18n('mcp-vertex_proposals_auto_work', proposalsAutoWorkI18n);
 registerToolI18n('mcp-vertex_memory_save', memorySaveI18n);
+registerToolI18n(
+	'mcp-vertex_agent-orchestrator_plan',
+	agentOrchestratorPlanI18n,
+);
 // Every MCP tool exposed by a plugin is qualified in `assemble.ts` as
 // `${corePrefix}_${pluginPrefix}_${toolId}` — e.g. `mcp-vertex_audit_audit_plan`.
 // The catalogue is keyed on that full MCP tool name, not the plugin's

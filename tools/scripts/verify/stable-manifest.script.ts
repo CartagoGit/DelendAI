@@ -21,10 +21,19 @@ import {
 	STABLE_MANIFEST_REL,
 	buildStableManifest,
 } from '@mcp-vertex/core/public';
+import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+
+import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
 
 const REPO_ROOT = process.cwd();
+const SEMVER_RE =
+	/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+
+const isJsonSchema = (value: unknown): boolean =>
+	value !== null && typeof value === 'object' && !Array.isArray(value);
 
 const main = (): number => {
+	registerStableToolContributions();
 	const abs = join(REPO_ROOT, STABLE_MANIFEST_REL);
 	if (!existsSync(abs)) {
 		process.stderr.write(
@@ -54,6 +63,38 @@ const main = (): number => {
 			(t) => t.name,
 		),
 	);
+	const manifest = onDisk as {
+		version: { packageVersion?: unknown };
+		tools: Array<{
+			name: string;
+			sinceVersion?: unknown;
+			inputSchema?: unknown;
+			outputSchema?: unknown;
+		}>;
+	};
+	if (manifest.version.packageVersion !== MCP_VERTEX_VERSION) {
+		errors.push(
+			`manifest packageVersion "${String(manifest.version.packageVersion)}" does not match "${MCP_VERTEX_VERSION}"`,
+		);
+	}
+	for (const tool of manifest.tools) {
+		if (
+			typeof tool.sinceVersion !== 'string' ||
+			!SEMVER_RE.test(tool.sinceVersion)
+		) {
+			errors.push(`tool "${tool.name}" has non-semver sinceVersion`);
+		}
+		if (!isJsonSchema(tool.inputSchema)) {
+			errors.push(
+				`tool "${tool.name}" has a null or invalid inputSchema`,
+			);
+		}
+		if (!isJsonSchema(tool.outputSchema)) {
+			errors.push(
+				`tool "${tool.name}" has a null or invalid outputSchema`,
+			);
+		}
+	}
 	for (const name of STABLE_API_TOOL_NAMES) {
 		if (!toolNames.has(name)) {
 			errors.push(
@@ -79,7 +120,7 @@ const main = (): number => {
 
 	// Cross-check that rebuilding with the same descriptors reproduces
 	// the committed file byte-for-byte (catches drift in the builder).
-	const fresh = buildStableManifest(STABLE_API_TOOLS, '0.0.0'); // version is checked elsewhere
+	const fresh = buildStableManifest(STABLE_API_TOOLS, MCP_VERTEX_VERSION);
 	const onDiskJson = JSON.stringify(onDisk, null, 2);
 	const freshJson = JSON.stringify(fresh, null, 2);
 	if (
@@ -88,13 +129,43 @@ const main = (): number => {
 	) {
 		// The fresh build always has a fresh timestamp; we can't byte-compare
 		// directly. Instead we compare structurally ignoring the timestamp.
-		const onDiskNoTs = JSON.parse(onDiskJson) as { tools: unknown };
-		const freshNoTs = JSON.parse(freshJson) as { tools: unknown };
+		const onDiskNoTs = JSON.parse(onDiskJson) as {
+			tools: unknown;
+			version: unknown;
+		};
+		const freshNoTs = JSON.parse(freshJson) as {
+			tools: unknown;
+			version: unknown;
+		};
 		if (
 			JSON.stringify(onDiskNoTs.tools) !== JSON.stringify(freshNoTs.tools)
 		) {
 			process.stderr.write(
 				`stable-manifest: committed tools differ from a fresh build. Run \`bun run build:stable-manifest\`.\n`,
+			);
+			return 1;
+		}
+		const onDiskVersion = (
+			onDisk as {
+				version: { schema: unknown; packageVersion: unknown };
+			}
+		).version;
+		const freshVersion = freshNoTs.version as {
+			schema: unknown;
+			packageVersion: unknown;
+		};
+		if (
+			JSON.stringify({
+				schema: onDiskVersion.schema,
+				packageVersion: onDiskVersion.packageVersion,
+			}) !==
+			JSON.stringify({
+				schema: freshVersion.schema,
+				packageVersion: freshVersion.packageVersion,
+			})
+		) {
+			process.stderr.write(
+				`stable-manifest: committed version differs from a fresh build. Run \`bun run build:stable-manifest\`.\n`,
 			);
 			return 1;
 		}

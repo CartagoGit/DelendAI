@@ -8,11 +8,15 @@
  * must treat specially.
  */
 
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { hostname } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 export type IDoneToReviewRegressionResult =
 	| { ok: true }
@@ -44,28 +48,120 @@ export const guardDoneToReviewRegression = (input: {
 
 export type IShippedInGuardResult =
 	| { ok: true }
-	| { ok: false; code: 'missing-shipped-in'; reason: string };
+	| {
+			ok: false;
+			code: 'missing-shipped-in';
+			reason: string;
+			/** Next action the agent must take to satisfy the gate. */
+			nextAction: string;
+			/** The exact frontmatter field the agent must add or repair. */
+			fix: string;
+	  };
+
+/** Single-line summary of the shipped-in gate. Kept short so it shows up
+ *  verbatim in the agent transcript. */
+const SHIPPED_IN_MISSING_REASON =
+	'frontmatter `shipped-in` is required to move a proposal to `done`; the gate is enforced by `guardShippedInPresent` (`plugins/proposals/src/lib/services/proposal-state.ts`).';
+
+/** Concrete next-action text the orchestrator can echo. Built so an agent
+ *  can run `git log <id> --format=%H` and paste the SHA into the
+ *  frontmatter without reading further docs. */
+const SHIPPED_IN_MISSING_NEXT_ACTION =
+	'Add `shipped-in: ["<sha>"]` to the proposal\'s top-level YAML frontmatter (the block between the first two `---` lines) — NOT inside a `resolution:` block. The SHA must be a 7-40 char hex commit that introduced the slice\'s `**Files**`. Find it with: `git log --all --oneline -- <file> | head -3`. A real SHA is preferred; for placeholder-only close-loops, HEAD also satisfies the gate.';
+
+/** Single-line fix instruction; the orchestrator renders this inside the
+ *  `code: 'missing-shipped-in'` envelope so the failure is unmissable. */
+const SHIPPED_IN_MISSING_FIX =
+	'edit frontmatter: append `shipped-in: ["<sha>"]` (replace `<sha>` with the commit that landed the slice).';
+
+/** 7-40 hex chars: short SHA (7) to full SHA-1 (40). The window covers
+ *  any reasonable commit identifier without accepting noisy strings. */
+const SHIPPED_IN_SHA_LENGTH_MAX = 40;
 
 export const guardShippedInPresent = (
 	proposalFrontmatter: Record<string, unknown>,
 ): IShippedInGuardResult => {
-	const shippedIn = proposalFrontmatter['shipped-in'];
-	if (!Array.isArray(shippedIn)) {
+	const raw = proposalFrontmatter['shipped-in'];
+	// Accept three shapes the repo has historically used:
+	//   1. List form (canonical):
+	//        shipped-in:\n  - abc1234
+	//        shipped-in: [abc1234]
+	//   2. Scalar string form (legacy test fixtures + some proposals):
+	//        shipped-in: abc1234
+	//   3. Bracketed scalar string form (legacy string-typed fixtures):
+	//        shipped-in: '[abc1234]'
+	// The shape-check downstream tolerates any of these by extracting
+	// every 7-40 char hex run.
+	const shaRe = new RegExp(`^[0-9a-f]{7,${SHIPPED_IN_SHA_LENGTH_MAX}}$`);
+	const candidates: string[] = [];
+	if (Array.isArray(raw)) {
+		for (const entry of raw) {
+			if (typeof entry === 'string' && entry.trim().length > 0) {
+				candidates.push(entry.trim());
+			} else if (typeof entry === 'number' && Number.isFinite(entry)) {
+				candidates.push(String(entry));
+			}
+		}
+	} else if (typeof raw === 'string' && raw.trim().length > 0) {
+		const trimmed = raw.trim();
+		// Strip matching [] to handle the legacy `'[abc1234]'` form.
+		const inner =
+			trimmed.startsWith('[') && trimmed.endsWith(']')
+				? trimmed.slice(1, -1)
+				: trimmed;
+		// If the bracket-stripped string is itself a valid 7-40 hex SHA,
+		// keep it as a single candidate (e.g. `[ship123]` is one SHA,
+		// not three tokens to split). Otherwise split on whitespace /
+		// commas to extract every individual SHA.
+		if (shaRe.test(inner)) {
+			candidates.push(inner);
+		} else {
+			for (const token of inner.split(/[\s,]+/u)) {
+				const t = token.replace(/^[-\s]+/u, '').trim();
+				if (t.length > 0) candidates.push(t);
+			}
+		}
+	} else if (typeof raw === 'number' && Number.isFinite(raw)) {
+		candidates.push(String(raw));
+	} else if (raw !== undefined && raw !== null) {
+		// Any non-string/non-array value (number, boolean, object) is
+		// malformed.
 		return {
 			ok: false,
 			code: 'missing-shipped-in',
-			reason: 'shipped-in: list is required to mark a proposal done',
+			reason: `${SHIPPED_IN_MISSING_REASON} Got malformed value of type ${typeof raw}.`,
+			nextAction: SHIPPED_IN_MISSING_NEXT_ACTION,
+			fix: SHIPPED_IN_MISSING_FIX,
 		};
 	}
-	const shas = shippedIn.filter(
-		(value): value is string =>
-			typeof value === 'string' && value.trim().length > 0,
-	);
-	if (shas.length === 0) {
+	if (candidates.length === 0) {
 		return {
 			ok: false,
 			code: 'missing-shipped-in',
-			reason: 'shipped-in: list is required to mark a proposal done',
+			reason: SHIPPED_IN_MISSING_REASON,
+			nextAction: SHIPPED_IN_MISSING_NEXT_ACTION,
+			fix: SHIPPED_IN_MISSING_FIX,
+		};
+	}
+	// Validate shape: every candidate must look like a short or full
+	// SHA (7-40 lowercase hex). A non-SHA like "TBD" or "n/a" used to
+	// pass silently and was the root cause of the in-progress/backlog
+	// regression (agents wrote `shipped-in: [TBD]` and the proposal got
+	// stuck). Cheap shape-check stops that failure mode before the
+	// validator runs downstream.
+	const invalid = candidates.filter(
+		(value) =>
+			!new RegExp(`^[0-9a-f]{7,${SHIPPED_IN_SHA_LENGTH_MAX}}$`).test(
+				value,
+			),
+	);
+	if (invalid.length > 0) {
+		return {
+			ok: false,
+			code: 'missing-shipped-in',
+			reason: `${SHIPPED_IN_MISSING_REASON} Got non-SHA entries: [${invalid.map((s) => JSON.stringify(s)).join(', ')}].`,
+			nextAction: SHIPPED_IN_MISSING_NEXT_ACTION,
+			fix: SHIPPED_IN_MISSING_FIX,
 		};
 	}
 	return { ok: true };
@@ -111,8 +207,10 @@ export const logForcedRegression = async (input: {
 
 	await mkdir(dirname(logPath), { recursive: true });
 	await withFileMutex(logPath, async () => {
-		const existing = await readFile(logPath, 'utf8').catch(
-			(error: unknown) => {
+		const existing = await new SafeWorkspaceReader(dirname(logPath))
+			.readText(basename(logPath))
+			.then((value) => value.content)
+			.catch((error: unknown) => {
 				if (
 					error &&
 					typeof error === 'object' &&
@@ -122,8 +220,7 @@ export const logForcedRegression = async (input: {
 					return '';
 				}
 				throw error;
-			},
-		);
+			});
 		const prefix =
 			existing === '' || existing.endsWith('\n')
 				? existing

@@ -64,7 +64,7 @@ const renderKnowledge = (input: {
 
 export default definePlugin({
 	name: 'test-policy',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Política declarativa de tests para agentes: tdd (default), tests-after, free o none — con guidance imperativa, override durable en runtime y knowledge entry de orientación.',
 	optionsSchema: OptionsSchema,

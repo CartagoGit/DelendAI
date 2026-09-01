@@ -95,6 +95,10 @@ export interface IHostCapabilityGateResult {
 	readonly findings: readonly IHostCapabilityFinding[];
 }
 
+export type HostAdapterPackBuilder = (
+	profile: IHostCapabilityProfile,
+) => IHostAdapterPack;
+
 const finding = (
 	hostId: string,
 	ruleId: string,
@@ -103,6 +107,7 @@ const finding = (
 
 const validateOne = (
 	profile: IHostCapabilityProfile,
+	buildPack: HostAdapterPackBuilder = buildHostAdapterPack,
 ): readonly IHostCapabilityFinding[] => {
 	const out: IHostCapabilityFinding[] = [];
 	if (profile.id.trim() === '') {
@@ -136,7 +141,7 @@ const validateOne = (
 
 	let pack: IHostAdapterPack;
 	try {
-		pack = buildHostAdapterPack(profile);
+		pack = buildPack(profile);
 	} catch (error) {
 		out.push(
 			finding(
@@ -265,6 +270,7 @@ const validateOne = (
  */
 export const runHostCapabilityGate = (
 	profiles: readonly IHostCapabilityProfile[] = CANONICAL_PROFILES,
+	buildPack: HostAdapterPackBuilder = buildHostAdapterPack,
 ): IHostCapabilityGateResult => {
 	const findings: IHostCapabilityFinding[] = [];
 	const ids = new Set<string>();
@@ -280,7 +286,7 @@ export const runHostCapabilityGate = (
 			continue;
 		}
 		ids.add(profile.id);
-		findings.push(...validateOne(profile));
+		findings.push(...validateOne(profile, buildPack));
 	}
 	return {
 		ok: findings.length === 0,

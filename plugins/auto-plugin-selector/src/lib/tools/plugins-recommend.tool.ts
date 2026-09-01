@@ -29,13 +29,21 @@ import type {
 	IPluginFit,
 	IProjectSignals,
 	IRecommendPluginsOptions,
+	IRecommendPluginsWeights,
+	IUsageAggregation,
 } from '../contracts/interfaces/plugin-fit.interface';
-import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/lib/contracts/interfaces/roster.interface';
+import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/public';
 
 export interface IPluginsRecommendToolOptions {
 	readonly namespacePrefix: string;
 	/** Injected catalog; defaults to the bundled FIRST_PARTY_PLUGIN_INDEX. */
 	readonly candidates?: readonly IPluginCandidate[];
+	/** r00025 S4 — host-overridable weights for the scoring formula. */
+	readonly weights?: IRecommendPluginsWeights | undefined;
+	/** r00025 S2/S3 — per-plugin local usage aggregates. */
+	readonly usageAggregations?:
+		| ReadonlyMap<string, IUsageAggregation>
+		| undefined;
 }
 
 const PROJECT_SIGNALS = z.object({
@@ -159,6 +167,12 @@ export const buildPluginsRecommendRegistration = (
 					...(args.minScore !== undefined
 						? { minScore: args.minScore }
 						: {}),
+					...(options.weights === undefined
+						? {}
+						: { weights: options.weights }),
+					...(options.usageAggregations === undefined
+						? {}
+						: { usageAggregations: options.usageAggregations }),
 				};
 				const fits = recommendPlugins(
 					args.signals,

@@ -15,11 +15,12 @@
  * and `computeCostUsd` returns `null` for them — we never fabricate a
  * per-call figure.
  */
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
 	redactSecrets,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -85,7 +86,12 @@ const SNAPSHOT_URL = new URL(
 
 /** Read the bundled snapshot that ships with the plugin. */
 export const readBundledSnapshot = async (): Promise<IPricingTable> => {
-	const raw = await readFile(fileURLToPath(SNAPSHOT_URL), 'utf8');
+	const snapshotPath = fileURLToPath(SNAPSHOT_URL);
+	const raw = (
+		await new SafeWorkspaceReader(dirname(snapshotPath)).readText(
+			basename(snapshotPath),
+		)
+	).content;
 	return JSON.parse(raw) as IPricingTable;
 };
 
@@ -110,7 +116,13 @@ export const readPricingCache = async (
 	absPath: string,
 ): Promise<IPricingTable | null> => {
 	try {
-		return parseTable(await readFile(absPath, 'utf8'));
+		return parseTable(
+			(
+				await new SafeWorkspaceReader(dirname(absPath)).readText(
+					basename(absPath),
+				)
+			).content,
+		);
 	} catch (err) {
 		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null;
 		return null;
@@ -185,6 +197,13 @@ export const writePricingCache = async (
 export interface IResolvePricingDeps {
 	readonly now?: () => number;
 	readonly fetchImpl?: typeof fetchLiteLlmPricing;
+	/**
+	 * Receives the in-flight background refresh so a caller can observe it
+	 * — a host awaiting it on shutdown so the write is not lost mid-flush,
+	 * or a test awaiting it instead of sleeping and hoping. Never called
+	 * when the cache is fresh enough that no refresh is triggered.
+	 */
+	readonly onBackgroundRefresh?: (refresh: Promise<void>) => void;
 }
 
 /**
@@ -208,14 +227,17 @@ export const resolvePricing = async (
 	const current = cache ?? (await readBundledSnapshot());
 
 	if (cache === null || isStale(current, now())) {
-		// Fire-and-forget background refresh; never awaited on the hot path.
-		void (async () => {
+		// Never awaited on the hot path — but handed to the caller so the
+		// refresh is observable rather than merely fire-and-forget.
+		const refresh = (async () => {
 			const fresh = await fetchImpl();
 			if (fresh)
 				await writePricingCache(cachePath, fresh).catch(
 					() => undefined,
 				);
 		})();
+		deps.onBackgroundRefresh?.(refresh);
+		void refresh;
 	}
 
 	return current;

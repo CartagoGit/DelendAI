@@ -5,8 +5,7 @@
  * produce no finding. The classifier is pure; the scan is pure over injected
  * readers; the real adapter reads the manifest + node_modules.
  */
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type { IFinding } from '@mcp-vertex/core/public';
 
@@ -95,11 +94,9 @@ export const realLicenseDeps = (
 	manifestRel: string,
 ): ILicenseScanDeps => ({
 	listDependencyNames: async () => {
+		const reader = new SafeWorkspaceReader(workspaceRootAbs);
 		try {
-			const raw = await readFile(
-				join(workspaceRootAbs, manifestRel),
-				'utf8',
-			);
+			const raw = (await reader.readText(manifestRel)).content;
 			const pkg = JSON.parse(raw) as Record<string, unknown>;
 			const sections = [
 				'dependencies',
@@ -120,11 +117,11 @@ export const realLicenseDeps = (
 		}
 	},
 	readLicense: async (pkgName) => {
+		const packageReader = new SafeWorkspaceReader(
+			`${workspaceRootAbs}/node_modules/${pkgName}`,
+		);
 		try {
-			const raw = await readFile(
-				join(workspaceRootAbs, 'node_modules', pkgName, 'package.json'),
-				'utf8',
-			);
+			const raw = (await packageReader.readText('package.json')).content;
 			return readLicenseField(JSON.parse(raw) as Record<string, unknown>);
 		} catch {
 			return undefined;

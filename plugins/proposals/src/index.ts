@@ -1,28 +1,42 @@
+import { registerAdoptionExtensions } from '@mcp-vertex/core/lib/adopt/adoption-extension-registry';
+import type {
+	IPluginConfigurationIssue,
+	IPluginConfigurationValidationInput,
+} from '@mcp-vertex/core/public';
 import {
 	createWorkspaceFileReader,
 	definePlugin,
 } from '@mcp-vertex/core/public';
-import { existsSync } from 'node:fs';
+import { createLogStore, logIncidents } from '@mcp-vertex/logs/public';
+import { access } from 'node:fs/promises';
+import { join } from 'node:path';
 
-import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 import z from 'zod';
+import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 
+import { mergeCheckpointAdvisories } from '@mcp-vertex/core/public';
+import { resolveScopes } from '@mcp-vertex/quality/public';
+import { buildProposalsAdoptionExtension } from './lib/adoption/proposals-adoption-extension';
+import { registerProposalsStableTools } from './lib/api/proposals-stable-tools';
 import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';
-import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
+import {
+	DEFAULT_PROPOSAL_FOLDER_POLICY,
+	type IProposalFolderPolicy,
+} from './lib/contracts/proposal-folder-policy';
+import { cleanupStaleAgentLockState } from './lib/locks/agent-lock-engine';
 import { createCallbackLockListener } from './lib/locks/lock-change-listener';
+import { buildProposalTemplatesResourceRegistration } from './lib/resources/proposal-templates.resource';
+import type { IObservedToolCall } from './lib/services/checkpoint-advisory-micro-validation.service';
+import { assessMicroValidationLoop } from './lib/services/checkpoint-advisory-micro-validation.service';
+import { registerProposalsWorkflowContribution } from './lib/skills/proposals-workflow-contribution';
+import { buildCloseSliceValidationProvider } from './lib/swarm/validation-provider';
+import { buildAdoptRegistration } from './lib/tools/adopt.tool';
+import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
+import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
 import { buildAgentWorktreeRegistration } from './lib/tools/agent-worktree.tool';
-import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
-import { buildSwarmHygieneRegistration } from './lib/tools/swarm-hygiene.tool';
-import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
-import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
-import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
-import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
-import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
-import {
-	buildDelegateRegistration,
-	buildPlanRegistration,
-} from './lib/tools/orchestration.tool';
+import { buildAgentsLockDiagnoseRegistration } from './lib/tools/agents-lock-diagnose.tool';
+import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
 import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
@@ -30,27 +44,34 @@ import {
 	buildReviewRegistration,
 	runCloseSliceQualityGate,
 } from './lib/tools/authoring.tool';
-import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
-import { buildAdoptRegistration } from './lib/tools/adopt.tool';
-import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
-import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
+import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
+import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
+import type { IAutoWorkPersistMode } from './lib/tools/auto-work-persist';
+import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
+import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
+import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
+import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
+import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
+import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
+import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
+import {
+	buildDelegateRegistration,
+	buildPlanRegistration,
+} from './lib/tools/orchestration.tool';
+import { buildProposalGetRegistration } from './lib/tools/proposal-get.tool';
+import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
+import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
-import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
-import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
+import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import {
 	buildStateHealthRegistration,
 	buildStateRepairRegistration,
 	runAutoStateRepairOnBoot,
 } from './lib/tools/state-tools.tool';
-import type { IStateToolOptions } from './lib/tools/state-tools.tool';
-import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
-import { cleanupStaleAgentLockState } from './lib/locks/agent-lock-engine';
-import { buildAgentsLockDiagnoseRegistration } from './lib/tools/agents-lock-diagnose.tool';
-import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
-import { mergeCheckpointAdvisories } from '@mcp-vertex/core/public';
-import { assessMicroValidationLoop } from './lib/services/checkpoint-advisory-micro-validation.service';
-import type { IObservedToolCall } from './lib/services/checkpoint-advisory-micro-validation.service';
+import { buildSwarmHygieneRegistration } from './lib/tools/swarm-hygiene.tool';
+import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
+import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
 
 /**
  * The proposals workflow plugin. It turns mcp-vertex into a multi-agent
@@ -74,6 +95,8 @@ import type { IObservedToolCall } from './lib/services/checkpoint-advisory-micro
  * fields, not `ctx.options.X as Y` casts.
  */
 const PROPOSALS_OPTIONS_SCHEMA = z.object({
+	/** Workspace-relative proposal content root. Defaults to <docsDir>/proposals. */
+	proposalsDir: z.string().min(1).optional(),
 	/** Custom symbolic agent-name pool. */
 	namePool: z.array(z.string()).optional(),
 	/** Quality-gate command surfaced by auto_work. */
@@ -83,6 +106,8 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 			mode: z.enum(['none', 'commit', 'commit-and-push']).default('none'),
 			messageTemplate: z.string().optional(),
 			pushTarget: z.string().optional(),
+			allowForeignChanges: z.boolean().optional(),
+			protectedBranches: z.array(z.string()).default(['main', 'master']),
 		})
 		.optional(),
 	orchestration: z
@@ -95,6 +120,41 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 * proposals dir), e.g. `['paused/demos']`. mcp-vertex bakes none.
 	 */
 	proposalFolders: z.array(z.string()).optional(),
+	/** Per-status folder layout. Unspecified statuses stay flat. */
+	folderPolicy: z
+		.record(
+			z.enum([
+				'ready',
+				'in-progress',
+				'review',
+				'done',
+				'paused',
+				'blocked',
+				'retired',
+			]),
+			z.union([
+				z.enum(['flat', 'by-kind']),
+				z.array(
+					z.enum([
+						'feat',
+						'breaking',
+						'fix',
+						'refactor',
+						'perf',
+						'audit',
+						'chore',
+						'docs',
+						'test',
+						'infra',
+						'spike',
+						'legacy',
+						'resume',
+						'plan',
+					]),
+				),
+			]),
+		)
+		.optional(),
 	/**
 	 * r00003 S7 + S9: host narrative-heading aliases for the proposal
 	 * scaffold linter, as `[heading, canonicalSection]` tuples.
@@ -107,6 +167,15 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 * Default true when omitted (wired at register time).
 	 */
 	requirePeerReview: z.boolean().optional(),
+	/**
+	 * Require a passing `bun run validate` (journalled to
+	 * `.cache/mcp-vertex/results/logs/validate.jsonl`) before
+	 * `close_slice` marks a slice done or `proposal_transition` moves a
+	 * proposal to review/done. Default true when omitted. Adopters
+	 * without a validate chain worth blocking on set this to false
+	 * instead of teaching every agent to pass `force: true`.
+	 */
+	requireValidateEvidence: z.boolean().optional(),
 	/**
 	 * a00069 S10: auto-purge orphan registry/queue/lock drift on plugin boot.
 	 * Default true. Set false to keep diagnose-only (manual state_repair).
@@ -149,12 +218,62 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 		.optional(),
 });
 
+const hasSliceTrigger = (
+	options: Readonly<Record<string, unknown>>,
+): boolean => {
+	const cadence = options.cadence;
+	if (typeof cadence !== 'object' || cadence === null) return false;
+	const triggers = (cadence as { readonly triggers?: unknown }).triggers;
+	return (
+		Array.isArray(triggers) &&
+		triggers.some(
+			(trigger) =>
+				typeof trigger === 'object' &&
+				trigger !== null &&
+				(trigger as { readonly kind?: unknown }).kind === 'slice',
+		)
+	);
+};
+
+const commitPolicyOwnsSlicePersistence = (
+	options: Readonly<Record<string, unknown>> | undefined,
+): boolean => {
+	if (options === undefined) return false;
+	const commit = options.commit;
+	const commitEnabled =
+		typeof commit === 'object' &&
+		commit !== null &&
+		(commit as { readonly enabled?: unknown }).enabled === true;
+	return commitEnabled && hasSliceTrigger(options);
+};
+
+export const resolveProposalPersistMode = (
+	configuredMode: IAutoWorkPersistMode | undefined,
+	commitPolicyOptions: Readonly<Record<string, unknown>> | undefined,
+): IAutoWorkPersistMode =>
+	commitPolicyOwnsSlicePersistence(commitPolicyOptions)
+		? 'none'
+		: (configuredMode ?? 'none');
+
+/**
+ * `commit-policy` owns slice persistence when it is enabled with a slice
+ * trigger. Proposals keeps its configured mode as the fallback for hosts that
+ * do not load that plugin or do not enable its slice cadence.
+ */
+export const validateProposalConfiguration = (
+	input: IPluginConfigurationValidationInput,
+): readonly IPluginConfigurationIssue[] => {
+	void input;
+	return [];
+};
+
 export default definePlugin({
 	name: 'proposals',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Proposal store + file-level agent locks + persistent task queue (multi-agent swarm coordination).',
 	optionsSchema: PROPOSALS_OPTIONS_SCHEMA,
+	validateConfiguration: validateProposalConfiguration,
 	configExample: {
 		summary:
 			'Default swarm setup: bun as the validation command, and an explicit agent-name pool so multi-agent runs get reproducible names.',
@@ -164,7 +283,13 @@ export default definePlugin({
 			orchestration: { delegateAfterToolCalls: 3 },
 		},
 	},
-	register(ctx) {
+	async register(ctx) {
+		registerAdoptionExtensions('proposals', [
+			buildProposalsAdoptionExtension(),
+		]);
+		registerProposalsStableTools();
+		registerProposalsWorkflowContribution();
+
 		// r00003 S9 (F9): validate ctx.options through the SAME schema the
 		// loader declares, so a host misconfig is a structured error here
 		// rather than a silent cast downstream. The narrow per-field casts
@@ -187,7 +312,11 @@ export default definePlugin({
 		// proposals under `<docsDir>`. Engines that bake DEFAULT_PATH_LAYOUT
 		// receive this layout explicitly (sync/round-context), so a
 		// relocated store stays coherent end to end.
-		const layout = buildSwarmPaths(ctx.cacheDir, ctx.docsDir);
+		const layout = buildSwarmPaths(
+			ctx.cacheDir,
+			ctx.docsDir,
+			parsedOptions.data.proposalsDir,
+		);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
 
@@ -195,7 +324,45 @@ export default definePlugin({
 		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
 		// its folder policy via ctx.options (now schema-validated, S9).
 		const extraProposalFolders = parsedOptions.data.proposalFolders ?? [];
+		const folderPolicy: IProposalFolderPolicy = {
+			...DEFAULT_PROPOSAL_FOLDER_POLICY,
+			...parsedOptions.data.folderPolicy,
+		};
+		const commitPolicyOptions = ctx.pluginOptions?.get('commit-policy');
+		const commitPolicyPush = commitPolicyOptions?.push;
+		const protectedBranches =
+			commitPolicyPush !== null &&
+			typeof commitPolicyPush === 'object' &&
+			Array.isArray(
+				(commitPolicyPush as { protectedBranches?: unknown })
+					.protectedBranches,
+			)
+				? (commitPolicyPush as { protectedBranches: string[] })
+						.protectedBranches
+				: ['main', 'master'];
+		const configuredPersist = parsedOptions.data.persist;
+		const effectivePersistMode = resolveProposalPersistMode(
+			configuredPersist?.mode,
+			commitPolicyOptions as
+				| Readonly<Record<string, unknown>>
+				| undefined,
+		);
+		const effectivePersist =
+			configuredPersist !== undefined
+				? {
+						...configuredPersist,
+						mode: effectivePersistMode,
+						protectedBranches,
+					}
+				: undefined;
 		const microValidationCalls: IObservedToolCall[] = [];
+		const incidentLogStore = createLogStore(
+			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors')),
+		);
+		const hasProposalsStore = await access(abs(layout.proposalsDir)).then(
+			() => true,
+			() => false,
+		);
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
@@ -241,12 +408,20 @@ export default definePlugin({
 			runAutoStateRepairOnBoot(stateOptions);
 		}
 
+		const qualityOptions = ctx.pluginOptions?.has('quality')
+			? (ctx.pluginOptions.get('quality') as {
+					scopes?: Record<string, readonly string[]>;
+				})
+			: undefined;
+		const qualityPeerConfigured = qualityOptions?.scopes !== undefined;
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRoot: ctx.workspace.root,
+			agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
 			proposalsDirAbs: abs(layout.proposalsDir),
 			indexPathAbs: abs(layout.proposalIndexFile),
 			lockPathAbs: abs(layout.lockFile),
+			agentNames: agentNamesOptions,
 			peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
 			counterPathAbs: abs(layout.proposalIdCountersFile),
 			layout: {
@@ -254,6 +429,7 @@ export default definePlugin({
 				proposalIndexFile: layout.proposalIndexFile,
 			},
 			extraFolders: extraProposalFolders,
+			folderPolicy,
 			// a00069 S5: host validation command for close_slice gate.
 			...(typeof ctx.options.validationCommand === 'string'
 				? {
@@ -267,12 +443,78 @@ export default definePlugin({
 							.requirePeerReview as boolean,
 					}
 				: { requirePeerReview: true }),
-			...((ctx.peerPlugins?.has('quality') ?? false)
+			...(typeof ctx.options.requireValidateEvidence === 'boolean'
 				? {
-						runQuality: () =>
-							runCloseSliceQualityGate(ctx.workspace.root),
+						requireValidateEvidence: ctx.options
+							.requireValidateEvidence as boolean,
+					}
+				: { requireValidateEvidence: true }),
+			...(qualityPeerConfigured
+				? {
+						resolveValidationDecision:
+							buildCloseSliceValidationProvider({
+								workspaceRoot: ctx.workspace.root,
+								registryPathAbs: abs(layout.agentRegistryFile),
+								lockPathAbs: abs(layout.lockFile),
+								worktreesDirAbs: abs(layout.worktreesDir),
+								scopes: await resolveScopes(
+									createWorkspaceFileReader(ctx.workspace),
+									ctx.pluginOptions?.has('quality') === true
+										? {
+												scopes:
+													(
+														ctx.pluginOptions.get(
+															'quality',
+														) as {
+															scopes?: Record<
+																string,
+																readonly string[]
+															>;
+														}
+													).scopes ?? {},
+											}
+										: {},
+								),
+								...(ctx.hostIdentity?.host !== undefined
+									? { host: ctx.hostIdentity.host }
+									: {}),
+								...(ctx.hostIdentity?.model !== undefined
+									? { model: ctx.hostIdentity.model }
+									: {}),
+							}),
+						runQuality: (input) =>
+							runCloseSliceQualityGate(
+								ctx.workspace.root,
+								undefined,
+								{
+									...(input?.scopes !== undefined
+										? { scopes: input.scopes }
+										: {}),
+								},
+							),
 					}
 				: {}),
+			...(effectivePersist !== undefined
+				? {
+						persist: {
+							mode: effectivePersist.mode,
+							protectedBranches,
+							...(effectivePersist.messageTemplate !== undefined
+								? {
+										messageTemplate:
+											effectivePersist.messageTemplate,
+									}
+								: {}),
+							...(effectivePersist.pushTarget !== undefined
+								? {
+										pushTarget: effectivePersist.pushTarget,
+									}
+								: {}),
+						},
+					}
+				: {}),
+			commitAuthor: ctx.commitAuthor,
+			persistGit: ctx.effects?.git,
 		};
 
 		return {
@@ -366,11 +608,18 @@ export default definePlugin({
 						proposalIndexFile: layout.proposalIndexFile,
 					},
 					extraFolders: extraProposalFolders,
+					folderPolicy,
 				}),
 				buildGetProposalWorkflowRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					proposalsDir: layout.proposalsDir,
 					indexFile: layout.proposalIndexFile,
+				}),
+				// r00031: `proposal_get` — compact | normal | full.
+				buildProposalGetRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					indexPathAbs: abs(layout.proposalIndexFile),
 				}),
 				buildRoundContextRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -419,18 +668,25 @@ export default definePlugin({
 							}
 						: {}),
 					// a00069 S7: short-circuit review/ without peer approve.
+					...(typeof ctx.options.requireValidateEvidence === 'boolean'
+						? {
+								requireValidateEvidence: ctx.options
+									.requireValidateEvidence as boolean,
+							}
+						: { requireValidateEvidence: true }),
 					...(typeof ctx.options.requirePeerReview === 'boolean'
 						? {
 								requirePeerReview: ctx.options
 									.requirePeerReview as boolean,
 							}
 						: { requirePeerReview: true }),
-					...(ctx.options.persist !== undefined
+					...(effectivePersist !== undefined
 						? {
-								persist: ctx.options.persist as {
+								persist: effectivePersist as {
 									mode: 'none' | 'commit' | 'commit-and-push';
 									messageTemplate?: string;
 									pushTarget?: string;
+									protectedBranches?: readonly string[];
 								},
 							}
 						: {}),
@@ -469,6 +725,7 @@ export default definePlugin({
 					// + self-**Files** rewrite inside applyTransition.
 					indexPathAbs: abs(layout.proposalIndexFile),
 					peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
+					folderPolicy,
 					// a00069 S7: peer-review gate on review→done (default on).
 					...(typeof ctx.options.requirePeerReview === 'boolean'
 						? {
@@ -504,6 +761,34 @@ export default definePlugin({
 					},
 					extraFolders: extraProposalFolders,
 				}),
+				buildIncidentProposalRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					indexPathAbs: abs(layout.proposalIndexFile),
+					counterPathAbs: abs(layout.proposalIdCountersFile),
+					layout: {
+						proposalsDir: layout.proposalsDir,
+						proposalIndexFile: layout.proposalIndexFile,
+					},
+					extraFolders: extraProposalFolders,
+					readIncidents: async (options) =>
+						logIncidents(await incidentLogStore, options),
+				}),
+				buildAutoFixQueueRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					indexPathAbs: abs(layout.proposalIndexFile),
+					counterPathAbs: abs(layout.proposalIdCountersFile),
+					layout: {
+						proposalsDir: layout.proposalsDir,
+						proposalIndexFile: layout.proposalIndexFile,
+					},
+					extraFolders: extraProposalFolders,
+					readIncidents: async (options) =>
+						logIncidents(await incidentLogStore, options),
+				}),
 				buildStateHealthRegistration(stateOptions),
 				buildStateRepairRegistration(stateOptions),
 				buildCompactStatusRegistration({
@@ -516,6 +801,7 @@ export default definePlugin({
 				}),
 				...buildRecoveryToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
+					indexPathAbs: abs(layout.proposalIndexFile),
 					proposalsDirAbs: abs(layout.proposalsDir),
 					lockPathAbs: abs(layout.lockFile),
 					agentRegistryPathAbs: abs(layout.agentRegistryFile),
@@ -527,6 +813,12 @@ export default definePlugin({
 									.requirePeerReview as boolean,
 							}
 						: { requirePeerReview: true }),
+				}),
+			],
+			resources: [
+				buildProposalTemplatesResourceRegistration({
+					proposalsDir: layout.proposalsDir,
+					indexFile: layout.proposalIndexFile,
 				}),
 			],
 			prompts: [
@@ -589,9 +881,8 @@ export default definePlugin({
 			],
 			knowledge: [
 				// f00116 S3: when the workspace has NO proposals store yet,
-				// orientation names the one call that bootstraps it. Boot-time
-				// existsSync is sanctioned (AGENTS.md rule 3); no writes here.
-				...(existsSync(abs(layout.proposalsDir))
+				// orientation names the one call that bootstraps it.
+				...(hasProposalsStore
 					? []
 					: [
 							{
@@ -637,7 +928,7 @@ export default definePlugin({
 						'- `auto_work` — one call: the next proposal + an ordered action plan.',
 						'- `auto_work.orchestration` — context policy: keep the main thread compact; inspect plan/delegate for non-trivial slices.',
 						'- `continue_proposal` — next proposal (mode "auto"), or a parallel slice plan/claim (modes "plan"/"claim").',
-						'- `agent_lock` — claim files before editing, release after (claim/release/status/gc).',
+						'- `agent_lock` — claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc).',
 						'- `get_proposal_workflow` — families, locations, naming, template.',
 						'- `sync_proposals` — rebuild the index after creating/renaming proposal files.',
 						'- `agent_names` — name the whole agent tree, orchestrator included.',

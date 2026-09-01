@@ -7,11 +7,14 @@ import {
 	type IToolDescriptor,
 	type IToolEffect,
 } from '@mcp-vertex/client';
+import { renderToolDetailHtml } from '@mcp-vertex/ui-extension/webview';
+import type { IToolDetail } from '@mcp-vertex/ui-extension/webview';
+import type { IToolDetailCopy } from '@mcp-vertex/ui-extension/webview';
 
 import type { IRenderableSchema } from '../views/render-output-schema';
-import { renderToolDetailHtml } from '../views/tool-detail-webview';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 import { OPEN_TOOL_DETAIL_COMMAND } from '../contracts/constants/open-tool-detail-command.constant';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
@@ -107,7 +110,10 @@ const loadKnowledgeBody = async (
 export const buildToolDetailHtml = async (
 	deps: Pick<ICommandDeps, 'client' | 'namespacePrefix' | 'globalState'>,
 	arg: IToolDetailArgument,
-): Promise<string> => {
+): Promise<{
+	readonly html: string;
+	readonly model: IToolDetail;
+}> => {
 	const fromArg = descriptorFromArgument(arg);
 	if (fromArg === undefined) {
 		throw new Error('openToolDetail requires a tool name or descriptor');
@@ -125,31 +131,63 @@ export const buildToolDetailHtml = async (
 		schemaTool === undefined
 			? overviewTool
 			: { ...descriptorFromMcpTool(schemaTool), ...overviewTool };
-	return renderToolDetailHtml({
+	const model: IToolDetail = {
 		tool,
 		...(isRenderableSchema(schemaTool?.inputSchema)
-			? { inputSchema: schemaTool.inputSchema }
+			? { inputSchema: schemaTool.inputSchema as IRenderableSchema }
 			: {}),
 		...(isRenderableSchema(schemaTool?.outputSchema)
-			? { outputSchema: schemaTool.outputSchema }
+			? { outputSchema: schemaTool.outputSchema as IRenderableSchema }
 			: {}),
 		...(knowledgeBody === undefined ? {} : { knowledgeBody }),
 		...(metrics === undefined ? {} : { metrics }),
-		copy: viewCopyFor(
-			resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
+		copy: projectToolDetailCopy(
+			viewCopyFor(
+				resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
+			),
 		),
-	});
+	};
+	return { html: renderToolDetailHtml(model), model };
 };
+
+/**
+ * `IToolDetail` is host-agnostic; the legacy `IViewCopy` carries a
+ * few extra strings the shared renderer does not consume. Project
+ * the subset we need so the dashboard shell can render the same
+ * detail without importing VS Code vocabulary.
+ */
+const projectToolDetailCopy = (copy: IViewCopy): IToolDetailCopy => ({
+	lang: copy.lang,
+	knowledge: copy.knowledge,
+	inputSchema: copy.inputSchema,
+	noInputSchema: copy.noInputSchema,
+	outputSchema: copy.outputSchema,
+	noOutputSchema: copy.noOutputSchema,
+	metrics: copy.metrics,
+	noCalls: copy.noCalls,
+	callSingular: copy.callSingular,
+	calls: copy.calls,
+	errorSingular: copy.errorSingular,
+	errors: copy.errors,
+	max: copy.max,
+	items: copy.items,
+	required: copy.required,
+	optional: copy.optional,
+	enumLabel: copy.enumLabel,
+});
 
 export const registerOpenToolDetailCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(
 		OPEN_TOOL_DETAIL_COMMAND,
 		async (arg?: unknown) => {
 			try {
-				const html = await buildToolDetailHtml(
+				const { html, model } = await buildToolDetailHtml(
 					deps,
 					(arg ?? '') as IToolDetailArgument,
 				);
+				const sinkHandled =
+					(await deps.detailSink?.('tool', model)) === true;
+				if (sinkHandled) return undefined;
 				const panel = deps.vscode.window.createWebviewPanel(
 					'mcpVertexToolDetail',
 					'mcp-vertex Tool Detail',

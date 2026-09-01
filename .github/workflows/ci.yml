@@ -1,181 +1,509 @@
 name: CI
 
-# develop is the integration branch (agents push there daily); without it
-# in the triggers, breakage only surfaces when a main release is attempted.
+# The full matrix is the strict release boundary for `main`. Development
+# branches receive lighter feedback from the affected/tier workflows without
+# making every local integration push a required quality event.
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 # Cancel superseded runs on the same ref to save CI minutes.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  lint:
-    name: lint (biome)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
+    lint-biome:
+        name: lint-biome
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Lint
-        run: bun run lint
+            - name: Run biome and style-entry lints
+              run: |
+                  set -euo pipefail
+                  bun run lint
+                  bun run lint:scss
 
-  site:
-    # c00088: astro-check (lint:web) provably misses build-only
-    # resolution failures — the site build has broken twice with every
-    # other gate green (04b13fcb vite alias shadowing, 7dae147b f00102).
-    # Building the real site is the only gate for that class.
-    name: web site build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
+    lint-architecture:
+        name: lint-architecture
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Build the web site
-        run: bun run site
+            - name: Run architecture lints
+              run: |
+                  set -euo pipefail
+                  bun run lint:cli-imports
+                  bun run lint:cli-coverage
+                  bun run lint:architecture-readfile-via-safe-reader
+                  bun run lint:tools
+                  bun run lint:self-host-dogfood
+                  bun run lint:solid
+                  bun run lint:no-any
+                  bun run lint:cli-shape
+                  bun run lint:cli-ui-parity
+                  bun run lint:shared-ui-ratchet
+                  bun run lint:types-in-contracts
+                  bun run lint:type-naming
+                  bun run lint:test-unsafe-casts
+                  bun run lint:effect-boundaries
+                  bun run lint:file-conventions
 
-  validate:
-    name: typecheck + tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
+    lint-presets:
+        name: lint-presets
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Clean mcp-vertex cache
-        run: rm -rf .cache/mcp-vertex
+            - name: Rebuild the proposal registry cache
+              # A fresh checkout has no `.cache/mcp-vertex/proposals/index.json`
+              # (gitignored — it's a derived cache, see r00010). `catalog:check`
+              # below needs it to exist to resolve at all. This mirrors what the
+              # MCP server does lazily on its own `auto_work`/`continue_proposal`
+              # calls; it is NOT a proposal-integrity gate (that lives in
+              # `lint-governance` via `lint:proposals`), so a nonzero exit here
+              # (e.g. duplicate ids mid-swarm) must not fail this job.
+              run: bun run sync:proposals || true
 
-      - name: Typecheck
-        run: bun run typecheck
+            - name: Run preset and release-surface checks
+              run: |
+                  set -euo pipefail
+                  bun run lint:setup
+                  bun run lint:dependency-versions
+                  bun run lint:core-version-pin
+                  bun run lint:feature-flags
+                  bun run lint:compat-window
+                  bun run verify:stable-manifest
+                  bun run catalog:check
+                  bun run catalog:hints:check
 
-      - name: Tests + coverage gate
-        run: bun run test:coverage
+    lint-docs:
+        name: lint-docs
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
 
-  pack-smoke:
-    name: pack smoke (publishable packages)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Run docs, content and web lints
+              run: |
+                  set -euo pipefail
+                  bun run lint:cli:i18n
+                  bun run lint:style-integrity
+                  bun run lint:content-integrity
+                  bun run lint:web
+                  bun run lint:workflow
+                  bun run lint:brand-hex
+                  bun run lint:skills
+                  bun run lint:host-instructions
+                  bun run lint:prompt-size
 
-      # Compile publishable dist/ (Node-runnable .js + .d.ts). `files: ["dist"]`
-      # means the tarball is empty unless this runs first.
-      - name: Build dist
-        run: bun run build
+    lint-security:
+        name: lint-security
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
 
-      # The published CLI must run under plain Node (npx/npm/pnpm/yarn), not
-      # only bun — guard that the compiled bin starts and resolves its deps.
-      # Use a literal block + JSON variable so the YAML parser doesn't read
-      # the inner `:` as a nested mapping key.
-      - name: Smoke — Node runs the compiled CLI
-        env:
-          EXPECTED: '"ok": true'
-        run: |
-          set -euo pipefail
-          output="$(node packages/core/dist/cli.js --check --plugins=)"
-          echo "$output"
-          echo "$output" | grep -qF "$EXPECTED"
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
 
-      # Functional smoke: connect an MCP client to the compiled CLI over stdio
-      # under Node and call a real tool (overview). Proves the published artifact
-      # serves the protocol, not just that the bin starts.
-      - name: Smoke — Node serves the compiled CLI over stdio
-        run: bun tools/scripts/smoke/cli.script.ts
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      # Tarball install e2e: pack core + two plugins, install into a clean project
-      # with npm, and drive the INSTALLED CLI under Node — proves the published
-      # packages resolve each other via plain node resolution (the M3 risk).
-      - name: Smoke — install from tarball and load plugins
-        run: bun tools/scripts/smoke/pack.script.ts
+            - name: Run security and hygiene lints
+              run: |
+                  set -euo pipefail
+                  bun run lint:privacy
+                  bun run lint:no-cleartext-secrets
+                  bun run lint:ephemeral
+                  bun run lint:stray-cache-files
+                  bun run lint:no-tracked-ignored-files
 
-      # `npm pack --dry-run` resolves each package's `files`/`exports` and
-      # fails if a published tarball would be missing or malformed — a cheap
-      # guard that the closed `exports` surface (R13) still packs cleanly.
-      - name: Pack each publishable package
-        run: |
-          set -euo pipefail
-          for dir in packages/core plugins/*; do
-            if [ -f "$dir/package.json" ]; then
-              echo "::group::pack $dir"
-              ( cd "$dir" && npm pack --dry-run )
-              echo "::endgroup::"
-            fi
-          done
+    lint-governance:
+        name: lint-governance
+        runs-on: ubuntu-latest
+        steps:
+            # Full history: this job verifies that commits cited by proposals
+            # actually exist. The default shallow checkout has none of them, so
+            # every citation reads as dangling and the gate could never pass.
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
 
-  metrics-gate:
-    name: metrics longitudinal regression gate (f00027)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Run governance and proposal lints
+              run: |
+                  set -euo pipefail
+                  bun run lint:proposals
+                  bun run lint:mass-content-removal
+                  bun run lint:scaffolds
+                  bun run lint:agents
+                  bun run lint:audit-ids
+                  bun run lint:cache
+                  bun run lint:proposal-id-drift
+                  bun run lint:proposal-cited-commits
+                  bun run lint:single-frontmatter
+                  bun run lint:reap-legacy-proposals
+                  bun run lint:closed-frozen-guard
+                  bun run lint:user-markers
+                  bun run lint:proposal-slice-completeness
+                  bun run lint:commit-branch
+                  bun run lint:push-to-develop
+                  bun run lint:agent-branch-naming
 
-      - name: Build dist
-        run: bun run build
+    typecheck:
+        name: typecheck
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
 
-      # Fetches the metrics snapshot attached to the previous GitHub
-      # release. Resolves gracefully (no failure) if this is the very
-      # first tagged release — the gate starts enforcing on the second one.
-      - name: Fetch baseline snapshot
-        env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          METRICS_BASELINE_OUT: metrics-baseline.json
-        run: bun tools/scripts/metrics/get-baseline.script.ts
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
 
-      # Drives the compiled CLI over stdio, calls every read-only/compact
-      # tool 3 times to average out single-run jitter, and persists a
-      # candidate snapshot.
-      - name: Collect candidate snapshot
-        env:
-          METRICS_CANDIDATE_PATH: metrics-candidate.json
-        run: bun tools/scripts/metrics/collect-candidate.script.ts
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      # Diffs candidate vs baseline; fails the job (non-zero exit) if any
-      # tool regresses beyond the configured threshold (default +20%).
-      # Posts the markdown table as the job summary either way.
-      - name: Diff snapshots against threshold
-        env:
-          METRICS_BASELINE_PATH: metrics-baseline.json
-          METRICS_CANDIDATE_PATH: metrics-candidate.json
-          METRICS_TOKEN_DELTA_PCT: '20'
-          METRICS_LATENCY_DELTA_PCT: '20'
-          METRICS_BYTES_DELTA_PCT: '20'
-        run: bun tools/scripts/metrics/diff-snapshots.script.ts
+            - name: Typecheck
+              run: bun run typecheck
+
+    tests:
+        name: tests
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Clean mcp-vertex cache
+              run: rm -rf .cache/mcp-vertex
+
+            - name: Run tests and coverage gate
+              run: |
+                  set -euo pipefail
+                  bun run test
+                  bun run test:coverage
+
+    quality-gate:
+        name: quality-gate
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Run configured quality scopes
+              run: bun run quality:gate
+
+    verify-runtime:
+        name: verify-runtime
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Run runtime and packaging verification
+              run: |
+                  set -euo pipefail
+                  bun run verify:tools
+                  bun run verify:plugin-wiring:advisory
+                  bun run verify:cache
+                  bun run verify:external-install
+                  bun run verify:scaffolds
+                  bun run verify:dev-bundles
+                  bun run verify:host-capability-packs
+
+    tokens-budget-real:
+        name: tokens-budget-real
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Gate the real preset token budgets
+              run: |
+                  set -euo pipefail
+                  bun run tokens:gate
+                  bun run tokens:dashboard:check
+
+    manifests-check:
+        name: manifests-check
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Validate manifest metadata and generated manifest outputs
+              run: |
+                  set -euo pipefail
+                  bun run lint:plugin-manifest
+                  bun run lint:manifest-vs-package
+                  bun run lint:manifest-vs-presets
+                  bun run generate:from-manifests --check
+
+    generated-artifacts-check:
+        name: generated-artifacts-check
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Verify generated artifacts stay in sync
+              run: bun run check:generated
+
+    site:
+        # c00088: astro-check (lint:web) provably misses build-only
+        # resolution failures — the site build has broken twice with every
+        # other gate green (04b13fcb vite alias shadowing, 7dae147b f00102).
+        # Building the real site is the only gate for that class.
+        name: web site build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Build the web site
+              run: bun run site
+
+    pack-smoke:
+        name: pack smoke (publishable packages)
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            # Compile publishable dist/ (Node-runnable .js + .d.ts). `files: ["dist"]`
+            # means the tarball is empty unless this runs first.
+            - name: Build dist
+              run: bun run build
+
+            # The published CLI must run under plain Node (npx/npm/pnpm/yarn), not
+            # only bun — guard that the compiled bin starts and resolves its deps.
+            # Use a literal block + JSON variable so the YAML parser doesn't read
+            # the inner `:` as a nested mapping key.
+            - name: Smoke — Node runs the compiled CLI
+              env:
+                  EXPECTED: '"ok": true'
+              run: |
+                  set -euo pipefail
+                  output="$(node packages/core/dist/cli.js --check --plugins=)"
+                  echo "$output"
+                  echo "$output" | grep -qF "$EXPECTED"
+
+            # Functional smoke: connect an MCP client to the compiled CLI over stdio
+            # under Node and call a real tool (overview). Proves the published artifact
+            # serves the protocol, not just that the bin starts.
+            - name: Smoke — Node serves the compiled CLI over stdio
+              run: bun tools/scripts/smoke/cli.script.ts
+
+            # Tarball install e2e: pack core + two plugins, install into a clean project
+            # with npm, and drive the INSTALLED CLI under Node — proves the published
+            # packages resolve each other via plain node resolution (the M3 risk).
+            - name: Smoke — install from tarball and load plugins
+              run: bun tools/scripts/smoke/pack.script.ts
+
+            # `npm pack --dry-run` resolves each package's `files`/`exports` and
+            # fails if a published tarball would be missing or malformed — a cheap
+            # guard that the closed `exports` surface (R13) still packs cleanly.
+            - name: Pack each publishable package
+              run: |
+                  set -euo pipefail
+                  for dir in packages/core plugins/*; do
+                    if [ -f "$dir/package.json" ]; then
+                      echo "::group::pack $dir"
+                      ( cd "$dir" && npm pack --dry-run )
+                      echo "::endgroup::"
+                    fi
+                  done
+
+    metrics-gate:
+        name: metrics longitudinal regression gate (f00027)
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Build dist
+              run: bun run build
+
+            # Fetches the metrics snapshot attached to the previous GitHub
+            # release. Resolves gracefully (no failure) if this is the very
+            # first tagged release — the gate starts enforcing on the second one.
+            - name: Fetch baseline snapshot
+              env:
+                  GITHUB_REPOSITORY: ${{ github.repository }}
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  METRICS_BASELINE_OUT: metrics-baseline.json
+              run: bun tools/scripts/metrics/get-baseline.script.ts
+
+            # Drives the compiled CLI over stdio, calls every read-only/compact
+            # tool 3 times to average out single-run jitter, and persists a
+            # candidate snapshot.
+            - name: Collect candidate snapshot
+              env:
+                  METRICS_CANDIDATE_PATH: .cache/mcp-vertex/metrics/candidate.json
+              run: bun tools/scripts/metrics/collect-candidate.script.ts
+
+            # Diffs candidate vs baseline; fails the job (non-zero exit) if any
+            # tool regresses beyond the configured threshold (default +20%).
+            # Posts the markdown table as the job summary either way.
+            - name: Diff snapshots against threshold
+              env:
+                  METRICS_BASELINE_PATH: metrics-baseline.json
+                  METRICS_CANDIDATE_PATH: .cache/mcp-vertex/metrics/candidate.json
+                  METRICS_TOKEN_DELTA_PCT: '20'
+                  METRICS_LATENCY_DELTA_PCT: '20'
+                  METRICS_BYTES_DELTA_PCT: '20'
+              run: bun tools/scripts/metrics/diff-snapshots.script.ts
+
+    # Single aggregate branch-protection check. Naming sixteen individual
+    # jobs as required checks is brittle both ways: renaming a job here
+    # silently drops it from the required set, and adding a job here
+    # silently protects nothing until someone remembers to also add it to
+    # `.github/branch-protection.ts`. This job `needs` every job above and
+    # is the ONLY one branch protection has to name — the source of truth
+    # for "did CI pass" lives in this one `needs` list, not duplicated in
+    # the branch-protection config.
+    #
+    # `if: always()` makes this job itself run even when a dependency
+    # failed (otherwise GitHub would just skip it, and a skipped required
+    # check blocks merging forever — the opposite of what we want: a red
+    # dependency must show up as a red aggregate, not a stuck one). The
+    # step then explicitly fails unless every dependency's result is
+    # `success` — `skipped` and `cancelled` do not count, so a job that
+    # never ran (misconfigured trigger, cancelled run) cannot slip a merge
+    # through silently.
+    ci-complete:
+        name: ci-complete
+        if: always()
+        needs:
+            - lint-biome
+            - lint-architecture
+            - lint-presets
+            - lint-docs
+            - lint-security
+            - lint-governance
+            - typecheck
+            - tests
+            - quality-gate
+            - verify-runtime
+            - tokens-budget-real
+            - manifests-check
+            - generated-artifacts-check
+            - site
+            - pack-smoke
+            - metrics-gate
+        runs-on: ubuntu-latest
+        steps:
+            - name: Require every job to have succeeded
+              if: |
+                  contains(needs.*.result, 'failure') ||
+                  contains(needs.*.result, 'cancelled') ||
+                  contains(needs.*.result, 'skipped')
+              run: |
+                  echo "One or more required jobs did not succeed (failure, cancelled, or skipped)."
+                  exit 1

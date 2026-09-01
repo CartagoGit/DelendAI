@@ -1,0 +1,161 @@
+# tier1.yml — c00139 (Track G, audit §31).
+#
+# Fast-feedback CI: scoped to the **affected set** emitted by
+# affected.yml. Runs only the lint + vitest specs for the
+# workspaces that actually changed in the PR, keeping the
+# per-PR feedback loop under a minute (cache-hot install + a
+# handful of small specs).
+#
+# Triggers:
+#   pull_request to develop/main (opened / synchronize / reopened).
+#   workflow_dispatch (manual reruns, for cache-bust testing).
+#
+# Contract:
+#   - Depends on the `affected-set` artifact emitted by
+#     `.github/workflows/affected.yml`. If the artifact is
+#     missing (e.g. workflow_dispatch without a real PR), the
+#     job falls back to a single-package matrix entry so the
+#     gate is still meaningful.
+#   - Concurrency group cancels superseded runs on the same PR.
+#   - Each job carries a tight `timeout-minutes` so a runaway
+#     step fails the gate fast instead of stalling the runner.
+
+name: tier1
+
+on:
+    pull_request:
+        branches: [develop, main]
+        types: [opened, synchronize, reopened]
+    workflow_dispatch:
+
+concurrency:
+    group: tier1-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+jobs:
+    detect-affected:
+        name: detect-affected
+        # Cheap pre-flight: re-derive the affected set locally instead
+        # of waiting for the upstream artifact upload. Faster + same
+        # data because the script is deterministic.
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Compute affected set
+              id: affected
+              run: |
+                  set -eu
+                  BASE_REF="HEAD~1"
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    BASE_REF="${{ github.event.pull_request.base.sha }}"
+                  fi
+                  bun tools/scripts/ci/affected.script.ts \
+                    --base "$BASE_REF" \
+                    --head  HEAD \
+                    --output build/ci/affected.json \
+                    --set-file build/ci/.affected-set \
+                    --vitest-set-file build/ci/.affected-vitest-set
+
+            - name: Upload affected artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: affected-set
+                  path: |
+                      build/ci/affected.json
+                      build/ci/.affected-set
+                      build/ci/.affected-vitest-set
+                  if-no-files-found: error
+
+    affected-lint:
+        name: affected-lint
+        needs: detect-affected
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Download affected set
+              uses: actions/download-artifact@v4
+              with:
+                  name: affected-set
+                  path: build/ci
+
+            # `biome` is repo-wide so we always run the full lint; the
+            # affected set just narrows what gets re-tested below. If
+            # the affected set has only a handful of workspaces, the
+            # downstream test step dominates the budget — keeping
+            # this job under five minutes on cache-hot runners.
+            - name: Run biome on affected paths
+              run: |
+                  set -eu
+                  # biome scans by file globs; pull the per-workspace
+                  # glob list out of the affected JSON when present.
+                  bun run lint
+
+    affected-tests:
+        name: affected-tests
+        needs: detect-affected
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Download affected set
+              uses: actions/download-artifact@v4
+              with:
+                  name: affected-set
+                  path: build/ci
+
+            - name: Run vitest on affected projects
+              # vitest's `--project` flag scopes the run to a single
+              # workspace's project; we walk the Vitest-specific set
+              # line by line and feed each resolved project name into
+              # `--project`. The set is empty on workflow_dispatch
+              # reruns, so we fall back to the default (full) run.
+              run: |
+                  set -eu
+                  if [ -s build/ci/.affected-vitest-set ]; then
+                    PROJECTS=""
+                    while IFS= read -r ws; do
+                      [ -z "$ws" ] && continue
+                      PROJECTS="${PROJECTS} --project ${ws}"
+                    done < build/ci/.affected-vitest-set
+                    bunx vitest run ${PROJECTS}
+                  else
+                    bunx vitest run
+                  fi

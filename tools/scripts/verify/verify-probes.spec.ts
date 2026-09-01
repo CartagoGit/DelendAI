@@ -2,11 +2,12 @@ import type { z } from 'zod';
 import zImpl from 'zod';
 import { describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolEffect, IToolRegistration } from '@mcp-vertex/core/public';
 
 import {
 	HAPPY_PATH_PROBE_IDS,
 	KNOWN_PROBE_INPUTS,
+	describeEffect,
 	runEmptyInputProbe,
 	runHappyPathProbe,
 	type IToolHandle,
@@ -22,11 +23,13 @@ const makeHandle = (opts: {
 	readonly outputSchema?: z.ZodTypeAny;
 	readonly handlerResult?: unknown;
 	readonly handlerThrows?: boolean;
+	readonly effects?: readonly IToolEffect[];
+	readonly onInvoke?: () => void;
 }): IToolHandle => {
 	const tool = {
 		id: opts.toolId ?? 'stub_tool',
 		summary: '',
-		effects: [],
+		effects: opts.effects ?? [],
 		tags: [],
 		register: async () => {},
 	} as unknown as IToolRegistration;
@@ -35,6 +38,7 @@ const makeHandle = (opts: {
 		inputSchema: opts.inputSchema,
 		outputSchema: opts.outputSchema,
 		invoke: async () => {
+			opts.onInvoke?.();
 			if (opts.handlerThrows) throw new Error('handler boom');
 			return opts.handlerResult;
 		},
@@ -103,6 +107,74 @@ describe('verify-probes (Solid SRP extraction)', async () => {
 			});
 			const res = await runEmptyInputProbe(handle);
 			expect(res.outcome).toBe('ok');
+		});
+	});
+
+	describe('runEmptyInputProbe — AUD-D07 side-effect guard', async () => {
+		// AUD-D07: the guard used to compare `tool.effects` against the
+		// wrong string literals (`'spawn'`, `'fs:write'`, `'network'`)
+		// instead of the real `IToolEffect` union (`'write' | 'spawn' |
+		// 'network' | 'destructive'`). `'fs:write'` never matched
+		// anything — a typo for `'write'` — so every tool declaring
+		// `effects: ['write']` (33 of them, incl. `memory_compact`,
+		// `external-mcps ack`, `issues ingest_issue`) was invoked with
+		// `{}` instead of skipped, and `'destructive'` was never
+		// covered at all. These specs pin: any declared effect skips
+		// the probe AND the handler is never called.
+		const effectCases: readonly IToolEffect[] = [
+			'destructive',
+			'write',
+			'network',
+			'spawn',
+		];
+		for (const effect of effectCases) {
+			it(`effect "${effect}" is reported as needs-input and never invoked`, async () => {
+				let invoked = false;
+				const handle = makeHandle({
+					inputSchema: zImpl.object({}).passthrough(),
+					effects: [effect],
+					onInvoke: () => {
+						invoked = true;
+					},
+				});
+				const res = await runEmptyInputProbe(handle);
+				expect(res.outcome).toBe('needs-input');
+				expect(invoked).toBe(false);
+				expect(res.detail).toContain(effect);
+			});
+		}
+
+		it('a tool with no declared effects IS probed (handler is invoked)', async () => {
+			let invoked = false;
+			const handle = makeHandle({
+				inputSchema: zImpl.object({}).passthrough(),
+				handlerResult: {},
+				onInvoke: () => {
+					invoked = true;
+				},
+			});
+			const res = await runEmptyInputProbe(handle);
+			expect(invoked).toBe(true);
+			expect(res.outcome).toBe('ok');
+		});
+	});
+
+	describe('describeEffect — exhaustiveness canary', async () => {
+		// AUD-D07: this is not a runtime safety net (the guard above no
+		// longer enumerates effect members) — it exists purely so that
+		// adding a member to `IToolEffect` breaks `tsc` here until this
+		// switch acknowledges it, per the audit's explicit ask for an
+		// exhaustiveness test.
+		it('has a case for every current member of IToolEffect', () => {
+			const members: readonly IToolEffect[] = [
+				'write',
+				'spawn',
+				'network',
+				'destructive',
+			];
+			for (const member of members) {
+				expect(describeEffect(member)).toBe(member);
+			}
 		});
 	});
 

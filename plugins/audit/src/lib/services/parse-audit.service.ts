@@ -19,6 +19,14 @@ import type {
 	IAuditScore,
 	IAuditSource,
 } from '../contracts/interfaces/audit.interface';
+import { DATE_PREFIX_LENGTH } from '../contracts/constants/audit.constant';
+import {
+	extractTextAfterFileLabel,
+	isExecutiveSummaryHeading,
+	isLevelTwoHeading,
+	parseConventionalSource,
+	stripMarkdownBold,
+} from './parse-audit-line';
 
 /** Normalised severity tokens the parser maps onto the canonical set.
  *  The first match wins (FATAL → BAD → MINOR → OK → GOOD → PERFECT →
@@ -51,6 +59,9 @@ const SEVERITY_PATTERNS: ReadonlyArray<{
 	{ pattern: /\b(?:EXEMPLARY|ESPL[ÉE]NDIDO)\b/iu, mapsTo: 'EXEMPLARY' },
 ];
 
+const SCORE_SCALE = 10;
+const DECIMAL_RADIX = SCORE_SCALE;
+
 /** Map the source file name to the source identity. */
 const deriveSourceFromPath = (
 	path: string,
@@ -59,33 +70,33 @@ const deriveSourceFromPath = (
 	const noExt = base.replace(/\.md$/u, '');
 	// Conventional shape: `DD-MM-YYYY- <Host> (<Model>)[ <suffix>]`
 	// or `DD-MM-YYYY- Auditoría ... (<Model>)` for unified audits.
-	const m =
-		/^(\d{2}-\d{2}-\d{4})[-\s]+(?:Auditor[íi]a\s+)?(.+?)\(([^)]+)\)(.*)$/u.exec(
-			noExt,
-		);
-	if (!m) {
+	const parsed = parseConventionalSource(noExt);
+	if (!parsed) {
 		return {
 			slug: noExt,
 			source: { host: 'unknown', model: 'unknown', date: '' },
 		};
 	}
-	const [, date, head, model] = m;
 	// `noUncheckedIndexedAccess` types every capture as `string | undefined`
 	// (TS cannot see that none of this regex's groups are optional) — narrow
 	// with a real check instead of casting past it. Malformed input degrades
 	// to the same "unknown" source as the `!m` branch above, matching this
 	// parser's documented permissive design, rather than assuming success.
-	if (date === undefined || head === undefined || model === undefined) {
+	if (
+		parsed.date.length === 0 ||
+		parsed.head.length === 0 ||
+		parsed.model.length === 0
+	) {
 		return {
 			slug: noExt,
 			source: { host: 'unknown', model: 'unknown', date: '' },
 		};
 	}
-	const host = head.replace(/\s*\(.*$/u, '').trim() || 'unknown';
-	const dateIso = date.replace(/^(\d{2})-(\d{2})-(\d{4})$/u, '$3-$2-$1');
+	const host = parsed.head.trim() || 'unknown';
+	const dateIso = `${parsed.date.slice(6, DATE_PREFIX_LENGTH)}-${parsed.date.slice(3, 5)}-${parsed.date.slice(0, 2)}`;
 	return {
 		slug: noExt,
-		source: { host, model: model.trim(), date: dateIso },
+		source: { host, model: parsed.model.trim(), date: dateIso },
 	};
 };
 
@@ -114,12 +125,12 @@ const extractSummary = (body: string): string => {
 	for (const line of lines) {
 		const trimmed = line.trim();
 		if (!inSummary) {
-			if (/^##\s+.*(Resumen|Summary|Executive)/iu.test(trimmed)) {
+			if (isExecutiveSummaryHeading(trimmed)) {
 				inSummary = true;
 			}
 			continue;
 		}
-		if (/^##\s+/u.test(trimmed)) break;
+		if (isLevelTwoHeading(trimmed)) break;
 		if (trimmed.startsWith('>')) continue; // skip blockquotes
 		if (trimmed.length > 0) collected.push(trimmed);
 	}
@@ -139,17 +150,12 @@ const extractSummary = (body: string): string => {
  * - rejection of leftover markdown tokens (`[`) from truncated citations
  */
 const citedPathsFromFindingLine = (line: string): readonly string[] => {
-	const fileHint =
-		/\*\*(?:Fichero[a-z]?|Archivos?|Files?)\s*:?\*\*?\s*:?/iu.test(line);
+	const restAfterFileLabel = extractTextAfterFileLabel(line);
 	const quoted = [...line.matchAll(/`([^`]+)`/gu)].map((m) => m[1] ?? '');
 	const fileUris = [...line.matchAll(/file:\/\/(\/[^)\s#]+)/gu)].map(
 		(m) => m[1] ?? '',
 	);
-	const rest = fileHint
-		? (/\*\*(?:Fichero[a-z]?|Archivos?|Files?)\s*:?\*\*?\s*:?\s*(.+)$/iu.exec(
-				line,
-			)?.[1] ?? '')
-		: '';
+	const rest = restAfterFileLabel ?? '';
 	const fromRest = rest
 		.split(',')
 		.map((part) => part.trim())
@@ -263,17 +269,16 @@ const extractScores = (body: string): readonly IAuditScore[] => {
 		// Strip surrounding `**…**` markdown emphasis from the dimension
 		// label so consumers can match on plain text (`Arquitectura`, not
 		// `**Arquitectura**`). Same goes for the score cell.
-		const cleanCell = (s: string): string =>
-			s
-				.replace(/^\*\*\s*/u, '')
-				.replace(/\s*\*\*$/u, '')
-				.trim();
+		const cleanCell = (s: string): string => stripMarkdownBold(s);
 		const dim = cleanCell(cells[0] ?? '');
 		const scoreCell = cleanCell(cells[1] ?? '');
 		const comment = cells.slice(2).join(' | ');
-		const scoreMatch = /^(\d+)\s*\/\s*10$/u.exec(scoreCell);
+		const scoreMatch = new RegExp(
+			String.raw`^(\d+)\s*\/\s*${String(SCORE_SCALE)}$`,
+			'u',
+		).exec(scoreCell);
 		const score = scoreMatch?.[1]
-			? Number.parseInt(scoreMatch[1], 10)
+			? Number.parseInt(scoreMatch[1], DECIMAL_RADIX)
 			: scoreCell.trim() === '?'
 				? null
 				: (() => {
@@ -336,6 +341,18 @@ export const parseAuditBody = (path: string, body: string): IAuditDocument => {
 	};
 };
 
+const tryParseAuditBody = (
+	path: string,
+	body: string,
+): IAuditDocument | undefined => {
+	try {
+		return parseAuditBody(path, body);
+	} catch {
+		// Intentional: one malformed audit must not abort the whole batch.
+		return undefined;
+	}
+};
+
 /** Convenience: parse all `*.md` files in a directory. Pure: takes the list. */
 export const parseAuditFiles = (
 	files: ReadonlyArray<{ path: string; body: string }>,
@@ -345,9 +362,8 @@ export const parseAuditFiles = (
 	for (const f of files) {
 		if (seen.has(f.path)) continue;
 		seen.add(f.path);
-		try {
-			docs.push(parseAuditBody(f.path, f.body));
-		} catch {}
+		const parsed = tryParseAuditBody(f.path, f.body);
+		if (parsed !== undefined) docs.push(parsed);
 	}
 	return docs;
 };

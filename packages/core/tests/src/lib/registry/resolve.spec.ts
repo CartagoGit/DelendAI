@@ -29,6 +29,11 @@ describe('FIRST_PARTY_PLUGIN_INDEX', () => {
 	it('is a non-empty, well-formed index', () => {
 		expect(FIRST_PARTY_PLUGIN_INDEX.origin).toBe('first-party');
 		expect(FIRST_PARTY_PLUGIN_INDEX.entries.length).toBeGreaterThan(10);
+		expect(
+			FIRST_PARTY_PLUGIN_INDEX.entries.filter(
+				(entry) => entry.id === 'search',
+			),
+		).toHaveLength(1);
 		for (const entry of FIRST_PARTY_PLUGIN_INDEX.entries) {
 			expect(entry.id).toMatch(/^[a-z][a-z0-9-]*$/u);
 			expect(entry.package).toMatch(/^@mcp-vertex\//u);
@@ -36,14 +41,24 @@ describe('FIRST_PARTY_PLUGIN_INDEX', () => {
 			expect(entry.origin).toBe('first-party');
 		}
 	});
+
+	it('includes auto-plugin-selector as a bundled first-party plugin', () => {
+		const entry = FIRST_PARTY_PLUGIN_INDEX.entries.find(
+			(candidate) => candidate.id === 'auto-plugin-selector',
+		);
+		expect(entry).toBeDefined();
+		expect(entry?.package).toBe('@mcp-vertex/auto-plugin-selector');
+		expect(entry?.tags).toContain('plugins');
+	});
 });
 
 describe('resolvePlugins', () => {
 	it('returns the bundled first-party index when no sources are supplied', () => {
 		const out = resolvePlugins();
 		expect(out.entries.length).toBeGreaterThan(10);
-		expect(out.total).toBe(out.entries.length);
-		expect(out.truncated).toBe(false);
+		expect(out.total).toBe(FIRST_PARTY_PLUGIN_INDEX.entries.length);
+		expect(out.entries).toHaveLength(Math.min(out.total, 50));
+		expect(out.truncated).toBe(out.total > 50);
 	});
 
 	it('filters entries by AND-matched tags', () => {
@@ -78,6 +93,25 @@ describe('resolvePlugins', () => {
 			origin: 'community',
 		});
 		expect(out.entries.map((e) => e.id)).toEqual(['demo-x']);
+	});
+
+	it('keeps the bundled first-party index as the fallback for community-only sources', () => {
+		const community: IPluginRegistrySource = {
+			origin: 'community',
+			entries: [
+				sample({
+					id: 'community-search',
+					origin: 'community',
+					summary: 'community search helper',
+					tags: ['search'],
+				}),
+			],
+		};
+		const out = resolvePlugins({ sources: [community], query: 'search' });
+		expect(
+			out.entries.some((entry) => entry.id === 'community-search'),
+		).toBe(true);
+		expect(out.entries.some((entry) => entry.id === 'search')).toBe(true);
 	});
 
 	it('matches the query case-insensitively across id, package, and summary', () => {

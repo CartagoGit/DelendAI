@@ -1,12 +1,8 @@
 import type { IScaffoldedFile } from './scaffold-host';
 import type { IScaffoldExtensionHostOptions } from '../contracts/interfaces/scaffold-extension-host-options.interface';
+import { toKebabCase } from '../shared/string-normalize';
 
-const kebab = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+const kebab = (value: string): string => toKebabCase(value);
 
 const pascal = (value: string): string =>
 	kebab(value)

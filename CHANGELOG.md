@@ -8,7 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Deprecated
+- `@mcp-vertex/core` now re-exports `nodeDynamicImport` through a deprecated
+  shim only. Import it from `@mcp-vertex/core/node` instead; the universal
+  barrel re-export will be removed in the next minor release.
+
 ### Added
+- **Agnostic core error collector** (`f00251`): a host-agnostic `IErrorCollector`
+  engine in core, wired into the plugin context via `assembleErrorCollector`;
+  `@mcp-vertex/logs` and `@mcp-vertex/issues` each register an `IErrorSink`
+  adapter so errors surface in the operational log and as issues automatically.
+  Skill + knowledge entries included. (13 source files, 5 test files, 167+ tests.)
 - **Peer-review loop for slices** (`proposals_proposal_review`): submit a finished
   slice for review (not done yet); a *different* agent approves it (→ done) or
   requests changes with an objection (→ reworkable). Loops until a reviewer has no
@@ -91,6 +101,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`deps_list` / `deps_check`, offline health — no network/CVE DB).
 - Chaos/adversarial coordination tests and a strict end-to-end net that
   validates every read-only tool's `outputSchema` over the real MCP protocol.
+
+### Changed (BREAKING)
+- **Internal API naming convention** (`b00238`, Track N / q00006 §50):
+  core-only helpers now follow the `*Internal` suffix convention so
+  plugins and external consumers cannot accidentally couple to
+  them. Migrated three helpers this cycle:
+  - `checkPluginDependencies` → `checkPluginDependenciesInternal`
+    (old name kept as `@deprecated` re-export for one minor).
+  - `formatMissingDependenciesError` →
+    `formatMissingDependenciesErrorInternal`
+    (old name kept as `@deprecated` re-export for one minor).
+  - `normalizePluginRuntime` → `normalizePluginRuntimeInternal`
+    (old name kept as `@deprecated` re-export for one minor).
+  The new lint
+  (`tools/scripts/lint/no-internal-imports.script.ts`)
+  blocks future regressions: any consumer outside
+  `packages/core/**` that imports a `*Internal` symbol from a core
+  entry point, or anything from `@mcp-vertex/core/_internal`, fails
+  the lint. No `breaking:` change in core's behavior — the old
+  names still work; only the boundary is now explicit.
 
 ### Changed (BREAKING)
 - `@mcp-vertex/ide` renamed to `@mcp-vertex/ui-extension`. The

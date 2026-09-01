@@ -1,4 +1,6 @@
-import { stat, readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 export type IAgentEventKind = 'agent-alive' | 'agent-idle' | 'agent-dead';
 
@@ -14,7 +16,12 @@ export interface IAgentEvent {
 interface ILockEntryLite {
 	task_id?: string;
 	agent?: string;
+	started_at?: string;
+	last_seen?: string;
 }
+
+const AGENT_IDLE_MISSED_BEATS = 10;
+const AGENT_DEAD_MISSED_BEATS = 3;
 
 export interface IAgentHeartbeatWatcher {
 	check(now?: Date): Promise<IAgentEvent[]>;
@@ -26,32 +33,46 @@ export interface IWatchAgentHeartbeatOptions {
 	readonly lockFile: string;
 	readonly heartbeatMs: number;
 	readonly intervalMs?: number;
-	readonly onEvent: (event: IAgentEvent) => void;
+	readonly onEvent: (event: IAgentEvent) => void | Promise<void>;
 }
 
-const readClaims = async (
-	lockFile: string,
-): Promise<Array<{ taskId: string; agent: string }>> => {
+interface IHeartbeatSnapshot {
+	readonly claims: Array<{
+		taskId: string;
+		agent: string;
+		lastSeen: string | undefined;
+	}>;
+	readonly staleAfterMinutes: number;
+}
+
+const readSnapshot = async (lockFile: string): Promise<IHeartbeatSnapshot> => {
 	try {
-		const parsed = JSON.parse(await readFile(lockFile, 'utf8')) as {
+		const parsed = JSON.parse(
+			(
+				await new SafeWorkspaceReader(dirname(lockFile)).readText(
+					basename(lockFile),
+				)
+			).content,
+		) as {
+			stale_after_minutes?: number;
 			in_flight?: ILockEntryLite[];
 		};
-		return (parsed.in_flight ?? [])
-			.filter((entry) => typeof entry.task_id === 'string')
-			.map((entry) => ({
-				taskId: entry.task_id ?? '',
-				agent: entry.agent ?? 'unknown',
-			}));
+		return {
+			staleAfterMinutes:
+				typeof parsed.stale_after_minutes === 'number' &&
+				parsed.stale_after_minutes > 0
+					? parsed.stale_after_minutes
+					: 10,
+			claims: (parsed.in_flight ?? [])
+				.filter((entry) => typeof entry.task_id === 'string')
+				.map((entry) => ({
+					taskId: entry.task_id ?? '',
+					agent: entry.agent ?? 'unknown',
+					lastSeen: entry.last_seen ?? entry.started_at,
+				})),
+		};
 	} catch {
-		return [];
-	}
-};
-
-const mtimeMs = async (path: string): Promise<number | null> => {
-	try {
-		return (await stat(path)).mtimeMs;
-	} catch {
-		return null;
+		return { claims: [], staleAfterMinutes: 10 };
 	}
 };
 
@@ -66,8 +87,7 @@ const eventKey = (agent: string, taskId: string): string =>
 export const watchAgentHeartbeat = (
 	options: IWatchAgentHeartbeatOptions,
 ): IAgentHeartbeatWatcher => {
-	let lastMtime: number | null = null;
-	let lastSeen = new Map<string, Date>();
+	const legacyLastSeen = new Map<string, Date>();
 	let emittedState = new Map<string, IAgentEventKind>();
 	let timer: ReturnType<typeof setInterval> | undefined;
 
@@ -78,7 +98,7 @@ export const watchAgentHeartbeat = (
 		now: Date,
 		seen: Date,
 		missedBeats: number,
-	): IAgentEvent => {
+	): Promise<IAgentEvent> => {
 		const event: IAgentEvent = {
 			kind,
 			agent,
@@ -87,47 +107,116 @@ export const watchAgentHeartbeat = (
 			lastSeen: seen.toISOString(),
 			missedBeats,
 		};
-		options.onEvent(event);
-		return event;
+		return Promise.resolve(options.onEvent(event)).then(() => event);
 	};
 
 	const check = async (now = new Date()): Promise<IAgentEvent[]> => {
-		const claims = await readClaims(options.lockFile);
+		const snapshot = await readSnapshot(options.lockFile);
+		const claims = snapshot.claims;
 		const claimKeys = new Set(
 			claims.map((claim) => eventKey(claim.agent, claim.taskId)),
 		);
-		lastSeen = new Map([...lastSeen].filter(([key]) => claimKeys.has(key)));
 		emittedState = new Map(
 			[...emittedState].filter(([key]) => claimKeys.has(key)),
 		);
-
-		const currentMtime = await mtimeMs(options.lockFile);
-		const bumped = currentMtime !== null && currentMtime !== lastMtime;
-		if (currentMtime !== null && lastMtime === null)
-			lastMtime = currentMtime;
+		for (const key of legacyLastSeen.keys()) {
+			if (!claimKeys.has(key)) legacyLastSeen.delete(key);
+		}
 
 		const out: IAgentEvent[] = [];
 		for (const claim of claims) {
 			const key = eventKey(claim.agent, claim.taskId);
-			if (bumped) {
-				lastSeen.set(key, now);
-				emittedState.delete(key);
+			const persistedLastSeen = claim.lastSeen
+				? Date.parse(claim.lastSeen)
+				: Number.NaN;
+			if (Number.isNaN(persistedLastSeen)) {
+				const firstSeen = legacyLastSeen.get(key);
+				if (firstSeen === undefined) {
+					legacyLastSeen.set(key, now);
+					if (emittedState.has(key)) continue;
+					emittedState.set(key, 'agent-alive');
+					out.push(
+						await emit(
+							'agent-alive',
+							claim.agent,
+							claim.taskId,
+							now,
+							now,
+							0,
+						),
+					);
+					continue;
+				}
+				const ageMs = Math.max(0, now.getTime() - firstSeen.getTime());
+				const missedBeats = Math.floor(
+					ageMs / Math.max(1, options.heartbeatMs),
+				);
+				const deadAfterMs =
+					AGENT_DEAD_MISSED_BEATS * Math.max(1, options.heartbeatMs);
+				if (
+					ageMs >=
+					AGENT_IDLE_MISSED_BEATS * Math.max(1, options.heartbeatMs)
+				) {
+					if (emittedState.get(key) === 'agent-idle') continue;
+					emittedState.set(key, 'agent-idle');
+					out.push(
+						await emit(
+							'agent-idle',
+							claim.agent,
+							claim.taskId,
+							now,
+							firstSeen,
+							missedBeats,
+						),
+					);
+				} else if (ageMs >= deadAfterMs) {
+					if (emittedState.get(key) === 'agent-dead') continue;
+					emittedState.set(key, 'agent-dead');
+					out.push(
+						await emit(
+							'agent-dead',
+							claim.agent,
+							claim.taskId,
+							now,
+							firstSeen,
+							missedBeats,
+						),
+					);
+				}
+				continue;
+			}
+			const seen = Number.isNaN(persistedLastSeen)
+				? now
+				: new Date(Math.min(persistedLastSeen, now.getTime()));
+			const ageMs = Math.max(0, now.getTime() - seen.getTime());
+			const deadAfterMs =
+				AGENT_DEAD_MISSED_BEATS * Math.max(1, options.heartbeatMs);
+			const missedBeats = Math.floor(
+				ageMs / Math.max(1, options.heartbeatMs),
+			);
+			if (ageMs >= deadAfterMs) {
+				if (emittedState.get(key) === 'agent-dead') continue;
+				emittedState.set(key, 'agent-dead');
 				out.push(
-					emit('agent-alive', claim.agent, claim.taskId, now, now, 0),
+					await emit(
+						'agent-dead',
+						claim.agent,
+						claim.taskId,
+						now,
+						seen,
+						missedBeats,
+					),
 				);
 				continue;
 			}
-
-			const seen = lastSeen.get(key) ?? now;
-			lastSeen.set(key, seen);
-			const missedBeats = Math.floor(
-				(now.getTime() - seen.getTime()) / options.heartbeatMs,
-			);
 			const previous = emittedState.get(key);
-			if (missedBeats >= 10 && previous !== 'agent-idle') {
+			if (
+				missedBeats >= AGENT_IDLE_MISSED_BEATS &&
+				previous !== 'agent-idle'
+			) {
 				emittedState.set(key, 'agent-idle');
 				out.push(
-					emit(
+					await emit(
 						'agent-idle',
 						claim.agent,
 						claim.taskId,
@@ -139,7 +228,7 @@ export const watchAgentHeartbeat = (
 			} else if (missedBeats >= 3 && previous !== 'agent-dead') {
 				emittedState.set(key, 'agent-dead');
 				out.push(
-					emit(
+					await emit(
 						'agent-dead',
 						claim.agent,
 						claim.taskId,
@@ -150,7 +239,6 @@ export const watchAgentHeartbeat = (
 				);
 			}
 		}
-		if (currentMtime !== null) lastMtime = currentMtime;
 		return out;
 	};
 

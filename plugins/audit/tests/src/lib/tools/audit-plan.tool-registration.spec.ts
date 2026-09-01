@@ -40,4 +40,24 @@ describe('buildPlanRegistration — dimensions fallback (x00165)', () => {
 		expect(out.dimensions).not.toContain('Arquitectura');
 		expect(out.dimensions).not.toContain('Genericidad');
 	});
+
+	it('renders and returns the requested audit type', async () => {
+		const reg = buildPlanRegistration({ namespacePrefix: 'audit' });
+		const out = parse(await invoke(reg, { auditType: 'plan' }));
+
+		expect(out.detail).toBe('normal');
+		expect(out.auditType).toBe('plan');
+		expect(out.markdown).toContain('type plan');
+		expect(out.markdown).toContain('implementation plan');
+	});
+
+	it('supports compact detail by omitting the generated markdown body', async () => {
+		const reg = buildPlanRegistration({ namespacePrefix: 'audit' });
+		const out = parse(await invoke(reg, { detail: 'compact' }));
+
+		expect(out.detail).toBe('compact');
+		expect(out.markdown).toBe('');
+		expect(out.scope).toBe('full');
+		expect(out.dimensions).toEqual([...SCORE_DIMENSIONS]);
+	});
 });

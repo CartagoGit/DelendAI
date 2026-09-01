@@ -3,7 +3,7 @@
  * closed-frozen-guard.script.spec.ts — f00076 S3.
  *
  * Pure-function coverage of the four drift kinds. Each test feeds
- * synthetic markdown + frontmatter + mtime into `detectFrozenDrift`
+ * synthetic markdown + frontmatter + content hash into `detectFrozenDrift`
  * and asserts the produced drift list. No filesystem I/O.
  */
 
@@ -15,17 +15,18 @@ import {
 } from './lib/closed-frozen-guard.lib';
 import type { IFrozenInputs } from './lib/closed-frozen-guard.lib';
 
-const NOW = new Date('2026-07-26T12:00:00Z');
+const _NOW = new Date('2026-07-26T12:00:00Z');
 const ARCHIVED_AT = '2026-07-15T10:00:00Z';
-const MTIME_BEFORE = '2026-07-15T10:00:30Z'; // 30s after archived-on
-const MTIME_AFTER = '2026-07-20T10:00:00Z'; // 5 days after archived-on
+const ARCHIVED_HASH = 'a'.repeat(64);
+const EDITED_HASH = 'b'.repeat(64);
 
 const baseInputs = (over: Partial<IFrozenInputs> = {}): IFrozenInputs => ({
 	relPath: 'legacy/closed/feats/f00100-alpha.md',
 	id: 'f00100',
 	status: 'done',
 	archivedOn: ARCHIVED_AT,
-	mtimeIso: MTIME_BEFORE,
+	contentSha256: ARCHIVED_HASH,
+	archivedSha256: ARCHIVED_HASH,
 	markdown: '### S1 — done\n- **Files**: `a.ts`\n- **Status**: done\n',
 	snapshotSlices: [],
 	...over,
@@ -49,7 +50,7 @@ describe('detectFrozenDrift — missing-archived-on', () => {
 			baseInputs({
 				archivedOn: '',
 				status: 'ready',
-				mtimeIso: MTIME_AFTER,
+				contentSha256: EDITED_HASH,
 			}),
 		);
 		expect(drifts).toHaveLength(1);
@@ -74,24 +75,28 @@ describe('detectFrozenDrift — status-drift', () => {
 	});
 });
 
-describe('detectFrozenDrift — mtime-drift', () => {
-	it('reports when file mtime is newer than archived-on + grace', () => {
-		const drifts = detectFrozenDrift(baseInputs({ mtimeIso: MTIME_AFTER }));
-		expect(drifts.some((d) => d.code === 'mtime-drift')).toBe(true);
+describe('detectFrozenDrift — content-drift', () => {
+	it('reports when the content hash no longer matches the archived one', () => {
+		const drifts = detectFrozenDrift(
+			baseInputs({ contentSha256: EDITED_HASH }),
+		);
+		expect(drifts.some((d) => d.code === 'content-drift')).toBe(true);
 	});
 
-	it('passes when mtime is within grace of archived-on', () => {
-		const drifts = detectFrozenDrift(
-			baseInputs({ mtimeIso: MTIME_BEFORE }),
-		);
-		expect(drifts.some((d) => d.code === 'mtime-drift')).toBe(false);
+	it('passes when the content hash still matches', () => {
+		const drifts = detectFrozenDrift(baseInputs());
+		expect(drifts.some((d) => d.code === 'content-drift')).toBe(false);
 	});
 
-	it('reports when mtime is invalid', () => {
+	it('says nothing when no hash was ever recorded', () => {
+		// An archive that predates the index is not evidence of tampering.
 		const drifts = detectFrozenDrift(
-			baseInputs({ mtimeIso: 'not-a-date' }),
+			baseInputs({
+				archivedSha256: undefined,
+				contentSha256: EDITED_HASH,
+			}),
 		);
-		expect(drifts.some((d) => d.code === 'mtime-drift')).toBe(true);
+		expect(drifts.some((d) => d.code === 'content-drift')).toBe(false);
 	});
 });
 
@@ -129,11 +134,11 @@ describe('detectFrozenDrift — slice-drift', () => {
 });
 
 describe('detectFrozenDrift — multiple drifts', () => {
-	it('reports all four kinds when all conditions hold', () => {
+	it('reports every applicable kind when all conditions hold', () => {
 		const drifts = detectFrozenDrift(
 			baseInputs({
 				status: 'ready',
-				mtimeIso: MTIME_AFTER,
+				contentSha256: EDITED_HASH,
 				snapshotSlices: [
 					{ id: 'S1', title: 'Done', status: 'done', files: [] },
 				],
@@ -143,7 +148,7 @@ describe('detectFrozenDrift — multiple drifts', () => {
 		);
 		const codes = drifts.map((d) => d.code).sort();
 		expect(codes).toContain('status-drift');
-		expect(codes).toContain('mtime-drift');
+		expect(codes).toContain('content-drift');
 		expect(codes).toContain('slice-drift');
 	});
 });

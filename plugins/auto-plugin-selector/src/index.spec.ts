@@ -84,13 +84,17 @@ describe('auto-plugin-selector plugin registration (x00169)', () => {
 		if (handler === undefined) throw new Error('handler not captured');
 		const raw = (await handler({
 			signals: {
-				pack: 'typescript',
-				languages: ['typescript'],
+				pack: 'generic',
+				languages: ['plugins', 'catalog', 'routing'],
 				hasBackend: true,
 				hasTests: true,
 			},
-		})) as { content: Array<{ text: string }> };
-		const body = JSON.parse(raw.content[0]?.text ?? '{}') as {
+		})) as {
+			structuredContent?: unknown;
+			content: Array<{ text: string }>;
+		};
+		const body = (raw.structuredContent ??
+			JSON.parse(raw.content[0]?.text ?? '{}')) as {
 			recommendations: Array<{ plugin: { id: string } }>;
 		};
 		expect(body.recommendations.length).toBeGreaterThan(0);

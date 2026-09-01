@@ -12,7 +12,33 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface DepsDepsCheckOutput {
+export interface McpVertexDepsDepsAuditOutput {
+	tool: string;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	ranAt: string;
+	skipped?: boolean;
+	note?: string;
+	worst: string;
+}
+
+export interface McpVertexDepsDepsCheckOutput {
 	manifest: string;
 	lockfile: {
 		present: boolean;
@@ -26,7 +52,31 @@ export interface DepsDepsCheckOutput {
 	healthy: boolean;
 }
 
-export interface DepsDepsListOutput {
+export interface McpVertexDepsDepsLicensesOutput {
+	tool: string;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+}
+
+export interface McpVertexDepsDepsListOutput {
+	detail?: "compact" | "normal" | "full";
 	manifest: string;
 	found: boolean;
 	counts: {
@@ -42,7 +92,7 @@ export interface DepsDepsListOutput {
 	}[];
 }
 
-export interface DepsDepsOutdatedOutput {
+export interface McpVertexDepsDepsOutdatedOutput {
 	manifest: string;
 	checked: number;
 	outdatedCount: number;
@@ -58,7 +108,8 @@ export interface DepsDepsOutdatedOutput {
 	truncated: boolean;
 }
 
-export interface DepsDepsPolyglotOutput {
+export interface McpVertexDepsDepsPolyglotOutput {
+	detail?: "compact" | "normal" | "full";
 	manifests: {
 		ecosystem: string;
 		manifest: string;
@@ -71,10 +122,31 @@ export interface DepsDepsPolyglotOutput {
 	}[];
 }
 
+export interface McpVertexDepsDepsTreeOutput {
+	manifest: string;
+	lockfile: string;
+	lockfileFound: boolean;
+	root: {
+		name: string;
+		version: string | null;
+		children: Array<{
+			name: string;
+			version: string | null;
+			section?: "dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies";
+			children: unknown[];
+		}>;
+	};
+	totalNodes: number;
+	maxDepth: number;
+}
+
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface DepsToolOutputs {
-	"deps_deps_check": DepsDepsCheckOutput;
-	"deps_deps_list": DepsDepsListOutput;
-	"deps_deps_outdated": DepsDepsOutdatedOutput;
-	"deps_deps_polyglot": DepsDepsPolyglotOutput;
+	"mcp-vertex_deps_deps_audit": McpVertexDepsDepsAuditOutput;
+	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;
+	"mcp-vertex_deps_deps_licenses": McpVertexDepsDepsLicensesOutput;
+	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
+	"mcp-vertex_deps_deps_outdated": McpVertexDepsDepsOutdatedOutput;
+	"mcp-vertex_deps_deps_polyglot": McpVertexDepsDepsPolyglotOutput;
+	"mcp-vertex_deps_deps_tree": McpVertexDepsDepsTreeOutput;
 }

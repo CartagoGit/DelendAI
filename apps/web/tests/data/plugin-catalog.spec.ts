@@ -7,6 +7,8 @@ import {
 	capabilityToolsFor,
 	resolvePluginPurpose,
 } from '#DATA/plugin-catalog';
+import { GENERATED_WEB_PLUGIN_CATALOG } from '#DATA/plugins/catalog.generated';
+import { GENERATED_PLUGIN_MANIFEST_WEB_CATALOG } from '#DATA/../generated/plugin-manifest-catalog.generated';
 
 /**
  * f00053 S1 — the canonical plugin catalog is the single source of
@@ -19,26 +21,7 @@ import {
  * `scripts/__tests__/**`.
  */
 
-// The 17 plugins shipped under `plugins/`.
-const EXPECTED_SLUGS = [
-	'audit',
-	'cache',
-	'conventions',
-	'deps',
-	'docs',
-	'git',
-	'issues',
-	'logs',
-	'memory',
-	'notification',
-	'proposals',
-	'quality',
-	'rules',
-	'search',
-	'status-marker',
-	'test-convention',
-	'web-fetch',
-] as const;
+const EXPECTED_SLUGS = GENERATED_WEB_PLUGIN_CATALOG.map((entry) => entry.slug);
 
 const VALID_CATEGORIES = new Set([
 	'workflow',
@@ -50,7 +33,7 @@ const VALID_CATEGORIES = new Set([
 ]);
 
 describe('PLUGIN_CATALOG', () => {
-	it('covers exactly the 17 shipped plugins', () => {
+	it('covers exactly the generated public plugin catalog', () => {
 		expect([...PLUGIN_SLUGS].sort()).toEqual([...EXPECTED_SLUGS].sort());
 	});
 
@@ -115,5 +98,34 @@ describe('capabilityCountFor / capabilityToolsFor', () => {
 	it('returns 0 for a plugin absent from the current capabilities snapshot', () => {
 		// A plugin not in the active preset contributes no tools here.
 		expect(capabilityCountFor('definitely-not-loaded')).toBe(0);
+	});
+});
+
+describe('GENERATED_PLUGIN_MANIFEST_WEB_CATALOG', () => {
+	it('includes manifest-backed profile fields for every web entry', () => {
+		for (const entry of GENERATED_PLUGIN_MANIFEST_WEB_CATALOG) {
+			expect(
+				entry.permissions.length,
+				`${entry.id}.permissions`,
+			).toBeGreaterThan(0);
+			expect(Array.isArray(entry.presets), `${entry.id}.presets`).toBe(
+				true,
+			);
+			expect(
+				entry.maturity.length,
+				`${entry.id}.maturity`,
+			).toBeGreaterThan(0);
+			expect(
+				entry.tokenBudget.warning,
+				`${entry.id}.warning`,
+			).toBeGreaterThan(0);
+			expect(entry.tokenBudget.hard, `${entry.id}.hard`).toBeGreaterThan(
+				0,
+			);
+			expect(
+				entry.tokenBudget.releaseRelativePercent,
+				`${entry.id}.releaseRelativePercent`,
+			).toBeGreaterThan(0);
+		}
 	});
 });

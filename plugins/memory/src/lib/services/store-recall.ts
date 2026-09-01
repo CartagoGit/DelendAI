@@ -13,8 +13,76 @@
  * empty to get the right shape back.
  */
 import { rankNotes } from './rank';
+import { selectLatestSessionDigest } from './session-digest-recall';
 import { readStore } from './store-io';
 import type { INote } from './store-types';
+
+const recallMetrics = {
+	recallCalls: 0,
+	notesReturned: 0,
+	digestReused: 0,
+	bytesAvoided: 0,
+};
+
+const DEFAULT_RECALL_LIMIT = 10;
+
+const noteBytes = (note: Pick<INote, 'title' | 'body' | 'tags'>): number =>
+	Buffer.byteLength(
+		JSON.stringify({
+			title: note.title,
+			body: note.body,
+			tags: note.tags,
+		}),
+		'utf8',
+	);
+
+const digestBytes = (digest: {
+	title: string;
+	body: string;
+	createdAt: string;
+}): number =>
+	Buffer.byteLength(
+		JSON.stringify({
+			title: digest.title,
+			body: digest.body,
+			createdAt: digest.createdAt,
+		}),
+		'utf8',
+	);
+
+const recordRecallMetrics = (notes: readonly INote[]): void => {
+	recallMetrics.recallCalls += 1;
+	recallMetrics.notesReturned += notes.length;
+	recallMetrics.bytesAvoided += notes.reduce(
+		(total, note) => total + noteBytes(note),
+		0,
+	);
+};
+
+export const recordSessionDigestReuse = (
+	digest: {
+		title: string;
+		body: string;
+		createdAt: string;
+	} | null,
+): void => {
+	if (digest === null) return;
+	recallMetrics.digestReused += 1;
+	recallMetrics.bytesAvoided += digestBytes(digest);
+};
+
+export const getRecallMetricsSnapshot = () => ({ ...recallMetrics });
+
+export const resetRecallMetrics = (): void => {
+	recallMetrics.recallCalls = 0;
+	recallMetrics.notesReturned = 0;
+	recallMetrics.digestReused = 0;
+	recallMetrics.bytesAvoided = 0;
+};
+
+export const selectLatestSessionDigestForRecall = (
+	notes: readonly Pick<INote, 'title' | 'body' | 'createdAt'>[],
+) => selectLatestSessionDigest(notes);
 
 /**
  * Recall notes by free-text query and/or tags.
@@ -35,7 +103,7 @@ export const recall = async (
 ): Promise<INote[]> => {
 	const rawQuery = options.query?.trim() ?? '';
 	const tags = options.tags ?? [];
-	const limit = options.limit ?? 10;
+	const limit = options.limit ?? DEFAULT_RECALL_LIMIT;
 
 	const filtered = (await readStore(absPath)).filter(
 		(note) =>
@@ -43,12 +111,14 @@ export const recall = async (
 	);
 
 	if (rawQuery.length === 0) {
-		return [...filtered]
+		const notes = [...filtered]
 			.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
 			.slice(0, limit);
+		recordRecallMetrics(notes);
+		return notes;
 	}
 
-	return rankNotes(filtered, rawQuery, {
+	const notes = rankNotes(filtered, rawQuery, {
 		...(options.bm25K1 !== undefined ? { bm25K1: options.bm25K1 } : {}),
 		...(options.bm25B !== undefined ? { bm25B: options.bm25B } : {}),
 		...(options.titleWeight !== undefined
@@ -63,4 +133,6 @@ export const recall = async (
 		)
 		.slice(0, limit)
 		.map((r) => r.note);
+	recordRecallMetrics(notes);
+	return notes;
 };

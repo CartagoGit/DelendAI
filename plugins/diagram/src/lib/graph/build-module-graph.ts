@@ -17,6 +17,7 @@ import type {
 	IModuleEdge,
 	IModuleGraph,
 } from '../contracts/interfaces/graph.interface';
+import { limitGraph, renderNodeEdgeMermaid } from './build-graph';
 
 /**
  * The display name for a file: the path relative to the package root,
@@ -33,7 +34,7 @@ export const moduleDisplayName = (relativePath: string): string => {
  * A mermaid-safe node id (letters/digits/underscore). Replaces `/` and
  * `-` with `_` so `src/lib/foo` becomes `src_lib_foo`.
  */
-const nodeId = (display: string): string =>
+const _nodeId = (display: string): string =>
 	display.replace(/[^A-Za-z0-9_]/g, '_');
 
 /**
@@ -79,23 +80,22 @@ export const buildModuleGraph = (
 	return { nodes, edges };
 };
 
+/** Module-graph wrapper over the shared {@link limitGraph}. */
+export const limitModuleGraph = (
+	graph: IModuleGraph,
+	limit: number | undefined,
+): { graph: IModuleGraph; truncated: boolean } => {
+	const limited = limitGraph(graph, limit);
+	return {
+		graph: limited.graph as IModuleGraph,
+		truncated: limited.truncated,
+	};
+};
+
 /**
  * Render a module graph as a mermaid `flowchart LR`. Isolated nodes
  * (no edges) are declared so they still appear. Deterministic output
  * — the same input always produces the same string.
  */
-export const renderModuleMermaid = (graph: IModuleGraph): string => {
-	const lines = ['flowchart LR'];
-	const connected = new Set<string>();
-	for (const edge of graph.edges) {
-		connected.add(edge.from);
-		connected.add(edge.to);
-		lines.push(
-			`\t${nodeId(edge.from)}["${edge.from}"] --> ${nodeId(edge.to)}["${edge.to}"]`,
-		);
-	}
-	for (const node of graph.nodes) {
-		if (!connected.has(node)) lines.push(`\t${nodeId(node)}["${node}"]`);
-	}
-	return lines.join('\n');
-};
+export const renderModuleMermaid = (graph: IModuleGraph): string =>
+	renderNodeEdgeMermaid(graph);

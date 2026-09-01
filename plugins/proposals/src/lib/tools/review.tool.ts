@@ -1,9 +1,11 @@
-import z from 'zod';
-
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import type { IAuthoringToolOptions } from './authoring-options';
-import { buildReviewRegistration as buildAuthoringReviewRegistration } from './authoring.tool';
+import {
+	buildReviewRegistration as buildAuthoringReviewRegistration,
+	REVIEW_INPUT_SCHEMA,
+	REVIEW_OUTPUT_SCHEMA,
+} from './authoring.tool';
 
 /**
  * Dedicated entry point for `proposal_review`.
@@ -18,33 +20,6 @@ import { buildReviewRegistration as buildAuthoringReviewRegistration } from './a
  * that every tool file carries an explicit inputSchema/outputSchema pair.
  * Keep the two in lock-step; the verify:tools gate asserts parity.
  */
-const REVIEW_INPUT_SCHEMA = z.object({
-	proposalId: z.string(),
-	sliceId: z.string(),
-	action: z.enum(['submit', 'approve', 'request_changes', 'status']),
-	agent: z.string().min(1),
-	note: z.string().optional(),
-});
-
-const REVIEW_OUTPUT_SCHEMA = z.object({
-	ok: z.literal(true),
-	proposalId: z.string(),
-	sliceId: z.string(),
-	action: z.string(),
-	status: z.enum(['none', 'in_review', 'changes_requested', 'done']),
-	implementer: z.string().nullable(),
-	reviewer: z.string().nullable(),
-	rounds: z.array(
-		z.object({
-			verdict: z.enum(['requested_changes', 'approved']),
-			agent: z.string(),
-			note: z.string(),
-		}),
-	),
-	lockReleased: z.boolean(),
-	redactedSecrets: z.number().int().nonnegative(),
-});
-
 export const buildReviewRegistration = (
 	options: IAuthoringToolOptions,
 ): IToolRegistration => buildAuthoringReviewRegistration(options);

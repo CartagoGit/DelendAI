@@ -1,5 +1,7 @@
-import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
-import { readFile } from 'node:fs/promises';
+import {
+	resolveWorkspaceContained,
+	SafeWorkspaceReader,
+} from '@mcp-vertex/core/public';
 
 /**
  * Polyglot dependency listing (M33) — minimal, hand-rolled parsers for the
@@ -40,6 +42,43 @@ interface ITomlTable {
 	readonly entries: ReadonlyMap<string, string>;
 }
 
+const parseTableHeading = (line: string): string | null => {
+	if (!line.startsWith('[') || !line.endsWith(']')) return null;
+	const inner = line.slice(1, -1);
+	if (inner.includes(']')) return null;
+	return inner.trim();
+};
+
+const splitKeyValueLine = (
+	line: string,
+): { key: string; value: string } | null => {
+	const equalsIndex = line.indexOf('=');
+	if (equalsIndex <= 0) return null;
+	const rawKey = line.slice(0, equalsIndex).trim();
+	const value = line.slice(equalsIndex + 1).trim();
+	if (rawKey === '' || value === '') return null;
+	return {
+		key:
+			rawKey.startsWith('"') && rawKey.endsWith('"') && rawKey.length >= 2
+				? rawKey.slice(1, -1)
+				: rawKey,
+		value,
+	};
+};
+
+const ASCII_WHITESPACE_RE = /[\t\n\v\f\r ]+/u;
+const INDIRECT_COMMENT_RE = /^indirect(?:$|[^0-9A-Za-z_])/u;
+
+const splitWhitespaceFields = (value: string): readonly string[] => {
+	const trimmed = value.trim();
+	if (trimmed === '') return [];
+	return trimmed.split(ASCII_WHITESPACE_RE);
+};
+
+const hasIndirectComment = (comment: string): boolean => {
+	return INDIRECT_COMMENT_RE.test(comment.trimStart());
+};
+
 /** Split TOML source into `[section]` tables of simple `key = value` lines. */
 const splitTomlTables = (raw: string): readonly ITomlTable[] => {
 	const tables: ITomlTable[] = [];
@@ -61,17 +100,16 @@ const splitTomlTables = (raw: string): readonly ITomlTable[] => {
 			continue;
 		}
 
-		const heading = /^\[([^\]]+)\]$/.exec(line);
-		if (heading) {
+		const heading = parseTableHeading(line);
+		if (heading !== null) {
 			if (current)
 				tables.push({ name: current.name, entries: current.entries });
-			current = { name: (heading[1] ?? '').trim(), entries: new Map() };
+			current = { name: heading, entries: new Map() };
 			continue;
 		}
-		const kv = /^([^=]+?)\s*=\s*(.+)$/.exec(line);
+		const kv = splitKeyValueLine(line);
 		if (kv && current) {
-			const key = (kv[1] ?? '').trim().replace(/^"(.*)"$/, '$1');
-			const val = (kv[2] ?? '').trim();
+			const { key, value: val } = kv;
 			if (val.startsWith('[') && !val.endsWith(']')) {
 				accumulatingKey = key;
 				accumulatingValue = val;
@@ -203,9 +241,15 @@ export const parseGoMod = (raw: string): readonly IPolyglotDepEntry[] => {
 	const pushEntry = (line: string): void => {
 		const trimmed = line.trim();
 		if (trimmed === '' || trimmed.startsWith('//')) return;
-		const indirect = / \/\/\s*indirect\b/.test(trimmed);
-		const withoutComment = trimmed.replace(/\/\/.*$/, '').trim();
-		const parts = withoutComment.split(/\s+/);
+		const commentIndex = trimmed.indexOf('//');
+		const indirect =
+			commentIndex >= 0 &&
+			hasIndirectComment(trimmed.slice(commentIndex + 2));
+		const withoutComment =
+			commentIndex >= 0
+				? trimmed.slice(0, commentIndex).trimEnd()
+				: trimmed;
+		const parts = splitWhitespaceFields(withoutComment);
 		const [name, version] = parts;
 		if (!name || !version) return;
 		out.push({
@@ -255,13 +299,14 @@ const MANIFESTS: ReadonlyArray<{
 export const listPolyglotDeps = async (
 	rootAbs: string,
 ): Promise<readonly IPolyglotManifest[]> => {
+	const reader = new SafeWorkspaceReader(rootAbs);
 	const out: IPolyglotManifest[] = [];
 	for (const { ecosystem, file, parse } of MANIFESTS) {
 		const contained = resolveWorkspaceContained(rootAbs, file);
 		if (!contained.ok) continue;
 		let raw: string;
 		try {
-			raw = await readFile(contained.abs, 'utf8');
+			raw = (await reader.readText(contained.rel)).content;
 		} catch {
 			continue;
 		}

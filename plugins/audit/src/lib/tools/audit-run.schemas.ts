@@ -21,6 +21,10 @@
 
 import z from 'zod';
 
+import { DETAIL_LEVELS } from '@mcp-vertex/core/public';
+
+const DetailSchema = z.enum(DETAIL_LEVELS);
+
 // ---------------------------------------------------------------------------
 // Output schema
 // ---------------------------------------------------------------------------
@@ -45,9 +49,12 @@ export const ScaffoldedSchema = z.object({
 	filename: z.string(),
 	severity: z.string(),
 	files: z.array(z.string()),
+	kind: z.enum(['audit', 'fix', 'plan']),
 });
 
 export const RunOutputSchema = z.object({
+	detail: DetailSchema,
+	auditType: z.enum(['plan', 'valuation']),
 	scope: z.string(),
 	mode: z.enum(['general', 'specific', 'monorepo']),
 	date: z.string(),
@@ -93,6 +100,16 @@ export const TargetSchema = z.object({
 });
 
 export const RunInputSchema = z.object({
+	detail: DetailSchema.optional(),
+	/**
+	 * Output intent for the audit pipeline. `plan` produces an exhaustive
+	 * implementation plan whose findings are scaffolded as linked proposals;
+	 * `valuation` produces a report-oriented technical assessment with
+	 * optional correction proposals when explicitly requested. Plan audits
+	 * are the default so executable audits produce a native parent plan plus
+	 * linked child proposals when scaffolding is available.
+	 */
+	auditType: z.enum(['plan', 'valuation']).optional(),
 	/**
 	 * Audit scope — same vocabulary as `audit_plan`. Universal
 	 * scopes (`full` default, `security`, `tokens`, `tests`, `docs`)

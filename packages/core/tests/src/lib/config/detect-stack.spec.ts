@@ -15,7 +15,24 @@ import type { IStackProbeDeps } from '@mcp-vertex/core/lib/contracts/interfaces/
 const pkg = (deps: Record<string, string>): unknown => ({
 	dependencies: deps,
 	devDependencies: {},
+	scripts: {},
 });
+
+const globToRegExp = (glob: string): RegExp => {
+	const escaped = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+	const pattern = escaped
+		.replaceAll('*', '[^/]*')
+		.replaceAll('{', '{')
+		.replaceAll('}', '}');
+	if (pattern.includes('{') && pattern.includes('}')) {
+		const alternation = pattern.replace(
+			/\{([^}]+)\}/g,
+			(_match, inner) => `(${String(inner).split(',').join('|')})`,
+		);
+		return new RegExp(`^${alternation}$`);
+	}
+	return new RegExp(`^${pattern}$`);
+};
 
 const makeDeps = (over: {
 	pkg?: unknown | null;
@@ -39,7 +56,12 @@ const makeDeps = (over: {
 			if (path.endsWith('go.mod')) return over.gomod ?? null;
 			return null;
 		},
-		listFiles: (_root, _globs) => [...fs],
+		listFiles: (_root, globs) => {
+			const matchers = globs.map(globToRegExp);
+			return fs.filter((path) =>
+				matchers.some((matcher) => matcher.test(path)),
+			);
+		},
 	};
 };
 
@@ -49,21 +71,89 @@ describe('detectStack', () => {
 		const r = await detectStack('/w', deps);
 		expect(r.top).toBe('unknown');
 		expect(r.recommendations).toEqual([]);
+		expect(r.defaults).toEqual({
+			packageManager: 'unknown',
+			language: 'unknown',
+			testRunner: 'unknown',
+			lintCommand: undefined,
+			typecheckCommand: undefined,
+			docsRoots: [],
+			sourceRoots: [],
+		});
 	});
 
 	it('detects Astro as web-app', async () => {
 		const deps = makeDeps({
-			pkg: pkg({ astro: '^4.0.0' }),
-			files: ['astro.config.mjs'],
+			pkg: {
+				dependencies: {
+					astro: '^4.0.0',
+					typescript: '^5.0.0',
+					vitest: '^2.0.0',
+				},
+				devDependencies: {},
+				scripts: {
+					lint: 'biome check .',
+					typecheck: 'tsc --noEmit',
+					test: 'vitest run',
+				},
+			},
+			files: [
+				'astro.config.mjs',
+				'bun.lock',
+				'src',
+				'docs',
+				'README.md',
+				'tsconfig.json',
+			],
 		});
 		const r = await detectStack('/w', deps);
 		expect(r.top).toBe('web-app');
 		expect(r.detectedFrameworks).toContain('Astro');
+		expect(r.defaults).toEqual({
+			packageManager: 'bun',
+			language: 'typescript',
+			testRunner: 'vitest',
+			lintCommand: 'bun run lint',
+			typecheckCommand: 'bun run typecheck',
+			docsRoots: ['docs', 'README.md'],
+			sourceRoots: ['src'],
+		});
 		const web = r.recommendations.find((c) => c.pack === 'web-app');
 		expect(web).toBeDefined();
 		expect(web?.reasons.some((reason) => reason.includes('Astro'))).toBe(
 			true,
 		);
+	});
+
+	it('detects pnpm-backed script commands without assuming bun', async () => {
+		const deps = makeDeps({
+			pkg: {
+				dependencies: { typescript: '^5.0.0', vitest: '^2.0.0' },
+				devDependencies: {},
+				scripts: {
+					lint: 'eslint .',
+					'type-check': 'tsc --noEmit',
+					test: 'vitest run',
+				},
+			},
+			files: [
+				'pnpm-lock.yaml',
+				'src',
+				'docs',
+				'README.md',
+				'tsconfig.json',
+			],
+		});
+		const r = await detectStack('/w', deps);
+		expect(r.defaults).toEqual({
+			packageManager: 'pnpm',
+			language: 'typescript',
+			testRunner: 'vitest',
+			lintCommand: 'pnpm lint',
+			typecheckCommand: 'pnpm type-check',
+			docsRoots: ['docs', 'README.md'],
+			sourceRoots: ['src'],
+		});
 	});
 
 	it('detects Next.js as web-app', async () => {
@@ -111,11 +201,22 @@ describe('detectStack', () => {
 
 	it('detects FastAPI as backend-api (python)', async () => {
 		const deps = makeDeps({
-			requirements: 'fastapi==0.110.0\nuvicorn==0.27.0',
+			requirements:
+				'fastapi==0.110.0\nuvicorn==0.27.0\npytest==8.0.0\nruff==0.6.0\nmypy==1.11.0',
+			files: ['src', 'docs'],
 		});
 		const r = await detectStack('/w', deps);
 		expect(r.top).toBe('backend-api');
 		expect(r.detectedFrameworks).toContain('FastAPI');
+		expect(r.defaults).toEqual({
+			packageManager: 'unknown',
+			language: 'python',
+			testRunner: 'pytest',
+			lintCommand: 'ruff check .',
+			typecheckCommand: 'mypy .',
+			docsRoots: ['docs'],
+			sourceRoots: ['src'],
+		});
 	});
 
 	it('detects a workspaces field as monorepo', async () => {

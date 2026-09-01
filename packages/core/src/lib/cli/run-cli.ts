@@ -17,11 +17,18 @@ import type { IPluginLoadResult } from '../plugins/load-plugins';
 import { parseCliArgs } from '../plugins/parse-cli-args';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { createMcpProject } from '../project/create-mcp-project';
+import { gracefulShutdown } from './graceful-shutdown';
 import {
 	createFileSystemBlueprintWriter,
 	type IBlueprintWriter,
 } from '../shared/blueprint-writer';
+import { trimTrailingChar } from '../shared/string-normalize';
 import { assembleCliConfig, type IAssembleCliDeps } from './assemble';
+import {
+	renderStartupReportAnsi,
+	renderStartupReportPlain,
+	shouldUseAnsiColors,
+} from '../startup-report/renderer';
 
 export interface IDoctorReport {
 	readonly ok: boolean;
@@ -128,7 +135,7 @@ export const prepareServerBlueprintOnStart = async (
 ): Promise<{ written: boolean; path: string }> => {
 	const cacheDir =
 		resolvedCacheDir ?? args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
-	const relPath = `${cacheDir.replace(/\/+$/, '')}/bootstrap/blueprint.json`;
+	const relPath = `${trimTrailingChar(cacheDir, '/')}/bootstrap/blueprint.json`;
 
 	// Idempotency is the writer's responsibility (SRP): `writeOnce`
 	// repeats the existence/corruption check inside its mutex, so a
@@ -235,19 +242,53 @@ export const runCli = async (
 		return;
 	}
 
-	const { config, loadResult, configDiagnostic } =
-		await assembleCliConfig(args);
+	const {
+		config,
+		loadResult,
+		configDiagnostic,
+		startupReportColor,
+		buildStartupReport,
+		evidenceStore,
+	} = await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		// stderr only: stdout is the MCP stdio transport.
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
 	}
-	// f00109 S1: config issues (schema violations, dead docsDir/roots) are
+	// S1: config issues (schema violations, dead docsDir/roots) are
 	// warnings, not boot failures — but they must be visible in the host's
 	// server log, not only behind an explicit `--check`.
 	for (const issue of configDiagnostic.issues) {
 		process.stderr.write(`[mcp-vertex] config warning: ${issue}\n`);
 	}
 	const assembled = await createMcpProject(config);
+	const surfaceRuntime = config.toolSurfaceRuntime?.get();
+	const surfaceMode = config.toolSurfacePlan?.mode ?? 'managed';
+	const schemaBytesByRegistrationId =
+		surfaceRuntime === undefined
+			? undefined
+			: {
+					// The native map supplies the full comparable baseline; the
+					// effective map adds router/bootstrap entries that native may
+					// intentionally hide.
+					...surfaceRuntime.measureSchemaBytes('native'),
+					...surfaceRuntime.measureSchemaBytes(surfaceMode),
+				};
+	const startupReport = buildStartupReport(schemaBytesByRegistrationId);
+	await evidenceStore.write('startup-report', startupReport, {
+		recordedAt: new Date(startupReport.generatedAtIso),
+	});
+	const startupText =
+		startupReportColor === 'always'
+			? renderStartupReportAnsi(startupReport, {
+					...process.env,
+					FORCE_COLOR: '1',
+				})
+			: startupReportColor === 'never'
+				? renderStartupReportPlain(startupReport)
+				: shouldUseAnsiColors()
+					? renderStartupReportAnsi(startupReport)
+					: renderStartupReportPlain(startupReport);
+	if (startupText.length > 0) process.stderr.write(`${startupText}\n`);
 	// `--verbose`: dump an assembly diagnostic to stderr before going live.
 	if (args.tokens.verbose !== undefined) {
 		process.stderr.write(
@@ -262,6 +303,32 @@ export const runCli = async (
 		);
 	}
 	await assembled.start();
+
+	// AUD-E02 / r00039: own the teardown the same way the eager path always
+	// promised but never wired up. `assembled.dispose()` is idempotent and
+	// disposes every plugin runtime (lazy or eager, whichever ran) in
+	// reverse activation order BEFORE the transport itself closes, so a
+	// plugin's `dispose()` still has a live server to report through if it
+	// needs to. `gracefulShutdown` owns the process exit; deliberately not a
+	// `try/finally` around `start()` — `start()` resolves once the stdio
+	// transport connects, not when the server eventually closes, so
+	// disposing there would tear plugins down immediately after boot.
+	const onShutdownSignal =
+		(exitCode: number): (() => void) =>
+		(): void => {
+			void assembled
+				.dispose()
+				.catch((error: unknown) => {
+					process.stderr.write(
+						`[mcp-vertex] dispose() failed during shutdown: ${error instanceof Error ? error.message : String(error)}\n`,
+					);
+				})
+				.finally(() => {
+					void gracefulShutdown(assembled.server, { exitCode });
+				});
+		};
+	process.on('SIGTERM', onShutdownSignal(143));
+	process.on('SIGINT', onShutdownSignal(130));
 
 	// Fast boot: the one-time server blueprint is prepared AFTER the server
 	// is live and off the critical path — analysing the repo + writing the

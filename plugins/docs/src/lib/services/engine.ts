@@ -1,8 +1,9 @@
 import {
 	resolveWorkspaceContained,
+	SafeWorkspaceReader,
 	walkAllowedFiles,
 } from '@mcp-vertex/core/public';
-import { readFile, stat } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import { relative, sep } from 'node:path';
 
 /** One catalogued doc. `path` is relative to the workspace root. */
@@ -32,6 +33,7 @@ const DEFAULT_IGNORE_DIRS: readonly string[] = [
 	'coverage',
 	'.cache',
 ];
+const DEFAULT_MAX_RESULTS = 200;
 const MAX_READ_BYTES = 256 * 1024;
 
 const extOf = (name: string): string => {
@@ -49,15 +51,35 @@ const clamp = (
 		? def
 		: Math.max(lo, Math.min(hi, Math.floor(v)));
 
+const stripWrappingQuotes = (value: string): string => {
+	if (value.length < 2) return value;
+	const first = value[0];
+	const last = value[value.length - 1];
+	if ((first === '"' || first === "'") && last === first) {
+		return value.slice(1, -1);
+	}
+	return value;
+};
+
 /** Title = first `# ` heading, else frontmatter `title:`, else the path. */
 export const extractTitle = (raw: string, fallback: string): string => {
-	const fm = raw.match(/^---\n([\s\S]*?)\n---/);
-	if (fm) {
-		const t = fm[1]!.match(/^title:\s*(.+)$/m);
-		if (t) return t[1]!.trim().replace(/^['"]|['"]$/g, '');
+	if (raw.startsWith('---\n')) {
+		const frontmatterEnd = raw.indexOf('\n---', 4);
+		if (frontmatterEnd >= 0) {
+			const frontmatter = raw.slice(4, frontmatterEnd);
+			for (const line of frontmatter.split('\n')) {
+				if (!line.startsWith('title:')) continue;
+				return stripWrappingQuotes(line.slice('title:'.length).trim());
+			}
+		}
 	}
-	const h = raw.match(/^#\s+(.+)$/m);
-	if (h) return h[1]!.trim();
+	for (const line of raw.split('\n')) {
+		if (!line.startsWith('#')) continue;
+		let index = 1;
+		while (index < line.length && /\s/u.test(line[index] ?? '')) index += 1;
+		if (index <= 1 || index >= line.length) continue;
+		return line.slice(index).trim();
+	}
 	return fallback;
 };
 
@@ -97,10 +119,11 @@ export const listDocs = async (
 		).map((e) => e.toLowerCase().replace(/^\./, '')),
 	);
 	const ignore = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
-	const max = clamp(options.maxResults, 200, 1, 1000);
+	const max = clamp(options.maxResults, DEFAULT_MAX_RESULTS, 1, 1000);
 
 	const docs: IDocEntry[] = [];
 	let truncated = false;
+	const reader = new SafeWorkspaceReader(workspaceRootAbs);
 
 	const addFile = async (abs: string): Promise<void> => {
 		if (truncated) return;
@@ -109,7 +132,7 @@ export const listDocs = async (
 		try {
 			const st = await stat(abs);
 			if (!st.isFile() || st.size > MAX_READ_BYTES) return;
-			raw = await readFile(abs, 'utf8');
+			raw = (await reader.readText(rel(workspaceRootAbs, abs))).content;
 		} catch {
 			return;
 		}
@@ -206,6 +229,7 @@ export interface IDocSearchHit {
 const SNIPPET_MAX_CHARS = 200;
 const SNIPPET_CONTEXT_CHARS = 80;
 const TITLE_HIT_WEIGHT = 3;
+const DEFAULT_SEARCH_LIMIT = 10;
 
 const countOccurrences = (haystack: string, needle: string): number => {
 	if (needle.length === 0) return 0;
@@ -267,7 +291,7 @@ export const searchDocs = async (
 }> => {
 	const trimmed = query.trim();
 	if (trimmed.length === 0) return { hits: [], truncated: false };
-	const limit = clamp(options.limit, 10, 1, 100);
+	const limit = clamp(options.limit, DEFAULT_SEARCH_LIMIT, 1, 100);
 
 	const { docs, truncated, diagnostic } = await listDocs(
 		workspaceRootAbs,
@@ -326,7 +350,9 @@ export const readDoc = async (
 	let raw: string;
 	try {
 		if (!(await stat(abs)).isFile()) return miss();
-		raw = await readFile(abs, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(workspaceRootAbs).readText(relPath)
+		).content;
 	} catch {
 		return miss();
 	}

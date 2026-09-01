@@ -28,7 +28,7 @@
  */
 import type { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolEffect, IToolRegistration } from '@mcp-vertex/core/public';
 
 /**
  * The minimal handle a probe needs: the captured input/output Zod
@@ -52,7 +52,7 @@ export interface IToolHandle {
 }
 
 /** Outcome of a probe — same shape the script used to build inline. */
-export type ProbeOutcome =
+export type IProbeOutcome =
 	/** Empty-input probe: schema accepts `{}` AND handler returned a schema-matching result. */
 	| 'ok'
 	/** Empty-input probe: inputSchema rejected `{}` — tool documents required input. */
@@ -63,10 +63,47 @@ export type ProbeOutcome =
 /** Result of a single probe over one tool. Stable shape for the table renderer. */
 export interface IProbeResult {
 	readonly tool: string;
-	readonly outcome: ProbeOutcome;
+	readonly outcome: IProbeOutcome;
 	readonly handlerReturned: boolean;
 	readonly detail?: string;
 }
+
+/**
+ * AUD-D07 exhaustiveness canary. Every member of `IToolEffect` must be
+ * listed in this `switch` — if the union in
+ * `tool-registration.interface.ts` gains a member, the `default`
+ * branch's assignment to `never` stops compiling until this file is
+ * updated to acknowledge it. This is what makes "a new effect exists
+ * that the verify harness doesn't know about" a build break instead
+ * of a silent gap, without this module re-enumerating the union
+ * anywhere else (that re-enumeration, with two literals that didn't
+ * exist in the union, is what caused AUD-D07 in the first place).
+ */
+export const describeEffect = (effect: IToolEffect): string => {
+	switch (effect) {
+		case 'write':
+		case 'spawn':
+		case 'network':
+		case 'destructive':
+			return effect;
+		default: {
+			const exhaustive: never = effect;
+			throw new Error(`unhandled tool effect: ${String(exhaustive)}`);
+		}
+	}
+};
+
+/**
+ * True when the tool declares at least one side effect. Deliberately
+ * NOT an enumeration of `IToolEffect`'s members — any declared effect
+ * at all is reason enough to skip the empty-input probe. See
+ * `describeEffect` above for the compile-time guard that still keeps
+ * this module honest about the shape of the union.
+ */
+const declaresAnyEffect = (
+	effects: readonly IToolEffect[] | undefined,
+): effects is readonly IToolEffect[] =>
+	effects !== undefined && effects.length > 0;
 
 /**
  * Solid-SRP: empty-input probe. "If the inputSchema accepts `{}`, the
@@ -80,24 +117,35 @@ export const runEmptyInputProbe = async (
 ): Promise<IProbeResult> => {
 	const { tool, inputSchema, outputSchema, invoke } = handle;
 
-	// f00030-protect-diagram-modules: tools that declare side effects
-	// (`spawn`, `fs:write`, `network`) MUST NOT be probed with empty
-	// input — invoking them with `{}` would execute real subprocesses
-	// (e.g. `run_quality` running `vitest`, `tsc`, `bun run build`)
-	// and hang the verify harness for as long as those scripts take.
-	// Report them as `needs-input` to keep the harness fast, and rely
-	// on the plugin's own test suite for the happy-path coverage.
-	if (
-		tool.effects !== undefined &&
-		tool.effects.some(
-			(e) => e === 'spawn' || e === 'fs:write' || e === 'network',
-		)
-	) {
+	// f00030-protect-diagram-modules / AUD-D07: tools that declare ANY
+	// side effect MUST NOT be probed with empty input — invoking them
+	// with `{}` would execute real subprocesses (e.g. `run_quality`
+	// running `vitest`, `tsc`, `bun run build`) and hang the verify
+	// harness for as long as those scripts take.
+	//
+	// AUD-D07 found this guard re-enumerating the members of
+	// `IToolEffect` with its own string literals (`'spawn'`,
+	// `'fs:write'`, `'network'`) instead of importing the union. Two of
+	// those three literals didn't exist in the union — `'fs:write'` was
+	// a typo for `'write'` — so the guard silently skipped nothing for
+	// the 33 tools declaring `effects: ['write']`, and never covered
+	// `'destructive'` at all. `tsc` had already flagged the typo'd
+	// comparison as TS2367 ("no overlap"); nobody saw it because
+	// `tools/` wasn't typechecked (AUD-A12).
+	//
+	// The fix removes the enumeration instead of correcting it: any
+	// declared effect at all is reason enough not to probe. There is
+	// nothing left here that can drift out of sync with `IToolEffect` —
+	// a new member added to that union is automatically covered by
+	// `.length > 0` without touching this file. Report them as
+	// `needs-input` to keep the harness fast, and rely on the plugin's
+	// own test suite for the happy-path coverage.
+	if (declaresAnyEffect(tool.effects)) {
 		return {
 			tool: tool.id,
 			outcome: 'needs-input',
 			handlerReturned: true,
-			detail: `skipped: declared side-effect (${tool.effects.join(', ')})`,
+			detail: `skipped: declared side-effect (${tool.effects.map(describeEffect).join(', ')})`,
 		};
 	}
 
@@ -150,7 +198,16 @@ export const runEmptyInputProbe = async (
 		};
 	}
 
-	let outcome: ProbeOutcome = 'failed';
+	if (invocationError === 'Tool surface runtime is not initialized yet.') {
+		return {
+			tool: tool.id,
+			outcome: 'needs-input',
+			handlerReturned,
+			detail: invocationError,
+		};
+	}
+
+	let outcome: IProbeOutcome = 'failed';
 	if (invocationError !== undefined) {
 		// Handler crashed on input that the schema accepted — real bug.
 		outcome = 'failed';
@@ -190,10 +247,10 @@ export const runEmptyInputProbe = async (
  * — the caller skips it (the only tools that get a happy-path
  * probe are the ones we know how to drive).
  */
-export type ProbeInputBuilder = (id: string) => Record<string, unknown> | null;
+export type IProbeInputBuilder = (id: string) => Record<string, unknown> | null;
 
 /** Returns the input shape for each "needs-input" tool we know how to drive. */
-export const KNOWN_PROBE_INPUTS: ProbeInputBuilder = (id) => {
+export const KNOWN_PROBE_INPUTS: IProbeInputBuilder = (id) => {
 	switch (id) {
 		case 'fs_read':
 			return { path: 'plugins/audit/README.md' };
@@ -226,7 +283,7 @@ export const HAPPY_PATH_PROBE_IDS: readonly string[] = [
  */
 export const runHappyPathProbe = async (
 	handle: IToolHandle,
-	buildInput: ProbeInputBuilder = KNOWN_PROBE_INPUTS,
+	buildInput: IProbeInputBuilder = KNOWN_PROBE_INPUTS,
 ): Promise<IProbeResult | null> => {
 	const { tool, inputSchema, outputSchema, invoke } = handle;
 	const probeInput = buildInput(tool.id);

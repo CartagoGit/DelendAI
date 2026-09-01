@@ -17,11 +17,30 @@
  */
 import { dirname, join } from 'node:path';
 
+import type { ICommitAuthorResolution } from '@mcp-vertex/core/public';
+
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import type { IGitRunner } from '../shared/git-runner';
+import type { IAgentNamesToolOptions } from './agent-names.tool';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
+
+export interface ICloseSliceValidationDecision {
+	readonly mode: 'scoped' | 'full' | 'blocked';
+	readonly resolvedScopes: readonly string[];
+	readonly snapshotId: string;
+	readonly reason: string;
+}
+
+export interface IAuthoringPersistConfig {
+	readonly mode: 'none' | 'commit' | 'commit-and-push';
+	readonly messageTemplate?: string;
+	readonly pushTarget?: string;
+	readonly protectedBranches?: readonly string[];
+	readonly allowForeignChanges?: boolean;
+}
 
 export interface IAuthoringToolOptions {
 	readonly namespacePrefix: string;
@@ -30,6 +49,8 @@ export interface IAuthoringToolOptions {
 	readonly proposalsDirAbs: string;
 	readonly indexPathAbs: string;
 	readonly lockPathAbs: string;
+	/** x00322: registry used to invalidate delegated leases on completion. */
+	readonly agentNames?: IAgentNamesToolOptions;
 	/** Append-only peer-review journal used by proposal_review + done gate. */
 	readonly peerReviewLogPathAbs?: string;
 	/** a00074 S2: per-submit caller identity journal for same-process review detection. */
@@ -50,6 +71,8 @@ export interface IAuthoringToolOptions {
 	 * post-mutation sync should also scan, e.g. `['paused/demos']`.
 	 */
 	readonly extraFolders?: readonly string[];
+	/** Folder layout policy per proposal status. */
+	readonly folderPolicy?: IProposalFolderPolicy;
 	/**
 	 * Peer-review gate (default: true). When on, `close_slice` refuses
 	 * to mark a slice `done` unless the slice has gone through the
@@ -64,6 +87,18 @@ export interface IAuthoringToolOptions {
 	 * extending the same gate to every slice of every proposal kind.
 	 */
 	readonly requirePeerReview?: boolean;
+	/**
+	 * When true (default), `close_slice` refuses to mark a slice done
+	 * without a passing `bun run validate` from the last 24h, journalled
+	 * to `.cache/mcp-vertex/results/logs/validate.jsonl`.
+	 *
+	 * Not every adopter has a validate chain worth blocking on — a docs
+	 * repo, a spike, a project whose CI is the real gate. Those hosts set
+	 * `proposals.options.requireValidateEvidence: false` rather than
+	 * teaching every agent to pass `force: true`, which would disable the
+	 * peer-review and quality gates along with it.
+	 */
+	readonly requireValidateEvidence?: boolean;
 	/**
 	 * f00091 S2: the non-destructive **branch-integration step**. When
 	 * `agentWorktree` is enabled AND the slice was closed on a per-agent
@@ -111,7 +146,11 @@ export interface IAuthoringToolOptions {
 	 * do not wire the quality plugin fall back to the existing
 	 * validation-only path.
 	 */
-	readonly runQuality?: () => Promise<{
+	readonly runQuality?: (input?: {
+		readonly skipWhenValidateEvidenceFresh?: boolean;
+		readonly scopes?: readonly string[];
+		readonly mode?: 'scoped' | 'full';
+	}) => Promise<{
 		readonly ok: boolean;
 		readonly severity: 'ok' | 'error';
 		readonly findings: readonly string[];
@@ -120,6 +159,19 @@ export interface IAuthoringToolOptions {
 			readonly scopes: number;
 		};
 	}>;
+	/** f00386: resolve the validation mode for the current slice. */
+	readonly resolveValidationDecision?: (input: {
+		readonly operation: 'close';
+		readonly ownedFiles: readonly string[];
+		readonly proposalId: string;
+		readonly sliceId: string;
+	}) => Promise<ICloseSliceValidationDecision>;
+	/** x00298 S3: configured persistence for close_slice. */
+	readonly persist?: IAuthoringPersistConfig;
+	/** Host-resolved author passed to the persistence Git engine. */
+	readonly commitAuthor?: ICommitAuthorResolution | undefined;
+	/** Host effect gateway for close_slice commit/push operations. */
+	readonly persistGit?: IGitRunner | undefined;
 }
 
 export type IIndexedDocResolution =
@@ -154,6 +206,7 @@ export const resolveIndexedDoc = async (
 		| 'indexPathAbs'
 		| 'layout'
 		| 'extraFolders'
+		| 'folderPolicy'
 	>,
 	proposalId: string,
 ): Promise<IIndexedDocResolution> => {
@@ -182,6 +235,8 @@ export const resolveIndexedDoc = async (
 		options.workspaceRoot,
 		options.layout,
 		options.extraFolders ?? [],
+		undefined,
+		options.folderPolicy,
 	);
 	const second = await lookup();
 	if (second !== null) return second;

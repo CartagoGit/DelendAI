@@ -15,13 +15,9 @@
  * `git grep`) is a NEW implementation of `ISearchBackend`, never an
  * edit to this file.
  */
-import { readFile, stat } from 'node:fs/promises';
-import { basename, join, relative, sep } from 'node:path';
+import { basename, relative, sep } from 'node:path';
 
-import {
-	resolveWorkspaceContained,
-	walkAllowedFiles,
-} from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, walkAllowedFiles } from '@mcp-vertex/core/public';
 
 import {
 	DEFAULT_EXTENSIONS,
@@ -41,6 +37,7 @@ import {
 	type ISearchHit,
 	type ISearchResult,
 } from './search-engine.types';
+import { resolveSearchRoots } from './search-safe-reader';
 
 export { InvalidSearchPatternError } from './search-engine.types';
 
@@ -88,14 +85,15 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 		);
 		const ignoreDirs = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
 		const caseSensitive = options.caseSensitive ?? false;
+		const reader = new SafeWorkspaceReader(workspaceRootAbs);
 		const gitignoreRules =
 			options.respectGitignore === false
 				? []
 				: parseGitignore(
-						await readFile(
-							join(workspaceRootAbs, '.gitignore'),
-							'utf8',
-						).catch(() => ''),
+						await reader
+							.readText('.gitignore')
+							.then((result) => result.content)
+							.catch(() => ''),
 					);
 
 		// Line matcher: regex (compiled once) or literal substring.
@@ -139,18 +137,19 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 
 		const visitFile = async (absPath: string): Promise<void> => {
 			if (truncated) return;
+			const rel = relative(workspaceRootAbs, absPath)
+				.split(sep)
+				.join('/');
 			let raw: string;
 			try {
-				const st = await stat(absPath);
+				const file = await reader.readText(rel);
+				const st = file.stats;
 				if (!st.isFile() || st.size > MAX_FILE_BYTES) return;
-				raw = await readFile(absPath, 'utf8');
+				raw = file.content;
 			} catch {
 				return;
 			}
 			scanned += 1;
-			const rel = relative(workspaceRootAbs, absPath)
-				.split(sep)
-				.join('/');
 			// Drop a single trailing empty element from the final newline so
 			// it never shows up as a phantom "after" context line.
 			const rawLines = raw.split('\n');
@@ -208,21 +207,15 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 
 		const rejectedRoots: string[] = [];
 		const missingRoots: string[] = [];
-		for (const root of roots) {
+		const resolvedRoots = await resolveSearchRoots(reader, roots);
+		rejectedRoots.push(...resolvedRoots.rejected);
+		missingRoots.push(...resolvedRoots.missing);
+		for (const root of resolvedRoots.roots) {
 			if (truncated) break;
-			// Containment: a root that escapes the workspace (`..`,
-			// absolute) is skipped — a read-only search must not
-			// catalog outside what the host exposes.
-			const contained = resolveWorkspaceContained(workspaceRootAbs, root);
-			if (!contained.ok) {
-				rejectedRoots.push(root);
-				continue;
-			}
-			const absRoot = contained.abs;
-			const st = await stat(absRoot).catch(() => null);
-			if (st?.isFile()) await visitFile(absRoot);
-			else if (st?.isDirectory()) await walk(absRoot);
-			else missingRoots.push(root);
+			if (root.stats.isFile()) await visitFile(root.path.absolutePath);
+			else if (root.stats.isDirectory())
+				await walk(root.path.absolutePath);
+			else missingRoots.push(root.input);
 		}
 
 		// a00063: a silent `scanned: 0` sent a real agent into a
@@ -240,7 +233,7 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 			}
 			if (rejectedRoots.length > 0) {
 				parts.push(
-					`roots must be workspace-relative (rejected: ${rejectedRoots.join(', ')})`,
+					`roots must stay inside the workspace (rejected: ${rejectedRoots.join(', ')})`,
 				);
 			}
 			if (parts.length === 0) {

@@ -1,3 +1,8 @@
+import { PRESET_METADATA } from '../contracts/constants/preset-metadata.generated';
+import { PRESET_ROLES } from '../contracts/constants/preset-roles.constant';
+import type { IPresetBudgetProfile } from '../contracts/interfaces/preset-budget-profile.interface';
+import { derivePresetBudget, derivePresetSummary } from './preset-derived';
+
 /**
  * Canonical preset catalog for `@mcp-vertex/core`.
  *
@@ -6,7 +11,7 @@
  * that wants to know "which plugins does preset X ship?".
  *
  * Invariants (enforced by `preset-catalog.spec.ts` and
- * `tools/scripts/lint/no-preset-drift.script.ts`):
+ * `tools/scripts/lint/preset-drift.script.ts`):
  *
  *   1. The catalog stores DELTAS, not full membership lists. Each
  *      preset's `members` array lists only the plugins *added* on
@@ -31,7 +36,6 @@
  * the rest of the core: only the ids the user types in `--plugins=`
  * are referenced here.
  */
-
 export const PRESET_KIND = [
 	'minimal',
 	'lean',
@@ -39,11 +43,10 @@ export const PRESET_KIND = [
 	'swarm',
 	'full',
 	'vertex',
-	// r00011 S1 — stack packs. Independent: each pack resolves to
-	// exactly its own plugin set + tuned defaults; they never
-	// accumulate the chain and never perturb the resolved
-	// membership of `minimal`/`lean`/`standard`/`swarm`/`full`/
-	// `vertex`.
+	// Stack packs. Independent: each pack resolves to exactly its
+	// own plugin set + tuned defaults; they never accumulate the
+	// chain and never perturb the resolved membership of
+	// `minimal`/`lean`/`standard`/`swarm`/`full`/`vertex`.
 	'web-app',
 	'backend-api',
 	'cli-tool',
@@ -67,6 +70,8 @@ export interface IPresetDefinition {
 	readonly title: string;
 	/** Human-facing summary (i18n key: `preset.<id>.summary`). */
 	readonly summary: string;
+	/** Why this preset exists operationally. */
+	readonly role: string;
 	/**
 	 * DELTA members. The effective membership is the union of every
 	 * preceding preset in `PRESET_KIND` plus this `members` array,
@@ -74,6 +79,17 @@ export interface IPresetDefinition {
 	 * members apply).
 	 */
 	readonly members: readonly IPresetMember[];
+	/**
+	 * Runtime budget snapshot. `toolCount`/`schemaBytes` come from
+	 * `PRESET_METADATA` (`preset-metadata.generated.ts`, r00024 /
+	 * PRESET-001) — generated against the live runtime by
+	 * `tools/scripts/generate/preset-metadata.script.ts`, the SAME
+	 * measurement the token dashboard uses; `check:generated` fails on
+	 * drift. `measurementSurface` is which surface was measured, not the
+	 * runtime exposure default. `permissions`
+	 * is real tool effects; `capabilities` is the role-profile summary.
+	 */
+	readonly budget: IPresetBudgetProfile;
 	/**
 	 * When true, the preset resolves to ONLY its own members and
 	 * skips the chain accumulation. Use this for presets that are
@@ -86,6 +102,8 @@ export interface IPresetDefinition {
 	readonly independent?: boolean;
 }
 
+type IPresetSeed = Omit<IPresetDefinition, 'summary' | 'budget'>;
+
 /**
  * Canonical preset catalog. Order is significant: presets are listed
  * from smallest to largest; the last entry in the chain (`full` /
@@ -96,12 +114,11 @@ export interface IPresetDefinition {
  * a superset of `swarm`). Because both are independent, they do NOT
  * alter the resolved membership of the chain presets around them.
  */
-export const PRESET_CATALOG: readonly IPresetDefinition[] = [
+const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'minimal',
 		title: 'minimal',
-		summary:
-			'Read-only orientation: git + search. Lightweight default for CI smoke tests.',
+		role: PRESET_ROLES.minimal!,
 		members: [{ plugin: 'git' }, { plugin: 'search' }],
 	},
 	{
@@ -116,9 +133,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		// independent defs that are not the target).
 		id: 'lean',
 		title: 'lean',
-		summary:
-			'The 4 essentials: git (version control), search (code discovery), memory (cross-session continuity), docs (documentation). ' +
-			'Independent preset (does NOT accumulate the chain); nothing heavy.',
+		role: PRESET_ROLES.lean!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -130,8 +145,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 	{
 		id: 'standard',
 		title: 'standard',
-		summary:
-			'Single-agent toolkit: minimal + memory, docs, i18n, rules, quality, deps, test-policy, database, container, diagram, env, skills-pack, prompts-pack.',
+		role: PRESET_ROLES.standard!,
 		members: [
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
@@ -148,35 +162,40 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'env' },
 			{ plugin: 'skills-pack' },
 			{ plugin: 'error-reporting' },
+			{ plugin: 'auto-agent-selector' },
+			{ plugin: 'agent-orchestrator' },
 		],
 	},
 	{
 		id: 'swarm',
 		title: 'swarm',
-		summary:
-			'Multi-agent coordination: standard + proposals, notification, logs, status-marker, test-convention, conventions. ' +
-			'audit is opt-in per project and is NOT in swarm — run it separately after a round finishes.',
+		role: PRESET_ROLES.swarm!,
 		members: [
 			{ plugin: 'proposals' },
 			{ plugin: 'notification' },
+			{ plugin: 'completion' },
 			{ plugin: 'logs' },
 			{ plugin: 'status-marker' },
 			{ plugin: 'test-convention' },
 			{ plugin: 'conventions' },
 			{ plugin: 'forge' },
+			{ plugin: 'agent-orchestrator' },
 		],
 	},
 	{
 		id: 'full',
 		title: 'full',
-		summary:
-			'Everything in swarm + the host-only plugins (web-fetch, issues). ' +
-			'audit is opt-in (load with --plugins=audit) when you need it.',
+		role: PRESET_ROLES.full!,
 		members: [
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'api' },
-			{ plugin: 'changelog' },
+			{ plugin: 'remote-provider-core' },
+			{ plugin: 'github' },
+			{ plugin: 'gitlab' },
+			{ plugin: 'prompt-eval' },
+			{ plugin: 'agent-orchestrator' },
+			// `changelog` removed — private, unpublished.
 		],
 	},
 	{
@@ -191,22 +210,22 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		// silently omit it, a stale drift caught live 2026-07-29).
 		// Marked `independent: true` so `resolvePresetMembers` skips the
 		// chain accumulation and returns ONLY the members listed
-		// below — the exact snapshot the project ships. Keep this list
-		// in lockstep with the root `mcp-vertex.config.json`'s `plugins`
-		// keys — `no-preset-drift.script.ts` re-derives from
-		// `PRESET_CATALOG` rather than hand-copying it, but it cannot
-		// catch THIS list drifting from the live config; that
-		// comparison must be done by hand on each pass.
+		// below — the exact snapshot the project ships. `preset-drift`
+		// verifies this list against the live root
+		// `mcp-vertex.config.json` plugin keys on every validate pass.
 		id: 'vertex',
 		title: 'vertex',
-		summary:
-			'Snapshot of the mcp-vertex project itself: every plugin its own mcp-vertex.config.json loads, including proposals (orchestration/swarm). ' +
-			'Independent preset (does NOT accumulate swarm); use this for projects that want the exact set the core ships.',
+		role: PRESET_ROLES.vertex!,
 		members: [
+			{ plugin: 'adaptive-optimizer' },
 			{ plugin: 'audit' },
-			{ plugin: 'auto-agent-selector', hostOnly: true },
+			{ plugin: 'auto-agent-selector' },
+			{ plugin: 'auto-plugin-selector' },
+			{ plugin: 'commit-policy' },
+			{ plugin: 'completion' },
 			{ plugin: 'container' },
 			{ plugin: 'conventions' },
+			{ plugin: 'context-for-change' },
 			{ plugin: 'deps' },
 			{ plugin: 'diagram' },
 			{ plugin: 'docs' },
@@ -214,14 +233,18 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'forge' },
 			{ plugin: 'git' },
 			{ plugin: 'i18n' },
+			{ plugin: 'impact-analysis' },
+			{ plugin: 'project-health' },
+			{ plugin: 'quality-policy' },
 			{ plugin: 'link-check' },
 			{ plugin: 'logs' },
 			{ plugin: 'memory' },
 			{ plugin: 'notification' },
 			{ plugin: 'orchestrator-runner' },
+			{ plugin: 'agent-orchestrator' },
 			{ plugin: 'perf' },
-			{ plugin: 'prompts-pack' },
 			{ plugin: 'proposals' },
+			{ plugin: 'project-kpis' },
 			{ plugin: 'quality' },
 			{ plugin: 'rules' },
 			{ plugin: 'search' },
@@ -235,15 +258,14 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		],
 		independent: true,
 	},
-	// r00011 S1 — stack packs. Each resolves to exactly its own
-	// members; never accumulates the ⊇ chain. `resolvePackOptions`
+	// Stack packs. Each resolves to exactly its own members;
+	// never accumulates the ⊇ chain. `resolvePackOptions`
 	// (in `pack-defaults.ts`) overlays tuned per-plugin defaults on
 	// top of `PLUGIN_DEFAULTS` and below the user's explicit config.
 	{
 		id: 'web-app',
 		title: 'web-app',
-		summary:
-			'Stack pack for web apps (Astro/Next/Remix/SvelteKit/etc): standard + i18n + diagram + container (dockerfile lint) + web-fetch. Independent; user config still wins.',
+		role: PRESET_ROLES['web-app']!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -269,8 +291,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 	{
 		id: 'backend-api',
 		title: 'backend-api',
-		summary:
-			'Stack pack for backend services (Nest/Express/Hono/Fastify/etc): standard + database + container + env + audit (opt-in) + deps + perf. Independent; user config still wins.',
+		role: PRESET_ROLES['backend-api']!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -294,21 +315,74 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 	{
 		id: 'cli-tool',
 		title: 'cli-tool',
-		summary:
-			'Stack pack for CLI tools (oclif/commander/cobra/clap): minimal + search + memory + docs + env + changelog + perf. Independent; user config still wins.',
+		role: PRESET_ROLES['cli-tool']!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
 			{ plugin: 'env' },
-			{ plugin: 'changelog' },
+			// `changelog` removed — private, unpublished.
 			{ plugin: 'perf' },
 			{ plugin: 'test-policy' },
 		],
 		independent: true,
 	},
 ];
+
+const resolvePresetMembersFrom = (
+	definitions: readonly Pick<
+		IPresetDefinition,
+		'id' | 'members' | 'independent'
+	>[],
+	id: IPresetKind | string | undefined,
+): readonly string[] => {
+	if (id === undefined) return [];
+	const index = PRESET_KIND.indexOf(id as IPresetKind);
+	if (index < 0) return [];
+	const target = definitions[index];
+	if (target === undefined) return [];
+	if (target.independent === true) {
+		return target.members.map((m) => m.plugin);
+	}
+	const seen = new Set<string>();
+	const ordered: string[] = [];
+	for (let i = 0; i <= index; i += 1) {
+		const def = definitions[i];
+		if (def === undefined) continue;
+		if (def.independent === true && def !== target) continue;
+		for (const member of def.members) {
+			if (!seen.has(member.plugin)) {
+				seen.add(member.plugin);
+				ordered.push(member.plugin);
+			}
+		}
+	}
+	return ordered;
+};
+
+export const PRESET_CATALOG: readonly IPresetDefinition[] = PRESET_SEEDS.map(
+	(definition) => {
+		const resolvedMembers = resolvePresetMembersFrom(
+			PRESET_SEEDS,
+			definition.id,
+		);
+		return {
+			...definition,
+			summary: derivePresetSummary({
+				id: definition.id,
+				resolvedMembers,
+				...(definition.independent === true
+					? { independent: true }
+					: {}),
+			}),
+			budget: derivePresetBudget({
+				metadata: PRESET_METADATA[definition.id],
+				resolvedMembers,
+			}),
+		};
+	},
+);
 
 /**
  * Resolves the effective membership of a preset: the union of every
@@ -323,36 +397,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 export const resolvePresetMembers = (
 	id: IPresetKind | string | undefined,
 ): readonly string[] => {
-	if (id === undefined) return [];
-	const index = PRESET_KIND.indexOf(id as IPresetKind);
-	if (index < 0) return [];
-	const target = PRESET_CATALOG[index];
-	if (target === undefined) return [];
-	if (target.independent === true) {
-		// Independent presets resolve to ONLY their own members;
-		// skip the chain accumulation entirely.
-		return target.members.map((m) => m.plugin);
-	}
-	const seen = new Set<string>();
-	const ordered: string[] = [];
-	for (let i = 0; i <= index; i += 1) {
-		const def = PRESET_CATALOG[i];
-		if (def === undefined) continue;
-		// An independent preset in the chain breaks the accumulation:
-		// subsequent chain presets still see the chain above them,
-		// but their own delta is appended fresh. (In practice we
-		// expect `vertex` to be the last preset and independent;
-		// placing any independent preset in the middle of the chain
-		// is intentionally allowed but rare.)
-		if (def.independent === true && def !== target) continue;
-		for (const member of def.members) {
-			if (!seen.has(member.plugin)) {
-				seen.add(member.plugin);
-				ordered.push(member.plugin);
-			}
-		}
-	}
-	return ordered;
+	return resolvePresetMembersFrom(PRESET_CATALOG, id);
 };
 
 /** A preset kind or `undefined` (no preset). */

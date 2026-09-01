@@ -25,6 +25,8 @@
  */
 import { dirname } from 'node:path';
 
+import type { IPluginMetricsSnapshot } from './payload-percentile.schema';
+
 /** A single tool's recorded metrics inside a persisted snapshot. */
 export interface IMetricSnapshotEntry {
 	readonly calls: number;
@@ -44,6 +46,24 @@ export interface IMetricsSnapshotFile {
 		readonly totalMs: number;
 		readonly totalBytes: number;
 	};
+	/**
+	 * Per-tracked-plugin metrics (`obs_runtime_metrics`,
+	 * `activation_metrics`), keyed by the tool's registered name. Optional:
+	 * a baseline snapshot fetched before these tools existed won't have it,
+	 * and a candidate run where a tracked plugin failed to load omits its
+	 * entry rather than fabricating one.
+	 */
+	readonly pluginMetrics?: Readonly<Record<string, IPluginMetricsSnapshot>>;
+	/**
+	 * What surface the numbers were taken from. Payload sizes are only
+	 * comparable between runs that measured the same set of tools: a
+	 * snapshot captured while most plugins failed to load records nearly
+	 * empty responses, and diffing a healthy run against it manufactures
+	 * enormous "regressions" that describe the broken capture, not a real
+	 * change. Optional because snapshots published before this field
+	 * existed do not carry it — those are treated as not comparable.
+	 */
+	readonly surface?: { readonly toolsMeasured: number };
 }
 
 export type IBaselineResult =

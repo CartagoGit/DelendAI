@@ -1,36 +1,51 @@
 {
 	"name": "@mcp-vertex/database",
 	"version": "0.1.1",
-	"private": true,
 	"type": "module",
 	"description": "Database introspection + query tools (f00128).",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"database",
+		"schema",
+		"agent",
+		"ai",
+		"cartago"
+	],
 	"sideEffects": false,
-	"main": "./src/index.ts",
-	"types": "./src/index.ts",
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
 	"exports": {
 		".": {
-			"types": "./src/index.ts",
-			"import": "./src/index.ts"
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
 		},
 		"./public": {
-			"types": "./src/public/index.ts",
-			"import": "./src/public/index.ts"
-		},
-		"./*": {
-			"types": "./src/*",
-			"import": "./src/*"
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
 		}
 	},
 	"scripts": {
 		"check": "tsc --noEmit",
+		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
-		"test:watch": "vitest"
-	},
-	"dependencies": {
-		"@mcp-vertex/core": "workspace:*",
-		"zod": "^4.0.0"
+		"test:watch": "vitest",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/database"
 	},
 	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.1",
 		"better-sqlite3": "^11.0.0"
 	},
 	"peerDependenciesMeta": {
@@ -38,10 +53,23 @@
 			"optional": true
 		}
 	},
+	"dependencies": {
+		"zod": "^4.0.0"
+	},
 	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
 		"@types/better-sqlite3": "^9.6.0",
 		"@types/node": "^26.1.0",
 		"typescript": "^7.0.2",
-		"vitest": "^4.0.0"
-	}
+		"vitest": "^4.1.11"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
 }

@@ -41,16 +41,16 @@
 		"editor.defaultFormatter": "biomejs.biome"
 	},
 	"[typescript]": {
-		"editor.defaultFormatter": "biomejs.biome"
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"[typescriptreact]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	},
 	"[json]": {
-		"editor.defaultFormatter": "biomejs.biome"
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"[jsonc]": {
-		"editor.defaultFormatter": "biomejs.biome"
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"[html]": {
 		"editor.defaultFormatter": "biomejs.biome"
@@ -137,10 +137,7 @@
 		"./plugins/rules/skills": true,
 		"./plugins/issues/skills": true
 	},
-	"mcp-vertex.server": {
-		"command": "bun",
-		"args": ["run", "mcp-vertex"]
-	},
+	"mcp-vertex.development.autoReload": true,
 
 	// ──────────────────────────────────────────────────────────────────────
 	// Peacock — workspace-scoped visual identity (morado agradable)
@@ -200,5 +197,11 @@
 		"titleBar.border": "#571faf",
 		"titleBar.inactiveBackground": "#571faf99",
 		"titleBar.inactiveForeground": "#e7e7e799"
+	},
+	"[markdown]": {
+		"editor.defaultFormatter": "yzhang.markdown-all-in-one"
+	},
+	"[yaml]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	}
 }

@@ -254,6 +254,42 @@ describe('the shapes the audit brief actually asks for', () => {
 		'**Final note: 6/10 — works, but the contracts slipped.**',
 	].join('\n');
 
+	it('preserves the exact extracted document for a representative brief-shaped audit', () => {
+		expect(
+			parseAuditBody(
+				'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+				BRIEF_SHAPED,
+			),
+		).toEqual({
+			path: 'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			slug: '14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking)',
+			source: {
+				host: 'Antigravity',
+				model: 'Claude Sonnet 4.6 Thinking',
+				date: '2026-06-14',
+			},
+			summary: 'Something happened.',
+			findings: [
+				{
+					id: 'fatal-1',
+					title: 'Declare the missing schema',
+					severity: 'FATAL',
+					files: ['src/tools/generate.tool.ts'],
+					detail: '**File**: `src/tools/generate.tool.ts#L55`\n\n**Problem**: no outputSchema.\n**Impact**: callers get untyped output.',
+				},
+				{
+					id: 'bad-2',
+					title: 'Write atomically',
+					severity: 'BAD',
+					files: ['src/cli/generate.ts', 'src/cli/watch.ts'],
+					detail: '**File**: `src/cli/generate.ts#L312`, `src/cli/watch.ts#L76`\n\n**Problem**: bare writeFile.\n\n**Final note: 6/10 — works, but the contracts slipped.**',
+				},
+			],
+			scores: [],
+			note: '6/10 — works, but the contracts slipped.',
+		});
+	});
+
 	it('reads `**File**:` the way it reads `**Fichero**:`', () => {
 		const doc = parseAuditBody('test.md', BRIEF_SHAPED);
 		const fatal = doc.findings.find(
@@ -305,5 +341,28 @@ describe('the shapes the audit brief actually asks for', () => {
 			'FATAL',
 			'BAD',
 		]);
+	});
+
+	it('handles long unmatched separators without stalling', () => {
+		const longNoise = '('.repeat(4000);
+		const doc = parseAuditBody(
+			`docs/mcp-vertex/proposals/done/14-06-2026- Auditoría ${longNoise}.md`,
+			[
+				'# Audit',
+				'',
+				'## Executive summary',
+				'',
+				'Something happened.',
+				'',
+				'## 🔴 FATAL',
+				'',
+				'### 1. Stress the parser',
+				`**File**: src/${' '.repeat(4000)}(${longNoise}`,
+			].join('\n'),
+		);
+
+		expect(doc.source.host).toBe('unknown');
+		expect(doc.findings).toHaveLength(1);
+		expect(doc.findings[0]?.files).toEqual([]);
 	});
 });

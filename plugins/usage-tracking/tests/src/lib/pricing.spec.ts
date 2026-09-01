@@ -136,13 +136,19 @@ describe('resolvePricing (stale-while-revalidate, non-blocking)', () => {
 				},
 			},
 		};
+		let backgroundRefresh: Promise<void> | undefined;
 		const resolved = await resolvePricing(cachePath, {
 			fetchImpl: async () => refreshed,
+			onBackgroundRefresh: (refresh) => {
+				backgroundRefresh = refresh;
+			},
 		});
 		// Returns the stale table immediately (empty models).
 		expect(Object.keys(resolved.models)).toHaveLength(0);
-		// Background refresh eventually lands on disk.
-		await new Promise((r) => setTimeout(r, 50));
+		// Await the refresh rather than sleeping: a fixed delay is a race
+		// that loses under full-suite load.
+		expect(backgroundRefresh).toBeDefined();
+		await backgroundRefresh;
 		const onDisk = JSON.parse(readFileSync(cachePath, 'utf8'));
 		expect(onDisk.source).toBe('network');
 	});

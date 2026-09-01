@@ -2,7 +2,6 @@ import {
 	mkdirSync,
 	existsSync,
 	mkdtempSync,
-	readFileSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
@@ -35,6 +34,13 @@ const capture = async (
 
 const parse = (r: { content: Array<{ text: string }> }) =>
 	JSON.parse(r.content[0]?.text ?? '{}');
+
+const APPROVE_EVIDENCE = {
+	commitHash: 'abc1234',
+	validateExitCode: 0,
+	testsPassing: 1,
+	testsTotal: 1,
+} as const;
 
 describe('auto transition after approve (a00074 S3)', () => {
 	let root = '';
@@ -86,7 +92,7 @@ title: Auto move
 kind: feat
 status: review
 type: proposal
-shipped-in: [ship123]
+shipped-in: [30551533]
 ---
 
 ## Slices
@@ -121,6 +127,7 @@ shipped-in: [ship123]
 				sliceId: 's1',
 				action: 'approve',
 				agent: 'owl',
+				evidence: APPROVE_EVIDENCE,
 			}),
 		);
 		expect(approved.status).toBe('done');
@@ -156,5 +163,47 @@ type: proposal
 		const prepared = markProposalDoneForAutoTransition('f00090', markdown);
 		expect(prepared.changed).toBe(false);
 		expect(prepared.markdown).toContain('status: review');
+	});
+
+	it('marks a non-plan proposal done without review when the host disables the gate', () => {
+		const markdown = `---
+id: f00091
+kind: feat
+status: in-progress
+type: proposal
+---
+
+## Slices
+
+### S1 — one
+- **Status**: done
+- **Files**: [src/a.ts]
+`;
+		const prepared = markProposalDoneForAutoTransition('f00091', markdown, {
+			requirePeerReview: false,
+		});
+		expect(prepared.changed).toBe(true);
+		expect(prepared.markdown).toContain('status: done');
+	});
+
+	it('never auto-transitions a plan through the proposal shortcut', () => {
+		const markdown = `---
+id: q00091
+kind: plan
+status: review
+type: plan
+---
+
+## Slices
+
+### S1 — one
+- **Status**: done
+- **Files**: [src/a.ts]
+`;
+		expect(
+			shouldAutoTransitionProposal('q00091', markdown, {
+				requirePeerReview: false,
+			}),
+		).toBe(false);
 	});
 });

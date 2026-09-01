@@ -20,16 +20,20 @@
  * TypeScript block to edit, so the parse surface is small and bounded).
  */
 import type {
-	IPluginWiringEdit,
-	IPluginWiringFs,
 	IPluginWiringWrite,
 	IWirePluginOptions,
 } from '../contracts/interfaces/plugin-wiring.interface';
+import {
+	commitWiringEdit,
+	escapeRegex,
+	injectAfterLastMatch,
+	injectBeforeLastClosing,
+	insertIntoArrayLiteral,
+	insertIntoObjectLiteral,
+	insertIntoPresetMembers,
+} from './wire-plugin-structure.service';
 
-const TS_BASE_PATH_KEY = '"@mcp-vertex';
 const TSCONFIG_BLOCK_OPEN = `"paths": {`;
-
-const PLUGIN_DEFAULTS_KEY = (id: string): string => `\t${JSON.stringify(id)}:`;
 
 const PUBLISH_ORDER_ENTRY = (dir: string): string => `\t'${dir}',`;
 
@@ -54,9 +58,6 @@ const VITEST_ALIAS_BLOCK = (id: string): string => {
 const camel = (id: string): string =>
 	id.replace(/-([a-z])/gu, (_, ch: string) => ch.toUpperCase());
 
-const escapeRegex = (value: string): string =>
-	value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-
 /** Returns the plugin dir under the monorepo (always `plugins/<id>`). */
 export const pluginDir = (pluginId: string): string => `plugins/${pluginId}`;
 
@@ -80,7 +81,6 @@ export const buildTsconfigPathsEntry = (pluginId: string): string => {
 		`],`,
 	].join('\n\t\t\t');
 };
-
 /**
  * Idempotently add the three plugin entries to the `paths` block of
  * `tsconfig.base.json`. Returns the diff so the doctor can audit it.
@@ -99,10 +99,7 @@ export const writeTsconfigBase = async (
 		? previous
 		: injectBeforeLastClosing(previous, TSCONFIG_BLOCK_OPEN, block);
 
-	const edit: IPluginWiringEdit = { path, previous, next, noop };
-	if (!noop && options.dryRun !== true) {
-		await options.fs.writeFile(path, next);
-	}
+	const edit = await commitWiringEdit(options, path, previous, next, noop);
 	return {
 		pointId: 'tsconfig-base',
 		edits: [edit],
@@ -143,10 +140,7 @@ export const writeVitestShared = async (
 		next = injectBeforeLastClosing(next, 'return [', aliasBlock);
 	}
 
-	const edit: IPluginWiringEdit = { path, previous, next, noop };
-	if (!noop && options.dryRun !== true) {
-		await options.fs.writeFile(path, next);
-	}
+	const edit = await commitWiringEdit(options, path, previous, next, noop);
 	return {
 		pointId: 'vitest-shared',
 		edits: [edit],
@@ -160,17 +154,13 @@ export const writePluginDefaults = async (
 ): Promise<IPluginWiringWrite> => {
 	const path = 'packages/core/src/lib/plugins/plugin-defaults.ts';
 	const previous = await options.fs.readFile(path);
-	const key = PLUGIN_DEFAULTS_KEY(options.pluginId);
-	const alreadyPresent = previous.includes(key);
-	const noop = alreadyPresent;
-	const next = noop
-		? previous
-		: injectBeforeLastClosing(previous, '};', `${key} {},`);
-
-	const edit: IPluginWiringEdit = { path, previous, next, noop };
-	if (!noop && options.dryRun !== true) {
-		await options.fs.writeFile(path, next);
-	}
+	const { next, noop } = insertIntoObjectLiteral(
+		previous,
+		'PLUGIN_DEFAULTS',
+		options.pluginId,
+		`${JSON.stringify(options.pluginId)}: {},`,
+	);
+	const edit = await commitWiringEdit(options, path, previous, next, noop);
 	return {
 		pointId: 'plugin-defaults',
 		edits: [edit],
@@ -184,17 +174,14 @@ export const writePublishOrder = async (
 ): Promise<IPluginWiringWrite> => {
 	const path = 'tools/scripts/release/release-plan.ts';
 	const previous = await options.fs.readFile(path);
-	const entry = PUBLISH_ORDER_ENTRY(pluginDir(options.pluginId));
-	const alreadyPresent = previous.includes(entry);
-	const noop = alreadyPresent;
-	const next = noop
-		? previous
-		: injectBeforeLastClosing(previous, '];', entry);
-
-	const edit: IPluginWiringEdit = { path, previous, next, noop };
-	if (!noop && options.dryRun !== true) {
-		await options.fs.writeFile(path, next);
-	}
+	const entry = pluginDir(options.pluginId);
+	const { next, noop } = insertIntoArrayLiteral(
+		previous,
+		'PUBLISH_ORDER',
+		entry,
+		PUBLISH_ORDER_ENTRY(entry).trim(),
+	);
+	const edit = await commitWiringEdit(options, path, previous, next, noop);
 	return {
 		pointId: 'publish-order',
 		edits: [edit],
@@ -213,17 +200,12 @@ export const writePresetCatalog = async (
 	const path = 'packages/core/src/lib/plugins/preset-catalog.ts';
 	const preset = options.targetPreset ?? 'vertex';
 	const previous = await options.fs.readFile(path);
-	const insertion = `\t\t{ plugin: '${options.pluginId}' },`;
-	const alreadyPresent = previous.includes(insertion);
-	const noop = alreadyPresent;
-	const next = noop
-		? previous
-		: injectBeforeLastClosing(previous, preset, insertion);
-
-	const edit: IPluginWiringEdit = { path, previous, next, noop };
-	if (!noop && options.dryRun !== true) {
-		await options.fs.writeFile(path, next);
-	}
+	const { next, noop } = insertIntoPresetMembers(
+		previous,
+		preset,
+		options.pluginId,
+	);
+	const edit = await commitWiringEdit(options, path, previous, next, noop);
 	return {
 		pointId: 'preset-catalog',
 		edits: [edit],
@@ -265,35 +247,3 @@ export const wirePluginIntoMonorepo = async (
  * Insert `block` immediately after the last line matching `anchor`.
  * Falls back to appending before the last `}` if no anchor is found.
  */
-const injectAfterLastMatch = (
-	text: string,
-	anchor: RegExp,
-	block: string,
-): string => {
-	const matches = [...text.matchAll(new RegExp(anchor.source, 'gu'))];
-	const last = matches[matches.length - 1];
-	if (last === undefined || last.index === undefined) return text;
-	const insertAt = last.index + last[0].length;
-	return `${text.slice(0, insertAt)}\n${block}${text.slice(insertAt)}`;
-};
-
-/**
- * Insert `block` immediately after the **last** opening of `anchorText`
- * in `text`, on a fresh line of its own. The block is indented with `\t`
- * so the inserted lines match the writers' target files.
- *
- * Deterministic: `anchorText` appears exactly once in every canonical
- * target file (`"paths": {` in `tsconfig.base.json`, `return [` in
- * `vitest.shared.ts`, `};` closing `PLUGIN_DEFAULTS`, `];` closing
- * `PUBLISH_ORDER`).
- */
-const injectBeforeLastClosing = (
-	text: string,
-	anchorText: string,
-	block: string,
-): string => {
-	const anchorIdx = text.lastIndexOf(anchorText);
-	if (anchorIdx < 0) return text;
-	const insertAt = anchorIdx + anchorText.length;
-	return `${text.slice(0, insertAt)}\n\t${block}${text.slice(insertAt)}`;
-};

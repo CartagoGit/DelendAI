@@ -256,16 +256,12 @@ const buildBundle = async (entryAbs: string): Promise<BundleMap> => {
 		sourcemap: 'inline',
 		plugins: [scssPlugin],
 		// Don't try to bundle Node-only or VS Code APIs in the browser bundle.
-		external: BROWSER_BUILD_EXTERNALS,
+		external: [...BROWSER_BUILD_EXTERNALS],
 		// Code-split the dynamic `import('./<page>')` calls in
 		// pages/registry.ts so each page becomes its own
 		// chunk. Without this Bun.build inlines the page
 		// modules into the entry, defeating the lazy load.
 		splitting: true,
-		// `write: false` keeps the bundle in memory — we
-		// serve the chunks via a Map lookup in the route
-		// handler, no tmp dir to clean up.
-		write: false,
 	});
 	if (!result.success) {
 		const messages = result.logs
@@ -327,7 +323,7 @@ const consolidateExports = (content: string): string => {
 	const seen = new Set<string>();
 	const merged: string[] = [];
 	for (const m of matches) {
-		const symbols = m[1]
+		const symbols = (m[1] ?? '')
 			.split(',')
 			.map((s) => s.trim())
 			.filter((s) => s !== '');

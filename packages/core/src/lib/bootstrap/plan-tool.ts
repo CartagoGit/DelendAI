@@ -7,53 +7,25 @@
 // pure `buildServerBlueprint` + `buildBlueprintFiles` over the
 // project analysis.
 
-import z from 'zod';
+import type z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import type { IFileReader } from './analyze-project';
+import type { IFileReader, IProjectAnalysis } from './analyze-project';
 import { analyzeProject } from './analyze-project';
 import { buildBlueprintFiles, buildServerBlueprint } from './build-blueprint';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
-import {
-	PLAN_INPUT_SCHEMA,
-	SCAFFOLDED_FILE_SCHEMA,
-	SERVER_BLUEPRINT_SCHEMA,
-} from './schemas';
+import { PLAN_INPUT_SCHEMA } from './schemas';
 import { toolJson } from '../shared/tool-response';
-import { ADOPTION_STRATEGY_SCHEMA } from '../contracts/constants/adoption-strategy-schema.constant';
+import { compactOutputSchema } from '../surface/compact-output-schema.helper';
 
 export interface IPlanToolDeps {
 	readonly namespacePrefix: string;
 	readonly reader: IFileReader;
+	readonly analyze?: () => Promise<IProjectAnalysis>;
 	readonly patternOverrides?: IPatternOverrides;
 }
 
 const json = (value: unknown) => toolJson(value);
-
-const compactSummarySchema = z.object({
-	serverName: z.string(),
-	namespacePrefix: z.string(),
-	targetDir: z.string(),
-	projectType: z.string(),
-	plugins: z.array(z.string()),
-	counts: z.object({
-		tools: z.number(),
-		prompts: z.number(),
-		skills: z.number(),
-		agents: z.number(),
-	}),
-	tests: z.boolean(),
-	hasExistingServer: z.boolean(),
-	adoptionStrategy: ADOPTION_STRATEGY_SCHEMA,
-});
-
-const compactDetailSchema = z.object({
-	section: z.enum(['tools', 'prompts', 'skills', 'agents', 'files', 'notes']),
-	cursor: z.number(),
-	nextCursor: z.number().nullable(),
-	total: z.number(),
-	items: z.array(z.unknown()),
-});
 
 const compactResult = (
 	blueprint: ReturnType<typeof buildServerBlueprint>,
@@ -108,18 +80,19 @@ export const buildPlanToolRegistration = (
 			server.registerTool(
 				`${prefix}_plan_mcp_project`,
 				{
-					outputSchema: z.object({
-						blueprint: SERVER_BLUEPRINT_SCHEMA.optional(),
-						files: z.array(SCAFFOLDED_FILE_SCHEMA).optional(),
-						summary: compactSummarySchema.optional(),
-						detail: compactDetailSchema.optional(),
-					}),
+					// v00129 S1 (AUD-B01): the full nested blueprint/files
+					// schema cost ~5.2 KB per tools/list entry for a shape
+					// the model needs only after calling (and only when
+					// full:true is explicitly requested). See
+					// compact-output-schema.ts.
+					outputSchema: compactOutputSchema(),
 					description:
 						'Read-only. Analyze this project and plan a project-specific MCP server. Returns a bounded compact summary by DEFAULT (page detail with section/cursor/limit over tools, prompts, skills, agents, files or notes); pass full:true only when you need the EXHAUSTIVE blueprint plus every file to write (hundreds of KB on real projects). If a server already exists, the notes explain how to integrate it with mcp-vertex instead of replacing it.',
 					inputSchema: PLAN_INPUT_SCHEMA,
 				},
 				async (args: z.infer<typeof PLAN_INPUT_SCHEMA>) => {
-					const analysis = await analyzeProject(deps.reader);
+					const analysis = await (deps.analyze?.() ??
+						analyzeProject(deps.reader));
 					const blueprint = buildServerBlueprint(analysis, {
 						...(args.tests !== undefined
 							? { tests: args.tests }

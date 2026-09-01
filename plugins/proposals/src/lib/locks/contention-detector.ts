@@ -1,5 +1,6 @@
-import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type { ILockFile } from './agent-lock-engine';
 import {
@@ -48,7 +49,11 @@ const EMPTY_LOCK = (): ILockFile => ({
 const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
 	let raw: string;
 	try {
-		raw = await readFile(lockPath, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(lockPath)).readText(
+				basename(lockPath),
+			)
+		).content;
 	} catch {
 		return EMPTY_LOCK();
 	}
@@ -271,6 +276,7 @@ export const detectContention = async (
 
 	for (const entry of history) {
 		if (entry.kind !== 'disjoint') continue;
+		if (entry.resolvedAt !== undefined) continue;
 		const startedMs = new Date(entry.startedAt).getTime();
 		if (Number.isNaN(startedMs)) continue;
 		const resolvedMs =

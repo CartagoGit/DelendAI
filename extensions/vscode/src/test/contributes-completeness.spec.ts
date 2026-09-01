@@ -115,6 +115,9 @@ describe('f00100 S4 — contributes-completeness ratchet', () => {
 		// Configuration Center is the 31st intentionally contributed command.
 		// f00119 S6: auto-agent-selector panel command is the 32nd.
 		// x00072 SEC-001 S1: start-server-untrusted command is the 33rd.
-		expect(contributed.length).toBe(33);
+		// f00192 S1: openAgentTimeline is the 34th.
+		// Runtime observer log command is the 35th.
+		// `openDashboardTab` (dashboard in an editor tab) is the 37th.
+		expect(contributed.length).toBe(37);
 	});
 });

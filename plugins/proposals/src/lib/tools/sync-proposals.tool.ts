@@ -3,6 +3,7 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
+import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
 
 export interface ISyncProposalsToolOptions {
 	readonly namespacePrefix: string;
@@ -21,6 +22,7 @@ export interface ISyncProposalsToolOptions {
 	 * beyond the generic ones, e.g. `['paused/demos']`.
 	 */
 	readonly extraFolders?: readonly string[];
+	readonly folderPolicy?: IProposalFolderPolicy;
 }
 
 /**
@@ -56,6 +58,8 @@ export const buildSyncProposalsRegistration = (
 					options.workspaceRoot,
 					options.layout,
 					options.extraFolders ?? [],
+					undefined,
+					options.folderPolicy,
 				);
 				const payload = {
 					changed: result.changed,

@@ -32,6 +32,13 @@
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
+		},
+		"./node": {
+			"@mcp-vertex/source": {
+				"types": "./src/node/index.ts"
+			},
+			"types": "./dist/node/index.d.ts",
+			"import": "./dist/node/index.js"
 		}
 	},
 	"scripts": {
@@ -41,12 +48,13 @@
 	},
 	"dependencies": {
 		"@mcp-vertex/core": "workspace:*",
-		"@modelcontextprotocol/sdk": "^1.29.0"
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.10"
+		"vitest": "4.1.11"
 	},
 	"publishConfig": {
 		"access": "public"

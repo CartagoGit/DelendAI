@@ -3,10 +3,10 @@
  * a directory. The only module here that touches the OS. Never throws (a
  * missing dir or unparseable file is skipped).
  */
-import { readFile, readdir } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
-import { joinUnderRoot } from '@mcp-vertex/core/public';
+import { joinUnderRoot, SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type {
 	II18nScanDeps,
@@ -43,6 +43,7 @@ const readSourceFiles = async (
 	workspaceRootAbs: string,
 	dir: string,
 ): Promise<readonly ISourceFile[]> => {
+	const reader = new SafeWorkspaceReader(workspaceRootAbs);
 	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
 	const out: ISourceFile[] = [];
 	for (const entry of entries) {
@@ -55,9 +56,10 @@ const readSourceFiles = async (
 			continue;
 		}
 		if (!entry.isFile() || !hasSourceExtension(entry.name)) continue;
-		const content = await readFile(absolutePath, 'utf8').catch(
-			() => undefined,
-		);
+		const content = await reader
+			.readText(relative(workspaceRootAbs, absolutePath))
+			.then((result) => result.content)
+			.catch(() => undefined);
 		if (content === undefined) continue;
 		out.push({
 			path: relative(workspaceRootAbs, absolutePath),
@@ -74,6 +76,7 @@ export const realI18nDeps = (
 ): II18nScanDeps => ({
 	listLocales: async () => {
 		const dir = joinUnderRoot(workspaceRootAbs, localesDir);
+		const localeReader = new SafeWorkspaceReader(dir);
 		const entries = await readdir(dir, { withFileTypes: true }).catch(
 			() => [],
 		);
@@ -82,7 +85,7 @@ export const realI18nDeps = (
 			if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
 			try {
 				const data = JSON.parse(
-					await readFile(join(dir, entry.name), 'utf8'),
+					(await localeReader.readText(entry.name)).content,
 				) as Record<string, unknown>;
 				if (data !== null && typeof data === 'object') {
 					out.push({

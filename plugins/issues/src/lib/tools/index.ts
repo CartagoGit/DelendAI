@@ -9,11 +9,14 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { buildAnalyzeIssueRegistration } from './analyze-issue.tool';
 import { buildFetchIssueRegistration } from './fetch-issue.tool';
 import { buildIngestIssueRegistration } from './ingest-issue.tool';
-import type { IGithubClient } from './list-issues.tool';
+import { buildListAdvisoriesRegistration } from './list-advisories.tool';
+import { buildListCodeScanningRegistration } from './list-code-scanning.tool';
+import { buildListDependabotRegistration } from './list-dependabot.tool';
+import type { IGithubClient } from '../contracts';
 import { buildListIssuesRegistration } from './list-issues.tool';
+import { buildListSecretScanningRegistration } from './list-secret-scanning.tool';
 import { buildResolveIssueRegistration } from './resolve-issue.tool';
 
-export type { IGithubClient } from './list-issues.tool';
 export { buildSetupGithubRegistration } from './setup-github.tool';
 
 export interface IBuildIssuesToolRegistrationsOptions {
@@ -29,11 +32,27 @@ export interface IBuildIssuesToolRegistrationsOptions {
 	readonly githubClient: IGithubClient;
 }
 
-/** Builds the 5 `<namespacePrefix>_issues_*` tool registrations. */
+/** Builds the 9 `<namespacePrefix>_issues_*` tool registrations. */
 export const buildIssuesToolRegistrations = (
 	options: IBuildIssuesToolRegistrationsOptions,
 ): readonly IToolRegistration[] => [
 	buildListIssuesRegistration({
+		namespacePrefix: options.namespacePrefix,
+		githubClient: options.githubClient,
+	}),
+	buildListDependabotRegistration({
+		namespacePrefix: options.namespacePrefix,
+		githubClient: options.githubClient,
+	}),
+	buildListCodeScanningRegistration({
+		namespacePrefix: options.namespacePrefix,
+		githubClient: options.githubClient,
+	}),
+	buildListSecretScanningRegistration({
+		namespacePrefix: options.namespacePrefix,
+		githubClient: options.githubClient,
+	}),
+	buildListAdvisoriesRegistration({
 		namespacePrefix: options.namespacePrefix,
 		githubClient: options.githubClient,
 	}),

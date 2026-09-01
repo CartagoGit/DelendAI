@@ -45,6 +45,20 @@ const fakeVscode = (): IVscodeApi => ({
 			return { webview: { html: '' } };
 		},
 	},
+	workspace: {
+		createFileSystemWatcher: () => ({
+			onDidChange: () => ({ dispose() {} }),
+			onDidCreate: () => ({ dispose() {} }),
+			onDidDelete: () => ({ dispose() {} }),
+		}),
+		getConfiguration: () => ({
+			get<T>(key: string, defaultValue?: T): T | undefined {
+				if (key === 'command') return 'node' as unknown as T;
+				if (key === 'args') return ['server.js'] as unknown as T;
+				return defaultValue;
+			},
+		}),
+	},
 });
 
 interface ITrackedClient {
@@ -162,7 +176,7 @@ describe('activate / deactivate lifecycle (reload-leak contract)', async () => {
 		expect(watcherListenerDisposals).toBe(3);
 	});
 
-	it('failed activate clears the runtime handle (no stale slot)', async () => {
+	it('failed initial connection keeps the runtime handle recoverable', async () => {
 		__resetRuntimeHandle();
 		const context: IExtensionContext = {
 			subscriptions: [],
@@ -183,15 +197,9 @@ describe('activate / deactivate lifecycle (reload-leak contract)', async () => {
 					throw new Error('bun not on PATH');
 				},
 			}),
-		).rejects.toThrow(/bun not on PATH/);
+		).resolves.toBeUndefined();
 
-		// Critical: the handle must NOT survive a failed activation,
-		// otherwise the next `activate()` inherits a half-populated slot
-		// and `deactivate()` will tear down disposables from a previous
-		// lifetime.
-		expect(getRuntimeHandle()).toBeUndefined();
-
-		// And `deactivate()` must be a no-op (handle is already gone).
+		expect(getRuntimeHandle()).toBeDefined();
 		await expect(deactivate()).resolves.toBeUndefined();
 	});
 });

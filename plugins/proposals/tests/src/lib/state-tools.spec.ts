@@ -77,6 +77,7 @@ describe('state_health / state_repair [N15]', async () => {
 			taskIds: [],
 			lastStaleSeen: null,
 		});
+		expect(out.heartbeatStalls).toEqual({ count: 0, taskIds: [] });
 		expect(out.peerReviewBypasses).toBe(0);
 		expect(out.autoTransitionRepairs).toEqual({ count: 0, entries: [] });
 		expect(out.registry.orphans).toBe(0);
@@ -114,7 +115,7 @@ describe('state_health / state_repair [N15]', async () => {
 		mkdirSync(join(dir, '.cache/mcp-vertex'), { recursive: true });
 		writeFileSync(
 			join(dir, '.cache/mcp-vertex/agents.lock.session.jsonl'),
-			[
+			`${[
 				JSON.stringify({
 					ts: '2026-07-26T00:00:00.000Z',
 					agent: 'alpha',
@@ -133,7 +134,7 @@ describe('state_health / state_repair [N15]', async () => {
 					action: 'claim',
 					ok: true,
 				}),
-			].join('\n') + '\n',
+			].join('\n')}\n`,
 		);
 		const handler = await capture(buildStateHealthRegistration(opts));
 		const out = parse(await handler({}));
@@ -259,6 +260,36 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(out.stale.taskIds).not.toContain('t-fresh');
 		expect(out.stale.lastStaleSeen).toBe('2001-06-15T12:00:00.000Z'); // most recent of the two
 		// Stale entries must fail the health gate (F151 closed).
+		expect(out.healthy).toBe(false);
+	});
+
+	it('surfaces a stalled heartbeat before the conservative stale-lock TTL', async () => {
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		const stalled = new Date(Date.now() - 31_000).toISOString();
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 'heartbeat-stalled',
+						agent: 'runner',
+						ownership: ['src/held.ts'],
+						started_at: stalled,
+						last_seen: stalled,
+					},
+				],
+			}),
+		);
+
+		const health = await capture(buildStateHealthRegistration(opts));
+		const out = parse(await health({}));
+		expect(out.heartbeatStalls).toEqual({
+			count: 1,
+			taskIds: ['heartbeat-stalled'],
+		});
+		expect(out.stale.count).toBe(0);
 		expect(out.healthy).toBe(false);
 	});
 

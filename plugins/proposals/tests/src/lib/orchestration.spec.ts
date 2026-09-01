@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -81,6 +87,12 @@ describe('delegate tool', async () => {
 		expect(out.locked).toBe(true);
 		expect(typeof out.agent).toBe('string');
 		expect(out.instruction).toContain('src/x.ts');
+		expect(out.instruction).toContain(
+			'configured checkout (normally develop)',
+		);
+		expect(out.instruction).not.toContain(
+			'do not edit the parent checkout',
+		);
 	});
 
 	it('f00082 S3: propagates host/model into the assigned registry entry', async () => {
@@ -108,6 +120,54 @@ describe('delegate tool', async () => {
 		expect(entry.host).toBe('vscode-copilot');
 		expect(entry.model).toBe('m3');
 	});
+
+	it('reconciles an abandoned assignment before allocating a pool slot', async () => {
+		writeFileSync(
+			opts.registryPathAbs,
+			JSON.stringify({
+				version: 2,
+				adopted: [],
+				assignments: [
+					{
+						task_id: 'abandoned-task',
+						agent_name: 'alpha',
+						agent_slot: 'implementation_runner',
+						parent_task_id: null,
+						depth: 0,
+						topic: 'old work',
+						adopted: true,
+						assigned_at: '2020-01-01T00:00:00.000Z',
+						last_seen: '2020-01-01T00:00:00.000Z',
+						cooldown_until: null,
+						status: 'active',
+					},
+				],
+			}),
+		);
+		const singleNameOpts = { ...opts, pool: ['alpha'] };
+		const handler = await capture(
+			buildDelegateRegistration({
+				namespacePrefix: 'proposals',
+				agentNames: singleNameOpts,
+				lockPathAbs: opts.lockPathAbs,
+			}),
+		);
+
+		const out = parse(
+			await handler({
+				taskId: 'new-task',
+				slot: 'implementation_runner',
+				files: ['src/recovered.ts'],
+			}),
+		);
+
+		expect(out.ok).toBe(true);
+		expect(out.agent).toBe('alpha');
+		const registry = JSON.parse(readFileSync(opts.registryPathAbs, 'utf8'));
+		expect(
+			registry.assignments.map((a: { task_id: string }) => a.task_id),
+		).toEqual(['new-task']);
+	});
 });
 
 describe('delegate tool — x00051 per-agent worktree wiring', () => {
@@ -130,9 +190,10 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 	/** Fake git runner that records every arg array the worktree engine saw. */
 	const recordingRunner = (
 		fail: boolean,
+		failureReason = 'mock failure',
 	): IGitRunner & { calls: string[][] } => {
 		const calls: string[][] = [];
-		const runner = ((args: readonly string[]) => {
+		const runner: IGitRunner = (args) => {
 			calls.push([...args]);
 			// The worktree engine first probes `rev-parse --verify
 			// --quiet <branch>` to know whether to create the branch or
@@ -143,13 +204,54 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 				args[0] === 'rev-parse'
 					? { ok: false, output: '', reason: 'no such ref' }
 					: fail
-						? { ok: false, output: '', reason: 'mock failure' }
+						? { ok: false, output: '', reason: failureReason }
 						: { ok: true, output: '' };
 			return Promise.resolve(result);
-		}) as unknown as IGitRunner & { calls: string[][] };
-		runner.calls = calls;
-		return runner;
+		};
+		// `IGitRunner` is a callable type (not a plain object shape), so
+		// `fakePartial` (designed for `Partial<T>` object literals) does
+		// not apply here — mapped types drop call signatures. Attaching
+		// the `calls` recorder via `Object.assign` keeps this fully typed
+		// with zero casts: its two-argument overload returns `T & U`.
+		return Object.assign(runner, { calls });
 	};
+
+	it('surfaces cancellation reason, alternatives, and durable log entry', async () => {
+		const runner = recordingRunner(true, 'operation cancelled by host');
+		const errorLogPath = join(root, 'logs', 'delegate-errors.jsonl');
+		const handler = await capture(
+			buildDelegateRegistration({
+				namespacePrefix: 'proposals',
+				agentNames: opts,
+				lockPathAbs: opts.lockPathAbs,
+				errorLogPathAbs: errorLogPath,
+				worktree: {
+					enabled: true,
+					workspaceRoot: root,
+					run: runner,
+				},
+			}),
+		);
+		const out = parse(
+			await handler({
+				taskId: 'cancelled-task',
+				slot: 'implementation_runner',
+				files: ['src/cancelled.ts'],
+			}),
+		);
+
+		expect(out.ok).toBe(false);
+		expect(out.cancelled).toBe(true);
+		expect(out.reason).toBe('operation cancelled by host');
+		expect(out.alternatives).toHaveLength(3);
+		expect(out.errorLogged).toBe(true);
+		expect(JSON.parse(readFileSync(errorLogPath, 'utf8'))).toMatchObject({
+			kind: 'delegate-error',
+			errorId: out.errorId,
+			taskId: 'cancelled-task',
+			cancelled: true,
+		});
+	});
 
 	it('creates a per-agent worktree when worktree.enabled is true', async () => {
 		const runner = recordingRunner(false);
@@ -178,6 +280,7 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		expect(out.worktree.created).toBe(true);
 		expect(out.worktree.branch).toBe(`agent/${out.agent}`);
 		expect(out.worktree.path).toContain(out.agent);
+		expect(out.cwd).toBe(out.worktree.path);
 		// `git worktree add -b agent/<slug> <path> HEAD` must have
 		// been issued — this is the regression we're guarding.
 		const addCall = runner.calls.find(
@@ -190,6 +293,9 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		// Instruction must surface the worktree path so the subagent
 		// knows where to commit.
 		expect(out.instruction).toContain(out.worktree.path);
+		expect(out.instruction).toContain(
+			'parent checkout on develop is not a valid workspace',
+		);
 	});
 
 	it('f00082 S3/S4: composite branch when host/model are delegated', async () => {
@@ -224,11 +330,13 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 
 	it('returns stage "worktree" without claiming the lock when worktree create fails', async () => {
 		const runner = recordingRunner(true);
+		const errorLogPath = join(root, 'logs', 'delegate-errors.jsonl');
 		const handler = await capture(
 			buildDelegateRegistration({
 				namespacePrefix: 'proposals',
 				agentNames: opts,
 				lockPathAbs: opts.lockPathAbs,
+				errorLogPathAbs: errorLogPath,
 				worktree: {
 					enabled: true,
 					workspaceRoot: root,
@@ -246,6 +354,27 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		expect(out.ok).toBe(false);
 		expect(out.stage).toBe('worktree');
 		expect(out.reason).toContain('mock failure');
+		expect(out.cancelled).toBe(false);
+		const registry = JSON.parse(readFileSync(opts.registryPathAbs, 'utf8'));
+		expect(registry.assignments).toHaveLength(1);
+		expect(registry.assignments[0].status).toBe('cooldown');
+		expect(registry.assignments[0].subscription_id).toBeUndefined();
+		expect(registry.assignments[0].lease_until).toBeUndefined();
+		expect(out.errorId).toMatch(/^[0-9a-f-]{36}$/);
+		expect(out.alternatives).toEqual([
+			'retry delegate after inspecting agent_names and active locks',
+			'choose a different claimable slice or disjoint file scope',
+			'call continue_proposal with mode:"plan" before retrying',
+		]);
+		expect(out.errorLogged).toBe(true);
+		const logEntry = JSON.parse(readFileSync(errorLogPath, 'utf8'));
+		expect(logEntry).toMatchObject({
+			kind: 'delegate-error',
+			errorId: out.errorId,
+			taskId: 't1',
+			stage: 'worktree',
+			cancelled: false,
+		});
 		expect(out.locked).toBeUndefined();
 		// Lock file must not exist — the failure short-circuits the
 		// claim step, so no agent holds the files.

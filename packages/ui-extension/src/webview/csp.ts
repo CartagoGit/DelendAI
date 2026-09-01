@@ -93,6 +93,23 @@ export const cspHeaderValue = (policy: IWebviewCspPolicy): string =>
 		`frame-src ${policy.frameSrc.join(' ')}`,
 	].join('; ');
 
+const findAsciiCaseInsensitive = (
+	text: string,
+	needle: string,
+	from = 0,
+): number => text.toLowerCase().indexOf(needle.toLowerCase(), from);
+
+const hasCspMeta = (html: string): boolean =>
+	findAsciiCaseInsensitive(html, 'http-equiv="content-security-policy"') >=
+		0 ||
+	findAsciiCaseInsensitive(html, "http-equiv='content-security-policy'") >= 0;
+
+const findHeadOpenTagEnd = (html: string): number => {
+	const headStart = findAsciiCaseInsensitive(html, '<head');
+	if (headStart < 0) return -1;
+	return html.indexOf('>', headStart);
+};
+
 /**
  * Inject a `<meta http-equiv="Content-Security-Policy">` tag into an
  * HTML document's `<head>`. Idempotent-ish: if the document already
@@ -104,14 +121,15 @@ export const injectCspMeta = (
 	html: string,
 	policy: IWebviewCspPolicy,
 ): string => {
-	if (/http-equiv=["']Content-Security-Policy["']/i.test(html)) {
+	if (hasCspMeta(html)) {
 		return html;
 	}
 	const meta = `<meta http-equiv="Content-Security-Policy" content="${cspHeaderValue(
 		policy,
 	)}" />`;
-	if (/<head[^>]*>/i.test(html)) {
-		return html.replace(/<head[^>]*>/i, (open) => `${open}\n\t${meta}`);
+	const headOpenTagEnd = findHeadOpenTagEnd(html);
+	if (headOpenTagEnd >= 0) {
+		return `${html.slice(0, headOpenTagEnd + 1)}\n\t${meta}${html.slice(headOpenTagEnd + 1)}`;
 	}
 	return `${meta}\n${html}`;
 };

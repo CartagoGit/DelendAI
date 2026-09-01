@@ -30,21 +30,23 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
-	toolError,
 	toolOk,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
-import type { IGithubIssueDetail, IIssueScaffold } from '../contracts';
+import type {
+	IGithubClient,
+	IGithubIssueDetail,
+	IIssueScaffold,
+} from '../contracts';
 import {
 	buildScaffold,
 	buildScaffoldFileName,
 	parseScaffold,
 	serializeScaffold,
 } from '../issue-scaffold';
-import type { IGithubClient } from './list-issues.tool';
-
+import { issueCommentSchema, issueNumberToolError } from './issues-tool.shared';
 export interface IIngestIssueToolOptions {
 	readonly namespacePrefix: string;
 	readonly githubClient: IGithubClient;
@@ -182,14 +184,7 @@ const SCAFFOLD_FRONTMATTER_SCHEMA = z.object({
 	]),
 	proposals: z.array(z.string()),
 	dismiss_reason: z.string().optional(),
-	comments: z.array(
-		z.object({
-			author: z.string(),
-			body: z.string(),
-			createdAt: z.string(),
-			url: z.string(),
-		}),
-	),
+	comments: z.array(issueCommentSchema),
 });
 
 const SCAFFOLD_REF_SCHEMA = z.object({
@@ -227,10 +222,7 @@ export const runIngestIssue = async (
 			alreadyExisted: result.alreadyExisted,
 		});
 	} catch (error) {
-		return toolError(
-			error instanceof Error ? error.message : String(error),
-			'Check the issue number / repo configuration / gh auth status.',
-		);
+		return issueNumberToolError(error);
 	}
 };
 

@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface NotificationAwaitLockOutput {
+export interface McpVertexNotificationAwaitLockOutput {
 	taskId: string;
 	released: boolean;
 	timedOut: boolean;
@@ -20,7 +20,7 @@ export interface NotificationAwaitLockOutput {
 	waitedMs: number;
 }
 
-export interface NotificationNotifyStatusOutput {
+export interface McpVertexNotificationNotifyStatusOutput {
 	watching: string;
 	emitted: number;
 	lastReleases: {
@@ -33,6 +33,6 @@ export interface NotificationNotifyStatusOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface NotificationToolOutputs {
-	"notification_await_lock": NotificationAwaitLockOutput;
-	"notification_notify_status": NotificationNotifyStatusOutput;
+	"mcp-vertex_notification_await_lock": McpVertexNotificationAwaitLockOutput;
+	"mcp-vertex_notification_notify_status": McpVertexNotificationNotifyStatusOutput;
 }

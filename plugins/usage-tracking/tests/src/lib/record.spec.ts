@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildRecord,
 	extractModel,
+	extractTokenAccounting,
 	extractTokensSaved,
 	extractUsage,
 	resolveSessionId,
@@ -61,6 +62,35 @@ describe('extractUsage / extractModel', () => {
 			}),
 		).toBe(375);
 		expect(extractTokensSaved({ structuredContent: {} })).toBe(0);
+	});
+
+	it('measures per-call savings from an explicit token baseline', () => {
+		const result = {
+			structuredContent: {
+				usage: { inputTokens: 80, outputTokens: 20 },
+				tokenAccounting: { baselineTokens: 150 },
+			},
+		};
+		const usage = extractUsage(result);
+		expect(extractTokenAccounting(result, usage, 0)).toEqual({
+			baselineTokens: 150,
+			usedTokens: 100,
+			tokensSaved: 50,
+			savingsPercent: 33,
+			status: 'measured',
+			basis: 'explicit baselineTokens/tokensBefore vs provider usage',
+		});
+	});
+
+	it('does not invent a saving without a baseline', () => {
+		expect(
+			extractTokenAccounting({}, { totalTokens: 100 }, 0),
+		).toMatchObject({
+			baselineTokens: null,
+			usedTokens: 100,
+			tokensSaved: null,
+			status: 'unavailable',
+		});
 	});
 });
 
@@ -178,6 +208,31 @@ describe('buildRecord', () => {
 		});
 		expect(record.tokensSaved).toBe(240);
 		expect(record.model).toEqual(fallbackModel);
+	});
+
+	it('uses a configured plugin/tool baseline when the result has none', () => {
+		const record = buildRecord({
+			...base,
+			toolName: 'mcp-vertex_orchestrator-runner_invoke',
+			peerPrefixes: ['orchestrator-runner'],
+			result: {
+				structuredContent: {
+					usage: { totalTokens: 100 },
+					model: { provider: 'p', modelId: 'm', kind: 'api' },
+				},
+			},
+			baselineTokensOf: (plugin, tool) =>
+				plugin === 'orchestrator-runner' && tool === 'invoke'
+					? 140
+					: undefined,
+		});
+		expect(record.tokenAccounting).toMatchObject({
+			baselineTokens: 140,
+			usedTokens: 100,
+			tokensSaved: 40,
+			status: 'measured',
+		});
+		expect(record.tokensSaved).toBe(40);
 	});
 
 	it('does not attribute ordinary plugin calls to the last model', () => {

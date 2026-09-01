@@ -3,20 +3,31 @@ import { rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scssPlugin } from '../../../tools/scripts/compile/scss-plugin';
+import { WELL_KNOWN } from '../../../tools/scripts/lib/monorepo-paths.ts';
 
 const EXTENSION_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 export const buildVsCodeExtension = async (
-	outdir = join(EXTENSION_ROOT, 'dist'),
+	outdir = WELL_KNOWN.vscode(),
 ): Promise<BuildOutput> => {
-	await rm(outdir, { recursive: true, force: true });
+	await rm(join(outdir, 'extension.js'), { force: true });
 	return Bun.build({
 		entrypoints: [join(EXTENSION_ROOT, 'src/extension.ts')],
 		target: 'node',
-		format: 'cjs',
+		format: 'esm',
 		external: ['vscode'],
 		outdir,
 		plugins: [scssPlugin],
+		// Bun's tree-shaker drops top-level side-effect imports for ESM
+		// bundles, so the navigator shim (which mutates `globalThis`
+		// at import time) would never run before `zod` evaluates
+		// `typeof navigator`. The `banner` runs at the very top of
+		// the bundle, before any module body — guaranteed to fire on
+		// extension host startup. Keep it dependency-free.
+		banner: [
+			'/* mcp-vertex: node22 navigator shim — must stay first */',
+			'try { Object.defineProperty(globalThis, "navigator", { value: undefined, writable: true, configurable: true }); } catch (_) { /* ignore */ }',
+		].join('\n'),
 	});
 };
 

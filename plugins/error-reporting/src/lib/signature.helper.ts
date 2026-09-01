@@ -1,140 +1,157 @@
 /**
- * Pure error-shaping helpers for the auto-reporting plugin. Everything
- * here is side-effect free so the decision/body logic is unit-testable
- * without touching a real error, the filesystem or the network.
+ * Pure safe-report shaping helpers for the auto-reporting plugin.
+ * Everything here is side-effect free so the classification,
+ * fingerprint and body logic are unit-testable without touching a real
+ * process, the filesystem or the network.
  */
-import type { IBuildIssueBodyInput } from './contracts/interfaces/signature.interface';
+import { createHash } from 'node:crypto';
 
-/**
- * Markers that indicate a failure originated inside mcp-vertex itself
- * rather than in the host project. A stack trace from mcp-vertex code
- * will contain at least one of these (source paths, package scope, or
- * the plugin/loader vocabulary). Kept deliberately conservative: better
- * to miss an exotic origin than to upload a host project's own stack.
- */
-const INTERNAL_MARKERS: readonly string[] = [
-	'mcp-vertex',
-	'@mcp-vertex',
-	'/packages/core/',
-	'/plugins/',
-];
+import type { ISafeMcpVertexReport } from './contracts/interfaces/reporter.interface';
+import type { ISafeFingerprintInput } from './contracts/interfaces/signature.interface';
+export {
+	classifyInternalError,
+	classificationFromEvidence,
+	classificationOf,
+	isMcpVertexInternal,
+	isMarkedInternalBoundary,
+	markErrorAsInternalBoundary,
+	registerInternalPath,
+	registerInternalRuntimePaths,
+	resetInternalPathRegistry,
+	safeFailureClassOf,
+} from './internal-classifier.helper';
 
-export const messageOf = (error: unknown): string | undefined => {
-	if (error instanceof Error) return error.message;
-	if (typeof error === 'string') return error;
-	if (typeof error === 'object' && error !== null) {
-		const record = error as { message?: unknown };
-		if (typeof record.message === 'string') return record.message;
-	}
-	return undefined;
-};
-
-export const stackOf = (error: unknown): string | undefined => {
-	if (error instanceof Error) return error.stack;
-	if (typeof error === 'object' && error !== null) {
-		const record = error as { stack?: unknown };
-		if (typeof record.stack === 'string') return record.stack;
-	}
-	return undefined;
-};
-
-/** True when the failure appears to originate inside mcp-vertex. */
-export const isMcpVertexInternal = (error: unknown): boolean => {
-	const haystack =
-		`${messageOf(error) ?? ''}\n${stackOf(error) ?? ''}`.toLowerCase();
-	return INTERNAL_MARKERS.some((marker) => haystack.includes(marker));
-};
-
-const HEX = /\b0x[0-9a-f]+\b/g;
-const NUMBERS = /\d+/g;
-const PATH = /\/[^\s"'`]*/g;
-
-const MAX_SIGNATURE_LENGTH = 280;
 const MAX_TITLE_LENGTH = 180;
 
-/**
- * Collapse the variable parts of an error message so two sightings of
- * the same bug (different timestamps, port numbers, absolute paths,
- * addresses) produce the same stable signature. Never used for display.
- */
-export const normalizeMessage = (message: string): string =>
-	message
-		.replace(HEX, '<hex>')
-		.replace(NUMBERS, '<n>')
-		.replace(PATH, '<path>')
-		.replace(/\s+/g, ' ')
-		.trim();
+const packageRank = (value: string): number => {
+	if (value.startsWith('@mcp-vertex/error-reporting/')) return 0;
+	if (value.startsWith('@mcp-vertex/core/')) return 1;
+	if (value.startsWith('@mcp-vertex/')) return 2;
+	return 3;
+};
 
-/** Stable de-duplication key for `toolName` + error. */
-export const signatureOf = (toolName: string, error: unknown): string => {
-	const normalized = normalizeMessage(messageOf(error) ?? 'unknown error');
-	return `${toolName}::${normalized}`.slice(0, MAX_SIGNATURE_LENGTH);
+const versionMajorMinorOf = (version: string): string => {
+	const [major = '0', minor = '0'] = version.split('.');
+	return `${major}.${minor}`;
+};
+
+const topInternalFrameRelativeOf = (
+	frame: ISafeFingerprintInput['mcpFrames'][number] | undefined,
+): string => {
+	if (frame === undefined) return '';
+	const suffix =
+		frame.line !== undefined
+			? `:${frame.line}${frame.col !== undefined ? `:${frame.col}` : ''}`
+			: '';
+	return `${frame.file}${suffix}`;
+};
+
+const componentIdOf = (input: ISafeFingerprintInput): string => {
+	if (input.componentId !== undefined) return input.componentId;
+	const topFrame = [...input.mcpFrames].sort(
+		(left, right) => packageRank(left.file) - packageRank(right.file),
+	)[0];
+	if (topFrame === undefined) return '';
+	const prefix = `${input.packageId}/`;
+	if (!topFrame.file.startsWith(prefix)) return topFrame.file;
+	return topFrame.file.slice(prefix.length);
+};
+
+export const signatureOf = (input: ISafeFingerprintInput): string => {
+	const firstFrame = [...input.mcpFrames].sort(
+		(left, right) => packageRank(left.file) - packageRank(right.file),
+	)[0];
+	return createHash('sha256')
+		.update(
+			[
+				versionMajorMinorOf(input.mcpVertexVersion),
+				input.packageId,
+				componentIdOf(input),
+				input.errorCode ?? '',
+				topInternalFrameRelativeOf(firstFrame),
+			].join('\n'),
+		)
+		.digest('hex');
 };
 
 const truncate = (value: string, max: number): string =>
 	value.length > max ? `${value.slice(0, max - 1)}…` : value;
 
-/** Issue title; the `[auto]` prefix makes machine reports obvious in a list. */
-export const buildIssueTitle = (toolName: string, error: unknown): string => {
-	const message = messageOf(error) ?? 'unknown error';
-	return truncate(
-		`[auto] ${toolName}: ${message.replace(/\s+/g, ' ').trim()}`,
+/** Issue title built only from controlled, internal-safe vocabulary. */
+export const buildIssueTitle = (report: ISafeMcpVertexReport): string =>
+	truncate(
+		`[auto] ${report.classification} ${report.packageId}${report.errorCode !== undefined ? `: ${report.errorCode}` : ''}`,
 		MAX_TITLE_LENGTH,
 	);
-};
 
-/** Full markdown body: detail + redacted log + opt-out instructions. */
-export const buildIssueBody = (input: IBuildIssueBodyInput): string => {
-	const stack = stackOf(input.error);
+/** Full markdown body built from the safe DTO only. */
+export const buildIssueBody = (report: ISafeMcpVertexReport): string => {
 	const lines: string[] = [
 		'## Automatic error report',
 		'',
 		'This issue was opened automatically by `@mcp-vertex/error-reporting` ' +
-			'after an mcp-vertex internal failure was detected in a host project.',
+			'after an mcp-vertex internal failure was reduced to a safe DTO.',
 		'',
 		'| Field | Value |',
 		'| --- | --- |',
-		`| Tool | \`${input.toolName}\` |`,
-		`| Namespace | \`${input.namespacePrefix}\` |`,
-		`| Detected at | ${input.ts} |`,
-		`| De-duplication signature | \`${input.signature}\` |`,
+		`| Package | \`${report.packageId}\` |`,
+		`| Reporter version | \`${report.reporterVersion}\` |`,
+		`| MCP Vertex version | \`${report.mcpVertexVersion}\` |`,
+		`| Classification | \`${report.classification}\` |`,
+		`| Failure class | \`${report.failureClass}\` |`,
+		`| Tool owner | \`${report.toolOwner}\` |`,
+		`| Tool category | \`${report.toolCategory}\` |`,
+		`| Fingerprint | \`${report.fingerprint}\` |`,
 	];
-	if (input.elapsedMs !== undefined) {
-		lines.push(`| Elapsed | ${Math.round(input.elapsedMs)} ms |`);
+	if (report.safeToolId !== undefined) {
+		lines.push(`| Safe tool | \`${report.safeToolId}\` |`);
 	}
-	if (input.host !== undefined) {
-		lines.push(`| Host | ${input.host} |`);
+	if (report.errorCode !== undefined) {
+		lines.push(`| Error code | \`${report.errorCode}\` |`);
 	}
-	if (input.model !== undefined) {
-		lines.push(`| Model | ${input.model} |`);
+	if (report.environmentClass !== undefined) {
+		lines.push(
+			`| Environment | runtime=${report.environmentClass.runtime}, platform=${report.environmentClass.platformFamily} |`,
+		);
 	}
-	lines.push(
-		'',
-		'## Error',
-		'',
-		'```',
-		messageOf(input.error) ?? 'unknown error',
-		'```',
-	);
-	if (stack !== undefined && stack.trim() !== '') {
-		lines.push('', '## Stack trace', '', '```', stack.trim(), '```');
-	}
-	if (input.argsJson.trim() !== '' && input.argsJson.trim() !== '{}') {
+	if (report.mcpFrames.length > 0) {
 		lines.push(
 			'',
-			'## Tool arguments (redacted)',
+			'## MCP Vertex frames',
+			'',
+			'```text',
+			...report.mcpFrames.map((frame) => {
+				const suffix =
+					frame.line !== undefined
+						? `:${frame.line}${frame.col !== undefined ? `:${frame.col}` : ''}`
+						: '';
+				return `${frame.file}${suffix}${frame.fn !== undefined ? ` ${frame.fn}` : ''}`;
+			}),
+			'```',
+		);
+	}
+	if (report.syntheticExample !== undefined) {
+		lines.push(
+			'',
+			'## Synthetic example',
 			'',
 			'```json',
-			input.argsJson,
+			JSON.stringify(report.syntheticExample, null, 2),
 			'```',
 		);
 	}
 	lines.push(
 		'',
-		'## How to disable',
+		'## Safe report payload',
+		'',
+		'```json',
+		JSON.stringify(report, null, 2),
+		'```',
+		'',
+		'## How to enable',
 		'',
 		'```jsonc',
-		'{ "plugins": { "error-reporting": { "options": { "enabled": false } } } }',
+		'{ "plugins": { "error-reporting": { "options": { "enabled": true } } } }',
 		'```',
 	);
 	return `${lines.join('\n').trim()}\n`;

@@ -143,4 +143,11 @@ export interface IRenderConfigurationCenterOptions {
 	readonly model: IConfigurationCenterModel;
 	readonly nonce?: string;
 	readonly lang?: string;
+	/**
+	 * Optional plugin id to deep-link. When set, the renderer
+	 * scrolls to and highlights that plugin's section on load so
+	 * the user lands on the form fields relevant to the plugin
+	 * they right-clicked in the Tools tree.
+	 */
+	readonly pluginId?: string;
 }

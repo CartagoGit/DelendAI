@@ -40,7 +40,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'auto-agent-selector',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Ruteo multi-agente sin configuración: descubre cada LLM/agente disponible (CLI en PATH + API keys), recomienda el más rentable por tarea (el usuario decide y puede fijar), y escala a un modelo más fuerte solo si el barato falla la puerta de aceptación del proyecto.',
 	optionsSchema: OptionsSchema,

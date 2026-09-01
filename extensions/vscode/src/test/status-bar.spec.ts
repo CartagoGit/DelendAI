@@ -88,6 +88,7 @@ describe('McpVertexStatusBar', async () => {
 		);
 
 		await bar.start();
+		await bar.update();
 
 		expect(item.text).toContain('mcp-vertex');
 		expect(item.text).toContain('1 tools');
@@ -114,6 +115,7 @@ describe('McpVertexStatusBar', async () => {
 			}),
 		);
 		await bar.start();
+		await bar.update();
 		// Without metrics or agents calls, the status bar should still
 		// render the tool/proposal segments and not crash.
 		expect(item.text).toContain('0 tools');
@@ -168,6 +170,7 @@ describe('McpVertexStatusBar', async () => {
 		);
 
 		await bar.start();
+		await bar.update();
 		expect(item.text).toContain('1 tools');
 
 		toolCount = 3;

@@ -5,6 +5,19 @@ import { renderAgentCatalogWebview } from '../views/agent-catalog-webview';
 import { renderMetricsHtml } from '../views/metrics-sparkline';
 import { renderProposalDetailHtml } from '../views/proposal-detail-webview';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
+import {
+	projectTimelineView,
+	renderAgentTimeline,
+} from '../views/agent-timeline';
+
+const zeroCost = {
+	contentTextBytes: 0,
+	structuredJsonBytes: 0,
+	wireEstimateBytes: 0,
+	estimatedTokens: {
+		estimatedTokens4B: 0,
+	},
+};
 
 describe('secondary webview content i18n', () => {
 	const es = viewCopyFor('es');
@@ -13,7 +26,13 @@ describe('secondary webview content i18n', () => {
 		const metrics = renderMetricsHtml(
 			{
 				tools: {},
-				totals: { calls: 2, errors: 1, totalMs: 0, totalBytes: 0 },
+				totals: {
+					calls: 2,
+					errors: 1,
+					totalMs: 0,
+					totalBytes: 0,
+					cost: zeroCost,
+				},
 			},
 			es,
 		);
@@ -33,7 +52,18 @@ describe('secondary webview content i18n', () => {
 
 	it('renders proposal and tool empty states in Spanish', () => {
 		const proposal = renderProposalDetailHtml(
-			{ id: 'f00108', logs: [] },
+			{
+				id: 'f00108',
+				logs: [],
+				agents: [],
+				progress: {
+					total: 0,
+					done: 0,
+					inProgress: 0,
+					pending: 0,
+					percent: 0,
+				},
+			},
 			es,
 		);
 		expect(proposal).toContain('No hay diagnóstico disponible.');
@@ -45,5 +75,17 @@ describe('secondary webview content i18n', () => {
 		});
 		expect(tool).toContain('No hay esquema de entrada.');
 		expect(tool).toContain('No hay llamadas registradas.');
+	});
+
+	it('renders the agent timeline chrome in Spanish', () => {
+		const timeline = renderAgentTimeline(
+			projectTimelineView({ version: 1, events: [] }, {}),
+			{ refreshHref: '?refresh=1', copy: es },
+		);
+		expect(timeline).toContain('<html lang="es">');
+		expect(timeline).toContain('<title>Línea de tiempo de agentes</title>');
+		expect(timeline).toContain('cualquier plugin');
+		expect(timeline).toContain('Aplicar');
+		expect(timeline).toContain('No hay eventos que coincidan');
 	});
 });

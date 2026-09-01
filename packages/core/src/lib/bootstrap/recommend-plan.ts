@@ -1,5 +1,8 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import { defaultMcpServerName } from '../scaffold/scaffold-host';
+import { stripPackageScope, toKebabCase } from '../shared/string-normalize';
 import type { IProjectAnalysis } from './analyze-project';
+import { resolveAdoptionStrategy } from './adoption-strategy';
 import { runnerFor } from './package-runners';
 import { resolvePatternCatalog } from './pattern-catalog-overrides';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
@@ -11,6 +14,7 @@ export interface IServerPlanOptions {
 	readonly cacheDir?: string;
 	readonly docsDir?: string;
 	readonly targetDir?: string;
+	readonly adoption?: unknown;
 	/**
 	 * Optional host-defined pattern overrides (see
 	 * `pattern-catalog-overrides.ts`). When omitted, the hardcoded
@@ -41,11 +45,7 @@ export interface IServerPlan {
 const kebabHead = (name: string | undefined): string => {
 	if (name?.startsWith('@mcp-vertex/')) return 'mcp-vertex';
 	if (!name) return 'app';
-	const cleaned = name
-		.replace(/^@[^/]+\//, '')
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+	const cleaned = toKebabCase(stripPackageScope(name));
 	const head = cleaned.split('-')[0];
 	return head && head.length > 0 ? head : 'app';
 };
@@ -81,11 +81,15 @@ export const recommendServerPlan = (
 	const catalog = resolvePatternCatalog(options.patternOverrides);
 	const pattern = catalog[analysis.projectType];
 	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
-	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
+	const serverName =
+		options.serverName ?? defaultMcpServerName(namespacePrefix);
 	const targetDir = options.targetDir ?? defaultTargetDir(analysis);
 	const cacheDir = options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const docsDir = options.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const plugins = pattern.recommendedPlugins;
+	const adoptionStrategy = resolveAdoptionStrategy(options.adoption ?? {}, {
+		hasExistingMcpProject: analysis.hasMcpProject,
+	});
 
 	const args = ['@mcp-vertex/core'];
 	if (plugins.length > 0) args.push(`--plugins=${plugins.join(',')}`);
@@ -113,9 +117,17 @@ export const recommendServerPlan = (
 		cacheDir,
 		docsDir,
 		mcpJson: {
-			servers: {
-				[serverName]: { command: 'bunx', args },
-			},
+			...(adoptionStrategy.operations.some(
+				(operation) =>
+					operation.capability === 'mcp-config' &&
+					operation.action === 'replace',
+			)
+				? {
+						servers: {
+							[serverName]: { command: 'bunx', args },
+						},
+					}
+				: {}),
 		},
 		notes,
 	};

@@ -217,6 +217,31 @@ describe('generate-agent-catalog script', async () => {
 		});
 	});
 
+	it('preserves the existing timestamp when only source timestamps change', async () => {
+		await withFixture(async (root) => {
+			const first = await runCatalogGeneratorCli(['--root', root], {
+				...testIo(),
+				fixedGeneratedAt: FIXED_NOW,
+				loadTools: async () => [...baseTools],
+			});
+			expect(first.exitCode).toBe(0);
+			const firstText = await readFile(
+				join(root, DEFAULT_OUTPUT_PATH),
+				'utf8',
+			);
+
+			const second = await runCatalogGeneratorCli(['--root', root], {
+				...testIo(),
+				fixedGeneratedAt: '2026-08-30T19:14:23.702Z',
+				loadTools: async () => [...baseTools],
+			});
+			expect(second.exitCode).toBe(0);
+			expect(
+				await readFile(join(root, DEFAULT_OUTPUT_PATH), 'utf8'),
+			).toBe(firstText);
+		});
+	});
+
 	it('--check exits 0 when the artifact is current and 1 when it is stale', async () => {
 		await withFixture(async (root) => {
 			await runCatalogGeneratorCli(['--root', root], {

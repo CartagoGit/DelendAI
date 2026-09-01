@@ -7,6 +7,7 @@ describe('renderPanelMemory', async () => {
 	it('renders memory notes and escapes user content', async () => {
 		const html = renderPanelMemory(
 			{
+				state: 'ready',
 				notes: [
 					{
 						id: 'n1',
@@ -23,5 +24,14 @@ describe('renderPanelMemory', async () => {
 		expect(html).toContain('&lt;Decision&gt;');
 		expect(html).toContain('&lt;tag&gt;');
 		expect(html).not.toContain('<Decision>');
+	});
+
+	it('renders an unavailable state without inventing notes', async () => {
+		const html = renderPanelMemory(
+			{ state: 'unavailable', notes: [], total: 0, offset: 0 },
+			dictsByLang.en,
+		);
+		expect(html).toContain('panel-memory');
+		expect(html).toContain('unavailable');
 	});
 });

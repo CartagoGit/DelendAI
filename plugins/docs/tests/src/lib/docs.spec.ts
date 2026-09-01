@@ -45,6 +45,31 @@ describe('docs engine', async () => {
 		);
 	});
 
+	it('keeps the exact title extraction for representative frontmatter and heading input', async () => {
+		expect(
+			extractTitle(
+				[
+					'---',
+					'title: "Reference Manual"',
+					'owner: docs',
+					'---',
+					'# Ignored',
+				].join('\n'),
+				'fallback.md',
+			),
+		).toBe('Reference Manual');
+		expect(
+			extractTitle('preface\n# Real Heading\nbody', 'fallback.md'),
+		).toBe('Real Heading');
+	});
+
+	it('handles a long unterminated frontmatter block without pathological slowdown', async () => {
+		const startedAt = performance.now();
+		const raw = `---\n${'owner: docs\n'.repeat(20_000)}# Real Heading\nbody`;
+		expect(extractTitle(raw, 'fallback.md')).toBe('Real Heading');
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
+
 	it('lists markdown under default roots (docs + README) with titles', async () => {
 		const { docs } = await listDocs(root);
 		const byPath = Object.fromEntries(docs.map((d) => [d.path, d.title]));

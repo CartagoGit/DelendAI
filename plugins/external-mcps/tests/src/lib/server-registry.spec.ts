@@ -304,7 +304,8 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 	it('bootEager boots ONLY the eager:true servers at init', () => {
 		const h = makeHarness(
 			{
-				lazy: entry(),
+				defaultLazy: entry(),
+				explicitLazy: entry({ eager: false, command: 'cold-cmd' }),
 				hot: entry({ eager: true, command: 'hot-cmd' }),
 			},
 			{ hostEnv: BASE_HOST_ENV },
@@ -315,7 +316,38 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 		expect(h.spawnCalls[0]?.env).toEqual(BASE_HOST_ENV);
 		const rows = h.registry.status();
 		expect(rows.find((r) => r.id === 'hot')?.running).toBe(true);
-		expect(rows.find((r) => r.id === 'lazy')?.running).toBe(false);
+		expect(rows.find((r) => r.id === 'defaultLazy')?.running).toBe(false);
+		expect(rows.find((r) => r.id === 'explicitLazy')?.running).toBe(false);
+	});
+
+	it('leaves eager:false and omitted entries cold until the first routed call', async () => {
+		const h = makeHarness(
+			{
+				defaultLazy: entry(),
+				explicitLazy: entry({ eager: false, command: 'cold-cmd' }),
+				hot: entry({ eager: true, command: 'hot-cmd' }),
+			},
+			{ hostEnv: BASE_HOST_ENV },
+		);
+		h.registry.bootEager();
+		expect(h.spawnCalls.map((call) => call.command)).toEqual(['hot-cmd']);
+
+		const firstLazy = h.registry.call('explicitLazy', 'ping', {});
+		expect(h.spawnCalls.map((call) => call.command)).toEqual([
+			'hot-cmd',
+			'cold-cmd',
+		]);
+		h.children[1]?.reply(0, { result: { pong: true } });
+		expect(await firstLazy).toEqual({ ok: true, result: { pong: true } });
+
+		const secondLazy = h.registry.call('defaultLazy', 'ping', {});
+		expect(h.spawnCalls.map((call) => call.command)).toEqual([
+			'hot-cmd',
+			'cold-cmd',
+			'stub-mcp',
+		]);
+		h.children[2]?.reply(0, { result: { pong: true } });
+		expect(await secondLazy).toEqual({ ok: true, result: { pong: true } });
 	});
 
 	it('snapshots the spawned env when entry.env is empty so only the base allow-list reaches the child', async () => {
@@ -588,6 +620,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 			buildCallToolRegistration({
 				namespacePrefix: 'external-mcps',
 				registry: h.registry,
+				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: true,
 			}),
 		);
@@ -607,6 +640,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 			buildCallToolRegistration({
 				namespacePrefix: 'external-mcps',
 				registry: h.registry,
+				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: true,
 				hasRecordedAck: (id) => id === 'fs',
 			}),
@@ -629,6 +663,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 			buildCallToolRegistration({
 				namespacePrefix: 'external-mcps',
 				registry: h.registry,
+				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: false,
 			}),
 		);
@@ -645,6 +680,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 			buildCallToolRegistration({
 				namespacePrefix: 'external-mcps',
 				registry: h.registry,
+				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: true,
 			}),
 		);
@@ -668,6 +704,7 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 			buildCallToolRegistration({
 				namespacePrefix: 'external-mcps',
 				registry: h.registry,
+				llmDecidesActivation: true,
 				requireHumanAckWhenLlmDecides: false,
 			}),
 		);
@@ -681,6 +718,80 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 		});
 		h.children[0]?.reply(0, { result: {} });
 		await pending;
+	});
+
+	// AUD-D04: `llmDecidesActivation` was declared, defaulted and
+	// documented but no code path read it — the model could activate a
+	// cold server exactly the same whether the knob was true or false.
+	describe('AUD-D04 — llmDecidesActivation gates activation of a COLD server', () => {
+		it('llmDecidesActivation:false refuses a cold server with {code:llm-activation-disabled} and does NOT boot', async () => {
+			const h = makeHarness({ fs: entry() });
+			const tool = await captureTool(
+				buildCallToolRegistration({
+					namespacePrefix: 'external-mcps',
+					registry: h.registry,
+					llmDecidesActivation: false,
+					requireHumanAckWhenLlmDecides: false,
+					hasRecordedAck: () => true,
+				}),
+			);
+			const result = await tool.handler({
+				server: 'fs',
+				tool: 'read_file',
+			});
+			const payload = CallOutputSchema.parse(result.structuredContent);
+			expect(payload.ok).toBe(false);
+			expect(payload.code).toBe('llm-activation-disabled');
+			expect(payload.hint).toContain('llmDecidesActivation');
+			expect(h.spawnCalls).toHaveLength(0);
+		});
+
+		it('llmDecidesActivation:false still serves calls to an ALREADY-running server (not an activation)', async () => {
+			const h = makeHarness({ fs: entry() });
+			// Boot the child out-of-band FIRST (the human/host activation
+			// path, e.g. `eager: true` at plugin init) — not through the
+			// gated `call` tool.
+			const bootPending = h.registry.call('fs', 'ping', {});
+			h.children[0]?.reply(0, { result: { pong: true } });
+			await bootPending;
+			expect(h.spawnCalls).toHaveLength(1);
+
+			const tool = await captureTool(
+				buildCallToolRegistration({
+					namespacePrefix: 'external-mcps',
+					registry: h.registry,
+					llmDecidesActivation: false,
+					requireHumanAckWhenLlmDecides: false,
+				}),
+			);
+			const pending = tool.handler({ server: 'fs', tool: 'ping' });
+			h.children[0]?.reply(1, { result: { pong: true } });
+			const payload = CallOutputSchema.parse(
+				(await pending).structuredContent,
+			);
+			expect(payload).toEqual({ ok: true, result: { pong: true } });
+			expect(h.spawnCalls).toHaveLength(1); // no second boot
+		});
+
+		it('llmDecidesActivation:true (default) is unaffected — falls through to the ack gate as before', async () => {
+			const h = makeHarness({ fs: entry() });
+			const tool = await captureTool(
+				buildCallToolRegistration({
+					namespacePrefix: 'external-mcps',
+					registry: h.registry,
+					llmDecidesActivation: true,
+					requireHumanAckWhenLlmDecides: true,
+				}),
+			);
+			const result = await tool.handler({
+				server: 'fs',
+				tool: 'read_file',
+			});
+			const payload = CallOutputSchema.parse(result.structuredContent);
+			expect(payload.ok).toBe(false);
+			expect(payload.code).toBe('ack-required');
+			expect(h.spawnCalls).toHaveLength(0);
+		});
 	});
 });
 

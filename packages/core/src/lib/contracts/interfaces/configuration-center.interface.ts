@@ -1,4 +1,5 @@
 import type { ActivationSource } from './activation-report.interface';
+import type { PermissionCategory } from './permission.interface';
 import type { PluginOrigin } from './plugin-origin.interface';
 
 export type ConfigurationCenterSection =
@@ -46,6 +47,8 @@ export interface IConfigurationPlugin {
 	readonly optionsSchema?: Readonly<Record<string, unknown>> | undefined;
 	readonly schemaStatus: 'available' | 'unavailable';
 	readonly configExample?: Readonly<Record<string, unknown>> | undefined;
+	readonly permissions?: readonly PermissionCategory[] | undefined;
+	readonly dependencies?: readonly string[] | undefined;
 	readonly capabilities: IConfigurationPluginCapabilities;
 }
 

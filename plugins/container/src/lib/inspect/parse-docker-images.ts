@@ -34,9 +34,7 @@ export const parseDockerImages = (raw: string): readonly IDockerImage[] => {
 				size: parsed.data.Size ?? '',
 				createdAt: toIso(parsed.data.CreatedAt),
 			});
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return items;
 };

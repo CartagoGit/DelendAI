@@ -13,6 +13,11 @@ import {
 	hasExplicitPluginSurfaceSelection,
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
+import {
+	renderStartupReportAnsi,
+	renderStartupReportPlain,
+	shouldUseAnsiColors,
+} from '@mcp-vertex/core/public';
 
 // x00186 (F27): `--workspace <abs>` (space or `=` form) already threads
 // through parseCliArgs's own `tokens.workspace ?? cwd` resolution
@@ -35,8 +40,27 @@ export const resolveWorkspaceFlag = (
 	return undefined;
 };
 
+export const hasHelpFlag = (argv: readonly string[]): boolean =>
+	argv.includes('--help') || argv.includes('-h');
+
 const run = async (): Promise<void> => {
 	const forwarded = process.argv.slice(2);
+	if (hasHelpFlag(forwarded)) {
+		process.stdout.write(
+			`${[
+				'mcp-vertex MCP host',
+				'',
+				'Usage: bun tools/scripts/host/host-server.script.ts [options]',
+				'',
+				'  --workspace <path>   Workspace root',
+				'  --preset <name>      Plugin preset',
+				'  --plugins <a,b>      Plugins to load',
+				'  --surface <mode>     MCP surface mode',
+				'  --help, -h           Show this help',
+			].join('\n')}\n`,
+		);
+		return;
+	}
 	const explicitWorkspace =
 		resolveWorkspaceFlag(forwarded) ?? process.env.MCP_VERTEX_WORKSPACE;
 	const cwd =
@@ -56,12 +80,35 @@ const run = async (): Promise<void> => {
 	// `assembleCliConfig` then adds plugin entries from
 	// `mcp-vertex.config.json` and applies exclude-plugins to the final set.
 	const args = parseCliArgs(effectiveArgv, cwd);
-	const { config, loadResult } = await assembleCliConfig(args);
+	const { config, loadResult, startupReportColor, buildStartupReport } =
+		await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
 	}
 
 	const assembled = await createMcpProject(config);
+	const surfaceRuntime = config.toolSurfaceRuntime?.get();
+	const surfaceMode = config.toolSurfacePlan?.mode ?? 'managed';
+	const schemaBytesByRegistrationId =
+		surfaceRuntime === undefined
+			? undefined
+			: {
+					...surfaceRuntime.measureSchemaBytes('native'),
+					...surfaceRuntime.measureSchemaBytes(surfaceMode),
+				};
+	const startupReport = buildStartupReport(schemaBytesByRegistrationId);
+	const startupText =
+		startupReportColor === 'always'
+			? renderStartupReportAnsi(startupReport, {
+					...process.env,
+					FORCE_COLOR: '1',
+				})
+			: startupReportColor === 'never'
+				? renderStartupReportPlain(startupReport)
+				: shouldUseAnsiColors()
+					? renderStartupReportAnsi(startupReport)
+					: renderStartupReportPlain(startupReport);
+	if (startupText.length > 0) process.stderr.write(`${startupText}\n`);
 
 	// Install signal handlers BEFORE `await assembled.start()`. The
 	// `start()` call can take several seconds on a cold start (loading
@@ -77,12 +124,6 @@ const run = async (): Promise<void> => {
 	process.on('SIGTERM', () => onSignal(143));
 	process.on('SIGINT', () => onSignal(130));
 	process.on('SIGHUP', () => onSignal(129));
-	// Deterministic e2e handshake. Tests opt in explicitly so production hosts
-	// do not gain banner noise, and signals are never sent based on a timer that
-	// can expire before cold plugin assembly reaches this point.
-	if (process.env.MCP_VERTEX_TEST_READY === '1') {
-		process.stderr.write('[mcp-vertex] signal-handlers-ready\n');
-	}
 	process.on('beforeExit', () => {
 		// beforeExit fires when the event loop drains naturally;
 		// gracefulShutdown's idempotent guard makes the no-op safe
@@ -91,6 +132,31 @@ const run = async (): Promise<void> => {
 	});
 
 	await assembled.start();
+
+	// Deterministic e2e handshake — emitted AFTER `start()` resolves so the
+	// test never races a child whose event loop has already drained. An empty
+	// workspace + 0 plugins can make `start()` return synchronously, in which
+	// case the child would exit cleanly with code 0 before the parent has a
+	// chance to send SIGTERM. Production hosts never see this marker; only
+	// opt-in tests do.
+	if (process.env.MCP_VERTEX_TEST_READY === '1') {
+		process.stderr.write('[mcp-vertex] signal-handlers-ready\n');
+		// Keep the event loop alive until a signal arrives. Without this,
+		// `start()` can return synchronously when the workspace has 0 plugins,
+		// the loop drains, and the host exits cleanly with code 0 before the
+		// parent sends SIGTERM/SIGINT. The 1ms interval is unref'd after the
+		// handshake so a signal can still tear it down promptly.
+		await new Promise<void>((resolve) => {
+			const keepAlive = setInterval(() => undefined, 1_000);
+			const onExit = (): void => {
+				clearInterval(keepAlive);
+				resolve();
+			};
+			process.once('SIGTERM', onExit);
+			process.once('SIGINT', onExit);
+			process.once('SIGHUP', onExit);
+		});
+	}
 };
 
 // a00083 F26: a terminal `.catch` so a rejected boot surfaces as a

@@ -54,7 +54,7 @@ const mountHandler = async (publishOrder: readonly IPublishOrderEntry[]) => {
 	});
 	const server = fakeServer();
 	await registration.register(server as never);
-	const tool = server.tools['changelog_release_plan'];
+	const tool = server.tools.changelog_release_plan;
 	if (tool === undefined) throw new Error('release_plan tool not registered');
 	return tool.handler;
 };
@@ -135,8 +135,8 @@ describe('f00131 S2.b release-plan', () => {
 		it('returns publish-order-missing when the order is empty', async () => {
 			const handler = await mountHandler([]);
 			const body = await callHandler(handler, {});
-			expect(body['ok']).toBe(false);
-			const err = body['error'] as { reason: string };
+			expect(body.ok).toBe(false);
+			const err = body.error as { reason: string };
 			expect(err.reason).toBe('publish-order-missing');
 		});
 
@@ -151,11 +151,11 @@ describe('f00131 S2.b release-plan', () => {
 					}),
 				],
 			});
-			expect(body['ok']).toBe(true);
-			expect(body['bump']).toBe('patch');
-			expect(body['from']).toBe('0.1.0');
-			expect(body['to']).toBe('0.1.1');
-			const entries = body['entries'] as Array<{ to: string }>;
+			expect(body.ok).toBe(true);
+			expect(body.bump).toBe('patch');
+			expect(body.from).toBe('0.1.0');
+			expect(body.to).toBe('0.1.1');
+			const entries = body.entries as Array<{ to: string }>;
 			expect(entries.every((e) => e.to === '0.1.1')).toBe(true);
 		});
 
@@ -170,8 +170,8 @@ describe('f00131 S2.b release-plan', () => {
 					}),
 				],
 			});
-			expect(body['bump']).toBe('minor');
-			expect(body['to']).toBe('0.2.0');
+			expect(body.bump).toBe('minor');
+			expect(body.to).toBe('0.2.0');
 		});
 
 		it('infers major from a breaking commit', async () => {
@@ -186,19 +186,19 @@ describe('f00131 S2.b release-plan', () => {
 					}),
 				],
 			});
-			expect(body['bump']).toBe('major');
-			expect(body['to']).toBe('1.0.0');
+			expect(body.bump).toBe('major');
+			expect(body.to).toBe('1.0.0');
 		});
 
 		it('returns none for an empty commits list', async () => {
 			const handler = await mountHandler(SAMPLE_PUBLISH_ORDER);
 			const body = await callHandler(handler, { commits: [] });
-			expect(body['bump']).toBe('none');
+			expect(body.bump).toBe('none');
 			// The handler's top-level `from`/`to` shadow the anchor (core),
 			// not the first plugin. With `kind: none` the anchor stays put.
-			expect(body['from']).toBe('0.1.0');
-			expect(body['to']).toBe('0.1.0');
-			const entries = body['entries'] as Array<{
+			expect(body.from).toBe('0.1.0');
+			expect(body.to).toBe('0.1.0');
+			const entries = body.entries as Array<{
 				from: string;
 				to: string;
 			}>;

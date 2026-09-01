@@ -82,7 +82,10 @@ describe('PUBLISH_ORDER', async () => {
 	const root = resolve(import.meta.dirname, '../../..');
 
 	it('publishes core, client and the executable CLI in dependency order', () => {
-		expect(PUBLISH_ORDER.slice(0, 3)).toEqual([
+		// `packages/contracts` is a leaf that `github`, `gitlab` and
+		// `remote-provider-core` depend on, so it packs before everything.
+		expect(PUBLISH_ORDER.slice(0, 4)).toEqual([
+			'packages/contracts',
 			'packages/core',
 			'packages/client',
 			'packages/cli',
@@ -91,14 +94,29 @@ describe('PUBLISH_ORDER', async () => {
 	});
 
 	it('publishes every first-party plugin, covering every preset and documented plugin', async () => {
-		const plugins = (
+		const pluginDirs = (
 			await readdir(resolve(root, 'plugins'), {
 				withFileTypes: true,
 			})
 		)
 			.filter((entry) => entry.isDirectory())
-			.map((entry) => `plugins/${entry.name}`)
-			.sort();
+			.map((entry) => entry.name);
+		// Internal-only plugins (`"private": true`, e.g. issues-triage)
+		// are intentionally absent from PUBLISH_ORDER — they never ship
+		// to npm.
+		const plugins: string[] = [];
+		await Promise.all(
+			pluginDirs.map(async (name) => {
+				const manifest = JSON.parse(
+					await readFile(
+						resolve(root, 'plugins', name, 'package.json'),
+						'utf8',
+					),
+				) as { private?: boolean };
+				if (manifest.private !== true) plugins.push(`plugins/${name}`);
+			}),
+		);
+		plugins.sort();
 		expect(
 			PUBLISH_ORDER.filter((dir) => dir.startsWith('plugins/')).sort(),
 		).toEqual(plugins);

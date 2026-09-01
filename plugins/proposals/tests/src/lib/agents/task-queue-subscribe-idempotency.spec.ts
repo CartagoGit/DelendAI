@@ -21,6 +21,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	overrideCallerSessionForTests,
+	releaseSessionSubscriptions,
 	runTaskQueueAction,
 	type ISubscribeActionResult,
 	type ITaskQueuePaths,
@@ -29,9 +31,14 @@ import {
 const subscribe = (
 	paths: ITaskQueuePaths,
 	taskId: string,
+	params: {
+		subscriberId?: string;
+		subscriptionId?: string;
+		now?: string;
+	} = {},
 ): Promise<ISubscribeActionResult> =>
 	runTaskQueueAction(
-		{ action: 'subscribe', params: { taskId } },
+		{ action: 'subscribe', params: { taskId, ...params } },
 		paths,
 	) as Promise<ISubscribeActionResult>;
 
@@ -117,5 +124,102 @@ describe('subscribe idempotency persists across sessions (M6)', async () => {
 			delivered: string[];
 		};
 		expect(persisted.delivered).toEqual(['obs2::dep1', 'obs::dep1']); // sorted
+	});
+
+	it('allows one subscriber, renews its lease, and rejects a second subscriber', async () => {
+		const first = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-a',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+		expect(first.subscriberId).toBe('agent-a');
+		expect(first.renewed).toBe(false);
+
+		const renewed = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-a',
+			subscriptionId: first.subscriptionId,
+			now: '2026-08-31T00:01:00.000Z',
+		});
+		expect(renewed.renewed).toBe(true);
+		expect(renewed.subscriptionId).toBe(first.subscriptionId);
+
+		const second = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-b',
+			now: '2026-08-31T00:02:00.000Z',
+		});
+		expect(second).toMatchObject({
+			blocked: true,
+			blockerType: 'subscription-conflict',
+		});
+	});
+
+	it('releases an abandoned subscription after its lease expires', async () => {
+		const first = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-a',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+		const replacement = await subscribe(paths, 'obs', {
+			subscriberId: 'agent-b',
+			now: '2026-08-31T00:10:01.000Z',
+		});
+		expect(replacement).toMatchObject({
+			subscriberId: 'agent-b',
+			renewed: false,
+		});
+		expect(replacement.subscriptionId).not.toBe(first.subscriptionId);
+	});
+});
+
+describe('subscribe session cleanup mirrors disconnect unsubscribe', async () => {
+	let dir = '';
+	let paths: ITaskQueuePaths;
+
+	beforeEach(async () => {
+		dir = mkdtempSync(join(tmpdir(), 'tq-release-'));
+		paths = {
+			queuePath: join(dir, 'queue.json'),
+			closedTasksPath: join(dir, 'closed.json'),
+			lockPath: join(dir, 'agents.lock.json'),
+			workspaceRoot: dir,
+		};
+	});
+
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('releases only leases owned by the caller, leaving other processes untouched', async () => {
+		const sessionA = { host: 'host-a', pid: 100 };
+		const sessionB = { host: 'host-b', pid: 200 };
+
+		overrideCallerSessionForTests(() => sessionA);
+		await subscribe(paths, 'obs-a', {
+			subscriberId: 'agent-a',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+		await subscribe(paths, 'obs-a2', {
+			subscriberId: 'agent-a2',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+		overrideCallerSessionForTests(() => sessionB);
+		await subscribe(paths, 'obs-b', {
+			subscriberId: 'agent-b',
+			now: '2026-08-31T00:00:00.000Z',
+		});
+
+		const leasesPath = join(dir, '.subscribe-leases.json');
+		const before = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
+			leases: Array<{ taskId: string }>;
+		};
+		expect(before.leases).toHaveLength(3);
+
+		const result = await releaseSessionSubscriptions(paths, sessionA);
+		expect([...result.releasedTaskIds].sort()).toEqual(['obs-a', 'obs-a2']);
+
+		const after = JSON.parse(readFileSync(leasesPath, 'utf8')) as {
+			leases: Array<{ taskId: string; host?: string; pid?: number }>;
+		};
+		expect(after.leases).toHaveLength(1);
+		expect(after.leases[0]?.taskId).toBe('obs-b');
+		expect(after.leases[0]?.host).toBe(sessionB.host);
+
+		overrideCallerSessionForTests(undefined);
 	});
 });

@@ -2,7 +2,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-import { sharedSetupFiles, workspaceAliases } from '../vitest.shared';
+import { sharedSetupFiles, workspaceAliases } from '../vitest.shared.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '..');
@@ -18,10 +18,21 @@ const workspaceRoot = resolve(here, '..');
  * collected.
  */
 export default defineConfig({
+	root: here,
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
 		include: ['**/*.spec.ts'],
 		exclude: ['**/node_modules/**', '**/dist/**'],
 		setupFiles: sharedSetupFiles(workspaceRoot),
+		// Several specs here scan the whole repository or boot a real MCP
+		// server; they are slow by nature, not by defect. The 5s default
+		// (and even a hand-written 30s) turns them into coin flips whenever
+		// the machine is busy — and because `bun run validate` is the
+		// evidence `close_slice` / `proposal_transition` require, a flaky
+		// failure here blocks every proposal from closing. Widen the
+		// ceiling: a genuine hang still fails, it just takes longer to say
+		// so. Mirrors the same reasoning in `plugins/proposals/vitest.config.ts`.
+		testTimeout: 120_000,
+		hookTimeout: 120_000,
 	},
 });

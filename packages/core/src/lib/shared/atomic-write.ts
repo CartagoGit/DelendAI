@@ -48,9 +48,16 @@ const fsyncDir = async (dir: string): Promise<void> => {
 	}
 };
 
+/**
+ * Binary payloads (downloaded artifacts, images) get the same crash-safe
+ * treatment as text: `Uint8Array` is written verbatim, `string` as UTF-8.
+ * Without this overload a plugin saving an artifact had no atomic option
+ * and fell back to a raw `writeFile`, which the plugin drift budget
+ * forbids for exactly the corruption reason above.
+ */
 export const writeFileAtomic = async (
 	absolutePath: string,
-	content: string,
+	content: string | Uint8Array,
 ): Promise<void> => {
 	const dir = dirname(absolutePath);
 	await mkdir(dir, { recursive: true });
@@ -58,7 +65,11 @@ export const writeFileAtomic = async (
 	try {
 		const handle = await open(tmp, 'w');
 		try {
-			await handle.writeFile(content, 'utf8');
+			if (typeof content === 'string') {
+				await handle.writeFile(content, 'utf8');
+			} else {
+				await handle.writeFile(content);
+			}
 			await handle.sync(); // fsync data before it becomes visible
 		} finally {
 			await handle.close();

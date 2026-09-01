@@ -1,6 +1,8 @@
 import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interface';
-import type { CommitAuthorMode } from '../shared/commit-author';
+import type { CommitAuthorMode } from '../contracts/interfaces/commit-author.interface';
+import type { IMcpToolSurfaceMode } from '../contracts/interfaces/surface-mode.interface';
+import type { IStartupReportLevelInput } from '../startup-report/level';
 import { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
 /**
@@ -58,6 +60,28 @@ export interface IMcpVertexCorePathsConfig {
 	 * files under legacy/ before writing fresh templates.
 	 */
 	readonly keepLegacy?: boolean;
+}
+
+/** Operator-only startup diagnostics. Defaults are resolved centrally. */
+export interface IStartupReportConfig {
+	readonly level?: IStartupReportLevelInput;
+	readonly color?: 'auto' | 'always' | 'never';
+}
+
+/** Managed-surface working-set policy. Null disables that bound. */
+export interface IManagedSurfaceConfig {
+	/** Module strategy for managed plugins. Defaults to lazy; use eager for compatibility. */
+	readonly loading?: 'lazy' | 'eager';
+	readonly idleTtlMs?: number | null;
+	readonly maxWarmPlugins?: number | null;
+}
+
+/** Runtime evidence retention and boot cleanup policy. */
+export interface IEvidenceConfig {
+	/** Number of days to retain evidence files. Default 30. */
+	readonly retentionDays?: number;
+	/** Default on-boot cleanup; dry-run reports without deleting. */
+	readonly cleanup?: 'on-boot' | 'dry-run' | 'off';
 }
 
 /**
@@ -228,6 +252,14 @@ export interface IMcpVertexCachePolicyConfig {
 export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	/** Optional editor hint pointing at the published JSON Schema. */
 	readonly $schema?: string;
+	/** Optional explicit surface override. Omitted => managed. */
+	readonly surfaceMode?: IMcpToolSurfaceMode;
+	/** Optional operator-facing startup report configuration. */
+	readonly startupReport?: IStartupReportConfig;
+	/** Optional managed-surface working-set policy. */
+	readonly managedSurface?: IManagedSurfaceConfig;
+	/** Optional runtime evidence retention policy. */
+	readonly evidence?: IEvidenceConfig;
 	/**
 	 * Host-scoped capability gate for `agent_worktree`. Default `false`.
 	 * When `false` (or unset) the proposals plugin's
@@ -237,6 +269,8 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 * `true` here (or via the `--agent-worktree` CLI flag, which wins).
 	 */
 	readonly agentWorktree?: boolean;
+	/** Core-owned runtime and agent policies. */
+	readonly core?: IMcpVertexCoreConfig;
 	/**
 	 * f00082: how every commit produced by the shared git engine
 	 * should be attributed. Defaults to `'git'` (the current
@@ -275,6 +309,8 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 * `bootstrap/pattern-catalog-overrides.ts` for the merge rules.
 	 */
 	readonly bootstrap?: IBootstrapPatternOverrides;
+	/** Optional local plugin-registry additions for discovery tools. */
+	readonly pluginRegistry?: import('../contracts/interfaces/plugin-registry.interface').IPluginRegistryConfig;
 	/**
 	 * f00152 S1 (L1 — version pin): optional semver string pinning the
 	 * self-host agent to a specific published `@mcp-vertex/core`
@@ -285,6 +321,26 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 */
 	readonly coreVersion?: string;
 }
+
+export interface IMcpVertexCoreConfig {
+	/** Global agent execution mode and engineering principles. */
+	readonly agentPolicy?: IMcpVertexAgentPolicyConfig;
+}
+
+export interface IMcpVertexAgentPolicyConfig {
+	readonly autonomous?: boolean;
+	readonly principles?: ReadonlyArray<string>;
+}
+
+export const DEFAULT_AGENT_POLICY: Required<IMcpVertexAgentPolicyConfig> = {
+	autonomous: true,
+	principles: [
+		'Apply SOLID architecture where it improves ownership and changeability.',
+		'Use good engineering practices and keep the code clear and maintainable.',
+		'Reuse existing code and abstractions before introducing duplication.',
+		'Keep naming, files, and folders homogeneous with the surrounding project.',
+	],
+};
 
 /** Default config file name looked up at the workspace root. */
 export const DEFAULT_CONFIG_FILENAME = 'mcp-vertex.config.json';

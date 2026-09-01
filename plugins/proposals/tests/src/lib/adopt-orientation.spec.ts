@@ -111,8 +111,15 @@ describe('apply + migrate compose in one call (f00116 S3)', () => {
 		expect(report.ok).toBe(true);
 		expect(report.applied).toBe(true);
 		expect(report.migration.migrated).toHaveLength(1);
-		const target = report.migration.migrated[0]!.target;
-		expect(existsSync(join(root, target))).toBe(true);
+		const migratedId = report.migration.migrated[0]!.id;
+		expect(
+			existsSync(
+				join(
+					root,
+					`docs/mcp-vertex/proposals/ready/feats/${migratedId}-ship-exports.md`,
+				),
+			),
+		).toBe(true);
 		// The migrated proposal is visible to the freshly built index.
 		expect(
 			existsSync(join(root, '.cache/mcp-vertex/proposals/index.json')),

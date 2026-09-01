@@ -91,12 +91,15 @@ describe('e2e: tool failure carries a logHint over the wire (f00045 S4)', async 
 			reason: 'force an error',
 		});
 
-		// Read the hint from whichever envelope carries it (structured or
-		// the parsed text), matching how a client extracts it.
+		// Read the hint from whichever envelope carries it (`_meta`, the
+		// structured content, or the parsed text), matching how a client
+		// extracts it.
+		const fromMeta = (res.raw._meta as { logHint?: LogHint } | undefined)
+			?.logHint;
 		const fromStructured = res.structured.logHint;
 		const fromText = (JSON.parse(res.text) as { logHint?: LogHint })
 			.logHint;
-		const hint = fromStructured ?? fromText;
+		const hint = fromMeta ?? fromStructured ?? fromText;
 
 		expect(hint).toBeDefined();
 		expect(hint?.path).toMatch(
@@ -124,6 +127,9 @@ describe('e2e: tool failure carries a logHint over the wire (f00045 S4)', async 
 
 		expect(res.structured.ok).toBe(true);
 		expect(res.structured.logHint).toBeUndefined();
+		expect(
+			(res.raw._meta as { logHint?: LogHint } | undefined)?.logHint,
+		).toBeUndefined();
 		expect(
 			(JSON.parse(res.text) as { logHint?: LogHint }).logHint,
 		).toBeUndefined();

@@ -17,9 +17,9 @@
  *      NEVER TRACKED. Examples today: `build/docs-api/` (typedoc),
  *      `build/apps/web/` (Astro).
  *
- *   3. `dist/<group>/<name>/<version>/<artifact>` — monorepo-wide
- *      distributable artefacts. NEVER TRACKED. Examples today:
- *      `dist/extensions/vscode/<version>/<name>.vsix`.
+ *   3. `dist/<group>/<name>/<version>/<artifact>` — legacy monorepo-wide
+ *      distributable artefacts. NEVER TRACKED. New build pipelines should
+ *      place versioned artefacts under `build/` instead.
  *
  * Any script, package.json script, or CI workflow that needs to compute
  * one of these paths MUST import from this module. Hard-coding
@@ -169,6 +169,48 @@ export const buildDir = (group: MonorepoGroup, name: string): string => {
 	return join(repoRoot(), 'build', group, name);
 };
 
+/** Absolute path to a versioned artefact directory under `build/`. */
+export const buildVersionDir = (
+	group: MonorepoGroup,
+	name: string,
+	version: string,
+): string => {
+	void assertSafeGroup(group);
+	assertSafeName('name', name);
+	if (typeof version !== 'string' || version.length === 0) {
+		throw new Error(
+			`version must be a non-empty string, got ${JSON.stringify(version)}`,
+		);
+	}
+	if (!/^[a-zA-Z0-9][a-zA-Z0-9._+-]*$/.test(version)) {
+		throw new Error(
+			`version ${JSON.stringify(version)} is not a valid semver-shaped string.`,
+		);
+	}
+	return join(buildDir(group, name), version);
+};
+
+/** Absolute path to one versioned build artefact under `build/`. */
+export const buildArtifactPath = (
+	group: MonorepoGroup,
+	name: string,
+	version: string,
+	artifact: string,
+): string => {
+	if (
+		typeof artifact !== 'string' ||
+		artifact.length === 0 ||
+		artifact.includes('/') ||
+		artifact.includes('\\') ||
+		artifact.includes('..')
+	) {
+		throw new Error(
+			`artifact ${JSON.stringify(artifact)} contains path traversal or is empty.`,
+		);
+	}
+	return join(buildVersionDir(group, name, version), artifact);
+};
+
 /**
  * Absolute path to the monorepo-wide distributable directory. The version
  * is preserved in the path so historical artefacts can be inspected
@@ -264,16 +306,16 @@ export const WELL_KNOWN = {
 	docsApi: () => buildTopLevel('docs-api'),
 	/** Astro static site output, served by GitHub Pages. */
 	webApp: () => buildDir('apps', 'web'),
-	/** VS Code extension dist. */
+	/** VS Code extension build output. */
 	vscode: () => buildDir('extensions', 'vscode'),
-	/** VS Code packaged .vsix output. The flat `name` in
+	/** VS Code packaged .vsix output under the canonical build tree. The flat `name` in
 	 *  `extensions/vscode/package.json` is kept as `mcp-vertex-vscode`
 	 *  because `vsce` rejects scoped names; the `displayName` is the
 	 *  new `@mcp-vertex/extension-vscode` for users. The packaging
 	 *  script reads `manifest.name` to compute this directly, so this
 	 *  helper is the second-source-of-truth for tests + documentation. */
 	vscodeVsix: (version: string) =>
-		distArtifactPath(
+		buildArtifactPath(
 			'extensions',
 			'vscode',
 			version,

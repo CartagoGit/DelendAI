@@ -14,6 +14,7 @@ import type {
 	IMetricsSnapshotFile,
 	IMetricSnapshotEntry,
 } from './get-baseline.script.ts';
+import type { IPluginMetricsSnapshot } from './payload-percentile.schema.ts';
 
 export interface IThresholds {
 	readonly tokenDeltaPct: number;
@@ -55,12 +56,59 @@ export interface IToolDiff {
  */
 export const ERROR_RATE_REGRESSION_FLOOR = 0.05;
 
+/** One tracked plugin's before/after read of its own `*_metrics` tool. */
+export interface IPluginMetricsDiff {
+	readonly tool: string;
+	readonly baseline: IPluginMetricsSnapshot | undefined;
+	readonly candidate: IPluginMetricsSnapshot | undefined;
+	/**
+	 * `true` when the baseline had real samples but the candidate reports
+	 * none — a plugin that stopped producing data is worth a look, even
+	 * though it isn't gated as a hard regression (payload-percentile
+	 * comparisons across different sample windows aren't apples-to-apples
+	 * the way per-tool bytes/latency are).
+	 */
+	readonly wentSampleless: boolean;
+}
+
 export interface IDiffReport {
 	readonly ok: boolean;
 	readonly thresholds: IThresholds;
 	readonly tools: readonly IToolDiff[];
 	readonly regressions: readonly IToolDiff[];
+	readonly pluginMetrics: readonly IPluginMetricsDiff[];
 }
+
+/**
+ * Diff `pluginMetrics` entries (f00027): each producer already emits the
+ * discriminated `{ hasSamples: false } | { hasSamples: true; p95PayloadBytes }`
+ * contract (see `payload-percentile.schema.ts`), so this function never
+ * has to guess whether a missing number means "zero" or "no data" — it
+ * reads `hasSamples` directly instead of coercing anything.
+ */
+export const diffPluginMetrics = (
+	baseline: IMetricsSnapshotFile,
+	candidate: IMetricsSnapshotFile,
+): readonly IPluginMetricsDiff[] => {
+	const toolNames = new Set([
+		...Object.keys(baseline.pluginMetrics ?? {}),
+		...Object.keys(candidate.pluginMetrics ?? {}),
+	]);
+	return [...toolNames]
+		.sort((a, b) => a.localeCompare(b))
+		.map((tool) => {
+			const before = baseline.pluginMetrics?.[tool];
+			const after = candidate.pluginMetrics?.[tool];
+			return {
+				tool,
+				baseline: before,
+				candidate: after,
+				wentSampleless:
+					before?.responses.hasSamples === true &&
+					after?.responses.hasSamples === false,
+			};
+		});
+};
 
 /** Average response bytes per call — the proxy for "token cost" per AGENTS.md M12. */
 const bytesPerCall = (entry: IMetricSnapshotEntry): number | null =>
@@ -85,6 +133,23 @@ const pctDelta = (
  * Diff a baseline + candidate snapshot pair against the given thresholds.
  * Pure function — no I/O, no process.exit — so it is trivially unit-testable.
  */
+/**
+ * Payload sizes only mean something when both runs measured the same
+ * surface. A baseline captured while most plugins failed to load holds
+ * near-empty responses; diffing a healthy run against it reports every
+ * tool as a huge regression, which describes the broken capture rather
+ * than any change in the code. Treat that pair the way a missing baseline
+ * is already treated — report it loudly and enforce nothing, instead of
+ * failing on a comparison that cannot support a conclusion.
+ */
+export const isComparableSurface = (
+	baseline: IMetricsSnapshotFile,
+	candidate: IMetricsSnapshotFile,
+): boolean =>
+	baseline.surface !== undefined &&
+	candidate.surface !== undefined &&
+	baseline.surface.toolsMeasured === candidate.surface.toolsMeasured;
+
 export const diffSnapshots = (
 	baseline: IMetricsSnapshotFile,
 	candidate: IMetricsSnapshotFile,
@@ -179,7 +244,13 @@ export const diffSnapshots = (
 	}
 
 	const regressions = tools.filter((t) => t.status === 'regression');
-	return { ok: regressions.length === 0, thresholds, tools, regressions };
+	return {
+		ok: regressions.length === 0,
+		thresholds,
+		tools,
+		regressions,
+		pluginMetrics: diffPluginMetrics(baseline, candidate),
+	};
 };
 
 const fmtPct = (n: number | null): string =>
@@ -211,6 +282,29 @@ export const renderMarkdownReport = (report: IDiffReport): string => {
 			`| ${t.tool} | ${t.status} | ${bytesCell} | ${latencyCell} | ${errorCell} |`,
 		);
 	}
+	if (report.pluginMetrics.length > 0) {
+		lines.push(
+			'',
+			'### Tracked-plugin metrics (obs_runtime_metrics / activation_metrics)',
+			'',
+			'| Tool | Baseline p95 bytes | Candidate p95 bytes |',
+			'| --- | --- | --- |',
+		);
+		for (const p of report.pluginMetrics) {
+			const cell = (
+				snapshot: IPluginMetricsSnapshot | undefined,
+			): string => {
+				if (snapshot === undefined) return '—';
+				return snapshot.responses.hasSamples
+					? snapshot.responses.p95PayloadBytes.toFixed(0)
+					: 'no samples';
+			};
+			const flag = p.wentSampleless ? ' ⚠️ went sampleless' : '';
+			lines.push(
+				`| ${p.tool}${flag} | ${cell(p.baseline)} | ${cell(p.candidate)} |`,
+			);
+		}
+	}
 	return `${lines.join('\n')}\n`;
 };
 
@@ -236,10 +330,11 @@ if (isMainModule()) {
 	const baselinePath =
 		process.env.METRICS_BASELINE_PATH ?? 'metrics-baseline.json';
 	const candidatePath =
-		process.env.METRICS_CANDIDATE_PATH ?? 'metrics-candidate.json';
+		process.env.METRICS_CANDIDATE_PATH ??
+		'.cache/mcp-vertex/metrics/candidate.json';
 	// Repo-tracked fallback so the token-budget gate is armed even before
 	// the first GitHub release publishes a baseline snapshot. Promote a
-	// fresh candidate with `cp metrics-candidate.json config/metrics-baseline.json`.
+	// fresh candidate with `cp .cache/mcp-vertex/metrics/candidate.json config/metrics-baseline.json`.
 	const fallbackBaselinePath = 'config/metrics-baseline.json';
 	const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
@@ -293,13 +388,23 @@ if (isMainModule()) {
 			process.env.METRICS_LATENCY_DELTA_PCT === undefined
 				? { ...thresholds, latencyDeltaPct: Number.POSITIVE_INFINITY }
 				: thresholds;
+		const comparable = isComparableSurface(baseline, candidate);
 		const report = diffSnapshots(baseline, candidate, effectiveThresholds);
 		const markdown = renderMarkdownReport(report);
 		console.log(markdown);
+		if (!comparable) {
+			console.log(
+				'\n> **Baseline not comparable** — it measured ' +
+					`${baseline.surface?.toolsMeasured ?? 'an unrecorded number of'} tools, ` +
+					`this run measured ${candidate.surface?.toolsMeasured ?? 'an unrecorded number'}. ` +
+					'The table above is informational only; no regression is enforced ' +
+					'until a baseline captured from the same surface is published.',
+			);
+		}
 		if (summaryPath !== undefined) {
 			await appendFile(summaryPath, markdown);
 		}
-		if (!report.ok) {
+		if (comparable && !report.ok) {
 			process.exit(1);
 		}
 	};

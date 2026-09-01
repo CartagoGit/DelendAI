@@ -34,6 +34,14 @@ export default definePlugin({
 ## Invariants (non-negotiable)
 
 - No `process.cwd()` — resolve paths from `ctx.workspace` / injected options.
+- Runtime cache and scratch data MUST use `ctx.pluginCacheDir` or
+   `ctx.cachePath(relativePath)`. Never write `.cache/mcp-vertex`, a dot-folder,
+   or a temporary file in the workspace root directly. Legacy locations must be
+   declared through `legacyCachePaths` on the plugin contract so boot-time
+   reconciliation can move them without overwriting canonical data.
+- The core exposes `cache_reconcile` for dry-run inspection and explicit repair;
+   `.continue` remains outside this migration because Continue.dev discovers it
+   as editor configuration rather than runtime cache.
 - Async I/O only in handlers/engines (`fs/promises`); no `*Sync` in hot paths.
 - Workspace-scoped path inputs (`roots`, `manifest`, …) → `resolveWorkspaceContained`.
 - Durable state → `withFileMutex` + `writeFileAtomic`; treat corrupt ≠ empty with

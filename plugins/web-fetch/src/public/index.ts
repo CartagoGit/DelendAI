@@ -5,7 +5,11 @@
  */
 export { default } from '../index';
 
-export { webFetch, isHostAllowed } from '../lib/services/engine';
+export {
+	webFetch,
+	isHostAllowed,
+	isHostPortAllowed,
+} from '../lib/services/engine';
 export type {
 	IWebFetchOptions,
 	IWebFetchResult,

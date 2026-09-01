@@ -238,6 +238,37 @@ Alcance: global
 }
 ```
 
+## Instalar una vez para todos los proyectos
+
+El CLI puede fusionar el mismo servidor MCP en las configuraciones globales
+de los hosts compatibles, para que cada repositorio no necesite su propio
+archivo MCP escrito a mano:
+
+```bash
+mcpv init:global --all
+```
+
+Para seleccionar solo algunos hosts globales:
+
+```bash
+mcpv init:global --ide=cursor-global,windsurf,claude-desktop,antigravity,zed
+```
+
+El comando está separado deliberadamente de `init`: nunca escribe archivos
+del proyecto como `.vscode/mcp.json`, `.cursor/mcp.json` o `.mcp.json`.
+Conserva servidores MCP y ajustes no relacionados, y se puede ejecutar de
+nuevo de forma segura. Los destinos exclusivos de proyecto (`vscode`,
+`cursor` y `claude-code`), los ids desconocidos y un valor vacío en `--ide=`
+se rechazan en lugar de activar la autodetección.
+
+`init:global` instala la conexión MCP, no una segunda copia de las reglas de
+los agentes. El mismo conjunto de herramientas MCP y el bootstrap canónico
+están disponibles para cualquier host compatible con MCP, incluidos Copilot,
+Claude, Cursor, Codex, Continue y Aider. Ejecuta `mcpv init` o
+`mcpv init:default` dentro de un repositorio cuando el host necesite punteros
+de instrucciones locales, adaptadores de agentes, skills o un archivo
+`mcp-vertex.config.json` específico del proyecto.
+
 ## Elige un preset
 
 Los presets son aditivos. Empieza con el conjunto más pequeño y amplíalo solo cuando tu flujo realmente necesite más superficie.

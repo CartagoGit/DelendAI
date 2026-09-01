@@ -15,12 +15,13 @@
  * records its provenance (`migrated-from:`) which also makes re-runs
  * idempotent; user text runs through `redactSecrets` before persisting.
  */
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readdir, rm, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import {
 	redactSecrets,
 	resolveWorkspaceContained,
+	SafeWorkspaceReader,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
@@ -39,6 +40,8 @@ export interface IMigrateForeignOptions {
 	readonly counterPathAbs: string;
 	/** Workspace-relative files or directories to migrate from. */
 	readonly roots: readonly string[];
+	/** Remove successfully migrated source files for explicit archive roots. */
+	readonly removeMigratedSources?: boolean;
 }
 
 export interface IMigratedEntry {
@@ -134,6 +137,9 @@ const kindFor = (
 	const prefix = PROPOSAL_KINDS[kind].prefix;
 	return { kind, prefix };
 };
+
+const isAuditSource = (source: string): boolean =>
+	/(?:^|\/)audits(?:\/|$)/u.test(source);
 
 interface ICandidate {
 	/** Provenance key (`rel` or `rel#slug`). */
@@ -256,8 +262,10 @@ const collectMarkdown = async (
 /** Provenance registry: every `migrated-from:` already present in the store. */
 const readMigratedSources = async (
 	proposalsDirAbs: string,
+	onlyKind?: IProposalKind,
 ): Promise<Set<string>> => {
 	const sources = new Set<string>();
+	const reader = new SafeWorkspaceReader(proposalsDirAbs);
 	const walk = async (dirAbs: string): Promise<void> => {
 		const entries = await readdir(dirAbs, { withFileTypes: true }).catch(
 			() => [],
@@ -266,7 +274,18 @@ const readMigratedSources = async (
 			const abs = join(dirAbs, entry.name);
 			if (entry.isDirectory()) await walk(abs);
 			else if (entry.name.endsWith('.md')) {
-				const text = await readFile(abs, 'utf8').catch(() => '');
+				const text = await reader
+					.readText(
+						relative(proposalsDirAbs, abs).split('\\').join('/'),
+					)
+					.then((value) => value.content)
+					.catch(() => '');
+				if (
+					onlyKind !== undefined &&
+					!new RegExp(`^kind:\\s*${onlyKind}\\s*$`, 'm').test(text)
+				) {
+					continue;
+				}
 				for (const match of text.matchAll(
 					/^migrated-from:\s*(.+)$/gm,
 				)) {
@@ -329,6 +348,10 @@ export const migrateForeign = async (
 	const migrated: IMigratedEntry[] = [];
 	const skipped: ISkippedEntry[] = [];
 	const alreadyMigrated = await readMigratedSources(options.proposalsDirAbs);
+	const migratedAudits = await readMigratedSources(
+		options.proposalsDirAbs,
+		'audit',
+	);
 
 	const files: string[] = [];
 	for (const root of options.roots) {
@@ -360,17 +383,18 @@ export const migrateForeign = async (
 	}
 
 	for (const rel of files) {
-		const text = await readFile(
-			join(options.workspaceRoot, rel),
-			'utf8',
-		).catch(() => '');
+		const text = await new SafeWorkspaceReader(options.workspaceRoot)
+			.readText(rel)
+			.then((value) => value.content)
+			.catch(() => '');
 		if (text.length === 0) {
 			skipped.push({ source: rel, reason: 'unreadable or empty' });
 			continue;
 		}
 
-		const checklist = parseChecklistShape(rel, text);
 		const candidates: ICandidate[] = [];
+		const auditSource = isAuditSource(rel);
+		const checklist = auditSource ? null : parseChecklistShape(rel, text);
 		if (checklist !== null) {
 			candidates.push(...checklist.candidates);
 			skipped.push(...checklist.skipped);
@@ -388,26 +412,57 @@ export const migrateForeign = async (
 		}
 
 		for (const candidate of candidates) {
-			if (alreadyMigrated.has(candidate.source)) {
+			const auditSource = isAuditSource(candidate.source);
+			const alreadyKnown = auditSource
+				? migratedAudits.has(candidate.source)
+				: alreadyMigrated.has(candidate.source);
+			if (alreadyKnown) {
+				if (
+					options.removeMigratedSources &&
+					isAuditSource(candidate.source) &&
+					!candidate.source.includes('#')
+				) {
+					await rm(join(options.workspaceRoot, candidate.source), {
+						force: true,
+					});
+				}
 				skipped.push({
 					source: candidate.source,
 					reason: 'already migrated (provenance found in the store)',
 				});
 				continue;
 			}
-			const { kind, prefix } = kindFor(candidate);
+			const { kind: inferredKind } = kindFor(candidate);
+			const kind = auditSource ? 'audit' : inferredKind;
+			const prefix = PROPOSAL_KINDS[kind].prefix;
 			const id = await allocateNextProposalId(prefix, {
 				proposalsDirAbs: options.proposalsDirAbs,
 				counterPathAbs: options.counterPathAbs,
 			});
-			const folder = STATUS_TO_FOLDER[candidate.status];
+			const status = auditSource ? 'done' : candidate.status;
+			const folder = STATUS_TO_FOLDER[status];
+			const kindFolder = kind === 'audit' ? 'audits/' : '';
 			const filename = `${id}-${slugFromTitle(candidate.title, id)}.md`;
-			const targetAbs = join(options.proposalsDirAbs, folder, filename);
+			const targetAbs = join(
+				options.proposalsDirAbs,
+				folder,
+				kindFolder,
+				filename,
+			);
 			const { text: safeBody } = redactSecrets(
-				renderProposal(id, candidate, kind),
+				renderProposal(id, { ...candidate, status }, kind),
 			);
 			await writeFileAtomic(targetAbs, safeBody);
+			if (
+				options.removeMigratedSources &&
+				!candidate.source.includes('#')
+			) {
+				await rm(join(options.workspaceRoot, candidate.source), {
+					force: true,
+				});
+			}
 			alreadyMigrated.add(candidate.source);
+			if (auditSource) migratedAudits.add(candidate.source);
 			migrated.push({
 				source: candidate.source,
 				target: relative(options.workspaceRoot, targetAbs),

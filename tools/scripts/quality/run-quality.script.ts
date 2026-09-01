@@ -23,6 +23,7 @@ import {
 export interface IRunQualityScriptOptions {
 	readonly workspaceRoot: string;
 	readonly json: boolean;
+	readonly scopes?: readonly string[];
 }
 
 export interface IRunQualityScriptReport {
@@ -38,6 +39,7 @@ export interface IRunQualityScriptReport {
 const parseArgs = (argv: readonly string[]): IRunQualityScriptOptions => {
 	let workspaceRoot = process.cwd();
 	let json = false;
+	const scopes: string[] = [];
 	for (const arg of argv) {
 		if (arg === '--json') {
 			json = true;
@@ -45,9 +47,16 @@ const parseArgs = (argv: readonly string[]): IRunQualityScriptOptions => {
 		}
 		if (arg.startsWith('--workspace=')) {
 			workspaceRoot = arg.slice('--workspace='.length);
+			continue;
 		}
+		if (arg.startsWith('--scope='))
+			scopes.push(arg.slice('--scope='.length));
 	}
-	return { workspaceRoot, json };
+	return {
+		workspaceRoot,
+		json,
+		...(scopes.length > 0 ? { scopes } : {}),
+	};
 };
 
 const readQualityOptions = async (
@@ -116,8 +125,29 @@ export const runQualityScript = async (
 			summary: { ok: false, scopes: 0 },
 		};
 	}
+	const selectedScopes =
+		options.scopes === undefined
+			? scopes
+			: Object.fromEntries(
+					options.scopes
+						.map((name) => [name, scopes[name]])
+						.filter(
+							(
+								entry,
+							): entry is [string, (typeof scopes)[string]] =>
+								entry[1] !== undefined,
+						),
+				);
+	if (Object.keys(selectedScopes).length === 0) {
+		return {
+			ok: false,
+			severity: 'error',
+			findings: ['none of the requested quality scopes are configured'],
+			summary: { ok: false, scopes: 0 },
+		};
+	}
 	const report = await runAllScopes(
-		scopes,
+		selectedScopes,
 		options.workspaceRoot,
 		createCommandRunner(qualityOptions.timeoutMs),
 		qualityOptions.commandPolicy,

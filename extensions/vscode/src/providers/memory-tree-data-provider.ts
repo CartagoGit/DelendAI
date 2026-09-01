@@ -29,7 +29,10 @@ export class MemoryTreeDataProvider {
 		  }
 		| undefined;
 
-	constructor(private readonly memory: Pick<MemoryService, 'list'>) {}
+	constructor(
+		private readonly memory: Pick<MemoryService, 'list'>,
+		private readonly serverConfigured = true,
+	) {}
 
 	readonly onDidChangeTreeData = (
 		listener: IMemoryTreeChangeListener,
@@ -48,7 +51,33 @@ export class MemoryTreeDataProvider {
 
 	async getChildren(element?: IMemoryTreeNode): Promise<IMemoryTreeNode[]> {
 		if (element !== undefined) return [];
-		const notes = await this.notes();
+		if (!this.serverConfigured) {
+			return [
+				{
+					id: 'memory:not-configured',
+					label: 'Configure MCP server to load memory',
+					collapsibleState: TreeItemCollapsibleState.None,
+					contextValue: 'mcpVertexMemoryRoot',
+				},
+			];
+		}
+		let notes: {
+			readonly notes: readonly IMemoryListEntry[];
+			readonly total: number;
+			readonly limit: number;
+		};
+		try {
+			notes = await this.notes();
+		} catch (error) {
+			return [
+				{
+					id: 'memory:error',
+					label: `Memory unavailable: ${error instanceof Error ? error.message : String(error)}`,
+					collapsibleState: TreeItemCollapsibleState.None,
+					contextValue: 'mcpVertexMemoryRoot',
+				},
+			];
+		}
 		if (notes.notes.length === 0) {
 			return [
 				{

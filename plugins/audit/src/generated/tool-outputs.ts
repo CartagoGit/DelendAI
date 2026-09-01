@@ -1,26 +1,20 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Typed `structuredContent` shapes for this package's MCP tools
- * (leaf module). Contains only the 3 tools registered by
- * `@mcp-vertex/audit`. The cross-plugin umbrella module lives at
- * `packages/core/src/generated/tool-outputs.ts` and contains all 196
- * tools across 16 plugins under `McpVertexToolOutputs`.
- *
- * Prefer importing this file for type lookups scoped to the audit
- * plugin (smaller, zero resolution cost) — fall back to the umbrella
- * only when you need to index tools across multiple plugins.
- *
- * Regenerate with:
+ * Typed `structuredContent` shapes for this package's MCP tools,
+ * generated from each tool's Zod `outputSchema` by:
  *
  *     bun run types:generate
  *
- * The drift guard in the test suite fails if this file is stale, so
- * any change to a tool's `outputSchema` must be accompanied by a
- * regenerate.
+ * The drift guard in the test suite fails if this file is stale, so any
+ * change to a tool's `outputSchema` must be accompanied by a regenerate.
+ * Action-multiplexed tools whose schema is intentionally permissive
+ * surface as `Record<string, unknown>`.
  */
 
-export interface AuditAuditConsolidateOutput {
+export interface McpVertexAuditAuditConsolidateOutput {
+	detail: "compact" | "normal" | "full";
+	auditType: "plan" | "valuation";
 	auditsFound: number;
 	skipped: {
 		path: string;
@@ -43,21 +37,25 @@ export interface AuditAuditConsolidateOutput {
 	}>;
 	topActions: string[];
 	markdown: string;
-	proposals:
-		| {
-				scaffolded: Array<{
-					id: string;
-					filename: string;
-					severity: string;
-					files: string[];
-				}>;
-				reason?: string;
-			}
-		| { skipped: string }
-		| { disabled: true };
+	proposals: {
+		scaffolded: Array<{
+			id: string;
+			filename: string;
+			severity: string;
+			files: string[];
+			kind: "audit" | "fix" | "plan";
+		}>;
+		reason?: string;
+	} | {
+		skipped: string;
+	} | {
+		disabled: true;
+	};
 }
 
-export interface AuditAuditPlanOutput {
+export interface McpVertexAuditAuditPlanOutput {
+	detail: "compact" | "normal" | "full";
+	auditType: "plan" | "valuation";
 	scope: string;
 	mode: "general" | "specific" | "monorepo";
 	markdown: string;
@@ -70,50 +68,89 @@ export interface AuditAuditPlanOutput {
 	projects: string[];
 }
 
-export interface AuditAuditRunOutput {
+export interface McpVertexAuditAuditRunOutput {
+	detail: "compact" | "normal" | "full";
+	auditType: "plan" | "valuation";
 	scope: string;
 	mode: "general" | "specific" | "monorepo";
 	date: string;
-	saved: Array<{
+	saved: {
 		provider: string;
 		model: string;
 		path: string;
 		bytes: number;
 		elapsedMs: number;
-	}>;
-	failed: Array<{
+	}[];
+	failed: {
 		provider: string;
 		model: string;
 		error: string;
 		elapsedMs: number;
-	}>;
+	}[];
 	consolidation: {
 		auditsFound: number;
-		skipped: Array<{
+		skipped: {
 			path: string;
 			reason: string;
-		}>;
+		}[];
 		findings: unknown[];
 		topActions: string[];
 		markdown: string;
 	};
-	proposals:
-		| {
-				scaffolded: Array<{
-					id: string;
-					filename: string;
-					severity: string;
-					files: string[];
-				}>;
-			}
-		| { skipped: string }
-		| { disabled: true };
+	proposals: {
+		scaffolded: Array<{
+			id: string;
+			filename: string;
+			severity: string;
+			files: string[];
+			kind: "audit" | "fix" | "plan";
+		}>;
+	} | {
+		skipped: string;
+	} | {
+		disabled: true;
+	};
 	projects: string[];
+}
+
+export interface McpVertexAuditSelfAuditOutput {
+	ranAt: string;
+	worst: "critical" | "high" | "medium" | "low" | "info" | "none";
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	skipped: {
+		id: string;
+		note?: string;
+	}[];
+	scannerCount?: number;
+	capabilities?: Record<string, number>;
+	backlog: Array<{
+		rank: number;
+		score: number;
+		rationale: string;
+		finding: {
+			ruleId: string;
+			severity: "critical" | "high" | "medium" | "low" | "info";
+			message: string;
+			location?: {
+				file: string;
+				line?: number;
+				endLine?: number;
+			};
+			fix?: string;
+		};
+	}>;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface AuditToolOutputs {
-	"audit_audit_consolidate": AuditAuditConsolidateOutput;
-	"audit_audit_plan": AuditAuditPlanOutput;
-	"audit_audit_run": AuditAuditRunOutput;
+	"mcp-vertex_audit_audit_consolidate": McpVertexAuditAuditConsolidateOutput;
+	"mcp-vertex_audit_audit_plan": McpVertexAuditAuditPlanOutput;
+	"mcp-vertex_audit_audit_run": McpVertexAuditAuditRunOutput;
+	"mcp-vertex_audit_self_audit": McpVertexAuditSelfAuditOutput;
 }

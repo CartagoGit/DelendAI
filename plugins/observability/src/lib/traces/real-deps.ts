@@ -1,5 +1,7 @@
-import { readdir, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readdir } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type {
 	IReadReleaseHealthDeps,
@@ -70,7 +72,11 @@ const readJsonLines = async (
 	const out: unknown[] = [];
 	for (const path of paths) {
 		try {
-			const raw = await readFile(path, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(dirname(path)).readText(
+					basename(path),
+				)
+			).content;
 			for (const line of raw.split('\n')) {
 				const trimmed = line.trim();
 				if (trimmed.length === 0) continue;

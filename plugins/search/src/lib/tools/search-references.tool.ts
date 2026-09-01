@@ -1,15 +1,14 @@
-import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
-
 import z from 'zod';
 
 import {
-	resolveWorkspaceContained,
+	SafeWorkspaceReader,
+	WorkspaceContainmentError,
 	toolError,
 	toolJson,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
+import { listContainedTypeScriptFiles } from '../services/search-safe-reader';
 import type { ISearchToolOptions } from './search.tool';
 import { findSymbolReferences } from './find-symbol';
 
@@ -28,34 +27,6 @@ const outputSchema = z.object({
 		}),
 	),
 });
-
-const walkTsFiles = async (
-	rootAbs: string,
-	relative = '',
-): Promise<string[]> => {
-	const dirAbs = join(rootAbs, relative);
-	const entries = await readdir(dirAbs, { withFileTypes: true }).catch(
-		() => [],
-	);
-	const files: string[] = [];
-	for (const entry of entries) {
-		if (entry.isDirectory()) {
-			if (['node_modules', '.git', 'dist', 'build'].includes(entry.name))
-				continue;
-			files.push(
-				...(await walkTsFiles(rootAbs, join(relative, entry.name))),
-			);
-			continue;
-		}
-		if (
-			entry.isFile() &&
-			(entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))
-		) {
-			files.push(join(relative, entry.name));
-		}
-	}
-	return files;
-};
 
 export const buildSearchReferencesToolRegistration = (
 	options: ISearchToolOptions,
@@ -82,29 +53,31 @@ export const buildSearchReferencesToolRegistration = (
 						'Fix the tool input and retry.',
 					);
 				}
-				const contained = resolveWorkspaceContained(
+				const reader = new SafeWorkspaceReader(
 					options.workspaceRootAbs,
-					parsed.data.cwd ?? '.',
 				);
-				if (!contained.ok) {
-					return toolError(
-						'cwd must stay inside the workspace',
-						'Pass a relative path inside the workspace.',
+				let files: readonly string[];
+				try {
+					files = await listContainedTypeScriptFiles(
+						reader,
+						parsed.data.cwd ?? '.',
 					);
+				} catch (error) {
+					if (error instanceof WorkspaceContainmentError) {
+						return toolError(
+							'cwd must stay inside the workspace',
+							'Pass a relative path inside the workspace.',
+						);
+					}
+					throw error;
 				}
-				const files = await walkTsFiles(contained.abs);
 				const hits = (
 					await Promise.all(
 						files.map(async (relativePath) => {
-							const absPath = join(contained.abs, relativePath);
-							const workspacePath =
-								`${contained.rel === '.' ? '' : `${contained.rel}/`}${relativePath}`
-									.split('\\')
-									.join('/');
-							const source = await readFile(absPath, 'utf8');
+							const source = await reader.readText(relativePath);
 							return findSymbolReferences(
-								workspacePath,
-								source,
+								source.path.relativePath,
+								source.content,
 								parsed.data.symbol,
 							);
 						}),

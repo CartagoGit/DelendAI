@@ -413,6 +413,7 @@ export const runInitWithAnswers = async (
 				answers.workspaceRoot,
 				launch,
 				answers.hostInstructions,
+				answers.serverName,
 			);
 			// The merge writer can return a `preserved` list alongside
 			// `kind: 'merged'`. We MUST carry it forward to both the
@@ -439,6 +440,7 @@ export const runInitWithAnswers = async (
 				answers.workspaceRoot,
 				buildCanonicalLaunch({ workspace: '.' }),
 				answers.hostInstructions,
+				answers.serverName,
 			);
 			written.push(
 				result.kind === 'merged'

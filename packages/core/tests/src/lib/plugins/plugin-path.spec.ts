@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 
 import {
 	diagnosePluginPathConfig,
@@ -9,6 +9,11 @@ import {
 import { CONFIG_FILE_SCHEMA } from '@mcp-vertex/core/lib/plugins/config-file-schema';
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+
+import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
+
+const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-plugin-path-');
+afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 describe('resolveConfigPluginSpecifiers (f00087 S1)', () => {
 	it('passes the bare entry key through when no path is set', () => {
@@ -151,7 +156,10 @@ describe('assembleCliConfig + plugins.<name>.path (f00087 S1)', () => {
 	};
 
 	it('passes the resolved path as the specifier the loader sees', async () => {
-		const args = parseCliArgs(['--workspace=/ws'], '/cwd');
+		const args = parseCliArgs(
+			[`--workspace=${WRITABLE_WORKSPACE}`, '--surface=native'],
+			WRITABLE_WORKSPACE,
+		);
 		const importCalls: string[] = [];
 		const { loadResult } = await assembleCliConfig(args, {
 			import: async (specifier) => {
@@ -167,7 +175,9 @@ describe('assembleCliConfig + plugins.<name>.path (f00087 S1)', () => {
 		});
 		// The loader received the workspace-rooted absolute path,
 		// NOT the bare key `lx-app`.
-		expect(importCalls).toContain('/ws/libs/plugins/lx-app/dist/index.js');
+		expect(importCalls).toContain(
+			`${WRITABLE_WORKSPACE}/libs/plugins/lx-app/dist/index.js`,
+		);
 		expect(loadResult.loaded.map((entry) => entry.plugin.name)).toContain(
 			'lx-app',
 		);
@@ -175,8 +185,12 @@ describe('assembleCliConfig + plugins.<name>.path (f00087 S1)', () => {
 
 	it('does not break a config that uses the bare-name pattern', async () => {
 		const args = parseCliArgs(
-			['--plugins=memory', '--workspace=/ws'],
-			'/cwd',
+			[
+				'--plugins=memory',
+				`--workspace=${WRITABLE_WORKSPACE}`,
+				'--surface=native',
+			],
+			WRITABLE_WORKSPACE,
 		);
 		const importCalls: string[] = [];
 		await assembleCliConfig(args, {
@@ -204,7 +218,10 @@ describe('assembleCliConfig + plugins.<name>.path (f00087 S1)', () => {
 	});
 
 	it('surfaces a config-typo warning for a bare-name-shaped path', async () => {
-		const args = parseCliArgs(['--workspace=/ws'], '/cwd');
+		const args = parseCliArgs(
+			[`--workspace=${WRITABLE_WORKSPACE}`, '--surface=native'],
+			WRITABLE_WORKSPACE,
+		);
 		const { configDiagnostic } = await assembleCliConfig(args, {
 			import: async () => ({
 				default: {

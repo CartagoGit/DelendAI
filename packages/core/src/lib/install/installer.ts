@@ -66,6 +66,8 @@ export interface IInstallOptions {
 	readonly ide?: readonly string[];
 	/** Write to every known target (create files). */
 	readonly all?: boolean;
+	/** Limit installation to targets with a global user configuration. */
+	readonly globalOnly?: boolean;
 }
 
 /** The `{ command, args, [type] }` server entry for a target + runner choice. */
@@ -166,11 +168,16 @@ export const runInstall = async (
 	let targets: IIdeInstallTarget[];
 	let detected = false;
 	if (options.all) {
-		targets = [...IDE_TARGETS];
+		targets = options.globalOnly
+			? IDE_TARGETS.filter((target) => target.scope === 'global')
+			: [...IDE_TARGETS];
 	} else if (options.ide && options.ide.length > 0) {
 		targets = options.ide
 			.map(targetById)
 			.filter((t): t is IIdeInstallTarget => t !== undefined);
+		if (options.globalOnly) {
+			targets = targets.filter((target) => target.scope === 'global');
+		}
 	} else {
 		targets = await detectTargets(env);
 		detected = true;

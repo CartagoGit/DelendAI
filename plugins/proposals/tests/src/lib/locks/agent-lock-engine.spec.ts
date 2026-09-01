@@ -17,12 +17,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	claimWithFileLocks,
 	getAgentLockSessionBalance,
+	releaseAgentSessionClaims,
 	resetAgentLockSessionBalance,
 	runAgentLockEngine,
 	type IAgentLockArgs,
 	type IAgentLockDeps,
 	type ILockFile,
 } from '../../../../src/lib/locks/agent-lock-engine';
+import { runAgentLockEngine as runAgentLockEngineFromPublic } from '../../../../src/lib/locks/public';
 import { RELEASE_AUDIT_LOG_RELATIVE_PATH } from '../../../../src/lib/contracts/constants/agents-lock.constants';
 import {
 	readSessionBalance,
@@ -63,6 +65,21 @@ beforeEach(() => {
 
 afterEach(() => {
 	rmSync(workspace, { recursive: true, force: true });
+});
+
+describe('agent lock public surface', async () => {
+	it('re-exports the lock engine from the explicit public entrypoint', async () => {
+		const result = await runAgentLockEngineFromPublic(
+			{
+				action: 'claim',
+				task_id: 'task-public',
+				agent: 'agent-public',
+				files: ['src/public.ts'],
+			},
+			deps(),
+		);
+		expect(body(result).claimed).toBe(true);
+	});
 });
 
 describe('runAgentLockEngine — claim', async () => {
@@ -209,6 +226,91 @@ describe('runAgentLockEngine — claim', async () => {
 });
 
 describe('runAgentLockEngine — release / status', async () => {
+	it('session cleanup releases only claims owned by the closing host process', async () => {
+		await run(
+			{
+				action: 'claim',
+				task_id: 'owned-task',
+				agent: 'agent-A',
+				files: ['src/owned.ts'],
+			},
+			{ nowHostId: () => ({ host: 'host-a', pid: 100 }) },
+		);
+		await run(
+			{
+				action: 'claim',
+				task_id: 'other-task',
+				agent: 'agent-B',
+				files: ['src/other.ts'],
+			},
+			{ nowHostId: () => ({ host: 'host-b', pid: 200 }) },
+		);
+
+		const result = await releaseAgentSessionClaims({
+			lockPath,
+			nowHostId: () => ({ host: 'host-a', pid: 100 }),
+		});
+
+		expect(result.releasedTaskIds).toEqual(['owned-task']);
+		expect(readLockFile().in_flight.map((entry) => entry.task_id)).toEqual([
+			'other-task',
+		]);
+	});
+
+	it('heartbeat refreshes a long-running claim without changing ownership', async () => {
+		await run(
+			{
+				action: 'claim',
+				task_id: 'task-A',
+				agent: 'agent-A',
+				files: ['src/a.ts'],
+			},
+			{ now: () => '2026-08-31T00:00:00.000Z' },
+		);
+		const before = readLockFile().in_flight[0];
+		const result = await run(
+			{
+				action: 'heartbeat',
+				task_id: 'task-A',
+				agent: 'agent-A',
+			},
+			{ now: () => '2026-08-31T00:05:00.000Z' },
+		);
+		const after = readLockFile().in_flight[0];
+
+		expect(body(result)).toMatchObject({
+			ok: true,
+			refreshed: true,
+			action: 'heartbeat',
+		});
+		expect(after?.ownership).toEqual(before?.ownership);
+		expect(after?.last_seen).toBe('2026-08-31T00:05:00.000Z');
+	});
+
+	it('heartbeat rejects a different agent and an unknown task', async () => {
+		await run({
+			action: 'claim',
+			task_id: 'task-A',
+			agent: 'agent-A',
+			files: ['src/a.ts'],
+		});
+		const mismatch = await run({
+			action: 'heartbeat',
+			task_id: 'task-A',
+			agent: 'agent-B',
+		});
+		const missing = await run({
+			action: 'heartbeat',
+			task_id: 'missing',
+			agent: 'agent-A',
+		});
+
+		expect(mismatch.isError).toBe(true);
+		expect(body(mismatch).blockerType).toBe('invalid-input');
+		expect(missing.isError).toBe(true);
+		expect(body(missing).blockerType).toBe('invalid-input');
+	});
+
 	it('release removes the task from the in-flight set', async () => {
 		await run({
 			action: 'claim',

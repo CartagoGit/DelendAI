@@ -5,6 +5,22 @@
  */
 export { default } from '../index';
 
+export { registerProposalsStableTools } from '../lib/api/proposals-stable-tools';
+
+// Stable adaptive-facade contract pins. R13 closed the `./lib/*`
+// wildcard exports, so cross-plugin consumers must import these
+// through the public barrel instead of deep `lib/` paths.
+export {
+	PROPOSALS_STABLE_TOOL_SURFACE,
+	PROPOSAL_ADAPTIVE_FACADE_INTENTS,
+	listProposalAdaptiveFacadePaths,
+} from '../lib/api/proposals-stable-tools';
+export type { IStableManifestTool } from '@mcp-vertex/core/public';
+export type {
+	IProposalAdaptiveFacadePath,
+	TProposalAdaptiveFacadeIntent,
+} from '../lib/api/proposals-stable-tools';
+
 export {
 	DEFAULT_PATH_LAYOUT,
 	buildSwarmPaths,
@@ -32,6 +48,15 @@ export type {
 	IProposalKindInfo,
 	IProposalFlagInfo,
 } from '../lib/contracts/constants/proposal-glossary.constant';
+export {
+	DEFAULT_PROPOSAL_FOLDER_POLICY,
+	proposalFolderFor,
+	proposalFoldersForPolicy,
+} from '../lib/contracts/proposal-folder-policy';
+export type {
+	IProposalFolderMode,
+	IProposalFolderPolicy,
+} from '../lib/contracts/proposal-folder-policy';
 // Swarm-domain contracts (moved out of the agnostic core).
 export type {
 	IProposalFamily,

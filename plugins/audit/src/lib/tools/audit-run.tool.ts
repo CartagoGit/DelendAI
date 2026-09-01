@@ -25,8 +25,10 @@
  */
 
 import {
+	projectDetail,
 	toolJson,
 	writeFileAtomic,
+	type Detail,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 import path from 'node:path';
@@ -84,7 +86,7 @@ export const buildRunRegistration = (
 	return {
 		id: 'audit_run',
 		summary:
-			'Dispatch the audit brief (general / specific / monorepo modes) to one or more LLM targets in parallel, save the markdown reports, consolidate the findings, and scaffold fix proposals for every actionable severity band (FATAL/BAD/MINOR).',
+			'Dispatch the audit brief (general / specific / monorepo modes) to one or more LLM targets in parallel, save the markdown reports, consolidate the findings into a native plan by default, and scaffold linked child proposals for every actionable severity band (FATAL/BAD/MINOR).',
 		descriptionKey: 'audit_run',
 		tags: ['audit', 'automation', 'fan-out'],
 		register: async (server) => {
@@ -97,6 +99,7 @@ export const buildRunRegistration = (
 					outputSchema: RunOutputSchema,
 				},
 				async (args: {
+					detail?: Detail | undefined;
 					scope?: string | undefined;
 					mode?: AuditMode | undefined;
 					projects?: readonly string[] | undefined;
@@ -105,6 +108,7 @@ export const buildRunRegistration = (
 						model: string;
 						apiKey: string;
 					}>;
+					auditType?: 'plan' | 'valuation' | undefined;
 					auditDir?: string | undefined;
 					scaffoldProposals?: boolean | undefined;
 					proposalsDir?: string | undefined;
@@ -114,6 +118,7 @@ export const buildRunRegistration = (
 					date?: string | undefined;
 					timeoutMs?: number | undefined;
 				}) => {
+					const detail = args.detail ?? 'normal';
 					// --- 1. Prelude (scope/mode/projects + dirs + brief) -
 					// The prelude fails BEFORE any HTTP call, so a
 					// `toolError` here is cheap and never sees the
@@ -145,6 +150,7 @@ export const buildRunRegistration = (
 					if (!prelude.ok) return prelude.error;
 					const {
 						scope,
+						auditType,
 						mode,
 						projects,
 						auditDirAbs,
@@ -253,9 +259,10 @@ export const buildRunRegistration = (
 						  }
 						| { skipped: string }
 						| { disabled: true };
-					if (enabled && consolidation.findings.length > 0) {
+					if (enabled) {
 						const scaffoldOptions: IAutoScaffoldOptions = {
 							enabled,
+							auditType,
 							peerPlugins: options.peerPlugins,
 							proposalsDir: proposalsDirRel,
 							workspaceRoot: options.workspaceRoot,
@@ -287,11 +294,13 @@ export const buildRunRegistration = (
 										filename: string;
 										severity: string;
 										files: string[];
+										kind: 'audit' | 'fix' | 'plan';
 									} => ({
 										id: r.id,
 										filename: r.filename,
 										severity: r.severity,
 										files: [...r.files],
+										kind: r.kind,
 									}),
 								),
 							};
@@ -306,7 +315,8 @@ export const buildRunRegistration = (
 						proposalsSummary = { scaffolded: [] };
 					}
 
-					return toolJson({
+					const payload = {
+						auditType,
 						scope,
 						mode,
 						date,
@@ -327,7 +337,24 @@ export const buildRunRegistration = (
 						},
 						proposals: proposalsSummary,
 						projects: [...projects],
-					});
+					};
+					const view = projectDetail(
+						payload,
+						{
+							compact: (full) => ({
+								...full,
+								consolidation: {
+									...full.consolidation,
+									findings: [],
+									markdown: '',
+								},
+							}),
+							normal: (full) => full,
+							full: (full) => full,
+						},
+						detail,
+					) as typeof payload;
+					return toolJson({ detail, ...view });
 				},
 			);
 		},

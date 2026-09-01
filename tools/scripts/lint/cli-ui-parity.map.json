@@ -1,6 +1,9 @@
 {
 	"$about": "f00098 S4 — CLI↔UI parity contract. Every CLI command group maps to a UI affordance ({ kind: vscode-command | vscode-view | web-route, id }) or carries a documented waiver; every contributed VS Code command maps to a CLI counterpart (command or group) or carries a waiver. Enforced by tools/scripts/lint/cli-ui-parity.script.ts (bun run lint:cli-ui-parity).",
 	"cliGroups": {
+		"adopt": {
+			"waiver": "f00170: read-only adoption assessment (detect stack, recommend plugins, estimate tool-schema cost) for the terminal/agent onboarding flow; no interactive UI story planned"
+		},
 		"agents": {
 			"ui": {
 				"kind": "vscode-command",
@@ -15,7 +18,10 @@
 			"waiver": "shell-only: prints bash/zsh/fish completion scripts, meaningless inside a UI host"
 		},
 		"config": {
-			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openSettings" }
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.openSettings"
+			}
 		},
 		"conventions": {
 			"waiver": "repo-convention ratchet consumed by agents and lint gates; no interactive UI story planned"
@@ -24,7 +30,10 @@
 			"waiver": "dependency introspection for agents; terminal-first, no UI story planned"
 		},
 		"docs": {
-			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openDocs" }
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.openDocs"
+			}
 		},
 		"doctor": {
 			"waiver": "sectioned terminal health report with exit codes for scripts/CI; the dashboard is the interactive equivalent"
@@ -36,28 +45,43 @@
 			"waiver": "IDE-native: VS Code's built-in SCM view supersedes the read-only git group"
 		},
 		"init": {
-			"waiver": "workspace bootstrap runs before any UI host is configured; shell-only by design"
+			"waiver": "global/project IDE configuration bootstrap; terminal-first setup flow with no interactive UI story planned"
+		},
+		"init:global": {
+			"waiver": "global IDE configuration bootstrap; terminal-first setup flow with no separate interactive UI story planned"
 		},
 		"init:default": {
 			"waiver": "non-interactive bootstrap for scripts and fresh checkouts; shell-only by design"
 		},
 		"knowledge": {
-			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openKnowledge" }
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.openKnowledge"
+			}
 		},
 		"logs": {
 			"waiver": "log query/tail/correlate is terminal-first; no dedicated log view contributed yet"
 		},
 		"memory": {
-			"ui": { "kind": "vscode-view", "id": "mcp-vertex.memory" }
+			"ui": {
+				"kind": "vscode-view",
+				"id": "mcp-vertex.memory"
+			}
 		},
 		"metrics": {
-			"ui": { "kind": "vscode-command", "id": "mcp-vertex.showMetrics" }
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.showMetrics"
+			}
 		},
 		"notification": {
 			"waiver": "agent-coordination primitive (status/await-lock); not a human UI affordance"
 		},
 		"overview": {
-			"ui": { "kind": "vscode-command", "id": "mcp-vertex.showOverview" }
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.showOverview"
+			}
 		},
 		"plugin": {
 			"ui": {
@@ -70,7 +94,10 @@
 			"waiver": "project analyze/plan/create is an agent scaffolding surface; terminal-first, no UI story planned"
 		},
 		"proposals": {
-			"ui": { "kind": "vscode-view", "id": "mcp-vertex.proposals" }
+			"ui": {
+				"kind": "vscode-view",
+				"id": "mcp-vertex.proposals"
+			}
 		},
 		"quality": {
 			"waiver": "quality scope runner is terminal-first; the validate group carries the UI affordance (runValidation)"
@@ -91,7 +118,10 @@
 			"waiver": "secret + dependency-CVE + license posture scanning for agents and CI; terminal-first, a VS Code posture panel is future work"
 		},
 		"status": {
-			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openDashboard" }
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.openDashboard"
+			}
 		},
 		"status-marker": {
 			"waiver": "swarm status-marker protocol between agents; not a human UI affordance"
@@ -107,7 +137,10 @@
 			}
 		},
 		"validate": {
-			"ui": { "kind": "vscode-command", "id": "mcp-vertex.runValidation" }
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.runValidation"
+			}
 		},
 		"validate-matrix": {
 			"ui": {
@@ -129,7 +162,19 @@
 			"cli": "overview",
 			"note": "the agent catalog is the overview snapshot rendered as a webview"
 		},
-		"mcp-vertex.openDashboard": { "cli": "status" },
+		"mcp-vertex.openAgentTimeline": {
+			"waiver": "VS Code-only observability viewer for the persisted agent timeline; no standalone CLI timeline command is registered yet"
+		},
+		"mcp-vertex.openRuntimeLog": {
+			"waiver": "VS Code-only runtime log viewer; the CLI exposes log querying but no equivalent command opens the persisted viewer"
+		},
+		"mcp-vertex.openDashboard": {
+			"cli": "status"
+		},
+		"mcp-vertex.openDashboardTab": {
+			"cli": "status",
+			"note": "same dashboard as mcp-vertex.openDashboard, opened in an editor tab instead of the side panel; one CLI counterpart serves both placements"
+		},
 		"mcp-vertex.providers.openDashboard": {
 			"cli": "usage-tracking report",
 			"note": "f00098 S3: the panel's usage card is the report; the provider half wraps agent tools (healthcheck_providers/get_quota) with no CLI group"
@@ -143,27 +188,43 @@
 		"mcp-vertex.providers.resume": {
 			"waiver": "wraps the agent tool set_provider_state (manual availability override); no CLI group for the orchestrator yet"
 		},
-		"mcp-vertex.usage.report": { "cli": "usage-tracking report" },
+		"mcp-vertex.usage.report": {
+			"cli": "usage-tracking report"
+		},
 		"mcp-vertex.usage.clear": {
 			"cli": "usage-tracking clear",
 			"note": "both surfaces confirm: the CLI needs --confirm, the command shows a modal"
 		},
-		"mcp-vertex.showOverview": { "cli": "overview" },
+		"mcp-vertex.showOverview": {
+			"cli": "overview"
+		},
 		"mcp-vertex.refresh": {
 			"waiver": "UI refresh affordance; re-running the corresponding CLI command is the scriptable equivalent"
 		},
-		"mcp-vertex.runValidation": { "cli": "validate" },
-		"mcp-vertex.openProposal": { "cli": "proposals board" },
+		"mcp-vertex.runValidation": {
+			"cli": "validate"
+		},
+		"mcp-vertex.openProposal": {
+			"cli": "proposals board"
+		},
 		"mcp-vertex.proposals.refresh": {
 			"waiver": "view-title refresh button for the proposals view; UI mechanics only"
 		},
 		"mcp-vertex.proposals.copyError": {
 			"waiver": "clipboard affordance for the proposals view error state; UI mechanics only"
 		},
-		"mcp-vertex.showMetrics": { "cli": "metrics" },
-		"mcp-vertex.openDocs": { "cli": "docs list" },
-		"mcp-vertex.openDocsApi": { "cli": "docs read" },
-		"mcp-vertex.openKnowledge": { "cli": "knowledge" },
+		"mcp-vertex.showMetrics": {
+			"cli": "metrics"
+		},
+		"mcp-vertex.openDocs": {
+			"cli": "docs list"
+		},
+		"mcp-vertex.openDocsApi": {
+			"cli": "docs read"
+		},
+		"mcp-vertex.openKnowledge": {
+			"cli": "knowledge"
+		},
 		"mcp-vertex.toolSearch": {
 			"cli": "overview",
 			"note": "overview --full prints the complete tool map; fuzzy filtering is UI-side sugar"
@@ -179,7 +240,9 @@
 			"cli": "config show",
 			"note": "f00107 S3: overview activation report plus merge-aware config enabled toggles"
 		},
-		"mcp-vertex.openSettings": { "cli": "config show" },
+		"mcp-vertex.openSettings": {
+			"cli": "config show"
+		},
 		"mcp-vertex.openConfigurationCenter": {
 			"cli": "config show",
 			"note": "schema-driven project configuration editor; config show is the read-only terminal counterpart"
@@ -195,8 +258,12 @@
 		"mcp-vertex.openToolbar": {
 			"waiver": "UI navigation into the webview toolbar; no scriptable behaviour"
 		},
-		"mcp-vertex.memorySave": { "cli": "memory save" },
-		"mcp-vertex.memoryForget": { "cli": "memory forget" },
+		"mcp-vertex.memorySave": {
+			"cli": "memory save"
+		},
+		"mcp-vertex.memoryForget": {
+			"cli": "memory forget"
+		},
 		"mcp-vertex.setupGithub": {
 			"waiver": "guided IDE onboarding flow for GitHub issues; no CLI counterpart yet"
 		},
@@ -205,6 +272,10 @@
 		},
 		"mcp-vertex.startServerUntrusted": {
 			"waiver": "x00072 SEC-001 S1: manual override that spawns the stdio child in an untrusted workspace after the user reads the warning. No CLI counterpart (CLI refuses untrusted workspaces entirely); the gate is purely a VS Code affordance."
+		},
+		"mcp-vertex.openPluginConfig": {
+			"cli": "config show",
+			"note": "f00098: reuses Configuration Center (config show is the read-only CLI counterpart) with optional pluginId narrowing"
 		}
 	}
 }

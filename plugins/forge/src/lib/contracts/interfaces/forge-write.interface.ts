@@ -28,6 +28,13 @@ export interface ICreateIssueOptions {
 	readonly confirm?: boolean | undefined;
 }
 
+export interface ICreateMcpVertexIssueOptions {
+	readonly title: string;
+	readonly body?: string | undefined;
+	readonly labels?: readonly string[] | undefined;
+	readonly confirm?: boolean | undefined;
+}
+
 export interface IPrCreateResultData {
 	readonly number: number;
 	readonly title: string;

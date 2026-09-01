@@ -1,7 +1,11 @@
-import { mkdir, readdir, readFile, rename } from 'node:fs/promises';
-import { dirname, join, relative, resolve, sep } from 'node:path';
+import { access, mkdir, readdir, rename } from 'node:fs/promises';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import { setFrontmatterStatus } from './proposal-frontmatter-writer';
@@ -20,16 +24,20 @@ import {
 	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
-	doneFolderFor,
 	KIND_TO_DONE_SUBFOLDER,
 } from '../contracts/constants/proposal-glossary.constant';
 import type {
 	IProposalKind,
 	IProposalStatus as IGlossaryStatus,
 } from '../contracts/constants/proposal-glossary.constant';
+import {
+	proposalFolderFor,
+	type IProposalFolderPolicy,
+} from '../contracts/proposal-folder-policy';
 import { lintProposalMarkdown } from './proposal-scaffold-linter';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { slugFromTitle } from '../shared/string-helpers';
 
 // The legacy 8-status union, PLUS the 2 new-only f00016 statuses
 // (`in-progress` hyphenated, `review`) that the legacy union never had —
@@ -220,7 +228,11 @@ const readProposalFile = async (
 	_indexPath: string,
 	proposalsDir: string,
 ): Promise<{ entry: IProposalEntry; warning?: string }> => {
-	const rawStr = await readFile(absFilepath, 'utf8');
+	const rawStr = (
+		await new SafeWorkspaceReader(proposalsDir).readText(
+			relative(proposalsDir, absFilepath).split('\\').join('/'),
+		)
+	).content;
 	const fm = parseFrontmatter(rawStr);
 	const name = absFilepath.split('/').pop() ?? absFilepath;
 	const id = fm.id ?? buildId(name);
@@ -368,7 +380,8 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 		if (!/^p\d+[a-z]*-.+\.md$/iu.test(name)) continue;
 
 		const sourcePath = join(proposalsDir, name);
-		const raw = await readFile(sourcePath, 'utf8');
+		const raw = (await new SafeWorkspaceReader(proposalsDir).readText(name))
+			.content;
 		const reconciled = reconcileCompletedProposalMarkdown(raw);
 		if (
 			reconciled === raw ||
@@ -409,6 +422,7 @@ interface INewSystemFile {
 	 * the status folder (no sub-folder).
 	 */
 	readonly kind: IProposalKind | undefined;
+	readonly title?: string;
 }
 
 export interface IProposalFolderDrift {
@@ -441,6 +455,23 @@ const isNewSystemFilename = (filename: string): boolean => {
 	return prefix !== 'p' && prefix in PROPOSAL_KIND_BY_PREFIX;
 };
 
+const canonicalProposalFilename = (file: INewSystemFile): string | null => {
+	const idMatch = file.id.match(/^([a-z])(\d+)$/iu);
+	if (idMatch === null) return null;
+	const prefix = (idMatch[1] ?? '').toLowerCase();
+	const numericId = Number(idMatch[2]);
+	if (!Number.isSafeInteger(numericId) || numericId < 1) return null;
+	const fallback = `${prefix}${String(numericId).padStart(5, '0')}`;
+	const title = file.title?.trim();
+	const slug = slugFromTitle(
+		title && title.length > 0
+			? title
+			: file.filename.replace(/^[a-z]\d+-/iu, '').replace(/\.md$/iu, ''),
+		fallback,
+	);
+	return `${prefix}${String(numericId).padStart(5, '0')}-${slug}.md`;
+};
+
 /**
  * Folders to scan for new-system proposal files. Includes the 7 status
  * folders, the proposals root (legacy flat layout), and every
@@ -451,7 +482,10 @@ const isNewSystemFilename = (filename: string): boolean => {
 const newSystemScanFolders = (): readonly string[] => {
 	const folders = new Set<string>(['', ...NEW_SYSTEM_FOLDERS]);
 	for (const sub of Object.values(KIND_TO_DONE_SUBFOLDER)) {
-		if (sub !== undefined) folders.add(join('done', sub));
+		if (sub !== undefined) {
+			folders.add(join('ready', sub));
+			folders.add(join('done', sub));
+		}
 	}
 	return [...folders];
 };
@@ -470,7 +504,11 @@ const scanNewSystemFiles = async (
 			if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
 			if (!isNewSystemFilename(dirent.name)) continue;
 			const absPath = join(dirAbs, dirent.name);
-			const raw = await readFile(absPath, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(proposalsDirAbs).readText(
+					relative(proposalsDirAbs, absPath).split('\\').join('/'),
+				)
+			).content;
 			const block = extractYamlBlock(raw);
 			if (block === null) continue;
 			const fm = parseFrontmatterBlock(block);
@@ -482,6 +520,7 @@ const scanNewSystemFiles = async (
 				: [];
 			const prefix = dirent.name[0] ?? '';
 			const kind = PROPOSAL_KIND_BY_PREFIX[prefix];
+			const title = typeof fm.title === 'string' ? fm.title : undefined;
 			out.push({
 				absPath,
 				folder,
@@ -490,6 +529,7 @@ const scanNewSystemFiles = async (
 				status,
 				blockedBy,
 				kind,
+				...(title !== undefined ? { title } : {}),
 			});
 		}
 	}
@@ -563,7 +603,7 @@ const scanAllProposalIds = async (
 				// Don't recurse into sibling cache dirs / unrelated
 				// sub-trees — keep the scan strictly under the
 				// proposalsDir the caller passed.
-				if (childAbs.startsWith(proposalsDirAbs + '/')) {
+				if (childAbs.startsWith(`${proposalsDirAbs}/`)) {
 					queue.push(childAbs);
 				}
 				continue;
@@ -574,7 +614,12 @@ const scanAllProposalIds = async (
 				dirent.name === 'README.md'
 			)
 				continue;
-			const raw = await readFile(childAbs, 'utf8').catch(() => '');
+			const raw = await new SafeWorkspaceReader(proposalsDirAbs)
+				.readText(
+					relative(proposalsDirAbs, childAbs).split('\\').join('/'),
+				)
+				.then((value) => value.content)
+				.catch(() => '');
 			if (raw.length === 0) continue;
 			const block = extractYamlBlock(raw);
 			// A `.md` with no frontmatter block at all is not a proposal (an
@@ -596,14 +641,16 @@ const scanAllProposalIds = async (
 
 export const findProposalFolderDrift = async (
 	proposalsDirAbs: string,
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<readonly IProposalFolderDrift[]> => {
 	const files = await scanNewSystemFiles(proposalsDirAbs);
 	const drift: IProposalFolderDrift[] = [];
 	for (const file of files) {
-		const expectedFolder =
-			file.status === 'done'
-				? doneFolderFor(file.kind)
-				: STATUS_TO_FOLDER[file.status];
+		const expectedFolder = proposalFolderFor(
+			file.status,
+			file.kind,
+			folderPolicy,
+		);
 		if (file.folder === expectedFolder) continue;
 		drift.push({
 			id: file.id,
@@ -622,7 +669,17 @@ const moveFile = async (
 	fromAbs: string,
 	toAbs: string,
 ): Promise<void> => {
-	await mkdir(dirname(toAbs), { recursive: true });
+	const targetDir = dirname(toAbs);
+	await mkdir(targetDir, { recursive: true });
+	const gitkeep = join(targetDir, '.gitkeep');
+	if (
+		!(await access(gitkeep).then(
+			() => true,
+			() => false,
+		))
+	) {
+		await writeFileAtomic(gitkeep, '');
+	}
 	const result = await gitRunner(['mv', fromAbs, toAbs]);
 	if (!result.ok) await rename(fromAbs, toAbs);
 };
@@ -644,16 +701,18 @@ const setStatusLine = setFrontmatterStatus;
 export const reconcileFolders = async (
 	proposalsDirAbs: string,
 	gitRunner: IGitRunner,
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<{
 	moved: ReadonlyArray<{ id: string; from: string; to: string }>;
 }> => {
 	const files = await scanNewSystemFiles(proposalsDirAbs);
 	const moved: Array<{ id: string; from: string; to: string }> = [];
 	for (const file of files) {
-		const expectedFolder =
-			file.status === 'done'
-				? doneFolderFor(file.kind)
-				: STATUS_TO_FOLDER[file.status];
+		const expectedFolder = proposalFolderFor(
+			file.status,
+			file.kind,
+			folderPolicy,
+		);
 		if (file.folder === expectedFolder) continue;
 		const newAbsPath = join(proposalsDirAbs, expectedFolder, file.filename);
 		await moveFile(gitRunner, file.absPath, newAbsPath);
@@ -667,6 +726,58 @@ export const reconcileFolders = async (
 };
 
 /**
+ * Renames recognisable new-system proposals to the canonical
+ * `<prefix><5 digits>-<kebab-title>.md` shape and places them in the folder
+ * implied by their status and kind. Legacy `p...` files are intentionally
+ * excluded. Existing targets are reported and never overwritten.
+ */
+export const reconcileCanonicalProposals = async (
+	proposalsDirAbs: string,
+	gitRunner: IGitRunner,
+	folderPolicy?: IProposalFolderPolicy,
+): Promise<{
+	moved: ReadonlyArray<{ id: string; from: string; to: string }>;
+	errors: readonly string[];
+}> => {
+	const files = await scanNewSystemFiles(proposalsDirAbs);
+	const moved: Array<{ id: string; from: string; to: string }> = [];
+	const errors: string[] = [];
+	for (const file of files) {
+		const canonicalFilename = canonicalProposalFilename(file);
+		if (canonicalFilename === null) continue;
+		const expectedFolder = proposalFolderFor(
+			file.status,
+			file.kind,
+			folderPolicy,
+		);
+		const targetAbs = join(
+			proposalsDirAbs,
+			expectedFolder,
+			canonicalFilename,
+		);
+		if (targetAbs === file.absPath) continue;
+		if (
+			await access(targetAbs).then(
+				() => true,
+				() => false,
+			)
+		) {
+			errors.push(
+				`canonical proposal collision for ${file.id}: ${relative(proposalsDirAbs, file.absPath)} -> ${relative(proposalsDirAbs, targetAbs)}`,
+			);
+			continue;
+		}
+		await moveFile(gitRunner, file.absPath, targetAbs);
+		moved.push({
+			id: file.id,
+			from: relative(proposalsDirAbs, file.absPath),
+			to: relative(proposalsDirAbs, targetAbs),
+		});
+	}
+	return { moved, errors };
+};
+
+/**
  * Auto-resolves `blocked` → `ready` (f00016 §4.2) when every entry in
  * `blocked_by` is satisfied: a `self:*` token clears once the scaffold
  * linter (S2) passes on the file; a proposal-id token clears once that
@@ -676,6 +787,7 @@ export const reconcileFolders = async (
 export const reconcileBlocked = async (
 	proposalsDirAbs: string,
 	gitRunner: IGitRunner,
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<{ resolved: ReadonlyArray<{ id: string }> }> => {
 	const files = await scanNewSystemFiles(proposalsDirAbs);
 	const statusById = new Map(files.map((f) => [f.id, f.status] as const));
@@ -685,7 +797,13 @@ export const reconcileBlocked = async (
 		if (file.status !== 'blocked' || file.blockedBy.length === 0) continue;
 
 		await withFileMutex(file.absPath, async () => {
-			const raw = await readFile(file.absPath, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(proposalsDirAbs).readText(
+					relative(proposalsDirAbs, file.absPath)
+						.split('\\')
+						.join('/'),
+				)
+			).content;
 			const stillBlocked = file.blockedBy.some((token) => {
 				if (token.startsWith('self:')) {
 					const lint = lintProposalMarkdown({
@@ -694,13 +812,16 @@ export const reconcileBlocked = async (
 					});
 					return !lint.ok;
 				}
-				return statusById.get(token) !== 'done';
+				const dependencyStatus = statusById.get(token);
+				return (
+					dependencyStatus !== 'review' && dependencyStatus !== 'done'
+				);
 			});
 			if (stillBlocked) return;
 
 			const newAbsPath = join(
 				proposalsDirAbs,
-				STATUS_TO_FOLDER.ready,
+				proposalFolderFor('ready', file.kind, folderPolicy),
 				file.filename,
 			);
 			const updated = setStatusLine(raw, 'ready');
@@ -710,6 +831,21 @@ export const reconcileBlocked = async (
 		});
 	}
 	return { resolved };
+};
+
+/**
+ * Find new-system proposals that declare `proposalId` as a dependency.
+ * Their `blocked-by` metadata remains useful after they become ready: it
+ * defines the dependent-first review order for the primary proposal.
+ */
+export const findDependentProposalStatuses = async (
+	proposalsDirAbs: string,
+	proposalId: string,
+): Promise<ReadonlyArray<{ id: string; status: IGlossaryStatus }>> => {
+	const files = await scanNewSystemFiles(proposalsDirAbs);
+	return files
+		.filter((file) => file.blockedBy.includes(proposalId))
+		.map((file) => ({ id: file.id, status: file.status }));
 };
 
 export async function syncProposalRegistry(
@@ -724,6 +860,7 @@ export async function syncProposalRegistry(
 	extraFolders: readonly string[] = [],
 	// f00016 S5: injectable for tests; defaults to a real `git mv` in `root`.
 	gitRunner: IGitRunner = createGitRunner(root),
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);
@@ -739,13 +876,21 @@ export async function syncProposalRegistry(
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
 		await reconcileAndArchiveCompletedRootProposals(proposalsDir);
-		const folderDriftBefore = await findProposalFolderDrift(proposalsDir);
+		const canonicalReconciliation = await reconcileCanonicalProposals(
+			proposalsDir,
+			gitRunner,
+			folderPolicy,
+		);
 		// f00016 S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
 		// the scan below so the index reflects the post-reconciliation tree.
-		await reconcileFolders(proposalsDir, gitRunner);
-		await reconcileBlocked(proposalsDir, gitRunner);
+		await reconcileFolders(proposalsDir, gitRunner, folderPolicy);
+		await reconcileBlocked(proposalsDir, gitRunner, folderPolicy);
+		const unresolvedFolderDrift = await findProposalFolderDrift(
+			proposalsDir,
+			folderPolicy,
+		);
 		// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
 		// arrive via `extraFolders`.
 		// f00016's 7 status folders (S5) overlap with the legacy list (`paused`
@@ -773,6 +918,15 @@ export async function syncProposalRegistry(
 			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
 				join(proposalsDir, 'done', sub),
 			),
+			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+				join(proposalsDir, 'ready', sub),
+			),
+			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+				join(proposalsDir, 'review', sub),
+			),
+			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+				join(proposalsDir, 'in-progress', sub),
+			),
 			// f00076 S1: archive sub-folders under `legacy/closed/<kind>/`
 			// mirror the `done/<kind>/` layout so reaped proposals stay
 			// indexed (with `archived: true`) without living in the active
@@ -790,6 +944,7 @@ export async function syncProposalRegistry(
 		].map((absolute) => ({ absolute }));
 		const entries: IProposalEntry[] = [];
 		const warnings: string[] = [];
+		warnings.push(...canonicalReconciliation.errors);
 		for (const subtree of subtrees) {
 			const result = await scanSubtree(
 				subtree.absolute,
@@ -805,7 +960,7 @@ export async function syncProposalRegistry(
 		// Detection only: we still write the index so agents can see both
 		// paths, but the error list is non-empty so lint/CI can fail.
 		const duplicates = await findDuplicateProposalIds(proposalsDir);
-		for (const drift of folderDriftBefore) {
+		for (const drift of unresolvedFolderDrift) {
 			warnings.push(
 				`folder drift: ${drift.id} at ${drift.path} is in ${drift.folder} but status ${drift.status} expects ${drift.expectedFolder}`,
 			);
@@ -830,7 +985,11 @@ export async function syncProposalRegistry(
 		const nextText = `${JSON.stringify(index, null, 4)}\n`;
 		let changed = true;
 		try {
-			const current = await readFile(indexPath, 'utf8');
+			const current = (
+				await new SafeWorkspaceReader(dirname(indexPath)).readText(
+					basename(indexPath),
+				)
+			).content;
 			changed = current !== nextText;
 		} catch {
 			// Missing or unreadable index means the generated file will be new.

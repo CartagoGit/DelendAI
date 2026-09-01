@@ -22,6 +22,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { proposalFolderFor } from '@mcp-vertex/proposals/lib/contracts/proposal-folder-policy';
+
 import {
 	createAssembledProposalsServer,
 	type IAssembledProposalsServer,
@@ -40,6 +42,8 @@ interface TransitionOutput {
 		readonly nextAction?: string;
 		readonly code?: string;
 	};
+	/** Only present on error responses; stripped before the parity check. */
+	readonly logHint?: unknown;
 }
 
 const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
@@ -68,7 +72,7 @@ const callTransition = async (
 		args,
 	);
 
-/** Seed a feat proposal in `ready/` and rebuild the index. */
+/** Seed a feat proposal in its canonical ready folder and rebuild the index. */
 const seedReady = async (
 	server: IAssembledProposalsServer,
 	id: string,
@@ -78,7 +82,11 @@ const seedReady = async (
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');
-	const dir = join(server.workspace, PROPOSALS_RELDIR, 'ready');
+	const dir = join(
+		server.workspace,
+		PROPOSALS_RELDIR,
+		proposalFolderFor('ready', 'feat'),
+	);
 	mkdirSync(dir, { recursive: true });
 	const relName = `${id}-${slug}.md`;
 	writeFileSync(
@@ -128,7 +136,15 @@ describe('e2e: proposals_proposal_transition over the real MCP protocol', async 
 
 	it('legal path ready → in-progress moves the file and returns ok:true', async () => {
 		const relName = await seedReady(harness, 'f08001', 'legal forward');
-		expect(existsSync(folderPath(harness, 'ready', relName))).toBe(true);
+		expect(
+			existsSync(
+				folderPath(
+					harness,
+					proposalFolderFor('ready', 'feat'),
+					relName,
+				),
+			),
+		).toBe(true);
 
 		const res = await callTransition(harness, {
 			id: 'f08001',
@@ -138,7 +154,15 @@ describe('e2e: proposals_proposal_transition over the real MCP protocol', async 
 		expect(res.structured.ok).toBe(true);
 		expect(res.structured.from).toBe('ready');
 		expect(res.structured.to).toBe('in-progress');
-		expect(existsSync(folderPath(harness, 'ready', relName))).toBe(false);
+		expect(
+			existsSync(
+				folderPath(
+					harness,
+					proposalFolderFor('ready', 'feat'),
+					relName,
+				),
+			),
+		).toBe(false);
 		expect(existsSync(folderPath(harness, 'in-progress', relName))).toBe(
 			true,
 		);
@@ -180,7 +204,15 @@ describe('e2e: proposals_proposal_transition over the real MCP protocol', async 
 		expect(res.structured.ok).toBe(false);
 		expect(res.structured.error?.reason).toMatch(/validateEvidence/i);
 		// No move happened.
-		expect(existsSync(folderPath(harness, 'ready', relName))).toBe(true);
+		expect(
+			existsSync(
+				folderPath(
+					harness,
+					proposalFolderFor('ready', 'feat'),
+					relName,
+				),
+			),
+		).toBe(true);
 		expect(existsSync(folderPath(harness, 'done', relName))).toBe(false);
 	});
 
@@ -230,8 +262,7 @@ describe('e2e: proposals_proposal_transition over the real MCP protocol', async 
 		const { logHint: _t, ...textPayload } = JSON.parse(
 			rejected.text,
 		) as Record<string, unknown>;
-		const { logHint: _s, ...structuredPayload } =
-			rejected.structured as unknown as Record<string, unknown>;
+		const { logHint: _s, ...structuredPayload } = rejected.structured;
 		expect(textPayload).toEqual(structuredPayload);
 		expect(structuredPayload.ok).toBe(false);
 	});

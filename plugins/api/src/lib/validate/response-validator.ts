@@ -8,6 +8,7 @@
  */
 import type { IFinding } from '@mcp-vertex/core/public';
 
+import { detectValueType } from './type-matcher';
 import type { IJsonSchema, IOpenApiOperation } from '../spec/openapi';
 
 type IJsonSchemaLike = IJsonSchema & {
@@ -21,7 +22,10 @@ export interface IValidateResponseOptions {
 	readonly schema?: IJsonSchema;
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
+const STATUS_OK = String(new Response().status);
+const EMAIL_RE = /^[^\s@]+@[^\s@.][^\s@]*\.[^\s@]+$/u;
+
+const isEmailLike = (value: string): boolean => EMAIL_RE.test(value);
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -49,39 +53,27 @@ const inferType = (schema: IJsonSchema): IJsonSchema['type'] | undefined => {
 };
 
 const detectType = (value: unknown): string => {
-	if (value === null) return 'null';
-	if (Array.isArray(value)) return 'array';
-	if (isPlainObject(value)) return 'object';
-	if (typeof value === 'string') return 'string';
-	if (typeof value === 'boolean') return 'boolean';
-	if (typeof value === 'number' && Number.isFinite(value)) {
-		return Number.isInteger(value) ? 'integer' : 'number';
-	}
 	if (value === undefined) return 'undefined';
-	return typeof value;
+	const detected = detectValueType(value);
+	return detected === 'unknown' ? typeof value : detected;
+};
+
+const TYPE_CHECKERS: Readonly<
+	Record<NonNullable<IJsonSchema['type']>, (value: unknown) => boolean>
+> = {
+	string: (value) => typeof value === 'string',
+	number: (value) => typeof value === 'number' && Number.isFinite(value),
+	integer: (value) => typeof value === 'number' && Number.isInteger(value),
+	boolean: (value) => typeof value === 'boolean',
+	array: (value) => Array.isArray(value),
+	object: (value) => isPlainObject(value),
+	null: (value) => value === null,
 };
 
 const matchesType = (
 	value: unknown,
 	expected: NonNullable<IJsonSchema['type']>,
-) => {
-	switch (expected) {
-		case 'string':
-			return typeof value === 'string';
-		case 'number':
-			return typeof value === 'number' && Number.isFinite(value);
-		case 'integer':
-			return typeof value === 'number' && Number.isInteger(value);
-		case 'boolean':
-			return typeof value === 'boolean';
-		case 'array':
-			return Array.isArray(value);
-		case 'object':
-			return isPlainObject(value);
-		case 'null':
-			return value === null;
-	}
-};
+) => TYPE_CHECKERS[expected]?.(value) ?? false;
 
 const isNullable = (schema: IJsonSchema): boolean =>
 	schemaExtras(schema).nullable === true;
@@ -98,7 +90,7 @@ const hasUnsupportedFeature = (
 const isValidFormat = (value: string, format: string): boolean => {
 	switch (format) {
 		case 'email':
-			return EMAIL_RE.test(value);
+			return isEmailLike(value);
 		case 'uri':
 			try {
 				const url = new URL(value);
@@ -128,7 +120,7 @@ export const resolveResponseSchema = (
 	operation: IOpenApiOperation,
 ): IJsonSchema | undefined => {
 	const exact200 = operation.responses.find(
-		(response) => response.status === '200',
+		(response) => response.status === STATUS_OK,
 	);
 	if (exact200?.schema !== undefined) return exact200.schema;
 	const success = operation.responses.find(

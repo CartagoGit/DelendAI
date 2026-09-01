@@ -42,12 +42,20 @@ const seed = async (
 	);
 };
 
+interface IIndexedProposal {
+	readonly id: string;
+	readonly status: string;
+	readonly file?: string;
+	readonly archived?: boolean;
+}
+
 const readIndex = async (
 	root: string,
-): Promise<{ proposals: Array<{ id: string; status: string }> }> => {
+): Promise<{ count: number; proposals: IIndexedProposal[] }> => {
 	const indexPath = resolve(root, DEFAULT_PATH_LAYOUT.proposalIndexFile);
 	return JSON.parse(await readFile(indexPath, 'utf8')) as {
-		proposals: Array<{ id: string; status: string }>;
+		count: number;
+		proposals: IIndexedProposal[];
 	};
 };
 
@@ -149,7 +157,36 @@ describe('syncProposalRegistry (entry point)', async () => {
 		expect(index.proposals.map((p) => p.id)).toContain('f904a');
 	});
 
-	it('surfaces folder drift found before reconciliation in sync errors', async () => {
+	it('indexes review proposals in kind subfolders exactly once', async () => {
+		await seed(root, 'review/plans', 'q905-review-plan.md', {
+			id: 'q905',
+			status: 'review',
+			kind: 'plan',
+			title: 'Review plan',
+		});
+		await seed(root, 'review/feats', 'f906-review-feat.md', {
+			id: 'f906',
+			status: 'review',
+			kind: 'feat',
+			title: 'Review feature',
+		});
+
+		const result = await syncProposalRegistry(
+			root,
+			DEFAULT_PATH_LAYOUT,
+			[],
+			FAKE_GIT_MV,
+		);
+		const index = await readIndex(root);
+		const ids = index.proposals.map((p) => p.id);
+
+		expect(result.errors).toEqual([]);
+		expect(index.count).toBe(2);
+		expect(ids).toEqual(expect.arrayContaining(['q905', 'f906']));
+		expect(new Set(ids).size).toBe(ids.length);
+	});
+
+	it('does not report folder drift once the same sync reconciles it', async () => {
 		await seed(root, 'review', 'f903-drift.md', {
 			id: 'f903',
 			status: 'done',
@@ -172,8 +209,10 @@ describe('syncProposalRegistry (entry point)', async () => {
 			[],
 			FAKE_GIT_MV,
 		);
-		expect(result.errors).toContain(
-			'folder drift: f903 at review/f903-drift.md is in review but status done expects done/feats',
+		expect(result.errors).toEqual([]);
+		const index = await readIndex(root);
+		expect(index.proposals.find((p) => p.id === 'f903')?.file).toBe(
+			'done/feats/f00903-drift.md',
 		);
 	});
 
@@ -200,17 +239,9 @@ describe('syncProposalRegistry (entry point)', async () => {
 			const archived = index.proposals.find((p) => p.id === 'f910');
 			expect(archived).toBeDefined();
 			expect(archived?.status).toBe('done');
-			expect(
-				(
-					index as unknown as {
-						proposals: Array<{
-							id: string;
-							file: string;
-							archived?: boolean;
-						}>;
-					}
-				).proposals.find((p) => p.id === 'f910')?.file,
-			).toBe('legacy/closed/feats/f910-archived-alpha.md');
+			expect(index.proposals.find((p) => p.id === 'f910')?.file).toBe(
+				'legacy/closed/feats/f910-archived-alpha.md',
+			);
 		});
 
 		it('does not mark active done/<kind>/ entries as archived', async () => {
@@ -227,11 +258,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 				FAKE_GIT_MV,
 			);
 			const index = await readIndex(root);
-			const live = (
-				index as unknown as {
-					proposals: Array<{ id: string; archived?: boolean }>;
-				}
-			).proposals.find((p) => p.id === 'f911');
+			const live = index.proposals.find((p) => p.id === 'f911');
 			expect(live).toBeDefined();
 			expect(live?.archived).toBeUndefined();
 		});

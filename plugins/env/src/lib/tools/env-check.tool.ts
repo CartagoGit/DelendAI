@@ -18,7 +18,8 @@ import {
 import type { IEnvCheckToolOptions } from '../contracts/interfaces/env.interface';
 import { runEnvCheck, runEnvCheckWithSchema } from '../env/check-env';
 import { realEnvDeps } from '../env/real-deps';
-import { ENV_SCHEMA, type IEnvSchema } from '../validate/env-schema';
+import { ENV_SCHEMA } from '../validate/env-schema';
+import type { IEnvSchema } from '../validate/env-schema';
 
 const FINDING = z.object({
 	ruleId: z.string(),
@@ -50,6 +51,7 @@ export const buildEnvCheckRegistration = (
 				inputSchema: z.object({
 					path: z.string().optional(),
 					required: z.array(z.string()).optional(),
+					schema: ENV_SCHEMA.optional(),
 				}),
 				outputSchema: z.object({
 					found: z.boolean(),
@@ -65,11 +67,7 @@ export const buildEnvCheckRegistration = (
 					worst: z.string(),
 				}),
 			},
-			async (args: {
-				path?: string | undefined;
-				required?: string[] | undefined;
-				schema?: IEnvSchema | undefined;
-			}) => {
+			async (args) => {
 				const path = args.path ?? '.env';
 				if (options.deps === undefined) {
 					const contained = resolveWorkspaceContained(
@@ -86,7 +84,37 @@ export const buildEnvCheckRegistration = (
 				}
 				const deps =
 					options.deps ?? realEnvDeps(options.workspaceRootAbs);
-				const schema = args.schema;
+				const schema: IEnvSchema | undefined =
+					args.schema === undefined
+						? undefined
+						: {
+								vars: Object.fromEntries(
+									Object.entries(args.schema.vars).map(
+										([key, value]) => [
+											key,
+											{
+												type: value.type,
+												...(value.enum === undefined
+													? {}
+													: { enum: value.enum }),
+												...(value.required === undefined
+													? {}
+													: {
+															required:
+																value.required,
+														}),
+												...(value.description ===
+												undefined
+													? {}
+													: {
+															description:
+																value.description,
+														}),
+											},
+										],
+									),
+								),
+							};
 				const { found, findings } =
 					schema !== undefined
 						? await runEnvCheckWithSchema(

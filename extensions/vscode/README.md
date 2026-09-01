@@ -39,8 +39,8 @@ VS Code client for a local `mcp-vertex` MCP server.
 
 - `bun run type` checks the extension sources.
 - `bun run test` runs the mock-based smoke and provider tests.
-- `bun run build` bundles `src/extension.ts` to `dist/extension.js`.
-- `bun run package` builds a local `.vsix`.
+- `bun run build` bundles `src/extension.ts` to `build/extensions/vscode/extension.js`.
+- `bun run package` builds `build/extensions/vscode/<version>/*.vsix`.
 
 The extension talks to the server over stdio through
 [`@mcp-vertex/client`](../../packages/client/) and the

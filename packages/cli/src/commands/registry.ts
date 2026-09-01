@@ -49,6 +49,7 @@ import {
 import { logsCommands } from './groups/logs';
 import { memoryCommands } from './groups/memory';
 import { notificationCommands } from './groups/notification';
+import { kpisCommands } from './kpis.command';
 import { proposalsCommands } from './groups/proposals';
 import { pluginsCommands } from './groups/plugins';
 import { qualityCommands } from './groups/quality';
@@ -384,6 +385,18 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
+		name: 'init:global',
+		summary:
+			'Install the shared mcp-vertex MCP server into the user-level host configurations.',
+		usage: 'init:global [--all] [--ide=<ids>] [--via=<runner>] [--preset=<name>]',
+		async run(args, ctx) {
+			const { runGlobalInit } = await import(
+				'./init/init-global.command'
+			);
+			return runGlobalInit(args, ctx);
+		},
+	},
+	{
 		name: 'search',
 		summary: 'Search workspace text files.',
 		async run(args, ctx) {
@@ -518,6 +531,7 @@ export const registerAllCommands = async (): Promise<
 	...proposalsCommands,
 	...pluginsCommands,
 	...notificationCommands,
+	...kpisCommands,
 	...webFetchCommands,
 	...statusMarkerCommands,
 	...conventionsCommands,

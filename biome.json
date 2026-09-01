@@ -96,6 +96,10 @@
 		{
 			"includes": [
 				"**/src/generated/tool-outputs.ts",
+				"packages/core/src/lib/registry/generated/**/*.generated.ts",
+				"apps/web/src/generated/**/*.generated.ts",
+				"apps/web/src/data/plugins/catalog.generated.ts",
+				"docs/mcp-vertex/generated/**",
 				"packages/core/schema/mcp-vertex.config.schema.json"
 			],
 			"formatter": { "enabled": false }

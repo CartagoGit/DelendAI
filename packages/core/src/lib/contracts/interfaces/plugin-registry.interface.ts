@@ -7,6 +7,9 @@
  * in by passing their own `IPluginRegistrySource[]` to the resolver.
  */
 
+import type { PermissionCategory } from './permission.interface';
+import type { IPluginToolPermissions } from './plugin-tool-permissions.interface';
+
 export type PluginRegistryOrigin = 'first-party' | 'community';
 
 /** Tags surfaced for filtering. Mirrors the keywords already in each plugin's package.json. */
@@ -21,6 +24,8 @@ export interface IPluginRegistryEntry {
 	readonly tags: readonly string[];
 	/** First-party = bundled in this monorepo; community = opt-in third-party. */
 	readonly origin: PluginRegistryOrigin;
+	/** Declared permission categories for this plugin's tool surface. */
+	readonly permissions?: readonly PermissionCategory[] | undefined;
 	/** Optional default preset id where this plugin lives. */
 	readonly defaultPreset?:
 		| 'minimal'
@@ -29,12 +34,38 @@ export interface IPluginRegistryEntry {
 		| 'swarm'
 		| 'full'
 		| 'vertex';
+	/**
+	 * f00179 S2/S3 — measured `staticBytes` for this plugin when its
+	 * manifest uses the new `IPluginTokenBudget` shape. Falls back to
+	 * the legacy `warning` ceiling when only the legacy shape is
+	 * present. `undefined` when the manifest declares no usable
+	 * number (defensive: surfaces "we don't know" instead of 0).
+	 */
+	readonly tokenBudgetBytes?: number | undefined;
+	/**
+	 * f00180 S3 — per-tool permission map for the plugin's tool
+	 * surface. When present, the auto-plugin-selector scorer
+	 * consults this map (keyed by tool id) for per-tool risk instead
+	 * of the global `permissions` array. `undefined` when the
+	 * manifest only declares the legacy global set.
+	 */
+	readonly toolPermissions?: IPluginToolPermissions | undefined;
+	/** Whether managed/lazy must activate this plugin at boot when configured. */
+	readonly startupActivation?: boolean | undefined;
+	/** Machine-readable sample config derived from the plugin contract. */
+	readonly example?: Readonly<Record<string, unknown>> | undefined;
 }
 
 /** A registry source — a list of entries plus its origin label. */
 export interface IPluginRegistrySource {
 	readonly origin: PluginRegistryOrigin;
 	readonly entries: readonly IPluginRegistryEntry[];
+}
+
+/** Durable config block for extra plugin-registry sources. */
+export interface IPluginRegistryConfig {
+	/** Local, committed community sources merged with the bundled first-party index. */
+	readonly communitySources?: readonly IPluginRegistrySource[];
 }
 
 /** Resolver input. */

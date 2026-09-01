@@ -3,8 +3,10 @@
  * reading each manifest under the conventional workspace roots and collecting
  * their declared dependency names. The only module here that touches the OS.
  */
-import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readdir } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type {
 	IDiagramDeps,
@@ -25,10 +27,13 @@ const readManifest = async (
 	path: string,
 ): Promise<IWorkspacePackage | undefined> => {
 	try {
-		const pkg = JSON.parse(await readFile(path, 'utf8')) as Record<
-			string,
-			unknown
-		>;
+		const pkg = JSON.parse(
+			(
+				await new SafeWorkspaceReader(dirname(path)).readText(
+					'package.json',
+				)
+			).content,
+		) as Record<string, unknown>;
 		if (typeof pkg.name !== 'string') return undefined;
 		const dependencies = new Set<string>();
 		for (const section of DEP_SECTIONS) {

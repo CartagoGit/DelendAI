@@ -1,5 +1,7 @@
-import { readdir, readFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { readdir } from 'node:fs/promises';
+import { basename, dirname, join, relative } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type {
 	IReadLocalCorrelateDeps,
@@ -139,7 +141,11 @@ const readLogLines = async (
 	const out: IReadonlyLocalLogLine[] = [];
 	for (const path of files) {
 		try {
-			const raw = await readFile(path, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(dirname(path)).readText(
+					basename(path),
+				)
+			).content;
 			const lines = raw.split('\n');
 			for (const [index, line] of lines.entries()) {
 				const trimmed = line.trim();
@@ -157,13 +163,9 @@ const readLogLines = async (
 						continue;
 					}
 					out.push(record);
-				} catch {
-					continue;
-				}
+				} catch {}
 			}
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return out;
 };
@@ -175,7 +177,11 @@ const readMetricLines = async (
 	const out: IReadonlyLocalMetricRecord[] = [];
 	for (const path of files) {
 		try {
-			const raw = await readFile(path, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(dirname(path)).readText(
+					basename(path),
+				)
+			).content;
 			for (const line of raw.split('\n')) {
 				const trimmed = line.trim();
 				if (trimmed.length === 0) continue;
@@ -186,13 +192,9 @@ const readMetricLines = async (
 						continue;
 					}
 					out.push(record);
-				} catch {
-					continue;
-				}
+				} catch {}
 			}
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return out;
 };

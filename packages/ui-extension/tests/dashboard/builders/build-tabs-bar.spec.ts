@@ -20,8 +20,12 @@ describe('buildTabsBar', () => {
 		// `class="mcpv-tabs__tab"` and `data-tab-trigger="${id}"`
 		// between `id=` and `aria-controls` (emitted by the shared
 		// `renderTabs` in `@mcp-vertex/shared/components/ui/tabs`).
+		// d-00018: status is now the first tab; overview is second.
 		expect(html).toContain(
-			'id="tab-overview" class="mcpv-tabs__tab" data-tab-trigger="overview" aria-selected="true" aria-controls="panel-overview"',
+			'id="tab-status" class="mcpv-tabs__tab" data-tab-trigger="status" aria-selected="true" aria-controls="panel-status"',
+		);
+		expect(html).toContain(
+			'id="tab-overview" class="mcpv-tabs__tab" data-tab-trigger="overview" aria-selected="false" aria-controls="panel-overview"',
 		);
 		expect(html).toContain(
 			'id="tab-health" class="mcpv-tabs__tab" data-tab-trigger="health" aria-selected="false" aria-controls="panel-health"',
@@ -33,10 +37,10 @@ describe('buildTabsBar', () => {
 
 	it('uses a roving tabindex: only the first tab is in the tab order (H27)', () => {
 		const html = buildTabsBar(dictsByLang.en);
-		// The first tab (overview) is selected → tabindex 0.
-		expect(html).toContain('id="tab-overview"');
+		// The first tab (status — d-00018) is selected → tabindex 0.
+		expect(html).toContain('id="tab-status"');
 		expect(html).toMatch(
-			/id="tab-overview"[^>]*aria-selected="true"[^>]*tabindex="0"/,
+			/id="tab-status"[^>]*aria-selected="true"[^>]*tabindex="0"/,
 		);
 		// Every other tab is removed from the tab order.
 		expect(html).toMatch(

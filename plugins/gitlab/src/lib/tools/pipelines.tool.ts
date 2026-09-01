@@ -1,0 +1,1 @@
+export { buildGitLabPipelinesToolRegistrations } from './shared';

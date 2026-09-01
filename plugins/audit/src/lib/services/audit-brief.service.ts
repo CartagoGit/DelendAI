@@ -26,6 +26,7 @@
 export { buildBrief } from './brief/brief-builder.service';
 export type {
 	AuditMode,
+	AuditType,
 	AuditScope,
 	IBriefOptions,
 } from './brief/brief-builder.service';

@@ -123,16 +123,19 @@ class VscodeWebviewPanel implements IWebviewPanel {
 		) => IDisposable;
 		readonly postMessage?: (msg: unknown) => Promise<void>;
 	} {
+		const owner = this;
 		return {
 			options: this.options,
-			html: this._html,
-			setHtml: (html: string) => {
-				this._html = html;
-				this.panel.webview.html = html;
+			get html() {
+				return owner._html;
+			},
+			setHtml: (html) => {
+				owner._html = html;
+				owner.panel.webview.html = html;
 			},
 			onDidReceiveMessage: (cb) => {
-				this.messageListeners.add(cb);
-				const sub = this.panel.webview.onDidReceiveMessage((msg) => {
+				owner.messageListeners.add(cb);
+				const sub = owner.panel.webview.onDidReceiveMessage((msg) => {
 					void Promise.resolve(cb(msg)).catch((e: unknown) => {
 						console.error(
 							'[mcp-vertex] onDidReceiveMessage handler threw:',
@@ -142,18 +145,13 @@ class VscodeWebviewPanel implements IWebviewPanel {
 				});
 				return new VscodeDisposable({
 					dispose: () => {
-						this.messageListeners.delete(cb);
+						owner.messageListeners.delete(cb);
 						sub.dispose();
 					},
 				});
 			},
 			postMessage: async (msg) => {
-				// VS Code's `postMessage` returns `Thenable<boolean>`. The
-				// `IWebviewPanel` contract pins it to `Promise<void>` so
-				// host fakes that don't model a real message bus can stay
-				// trivially `{ postMessage: async () => {} }`. We await and
-				// swallow the boolean here.
-				await this.panel.webview.postMessage(msg);
+				await owner.panel.webview.postMessage(msg);
 			},
 		};
 	}
@@ -171,6 +169,51 @@ class VscodeWebviewPanel implements IWebviewPanel {
 				this.disposeListeners.delete(cb);
 			},
 		});
+	}
+}
+
+class VscodeWebviewViewPanel implements IWebviewPanel {
+	readonly id: string;
+	readonly visible = true;
+
+	constructor(private readonly view: vscode.WebviewView) {
+		this.id = `vscode-webview-view-${view.viewType}`;
+	}
+
+	get webview(): IWebviewPanel['webview'] {
+		return {
+			options: { enableScripts: true },
+			html: this.view.webview.html,
+			setHtml: (html: string) => {
+				this.view.webview.html = html;
+			},
+			onDidReceiveMessage: (cb) =>
+				new VscodeDisposable(
+					this.view.webview.onDidReceiveMessage((msg) => {
+						void Promise.resolve(cb(msg)).catch(
+							(error: unknown) => {
+								console.error(
+									'[mcp-vertex] KPI webview message handler threw:',
+									error,
+								);
+							},
+						);
+					}),
+				),
+			postMessage: async (msg) => {
+				await this.view.webview.postMessage(msg);
+			},
+		};
+	}
+
+	reveal(): void {
+		this.view.show(true);
+	}
+
+	dispose(): void {}
+
+	onDidDispose(cb: () => void): IDisposable {
+		return new VscodeDisposable(this.view.onDidDispose(cb));
 	}
 }
 
@@ -317,6 +360,17 @@ export const createVscodeHostAdapter = (
 				{ ...panelOptions, ...webviewOptions },
 			);
 			return new VscodeWebviewPanel(panel, options);
+		},
+
+		registerWebviewViewProvider(viewId, provider): IDisposable {
+			return new VscodeDisposable(
+				vscode.window.registerWebviewViewProvider(viewId, {
+					resolveWebviewView: (view) =>
+						provider.resolveWebviewView(
+							new VscodeWebviewViewPanel(view),
+						),
+				}),
+			);
 		},
 
 		async showInformationMessage(message: string) {

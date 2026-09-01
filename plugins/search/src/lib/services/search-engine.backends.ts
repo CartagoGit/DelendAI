@@ -30,7 +30,7 @@ import { execFile } from 'node:child_process';
 import { relative, resolve, sep } from 'node:path';
 import { promisify } from 'node:util';
 
-import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import {
 	DEFAULT_IGNORE_DIRS,
@@ -43,6 +43,7 @@ import type {
 	ISearchHit,
 	ISearchResult,
 } from './search-engine.types';
+import { resolveSearchRoots } from './search-safe-reader';
 
 export type {
 	ISearchBackend,
@@ -132,12 +133,13 @@ export const createRgBackend = async (
 			const requestedRoots = hasExplicitRoots
 				? (opts.roots ?? [])
 				: ['.'];
-			const roots = requestedRoots
-				.map((root) =>
-					resolveWorkspaceContained(workspaceRootAbs, root),
-				)
-				.filter((c) => c.ok)
-				.map((c) => c.abs);
+			const resolvedRoots = await resolveSearchRoots(
+				new SafeWorkspaceReader(workspaceRootAbs),
+				requestedRoots,
+			);
+			const roots = resolvedRoots.roots.map(
+				(root) => root.path.absolutePath,
+			);
 			// Explicit roots are an allow-list. If containment rejects every
 			// requested root, fail closed instead of silently widening the search
 			// back to the entire workspace (`.`). This also keeps the rg backend

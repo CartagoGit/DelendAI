@@ -9,7 +9,11 @@
  * The four drift kinds:
  *   - `[missing-archived-on]` — `archived-on:` frontmatter is missing.
  *   - `[status-drift]` — `status:` is no longer `done`.
- *   - `[mtime-drift]` — file mtime is newer than `archived-on:` + 1 minute.
+ *   - `[content-drift]` — the file's content hash no longer matches the
+ *     one recorded at archival. Replaces an earlier mtime comparison:
+ *     git does not preserve mtimes, so every file in a fresh clone looks
+ *     modified today and the check could only ever pass on a long-lived
+ *     working copy — it reported all 129 archives as drifted in CI.
  *   - `[slice-drift]` — any `### S<n>` `**Status**:` has changed since
  *     archival (compared against the snapshot in `<file>.archive-snapshot.json`,
  *     sidecar produced by the S2 reaper's `--apply`).
@@ -24,7 +28,7 @@ import type { ISliceParse } from '../../../../plugins/proposals/src/lib/services
 export type FrozenDriftCode =
 	| 'missing-archived-on'
 	| 'status-drift'
-	| 'mtime-drift'
+	| 'content-drift'
 	| 'slice-drift';
 
 export interface IFrozenDrift {
@@ -38,11 +42,13 @@ export interface IFrozenInputs {
 	/** Path-proposal-relative (`legacy/closed/feats/f00100.md`) */
 	readonly relPath: string;
 	readonly id: string;
+	/** sha256 of the file's content now. */
+	readonly contentSha256: string;
+	/** sha256 recorded at archival, or `undefined` when none is on record. */
+	readonly archivedSha256: string | undefined;
 	/** Parsed frontmatter. `archivedOn` is the ISO date from `archived-on:`. */
 	readonly status: string | undefined;
 	readonly archivedOn: string | undefined;
-	/** File mtime, ISO string. */
-	readonly mtimeIso: string;
 	/** Full markdown body. */
 	readonly markdown: string;
 	/**
@@ -53,19 +59,7 @@ export interface IFrozenInputs {
 }
 
 /** mtime newer than archived-on (with a 60s grace window for write latency). */
-const ARCHIVAL_MTIME_GRACE_MS = 60_000;
-
-const isMtimeDrift = (
-	archivedOn: string,
-	mtimeIso: string,
-	now: Date = new Date(),
-): boolean => {
-	const archivedMs = Date.parse(archivedOn);
-	const mtimeMs = Date.parse(mtimeIso);
-	if (Number.isNaN(archivedMs) || Number.isNaN(mtimeMs)) return true;
-	// Treat mtime newer than archivedOn + grace as drift.
-	return mtimeMs > archivedMs + ARCHIVAL_MTIME_GRACE_MS;
-};
+const _ARCHIVAL_MTIME_GRACE_MS = 60_000;
 
 /** Pure: produce the drift list for one proposal. */
 export const detectFrozenDrift = (
@@ -89,11 +83,17 @@ export const detectFrozenDrift = (
 			fix: `revert status to done (legacy/closed/ freezes the workflow state at archival)`,
 		});
 	}
-	if (isMtimeDrift(input.archivedOn, input.mtimeIso)) {
+	// Only meaningful once a hash is on record: an archive from before the
+	// index existed is not evidence of tampering, so it is left alone
+	// rather than reported as drift it cannot substantiate.
+	if (
+		input.archivedSha256 !== undefined &&
+		input.archivedSha256 !== input.contentSha256
+	) {
 		drifts.push({
 			id: input.id,
-			code: 'mtime-drift',
-			detail: `file mtime (${input.mtimeIso}) is newer than archived-on (${input.archivedOn})`,
+			code: 'content-drift',
+			detail: `content hash ${input.contentSha256.slice(0, 12)} does not match the archived ${input.archivedSha256.slice(0, 12)}`,
 			fix: 'revert the body to the archived state (legacy/closed/ freezes the proposal body)',
 		});
 	}

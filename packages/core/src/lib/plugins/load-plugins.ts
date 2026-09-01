@@ -3,8 +3,17 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from './plugin-contract';
-import { resolve as resolvePath } from 'node:path';
+import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
+import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-lifecycle-error.interface';
+import { registerResolvedPluginsWithLifecycle } from './load-plugins-lifecycle.helper';
+import { normalizePluginOptions } from './plugin-activation-session';
+import { validatePluginConfiguration } from './configuration-compatibility';
+import { join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import { resolveWorkspaceContained } from '../shared/contain-path';
+import { basename } from 'node:path';
 
 const fileExists = async (path: string): Promise<boolean> => {
 	try {
@@ -23,6 +32,7 @@ export interface ILoadedPlugin {
 	readonly resolved: string;
 	readonly plugin: IMcpPlugin;
 	readonly registrations: IMcpPluginRegistrations;
+	readonly runtime: IPluginRuntime<IMcpPluginRegistrations>;
 }
 
 export interface IPluginLoadResult {
@@ -31,12 +41,7 @@ export interface IPluginLoadResult {
 		readonly specifier: string;
 		readonly message: string;
 	}>;
-}
-
-/** One loaded plugin's unmet `dependsOn` entries. */
-export interface IMissingPluginDependency {
-	readonly plugin: string;
-	readonly missing: readonly string[];
+	readonly registerErrors: readonly IPluginRegisterErrorInfo[];
 }
 
 export interface ILoadPluginsOptions {
@@ -59,6 +64,8 @@ export interface ILoadPluginsOptions {
 	readonly import: (specifier: string) => Promise<unknown>;
 	/** Per-step timeout (ms) for import and register. Default 15000. */
 	readonly timeoutMs?: number;
+	/** External batch cancellation for register lifecycle. */
+	readonly signal?: AbortSignal | undefined;
 }
 
 /**
@@ -85,8 +92,14 @@ export interface ILoadPluginsOptions {
  */
 export const nodeDynamicImport = async (
 	specifier: string,
+	workspaceRoot?: string,
 ): Promise<unknown> => {
-	const normalized = normalizeImportSpecifier(specifier);
+	const localSource =
+		workspaceRoot !== undefined && specifier.startsWith('@mcp-vertex/')
+			? await resolveLocalFirstPartySource(specifier, workspaceRoot)
+			: undefined;
+	const runtimeSpecifier = localSource ?? specifier;
+	const normalized = normalizeImportSpecifier(runtimeSpecifier);
 	// Use `Function` to hide `import()` from the static analyser, but
 	// fall back to the direct form on sandbox failures so callers
 	// (and the test suite) keep working in restricted runtimes.
@@ -98,10 +111,66 @@ export const nodeDynamicImport = async (
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
 		if (/dynamic import callback/i.test(message)) {
-			return await import(normalized);
+			try {
+				return await import(normalized);
+			} catch (fallbackError) {
+				if (localSource === undefined && workspaceRoot !== undefined) {
+					const packageId = specifier.slice('@mcp-vertex/'.length);
+					const expectedPaths = [
+						join(
+							workspaceRoot,
+							'packages',
+							packageId,
+							'src',
+							'index.ts',
+						),
+						join(
+							workspaceRoot,
+							'plugins',
+							packageId,
+							'src',
+							'index.ts',
+						),
+					];
+					const fallbackMessage =
+						fallbackError instanceof Error
+							? fallbackError.message
+							: String(fallbackError);
+					throw new Error(
+						`local first-party plugin source not found for "${specifier}" under "${workspaceRoot}"; expected src/index.ts. Package resolution also failed: ${fallbackMessage}. Checked: ${expectedPaths.join(', ')}`,
+					);
+				}
+				throw fallbackError;
+			}
+		}
+		if (localSource === undefined && workspaceRoot !== undefined) {
+			const packageId = specifier.slice('@mcp-vertex/'.length);
+			const expectedPaths = [
+				join(workspaceRoot, 'packages', packageId, 'src', 'index.ts'),
+				join(workspaceRoot, 'plugins', packageId, 'src', 'index.ts'),
+			];
+			throw new Error(
+				`local first-party plugin source not found for "${specifier}" under "${workspaceRoot}"; expected src/index.ts. Package resolution also failed: ${message}. Checked: ${expectedPaths.join(', ')}`,
+			);
 		}
 		throw err;
 	}
+};
+
+const resolveLocalFirstPartySource = async (
+	specifier: string,
+	workspaceRoot: string,
+): Promise<string | undefined> => {
+	const packageId = specifier.slice('@mcp-vertex/'.length);
+	if (packageId.includes('/')) return specifier;
+	const candidates = [
+		join(workspaceRoot, 'packages', packageId, 'src', 'index.ts'),
+		join(workspaceRoot, 'plugins', packageId, 'src', 'index.ts'),
+	];
+	for (const candidate of candidates) {
+		if (await fileExists(candidate)) return candidate;
+	}
+	return undefined;
 };
 
 const normalizeImportSpecifier = (specifier: string): string => {
@@ -149,13 +218,20 @@ export const resolvePluginSpecifier = (specifier: string): string[] => {
 const isPathLikeSpecifier = (specifier: string): boolean =>
 	specifier.startsWith('.') ||
 	specifier.startsWith('/') ||
-	specifier.startsWith('file:');
+	specifier.startsWith('file:') ||
+	specifier.startsWith('plugins/') ||
+	specifier.startsWith('packages/');
 
 const resolveFilesystemSpecifier = (
 	specifier: string,
 	workspaceRoot: string | undefined,
 ): string => {
-	if (!specifier.startsWith('.')) return specifier;
+	if (
+		!specifier.startsWith('.') &&
+		!specifier.startsWith('plugins/') &&
+		!specifier.startsWith('packages/')
+	)
+		return specifier;
 	if (workspaceRoot === undefined || workspaceRoot.length === 0) {
 		return specifier;
 	}
@@ -182,80 +258,31 @@ const asPlugin = (mod: unknown): IMcpPlugin | undefined => {
 	return undefined;
 };
 
-/**
- * Pure, single-pass dependency check: for every plugin whose
- * `dependsOn` names a plugin id that is NOT also in the set, collect a
- * `{ plugin, missing }` entry. Order matches the input. Does not mutate
- * or import anything — a separate concern from the import/register loop
- * in `loadPlugins`, so it can be unit-tested and reasoned about on its
- * own (SOLID: one responsibility per function).
- *
- * Accepts anything carrying a `{ plugin }` — the RESOLVED set (before
- * `register()`) as well as the fully-loaded set — so `loadPlugins` can
- * gate registration on satisfied dependencies before running any
- * plugin's side effects.
- */
-export const checkPluginDependencies = (
-	loadedPlugins: ReadonlyArray<{ readonly plugin: IMcpPlugin }>,
-): readonly IMissingPluginDependency[] => {
-	const loadedNames = new Set(
-		loadedPlugins.map((entry) => entry.plugin.name),
-	);
-	const result: IMissingPluginDependency[] = [];
-	for (const { plugin } of loadedPlugins) {
-		const missing = (plugin.dependsOn ?? []).filter(
-			(dep) => !loadedNames.has(dep),
-		);
-		if (missing.length > 0) {
-			result.push({ plugin: plugin.name, missing });
-		}
-	}
-	return result;
-};
-
-/** Render the combined dependency error for every plugin with missing deps. */
-const formatMissingDependenciesError = (
-	missing: readonly IMissingPluginDependency[],
-): string =>
-	missing
-		.map(
-			(entry) =>
-				`plugin "${entry.plugin}" requires ${entry.missing
-					.map((dep) => `"${dep}"`)
-					.join(', ')} (not in load set)`,
-		)
-		.join('; ');
-
 /** A plugin that resolved + validated its options but has NOT yet run `register()`. */
 interface IResolvedPlugin {
 	readonly specifier: string;
 	readonly resolved: string;
 	readonly plugin: IMcpPlugin;
-	readonly ctx: IMcpPluginContext;
+	ctx: IMcpPluginContext;
 }
 
 /**
- * Resolve, import and register each requested plugin. One bad plugin
- * never aborts the rest: failures are collected in `errors` and the
- * server still boots with whatever loaded. Deterministic: plugins are
- * processed in the order requested.
+ * Resolve, import and register each requested plugin. Import and option
+ * validation keep the old tolerant behaviour (one bad specifier does not
+ * abort the rest). The register phase is transactional: once registration
+ * starts, the first register failure or cancellation rolls back the plugins
+ * that already became active, in reverse order.
  *
- * Two-phase by design (a00065 S6):
+ * Three-phase by design (a00065 S6, x00218):
  *  1. **Resolve** — import, dedup, and validate options for every
  *     specifier WITHOUT calling `register()`. No plugin side effects
  *     run yet.
- *  2. **Dependency gate** — `checkPluginDependencies` runs over the
- *     RESOLVED set. If any plugin declares a `dependsOn` not satisfied
- *     by the rest of the set, the WHOLE batch is refused: `loaded`
- *     comes back empty and a single combined error lists every missing
- *     dependency. Because this runs *before* phase 3, a plugin with an
- *     unmet hard dependency never executes its `register()` side
- *     effects (timers, sockets, file writes) — the previous order ran
- *     every register() first and only rejected afterwards, leaking
- *     those effects.
- *  3. **Register** — only once dependencies are satisfied, call each
- *     resolved plugin's `register()` in request order. A register()
- *     that throws is collected in `errors` without aborting the rest.
+ *  2. **Dependency graph** — build the DAG from the resolved set,
+ *     detect cycles before side effects, and mark nodes blocked when a
+ *     hard dependency is missing.
+ *  3. **Register** — register in topological order. A plugin whose
+ *     dependency failed or is blocked never runs `register()`; it is
+ *     marked blocked and reported through `errors` + `registerErrors`.
  */
 export const loadPlugins = async (
 	options: ILoadPluginsOptions,
@@ -344,54 +371,98 @@ export const loadPlugins = async (
 			});
 			continue;
 		}
-		if (plugin.optionsSchema) {
-			const parsed = plugin.optionsSchema.safeParse(ctx.options);
-			if (!parsed.success) {
-				errors.push({
-					specifier,
-					message: `plugin "${plugin.name}" rejected its options (mcp-vertex.config.json → plugins.${plugin.name}.options).`,
-				});
-				continue;
-			}
+		// Delegates to the SAME normalizer the managed-lazy runtime uses
+		// (`plugin-activation-session.ts`) so eager and lazy activation
+		// can never re-diverge on how `optionsSchema` is applied (AUD-E01.a).
+		const normalized = normalizePluginOptions(plugin, ctx);
+		if (!normalized.ok) {
+			errors.push({ specifier, message: normalized.message });
+			continue;
 		}
+		ctx = normalized.ctx;
 		resolvedPlugins.push({ specifier, resolved, plugin, ctx });
 		resolvedNames.add(plugin.name);
 	}
 
-	// ── Phase 2: dependency gate — refuse the whole batch BEFORE any
-	//    register() runs if a hard dependency is unmet. ──
-	const missingDependencies = checkPluginDependencies(resolvedPlugins);
-	if (missingDependencies.length > 0) {
-		return {
-			loaded: [],
-			errors: [
-				...errors,
-				{
-					specifier: '(dependsOn)',
-					message:
-						formatMissingDependenciesError(missingDependencies),
-				},
-			],
-		};
-	}
-
-	// ── Phase 3: register (side effects) — dependencies are satisfied. ──
-	const loaded: ILoadedPlugin[] = [];
-	for (const { specifier, resolved, plugin, ctx } of resolvedPlugins) {
-		try {
-			const registrations = await withTimeout(
-				Promise.resolve(plugin.register(ctx)),
-				timeoutMs,
-				`plugin "${plugin.name}" register()`,
-			);
-			loaded.push({ specifier, resolved, plugin, registrations });
-		} catch (error) {
+	// Cross-plugin configuration validation runs only after every selected
+	// plugin has passed its own schema and before any register() side effect.
+	// This makes incompatible policies a boot-time error, never a runtime race.
+	const pluginOptions = new Map(
+		resolvedPlugins.map(({ plugin, ctx }) => [plugin.name, ctx.options]),
+	);
+	const enabledPlugins = resolvedPlugins.map(({ plugin }) => plugin.name);
+	const configurationIssues = await validatePluginConfiguration({
+		plugins: resolvedPlugins.map(({ plugin }) => plugin),
+		pluginOptions,
+		enabledPlugins,
+	});
+	if (configurationIssues.length > 0) {
+		for (const message of configurationIssues) {
 			errors.push({
-				specifier,
-				message: `plugin "${plugin.name}" register() failed: ${error instanceof Error ? error.message : String(error)}`,
+				specifier: 'configuration',
+				message,
 			});
 		}
+		return { loaded: [], errors, registerErrors: [] };
 	}
 
-	return { loaded, errors };
+	for (const entry of resolvedPlugins) {
+		entry.ctx = { ...entry.ctx, pluginOptions };
+	}
+
+	for (const entry of resolvedPlugins) {
+		const canonicalPluginDir = entry.ctx.pluginCacheDir;
+		const legacyPaths = [
+			...(entry.ctx.cacheDir !== DEFAULT_CORE_PATHS.cacheDir
+				? [
+						{
+							source: `${DEFAULT_CORE_PATHS.cacheDir}/${entry.plugin.name}`,
+							destination: '',
+						},
+					]
+				: []),
+			...(entry.plugin.legacyCachePaths ?? []),
+		].flatMap((path) => {
+			const source = resolveWorkspaceContained(
+				entry.ctx.workspace.root,
+				path.source,
+			);
+			const destinationRel =
+				path.destination === undefined
+					? basename(path.source)
+					: path.destination;
+			const destination = resolveWorkspaceContained(
+				entry.ctx.workspace.root,
+				join(canonicalPluginDir, destinationRel),
+			);
+			return source.ok && destination.ok
+				? [
+						{
+							sourceAbs: source.abs,
+							destinationAbs: destination.abs,
+						},
+					]
+				: [];
+		});
+		if (legacyPaths.length === 0) continue;
+		await bootstrapCacheLayout({
+			workspaceRootAbs: entry.ctx.workspace.root,
+			cacheDirAbs: entry.ctx.cacheDir,
+			includeBuiltInLegacyPaths: false,
+			createCacheDir: false,
+			legacyPaths,
+		});
+	}
+
+	const lifecycle = await registerResolvedPluginsWithLifecycle({
+		resolvedPlugins,
+		timeoutMs,
+		signal: options.signal,
+	});
+
+	return {
+		loaded: lifecycle.loaded,
+		errors: [...errors, ...lifecycle.errors],
+		registerErrors: lifecycle.registerErrors,
+	};
 };

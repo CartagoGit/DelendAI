@@ -3,8 +3,10 @@
  * root (via Bun.Glob), skip vendored / build / VCS dirs, and read each within
  * bounds. The only module here that touches the OS. Never throws.
  */
-import { readFile, stat } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type {
 	ISourceFile,
@@ -38,6 +40,7 @@ export const realTechDebtDeps = (
 	workspaceRootAbs: string,
 ): ITechDebtScanDeps => ({
 	listSourceFiles: async () => {
+		const reader = new SafeWorkspaceReader(workspaceRootAbs);
 		const out: ISourceFile[] = [];
 		const glob = new Bun.Glob(GLOB);
 		for await (const rel of glob.scan({
@@ -51,7 +54,10 @@ export const realTechDebtDeps = (
 			try {
 				const info = await stat(abs);
 				if (info.size > MAX_FILE_BYTES) continue;
-				out.push({ path: rel, content: await readFile(abs, 'utf8') });
+				out.push({
+					path: rel,
+					content: (await reader.readText(rel)).content,
+				});
 			} catch {
 				// unreadable or vanished — skip it
 			}

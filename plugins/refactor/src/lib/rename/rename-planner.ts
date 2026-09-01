@@ -78,9 +78,7 @@ export interface IRenameRequest {
 	readonly dryRun?: boolean;
 }
 
-export interface IFileReader {
-	(absPath: string): Promise<string>;
-}
+export type IFileReader = (absPath: string) => Promise<string>;
 
 const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
@@ -148,7 +146,7 @@ const isShadowed = (
  * Apply a rename transform to a single file.
  */
 const renameSingleFile = (
-	path: string,
+	_path: string,
 	source: string,
 	from: string,
 	to: string,

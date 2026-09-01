@@ -1,6 +1,6 @@
-import { readFile } from 'node:fs/promises';
+import { basename, dirname, isAbsolute } from 'node:path';
 
-import { writeFileAtomic } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, writeFileAtomic } from '@mcp-vertex/core/public';
 
 export interface IRawLogEntry {
 	readonly ts: string;
@@ -34,9 +34,16 @@ const resolveSource = async (
 	readonly content: string;
 	readonly sourcePath?: string;
 }> => {
+	if (!isAbsolute(source)) {
+		return { content: source };
+	}
 	try {
 		return {
-			content: await readFile(source, 'utf8'),
+			content: (
+				await new SafeWorkspaceReader(dirname(source)).readText(
+					basename(source),
+				)
+			).content,
 			sourcePath: source,
 		};
 	} catch (error: unknown) {
@@ -78,9 +85,7 @@ export const honestRewriteFile = async (input: {
 			processed += 1;
 			if (honest.outcome !== parsed.outcome) rewritten += 1;
 			output.push(JSON.stringify(honest));
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 
 	const next = output.length === 0 ? '' : `${output.join('\n')}\n`;

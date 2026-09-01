@@ -1,0 +1,67 @@
+{
+	"name": "@mcp-vertex/github",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "GitHub read-only provider plugin for @mcp-vertex/core: configuration, provider context and hermetic HTTP client for future read tools. Load with `mcp-vertex --plugins=github`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"github",
+		"provider",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./lib/*": {
+			"@mcp-vertex/source": {
+				"types": "./src/lib/*"
+			},
+			"types": "./dist/lib/*"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/github"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.1"
+	},
+	"dependencies": {
+		"@mcp-vertex/contracts": "workspace:*",
+		"@mcp-vertex/remote-provider-core": "workspace:*",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

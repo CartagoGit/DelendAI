@@ -31,6 +31,9 @@ export interface IDipHit {
 const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// Boot-time config loaders are explicitly allowed sync FS.
 	/packages\/core\/src\/lib\/configuration-center\//,
+	// The code-map resource is a startup-boundary adapter: it resolves the
+	// workspace once before exposing a resource snapshot to the client.
+	/packages\/core\/src\/lib\/code-map\//,
 	/packages\/core\/src\/lib\/install\//,
 	/packages\/core\/src\/lib\/setup\//,
 	/packages\/core\/src\/lib\/cli\/parse-cli-args/,
@@ -103,19 +106,23 @@ export const detectDipViolations = (
 	}
 	const out: IDipHit[] = [];
 	let m: RegExpExecArray | null;
-	while ((m = processCwdRegex.exec(body)) !== null) {
+	m = processCwdRegex.exec(body);
+	while (m !== null) {
 		out.push({
 			line: lineOf(body, m.index),
 			kind: 'process-cwd',
 			snippet: m[0],
 		});
+		m = processCwdRegex.exec(body);
 	}
-	while ((m = syncFsImportRegex.exec(body)) !== null) {
+	m = syncFsImportRegex.exec(body);
+	while (m !== null) {
 		out.push({
 			line: lineOf(body, m.index),
 			kind: 'sync-fs-import',
 			snippet: m[0].replace(/\s+/g, ' ').slice(0, 120),
 		});
+		m = syncFsImportRegex.exec(body);
 	}
 	return out;
 };

@@ -171,6 +171,20 @@ persist proposal/slice state → release unnecessary locks → new session →
 orient → resume from `memory_checkpoint_packet`. Session age by itself must
 never hard-block work.
 
+### 4.e Rebaseline with `--update`
+
+When a lint fails because a **baselined historical value** drifted (for example,
+an already-closed proposal still cites an old path or an old orphan commit), do
+not hand-edit the baseline JSON unless the script explicitly tells you to. First
+check whether the lint supports `--update` and re-run the lint through that
+entrypoint so the script itself rewrites its canonical baseline format. Manual
+edits are the fallback only when no `--update` mode exists.
+
+| Lint / script                                             | `--update` support | Use case                                                                                                                                                      |
+| --------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun tools/scripts/lint/proposal-files-exist.script.ts`   | Yes                | Rebaseline known dangling `Files:` references in historical `done/`, `review/` or `in-progress` proposals after an intentional rename or archived path drift. |
+| `bun tools/scripts/lint/proposal-cited-commits.script.ts` | Yes                | Rebaseline known orphan commit citations in historical `done/*` proposals when the commit was intentionally rebased away or documented as legacy debt.        |
+
 ### 4.b Coexistence with parallel work (c00012)
 
 This workspace is shared. Other agents, CI bots, and humans commit
@@ -215,6 +229,17 @@ restates the rule for swarm context.
 
 ## 5. Definition of done
 
+### Cross-plugin configuration compatibility
+
+Plugin options are persistent host configuration, not suggestions. Plugins
+may complement one another when they own different effects, but the core
+performs a compatibility preflight before any plugin `register()` hook runs.
+If enabled plugins claim the same automatic side effect, startup stops with a
+diagnostic containing the exact configuration keys, effective values,
+precedence, and a JSON patch for `mcp-vertex.config.json`. The core remains
+agnostic; each plugin declares only the compatibility rules for its own
+interactions.
+
 - `bun run validate` is green (typecheck + lint + tests + drift guards).
 - Conventional Commits (`fix:` / `feat:` / `feat!:`) — versioning is
   automatic on `main`. No manual bumps.
@@ -224,6 +249,15 @@ restates the rule for swarm context.
   proposals persist step otherwise. The author is resolved centrally, so
   never ask the user whose name to use and never leave completed work
   uncommitted waiting for a reminder.
+
+- **Delegated agents follow the configured workspace policy.** With
+  `agentWorktree: false` (the repository default), agents edit the configured
+  checkout, normally `develop`; `commit-policy` owns the automatic commit and
+  push after each completed slice. With `agentWorktree: true`,
+  `proposals_delegate` creates the branch and worktree before claiming files
+  and returns both `worktree.path` and `cwd`; the host must launch or continue
+  the delegated agent in that directory. The host must never infer a different
+  workspace policy from a tool handoff.
 - Touched a tool? Kept its `outputSchema`. Added a tool? Added its
   output to the catalog generator (if it isn't picked up automatically).
 - Persisted state? Routed through `withFileMutex` + `writeFileAtomic`.
@@ -231,6 +265,12 @@ restates the rule for swarm context.
 
 ## 6. Invariants you must not break
 
+- **The dogfooding host is a one-shot process.** Keep `.vscode/mcp.json` and
+  `.mcp.json` pointed at the repo-local host with
+  `bun tools/scripts/host/host-server.script.ts` and the appropriate workspace
+  argument. A restarted host must be started explicitly so each session has
+  one composition root and one resource registration set. The
+  `lint:self-host-dogfood` gate must remain green.
 - Core stays agnostic. No project vocabulary (role enums, model names,
   folder names) inside `packages/core`. Plugins receive everything
   resolved through `IMcpPluginContext`.
@@ -241,15 +281,22 @@ restates the rule for swarm context.
 - Token budget is a protected invariant. `overview` (compact) +
   `auto_work` stay under their measured budgets.
 - **Every agent MUST hold an active lock claim (`agent_lock`) for the files it edits.** The validation gate enforces this via `lint:agent-claims`, and commits/pushes violating this will be rejected by git hooks. (x00080) The claim check itself is a lefthook-installed TypeScript hook (`tools/scripts/hooks/pre-commit.ts`), not a raw `.sh` git hook template — every hook in this repo is TypeScript, per rule #10 below.
-- **Branching is config-driven; this repo forbids per-agent branches.**
-  `agentWorktree: false` in `mcp-vertex.config.json` means agents never
-  create `agent/*` worktrees or branches — they commit and push directly
-  on `develop` and share the git history. The operator may still create
-  manual branches (`fix/*`, `feature/*`); those are allowed. When the
-  gate is on, agents working in worktrees must never `git switch` the
-  shared checkout — the main checkout stays on `develop` until the
-  worktree is merged and removed. `branch_status` / `swarm_hygiene`
-  expose `mainCheckoutDrift` to detect a switched shared checkout.
+  - **`develop` is the shared snapshot journal; `main` is the release boundary.**
+    With `agentWorktree: false` (the repository default), agents work in the
+    shared checkout. The commit policy serializes `stage → commit → push`, so
+    concurrent agents can leave frequent, visible, reversible snapshots on
+    `develop`. Agents must not create a WIP branch merely to isolate those
+    snapshots. `main` remains protected and is promoted only through a pull
+    request after the configured quality checks. When `agentWorktree: true` is
+    explicitly enabled, isolated agent branches and worktrees are appropriate;
+    that is a separate operating mode from the shared snapshot journal.
+- **No orphaned branches or stashes — always reconcile (this repo).**
+  Before closing any work or session, run `bun run reclaim:orphans` and
+  reconcile every listed orphan: merge-if-valuable into `develop`
+  (fixing discrepancies/bugs until 100% functional) or delete-if-not.
+  `bun run reclaim:orphans --apply` deletes only lossless branches
+  (`ahead === 0`); stashes and unique-commit branches are never
+  auto-deleted. This is a repo-level policy, not a plugin behaviour.
 - Every public tool declares an `outputSchema`. `catchall` is documented,
   not default.
 - **No hardcoded lists of skills / tools / proposal ids in any host
@@ -444,3 +491,18 @@ or have their own config file. Use the same single-pointer pattern:
 
 - That's it. No other content. When the bootstrap changes, the host
   picks it up on the next session.
+
+
+## Quantitative facts
+
+<!-- mcp-vertex:begin quantitative -->
+```
+Generated at: 2026-09-01T02:05:47.373Z
+
+Plugins: 56
+Tools: 241
+Test specs: 521 (≈4255 cases)
+Workspaces: 6 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
+Proposals: 559 on disk (ready=160, in-progress=2, done=397)
+```
+<!-- mcp-vertex:end quantitative -->

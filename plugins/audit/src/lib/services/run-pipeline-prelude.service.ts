@@ -57,8 +57,13 @@ import {
 import {
 	buildBrief,
 	type AuditMode,
+	type AuditType,
 	type ILayerConfig,
 } from './audit-brief.service';
+import {
+	canonicalAuditPathMessage,
+	isCanonicalAuditDir,
+} from './audit-path-policy.service';
 
 /**
  * Subset of the `audit_run` input the prelude consumes plus the
@@ -70,6 +75,7 @@ export interface IRunPreludeInput {
 	/** Caller's tool input — only the prelude-relevant fields. */
 	readonly args: {
 		readonly scope?: string | undefined;
+		readonly auditType?: AuditType | undefined;
 		readonly mode?: AuditMode | undefined;
 		readonly projects?: readonly string[] | undefined;
 		readonly auditDir?: string | undefined;
@@ -118,6 +124,7 @@ export type IRunPreludeResult =
 	| {
 			readonly ok: true;
 			readonly scope: string;
+			readonly auditType: AuditType;
 			readonly mode: AuditMode;
 			readonly projects: readonly string[];
 			/** Absolute `auditDir` — used for `path.join` and `writeFileAtomic`. */
@@ -179,6 +186,7 @@ export const runPipelinePrelude = async (
 
 	// 1. Scope inference + unknown-scope guard.
 	const scope = args.scope ?? 'full';
+	const auditType = args.auditType ?? 'plan';
 	if (!input.allAvailableScopes.includes(scope)) {
 		return {
 			ok: false,
@@ -229,6 +237,15 @@ export const runPipelinePrelude = async (
 	const proposalsRel = sanitizeRel(
 		args.proposalsDir ?? input.defaultProposalsDir,
 	);
+	if (!isCanonicalAuditDir(auditRel)) {
+		return {
+			ok: false,
+			error: toolError(
+				`audit dir "${auditRel}" is not allowed: not canonical`,
+				canonicalAuditPathMessage,
+			),
+		};
+	}
 	const auditDirResult = resolveDir(input.workspaceRoot, auditRel);
 	if (!auditDirResult.ok) {
 		return {
@@ -264,6 +281,7 @@ export const runPipelinePrelude = async (
 	//    session and get the same format the `audit_run` tool
 	//    would have sent.
 	const brief = buildBrief(scope, {
+		auditType,
 		dimensions: input.dimensions,
 		layers: input.configuredLayers,
 		mode,
@@ -282,6 +300,7 @@ export const runPipelinePrelude = async (
 	return {
 		ok: true,
 		scope,
+		auditType,
 		mode,
 		projects,
 		auditDirAbs,

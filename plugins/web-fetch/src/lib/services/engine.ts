@@ -45,6 +45,10 @@ export type {
 const DEFAULT_MAX_BYTES = 50 * 1024;
 const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_MAX_REDIRECTS = 5;
+const DEFAULT_HTTP_PORT = 80;
+const DEFAULT_HTTPS_PORT = 443;
+const REDIRECT_STATUS_MIN = 300;
+const REDIRECT_STATUS_MAX = 400;
 
 /**
  * Hard ceilings (a00065 S6). Even a caller that bypasses the tool schema
@@ -99,21 +103,73 @@ export const sanitizeBounds = (
 	),
 });
 
-/** True when `hostname` matches an allow-list entry (exact, or `*.suffix` wildcard). */
+const matchesHostPattern = (hostname: string, hostPattern: string): boolean => {
+	const lower = hostname.toLowerCase();
+	const pattern = hostPattern.toLowerCase();
+	if (pattern.startsWith('*.')) {
+		const suffix = pattern.slice(1); // keep the leading dot
+		return lower.endsWith(suffix) && lower.length > suffix.length;
+	}
+	return lower === pattern;
+};
+
+const parseAllowListEntry = (
+	entry: string,
+): { hostPattern: string; port?: number } => {
+	const lastColon = entry.lastIndexOf(':');
+	// `host:port` is only recognised for hostname-style entries. Strings with
+	// multiple colons are treated as literal host patterns, so an IPv6-like
+	// value is never split on a trailing numeric segment by mistake.
+	if (lastColon <= 0 || entry.indexOf(':') !== lastColon) {
+		return { hostPattern: entry };
+	}
+	const rawPort = entry.slice(lastColon + 1);
+	if (!/^\d+$/.test(rawPort)) {
+		return { hostPattern: entry };
+	}
+	return {
+		hostPattern: entry.slice(0, lastColon),
+		port: Number(rawPort),
+	};
+};
+
+/** Backward-compatible hostname-only matcher for external callers. */
 export const isHostAllowed = (
 	hostname: string,
 	allowList: readonly string[],
-): boolean => {
-	const lower = hostname.toLowerCase();
-	return allowList.some((entry) => {
-		const pattern = entry.toLowerCase();
-		if (pattern.startsWith('*.')) {
-			const suffix = pattern.slice(1); // keep the leading dot
-			return lower.endsWith(suffix) && lower.length > suffix.length;
-		}
-		return lower === pattern;
+): boolean =>
+	allowList.some((entry) => {
+		const { hostPattern } = parseAllowListEntry(entry);
+		return matchesHostPattern(hostname, hostPattern);
 	});
+
+/** True when `hostname` + normalized `port` match an allow-list entry. */
+export const isHostPortAllowed = (
+	hostname: string,
+	port: number,
+	allowList: readonly string[],
+): boolean =>
+	allowList.some((entry) => {
+		const parsed = parseAllowListEntry(entry);
+		if (!matchesHostPattern(hostname, parsed.hostPattern)) {
+			return false;
+		}
+		return parsed.port === undefined
+			? port === DEFAULT_HTTP_PORT || port === DEFAULT_HTTPS_PORT
+			: parsed.port === port;
+	});
+
+const normalizePort = (url: URL): number => {
+	if (url.port === '') {
+		return url.protocol === 'https:'
+			? DEFAULT_HTTPS_PORT
+			: DEFAULT_HTTP_PORT;
+	}
+	return Number(url.port);
 };
+
+const formatHostPortDetail = (hostname: string, port: number): string =>
+	`${hostname}:${String(port)}`;
 
 const parseUrl = (raw: string): URL | undefined => {
 	try {
@@ -201,11 +257,18 @@ export const webFetch = async (
 	}
 
 	for (let hop = 0; hop <= maxRedirects; hop += 1) {
-		if (!isHostAllowed(currentUrl.hostname, options.allowList)) {
+		const currentPort = normalizePort(currentUrl);
+		if (
+			!isHostPortAllowed(
+				currentUrl.hostname,
+				currentPort,
+				options.allowList,
+			)
+		) {
 			return {
 				ok: false,
 				reason: hop === 0 ? 'blocked-host' : 'redirect-blocked',
-				detail: currentUrl.hostname,
+				detail: formatHostPortDetail(currentUrl.hostname, currentPort),
 			};
 		}
 
@@ -236,7 +299,10 @@ export const webFetch = async (
 
 		// Manual redirect handling: re-validate the Location host before
 		// following it, instead of letting `fetch` auto-follow blindly.
-		if (res.status >= 300 && res.status < 400) {
+		if (
+			res.status >= REDIRECT_STATUS_MIN &&
+			res.status < REDIRECT_STATUS_MAX
+		) {
 			clearTimeout(timer);
 			// Free the hop's connection; its body is never read.
 			void res.body?.cancel().catch(() => undefined);

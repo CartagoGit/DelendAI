@@ -4,7 +4,23 @@ import z from 'zod';
 import { buildPluginsRecommendRegistration } from './lib/tools/plugins-recommend.tool';
 import { firstPartyPluginCandidates } from './lib/catalog/first-party-candidates';
 
-const OptionsSchema = z.object({});
+/**
+ * r00025 S4 — optional `weights` block (one per signal in the
+ * scoring formula). Hosts can override any subset; missing keys
+ * fall back to the defaults declared in
+ * `recommend-plugins.ts#DEFAULT_WEIGHTS`.
+ */
+const OptionsSchema = z.object({
+	weights: z
+		.object({
+			match: z.number().optional(),
+			tokenTax: z.number().optional(),
+			latencyTax: z.number().optional(),
+			historicalSuccess: z.number().optional(),
+			permissionRisk: z.number().optional(),
+		})
+		.optional(),
+});
 
 /**
  * `@mcp-vertex/auto-plugin-selector` — recommend the best plugin
@@ -16,16 +32,19 @@ const OptionsSchema = z.object({});
  */
 export default definePlugin({
 	name: 'auto-plugin-selector',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Recommends the best plugin set for this project from its signals (manifest, files, git, task). Pure deterministic scorer by default; optional LLM rationale via auto-agent-selector.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
+		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
+		const weights = parsed.success ? parsed.data.weights : undefined;
 		return {
 			tools: [
 				buildPluginsRecommendRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					candidates: firstPartyPluginCandidates(),
+					...(weights === undefined ? {} : { weights }),
 				}),
 			],
 			knowledge: [

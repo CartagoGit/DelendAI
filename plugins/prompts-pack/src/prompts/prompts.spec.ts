@@ -1,8 +1,11 @@
-import { readFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { readdir } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import { buildGenerateDocstringsPrompt } from './docstrings';
 import { buildExplainThisCodePrompt } from './explain';
@@ -78,13 +81,53 @@ const fakeServer = () => {
 	return { server, calls };
 };
 
+const collectGeneratedToolOutputFiles = async (
+	root: string,
+	relDir: string,
+): Promise<string[]> => {
+	const out: string[] = [];
+	const absDir = resolve(root, relDir);
+	const stack = [absDir];
+	while (stack.length > 0) {
+		const next = stack.pop();
+		if (next === undefined) break;
+		let entries: Dirent<string>[] = [];
+		try {
+			entries = await readdir(next, {
+				encoding: 'utf8',
+				withFileTypes: true,
+			});
+		} catch {
+			continue;
+		}
+		for (const entry of entries) {
+			const absPath = join(next, entry.name);
+			if (entry.isDirectory()) {
+				stack.push(absPath);
+				continue;
+			}
+			if (entry.name !== 'tool-outputs.ts') continue;
+			out.push(absPath);
+		}
+	}
+	return out.sort();
+};
+
 const loadCatalogToolIds = async (): Promise<Set<string>> => {
-	const source = await readFile(
-		resolve(workspaceRoot, 'packages/core/src/generated/tool-outputs.ts'),
-		'utf8',
-	);
-	const ids = source.match(/"mcp-vertex_[^"]+"/g) ?? [];
-	return new Set(ids.map((entry) => entry.slice(1, -1)));
+	const reader = new SafeWorkspaceReader(workspaceRoot);
+	const files = [
+		...(await collectGeneratedToolOutputFiles(workspaceRoot, 'packages')),
+		...(await collectGeneratedToolOutputFiles(workspaceRoot, 'plugins')),
+	];
+	const ids = new Set<string>();
+	for (const absPath of files) {
+		const relativePath = absPath.slice(workspaceRoot.length + 1);
+		const source = (await reader.readText(relativePath)).content;
+		for (const match of source.match(/"mcp-vertex_[^"]+"/g) ?? []) {
+			ids.add(match.slice(1, -1));
+		}
+	}
+	return ids;
 };
 
 describe('prompts-pack prompt registrations', () => {

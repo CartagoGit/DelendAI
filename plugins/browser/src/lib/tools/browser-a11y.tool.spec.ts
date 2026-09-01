@@ -258,6 +258,55 @@ describe('axe-mapper (f00125 S2)', () => {
 		]);
 		expect(findings[0]?.severity).toBe('info');
 	});
+
+	it('keeps the exact normalized finding payload for representative axe HTML', () => {
+		expect(
+			mapAxeReport('https://example.com', [
+				{
+					id: 'color-contrast',
+					impact: 'serious',
+					help: 'Elements must have sufficient color contrast',
+					helpUrl:
+						'https://dequeuniversity.com/rules/axe/4.7/color-contrast',
+					nodes: [
+						{
+							html: '<button class="btn">Sign in</button>',
+							target: ['.btn'],
+						},
+					],
+				},
+			]),
+		).toEqual([
+			{
+				ruleId: 'axe:color-contrast',
+				severity: 'high',
+				message:
+					'Elements must have sufficient color contrast @ https://example.com — selector: .btn',
+				location: {
+					file: 'Sign in#node-1',
+				},
+				fix: 'Elements must have sufficient color contrast (https://dequeuniversity.com/rules/axe/4.7/color-contrast)',
+			},
+		]);
+	});
+
+	it('handles long HTML fragments without pathological slowdown', () => {
+		const startedAt = performance.now();
+		const findings = mapAxeReport('https://example.com', [
+			{
+				id: 'color-contrast',
+				impact: 'serious',
+				nodes: [
+					{
+						html: `<button ${'data-x="1" '.repeat(20_000)}>Sign in</button>`,
+						target: ['.btn'],
+					},
+				],
+			},
+		]);
+		expect(findings[0]?.location?.file).toBe('Sign in#node-1');
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
 });
 
 describe('outcomesToFindings (f00125 S2)', () => {

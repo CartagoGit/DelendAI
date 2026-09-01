@@ -10,7 +10,9 @@
  * `parseImportPayload`. The merge conflict resolution policy is
  * also pluggable via the `IMemoryImportConflict` union.
  */
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import { redactSecrets } from './redact';
 import { NoteQuotaExceededError, getMaxNotes } from './store-records';
@@ -44,7 +46,11 @@ const readStoreForExport = async (
 	const filtered = await readStore(absPath);
 	if (!includeExpired) return filtered;
 	try {
-		const raw = await readFile(absPath, 'utf8');
+		const raw = (
+			await new SafeWorkspaceReader(dirname(absPath)).readText(
+				basename(absPath),
+			)
+		).content;
 		if (!raw.trim()) return filtered;
 		const parsed = JSON.parse(raw) as { notes?: INote[] };
 		return Array.isArray(parsed.notes) ? parsed.notes : filtered;

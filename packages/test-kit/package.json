@@ -1,0 +1,37 @@
+{
+	"name": "@mcp-vertex/test-kit",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"license": "BSD-3-Clause",
+	"description": "Internal, test-only helpers shared across @mcp-vertex workspaces (never published). Home of the typed partial-fake helper that replaces `as unknown as T` casts in test files.",
+	"scripts": {
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run",
+		"lint": "biome ci src tests"
+	},
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./src/index.ts",
+			"import": "./src/index.ts"
+		},
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./src/public/index.ts",
+			"import": "./src/public/index.ts"
+		}
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.11",
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"@types/bun": "latest",
+		"@types/node": "^26.1.0",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	}
+}

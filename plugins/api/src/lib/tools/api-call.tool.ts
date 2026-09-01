@@ -76,10 +76,40 @@ const OUTPUT = z.object({
 	parseNote: z.string(),
 });
 
+const REDACTED_HEADER_VALUE = '***';
+const SENSITIVE_HEADER_NAMES = new Set([
+	'authorization',
+	'cookie',
+	'set-cookie',
+	'x-api-key',
+	'api-key',
+]);
+const SENSITIVE_HEADER_SUBSTRINGS = ['token', 'secret'] as const;
+
 const installHint = (
 	reason: string,
 	nextAction: string,
 ): ReturnType<typeof toolError> => toolError(reason, nextAction);
+
+const isSensitiveHeaderName = (name: string): boolean => {
+	const normalized = name.toLowerCase();
+	if (SENSITIVE_HEADER_NAMES.has(normalized)) {
+		return true;
+	}
+	return SENSITIVE_HEADER_SUBSTRINGS.some((part) =>
+		normalized.includes(part),
+	);
+};
+
+const redactRequestHeaders = (
+	headers: Readonly<Record<string, string>>,
+): Record<string, string> =>
+	Object.fromEntries(
+		Object.entries(headers).map(([name, value]) => [
+			name,
+			isSensitiveHeaderName(name) ? REDACTED_HEADER_VALUE : value,
+		]),
+	);
 
 /** `api_call` tool registration. */
 export const buildApiCallToolRegistration = (
@@ -185,8 +215,16 @@ export const buildApiCallToolRegistration = (
 						'Check the `allowList` and the `url`.',
 					);
 				}
+				const outputRequest = {
+					method: request.method,
+					url: request.url,
+					headers: redactRequestHeaders(request.headers),
+					...(request.body !== undefined
+						? { body: request.body }
+						: {}),
+				};
 				return toolJson({
-					request,
+					request: outputRequest,
 					response: {
 						ok: response.ok,
 						status: response.status,

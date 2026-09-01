@@ -30,7 +30,7 @@ export type IPluginOptionsMap = Readonly<Record<string, unknown>>;
 /**
  * The overlay table: pack id → plugin id → options. Adding a new
  * pack means adding one entry here + one entry in PRESET_CATALOG.
- * The two stay in sync via the `lint:setup` (no-preset-drift) gate
+ * The two stay in sync via the `lint:setup` (preset-drift) gate
  * which knows the pack membership.
  */
 export const PACK_DEFAULTS_OVERLAY: Readonly<
@@ -64,14 +64,14 @@ export const PACK_DEFAULTS_OVERLAY: Readonly<
 		},
 	},
 	'cli-tool': {
-		// Tuned for a small CLI: lean, no i18n, focused on perf
-		// + changelog hygiene. No quality gate (too noisy for a 200-LoC
-		// CLI).
+		// Tuned for a small CLI: lean, no i18n, focused on perf.
+		// No quality gate (too noisy for a 200-LoC CLI). `changelog`
+		// overlay removed with the plugin itself (f00177 / MAN-001:
+		// `changelog` is `private: true`, never published to npm, so it
+		// cannot be a member of a preset an external adopter installs —
+		// see `plugins/changelog/plugin.manifest.ts`).
 		search: {
 			hybridWeights: { bm25: 0.8, vector: 0.2 },
-		},
-		changelog: {
-			strictCommits: true,
 		},
 	},
 };
@@ -126,7 +126,7 @@ const PACK_META: Readonly<
 	'cli-tool': {
 		title: 'CLI tool',
 		summary:
-			'oclif / commander / cobra / clap. Lean: perf + changelog hygiene, no quality gate.',
+			'oclif / commander / cobra / clap. Lean: perf, no quality gate.',
 	},
 };
 

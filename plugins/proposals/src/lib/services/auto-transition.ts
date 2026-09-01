@@ -1,7 +1,11 @@
-import { mkdir, readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { mkdir } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import {
 	readFrontmatterField,
@@ -34,11 +38,19 @@ export const AUTO_TRANSITION_REPAIRS_RELATIVE_PATH = join(
 export const shouldAutoTransitionProposal = (
 	proposalId: string,
 	markdown: string,
+	options: { readonly requirePeerReview?: boolean } = {},
 ): boolean => {
 	const status = readFrontmatterField(markdown, 'status')
 		?.trim()
 		.toLowerCase();
-	if (status !== 'review') return false;
+	const type = readFrontmatterField(markdown, 'type')?.trim().toLowerCase();
+	if (type === 'plan') return false;
+	if (
+		options.requirePeerReview !== false
+			? status !== 'review'
+			: status === 'done' || status === undefined
+	)
+		return false;
 	const plan = parseProposalSlicePlan(proposalId, markdown);
 	if (plan === null || plan.slices.length === 0) return false;
 	return plan.slices.every((slice) => slice.status === 'done');
@@ -47,8 +59,9 @@ export const shouldAutoTransitionProposal = (
 export const markProposalDoneForAutoTransition = (
 	proposalId: string,
 	markdown: string,
+	options: { readonly requirePeerReview?: boolean } = {},
 ): { readonly changed: boolean; readonly markdown: string } => {
-	if (!shouldAutoTransitionProposal(proposalId, markdown)) {
+	if (!shouldAutoTransitionProposal(proposalId, markdown, options)) {
 		return { changed: false, markdown };
 	}
 	return {
@@ -63,17 +76,20 @@ const createAutoTransitionRepairDeps = (): IAutoTransitionRepairDeps => ({
 	},
 	now: () => new Date().toISOString(),
 	readText: async (path) =>
-		readFile(path, 'utf8').catch((error: unknown) => {
-			if (
-				error &&
-				typeof error === 'object' &&
-				'code' in error &&
-				error.code === 'ENOENT'
-			) {
-				return '';
-			}
-			throw error;
-		}),
+		new SafeWorkspaceReader(dirname(path))
+			.readText(basename(path))
+			.then((value) => value.content)
+			.catch((error: unknown) => {
+				if (
+					error &&
+					typeof error === 'object' &&
+					'code' in error &&
+					error.code === 'ENOENT'
+				) {
+					return '';
+				}
+				throw error;
+			}),
 	withLock: async (path, work) => withFileMutex(path, work),
 	writeText: async (path, text) => {
 		await writeFileAtomic(path, text);

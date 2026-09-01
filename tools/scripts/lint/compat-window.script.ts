@@ -134,8 +134,9 @@ const walkToolFiles = async (root: string): Promise<readonly string[]> => {
 const extractImports = (source: string): readonly string[] => {
 	const imports: string[] = [];
 	IMPORT_LINE_RE.lastIndex = 0;
-	let match: RegExpExecArray | null;
-	while ((match = IMPORT_LINE_RE.exec(source)) !== null) {
+	while (true) {
+		const match = IMPORT_LINE_RE.exec(source);
+		if (match === null) break;
 		if (typeof match[1] === 'string') imports.push(match[1]);
 	}
 	return imports;

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
 import {
 	runContinueProposal,
 	type IContinueProposalToolOptions,
@@ -22,6 +23,9 @@ const parse = (result: {
 	expect(result.structuredContent).toEqual(value);
 	return value;
 };
+
+const parseTextOnly = (result: { content: Array<{ text: string }> }): any =>
+	JSON.parse(result.content[0]?.text ?? '{}');
 
 describe('continue_proposal (serial cascade)', async () => {
 	let root = '';
@@ -98,6 +102,39 @@ kind: fix
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 		expect(out.kind).toBe('next-proposal');
 		expect(out.proposalId).toBe('x00184');
+	});
+
+	it('treats by-kind ready subfolders as actionable', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'f200-ready-kind',
+						file: 'ready/feats/f200-ready-kind.md',
+						status: 'ready',
+						type: 'proposal',
+					},
+				],
+			}),
+		);
+		mkdirSync(join(root, 'ready/feats'), { recursive: true });
+		writeFileSync(
+			join(root, 'ready/feats/f200-ready-kind.md'),
+			[
+				'---',
+				'id: f200-ready-kind',
+				'status: ready',
+				'kind: feat',
+				'---',
+				'',
+				'# f200-ready-kind',
+			].join('\n'),
+		);
+		options = { ...options, proposalsDirAbs: root };
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+		expect(out.kind).toBe('next-proposal');
+		expect(out.proposalId).toBe('f200-ready-kind');
 	});
 
 	it('applies cascadeOverride and reports its reason in cascadeTrace', async () => {
@@ -200,6 +237,83 @@ kind: fix
 		expect(out.proposalId ?? out.id).toBeDefined();
 	});
 
+	it('integrates migration ordering and worktree guidance into the real slice-plan flow', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{ id: 'r00044', file: 'r00044.md', status: 'ready' },
+				],
+			}),
+		);
+		writeFileSync(
+			join(root, 'r00044.md'),
+			[
+				'---',
+				'id: r00044',
+				'---',
+				'',
+				'# r00044',
+				'',
+				'## Slices',
+				'',
+				'### S1 — expand',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- migration_phase: expand',
+				'- status: done',
+				'',
+				'### S2 — producers',
+				'- files: plugins/proposals/src/lib/swarm/contract-migration-policy.ts',
+				'- migration_phase: producers',
+				'- status: done',
+				'',
+				'### S3 — regenerate',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- migration_phase: regenerate',
+				'- status: done',
+				'',
+				'### S4 — consumers',
+				'- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+				'- migration_phase: consumers',
+				'- status: done',
+				'',
+				'### S5 — verify fanout',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+				'- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts',
+				'- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts',
+				'- migration_phase: verify',
+				'- gate: type',
+				'',
+				'### S6 — contract cleanup',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- files: plugins/proposals/src/lib/swarm/contract-migration-policy.ts',
+				'- migration_phase: contract',
+				'- gate: type',
+				'',
+			].join('\n'),
+		);
+		const out = parse(
+			await runContinueProposal(
+				{ mode: 'plan', proposalId: 'r00044' },
+				options,
+			),
+		);
+		expect(out.kind).toBe('slice-plan');
+		expect(out.claimableSliceIds).not.toContain('S5');
+		expect(out.claimableSliceIds).not.toContain('S6');
+		const verifySlice = out.plan.slices.find(
+			(slice: { sliceId: string }) => slice.sliceId === 'S5',
+		);
+		expect(verifySlice.migrationGuidance.phase).toBe('verify');
+		expect(
+			verifySlice.migrationGuidance.worktreeImpactPolicy.isolation,
+		).toBe('agent-worktree');
+		expect(
+			verifySlice.migrationGuidance.worktreeImpactPolicy.claimMode,
+		).toBe('requires-agent-worktree');
+	});
+
 	it('skips in_progress proposals locked by another agent (anti-loop) [N9]', async () => {
 		// f1 is in_progress AND locked → must not be re-selected; p2 (free) wins.
 		writeFileSync(
@@ -242,6 +356,120 @@ kind: fix
 		expect(out.nextAction).toContain('Do NOT retry');
 		expect(out.nextAction).toContain('proposals_await_lock');
 		expect(out.nextAction).toContain('lock-released');
+	});
+
+	it('uses a composite task_id per proposal when claiming the same sliceId and release matches that id', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{ id: 'f00091-alpha', file: 'f00091.md', status: 'ready' },
+					{ id: 'f00092-beta', file: 'f00092.md', status: 'ready' },
+				],
+			}),
+		);
+		writeFileSync(
+			join(root, 'f00091.md'),
+			[
+				'# f00091-alpha',
+				'',
+				'## Slices',
+				'',
+				'### S1 — independent',
+				'- **Files**: `src/alpha.ts`',
+				'- **Gate**: none',
+				'- **Status**: pending',
+			].join('\n'),
+		);
+		writeFileSync(
+			join(root, 'f00092.md'),
+			[
+				'# f00092-beta',
+				'',
+				'## Slices',
+				'',
+				'### S1 — independent',
+				'- **Files**: `src/beta.ts`',
+				'- **Gate**: none',
+				'- **Status**: pending',
+			].join('\n'),
+		);
+
+		const firstClaim = parse(
+			await runContinueProposal(
+				{
+					proposalId: 'f00091-alpha',
+					mode: 'claim',
+					sliceId: 'S1',
+					agentName: 'falcon',
+				},
+				options,
+			),
+		);
+		expect(firstClaim.kind).toBe('slice-claim');
+
+		const secondClaim = parse(
+			await runContinueProposal(
+				{
+					proposalId: 'f00092-beta',
+					mode: 'claim',
+					sliceId: 'S1',
+					agentName: 'owl',
+				},
+				options,
+			),
+		);
+		expect(secondClaim.kind).toBe('slice-claim');
+
+		const deps = {
+			lockPath: options.lockPathAbs,
+			toolName: 'proposals_agent_lock',
+		};
+		const lockStatus = parseTextOnly(
+			await runAgentLockEngine({ action: 'status' }, deps),
+		);
+		expect(lockStatus.in_flight).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					task_id: 'f00091-alpha-S1',
+					agent: 'falcon',
+				}),
+				expect.objectContaining({
+					task_id: 'f00092-beta-S1',
+					agent: 'owl',
+				}),
+			]),
+		);
+
+		await runAgentLockEngine(
+			{ action: 'release', task_id: 'f00091-alpha-S1' },
+			deps,
+		);
+		const afterFirstRelease = parseTextOnly(
+			await runAgentLockEngine({ action: 'status' }, deps),
+		);
+		expect(afterFirstRelease.in_flight).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					task_id: 'f00092-beta-S1',
+					agent: 'owl',
+				}),
+			]),
+		);
+		expect(afterFirstRelease.in_flight).not.toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ task_id: 'f00091-alpha-S1' }),
+			]),
+		);
+
+		await runAgentLockEngine(
+			{ action: 'release', task_id: 'f00092-beta-S1' },
+			deps,
+		);
+		const afterSecondRelease = parseTextOnly(
+			await runAgentLockEngine({ action: 'status' }, deps),
+		);
+		expect(afterSecondRelease.active_write_lanes).toBe(0);
 	});
 
 	it('skips a ready proposal whose slices exist but none are claimable because live ownership already covers them', async () => {

@@ -35,11 +35,11 @@ export interface IRuntimeHandle {
 	/** Dispose a single disposable by id. Returns true if removed. */
 	disposeOne(id: string): boolean;
 	/** Dispose every registered disposable, in LIFO order. Errors are swallowed. */
-	disposeAll(): void;
+	disposeAll(): Promise<void>;
 }
 
 export interface IDisposableLike {
-	dispose(): void;
+	dispose(): unknown;
 }
 
 interface IEntry {
@@ -51,13 +51,16 @@ interface IEntry {
 export const createRuntimeHandle = (): IRuntimeHandle => {
 	const entries: IEntry[] = [];
 
-	const disposeEntry = (entry: IEntry): void => {
-		if (entry.disposed) return;
+	const disposeEntry = (entry: IEntry): Promise<void> | undefined => {
+		if (entry.disposed) return undefined;
 		entry.disposed = true;
 		try {
-			entry.disposable.dispose();
+			return Promise.resolve(entry.disposable.dispose()).then(
+				() => undefined,
+			);
 		} catch {
 			// best-effort: a broken disposable must not block the rest.
+			return undefined;
 		}
 	};
 
@@ -71,17 +74,21 @@ export const createRuntimeHandle = (): IRuntimeHandle => {
 		disposeOne(id) {
 			const idx = entries.findIndex((e) => e.id === id && !e.disposed);
 			if (idx === -1) return false;
-			disposeEntry(entries[idx]!);
+			void disposeEntry(entries[idx]!);
 			return true;
 		},
-		disposeAll() {
+		async disposeAll() {
+			const pending: Promise<void>[] = [];
 			// LIFO: walk the array backwards so the most recently registered
 			// resource is disposed first. This matches the convention
 			// `IExtensionContext.subscriptions` follows in the real VS Code
 			// runtime.
 			for (let i = entries.length - 1; i >= 0; i--) {
-				disposeEntry(entries[i]!);
+				const result = disposeEntry(entries[i]!);
+				if (result !== undefined)
+					pending.push(result.catch(() => undefined));
 			}
+			await Promise.all(pending);
 		},
 	};
 };

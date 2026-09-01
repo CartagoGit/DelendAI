@@ -7,23 +7,8 @@ import {
 	sentryParseList,
 } from '../errors/list-errors';
 import type { IErrorSource } from '../errors/ierror-source';
-
-class FakeServer {
-	tools: Record<string, { handler: (a: unknown) => Promise<unknown> }> = {};
-	registerTool(
-		name: string,
-		_meta: unknown,
-		handler: (a: unknown) => Promise<unknown>,
-	) {
-		this.tools[name] = { handler };
-	}
-}
-
-const parseOk = (r: unknown): Record<string, unknown> => {
-	const text =
-		(r as { content: Array<{ text: string }> }).content[0]?.text ?? '{}';
-	return JSON.parse(text) as Record<string, unknown>;
-};
+import { FakeServer, parseOk } from '../testing/tool-spec-server.helper';
+import { asArray } from '@mcp-vertex/test-kit/public';
 
 const parseError = (r: unknown): { reason: string; nextAction?: string } => {
 	const text =
@@ -89,7 +74,7 @@ const build = (source: IErrorSource | undefined) => {
 		...(source === undefined ? {} : { source }),
 	});
 	const server = new FakeServer();
-	for (const r of [regs]) void r.register(server as never);
+	for (const r of [regs]) void r.register(server.asServer);
 	return server.tools;
 };
 
@@ -136,7 +121,7 @@ describe('obs-errors (f00129 S1)', () => {
 			a: unknown,
 		) => Promise<unknown>;
 		const out = parseOk(await handler({ limit: 10, project: 'web' }));
-		const issues = out.issues as unknown[];
+		const issues = asArray(out.issues);
 		expect(issues).toHaveLength(1);
 	});
 

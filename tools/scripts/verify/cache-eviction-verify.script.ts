@@ -70,7 +70,7 @@ const seedDir = async (abs: string, when: Date): Promise<void> => {
 const dirBytes = async (abs: string): Promise<number> => {
 	const { readdir } = await import('node:fs/promises');
 	let total = 0;
-	let entries: Awaited<ReturnType<typeof readdir>>;
+	let entries: import('node:fs').Dirent<string>[];
 	try {
 		entries = await readdir(abs, { withFileTypes: true });
 	} catch {

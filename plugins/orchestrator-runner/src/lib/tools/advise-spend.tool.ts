@@ -15,10 +15,18 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
+import {
+	compactOutputSchema,
+	projectDetail,
+	toolJson,
+	type IToolRegistration,
+} from '@mcp-vertex/core/public';
 import z from 'zod';
 
-import { AdviseSpendOutputSchema } from '../schemas';
+import {
+	SPEND_DETAIL_PROJECTIONS,
+	type ISpendFullView,
+} from '../contracts/spend-view.contract';
 
 /** A grouped usage bucket, mirrored from usage-tracking's `IRollupBucket`. */
 export interface IUsageBucket {
@@ -247,6 +255,8 @@ export interface IAdviseSpendToolOptions {
 
 const InputSchema = z.object({
 	windowDays: z.number().positive().optional(),
+	// r00032: opt-in projection level (compact | normal | full).
+	detail: z.enum(['compact', 'normal', 'full']).optional(),
 });
 
 export const buildAdviseSpendRegistration = (
@@ -264,7 +274,13 @@ export const buildAdviseSpendRegistration = (
 				description:
 					"Act as a cost analyst over recorded usage. Reads the usage-tracking rollup (spend by provider, plugin, agent, extension) plus the circuit-breaker limitsStatus (rolling session + monthly spend vs your caps) and returns observations plus risk-graded (low/medium/high) recommendations — e.g. 'you have $12 of your $50 monthly cap left; consider switching to a cheaper model.' Recommendations are NON-DESTRUCTIVE: it never edits your config or roster; you confirm any change yourself.",
 				inputSchema: InputSchema,
-				outputSchema: AdviseSpendOutputSchema,
+				// v00130 (AUD-B01): `AdviseSpendOutputSchema` is not used as
+				// a runtime response validator anywhere in this handler —
+				// only declared here as the wire `outputSchema`. It stays
+				// exported from `schemas.ts` for the behavioural tests;
+				// `tools/list` gets the compact envelope instead. The real
+				// response payload is unchanged.
+				outputSchema: compactOutputSchema(),
 			},
 			async (args: z.infer<typeof InputSchema>) => {
 				const { state, windowDays } = await readSpendState(
@@ -280,12 +296,24 @@ export const buildAdviseSpendRegistration = (
 						`Requested windowDays=${args.windowDays}; the usage rollup is currently aggregated over ${windowDays} day(s). Adjust plugins.usage-tracking.options.windowDays to change the rollup window.`,
 					);
 				}
-				return toolJson({
+				const full: ISpendFullView = {
 					windowDays: args.windowDays ?? windowDays,
 					generatedAt: new Date().toISOString(),
 					currentState: state,
 					observations,
 					recommendations: advice.recommendations,
+				};
+				// r00032: project the view according to `args.detail`
+				// (default `'normal'` per the transversal contract).
+				const level = args.detail ?? 'normal';
+				const view = projectDetail(
+					full,
+					SPEND_DETAIL_PROJECTIONS,
+					level,
+				);
+				return toolJson({
+					view,
+					level,
 				});
 			},
 		);

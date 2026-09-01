@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	toolErrorWithLogHint,
 	toolJson,
+	toolJsonWithSummary,
 	toolOk,
 	toolError,
 } from '@mcp-vertex/core/public';
@@ -49,6 +50,19 @@ describe('tool-response helpers — MCP modern structuredContent', async () => {
 	it('text and structuredContent stay consistent', async () => {
 		const res = toolOk({ n: 7 });
 		expect(JSON.parse(res.content[0]!.text)).toEqual(res.structuredContent);
+	});
+
+	it('toolJsonWithSummary keeps structuredContent but emits a compact JSON string summary', async () => {
+		const res = toolJsonWithSummary(
+			{ ok: true, tools: ['overview', 'status'] },
+			'2 tools in summary',
+		);
+		expect(res.structuredContent).toEqual({
+			ok: true,
+			tools: ['overview', 'status'],
+		});
+		expect(res.content[0]?.text).toBe(JSON.stringify('2 tools in summary'));
+		expect(JSON.parse(res.content[0]!.text)).toBe('2 tools in summary');
 	});
 
 	it('toolErrorWithLogHint attaches the hint and keeps the envelope', async () => {

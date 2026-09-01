@@ -9,6 +9,7 @@ import { dirname, basename } from 'node:path';
 
 import {
 	getAgentLockSessionBalance,
+	releaseAgentSessionClaims,
 	runAgentLockEngine,
 } from '../locks/agent-lock-engine';
 import type { ILockChangeListener } from '../locks/lock-change-listener';
@@ -49,41 +50,44 @@ export interface IAgentLockToolOptions {
 	readonly defaultIdentity?: IResolvedHostIdentity;
 }
 
-const AGENT_LOCK_ENTRY_OUTPUT_SCHEMA = z.object({
-	task_id: z.string(),
-	agent: z.string(),
-	ownership: z.array(z.string()),
-	started_at: z.string(),
-	last_seen: z.string(),
-	parent_task_id: z.string().optional(),
-});
-
 /**
  * Derive the workspace root from `lockPathAbs`. Mirrors the engine's
  * own `resolveSessionWorkspaceRoot` so the tool layer doesn't need
- * `process.cwd()` lookups when stamping the session balance.
+ * ambient working-directory lookups when stamping the session balance.
  */
 const deriveWorkspaceRoot = (lockPathAbs: string): string => {
 	const parent = dirname(lockPathAbs);
 	return basename(parent) === '.cache' ? dirname(parent) : parent;
 };
 
-const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
+type ICloseCapableServer = {
+	readonly server?: {
+		onclose?: (() => void) | undefined;
+	};
+};
+
+const attachSessionCleanup = (server: unknown, lockPathAbs: string): void => {
+	const transportServer = (server as ICloseCapableServer).server;
+	if (transportServer === undefined) return;
+	const previousOnClose = transportServer.onclose;
+	transportServer.onclose = (): void => {
+		void releaseAgentSessionClaims({ lockPath: lockPathAbs }).catch(
+			() => undefined,
+		);
+		previousOnClose?.();
+	};
+};
+
+export const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	tool: z.string().optional(),
-	action: z.enum(['claim', 'release', 'status', 'gc']).optional(),
+	action: z
+		.enum(['claim', 'heartbeat', 'release', 'status', 'gc'])
+		.optional(),
 	path: z.string().optional(),
 	lock_path: z.string().optional(),
 	task_id: z.string().optional(),
 	agent: z.string().optional(),
-	error: z
-		.union([
-			z.string(),
-			z.object({
-				reason: z.string(),
-				nextAction: z.string().optional(),
-			}),
-		])
-		.optional(),
+	error: z.unknown().optional(),
 	blockerType: z.string().optional(),
 	nextAction: z.string().optional(),
 	summary: z.string().optional(),
@@ -107,29 +111,27 @@ const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	dropped: z.number().optional(),
 	version: z.number().optional(),
 	stale_after_minutes: z.number().optional(),
-	in_flight: z.array(AGENT_LOCK_ENTRY_OUTPUT_SCHEMA).optional(),
+	in_flight: z.unknown().optional(),
 	// Every terminal lock outcome is a canonical success/error envelope.
 	// Consumers must not infer success from action-specific fields such as
 	// `claimed` or `removed`.
 	ok: z.boolean(),
-	session: z
-		.object({
-			claims: z.number(),
-			releases: z.number(),
-			imbalance: z.number(),
-		})
-		.optional(),
+	session: z.unknown().optional(),
 	// f00082 S3: the tool re-echoes the composite identity it was
 	// called with, so a caller can attribute the lock op to a
 	// (host, model, agent, task) without consulting the registry.
-	identity: z
-		.object({
-			host: z.string().optional(),
-			model: z.string().optional(),
-			agent_name: z.string().optional(),
-			task_id: z.string().optional(),
-		})
-		.optional(),
+	identity: z.unknown().optional(),
+});
+
+export const AGENT_LOCK_INPUT_SCHEMA = z.object({
+	action: z.enum(['claim', 'heartbeat', 'release', 'status', 'gc']),
+	task_id: z.string().optional(),
+	agent: z.string().optional(),
+	files: z.array(z.string()).optional(),
+	parent_task_id: z.string().optional(),
+	onContention: z.enum(['steal', 'fail']).optional(),
+	host: z.string().optional(),
+	model: z.string().optional(),
 });
 
 /**
@@ -145,44 +147,17 @@ export const buildAgentLockRegistration = (
 		id: 'agent_lock',
 		effects: ['write'],
 		summary:
-			'Claim files before editing, release after (claim/release/status/gc). The write-ownership primitive.',
+			'Claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc). The write-ownership primitive.',
 		tags: ['coordination'],
 		register: async (server) => {
+			attachSessionCleanup(server, options.lockPathAbs);
 			server.registerTool(
 				toolName,
 				{
 					outputSchema: AGENT_LOCK_OUTPUT_SCHEMA,
 					description:
 						'Write-ownership lock only: claim before editing, release after editing, status/gc for stale claims. Not a task planner.',
-					inputSchema: z.object({
-						action: z.enum(['claim', 'release', 'status', 'gc']),
-						task_id: z.string().optional(),
-						agent: z.string().optional(),
-						files: z.array(z.string()).optional(),
-						parent_task_id: z.string().optional(),
-						/**
-						 * What to do when claim/release/gc contends with a *live*
-						 * holder past the mutex's contention timeout:
-						 * `'steal'` (default) reclaims as before; `'fail'` rejects
-						 * instead of clobbering a slow-but-alive holder.
-						 */
-						onContention: z.enum(['steal', 'fail']).optional(),
-						// f00082 S3: composite-identity fields. Purely
-						// echoed back in the response `identity` block for
-						// attribution; they do not affect lock semantics.
-						host: z
-							.string()
-							.optional()
-							.describe(
-								'f00082: host/IDE driving the agent; re-echoed in the response identity.',
-							),
-						model: z
-							.string()
-							.optional()
-							.describe(
-								'f00082: LLM model name; re-echoed in the response identity.',
-							),
-					}),
+					inputSchema: AGENT_LOCK_INPUT_SCHEMA,
 				},
 				async (args) => {
 					const res = await runAgentLockEngine(args, {
@@ -204,7 +179,8 @@ export const buildAgentLockRegistration = (
 					if (
 						!res.isError &&
 						options.lockChangeListener !== undefined &&
-						args.action !== 'status'
+						args.action !== 'status' &&
+						args.action !== 'heartbeat'
 					) {
 						options.lockChangeListener.onLockChanged({
 							action: args.action,

@@ -15,6 +15,7 @@ import {
 	runProposalTransitionCompat,
 } from '@mcp-vertex/proposals/lib/tools/proposal-transition.compat';
 import type { IProposalTransitionToolOptions } from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
+import { fakePartial } from '@mcp-vertex/test-kit/public';
 
 const baseArgs = {
 	id: 'x00153',
@@ -22,16 +23,20 @@ const baseArgs = {
 	reason: 'test',
 };
 
-const stubOptions = {
-	// x00153 S9: the handler resolves `proposalsDirAbs` eagerly;
-	// point it at a guaranteed-absent directory so the handler's
-	// own locate step is a deterministic "not found" (toolError),
-	// not a thrown TypeError. The compat layer is exercised
-	// BEFORE the handler runs, so the inner failure is irrelevant
-	// — we assert on `deprecatedShapeUsed` only.
+// x00153 S9: the handler resolves `proposalsDirAbs` eagerly; point it
+// at a guaranteed-absent directory so the handler's own locate step is
+// a deterministic "not found" (toolError), not a thrown TypeError. The
+// compat layer is exercised BEFORE the handler runs, so the inner
+// failure is irrelevant — we assert on `deprecatedShapeUsed` only.
+// `namespacePrefix`/`workspaceRoot` (real required fields) are never
+// read on this path, so only `proposalsDirAbs` is declared required.
+const stubOptions = fakePartial<
+	IProposalTransitionToolOptions,
+	'proposalsDirAbs'
+>({
 	proposalsDirAbs: '/tmp/mcp-vertex-x00153-s9-compat',
 	indexPathAbs: '/tmp/mcp-vertex-x00153-s9-compat/index.json',
-} as unknown as IProposalTransitionToolOptions;
+});
 
 describe('x00153 S9 — PROPOSAL_TRANSITION_COMPAT window metadata', () => {
 	it('exposes both v1 and v2 versions', () => {
@@ -75,6 +80,30 @@ describe('x00153 S9 — runProposalTransitionCompat v1/v2 routing', () => {
 	it('rejects malformed input with compat-window-invalid', async () => {
 		const result = await runProposalTransitionCompat(
 			{ id: '' },
+			stubOptions,
+		);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error.code).toBe('compat-window-invalid');
+			expect(Array.isArray(result.error.issues)).toBe(true);
+		}
+	});
+
+	it('rejects an invalid target status with compat-window-invalid', async () => {
+		const result = await runProposalTransitionCompat(
+			{ ...baseArgs, to: 'shipping' },
+			stubOptions,
+		);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error.code).toBe('compat-window-invalid');
+			expect(Array.isArray(result.error.issues)).toBe(true);
+		}
+	});
+
+	it('rejects unknown keys with compat-window-invalid', async () => {
+		const result = await runProposalTransitionCompat(
+			{ ...baseArgs, extra: 1 },
 			stubOptions,
 		);
 		expect(result.ok).toBe(false);

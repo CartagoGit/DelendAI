@@ -25,6 +25,14 @@ For each tool call it writes one NDJSON row to
   "tool": "auto_work",
   "model": null,                 // set only for orchestrated calls
   "usage": null,                 // set when the provider reports tokens
+  "tokenAccounting": {            // local, metadata-only comparison
+    "baselineTokens": null,
+    "usedTokens": null,
+    "tokensSaved": null,
+    "savingsPercent": null,
+    "status": "unavailable",     // measured | estimated | unavailable
+    "basis": "no explicit token baseline reported"
+  },
   "costUsd": null,               // computed from pricing.json + usage
   "durationMs": 4820,
   "outcome": "success",           // success | error | timeout | fallback
@@ -36,6 +44,34 @@ For each tool call it writes one NDJSON row to
 **Metadata only** — message content is never written to disk, and every
 record is piped through the core's `redactSecrets` before it lands, so a
 credential an agent happened to see is never persisted.
+
+## Per-call token savings
+
+When a provider reports token usage, the plugin can calculate savings locally
+without making another LLM request. Configure an explicit baseline per tool or
+plugin:
+
+```jsonc
+{
+  "plugins": {
+    "usage-tracking": {
+      "options": {
+        "tokenBaselines": {
+          "orchestrator-runner/invoke": 1200,
+          "memory/*": 800
+        }
+      }
+    }
+  }
+}
+```
+
+The exact `plugin/tool` key wins over `plugin/*`. For a call with a baseline
+of 1200 tokens and provider usage of 900 tokens, the row records 300 saved
+tokens and a 25% saving. Calls without provider usage or without a defensible
+baseline remain `unavailable`; the plugin never guesses tokens from character
+counts. Legacy rows and tools that already report `tokensSaved` are preserved
+as `estimated` when no comparable baseline exists.
 
 ## Checkpoint advisories (f00156)
 
@@ -128,17 +164,18 @@ The plugin **never** sniffs `process.env` for vendor-specific variables.
 
 ## Options
 
-| Option | Default | Meaning |
-|---|---|---|
-| `clientMap` | – | `clientInfo.name` → `{kind, extension}` overrides |
-| `maxBatch` | `64` | records buffered before a forced flush |
-| `maxDelayMs` | `250` | max ms a record waits before a flush |
-| `windowDays` | `7` | rollup window for the periodic summary |
-| `summaryIntervalMs` | `300000` | how often the summary is regenerated |
-| `sessionHygiene.enabled` | `true` | emit one-shot local MCP-session advisories |
-| `sessionHygiene.maxSessionAgeMinutes` | `120` | observed MCP activity span before an advisory |
-| `sessionHygiene.maxIdleGapMinutes` | `30` | observed gap between MCP calls before an advisory |
-| `sessionHygiene.maxMcpOutputTokens` | `8000` | estimated MCP response volume before an advisory |
+| Option                                | Default  | Meaning                                                                                                   |
+| ------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| `clientMap`                           | –        | `clientInfo.name` → `{kind, extension}` overrides                                                         |
+| `tokenBaselines`                      | –        | Explicit token baselines keyed by `plugin/tool` or `plugin/*`; used only when provider usage is available |
+| `maxBatch`                            | `64`     | records buffered before a forced flush                                                                    |
+| `maxDelayMs`                          | `250`    | max ms a record waits before a flush                                                                      |
+| `windowDays`                          | `7`      | rollup window for the periodic summary                                                                    |
+| `summaryIntervalMs`                   | `300000` | how often the summary is regenerated                                                                      |
+| `sessionHygiene.enabled`              | `true`   | emit one-shot local MCP-session advisories                                                                |
+| `sessionHygiene.maxSessionAgeMinutes` | `120`    | observed MCP activity span before an advisory                                                             |
+| `sessionHygiene.maxIdleGapMinutes`    | `30`     | observed gap between MCP calls before an advisory                                                         |
+| `sessionHygiene.maxMcpOutputTokens`   | `8000`   | estimated MCP response volume before an advisory                                                          |
 
 ## License
 

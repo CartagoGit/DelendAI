@@ -73,7 +73,7 @@ const presetIdFor = (
  */
 export default definePlugin({
 	name: 'rules',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Per-framework default ESLint/TypeScript presets + per-area detection + enforcement modes (strict/mixed/none/proposal). Project config always wins.',
 	optionsSchema: z.object({
@@ -129,6 +129,7 @@ export default definePlugin({
 				overrides,
 			);
 			await ensureRulesCache({
+				reader,
 				resolve: (rel) => ctx.workspace.resolve(rel),
 				cacheRelDir,
 				manifest,

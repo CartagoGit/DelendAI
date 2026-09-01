@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	buildTsconfigPathsEntry,
+	diagnosePluginWiring,
 	pluginDir,
 	wirePluginIntoMonorepo,
 	writePluginDefaults,
@@ -92,9 +93,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 
 /** Realistic plugin-defaults.ts with one anchor. */
 const PLUGIN_DEFAULTS_SEED = `export const PLUGIN_DEFAULTS: Readonly<\n\tRecord<string, Readonly<Record<string, unknown>>>\n> = {
-\tproposals: {
-\t\tvalidationCommand: 'bun run validate',
-\t},
+	proposals: {},
 };
 `;
 
@@ -108,22 +107,27 @@ const PUBLISH_ORDER_SEED = `export const PUBLISH_ORDER: readonly string[] = [
 `;
 
 /** Realistic preset-catalog.ts with one preset the writer can target. */
-const PRESET_CATALOG_SEED = `export const PRESET_CATALOG: Readonly<
-\tRecord<string, IPresetDefinition>
-> = {
-\tminimal: {
-\t\tmembers: [
-\t\t\t{ plugin: 'git' },
-\t\t\t{ plugin: 'docs' },
-\t\t],
-\t},
-\tvertex: {
-\t\tmembers: [
-\t\t\t{ plugin: 'proposals' },
-\t\t\t{ plugin: 'rules' },
-\t\t],
-\t},
-};
+const PRESET_CATALOG_SEED = `export const PRESET_CATALOG: readonly IPresetDefinition[] = [
+	{
+		id: 'minimal',
+		title: 'minimal',
+		summary: 'summary',
+		members: [
+			{ plugin: 'git' },
+			{ plugin: 'docs' },
+		],
+	},
+	{
+		id: 'vertex',
+		title: 'vertex',
+		summary: 'summary',
+		members: [
+			{ plugin: 'proposals' },
+			{ plugin: 'rules' },
+		],
+		independent: true,
+	},
+];
 `;
 
 describe('pluginDir', () => {
@@ -263,6 +267,20 @@ describe('writePresetCatalog', () => {
 		});
 		expect(second.edits[0]?.noop).toBe(true);
 	});
+
+	it('fails when the target preset symbol cannot be found', async () => {
+		const fs = createMemoryFs({
+			'packages/core/src/lib/plugins/preset-catalog.ts':
+				PRESET_CATALOG_SEED.replace("id: 'vertex'", "id: 'full'"),
+		});
+		await expect(
+			writePresetCatalog({
+				pluginId: 'demo',
+				fs,
+				dryRun: false,
+			}),
+		).rejects.toThrow(/preset vertex/i);
+	});
 });
 
 describe('wirePluginIntoMonorepo (façade)', () => {
@@ -292,5 +310,26 @@ describe('wirePluginIntoMonorepo (façade)', () => {
 			'tsconfig.base.json',
 			'vitest.shared.ts',
 		]);
+	});
+
+	it('surfaces created-but-not-loaded diagnostics when the plugin is indexed but absent from host config', async () => {
+		const fs = createMemoryFs({
+			'tsconfig.base.json': TS_BASE_SEED,
+			'vitest.shared.ts': VITEST_SEED,
+			'packages/core/src/lib/plugins/plugin-defaults.ts':
+				PLUGIN_DEFAULTS_SEED,
+			'tools/scripts/release/release-plan.ts': PUBLISH_ORDER_SEED,
+			'packages/core/src/lib/plugins/preset-catalog.ts':
+				PRESET_CATALOG_SEED,
+			'packages/core/src/lib/registry/first-party-index.ts':
+				"export const FIRST_PARTY_PLUGIN_INDEX = { entries: [{ id: 'demo' }] };\n",
+			'docs/mcp-vertex/agent-catalog.generated.json': '{"tools":[]}',
+			'mcp-vertex.config.json': JSON.stringify({ plugins: { git: {} } }),
+			'plugins/demo/src/index.ts': 'export default {}\n',
+		});
+		const report = await diagnosePluginWiring('demo', fs);
+		expect(report.fullyWired).toBe(false);
+		expect(report.loadDiagnostics).toHaveLength(1);
+		expect(report.loadDiagnostics[0]?.reason).toContain('does not load it');
 	});
 });

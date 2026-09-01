@@ -1,29 +1,35 @@
-import type { IErrorReportingOptions } from '../interfaces/options.interface';
 import z from 'zod';
 
 /**
  * Options contract for `@mcp-vertex/error-reporting`. Everything is
- * optional: the plugin ships sane defaults so an adopter gets
- * automatic error reporting without writing a single config line.
+ * optional: the plugin ships safe defaults so an adopter stays
+ * fail-closed until automatic reporting is explicitly enabled.
  */
 export const OptionsSchema = z.object({
 	/**
-	 * Master switch. Default `true` — error reporting is intrinsic and
-	 * opt-out, not opt-in. Set `false` to disable entirely.
+	 * Master switch. Default `false` — network reporting is explicit
+	 * opt-in. Set `true` to enable dispatch entirely.
 	 */
 	enabled: z.boolean().optional(),
-	/** `owner/name` to report into. Defaults to the mcp-vertex repo. */
-	targetRepo: z.string().optional(),
-	/** Labels applied to every auto-created issue. */
-	labels: z.array(z.string()).optional(),
 	/**
-	 * When `true` (default) only failures whose stack/message originates
-	 * inside mcp-vertex itself are reported — a project's own errors are
-	 * never sent upstream. Set `false` to report every tool failure.
+	 * Deprecated compatibility field. The effective destination is always
+	 * the MCP Vertex repository and this value is ignored.
 	 */
-	internalOnly: z.boolean().optional(),
+	targetRepo: z.string().optional(),
+	/** Deprecated compatibility field. Labels are fixed by MCP Vertex. */
+	labels: z.array(z.string()).optional(),
 	/** De-duplication window in hours. Defaults to one day. */
 	dedupeWindowHours: z.number().int().positive().optional(),
+	/** Max new issues a single installation may create per UTC day. */
+	maxIssuesPerDay: z.number().int().positive().optional(),
+	/** Consecutive failed dispatches before opening the circuit breaker. */
+	circuitBreakerThreshold: z.number().int().positive().optional(),
+	/** Base delay for exponential backoff after a failed dispatch. */
+	backoffBaseMs: z.number().int().positive().optional(),
+	/** Upper bound for exponential backoff delays. */
+	backoffMaxMs: z.number().int().positive().optional(),
+	/** Jitter ratio applied on top of computed backoff delays. */
+	backoffJitterRatio: z.number().min(0).max(1).optional(),
 });
 
 export const DEFAULT_TARGET_REPO = 'CartagoGit/mcp-vertex';
@@ -32,27 +38,12 @@ export const DEFAULT_LABELS: readonly string[] = ['auto-reported', 'bug'];
 
 export const DEFAULT_DEDUPE_WINDOW_HOURS = 24;
 
-export const resolveOptions = (
-	raw: Readonly<Record<string, unknown>>,
-): IErrorReportingOptions => {
-	const parsed = OptionsSchema.safeParse(raw);
-	const data = parsed.success ? parsed.data : {};
-	const configuredRepo =
-		typeof data.targetRepo === 'string' ? data.targetRepo.trim() : '';
-	const configuredLabels =
-		Array.isArray(data.labels) && data.labels.length > 0
-			? data.labels.map((label) => label.trim()).filter((l) => l !== '')
-			: [];
-	return {
-		enabled: data.enabled ?? true,
-		targetRepo:
-			configuredRepo !== '' ? configuredRepo : DEFAULT_TARGET_REPO,
-		labels:
-			configuredLabels.length > 0
-				? configuredLabels
-				: [...DEFAULT_LABELS],
-		internalOnly: data.internalOnly ?? true,
-		dedupeWindowHours:
-			data.dedupeWindowHours ?? DEFAULT_DEDUPE_WINDOW_HOURS,
-	};
-};
+export const DEFAULT_MAX_ISSUES_PER_DAY = 10;
+
+export const DEFAULT_CIRCUIT_BREAKER_THRESHOLD = 3;
+
+export const DEFAULT_BACKOFF_BASE_MS = 60_000;
+
+export const DEFAULT_BACKOFF_MAX_MS = 3_600_000;
+
+export const DEFAULT_BACKOFF_JITTER_RATIO = 0.2;

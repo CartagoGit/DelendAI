@@ -19,6 +19,7 @@
 	"main": "./dist/index.js",
 	"files": [
 		"dist",
+		"skills",
 		"README.md",
 		"LICENSE"
 	],
@@ -54,7 +55,7 @@
 		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.10"
+		"vitest": "4.1.11"
 	},
 	"publishConfig": {
 		"access": "public"

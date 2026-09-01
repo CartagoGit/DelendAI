@@ -1,13 +1,14 @@
 import z from 'zod';
 
 import type { IActivationReport } from '../contracts/interfaces/activation-report.interface';
-import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
+import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type {
 	IToolEffect,
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
-import { toolJson } from '../shared/tool-response';
+import { toolJsonWithSummary } from '../shared/tool-response';
+import { compactOutputSchema } from '../surface/compact-output-schema.helper';
 
 export interface IOverviewToolEntry {
 	readonly name: string;
@@ -40,6 +41,10 @@ export interface IOverviewPlugin {
 export interface IOverviewSnapshot {
 	readonly server: { readonly name: string; readonly version: string };
 	readonly namespacePrefix: string;
+	// Surfaced so the overview tool can ask the
+	// tool-surface runtime for the per-surface counts via
+	// `getProjectContext({ workspaceRoot })`.
+	readonly workspaceRoot: string;
 	readonly corePaths: { readonly cacheDir: string; readonly docsDir: string };
 	/**
 	 * f00109 S1: config-file problems detected at boot — schema violations
@@ -94,6 +99,21 @@ const compactSummary = (summary: string | undefined): string | undefined => {
 	return `${summary.slice(0, MAX_OVERVIEW_SUMMARY_CHARS - 3)}...`;
 };
 
+const countGroupedTools = (groupedTools: Record<string, string[]>): number =>
+	Object.values(groupedTools).reduce(
+		(total, group) => total + group.length,
+		0,
+	);
+
+const buildOverviewSummary = (args: {
+	readonly compact: boolean;
+	readonly pluginCount: number;
+	readonly toolCount: number;
+	readonly knowledgeCount: number;
+	readonly activationIncluded: boolean;
+}): string =>
+	`${args.compact ? 'compact ' : ''}overview: ${args.pluginCount} plugins, ${args.toolCount} tools, ${args.knowledgeCount} knowledge ids${args.activationIncluded ? ', activation included' : ''}`;
+
 /**
  * The single cold-start entry point. One call returns the whole map of
  * the server — identity, loaded plugins, every tool with a one-line
@@ -104,6 +124,7 @@ const compactSummary = (summary: string | undefined): string | undefined => {
 export const buildOverviewToolRegistration = (
 	namespacePrefix: string,
 	snapshot: () => IOverviewSnapshot,
+	runtimeAccess?: IToolSurfaceRuntimeAccess,
 ): IToolRegistration => ({
 	id: 'overview',
 	summary:
@@ -121,128 +142,12 @@ export const buildOverviewToolRegistration = (
 					tag: z.string().optional(),
 					activation: z.boolean().optional(),
 				}),
-				outputSchema: z.object({
-					server: z.object({ name: z.string(), version: z.string() }),
-					namespacePrefix: z.string(),
-					corePaths: z
-						.object({ cacheDir: z.string(), docsDir: z.string() })
-						.optional(),
-					// f00109 S1: boot-time config problems (schema violations,
-					// dead docsDir/roots). Omitted when the config is clean.
-					configIssues: z.array(z.string()).optional(),
-					pluginDiagnostic: z
-						.object({
-							requested: z.array(z.string()),
-							loaded: z.array(z.string()),
-							missing: z.array(z.string()),
-							missingReasons: z
-								.record(z.string(), z.string())
-								.optional(),
-							configPlugins: z.array(z.string()),
-							errors: z.number(),
-						})
-						.optional(),
-					plugins: z.array(
-						z.union([
-							z.string(),
-							z.object({
-								name: z.string(),
-								version: z.string().optional(),
-								describe: z.string().optional(),
-							}),
-						]),
-					),
-					// Full overview: an array of per-tool entries (name +
-					// summary/tags/effects). Compact overview: a record keyed by
-					// plugin (`{ proposals: ['agent_lock', …], … }`, core tools
-					// under `core`) so the shared `<prefix>_<plugin>_` is stated
-					// once per group, not per tool.
-					tools: z.union([
-						z.array(
-							z.union([
-								z.string(),
-								z.object({
-									name: z.string(),
-									summary: z.string().optional(),
-									tags: z.array(z.string()).optional(),
-									effects: z
-										.array(
-											z.enum([
-												'write',
-												'spawn',
-												'network',
-												'destructive',
-											]),
-										)
-										.optional(),
-								}),
-							]),
-						),
-						z.record(z.string(), z.array(z.string())),
-					]),
-					knowledge: z.array(
-						z.union([
-							z.string(),
-							z.object({ id: z.string(), title: z.string() }),
-						]),
-					),
-					// f00067a S2: provider roster summaries (full mode only;
-					// omitted entirely when no roster is configured).
-					providers: z
-						.array(
-							z.object({
-								id: z.string(),
-								kind: z.enum([
-									'api',
-									'subscription',
-									'cli',
-									'mcp-server',
-								]),
-								modelId: z.string(),
-								// Literal union: keeps the generated SDK type
-								// assignable to `CostTier`.
-								costTier: z.union([
-									z.literal(1),
-									z.literal(2),
-									z.literal(3),
-									z.literal(4),
-									z.literal(5),
-								]),
-								reachable: z.boolean(),
-								strengths: z.array(z.enum(CAPABILITY_TAGS)),
-							}),
-						)
-						.optional(),
-					activationReport: z
-						.object({
-							entries: z.array(
-								z.object({
-									id: z.string(),
-									origin: z.enum([
-										'bundled',
-										'user-local',
-										'external',
-									]),
-									active: z.boolean(),
-									source: z.enum([
-										'preset',
-										'config',
-										'flag',
-									]),
-									toolCount: z.number(),
-								}),
-							),
-							counts: z.object({
-								bundled: z.number(),
-								'user-local': z.number(),
-								external: z.number(),
-							}),
-							totalTools: z.number(),
-						})
-						.optional(),
-					unusedActivePlugins: z.array(z.string()).optional(),
-					recommendedNextAction: z.string(),
-				}),
+				// v00129 S1 (AUD-B01): the full nested overview schema cost
+				// ~4.2 KB per tools/list entry to describe a response shape
+				// the model only needs after calling `overview` — and this
+				// tool is in the bootstrap set every preset always sends.
+				// See compact-output-schema.ts.
+				outputSchema: compactOutputSchema(),
 			},
 			async (args: {
 				compact?: boolean | undefined;
@@ -250,10 +155,17 @@ export const buildOverviewToolRegistration = (
 				activation?: boolean | undefined;
 			}) => {
 				const snap = snapshot();
+				const runtime = runtimeAccess?.get();
 				let tools = snap.tools;
 				if (args.tag !== undefined) {
 					tools = tools.filter((t) =>
 						(t.tags ?? []).includes(args.tag!),
+					);
+				}
+				if (runtime !== undefined) {
+					tools = tools.filter(
+						(tool) =>
+							runtime.getToolExposure(tool.name) === 'visible',
 					);
 				}
 				if (args.compact === true) {
@@ -279,10 +191,10 @@ export const buildOverviewToolRegistration = (
 						bucket.push(stem);
 						groupedTools[group] = bucket;
 					}
-					return toolJson({
+					const payload = {
 						server: snap.server,
 						namespacePrefix: snap.namespacePrefix,
-						// f00109 S1: config problems survive compact mode — a
+						// S1: config problems survive compact mode — a
 						// dead config is exactly when orientation must not look
 						// healthy. Omitted when clean.
 						...(snap.configIssues !== undefined
@@ -303,10 +215,68 @@ export const buildOverviewToolRegistration = (
 						...(snap.unusedActivePlugins?.length
 							? { unusedActivePlugins: snap.unusedActivePlugins }
 							: {}),
+						// Surface mode + tool counts (compact mode
+						// also surfaces them — the operator needs to know
+						// the totals even when they ask for the grouped
+						// view).
+						...(runtime !== undefined
+							? (() => {
+									const ctx = runtime.getProjectContext({
+										workspaceRoot: snap.workspaceRoot,
+										...(snap.corePaths?.cacheDir !==
+										undefined
+											? {
+													cacheDir:
+														snap.corePaths.cacheDir,
+												}
+											: {}),
+										...(snap.corePaths?.docsDir !==
+										undefined
+											? {
+													docsDir:
+														snap.corePaths.docsDir,
+												}
+											: {}),
+										...(snap.configIssues !== undefined
+											? {
+													configIssues:
+														snap.configIssues,
+												}
+											: {}),
+									});
+									const visibleToolCount =
+										ctx.visibleToolCount;
+									const hiddenToolCount = ctx.hiddenToolCount;
+									return {
+										projectContext: {
+											surfaceMode: ctx.surfaceMode,
+											visibleToolCount,
+											hiddenToolCount,
+											loadedPluginCount:
+												ctx.loadedPlugins.length,
+											loadedToolCount:
+												visibleToolCount +
+												hiddenToolCount,
+										},
+									};
+								})()
+							: {}),
 						recommendedNextAction: snap.recommendedNextAction,
-					});
+					};
+					return toolJsonWithSummary(
+						payload,
+						buildOverviewSummary({
+							compact: true,
+							pluginCount: snap.plugins.length,
+							toolCount: countGroupedTools(groupedTools),
+							knowledgeCount: snap.knowledge.length,
+							activationIncluded:
+								args.activation === true &&
+								snap.activationReport !== undefined,
+						}),
+					);
 				}
-				return toolJson({
+				const payload = {
 					server: snap.server,
 					namespacePrefix: snap.namespacePrefix,
 					...(snap.configIssues !== undefined
@@ -356,8 +326,53 @@ export const buildOverviewToolRegistration = (
 					...(snap.unusedActivePlugins?.length
 						? { unusedActivePlugins: snap.unusedActivePlugins }
 						: {}),
+					// Surface mode + tool counts. The operator's
+					// first call to `overview` is the canonical place to
+					// answer "how many tools does this server have right
+					// now, and how would I get more?".
+					...(runtime !== undefined
+						? (() => {
+								const ctx = runtime.getProjectContext({
+									workspaceRoot: snap.workspaceRoot,
+									...(snap.corePaths?.cacheDir !== undefined
+										? { cacheDir: snap.corePaths.cacheDir }
+										: {}),
+									...(snap.corePaths?.docsDir !== undefined
+										? { docsDir: snap.corePaths.docsDir }
+										: {}),
+									...(snap.configIssues !== undefined
+										? { configIssues: snap.configIssues }
+										: {}),
+								});
+								const visibleToolCount = ctx.visibleToolCount;
+								const hiddenToolCount = ctx.hiddenToolCount;
+								return {
+									projectContext: {
+										surfaceMode: ctx.surfaceMode,
+										visibleToolCount,
+										hiddenToolCount,
+										loadedPluginCount:
+											ctx.loadedPlugins.length,
+										loadedToolCount:
+											visibleToolCount + hiddenToolCount,
+									},
+								};
+							})()
+						: {}),
 					recommendedNextAction: snap.recommendedNextAction,
-				});
+				};
+				return toolJsonWithSummary(
+					payload,
+					buildOverviewSummary({
+						compact: false,
+						pluginCount: snap.plugins.length,
+						toolCount: tools.length,
+						knowledgeCount: snap.knowledge.length,
+						activationIncluded:
+							args.activation === true &&
+							snap.activationReport !== undefined,
+					}),
+				);
 			},
 		);
 	},

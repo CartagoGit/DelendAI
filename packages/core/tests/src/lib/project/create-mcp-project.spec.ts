@@ -9,7 +9,10 @@ import {
 } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
 import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
-import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+import type {
+	IResourceRegistration,
+	IToolRegistration,
+} from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
 
 const registration = (
 	id: string,
@@ -123,6 +126,23 @@ describe('createMcpProject', async () => {
 		expect(assembled.server).toBeDefined();
 		expect(assembled.registrationOrder).toEqual([]);
 	});
+
+	it('deduplicates knowledge resources registered by eager and lazy paths', async () => {
+		let registrations = 0;
+		const resource: IResourceRegistration = {
+			id: 'resource:commit-policy',
+			register: async () => {
+				registrations += 1;
+			},
+		};
+		const assembled = await createMcpProject({
+			...hostConfig([]),
+			extraResources: [resource, resource],
+		});
+
+		expect(registrations).toBe(1);
+		await assembled.dispose();
+	});
 });
 
 describe('instrumented tool hooks (f00111 S1)', async () => {
@@ -150,6 +170,11 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 			toolName: string;
 			args: unknown;
 			elapsedMs: number;
+			context?: {
+				reason: string;
+				nextAction: string;
+				error: unknown;
+			};
 		}> = [];
 		const slowTool: IToolRegistration = {
 			id: 'slow',
@@ -173,13 +198,22 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 		};
 		const { client, close } = await connect({
 			...hostConfig([slowTool]),
-			onToolCancel: (toolName, args, elapsedMs) => {
-				cancels.push({ toolName, args, elapsedMs });
+			onToolCancel: (toolName, args, elapsedMs, context) => {
+				cancels.push({
+					toolName,
+					args,
+					elapsedMs,
+					...(context !== undefined ? { context } : {}),
+				});
 			},
 		});
 		try {
 			const controller = new AbortController();
-			setTimeout(() => controller.abort(), 50);
+			setTimeout(
+				() =>
+					controller.abort(new Error('user stopped duplicate work')),
+				50,
+			);
 			await expect(
 				client.callTool(
 					{ name: 'spec_slow', arguments: { x: 1 } },
@@ -196,6 +230,13 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 			expect(cancels[0]?.args).toEqual({ x: 1 });
 			expect(cancels[0]?.elapsedMs).toBeGreaterThan(0);
 			expect(cancels[0]?.elapsedMs).toBeLessThan(300);
+			expect(cancels[0]?.context?.reason).toBe(
+				'user stopped duplicate work',
+			);
+			expect(cancels[0]?.context?.nextAction).toContain('Retry');
+			expect(String(cancels[0]?.context?.error)).toContain(
+				'user stopped duplicate work',
+			);
 		} finally {
 			await close();
 		}
@@ -267,6 +308,57 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 			await client.callTool({ name: 'spec_bare', arguments: {} });
 			expect(started).toHaveLength(1);
 			expect(started[0]?.args).toEqual({});
+		} finally {
+			await close();
+		}
+	});
+
+	it('reports host hook failures through onHookError without breaking the tool call', async () => {
+		const hookErrors: Array<{
+			hookName: string;
+			toolName: string;
+			args: unknown;
+			error: unknown;
+		}> = [];
+		const pingTool: IToolRegistration = {
+			id: 'hook-ping',
+			register: async (server) => {
+				server.registerTool(
+					'spec_hook_ping',
+					{
+						description: 'hook ping',
+						inputSchema: z.object({ value: z.number() }),
+					},
+					async () => ({
+						content: [{ type: 'text' as const, text: 'ok' }],
+					}),
+				);
+			},
+		};
+		const { client, close } = await connect({
+			...hostConfig([pingTool]),
+			onToolStart: () => {
+				throw new Error('start boom');
+			},
+			onHookError: (info) => {
+				hookErrors.push(info);
+			},
+		});
+		try {
+			const result = await client.callTool({
+				name: 'spec_hook_ping',
+				arguments: { value: 1 },
+			});
+			expect(result.isError).not.toBe(true);
+			expect(hookErrors).toHaveLength(1);
+			expect(hookErrors[0]).toEqual(
+				expect.objectContaining({
+					hookName: 'onToolStart',
+					toolName: 'spec_hook_ping',
+					args: { value: 1 },
+				}),
+			);
+			expect(hookErrors[0]?.error).toBeInstanceOf(Error);
 		} finally {
 			await close();
 		}

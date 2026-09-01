@@ -128,7 +128,7 @@ export const renderMcpVertexConfig = (
 	};
 	// f00088 S4: when the S1 detector picked a non-default
 	// `pluginPathsRoot`, record it in a `convention` block so
-	// `tools/scripts/create-plugin.ts` (f00087 S2) and any
+	// `tools/scripts/scaffold/create-plugin.script.ts` (f00087 S2) and any
 	// downstream tool that wants to scaffold code under the
 	// project's natural root can read it. The block is advisory
 	// only — the loader ignores it.
@@ -210,6 +210,7 @@ export const mergeMcpVertexServerEntry = (
 	launch: ICanonicalLaunch,
 	existingContent: string,
 	kind: 'servers' | 'mcpServers' = 'servers',
+	serverName = 'mcp-vertex',
 ): string | undefined => {
 	let parsed: unknown;
 	try {
@@ -240,7 +241,7 @@ export const mergeMcpVertexServerEntry = (
 	// specific mcp-vertex checkout), we still overwrite it with the
 	// freshly-resolved path — that's the point of running `init`
 	// again: it brings the launcher up to date.
-	nextServers['mcp-vertex'] = incoming;
+	nextServers[serverName] = incoming;
 	const next = { ...doc, [kind]: nextServers };
 	return `${JSON.stringify(next, null, '\t')}\n`;
 };
@@ -248,10 +249,11 @@ export const mergeMcpVertexServerEntry = (
 /** Renders `.vscode/mcp.json` with the canonical launch shape. */
 export const renderVscodeMcpJson = (
 	launch: ICanonicalLaunch,
+	serverName = 'mcp-vertex',
 ): IRenderedFile => {
 	const content = {
 		servers: {
-			'mcp-vertex': renderMcpVertexServerEntry(launch),
+			[serverName]: renderMcpVertexServerEntry(launch),
 		},
 	};
 	return {
@@ -262,10 +264,11 @@ export const renderVscodeMcpJson = (
 
 export const renderGenericMcpJson = (
 	launch: ICanonicalLaunch,
+	serverName = 'mcp-vertex',
 ): IRenderedFile => ({
 	relPath: '.mcp.json',
 	content: `${JSON.stringify(
-		{ mcpServers: { 'mcp-vertex': renderMcpVertexServerEntry(launch) } },
+		{ mcpServers: { [serverName]: renderMcpVertexServerEntry(launch) } },
 		null,
 		'\t',
 	)}\n`,
@@ -283,25 +286,29 @@ export const renderGenericMcpJson = (
  * omitted here entirely, so every `mcpv init` adopter got all 5 agents
  * visible and selectable.
  */
-const renderAgentFile = (descriptor: {
-	role: string;
-	description: string;
-	body: string;
-}): IRenderedFile => {
+const renderAgentFile = (
+	descriptor: {
+		role: string;
+		description: string;
+		body: string;
+	},
+	namespacePrefix = 'mcp-vertex',
+	serverName = 'mcp-vertex',
+): IRenderedFile => {
 	const isRoot = descriptor.role === 'orchestrator';
 	const tools = isRoot
-		? '[read, search, edit, execute, todo, agent, mcp-vertex/*]'
-		: '[read, search, edit, execute, todo, mcp-vertex/*]';
+		? `[read, search, edit, execute, todo, agent, ${serverName}/*]`
+		: `[read, search, edit, execute, todo, ${serverName}/*]`;
 	const frontmatter = [
 		'---',
-		`name: mcp-vertex-${descriptor.role}`,
+		`name: ${namespacePrefix}-${descriptor.role}`,
 		`description: ${descriptor.description}`,
 		`tools: ${tools}`,
 		`user-invocable: ${isRoot}`,
 		'---',
 	].join('\n');
 	return {
-		relPath: `.github/agents/mcp-vertex-${descriptor.role}.agent.md`,
+		relPath: `.github/agents/${namespacePrefix}-${descriptor.role}.agent.md`,
 		content: `${frontmatter}\n\n${descriptor.body}\n`,
 	};
 };
@@ -323,19 +330,22 @@ const renderAgentFile = (descriptor: {
  * omitting the frontmatter key inherits every tool available to
  * subagents in the session, same as before.
  */
-const renderClaudeAgentFile = (descriptor: {
-	role: string;
-	description: string;
-	body: string;
-}): IRenderedFile => {
+const renderClaudeAgentFile = (
+	descriptor: {
+		role: string;
+		description: string;
+		body: string;
+	},
+	namespacePrefix = 'mcp-vertex',
+): IRenderedFile => {
 	const frontmatter = [
 		'---',
-		`name: mcp-vertex-${descriptor.role}`,
+		`name: ${namespacePrefix}-${descriptor.role}`,
 		`description: ${descriptor.description}`,
 		'---',
 	].join('\n');
 	return {
-		relPath: `.claude/agents/mcp-vertex-${descriptor.role}.md`,
+		relPath: `.claude/agents/${namespacePrefix}-${descriptor.role}.md`,
 		content: `${frontmatter}\n\n${descriptor.body}\n`,
 	};
 };
@@ -351,19 +361,22 @@ const renderClaudeAgentFile = (descriptor: {
  * subagents; without it the Codex host reads only `AGENTS.md` (shared
  * with Copilot Chat) and never knows they exist.
  */
-const renderCodexAgentFile = (descriptor: {
-	role: string;
-	description: string;
-	body: string;
-}): IRenderedFile => {
+const renderCodexAgentFile = (
+	descriptor: {
+		role: string;
+		description: string;
+		body: string;
+	},
+	namespacePrefix = 'mcp-vertex',
+): IRenderedFile => {
 	const frontmatter = [
 		'---',
-		`name: mcp-vertex-${descriptor.role}`,
+		`name: ${namespacePrefix}-${descriptor.role}`,
 		`description: ${descriptor.description}`,
 		'---',
 	].join('\n');
 	return {
-		relPath: `.codex/agents/mcp-vertex-${descriptor.role}.md`,
+		relPath: `.codex/agents/${namespacePrefix}-${descriptor.role}.md`,
 		content: `${frontmatter}\n\n${descriptor.body}\n`,
 	};
 };
@@ -374,16 +387,19 @@ export const renderAgentFiles = async (
 	options: {
 		readonly namespacePrefix?: string;
 		readonly locale?: string;
+		readonly serverName?: string;
 	} = {},
 ): Promise<readonly IRenderedFile[]> => {
+	const namespacePrefix = options.namespacePrefix ?? 'mcp-vertex';
+	const serverName = options.serverName ?? namespacePrefix;
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
 	// x00160 S2: one Copilot file + one Claude Code file per role.
 	// Extended to emit Codex CLI files as well so a Codex adopter of
 	// `mcpv init` gets the subagents AGENT-BOOTSTRAP.md §8.3 references.
 	return descriptors.flatMap((descriptor) => [
-		renderAgentFile(descriptor),
-		renderClaudeAgentFile(descriptor),
-		renderCodexAgentFile(descriptor),
+		renderAgentFile(descriptor, namespacePrefix, serverName),
+		renderClaudeAgentFile(descriptor, namespacePrefix),
+		renderCodexAgentFile(descriptor, namespacePrefix),
 	]);
 };
 
@@ -485,12 +501,17 @@ export const renderInitBundle = async (
 		buildCanonicalLaunch({ workspace: '${workspaceFolder}' });
 	const files: IRenderedFile[] = [
 		renderMcpVertexConfig(answers, resolvedPlugins),
-		renderVscodeMcpJson(launch),
-		renderGenericMcpJson(buildCanonicalLaunch({ workspace: '.' })),
+		renderVscodeMcpJson(launch, answers.serverName),
+		renderGenericMcpJson(
+			buildCanonicalLaunch({ workspace: '.' }),
+			answers.serverName,
+		),
 	];
 	if (answers.generateAgentMd) {
 		files.push(
 			...(await renderAgentFiles(answers.workspaceRoot, {
+				namespacePrefix: answers.namespacePrefix,
+				serverName: answers.serverName,
 				locale: 'en',
 			})),
 		);

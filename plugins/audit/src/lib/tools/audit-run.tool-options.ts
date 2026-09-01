@@ -61,7 +61,7 @@ export interface IRunToolOptions {
 	 * Default for the `autoScaffoldProposals` flag. Per-call
 	 * `scaffoldProposals: false` overrides it. When the proposals
 	 * plugin is loaded AND opt-in is on, every run also scaffolds
-	 * the dedup'd findings into fix proposals.
+	 * the dedup'd findings into a native plan and linked fix proposals.
 	 */
 	readonly autoScaffoldProposals?: boolean;
 	/**

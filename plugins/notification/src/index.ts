@@ -23,7 +23,7 @@ import {
  */
 export default definePlugin({
 	name: 'notification',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Push notifications/message when a file lock is released, so agents stop polling agent_lock.',
 	optionsSchema: z.object({
@@ -71,6 +71,12 @@ export default definePlugin({
 		const toolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			lockFileAbs: lockPath.abs,
+			agentRegistryFileAbs: ctx.workspace.resolve(
+				joinRel(ctx.cacheDir, 'subagent-registry.json'),
+			),
+			queueFileAbs: ctx.workspace.resolve(
+				joinRel(ctx.cacheDir, 'agent-queue/queue.json'),
+			),
 			handoffDirAbs: handoffPath.abs,
 			handoffDirRel: handoffPath.rel,
 			...(typeof ctx.options.intervalMs === 'number'

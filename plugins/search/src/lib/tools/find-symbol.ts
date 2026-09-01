@@ -97,8 +97,9 @@ const pushHits = (
 	mapOffset?: (match: RegExpExecArray) => number,
 	mapExportPath?: (match: RegExpExecArray) => string | undefined,
 ): void => {
-	let match: RegExpExecArray | null;
-	while ((match = regex.exec(source)) !== null) {
+	while (true) {
+		const match = regex.exec(source);
+		if (match === null) break;
 		const offset = mapOffset ? mapOffset(match) : match.index;
 		const { line, column } = lineColAt(source, offset);
 		const exportPath = mapExportPath?.(match);
@@ -181,12 +182,10 @@ export const findSymbolDeclarations = (
 		undefined,
 	);
 
-	const exportFrom = new RegExp(
-		`\\bexport\\s*\\{([^}]*)\\}\\s*from\\s*['\"]([^'\"]+)['\"]`,
-		'g',
-	);
-	let match: RegExpExecArray | null;
-	while ((match = exportFrom.exec(source)) !== null) {
+	const exportFrom = /\bexport\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g;
+	while (true) {
+		const match = exportFrom.exec(source);
+		if (match === null) break;
 		const members = (match[1] ?? '')
 			.split(',')
 			.map((part) => part.trim())
@@ -329,8 +328,9 @@ const classifyDefinitionOffsets = (
 	];
 	const offsets = new Set<number>();
 	for (const pattern of patterns) {
-		let match: RegExpExecArray | null;
-		while ((match = pattern.exec(masked)) !== null) {
+		while (true) {
+			const match = pattern.exec(masked);
+			if (match === null) break;
 			offsets.add((match.index ?? 0) + match[0].lastIndexOf(symbol));
 		}
 	}

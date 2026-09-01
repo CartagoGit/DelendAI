@@ -22,8 +22,12 @@ import {
 } from '../contracts/constants/proposal-glossary.constant';
 import { buildCascadeSummary } from '../cascade/cascade-summary';
 import { buildDefaultCascadeChain } from '../cascade/cascade-chain';
-import type { TCascadeBoost } from '../cascade/cascade-priority';
 import { blockedByFor } from '../proposals/blocked-by';
+import {
+	extractYamlBlock,
+	parseFrontmatterBlock,
+} from '../proposals/frontmatter-parser';
+import { DEFAULT_STALE_AFTER_MINUTES } from '../shared/branch-tool-helpers';
 import type { IProposalIndexEntry } from '../proposals/index-reader';
 import {
 	readJsonOrNull,
@@ -87,70 +91,6 @@ export interface IContinueProposalArgs {
 const json = toolJson;
 
 const ACTIONABLE = new Set(['pending', 'ready', 'in_progress']);
-const SLICE_GATE_SCHEMA = z.enum(['lint', 'type', 'e2e', 'none']);
-const SLICE_STATUS_SCHEMA = z.enum([
-	'pending',
-	'in-progress',
-	'done',
-	'blocked',
-]);
-const CLAIM_BLOCKER_SCHEMA = z.enum([
-	'none',
-	'unknown-slice',
-	'deps-not-done',
-	'overlap-in-progress',
-	'already-done',
-	'already-in-progress',
-]);
-
-const CASCADE_BOOST_VALUES = [
-	'shipped-blocking',
-	'customer-reported',
-	'security',
-] as const satisfies readonly [TCascadeBoost, ...TCascadeBoost[]];
-
-const PROPOSAL_SLICE_SCHEMA = z.object({
-	proposalId: z.string(),
-	sliceId: z.string(),
-	title: z.string(),
-	owner: z.string().nullable(),
-	files: z.array(z.string()),
-	dependsOn: z.array(z.string()),
-	gate: SLICE_GATE_SCHEMA,
-	status: SLICE_STATUS_SCHEMA,
-	acceptanceCriteria: z.array(z.string()),
-});
-
-const PROPOSAL_SLICE_PLAN_SCHEMA = z.object({
-	proposalId: z.string(),
-	slices: z.array(PROPOSAL_SLICE_SCHEMA),
-	globalGate: SLICE_GATE_SCHEMA,
-});
-
-const CLAIM_VALIDATION_SCHEMA = z.object({
-	ok: z.boolean(),
-	reason: z.string(),
-	blockerType: CLAIM_BLOCKER_SCHEMA,
-});
-
-const SLICE_OVERLAP_SCHEMA = z.object({
-	first: z.string(),
-	second: z.string(),
-	file: z.string(),
-});
-
-const EXECUTION_GUIDE_SCHEMA = z.object({
-	files: z.array(z.string()),
-	acceptanceCriteria: z.array(z.string()),
-	gate: SLICE_GATE_SCHEMA,
-	rules: z.array(z.string()),
-});
-
-const CASCADE_TRACE_SCHEMA = z.object({
-	priority: z.number().optional(),
-	cascadeOverrideReason: z.string().optional(),
-	cascadeBoost: z.enum(CASCADE_BOOST_VALUES).optional(),
-});
 
 const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	kind: z.enum([
@@ -169,14 +109,15 @@ const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	status: z.string().optional(),
 	relaunchCommand: z.string().optional(),
 	guide: z.array(z.string()).optional(),
-	plan: PROPOSAL_SLICE_PLAN_SCHEMA.optional(),
-	disjointnessIssues: z.array(SLICE_OVERLAP_SCHEMA).optional(),
+	plan: z.unknown().optional(),
+	disjointnessIssues: z.unknown().optional(),
 	claimableSliceIds: z.array(z.string()).optional(),
+	action: z.enum(['close']).optional(),
 	sliceId: z.string().optional(),
-	validation: CLAIM_VALIDATION_SCHEMA.optional(),
-	slice: PROPOSAL_SLICE_SCHEMA.nullable().optional(),
-	executionGuide: EXECUTION_GUIDE_SCHEMA.optional(),
-	cascadeTrace: CASCADE_TRACE_SCHEMA.optional(),
+	validation: z.unknown().optional(),
+	slice: z.unknown().nullable().optional(),
+	executionGuide: z.unknown().optional(),
+	cascadeTrace: z.unknown().optional(),
 	error: z.string().optional(),
 	blockedBy: z.array(z.string()).optional(),
 	/**
@@ -199,6 +140,16 @@ const NEW_SYSTEM_ACTIONABLE_FOLDERS = new Set([
 	'in-progress',
 	'review',
 ]);
+
+const folderStateOf = (
+	file: string,
+	proposalsDirAbs?: string,
+): string | null => {
+	const folder = folderOf(file, proposalsDirAbs);
+	if (folder === null || folder.length === 0) return folder;
+	const slash = folder.indexOf('/');
+	return slash === -1 ? folder : folder.slice(0, slash);
+};
 
 /**
  * Same dual signal as S5's `isNewSystemFilename` (status alone isn't
@@ -244,8 +195,11 @@ const folderOf = (file: string, proposalsDirAbs?: string): string | null => {
  */
 const isActionable = (entry: IProposalIndexEntry): boolean => {
 	if (isNewSystemEntry(entry)) {
-		const folder = folderOf(entry.file);
-		return folder !== null && NEW_SYSTEM_ACTIONABLE_FOLDERS.has(folder);
+		const folderState = folderStateOf(entry.file);
+		return (
+			folderState !== null &&
+			NEW_SYSTEM_ACTIONABLE_FOLDERS.has(folderState)
+		);
 	}
 	return entry.status !== undefined && ACTIONABLE.has(entry.status);
 };
@@ -264,7 +218,8 @@ const readActiveLocks = async (
 		}>;
 	}>(lockPath);
 	if (lock === null) return [];
-	const staleMinutes = lock.stale_after_minutes ?? 10;
+	const staleMinutes =
+		lock.stale_after_minutes ?? DEFAULT_STALE_AFTER_MINUTES;
 	const now = Date.now();
 	return (lock.in_flight ?? [])
 		.filter((entry) => {
@@ -363,8 +318,8 @@ export const pickFromPausedFallback = async (
 ): Promise<IToolTextResult | null> => {
 	const pausedEntries = entries.filter((entry) => {
 		if (!isNewSystemEntry(entry)) return false;
-		const folder = folderOf(entry.file, options.proposalsDirAbs);
-		return folder === 'paused';
+		const folderState = folderStateOf(entry.file, options.proposalsDirAbs);
+		return folderState === 'paused';
 	});
 	if (pausedEntries.length === 0) return null;
 	const proposalIdOf = (value: string): string =>
@@ -509,7 +464,7 @@ export const runContinueProposal = async (
 		const lockResult = await runAgentLockEngine(
 			{
 				action: 'claim',
-				task_id: args.sliceId,
+				task_id: `${doc.id}-${args.sliceId}`,
 				agent,
 				files: [...slice.files],
 			},
@@ -595,6 +550,14 @@ export const runContinueProposal = async (
 			nextAction: `Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or wait once with ${options.namespacePrefix}_await_lock / a lock-released notification, then retry the claim path.`,
 		});
 	}
+	// Dependent work must continue while a primary proposal waits for peer
+	// review. Review is still actionable, but it is a lower-priority lane:
+	// only select it when no ready/in-progress proposal remains.
+	const executableFree = free.filter((entry) => {
+		const folderState = folderStateOf(entry.file, options.proposalsDirAbs);
+		return folderState !== 'review';
+	});
+	const selectableFree = executableFree.length > 0 ? executableFree : free;
 	// f00024: kind-based cascade (+ frontmatter override/boost) — the host
 	// may inject a custom resolver (DIP, for tests), otherwise the full
 	// 13-family cascade plus the break-glass override is used.
@@ -606,7 +569,8 @@ export const runContinueProposal = async (
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
 	const activeLocks = await readActiveLocks(options.lockPathAbs);
 	const claimableById = new Map<string, number>();
-	for (const entry of free) {
+	const closureReadyById = new Set<string>();
+	for (const entry of selectableFree) {
 		const docPath = join(
 			options.proposalsDirAbs ?? dirname(options.indexPathAbs),
 			entry.file,
@@ -625,8 +589,34 @@ export const runContinueProposal = async (
 			continue;
 		}
 		const parsedPlan = parseProposalSlicePlan(entry.id, markdown);
-		if (parsedPlan === null) continue;
-		const derivedPlan = deriveSliceStatuses(parsedPlan, activeLocks);
+		const yamlBlock = extractYamlBlock(markdown);
+		const frontmatter =
+			yamlBlock === null ? null : parseFrontmatterBlock(yamlBlock);
+		const isPlan = frontmatter?.type === 'plan';
+		const derivedPlan =
+			parsedPlan === null
+				? null
+				: deriveSliceStatuses(parsedPlan, activeLocks);
+		const allOwnSlicesDone =
+			derivedPlan === null ||
+			derivedPlan.slices.length === 0 ||
+			derivedPlan.slices.every((slice) => slice.status === 'done');
+		if (
+			isPlan &&
+			allOwnSlicesDone &&
+			(await blockedByFor(entry, options.indexPathAbs)).length === 0
+		) {
+			closureReadyById.add(entry.id);
+		}
+		if (derivedPlan === null) continue;
+		if (
+			derivedPlan.slices.length > 0 &&
+			derivedPlan.slices.every((slice) => slice.status === 'done') &&
+			entry.status !== 'done' &&
+			!isPlan
+		) {
+			closureReadyById.add(entry.id);
+		}
 		claimableById.set(
 			entry.id,
 			derivedPlan.slices.filter(
@@ -634,9 +624,50 @@ export const runContinueProposal = async (
 			).length,
 		);
 	}
+	const closureReady = selectableFree.filter((entry) =>
+		closureReadyById.has(entry.id),
+	);
+	if (closureReady.length > 0) {
+		const next = [...closureReady].sort((a, b) =>
+			a.id.localeCompare(b.id),
+		)[0]!;
+		const isReview =
+			folderStateOf(next.file, options.proposalsDirAbs) === 'review';
+		const markdown = await readTextOrNull(
+			join(
+				options.proposalsDirAbs ?? dirname(options.indexPathAbs),
+				next.file,
+			),
+		);
+		const yamlBlock = markdown === null ? null : extractYamlBlock(markdown);
+		const frontmatter =
+			yamlBlock === null ? null : parseFrontmatterBlock(yamlBlock);
+		const isPlan = frontmatter?.type === 'plan';
+		return json({
+			kind: 'next-proposal',
+			proposalId: next.id,
+			file: next.file,
+			status: next.status,
+			action: 'close',
+			nextAction: isPlan
+				? `${options.namespacePrefix}_proposals_close_plan { planId: "${next.id}", reason }`
+				: isReview
+					? `${options.namespacePrefix}_proposal_transition { id: "${next.id}", to: "done", reason }`
+					: `${options.namespacePrefix}_proposal_transition { id: "${next.id}", to: "review", reason, validateEvidence }`,
+			relaunchCommand: `${options.namespacePrefix}_continue_proposal { proposalId: "${next.id}", mode: "plan" }`,
+			guide: [
+				'All declared slices are done; do not claim another slice.',
+				isPlan
+					? 'Run the plan closure preflight; it will close the plan only when every required child, sub-plan, own slice, and review gate is satisfied.'
+					: isReview
+						? 'Complete the final proposal transition to done after the peer-review and evidence gates pass.'
+						: 'Move the proposal to review with validation evidence, then complete peer review and transition it to done.',
+			],
+		});
+	}
 	// Unset entries keep the serial-work default of 1 (legacy docs
 	// without a `## Slices` section). Missing documents are explicitly 0.
-	const seriallyFree = free.filter(
+	const seriallyFree = selectableFree.filter(
 		(entry) => (claimableById.get(entry.id) ?? 1) > 0,
 	);
 	if (seriallyFree.length === 0) {

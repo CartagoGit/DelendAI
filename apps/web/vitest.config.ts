@@ -34,6 +34,22 @@ export default defineConfig({
 			'tests/**/*.spec.ts',
 		],
 		exclude: ['**/node_modules/**', '**/dist/**'],
+		coverage: {
+			provider: 'v8',
+			include: [
+				'src/lib/**/*.ts',
+				'src/data/**/*.ts',
+				'src/components/ui/**/*.ts',
+				'src/i18n/tools/index.ts',
+				'scripts/**/*.ts',
+			],
+			exclude: [
+				'**/*.spec.ts',
+				'**/__tests__/**',
+				'src/generated/**/*.generated.ts',
+				'scripts/lib/ensure-manifests.globalsetup.ts',
+			],
+		},
 		environment: 'node',
 		globals: false,
 		setupFiles: sharedSetupFiles(workspaceRoot),

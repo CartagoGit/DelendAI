@@ -5,6 +5,12 @@ import { join, resolve } from 'node:path';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
+import type {
+	IToolIdentityRegistry,
+	IToolRegistryEntry,
+	SafeToolCategory,
+	ToolOwner,
+} from '../contracts/interfaces/safe-tool-identity.interface';
 import {
 	DEFAULT_CONFIG_FILENAME,
 	diagnoseConfigFile,
@@ -18,12 +24,15 @@ import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
 import { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
+import { classifyOrigin } from '../plugins/classify-origin';
 import { joinRel } from '../shared/paths';
 import {
 	createGitConfigReader,
 	resolveCommitAuthor,
 } from '../shared/commit-author';
 import { createGitRunner } from '../shared/git-write';
+import { createEffectBroker } from '../capabilities/effect-broker.factory';
+import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
 import type { IToolSummary } from '../catalog/agent-discovery-types';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
 import type {
@@ -34,16 +43,103 @@ import { createCacheEvictionRegistry } from '../cache/eviction-registry';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 import type { ILogsSink } from '../plugins/plugin-contract';
 import { ConsoleLogsSink } from '../plugins/logs-sink';
+import type { IErrorCollector } from '../error-collection/collector.interface';
+import type { IErrorSink } from '../error-collection/sink.interface';
+import { createErrorCollector } from '../error-collection/collector.service';
+import { ConsoleErrorSink } from '../error-collection/console-sink';
+import { createDefaultSeverityClassifier } from '../error-collection/severity-classifier';
+import { createDefaultRedactionPolicy } from '../error-collection/redaction-policy';
+import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surface.interface';
+import type { IToolSurfacePlan } from '../contracts/interfaces/tool-surface.interface';
 import { assemblePlugins } from './assemble-plugins';
 import { assembleCoreTools } from './assemble-core-tools';
 import { assembleSkills } from './assemble-skills';
+import { createToolSurfaceRuntimeAccess } from '../project/tool-surface-runtime.service';
+import {
+	createEvidenceStore,
+	type IEvidenceStoreWithCleanup,
+} from '../evidence/evidence-store';
+import { BOOTSTRAP_CORE_TOOL_IDS } from '../contracts/constants/bootstrap-core-tool-ids.constant';
+import {
+	resolveExplicitSurfaceMode,
+	resolveInitialSurfaceMode,
+} from '../surface/decide-mode';
 import {
 	mergeCheckpointAdvisories,
 	selectCheckpointAdvisory,
 } from '../shared/checkpoint-advisory';
+import { buildStartupReportForAssembly } from '../startup-report/assembly';
+import { resolveStartupReportLevel } from '../startup-report/level';
+import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import {
+	createJsonlRuntimeEventSink,
+	runtimeEventsPath,
+	runtimeSessionStarted,
+} from '../observability/runtime-events';
+
+const toolOwnerFromOrigin = (
+	origin: 'bundled' | 'user-local' | 'external',
+): ToolOwner => {
+	switch (origin) {
+		case 'bundled':
+			return 'mcp-vertex';
+		case 'external':
+			return 'external-mcp';
+		default:
+			return 'host-project';
+	}
+};
+
+const toolCategoryOf = (input: {
+	readonly packageName: string;
+	readonly tags?: readonly string[] | undefined;
+	readonly effects?:
+		| readonly ('write' | 'spawn' | 'network' | 'destructive')[]
+		| undefined;
+}): SafeToolCategory => {
+	const tags = new Set((input.tags ?? []).map((tag) => tag.toLowerCase()));
+	const effects = new Set(input.effects ?? []);
+	if (
+		input.packageName === '@mcp-vertex/error-reporting' ||
+		tags.has('reporting') ||
+		tags.has('issues') ||
+		tags.has('logs')
+	) {
+		return 'reporting';
+	}
+	if (
+		tags.has('routing') ||
+		tags.has('orchestration') ||
+		tags.has('coordination') ||
+		tags.has('agents')
+	) {
+		return 'orchestration';
+	}
+	if (tags.has('analysis') || tags.has('audit') || tags.has('search')) {
+		return 'analysis';
+	}
+	if (
+		input.packageName.includes('external-mcps') ||
+		tags.has('external-mcps') ||
+		tags.has('browser')
+	) {
+		return 'external-bridge';
+	}
+	if (effects.has('network')) return 'network';
+	if (effects.has('spawn')) return 'process';
+	if (effects.has('write')) return 'file';
+	return 'unknown';
+};
 
 export interface IAssembledCliConfig {
 	readonly config: IMcpVertexHostConfig;
+	/** Operator-only report; never sent through the MCP protocol. */
+	readonly startupReport: import('../startup-report/model').IStartupReport;
+	/** Rebuild the report after MCP registration exposes the real schemas. */
+	readonly buildStartupReport: (
+		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+	) => import('../startup-report/model').IStartupReport;
+	readonly startupReportColor: 'auto' | 'always' | 'never';
 	readonly loadResult: IPluginLoadResult;
 	/** Config-file diagnostic from the SAME read used to assemble (so the
 	 * doctor doesn't read the file twice). */
@@ -73,6 +169,11 @@ export interface IAssembledCliConfig {
 	 * (`fs_read`, `agent_catalog`, …).
 	 */
 	readonly agentCatalogTools: readonly IToolSummary[];
+	/** f00251 — the assembled error collector (always defined; ConsoleErrorSink fallback when no plugin registers a sink). */
+	readonly errorCollector: IErrorCollector;
+	/** Runtime evidence store under `<cacheDir>/evidence`. */
+	readonly evidenceStore: IEvidenceStoreWithCleanup;
+	readonly evidenceCleanupReport: ICacheEvictionReport;
 }
 
 export interface IAssembleCliDeps {
@@ -127,7 +228,7 @@ export const assembleCliConfig = async (
 	const rawConfig = await readFile(configPath);
 	const fileConfig = parseConfigFile(rawConfig);
 	const baseConfigDiagnostic = diagnoseConfigFile(rawConfig);
-	// f00087 S1: layer the semantic plugin-path warnings on top of the
+	// S1: layer the semantic plugin-path warnings on top of the
 	// schema-only diagnostic. Schema validation can't catch the
 	// "looks-like-a-bare-name" case (a bare string is still valid), so
 	// we run a separate guard for every plugin entry that sets `path`.
@@ -149,7 +250,7 @@ export const assembleCliConfig = async (
 	const docsDir =
 		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
-	// f00109 S1: dead-config detection. A config file whose docsDir or
+	// S1: dead-config detection. A config file whose docsDir or
 	// plugin `options.roots` point at paths that do not exist (the classic
 	// copied-from-another-repo config) used to boot silently — every
 	// plugin scanned an empty tree and the agent never found the docs,
@@ -182,7 +283,7 @@ export const assembleCliConfig = async (
 	};
 	const corePrefix = args.namespacePrefix ?? 'mcp-vertex';
 	const keepLegacy = fileConfig.keepLegacy ?? false;
-	// f00089 U5: native authorized-roots filesystem allowlist. The config
+	// U5: native authorized-roots filesystem allowlist. The config
 	// lists absolute roots the operator authorizes for `fs_read`/`fs_write`
 	// beyond the workspace; a relative entry is resolved against the
 	// workspace root so the value handed to the containment helper is always
@@ -190,7 +291,7 @@ export const assembleCliConfig = async (
 	const fsAuthorizedRoots = (
 		fileConfig.filesystem?.authorizedRoots ?? []
 	).map((root) => resolve(workspace.root, root));
-	// f00052: host-scoped agent_worktree gate. Resolution order is host
+	// Host-scoped agent_worktree gate. Resolution order is host
 	// CLI flag > config file > `false` default. The CLI value is already a
 	// tri-state boolean (`undefined` when the flag is absent), so a simple
 	// nullish cascade gives the documented precedence with a concrete
@@ -198,7 +299,7 @@ export const assembleCliConfig = async (
 	const agentWorktreeEnabled =
 		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
 
-	// f00072 slice S1: the cache eviction registry is a single shared
+	// slice S1: the cache eviction registry is a single shared
 	// instance every plugin receives via its context. We create it
 	// BEFORE loadPlugins so a plugin's `register()` can call
 	// `ctx.cacheEvictionRegistry.register(rule)`. The boot sweep that
@@ -222,20 +323,51 @@ export const assembleCliConfig = async (
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
 	});
+	await bootstrapCacheLayout({
+		workspaceRootAbs: workspace.root,
+		cacheDirAbs: cacheDirContained.abs,
+		createPluginDirs: false,
+		legacyPaths:
+			cacheDir !== DEFAULT_CORE_PATHS.cacheDir
+				? [
+						{
+							sourceAbs: resolve(
+								workspace.root,
+								DEFAULT_CORE_PATHS.cacheDir,
+							),
+							destinationAbs: cacheDirContained.abs,
+						},
+					]
+				: [],
+	});
+	const evidenceStore = createEvidenceStore({
+		evidenceRootAbs: join(cacheDirContained.abs, 'evidence'),
+		evictionRegistry: cacheEvictionRegistry,
+		retentionDays: fileConfig.evidence?.retentionDays ?? 30,
+	});
+	// A server use always leaves the evidence root in place, even when no
+	// optional report is enabled. This gives every host the same durable,
+	// typed location without writing evidence into the repository.
+	await evidenceStore.ensureLayout();
 
 	// Peer-plugin registry: populated AFTER loadPlugins returns, so
 	// handlers can lazily consult `ctx.peerPlugins.list()` and see the
 	// final peer set. Created empty here; `peerPluginRegistrySet(...)`
 	// is called once we know which plugins loaded successfully.
 	const peerRegistry = createPeerPluginRegistry();
+	const toolRegistryEntries = new Map<string, IToolRegistryEntry>();
+	const toolRegistry: IToolIdentityRegistry = {
+		get: (toolName) => toolRegistryEntries.get(toolName),
+		list: () => new Map(toolRegistryEntries),
+	};
 
-	// f00082: resolve the commit-author policy ONCE (the git lookup
+	// Resolve the commit-author policy ONCE (the git lookup
 	// runs at boot, not per commit). The CLI loader fills the identity
 	// from MCP `clientInfo` (or `args.extra['agent-client']` / `agent-model`
 	// — the only two places a programmatic host can inject it today
 	// without plumbing a new channel); the named bits from the config
 	// file. Defaults: mode `'git'`, clientName `'agent'`.
-	// f00082 S3: the RAW host/model the host actually declared (config file
+	// S3: the RAW host/model the host actually declared (config file
 	// first, then the programmatic `agent-client`/`agent-model` args). Kept
 	// separate from the sentinel-defaulted commit-author identity below so the
 	// plugin-context `hostIdentity` is populated ONLY when a real identity was
@@ -278,18 +410,56 @@ export const assembleCliConfig = async (
 		createGitConfigReader(createGitRunner(workspace.root)),
 	);
 
-	// f00154 S2 — the sink every plugin's context receives. We
+	// S2 — the sink every plugin's context receives. We
 	// resolve it AFTER `assemblePlugins` (which sees the `logsSink`
 	// each plugin returned in its registrations), and fall back to a
 	// `ConsoleLogsSink` if no plugin supplied one. The fallback
 	// guarantees no tool-call lifecycle event is silently dropped
 	// when the host forgets `--plugins=logs`.
 	let resolvedLogsSink: ILogsSink | undefined;
+	// — collector assembled after `assemblePlugins` returns.
+	let resolvedErrorCollector: IErrorCollector | undefined;
+	// One dry-run-gated effects object, shared across every plugin's
+	// context, built through the EffectBroker (r00037 S2/S3) — the
+	// single point of construction for every mutating capability a
+	// plugin context hands out. Safe to share a single instance — the
+	// gate reads the AMBIENT dry-run scope of whichever tool call is
+	// currently invoking it (see `dry-run-scope.helper.ts`), not any
+	// state captured at construction time.
+	const pluginEffects: IPluginEffectsCapability = createEffectBroker({
+		git: {
+			kind: 'git',
+			perform: createGitRunner(workspace.root),
+			describe: (args: readonly string[]) => args.join(' '),
+		},
+	});
 	const buildContext = (
 		pluginName: string,
 		cacheNamespace?: string,
 	): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
+		const pluginOptions = new Map(
+			Object.entries(fileConfig.plugins ?? {}).map(([name, config]) => [
+				name,
+				config.options ?? {},
+			]),
+		);
+		const pluginCacheDir = joinRel(
+			corePaths.cacheDir,
+			cacheNamespace ? `${cacheNamespace}/${pluginName}` : pluginName,
+		);
+		const cachePath = (relativePath = ''): string => {
+			const contained = resolveWorkspaceContained(
+				workspace.root,
+				join(pluginCacheDir, relativePath),
+			);
+			if (!contained.ok) {
+				throw new Error(
+					`plugin cache path escapes ${pluginCacheDir}: ${relativePath}`,
+				);
+			}
+			return contained.abs;
+		};
 		return {
 			workspace,
 			corePaths,
@@ -299,18 +469,22 @@ export const assembleCliConfig = async (
 			agentWorktreeEnabled,
 			commitAuthor: commitAuthorResolution,
 			...(hostIdentity !== undefined ? { hostIdentity } : {}),
-			pluginCacheDir: joinRel(
-				corePaths.cacheDir,
-				cacheNamespace ? `${cacheNamespace}/${pluginName}` : pluginName,
-			),
+			pluginCacheDir,
+			cachePath,
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
 			options: pluginConfig.options ?? {},
+			pluginOptions,
 			args: args.extra,
 			cacheEvictionRegistry,
 			peerPlugins: peerRegistry.registry,
+			toolRegistry,
+			effects: pluginEffects,
 			...(resolvedLogsSink !== undefined
 				? { logsSink: resolvedLogsSink }
+				: {}),
+			...(resolvedErrorCollector !== undefined
+				? { errorCollector: resolvedErrorCollector }
 				: {}),
 		};
 	};
@@ -326,13 +500,24 @@ export const assembleCliConfig = async (
 		onToolCalls,
 		onToolStarts,
 		onToolCancels,
+		onHookErrors,
 		isAgentStuckFn,
 		getCheckpointAdvisoryFns,
 		beforeToolCallFns,
 		logsSink,
+		errorSinks,
 		activationReport,
+		toolSurfaceDescriptors,
 		configurationPlugins,
 		configurationArtifacts,
+		pluginSummaries,
+		lazyToolActivators,
+		moduleLoading,
+		lazyPluginPackages,
+		lazyPluginActivators,
+		consumeLazyPluginRegistrations,
+		disposePlugins,
+		disposePlugin,
 	} = await assemblePlugins({
 		args,
 		fileConfig,
@@ -342,6 +527,57 @@ export const assembleCliConfig = async (
 		buildContext,
 		peerRegistry,
 		...(deps.import !== undefined ? { importFn: deps.import } : {}),
+	});
+	const cacheReconcile = (apply: boolean) =>
+		bootstrapCacheLayout({
+			workspaceRootAbs: workspace.root,
+			cacheDirAbs: cacheDirContained.abs,
+			apply,
+			legacyPaths: loadResult.loaded.flatMap(({ plugin }) => {
+				const target = joinRel(
+					corePaths.cacheDir,
+					plugin.cacheNamespace
+						? `${plugin.cacheNamespace}/${plugin.name}`
+						: plugin.name,
+				);
+				return [
+					...(cacheDir !== DEFAULT_CORE_PATHS.cacheDir
+						? [
+								{
+									sourceAbs: resolve(
+										workspace.root,
+										joinRel(
+											DEFAULT_CORE_PATHS.cacheDir,
+											plugin.cacheNamespace
+												? `${plugin.cacheNamespace}/${plugin.name}`
+												: plugin.name,
+										),
+									),
+									destinationAbs: resolve(
+										workspace.root,
+										target,
+									),
+								},
+								{
+									sourceAbs: resolve(
+										workspace.root,
+										`.${plugin.name}`,
+									),
+									destinationAbs: resolve(
+										workspace.root,
+										target,
+									),
+								},
+							]
+						: []),
+				];
+			}),
+			createPluginDirs: false,
+		});
+	await bootstrapCacheLayout({
+		workspaceRootAbs: workspace.root,
+		cacheDirAbs: cacheDirContained.abs,
+		createPluginDirs: false,
 	});
 
 	const {
@@ -357,38 +593,244 @@ export const assembleCliConfig = async (
 		cacheDir,
 		corePrefix,
 		docsDirMissing,
+		configPresent: baseConfigDiagnostic.present,
 		readFile,
 		loadResult,
 		configurationArtifacts,
+		...(lazyPluginPackages !== undefined
+			? { portablePluginPackages: lazyPluginPackages }
+			: {}),
 	});
 
-	const { tools, catalogToolEntries, metricsRegistry } =
-		await assembleCoreTools({
-			args,
-			corePrefix,
-			corePaths,
-			workspace,
-			fileConfig,
-			configDiagnostic,
-			configPluginNames,
-			effectivePlugins,
-			activationReport,
-			loadResult,
-			pluginToolEntries,
-			qualifiedPluginTools,
-			knowledge,
-			skillSummaries,
-			skillCatalog,
-			proposalSummaries,
-			validationMatrix,
-			recommendedNextAction,
-			configurationPlugins,
-			configurationArtifacts,
-			fsAuthorizedRoots,
-			keepLegacy,
-			prompts,
-			resources,
+	const toolSurfaceRuntime = createToolSurfaceRuntimeAccess();
+	const explicitSurfaceMode = resolveExplicitSurfaceMode({
+		cliMode: args.surfaceMode,
+		cliSurfaceExplicit: args.tokens.surface !== undefined,
+		configMode: fileConfig.surfaceMode,
+	});
+	const initialSurfaceMode = resolveInitialSurfaceMode(explicitSurfaceMode);
+	const {
+		tools,
+		catalogToolEntries,
+		metricsRegistry,
+		configurationSnapshot,
+	} = await assembleCoreTools({
+		args,
+		corePrefix,
+		corePaths,
+		workspace,
+		fileConfig,
+		configDiagnostic,
+		configPluginNames,
+		effectivePlugins,
+		activationReport,
+		loadResult,
+		pluginSummaries,
+		moduleLoading,
+		pluginToolEntries,
+		qualifiedPluginTools,
+		knowledge,
+		skillSummaries,
+		skillCatalog,
+		proposalSummaries,
+		validationMatrix,
+		recommendedNextAction,
+		configurationPlugins,
+		configurationArtifacts,
+		fsAuthorizedRoots,
+		keepLegacy,
+		toolSurfaceRuntime,
+		prompts,
+		resources,
+		cacheReconcile,
+	});
+	const runtimeEventSink = createJsonlRuntimeEventSink(
+		runtimeEventsPath(cacheDirContained.abs),
+	);
+	runtimeSessionStarted(runtimeEventSink, {
+		mode: initialSurfaceMode,
+		workspace: workspace.root,
+	});
+	const coreSurfaceDescriptors: IToolSurfaceDescriptor[] = tools
+		.filter(
+			(registration) =>
+				!toolSurfaceDescriptors.some(
+					(entry) => entry.registrationId === registration.id,
+				),
+		)
+		.map((registration) => ({
+			registrationId: registration.id,
+			name: `${corePrefix}_${registration.id}`,
+			toolId: registration.id,
+			...(registration.summary !== undefined
+				? { summary: registration.summary }
+				: {}),
+			...(registration.tags !== undefined
+				? { tags: registration.tags }
+				: {}),
+		}));
+	const pluginDescriptorsByRegistrationId = new Map(
+		toolSurfaceDescriptors.map(
+			(entry) => [entry.registrationId, entry] as const,
+		),
+	);
+	for (const registration of tools) {
+		const descriptor = pluginDescriptorsByRegistrationId.get(
+			registration.id,
+		);
+		if (descriptor?.pluginId !== undefined) {
+			const loadedPlugin = loadResult.loaded.find(
+				(entry) => entry.plugin.name === descriptor.pluginId,
+			);
+			const pluginConfig = pluginConfigFor(
+				fileConfig,
+				descriptor.pluginId,
+			);
+			const origin = classifyOrigin({
+				name: descriptor.pluginId,
+				resolvedSpecifier:
+					loadedPlugin?.resolved ?? descriptor.pluginId,
+				hasExplicitPath:
+					typeof pluginConfig.path === 'string' &&
+					pluginConfig.path !== '',
+				isExternalServer: descriptor.pluginId.startsWith('ext.'),
+			});
+			const packageName = loadedPlugin?.resolved ?? descriptor.pluginId;
+			toolRegistryEntries.set(descriptor.name, {
+				packageName,
+				owner: toolOwnerFromOrigin(origin),
+				...(origin === 'bundled'
+					? { publicToolName: descriptor.toolId }
+					: {}),
+				category: toolCategoryOf({
+					packageName,
+					tags: registration.tags,
+					effects: registration.effects,
+				}),
+			});
+			continue;
+		}
+
+		toolRegistryEntries.set(`${corePrefix}_${registration.id}`, {
+			packageName: '@mcp-vertex/core',
+			owner: 'mcp-vertex',
+			publicToolName: registration.id,
+			category: toolCategoryOf({
+				packageName: '@mcp-vertex/core',
+				tags: registration.tags,
+				effects: registration.effects,
+			}),
 		});
+	}
+	// Lazy plugin tools are catalogued before any plugin module is imported.
+	// Give the same identity registry coverage to those hidden routes so
+	// permission/category consumers do not mistake "not loaded" for "unknown".
+	for (const descriptor of toolSurfaceDescriptors) {
+		if (
+			descriptor.pluginId === undefined ||
+			toolRegistryEntries.has(descriptor.name)
+		)
+			continue;
+		const packageName = `@mcp-vertex/${descriptor.pluginId}`;
+		toolRegistryEntries.set(descriptor.name, {
+			packageName,
+			owner: 'mcp-vertex',
+			publicToolName: descriptor.toolId,
+			category: toolCategoryOf({
+				packageName,
+				tags: descriptor.tags,
+			}),
+		});
+	}
+	const pluginDescriptorsByPlugin = new Map<
+		string,
+		{
+			namespace: string;
+			toolRegistrationIds: string[];
+			describe?: string | undefined;
+		}
+	>();
+	// Keep plugins that only contribute prompts, resources, knowledge, or
+	// skills in the surface index too. They have no tool descriptor to seed
+	// this map, but `plugin_activate` still needs to resolve their id so a
+	// lazy module can reconnect those non-tool registrations on demand.
+	for (const plugin of configurationPlugins) {
+		pluginDescriptorsByPlugin.set(plugin.id, {
+			namespace: plugin.prefix ?? plugin.id,
+			toolRegistrationIds: [],
+			describe: pluginSummaries.find(
+				(summary) => summary.name === plugin.id,
+			)?.describe,
+		});
+	}
+	for (const entry of toolSurfaceDescriptors) {
+		if (entry.pluginId === undefined || entry.namespace === undefined)
+			continue;
+		const existing = pluginDescriptorsByPlugin.get(entry.pluginId) ?? {
+			namespace: entry.namespace,
+			toolRegistrationIds: [],
+			describe: loadResult.loaded.find(
+				(candidate) => candidate.plugin.name === entry.pluginId,
+			)?.plugin.describe,
+		};
+		existing.toolRegistrationIds.push(entry.registrationId);
+		pluginDescriptorsByPlugin.set(entry.pluginId, existing);
+	}
+	const toolSurfacePlan: IToolSurfacePlan = {
+		mode: initialSurfaceMode,
+		...(explicitSurfaceMode !== undefined
+			? { explicitMode: explicitSurfaceMode }
+			: {}),
+		bootstrapToolIds: [...BOOTSTRAP_CORE_TOOL_IDS],
+		// The vertex router is ALWAYS registered as a tool
+		// (see assemble-core-tools.ts) and the plan records its id so
+		// the runtime can hide it in `native` mode (the operator has
+		// every tool listed) and expose it in `managed`/`adaptive`/`compact`
+		// mode as the fallback entry point for tools outside the
+		// bootstrap set.
+		routerToolId: 'vertex',
+		workingSet: {
+			idleTtlMs:
+				fileConfig.managedSurface?.idleTtlMs !== undefined
+					? fileConfig.managedSurface.idleTtlMs
+					: 5 * 60_000,
+			maxWarmPlugins:
+				fileConfig.managedSurface?.maxWarmPlugins !== undefined
+					? fileConfig.managedSurface.maxWarmPlugins
+					: 8,
+		},
+		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
+		plugins: [...pluginDescriptorsByPlugin.entries()].map(
+			([id, entry]) => ({
+				id,
+				namespace: entry.namespace,
+				toolRegistrationIds: entry.toolRegistrationIds,
+				...(entry.describe !== undefined
+					? { describe: entry.describe }
+					: {}),
+			}),
+		),
+	};
+
+	const emitHookError = async (info: {
+		readonly pluginName: string;
+		readonly resolvedSpecifier: string;
+		readonly hookName: import('../contracts/interfaces/plugin-lifecycle-error.interface').PluginHookName;
+		readonly toolName: string;
+		readonly args: unknown;
+		readonly error: unknown;
+		readonly elapsedMs?: number;
+	}): Promise<void> => {
+		for (const observer of onHookErrors) {
+			try {
+				await observer.handler(info);
+			} catch (hookError) {
+				process.stderr.write(
+					`[mcp-vertex] onHookError error (${observer.pluginName}): ${hookError instanceof Error ? hookError.message : String(hookError)}\n`,
+				);
+			}
+		}
+	};
 
 	const config: IMcpVertexHostConfig = {
 		metadata: {
@@ -404,40 +846,113 @@ export const assembleCliConfig = async (
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
+		runtimeEventSink,
 		extraTools: tools,
 		extraPrompts: prompts,
 		extraResources: resources,
-		...(onToolStarts.length > 0
+		toolSurfacePlan,
+		toolSurfaceRuntime,
+		disposePlugins,
+		...(disposePlugin !== undefined ? { disposePlugin } : {}),
+		...(lazyToolActivators !== undefined ? { lazyToolActivators } : {}),
+		...(lazyPluginActivators !== undefined ? { lazyPluginActivators } : {}),
+		...(consumeLazyPluginRegistrations !== undefined
+			? { consumeLazyPluginRegistrations }
+			: {}),
+		...(moduleLoading === 'lazy' || onToolStarts.length > 0
 			? {
 					onToolStart: async (toolName, toolArgs) => {
-						for (const handler of onToolStarts) {
+						for (const observer of onToolStarts) {
 							try {
-								await handler(toolName, toolArgs);
+								await observer.handler(toolName, toolArgs);
 							} catch (e) {
 								process.stderr.write(
 									`[mcp-vertex] onToolStart error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
+								await emitHookError({
+									pluginName: observer.pluginName,
+									resolvedSpecifier:
+										observer.resolvedSpecifier,
+									hookName: 'onToolStart',
+									toolName,
+									args: toolArgs,
+									error: e,
+								});
 							}
 						}
 					},
 				}
 			: {}),
-		...(onToolCancels.length > 0
+		...(moduleLoading === 'lazy' ||
+		onToolCancels.length > 0 ||
+		resolvedLogsSink !== undefined
 			? {
-					onToolCancel: async (toolName, toolArgs, elapsedMs) => {
-						for (const handler of onToolCancels) {
+					onToolCancel: async (
+						toolName,
+						toolArgs,
+						elapsedMs,
+						context,
+					) => {
+						const cancellation = context ?? {
+							reason: 'tool invocation aborted',
+							nextAction:
+								'Retry the operation or resume from the latest persisted checkpoint.',
+							error: new Error('tool invocation aborted'),
+						};
+						if (resolvedLogsSink !== undefined) {
 							try {
-								await handler(toolName, toolArgs, elapsedMs);
+								await resolvedLogsSink.record({
+									ts: new Date().toISOString(),
+									kind: 'tool-cancelled',
+									outcome: 'cancelled',
+									severity: 'notice',
+									incidentType: 'tool-cancelled',
+									toolName,
+									taskId: null,
+									agent: null,
+									summary: `tool-cancelled: ${toolName}: ${cancellation.reason}`,
+									meta: {
+										reason: cancellation.reason,
+										nextAction: cancellation.nextAction,
+										elapsedMs,
+										error: String(cancellation.error),
+										args: toolArgs,
+									},
+								});
+							} catch (e) {
+								process.stderr.write(
+									`[mcp-vertex] cancellation log error: ${e instanceof Error ? e.message : String(e)}\n`,
+								);
+							}
+						}
+						for (const observer of onToolCancels) {
+							try {
+								await observer.handler(
+									toolName,
+									toolArgs,
+									elapsedMs,
+									cancellation,
+								);
 							} catch (e) {
 								process.stderr.write(
 									`[mcp-vertex] onToolCancel error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
+								await emitHookError({
+									pluginName: observer.pluginName,
+									resolvedSpecifier:
+										observer.resolvedSpecifier,
+									hookName: 'onToolCancel',
+									toolName,
+									args: toolArgs,
+									error: e,
+									elapsedMs,
+								});
 							}
 						}
 					},
 				}
 			: {}),
-		...(onToolCalls.length > 0
+		...(moduleLoading === 'lazy' || onToolCalls.length > 0
 			? {
 					onToolCall: async (
 						toolName,
@@ -446,9 +961,9 @@ export const assembleCliConfig = async (
 						error,
 						elapsedMs,
 					) => {
-						for (const handler of onToolCalls) {
+						for (const observer of onToolCalls) {
 							try {
-								await handler(
+								await observer.handler(
 									toolName,
 									toolArgs,
 									result,
@@ -459,15 +974,30 @@ export const assembleCliConfig = async (
 								process.stderr.write(
 									`[mcp-vertex] onToolCall error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
+								await emitHookError({
+									pluginName: observer.pluginName,
+									resolvedSpecifier:
+										observer.resolvedSpecifier,
+									hookName: 'onToolCall',
+									toolName,
+									args: toolArgs,
+									error: e,
+									...(elapsedMs !== undefined
+										? { elapsedMs }
+										: {}),
+								});
 							}
 						}
 					},
 				}
 			: {}),
-		...(isAgentStuckFn !== undefined
-			? { isAgentStuck: isAgentStuckFn }
+		...(moduleLoading === 'lazy' || isAgentStuckFn !== undefined
+			? {
+					isAgentStuck: (toolName, toolArgs) =>
+						isAgentStuckFn?.(toolName, toolArgs) ?? null,
+				}
 			: {}),
-		...(getCheckpointAdvisoryFns.length > 0
+		...(moduleLoading === 'lazy' || getCheckpointAdvisoryFns.length > 0
 			? {
 					getCheckpointAdvisory: (context) =>
 						selectCheckpointAdvisory(
@@ -475,7 +1005,7 @@ export const assembleCliConfig = async (
 						),
 				}
 			: {}),
-		...(beforeToolCallFns.length > 0
+		...(moduleLoading === 'lazy' || beforeToolCallFns.length > 0
 			? {
 					beforeToolCall: (context) =>
 						mergeCheckpointAdvisories(
@@ -485,7 +1015,7 @@ export const assembleCliConfig = async (
 			: {}),
 	};
 
-	// f00154 S2 — if no plugin supplied a sink, default to the
+	// S2 — if no plugin supplied a sink, default to the
 	// console fallback so lifecycle events still surface (one
 	// structured JSON line per event on stderr, redacted).
 	resolvedLogsSink =
@@ -494,7 +1024,123 @@ export const assembleCliConfig = async (
 			quiet: (args as { quiet?: boolean }).quiet === true,
 		});
 
-	// f00072 slice S1/S3: boot sweep. Runs once, AFTER every plugin has
+	// Build the error collector once; inject ConsoleErrorSink fallback when
+	// no plugin registered a sink so every tool invocation has a capture target.
+	const effectiveErrorSinks: readonly IErrorSink[] =
+		errorSinks.length > 0
+			? errorSinks
+			: [
+					new ConsoleErrorSink({
+						quiet: (args as { quiet?: boolean }).quiet === true,
+					}),
+				];
+	const errorCollector = createErrorCollector({
+		sinks: effectiveErrorSinks,
+		classifier: createDefaultSeverityClassifier(),
+		redaction: createDefaultRedactionPolicy(),
+	});
+	resolvedErrorCollector = errorCollector;
+
+	const startupLevel = resolveStartupReportLevel({
+		configLevel: fileConfig.startupReport?.level,
+		cliLevel: args.startupReportLevel,
+	});
+	const skillsByPlugin = Object.fromEntries(
+		['core', ...effectivePlugins].map((pluginId) => [
+			pluginId,
+			skillSummaries
+				.filter((skill) =>
+					skill.appliesTo.some(
+						(owner) =>
+							owner === '@mcp-vertex/*' ||
+							owner === `@mcp-vertex/${pluginId}`,
+					),
+				)
+				.map((skill) => skill.id),
+		]),
+	);
+	const buildStartupReport = (
+		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+	) =>
+		buildStartupReportForAssembly({
+			plan: toolSurfacePlan,
+			level: startupLevel.level,
+			version: args.serverVersion,
+			workspace: args.workspace,
+			preset: args.tokens.preset ?? 'custom',
+			configuredPluginIds: effectivePlugins,
+			loadedPluginIds: loadResult.loaded.map(
+				(entry) => entry.plugin.name,
+			),
+			skillsByPlugin,
+			failedPluginCount: loadResult.errors.length,
+			skillsAvailable: skillSummaries.length,
+			resourcesAvailable:
+				resources.length +
+				(moduleLoading === 'lazy'
+					? configurationPlugins.reduce(
+							(total, plugin) =>
+								total + plugin.capabilities.resources,
+							0,
+						)
+					: 0),
+			moduleLoading,
+			...(schemaBytesByRegistrationId !== undefined
+				? { schemaBytesByRegistrationId }
+				: {}),
+			warnings: [
+				...configDiagnostic.issues.map((message) => ({
+					severity: 'warning' as const,
+					code: 'config',
+					message,
+				})),
+				...(startupLevel.requested !== undefined
+					? [
+							{
+								severity: 'warning' as const,
+								code: 'startup-report-level',
+								message: `Unknown startup report level "${startupLevel.requested}"; using ${startupLevel.level}.`,
+							},
+						]
+					: []),
+			],
+			diagnostics: {
+				configuration: configurationSnapshot,
+			},
+		});
+	const startupReport = buildStartupReport();
+	// Runtime evidence is cache data, not repository output. Keep the surface
+	// and skill snapshots compact: they make the typed evidence directories
+	// useful to operators without persisting tool schemas or skill bodies.
+	await evidenceStore.write('surface', {
+		mode: startupReport.identity.surfaceMode,
+		availableTools: startupReport.catalog.toolsAvailable,
+		exposedTools: startupReport.catalog.toolsExposed,
+		exposedSchemaBytesPerRequest:
+			startupReport.reconciliation.exposedSchemaBytesPerRequest,
+		nativeEquivalentTokensPerRequest:
+			startupReport.reconciliation.nativeEquivalentTokensPerRequest,
+		avoidedTokensPerRequest:
+			startupReport.reconciliation.avoidedTokensPerRequest,
+	});
+	await evidenceStore.write('skills', {
+		available: startupReport.catalog.skillsAvailable,
+		bodiesPreloaded: startupReport.catalog.skillsBodiesPreloaded,
+		byPlugin: skillsByPlugin,
+	});
+	if (startupReport.warnings.length > 0) {
+		await evidenceStore.write('diagnostic', {
+			warnings: startupReport.warnings.map(
+				({ code, message, severity }) => ({
+					code,
+					message,
+					severity,
+				}),
+			),
+		});
+	}
+
+	// slice S1/S3: boot sweep. Runs once, AFTER every plugin has
 	// registered its rules. The result is surfaced in
 	// `IAssembledCliConfig.cacheEvictionBootReport` so the doctor
 	// (and CLI tests) can assert what the sweep would have done.
@@ -524,14 +1170,23 @@ export const assembleCliConfig = async (
 					rulesEvaluated: 0,
 				}
 			: await cacheEvictionRegistry.run({ dryRun: !cacheEvictionApply });
+	const evidenceCleanupReport = await evidenceStore.cleanup(
+		fileConfig.evidence?.cleanup ?? 'on-boot',
+	);
 
 	return {
 		config,
+		startupReport,
+		buildStartupReport,
+		startupReportColor: fileConfig.startupReport?.color ?? 'auto',
 		loadResult,
 		configDiagnostic,
 		configPath,
 		cacheEvictionRegistry,
 		cacheEvictionBootReport,
 		agentCatalogTools: catalogToolEntries,
+		errorCollector,
+		evidenceStore,
+		evidenceCleanupReport,
 	};
 };

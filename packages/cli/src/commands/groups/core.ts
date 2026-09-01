@@ -156,6 +156,35 @@ const projectCreateCommand: ICliCommand = {
 	},
 };
 
+const adoptCommand: ICliCommand = {
+	name: 'adopt',
+	summary: 'Assess or scaffold mcp-vertex adoption for the current project.',
+	async run(args, ctx) {
+		return data(
+			await request(ctx, 'mcp-vertex_adopt_project', {
+				...(hasFlag(args, 'analyze') ? { analyze: true } : {}),
+				...(hasFlag(args, 'write') ? { write: true } : {}),
+				...(hasFlag(args, 'overwrite') ? { overwrite: true } : {}),
+				...(scalarArg(args, 'project-name') !== undefined
+					? { projectName: scalarArg(args, 'project-name') }
+					: {}),
+				...(scalarArg(args, 'prefix') !== undefined
+					? { namespacePrefix: scalarArg(args, 'prefix') }
+					: {}),
+				...(scalarArg(args, 'server-name') !== undefined
+					? { mcpServerName: scalarArg(args, 'server-name') }
+					: {}),
+				...(scalarArg(args, 'default-model') !== undefined
+					? { defaultModel: scalarArg(args, 'default-model') }
+					: {}),
+				...(scalarArg(args, 'repo') !== undefined
+					? { repo: scalarArg(args, 'repo') }
+					: {}),
+			}),
+		);
+	},
+};
+
 interface IPluginNewCommandDeps {
 	readonly createWorkspacePathProvider: typeof createWorkspacePathProvider;
 	readonly runCreatePlugin: typeof runCreatePlugin;
@@ -226,6 +255,7 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	fsReadCommand,
 	fsWriteCommand,
 	knowledgeCommand,
+	adoptCommand,
 	projectAnalyzeCommand,
 	projectPlanCommand,
 	projectCreateCommand,

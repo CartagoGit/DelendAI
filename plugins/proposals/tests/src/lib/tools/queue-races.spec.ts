@@ -26,10 +26,15 @@ import {
 	buildStateRepairRegistration,
 	type IStateToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
+import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 const STALE_LAST_SEEN = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
-/** A registry whose single adopted assignment is a stale, lock-less zombie. */
+/** A registry whose single adopted assignment is a stale zombie with
+ *  a lock entry — R-2026-08-31: `gcZombies` only emits the watchdog
+ *  event when the orphan actually held a lock, so the test fixtures
+ *  must include a real lock entry for the reconcile path to fire
+ *  `queueEmitter`. */
 const zombieRegistry = (taskId: string): string =>
 	JSON.stringify({
 		version: 2,
@@ -51,6 +56,25 @@ const zombieRegistry = (taskId: string): string =>
 		],
 	});
 
+/** A lock file with the matching taskId so the reconcile path
+ *  actually frees a lock and triggers the watchdog event. */
+const zombieLock = (taskId: string): string =>
+	JSON.stringify({
+		version: 1,
+		stale_after_minutes: 10,
+		in_flight: [
+			{
+				task_id: taskId,
+				agent: 'vega',
+				ownership: ['packages/proposals/src/queue-race.ts'],
+				started_at: STALE_LAST_SEEN,
+				last_seen: STALE_LAST_SEEN,
+				host: 'dead-host',
+				pid: 999999,
+			},
+		],
+	});
+
 interface IToolResult {
 	readonly content: Array<{ type: 'text'; text: string }>;
 }
@@ -62,13 +86,11 @@ const captureRepairHandler = async (
 	options: IStateToolOptions,
 ): Promise<ToolHandler> => {
 	let handler: ToolHandler | undefined;
-	const server = {
-		registerTool: (_name: string, _config: unknown, h: ToolHandler) => {
-			handler = h;
+	const server = createFakeToolServer({
+		onRegisterTool: (call) => {
+			handler = call.handler as ToolHandler;
 		},
-	} as unknown as Parameters<
-		ReturnType<typeof buildStateRepairRegistration>['register']
-	>[0];
+	});
 	await buildStateRepairRegistration(options).register(server);
 	if (handler === undefined) throw new Error('state_repair did not register');
 	return handler;
@@ -90,19 +112,28 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	const namesOptions = (registryPath: string): IAgentNamesToolOptions => ({
+	const namesOptions = (
+		registryPath: string,
+		lockPath: string,
+	): IAgentNamesToolOptions => ({
 		namespacePrefix: 'proposals',
 		registryPathAbs: registryPath,
-		lockPathAbs: join(root, 'agent-lock.json'), // absent: zombies hold no lock
+		lockPathAbs: lockPath,
 		queuePathAbs: queuePath,
 		closedTasksPathAbs: closedTasksPath,
 		workspaceRoot: root,
 	});
 
-	/** One reconcile = one force_release = one watchdog enqueue on the shared queue. */
+	/** One reconcile = one force_release = one watchdog enqueue on the shared queue.
+	 *  R-2026-08-31: the lock fixture MUST contain the matching taskId so the
+	 *  `gcZombies` release actually fires `queueEmitter`. Each zombie
+	 *  gets its own lock file under a unique name so the releases do
+	 *  not race the same in_flight entry. */
 	const reconcileZombie = (index: number): Promise<IToolResult> => {
 		const registryPath = join(root, `registry-${index}.json`);
+		const lockPath = join(root, `agent-lock-${index}.json`);
 		writeFileSync(registryPath, zombieRegistry(`task-${index}`));
+		writeFileSync(lockPath, zombieLock(`task-${index}`));
 		return runAgentNames(
 			{
 				action: 'reconcile',
@@ -110,7 +141,7 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 				stale_after_minutes: 10,
 				now: new Date().toISOString(),
 			},
-			namesOptions(registryPath),
+			namesOptions(registryPath, lockPath),
 		);
 	};
 
@@ -159,9 +190,14 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 
 	it('serialized transactions keep the one-entry-per-taskId parser invariant', async () => {
 		// The same zombie reconciled twice concurrently must not append a
-		// duplicate taskId (parseQueue hard-fails on duplicates).
+		// duplicate taskId (parseQueue hard-fails on duplicates). Both
+		// reconciles must share the same lock file so each one releases
+		// the same taskId; the queue emitter fires once because the
+		// second reconcile finds the lock already gone.
 		const registryPath = join(root, 'registry-dup.json');
+		const lockPath = join(root, 'agent-lock-dup.json');
 		writeFileSync(registryPath, zombieRegistry('task-dup'));
+		writeFileSync(lockPath, zombieLock('task-dup'));
 		const args = {
 			action: 'reconcile',
 			dry_run: false,
@@ -169,8 +205,8 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 			now: new Date().toISOString(),
 		} as const;
 		await Promise.all([
-			runAgentNames(args, namesOptions(registryPath)),
-			runAgentNames(args, namesOptions(registryPath)),
+			runAgentNames(args, namesOptions(registryPath, lockPath)),
+			runAgentNames(args, namesOptions(registryPath, lockPath)),
 		]);
 
 		// parseQueue itself enforces the invariant — it throws on duplicates.

@@ -1,9 +1,35 @@
 {
-	"generatedAt": "2026-08-23T23:26:39.069Z",
 	"mode": "compact",
 	"tools": [
 		{
+			"name": "mcp-vertex_adaptive-optimizer_activation_metrics",
+			"plugin": "adaptive-optimizer"
+		},
+		{
+			"name": "mcp-vertex_adaptive-optimizer_adaptive_facade",
+			"plugin": "adaptive-optimizer"
+		},
+		{
+			"name": "mcp-vertex_adaptive-optimizer_optimize_run",
+			"plugin": "adaptive-optimizer"
+		},
+		{
+			"name": "mcp-vertex_adopt_project"
+		},
+		{
 			"name": "mcp-vertex_agent_catalog"
+		},
+		{
+			"name": "mcp-vertex_agent-orchestrator_classify",
+			"plugin": "agent-orchestrator"
+		},
+		{
+			"name": "mcp-vertex_agent-orchestrator_dispatch",
+			"plugin": "agent-orchestrator"
+		},
+		{
+			"name": "mcp-vertex_agent-orchestrator_plan",
+			"plugin": "agent-orchestrator"
 		},
 		{
 			"name": "mcp-vertex_analyze_project"
@@ -45,6 +71,45 @@
 			"plugin": "auto-agent-selector"
 		},
 		{
+			"name": "mcp-vertex_auto-plugin-selector_plugins_recommend",
+			"plugin": "auto-plugin-selector"
+		},
+		{
+			"name": "mcp-vertex_cache_reconcile"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_commit",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_push",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_refresh_branch_protection",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_run",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_status",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "mcp-vertex_completion_clear",
+			"plugin": "completion"
+		},
+		{
+			"name": "mcp-vertex_completion_report_complete",
+			"plugin": "completion"
+		},
+		{
+			"name": "mcp-vertex_completion_status",
+			"plugin": "completion"
+		},
+		{
 			"name": "mcp-vertex_configuration_center"
 		},
 		{
@@ -66,6 +131,10 @@
 		{
 			"name": "mcp-vertex_container_k8s_apply",
 			"plugin": "container"
+		},
+		{
+			"name": "mcp-vertex_context-for-change_context_for_change",
+			"plugin": "context-for-change"
 		},
 		{
 			"name": "mcp-vertex_conventions_conventions_check",
@@ -189,6 +258,10 @@
 			"plugin": "forge"
 		},
 		{
+			"name": "mcp-vertex_forge_mcp_vertex_issue_create",
+			"plugin": "forge"
+		},
+		{
 			"name": "mcp-vertex_forge_pr_comment",
 			"plugin": "forge"
 		},
@@ -276,6 +349,14 @@
 		{
 			"name": "mcp-vertex_i18n_i18n_validate",
 			"plugin": "i18n"
+		},
+		{
+			"name": "mcp-vertex_impact-analysis_impact_analyze",
+			"plugin": "impact-analysis"
+		},
+		{
+			"name": "mcp-vertex_impact-analysis_tests_for_change",
+			"plugin": "impact-analysis"
 		},
 		{
 			"name": "mcp-vertex_init_config"
@@ -433,10 +514,36 @@
 			"name": "mcp-vertex_plan_mcp_project"
 		},
 		{
+			"name": "mcp-vertex_plugin_activate"
+		},
+		{
 			"name": "mcp-vertex_plugin_add"
 		},
 		{
+			"name": "mcp-vertex_plugin_deactivate"
+		},
+		{
 			"name": "mcp-vertex_plugin_search"
+		},
+		{
+			"name": "mcp-vertex_project_context"
+		},
+		{
+			"name": "mcp-vertex_project_plugins_create"
+		},
+		{
+			"name": "mcp-vertex_project_plugins_inspect"
+		},
+		{
+			"name": "mcp-vertex_project_plugins_repair"
+		},
+		{
+			"name": "mcp-vertex_project-health_project_health",
+			"plugin": "project-health"
+		},
+		{
+			"name": "mcp-vertex_project-kpis_project_kpis",
+			"plugin": "project-kpis"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_lock",
@@ -456,6 +563,10 @@
 		},
 		{
 			"name": "mcp-vertex_proposals_agents_lock_diagnose",
+			"plugin": "proposals"
+		},
+		{
+			"name": "mcp-vertex_proposals_auto_fix_queue",
 			"plugin": "proposals"
 		},
 		{
@@ -495,6 +606,10 @@
 			"plugin": "proposals"
 		},
 		{
+			"name": "mcp-vertex_proposals_incident_proposals",
+			"plugin": "proposals"
+		},
+		{
 			"name": "mcp-vertex_proposals_inherit_host_instructions",
 			"plugin": "proposals"
 		},
@@ -516,6 +631,10 @@
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_force_transition",
+			"plugin": "proposals"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposal_get",
 			"plugin": "proposals"
 		},
 		{
@@ -577,6 +696,10 @@
 		{
 			"name": "mcp-vertex_quality_run_quality",
 			"plugin": "quality"
+		},
+		{
+			"name": "mcp-vertex_quality-policy_quality_policy",
+			"plugin": "quality-policy"
 		},
 		{
 			"name": "mcp-vertex_refactor_refactor_apply",
@@ -680,6 +803,9 @@
 			"plugin": "test-policy"
 		},
 		{
+			"name": "mcp-vertex_tool_search"
+		},
+		{
 			"name": "mcp-vertex_usage-tracking_session_hygiene",
 			"plugin": "usage-tracking"
 		},
@@ -690,6 +816,9 @@
 		{
 			"name": "mcp-vertex_usage-tracking_usage_report",
 			"plugin": "usage-tracking"
+		},
+		{
+			"name": "mcp-vertex_vertex"
 		}
 	],
 	"skills": [
@@ -710,6 +839,22 @@
 				"triage"
 			],
 			"bodyPath": "plugins/skills-pack/skills/debugging-playbook/SKILL.md"
+		},
+		{
+			"id": "error-collection",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",
+			"appliesTo": [
+				"@mcp-vertex/*"
+			],
+			"tags": [
+				"error-collection",
+				"privacy",
+				"redaction",
+				"sink"
+			],
+			"bodyPath": "packages/core/skills/error-collection/SKILL.md"
 		},
 		{
 			"id": "incident-response",
@@ -1119,105 +1264,1342 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "c00127",
-				"title": "c00127",
-				"track": "adoption",
+				"id": "d00009",
+				"title": "d00009",
+				"track": "security",
 				"status": "ready",
-				"kind": "chore"
+				"kind": "docs",
+				"date": ""
+			},
+			{
+				"id": "d00010",
+				"title": "d00010",
+				"track": "docs",
+				"status": "ready",
+				"kind": "docs",
+				"date": ""
+			},
+			{
+				"id": "d00011",
+				"title": "d00011",
+				"track": "docs",
+				"status": "ready",
+				"kind": "docs",
+				"date": ""
+			},
+			{
+				"id": "d00012",
+				"title": "d00012",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "docs",
+				"date": ""
+			},
+			{
+				"id": "d00013",
+				"title": "d00013",
+				"track": "governance",
+				"status": "ready",
+				"kind": "docs",
+				"date": ""
+			},
+			{
+				"id": "d00014",
+				"title": "d00014",
+				"track": "docs",
+				"status": "ready",
+				"kind": "docs",
+				"date": ""
+			},
+			{
+				"id": "d00015",
+				"title": "d00015",
+				"track": "governance",
+				"status": "ready",
+				"kind": "docs",
+				"date": ""
+			},
+			{
+				"id": "d00415",
+				"title": "d00415",
+				"track": "general",
+				"status": "ready",
+				"kind": "docs",
+				"date": ""
 			},
 			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
-				"kind": "feat"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "f00157",
-				"title": "f00157",
+				"id": "f00201",
+				"title": "f00201",
+				"track": "transactions",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00268",
+				"title": "f00268",
+				"track": "lifecycle",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00269",
+				"title": "f00269",
+				"track": "lifecycle",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00280",
+				"title": "f00280",
 				"track": "adoption",
 				"status": "ready",
-				"kind": "feat"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "f00158",
-				"title": "f00158",
-				"track": "github",
+				"id": "f00293",
+				"title": "f00293",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "feat"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "r00014",
-				"title": "r00014",
-				"track": "bootstrap",
+				"id": "f00294",
+				"title": "f00294",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "refactor"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "r00015",
-				"title": "r00015",
-				"track": "plugins",
+				"id": "f00295",
+				"title": "f00295",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "refactor"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "x00193",
-				"title": "x00193",
-				"track": "ci+audit-followup",
+				"id": "f00296",
+				"title": "f00296",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "fix"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "x00208",
-				"title": "x00208",
-				"track": "scaffold",
+				"id": "f00297",
+				"title": "f00297",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "fix"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "x00209",
-				"title": "x00209",
-				"track": "proposals",
+				"id": "f00298",
+				"title": "f00298",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "fix"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "x00210",
-				"title": "x00210",
-				"track": "proposals",
+				"id": "f00299",
+				"title": "f00299",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "fix"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "x00211",
-				"title": "x00211",
-				"track": "setup",
+				"id": "f00300",
+				"title": "f00300",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "fix"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "x00212",
-				"title": "x00212",
-				"track": "plugins+adoption",
+				"id": "f00301",
+				"title": "f00301",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "fix"
+				"kind": "feat",
+				"date": ""
 			},
 			{
-				"id": "x00213",
-				"title": "x00213",
-				"track": "quality+proposals+lint-baseline",
+				"id": "f00302",
+				"title": "f00302",
+				"track": "migrated",
 				"status": "ready",
-				"kind": "fix"
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00303",
+				"title": "f00303",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00304",
+				"title": "f00304",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00305",
+				"title": "f00305",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00306",
+				"title": "f00306",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00307",
+				"title": "f00307",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00308",
+				"title": "f00308",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00309",
+				"title": "f00309",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00310",
+				"title": "f00310",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00311",
+				"title": "f00311",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00312",
+				"title": "f00312",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00313",
+				"title": "f00313",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00314",
+				"title": "f00314",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00315",
+				"title": "f00315",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00316",
+				"title": "f00316",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00317",
+				"title": "f00317",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00318",
+				"title": "f00318",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00319",
+				"title": "f00319",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00320",
+				"title": "f00320",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00321",
+				"title": "f00321",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00322",
+				"title": "f00322",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00323",
+				"title": "f00323",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00324",
+				"title": "f00324",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00325",
+				"title": "f00325",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00326",
+				"title": "f00326",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00327",
+				"title": "f00327",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00328",
+				"title": "f00328",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00329",
+				"title": "f00329",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00330",
+				"title": "f00330",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00331",
+				"title": "f00331",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00332",
+				"title": "f00332",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00333",
+				"title": "f00333",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00334",
+				"title": "f00334",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00335",
+				"title": "f00335",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00336",
+				"title": "f00336",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00337",
+				"title": "f00337",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00338",
+				"title": "f00338",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00339",
+				"title": "f00339",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00340",
+				"title": "f00340",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00341",
+				"title": "f00341",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00342",
+				"title": "f00342",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00343",
+				"title": "f00343",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00344",
+				"title": "f00344",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00345",
+				"title": "f00345",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00346",
+				"title": "f00346",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00347",
+				"title": "f00347",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00348",
+				"title": "f00348",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00349",
+				"title": "f00349",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00350",
+				"title": "f00350",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00351",
+				"title": "f00351",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00352",
+				"title": "f00352",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00353",
+				"title": "f00353",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00354",
+				"title": "f00354",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00355",
+				"title": "f00355",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00356",
+				"title": "f00356",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00357",
+				"title": "f00357",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00358",
+				"title": "f00358",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00359",
+				"title": "f00359",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00360",
+				"title": "f00360",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00361",
+				"title": "f00361",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00362",
+				"title": "f00362",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00363",
+				"title": "f00363",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00364",
+				"title": "f00364",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00365",
+				"title": "f00365",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00366",
+				"title": "f00366",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00367",
+				"title": "f00367",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00368",
+				"title": "f00368",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00369",
+				"title": "f00369",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00370",
+				"title": "f00370",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00371",
+				"title": "f00371",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00372",
+				"title": "f00372",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00373",
+				"title": "f00373",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00374",
+				"title": "f00374",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00375",
+				"title": "f00375",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00376",
+				"title": "f00376",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00377",
+				"title": "f00377",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00378",
+				"title": "f00378",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00379",
+				"title": "f00379",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00380",
+				"title": "f00380",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00381",
+				"title": "f00381",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00382",
+				"title": "f00382",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00383",
+				"title": "f00383",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00384",
+				"title": "f00384",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00385",
+				"title": "f00385",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00387",
+				"title": "f00387",
+				"track": "parallel-validation",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00388",
+				"title": "f00388",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00389",
+				"title": "f00389",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00390",
+				"title": "f00390",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00391",
+				"title": "f00391",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00392",
+				"title": "f00392",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00393",
+				"title": "f00393",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00394",
+				"title": "f00394",
+				"track": "vscode-shared-ui",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00395",
+				"title": "f00395",
+				"track": "general",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00410",
+				"title": "f00410",
+				"track": "remote-providers-foundation",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00411",
+				"title": "f00411",
+				"track": "gitlab-read-only",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00412",
+				"title": "f00412",
+				"track": "github-read-only",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00413",
+				"title": "f00413",
+				"track": "remote-provider-mutations",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00414",
+				"title": "f00414",
+				"track": "scaffolding+agents+error-reporting",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00415",
+				"title": "f00415",
+				"track": "remote-ci-diagnostics",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "q00006",
+				"title": "q00006",
+				"track": "develop-audit-hardening-v4",
+				"status": "in-progress",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00007",
+				"title": "q00007",
+				"track": "workflow-policy",
+				"status": "in-progress",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00008",
+				"title": "q00008",
+				"track": "rail-clean-code-solid-intrinsic",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00009",
+				"title": "q00009",
+				"track": "managed-surface-portable-skills-startup-report",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00010",
+				"title": "q00010",
+				"track": "develop-audit-hardening-v4-closeout",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00011",
+				"title": "q00011",
+				"track": "runtime-contracts-v1",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00012",
+				"title": "q00012",
+				"track": "audit-stabilization",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00013",
+				"title": "q00013",
+				"track": "master-hardening-release-stabilization",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "r00027",
+				"title": "r00027",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00028",
+				"title": "r00028",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00029",
+				"title": "r00029",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00030",
+				"title": "r00030",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00031",
+				"title": "r00031",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00032",
+				"title": "r00032",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00033",
+				"title": "r00033",
+				"track": "contracts",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00034",
+				"title": "r00034",
+				"track": "security",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00035",
+				"title": "r00035",
+				"track": "ci",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00040",
+				"title": "r00040",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00041",
+				"title": "r00041",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00042",
+				"title": "r00042",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00043",
+				"title": "r00043",
+				"track": "architecture",
+				"status": "in-progress",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00044",
+				"title": "r00044",
+				"track": "general",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00045",
+				"title": "r00045",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "t00017",
+				"title": "t00017",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "t00018",
+				"title": "t00018",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "t00019",
+				"title": "t00019",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "t00020",
+				"title": "t00020",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "t00021",
+				"title": "t00021",
+				"track": "commit-policy",
+				"status": "in-progress",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "t00022",
+				"title": "t00022",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "t00023",
+				"title": "t00023",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "t00030",
+				"title": "t00030",
+				"track": "testing",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "t00031",
+				"title": "t00031",
+				"track": "testing",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "v00126",
+				"title": "v00126",
+				"track": "ci",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "v00127",
+				"title": "v00127",
+				"track": "governance",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "v00128",
+				"title": "v00128",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "v00131",
+				"title": "v00131",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "v00132",
+				"title": "v00132",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "v00133",
+				"title": "v00133",
+				"track": "general",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "v00134",
+				"title": "v00134",
+				"track": "general",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "x00261",
+				"title": "x00261",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00262",
+				"title": "x00262",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00299",
+				"title": "x00299",
+				"track": "governance",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00303",
+				"title": "x00303",
+				"track": "proposals-commit-persistence",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00304",
+				"title": "x00304",
+				"track": "proposals-commit-persistence",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00305",
+				"title": "x00305",
+				"track": "audit-stabilization",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 12,
-			"in-progress": 0,
+			"ready": 160,
+			"in-progress": 5,
 			"review": 0,
 			"paused": 1,
-			"done": 348,
-			"blocked": 0,
-			"retired": 2,
+			"done": 576,
+			"blocked": 23,
+			"retired": 11,
 			"unspecified": 0
 		}
 	}

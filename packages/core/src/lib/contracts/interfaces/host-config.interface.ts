@@ -1,9 +1,10 @@
 import type { ICorePaths } from './core-paths.interface';
-import type { ICommitAuthorResolution } from '../../shared/commit-author';
+import type { ICommitAuthorResolution } from './commit-author.interface';
 import type { IKnowledgeEntry, ISkillEntry } from './knowledge.interface';
 import type { IMcpVertexProjectMetadata } from './project-metadata.interface';
 import type { IStatusCollector } from './status-collector.interface';
 import type { IMetricsRegistry } from '../../metrics/metrics-registry';
+import type { IRuntimeEventSink } from '../../observability/runtime-events';
 import type {
 	IPromptRegistration,
 	IResourceRegistration,
@@ -11,6 +12,10 @@ import type {
 } from './tool-registration.interface';
 import type { IValidationMatrix } from './validation-matrix.interface';
 import type { IWorkspacePathProvider } from './workspace-paths.interface';
+import type {
+	IToolSurfacePlan,
+	IToolSurfaceRuntimeAccess,
+} from './tool-surface.interface';
 
 /**
  * Solid-ISP (2026-06-23): `IMcpVertexHostConfig` used to be a single
@@ -89,6 +94,8 @@ export interface IHostContent {
 
 /** Solid-ISP: runtime observability seams. */
 export interface IHostObservability {
+	/** Optional host-neutral JSONL/event sink outside MCP stdio. */
+	readonly runtimeEventSink?: IRuntimeEventSink | undefined;
 	/** Host runtime status seams (anything with `collect()`). */
 	readonly statusCollectors?: readonly IStatusCollector[] | undefined;
 	/**
@@ -127,6 +134,16 @@ export interface IHostObservability {
 				toolName: string,
 				args: unknown,
 				elapsedMs: number,
+				context?: {
+					readonly reason: string;
+					readonly nextAction: string;
+					readonly error: unknown;
+				},
+		  ) => Promise<void> | void)
+		| undefined;
+	readonly onHookError?:
+		| ((
+				info: import('./plugin-lifecycle-error.interface').IPluginHookErrorInfo,
 		  ) => Promise<void> | void)
 		| undefined;
 	readonly isAgentStuck?:
@@ -160,6 +177,60 @@ export interface IHostRegistrations {
 	readonly extraTools?: readonly IToolRegistration[] | undefined;
 	readonly extraPrompts?: readonly IPromptRegistration[] | undefined;
 	readonly extraResources?: readonly IResourceRegistration[] | undefined;
+	/** Optional runtime plan/access pair for adaptive/compact tool surfaces. */
+	readonly toolSurfacePlan?: IToolSurfacePlan | undefined;
+	readonly toolSurfaceRuntime?: IToolSurfaceRuntimeAccess | undefined;
+	/** Managed-only tool activators keyed by their stable registration id. */
+	readonly lazyToolActivators?: ReadonlyMap<
+		string,
+		() => Promise<
+			import('./tool-surface.interface').IToolSurfaceLazyBinding
+		>
+	>;
+	/** Managed-only plugin loaders used by explicit plugin activation. */
+	readonly lazyPluginActivators?:
+		| ReadonlyMap<string, () => Promise<void>>
+		| undefined;
+	/**
+	 * Drains non-tool registrations produced by managed lazy activation.
+	 * The project registers them after the first routed use; their bodies are
+	 * therefore absent from cold start but remain available through MCP-native
+	 * prompt/resource registration once their owning plugin is needed.
+	 */
+	readonly consumeLazyPluginRegistrations?:
+		| (() => readonly {
+				readonly prompts?: readonly IPromptRegistration[] | undefined;
+				readonly resources?:
+					| readonly IResourceRegistration[]
+					| undefined;
+				readonly knowledge?: readonly IKnowledgeEntry[] | undefined;
+		  }[])
+		| undefined;
+	/**
+	 * Dispose every plugin runtime this host activated, in reverse
+	 * activation order, aggregating per-plugin failures rather than
+	 * throwing on the first one. `createMcpProject`'s returned
+	 * `dispose()` is the sole caller (AUD-E02 / r00039) — nobody else
+	 * should invoke this directly, since it is not itself idempotent
+	 * across independent callers racing each other.
+	 */
+	readonly disposePlugins?:
+		| (() => Promise<
+				readonly {
+					readonly pluginName: string;
+					readonly error: unknown;
+				}[]
+		  >)
+		| undefined;
+	/**
+	 * Dispose exactly one plugin's runtime, by plugin id (x00286 S4).
+	 * `createMcpProject` wires this into
+	 * `toolSurfaceRuntime.setPluginDisposer` so `evictIdlePlugins`'s
+	 * eviction has a real per-plugin dispose to call instead of only
+	 * relazying the tool. Present only for the managed-lazy assembly —
+	 * eager plugins are never evictable, so there is nothing to wire.
+	 */
+	readonly disposePlugin?: (pluginId: string) => Promise<void>;
 }
 
 /**

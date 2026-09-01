@@ -38,6 +38,18 @@ describe('extractCitedHashes', () => {
 		expect(hits).toEqual(['1234567', 'f00ba7cafe']);
 	});
 
+	it('skips proposal ids that resemble short commit hashes', () => {
+		const md = 'proposal `f00067a` and commit `3fbb19bd`';
+		const hits = extractCitedHashes(md).map((h) => h.hash);
+		expect(hits).toEqual(['3fbb19bd']);
+	});
+
+	it('skips numeric CI run ids', () => {
+		const md = 'run `33076654689` and commit `3fbb19bd`';
+		const hits = extractCitedHashes(md).map((h) => h.hash);
+		expect(hits).toEqual(['3fbb19bd']);
+	});
+
 	it('returns empty for prose with no citations', () => {
 		expect(extractCitedHashes('hello world, no backticks here')).toEqual(
 			[],

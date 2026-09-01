@@ -11,8 +11,10 @@
  * lifecycle (atomic .tmp + rename) lives in `round-context-digest.ts`.
  */
 
-import { readFile, readdir } from 'node:fs/promises';
-import { join, relative, resolve, sep } from 'node:path';
+import { readdir } from 'node:fs/promises';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
@@ -104,7 +106,11 @@ const readJsonSource = async <T>(
 ): Promise<IJsonSourceRead<T>> => {
 	let raw: string;
 	try {
-		raw = await readFile(path, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(path)).readText(
+				basename(path),
+			)
+		).content;
 	} catch {
 		return {
 			state: 'missing',
@@ -172,6 +178,7 @@ const scanLiveProposalEntries = async (
 		return absolute;
 	});
 	const roots = [proposalsDir, ...containedExtraFolders];
+	const reader = new SafeWorkspaceReader(proposalsDir);
 	const entries: IScannedProposalEntry[] = [];
 	for (const root of roots) {
 		let names: string[];
@@ -183,7 +190,10 @@ const scanLiveProposalEntries = async (
 		for (const name of names) {
 			if (!name.endsWith('.md') || name === 'README.md') continue;
 			const abs = join(root, name);
-			const raw = await readFile(abs, 'utf8').catch(() => null);
+			const raw = await reader
+				.readText(relative(proposalsDir, abs).split('\\').join('/'))
+				.then((value) => value.content)
+				.catch(() => null);
 			if (raw === null) continue;
 			const block = extractYamlBlock(raw);
 			const parsed = block ? parseFrontmatterBlock(block) : {};

@@ -1,0 +1,181 @@
+# tier3.yml — c00139 (Track G, audit §31).
+#
+# Nightly + per-push-to-develop battery. Runs every check
+# that is too expensive for the PR gate but cheap enough to
+# run daily:
+#
+#   - pack-smoke (x00268)            — publishable packages tarball + install roundtrip.
+#   - drift (c00133)                 — generators vs checked-in tree.
+#   - branch-protection verifier     — c00130, AUD-P0-001.
+#   - develop-health verifier        — v00125.
+#   - security audit                 — codeql + privacy lints.
+#   - local-repro smoke              — v00126 against the last failed run, if any.
+#
+# Triggers:
+#   schedule (cron, nightly 03:00 UTC).
+#   push to develop.
+#   workflow_dispatch.
+
+name: tier3
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # nightly at 03:00 UTC
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: tier3-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  pack-smoke:
+    name: pack-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Packing without building ships tarballs whose declared entrypoints
+      # do not exist; the failure then surfaces as MODULE_NOT_FOUND on a
+      # temp-dir path that points nowhere near the missing step.
+      - name: Build dist
+        run: bun run build
+
+      # The pack-smoke script lives under `tools/scripts/ci/`.
+      # x00268 changed it to capture full output via `::group::`
+      # + `mktemp` so a failing step leaves its evidence in the
+      # run log instead of being swallowed by `set -e`.
+      - name: Run pack-smoke
+        run: bun tools/scripts/ci/pack-smoke.script.ts --real
+
+  drift:
+    name: drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Drift check
+        run: bun tools/scripts/gen-all.script.ts --check
+
+  web-pages-drift:
+    name: web-pages-drift (c00142)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # c00142 / q00006 Track I. Same drift detector as the
+      # `drift` job, but scoped to the web-page generators
+      # (PageSpec index, capabilities, skills, plugin catalog,
+      # per-plugin docs) and emitting a per-step "what drifted +
+      # how to refresh" report. The two jobs are complementary:
+      # `drift` is the universal guard; `web-pages-drift` is the
+      # focused, fast-feedback surface for web-page content.
+      - name: Web pages drift check
+        run: bun tools/scripts/gen/web-pages.script.ts --check
+
+  branch-protection:
+    name: branch-protection
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify branch protection
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional repo-admin-scoped PAT (see docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md).
+          # Without it the ambient GITHUB_TOKEN above is used, which
+          # cannot read branch protection (no `administration` scope) —
+          # the script reports that explicitly as `unverified` rather
+          # than a false pass or a red build.
+          BRANCH_PROTECTION_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
+        run: bun tools/scripts/ci/verify-branch-protection.script.ts --repo ${{ github.repository }}
+
+  develop-health:
+    name: develop-health
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify develop + main are healthy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # See the `branch-protection` job above — same optional token,
+          # same fallback, same `unverified` semantics.
+          BRANCH_PROTECTION_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
+        run: bun tools/scripts/ci/verify-develop-health.script.ts --repo ${{ github.repository }}
+
+  privacy-audit:
+    name: privacy-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Privacy + ephemeral + secrets lints
+        run: |
+          set -eu
+          bun run lint:privacy
+          bun run lint:no-cleartext-secrets
+          bun run lint:ephemeral
+          bun run lint:stray-cache-files

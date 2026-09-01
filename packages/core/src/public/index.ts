@@ -13,22 +13,42 @@ export {
 	__resetShutdownGuardForTests,
 	gracefulShutdown,
 } from '../lib/cli/graceful-shutdown';
-export type { IGracefulShutdownOptions } from '../lib/cli/graceful-shutdown';
 export {
 	createMcpProject,
 	planRegistrationOrder,
 } from '../lib/project/create-mcp-project';
-export type { IMcpVertexProject } from '../lib/project/create-mcp-project';
+export type { IGracefulShutdownOptions, IMcpVertexProject } from '../contracts';
 
 // --- workspace + paths -----------------------------------------------------
 export { DEFAULT_CORE_PATHS } from '../lib/contracts/interfaces/core-paths.interface';
-export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
-export type { IWorkspacePathProvider } from '../lib/contracts/interfaces/workspace-paths.interface';
+export {
+	isMcpToolSurfaceMode,
+	MCP_TOOL_SURFACE_MODE,
+} from '../lib/contracts/interfaces/surface-mode.interface';
+export type {
+	ICorePaths,
+	IMcpToolSurfaceMode,
+	IWorkspacePathProvider,
+} from '../contracts';
 export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
+
+// --- projection + handles (v00133 S2) ------------------------------------
+export { projectValue } from '../lib/contracts/output/projection';
+export type {
+	IProjectionRequest,
+	IProjectionResult,
+	TProjectionMode,
+} from '../lib/contracts/output/projection';
+export { createInMemoryHandleStore } from '../lib/handles/artifact-handle';
+export type {
+	IArtifactHandle,
+	IHandleOptions,
+	IHandleStore,
+	THandleReadResult,
+} from '../lib/handles/artifact-handle';
 
 // --- contracts -------------------------------------------------------------
 export type {
-	IHostCapabilities,
 	IHostCapabilityProfile,
 	THostContinuationCapability,
 	THostInstructionCapability,
@@ -44,33 +64,66 @@ export type {
 	IMcpVertexHostConfig,
 } from '../lib/contracts/interfaces/host-config.interface';
 export type {
+	IHostCapabilities,
 	IKnowledgeEntry,
 	ISkillEntry,
-} from '../lib/contracts/interfaces/knowledge.interface';
-export type { IPluginConfigExample } from '../lib/contracts/interfaces/plugin-config-example.interface';
-export type { IMcpVertexProjectMetadata } from '../lib/contracts/interfaces/project-metadata.interface';
+	IPluginConfigExample,
+	IMcpVertexProjectMetadata,
+	IStatusCollector,
+	IPromptRegistration,
+	IResourceRegistration,
+	IToolEffect,
+	IToolRegistration,
+} from '../contracts';
+export type {
+	ISafeToolIdentity,
+	IToolIdentityRegistry,
+	IToolRegistryEntry,
+	SafeToolCategory,
+	SafeToolId,
+	ToolOwner,
+} from '../lib/contracts/interfaces/safe-tool-identity.interface';
 export type {
 	IQualityGate,
 	IQualityGateExpect,
 	IQualityGateLanguage,
 	IQualityGateList,
 } from '../lib/contracts/interfaces/quality-gate.interface';
-export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type {
-	IPromptRegistration,
-	IResourceRegistration,
 	// f00057 S11: deprecation marker for tools that have a documented
 	// replacement (e.g. docs_search → search_search). Plugins attach it
 	// to the registration and the handler returns a typed envelope.
 	IToolDeprecationMarker,
 	// f00065 slice F: canonical tool-effect union, shared with @mcp-vertex/client.
-	IToolEffect,
-	IToolRegistration,
 } from '../lib/contracts/interfaces/tool-registration.interface';
 export type {
 	IValidationCommand,
 	IValidationMatrix,
 } from '../lib/contracts/interfaces/validation-matrix.interface';
+export type {
+	IModelCatalog,
+	IModelCatalogEntry,
+	IModelCatalogFilter,
+	IModelCatalogSearchOptions,
+	IModelLimits,
+	IModelCatalogErrorCode,
+	IModelLifecycle,
+} from '../lib/contracts/interfaces/model-catalog.interface';
+export {
+	DEFAULT_MODEL_CATALOG_LIMIT,
+	InMemoryModelCatalog,
+	MAX_MODEL_CATALOG_LIMIT,
+	ModelCatalogError,
+} from '../lib/catalog';
+export type {
+	EvidenceType,
+	IEvidenceStore,
+} from '../lib/contracts/interfaces/evidence.interface';
+export {
+	createEvidenceStore,
+	EVIDENCE_TYPES,
+} from '../lib/evidence/evidence-store';
+export type { IEvidenceStoreWithCleanup } from '../lib/evidence/evidence-store';
 export { buildHostAdapterPack } from '../lib/hosts/host-adapter-pack';
 export type {
 	IHostAdapterPack,
@@ -125,25 +178,38 @@ export type {
 	IConfigurationOwner,
 	IConfigurationPlugin,
 	IConfigurationPluginCapabilities,
-} from '../lib/contracts/interfaces/configuration-center.interface';
-export type {
-	IPluginOriginInput,
-	PluginOrigin,
-} from '../lib/contracts/interfaces/plugin-origin.interface';
-export type { IResolvedHostIdentity } from '../lib/contracts/interfaces/resolved-host-identity.interface';
-export type {
+	IResolvedHostIdentity,
 	IWorkspaceLayoutArgs,
 	WorkspaceLayoutProbe,
 	WorkspacePathStatus,
-} from '../lib/contracts/interfaces/workspace-layout.interface';
+	PluginOrigin,
+	IMcpVertexCliArgs,
+	IMcpPlugin,
+	IMcpPluginContext,
+	IMcpPluginRegistrations,
+	IActivateContext,
+	IPhasedLifecycle,
+	IPrepareContext,
+} from '../contracts';
+export {
+	PERMISSION_CATEGORIES,
+	PERMISSION_RISK_WEIGHTS,
+} from '../lib/contracts/constants/permission-categories.constant';
+export type {
+	IToolPermissionGrant,
+	PermissionCategory,
+} from '../lib/contracts/interfaces/permission.interface';
+export type { IPluginOriginInput } from '../lib/contracts/interfaces/plugin-origin.interface';
 export { buildActivationReport } from '../lib/plugins/activation-report';
 export {
 	classifyOrigin,
 	isFirstPartySpecifier,
 } from '../lib/plugins/classify-origin';
+export { resolvePublicToolIdentity } from '../lib/contracts/resolvers/safe-tool-identity.resolver';
 export { diagnoseWorkspaceLayout } from '../lib/plugins/diagnose-workspace-layout';
 export {
 	CONFIG_FILE_SCHEMA,
+	DEFAULT_AGENT_POLICY,
 	DEFAULT_CONFIG_FILENAME,
 	diagnoseConfigFile,
 	diagnosePluginPathConfig,
@@ -151,11 +217,13 @@ export {
 	pluginConfigFor,
 	resolveConfigPluginSpecifiers,
 } from '../lib/plugins/load-config-file';
-export {
-	loadPlugins,
-	nodeDynamicImport,
-	resolvePluginSpecifier,
-} from '../lib/plugins/load-plugins';
+export { loadPlugins, resolvePluginSpecifier } from '../plugin';
+import { nodeDynamicImport as nodeDynamicImportImpl } from '../node';
+/**
+ * @deprecated r00028 / b00237 — use `@mcp-vertex/core/node` instead.
+ * Will be removed in the next minor release.
+ */
+export const nodeDynamicImport = nodeDynamicImportImpl;
 export type {
 	ILoadedPlugin,
 	IPluginLoadResult,
@@ -186,15 +254,21 @@ export type {
 export {
 	DEFAULT_CLI_ARGS,
 	hasExplicitPluginSurfaceSelection,
-	parseCliArgs,
 } from '../lib/plugins/parse-cli-args';
-export type { IMcpVertexCliArgs } from '../lib/plugins/parse-cli-args';
-export { definePlugin } from '../lib/plugins/plugin-contract';
+export { parseCliArgs } from '../plugin';
+export { adaptLegacyPlugin } from '../lib/plugins/plugin-contract';
+export { definePlugin } from '../plugin';
 export type {
-	IMcpPlugin,
-	IMcpPluginContext,
-	IMcpPluginRegistrations,
+	IPluginConfigurationIssue,
+	IPluginConfigurationValidationInput,
 } from '../lib/plugins/plugin-contract';
+// (Track D): phased plugin lifecycle.
+export {
+	hasPhasedLifecycle,
+	runLifecycle,
+	safeDispose,
+} from '../lib/plugins/lifecycle';
+export type { IPluginRuntime } from '../lib/contracts/interfaces/plugin-runtime.interface';
 export {
 	injectCheckpointAdvisory,
 	mergeCheckpointAdvisories,
@@ -204,10 +278,21 @@ export type {
 	BeforeToolCallHook,
 	CheckpointAdvisoryProvider,
 	CheckpointAdvisorySeverity,
-	ICheckpointAdvisory,
 	ICheckpointAdvisoryContext,
 } from '../lib/contracts/interfaces/checkpoint-advisory.interface';
+export type { ICheckpointAdvisory } from '../contracts';
 export { CHECKPOINT_ADVISORY_SEVERITIES } from '../lib/contracts/interfaces/checkpoint-advisory.interface';
+export {
+	measureBootstrapBytes,
+	measureToolWireBytes,
+	type IBootstrapMeasurement,
+	type IMcpToolWireDefinition,
+} from '../lib/surface/bootstrap';
+export { compactOutputSchema } from '../lib/surface/compact-output-schema.helper';
+export {
+	VALIDATE_EVIDENCE_SCHEMA,
+	type IValidateEvidenceInput,
+} from '../lib/proposals/validate-evidence.schema';
 export {
 	PLUGIN_DEFAULTS,
 	resolvePluginOptions,
@@ -223,7 +308,36 @@ export type {
 	IPresetKind,
 	IPresetMember,
 } from '../lib/plugins/preset-catalog';
-// f00120 S2: monorepo-wiring writer for first-party plugins.
+export type { ProjectPackKind } from '../lib/contracts/interfaces/project-signals.interface';
+
+// --- managed-surface startup diagnostics (q00009) -------------------------
+export {
+	buildStartupReport,
+	isStartupReportLevelVisible,
+	levelIncludesPluginCostTable,
+	renderStartupReport,
+	renderStartupReportAnsi,
+	renderStartupReportPlain,
+	resolveStartupReportLevel,
+	shouldUseAnsiColors,
+	STARTUP_REPORT_DEFAULT_LEVEL,
+	STARTUP_REPORT_LEVELS,
+	STARTUP_REPORT_LEVEL_INPUTS,
+} from '../lib/startup-report';
+export type {
+	IStartupReport,
+	IStartupReportBaseline,
+	IStartupReportBudget,
+	IStartupReportCatalogCounts,
+	IStartupReportInput,
+	IStartupReportLevel,
+	IStartupReportLevelInput,
+	IStartupReportManagedRuntime,
+	IStartupReportServerIdentity,
+	IStartupReportWarning,
+} from '../lib/startup-report';
+
+// S2: monorepo-wiring writer for first-party plugins.
 export {
 	buildTsconfigPathsEntry,
 	pluginDir,
@@ -235,7 +349,7 @@ export {
 	writeTsconfigBase,
 	writeVitestShared,
 } from '../lib/scaffold/wire-plugin';
-// f00120 S4: wiring-doctor (verifier) for first-party plugins.
+// S4: wiring-doctor (verifier) for first-party plugins.
 export type {
 	IAssembleCliDeps,
 	IAssembledCliConfig,
@@ -244,6 +358,7 @@ export { runCli, runDoctor } from '../lib/cli/run-cli';
 export type { IDoctorReport } from '../lib/cli/run-cli';
 export type {
 	IPluginWiringEdit,
+	IPluginWiringDiagnostic,
 	IPluginWiringFs,
 	IPluginWiringPoint,
 	IPluginWiringReport,
@@ -255,6 +370,8 @@ export type {
 	IBootstrapPatternOverride,
 	IBootstrapPatternOverrides,
 	IFilesystemConfig,
+	IMcpVertexAgentPolicyConfig,
+	IMcpVertexCoreConfig,
 	ILoopDetectorConfig,
 	IMcpVertexCachePolicyConfig,
 	IMcpVertexCacheWorktreesConfig,
@@ -280,17 +397,28 @@ export type {
 	ICreatePluginToolOptions,
 	IRegenerateCatalogArgs,
 } from '../lib/scaffold/create-plugin.tool';
+export {
+	buildProjectPluginsCreateToolRegistration,
+	buildProjectPluginsInspectToolRegistration,
+	buildProjectPluginsRepairToolRegistration,
+	PROJECT_PLUGINS_CREATE_INPUT_SCHEMA,
+	PROJECT_PLUGINS_INSPECT_INPUT_SCHEMA,
+	PROJECT_PLUGINS_REPAIR_INPUT_SCHEMA,
+	PROJECT_PLUGINS_OUTPUT_SCHEMA,
+} from '../lib/scaffold/project-plugins';
+export type {
+	IProjectPluginsCreateArgs,
+	IProjectPluginsInspectArgs,
+	IProjectPluginsRepairArgs,
+	IProjectPluginsOptions,
+	IProjectPluginsOutput,
+} from '../lib/scaffold/project-plugins';
 export { extractPlugin } from '../lib/scaffold/extract-plugin';
 export type {
 	IExtractedTool,
 	IExtractPluginOptions,
 	IExtractPluginResult,
 } from '../lib/scaffold/extract-plugin';
-export { renderPluginBlueprint } from '../lib/scaffold/plugin-blueprint';
-export type {
-	BlueprintFile,
-	IPluginBlueprintDeps,
-} from '../lib/scaffold/plugin-blueprint';
 export { scaffoldExtensionHostFiles } from '../lib/scaffold/scaffold-extension-host';
 export {
 	detectExistingMcpVertexInstall,
@@ -298,7 +426,7 @@ export {
 	isMcpVertexLaunchShape,
 	resolveHostScaffoldDefaults,
 } from '../lib/scaffold/detect-existing-install';
-export type { IExistingMcpVertexInstall } from '../lib/scaffold/detect-existing-install';
+export type { IExistingMcpVertexInstall } from '../contracts';
 export {
 	scaffoldAgentFile,
 	scaffoldClaudeAgentFile,
@@ -343,9 +471,21 @@ export {
 	resolveWorkspaceContained,
 } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
+export { SafeWorkspaceReader } from '../lib/filesystem/safe-workspace-reader';
+export { readAbsoluteTextSafe } from '../lib/filesystem/safe-workspace-reader.helpers';
+export { WorkspaceContainmentError } from '../lib/filesystem/safe-workspace-reader.errors';
+export type {
+	ContainedPathResult,
+	ISafeWorkspaceReader,
+	SafeListEntry,
+	SafeListResult,
+	SafeReadResult,
+	SafeStatResult,
+	WorkspaceContainmentReason,
+} from '../lib/filesystem/safe-workspace-reader.types';
 export { joinUnderRoot } from '../lib/shared/join-under-root';
 export { joinRel } from '../lib/shared/paths';
-// f00087 S2: batch atomic writer for consumers that want to apply
+// S2: batch atomic writer for consumers that want to apply
 // scaffolded files outside an MCP session.
 export { createFileSystemBatchWriter } from '../lib/shared/batch-atomic-writer';
 export type {
@@ -378,20 +518,21 @@ export type {
 // contribute rules via `ctx.cacheEvictionRegistry.register(rule)`; the
 // core boot sweep runs a dry-run after every plugin has loaded.
 export { createCacheEvictionRegistry } from '../lib/cache/eviction-registry';
+export { bootstrapCacheLayout } from '../lib/cache/cache-layout-bootstrap';
+export { buildCacheReconcileToolRegistration } from '../lib/tools/cache-reconcile.tool';
 export type {
 	ICacheEvictionCustom,
 	ICacheEvictionErrored,
 	ICacheEvictionKeepLastN,
 	ICacheEvictionOlderThan,
 	ICacheEvictionOlderThanMtime,
-	ICacheEvictionRegistry,
 	ICacheEvictionRemoved,
 	ICacheEvictionReport,
-	ICacheEvictionRule,
 	ICacheEvictionRunOptions,
 	ICacheEvictionSkipped,
 	ICacheEvictionWhen,
 } from '../lib/contracts/interfaces/cache-eviction.interface';
+export type { ICacheEvictionRegistry, ICacheEvictionRule } from '../contracts';
 
 // --- peer plugins (loaded-set introspection) ------------------------------
 // Plugins that need to gate runtime behaviour on whether another plugin
@@ -401,7 +542,10 @@ export type {
 // by the core AFTER `loadPlugins()` returns; at register time it is
 // empty.
 export type { IEvictionRegistryDeps } from '../lib/cache/eviction-registry';
-export { killProcessGroup } from '../lib/commands/process-group';
+export {
+	killProcessGroup,
+	killProcessTree,
+} from '../lib/commands/process-group';
 export type {
 	IRunArgvOptions,
 	IRunArgvOutcome,
@@ -475,58 +619,200 @@ export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
 
 // --- write-side git primitives (S9: git_commit/git_push, auto_work persist) ---
 export {
+	clearForcePushAuthorizationsForTests,
 	commitAndPush,
 	createGitRunner as createWriteGitRunner,
+	stripAnsi,
 	gitAdd,
 	gitCommit,
 	gitHeadShortHash,
 	gitLastCommitAuthor,
 	gitPush,
+	listForcePushAuthorizations,
 } from '../lib/shared/git-write';
 export type {
-	ICommitAndPushOptions,
-	ICommitAndPushResult,
 	ICommitOptions,
+	IForcePushAuthorizationRecord,
+	IPushAuthorization,
 	IPushForceMode,
 	IPushOptions,
 	IGitRunner as IWriteGitRunner,
 	IGitRunResult as IWriteGitRunResult,
 } from '../lib/shared/git-write';
+export type { ICommitAndPushOptions, ICommitAndPushResult } from '../contracts';
 // --- commit author policy (f00082) ---
 export {
 	COMMIT_AUTHOR_MODES,
+	type CommitAuthorMode,
+	type ICommitAuthorIdentity,
+	type ICommitAuthorInput,
+	type ICommitAuthorNamed,
+} from '../lib/contracts/interfaces/commit-author.interface';
+export type { ICommitAuthorResolution } from '../contracts';
+export {
 	createGitConfigReader,
 	resolveCommitAuthor,
 } from '../lib/shared/commit-author';
-export type {
-	CommitAuthorMode,
-	ICommitAuthorIdentity,
-	ICommitAuthorInput,
-	ICommitAuthorNamed,
-	ICommitAuthorResolution,
-	IGitConfigReader,
-} from '../lib/shared/commit-author';
+export type { IGitConfigReader } from '../lib/shared/commit-author';
 
-// f00065 slice F: the canonical shared git-runner contract. Plugins that used
+// slice F: the canonical shared git-runner contract. Plugins that used
 // to redefine this type (git, proposals) import it from here instead.
-export type {
-	IGitRunner,
-	IGitRunResult,
-} from '../lib/contracts/interfaces/git-runner.interface';
-// f00082: composite agent identity contract. Plugins that produce or
+export type { IGitRunner, IGitRunResult } from '../contracts';
+// Composite agent identity contract. Plugins that produce or
 // consume the four-field identity (proposals worktree engine, handoff
 // packets, swarm tools) import from here so the contract has one
 // source of truth.
 export { AGENT_IDENTITY_LIMITS } from '../lib/contracts/interfaces/agent-identity.interface';
+export type { AgentHost, IAgentIdentity } from '../contracts';
+export {
+	assertReleaseMetadata,
+	assertReleaseSlug,
+	assertReleaseType,
+	releaseBranch,
+	RELEASE_STATES,
+	RELEASE_TYPES,
+	slugifyRelease,
+	isReleaseType,
+	nextVersion,
+} from '../lib/contracts/release';
 export type {
-	AgentHost,
-	IAgentIdentity,
-} from '../lib/contracts/interfaces/agent-identity.interface';
-// f00067 S1: the canonical multi-model provider contract. Wiki pages
+	IReleaseCandidateMetadata,
+	ReleaseState,
+	ReleaseType,
+} from '../lib/contracts/release';
+export {
+	assertExpectedReleaseState,
+	evaluateReleaseReadiness,
+	releaseStatusCompact,
+	ReleaseStateError,
+} from '../lib/contracts/release-state';
+export type {
+	IExpectedReleaseState,
+	IReleaseGate,
+	IReleasePrepareInput,
+	IReleasePreparation,
+	IReleaseReadiness,
+	IReleaseStatusCompact,
+	ReleasePrepareMode,
+	ReleaseStateErrorCode,
+} from '../lib/contracts/release-state';
+export {
+	assertExpectedFinalReleaseState,
+	buildReleaseReceipt,
+} from '../lib/contracts/release-finalize';
+export type {
+	IExpectedFinalReleaseState,
+	IHotfixInput,
+	IReleaseFinalizeInput,
+	IReleaseReceipt,
+	IReleaseReconciliationInput,
+} from '../lib/contracts/release-finalize';
+// S1: the canonical multi-model provider contract. Wiki pages
 // 04/05/06/07/08 and both consuming plugins (orchestrator-runner,
 // usage-tracking) import the provider vocabulary from this single file so
 // there is no drift between the design text and the code.
 export { CAPABILITY_TAGS } from '../lib/contracts/interfaces/provider-capabilities.interface';
+
+// --- f00188 (Track F / security): capability schema + enforcement ----
+export {
+	CAPABILITIES,
+	isCapability,
+	parseCapability,
+	parseCapabilityList,
+	splitCapability,
+} from '../lib/capabilities/schema';
+export type {
+	Capability,
+	ICapabilityParts,
+	ICapabilityRefusal,
+	TCapabilityGroup,
+} from '../lib/capabilities/schema';
+export {
+	createCapabilityGate,
+	parseDeclaredCapabilities,
+	resolveCapabilityAccess,
+	summariseLegacyShimWarning,
+} from '../lib/capabilities/inject';
+export type { ILegacyShimWarning } from '../lib/capabilities/inject';
+
+// --- f00194 (Track K / capability versioning): semver-aware requires ---
+export {
+	WILDCARD_RANGE,
+	buildAvailableVersions,
+	checkCapabilityRequirements,
+	formatCapabilityVersionRefusal,
+	legacyVersionedCapability,
+	parseCapabilityRequirement,
+	resolveAllCapabilityVersions,
+	resolveCapabilityVersion,
+} from '../lib/capabilities/versioning';
+export type {
+	CapabilityRequirement,
+	CapabilityVersionResult,
+	ICapabilityVersionRefusal,
+	ICapabilityVersionResolution,
+	IVersionedCapability,
+} from '../lib/capabilities/versioning';
+
+// --- f00189 (Track F / security): dryRun transversal protocol -------
+export {
+	buildDryRunResult,
+	dryRunRequiredFor,
+	isDryRunResult,
+	validateDryRunResult,
+} from '../lib/dry-run/protocol';
+export type {
+	DryRunOrRun,
+	IDryRunResult,
+	IDryRunResultIssue,
+	IPlannedChange,
+	IPlannedRun,
+	TDryRunRisk,
+} from '../lib/dry-run/protocol';
+export {
+	enforceDryRunReturnContract,
+	planDryRun,
+	validateToolDryRunManifest,
+} from '../lib/dry-run/enforce';
+export type {
+	IDryRunContractRefusal,
+	IDryRunManifestWarning,
+} from '../lib/dry-run/enforce';
+export {
+	DryRunEffectRefusedError,
+	guardEffectCapability,
+	runWithDryRunGate,
+} from '../lib/dry-run/effect-guard.helper';
+export type {
+	IDryRunEffectRefusal,
+	TEffectCapabilityKind,
+} from '../lib/dry-run/effect-guard.helper';
+// The mandatory capability-injection layer — the ambient
+// dry-run scope + the typed effects surface handed to plugins via
+// `IMcpPluginContext.effects`.
+export {
+	getActiveDryRunFlag,
+	runWithDryRunScope,
+} from '../lib/dry-run/dry-run-scope.helper';
+export { createDryRunGatedGitRunner } from '../lib/dry-run/effect-capability-factory.helper';
+export type { IPluginEffectsCapability } from '../lib/contracts/interfaces/effect-capabilities.interface';
+// r00037 S1 — post-hoc dry-run violations, bounded ring buffer keyed by
+// the plugin/tool responsible. Detection, not prevention (see the
+// EffectBroker exports below for prevention).
+export {
+	clearDryRunViolationsForTests,
+	listDryRunViolations,
+	recordDryRunViolation,
+} from '../lib/dry-run/dry-run-violation-log.service';
+export type { IDryRunContractViolationRecord } from '../lib/contracts/interfaces/dry-run-violation.interface';
+// r00037 S2/S3 — the EffectBroker: the single point of construction for
+// every ambient-dry-run-gated capability a plugin context hands out.
+export { createEffectBroker } from '../lib/capabilities/effect-broker.factory';
+export type {
+	IEffectBrokerCapabilityDefinition,
+	IEffectBrokerCapabilities,
+	IEffectBrokerDefinitions,
+} from '../lib/contracts/interfaces/effect-broker.interface';
 export type {
 	CapabilityTag,
 	CostTier,
@@ -549,10 +835,10 @@ export {
 
 // --- shared tool-response helpers (compact JSON + error envelope) ----------
 export {
-	DEFAULT_MAX_RESPONSE_BYTES,
 	toolError,
 	toolErrorWithLogHint,
 	toolJson,
+	toolJsonWithSummary,
 	toolJsonBounded,
 	toolOk,
 	truncateIfTooLarge,
@@ -560,8 +846,113 @@ export {
 export type {
 	IToolErrorLogHint,
 	IToolTextResult,
-	ITruncationResult,
 } from '../lib/shared/tool-response';
+export type { ICursorPage, IExcerptRange, IPaginatedItems } from '../contracts';
+export {
+	DEFAULT_COMPACT_RESPONSE_BYTES,
+	DEFAULT_MAX_RESPONSE_BYTES,
+	MAX_RESPONSE_BYTES_CEILING,
+} from '../lib/contracts/constants/response-byte-budget.constant';
+export { TOKEN_BUDGETS } from '../lib/contracts/constants/token-budgets.constant';
+export type {
+	IGovernedToolsListBudget,
+	IPresetTokenBudgetProfile,
+	ITokenBudgetCeiling,
+	ITokenBudgetRegistry,
+	ITokenBudgetSurface,
+} from '../lib/contracts/constants/token-budgets.constant';
+// — transversal `detail: compact | normal | full` contract.
+export {
+	DETAIL_LEVELS,
+	projectDetail,
+	UnknownDetailLevelError,
+	withDetail,
+} from '../lib/contracts/detail.contract';
+export type {
+	Detail,
+	DetailProjection,
+	DetailProjections,
+	WithDetail,
+} from '../lib/contracts/detail.contract';
+// — TokenBudgetRegistry + types.
+export {
+	createTokenBudgetRegistry,
+	TokenBudgetRegistry,
+} from '../lib/budgets/registry';
+export type {
+	IMeasureOptions,
+	IRegistryOptions,
+} from '../lib/budgets/registry';
+export { createStaticBytesSource } from '../lib/budgets/sources/static-bytes';
+export { createDashboardMockSource } from '../lib/budgets/sources/dashboard-mock';
+export {
+	TokenBudgetBreachError,
+	type IBudgetCeiling,
+	type IBudgetForSurface,
+	type IBudgetSource,
+	type IPerSurfaceMeasurement,
+	type ITokenMeasurement,
+	type ITokenReport,
+	type ITokenReportRow,
+	type Surface,
+	type TokenSurface,
+} from '../lib/budgets/types';
+// — Token ROI per plugin (KPI).
+export { buildValueLookup } from '../lib/budgets/manifest';
+export { aggregateROI, computeROI, confidenceFor } from '../lib/budgets/roi';
+export type {
+	IComputeRoiInput,
+	IRoiConfidence,
+	IRoiMeasurement,
+	IRoiReport,
+	IRoiValueLookup,
+} from '../lib/budgets/roi';
+export {
+	paginateFileExcerpt,
+	paginateItems,
+} from '../lib/shared/pagination.helper';
+export type {
+	ITruncatedEnvelope,
+	ITruncationResult,
+} from '../lib/contracts/interfaces/truncation.interface';
+// — Cost-aware routing utility (Track L, P2).
+export {
+	DEFAULT_UTILITY_WEIGHTS,
+	rankCandidates,
+	utility,
+} from '../lib/routing/utility';
+export type {
+	IProviderCandidate,
+	IRoutingContext,
+	IUtilityScore,
+	IUtilityWeights,
+} from '../lib/routing/utility';
+// — Model-aware presets (Track L, P2).
+export {
+	DEFAULT_MODEL_PROFILES,
+	detectModelTier,
+	filterToolsByProfile,
+	getModelProfile,
+	listModelProfiles,
+} from '../lib/presets/model-profiles';
+export type {
+	IModelProfile,
+	IModelProfileOverride,
+	TModelTier,
+} from '../lib/presets/model-profiles';
+// — Memory utility score (Track M, P2).
+export {
+	DEFAULT_MEMORY_COST_THRESHOLD,
+	DEFAULT_MEMORY_UTILITY_WEIGHTS,
+	filterByUtility,
+	utility as computeMemoryUtility,
+} from '../lib/memory/utility';
+export type {
+	IMemoryEntry,
+	IMemoryUtilityContext,
+	IMemoryUtilityScore,
+	IMemoryUtilityWeights,
+} from '../lib/memory/utility';
 
 // --- core meta-tools (overview / knowledge / validation matrix) ------------
 export { buildCatalog } from '../lib/catalog/agent-discovery-catalog';
@@ -591,9 +982,92 @@ export type {
 } from '../lib/metrics/metrics-registry';
 export { buildMetricsToolRegistration } from '../lib/metrics/metrics-tool';
 export {
-	MigrationError,
-	runMigrations,
-} from '../lib/migrations/migrate';
+	computePayloadPercentile,
+	createByteSamplePercentileRegistry,
+	PayloadPercentileSchema,
+	readMetricsSnapshot,
+} from '../lib/metrics/payload-percentile';
+export type {
+	IByteSamplePercentileRegistry,
+	IResettableMetricsRegistry,
+	IPayloadPercentile,
+	IPayloadPercentileEmpty,
+	IPayloadPercentileSampled,
+} from '../lib/metrics/payload-percentile';
+// (Track D): plugin lifecycle metrics.
+export { createPluginMetrics } from '../lib/observability/plugin-metrics';
+export type {
+	IPluginMetrics,
+	IPluginMetricsCounters,
+	IPluginMetricsHistogram,
+	IPluginMetricsSnapshot,
+	PluginEvent,
+	PluginHistogramEvent,
+} from '../lib/observability/plugin-metrics';
+export {
+	createJsonlRuntimeEventSink,
+	runtimeEventsPath,
+	runtimeSessionStarted,
+} from '../lib/observability/runtime-events';
+export type { RuntimeEventKind } from '../lib/observability/runtime-events';
+export type {
+	IRuntimeEvent,
+	IRuntimeEventSink,
+	RuntimeEventInput,
+} from '../contracts';
+// (Track M): cross-plugin activation KPIs.
+export {
+	createActivationKpis,
+	hydrateKpis,
+	intersectSize,
+	jaccardDistance,
+	precision,
+	recall,
+	serializeKpis,
+} from '../lib/observability/activation-kpis';
+export { createActivationKpiSessionStore } from '../lib/observability/activation-kpis-session';
+export type {
+	IActivationKpiSessionStore,
+	IActivationKpiSessionStoreOptions,
+} from '../lib/observability/activation-kpis-session';
+export type {
+	IActivationKpis,
+	IAggregateKpis,
+	IPersistedKpisFile,
+	ISessionKpis,
+} from '../lib/observability/activation-kpis';
+// (Track M): tool confusion matrix.
+export {
+	createToolConfusion,
+	DEFAULT_RENAME_THRESHOLD,
+	hydrateConfusion,
+	serializeConfusion,
+} from '../lib/observability/tool-confusion';
+export type {
+	IConfusionMatrix,
+	IConfusionPair,
+	IPersistedConfusionFile,
+	IRenameSuggestion,
+	IToolConfusion,
+} from '../lib/observability/tool-confusion';
+// --- f00192 (Track J / agent timeline): host-agnostic append-only log ---
+export {
+	DEFAULT_MAX_EVENTS,
+	TimelineBuffer,
+	formatEventTimestamp,
+	isTimelineLog,
+	mergeTimelineLogs,
+	nowEvent,
+	redactFreeText,
+	truncateRedactor,
+} from '../lib/observability/timeline';
+export type {
+	ITimelineBufferOptions,
+	ITimelineEvent,
+	ITimelineLog,
+	TimelineEventKind,
+} from '../lib/observability/timeline';
+export { MigrationError, runMigrations } from '../lib/migrations/migrate';
 export type {
 	IMigrationResult,
 	IMigrator,
@@ -606,6 +1080,9 @@ export type {
 } from '../lib/migrations/migrate-file';
 export { buildAgentBootstrapPromptRegistration } from '../lib/prompts/agent-bootstrap.prompt';
 export { buildAgentCatalogResourceRegistration } from '../lib/resources/agent-catalog-resource';
+export { buildCodeMapResourceRegistration } from '../lib/code-map/resource';
+export type { ICodeMap } from '../lib/code-map/generator';
+export { CODE_MAP_SCHEMA_VERSION } from '../lib/code-map/generator';
 export { buildAgentCatalogToolRegistration } from '../lib/tools/agent-catalog-tool';
 export { buildKnowledgeResourceRegistrations } from '../lib/tools/knowledge-resources';
 export { buildKnowledgeToolRegistration } from '../lib/tools/knowledge-tool';
@@ -637,12 +1114,32 @@ export type {
 	IBlueprintArtifact,
 	IBlueprintOptions,
 	IBootstrapToolOptions,
-	IFileReader,
 	IProjectAnalysis,
 	IProjectPattern,
 	IServerBlueprint,
 	IServerPlan,
 } from '../lib/bootstrap/index';
+export type { IFileReader } from '../contracts';
+
+// --- one-call project adoption (f00157 S1) --------------------------------
+export { buildAdoptionAssessment } from '../lib/adopt/adoption-assessment.service';
+export {
+	buildAdoptProjectPlan,
+	buildAdoptProjectToolRegistration,
+} from '../lib/adopt/adopt-project.tool';
+export type {
+	IAdoptProjectPlan,
+	IAdoptProjectPreset,
+	IAdoptProjectToolDeps,
+	IBuildAdoptProjectPlanInput,
+} from '../contracts';
+export type {
+	IAssessmentConflict,
+	IAssessmentCost,
+	IBuildAdoptionAssessmentOptions,
+	IPluginRecommendation,
+} from '../lib/contracts/interfaces/adoption-assessment.interface';
+export type { IAdoptionAssessment } from '../contracts';
 
 // --- versioned skill bundles (f00029 S4; f00065 S1: skills owned by package/plugin) ------
 export { loadSkills } from '../lib/skills/load-skills';
@@ -655,6 +1152,16 @@ export type {
 	ISkillCatalog,
 	ISkillCatalogEntry,
 } from '../lib/skills/skill-catalog';
+export { packageSkillSource } from '../lib/skills/sources/package-skill-source';
+export { buildSkillResolver } from '../lib/skills/sources/resolver';
+export type { ISkillResolver } from '../lib/skills/sources/resolver';
+export type {
+	ILoadedSkill,
+	ISkillDescriptor,
+	ISkillResolverListResult,
+	ISkillResolverLoadResult,
+	ISkillSource,
+} from '../lib/skills/sources/types';
 export {
 	CORE_SKILLS_ROOT,
 	ownerRootForAppliesTo,
@@ -707,16 +1214,16 @@ export type {
 	IProbeDeps,
 	IRunExternalToolInput,
 	IToolProbeResult,
-} from '../lib/contracts/interfaces/external-tool.interface';
+} from '../contracts';
 export type {
 	FindingSeverity,
 	IAggregatedScan,
-	IFinding,
 	IFindingCounts,
 	IFindingLocation,
 	IScanResult,
 	IScanSkip,
 } from '../lib/contracts/interfaces/finding.interface';
+export type { IFinding } from '../contracts';
 export { aggregateScans } from '../lib/external-tool/aggregate-scans';
 export {
 	probeTool,
@@ -747,6 +1254,45 @@ export type {
 	IResolvePluginsResult,
 	PluginRegistryOrigin,
 } from '../lib/contracts/interfaces/plugin-registry.interface';
+export type {
+	IPluginManifest,
+	IPluginManifestTokenBudget,
+	PluginManifestMaturity,
+	PluginManifestVisibility,
+} from '../lib/contracts/interfaces/plugin-manifest.interface';
+export type {
+	IPluginTokenBudget,
+	IPluginTokenBudgetCaps,
+} from '../lib/contracts/interfaces/plugin-token-budget.interface';
+export { resolveTokenBudget } from '../lib/contracts/interfaces/plugin-token-budget.interface';
+export type { IPluginToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
+export { resolveToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
+// (Track D): plugin state machine.
+export {
+	canTransition,
+	createPluginStateMachine,
+	PluginStateError,
+} from '../lib/plugins/states';
+export type {
+	IPluginStateMachine,
+	ITransitionReason,
+	PluginState,
+} from '../lib/plugins/states';
+export {
+	definePluginManifest,
+	parsePluginManifest,
+} from '../lib/manifest/define-plugin-manifest';
+export {
+	discoverPluginManifests,
+	loadAllPluginManifests,
+} from '../lib/manifest/discovery';
+export { validatePluginManifest } from '../lib/manifest/validation';
+export {
+	permissionCategorySchema,
+	permissionListSchema,
+	toolPermissionGrantSchema,
+	toolPermissionsSchema,
+} from '../lib/manifest/permissions.schema';
 export { FIRST_PARTY_PLUGIN_INDEX } from '../lib/registry/first-party-index';
 export {
 	buildPluginAddRecipe,
@@ -768,10 +1314,7 @@ export { resolvePlugins } from '../lib/registry/resolve';
 export type * from '../generated/tool-outputs';
 
 // --- f00152 S5 (L3): feature flags ---
-export {
-	coreFeatureFlag,
-	readFeatureFlag,
-} from '../lib/plugins/feature-flags';
+export { coreFeatureFlag, readFeatureFlag } from '../lib/plugins/feature-flags';
 export type {
 	IFeatureFlagEntry,
 	IFeatureFlagSource,
@@ -830,7 +1373,7 @@ export type {
 	IIncidentLoggingContext,
 	IWithIncidentLoggingOptions,
 } from '../lib/tools/with-incident-logging';
-// c00126 S2: scan helpers - pure utilities adopted by the SOLID-compliance
+// S2: scan helpers - pure utilities adopted by the SOLID-compliance
 // lint and any future lint. See `packages/core/src/lib/scan/` for the
 // full module set; this block re-exports the public surface.
 export {
@@ -859,3 +1402,63 @@ export type {
 	IShingleHit,
 	IShingleOptions,
 } from '../lib/scan';
+// --- error collection (f00251) -------------------------------------------
+export type { IErrorSink } from '../lib/error-collection/sink.interface';
+export type {
+	IErrorCollector,
+	ICreateErrorCollectorOptions,
+	IRedactionPolicy,
+	ISeverityClassifier,
+} from '../lib/error-collection/collector.interface';
+export type {
+	ICapturedError,
+	ICapturedErrorContext,
+	ISeverityBand,
+	ISinkId,
+	IErrorSinkRecordInput,
+} from '../lib/error-collection/types';
+export type {
+	TSeverityBand,
+	TClassification,
+} from '../lib/error-collection/severity-classifier';
+export { createErrorCollector } from '../lib/error-collection/collector.service';
+export { ConsoleErrorSink } from '../lib/error-collection/console-sink';
+export { BufferingErrorSink } from '../lib/error-collection/buffering-sink';
+export { withErrorCollection } from '../lib/error-collection/with-error-collection';
+export type {
+	IToolMetaForError,
+	IWithErrorCollectionOptions,
+} from '../lib/error-collection/with-error-collection';
+export { createDefaultRedactionPolicy } from '../lib/error-collection/redaction-policy';
+export { createDefaultSeverityClassifier } from '../lib/error-collection/severity-classifier';
+// (Track N): generic mutation idempotency store.
+export {
+	createIdempotencyStore,
+	duplicateSuppressedRefusal,
+	IDEMPOTENCY_DUPLICATE_SUPPRESSED,
+	readIdempotencyFile,
+	writeIdempotencyFile,
+} from '../lib/mutations/idempotency';
+export type {
+	IIdempotencyFile,
+	IIdempotencyOptions,
+	IIdempotencyRecord,
+	IIdempotencySnapshot,
+	IIdempotencyStore,
+} from '../lib/mutations/idempotency';
+
+// --- f00201 (Track O / q00006 §55): workflow transactions -----------
+export { plan, execute, computePlanRisk } from '../lib/transactions/plan';
+export type {
+	ICompensationContext,
+	ICompensationRecord,
+	IExecuteOptions,
+	IStep,
+	IStepContext,
+	ITransactionError,
+	ITransactionPlan,
+	ITransactionResult,
+	StepEffect,
+	TTransactionRisk,
+} from '../lib/transactions/types';
+export type { IExecuteResult } from '../lib/transactions/executor';

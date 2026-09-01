@@ -1,7 +1,7 @@
 /**
  * x00072 SEC-001 S2 — Trust-fingerprint helpers + QuickPick gate.
  */
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -10,7 +10,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { registerStartServerUntrusted } from '../commands/start-server-untrusted';
 import {
 	computeLaunchFingerprint,
-	computeMcpJsonHash,
 	describeLaunch,
 	isLaunchApproved,
 	recordApproval,
@@ -59,16 +58,6 @@ describe('trust-fingerprint (x00072 S2)', () => {
 		expect(reordered).not.toBe(a);
 	});
 
-	it('computeMcpJsonHash returns undefined for empty/missing and hash for body', () => {
-		expect(computeMcpJsonHash(undefined)).toBeUndefined();
-		expect(computeMcpJsonHash('')).toBeUndefined();
-		const h1 = computeMcpJsonHash('{"mcpServers":{}}') as string;
-		const h2 = computeMcpJsonHash('{"mcpServers":{}}') as string;
-		const h3 = computeMcpJsonHash('{"mcpServers":{"x":1}}') as string;
-		expect(h1).toBe(h2);
-		expect(h1).not.toBe(h3);
-	});
-
 	it('describeLaunch renders command + args + cwd', () => {
 		expect(describeLaunch(baseLaunch)).toBe(
 			`bun run mcp-vertex (cwd=${baseLaunch.cwd})`,
@@ -83,50 +72,25 @@ describe('isLaunchApproved (x00072 S2)', () => {
 		store = new MemoryGlobalState();
 	});
 
-	it('approves when nothing stored + nothing to compare', () => {
-		expect(isLaunchApproved(store, baseLaunch, undefined)).toBe(false);
+	it('rejects before the configured launch has been approved', () => {
+		expect(isLaunchApproved(store, baseLaunch)).toBe(false);
 	});
 
-	it('re-uses stored fingerprint when launch unchanged and no .mcp.json', async () => {
-		await recordApproval(store, baseLaunch, undefined);
-		expect(isLaunchApproved(store, baseLaunch, undefined)).toBe(true);
+	it('re-uses stored fingerprint for the unchanged configured launch', async () => {
+		await recordApproval(store, baseLaunch);
+		expect(isLaunchApproved(store, baseLaunch)).toBe(true);
 	});
 
 	it('invalidates when launch changes', async () => {
-		await recordApproval(store, baseLaunch, undefined);
+		await recordApproval(store, baseLaunch);
 		expect(
-			isLaunchApproved(
-				store,
-				{ ...baseLaunch, args: ['run', 'mcpv'] },
-				undefined,
-			),
+			isLaunchApproved(store, { ...baseLaunch, args: ['run', 'mcpv'] }),
 		).toBe(false);
 	});
 
 	it('invalidates when cwd changes', async () => {
-		await recordApproval(store, baseLaunch, undefined);
-		expect(
-			isLaunchApproved(
-				store,
-				{ ...baseLaunch, cwd: '/other' },
-				undefined,
-			),
-		).toBe(false);
-	});
-
-	it('invalidates when .mcp.json content drifts', async () => {
-		const body1 =
-			'{"mcpServers":{"mcp-vertex":{"command":"bun","args":["run","mcp-vertex"]}}}';
-		await recordApproval(store, baseLaunch, body1);
-		expect(isLaunchApproved(store, baseLaunch, body1)).toBe(true);
-		const body2 =
-			'{"mcpServers":{"mcp-vertex":{"command":"bun","args":["run","evil"]}}}';
-		expect(isLaunchApproved(store, baseLaunch, body2)).toBe(false);
-	});
-
-	it('invalidates when .mcp.json appears where there was none', async () => {
-		await recordApproval(store, baseLaunch, undefined);
-		expect(isLaunchApproved(store, baseLaunch, '{"mcpServers":{}}')).toBe(
+		await recordApproval(store, baseLaunch);
+		expect(isLaunchApproved(store, { ...baseLaunch, cwd: '/other' })).toBe(
 			false,
 		);
 	});
@@ -168,8 +132,17 @@ describe('registerStartServerUntrusted (x00072 S2)', () => {
 			workspace: {
 				isTrusted: false,
 				workspaceFolders: [{ uri: { fsPath: cwd } }],
-				getConfiguration: () => ({
-					get: <T>(_k: string, def?: T): T | undefined => def,
+				getConfiguration: (section?: string) => ({
+					get: <T>(key: string, def?: T): T | undefined => {
+						if (
+							section === 'mcp-vertex.server' &&
+							key === 'command'
+						)
+							return 'bun' as T;
+						if (section === 'mcp-vertex.server' && key === 'args')
+							return ['run', 'mcp-vertex'] as T;
+						return def;
+					},
 				}),
 			},
 		}) as unknown as IVscodeApi;
@@ -214,7 +187,7 @@ describe('registerStartServerUntrusted (x00072 S2)', () => {
 		expect(fp).toMatch(/^[a-f0-9]{64}$/);
 	});
 
-	it('skips the picker when fingerprint already approved (no .mcp.json)', async () => {
+	it('skips the picker when fingerprint already approved', async () => {
 		pickResult = undefined; // picker should not even be invoked
 		await registerStartServerUntrusted(makeContext(), makeVscode(), {
 			createClient: () => {
@@ -243,41 +216,21 @@ describe('registerStartServerUntrusted (x00072 S2)', () => {
 		expect(createdClientCalls).toBe(2);
 	});
 
-	it('re-prompts when .mcp.json drifts after approval', async () => {
-		writeFileSync(join(cwd, '.mcp.json'), '{"mcpServers":{}}', 'utf8');
-		pickResult = 'Approve & start';
-		await registerStartServerUntrusted(makeContext(), makeVscode(), {
-			createClient: () => {
-				createdClientCalls++;
-				return Promise.resolve({} as never);
-			},
-		});
-		expect(createdClientCalls).toBe(1);
-		// Drift: rewrite .mcp.json with new content
-		writeFileSync(
-			join(cwd, '.mcp.json'),
-			'{"mcpServers":{"mcp-vertex":{"command":"node","args":["evil"]}}}',
-			'utf8',
-		);
-		pickResult = undefined; // would be required again
-		await registerStartServerUntrusted(makeContext(), makeVscode(), {
-			createClient: () => {
-				createdClientCalls++;
-				return Promise.resolve({} as never);
-			},
-		});
-		expect(createdClientCalls).toBe(1); // blocked, no new spawn
-	});
-
 	it('resolveServerCommand picks up workspace settings', async () => {
 		const cfg = makeVscode();
 		(cfg.workspace as { getConfiguration?: unknown }).getConfiguration =
 			() => ({
-				get: <T>(key: string, def?: T): T | undefined =>
-					key === 'command' ? ('node' as unknown as T) : def,
+				get: <T>(key: string, def?: T): T | undefined => {
+					if (key === 'command') return 'node' as unknown as T;
+					if (key === 'args') return ['server.js'] as unknown as T;
+					return def;
+				},
 			});
 		const launch = await resolveServerCommand(cfg);
+		if (launch === undefined)
+			throw new Error('server launch was not resolved');
 		expect(launch.command).toBe('node');
+		expect(launch.args).toEqual(['server.js']);
 		expect(launch.cwd).toBe(cwd);
 	});
 });

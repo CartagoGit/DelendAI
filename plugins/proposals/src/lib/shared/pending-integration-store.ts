@@ -24,11 +24,12 @@
  * write itself is atomic (temp-in-same-dir + rename), so two agents
  * closing slices concurrently never lose an entry or read a torn file.
  */
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
 import {
 	CorruptFileError,
 	quarantineCorruptFile,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -69,7 +70,11 @@ export const createPendingIntegrationStore = (
 	const read = async (): Promise<IPendingIntegrationState> => {
 		let raw: string;
 		try {
-			raw = await readFile(path, 'utf8');
+			raw = (
+				await new SafeWorkspaceReader(dirname(path)).readText(
+					basename(path),
+				)
+			).content;
 		} catch (err: unknown) {
 			if ((err as NodeJS.ErrnoException).code === 'ENOENT')
 				return emptyState();

@@ -28,8 +28,15 @@ describe('e2e: agent catalog', async () => {
 		client: Client;
 		close: () => Promise<void>;
 	}> => {
+		// r00026 (TOK-004): pin native — this suite calls tools directly
+		// by name to test the catalog/protocol, not surface negotiation
+		// (adaptive is now the default for a plain client).
 		const args = parseCliArgs(
-			['--plugins=proposals', `--workspace=${workspace}`],
+			[
+				'--plugins=proposals',
+				`--workspace=${workspace}`,
+				'--surface=native',
+			],
 			workspace,
 		);
 		const { config } = await assembleCliConfig(args, {
@@ -147,10 +154,11 @@ describe('e2e: agent catalog', async () => {
 			name: 'mcp-vertex_agent_catalog',
 			arguments: args,
 		});
-		return JSON.parse(
-			(res.content as Array<{ type: string; text: string }>)[0]?.text ??
-				'{}',
-		) as Record<string, unknown>;
+		return (res.structuredContent ??
+			JSON.parse(
+				(res.content as Array<{ type: string; text: string }>)[0]
+					?.text ?? '{}',
+			)) as Record<string, unknown>;
 	};
 
 	it('returns actionable proposals in compact mode and the full registry in full mode', async () => {
@@ -251,7 +259,7 @@ describe('e2e: agent catalog', async () => {
 		const loaded = await callSkill({
 			id: 'mcp-vertex-token-budget-playbook',
 		});
-		expect(loaded.body as string).toContain('Compact-first, then drill');
+		expect(loaded.body as string).toContain('# Token budget playbook');
 	});
 
 	it('errors for an unknown skill id', async () => {

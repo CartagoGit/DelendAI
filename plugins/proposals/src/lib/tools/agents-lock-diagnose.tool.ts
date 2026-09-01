@@ -1,7 +1,8 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import {
+	SafeWorkspaceReader,
 	toolJson,
 	type IToolRegistration,
 	withFileMutex,
@@ -11,7 +12,6 @@ import z from 'zod';
 import {
 	listStaleAgentLockTmpFiles,
 	readLock,
-	type IAgentLockTmpFileInfo,
 	type ILockEntry,
 } from '../locks/agent-lock-engine';
 
@@ -94,10 +94,12 @@ const readLatestLogTsByTask = async (
 		const names = (await readdir(logsDir).catch(() => []))
 			.filter((name) => name.endsWith('.jsonl'))
 			.sort();
+		const reader = new SafeWorkspaceReader(logsDir);
 		for (const name of names) {
-			const content = await readFile(join(logsDir, name), 'utf8').catch(
-				() => '',
-			);
+			const content = await reader
+				.readText(name)
+				.then((value) => value.content)
+				.catch(() => '');
 			for (const line of content.split('\n')) {
 				if (!line.trim()) continue;
 				let parsed: unknown;

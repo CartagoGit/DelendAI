@@ -33,6 +33,8 @@ import {
 } from './proposal-scaffolder.service';
 
 export interface IAutoScaffoldOptions {
+	/** Output intent; plan emits a parent plan plus child fixes. */
+	readonly auditType?: 'plan' | 'valuation';
 	/** Caller's opt-in flag. When false, the helper returns `disabled`. */
 	readonly enabled: boolean;
 	/** Peer-plugin registry — used to detect the `proposals` plugin. */
@@ -54,6 +56,8 @@ export interface IAutoScaffoldOptions {
 	 * today UTC.
 	 */
 	readonly date?: string;
+	/** Resolve the ready subfolder for a generated proposal kind. */
+	readonly folderForKind?: (kind: IScaffoldedProposal['kind']) => string;
 }
 
 export type AutoScaffoldOutcome =
@@ -85,6 +89,7 @@ export const resolveAutoScaffold = async (
 	// Run the scaffolder to get the in-memory records, then write each
 	// one to disk with `writeFileAtomic` (the durability boundary).
 	const records = scaffoldProposals(consolidation, {
+		auditType: options.auditType ?? 'plan',
 		...(options.knownProposalIds !== undefined
 			? { existingIds: options.knownProposalIds }
 			: {}),
@@ -93,6 +98,9 @@ export const resolveAutoScaffold = async (
 		outputDir: options.proposalsDir,
 		...(options.auditId !== undefined ? { auditId: options.auditId } : {}),
 		...(options.date !== undefined ? { date: options.date } : {}),
+		...(options.folderForKind !== undefined
+			? { folderForKind: options.folderForKind }
+			: {}),
 	});
 	if (records.length === 0) {
 		return { kind: 'scaffolded', records: [] };
@@ -105,9 +113,16 @@ export const resolveAutoScaffold = async (
 	const absDir = path.isAbsolute(options.proposalsDir)
 		? options.proposalsDir
 		: path.join(options.workspaceRoot, options.proposalsDir);
-	await mkdir(absDir, { recursive: true });
 	for (const record of records) {
-		await writeFileAtomic(path.join(absDir, record.filename), record.body);
+		const targetDir = path.join(
+			absDir,
+			record.relativePath.split('/').slice(0, -1).join('/'),
+		);
+		await mkdir(targetDir, { recursive: true });
+		await writeFileAtomic(
+			path.join(targetDir, record.filename),
+			record.body,
+		);
 	}
 	return { kind: 'scaffolded', records };
 };

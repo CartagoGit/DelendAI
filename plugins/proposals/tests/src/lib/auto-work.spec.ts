@@ -12,6 +12,7 @@ import {
 	runAutoWork,
 	type IAutoWorkToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/auto-work.tool';
+import { asArray } from '@mcp-vertex/test-kit/public';
 
 // The tool declares an `outputSchema`, so the MCP SDK requires
 // `structuredContent` on every response — a text-only payload throws
@@ -155,7 +156,72 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.claimReady).toBeUndefined();
 	});
 
-	it('does not re-claim a pending slice whose declared artifacts are already tracked', async () => {
+	it('keeps a pending slice claimable when its declared artifacts are tracked but clean', async () => {
+		options = { ...options, workspaceRoot: root };
+		execFileSync('git', ['-C', root, 'init'], { stdio: 'ignore' });
+		execFileSync('git', [
+			'-C',
+			root,
+			'config',
+			'user.email',
+			'test@example.com',
+		]);
+		execFileSync('git', ['-C', root, 'config', 'user.name', 'Test User']);
+		mkdirSync(join(root, 'src'), { recursive: true });
+		writeFileSync(
+			join(root, 'src', 'implemented.ts'),
+			'export const done = true;\n',
+		);
+		writeFileSync(
+			join(root, 'src', 'existing-service.ts'),
+			'export const service = true;\n',
+		);
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p3-x', file: 'p3.md', status: 'pending' }],
+			}),
+		);
+		writeFileSync(
+			join(root, 'p3.md'),
+			`# p3-x
+
+## Slices
+
+### S1 — already implemented
+- **Files**: \`src/implemented.ts\`, \`src/existing-service.ts\`
+- **Gate**: type
+- **Status**: pending
+`,
+		);
+		execFileSync(
+			'git',
+			[
+				'-C',
+				root,
+				'add',
+				'src/implemented.ts',
+				'src/existing-service.ts',
+			],
+			{ stdio: 'ignore' },
+		);
+		execFileSync(
+			'git',
+			['-C', root, 'commit', '-m', 'test: seed artifact'],
+			{
+				stdio: 'ignore',
+			},
+		);
+
+		const out = parse(await runAutoWork(options));
+		expect(out.claimReady).toMatchObject({
+			sliceId: 'S1',
+			files: ['src/implemented.ts', 'src/existing-service.ts'],
+		});
+		expect(out.reason).toBeUndefined();
+	});
+
+	it('does not re-claim a pending slice whose declared artifacts have local changes', async () => {
 		options = { ...options, workspaceRoot: root };
 		execFileSync('git', ['-C', root, 'init'], { stdio: 'ignore' });
 		mkdirSync(join(root, 'src'), { recursive: true });
@@ -194,6 +260,58 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.hygieneBlockers).toContain(
 			'pending slice already has tracked artifacts: S1: src/implemented.ts',
 		);
+	});
+
+	it('withholds claimReady when VERIFY fan-out requires agent-worktree isolation', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p44-x', file: 'p44.md', status: 'pending' }],
+			}),
+		);
+		writeFileSync(
+			join(root, 'p44.md'),
+			[
+				'# p44-x',
+				'',
+				'## Slices',
+				'',
+				'### S1 — expand',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- migration_phase: expand',
+				'- status: done',
+				'',
+				'### S2 — producers',
+				'- files: plugins/proposals/src/lib/swarm/contract-migration-policy.ts',
+				'- migration_phase: producers',
+				'- status: done',
+				'',
+				'### S3 — regenerate',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- migration_phase: regenerate',
+				'- status: done',
+				'',
+				'### S4 — consumers',
+				'- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+				'- migration_phase: consumers',
+				'- status: done',
+				'',
+				'### S5 — verify fanout',
+				'- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts',
+				'- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts',
+				'- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts',
+				'- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts',
+				'- migration_phase: verify',
+				'- gate: type',
+			].join('\n'),
+		);
+
+		const out = parse(await runAutoWork(options));
+		expect(out.state).toBe('idle');
+		expect(out.reason).toBe(
+			'every actionable proposal is currently covered by live slice claims or ownership overlap',
+		);
+		expect(out.claimReady).toBeUndefined();
 	});
 
 	it('surfaces a compact orchestration policy for non-trivial slices', async () => {
@@ -286,6 +404,48 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.steps[2]).toContain('proposal_transition');
 	});
 
+	it('continues ready work while an unrelated review is pending', async () => {
+		options = {
+			...options,
+			proposalsDirAbs: root,
+			requirePeerReview: true,
+		};
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'a00064',
+						file: 'review/a00064-primary.md',
+						status: 'review',
+					},
+					{
+						id: 'a00065',
+						file: 'ready/a00065-dependent.md',
+						status: 'ready',
+					},
+				],
+			}),
+		);
+		mkdirSync(join(root, 'review'), { recursive: true });
+		mkdirSync(join(root, 'ready'), { recursive: true });
+		writeFileSync(
+			join(root, 'review', 'a00064-primary.md'),
+			'---\nid: a00064\nstatus: review\n---\n',
+			'utf8',
+		);
+		writeFileSync(
+			join(root, 'ready', 'a00065-dependent.md'),
+			'---\nid: a00065\nstatus: ready\nblocked-by: [a00064]\n---\n',
+			'utf8',
+		);
+
+		const out = parse(await runAutoWork(options));
+		expect(out.state).toBe('work');
+		expect(out.proposalId).toBe('a00065');
+		expect(out.next).not.toBe('proposals_proposal_review');
+	});
+
 	it('builds the orchestration policy as a standalone pure helper', async () => {
 		expect(
 			buildAutoWorkOrchestrationPolicy({
@@ -332,14 +492,21 @@ describe('auto_work (one-call action plan)', async () => {
 			s.includes('Persist the slice'),
 		);
 		expect(persistSteps).toHaveLength(1);
-		expect(persistSteps[0]).toContain('mode: "commit"');
-		expect(persistSteps[0]).toContain('maybePersistAfterSlice');
+		expect(persistSteps[0]).toContain('proposals_close_slice');
+		expect(persistSteps[0]).toContain('persist mode "commit"');
+		expect(persistSteps[0]).toContain(
+			'Hosts must not call maybePersistAfterSlice directly',
+		);
+		expect(persistSteps[0]?.toLowerCase()).toContain(
+			'do not stage unrelated files',
+		);
 	});
 
 	it("plan with persist mode 'commit-and-push' includes the push warning", async () => {
 		const pushOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit-and-push', pushTarget: 'origin agent/p1' },
+			agentWorktreeEnabled: true,
 		};
 		writeFileSync(
 			pushOptions.indexPathAbs,
@@ -354,14 +521,25 @@ describe('auto_work (one-call action plan)', async () => {
 			s.includes('Persist the slice'),
 		);
 		expect(persistSteps).toHaveLength(1);
-		expect(persistSteps[0]).toContain('commit + push');
-		expect(persistSteps[0]).toContain('refuses to push to `main`');
+		expect(persistSteps[0]).toContain('proposals_close_slice');
+		expect(persistSteps[0]).toContain('persist mode "commit-and-push"');
+		expect(persistSteps[0]).toContain(
+			'verify push target "origin agent/p1"',
+		);
+		expect(persistSteps[0]).toContain(
+			'committed=true/pushed=false as incomplete',
+		);
+		expect(persistSteps[0]).toContain('persist block in the response');
+		expect(persistSteps[0]).toContain(
+			'Hosts must not call maybePersistAfterSlice directly',
+		);
 	});
 
 	it("x00051 S3: persist mode 'commit' prepends an explicit agent_worktree create step", async () => {
 		const commitOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit' },
+			agentWorktreeEnabled: true,
 		};
 		writeFileSync(
 			commitOptions.indexPathAbs,
@@ -390,6 +568,7 @@ describe('auto_work (one-call action plan)', async () => {
 		const pushOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit-and-push', pushTarget: 'origin agent/p1' },
+			agentWorktreeEnabled: true,
 		};
 		writeFileSync(
 			pushOptions.indexPathAbs,
@@ -419,6 +598,113 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(wtSteps).toHaveLength(0);
 	});
 
+	it("allows persist 'commit-and-push' targeting develop in shared checkout", async () => {
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit-and-push', pushTarget: 'origin develop' },
+		};
+		writeFileSync(
+			pushOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(pushOptions));
+		expect(out.persist).toMatchObject({
+			mode: 'commit-and-push',
+			pushTarget: 'origin develop',
+		});
+		expect(out.executionMode).toBe('normal');
+		const sharedCheckoutStep = out.steps.find((s: string) =>
+			s.includes('agentWorktree: false'),
+		);
+		expect(sharedCheckoutStep).toBeDefined();
+		expect(sharedCheckoutStep).toContain('push to the configured target');
+		expect(sharedCheckoutStep).toContain('origin develop');
+		expect(sharedCheckoutStep).not.toContain('wip/');
+	});
+
+	it("x00231: persist 'commit' with agentWorktree off orders commit only (no push mention)", async () => {
+		const commitOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit' },
+		};
+		writeFileSync(
+			commitOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(commitOptions));
+		const developStep = out.steps.find((s: string) =>
+			s.includes('agentWorktree: false'),
+		);
+		expect(developStep).toBeDefined();
+		expect(developStep).toContain(
+			'commit directly on the shared checkout target selected by the operator',
+		);
+		expect(developStep).not.toContain('push');
+	});
+
+	it('invalid protected persist target does not suggest wip branches', async () => {
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit-and-push', pushTarget: 'origin main' },
+		};
+		writeFileSync(
+			pushOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(pushOptions));
+		expect(out.reason).toBe('invalid-persist-config');
+		expect(out.nextAction).toContain(
+			'explicit non-protected branch target',
+		);
+		expect(out.nextAction).not.toContain('wip/*');
+	});
+
+	it('blocks develop when persist.protectedBranches marks it protected', async () => {
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: {
+				mode: 'commit-and-push',
+				pushTarget: 'origin develop',
+				protectedBranches: ['main', 'master', 'develop'],
+			},
+		};
+		writeFileSync(
+			pushOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(pushOptions));
+		expect(out.reason).toBe('invalid-persist-config');
+		expect(asArray(out.hygieneBlockers)[0]).toContain('origin develop');
+	});
+
+	it('blocks protected refspec targets such as HEAD:develop', async () => {
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: {
+				mode: 'commit-and-push',
+				pushTarget: 'origin HEAD:develop',
+				protectedBranches: ['main', 'master', 'develop'],
+			},
+		};
+		writeFileSync(
+			pushOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(pushOptions));
+		expect(out.reason).toBe('invalid-persist-config');
+		expect(asArray(out.hygieneBlockers)[0]).toContain('HEAD:develop');
+	});
+
 	it('input.persist overrides config.persist.mode (priority chain, l109 §2)', async () => {
 		const commitOptions: IAutoWorkToolOptions = {
 			...options,
@@ -430,7 +716,8 @@ describe('auto_work (one-call action plan)', async () => {
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
 			}),
 		);
-		// input.persist='commit-and-push' must win over config 'commit'.
+		// input.persist='commit-and-push' wins over config 'commit' and is
+		// valid in this repository's shared-checkout mode.
 		const out = parse(
 			await runAutoWork({
 				...commitOptions,
@@ -687,7 +974,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			expect(out.executionMode).toBe('blocked');
 			// Stash rides on the response payload.
 			expect(Array.isArray(out.stashes)).toBe(true);
-			expect((out.stashes as unknown[]).length).toBe(1);
+			expect(asArray(out.stashes).length).toBe(1);
 			expect((out.stashes as Array<{ ref: string }>)[0]?.ref).toBe(
 				'stash@{0}',
 			);

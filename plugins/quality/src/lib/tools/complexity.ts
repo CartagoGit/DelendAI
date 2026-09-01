@@ -125,8 +125,9 @@ export const collectComplexityFindings = (
 	const masked = preserveLayout(source);
 	const findings: IComplexityFinding[] = [];
 	for (const pattern of FUNCTION_PATTERNS) {
-		let match: RegExpExecArray | null;
-		while ((match = pattern.exec(masked)) !== null) {
+		while (true) {
+			const match = pattern.exec(masked);
+			if (match === null) break;
 			const functionName = match[1] ?? 'anonymous';
 			const searchFrom = match.index + match[0].length;
 			const bodyStart = masked.indexOf('{', searchFrom);

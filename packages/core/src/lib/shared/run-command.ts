@@ -1,10 +1,11 @@
 import { spawn } from 'node:child_process';
 
-import { killProcessGroup } from '../commands/process-group';
+import { killProcessTree } from '../commands/process-group';
 import type {
 	IRunArgvOptions,
 	IRunArgvOutcome,
 } from '../contracts/interfaces/run-command.interface';
+import { truncateUtf8Buffer } from './truncate-utf8';
 import { withFileMutex } from './with-file-mutex';
 
 export type {
@@ -30,6 +31,7 @@ export interface IRunCommandOutcome {
 	readonly code: number;
 	readonly output: string;
 	readonly timedOut: boolean;
+	readonly aborted?: boolean;
 }
 
 export interface IRunCommandOptions {
@@ -45,6 +47,11 @@ export interface IRunCommandOptions {
 	 * or a lockfile) so concurrent callers serialize instead of racing.
 	 */
 	readonly lockPath?: string;
+	/**
+	 * Optional abort signal. When aborted, the whole process tree is killed
+	 * and the promise resolves only after the child closes.
+	 */
+	readonly signal?: AbortSignal;
 }
 
 /**
@@ -68,32 +75,151 @@ const spawnShell = (command: string, cwd: string): ReturnType<typeof spawn> =>
 				stdio: ['ignore', 'pipe', 'pipe'],
 			});
 
+interface IByteCollector {
+	readonly chunks: Buffer[];
+	collectedBytes: number;
+	readonly limitBytes?: number;
+}
+
+const createByteCollector = (limitBytes?: number): IByteCollector => ({
+	chunks: [],
+	collectedBytes: 0,
+	...(limitBytes !== undefined ? { limitBytes } : {}),
+});
+
+const remainingBytes = (collector: IByteCollector): number =>
+	collector.limitBytes === undefined
+		? Number.POSITIVE_INFINITY
+		: Math.max(0, collector.limitBytes - collector.collectedBytes);
+
+const captureUtf8Bytes = (
+	collector: IByteCollector,
+	chunk: Buffer,
+	sharedCollector?: IByteCollector,
+): void => {
+	const chunkBytes = Buffer.byteLength(chunk);
+	const bytesToTake = Math.min(
+		chunkBytes,
+		remainingBytes(collector),
+		sharedCollector === undefined
+			? Number.POSITIVE_INFINITY
+			: remainingBytes(sharedCollector),
+	);
+	if (bytesToTake <= 0) return;
+	collector.chunks.push(chunk.subarray(0, bytesToTake));
+	collector.collectedBytes += bytesToTake;
+	if (sharedCollector !== undefined) {
+		sharedCollector.collectedBytes += bytesToTake;
+	}
+};
+
+const decodeUtf8Chunks = (chunks: readonly Buffer[]): string => {
+	// Concatenate once: this runs over whole process output, and doing it
+	// twice doubled the peak allocation for no benefit.
+	const combined = Buffer.concat(chunks);
+	return truncateUtf8Buffer(combined, combined.length).toString('utf8');
+};
+
+const TIMEOUT_EXIT_CODE = 124;
+const ABORT_EXIT_CODE = 130;
+
+type IStopReason = 'timeout' | 'abort';
+
+const bindAbortSignal = (
+	signal: AbortSignal | undefined,
+	onAbort: () => void,
+): (() => void) => {
+	if (signal === undefined) return () => {};
+	if (signal.aborted) {
+		onAbort();
+		return () => {};
+	}
+	const handleAbort = (): void => {
+		onAbort();
+	};
+	signal.addEventListener('abort', handleAbort, { once: true });
+	return () => {
+		signal.removeEventListener('abort', handleAbort);
+	};
+};
+
+const resolveOutcomeCode = (
+	code: number | null,
+	timedOut: boolean,
+	aborted: boolean,
+): number => {
+	if (aborted) return ABORT_EXIT_CODE;
+	if (timedOut) return TIMEOUT_EXIT_CODE;
+	return code ?? 1;
+};
+
 const spawnOnce = (
 	command: string,
 	cwd: string,
 	timeoutMs: number,
 	maxOutputBytes: number,
+	signal?: AbortSignal,
 ): Promise<IRunCommandOutcome> =>
 	new Promise<IRunCommandOutcome>((resolve) => {
-		let output = '';
-		let timedOut = false;
+		if (signal?.aborted === true) {
+			resolve({
+				code: ABORT_EXIT_CODE,
+				output: 'aborted before spawn',
+				timedOut: false,
+				aborted: true,
+			});
+			return;
+		}
+		const outputCollector = createByteCollector(maxOutputBytes);
+		let stopReason: IStopReason | undefined;
 		const child = spawnShell(command, cwd);
 		const capture = (chunk: Buffer): void => {
-			if (output.length < maxOutputBytes) output += chunk.toString();
+			captureUtf8Bytes(outputCollector, chunk);
 		};
 		child.stdout?.on('data', capture);
 		child.stderr?.on('data', capture);
-		const timer = setTimeout(() => {
-			timedOut = true;
-			killProcessGroup(child.pid);
-		}, timeoutMs);
-		child.on('close', (code) => {
-			clearTimeout(timer);
-			resolve({ code: timedOut ? 124 : (code ?? 1), output, timedOut });
+		let teardown: Promise<void> | undefined;
+		const stop = (reason: IStopReason): void => {
+			if (stopReason !== undefined) return;
+			stopReason = reason;
+			teardown = killProcessTree(child.pid);
+		};
+		const disposeAbort = bindAbortSignal(signal, () => {
+			stop('abort');
 		});
-		child.on('error', (error) => {
+		const timer = setTimeout(() => {
+			stop('timeout');
+		}, timeoutMs);
+		child.on('close', async (code) => {
 			clearTimeout(timer);
-			resolve({ code: 127, output: String(error), timedOut: false });
+			disposeAbort();
+			await teardown;
+			resolve({
+				code: resolveOutcomeCode(
+					code,
+					stopReason === 'timeout',
+					stopReason === 'abort',
+				),
+				output: decodeUtf8Chunks(outputCollector.chunks),
+				timedOut: stopReason === 'timeout',
+				aborted: stopReason === 'abort',
+			});
+		});
+		child.on('error', async (error: NodeJS.ErrnoException) => {
+			clearTimeout(timer);
+			disposeAbort();
+			await teardown;
+			resolve({
+				code:
+					stopReason === 'abort'
+						? ABORT_EXIT_CODE
+						: error.code === 'ENOENT'
+							? 127
+							: 126,
+				output: String(error),
+				timedOut: stopReason === 'timeout',
+				aborted: stopReason === 'abort',
+			});
 		});
 	});
 
@@ -110,7 +236,13 @@ export const runCommand = async (
 	const timeoutMs = options.timeoutMs ?? 600_000;
 	const maxOutputBytes = options.maxOutputBytes ?? 64 * 1024;
 	const run = (): Promise<IRunCommandOutcome> =>
-		spawnOnce(command, options.cwd, timeoutMs, maxOutputBytes);
+		spawnOnce(
+			command,
+			options.cwd,
+			timeoutMs,
+			maxOutputBytes,
+			options.signal,
+		);
 	return options.lockPath !== undefined
 		? withFileMutex(options.lockPath, run)
 		: run();
@@ -129,6 +261,16 @@ export const runArgv = (
 	options: IRunArgvOptions = {},
 ): Promise<IRunArgvOutcome> =>
 	new Promise<IRunArgvOutcome>((resolve) => {
+		if (options.signal?.aborted === true) {
+			resolve({
+				code: ABORT_EXIT_CODE,
+				stdout: '',
+				stderr: 'aborted before spawn',
+				timedOut: false,
+				aborted: true,
+			});
+			return;
+		}
 		const [binary, ...args] = argv;
 		if (binary === undefined) {
 			resolve({
@@ -136,16 +278,20 @@ export const runArgv = (
 				stdout: '',
 				stderr: 'runArgv: empty argv',
 				timedOut: false,
+				aborted: false,
 			});
 			return;
 		}
 		const timeoutMs = options.timeoutMs ?? 600_000;
 		const maxOutputBytes = options.maxOutputBytes ?? 64 * 1024;
-		let stdout = '';
-		let stderr = '';
-		let timedOut = false;
+		const totalCollector = createByteCollector(maxOutputBytes);
+		const stdoutCollector = createByteCollector(options.maxStdoutBytes);
+		const stderrCollector = createByteCollector(options.maxStderrBytes);
+		let stopReason: IStopReason | undefined;
+		let timeoutTeardown: Promise<void> | undefined;
 		const child = spawn(binary, args, {
 			...(options.cwd !== undefined ? { cwd: options.cwd } : {}),
+			...(process.platform === 'win32' ? {} : { detached: true }),
 			stdio: [
 				options.stdin !== undefined ? 'pipe' : 'ignore',
 				'pipe',
@@ -156,31 +302,53 @@ export const runArgv = (
 			child.stdin?.end(options.stdin);
 		}
 		child.stdout?.on('data', (chunk: Buffer) => {
-			if (stdout.length < maxOutputBytes) stdout += chunk.toString();
+			captureUtf8Bytes(stdoutCollector, chunk, totalCollector);
 		});
 		child.stderr?.on('data', (chunk: Buffer) => {
-			if (stderr.length < maxOutputBytes) stderr += chunk.toString();
+			captureUtf8Bytes(stderrCollector, chunk, totalCollector);
+		});
+		const stop = (reason: IStopReason): void => {
+			if (stopReason !== undefined) return;
+			stopReason = reason;
+			timeoutTeardown = killProcessTree(child.pid);
+		};
+		const disposeAbort = bindAbortSignal(options.signal, () => {
+			stop('abort');
 		});
 		const timer = setTimeout(() => {
-			timedOut = true;
-			child.kill('SIGKILL');
+			stop('timeout');
 		}, timeoutMs);
-		child.on('close', (code) => {
+		child.on('close', async (code) => {
 			clearTimeout(timer);
+			disposeAbort();
+			await timeoutTeardown;
 			resolve({
-				code: timedOut ? 124 : (code ?? 1),
-				stdout,
-				stderr,
-				timedOut,
+				code: resolveOutcomeCode(
+					code,
+					stopReason === 'timeout',
+					stopReason === 'abort',
+				),
+				stdout: decodeUtf8Chunks(stdoutCollector.chunks),
+				stderr: decodeUtf8Chunks(stderrCollector.chunks),
+				timedOut: stopReason === 'timeout',
+				aborted: stopReason === 'abort',
 			});
 		});
-		child.on('error', (error: NodeJS.ErrnoException) => {
+		child.on('error', async (error: NodeJS.ErrnoException) => {
 			clearTimeout(timer);
+			disposeAbort();
+			await timeoutTeardown;
 			resolve({
-				code: error.code === 'ENOENT' ? 127 : 126,
-				stdout,
+				code:
+					stopReason === 'abort'
+						? ABORT_EXIT_CODE
+						: error.code === 'ENOENT'
+							? 127
+							: 126,
+				stdout: decodeUtf8Chunks(stdoutCollector.chunks),
 				stderr: String(error),
-				timedOut: false,
+				timedOut: stopReason === 'timeout',
+				aborted: stopReason === 'abort',
 			});
 		});
 	});

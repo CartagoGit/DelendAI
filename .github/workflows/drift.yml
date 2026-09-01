@@ -1,0 +1,66 @@
+# drift.yml — c00133 (AUD-P0-003).
+#
+# Required status check on `develop` and `main` (see
+# `.github/branch-protection.ts`). Runs every generator and fails
+# the PR when the working tree drifts from what the generators
+# produce.
+
+name: drift
+
+on:
+    pull_request:
+        branches: [develop, main]
+    push:
+        branches: [develop]
+    schedule:
+        - cron: '0 5 * * *' # nightly at 05:00 UTC
+    workflow_dispatch:
+
+concurrency:
+    group: drift-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+jobs:
+    drift:
+        name: drift
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.14
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Run drift check
+              id: drift_check
+              continue-on-error: true
+              run: bun run gen:all --check
+
+            - name: Capture drift diff
+              if: steps.drift_check.outcome == 'failure'
+              run: |
+                  mkdir -p .artifacts/drift
+                  git status --short > .artifacts/drift/git-status.txt
+                  git diff --binary --stat --patch > .artifacts/drift/git-diff.patch
+
+            - name: Upload drift artifact (when check fails)
+              if: steps.drift_check.outcome == 'failure'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: drift-diff
+                  path: .artifacts/drift
+                  if-no-files-found: error
+
+            - name: Fail on drift
+              if: steps.drift_check.outcome == 'failure'
+              run: exit 1

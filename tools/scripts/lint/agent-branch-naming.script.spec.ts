@@ -73,6 +73,20 @@ describe('lintAgentBranchNaming', () => {
 		expect(result.ok).toBe(true);
 	});
 
+	it('ignores wip/* branches regardless of the worktree gate — a different concern (PR-landing branches, not per-agent worktrees)', () => {
+		const branches = [
+			{ name: 'wip/some-slug', hasWorktree: false },
+			{ name: 'fix/some-bug', hasWorktree: false },
+			{ name: 'feature/some-thing', hasWorktree: false },
+		];
+		expect(
+			lintAgentBranchNaming({ branches, agentWorktreeEnabled: false }).ok,
+		).toBe(true);
+		expect(
+			lintAgentBranchNaming({ branches, agentWorktreeEnabled: true }).ok,
+		).toBe(true);
+	});
+
 	it('fails every agent/* branch when agentWorktree is false', () => {
 		const result = lintAgentBranchNaming({
 			branches: [

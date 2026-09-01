@@ -2,6 +2,7 @@ import z from 'zod';
 
 import type { IConfigurationCenterSnapshot } from '../contracts/interfaces/configuration-center.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import { permissionCategorySchema } from '../manifest/permissions.schema';
 import { toolJson } from '../shared/tool-response';
 import { readConfigurationCenterSection } from '../configuration-center/configuration-center';
 
@@ -83,6 +84,9 @@ export const buildConfigurationCenterToolRegistration = (
 								]),
 								configExample: z
 									.record(z.string(), z.unknown())
+									.optional(),
+								permissions: z
+									.array(permissionCategorySchema)
 									.optional(),
 								capabilities: z.object({
 									tools: z.number(),

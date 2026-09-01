@@ -7,12 +7,13 @@
  * persisted state); a corrupt or schema-invalid file is quarantined
  * aside and treated as absent — corrupt ≠ empty.
  */
-import { readFile, rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
 	quarantineCorruptFile,
 	redactSecrets,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -61,7 +62,8 @@ export const readPolicyOverride = async (
 	const path = storePath(storeDir);
 	let raw: string;
 	try {
-		raw = await readFile(path, 'utf8');
+		raw = (await new SafeWorkspaceReader(storeDir).readText(STORE_FILE))
+			.content;
 	} catch {
 		return null;
 	}

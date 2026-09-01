@@ -10,9 +10,11 @@
  * piped through `redactSecrets` first (AGENTS.md rules 4 + 6), same as
  * every other durable write in this plugin.
  */
-import { readFile } from 'node:fs/promises';
+import { readdir, rm } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 
 import {
+	readAbsoluteTextSafe,
 	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
@@ -33,6 +35,29 @@ import type {
 	IUsageSummary,
 	SortBy,
 } from './types';
+import { readSummaryFile } from './summary-file.service';
+import { summarizeLocalKpis } from './usage-kpis.helper';
+
+const HOURS_PER_DAY = 24;
+const DAY_MS = HOURS_PER_DAY * 60 * 60 * 1000;
+
+const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
+	const dir = dirname(absPath);
+	const prefix = `${basename(absPath)}.`;
+	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	await Promise.all(
+		entries
+			.filter(
+				(entry) =>
+					entry.isFile() &&
+					entry.name.startsWith(prefix) &&
+					entry.name.endsWith('.tmp'),
+			)
+			.map((entry) => rm(join(dir, entry.name), { force: true })),
+	);
+};
+
+export { summarizeLocalKpis } from './usage-kpis.helper';
 
 /** Parse the NDJSON log, skipping blank/corrupt lines. */
 export const readInvocations = async (
@@ -40,10 +65,9 @@ export const readInvocations = async (
 ): Promise<IInvocationRecord[]> => {
 	let raw: string;
 	try {
-		raw = await readFile(absPath, 'utf8');
-	} catch (err) {
-		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
-		throw err;
+		raw = await readAbsoluteTextSafe(absPath);
+	} catch {
+		return [];
 	}
 	const out: IInvocationRecord[] = [];
 	for (const line of raw.split('\n')) {
@@ -65,33 +89,28 @@ export const withinWindow = (
 	now: number = Date.now(),
 ): IInvocationRecord[] => {
 	if (!Number.isFinite(windowDays) || windowDays <= 0) return [...records];
-	const cutoff = now - windowDays * 24 * 60 * 60 * 1000;
+	const cutoff = now - windowDays * DAY_MS;
 	return records.filter((r) => {
 		const ts = Date.parse(r.ts);
 		return Number.isNaN(ts) || ts >= cutoff;
 	});
 };
 
-const axisKey = (record: IInvocationRecord, axis: GroupByAxis): string => {
-	switch (axis) {
-		case 'provider':
-			return record.model?.provider ?? 'unknown';
-		case 'plugin':
-			return record.plugin;
-		case 'agent':
-			return record.agent.id;
-		case 'extension':
-			return record.agent.extension;
-		case 'model':
-			// f00106 S1a: attribute spend/tokens to the LLM that handled the
-			// call. Only orchestrated calls carry a model; plain plugin/core
-			// calls (model: null) collect in an explicit `unattributed`
-			// bucket so nothing is silently dropped.
-			return record.model
-				? `${record.model.provider}/${record.model.modelId}`
-				: 'unattributed';
-	}
+const AXIS_KEY_RESOLVERS: Readonly<
+	Record<GroupByAxis, (record: IInvocationRecord) => string>
+> = {
+	provider: (record) => record.model?.provider ?? 'unknown',
+	plugin: (record) => record.plugin,
+	agent: (record) => record.agent.id,
+	extension: (record) => record.agent.extension,
+	model: (record) =>
+		record.model
+			? `${record.model.provider}/${record.model.modelId}`
+			: 'unattributed',
 };
+
+const axisKey = (record: IInvocationRecord, axis: GroupByAxis): string =>
+	AXIS_KEY_RESOLVERS[axis](record);
 
 const savingsPercentOf = (tokensSaved: number, tokensUsed: number): number =>
 	tokensUsed === 0 ? 0 : Math.round((100 * tokensSaved) / tokensUsed);
@@ -191,6 +210,7 @@ export const buildSummary = (
 	options: IBuildSummaryOptions = {},
 ): IUsageSummary => {
 	const windowed = withinWindow(records, windowDays, now);
+	const localKpis = summarizeLocalKpis(windowed, windowDays);
 	return {
 		updatedAt: new Date(now).toISOString(),
 		windowDays,
@@ -199,6 +219,8 @@ export const buildSummary = (
 		byPlugin: bucketBy(windowed, 'plugin', 'costUsd'),
 		byAgent: bucketBy(windowed, 'agent', 'costUsd'),
 		byExtension: bucketBy(windowed, 'extension', 'costUsd'),
+		pluginKpis: localKpis.pluginKpis,
+		kpis: localKpis.kpis,
 		autoBypassed: countAutoBypassed(windowed),
 		limitsStatus: options.limits
 			? computeLimitsStatus(records, options.limits, now)
@@ -212,6 +234,7 @@ const writeSummaryUnlocked = async (
 	absPath: string,
 	summary: IUsageSummary,
 ): Promise<void> => {
+	await removeSummarySiblingTmpFiles(absPath);
 	const { text } = redactSecrets(`${JSON.stringify(summary, null, '\t')}\n`);
 	await writeFileAtomic(absPath, text);
 };
@@ -228,12 +251,7 @@ export const writeSummary = async (
 export const readSummary = async (
 	summaryPath: string,
 ): Promise<IUsageSummary | null> => {
-	try {
-		const raw = await readFile(summaryPath, 'utf8');
-		return JSON.parse(raw) as IUsageSummary;
-	} catch {
-		return null;
-	}
+	return readSummaryFile(summaryPath);
 };
 
 /**

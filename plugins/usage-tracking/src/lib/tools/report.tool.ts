@@ -8,8 +8,14 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import {
+	compactOutputSchema,
+	DETAIL_LEVELS,
+	projectDetail,
+	toolJson,
+	type Detail,
+	type IToolRegistration,
+} from '@mcp-vertex/core/public';
 
 import {
 	bucketBy,
@@ -17,7 +23,13 @@ import {
 	readInvocations,
 	withinWindow,
 } from '../rollup';
-import type { GroupByAxis, IInvocationRecord, SortBy } from '../types';
+import type { IInvocationRecord } from '../types';
+import { summarizeLocalKpis } from '../usage-kpis.helper';
+
+const DEFAULT_REPORT_LIMIT = 20;
+const MAX_REPORT_LIMIT = 200;
+const EXPENSIVE_CALL_LIMIT = 10;
+const DetailSchema = z.enum(DETAIL_LEVELS);
 
 const BucketSchema = z.object({
 	key: z.string(),
@@ -43,7 +55,69 @@ const ExpensiveCallSchema = z.object({
 	outcome: z.string(),
 });
 
+const TokenTaxSchema = z.object({
+	staticSchemaBytes: z.number(),
+	compactTypicalBytes: z.number(),
+	p95ResponseBytes: z.number(),
+	totalBytes: z.number(),
+	estimated: z.boolean(),
+	observedToolCount: z.number(),
+	observedResponseSamples: z.number(),
+	sources: z.object({
+		staticSchemaBytes: z.string(),
+		compactTypicalBytes: z.string(),
+		p95ResponseBytes: z.string(),
+	}),
+});
+
+const PluginKpiSchema = z.object({
+	plugin: z.string(),
+	observedCalls: z.number(),
+	observedSessions: z.number(),
+	tokenTax: TokenTaxSchema,
+	utilityPer1kTokens: z.number(),
+	kpis: z.object({
+		schemaBytes: z.number(),
+		invocationRatePerDay: z.number(),
+		successContribution: z.number(),
+		responseBytesP50: z.number().nullable(),
+		responseBytesP95: z.number().nullable(),
+		latencyMsP50: z.number().nullable(),
+		latencyMsP95: z.number().nullable(),
+		toolErrorRate: z.number(),
+		pluginActivationRate: z.number().nullable(),
+		dynamicActivationSavingsBytes: z.number().nullable(),
+		memoryCompactionSavingsTokens: z.number(),
+		contextRehydrationEffectiveness: z.number().nullable(),
+		contextRehydrationEffectivenessNote: z.string().nullable(),
+		privacyGateBlockedReportCount: z.number().nullable(),
+		privacyGateBlockedReportCountNote: z.string().nullable(),
+	}),
+});
+
+const KpisSchema = z.object({
+	coldStartCostBytes: z.number(),
+	coldStartCostTokens: z.number(),
+	coldStartCostNote: z.string(),
+	invocationRatePerDay: z.number(),
+	successfulCallRate: z.number(),
+	responseBytesP50: z.number().nullable(),
+	responseBytesP95: z.number().nullable(),
+	latencyMsP50: z.number().nullable(),
+	latencyMsP95: z.number().nullable(),
+	toolErrorRate: z.number(),
+	averagePluginActivationRate: z.number().nullable(),
+	dynamicActivationSavingsBytes: z.number().nullable(),
+	memoryCompactionSavingsTokens: z.number(),
+	memoryCompactionSavingsNote: z.string(),
+	contextRehydrationEffectiveness: z.number().nullable(),
+	contextRehydrationEffectivenessNote: z.string(),
+	privacyGateBlockedReportCount: z.number().nullable(),
+	privacyGateBlockedReportCountNote: z.string(),
+});
+
 const OutputSchema = z.object({
+	detail: DetailSchema,
 	groupBy: z.enum(['provider', 'plugin', 'agent', 'extension', 'model']),
 	windowDays: z.number(),
 	totals: z.object({
@@ -58,7 +132,51 @@ const OutputSchema = z.object({
 		autoBypassed: z.number(),
 	}),
 	buckets: z.array(BucketSchema),
+	pluginKpis: z.array(PluginKpiSchema),
+	kpis: KpisSchema,
 	expensiveCalls: z.array(ExpensiveCallSchema),
+});
+
+type UsageReportPayload = Omit<z.infer<typeof OutputSchema>, 'detail'>;
+
+const projectUsageReport = (
+	payload: UsageReportPayload,
+	detail: Detail,
+): UsageReportPayload =>
+	projectDetail(
+		payload,
+		{
+			compact: (full) => ({
+				...full,
+				pluginKpis: [],
+				expensiveCalls: [],
+			}),
+			normal: (full) => full,
+			full: (full) => full,
+		},
+		detail,
+	) as UsageReportPayload;
+
+const InputSchema = z.object({
+	groupBy: z
+		.enum(['provider', 'plugin', 'agent', 'extension', 'model'])
+		.optional(),
+	windowDays: z.number().positive().optional(),
+	filter: z
+		.object({
+			provider: z.string().optional(),
+			plugin: z.string().optional(),
+			agent: z.string().optional(),
+			outcome: z
+				.enum(['success', 'error', 'timeout', 'fallback'])
+				.optional(),
+		})
+		.optional(),
+	sortBy: z
+		.enum(['calls', 'totalTokens', 'tokensSaved', 'costUsd'])
+		.optional(),
+	limit: z.number().int().positive().optional(),
+	detail: DetailSchema.optional(),
 });
 
 const matchesFilter = (
@@ -98,69 +216,22 @@ export const buildReportToolRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_usage_report`,
 			{
-				description:
-					'Report recorded tool usage grouped by provider, plugin, agent, extension or model. Returns spend, tokens used, attributable tokens saved and savings percent plus the top-10 most expensive calls. Group by `model` to see which LLM spent and saved what (calls with no model land in an `unattributed` bucket). Reads the append-only log on demand; no message content is ever recorded or returned.',
-				inputSchema: z.object({
-					groupBy: z
-						.enum([
-							'provider',
-							'plugin',
-							'agent',
-							'extension',
-							'model',
-						])
-						.optional(),
-					windowDays: z.number().positive().optional(),
-					filter: z
-						.object({
-							provider: z.string().optional(),
-							plugin: z.string().optional(),
-							agent: z.string().optional(),
-							outcome: z
-								.enum([
-									'success',
-									'error',
-									'timeout',
-									'fallback',
-								])
-								.optional(),
-						})
-						.optional(),
-					sortBy: z
-						.enum([
-							'calls',
-							'totalTokens',
-							'tokensSaved',
-							'costUsd',
-						])
-						.optional(),
-					limit: z.number().int().positive().optional(),
-				}),
-				outputSchema: OutputSchema,
+				description: `Report recorded tool usage grouped by provider, plugin, agent, extension or model. Returns spend, tokens used, attributable tokens saved and savings percent plus the top-${EXPENSIVE_CALL_LIMIT} most expensive calls. Group by \`model\` to see which LLM spent and saved what (calls with no model land in an \`unattributed\` bucket). Reads the append-only log on demand; no message content is ever recorded or returned. \`detail\` defaults to \`normal\`; \`compact\` suppresses the expensive-call list and plugin KPI breakdown while preserving totals and buckets.`,
+				inputSchema: InputSchema,
+				outputSchema: compactOutputSchema(),
 			},
-			async (args: {
-				groupBy?: GroupByAxis | undefined;
-				windowDays?: number | undefined;
-				filter?:
-					| {
-							provider?: string | undefined;
-							plugin?: string | undefined;
-							agent?: string | undefined;
-							outcome?:
-								| 'success'
-								| 'error'
-								| 'timeout'
-								| 'fallback'
-								| undefined;
-					  }
-					| undefined;
-				sortBy?: SortBy | undefined;
-				limit?: number | undefined;
-			}) => {
+			async (args: z.infer<typeof InputSchema>) => {
+				const detail = args.detail ?? 'normal';
 				const groupBy = args.groupBy ?? 'provider';
 				const windowDays = args.windowDays ?? 7;
 				const sortBy = args.sortBy ?? 'costUsd';
-				const limit = Math.max(1, Math.min(200, args.limit ?? 20));
+				const limit = Math.max(
+					1,
+					Math.min(
+						MAX_REPORT_LIMIT,
+						args.limit ?? DEFAULT_REPORT_LIMIT,
+					),
+				);
 
 				const all = await readInvocations(options.invocationsPath);
 				const windowed = withinWindow(all, windowDays).filter((r) =>
@@ -178,7 +249,7 @@ export const buildReportToolRegistration = (
 							(b.costUsd ?? 0) - (a.costUsd ?? 0) ||
 							(b.durationMs ?? 0) - (a.durationMs ?? 0),
 					)
-					.slice(0, 10)
+					.slice(0, EXPENSIVE_CALL_LIMIT)
 					.map((r) => ({
 						ts: r.ts,
 						plugin: r.plugin,
@@ -189,13 +260,23 @@ export const buildReportToolRegistration = (
 						durationMs: r.durationMs,
 						outcome: r.outcome,
 					}));
+				const localKpis = summarizeLocalKpis(windowed, windowDays);
+				const payload = projectUsageReport(
+					{
+						groupBy,
+						windowDays,
+						totals: computeTotals(windowed),
+						buckets,
+						pluginKpis: [...localKpis.pluginKpis],
+						kpis: localKpis.kpis,
+						expensiveCalls,
+					},
+					detail,
+				);
 
 				return toolJson({
-					groupBy,
-					windowDays,
-					totals: computeTotals(windowed),
-					buckets,
-					expensiveCalls,
+					detail,
+					...payload,
 				});
 			},
 		);

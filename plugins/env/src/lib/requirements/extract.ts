@@ -23,12 +23,6 @@ const ENV_MARKER = /env:([A-Z][A-Z0-9_]*)/;
 /** Optional provider marker — pairs the var with a routing tag. */
 const PROVIDER_MARKER = /provider:([a-z][a-z0-9_-]*)/;
 
-/**
- * The describe text after stripping markers — what remains is the
- * human-readable capability label.
- */
-const CAPABILITY_RE = /^[^-]*/;
-
 interface IZodLike {
 	readonly _def?: {
 		readonly description?: string;
@@ -93,7 +87,9 @@ const parseEnvFromDescription = (
 	const providerMatch = describe.match(PROVIDER_MARKER);
 	const provider = providerMatch?.[1];
 	// Capability label = text before any marker, trimmed, fall back to describe.
-	const head = describe.split(/\s*env:/)[0]?.trim() ?? describe;
+	const envIndex = describe.indexOf('env:');
+	const head =
+		envIndex >= 0 ? describe.slice(0, envIndex).trim() : describe.trim();
 	const capability = head.length > 0 ? head : describe;
 	// required: true unless the field is .optional() — we approximate by
 	// checking for "optional" in the describe text.

@@ -135,6 +135,29 @@ describe('solid-compliance.script — pure engine', () => {
 		expect(relPaths.size).toBe(2);
 	});
 
+	it('does not flag duplicate blocks within one plugin', async () => {
+		const duplicatedBlock = [
+			'export const helper = (x: number): number => {',
+			'  if (x < 0) return 0;',
+			'  if (x > 100) return 100;',
+			'  return x * 2;',
+			'};',
+			'',
+			'// extra padding to fill 8 lines',
+			'export const _marker = true;',
+		].join('\n');
+		const files = mkMap({
+			'plugins/foo/src/lib/one.ts': duplicatedBlock,
+			'plugins/foo/src/lib/two.ts': duplicatedBlock,
+		});
+		const result = await classifySolidFindings(process.cwd(), files, {
+			minDupCopies: 2,
+		});
+		expect(
+			result.findings.filter((f) => f.id === 'duplicated-cross-plugin'),
+		).toHaveLength(0);
+	});
+
 	it('formatReport: empty findings produces clean output', () => {
 		const result: ISolidScanResult = {
 			rootDir: '/tmp',

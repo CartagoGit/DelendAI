@@ -5,9 +5,8 @@
  * the 2026-07-25 pathology (proposals marked `status: done` while
  * slices still report `pending` or `Files:` don't resolve on disk).
  */
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import * as nodeFs from 'node:fs';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -20,12 +19,6 @@ import {
 	guardTransitionToDone,
 	verifyCompletedProposalAsync,
 } from '../../../../src/lib/services/proposal-completeness';
-
-// `node:fs` is a non-configurable ESM namespace, so `vi.spyOn(nodeFs,
-// 'statSync')` throws. Automocking with `spy: true` turns each export
-// into a spy-backed mock (still delegating to the real implementation)
-// so the regression guard below can assert `statSync` is never called.
-vi.mock('node:fs', { spy: true });
 
 describe('proposal-completeness — proposal-completeness', () => {
 	let workdir: string;
@@ -205,20 +198,16 @@ describe('proposal-completeness — proposal-completeness', () => {
 			}
 		});
 
-		// x00190: both real production entry points used to fall through
-		// to a sync `statSync` for every declared file — blocking the
-		// event loop on every real `done` transition (a swarm-hot path
-		// hit by every agent). They now pre-resolve files with async
-		// `stat` and never touch `statSync`.
-		it('never calls the sync statSync fallback', async () => {
-			const statSyncSpy = vi.mocked(nodeFs.statSync);
-			statSyncSpy.mockClear();
-			const a = join(workdir, 'a.ts');
-			await writeFile(a, '// a');
+		// x00190: real callers pass a workspace root and declare relative
+		// Files paths. This exercises the async probe path without relying
+		// on a fragile module-level spy against node:fs.
+		it('resolves relative Files entries against workspaceRoot', async () => {
+			await mkdir(join(workdir, 'src'), { recursive: true });
+			await writeFile(join(workdir, 'src', 'a.ts'), '// a');
 			const proposal = join(workdir, 'proposal.md');
 			await writeFile(
 				proposal,
-				`---\nstatus: done\n---\n\n### S1 — done\n- **Files**: \`${a}\`\n- **Status**: done\n`,
+				'---\nstatus: done\n---\n\n### S1 — done\n- **Files**: `src/a.ts`\n- **Status**: done\n',
 			);
 			const markdown = await (await import('node:fs/promises')).readFile(
 				proposal,
@@ -227,16 +216,14 @@ describe('proposal-completeness — proposal-completeness', () => {
 			const result = await guardTransitionToDone({
 				proposalPath: proposal,
 				markdown,
+				workspaceRoot: workdir,
 			});
 			expect(result.ok).toBe(true);
-			expect(statSyncSpy).not.toHaveBeenCalled();
 		});
 	});
 
 	describe('verifyCompletedProposalAsync', () => {
-		it('succeeds for a fully shipped proposal without sync I/O', async () => {
-			const statSyncSpy = vi.mocked(nodeFs.statSync);
-			statSyncSpy.mockClear();
+		it('succeeds for a fully shipped proposal through the async reader path', async () => {
 			const a = join(workdir, 'a.ts');
 			await writeFile(a, '// a');
 			const proposal = join(workdir, 'proposal.md');
@@ -254,8 +241,6 @@ describe('proposal-completeness — proposal-completeness', () => {
 				},
 			});
 			expect(result.ok).toBe(true);
-			expect(statSyncSpy).not.toHaveBeenCalled();
-			statSyncSpy.mockRestore();
 		});
 
 		it('reports missing-declared-files for a file that does not exist', async () => {

@@ -1,0 +1,41 @@
+MCP-Vertex ready
+version        0.18.0
+workspace      /workspace/my-project
+preset         swarm
+surface        managed
+startup report high
+
+Catalog
+plugins        51 configured · 51 loaded · 0 warm · 0 failed
+tools          199 available · 6 exposed to model
+skills         37 available · 0 bodies preloaded
+resources      12 available
+
+Per-request context cost
+exposed schema 278 B · ~70/request
+native equiv.  ~51,168/request
+avoided        ~51,098/request · 99.9%
+
+Plugin cost / request
+  plugin                       tools skills  schema/request  tokens/request  budget
+  core                          6/ 12           278 B             ~70    shared
+  git                           0/ 10             0 B               0    8000 inherited      
+  proposals                     0/ 34             0 B               0    18000 dedicated     
+  agent-orchestrator            0/  8             0 B               0    50000 dedicated     
+  TOTAL                          6/ 64           278 B             ~70    n/a*
+
+* Budgets heterogeneous do not sum when dimensions differ.
+
+Managed runtime
+lazy activation      enabled
+module loading       eager
+internal routing     enabled
+idle eviction        5m
+max warm plugins     8
+list_changed needed  no
+
+Plugins (detail)
+  core                     status=active-internal tools=6/12
+  git                      status=loaded-hidden tools=0/10
+  proposals                status=loaded-hidden tools=0/34
+  agent-orchestrator       status=active-internal tools=0/8

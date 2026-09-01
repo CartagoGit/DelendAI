@@ -1,13 +1,17 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import z from 'zod';
 
 import type { IPeerPluginRegistry } from '@mcp-vertex/core/public';
 import {
+	DETAIL_LEVELS,
+	projectDetail,
+	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
+	type Detail,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
@@ -15,15 +19,48 @@ import {
 	consolidateAudits,
 	renderConsolidationMarkdown,
 } from '../services/audit-consolidate.service';
+import type { AuditType } from '../services/audit-brief.service';
 import {
 	resolveAutoScaffold,
 	type IAutoScaffoldOptions,
 } from '../services/auto-scaffold-proposals.service';
+import {
+	canonicalAuditPathMessage,
+	isCanonicalAuditDir,
+} from '../services/audit-path-policy.service';
 import { parseAuditFiles } from '../services/parse-audit.service';
+
+const DetailSchema = z.enum(DETAIL_LEVELS);
+
+const collectMarkdownFiles = async (
+	root: string,
+	relative = '',
+): Promise<readonly string[]> => {
+	const entries = await readdir(path.join(root, relative), {
+		withFileTypes: true,
+	});
+	const files: string[] = [];
+	for (const entry of entries) {
+		const child =
+			relative.length > 0 ? `${relative}/${entry.name}` : entry.name;
+		if (entry.isDirectory()) {
+			files.push(...(await collectMarkdownFiles(root, child)));
+		} else if (
+			entry.isFile() &&
+			entry.name.endsWith('.md') &&
+			entry.name !== 'README.md'
+		) {
+			files.push(child);
+		}
+	}
+	return files.sort();
+};
 
 // --- output schemas --------------------------------------------------------
 
 const ConsolidationOutputSchema = z.object({
+	detail: DetailSchema,
+	auditType: z.enum(['plan', 'valuation']),
 	auditsFound: z.number(),
 	skipped: z.array(z.object({ path: z.string(), reason: z.string() })),
 	consensus: z.array(
@@ -57,7 +94,7 @@ const ConsolidationOutputSchema = z.object({
 	/**
 	 * Proposal-scaffolding summary. Three possible shapes:
 	 *  - `{ scaffolded: [...] }` — the proposals plugin was loaded
-	 *    and the tool wrote the listed fix proposals.
+	 *    and the tool wrote the audit record plus any plan/fix proposals.
 	 *  - `{ skipped: "proposals-not-loaded" }` — proposals is NOT
 	 *    loaded; the audit consolidated but the fix-loop was deferred.
 	 *  - `{ disabled: true }` — the caller opted out via
@@ -71,6 +108,7 @@ const ConsolidationOutputSchema = z.object({
 					filename: z.string(),
 					severity: z.string(),
 					files: z.array(z.string()),
+					kind: z.enum(['audit', 'fix', 'plan']),
 				}),
 			),
 			reason: z.string().optional(),
@@ -82,7 +120,12 @@ const ConsolidationOutputSchema = z.object({
 
 // --- input schema ----------------------------------------------------------
 
+const MAX_TOP_ACTIONS = 50;
+
 const ConsolidateInputSchema = z.object({
+	detail: DetailSchema.optional(),
+	/** Select an implementation-plan scaffold or normal fix proposals. */
+	auditType: z.enum(['plan', 'valuation']).optional(),
 	/**
 	 * Workspace-relative directory containing the individual audit
 	 * `*.md` files. Default: the host's configured `defaultAuditDir`
@@ -90,7 +133,7 @@ const ConsolidateInputSchema = z.object({
 	 */
 	auditDir: z.string().optional(),
 	/** How many top actions to surface. Default: 5. */
-	topActions: z.number().int().min(1).max(50).optional(),
+	topActions: z.number().int().min(1).max(MAX_TOP_ACTIONS).optional(),
 	/**
 	 * Override the host's `autoScaffoldProposals` setting for this
 	 * call. Pass `false` to opt out of proposal scaffolding without
@@ -150,8 +193,9 @@ export interface IConsolidateToolOptions {
  * `*.md` in the audits dir, parse each as an {@link IAuditDocument},
  * deduplicate findings across documents, average per-dimension scores,
  * and (when the `proposals` peer plugin is loaded AND the host opts
- * in via `autoScaffoldProposals: true`) scaffold fix proposals for
- * every actionable finding.
+ * in via `autoScaffoldProposals: true`) scaffold a native parent plan
+ * plus linked fix proposals for every actionable finding. Explicit
+ * `auditType: 'valuation'` keeps the report-oriented output.
  */
 export const buildConsolidateRegistration = (
 	options: IConsolidateToolOptions,
@@ -160,26 +204,36 @@ export const buildConsolidateRegistration = (
 	return {
 		id: 'audit_consolidate',
 		summary:
-			'Read every *.md audit in the audits directory, parse + deduplicate + average scores, and return the master view + markdown. Auto-scaffolds fix proposals when the `proposals` plugin is loaded and `autoScaffoldProposals` is enabled.',
+			'Read every *.md audit in the audits directory, parse + deduplicate + average scores, and return the master view + markdown. By default, auto-scaffold a native plan with linked fix proposals when the `proposals` plugin is loaded and `autoScaffoldProposals` is enabled.',
 		descriptionKey: 'audit_consolidate',
 		tags: ['audit', 'aggregate'],
 		register: async (server) => {
 			server.registerTool(
 				`${prefix}_audit_consolidate`,
 				{
-					description: `Read every \`*.md\` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with \`seenBy\`) and the rendered master markdown. When the \`proposals\` plugin is loaded and \`autoScaffoldProposals\` is enabled, also scaffold one fix proposal per actionable finding under the proposals directory. Default dir: \`${options.defaultAuditDir}\`.`,
+					description: `Read every \`*.md\` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with \`seenBy\`) and the rendered master markdown. By default, when the \`proposals\` plugin is loaded and \`autoScaffoldProposals\` is enabled, also scaffold a native parent plan plus one linked fix proposal per actionable finding under the proposals directory. Pass \`auditType: "valuation"\` for report-oriented output. Default dir: \`${options.defaultAuditDir}\`.`,
 					inputSchema: ConsolidateInputSchema,
 					outputSchema: ConsolidationOutputSchema,
 				},
 				async (args: {
+					detail?: Detail | undefined;
+					auditType?: AuditType | undefined;
 					auditDir?: string | undefined;
 					topActions?: number | undefined;
 					autoScaffoldProposals?: boolean | undefined;
 					proposalsDir?: string | undefined;
 				}) => {
+					const detail = args.detail ?? 'normal';
+					const auditType = args.auditType ?? 'plan';
 					const relDir = (
 						args.auditDir ?? options.defaultAuditDir
 					).replace(/^\.\//u, '');
+					if (!isCanonicalAuditDir(relDir)) {
+						return toolError(
+							`audit dir "${relDir}" is not allowed: not canonical`,
+							canonicalAuditPathMessage,
+						);
+					}
 					const contained = resolveWorkspaceContained(
 						options.workspaceRoot,
 						relDir,
@@ -192,18 +246,17 @@ export const buildConsolidateRegistration = (
 						);
 					}
 					const absDir = contained.abs;
+					const reader = new SafeWorkspaceReader(absDir);
 					let entries: readonly string[];
 					try {
-						entries = await readdir(absDir);
+						entries = await collectMarkdownFiles(absDir);
 					} catch (err) {
 						return toolError(
 							`cannot read audit dir "${relDir}"`,
 							`Underlying error: ${(err as Error).message}`,
 						);
 					}
-					const mdRel = entries
-						.filter((n) => n.endsWith('.md') && n !== 'README.md')
-						.sort();
+					const mdRel = entries;
 					if (mdRel.length === 0) {
 						return toolError(
 							`no audit files found under "${relDir}"`,
@@ -212,9 +265,8 @@ export const buildConsolidateRegistration = (
 					}
 					const docs: { path: string; body: string }[] = [];
 					for (const name of mdRel) {
-						const abs = path.join(absDir, name);
 						try {
-							const body = await readFile(abs, 'utf8');
+							const body = (await reader.readText(name)).content;
 							docs.push({ path: name, body });
 						} catch {
 							// Skip unreadable files but keep going so a single
@@ -252,6 +304,7 @@ export const buildConsolidateRegistration = (
 									filename: string;
 									severity: string;
 									files: string[];
+									kind: 'audit' | 'fix' | 'plan';
 								}>;
 								reason?: string;
 						  }
@@ -260,6 +313,7 @@ export const buildConsolidateRegistration = (
 					if (proposalsDirContained.ok) {
 						const scaffoldOptions: IAutoScaffoldOptions = {
 							enabled,
+							auditType,
 							peerPlugins: options.peerPlugins,
 							// Pass the normalized workspace-relative path forward. The
 							// persistence helper must never receive an absolute or escaping
@@ -282,11 +336,13 @@ export const buildConsolidateRegistration = (
 										filename: string;
 										severity: string;
 										files: string[];
+										kind: 'audit' | 'fix' | 'plan';
 									} => ({
 										id: r.id,
 										filename: r.filename,
 										severity: r.severity,
 										files: [...r.files],
+										kind: r.kind,
 									}),
 								),
 							};
@@ -306,15 +362,33 @@ export const buildConsolidateRegistration = (
 						};
 					}
 
-					return toolJson({
-						...result,
-						markdown: renderConsolidationMarkdown(result, {
-							...(options.projectName !== undefined
-								? { projectName: options.projectName }
-								: {}),
-						}),
-						proposals: proposalsSummary,
-					});
+					const payload = projectDetail(
+						{
+							auditType,
+							...result,
+							markdown: renderConsolidationMarkdown(result, {
+								...(options.projectName !== undefined
+									? { projectName: options.projectName }
+									: {}),
+							}),
+							proposals: proposalsSummary,
+						},
+						{
+							compact: (full) => ({
+								...full,
+								consensus: [],
+								findings: [],
+								markdown: '',
+							}),
+							normal: (full) => full,
+							full: (full) => full,
+						},
+						detail,
+					) as Omit<
+						z.infer<typeof ConsolidationOutputSchema>,
+						'detail'
+					>;
+					return toolJson({ detail, ...payload });
 				},
 			);
 		},

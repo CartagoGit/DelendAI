@@ -12,31 +12,56 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface RulesApplyRulesOutput {
+export interface McpVertexRulesApplyRulesOutput {
 	mode: string;
 	modeGuidance: string;
 	area: string;
 	framework: string;
 	eslintConfigs: string[];
+	linterConfigs: string[];
 	command: string;
 	fixCommand: string;
 	steps: string[];
 }
 
-export interface RulesCheckRulesOutput {
+export interface McpVertexRulesCheckRulesOutput {
 	compact: boolean;
-	checks: {
+	checks: Array<{
 		project: string;
 		area: string;
 		framework: string;
 		eslintConfigs?: string[];
+		linterConfigs?: string[];
 		typecheckConfigs?: string[];
 		command: string;
 		typecheckCommand?: string;
 		missingEslintDeps: string[];
-	}[];
-	findings: {
-		code: "missing-eslint-deps";
+		missingLinterDeps: string[];
+		linter: string;
+		installHint: string;
+		evidence: {
+			effective: "project" | "dogma" | "default";
+			command: string;
+			rationale: string;
+			fromProject?: {
+				checkCommand: string;
+				fixCommand?: string;
+				typecheckCommand?: string;
+			};
+			fromDogma?: {
+				checkCommand: string;
+				fixCommand?: string;
+				typecheckCommand?: string;
+			};
+			fromDefault: {
+				checkCommand: string;
+				fixCommand?: string;
+				typecheckCommand?: string;
+			};
+		};
+	}>;
+	findings: Array<{
+		code: "missing-linter-deps" | "missing-eslint-deps";
 		severity: "warning";
 		project: string;
 		area: string;
@@ -44,30 +69,48 @@ export interface RulesCheckRulesOutput {
 		message: string;
 		missing: string[];
 		nextAction: string;
-	}[];
+	}>;
 }
 
-export interface RulesGetRulesOutput {
+export interface McpVertexRulesGetRulesOutput {
 	mode: string;
 	modeGuidance: string;
 	supported: string[];
 	areas: {
 		project: string;
 		area: string;
-		rules: {
+		rules?: {
 			framework: string;
 			presetId: string;
 			eslint: string[];
+			configs?: string[];
 			typecheck: string[];
 			reason: string;
 		};
+		presetId?: string;
 	}[];
-	conventions: Record<string, string[]>;
+	conventions?: Record<string, string[]>;
+	dogmas?: Record<string, {
+		language: string;
+		displayName?: string;
+		version: string;
+		packageManager: string;
+		ownership: string;
+		errorModel: string;
+		nullSafety: string;
+		naming: string;
+		async: string;
+		visibility: string;
+		immutability: string;
+		testing: string;
+		bullets: string[];
+	}>;
+	renderedDogmas?: Record<string, string>;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface RulesToolOutputs {
-	"rules_apply_rules": RulesApplyRulesOutput;
-	"rules_check_rules": RulesCheckRulesOutput;
-	"rules_get_rules": RulesGetRulesOutput;
+	"mcp-vertex_rules_apply_rules": McpVertexRulesApplyRulesOutput;
+	"mcp-vertex_rules_check_rules": McpVertexRulesCheckRulesOutput;
+	"mcp-vertex_rules_get_rules": McpVertexRulesGetRulesOutput;
 }

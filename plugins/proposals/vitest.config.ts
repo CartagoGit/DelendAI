@@ -10,6 +10,10 @@ const workspaceRoot = resolve(here, '../..');
 export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
+		// The proposal state tools and peer-review bypass audit share
+		// process-local buffers. Running their files concurrently lets one
+		// spec reset another spec's audit state mid-assertion.
+		fileParallelism: false,
 		// Concurrency/IO tests can exceed the 5s default under heavy
 		// parallel-suite CPU load; widen so CI is not flaky (a real hang
 		// still fails — assertions are the contract, not the wait).
@@ -21,6 +25,11 @@ export default defineConfig({
 		environment: 'node',
 		setupFiles: [
 			...sharedSetupFiles(workspaceRoot),
+			// Reset ambient CI/GITHUB_ACTIONS/GITHUB_SHA env vars before each
+			// test so specs stay hermetic on a real GitHub Actions runner
+			// (which sets CI=true and GITHUB_ACTIONS=true for every job).
+			// See the file for the full story.
+			resolve(here, 'tests/setup/reset-ci-env.setup.ts'),
 			// Wire the Bun polyfill ONLY in this project. The proposals
 			// integration spec (`executable-acceptance.spec.ts`) gates itself
 			// on `typeof Bun !== 'undefined'`; vitest's thread pool is plain

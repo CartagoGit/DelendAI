@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { isHostAllowed, webFetch } from '../../../src/lib/services/engine';
+import {
+	isHostAllowed,
+	isHostPortAllowed,
+	webFetch,
+} from '../../../src/lib/services/engine';
 import type { IFetchLike } from '../../../src/lib/services/engine';
 
 const textResponse = (
@@ -29,6 +33,32 @@ describe('isHostAllowed', async () => {
 
 	it('fails closed on an empty allow-list', async () => {
 		expect(isHostAllowed('example.com', [])).toBe(false);
+	});
+});
+
+describe('isHostPortAllowed', async () => {
+	it('allows default web ports for hostname-only entries', async () => {
+		expect(isHostPortAllowed('example.com', 80, ['example.com'])).toBe(
+			true,
+		);
+		expect(isHostPortAllowed('example.com', 443, ['example.com'])).toBe(
+			true,
+		);
+		expect(isHostPortAllowed('example.com', 6379, ['example.com'])).toBe(
+			false,
+		);
+	});
+
+	it('allows explicit host:port entries and wildcard host:port entries', async () => {
+		expect(
+			isHostPortAllowed('example.com', 6379, ['example.com:6379']),
+		).toBe(true);
+		expect(
+			isHostPortAllowed('api.example.com', 8080, ['*.example.com:8080']),
+		).toBe(true);
+		expect(
+			isHostPortAllowed('api.example.com', 8081, ['*.example.com:8080']),
+		).toBe(false);
 	});
 });
 
@@ -63,8 +93,64 @@ describe('webFetch', async () => {
 		expect(result).toEqual({
 			ok: false,
 			reason: 'blocked-host',
-			detail: 'evil.com',
+			detail: 'evil.com:443',
 		});
+	});
+
+	it('rejects a non-default port when the allow-list only names the host', async () => {
+		const fetchImpl: IFetchLike = () => textResponse(200, 'unreachable');
+
+		const result = await webFetch(
+			{ url: 'http://example.com:6379/page', allowList: ['example.com'] },
+			fetchImpl,
+		);
+
+		expect(result).toEqual({
+			ok: false,
+			reason: 'blocked-host',
+			detail: 'example.com:6379',
+		});
+	});
+
+	it('accepts default ports for hostname-only entries and explicit ports when allowed', async () => {
+		const fetchImpl: IFetchLike = (url) => textResponse(200, url);
+
+		const defaultPort = await webFetch(
+			{ url: 'http://example.com/path', allowList: ['example.com'] },
+			fetchImpl,
+		);
+		expect(defaultPort.ok).toBe(true);
+
+		const explicitPort = await webFetch(
+			{
+				url: 'http://example.com:6379/path',
+				allowList: ['example.com:6379'],
+			},
+			fetchImpl,
+		);
+		expect(explicitPort.ok).toBe(true);
+	});
+
+	it('keeps wildcard allow-list support when validating the effective port', async () => {
+		const fetchImpl: IFetchLike = (url) => textResponse(200, url);
+
+		const wildcardDefault = await webFetch(
+			{
+				url: 'https://docs.example.com/page',
+				allowList: ['*.example.com'],
+			},
+			fetchImpl,
+		);
+		expect(wildcardDefault.ok).toBe(true);
+
+		const wildcardExplicit = await webFetch(
+			{
+				url: 'http://docs.example.com:8080/page',
+				allowList: ['*.example.com:8080'],
+			},
+			fetchImpl,
+		);
+		expect(wildcardExplicit.ok).toBe(true);
 	});
 
 	it('truncates an oversized response at maxBytes', async () => {
@@ -147,7 +233,7 @@ describe('webFetch', async () => {
 		expect(result).toEqual({
 			ok: false,
 			reason: 'redirect-blocked',
-			detail: 'evil.com',
+			detail: 'evil.com:443',
 		});
 	});
 

@@ -123,7 +123,7 @@ describe('command wiring', async () => {
 		await commands.get(RUN_VALIDATION_COMMAND)?.();
 
 		expect(errors).toEqual([
-			'mcp-vertex: run validation failed: server offline',
+			'mcp-vertex: run validation failed: Failed to call MCP tool "mcp-vertex_get_validation_matrix": server offline',
 		]);
 		expect(panels).toHaveLength(0);
 	});
@@ -171,7 +171,7 @@ describe('command wiring', async () => {
 		await commands.get(OPEN_PROPOSAL_COMMAND)?.();
 
 		expect(errors).toEqual([
-			'mcp-vertex: open proposals failed: proposal tool missing',
+			'mcp-vertex: open proposals failed: Failed to call MCP tool "mcp-vertex_proposals_proposal_board": proposal tool missing',
 		]);
 		expect(panels).toHaveLength(0);
 	});
@@ -190,7 +190,7 @@ describe('command wiring', async () => {
 		await commands.get(SHOW_OVERVIEW_COMMAND)?.();
 
 		expect(errors).toEqual([
-			'mcp-vertex: show overview failed: overview unavailable',
+			'mcp-vertex: show overview failed: Failed to call MCP tool "mcp-vertex_overview": overview unavailable',
 		]);
 		expect(panels).toHaveLength(0);
 	});
@@ -236,7 +236,7 @@ describe('command wiring', async () => {
 		await commands.get(SHOW_METRICS_COMMAND)?.();
 
 		expect(errors).toEqual([
-			'mcp-vertex: show metrics failed: metrics unavailable',
+			'mcp-vertex: show metrics failed: Failed to call MCP tool "mcp-vertex_metrics": metrics unavailable',
 		]);
 		expect(panels).toHaveLength(0);
 	});

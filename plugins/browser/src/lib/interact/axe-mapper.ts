@@ -29,10 +29,36 @@ const impactToSeverity = (impact: IAxeViolation['impact']): FindingSeverity => {
 const htmlToFile = (html: string): string => {
 	// Axe HTML can be long; strip tags + collapse whitespace so the
 	// `file` field is a single navigable line for CLI/extension output.
-	const text = html
-		.replace(/<[^>]+>/g, ' ')
-		.replace(/\s+/g, ' ')
-		.trim();
+	let withoutTags = '';
+	let index = 0;
+	while (index < html.length) {
+		const char = html[index];
+		if (char !== '<') {
+			withoutTags += char;
+			index += 1;
+			continue;
+		}
+		const closeIndex = html.indexOf('>', index + 1);
+		if (closeIndex < 0) {
+			withoutTags += html.slice(index);
+			break;
+		}
+		withoutTags += ' ';
+		index = closeIndex + 1;
+	}
+	let text = '';
+	let previousWasWhitespace = false;
+	for (const char of withoutTags) {
+		const isWhitespace = /\s/u.test(char);
+		if (isWhitespace) {
+			if (!previousWasWhitespace) text += ' ';
+			previousWasWhitespace = true;
+			continue;
+		}
+		text += char;
+		previousWasWhitespace = false;
+	}
+	text = text.trim();
 	return text.length === 0 ? '<element>' : text.slice(0, 120);
 };
 

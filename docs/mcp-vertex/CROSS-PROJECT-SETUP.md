@@ -10,6 +10,49 @@ Use this page for the first run in a new project, for fixing an `issues` setup t
 - You want the `issues` plugin to read GitHub issues for the current repository without guessing which config key or auth path to use.
 - You need to debug a mismatch between what your host launches from `mcp.json` and what the repo declares in `mcp-vertex.config.json`.
 
+## One-call adoption (`adopt_project`)
+
+Adopting a project used to require chaining config → proposals → launch →
+agents → issues by hand. Today it is one MCP call, and it is **additive**:
+it writes only what is missing and never overwrites a file the project
+already owns (an existing config is merged, an existing instruction or
+agent file wins). The project's own instructions are always the
+authority — mcp-vertex never replaces them.
+
+```text
+mcp-vertex_adopt_project { write: true }
+```
+
+One call does the mechanical wiring end-to-end:
+
+| What it writes | Where |
+|---|---|
+| Derived config (preset expanded to the `plugins` map) | `mcp-vertex.config.json` |
+| Proposals store (7 status folders + `README.md`) | `<docsDir>/proposals/` |
+| Orchestrator + 4 subagents, Copilot format | `.github/agents/*.agent.md` |
+| Orchestrator + 4 subagents, Claude Code format | `.claude/agents/*.md` |
+| Orchestrator + 4 subagents, Codex CLI format | `.codex/agents/*.md` |
+| Shared instructions pointer | `.github/copilot-instructions.md` |
+
+It returns a verified checklist (`created` / `skipped` / `residual`). The
+only steps left are the ones that genuinely need a human or the network:
+
+1. **Relaunch the host** with the command the tool printed (e.g.
+   `bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full`).
+2. **Optional GitHub issues** — run `mcp-vertex_setup_github` (read-only
+   guide) and set `plugins.issues.options.repo`, or pass `repo:
+   "owner/name"` to `adopt_project` so it writes the wiring for you.
+
+Skills, prompts, knowledge and every other utility are **not** copied into
+the project: they are served live by the MCP server once the host is
+relaunched. The project keeps only the thin agent/instruction pointers.
+
+Dry-run first to preview without writing:
+
+```text
+mcp-vertex_adopt_project
+```
+
 ## Session and context hygiene
 
 Every adopted project should keep its host instruction file as a pointer to

@@ -17,7 +17,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { CorruptFileError, toolError, toolJson } from '@mcp-vertex/core/public';
+import { toolError, toolJson } from '@mcp-vertex/core/public';
 import type { IToolTextResult } from '@mcp-vertex/core/public';
 
 import {
@@ -28,6 +28,7 @@ import {
 import { SESSION_DIGEST_TITLE_PREFIX } from '../contracts/constants/session-digest.constant';
 import { saveNote } from '../services/store';
 import { NoteQuotaExceededError } from '../services/store-records';
+import { guardCorruptStore } from './tool-guard-corrupt';
 
 const CONTEXT_ITEM_KINDS = [
 	'decision',
@@ -48,7 +49,7 @@ const ContextItemSchema = z.object({
 	drop: z.boolean().optional(),
 });
 
-const TokenAccountingSchema = z.object({
+const _TokenAccountingSchema = z.object({
 	inputEstimate: z.number(),
 	digestEstimate: z.number(),
 	savedEstimate: z.number(),
@@ -57,6 +58,9 @@ const TokenAccountingSchema = z.object({
 });
 
 const DEFAULT_SESSION_TTL_SECONDS = 3600; // 1h — survives the session, then dies.
+const MAX_TOPIC_LENGTH = 120;
+const MIN_DETAIL_MAX_CHARS = 20;
+const MAX_DETAIL_MAX_CHARS = 2000;
 const MAX_ITEMS = 200;
 
 export interface ICompactToolOptions {
@@ -65,24 +69,6 @@ export interface ICompactToolOptions {
 	/** Total-store quota; reused so a runaway compaction can't overflow it. */
 	readonly maxNotes: number;
 }
-
-const guardCorrupt = async (
-	fn: () => Promise<IToolTextResult>,
-): Promise<IToolTextResult> => {
-	try {
-		return await fn();
-	} catch (err) {
-		if (err instanceof CorruptFileError) {
-			return toolError(
-				`memory store is corrupt: ${err.message}`,
-				err.backupPath
-					? `The corrupt file was preserved at "${err.backupPath}". Inspect or delete it, then retry.`
-					: 'Could not back up the corrupt store; inspect it manually before retrying.',
-			);
-		}
-		throw err;
-	}
-};
 
 /**
  * Build the `memory_compact` registration. Persistence is OPTIONAL: when
@@ -106,27 +92,21 @@ export const buildCompactToolRegistration = (
 					description:
 						'In-session context compaction. Hand over the working-state items you are currently carrying (decisions, open tasks, facts, pointers, plus the raw output/exploration/superseded noise) and get back ONE compact digest that keeps only the load-bearing core, so you can drop the raw conversation tail and spend far fewer tokens in the SAME chat. `decision|open|fact|pointer` are kept by default; `output|exploration|superseded` are discarded by default; override per item with `pin`/`drop`. By default the digest is persisted as a self-expiring `session-digest:<topic>` note (recall it later instead of re-reading); set `persist:false` for a dry-run preview. Returns the digest body + token accounting (estimated tokens in vs. kept vs. saved). Secrets are auto-redacted before the digest is stored.',
 					inputSchema: z.object({
-						topic: z.string().min(1).max(120),
+						topic: z.string().min(1).max(MAX_TOPIC_LENGTH),
 						items: z.array(ContextItemSchema).max(MAX_ITEMS),
 						detailMaxChars: z
 							.number()
 							.int()
-							.min(20)
-							.max(2000)
+							.min(MIN_DETAIL_MAX_CHARS)
+							.max(MAX_DETAIL_MAX_CHARS)
 							.optional(),
 						persist: z.boolean().optional(),
 						ttlSeconds: z.number().int().positive().optional(),
 					}),
 					outputSchema: z.object({
 						digest: z.string(),
-						sections: z.array(
-							z.object({
-								kind: z.enum(CONTEXT_ITEM_KINDS),
-								heading: z.string(),
-								bullets: z.array(z.string()),
-							}),
-						),
-						tokenAccounting: TokenAccountingSchema,
+						sections: z.unknown(),
+						tokenAccounting: z.unknown(),
 						persisted: z.boolean(),
 						noteId: z.string().optional(),
 						redactedSecrets: z.number(),
@@ -182,7 +162,7 @@ export const buildCompactToolRegistration = (
 						});
 					}
 
-					return guardCorrupt(async () => {
+					return guardCorruptStore(async () => {
 						const title = `${SESSION_DIGEST_TITLE_PREFIX}${args.topic}`;
 						// Reuse the durable-store quota; a session digest is one
 						// upserted note per topic, so this only trips when the

@@ -24,6 +24,15 @@ import { SessionHygieneMonitor } from '../../../src/lib/session-hygiene';
 import { buildUsageTrackingToolRegistrations } from '../../../src/lib/tools';
 import type { IInvocationRecord } from '../../../src/lib/types';
 
+const jsonSchemaBytesOf = (schema: unknown): number => {
+	const candidate = schema as { toJSONSchema?: () => unknown };
+	const json =
+		typeof candidate?.toJSONSchema === 'function'
+			? candidate.toJSONSchema()
+			: schema;
+	return Buffer.byteLength(JSON.stringify(json), 'utf8');
+};
+
 type Handler = (a: unknown) => Promise<{
 	content: Array<{ text: string }>;
 	isError?: boolean;
@@ -38,6 +47,21 @@ const captureHandler = async (reg: IToolRegistration): Promise<Handler> => {
 	} as never);
 	if (!handler) throw new Error('handler not registered');
 	return handler;
+};
+
+const captureOutputSchema = async (
+	reg: IToolRegistration,
+): Promise<unknown> => {
+	let outputSchema: unknown;
+	await reg.register({
+		registerTool: (
+			_name: string,
+			config: { outputSchema?: unknown },
+		): void => {
+			outputSchema = config.outputSchema;
+		},
+	} as never);
+	return outputSchema;
 };
 
 const parse = async (
@@ -99,6 +123,13 @@ describe('usage-tracking tools', () => {
 		]);
 	});
 
+	it('declares compact outputSchema projections for usage_report and session_hygiene', async () => {
+		const reportSchema = await captureOutputSchema(regs()[0]!);
+		const hygieneSchema = await captureOutputSchema(regs()[2]!);
+		expect(jsonSchemaBytesOf(reportSchema)).toBeLessThanOrEqual(200);
+		expect(jsonSchemaBytesOf(hygieneSchema)).toBeLessThanOrEqual(200);
+	});
+
 	it('usage_report rolls up by the requested axis + returns expensive calls', async () => {
 		writeFileSync(
 			invocationsPath,
@@ -121,11 +152,34 @@ describe('usage-tracking tools', () => {
 			groupBy: 'plugin',
 			sortBy: 'costUsd',
 		});
+		expect(out.detail).toBe('normal');
 		expect((out.totals as { calls: number }).calls).toBe(3);
 		const buckets = out.buckets as Array<{ key: string; costUsd: number }>;
 		expect(buckets[0]?.key).toBe('docs');
 		expect(buckets[0]?.costUsd).toBe(6);
 		expect((out.expensiveCalls as unknown[]).length).toBeGreaterThan(0);
+	});
+
+	it('usage_report honors compact detail by suppressing expensive breakdowns', async () => {
+		writeFileSync(
+			invocationsPath,
+			`${[
+				rec({ plugin: 'proposals', costUsd: 1 }),
+				rec({ plugin: 'docs', costUsd: 4 }),
+			]
+				.map((r) => JSON.stringify(r))
+				.join('\n')}\n`,
+			'utf8',
+		);
+		const report = await captureHandler(regs()[0]!);
+		const out = await parse(report, {
+			groupBy: 'plugin',
+			detail: 'compact',
+		});
+		expect(out.detail).toBe('compact');
+		expect(out.pluginKpis).toEqual([]);
+		expect(out.expensiveCalls).toEqual([]);
+		expect((out.totals as { calls: number }).calls).toBe(2);
 	});
 
 	it('usage_report honours the outcome filter', async () => {
@@ -141,6 +195,7 @@ describe('usage-tracking tools', () => {
 		);
 		const report = await captureHandler(regs()[0]!);
 		const out = await parse(report, { filter: { outcome: 'error' } });
+		expect(out.detail).toBe('normal');
 		expect((out.totals as { calls: number }).calls).toBe(1);
 	});
 

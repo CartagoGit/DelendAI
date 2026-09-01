@@ -123,9 +123,9 @@ describe('api_mock tool (f00130 S3)', () => {
 				spec: JSON.parse(JSON.stringify(fixtureSpec)),
 			}),
 		);
-		expect(body['ok']).toBe(true);
-		expect(body['selectedStatus']).toBe('200');
-		const selectedBody = body['selectedBody'] as {
+		expect(body.ok).toBe(true);
+		expect(body.selectedStatus).toBe('200');
+		const selectedBody = body.selectedBody as {
 			id: number;
 			email: string;
 		};
@@ -144,15 +144,15 @@ describe('api_mock tool (f00130 S3)', () => {
 				spec: JSON.parse(JSON.stringify(fixtureSpec)),
 			}),
 		);
-		expect(body['selectedStatus']).toBe('404');
-		const sel = body['selectedBody'] as { message: string };
+		expect(body.selectedStatus).toBe('404');
+		const sel = body.selectedBody as { message: string };
 		expect(typeof sel.message).toBe('string');
 	});
 
 	it('returns a missing-spec envelope when no spec or specUrl is supplied', async () => {
 		const handler = mount({ namespacePrefix: 'api' });
 		const body = await parseBody(handler({ operationId: 'getUser' }));
-		expect(body['error']).toEqual(
+		expect(body.error).toEqual(
 			expect.objectContaining({ reason: 'missing-spec' }),
 		);
 	});
@@ -167,7 +167,7 @@ describe('api_mock tool (f00130 S3)', () => {
 				spec: JSON.parse(JSON.stringify(fixtureSpec)),
 			}),
 		);
-		expect(body['error']).toEqual(
+		expect(body.error).toEqual(
 			expect.objectContaining({ reason: 'operation-not-found' }),
 		);
 	});
@@ -179,7 +179,7 @@ describe('api_mock tool (f00130 S3)', () => {
 		const body = await parseBody(
 			handler({ spec: JSON.parse(JSON.stringify(fixtureSpec)) }),
 		);
-		expect(body['error']).toEqual(
+		expect(body.error).toEqual(
 			expect.objectContaining({ reason: 'invalid-arguments' }),
 		);
 	});
@@ -195,7 +195,7 @@ describe('api_mock tool (f00130 S3)', () => {
 				specUrl: 'https://api.example.com/openapi.json',
 			}),
 		);
-		expect(body['error']).toEqual(
+		expect(body.error).toEqual(
 			expect.objectContaining({
 				reason: expect.stringMatching(/allowList/i),
 			}),
@@ -211,7 +211,7 @@ describe('api_mock tool (f00130 S3)', () => {
 				allowList: ['api.example.com'],
 			}),
 		);
-		expect(body['error']).toEqual(
+		expect(body.error).toEqual(
 			expect.objectContaining({ reason: 'install-required' }),
 		);
 	});
@@ -227,8 +227,8 @@ describe('api_mock tool (f00130 S3)', () => {
 				spec: JSON.parse(JSON.stringify(fixtureSpec)),
 			}),
 		);
-		expect(body['count']).toBe(3);
-		const allResponses = body['allResponses'] as Array<{ status: string }>;
+		expect(body.count).toBe(3);
+		const allResponses = body.allResponses as Array<{ status: string }>;
 		expect(allResponses).toHaveLength(2);
 	});
 });

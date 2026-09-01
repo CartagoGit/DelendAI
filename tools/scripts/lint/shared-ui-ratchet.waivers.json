@@ -1,1 +1,7 @@
-[]
+[
+	{
+		"file": "packages/ui-extension/src/dashboard/render-dashboard.ts",
+		"className": "aria-label:Close",
+		"reason": "Detail-overlay close button label is owned by the host extension that owns the dashboard copy; the shared package emits the aria attribute, the host translates it."
+	}
+]

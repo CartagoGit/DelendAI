@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { CONTRACT_MIGRATION_PHASES } from '@mcp-vertex/core/lib/contracts';
 import {
 	deriveSliceStatuses,
 	parseProposalSlicePlan,
@@ -163,6 +164,65 @@ describe('parseProposalSlicePlan', async () => {
 		expect(plan?.slices[1]?.gate).toBe('lint');
 	});
 
+	it('keeps multiline Files continuations byte-identical in the parsed output', async () => {
+		const plan = parseProposalSlicePlan(
+			'x00298',
+			[
+				'## Slices',
+				'',
+				'### x00298.S3 — multiline files',
+				'- **Files**:',
+				'  - `packages/core/src/public/index.ts`',
+				'  - [run-all.ts](file:///tmp/plugins/quality/src/lib/run-all.ts#L10)',
+				'- **Gate**: type',
+				'',
+			].join('\n'),
+		);
+		expect(plan).toEqual({
+			proposalId: 'x00298',
+			globalGate: 'none',
+			slices: [
+				{
+					proposalId: 'x00298',
+					sliceId: 'x00298.S3',
+					title: 'multiline files',
+					owner: null,
+					files: [
+						'packages/core/src/public/index.ts',
+						'plugins/quality/src/lib/run-all.ts',
+					],
+					dependsOn: [],
+					gate: 'type',
+					status: 'pending',
+					acceptanceCriteria: [],
+				},
+			],
+		});
+	});
+
+	it('parses a long indented Files block without changing the extracted paths', async () => {
+		const declared = Array.from(
+			{ length: 64 },
+			(_, index) =>
+				`  - \`docs/stress/file-${index.toString().padStart(2, '0')}.md\``,
+		);
+		const plan = parseProposalSlicePlan(
+			'x00298',
+			[
+				'## Slices',
+				'',
+				'### x00298.S3 — stress files',
+				'- **Files**:',
+				...declared,
+				'- **Gate**: none',
+				'',
+			].join('\n'),
+		);
+		expect(plan?.slices[0]?.files).toHaveLength(64);
+		expect(plan?.slices[0]?.files[0]).toBe('docs/stress/file-00.md');
+		expect(plan?.slices[0]?.files[63]).toBe('docs/stress/file-63.md');
+	});
+
 	it('flags overlapping files between slices', async () => {
 		const doc = DOC.replace(
 			'- files: docs/pX.md',
@@ -246,6 +306,60 @@ id: f00099
 - max_cost_tier: 9
 `;
 
+const DOC_WITH_MIGRATION_PHASES = `---
+id: r00044
+---
+
+# r00044
+
+## Slices
+
+### S1 — expand
+
+- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts
+- migration_phase: expand
+- status: done
+
+### S2 — producers
+
+- files: plugins/proposals/src/lib/swarm/contract-migration-policy.ts
+- migration_phase: producers
+- status: done
+
+### S3 — regenerate
+
+- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts
+- migration_phase: regenerate
+- status: done
+
+### S4 — consumers
+
+- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts
+- migration_phase: consumers
+- status: done
+
+### S5 — verify fanout
+
+- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts
+- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts
+- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts
+- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts
+- migration_phase: verify
+- gate: type
+
+### S6 — contract cleanup
+
+- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts
+- files: plugins/proposals/src/lib/swarm/contract-migration-policy.ts
+- migration_phase: contract
+- gate: type
+`;
+
+const DOC_WITH_VERIFY_DONE = DOC_WITH_MIGRATION_PHASES.replace(
+	'### S5 — verify fanout\n\n- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts\n- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts\n- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts\n- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts\n- migration_phase: verify\n- gate: type\n',
+	'### S5 — verify fanout\n\n- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts\n- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts\n- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts\n- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts\n- migration_phase: verify\n- gate: type\n- status: done\n',
+);
+
 describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
 	const plan = parseProposalSlicePlan('f00099', DOC_WITH_ROUTING_HINTS)!;
 
@@ -282,10 +396,58 @@ describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
 	it('does not regress the legacy corpus fixture (zero new fields on DOC)', async () => {
 		const legacy = parseProposalSlicePlan('pX', DOC)!;
 		for (const slice of legacy.slices) {
+			expect(slice.migrationPhase).toBeUndefined();
+			expect(slice.migrationGuidance).toBeUndefined();
 			expect(slice.requiresCapability).toBeUndefined();
 			expect(slice.preferredProvider).toBeUndefined();
 			expect(slice.maxCostTier).toBeUndefined();
 		}
+	});
+
+	it('attaches migration guidance and escalates verify fan-out to an agent worktree', async () => {
+		const plan = parseProposalSlicePlan(
+			'r00044',
+			DOC_WITH_MIGRATION_PHASES,
+		)!;
+		const verifySlice = plan.slices.find((slice) => slice.sliceId === 'S5');
+		expect(verifySlice?.migrationPhase).toBe('verify');
+		expect(verifySlice?.migrationGuidance?.completedPhases).toEqual([
+			'expand',
+			'producers',
+			'regenerate',
+			'consumers',
+		]);
+		expect(verifySlice?.migrationGuidance?.migrationPolicy.ok).toBe(true);
+		expect(
+			verifySlice?.migrationGuidance?.worktreeImpactPolicy.isolation,
+		).toBe('agent-worktree');
+		expect(
+			verifySlice?.migrationGuidance?.worktreeImpactPolicy.claimMode,
+		).toBe('requires-agent-worktree');
+		expect(
+			verifySlice?.migrationGuidance?.worktreeImpactPolicy.reasons.join(
+				' ',
+			),
+		).toContain('late migration phase');
+	});
+
+	it('reuses the core barrel export for migration phase ordering', async () => {
+		expect(CONTRACT_MIGRATION_PHASES).toEqual([
+			'expand',
+			'producers',
+			'regenerate',
+			'consumers',
+			'verify',
+			'contract',
+		]);
+		const plan = parseProposalSlicePlan(
+			'r00044',
+			DOC_WITH_MIGRATION_PHASES,
+		)!;
+		const verifySlice = plan.slices.find((slice) => slice.sliceId === 'S5');
+		expect(verifySlice?.migrationGuidance?.completedPhases).toEqual(
+			CONTRACT_MIGRATION_PHASES.slice(0, 4),
+		);
 	});
 });
 
@@ -356,6 +518,39 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 		expect(validateClaim(withBusy, 'pX.S3').blockerType).toBe(
 			'overlap-in-progress',
 		);
+	});
+
+	it('blocks contract claims until verify is done, then still requires isolation for high-impact phases', async () => {
+		const plan = parseProposalSlicePlan(
+			'r00044',
+			DOC_WITH_MIGRATION_PHASES,
+		)!;
+		expect(validateClaim(plan, 'S6')).toEqual({
+			ok: false,
+			blockerType: 'migration-phase-blocked',
+			reason: 'contract requires prior verify in EXPAND -> PRODUCERS -> REGENERATE -> CONSUMERS -> VERIFY -> CONTRACT order. contract requires successful verify evidence before the legacy surface can be removed.',
+		});
+		const verified = parseProposalSlicePlan(
+			'r00044',
+			DOC_WITH_VERIFY_DONE,
+		)!;
+		expect(validateClaim(verified, 'S6')).toEqual({
+			ok: false,
+			blockerType: 'isolation-required',
+			reason: 'slice "S6" is contract with high fan-out and requires agent-worktree isolation before claim. Use an isolated orchestration path (delegate or create an agent/<name> worktree) instead of the shared checkout.',
+		});
+	});
+
+	it('blocks verify claims that require agent-worktree isolation', async () => {
+		const plan = parseProposalSlicePlan(
+			'r00044',
+			DOC_WITH_MIGRATION_PHASES,
+		)!;
+		expect(validateClaim(plan, 'S5')).toEqual({
+			ok: false,
+			blockerType: 'isolation-required',
+			reason: 'slice "S5" is verify with high fan-out and requires agent-worktree isolation before claim. Use an isolated orchestration path (delegate or create an agent/<name> worktree) instead of the shared checkout.',
+		});
 	});
 });
 

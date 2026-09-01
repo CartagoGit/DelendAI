@@ -33,6 +33,17 @@ const baseDetail: IProposalDetail = {
 			summary: 'ready → in_progress',
 		},
 	],
+	agents: [{ name: 'implementation_runner', taskId: 'f00097' }],
+	progress: {
+		total: 4,
+		done: 1,
+		inProgress: 1,
+		pending: 2,
+		percent: 25,
+		etaLabel: '≈ 2h 10m',
+		eta: '2026-07-03T12:00:00Z',
+		avgSliceMs: 12_000,
+	},
 };
 
 describe('renderProposalDetailHtml', () => {
@@ -65,8 +76,35 @@ describe('renderProposalDetailHtml', () => {
 	});
 
 	it('notes proposals absent from the actionable board', () => {
-		const html = renderProposalDetailHtml({ id: 'a00040', logs: [] });
+		const html = renderProposalDetailHtml({
+			id: 'a00040',
+			logs: [],
+			agents: [],
+			progress: {
+				total: 0,
+				done: 0,
+				inProgress: 0,
+				pending: 0,
+				percent: 0,
+			},
+		});
 		expect(html).toContain('not on the actionable board');
+	});
+
+	it('renders the progress, agents and plan cards when populated', () => {
+		const html = renderProposalDetailHtml({
+			...baseDetail,
+			planMarkdown: '# Plan\n\n- Ship slice S3\n- Update the docs page\n',
+		});
+		expect(html).toContain('Progress');
+		expect(html).toContain('role="progressbar"');
+		expect(html).toContain('25%');
+		expect(html).toContain('≈ 2h 10m');
+		expect(html).toContain('Agents working');
+		expect(html).toContain('implementation_runner');
+		expect(html).toContain('Plan');
+		expect(html).toContain('<h1>Plan</h1>');
+		expect(html).toContain('Ship slice S3');
 	});
 });
 

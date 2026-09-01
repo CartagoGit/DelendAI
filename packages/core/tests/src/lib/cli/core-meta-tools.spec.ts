@@ -1,9 +1,26 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
 import z from 'zod';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+
+const workspaces: string[] = [];
+const testWorkspace = (): string => {
+	const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-core-meta-'));
+	workspaces.push(workspace);
+	return workspace;
+};
+
+afterEach(() => {
+	for (const workspace of workspaces.splice(0)) {
+		rmSync(workspace, { recursive: true, force: true });
+	}
+});
 
 const fakePlugin = {
 	name: 'demo',
@@ -47,18 +64,30 @@ const callTool = async (
 	tool: IToolRegistration,
 	args: unknown = {},
 ): Promise<any> => {
-	let handler: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
+	let handler: (a: unknown) => Promise<{
+		content: Array<{ text: string }>;
+		structuredContent?: unknown;
+	}>;
 	await tool.register({
 		registerTool: (_n: string, _d: unknown, h: typeof handler) => {
 			handler = h;
 		},
 	} as never);
-	const result = await handler!(args);
-	return JSON.parse(result.content[0]?.text ?? '{}');
+	const result = (await handler!(args)) as {
+		content: Array<{ text: string }>;
+		structuredContent?: unknown;
+	};
+	return (
+		result.structuredContent ?? JSON.parse(result.content[0]?.text ?? '{}')
+	);
 };
 
 const assemble = async () => {
-	const args = parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd');
+	const workspace = testWorkspace();
+	const args = parseCliArgs(
+		['--plugins=demo', `--workspace=${workspace}`],
+		'/cwd',
+	);
 	const { config } = await assembleCliConfig(args, {
 		import: async () => ({ default: fakePlugin }),
 		readFile: async () =>
@@ -69,6 +98,21 @@ const assemble = async () => {
 					},
 				},
 			}),
+	});
+	const byId = (id: string): IToolRegistration =>
+		config.extraTools!.find((tool) => tool.id === id)!;
+	return { config, byId };
+};
+
+const assembleNoConfig = async () => {
+	const workspace = testWorkspace();
+	const args = parseCliArgs(
+		['--plugins=demo', `--workspace=${workspace}`],
+		'/cwd',
+	);
+	const { config } = await assembleCliConfig(args, {
+		import: async () => ({ default: fakePlugin }),
+		readFile: async () => undefined,
 	});
 	const byId = (id: string): IToolRegistration =>
 		config.extraTools!.find((tool) => tool.id === id)!;
@@ -92,6 +136,15 @@ describe('core meta-tools', async () => {
 		);
 		expect(typeof snap.recommendedNextAction).toBe('string');
 		expect(snap.activationReport).toBeUndefined();
+	});
+
+	it('routes first-use orientation to adopt_project when no config file exists (f00157)', async () => {
+		const { byId } = await assembleNoConfig();
+		const snap = await callTool(byId('overview'));
+		expect(snap.recommendedNextAction).toMatch(/adopt_project/);
+		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
+			'no-config-file',
+		);
 	});
 
 	it('overview exposes activation origin, source and tool count only on request', async () => {
@@ -155,8 +208,9 @@ describe('core meta-tools', async () => {
 	});
 
 	it('activation report reconciles preset and local-path config sources after loading', async () => {
+		const workspace = testWorkspace();
 		const args = parseCliArgs(
-			['--preset=minimal', '--workspace=/ws'],
+			['--preset=minimal', `--workspace=${workspace}`],
 			'/cwd',
 		);
 		const { config } = await assembleCliConfig(args, {

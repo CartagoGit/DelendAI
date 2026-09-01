@@ -105,9 +105,37 @@ if (!biomeFailed) {
 		stdio: 'ignore',
 	});
 	if (add.status !== 0) {
+		// f00085-style self-heal: if `git add` fails with the
+		// classic "Unable to create '.git/index.lock': File exists"
+		// message left behind by a crashed/killed git process (the
+		// remote VSCode host killing its `git status` child is a
+		// frequent culprit), try to reclaim the stale lock and
+		// retry the `git add` once before giving up. The reclaim
+		// script (lint:git-stale-lock) refuses to remove a lock
+		// held by a live PID, so this is safe to attempt
+		// unconditionally.
 		console.warn(
-			'pre-commit: failed to re-stage formatted files. Continuing — the commit may carry unformatted bytes.',
+			'pre-commit: failed to re-stage formatted files; attempting stale-lock reclaim…',
 		);
+		const reclaim = spawnSync(
+			'bun',
+			['tools/scripts/lint/git-stale-lock.script.ts', '--reclaim'],
+			{ stdio: 'inherit' },
+		);
+		if (reclaim.status === 0) {
+			const retry = spawnSync('git', ['add', '--', ...formattable], {
+				stdio: 'ignore',
+			});
+			if (retry.status !== 0) {
+				console.warn(
+					'pre-commit: failed to re-stage formatted files after reclaim. Continuing — the commit may carry unformatted bytes.',
+				);
+			}
+		} else {
+			console.warn(
+				'pre-commit: stale-lock reclaim refused (lock held by a live PID). Continuing — the commit may carry unformatted bytes.',
+			);
+		}
 	}
 }
 

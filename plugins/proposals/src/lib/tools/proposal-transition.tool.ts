@@ -31,13 +31,15 @@
  *   cleanly without needing a feature flag.
  */
 
-import { mkdir, readFile, rename } from 'node:fs/promises';
-import { dirname, join, relative } from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { access, mkdir, rename } from 'node:fs/promises';
+import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	SafeWorkspaceReader,
 	toolError,
 	toolOk,
 	withFileMutex,
@@ -48,9 +50,11 @@ import {
 	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_STATUS_TRANSITIONS,
 	PROPOSAL_STATUSES,
-	STATUS_TO_FOLDER,
-	doneFolderFor,
 } from '../contracts/constants/proposal-glossary.constant';
+import {
+	proposalFolderFor,
+	type IProposalFolderPolicy,
+} from '../contracts/proposal-folder-policy';
 import type {
 	IProposalKind,
 	IProposalStatus,
@@ -67,12 +71,16 @@ import {
 	setFrontmatterField,
 } from '../proposals/proposal-frontmatter-writer';
 import { isPlanProposal } from '../proposals/proposal-type-detector';
-import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import {
+	findDependentProposalStatuses,
+	syncProposalRegistry,
+} from '../proposals/sync-proposal-registry';
 import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
 import { rewriteStaleProposalSelfPaths } from '../proposals/rewrite-stale-self-paths';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
+import { recordPlanClosureBypass } from '../shared/plan-closure-bypass-log';
 import {
 	hasIndependentApprovalSinceLastReview,
 	recordProposalEnteredReview,
@@ -90,6 +98,12 @@ import {
 import { guardTransitionToDone } from '../services/proposal-completeness';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
 import { VALIDATE_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
+import {
+	PROPOSAL_TRANSITION_INPUT_SCHEMA,
+	type IProposalTransitionArgs,
+} from '../contracts/proposal-transition-input.contract';
+
+export type { IProposalTransitionArgs } from '../contracts/proposal-transition-input.contract';
 
 const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -128,17 +142,20 @@ export interface IValidateEvidenceDeps {
 const readValidateLogEntries = async (
 	logPathAbs: string,
 ): Promise<readonly IValidateLogEntry[]> => {
-	const raw = await readFile(logPathAbs, 'utf8').catch((error: unknown) => {
-		if (
-			error &&
-			typeof error === 'object' &&
-			'code' in error &&
-			error.code === 'ENOENT'
-		) {
-			return '';
-		}
-		throw error;
-	});
+	const raw = await new SafeWorkspaceReader(dirname(logPathAbs))
+		.readText(basename(logPathAbs))
+		.then((value) => value.content)
+		.catch((error: unknown) => {
+			if (
+				error &&
+				typeof error === 'object' &&
+				'code' in error &&
+				error.code === 'ENOENT'
+			) {
+				return '';
+			}
+			throw error;
+		});
 	if (raw.trim() === '') return [];
 	const entries: IValidateLogEntry[] = [];
 	for (const line of raw.split('\n')) {
@@ -149,7 +166,10 @@ const readValidateLogEntries = async (
 			if (parsed && typeof parsed === 'object') {
 				entries.push(parsed as IValidateLogEntry);
 			}
-		} catch {}
+		} catch (error: unknown) {
+			if (error instanceof SyntaxError) continue;
+			throw error;
+		}
 	}
 	return entries;
 };
@@ -180,21 +200,22 @@ export interface IProposalTransitionToolOptions {
 	 * `proposals.options.requirePeerReview: false`.
 	 */
 	readonly requirePeerReview?: boolean;
+	/**
+	 * When true (default), `→ review` and `→ done` require a passing
+	 * `bun run validate` from the last 24h, journalled to
+	 * `.cache/mcp-vertex/results/logs/validate.jsonl`.
+	 *
+	 * Not every adopter has a validate chain worth blocking on — a docs
+	 * repo, a spike, a project whose CI is the real gate. Those hosts set
+	 * `proposals.options.requireValidateEvidence: false` rather than
+	 * teaching every agent to pass `force: true`, which would disable the
+	 * peer-review and slice-completeness gates along with it.
+	 */
+	readonly requireValidateEvidence?: boolean;
+	/** Folder layout policy per proposal status. */
+	readonly folderPolicy?: IProposalFolderPolicy;
 	readonly peerReviewGateDeps?: IPeerReviewGateDeps;
 	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
-}
-
-export interface IProposalTransitionArgs {
-	readonly id: string;
-	readonly to: string;
-	readonly reason: string;
-	readonly agent?: string | undefined;
-	/**
-	 * a00069 S7: skip the peer-review gate on `review → done`. Only for
-	 * emergency / host-approved bypass; default false.
-	 */
-	readonly force?: boolean | undefined;
-	readonly validateEvidence?: IValidateEvidence | undefined;
 }
 
 /**
@@ -264,13 +285,17 @@ const resolveTargetFolder = async (
 	to: IProposalStatus,
 	found: ILocatedProposal,
 	proposalsDirAbs: string,
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<string> => {
-	if (to !== 'done') return STATUS_TO_FOLDER[to];
-	const raw = await readFile(found.absPath, 'utf8').catch(() => '');
-	const kindRaw = readFrontmatterField(raw, 'kind');
+	const raw = await new SafeWorkspaceReader(proposalsDirAbs)
+		.readText(relative(proposalsDirAbs, found.absPath))
+		.then((value) => value.content)
+		.catch(() => '');
+	const kindRaw =
+		readFrontmatterField(raw, 'kind') ?? readFrontmatterField(raw, 'type');
 	const kind =
 		kindRaw !== undefined && isKnownKind(kindRaw) ? kindRaw : undefined;
-	const folder = doneFolderFor(kind);
+	const folder = proposalFolderFor(to, kind, folderPolicy);
 	void proposalsDirAbs;
 	return folder;
 };
@@ -284,13 +309,17 @@ const TOOL_ERROR_SCHEMA = z.object({
 	nextHops: z.array(z.string()).optional(),
 });
 
-const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
+export const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	error: TOOL_ERROR_SCHEMA.optional(),
 	id: z.string().optional(),
 	from: z.string().optional(),
 	to: z.string().optional(),
 	reason: z.string().optional(),
+	transitionId: z.string().optional(),
+	correlationId: z.string().optional(),
+	idempotencyKey: z.string().optional(),
+	idempotentReplay: z.boolean().optional(),
 	movedFrom: z.string().optional(),
 	movedTo: z.string().optional(),
 	warning: z.string().optional(),
@@ -308,6 +337,97 @@ const isFreshValidateEvidence = (
 	const tsMs = Date.parse(evidence.timestamp);
 	if (Number.isNaN(tsMs)) return false;
 	return tsMs >= nowMs - VALIDATE_EVIDENCE_WINDOW_MS;
+};
+
+const LAST_TRANSITION_ID_FIELD = 'last-transition-id';
+const LAST_CORRELATION_ID_FIELD = 'last-correlation-id';
+const LAST_IDEMPOTENCY_KEY_FIELD = 'last-idempotency-key';
+const LAST_TRANSITION_FROM_FIELD = 'last-transition-from';
+
+interface IStoredTransitionMetadata {
+	readonly transitionId: string | undefined;
+	readonly correlationId: string | undefined;
+	readonly idempotencyKey: string | undefined;
+	readonly from: string | undefined;
+}
+
+interface IResolvedTransitionMetadata {
+	readonly transitionId: string;
+	readonly correlationId: string;
+	readonly idempotencyKey: string | undefined;
+}
+
+const normalizeOptionalString = (
+	value: string | undefined,
+): string | undefined => {
+	const trimmed = value?.trim();
+	return trimmed && trimmed.length > 0 ? trimmed : undefined;
+};
+
+const resolveTransitionMetadata = (
+	args: IProposalTransitionArgs,
+): IResolvedTransitionMetadata => {
+	const transitionId =
+		normalizeOptionalString(args.transitionId) ?? randomUUID();
+	const correlationId =
+		normalizeOptionalString(args.correlationId) ?? transitionId;
+	return {
+		transitionId,
+		correlationId,
+		idempotencyKey: normalizeOptionalString(args.idempotencyKey),
+	};
+};
+
+const readStoredTransitionMetadata = (
+	raw: string,
+): IStoredTransitionMetadata => ({
+	transitionId: readFrontmatterField(raw, LAST_TRANSITION_ID_FIELD),
+	correlationId: readFrontmatterField(raw, LAST_CORRELATION_ID_FIELD),
+	idempotencyKey: readFrontmatterField(raw, LAST_IDEMPOTENCY_KEY_FIELD),
+	from: readFrontmatterField(raw, LAST_TRANSITION_FROM_FIELD),
+});
+
+const buildIdempotentReplayResult = (input: {
+	readonly proposalId: string;
+	readonly currentStatus: string;
+	readonly reason: string;
+	readonly relativePath: string;
+	readonly metadata: IStoredTransitionMetadata;
+}) => {
+	const envelope = {
+		ok: true as const,
+		id: input.proposalId,
+		from: input.metadata.from ?? input.currentStatus,
+		to: input.currentStatus,
+		reason: input.reason,
+		transitionId: input.metadata.transitionId,
+		correlationId:
+			input.metadata.correlationId ?? input.metadata.transitionId,
+		idempotencyKey: input.metadata.idempotencyKey,
+		idempotentReplay: true,
+		movedTo: input.relativePath,
+		warning:
+			'idempotent replay detected; the transition was already applied and no new mutation ran.',
+	};
+	return {
+		content: [{ type: 'text' as const, text: JSON.stringify(envelope) }],
+		structuredContent: envelope,
+	};
+};
+
+const setFrontmatterMetadataField = (
+	raw: string,
+	fieldName: string,
+	newValue: string,
+): string => {
+	const existing = readFrontmatterField(raw, fieldName);
+	if (existing !== undefined) {
+		return setFrontmatterField(raw, fieldName, newValue);
+	}
+	return raw.replace(
+		/^(---\r?\n[\s\S]*?)(\r?\n---)/,
+		`$1\n${fieldName}: ${newValue}$2`,
+	);
 };
 
 const toValidateEvidence = (
@@ -364,14 +484,29 @@ const buildValidateRequiredEnvelope = () => ({
 	nextAction: 'bun run validate' as const,
 });
 
-const buildCodeError = (code: string, reason: string) => {
-	const envelope = {
+const buildCodeError = (
+	code: string,
+	reason: string,
+	nextAction?: string,
+	fix?: string,
+) => {
+	const envelope: {
+		ok: false;
+		error: {
+			code: string;
+			reason: string;
+			nextAction?: string;
+			fix?: string;
+		};
+	} = {
 		ok: false as const,
 		error: {
 			code,
 			reason,
 		},
 	};
+	if (nextAction !== undefined) envelope.error.nextAction = nextAction;
+	if (fix !== undefined) envelope.error.fix = fix;
 	return {
 		content: [
 			{
@@ -382,6 +517,40 @@ const buildCodeError = (code: string, reason: string) => {
 		structuredContent: envelope,
 		isError: true,
 	};
+};
+
+const appendWarning = (current: string | undefined, next: string): string =>
+	current === undefined ? next : `${current}; ${next}`;
+
+const isTrackedFile = async (
+	gitRunner: IGitRunner,
+	filePath: string,
+): Promise<boolean> =>
+	(await gitRunner(['ls-files', '--error-unmatch', filePath])).ok;
+
+const isCiEnvironment = (): boolean =>
+	process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
+const readProposalCiEvidenceCommit = (raw: string): string | null => {
+	const yamlBlock = extractYamlBlock(raw);
+	if (yamlBlock === null) return null;
+	const match = yamlBlock.match(/^\s+commit:\s*"?([^"\n]+)"?\s*$/mu);
+	return match?.[1]?.trim() || null;
+};
+
+const hasProposalCiEvidence = (raw: string): boolean => {
+	const yamlBlock = extractYamlBlock(raw);
+	if (yamlBlock === null) return false;
+	if (readProposalCiEvidenceCommit(raw) === null) return false;
+	return /^evidence:\s*$[\s\S]*?^\s+ci-runs:\s*$[\s\S]*?^\s+-\s+name:\s*.+$[\s\S]*?^\s+status:\s*.+$/mu.test(
+		yamlBlock,
+	);
+};
+
+const hasExactCiCommitEvidence = (raw: string): boolean => {
+	const currentSha = process.env.GITHUB_SHA?.trim();
+	if (currentSha === undefined || currentSha === '') return false;
+	return readProposalCiEvidenceCommit(raw) === currentSha;
 };
 
 export const runProposalTransition = async (
@@ -411,7 +580,12 @@ export const runProposalTransition = async (
 
 	const from = validateCurrentStatus(args.id, found);
 	if (typeof from !== 'string') return from;
-	const raw = await readFile(found.absPath, 'utf8').catch(() => '');
+	const raw = await new SafeWorkspaceReader(options.proposalsDirAbs)
+		.readText(relative(options.proposalsDirAbs, found.absPath))
+		.then((value) => value.content)
+		.catch(() => '');
+	const transitionMetadata = resolveTransitionMetadata(args);
+	const storedTransitionMetadata = readStoredTransitionMetadata(raw);
 
 	let finalTo = to;
 	let depId: string | undefined;
@@ -445,6 +619,26 @@ export const runProposalTransition = async (
 		}
 	}
 
+	if (
+		transitionMetadata.idempotencyKey !== undefined &&
+		storedTransitionMetadata.idempotencyKey ===
+			transitionMetadata.idempotencyKey
+	) {
+		if (found.status === finalTo) {
+			return buildIdempotentReplayResult({
+				proposalId: args.id,
+				currentStatus: found.status,
+				reason: args.reason,
+				relativePath: relative(options.proposalsDirAbs, found.absPath),
+				metadata: storedTransitionMetadata,
+			});
+		}
+		return buildCodeError(
+			'idempotency-key-conflict',
+			`idempotencyKey "${transitionMetadata.idempotencyKey}" was already applied to ${args.id} and cannot be reused for a different target status`,
+		);
+	}
+
 	const regressionGuard = guardDoneToReviewRegression({
 		from,
 		to: finalTo,
@@ -454,7 +648,6 @@ export const runProposalTransition = async (
 	if (!regressionGuard.ok) {
 		return buildCodeError(regressionGuard.code, regressionGuard.reason);
 	}
-
 	if (
 		args.reason.trim() === '' &&
 		!(from === 'done' && finalTo === 'review' && args.force === true)
@@ -469,7 +662,21 @@ export const runProposalTransition = async (
 		(from === 'ready' || from === 'pending') && finalTo === 'done';
 	const skipsDfa =
 		(from === 'done' && finalTo === 'review' && args.force === true) ||
-		isZeroWorkShortcut;
+		isZeroWorkShortcut ||
+		args.skipDfaForPlanClosure === true;
+	// a00072 S4 (plan-closure shortcut): every skip is audited with the
+	// proposal id, caller reason, and `via: 'plan-closure-shortcut'`
+	// marker — same shape as `recordPeerReviewBypass`. Only the
+	// `proposals_close_plan` wrapper sets this flag (after a successful
+	// closure preflight); the compat layer strips it from MCP callers,
+	// so only audited wrapper invocations ever reach this branch.
+	if (args.skipDfaForPlanClosure === true) {
+		recordPlanClosureBypass({
+			proposalId: args.id,
+			reason: args.reason,
+			...(args.agent !== undefined ? { agent: args.agent } : {}),
+		});
+	}
 	if (!skipsDfa) {
 		const dfaRejection = validateTransition(
 			args.id,
@@ -517,6 +724,8 @@ export const runProposalTransition = async (
 	if (
 		!isZeroWorkShortcut &&
 		args.force !== true &&
+		args.skipDfaForPlanClosure !== true &&
+		options.requireValidateEvidence !== false &&
 		(finalTo === 'review' || finalTo === 'done')
 	) {
 		const validateEvidence = await resolveRecentValidateEvidence({
@@ -539,15 +748,44 @@ export const runProposalTransition = async (
 		}
 	}
 
-	if (finalTo === 'done') {
-		const yamlBlock = extractYamlBlock(raw);
-		const frontmatter =
-			yamlBlock === null
-				? {}
-				: (parseFrontmatterBlock(yamlBlock) as Record<string, unknown>);
-		const shippedInGuard = guardShippedInPresent(frontmatter);
-		if (!shippedInGuard.ok) {
-			return buildCodeError(shippedInGuard.code, shippedInGuard.reason);
+	if (
+		isCiEnvironment() &&
+		args.force !== true &&
+		args.skipDfaForPlanClosure !== true &&
+		(finalTo === 'review' || finalTo === 'done') &&
+		!hasProposalCiEvidence(raw)
+	) {
+		return buildCodeError(
+			'missing-ci-evidence',
+			`CI requires frontmatter evidence.commit and at least one evidence.ci-runs entry before moving a proposal to ${finalTo}`,
+		);
+	}
+
+	if (
+		isCiEnvironment() &&
+		args.force !== true &&
+		args.skipDfaForPlanClosure !== true &&
+		(finalTo === 'review' || finalTo === 'done') &&
+		!hasExactCiCommitEvidence(raw)
+	) {
+		return buildCodeError(
+			'ci-evidence-sha-mismatch',
+			`CI requires evidence.commit to match GITHUB_SHA before moving a proposal to ${finalTo}`,
+		);
+	}
+
+	if (from === 'review' && finalTo === 'done') {
+		const openDependents = (
+			await findDependentProposalStatuses(
+				options.proposalsDirAbs,
+				args.id,
+			)
+		).filter((dependent) => dependent.status !== 'done');
+		if (openDependents.length > 0) {
+			return toolError(
+				`proposal ${args.id} cannot close before its dependents are done`,
+				`Review and close dependent proposal(s) first: ${openDependents.map((dependent) => `${dependent.id} (${dependent.status})`).join(', ')}. Then retry proposal_transition for ${args.id}.`,
+			);
 		}
 	}
 
@@ -570,9 +808,17 @@ export const runProposalTransition = async (
 							args.id,
 						)
 					: hasIndependentPeerApproval(
-							await readFile(found.absPath, 'utf8').catch(
-								() => '',
-							),
+							await new SafeWorkspaceReader(
+								options.proposalsDirAbs,
+							)
+								.readText(
+									relative(
+										options.proposalsDirAbs,
+										found.absPath,
+									),
+								)
+								.then((value) => value.content)
+								.catch(() => ''),
 						);
 			if (!approved) {
 				const envelope = {
@@ -598,6 +844,23 @@ export const runProposalTransition = async (
 		}
 	}
 
+	if (finalTo === 'done') {
+		const yamlBlock = extractYamlBlock(raw);
+		const frontmatter =
+			yamlBlock === null
+				? {}
+				: (parseFrontmatterBlock(yamlBlock) as Record<string, unknown>);
+		const shippedInGuard = guardShippedInPresent(frontmatter);
+		if (!shippedInGuard.ok) {
+			return buildCodeError(
+				shippedInGuard.code,
+				shippedInGuard.reason,
+				shippedInGuard.nextAction,
+				shippedInGuard.fix,
+			);
+		}
+	}
+
 	const guardRejection = await maybeApplyPlanClosureGuard(
 		args,
 		found,
@@ -620,7 +883,15 @@ export const runProposalTransition = async (
 	// a00069 S3: applyTransition rewrites self-`**Files**` paths and
 	// regenerates the index (when indexPathAbs is set) before returning.
 	const result = await applyTransition(
-		{ id: args.id, from, to: finalTo, reason: args.reason },
+		{
+			id: args.id,
+			from,
+			to: finalTo,
+			reason: args.reason,
+			transitionId: transitionMetadata.transitionId,
+			correlationId: transitionMetadata.correlationId,
+			idempotencyKey: transitionMetadata.idempotencyKey,
+		},
 		found,
 		options,
 		depId,
@@ -738,7 +1009,11 @@ const maybeApplyPlanClosureGuard = async (
 	// matched (no re-read of the file). The plan-closure guard needs
 	// the full markdown, so we re-read it here. Cheap and keeps the
 	// locate helper single-responsibility.
-	const raw = await readFile(found.absPath, 'utf8');
+	const raw = (
+		await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
+			relative(options.proposalsDirAbs, found.absPath),
+		)
+	).content;
 	if (!isPlanProposal(raw)) return null;
 
 	const guard = await runPlanClosureGuard({
@@ -763,6 +1038,9 @@ interface IApplyArgs {
 	readonly from: string;
 	readonly to: IProposalStatus;
 	readonly reason: string;
+	readonly transitionId: string;
+	readonly correlationId: string;
+	readonly idempotencyKey: string | undefined;
 }
 
 const applyTransition = async (
@@ -777,6 +1055,7 @@ const applyTransition = async (
 		args.to,
 		found,
 		options.proposalsDirAbs,
+		options.folderPolicy,
 	);
 	const filename = found.absPath.split('/').pop() ?? found.absPath;
 	const newAbsPath = join(options.proposalsDirAbs, newFolder, filename);
@@ -787,8 +1066,34 @@ const applyTransition = async (
 	const movedFromRel = relative(options.proposalsDirAbs, found.absPath);
 	const movedToRel = relative(options.proposalsDirAbs, newAbsPath);
 	await withFileMutex(found.absPath, async () => {
-		const current = await readFile(found.absPath, 'utf8');
+		const current = (
+			await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
+				relative(options.proposalsDirAbs, found.absPath),
+			)
+		).content;
 		let updated = setFrontmatterStatus(current, args.to);
+		updated = setFrontmatterMetadataField(
+			updated,
+			LAST_TRANSITION_ID_FIELD,
+			args.transitionId,
+		);
+		updated = setFrontmatterMetadataField(
+			updated,
+			LAST_CORRELATION_ID_FIELD,
+			args.correlationId,
+		);
+		updated = setFrontmatterMetadataField(
+			updated,
+			LAST_TRANSITION_FROM_FIELD,
+			args.from,
+		);
+		if (args.idempotencyKey !== undefined) {
+			updated = setFrontmatterMetadataField(
+				updated,
+				LAST_IDEMPOTENCY_KEY_FIELD,
+				args.idempotencyKey,
+			);
+		}
 		if (args.to === 'blocked' && depId) {
 			updated = setFrontmatterField(updated, 'blocked-by', `[${depId}]`);
 		}
@@ -806,24 +1111,19 @@ const applyTransition = async (
 		await writeFileAtomic(found.absPath, updated);
 
 		if (moved) {
-			// The 7 status folders are expected to already exist (this repo
-			// seeds them with .gitkeep), but a host project adopting f00016
-			// fresh, or a stray custom folder, might not have created the
-			// target yet — never fail the transition over a missing dir.
-			await mkdir(dirname(newAbsPath), { recursive: true });
-			// x00106 S2: an UNTRACKED file (create_proposal writes without
-			// staging, so a fresh proposal's first transition always lands
-			// here) has no history for `git mv` to preserve — move it
-			// plainly, stage the new location (best-effort) so the NEXT
-			// transition can git mv, and emit no warning. The warning is
-			// reserved for the case that matters: git mv failing on a
-			// TRACKED file.
-			const tracked = await gitRunner([
-				'ls-files',
-				'--error-unmatch',
-				found.absPath,
-			]);
-			if (!tracked.ok) {
+			// Keep dynamically-created status/kind folders visible to git too.
+			const targetDir = dirname(newAbsPath);
+			await mkdir(targetDir, { recursive: true });
+			const gitkeep = join(targetDir, '.gitkeep');
+			if (
+				!(await access(gitkeep).then(
+					() => true,
+					() => false,
+				))
+			) {
+				await writeFileAtomic(gitkeep, '');
+			}
+			if (!(await isTrackedFile(gitRunner, found.absPath))) {
 				await rename(found.absPath, newAbsPath);
 				await gitRunner(['add', newAbsPath]);
 			} else {
@@ -866,16 +1166,15 @@ const applyTransition = async (
 				layout,
 				[],
 				gitRunner,
+				options.folderPolicy,
 			);
 			indexSynced = true;
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
-			gitWarning = [
+			gitWarning = appendWarning(
 				gitWarning,
 				`index sync failed after transition (${msg}); run sync_proposals`,
-			]
-				.filter(Boolean)
-				.join('; ');
+			);
 		}
 	}
 
@@ -884,6 +1183,10 @@ const applyTransition = async (
 		from: args.from,
 		to: args.to,
 		reason: args.reason,
+		transitionId: args.transitionId,
+		correlationId: args.correlationId,
+		idempotencyKey: args.idempotencyKey,
+		idempotentReplay: false,
 		movedFrom: movedFromRel,
 		movedTo: movedToRel,
 		indexSynced,
@@ -912,20 +1215,7 @@ export const buildProposalTransitionRegistration = (
 				outputSchema: PROPOSAL_TRANSITION_OUTPUT_SCHEMA,
 				description:
 					'Move a proposal to a new status. Validates against the DFA, updates frontmatter + git mv. Requires reason.',
-				inputSchema: z.object({
-					id: z.string().min(1),
-					to: z.string().min(1),
-					reason: z.string().min(1),
-					agent: z.string().optional(),
-					force: z.boolean().optional(),
-					validateEvidence: z
-						.object({
-							timestamp: z.string().min(1),
-							exitCode: z.number().int(),
-							logPath: z.string().min(1).optional(),
-						})
-						.optional(),
-				}),
+				inputSchema: PROPOSAL_TRANSITION_INPUT_SCHEMA,
 			},
 			async (args: IProposalTransitionArgs) =>
 				runProposalTransitionCompat(args, options).then((result) =>

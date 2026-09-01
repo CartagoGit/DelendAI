@@ -110,8 +110,7 @@ const fieldForScope = (
 			collectStrings(meta.result, parts);
 			return parts.join('\n');
 		}
-		case 'all':
-		default: {
+		case 'all': {
 			const parts: string[] = [event.summary];
 			collectStrings(meta.error, parts);
 			collectStrings(meta.args, parts);
@@ -119,6 +118,7 @@ const fieldForScope = (
 			return parts.join('\n');
 		}
 	}
+	return '';
 };
 
 export const logSearch = async (
@@ -169,12 +169,14 @@ export const logSearch = async (
 export interface ILogIncident {
 	readonly incidentType: string;
 	readonly toolName: string;
+	readonly errorFingerprint?: string;
+	readonly sampleError: string;
+	readonly hasStack: boolean;
 	readonly count: number;
 	readonly distinctAgents: number;
 	readonly firstSeen: string;
 	readonly lastSeen: string;
 	readonly sampleSummary: string;
-	readonly sampleError: string;
 	readonly recentEvents: readonly ILogEvent[];
 }
 
@@ -210,6 +212,12 @@ const toolNameOfEvent = (event: ILogEvent): string => {
 	return event.taskId ?? event.kind;
 };
 
+const hasStackOfEvent = (event: ILogEvent): boolean => {
+	const error = event.meta.error;
+	if (!error || typeof error !== 'object') return false;
+	return typeof (error as Record<string, unknown>).stack === 'string';
+};
+
 const sha1 = (input: string): string =>
 	createHash('sha1').update(input).digest('hex').slice(0, 16);
 
@@ -236,10 +244,10 @@ export const logIncidents = async (
 	type Cluster = {
 		toolName: string;
 		messageHash: string;
-		message: string;
 		incidentType: string;
 		events: ILogEvent[];
 		agents: Set<string>;
+		hasStack: boolean;
 		firstSeen: string;
 		lastSeen: string;
 		sampleSummary: string;
@@ -254,6 +262,7 @@ export const logIncidents = async (
 		if (existing) {
 			existing.events.push(event);
 			if (event.agent) existing.agents.add(event.agent);
+			existing.hasStack ||= hasStackOfEvent(event);
 			if (compareIso(event.ts, existing.firstSeen) < 0)
 				existing.firstSeen = event.ts;
 			if (compareIso(event.ts, existing.lastSeen) > 0)
@@ -262,10 +271,10 @@ export const logIncidents = async (
 			clusters.set(key, {
 				toolName,
 				messageHash,
-				message,
 				incidentType: event.incidentType ?? 'unknown',
 				events: [event],
 				agents: new Set(event.agent ? [event.agent] : []),
+				hasStack: hasStackOfEvent(event),
 				firstSeen: event.ts,
 				lastSeen: event.ts,
 				sampleSummary: event.summary,
@@ -283,12 +292,14 @@ export const logIncidents = async (
 		incidents.push({
 			incidentType: cluster.incidentType,
 			toolName: cluster.toolName,
+			errorFingerprint: cluster.messageHash,
+			sampleError: `redacted:${cluster.messageHash}`,
+			hasStack: cluster.hasStack,
 			count: cluster.events.length,
 			distinctAgents: cluster.agents.size,
 			firstSeen: cluster.firstSeen,
 			lastSeen: cluster.lastSeen,
 			sampleSummary: cluster.sampleSummary,
-			sampleError: cluster.message,
 			recentEvents: recent,
 		});
 	}

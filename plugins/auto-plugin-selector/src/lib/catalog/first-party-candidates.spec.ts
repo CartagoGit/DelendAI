@@ -13,10 +13,20 @@ describe('firstPartyPluginCandidates (x00169)', () => {
 		expect(security).toBeDefined();
 		expect(security?.tags).toContain('security');
 		expect(security?.summary.length).toBeGreaterThan(0);
+		expect(security?.permissions).toContain('filesystem-read');
 	});
 
 	it('produces unique ids', () => {
 		const ids = firstPartyPluginCandidates().map((c) => c.id);
 		expect(new Set(ids).size).toBe(ids.length);
+	});
+
+	it('includes auto-plugin-selector so the recommender knows itself', () => {
+		const candidate = firstPartyPluginCandidates().find(
+			(entry) => entry.id === 'auto-plugin-selector',
+		);
+		expect(candidate).toBeDefined();
+		expect(candidate?.origin).toBe('first-party');
+		expect(candidate?.tags).toContain('plugins');
 	});
 });

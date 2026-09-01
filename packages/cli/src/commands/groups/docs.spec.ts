@@ -61,15 +61,17 @@ describe('search --context extension (f00046 S6)', async () => {
 	it('forwards context to mcp-vertex_search_search', async () => {
 		const { ctx, calls } = buildStubContext();
 		await (await find('search')).run(['needle', '--context=3'], ctx);
-		expect(calls[0]?.tool).toBe('mcp-vertex_search_search');
-		expect((calls[0]?.args as { context?: number }).context).toBe(3);
+		const call = calls[0];
+		if (call === undefined) throw new Error('expected search tool call');
+		expect(call.tool).toBe('mcp-vertex_search_search');
+		expect((call.args as { context?: number }).context).toBe(3);
 	});
 
 	it('omits context when not provided', async () => {
 		const { ctx, calls } = buildStubContext();
 		await (await find('search')).run(['needle'], ctx);
-		expect(
-			(calls[0]?.args as { context?: number }).context,
-		).toBeUndefined();
+		const call = calls[0];
+		if (call === undefined) throw new Error('expected search tool call');
+		expect((call.args as { context?: number }).context).toBeUndefined();
 	});
 });

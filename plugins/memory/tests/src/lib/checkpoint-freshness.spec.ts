@@ -1,6 +1,14 @@
+import { mkdtempSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+
 import { describe, expect, it } from 'vitest';
 
-import { assessCheckpointFreshness } from '@mcp-vertex/memory/lib/services/checkpoint-freshness';
+import {
+	assessCheckpointFreshness,
+	refreshCheckpointFreshnessAdvisory,
+} from '@mcp-vertex/memory/lib/services/checkpoint-freshness';
+import { saveNote } from '@mcp-vertex/memory/lib/services/store';
 
 const digest = (createdAt: string) => ({
 	title: 'session-digest:test',
@@ -43,5 +51,30 @@ describe('checkpoint freshness', () => {
 		expect(
 			assessCheckpointFreshness(digest('not-a-date'), Date.now()),
 		).toMatchObject({ state: 'stale', ageMs: null });
+	});
+
+	it('refreshes advisory and mtime from the current durable store snapshot', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'mem-freshness-'));
+		const store = join(dir, 'notes.json');
+		try {
+			await saveNote(
+				store,
+				{
+					title: 'session-digest:work',
+					body: 'bounded',
+					tags: ['session-digest'],
+				},
+				() => '2026-08-23T11:55:00.000Z',
+			);
+			const refreshed = await refreshCheckpointFreshnessAdvisory(store, {
+				nowMs: Date.parse('2026-08-23T12:00:00.000Z'),
+				maxAgeMs: 30 * 60 * 1000,
+			});
+			expect(refreshed.freshness.state).toBe('fresh');
+			expect(refreshed.advisory).toBeNull();
+			expect(typeof refreshed.mtimeMs).toBe('number');
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });

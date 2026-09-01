@@ -53,9 +53,7 @@ export const loadRequirementsFromPluginNames = async (
 					...extractRequirements(pluginName, optionsSchema),
 				);
 				break;
-			} catch {
-				continue;
-			}
+			} catch {}
 		}
 	}
 	return dedupeRequirements(requirements);

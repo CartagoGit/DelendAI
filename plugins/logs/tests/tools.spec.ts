@@ -7,6 +7,7 @@ import { createLogStore } from '../src/lib/services/log-store';
 import { normalizeEvent } from '../src/lib/services/normalize-event';
 import { redactTest } from '../src/lib/services/redact-test';
 import { buildLogToolRegistrations } from '../src/lib/tools/tools';
+import { asArray } from '@mcp-vertex/test-kit/public';
 
 type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 
@@ -27,7 +28,12 @@ const registeredHandlers = async () => {
 	await store.appendEvent(
 		normalizeEvent(
 			'tool-failed',
-			{ toolName: 'beta', agent: 'a1' },
+			{
+				toolName: 'beta',
+				agent: 'a1',
+				error: { message: 'boom', stack: 'Error: boom\n    at beta' },
+				summary: 'tool-failed: beta — boom',
+			},
 			new Date('2026-06-20T10:01:00.000Z'),
 		),
 	);
@@ -36,8 +42,28 @@ const registeredHandlers = async () => {
 	await errorStore.appendEvent(
 		normalizeEvent(
 			'tool-failed',
-			{ toolName: 'gamma', agent: 'a1', error: 'boom' },
+			{
+				toolName: 'gamma',
+				agent: 'a1',
+				error: 'boom',
+				summary: 'tool-failed: gamma — boom',
+			},
 			new Date('2026-06-20T10:02:00.000Z'),
+		),
+	);
+	await errorStore.appendEvent(
+		normalizeEvent(
+			'tool-failed',
+			{
+				toolName: 'delta',
+				agent: 'a2',
+				error: {
+					message: 'kaboom',
+					stack: 'Error: kaboom\n    at delta',
+				},
+				summary: 'tool-failed: delta — kaboom',
+			},
+			new Date('2026-06-20T10:03:00.000Z'),
 		),
 	);
 	const handlers = new Map<string, Handler>();
@@ -79,14 +105,38 @@ describe('log tools', async () => {
 		const first = structured(
 			await handlers.get('logs_query')?.({ limit: 1 }),
 		);
-		expect(first.events as unknown[]).toHaveLength(1);
+		expect(first.detail).toBe('normal');
+		expect(asArray(first.events)).toHaveLength(1);
+		expect(
+			(first.events as Array<{ meta?: Record<string, unknown> }>)[0]
+				?.meta,
+		).toEqual({});
 		expect(first.hasMore).toBe(true);
 		const second = structured(
 			await handlers.get('logs_query')?.({
 				limit: 1,
 				cursor: first.cursor,
+				detail: 'full',
 			}),
 		);
+		expect(second.detail).toBe('full');
+		const secondEvent = (
+			second.events as Array<{
+				meta: {
+					toolName?: string;
+					error?: Record<string, unknown>;
+				};
+				summary: string;
+			}>
+		)[0];
+		expect(secondEvent?.meta.toolName).toBe('beta');
+		expect(secondEvent?.summary).toBe('tool-failed: beta');
+		expect(secondEvent?.meta.error).toEqual({
+			redacted: true,
+			fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+			hasStack: true,
+		});
+		expect(JSON.stringify(secondEvent)).not.toContain('boom');
 		expect(second.hasMore).toBe(false);
 	});
 
@@ -95,6 +145,7 @@ describe('log tools', async () => {
 		const tail = structured(
 			await handlers.get('logs_tail')?.({ outcomeFilter: 'failed' }),
 		);
+		expect(tail.detail).toBe('normal');
 		expect((tail.events as Array<{ outcome: string }>)[0]?.outcome).toBe(
 			'failed',
 		);
@@ -108,45 +159,73 @@ describe('log tools', async () => {
 				includeMeta: true,
 			}),
 		);
-		expect(
-			(
-				detailedTail.events as Array<{
-					meta: Record<string, unknown>;
-				}>
-			)[0]?.meta.toolName,
-		).toBe('beta');
+		expect(detailedTail.detail).toBe('full');
+		const detailedEvent = (
+			detailedTail.events as Array<{
+				meta: {
+					toolName?: string;
+					error?: Record<string, unknown>;
+				};
+				summary: string;
+			}>
+		)[0];
+		expect(detailedEvent?.meta.toolName).toBe('beta');
+		expect(detailedEvent?.summary).toBe('tool-failed: beta');
+		expect(detailedEvent?.meta.error).toEqual({
+			redacted: true,
+			fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+			hasStack: true,
+		});
+		expect(JSON.stringify(detailedEvent)).not.toContain('boom');
 
 		const sub = structured(
 			await handlers.get('logs_subscribe')?.({ limit: 2 }),
 		);
+		expect(sub.detail).toBe('normal');
 		expect(sub.stream).toBe('logs');
 
 		const corr = structured(
 			await handlers.get('logs_correlate')?.({ agent: 'a1' }),
 		);
+		expect(corr.detail).toBe('normal');
 		expect(corr.firstTs).toBe('2026-06-20T10:00:00.000Z');
 	});
 
 	it('errors_tail reads only the curated error stream, compact by default', async () => {
 		const handlers = await registeredHandlers();
 		const errors = structured(await handlers.get('logs_errors_tail')?.({}));
+		expect(errors.detail).toBe('normal');
 		const events = errors.events as Array<{
 			taskId: string | null;
 			meta: Record<string, unknown>;
 		}>;
-		expect(events).toHaveLength(1);
-		expect(events[0]?.taskId).toBe('gamma');
+		expect(events).toHaveLength(2);
+		expect(events.map((event) => event.taskId).sort()).toEqual([
+			'delta',
+			'gamma',
+		]);
 		expect(events[0]?.meta).toEqual({});
 		const detailed = structured(
 			await handlers.get('logs_errors_tail')?.({ includeMeta: true }),
 		);
-		expect(
-			(
-				detailed.events as Array<{
-					meta: Record<string, unknown>;
-				}>
-			)[0]?.meta.toolName,
-		).toBe('gamma');
+		expect(detailed.detail).toBe('full');
+		const detailedErrorEvent = (
+			detailed.events as Array<{
+				meta: {
+					toolName?: string;
+					error?: Record<string, unknown>;
+				};
+				summary: string;
+			}>
+		)[0];
+		expect(detailedErrorEvent?.meta.toolName).toBe('gamma');
+		expect(detailedErrorEvent?.summary).toBe('tool-failed: gamma');
+		expect(detailedErrorEvent?.meta.error).toEqual({
+			redacted: true,
+			fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+			hasStack: false,
+		});
+		expect(JSON.stringify(detailedErrorEvent)).not.toContain('boom');
 	});
 
 	it('errors_tail honors includeMeta:false to strip context', async () => {
@@ -154,10 +233,51 @@ describe('log tools', async () => {
 		const errors = structured(
 			await handlers.get('logs_errors_tail')?.({ includeMeta: false }),
 		);
+		expect(errors.detail).toBe('normal');
 		const events = errors.events as Array<{
 			meta: Record<string, unknown>;
 		}>;
 		expect(events[0]?.meta).toEqual({});
+	});
+
+	it('incidents exposes safe hasStack metadata without raw summaries when recent events are omitted', async () => {
+		const handlers = await registeredHandlers();
+		const incidents = structured(
+			await handlers.get('logs_incidents')?.({
+				minCount: 1,
+				recentLimit: 0,
+			}),
+		);
+		const cluster = (
+			incidents.incidents as Array<{
+				toolName: string;
+				sampleSummary: string;
+				hasStack: boolean;
+			}>
+		).find((entry) => entry.toolName === 'delta');
+		expect(cluster?.sampleSummary).toBe('tool-failed: delta');
+		expect(cluster?.hasStack).toBe(true);
+		expect(JSON.stringify(cluster)).not.toContain('kaboom');
+	});
+
+	it('tail honors compact detail by trimming per-event context', async () => {
+		const handlers = await registeredHandlers();
+		const tail = structured(
+			await handlers.get('logs_tail')?.({
+				outcomeFilter: 'failed',
+				detail: 'compact',
+			}),
+		);
+		expect(tail.detail).toBe('compact');
+		const events = tail.events as Array<Record<string, unknown>>;
+		expect(events[0]).toEqual({
+			ts: '2026-06-20T10:01:00.000Z',
+			kind: 'tool-failed',
+			outcome: 'failed',
+			severity: 'error',
+			incidentType: 'tool-failure',
+			summary: 'tool-failed: beta',
+		});
 	});
 
 	it('redacts canary payloads', async () => {

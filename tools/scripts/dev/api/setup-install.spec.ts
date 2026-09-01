@@ -128,8 +128,8 @@ describe('runSetupInstall', () => {
 			'mcp-vertex',
 			'my-server',
 		]);
-		expect(parsed.servers['mcp-vertex'].command).toBe('bun');
-		expect(parsed.servers['my-server'].command).toBe('foo');
+		expect(parsed.servers['mcp-vertex']?.command).toBe('bun');
+		expect(parsed.servers['my-server']?.command).toBe('foo');
 	});
 
 	it('refuses to rewrite when existing "servers" is not an object', () => {

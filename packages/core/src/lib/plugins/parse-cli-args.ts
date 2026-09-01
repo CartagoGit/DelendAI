@@ -1,9 +1,14 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import {
+	coerceSurfaceMode,
+	type IMcpToolSurfaceMode,
+} from '../contracts/interfaces/surface-mode.interface';
+import {
 	PRESET_CATALOG,
 	resolvePresetMembers,
 	type IPresetKind,
 } from './preset-catalog';
+import { resolve as resolvePath } from 'node:path';
 
 /**
  * Parsed mcp-vertex CLI invocation. Pure data so the loader and tests
@@ -24,6 +29,10 @@ export interface IMcpVertexCliArgs {
 	readonly docsDir: string;
 	/** Absolute workspace root (`--workspace`, default cwd). */
 	readonly workspace: string;
+	/** Tool-surface strategy (`--surface=managed|native|adaptive|compact`). */
+	readonly surfaceMode: IMcpToolSurfaceMode;
+	/** Optional operator-only startup report level override. */
+	readonly startupReportLevel?: string | undefined;
 	/** Server name advertised over MCP (`--name`). */
 	readonly serverName: string;
 	/** Server version (`--serverVersion`). */
@@ -77,6 +86,8 @@ const KNOWN_KEYS = new Set([
 	'cacheDir',
 	'docsDir',
 	'workspace',
+	'surface',
+	'startup-report',
 	'name',
 	'serverVersion',
 	'prefix',
@@ -170,6 +181,15 @@ const splitList = (value: string | undefined): string[] =>
 				.map((entry) => entry.trim())
 				.filter((entry) => entry.length > 0);
 
+const parseSurfaceMode = (value: string | undefined): IMcpToolSurfaceMode => {
+	if (value === undefined) return 'managed';
+	const mode = coerceSurfaceMode(value);
+	if (mode !== undefined) return mode;
+	throw new Error(
+		`Invalid value for --surface: "${value}". Use --surface=managed, --surface=native, --surface=adaptive, or --surface=compact.`,
+	);
+};
+
 /**
  * Parse an mcp-vertex argv (without the `node script` prefix) against a
  * working directory. Unknown `--key=value` flags land in `extra` and
@@ -207,7 +227,9 @@ export const parseCliArgs = (
 		excludePlugins: [...exclude],
 		cacheDir: tokens.cacheDir ?? DEFAULT_CLI_ARGS.cacheDir,
 		docsDir: tokens.docsDir ?? DEFAULT_CLI_ARGS.docsDir,
-		workspace: tokens.workspace ?? cwd,
+		workspace: resolvePath(cwd, tokens.workspace ?? '.'),
+		surfaceMode: parseSurfaceMode(tokens.surface),
+		startupReportLevel: tokens['startup-report'],
 		serverName: tokens.name ?? DEFAULT_CLI_ARGS.serverName,
 		serverVersion: tokens.serverVersion ?? DEFAULT_CLI_ARGS.serverVersion,
 		namespacePrefix: tokens.prefix,

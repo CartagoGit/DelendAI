@@ -1,15 +1,22 @@
+import { basename, dirname } from 'node:path';
+
 import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 import z from 'zod';
 
-import { expireExpiredNotes, readStore } from './lib/services/store';
+import { expireExpiredNotes } from './lib/services/store';
 import { buildMemoryToolRegistrations } from './lib/tools';
 import {
-	assessCheckpointFreshness,
 	DEFAULT_CHECKPOINT_MAX_AGE_MS,
+	readStoreMtimeMs,
+	refreshCheckpointFreshnessAdvisory,
 } from './lib/services/checkpoint-freshness';
-import { mapFreshnessToCheckpointAdvisory } from './lib/services/checkpoint-advisory.service';
-import { selectLatestSessionDigest } from './lib/services/session-digest-recall';
+import { SESSION_DIGEST_TITLE_PREFIX } from './lib/contracts/constants/session-digest.constant';
+import { createFreshnessDebouncer } from './lib/services/freshness-debounce';
+import { createStoreWatcher } from './lib/services/store-watcher';
 import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+
+const MAX_TITLE_WEIGHT = 10;
+const FRESHNESS_DEBOUNCE_WAIT_MS = 250;
 
 const OptionsSchema = z
 	.object({
@@ -31,7 +38,7 @@ const OptionsSchema = z
 		 * counted `titleWeight` times, so this is effectively a multiplier
 		 * on title relevance vs body relevance. Default 2.
 		 */
-		titleWeight: z.number().int().min(1).max(10).optional(),
+		titleWeight: z.number().int().min(1).max(MAX_TITLE_WEIGHT).optional(),
 		/**
 		 * Maximum number of notes the store keeps on disk. Once the
 		 * store is full, `memory_save` rejects new notes with a clear
@@ -60,7 +67,7 @@ const DEFAULT_OPTIONS = {
  */
 export default definePlugin({
 	name: 'memory',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Persistent project notes (save/recall/list/forget) for cross-session continuity with minimal tokens.',
 	// Accumulated knowledge, not derivable cache — deleting it is amnesia,
@@ -104,28 +111,98 @@ export default definePlugin({
 		});
 
 		let lastFreshnessAdvisory: ICheckpointAdvisory | null = null;
+		let lastStoreMtimeMs: number | null = null;
 		const refreshFreshnessAdvisory = async (): Promise<void> => {
 			try {
-				const notes = await readStore(storePathAbs);
-				const digest = selectLatestSessionDigest(
-					notes.map((note) => ({
-						title: note.title,
-						body: note.body,
-						createdAt: note.createdAt,
-					})),
+				const refreshed = await refreshCheckpointFreshnessAdvisory(
+					storePathAbs,
+					{
+						nowMs: Date.now(),
+						maxAgeMs: DEFAULT_CHECKPOINT_MAX_AGE_MS,
+					},
 				);
-				lastFreshnessAdvisory = mapFreshnessToCheckpointAdvisory(
-					assessCheckpointFreshness(
-						digest,
-						Date.now(),
-						DEFAULT_CHECKPOINT_MAX_AGE_MS,
-					),
-				);
+				lastFreshnessAdvisory = refreshed.advisory;
+				lastStoreMtimeMs = refreshed.mtimeMs;
 			} catch {
 				// Store missing/corrupt: do not invent an advisory.
 			}
 		};
+		const freshnessDebouncer = createFreshnessDebouncer(
+			refreshFreshnessAdvisory,
+			{ waitMs: FRESHNESS_DEBOUNCE_WAIT_MS },
+		);
+
+		const scheduleIfStoreMtimeChanged = async (): Promise<void> => {
+			const currentMtimeMs = await readStoreMtimeMs(storePathAbs);
+			if (currentMtimeMs === lastStoreMtimeMs) return;
+			lastStoreMtimeMs = currentMtimeMs;
+			freshnessDebouncer.schedule();
+		};
+
+		const storeWatcher = createStoreWatcher({
+			dir: dirname(storePathAbs),
+			fileName: basename(storePathAbs),
+			onChange: () => {
+				void scheduleIfStoreMtimeChanged();
+			},
+		});
 		void refreshFreshnessAdvisory();
+
+		const isTool = (toolName: string, toolId: string): boolean =>
+			toolName === `${ctx.namespacePrefix}_${toolId}` ||
+			toolName.endsWith(`_${ctx.namespacePrefix}_${toolId}`);
+
+		const isToolErrorResult = (result: unknown): boolean =>
+			typeof result === 'object' &&
+			result !== null &&
+			(result as { isError?: unknown }).isError === true;
+
+		const parseToolPayload = (
+			result: unknown,
+		): Record<string, unknown> | null => {
+			if (typeof result !== 'object' || result === null) return null;
+			const content = (result as { content?: unknown }).content;
+			if (!Array.isArray(content) || content.length === 0) return null;
+			const text = (content[0] as { text?: unknown } | undefined)?.text;
+			if (typeof text !== 'string') return null;
+			try {
+				const parsed = JSON.parse(text) as unknown;
+				return typeof parsed === 'object' && parsed !== null
+					? (parsed as Record<string, unknown>)
+					: null;
+			} catch {
+				return null;
+			}
+		};
+
+		const shouldRefreshForMutationEvent = (
+			toolName: string,
+			result: unknown,
+		): boolean => {
+			if (isToolErrorResult(result)) return false;
+			return (
+				isTool(toolName, 'save') ||
+				isTool(toolName, 'forget') ||
+				isTool(toolName, 'import')
+			);
+		};
+
+		const shouldRefreshForCheckpointEvent = (
+			toolName: string,
+			args: unknown,
+			result: unknown,
+		): boolean => {
+			if (isToolErrorResult(result)) return false;
+			if (isTool(toolName, 'compact')) {
+				return parseToolPayload(result)?.persisted === true;
+			}
+			if (!isTool(toolName, 'save')) return false;
+			const title = (args as { title?: unknown } | null)?.title;
+			return (
+				typeof title === 'string' &&
+				title.startsWith(SESSION_DIGEST_TITLE_PREFIX)
+			);
+		};
 
 		return {
 			tools: buildMemoryToolRegistrations({
@@ -136,10 +213,20 @@ export default definePlugin({
 				titleWeight,
 				maxNotes,
 			}),
-			onToolCall: () => {
-				void refreshFreshnessAdvisory();
+			onToolCall: (toolName, args, result) => {
+				if (shouldRefreshForCheckpointEvent(toolName, args, result)) {
+					freshnessDebouncer.schedule();
+					return;
+				}
+				if (shouldRefreshForMutationEvent(toolName, result)) {
+					freshnessDebouncer.schedule();
+				}
 			},
 			getCheckpointAdvisory: () => lastFreshnessAdvisory,
+			dispose: () => {
+				storeWatcher.dispose();
+				freshnessDebouncer.cancel();
+			},
 			knowledge: [
 				{
 					id: 'memory-usage',

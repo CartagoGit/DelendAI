@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { buildSearchToolRegistrations } from '../../../../src/lib/tools/search.tool';
 import type { IEmbedder } from '../../../../src/lib/embed/embedder';

@@ -5,7 +5,7 @@ import { resolveBumpCoreVersion } from './release.script';
 describe('resolveBumpCoreVersion (f00152 S7)', () => {
 	describe('sentinel / absent pin', () => {
 		it('returns the config unchanged when coreVersion is undefined', () => {
-			const current = { coreVersion: undefined as string | undefined };
+			const current: { coreVersion?: string } = {};
 			const next = resolveBumpCoreVersion(current, '0.5.0');
 			expect(next).toBe(current);
 		});

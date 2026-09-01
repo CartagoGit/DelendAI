@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { McpStdioClient, type IOverview } from '@mcp-vertex/client';
 
@@ -13,6 +16,7 @@ import {
 	OPEN_TOOL_DETAIL_COMMAND,
 	renderOverviewHtml,
 	REFRESH_COMMAND,
+	resolveServerCommand,
 	RUN_VALIDATION_COMMAND,
 	SHOW_METRICS_COMMAND,
 	SHOW_OVERVIEW_COMMAND,
@@ -29,6 +33,12 @@ const overviewFixture: IOverview = {
 	knowledge: [],
 	recommendedNextAction: 'Call overview first.',
 };
+
+const createFileSystemWatcher = () => ({
+	onDidChange: () => ({ dispose() {} }),
+	onDidCreate: () => ({ dispose() {} }),
+	onDidDelete: () => ({ dispose() {} }),
+});
 
 describe('VS Code extension smoke', async () => {
 	it('activates, stores the client and registers showOverview', async () => {
@@ -65,6 +75,17 @@ describe('VS Code extension smoke', async () => {
 					return panel;
 				},
 			},
+			workspace: {
+				createFileSystemWatcher,
+				getConfiguration: () => ({
+					get<T>(key: string, defaultValue?: T): T | undefined {
+						if (key === 'command') return 'node' as unknown as T;
+						if (key === 'args')
+							return ['server.js'] as unknown as T;
+						return defaultValue;
+					},
+				}),
+			},
 		};
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
@@ -81,7 +102,7 @@ describe('VS Code extension smoke', async () => {
 			createClient: async () => client,
 		});
 
-		expect(stored.get(CLIENT_STATE_KEY)).toBe(client);
+		expect(stored.get(CLIENT_STATE_KEY)).toBeInstanceOf(McpStdioClient);
 		// f125 + f126/f00026: original commands + observability commands.
 		// f00047 S5: +1 for the new mcp-vertex.openToolbar command.
 		// f00030 S4: +1 for the new mcp-vertex.setupGithub command.
@@ -108,7 +129,12 @@ describe('VS Code extension smoke', async () => {
 		// f00107 S3: +1 plugin activation switchboard command.
 		// Configuration Center host command adds one lifecycle-tracked registration.
 		// f00119 S6: +1 auto-agent-selector panel command.
-		expect(subscriptions).toHaveLength(32);
+		// f00192 S1: +1 openAgentTimeline command.
+		// KPI sidebar provider adds one lifecycle registration.
+		// Main shared dashboard webview view adds one lifecycle registration.
+		// Runtime observer adds one lifecycle registration in addition to
+		// the runtime log command.
+		expect(subscriptions).toHaveLength(38);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);
@@ -124,6 +150,119 @@ describe('VS Code extension smoke', async () => {
 		expect(panels).toHaveLength(1);
 		expect(panels[0]?.webview.html).toContain('mcp-vertex Overview');
 		expect(panels[0]?.webview.html).toContain('mcp-vertex_overview');
+	});
+
+	it('keeps activation successful when global state persistence rejects', async () => {
+		const context: IExtensionContext = {
+			subscriptions: [],
+			globalState: {
+				get<T>(): T | undefined {
+					return undefined;
+				},
+				update: async () => {
+					throw new Error('state unavailable');
+				},
+			},
+		};
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand() {
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+			},
+			workspace: {
+				createFileSystemWatcher,
+				getConfiguration: () => ({
+					get<T>(key: string, defaultValue?: T): T | undefined {
+						if (key === 'command') return 'node' as unknown as T;
+						if (key === 'args')
+							return ['server.js'] as unknown as T;
+						return defaultValue;
+					},
+				}),
+			},
+		};
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return { structuredContent: overviewFixture };
+			},
+		});
+
+		await expect(
+			activate(context, { vscode, createClient: async () => client }),
+		).resolves.toBeUndefined();
+		await deactivate();
+	});
+
+	it('keeps the extension alive and reconnects after an initial MCP failure', async () => {
+		const commands = new Map<
+			string,
+			(...args: readonly unknown[]) => unknown
+		>();
+		const context: IExtensionContext = {
+			subscriptions: [],
+			globalState: {
+				get<T>(): T | undefined {
+					return undefined;
+				},
+				async update() {},
+			},
+		};
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand(command, callback) {
+					commands.set(command, callback);
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+				async showErrorMessage() {
+					return undefined;
+				},
+			},
+			workspace: {
+				createFileSystemWatcher,
+				getConfiguration: () => ({
+					get<T>(key: string, defaultValue?: T): T | undefined {
+						if (key === 'command') return 'node' as unknown as T;
+						if (key === 'args')
+							return ['server.js'] as unknown as T;
+						return defaultValue;
+					},
+				}),
+			},
+		};
+		const connected = McpStdioClient.fromTransport({
+			async callTool() {
+				return { structuredContent: overviewFixture };
+			},
+		});
+		let attempts = 0;
+		const createClient = async (): Promise<McpStdioClient> => {
+			attempts += 1;
+			if (attempts === 1) throw new Error('server is starting');
+			return connected;
+		};
+
+		await expect(
+			activate(context, { vscode, createClient }),
+		).resolves.toBeUndefined();
+		expect(commands.has('mcp-vertex.providers.healthcheck')).toBe(true);
+		expect(commands.has('mcp-vertex.restartServer')).toBe(true);
+
+		await commands.get('mcp-vertex.restartServer')?.();
+		expect(attempts).toBe(2);
+		await deactivate();
 	});
 
 	// Fix for "Error spawn bun ENOENT" on hosts where `bun` is not on
@@ -206,7 +345,7 @@ describe('VS Code extension smoke', async () => {
 		expect(calls[0]?.args).toEqual(['run', 'mcp-vertex', '--preset=swarm']);
 	});
 
-	it('createDefaultClient falls back to `bun run mcp-vertex` when no configuration is provided', async () => {
+	it('createDefaultClient refuses to spawn when no configuration is provided', async () => {
 		const calls: Array<{ command: string; args: readonly string[] }> = [];
 		const vscode: IVscodeApi = {
 			ViewColumn: { One: 1 },
@@ -237,50 +376,163 @@ describe('VS Code extension smoke', async () => {
 		}) as typeof McpStdioClient.connect;
 		try {
 			const { createDefaultClient } = await import('../extension');
-			await createDefaultClient(vscode);
+			await expect(createDefaultClient(vscode)).rejects.toThrow(
+				'mcp-vertex.server.command and mcp-vertex.server.args',
+			);
 		} finally {
 			McpStdioClient.connect = originalConnect;
 		}
 
-		expect(calls).toEqual([
-			{ command: 'bun', args: ['run', 'mcp-vertex'] },
-		]);
+		expect(calls).toEqual([]);
 	});
 
-	// x00102 S1: a consumer freshly initialised by `mcpv init` has no
-	// `mcp-vertex.server.*` settings and no `"mcp-vertex"` package.json
-	// script — but it DOES have the `.mcp.json` init wrote. The extension
-	// must reuse that launch (with cwd = the workspace root, so relative
-	// script paths resolve) instead of dying on `bun run mcp-vertex`.
-	it('createDefaultClient reuses the workspace .mcp.json launch when no settings exist', async () => {
-		const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
-		const { tmpdir } = await import('node:os');
-		const { join } = await import('node:path');
-		const root = await mkdtemp(join(tmpdir(), 'mcpv-ext-spawn-'));
+	it('resolveServerCommand prefers the workspace MCP launch configuration', async () => {
+		// Hermetic: the workspace gets its own canonical `.mcp.json`
+		// instead of depending on the live repo root, where concurrent
+		// workers may change the file under test.
+		const workspaceRoot = await mkdtemp(
+			join(tmpdir(), 'mcp-vertex-vscode-launch-'),
+		);
 		await writeFile(
-			join(root, '.mcp.json'),
+			join(workspaceRoot, '.mcp.json'),
 			JSON.stringify({
 				mcpServers: {
 					'mcp-vertex': {
-						type: 'stdio',
-						command: 'bunx',
+						command: 'bun',
 						args: [
-							'--package',
-							'@mcp-vertex/cli',
-							'mcpv',
-							'__serve',
-							'--workspace',
-							'.',
+							'tools/scripts/host/host-server.script.ts',
+							'--workspace=.',
 						],
 					},
 				},
 			}),
+			'utf8',
 		);
-		const calls: Array<{
-			command: string;
-			args: readonly string[];
-			cwd?: string;
-		}> = [];
+		try {
+			const vscode: IVscodeApi = {
+				ViewColumn: { One: 1 },
+				commands: {
+					registerCommand() {
+						return { dispose() {} };
+					},
+				},
+				window: {
+					createWebviewPanel() {
+						return { webview: { html: '' } };
+					},
+				},
+				workspace: {
+					workspaceFolders: [{ uri: { fsPath: workspaceRoot } }],
+					createFileSystemWatcher() {
+						return {
+							onDidChange() {
+								return { dispose() {} };
+							},
+							onDidCreate() {
+								return { dispose() {} };
+							},
+							onDidDelete() {
+								return { dispose() {} };
+							},
+							dispose() {},
+						};
+					},
+					getConfiguration() {
+						return {
+							get<T>(
+								_key: string,
+								defaultValue?: T,
+							): T | undefined {
+								return defaultValue;
+							},
+						};
+					},
+				},
+			};
+
+			const launch = await resolveServerCommand(vscode);
+			expect(launch).toEqual({
+				command: 'bun',
+				args: [
+					'tools/scripts/host/host-server.script.ts',
+					'--workspace=.',
+				],
+				cwd: workspaceRoot,
+			});
+		} finally {
+			await rm(workspaceRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('resolveServerCommand falls back to bun for a configured workspace without .mcp.json', async () => {
+		const workspaceRoot = await mkdtemp(
+			join(tmpdir(), 'mcp-vertex-vscode-'),
+		);
+		await writeFile(
+			join(workspaceRoot, 'mcp-vertex.config.json'),
+			'{}\n',
+			'utf8',
+		);
+		try {
+			const vscode: IVscodeApi = {
+				ViewColumn: { One: 1 },
+				commands: {
+					registerCommand() {
+						return { dispose() {} };
+					},
+				},
+				window: {
+					createWebviewPanel() {
+						return { webview: { html: '' } };
+					},
+				},
+				workspace: {
+					workspaceFolders: [{ uri: { fsPath: workspaceRoot } }],
+					createFileSystemWatcher() {
+						return {
+							onDidChange() {
+								return { dispose() {} };
+							},
+							onDidCreate() {
+								return { dispose() {} };
+							},
+							onDidDelete() {
+								return { dispose() {} };
+							},
+							dispose() {},
+						};
+					},
+					getConfiguration() {
+						return {
+							get<T>(
+								_key: string,
+								defaultValue?: T,
+							): T | undefined {
+								return defaultValue;
+							},
+						};
+					},
+				},
+			};
+
+			expect(await resolveServerCommand(vscode)).toEqual({
+				command: 'bun',
+				args: ['run', 'mcp-vertex'],
+				cwd: workspaceRoot,
+			});
+		} finally {
+			await rm(workspaceRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('routes child stderr to the VS Code startup-report output channel', async () => {
+		const output: string[] = [];
+		const channel = {
+			append(value: string) {
+				output.push(value);
+			},
+			dispose() {},
+		};
 		const vscode: IVscodeApi = {
 			ViewColumn: { One: 1 },
 			commands: {
@@ -294,33 +546,22 @@ describe('VS Code extension smoke', async () => {
 				},
 			},
 			workspace: {
-				createFileSystemWatcher() {
-					return {
-						onDidChange() {
-							return { dispose() {} };
-						},
-						onDidCreate() {
-							return { dispose() {} };
-						},
-						onDidDelete() {
-							return { dispose() {} };
-						},
-					};
-				},
-				workspaceFolders: [{ uri: { fsPath: root } }],
+				createFileSystemWatcher,
+				getConfiguration: () => ({
+					get<T>(key: string, defaultValue?: T): T | undefined {
+						if (key === 'command') return 'node' as unknown as T;
+						if (key === 'args')
+							return ['server.js'] as unknown as T;
+						return defaultValue;
+					},
+				}),
 			},
 		};
 		const originalConnect = McpStdioClient.connect;
 		McpStdioClient.connect = (async (opts: {
-			command: string;
-			args: readonly string[];
-			cwd?: string;
+			onStderr?: (chunk: string) => void;
 		}) => {
-			calls.push({
-				command: opts.command,
-				args: opts.args,
-				...(opts.cwd === undefined ? {} : { cwd: opts.cwd }),
-			});
+			opts.onStderr?.('MCP-Vertex ready\\n');
 			return McpStdioClient.fromTransport({
 				async callTool() {
 					return { structuredContent: overviewFixture };
@@ -329,26 +570,12 @@ describe('VS Code extension smoke', async () => {
 		}) as typeof McpStdioClient.connect;
 		try {
 			const { createDefaultClient } = await import('../extension');
-			await createDefaultClient(vscode);
+			await createDefaultClient(vscode, channel);
 		} finally {
 			McpStdioClient.connect = originalConnect;
-			await rm(root, { recursive: true, force: true });
 		}
 
-		expect(calls).toEqual([
-			{
-				command: 'bunx',
-				args: [
-					'--package',
-					'@mcp-vertex/cli',
-					'mcpv',
-					'__serve',
-					'--workspace',
-					'.',
-				],
-				cwd: root,
-			},
-		]);
+		expect(output).toEqual(['MCP-Vertex ready\\n']);
 	});
 
 	it('escapes overview content before rendering HTML', async () => {

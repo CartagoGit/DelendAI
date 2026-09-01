@@ -8,8 +8,10 @@ import {
 	runAnalyzeIssue,
 	type IAnalyzeIssueToolOptions,
 } from '../../../../src/lib/tools/analyze-issue.tool';
-import type { IFetchIssueResult } from '../../../../src/lib/github-client';
-import type { IGithubClient } from '../../../../src/lib/tools/list-issues.tool';
+import type {
+	IFetchIssueResult,
+	IGithubClient,
+} from '../../../../src/lib/contracts';
 
 const buildFetchResult = (
 	number: number,
@@ -39,6 +41,10 @@ const fakeClient = (
 ): IGithubClient => ({
 	fetchIssue: async (number) => buildFetchResult(number, body, labels),
 	listIssues: async () => ({ issues: [], tier: 'gh' }),
+	listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+	listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+	listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+	listSecurityAdvisories: async () => ({ advisories: [], tier: 'gh' }),
 });
 
 describe('issues_analyze', async () => {
@@ -157,6 +163,13 @@ describe('issues_analyze', async () => {
 				);
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		// First call ingests.
 		await runAnalyzeIssue({ number: 13 }, buildOptions(client));
@@ -178,6 +191,13 @@ describe('issues_analyze', async () => {
 				throw new Error('network down');
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const result = await runAnalyzeIssue(
 			{ number: 14 },

@@ -10,6 +10,7 @@ import type {
 	ILogsSink,
 	ISinkEvent,
 } from '@mcp-vertex/core/public';
+import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],
@@ -104,16 +105,11 @@ describe('quality_run_all tool registration', async () => {
 		expect(registration.effects).toEqual(['spawn']);
 
 		let handler: ((args: unknown) => Promise<unknown>) | undefined;
-		const fakeServer = {
-			registerTool: (
-				_name: string,
-				_def: unknown,
-				fn: (args: unknown) => Promise<unknown>,
-			) => {
-				handler = fn;
+		const fakeServer = createFakeToolServer({
+			onRegisterTool: (call) => {
+				handler = call.handler as (args: unknown) => Promise<unknown>;
 			},
-			// minimal stub surface; only registerTool is exercised here
-		} as unknown as Parameters<typeof registration.register>[0];
+		});
 
 		await registration.register(fakeServer);
 		const result = (await handler?.({})) as {

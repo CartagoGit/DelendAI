@@ -12,6 +12,22 @@ export interface ICatchSwallowHit {
 	readonly snippet: string;
 }
 
+const skipWhitespace = (body: string, start: number): number => {
+	let index = start;
+	while (index < body.length) {
+		const char = body[index];
+		if (char !== ' ' && char !== '\n' && char !== '\r' && char !== '\t')
+			break;
+		index += 1;
+	}
+	return index;
+};
+
+const isCommentOnlyCatchBody = (body: string): boolean => {
+	const trimmed = body.trim();
+	return trimmed.startsWith('/*') && trimmed.endsWith('*/');
+};
+
 /**
  * Find empty or comment-only `catch` blocks in `body`.
  * Pure; the caller decides how to surface the findings.
@@ -20,20 +36,41 @@ export const detectCatchSwallow = (
 	body: string,
 ): readonly ICatchSwallowHit[] => {
 	const out: ICatchSwallowHit[] = [];
-	const emptyCatch = /catch\s*(?:\([^)]*\))?\s*\{\s*\}/g;
-	let m: RegExpExecArray | null;
-	while ((m = emptyCatch.exec(body)) !== null) {
-		out.push({
-			line: lineOf(body, m.index),
-			snippet: m[0].replace(/\s+/g, ' '),
-		});
-	}
-	const nothingCatch = /catch\s*(?:\([^)]*\))?\s*\{\s*\/\*[^*]*\*\/\s*\}/g;
-	while ((m = nothingCatch.exec(body)) !== null) {
-		out.push({
-			line: lineOf(body, m.index),
-			snippet: m[0].replace(/\s+/g, ' '),
-		});
+	let searchFrom = 0;
+	while (searchFrom < body.length) {
+		const catchIndex = body.indexOf('catch', searchFrom);
+		if (catchIndex === -1) break;
+		let cursor = skipWhitespace(body, catchIndex + 'catch'.length);
+		if (body[cursor] === '(') {
+			const closeParen = body.indexOf(')', cursor + 1);
+			if (closeParen === -1) {
+				searchFrom = catchIndex + 'catch'.length;
+				continue;
+			}
+			cursor = skipWhitespace(body, closeParen + 1);
+		}
+		if (body[cursor] !== '{') {
+			searchFrom = catchIndex + 'catch'.length;
+			continue;
+		}
+		const closeBrace = body.indexOf('}', cursor + 1);
+		if (closeBrace === -1) {
+			searchFrom = catchIndex + 'catch'.length;
+			continue;
+		}
+		const catchBody = body.slice(cursor + 1, closeBrace);
+		if (
+			catchBody.trim().length === 0 ||
+			isCommentOnlyCatchBody(catchBody)
+		) {
+			out.push({
+				line: lineOf(body, catchIndex),
+				snippet: body
+					.slice(catchIndex, closeBrace + 1)
+					.replace(/\s+/g, ' '),
+			});
+		}
+		searchFrom = closeBrace + 1;
 	}
 	return out;
 };

@@ -1,11 +1,7 @@
 import { createHash } from 'node:crypto';
-import { basename, join, relative, sep } from 'node:path';
-import { readFile, stat } from 'node:fs/promises';
+import { basename, relative, sep } from 'node:path';
 
-import {
-	resolveWorkspaceContained,
-	walkAllowedFiles,
-} from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, walkAllowedFiles } from '@mcp-vertex/core/public';
 
 import type { ISearchOptions } from '../services/search-engine.service';
 import {
@@ -20,6 +16,7 @@ import {
 	parseGitignore,
 } from '../services/search-engine.gitignore';
 import { globToRegExp } from '../services/search-engine.glob';
+import { resolveSearchRoots } from '../services/search-safe-reader';
 import { defaultEmbedder, type IEmbedder } from './embedder';
 import {
 	createEmbedIndexStore,
@@ -67,6 +64,7 @@ export const discoverEmbeddableFiles = async (
 	workspaceRootAbs: string,
 	options: ISearchOptions = {},
 ): Promise<readonly IDiscoveredEmbedFile[]> => {
+	const reader = new SafeWorkspaceReader(workspaceRootAbs);
 	const roots =
 		options.roots !== undefined && options.roots.length > 0
 			? options.roots
@@ -79,10 +77,10 @@ export const discoverEmbeddableFiles = async (
 		options.respectGitignore === false
 			? []
 			: parseGitignore(
-					await readFile(
-						join(workspaceRootAbs, '.gitignore'),
-						'utf8',
-					).catch(() => ''),
+					await reader
+						.readText('.gitignore')
+						.then((result) => result.content)
+						.catch(() => ''),
 				);
 
 	const shouldIncludePath = (relPath: string, name: string): boolean => {
@@ -103,51 +101,43 @@ export const discoverEmbeddableFiles = async (
 
 	const discovered: IDiscoveredEmbedFile[] = [];
 	const visitFile = async (absPath: string): Promise<void> => {
-		const fileInfo = await stat(absPath).catch(() => undefined);
-		if (
-			fileInfo === undefined ||
-			!fileInfo.isFile() ||
-			fileInfo.size > MAX_FILE_BYTES
-		) {
-			return;
-		}
-		const content = await readFile(absPath, 'utf8').catch(() => undefined);
-		if (content === undefined) {
-			return;
-		}
 		const relPath = relative(workspaceRootAbs, absPath)
 			.split(sep)
 			.join('/');
+		const file = await reader.readText(relPath).catch(() => undefined);
+		if (
+			file === undefined ||
+			!file.stats.isFile() ||
+			file.stats.size > MAX_FILE_BYTES
+		) {
+			return;
+		}
 		discovered.push({
 			absPath,
 			relPath,
-			mtimeMs: fileInfo.mtimeMs,
-			content,
-			hash: hashContent(content),
+			mtimeMs: file.stats.mtimeMs,
+			content: file.content,
+			hash: hashContent(file.content),
 		});
 	};
 
-	for (const root of roots) {
-		const contained = resolveWorkspaceContained(workspaceRootAbs, root);
-		if (!contained.ok) {
-			continue;
-		}
-		const rootInfo = await stat(contained.abs).catch(() => undefined);
-		if (rootInfo?.isFile()) {
-			const relPath = relative(workspaceRootAbs, contained.abs)
+	const resolvedRoots = await resolveSearchRoots(reader, roots);
+	for (const root of resolvedRoots.roots) {
+		if (root.stats.isFile()) {
+			const relPath = relative(workspaceRootAbs, root.path.absolutePath)
 				.split(sep)
 				.join('/');
-			if (shouldIncludePath(relPath, basename(contained.abs))) {
-				await visitFile(contained.abs);
+			if (shouldIncludePath(relPath, basename(root.path.absolutePath))) {
+				await visitFile(root.path.absolutePath);
 			}
 			continue;
 		}
-		if (!rootInfo?.isDirectory()) {
+		if (!root.stats.isDirectory()) {
 			continue;
 		}
 		await walkAllowedFiles({
 			workspaceRootAbs,
-			rootAbs: contained.abs,
+			rootAbs: root.path.absolutePath,
 			isTruncated: () => false,
 			shouldSkipDir: (relDirPath, dirName) => {
 				if (ignoreDirs.has(dirName)) {

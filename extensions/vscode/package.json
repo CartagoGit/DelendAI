@@ -2,11 +2,11 @@
 	"name": "mcp-vertex-vscode",
 	"displayName": "MCP Vertex for VS Code",
 	"description": "VS Code host implementation that consumes @mcp-vertex/ui-extension to render the dashboard and panels inside the IDE.",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"publisher": "cartago",
-	"type": "module",
 	"private": true,
 	"license": "BSD-3-Clause",
+	"type": "module",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/CartagoGit/mcp-vertex"
@@ -17,8 +17,12 @@
 	"categories": [
 		"Other"
 	],
-	"main": "./dist/extension.js",
+	"main": "./extension.js",
+	"extensionKind": [
+		"workspace"
+	],
 	"activationEvents": [
+		"onStartupFinished",
 		"workspaceContains:**/mcp-vertex.config.json"
 	],
 	"contributes": {
@@ -34,19 +38,20 @@
 		"views": {
 			"mcp-vertex": [
 				{
-					"id": "mcp-vertex.tools",
-					"name": "Tools",
+					"id": "mcp-vertex.dashboard",
+					"name": "Dashboard",
+					"type": "webview",
 					"icon": "media/logo.svg"
 				},
 				{
 					"id": "mcp-vertex.proposals",
 					"name": "Proposals",
-					"icon": "media/logo.svg"
+					"type": "tree"
 				},
 				{
 					"id": "mcp-vertex.memory",
 					"name": "Memory",
-					"icon": "media/logo.svg"
+					"type": "tree"
 				}
 			]
 		},
@@ -56,6 +61,12 @@
 				"title": "Open Agent Catalog",
 				"category": "MCP Vertex",
 				"icon": "$(list-tree)"
+			},
+			{
+				"command": "mcp-vertex.openAgentTimeline",
+				"title": "Open Agent Timeline",
+				"category": "MCP Vertex",
+				"icon": "$(history)"
 			},
 			{
 				"command": "mcp-vertex.openAutoAgentSelector",
@@ -70,9 +81,21 @@
 				"icon": "$(dashboard)"
 			},
 			{
+				"command": "mcp-vertex.openDashboardTab",
+				"title": "Open Dashboard in Editor Tab",
+				"category": "MCP Vertex",
+				"icon": "$(dashboard)"
+			},
+			{
 				"command": "mcp-vertex.showOverview",
 				"title": "Show Overview",
 				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.openRuntimeLog",
+				"title": "Open Runtime Log",
+				"category": "MCP Vertex",
+				"icon": "$(pulse)"
 			},
 			{
 				"command": "mcp-vertex.refresh",
@@ -157,6 +180,12 @@
 				"icon": "$(settings-gear)"
 			},
 			{
+				"command": "mcp-vertex.openPluginConfig",
+				"title": "Configure Plugin",
+				"category": "MCP Vertex",
+				"icon": "$(settings-gear)"
+			},
+			{
 				"command": "mcp-vertex.saveSettings",
 				"title": "Save Settings",
 				"category": "MCP Vertex"
@@ -196,7 +225,7 @@
 				"command": "mcp-vertex.providers.healthcheck",
 				"title": "Refresh Provider Healthcheck",
 				"category": "MCP Vertex",
-				"icon": "$(refresh)"
+				"icon": "$(pulse)"
 			},
 			{
 				"command": "mcp-vertex.providers.pause",
@@ -282,6 +311,23 @@
 					"group": "inline"
 				}
 			],
+			"view/item/context": [
+				{
+					"command": "mcp-vertex.openToolDetail",
+					"when": "view == mcp-vertex.tools && viewItem == mcpVertexTool",
+					"group": "inline"
+				},
+				{
+					"command": "mcp-vertex.openPluginConfig",
+					"when": "view == mcp-vertex.tools && viewItem == mcpVertexPlugin",
+					"group": "configure"
+				},
+				{
+					"command": "mcp-vertex.plugins.activation",
+					"when": "view == mcp-vertex.tools && viewItem == mcpVertexPlugin",
+					"group": "configure"
+				}
+			],
 			"commandPalette": [
 				{
 					"command": "mcp-vertex.openAgentCatalog",
@@ -351,8 +397,7 @@
 			"properties": {
 				"mcp-vertex.server.command": {
 					"type": "string",
-					"default": "bun",
-					"markdownDescription": "Executable used to spawn the MCP server. Override this when `bun` (or your replacement) is not on the `PATH` inherited by VS Code's extension host \u2014 e.g. WSL installs at `~/.bun/bin/bun`. Set to an absolute path to bypass `PATH` lookup entirely.",
+					"markdownDescription": "Executable used to spawn the MCP server for the extension. Optional when the workspace contains `mcp-vertex.config.json`: the extension then uses `bun run mcp-vertex`.",
 					"scope": "machine"
 				},
 				"mcp-vertex.server.args": {
@@ -363,26 +408,35 @@
 					"items": {
 						"type": "string"
 					},
-					"default": [
-						"run",
-						"mcp-vertex"
-					],
-					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Accepts either a JSON array of strings or a single space-separated string. Defaults to `[\"run\", \"mcp-vertex\"]`.",
+					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Optional when the workspace contains `mcp-vertex.config.json`; provide an array to preserve argument boundaries exactly.",
+					"scope": "machine"
+				},
+				"mcp-vertex.server.cwd": {
+					"type": "string",
+					"markdownDescription": "Working directory for the extension's MCP server process. Leave empty to use the first workspace folder.",
 					"scope": "machine"
 				},
 				"mcp-vertex.server.prefix": {
 					"type": "string",
 					"markdownDescription": "Tool-name namespace prefix the server was started with (the value passed to the server's `--prefix` flag, e.g. `acme`). When set, every service call is namespaced as `<prefix>_<tool>`. Leave empty to use the default `mcp-vertex_` namespace.",
 					"scope": "machine"
+				},
+				"mcp-vertex.development.autoReload": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Development-only: reload the VS Code window when the locally built extension bundle changes. Enable only when the extension is loaded from this workspace.",
+					"scope": "window"
 				}
 			}
 		}
 	},
 	"scripts": {
 		"type": "tsc --noEmit -p tsconfig.json",
+		"bench:activation": "bun src/benchmarks/run-activation-benchmark.ts",
 		"test": "vitest run",
 		"check:i18n": "bun scripts/check-i18n.ts",
 		"build": "bun scripts/build.ts",
+		"watch": "bun scripts/watch.ts",
 		"package": "bun run build && bun scripts/package.script.ts"
 	},
 	"dependencies": {
@@ -391,14 +445,16 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
+		"@vscode/test-electron": "^2.5.2",
 		"@types/vscode": "^1.90.0",
 		"@vscode/vsce": "^3.6.3",
 		"typescript": "7.0.2",
-		"vitest": "4.1.10"
+		"vitest": "4.1.11"
 	},
 	"capabilities": {
 		"untrustedWorkspaces": {
-			"supported": false
+			"supported": true,
+			"description": "The extension does not start the configured server automatically in Restricted Mode. Use the explicit Start Server (Untrusted) command after reviewing and approving the configured launch."
 		}
 	}
 }

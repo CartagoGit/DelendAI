@@ -4,7 +4,18 @@
 	"private": true,
 	"type": "module",
 	"description": "Build + dev orchestrator scripts. Lives at repo root so the SCSS Bun.build plugin in `tools/scripts/dev/dev.script.ts` can resolve `sass` and other runtime deps at script-boot time without needing a self-package.",
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit"
+	},
 	"dependencies": {
+		"@anthropic-ai/tokenizer": "^0.0.4",
+		"gpt-tokenizer": "^4.0.0",
 		"sass": "^1.101.0"
+	},
+	"devDependencies": {
+		"@mcp-vertex/proposals": "workspace:*",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
 	}
 }

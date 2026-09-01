@@ -1,0 +1,902 @@
+[
+	{
+		"path": "apps/shared/src/components/ui/code-block.ts",
+		"lines": [62],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/components/ui/tabs.ts",
+		"lines": [92],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/ar.ts",
+		"lines": [465],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/de.ts",
+		"lines": [471],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/en.ts",
+		"lines": [469],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/es.ts",
+		"lines": [474],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/fr.ts",
+		"lines": [473],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/hi.ts",
+		"lines": [466],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/it.ts",
+		"lines": [473],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/ja.ts",
+		"lines": [472],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/pt.ts",
+		"lines": [473],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/th.ts",
+		"lines": [462],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/vi.ts",
+		"lines": [469],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/shared/src/i18n/langs/zh.ts",
+		"lines": [462],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/web/scripts/fetch-brand-logos.ts",
+		"lines": [261],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/web/scripts/gen-capabilities.ts",
+		"lines": [232],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/web/src/i18n/tools/mcp-vertex_docs_docs_search.ts",
+		"lines": [3],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "apps/web/vitest.config.ts",
+		"lines": [32],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-docs-api.ts",
+		"lines": [21],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-knowledge.ts",
+		"lines": [73],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-proposal.ts",
+		"lines": [60, 75],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-settings.ts",
+		"lines": [158],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-toolbar.ts",
+		"lines": [102, 115, 142],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/commands/refresh.ts",
+		"lines": [21],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/commands/types.ts",
+		"lines": [176, 204],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/dev/entry.ts",
+		"lines": [150],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/dev/pages/dashboard.ts",
+		"lines": [94, 115],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/dev/settings-panel.ts",
+		"lines": [241, 350],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/host/vscode-host-adapter.ts",
+		"lines": [308],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "extensions/vscode/src/providers/status-bar.ts",
+		"lines": [99],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/commands/groups/core.ts",
+		"lines": [61],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/commands/init/init.command.ts",
+		"lines": [285, 358, 492],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/commands/registry.ts",
+		"lines": [174, 362, 371, 409],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/contracts/constants/plugin-defaults.constant.ts",
+		"lines": [27, 66],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/contracts/interfaces/cli-command.interface.ts",
+		"lines": [16],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/index.ts",
+		"lines": [89],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-host-instructions.service.ts",
+		"lines": [100],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-human-summary.service.ts",
+		"lines": [221, 251],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-migrate-offer.service.ts",
+		"lines": [111],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-prompts.service.ts",
+		"lines": [223],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-render.service.ts",
+		"lines": [129, 396, 406, 424, 525, 540, 545],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/src/lib/parser.service.ts",
+		"lines": [174],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/cli/vitest.config.ts",
+		"lines": [15, 21],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/client/src/lib/contracts/interfaces/tool-descriptor.interface.ts",
+		"lines": [3],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/client/src/public/index.ts",
+		"lines": [198, 207, 221],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/bootstrap/analyze-tool.ts",
+		"lines": [42, 82],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/bootstrap/derive-config.ts",
+		"lines": [89],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/bootstrap/init-config-tool.ts",
+		"lines": [110],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/bootstrap/plan-tool.ts",
+		"lines": [83, 116],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/bootstrap/schemas.ts",
+		"lines": [28, 29, 66, 67, 82, 83, 89, 91, 110, 128, 130, 136],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/token-budgets.constant.ts",
+		"lines": [102, 115, 126, 138, 254],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/metrics/metrics-tool.ts",
+		"lines": [28],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/plugins/plugin-defaults.ts",
+		"lines": [11, 70],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/project/create-mcp-project.ts",
+		"lines": [366],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/scaffold/create-plugin-writer.service.ts",
+		"lines": [87],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/scaffold/extract-plugin.ts",
+		"lines": [133],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/scaffold/scaffold-host.ts",
+		"lines": [777, 915, 1074],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/scaffold/scaffold-tool.ts",
+		"lines": [108, 125, 126, 191, 200, 349, 363],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/shared/fs-read.ts",
+		"lines": [54],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/shared/fs-tools.ts",
+		"lines": [110, 188],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/shared/fs-write.ts",
+		"lines": [56],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/shared/quarantine-corrupt-file.ts",
+		"lines": [83],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/shared/with-file-mutex.ts",
+		"lines": [566],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/surface/compact-output-schema.helper.ts",
+		"lines": [4],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/tools/agent-catalog-tool.ts",
+		"lines": [140],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/lib/tools/overview-tool.ts",
+		"lines": [145],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/core/src/public/index.ts",
+		"lines": [93, 97, 799, 808],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/ui-extension/src/components/language-picker.ts",
+		"lines": [72],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/ui-extension/src/components/runtime.ts",
+		"lines": [161],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/ui-extension/src/components/toast.ts",
+		"lines": [49],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/ui-extension/src/dashboard/builders/build-tabs-bar.ts",
+		"lines": [66],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/ui-extension/src/dev/entry.ts",
+		"lines": [92],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/ui-extension/src/dev/mock-model.ts",
+		"lines": [286],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "packages/ui-extension/src/styles/component-css.ts",
+		"lines": [1],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/auto-agent-selector/src/lib/calibrate/store.ts",
+		"lines": [49],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/auto-plugin-selector/src/lib/catalog/first-party-candidates.ts",
+		"lines": [34],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts",
+		"lines": [140, 151, 163, 176],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/auto-plugin-selector/src/lib/score/token-tax.ts",
+		"lines": [78],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/browser/src/lib/tools/browser-inspect.tool.ts",
+		"lines": [17],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/cache/src/lib/static-rules.ts",
+		"lines": [92],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/changelog/plugin.manifest.ts",
+		"lines": [12],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/commit-policy/src/lib/services/commit-driver.ts",
+		"lines": [747, 753, 786, 822, 854],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/commit-policy/src/lib/services/push-scheduler.ts",
+		"lines": [189],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/commit-policy/src/lib/tools/run-tool.ts",
+		"lines": [141, 166, 310, 412, 596],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/commit-policy/src/lib/triggers/slice-listener.ts",
+		"lines": [354],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/container/plugin.manifest.ts",
+		"lines": [14],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/conventions/src/lib/tools/check-conventions.tool.ts",
+		"lines": [83],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/conventions/src/lib/tools/classify-paths.tool.ts",
+		"lines": [19],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/deps/src/lib/tools/tools.ts",
+		"lines": [147],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/docs/src/lib/services/engine.ts",
+		"lines": [109, 176],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/docs/src/lib/tools/tools.ts",
+		"lines": [121],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/error-reporting/plugin.manifest.ts",
+		"lines": [15],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/error-reporting/src/lib/tools/report-status.tool.ts",
+		"lines": [116],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/external-mcps/src/index.ts",
+		"lines": [86],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/external-mcps/src/lib/tools/ack.tool.ts",
+		"lines": [58],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/forge/plugin.manifest.ts",
+		"lines": [13],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/forge/src/index.ts",
+		"lines": [49],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/git/plugin.manifest.ts",
+		"lines": [23],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/git/src/lib/services/changelog.ts",
+		"lines": [122],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/git/src/lib/services/git.ts",
+		"lines": [3],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/git/src/lib/tools/write-tools.ts",
+		"lines": [153, 228, 237, 246],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/issues/plugin.manifest.ts",
+		"lines": [14],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/logs/src/index.ts",
+		"lines": [197],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/logs/src/lib/services/log-store.ts",
+		"lines": [81, 136, 212, 222, 262, 303],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/logs/src/lib/services/normalize-event.ts",
+		"lines": [202],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/logs/src/lib/tools/tools.ts",
+		"lines": [479, 544, 621, 677, 722],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/memory/plugin.manifest.ts",
+		"lines": [22],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/memory/src/index.ts",
+		"lines": [89],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/memory/src/lib/services/store-portable.ts",
+		"lines": [241],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/memory/src/lib/tools/tools.ts",
+		"lines": [38, 472],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/notification/src/index.ts",
+		"lines": [90],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/notification/src/lib/services/watcher.ts",
+		"lines": [226, 251],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/observability/src/lib/errors/ierror-source.ts",
+		"lines": [150, 177],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/observability/src/lib/errors/list-errors.ts",
+		"lines": [28],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/orchestrator-runner/src/lib/options.ts",
+		"lines": [39],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/orchestrator-runner/src/lib/tools/advise-routing.tool.ts",
+		"lines": [170],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/orchestrator-runner/src/lib/tools/advise-spend.tool.ts",
+		"lines": [258, 277, 306],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts",
+		"lines": [166],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/prompt-eval/src/index.ts",
+		"lines": [73],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/plugin.manifest.ts",
+		"lines": [18],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/index.ts",
+		"lines": [
+			293, 377, 397, 402, 433, 526, 540, 557, 578, 586, 618, 646, 652,
+			670, 706, 724, 729, 748, 809, 883
+		],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/agents/agent-loop-detector.ts",
+		"lines": [215, 232, 246],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/agents/agent-worktree-engine.ts",
+		"lines": [193, 221, 237, 268, 298],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/agents/delivery-verifier.ts",
+		"lines": [160],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/agents/loop-detector-config.ts",
+		"lines": [128, 259],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/agents/loop-detector-service.ts",
+		"lines": [107, 258],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/agents/promote-on-release.ts",
+		"lines": [54],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/agents/zombie-reconcile.ts",
+		"lines": [156, 185],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/locks/agent-lock-session-store.ts",
+		"lines": [59, 76],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/locks/engine.ts",
+		"lines": [70, 120, 178, 258, 357, 365, 1133, 1173],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/locks/file-lock-table.ts",
+		"lines": [295],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/proposals/adopt.ts",
+		"lines": [129, 236],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/proposals/locate.ts",
+		"lines": [119],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/proposals/migrate-foreign.ts",
+		"lines": [191],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/proposals/proposal-document.ts",
+		"lines": [220],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/proposals/proposal-policy-guards.ts",
+		"lines": [130],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/proposals/sync-proposal-registry.ts",
+		"lines": [223, 246, 256, 299, 556, 861, 884, 912, 930, 958, 979],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/services/proposal-completeness.ts",
+		"lines": [74],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/services/review-identity.ts",
+		"lines": [203],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/shared/branch-gc-engine.ts",
+		"lines": [176, 366],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/shared/git-runner.ts",
+		"lines": [3],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/shared/peer-review-log.ts",
+		"lines": [41, 155, 163],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/shared/swarm-hygiene-engine.ts",
+		"lines": [329, 380],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/swarm/proposal-slice-plan.ts",
+		"lines": [258, 282, 289, 298],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/swarm/round-context-sources.ts",
+		"lines": [344],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/adopt.tool.ts",
+		"lines": [31, 165, 241, 272, 301],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/agent-lock.tool.ts",
+		"lines": [96, 120, 167, 191, 209],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/agent-names.tool.ts",
+		"lines": [187],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/agent-worktree.tool.ts",
+		"lines": [126, 145],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/authoring.tool.ts",
+		"lines": [406, 987, 994, 1029, 1138, 1332, 1433, 1443, 1574, 1817],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/auto-work.tool.ts",
+		"lines": [
+			173, 459, 488, 522, 551, 671, 783, 804, 881, 888, 893, 958, 961
+		],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/close-plan.tool.ts",
+		"lines": [61, 64],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
+		"lines": [134, 275, 293, 561],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/orchestration.tool.ts",
+		"lines": [280, 358, 371],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/proposal-transition.tool.ts",
+		"lines": [667, 697, 792, 794, 883, 978, 1100, 1147],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/round-context.tool.ts",
+		"lines": [160],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/state-tools.tool.ts",
+		"lines": [381],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/swarm-hygiene.tool.ts",
+		"lines": [131],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/src/public/index.ts",
+		"lines": [29, 178],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/proposals/tests/src/lib/e2e/assembled-proposals-server.ts",
+		"lines": [101],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/quality/plugin.manifest.ts",
+		"lines": [14],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/quality/src/index.ts",
+		"lines": [155, 272],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/quality/src/lib/services/runner.ts",
+		"lines": [76],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/quality/src/public/index.ts",
+		"lines": [17],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/refactor/src/lib/tools/refactor-nav.tool.ts",
+		"lines": [68],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/rules/src/lib/frameworks/online-preset.ts",
+		"lines": [104, 156, 405],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/rules/src/lib/tools/rules-tools.ts",
+		"lines": [196, 369, 543],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/search/plugin.manifest.ts",
+		"lines": [23],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/search/src/lib/services/search-engine.in-house.ts",
+		"lines": [69, 221],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/search/src/lib/tools/search-semantic.tool.ts",
+		"lines": [98],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/status-marker/src/lib/tools/close-tools.ts",
+		"lines": [235],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/test-convention/src/index.ts",
+		"lines": [55, 77],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/test-policy/src/lib/policy-store.ts",
+		"lines": [83],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/usage-tracking/src/index.ts",
+		"lines": [198, 219, 283, 309],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/usage-tracking/src/lib/record-buffer.ts",
+		"lines": [145],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/usage-tracking/src/lib/rollup.ts",
+		"lines": [271],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/web-fetch/src/index.ts",
+		"lines": [39],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/web-fetch/src/lib/services/engine.ts",
+		"lines": [326],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	},
+	{
+		"path": "plugins/web-fetch/src/lib/tools/tools.ts",
+		"lines": [68],
+		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
+	}
+]

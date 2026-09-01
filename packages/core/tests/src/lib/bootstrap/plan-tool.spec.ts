@@ -2,7 +2,10 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { describe, expect, it } from 'vitest';
 
 import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { buildBootstrapToolRegistrations } from '@mcp-vertex/core/lib/bootstrap/bootstrap-tool';
 import { buildPlanToolRegistration } from '@mcp-vertex/core/lib/bootstrap/plan-tool';
+import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (path) => files[path],
@@ -38,6 +41,33 @@ const registerHandler = async (files: Record<string, string>) => {
 			unknown
 		>;
 	};
+};
+
+const callTool = async (
+	tool: IToolRegistration,
+	args: Record<string, unknown> = {},
+) => {
+	let handler:
+		| ((value: Record<string, unknown>) => Promise<unknown>)
+		| undefined;
+	await tool.register({
+		registerTool: (
+			_name: string,
+			_config: unknown,
+			callback: typeof handler,
+		) => {
+			handler = callback;
+		},
+	} as unknown as McpServer);
+	if (handler === undefined)
+		throw new Error('tool handler was not registered');
+	const response = (await handler(args)) as {
+		readonly content: ReadonlyArray<{ readonly text?: string }>;
+	};
+	return JSON.parse(response.content[0]?.text ?? '{}') as Record<
+		string,
+		unknown
+	>;
 };
 
 describe('plan_mcp_project compact projection', () => {
@@ -141,5 +171,70 @@ describe('plan_mcp_project compact projection', () => {
 		// Legacy escape hatch: compact:false behaves like full:true.
 		const legacy = await invoke({ compact: false });
 		expect(legacy).toHaveProperty('blueprint');
+	});
+
+	it('shares one analysis across analyze_project and plan_mcp_project in the same bootstrap session', async () => {
+		let packageJsonReads = 0;
+		const tools = buildBootstrapToolRegistrations({
+			workspace: createWorkspacePathProvider('/tmp/bootstrap-spec'),
+			namespacePrefix: 'demo',
+			reader: {
+				readFile: async (path) => {
+					if (path === 'package.json') packageJsonReads += 1;
+					if (path !== 'package.json') return undefined;
+					return JSON.stringify({
+						name: 'consumer',
+						scripts: { test: 'vitest' },
+					});
+				},
+				exists: async (path) => path === 'package.json',
+				listDir: async () => [],
+			},
+		});
+		const analyze = tools.find((tool) => tool.id === 'analyze_project');
+		const plan = tools.find((tool) => tool.id === 'plan_mcp_project');
+		expect(analyze).toBeDefined();
+		expect(plan).toBeDefined();
+
+		await callTool(analyze!);
+		await callTool(plan!);
+
+		expect(packageJsonReads).toBe(1);
+	});
+
+	it('materialises exactly the full plan blueprint when create_project receives it back', async () => {
+		const tools = buildBootstrapToolRegistrations({
+			workspace: createWorkspacePathProvider('/tmp/bootstrap-spec'),
+			namespacePrefix: 'demo',
+			reader: reader({
+				'package.json': JSON.stringify({
+					name: '@acme/service',
+					scripts: { test: 'vitest', lint: 'eslint .' },
+				}),
+			}),
+		});
+		const plan = tools.find((tool) => tool.id === 'plan_mcp_project');
+		const create = tools.find((tool) => tool.id === 'create_project');
+		const fullPlan = await callTool(plan!, {
+			full: true,
+			targetDir: 'custom/mcp-project',
+			adoption: { mode: 'replace' },
+		});
+		const blueprint = fullPlan.blueprint as Record<string, unknown>;
+		const plannedFiles = fullPlan.files;
+		const created = await callTool(create!, { blueprint });
+
+		expect(created).toMatchObject({ kind: 'host' });
+		expect(created.files).toEqual(plannedFiles);
+		expect(
+			(created.files as Array<{ path: string }>).some(
+				({ path }) => path === 'custom/mcp-project/src/server.ts',
+			),
+		).toBe(true);
+		expect(
+			(created.files as Array<{ path: string }>).some(({ path }) =>
+				path.endsWith('.tool.spec.ts'),
+			),
+		).toBe(true);
 	});
 });

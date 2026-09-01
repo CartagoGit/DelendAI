@@ -12,8 +12,9 @@
  * existing e2e spec's import paths keep working unchanged.
  */
 
-import { readFile, readdir } from 'node:fs/promises';
-import path from 'node:path';
+import { readdir } from 'node:fs/promises';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import { parseAuditFiles } from './parse-audit.service';
 
@@ -35,10 +36,11 @@ export const probeAudits = async (
 	const md = entries
 		.filter((n) => n.endsWith('.md') && n !== 'README.md')
 		.sort();
+	const reader = new SafeWorkspaceReader(auditDirAbs);
 	const docs: { path: string; body: string }[] = [];
 	for (const name of md) {
 		try {
-			const body = await readFile(path.join(auditDirAbs, name), 'utf8');
+			const body = (await reader.readText(name)).content;
 			docs.push({ path: name, body });
 		} catch {
 			/* skip — same tolerance as the consolidate tool */

@@ -10,13 +10,14 @@
  */
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { diagnoseWorkspaceLayout } from '@mcp-vertex/core/lib/plugins/diagnose-workspace-layout';
 import type { WorkspacePathStatus } from '@mcp-vertex/core/lib/contracts/interfaces/workspace-layout.interface';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 const probeOf =
 	(existing: readonly string[]) =>
@@ -96,7 +97,13 @@ describe('diagnoseWorkspaceLayout (f00109 S1)', () => {
 });
 
 describe('assembleCliConfig — dead-config surfacing (f00109 S1)', () => {
-	const args = () => parseCliArgs(['--workspace=/ws'], '/ws');
+	const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-diagnose-');
+	afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
+	const args = () =>
+		parseCliArgs(
+			[`--workspace=${WRITABLE_WORKSPACE}`, '--surface=native'],
+			WRITABLE_WORKSPACE,
+		);
 	const deadConfig = JSON.stringify({
 		docsDir: 'docs/mcp-vertex',
 		plugins: { search: { options: { roots: ['packages'] } } },
@@ -145,9 +152,7 @@ describe('assembleCliConfig — dead-config surfacing (f00109 S1)', () => {
 				name: 'mcp-vertex_overview',
 				arguments: { compact: true },
 			});
-			const text = (res.content as ReadonlyArray<{ text?: string }>)[0]
-				?.text;
-			const overview = JSON.parse(text ?? '{}') as {
+			const overview = res.structuredContent as {
 				readonly configIssues?: readonly string[];
 				readonly recommendedNextAction?: string;
 			};

@@ -222,19 +222,20 @@ if (isMainModule()) {
 			countersPathAbs,
 		);
 
-		if (summary.counters === null) {
-			console.error(
-				'✖ check-proposal-id-drift: counters file is missing.',
+		// The counter lives under `.cache/`, which is gitignored, so a fresh
+		// checkout legitimately has none — CI could never satisfy a hard
+		// failure here. An absent allocator cannot mint a colliding id
+		// either, so only the counter-vs-filesystem comparison is skipped;
+		// the filesystem collision check below still runs, because two
+		// proposals sharing an id on disk is a real defect regardless of
+		// whether any allocator state exists yet.
+		const hasAllocatorState = summary.counters !== null;
+		if (!hasAllocatorState) {
+			console.log(
+				'check-proposal-id-drift: no allocator state yet at ' +
+					`${relative(root, countersPathAbs)} — checking filesystem ` +
+					'collisions only. `bun run sync:counters` seeds it from disk.',
 			);
-			console.error(`  expected at: ${relative(root, countersPathAbs)}`);
-			console.error(
-				'  fix: run any `create_proposal` call (it seeds from disk) or run',
-			);
-			console.error(
-				'       `bun tools/scripts/proposals/sync-proposal-counters.script.ts`',
-			);
-			process.exit(1);
-			return;
 		}
 
 		if (summary.collisions.length > 0) {
@@ -252,7 +253,7 @@ if (isMainModule()) {
 			);
 		}
 
-		if (summary.drifts.length > 0) {
+		if (hasAllocatorState && summary.drifts.length > 0) {
 			console.error(
 				`✖ check-proposal-id-drift: ${summary.drifts.length} prefix(es) have filesystem ids past the counter:`,
 			);
@@ -269,13 +270,20 @@ if (isMainModule()) {
 			);
 		}
 
-		if (!summary.ok) {
+		// Without allocator state every prefix reads as "drifted", which is
+		// meaningless — only an on-disk collision is a real defect then.
+		const failed = hasAllocatorState
+			? !summary.ok
+			: summary.collisions.length > 0;
+		if (failed) {
 			process.exit(1);
 			return;
 		}
 
 		console.log(
-			'✓ check-proposal-id-drift: counter is in sync with filesystem (all prefixes have counter ≥ max(filesystem)).',
+			hasAllocatorState
+				? '✓ check-proposal-id-drift: counter is in sync with filesystem (all prefixes have counter ≥ max(filesystem)).'
+				: '✓ check-proposal-id-drift: no id collisions on disk.',
 		);
 	})();
 }

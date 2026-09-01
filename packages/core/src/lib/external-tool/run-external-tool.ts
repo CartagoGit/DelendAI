@@ -54,6 +54,12 @@ export const runExternalTool = async (
 		...(input.cwd !== undefined ? { cwd: input.cwd } : {}),
 		timeoutMs: input.timeoutMs ?? 60_000,
 		maxOutputBytes: input.maxOutputBytes ?? 1024 * 1024,
+		...(input.maxStdoutBytes !== undefined
+			? { maxStdoutBytes: input.maxStdoutBytes }
+			: {}),
+		...(input.maxStderrBytes !== undefined
+			? { maxStderrBytes: input.maxStderrBytes }
+			: {}),
 		...(input.stdin !== undefined ? { stdin: input.stdin } : {}),
 	});
 	const redact = makeRedactor(input.redact);

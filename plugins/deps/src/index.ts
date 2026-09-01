@@ -29,7 +29,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'deps',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Dependency inventory + offline health (deps_list / deps_check): lockfile, unpinned ranges, duplicates. Opt-in deps_outdated (network) and package_install/package_run_script (write).',
 	optionsSchema: OptionsSchema,

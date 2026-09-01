@@ -68,6 +68,7 @@ export interface IProposalFilterStore {
 }
 
 export interface IProposalBoardProviderOptions {
+	readonly serverConfigured?: boolean;
 	readonly snapshotSource?: ProposalsSnapshotSource;
 	readonly filterStore?: IProposalFilterStore;
 	readonly namespacePrefix?: string;
@@ -106,11 +107,13 @@ export class ProposalBoardProvider {
 	private readonly filterStore: IProposalFilterStore | undefined;
 	private readonly listeners = new Set<IProposalTreeChangeListener>();
 	private filters: IProposalFilters;
+	private readonly serverConfigured: boolean;
 
 	constructor(
 		client: Pick<McpStdioClient, 'request'>,
 		options: IProposalBoardProviderOptions = {},
 	) {
+		this.serverConfigured = options.serverConfigured ?? true;
 		this.source =
 			options.snapshotSource ??
 			new ProposalsSnapshotSource({
@@ -139,6 +142,20 @@ export class ProposalBoardProvider {
 	}
 
 	async getChildren(element?: IProposalNode): Promise<IProposalNode[]> {
+		if (!this.serverConfigured) {
+			return element === undefined
+				? [
+						{
+							kind: 'tool',
+							nodeType: 'banner',
+							id: 'banner:not-configured',
+							label: 'Configure MCP server to load proposals',
+							collapsibleState: TreeItemCollapsibleState.None,
+							contextValue: 'mcpVertexProposalBanner',
+						},
+					]
+				: [];
+		}
 		const snapshot = await this.source.get();
 		if (element === undefined) return this.rootNodes(snapshot);
 		if (element.nodeType === 'group' && element.groupStatus !== undefined) {

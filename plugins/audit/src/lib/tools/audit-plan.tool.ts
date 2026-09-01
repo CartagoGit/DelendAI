@@ -1,6 +1,9 @@
 import {
+	DETAIL_LEVELS,
+	projectDetail,
 	toolError,
 	toolJson,
+	type Detail,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
@@ -9,15 +12,20 @@ import {
 	SCORE_DIMENSIONS,
 	UNIVERSAL_SCOPES,
 	type AuditMode,
+	type AuditType,
 	type ILayerConfig,
 } from '../services/audit-brief.service';
 import { inferMode } from '../services/brief/brief-modes.service';
 
 import z from 'zod';
 
+const DetailSchema = z.enum(DETAIL_LEVELS);
+
 // --- output schemas --------------------------------------------------------
 
 const PlanOutputSchema = z.object({
+	detail: DetailSchema,
+	auditType: z.enum(['plan', 'valuation']),
 	scope: z.string(),
 	mode: z.enum(['general', 'specific', 'monorepo']),
 	markdown: z.string(),
@@ -41,6 +49,9 @@ const PlanOutputSchema = z.object({
 // --- input schema ----------------------------------------------------------
 
 const PlanInputSchema = z.object({
+	detail: DetailSchema.optional(),
+	/** Select an implementation-plan brief or the normal valuation brief. */
+	auditType: z.enum(['plan', 'valuation']).optional(),
 	/**
 	 * Scope to audit. Accepts any universal scope (`full`, `security`,
 	 * `tokens`, `tests`, `docs`) or any layer name configured via
@@ -153,11 +164,15 @@ export const buildPlanRegistration = (
 					outputSchema: PlanOutputSchema,
 				},
 				async (args: {
+					detail?: Detail | undefined;
+					auditType?: AuditType | undefined;
 					scope?: string | undefined;
 					mode?: AuditMode | undefined;
 					projects?: readonly string[] | undefined;
 				}) => {
+					const detail = args.detail ?? 'normal';
 					const scope = args.scope ?? 'full';
+					const auditType = args.auditType ?? 'plan';
 					if (!allAvailableNames.includes(scope)) {
 						return toolError(
 							`unknown scope "${scope}"`,
@@ -196,31 +211,45 @@ export const buildPlanRegistration = (
 											projects.includes(s.name)),
 								)
 							: allAvailable;
-					return toolJson({
-						scope,
-						mode,
-						markdown: buildBrief(scope, {
-							dimensions,
-							layers: configuredLayers,
+					const payload = projectDetail(
+						{
+							auditType,
+							scope,
 							mode,
+							markdown: buildBrief(scope, {
+								auditType,
+								dimensions,
+								layers: configuredLayers,
+								mode,
+								projects,
+								...(options.projectName !== undefined
+									? { projectName: options.projectName }
+									: {}),
+								...(options.configFileName !== undefined
+									? { configFileName: options.configFileName }
+									: {}),
+								...(options.crossCuttingAdditions !== undefined
+									? {
+											crossCuttingAdditions:
+												options.crossCuttingAdditions,
+										}
+									: {}),
+							}),
+							dimensions,
+							availableScopes,
 							projects,
-							...(options.projectName !== undefined
-								? { projectName: options.projectName }
-								: {}),
-							...(options.configFileName !== undefined
-								? { configFileName: options.configFileName }
-								: {}),
-							...(options.crossCuttingAdditions !== undefined
-								? {
-										crossCuttingAdditions:
-											options.crossCuttingAdditions,
-									}
-								: {}),
-						}),
-						dimensions,
-						availableScopes,
-						projects,
-					});
+						},
+						{
+							compact: (full) => ({
+								...full,
+								markdown: '',
+							}),
+							normal: (full) => full,
+							full: (full) => full,
+						},
+						detail,
+					) as Omit<z.infer<typeof PlanOutputSchema>, 'detail'>;
+					return toolJson({ detail, ...payload });
 				},
 			);
 		},

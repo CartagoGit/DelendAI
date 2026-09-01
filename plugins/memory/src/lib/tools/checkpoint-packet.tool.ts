@@ -2,8 +2,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { CorruptFileError, toolError, toolJson } from '@mcp-vertex/core/public';
-import type { IToolTextResult } from '@mcp-vertex/core/public';
+import { toolJson } from '@mcp-vertex/core/public';
 
 import {
 	buildCheckpointPacket,
@@ -15,13 +14,14 @@ import {
 } from '../services/checkpoint-freshness';
 import { selectLatestSessionDigest } from '../services/session-digest-recall';
 import { readStore } from '../services/store';
+import { guardCorruptStore } from './tool-guard-corrupt';
 
-const PacketSchema = z.object({
+const _PacketSchema = z.object({
 	digest: z.string(),
 	pointers: z.array(z.string()),
 	nextAction: z.string().nullable(),
 });
-const AdvisorySchema = z.object({
+const _AdvisorySchema = z.object({
 	hostEvent: z.enum(['pre-compact', 'session-end']),
 	freshness: z.object({
 		state: z.enum(['missing', 'fresh', 'stale']),
@@ -36,28 +36,13 @@ const AdvisorySchema = z.object({
 	]),
 });
 
+const MIN_PACKET_DIGEST_CHARS = 200;
+const MAX_CHECKPOINT_AGE_MINUTES = 24 * 60;
+
 export interface ICheckpointPacketToolOptions {
 	readonly namespacePrefix: string;
 	readonly storePathAbs: string;
 }
-
-const guardCorrupt = async (
-	fn: () => Promise<IToolTextResult>,
-): Promise<IToolTextResult> => {
-	try {
-		return await fn();
-	} catch (error) {
-		if (error instanceof CorruptFileError) {
-			return toolError(
-				`memory store is corrupt: ${error.message}`,
-				error.backupPath
-					? `The corrupt file was preserved at "${error.backupPath}". Inspect or delete it, then retry.`
-					: 'Could not back up the corrupt store; inspect it manually before retrying.',
-			);
-		}
-		throw error;
-	}
-};
 
 /**
  * Return a portable continuation packet without reading host transcripts or
@@ -81,7 +66,7 @@ export const buildCheckpointPacketToolRegistration = (
 					maxDigestChars: z
 						.number()
 						.int()
-						.min(200)
+						.min(MIN_PACKET_DIGEST_CHARS)
 						.max(8_000)
 						.optional(),
 					hostEvent: z
@@ -91,13 +76,13 @@ export const buildCheckpointPacketToolRegistration = (
 						.number()
 						.int()
 						.positive()
-						.max(24 * 60)
+						.max(MAX_CHECKPOINT_AGE_MINUTES)
 						.optional(),
 				}),
 				outputSchema: z.object({
 					available: z.boolean(),
-					packet: PacketSchema.nullable(),
-					advisory: AdvisorySchema.optional(),
+					packet: z.unknown().nullable(),
+					advisory: z.unknown().optional(),
 				}),
 			},
 			async (args: {
@@ -105,7 +90,7 @@ export const buildCheckpointPacketToolRegistration = (
 				hostEvent?: 'pre-compact' | 'session-end' | undefined;
 				maxCheckpointAgeMinutes?: number | undefined;
 			}) =>
-				guardCorrupt(async () => {
+				guardCorruptStore(async () => {
 					const notes = await readStore(options.storePathAbs);
 					const digest = selectLatestSessionDigest(
 						notes.map((note) => ({

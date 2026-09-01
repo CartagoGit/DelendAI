@@ -1,9 +1,10 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import z from 'zod';
 
 import {
+	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
@@ -95,16 +96,17 @@ export const buildDocsGenerateToolRegistration = (
 				const srcRel =
 					contained.rel === '.' ? 'src' : `${contained.rel}/src`;
 				const srcAbs = join(options.workspaceRootAbs, srcRel);
+				const reader = new SafeWorkspaceReader(
+					options.workspaceRootAbs,
+				);
 				const moduleFiles = await walkTsFiles(srcAbs);
 				const generated: IGeneratedDocFile[] = await Promise.all(
 					moduleFiles.map(async (relativePath) => {
 						const workspacePath = `${srcRel}/${relativePath}`
 							.split('\\')
 							.join('/');
-						const source = await readFile(
-							join(srcAbs, relativePath),
-							'utf8',
-						);
+						const source = (await reader.readText(workspacePath))
+							.content;
 						return {
 							path: workspacePath,
 							markdown: generateModuleMarkdown(

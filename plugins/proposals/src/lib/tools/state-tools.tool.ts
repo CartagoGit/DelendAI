@@ -1,4 +1,4 @@
-import { stat } from 'node:fs/promises';
+import { access } from 'node:fs/promises';
 
 import z from 'zod';
 
@@ -18,18 +18,30 @@ import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { readSessionBalance } from '../locks/agent-lock-session-store';
 import { readJsonOrNull } from '../proposals/index-reader';
 import { getPeerReviewBypassCount } from '../shared/peer-review-bypass-log';
+import { DEFAULT_STALE_AFTER_MINUTES } from '../shared/branch-tool-helpers';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
+import {
+	optionalString,
+	optionalUnknown,
+} from '../shared/tool-schema-shortcuts';
 import { readAutoTransitionRepairs } from '../services/auto-transition';
 
 /** Async existence check (H2): never blocks the event loop. */
-const fileExists = async (path: string): Promise<boolean> => {
-	try {
-		await stat(path);
-		return true;
-	} catch {
-		return false;
-	}
-};
+const fileExists = async (path: string): Promise<boolean> =>
+	access(path)
+		.then(() => true)
+		.catch(() => false);
+
+const countDueQueueEntries = (
+	entries: readonly { status: string; expiresAt?: string }[],
+	now = Date.now(),
+): number =>
+	entries.filter(
+		(entry) =>
+			entry.status === 'queued' &&
+			typeof entry.expiresAt === 'string' &&
+			Date.parse(entry.expiresAt) < now,
+	).length;
 
 /** In-flight claim count straight from the lock file (0 if missing/corrupt). */
 const rawInFlightCount = async (lockPath: string): Promise<number> => {
@@ -72,6 +84,7 @@ export interface IStateToolOptions {
 
 /** a00069 S8: alert when session claims − releases exceeds this. */
 const CLAIM_RELEASE_IMBALANCE_THRESHOLD = 5;
+const HEARTBEAT_STALL_MS = 30_000;
 
 interface IStateDiagnosis {
 	readonly locks: {
@@ -107,6 +120,11 @@ interface IStateDiagnosis {
 		readonly taskIds: readonly string[];
 		readonly lastStaleSeen: string | null;
 	};
+	/** Locks whose first heartbeat was never refreshed after the diagnose window. */
+	readonly heartbeatStalls: {
+		readonly count: number;
+		readonly taskIds: readonly string[];
+	};
 	/** a00069 S11: peer-review bypasses (force/skipPeerReview) this session. */
 	readonly peerReviewBypasses: number;
 	readonly autoTransitionRepairs: {
@@ -121,6 +139,7 @@ interface IStateDiagnosis {
 	readonly queue: {
 		readonly queueLength: number;
 		readonly queuedCount: number;
+		readonly dueQueueEntries: number;
 		readonly waiterOrphans: number;
 		readonly oldestAgeMinutes: number;
 		readonly threshold: string;
@@ -132,100 +151,83 @@ interface IStateDiagnosis {
 	readonly healthy: boolean;
 }
 
-const STATE_DIAGNOSIS_SCHEMA = z.object({
-	locks: z.object({
-		active: z.number(),
-		stale: z.number(),
-		staleTaskIds: z.array(z.string()),
-		lastStaleSeen: z.string().nullable(),
-		livelocks: z.number(),
-		livelockPairs: z.array(
-			z.object({
-				agentA: z.string(),
-				agentB: z.string(),
-				files: z.array(z.string()),
-				heldMs: z.number(),
-			}),
-		),
-		crossProposal: z.array(
-			z.object({
-				id: z.string(),
+const STATE_DIAGNOSIS_SCHEMA = z
+	.object({
+		locks: z
+			.object({
+				active: z.number(),
+				stale: z.number(),
+				livelocks: z.number(),
+				sessionBalance: z.object({
+					claims: z.number(),
+					releases: z.number(),
+					imbalance: z.number(),
+				}),
+				sessionClaims: z.number(),
+				sessionReleases: z.number(),
+				sessionImbalance: z.number(),
+			})
+			.passthrough(),
+		/**
+		 * a00072 S1.a: stale locks the smoke detector sees right now.
+		 * When `stale.count > 0` the host should suggest `state_repair
+		 * { mode: "execute" }` (or the explicit `agent_lock_release_orphan`
+		 * tool for a targeted release).
+		 */
+		stale: z
+			.object({
 				count: z.number(),
-				taskIds: z.array(z.string()),
-			}),
-		),
-		sessionBalance: z.object({
-			claims: z.number(),
-			releases: z.number(),
-			imbalance: z.number(),
-		}),
-		sessionClaims: z.number(),
-		sessionReleases: z.number(),
-		sessionImbalance: z.number(),
-	}),
-	/**
-	 * a00072 S1.a: stale locks the smoke detector sees right now.
-	 * When `stale.count > 0` the host should suggest `state_repair
-	 * { mode: "execute" }` (or the explicit `agent_lock_release_orphan`
-	 * tool for a targeted release).
-	 */
-	stale: z.object({
-		count: z.number(),
-		taskIds: z.array(z.string()),
-		lastStaleSeen: z.string().nullable(),
-	}),
-	/** a00069 S11: force/skipPeerReview peer-review bypasses this session. */
-	peerReviewBypasses: z.number(),
-	autoTransitionRepairs: z.object({
-		count: z.number(),
-		entries: z.array(
-			z.object({
-				proposalId: z.string(),
-				path: z.string(),
-				reason: z.string(),
-				ts: z.string(),
-			}),
-		),
-	}),
-	queue: z
-		.object({
-			queueLength: z.number(),
-			queuedCount: z.number(),
-			waiterOrphans: z.number(),
-			oldestAgeMinutes: z.number(),
-			threshold: z.string(),
-		})
-		.nullable(),
-	registry: z.object({
-		orphans: z.number(),
-		threshold: z.string(),
-	}),
-	healthy: z.boolean(),
-});
+			})
+			.passthrough(),
+		heartbeatStalls: z
+			.object({
+				count: z.number(),
+			})
+			.passthrough(),
+		/** a00069 S11: force/skipPeerReview peer-review bypasses this session. */
+		peerReviewBypasses: z.number(),
+		autoTransitionRepairs: z
+			.object({
+				count: z.number(),
+			})
+			.passthrough(),
+		queue: z
+			.object({
+				queueLength: z.number(),
+				queuedCount: z.number(),
+				waiterOrphans: z.number(),
+				oldestAgeMinutes: z.number(),
+				threshold: z.string(),
+			})
+			.passthrough()
+			.nullable(),
+		registry: z
+			.object({
+				orphans: z.number(),
+				threshold: z.string(),
+			})
+			.passthrough(),
+		healthy: z.boolean(),
+	})
+	.passthrough();
 
-const STATE_REPAIR_OUTPUT_SCHEMA = z.object({
-	mode: z.enum(['dry-run', 'execute']),
-	diagnosis: STATE_DIAGNOSIS_SCHEMA,
-	wouldRepair: z
-		.object({
-			staleLocks: z.number(),
-			dueQueueEntries: z.number(),
-			orphanAssignments: z.number(),
-		})
-		.optional(),
-	repaired: z
-		.object({
-			staleLocks: z.number(),
-			expiredQueueEntries: z.number(),
-			orphanAssignments: z.number(),
-		})
-		.optional(),
-	nextAction: z.string().optional(),
+export const STATE_REPAIR_OUTPUT_SCHEMA = z
+	.object({
+		mode: z.enum(['dry-run', 'execute']),
+		diagnosis: z.unknown(),
+		wouldRepair: optionalUnknown(),
+		repaired: optionalUnknown(),
+		nextAction: optionalString(),
+	})
+	.passthrough();
+
+export const STATE_REPAIR_INPUT_SCHEMA = z.object({
+	mode: z.enum(['dry-run', 'execute']).optional(),
 });
 
 const EMPTY_LOCK = (): ILockFile => ({
 	version: 1,
-	stale_after_minutes: 10,
+	stale_after_minutes: DEFAULT_STALE_AFTER_MINUTES,
 	in_flight: [],
 });
 
@@ -236,7 +238,8 @@ const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
 	}
 	return {
 		version: parsed.version ?? 1,
-		stale_after_minutes: parsed.stale_after_minutes ?? 10,
+		stale_after_minutes:
+			parsed.stale_after_minutes ?? DEFAULT_STALE_AFTER_MINUTES,
 		in_flight: Array.isArray(parsed.in_flight) ? parsed.in_flight : [],
 	};
 };
@@ -270,6 +273,18 @@ const findLastStaleSeen = (entries: readonly ILockEntry[]): string | null => {
 	}
 	return latest === null ? null : new Date(latest).toISOString();
 };
+
+const findHeartbeatStalls = (
+	entries: readonly ILockEntry[],
+	nowMs = Date.now(),
+): readonly ILockEntry[] =>
+	entries.filter((entry) => {
+		if (entry.started_at !== entry.last_seen) return false;
+		const lastSeenMs = Date.parse(entry.last_seen);
+		return (
+			!Number.isNaN(lastSeenMs) && nowMs - lastSeenMs > HEARTBEAT_STALL_MS
+		);
+	});
 
 const summarizeCrossProposal = (
 	entries: readonly ILockEntry[],
@@ -317,6 +332,7 @@ const diagnose = async (
 		taskIds: staleTaskIds,
 		lastStaleSeen: findLastStaleSeen(staleEntries),
 	};
+	const heartbeatStalls = findHeartbeatStalls(rawLock.in_flight);
 	const livelockState = await detectContention({
 		lockPath: options.lockPathAbs,
 		fileLockTablePath:
@@ -339,6 +355,7 @@ const diagnose = async (
 		queue = {
 			queueLength: report.queueLength,
 			queuedCount: report.queuedCount,
+			dueQueueEntries: countDueQueueEntries(loaded.entries),
 			waiterOrphans: report.waiterOrphans,
 			oldestAgeMinutes: report.oldestAgeMinutes,
 			threshold: report.threshold,
@@ -376,6 +393,7 @@ const diagnose = async (
 		livelockState.livelocks.length === 0 &&
 		!claimReleaseImbalanceAlert &&
 		stale.count === 0 &&
+		heartbeatStalls.length === 0 &&
 		autoTransitionRepairs.length === 0;
 
 	return {
@@ -403,6 +421,10 @@ const diagnose = async (
 			threshold: zombies.threshold,
 		},
 		stale,
+		heartbeatStalls: {
+			count: heartbeatStalls.length,
+			taskIds: heartbeatStalls.map((entry) => entry.task_id),
+		},
 		healthy,
 	};
 };
@@ -554,9 +576,7 @@ export const buildStateRepairRegistration = (
 				outputSchema: STATE_REPAIR_OUTPUT_SCHEMA,
 				description:
 					'Auto-heal stale swarm state. mode:"dry-run" (default) reports what would be removed; mode:"execute" GCs stale locks, expires due queue entries and force-releases orphan assignments (atomic, mutex-guarded). Returns the diagnosis plus what was (or would be) removed.',
-				inputSchema: z.object({
-					mode: z.enum(['dry-run', 'execute']).optional(),
-				}),
+				inputSchema: STATE_REPAIR_INPUT_SCHEMA,
 			},
 			async (args: { mode?: 'dry-run' | 'execute' | undefined }) => {
 				const before = await diagnose(options);
@@ -566,7 +586,7 @@ export const buildStateRepairRegistration = (
 						diagnosis: before,
 						wouldRepair: {
 							staleLocks: before.stale.count,
-							dueQueueEntries: before.queue?.queuedCount ?? 0,
+							dueQueueEntries: before.queue?.dueQueueEntries ?? 0,
 							orphanAssignments: before.registry.orphans,
 						},
 						nextAction:

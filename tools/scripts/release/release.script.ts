@@ -37,6 +37,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -62,6 +63,8 @@ import {
 } from './publish-tarballs.ts';
 import {
 	packRewrittenTarball,
+	rewriteWorkspaceDeps,
+	stageBuildForPublish,
 	type IWorkspaceDepsPlan,
 } from '../publish/workspace-deps.ts';
 
@@ -264,9 +267,18 @@ const inspectTarball = (tarballPath: string): void => {
 	}
 };
 
+/**
+ * Every entry in a lockstep release plan is bumped to the SAME `plan.to`
+ * (see `applyPlan`, which writes it into each package's own `package.json`
+ * before this runs) — so resolving per-entry, from `entry.to`, is both the
+ * general-purpose rule (never borrow a version from a package other than
+ * the one being depended on) and, in this lockstep case, exactly `plan.to`
+ * for every entry.
+ */
 const createWorkspaceDepsPlan = (plan: IReleasePlan): IWorkspaceDepsPlan => ({
-	targetVersion: plan.to,
-	mcpVertexPackages: new Set(plan.entries.map((entry) => entry.name)),
+	packageVersions: new Map(
+		plan.entries.map((entry) => [entry.name, entry.to] as const),
+	),
 });
 
 async function publishAll(
@@ -281,26 +293,40 @@ async function publishAll(
 				'support provenance attestations); ignoring. Use --tool=npm.',
 		);
 	}
-	if (tool === 'bun') {
-		const args = ['publish'];
-		for (const dir of PUBLISH_ORDER) {
-			logger.info(
-				`\n=== publishing ${dir} (${tool} ${args.join(' ')}) ===`,
-			);
-			run(tool, args, join(ROOT, dir));
-		}
-		logger.info('\nAll packages published.');
-		return;
-	}
-
-	const tarballRoot = mkdtempSync(join(tmpdir(), 'mcp-vertex-release-'));
+	const stagingRoot = mkdtempSync(join(tmpdir(), 'mcp-vertex-release-'));
 	try {
 		const workspacePlan = createWorkspaceDepsPlan(plan);
-		const tarballPaths: string[] = [];
+		const stagedDirs: string[] = [];
 		for (const dir of PUBLISH_ORDER) {
+			const pkg = readPkg(dir);
+			const group = dir.startsWith('packages/') ? 'packages' : 'plugins';
+			const name = dir.slice(dir.indexOf('/') + 1);
+			const buildDir = join(ROOT, 'build', group, name, pkg.version);
+			const stageDir = join(stagingRoot, dir);
+			await stageBuildForPublish(join(ROOT, dir), buildDir, stageDir);
+			await rewriteWorkspaceDeps(stageDir, workspacePlan);
+			stagedDirs.push(stageDir);
+		}
+
+		if (tool === 'bun') {
+			const args = ['publish'];
+			for (const [index, dir] of PUBLISH_ORDER.entries()) {
+				logger.info(
+					`\n=== publishing ${dir} (${tool} ${args.join(' ')}) ===`,
+				);
+				run(tool, args, stagedDirs[index] as string);
+			}
+			logger.info('\nAll packages published.');
+			return;
+		}
+
+		const tarballRoot = join(stagingRoot, 'tarballs');
+		await mkdir(tarballRoot, { recursive: true });
+		const tarballPaths: string[] = [];
+		for (const [index, dir] of PUBLISH_ORDER.entries()) {
 			logger.info(`\n=== packing ${dir} for verified npm publish ===`);
 			const tarballPath = await packRewrittenTarball(
-				join(ROOT, dir),
+				stagedDirs[index] as string,
 				workspacePlan,
 				{ outDir: tarballRoot },
 			);
@@ -325,7 +351,7 @@ async function publishAll(
 		}
 		logger.info('\nAll packages published.');
 	} finally {
-		rmSync(tarballRoot, { recursive: true, force: true });
+		rmSync(stagingRoot, { recursive: true, force: true });
 	}
 }
 
@@ -387,10 +413,11 @@ async function main(): Promise<void> {
 			logger.info('Validating before publish (bun run validate)…\n');
 			run('bun', ['run', 'validate'], ROOT);
 		}
-		// Compile every package to publishable `dist/` (Node-runnable .js +
-		// .d.ts) before publishing. Core builds first so plugins resolve its
-		// types. `files: ["dist"]` is what ends up on the registry.
-		logger.info('Building dist before publish (bun run build)…\n');
+		// Compile every package to centralized build output, then stage that
+		// output as the package-local `dist/` path required by exports.
+		logger.info(
+			'Building centralized artifacts before publish (bun run build)…\n',
+		);
 		run('bun', ['run', 'build'], ROOT);
 		await publishAll(flags.tool, flags.provenance, plan, logger);
 	} else {

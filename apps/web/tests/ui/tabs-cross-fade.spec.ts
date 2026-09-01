@@ -503,7 +503,17 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 		here,
 		'../../src/styles/components/_tabs.scss',
 	);
-	const _styles = readFileSync(tabsScssPath, 'utf8');
+	// f00102 S2.1 — the apps/web partial is now a shim that
+	// `@forward`s the shared tabs stylesheet. The CSS-contract
+	// assertions must read the shared source of truth, not the
+	// shim wrapper, otherwise `.mcpv-tabs` never appears in the
+	// inspected bytes.
+	const _styles = readFileSync(
+		resolve(here, '../../../shared/src/styles/components/_tabs.scss'),
+		'utf8',
+	);
+	expect(_styles).toContain('.mcpv-tabs');
+	expect(readFileSync(tabsScssPath, 'utf8').includes('@forward')).toBe(true);
 
 	// f00102 S2.1 — the tablist markup moved from `Tabs.astro` into
 	// the shared `renderTabs()` at

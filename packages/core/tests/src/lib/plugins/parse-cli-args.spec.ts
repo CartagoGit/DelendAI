@@ -14,8 +14,24 @@ describe('parseCliArgs', async () => {
 		expect(args.cacheDir).toBe('.cache/mcp-vertex');
 		expect(args.docsDir).toBe('docs/mcp-vertex');
 		expect(args.workspace).toBe('/cwd');
+		expect(args.surfaceMode).toBe('managed');
 		expect(args.mcpProjectCreate).toBe(true);
 		expect(args.mcpProjectTests).toBe(true);
+	});
+
+	it('parses --surface and rejects unknown values', async () => {
+		expect(parseCliArgs(['--surface=adaptive'], '/cwd').surfaceMode).toBe(
+			'adaptive',
+		);
+		expect(parseCliArgs(['--surface=compact'], '/cwd').surfaceMode).toBe(
+			'compact',
+		);
+		expect(parseCliArgs(['--surface=extended'], '/cwd').surfaceMode).toBe(
+			'adaptive',
+		);
+		expect(() => parseCliArgs(['--surface=wide'], '/cwd')).toThrow(
+			/Invalid value for --surface: "wide"/,
+		);
 	});
 
 	it('parses --mcp-project-create=false and --mcp-project-tests=false', async () => {
@@ -55,6 +71,15 @@ describe('parseCliArgs', async () => {
 		);
 		expect(args.workspace).toBe('/ws');
 		expect(args.extra.proposalsDir).toBe('docs/p');
+	});
+
+	it('normalizes relative workspace paths against cwd', async () => {
+		expect(parseCliArgs(['--workspace=.'], '/repo').workspace).toBe(
+			'/repo',
+		);
+		expect(
+			parseCliArgs(['--workspace=packages/app'], '/repo').workspace,
+		).toBe('/repo/packages/app');
 	});
 
 	// N18: plugin presets

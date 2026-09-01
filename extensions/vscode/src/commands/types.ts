@@ -8,10 +8,27 @@ import type { ICommandQuickPickItem } from '../contracts/interfaces/command-quic
 import type { IDisposable, IWebviewPanel } from '../extension';
 import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
 import type { ToolTreeDataProvider } from '../providers/tool-tree-data-provider';
+import type {
+	IProposalDetail,
+	IToolDetail,
+} from '@mcp-vertex/ui-extension/webview';
 
 /** Minimal `vscode.Uri` surface this module needs (f00045 S3). */
 export interface IVscodeUri {
 	with(change: { readonly fragment?: string }): IVscodeUri;
+}
+
+export type IPrivateTerminalExecution = object;
+
+export interface IPrivateShellIntegration {
+	executeCommand(commandLine: string): IPrivateTerminalExecution;
+}
+
+export interface IPrivateTerminal {
+	readonly shellIntegration?: IPrivateShellIntegration;
+	sendText(text: string, addNewLine?: boolean): void;
+	show?(preserveFocus?: boolean): void;
+	dispose(): void;
 }
 
 export interface ICommandVscodeApi {
@@ -34,6 +51,23 @@ export interface ICommandVscodeApi {
 		file(path: string): IVscodeUri;
 	};
 	readonly window: {
+		readonly createTerminal?: (options: {
+			readonly name: string;
+			readonly hideFromUser?: boolean;
+			readonly cwd?: string;
+		}) => IPrivateTerminal;
+		readonly onDidChangeTerminalShellIntegration?: (
+			callback: (event: {
+				readonly terminal: IPrivateTerminal;
+				readonly shellIntegration: IPrivateShellIntegration;
+			}) => void,
+		) => IDisposable;
+		readonly onDidEndTerminalShellExecution?: (
+			callback: (event: {
+				readonly execution: IPrivateTerminalExecution;
+				readonly exitCode?: number;
+			}) => void,
+		) => IDisposable;
 		createWebviewPanel(
 			viewType: string,
 			title: string,
@@ -111,6 +145,24 @@ export interface ICommandDeps {
 		ProposalsSnapshotSource,
 		'fetchProposalDetail'
 	>;
+	/**
+	 * Workspace root, used by the proposal detail webview to read the
+	 * markdown plan file when rendering the full plan content. Omitted →
+	 * the plan card is hidden (every other detail section still renders).
+	 */
+	readonly workspaceRoot?: string;
+	/**
+	 * Optional sink for host-agnostic detail models. When supplied, the
+	 * `openToolDetail` and `openProposal` commands prefer to deliver the
+	 * `IToolDetail` / `IProposalDetail` payload through the host shell
+	 * (e.g. the dashboard `WebviewView`) before falling back to opening a
+	 * standalone webview panel. Returning `true` suppresses the fallback
+	 * panel so the dashboard overlay is the only surface.
+	 */
+	readonly detailSink?: (
+		kind: 'tool' | 'proposal',
+		model: IToolDetail | IProposalDetail,
+	) => Promise<boolean> | boolean;
 }
 
 export const showCommandError = async (

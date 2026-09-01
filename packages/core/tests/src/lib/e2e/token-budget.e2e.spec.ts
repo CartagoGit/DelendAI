@@ -4,139 +4,104 @@ import { dirname, join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import type {
+	ClientCapabilities,
+	Implementation,
+} from '@modelcontextprotocol/sdk/types.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
+import { nodeDynamicImport } from '@mcp-vertex/core/lib/plugins/load-plugins';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
-import proposalsPlugin from '@mcp-vertex/proposals';
-import rulesPlugin from '@mcp-vertex/rules';
-import memoryPlugin from '@mcp-vertex/memory';
-import gitPlugin from '@mcp-vertex/git';
-import qualityPlugin from '@mcp-vertex/quality';
-import searchPlugin from '@mcp-vertex/search';
-import notificationPlugin from '@mcp-vertex/notification';
-import docsPlugin from '@mcp-vertex/docs';
-import depsPlugin from '@mcp-vertex/deps';
-import logsPlugin from '@mcp-vertex/logs';
-import statusMarkerPlugin from '@mcp-vertex/status-marker';
-import testConventionPlugin from '@mcp-vertex/test-convention';
-import testPolicyPlugin from '@mcp-vertex/test-policy';
-import conventionsPlugin from '@mcp-vertex/conventions';
+import {
+	TOKEN_BUDGETS,
+	type IMcpToolSurfaceMode,
+} from '@mcp-vertex/core/public';
 
 /**
- * Token budget benchmark [N23]. "Low-token" is a measurable promise, not
- * marketing: this drives the REAL server over the protocol and asserts
- * the cold-start payloads stay under explicit byte budgets, and that the
- * `compact` overview is materially cheaper than the full one. The numbers
- * printed here are the documented baseline; tighten the budgets if a
- * change regresses them.
+ * Token budget benchmark [N23]. Invariant: cold-start protocol payloads stay
+ * under explicit byte ceilings, and `overview { compact:true }` stays
+ * materially cheaper than the full surface.
  *
- * Rough token estimate: ~4 bytes/token, so the budgets below are roughly
- * overview-full < ~1.5k tokens, overview-compact < ~400 tokens,
- * agent-catalog-compact < ~325 tokens and agent-catalog-full < ~1.7k tokens.
+ * Why this matters: "low-token" is a measurable product promise, so this spec
+ * guards the real wire payloads instead of prose.
+ *
+ * Risk rule: if a change regresses the measured bytes, tighten the budgets or
+ * the surface deliberately. Rough estimate only: ~4 bytes/token. See N23 and
+ * docs/mcp-vertex/TOKEN-BUDGETS.md.
  */
-const BUDGET_BYTES = {
-	// Bumped overviewFull 9800→10000 / compact 1280→1400 (2026-07-25): a00069 S9 unusedActivePlugins advisory.
+const budgetWarning = (label: string, value: number, warning: number): void => {
+	if (value > warning) {
+		console.warn(
+			`[token-budget warning] ${label}: ${value}B exceeds warning ceiling ${warning}B`,
+		);
+	}
+};
 
-	// Full overview lists every tool's summary, so it grows as the toolset does
-	// (await_lock, proposal_review, proposal_adopt, …). The promise is the COMPACT
-	// path (well under budget) — agents use it when there are many tools.
-	// Bumped 7000 → 8000 (2026-06-22) after f00029-S2 (github-issues plugin,
-	// 5 tools) + f00030 (setup-github) + f00047 (ui-extension toolbar) raised
-	// the baseline from 6700B to 7244B measured.
-	// Bumped 8000 → 8500 / 1600 → 2100 (2026-06-26): the host-namespace tool
-	// rename (`mcp-vertex_` prefix on every tool) added ~11B per listed tool,
-	// raising full to 8015B and compact to 1944B measured. Compact is still
-	// the real promise — < 30% of full.
-	// Bumped 8500 → 8700 (2026-06-28): added commitAuthor options.
-	// Bumped 8700 → 8900 (2026-06-30): f00090 S1 added the memory_compact tool
-	// (in-session context compaction). Its summary is the only thing the full
-	// overview lists; full measured 8755B. Compact path unchanged (2079B), still
-	// the real promise.
-	// Bumped 8900 → 9050 / 2100 → 2180 (2026-07-02): f00094 wired the
-	// inherit_host_instructions tool (host-instruction audit) into the proposals
-	// plugin; full measured 8964B, compact 2128B. Summary kept terse. Compact is
-	// still the real promise at < 24% of full.
-	// Bumped 8900 → 9100 (2026-07-04): added orchestrator-runner execution tools.
-	// Bumped 9100 → 9500 / 1200 → 1250 (2026-07-16): f00117 S2 added the
-	// init_config core tool (server-side self-init); full measured 9416B,
-	// compact 1220B. Compact is still the real promise at < 13% of full.
-	// Bumped 9500 → 9700 (2026-07-24): f00145 added the read-only memory
-	// checkpoint packet; full measured 9598B while compact stayed 1240B.
-	// Bumped 9700 → 9800 / 1250 → 1280 (2026-07-24): f00120 S4 added the
-	// `create_plugin` core tool (scaffold + wire + doctor). Full measured
-	// 9792B, compact measured 1256B — both well under their promised
-	// ceilings. The compact mode still saves 87% vs. full.
-	overviewFull: 10_500,
-	overviewCompact: 1_500,
-	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
-	// tool-entry construction. Core tools whose id has an underscore
-	// (agent_catalog, fs_read, …) were advertised WITHOUT the `mcp-vertex_`
-	// prefix (a non-callable name), and every tool's `plugin` was mis-derived
-	// as the host segment. Now every name is fully qualified and `plugin` is
-	// the real owning plugin — both add bytes (compact 1290→1403B measured)
-	// but make the discovery catalog truthful.
-	// Tightened 1450 → 900 (2026-07-13): the default compact orientation
-	// call now drops the tool list (overview already carries every name)
-	// and trims skills to {id, tags}. Against the real repo (20 skills,
-	// 89 tools) this cut the live payload 14 103B → 2 321B; in this
-	// synthetic workspace it measured 356B. section/query calls keep the
-	// full entries and are budgeted by agentCatalogFull.
-	agentCatalogCompact: 900,
-	agentCatalogFull: 6_800,
-	// Bumped 1 600 → 2 000 (2026-07-25): v00122 embeds a claim-ready
-	// slice and its exact lock arguments, eliminating the old extra planning
-	// call while preserving a bounded first response.
-	// Bumped 2 000 → 2 050 (2026-07-25): a00072 S2.b added the F149
-	// peer-review gate surface to the delegation policy; the expanded
-	// next/policy text raised the live payload 2 036B → 2 036B measured.
-	// Bumped 2 050 → 2 600 (2026-07-25): a00072 S2.b's expanded
-	// proposal_review surface (peer-review gate, reviewer agent, sliceId)
-	// raised the live payload 2 036B → 2 527B measured.
-	autoWork: 2_600,
-	search: 3_000,
-	docsList: 2_500,
-	roundContext: 3_000,
-	logsTail: 6_000,
-	analyzeCompact: 1_800,
-	planCompact: 2_000,
-	// The repo host defaults to `swarm`, so its static MCP tool definitions
-	// (tools/list) and the two normal orientation/resume calls are independently
-	// budgeted. Measured 2026-07-24: 157 504B / 2 463B / 146B respectively.
-	// Updated 2026-07-25: refactor plugin (f00123 S2) added to swarm via standard,
-	// increasing overview compact from 2 463B to ~3 568B.
-	// (f00127 prompt-eval + f00128 database added to swarm via standard.)
-	// Bumped 175 000 → 182 000 (2026-07-27): env plugin (f00135) S3 added the
-	// `env` sub-field to configuration_center summary, raising tools/list
-	// 175 000B → 180 561B measured. Round to 182 000 to absorb tool-outputs
-	// regeneration noise from the f00136 surface additions.
-	// Bumped 4 200 → 4 500 (2026-07-26): container plugin (f00133) added to swarm
-	// via standard, increasing overview compact from ~3 568B to ~4 368B.
-	// Bumped 4 500 → 4 700 (2026-07-26): container plugin S2/S3 added the lint,
-	// logs, and build tools, increasing overview compact from ~4 368B to ~4 587B.
-	// Bumped 4 700 → 4 800 (2026-07-27): env plugin (f00135) added env_explains to
-	// standard preset, increasing overview compact from ~4 587B to ~4 796B.
-	// Bumped 4 800 → 4 900 (2026-07-27): env plugin (f00135) S3 added the `env`
-	// sub-field to configuration_center summary, raising overview compact
-	// 4 796B → 4 880B measured.
-	// Bumped 4 900 → 5 200 (2026-07-27): i18n + skills-pack (f00138) added to
-	// standard preset, raising overview compact 4 880B → 5 097B measured.
-	// Bumped 5 200 → 5 500 (2026-07-27): prompts-pack (f00138 S1+S2+S3) added to
-	// standard preset, raising overview compact 5 097B → 5 396B measured.
-	// Bumped 5 500 → 5 600 (2026-07-27): auto-plugin-selector (f00142 S1)
-	// added `plugins_recommend` to standard preset, raising overview compact
-	// 5 396B → ~5 510B measured.
-	swarmToolsList: 190_000,
-	swarmOverviewCompact: 5_600,
-	swarmRoundContext: 300,
-	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
-	// Bumped 65 000 → 69 000 (2026-07-27): env plugin (f00135) S3 added the `env`
-	// sub-field to configuration_center summary, raising lean tools/list
-	// 65 000B → 68 126B measured.
-	leanToolsList: 69_000,
-} as const;
+const expectWithinBudget = (
+	label: string,
+	value: number,
+	budget: { hard: number; warning: number },
+): void => {
+	budgetWarning(label, value, budget.warning);
+	expect(value, `${label} = ${value}B`).toBeLessThanOrEqual(budget.hard);
+};
+
+const jsonBytes = (value: unknown): number =>
+	Buffer.byteLength(JSON.stringify(value), 'utf8');
+
+const dynamicSurfaceCapabilities: ClientCapabilities = {
+	extensions: {
+		'mcp-vertex/surface': {
+			toolsListChanged: true,
+		},
+	},
+};
+
+const modernClientInfo: Implementation = {
+	name: 'vscode-copilot',
+	version: '1.0.0',
+};
+
+const classifyToolOwner = (
+	toolName: string,
+	pluginIds: readonly string[],
+): string => {
+	const qualifiedPrefix = 'mcp-vertex_';
+	const unqualified = toolName.startsWith(qualifiedPrefix)
+		? toolName.slice(qualifiedPrefix.length)
+		: toolName;
+	for (const pluginId of [...pluginIds].sort(
+		(left, right) => right.length - left.length,
+	)) {
+		if (unqualified.startsWith(`${pluginId}_`)) {
+			return pluginId;
+		}
+	}
+	return 'core';
+};
+
+const marginalPluginBytes = (
+	tools: readonly {
+		readonly name: string;
+		readonly description?: string | undefined;
+		readonly inputSchema?: unknown | undefined;
+		readonly outputSchema?: unknown | undefined;
+	}[],
+	pluginIds: readonly string[],
+): number => {
+	const totals = new Map<string, number>();
+	for (const tool of tools) {
+		const owner = classifyToolOwner(tool.name, pluginIds);
+		if (owner === 'core') {
+			continue;
+		}
+		totals.set(owner, (totals.get(owner) ?? 0) + jsonBytes(tool));
+	}
+	return Math.max(0, ...totals.values());
+};
 
 describe('e2e: token budget (cold-start payloads)', async () => {
 	let workspace = '';
@@ -146,45 +111,62 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	const connectClient = async (
 		pluginList: string,
 		preset = false,
-	): Promise<{ client: Client; close: () => Promise<void> }> => {
+		input?: {
+			readonly clientInfo?: Implementation;
+			readonly capabilities?: ClientCapabilities;
+			// x00296 S1 (AUD-B06) regression guard: lets a test pin an
+			// explicit surface the same way `connectTokenBudgetClient`
+			// (the dashboard's fixture measurement) does, so the test below
+			// can prove an explicit `surfaceMode` always wins regardless of
+			// what `decideSurfaceModeFromCapabilities` would infer from
+			// `capabilities`/`clientInfo` — the exact invariant whose
+			// absence let AUD-B06 slip through when AUD-C01 was fixed.
+			readonly surfaceMode?: IMcpToolSurfaceMode;
+		},
+	): Promise<{
+		client: Client;
+		close: () => Promise<void>;
+		pluginIds: readonly string[];
+	}> => {
 		const args = parseCliArgs(
 			[
 				`--${preset ? 'preset' : 'plugins'}=${pluginList}`,
 				`--workspace=${workspace}`,
+				// r00026 (TOK-004) made `adaptive` the default surface for a
+				// plain client with no capability negotiation. This suite
+				// measures raw cold-start payload sizes for the FULL/native
+				// surface (the historical budget baseline every threshold
+				// here was calibrated against) UNLESS the caller passes
+				// `capabilities` explicitly to exercise real adaptive
+				// negotiation (a couple of tests below do exactly that) —
+				// an explicit `--surface` flag would override capability
+				// detection entirely, so only pin it when there is no
+				// capability-driven case to preserve.
+				...(input?.surfaceMode !== undefined
+					? [`--surface=${input.surfaceMode}`]
+					: input?.capabilities === undefined
+						? ['--surface=native']
+						: []),
 			],
 			workspace,
 		);
-		const plugins: Record<string, { default: unknown }> = {
-			'@mcp-vertex/proposals': { default: proposalsPlugin },
-			'@mcp-vertex/rules': { default: rulesPlugin },
-			'@mcp-vertex/memory': { default: memoryPlugin },
-			'@mcp-vertex/git': { default: gitPlugin },
-			'@mcp-vertex/quality': { default: qualityPlugin },
-			'@mcp-vertex/search': { default: searchPlugin },
-			'@mcp-vertex/notification': { default: notificationPlugin },
-			'@mcp-vertex/docs': { default: docsPlugin },
-			'@mcp-vertex/deps': { default: depsPlugin },
-			'@mcp-vertex/logs': { default: logsPlugin },
-			'@mcp-vertex/status-marker': { default: statusMarkerPlugin },
-			'@mcp-vertex/test-convention': { default: testConventionPlugin },
-			'@mcp-vertex/test-policy': { default: testPolicyPlugin },
-			'@mcp-vertex/conventions': { default: conventionsPlugin },
-		};
-		const { config } = await assembleCliConfig(args, {
-			import: async (specifier: string) => plugins[specifier]!,
+		const assembledConfig = await assembleCliConfig(args, {
+			import: async (specifier: string) =>
+				(await nodeDynamicImport(specifier)) as { default: unknown },
 			readFile: async () => undefined,
 		});
-		const assembled = await createMcpProject(config);
+		const assembled = await createMcpProject(assembledConfig.config);
 		const [clientTransport, serverTransport] =
 			InMemoryTransport.createLinkedPair();
 		await assembled.server.connect(serverTransport);
 		const connectedClient = new Client(
-			{ name: 'tok', version: '0' },
-			{ capabilities: {} },
+			input?.clientInfo ?? { name: 'tok', version: '0' },
+			{ capabilities: input?.capabilities ?? {} },
 		);
 		await connectedClient.connect(clientTransport);
 		return {
 			client: connectedClient,
+			pluginIds: args.plugins,
 			close: async () => {
 				await connectedClient.close();
 				await assembled.server.close();
@@ -260,7 +242,9 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				],
 			}),
 		);
-		({ client, close } = await connectClient('proposals,memory'));
+		({ client, close } = await connectClient(
+			TOKEN_BUDGETS.fixturePluginIds.join(','),
+		));
 	});
 
 	afterEach(async () => {
@@ -273,34 +257,119 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		args: Record<string, unknown>,
 	): Promise<number> => {
 		const res = await client.callTool({ name, arguments: args });
+		if (res.structuredContent !== undefined) {
+			return Buffer.byteLength(
+				JSON.stringify(res.structuredContent),
+				'utf8',
+			);
+		}
 		const text = (res.content as Array<{ type: string; text: string }>)[0]
 			?.text;
 		return Buffer.byteLength(text ?? '', 'utf8');
 	};
 
-	it('cold-start overview stays under budget; compact is much cheaper', async () => {
+	/**
+	 * x00296 S2 (AUD-B06): `overview` is also directly callable under the
+	 * `native` surface (the default `client` above is pinned to
+	 * `--surface=native`), which lists the full tool catalog — a
+	 * materially larger, independently-governed payload than the
+	 * `managed` bootstrap listing `overviewFull`/`overviewCompact` cover.
+	 * `overviewFullNative`/`overviewCompactNative` are a NEW ceiling pair
+	 * (`token-budgets.constant.ts`), not a redefinition of the existing
+	 * `managed` ones.
+	 */
+	it('native overview listing stays under its own dedicated budget', async () => {
 		const full = await textBytes('mcp-vertex_overview', {});
 		const compact = await textBytes('mcp-vertex_overview', {
 			compact: true,
 		});
-
-		// Documented baseline (printed for visibility on failures):
-		expect(
+		expectWithinBudget(
+			'overview full (native)',
 			full,
-			`overview full = ${full}B, compact = ${compact}B`,
-		).toBeLessThan(BUDGET_BYTES.overviewFull);
-		expect(compact).toBeLessThan(BUDGET_BYTES.overviewCompact);
-		// Compact must be a real saving, not cosmetic.
-		expect(compact).toBeLessThan(full * 0.7);
+			TOKEN_BUDGETS.toolPayloads.overviewFullNative,
+		);
+		expectWithinBudget(
+			'overview compact (native)',
+			compact,
+			TOKEN_BUDGETS.toolPayloads.overviewCompactNative,
+		);
+		expect(compact).toBeLessThan(full);
+	});
+
+	it('cold-start overview stays under budget; compact is much cheaper', async () => {
+		const adaptive = await connectClient(
+			TOKEN_BUDGETS.fixturePluginIds.join(','),
+			false,
+			{
+				clientInfo: modernClientInfo,
+				capabilities: dynamicSurfaceCapabilities,
+			},
+		);
+		try {
+			const adaptiveTextBytes = async (
+				name: string,
+				args: Record<string, unknown>,
+			): Promise<number> => {
+				const res = await adaptive.client.callTool({
+					name,
+					arguments: args,
+				});
+				if (res.structuredContent !== undefined) {
+					return Buffer.byteLength(
+						JSON.stringify(res.structuredContent),
+						'utf8',
+					);
+				}
+				const text = (
+					res.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			};
+			const full = await adaptiveTextBytes('mcp-vertex_overview', {});
+			const compact = await adaptiveTextBytes('mcp-vertex_overview', {
+				compact: true,
+			});
+
+			// Documented baseline (printed for visibility on failures):
+			expectWithinBudget(
+				'overview full',
+				full,
+				TOKEN_BUDGETS.toolPayloads.overviewFull,
+			);
+			expectWithinBudget(
+				'overview compact',
+				compact,
+				TOKEN_BUDGETS.toolPayloads.overviewCompact,
+			);
+			// Compact must be a real saving, not cosmetic.
+			expect(compact).toBeLessThan(
+				full * TOKEN_BUDGETS.invariants.compactVsFullMaxRatio,
+			);
+		} finally {
+			await adaptive.close();
+		}
 	});
 
 	it('swarm preset keeps its real static and resume surfaces bounded', async () => {
-		const swarm = await connectClient('swarm', true);
+		const swarmOverviewCompactBudget =
+			TOKEN_BUDGETS.presets.swarm.overviewCompact;
+		const swarmRoundContextBudget =
+			TOKEN_BUDGETS.presets.swarm.roundContext;
+		expect(swarmOverviewCompactBudget).toBeDefined();
+		expect(swarmRoundContextBudget).toBeDefined();
+		const swarm = await connectClient('swarm', true, {
+			clientInfo: modernClientInfo,
+			capabilities: dynamicSurfaceCapabilities,
+		});
 		try {
 			const toolList = await swarm.client.listTools();
 			const toolsListBytes = Buffer.byteLength(
 				JSON.stringify(toolList.tools),
 				'utf8',
+			);
+			const maxPluginBytes = marginalPluginBytes(
+				toolList.tools,
+				swarm.pluginIds,
 			);
 			const textBytesForSwarm = async (
 				name: string,
@@ -324,38 +393,101 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				{},
 			);
 
-			expect(
+			expectWithinBudget(
+				'swarm tools/list',
 				toolsListBytes,
-				`swarm: tools/list = ${toolsListBytes}B, overview compact = ${overviewCompact}B, round context = ${roundContext}B`,
-			).toBeLessThan(BUDGET_BYTES.swarmToolsList);
-			expect(overviewCompact).toBeLessThan(
-				BUDGET_BYTES.swarmOverviewCompact,
+				TOKEN_BUDGETS.presets.swarm.toolsList,
 			);
-			expect(roundContext).toBeLessThan(BUDGET_BYTES.swarmRoundContext);
+			expectWithinBudget(
+				'swarm overview compact',
+				overviewCompact,
+				swarmOverviewCompactBudget!,
+			);
+			expectWithinBudget(
+				'swarm round context',
+				roundContext,
+				swarmRoundContextBudget!,
+			);
+			expectWithinBudget('swarm marginal plugin bytes', maxPluginBytes, {
+				hard: TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginHard,
+				warning:
+					TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginWarning,
+			});
 		} finally {
 			await swarm.close();
 		}
 	});
 
 	it('lean preset remains materially smaller than the collaboration surface', async () => {
-		const lean = await connectClient('lean', true);
+		const lean = await connectClient('lean', true, {
+			clientInfo: modernClientInfo,
+			capabilities: dynamicSurfaceCapabilities,
+		});
 		try {
 			const toolList = await lean.client.listTools();
 			const toolsListBytes = Buffer.byteLength(
 				JSON.stringify(toolList.tools),
 				'utf8',
 			);
-			expect(
+			const maxPluginBytes = marginalPluginBytes(
+				toolList.tools,
+				lean.pluginIds,
+			);
+			expectWithinBudget(
+				'lean tools/list',
 				toolsListBytes,
-				`lean tools/list = ${toolsListBytes}B`,
-			).toBeLessThan(BUDGET_BYTES.leanToolsList);
+				TOKEN_BUDGETS.presets.lean.toolsList,
+			);
+			expectWithinBudget('lean marginal plugin bytes', maxPluginBytes, {
+				hard: TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginHard,
+				warning:
+					TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginWarning,
+			});
 			expect(toolsListBytes).toBeLessThan(
-				BUDGET_BYTES.swarmToolsList * 0.4,
+				TOKEN_BUDGETS.presets.swarm.toolsList.hard *
+					TOKEN_BUDGETS.invariants.leanVsSwarmToolsListMaxRatio,
 			);
 		} finally {
 			await lean.close();
 		}
 	});
+
+	/**
+	 * AUD-B02/x00283: the dashboard's "Marginal Status" column used to
+	 * default an undeclared `marginalPluginHard` to `0` and report "over
+	 * hard (0B)" for minimal/standard/full/vertex — a permanent false
+	 * alarm no gate shared. `swarm` and `lean` already had real ceilings
+	 * and their own dedicated assertions above; this closes the other
+	 * four governed presets so all six are asserted, matching what
+	 * `IGovernedToolsListBudget` now requires the contract to declare.
+	 */
+	it.each(['minimal', 'standard', 'full', 'vertex'] as const)(
+		'%s preset keeps its marginal plugin ceiling honest',
+		async (presetId) => {
+			const connection = await connectClient(presetId, true, {
+				clientInfo: modernClientInfo,
+				capabilities: dynamicSurfaceCapabilities,
+			});
+			try {
+				const toolList = await connection.client.listTools();
+				const maxPluginBytes = marginalPluginBytes(
+					toolList.tools,
+					connection.pluginIds,
+				);
+				const budget = TOKEN_BUDGETS.presets[presetId].toolsList;
+				expectWithinBudget(
+					`${presetId} marginal plugin bytes`,
+					maxPluginBytes,
+					{
+						hard: budget.marginalPluginHard,
+						warning: budget.marginalPluginWarning,
+					},
+				);
+			} finally {
+				await connection.close();
+			}
+		},
+	);
 
 	it('agent catalog stays under budget; compact is materially cheaper than full', async () => {
 		const catalogOnly = await connectClient('');
@@ -380,11 +512,16 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				mode: 'full',
 			});
 
-			expect(
+			expectWithinBudget(
+				'agent catalog compact',
 				compact,
-				`agent catalog compact = ${compact}B, full = ${full}B`,
-			).toBeLessThan(BUDGET_BYTES.agentCatalogCompact);
-			expect(full).toBeLessThan(BUDGET_BYTES.agentCatalogFull);
+				TOKEN_BUDGETS.toolPayloads.agentCatalogCompact,
+			);
+			expectWithinBudget(
+				'agent catalog full',
+				full,
+				TOKEN_BUDGETS.toolPayloads.agentCatalogFull,
+			);
 			expect(compact).toBeLessThan(full);
 		} finally {
 			await catalogOnly.close();
@@ -429,8 +566,10 @@ title: token budget fixture
 			arguments: {},
 		});
 		const bytes = await textBytes('mcp-vertex_proposals_auto_work', {});
-		expect(bytes, `auto_work claim-ready plan = ${bytes}B`).toBeLessThan(
-			BUDGET_BYTES.autoWork,
+		expectWithinBudget(
+			'auto_work claim-ready plan',
+			bytes,
+			TOKEN_BUDGETS.toolPayloads.autoWork,
 		);
 	});
 
@@ -440,11 +579,15 @@ title: token budget fixture
 		// requires full:true.
 		const analyze = await textBytes('mcp-vertex_analyze_project', {});
 		const plan = await textBytes('mcp-vertex_plan_mcp_project', {});
-		expect(analyze, `analyze compact = ${analyze}B`).toBeLessThan(
-			BUDGET_BYTES.analyzeCompact,
+		expectWithinBudget(
+			'analyze compact',
+			analyze,
+			TOKEN_BUDGETS.toolPayloads.analyzeCompact,
 		);
-		expect(plan, `plan compact = ${plan}B`).toBeLessThan(
-			BUDGET_BYTES.planCompact,
+		expectWithinBudget(
+			'plan compact',
+			plan,
+			TOKEN_BUDGETS.toolPayloads.planCompact,
 		);
 	});
 
@@ -487,22 +630,107 @@ title: token budget fixture
 				limit: 10,
 			});
 
-			expect(search, `search = ${search}B`).toBeLessThan(
-				BUDGET_BYTES.search,
+			expectWithinBudget(
+				'search',
+				search,
+				TOKEN_BUDGETS.toolPayloads.search,
 			);
-			expect(docsList, `docs_list = ${docsList}B`).toBeLessThan(
-				BUDGET_BYTES.docsList,
+			expectWithinBudget(
+				'docs_list',
+				docsList,
+				TOKEN_BUDGETS.toolPayloads.docsList,
 			);
-			expect(
+			expectWithinBudget(
+				'round_context',
 				roundContext,
-				`round_context = ${roundContext}B`,
-			).toBeLessThan(BUDGET_BYTES.roundContext);
-			expect(
+				TOKEN_BUDGETS.toolPayloads.roundContext,
+			);
+			expectWithinBudget(
+				'mcp-vertex_logs_tail',
 				logsTail,
-				`mcp-vertex_logs_tail = ${logsTail}B`,
-			).toBeLessThan(BUDGET_BYTES.logsTail);
+				TOKEN_BUDGETS.toolPayloads.logsTail,
+			);
 		} finally {
 			await extra.close();
+		}
+	});
+
+	/**
+	 * x00296 S1 (AUD-B06) regression pin: fixing AUD-C01 (`x00285`) changed
+	 * what `decideSurfaceModeFromCapabilities` infers for a client that
+	 * declares no capabilities (managed -> native), and the dashboard's
+	 * fixture measurement (`connectTokenBudgetClient` in
+	 * `token-budget-report-lib.ts`) never declared an explicit
+	 * `surfaceMode`, so it silently started measuring a different surface
+	 * than the one its ceilings were calibrated for. The fix is that every
+	 * fixture-gated connection now passes an explicit `surfaceMode`, which
+	 * `resolveExplicitSurfaceMode` always honours ahead of any
+	 * capability-based inference (see `decide-mode.ts`). This test proves
+	 * that invariant directly: an explicit `surfaceMode` produces the same
+	 * `overview` payload regardless of what capabilities/clientInfo would
+	 * otherwise have inferred, so a FUTURE change to
+	 * `decideSurfaceModeFromCapabilities`'s default cannot silently move a
+	 * fixture-gated row onto a different surface ever again.
+	 */
+	it('an explicit surfaceMode overrides capability-based inference (AUD-B06 regression)', async () => {
+		// No capabilities at all would infer `native` (AUD-C01's fixed
+		// behaviour); pinning `managed` here must still win.
+		const managedNoCapabilities = await connectClient(
+			TOKEN_BUDGETS.fixturePluginIds.join(','),
+			false,
+			{ surfaceMode: 'managed' },
+		);
+		// Capabilities that declare `mcp-vertex/surface` listChanged support
+		// would infer `managed`; pinning `native` here must still win.
+		const nativeWithManagedCapabilities = await connectClient(
+			TOKEN_BUDGETS.fixturePluginIds.join(','),
+			false,
+			{
+				clientInfo: modernClientInfo,
+				capabilities: dynamicSurfaceCapabilities,
+				surfaceMode: 'native',
+			},
+		);
+		try {
+			const managedBytes = await (async () => {
+				const res = await managedNoCapabilities.client.callTool({
+					name: 'mcp-vertex_overview',
+					arguments: {},
+				});
+				const text = (
+					res.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			})();
+			const nativeBytes = await (async () => {
+				const res = await nativeWithManagedCapabilities.client.callTool(
+					{ name: 'mcp-vertex_overview', arguments: {} },
+				);
+				const text = (
+					res.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			})();
+
+			// `managed` (bootstrap-only listing) must stay well within the
+			// `overviewFull` ceiling regardless of the absent capabilities
+			// that would otherwise infer `native`.
+			expectWithinBudget(
+				'overview full (managed, no capabilities)',
+				managedBytes,
+				TOKEN_BUDGETS.toolPayloads.overviewFull,
+			);
+			// `native` (full catalog listing) must stay materially larger
+			// than the `managed` measurement above regardless of the
+			// listChanged-capable client that would otherwise infer
+			// `managed`, proving the two connections really measured two
+			// different surfaces, not the same one twice.
+			expect(nativeBytes).toBeGreaterThan(managedBytes);
+		} finally {
+			await Promise.all([
+				managedNoCapabilities.close(),
+				nativeWithManagedCapabilities.close(),
+			]);
 		}
 	});
 });

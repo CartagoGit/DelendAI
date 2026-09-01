@@ -4,6 +4,7 @@ import { dirname, join, relative } from 'node:path';
 import z from 'zod';
 
 import {
+	planDryRun,
 	toolError,
 	toolJson,
 	toolOk,
@@ -22,7 +23,7 @@ import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
 } from '../proposals/frontmatter-parser';
-import { locateByScan } from '../proposals/locate';
+import { locateProposal as locateSharedProposal } from '../proposals/locate';
 import { setFrontmatterStatus as sharedSetFrontmatterStatus } from '../proposals/proposal-frontmatter-writer';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
@@ -30,8 +31,12 @@ import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
 import { hasIndependentPeerApproval } from './proposal-transition.tool';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
-import { removeStale } from '../locks/agent-lock-engine';
+import { removeStale, type ILockFile } from '../locks/agent-lock-engine';
 import { guardDoneToReviewRegression } from '../services/proposal-state';
+/** Lock-file schema version written when no lock exists yet. */
+const DEFAULT_LOCK_VERSION = 1;
+/** Minutes after which an unrefreshed claim is considered abandoned. */
+const DEFAULT_STALE_AFTER_MINUTES = 10;
 
 export interface IRecoveryEvent {
 	readonly kind: 'agent-alive' | 'agent-idle' | 'agent-dead';
@@ -84,6 +89,7 @@ export const createRecoveryEventBuffer = (
 
 export interface IRecoveryToolOptions {
 	readonly namespacePrefix: string;
+	readonly indexPathAbs: string;
 	readonly proposalsDirAbs: string;
 	readonly lockPathAbs: string;
 	readonly agentRegistryPathAbs: string;
@@ -109,11 +115,6 @@ interface ILocatedProposal {
 const isKnownStatus = (value: string): value is IProposalStatus =>
 	value in PROPOSAL_STATUSES;
 
-const TOOL_ERROR_SCHEMA = z.object({
-	reason: z.string(),
-	nextAction: z.string().optional(),
-});
-
 const RECOVERY_EVENT_SCHEMA = z.object({
 	kind: z.enum(['agent-alive', 'agent-idle', 'agent-dead']),
 	agent: z.string(),
@@ -127,40 +128,100 @@ const STALE_PROPOSAL_SCHEMA = RECOVERY_EVENT_SCHEMA.extend({
 	suggestedActions: z.array(z.string()),
 });
 
-const RECOVERY_OUTPUT_SCHEMA = z.object({
+// Each of the 5 recovery tools below used to share one 30-field
+// kitchen-sink output schema, so every tool advertised (and paid wire
+// bytes for) every OTHER tool's fields too — e.g. `proposal_stale_list`
+// declared `to`/`from`/`movedTo`/`lockReleased` even though it never
+// returns them. These are sized to exactly what each handler returns
+// (`runProposalStaleList` / `runAgentLockReleaseOrphan` / etc. below),
+// so no capability is lost — a tool simply no longer advertises fields
+// it could never produce. Error results short-circuit via `toolError`/
+// `buildRecoveryCodeError` with `isError: true`, which the MCP SDK never
+// validates against `outputSchema`, so these success-shaped schemas
+// don't need to model the failure envelope.
+const STALE_LIST_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
-	error: TOOL_ERROR_SCHEMA.optional(),
-	count: z.number().optional(),
-	zombies: z.array(STALE_PROPOSAL_SCHEMA).optional(),
-	taskId: z.string().optional(),
-	agent: z.string().optional(),
-	released: z.boolean().optional(),
-	id: z.string().optional(),
-	from: z.string().optional(),
-	to: z.string().optional(),
-	reason: z.string().optional(),
-	lockReleased: z.boolean().optional(),
-	movedTo: z.string().optional(),
+	count: z.number(),
+	zombies: z.array(STALE_PROPOSAL_SCHEMA),
+});
+
+const RELEASE_ORPHAN_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	taskId: z.string(),
+	agent: z.string(),
+	released: z.boolean(),
+});
+
+export const FORCE_TRANSITION_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	id: z.string(),
+	from: z.string(),
+	to: z.string(),
+	reason: z.string(),
+	lockReleased: z.boolean(),
+	movedTo: z.string(),
 	warning: z.string().optional(),
+});
+
+export const FORCE_TRANSITION_INPUT_SCHEMA = z.object({
+	id: z.string().min(1),
+	to: z.string().min(1),
+	reason: z.string().min(1),
+	overrideLockOwner: z.string().optional(),
+	taskId: z.string().optional(),
+	skipPeerReview: z.boolean().optional(),
+});
+
+const RECONCILE_FOLDER_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	id: z.string(),
 	changed: z.boolean().optional(),
 	path: z.string().optional(),
 	dryRun: z.boolean().optional(),
-	file: z.string().optional(),
-	folder: z.string().optional(),
-	status: z.string().optional(),
-	lockOwners: z.array(z.string()).optional(),
-	staleTaskIds: z.array(z.string()).optional(),
+	wouldChange: z
+		.array(
+			z.object({
+				kind: z.enum(['write', 'delete', 'rename', 'create', 'patch']),
+				path: z.string(),
+				summary: z.string(),
+			}),
+		)
+		.optional(),
+	wouldRun: z
+		.array(
+			z.object({
+				shape: z.enum(['shell', 'network', 'process', 'git', 'mcp']),
+				target: z.string(),
+				summary: z.string(),
+			}),
+		)
+		.optional(),
+	risk: z.enum(['low', 'medium', 'high']).optional(),
+	from: z.string().optional(),
+	to: z.string().optional(),
+	movedTo: z.string().optional(),
+	warning: z.string().optional(),
+});
+
+const DIAGNOSE_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	id: z.string(),
+	file: z.string(),
+	folder: z.string(),
+	status: z.string(),
+	lockOwners: z.array(z.string()),
+	staleTaskIds: z.array(z.string()),
 	lastHeartbeat: z.string().optional(),
 	lastAgentDeadEvent: RECOVERY_EVENT_SCHEMA.optional(),
-	inconsistencies: z.array(z.string()).optional(),
-	suggestedActions: z.array(z.string()).optional(),
-	// a00072 S1.a: cross-proposal stale locks the smoke detector
+	inconsistencies: z.array(z.string()),
+	suggestedActions: z.array(z.string()),
+	// Cross-proposal stale locks the smoke detector
 	// saw when running. When non-empty the host should run
 	// `state_repair { mode: "execute" }` (or call
 	// `agent_lock_release_orphan` for a targeted release).
 	crossProposal: z.boolean().optional(),
-	crossProposalStaleTaskIds: z.array(z.string()).optional(),
-	crossProposalStaleAgents: z.array(z.string()).optional(),
+	crossProposalStaleTaskIds: z.array(z.string()),
+	crossProposalStaleAgents: z.array(z.string()),
 });
 
 const matchesProposalTask = (proposalId: string, taskId: string): boolean =>
@@ -172,13 +233,17 @@ const taskProposalId = (taskId: string): string => {
 };
 
 const locateProposal = async (
-	proposalsDirAbs: string,
+	options: Pick<IRecoveryToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
 	id: string,
 ): Promise<ILocatedProposal | null> => {
-	// Delegate the folder-walking to the shared `locateByScan` (DRY —
-	// same loop body used by 3+ tools). The local wrapper just adds
+	// Use the shared index-first resolver so recovery tools address the
+	// same proposals as proposal_get and proposal_review. The local
+	// wrapper just adds
 	// the `raw` + `frontmatter` fields the recovery tools need.
-	const located = await locateByScan(proposalsDirAbs, id);
+	const located = await locateSharedProposal(id, {
+		indexPathAbs: options.indexPathAbs,
+		proposalsDirAbs: options.proposalsDirAbs,
+	});
 	if (located === null) return null;
 	const raw = (await readTextOrNull(located.absPath)) ?? '';
 	const block = extractYamlBlock(raw);
@@ -188,7 +253,7 @@ const locateProposal = async (
 			: (parseFrontmatterBlock(block) as Record<string, unknown>);
 	return {
 		absPath: located.absPath,
-		relPath: relative(proposalsDirAbs, located.absPath),
+		relPath: relative(options.proposalsDirAbs, located.absPath),
 		folder: located.folder,
 		raw,
 		frontmatter,
@@ -229,24 +294,19 @@ const extractFrontmatterBlock = (raw: string): string | null => {
 	return m === null ? null : (m[1] ?? '');
 };
 
-const readLock = async (
-	lockPathAbs: string,
-): Promise<{
-	version: number;
-	stale_after_minutes: number;
-	in_flight: any[];
-}> => {
-	const parsed = await readJsonOrNull<{
-		version?: number;
-		stale_after_minutes?: number;
-		in_flight?: any[];
-	}>(lockPathAbs);
+const readLock = async (lockPathAbs: string): Promise<ILockFile> => {
+	const parsed = await readJsonOrNull<Partial<ILockFile>>(lockPathAbs);
 	if (parsed === null) {
-		return { version: 1, stale_after_minutes: 10, in_flight: [] };
+		return {
+			version: DEFAULT_LOCK_VERSION,
+			stale_after_minutes: DEFAULT_STALE_AFTER_MINUTES,
+			in_flight: [],
+		};
 	}
 	return {
-		version: parsed.version ?? 1,
-		stale_after_minutes: parsed.stale_after_minutes ?? 10,
+		version: parsed.version ?? DEFAULT_LOCK_VERSION,
+		stale_after_minutes:
+			parsed.stale_after_minutes ?? DEFAULT_STALE_AFTER_MINUTES,
 		in_flight: Array.isArray(parsed.in_flight) ? parsed.in_flight : [],
 	};
 };
@@ -331,7 +391,7 @@ const moveProposal = async (
 		await writeFileAtomic(found.absPath, updated);
 		if (newAbsPath !== found.absPath) {
 			await mkdir(dirname(newAbsPath), { recursive: true });
-			// x00106 S2: untracked file → plain rename + stage, no warning
+			// Untracked file → plain rename + stage, no warning
 			// (nothing to preserve); the warning is for tracked-file mv
 			// failures only. Mirrors proposal-transition.tool.ts.
 			const tracked = await gitRunner([
@@ -361,7 +421,7 @@ const moveProposal = async (
 	};
 };
 
-// x00154 S2: route the local error helper through `toolJson` so the
+// Route the local error helper through `toolJson` so the
 // envelope (text + structuredContent) is produced by the same helper
 // as `toolOk` / `toolError`, and stamp `isError: true` to match
 // `toolError`'s contract.
@@ -438,13 +498,13 @@ export const runProposalForceTransition = async (
 			`Use one of: ${Object.keys(PROPOSAL_STATUSES).join(', ')}.`,
 		);
 	}
-	const found = await locateProposal(options.proposalsDirAbs, args.id);
+	const found = await locateProposal(options, args.id);
 	if (!found) {
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	}
-	// a00069 S7: force_transition without skipPeerReview still needs peer approve
+	// force_transition without skipPeerReview still needs peer approve
 	// when moving review → done (same gate as proposal_transition).
-	// a00069 S11: skipPeerReview bypass is audited (reason already required).
+	// skipPeerReview bypass is audited (reason already required).
 	const requirePeer = options.requirePeerReview !== false;
 	if (requirePeer && args.to === 'done' && found.status === 'review') {
 		if (args.skipPeerReview === true) {
@@ -495,7 +555,7 @@ export const runProposalReconcileFolder = async (
 	},
 	options: IRecoveryToolOptions,
 ) => {
-	const found = await locateProposal(options.proposalsDirAbs, args.id);
+	const found = await locateProposal(options, args.id);
 	if (!found)
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	if (!isKnownStatus(found.status)) {
@@ -523,10 +583,23 @@ export const runProposalReconcileFolder = async (
 		const filename = found.relPath.split('/').pop() ?? found.relPath;
 		return toolOk({
 			id: args.id,
-			changed: true,
-			dryRun: true,
-			from: found.relPath,
-			to: `${expectedFolder}/${filename}`,
+			...planDryRun({
+				wouldChange: [
+					{
+						kind: 'rename',
+						path: found.relPath,
+						summary: `move proposal ${args.id} to ${expectedFolder}/${filename}`,
+					},
+				],
+				wouldRun: [
+					{
+						shape: 'mcp',
+						target: 'proposal_reconcile_folder',
+						summary: `move ${args.id} only after the dry-run plan is approved`,
+					},
+				],
+				risk: 'medium',
+			}),
 		});
 	}
 	const moved = await moveProposal(
@@ -547,7 +620,7 @@ export const runProposalDiagnose = async (
 	},
 	options: IRecoveryToolOptions,
 ) => {
-	const found = await locateProposal(options.proposalsDirAbs, args.id);
+	const found = await locateProposal(options, args.id);
 	if (!found)
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	const lock = await readLock(options.lockPathAbs);
@@ -627,7 +700,7 @@ export const runProposalDiagnose = async (
 			'proposal_force_transition',
 		);
 	}
-	// x00154 S2: success envelope is `{ ok: true, ...payload }` so the
+	// Success envelope is `{ ok: true, ...payload }` so the
 	// contract matches `toolError` and the modern MCP client can read
 	// `ok` from `structuredContent` without re-parsing the text.
 	return toolOk({
@@ -664,7 +737,7 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'List proposals whose owner emitted agent-dead from the recovery event buffer.',
-						outputSchema: RECOVERY_OUTPUT_SCHEMA,
+						outputSchema: STALE_LIST_OUTPUT_SCHEMA,
 					},
 					async () => runProposalStaleList(withBuffer),
 				);
@@ -679,7 +752,7 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'Release an orphan task lock only when a matching agent-dead event exists.',
-						outputSchema: RECOVERY_OUTPUT_SCHEMA,
+						outputSchema: RELEASE_ORPHAN_OUTPUT_SCHEMA,
 						inputSchema: z.object({
 							taskId: z.string().min(1),
 							agent: z.string().min(1),
@@ -699,15 +772,8 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'Force a proposal to a recovery status with a required reason and optional lock release. a00069 S7: review→done still requires peer approve unless skipPeerReview:true.',
-						outputSchema: RECOVERY_OUTPUT_SCHEMA,
-						inputSchema: z.object({
-							id: z.string().min(1),
-							to: z.string().min(1),
-							reason: z.string().min(1),
-							overrideLockOwner: z.string().optional(),
-							taskId: z.string().optional(),
-							skipPeerReview: z.boolean().optional(),
-						}),
+						outputSchema: FORCE_TRANSITION_OUTPUT_SCHEMA,
+						inputSchema: FORCE_TRANSITION_INPUT_SCHEMA,
 					},
 					async (args) =>
 						runProposalForceTransition(args, withBuffer),
@@ -723,7 +789,7 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'Move one proposal file to the folder that matches its frontmatter status.',
-						outputSchema: RECOVERY_OUTPUT_SCHEMA,
+						outputSchema: RECONCILE_FOLDER_OUTPUT_SCHEMA,
 						inputSchema: z.object({
 							id: z.string().min(1),
 							dryRun: z.boolean().optional(),
@@ -744,7 +810,7 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'Diagnose proposal folder, status, lock owners, heartbeat, and recovery actions.',
-						outputSchema: RECOVERY_OUTPUT_SCHEMA,
+						outputSchema: DIAGNOSE_OUTPUT_SCHEMA,
 						inputSchema: z.object({
 							id: z.string().min(1),
 							caller: z.string().optional(),

@@ -1,22 +1,28 @@
 #!/usr/bin/env bun
 /**
  * push-to-develop-discipline.script.ts — f00086 S2, stdin fix x00159 S1
- * (refined 2026-08-24: config-driven, block only per-agent branches).
+ * (refined 2026-08-27: `develop` only lands via PR — no more direct push).
  *
  * Pre-push guard. Pure function over
  * `(cwd, remoteName, remoteBranch, currentBranch, agentWorktreeEnabled)`
  * → `{ ok: true } | { ok: false, blockers: string[] }`.
  *
  * Policy (config-driven):
- *   - Pushing from `develop` → always allowed (the shared push, and
- *     `develop → main` release merges).
- *   - Pushing from `main` → allowed (release flow; versioning is
+ *   - Pushing directly to `develop` → BLOCKED, regardless of source
+ *     branch or the worktree gate. Work lands on `develop` through a
+ *     pull request from `wip/*` (or the user-managed `fix/*` /
+ *     `feature/*`), never a direct push. This mirrors the independent
+ *     `DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED` refusal the `commit-policy`
+ *     plugin's push driver already enforces when pushing through its
+ *     tool instead of a raw `git push` — two layers, one rule.
+ *   - Pushing to `main` → allowed (release flow; versioning is
  *     derived on push to `main`).
- *   - When `agentWorktree: true` → every branch is allowed: `agent/*`
- *     branches are the expected per-agent isolation shape.
+ *   - When `agentWorktree: true` → every source branch is allowed:
+ *     `agent/*` branches are the expected per-agent isolation shape.
  *   - When `agentWorktree: false` (this repo) → pushing from an
  *     `agent/*` branch is blocked (agents never branch on their own).
- *     User-managed branches (`fix/*`, `feature/*`, …) are allowed.
+ *     User-managed branches (`wip/*`, `fix/*`, `feature/*`, …) are
+ *     allowed.
  *   - Branch deletes (all-zero local oid) never block.
  *
  * x00159 S1: the refs actually being pushed are NOT available as a
@@ -32,14 +38,21 @@
  * contract first; the argv-based parsing stays only as a fallback
  * for direct/manual invocation (and the existing unit tests).
  */
-import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
 import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
 const DEVELOP_BRANCH = 'develop';
+const MAIN_BRANCH = 'main';
+export const RELEASE_BRANCH_PREFIX = 'release/';
+
+/** Branch prefixes that identify agent-driven work rather than the operator. */
+const AGENT_BRANCH_PREFIXES = ['wip/', 'agent/'] as const;
 const AGENT_BRANCH_PREFIX = 'agent/';
+
+export const isReleaseBranch = (branch: string): boolean =>
+	branch.startsWith(RELEASE_BRANCH_PREFIX);
 
 export interface IPushToDevelopInput {
 	readonly cwd: string;
@@ -63,7 +76,7 @@ export interface IPrePushRefUpdate {
 
 const REFS_HEADS_PREFIX = 'refs/heads/';
 
-const stripRefsHeadsPrefix = (ref: string): string =>
+export const stripRefsHeadsPrefix = (ref: string): string =>
 	ref.startsWith(REFS_HEADS_PREFIX)
 		? ref.slice(REFS_HEADS_PREFIX.length)
 		: ref;
@@ -172,12 +185,120 @@ export const parseGitPushArgs = (
 export const lintPushToDevelop = (
 	input: IPushToDevelopInput,
 ): PushToDevelopResult => {
-	const { currentBranch, agentWorktreeEnabled = false } = input;
-	const blockers: string[] = [];
+	const { remoteBranch, currentBranch, agentWorktreeEnabled = false } = input;
+
+	if (
+		remoteBranch === MAIN_BRANCH &&
+		currentBranch !== null &&
+		isReleaseBranch(currentBranch)
+	) {
+		return {
+			ok: false,
+			blockers: [
+				`pushing from \`${currentBranch}\` straight into \`${MAIN_BRANCH}\` — release branches land on main through a pull request, not a direct push.`,
+				'',
+				'next-action:',
+				`  open a pull request from \`${currentBranch}\` into \`${MAIN_BRANCH}\`.`,
+				'  if the release must continue after main, promote main forward through the normal release flow.',
+				'',
+				'  if this is a true emergency release, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+			],
+		};
+	}
+
+	if (remoteBranch === MAIN_BRANCH) {
+		return {
+			ok: false,
+			blockers: [
+				'pushing directly to `main` — main only receives commits through a pull request (ADR 0018).',
+				'',
+				'next-action:',
+				'  open a pull request from your branch into `main` instead of pushing directly.',
+				'',
+				'  if this is a true emergency release, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+			],
+		};
+	}
+
+	// `develop` is this repo's working branch and is deliberately not
+	// protected: the operator pushes to it directly. What is refused is an
+	// AGENT doing so — agents work on `wip/*` and land through a pull
+	// request the operator decides on. The source branch is what tells the
+	// two apart, so this check comes after the source-branch resolution
+	// rather than short-circuiting ahead of it.
+	if (
+		remoteBranch === DEVELOP_BRANCH &&
+		currentBranch !== undefined &&
+		currentBranch !== null &&
+		AGENT_BRANCH_PREFIXES.some((prefix) => currentBranch.startsWith(prefix))
+	) {
+		return {
+			ok: false,
+			blockers: [
+				`pushing from \`${currentBranch}\` straight into \`${DEVELOP_BRANCH}\` — agent work lands through a pull request.`,
+				'',
+				'next-action:',
+				'  push your work branch instead:  git push origin <wip/your-branch>',
+				`  then open a pull request into \`${DEVELOP_BRANCH}\`.`,
+				'',
+				'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+			],
+		};
+	}
 
 	// Detached HEAD / unknown source: fail-open (mirrors the commit
 	// discipline; release engineers may push from a checked-out tag).
 	if (currentBranch === null || currentBranch === '') {
+		return { ok: true };
+	}
+
+	if (remoteBranch === DEVELOP_BRANCH && isReleaseBranch(currentBranch)) {
+		return {
+			ok: false,
+			blockers: [
+				`pushing from \`${currentBranch}\` straight into \`${DEVELOP_BRANCH}\` — release branches do not merge back into develop directly.`,
+				'',
+				'next-action:',
+				`  merge \`${currentBranch}\` into \`${MAIN_BRANCH}\` first through a pull request.`,
+				`  if develop needs the change, promote it from \`${MAIN_BRANCH}\` using the normal forward flow.`,
+				'',
+				'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+			],
+		};
+	}
+
+	if (isReleaseBranch(remoteBranch)) {
+		if (isReleaseBranch(currentBranch) && currentBranch !== remoteBranch) {
+			return {
+				ok: false,
+				blockers: [
+					`pushing from \`${currentBranch}\` into \`${remoteBranch}\` — one release branch must not merge into another release branch.`,
+					'',
+					'next-action:',
+					`  push \`${currentBranch}\` to its own remote branch, or merge through \`${MAIN_BRANCH}\` if you are closing the release.`,
+					`  only \`${DEVELOP_BRANCH}\` may be promoted into \`${remoteBranch}\`.`,
+					'',
+					'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+				],
+			};
+		}
+		if (currentBranch === remoteBranch) {
+			return { ok: true };
+		}
+		if (currentBranch !== DEVELOP_BRANCH) {
+			return {
+				ok: false,
+				blockers: [
+					`pushing from \`${currentBranch}\` into \`${remoteBranch}\` — release branches only receive promotion from \`${DEVELOP_BRANCH}\`.`,
+					'',
+					'next-action:',
+					`  land the change on \`${DEVELOP_BRANCH}\` first, then promote \`${DEVELOP_BRANCH}\` into \`${remoteBranch}\`.`,
+					`  do not push feature or fix branches straight into \`${remoteBranch}\`.`,
+					'',
+					'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+				],
+			};
+		}
 		return { ok: true };
 	}
 
@@ -187,24 +308,26 @@ export const lintPushToDevelop = (
 		return { ok: true };
 	}
 
-	// Gate off: the only branches agents must not push are `agent/*`.
-	// `develop` (shared push), `main` (release) and user-managed
-	// branches (fix/*, feature/*, …) are all allowed.
+	// Gate off: the only source branches agents must not push from are
+	// `agent/*`. User-managed branches (`wip/*`, `fix/*`, `feature/*`, …)
+	// are all allowed.
 	if (!currentBranch.startsWith(AGENT_BRANCH_PREFIX)) {
 		return { ok: true };
 	}
 
-	blockers.push(
-		`pushing from \`${currentBranch}\` — per-agent branches are disabled (agentWorktree: false).`,
-		'',
-		'next-action:',
-		`  switch back:  git switch ${DEVELOP_BRANCH}`,
-		'  then commit and push on develop (the shared branch).',
-		'  only the operator creates branches; agents never branch on their own.',
-		'',
-		'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
-	);
-	return { ok: false, blockers };
+	return {
+		ok: false,
+		blockers: [
+			`pushing from \`${currentBranch}\` — per-agent branches are disabled (agentWorktree: false).`,
+			'',
+			'next-action:',
+			`  switch to a wip/* branch instead:  git switch -c wip/<slug>`,
+			'  then push that branch and open a pull request.',
+			'  only the operator creates branches; agents never branch on their own.',
+			'',
+			'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+		],
+	};
 };
 
 // ---------- CLI shell ----------
@@ -307,10 +430,57 @@ const formatReport = (result: PushToDevelopResult): string => {
  * probing it would block waiting for keyboard input — so it short-
  * circuits to empty rather than calling `readFileSync(0, ...)`.
  */
-const readStdinRefUpdates = (): ReadonlyArray<IPrePushRefUpdate> => {
+const STDIN_PROBE_TIMEOUT_MS = 2_000;
+
+/**
+ * Read git's pre-push ref-update protocol from stdin, if any.
+ *
+ * A TTY never carries ref updates, so it short-circuits. Everything else
+ * used to go straight to `readFileSync(0)`, which blocks until EOF — and
+ * an inherited pipe that nobody ever closes (a CI runner, a task runner
+ * spawning this as one of many steps) has no EOF. The script then hung
+ * forever instead of reporting anything, which is strictly worse than a
+ * failure: nothing downstream can tell a hang from slow work.
+ *
+ * Reading with a deadline keeps the real hook exact — git writes the ref
+ * updates and closes stdin immediately, so EOF arrives in microseconds —
+ * while a stdin that never closes degrades to "no ref updates" instead of
+ * a hang.
+ */
+const readStdinRefUpdates = async (): Promise<
+	ReadonlyArray<IPrePushRefUpdate>
+> => {
 	if (process.stdin.isTTY) return [];
+	const raw = await new Promise<string>((resolve) => {
+		let buffer = '';
+		let settled = false;
+		const finish = (value: string): void => {
+			if (settled) return;
+			settled = true;
+			process.stdin.removeAllListeners('data');
+			process.stdin.removeAllListeners('end');
+			process.stdin.removeAllListeners('error');
+			process.stdin.pause();
+			resolve(value);
+		};
+		const timer = setTimeout(() => finish(buffer), STDIN_PROBE_TIMEOUT_MS);
+		timer.unref?.();
+		process.stdin.setEncoding('utf8');
+		process.stdin.on('data', (chunk: string) => {
+			buffer += chunk;
+		});
+		process.stdin.on('end', () => {
+			clearTimeout(timer);
+			finish(buffer);
+		});
+		process.stdin.on('error', () => {
+			clearTimeout(timer);
+			finish('');
+		});
+		process.stdin.resume();
+	});
 	try {
-		return parsePrePushStdin(readFileSync(0, 'utf8'));
+		return parsePrePushStdin(raw);
 	} catch {
 		return [];
 	}
@@ -341,7 +511,7 @@ const main = async (): Promise<number> => {
 	// <remote oid>` per updated ref). The lefthook argv `{3}` template
 	// has no refspec to substitute for a plain `git push` and used to
 	// ship as the literal string `"{3}"`, silently defeating the guard.
-	const stdinUpdates = readStdinRefUpdates();
+	const stdinUpdates = await readStdinRefUpdates();
 	if (stdinUpdates.length > 0) {
 		const result = lintPrePushStdinUpdates(
 			stdinUpdates,

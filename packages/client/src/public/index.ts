@@ -11,6 +11,11 @@ export type {
 	IMcpToolDescriptor,
 	IMcpTransport,
 } from '../lib/contracts/interfaces/mcp-transport.interface';
+export type {
+	IMcpTransportError,
+	McpTransportErrorCode,
+	McpTransportErrorKind,
+} from '../lib/contracts/interfaces/mcp-transport-error.interface';
 export {
 	DEFAULT_NAMESPACE_PREFIX,
 	formatToolName,
@@ -135,6 +140,8 @@ export type { IDashboardServiceOptions } from '../lib/services/dashboard.service
 export type {
 	IDashboardAgentsModel,
 	IDashboardAllModels,
+	IDashboardDataState,
+	IDashboardMemoryModel,
 	IDashboardMetricsModel,
 	IDashboardOverviewModel,
 	IDashboardPluginsModel,
@@ -188,7 +195,13 @@ export type {
 	IToolEffect,
 } from '../lib/contracts/interfaces/tool-descriptor.interface';
 
-export type * from '@mcp-vertex/core/public';
+// r00030 (Track C): the client only re-exports TYPES from
+// `@mcp-vertex/core/contracts`, not runtime values from
+// `@mcp-vertex/core/public`. This keeps the client decoupled
+// from the runtime surface (which carries Node-only helpers).
+// Consumers that need runtime values should import from
+// `@mcp-vertex/core/public` directly.
+export type * from '@mcp-vertex/core/contracts';
 
 // --- scaffolding helpers (f00087 S2) ----------------------------------------
 // f00087 S2: re-export the pure scaffold generators from the core
@@ -204,25 +217,77 @@ export type {
 	IWriteScaffoldedFilesResult,
 } from '../lib/scaffold/write-scaffolded-files';
 
-// --- plugin authoring (f00089 U4) -------------------------------------------
-// f00089 U4: one client-callable action that authors a complete, correct
+// --- project plugin scaffolding (f00089 U4) ---------------------------------
+// f00089 U4: one client-callable action that creates a complete, correct
 // `IMcpPlugin` from a declarative spec AND registers it on the host by PATH
 // (`plugins.<name>.path` in mcp-vertex.config.json). The target project's
 // LLM calls this to add project-specific plugins without ever reading the
 // mcp-vertex core or its internal plugins. Reuses the f00087 scaffold +
 // writer machinery.
-export { authorPlugin } from '../lib/scaffold/author-plugin';
+export {
+	createProjectPlugin,
+	repairProjectPlugin,
+} from '../lib/scaffold/project-plugins';
 export { setPluginActivation } from '../lib/services/plugin-activation.service';
 export type {
 	ISetPluginActivationInput,
 	ISetPluginActivationResult,
 } from '../lib/contracts/interfaces/plugin-activation.interface';
 export type {
-	IAuthorPluginOptions,
-	IAuthorPluginRegistration,
-	IAuthorPluginResult,
-	IAuthorPluginSpec,
+	IProjectPluginOptions,
+	IProjectPluginRegistration,
+	IProjectPluginResult,
+	IProjectPluginSpec,
 	IPluginFieldSpec,
 	IPluginFieldType,
 	IPluginToolSpec,
-} from '../lib/scaffold/author-plugin';
+	IRepairProjectPluginResult,
+} from '../lib/scaffold/project-plugins';
+
+// --- f00193 (Track K / external MCPs): control-plane registry + router ----
+// ships the registry + router that lets the host talk to multiple
+// external MCP providers and pick the best one per capability. Re-exports
+// the pure types and helpers; runtime values (the `ExternalMcpRegistry`
+// class) are exposed alongside.
+export {
+	ExternalMcpRegistry,
+	formatRegistrySnapshot,
+	sanitizeProbeReason,
+	scoreAll,
+} from '../services/external-mcp/registry';
+export type {
+	IRegistryOptions,
+	IRegisteredProviderSnapshot,
+} from '../services/external-mcp/registry';
+export {
+	classifyHealth,
+	DEFAULT_DEGRADED_LATENCY_MS,
+	DEFAULT_DOWN_LATENCY_MS,
+	probeProvider,
+	worstOf,
+} from '../services/external-mcp/health';
+export type { IClassifyHealthOptions } from '../services/external-mcp/health';
+export {
+	redactProviderId,
+	scoreProvider,
+	selectProvider,
+	selectWithFailover,
+} from '../services/external-mcp/router';
+export type {
+	IRouterInput,
+	IRouterInputEnvelope,
+} from '../services/external-mcp/router';
+export { DEFAULT_ROUTER_WEIGHTS } from '../services/external-mcp/types';
+export type {
+	ExternalMcpTransport,
+	ExternalMcpCapability,
+	IExternalMcpConnection,
+	IExternalMcpCost,
+	IExternalMcpHealth,
+	IExternalMcpProvider,
+	IExternalMcpRefusal,
+	IExternalMcpRouterOptions,
+	IExternalMcpSelection,
+	ProviderHealthState,
+	RedactedProviderId,
+} from '../services/external-mcp/types';

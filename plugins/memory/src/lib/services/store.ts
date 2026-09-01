@@ -45,7 +45,13 @@ export {
 	saveNote,
 } from './store-records';
 
-export { recall } from './store-recall';
+export {
+	getRecallMetricsSnapshot,
+	recall,
+	recordSessionDigestReuse,
+	resetRecallMetrics,
+	selectLatestSessionDigestForRecall,
+} from './store-recall';
 
 export {
 	exportNotes,

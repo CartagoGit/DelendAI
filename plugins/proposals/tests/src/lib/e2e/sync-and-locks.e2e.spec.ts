@@ -160,6 +160,37 @@ Seed for the sync e2e.
 		expect(after.structured.count).toBe(baseline + 1);
 	});
 
+	it('runtime importer loads dist and indexes review plan and feature proposals', async () => {
+		const runtime = await createAssembledProposalsServer({
+			useRuntimeImporter: true,
+		});
+		try {
+			expect(runtime.resolvedPlugin).toBe('@mcp-vertex/proposals');
+			const proposalsRoot = join(runtime.workspace, PROPOSALS_RELDIR);
+			for (const [folder, filename, id, kind] of [
+				['review/plans', 'q00004-runtime.md', 'q00004', 'plan'],
+				['review/feats', 'f00281-runtime.md', 'f00281', 'feat'],
+			] as const) {
+				const dir = join(proposalsRoot, folder);
+				mkdirSync(dir, { recursive: true });
+				writeFileSync(
+					join(dir, filename),
+					`---\nid: ${id}\nstatus: review\nkind: ${kind}\ntype: proposal\ntrack: runtime\ndate: 2026-08-30\n---\n\n## Goal\n\nRuntime route coverage.\n`,
+					'utf8',
+				);
+			}
+			const result = await runtime.callTool<{
+				count: number;
+				errors: string[];
+			}>('mcp-vertex_proposals_sync_proposals');
+			expect(result.ok).toBe(true);
+			expect(result.structured.errors).toEqual([]);
+			expect(result.structured.count).toBeGreaterThanOrEqual(2);
+		} finally {
+			await runtime.close();
+		}
+	});
+
 	it('agent_worktree create returns a clean worktree with no origin remote (host enabled)', async () => {
 		// f00052: the capability is off by default, so this test runs against
 		// a harness that opted in via `--agent-worktree=true`.

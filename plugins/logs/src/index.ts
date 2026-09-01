@@ -5,8 +5,10 @@ import { definePlugin } from '@mcp-vertex/core/public';
 import z from 'zod';
 
 import { buildOperationalEventLogKnowledge } from './lib/knowledge/logs-knowledge';
-import { type LogSeverity, severityForOutcome } from './lib/services/kinds';
+import { buildErrorCollectorKnowledge } from './lib/knowledge/error-collector';
+import type { LogSeverity } from './lib/services/kinds';
 import { createLogStore } from './lib/services/log-store';
+import { createLogsErrorSinkAdapter } from './lib/services/error-sink-adapter';
 import {
 	extractAgentHint,
 	extractFilesHint,
@@ -35,7 +37,7 @@ const errorMessageOf = (error: unknown): string | undefined => {
 
 export default definePlugin({
 	name: 'logs',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'Persistent append-only, secret-redacted MCP event log with query, tail, subscribe, correlate, curated error-stream and redaction audit tools.',
 	// The log is an accumulated record, not derivable cache — deleting it
@@ -92,7 +94,13 @@ export default definePlugin({
 			}
 		};
 
-		// f00072 S4 / rotation rework: register retention as DATA against
+		// S3 — adapter that forwards ICapturedError events from
+		// the core collector into the same JSONL streams used by the
+		// lifecycle hooks. Instantiated here so it shares the
+		// `appendEvent` closure and inherits both-stream fan-out for free.
+		const adapter = createLogsErrorSinkAdapter({ appendEvent });
+
+		// S4 / rotation rework: register retention as DATA against
 		// the shared cache-eviction registry instead of an inline
 		// one-shot `gc()`. Both streams keep the newest N *files*
 		// (`keepLastN`, one file per day) rather than aging out by
@@ -117,7 +125,7 @@ export default definePlugin({
 			when: { kind: 'keepLastN', n: retentionCount },
 		});
 
-		// f00111 S2: one boot marker per server process. Sessions from a
+		// S2: one boot marker per server process. Sessions from a
 		// stale host and the live one interleave in the same date file;
 		// this line is what tells them apart when debugging.
 		await appendEvent(
@@ -130,7 +138,7 @@ export default definePlugin({
 			}),
 		);
 
-		// f00153 S4 — cross-plugin incident helper. The `logs` plugin
+		// S4 — cross-plugin incident helper. The `logs` plugin
 		// owns the `appendEvent` writer, but peer plugins (notification,
 		// quality, security, …) can call it through `ctx.logs.log(...)`
 		// without depending on `@mcp-vertex/logs` at compile time. The
@@ -186,7 +194,11 @@ export default definePlugin({
 				main: mainStore,
 				errors: errorStore,
 			}),
-			// f00154 S2 — publish our appendEvent as the canonical
+			// f00251 S3 — expose the adapter so the assembler registers
+			// it with the core error collector. Shares `appendEvent`
+			// and inherits the error-stream fan-out for free.
+			errorSinks: [adapter.sink],
+			// S2 — publish our appendEvent as the canonical
 			// sink. The core routes every `onToolStart` / `onToolCall`
 			// / `onToolCancel` (across ALL plugins) through this sink,
 			// so the JSONL streams are populated even for plugins that
@@ -211,6 +223,13 @@ export default definePlugin({
 					id: 'logs-operational-event-log',
 					title: 'Operational event log',
 					body: buildOperationalEventLogKnowledge({
+						prefix: ctx.namespacePrefix,
+					}),
+				},
+				{
+					id: 'logs-error-collector',
+					title: 'Error-collector sink adapter (f00251)',
+					body: buildErrorCollectorKnowledge({
 						prefix: ctx.namespacePrefix,
 					}),
 				},
@@ -265,13 +284,13 @@ export default definePlugin({
 					}),
 				);
 			},
-			// f00111 S2: client aborted the call while the handler was
+			// S2: client aborted the call while the handler was
 			// running. The handler's own completion/failure still logs
 			// separately when it settles — both lines together tell whether
 			// the cancel raced a fast tool or interrupted a slow one. Does
 			// NOT clear `inFlightCallIds`: the completion/failure still
 			// needs the same `callId` when it settles later.
-			onToolCancel: async (toolName, args, elapsedMs) => {
+			onToolCancel: async (toolName, args, elapsedMs, context) => {
 				const key = asCorrelationKey(args);
 				const callId = key ? inFlightCallIds.get(key) : undefined;
 				return appendEvent(
@@ -283,7 +302,15 @@ export default definePlugin({
 						files: extractFilesHint(args, undefined),
 						args,
 						elapsedMs: Math.round(elapsedMs),
-						summary: `tool-cancelled: ${toolName} after ${Math.round(elapsedMs)}ms`,
+						summary: `tool-cancelled: ${toolName} after ${Math.round(elapsedMs)}ms: ${context?.reason ?? 'tool invocation aborted'}`,
+						meta: {
+							cancellationReason:
+								context?.reason ?? 'tool invocation aborted',
+							cancellationNextAction:
+								context?.nextAction ??
+								'Retry the operation or resume from the latest persisted checkpoint.',
+							cancellationError: context?.error,
+						},
 					}),
 				);
 			},

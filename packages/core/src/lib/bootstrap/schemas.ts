@@ -16,6 +16,15 @@ import {
 	ADOPTION_STRATEGY_SCHEMA,
 } from '../contracts/constants/adoption-strategy-schema.constant';
 
+const DOCS_CONVENTION_SCHEMA = z.enum([
+	'README.md',
+	'docs/',
+	'root-markdown',
+	'docs-site:astro',
+	'docs-site:docusaurus',
+	'docs-site:vitepress',
+]);
+
 // r00002 S1 — mirrors `IProjectAnalysis` (analyze-project.ts).
 // r00001 S0 — exported so the golden snapshot test can pin the schema shape.
 export const PROJECT_ANALYSIS_SCHEMA = z.object({
@@ -44,8 +53,13 @@ export const PROJECT_ANALYSIS_SCHEMA = z.object({
 	hasMcpProject: z.boolean(),
 	mcpEvidence: z.array(z.string()),
 	ci: z.array(z.string()),
+	ciProvider: z
+		.enum(['github-actions', 'gitlab-ci', 'circleci', 'unknown'])
+		.optional(),
 	agentConfigs: z.array(z.string()),
 	scripts: z.record(z.string(), z.string()),
+	docsConventions: z.array(DOCS_CONVENTION_SCHEMA).optional(),
+	conflicts: z.array(z.string()).optional(),
 	signals: z.array(z.string()),
 });
 
@@ -78,6 +92,19 @@ export const SCAFFOLDED_FILE_SCHEMA = z.object({
 export const BLUEPRINT_ARTIFACT_SCHEMA = z.object({
 	name: z.string(),
 	description: z.string(),
+	body: z.string().optional(),
+	whenToUse: z.array(z.string()).optional(),
+});
+
+const BLUEPRINT_AGENT_SCHEMA = z.object({
+	slot: z.string(),
+	description: z.string(),
+});
+
+const BLUEPRINT_DEFAULTS_SCHEMA = z.object({
+	keepLegacy: z.boolean(),
+	reasons: z.array(z.string()),
+	warnings: z.array(z.string()),
 });
 
 // r00001 S0 — exported so the golden snapshot test can pin the schema shape.
@@ -90,15 +117,11 @@ export const SERVER_BLUEPRINT_SCHEMA = z.object({
 	tools: z.array(BLUEPRINT_ARTIFACT_SCHEMA),
 	prompts: z.array(BLUEPRINT_ARTIFACT_SCHEMA),
 	skills: z.array(BLUEPRINT_ARTIFACT_SCHEMA),
-	agents: z.array(z.object({ slot: z.string(), description: z.string() })),
+	agents: z.array(BLUEPRINT_AGENT_SCHEMA),
 	tests: z.boolean(),
 	hasExistingServer: z.boolean(),
 	adoptionStrategy: ADOPTION_STRATEGY_SCHEMA,
-	defaults: z.object({
-		keepLegacy: z.boolean(),
-		reasons: z.array(z.string()),
-		warnings: z.array(z.string()),
-	}),
+	defaults: BLUEPRINT_DEFAULTS_SCHEMA,
 	notes: z.array(z.string()),
 });
 
@@ -167,9 +190,12 @@ export const CREATE_INPUT_SCHEMA = z.object({
 		.enum(['host', 'plugin', 'client', 'extension-host'])
 		.optional()
 		.describe('What to scaffold.'),
+	serverName: z.string().optional(),
 	projectName: z.string().optional(),
 	namespacePrefix: z.string().optional(),
 	projectPackageName: z.string().optional(),
+	targetDir: z.string().optional(),
+	blueprint: SERVER_BLUEPRINT_SCHEMA.partial().optional(),
 	pluginName: z.string().optional().describe('Plugin id (kind "plugin").'),
 	clientName: z.string().optional().describe('Client id (kind "client").'),
 	extensionHostName: z

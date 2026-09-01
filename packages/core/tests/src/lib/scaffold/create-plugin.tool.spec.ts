@@ -50,9 +50,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 const PLUGIN_DEFAULTS_SEED = `export const PLUGIN_DEFAULTS: Readonly<
 \tRecord<string, Readonly<Record<string, unknown>>>
 > = {
-\tproposals: {
-\t\tvalidationCommand: 'bun run validate',
-\t},
+	proposals: {},
 };
 `;
 
@@ -88,6 +86,22 @@ const CATALOG_SEED = `{
 		{ "name": "x", "plugin": "proposals" }
 	]
 }
+`;
+
+const FIRST_PARTY_INDEX_SEED = `export const FIRST_PARTY_PLUGIN_INDEX = {
+	origin: 'first-party',
+	entries: [
+		{
+			origin: 'first-party',
+			id: 'api',
+			package: '@mcp-vertex/api',
+			summary: 'REST/GraphQL API surface for mcp-vertex plugins.',
+			tags: ['api'],
+			permissions: [],
+		},
+		...GENERATED_FIRST_PARTY_MANIFEST_ENTRIES,
+	],
+};
 `;
 
 const createMemoryFs = (
@@ -151,6 +165,8 @@ const buildSeed = (): Record<string, string> => ({
 	'packages/core/src/lib/plugins/plugin-defaults.ts': PLUGIN_DEFAULTS_SEED,
 	'tools/scripts/release/release-plan.ts': PUBLISH_ORDER_SEED,
 	'packages/core/src/lib/plugins/preset-catalog.ts': PRESET_CATALOG_SEED,
+	'packages/core/src/lib/registry/first-party-index.ts':
+		FIRST_PARTY_INDEX_SEED,
 	'docs/mcp-vertex/agent-catalog.generated.json': CATALOG_SEED,
 	// A minimal host config that loads the plugin under test — the doctor
 	// uses this to decide whether the catalog-regen check is required.
@@ -182,6 +198,16 @@ describe('runCreatePlugin (f00120 S4)', () => {
 		expect(report.wired).toHaveLength(6);
 		expect(report.doctor.fullyWired).toBe(true);
 		expect(fs.files.has('plugins/demo-plugin/package.json')).toBe(true);
+		expect(
+			fs.files
+				.get('packages/core/src/lib/registry/first-party-index.ts')
+				?.includes('GENERATED_FIRST_PARTY_MANIFEST_ENTRIES'),
+		).toBe(true);
+		expect(
+			JSON.parse(fs.files.get('mcp-vertex.config.json') ?? '{}').plugins[
+				'demo-plugin'
+			],
+		).toEqual({ options: {} });
 	});
 
 	it('surfaces doctor failures when the catalog point is still missing', async () => {
@@ -246,5 +272,65 @@ describe('runCreatePlugin (f00120 S4)', () => {
 		expect(report.ok).toBe(true);
 		expect(fs.writes).toEqual([]);
 		expect(fs.files.has('plugins/dry-run-demo/package.json')).toBe(false);
+	});
+
+	it('uses the default synthetic catalog tool id during dry-run previews', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const report = await runCreatePlugin(
+			{
+				name: 'catalog-demo',
+				description: 'Catalog demo.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+			},
+		);
+
+		expect(report.ok).toBe(true);
+		expect(fs.writes).toEqual([]);
+	});
+
+	it('preserves plugin id and scaffold paths for repeated separators in the name', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const report = await runCreatePlugin(
+			{
+				name: '  Demo___Plugin!!!  ',
+				description: 'Demo plugin.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+				regenerateCatalog: appendCatalogEntry,
+			},
+		);
+		expect(report.pluginId).toBe('demo-plugin');
+		expect(report.scaffolded.files).toContain(
+			'plugins/demo-plugin/package.json',
+		);
+	});
+
+	it('normalises a long separator run in the plugin name quickly', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const started = Date.now();
+		const report = await runCreatePlugin(
+			{
+				name: `Demo${'!'.repeat(40_000)}Plugin`,
+				description: 'Demo plugin.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+				regenerateCatalog: appendCatalogEntry,
+			},
+		);
+		expect(report.pluginId).toBe('demo-plugin');
+		expect(Date.now() - started).toBeLessThan(1_000);
 	});
 });

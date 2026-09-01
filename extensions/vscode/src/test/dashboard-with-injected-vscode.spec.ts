@@ -61,6 +61,21 @@ describe('dashboard registration with injected vscode', async () => {
 					return panel;
 				},
 			},
+			workspace: {
+				createFileSystemWatcher: () => ({
+					onDidChange: () => ({ dispose() {} }),
+					onDidCreate: () => ({ dispose() {} }),
+					onDidDelete: () => ({ dispose() {} }),
+				}),
+				getConfiguration: () => ({
+					get<T>(key: string, defaultValue?: T): T | undefined {
+						if (key === 'command') return 'node' as unknown as T;
+						if (key === 'args')
+							return ['server.js'] as unknown as T;
+						return defaultValue;
+					},
+				}),
+			},
 		};
 		const client = McpStdioClient.fromTransport({
 			async callTool() {

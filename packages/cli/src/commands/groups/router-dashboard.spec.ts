@@ -58,7 +58,7 @@ const stubReplyFor = (tool: string, args: object): unknown => {
 				{
 					candidate: midProvider,
 					score: 10,
-					rationale: 'best value for task ' + taskType,
+					rationale: `best value for task ${taskType}`,
 					pinned: false,
 				},
 				{

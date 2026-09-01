@@ -13,8 +13,8 @@
  */
 
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import { CORE_DOCS } from './round-context-types';
 
@@ -63,10 +63,13 @@ export const computeCoreDocHashes = async (
 	coreDocs: readonly string[] = CORE_DOCS,
 ): Promise<Record<string, string>> => {
 	const result: Record<string, string> = {};
+	const reader = new SafeWorkspaceReader(monorepoRoot);
 	await Promise.all(
 		coreDocs.map(async (rel) => {
-			const abs = join(monorepoRoot, rel);
-			const content = await readFile(abs, 'utf8').catch(() => null);
+			const content = await reader
+				.readText(rel)
+				.then((value) => value.content)
+				.catch(() => null);
 			if (content === null) {
 				result[rel] = 'rh-missing';
 				return;

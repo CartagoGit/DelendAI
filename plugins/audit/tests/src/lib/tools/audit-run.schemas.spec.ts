@@ -64,4 +64,12 @@ describe('RunInputSchema — proposalPrefix (x00165)', () => {
 		const result = RunInputSchema.safeParse(baseArgs);
 		expect(result.success).toBe(true);
 	});
+
+	it('accepts shared detail levels', () => {
+		const result = RunInputSchema.safeParse({
+			...baseArgs,
+			detail: 'compact',
+		});
+		expect(result.success).toBe(true);
+	});
 });

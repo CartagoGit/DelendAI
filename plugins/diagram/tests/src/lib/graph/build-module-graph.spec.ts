@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	buildModuleGraph,
+	limitModuleGraph,
 	moduleDisplayName,
 	renderModuleMermaid,
 } from '../../../../src/lib/graph/build-module-graph';
@@ -79,5 +80,19 @@ describe('buildModuleGraph + renderModuleMermaid (f00132 S1)', () => {
 		expect(graph.nodes).toEqual([]);
 		expect(graph.edges).toEqual([]);
 		expect(renderModuleMermaid(graph)).toBe('flowchart LR');
+	});
+
+	it('limits deterministically by the first sorted node ids', () => {
+		const limited = limitModuleGraph(
+			buildModuleGraph({
+				'src/c.ts': [],
+				'src/a.ts': ['src/b.ts'],
+				'src/b.ts': ['src/c.ts'],
+			}),
+			2,
+		);
+		expect(limited.graph.nodes).toEqual(['src/a', 'src/b']);
+		expect(limited.graph.edges).toEqual([{ from: 'src/a', to: 'src/b' }]);
+		expect(limited.truncated).toBe(true);
 	});
 });

@@ -15,7 +15,7 @@
  * re-implement the regex set in the client to avoid pulling the
  * `logs` plugin into the runtime).
  */
-import { redactSecrets } from '@mcp-vertex/core/public';
+import { redactSecrets } from '../shared/redact-secrets';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import type {

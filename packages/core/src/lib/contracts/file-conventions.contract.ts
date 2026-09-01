@@ -246,8 +246,11 @@ const EntryRule: IRoleRule = rule('entry', (rel) =>
 	/(?:^|\/)(?:cli|extension)\.ts$/.test(rel),
 );
 
-const PluginRule: IRoleRule = rule('plugin', (rel) =>
-	/\/src\/lib\/plugins\//.test(rel),
+const PluginRule: IRoleRule = rule(
+	'plugin',
+	(rel) =>
+		/\/src\/lib\/plugins\//.test(rel) ||
+		/\/plugin\.manifest\.ts$/.test(rel),
 );
 
 const AppLibRule: IRoleRule = rule('app-lib', (rel) =>
@@ -309,7 +312,11 @@ const ConstantRule: IRoleRule = rule(
  *  falls through to the service classifier. */
 const HelperRule: IRoleRule = rule(
 	'helper',
-	(rel) => hasSegment(rel, 'helpers') || endsWithBasename(rel, 'helper.ts'),
+	(rel) =>
+		hasSegment(rel, 'helpers') ||
+		endsWithBasename(rel, 'helper.ts') ||
+		endsWithBasename(rel, 'schema.ts') ||
+		basename(rel) === 'define-plugin-manifest.ts',
 );
 
 /** 19. Services — under `services/` or `.service.ts`. */

@@ -31,18 +31,29 @@ describe('preset-table', () => {
 			// First ids come from minimal (git, search)
 			expect(ids[0]).toBe('git');
 			expect(ids[1]).toBe('search');
-			// x00166: vertex now mirrors mcp-vertex.config.json exactly
-			// (28 members) — the last 8 unique columns are the ones only
-			// vertex introduces (not already seen from minimal/lean/
-			// standard/swarm/full): audit, auto-agent-selector,
-			// link-check, orchestrator-runner, perf, security,
-			// tech-debt, usage-tracking. 35 total columns.
-			expect(ids.length).toBe(35);
-			const tail = ids.slice(-8);
+			// x00166: vertex now mirrors mcp-vertex.config.json exactly —
+			// its tail now also carries the manifest-driven plugins that only
+			// appear there. Adding prompt-eval to full raises the total unique
+			// plugin columns to 43.
+			// (adaptive-optimizer, context-for-change, impact-analysis,
+			// project-health, quality-policy) alongside the existing audit /
+			// link-check / orchestrator-runner / perf / security /
+			// tech-debt / usage-tracking tail.
+			// f00177 / MAN-001: `changelog` removed from `full`/`cli-tool`
+			// (private, never published to npm) drops the total to 42 — it
+			// was the only preset-visible use of that column. The three
+			// remote-provider plugins (remote-provider-core, github,
+			// gitlab) added to `full` bring it to 49.
+			expect(ids.length).toBe(49);
+			const tail = ids.slice(-12);
 			expect(new Set(tail)).toEqual(
 				new Set([
-					'audit',
-					'auto-agent-selector',
+					'commit-policy',
+					'context-for-change',
+					'impact-analysis',
+					'project-health',
+					'project-kpis',
+					'quality-policy',
 					'link-check',
 					'orchestrator-runner',
 					'perf',
@@ -71,13 +82,16 @@ describe('preset-table', () => {
 			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
 			// x00166: `vertex` is independent — its effective membership
-			// equals its 28 declared members, exactly mirroring
-			// mcp-vertex.config.json (including `proposals`, the
-			// orchestration plugin — previously excluded, a stale drift).
-			expect(vertex?.effective.length).toBe(28);
+			// equals its 34 declared members, exactly mirroring
+			// mcp-vertex.config.json
+			// (including `proposals`, the orchestration plugin —
+			// previously excluded, a stale drift).
+			expect(vertex?.effective.length).toBe(38);
 			expect(vertex?.effective).toContain('perf');
 			expect(vertex?.effective).toContain('audit');
 			expect(vertex?.effective).toContain('auto-agent-selector');
+			expect(vertex?.effective).toContain('context-for-change');
+			expect(vertex?.effective).toContain('project-health');
 			expect(vertex?.effective).toContain('proposals');
 			expect(vertex?.effective).toContain('memory');
 			expect(vertex?.effective).not.toContain('refactor');

@@ -14,7 +14,7 @@
 import { formatToolName, type McpStdioClient } from '@mcp-vertex/client';
 
 import type { ICommandDeps } from './types';
-import { renderJsonHtml, showCommandError } from './types';
+import { renderJsonHtml } from './types';
 
 export const OPEN_AUTO_AGENT_SELECTOR_COMMAND =
 	'mcp-vertex.openAutoAgentSelector';
@@ -43,6 +43,15 @@ export const registerOpenAutoAgentSelectorCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(
 		OPEN_AUTO_AGENT_SELECTOR_COMMAND,
 		async (rawArgs?: unknown) => {
+			const panel = deps.vscode.window.createWebviewPanel(
+				'mcpVertexAutoAgentSelector',
+				'Auto-agent selector',
+				deps.vscode.ViewColumn.One,
+				{ enableScripts: false },
+			);
+			panel.webview.html = renderJsonHtml('Auto-agent selector', {
+				state: 'loading',
+			});
 			try {
 				const args = asRecord(rawArgs);
 				const taskType =
@@ -95,24 +104,21 @@ export const registerOpenAutoAgentSelectorCommand = (deps: ICommandDeps) =>
 					fetchedAt: new Date().toISOString(),
 				};
 
-				const panel = deps.vscode.window.createWebviewPanel(
-					'mcpVertexAutoAgentSelector',
-					'Auto-agent selector',
-					deps.vscode.ViewColumn.One,
-					{ enableScripts: false },
-				);
 				panel.webview.html = renderJsonHtml(
 					'Auto-agent selector',
 					payload,
 				);
 				return panel;
 			} catch (err) {
-				await showCommandError(
-					deps.vscode,
-					'open auto-agent selector',
-					err,
+				panel.webview.html = renderJsonHtml(
+					'Auto-agent selector unavailable',
+					{
+						state: 'error',
+						message:
+							err instanceof Error ? err.message : String(err),
+					},
 				);
-				return undefined;
+				return panel;
 			}
 		},
 	);

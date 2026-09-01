@@ -81,6 +81,30 @@ const writeProposal = (
 	return abs;
 };
 
+/**
+ * Resolve the on-disk path of a proposal by reading the registry
+ * index. `close_slice` calls `syncProposalRegistry`, which may move
+ * the file from `in-progress/` to `done/<kind>/` after writing the
+ * new status. The test must read from the live location, not the
+ * one it wrote.
+ */
+const readProposal = (
+	opts: IAuthoringToolOptions,
+	proposalId: string,
+	fallbackAbs: string,
+): string => {
+	const indexRaw = readFileSync(opts.indexPathAbs, 'utf8');
+	const index = JSON.parse(indexRaw) as {
+		proposals: Array<{ id: string; file: string }>;
+	};
+	const entry = index.proposals.find(
+		(p) => p.id === proposalId || p.id.startsWith(`${proposalId}-`),
+	);
+	return entry === undefined
+		? fallbackAbs
+		: join(opts.proposalsDirAbs, entry.file);
+};
+
 describe('sliceRequiresValidation (a00069 S5 pure helper)', () => {
 	it('skips gate: none / lint and empty blocks', () => {
 		expect(sliceRequiresValidation('- **Gate**: none\n')).toBe(false);
@@ -202,7 +226,7 @@ status: in-progress
 		expect(result.ok).toBe(false);
 		expect(result.blockerType).toBe('validate-required');
 		expect(result.error?.reason ?? '').toMatch(/validate evidence/i);
-		const body = readFileSync(abs, 'utf8');
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toContain('**Status**: pending');
 		expect(body).not.toMatch(/\*\*Status\*\*:\s*done/i);
 	});
@@ -223,7 +247,7 @@ status: in-progress
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
-		const body = readFileSync(abs, 'utf8');
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
@@ -243,7 +267,7 @@ status: in-progress
 		);
 		expect(result.ok).toBe(false);
 		expect(result.blockerType).toBe('validate-required');
-		const body = readFileSync(abs, 'utf8');
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toMatch(/\*\*Status\*\*:\s*pending/i);
 	});
 
@@ -272,7 +296,7 @@ status: in-progress
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
-		const body = readFileSync(abs, 'utf8');
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
@@ -288,6 +312,108 @@ status: in-progress
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
-		expect(readFileSync(abs, 'utf8')).toMatch(/\*\*Status\*\*:\s*done/i);
+		expect(readFileSync(readProposal(opts, 'f00001', abs), 'utf8')).toMatch(
+			/\*\*Status\*\*:\s*done/i,
+		);
+	});
+
+	it('closes with scoped validation metadata when the resolver permits it', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('none'),
+		);
+		opts = {
+			...opts,
+			resolveValidationDecision: async () => ({
+				mode: 'scoped' as const,
+				resolvedScopes: ['proposals'],
+				snapshotId: 'snapshot-scoped',
+				reason: 'another active actor still exists',
+			}),
+		};
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				force: true,
+			}),
+		);
+		expect(result.ok).toBe(true);
+		expect(result.validationDecision).toMatchObject({
+			mode: 'scoped',
+			resolvedScopes: ['proposals'],
+			snapshotId: 'snapshot-scoped',
+		});
+		expect(readFileSync(readProposal(opts, 'f00001', abs), 'utf8')).toMatch(
+			/\*\*Status\*\*:\s*done/i,
+		);
+	});
+
+	it('blocks close when activity cannot prove a safe validation mode', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('none'),
+		);
+		opts = {
+			...opts,
+			resolveValidationDecision: async () => ({
+				mode: 'blocked' as const,
+				resolvedScopes: [],
+				snapshotId: 'snapshot-blocked',
+				reason: 'current actor is not provably active',
+			}),
+		};
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				force: true,
+			}),
+		);
+		expect(result.ok).toBe(false);
+		expect(result.kind).toBe('validation-error');
+		expect(result.validationDecision).toMatchObject({
+			mode: 'blocked',
+			snapshotId: 'snapshot-blocked',
+		});
+		expect(readFileSync(readProposal(opts, 'f00001', abs), 'utf8')).toMatch(
+			/\*\*Status\*\*:\s*pending/i,
+		);
+	});
+
+	it('passes resolved scopes to the quality probe', async () => {
+		writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('none'),
+		);
+		const calls: Array<{ scopes?: readonly string[]; mode?: string }> = [];
+		opts = {
+			...opts,
+			runQuality: async (input) => {
+				calls.push(input ?? {});
+				return { ok: true, severity: 'ok' as const, findings: [] };
+			},
+			resolveValidationDecision: async () => ({
+				mode: 'scoped' as const,
+				resolvedScopes: ['proposals'],
+				snapshotId: 'snapshot-scoped',
+				reason: 'another active actor still exists',
+			}),
+		};
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				force: true,
+			}),
+		);
+		expect(result.ok).toBe(true);
+		expect(calls).toEqual([{ scopes: ['proposals'], mode: 'scoped' }]);
 	});
 });

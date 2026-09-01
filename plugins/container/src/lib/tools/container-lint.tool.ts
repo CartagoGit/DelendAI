@@ -8,6 +8,10 @@
  * Missing CLI returns a structured `ok: 'skipped'` envelope with the
  * install hint.
  */
+// effect-boundary-authorized: read-only filesystem path normalization for
+// the offline Dockerfile lint; the real I/O goes through the injected
+// IDockerfileFetcher and IDockerLogsDeps adapters below.
+import { realpath } from 'node:fs/promises';
 import { relative, resolve, sep } from 'node:path';
 
 import z from 'zod';
@@ -92,10 +96,10 @@ const invalidArguments = (issues: readonly z.ZodIssue[]) =>
 			.join('; '),
 	);
 
-const resolveContainedDockerfilePath = (
+const resolveContainedDockerfilePath = async (
 	workspaceRootAbs: string,
 	dockerfilePath: string | undefined,
-):
+): Promise<
 	| {
 			readonly ok: true;
 			readonly abs: string;
@@ -104,7 +108,8 @@ const resolveContainedDockerfilePath = (
 	| {
 			readonly ok: false;
 			readonly detail: string;
-	  } => {
+	  }
+> => {
 	const workspaceRoot = resolve(workspaceRootAbs);
 	const requested = dockerfilePath ?? 'Dockerfile';
 	const abs = requested.startsWith('/')
@@ -116,6 +121,28 @@ const resolveContainedDockerfilePath = (
 			ok: false,
 			detail: `Path "${requested}" is outside workspace root`,
 		};
+	}
+	try {
+		const [realWorkspaceRoot, realDockerfile] = await Promise.all([
+			realpath(workspaceRoot),
+			realpath(abs),
+		]);
+		const realRel = relative(realWorkspaceRoot, realDockerfile)
+			.split(sep)
+			.join('/');
+		if (realRel === '..' || realRel.startsWith('../')) {
+			return {
+				ok: false,
+				detail: `Path "${requested}" resolves outside workspace root`,
+			};
+		}
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+			return {
+				ok: false,
+				detail: `Unable to validate Dockerfile path "${requested}"`,
+			};
+		}
 	}
 	return {
 		ok: true,
@@ -249,7 +276,7 @@ export const buildContainerLintToolRegistrations = (
 							return invalidArguments(parsed.error.issues);
 						}
 
-						const resolved = resolveContainedDockerfilePath(
+						const resolved = await resolveContainedDockerfilePath(
 							options.workspaceRootAbs,
 							parsed.data.dockerfilePath,
 						);

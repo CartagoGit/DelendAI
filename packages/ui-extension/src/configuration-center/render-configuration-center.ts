@@ -159,6 +159,7 @@ const opaqueOptionsField = (
 const renderPlugin = (
 	plugin: IConfigurationPluginModel,
 	model: IConfigurationCenterModel,
+	highlightPluginId?: string,
 ): string => {
 	const fields = [
 		...builtinPluginFields(plugin, model),
@@ -166,7 +167,9 @@ const renderPlugin = (
 			? plugin.fields
 			: [opaqueOptionsField(plugin, model)]),
 	];
-	return `<article class="mcpv-config__card" data-config-search-text="${attr(`${plugin.id} ${plugin.origin} ${plugin.source}`)}">
+	const highlighted =
+		highlightPluginId !== undefined && highlightPluginId === plugin.id;
+	return `<article class="mcpv-config__card${highlighted ? ' mcpv-config__card--highlight' : ''}" data-config-search-text="${attr(`${plugin.id} ${plugin.origin} ${plugin.source}`)}" id="${attr(`config-plugin-${plugin.id}`)}">
 		<header class="mcpv-config__card-head">
 			<div><h3 class="mcpv-config__card-title">${attr(plugin.id)}</h3><p class="mcpv-config__card-meta">${plugin.capabilities.tools} ${attr(model.copy.capabilityTools)} · ${plugin.capabilities.prompts} ${attr(model.copy.capabilityPrompts)} · ${plugin.capabilities.resources} ${attr(model.copy.capabilityResources)}</p></div>
 			<div class="mcpv-config__badges"><span class="mcpv-config__badge">${attr(originLabel(plugin.origin, model))}</span><span class="mcpv-config__badge mcpv-config__badge--${plugin.active ? 'active' : 'inactive'}">${attr(plugin.active ? model.copy.active : model.copy.inactive)}</span></div>
@@ -217,7 +220,11 @@ export const renderConfigurationCenter = (
 	const pluginBody =
 		model.plugins.length === 0
 			? `<p class="mcpv-config__empty">${attr(model.copy.empty)}</p>`
-			: `<div class="mcpv-config__grid">${model.plugins.map((entry) => renderPlugin(entry, model)).join('')}</div>`;
+			: `<div class="mcpv-config__grid">${model.plugins
+					.map((entry) =>
+						renderPlugin(entry, model, options.pluginId),
+					)
+					.join('')}</div>`;
 	const providerBody =
 		model.providers.length === 0
 			? `<p class="mcpv-config__empty">${attr(model.copy.empty)}</p>`

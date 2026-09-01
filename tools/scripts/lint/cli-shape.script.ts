@@ -62,19 +62,24 @@ const TOP_LEVEL_EXEMPT: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Parse `name: 'foo'` (or `name: "foo"`) from a TypeScript command-group
- * file. Returns the name string + 1-based line number, or null.
+ * Parse the primary command name from a typed `ICliCommand` object literal.
+ * Looking for a bare `name:` property would mistake doctor section names
+ * (`env`, `plugins`, `tools`) for CLI commands. The existing linter treats
+ * one command-group file as one shape unit, so retain its first-name
+ * contract while making the match type-aware.
  */
 const extractName = (source: string): { name: string; line: number } | null => {
-	const lines = source.split('\n');
-	for (let i = 0; i < lines.length; i++) {
-		const m = lines[i]?.match(/^\s*name:\s*['"]([^'"]+)['"]/);
-		if (m && m[1] !== undefined) {
-			return { name: m[1], line: i + 1 };
-		}
-	}
-	return null;
+	const commandRe =
+		/(?:^|\n)\s*(?:export\s+)?(?:const|let|var)\s+\w+\s*:\s*ICliCommand\s*=\s*\{\s*\n\s*name:\s*['"]([^'"]+)['"]/g;
+	const match = commandRe.exec(source);
+	const name = match?.[1];
+	if (match === null || name === undefined) return null;
+	const nameOffset = (match.index ?? 0) + match[0].lastIndexOf('name:');
+	return { name, line: lineOf(source, nameOffset) };
 };
+
+const lineOf = (source: string, index: number): number =>
+	source.slice(0, index).split('\n').length;
 
 /**
  * Run every rule in `rules` against a parsed name. The first matching
@@ -118,16 +123,15 @@ export const lintCliShape = async (
 			continue;
 		const file = join(groupsDir, entry.name);
 		const source = await readFile(file, 'utf8');
-		const extracted = extractName(source);
-		if (!extracted) continue;
-		if (exempt.has(extracted.name)) continue;
-		const ruleFindings = evaluateName(rules, extracted.name);
+		const command = extractName(source);
+		if (command === null || exempt.has(command.name)) continue;
+		const ruleFindings = evaluateName(rules, command.name);
 		for (const rf of ruleFindings) {
 			findings.push({
 				...rf,
 				file,
-				line: extracted.line,
-				name: extracted.name,
+				line: command.line,
+				name: command.name,
 			});
 		}
 	}

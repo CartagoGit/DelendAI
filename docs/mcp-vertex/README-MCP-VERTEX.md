@@ -30,19 +30,26 @@ copy the args verbatim into the client-specific config.
 
 The four clients we actively dogfood today, in priority order:
 
-| Client | Config file | Format | Where it lives |
-|---|---|---|---|
-| **GitHub Copilot** (VS Code) | `.vscode/mcp.json` | JSON with `servers.<name>` | workspace root (this repo's own setup) |
-| **Cursor** | `.vscode/mcp.json` | same as Copilot | workspace root (Cursor reuses the VS Code file) |
-| **Antigravity** | `.vscode/mcp.json` | same as Copilot | workspace root (Antigravity is built on VS Code) |
-| **Claude Code** | `~/.claude.json` | JSON with `mcpServers.<name>` | user home directory |
-| **Codex** | `~/.codex/config.toml` | TOML with `[mcp_servers.<name>]` | user home directory |
+| Client                       | Config file            | Format                           | Where it lives                                   |
+| ---------------------------- | ---------------------- | -------------------------------- | ------------------------------------------------ |
+| **GitHub Copilot** (VS Code) | `.vscode/mcp.json`     | JSON with `servers.<name>`       | workspace root (this repo's own setup)           |
+| **Cursor**                   | `.vscode/mcp.json`     | same as Copilot                  | workspace root (Cursor reuses the VS Code file)  |
+| **Antigravity**              | `.vscode/mcp.json`     | same as Copilot                  | workspace root (Antigravity is built on VS Code) |
+| **Claude Code**              | `~/.claude.json`       | JSON with `mcpServers.<name>`    | user home directory                              |
+| **Codex**                    | `~/.codex/config.toml` | TOML with `[mcp_servers.<name>]` | user home directory                              |
 
 > **One canonical launch shape, many config files.** The four files above
 > all wrap the same `--workspace`, `--config` and `--preset` arguments —
 > the only thing that changes is the JSON/TOML wrapping. Edit your
 > `mcp-vertex.config.json` once and every client picks up the change on
 > next start.
+
+Host-project scaffolding uses a shared namespace contract: `namespacePrefix`
+controls tool ids (`<prefix>_*`) and `mcpServerName` controls the concrete
+editor registration key those generated agent files reference. When a project
+adopts mcp-vertex into an existing server, pass the real `mcpServerName`
+instead of assuming the greenfield default `mcp-project-<prefix>`; this is the
+contract behind GitHub issue #52.
 
 ### VS Code / GitHub Copilot (`.vscode/mcp.json`)
 
@@ -146,24 +153,59 @@ client picks up the change on next start.
 
 If this is the first time you are wiring `mcp-vertex` into a repository, start with [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md). It is the canonical guide for choosing the right preset, writing `mcp-vertex.config.json`, and configuring the `issues` plugin for the current GitHub repo without drifting from the documented launch shape.
 
+## Install once for all projects
+
+The CLI can register the same MCP server in the supported global host
+configurations so each project does not need a hand-edited MCP file:
+
+```bash
+mcpv init:global --all
+```
+
+Use `--ide=cursor-global,windsurf,claude-desktop,antigravity,zed` to select
+global targets. The command is deliberately separate from `init`: it never
+writes project-scoped files and rejects project-only ids (`vscode`, `cursor`,
+and `claude-code`), unknown ids, and an empty `--ide=` value. Re-running it is
+idempotent: the `mcp-vertex` entry is merged while unrelated MCP servers and
+settings remain untouched.
+
+The currently supported global targets are:
+
+| Id               | Host           | Configuration scope            |
+| ---------------- | -------------- | ------------------------------ |
+| `cursor-global`  | Cursor         | user home                      |
+| `windsurf`       | Windsurf       | user home                      |
+| `claude-desktop` | Claude Desktop | platform user application data |
+| `antigravity`    | Antigravity    | user home                      |
+| `zed`            | Zed            | platform user application data |
+
+The command installs the MCP connection only. Agent behavior remains
+host-independent because every MCP-capable model receives the same server
+tools and the same canonical bootstrap rules. For project-specific pointer
+files, generated agent adapters, skills, or `mcp-vertex.config.json`, run
+`mcpv init` or `mcpv init:default` in that project. This distinction matters:
+MCP configuration can be global, but instruction-file discovery is still
+defined by each host (for example `AGENTS.md`, `CLAUDE.md`, Copilot agent
+files, Cursor rules, Codex instructions, or Continue configuration).
+
 ## CLI arguments
 
-| Argument | Default | Purpose |
-|---|---|---|
-| `--plugins=a,b,c` | _(none)_ | Plugins to load. Resolved as `@mcp-vertex/<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
-| `--preset=NAME` | _(none)_ | Curated, additive plugin set merged with `--plugins` (deduped). Presets are defined in the canonical catalog (`minimal`, `standard`, `swarm`, `full`) and rendered on the web presets page. |
-| `--verbose` | off | Print the assembly diagnostics (resolved plugins, tool/prompt/resource counts, any load errors) to stderr at startup. |
-| `--cacheDir=DIR` | `.cache/mcp-vertex` | Scratch/state root. Each plugin gets `<cacheDir>/<plugin>`. |
-| `--docsDir=DIR` | `docs/mcp-vertex` | Human-edited document root (e.g. proposals). |
-| `--workspace=DIR` | current dir | Workspace root all paths resolve against. |
-| `--name=NAME` | `mcp-vertex` | Server name advertised over MCP. |
-| `--prefix=NS` | `mcpvertex` | Namespace for the core's own tools (`<NS>_analyze_project`, …). |
-| `--config=FILE` | `mcp-vertex.config.json` | Config file with per-plugin values (see below). |
-| `--exclude-plugins=a,b` | _(none)_ | Subtract plugins after preset, explicit plugins and config-file plugin declarations are merged. |
-| `--check` / `--doctor` | — | Doctor mode: validate config, resolve/load plugins and print a report (tools/prompts/resources counts, errors) **without** starting the server. |
-| `--mcp-project-create=false` | (on) | Disable the first-start project-server blueprint. |
-| `--mcp-project-tests=false` | (on) | Omit tests from the generated blueprint. |
-| `--<anything>=value` | — | Forwarded to every plugin via `ctx.args`. |
+| Argument                     | Default                  | Purpose                                                                                                                                                                                                      |
+| ---------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--plugins=a,b,c`            | _(none)_                 | Plugins to load. Resolved as `@mcp-vertex/<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
+| `--preset=NAME`              | _(none)_                 | Curated, additive plugin set merged with `--plugins` (deduped). Presets are defined in the canonical catalog (`minimal`, `standard`, `swarm`, `full`) and rendered on the web presets page.                  |
+| `--verbose`                  | off                      | Print the assembly diagnostics (resolved plugins, tool/prompt/resource counts, any load errors) to stderr at startup.                                                                                        |
+| `--cacheDir=DIR`             | `.cache/mcp-vertex`      | Scratch/state root. Each plugin gets `<cacheDir>/<plugin>`.                                                                                                                                                  |
+| `--docsDir=DIR`              | `docs/mcp-vertex`        | Human-edited document root (e.g. proposals).                                                                                                                                                                 |
+| `--workspace=DIR`            | current dir              | Workspace root all paths resolve against.                                                                                                                                                                    |
+| `--name=NAME`                | `mcp-vertex`             | Server name advertised over MCP.                                                                                                                                                                             |
+| `--prefix=NS`                | `mcpvertex`              | Namespace for the core's own tools (`<NS>_analyze_project`, …).                                                                                                                                              |
+| `--config=FILE`              | `mcp-vertex.config.json` | Config file with per-plugin values (see below).                                                                                                                                                              |
+| `--exclude-plugins=a,b`      | _(none)_                 | Subtract plugins after preset, explicit plugins and config-file plugin declarations are merged.                                                                                                              |
+| `--check` / `--doctor`       | —                        | Doctor mode: validate config, resolve/load plugins and print a report (tools/prompts/resources counts, errors) **without** starting the server.                                                              |
+| `--mcp-project-create=false` | (on)                     | Disable the first-start project-server blueprint.                                                                                                                                                            |
+| `--mcp-project-tests=false`  | (on)                     | Omit tests from the generated blueprint.                                                                                                                                                                     |
+| `--<anything>=value`         | —                        | Forwarded to every plugin via `ctx.args`.                                                                                                                                                                    |
 
 ```bash
 # Diagnose a setup before wiring it into a client:

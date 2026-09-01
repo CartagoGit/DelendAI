@@ -6,9 +6,9 @@
  * output, quota or inferred turn. A matching MCP id is evidence only when a
  * host has explicitly supplied that exact opaque id to both channels.
  */
-import { readFile } from 'node:fs/promises';
-
 import z from 'zod';
+
+import { readAbsoluteTextSafe } from '@mcp-vertex/core/public';
 
 import type {
 	HostLifecycleEventKind,
@@ -17,10 +17,12 @@ import type {
 	IObservedHostSession,
 } from './types';
 
+const HOST_SESSION_ID_MAX_LENGTH = 512;
+
 const HostLifecycleEventSchema = z.object({
 	version: z.literal(1),
 	host: z.literal('claude-code'),
-	hostSessionId: z.string().trim().min(1).max(512),
+	hostSessionId: z.string().trim().min(1).max(HOST_SESSION_ID_MAX_LENGTH),
 	event: z.enum(['turn', 'pre-compact', 'post-compact', 'session-end']),
 	at: z.string().datetime(),
 });
@@ -36,10 +38,9 @@ export const readHostLifecycleEvents = async (
 ): Promise<IHostLifecycleEvent[]> => {
 	let raw: string;
 	try {
-		raw = await readFile(absPath, 'utf8');
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
-		throw error;
+		raw = await readAbsoluteTextSafe(absPath);
+	} catch {
+		return [];
 	}
 	const events: IHostLifecycleEvent[] = [];
 	for (const line of raw.split('\n')) {

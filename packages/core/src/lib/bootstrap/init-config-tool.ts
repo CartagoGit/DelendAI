@@ -33,7 +33,7 @@ const OUTPUT_SCHEMA = z.object({
 	error: z
 		.object({ reason: z.string(), nextAction: z.string().optional() })
 		.optional(),
-	preset: z.enum(['lean', 'standard', 'minimal']).optional(),
+	preset: z.enum(['lean', 'standard', 'minimal', 'swarm']).optional(),
 	config: z.record(z.string(), z.unknown()).optional(),
 	rationale: z.array(z.string()).optional(),
 	wrote: z.boolean().optional(),

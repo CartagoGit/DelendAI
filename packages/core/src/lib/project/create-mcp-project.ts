@@ -1,272 +1,86 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { setMaxListeners } from 'node:events';
 
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import { estimateResultBytes } from '../metrics/metrics-registry';
-import {
-	injectCheckpointAdvisory,
-	selectCheckpointAdvisory,
-} from '../shared/checkpoint-advisory';
-import { toolError } from '../shared/tool-response';
+import { decideSurfaceModeFromCapabilities } from '../surface/decide-mode';
+import { instrumentToolHandlers } from './instrument-tool-handlers.helper';
+import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
+import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 
 /**
- * Compute the absolute path of today's JSONL entry in the `logs`
- * plugin's curated error stream (`results/logs-errors/`, not the
- * noisy mixed-outcome `results/logs/` stream — every event this hint
- * fires for is an `isError` result, so it belongs in the focused
- * file). Pure: no filesystem I/O. The path is resolved against the
- * host workspace and `corePaths.cacheDir`. When either is missing,
- * the hint is `null` and the wrapper simply skips the injection.
- * Must stay in sync with the directory layout
- * `plugins/logs/src/index.ts` writes (`cacheNamespace: 'results'`).
+ * Bound on how long `dispose()` waits for an in-flight lazily-activated
+ * tool call to drain before tearing down plugin runtimes anyway. A
+ * wedged handler must never pin teardown open forever (AUD-E02).
  */
-const resolveLogFilePath = (
-	config: IMcpVertexHostConfig,
-	now: Date,
-): string | null => {
-	if (!config.corePaths) return null;
-	const cacheDir = config.workspace.resolve(config.corePaths.cacheDir);
-	if (!cacheDir) return null;
-	const dateStr = now.toISOString().slice(0, 10);
-	const sep = cacheDir.includes('\\') ? '\\' : '/';
-	// `logs` declares `cacheNamespace: 'results'`, so its actual
-	// on-disk root is `<cacheDir>/results/logs-errors/`, not
-	// `<cacheDir>/logs-errors/`.
-	return `${cacheDir}${sep}results${sep}logs-errors${sep}${dateStr}.jsonl`;
-};
+const DISPOSE_DRAIN_TIMEOUT_MS = 5_000;
+const DISPOSE_DRAIN_POLL_MS = 25;
 
-/**
- * Inject a `logHint` into a failure result's `structuredContent` so
- * the IDE can offer a clickable "Open log" affordance. Pure: only
- * mutates the in-memory result object; never does filesystem I/O.
- * No-op when the result is not an object, already carries a
- * `logHint`, or the path cannot be resolved.
- */
-const injectLogHintIntoResult = (
-	result: unknown,
-	logPath: string | null,
-	now: Date,
-): void => {
-	if (!result || typeof result !== 'object') return;
-	if (
-		!Array.isArray(result) &&
-		(result as { isError?: boolean }).isError !== true
-	)
-		return;
-	const resObj = result as Record<string, unknown>;
-	const structured = resObj.structuredContent;
-	if (
-		structured === null ||
-		typeof structured !== 'object' ||
-		Array.isArray(structured)
-	) {
-		return;
-	}
-	const structuredObj = structured as Record<string, unknown>;
-	if ('logHint' in structuredObj) return; // engine already set one
-	if (logPath === null) return;
-	structuredObj.logHint = {
-		path: logPath,
-		line: 0, // unknown without I/O — IDE renders path only
-		ts: now.toISOString(),
-	};
-};
-
-/**
- * Wrap `server.registerTool` so every tool handler records latency, response
- * bytes and error flag into the metrics registry. Transparent: the tool
- * contract is unchanged; instrumentation is pure measurement around the call.
- */
-const instrumentToolHandlers = (
+const installListChangeBatching = (
 	server: McpServer,
-	config: IMcpVertexHostConfig,
-): void => {
-	type RegisterTool = McpServer['registerTool'];
-	const original = server.registerTool.bind(server) as RegisterTool;
-	// f00111 S1: the SDK hands the handler its `RequestHandlerExtra` — as
-	// the second arg for schema tools, as the FIRST (and only) arg for
-	// schema-less tools. Identify it by its `AbortSignal` so hooks receive
-	// the parsed tool arguments, never the extra (whose serialized form is
-	// the `{"signal":{},"_meta":…}` noise seen in older logs).
-	const findAbortSignal = (
-		args: readonly unknown[],
-	): AbortSignal | undefined => {
-		for (const arg of args) {
-			const signal = (arg as { signal?: unknown } | null)?.signal;
-			if (signal instanceof AbortSignal) return signal;
+): {
+	batch<T>(work: () => Promise<T>): Promise<T>;
+	batchSync<T>(work: () => T): T;
+} => {
+	let depth = 0;
+	let toolsPending = false;
+	let promptsPending = false;
+	let resourcesPending = false;
+	const sendToolListChanged = server.sendToolListChanged.bind(server);
+	const sendPromptListChanged = server.sendPromptListChanged.bind(server);
+	const sendResourceListChanged = server.sendResourceListChanged.bind(server);
+	server.sendToolListChanged = () => {
+		if (depth > 0) {
+			toolsPending = true;
+			return Promise.resolve();
 		}
-		return undefined;
+		return sendToolListChanged();
 	};
-	let lastCheckpointDedupeKey: string | null = null;
-	const wrap = (name: string, handler: unknown): unknown => {
-		if (typeof handler !== 'function') return handler;
-		const fn = handler as (...args: unknown[]) => unknown;
-		return async (...args: unknown[]): Promise<unknown> => {
-			const start = performance.now();
-			const signal = findAbortSignal(args);
-			const hookArgs =
-				args[0] !== undefined &&
-				(args[0] as { signal?: unknown } | null)?.signal instanceof
-					AbortSignal
-					? {}
-					: args[0];
-			let result: unknown;
-			let isError = false;
-			let error: unknown;
-			// f00111 S1: observe client cancellation while the handler is
-			// still in flight. Removed in `finally`, so a late abort (after
-			// the response settled) never fires the hook.
-			let onAbort: (() => void) | undefined;
-			if (signal !== undefined && config.onToolCancel) {
-				const onToolCancel = config.onToolCancel;
-				let cancelReported = false;
-				onAbort = () => {
-					if (cancelReported) return;
-					cancelReported = true;
-					try {
-						void Promise.resolve(
-							onToolCancel(
-								name,
-								hookArgs,
-								performance.now() - start,
-							),
-						).catch(() => {});
-					} catch {
-						// Ignored
-					}
-				};
-				signal.addEventListener('abort', onAbort, { once: true });
-				// `addEventListener` does not replay an abort that happened just
-				// before registration. The idempotence guard also closes the tiny
-				// race where abort fires between registration and this check.
-				if (signal.aborted) onAbort();
-			}
+	server.sendPromptListChanged = () => {
+		if (depth > 0) {
+			promptsPending = true;
+			return Promise.resolve();
+		}
+		return sendPromptListChanged();
+	};
+	server.sendResourceListChanged = () => {
+		if (depth > 0) {
+			resourcesPending = true;
+			return Promise.resolve();
+		}
+		return sendResourceListChanged();
+	};
+	const flush = async (): Promise<void> => {
+		const flushTools = toolsPending;
+		const flushPrompts = promptsPending;
+		const flushResources = resourcesPending;
+		toolsPending = false;
+		promptsPending = false;
+		resourcesPending = false;
+		if (flushTools) await sendToolListChanged();
+		if (flushPrompts) await sendPromptListChanged();
+		if (flushResources) await sendResourceListChanged();
+	};
+	return {
+		async batch<T>(work: () => Promise<T>): Promise<T> {
+			depth += 1;
 			try {
-				if (config.onToolStart) {
-					try {
-						void Promise.resolve(
-							config.onToolStart(name, hookArgs),
-						).catch(() => {});
-					} catch {
-						// Ignored
-					}
-				}
-				const preBlock = config.beforeToolCall?.({
-					toolName: name,
-					args: hookArgs,
-				});
-				if (
-					preBlock?.triggered === true &&
-					preBlock.severity === 'block'
-				) {
-					if (preBlock.dedupeKey !== lastCheckpointDedupeKey) {
-						lastCheckpointDedupeKey = preBlock.dedupeKey;
-					}
-					const blocked = toolError(
-						preBlock.reason,
-						preBlock.nextAction,
-					);
-					injectCheckpointAdvisory(blocked, preBlock);
-					isError = true;
-					result = blocked;
-					return blocked;
-				}
-				result = await fn(...args);
-				isError = (result as { isError?: boolean })?.isError === true;
-
-				// Inject __stuck_detected if agent is stuck
-				if (
-					config.isAgentStuck &&
-					result &&
-					typeof result === 'object'
-				) {
-					const stuckInfo = config.isAgentStuck(name, hookArgs);
-					if (stuckInfo) {
-						const resObj = result as Record<string, unknown>;
-						const structured =
-							(resObj.structuredContent as Record<
-								string,
-								unknown
-							>) ?? {};
-						resObj.structuredContent = {
-							...structured,
-							__stuck_detected: true,
-							handoffPath: stuckInfo.handoffPath,
-							suggestedAction: stuckInfo.suggestedAction,
-						};
-					}
-				}
-
-				// On failure, inject a logHint so the IDE can offer an
-				// "Open log" affordance. Pure (no I/O): the actual
-				// log entry is written by the logs plugin's onToolCall
-				// in the finally block below.
-				if (isError) {
-					injectLogHintIntoResult(
-						result,
-						resolveLogFilePath(config, new Date()),
-						new Date(),
-					);
-				} else {
-					const advisory = selectCheckpointAdvisory(
-						[
-							config.getCheckpointAdvisory?.({
-								toolName: name,
-								args: hookArgs,
-							}),
-						],
-						lastCheckpointDedupeKey,
-					);
-					if (advisory !== null) {
-						lastCheckpointDedupeKey = advisory.dedupeKey;
-						injectCheckpointAdvisory(result, advisory);
-					}
-				}
-
-				return result;
-			} catch (err) {
-				isError = true;
-				error = err;
-				throw err;
+				return await work();
 			} finally {
-				if (signal !== undefined && onAbort !== undefined) {
-					signal.removeEventListener('abort', onAbort);
-				}
-				const ms = performance.now() - start;
-				if (config.metricsRegistry) {
-					config.metricsRegistry.record(name, {
-						ms,
-						bytes: isError ? 0 : estimateResultBytes(result),
-						isError,
-					});
-				}
-				if (config.onToolCall) {
-					try {
-						void Promise.resolve(
-							config.onToolCall(
-								name,
-								hookArgs,
-								result,
-								error,
-								ms,
-							),
-						).catch(() => {});
-					} catch {
-						// Ignored
-					}
-				}
+				depth -= 1;
+				if (depth === 0) await flush();
 			}
-		};
-	};
-	// registerTool is heavily overloaded; the handler is always the last arg.
-	(server as { registerTool: (...a: unknown[]) => unknown }).registerTool = (
-		...callArgs: unknown[]
-	) => {
-		const name = callArgs[0] as string;
-		const last = callArgs.length - 1;
-		callArgs[last] = wrap(name, callArgs[last]);
-		return (original as (...a: unknown[]) => unknown)(...callArgs);
+		},
+		batchSync<T>(work: () => T): T {
+			depth += 1;
+			try {
+				return work();
+			} finally {
+				depth -= 1;
+				if (depth === 0) void flush();
+			}
+		},
 	};
 };
 
@@ -279,6 +93,16 @@ export interface IMcpVertexProject {
 	readonly server: McpServer;
 	readonly registrationOrder: readonly string[];
 	start(): Promise<void>;
+	/**
+	 * Idempotent teardown (r00039 / AUD-E02): waits (bounded) for any
+	 * in-flight lazily-activated tool invocation to drain, then disposes
+	 * every plugin runtime this project activated — eager or lazy,
+	 * whichever ran — in reverse activation order. Safe to call more
+	 * than once, and safe to call even if `start()` was never invoked.
+	 * Does not close the transport itself; wire `SIGTERM`/`SIGINT` to
+	 * this alongside `gracefulShutdown(server)` (see `run-cli.ts`).
+	 */
+	dispose(): Promise<void>;
 }
 
 /**
@@ -343,23 +167,335 @@ export async function createMcpProject(
 		name: config.metadata.name,
 		version: config.metadata.version,
 	});
+	const withListChangeBatch = installListChangeBatching(server);
 	// Instrument BEFORE registering tools so every handler is wrapped.
 	instrumentToolHandlers(server, config);
+	const toolSurfaceRuntime =
+		config.toolSurfacePlan !== undefined
+			? createToolSurfaceRuntime(config.toolSurfacePlan)
+			: undefined;
+	if (
+		toolSurfaceRuntime !== undefined &&
+		config.toolSurfaceRuntime !== undefined
+	) {
+		config.toolSurfaceRuntime.bind(toolSurfaceRuntime);
+	}
+	if (toolSurfaceRuntime !== undefined) {
+		toolSurfaceRuntime.setListChangeBatcher?.(withListChangeBatch);
+	}
+	const knowledgeResourceRegistrations = new Map<string, Promise<void>>();
+	const registerKnowledgeResource = (
+		resource: IToolRegistration,
+	): Promise<void> => {
+		const uri = `knowledge://${resource.id.slice('resource:'.length)}`;
+		const existing = knowledgeResourceRegistrations.get(uri);
+		if (existing !== undefined) return existing;
+		const registration = resource.register(server);
+		knowledgeResourceRegistrations.set(uri, registration);
+		return registration;
+	};
+	if (toolSurfaceRuntime !== undefined) {
+		const materializedLazyTools = new Map<
+			string,
+			Promise<{
+				readonly description?: string | undefined;
+				readonly inputSchema?: unknown;
+				readonly outputSchema?: unknown;
+				readonly handler: unknown;
+			}>
+		>();
+		const lazyToolActivators = new Map<
+			string,
+			() => Promise<{
+				readonly description?: string | undefined;
+				readonly inputSchema?: unknown;
+				readonly outputSchema?: unknown;
+				readonly handler: unknown;
+			}>
+		>();
+		const announcedLazyPlugins = new Set<string>();
+		const drainLazyPluginRegistrations = async (): Promise<void> => {
+			for (const registrations of config.consumeLazyPluginRegistrations?.() ??
+				[]) {
+				for (const prompt of registrations.prompts ?? []) {
+					await prompt.register(server);
+				}
+				for (const resource of registrations.resources ?? []) {
+					await resource.register(server);
+				}
+				for (const resource of buildKnowledgeResourceRegistrations(
+					registrations.knowledge ?? [],
+				)) {
+					await registerKnowledgeResource(resource);
+				}
+			}
+		};
+		const materializeLazyTool = async (
+			registrationId: string,
+			activate: () => Promise<{
+				readonly description?: string | undefined;
+				readonly inputSchema?: unknown;
+				readonly outputSchema?: unknown;
+				readonly handler: unknown;
+			}>,
+		): Promise<{
+			readonly description?: string | undefined;
+			readonly inputSchema?: unknown;
+			readonly outputSchema?: unknown;
+			readonly handler: unknown;
+		}> => {
+			const existing = materializedLazyTools.get(registrationId);
+			if (existing !== undefined) return existing;
+			const materialization = (async () => {
+				const binding = await activate();
+				await drainLazyPluginRegistrations();
+				const descriptor = config.toolSurfacePlan?.descriptors.find(
+					(entry) => entry.registrationId === registrationId,
+				);
+				if (descriptor === undefined) return binding;
+				// Register through the already-instrumented MCP server so a
+				// first-use tool keeps metrics, lifecycle hooks, abort handling,
+				// and error/result decoration identical to an eager tool.
+				const handle = server.registerTool(
+					descriptor.name,
+					{
+						...(binding.description !== undefined
+							? { description: binding.description }
+							: {}),
+						...(binding.inputSchema !== undefined
+							? { inputSchema: binding.inputSchema }
+							: {}),
+						...(binding.outputSchema !== undefined
+							? { outputSchema: binding.outputSchema }
+							: {}),
+					} as never,
+					binding.handler as never,
+				);
+				const instrumentedBinding = {
+					...binding,
+					handler: handle.handler,
+				};
+				// Keep the runtime record tied to the real SDK handle. This makes
+				// explicit plugin activation visible to tools/list and lets the
+				// SDK emit tools/list_changed. The managed surface still starts
+				// hidden until the plugin is explicitly activated.
+				toolSurfaceRuntime.bindRegisteredTool({
+					registrationId,
+					name: descriptor.name,
+					description: instrumentedBinding.description,
+					inputSchema: instrumentedBinding.inputSchema,
+					outputSchema: instrumentedBinding.outputSchema,
+					handler: instrumentedBinding.handler,
+					handle,
+				});
+				handle.disable();
+				return instrumentedBinding;
+			})();
+			materializedLazyTools.set(registrationId, materialization);
+			return materialization;
+		};
+		for (const [registrationId, activate] of config.lazyToolActivators ??
+			[]) {
+			lazyToolActivators.set(registrationId, activate);
+			toolSurfaceRuntime.bindLazyTool({
+				registrationId,
+				activate: () => materializeLazyTool(registrationId, activate),
+			});
+		}
+		if (
+			config.lazyPluginActivators !== undefined &&
+			toolSurfaceRuntime.setLazyPluginLoader !== undefined
+		) {
+			toolSurfaceRuntime.setLazyPluginLoader(async (pluginId) => {
+				await withListChangeBatch.batch(async () => {
+					const activatePlugin =
+						config.lazyPluginActivators?.get(pluginId);
+					if (activatePlugin === undefined) return;
+					await activatePlugin();
+					const plugin = config.toolSurfacePlan?.plugins.find(
+						(entry) => entry.id === pluginId,
+					);
+					const discoveredToolNames: string[] = [];
+					for (const registrationId of plugin?.toolRegistrationIds ??
+						[]) {
+						const materialize =
+							lazyToolActivators.get(registrationId);
+						if (materialize !== undefined) {
+							await materializeLazyTool(
+								registrationId,
+								materialize,
+							);
+							const descriptor =
+								config.toolSurfacePlan?.descriptors.find(
+									(entry) =>
+										entry.registrationId === registrationId,
+								);
+							if (descriptor !== undefined) {
+								discoveredToolNames.push(descriptor.name);
+							}
+						}
+					}
+					await drainLazyPluginRegistrations();
+					if (config.runtimeEventSink !== undefined) {
+						void Promise.resolve(
+							config.runtimeEventSink.emit({
+								version: 1,
+								ts: new Date().toISOString(),
+								kind: 'plugin.activated',
+								pluginName: pluginId,
+								toolCount: discoveredToolNames.length,
+							}),
+						).catch(() => undefined);
+					}
+					if (
+						discoveredToolNames.length > 0 &&
+						!announcedLazyPlugins.has(pluginId)
+					) {
+						announcedLazyPlugins.add(pluginId);
+						process.stderr.write(
+							`[surface] plugin-discovered plugin=${pluginId} tools=${discoveredToolNames.length} names=${discoveredToolNames.join(', ')}\n`,
+						);
+					}
+				});
+			});
+		}
+		if (
+			config.disposePlugin !== undefined &&
+			toolSurfaceRuntime.setPluginDisposer !== undefined
+		) {
+			// x00286 S4: connects `evictIdlePlugins`'s bookkeeping-only
+			// eviction to a real per-plugin dispose. Without this, an
+			// evicted plugin's tools relazy but its timers/listeners/child
+			// processes outlive it (AUD-C02's "no descarga, no libera"
+			// half) — `disposePlugin` here is the managed lazy runtime's
+			// retained `dispose` for exactly this plugin id.
+			toolSurfaceRuntime.setPluginDisposer(config.disposePlugin);
+		}
+		const previousOnInitialized = server.server.oninitialized;
+		server.server.oninitialized = () => {
+			previousOnInitialized?.();
+			const decision = decideSurfaceModeFromCapabilities({
+				clientInfo: server.server.getClientVersion(),
+				capabilities: server.server.getClientCapabilities(),
+				explicitMode: config.toolSurfacePlan?.explicitMode,
+			});
+			// `oninitialized` is a fire-and-forget SDK callback (it is not
+			// awaited by `client.connect()`), and switching TO `native`
+			// needs to materialize every still-lazy plugin before the
+			// surface's visibility is computed (AUD-C01) — that import +
+			// register() work is async, so this handler must be too. Wrap
+			// rather than change the callback's own signature: nothing
+			// downstream needs to await this handler; the e2e test that
+			// depends on the outcome already polls `tools/list` for exactly
+			// this reason.
+			void (async () => {
+				const change = await toolSurfaceRuntime.applySurfaceModeAsync(
+					decision.mode,
+				);
+				const client = server.server.getClientVersion();
+				// When the surface mode is already pinned via
+				// `config.surfaceMode` (or the `vertex` preset default), the
+				// explicit override leaves the surface unchanged. Skip the
+				// log line so the operator's stderr stays clean — the
+				// managed mode shows only bootstrap and router tools on the first
+				// `tools/list`,
+				// while native compatibility mode surfaces every loaded tool.
+				// Only report a real transition. The stable managed default must not
+				// add a redundant capability-negotiation line to stderr on every boot;
+				// the operator-facing Startup Report already records the effective mode.
+				if (change.changedToolNames.length > 0) {
+					process.stderr.write(
+						`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
+					);
+				}
+			})();
+		};
+	}
+	let currentRegistration: IToolRegistration | undefined;
+	const registrationServer =
+		toolSurfaceRuntime === undefined
+			? server
+			: (() => {
+					const proxy = Object.create(server) as McpServer;
+					proxy.registerTool = ((name, cfg, cb) => {
+						const registrationId = currentRegistration?.id ?? name;
+						const originalConfig = cfg as {
+							description?: string | undefined;
+							inputSchema?: unknown;
+							outputSchema?: unknown;
+						};
+						const publicDescription =
+							toolSurfaceRuntime.publicDescriptionFor(
+								registrationId,
+								originalConfig.description,
+								currentRegistration?.summary,
+							);
+						const handle = server.registerTool(
+							name,
+							{
+								...cfg,
+								...(publicDescription !== undefined
+									? { description: publicDescription }
+									: {}),
+							},
+							cb,
+						);
+						toolSurfaceRuntime.bindRegisteredTool({
+							registrationId,
+							name,
+							description: originalConfig.description,
+							inputSchema: originalConfig.inputSchema,
+							outputSchema: originalConfig.outputSchema,
+							handler: handle.handler,
+							handle,
+						});
+						return handle;
+					}) as McpServer['registerTool'];
+					return proxy;
+				})();
 	const ordered = planRegistrationOrder([], config.extraTools ?? []);
 	for (const registration of ordered) {
-		await registration.register(server);
+		currentRegistration = registration;
+		await registration.register(registrationServer);
 	}
+	currentRegistration = undefined;
+	toolSurfaceRuntime?.finalizeInitialSurface();
 	for (const prompt of config.extraPrompts ?? []) {
 		await prompt.register(server);
 	}
 	for (const resource of config.extraResources ?? []) {
+		if (resource.id.startsWith('resource:')) {
+			await registerKnowledgeResource(resource);
+			continue;
+		}
 		await resource.register(server);
 	}
+	let disposed = false;
 	return {
 		server,
 		registrationOrder: ordered.map((registration) => registration.id),
 		async start(): Promise<void> {
-			await server.connect(new StdioServerTransport());
+			const transport = new StdioServerTransport();
+			// The MCP SDK attaches one `drain` listener per pending stdio
+			// write. Startup can legitimately publish more than ten frames
+			// before stdout drains, so the default EventTarget warning is
+			// noisy here even though the listeners are released by `send`.
+			setMaxListeners(0, process.stdout);
+			await server.connect(transport);
+		},
+		async dispose(): Promise<void> {
+			if (disposed) return;
+			disposed = true;
+			const runtime = toolSurfaceRuntime;
+			if (runtime !== undefined) {
+				const deadline = Date.now() + DISPOSE_DRAIN_TIMEOUT_MS;
+				while (runtime.hasInFlightWork() && Date.now() < deadline) {
+					await new Promise((resolve) =>
+						setTimeout(resolve, DISPOSE_DRAIN_POLL_MS),
+					);
+				}
+			}
+			await config.disposePlugins?.();
 		},
 	};
 }

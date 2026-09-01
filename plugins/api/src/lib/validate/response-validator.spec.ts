@@ -180,6 +180,50 @@ describe('validateResponse (f00130 S2)', () => {
 		).toHaveLength(3);
 	});
 
+	it('keeps the exact email format finding payload for a representative invalid response', () => {
+		expect(
+			validateResponse(OPERATION, {
+				id: 'u_1',
+				role: 'admin',
+				profile: {
+					email: 'not-an-email',
+					website: 'https://example.com',
+				},
+				links: [{ href: 'https://example.com/docs' }],
+			}),
+		).toEqual([
+			{
+				ruleId: 'format-mismatch',
+				severity: 'medium',
+				message:
+					'$.profile.email: expected format email but received "not-an-email".',
+				fix: 'Provide a value that matches the email format.',
+			},
+		]);
+	});
+
+	it('rejects a long malformed email candidate quickly', () => {
+		const startedAt = performance.now();
+		const findings = validateResponse(OPERATION, {
+			id: 'u_1',
+			role: 'admin',
+			profile: {
+				email: `${'localpart'.repeat(4_000)} @example.com`,
+				website: 'https://example.com',
+			},
+			links: [{ href: 'https://example.com/docs' }],
+		});
+		expect(findings).toEqual([
+			{
+				ruleId: 'format-mismatch',
+				severity: 'medium',
+				message: `$.profile.email: expected format email but received ${JSON.stringify(`${'localpart'.repeat(4_000)} @example.com`)}.`,
+				fix: 'Provide a value that matches the email format.',
+			},
+		]);
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
+
 	it('flags an empty body when the response schema expects an object', () => {
 		const findings = validateResponse(OPERATION, undefined);
 		expect(findings).toHaveLength(1);

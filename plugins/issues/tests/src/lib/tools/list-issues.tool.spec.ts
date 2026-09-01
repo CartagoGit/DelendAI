@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	runListIssues,
-	type IGithubClient,
-	type IListIssuesToolOptions,
-} from '../../../../src/lib/tools/list-issues.tool';
+import { runListIssues } from '../../../../src/lib/tools/list-issues.tool';
 import type {
 	IFetchIssueResult,
+	IGithubClient,
 	IListIssuesOptions,
 	IListIssuesResult,
-} from '../../../../src/lib/github-client';
+	IListIssuesToolOptions,
+} from '../../../../src/lib/contracts';
 
 const STUB_FETCH_RESULT: IFetchIssueResult = {
 	data: {
@@ -34,6 +32,10 @@ const fakeClient = (
 ): IGithubClient => ({
 	fetchIssue: async () => STUB_FETCH_RESULT,
 	listIssues: listIssuesImpl,
+	listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+	listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+	listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+	listSecurityAdvisories: async () => ({ advisories: [], tier: 'gh' }),
 });
 
 describe('issues_list', async () => {

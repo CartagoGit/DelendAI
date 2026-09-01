@@ -6,10 +6,21 @@ import {
 import z from 'zod';
 
 import { createGithubSetupDeps } from './lib/github-setup';
-import { fetchIssue, listIssues } from './lib/github-client';
-import type { IGithubClient } from './lib/tools';
+import {
+	createIssueViaGh,
+	fetchIssue,
+	listCodeScanningAlerts,
+	listDependabotAlerts,
+	listIssues,
+	listSecretScanningAlerts,
+	listSecurityAdvisories,
+} from './lib/github-client';
+import type { IGithubClient } from './lib/contracts';
 import { buildIssuesToolRegistrations } from './lib/tools';
 import { buildSetupGithubRegistration } from './lib/tools/setup-github.tool';
+import { createIssuesErrorSinkAdapter } from './lib/services/error-sink-adapter';
+import type { IGithubClient as IAdapterGithubClient } from './lib/services/error-sink-adapter';
+import { buildIssuesErrorCollectorKnowledge } from './lib/knowledge/error-collector';
 
 /** Default scaffold directory (workspace-relative), per the proposal's S3 spec. */
 const DEFAULT_SCAFFOLD_DIR = 'docs/mcp-vertex/proposals/retired/issues';
@@ -18,6 +29,11 @@ const DEFAULT_SCAFFOLD_DIR = 'docs/mcp-vertex/proposals/retired/issues';
 const createGithubClient = (repo: string): IGithubClient => ({
 	fetchIssue: (number: number) => fetchIssue(repo, number),
 	listIssues: (opts) => listIssues(repo, opts ?? {}),
+	listDependabotAlerts: (opts) => listDependabotAlerts(repo, opts ?? {}),
+	listCodeScanningAlerts: (opts) => listCodeScanningAlerts(repo, opts ?? {}),
+	listSecretScanningAlerts: (opts) =>
+		listSecretScanningAlerts(repo, opts ?? {}),
+	listSecurityAdvisories: (opts) => listSecurityAdvisories(repo, opts ?? {}),
 });
 
 /**
@@ -69,7 +85,8 @@ const ISSUES_NEEDS_SETUP_BODY = [
  * register `issues` at all if `proposals` is not in the same load
  * set — no partial registration, no silently broken tools.
  *
- * The 5 `issues_*` tools (list/fetch/ingest/analyze/resolve) register
+ * The 9 `issues_*` tools (list/list_dependabot/list_code_scanning/
+ * list_secret_scanning/list_advisories/fetch/ingest/analyze/resolve) register
  * conditionally on the `repo` option being set; without it, the
  * plugin returns an `IKnowledgeEntry` (`issues-needs-repo-config`) so the
  * host agent can discover the missing-config situation via
@@ -77,15 +94,19 @@ const ISSUES_NEEDS_SETUP_BODY = [
  */
 export default definePlugin({
 	name: 'issues',
-	version: '0.1.0',
+	version: '0.1.1',
 	describe:
 		'REQUIRES proposals plugin. Opt-in GitHub issues ingest/analyse/promote workflow — host-only, not in the swarm preset.',
 	dependsOn: ['proposals'],
 	optionsSchema: z.object({
-		/** `'owner/name'`; required to register the 5 `issues_*` tools. */
+		/** `'owner/name'`; required to register the 9 `issues_*` tools. */
 		repo: z.string().optional(),
 		/** Defaults to `docs/mcp-vertex/proposals/retired/issues`. */
 		scaffoldDir: z.string().optional(),
+		/** When `true`, opens a live issue for critical/alert/emergency errors. Default `false`. */
+		autoReport: z.boolean().optional(),
+		/** Maximum live issues opened per rolling hour. Default `5`. */
+		maxReportsPerHour: z.number().int().positive().optional(),
 	}),
 	register(ctx) {
 		const repo =
@@ -99,7 +120,7 @@ export default definePlugin({
 				? ctx.options.scaffoldDir
 				: DEFAULT_SCAFFOLD_DIR;
 
-		// f00030 S2: the setup-github guide is available regardless of
+		// S2: the setup-github guide is available regardless of
 		// whether `repo` is configured — its whole point is to help the
 		// user reach a configured state.
 		const setupGithubTool = buildSetupGithubRegistration({
@@ -149,6 +170,35 @@ export default definePlugin({
 			githubClient,
 		});
 
-		return { tools: [...tools, setupGithubTool] };
+		// S4: error-sink adapter (safe-mode by default, opt-in autoReport).
+		const adapterClient: IAdapterGithubClient = {
+			createIssue: (input) => createIssueViaGh(repo, input),
+		};
+		const errorAdapter = createIssuesErrorSinkAdapter({
+			githubClient: adapterClient,
+			scaffoldDir: contained.abs,
+			autoReport:
+				typeof ctx.options.autoReport === 'boolean'
+					? ctx.options.autoReport
+					: false,
+			maxReportsPerHour:
+				typeof ctx.options.maxReportsPerHour === 'number'
+					? ctx.options.maxReportsPerHour
+					: 5,
+		});
+
+		return {
+			tools: [...tools, setupGithubTool],
+			errorSinks: [errorAdapter.sink],
+			knowledge: [
+				{
+					id: 'issues-error-collector',
+					title: 'Error-collector sink adapter (f00251)',
+					body: buildIssuesErrorCollectorKnowledge({
+						prefix: ctx.namespacePrefix,
+					}),
+				},
+			],
+		};
 	},
 });

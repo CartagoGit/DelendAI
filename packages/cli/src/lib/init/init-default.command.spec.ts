@@ -171,6 +171,7 @@ describe('init:default (f00103)', () => {
 			'diagram',
 			'docs',
 			'env',
+			'error-reporting',
 			'forge',
 			'git',
 			'i18n',
@@ -180,7 +181,6 @@ describe('init:default (f00103)', () => {
 			'notification',
 			'orchestrator-runner',
 			'perf',
-			'prompts-pack',
 			'proposals',
 			'quality',
 			'rules',
@@ -204,8 +204,9 @@ describe('init:default (f00103)', () => {
 		]) {
 			expect(config.plugins[phantom]).toBeUndefined();
 		}
-		// Exactly 28 vertex plugins rendered, no extras added.
-		expect(Object.keys(config.plugins).length).toBe(28);
+		// Exactly 37 vertex plugins rendered in the current dogfood snapshot,
+		// no extras added.
+		expect(Object.keys(config.plugins).length).toBe(38);
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {
@@ -300,7 +301,7 @@ describe('init:default (f00103)', () => {
 		// ~2-4s in the test sandbox (env warning lookup); well above
 		// vitest's 5s default. See
 		// `init-render.service.spec.ts` for the same constant.
-		const TEST_TIMEOUT_MS = 30_000;
+		const _TEST_TIMEOUT_MS = 30_000;
 		const stderr = vi
 			.spyOn(process.stderr, 'write')
 			.mockImplementation(() => true);

@@ -37,7 +37,8 @@ export const detectLongChains = (
 	// Match switches with `case`
 	const switchRegex = /\bswitch\s*\([^)]*\)\s*\{/g;
 	let m: RegExpExecArray | null;
-	while ((m = switchRegex.exec(body)) !== null) {
+	m = switchRegex.exec(body);
+	while (m !== null) {
 		const start = m.index + m[0].length;
 		// Find matching closing brace (single-level aware; nested switches are rare)
 		let depth = 1;
@@ -58,12 +59,15 @@ export const detectLongChains = (
 				kind: 'switch',
 			});
 		}
+		m = switchRegex.exec(body);
 	}
 	// Match chains of `else if` at indentation 0
 	const elseIfRegex = /\belse\s+if\s*\(/g;
 	const elseIfHits: Array<{ line: number; idx: number }> = [];
-	while ((m = elseIfRegex.exec(body)) !== null) {
+	m = elseIfRegex.exec(body);
+	while (m !== null) {
 		elseIfHits.push({ line: lineOf(body, m.index), idx: m.index });
+		m = elseIfRegex.exec(body);
 	}
 	// Coalesce: consecutive `else if` branches (no intervening `}`-then-new-statement).
 	for (let i = 0; i < elseIfHits.length; i += 1) {

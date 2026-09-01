@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"mcp-vertex": {
+			"command": "npx",
+			"args": ["-y", "@mcp-vertex/core", "--preset=standard"]
+		}
+	}
+}

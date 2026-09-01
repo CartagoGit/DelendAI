@@ -21,9 +21,11 @@
  * both consume the object this returns; neither re-reads the manifest or
  * re-parses frontmatter.
  */
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 
 import type { ISkillBundle } from './load-skills';
+import type { ISkillDescriptor } from './sources/types';
 
 /** A compact, actionable catalog row. No body — that is loaded on demand. */
 export interface ISkillCatalogEntry {
@@ -35,6 +37,11 @@ export interface ISkillCatalogEntry {
 	readonly appliesTo: readonly string[];
 	readonly tags: readonly string[];
 	readonly bodyPath: string;
+	/** Portable provenance metadata; absent only when the body could not be read. */
+	readonly source?: ISkillDescriptor['source'];
+	readonly owner?: string;
+	readonly hash?: string;
+	readonly estimatedBodyTokens?: number;
 }
 
 /** The skill catalog plus an on-demand body loader. */
@@ -64,9 +71,9 @@ export const extractSkillDescription = (
 	skillId: string,
 	body: string,
 ): string => {
-	const fm = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/u.exec(body);
-	if (fm) {
-		const yaml = fm[1] ?? '';
+	const fm = splitFrontmatter(body);
+	if (fm !== undefined) {
+		const yaml = fm.yaml;
 		const lines = yaml.split('\n');
 		for (let i = 0; i < lines.length; i += 1) {
 			const line = lines[i] ?? '';
@@ -90,11 +97,27 @@ export const extractSkillDescription = (
 			const folded = collapse(block.join(' '));
 			if (folded.length > 0) return folded;
 		}
-		const prose = firstParagraph(fm[2] ?? '');
+		const prose = firstParagraph(fm.rest);
 		if (prose) return prose;
 	}
 	const prose = firstParagraph(body);
 	return prose ?? `Skill ${skillId}`;
+};
+
+const splitFrontmatter = (
+	body: string,
+): { readonly yaml: string; readonly rest: string } | undefined => {
+	const opening = '---\n';
+	if (!body.startsWith(opening)) return undefined;
+	const closingIndex = body.indexOf('\n---', opening.length);
+	if (closingIndex === -1) return undefined;
+	const afterClosing = closingIndex + '\n---'.length;
+	const restStart =
+		body[afterClosing] === '\n' ? afterClosing + 1 : afterClosing;
+	return {
+		yaml: body.slice(opening.length, closingIndex),
+		rest: body.slice(restStart),
+	};
 };
 
 const collapse = (s: string): string => s.replace(/\s+/gu, ' ').trim();
@@ -127,9 +150,35 @@ export const buildSkillCatalog = async (
 	const entries: ISkillCatalogEntry[] = [];
 	for (const bundle of bundles) {
 		let description: string;
+		let bodyMetadata:
+			| Pick<
+					ISkillCatalogEntry,
+					'source' | 'owner' | 'hash' | 'estimatedBodyTokens'
+			  >
+			| undefined;
 		try {
 			const body = await readFile(absFor(bundle.bodyPath));
 			description = extractSkillDescription(bundle.id, body);
+			const primaryOwner = bundle.appliesTo[0] ?? '@mcp-vertex/core';
+			const owner =
+				primaryOwner === '@mcp-vertex/*' ||
+				primaryOwner === '@mcp-vertex/core'
+					? '@mcp-vertex/core'
+					: primaryOwner;
+			const source: ISkillDescriptor['source'] =
+				bundle.bodyPath.startsWith('.mcp-vertex/')
+					? 'workspace'
+					: owner === '@mcp-vertex/core'
+						? 'core'
+						: 'plugin';
+			bodyMetadata = {
+				source,
+				owner,
+				hash: `sha256:${createHash('sha256').update(body).digest('hex')}`,
+				estimatedBodyTokens: Math.ceil(
+					Buffer.byteLength(body, 'utf8') / 4,
+				),
+			};
 		} catch {
 			// A missing body is not fatal: still advertise the skill so the AI
 			// knows it exists, with a minimal description.
@@ -143,6 +192,7 @@ export const buildSkillCatalog = async (
 			appliesTo: [...bundle.appliesTo],
 			tags: [...bundle.tags],
 			bodyPath: bundle.bodyPath,
+			...(bodyMetadata ?? {}),
 		});
 	}
 

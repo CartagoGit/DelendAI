@@ -115,6 +115,12 @@ export const ServerEntrySchema = z
 		 */
 		detect: z.string().min(1).optional(),
 		/**
+		 * Boot this third-party server at host init instead of lazily on
+		 * the first routed call. Defaults to false because eager startup
+		 * expands the boot-time execution surface.
+		 */
+		eager: z.boolean().default(false),
+		/**
 		 * Environment variables the server needs, by NAME only. Values
 		 * live in the user's shell/host secret store — never in config.
 		 */
@@ -168,4 +174,4 @@ export const OptionsSchema = z
 	.strict();
 
 export type IExternalMcpsOptions = z.infer<typeof OptionsSchema>;
-export type IServerEntry = z.infer<typeof ServerEntrySchema>;
+export type IServerEntry = z.input<typeof ServerEntrySchema>;

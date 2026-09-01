@@ -1,5 +1,5 @@
-import { readFile, stat } from 'node:fs/promises';
-import { join, relative, resolve } from 'node:path';
+import { stat } from 'node:fs/promises';
+import { relative, resolve } from 'node:path';
 
 import z from 'zod';
 
@@ -8,7 +8,7 @@ import type {
 	IToolTextResult,
 	ICommitAuthorResolution,
 } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, toolJson } from '@mcp-vertex/core/public';
 
 import { runContinueProposal } from './continue-proposal.tool';
 import type { IContinueProposalToolOptions } from './continue-proposal.tool';
@@ -17,7 +17,10 @@ import { createGitRunner } from '../shared/git-runner';
 import { runBranchStatusEngine } from '../shared/branch-status-engine';
 import { runBranchGcEngine } from '../shared/branch-gc-engine';
 import { runSwarmHygieneEngine } from '../shared/swarm-hygiene-engine';
-import type { IRescueCandidate } from '../contracts/interfaces/swarm-hygiene.interface';
+import type {
+	IRescueCandidate,
+	ISmokeResidualBranch,
+} from '../contracts/interfaces/swarm-hygiene.interface';
 import { runStashSnapshot, type IStashEntry } from '../shared/stash-snapshot';
 import { detectAgentLoop, type IToolCall } from '../agents/agent-loop-detector';
 import { hasPeerApprovedReview } from '../swarm/proposal-review';
@@ -26,16 +29,16 @@ import { readJsonOrNull } from '../proposals/index-reader';
 /**
  * Optional persistence step the orchestrator can opt into at slice
  * close time. Three modes — `'none'` (default, no git), `'commit'`,
- * `'commit-and-push'`. See l109 §2 for the rationale; the helper
- * itself lives in `auto-work-persist.ts` and is invoked by the
- * orchestrator, not by `auto_work` (which only renders the plan).
+ * `'commit-and-push'`. See l109 §2 for the rationale; the actual git
+ * mutation happens inside `close_slice`, while `auto_work` remains a
+ * read-only planner that surfaces the configured persistence contract.
  */
 export interface IAutoWorkPersistConfig {
 	readonly mode: IAutoWorkPersistMode;
 	/**
 	 * Conventional-Commits template. Default:
-	 * `<area>(<proposalId>): <sliceId>`. Forwarded to
-	 * `maybePersistAfterSlice`.
+	 * `<area>(<proposalId>): <sliceId>`. Forwarded to the
+	 * `close_slice` persistence step.
 	 */
 	readonly messageTemplate?: string;
 	/**
@@ -44,6 +47,7 @@ export interface IAutoWorkPersistConfig {
 	 * `origin agent/<name>` for worktrees.
 	 */
 	readonly pushTarget?: string;
+	readonly protectedBranches?: readonly string[];
 }
 
 export interface IAutoWorkOrchestrationConfig {
@@ -133,6 +137,23 @@ export const DEFAULT_LOOP_DETECTOR_DISABLE_FOR = [
 	'proposals_auto_work',
 ] as const;
 
+const persistTargetHitsProtectedBranch = (
+	pushTarget: string,
+	protectedBranches: readonly string[] = ['main', 'master'],
+): boolean => {
+	const tokens = pushTarget.split(/\s+/u);
+	return tokens.some((token) =>
+		protectedBranches.some(
+			(branch) =>
+				token === branch ||
+				token.endsWith(`/${branch}`) ||
+				token.endsWith(`\\${branch}`) ||
+				token.endsWith(`:${branch}`) ||
+				token.endsWith(`:/${branch}`),
+		),
+	);
+};
+
 const json = toolJson;
 
 // Hard anti-idle brake: the `idle` state is guidance, but a model can ignore it
@@ -195,6 +216,33 @@ interface IClaimReadyResolution {
 	readonly pendingTrackedArtifacts: readonly string[];
 }
 
+const findReviewPendingPeerApproval = async (
+	options: Pick<IAutoWorkToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
+): Promise<{ proposalId: string; file: string } | null> => {
+	if (options.proposalsDirAbs === undefined) return null;
+	const index = await readJsonOrNull<{
+		proposals?: Array<{ id: string; file: string }>;
+	}>(options.indexPathAbs);
+	for (const entry of index?.proposals ?? []) {
+		if (
+			entry.file.startsWith('review/') ||
+			entry.file.includes('/review/')
+		) {
+			try {
+				const raw = (
+					await new SafeWorkspaceReader(
+						options.proposalsDirAbs,
+					).readText(entry.file)
+				).content;
+				if (!hasPeerApprovedReview(raw)) {
+					return { proposalId: entry.id, file: entry.file };
+				}
+			} catch {}
+		}
+	}
+	return null;
+};
+
 const hasTrackedArtifact = async (
 	workspaceRoot: string,
 	file: string,
@@ -210,6 +258,28 @@ const hasTrackedArtifact = async (
 	const git = await createGitRunner(workspaceRoot)([
 		'ls-files',
 		'--error-unmatch',
+		'--',
+		file,
+	]);
+	return git.ok && git.output.trim() !== '';
+};
+
+const hasPendingArtifactChange = async (
+	workspaceRoot: string,
+	file: string,
+): Promise<boolean> => {
+	const abs = resolve(workspaceRoot, file);
+	const rel = relative(workspaceRoot, abs);
+	if (rel.startsWith('..') || rel === '..') return false;
+	try {
+		await stat(abs);
+	} catch {
+		return false;
+	}
+	const git = await createGitRunner(workspaceRoot)([
+		'status',
+		'--porcelain=v1',
+		'--untracked-files=all',
 		'--',
 		file,
 	]);
@@ -283,7 +353,7 @@ const resolveClaimReady = async (
 							await Promise.all(
 								slice.files.map(async (file) => ({
 									file,
-									exists: await hasTrackedArtifact(
+									exists: await hasPendingArtifactChange(
 										options.workspaceRoot!,
 										file,
 									),
@@ -316,10 +386,12 @@ const buildPeerReviewPlan = (input: {
 	readonly namespacePrefix: string;
 	readonly proposalId: string;
 	readonly file: string;
+	readonly persistMode?: IAutoWorkPersistMode;
 }) => ({
 	state: 'work' as const,
 	proposalId: input.proposalId,
 	file: input.file,
+	persist: { mode: input.persistMode ?? 'none' },
 	next: `${input.namespacePrefix}_proposal_review`,
 	nextAction: `Peer-review gate (F149). Call ${input.namespacePrefix}_proposal_review { action: "approve", proposalId: "${input.proposalId}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>" } before ${input.namespacePrefix}_proposal_transition { id: "${input.proposalId}", to: "done", reason } .`,
 	steps: [
@@ -329,35 +401,6 @@ const buildPeerReviewPlan = (input: {
 		`Repeat ${input.namespacePrefix}_auto_work.`,
 	],
 });
-
-const findReviewPendingPeerApproval = async (
-	options: Pick<IAutoWorkToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
-): Promise<{ proposalId: string; file: string } | null> => {
-	if (options.proposalsDirAbs === undefined) return null;
-	const index = await readJsonOrNull<{
-		proposals?: Array<{ id: string; file: string }>;
-	}>(options.indexPathAbs);
-	for (const entry of index?.proposals ?? []) {
-		if (
-			!entry.file.startsWith('review/') &&
-			!entry.file.includes('/review/')
-		) {
-			continue;
-		}
-		try {
-			const raw = await readFile(
-				join(options.proposalsDirAbs, entry.file),
-				'utf8',
-			);
-			if (!hasPeerApprovedReview(raw)) {
-				return { proposalId: entry.id, file: entry.file };
-			}
-		} catch {
-			continue;
-		}
-	}
-	return null;
-};
 
 export const buildAutoWorkOrchestrationPolicy = (options: {
 	readonly namespacePrefix: string;
@@ -383,9 +426,10 @@ export const buildAutoWorkOrchestrationPolicy = (options: {
  * is actionable it returns an explicit idle state.
  *
  * When `options.persist.mode !== 'none'` the plan includes an extra
- * step that tells the orchestrator to invoke
- * `maybePersistAfterSlice(...)` after `sync_proposals`. The persist
- * itself is NOT executed inside this tool — `auto_work` is read-only
+ * step that tells the orchestrator to complete the slice via
+ * `close_slice`, which performs the configured persistence after
+ * validation and before release. The persist itself is NOT executed
+ * inside this tool — `auto_work` is read-only
  * with respect to the workspace filesystem and git; it only renders
  * a plan. See l109 s3.
  */
@@ -530,6 +574,7 @@ export const runAutoWork = async (
 				: {}),
 			stashes: [...hygiene.stashes],
 			rescueCandidates: [...hygiene.rescueCandidates],
+			smokeResiduals: [...hygiene.smokeResiduals],
 			blockers: [...hygiene.hygieneBlockers],
 			nextAction:
 				'Resolve the hygiene blockers above (pop stashes, cherry-pick rescue branches, or pass forceHygieneBypass:true) and call auto_work again. The slice-selection cascade was NOT run.',
@@ -550,18 +595,29 @@ export const runAutoWork = async (
 		status?: string;
 		reason?: string;
 		nextAction?: string;
+		action?: 'close';
 		pickedFromPaused?: boolean;
 	};
 	const requirePeer = options.requirePeerReview !== false;
-	if (requirePeer) {
+	const nextIsExecutable =
+		next.kind === 'next-proposal' &&
+		typeof next.file === 'string' &&
+		!next.file.startsWith('review/') &&
+		!next.file.includes('/review/');
+	if (requirePeer && !nextIsExecutable) {
 		const pendingReview = await findReviewPendingPeerApproval(options);
 		if (pendingReview !== null) {
 			consecutiveIdle = 0;
+			const peerReviewPersistMode =
+				options.inputPersist ?? options.persist?.mode;
 			return json(
 				buildPeerReviewPlan({
 					namespacePrefix: options.namespacePrefix,
 					proposalId: pendingReview.proposalId,
 					file: pendingReview.file,
+					...(peerReviewPersistMode !== undefined
+						? { persistMode: peerReviewPersistMode }
+						: {}),
 				}),
 			);
 		}
@@ -589,6 +645,25 @@ export const runAutoWork = async (
 					}),
 		});
 	}
+	if (next.action === 'close') {
+		consecutiveIdle = 0;
+		return json({
+			state: 'work',
+			proposalId: next.proposalId,
+			file: next.file,
+			action: 'close',
+			persist: {
+				mode: options.inputPersist ?? options.persist?.mode ?? 'none',
+			},
+			nextAction: next.nextAction,
+			steps: [
+				'All declared slices are already done; do not claim another slice.',
+				next.nextAction ??
+					'Complete the proposal closure transition with its required evidence and peer-review gates.',
+				`Re-run ${options.namespacePrefix}_auto_work after the proposal reaches done.`,
+			],
+		});
+	}
 
 	// Actionable work → reset the idle streak.
 	consecutiveIdle = 0;
@@ -605,20 +680,28 @@ export const runAutoWork = async (
 		next.file &&
 		options.proposalsDirAbs
 	) {
-		const docPath = join(options.proposalsDirAbs, next.file);
 		let approved = false;
 		try {
-			const raw = await readFile(docPath, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
+					next.file,
+				)
+			).content;
 			approved = hasPeerApprovedReview(raw);
 		} catch {
 			approved = false;
 		}
 		if (!approved) {
+			const peerReviewPersistMode =
+				options.inputPersist ?? options.persist?.mode;
 			return json(
 				buildPeerReviewPlan({
 					namespacePrefix: options.namespacePrefix,
 					proposalId: next.proposalId,
 					file: next.file,
+					...(peerReviewPersistMode !== undefined
+						? { persistMode: peerReviewPersistMode }
+						: {}),
 				}),
 			);
 		}
@@ -627,10 +710,32 @@ export const runAutoWork = async (
 	// Resolve the persist mode in priority order: tool input > config >
 	// hard default `'none'`. Keeping this resolver pure and inline keeps
 	// the call graph small; the orchestrator can also inspect the
-	// returned `persist.mode` to decide whether to actually invoke
-	// `maybePersistAfterSlice` later.
+	// returned `persist.mode` to decide whether the eventual
+	// `close_slice` call must commit or commit-and-push.
 	const resolvedMode: IAutoWorkPersistMode =
 		options.inputPersist ?? options.persist?.mode ?? 'none';
+	if (
+		resolvedMode === 'commit-and-push' &&
+		options.persist?.pushTarget !== undefined &&
+		persistTargetHitsProtectedBranch(
+			options.persist.pushTarget,
+			options.persist.protectedBranches,
+		)
+	) {
+		return json({
+			state: 'work',
+			ok: false,
+			reason: 'invalid-persist-config',
+			executionMode: 'blocked',
+			proposalId: next.proposalId,
+			file: next.file,
+			hygieneBlockers: [
+				`persist.mode "commit-and-push" cannot target a protected branch: "${options.persist.pushTarget}"`,
+			],
+			nextAction:
+				'Change persist.pushTarget to an explicit non-protected branch target, then call auto_work again. No commit-and-push plan was produced.',
+		});
+	}
 
 	const prefix = options.namespacePrefix;
 	const orchestration = buildAutoWorkOrchestrationPolicy({
@@ -675,29 +780,45 @@ export const runAutoWork = async (
 		});
 	}
 	const claimReady = claimReadyResolution.claimReady;
+	// x00231 + x00299: persist planning mirrors the effective push policy.
+	// `main`/`master` stay protected by config, but an explicit
+	// `persist.pushTarget` like `origin develop` is valid when the policy
+	// allows it. The plan must not invent an undeclared `wip/*` detour;
+	// it surfaces the configured target verbatim and only falls back to a
+	// mode-appropriate default when no target is configured.
+	const worktreeEnabled = options.agentWorktreeEnabled === true;
+	const pushTargetHint =
+		options.persist?.pushTarget ??
+		(worktreeEnabled ? 'origin agent/<branch>' : 'origin HEAD');
 	const persistStep =
 		resolvedMode === 'none'
 			? []
 			: resolvedMode === 'commit'
 				? [
-						'Persist the slice: call the engine helper `maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit" })` after `sync_proposals` and before `release`.',
+						`Persist the slice via ${prefix}_close_slice { proposalId, sliceId, validateEvidence } after validation and before release; close_slice stages only the declared slice files, applies persist mode "commit", and exposes the typed persist result in its response. Hosts must not call maybePersistAfterSlice directly. Do not stage unrelated files.`,
 					]
 				: [
-						'Persist the slice (commit + push): call `maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "origin agent/<branch>" })` after `sync_proposals` and before `release`. The helper refuses to push to `main` automatically.',
+						`Persist the slice via ${prefix}_close_slice { proposalId, sliceId, validateEvidence } after validation and before release; close_slice stages only the declared slice files, applies persist mode "commit-and-push", and must verify push target "${pushTargetHint}" before reporting closed=true. Hosts must not call maybePersistAfterSlice directly. Treat committed=true/pushed=false as incomplete and never report closed=true. The persist block in the response carries mode, committed, pushed, and hash/reason when present.`,
 					];
 
-	// x00051 S3: when persist is enabled, the plan must surface the
-	// `agent_worktree create` step explicitly so a host that runs
-	// `auto_work` solo (without going through `delegate`) still
-	// produces the per-agent branch before the persist push. When
-	// persist is `none`, no worktree step is needed — the orchestrator
-	// is not pushing.
+	// x00051 S3 + x00299: when persist is enabled, the plan must surface
+	// where the persist commit/push goes. With the worktree gate on,
+	// `agent_worktree create` stays explicit so solo hosts can satisfy
+	// the isolation requirement before persisting. With the gate off,
+	// the plan stays on the shared branch and, for commit-and-push,
+	// points at the configured target rather than inventing a side branch.
 	const worktreeStep =
 		resolvedMode === 'none'
 			? []
-			: [
-					`Ensure per-agent worktree exists before persisting: ${prefix}_agent_worktree { action: "create", agent: "<pending>" } (idempotent — returns the existing worktree if one is present; required when persist mode is "${resolvedMode}"). When the slice is delegated via ${prefix}_delegate this is handled for you; keep the step as a safety net for solo runs.`,
-				];
+			: worktreeEnabled
+				? [
+						`Ensure per-agent worktree exists before persisting: ${prefix}_agent_worktree { action: "create", agent: "<pending>" } (idempotent — returns the existing worktree if one is present; required when persist mode is "${resolvedMode}"). When the slice is delegated via ${prefix}_delegate this is handled for you; keep the step as a safety net for solo runs.`,
+					]
+				: [
+						resolvedMode === 'commit-and-push'
+							? `This repo forbids per-agent worktrees (\`agentWorktree: false\`): persist on the shared checkout and push to the configured target (here: \`${pushTargetHint}\`) when the effective protected-branch policy allows it. Do NOT create an agent worktree or invent an intermediate branch.`
+							: 'This repo forbids per-agent worktrees (`agentWorktree: false`): commit directly on the shared checkout target selected by the operator. Do NOT create an agent worktree or branch.',
+					];
 
 	const steps = [
 		...worktreeStep,
@@ -785,7 +906,7 @@ export const runAutoWork = async (
 	});
 };
 
-const INPUT_SCHEMA = z
+export const AUTO_WORK_INPUT_SCHEMA = z
 	.object({
 		/**
 		 * Optional per-call override for the persist mode. Resolved with
@@ -818,32 +939,7 @@ const INPUT_SCHEMA = z
 	})
 	.strict();
 
-const AUTO_WORK_ORCHESTRATION_OUTPUT_SCHEMA = z.object({
-	lane: z.literal('inspect-then-delegate'),
-	delegateAfterToolCalls: z.number().int().positive(),
-	next: z.string(),
-	policy: z.string(),
-});
-
-const AUTO_WORK_PERSIST_OUTPUT_SCHEMA = z.object({
-	mode: z.enum(['none', 'commit', 'commit-and-push']),
-	messageTemplate: z.string().optional(),
-	pushTarget: z.string().optional(),
-});
-
-const AUTO_WORK_CLAIM_READY_OUTPUT_SCHEMA = z.object({
-	sliceId: z.string(),
-	files: z.array(z.string()),
-	gate: z.enum(['lint', 'type', 'e2e', 'none']),
-	agent_lock_args: z.object({
-		action: z.literal('claim'),
-		task_id: z.string(),
-		agent: z.literal('<host-resolved-agent>'),
-		files: z.array(z.string()),
-	}),
-});
-
-const AUTO_WORK_OUTPUT_SCHEMA = z.object({
+export const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	state: z.enum(['idle', 'work']),
 	idleStreak: z.number().int().positive().optional(),
 	reason: z.string().optional(),
@@ -853,10 +949,11 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	proposalId: z.string().optional(),
 	file: z.string().optional(),
 	pickedFromPaused: z.literal(true).optional(),
-	orchestration: AUTO_WORK_ORCHESTRATION_OUTPUT_SCHEMA.optional(),
+	orchestration: z.unknown().optional(),
 	validationCommand: z.string().optional(),
-	persist: AUTO_WORK_PERSIST_OUTPUT_SCHEMA.optional(),
-	claimReady: AUTO_WORK_CLAIM_READY_OUTPUT_SCHEMA.optional(),
+	persist: z.unknown().optional(),
+	claimReady: z.unknown().optional(),
+	action: z.enum(['close']).optional(),
 	steps: z.array(z.string()).optional(),
 	// f00073: optional array of warnings about other agents' branch /
 	// worktree state. Empty when the swarm is clean.
@@ -871,30 +968,13 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	hygieneBlockers: z.array(z.string()).optional(),
 	hygieneActions: z.array(z.string()).optional(),
 	hygieneWarnings: z.array(z.string()).optional(),
-	stashes: z
-		.array(
-			z.object({
-				index: z.number().int().nonnegative(),
-				ref: z.string(),
-				branch: z.string().nullable(),
-				message: z.string(),
-				date: z.string().nullable(),
-			}),
-		)
-		.optional(),
-	rescueCandidates: z
-		.array(
-			z.object({
-				branch: z.string(),
-				ahead: z.number().int().nonnegative(),
-				behind: z.number().int().nonnegative(),
-				lastCommitMinutesAgo: z.number().int(),
-				worktreePath: z.string(),
-				diffStat: z.string(),
-				cherryPickHint: z.string(),
-			}),
-		)
-		.optional(),
+	stashes: z.unknown().optional(),
+	rescueCandidates: z.unknown().optional(),
+	// R-2026-08-31: rescue-candidate lookalikes that the engine
+	// classifies as smoke artifacts. Surfaced on the response so the
+	// operator can prune them with `git branch -D` /
+	// `proposals_branch_gc` without gating the cascade.
+	smokeResiduals: z.unknown().optional(),
 	// Strict-mode envelope: when the front-hook blocks, the plan also
 	// sets `ok: false` and `reason: 'hygiene-blocked'`. The fields
 	// below are the structured payload so the orchestrator can render
@@ -1038,6 +1118,7 @@ export interface IHygieneFrontHook {
 	readonly hygieneActions: readonly string[];
 	readonly hygieneWarnings: readonly string[];
 	readonly rescueCandidates: readonly IRescueCandidate[];
+	readonly smokeResiduals: readonly ISmokeResidualBranch[];
 	readonly gcEligibleCount: number;
 	readonly outOfCacheCount: number;
 	readonly stashes: readonly IStashEntry[];
@@ -1049,6 +1130,7 @@ const emptyHygieneFrontHook: IHygieneFrontHook = {
 	hygieneActions: [],
 	hygieneWarnings: [],
 	rescueCandidates: [],
+	smokeResiduals: [],
 	gcEligibleCount: 0,
 	outOfCacheCount: 0,
 	stashes: [],
@@ -1073,6 +1155,22 @@ const rescueBlockersFor = (
 		);
 	}
 	return blockers;
+};
+
+/**
+ * R-2026-08-31: smoke-residual lines are surfaced as **warnings**, not
+ * blockers. They are rescue-candidate lookalikes (single-commit recent
+ * or authored by the reserved `smoke-tester` identity) that the swarm
+ * left behind; the auto_work cascade must proceed so the operator can
+ * decide whether to delete them.
+ */
+const smokeResidualWarningsFor = (
+	smokeResiduals: readonly ISmokeResidualBranch[],
+): string[] => {
+	if (smokeResiduals.length === 0) return [];
+	return [
+		`${smokeResiduals.length} smoke-residual branch(es) detected (excluded from rescue-candidate block): delete with \`git branch -D <branch>\` or run \`proposals_branch_gc { dryRun: false }\` once older than the GC threshold.`,
+	];
 };
 
 /**
@@ -1172,9 +1270,13 @@ export const collectHygieneFrontHook = async (
 			runStashSnapshot({ run, workspaceRoot }),
 		]);
 		const rescueCandidates = hygiene.ok ? hygiene.rescueCandidates : [];
+		const smokeResiduals = hygiene.ok ? hygiene.smokeResiduals : [];
 		const gcEligible = hygiene.ok ? hygiene.gcEligible : [];
 		const outOfCache = hygiene.ok ? hygiene.outOfCache : [];
 
+		// R-2026-08-31: smoke-residuals do NOT count as rescue-candidate
+		// blockers. They are surfaced on the response so the operator
+		// can prune them, but they never gate the cascade.
 		const rescueBlocked = rescueCandidates.length > 0;
 		const stashBlocked = stashes.length > 0;
 		const executionMode: IHygieneFrontHook['executionMode'] =
@@ -1189,7 +1291,10 @@ export const collectHygieneFrontHook = async (
 			...stashBlockersFor(stashes),
 		];
 		const hygieneActions = gcActionsFor(gcEligible);
-		const hygieneWarnings = outOfCacheWarningsFor(outOfCache);
+		const hygieneWarnings = [
+			...outOfCacheWarningsFor(outOfCache),
+			...smokeResidualWarningsFor(smokeResiduals),
+		];
 
 		return {
 			executionMode,
@@ -1197,6 +1302,7 @@ export const collectHygieneFrontHook = async (
 			hygieneActions,
 			hygieneWarnings,
 			rescueCandidates,
+			smokeResiduals,
 			gcEligibleCount: gcEligible.length,
 			outOfCacheCount: outOfCache.length,
 			stashes,
@@ -1225,7 +1331,7 @@ export const buildAutoWorkRegistration = (
 				outputSchema: AUTO_WORK_OUTPUT_SCHEMA,
 				description:
 					'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → [persist] → release), or an explicit idle state. Low-token: a tight action list, not prose.',
-				inputSchema: INPUT_SCHEMA,
+				inputSchema: AUTO_WORK_INPUT_SCHEMA,
 			},
 			async (args: {
 				persist?: IAutoWorkPersistMode | undefined;

@@ -12,22 +12,21 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface ProposalsAgentLockOutput {
+export interface McpVertexProposalsAgentLockOutput {
 	tool?: string;
-	action?: "claim" | "release" | "status" | "gc";
+	action?: "claim" | "heartbeat" | "release" | "status" | "gc";
 	path?: string;
 	lock_path?: string;
 	task_id?: string;
 	agent?: string;
-	error?: string | {
-		reason: string;
-		nextAction?: string;
-	};
+	error?: unknown;
 	blockerType?: string;
 	nextAction?: string;
 	summary?: string;
 	refreshed?: boolean;
 	ownership_count?: number;
+	cross_process_release?: boolean;
+	original_pid?: number;
 	blocked?: boolean;
 	blocked_reason?: string;
 	conflicting_task?: string;
@@ -40,153 +39,39 @@ export interface ProposalsAgentLockOutput {
 	dropped?: number;
 	version?: number;
 	stale_after_minutes?: number;
-	in_flight?: {
-		task_id: string;
-		agent: string;
-		ownership: string[];
-		started_at: string;
-		last_seen: string;
-		parent_task_id?: string;
-	}[];
+	in_flight?: unknown;
 	ok: boolean;
-	session?: {
-		claims: number;
-		releases: number;
-		imbalance: number;
-	};
-	identity?: {
-		host?: string;
-		model?: string;
-		agent_name?: string;
-		task_id?: string;
-	};
+	session?: unknown;
+	identity?: unknown;
 }
 
-export interface ProposalsAgentLockReleaseOrphanOutput {
+export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
 	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-		suggestedActions: string[];
-	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
-	from?: string;
-	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
-	movedTo?: string;
-	warning?: string;
-	changed?: boolean;
-	path?: string;
-	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
-	lastHeartbeat?: string;
-	lastAgentDeadEvent?: {
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
+	taskId: string;
+	agent: string;
+	released: boolean;
 }
 
-export interface ProposalsAgentNamesOutput {
+export interface McpVertexProposalsAgentNamesOutput {
 	error?: string;
-	backup?: string | null;
 	nextAction?: string;
-	summary?: {
-		active: number;
-		cooldown: number;
-		orphan: number;
-		adopted: number;
-	};
-	assignments?: Array<{
-		task_id: string;
-		agent_name: string;
-		agent_slot: string;
-		parent_task_id: string | null;
-		depth: number;
-		topic: string;
-		adopted: boolean;
-		assigned_at: string;
-		last_seen: string;
-		cooldown_until: string | null;
-		status: "active" | "cooldown" | "orphan";
-		children?: unknown[];
-	}>;
-	adopted?: {
-		name: string;
-		task_id: string;
-	}[];
-	tree?: Array<{
-		task_id: string;
-		agent_name: string;
-		agent_slot: string;
-		parent_task_id: string | null;
-		depth: number;
-		topic: string;
-		adopted: boolean;
-		assigned_at: string;
-		last_seen: string;
-		cooldown_until: string | null;
-		status: "active" | "cooldown" | "orphan";
-		children?: unknown[];
-	}>;
-	agent?: string;
-	status?: string;
-	in_cooldown?: boolean;
-	task_id?: string;
-	released?: string[];
-	promoted?: number;
-	freed?: number;
 	blocked?: boolean;
 	blockerType?: string;
 	reason?: string;
-	depth?: number;
-	max_depth?: number;
-	allowed?: string[];
-	pool_size?: number;
+	agent?: string;
+	status?: string;
+	task_id?: string;
 	agent_name?: string;
 	agent_slot?: string;
-	parent_task_id?: string | null;
-	topic?: string;
-	assigned_at?: string;
-	last_seen?: string;
-	cooldown_until?: string | null;
-	scannedAt?: string;
-	staleAfterMinutes?: number;
-	orphans?: Array<{
-		agentName: string;
-		taskId: string;
-		agentSlot: string;
-		lastSeen: string;
-		ageMinutes: number;
-		reason: "cooldown_null" | "stale_no_lock" | "stale_with_orphaned_lock";
-		recommendedAction: "force_release" | "extend_cooldown" | "escalate";
-	}>;
-	threshold?: "green" | "yellow" | "red";
-	recommendation?: string;
+	summary?: unknown;
+	released?: string[];
+	assignments?: unknown;
+	tree?: unknown;
+	adopted?: unknown;
+	[key: string]: unknown;
 }
 
-export interface ProposalsAgentWorktreeOutput {
+export interface McpVertexProposalsAgentWorktreeOutput {
 	ok: boolean;
 	action: "create" | "list" | "remove";
 	reason?: string;
@@ -194,6 +79,21 @@ export interface ProposalsAgentWorktreeOutput {
 	branch?: string;
 	created?: boolean;
 	removed?: boolean;
+	strandedPurge?: {
+		dryRun: boolean;
+		candidates: Array<{
+			branch: string;
+			ahead: number;
+			behind: number;
+			lastCommitIso: string;
+			worktreePath: string | null;
+		}>;
+		deleted: string[];
+		skipped: {
+			branch: string;
+			reason: string;
+		}[];
+	};
 	worktrees?: {
 		path: string;
 		head: string;
@@ -203,7 +103,43 @@ export interface ProposalsAgentWorktreeOutput {
 	}[];
 }
 
-export interface ProposalsAutoWorkOutput {
+export interface McpVertexProposalsAgentsLockDiagnoseOutput {
+	ok: true;
+	zombies: {
+		task_id: string;
+		agent: string;
+		ownership: string[];
+		started_at: string;
+		last_seen: string;
+		age_seconds: number;
+		parent_task_id?: string;
+	}[];
+	tmpOrphans: {
+		absPath: string;
+		relName: string;
+		mtime: string;
+		ageSeconds: number;
+	}[];
+	logGaps: Array<{
+		task_id: string;
+		lock_last_seen: string;
+		latest_log_ts: string | null;
+		gap_seconds: number | null;
+	}>;
+}
+
+export interface McpVertexProposalsAutoFixQueueOutput {
+	ok: true;
+	autoFixable: unknown;
+	needsHuman: unknown;
+	deduped: number;
+	totalClusters: number;
+	written?: number;
+	files?: string[];
+	indexCount?: number;
+}
+
+export interface McpVertexProposalsAutoWorkOutput {
 	state: "idle" | "work";
 	idleStreak?: number;
 	reason?: string;
@@ -212,30 +148,108 @@ export interface ProposalsAutoWorkOutput {
 	nextAction?: string;
 	proposalId?: string;
 	file?: string;
-	orchestration?: {
-		lane: "inspect-then-delegate";
-		delegateAfterToolCalls: number;
-		next: string;
-		policy: string;
-	};
+	pickedFromPaused?: true;
+	orchestration?: unknown;
 	validationCommand?: string;
-	persist?: {
-		mode: "none" | "commit" | "commit-and-push";
-		messageTemplate?: string;
-		pushTarget?: string;
-	};
+	persist?: unknown;
+	claimReady?: unknown;
+	action?: "close";
 	steps?: string[];
+	branchStatusWarnings?: string[];
+	executionMode?: "normal" | "confirm-required" | "blocked";
+	hygieneBlockers?: string[];
+	hygieneActions?: string[];
+	hygieneWarnings?: string[];
+	stashes?: unknown;
+	rescueCandidates?: unknown;
+	smokeResiduals?: unknown;
+	ok?: boolean;
+	blockers?: string[];
 }
 
-export interface ProposalsCloseSliceOutput {
-	ok: true;
-	proposalId: string;
-	sliceId: string;
-	closed: boolean;
-	lockReleased: boolean;
+export interface McpVertexProposalsBranchGcOutput {
+	ok: boolean;
+	reason?: string;
+	baseBranch?: string;
+	dryRun?: boolean;
+	staleMinutes?: number;
+	removed?: Array<{
+		path: string;
+		branch: string;
+		reason: "merged-and-clean" | "merged-and-clean-with-force" | "behind-only" | "no-branch";
+		dirtyFiles: number;
+		untrackedFiles: number;
+		outOfCache: boolean;
+		ageLabel: string;
+	}>;
+	skipped?: Array<{
+		path: string;
+		branch: string;
+		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch";
+		detail: string;
+	}>;
+	summary?: {
+		removedCount: number;
+		skippedCount: number;
+		dryRunRemovedCount: number;
+	};
 }
 
-export interface ProposalsCompactStatusOutput {
+export interface McpVertexProposalsBranchStatusOutput {
+	ok: boolean;
+	reason?: string;
+	baseBranch?: string;
+	branches?: unknown;
+	stranded?: unknown;
+	worktrees?: unknown;
+	mainCheckoutBranch?: string;
+	mainCheckoutDrift?: boolean;
+	summary?: unknown;
+	generatedAt?: string;
+}
+
+export interface McpVertexProposalsCloseSliceOutput {
+	ok: boolean;
+	blockerType?: string;
+	blockerDetail?: {
+		ok: boolean;
+		severity: "ok" | "error";
+		findings: string[];
+		summary?: {
+			ok: boolean;
+			scopes: number;
+		};
+	};
+	error?: {
+		reason: string;
+		nextAction?: string;
+		kind?: string;
+		output?: string;
+	};
+	proposalId?: string;
+	sliceId?: string;
+	closed?: boolean;
+	validationDecision?: {
+		mode: "scoped" | "full" | "blocked";
+		resolvedScopes: string[];
+		snapshotId: string;
+		reason: string;
+	};
+	lockReleased?: boolean;
+	assignmentReleased?: boolean;
+	persist?: {
+		committed: boolean;
+		pushed: boolean;
+		mode: "none" | "commit" | "commit-and-push";
+		hash?: string;
+		reason?: string;
+	};
+	pendingIntegrationBranch?: string | null;
+	kind?: string;
+	validationOutput?: string;
+}
+
+export interface McpVertexProposalsCompactStatusOutput {
 	locks?: {
 		active: number;
 	};
@@ -252,7 +266,7 @@ export interface ProposalsCompactStatusOutput {
 	};
 }
 
-export interface ProposalsContinueProposalOutput {
+export interface McpVertexProposalsContinueProposalOutput {
 	kind: "next-proposal" | "no-proposal" | "all-claimed" | "slice-mode-error" | "slice-plan" | "slice-claim-rejected" | "slice-claim";
 	reason?: string;
 	nextAction?: string;
@@ -261,60 +275,21 @@ export interface ProposalsContinueProposalOutput {
 	status?: string;
 	relaunchCommand?: string;
 	guide?: string[];
-	plan?: {
-		proposalId: string;
-		slices: Array<{
-			proposalId: string;
-			sliceId: string;
-			title: string;
-			owner: string | null;
-			files: string[];
-			dependsOn: string[];
-			gate: "lint" | "type" | "e2e" | "none";
-			status: "pending" | "in-progress" | "done" | "blocked";
-			acceptanceCriteria: string[];
-		}>;
-		globalGate: "lint" | "type" | "e2e" | "none";
-	};
-	disjointnessIssues?: {
-		first: string;
-		second: string;
-		file: string;
-	}[];
+	plan?: unknown;
+	disjointnessIssues?: unknown;
 	claimableSliceIds?: string[];
+	action?: "close";
 	sliceId?: string;
-	validation?: {
-		ok: boolean;
-		reason: string;
-		blockerType: "none" | "unknown-slice" | "deps-not-done" | "overlap-in-progress" | "already-done" | "already-in-progress";
-	};
-	slice?: {
-		proposalId: string;
-		sliceId: string;
-		title: string;
-		owner: string | null;
-		files: string[];
-		dependsOn: string[];
-		gate: "lint" | "type" | "e2e" | "none";
-		status: "pending" | "in-progress" | "done" | "blocked";
-		acceptanceCriteria: string[];
-	} | null;
-	executionGuide?: {
-		files: string[];
-		acceptanceCriteria: string[];
-		gate: "lint" | "type" | "e2e" | "none";
-		rules: string[];
-	};
-	cascadeTrace?: {
-		priority?: number;
-		cascadeOverrideReason?: string;
-		cascadeBoost?: "shipped-blocking" | "customer-reported" | "security";
-	};
+	validation?: unknown;
+	slice?: unknown | null;
+	executionGuide?: unknown;
+	cascadeTrace?: unknown;
 	error?: string;
 	blockedBy?: string[];
+	pickedFromPaused?: boolean;
 }
 
-export interface ProposalsCreateProposalOutput {
+export interface McpVertexProposalsCreateProposalOutput {
 	ok: true;
 	file: string;
 	path: string;
@@ -324,22 +299,34 @@ export interface ProposalsCreateProposalOutput {
 		file: string;
 	}[];
 	indexCount: number;
+	redactedSecrets?: number;
 }
 
-export interface ProposalsDelegateOutput {
+export interface McpVertexProposalsDelegateOutput {
 	ok: boolean;
-	stage?: "assign" | "lock";
+	stage?: "assign" | "worktree" | "lock";
 	detail?: Record<string, unknown>;
 	agent?: string;
 	reason?: string;
+	errorId?: string;
+	cancelled?: boolean;
+	alternatives?: string[];
+	errorLogged?: boolean;
 	taskId?: string;
 	slot?: string;
 	files?: string[];
 	locked?: boolean;
+	subscriptionId?: string;
+	worktree?: {
+		path: string;
+		branch: string;
+		created: boolean;
+	};
+	cwd?: string;
 	instruction?: string;
 }
 
-export interface ProposalsGetProposalWorkflowOutput {
+export interface McpVertexProposalsGetProposalWorkflowOutput {
 	families: {
 		prefix: string;
 		kind?: string;
@@ -352,13 +339,53 @@ export interface ProposalsGetProposalWorkflowOutput {
 	template: string;
 }
 
-export interface ProposalsPlanOutput {
+export interface McpVertexProposalsIncidentProposalsOutput {
+	ok: true;
+	drafts: {
+		signature: string;
+		toolName: string;
+		incidentType: string;
+		classification: string;
+		title: string;
+		summary: string;
+		rationale: string;
+		suggestedTrack: string;
+		sourceCluster: {
+			count: number;
+			distinctAgents: number;
+			firstSeen: string;
+			lastSeen: string;
+			sampleSummary: string;
+			sampleError: string;
+			recentEventsCount: number;
+		};
+	}[];
+	deduped: number;
+	totalClusters: number;
+	written?: number;
+	files?: string[];
+	indexCount?: number;
+}
+
+export interface McpVertexProposalsInheritHostInstructionsOutput {
+	ok: true;
+	scope: "repo" | "all";
+	files: string[];
+	totalNonCanonical: number;
+	id: string | null;
+	file?: string;
+	path?: string;
+	indexCount?: number;
+	redactedSecrets?: number;
+}
+
+export interface McpVertexProposalsPlanOutput {
 	plan: unknown;
 	disjointnessIssues: unknown[];
 	claimableSliceIds: string[];
 }
 
-export interface ProposalsProposalAdoptOutput {
+export interface McpVertexProposalsProposalAdoptOutput {
 	ok: true;
 	root: string;
 	layout: {
@@ -370,7 +397,7 @@ export interface ProposalsProposalAdoptOutput {
 		proposals: Array<{
 			file: string;
 			id: string;
-			kind: "proposal" | "fix";
+			kind: "feat" | "breaking" | "fix" | "refactor" | "perf" | "audit" | "chore" | "docs" | "test" | "infra" | "spike" | "legacy" | "resume" | "plan";
 			status: string;
 		}>;
 		folders: string[];
@@ -381,9 +408,24 @@ export interface ProposalsProposalAdoptOutput {
 	};
 	plan: string[];
 	ready: boolean;
+	applied: boolean;
+	created: string[];
+	skipped: string[];
+	migration?: {
+		migrated: {
+			source: string;
+			target: string;
+			id: string;
+			title: string;
+		}[];
+		skipped: {
+			source: string;
+			reason: string;
+		}[];
+	};
 }
 
-export interface ProposalsProposalBoardOutput {
+export interface McpVertexProposalsProposalBoardOutput {
 	proposals: Array<{
 		id: string;
 		status: string;
@@ -393,42 +435,18 @@ export interface ProposalsProposalBoardOutput {
 			owner: string | null;
 		}>;
 		claimableSliceIds?: string[];
+		unreadable?: string;
 	}>;
 }
 
-export interface ProposalsProposalDiagnoseOutput {
+export interface McpVertexProposalsProposalDiagnoseOutput {
 	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-		suggestedActions: string[];
-	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
-	from?: string;
-	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
-	movedTo?: string;
-	warning?: string;
-	changed?: boolean;
-	path?: string;
-	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
+	id: string;
+	file: string;
+	folder: string;
+	status: string;
+	lockOwners: string[];
+	staleTaskIds: string[];
 	lastHeartbeat?: string;
 	lastAgentDeadEvent?: {
 		kind: "agent-alive" | "agent-idle" | "agent-dead";
@@ -438,103 +456,103 @@ export interface ProposalsProposalDiagnoseOutput {
 		lastSeen: string;
 		missedBeats: number;
 	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
+	inconsistencies: string[];
+	suggestedActions: string[];
+	crossProposal?: boolean;
+	crossProposalStaleTaskIds: string[];
+	crossProposalStaleAgents: string[];
 }
 
-export interface ProposalsProposalForceTransitionOutput {
+export interface McpVertexProposalsProposalForceTransitionOutput {
 	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-		suggestedActions: string[];
-	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
-	from?: string;
-	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
-	movedTo?: string;
+	id: string;
+	from: string;
+	to: string;
+	reason: string;
+	lockReleased: boolean;
+	movedTo: string;
 	warning?: string;
+}
+
+export interface McpVertexProposalsProposalGetOutput {
+	proposals?: Array<{
+		id: string;
+		status: string;
+		kind: string | null;
+		track: string;
+		title: string;
+		summary: string;
+		progress: string | null;
+		next: string | null;
+	}>;
+	nextCursor?: string | null;
+	level?: "compact" | "normal" | "full";
+	proposal?: {
+		id: string;
+		status: string;
+		kind: string | null;
+		track: string;
+		title: string;
+		summary: string;
+		progress: string | null;
+		next: string | null;
+		priority: string | null;
+		parentPlan: string | null;
+		auditSection: string | null;
+		related: string[];
+		slices: {
+			id: string;
+			status: string;
+			title?: string;
+		}[];
+		acceptance: {
+			command: string;
+			expect: string;
+		}[];
+	};
+	history?: {
+		timestamp: string;
+		action: string;
+		agent?: string;
+		note?: string;
+	}[];
+	slices?: {
+		id: string;
+		status: string;
+		title?: string;
+	}[];
+	reviews?: Array<{
+		timestamp: string;
+		action: "submit" | "approve" | "request_changes";
+		agent: string;
+		note?: string;
+	}>;
+}
+
+export interface McpVertexProposalsProposalReconcileFolderOutput {
+	ok: boolean;
+	id: string;
 	changed?: boolean;
 	path?: string;
 	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
-	lastHeartbeat?: string;
-	lastAgentDeadEvent?: {
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
-}
-
-export interface ProposalsProposalReconcileFolderOutput {
-	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-		suggestedActions: string[];
+	wouldChange?: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
 	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
+	wouldRun?: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
+	risk?: "low" | "medium" | "high";
 	from?: string;
 	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
 	movedTo?: string;
 	warning?: string;
-	changed?: boolean;
-	path?: string;
-	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
-	lastHeartbeat?: string;
-	lastAgentDeadEvent?: {
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
 }
 
-export interface ProposalsProposalReviewOutput {
+export interface McpVertexProposalsProposalReviewOutput {
 	ok: true;
 	proposalId: string;
 	sliceId: string;
@@ -548,16 +566,14 @@ export interface ProposalsProposalReviewOutput {
 		note: string;
 	}>;
 	lockReleased: boolean;
+	assignmentReleased: boolean;
+	redactedSecrets: number;
 }
 
-export interface ProposalsProposalStaleListOutput {
+export interface McpVertexProposalsProposalStaleListOutput {
 	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
+	count: number;
+	zombies: Array<{
 		kind: "agent-alive" | "agent-idle" | "agent-dead";
 		agent: string;
 		taskId: string;
@@ -566,57 +582,50 @@ export interface ProposalsProposalStaleListOutput {
 		missedBeats: number;
 		suggestedActions: string[];
 	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
-	from?: string;
-	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
-	movedTo?: string;
-	warning?: string;
-	changed?: boolean;
-	path?: string;
-	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
-	lastHeartbeat?: string;
-	lastAgentDeadEvent?: {
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
 }
 
-export interface ProposalsProposalTransitionOutput {
+export interface McpVertexProposalsProposalTransitionOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
 		nextAction?: string;
+		code?: string;
+		blockerType?: string;
+		nextHops?: string[];
 	};
 	id?: string;
 	from?: string;
 	to?: string;
 	reason?: string;
+	transitionId?: string;
+	correlationId?: string;
+	idempotencyKey?: string;
+	idempotentReplay?: boolean;
 	movedFrom?: string;
 	movedTo?: string;
 	warning?: string;
+	indexSynced?: boolean;
+	filesRewritten?: number;
 }
 
-export interface ProposalsProposalsClosePlanOutput {
-	ok: boolean;
-	planId: string;
+export interface McpVertexProposalsProposalsClosePlanOutput {
 	dryRun: boolean;
-	closable: boolean;
-	blockers: Array<{
+	wouldChange?: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
+	}>;
+	wouldRun?: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
+	risk?: "low" | "medium" | "high";
+	note?: string;
+	ok?: boolean;
+	planId?: string;
+	closable?: boolean;
+	blockers?: Array<{
 		ref: string;
 		kind: "proposal" | "plan" | "slice";
 		code: "not-done" | "not-peer-reviewed" | "self-cycle" | "unknown-ref";
@@ -634,159 +643,100 @@ export interface ProposalsProposalsClosePlanOutput {
 	};
 }
 
-export interface ProposalsRoundContextOutput {
+export interface McpVertexProposalsRoundContextOutput {
 	digest: {
 		roundId: string;
 		activeProposalId: string;
 		currentTaskId: string;
-		activeLocks: {
-			taskId: string;
-			agent: string;
-			ownershipCount: number;
-			filesPreview: string[];
-			lastSeen: string;
-			parentTaskId?: string;
-		}[];
-		activeAgents: {
-			agent: string;
-			taskId: string;
-			slot: string;
-			depth: number;
-			lastSeen: string;
-			adopted: boolean;
-		}[];
-		coreDocHashes: Record<string, string>;
-		sources: {
-			chatContext: {
-				state: "ok" | "missing" | "corrupt";
-				fingerprint: string;
-				timestamp: string | null;
-				ageMinutes: number | null;
-				temporallyStale: boolean;
-			};
-			checkpoint: {
-				state: "ok" | "missing" | "corrupt";
-				fingerprint: string;
-				timestamp: string | null;
-				ageMinutes: number | null;
-				temporallyStale: boolean;
-			};
-			lock: {
-				state: "ok" | "missing" | "corrupt";
-				fingerprint: string;
-				timestamp: string | null;
-				ageMinutes: number | null;
-				temporallyStale: boolean;
-			};
-			registry: {
-				state: "ok" | "missing" | "corrupt";
-				fingerprint: string;
-				timestamp: string | null;
-				ageMinutes: number | null;
-				temporallyStale: boolean;
-			};
-		};
-		chatContext: {
-			proposalIds: string[];
-			topic?: string;
-			lastUpdated?: string;
-		};
-		checkpoint: {
-			proposalId?: string;
-			status?: string;
-			selectedTask?: string;
-			nextAction?: string;
-			updatedAt?: string;
-		};
-		proposalPortfolio: {
-			sourceState: "ok" | "missing" | "corrupt";
-			strategy: "index" | "fallback-scan";
-			activeIds: string[];
-			activeOverflowCount: number;
-			activeCount: number;
-			pendingCount: number;
-			inProgressCount: number;
-		};
-		resumeHint: {
-			mode: "resume" | "next" | "unknown";
-			proposalId: string;
-			reason: string;
-			taskId?: string;
-		};
 		createdAt: string;
 		digestVersion: 1;
+		[key: string]: unknown;
 	} | null;
 	stale: boolean;
 	recomputedAt: string;
 	digestPath: string;
+	[key: string]: unknown;
 }
 
-export interface ProposalsStateHealthOutput {
+export interface McpVertexProposalsStateHealthOutput {
 	locks: {
 		active: number;
+		stale: number;
+		livelocks: number;
+		sessionBalance: {
+			claims: number;
+			releases: number;
+			imbalance: number;
+		};
 		sessionClaims: number;
 		sessionReleases: number;
 		sessionImbalance: number;
+		[key: string]: unknown;
+	};
+	stale: {
+		count: number;
+		[key: string]: unknown;
+	};
+	heartbeatStalls: {
+		count: number;
+		[key: string]: unknown;
 	};
 	peerReviewBypasses: number;
+	autoTransitionRepairs: {
+		count: number;
+		[key: string]: unknown;
+	};
 	queue: {
 		queueLength: number;
 		queuedCount: number;
 		waiterOrphans: number;
 		oldestAgeMinutes: number;
 		threshold: string;
+		[key: string]: unknown;
 	} | null;
 	registry: {
 		orphans: number;
 		threshold: string;
+		[key: string]: unknown;
 	};
 	healthy: boolean;
+	[key: string]: unknown;
 }
 
-export interface ProposalsStateRepairOutput {
+export interface McpVertexProposalsStateRepairOutput {
 	mode: "dry-run" | "execute";
-	diagnosis: {
-		locks: {
-			active: number;
-			sessionClaims: number;
-			sessionReleases: number;
-			sessionImbalance: number;
-		};
-		peerReviewBypasses: number;
-		queue: {
-			queueLength: number;
-			queuedCount: number;
-			waiterOrphans: number;
-			oldestAgeMinutes: number;
-			threshold: string;
-		} | null;
-		registry: {
-			orphans: number;
-			threshold: string;
-		};
-		healthy: boolean;
-	};
-	wouldRepair?: {
-		staleLocks: number;
-		dueQueueEntries: number;
-		orphanAssignments: number;
-	};
-	repaired?: {
-		staleLocks: number;
-		expiredQueueEntries: number;
-		orphanAssignments: number;
-	};
+	diagnosis: unknown;
+	wouldRepair?: unknown;
+	repaired?: unknown;
 	nextAction?: string;
+	[key: string]: unknown;
 }
 
-export interface ProposalsSyncProposalsOutput {
+export interface McpVertexProposalsSwarmHygieneOutput {
+	ok: boolean;
+	reason?: string;
+	baseBranch?: string;
+	generatedAt?: string;
+	rescueCandidates?: unknown;
+	gcEligible?: unknown;
+	outOfCache?: unknown;
+	mainCheckoutBranch?: string;
+	mainCheckoutDrift?: boolean;
+	pendingIntegration?: unknown;
+	nonConformingBranches?: unknown;
+	staleUnmerged?: unknown;
+	summary?: unknown;
+	[key: string]: unknown;
+}
+
+export interface McpVertexProposalsSyncProposalsOutput {
 	changed: boolean;
 	count: number;
 	indexPath: string;
 	errors: string[];
 }
 
-export interface ProposalsTaskQueueOutput {
+export interface McpVertexProposalsTaskQueueOutput {
 	error?: string;
 	taskId?: string;
 	status?: string;
@@ -806,6 +756,13 @@ export interface ProposalsTaskQueueOutput {
 		diffSummary?: string;
 	}[];
 	pendingTargets?: string[];
+	subscriberId?: string;
+	subscriptionId?: string;
+	leaseUntil?: string;
+	renewed?: boolean;
+	blocked?: boolean;
+	blockerType?: string;
+	nextAction?: string;
 	queuedCount?: number;
 	promotedCount?: number;
 	consumedCount?: number;
@@ -820,30 +777,38 @@ export interface ProposalsTaskQueueOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface ProposalsToolOutputs {
-	"proposals_agent_lock": ProposalsAgentLockOutput;
-	"proposals_agent_lock_release_orphan": ProposalsAgentLockReleaseOrphanOutput;
-	"proposals_agent_names": ProposalsAgentNamesOutput;
-	"proposals_agent_worktree": ProposalsAgentWorktreeOutput;
-	"proposals_auto_work": ProposalsAutoWorkOutput;
-	"proposals_close_slice": ProposalsCloseSliceOutput;
-	"proposals_compact_status": ProposalsCompactStatusOutput;
-	"proposals_continue_proposal": ProposalsContinueProposalOutput;
-	"proposals_create_proposal": ProposalsCreateProposalOutput;
-	"proposals_delegate": ProposalsDelegateOutput;
-	"proposals_get_proposal_workflow": ProposalsGetProposalWorkflowOutput;
-	"proposals_plan": ProposalsPlanOutput;
-	"proposals_proposal_adopt": ProposalsProposalAdoptOutput;
-	"proposals_proposal_board": ProposalsProposalBoardOutput;
-	"proposals_proposal_diagnose": ProposalsProposalDiagnoseOutput;
-	"proposals_proposal_force_transition": ProposalsProposalForceTransitionOutput;
-	"proposals_proposal_reconcile_folder": ProposalsProposalReconcileFolderOutput;
-	"proposals_proposal_review": ProposalsProposalReviewOutput;
-	"proposals_proposal_stale_list": ProposalsProposalStaleListOutput;
-	"proposals_proposal_transition": ProposalsProposalTransitionOutput;
-	"proposals_proposals_close_plan": ProposalsProposalsClosePlanOutput;
-	"proposals_round_context": ProposalsRoundContextOutput;
-	"proposals_state_health": ProposalsStateHealthOutput;
-	"proposals_state_repair": ProposalsStateRepairOutput;
-	"proposals_sync_proposals": ProposalsSyncProposalsOutput;
-	"proposals_task_queue": ProposalsTaskQueueOutput;
+	"mcp-vertex_proposals_agent_lock": McpVertexProposalsAgentLockOutput;
+	"mcp-vertex_proposals_agent_lock_release_orphan": McpVertexProposalsAgentLockReleaseOrphanOutput;
+	"mcp-vertex_proposals_agent_names": McpVertexProposalsAgentNamesOutput;
+	"mcp-vertex_proposals_agent_worktree": McpVertexProposalsAgentWorktreeOutput;
+	"mcp-vertex_proposals_agents_lock_diagnose": McpVertexProposalsAgentsLockDiagnoseOutput;
+	"mcp-vertex_proposals_auto_fix_queue": McpVertexProposalsAutoFixQueueOutput;
+	"mcp-vertex_proposals_auto_work": McpVertexProposalsAutoWorkOutput;
+	"mcp-vertex_proposals_branch_gc": McpVertexProposalsBranchGcOutput;
+	"mcp-vertex_proposals_branch_status": McpVertexProposalsBranchStatusOutput;
+	"mcp-vertex_proposals_close_slice": McpVertexProposalsCloseSliceOutput;
+	"mcp-vertex_proposals_compact_status": McpVertexProposalsCompactStatusOutput;
+	"mcp-vertex_proposals_continue_proposal": McpVertexProposalsContinueProposalOutput;
+	"mcp-vertex_proposals_create_proposal": McpVertexProposalsCreateProposalOutput;
+	"mcp-vertex_proposals_delegate": McpVertexProposalsDelegateOutput;
+	"mcp-vertex_proposals_get_proposal_workflow": McpVertexProposalsGetProposalWorkflowOutput;
+	"mcp-vertex_proposals_incident_proposals": McpVertexProposalsIncidentProposalsOutput;
+	"mcp-vertex_proposals_inherit_host_instructions": McpVertexProposalsInheritHostInstructionsOutput;
+	"mcp-vertex_proposals_plan": McpVertexProposalsPlanOutput;
+	"mcp-vertex_proposals_proposal_adopt": McpVertexProposalsProposalAdoptOutput;
+	"mcp-vertex_proposals_proposal_board": McpVertexProposalsProposalBoardOutput;
+	"mcp-vertex_proposals_proposal_diagnose": McpVertexProposalsProposalDiagnoseOutput;
+	"mcp-vertex_proposals_proposal_force_transition": McpVertexProposalsProposalForceTransitionOutput;
+	"mcp-vertex_proposals_proposal_get": McpVertexProposalsProposalGetOutput;
+	"mcp-vertex_proposals_proposal_reconcile_folder": McpVertexProposalsProposalReconcileFolderOutput;
+	"mcp-vertex_proposals_proposal_review": McpVertexProposalsProposalReviewOutput;
+	"mcp-vertex_proposals_proposal_stale_list": McpVertexProposalsProposalStaleListOutput;
+	"mcp-vertex_proposals_proposal_transition": McpVertexProposalsProposalTransitionOutput;
+	"mcp-vertex_proposals_proposals_close_plan": McpVertexProposalsProposalsClosePlanOutput;
+	"mcp-vertex_proposals_round_context": McpVertexProposalsRoundContextOutput;
+	"mcp-vertex_proposals_state_health": McpVertexProposalsStateHealthOutput;
+	"mcp-vertex_proposals_state_repair": McpVertexProposalsStateRepairOutput;
+	"mcp-vertex_proposals_swarm_hygiene": McpVertexProposalsSwarmHygieneOutput;
+	"mcp-vertex_proposals_sync_proposals": McpVertexProposalsSyncProposalsOutput;
+	"mcp-vertex_proposals_task_queue": McpVertexProposalsTaskQueueOutput;
 }

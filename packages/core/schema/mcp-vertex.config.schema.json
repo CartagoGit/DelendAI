@@ -11,11 +11,123 @@
 		"docsDir": {
 			"type": "string"
 		},
+		"surfaceMode": {
+			"type": "string",
+			"enum": [
+				"native",
+				"managed",
+				"adaptive",
+				"compact"
+			]
+		},
+		"startupReport": {
+			"type": "object",
+			"properties": {
+				"level": {
+					"type": "string",
+					"enum": [
+						"off",
+						"compact",
+						"medium",
+						"high",
+						"full",
+						"extended"
+					]
+				},
+				"color": {
+					"type": "string",
+					"enum": [
+						"auto",
+						"always",
+						"never"
+					]
+				}
+			},
+			"additionalProperties": false
+		},
+		"managedSurface": {
+			"type": "object",
+			"properties": {
+				"loading": {
+					"type": "string",
+					"enum": [
+						"lazy",
+						"eager"
+					]
+				},
+				"idleTtlMs": {
+					"anyOf": [
+						{
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 9007199254740991
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"maxWarmPlugins": {
+					"anyOf": [
+						{
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 9007199254740991
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			},
+			"additionalProperties": false
+		},
+		"evidence": {
+			"type": "object",
+			"properties": {
+				"retentionDays": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 9007199254740991
+				},
+				"cleanup": {
+					"type": "string",
+					"enum": [
+						"on-boot",
+						"dry-run",
+						"off"
+					]
+				}
+			},
+			"additionalProperties": false
+		},
 		"keepLegacy": {
 			"type": "boolean"
 		},
 		"agentWorktree": {
 			"type": "boolean"
+		},
+		"core": {
+			"type": "object",
+			"properties": {
+				"agentPolicy": {
+					"type": "object",
+					"properties": {
+						"autonomous": {
+							"type": "boolean"
+						},
+						"principles": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1
+							}
+						}
+					},
+					"additionalProperties": false
+				}
+			},
+			"additionalProperties": false
 		},
 		"featureFlags": {
 			"type": "object",
@@ -150,6 +262,99 @@
 				},
 				"additionalProperties": false
 			}
+		},
+		"pluginRegistry": {
+			"type": "object",
+			"properties": {
+				"communitySources": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"origin": {
+								"type": "string",
+								"const": "community"
+							},
+							"entries": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string"
+										},
+										"package": {
+											"type": "string"
+										},
+										"summary": {
+											"type": "string"
+										},
+										"tags": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"origin": {
+											"type": "string",
+											"enum": [
+												"first-party",
+												"community"
+											]
+										},
+										"permissions": {
+											"type": "array",
+											"items": {
+												"type": "string",
+												"enum": [
+													"filesystem-read",
+													"filesystem-write",
+													"process",
+													"network",
+													"git-read",
+													"git-write",
+													"forge-read",
+													"forge-write",
+													"env-read",
+													"secrets",
+													"browser",
+													"container",
+													"database"
+												]
+											}
+										},
+										"defaultPreset": {
+											"type": "string",
+											"enum": [
+												"minimal",
+												"lean",
+												"standard",
+												"swarm",
+												"full",
+												"vertex"
+											]
+										}
+									},
+									"required": [
+										"id",
+										"package",
+										"summary",
+										"tags",
+										"origin"
+									],
+									"additionalProperties": false
+								}
+							}
+						},
+						"required": [
+							"origin",
+							"entries"
+						],
+						"additionalProperties": false
+					}
+				}
+			},
+			"additionalProperties": false
 		},
 		"providers": {
 			"type": "array",

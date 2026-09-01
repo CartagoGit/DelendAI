@@ -1,13 +1,12 @@
 import { dirname, join } from 'node:path';
-
 import z from 'zod';
-
 import type {
 	IToolRegistration,
 	IToolTextResult,
 } from '@mcp-vertex/core/public';
 import {
 	redactSecrets,
+	VALIDATE_EVIDENCE_SCHEMA,
 	toolError,
 	toolJson,
 	toolOk,
@@ -16,7 +15,9 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import { runAgentNames } from './agent-names.tool';
 import type { IGitRunner } from '../shared/git-runner';
+import { toolErrorEnvelope } from '../shared/tool-envelope';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 import { PEER_REVIEW_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
@@ -28,8 +29,9 @@ import {
 import { runAcceptanceCriteria } from '../proposals/proposal-acceptance';
 import {
 	PROPOSAL_KIND_BY_PREFIX,
-	STATUS_TO_FOLDER,
+	type IProposalKind,
 } from '../contracts/constants/proposal-glossary.constant';
+import { proposalFolderFor } from '../contracts/proposal-folder-policy';
 import {
 	kindMatchesId,
 	newProposalIdSchema,
@@ -66,7 +68,21 @@ import {
 import { locateProposal } from '../proposals/locate';
 import type { IValidateEvidence } from '../services/transition-evidence';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
-import type { IAuthoringToolOptions } from './authoring-options';
+import type {
+	IAuthoringToolOptions,
+	ICloseSliceValidationDecision,
+} from './authoring-options';
+import {
+	maybePersistAfterSlice,
+	type IPersistResult,
+} from './auto-work-persist';
+
+type ICloseSlicePersistConfig = {
+	readonly mode: 'none' | 'commit' | 'commit-and-push';
+	readonly messageTemplate?: string;
+	readonly pushTarget?: string;
+	readonly protectedBranches?: readonly string[];
+};
 
 export type { IAuthoringToolOptions } from './authoring-options';
 export { readActiveLocks } from './authoring-options';
@@ -75,6 +91,8 @@ export { readActiveLocks } from './authoring-options';
 // close-slice validation below that deadline so callers receive the
 // structured validation error and the document mutex is always released.
 const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
+const ISO_DATE_LENGTH = 10;
+const TIMEOUT_EXIT_CODE = 124;
 
 /**
  * x00156 S5 — the `close_slice` write-path throws a plain `Error`
@@ -90,12 +108,14 @@ type ICloseSliceThrownError = Error & {
 		| 'quality-failed'
 		| 'peer-review-required';
 	readonly output?: string;
+	readonly persist?: IPersistResult;
 	readonly detail?: {
 		readonly ok: boolean;
 		readonly severity: 'ok' | 'error';
 		readonly findings: readonly string[];
 		readonly summary?: { readonly ok: boolean; readonly scopes: number };
 	};
+	readonly validationDecision?: ICloseSliceValidationDecision;
 };
 
 const isCloseSliceThrownError = (
@@ -113,6 +133,94 @@ type IToolErrorCarryingError = Error & { readonly toolError?: IToolTextResult };
 const isToolErrorCarryingError = (
 	value: unknown,
 ): value is IToolErrorCarryingError => value instanceof Error;
+
+export const REVIEW_APPROVE_COMMIT_HASH_MIN_LEN = 7;
+export const REVIEW_APPROVE_COMMIT_HASH_MAX_LEN = 40;
+export const REVIEW_APPROVE_COMMIT_HASH_RE = new RegExp(
+	`^[0-9a-f]{${REVIEW_APPROVE_COMMIT_HASH_MIN_LEN},${REVIEW_APPROVE_COMMIT_HASH_MAX_LEN}}$`,
+	'i',
+);
+
+export interface IProposalReviewEvidence {
+	readonly commitHash: string;
+	readonly validateExitCode: number;
+	readonly testsPassing: number;
+	readonly testsTotal: number;
+}
+
+export const REVIEW_EVIDENCE_SCHEMA = z
+	.object({
+		commitHash: z
+			.string()
+			.regex(
+				REVIEW_APPROVE_COMMIT_HASH_RE,
+				`evidence.commitHash must be ${REVIEW_APPROVE_COMMIT_HASH_MIN_LEN}-${REVIEW_APPROVE_COMMIT_HASH_MAX_LEN} hex characters`,
+			),
+		validateExitCode: z
+			.number()
+			.int()
+			.refine((value) => value === 0, {
+				message: 'evidence.validateExitCode must be 0',
+			}),
+		testsPassing: z
+			.number()
+			.int()
+			.min(1, 'evidence.testsPassing must be >= 1'),
+		testsTotal: z.number().int().min(1, 'evidence.testsTotal must be >= 1'),
+	})
+	.refine((value) => value.testsPassing <= value.testsTotal, {
+		message: 'evidence.testsPassing must be <= evidence.testsTotal',
+		path: ['testsPassing'],
+	});
+
+export const REVIEW_INPUT_SCHEMA = z.object({
+	proposalId: z.string(),
+	sliceId: z.string(),
+	action: z.enum(['submit', 'approve', 'request_changes', 'status']),
+	agent: z.string().min(1),
+	note: z.string().optional(),
+	evidence: REVIEW_EVIDENCE_SCHEMA.optional(),
+});
+
+export const REVIEW_OUTPUT_SCHEMA = z.object({
+	ok: z.literal(true),
+	proposalId: z.string(),
+	sliceId: z.string(),
+	action: z.string(),
+	status: z.enum(['none', 'in_review', 'changes_requested', 'done']),
+	implementer: z.string().nullable(),
+	reviewer: z.string().nullable(),
+	rounds: z.array(
+		z.object({
+			verdict: z.enum(['requested_changes', 'approved']),
+			agent: z.string(),
+			note: z.string(),
+		}),
+	),
+	lockReleased: z.boolean(),
+	assignmentReleased: z.boolean(),
+	redactedSecrets: z.number().int().nonnegative(),
+});
+
+const toApproveEvidenceError = (reason: string): IToolTextResult =>
+	toolError(`approve requires empirical evidence: ${reason}`);
+
+const requireProposalReviewEvidence = (
+	evidence: IProposalReviewEvidence | undefined,
+): IToolTextResult | null => {
+	if (evidence === undefined) {
+		return toApproveEvidenceError(
+			'provide evidence.commitHash, evidence.validateExitCode=0, evidence.testsPassing>=1, and evidence.testsTotal>=1',
+		);
+	}
+	const parsed = REVIEW_EVIDENCE_SCHEMA.safeParse(evidence);
+	if (!parsed.success) {
+		return toApproveEvidenceError(
+			parsed.error.issues[0]?.message ?? 'invalid evidence payload',
+		);
+	}
+	return null;
+};
 
 type IPeerReviewPersistedEntry = {
 	readonly ts: string;
@@ -159,13 +267,16 @@ export const runCloseSliceValidation = async (
 			.join('\n'),
 		exitCode:
 			verdict.exitCode ??
-			(verdict.reason?.startsWith('timeout:') ? 124 : 1),
+			(verdict.reason?.startsWith('timeout:') ? TIMEOUT_EXIT_CODE : 1),
 	};
 };
 
 export const runCloseSliceQualityGate = async (
 	cwd: string,
 	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
+	options: {
+		readonly scopes?: readonly string[];
+	} = {},
 ): Promise<{
 	readonly ok: boolean;
 	readonly severity: 'ok' | 'error';
@@ -178,8 +289,13 @@ export const runCloseSliceQualityGate = async (
 	const result = await runAcceptanceCriteria(
 		[
 			{
-				command:
-					'bun tools/scripts/quality/run-quality.script.ts --json',
+				command: [
+					'bun tools/scripts/quality/run-quality.script.ts',
+					'--json',
+					...(options.scopes ?? []).map(
+						(scope) => `--scope=${scope}`,
+					),
+				].join(' '),
 				expect: 'exit0',
 				timeoutMs,
 			},
@@ -241,6 +357,52 @@ const SLICE_IN = z.object({
 	acceptance: z.array(z.string()).optional(),
 });
 
+export const CREATE_PROPOSAL_INPUT_SCHEMA = z.object({
+	id: z.string().optional(),
+	kind: z
+		.enum([
+			'feat',
+			'breaking',
+			'fix',
+			'refactor',
+			'perf',
+			'audit',
+			'chore',
+			'docs',
+			'test',
+			'infra',
+			'spike',
+			'legacy',
+			'resume',
+		])
+		.optional(),
+	title: z.string(),
+	goal: z.string().optional(),
+	status: z
+		.enum(['pending', 'ready', 'in_progress', 'in-progress'])
+		.optional(),
+	track: z.string().optional(),
+	why: z.string().optional(),
+	nonGoals: z.array(z.string()).optional(),
+	globalGate: z.enum(['lint', 'type', 'e2e', 'none']).optional(),
+	slices: z.array(SLICE_IN).optional(),
+});
+
+export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
+	ok: z.literal(true),
+	file: z.string(),
+	path: z.string(),
+	disjointnessIssues: z.array(
+		z.object({
+			first: z.string(),
+			second: z.string(),
+			file: z.string(),
+		}),
+	),
+	indexCount: z.number(),
+	redactedSecrets: z.number().int().nonnegative().optional(),
+});
+
 // x00098 S2: emit the canonical slice shape the repo linter validates
 // (`**Status**`/`**Files**`/`**Gate**` bullets); the plan parser reads
 // both this and the legacy lowercase form.
@@ -276,6 +438,223 @@ const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
 		for (const a of s.acceptance) lines.push(`  - "${a}"`);
 	}
 	return lines.join('\n');
+};
+
+type ICreateProposalSlice = z.infer<typeof SLICE_IN>;
+
+type IFrontmatterPrimitive = boolean | number | string;
+
+interface ICreateProposalRequest {
+	readonly id?: string | undefined;
+	readonly kind?: string | undefined;
+	readonly title: string;
+	readonly goal?: string | undefined;
+	readonly status?: string | undefined;
+	readonly track?: string | undefined;
+	readonly why?: string | undefined;
+	readonly nonGoals?: readonly string[] | undefined;
+	readonly globalGate?: 'lint' | 'type' | 'e2e' | 'none' | undefined;
+	readonly slices?: readonly ICreateProposalSlice[] | undefined;
+	readonly extraFrontmatter?:
+		| Readonly<Record<string, IFrontmatterPrimitive>>
+		| undefined;
+}
+
+interface ICreateProposalWriteResult {
+	readonly ok: true;
+	readonly file: string;
+	readonly path: string;
+	readonly disjointnessIssues: readonly {
+		readonly first: string;
+		readonly second: string;
+		readonly file: string;
+	}[];
+	readonly indexCount: number;
+	readonly redactedSecrets: number;
+}
+
+interface ICreateProposalWriteError {
+	readonly ok: false;
+	readonly reason: string;
+	readonly nextAction: string;
+}
+
+const serializeFrontmatterValue = (value: IFrontmatterPrimitive): string =>
+	typeof value === 'string' ? JSON.stringify(value) : String(value);
+
+const renderExtraFrontmatter = (
+	frontmatter: Readonly<Record<string, IFrontmatterPrimitive>> | undefined,
+): string[] =>
+	Object.entries(frontmatter ?? {})
+		.filter(([, value]) => value !== undefined)
+		.sort(([left], [right]) => left.localeCompare(right))
+		.map(([key, value]) => `${key}: ${serializeFrontmatterValue(value)}`);
+
+export const createProposalDocument = async (
+	args: ICreateProposalRequest,
+	options: Pick<
+		IAuthoringToolOptions,
+		| 'workspaceRoot'
+		| 'proposalsDirAbs'
+		| 'counterPathAbs'
+		| 'layout'
+		| 'extraFolders'
+		| 'folderPolicy'
+	>,
+): Promise<ICreateProposalWriteResult | ICreateProposalWriteError> => {
+	let id: string;
+	if (args.id !== undefined) {
+		id = args.id;
+		const idResult = newProposalIdSchema.safeParse(id);
+		if (!idResult.success) {
+			return {
+				ok: false,
+				reason: `invalid proposal id "${id}" — ${idResult.error.issues[0]?.message ?? 'malformed'}`,
+				nextAction:
+					'Use one lowercase family prefix followed by exactly five digits (for example f00001), or omit id and pass kind for race-safe allocation.',
+			};
+		}
+		if (args.kind !== undefined) {
+			const match = kindMatchesId(args.kind, id);
+			if (!match.ok) {
+				return {
+					ok: false,
+					reason: match.reason,
+					nextAction:
+						'Ensure the ID prefix matches the specified kind.',
+				};
+			}
+		}
+	} else if (args.kind !== undefined) {
+		const prefix = prefixForKind(args.kind);
+		if (prefix === null) {
+			return {
+				ok: false,
+				reason: `unknown kind "${args.kind}"`,
+				nextAction: 'Pass a recognised kind, or pass id explicitly.',
+			};
+		}
+		id = await allocateNextProposalId(prefix, {
+			proposalsDirAbs: options.proposalsDirAbs,
+			counterPathAbs: options.counterPathAbs,
+		});
+	} else {
+		return {
+			ok: false,
+			reason: 'either id or kind is required',
+			nextAction:
+				'Pass an explicit id, or pass kind to auto-allocate the next one (f00016 S13).',
+		};
+	}
+	const slices = [...(args.slices ?? [])];
+	const plan = {
+		proposalId: id,
+		globalGate: (args.globalGate ?? 'none') as
+			| 'lint'
+			| 'type'
+			| 'e2e'
+			| 'none',
+		slices: slices.map((s) => ({
+			proposalId: id,
+			sliceId: s.sliceId,
+			title: s.title ?? s.sliceId,
+			owner: null,
+			files: s.files,
+			dependsOn: s.dependsOn ?? [],
+			gate: (s.gate ?? 'none') as 'lint' | 'type' | 'e2e' | 'none',
+			status: 'pending' as const,
+			acceptanceCriteria: s.acceptance ?? [],
+		})),
+	};
+	const issues = planDisjointnessIssues(plan);
+	if (issues.length > 0) {
+		return {
+			ok: false,
+			reason: `slices share files: ${issues.map((i) => `${i.first}/${i.second}:${i.file}`).join(', ')}`,
+			nextAction: 'Make each slice edit a disjoint set of files.',
+		};
+	}
+	const inferredKind: IProposalKind =
+		args.kind !== undefined && prefixForKind(args.kind) !== null
+			? (args.kind as IProposalKind)
+			: (PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] ?? 'feat');
+	const date = new Date().toISOString().slice(0, ISO_DATE_LENGTH);
+	const status = canonicalStatus(args.status);
+	const acceptanceLines = slices.flatMap((s) =>
+		(s.acceptance ?? []).map((acceptance) => `- ${acceptance}`),
+	);
+	const body = [
+		'---',
+		`id: ${id}`,
+		`title: ${JSON.stringify(args.title)}`,
+		`kind: ${inferredKind}`,
+		`status: ${status}`,
+		'type: proposal',
+		`track: ${args.track ?? 'general'}`,
+		`date: ${date}`,
+		...renderExtraFrontmatter(args.extraFrontmatter),
+		'---',
+		'',
+		`# ${id} — ${args.title}`,
+		'',
+		'## Goal',
+		'',
+		args.goal ?? 'TODO: describe the goal.',
+		'',
+		'## why',
+		'',
+		args.why ?? 'TODO: why this work matters now.',
+		'',
+		'## non-goals',
+		'',
+		...(args.nonGoals && args.nonGoals.length > 0
+			? args.nonGoals.map((goal) => `- ${goal}`)
+			: ['- TODO: what this proposal deliberately skips.']),
+		'',
+		'## Slices',
+		'',
+		`- global_gate: ${args.globalGate ?? 'none'}`,
+		'',
+		...(slices.length > 0
+			? slices.map(renderSlice).join('\n\n').split('\n')
+			: [
+					'### S1 — TODO',
+					'- **Status**: pending',
+					'- **Files**: `TODO`',
+					'- **Gate**: none',
+				]),
+		'',
+		'## acceptance',
+		'',
+		...(acceptanceLines.length > 0
+			? acceptanceLines
+			: ['- TODO: observable acceptance criteria.']),
+		'',
+	].join('\n');
+	const fileRel = `${proposalFolderFor(status, inferredKind, options.folderPolicy)}/${id}-${slugFromTitle(args.title, id)}.md`;
+	const absPath = join(options.proposalsDirAbs, ...fileRel.split('/'));
+	const { text: safeBody, redactions } = redactSecrets(body);
+	await writeFileAtomic(absPath, safeBody);
+	const sync = await syncProposalRegistry(
+		options.workspaceRoot,
+		options.layout,
+		options.extraFolders ?? [],
+		undefined,
+		options.folderPolicy,
+	);
+	const syncEntry = sync.proposals.find((proposal) => proposal.id === id);
+	const finalFileRel = syncEntry ? syncEntry.file : fileRel;
+	const finalAbsPath = syncEntry
+		? join(options.proposalsDirAbs, ...finalFileRel.split('/'))
+		: absPath;
+	return {
+		ok: true,
+		file: finalFileRel,
+		path: finalAbsPath,
+		disjointnessIssues: issues,
+		indexCount: sync.count,
+		redactedSecrets: redactions,
+	};
 };
 
 /**
@@ -400,63 +779,10 @@ export const buildCreateProposalRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_create_proposal`,
 			{
-				outputSchema: z.object({
-					ok: z.literal(true),
-					file: z.string(),
-					path: z.string(),
-					disjointnessIssues: z.array(
-						z.object({
-							first: z.string(),
-							second: z.string(),
-							file: z.string(),
-						}),
-					),
-					indexCount: z.number(),
-				}),
+				outputSchema: CREATE_PROPOSAL_OUTPUT_SCHEMA,
 				description:
 					'Create a proposal document with frontmatter, a Goal and a parseable `## Slices` section (one slice per parallelisable, file-disjoint unit). Validates disjointness, writes atomically and re-syncs the index. Returns the file path and any overlap issues.',
-				inputSchema: z.object({
-					id: z.string().optional(),
-					// f00016 S13: when `id` is omitted, `kind` resolves the
-					// prefix and the race-safe allocator picks the next
-					// number. One of the two is required (checked at runtime
-					// — modelling that as an exclusive-or in Zod is more
-					// machinery than the one resulting error message saves).
-					kind: z
-						.enum([
-							'feat',
-							'breaking',
-							'fix',
-							'refactor',
-							'perf',
-							'audit',
-							'chore',
-							'docs',
-							'test',
-							'infra',
-							'spike',
-							'legacy',
-							'resume',
-						])
-						.optional(),
-					title: z.string(),
-					goal: z.string().optional(),
-					status: z
-						.enum([
-							'pending',
-							'ready',
-							'in_progress',
-							'in-progress',
-						])
-						.optional(),
-					track: z.string().optional(),
-					why: z.string().optional(),
-					nonGoals: z.array(z.string()).optional(),
-					globalGate: z
-						.enum(['lint', 'type', 'e2e', 'none'])
-						.optional(),
-					slices: z.array(SLICE_IN).optional(),
-				}),
+				inputSchema: CREATE_PROPOSAL_INPUT_SCHEMA,
 			},
 			async (args: {
 				id?: string | undefined;
@@ -470,162 +796,26 @@ export const buildCreateProposalRegistration = (
 				globalGate?: string | undefined;
 				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
 			}) => {
-				let id: string;
-				if (args.id !== undefined) {
-					id = args.id;
-					// f00114: the WRITE-seam schema owns the shape rule
-					// (strict 5 digits, canonical prefix, no `p` alias)…
-					const idResult = newProposalIdSchema.safeParse(id);
-					if (!idResult.success) {
-						return toolError(
-							`invalid proposal id "${id}" — ${idResult.error.issues[0]?.message ?? 'malformed'}`,
-							'Use one lowercase family prefix followed by exactly five digits (for example f00001), or omit id and pass kind for race-safe allocation.',
-						);
-					}
-					// …and kindMatchesId owns prefix↔kind coherence.
-					if (args.kind !== undefined) {
-						const match = kindMatchesId(args.kind, id);
-						if (!match.ok) {
-							return toolError(
-								match.reason,
-								'Ensure the ID prefix matches the specified kind.',
-							);
-						}
-					}
-				} else if (args.kind !== undefined) {
-					const prefix = prefixForKind(args.kind);
-					if (prefix === null) {
-						return toolError(
-							`unknown kind "${args.kind}"`,
-							'Pass a recognised kind, or pass id explicitly.',
-						);
-					}
-					id = await allocateNextProposalId(prefix, {
-						proposalsDirAbs: options.proposalsDirAbs,
-						counterPathAbs: options.counterPathAbs,
-					});
-				} else {
-					return toolError(
-						'either id or kind is required',
-						'Pass an explicit id, or pass kind to auto-allocate the next one (f00016 S13).',
-					);
-				}
-				const slices = args.slices ?? [];
-				// Validate disjointness before writing.
-				const plan = {
-					proposalId: id,
-					globalGate: (args.globalGate ?? 'none') as
-						| 'lint'
-						| 'type'
-						| 'e2e'
-						| 'none',
-					slices: slices.map((s) => ({
-						proposalId: id,
-						sliceId: s.sliceId,
-						title: s.title ?? s.sliceId,
-						owner: null,
-						files: s.files,
-						dependsOn: s.dependsOn ?? [],
-						gate: (s.gate ?? 'none') as
+				const created = await createProposalDocument(
+					{
+						...args,
+						globalGate: (args.globalGate ?? 'none') as
 							| 'lint'
 							| 'type'
 							| 'e2e'
 							| 'none',
-						status: 'pending' as const,
-						acceptanceCriteria: s.acceptance ?? [],
-					})),
-				};
-				const issues = planDisjointnessIssues(plan);
-				if (issues.length > 0) {
-					return toolError(
-						`slices share files: ${issues.map((i) => `${i.first}/${i.second}:${i.file}`).join(', ')}`,
-						'Make each slice edit a disjoint set of files.',
-					);
+					},
+					options,
+				);
+				if (!created.ok) {
+					return toolError(created.reason, created.nextAction);
 				}
-				const inferredKind =
-					args.kind ??
-					(PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] || 'feat');
-				const date = new Date().toISOString().slice(0, 10);
-				// x00098 S2: author the canonical, lint-valid document —
-				// frontmatter `title`, hyphenated status, the required
-				// why/non-goals/acceptance sections (scaffolded when the
-				// caller gave no content) and canonical slice bullets.
-				const status = canonicalStatus(args.status);
-				const acceptanceLines = slices.flatMap((s) =>
-					(s.acceptance ?? []).map((a) => `- ${a}`),
-				);
-				const body = [
-					'---',
-					`id: ${id}`,
-					`title: ${JSON.stringify(args.title)}`,
-					`kind: ${inferredKind}`,
-					`status: ${status}`,
-					'type: proposal',
-					`track: ${args.track ?? 'general'}`,
-					`date: ${date}`,
-					'---',
-					'',
-					`# ${id} — ${args.title}`,
-					'',
-					'## Goal',
-					'',
-					args.goal ?? 'TODO: describe the goal.',
-					'',
-					'## why',
-					'',
-					args.why ?? 'TODO: why this work matters now.',
-					'',
-					'## non-goals',
-					'',
-					...(args.nonGoals && args.nonGoals.length > 0
-						? args.nonGoals.map((g) => `- ${g}`)
-						: ['- TODO: what this proposal deliberately skips.']),
-					'',
-					'## Slices',
-					'',
-					`- global_gate: ${args.globalGate ?? 'none'}`,
-					'',
-					...(slices.length > 0
-						? slices.map(renderSlice).join('\n\n').split('\n')
-						: [
-								'### S1 — TODO',
-								'- **Status**: pending',
-								'- **Files**: `TODO`',
-								'- **Gate**: none',
-							]),
-					'',
-					'## acceptance',
-					'',
-					...(acceptanceLines.length > 0
-						? acceptanceLines
-						: ['- TODO: observable acceptance criteria.']),
-					'',
-				].join('\n');
-				// The linter requires every proposal to live in its status
-				// folder (`ready/`, `in-progress/`, …), not the dir root.
-				const fileRel = `${STATUS_TO_FOLDER[status]}/${id}-${slugFromTitle(args.title, id)}.md`;
-				const absPath = join(
-					options.proposalsDirAbs,
-					...fileRel.split('/'),
-				);
-				const { text: safeBody, redactions } = redactSecrets(body);
-				await writeFileAtomic(absPath, safeBody);
-				const sync = await syncProposalRegistry(
-					options.workspaceRoot,
-					options.layout,
-					options.extraFolders ?? [],
-				);
-				const syncEntry = sync.proposals.find((p) => p.id === id);
-				const finalFileRel = syncEntry ? syncEntry.file : fileRel;
-				const finalAbsPath = syncEntry
-					? join(options.proposalsDirAbs, ...finalFileRel.split('/'))
-					: absPath;
 				return toolOk({
-					file: finalFileRel,
-					path: finalAbsPath,
-					disjointnessIssues: issues,
-					indexCount: sync.count,
-					redactedSecrets: redactions,
+					file: created.file,
+					path: created.path,
+					disjointnessIssues: created.disjointnessIssues,
+					indexCount: created.indexCount,
+					redactedSecrets: created.redactedSecrets,
 				});
 			},
 		);
@@ -654,6 +844,8 @@ const resolveWorktreeTopLevel = async (run: IGitRunner): Promise<string> => {
 
 type ICloseSliceValidateOptions = IAuthoringToolOptions & {
 	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	readonly persist?: ICloseSlicePersistConfig;
+	readonly persistGit?: IGitRunner;
 };
 
 interface IAgentLockReleaseResult {
@@ -705,6 +897,30 @@ const releaseSliceLock = async (
 	return false;
 };
 
+const releaseSliceAssignment = async (
+	options: IAuthoringToolOptions,
+	proposalId: string,
+	sliceId: string,
+): Promise<boolean> => {
+	if (options.agentNames === undefined) return false;
+	const candidates = new Set([
+		`${proposalId}-${canonicalSliceId(sliceId)}`,
+		`${proposalId}-${sliceId}`,
+		sliceId,
+	]);
+	for (const taskId of candidates) {
+		const result = await runAgentNames(
+			{ action: 'release', task_id: taskId },
+			options.agentNames,
+		);
+		const body = JSON.parse(result.content[0]?.text ?? '{}') as {
+			released?: readonly string[];
+		};
+		if (body.released?.includes(taskId) === true) return true;
+	}
+	return false;
+};
+
 /**
  * `close_slice` — mark a slice `done` in the proposal doc AND release its
  * agent lock, atomically. Closes the loop crisply so the next agent sees
@@ -749,7 +965,25 @@ export const buildCloseSliceRegistration = (
 					proposalId: z.string().optional(),
 					sliceId: z.string().optional(),
 					closed: z.boolean().optional(),
+					validationDecision: z
+						.object({
+							mode: z.enum(['scoped', 'full', 'blocked']),
+							resolvedScopes: z.array(z.string()),
+							snapshotId: z.string(),
+							reason: z.string(),
+						})
+						.optional(),
 					lockReleased: z.boolean().optional(),
+					assignmentReleased: z.boolean().optional(),
+					persist: z
+						.object({
+							committed: z.boolean(),
+							pushed: z.boolean(),
+							mode: z.enum(['none', 'commit', 'commit-and-push']),
+							hash: z.string().optional(),
+							reason: z.string().optional(),
+						})
+						.optional(),
 					// f00091 S2: the branch (if any) recorded for deliberate
 					// integration by the non-destructive branch-integration
 					// step. `null` when agentWorktree is off, the active
@@ -768,13 +1002,7 @@ export const buildCloseSliceRegistration = (
 					sliceId: z.string(),
 					releaseLock: z.boolean().optional(),
 					force: z.boolean().optional(),
-					validateEvidence: z
-						.object({
-							timestamp: z.string().min(1),
-							exitCode: z.number().int(),
-							logPath: z.string().min(1).optional(),
-						})
-						.optional(),
+					validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
 				}),
 			},
 			async (args: {
@@ -810,7 +1038,13 @@ export const buildCloseSliceRegistration = (
 				}
 				const { entry, docPath } = resolved;
 				const closeSliceOptions = options as ICloseSliceValidateOptions;
-				if (args.force !== true) {
+				let validationDecision:
+					| ICloseSliceValidationDecision
+					| undefined;
+				if (
+					args.force !== true &&
+					options.requireValidateEvidence !== false
+				) {
 					const validateEvidence =
 						await resolveRecentValidateEvidence({
 							workspaceRoot: options.workspaceRoot,
@@ -829,18 +1063,14 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 						};
-						return {
-							content: [
-								{
-									type: 'text' as const,
-									text: JSON.stringify(envelope),
-								},
-							],
-							structuredContent: envelope,
-							isError: true,
-						};
+						return toolErrorEnvelope(envelope);
 					}
 				}
+				let persisted: IPersistResult = {
+					committed: false,
+					pushed: false,
+					mode: 'none',
+				};
 				try {
 					await withFileMutex(docPath, async () => {
 						const md = await readTextOrNull(docPath);
@@ -861,12 +1091,67 @@ export const buildCloseSliceRegistration = (
 							);
 						}
 						const rawBlock = m[2] ?? '';
+						const slicePlan = parseProposalSlicePlan(entry.id, md);
+						if (slicePlan === null) {
+							throw new Error(
+								`slice plan missing in ${entry.file}`,
+							);
+						}
+						const slice = slicePlan.slices.find(
+							(candidate) =>
+								candidate.sliceId ===
+								canonicalSliceId(args.sliceId),
+						);
+						if (slice === undefined) {
+							throw new Error(
+								`slice "${args.sliceId}" not found in ${entry.file}`,
+							);
+						}
+						if (
+							closeSliceOptions.resolveValidationDecision !==
+							undefined
+						) {
+							const decision =
+								await closeSliceOptions.resolveValidationDecision(
+									{
+										operation: 'close',
+										ownedFiles: slice.files,
+										proposalId: entry.id,
+										sliceId: canonicalSliceId(args.sliceId),
+									},
+								);
+							validationDecision = {
+								mode: decision.mode,
+								resolvedScopes: [...decision.resolvedScopes],
+								snapshotId: decision.snapshotId,
+								reason: decision.reason,
+							};
+							if (decision.mode === 'blocked') {
+								const err: ICloseSliceThrownError =
+									Object.assign(new Error(decision.reason), {
+										kind: 'validation-error' as const,
+										validationDecision,
+									});
+								throw err;
+							}
+						}
 						// a00072 S3.c — quality gate BEFORE flipping status.
 						// If the probe is wired and reports severity=error,
 						// refuse the close. Hosts that do not wire the quality
 						// plugin skip this check entirely.
 						if (typeof options.runQuality === 'function') {
-							const quality = await options.runQuality();
+							const quality = await options.runQuality(
+								validationDecision !== undefined
+									? {
+											scopes: validationDecision.resolvedScopes,
+											mode:
+												validationDecision.mode ===
+												'blocked'
+													? 'full'
+													: validationDecision.mode,
+										}
+									: undefined,
+							);
 							if (quality.severity === 'error') {
 								const err: ICloseSliceThrownError =
 									Object.assign(
@@ -899,11 +1184,74 @@ export const buildCloseSliceRegistration = (
 								throw err;
 							}
 						}
+						const configuredPersist = closeSliceOptions.persist ?? {
+							mode: 'none' as const,
+						};
+						const persistResult = await maybePersistAfterSlice(
+							slice.files,
+							entry.id,
+							canonicalSliceId(args.sliceId),
+							{
+								...configuredPersist,
+								...(options.agentWorktreeEnabled !== undefined
+									? {
+											agentWorktreeEnabled:
+												options.agentWorktreeEnabled,
+										}
+									: {}),
+								cwd: options.workspaceRoot,
+								...(configuredPersist.allowForeignChanges ===
+								true
+									? { allowForeignChanges: true }
+									: {}),
+								...(closeSliceOptions.commitAuthor !== undefined
+									? {
+											commitAuthor:
+												closeSliceOptions.commitAuthor,
+										}
+									: {}),
+								...(closeSliceOptions.persistGit !== undefined
+									? { git: closeSliceOptions.persistGit }
+									: {}),
+							},
+						);
+						const persistIncomplete =
+							(configuredPersist.mode === 'commit' &&
+								persistResult.committed !== true) ||
+							(configuredPersist.mode === 'commit-and-push' &&
+								(persistResult.committed !== true ||
+									persistResult.pushed !== true));
+						if (persistIncomplete) {
+							const err: ICloseSliceThrownError = Object.assign(
+								new Error(
+									persistResult.reason ??
+										'persistence is incomplete; the slice was not closed',
+								),
+								{
+									kind: 'validation-error' as const,
+									output: JSON.stringify(persistResult),
+									persist: persistResult,
+								},
+							);
+							throw err;
+						}
+						persisted = persistResult;
 						const block = flipSliceStatusDone(rawBlock);
-						const nextContent = md.replace(
+						const sliceClosedContent = md.replace(
 							blockRe,
 							`${m[1]}${block}`,
 						);
+						const prepared = markProposalDoneForAutoTransition(
+							entry.id,
+							sliceClosedContent,
+							options.requirePeerReview === undefined
+								? {}
+								: {
+										requirePeerReview:
+											options.requirePeerReview,
+									},
+						);
+						const nextContent = prepared.markdown;
 						await writeFileAtomic(docPath, nextContent);
 					});
 				} catch (rawErr: unknown) {
@@ -924,17 +1272,17 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 							validationOutput: String(err.output ?? ''),
+							...(err.validationDecision !== undefined
+								? { validationDecision: err.validationDecision }
+								: {}),
+							...(err.persist !== undefined
+								? { persist: err.persist }
+								: {}),
+							...(err.persist !== undefined
+								? { persist: err.persist }
+								: {}),
 						};
-						return {
-							content: [
-								{
-									type: 'text' as const,
-									text: JSON.stringify(envelope),
-								},
-							],
-							structuredContent: envelope,
-							isError: true,
-						};
+						return toolErrorEnvelope(envelope);
 					}
 					if (err.kind === 'peer-review-required') {
 						const envelope = {
@@ -950,16 +1298,7 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 						};
-						return {
-							content: [
-								{
-									type: 'text' as const,
-									text: JSON.stringify(envelope),
-								},
-							],
-							structuredContent: envelope,
-							isError: true,
-						};
+						return toolErrorEnvelope(envelope);
 					}
 					if (err.kind === 'quality-failed') {
 						const envelope = {
@@ -980,19 +1319,12 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 						};
-						return {
-							content: [
-								{
-									type: 'text' as const,
-									text: JSON.stringify(envelope),
-								},
-							],
-							structuredContent: envelope,
-							isError: true,
-						};
+						return toolErrorEnvelope(envelope);
 					}
 					return toolError(
-						err.message,
+						err instanceof Error
+							? `${err.message}\n${err.stack ?? ''}`
+							: String(err),
 						'Call proposal_board to list slices.',
 					);
 				}
@@ -1030,8 +1362,14 @@ export const buildCloseSliceRegistration = (
 				}
 
 				let lockReleased = false;
+				let assignmentReleased = false;
 				if (args.releaseLock !== false) {
 					lockReleased = await releaseSliceLock(
+						options,
+						entry.id,
+						args.sliceId,
+					);
+					assignmentReleased = await releaseSliceAssignment(
 						options,
 						entry.id,
 						args.sliceId,
@@ -1047,7 +1385,12 @@ export const buildCloseSliceRegistration = (
 					sliceId: args.sliceId,
 					closed: true,
 					lockReleased,
+					assignmentReleased,
+					persist: persisted,
 					pendingIntegrationBranch,
+					...(validationDecision !== undefined
+						? { validationDecision }
+						: {}),
 				});
 			},
 		);
@@ -1075,42 +1418,9 @@ export const buildReviewRegistration = (
 			`${options.namespacePrefix}_proposal_review`,
 			{
 				description:
-					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released. action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. action=status: read current state. Enforces reviewer ≠ implementer (independent verification).',
-				inputSchema: z.object({
-					proposalId: z.string(),
-					sliceId: z.string(),
-					action: z.enum([
-						'submit',
-						'approve',
-						'request_changes',
-						'status',
-					]),
-					agent: z.string().min(1),
-					note: z.string().optional(),
-				}),
-				outputSchema: z.object({
-					ok: z.literal(true),
-					proposalId: z.string(),
-					sliceId: z.string(),
-					action: z.string(),
-					status: z.enum([
-						'none',
-						'in_review',
-						'changes_requested',
-						'done',
-					]),
-					implementer: z.string().nullable(),
-					reviewer: z.string().nullable(),
-					rounds: z.array(
-						z.object({
-							verdict: z.enum(['requested_changes', 'approved']),
-							agent: z.string(),
-							note: z.string(),
-						}),
-					),
-					lockReleased: z.boolean(),
-					redactedSecrets: z.number().int().nonnegative(),
-				}),
+					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released, and must attach empirical evidence (commit hash, passing validate exit code, and passing test counts). action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. action=status: read current state. Enforces reviewer ≠ implementer (independent verification).',
+				inputSchema: REVIEW_INPUT_SCHEMA,
+				outputSchema: REVIEW_OUTPUT_SCHEMA,
 			},
 			async (args: {
 				proposalId: string;
@@ -1118,6 +1428,7 @@ export const buildReviewRegistration = (
 				action: 'submit' | 'approve' | 'request_changes' | 'status';
 				agent: string;
 				note?: string | undefined;
+				evidence?: IProposalReviewEvidence | undefined;
 			}) => {
 				// x00106 S1: same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
@@ -1128,6 +1439,7 @@ export const buildReviewRegistration = (
 					return toolError(resolved.reason, resolved.nextAction);
 				}
 				const { entry, docPath } = resolved;
+				const missingSliceNextAction = `Call ${options.namespacePrefix}_proposal_get { view: "slices", proposalId: "${entry.id}" } and retry with a declared sliceId. If this historical proposal is already done, do not submit a review: run ${options.namespacePrefix}_proposal_reconcile_folder { id: "${entry.id}", reason: "repair historical proposal state" }; if the done state still needs an audited repair, ask the host to approve ${options.namespacePrefix}_proposal_force_transition { id: "${entry.id}", to: "done", reason: "repair historical proposal state", skipPeerReview: true }.`;
 				// x00055 S2: redact the reviewer note...
 				const redactedNote = args.note
 					? redactSecrets(args.note)
@@ -1145,7 +1457,7 @@ export const buildReviewRegistration = (
 					if (m === null) {
 						return toolError(
 							`slice "${args.sliceId}" not found in ${entry.file}`,
-							'Call proposal_board to list slices.',
+							missingSliceNextAction,
 						);
 					}
 					const body = m[2] ?? '';
@@ -1159,6 +1471,7 @@ export const buildReviewRegistration = (
 						reviewer: state.reviewer,
 						rounds: state.rounds,
 						lockReleased: false,
+						assignmentReleased: false,
 						redactedSecrets: 0,
 					});
 				}
@@ -1222,8 +1535,7 @@ export const buildReviewRegistration = (
 							if (!identityCheck.ok) {
 								if (
 									sameAgentNameAsImplementer &&
-									identityCheck.reason ===
-										'same-process-approve'
+									identityCheck.reason === 'self-approve'
 								) {
 									throw Object.assign(
 										new Error(
@@ -1243,6 +1555,17 @@ export const buildReviewRegistration = (
 											identityCheck.reason,
 											identityCheck.nextAction,
 										),
+									},
+								);
+							}
+							const evidenceError = requireProposalReviewEvidence(
+								args.evidence,
+							);
+							if (evidenceError !== null) {
+								throw Object.assign(
+									new Error('missing empirical evidence'),
+									{
+										toolError: evidenceError,
 									},
 								);
 							}
@@ -1356,19 +1679,27 @@ export const buildReviewRegistration = (
 				} catch (rawErr: unknown) {
 					if (!isToolErrorCarryingError(rawErr)) throw rawErr;
 					if (rawErr.toolError !== undefined) return rawErr.toolError;
-					return toolError(
-						rawErr.message,
-						'Call proposal_board to list slices.',
-					);
+					const nextAction =
+						rawErr.message.includes('slice "') &&
+						rawErr.message.includes('not found')
+							? missingSliceNextAction
+							: 'Call proposal_board to list slices.';
+					return toolError(rawErr.message, nextAction);
 				}
 
 				// approve/request_changes free the slice (done, or reworkable).
 				let lockReleased = false;
+				let assignmentReleased = false;
 				if (
 					nextStatus === 'done' ||
 					nextStatus === 'changes_requested'
 				) {
 					lockReleased = await releaseSliceLock(
+						options,
+						entry.id,
+						args.sliceId,
+					);
+					assignmentReleased = await releaseSliceAssignment(
 						options,
 						entry.id,
 						args.sliceId,
@@ -1417,6 +1748,7 @@ export const buildReviewRegistration = (
 					reviewer: nextReviewer,
 					rounds: nextRounds,
 					lockReleased,
+					assignmentReleased,
 					redactedSecrets: redactedNote.redactions,
 				});
 			},

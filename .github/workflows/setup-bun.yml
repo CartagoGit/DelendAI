@@ -1,0 +1,65 @@
+# setup-bun.yml — r00035 S3 (refactor).
+#
+# Reusable `workflow_call` that performs the three steps every job in this
+# repo needs before running any bun command: `actions/checkout@v7`,
+# `oven-sh/setup-bun@v2` pinned to `bun-version: 1.3.14`, and
+# `bun install --frozen-lockfile`. Other workflows `uses:` this with
+# `secrets: inherit` rather than copying the three blocks; the
+# `workflow-command-duplication` lint (r00035 S3) only passes because of
+# this indirection.
+#
+# Why a workflow_call (not a composite action):
+#   - The repeated block already uses GitHub-Actions standard calls
+#     (`checkout@v7`, `setup-bun@v2`); wrapping them in `workflow_call`
+#     centralises the pinned action versions and the bun-version in ONE
+#     place, so a version bump touches a single YAML.
+#   - Composite actions in `action.yml` ship as a single tarball and are
+#     awkward to combine with `${{ github.* }}` context that already
+#     flows through every existing workflow.
+#
+# Usage:
+#   jobs:
+#       my-job:
+#           uses: ./.github/workflows/setup-bun.yml
+#           with:
+#               node-version: '20'
+#           secrets: inherit
+
+name: setup-bun
+
+on:
+    workflow_call:
+        inputs:
+            bun-version:
+                description: 'Bun version to install via oven-sh/setup-bun'
+                required: false
+                type: string
+                default: '1.3.14'
+            install:
+                description: 'Run `bun install --frozen-lockfile` after checkout.'
+                required: false
+                type: boolean
+                default: true
+            node-version:
+                description: 'Optional node-version override for setup-bun.'
+                required: false
+                type: string
+                default: ''
+
+jobs:
+    setup:
+        name: setup
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: ${{ inputs.bun-version }}
+
+            - name: Install dependencies
+              if: ${{ inputs.install }}
+              run: bun install --frozen-lockfile

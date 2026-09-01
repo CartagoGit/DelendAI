@@ -60,7 +60,6 @@ import {
 	detectLongChains,
 	detectMagicNumbers,
 	formatFixProposal,
-	lineOf,
 	shingleBlocks,
 	toRelPosix,
 	walkTsFiles,
@@ -198,8 +197,9 @@ export const classifySolidFindings = async (
 				snippet: d.snippet,
 			});
 		}
-		// magic-number-in-plugin (only in plugins/*)
-		if (relPath.startsWith('plugins/')) {
+		// magic-number-in-plugin (only in plugins/*, never in their tests:
+		// numeric literals in specs are fixtures/timestamps, not magic).
+		if (relPath.startsWith('plugins/') && !relPath.includes('/tests/')) {
 			pluginFiles.set(relPath, body);
 			const mags = detectMagicNumbers(body);
 			for (const m of mags) {
@@ -223,7 +223,23 @@ export const classifySolidFindings = async (
 		}
 	}
 	const dups = shingleBlocks(dupSources);
-	const dupFilter = dups.filter((d) => d.copies >= minDupCopies);
+	const pluginNameOf = (relPath: string): string | undefined => {
+		const match = /^plugins\/([^/]+)\//.exec(relPath);
+		return match?.[1];
+	};
+	const pluginsByHash = new Map<string, Set<string>>();
+	for (const d of dups) {
+		const pluginName = pluginNameOf(d.relPath);
+		if (pluginName === undefined) continue;
+		const pluginsForHash = pluginsByHash.get(d.hash) ?? new Set();
+		pluginsForHash.add(pluginName);
+		pluginsByHash.set(d.hash, pluginsForHash);
+	}
+	const dupFilter = dups.filter(
+		(d) =>
+			d.copies >= minDupCopies &&
+			(pluginsByHash.get(d.hash)?.size ?? 0) >= 2,
+	);
 	for (const d of dupFilter) {
 		findings.push({
 			id: 'duplicated-cross-plugin',
@@ -364,7 +380,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 			process.stderr.write(msg);
 			return 1;
 		}
-		process.stdout.write(formatFixProposal(proposal) + '\n');
+		process.stdout.write(`${formatFixProposal(proposal)}\n`);
 		return 0;
 	}
 	const files = await walkTsFiles(rootDir, roots);
@@ -416,10 +432,10 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const out = formatReport(result);
 	if (report) {
 		process.stderr.write(
-			'solid-compliance: ' + result.findings.length + ' findings' + '\n',
+			`solid-compliance: ${result.findings.length} findings\n`,
 		);
 	} else {
-		process.stdout.write(out + '\n');
+		process.stdout.write(`${out}\n`);
 	}
 	return result.findings.length === 0 ? 0 : 1;
 };

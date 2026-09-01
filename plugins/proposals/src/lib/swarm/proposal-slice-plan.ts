@@ -6,8 +6,16 @@
 // an explicit `- status: done` line in the doc — no sidecar files, no
 // index.json changes (non-goal).
 
+import {
+	CONTRACT_MIGRATION_PHASES,
+	type ContractMigrationPhase,
+	type IContractMigrationSliceGuidance,
+} from '@mcp-vertex/core/lib/contracts';
 import { CAPABILITY_TAGS, type CapabilityTag } from '@mcp-vertex/core/public';
+
+import { evaluateWorktreeImpactPolicy } from '../agents/worktree-impact-policy';
 import { expandDeclaredFiles } from '../proposals/expand-declared-files';
+import { evaluateContractMigrationPolicy } from './contract-migration-policy';
 
 export type ISliceGate = 'lint' | 'type' | 'e2e' | 'none';
 
@@ -27,6 +35,8 @@ export interface IProposalSliceContract {
 	readonly gate: ISliceGate;
 	readonly status: ISliceStatus;
 	readonly acceptanceCriteria: readonly string[];
+	readonly migrationPhase?: ContractMigrationPhase;
+	readonly migrationGuidance?: IContractMigrationSliceGuidance;
 	/**
 	 * f00067 S2 (routing hints, all optional — default "no preference").
 	 * A slice can steer the multi-model orchestrator toward a provider
@@ -59,10 +69,13 @@ export interface IClaimValidation {
 		| 'deps-not-done'
 		| 'overlap-in-progress'
 		| 'already-done'
-		| 'already-in-progress';
+		| 'already-in-progress'
+		| 'isolation-required'
+		| 'migration-phase-blocked';
 }
 
 const GATES: readonly ISliceGate[] = ['lint', 'type', 'e2e', 'none'];
+const DECIMAL_RADIX = 10;
 
 const asGate = (value: string | undefined): ISliceGate =>
 	GATES.includes((value ?? '') as ISliceGate)
@@ -70,6 +83,13 @@ const asGate = (value: string | undefined): ISliceGate =>
 		: 'none';
 
 const CAPABILITY_TAG_SET: ReadonlySet<string> = new Set(CAPABILITY_TAGS);
+const CONTRACT_MIGRATION_PHASE_SET: ReadonlySet<string> = new Set(
+	CONTRACT_MIGRATION_PHASES,
+);
+
+const FILES_FIELD_RE = /^[-*]\s*(?:files|\*\*Files\*\*):[ \t]*(.*)$/u;
+
+const FILES_CONTINUATION_RE = /^[ \t]+.*$/u;
 
 /**
  * Read a single slice-body field's raw right-hand side. Accepts both the
@@ -127,8 +147,90 @@ const parsePreferredProvider = (
 
 const parseCostTier = (raw: string | undefined): ISliceCostTier | undefined => {
 	if (raw === undefined) return undefined;
-	const n = Number.parseInt(raw.trim(), 10);
+	const n = Number.parseInt(raw.trim(), DECIMAL_RADIX);
 	return n >= 1 && n <= 5 ? (n as ISliceCostTier) : undefined;
+};
+
+const parseMigrationPhase = (
+	body: string,
+): ContractMigrationPhase | undefined => {
+	const raw =
+		readSliceField(body, 'migration_phase') ??
+		readSliceField(body, 'phase');
+	const normalized = raw?.trim().toLowerCase();
+	if (
+		normalized !== undefined &&
+		CONTRACT_MIGRATION_PHASE_SET.has(normalized)
+	) {
+		return normalized as ContractMigrationPhase;
+	}
+	return undefined;
+};
+
+const orderedCompletedPhasesFor = (
+	slices: readonly IProposalSliceContract[],
+	targetPhase: ContractMigrationPhase,
+): readonly ContractMigrationPhase[] => {
+	const targetIndex = CONTRACT_MIGRATION_PHASES.indexOf(targetPhase);
+	const donePhases = new Set<ContractMigrationPhase>(
+		slices.flatMap((slice) =>
+			slice.status === 'done' && slice.migrationPhase !== undefined
+				? [slice.migrationPhase]
+				: [],
+		),
+	);
+	return CONTRACT_MIGRATION_PHASES.filter(
+		(phase, index) => index < targetIndex && donePhases.has(phase),
+	);
+};
+
+const attachMigrationGuidance = (
+	slices: readonly IProposalSliceContract[],
+): readonly IProposalSliceContract[] =>
+	slices.map((slice) => {
+		if (slice.migrationPhase === undefined) return slice;
+		const completedPhases = orderedCompletedPhasesFor(
+			slices,
+			slice.migrationPhase,
+		);
+		const verificationPassed = completedPhases.includes('verify');
+		return {
+			...slice,
+			migrationGuidance: {
+				phase: slice.migrationPhase,
+				completedPhases,
+				verificationPassed,
+				migrationPolicy: evaluateContractMigrationPolicy({
+					targetPhase: slice.migrationPhase,
+					completedPhases,
+					verificationPassed,
+				}),
+				worktreeImpactPolicy: evaluateWorktreeImpactPolicy({
+					phase: slice.migrationPhase,
+					touchedPaths: slice.files,
+				}),
+			},
+		};
+	});
+
+const readRawFilesBlocks = (body: string): readonly string[] => {
+	const blocks: string[] = [];
+	const lines = body.split('\n');
+	for (let index = 0; index < lines.length; index += 1) {
+		const line = lines[index] ?? '';
+		const match = line.match(FILES_FIELD_RE);
+		if (match === null) continue;
+		let raw = match[1] ?? '';
+		while (
+			index + 1 < lines.length &&
+			FILES_CONTINUATION_RE.test(lines[index + 1] ?? '')
+		) {
+			index += 1;
+			raw = `${raw}\n${lines[index] ?? ''}`;
+		}
+		blocks.push(raw);
+	}
+	return blocks;
 };
 
 /**
@@ -190,13 +292,9 @@ export const parseProposalSlicePlan = (
 		// check silently dropped every continuation line past the first,
 		// which fed only a fragment of the declared files into the
 		// (also buggy) comma split below. `[ \t]+` accepts either.
-		const files = [
-			...body.matchAll(
-				/^[-*]\s*(?:files|\*\*Files\*\*):[ \t]*(.*(?:\n[ \t]+.*)*)$/gm,
-			),
-		]
-			.flatMap((m) => {
-				const raw = (m[1] ?? '').trim();
+		const files = readRawFilesBlocks(body)
+			.flatMap((rawBlock) => {
+				const raw = rawBlock.trim();
 				// x00158 S1: prefer the shared brace-aware parser (handles
 				// backticked `{a,b,c}` expansion correctly). Also lift
 				// `file://` markdown links so a truncated `[path](file://…)`
@@ -247,6 +345,7 @@ export const parseProposalSlicePlan = (
 		const maxCostTier = parseCostTier(
 			readSliceField(body, 'max_cost_tier'),
 		);
+		const migrationPhase = parseMigrationPhase(body);
 		slices.push({
 			proposalId,
 			sliceId,
@@ -257,13 +356,18 @@ export const parseProposalSlicePlan = (
 			gate,
 			status: docDone ? 'done' : 'pending',
 			acceptanceCriteria,
+			...(migrationPhase !== undefined ? { migrationPhase } : {}),
 			...(requiresCapability.length > 0 ? { requiresCapability } : {}),
 			...(preferredProvider !== undefined ? { preferredProvider } : {}),
 			...(maxCostTier !== undefined ? { maxCostTier } : {}),
 		});
 	}
 	if (slices.length === 0) return null;
-	return { proposalId, slices, globalGate };
+	return {
+		proposalId,
+		slices: attachMigrationGuidance(slices),
+		globalGate,
+	};
 };
 
 /** Pairs of slices whose `files` overlap (forbidden by construction). */
@@ -302,7 +406,7 @@ const WORKSPACE_PATH_RE =
 
 const looksLikePath = (value: string): boolean => {
 	if (value.length < 2) return false;
-	if (/^[\[\]()]+$/.test(value)) return false;
+	if (/^[[\]()]+$/.test(value)) return false;
 	if (value.includes('/') || /\.[A-Za-z0-9]+$/.test(value)) return true;
 	return /^[A-Za-z][A-Za-z0-9._-]*$/.test(value);
 };
@@ -414,6 +518,28 @@ export const validateClaim = (
 			ok: false,
 			blockerType: 'deps-not-done',
 			reason: `slice "${sliceId}" depends on [${missingDeps.join(', ')}] which are not done`,
+		};
+	}
+	if (slice.migrationGuidance?.migrationPolicy.ok === false) {
+		const blockers =
+			slice.migrationGuidance.migrationPolicy.blockers.join(' ');
+		return {
+			ok: false,
+			blockerType: 'migration-phase-blocked',
+			reason:
+				blockers.length > 0
+					? blockers
+					: `slice "${sliceId}" cannot start ${slice.migrationGuidance.phase} yet`,
+		};
+	}
+	if (
+		slice.migrationGuidance?.worktreeImpactPolicy.claimMode ===
+		'requires-agent-worktree'
+	) {
+		return {
+			ok: false,
+			blockerType: 'isolation-required',
+			reason: `slice "${sliceId}" is ${slice.migrationGuidance.phase} with high fan-out and requires agent-worktree isolation before claim. Use an isolated orchestration path (delegate or create an agent/<name> worktree) instead of the shared checkout.`,
 		};
 	}
 	const mine = new Set(slice.files);

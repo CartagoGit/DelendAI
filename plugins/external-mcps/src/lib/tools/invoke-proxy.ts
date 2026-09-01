@@ -16,10 +16,19 @@
  * check is an injectable (possibly async) predicate; the plugin manifest
  * composes it from the SAME durable pending-acks ledger the `ack` tool
  * writes (x00097 S1), so an accepted ack enables the call across restarts.
+ *
+ * Activation gate (AUD-D04): the two autonomy knobs plus the target
+ * server's current running state are handed to the pure
+ * {@link decideActivation} policy, not decided inline here. A server that
+ * is already running serves the call regardless of the knobs (it is not
+ * being ACTIVATED); a cold server with `llmDecidesActivation: false`
+ * refuses unconditionally with `code: 'llm-activation-disabled'` — the
+ * model cannot trigger the first boot on its own.
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
 import z from 'zod';
 
+import { decideActivation } from '../activation/activation-policy.helper';
 import type { ExternalServerRegistry } from '../subprocess/server-registry';
 
 /**
@@ -27,18 +36,23 @@ import type { ExternalServerRegistry } from '../subprocess/server-registry';
  * durable pending-acks ledger can back it directly (fresh read per call —
  * an ack recorded mid-session is honoured without a restart).
  */
-export type HasRecordedAck = (serverId: string) => boolean | Promise<boolean>;
+export type IHasRecordedAck = (serverId: string) => boolean | Promise<boolean>;
 
 /** Fail-closed default when no ledger is composed: no acks are recorded. */
-export const noAcksRecorded: HasRecordedAck = () => false;
+export const noAcksRecorded: IHasRecordedAck = () => false;
 
 export interface IInvokeProxyOptions {
 	readonly namespacePrefix: string;
 	readonly registry: ExternalServerRegistry;
+	/**
+	 * AUD-D04: when `false` the model may not activate a server that is
+	 * not yet running (`true` by default — `options-schema.ts`).
+	 */
+	readonly llmDecidesActivation: boolean;
 	/** The resolved autonomy knob (`true` by default — gate decision 5). */
 	readonly requireHumanAckWhenLlmDecides: boolean;
 	/** Injectable pending-ack predicate. Default: {@link noAcksRecorded}. */
-	readonly hasRecordedAck?: HasRecordedAck;
+	readonly hasRecordedAck?: IHasRecordedAck;
 }
 
 const InputSchema = z.object({
@@ -54,7 +68,13 @@ export const CallOutputSchema = z.object({
 	ok: z.boolean(),
 	/** Present only on failure — stable, machine-actionable. */
 	code: z
-		.enum(['ack-required', 'unknown-server', 'call-failed', 'call-timeout'])
+		.enum([
+			'ack-required',
+			'llm-activation-disabled',
+			'unknown-server',
+			'call-failed',
+			'call-timeout',
+		])
 		.optional(),
 	/** Present only on failure — one actionable line. */
 	hint: z.string().optional(),
@@ -87,7 +107,7 @@ export const buildCallToolRegistration = (
 				`${options.namespacePrefix}_call`,
 				{
 					description:
-						'Invoke ext.<server>.<tool> on a server declared under plugins.external-mcps.servers — the host cannot register child tools on its own surface yet, so this proxy IS the invocation surface for every external tool. The child spawns lazily on the first call and is reused after; failures return structured {ok:false, code, hint} (ack-required | unknown-server | call-failed | call-timeout), success returns {ok:true, result} with the child MCP tools/call result.',
+						'Invoke ext.<server>.<tool> on a server declared under plugins.external-mcps.servers — the host cannot register child tools on its own surface yet, so this proxy IS the invocation surface for every external tool. The child spawns lazily on the first call and is reused after; failures return structured {ok:false, code, hint} (llm-activation-disabled | ack-required | unknown-server | call-failed | call-timeout), success returns {ok:true, result} with the child MCP tools/call result.',
 					inputSchema: InputSchema,
 					outputSchema: CallOutputSchema,
 				},
@@ -113,11 +133,27 @@ export const buildCallToolRegistration = (
 						typeof recorded === 'boolean'
 							? recorded
 							: await recorded;
-					if (options.requireHumanAckWhenLlmDecides && !acked) {
+					// AUD-D04: an already-running child is a normal
+					// invocation, not an activation — `status()` is
+					// read-only (never boots), so this check cannot itself
+					// trigger the spawn it is trying to gate.
+					const alreadyActive =
+						options.registry
+							.status()
+							.find((row) => row.id === serverId)?.running ??
+						false;
+					const decision = decideActivation({
+						llmDecidesActivation: options.llmDecidesActivation,
+						requireHumanAckWhenLlmDecides:
+							options.requireHumanAckWhenLlmDecides,
+						alreadyActive,
+						hasRecordedAck: acked,
+					});
+					if (!decision.allowed) {
 						return toolJson({
 							ok: false,
-							code: 'ack-required',
-							hint: `activating "${serverId}" needs a recorded human ack (requireHumanAckWhenLlmDecides is on) and none is recorded — ask the human to ack, or set the knob to false in plugins.external-mcps.options.`,
+							code: decision.code,
+							hint: decision.hint,
 						});
 					}
 					const outcome = await options.registry.call(

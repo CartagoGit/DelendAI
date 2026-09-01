@@ -28,7 +28,12 @@ import {
 import rawSharedEn from '../../shared/src/i18n/langs/en';
 import rawSharedEs from '../../shared/src/i18n/langs/es';
 
-const strictMode = process.argv.includes('--strict');
+export type CheckMode = 'warn' | 'strict';
+
+export const resolveCheckMode = (argv: readonly string[]): CheckMode =>
+	argv.includes('--strict') ? 'strict' : 'warn';
+
+const strictMode = resolveCheckMode(process.argv) === 'strict';
 
 const flattenKeys = (root: unknown, prefix = ''): string[] => {
 	if (root === null || root === undefined) return prefix ? [prefix] : [];
@@ -63,6 +68,102 @@ const flattenStrings = (
 			out.set(path, text);
 	}
 	return out;
+};
+
+export interface I18nCheckInput {
+	readonly siteDictsByLang: Record<string, unknown>;
+	readonly siteLanguages: readonly { readonly code: string }[];
+	readonly sharedDictsByLang: Record<string, unknown>;
+	readonly sharedLanguages: readonly { readonly code: string }[];
+	readonly registeredTools: readonly {
+		readonly name: string;
+		readonly dict: { readonly description: Record<string, unknown> };
+	}[];
+	readonly authoredEnglishExtension: unknown;
+	readonly authoredSpanishExtension: unknown;
+}
+
+export interface I18nCheckResult {
+	readonly siteProblems: readonly string[];
+	readonly sharedProblems: readonly string[];
+	readonly authoredProblems: readonly string[];
+	readonly shouldFail: boolean;
+}
+
+export const runCheck = (
+	input: I18nCheckInput,
+	mode: CheckMode,
+): I18nCheckResult => {
+	const siteProblems: string[] = [];
+	const siteEn = flattenKeys(input.siteDictsByLang.en ?? {});
+	const siteEnSet = new Set(siteEn);
+	for (const language of input.siteLanguages) {
+		const dictionary = input.siteDictsByLang[language.code];
+		if (dictionary === undefined) {
+			siteProblems.push(`[${language.code}] no dictionary registered`);
+			continue;
+		}
+		const keys = new Set(flattenKeys(dictionary));
+		const missing = siteEn.filter((key) => !keys.has(key));
+		if (missing.length > 0)
+			siteProblems.push(
+				`[${language.code}] missing ${missing.length}/${siteEn.length} keys: ${missing.join(', ')}`,
+			);
+		if (language.code !== 'en') {
+			const extra = [...keys].filter((key) => !siteEnSet.has(key));
+			if (extra.length > 0)
+				siteProblems.push(
+					`[${language.code}] stale keys not in en: ${extra.join(', ')}`,
+				);
+		}
+	}
+
+	const sharedProblems: string[] = [];
+	const sharedEn = flattenKeys(input.sharedDictsByLang.en ?? {});
+	const sharedEnSet = new Set(sharedEn);
+	for (const language of input.sharedLanguages) {
+		const dictionary = input.sharedDictsByLang[language.code];
+		if (dictionary === undefined) {
+			sharedProblems.push(
+				`[shared:${language.code}] no dictionary registered`,
+			);
+			continue;
+		}
+		const keys = new Set(flattenKeys(dictionary));
+		const missing = sharedEn.filter((key) => !keys.has(key));
+		if (missing.length > 0)
+			sharedProblems.push(
+				`[shared:${language.code}] missing ${missing.length}/${sharedEn.length} keys: ${missing.join(', ')}`,
+			);
+		if (language.code !== 'en') {
+			const extra = [...keys].filter((key) => !sharedEnSet.has(key));
+			if (extra.length > 0)
+				sharedProblems.push(
+					`[shared:${language.code}] stale keys not in en: ${extra.join(', ')}`,
+				);
+		}
+	}
+
+	const authoredEnglish = flattenStrings(input.authoredEnglishExtension);
+	const authoredSpanish = flattenStrings(input.authoredSpanishExtension);
+	const authoredProblems = [
+		...[...authoredEnglish.keys()].filter(
+			(key) => !authoredSpanish.has(key),
+		),
+		...[...authoredSpanish.keys()].filter(
+			(key) => !authoredEnglish.has(key),
+		),
+	];
+	return {
+		siteProblems,
+		sharedProblems,
+		authoredProblems,
+		shouldFail:
+			mode === 'strict' &&
+			(siteProblems.length > 0 ||
+				sharedProblems.length > 0 ||
+				authoredProblems.length > 0),
+	};
 };
 
 // ---- Site dict check (recursive walk, f00059 S2) ----
@@ -211,6 +312,13 @@ const allowedIdenticalSpanish = new Set([
 	'common.id',
 	// "Nord" is the theme's proper name — identical in every language.
 	'settings.theme.nord',
+	// Loanwords the Spanish copy uses verbatim throughout (see the
+	// `workspace`/`plugins`/`logs` wording across `langs/es.ts`), matching
+	// the already-allowed `tabPlugins` / `kpiPlugins` /
+	// `toolbarCategoryLogs` entries above.
+	'status.pluginsLabel',
+	'tabLogs',
+	'settings.section.workspace',
 ]);
 const spanishStaleEnglish = [...authoredEnglish].flatMap(([key, value]) =>
 	authoredSpanish.get(key) === value && !allowedIdenticalSpanish.has(key)

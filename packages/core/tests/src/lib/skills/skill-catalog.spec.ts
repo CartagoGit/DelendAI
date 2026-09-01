@@ -84,6 +84,12 @@ describe('buildSkillCatalog', () => {
 		expect(catalog.entries).toHaveLength(1);
 		expect(catalog.entries[0]?.description).toBe('Orient first.');
 		expect(catalog.entries[0]?.appliesTo).toEqual(['@mcp-vertex/*']);
+		expect(catalog.entries[0]).toMatchObject({
+			source: 'core',
+			owner: '@mcp-vertex/core',
+			hash: expect.stringMatching(/^sha256:/u),
+			estimatedBodyTokens: expect.any(Number),
+		});
 		// One read at build time (for the description).
 		expect(reads).toHaveLength(1);
 	});
@@ -111,5 +117,24 @@ describe('buildSkillCatalog', () => {
 		const reader = async (): Promise<string> => '---\n---\nx';
 		const catalog = await buildSkillCatalog('/ws', [bundle()], reader);
 		expect(await catalog.loadBody('nope')).toBeUndefined();
+	});
+
+	it('preserves paragraph fallback when frontmatter has no description', () => {
+		const body = [
+			'---',
+			'name: x',
+			'tags: [one]',
+			'---',
+			'',
+			'Body prose.',
+		].join('\n');
+		expect(extractSkillDescription('x', body)).toBe('Body prose.');
+	});
+
+	it('parses a long frontmatter block without pathological slowdown', () => {
+		const body = `---\n${'tag: value\n'.repeat(20_000)}---\n\nBody prose.`;
+		const started = Date.now();
+		expect(extractSkillDescription('x', body)).toBe('Body prose.');
+		expect(Date.now() - started).toBeLessThan(500);
 	});
 });

@@ -45,8 +45,8 @@ const buildPlan = (
 	package: packageName,
 	origin,
 	dryRun,
-	installed: dryRun ? false : true,
-	configured: dryRun ? false : true,
+	installed: !dryRun,
+	configured: !dryRun,
 	...(dryRun ? {} : { configPath: 'mcp-vertex.config.json' }),
 	notes: dryRun ? [] : [INSTALL_STUB_NOTE],
 });

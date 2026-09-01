@@ -5,6 +5,13 @@ import { execFile } from 'node:child_process';
 // Only the contract is shared; the read-only runner implementation stays local.
 export type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import {
+	assertReleaseMetadata,
+	nextVersion,
+	releaseBranch,
+	type IReleaseCandidateMetadata,
+	type ReleaseType,
+} from '@mcp-vertex/core/public';
 
 /**
  * Default runner: invoke the real `git` in `cwd` (read-only commands)
@@ -13,7 +20,7 @@ import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
  * `{ ok: false, reason }`.
  */
 export const createGitRunner =
-	(cwd: string, timeoutMs = 15_000): IGitRunner =>
+	(cwd: string, timeoutMs = 60_000): IGitRunner =>
 	(args) =>
 		new Promise<IGitRunResult>((resolve) => {
 			execFile(
@@ -359,3 +366,51 @@ export const gitWorktreeList = async (
 	run: IGitRunner,
 ): Promise<readonly IGitWorktreeEntry[]> =>
 	parseWorktreeList((await run(['worktree', 'list', '--porcelain'])).output);
+
+const resolveRef = async (run: IGitRunner, ref: string): Promise<string> => {
+	const result = await run(['rev-parse', ref]);
+	if (!result.ok || result.output.trim() === '')
+		throw new Error(result.reason ?? `could not resolve git ref "${ref}"`);
+	return result.output.trim();
+};
+
+/** Read the real package version from main and freeze an immutable release cut. */
+export const createReleaseCandidate = async (
+	run: IGitRunner,
+	input: {
+		readonly type: ReleaseType;
+		readonly slug: string;
+		readonly actor: string;
+		readonly timestamp?: string;
+		readonly includedProposals?: readonly string[];
+	},
+): Promise<IReleaseCandidateMetadata> => {
+	const sourceDevelopSha = await resolveRef(run, 'develop');
+	const baseMainSha = await resolveRef(run, 'main');
+	const versionResult = await run([
+		'show',
+		`${baseMainSha}:packages/core/package.json`,
+	]);
+	if (!versionResult.ok)
+		throw new Error(versionResult.reason ?? 'could not read main version');
+	const parsed = JSON.parse(versionResult.output) as { version?: unknown };
+	if (typeof parsed.version !== 'string')
+		throw new Error('main package.json has no string version');
+	const metadata: IReleaseCandidateMetadata = {
+		sourceDevelopSha,
+		baseMainSha,
+		fromVersion: parsed.version,
+		targetVersion: nextVersion(parsed.version, input.type),
+		type: input.type,
+		slug: input.slug,
+		branch: releaseBranch(input.type, input.slug),
+		actor: input.actor,
+		timestamp: input.timestamp ?? new Date().toISOString(),
+		includedProposals: [...(input.includedProposals ?? [])],
+		state: 'cut',
+	};
+	return Object.freeze({
+		...assertReleaseMetadata(metadata),
+		includedProposals: Object.freeze([...metadata.includedProposals]),
+	});
+};

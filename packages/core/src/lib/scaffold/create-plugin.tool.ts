@@ -10,17 +10,19 @@ import {
 	createFileSystemBatchWriter,
 	type IBatchAtomicWriter,
 } from '../shared/batch-atomic-writer';
+import { toKebabCase } from '../shared/string-normalize';
 import { toolJson } from '../shared/tool-response';
+import {
+	createOverlayFs,
+	stagePluginScaffold,
+	writeFirstPartyIndex,
+	writeHostConfig,
+} from './create-plugin-writer.service';
 import { diagnosePluginWiring } from './diagnose-plugin-wiring';
 import { scaffoldPluginFiles } from './scaffold-host';
 import { wirePluginIntoMonorepo } from './wire-plugin';
 
-const kebabCase = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/gu, '-')
-		.replace(/^-+|-+$/gu, '');
+const kebabCase = (value: string): string => toKebabCase(value);
 
 const PLUGIN_WIRING_POINT_ID_SCHEMA = z.enum([
 	'tsconfig-base',
@@ -55,6 +57,13 @@ const PLUGIN_WIRING_POINT_SCHEMA = z.object({
 const PLUGIN_WIRING_REPORT_SCHEMA = z.object({
 	pluginId: z.string(),
 	points: z.array(PLUGIN_WIRING_POINT_SCHEMA),
+	loadDiagnostics: z.array(
+		z.object({
+			pluginId: z.string(),
+			reason: z.string(),
+			fixHint: z.string(),
+		}),
+	),
 	fullyWired: z.boolean(),
 	missing: z.array(PLUGIN_WIRING_POINT_ID_SCHEMA),
 });
@@ -69,7 +78,6 @@ export const CREATE_PLUGIN_INPUT_SCHEMA = z.object({
 		})
 		.describe('Plugin name or id; normalized to kebab-case.'),
 	description: z.string().trim().min(1),
-	sampleToolId: z.string().trim().min(1).optional(),
 	dryRun: z.boolean().optional(),
 });
 
@@ -82,7 +90,6 @@ export const CREATE_PLUGIN_OUTPUT_SCHEMA = z.object({
 	doctor: PLUGIN_WIRING_REPORT_SCHEMA,
 	pluginId: z.string(),
 });
-
 export type ICreatePluginArgs = z.infer<typeof CREATE_PLUGIN_INPUT_SCHEMA>;
 export type ICreatePluginOutput = z.infer<typeof CREATE_PLUGIN_OUTPUT_SCHEMA>;
 
@@ -100,9 +107,9 @@ export interface IRegenerateCatalogArgs {
 	readonly pluginId: string;
 	readonly fs: IPluginWiringFs;
 	readonly workspaceRoot: string;
-	readonly sampleToolId: string;
 	readonly dryRun: boolean;
 }
+const SYNTHETIC_CATALOG_TOOL_ID = 'sample-tool';
 
 const normalizeWired = (
 	wired: readonly {
@@ -132,6 +139,11 @@ const normalizeDoctor = (report: {
 		readonly summary: string;
 		readonly remediation?: string;
 	}[];
+	readonly loadDiagnostics: readonly {
+		readonly pluginId: string;
+		readonly reason: string;
+		readonly fixHint: string;
+	}[];
 	readonly fullyWired: boolean;
 	readonly missing: readonly string[];
 }): ICreatePluginOutput['doctor'] => ({
@@ -145,6 +157,7 @@ const normalizeDoctor = (report: {
 			? { remediation: point.remediation }
 			: {}),
 	})),
+	loadDiagnostics: report.loadDiagnostics.map((entry) => ({ ...entry })),
 	fullyWired: report.fullyWired,
 	missing: [
 		...report.missing.map(
@@ -152,7 +165,6 @@ const normalizeDoctor = (report: {
 		),
 	],
 });
-
 const createWorkspaceFs = (
 	workspace: IWorkspacePathProvider,
 ): IPluginWiringFs => ({
@@ -172,27 +184,9 @@ const createWorkspaceFs = (
 	},
 });
 
-const createOverlayFs = (baseFs: IPluginWiringFs): IPluginWiringFs => {
-	const overlay = new Map<string, string>();
-	return {
-		async readFile(path) {
-			const fromOverlay = overlay.get(path);
-			if (fromOverlay !== undefined) return fromOverlay;
-			return baseFs.readFile(path);
-		},
-		async writeFile(path, content) {
-			overlay.set(path, content);
-		},
-		async pathExists(path) {
-			return overlay.has(path) || (await baseFs.pathExists(path));
-		},
-	};
-};
-
 const appendSyntheticCatalogEntry = async ({
 	pluginId,
 	fs,
-	sampleToolId,
 }: IRegenerateCatalogArgs): Promise<void> => {
 	const path = 'docs/mcp-vertex/agent-catalog.generated.json';
 	const parsed = JSON.parse(await fs.readFile(path)) as {
@@ -202,7 +196,7 @@ const appendSyntheticCatalogEntry = async ({
 	const tools = Array.isArray(parsed.tools) ? parsed.tools : [];
 	if (!tools.some((tool) => tool.plugin === pluginId)) {
 		tools.push({
-			name: `${pluginId}_${sampleToolId.replace(/-/gu, '_')}`,
+			name: `${pluginId}_${SYNTHETIC_CATALOG_TOOL_ID.replace(/-/gu, '_')}`,
 			plugin: pluginId,
 		});
 	}
@@ -276,7 +270,6 @@ export const runCreatePlugin = async (
 	}
 
 	const dryRun = args.dryRun ?? false;
-	const sampleToolId = args.sampleToolId ?? 'sample-tool';
 	const scaffoldedFiles = scaffoldPluginFiles({
 		pluginName: pluginId,
 		description: args.description,
@@ -285,24 +278,45 @@ export const runCreatePlugin = async (
 	const fs = options.fs ?? createWorkspaceFs(options.workspace);
 	const regenerateCatalog =
 		options.regenerateCatalog ?? defaultRegenerateCatalog;
+	const stageWiring = async (
+		targetFs: IPluginWiringFs,
+		catalogDryRun: boolean,
+	): Promise<
+		readonly {
+			readonly pointId: string;
+			readonly edits: readonly {
+				readonly path: string;
+				readonly previous: string;
+				readonly next: string;
+				readonly noop: boolean;
+			}[];
+			readonly wired: boolean;
+		}[]
+	> => {
+		await stagePluginScaffold({ files: scaffoldedFiles, fs: targetFs });
+		const wired = await wirePluginIntoMonorepo({
+			pluginId,
+			fs: targetFs,
+			dryRun: false,
+		});
+		await writeFirstPartyIndex({
+			pluginId,
+			description: args.description,
+			fs: targetFs,
+		});
+		await writeHostConfig({ pluginId, fs: targetFs });
+		await regenerateCatalog({
+			pluginId,
+			fs: targetFs,
+			workspaceRoot: options.workspace.root,
+			dryRun: catalogDryRun,
+		});
+		return wired;
+	};
 
 	if (dryRun) {
 		const previewFs = createOverlayFs(fs);
-		for (const file of scaffoldedFiles) {
-			await previewFs.writeFile(file.path, file.content);
-		}
-		const wired = await wirePluginIntoMonorepo({
-			pluginId,
-			fs: previewFs,
-			dryRun: false,
-		});
-		await regenerateCatalog({
-			pluginId,
-			fs: previewFs,
-			workspaceRoot: options.workspace.root,
-			sampleToolId,
-			dryRun: true,
-		});
+		const wired = await stageWiring(previewFs, true);
 		const doctor = await diagnosePluginWiring(pluginId, previewFs);
 		return {
 			ok: doctor.fullyWired,
@@ -317,12 +331,9 @@ export const runCreatePlugin = async (
 	const batchWriter =
 		options.batchWriter ??
 		createFileSystemBatchWriter(options.workspace.root);
-	const batch = await batchWriter.writeAll(
-		scaffoldedFiles.map((file) => ({
-			path: file.path,
-			content: file.content,
-		})),
-	);
+	const previewFs = createOverlayFs(fs);
+	const wired = await stageWiring(previewFs, true);
+	const batch = await batchWriter.writeAll(previewFs.snapshot());
 	if (!batch.ok) {
 		const detail = batch.errors
 			.map((error) => `${error.path}: ${error.reason}`)
@@ -333,17 +344,10 @@ export const runCreatePlugin = async (
 				: 'failed to scaffold plugin files',
 		);
 	}
-
-	const wired = await wirePluginIntoMonorepo({
-		pluginId,
-		fs,
-		dryRun: false,
-	});
 	await regenerateCatalog({
 		pluginId,
 		fs,
 		workspaceRoot: options.workspace.root,
-		sampleToolId,
 		dryRun: false,
 	});
 	const doctor = await diagnosePluginWiring(pluginId, fs);
@@ -361,7 +365,7 @@ export const buildCreatePluginToolRegistration = (
 ): IToolRegistration => ({
 	id: 'create_plugin',
 	summary:
-		'Scaffold a new first-party plugin: writes the scaffold files, wires monorepo integration points, then self-checks via the wiring doctor.',
+		'Scaffold a new first-party plugin: writes the plugin package scaffold, wires monorepo integration points, updates the first-party index and host config, then self-checks via the wiring doctor.',
 	tags: ['bootstrap'],
 	effects: ['write', 'spawn'],
 	register: async (server) => {
@@ -369,7 +373,7 @@ export const buildCreatePluginToolRegistration = (
 			`${options.namespacePrefix}_create_plugin`,
 			{
 				description:
-					'Scaffold a new first-party plugin: writes the four scaffold files + wires it into tsconfig.base/vitest.shared/PLUGIN_DEFAULTS/publish-order/preset-catalog, then self-checks via the doctor. Returns the full report.',
+					'Scaffold a new first-party plugin: writes the plugin package scaffold, wires it into tsconfig.base/vitest.shared/PLUGIN_DEFAULTS/publish-order/preset-catalog, updates FIRST_PARTY_PLUGIN_INDEX and mcp-vertex.config.json, then self-checks via the doctor. Returns the full report.',
 				inputSchema: CREATE_PLUGIN_INPUT_SCHEMA,
 				outputSchema: CREATE_PLUGIN_OUTPUT_SCHEMA,
 			},

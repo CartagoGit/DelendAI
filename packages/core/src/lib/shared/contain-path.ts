@@ -1,5 +1,46 @@
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 
+interface IContainmentPathDialect {
+	readonly sep: string;
+	resolve(...paths: string[]): string;
+	relative(from: string, to: string): string;
+	isAbsolute(path: string): boolean;
+}
+
+const nativePathDialect: IContainmentPathDialect = {
+	sep,
+	resolve,
+	relative,
+	isAbsolute,
+};
+
+const WINDOWS_CASE_INSENSITIVE = process.platform === 'win32';
+
+const normalizeRelativeSeparators = (
+	relativePath: string,
+	separator: string,
+): string => relativePath.split(separator).join('/');
+
+const foldPathForComparison = (
+	pathValue: string,
+	caseInsensitive: boolean,
+): string => (caseInsensitive ? pathValue.toLowerCase() : pathValue);
+
+const pathEscapesRoot = (
+	pathDialect: IContainmentPathDialect,
+	relativePathNative: string,
+): boolean => {
+	const relativePath = normalizeRelativeSeparators(
+		relativePathNative,
+		pathDialect.sep,
+	);
+	return (
+		pathDialect.isAbsolute(relativePathNative) ||
+		relativePath === '..' ||
+		relativePath.startsWith('../')
+	);
+};
+
 /** Result of {@link resolveWorkspaceContained}. */
 export interface IContainedPath {
 	/** `true` when `child` stays inside the workspace root. */
@@ -11,6 +52,74 @@ export interface IContainedPath {
 	/** Why the path was rejected (only set when `ok` is `false`). */
 	readonly reason?: string;
 }
+
+interface IContainmentOptions {
+	readonly caseInsensitive?: boolean;
+	readonly pathDialect?: IContainmentPathDialect;
+}
+
+/**
+ * Pure containment primitive parameterized over a path dialect.
+ *
+ * The production `resolveWorkspaceContained` / `resolveAgainstRoots`
+ * wrappers use the host platform's path semantics. Tests can inject
+ * `node:path.win32` to verify Windows drive-letter / UNC behaviour on a
+ * non-Windows runner without touching the real filesystem.
+ */
+const resolveWorkspaceContainedWithDialect = (
+	pathDialect: IContainmentPathDialect,
+	rootAbs: string,
+	child: string,
+	options: IContainmentOptions = {},
+): IContainedPath => {
+	const root = pathDialect.resolve(rootAbs);
+	if (pathDialect.isAbsolute(child)) {
+		return {
+			ok: false,
+			abs: child,
+			rel: child,
+			reason: `absolute path not allowed: ${child}`,
+		};
+	}
+	const abs = pathDialect.resolve(root, child);
+	const relNative = pathDialect.relative(root, abs);
+	const comparisonRelativeNative = pathDialect.relative(
+		foldPathForComparison(root, options.caseInsensitive ?? false),
+		foldPathForComparison(abs, options.caseInsensitive ?? false),
+	);
+	const rel = normalizeRelativeSeparators(relNative, pathDialect.sep);
+	if (pathEscapesRoot(pathDialect, comparisonRelativeNative)) {
+		return {
+			ok: false,
+			abs,
+			rel,
+			reason: `path escapes workspace: ${child}`,
+		};
+	}
+	return { ok: true, abs, rel: rel === '' ? '.' : rel };
+};
+
+const containWithinRootForPathDialect = (
+	pathDialect: IContainmentPathDialect,
+	rootAbs: string,
+	child: string,
+	options: {
+		readonly caseInsensitive?: boolean;
+	} = {},
+): IContainedPath => {
+	const root = pathDialect.resolve(rootAbs);
+	const abs = pathDialect.resolve(root, child);
+	const relNative = pathDialect.relative(root, abs);
+	const comparisonRelativeNative = pathDialect.relative(
+		foldPathForComparison(root, options.caseInsensitive ?? false),
+		foldPathForComparison(abs, options.caseInsensitive ?? false),
+	);
+	const rel = normalizeRelativeSeparators(relNative, pathDialect.sep);
+	if (pathEscapesRoot(pathDialect, comparisonRelativeNative)) {
+		return { ok: false, abs, rel };
+	}
+	return { ok: true, abs, rel: rel === '' ? '.' : rel };
+};
 
 /**
  * Resolve `child` against the absolute workspace `rootAbs` and guarantee the
@@ -30,52 +139,17 @@ export interface IContainedPath {
 export const resolveWorkspaceContained = (
 	rootAbs: string,
 	child: string,
+	options: IContainmentOptions = {},
 ): IContainedPath => {
-	const root = resolve(rootAbs);
-	if (isAbsolute(child)) {
-		return {
-			ok: false,
-			abs: child,
-			rel: child,
-			reason: `absolute path not allowed: ${child}`,
-		};
-	}
-	const abs = resolve(root, child);
-	const rel = relative(root, abs).split(sep).join('/');
-	if (rel === '..' || rel.startsWith('../')) {
-		return {
-			ok: false,
-			abs,
-			rel,
-			reason: `path escapes workspace: ${child}`,
-		};
-	}
-	return { ok: true, abs, rel: rel === '' ? '.' : rel };
-};
-
-/**
- * Lexical containment of `child` inside a single `rootAbs`, *allowing*
- * an absolute `child` as long as it resolves inside the root. This is
- * the per-root primitive {@link resolveAgainstRoots} composes; it is
- * deliberately separate from {@link resolveWorkspaceContained}, which
- * rejects absolute paths outright because the workspace contract is
- * "relative path only".
- *
- * Returns `ok:false` (without a reason) when the path escapes the
- * root, so the caller can keep trying the next authorized root before
- * deciding on a final rejection message.
- */
-const containWithinRoot = (rootAbs: string, child: string): IContainedPath => {
-	const root = resolve(rootAbs);
-	// `resolve(root, child)` ignores `root` when `child` is absolute, so
-	// an absolute path is validated against this root by the same `..`
-	// containment check as a relative one — no special case needed.
-	const abs = resolve(root, child);
-	const rel = relative(root, abs).split(sep).join('/');
-	if (rel === '..' || rel.startsWith('../')) {
-		return { ok: false, abs, rel };
-	}
-	return { ok: true, abs, rel: rel === '' ? '.' : rel };
+	return resolveWorkspaceContainedWithDialect(
+		options.pathDialect ?? nativePathDialect,
+		rootAbs,
+		child,
+		{
+			caseInsensitive:
+				options.caseInsensitive ?? WINDOWS_CASE_INSENSITIVE,
+		},
+	);
 };
 
 /**
@@ -106,15 +180,28 @@ export const resolveAgainstRoots = (
 	workspaceRootAbs: string,
 	authorizedRoots: readonly string[],
 	child: string,
+	options: IContainmentOptions = {},
 ): IContainedPath => {
+	const pathDialect = options.pathDialect ?? nativePathDialect;
+	const caseInsensitive = options.caseInsensitive ?? WINDOWS_CASE_INSENSITIVE;
 	// Workspace root keeps the original strict semantics so the
 	// empty-allowlist path is provably identical to the old helper.
-	const workspace = resolveWorkspaceContained(workspaceRootAbs, child);
+	const workspace = resolveWorkspaceContainedWithDialect(
+		pathDialect,
+		workspaceRootAbs,
+		child,
+		{ caseInsensitive },
+	);
 	if (workspace.ok || authorizedRoots.length === 0) {
 		return workspace;
 	}
 	for (const rootAbs of authorizedRoots) {
-		const hit = containWithinRoot(rootAbs, child);
+		const hit = containWithinRootForPathDialect(
+			pathDialect,
+			rootAbs,
+			child,
+			{ caseInsensitive },
+		);
 		if (hit.ok) return hit;
 	}
 	// Nothing contained it — surface the workspace rejection reason so the
