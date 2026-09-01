@@ -8,6 +8,7 @@ track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
+shipped-in: ["1c2fe9115"]
 ---
 
 # f00393 — Release track R1: contracts, branch cut, SemVer and immutable candidate state

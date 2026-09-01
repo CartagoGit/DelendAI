@@ -9,6 +9,7 @@ import {
 	renderBlock,
 	updateDocBlock,
 	SCHEMA_VERSION,
+	type IQuantitativeSnapshot,
 } from './quantitative.script';
 
 const SAMPLE_SNAP = {
@@ -169,5 +170,59 @@ describe('buildSnapshot over a vendor root', () => {
 		void countPackages;
 		void countTools;
 		expect(typeof renderBlock).toBe('function');
+	});
+});
+
+describe('idempotence over volatile lines', () => {
+	const BLOCK = [
+		'<!-- mcp-vertex:begin quantitative -->',
+		'```',
+		'Generated at: 2026-09-01T08:00:00.000Z',
+		'',
+		'Plugins: 56',
+		'Tools: 241',
+		'Test specs: 520 (≈4240 cases)',
+		'Workspaces: 6 packages, 2 apps, 1 extensions, 4 tooling workspace(s).',
+		'Proposals: 543 on disk (ready=76, in-progress=2, done=465)',
+		'```',
+		'<!-- mcp-vertex:end quantitative -->',
+	].join('\n');
+
+	const snapshotWith = (proposalsTotal: number): IQuantitativeSnapshot =>
+		({
+			generatedAt: '2026-09-01T09:00:00.000Z',
+			plugins: { total: 56 },
+			tools: { total: 241 },
+			tests: { specFiles: 520, testCases: 4240 },
+			packages: { packages: 6, apps: 2, extensions: 1, tools: 4 },
+			proposals: {
+				total: proposalsTotal,
+				byStatus: [
+					{ kind: 'ready', count: 75 },
+					{ kind: 'in-progress', count: 2 },
+					{ kind: 'done', count: 465 },
+				],
+			},
+		}) as unknown as IQuantitativeSnapshot;
+
+	it('leaves the block untouched when only the proposal counts moved', () => {
+		// `gen-all --check` gates `git push` with a raw `git diff`. While
+		// agents close proposals continuously the counts move between
+		// generating the block and diffing it, so rewriting them on a run
+		// that changed nothing real made the pre-push hook unwinnable.
+		const result = updateDocBlock(BLOCK, snapshotWith(542));
+		expect(result.changed).toBe(false);
+		expect(result.text).toBe(BLOCK);
+	});
+
+	it('still rewrites when a substantive fact changed', () => {
+		const snap = snapshotWith(543);
+		const bumped = {
+			...snap,
+			plugins: { total: 57 },
+		} as unknown as IQuantitativeSnapshot;
+		const result = updateDocBlock(BLOCK, bumped);
+		expect(result.changed).toBe(true);
+		expect(result.text).toContain('Plugins: 57');
 	});
 });
