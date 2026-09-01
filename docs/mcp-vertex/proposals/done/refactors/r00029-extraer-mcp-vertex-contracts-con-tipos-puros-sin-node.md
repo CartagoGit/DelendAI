@@ -2,7 +2,7 @@
 id: r00029
 title: "Extraer `@mcp-vertex/contracts` con tipos puros sin Node"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -19,6 +19,10 @@ related:
     - r00030 # cliente importa de contracts
     - r00033 # envelopes compartidos (Track M)
 superseded-by: d00012
+shipped-in: ["f1b7b7934"]
+last-transition-id: 5e0b4de5-bdcb-402b-9a5d-35942f6e435f
+last-correlation-id: 5e0b4de5-bdcb-402b-9a5d-35942f6e435f
+last-transition-from: review
 ---
 
 # r00029 — Extraer `@mcp-vertex/contracts` con tipos puros sin Node

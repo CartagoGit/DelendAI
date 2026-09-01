@@ -2,7 +2,7 @@
 id: x00262
 title: "AUD-CP-004 — `commit_policy_run` selector exacto por `proposalId`+`sliceId`"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -20,6 +20,9 @@ related:
     - x00263 # sliceScoping stagea exactos
     - x00259 # parser invertible para mensajes
     - f00182 # engine para enrutar el commit
+last-transition-id: 214cdac4-66bd-4c3d-8ab6-6e5affe398f4
+last-correlation-id: 214cdac4-66bd-4c3d-8ab6-6e5affe398f4
+last-transition-from: review
 ---
 
 # x00262 — AUD-CP-004: `commit_policy_run` debe seleccionar el slice exacto o fallar tipado

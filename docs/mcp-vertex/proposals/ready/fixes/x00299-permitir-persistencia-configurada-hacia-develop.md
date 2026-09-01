@@ -6,7 +6,7 @@ status: ready
 type: proposal
 track: governance
 date: 2026-08-29
-shipped-in: ["0c0be56d6"] # feat(core): enforce cross-plugin configuration compatibility (develop push guard)
+shipped-in: ["0c0be56d6 # feat(core): enforce cross-plugin configuration compatibility, develop push guard"]
 ---
 
 # x00261 — Permitir persistencia configurada hacia develop
