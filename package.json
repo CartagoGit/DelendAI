@@ -199,6 +199,7 @@
 		"lint:compat-window": "bun tools/scripts/lint/compat-window.script.ts",
 		"build:stable-manifest": "bun tools/scripts/build/stable-manifest.script.ts",
 		"verify:stable-manifest": "bun tools/scripts/verify/stable-manifest.script.ts",
+		"proposals:repair-self-paths": "bun tools/scripts/proposals/repair-self-paths.script.ts",
 		"lint:proposal-slice-completeness": "bun tools/scripts/lint/proposal-slice-completeness.script.ts",
 		"lint:proposal-already-implemented": "bun tools/scripts/lint/proposal-already-implemented.script.ts",
 		"lint:proposal-ready-to-close": "bun tools/scripts/lint/proposal-ready-to-close.script.ts",
