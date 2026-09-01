@@ -8,6 +8,7 @@ track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
+shipped-in: ["8514f99f7", "af2265b4b"]
 ---
 
 # f00392 — Adaptive preferred path, proposals facade, provenance, generated truth and VS Code benchmark
