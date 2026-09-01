@@ -1407,10 +1407,6 @@ automatizaciones para que los mismos problemas no regresen.
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: done
-- review-implementer: copilot-orchestrator-bulk-retire-placeholders
-- review-reviewer: sonnet-verifier-7
-- review-log: approved by sonnet-verifier-7 — Independently verified: legacy source dir is genuinely gone but this file preserves the full audit inline; its audit-source is declared by q00006 (in-progress plan, 15 tracks A-O, dozens of real child proposals). Closing this bookkeeping wrapper only — q00006 itself remains in-progress and unaffected.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
