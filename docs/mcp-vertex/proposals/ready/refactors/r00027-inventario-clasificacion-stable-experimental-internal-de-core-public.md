@@ -17,6 +17,7 @@ related:
     - r00028 # subpath exports (depende del inventario)
     - r00029 # extraer @mcp-vertex/contracts (depende del inventario)
     - b00238 # APIs internas marcadas como internal (Track N)
+shipped-in: ["1a0ed8afd"] # export inventory helpers + add spec (S1)
 ---
 
 # r00027 — Inventario + clasificación stable/experimental/internal de `core/public`
