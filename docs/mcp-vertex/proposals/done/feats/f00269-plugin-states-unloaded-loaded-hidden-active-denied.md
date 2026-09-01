@@ -2,7 +2,7 @@
 id: f00269
 title: "Plugin states: UNLOADED / LOADED_HIDDEN / ACTIVE / DENIED"
 kind: feat
-status: review
+status: done
 type: proposal
 track: lifecycle
 date: 2026-08-25
@@ -18,9 +18,9 @@ related:
     - c00134 # métricas de lifecycle (Track D)
     - f00188 # capability enforcement (Track F)
 shipped-in: ["4162e9ab8"]
-last-transition-id: c1fa8aea-b969-4e59-b5df-f30f62492832
-last-correlation-id: c1fa8aea-b969-4e59-b5df-f30f62492832
-last-transition-from: in-progress
+last-transition-id: eb93871b-3a9c-4fb6-b04d-8e3927f983ed
+last-correlation-id: eb93871b-3a9c-4fb6-b04d-8e3927f983ed
+last-transition-from: review
 ---
 
 # f00269 — Plugin states: UNLOADED / LOADED_HIDDEN / ACTIVE / DENIED
