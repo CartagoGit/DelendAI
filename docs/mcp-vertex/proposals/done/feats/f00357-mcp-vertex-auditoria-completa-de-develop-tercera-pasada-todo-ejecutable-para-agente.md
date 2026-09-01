@@ -1015,7 +1015,7 @@ mismo SHA
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00357-mcp-vertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00357-mcp-vertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
