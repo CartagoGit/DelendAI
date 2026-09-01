@@ -2,7 +2,7 @@
 id: f00320
 title: "Migrated work item f00320"
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-reviewer-5
+- review-log: approved by sonnet-reviewer-5 — Independent review: audit TODO PL-005 (register timeout must be genuinely cancelable via AbortSignal) is shipped via f00161 (commit 7fa50e79e): plugin-contract.ts declares register(ctx, signal); load-plugins-runtime.helper.ts aborts the controller on timeout so underlying work is cancelled, not abandoned. Verified with register-cancel-dispose.spec.ts (11 tests passing).
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
