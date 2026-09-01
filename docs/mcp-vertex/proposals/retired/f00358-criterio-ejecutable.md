@@ -2,15 +2,15 @@
 id: f00358
 title: "criterio ejecutable"
 kind: feat
-status: review
+status: retired
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#criterio-ejecutable
 shipped-in: ["07225dbf7c6215d7ca73f404a4aad37752e5f937"]
-last-transition-id: 8c67991b-bfec-4fc3-be79-0a546905bbcf
-last-correlation-id: 8c67991b-bfec-4fc3-be79-0a546905bbcf
-last-transition-from: in-progress
+last-transition-id: b2688a33-140c-40cb-894d-44d0dc172ecb
+last-correlation-id: b2688a33-140c-40cb-894d-44d0dc172ecb
+last-transition-from: review
 ---
 
 # f00358 — criterio ejecutable
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00358-criterio-ejecutable.md`
+- **Files**: `docs/mcp-vertex/proposals/retired/f00358-criterio-ejecutable.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -81,3 +81,22 @@ independently-verified acceptance criterion and, where actionable
 scope existed, real shipped code with passing tests. No further
 actionable code scope exists specifically for this title. Confirmed
 done as a bookkeeping/review item.
+
+## Notes
+
+### Retired 2026-09-01 — the migrated anchor is a template row, not a finding
+
+`migrated-from` points at `#criterio-ejecutable` in
+`2026-08-25-develop-external-audit-chatgpt-sol.md`. Recovered from git
+history (`git show 11130767c:docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md`),
+that anchor is two literal checklist placeholders inside the audit's
+proposal-authoring boilerplate:
+
+```
+- [ ] criterio ejecutable
+- [ ] criterio ejecutable
+```
+
+There is no finding behind it and never was — the migration lifted a
+blank template line into a proposal. Retiring says that honestly;
+marking it `done` would assert a delivery that does not exist.
