@@ -2,7 +2,7 @@
 id: f00299
 title: "TOKEN-BUDGETS se genera."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 TOK-004/DOC-002, generate TOKEN-BUDGETS.md instead of hand-maintaining it) is shipped: docs/mcp-vertex/TOKEN-BUDGETS.md carries an explicit '<!-- generated -->' banner and states it is produced by tools/scripts/report/token-budget-dashboard.script.ts from packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Ran token-budget-dashboard.spec.ts and token-budget-ceiling-ratchet.spec.ts: 21 tests pass, exit 0. Bulk-close review-log claiming 'no actionable scope' was false.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
