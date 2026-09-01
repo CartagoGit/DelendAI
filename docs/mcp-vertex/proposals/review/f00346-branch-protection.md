@@ -2,12 +2,15 @@
 id: f00346
 title: "branch protection."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#branch-protection
 shipped-in: ["e1ee275a4", "305515338"]
+last-transition-id: 2bc0f7de-d642-4552-a166-9f98402b9c0a
+last-correlation-id: 2bc0f7de-d642-4552-a166-9f98402b9c0a
+last-transition-from: in-progress
 ---
 
 # f00346 — branch protection.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00346-branch-protection.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00346-branch-protection.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
