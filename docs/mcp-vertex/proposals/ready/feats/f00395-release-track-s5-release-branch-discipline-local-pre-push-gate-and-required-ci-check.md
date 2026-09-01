@@ -10,6 +10,7 @@ related:
   - q00013 # master coordination plan
   - f00393 # R1 contracts (already approved)
   - f00390 # R3 release PR / forge boundary
+shipped-in: ["c0102fbed", "35e229f6"]
 ---
 
 # f00395 — Release track S5: release/* branch discipline, local pre-push gate and required CI check
