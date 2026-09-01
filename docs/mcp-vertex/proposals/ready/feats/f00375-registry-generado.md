@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#registry-generado
+shipped-in: ["82c54bcc"]
 ---
 
 # f00375 — registry generado.
