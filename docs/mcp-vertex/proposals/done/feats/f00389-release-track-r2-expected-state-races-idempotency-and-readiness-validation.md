@@ -2,16 +2,16 @@
 id: f00389
 title: "Release track R2: expected state, races, idempotency and readiness validation"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
 shipped-in: ["8514f99f7"]
-last-transition-id: 919250b3-2a1a-436e-bd55-045d24a6139c
-last-correlation-id: 919250b3-2a1a-436e-bd55-045d24a6139c
-last-transition-from: in-progress
+last-transition-id: 0f49f313-3fa2-4906-8f9a-061436a35745
+last-correlation-id: 0f49f313-3fa2-4906-8f9a-061436a35745
+last-transition-from: review
 ---
 
 # f00389 — Release track R2: expected state, races, idempotency and readiness validation
@@ -36,7 +36,7 @@ El candidato debe ser seguro frente a cambios de main/develop y reintentos concu
 
 ### S1 — Expected-state release preparation and validation
 - **Status**: done
-- **Files**: `packages/core/src/lib/contracts/release-state`, `plugins/git/src/lib/release`, `plugins/forge/src/lib/release`, `packages/core/tests/release`, `plugins/git/tests/release`
+- **Files**: `packages/core/src/lib/contracts/release-state`, `plugins/git/src/lib/release`, `plugins/forge/src/lib/release`, `packages/core/tests/release-state.spec.ts`, `plugins/git/tests/release`
 - **Gate**: e2e
 - acceptance:
   - "dryRun y execute rechazan expected-state obsoleto"
