@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): plugins/error-reporting/tests/privacy-adversarial.spec.ts and privacy-adversarial-llm-suffix-spoofing.spec.ts exist and are green. Ran 'bun test plugins/error-reporting/tests/privacy-adversarial.spec.ts' -> 3 pass, 0 fail, 467 expect() calls. This is also wired into the repo's own validate pipeline as 'test:privacy-adversarial' inside package.json's validate:run script. Acceptance genuinely met; closing.

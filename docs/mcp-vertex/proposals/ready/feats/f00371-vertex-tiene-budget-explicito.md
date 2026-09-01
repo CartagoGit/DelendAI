@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): packages/core/src/lib/contracts/constants/token-budgets.constant.ts defines an explicit 'vertex' preset profile with hard=384,000 / warning=320,000 toolsList ceilings and its own marginalPluginHard/marginalPluginWarning (80,000/70,000), addressing TOK2-006's 'crear hard/warning explícitos también para vertex, no solo swarm/lean'. Ran 'bun run tokens:gate' live: '[vertex] 197 tools, 262,834 B tools/list — tools/list: 262,834 B (warning 320,000 / hard 384,000) => ok'. Explicit budget exists and the live measurement is within it. Acceptance genuinely met; closing.

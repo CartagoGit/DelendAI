@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts contains dedicated invariant tests titled 'enumerated contender schedules never allow two simultaneous holders' and 'fast-check: three contenders never overlap across generated schedules', both passing as part of the 17/17 green run above (same CAS/lease fix, x00219, shipped-in 7bb6d3513). Acceptance genuinely met; closing.

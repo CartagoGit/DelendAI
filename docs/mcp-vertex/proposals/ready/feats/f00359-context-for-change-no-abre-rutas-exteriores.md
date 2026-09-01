@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): actionable scope did exist and was already delivered elsewhere in develop. `context_for_change` is implemented at plugins/context-for-change/src/lib/tools/context-for-change.tool.ts and plugins/context-for-change/src/lib/services/context-for-change.service.ts, routed through the shared WorkspaceContainmentError-throwing safe reader (packages/core/src/lib/filesystem/safe-workspace-reader.ts, shipped x00241 9819d8fe1 + x00242 7eea421df). Test plugins/context-for-change/tests/src/context-for-change.tool.spec.ts::'rejects adversarial workspace-escape and reserved paths with a structured error' exercises symlink-escape, ../ traversal and reserved paths and passes: 'bun test plugins/context-for-change/tests/src/context-for-change.tool.spec.ts' -> 6 pass, 0 fail, 75 expect() calls. Acceptance genuinely met; closing.

@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): the race was reproduced and fixed at x00219 (shipped-in 7bb6d3513, 'fix(mutex): x00219 — reclaim seguro de stale lock (CAS/lease) + métricas de contención'). A deterministic regression test exists: packages/core/tests/src/lib/shared/with-file-mutex-reclaim.spec.ts::'does not reclaim when a holder heartbeats between stale observation and reclaim' plus 'reclaims a genuinely stale lock and enters the critical section'. Ran 'bun test packages/core/tests/src/lib/shared/with-file-mutex-reclaim.spec.ts packages/core/tests/src/lib/shared/with-file-mutex.spec.ts packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts' -> 17 pass, 0 fail, 473 expect() calls. Acceptance genuinely met; closing.

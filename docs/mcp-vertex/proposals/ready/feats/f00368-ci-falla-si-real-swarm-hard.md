@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): 'tokens:gate' and 'tokens:ceiling-ratchet' (tools/scripts/lint/token-budget-ceiling-ratchet.script.ts, shipped r00036, 71fb21cf597) are both wired into package.json's validate:run, which gates CI. Ran 'bun run tokens:ceiling-ratchet' directly: '✓ token-budget-ceiling-ratchet: 54 ceiling(s) checked, no undocumented raise.' The ratchet refuses any undocumented ceiling increase (including swarm's), and tokens:gate fails the build if a measured preset exceeds its hard ceiling — this is the CI-fails-if-over-hard mechanism. Acceptance genuinely met; closing.

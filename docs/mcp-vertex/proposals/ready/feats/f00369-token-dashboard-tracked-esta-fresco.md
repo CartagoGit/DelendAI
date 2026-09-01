@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): ran 'bun run tokens:dashboard:check' (tools/scripts/test/run-token-dashboard-check.script.ts). Output: '[token-dashboard-check] in sync: /home/cartago/_projects/mcp-vertex/docs/mcp-vertex/TOKEN-BUDGETS.md' — the tracked dashboard doc matches the live-measured values, and this check is wired into validate:run so drift is caught in CI. Acceptance genuinely met; closing.

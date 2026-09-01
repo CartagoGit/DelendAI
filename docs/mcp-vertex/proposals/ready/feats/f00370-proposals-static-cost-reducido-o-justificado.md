@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): a second audit pass (a00093, TOK2-005) flagged the 'proposals' plugin's static schema cost (~76,776 B measured at audit time) with a target of '<40 KB static o justificar otro target'. This was resolved by x00283 (docs/mcp-vertex/proposals/done/fixes/x00283-*.md, shipped-in 71fb21cf597, 'fix(tokens): budget ceilings that can refuse a raise, and one honest wire measurement') which chose the 'justify' branch: it introduced an explicit, documented marginalPluginHard/marginalPluginWarning governance ceiling (80,000/70,000 bytes) for the full/vertex presets specifically because they carry 'proposals' at its measured size, with an inline comment explaining the decision (packages/core/src/lib/contracts/constants/token-budgets.constant.ts lines ~285-292). Ran 'bun run tokens:gate' live: 'proposals' currently measures 50,347 B in the vertex/full/swarm presets, under the governed 80,000 B ceiling, and 'bun run tokens:ceiling-ratchet' confirms no undocumented raise. Acceptance genuinely met (justified branch, not reduced-below-40KB branch); closing.

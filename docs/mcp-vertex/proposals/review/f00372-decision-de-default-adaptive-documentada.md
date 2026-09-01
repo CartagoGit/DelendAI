@@ -2,12 +2,15 @@
 id: f00372
 title: "decisión de default adaptive documentada."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#decision-de-default-adaptive-documentada
 shipped-in: ["58ef6288", "11d31317"]
+last-transition-id: 4705e3e6-55ee-4198-b268-d68acddf4c2a
+last-correlation-id: 4705e3e6-55ee-4198-b268-d68acddf4c2a
+last-transition-from: in-progress
 ---
 
 # f00372 — decisión de default adaptive documentada.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00372-decision-de-default-adaptive-documentada.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00372-decision-de-default-adaptive-documentada.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

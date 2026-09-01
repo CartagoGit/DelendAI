@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): already fixed and shipped as b00236 (docs/mcp-vertex/proposals/done/breakings/b00236-*.md, shipped-in d98e05281, commit 'fix(privacy): x00236 — retire internalOnly config surface'), which removed the internalOnly:false configuration surface entirely — external reporting is now impossible by construction, not by configuration/redaction. Confirmed commit is on develop's history. Acceptance genuinely met by already-shipped work; closing.

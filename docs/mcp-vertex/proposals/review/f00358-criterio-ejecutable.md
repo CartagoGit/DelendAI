@@ -2,12 +2,15 @@
 id: f00358
 title: "criterio ejecutable"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#criterio-ejecutable
 shipped-in: ["07225dbf7c6215d7ca73f404a4aad37752e5f937"]
+last-transition-id: 8c67991b-bfec-4fc3-be79-0a546905bbcf
+last-correlation-id: 8c67991b-bfec-4fc3-be79-0a546905bbcf
+last-transition-from: in-progress
 ---
 
 # f00358 — criterio ejecutable
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00358-criterio-ejecutable.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00358-criterio-ejecutable.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

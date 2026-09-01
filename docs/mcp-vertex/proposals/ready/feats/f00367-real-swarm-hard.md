@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): ran 'bun run tokens:gate' (tools/scripts/test/run-actual-preset-budget.script.ts) directly against the live tool registry. Measured output: '[swarm] 166 tools, 193,678 B tools/list — tools/list: 193,678 B (warning 204,000 / hard 210,000) => ok'. The real, currently-measured swarm preset cost is under its documented hard ceiling (packages/core/src/lib/contracts/constants/token-budgets.constant.ts, presets.swarm.toolsList.hard = 210_000). Acceptance genuinely met; closing.

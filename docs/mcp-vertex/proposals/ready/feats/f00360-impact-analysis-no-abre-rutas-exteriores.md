@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): `impact_analyze` (plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts) is likewise routed through the shared safe workspace reader (x00243 b3c72f600) and throws WorkspaceContainmentError on external/symlink-escape paths. Test plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts::'returns a structured containment error for outside, reserved and symlink-escape paths' passes: 'bun test plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts' -> 7 pass, 0 fail, 99 expect() calls. Acceptance genuinely met; closing.

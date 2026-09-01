@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): the shared safe-reader primitive (packages/core/src/lib/filesystem/safe-workspace-reader.ts, shipped x00241 9819d8fe1) performs a realpath-validated symlink walk and rejects any resolution escaping the workspace ('symlink-outside' kind in safe-workspace-reader.types.ts). Test suite packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts passes: 'bun test packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts' -> 32 pass, 0 fail, 46 expect() calls. This primitive is what backs the containment tests in f00359/f00360 above. Acceptance genuinely met; closing.

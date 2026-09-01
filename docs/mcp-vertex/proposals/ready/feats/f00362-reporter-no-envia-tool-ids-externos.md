@@ -60,3 +60,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Verified 2026-09-01
+
+Independent re-verification (sonnet-verifier-8): this exact concern was already fixed and shipped as x00245 (docs/mcp-vertex/proposals/done/fixes/x00245-*.md, shipped-in 0d546d5eb, commit 'fix(error-reporting): derive safe tool identity from registry'), which replaced raw toolName passthrough with an ISafeToolIdentity registry-driven lookup so no external/host tool name reaches the public DTO. Confirmed the commit is on develop's history and the sibling x00249 (LLM tool provenance via IToolIdentityRegistry) hardens the LLM-surface case too. Acceptance genuinely met by already-shipped work; closing.
