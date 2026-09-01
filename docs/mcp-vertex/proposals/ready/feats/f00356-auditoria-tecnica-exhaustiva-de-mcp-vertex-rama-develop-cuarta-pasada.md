@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
+shipped-in: ["07225dbf7"]
 ---
 
 # f00356 — Auditoría técnica exhaustiva de MCP Vertex — rama `develop` (cuarta pasada)
@@ -1413,6 +1414,28 @@ automatizaciones para que los mismos problemas no regresen.
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
+
+### Verified 2026-09-01
+
+- The prior review-log's premise is misleading but the closure outcome is
+  correct: `docs/mcp-vertex/audits/legacy/` genuinely doesn't exist
+  anymore, but this proposal file itself preserved the full audit text
+  inline (not a stub referencing a missing source). This audit ("cuarta
+  pasada", commit-audited `a89a68ba6`) is the declared `audit-source` for
+  `docs/mcp-vertex/proposals/in-progress/plans/q00006-plan-hardening-post-auditoria-chatgpt-sol-cuarta-pasada.md`,
+  which decomposes it into 15 tracks (A-O) and dozens of concrete child
+  proposals (c00130-c00133, x00257-x00267, v00125, f00182/f00183, t00017,
+  etc.) — i.e. the actionable scope WAS derived, per this document's own
+  §0 instructions ("transformarse en propuestas independientes").
+- IMPORTANT: unlike f00357/q00005, q00006's `status` is still
+  `in-progress`, not done — the underlying findings are NOT all resolved
+  yet. Closing this bookkeeping wrapper proposal does not close q00006 or
+  any of its unfinished children; it only reflects that this specific
+  migrated-input document was reviewed and its findings have a real,
+  separately-tracked home. Anyone auditing q00006 should keep going there.
+- Closing this wrapper proposal on that evidence, not on the "no
+  actionable scope" claim.
+
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders

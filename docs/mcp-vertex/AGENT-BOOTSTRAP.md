@@ -497,7 +497,7 @@ or have their own config file. Use the same single-pointer pattern:
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-09-01T07:22:59.734Z
+Generated at: 2026-09-01T07:23:55.371Z
 
 Plugins: 56
 Tools: 241
