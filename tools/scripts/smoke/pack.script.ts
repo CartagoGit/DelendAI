@@ -451,13 +451,24 @@ const runPresetsSmoke = async (
 
 const main = async (): Promise<void> => {
 	assertPublishablePackagesArePacked();
-	assertPackedEntrypointsExist();
-	const args = parseCliArgs(process.argv.slice(2));
-	if (args.mode === 'presets') {
-		await runPresetsSmoke(args.presetIds);
-		return;
+	// r00045 S1: build/ is now the only compile output, so this smoke must
+	// stage `dist/` per package (exactly as `release.script.ts` does at
+	// publish time) BEFORE it can assert entrypoints or pack anything —
+	// packing the raw workspace dir packs a manifest whose `./dist/...`
+	// entrypoint was never written on disk.
+	const stagingRoot = mkdtempSync(join(tmpdir(), 'mcp-vertex-pack-stage-'));
+	try {
+		const stagedDirs = await stagePackedPackages(stagingRoot);
+		assertPackedEntrypointsExist(stagedDirs);
+		const args = parseCliArgs(process.argv.slice(2));
+		if (args.mode === 'presets') {
+			await runPresetsSmoke(args.presetIds, stagedDirs);
+			return;
+		}
+		await runPackageSmoke(stagedDirs);
+	} finally {
+		rmSync(stagingRoot, { recursive: true, force: true });
 	}
-	await runPackageSmoke();
 };
 
 if (import.meta.main === true) {
