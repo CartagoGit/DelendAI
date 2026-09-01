@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#project-health
+shipped-in: ["1b7f7b556"]
 ---
 
 # f00353 — project_health.
@@ -50,6 +51,19 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#project-health` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
+
+### Verified 2026-09-01
+
+- The prior review-log's premise was false: a00092 is present and this
+  title maps to §23 IDEA-004 (`project_health` tool). Verified against
+  the current codebase: `plugins/project-health/` is a full first-party
+  plugin (manifest, tool, services, tests), landed in `1b7f7b556`
+  (feat(f00166): plugin project-health — agregador de salud con
+  detalles lazy). Ran its tests directly:
+  `bun run vitest run plugins/project-health` → passed (included in the
+  10-file/45-test run below).
+- Closing on this evidence, not on the "no actionable scope" claim.
+
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders

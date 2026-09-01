@@ -2,7 +2,7 @@
 id: f00301
 title: "CI obliga los gates arquitectónicos importantes."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -44,8 +44,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-6
+- review-reviewer: sonnet-reviewer-6-verify
+- review-log: approved by sonnet-reviewer-6-verify — Audit finding (a00092 CI-001/CI-002/CI-004/CI-005, architectural lints must be required checks, not bundled into one generic 'lint' job) is shipped: .github/workflows/ci.yml has a dedicated lint-architecture job (separate from lint-biome/lint-presets/lint-docs/lint-security/lint-governance) and an aggregating ci-complete job whose `needs` list includes lint-architecture, tokens-budget-real, manifests-check, generated-artifacts-check; .github/branch-protection.yml requires ci-complete + release-pr-gate as required_status_checks on main with enforce_admins true. tier2.yml also runs architecture lint on develop-facing PRs. This is a deliberate, documented split (full gate matrix required on main; lighter feedback on develop, per ci.yml's own header comment), not an oversight.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
