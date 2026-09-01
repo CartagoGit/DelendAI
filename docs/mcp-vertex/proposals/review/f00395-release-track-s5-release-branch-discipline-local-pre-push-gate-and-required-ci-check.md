@@ -2,7 +2,7 @@
 id: f00395
 title: "Release track S5: release/* branch discipline, local pre-push gate and required CI check"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-08-31
@@ -11,6 +11,9 @@ related:
   - f00393 # R1 contracts (already approved)
   - f00390 # R3 release PR / forge boundary
 shipped-in: ["c0102fbed", "35e229f6"]
+last-transition-id: 6bdfafdf-4483-4e30-bc50-e145e343c90d
+last-correlation-id: 6bdfafdf-4483-4e30-bc50-e145e343c90d
+last-transition-from: in-progress
 ---
 
 # f00395 — Release track S5: release/* branch discipline, local pre-push gate and required CI check
