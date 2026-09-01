@@ -2,12 +2,15 @@
 id: f00299
 title: "TOKEN-BUDGETS se genera."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#token-budgets-se-genera
+last-transition-id: 969edf05-bfe7-4518-a23f-3eeca2dc834d
+last-correlation-id: 969edf05-bfe7-4518-a23f-3eeca2dc834d
+last-transition-from: in-progress
 ---
 
 # f00299 — TOKEN-BUDGETS se genera.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00299-token-budgets-se-genera.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00299-token-budgets-se-genera.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

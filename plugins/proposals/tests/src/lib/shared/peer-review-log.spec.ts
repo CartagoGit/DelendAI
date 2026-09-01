@@ -22,6 +22,7 @@ import {
 	PeerReviewLogUnreadableError,
 	appendPeerReviewJsonl,
 	hasIndependentApprovalSinceLastReview,
+	logHasAnyReviewVerdictFor,
 	readPeerReviewLog,
 	recordProposalEnteredReview,
 	recordProposalReviewAction,
@@ -309,6 +310,44 @@ describe('peer-review-log (x00154 S6)', () => {
 					'f00999',
 				),
 			).toBe(false);
+		});
+
+		it('reports whether the log has any verdict at all for a proposal', async () => {
+			// The gate uses this to decide whether the (gitignored,
+			// disposable) log has anything to say before falling back to
+			// the committed proposal document.
+			expect(await logHasAnyReviewVerdictFor(logPathAbs, 'f00999')).toBe(
+				false,
+			);
+
+			await recordProposalEnteredReview({
+				logPathAbs,
+				proposalId: 'f00999',
+				from: 'in-progress',
+				ts: '2026-07-25T10:00:00.000Z',
+			});
+			// A transition entry is not a verdict.
+			expect(await logHasAnyReviewVerdictFor(logPathAbs, 'f00999')).toBe(
+				false,
+			);
+
+			await recordProposalReviewAction({
+				logPathAbs,
+				proposalId: 'f00999',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'bob',
+				verdict: 'approved',
+				ts: '2026-07-25T10:01:00.000Z',
+			});
+			expect(await logHasAnyReviewVerdictFor(logPathAbs, 'f00999')).toBe(
+				true,
+			);
+			// …and only for the proposal asked about.
+			expect(await logHasAnyReviewVerdictFor(logPathAbs, 'f00998')).toBe(
+				false,
+			);
 		});
 
 		it('never accepts a self-approval, whatever the timing', async () => {
