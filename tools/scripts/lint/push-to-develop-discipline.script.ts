@@ -38,7 +38,6 @@
  * contract first; the argv-based parsing stays only as a fallback
  * for direct/manual invocation (and the existing unit tests).
  */
-import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
