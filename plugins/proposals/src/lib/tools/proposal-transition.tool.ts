@@ -225,11 +225,21 @@ export interface IProposalTransitionToolOptions {
  * matter for older diagnostics and for transitional specs.
  */
 export const hasIndependentPeerApproval = (markdown: string): boolean => {
+	// Both spellings are in active use across the corpus — 237 documents
+	// write `- review-implementer:` and 94 write `- **review-implementer**:`
+	// — and the writers never agreed. Reading only the unbolded form made
+	// every review record in those 94 invisible to this check, so a
+	// genuinely peer-approved proposal was refused for lack of the
+	// approval sitting in its own document.
 	const implementers = [
-		...markdown.matchAll(/^[-*]\s*review-implementer:\s*(\S+)/gim),
+		...markdown.matchAll(
+			/^[-*]\s*\*{0,2}review-implementer\*{0,2}:\s*(\S+)/gim,
+		),
 	].map((m) => (m[1] ?? '').toLowerCase());
 	const approves = [
-		...markdown.matchAll(/^[-*]\s*review-log:\s*approved\s+by\s+(\S+)/gim),
+		...markdown.matchAll(
+			/^[-*]\s*\*{0,2}review-log\*{0,2}:\s*approved\s+by\s+(\S+)/gim,
+		),
 	].map((m) => (m[1] ?? '').toLowerCase());
 	if (approves.length === 0) return false;
 	if (implementers.length === 0) return true;
