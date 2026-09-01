@@ -2,10 +2,14 @@
 id: f00387
 title: "Validación cooperativa por agente y gate global del último agente"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: parallel-validation
 date: 2026-08-30
+shipped-in: ["410a21f56"]
+last-transition-id: 6abdf871-925c-4d78-8a2e-b5f7233124d7
+last-correlation-id: 6abdf871-925c-4d78-8a2e-b5f7233124d7
+last-transition-from: review
 ---
 
 # f00387 — Validación cooperativa por agente y gate global del último agente
