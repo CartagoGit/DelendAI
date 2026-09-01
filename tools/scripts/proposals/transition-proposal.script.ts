@@ -90,9 +90,16 @@ const main = async (argv: readonly string[]): Promise<number> => {
 		{ id: args.id, to: args.to, reason: args.reason } as never,
 		buildTransitionOptions(process.cwd()) as never,
 	);
-	const text = result.content?.[0]?.text ?? JSON.stringify(result);
+	// The tool's return type is a union: only the refusal branches carry
+	// `isError`. Narrow through the envelope instead of reaching for a
+	// property the success branches do not declare.
+	const envelope = result as {
+		readonly content?: readonly { readonly text?: string }[];
+		readonly isError?: boolean;
+	};
+	const text = envelope.content?.[0]?.text ?? JSON.stringify(result);
 	process.stdout.write(`${text}\n`);
-	return result.isError === true ? 1 : 0;
+	return envelope.isError === true ? 1 : 0;
 };
 
 if (import.meta.main) {

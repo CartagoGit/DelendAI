@@ -2,14 +2,14 @@
 id: x00261
 title: "AUD-CP-003 — Listener: `register()` debe devolver `dispose()` que pare timers/listeners"
 kind: fix
-status: review
+status: done
 type: proposal
 track: commit-policy
 date: 2026-08-25
 priority: P0
 classification: CONFIRMADO
 parent-plan: q00006
-shipped-in: ["e17eac671"] # fix(commit-policy): x00261 — register returns dispose() for clean teardown
+shipped-in: ["e17eac671 # fix(commit-policy): x00261 register returns dispose() for clean teardown"]
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track B / x00261"
@@ -20,9 +20,9 @@ related:
     - t00020 # reload/dispose N veces deja 1 listener
     - x00266 # scheduler requiere lifecycle-clean
     - f00182 # engine (posee timers internos, debe soportar stop)
-last-transition-id: dfe9aaf7-5bfb-4a40-925c-5cdfe3d18fe7
-last-correlation-id: dfe9aaf7-5bfb-4a40-925c-5cdfe3d18fe7
-last-transition-from: in-progress
+last-transition-id: 6ce1247f-a461-4569-9959-7521030895f7
+last-correlation-id: 6ce1247f-a461-4569-9959-7521030895f7
+last-transition-from: review
 ---
 
 # x00261 — AUD-CP-003: `register()` debe devolver `dispose()` con `stop()` para listeners y timers

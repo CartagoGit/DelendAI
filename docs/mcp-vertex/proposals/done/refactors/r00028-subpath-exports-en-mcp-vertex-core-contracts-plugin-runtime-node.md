@@ -2,7 +2,7 @@
 id: r00028
 title: "Subpath exports en `@mcp-vertex/core`: `/contracts`, `/plugin`, `/runtime`, `/node`"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -18,6 +18,9 @@ related:
     - r00029 # extraer @mcp-vertex/contracts es prerequisito lógico
     - r00030 # cliente importa de contracts
 shipped-in: ["10bb11612"]
+last-transition-id: 911c30cd-780f-4c46-8823-1823195c67bd
+last-correlation-id: 911c30cd-780f-4c46-8823-1823195c67bd
+last-transition-from: review
 ---
 
 # r00028 — Subpath exports en `@mcp-vertex/core`: `/contracts`, `/plugin`, `/runtime`, `/node`

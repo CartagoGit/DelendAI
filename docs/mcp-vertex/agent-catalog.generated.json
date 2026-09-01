@@ -2288,14 +2288,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00028",
-				"title": "r00028",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00029",
 				"title": "r00029",
 				"track": "architecture",
@@ -2520,14 +2512,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00261",
-				"title": "x00261",
-				"track": "commit-policy",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00262",
 				"title": "x00262",
 				"track": "commit-policy",
@@ -2569,11 +2553,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 157,
+			"ready": 155,
 			"in-progress": 5,
 			"review": 0,
 			"paused": 1,
-			"done": 579,
+			"done": 581,
 			"blocked": 23,
 			"retired": 11,
 			"unspecified": 0
