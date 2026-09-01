@@ -37,8 +37,8 @@
 
 ## Tests
 
-- plugins/status-marker/tests/markers.spec.ts
 - plugins/status-marker/tests/close-tools.spec.ts
+- plugins/status-marker/tests/markers.spec.ts
 - plugins/status-marker/tests/validate.spec.ts
 
 ## Do not

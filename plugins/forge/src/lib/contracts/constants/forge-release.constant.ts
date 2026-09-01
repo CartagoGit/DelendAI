@@ -27,12 +27,28 @@ export const FORGE_RELEASE_RESULT_SCHEMA = z
 		provider: FORGE_PROVIDER_SCHEMA,
 		tag: z.string(),
 		url: z.string(),
+		id: z.string().optional(),
+		// The service actually emits `name` (matching `IForgeReleaseSuccess.name`
+		// and the `gh release view --json name` field). Earlier revisions of
+		// this schema named the slot `title`, which made `toolJsonBounded`
+		// reject real forge responses. Both keys remain valid via a transform
+		// so callers reading either `result.title` or `result.name` keep
+		// working — but the canonical shape is `name`.
+		name: z.string().optional(),
 		title: z.string().optional(),
 		draft: z.boolean().optional(),
 		prerelease: z.boolean().optional(),
 		target: z.string().optional(),
 	})
-	.strict();
+	.strict()
+	.transform((value) => {
+		// If a host reads `result.title` (older API) we keep it populated;
+		// the service-side canonical field is `name`.
+		if (value.title === undefined && value.name !== undefined) {
+			return { ...value, title: value.name };
+		}
+		return value;
+	});
 
 const forgeReleaseFailure = () =>
 	z

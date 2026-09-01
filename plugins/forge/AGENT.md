@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/forge/tests/src/lib/services/forge-search.spec.ts
-- plugins/forge/tests/src/lib/services/forge.spec.ts
+- plugins/forge/tests/release-finalize/index.spec.ts
+- plugins/forge/tests/release-pr/index.spec.ts
+- plugins/forge/tests/src/lib/plugin-options.spec.ts
 - plugins/forge/tests/src/lib/services/forge-release.spec.ts
-- plugins/forge/tests/src/lib/services/forge-write.spec.ts
 
 ## Do not
 

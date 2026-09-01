@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/audit/tests/src/lib/self-audit/rank.spec.ts
-- plugins/audit/tests/src/lib/self-audit/file-proposals.spec.ts
+- plugins/audit/tests/src/lib/plugin-options.spec.ts
 - plugins/audit/tests/src/lib/self-audit/aggregate.spec.ts
-- plugins/audit/tests/src/lib/services/audit-brief.service.spec.ts
+- plugins/audit/tests/src/lib/self-audit/file-proposals.spec.ts
+- plugins/audit/tests/src/lib/self-audit/rank.spec.ts
 
 ## Do not
 

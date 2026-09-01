@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/logs/tests/normalize-event.spec.ts
-- plugins/logs/tests/tools.spec.ts
-- plugins/logs/tests/subscribe.spec.ts
+- plugins/logs/tests/correlate.spec.ts
+- plugins/logs/tests/incidents-search.spec.ts
 - plugins/logs/tests/index.spec.ts
+- plugins/logs/tests/kinds.spec.ts
 
 ## Do not
 

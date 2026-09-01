@@ -44,31 +44,105 @@ const mainPackageJson = `${JSON.stringify({ name: '@mcp-vertex/core', version: M
 
 /**
  * Standard `IGitRunner` mock for the dry-run path. The release contract
- * resolves `develop` + `main` SHAs and reads `<mainSha>:packages/core/
+ * resolves `develop` + `main` SHAs, prepares the canonical release branch
+ * from a clean `develop` checkout, and reads `<mainSha>:packages/core/
  * package.json`. The script never calls git for anything else in this
  * branch of the flow.
+ *
+ * Tracks `switch`/`merge`/`rebase` so `git status` reflects the
+ * branch the runner is currently on — needed by
+ * `rehydrateIntegrationFromRelease` which requires the current branch
+ * to be the release branch.
  */
 const buildDryRunGitRunner = (): IGitRunner => {
 	const commands: string[][] = [];
+	let currentBranch = 'develop';
+	let headSha = `${SOURCE_DEVELOP_SHA}`;
+	const releaseBranchName = `release/minor/${SLUG}`;
 	return async (args): Promise<IGitRunResult> => {
 		commands.push([...args]);
-		if (args[0] === 'rev-parse' && args[1] === 'develop') {
-			return { ok: true, output: `${SOURCE_DEVELOP_SHA}\n` };
+		if (args[0] === 'status') {
+			return { ok: true, output: `## ${currentBranch}\n` };
 		}
-		if (args[0] === 'rev-parse' && args[1] === 'main') {
-			return { ok: true, output: `${BASE_MAIN_SHA}\n` };
+		if (args[0] === 'rev-parse') {
+			if (
+				args[1] === '--verify' &&
+				args[2] === '--quiet' &&
+				args[3] === 'HEAD'
+			) {
+				return { ok: true, output: `${headSha}\n` };
+			}
+			if (
+				args[1] === '--verify' &&
+				args[2] === '--quiet' &&
+				typeof args[3] === 'string' &&
+				args[3].startsWith('refs/heads/')
+			) {
+				return { ok: false, output: '', reason: 'missing branch' };
+			}
+			if (args[1] === 'develop') {
+				// The simulate-merge path simulates the post-PR
+				// state: the release PR is already merged into `main`
+				// but `develop` has NOT yet been rehydrated, so its
+				// local tip still points at SOURCE_DEVELOP_SHA. There
+				// IS work for rehydrate to do because the release
+				// branch tip advanced to BASE_MAIN_SHA via the
+				// simulated merge into `main`.
+				return { ok: true, output: `${SOURCE_DEVELOP_SHA}\n` };
+			}
+			if (args[1] === 'main') {
+				return { ok: true, output: `${BASE_MAIN_SHA}\n` };
+			}
+			if (args[1] === releaseBranchName) {
+				// The release branch tip advanced to BASE_MAIN_SHA
+				// when the simulated reader merged it into `main`.
+				return { ok: true, output: `${BASE_MAIN_SHA}\n` };
+			}
+			if (args[1] === 'HEAD') {
+				return { ok: true, output: `${headSha}\n` };
+			}
 		}
-		if (
-			args[0] === 'show' &&
-			args[1] === `${BASE_MAIN_SHA}:packages/core/package.json`
-		) {
-			return { ok: true, output: mainPackageJson };
+		if (args[0] === 'switch') {
+			// `switch` may be `switch <target>` or
+			// `switch --create <branch> <startPoint>`. Pick the FIRST
+			// positional argument (after the verb) that is not a
+			// flag, with explicit fallback to `develop`.
+			const positional = args
+				.slice(1)
+				.find(
+					(token) =>
+						typeof token === 'string' && !token.startsWith('--'),
+				);
+			const target =
+				typeof positional === 'string' ? positional : 'develop';
+			currentBranch = target;
+			if (target === 'develop') headSha = `${SOURCE_DEVELOP_SHA}`;
+			if (target === releaseBranchName) headSha = `${SOURCE_DEVELOP_SHA}`;
+			return { ok: true, output: '' };
 		}
-		return {
-			ok: false,
-			output: '',
-			reason: `unexpected git command: ${args.join(' ')}`,
-		};
+		if (args[0] === 'merge') {
+			// No-ff merge creates a new merge commit; advance headSha
+			// (which represents the current integration branch tip)
+			// so rehydrate sees the integration branch has moved.
+			if (args.includes('--no-ff')) headSha = 'rehydrated-sha';
+			return { ok: true, output: '' };
+		}
+		if (args[0] === 'rebase') {
+			headSha = 'rehydrated-sha';
+			return { ok: true, output: '' };
+		}
+		if (args[0] === 'fetch') {
+			return { ok: true, output: '' };
+		}
+		if (args[0] === 'show') {
+			if (
+				args[1] === `${BASE_MAIN_SHA}:packages/core/package.json` ||
+				args[1]?.endsWith('packages/core/package.json')
+			) {
+				return { ok: true, output: mainPackageJson };
+			}
+		}
+		return { ok: true, output: '' };
 	};
 };
 
@@ -293,6 +367,69 @@ describe('dogfood.script — release track dogfooding', () => {
 			);
 			expect(providerSpy.listPullRequests).toHaveBeenCalledTimes(1);
 			expect(providerSpy.createPullRequest).toHaveBeenCalledTimes(1);
+		});
+
+		it('asks the PR provider for the prepared release branch, not develop', async () => {
+			const providerSpy: IReleasePrProvider = {
+				listPullRequests: vi.fn(async () => []),
+				createPullRequest: vi.fn(async (input) =>
+					Object.freeze({
+						number: 7,
+						url: 'https://example.test/pr/7',
+						title: input.title,
+						headBranch: input.headBranch,
+						baseBranch: input.baseBranch,
+					}),
+				),
+			};
+			await runReleaseDogfood(
+				buildInput({
+					flags: parseDogfoodFlags(['--execute', '--confirm-pr']),
+					provider: providerSpy,
+				}),
+			);
+			expect(providerSpy.createPullRequest).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headBranch: `release/minor/${SLUG}`,
+					baseBranch: 'main',
+				}),
+			);
+			expect(providerSpy.listPullRequests).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headBranch: `release/minor/${SLUG}`,
+					baseBranch: 'main',
+				}),
+			);
+		});
+	});
+
+	describe('release branch workflow guard', () => {
+		it('refuses to prepare a release branch from a non-develop checkout', async () => {
+			const wrongSource: IGitRunner = async (args) => {
+				if (args[0] === 'status') {
+					return { ok: true, output: '## feature/wrong\n' };
+				}
+				if (args[0] === 'rev-parse' && args[1] === 'develop') {
+					return { ok: true, output: `${SOURCE_DEVELOP_SHA}\n` };
+				}
+				if (args[0] === 'rev-parse' && args[1] === 'main') {
+					return { ok: true, output: `${BASE_MAIN_SHA}\n` };
+				}
+				if (
+					args[0] === 'show' &&
+					args[1] === `${BASE_MAIN_SHA}:packages/core/package.json`
+				) {
+					return { ok: true, output: mainPackageJson };
+				}
+				return {
+					ok: false,
+					output: '',
+					reason: `unexpected git command: ${args.join(' ')}`,
+				};
+			};
+			await expect(
+				runReleaseDogfood(buildInput({ run: wrongSource })),
+			).rejects.toThrowError(/prepared from develop/);
 		});
 	});
 

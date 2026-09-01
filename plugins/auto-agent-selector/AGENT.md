@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/auto-agent-selector/tests/src/lib/discovery/install-provider.spec.ts
+- plugins/auto-agent-selector/tests/src/lib/calibrate/store.spec.ts
+- plugins/auto-agent-selector/tests/src/lib/calibrate/win-rates.spec.ts
+- plugins/auto-agent-selector/tests/src/lib/dashboard/view-model.spec.ts
 - plugins/auto-agent-selector/tests/src/lib/discovery/discover-roster.spec.ts
-- plugins/auto-agent-selector/tests/src/lib/discovery/roster-store.spec.ts
-- plugins/auto-agent-selector/tests/src/lib/routing/rank-providers.spec.ts
 
 ## Do not
 

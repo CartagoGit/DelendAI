@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/orchestrator-runner/tests/e2e/invoke-real-subprocess.e2e.spec.ts
 - plugins/orchestrator-runner/tests/e2e/fallback-chain.e2e.spec.ts
-- plugins/orchestrator-runner/tests/src/lib/invoke/token.spec.ts
-- plugins/orchestrator-runner/tests/src/lib/invoke/limits-store.spec.ts
+- plugins/orchestrator-runner/tests/e2e/invoke-real-subprocess.e2e.spec.ts
+- plugins/orchestrator-runner/tests/src/lib/bootstrap.spec.ts
+- plugins/orchestrator-runner/tests/src/lib/contracts/spend-view.contract.spec.ts
 
 ## Do not
 

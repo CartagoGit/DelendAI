@@ -121,4 +121,206 @@ describe('createRelease', () => {
 		if (!result.ok)
 			expect(result.error.reason).toContain('tag already exists');
 	});
+
+	// MUY-ALTA #1: schema/handler drift regression tests. These guarantee
+	// that every input field the Zod schema accepts reaches `gh release
+	// create`. Prior to the fix, `notesFile`/`target`/`prerelease`/`draft`
+	// were silently dropped, so a user passing `prerelease: true` got a
+	// normal release. Tests assert each flag ends up as the right CLI arg.
+
+	it('forwards --notes when notes is non-empty', async () => {
+		const observedArgs: string[][] = [];
+		const exec: IForgeReleaseExec = async (input) => {
+			if (input.tool.bin === 'git')
+				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			observedArgs.push(input.args.slice());
+			if (input.args[0] === 'release' && input.args[1] === 'create')
+				return okRun('');
+			return okRun(
+				'{"url":"https://example/r","id":"1","name":"r","tagName":"v1.0.0","isDraft":false,"isPrerelease":false}',
+			);
+		};
+		await createRelease(
+			'/repo',
+			{ tag: 'v1.0.0', notes: 'hello', confirm: true },
+			exec,
+		);
+		const create = observedArgs.find(
+			(a) => a[0] === 'release' && a[1] === 'create',
+		);
+		expect(create).toContain('v1.0.0');
+		expect(create).toContain('--notes');
+		expect(create).toContain('hello');
+	});
+
+	it('forwards --notes-file when notesFile is non-empty', async () => {
+		const observedArgs: string[][] = [];
+		const exec: IForgeReleaseExec = async (input) => {
+			if (input.tool.bin === 'git')
+				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			observedArgs.push(input.args.slice());
+			if (input.args[0] === 'release' && input.args[1] === 'create')
+				return okRun('');
+			return okRun(
+				'{"url":"https://example/r","id":"1","name":"r","tagName":"v1.0.0","isDraft":false,"isPrerelease":false}',
+			);
+		};
+		await createRelease(
+			'/repo',
+			{ tag: 'v1.0.0', notesFile: 'CHANGELOG.md', confirm: true },
+			exec,
+		);
+		const create = observedArgs.find(
+			(a) => a[0] === 'release' && a[1] === 'create',
+		);
+		expect(create).toContain('--notes-file');
+		expect(create).toContain('CHANGELOG.md');
+		expect(create).not.toContain('--notes');
+	});
+
+	it('forwards --target when target is non-empty', async () => {
+		const observedArgs: string[][] = [];
+		const exec: IForgeReleaseExec = async (input) => {
+			if (input.tool.bin === 'git')
+				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			observedArgs.push(input.args.slice());
+			if (input.args[0] === 'release' && input.args[1] === 'create')
+				return okRun('');
+			return okRun(
+				'{"url":"https://example/r","id":"1","name":"r","tagName":"v1.0.0","isDraft":false,"isPrerelease":false}',
+			);
+		};
+		await createRelease(
+			'/repo',
+			{ tag: 'v1.0.0', target: 'main', confirm: true },
+			exec,
+		);
+		const create = observedArgs.find(
+			(a) => a[0] === 'release' && a[1] === 'create',
+		);
+		expect(create).toContain('--target');
+		expect(create).toContain('main');
+	});
+
+	it('forwards --draft when draft:true', async () => {
+		const observedArgs: string[][] = [];
+		const exec: IForgeReleaseExec = async (input) => {
+			if (input.tool.bin === 'git')
+				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			observedArgs.push(input.args.slice());
+			if (input.args[0] === 'release' && input.args[1] === 'create')
+				return okRun('');
+			return okRun(
+				'{"url":"https://example/r","id":"1","name":"r","tagName":"v1.0.0","isDraft":true,"isPrerelease":false}',
+			);
+		};
+		const result = await createRelease(
+			'/repo',
+			{ tag: 'v1.0.0', draft: true, confirm: true },
+			exec,
+		);
+		const create = observedArgs.find(
+			(a) => a[0] === 'release' && a[1] === 'create',
+		);
+		expect(create).toContain('--draft');
+		expect(result.ok).toBe(true);
+		if (result.ok) expect(result.draft).toBe(true);
+	});
+
+	it('forwards --prerelease when prerelease:true', async () => {
+		const observedArgs: string[][] = [];
+		const exec: IForgeReleaseExec = async (input) => {
+			if (input.tool.bin === 'git')
+				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			observedArgs.push(input.args.slice());
+			if (input.args[0] === 'release' && input.args[1] === 'create')
+				return okRun('');
+			return okRun(
+				'{"url":"https://example/r","id":"1","name":"r","tagName":"v1.0.0","isDraft":false,"isPrerelease":true}',
+			);
+		};
+		const result = await createRelease(
+			'/repo',
+			{ tag: 'v1.0.0', prerelease: true, confirm: true },
+			exec,
+		);
+		const create = observedArgs.find(
+			(a) => a[0] === 'release' && a[1] === 'create',
+		);
+		expect(create).toContain('--prerelease');
+		if (result.ok) expect(result.prerelease).toBe(true);
+	});
+
+	it('rejects notes + notesFile (mutually exclusive)', async () => {
+		let createCalled = false;
+		const exec: IForgeReleaseExec = async (input) => {
+			if (input.tool.bin === 'git')
+				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			if (input.args[0] === 'release' && input.args[1] === 'create') {
+				createCalled = true;
+				return okRun('');
+			}
+			return okRun('');
+		};
+		const result = await createRelease(
+			'/repo',
+			{
+				tag: 'v1.0.0',
+				notes: 'a',
+				notesFile: 'CHANGELOG.md',
+				confirm: true,
+			},
+			exec,
+		);
+		expect(result.ok).toBe(false);
+		if (!result.ok)
+			expect(result.error.reason).toContain('mutually exclusive');
+		expect(createCalled).toBe(false);
+	});
+
+	// ALTA #14: numeric `id` from gh release view (real shape is number,
+	// not string — covered by `trimOrEmpty`).
+	it('accepts numeric id from gh release view', async () => {
+		const exec: IForgeReleaseExec = async (input) => {
+			if (input.tool.bin === 'git')
+				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			if (input.args[0] === 'release' && input.args[1] === 'create')
+				return okRun('');
+			return okRun(
+				'{"url":"https://example/r","id":12345,"name":"v1.0.0","tagName":"v1.0.0","isDraft":false,"isPrerelease":false}',
+			);
+		};
+		const result = await createRelease(
+			'/repo',
+			{ tag: 'v1.0.0', confirm: true },
+			exec,
+		);
+		expect(result.ok).toBe(true);
+		if (result.ok) expect(result.id).toBe('12345');
+	});
+
+	it('falls back to stderr when gh release view writes JSON there', async () => {
+		const exec: IForgeReleaseExec = async (input) => {
+			if (input.tool.bin === 'git')
+				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			if (input.args[0] === 'release' && input.args[1] === 'create')
+				return okRun('');
+			// Some gh versions route --json to stderr
+			return {
+				ok: true,
+				code: 0,
+				stdout: '',
+				stderr: '{"url":"https://example/r","id":"9","name":"v1.0.0","tagName":"v1.0.0","isDraft":false,"isPrerelease":false}',
+				timedOut: false,
+				unavailable: false,
+			};
+		};
+		const result = await createRelease(
+			'/repo',
+			{ tag: 'v1.0.0', confirm: true },
+			exec,
+		);
+		expect(result.ok).toBe(true);
+		if (result.ok) expect(result.id).toBe('9');
+	});
 });

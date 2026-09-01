@@ -30,9 +30,9 @@
 
 ## Tests
 
-- plugins/web-fetch/tests/src/lib/services/engine.spec.ts
 - plugins/web-fetch/tests/src/lib/engine.spec.ts
 - plugins/web-fetch/tests/src/lib/plugin-options.spec.ts
+- plugins/web-fetch/tests/src/lib/services/engine.spec.ts
 
 ## Do not
 

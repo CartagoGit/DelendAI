@@ -285,7 +285,9 @@ export const composeAgentMd = async (
 	const walkTests = async (path: string): Promise<void> => {
 		try {
 			const entries = await readdir(path, { withFileTypes: true });
-			for (const entry of entries) {
+			for (const entry of entries.sort((left, right) =>
+				left.name.localeCompare(right.name),
+			)) {
 				if (tests.length >= MAX_TESTS) break;
 				const full = join(path, entry.name);
 				if (entry.isDirectory()) {

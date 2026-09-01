@@ -45,3 +45,6 @@ jobs:
 
             - name: Lint (Biome)
               run: bun run lint
+
+            - name: Release PR policy gate
+              run: bun run lint:release-pr-gate

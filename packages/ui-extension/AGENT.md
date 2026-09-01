@@ -38,10 +38,10 @@ _(none)_
 
 ## Tests
 
-- packages/ui-extension/tests/contracts/interfaces/host-adapter.interface.spec.ts
-- packages/ui-extension/tests/webview/csp.spec.ts
-- packages/ui-extension/tests/settings/settings-schema.spec.ts
-- packages/ui-extension/tests/settings/render-settings.spec.ts
+- packages/ui-extension/tests/components/disclosure.spec.ts
+- packages/ui-extension/tests/components/dropdown.spec.ts
+- packages/ui-extension/tests/components/header-bar.spec.ts
+- packages/ui-extension/tests/components/language-picker.spec.ts
 
 ## Do not
 

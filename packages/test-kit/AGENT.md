@@ -26,8 +26,8 @@ _(none)_
 ## Tests
 
 - packages/test-kit/tests/src/lib/as-array.spec.ts
-- packages/test-kit/tests/src/lib/fake-tool-server.spec.ts
 - packages/test-kit/tests/src/lib/fake-partial.spec.ts
+- packages/test-kit/tests/src/lib/fake-tool-server.spec.ts
 
 ## Do not
 
