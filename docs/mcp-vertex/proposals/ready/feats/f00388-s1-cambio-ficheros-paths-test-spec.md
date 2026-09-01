@@ -52,6 +52,24 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
+### Verified 2026-09-01
+
+- The prior review-log's claim ("migration source no longer present") is
+  **incorrect** — the source audit exists at
+  `docs/mcp-vertex/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md`
+  (not a00092, which is a different audit). Confirmed via
+  `grep -n "cambio>\|ficheros:\|<paths>\|<spec>"` against that file.
+- However the anchor `#s1-cambio-ficheros-paths-test-spec` does not point
+  to a real finding: at line 3580 of a00090 it is the literal fill-in
+  template row "S1 — cambio · ficheros: paths · test: spec" (with
+  angle-bracket placeholders) inside the audit's "how to author a
+  proposal from a finding" boilerplate block (a markdown fence showing
+  authors the proposal skeleton), not an actual AUD-XNN finding. There never was
+  real work behind this migrated item — it is a template artifact
+  incorrectly swept up by the migration, not a dropped implementation.
+  Independently re-confirmed correct-as-closed (no code to verify, no
+  test to run) rather than trusting the prior review-log's reasoning.
+
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
