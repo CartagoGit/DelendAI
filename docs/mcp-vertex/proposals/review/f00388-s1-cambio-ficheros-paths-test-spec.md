@@ -2,12 +2,15 @@
 id: f00388
 title: "**S1** — <cambio> · ficheros: `<paths>` · test: `<spec>`"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/2026-08-27-develop-independent-audit-claude-opus5.md#s1-cambio-ficheros-paths-test-spec
 shipped-in: ["1bcc6f491"]
+last-transition-id: 8564565a-a9db-46d1-b83a-1f8d4387ba51
+last-correlation-id: 8564565a-a9db-46d1-b83a-1f8d4387ba51
+last-transition-from: in-progress
 ---
 
 # f00388 — **S1** — <cambio> · ficheros: `<paths>` · test: `<spec>`
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00388-s1-cambio-ficheros-paths-test-spec.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00388-s1-cambio-ficheros-paths-test-spec.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
