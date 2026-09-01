@@ -8,6 +8,7 @@ track: general
 date: 2026-08-30
 related:
   - q00013 # master coordination plan
+shipped-in: ["fdb49852b"]
 ---
 
 # v00133 — Schema surface, compact projection, artifact handles and task context cost
