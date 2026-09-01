@@ -9,6 +9,7 @@ date: 2026-08-25
 priority: P0
 classification: CONFIRMADO
 parent-plan: q00006
+shipped-in: ["e17eac671"] # fix(commit-policy): x00261 — register returns dispose() for clean teardown
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
     section: "Track B / x00261"
