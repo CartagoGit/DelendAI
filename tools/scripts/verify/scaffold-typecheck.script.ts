@@ -93,19 +93,46 @@ const ensureDeclarations = (): void => {
  * `bun`/`node` types — resolves by normal node_modules walk-up because the
  * scratch dir lives under the repo's `node_modules/.cache`.
  */
-const scaffoldPaths = (): Record<string, string[]> => ({
-	'@mcp-vertex/core': [join(ROOT, 'packages/core/dist/index.d.ts')],
-	'@mcp-vertex/core/public': [
-		join(ROOT, 'packages/core/dist/public/index.d.ts'),
-	],
-	'@mcp-vertex/core/*': [join(ROOT, 'packages/core/dist/*')],
-	'@mcp-vertex/client': [join(ROOT, 'packages/client/dist/index.d.ts')],
-	'@mcp-vertex/client/*': [join(ROOT, 'packages/client/dist/*')],
-	'@mcp-vertex/ui-extension/public': [
-		join(ROOT, 'packages/ui-extension/dist/public/index.d.ts'),
-	],
-	'@mcp-vertex/ui-extension/*': [join(ROOT, 'packages/ui-extension/dist/*')],
-});
+/**
+ * Absolute path of a workspace package's canonical build output.
+ *
+ * r00045 moved every artefact to one versioned tree,
+ * `build/{group}/{name}/{version}/`, and stopped writing a per-package
+ * `dist/`. These mappings still pointed at `packages/<name>/dist/…`, so
+ * every scaffold typecheck failed with `TS2307: Cannot find module
+ * '@mcp-vertex/core/public'` — not because the scaffolds were wrong, but
+ * because the `.d.ts` they were pinned to no longer exists. The version
+ * is read from the package's own manifest, exactly as the build derives
+ * it, so the two cannot drift.
+ */
+const buildDirOf = (packageDir: string): string => {
+	const manifest = JSON.parse(
+		readFileSync(join(ROOT, packageDir, 'package.json'), 'utf8'),
+	) as { version?: unknown };
+	const version =
+		typeof manifest.version === 'string' ? manifest.version : '';
+	if (version === '') {
+		throw new Error(`${packageDir}/package.json is missing a version`);
+	}
+	return join(ROOT, 'build', packageDir, version);
+};
+
+const scaffoldPaths = (): Record<string, string[]> => {
+	const core = buildDirOf('packages/core');
+	const client = buildDirOf('packages/client');
+	const uiExtension = buildDirOf('packages/ui-extension');
+	return {
+		'@mcp-vertex/core': [join(core, 'index.d.ts')],
+		'@mcp-vertex/core/public': [join(core, 'public/index.d.ts')],
+		'@mcp-vertex/core/*': [join(core, '*')],
+		'@mcp-vertex/client': [join(client, 'index.d.ts')],
+		'@mcp-vertex/client/*': [join(client, '*')],
+		'@mcp-vertex/ui-extension/public': [
+			join(uiExtension, 'public/index.d.ts'),
+		],
+		'@mcp-vertex/ui-extension/*': [join(uiExtension, '*')],
+	};
+};
 
 interface IScaffoldKind {
 	readonly name: string;
