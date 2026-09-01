@@ -8,7 +8,9 @@ import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-e
 import {
 	runContinueProposal,
 	type IContinueProposalToolOptions,
+	nextClosureHop,
 } from '@mcp-vertex/proposals/lib/tools/continue-proposal.tool';
+import { PROPOSAL_STATUS_TRANSITIONS } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
 
 // The tool declares an `outputSchema`, so the MCP SDK requires
 // `structuredContent` on every response — a text-only payload throws
@@ -611,5 +613,54 @@ kind: fix
 			expect(out.kind).toBe('next-proposal');
 			expect(out.proposalId).toBe('p203');
 		});
+	});
+});
+
+describe('nextClosureHop — the cascade may only recommend legal DFA edges', () => {
+	it('routes a ready proposal through in-progress, never straight to review', () => {
+		// `ready → review` is not in PROPOSAL_STATUS_TRANSITIONS. The
+		// cascade used to recommend it anyway, so auto_work handed the
+		// agent a step proposal_transition then refused — and the agent,
+		// doing exactly as told, looped. 128 proposals were stranded in
+		// ready/ behind this.
+		const hop = nextClosureHop('ready');
+		expect(hop.to).toBe('in-progress');
+		expect(PROPOSAL_STATUS_TRANSITIONS.ready.has(hop.to)).toBe(true);
+	});
+
+	it('routes in-progress to review and asks for validate evidence', () => {
+		const hop = nextClosureHop('in-progress');
+		expect(hop.to).toBe('review');
+		expect(hop.needsValidateEvidence).toBe(true);
+		expect(PROPOSAL_STATUS_TRANSITIONS['in-progress'].has(hop.to)).toBe(
+			true,
+		);
+	});
+
+	it('routes review to done', () => {
+		const hop = nextClosureHop('review');
+		expect(hop.to).toBe('done');
+		expect(PROPOSAL_STATUS_TRANSITIONS.review.has(hop.to)).toBe(true);
+	});
+
+	it('never recommends a hop the DFA rejects, for any folder state', () => {
+		for (const state of [
+			'ready',
+			'in-progress',
+			'review',
+			'blocked',
+			'paused',
+			null,
+			'something-unexpected',
+		]) {
+			const hop = nextClosureHop(state);
+			const from =
+				state === 'in-progress' || state === 'review' ? state : 'ready';
+			expect(
+				PROPOSAL_STATUS_TRANSITIONS[
+					from as keyof typeof PROPOSAL_STATUS_TRANSITIONS
+				].has(hop.to),
+			).toBe(true);
+		}
 	});
 });
