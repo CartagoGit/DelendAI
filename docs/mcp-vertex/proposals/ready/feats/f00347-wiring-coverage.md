@@ -7,6 +7,7 @@ type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#wiring-coverage
+shipped-in: ["87f3f269f"]
 ---
 
 # f00347 — wiring coverage.
@@ -50,6 +51,21 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#wiring-coverage` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
+
+### Verified 2026-09-01
+
+- The prior review-log's premise was false: a00092 is present and this
+  title maps to §19 TEST-001 ("Revisar exclusión global de `index.ts`" —
+  a lot of real wiring code lives in barrel files, so excluding all
+  `index.ts` from coverage hides it; propose excluding only pure-barrel
+  files by detection). Verified against the current codebase:
+  `vitest.config.ts` implements exactly this — `isPureBarrelIndex()`
+  statically detects barrel-only `index.ts` files and only those are
+  coverage-excluded (`pureBarrelCoverageExcludes`), landed in `87f3f269f`
+  (test(t00006): cobertura — barrels por detección, apps/web y
+  property-based).
+- Closing on this evidence, not on the "no actionable scope" claim.
+
 
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
