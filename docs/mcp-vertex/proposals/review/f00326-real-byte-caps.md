@@ -39,11 +39,11 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by claude-opus5-orchestrator — Independent
+  verification, 2026-09-01. The original bulk-close claimed the migration
+  source was gone; it is present at
+  `docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md`.
+  Checked against the real code instead: real byte caps are live in `packages/core/src/lib/shared/run-command.ts` (`maxOutputBytes` + `remainingBytes` trimming to the exact remaining budget); `run-command-bytes.spec.ts` passes.
 
 ## acceptance
 

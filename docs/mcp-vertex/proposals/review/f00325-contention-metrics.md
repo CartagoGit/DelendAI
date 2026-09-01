@@ -39,11 +39,11 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by claude-opus5-orchestrator — Independent
+  verification, 2026-09-01. The original bulk-close claimed the migration
+  source was gone; it is present at
+  `docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md`.
+  Checked against the real code instead: contention metrics are live in `with-file-mutex.ts` (aggregate-only collector, `IByteCollector`-style opt-in); the same two mutex suites pass.
 
 ## acceptance
 
