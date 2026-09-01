@@ -2,12 +2,15 @@
 id: f00326
 title: "Real byte caps."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 shipped-in: ["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk book-keeping close of migrated placeholder
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#real-byte-caps
+last-transition-id: ce5ad217-3163-433a-bb35-c1f615dbd830
+last-correlation-id: ce5ad217-3163-433a-bb35-c1f615dbd830
+last-transition-from: in-progress
 ---
 
 # f00326 — Real byte caps.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00326-real-byte-caps.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00326-real-byte-caps.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
