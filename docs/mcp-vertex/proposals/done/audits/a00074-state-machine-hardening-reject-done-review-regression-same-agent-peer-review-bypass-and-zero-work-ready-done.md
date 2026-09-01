@@ -164,7 +164,7 @@ The fix must be in the code path, not the doc, because every recent pathology in
 
 ### S4 — Same-agent content removal gate (plugins/mass-deletes require acknowledgement)
 - **Status**: done
-- **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `plugins/proposals/tests/src/lib/mass-removal.spec.ts`, `docs/mcp-vertex/proposals/ready/a00074-state-machine-hardening-reject-done-review-regression-same-agent-peer-review-bypass-and-zero-work-ready-done.md` (this proposal)
+- **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `plugins/proposals/tests/src/lib/mass-removal.spec.ts`, `docs/mcp-vertex/proposals/done/audits/a00074-state-machine-hardening-reject-done-review-regression-same-agent-peer-review-bypass-and-zero-work-ready-done.md` (this proposal)
 - **Gate**: type
 - Implemented as: a validate-time branch gate that fails with `same-agent-mass-removal` when `git diff develop..<branch> --diff-filter=D` finds at least 5 deleted files under `plugins/**` or `packages/core/src/lib/**`, with `--audit-removed` available for post-mortem scans.
 - why:

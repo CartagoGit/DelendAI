@@ -34,7 +34,7 @@ User directive 2026-07-14: keep finding improvements/refactors to push every aud
 
 ### S1 — Run the delta audit and record findings + scoreboard + derived proposals
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/ready/a00054-14-07-2026-claude-code-fable-5-delta-audit-post-backlog-drain-re-scan-gates-that-lie-and-the-taxonomy-made-executable.md`
+- **Files**: `docs/mcp-vertex/proposals/done/audits/a00054-14-07-2026-claude-code-fable-5-delta-audit-post-backlog-drain-re-scan-gates-that-lie-and-the-taxonomy-made-executable.md`
 - **Gate**: lint
 - acceptance:
   - "Findings table with file:line evidence for every entry; scoreboard justified by findings; every open finding maps to a created proposal id."
