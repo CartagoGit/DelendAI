@@ -1462,10 +1462,26 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00419",
+				"title": "x00419",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00420",
+				"title": "x00420",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 14,
+			"ready": 16,
 			"in-progress": 10,
 			"review": 4,
 			"paused": 1,
