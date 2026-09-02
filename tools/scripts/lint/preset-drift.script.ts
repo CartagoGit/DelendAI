@@ -30,12 +30,18 @@ import { join, relative, resolve } from 'node:path';
 import {
 	PACK_DEFAULTS_OVERLAY,
 	PACK_IDS,
-	MANAGED_LAZY_PLUGIN_CATALOG,
 	PRESET_CATALOG,
 	PRESET_KIND,
 	resolvePresetMembers,
 	type IPresetDefinition,
 } from '@mcp-vertex/core/public';
+
+// Internal path on purpose: the generated lazy index is a build-time
+// artifact this gate reads, not a runtime API consumers should depend
+// on — exporting it publicly would spend the core's public-surface
+// budget on a lint. `tools/scripts/lint/` is excluded from
+// `no-internal-core-imports` for exactly this case.
+import { MANAGED_LAZY_PLUGIN_CATALOG } from '@mcp-vertex/core/lib/plugins/managed-lazy-catalog.generated';
 
 import {
 	buildCompatibilityMatrix,

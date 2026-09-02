@@ -297,17 +297,6 @@ export {
 	PLUGIN_DEFAULTS,
 	resolvePluginOptions,
 } from '../lib/plugins/plugin-defaults';
-// The generated lazy index, exported so the preset integrity lint can
-// assert that every preset member is indexed — one that is not demotes
-// the whole managed surface to eager loading (see
-// `managed-lazy-demotion.ts`).
-export { MANAGED_LAZY_PLUGIN_CATALOG } from '../lib/plugins/managed-lazy-catalog.generated';
-export type { IManagedLazyPluginCatalogEntry } from '../lib/plugins/managed-lazy-catalog.generated';
-export {
-	announceManagedLazyDemotion,
-	buildManagedLazyDemotionNotice,
-} from '../lib/plugins/managed-lazy-demotion';
-export type { IManagedLazyDemotionNotice } from '../lib/plugins/managed-lazy-demotion';
 export {
 	isPresetKind,
 	PRESET_CATALOG,

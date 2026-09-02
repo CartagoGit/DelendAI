@@ -2,7 +2,7 @@
 id: f00330
 title: "Semántica UTF-8 real para límites de salida y métricas"
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -39,7 +39,7 @@ El alcance se divide en dos dueños claros:
 
 ### S1 — Runner de procesos con presupuesto real de bytes
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/run-command.ts`, `packages/core/src/lib/contracts/interfaces/run-command.interface.ts`, `packages/core/tests/src/lib/shared/run-command-bytes.spec.ts`
 - **Gate**: `vitest packages/core/tests/src/lib/shared/run-command-bytes.spec.ts`
 - acceptance:
@@ -47,7 +47,10 @@ El alcance se divide en dos dueños claros:
   - "El presupuesto combinado stdout+stderr se respeta incluso cuando el corte cae dentro de un carácter multibyte."
   - "La truncación toma exactamente los bytes restantes sin introducir `\uFFFD` cuando existe un prefijo UTF-8 válido recuperable."
   - "La interfaz pública documenta con claridad la semántica de bytes para `maxOutputBytes` y presupuestos por stream."
-
+- review-state: done
+- review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run packages/core/tests/src/lib/shared/run-command-bytes.spec.ts -> passing. Confirms S1 acceptance bullets already implemented.
 ### S2 — Métricas de respuesta medidas en bytes UTF-8 reales
 
 - **Status**: done
