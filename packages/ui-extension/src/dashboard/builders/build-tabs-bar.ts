@@ -3,22 +3,22 @@ import { renderTabs } from '@mcp-vertex/shared/components/ui/tabs';
 
 import { extensionText } from '../../i18n/extension-text';
 
-export const TABS: ReadonlyArray<{ id: string; label: string }> = [
-	{ id: 'status', label: 'tabStatus' },
-	{ id: 'overview', label: 'tabOverview' },
-	{ id: 'logs', label: 'tabLogs' },
-	{ id: 'metrics', label: 'tabMetrics' },
-	{ id: 'tokens', label: 'tabTokens' },
-	{ id: 'spend', label: 'tabSpend' },
-	{ id: 'tools', label: 'tabTools' },
-	{ id: 'plugins', label: 'tabPlugins' },
-	{ id: 'sessions', label: 'tabSessions' },
-	{ id: 'times', label: 'tabTimes' },
-	{ id: 'agents', label: 'tabAgents' },
-	{ id: 'memory', label: 'tabMemory' },
-	{ id: 'health', label: 'tabHealth' },
-	{ id: 'help', label: 'tabHelp' },
-	{ id: 'settings', label: 'tabSettings' },
+export const TABS: ReadonlyArray<{
+	id: string;
+	label: string;
+	fallback: string;
+}> = [
+	{ id: 'status', label: 'tabStatus', fallback: 'Status' },
+	{ id: 'overview', label: 'tabOverview', fallback: 'Overview' },
+	{ id: 'tools', label: 'tabTools', fallback: 'Tools' },
+	{ id: 'memory', label: 'tabMemory', fallback: 'Memory' },
+	{ id: 'proposals', label: 'tabSessions', fallback: 'Proposals' },
+	{ id: 'agents', label: 'tabAgents', fallback: 'Agents' },
+	{ id: 'kpis', label: 'dashboard.kpis.title', fallback: 'KPIs' },
+	{ id: 'plugins', label: 'tabPlugins', fallback: 'Plugins' },
+	{ id: 'health', label: 'tabHealth', fallback: 'Health' },
+	{ id: 'docs', label: 'tabDocs', fallback: 'Docs' },
+	{ id: 'settings', label: 'tabSettings', fallback: 'Configuration' },
 ];
 
 // Iconography shared by the surface action buttons (sidebar + tab
@@ -41,12 +41,11 @@ const NAV_GROUPS: ReadonlyArray<{
 }> = [
 	{
 		label: 'Workspace',
-		tabs: ['status', 'overview', 'logs', 'tools', 'plugins', 'docs'],
+		tabs: ['overview', 'tools', 'plugins', 'health', 'docs'],
 	},
-	{ label: 'Operations', tabs: ['sessions', 'agents', 'health'] },
-	{ label: 'Telemetry', tabs: ['metrics', 'tokens', 'spend', 'times'] },
+	{ label: 'Delivery', tabs: ['proposals', 'agents'] },
 	{ label: 'Knowledge', tabs: ['memory'] },
-	{ label: 'Help', tabs: ['help'] },
+	{ label: 'Insights', tabs: ['kpis'] },
 	{ label: 'Preferences', tabs: ['settings'] },
 ];
 
@@ -75,9 +74,8 @@ export function buildTabsBar(lang: ILangDict): string {
 	// `data-tab-trigger`, so it stays out of the keyboard loop.
 	const tabItems = TABS.map((tab) => ({
 		id: tab.id,
-		label: text(tab.label),
+		label: text(tab.label, tab.fallback),
 	}));
-	const docsTab = { id: 'docs', label: text('tabDocs') };
 	const refreshHtml = `<button class="mcpv-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}" aria-label="${text('refreshDashboard')}">${REFRESH_ICON}</button>`;
 	const expandHtml = `<button class="mcpv-tabs__action-btn" id="tab-expand" data-action="expand" type="button" title="${text('openDashboardInTab', 'Open dashboard in a tab')}" aria-label="${text('openDashboardInTab', 'Open dashboard in a tab')}">${EXPAND_ICON}</button>`;
 	const sidebarRefreshHtml = refreshHtml.replace(' id="tab-refresh"', '');
@@ -93,13 +91,10 @@ export function buildTabsBar(lang: ILangDict): string {
 		(group) =>
 			`<details class="mcpv-app-nav__group" open><summary>${group.label}<span aria-hidden="true">⌄</span></summary><div class="mcpv-app-nav__items">${group.tabs
 				.map((id) => {
-					const tab =
-						id === 'docs'
-							? docsTab
-							: TABS.find((item) => item.id === id);
+					const tab = TABS.find((item) => item.id === id);
 					return tab === undefined
 						? ''
-						: `<button type="button" class="mcpv-app-nav__item" data-sidebar-trigger="${tab.id}" aria-current="${tab.id === TABS[0]?.id ? 'page' : 'false'}"><span>${text(tab.label)}</span></button>`;
+						: `<button type="button" class="mcpv-app-nav__item" data-sidebar-trigger="${tab.id}" aria-current="${tab.id === 'overview' ? 'page' : 'false'}"><span>${text(tab.label, tab.fallback)}</span></button>`;
 				})
 				.join('')}</div></details>`,
 	).join('');
@@ -108,9 +103,9 @@ export function buildTabsBar(lang: ILangDict): string {
 		`<aside class="mcpv-app-nav" data-nav-panel aria-label="${text('dashboardSections', 'Dashboard sections')}">${sidebar}<div class="mcpv-app-nav__actions">${surfaceActions}${sidebarRefreshHtml}${sidebarExpandHtml}</div></aside>` +
 		`<div class="mcpv-content"><section class="mcpv-tabs mcpv-tabs--underline">` +
 		renderTabs({
-			tabs: [...tabItems, docsTab],
+			tabs: tabItems,
 			variant: 'underline',
-			label: text('tabOverview'),
+			label: text('dashboardSections', 'Dashboard sections'),
 			idPrefix: '',
 			actionHtml: `${surfaceActions}${refreshHtml}${expandHtml}`,
 		}) +

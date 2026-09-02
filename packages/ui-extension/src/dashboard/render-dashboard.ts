@@ -95,7 +95,7 @@ const CLIENT_SCRIPT = `
     surface.addEventListener('click', () => {
       const id = surface.getAttribute('data-surface');
       const internalTarget = {
-        proposals: 'sessions',
+        proposals: 'proposals',
         knowledge: 'memory',
         configuration: 'settings',
         settings: 'settings',
@@ -556,6 +556,8 @@ export const renderDashboard = (
 
 	const settings: IExtensionSettings =
 		options.settings ?? DEFAULT_EXTENSION_SETTINGS;
+	const initialLanguage = settings.language || 'en';
+	const initialDir = initialLanguage === 'ar' ? 'rtl' : 'ltr';
 	const header = buildHeader(model, settings);
 	const kpiStrip = buildKpiStrip(model, options.lang);
 	const tabsBar = buildTabsBar(options.lang);
@@ -563,7 +565,7 @@ export const renderDashboard = (
 	const footer = buildFooter(model, options, options.lang);
 
 	return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${escapeHtml(initialLanguage)}" dir="${escapeHtml(initialDir)}">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -571,6 +573,58 @@ export const renderDashboard = (
 	<style>${componentCss}</style>
 	<style>${dashboardCss}</style>
 	<style>
+    .mcpv-shell {
+      display: grid;
+      grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
+      gap: 1.25rem;
+      align-items: start;
+    }
+    .mcpv-main {
+      min-width: 0;
+    }
+    .mcpv-panel--shell {
+      container-type: inline-size;
+    }
+    .mcpv-shell-stack {
+      display: grid;
+      gap: 1rem;
+    }
+    .mcpv-shell-section {
+      display: grid;
+      gap: 0.85rem;
+      padding: 1rem;
+      border: 1px solid var(--vscode-panel-border, #444);
+      border-radius: 14px;
+      background: var(--vscode-editor-background, #1e1e1e);
+    }
+    .mcpv-shell-section__head {
+      display: grid;
+      gap: 0.3rem;
+    }
+    .mcpv-shell-section__head > p {
+      margin: 0;
+    }
+    .mcpv-shell-section__title {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .mcpv-shell-state {
+      border-left: 4px solid var(--vscode-textLink-foreground, #3794ff);
+    }
+    .mcpv-shell-state[data-state-tone="empty"] {
+      border-left-color: var(--vscode-descriptionForeground, #9da5b4);
+    }
+    .mcpv-shell-state[data-state-tone="error"] {
+      border-left-color: var(--vscode-errorForeground, #f14c4c);
+    }
+    .mcpv-shell-state[data-state-tone="unavailable"] {
+      border-left-color: var(--vscode-inputValidation-warningBorder, #cca700);
+    }
+    @media (max-width: 960px) {
+      .mcpv-shell {
+        grid-template-columns: 1fr;
+      }
+    }
 		.mcpv-detail-overlay {
 			position: fixed; inset: 0; z-index: 9999;
 			display: flex; align-items: center; justify-content: center;
