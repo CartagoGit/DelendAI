@@ -2,7 +2,7 @@
 id: f00373
 title: "todos los plugins públicos con manifest."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -40,8 +40,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
 - **review-log**: approved by sonnet-reviewer-12 — ran `find plugins -maxdepth 2 -iname plugin.manifest.ts` (56 hits, 100% coverage) and re-ran the enforcement gates myself: `bun tools/scripts/lint/plugin-manifest.script.ts` (0 errors), `manifest-vs-package.script.ts` (OK), `manifest-vs-presets.script.ts` (OK), `capabilities-declared.script.ts` (56 plugins, all declared). MAN2-002 is satisfied.
-- review-state: in_review
+- review-state: done
 - review-implementer: verifier-independent
+- review-reviewer: sonnet-reviewer-12
+- review-log: approved by sonnet-reviewer-12 — sonnet-reviewer-12: ran find plugins -maxdepth 2 -iname plugin.manifest.ts (56 hits, 100% coverage) and re-ran the enforcement gates myself: plugin-manifest.script.ts (0 errors), manifest-vs-package.script.ts (OK), manifest-vs-presets.script.ts (OK), capabilities-declared.script.ts (56 plugins, all declared).
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
