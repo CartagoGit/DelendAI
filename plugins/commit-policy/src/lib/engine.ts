@@ -24,6 +24,8 @@
  * the interface is stable.
  */
 
+import { createHash } from 'node:crypto';
+
 import {
 	branchProtectedRefusal,
 	isBranchProtected,
@@ -203,6 +205,29 @@ type IPipelineOutcome = 'OK' | 'ERR' | 'SKIP';
  */
 const LOG_PIPELINE_DEBUG = process.env.MCP_COMMIT_POLICY_DEBUG === '1';
 
+/**
+ * Render an event id for a LOG LINE — never for identity.
+ *
+ * A slice's `eventId` is the whole event serialised: kind, proposal,
+ * slice, status and every declared path. That is deliberate, because
+ * the idempotency key is derived from it and any two events with the
+ * same content must dedupe. It is also completely unreadable in a log,
+ * and it is emitted twice per event (`pipeline.step` and
+ * `pipeline.summary`). A slice declaring twenty files produced several
+ * kilobytes of stderr per attempt, and the operator's console became
+ * unusable during a replay — the flood the user reported on 2026-09-03.
+ *
+ * So the log gets a short, stable digest instead. Identical events
+ * still produce identical digests, so lines remain groupable and
+ * greppable, and the storm detector keeps working. The full event is
+ * still available in the processed-events store when it is genuinely
+ * needed.
+ */
+const logEventId = (eventId: string): string =>
+	eventId.length <= 64
+		? eventId
+		: `sha256:${createHash('sha256').update(eventId).digest('hex').slice(0, 16)}`;
+
 const logPipelineStep = (
 	event: IEngineEvent,
 	step: IPipelineStep,
@@ -212,7 +237,7 @@ const logPipelineStep = (
 	const line = JSON.stringify({
 		event: 'pipeline.step',
 		trigger: event.kind,
-		eventId: event.eventId,
+		eventId: logEventId(event.eventId),
 		step,
 		outcome,
 		...(details ?? {}),
@@ -375,7 +400,7 @@ export const createCommitPolicyEngine = (
 			const summaryLine = JSON.stringify({
 				event: 'pipeline.summary',
 				trigger: event.kind,
-				eventId: event.eventId,
+				eventId: logEventId(event.eventId),
 				outcome: result.ack,
 				...(result.ack === 'OK'
 					? {
