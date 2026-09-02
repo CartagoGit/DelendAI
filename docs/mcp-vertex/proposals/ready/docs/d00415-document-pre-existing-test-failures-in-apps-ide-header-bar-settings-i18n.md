@@ -53,7 +53,7 @@ release can proceed.
 - **Gate**: `bunx vitest run packages/ui-extension/tests/components/header-bar.spec.ts`
 
 ### S3 — Follow-up: fix F3 + i18n gap (settings copy + l10n dicts)
-- **Status**: retired (no longer reproduces — verified 2026-09-02, see closing note)
+- **Status**: retired
 - **Files**:
   - `apps/shared/src/i18n/shared.ts`
   - `apps/shared/src/i18n/langs/{en,es,...}.ts`
