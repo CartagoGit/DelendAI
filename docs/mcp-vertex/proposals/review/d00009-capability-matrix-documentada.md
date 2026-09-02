@@ -2,7 +2,7 @@
 id: d00009
 title: "Capability matrix documentada"
 kind: docs
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-08-25
@@ -17,9 +17,9 @@ related:
     - f00188 # capability schema (fuente de verdad)
     - c00137 # lint de capabilities (consume la matriz)
     - f00194 # capability versioning (Track K)
-last-transition-id: ef3e7940-c444-47c0-932b-7c9d8464c95f
-last-correlation-id: ef3e7940-c444-47c0-932b-7c9d8464c95f
-last-transition-from: ready
+last-transition-id: 2cd16c99-681f-4e71-a836-4618d56e0069
+last-correlation-id: 2cd16c99-681f-4e71-a836-4618d56e0069
+last-transition-from: in-progress
 ---
 
 # d00009 — Capability matrix documentada

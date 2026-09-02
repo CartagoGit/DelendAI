@@ -1264,14 +1264,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "d00009",
-				"title": "d00009",
-				"track": "security",
-				"status": "ready",
-				"kind": "docs",
-				"date": ""
-			},
-			{
 				"id": "d00010",
 				"title": "d00010",
 				"track": "docs",
@@ -1745,9 +1737,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 54,
+			"ready": 53,
 			"in-progress": 5,
-			"review": 1,
+			"review": 2,
 			"paused": 1,
 			"done": 679,
 			"blocked": 23,
