@@ -14,8 +14,6 @@ import { CommitPolicyOptionsSchema } from '../../../src/lib/contracts/options';
 import { runCommitDriver } from '../../../src/lib/services/commit-driver';
 import { runPushDriver } from '../../../src/lib/services/push-driver';
 import { createPushScheduler } from '../../../src/lib/services/push-scheduler';
-import { runCommitPolicyRun } from '../../../src/lib/tools/run-tool';
-import { runCommitPolicyStatus } from '../../../src/lib/tools/status-tool';
 import {
 	cleanupDogfoodRepo,
 	createDogfoodRepo,

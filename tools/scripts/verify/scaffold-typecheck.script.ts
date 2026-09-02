@@ -28,7 +28,6 @@ import {
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
 import {
@@ -39,8 +38,6 @@ import {
 	scaffoldPromptFile,
 	scaffoldToolFile,
 } from '@mcp-vertex/core/public';
-
-import { stageBuildForPublish } from '../publish/workspace-deps.ts';
 
 const ROOT = resolve(import.meta.dir, '../../..');
 
