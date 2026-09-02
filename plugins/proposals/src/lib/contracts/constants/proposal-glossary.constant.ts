@@ -309,8 +309,24 @@ export const PROPOSAL_SCAN_FOLDERS: readonly string[] = [
 	'',
 	...Object.values(STATUS_TO_FOLDER),
 	'retired/issues',
-	...Object.values(KIND_TO_DONE_SUBFOLDER).map(
-		(sub) => `${STATUS_TO_FOLDER.done}/${sub}`,
+	// Kind subfolders exist under EVERY status folder, not only
+	// `done/`. `ready/plans`, `ready/fixes`, `in-progress/plans` and
+	// their siblings are all real directories on disk.
+	//
+	// This list used to enumerate them for `done/` alone, so anything
+	// that walks the tree through it — the id-counter reseed most of
+	// all — never saw the proposals that live in `ready/<kind>/`. The
+	// counters therefore reported a maximum id lower than the one
+	// already taken, and two agents minting a proposal minutes apart
+	// were handed the SAME id. That is not hypothetical: q00013 and
+	// x00419 were each claimed twice on 2026-09-02, which then blocked
+	// `catalog-drift-check` for every agent in the workspace.
+	//
+	// Walkers tolerate folders that do not exist, so listing the full
+	// cross-product is safe and stays correct if a status gains its
+	// first proposal of some kind.
+	...Object.values(STATUS_TO_FOLDER).flatMap((status) =>
+		Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) => `${status}/${sub}`),
 	),
 ];
 
