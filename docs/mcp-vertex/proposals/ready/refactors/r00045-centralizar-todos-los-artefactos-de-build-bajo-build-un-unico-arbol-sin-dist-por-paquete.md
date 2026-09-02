@@ -128,3 +128,54 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
 - Demostración: `bun tools/scripts/gen-all.script.ts --check` corre sin tocar `build/`; los `require()` que aparezcan en su stdout apuntan todos a `src/`
 - `docs/mcp-vertex/AGENT-BOOTSTRAP.md` sección "Build / dist layout" reescrita para reflejar el árbol `build/{group}/{<version>/` y la regla "scripts nunca resuelven a `build/`"
 - `bun run validate` exit 0 completo
+
+## notes
+
+### 2026-09-02 — S1-S3 verified done; S4 done except the final validate confirmation
+
+Found this proposal already far more implemented than a first read of
+its "pending" slice statuses suggested — someone had done the real
+work without updating the frontmatter. Verified each piece
+independently rather than trusting file presence:
+
+- **S1**: `build/packages/core/0.1.1/{index,cli,version}.js` (+ `.d.ts`)
+  exist; ran `bun tools/scripts/compile/build.script.ts packages/core`
+  directly — exit 0, tree matches. `git status` after the build shows
+  no tracked file touched (`build/` is gitignored).
+- **S2**: `stageBuildForPublish` is wired into all three named scripts
+  (`release.script.ts`, `pack.script.ts`,
+  `external-install-smoke.script.ts` — confirmed via `grep`). Ran
+  `bun tools/scripts/ci/pack-smoke.script.ts --real` for real; it
+  packed multiple real packages (`@mcp-vertex/diagram`,
+  `@mcp-vertex/docs`, …) successfully via the staging path before this
+  session's own timeout cut it short. The interrupted run left stray
+  `packages/*/dist/` directories on disk (SIGTERM skipping the
+  staging script's cleanup, not a code bug reachable in the completed
+  path) — deleted them; they are gitignored so no tracked file was
+  ever affected.
+- **S3**: `bun run lint:no-build-imports-from-src` → `0 violations`,
+  already wired into `validate:run`.
+- **S4**: `bunfig.toml` and `tsconfig.base.json` already carry the
+  source condition. The literal `resolve.conditions` config the slice
+  names lives in the ROOT `vitest.config.ts` (not `vitest.shared.ts`
+  as the slice's file list says — a naming miss in the proposal, not
+  in the implementation) tagged `// r00045 S4`.
+  `bun tools/scripts/gen-all.script.ts --check` runs clean with no
+  drift. The AGENT-BOOTSTRAP.md "Build / dist layout" section did NOT
+  exist (a real gap — the `.gitignore` comment pointed at `AGENTS.md`,
+  which is itself just a 19-line pointer to AGENT-BOOTSTRAP.md and has
+  no such section) — added this session, and fixed the `.gitignore`
+  comment to point at the right file. Also fixed a stale/contradictory
+  acceptance bullet under S1 (it said "0 `./dist` references", which
+  the S2 correction explicitly supersedes — annotated in place rather
+  than deleted, to preserve the history).
+- **Not independently confirmed**: `bun run validate exit 0 completo`
+  — rule 3 forbids starting a second full validate while the
+  orchestrator's own run is in flight. Every scoped gate this session
+  could run independently (the build, the lint, the pack-smoke path,
+  the drift check) passed. Left the proposal in `ready/` rather than
+  moving it to `review/`, since that final full-validate confirmation
+  is the one acceptance item outstanding and this session cannot
+  produce it without violating rule 3 — the orchestrator (or whoever's
+  validate run lands next) should confirm it and can then submit for
+  review.

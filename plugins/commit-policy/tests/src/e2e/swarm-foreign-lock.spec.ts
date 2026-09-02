@@ -206,6 +206,48 @@ describe('commit-policy E2E — a swarm sweep never commits a held file', () => 
 		expect(await committedFiles()).toEqual(['theirs.ts']);
 	});
 
+	it('never withholds from a commit whose files the caller named', async () => {
+		// The safeguard must not be able to refuse an agent committing
+		// its own claimed slice. Whether an entry is "someone else's"
+		// depends on this plugin's idea of who it is matching the lock
+		// file's, which it cannot guarantee — so an explicitly named
+		// file list is never filtered, and a wrong guess can never turn
+		// a safeguard against deadlock into a cause of one.
+		await writeFile(join(workspace, 'ours.ts'), 'export const a = 1;\n');
+		await writeLock([
+			{
+				task_id: 'f00002-S1',
+				agent: 'whatever-the-lock-calls-us',
+				ownership: ['ours.ts'],
+				last_seen: new Date().toISOString(),
+			},
+		]);
+
+		const result = await runCommitDriver(
+			{
+				message: 'feat: my own slice',
+				files: ['ours.ts'],
+			},
+			{
+				run: runner,
+				policy: SWEEP_EVERYTHING,
+				identityCtx: {
+					run: runner,
+					envVars: Object.freeze({}),
+					hostIdentity: { host: 'test', model: 'test' },
+				},
+				workspaceRoot: workspace,
+				auditAgent: null,
+				foreignLocks: provider(),
+				selfAgent: 'a-name-that-does-not-match',
+			},
+		);
+
+		expect(result.committed).toBe(true);
+		expect(await committedFiles()).toEqual(['ours.ts']);
+		expect(result.withheldForeignLocks).toBeUndefined();
+	});
+
 	it('behaves exactly as before when no provider is wired', async () => {
 		// A host without the proposals plugin is a supported setup and
 		// must see no change at all.
