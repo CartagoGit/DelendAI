@@ -105,7 +105,12 @@ export default defineConfig({
 		//     when a host wants the exhaustive summary (e.g. CI coverage
 		//     ratchet scripts that already triage failures offline).
 		bail: 1,
-		reporters: ['verbose'],
+		//   - the journal reporter writes every run (pass or fail) to
+		//     `.cache/mcp-vertex/results/logs/test-runs.jsonl`, so the
+		//     failures of a run that has already scrolled away can be read
+		//     with `bun run test:failures` instead of running the suite a
+		//     second time. It never prints and never throws.
+		reporters: ['verbose', './tools/scripts/test/journal-reporter.ts'],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
 		// `bun run test` stays fast.
