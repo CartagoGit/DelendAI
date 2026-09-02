@@ -2,11 +2,14 @@
 id: f00333
 title: "plugin marginal cost."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#plugin-marginal-cost
+last-transition-id: 7bb20354-edeb-4111-9661-dc2a26919867
+last-correlation-id: 7bb20354-edeb-4111-9661-dc2a26919867
+last-transition-from: in-progress
 ---
 
 # f00333 — plugin marginal cost.
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: pending
-- **Files**: `ready/feats/f00333-plugin-marginal-cost.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00333-plugin-marginal-cost.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -40,7 +43,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: in_review
+- review-implementer: sonnet-worker-migrated
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
@@ -77,3 +81,33 @@ alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
 actual scope/acceptance for "plugin-marginal-cost" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+Real derived acceptance: the token-budget dashboard must report a
+"marginal bytes per plugin" figure (TOK-001's "marginal bytes per
+plugin" dashboard column) AND the budget contract must be able to
+govern it with real, non-defaulted ceilings (TOK-005's per-plugin
+declaration).
+
+Already implemented, not net-new work:
+- `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`
+  defines `IGovernedToolsListBudget` with required
+  `marginalPluginHard`/`marginalPluginWarning` fields per governed
+  preset (the type comment cites `AUD-B02 / x00283` explaining why
+  these were made non-optional after silently defaulting to `?? 0`
+  produced false "over hard (0B)" violations for every plugin).
+- `tools/scripts/report/token-budget-report-lib.ts`
+  (`measureToolListMetrics`) computes real per-plugin
+  `toolsListBytes`/`schemaBytes`/... rollups and a `maxPluginBytes`
+  figure across all plugin owners.
+- `docs/mcp-vertex/TOKEN-BUDGETS.md` (generated) documents "marginal
+  plugin ceiling: max static tools/list bytes one plugin is allowed to
+  contribute" and renders a plugin-marginal table from the same
+  contract the e2e test governs.
+
+Ran
+`npx vitest run tools/scripts/report/token-budget-dashboard.spec.ts tools/tests/lint/token-budget-ceiling-ratchet.spec.ts packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
+on 2026-09-02: 3 files, tests passing (see also the combined 57/57 run
+across the token-budget + manifest test set). No code change required;
+closing on this evidence.

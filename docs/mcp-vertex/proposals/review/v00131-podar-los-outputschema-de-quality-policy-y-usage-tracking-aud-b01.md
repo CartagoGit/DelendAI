@@ -2,7 +2,7 @@
 id: v00131
 title: "Podar los `outputSchema` de quality-policy y usage-tracking (AUD-B01)"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-08-29
@@ -11,9 +11,9 @@ related:
     - q00011
     - v00129 # predecesor: los 5 outputSchema más baratos del core (mismo patrón)
     - v00130 # hermano independiente: orchestrator-runner
-last-transition-id: 5a489c72-3791-4271-be9b-6fbe675d97b0
-last-correlation-id: 5a489c72-3791-4271-be9b-6fbe675d97b0
-last-transition-from: ready
+last-transition-id: a3a91540-f7f4-4e1a-9f29-b8986e8b19d1
+last-correlation-id: a3a91540-f7f4-4e1a-9f29-b8986e8b19d1
+last-transition-from: in-progress
 ---
 
 # v00131 — Podar los `outputSchema` de `quality-policy` y `usage-tracking` (AUD-B01)
@@ -195,6 +195,25 @@ propuesta ("`usage-tracking` (`usage_report` + `session_hygiene`,
 8.807 B)"), y 5.817 + 2.990 = 8.807 B cuadra de forma exacta con lo
 medido en esta sesión. Se incluye aquí para no dejar un cabo suelto
 que el propio `v00129` ya había prometido cerrar.
+
+**Verificación 2026-09-02 (cierre):** al revisar el repo antes de
+implementar, `usage_report` (`report.tool.ts`) y `session_hygiene`
+(`session-hygiene.tool.ts`) **ya** declaraban `compactOutputSchema()`
+— podadas en una sesión previa no vinculada explícitamente a este id.
+Solo `quality_policy` seguía declarando el `QualityPolicyOutputSchema`
+completo (~7.9 KB). Se podó en esta sesión
+(`plugins/quality-policy/src/lib/tools/quality-policy.tool.ts`),
+reescribiendo `quality-policy.tool.spec.ts` para validar
+`structuredContent` contra el schema exportado directamente (no contra
+`meta.outputSchema`) más una aserción de que el `outputSchema`
+declarado se mantiene ≤200 B, siguiendo el patrón de
+`invoke.tool.spec.ts` (`v00130`). Medido: preset `vertex` bajó de
+262.834 B a 255.066 B en `tools/list` tras el cambio
+(`bun run tokens:gate`); `tokens:dashboard:check` reporta el documento
+en sync sin necesidad de regenerarlo (ya reflejaba la poda previa de
+usage-tracking). `bunx vitest run --project quality-policy` (5/5),
+`--project usage-tracking`, `tokens:ceiling-ratchet` y
+`tools/scripts/typecheck.script.ts` en verde.
 
 Ficheros de referencia:
 
