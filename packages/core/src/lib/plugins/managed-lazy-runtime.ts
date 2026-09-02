@@ -92,6 +92,31 @@ export interface IManagedLazyRuntimeOptions {
 	}) => void;
 }
 
+/**
+ * One plugin that cannot be imported must not take the server down.
+ *
+ * This pass imports every catalog entry to normalise its options before
+ * assembly. An import that threw used to propagate straight out of
+ * `assembleCliConfig`, so on the DEFAULT managed-lazy surface a single
+ * broken or unresolvable plugin module aborted the whole start — no
+ * tools, no diagnostics, nothing but a stack trace. That is precisely
+ * the case the degradation exists for: a workspace where one package is
+ * missing or half-built, which is the ordinary state of a fresh
+ * worktree or another project.
+ *
+ * The failure is returned instead, so the caller can announce it, route
+ * it to the register-error observers, and start with everything else.
+ */
+export interface IManagedLazyConfigurationResult {
+	/** Cross-plugin configuration problems, as before. */
+	readonly issues: readonly string[];
+	/** Plugins that could not be imported or whose options were invalid. */
+	readonly failures: ReadonlyArray<{
+		readonly specifier: string;
+		readonly message: string;
+	}>;
+}
+
 export const validateManagedLazyConfiguration = async (options: {
 	readonly plugins: readonly IManagedLazyPluginCatalogEntry[];
 	readonly buildContext: (
@@ -104,29 +129,53 @@ export const validateManagedLazyConfiguration = async (options: {
 	>;
 	readonly enabledPlugins: readonly string[];
 	readonly importFn: (specifier: string) => Promise<unknown>;
-}): Promise<readonly string[]> => {
+}): Promise<IManagedLazyConfigurationResult> => {
 	const loadedPlugins: IMcpPlugin[] = [];
+	const failures: Array<{ specifier: string; message: string }> = [];
 	const normalizedOptions = new Map<
 		string,
 		Readonly<Record<string, unknown>>
 	>();
 	for (const definition of options.plugins) {
-		const module = await options.importFn(definition.packageSpecifier);
+		let module: unknown;
+		try {
+			module = await options.importFn(definition.packageSpecifier);
+		} catch (error) {
+			failures.push({
+				specifier: definition.id,
+				message: `could not load plugin "${definition.id}" from "${definition.packageSpecifier}": ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			});
+			continue;
+		}
 		const plugin = pluginFromModule(module);
 		if (plugin === undefined) continue;
 		const normalized = normalizePluginOptions(
 			plugin,
 			options.buildContext(plugin.name, plugin.cacheNamespace),
 		);
-		if (!normalized.ok) throw new Error(normalized.message);
+		if (!normalized.ok) {
+			// Invalid options are a failure OF THAT PLUGIN, not of the
+			// server. Refusing to start punished every other plugin for
+			// one bad options block.
+			failures.push({
+				specifier: definition.id,
+				message: normalized.message,
+			});
+			continue;
+		}
 		loadedPlugins.push(plugin);
 		normalizedOptions.set(plugin.name, normalized.ctx.options);
 	}
-	return validatePluginConfiguration({
-		plugins: loadedPlugins,
-		pluginOptions: normalizedOptions,
-		enabledPlugins: options.enabledPlugins,
-	});
+	return {
+		failures,
+		issues: validatePluginConfiguration({
+			plugins: loadedPlugins,
+			pluginOptions: normalizedOptions,
+			enabledPlugins: options.enabledPlugins,
+		}),
+	};
 };
 
 interface ICapturedTool {

@@ -403,15 +403,15 @@ const tryAssembleManagedLazy = async (input: {
 			config.options ?? {},
 		]),
 	);
-	const configurationIssues = await validateManagedLazyConfiguration({
+	const configuration = await validateManagedLazyConfiguration({
 		plugins: definitions,
 		buildContext: input.buildContext,
 		pluginOptions,
 		enabledPlugins: pluginIds,
 		importFn: input.importFn,
 	});
-	if (configurationIssues.length > 0) {
-		throw new Error(configurationIssues.join('\n\n'));
+	if (configuration.issues.length > 0) {
+		throw new Error(configuration.issues.join('\n\n'));
 	}
 	const onToolCalls: IPluginToolCallObserver[] = [];
 	const onToolStarts: IPluginToolStartObserver[] = [];
