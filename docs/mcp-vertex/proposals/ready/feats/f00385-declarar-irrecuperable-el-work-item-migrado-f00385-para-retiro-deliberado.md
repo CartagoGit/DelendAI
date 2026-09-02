@@ -37,8 +37,8 @@ La migracion produjo un placeholder sin especificacion tecnica real. La referenc
 ### S1 — Dejar la propuesta lista para retiro deliberado
 
 - **Status**: pending
-- **Files**: `ready/feats/f00385-recuperar-o-retirar-el-work-item-migrado-f00385.md`
-- **Gate**: `git diff --check -- docs/mcp-vertex/proposals/ready/feats/f00385-recuperar-o-retirar-el-work-item-migrado-f00385.md` y `rg -n "review-log|review-state|review-reviewer|review-implementer|\.\.\.\." docs/mcp-vertex/proposals/ready/feats/f00385-recuperar-o-retirar-el-work-item-migrado-f00385.md`
+- **Files**: `ready/feats/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md`
+- **Gate**: `git diff --check -- docs/mcp-vertex/proposals/ready/feats/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md` y `rg -n "review-log|review-state|review-reviewer|review-implementer|\.\.\.\." docs/mcp-vertex/proposals/ready/feats/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md`
 - acceptance:
   - "La propuesta documenta de forma explícita que no existe una fuente verificable del item 25047 en las ubicaciones permitidas revisadas."
   - "No quedan placeholders ni review logs heredados que aparenten una validacion o una implementacion inexistentes."
