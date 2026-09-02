@@ -2,7 +2,7 @@
 id: d00013
 title: "ADR: develop es laboratorio, main es publicación — y qué falta para que el guard lo sostenga"
 kind: docs
-status: ready
+status: in-progress
 type: proposal
 track: governance
 date: 2026-08-29
@@ -10,6 +10,9 @@ priority: P1
 related:
     - q00011
     - x00273 # guard de push directo a main — implementación de la decisión que fija este ADR
+last-transition-id: fc372d5b-31b1-466f-aa5a-0970bc4503dd
+last-correlation-id: fc372d5b-31b1-466f-aa5a-0970bc4503dd
+last-transition-from: ready
 ---
 
 # d00013 — ADR: modelo de ramas develop/main
