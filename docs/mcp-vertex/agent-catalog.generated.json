@@ -1267,7 +1267,7 @@
 				"id": "d00011",
 				"title": "d00011",
 				"track": "docs",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "docs",
 				"date": ""
 			},
@@ -1721,8 +1721,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 51,
-			"in-progress": 5,
+			"ready": 50,
+			"in-progress": 6,
 			"review": 2,
 			"paused": 1,
 			"done": 681,

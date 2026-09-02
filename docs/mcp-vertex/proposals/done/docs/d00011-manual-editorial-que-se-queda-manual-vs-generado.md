@@ -2,7 +2,7 @@
 id: d00011
 title: "Manual editorial: qué se queda manual vs generado"
 kind: docs
-status: in-progress
+status: review
 type: proposal
 track: docs
 date: 2026-08-25
@@ -18,9 +18,9 @@ related:
     - f00190 # AGENT.md por package/plugin
     - d00009 # capability matrix
     - d00010 # vertex://code-map
-last-transition-id: ca9949e1-e377-4b61-af62-bc2c78f67309
-last-correlation-id: ca9949e1-e377-4b61-af62-bc2c78f67309
-last-transition-from: ready
+last-transition-id: 0f3ec6f9-8eb2-4269-b44d-09d9be7aaaaa
+last-correlation-id: 0f3ec6f9-8eb2-4269-b44d-09d9be7aaaaa
+last-transition-from: in-progress
 ---
 
 # d00011 — Manual editorial: qué se queda manual vs generado
@@ -111,7 +111,8 @@ inventarios, tablas de capabilities, dashboards).
 - **Status**: pending
 - **Files**: `docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md`, referencias en `c00140`, `r00027`, `d00009`, `d00010`, `f00190`, `tools/scripts/gen/*/README.md` (opcional)
 - **Gate**: type
-
+- review-state: in_review
+- review-implementer: sonnet-worker-docs
 ## acceptance
 
 - Documento publicado y revisado.
