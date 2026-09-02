@@ -93,6 +93,18 @@ const shippedInState = (
 	return 'ok';
 };
 
+/**
+ * What to actually do next.
+ *
+ * This used to end with "(force:true if no peer reviewer is
+ * available)", which taught every agent that read it to bypass the
+ * peer-review gate the moment closing became inconvenient — and a
+ * proposal closed that way looks identical to one that was reviewed.
+ * The honest next step is the two-call handoff: the implementer opens
+ * the round, a different agent approves it. If no reviewer is
+ * available, the proposal is not closable yet, and saying so is the
+ * point of the gate.
+ */
 const nextActionFor = (
 	state: IReadyToCloseFinding['shippedInState'],
 	proposalId: string,
@@ -104,7 +116,10 @@ const nextActionFor = (
 				`Add \`shipped-in: [<sha>]\` to the top-level frontmatter of ${proposalId} ` +
 				`(between the two leading --- lines — NOT inside a resolution: block). ` +
 				`Find the SHA with: \`git log --oneline --all | head -20 | grep -i ${proposalId.slice(0, 1)}0\`. ` +
-				`Then run proposals_proposal_transition { id: "${proposalId}", to: "done", reason: "all slices done; close-loop" } (force:true if no peer reviewer is available).`
+				`Then open a review round and have a DIFFERENT agent approve it: ` +
+				`proposals_proposal_review { action: "submit", proposalId: "${proposalId}", sliceId: "<finished-slice>", agent: "<implementer>" }, ` +
+				`then proposals_proposal_review { action: "approve", ... , agent: "<reviewer ≠ implementer>" }. ` +
+				`Finally proposals_proposal_transition { id: "${proposalId}", to: "done", reason: "all slices done; close-loop" }.`
 			);
 		case 'invalid':
 			return (

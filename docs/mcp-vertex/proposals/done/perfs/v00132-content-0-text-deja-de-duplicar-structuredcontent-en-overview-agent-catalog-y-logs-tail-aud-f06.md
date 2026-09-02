@@ -2,17 +2,18 @@
 id: v00132
 title: "content[0].text deja de duplicar structuredContent en overview, agent_catalog y logs_tail (AUD-F06)"
 kind: perf
-status: in-progress
+status: done
 type: proposal
 track: tokens
 date: 2026-08-29
 priority: P2
+shipped-in: ["f267bf5e0"]
 related:
     - q00011
     - v00129 # mismo track de tokens, mismo tipo de poda "declarar menos, no cambiar el dato real"
-last-transition-id: 3449f996-e2ba-499b-9aa9-e1edf1ba2796
-last-correlation-id: 3449f996-e2ba-499b-9aa9-e1edf1ba2796
-last-transition-from: ready
+last-transition-id: 365c7751-ca77-4ea9-8d51-a911808ce801
+last-correlation-id: 365c7751-ca77-4ea9-8d51-a911808ce801
+last-transition-from: in-progress
 ---
 
 # v00132 — `content[0].text` deja de duplicar `structuredContent` (AUD-F06)
@@ -177,7 +178,10 @@ constancia del contrato).
 **antes** de regenerar `TOKEN-BUDGETS.md` a mano, igual que en
 `v00129`/`v00130`/`v00131` — regenerar primero deja el gate en verde
 sin haber comprobado nada.
-
+- review-state: done
+- review-implementer: sonnet-worker-tokens
+- review-reviewer: sonnet-verifier-tokens
+- review-log: approved by sonnet-verifier-tokens — Confirmed logs/tools.ts tail registration uses toolJsonWithSummary; overview-tool.ts/agent-catalog-tool.ts already did. Ran vitest --project core (270/270) and --project logs (9/9, 87 tests incl. new v00132 regression test), tokens:gate (vertex 255,066B), tokens:dashboard:check (in sync), tokens:ceiling-ratchet (54 checked), typecheck.script.ts (clean). TOKEN-BUDGETS.md fixture-gated rows confirm overview full 47B / agent_catalog full 33B / logs_tail 28B, down from 11,727/8,736/2,609.
 ## dependency graph
 
 S1 es la única slice. Independiente de `v00129`/`v00130`/`v00131`
