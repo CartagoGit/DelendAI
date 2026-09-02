@@ -2,7 +2,7 @@
 id: d00009
 title: "Capability matrix documentada"
 kind: docs
-status: review
+status: done
 type: proposal
 track: security
 date: 2026-08-25
@@ -108,10 +108,13 @@ lint `c00137`.
 
 ### S1 — Generador de matriz + tests + integración en CI
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/gen/capability-matrix.script.ts`, `tools/scripts/gen/capability-matrix.spec.ts`, `docs/mcp-vertex/CAPABILITY-MATRIX.md` (generado)
 - **Gate**: type
-
+- review-state: done
+- review-implementer: sonnet-worker-docs
+- review-reviewer: sonnet-worker-review
+- review-log: approved by sonnet-worker-review — Verified capability-matrix.script.ts + .spec.ts already implement the full acceptance contract: script regenerates docs/mcp-vertex/security/capability-matrix.md with zero diff against committed artifact, all 14 unit tests pass, no external tool names leak (only pluginId + canonical capability tokens).
 ## acceptance
 
 - Script ejecutable regenera la matriz.
