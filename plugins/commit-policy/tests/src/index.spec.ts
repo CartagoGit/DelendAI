@@ -312,9 +312,9 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 			// creation, so a throw there propagates out and no
 			// runtime/dispose is ever returned to the caller — this
 			// is the "register() falla a mitad" shape from AUD-CP-003.
-			await expect(
-				reloadedPlugin.register(buildCtx(workspace)),
-			).rejects.toThrow('boom: slice listener failed to attach');
+			expect(() => reloadedPlugin.register(buildCtx(workspace))).toThrow(
+				'boom: slice listener failed to attach',
+			);
 
 			// The interval trigger's setInterval() call happens after
 			// slice-listener setup in register(), so nothing reaches
