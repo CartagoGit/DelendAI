@@ -38,7 +38,7 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
 - global_gate: e2e
 
 ### S1 — build driver: emitir bajo `build/{group}/{name}/{version}/`
-- **Status**: pending
+- **Status**: done (verified 2026-09-02 — see Notes)
 - **Files**: `tools/scripts/compile/build.script.ts`, `tools/scripts/compile/bundle-js.ts`, `tools/scripts/compile/build.spec.ts`, `.gitignore`
 - **Gate**: e2e
 - acceptance:
