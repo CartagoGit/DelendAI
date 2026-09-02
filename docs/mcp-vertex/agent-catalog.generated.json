@@ -1616,14 +1616,6 @@
 				"date": ""
 			},
 			{
-				"id": "t00020",
-				"title": "t00020",
-				"track": "commit-policy",
-				"status": "in-progress",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "t00021",
 				"title": "t00021",
 				"track": "commit-policy",
@@ -1706,8 +1698,8 @@
 		],
 		"byStatus": {
 			"ready": 48,
-			"in-progress": 6,
-			"review": 1,
+			"in-progress": 5,
+			"review": 2,
 			"paused": 1,
 			"done": 684,
 			"blocked": 23,
