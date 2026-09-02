@@ -2,10 +2,13 @@
 id: r00045
 title: "Centralizar todos los artefactos de build bajo `build/` (un único árbol, sin `dist/` por paquete)"
 kind: refactor
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-31
+last-transition-id: b89ddeac-c05a-4eef-a57e-989b0db89750
+last-correlation-id: b89ddeac-c05a-4eef-a57e-989b0db89750
+last-transition-from: ready
 ---
 
 # r00045 — Centralizar todos los artefactos de build bajo `build/` (un único árbol, sin `dist/` por paquete)
