@@ -1,8 +1,10 @@
 import { watch } from 'node:fs';
 import type { FSWatcher } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
+import { hostname } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 
+import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 /** `fs/promises.stat` rejects on ENOENT; we only care whether the path exists. */
