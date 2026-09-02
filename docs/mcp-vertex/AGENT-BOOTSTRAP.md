@@ -493,6 +493,47 @@ or have their own config file. Use the same single-pointer pattern:
   picks it up on the next session.
 
 
+## Build / dist layout (r00045)
+
+Every compiled artifact in this monorepo lands under one root-anchored
+tree: `/build/{group}/{name}/{version}/...` (e.g.
+`build/packages/core/0.1.1/index.js`,
+`build/plugins/proposals/0.1.0/public/index.js`). There is no
+persistent `packages/*/dist/` or `plugins/*/dist/` on disk — `/build/`
+and `/dist/` are both gitignored, and `bun run build` (or
+`bun tools/scripts/compile/build.script.ts <pkg-dir>`) is the only
+producer.
+
+**Scripts never resolve against `build/`.** `bun run <script>`,
+`vitest`, and `tsc --noEmit` all inject the `@mcp-vertex/source`
+condition (`bunfig.toml#run.conditions`,
+`tsconfig.base.json#compilerOptions.customConditions`, and
+`vitest.shared.ts`'s per-package `resolve.alias` entries pointing at
+`src/`), so every one of those consumers resolves `@mcp-vertex/*`
+straight to `src/`, never to a compiled artifact. If a script call
+prints a `require()`/import resolving into `build/`, that call is
+missing the source condition — fix the invocation, don't chase it as a
+build bug.
+
+**Package manifests keep `"main": "./dist/index.js"` and
+`exports["."] → "./dist/..."` on purpose** — Node/npm do not allow
+`package.json#exports` to point outside the package's own directory
+with `../build`, so a manifest cannot reference the root-level
+`build/` tree directly. `./dist/` is materialized only inside a
+temporary staging directory at publish/pack time
+(`stageBuildForPublish(pkgDir, buildDir, stageDir)` in
+`tools/scripts/publish/workspace-deps.ts`, used by
+`release.script.ts`, `tools/scripts/smoke/pack.script.ts`, and
+`tools/scripts/verify/external-install-smoke.script.ts`), which copies
+the package to a scratch directory, materializes its
+`build/<group>/<name>/<version>/` slice there as `dist/`, packs that
+copy, and deletes the staging directory afterward. No `dist/` is ever
+written back into `packages/*` or `plugins/*` on disk.
+
+`lint:no-build-imports-from-src` (wired into `bun run validate`) fails
+if any emitted file under `build/**/*.js` imports `../src/` — a
+compiled artifact must never reach back into source.
+
 ## Architecture decisions
 
 Durable architecture decisions live as ADRs in `docs/mcp-vertex/adr/`,

@@ -108,7 +108,11 @@ describe('commit-policy E2E — a swarm sweep never commits a held file', () => 
 			{
 				run: runner,
 				policy: SWEEP_EVERYTHING,
-				identityCtx: { workspaceRoot: workspace },
+				identityCtx: {
+					run: runner,
+					envVars: Object.freeze({}),
+					hostIdentity: { host: 'test', model: 'test' },
+				},
 				workspaceRoot: workspace,
 				auditAgent: null,
 				foreignLocks: provider(),
@@ -144,7 +148,11 @@ describe('commit-policy E2E — a swarm sweep never commits a held file', () => 
 			{
 				run: runner,
 				policy: SWEEP_EVERYTHING,
-				identityCtx: { workspaceRoot: workspace },
+				identityCtx: {
+					run: runner,
+					envVars: Object.freeze({}),
+					hostIdentity: { host: 'test', model: 'test' },
+				},
 				workspaceRoot: workspace,
 				auditAgent: null,
 				foreignLocks: provider(),
@@ -182,7 +190,11 @@ describe('commit-policy E2E — a swarm sweep never commits a held file', () => 
 			{
 				run: runner,
 				policy: SWEEP_EVERYTHING,
-				identityCtx: { workspaceRoot: workspace },
+				identityCtx: {
+					run: runner,
+					envVars: Object.freeze({}),
+					hostIdentity: { host: 'test', model: 'test' },
+				},
 				workspaceRoot: workspace,
 				auditAgent: null,
 				foreignLocks: provider(),
@@ -206,7 +218,11 @@ describe('commit-policy E2E — a swarm sweep never commits a held file', () => 
 			{
 				run: runner,
 				policy: SWEEP_EVERYTHING,
-				identityCtx: { workspaceRoot: workspace },
+				identityCtx: {
+					run: runner,
+					envVars: Object.freeze({}),
+					hostIdentity: { host: 'test', model: 'test' },
+				},
 				workspaceRoot: workspace,
 				auditAgent: null,
 			},
