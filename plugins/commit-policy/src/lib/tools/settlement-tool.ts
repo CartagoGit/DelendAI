@@ -60,7 +60,7 @@ export const createSettlementTool = (deps: ISettlementToolDeps) => {
 			return out;
 		},
 		async enter(
-			input: z.infer<typeof SettlementEnterInput>,
+			_input: z.infer<typeof SettlementEnterInput>,
 		): Promise<
 			| { readonly ack: 'OK'; readonly phase: 'settling' }
 			| { readonly ack: 'REFUSED'; readonly reason: string }

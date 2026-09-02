@@ -29,14 +29,14 @@ import { createIntervalTimer } from './lib/triggers/interval-timer';
 import { buildCommitToolRegistration } from './lib/tools/commit-tool';
 import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
-import { buildStatusToolRegistration } from './lib/tools/status-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { createPushScheduler } from './lib/services/push-scheduler';
 import { createCommitPolicyEngine, type IEngineResult } from './lib/engine';
 import { createProcessedEventsStore } from './lib/processed-events';
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
-import { buildBranchProtectionToolRegistration } from './lib/tools/branch-protection-tool';
 import { StormDetector } from './lib/services/storm-detector';
+import { StormLog } from './lib/services/storm-log';
+import { fileRepairProposals } from './lib/services/repair-proposer';
 
 const OptionsSchema = CommitPolicyOptionsSchema;
 
@@ -316,13 +316,48 @@ export default definePlugin({
 		pushScheduler.start();
 		disposables.push(() => pushScheduler.stop());
 
-		// x00419 S2+S3: shared StormDetector so the host boot hook
+		// x00419 S2+S3+S4: shared StormDetector so the host boot hook
 		// (S5) and the storms-tool see the same in-memory buckets.
+		// S4: the StormLog persists entries under
+		// `<pluginCacheDir>/storms/<key>.json` and replays them
+		// on the next host boot so the count survives a restart.
 		const stormDetector = new StormDetector({
 			windowSeconds: 30,
 			threshold: 5,
 			maxSamplesPerStorm: 5,
 		});
+		const stormLog = new StormLog({
+			cacheDir: ctx.pluginCacheDir,
+		});
+		stormLog.ensureDir();
+		stormLog.replayInto(stormDetector);
+
+		// x00419 S5: file a `kind: repair` proposal for any storm
+		// that crossed the threshold. Idempotent — a proposal with
+		// the same slug is not re-created. The host boot step runs
+		// after plugin registration, so by the time `register()`
+		// runs the in-memory detector has already been seeded from
+		// the on-disk log; storms detected at boot feed into the
+		// next `auto_work` cycle.
+		const repairResults = fileRepairProposals(
+			stormDetector.snapshot().storms,
+			{ docsDir: ctx.docsDir },
+		);
+		for (const r of repairResults) {
+			if (r.proposed) {
+				console.warn(
+					JSON.stringify({
+						event: 'commit-policy.repair-proposed',
+						code: r.storm.code,
+						trigger: r.storm.trigger,
+						file: r.filePath,
+						sampleProposalIds: r.storm.sampleProposalIds,
+					}),
+				);
+			}
+		}
+
+		const tools = [
 			buildCommitToolRegistration({
 				...sharedDriver,
 				namespacePrefix: ctx.namespacePrefix,
@@ -356,6 +391,37 @@ export default definePlugin({
 			buildStormsToolRegistration({
 				namespacePrefix: ctx.namespacePrefix,
 				detector: stormDetector,
+				stormLog,
+				onSnapshot: () => {
+					// Persist the current state to disk. Cheap
+					// (max 256 files × ~1KB), bounded by maxAgeMs
+					// on the next read.
+					const snap = stormDetector.snapshot();
+					stormLog.write(
+						snap.storms.map((s) => ({
+							trigger: s.trigger,
+							code: s.code,
+							firstSeenAt: s.firstSeenAt,
+							lastSeenAt: s.lastSeenAt,
+							timestamps: snap.storms.find(
+								(storm) =>
+									storm.code === s.code &&
+									storm.trigger === s.trigger,
+							)
+								? Array.from(
+										{ length: s.count },
+										(_, i) =>
+											s.lastSeenAt -
+											(s.count - i - 1) * 1000,
+									)
+								: [],
+							sampleProposalIds: [...s.sampleProposalIds],
+							...(s.suggestedFix !== undefined
+								? { suggestedFix: s.suggestedFix }
+								: {}),
+						})),
+					);
+				},
 			}),
 		];
 

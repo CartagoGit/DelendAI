@@ -24,6 +24,7 @@ import {
 	inferSuggestedFix,
 	type IStormEvent,
 } from '../services/storm-detector';
+import type { StormLog } from '../services/storm-log';
 
 export interface IStormsToolOptions {
 	readonly namespacePrefix: string;
@@ -40,6 +41,19 @@ export interface IStormsToolOptions {
 	 * uses this to feed the in-process engine's stderr stream.
 	 */
 	readonly observedEvents?: readonly IStormEvent[];
+	/**
+	 * Optional callback invoked once after every successful
+	 * snapshot. The host uses this to persist the snapshot via
+	 * `StormLog` so the count survives a restart.
+	 */
+	readonly onSnapshot?: (() => void) | undefined;
+	/**
+	 * Optional reference to the StormLog; the tool can decide
+	 * whether to persist the snapshot itself rather than relying
+	 * on a host callback. Currently unused — we just thread it
+	 * through for the host's boot-hook convenience.
+	 */
+	readonly stormLog?: StormLog | undefined;
 }
 
 const IStormSchema = z.object({
@@ -81,6 +95,7 @@ export const runCommitPolicyStorms = async (
 			});
 		}
 		const snapshot = detector.snapshot();
+		options.onSnapshot?.();
 		return toolOk(snapshot);
 	} catch (error: unknown) {
 		return toolError(
@@ -90,7 +105,7 @@ export const runCommitPolicyStorms = async (
 	}
 };
 
-export const createStormsTool = (
+export const buildStormsToolRegistration = (
 	options: IStormsToolOptions,
 ): IToolRegistration => ({
 	id: 'commit_policy_storms',

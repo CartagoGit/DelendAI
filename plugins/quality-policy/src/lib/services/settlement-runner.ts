@@ -47,7 +47,7 @@ export const runSettlement = async (
 
 	for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
 		try {
-			const { stdout } = await execFileAsync('sh', ['-c', cmd], {
+			await execFileAsync('sh', ['-c', cmd], {
 				cwd: options.cwd,
 				timeout: 600_000,
 				maxBuffer: 16 * 1024 * 1024,
