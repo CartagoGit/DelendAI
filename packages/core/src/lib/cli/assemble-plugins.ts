@@ -267,6 +267,27 @@ const sourceForLazyPlugin = (input: {
 };
 
 /**
+ * Boot-time work a plugin's CONFIG promises must happen at boot, even
+ * though the plugin is lazy.
+ *
+ * `cache.runOnBoot` schedules an eviction sweep during assembly, but the
+ * rules it sweeps are contributed by the `cache` plugin's `register()`.
+ * Under the managed-lazy surface `register()` does not run until a tool
+ * is called, so the sweep found zero rules and the configured posture —
+ * including the destructive `apply` — was quietly a no-op. `'off'` is
+ * the one posture that genuinely needs nothing.
+ *
+ * Same shape as the Git-policy rule below: a lifecycle guarantee the
+ * operator configured, not a tool the model must remember to invoke.
+ */
+export const requiresBootSweepActivation = (
+	pluginId: string,
+	fileConfig: Pick<IMcpVertexConfigFile, 'cache'>,
+): boolean =>
+	pluginId === 'cache' &&
+	(fileConfig.cache?.runOnBoot ?? 'dry-run') !== 'off';
+
+/**
  * Policy-owned plugins must start before the first lazy tool call. A configured
  * automatic Git policy is a lifecycle guarantee, not a tool the model has to
  * remember to invoke.
@@ -518,7 +539,8 @@ const tryAssembleManagedLazy = async (input: {
 		// validation and cannot silently disable its listeners.
 		return (
 			plugin.startupActivation === true ||
-			requiresPolicyStartupActivation(plugin.id, options)
+			requiresPolicyStartupActivation(plugin.id, options) ||
+			requiresBootSweepActivation(plugin.id, input.fileConfig)
 		);
 	});
 	await Promise.all(
