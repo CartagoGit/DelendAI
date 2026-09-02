@@ -47,8 +47,10 @@ release can proceed.
 - **Files**:
   - `docs/mcp-vertex/proposals/ready/docs/d00415-document-pre-existing-test-failures-in-apps-ide-header-bar-settings-i18n.md`
 - **Gate**: none
-- review-state: in_review
+- review-state: done
 - review-implementer: implementation_runner
+- review-reviewer: mcp-vertex-delivery-verifier
+- review-log: approved by mcp-vertex-delivery-verifier
 ### S2 — Follow-up: fix F1 + F2 (header-bar renderer + spec)
 - **Status**: done
 - **Files**:
