@@ -1283,7 +1283,7 @@
 				"id": "f00268",
 				"title": "f00268",
 				"track": "lifecycle",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1625,8 +1625,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 39,
-			"in-progress": 5,
+			"ready": 38,
+			"in-progress": 6,
 			"review": 0,
 			"paused": 1,
 			"done": 695,
