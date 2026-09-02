@@ -25,6 +25,11 @@ import {
 import type { IMcpVertexConfigFile } from '../plugins/load-config-file';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
+import {
+	announcePluginFailures,
+	asRegisterErrorInfo,
+	buildPluginFailureAnnouncement,
+} from '../plugins/announce-plugin-failures';
 import { buildActivationReport } from '../plugins/activation-report';
 import { classifyOrigin } from '../plugins/classify-origin';
 import type {
@@ -873,6 +878,25 @@ export const assemblePlugins = async (
 			});
 		}
 	}
+	// A plugin that failed is degraded, not fatal — but it must be VISIBLE.
+	// Until now the failure reached the operator only as an absence: tools
+	// that should exist do not, and an agent cannot tell "never installed"
+	// from "failed to start", so it retries the call or treats the gap as
+	// work to do. Announce once on stderr, and route load failures (which
+	// never reach `register()` and so produced no observer event at all)
+	// through the same `onRegisterError` observers the error-reporting
+	// plugin already subscribes to.
+	announcePluginFailures(
+		buildPluginFailureAnnouncement({
+			loadErrors: loadResult.errors,
+			registerErrors: loadResult.registerErrors,
+			loadedCount: loadResult.loaded.length,
+		}),
+	);
+	await replayRegisterErrors(
+		onRegisterErrors,
+		loadResult.errors.map(asRegisterErrorInfo),
+	);
 	await replayRegisterErrors(onRegisterErrors, loadResult.registerErrors);
 
 	const configNameBySpecifier = new Map(
