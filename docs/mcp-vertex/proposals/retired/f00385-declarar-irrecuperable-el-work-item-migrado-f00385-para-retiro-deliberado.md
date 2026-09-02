@@ -2,11 +2,14 @@
 id: f00385
 title: "Declarar irrecuperable el work item migrado f00385 para retiro deliberado"
 kind: feat
-status: ready
+status: retired
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md#item-25047
+last-transition-id: 2893cbc5-2eba-48b9-92ec-7e61664ef3f2
+last-correlation-id: 2893cbc5-2eba-48b9-92ec-7e61664ef3f2
+last-transition-from: ready
 ---
 
 # f00385 — Declarar irrecuperable el work item migrado f00385 para retiro deliberado
@@ -36,15 +39,17 @@ La migracion produjo un registro sin especificacion tecnica real. La referencia 
 
 ### S1 — Dejar la propuesta lista para retiro deliberado
 
-- **Status**: pending
-- **Files**: `ready/feats/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/retired/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md`
 - **Gate**: `git diff --check -- docs/mcp-vertex/proposals/ready/feats/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md` y revisión del documento para confirmar que no contiene bloques de review heredados del placeholder ni texto placeholder; los campos vivos que añade el workflow se conservan como estado operativo.
 - acceptance:
   - "La propuesta documenta de forma explícita que no existe una fuente verificable del item 25047 en las ubicaciones permitidas revisadas."
   - "No quedan placeholders ni bloques de review heredados que aparenten una validacion o una implementacion inexistentes; los metadatos vivos del workflow no cuentan como residuo."
   - "El siguiente paso operativo queda claro y acotado: retirar deliberadamente esta propuesta mediante una transicion posterior, no intentar implementarla."
-- review-state: in_review
+- review-state: done
 - review-implementer: falcon
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Aprobación independiente final: evidencia de irrecuperabilidad suficiente, gate no autorreferente y residuos heredados eliminados; procede retiro deliberado.
 ## acceptance
 
 - La propuesta describe un trabajo real y verificable: documentar la irrecuperabilidad del item migrado y preparar su retiro deliberado.
