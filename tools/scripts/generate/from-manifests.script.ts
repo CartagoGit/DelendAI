@@ -28,6 +28,7 @@ export const GENERATED_DOCS_JSON_PATH =
 	'docs/mcp-vertex/generated/plugin-manifests.generated.json';
 export const GENERATED_PLUGIN_DOCS_DIR =
 	'docs/mcp-vertex/plugins/auto-generated';
+export const PLUGIN_DOC_NOTES_DIR = 'docs/mcp-vertex/plugins/notes';
 export const GENERATED_PERMISSION_MATRIX_PATH =
 	'docs/mcp-vertex/security/permission-matrix.md';
 
@@ -630,9 +631,31 @@ const renderDocsMarkdown = (artifact: IPluginManifestArtifact): string => {
 	].join('\n');
 };
 
+/**
+ * Reads the optional hand-written notes file for a plugin (d00014).
+ *
+ * `docs/mcp-vertex/plugins/notes/<id>.notes.md` is the ONE place a
+ * human/agent may write prose about a plugin that the manifest cannot
+ * derive (design decisions, use cases, operational caveats). It has no
+ * drift check of its own (it is prose), but it has exactly one location
+ * per plugin, and its content is folded into the auto-generated page
+ * instead of living as a second, undriftchecked page.
+ */
+const loadPluginNotes = async (
+	manifestId: string,
+	root: string,
+	io: IGeneratorIo,
+): Promise<string | undefined> => {
+	const text = await io.readText(
+		resolve(root, PLUGIN_DOC_NOTES_DIR, `${manifestId}.notes.md`),
+	);
+	return text === undefined ? undefined : text.trim();
+};
+
 const renderPluginDocMarkdown = (
 	manifest: IPluginManifest,
 	generatedAt: string,
+	notes?: string,
 ): string =>
 	[
 		'---',
@@ -687,6 +710,9 @@ const renderPluginDocMarkdown = (
 					.map((capability) => `- ${capability}`)
 					.join('\n'),
 		'',
+		...(notes === undefined || notes.length === 0
+			? []
+			: ['## Notes', '', notes, '']),
 	].join('\n');
 
 const renderPermissionMatrixMarkdown = (

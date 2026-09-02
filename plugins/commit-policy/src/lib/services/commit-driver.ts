@@ -503,6 +503,39 @@ export const commitWithGuard = async (
 		lockPath,
 		async () => {
 			try {
+				// AUD-CP-005 (t00022/t00023): the isolated index is built
+				// fresh from HEAD, so it can never see files another
+				// agent staged directly in the REAL index — the subset
+				// check below would always pass trivially. Check the
+				// real index explicitly, under the same lock, before we
+				// ever touch the isolated one.
+				if (args.enforceSubset) {
+					const realStaged = [...(await gitCachedNames(args.run))];
+					const expectedReal = new Set(
+						args.allowList.map(normalizeRepoPath),
+					);
+					const realExtras = realStaged.filter(
+						(name) => !expectedReal.has(normalizeRepoPath(name)),
+					);
+					if (realExtras.length > 0) {
+						await resetWholeStageSafely(args.run);
+						return {
+							committed: false,
+							pushed: false,
+							commitCreated: false,
+							headMoved: false,
+							headBefore,
+							headAfter: headBefore,
+							refusal: `CROSS_AGENT_CONTAMINATION: staged extras not in trigger files=${realExtras.join(',')}`,
+							trace: {
+								commitCreated: false,
+								headBefore: headBefore ?? '',
+								headAfter: headBefore ?? '',
+								stagedSetAtPreCommit: realStaged,
+							},
+						};
+					}
+				}
 				if (headBefore !== undefined) {
 					const readTreeResult = await isolatedRun([
 						'read-tree',
