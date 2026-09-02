@@ -58,7 +58,8 @@ El alcance se divide en dos dueños claros:
   - "`estimateResultCost` separa bytes de texto y bytes JSON estructurados sin subcontar contenido multibyte."
   - "Los agregados de métricas y los consumidores inmediatos preservan el mismo contrato de `responseBytes`."
   - "Las pruebas cubren texto multibyte y demuestran que el coste no cae artificialmente a cero por usar longitud UTF-16."
-
+- review-state: in_review
+- review-implementer: sonnet-worker-migrated
 ## acceptance
 
 - El runner compartido de procesos aplica `maxOutputBytes` sobre bytes UTF-8 reales y respeta el presupuesto combinado stdout+stderr.

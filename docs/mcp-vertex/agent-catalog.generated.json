@@ -1280,14 +1280,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00330",
-				"title": "f00330",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00331",
 				"title": "f00331",
 				"track": "migrated",
@@ -1609,9 +1601,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 37,
+			"ready": 36,
 			"in-progress": 5,
-			"review": 2,
+			"review": 3,
 			"paused": 1,
 			"done": 695,
 			"blocked": 23,

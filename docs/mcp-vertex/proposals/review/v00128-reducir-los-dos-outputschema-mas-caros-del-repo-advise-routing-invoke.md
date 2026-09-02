@@ -115,7 +115,7 @@ realmente cada llamante, para que S2 no sea adivinanza.
 - review-log: approved by sonnet-verifier-tokens — Ran tokens:gate (orchestrator-runner 14,395B/11 tools, was 40,599B before v00128/v00130 work), tokens:dashboard:check (in sync), and npx vitest run advise-routing.tool.spec.ts + invoke.tool.spec.ts (9/9 passed). Detail levels, narrowed alternates, execution-aware measurement confirmed in source.
 ### S2 — `IAlternateSummary`
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run tokens:gate`
 - **Files**:
     - `plugins/orchestrator-runner/src/lib/schemas.ts`
@@ -123,19 +123,23 @@ realmente cada llamante, para que S2 no sea adivinanza.
 
 Sustituir la forma completa por el resumen estrecho en `alternates`.
 Medir el delta.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-tokens
+- review-reviewer: sonnet-verifier-tokens
+- review-log: approved by sonnet-verifier-tokens — Confirmed IAlternateCompactView in advise-routing.tool.ts / invoke.tool.ts narrows alternates to strategy/targetProvider/rationale/estimatedCostTier/sessionId (no invoke/prompt/scoringTrace leak); advise-routing.tool.spec.ts asserts compact alternates lack 'invoke' property.
 ### S3 — Niveles de detalle
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run tokens:gate`
 - **Files**:
     - `plugins/orchestrator-runner/src/lib/tools/advise-routing.tool.ts`
 
 `detail: compact | normal | full` en `advise_routing`, siguiendo el
 patrón ya existente de `advise_spend`.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-tokens
+- review-reviewer: sonnet-verifier-tokens
+- review-log: approved by sonnet-verifier-tokens — detail: compact|normal|full implemented in advise-routing.tool.ts and invoke.tool.ts via DetailProjections, following advise-spend precedent; spec asserts level field and payload shape per level.
 ### S4 — `scoringTrace` como recurso
 
 - **Status**: pending
@@ -148,7 +152,7 @@ de inline.
 
 ### S5 — Alinear `measureSchemaBytes()`
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run tokens:dashboard:check`
 - **Files**:
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
@@ -156,8 +160,10 @@ de inline.
 
 Medir el objeto real del cable en vez de reconstruirlo, para que deje de
 omitir `execution`.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-tokens
+- review-reviewer: sonnet-verifier-tokens
+- review-log: approved by sonnet-verifier-tokens — measureSchemaBytes() in tool-surface-runtime.service.ts now includes execution:{taskSupport:'forbidden'} to match the real wire object (see inline comment referencing AUD-B04/x00284); tokens:dashboard:check reports 'in sync'.
 ## dependency graph
 
 S1 → S2. S3 y S4 son independientes de S2 y entre sí. S5 es
