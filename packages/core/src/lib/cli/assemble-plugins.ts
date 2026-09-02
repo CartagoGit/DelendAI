@@ -567,6 +567,10 @@ const tryAssembleManagedLazy = async (input: {
 						loadedCount: pendingRegistrations.size,
 					}),
 				);
+				// …and route it to the observers too, so the
+				// error-reporting plugin can file it. Announcing on stderr
+				// tells the operator; this is what tells the maintainers.
+				reportRegisterError(asRegisterErrorInfo(failure));
 			}
 		},
 	});
