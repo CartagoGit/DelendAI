@@ -2,7 +2,7 @@
 id: d00015
 title: "Invariantes explícitos por subsistema, cada uno con su test"
 kind: docs
-status: review
+status: done
 type: proposal
 track: governance
 date: 2026-08-29
@@ -109,7 +109,7 @@ cada documento:
 
 ### S1 — `plugin-lifecycle.md` + `effects.md`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `docs/mcp-vertex/architecture/invariants/plugin-lifecycle.md` (nuevo)
     - `docs/mcp-vertex/architecture/invariants/effects.md` (nuevo)
@@ -119,11 +119,13 @@ cada documento:
       auditoría no marca ya como falsos, para que existan protegidos
       desde el día uno)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/plugins/lifecycle-invariants.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-code-worker
+- review-reviewer: sonnet-worker-docs-2
+- review-log: approved by sonnet-worker-docs-2 — Verified S1: plugin-lifecycle.md + effects.md document current (mostly CIERTO, since r00038/x00288/r00037 shipped) invariant states with real test refs; new lifecycle-invariants.spec.ts (2/2) passing, verified via bunx vitest run --project core.
 ### S2 — `adaptive-surface.md` + `external-mcp.md`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `docs/mcp-vertex/architecture/invariants/adaptive-surface.md` (nuevo,
       documenta explícitamente "visible ≠ loaded ≠ active ≠ callable"
@@ -132,10 +134,13 @@ cada documento:
     - `docs/mcp-vertex/architecture/invariants/external-mcp.md` (nuevo)
     - `packages/core/tests/src/lib/project/adaptive-surface-invariants.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/project/adaptive-surface-invariants.spec.ts`
-
+- review-state: done
+- review-implementer: claude-code-worker
+- review-reviewer: sonnet-worker-docs-2
+- review-log: approved by sonnet-worker-docs-2 — Verified S2: adaptive-surface.md + external-mcp.md written; new adaptive-surface-invariants.spec.ts (4/4) passing, verified via bunx vitest run --project core.
 ### S3 — Enlazar cada invariante roto con su proposal de fix y verificar que no hay huérfanos
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - los cuatro documentos de S1/S2 (añadir la referencia cruzada a
       `r00037` y a las propuestas de `AUD-E01`/`D01`/`D05`/`E02`)
@@ -143,7 +148,10 @@ cada documento:
       si un invariante marcado `FALSO` no referencia ningún proposal
       existente)
 - **Gate**: `bun tools/scripts/lint/invariants-link-fix.script.ts`
-
+- review-state: done
+- review-implementer: claude-code-worker
+- review-reviewer: sonnet-worker-docs-2
+- review-log: approved by sonnet-worker-docs-2 — Verified S3: every FALSO/NO-IMPLEMENTADO invariant cross-references a real proposal id; new invariants-link-fix.script.ts + spec (4/4) passing, wired into package.json/validate:run.
 ## dependency graph
 
 Independiente en su redacción, pero su valor depende de que las
