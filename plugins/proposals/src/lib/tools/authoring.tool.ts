@@ -973,6 +973,10 @@ export const buildCloseSliceRegistration = (
 							resolvedScopes: z.array(z.string()),
 							snapshotId: z.string(),
 							reason: z.string(),
+							// Present on `blocked`. Without them the caller
+							// gets one abstract sentence and no way to act.
+							blockingReasons: z.array(z.string()).optional(),
+							nextAction: z.string().optional(),
 						})
 						.optional(),
 					lockReleased: z.boolean().optional(),
@@ -1293,12 +1297,32 @@ export const buildCloseSliceRegistration = (
 					if (!isCloseSliceThrownError(rawErr)) throw rawErr;
 					const err = rawErr;
 					if (err.kind === 'validation-error') {
+						// One `kind` covers two unrelated failures: the
+						// quality probe reported errors (there IS failing
+						// output to fix), and the swarm validation gate
+						// refused outright (there is no output at all — the
+						// activity snapshot is inconsistent, or the caller
+						// is not an active actor). Answering both with
+						// "fix the failing validate output" sent agents to
+						// wait on a green validate that could never have
+						// unblocked them, with the work finished and the
+						// slice uncloseable. The blocked decision carries
+						// its own next step; use it.
+						const blocked =
+							err.validationDecision?.mode === 'blocked'
+								? err.validationDecision
+								: undefined;
 						const envelope = {
 							ok: false as const,
 							kind: 'validation-error',
+							blockerType:
+								blocked !== undefined
+									? ('swarm-validation-blocked' as const)
+									: ('quality-failed' as const),
 							error: {
 								reason: String(err.message),
 								nextAction:
+									blocked?.nextAction ??
 									'Fix the failing validate output, then retry close_slice.',
 								kind: 'validation-error',
 								output: String(err.output ?? ''),
@@ -1309,9 +1333,6 @@ export const buildCloseSliceRegistration = (
 							validationOutput: String(err.output ?? ''),
 							...(err.validationDecision !== undefined
 								? { validationDecision: err.validationDecision }
-								: {}),
-							...(err.persist !== undefined
-								? { persist: err.persist }
 								: {}),
 							...(err.persist !== undefined
 								? { persist: err.persist }
