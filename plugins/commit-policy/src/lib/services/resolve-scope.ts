@@ -27,8 +27,35 @@ import type {
 } from '../contracts/interfaces/resolved-scope.interface';
 
 /** Normalise to repo-relative POSIX form, matching `commit-driver.ts`. */
+/**
+ * Strip the markdown code-span backticks a proposal's `Files:` list
+ * almost always carries: `` `path/to/file.ts` `` is how every proposal
+ * in this repo writes a path, because that is how paths are written in
+ * prose.
+ *
+ * Without this the backticks survive into the commit scope and `git
+ * add -- '`tracked.txt`'` matches nothing, so a slice that declared a
+ * perfectly good path silently resolves to zero files. Real, observed:
+ * the `auto-work` e2e slice declares ``Files: `tracked.txt` `` and the
+ * server log of 2026-09-03 shows entries like
+ * ``SKILL.md`.`` and ``proposal-frontmatter-types.ts` (or equivalent)``
+ * reaching the resolver with their backticks intact.
+ *
+ * Only balanced, wrapping backticks are removed. A stray backtick in
+ * the middle of an entry is left alone — that entry is malformed and
+ * belongs in `unresolvedEntries`, not silently repaired.
+ */
+const stripCodeSpan = (raw: string): string => {
+	const trimmed = raw.trim();
+	return trimmed.length >= 2 &&
+		trimmed.startsWith('`') &&
+		trimmed.endsWith('`')
+		? trimmed.slice(1, -1).trim()
+		: trimmed;
+};
+
 export const normalizeRepoPath = (raw: string): string => {
-	const replaced = raw.replace(/\\/gu, '/').trim();
+	const replaced = stripCodeSpan(raw).replace(/\\/gu, '/').trim();
 	const arrow = replaced.lastIndexOf(' -> ');
 	const path = arrow >= 0 ? replaced.slice(arrow + 4).trim() : replaced;
 	return path.startsWith('./') ? path.slice(2) : path;
@@ -44,7 +71,9 @@ export const normalizeRepoPath = (raw: string): string => {
 export const classifyDeclaredEntry = (
 	raw: string,
 ): IUnresolvedScopeEntry | null => {
-	const trimmed = raw.trim();
+	// Classify the path itself, not its markdown decoration — a
+	// backticked path is a path.
+	const trimmed = stripCodeSpan(raw);
 	if (trimmed.length === 0) {
 		return { raw, reason: 'empty' };
 	}
