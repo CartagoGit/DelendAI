@@ -85,15 +85,22 @@ export default defineConfig({
 			'tools',
 		],
 		// r00418 / UX request 2026-09-02:
-		//   - `bail: 1` stops the run at the first failed test so a human
-		//     (or agent) running `bun run test` sees the failure in real
-		//     time instead of waiting for the whole 1500-test sweep. The
+		//   - `bail: 1` stops the run after the first failed test so a human
+		//     (or agent) running `bun run test` sees the failure in real time
+		//     instead of waiting for the whole 1500-test sweep. The
 		//     noise-recovery loop ("run, see only summary, run again with
 		//     `--reporter=verbose`") is gone.
+		//   - NOTE on `fileParallelism`: vitest defaults to parallel test
+		//     files. `bail` only stops NEW files from starting, so already
+		//     in-flight files still run to completion. The trade-off is
+		//     intentional — leaving parallelism on keeps CI fast and keeps
+		//     the developer feedback loop <2s on the failing file. Tests
+		//     that follow the failing file still get to run if they were
+		//     scheduled before the bail event.
 		//   - `reporters: ['verbose']` makes every test print its result
 		//     line-by-line as it executes; a failing test surfaces its
-		//     `expected/received` block on the FIRST run.
-		//   - Both can be overridden per invocation:
+		//     `expected/received` block on the FIRST run, not at the end.
+		//   - All three can be overridden per invocation:
 		//       `bun run test --bail 0 --reporter=default`
 		//     when a host wants the exhaustive summary (e.g. CI coverage
 		//     ratchet scripts that already triage failures offline).

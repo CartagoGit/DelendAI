@@ -30,11 +30,13 @@ import { buildCommitToolRegistration } from './lib/tools/commit-tool';
 import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStatusToolRegistration } from './lib/tools/status-tool';
+import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { createPushScheduler } from './lib/services/push-scheduler';
 import { createCommitPolicyEngine, type IEngineResult } from './lib/engine';
 import { createProcessedEventsStore } from './lib/processed-events';
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { buildBranchProtectionToolRegistration } from './lib/tools/branch-protection-tool';
+import { StormDetector } from './lib/services/storm-detector';
 
 const OptionsSchema = CommitPolicyOptionsSchema;
 
@@ -314,18 +316,13 @@ export default definePlugin({
 		pushScheduler.start();
 		disposables.push(() => pushScheduler.stop());
 
-		const tools = [
-			buildStatusToolRegistration({
-				namespacePrefix: ctx.namespacePrefix,
-				options: policy,
-				identityCtx,
-				branchProtectionAdapter,
-				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
-			}),
-			buildBranchProtectionToolRegistration({
-				namespacePrefix: ctx.namespacePrefix,
-				adapter: branchProtectionAdapter,
-			}),
+		// x00419 S2+S3: shared StormDetector so the host boot hook
+		// (S5) and the storms-tool see the same in-memory buckets.
+		const stormDetector = new StormDetector({
+			windowSeconds: 30,
+			threshold: 5,
+			maxSamplesPerStorm: 5,
+		});
 			buildCommitToolRegistration({
 				...sharedDriver,
 				namespacePrefix: ctx.namespacePrefix,
@@ -351,6 +348,14 @@ export default definePlugin({
 				...(intervalTimer !== undefined ? { intervalTimer } : {}),
 				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
 				onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
+			}),
+			// x00419 S3: surface the engine's stderr as a structured
+			// snapshot agents can read. The detector is shared with
+			// the host boot hook (S5) so a storm detected at boot
+			// is visible to agents calling this tool.
+			buildStormsToolRegistration({
+				namespacePrefix: ctx.namespacePrefix,
+				detector: stormDetector,
 			}),
 		];
 

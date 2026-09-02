@@ -108,8 +108,48 @@ describe('resolveCommitScope (f00417)', () => {
 			declaredFiles: ['plugins/a.ts', 'plugins/b.ts'],
 			workspaceDirty: ['plugins/a.ts'],
 		});
+		// x00419 / 2026-09-02: `files` is the canonical ∩ owned set
+		// (NOT filtered by workspaceDirty — the stage step does the
+		// staging). `foreignDirtyExcluded` is a WARN signal so the
+		// operator can spot slices whose declared paths quietly
+		// vanished from the worktree.
 		expect(scope.files).toEqual(['plugins/a.ts', 'plugins/b.ts']);
 		expect(scope.foreignDirtyExcluded).toEqual(['plugins/b.ts']);
+	});
+
+	it('x00419 regression: declared-but-unstaged files are still committable', () => {
+		// Real-world slice shape from the 2026-09-02 log storm:
+		// the agent wrote `forge-write.ts` but never `git add`'d
+		// it (so `git status --porcelain` shows `?? forge-write.ts`,
+		// which `gitDirtyFilePaths` does NOT report because it only
+		// surfaces staged entries). The slice declares it.
+		//
+		// BEFORE the fix: `files` was filtered by `workspaceDirty`,
+		// the scope became empty, engine.ts short-circuited to
+		// NO_CHANGE, and the user saw hundreds of
+		// `WORKSPACE_HAS_NO_FILES` ERR lines per session.
+		//
+		// AFTER the fix: `files` carries the declared canonical
+		// path through to the stage step, which `git add`s it and
+		// commits. `foreignDirtyExcluded` records the unstaged
+		// warning for the operator.
+		const scope = resolveCommitScope({
+			proposalId: 'x00168',
+			sliceId: 'S5',
+			declaredFiles: [
+				'plugins/forge/src/lib/services/forge-write.ts',
+				'plugins/forge/tests/src/lib/services/forge-write.spec.ts',
+			],
+			workspaceDirty: [], // nothing staged — both files are `??`
+		});
+		expect(scope.files).toEqual([
+			'plugins/forge/src/lib/services/forge-write.ts',
+			'plugins/forge/tests/src/lib/services/forge-write.spec.ts',
+		]);
+		expect(scope.foreignDirtyExcluded).toEqual([
+			'plugins/forge/src/lib/services/forge-write.ts',
+			'plugins/forge/tests/src/lib/services/forge-write.spec.ts',
+		]);
 	});
 
 	it('returns empty scope + no unresolved when declared is empty', () => {

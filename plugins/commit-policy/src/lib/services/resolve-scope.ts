@@ -134,6 +134,26 @@ export const resolveCommitScope = (
 	}
 
 	// Foreign-dirty-excluded: paths in `files` not currently dirty.
+	// x00419 / 2026-09-02 log storm regression.
+	//
+	// IMPORTANT — DO NOT filter `files` by `workspaceDirty` here. The
+	// resolver's job is to produce the canonical git-path scope from the
+	// declared entries + ownership. Whether those paths are *currently*
+	// in the workspace's `git status` output is downstream of the stage
+	// step — engine.ts stages the file FIRST (via the commit-driver's
+	// isolated index), then commits. If we filter `files` by
+	// `workspaceDirty`, unstaged declared paths (which is the COMMON case
+	// in real slices — the agent wrote the file but hasn't `git add`'d
+	// it yet) end up in `foreignDirtyExcluded`, the scope becomes empty,
+	// and engine.ts short-circuits to NO_CHANGE without ever reaching
+	// the stage step. The stage step itself, when reached, runs
+	// `gitDirtyFilePaths()` again and finds zero — emitting the
+	// `WORKSPACE_HAS_NO_FILES` ERR log storm the user saw on 2026-09-02.
+	//
+	// What `foreignDirtyExcluded` IS for: the operator wants to know
+	// which declared paths were not staged by the agent before the slice
+	// fired, so they can spot the slice that quietly lost its changes.
+	// It is a WARN signal, never a commit-scope filter.
 	const dirty = new Set(
 		(input.workspaceDirty ?? []).map((p) => normalizeRepoPath(p)),
 	);
