@@ -1280,14 +1280,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00394",
-				"title": "f00394",
-				"track": "vscode-shared-ui",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00411",
 				"title": "f00411",
 				"track": "gitlab-read-only",
@@ -1474,8 +1466,8 @@
 		],
 		"byStatus": {
 			"ready": 18,
-			"in-progress": 7,
-			"review": 1,
+			"in-progress": 6,
+			"review": 2,
 			"paused": 1,
 			"done": 712,
 			"blocked": 23,

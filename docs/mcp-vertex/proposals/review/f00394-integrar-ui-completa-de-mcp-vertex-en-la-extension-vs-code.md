@@ -2,13 +2,13 @@
 id: f00394
 title: "Integrar UI completa de MCP Vertex en la extension VS Code"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: vscode-shared-ui
 date: 2026-08-31
-last-transition-id: ec42ee8d-98e7-4fa0-8778-46bf387371e3
-last-correlation-id: ec42ee8d-98e7-4fa0-8778-46bf387371e3
-last-transition-from: ready
+last-transition-id: 719d2dfd-557b-4817-a7b1-92003b51326b
+last-correlation-id: 719d2dfd-557b-4817-a7b1-92003b51326b
+last-transition-from: in-progress
 ---
 
 # f00394 — Integrar UI completa de MCP Vertex en la extension VS Code
