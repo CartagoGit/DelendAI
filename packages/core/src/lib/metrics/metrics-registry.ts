@@ -122,6 +122,19 @@ const buildMetricCost = (
 const fallbackMetricCost = (wireEstimateBytes: number): MetricCost =>
 	buildMetricCost(wireEstimateBytes, 0);
 
+const responseContentOf = (result: unknown): unknown[] => {
+	const content =
+		result !== null && typeof result === 'object'
+			? (result as { content?: unknown }).content
+			: undefined;
+	return Array.isArray(content) ? content : [];
+};
+
+const structuredContentOf = (result: unknown): unknown =>
+	result !== null && typeof result === 'object'
+		? (result as { structuredContent?: unknown }).structuredContent
+		: undefined;
+
 const mutableCostToSnapshot = (
 	cost: IMutableMetric['cost'],
 ): IToolMetric['cost'] => ({
@@ -251,26 +264,21 @@ export const createMetricsRegistry = (): IMetricsRegistry => {
 	};
 };
 
-/** Estimate a tool result's response size (sum of text content lengths). */
-export const estimateResultBytes = (result: unknown): number => {
-	const content =
-		result !== null && typeof result === 'object'
-			? (result as { content?: unknown }).content
-			: undefined;
-	if (!Array.isArray(content)) return 0;
-	return content.reduce<number>((sum, part) => {
+/** Estimate the public responseBytes contract from text content only. */
+export const estimateResponseBytes = (result: unknown): number =>
+	responseContentOf(result).reduce<number>((sum, part) => {
 		const text = (part as { text?: unknown }).text;
 		return sum + (typeof text === 'string' ? bytesOfText(text) : 0);
 	}, 0);
-};
+
+/** Back-compat alias: response text bytes, not the full wire estimate. */
+export const estimateResultBytes = (result: unknown): number =>
+	estimateResponseBytes(result);
 
 /** Estimate the public response cost from text + structured JSON only. */
 export const estimateResultCost = (result: unknown): MetricCost => {
-	const contentTextBytes = estimateResultBytes(result);
-	const structured =
-		result !== null && typeof result === 'object'
-			? (result as { structuredContent?: unknown }).structuredContent
-			: undefined;
+	const contentTextBytes = estimateResponseBytes(result);
+	const structured = structuredContentOf(result);
 	const structuredJsonBytes =
 		structured !== undefined ? bytesOfJson(structured) : 0;
 	return buildMetricCost(contentTextBytes, structuredJsonBytes);

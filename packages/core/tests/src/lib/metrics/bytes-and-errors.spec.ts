@@ -6,6 +6,7 @@ import z from 'zod';
 import {
 	createMetricsRegistry,
 	estimateErrorCost,
+	estimateResponseBytes,
 	estimateResultBytes,
 	estimateResultCost,
 } from '@mcp-vertex/core/lib/metrics/metrics-registry';
@@ -22,6 +23,28 @@ describe('metrics bytes and error accounting (x00223)', async () => {
 				content: [{ type: 'text', text }],
 			}),
 		).toBe(Buffer.byteLength(text, 'utf8'));
+	});
+
+	it('preserves responseBytes as text-only while charging structured multibyte JSON in cost', async () => {
+		const result = toolOk({
+			message: 'hola 😀',
+			language: '日本語',
+		});
+		const expectedStructuredBytes = Buffer.byteLength(
+			JSON.stringify(result.structuredContent),
+			'utf8',
+		);
+
+		expect(estimateResponseBytes(result)).toBe(
+			Buffer.byteLength(result.content[0]?.text ?? '', 'utf8'),
+		);
+		expect(estimateResultBytes(result)).toBe(estimateResponseBytes(result));
+		expect(estimateResultCost(result)).toMatchObject({
+			contentTextBytes: estimateResponseBytes(result),
+			structuredJsonBytes: expectedStructuredBytes,
+			wireEstimateBytes:
+				estimateResponseBytes(result) + expectedStructuredBytes,
+		});
 	});
 
 	it('separates text, structured JSON and estimated token costs', async () => {
@@ -43,6 +66,26 @@ describe('metrics bytes and error accounting (x00223)', async () => {
 			Math.ceil(cost.wireEstimateBytes / 4),
 		);
 		expect(cost.estimatedTokens.actualModelTokens).toBeUndefined();
+	});
+
+	it('does not let structured-only multibyte results collapse to zero wire cost', async () => {
+		const result = {
+			structuredContent: {
+				message: 'hola 😀',
+				language: '日本語',
+			},
+		};
+		const cost = estimateResultCost(result);
+
+		expect(estimateResponseBytes(result)).toBe(0);
+		expect(cost.contentTextBytes).toBe(0);
+		expect(cost.structuredJsonBytes).toBe(
+			Buffer.byteLength(JSON.stringify(result.structuredContent), 'utf8'),
+		);
+		expect(cost.wireEstimateBytes).toBeGreaterThan(0);
+		expect(cost.estimatedTokens.estimatedTokens4B).toBe(
+			Math.ceil(cost.wireEstimateBytes / 4),
+		);
 	});
 
 	it('counts error responses and does not leak private invocation data in aggregates', async () => {

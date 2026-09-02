@@ -2,11 +2,14 @@
 id: f00330
 title: "Semántica UTF-8 real para límites de salida y métricas"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#utf-8
+last-transition-id: 064bca27-741e-4507-bd79-e00ab65b8ee8
+last-correlation-id: 064bca27-741e-4507-bd79-e00ab65b8ee8
+last-transition-from: in-progress
 ---
 
 # f00330 — Semántica UTF-8 real para límites de salida y métricas

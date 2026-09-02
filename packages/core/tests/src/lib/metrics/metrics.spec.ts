@@ -9,7 +9,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	createMetricsRegistry,
+	estimateResponseBytes,
 	estimateResultBytes,
+	estimateResultCost,
 } from '@mcp-vertex/core/lib/metrics/metrics-registry';
 import { buildMetricsToolRegistration } from '@mcp-vertex/core/lib/metrics/metrics-tool';
 import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
@@ -74,6 +76,21 @@ describe('createMetricsRegistry (M12)', async () => {
 		).toBe(7);
 		expect(estimateResultBytes({})).toBe(0);
 		expect(estimateResultBytes({ content: 'nope' })).toBe(0);
+	});
+
+	it('keeps responseBytes separate from structured-only wire cost', async () => {
+		const result = {
+			structuredContent: {
+				message: 'hola 😀',
+				language: '日本語',
+			},
+		};
+		const cost = estimateResultCost(result);
+
+		expect(estimateResponseBytes(result)).toBe(0);
+		expect(estimateResultBytes(result)).toBe(0);
+		expect(cost.structuredJsonBytes).toBeGreaterThan(0);
+		expect(cost.wireEstimateBytes).toBe(cost.structuredJsonBytes);
 	});
 });
 

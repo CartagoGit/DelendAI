@@ -2,10 +2,10 @@ import { randomUUID } from 'node:crypto';
 
 import {
 	definePlugin,
-	estimateResultBytes,
 	joinRel,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
+import { estimateResponseBytes } from '@mcp-vertex/core/lib/metrics/metrics-registry';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
@@ -402,7 +402,7 @@ export default definePlugin({
 					error,
 					startedAt,
 					endedAt,
-					responseBytes: estimateResultBytes(result ?? {}),
+					responseBytes: estimateResponseBytes(result ?? {}),
 					fallbackModel: lastModelBySession.get(sessionId),
 					baselineTokensOf,
 					costOf,
