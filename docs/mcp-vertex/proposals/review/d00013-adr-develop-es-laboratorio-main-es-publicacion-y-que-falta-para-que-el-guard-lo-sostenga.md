@@ -220,7 +220,7 @@ describe).
 - **Gate**: `bun tools/scripts/lint/proposals.script.ts` — verde;
   `bun tools/scripts/lint/check-adr-coverage.script.ts` — verde.
 - review-state: done
-- review-implementer: sonnet-worker-docs-2
+- review-implementer: claude-code-worker
 - review-reviewer: sonnet-worker-docs-2
 - review-log: ADR 0019 creado siguiendo la plantilla de 0007/0017/0018
   (Status/Date/Deciders/Context/Decision/Consequences/Trigger for
@@ -235,7 +235,7 @@ describe).
 - **Gate**: `grep -n "Require a pull request before merging" docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`
   debe mostrar la instrucción aplicada a `main`, no a `develop`.
 - review-state: done
-- review-implementer: sonnet-worker-docs-2
+- review-implementer: claude-code-worker
 - review-reviewer: sonnet-worker-docs-2
 - review-log: verificado que el documento ya NO instruía activar el
   toggle para `develop` (esa frase ya no existía en el fichero al
@@ -254,7 +254,7 @@ describe).
   secciones H2, todas canónicas) y `bun tools/scripts/lint/check-adr-coverage.script.ts`
   (verde) como los gates reales que cubren este fichero.
 - review-state: done
-- review-implementer: sonnet-worker-docs-2
+- review-implementer: claude-code-worker
 - review-reviewer: sonnet-worker-docs-2
 - review-log: enlace a ADR 0019 añadido en la sección "Architecture
   decisions", junto al enlace existente a ADR 0007. Verificado con
