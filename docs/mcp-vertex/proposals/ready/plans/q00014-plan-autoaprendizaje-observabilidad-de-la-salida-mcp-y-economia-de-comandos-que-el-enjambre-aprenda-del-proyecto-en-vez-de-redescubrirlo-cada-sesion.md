@@ -68,7 +68,7 @@ trabajo redundante.
   `auto-plugin-selector`. Los consume.
 - **NO** introduce ML ni embeddings. Es estadística sobre eventos
   propios: frecuencias, correlaciones y recencia.
-- **NO** cambia el modelo operativo de `q00013` (shared develop,
+- **NO** cambia el modelo operativo de `q00015` (shared develop,
   eventual settlement). Se apoya en él.
 
 ## Slices

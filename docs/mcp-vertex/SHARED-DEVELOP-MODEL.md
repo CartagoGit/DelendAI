@@ -6,7 +6,7 @@ title: "Shared-develop model: ACTIVE → SETTLING → STABLE"
 # Shared-develop operating model
 
 This document is the canonical description of the operating model
-that `f00417` enables and `q00013` formalises. It is binding for
+that `f00417` enables and `q00015` formalises. It is binding for
 every agent (human or AI) and every tool that operates on this
 repository. The bootstrap references it from §6 (Invariants).
 
@@ -93,10 +93,10 @@ as an **eventually consistent** batch:
 ## Where the code lives
 
 - `commit-policy/src/lib/settlement/`: settlement gate, worker
-  registry, settlement-tool. (q00013 S2)
+  registry, settlement-tool. (q00015 S2)
 - `quality-policy/src/lib/settlement-runner.ts`: full-validate
-  loop with bounded retries. (q00013 S3)
+  loop with bounded retries. (q00015 S3)
 - `proposals/src/lib/auto-work/repair-mode.ts`: repair agent that
-  emits slices for failing files. (q00013 S4)
+  emits slices for failing files. (q00015 S4)
 - `tests/e2e/eventual-settlement.spec.ts`: end-to-end cycle test.
-  (q00013 S5)
+  (q00015 S5)

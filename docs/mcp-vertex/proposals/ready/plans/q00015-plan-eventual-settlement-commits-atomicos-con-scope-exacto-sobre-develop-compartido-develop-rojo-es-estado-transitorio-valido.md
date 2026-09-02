@@ -130,6 +130,6 @@ Es la diferencia entre **eventually consistent** y **strongly consistent**: el s
 
 ## Relación con otras propuestas
 
-- `f00417` S1 introduce `positiveOwnership` desde el agent-lock store. Esa es la **infraestructura** sobre la que q00013 S2 (settlement gate) decide si acepta más commits.
-- `f00418` (retry taxonomy) provee `DEAD_LETTER` y `ESCALATE`. q00013 R1 depende de eso.
-- `r00042` (proposals-como-event-log) es ortogonal: no comparte infra con q00013, pero converge en el modelo de outbox a largo plazo.
+- `f00417` S1 introduce `positiveOwnership` desde el agent-lock store. Esa es la **infraestructura** sobre la que q00015 S2 (settlement gate) decide si acepta más commits.
+- `f00418` (retry taxonomy) provee `DEAD_LETTER` y `ESCALATE`. q00015 R1 depende de eso.
+- `r00042` (proposals-como-event-log) es ortogonal: no comparte infra con q00015, pero converge en el modelo de outbox a largo plazo.
