@@ -2,7 +2,7 @@
 id: d00010
 title: "`vertex://code-map` resource documentado"
 kind: docs
-status: ready
+status: in-progress
 type: proposal
 track: docs
 date: 2026-08-25
@@ -16,6 +16,9 @@ related:
     - q00006
     - f00190 # AGENT.md por package/plugin (fuente del mapa)
     - r00027 # inventario de core/public
+last-transition-id: efdff471-24c1-41c9-be6c-589ac2b12dff
+last-correlation-id: efdff471-24c1-41c9-be6c-589ac2b12dff
+last-transition-from: ready
 ---
 
 # d00010 — `vertex://code-map` resource documentado
