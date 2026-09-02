@@ -1,5 +1,7 @@
 import type { ILockEntry, ILockFile } from '../locks/agent-lock-engine';
 
+import { isLockEntryStale as isSharedLockEntryStale } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
+
 import { readJsonOrNull } from '../proposals/index-reader';
 
 export interface IPurgeStaleLocksOptions {
@@ -33,15 +35,17 @@ const resolveNowMs = (options: IPurgeStaleLocksOptions): number => {
 	return Number.isNaN(nowMs) ? Date.now() : nowMs;
 };
 
+/**
+ * Delegates to the shared rule in core. More than one plugin reads this
+ * lock file — `notification`'s `await_lock` waits on it — and each
+ * reader having its own idea of "held" made the engine and the waiter
+ * disagree exactly when it mattered.
+ */
 export const isLockEntryStale = (
 	entry: Pick<ILockEntry, 'last_seen'>,
 	thresholdMinutes: number,
 	nowMs = Date.now(),
-): boolean => {
-	const lastSeenMs = new Date(entry.last_seen).getTime();
-	if (Number.isNaN(lastSeenMs)) return true;
-	return nowMs - lastSeenMs > thresholdMinutes * 60_000;
-};
+): boolean => isSharedLockEntryStale(entry, thresholdMinutes, nowMs);
 
 export const summarizeStaleLocks = (
 	lock: Pick<ILockFile, 'in_flight' | 'stale_after_minutes'>,

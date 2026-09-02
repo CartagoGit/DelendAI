@@ -1,5 +1,7 @@
 import { hostname } from 'node:os';
 
+import { isLockEntryOrphaned as isSharedLockEntryOrphaned } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
+
 import type { ILockEntry } from './agent-lock-engine';
 
 /**
@@ -67,15 +69,11 @@ export const defaultLivenessProbe = (): ILockLivenessProbe => ({
 export const isLockEntryOrphaned = (
 	entry: Pick<ILockEntry, 'host' | 'pid'>,
 	probe: ILockLivenessProbe = defaultLivenessProbe(),
-): boolean => {
-	// Another machine's claim: this host's process table says nothing
-	// about it, and guessing would evict a healthy remote agent.
-	if (entry.host === undefined || entry.host !== probe.host) return false;
-	// Written before pids were recorded, or malformed. Time is the only
-	// evidence available.
-	if (typeof entry.pid !== 'number' || !Number.isInteger(entry.pid)) {
-		return false;
-	}
-	if (entry.pid <= 0) return false;
-	return !probe.isProcessAlive(entry.pid);
-};
+): boolean =>
+	// Delegates to the shared rule in core so every reader of the lock
+	// file — the engine here, `notification`'s `await_lock` waiter —
+	// answers "is this still held?" identically.
+	isSharedLockEntryOrphaned(entry, {
+		host: probe.host,
+		isProcessAlive: probe.isProcessAlive,
+	});
