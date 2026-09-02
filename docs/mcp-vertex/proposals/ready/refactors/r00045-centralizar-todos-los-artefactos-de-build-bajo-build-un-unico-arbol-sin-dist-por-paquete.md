@@ -46,7 +46,7 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "bun run build escribe `build/plugins/proposals/<version>/{index,public/index}.{js,d.ts}`"
   - "bun run build es idempotente: una segunda corrida sin cambios no toca timestamps ni genera bytes"
   - "bun run build.script.ts build packages/core sale con exit 0 y el árbol bajo `build/packages/core/<version>/` contiene `index.js`, `public/index.js`, `contracts/index.js`, `runtime/index.js`, `plugin/index.js`, `node/index.js`, `version.js` y sus `.d.ts`"
-  - "Las 57 entradas `package.json#main` con valor `./dist/...` se reducen a 0 (verificable con `rg '"\\./dist' packages plugins extensions apps -l`)"
+  - "**Superseded by the S2 correction (2026-09-01), kept for history:** this bullet originally read '57 `package.json#main` entries move off `./dist/...`'. That's wrong per the Goal's design note — `exports` cannot point outside the package directory at `../build`, so manifests correctly KEEP `./dist/...`; see the canonical `## acceptance` section below and S2's correction note."
   - ".gitignore deja de ignorar `dist/` raíz y `packages/*/dist/`, `plugins/*/dist/` (siguen ignorados por la nueva entrada `/build/`)"
 
 ### S2 — staging de publicación materializa `dist/` desde `build/` (manifests se quedan en `./dist/...`)
