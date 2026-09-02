@@ -55,6 +55,10 @@ import {
 	createManagedLazyRuntime,
 	validateManagedLazyConfiguration,
 } from '../plugins/managed-lazy-runtime';
+import {
+	announceManagedLazyDemotion,
+	buildManagedLazyDemotionNotice,
+} from '../plugins/managed-lazy-demotion';
 import { disposeLoadedPlugins } from '../plugins/load-plugins-runtime.helper';
 import type { IToolSurfaceLazyBinding } from '../contracts/interfaces/tool-surface.interface';
 
@@ -304,7 +308,22 @@ const tryAssembleManagedLazy = async (input: {
 	)
 		return undefined;
 	const ids = input.effectivePlugins.map(lazyPluginIdFor);
-	if (ids.some((id): id is undefined => id === undefined)) return undefined;
+	if (ids.some((id): id is undefined => id === undefined)) {
+		// All-or-nothing by construction: the runtime routes tool calls
+		// through the generated index, so a plugin missing from it would
+		// own tools nobody could activate. Falling back to eager is the
+		// right degradation — but doing it silently made "someone added a
+		// plugin and did not regenerate the catalog" look like the server
+		// merely getting slower.
+		announceManagedLazyDemotion(
+			buildManagedLazyDemotionNotice({
+				effectivePlugins: input.effectivePlugins,
+				isIndexed: (specifier) =>
+					lazyPluginIdFor(specifier) !== undefined,
+			}),
+		);
+		return undefined;
+	}
 	const pluginIds = ids as string[];
 	const namespaces = new Map(
 		pluginIds.map((id) => [
