@@ -30,7 +30,7 @@ La propuesta actual no describe trabajo real. El titulo es generico, el goal que
 ### S1 — Recuperar evidencia del item migrado
 
 - **Status**: pending
-- **Files**: `ready/feats/f00385-migrated-work-item-f00385.md`
+- **Files**: `ready/feats/f00385-recuperar-o-retirar-el-work-item-migrado-f00385.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 - acceptance:
   - "Existe una fuente verificable del item 25047 fuera de este placeholder."
@@ -41,7 +41,7 @@ La propuesta actual no describe trabajo real. El titulo es generico, el goal que
 
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `ready/feats/f00385-migrated-work-item-f00385.md`
+- **Files**: `ready/feats/f00385-recuperar-o-retirar-el-work-item-migrado-f00385.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 - acceptance:
   - "Si no aparece una fuente verificable, la propuesta deja explicitamente documentado por que es irrecuperable."
