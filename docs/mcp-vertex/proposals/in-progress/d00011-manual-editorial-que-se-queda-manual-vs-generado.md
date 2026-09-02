@@ -2,7 +2,7 @@
 id: d00011
 title: "Manual editorial: qué se queda manual vs generado"
 kind: docs
-status: ready
+status: in-progress
 type: proposal
 track: docs
 date: 2026-08-25
@@ -18,6 +18,9 @@ related:
     - f00190 # AGENT.md por package/plugin
     - d00009 # capability matrix
     - d00010 # vertex://code-map
+last-transition-id: ca9949e1-e377-4b61-af62-bc2c78f67309
+last-correlation-id: ca9949e1-e377-4b61-af62-bc2c78f67309
+last-transition-from: ready
 ---
 
 # d00011 — Manual editorial: qué se queda manual vs generado
