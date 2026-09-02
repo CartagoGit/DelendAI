@@ -39,11 +39,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- confirmed commit d98e05281 (b00236, retire internalOnly config surface) is an ancestor of develop HEAD; grep for 'internalOnly' in plugins/error-reporting/src/lib/contracts/constants/options.constant.ts returns no matches, confirming the surface was removed. Acceptance genuinely met.
 
 ## acceptance
 
@@ -58,11 +54,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- confirmed commit d98e05281 (b00236, retire internalOnly config surface) is an ancestor of develop HEAD; grep for 'internalOnly' in plugins/error-reporting/src/lib/contracts/constants/options.constant.ts returns no matches, confirming the surface was removed. Acceptance genuinely met.
 
 ### Verified 2026-09-01
 

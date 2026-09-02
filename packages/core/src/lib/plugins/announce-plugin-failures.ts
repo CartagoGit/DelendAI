@@ -57,11 +57,24 @@ export const buildPluginFailureAnnouncement = (input: {
 	if (lines.length === 0) {
 		return { lines: [], failedCount: 0 };
 	}
+	const failedCount = lines.length;
+	// Nothing loaded at all is a different situation from one degraded
+	// plugin, and it needs different advice. It almost always means the
+	// workspace itself is not ready — a fresh git worktree or a checkout
+	// in another project, with no `node_modules` and no build output — so
+	// every `@mcp-vertex/*` specifier fails to resolve at once. Telling
+	// that reader "do not retry" is useless; telling them to install and
+	// build is the actual fix, and saying it here is what stops an agent
+	// from spelunking through a cascade of unrelated resolution errors.
 	lines.push(
-		`[mcp-vertex] ${lines.length} plugin(s) are unavailable; the server started anyway with ${input.loadedCount} working plugin(s). ` +
-			'Their tools are absent, not broken — do not retry them, and do not treat the gap as work to do.',
+		input.loadedCount === 0
+			? `[mcp-vertex] ${failedCount} plugin(s) failed and NONE loaded. That usually means this workspace is not set up ` +
+					'(a fresh worktree or another project): run `bun install` and `bun run build` here, then retry. ' +
+					'The server is up but has no plugin tools.'
+			: `[mcp-vertex] ${failedCount} plugin(s) are unavailable; the server started anyway with ${input.loadedCount} working plugin(s). ` +
+					'Their tools are absent, not broken — do not retry them, and do not treat the gap as work to do.',
 	);
-	return { lines, failedCount: lines.length - 1 };
+	return { lines, failedCount };
 };
 
 /**

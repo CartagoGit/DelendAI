@@ -66,6 +66,28 @@ describe('buildPluginFailureAnnouncement', () => {
 		expect(closing).toContain('do not retry');
 	});
 
+	it('tells a fresh worktree how to fix itself when NOTHING loaded', () => {
+		// Every `@mcp-vertex/*` specifier failing at once almost always
+		// means the workspace is not set up — a new git worktree or a
+		// checkout in another project, with no node_modules and no build
+		// output. "Do not retry" is useless advice there; install+build is
+		// the actual fix, and saying so is what stops an agent spelunking
+		// through a cascade of unrelated resolution errors.
+		const announcement = buildPluginFailureAnnouncement({
+			loadErrors: [
+				{ specifier: 'docs', message: 'cannot find module' },
+				{ specifier: 'rules', message: 'cannot find module' },
+			],
+			registerErrors: [],
+			loadedCount: 0,
+		});
+		const closing = announcement.lines.at(-1) ?? '';
+		expect(closing).toContain('NONE loaded');
+		expect(closing).toContain('bun install');
+		expect(closing).toContain('bun run build');
+		expect(announcement.failedCount).toBe(2);
+	});
+
 	it('counts load and register failures together', () => {
 		const announcement = buildPluginFailureAnnouncement({
 			loadErrors: [{ specifier: 'a', message: 'x' }],

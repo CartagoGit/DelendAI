@@ -39,11 +39,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- same 17/17 green run as f00365 covers the 'never two simultaneous holders' fast-check property tests in with-file-mutex.property.spec.ts; confirmed commit 7bb6d3513 (x00219) is an ancestor of develop HEAD. Acceptance genuinely met.
 
 ## acceptance
 
@@ -58,11 +54,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- same 17/17 green run as f00365 covers the 'never two simultaneous holders' fast-check property tests in with-file-mutex.property.spec.ts; confirmed commit 7bb6d3513 (x00219) is an ancestor of develop HEAD. Acceptance genuinely met.
 
 ### Verified 2026-09-01
 

@@ -39,11 +39,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- independently ran 'bun run tokens:gate'; live measurement: [vertex] 197 tools, 262,834 B tools/list (warning 320,000 / hard 384,000) => ok, an explicit vertex-specific ceiling distinct from swarm/lean; confirmed commit 71fb21cf5 is an ancestor of develop HEAD. Acceptance genuinely met.
 
 ## acceptance
 
@@ -58,11 +54,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- independently ran 'bun run tokens:gate'; live measurement: [vertex] 197 tools, 262,834 B tools/list (warning 320,000 / hard 384,000) => ok, an explicit vertex-specific ceiling distinct from swarm/lean; confirmed commit 71fb21cf5 is an ancestor of develop HEAD. Acceptance genuinely met.
 
 ### Verified 2026-09-01
 

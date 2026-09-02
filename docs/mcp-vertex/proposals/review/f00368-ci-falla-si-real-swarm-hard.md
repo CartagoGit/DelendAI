@@ -39,11 +39,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- independently ran 'bun run tokens:ceiling-ratchet' -> '54 ceiling(s) checked, no undocumented raise'; confirmed tokens:gate and tokens:ceiling-ratchet are both wired into package.json's validate:run (which gates CI). Acceptance genuinely met.
 
 ## acceptance
 
@@ -58,11 +54,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- independently ran 'bun run tokens:ceiling-ratchet' -> '54 ceiling(s) checked, no undocumented raise'; confirmed tokens:gate and tokens:ceiling-ratchet are both wired into package.json's validate:run (which gates CI). Acceptance genuinely met.
 
 ### Verified 2026-09-01
 

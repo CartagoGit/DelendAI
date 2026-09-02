@@ -39,11 +39,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- independently ran 'bun run tokens:gate'; live measurement: proposals plugin measures 50,347 B, under the governed marginalPluginHard=80,000 B ceiling in packages/core/src/lib/contracts/constants/token-budgets.constant.ts (lines ~285-292); confirmed commit 71fb21cf5 (x00283) is an ancestor of develop HEAD. Justified-branch acceptance genuinely met.
 
 ## acceptance
 
@@ -58,11 +54,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-verifier-11 -- independently ran 'bun run tokens:gate'; live measurement: proposals plugin measures 50,347 B, under the governed marginalPluginHard=80,000 B ceiling in packages/core/src/lib/contracts/constants/token-budgets.constant.ts (lines ~285-292); confirmed commit 71fb21cf5 (x00283) is an ancestor of develop HEAD. Justified-branch acceptance genuinely met.
 
 ### Verified 2026-09-01
 
