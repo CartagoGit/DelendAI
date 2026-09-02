@@ -2,13 +2,13 @@
 id: x00418
 title: "Completar fixture de protección de ramas"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: quality
 date: 2026-09-02
-last-transition-id: 983513b0-927a-41de-9481-6cb7ccf4ef2f
-last-correlation-id: 983513b0-927a-41de-9481-6cb7ccf4ef2f
-last-transition-from: ready
+last-transition-id: 214ea54d-6977-4ec3-8afe-64ee4598263f
+last-correlation-id: 214ea54d-6977-4ec3-8afe-64ee4598263f
+last-transition-from: in-progress
 ---
 
 # x00418 — Completar fixture de protección de ramas

@@ -1462,28 +1462,12 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
-			},
-			{
-				"id": "x00417",
-				"title": "x00417",
-				"track": "quality",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00418",
-				"title": "x00418",
-				"track": "quality",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
 			"ready": 14,
-			"in-progress": 12,
-			"review": 2,
+			"in-progress": 10,
+			"review": 4,
 			"paused": 1,
 			"done": 712,
 			"blocked": 23,
