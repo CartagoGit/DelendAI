@@ -17,9 +17,27 @@ import plugin from '@mcp-vertex/notification';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 const lock = (
-	entries: Array<{ task_id: string; agent?: string; ownership?: string[] }>,
+	entries: Array<{
+		task_id: string;
+		agent?: string;
+		ownership?: string[];
+		last_seen?: string;
+		host?: string;
+		pid?: number;
+	}>,
 ) =>
-	JSON.stringify({ version: 1, stale_after_minutes: 10, in_flight: entries });
+	JSON.stringify({
+		version: 1,
+		stale_after_minutes: 10,
+		// A real entry always carries `last_seen` — the engine writes it on
+		// every claim and heartbeat — and an entry that cannot say when it
+		// was last alive is not treated as held by anyone. Default to
+		// "just now" so each test states only what it is actually about.
+		in_flight: entries.map((entry) => ({
+			last_seen: new Date().toISOString(),
+			...entry,
+		})),
+	});
 
 describe('lock-release watcher [N14]', async () => {
 	let dir = '';
