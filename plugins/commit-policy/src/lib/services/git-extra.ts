@@ -76,6 +76,26 @@ export const gitDirtyFileCount = async (run: IGitRunner): Promise<number> => {
  *
  * Returns `[]` when git is not a repo or `status` fails.
  */
+/**
+ * Paths that exist only while some other process is mid-write.
+ *
+ * `withFileMutex` creates a `<file>.mutex` sibling for the duration of a
+ * write and removes it afterwards. A snapshot commit that happens to run
+ * in that window sees the mutex as a dirty untracked file, stages it,
+ * and by the time `git add` runs it is gone — the whole commit then
+ * fails with `pathspec '...mutex' did not match any files`, so a real
+ * batch of finished work is lost to a file that was never meant to be
+ * committed. Observed live in this repo.
+ *
+ * Filtering here rather than at the call sites because every consumer of
+ * "what is dirty" wants the same answer: transient coordination files
+ * are not work.
+ */
+const TRANSIENT_PATH_PATTERN = /(^|\/)\.git\/|\.mutex$|\.tmp-[^/]*$|\.lock$/u;
+
+export const isTransientWorkspacePath = (path: string): boolean =>
+	TRANSIENT_PATH_PATTERN.test(path);
+
 export const gitDirtyFilePaths = async (
 	run: IGitRunner,
 ): Promise<readonly string[]> => {
@@ -105,7 +125,7 @@ export const gitDirtyFilePaths = async (
 			if (path.length > 0) paths.push(path);
 		}
 	}
-	return paths;
+	return paths.filter((path) => !isTransientWorkspacePath(path));
 };
 
 /**
