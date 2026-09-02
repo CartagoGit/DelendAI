@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-31T21:30:02.436Z",
+	"generatedAt": "2026-09-02T01:21:12.948Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -161,7 +161,9 @@
 				"filesystem-read",
 				"process"
 			],
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -263,7 +265,9 @@
 				"browser",
 				"network"
 			],
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -293,7 +297,9 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -828,7 +834,9 @@
 				"network",
 				"process"
 			],
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -1417,7 +1425,9 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -3521,7 +3531,9 @@
 			],
 			"maturity": "experimental",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"capabilities": [
 				"audit-orchestration",
 				"subagent-dispatch"
@@ -3604,7 +3616,9 @@
 			],
 			"maturity": "stable",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"capabilities": [
 				"browser",
 				"automation"
@@ -3629,7 +3643,9 @@
 			],
 			"maturity": "stable",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"capabilities": [
 				"cache",
 				"lifecycle"
@@ -3992,7 +4008,9 @@
 			],
 			"maturity": "stable",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"capabilities": [
 				"external-mcps",
 				"composition"
@@ -4340,7 +4358,9 @@
 			],
 			"maturity": "stable",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"full"
+			],
 			"capabilities": [
 				"observability"
 			],
@@ -6178,8 +6198,8 @@
 		{
 			"pluginId": "audit-orchestrator",
 			"presetId": "full",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -6367,8 +6387,8 @@
 		{
 			"pluginId": "browser",
 			"presetId": "full",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -6430,8 +6450,8 @@
 		{
 			"pluginId": "cache",
 			"presetId": "full",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -7249,8 +7269,8 @@
 		{
 			"pluginId": "external-mcps",
 			"presetId": "full",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -8068,8 +8088,8 @@
 		{
 			"pluginId": "observability",
 			"presetId": "full",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{

@@ -127,7 +127,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "experimental",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"full"
+		],
 		"capabilities": [
 			"audit-orchestration",
 			"subagent-dispatch"
@@ -210,7 +212,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "stable",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"full"
+		],
 		"capabilities": [
 			"browser",
 			"automation"
@@ -235,7 +239,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "stable",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"full"
+		],
 		"capabilities": [
 			"cache",
 			"lifecycle"
@@ -598,7 +604,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "stable",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"full"
+		],
 		"capabilities": [
 			"external-mcps",
 			"composition"
@@ -946,7 +954,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "stable",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"full"
+		],
 		"capabilities": [
 			"observability"
 		],

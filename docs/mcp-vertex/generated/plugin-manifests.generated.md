@@ -8,11 +8,11 @@
 | agent-orchestrator | @mcp-vertex/agent-orchestrator | public | experimental | standard, swarm, full, vertex |
 | api | @mcp-vertex/api | public | stable | full |
 | audit | @mcp-vertex/audit | public | stable | vertex |
-| audit-orchestrator | @mcp-vertex/audit-orchestrator | public | experimental |  |
+| audit-orchestrator | @mcp-vertex/audit-orchestrator | public | experimental | full |
 | auto-agent-selector | @mcp-vertex/auto-agent-selector | public | stable | standard, swarm, full, vertex |
 | auto-plugin-selector | @mcp-vertex/auto-plugin-selector | public | stable | vertex |
-| browser | @mcp-vertex/browser | public | stable |  |
-| cache | @mcp-vertex/cache | public | stable |  |
+| browser | @mcp-vertex/browser | public | stable | full |
+| cache | @mcp-vertex/cache | public | stable | full |
 | commit-policy | @mcp-vertex/commit-policy | public | experimental | vertex |
 | completion | @mcp-vertex/completion | public | stable | swarm, full, vertex |
 | container | @mcp-vertex/container | public | stable | standard, swarm, full, vertex, web-app, backend-api |
@@ -24,7 +24,7 @@
 | docs | @mcp-vertex/docs | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | env | @mcp-vertex/env | public | stable | standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | error-reporting | @mcp-vertex/error-reporting | public | stable | standard, swarm, full, vertex |
-| external-mcps | @mcp-vertex/external-mcps | public | stable |  |
+| external-mcps | @mcp-vertex/external-mcps | public | stable | full |
 | forge | @mcp-vertex/forge | public | stable | swarm, full, vertex |
 | git | @mcp-vertex/git | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | github | @mcp-vertex/github | public | experimental | full |
@@ -36,7 +36,7 @@
 | logs | @mcp-vertex/logs | public | stable | swarm, full, vertex |
 | memory | @mcp-vertex/memory | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | notification | @mcp-vertex/notification | public | stable | swarm, full, vertex |
-| observability | @mcp-vertex/observability | public | stable |  |
+| observability | @mcp-vertex/observability | public | stable | full |
 | orchestrator-runner | @mcp-vertex/orchestrator-runner | public | stable | vertex |
 | perf | @mcp-vertex/perf | public | stable | vertex, cli-tool |
 | project-health | @mcp-vertex/project-health | public | experimental | vertex |
@@ -225,7 +225,7 @@
 | audit-orchestrator | lean | no | no | yes |
 | audit-orchestrator | standard | no | no | yes |
 | audit-orchestrator | swarm | no | no | yes |
-| audit-orchestrator | full | no | no | yes |
+| audit-orchestrator | full | yes | yes | yes |
 | audit-orchestrator | vertex | no | no | yes |
 | audit-orchestrator | web-app | no | no | yes |
 | audit-orchestrator | backend-api | no | no | yes |
@@ -252,7 +252,7 @@
 | browser | lean | no | no | yes |
 | browser | standard | no | no | yes |
 | browser | swarm | no | no | yes |
-| browser | full | no | no | yes |
+| browser | full | yes | yes | yes |
 | browser | vertex | no | no | yes |
 | browser | web-app | no | no | yes |
 | browser | backend-api | no | no | yes |
@@ -261,7 +261,7 @@
 | cache | lean | no | no | yes |
 | cache | standard | no | no | yes |
 | cache | swarm | no | no | yes |
-| cache | full | no | no | yes |
+| cache | full | yes | yes | yes |
 | cache | vertex | no | no | yes |
 | cache | web-app | no | no | yes |
 | cache | backend-api | no | no | yes |
@@ -378,7 +378,7 @@
 | external-mcps | lean | no | no | yes |
 | external-mcps | standard | no | no | yes |
 | external-mcps | swarm | no | no | yes |
-| external-mcps | full | no | no | yes |
+| external-mcps | full | yes | yes | yes |
 | external-mcps | vertex | no | no | yes |
 | external-mcps | web-app | no | no | yes |
 | external-mcps | backend-api | no | no | yes |
@@ -495,7 +495,7 @@
 | observability | lean | no | no | yes |
 | observability | standard | no | no | yes |
 | observability | swarm | no | no | yes |
-| observability | full | no | no | yes |
+| observability | full | yes | yes | yes |
 | observability | vertex | no | no | yes |
 | observability | web-app | no | no | yes |
 | observability | backend-api | no | no | yes |
