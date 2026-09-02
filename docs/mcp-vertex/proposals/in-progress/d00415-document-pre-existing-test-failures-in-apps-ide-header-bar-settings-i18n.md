@@ -75,24 +75,6 @@ release can proceed.
       failures and the i18n gap no longer reproduce on `develop` (see closing note); the doc-only
       catalogue is the full remaining scope of this proposal.
 
-## Closing note (2026-09-02)
-
-Re-ran the exact reproduction from this proposal on current `develop`:
-
-```
-VITE_CONFIG_NATIVE_IGNORE_WARNING=true bunx vitest run \
-  tests/components/header-bar.spec.ts tests/settings/render-settings.spec.ts \
-  --reporter=verbose --maxWorkers=1
-```
-
-Result: **9 passed | 0 failed** (was 3 failed | 6 passed when this proposal was written).
-`bun run --cwd apps/web check:i18n` also now reports complete coverage (was reporting missing
-Spanish keys). `packages/ui-extension/src/components/header-bar.ts` was touched incidentally by
-`f00395` slice S3 (commit `9d6c16704`, 2026-08-31), which appears to have fixed F1/F2 as a side
-effect of unrelated dashboard-branding work; the i18n dictionaries were completed by a separate,
-untracked commit around the same window. No S2/S3 follow-up proposal is needed — there is nothing
-left to fix. Retiring S2/S3 in place rather than opening dead proposals for already-fixed bugs.
-
 ## Notes
 
 ### Pre-existing failures (reproduce on `origin/develop`)
@@ -158,3 +140,22 @@ under `apps/shared/src/i18n/langs/<lang>.ts` — is missing translations for
 several keys that the extension surfaces in its status bar, logs tab, and
 settings sections. The same dictionary files are involved in F3, so a single
 l10n slice can clear both.
+
+
+### Closing note (2026-09-02)
+
+Re-ran the exact reproduction from this proposal on current `develop`:
+
+```
+VITE_CONFIG_NATIVE_IGNORE_WARNING=true bunx vitest run \
+  tests/components/header-bar.spec.ts tests/settings/render-settings.spec.ts \
+  --reporter=verbose --maxWorkers=1
+```
+
+Result: **9 passed | 0 failed** (was 3 failed | 6 passed when this proposal was written).
+`bun run --cwd apps/web check:i18n` also now reports complete coverage (was reporting missing
+Spanish keys). `packages/ui-extension/src/components/header-bar.ts` was touched incidentally by
+`f00395` slice S3 (commit `9d6c16704`, 2026-08-31), which appears to have fixed F1/F2 as a side
+effect of unrelated dashboard-branding work; the i18n dictionaries were completed by a separate,
+untracked commit around the same window. No S2/S3 follow-up proposal is needed — there is nothing
+left to fix. Retiring S2/S3 in place rather than opening dead proposals for already-fixed bugs.

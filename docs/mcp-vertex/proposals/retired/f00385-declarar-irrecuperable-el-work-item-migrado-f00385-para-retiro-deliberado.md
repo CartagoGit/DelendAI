@@ -28,13 +28,6 @@ La migracion produjo un registro sin especificacion tecnica real. La referencia 
 - Cambiar el estado de la propuesta en este documento; el siguiente paso es un retiro deliberado por transicion separada.
 - Conservar texto placeholder o metadatos de revision migratorios que aparenten una verificacion inexistente.
 
-## Evidence
-
-- El working tree actual solo contiene referencias textuales a `25047` y `f00385` en esta propuesta y en `docs/mcp-vertex/agent-catalog.generated.json`; no aparece ninguna especificacion fuente adicional.
-- El archivo historico `docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md` existio en la historia git, incluyendo el commit `1fb55f19c`, pero `git show 1fb55f19c:docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md | rg -n "25047|item-25047|f00385"` devolvio cero coincidencias.
-- Las copias locales permitidas en los worktrees de origen y promoción sólo contienen el texto genérico del item migrado y anotaciones de revisión heredadas; no agregan alcance técnico recuperable.
-- Una version historica de la propuesta migrada en git ya registraba el mismo hallazgo: el ancla `#item-25047` no correspondia a ningun heading identificable y el audit historico no tenia coincidencias para `25047` ni `item-25047`.
-
 ## Slices
 
 ### S1 — Dejar la propuesta lista para retiro deliberado
@@ -61,3 +54,11 @@ La migracion produjo un registro sin especificacion tecnica real. La referencia 
 
 - La referencia `migrated-from` se conserva solo como rastro historico de la migracion defectuosa; no constituye una fuente de alcance.
 - Esta reescritura no cambia el estado porque el encargo fue documentar la evidencia y eliminar ambiguedad; el retiro debe ejecutarse de forma deliberada en un paso posterior de workflow.
+
+
+### Evidence
+
+- El working tree actual solo contiene referencias textuales a `25047` y `f00385` en esta propuesta y en `docs/mcp-vertex/agent-catalog.generated.json`; no aparece ninguna especificacion fuente adicional.
+- El archivo historico `docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md` existio en la historia git, incluyendo el commit `1fb55f19c`, pero `git show 1fb55f19c:docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md | rg -n "25047|item-25047|f00385"` devolvio cero coincidencias.
+- Las copias locales permitidas en los worktrees de origen y promoción sólo contienen el texto genérico del item migrado y anotaciones de revisión heredadas; no agregan alcance técnico recuperable.
+- Una version historica de la propuesta migrada en git ya registraba el mismo hallazgo: el ancla `#item-25047` no correspondia a ningun heading identificable y el audit historico no tenia coincidencias para `25047` ni `item-25047`.
