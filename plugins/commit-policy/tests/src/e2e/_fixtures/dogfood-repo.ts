@@ -42,10 +42,8 @@ let activeConfigDir: string | undefined;
 let previousConfigGlobal: string | undefined;
 let hadConfigGlobal = false;
 
-export const git = (
-	cwd: string,
-	...args: readonly string[]
-): ReturnType<typeof execFileAsync> => execFileAsync('git', [...args], { cwd });
+export const git = (cwd: string, ...args: readonly string[]) =>
+	execFileAsync('git', [...args], { cwd });
 
 export interface IDogfoodRepo {
 	workspace: string;
