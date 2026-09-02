@@ -2,15 +2,15 @@
 id: f00378
 title: "permissions generated."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#permissions-generated
 shipped-in: ["82c54bcc"]
-last-transition-id: b87395e7-18a2-4dc3-a7e9-897f2090624c
-last-correlation-id: b87395e7-18a2-4dc3-a7e9-897f2090624c
-last-transition-from: in-progress
+last-transition-id: 9c89a38b-ca4b-4d70-8228-1afb76ea1e32
+last-correlation-id: 9c89a38b-ca4b-4d70-8228-1afb76ea1e32
+last-transition-from: review
 ---
 
 # f00378 — permissions generated.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00378-permissions-generated.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00378-permissions-generated.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
