@@ -932,7 +932,7 @@ describe('runCommitDriver', () => {
 			expect(commitIndex).toBeGreaterThan(assertSubsetIndex);
 		});
 
-		it('isolated-index guard: never calls commit-tree before the assertSubset read (diff --cached), even on the real repo', async () => {
+		it('isolated-index guard: the real (non-isolated) runner never sees a raw commit primitive', async () => {
 			await withTempRepo(async ({ repoDir, git }) => {
 				const commands: string[][] = [];
 				const spiedRun: IGitRunner = async (args) => {
@@ -954,18 +954,16 @@ describe('runCommitDriver', () => {
 				});
 				expect(result.committed).toBe(true);
 
-				// The isolated index lives under its own env (GIT_INDEX_FILE),
-				// invisible to `spiedRun`; only the real-index calls the
-				// driver makes through `args.run` are observable here —
-				// which is exactly the surface a bypass would have to use.
+				// `commit-tree`/`update-ref` run inside the isolated env
+				// (its own GIT_INDEX_FILE), invisible to `spiedRun` — this
+				// asserts the complementary half of the invariant: nothing
+				// in the driver ever calls a raw `commit`/`commit-tree`/
+				// `update-ref` through the shared, real-index runner,
+				// which is what `preserveRealIndexAfterIsolatedCommit`
+				// and the pre-commit `rev-parse HEAD` read use instead.
 				const verbs = commands.map((command) => command[0]);
-				const addIndex = verbs.indexOf('add');
-				const commitTreeIndex = verbs.indexOf('rev-parse');
-				expect(addIndex).toBeGreaterThanOrEqual(0);
-				// `rev-parse HEAD` (headBefore) always precedes `add`, and
-				// no `commit`/`commit-tree`/`update-ref` primitive is ever
-				// issued through the real, non-isolated runner.
-				expect(commitTreeIndex).toBeGreaterThanOrEqual(0);
+				expect(verbs).toContain('rev-parse');
+				expect(verbs).toContain('add');
 				expect(verbs).not.toContain('commit');
 				expect(verbs).not.toContain('commit-tree');
 				expect(verbs).not.toContain('update-ref');
