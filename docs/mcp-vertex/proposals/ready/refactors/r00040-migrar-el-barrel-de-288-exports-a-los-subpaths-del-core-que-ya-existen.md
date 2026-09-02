@@ -179,6 +179,42 @@ real).
 - El barrel raíz sigue funcionando para todo consumidor existente
   (ningún import roto) porque re-exporta desde los subpaths.
 
+## Notes
+
+### 2026-09-02 — S1 verified genuinely done; S2/S3 not attempted
+
+Re-ran the S1 artifacts against the current barrel (315 export
+statements, 947 named exports) rather than trusting their presence:
+
+- `tools/scripts/report/core-public-surface-report.script.ts` runs and
+  really parses the barrel + cross-references which exports are
+  re-exported from `../contracts`, `../plugin`, `../runtime`, `../node`
+  vs. sourced directly from `../lib/*` — it is not a naming-heuristic
+  stub. Output: `contracts: 70, plugin: 4, runtime-kept-in-public: 6,
+  node-shim: 1, direct-public: 873`. Every export lands in one of these
+  buckets (none silently dropped).
+- `packages/core/tests/src/public/surface-classification.spec.ts`
+  passes (4/4).
+- **Not done**: the barrel itself (`packages/core/src/public/index.ts`)
+  has zero `@stable`/`@experimental`/`@internal` annotation comments —
+  S1's file list names this file as a target and it was never touched.
+  The report script satisfies the "classify all 947, none left out"
+  acceptance bullet on its own, so S1 is functionally complete, but the
+  annotation deliverable is missing if a future agent expects to find it
+  inline.
+
+S2 (migrate the largest domain — 873 `direct-public` exports — into a
+subpath) was **not attempted this session**: deciding a correct
+per-export domain split across 873 exports and physically moving the
+backing files in `packages/core/src/lib/**` is a large, correctness-
+sensitive change touching the package every plugin and the client
+import from. Without a live `bun run validate` pass available (the
+orchestrator's run was in flight; rule 3 forbids starting a second
+one), there is no safe way to catch a broken transitive import before
+committing. Left `packages/core/src/public/index.ts` untouched beyond
+S1's read-only report. S3 (deprecation comment) explicitly depends on
+S2 having migrated at least one domain, so it is blocked too.
+
 ## risks and mitigations
 
 - **Riesgo: clasificar mal un export como `@internal` cuando algún
