@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['audit', 'orchestrator', 'subagent', 'proposals'],
 	maturity: 'experimental',
 	permissions: ['filesystem-read', 'process'],
-	presets: [],
+	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@mcp-vertex/agent-orchestrator', 'zod'],
 	capabilities: ['audit-orchestration', 'subagent-dispatch'],

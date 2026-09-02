@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['external-mcps', 'composition'],
 	maturity: 'stable',
 	permissions: ['network', 'process'],
-	presets: [],
+	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', 'zod'],
 	capabilities: ['external-mcps', 'composition'],

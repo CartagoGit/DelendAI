@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['browser', 'automation'],
 	maturity: 'stable',
 	permissions: ['browser', 'network'],
-	presets: [],
+	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', 'playwright'],
 	capabilities: ['browser', 'automation'],

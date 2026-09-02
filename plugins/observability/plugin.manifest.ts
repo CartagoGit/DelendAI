@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['observability'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write'],
-	presets: [],
+	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@mcp-vertex/web-fetch'],
 	capabilities: ['observability'],

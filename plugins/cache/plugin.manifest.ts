@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['cache', 'lifecycle'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write'],
-	presets: [],
+	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['cache', 'lifecycle'],
