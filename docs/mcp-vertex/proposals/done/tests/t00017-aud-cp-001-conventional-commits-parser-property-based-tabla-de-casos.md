@@ -2,7 +2,7 @@
 id: t00017
 title: "AUD-CP-001 — Conventional Commits parser: property-based + tabla de casos"
 kind: test
-status: review
+status: done
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -146,7 +146,7 @@ bunx vitest run plugins/commit-policy/tests/src/lib/contracts/i18n-types.spec.ts
 
 ### S1 — Tests del parser con tabla y property-based
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/tests/src/lib/contracts/i18n-types.spec.ts` (o `scope.spec.ts`), `plugins/commit-policy/tests/fixtures/conventional-cases.json`, opcional `plugins/commit-policy/tests/src/lib/contracts/property-helpers.ts`
 - **Gate**: type
 - **Dependency**: `x00259`
@@ -155,7 +155,10 @@ bunx vitest run plugins/commit-policy/tests/src/lib/contracts/i18n-types.spec.ts
   - "property-based genera 1000 mensajes y verifica `parse(rebuild(x)) === x`"
   - "casos adversariales pasan (unicode, emojis, whitespace al borde)"
   - "tests rojos antes del fix de x00259; verdes después"
-
+- review-state: done
+- review-implementer: sonnet-worker-implementer
+- review-reviewer: sonnet-worker-tests
+- review-log: approved by sonnet-worker-tests — Ran npx vitest run plugins/commit-policy/tests/src/lib/contracts/scope.spec.ts: 28/28 green (27-row truth table fixture incl. unicode/emoji/CR-only/control-char adversarial cases + 1000-case seeded property round-trip). Coverage on scope.ts: 100% statements, 93.5% branches, 100% functions -- exceeds acceptance thresholds. biome check and tsc --noEmit clean.
 ## acceptance
 
 - `bunx vitest run` del archivo termina verde con 1000/1000

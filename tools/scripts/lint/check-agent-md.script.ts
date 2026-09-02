@@ -7,6 +7,9 @@
  * existing AGENT.md's marker-delimited block against the live
  * regeneration; reports drift per file. Wired into `validate`.
  *
+ * This is the drift check for a GENERATED artifact per
+ * `docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md` (d00011, rule #6).
+ *
  * Exit codes:
  *   0 — every AGENT.md matches the generator's projected output.
  *   1 — at least one drift detected.
