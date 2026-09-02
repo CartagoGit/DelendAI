@@ -89,7 +89,12 @@ describe('runArgv byte budgets (x00220)', () => {
 				"process.stdout.write('abcdef');",
 				"process.stderr.write('WXYZ');",
 			].join(''),
-			{ maxOutputBytes: 10, maxStdoutBytes: 3, maxStderrBytes: 2 },
+			{
+				cwd: process.cwd(),
+				maxOutputBytes: 10,
+				maxStdoutBytes: 3,
+				maxStderrBytes: 2,
+			},
 		);
 		expect(result.code).toBe(0);
 		expect(result.stdout).toBe('abc');

@@ -1,7 +1,11 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import {
+	compactOutputSchema,
+	toolError,
+	toolJson,
+} from '@mcp-vertex/core/public';
 
 import { QUALITY_POLICY_AREAS } from '../contracts/constants/quality-policy.constant';
 import type {
@@ -91,7 +95,13 @@ export const buildQualityPolicyToolRegistrations = (
 			server.registerTool(
 				`${options.namespacePrefix}_quality_policy`,
 				{
-					outputSchema: QualityPolicyOutputSchema,
+					// v00131 (AUD-B01): `QualityPolicyOutputSchema` is not
+					// used as a runtime response validator anywhere in this
+					// handler — only declared here as the wire
+					// `outputSchema`. It stays exported for behavioural
+					// tests; `tools/list` gets the compact envelope
+					// instead. The real response payload is unchanged.
+					outputSchema: compactOutputSchema(),
 					description:
 						'Aggregate tests, conventions, lint, types and coverage policy in one bounded response. Reuses pure public helpers from quality, rules, test-policy, test-convention and conventions, and intentionally does not run heavy scanners or quality commands.',
 					inputSchema: InputSchema,
