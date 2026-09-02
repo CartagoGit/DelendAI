@@ -565,6 +565,7 @@ const tryAssembleManagedLazy = async (input: {
 						loadErrors: [failure],
 						registerErrors: [],
 						loadedCount: pendingRegistrations.size,
+						atBoot: false,
 					}),
 				);
 				// …and route it to the observers too, so the

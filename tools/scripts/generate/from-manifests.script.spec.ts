@@ -7,7 +7,9 @@ import { describe, expect, it } from 'vitest';
 import {
 	GENERATED_DOCS_JSON_PATH,
 	GENERATED_FIRST_PARTY_INDEX_PATH,
+	GENERATED_PLUGIN_DOCS_DIR,
 	GENERATED_WEB_CATALOG_PATH,
+	PLUGIN_DOC_NOTES_DIR,
 	runFromManifestsGenerator,
 	buildCompatibilityMatrix,
 	buildGeneratedFirstPartyEntries,
@@ -324,6 +326,35 @@ describe('from-manifests generator', () => {
 			expect(
 				await readFile(join(root, GENERATED_DOCS_JSON_PATH), 'utf8'),
 			).toContain('filesystem-read');
+		});
+	});
+
+	it('folds an optional plugin notes file into the generated page as a Notes section (d00014)', async () => {
+		await withFixture(async (root) => {
+			await mkdir(join(root, PLUGIN_DOC_NOTES_DIR), { recursive: true });
+			await writeFile(
+				join(root, PLUGIN_DOC_NOTES_DIR, 'context-for-change.notes.md'),
+				'This plugin exists to keep the change-context payload compact.\n',
+				'utf8',
+			);
+			const run = await runFromManifestsGenerator(
+				[`--root=${root}`],
+				testIo(),
+			);
+			expect(run.exitCode).toBe(0);
+			const withNotes = await readFile(
+				join(root, GENERATED_PLUGIN_DOCS_DIR, 'context-for-change.md'),
+				'utf8',
+			);
+			expect(withNotes).toContain('## Notes');
+			expect(withNotes).toContain(
+				'This plugin exists to keep the change-context payload compact.',
+			);
+			const withoutNotes = await readFile(
+				join(root, GENERATED_PLUGIN_DOCS_DIR, 'impact-analysis.md'),
+				'utf8',
+			);
+			expect(withoutNotes).not.toContain('## Notes');
 		});
 	});
 

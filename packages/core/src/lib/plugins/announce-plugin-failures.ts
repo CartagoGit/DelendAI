@@ -42,6 +42,16 @@ export const buildPluginFailureAnnouncement = (input: {
 	readonly loadErrors: readonly IPluginLoadFailure[];
 	readonly registerErrors: readonly IPluginRegisterErrorInfo[];
 	readonly loadedCount: number;
+	/**
+	 * Whether this is the start-up sweep. The "nothing loaded, your
+	 * workspace is not set up" diagnosis is only meaningful at boot: a
+	 * lazy plugin that fails minutes later, when an agent first reaches
+	 * for its tools, has no bearing on whether `bun install` was run —
+	 * and telling the operator to install and rebuild at that point sends
+	 * them after the wrong problem. Defaults to true, which is what every
+	 * boot-time caller means.
+	 */
+	readonly atBoot?: boolean | undefined;
 }): IPluginFailureAnnouncement => {
 	const lines: string[] = [];
 	for (const failure of input.loadErrors) {
@@ -67,7 +77,7 @@ export const buildPluginFailureAnnouncement = (input: {
 	// build is the actual fix, and saying it here is what stops an agent
 	// from spelunking through a cascade of unrelated resolution errors.
 	lines.push(
-		input.loadedCount === 0
+		input.loadedCount === 0 && input.atBoot !== false
 			? `[mcp-vertex] ${failedCount} plugin(s) failed and NONE loaded. That usually means this workspace is not set up ` +
 					'(a fresh worktree or another project): run `bun install` and `bun run build` here, then retry. ' +
 					'The server is up but has no plugin tools.'

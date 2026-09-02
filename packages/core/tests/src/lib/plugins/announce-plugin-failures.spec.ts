@@ -152,3 +152,21 @@ describe('asRegisterErrorInfo', () => {
 		expect((info.error as Error).message).toBe('could not load plugin');
 	});
 });
+
+describe('buildPluginFailureAnnouncement — runtime failures', () => {
+	it('does not blame the workspace for a failure that happens after boot', () => {
+		// A lazy plugin that fails when an agent first reaches for its
+		// tools says nothing about whether `bun install` was run; the
+		// fresh-worktree advice would send the operator after the wrong
+		// problem.
+		const announcement = buildPluginFailureAnnouncement({
+			loadErrors: [{ specifier: 'browser', message: 'dist missing' }],
+			registerErrors: [],
+			loadedCount: 0,
+			atBoot: false,
+		});
+		const closing = announcement.lines.at(-1) ?? '';
+		expect(closing).not.toContain('bun install');
+		expect(closing).toContain('do not retry');
+	});
+});
