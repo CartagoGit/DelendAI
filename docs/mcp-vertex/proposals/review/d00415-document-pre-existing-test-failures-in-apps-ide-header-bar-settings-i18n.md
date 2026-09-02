@@ -47,14 +47,16 @@ release can proceed.
 - **Files**:
   - `docs/mcp-vertex/proposals/ready/docs/d00415-document-pre-existing-test-failures-in-apps-ide-header-bar-settings-i18n.md`
 - **Gate**: none
-
+- review-state: in_review
+- review-implementer: implementation_runner
 ### S2 — Follow-up: fix F1 + F2 (header-bar renderer + spec)
 - **Status**: done
 - **Files**:
   - `packages/ui-extension/src/components/header-bar.ts`
   - `packages/ui-extension/tests/components/header-bar.spec.ts`
 - **Gate**: `bunx vitest run packages/ui-extension/tests/components/header-bar.spec.ts`
-
+- review-state: in_review
+- review-implementer: implementation_runner
 ### S3 — Follow-up: fix F3 + i18n gap (settings copy + l10n dicts)
 - **Status**: done
 - **Files**:
@@ -65,7 +67,8 @@ release can proceed.
   - `apps/web/scripts/check-i18n.ts`
 - **Gate**: `bun run --cwd apps/web check:i18n` and
   `bunx vitest run packages/ui-extension/tests/settings/render-settings.spec.ts`.
-
+- review-state: in_review
+- review-implementer: implementation_runner
 ## acceptance
 
 - [x] The three failures and the i18n gap are listed above with concrete file/line references.
