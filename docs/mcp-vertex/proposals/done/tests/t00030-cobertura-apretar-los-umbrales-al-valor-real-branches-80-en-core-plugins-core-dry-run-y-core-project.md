@@ -2,7 +2,7 @@
 id: t00030
 title: "Cobertura: apretar los umbrales al valor real + branches >=80% en core/plugins, core/dry-run y core/project"
 kind: test
-status: in-progress
+status: done
 type: proposal
 track: testing
 date: 2026-08-29
@@ -13,9 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P1
 related: [q00011]
-last-transition-id: fcd964d3-041e-40f7-9e68-dfa0cc6b5d82
-last-correlation-id: fcd964d3-041e-40f7-9e68-dfa0cc6b5d82
-last-transition-from: ready
+last-transition-id: a0aa4c99-670a-4330-9ad0-f19c985f3d4d
+last-correlation-id: a0aa4c99-670a-4330-9ad0-f19c985f3d4d
+last-transition-from: in-progress
 ---
 
 # t00030 — Cobertura: apretar los umbrales + branches ≥80% en los módulos P0
@@ -192,7 +192,10 @@ actualizó" que `type-naming.script.ts --update` (ver `c00157`).
       implementación — no bloquea `validate` en cada PR si el runtime
       de `test:coverage` completo es costoso)
 - **Gate**: `bunx vitest run tools/scripts/coverage-ratchet.script.spec.ts`
-
+- review-state: done
+- review-implementer: sonnet-worker-tests-2-impl
+- review-reviewer: sonnet-worker-tests-2
+- review-log: approved by sonnet-worker-tests-2 — Confirmed S1 (global thresholds 82/69/83/83) and S2 (branches>=80 glob overrides for core/plugins, core/dry-run, core/project) already implemented and dated in vitest.config.ts's own RATCHET POLICY comment. Reviewed and ran the new S3 (coverage-ratchet.script.ts): pure computeCoverageRatchetViolations correctly flags stale thresholds against floor(measured-1.0), parseGlobalThresholds correctly ignores per-module glob overrides, script fails closed (exit 1) with no report present. 9/9 tests passing, typecheck clean.
 ## dependency graph
 
 `t00030` "acompaña a toda la Ola 1" según el grafo de `q00011`: los
