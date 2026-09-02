@@ -2,15 +2,15 @@
 id: f00374
 title: "no `MIGRATED_PLUGIN_IDS`."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#no-migrated-plugin-ids
 shipped-in: ["d98f3fd6"]
-last-transition-id: c1c2fbff-a154-46c7-983b-4b88eff2b114
-last-correlation-id: c1c2fbff-a154-46c7-983b-4b88eff2b114
-last-transition-from: in-progress
+last-transition-id: 43f1f01d-6ff5-49db-a44a-81230c013749
+last-correlation-id: 43f1f01d-6ff5-49db-a44a-81230c013749
+last-transition-from: review
 ---
 
 # f00374 — no `MIGRATED_PLUGIN_IDS`.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00374-no-migrated-plugin-ids.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00374-no-migrated-plugin-ids.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
