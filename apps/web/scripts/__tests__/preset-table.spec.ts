@@ -43,8 +43,13 @@ describe('preset-table', () => {
 			// (private, never published to npm) drops the total to 42 — it
 			// was the only preset-visible use of that column. The three
 			// remote-provider plugins (remote-provider-core, github,
-			// gitlab) added to `full` bring it to 49.
-			expect(ids.length).toBe(49);
+			// gitlab) added to `full` bring it to 49. The five plugins that
+			// were loadable but reachable from no preset at all
+			// (audit-orchestrator, browser, cache, external-mcps,
+			// observability) were added to `full` and bring it to 54; they
+			// cost a managed-lazy catalog entry, not an import, until one
+			// of their tools is called.
+			expect(ids.length).toBe(54);
 			const tail = ids.slice(-12);
 			expect(new Set(tail)).toEqual(
 				new Set([
