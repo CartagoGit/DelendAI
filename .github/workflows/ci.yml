@@ -19,15 +19,8 @@ jobs:
         name: lint-biome
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Run biome and style-entry lints
               run: |
@@ -39,15 +32,8 @@ jobs:
         name: lint-architecture
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Run architecture lints
               run: |
@@ -72,15 +58,8 @@ jobs:
         name: lint-presets
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Rebuild the proposal registry cache
               # A fresh checkout has no `.cache/mcp-vertex/proposals/index.json`
@@ -108,15 +87,8 @@ jobs:
         name: lint-docs
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Run docs, content and web lints
               run: |
@@ -135,15 +107,8 @@ jobs:
         name: lint-security
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Run security and hygiene lints
               run: |
@@ -197,15 +162,8 @@ jobs:
         name: typecheck
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Typecheck
               run: bun run typecheck
@@ -214,15 +172,8 @@ jobs:
         name: tests
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Clean mcp-vertex cache
               run: rm -rf .cache/mcp-vertex
@@ -237,15 +188,8 @@ jobs:
         name: quality-gate
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Run configured quality scopes
               run: bun run quality:gate
@@ -254,15 +198,8 @@ jobs:
         name: verify-runtime
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Run runtime and packaging verification
               run: |
@@ -279,15 +216,8 @@ jobs:
         name: tokens-budget-real
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Gate the real preset token budgets
               run: |
@@ -299,15 +229,8 @@ jobs:
         name: manifests-check
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Validate manifest metadata and generated manifest outputs
               run: |
@@ -321,15 +244,8 @@ jobs:
         name: generated-artifacts-check
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Verify generated artifacts stay in sync
               run: bun run check:generated
@@ -342,15 +258,8 @@ jobs:
         name: web site build
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Build the web site
               run: bun run site
@@ -359,15 +268,8 @@ jobs:
         name: pack smoke (publishable packages)
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             # Compile publishable dist/ (Node-runnable .js + .d.ts). `files: ["dist"]`
             # means the tarball is empty unless this runs first.
@@ -417,15 +319,8 @@ jobs:
         name: metrics longitudinal regression gate (f00027)
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
-
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.3.14
-
-            - name: Install dependencies
-              run: bun install --frozen-lockfile
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Build dist
               run: bun run build
