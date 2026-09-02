@@ -417,6 +417,25 @@ const tryAssembleManagedLazy = async (input: {
 	const onToolStarts: IPluginToolStartObserver[] = [];
 	const onToolCancels: IPluginToolCancelObserver[] = [];
 	const onHookErrors: IPluginHookErrorObserver[] = [];
+	// Register-error observers on the LAZY route. The eager route
+	// collected these and replayed failures into them; this one never
+	// did, so on the default surface a plugin that failed to load or
+	// activate was announced on stderr and reached the error-reporting
+	// plugin never. `pendingRegisterErrors` holds failures seen before
+	// any observer existed — a plugin cannot report a failure that
+	// happened before it was activated, so they are replayed to each
+	// observer as it arrives.
+	const onRegisterErrors: Array<{
+		readonly pluginName: string;
+		readonly handler: (
+			info: IPluginRegisterErrorInfo,
+		) => Promise<void> | void;
+	}> = [];
+	const pendingRegisterErrors: IPluginRegisterErrorInfo[] = [];
+	const reportRegisterError = (info: IPluginRegisterErrorInfo): void => {
+		pendingRegisterErrors.push(info);
+		void replayRegisterErrors(onRegisterErrors, [info]);
+	};
 	const getCheckpointAdvisoryFns: Array<
 		NonNullable<IMcpVertexHostConfig['getCheckpointAdvisory']>
 	> = [];
@@ -478,6 +497,18 @@ const tryAssembleManagedLazy = async (input: {
 					resolvedSpecifier,
 					handler: registrations.onHookError,
 				});
+			if (registrations.onRegisterError) {
+				const observer = {
+					pluginName: plugin.name,
+					handler: registrations.onRegisterError,
+				};
+				onRegisterErrors.push(observer);
+				// Everything that already failed, replayed into the
+				// observer that just showed up. Lazy activation means the
+				// reporter is almost always activated AFTER the failures
+				// worth reporting.
+				void replayRegisterErrors([observer], pendingRegisterErrors);
+			}
 			if (registrations.isAgentStuck) {
 				claimSingleSlot(singleSlotClaims, 'isAgentStuck', plugin.name);
 				if (isAgentStuckFn === undefined) {
