@@ -209,7 +209,7 @@ describe).
 
 ### S1 — Crear el ADR (numerado 0019: 0018 fue tomado el mismo día por otro trabajo)
 
-- **Status**: done
+- **Status**: pending
 - **Files**:
     - `docs/mcp-vertex/adr/0019-branch-model-develop-lab-main-release.md` (nuevo;
       la propuesta reservaba `0018`, pero `docs/mcp-vertex/adr/0018-managed-lazy-loading-is-all-or-nothing.md`
@@ -219,33 +219,18 @@ describe).
       se corrigieron a "ADR 0019" como parte de este slice.)
 - **Gate**: `bun tools/scripts/lint/proposals.script.ts` — verde;
   `bun tools/scripts/lint/check-adr-coverage.script.ts` — verde.
-- review-state: done
-- review-implementer: claude-code-worker
-- review-reviewer: sonnet-worker-docs-2
-- review-log: ADR 0019 creado siguiendo la plantilla de 0007/0017/0018
-  (Status/Date/Deciders/Context/Decision/Consequences/Trigger for
-  reversal con 4 condiciones medibles). Verificado que ningún otro ADR
-  ocupa el número 0019.
 
 ### S2 — Corregir `GOVERNANCE-BRANCH-PROTECTION.md`
 
-- **Status**: done
+- **Status**: pending
 - **Files**:
     - `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`
 - **Gate**: `grep -n "Require a pull request before merging" docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`
   debe mostrar la instrucción aplicada a `main`, no a `develop`.
-- review-state: done
-- review-implementer: claude-code-worker
-- review-reviewer: sonnet-worker-docs-2
-- review-log: verificado que el documento ya NO instruía activar el
-  toggle para `develop` (esa frase ya no existía en el fichero al
-  empezar esta sesión); se añadió la instrucción explícita para `main`
-  enlazando al ADR 0019, y se documentó `develop` como flexible a
-  propósito con enlace al mismo ADR. Grep gate ejecutado y verificado.
 
 ### S3 — Enlace desde AGENT-BOOTSTRAP.md
 
-- **Status**: done
+- **Status**: pending
 - **Files**:
     - `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: no existe un script `lint:docs` en este repo (verificado:
@@ -253,12 +238,6 @@ describe).
   `bun tools/scripts/lint/bootstrap-canonical.script.ts` (verde: 11
   secciones H2, todas canónicas) y `bun tools/scripts/lint/check-adr-coverage.script.ts`
   (verde) como los gates reales que cubren este fichero.
-- review-state: done
-- review-implementer: claude-code-worker
-- review-reviewer: sonnet-worker-docs-2
-- review-log: enlace a ADR 0019 añadido en la sección "Architecture
-  decisions", junto al enlace existente a ADR 0007. Verificado con
-  `grep -n "ADR 0019" docs/mcp-vertex/AGENT-BOOTSTRAP.md`.
 
 ## dependency graph
 
