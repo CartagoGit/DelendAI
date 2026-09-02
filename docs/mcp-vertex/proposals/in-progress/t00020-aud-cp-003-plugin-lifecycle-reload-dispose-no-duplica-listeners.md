@@ -2,7 +2,7 @@
 id: t00020
 title: "AUD-CP-003 — Plugin lifecycle: reload/dispose no duplica listeners"
 kind: test
-status: ready
+status: in-progress
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -18,6 +18,9 @@ related:
     - q00006
     - x00261 # dispose que se prueba
     - f00182 # timers del engine bajo dispose
+last-transition-id: 1f989f5e-7f5a-445b-b0b5-865ca756a0cc
+last-correlation-id: 1f989f5e-7f5a-445b-b0b5-865ca756a0cc
+last-transition-from: ready
 ---
 
 # t00020 — Plugin lifecycle: reload/dispose no duplica listeners
