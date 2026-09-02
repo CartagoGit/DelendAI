@@ -283,6 +283,51 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 			vi.resetModules();
 		}
 	});
+
+	it('register() failing mid-way at the slice listener leaves zero zombie timers', async () => {
+		vi.resetModules();
+		vi.doMock(
+			'@mcp-vertex/commit-policy/lib/triggers/slice-listener',
+			async () => {
+				const actual = await vi.importActual<
+					typeof import('@mcp-vertex/commit-policy/lib/triggers/slice-listener')
+				>('@mcp-vertex/commit-policy/lib/triggers/slice-listener');
+				return {
+					...actual,
+					createSliceListener: vi.fn(() => {
+						throw new Error(
+							'boom: slice listener failed to attach',
+						);
+					}),
+				};
+			},
+		);
+
+		try {
+			const { default: reloadedPlugin } = await import(
+				'@mcp-vertex/commit-policy'
+			);
+
+			// register() has no top-level try/catch around listener
+			// creation, so a throw there propagates out and no
+			// runtime/dispose is ever returned to the caller — this
+			// is the "register() falla a mitad" shape from AUD-CP-003.
+			await expect(
+				reloadedPlugin.register(buildCtx(workspace)),
+			).rejects.toThrow('boom: slice listener failed to attach');
+
+			// The interval trigger's setInterval() call happens after
+			// slice-listener setup in register(), so nothing reaches
+			// that point; no timer should have leaked past the throw.
+			expect(createdIntervals).toBe(0);
+			expect(activeIntervals.size).toBe(0);
+		} finally {
+			vi.doUnmock(
+				'@mcp-vertex/commit-policy/lib/triggers/slice-listener',
+			);
+			vi.resetModules();
+		}
+	});
 });
 
 function asRuntime(reg: Awaited<ReturnType<typeof plugin.register>>): {

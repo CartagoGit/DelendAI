@@ -493,6 +493,14 @@ or have their own config file. Use the same single-pointer pattern:
   picks it up on the next session.
 
 
+## Architecture decisions
+
+Durable architecture decisions live as ADRs in `docs/mcp-vertex/adr/`,
+not only in commit messages. This section indexes the ones worth a
+newcomer's attention before they re-litigate a closed decision.
+
+- [ADR 0007 — `@mcp-vertex/core/contracts` (subpath) vs a separate package](adr/0007-core-contracts-subpath-vs-package.md)
+
 ## Quantitative facts
 
 <!-- mcp-vertex:begin quantitative -->
