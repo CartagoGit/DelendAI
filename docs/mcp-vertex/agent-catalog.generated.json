@@ -1291,7 +1291,7 @@
 				"id": "f00412",
 				"title": "f00412",
 				"track": "github-read-only",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1299,7 +1299,7 @@
 				"id": "f00413",
 				"title": "f00413",
 				"track": "remote-provider-mutations",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1315,7 +1315,7 @@
 				"id": "f00415",
 				"title": "f00415",
 				"track": "remote-ci-diagnostics",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1481,8 +1481,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 20,
-			"in-progress": 6,
+			"ready": 17,
+			"in-progress": 9,
 			"review": 2,
 			"paused": 1,
 			"done": 712,

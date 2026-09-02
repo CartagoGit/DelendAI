@@ -2,10 +2,13 @@
 id: f00413
 title: "Operaciones mutables controladas para proveedores remotos"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: remote-provider-mutations
 date: 2026-08-31
+last-transition-id: 53c34272-9b04-4a07-b1ba-8e8ad0c075ed
+last-correlation-id: 53c34272-9b04-4a07-b1ba-8e8ad0c075ed
+last-transition-from: ready
 ---
 
 # f00413 — Operaciones mutables controladas para proveedores remotos

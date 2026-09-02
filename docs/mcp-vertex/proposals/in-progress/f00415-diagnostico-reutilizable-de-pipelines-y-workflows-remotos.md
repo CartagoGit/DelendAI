@@ -2,10 +2,13 @@
 id: f00415
 title: "Diagnóstico reutilizable de pipelines y workflows remotos"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: remote-ci-diagnostics
 date: 2026-08-31
+last-transition-id: 767c5784-9236-4d06-852f-dade07fa488d
+last-correlation-id: 767c5784-9236-4d06-852f-dade07fa488d
+last-transition-from: ready
 ---
 
 # f00415 — Diagnóstico reutilizable de pipelines y workflows remotos
