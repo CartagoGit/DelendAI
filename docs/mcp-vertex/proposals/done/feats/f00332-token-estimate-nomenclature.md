@@ -2,11 +2,14 @@
 id: f00332
 title: "token estimate nomenclature."
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#token-estimate-nomenclature
+last-transition-id: 7620530f-b3d5-4884-89b3-8265fe2b006f
+last-correlation-id: 7620530f-b3d5-4884-89b3-8265fe2b006f
+last-transition-from: in-progress
 ---
 
 # f00332 — token estimate nomenclature.
@@ -27,8 +30,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
-- **Files**: `ready/feats/f00332-token-estimate-nomenclature.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/review/f00332-token-estimate-nomenclature.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -40,7 +43,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run packages/core/tests/src/lib/metrics/bytes-and-errors.spec.ts packages/core/tests/src/lib/metrics/metrics.spec.ts -> 2 files, 32 tests passing. Confirmed field naming contentTextBytes/structuredJsonBytes/wireEstimateBytes/estimatedTokens4B/actualModelTokens matches MET-003/MET-004.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

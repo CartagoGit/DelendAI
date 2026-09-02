@@ -1,5 +1,9 @@
 import { announceLines } from '@mcp-vertex/core/public';
 
+import type {
+	ISlicePersistenceOwner,
+	ISlicePersistenceResolution,
+} from './contracts/interfaces/slice-persistence.interface';
 import type { IAutoWorkPersistMode } from './tools/auto-work-persist';
 
 /**
@@ -30,14 +34,7 @@ import type { IAutoWorkPersistMode } from './tools/auto-work-persist';
  * actually has. The configuration is still obeyed exactly as written:
  * this changes what is said, never what is done.
  */
-export type ISlicePersistenceOwner = 'commit-policy' | 'proposals' | 'nobody';
-
-export interface ISlicePersistenceResolution {
-	readonly mode: IAutoWorkPersistMode;
-	readonly owner: ISlicePersistenceOwner;
-	/** Operator-facing lines. Empty unless nobody owns persistence. */
-	readonly lines: readonly string[];
-}
+export type { ISlicePersistenceOwner, ISlicePersistenceResolution };
 
 export const resolveSlicePersistence = (input: {
 	readonly configuredMode: IAutoWorkPersistMode | undefined;

@@ -2,7 +2,7 @@
 id: v00131
 title: "Podar los `outputSchema` de quality-policy y usage-tracking (AUD-B01)"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-08-29
@@ -11,6 +11,9 @@ related:
     - q00011
     - v00129 # predecesor: los 5 outputSchema más baratos del core (mismo patrón)
     - v00130 # hermano independiente: orchestrator-runner
+last-transition-id: 5a489c72-3791-4271-be9b-6fbe675d97b0
+last-correlation-id: 5a489c72-3791-4271-be9b-6fbe675d97b0
+last-transition-from: ready
 ---
 
 # v00131 — Podar los `outputSchema` de `quality-policy` y `usage-tracking` (AUD-B01)
@@ -105,7 +108,7 @@ declarado en el registro de la tool.
 
 ### S1 — Podar `quality_policy`, `usage_report` y `session_hygiene`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/quality-policy/src/lib/tools/quality-policy.tool.ts`
     - `plugins/usage-tracking/src/lib/tools/report.tool.ts`

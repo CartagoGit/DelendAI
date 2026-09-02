@@ -2,6 +2,8 @@ import { hostname } from 'node:os';
 
 import { isLockEntryOrphaned as isSharedLockEntryOrphaned } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
 
+import type { ILockLivenessProbe } from '../contracts/interfaces/lock-liveness-probe.interface';
+
 import type { ILockEntry } from './agent-lock-engine';
 
 /**
@@ -35,12 +37,7 @@ import type { ILockEntry } from './agent-lock-engine';
  * falls back to the time-based rule. Refusing to guess is what keeps
  * this from becoming a new source of false positives.
  */
-export interface ILockLivenessProbe {
-	/** This host's identifier, matched against `entry.host`. */
-	readonly host: string;
-	/** Whether a pid on THIS host is still running. */
-	readonly isProcessAlive: (pid: number) => boolean;
-}
+export type { ILockLivenessProbe };
 
 /**
  * Signal 0 performs the permission and existence checks without
