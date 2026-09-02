@@ -77,3 +77,35 @@ alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
 actual scope/acceptance for "generated-preset-data" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+The generator suite in section 21 (MAN-003 through MAN-007) includes
+generating the web catalog (MAN-004) and a compatibility matrix
+between each plugin's declared presets and the actual preset
+membership resolver — this is the "generated preset data" scope: web
+catalog rows and preset compatibility must be derived from manifests,
+not hand-authored, and must not silently drift from the real preset
+resolver.
+
+Real derived acceptance: plugin preset membership/catalog data
+consumed by the web app must be generated from plugin manifests, and
+a check must catch a manifest's declared presets disagreeing with the
+real preset resolver.
+
+Already implemented, not net-new work:
+`tools/scripts/generate/from-manifests.script.ts` generates
+`apps/web/src/data/plugins/catalog.generated.ts` (slug/displayName/
+purpose/category per plugin) and
+`apps/web/src/generated/plugin-manifest-catalog.generated.ts` from
+manifests, and separately builds an `ICompatibilityRow[]` per
+plugin×preset comparing the manifest's `declared` presets against
+`resolvePresetMembers(presetId)` (`catalogMember`), flagging
+`matches: declared === catalogMember`.
+`tools/scripts/lint/manifest-vs-presets.script.ts` enforces that
+comparison as a gate.
+
+Ran
+`npx vitest run tools/scripts/generate/from-manifests.script.spec.ts tools/scripts/lint/manifest-vs-presets.spec.ts`
+on 2026-09-02: passing. No code change required; closing on this
+evidence.
