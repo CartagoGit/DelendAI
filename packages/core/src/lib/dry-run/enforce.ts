@@ -88,6 +88,23 @@ export interface IDryRunContractRefusal {
  *   - When `args.dryRun === true`, the result MUST be an
  *     `IDryRunResult`. Anything else → typed refusal.
  */
+/**
+ * The dry-run plan as the handler built it, looking through the MCP tool
+ * envelope when there is one.
+ *
+ * `toolOk`/`toolJson` wrap a payload as `{ content, structuredContent }`,
+ * which is what the protocol requires and what every handler returns. A
+ * bare object (a handler that returns its payload directly, and the unit
+ * specs) is passed through untouched.
+ */
+const unwrapToolEnvelope = (result: unknown): unknown => {
+	if (result === null || typeof result !== 'object') return result;
+	const candidate = result as { readonly structuredContent?: unknown };
+	return candidate.structuredContent !== undefined
+		? candidate.structuredContent
+		: result;
+};
+
 export const enforceDryRunReturnContract = (input: {
 	readonly args: { readonly dryRun?: unknown };
 	readonly result: unknown;
@@ -96,8 +113,16 @@ export const enforceDryRunReturnContract = (input: {
 	| IDryRunContractRefusal => {
 	const { args, result } = input;
 	if (args.dryRun !== true) return { kind: 'forwarded', value: result };
-	if (isDryRunResult(result)) {
-		const issues = validateDryRunResult(result);
+	// Every MCP tool answers with an envelope (`{ content,
+	// structuredContent }`), so the dry-run plan a handler builds with
+	// `planDryRun` is nested one level down. Checking the envelope itself
+	// for `dryRun === true` therefore refused EVERY well-behaved tool: a
+	// handler could honour the contract perfectly and still be reported as
+	// having "ignored args.dryRun", leaving the caller unable to preflight
+	// anything and unable to tell a real refusal from this one.
+	const payload = unwrapToolEnvelope(result);
+	if (isDryRunResult(payload)) {
+		const issues = validateDryRunResult(payload);
 		if (issues.length === 0) return { kind: 'forwarded', value: result };
 		return {
 			kind: 'dry-run-contract-violation',
