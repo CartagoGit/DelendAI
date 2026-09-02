@@ -192,3 +192,41 @@ frente a las 37.167 citadas) confirma que el plugin sigue creciendo
 más rápido de lo que se está podando — motivo de más para empezar la
 extracción ahora con la pieza de menor riesgo en vez de esperar a
 diseñar el event log completo.
+
+### 2026-09-02 — S1/S2 verified genuinely done; S3 blocked, not attempted
+
+Re-verified S1 and S2 against real behavior rather than trusting file
+presence:
+
+- S1: `plugins/proposals/src/lib/locks/agent-lock-engine.ts` is a
+  24-line re-export from `engine.ts` (compat, per the S1 risk
+  mitigation against re-triggering `x00157`); `public/index.ts`
+  re-exports the same explicit surface. `bunx vitest run
+  plugins/proposals/tests/src/lib/locks` → 9 files, 73 tests, all
+  passing.
+- S2: `proposal-transition.tool.ts` accepts optional
+  `transitionId`/`correlationId`/`idempotencyKey`, generates
+  `transitionId` (and derives `correlationId` from it) when omitted,
+  and persists all three to frontmatter.
+  `proposal-transition.idempotency.spec.ts` → 3/3 passing, including
+  the required backward-compatible-without-the-field case.
+
+S3 is genuinely not done and was not attempted: `engine.ts` is 1,394
+lines, more than double the 600-line ceiling this slice sets, and no
+file-size lint exists yet anywhere in `tools/scripts/lint/`. Splitting
+a 1,394-line, concurrency-sensitive lock engine (this exact file has a
+documented history of subtle correctness bugs — see the repo's
+`x00157` release-by-bare-`sliceId` incident and the "Agent-lock
+re-claim drops files" postmortem) into ≤600-line modules is a real
+internal refactor, not a mechanical move: it requires understanding
+which functions form cohesive units before splitting, and the existing
+73 specs — while a good regression net — are not a substitute for a
+full `bun run validate` pass, which this session could not start
+(rule 3: the orchestrator's validate run was already in flight).
+Attempting the split blind and shipping it un-validated would be
+exactly the "automated refactor drops logic outside its scope" failure
+mode this session was warned about. Left `engine.ts` unsplit and did
+not add the file-size lint (adding a lint that immediately fails
+against `engine.ts` and is not wired into `validate` would be dead
+weight; wiring it in while red would break the shared gate for every
+other agent). S3 stays `pending`.
