@@ -2,10 +2,13 @@
 id: f00412
 title: "Plugin GitHub read-only como proveedor remoto independiente"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: github-read-only
 date: 2026-08-31
+last-transition-id: 598a35dd-d95b-4c48-9820-d98dca9f5474
+last-correlation-id: 598a35dd-d95b-4c48-9820-d98dca9f5474
+last-transition-from: ready
 ---
 
 # f00412 — Plugin GitHub read-only como proveedor remoto independiente
