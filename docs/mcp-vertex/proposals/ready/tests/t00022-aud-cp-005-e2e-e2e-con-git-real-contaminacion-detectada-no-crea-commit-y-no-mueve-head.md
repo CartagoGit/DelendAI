@@ -286,3 +286,52 @@ dejen basura deben fallar (lint reviewer-monitor lo mide).
   mover a `vitest.integration.config.ts` opt-in.
 - Logs del test no contienen passwords / tempdirs absolutos en
   caso de failure (R8 / privacy).
+
+## notes
+
+- 2026-09-02 (sonnet-worker-tests-2): S1 fixture
+  (`tests/integration/_fixtures/git-tmp.ts`) and S2 spec
+  (`tests/integration/cross-agent-real.spec.ts`) already exist in the
+  tree (added by a prior slice, commit `28fd71eed`). Ran
+  `npx vitest run plugins/commit-policy/tests/integration/cross-agent-real.spec.ts`:
+  Test 2 (control) and Test 3 (8x concurrency) pass; **Test 1
+  (contamination refusal) fails** — `result.ack` is `'OK'`, not the
+  expected `'ERR'`.
+- Root-caused this to a real architecture conflict, not a test bug.
+  `commitWithGuard`'s isolated-index path (x00270,
+  `plugins/commit-policy/src/lib/services/commit-driver.ts`) builds a
+  private index from `git read-tree HEAD` and only adds `allowList`,
+  so the `enforceSubset` check inside it compares the isolated
+  index (always == allowList) against itself — it can never see a
+  file another process staged directly in the **real** index. After
+  a successful isolated commit, `preserveRealIndexAfterIsolatedCommit`
+  explicitly re-stages whatever was staged in the real index before
+  the call and not part of this commit — i.e. the current, intentional
+  design *tolerates* a foreign staged file rather than treating it as
+  contamination.
+- Tried the direct fix: check the real index for extras before
+  touching the isolated one, refuse with `CROSS_AGENT_CONTAMINATION`
+  when found. This made t00022 Test 1 pass, but broke
+  `tests/integration/cross-agent.spec.ts` (`t00018`, already shipped
+  as `done`) — specifically "commits only B files when A already has
+  staged work in the same repo", which asserts `result.ack === 'OK'`
+  for the exact same setup (agent A pre-stages `a.ts`, agent B commits
+  `b.ts`). t00018's own spec encodes "foreign staged file → still
+  commit successfully" as the accepted contract for the isolated-index
+  concurrency model. t00022/AUD-CP-005 encodes the opposite contract
+  for the same shape of input. Reverted the fix (working tree now
+  matches pre-session `commit-driver.ts`, verified
+  `git diff a87a8fba4 -- plugins/commit-policy/src/lib/services/commit-driver.ts`
+  shows only the pre-existing x00270 code, no residue) rather than ship
+  a change that silently regresses an already-closed, already-tested
+  proposal.
+- Leaving this **ready**, not done: the acceptance bullets cannot be
+  met without first resolving the t00018 vs. t00022 contract conflict
+  at the design level (does "foreign staged file" mean "concurrent
+  teammate, tolerate" or "cross-agent contamination, refuse"?) — that
+  decision belongs in a fix/architecture proposal referencing both
+  t00018 and t00022, not in a test-only closing pass. Whoever picks
+  this up next should start from `commitWithGuard` in
+  `plugins/commit-policy/src/lib/services/commit-driver.ts` (isolated
+  branch, `~L487-701`) and `cross-agent.spec.ts` line ~193 vs.
+  `cross-agent-real.spec.ts` line ~89.
