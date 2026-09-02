@@ -12,7 +12,7 @@
  */
 
 /** Why the wait ended without the lock coming free. */
-export type WaitVerdict =
+export type IWaitVerdict =
 	/** The holder is alive and heartbeating. It really is still working. */
 	| 'holder-alive'
 	/**
@@ -43,7 +43,7 @@ export interface IWaitHolderInfo {
 }
 
 export interface IWaitDiagnosis {
-	readonly verdict: WaitVerdict;
+	readonly verdict: IWaitVerdict;
 	/** The claim that blocked the wait, when one is still recorded. */
 	readonly holder: IWaitHolderInfo | undefined;
 	/** One sentence an operator can read, stating what was observed. */

@@ -8,7 +8,7 @@ import type {
 	IRegisteredWait,
 	IWaitDiagnosis,
 	IWaitHolderInfo,
-	WaitVerdict,
+	IWaitVerdict,
 } from '../contracts/interfaces/wait-diagnosis.interface';
 import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 
@@ -95,7 +95,7 @@ const waitsBackOnto = (
 	return false;
 };
 
-const NEXT_ACTION: Record<WaitVerdict, string> = {
+const NEXT_ACTION: Record<IWaitVerdict, string> = {
 	'free-now':
 		'Claim it now — retry `agent_lock action:"claim"` with the same files. Do NOT call await_lock again; there is nothing left to wait for.',
 	'holder-gone':
