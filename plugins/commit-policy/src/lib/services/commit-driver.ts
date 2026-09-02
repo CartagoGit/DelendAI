@@ -897,17 +897,32 @@ const runCommitDriverUnlocked = async (
 		};
 	}
 
-	// Drop anything another agent is still holding. This runs after
-	// every scoping decision precisely because it must hold regardless
-	// of them: an explicit slice list that overlaps someone else's claim
-	// is contention the lock exists to prevent, not an exception to it.
-	const lockFilter = await filterForeignLockedFiles({
-		files,
-		...(options.selfAgent !== undefined
-			? { selfAgent: options.selfAgent }
-			: { selfAgent: undefined }),
-		provider: options.foreignLocks,
-	});
+	// Drop anything another agent is still holding — but ONLY when this
+	// file list came from the workspace rather than from the caller.
+	//
+	// That distinction is the whole safety argument. A sweep (an
+	// interval or threshold trigger, or a slice commit under
+	// `sliceScoping: false`) stages whatever happens to be dirty, so it
+	// can capture an edit that is not finished; that is the case worth
+	// protecting. An explicit `files` list or a scoped slice list is the
+	// caller naming its own work, and withholding there would depend on
+	// this plugin's idea of "who am I" matching the lock file's — which
+	// it has no way to guarantee. Guessing wrong would refuse an agent's
+	// commit of its own claimed slice, turning a safeguard against
+	// deadlock into a cause of one. So the filter is applied exactly
+	// where it cannot misfire.
+	const isWorkspaceDerived =
+		input.triggerContext !== undefined ||
+		(input.sliceContext !== undefined && !scopeSliceCommit);
+	const lockFilter = isWorkspaceDerived
+		? await filterForeignLockedFiles({
+				files,
+				...(options.selfAgent !== undefined
+					? { selfAgent: options.selfAgent }
+					: { selfAgent: undefined }),
+				provider: options.foreignLocks,
+			})
+		: { files, withheld: [] as const };
 	if (lockFilter.files.length === 0 && lockFilter.withheld.length > 0) {
 		return {
 			committed: false,
