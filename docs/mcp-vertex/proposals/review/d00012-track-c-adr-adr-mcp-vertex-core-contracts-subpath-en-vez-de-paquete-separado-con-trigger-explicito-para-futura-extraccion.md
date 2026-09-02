@@ -2,7 +2,7 @@
 id: d00012
 title: "Track C.adr — ADR: `@mcp-vertex/core/contracts` (subpath) en vez de paquete separado, con trigger explícito para futura extracción"
 kind: docs
-status: in-progress
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -22,9 +22,9 @@ related:
     - r00030 # cliente importa de contracts (predecesor)
     - b00237 # deprecar nodeDynamicImport (predecesor)
     - c00146 # realinear Track C con subpath + trigger (hermano)
-last-transition-id: 72d3e433-71f7-46f6-aa6d-07e4eebaed9e
-last-correlation-id: 72d3e433-71f7-46f6-aa6d-07e4eebaed9e
-last-transition-from: ready
+last-transition-id: b9fe481c-2afa-49bc-ab81-60e2bed76c92
+last-correlation-id: b9fe481c-2afa-49bc-ab81-60e2bed76c92
+last-transition-from: in-progress
 ---
 
 # d00012 — ADR: `@mcp-vertex/core/contracts` (subpath) en vez de paquete separado
@@ -228,29 +228,38 @@ lee el frontmatter de cada ADR y verifica que cualquier
 
 ### S1 — Crear el ADR
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `docs/mcp-vertex/adr/0007-core-contracts-subpath-vs-package.md`.
 - **Gate**: docs lint
 - **Depends on**: `r00028` (predecesor de implementación).
-
+- review-state: done
+- review-implementer: sonnet-worker-docs
+- review-reviewer: sonnet-worker-review
+- review-log: approved by sonnet-worker-review — Verified slice S1: ADR 0007 exists (Context/Decision/Consequences/Trigger-for-reversal with 4 measurable conditions), AGENT-BOOTSTRAP.md links it under a new 'Architecture decisions' section, check-adr-coverage.script.ts+spec pass (12/12), wired into validate:run, r00028+c00146 reference d00012 in frontmatter.
 ### S2 — Enlace desde AGENT-BOOTSTRAP.md
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `docs/mcp-vertex/AGENT-BOOTSTRAP.md`.
 - **Gate**: docs lint
 - **Depends on**: S1.
-
+- review-state: done
+- review-implementer: sonnet-worker-docs
+- review-reviewer: sonnet-worker-review
+- review-log: approved by sonnet-worker-review — Verified slice S2: ADR 0007 exists (Context/Decision/Consequences/Trigger-for-reversal with 4 measurable conditions), AGENT-BOOTSTRAP.md links it under a new 'Architecture decisions' section, check-adr-coverage.script.ts+spec pass (12/12), wired into validate:run, r00028+c00146 reference d00012 in frontmatter.
 ### S3 — Lint `check-adr-coverage`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `tools/scripts/lint/check-adr-coverage.script.ts`,
   `tools/scripts/lint/check-adr-coverage.script.spec.ts`,
   `package.json` (añadir a `lint:`).
 - **Gate**: type + test passing
-
+- review-state: done
+- review-implementer: sonnet-worker-docs
+- review-reviewer: sonnet-worker-review
+- review-log: approved by sonnet-worker-review — Verified slice S3: ADR 0007 exists (Context/Decision/Consequences/Trigger-for-reversal with 4 measurable conditions), AGENT-BOOTSTRAP.md links it under a new 'Architecture decisions' section, check-adr-coverage.script.ts+spec pass (12/12), wired into validate:run, r00028+c00146 reference d00012 in frontmatter.
 ## acceptance
 
 - `docs/mcp-vertex/adr/0007-core-contracts-subpath-vs-package.md`

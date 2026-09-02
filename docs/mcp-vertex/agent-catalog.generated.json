@@ -1264,14 +1264,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "d00012",
-				"title": "d00012",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "docs",
-				"date": ""
-			},
-			{
 				"id": "d00013",
 				"title": "d00013",
 				"track": "governance",
@@ -1697,9 +1689,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 48,
+			"ready": 47,
 			"in-progress": 5,
-			"review": 1,
+			"review": 2,
 			"paused": 1,
 			"done": 685,
 			"blocked": 23,
