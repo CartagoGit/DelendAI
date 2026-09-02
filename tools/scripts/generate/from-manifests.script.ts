@@ -753,6 +753,7 @@ const resolveGeneratedAt = (io: IGeneratorIo): string =>
 
 const buildOutputs = (
 	artifact: IPluginManifestArtifact,
+	notesById: Readonly<Record<string, string | undefined>> = {},
 ): Readonly<Record<string, string>> => ({
 	[GENERATED_FIRST_PARTY_INDEX_PATH]: renderRegistryTs(
 		artifact.firstPartyEntries,
@@ -766,7 +767,11 @@ const buildOutputs = (
 	...Object.fromEntries(
 		artifact.manifests.map((manifest) => [
 			`${GENERATED_PLUGIN_DOCS_DIR}/${manifest.id}.md`,
-			renderPluginDocMarkdown(manifest, artifact.generatedAt),
+			renderPluginDocMarkdown(
+				manifest,
+				artifact.generatedAt,
+				notesById[manifest.id],
+			),
 		]),
 	),
 });
@@ -785,7 +790,15 @@ export const runFromManifestsGenerator = async (
 		const generatedAt = resolveGeneratedAt(io);
 		const manifests = await loadPluginManifests(root, io);
 		const artifact = buildManifestArtifact(manifests, generatedAt);
-		const outputs = buildOutputs(artifact);
+		const notesById = Object.fromEntries(
+			await Promise.all(
+				artifact.manifests.map(async (manifest) => [
+					manifest.id,
+					await loadPluginNotes(manifest.id, root, io),
+				]),
+			),
+		) as Readonly<Record<string, string | undefined>>;
+		const outputs = buildOutputs(artifact, notesById);
 		let changed = false;
 		for (const [relPath, text] of Object.entries(outputs)) {
 			const absPath = resolve(root, relPath);
