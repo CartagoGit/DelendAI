@@ -216,12 +216,14 @@ Como el bloque "Nivel 3" arriba. Vive en
 
 ### S3 — Spec runtime spy
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts` (añadir `it`).
 - **Gate**: test passing
 - **Depends on**: `x00269`
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-tests-2-impl
+- review-reviewer: sonnet-worker-tests-2
+- review-log: approved by sonnet-worker-tests-2 — Verified S1 lint (commit-driver-guard.script.ts) already passed; added S3 runtime-spy test to commit-driver.spec.ts proving assertSubset (diff --cached) runs strictly between add and commit/commit-tree in both the shared-index and isolated-index guards. 33/33 tests passing, typecheck clean.
 ## acceptance
 
 - `bun tools/scripts/lint/commit-driver-guard.script.ts` sale 0.
