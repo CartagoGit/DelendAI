@@ -36,6 +36,7 @@
 	"scripts": {
 		"test": "bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run",
 		"test:coverage": "bun tools/scripts/lib/with-compute-lock.script.ts test:coverage -- vitest run --coverage",
+		"coverage:ratchet": "bun tools/scripts/lib/with-compute-lock.script.ts coverage:ratchet -- 'vitest run --coverage --reporter=json-summary && bun tools/scripts/coverage-ratchet.script.ts'",
 		"typecheck": "bun tools/scripts/lib/with-compute-lock.script.ts typecheck -- bun tools/scripts/typecheck.script.ts",
 		"lint": "bun tools/scripts/lib/with-compute-lock.script.ts lint -- 'bun tools/scripts/lint/biome-baseline.script.ts && bun run --cwd extensions/vscode check:i18n'",
 		"check:i18n:ide": "cd extensions/vscode && bun run check:i18n",
