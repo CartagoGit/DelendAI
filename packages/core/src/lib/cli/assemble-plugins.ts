@@ -427,10 +427,28 @@ const tryAssembleManagedLazy = async (input: {
 						entry.message === message,
 				)
 			) {
-				lazyErrors.push({
+				const failure = {
 					specifier: pluginId,
 					message: `could not activate plugin "${pluginId}" from "${resolvedSpecifier}": ${message}`,
-				});
+				};
+				lazyErrors.push(failure);
+				// A lazy activation fails AFTER assembly — typically the
+				// first time an agent reaches for the plugin's tools — so
+				// the start-up announcement cannot have covered it. Say so
+				// here, at the moment it happens, and route it to the same
+				// observers the error-reporting plugin subscribes to.
+				// Otherwise the agent sees a tool that simply does not
+				// answer and retries it forever.
+				announcePluginFailures(
+					buildPluginFailureAnnouncement({
+						loadErrors: [failure],
+						registerErrors: [],
+						loadedCount: pendingRegistrations.size,
+					}),
+				);
+				void replayRegisterErrors(onRegisterErrors, [
+					asRegisterErrorInfo(failure),
+				]);
 			}
 		},
 	});

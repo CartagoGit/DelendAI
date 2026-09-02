@@ -2,12 +2,15 @@
 id: f00359
 title: "context-for-change no abre rutas exteriores."
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#context-for-change-no-abre-rutas-exteriores
 shipped-in: ["7eea421dff14018cc8af78d6239d32dba9b7470d"]
+last-transition-id: 549728d5-a1bf-4016-9aef-702d55dea9c6
+last-correlation-id: 549728d5-a1bf-4016-9aef-702d55dea9c6
+last-transition-from: ready
 ---
 
 # f00359 — context-for-change no abre rutas exteriores.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00359-context-for-change-no-abre-rutas-exteriores.md`
+- **Files**: `docs/mcp-vertex/proposals/in-progress/f00359-context-for-change-no-abre-rutas-exteriores.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
