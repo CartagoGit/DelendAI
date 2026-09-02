@@ -1,20 +1,23 @@
 ---
-id: f00366
-title: "nunca dos holders simultáneos."
+id: f00364
+title: "privacy adversarial suite verde."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#nunca-dos-holders-simultaneos
-shipped-in: ["7bb6d35138db047d35491c68eebfd2435b897b12"]
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#privacy-adversarial-suite-verde
+shipped-in: ["e746316dca20027867ce1d8efee9248dde60c17e"]
+last-transition-id: deef4c2d-e64a-4e6c-89f7-e57418e9560a
+last-correlation-id: deef4c2d-e64a-4e6c-89f7-e57418e9560a
+last-transition-from: in-progress
 ---
 
-# f00366 — nunca dos holders simultáneos.
+# f00364 — privacy adversarial suite verde.
 
 ## Goal
 
-Migrated work item: nunca dos holders simultáneos..
+Migrated work item: privacy adversarial suite verde..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00366-nunca-dos-holders-simultaneos.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00364-privacy-adversarial-suite-verde.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#nunca-dos-holders-simultaneos` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#privacy-adversarial-suite-verde` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -63,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts contains dedicated invariant tests titled 'enumerated contender schedules never allow two simultaneous holders' and 'fast-check: three contenders never overlap across generated schedules', both passing as part of the 17/17 green run above (same CAS/lease fix, x00219, shipped-in 7bb6d3513). Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): plugins/error-reporting/tests/privacy-adversarial.spec.ts and privacy-adversarial-llm-suffix-spoofing.spec.ts exist and are green. Ran 'bun test plugins/error-reporting/tests/privacy-adversarial.spec.ts' -> 3 pass, 0 fail, 467 expect() calls. This is also wired into the repo's own validate pipeline as 'test:privacy-adversarial' inside package.json's validate:run script. Acceptance genuinely met; closing.

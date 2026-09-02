@@ -435,10 +435,11 @@ const tryAssembleManagedLazy = async (input: {
 				// A lazy activation fails AFTER assembly — typically the
 				// first time an agent reaches for the plugin's tools — so
 				// the start-up announcement cannot have covered it. Say so
-				// here, at the moment it happens, and route it to the same
-				// observers the error-reporting plugin subscribes to.
-				// Otherwise the agent sees a tool that simply does not
-				// answer and retries it forever.
+				// here, at the moment it happens. Otherwise the agent sees
+				// a tool that simply does not answer and retries it
+				// forever. The failure also stays in `lazyErrors`, which is
+				// this route's `IPluginLoadResult.errors`, so every
+				// downstream consumer still sees it.
 				announcePluginFailures(
 					buildPluginFailureAnnouncement({
 						loadErrors: [failure],
@@ -446,9 +447,6 @@ const tryAssembleManagedLazy = async (input: {
 						loadedCount: pendingRegistrations.size,
 					}),
 				);
-				void replayRegisterErrors(onRegisterErrors, [
-					asRegisterErrorInfo(failure),
-				]);
 			}
 		},
 	});

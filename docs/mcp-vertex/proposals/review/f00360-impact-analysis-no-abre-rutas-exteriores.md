@@ -1,20 +1,23 @@
 ---
-id: f00369
-title: "token dashboard tracked está fresco."
+id: f00360
+title: "impact-analysis no abre rutas exteriores."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#token-dashboard-tracked-esta-fresco
-shipped-in: ["82c54bccc94ab11c524f187c671da854e522ab7d"]
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#impact-analysis-no-abre-rutas-exteriores
+shipped-in: ["b3c72f6006054fbc89c856a45a4b81272ea5705a"]
+last-transition-id: 5c237beb-5eb9-4a2b-9451-b6e847478bcc
+last-correlation-id: 5c237beb-5eb9-4a2b-9451-b6e847478bcc
+last-transition-from: in-progress
 ---
 
-# f00369 — token dashboard tracked está fresco.
+# f00360 — impact-analysis no abre rutas exteriores.
 
 ## Goal
 
-Migrated work item: token dashboard tracked está fresco..
+Migrated work item: impact-analysis no abre rutas exteriores..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00369-token-dashboard-tracked-esta-fresco.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00360-impact-analysis-no-abre-rutas-exteriores.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#token-dashboard-tracked-esta-fresco` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#impact-analysis-no-abre-rutas-exteriores` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -63,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): ran 'bun run tokens:dashboard:check' (tools/scripts/test/run-token-dashboard-check.script.ts). Output: '[token-dashboard-check] in sync: /home/cartago/_projects/mcp-vertex/docs/mcp-vertex/TOKEN-BUDGETS.md' — the tracked dashboard doc matches the live-measured values, and this check is wired into validate:run so drift is caught in CI. Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): `impact_analyze` (plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts) is likewise routed through the shared safe workspace reader (x00243 b3c72f600) and throws WorkspaceContainmentError on external/symlink-escape paths. Test plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts::'returns a structured containment error for outside, reserved and symlink-escape paths' passes: 'bun test plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts' -> 7 pass, 0 fail, 99 expect() calls. Acceptance genuinely met; closing.

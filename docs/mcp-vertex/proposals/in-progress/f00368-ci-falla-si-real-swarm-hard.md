@@ -1,20 +1,23 @@
 ---
-id: f00371
-title: "vertex tiene budget explícito."
+id: f00368
+title: "CI falla si real swarm > hard."
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#vertex-tiene-budget-explicito
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard
 shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
+last-transition-id: fd83041d-0d35-48b4-b727-ceb79dd4bf2c
+last-correlation-id: fd83041d-0d35-48b4-b727-ceb79dd4bf2c
+last-transition-from: ready
 ---
 
-# f00371 — vertex tiene budget explícito.
+# f00368 — CI falla si real swarm > hard.
 
 ## Goal
 
-Migrated work item: vertex tiene budget explícito..
+Migrated work item: CI falla si real swarm > hard..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00371-vertex-tiene-budget-explicito.md`
+- **Files**: `docs/mcp-vertex/proposals/in-progress/f00368-ci-falla-si-real-swarm-hard.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#vertex-tiene-budget-explicito` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -63,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): packages/core/src/lib/contracts/constants/token-budgets.constant.ts defines an explicit 'vertex' preset profile with hard=384,000 / warning=320,000 toolsList ceilings and its own marginalPluginHard/marginalPluginWarning (80,000/70,000), addressing TOK2-006's 'crear hard/warning explícitos también para vertex, no solo swarm/lean'. Ran 'bun run tokens:gate' live: '[vertex] 197 tools, 262,834 B tools/list — tools/list: 262,834 B (warning 320,000 / hard 384,000) => ok'. Explicit budget exists and the live measurement is within it. Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): 'tokens:gate' and 'tokens:ceiling-ratchet' (tools/scripts/lint/token-budget-ceiling-ratchet.script.ts, shipped r00036, 71fb21cf597) are both wired into package.json's validate:run, which gates CI. Ran 'bun run tokens:ceiling-ratchet' directly: '✓ token-budget-ceiling-ratchet: 54 ceiling(s) checked, no undocumented raise.' The ratchet refuses any undocumented ceiling increase (including swarm's), and tokens:gate fails the build if a measured preset exceeds its hard ceiling — this is the CI-fails-if-over-hard mechanism. Acceptance genuinely met; closing.

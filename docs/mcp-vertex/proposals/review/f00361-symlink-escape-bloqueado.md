@@ -1,20 +1,23 @@
 ---
-id: f00368
-title: "CI falla si real swarm > hard."
+id: f00361
+title: "symlink escape bloqueado."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard
-shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#symlink-escape-bloqueado
+shipped-in: ["9819d8fe1e0637c998706e9eec31d1e6c2235fdb"]
+last-transition-id: 358772f9-5be5-4bed-a0ff-85563436983c
+last-correlation-id: 358772f9-5be5-4bed-a0ff-85563436983c
+last-transition-from: in-progress
 ---
 
-# f00368 — CI falla si real swarm > hard.
+# f00361 — symlink escape bloqueado.
 
 ## Goal
 
-Migrated work item: CI falla si real swarm > hard..
+Migrated work item: symlink escape bloqueado..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00368-ci-falla-si-real-swarm-hard.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00361-symlink-escape-bloqueado.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#symlink-escape-bloqueado` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -63,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): 'tokens:gate' and 'tokens:ceiling-ratchet' (tools/scripts/lint/token-budget-ceiling-ratchet.script.ts, shipped r00036, 71fb21cf597) are both wired into package.json's validate:run, which gates CI. Ran 'bun run tokens:ceiling-ratchet' directly: '✓ token-budget-ceiling-ratchet: 54 ceiling(s) checked, no undocumented raise.' The ratchet refuses any undocumented ceiling increase (including swarm's), and tokens:gate fails the build if a measured preset exceeds its hard ceiling — this is the CI-fails-if-over-hard mechanism. Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): the shared safe-reader primitive (packages/core/src/lib/filesystem/safe-workspace-reader.ts, shipped x00241 9819d8fe1) performs a realpath-validated symlink walk and rejects any resolution escaping the workspace ('symlink-outside' kind in safe-workspace-reader.types.ts). Test suite packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts passes: 'bun test packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts' -> 32 pass, 0 fail, 46 expect() calls. This primitive is what backs the containment tests in f00359/f00360 above. Acceptance genuinely met; closing.

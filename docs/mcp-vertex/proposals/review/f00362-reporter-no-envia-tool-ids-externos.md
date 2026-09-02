@@ -1,20 +1,23 @@
 ---
-id: f00364
-title: "privacy adversarial suite verde."
+id: f00362
+title: "reporter no envía tool ids externos."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#privacy-adversarial-suite-verde
-shipped-in: ["e746316dca20027867ce1d8efee9248dde60c17e"]
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#reporter-no-envia-tool-ids-externos
+shipped-in: ["0d546d5eb59311e697f66cc89d5be736de144ad3"]
+last-transition-id: 3638961e-f221-4332-84d6-21c0893bd955
+last-correlation-id: 3638961e-f221-4332-84d6-21c0893bd955
+last-transition-from: in-progress
 ---
 
-# f00364 — privacy adversarial suite verde.
+# f00362 — reporter no envía tool ids externos.
 
 ## Goal
 
-Migrated work item: privacy adversarial suite verde..
+Migrated work item: reporter no envía tool ids externos..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00364-privacy-adversarial-suite-verde.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00362-reporter-no-envia-tool-ids-externos.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#privacy-adversarial-suite-verde` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#reporter-no-envia-tool-ids-externos` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -63,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): plugins/error-reporting/tests/privacy-adversarial.spec.ts and privacy-adversarial-llm-suffix-spoofing.spec.ts exist and are green. Ran 'bun test plugins/error-reporting/tests/privacy-adversarial.spec.ts' -> 3 pass, 0 fail, 467 expect() calls. This is also wired into the repo's own validate pipeline as 'test:privacy-adversarial' inside package.json's validate:run script. Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): this exact concern was already fixed and shipped as x00245 (docs/mcp-vertex/proposals/done/fixes/x00245-*.md, shipped-in 0d546d5eb, commit 'fix(error-reporting): derive safe tool identity from registry'), which replaced raw toolName passthrough with an ISafeToolIdentity registry-driven lookup so no external/host tool name reaches the public DTO. Confirmed the commit is on develop's history and the sibling x00249 (LLM tool provenance via IToolIdentityRegistry) hardens the LLM-surface case too. Acceptance genuinely met by already-shipped work; closing.

@@ -2,12 +2,15 @@
 id: f00365
 title: "stale reclaim race reproducido o descartado con test determinista."
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#stale-reclaim-race-reproducido-o-descartado-con-test-determinista
 shipped-in: ["7bb6d35138db047d35491c68eebfd2435b897b12"]
+last-transition-id: 496ff7b6-0836-48ec-ac75-03c31040a582
+last-correlation-id: 496ff7b6-0836-48ec-ac75-03c31040a582
+last-transition-from: ready
 ---
 
 # f00365 — stale reclaim race reproducido o descartado con test determinista.
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00365-stale-reclaim-race-reproducido-o-descartado-con-test-determinista.md`
+- **Files**: `docs/mcp-vertex/proposals/in-progress/f00365-stale-reclaim-race-reproducido-o-descartado-con-test-determinista.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

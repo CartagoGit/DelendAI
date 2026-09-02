@@ -1,23 +1,23 @@
 ---
-id: f00360
-title: "impact-analysis no abre rutas exteriores."
+id: f00363
+title: "`internalOnly:false` no permite ampliar reporting."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#impact-analysis-no-abre-rutas-exteriores
-shipped-in: ["b3c72f6006054fbc89c856a45a4b81272ea5705a"]
-last-transition-id: 38835fb2-7213-4c35-8230-ca1f57603d3c
-last-correlation-id: 38835fb2-7213-4c35-8230-ca1f57603d3c
-last-transition-from: ready
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#internalonly-false-no-permite-ampliar-reporting
+shipped-in: ["d98e052811910af27c7dee379ed418631d1c2578"]
+last-transition-id: 448c01c9-bf93-4a38-b187-d3eea766d61f
+last-correlation-id: 448c01c9-bf93-4a38-b187-d3eea766d61f
+last-transition-from: in-progress
 ---
 
-# f00360 — impact-analysis no abre rutas exteriores.
+# f00363 — `internalOnly:false` no permite ampliar reporting.
 
 ## Goal
 
-Migrated work item: impact-analysis no abre rutas exteriores..
+Migrated work item: `internalOnly:false` no permite ampliar reporting..
 
 ## why
 
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/in-progress/f00360-impact-analysis-no-abre-rutas-exteriores.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00363-internalonly-false-no-permite-ampliar-reporting.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -51,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#impact-analysis-no-abre-rutas-exteriores` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#internalonly-false-no-permite-ampliar-reporting` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -66,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): `impact_analyze` (plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts) is likewise routed through the shared safe workspace reader (x00243 b3c72f600) and throws WorkspaceContainmentError on external/symlink-escape paths. Test plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts::'returns a structured containment error for outside, reserved and symlink-escape paths' passes: 'bun test plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts' -> 7 pass, 0 fail, 99 expect() calls. Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): already fixed and shipped as b00236 (docs/mcp-vertex/proposals/done/breakings/b00236-*.md, shipped-in d98e05281, commit 'fix(privacy): x00236 — retire internalOnly config surface'), which removed the internalOnly:false configuration surface entirely — external reporting is now impossible by construction, not by configuration/redaction. Confirmed commit is on develop's history. Acceptance genuinely met by already-shipped work; closing.

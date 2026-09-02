@@ -1,20 +1,23 @@
 ---
-id: f00363
-title: "`internalOnly:false` no permite ampliar reporting."
+id: f00367
+title: "real swarm <= hard."
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#internalonly-false-no-permite-ampliar-reporting
-shipped-in: ["d98e052811910af27c7dee379ed418631d1c2578"]
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#real-swarm-hard
+shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
+last-transition-id: 4972cc9b-1d1c-40d2-91af-e3ce35b19a85
+last-correlation-id: 4972cc9b-1d1c-40d2-91af-e3ce35b19a85
+last-transition-from: ready
 ---
 
-# f00363 — `internalOnly:false` no permite ampliar reporting.
+# f00367 — real swarm <= hard.
 
 ## Goal
 
-Migrated work item: `internalOnly:false` no permite ampliar reporting..
+Migrated work item: real swarm <= hard..
 
 ## why
 
@@ -29,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `ready/feats/f00363-internalonly-false-no-permite-ampliar-reporting.md`
+- **Files**: `docs/mcp-vertex/proposals/in-progress/f00367-real-swarm-hard.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -48,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#internalonly-false-no-permite-ampliar-reporting` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#real-swarm-hard` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -63,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): already fixed and shipped as b00236 (docs/mcp-vertex/proposals/done/breakings/b00236-*.md, shipped-in d98e05281, commit 'fix(privacy): x00236 — retire internalOnly config surface'), which removed the internalOnly:false configuration surface entirely — external reporting is now impossible by construction, not by configuration/redaction. Confirmed commit is on develop's history. Acceptance genuinely met by already-shipped work; closing.
+Independent re-verification (sonnet-verifier-8): ran 'bun run tokens:gate' (tools/scripts/test/run-actual-preset-budget.script.ts) directly against the live tool registry. Measured output: '[swarm] 166 tools, 193,678 B tools/list — tools/list: 193,678 B (warning 204,000 / hard 210,000) => ok'. The real, currently-measured swarm preset cost is under its documented hard ceiling (packages/core/src/lib/contracts/constants/token-budgets.constant.ts, presets.swarm.toolsList.hard = 210_000). Acceptance genuinely met; closing.
