@@ -35,6 +35,9 @@
 	},
 	"scripts": {
 		"test": "bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run",
+		"test:failures": "bun tools/scripts/test/read-test-journal.script.ts",
+		"test:failures:json": "bun tools/scripts/test/read-test-journal.script.ts --json",
+		"test:history": "bun tools/scripts/test/read-test-journal.script.ts --history",
 		"test:coverage": "bun tools/scripts/lib/with-compute-lock.script.ts test:coverage -- vitest run --coverage",
 		"coverage:ratchet": "bun tools/scripts/lib/with-compute-lock.script.ts coverage:ratchet -- 'vitest run --coverage --coverage.reporter=json-summary && bun tools/scripts/coverage-ratchet.script.ts'",
 		"typecheck": "bun tools/scripts/lib/with-compute-lock.script.ts typecheck -- bun tools/scripts/typecheck.script.ts",
@@ -49,7 +52,7 @@
 		"lint:scaffolds": "bun tools/scripts/lint/scaffolds.script.ts",
 		"lint:agents": "bun tools/scripts/lint/agent-redirector-contract.script.ts && bun tools/scripts/lint/agent-slots-in-sync.script.ts",
 		"lint:agent-claims": "bun tools/scripts/lint/agent-claims.script.ts",
-		"lint:agent-claims:warn": "echo '\u26a0 lint:agent-claims is ADVISORY since x00088 \u2014 use `bun run lint:agent-claims` directly if you want to see the warnings. It never blocks.'",
+		"lint:agent-claims:warn": "echo '⚠ lint:agent-claims is ADVISORY since x00088 — use `bun run lint:agent-claims` directly if you want to see the warnings. It never blocks.'",
 		"lint:cli-imports": "bun tools/scripts/lint/no-internal-core-imports.script.ts",
 		"lint:internal-naming": "bun tools/scripts/lint/no-internal-imports.script.ts",
 		"lint:cli-coverage": "bun tools/scripts/lint/cli-coverage.script.ts",
