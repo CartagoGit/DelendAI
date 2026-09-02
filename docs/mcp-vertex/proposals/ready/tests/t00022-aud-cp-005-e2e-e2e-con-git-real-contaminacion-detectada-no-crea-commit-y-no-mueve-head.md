@@ -335,3 +335,37 @@ dejen basura deben fallar (lint reviewer-monitor lo mide).
   `plugins/commit-policy/src/lib/services/commit-driver.ts` (isolated
   branch, `~L487-701`) and `cross-agent.spec.ts` line ~193 vs.
   `cross-agent-real.spec.ts` line ~89.
+
+### Resolución 2026-09-02 — el conflicto t00018 vs t00022 era de contrato, y lo gana la opción documentada
+
+`allowForeignChanges` está documentado como *"Explicitly allow slice
+commits to **include** changes made by other agents... Default false"*.
+Es decir: `false` significa **no incluir** el trabajo ajeno en el commit
+— no significa "rechazar mientras otro agente tenga algo staged".
+
+Bajo esa lectura:
+
+- `t00018` es correcto: commitea sólo sus ficheros y deja el trabajo
+  ajeno staged. El contrato se cumple.
+- El `ERR CROSS_AGENT_CONTAMINATION` que este test exigía era la forma
+  que tenía la implementación **anterior a x00270** de garantizar lo
+  mismo: abortar el commit entero. El índice aislado lo garantiza
+  estructuralmente (el árbol se construye con `read-tree HEAD` + la
+  allowList, así que una ruta ajena no puede entrar), que es una
+  garantía **más fuerte**, no más débil.
+
+Y es determinante para un enjambre: con la lectura estricta, cada agente
+abortaría siempre que cualquier otro tenga algo staged — que en este
+repo es casi siempre. Agentes parados sin saber qué hacer, que es
+exactamente el fallo que este trabajo debe evitar.
+
+Test 1 se ha reescrito para comprobar **la propiedad que pedía la
+auditoría** en lugar del mecanismo: se lee Git de verdad y se verifica
+que el commit contiene exactamente `agent-a.ts`, que `intruder.ts` no
+está en él, que HEAD avanza exactamente 1, y que el trabajo ajeno sigue
+staged e intacto (robárselo o resetearlo sería su propia forma de
+contaminación cruzada). 3/3 en verde.
+
+La guarda `CROSS_AGENT_CONTAMINATION` sigue viva y con test propio
+(`engine.spec.ts`) para la ruta de índice compartido, donde la exclusión
+no está garantizada por construcción — ahí sí protege.

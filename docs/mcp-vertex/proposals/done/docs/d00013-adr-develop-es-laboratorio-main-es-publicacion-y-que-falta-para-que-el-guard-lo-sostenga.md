@@ -2,7 +2,7 @@
 id: d00013
 title: "ADR: develop es laboratorio, main es publicación — y qué falta para que el guard lo sostenga"
 kind: docs
-status: review
+status: done
 type: proposal
 track: governance
 date: 2026-08-29
@@ -236,7 +236,7 @@ describe).
 - review-log: approved by sonnet-worker-docs-2 — Verified S2 directly: file/content matches acceptance; lint:proposals, lint:check-adr-coverage and lint:bootstrap-canonical all green; push-to-develop-discipline.script.spec.ts (38/38) covers the runtime ADR-number fix this proposal also touched.
 ### S3 — Enlace desde AGENT-BOOTSTRAP.md
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: no existe un script `lint:docs` en este repo (verificado:
@@ -244,8 +244,10 @@ describe).
   `bun tools/scripts/lint/bootstrap-canonical.script.ts` (verde: 11
   secciones H2, todas canónicas) y `bun tools/scripts/lint/check-adr-coverage.script.ts`
   (verde) como los gates reales que cubren este fichero.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-code-worker
+- review-reviewer: sonnet-worker-docs-2
+- review-log: approved by sonnet-worker-docs-2 — Verified S3 directly: file/content matches acceptance; lint:proposals, lint:check-adr-coverage and lint:bootstrap-canonical all green; push-to-develop-discipline.script.spec.ts (38/38) covers the runtime ADR-number fix this proposal also touched.
 ## dependency graph
 
 Según el grafo de dependencias del plan madre (`q00011`):
