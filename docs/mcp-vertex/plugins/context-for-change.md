@@ -1,14 +1,5 @@
-# Context For Change
-
-## Filesystem safety
-
-The plugin now reads source files exclusively through SafeWorkspaceReader from @mcp-vertex/core.
-
-Rejected inputs:
-
-- Absolute paths outside the workspace root.
-- Relative traversal that escapes the workspace.
-- Symlinks inside the workspace that resolve outside it.
-- Reserved paths such as .git, .env, and node_modules.
-
-Operationally, callers receive a structured tool error whose reason starts with workspace-containment instead of a raw filesystem exception.
+> **Merged (d00014).** This page's content moved into the auto-generated
+> canonical page for this plugin: see
+> [`auto-generated/context-for-change.md`](auto-generated/context-for-change.md)
+> (its "Notes" section). Edit the source prose at
+> [`notes/context-for-change.notes.md`](notes/context-for-change.notes.md).

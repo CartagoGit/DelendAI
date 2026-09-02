@@ -1,14 +1,5 @@
-# Impact Analysis
-
-## Filesystem safety
-
-The impact-analysis and tests-for-change tools now resolve user-supplied file anchors through SafeWorkspaceReader from @mcp-vertex/core.
-
-Rejected inputs:
-
-- Absolute paths outside the workspace root.
-- Relative traversal that escapes the workspace.
-- Symlink chains that leave the workspace.
-- Reserved paths such as .git, .env, and node_modules.
-
-When containment fails, the tool returns the standard structured error envelope with a workspace-containment reason instead of reading external files or crashing.
+> **Merged (d00014).** This page's content moved into the auto-generated
+> canonical page for this plugin: see
+> [`auto-generated/impact-analysis.md`](auto-generated/impact-analysis.md)
+> (its "Notes" section). Edit the source prose at
+> [`notes/impact-analysis.notes.md`](notes/impact-analysis.notes.md).
