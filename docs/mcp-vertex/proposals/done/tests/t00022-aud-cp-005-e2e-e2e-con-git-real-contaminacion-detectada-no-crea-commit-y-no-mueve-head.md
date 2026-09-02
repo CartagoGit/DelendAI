@@ -2,7 +2,7 @@
 id: t00022
 title: "AUD-CP-005.e2e — E2E con Git real: contaminación detectada NO crea commit y NO mueve HEAD"
 kind: test
-status: review
+status: done
 shipped-in: ["2954b19f9"]
 type: proposal
 track: commit-policy
@@ -268,8 +268,10 @@ dejen basura deben fallar (lint reviewer-monitor lo mide).
 - **Depends on**: S1 + `x00269` (suministra el contrato
   `commitCreated` / `headMoved`) + `x00270` (suministra el modo
   de aislamiento usado por Test 3).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-orchestrator
+- review-reviewer: sonnet-reviewer-t00022
+- review-log: approved by sonnet-reviewer-t00022 — Verified (a) options.ts:194-198 doc comment literally says allowForeignChanges=false means do not INCLUDE foreign changes, not 'refuse while foreign work is staged' — t00018's OK-outcome reading is the documented one. (b) Traced commitWithGuard's isolated branch (commit-driver.ts:487-701): index is read-tree HEAD then only allowList is added; gitCachedNames() runs 'git diff --cached --name-only' against HEAD, so an untracked foreign path (not in HEAD, never added) cannot appear in the diff — structurally excluded, confirmed by code trace, not just assertion. (c) Rewritten Test 1 in cross-agent-real.spec.ts now inspects real Git via 'git show --name-only HEAD' and asserts intruder.ts is absent from the actual commit tree while agent-a.ts is present, plus confirms intruder.ts stays staged/untouched — this proves the AUD-CP-005 property (real git state, not self-report) even more directly than the original refusal-based test. (d) CROSS_AGENT_CONTAMINATION guard remains reachable and tested on both paths: engine.spec.ts:327-352 (isolated path, workspaceRoot set) and tests/src/lib/services/commit-driver.spec.ts:490-529 (shared-index/non-isolated path, no workspaceRoot — confirmed via direct read). (e) Ran cross-agent-real.spec.ts standalone: 3/3 passed. Ran full --project commit-policy: 321 passed, 1 skipped (322 total), 26 files. Judgement call is sound: the isolated-index guarantee (x00270) is strictly stronger than the pre-existing abort-based guarantee, t00018 and the rewritten t00022 Test 1 are now mutually consistent, and the contamination guard is not weakened anywhere it structurally applies.
 ### S3 — Spec de concurrencia 8x con `GIT_INDEX_FILE` aislado
 
 - **Status**: done
