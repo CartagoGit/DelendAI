@@ -132,7 +132,7 @@ package.json:
 
 ### S3 — Subpaths `client/contracts` y `client/transport` + smoke sin `@types/node`
 
-- **Status**: pending
+- **Status**: blocked (attempted and reverted 2026-09-02 — see Notes)
 - **Files**:
     - `packages/client/package.json` (`exports`, nuevos subpaths)
     - `packages/client/tsconfig.contracts.json` / equivalente (nuevo,
@@ -142,7 +142,7 @@ package.json:
 
 ### S4 — Degradar `@mcp-vertex/core` a `peerDependencies` opcional
 
-- **Status**: pending
+- **Status**: blocked (depends on S3)
 - **Files**:
     - `packages/client/package.json`
     - `packages/client/tests/build/optional-core-peer.spec.ts` (nuevo:
@@ -193,3 +193,47 @@ problema real es puntual (un fichero, un import de valor), no
 sistémico. El diseño de esta propuesta refleja eso: no es una reescritura
 grande del cliente, es aislar el único punto de fuga real y poner un
 test que impida que reaparezca.
+
+### 2026-09-02 — S1/S2 verified already done; S3 blocked by an upstream finding
+
+S1 and S2 were already implemented in `develop` before this session
+(found via `git log`, landed under an unrelated commit message) —
+verified genuinely, not just present: the boundary spec
+(`no-node-outside-client-node.spec.ts`) passes 6/6, and
+`write-scaffolded-files.ts` really lives under `src/node/scaffold/`
+with a re-export left at the old path for compat, exactly as S2
+specifies.
+
+S3 was attempted and reverted. A `tsconfig.contracts.json` with
+`"lib": ["ES2022", "DOM"]` and `"types": []` compiling
+`src/lib/contracts/**` + `src/lib/transport/**` fails, and not for a
+reason fixable inside `packages/client`:
+
+- `src/lib/transport/mcp-stdio-client.ts:245` uses the ambient
+  `Buffer` type directly in a stderr-data callback — a real,
+  independent small violation S1's own boundary test does not catch
+  (it only flags `node:*`/`@mcp-vertex/core` *import specifiers*, not
+  ambient global type usage). Fixable in isolation.
+- The blocking issue is upstream: `src/lib/contracts/interfaces/{tool-descriptor,plugin-activation}.interface.ts`
+  do `import type { X } from '@mcp-vertex/core/contracts'`, and
+  TypeScript type-checks the **full** target module to resolve `X`
+  even for a type-only re-export. `@mcp-vertex/core/contracts`'s own
+  barrel (`packages/core/src/contracts/index.ts`) re-exports types
+  from implementation files (`../lib/cli/graceful-shutdown`,
+  `../lib/shared/with-file-mutex`, etc.) that use ambient `process`,
+  `Buffer`, and `NodeJS.*` — so any tsconfig without `@types/node`
+  fails on files the client never asked to compile. This is not a gap
+  in the client; it is `@mcp-vertex/core/contracts` not actually being
+  library-safe despite its own doc comment claiming "no Node-only
+  modules". Fixing it is core's responsibility (adjacent to `r00040`'s
+  barrel work, not this proposal's declared file scope), so it was not
+  attempted here — doing it as a side effect of r00041 would be scope
+  creep into a different proposal's territory.
+- No files were left half-changed: the experimental
+  `tsconfig.contracts.json` was deleted after confirming the failure
+  mode; `git status` is clean on this proposal's slices beyond the
+  status notes above.
+
+S4 depends on S3 and is blocked transitively. Proposal stays in
+`ready/`: 2 of 4 slices are genuinely complete, 2 are blocked on a
+cross-cutting core fix outside this proposal's scope.
