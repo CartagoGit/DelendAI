@@ -2,15 +2,15 @@
 id: f00377
 title: "docs generated."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#docs-generated
 shipped-in: ["82c54bcc"]
-last-transition-id: ad39fbd1-897d-42b2-9477-ef0458713dff
-last-correlation-id: ad39fbd1-897d-42b2-9477-ef0458713dff
-last-transition-from: in-progress
+last-transition-id: 9a9f9ec4-6d11-4052-ad3a-b5d208bde920
+last-correlation-id: 9a9f9ec4-6d11-4052-ad3a-b5d208bde920
+last-transition-from: review
 ---
 
 # f00377 — docs generated.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00377-docs-generated.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00377-docs-generated.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
