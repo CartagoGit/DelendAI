@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type {
-	IDeclaredBranchPolicy,
-	IGitHubBranchProtectionResponse,
-} from './verify-main-health.script.ts';
+import type { IGitHubBranchProtectionResponse } from './lib/github-protection.lib.ts';
+import type { IDeclaredBranchPolicy } from './verify-branch-protection.script.ts';
 import { diffDeclaredProtection } from './verify-main-health.script.ts';
 
 const declaredPolicy = (
