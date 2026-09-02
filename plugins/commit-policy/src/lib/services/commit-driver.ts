@@ -105,6 +105,14 @@ export interface ICommitDriverResult extends ICommitAndPushResult {
 	readonly headAfter?: string | undefined;
 	/** Pre-commit trace for stage → validate → commit assertions. */
 	readonly trace?: ICommitTrace | undefined;
+	/**
+	 * Files left out because another agent holds them. A partial
+	 * withholding still commits — the rest of the work is finished and
+	 * has every right to land — but it must never be silent: the caller
+	 * has to be able to tell "I committed all of it" from "I committed
+	 * what was mine".
+	 */
+	readonly withheldForeignLocks?: readonly string[] | undefined;
 	/** The resolved author at commit time (for audit / output). */
 	readonly resolvedAuthor?:
 		| {
@@ -909,6 +917,9 @@ const runCommitDriverUnlocked = async (
 			refusal: buildForeignLockRefusal(lockFilter.withheld),
 		};
 	}
+	const withheldForeignLocks = lockFilter.withheld.map(
+		(holding) => holding.file,
+	);
 	const normalizedFiles = lockFilter.files.map(normalizeStagePath);
 	const result = await commitWithGuard({
 		run: options.run,
