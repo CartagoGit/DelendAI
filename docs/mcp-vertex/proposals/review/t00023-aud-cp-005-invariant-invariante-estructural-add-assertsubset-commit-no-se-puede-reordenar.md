@@ -220,7 +220,8 @@ Como el bloque "Nivel 3" arriba. Vive en
 - **Files**: `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts` (añadir `it`).
 - **Gate**: test passing
 - **Depends on**: `x00269`
-
+- review-state: in_review
+- review-implementer: sonnet-worker-tests-2-impl
 ## acceptance
 
 - `bun tools/scripts/lint/commit-driver-guard.script.ts` sale 0.
