@@ -123,7 +123,8 @@ realmente cada llamante, para que S2 no sea adivinanza.
 
 Sustituir la forma completa por el resumen estrecho en `alternates`.
 Medir el delta.
-
+- review-state: in_review
+- review-implementer: sonnet-worker-tokens
 ### S3 — Niveles de detalle
 
 - **Status**: pending
