@@ -14,6 +14,7 @@ import {
 	readLock,
 	type ILockEntry,
 } from '../locks/agent-lock-engine';
+import { readWaitDiagnostics } from '../locks/wait-registry-reader';
 
 const ZOMBIE_AGE_MS = 30_000;
 const TMP_ORPHAN_AGE_MS = 60_000;
@@ -42,11 +43,31 @@ const LOG_GAP_SCHEMA = z.object({
 	gap_seconds: z.number().nullable(),
 });
 
+const WAIT_SCHEMA = z.object({
+	waiter: z.string(),
+	waitingOnTaskId: z.string(),
+	holder: z.string().nullable(),
+	waitingForSeconds: z.number().nullable(),
+});
+
 const AGENTS_LOCK_DIAGNOSE_OUTPUT_SCHEMA = z.object({
 	ok: z.literal(true),
 	zombies: z.array(ZOMBIE_SCHEMA),
 	tmpOrphans: z.array(TMP_ORPHAN_SCHEMA),
 	logGaps: z.array(LOG_GAP_SCHEMA),
+	/**
+	 * Who is currently blocked on whom. Everything above describes a
+	 * lock going wrong by itself; this is the failure that only exists
+	 * BETWEEN agents, and without it a stalled swarm looked like a lock
+	 * file full of healthy heartbeating claims and no explanation.
+	 */
+	waits: z.array(WAIT_SCHEMA),
+	/**
+	 * Closed cycles of waiters. Non-empty means a real deadlock: no
+	 * timeout will resolve it, because every participant is waiting on
+	 * someone who is waiting on them. One of them has to give way.
+	 */
+	deadlocks: z.array(z.array(z.string())),
 });
 
 export interface IAgentsLockDiagnoseToolOptions {
@@ -172,11 +193,18 @@ const diagnoseAgentsLock = async (
 		TMP_ORPHAN_AGE_MS,
 	);
 	const latestByTask = await readLatestLogTsByTask(options.lockPathAbs);
+	const waitDiagnostics = await readWaitDiagnostics({
+		lockPathAbs: options.lockPathAbs,
+		inFlight: lock.in_flight,
+		nowMs,
+	});
 	return {
 		ok: true,
 		zombies,
 		tmpOrphans: [...tmpOrphans],
 		logGaps: buildLogGaps(zombies, latestByTask),
+		waits: [...waitDiagnostics.waits],
+		deadlocks: waitDiagnostics.deadlocks.map((cycle) => [...cycle]),
 	};
 };
 

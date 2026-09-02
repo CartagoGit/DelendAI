@@ -170,3 +170,15 @@ describe('parseGlobalThresholds', () => {
 		);
 	});
 });
+
+describe('coverage:ratchet script wiring', () => {
+	it("uses Vitest 4's --coverage.reporter=json-summary, not the removed --reporter=json-summary form", () => {
+		const repoRoot = process.cwd();
+		const packageJson = JSON.parse(
+			readFileSync(join(repoRoot, 'package.json'), 'utf8'),
+		) as { readonly scripts: Record<string, string> };
+		const script = packageJson.scripts['coverage:ratchet'];
+		expect(script).toContain('--coverage.reporter=json-summary');
+		expect(script).not.toMatch(/(?<!\.)--reporter=json-summary/u);
+	});
+});
