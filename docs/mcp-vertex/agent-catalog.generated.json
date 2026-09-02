@@ -1755,9 +1755,9 @@
 		"byStatus": {
 			"ready": 55,
 			"in-progress": 5,
-			"review": 9,
+			"review": 8,
 			"paused": 1,
-			"done": 670,
+			"done": 671,
 			"blocked": 23,
 			"retired": 13,
 			"unspecified": 0
