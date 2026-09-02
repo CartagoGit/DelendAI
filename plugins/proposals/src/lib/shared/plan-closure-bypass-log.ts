@@ -63,7 +63,12 @@ export const recordPlanClosureBypass = (input: {
 	};
 	events.push(event);
 	gc(nowMs);
-	// eslint-disable-next-line no-console -- operator-visible audit trail
+	// eslint-disable-next-line no-console -- operator-visible audit trail.
+	// MUST be `warn`, never `info`/`log`: this runs inside the MCP stdio
+	// server, where stdout IS the JSON-RPC channel. Writing an audit line
+	// there corrupts the protocol stream, and the client reports it as
+	// "Failed to parse message" with no hint of where it came from.
+	// `lint:no-stdout-in-runtime` enforces this.
 	console.warn(
 		`[mcp-vertex] plan-closure-bypassed proposal=${event.proposalId} via=${event.via} agent=${event.agent} reason=${JSON.stringify(event.reason)}`,
 	);
