@@ -2,7 +2,7 @@
 id: d00415
 title: "Document pre-existing test failures in apps-ide (header-bar + settings i18n)"
 kind: docs
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-08-31
@@ -55,8 +55,10 @@ release can proceed.
   - `packages/ui-extension/src/components/header-bar.ts`
   - `packages/ui-extension/tests/components/header-bar.spec.ts`
 - **Gate**: `bunx vitest run packages/ui-extension/tests/components/header-bar.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: implementation_runner
+- review-reviewer: mcp-vertex-delivery-verifier
+- review-log: approved by mcp-vertex-delivery-verifier
 ### S3 — Follow-up: fix F3 + i18n gap (settings copy + l10n dicts)
 - **Status**: done
 - **Files**:
@@ -67,8 +69,10 @@ release can proceed.
   - `apps/web/scripts/check-i18n.ts`
 - **Gate**: `bun run --cwd apps/web check:i18n` and
   `bunx vitest run packages/ui-extension/tests/settings/render-settings.spec.ts`.
-- review-state: in_review
+- review-state: done
 - review-implementer: implementation_runner
+- review-reviewer: mcp-vertex-delivery-verifier
+- review-log: approved by mcp-vertex-delivery-verifier
 ## acceptance
 
 - [x] The three failures and the i18n gap are listed above with concrete file/line references.
