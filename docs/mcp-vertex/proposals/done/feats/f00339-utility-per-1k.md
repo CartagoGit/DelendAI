@@ -2,7 +2,7 @@
 id: f00339
 title: "utility per 1K."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -30,8 +30,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/review/f00339-utility-per-1k.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00339-utility-per-1k.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -43,8 +43,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run plugins/usage-tracking/tests/token-tax.spec.ts -> passing. Confirmed utilityPer1kTokens formula matches TOK-011 definition.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

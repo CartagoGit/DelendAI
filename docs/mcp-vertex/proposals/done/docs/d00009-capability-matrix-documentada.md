@@ -109,7 +109,10 @@ lint `c00137`.
 ### S1 — Generador de matriz + tests + integración en CI
 
 - **Status**: done
-- **Files**: `tools/scripts/gen/capability-matrix.script.ts`, `tools/scripts/gen/capability-matrix.spec.ts`, `docs/mcp-vertex/CAPABILITY-MATRIX.md` (generado)
+- **Files**: `tools/scripts/gen/capability-matrix.script.ts`, `tools/scripts/gen/capability-matrix.spec.ts`, `docs/mcp-vertex/security/capability-matrix.md` (generado)
+- **Nota**: la ruta del artefacto generado que se planteó al abrir la propuesta
+  (`docs/mcp-vertex/CAPABILITY-MATRIX.md`) nunca llegó a existir; el generador
+  escribe en `docs/mcp-vertex/security/`, junto a las otras matrices.
 - **Gate**: type
 - review-state: done
 - review-implementer: sonnet-worker-docs

@@ -280,6 +280,21 @@ describe('log tools', async () => {
 		});
 	});
 
+	it('tail — v00132 (AUD-F06): content[0].text is a compact summary, not a duplicate of structuredContent', async () => {
+		const handlers = await registeredHandlers();
+		const result = (await handlers.get('logs_tail')?.({
+			outcomeFilter: 'failed',
+		})) as {
+			content: ReadonlyArray<{ type: string; text: string }>;
+			structuredContent: Record<string, unknown>;
+		};
+		const text = result.content[0]?.text ?? '';
+		expect(text).not.toBe(JSON.stringify(result.structuredContent));
+		expect(() => JSON.parse(text)).not.toThrow();
+		expect(typeof JSON.parse(text)).toBe('string');
+		expect(text).toContain('log lines');
+	});
+
 	it('redacts canary payloads', async () => {
 		const result = redactTest(
 			'token ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL and AKIA1234567890ABCDEF',

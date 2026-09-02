@@ -7,6 +7,7 @@ import {
 	projectDetail,
 	toolError,
 	toolJson,
+	toolJsonWithSummary,
 	type Detail,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
@@ -355,12 +356,25 @@ export const buildLogToolRegistrations = (
 							tailOptionsFrom(args),
 						);
 						const events = compactEvents(storedEvents, detail);
-						return toolJson({
-							detail,
-							events,
-							oldestTs: storedEvents[0]?.ts ?? null,
-							newestTs: storedEvents.at(-1)?.ts ?? null,
-						});
+						const oldestTs = storedEvents[0]?.ts ?? null;
+						const newestTs = storedEvents.at(-1)?.ts ?? null;
+						// v00132 (AUD-F06): `content[0].text` used to
+						// duplicate `structuredContent` byte-for-byte —
+						// verified no in-process caller in this repo reads
+						// `logs_tail`'s `content[0].text` (only
+						// `structuredContent`, see plugins/logs/tests/
+						// tools.spec.ts's `structured()` helper). Emit a
+						// compact summary instead; `structuredContent`
+						// carries the full payload unchanged.
+						return toolJsonWithSummary(
+							{
+								detail,
+								events,
+								oldestTs,
+								newestTs,
+							},
+							`${events.length} log lines, newest at ${newestTs ?? 'n/a'}`,
+						);
 					},
 				);
 			},

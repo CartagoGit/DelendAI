@@ -109,7 +109,11 @@ inventarios, tablas de capabilities, dashboards).
 ### S1 — Documento editorial + enlaces cruzados
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md`, referencias en `c00140`, `r00027`, `d00009`, `d00010`, `f00190`, `tools/scripts/gen/*/README.md` (opcional)
+- **Files**: `docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md`
+- **Nota**: el listado original mezclaba el fichero entregado con propuestas
+  relacionadas (c00140, r00027, d00009, d00010, f00190) y con READMEs de
+  generadores que quedaron como opcionales y no se escribieron. Sólo el
+  documento anterior es entregable; el resto son referencias.
 - **Gate**: type
 - review-state: done
 - review-implementer: sonnet-worker-docs

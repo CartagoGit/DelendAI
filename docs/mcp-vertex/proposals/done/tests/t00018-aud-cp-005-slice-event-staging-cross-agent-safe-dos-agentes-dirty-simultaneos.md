@@ -154,7 +154,9 @@ bunx vitest run plugins/commit-policy/tests/integration/cross-agent.spec.ts
 ### S1 — Escenario cross-agent dirty simultáneo con verificación de subset
 
 - **Status**: done
-- **Files**: `plugins/commit-policy/tests/integration/cross-agent.spec.ts`, posible helper `plugins/commit-policy/tests/integration/_helpers/git-stage.ts`
+- **Files**: `plugins/commit-policy/tests/integration/cross-agent.spec.ts`
+- **Nota**: el helper `_helpers/git-stage.ts` se planteó como posible y no hizo
+  falta; el spec construye su propio staging.
 - **Gate**: type
 - **Dependency**: `x00260`, `x00261`, `x00263`
 - acceptance:

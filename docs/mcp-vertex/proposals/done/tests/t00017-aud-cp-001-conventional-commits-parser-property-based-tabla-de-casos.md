@@ -147,7 +147,11 @@ bunx vitest run plugins/commit-policy/tests/src/lib/contracts/i18n-types.spec.ts
 ### S1 — Tests del parser con tabla y property-based
 
 - **Status**: done
-- **Files**: `plugins/commit-policy/tests/src/lib/contracts/i18n-types.spec.ts` (o `scope.spec.ts`), `plugins/commit-policy/tests/fixtures/conventional-cases.json`, opcional `plugins/commit-policy/tests/src/lib/contracts/property-helpers.ts`
+- **Files**: `plugins/commit-policy/tests/src/lib/contracts/i18n-types.spec.ts`, `plugins/commit-policy/tests/fixtures/conventional-cases.json`
+- **Nota**: al abrir la propuesta se dejaron dos alternativas abiertas — un
+  `scope.spec.ts` en lugar del anterior, y un helper `property-helpers.ts`
+  marcado como opcional. No se escribió ninguna de las dos: los casos viven
+  en el spec y en el fixture.
 - **Gate**: type
 - **Dependency**: `x00259`
 - acceptance:
