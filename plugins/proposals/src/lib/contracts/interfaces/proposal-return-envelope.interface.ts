@@ -13,10 +13,10 @@ import type {
 } from '@mcp-vertex/core/contracts';
 
 /** Entity kinds `proposals` mints an `EntityRef` for. */
-export type TProposalEntityKind = 'proposal' | 'slice' | 'plan';
+export type IProposalEntityKind = 'proposal' | 'slice' | 'plan';
 
 /** `EntityRef` narrowed to the kinds this plugin actually produces. */
-export type ProposalEntityRef = EntityRef<TProposalEntityKind>;
+export type IProposalEntityRef = EntityRef<IProposalEntityKind>;
 
 /** `OperationResult` narrowed with the plugin's default `Refusal` shape. */
-export type ProposalOperationResult<T> = OperationResult<T, Refusal>;
+export type IProposalOperationResult<T> = OperationResult<T, Refusal>;

@@ -13,7 +13,7 @@
  *
  * This is additive: it does not change any existing tool's wire
  * contract. New return sites (or a future migration of an existing
- * one) can adopt `ProposalOperationResult<T>` / `toProposalEntityRef`
+ * one) can adopt `IProposalOperationResult<T>` / `toProposalEntityRef`
  * without a breaking change, because the underlying shape
  * (`{ ok, value }` / `{ ok, error }`) already matches what most
  * `proposals` tools return today.
@@ -21,16 +21,16 @@
 import { failure, success } from '@mcp-vertex/core/contracts';
 
 import type {
-	ProposalEntityRef,
-	TProposalEntityKind,
+	IProposalEntityRef,
+	IProposalEntityKind,
 } from './contracts/interfaces/proposal-return-envelope.interface';
 
 /** Build an `EntityRef` for a proposal, slice, or plan id. */
 export const toProposalEntityRef = (
-	kind: TProposalEntityKind,
+	kind: IProposalEntityKind,
 	id: string,
 	displayName?: string,
-): ProposalEntityRef =>
+): IProposalEntityRef =>
 	displayName === undefined ? { kind, id } : { kind, id, displayName };
 
 /** Re-exported so `proposals` code has one import for the envelope

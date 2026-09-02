@@ -5,7 +5,7 @@ import {
 	proposalSuccess,
 	toProposalEntityRef,
 } from '../../../src/lib/returns';
-import type { ProposalOperationResult } from '../../../src/lib/contracts/interfaces/proposal-return-envelope.interface';
+import type { IProposalOperationResult } from '../../../src/lib/contracts/interfaces/proposal-return-envelope.interface';
 
 describe('returns — r00033 S1 pilot adoption', () => {
 	it('mints an EntityRef narrowed to proposals-owned kinds', () => {
@@ -21,11 +21,10 @@ describe('returns — r00033 S1 pilot adoption', () => {
 	});
 
 	it('proposalSuccess mints a frozen OperationResult success envelope', () => {
-		const result: ProposalOperationResult<{ id: string }> = proposalSuccess(
-			{
+		const result: IProposalOperationResult<{ id: string }> =
+			proposalSuccess({
 				id: 'r00033',
-			},
-		);
+			});
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.value).toEqual({ id: 'r00033' });
@@ -34,7 +33,7 @@ describe('returns — r00033 S1 pilot adoption', () => {
 	});
 
 	it('proposalFailure mints a discriminated failure envelope', () => {
-		const result: ProposalOperationResult<never> = proposalFailure({
+		const result: IProposalOperationResult<never> = proposalFailure({
 			code: 'NOT_FOUND',
 			message: 'r00033 not found',
 		});
