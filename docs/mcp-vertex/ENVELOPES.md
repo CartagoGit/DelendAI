@@ -32,8 +32,14 @@ envelopes with optional `EnvelopeMeta`.
 ## Adoption status
 
 - **r00033** ships the types — this proposal.
-- `proposals` already uses an `OperationResult`-shaped return for
-  several tools (pilot migration).
+- `plugins/proposals/src/lib/returns.ts` is the pilot adoption: a
+  plugin-scoped surface built on `EntityRef` / `OperationResult` /
+  `success` / `failure`, narrowed to the entity kinds `proposals`
+  mints (`proposal`, `slice`, `plan`). Its type aliases live in
+  `plugins/proposals/src/lib/contracts/interfaces/proposal-return-envelope.interface.ts`
+  per the repo's `lint:types-in-contracts` convention. No existing
+  tool's wire shape was changed yet — this is the additive surface a
+  future migration adopts from, not a retrofit of an existing tool.
 - New plugin returns should reach for these envelopes first.
 - Existing plugin returns keep working; the migration is gradual.
 
