@@ -7,6 +7,7 @@ type: proposal
 track: contracts
 date: 2026-08-25
 priority: P2
+shipped-in: ["d8646783c"]
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
