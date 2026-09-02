@@ -1616,14 +1616,6 @@
 				"date": ""
 			},
 			{
-				"id": "t00031",
-				"title": "t00031",
-				"track": "testing",
-				"status": "ready",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "v00127",
 				"title": "v00127",
 				"track": "governance",
@@ -1665,11 +1657,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 44,
+			"ready": 43,
 			"in-progress": 5,
 			"review": 0,
 			"paused": 1,
-			"done": 690,
+			"done": 691,
 			"blocked": 23,
 			"retired": 13,
 			"unspecified": 0

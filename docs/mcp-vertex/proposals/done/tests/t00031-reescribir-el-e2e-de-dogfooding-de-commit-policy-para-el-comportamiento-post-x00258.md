@@ -2,7 +2,7 @@
 id: t00031
 title: "Reescribir el e2e de dogfooding de commit-policy para el comportamiento post-x00258"
 kind: test
-status: review
+status: done
 type: proposal
 track: testing
 date: 2026-08-29
@@ -172,7 +172,10 @@ ya tiene alcance propio (reescribir un e2e).
       `ok: false` con la razón `DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED` o
       `protectedBranches`, según la rama probada)
 - **Gate**: `bunx vitest run plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
-
+- review-state: done
+- review-implementer: sonnet-worker-tests-2-impl
+- review-reviewer: sonnet-worker-tests-2
+- review-log: approved by sonnet-worker-tests-2 — Confirmed S1 already done (grep for it.skip: zero hits, remote log read already uses topic/e2e-test). Reviewed and ran new S2 test: full runCommitDriver commit then runPushDriver push to develop refused with BRANCH_PROTECTED, remote never sees the branch. 8/8 dogfood.spec.ts tests passing, typecheck clean, only pre-existing unrelated failure in the project is t00022's documented Test 1 (cross-agent-real.spec.ts).
 ### S3 (deferred, not a slice of this proposal) — Lint `no-unconditional-skip` con caducidad declarada
 
 Explicitly optional / "arquitectura ideal" per the `Goal` and the risk
