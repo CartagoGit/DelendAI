@@ -103,7 +103,7 @@ que la alternativa sería rediseñar el contrato de plugins entero. El
 
 ### S1 — Inventario y lint de visibilidad
 
-- **Status**: pending
+- **Status**: done (verified 2026-09-02: `bun run lint:effect-boundaries` is live, baseline-backed, ~108 entries; see Notes)
 - **Gate**: `bun run lint:capabilities-adoption`
 - **Files**:
     - `tools/scripts/lint/`
