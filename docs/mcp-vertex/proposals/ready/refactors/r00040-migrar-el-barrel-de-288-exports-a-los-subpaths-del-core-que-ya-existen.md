@@ -179,7 +179,27 @@ real).
 - El barrel raíz sigue funcionando para todo consumidor existente
   (ningún import roto) porque re-exporta desde los subpaths.
 
-## Notes
+## risks and mitigations
+
+- **Riesgo: clasificar mal un export como `@internal` cuando algún
+  plugin de terceros ya lo importa.** Mitigación: S1 incluye un grep
+  de uso real sobre `plugins/*/src` y `packages/client/src` antes de
+  anotar cualquier export como no-`@stable`.
+- **Riesgo: mover código de `../lib` a un subpath existente rompe
+  imports relativos internos del propio core.** Mitigación: S2 migra
+  un dominio a la vez y corre el typecheck completo del paquete
+  (`bunx tsc --noEmit -p packages/core`) antes de dar el slice por
+  cerrado, no sólo el spec de superficie.
+
+## notes
+
+Corrección explícita sobre `AUD-E03`: el hallazgo de que hay 288 (por
+la auditoría, 287) exports en un barrel monolítico se sostiene, pero
+la afirmación implícita de que los subpaths de dominio no existen es
+falsa — existen, están en `package.json`, tienen ADR (`d00012`) y
+fichero fuente real, y hoy cubren 59 de 288 exports. Esta propuesta es
+"terminar una migración a medias", no "construir subpaths desde
+cero", lo que cambia sustancialmente el esfuerzo estimado a la baja.
 
 ### 2026-09-02 — S1 verified genuinely done; S2/S3 not attempted
 
@@ -214,25 +234,3 @@ one), there is no safe way to catch a broken transitive import before
 committing. Left `packages/core/src/public/index.ts` untouched beyond
 S1's read-only report. S3 (deprecation comment) explicitly depends on
 S2 having migrated at least one domain, so it is blocked too.
-
-## risks and mitigations
-
-- **Riesgo: clasificar mal un export como `@internal` cuando algún
-  plugin de terceros ya lo importa.** Mitigación: S1 incluye un grep
-  de uso real sobre `plugins/*/src` y `packages/client/src` antes de
-  anotar cualquier export como no-`@stable`.
-- **Riesgo: mover código de `../lib` a un subpath existente rompe
-  imports relativos internos del propio core.** Mitigación: S2 migra
-  un dominio a la vez y corre el typecheck completo del paquete
-  (`bunx tsc --noEmit -p packages/core`) antes de dar el slice por
-  cerrado, no sólo el spec de superficie.
-
-## notes
-
-Corrección explícita sobre `AUD-E03`: el hallazgo de que hay 288 (por
-la auditoría, 287) exports en un barrel monolítico se sostiene, pero
-la afirmación implícita de que los subpaths de dominio no existen es
-falsa — existen, están en `package.json`, tienen ADR (`d00012`) y
-fichero fuente real, y hoy cubren 59 de 288 exports. Esta propuesta es
-"terminar una migración a medias", no "construir subpaths desde
-cero", lo que cambia sustancialmente el esfuerzo estimado a la baja.
