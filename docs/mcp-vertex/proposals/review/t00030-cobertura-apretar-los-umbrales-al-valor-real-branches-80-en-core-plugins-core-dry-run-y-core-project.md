@@ -2,7 +2,7 @@
 id: t00030
 title: "Cobertura: apretar los umbrales al valor real + branches >=80% en core/plugins, core/dry-run y core/project"
 kind: test
-status: ready
+status: in-progress
 type: proposal
 track: testing
 date: 2026-08-29
@@ -13,6 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P1
 related: [q00011]
+last-transition-id: fcd964d3-041e-40f7-9e68-dfa0cc6b5d82
+last-correlation-id: fcd964d3-041e-40f7-9e68-dfa0cc6b5d82
+last-transition-from: ready
 ---
 
 # t00030 — Cobertura: apretar los umbrales + branches ≥80% en los módulos P0
