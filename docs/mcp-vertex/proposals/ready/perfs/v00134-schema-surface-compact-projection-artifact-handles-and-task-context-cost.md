@@ -57,3 +57,47 @@ La superficie native y los resultados grandes consumen contexto; hace falta medi
 - large result chaining through bounded handles
 - authorization/redaction/expiry tests
 - full fallback remains compatible
+
+## notes
+
+**2026-09-02 — left in `ready`, not actionable as written.** Three
+independent reasons:
+
+1. **The `Goal` section is a template artifact, not a written goal.**
+   It ends with a literal, unfilled field-name dump — "Required
+   sections: problem, evidence, SHA, objective, non-goals, design,
+   alternatives, contracts, expected files, dependencies,
+   compatibility, migration, tests, security, token/CI/multiagent
+   impact, rollback, observability, acceptance, DoD, parallelism,
+   worktree, reviewer, related, ownership." — pasted as prose instead
+   of being used as a checklist to write the section. This reads as a
+   generation failure (the template's own field list leaked into the
+   body), not a scoped ask.
+2. **Internally contradictory scope.** The same sentence says "RELEASE
+   TRACK excluido" and then lists "release" as one of the
+   `task_context_cost` corpora to measure end-to-end (search-edición,
+   proposal lifecycle, CI diagnosis, security, PR, impact analysis
+   *and release*). Which one governs needs a product decision this
+   session can't make unilaterally.
+3. **A named hard dependency is blocked, not done.** The body cites
+   "x00323 para gates reproducibles" as a dependency; `x00323` (
+   `docs/mcp-vertex/proposals/blocked/x00323-hermetic-generators-typescript-zero-and-quality-collect-gates.md`)
+   is `status: blocked`, so S1's "reproducible" gate can't be
+   satisfied yet regardless of how S1 itself is scoped.
+
+**What already exists, verified this session** (so a future re-scope
+doesn't have to start from zero): `compactOutputSchema()`
+(`packages/core/src/lib/surface/compact-output-schema.ts`),
+`projectDetail`/`DetailProjections` (compact/normal/full, used by
+`advise_routing`, `invoke`, `advise_spend`), and a working handle store
+(`createInMemoryHandleStore`, `IHandleStore`, wired into `invoke`'s
+`resultArtifact` for oversized results with `maxBytes`) all ship
+today. `tools/scripts/report/token-budget-dashboard.script.ts` already
+measures native/swarm per-plugin/per-tool bytes and an
+`outputSchema`/`description` breakdown into
+`docs/mcp-vertex/TOKEN-BUDGETS.md` (used to verify v00128/v00131/
+v00132 this same session). The genuinely new, unbuilt piece is the
+`task_context_cost` p50/p95 dashboard across the named corpora, plus
+authorization/redaction/expiry tests for the handle store — that's the
+real remaining scope once someone rewrites `Goal` as an actual goal,
+resolves the release-track contradiction, and `x00323` unblocks.
