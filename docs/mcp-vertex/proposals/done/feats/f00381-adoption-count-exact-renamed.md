@@ -2,15 +2,15 @@
 id: f00381
 title: "adoption count exact/renamed."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#adoption-count-exact-renamed
 shipped-in: ["b9009bb8"]
-last-transition-id: 625ded5a-9b55-4870-854c-a44851dbc7b3
-last-correlation-id: 625ded5a-9b55-4870-854c-a44851dbc7b3
-last-transition-from: in-progress
+last-transition-id: 69e16aae-76e7-4733-92d6-93a41686de58
+last-correlation-id: 69e16aae-76e7-4733-92d6-93a41686de58
+last-transition-from: review
 ---
 
 # f00381 — adoption count exact/renamed.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00381-adoption-count-exact-renamed.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00381-adoption-count-exact-renamed.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
