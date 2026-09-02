@@ -170,7 +170,7 @@ export const validateManagedLazyConfiguration = async (options: {
 	}
 	return {
 		failures,
-		issues: validatePluginConfiguration({
+		issues: await validatePluginConfiguration({
 			plugins: loadedPlugins,
 			pluginOptions: normalizedOptions,
 			enabledPlugins: options.enabledPlugins,
