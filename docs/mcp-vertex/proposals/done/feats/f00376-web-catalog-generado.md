@@ -2,15 +2,15 @@
 id: f00376
 title: "web catalog generado."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#web-catalog-generado
 shipped-in: ["82c54bcc"]
-last-transition-id: 5b2b2c07-1914-440c-bf1b-28cf54d5031d
-last-correlation-id: 5b2b2c07-1914-440c-bf1b-28cf54d5031d
-last-transition-from: in-progress
+last-transition-id: fda1ccf5-0d27-49d8-a87c-e550d2b49c98
+last-correlation-id: fda1ccf5-0d27-49d8-a87c-e550d2b49c98
+last-transition-from: review
 ---
 
 # f00376 — web catalog generado.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00376-web-catalog-generado.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00376-web-catalog-generado.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
