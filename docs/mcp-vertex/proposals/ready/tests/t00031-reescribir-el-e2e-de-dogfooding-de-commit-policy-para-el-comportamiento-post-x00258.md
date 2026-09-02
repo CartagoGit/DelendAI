@@ -152,7 +152,7 @@ ya tiene alcance propio (reescribir un e2e).
 
 ### S1 — Corregir la aserción del test existente y reactivarlo
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts` (línea 77
       en adelante: quitar `.skip`, renombrar el test, corregir la
@@ -161,7 +161,7 @@ ya tiene alcance propio (reescribir un e2e).
 
 ### S2 — Caso de rechazo de push directo a rama protegida en el camino de dogfood completo
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts` (nuevo
       `it(...)` que hace commit real vía `runCommitDriver` y luego
@@ -170,19 +170,19 @@ ya tiene alcance propio (reescribir un e2e).
       `protectedBranches`, según la rama probada)
 - **Gate**: `bunx vitest run plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
 
-### S3 — Lint `no-unconditional-skip` con caducidad declarada (opcional, arquitectura ideal)
+### S3 (deferred, not a slice of this proposal) — Lint `no-unconditional-skip` con caducidad declarada
 
-- **Status**: pending
-- **Files**:
-    - `tools/scripts/lint/no-unconditional-skip.script.ts` (nuevo)
-    - `tools/scripts/lint/no-unconditional-skip.script.spec.ts` (nuevo)
-    - `tools/scripts/lint/no-unconditional-skip.baseline.json` (nuevo,
-      baseline de los nueve `it.skip`/`describe.skip` legítimos
-      existentes, cada uno anotado con su justificación de entorno)
-    - `package.json` (`lint:no-unconditional-skip` + inserción en
-      `validate`)
-- **Gate**: `bunx vitest run tools/scripts/lint/no-unconditional-skip.script.spec.ts`,
-  `bun tools/scripts/lint/no-unconditional-skip.script.ts`
+Explicitly optional / "arquitectura ideal" per the `Goal` and the risk
+mitigation above — not counted against S1/S2's acceptance, and spun
+back out of the slice list (see `## notes`) so it does not gate this
+proposal's closure the way a real, required slice would. If picked up
+later it should become its own proposal:
+`tools/scripts/lint/no-unconditional-skip.script.ts` (new),
+`tools/scripts/lint/no-unconditional-skip.script.spec.ts` (new),
+`tools/scripts/lint/no-unconditional-skip.baseline.json` (new,
+baseline of the nine existing legitimate `it.skip`/`describe.skip`,
+each annotated with its environment justification), `package.json`
+(`lint:no-unconditional-skip` + insertion into `validate`).
 
 ## dependency graph
 
@@ -243,3 +243,47 @@ Ficheros de referencia:
 - `plugins/commit-policy/src/lib/services/push-driver.ts:100-176`
 - `tools/scripts/lint/user-markers.script.ts` (dominio distinto,
   verificado — no es una extensión trivial para S3)
+
+2026-09-02 (sonnet-worker-tests-2): verified S1 was already done —
+`dogfood.spec.ts` has no `it.skip` at all (grep confirms zero
+occurrences repo-wide in this file), and the reactivated test already
+reads `git(remote, 'log', 'topic/e2e-test', '--oneline')` exactly as
+this proposal's S1 architecture prescribes.
+
+A second premise in this proposal's own `## why` is also stale: it
+still cites a "hardcoded `develop` guard" at
+`push-driver.ts:147-152`. Read the current file — the only hardcoded
+branch guard left is `branch === 'main'`
+(`DIRECT_PUSH_TO_MAIN_NOT_ALLOWED`, lines ~161-168); `develop` is not
+in `DEFAULT_PROTECTED_BRANCHES_V2` (only `['main']`, per
+`protected-branches.ts` / c00145 "develop solo si el owner lo activa
+explícitamente") and pushing to it is refused only when a caller
+opts in via `protectedBranches`, via the generic `BRANCH_PROTECTED`
+code. This doesn't block S2 — the proposal's own acceptance already
+allows for it ("la razón `DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED` o
+`protectedBranches`, según la rama probada") — but is worth recording
+since the codebase moved further since this finding's snapshot.
+
+Wrote the missing S2: a new `it` in `dogfood.spec.ts` ("commits the
+full dogfood path, then refuses a direct push to develop when develop
+is protected") that runs a real `runCommitDriver` commit (audit
+trailer included) against `topic/e2e-test`, then calls
+`runPushDriver` targeting `develop` with `protectedBranches: ['main',
+'master', 'develop']` (opt-in, matching the current, non-hardcoded
+design) and asserts `ok: false`, `code: 'BRANCH_PROTECTED'`, and that
+the guard fired before any network call (`git branch -a` on the bare
+remote never sees `topic/e2e-test`). `npx vitest run
+plugins/commit-policy/tests/src/e2e/dogfood.spec.ts` → 8/8 passing;
+`npx tsc -p plugins/commit-policy/tsconfig.json --noEmit` clean;
+`npx vitest run plugins/commit-policy` → 320 passing / 1 pre-existing
+failure (`tests/integration/cross-agent-real.spec.ts` Test 1,
+unrelated to this proposal — see `t00022`'s notes, left `ready` for a
+real architecture-conflict fix).
+
+S3 (the `no-unconditional-skip` lint) was left out of the slice list
+entirely — it was already marked optional/"arquitectura ideal" and
+excluded from this proposal's own acceptance criteria; converted its
+heading to a plain "deferred" note (see `## slices`) so it doesn't
+block this proposal's `done` transition, consistent with the risk
+mitigation already written above ("se cita en notes para que quien
+triage el backlog decida").

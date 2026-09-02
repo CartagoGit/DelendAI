@@ -32,6 +32,11 @@ import {
 } from './file-lock-table';
 import { isLockEntryStale } from '../shared/purge-stale-locks';
 import {
+	defaultLivenessProbe,
+	isLockEntryOrphaned,
+	type ILockLivenessProbe,
+} from './orphaned-lock';
+import {
 	appendSessionEntry,
 	readSessionBalance,
 	resetSessionBalance,
@@ -569,13 +574,27 @@ const writeLock = async (
 	await writeFileAtomic(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
 };
 
+/**
+ * Drop every claim whose owner is gone — by the clock, or by the
+ * operating system.
+ *
+ * Time alone had to serve two opposite failure modes: a crashed agent
+ * held its files for the full stale window, while shortening that
+ * window started evicting agents that were alive and merely slow. A
+ * claim records its owner (`host`, `pid`), so on this host the question
+ * can be answered outright instead of estimated — see
+ * `orphaned-lock.ts` for why the check is deliberately narrow.
+ */
 export const removeStale = (
 	lock: ILockFile,
 	nowMs = Date.now(),
+	probe: ILockLivenessProbe = defaultLivenessProbe(),
 ): ILockFile => ({
 	...lock,
 	in_flight: lock.in_flight.filter(
-		(entry) => !isLockEntryStale(entry, lock.stale_after_minutes, nowMs),
+		(entry) =>
+			!isLockEntryStale(entry, lock.stale_after_minutes, nowMs) &&
+			!isLockEntryOrphaned(entry, probe),
 	),
 });
 
