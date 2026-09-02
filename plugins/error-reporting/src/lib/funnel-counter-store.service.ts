@@ -81,6 +81,29 @@ const readAll = async (statePath: string): Promise<IFunnelCounters> => {
  * result, not derivable cache), same mutex+atomic write idiom as
  * `report-store.service.ts` and `usage-tracking`'s summary file.
  */
+/**
+ * The funnel is pure observability: it must never gate, change or
+ * interrupt reporting — and reporting itself hangs off `onToolCall`,
+ * which every plugin host fires with `void`. So a counter write that
+ * throws does not fail a counter, it becomes an unhandled rejection
+ * printed as a raw stack trace in the middle of somebody's tool output.
+ *
+ * That is not hypothetical: a transient workspace (a temp dir a
+ * generator creates, uses and removes) can vanish between the `mkdir`
+ * and the lock acquire, and the ENOENT surfaced as a stack dump with no
+ * connection to anything the operator did. Now that reporting is on by
+ * default, every short-lived workspace would hit it.
+ *
+ * Losing a counter increment is the correct trade against that.
+ */
+const bestEffort = async (write: () => Promise<void>): Promise<void> => {
+	try {
+		await write();
+	} catch {
+		// Observability only — see above.
+	}
+};
+
 export const createFunnelCounterStore = (
 	dirAbs: string,
 ): IFunnelCounterStore => {
@@ -91,63 +114,68 @@ export const createFunnelCounterStore = (
 			return readAll(statePath);
 		},
 		async increment(event: IFunnelCounterEvent): Promise<void> {
-			await mkdir(dirname(statePath), { recursive: true });
-			await withFileMutex(statePath, async () => {
-				const current = await readAll(statePath);
-				// A successful dispatch closes any open circuit and clears
-				// the stale failure code — mirrors
-				// `report-store.service.ts#recordSuccess`. Built via
-				// destructure (never an explicit `undefined` assignment)
-				// because `exactOptionalPropertyTypes` forbids the latter.
-				const {
-					lastFailureCode: _staleFailureCode,
-					circuitOpenUntil: _staleCircuitOpenUntil,
-					...clearedBase
-				} = current;
-				const base =
-					event.stage === 'submissionSucceeded'
-						? clearedBase
-						: current;
-				const next: IFunnelCounters = {
-					...base,
-					[event.stage]: current[event.stage] + 1,
-					...(event.stage === 'observedFailures'
-						? { lastObservedAt: event.at }
-						: {}),
-					...(event.stage === 'submissionAttempted'
-						? { lastSubmittedAt: event.at }
-						: {}),
-					...(event.stage === 'submissionFailed'
-						? {
-								...(event.failureCode !== undefined
-									? { lastFailureCode: event.failureCode }
-									: {}),
-								...(event.circuitOpenUntil !== undefined
-									? {
-											circuitOpenUntil:
-												event.circuitOpenUntil,
-										}
-									: {}),
-							}
-						: {}),
-				};
-				await writeFileAtomic(
-					statePath,
-					JSON.stringify(next, null, '\t'),
-				);
+			await bestEffort(async () => {
+				await mkdir(dirname(statePath), { recursive: true });
+				await withFileMutex(statePath, async () => {
+					const current = await readAll(statePath);
+					// A successful dispatch closes any open circuit and clears
+					// the stale failure code — mirrors
+					// `report-store.service.ts#recordSuccess`. Built via
+					// destructure (never an explicit `undefined` assignment)
+					// because `exactOptionalPropertyTypes` forbids the latter.
+					const {
+						lastFailureCode: _staleFailureCode,
+						circuitOpenUntil: _staleCircuitOpenUntil,
+						...clearedBase
+					} = current;
+					const base =
+						event.stage === 'submissionSucceeded'
+							? clearedBase
+							: current;
+					const next: IFunnelCounters = {
+						...base,
+						[event.stage]: current[event.stage] + 1,
+						...(event.stage === 'observedFailures'
+							? { lastObservedAt: event.at }
+							: {}),
+						...(event.stage === 'submissionAttempted'
+							? { lastSubmittedAt: event.at }
+							: {}),
+						...(event.stage === 'submissionFailed'
+							? {
+									...(event.failureCode !== undefined
+										? { lastFailureCode: event.failureCode }
+										: {}),
+									...(event.circuitOpenUntil !== undefined
+										? {
+												circuitOpenUntil:
+													event.circuitOpenUntil,
+											}
+										: {}),
+								}
+							: {}),
+					};
+					await writeFileAtomic(
+						statePath,
+						JSON.stringify(next, null, '\t'),
+					);
+				});
 			});
 		},
 		async markClassified(at: string): Promise<void> {
-			await withFileMutex(statePath, async () => {
-				const current = await readAll(statePath);
-				const next: IFunnelCounters = {
-					...current,
-					lastClassifiedAt: at,
-				};
-				await writeFileAtomic(
-					statePath,
-					JSON.stringify(next, null, '\t'),
-				);
+			await bestEffort(async () => {
+				await mkdir(dirname(statePath), { recursive: true });
+				await withFileMutex(statePath, async () => {
+					const current = await readAll(statePath);
+					const next: IFunnelCounters = {
+						...current,
+						lastClassifiedAt: at,
+					};
+					await writeFileAtomic(
+						statePath,
+						JSON.stringify(next, null, '\t'),
+					);
+				});
 			});
 		},
 	};
