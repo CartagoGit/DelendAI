@@ -48,6 +48,24 @@ pre-commit:
             run: bun tools/scripts/gen/quantitative.script.ts >/dev/null 2>&1 || true
             stage_fixed: true
 
+        # Report dangling git stashes. This repo's policy is that stashes
+        # are forbidden — `tools/scripts/lint/no-stashes.script.ts` has
+        # said so, with tests, since it was written — but it was wired to
+        # nothing, so the policy was never enforced and stashes
+        # accumulated unseen. In a shared worktree they are the same
+        # hazard as a zombie lock: work an agent left behind when it
+        # stopped, invisible to everyone else, and a source of `git
+        # apply` conflicts when two hooks run at once.
+        #
+        # ADVISORY on purpose, and NOT in `bun run validate`. A stray
+        # stash must not block a commit that is otherwise fine, and it
+        # must never make validate red — a red validate blocks every
+        # agent in the swarm from closing anything, which is a far worse
+        # failure than the one being reported.
+        no-stashes-advisory:
+            run: bun run lint:no-stashes || true
+            stage_fixed: false
+
         # Validate BEM + nested SCSS rules on staged SCSS files. Advisory:
         # violations are printed but do NOT block the commit; the same
         # check runs in `bun run validate` and CI.
