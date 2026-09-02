@@ -1,9 +1,10 @@
 import { basename, dirname, join } from 'node:path';
 
-import {
-	SafeWorkspaceReader,
-	isLockEntryExpired,
-} from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+// The expiry rule lives in core's internal shared module (not the
+// public surface, which is budgeted) precisely so every reader of this
+// file agrees on when a claim stops counting as held.
+import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
 
 import type {
 	ForeignLockProvider,
