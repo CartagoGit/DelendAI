@@ -497,12 +497,12 @@ or have their own config file. Use the same single-pointer pattern:
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-09-02T00:23:07.699Z
+Generated at: 2026-09-02T00:32:18.804Z
 
 Plugins: 56
 Tools: 241
-Test specs: 524 (≈4278 cases)
+Test specs: 524 (≈4281 cases)
 Workspaces: 6 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 530 on disk (ready=55, in-progress=2, done=473)
+Proposals: 543 on disk (ready=55, in-progress=2, done=486)
 ```
 <!-- mcp-vertex:end quantitative -->

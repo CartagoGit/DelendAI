@@ -35,7 +35,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
 import {
 	clearDryRunViolationsForTests,
+	enforceDryRunReturnContract,
 	listDryRunViolations,
+	planDryRun,
 } from '@mcp-vertex/core/public';
 
 const makeHandle = () => ({
@@ -194,5 +196,43 @@ describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', 
 		);
 
 		expect(result).toEqual({ ok: true, committed: true });
+	});
+});
+
+describe('MCP envelopes (the shape every real handler returns)', () => {
+	it('accepts a plan nested in structuredContent', () => {
+		// `toolOk`/`toolJson` wrap the payload as
+		// `{ content, structuredContent }`, so checking the envelope itself
+		// for `dryRun === true` refused EVERY well-behaved tool: a handler
+		// could honour the contract perfectly and still be reported as
+		// having "ignored args.dryRun".
+		const envelope = {
+			content: [{ type: 'text', text: '{}' }],
+			structuredContent: planDryRun({ risk: 'low', note: 'preview' }),
+		};
+		const verdict = enforceDryRunReturnContract({
+			args: { dryRun: true },
+			result: envelope,
+		});
+		expect(verdict.kind).toBe('forwarded');
+	});
+
+	it('still refuses an envelope whose payload is not a dry-run plan', () => {
+		const verdict = enforceDryRunReturnContract({
+			args: { dryRun: true },
+			result: {
+				content: [{ type: 'text', text: '{}' }],
+				structuredContent: { ok: true, closable: true },
+			},
+		});
+		expect(verdict.kind).toBe('dry-run-contract-violation');
+	});
+
+	it('still accepts a bare plan with no envelope', () => {
+		const verdict = enforceDryRunReturnContract({
+			args: { dryRun: true },
+			result: planDryRun({ risk: 'low' }),
+		});
+		expect(verdict.kind).toBe('forwarded');
 	});
 });
