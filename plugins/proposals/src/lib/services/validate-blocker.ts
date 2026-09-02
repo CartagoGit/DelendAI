@@ -1,3 +1,5 @@
+import { VALIDATE_EVIDENCE_MAX_AGE_MS } from '../contracts/constants/validate-blocker.constant';
+
 import type {
 	IValidateBlockerDiagnosis,
 	IValidateJournalRow,
@@ -23,9 +25,6 @@ import type {
  *
  * Pure: the caller reads the journal, this decides what it means.
  */
-
-/** Evidence older than this is not evidence about the current tree. */
-export const VALIDATE_EVIDENCE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 const timestampOf = (row: IValidateJournalRow): number =>
 	Date.parse(row.timestamp ?? row.ts ?? '');
