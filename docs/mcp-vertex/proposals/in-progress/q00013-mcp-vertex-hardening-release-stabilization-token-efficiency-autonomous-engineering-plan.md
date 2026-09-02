@@ -2,7 +2,7 @@
 id: q00013
 title: "MCP Vertex Hardening, Release Stabilization, Token Efficiency & Autonomous Engineering Plan"
 kind: plan
-status: ready
+status: in-progress
 type: plan
 track: master-hardening-release-stabilization
 date: 2026-08-30
@@ -30,6 +30,9 @@ closureGate:
   requireEvidenceOnClose: true
   requireDevelopGreen: true
 globalGate: type
+last-transition-id: bbd77757-eebc-4e99-a7fa-43dc4c5f135c
+last-correlation-id: bbd77757-eebc-4e99-a7fa-43dc4c5f135c
+last-transition-from: ready
 ---
 
 # q00013 — MCP Vertex Hardening, Release Stabilization, Token Efficiency & Autonomous Engineering Plan
@@ -56,7 +59,7 @@ La promoción develop -> main era móvil y obsoleta. El programa necesita una fr
 
 ### S1 — Coordinar árbol completo y validar cierre
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/ready/plans/q00013-mcp-vertex-hardening-release-stabilization-token-efficiency-autonomous-engineering-plan.md`
+- **Files**: `docs/mcp-vertex/proposals/in-progress/q00013-mcp-vertex-hardening-release-stabilization-token-efficiency-autonomous-engineering-plan.md`
 - **Gate**: none
 - acceptance:
   - "PR #50 cerrado sin merge y provenance registrado"
