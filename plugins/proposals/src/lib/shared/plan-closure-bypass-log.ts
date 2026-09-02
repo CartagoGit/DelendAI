@@ -11,7 +11,7 @@
  * `via: 'plan-closure-shortcut'` marker.
  *
  * The buffer mirrors `peer-review-bypass-log.ts` (24h TTL window,
- * GC on every read/write, console.info for operator visibility,
+ * GC on every read/write, a stderr line for operator visibility,
  * session-scoped — the `state_health` plugin reads the count for
  * `plan-closure-bypass-count`).
  *
