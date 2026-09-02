@@ -38,15 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Setup repo (checkout + bun + install)
+        uses: ./.github/actions/setup-bun-repo
 
       # Packing without building ships tarballs whose declared entrypoints
       # do not exist; the failure then surfaces as MODULE_NOT_FOUND on a
@@ -113,15 +106,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Setup repo (checkout + bun + install)
+        uses: ./.github/actions/setup-bun-repo
 
       - name: Verify branch protection
         env:
@@ -139,15 +125,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Setup repo (checkout + bun + install)
+        uses: ./.github/actions/setup-bun-repo
 
       - name: Verify develop + main are healthy
         env:
@@ -162,15 +141,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Setup repo (checkout + bun + install)
+        uses: ./.github/actions/setup-bun-repo
 
       - name: Privacy + ephemeral + secrets lints
         run: |
