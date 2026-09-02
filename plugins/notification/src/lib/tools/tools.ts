@@ -18,6 +18,13 @@ import {
 	type IAgentEventsBridge,
 } from '../services/agent-events-bridge';
 import { safeSendLoggingMessage } from '../services/safe-logging';
+import { readLockSnapshot } from '../services/lock-snapshot';
+import { diagnoseWaitTimeout } from '../services/wait-diagnosis';
+import {
+	readRegisteredWaits,
+	registerWait,
+	unregisterWait,
+} from '../services/wait-registry';
 
 export interface INotifyToolOptions {
 	readonly namespacePrefix: string;
@@ -206,10 +213,11 @@ export const buildAwaitLockRegistration = (
 			server.registerTool(
 				`${options.namespacePrefix}_await_lock`,
 				{
-					description: `Block until the lock for \`taskId\` is released (no longer in-flight) or \`timeoutMs\` elapses (default ${DEFAULT_AWAIT_LOCK_TIMEOUT_MS}, max ${MAX_AWAIT_LOCK_TIMEOUT_MS}), then return {taskId,released,timedOut,alreadyFree,waitedMs}. Use this after agent_lock returns lock-conflict: wait once, then retry the claim — do NOT poll agent_lock status in a loop.`,
+					description: `Block until the lock for \`taskId\` is released (no longer in-flight) or \`timeoutMs\` elapses (default ${DEFAULT_AWAIT_LOCK_TIMEOUT_MS}, max ${MAX_AWAIT_LOCK_TIMEOUT_MS}), then return {taskId,released,timedOut,alreadyFree,waitedMs}. Use this after agent_lock returns lock-conflict: wait once, then retry the claim — do NOT poll agent_lock status in a loop. On timeout the result also carries {verdict,holder,reason,nextAction}: FOLLOW nextAction, which is never "wait again". Pass your own \`agent\` id so a mutual wait between you and the holder can be detected as the deadlock it is.`,
 					inputSchema: z.object({
 						taskId: z.string().min(1),
 						timeoutMs: z.number().optional(),
+						agent: z.string().min(1).optional(),
 					}),
 					outputSchema: z.object({
 						taskId: z.string(),
@@ -217,14 +225,37 @@ export const buildAwaitLockRegistration = (
 						timedOut: z.boolean(),
 						alreadyFree: z.boolean(),
 						waitedMs: z.number(),
+						verdict: z.string().optional(),
+						holder: z
+							.object({
+								taskId: z.string(),
+								agent: z.string(),
+								files: z.array(z.string()),
+								lastSeen: z.string().optional(),
+								heldForMs: z.number().optional(),
+							})
+							.optional(),
+						reason: z.string().optional(),
+						nextAction: z.string().optional(),
 					}),
 				},
 				async (args: {
 					taskId: string;
 					timeoutMs?: number | undefined;
+					agent?: string | undefined;
 				}) => {
 					const ac = new AbortController();
 					pending.add(ac);
+					// Publish the wait so a peer that ends up waiting on
+					// THIS agent can see the cycle. Best-effort on both
+					// sides: the registry never gates the wait itself.
+					if (args.agent !== undefined) {
+						await registerWait({
+							lockFile: options.lockFileAbs,
+							waiter: args.agent,
+							waitingOnTaskId: args.taskId,
+						});
+					}
 					try {
 						const r = await awaitLockRelease({
 							lockFile: options.lockFileAbs,
@@ -234,15 +265,52 @@ export const buildAwaitLockRegistration = (
 								: {}),
 							signal: ac.signal,
 						});
-						return toolJson({
+						const base = {
 							taskId: args.taskId,
 							released: r.released,
 							timedOut: r.timedOut,
 							alreadyFree: r.alreadyFree,
 							waitedMs: r.waitedMs,
+						};
+						if (!r.timedOut) return toolJson(base);
+						// A bare `timedOut: true` leaves the agent exactly
+						// one move — wait again — and two agents doing that
+						// to each other never progress. Every timeout comes
+						// back with the reason and a next call that is not
+						// the one that just failed.
+						const diagnosis = diagnoseWaitTimeout({
+							snapshot: await readLockSnapshot(
+								options.lockFileAbs,
+							),
+							taskId: args.taskId,
+							...(args.agent !== undefined
+								? { waiterAgent: args.agent }
+								: {}),
+							waits: await readRegisteredWaits(
+								options.lockFileAbs,
+							),
+						});
+						return toolJson({
+							...base,
+							verdict: diagnosis.verdict,
+							...(diagnosis.holder !== undefined
+								? { holder: diagnosis.holder }
+								: {}),
+							reason: diagnosis.reason,
+							nextAction: diagnosis.nextAction,
 						});
 					} finally {
 						pending.delete(ac);
+						// However the wait ended — released, timed out,
+						// aborted by a server close, or thrown through —
+						// the wait row goes. A registry that outlived its
+						// waits would invent deadlocks that do not exist.
+						if (args.agent !== undefined) {
+							await unregisterWait({
+								lockFile: options.lockFileAbs,
+								waiter: args.agent,
+							});
+						}
 					}
 				},
 			);
