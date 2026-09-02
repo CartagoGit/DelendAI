@@ -142,13 +142,30 @@ patrón ya existente de `advise_spend`.
 - review-log: approved by sonnet-verifier-tokens — detail: compact|normal|full implemented in advise-routing.tool.ts and invoke.tool.ts via DetailProjections, following advise-spend precedent; spec asserts level field and payload shape per level.
 ### S4 — `scoringTrace` como recurso
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run tokens:gate`
 - **Files**:
     - `plugins/orchestrator-runner/src/lib/tools/advise-routing.tool.ts`
 
 Devolver un identificador y exponer la traza detrás de un handle en vez
 de inline.
+
+**Resuelto por descarte, no por implementación.** El propio documento
+marca esta slice como condicional ("S4 va al final, y solo si S2+S3
+no bastaron", ver "risks and mitigations"). Medido tras S1+S2+S3+S5:
+`orchestrator-runner` pasó de 40.599 B a 14.395 B en `tools/list`
+(preset `vertex`, `bun run tokens:gate`, sesión 2026-09-02) — una
+caída del ~65%, muy por delante del objetivo de "bajar de forma
+medible" de la sección `acceptance`. `scoringTrace` solo viaja en
+`detail:'normal'|'full'` (opt-in, no en el `compact` por defecto), así
+que el coste que motivó esta slice ya no se paga por defecto. Mover
+`scoringTrace` detrás de un resource handle añadiría la complejidad de
+gestión de recursos que la propia propuesta señala como riesgo
+("el ahorro no compense la complejidad") sin ahorro adicional
+medible sobre el objetivo ya cumplido. Se cierra sin código nuevo;
+si una medición futura muestra que `normal`/`full` se usan con
+frecuencia suficiente para que el inline vuelva a doler, reabrir como
+proposal nueva en vez de reactivar esta.
 
 ### S5 — Alinear `measureSchemaBytes()`
 

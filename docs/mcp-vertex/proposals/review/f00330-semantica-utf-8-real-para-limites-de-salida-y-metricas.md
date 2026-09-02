@@ -50,7 +50,7 @@ El alcance se divide en dos dueños claros:
 
 ### S2 — Métricas de respuesta medidas en bytes UTF-8 reales
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/tests/src/lib/metrics/bytes-and-errors.spec.ts`, `packages/core/tests/src/lib/metrics/metrics.spec.ts`, `plugins/usage-tracking/src/index.ts`
 - **Gate**: `vitest packages/core/tests/src/lib/metrics/bytes-and-errors.spec.ts packages/core/tests/src/lib/metrics/metrics.spec.ts`
 - acceptance:
@@ -58,8 +58,10 @@ El alcance se divide en dos dueños claros:
   - "`estimateResultCost` separa bytes de texto y bytes JSON estructurados sin subcontar contenido multibyte."
   - "Los agregados de métricas y los consumidores inmediatos preservan el mismo contrato de `responseBytes`."
   - "Las pruebas cubren texto multibyte y demuestran que el coste no cae artificialmente a cero por usar longitud UTF-16."
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run packages/core/tests/src/lib/shared/run-command-bytes.spec.ts packages/core/tests/src/lib/metrics/bytes-and-errors.spec.ts packages/core/tests/src/lib/metrics/metrics.spec.ts -> 3 files, 32 tests passing. Confirmed source implements exact acceptance bullets: Buffer.byteLength utf8 in run-command.ts and metrics-registry.ts, multibyte-safe truncation, contentTextBytes/structuredJsonBytes/wireEstimateBytes separation.
 ## acceptance
 
 - El runner compartido de procesos aplica `maxOutputBytes` sobre bytes UTF-8 reales y respeta el presupuesto combinado stdout+stderr.

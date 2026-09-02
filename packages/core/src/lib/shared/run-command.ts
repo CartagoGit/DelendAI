@@ -79,11 +79,13 @@ interface IByteCollector {
 	readonly chunks: Buffer[];
 	collectedBytes: number;
 	readonly limitBytes?: number;
+	pendingBytes: Buffer;
 }
 
 const createByteCollector = (limitBytes?: number): IByteCollector => ({
 	chunks: [],
 	collectedBytes: 0,
+	pendingBytes: Buffer.alloc(0),
 	...(limitBytes !== undefined ? { limitBytes } : {}),
 });
 
@@ -96,21 +98,37 @@ const captureUtf8Bytes = (
 	collector: IByteCollector,
 	chunk: Buffer,
 	sharedCollector?: IByteCollector,
+	emittedChunks?: Buffer[],
 ): void => {
-	const chunkBytes = Buffer.byteLength(chunk);
-	const bytesToTake = Math.min(
-		chunkBytes,
+	const input =
+		collector.pendingBytes.length === 0
+			? chunk
+			: Buffer.concat([collector.pendingBytes, chunk]);
+	const completePrefix = truncateUtf8Buffer(input, input.length);
+	const availableBytes = Math.min(
 		remainingBytes(collector),
 		sharedCollector === undefined
 			? Number.POSITIVE_INFINITY
 			: remainingBytes(sharedCollector),
 	);
-	if (bytesToTake <= 0) return;
-	collector.chunks.push(chunk.subarray(0, bytesToTake));
-	collector.collectedBytes += bytesToTake;
-	if (sharedCollector !== undefined) {
-		sharedCollector.collectedBytes += bytesToTake;
+	const capturedPrefix =
+		availableBytes === Number.POSITIVE_INFINITY ||
+		completePrefix.length <= availableBytes
+			? completePrefix
+			: truncateUtf8Buffer(completePrefix, availableBytes);
+	if (capturedPrefix.length > 0) {
+		collector.chunks.push(capturedPrefix);
+		emittedChunks?.push(capturedPrefix);
+		collector.collectedBytes += capturedPrefix.length;
+		if (sharedCollector !== undefined) {
+			sharedCollector.collectedBytes += capturedPrefix.length;
+		}
 	}
+	collector.pendingBytes =
+		capturedPrefix.length === completePrefix.length &&
+		availableBytes > capturedPrefix.length
+			? input.subarray(completePrefix.length)
+			: Buffer.alloc(0);
 };
 
 const decodeUtf8Chunks = (chunks: readonly Buffer[]): string => {
@@ -171,13 +189,23 @@ const spawnOnce = (
 			return;
 		}
 		const outputCollector = createByteCollector(maxOutputBytes);
+		const stdoutCollector = createByteCollector();
+		const stderrCollector = createByteCollector();
+		const outputChunks: Buffer[] = [];
 		let stopReason: IStopReason | undefined;
 		const child = spawnShell(command, cwd);
-		const capture = (chunk: Buffer): void => {
-			captureUtf8Bytes(outputCollector, chunk);
-		};
-		child.stdout?.on('data', capture);
-		child.stderr?.on('data', capture);
+		const capture =
+			(collector: IByteCollector) =>
+			(chunk: Buffer): void => {
+				captureUtf8Bytes(
+					collector,
+					chunk,
+					outputCollector,
+					outputChunks,
+				);
+			};
+		child.stdout?.on('data', capture(stdoutCollector));
+		child.stderr?.on('data', capture(stderrCollector));
 		let teardown: Promise<void> | undefined;
 		const stop = (reason: IStopReason): void => {
 			if (stopReason !== undefined) return;
@@ -200,7 +228,7 @@ const spawnOnce = (
 					stopReason === 'timeout',
 					stopReason === 'abort',
 				),
-				output: decodeUtf8Chunks(outputCollector.chunks),
+				output: decodeUtf8Chunks(outputChunks),
 				timedOut: stopReason === 'timeout',
 				aborted: stopReason === 'abort',
 			});

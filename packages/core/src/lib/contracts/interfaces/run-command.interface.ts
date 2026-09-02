@@ -15,18 +15,23 @@ export interface IRunArgvOptions {
 	readonly timeoutMs?: number;
 	/**
 	 * Cap captured UTF-8 bytes across stdout+stderr combined. Default 64KiB.
-	 * Chunks are truncated to the exact remaining byte budget; if truncation
-	 * lands mid-code-point, decoding emits U+FFFD for that partial sequence.
+	 * The shared budget is measured in real UTF-8 bytes, not UTF-16 code
+	 * units. Each stream is reconstructed from raw bytes and then truncated to
+	 * the largest decodable UTF-8 prefix that still fits the remaining shared
+	 * budget, so incomplete trailing code points are dropped instead of
+	 * surfacing U+FFFD when a valid prefix is recoverable.
 	 */
 	readonly maxOutputBytes?: number;
 	/**
 	 * Optional extra cap for stdout only. When omitted, stdout can use any
-	 * remaining portion of `maxOutputBytes`.
+	 * remaining portion of `maxOutputBytes`. This limit is also measured in
+	 * real UTF-8 bytes after stream reassembly.
 	 */
 	readonly maxStdoutBytes?: number;
 	/**
 	 * Optional extra cap for stderr only. When omitted, stderr can use any
-	 * remaining portion of `maxOutputBytes`.
+	 * remaining portion of `maxOutputBytes`. This limit is also measured in
+	 * real UTF-8 bytes after stream reassembly.
 	 */
 	readonly maxStderrBytes?: number;
 	/**

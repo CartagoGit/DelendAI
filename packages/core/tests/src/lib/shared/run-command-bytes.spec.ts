@@ -1,11 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import { runArgv } from '../../../../src/lib/shared/run-command';
+import { runArgv, runCommand } from '../../../../src/lib/shared/run-command';
 
 const execEval = async (
 	script: string,
 	options?: Parameters<typeof runArgv>[1],
 ) => runArgv([process.execPath, '-e', script], options);
+
+const execShellEval = async (
+	script: string,
+	options?: Parameters<typeof runCommand>[1],
+) =>
+	runCommand(
+		`${JSON.stringify(process.execPath)} -e ${JSON.stringify(script)}`,
+		{
+			cwd: process.cwd(),
+			...options,
+		},
+	);
 
 describe('runArgv byte budgets (x00220)', () => {
 	it('caps stdout by real UTF-8 bytes, not UTF-16 code units', async () => {
@@ -19,7 +31,7 @@ describe('runArgv byte budgets (x00220)', () => {
 		expect(result.stderr).toBe('');
 	});
 
-	it('truncates a chunk to the exact remaining bytes and decodes partial UTF-8 with replacement', async () => {
+	it('drops an incomplete trailing code point instead of decoding it as U+FFFD', async () => {
 		const payload = '🙂';
 		const result = await execEval(
 			`process.stdout.write(${JSON.stringify(payload)});`,
@@ -28,6 +40,20 @@ describe('runArgv byte budgets (x00220)', () => {
 		expect(result.code).toBe(0);
 		expect(result.stdout).toBe('');
 		expect(result.stderr).toBe('');
+	});
+
+	it('lets stderr use the shared budget when stdout only has an unrecoverable UTF-8 tail', async () => {
+		const result = await execEval(
+			[
+				'process.stdout.write(Buffer.from([0xF0, 0x9F, 0x99]));',
+				"process.stderr.write('abc');",
+			].join(''),
+			{ maxOutputBytes: 3 },
+		);
+		expect(result.code).toBe(0);
+		expect(result.stdout).toBe('');
+		expect(result.stderr).toBe('abc');
+		expect(result.stderr).not.toContain('\uFFFD');
 	});
 
 	it('never leaves a replacement character when the combined budget cuts inside a multibyte character', async () => {
@@ -56,6 +82,20 @@ describe('runArgv byte budgets (x00220)', () => {
 			Buffer.byteLength(result.stdout, 'utf8') +
 				Buffer.byteLength(result.stderr, 'utf8'),
 		).toBe(6);
+	});
+
+	it('runCommand preserves stream-local UTF-8 decoding while sharing one byte budget', async () => {
+		const result = await execShellEval(
+			[
+				'process.stdout.write(Buffer.from([0xF0, 0x9F, 0x99]));',
+				"process.stderr.write('abc');",
+			].join('\n'),
+			{ maxOutputBytes: 3 },
+		);
+		expect(result.code).toBe(0);
+		expect(result.output).toBe('abc');
+		expect(result.output).not.toContain('\uFFFD');
+		expect(Buffer.byteLength(result.output, 'utf8')).toBe(3);
 	});
 
 	it('applies optional per-stream byte budgets on top of the combined budget', async () => {
