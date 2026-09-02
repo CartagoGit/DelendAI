@@ -2,15 +2,15 @@
 id: f00383
 title: "preset summaries coherentes."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#preset-summaries-coherentes
 shipped-in: ["916c0673"]
-last-transition-id: 28138d19-8915-42e6-a7dc-3f9556b77d2d
-last-correlation-id: 28138d19-8915-42e6-a7dc-3f9556b77d2d
-last-transition-from: in-progress
+last-transition-id: 39911528-cb61-42fa-a2ce-8fb8ba3b8ade
+last-correlation-id: 39911528-cb61-42fa-a2ce-8fb8ba3b8ade
+last-transition-from: review
 ---
 
 # f00383 — preset summaries coherentes.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00383-preset-summaries-coherentes.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00383-preset-summaries-coherentes.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
