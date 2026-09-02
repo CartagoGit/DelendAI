@@ -297,6 +297,17 @@ interactions.
   `bun run reclaim:orphans --apply` deletes only lossless branches
   (`ahead === 0`); stashes and unique-commit branches are never
   auto-deleted. This is a repo-level policy, not a plugin behaviour.
+- **Slice commits are causally bounded (f00417).** A slice commit is
+  only valid if the staged paths are a subset of the **machine-resolved
+  scope** at the moment the transition was emitted. The resolver
+  classifies every declared `Files:` entry as either canonical
+  git-path or unresolved (recorded in WARN, never refusal). Foreign
+  dirty files in the workspace MAY coexist; they MUST NOT enter a
+  different slice's commit. No configuration disables this. Terminal
+  outcomes (NO_CHANGE, CAUSALITY_VIOLATION, PERMANENT_REFUSAL) are
+  persisted and never retried. Every refutation path is exercised by
+  `bun tools/scripts/lint/causality-regression.script.ts` and the e2e
+  tests in `plugins/commit-policy/tests/src/e2e/causality-*.spec.ts`.
 - Every public tool declares an `outputSchema`. `catchall` is documented,
   not default.
 - **No hardcoded lists of skills / tools / proposal ids in any host
@@ -530,12 +541,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-09-02T18:19:00.289Z
+Generated at: 2026-09-02T20:45:40.894Z
 
 Plugins: 56
-Tools: 241
+Tools: 242
 Test specs: 536 (≈4371 cases)
 Workspaces: 6 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 549 on disk (ready=14, in-progress=2, done=533)
+Proposals: 520 on disk (ready=12, in-progress=2, done=506)
 ```
 <!-- mcp-vertex:end quantitative -->

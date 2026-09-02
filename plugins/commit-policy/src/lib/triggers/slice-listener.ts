@@ -322,8 +322,16 @@ export const createSliceListener = (
 		const { events: newEvents, refusals: newRefusals } = initialized
 			? diffSlices(prev, curr, config.onStatuses)
 			: indexWasUnavailable
-				? diffSlices(new Map(), curr, config.onStatuses)
-				: { events: [], refusals: [] };
+				? // f00417: when the first poll failed, the next successful
+					// poll is the BASELINE — not a snapshot-vs-empty diff.
+					// Replaying every `done` slice as a fresh transition
+					// would have driven the 2026-09-02 storm (83 events
+					// emitted on startup). The new state is acknowledged
+					// silently; future polls diff against it.
+					{ events: [], refusals: [] }
+				: // First poll ever, first read succeeded. Same
+					// reasoning: no transitions to emit yet.
+					{ events: [], refusals: [] };
 		prev = curr;
 		initialized = true;
 		indexWasUnavailable = false;

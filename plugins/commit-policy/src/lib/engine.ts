@@ -49,6 +49,12 @@ import {
 	type ConventionalHeaderStatus,
 } from './services/git-extra';
 import { withGitWriteLock } from './services/git-write-lock';
+import { resolveCommitScope } from './services/resolve-scope';
+import {
+	getPositiveOwnership,
+	type IPositiveOwnership,
+} from './services/agent-lock-positive-ownership';
+import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 import type { ITriggerEvent } from './triggers/trigger-types';
 
 /**
@@ -109,9 +115,11 @@ export type IEngineRefusalCode =
 	| 'UNKNOWN_TYPE'
 	| 'NON_CONVENTIONAL_MESSAGE'
 	| 'CROSS_AGENT_CONTAMINATION'
+	| 'CAUSALITY_VIOLATION'
 	| 'TRIGGER_HAS_NO_FILES'
 	| 'STORE_READ_ERROR'
-	| 'PUSH_FAILED';
+	| 'PUSH_FAILED'
+	| 'SETTLEMENT_IN_PROGRESS';
 
 export const ENGINE_REFUSAL_CODES = [
 	'SLICE_NOT_FOUND',
@@ -212,6 +220,16 @@ export interface IEngineOptions {
 	 * is replay-vulnerable (only acceptable for tests).
 	 */
 	readonly processedEvents?: IProcessedEventsStore | undefined;
+	/**
+	 * q00013 S2: optional hook that returns the current
+	 * settlement phase. When the phase is `settling`, the engine
+	 * refuses new slice commits with `SETTLEMENT_IN_PROGRESS`.
+	 * Hosts that don't yet wire the settlement gate leave this
+	 * undefined; behaviour matches the pre-q00013 default.
+	 */
+	readonly settlementRead?:
+		| (() => Promise<'active' | 'settling' | 'stable'>)
+		| undefined;
 	readonly onDispose?: readonly (() => void)[] | undefined;
 }
 
@@ -219,6 +237,54 @@ export interface ICommitPolicyEngine {
 	handle(event: IEngineEvent | ITriggerEvent): Promise<IEngineResult>;
 	dispose(): void;
 }
+
+/**
+ * f00417: read the agent-lock store and return positive ownership
+ * for the agent/task pair on this slice event. The slice trigger
+ * does not yet emit agentId/taskId — that wiring lands with
+ * q00013 (S4, repair agent) and the proposals-event enrichment
+ * from f00417 S1+. Until then we return `undefined` and the
+ * resolver falls back to declared-only canonical files, which is
+ * the safe default.
+ */
+const readSliceOwnership = async (input: {
+	readonly event: IEngineEvent & { readonly kind: 'slice' };
+	readonly options: IEngineOptions;
+}): Promise<IPositiveOwnership | undefined> => {
+	if (input.options.driver.workspaceRoot === undefined) return undefined;
+	const event = input.event as IEngineEvent & {
+		readonly kind: 'slice';
+	} & {
+		readonly agentId?: string;
+		readonly taskId?: string;
+	};
+	const agentId =
+		'agentId' in event && typeof event.agentId === 'string'
+			? event.agentId
+			: (input.options.driver.selfAgent ?? undefined);
+	if (agentId === undefined) return undefined;
+	const taskId =
+		'transitionId' in event && typeof event.transitionId === 'string'
+			? event.transitionId
+			: `${input.event.proposalId}-${input.event.sliceId}`;
+	const owned = await getPositiveOwnership({
+		workspaceRoot: input.options.driver.workspaceRoot,
+		agentId,
+		taskId,
+		policy: DEFAULT_LOCK_EXPIRY_POLICY,
+	});
+	if (owned.length === 0) return undefined;
+	return { agentId, taskId, ownedFiles: owned };
+};
+
+/**
+ * Default expiry used for the agent-lock reader — 1 minute of staleness
+ * is the same window proposals uses, so positive-ownership never
+ * blocks on a dead holder.
+ */
+const DEFAULT_LOCK_EXPIRY_POLICY: ILockExpiryPolicy = {
+	staleAfterMinutes: 1,
+};
 
 /**
  * Create a fresh engine. Pure factory — no module-level state.
@@ -319,6 +385,22 @@ export const createCommitPolicyEngine = (
 			}
 		}
 		completeStep('selector', 'OK');
+
+		// Step 1.5 — settlement gate (q00013 S2). When the swarm
+		// is in SETTLING, no new slice commits are accepted.
+		// We surface SETTLEMENT_IN_PROGRESS so the listener knows
+		// to retry once the round completes (or DEAD_LETTER if
+		// the round times out — covered by f00418 retry taxonomy).
+		if (event.kind === 'slice' && options.settlementRead !== undefined) {
+			const phase = await options.settlementRead();
+			if (phase === 'settling') {
+				return failAt(
+					'branch',
+					'SETTLEMENT_IN_PROGRESS',
+					`slice ${event.proposalId}-${event.sliceId} arrived during settlement; the host will retry once the round completes`,
+				);
+			}
+		}
 
 		// Step 2 — branch policy (x00267). Unified check; works
 		// for any trigger that could land on a protected
@@ -427,12 +509,103 @@ export const createCommitPolicyEngine = (
 		// the allow-list, enforces the post-stage subset check,
 		// and commits through the isolated index flow when the
 		// workspace metadata is available.
+		//
+		// f00417: before composing the driver input, resolve the
+		// slice's machine-readable commit scope. The resolver
+		// classifies every declared entry as either canonical
+		// git-path or unresolved (recorded in WARN, never
+		// refusal). For slice events we then force the driver
+		// to use the resolved scope and force `enforceSubset`
+		// regardless of `sliceScoping`/`allowForeignChanges`.
+		let resolvedSliceScope:
+			| {
+					readonly proposalId: string;
+					readonly sliceId: string;
+					readonly files: readonly string[];
+			  }
+			| undefined;
+		if (event.kind === 'slice') {
+			const workspaceDirty = await gitDirtyFilePaths(options.driver.run);
+			const ownership = await readSliceOwnership({
+				event,
+				options,
+			});
+			const scope = resolveCommitScope({
+				proposalId: event.proposalId,
+				sliceId: event.sliceId,
+				declaredFiles: event.files,
+				...(ownership !== undefined ? { ownership } : {}),
+				workspaceDirty,
+			});
+			if (scope.unresolvedEntries.length > 0) {
+				console.warn(
+					JSON.stringify({
+						event: 'commit-policy.scope.unresolved',
+						proposalId: event.proposalId,
+						sliceId: event.sliceId,
+						count: scope.unresolvedEntries.length,
+						sample: scope.unresolvedEntries.slice(0, 3),
+					}),
+				);
+			}
+			if (scope.foreignDirtyExcluded.length > 0) {
+				console.warn(
+					JSON.stringify({
+						event: 'commit-policy.scope.foreignDirtyExcluded',
+						proposalId: event.proposalId,
+						sliceId: event.sliceId,
+						count: scope.foreignDirtyExcluded.length,
+						sample: scope.foreignDirtyExcluded.slice(0, 5),
+					}),
+				);
+			}
+			resolvedSliceScope = {
+				proposalId: scope.proposalId,
+				sliceId: scope.sliceId,
+				files: scope.files,
+			};
+			if (scope.files.length === 0) {
+				// No canonical, agent-owned, dirty paths.
+				// f00417 S2: terminal NO_CHANGE, persisted.
+				completeStep('idempotency', 'SKIP');
+				const reason =
+					scope.unresolvedEntries.length > 0
+						? `NO_CHANGE: declared files unresolvable (${scope.unresolvedEntries.length} entries)`
+						: 'NO_CHANGE: scope resolved to zero files';
+				if (options.processedEvents !== undefined) {
+					await options.processedEvents.recordTerminal(
+						computeIdempotencyKey(event),
+						'NO_CHANGE',
+						reason,
+					);
+				}
+				return finish({
+					ack: 'OK',
+					committed: false,
+					pushed: false,
+					commitCreated: false,
+					headMoved: false,
+					refusal: reason,
+				});
+			}
+		}
 		const driverInput = toDriverInput(
 			event,
 			baseMessage,
 			options.driver.policy.cadence.sliceScoping &&
 				options.driver.policy.cadence.allowForeignChanges !== true,
+			resolvedSliceScope,
 		);
+		// f00417: thread the resolved slice scope into the driver
+		// so the post-stage subset check can upgrade
+		// CROSS_AGENT_CONTAMINATION to CAUSALITY_VIOLATION. Manual
+		// events carrying a sliceContext still go through the older
+		// path; only auto slice events get the new code.
+		if (event.kind === 'slice' && resolvedSliceScope !== undefined) {
+			(
+				driverInput as { resolvedSliceScope?: unknown }
+			).resolvedSliceScope = resolvedSliceScope;
+		}
 		const result = await executeGuardedCommit(
 			driverInput,
 			options.driver,
@@ -645,16 +818,34 @@ const composeMessage = (event: IEngineEvent): string => {
 const toDriverInput = (
 	event: IEngineEvent,
 	message: string,
-	sliceScoping: boolean,
+	scopeSliceCommit: boolean,
+	resolvedSliceScope:
+		| {
+				readonly proposalId: string;
+				readonly sliceId: string;
+				readonly files: readonly string[];
+		  }
+		| undefined,
 ): ICommitDriverInput => {
 	switch (event.kind) {
 		case 'slice':
+			// f00417: slice events ALWAYS commit only the
+			// machine-resolved scope. `sliceScoping`/`allowForeignChanges`
+			// no longer control this path; they still apply to
+			// threshold/interval/manual. The subset check
+			// (`enforceSubset`) is also forced for slice events
+			// — see `executeGuardedCommit` and the driver.
 			return {
 				message,
 				sliceContext: {
 					proposalId: event.proposalId,
 					sliceId: event.sliceId,
-					files: sliceScoping ? event.files : [],
+					files:
+						resolvedSliceScope !== undefined
+							? resolvedSliceScope.files
+							: scopeSliceCommit
+								? event.files
+								: [],
 				},
 			};
 		case 'threshold':
@@ -818,7 +1009,7 @@ const executeGuardedCommit = async (
 		allowList,
 		enforceSubset:
 			input.triggerContext !== undefined ||
-			(scopeSliceCommit && input.sliceContext !== undefined),
+			input.sliceContext !== undefined,
 		...(options.workspaceRoot !== undefined
 			? { workspaceRoot: options.workspaceRoot }
 			: {}),

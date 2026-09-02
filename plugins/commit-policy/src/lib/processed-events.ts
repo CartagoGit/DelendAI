@@ -31,15 +31,42 @@ export class ProcessedEventsStoreReadError extends Error {
 	}
 }
 
+export type ITerminalOutcome =
+	| 'APPLIED'
+	| 'NO_CHANGE'
+	| 'PERMANENT_REFUSAL'
+	| 'CAUSALITY_VIOLATION';
+
 export interface IProcessedRecord {
 	readonly key: string;
-	readonly sha: string;
+	/**
+	 * `null` when the terminal outcome is not a commit (NO_CHANGE,
+	 * PERMANENT_REFUSAL, CAUSALITY_VIOLATION). `APPLIED` writes the
+	 * commit sha here. Older records (pre-f00417) keep `sha: <sha>`
+	 * for backwards compatibility — readers should treat them as
+	 * `APPLIED` with no `reason`.
+	 */
+	readonly sha: string | null;
 	readonly ts: number;
+	readonly outcome: ITerminalOutcome;
+	readonly reason?: string;
 }
 
 export interface IProcessedEventsStore {
 	has(key: string): Promise<boolean>;
 	add(key: string, sha: string, now?: number): Promise<void>;
+	/**
+	 * f00417: record a terminal outcome for an event whose result
+	 * is not a commit. The engine calls this for NO_CHANGE,
+	 * CAUSALITY_VIOLATION and PERMANENT_REFUSAL. Terminal outcomes
+	 * are never re-emitted by the slice listener.
+	 */
+	recordTerminal(
+		key: string,
+		outcome: Exclude<ITerminalOutcome, 'APPLIED'>,
+		reason?: string,
+		now?: number,
+	): Promise<void>;
 	prune(now: number): Promise<number>;
 	dispose(): Promise<void>;
 }
@@ -101,17 +128,43 @@ export const createProcessedEventsStore = (
 				try {
 					const parsed = JSON.parse(
 						trimmed,
-					) as Partial<IProcessedRecord>;
+					) as Partial<IProcessedRecord> & {
+						readonly outcome?: ITerminalOutcome;
+					};
 					if (
 						typeof parsed.key === 'string' &&
-						typeof parsed.sha === 'string' &&
 						typeof parsed.ts === 'number'
 					) {
+						// f00417: legacy records (pre-f00417) only had
+						// `{ key, sha, ts }` with sha always a commit
+						// hash. New records carry `outcome` and may
+						// have `sha: null` for non-APPLIED outcomes.
+						const outcome: ITerminalOutcome =
+							parsed.outcome ?? 'APPLIED';
+						const sha =
+							parsed.sha === null ||
+							typeof parsed.sha === 'string'
+								? parsed.sha
+								: undefined;
+						if (sha === undefined && outcome === 'APPLIED') {
+							// Malformed legacy record without a sha —
+							// skip rather than fabricate.
+							continue;
+						}
 						if (includeExpired || now - parsed.ts <= ttlMs) {
 							records.set(parsed.key, {
 								key: parsed.key,
-								sha: parsed.sha,
 								ts: parsed.ts,
+								outcome,
+								...(outcome === 'APPLIED' &&
+								typeof sha === 'string'
+									? { sha }
+									: outcome === 'APPLIED'
+										? { sha: null }
+										: { sha: null }),
+								...(parsed.reason !== undefined
+									? { reason: parsed.reason }
+									: {}),
 							});
 						}
 					}
@@ -174,7 +227,30 @@ export const createProcessedEventsStore = (
 		async add(key, sha, now = Date.now()) {
 			await withFileMutex(filePath, async () => {
 				await syncSeenFromDisk(now);
-				seen.set(key, { key, sha, ts: now });
+				seen.set(key, {
+					key,
+					sha,
+					ts: now,
+					outcome: 'APPLIED',
+				});
+				await persist();
+			});
+			addsSincePrune += 1;
+			if (addsSincePrune >= pruneEvery) {
+				addsSincePrune = 0;
+				await this.prune(now);
+			}
+		},
+		async recordTerminal(key, outcome, reason, now = Date.now()) {
+			await withFileMutex(filePath, async () => {
+				await syncSeenFromDisk(now);
+				seen.set(key, {
+					key,
+					sha: null,
+					ts: now,
+					outcome,
+					...(reason !== undefined ? { reason } : {}),
+				});
 				await persist();
 			});
 			addsSincePrune += 1;

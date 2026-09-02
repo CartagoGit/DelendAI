@@ -434,6 +434,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 		const processedEvents: IProcessedEventsStore = {
 			has: vi.fn(async () => false),
 			add: vi.fn(async () => undefined),
+			recordTerminal: vi.fn(async () => undefined),
 			prune: vi.fn(async () => 0),
 			dispose: vi.fn(async () => undefined),
 		};

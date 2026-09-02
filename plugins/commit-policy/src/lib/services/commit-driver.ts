@@ -88,6 +88,21 @@ export interface ICommitDriverInput {
 	 * is empty (the trigger fired with zero dirty paths).
 	 */
 	readonly triggerContext?: ITriggerContext | undefined;
+	/**
+	 * f00417: machine-resolved scope for slice events. When set,
+	 * the post-stage subset check failure upgrades
+	 * CROSS_AGENT_CONTAMINATION to CAUSALITY_VIOLATION. The
+	 * engine supplies this whenever the slice event's resolver
+	 * produced a non-empty scope; absence means the trigger was
+	 * a manual/threshold/interval sweep.
+	 */
+	readonly resolvedSliceScope?:
+		| {
+				readonly proposalId: string;
+				readonly sliceId: string;
+				readonly files: readonly string[];
+		  }
+		| undefined;
 }
 
 export interface ICommitDriverResult extends ICommitAndPushResult {
@@ -119,6 +134,20 @@ export interface ICommitDriverResult extends ICommitAndPushResult {
 				readonly displayName: string;
 				readonly email: string;
 				readonly label: string;
+		  }
+		| undefined;
+	/**
+	 * f00417: when a slice event drove this commit and the
+	 * post-stage subset check fails, the driver returns
+	 * CAUSALITY_VIOLATION instead of the older
+	 * CROSS_AGENT_CONTAMINATION. The engine surfaces the
+	 * machine-readable refusal code via `IEngineResult.code`.
+	 */
+	readonly resolvedSliceScope?:
+		| {
+				readonly proposalId: string;
+				readonly sliceId: string;
+				readonly files: readonly string[];
 		  }
 		| undefined;
 }
@@ -171,6 +200,16 @@ interface ICommitWithGuardArgs {
 	readonly branch?: string;
 	readonly workspaceRoot?: string;
 	readonly gitTimeoutMs?: number;
+	/** f00417: when slice-context, the resolved scope the subset
+	 * check is enforcing. Absence means CROSS_AGENT_CONTAMINATION
+	 * on extras; presence upgrades to CAUSALITY_VIOLATION. */
+	readonly resolvedSliceScope?:
+		| {
+				readonly proposalId: string;
+				readonly sliceId: string;
+				readonly files: readonly string[];
+		  }
+		| undefined;
 }
 
 type ICommitWithGuardResult =
@@ -192,6 +231,7 @@ type ICommitWithGuardResult =
 			readonly headBefore: string | undefined;
 			readonly headAfter: string | undefined;
 			readonly refusal: string;
+			readonly code?: import('../contracts/branch').CommitPolicyRefusalCode;
 			readonly trace?: ICommitTrace | undefined;
 	  };
 
@@ -449,6 +489,15 @@ const commitWithSharedIndexGuard = async (
 		);
 		if (extras.length > 0) {
 			await resetWholeStageSafely(args.run);
+			// f00417: when the slice resolver produced a scope, an
+			// extras-in-stage is a causality breach — not the older
+			// CROSS_AGENT_CONTAMINATION (which lives in
+			// trigger/interval sweeps). Use the slice-specific code
+			// so callers and metrics can distinguish them.
+			const refusalCode =
+				args.resolvedSliceScope !== undefined
+					? 'CAUSALITY_VIOLATION'
+					: 'CROSS_AGENT_CONTAMINATION';
 			return {
 				committed: false,
 				pushed: false,
@@ -456,7 +505,8 @@ const commitWithSharedIndexGuard = async (
 				headMoved: false,
 				headBefore,
 				headAfter: headBefore,
-				refusal: `CROSS_AGENT_CONTAMINATION: staged extras not in trigger files=${extras.join(',')}`,
+				refusal: `${refusalCode}: staged extras not in trigger files=${extras.join(',')}`,
+				code: refusalCode,
 				trace: {
 					commitCreated: false,
 					headBefore: headBefore ?? '',
@@ -944,7 +994,10 @@ const runCommitDriverUnlocked = async (
 		branch,
 		enforceSubset:
 			input.triggerContext !== undefined ||
-			(scopeSliceCommit && input.sliceContext !== undefined),
+			input.sliceContext !== undefined,
+		...(input.resolvedSliceScope !== undefined
+			? { resolvedSliceScope: input.resolvedSliceScope }
+			: {}),
 		...(options.policy.gitTimeoutMs !== undefined
 			? { gitTimeoutMs: options.policy.gitTimeoutMs }
 			: {}),

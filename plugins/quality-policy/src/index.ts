@@ -3,6 +3,7 @@ import z from 'zod';
 
 import { DEFAULT_QUALITY_POLICY_MAX_BYTES } from './lib/contracts/constants/quality-policy.constant';
 import { buildQualityPolicyToolRegistrations } from './lib/tools/quality-policy.tool';
+import { buildSettlementToolRegistration } from './lib/tools/settlement.tool';
 
 const OptionsSchema = z.object({
 	maxBytes: z.number().int().positive().optional(),
@@ -21,13 +22,18 @@ export default definePlugin({
 				`quality-policy plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
-		return {
-			tools: buildQualityPolicyToolRegistrations({
-				namespacePrefix: ctx.namespacePrefix,
-				workspaceRootAbs: ctx.workspace.root,
-				maxBytes:
-					parsed.data.maxBytes ?? DEFAULT_QUALITY_POLICY_MAX_BYTES,
-			}),
-		};
+		const tools = buildQualityPolicyToolRegistrations({
+			namespacePrefix: ctx.namespacePrefix,
+			workspaceRootAbs: ctx.workspace.root,
+			maxBytes: parsed.data.maxBytes ?? DEFAULT_QUALITY_POLICY_MAX_BYTES,
+		});
+		// q00013 S3: settlement-runner tool — optional until the
+		// host wires the settlement gate. Hosts that don't want
+		// it can ignore the registration; the gate is opt-in.
+		const settlement = buildSettlementToolRegistration({
+			namespacePrefix: ctx.namespacePrefix,
+			defaultCwd: ctx.workspace.root,
+		});
+		return { tools: [...tools, settlement] };
 	},
 });

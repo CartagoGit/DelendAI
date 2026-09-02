@@ -36,6 +36,7 @@ export const COMMIT_POLICY_REFUSAL_CODES = [
 	'WORKSPACE_HAS_NO_FILES',
 	'TRIGGER_HAS_NO_FILES',
 	'CROSS_AGENT_CONTAMINATION',
+	'CAUSALITY_VIOLATION',
 	'NOTHING_TO_COMMIT',
 	'GIT_OPERATION_FAILED',
 	'PUSH_DISABLED',
@@ -64,6 +65,7 @@ export const classifyRefusal = (refusal: string): CommitPolicyRefusalCode => {
 	if (refusal.includes('TRIGGER_HAS_NO_FILES')) return 'TRIGGER_HAS_NO_FILES';
 	if (refusal.includes('CROSS_AGENT_CONTAMINATION'))
 		return 'CROSS_AGENT_CONTAMINATION';
+	if (refusal.includes('CAUSALITY_VIOLATION')) return 'CAUSALITY_VIOLATION';
 	if (refusal.includes('nothing to commit')) return 'NOTHING_TO_COMMIT';
 	if (refusal.includes('push.enabled')) return 'PUSH_DISABLED';
 	if (refusal.includes('could not resolve remote/branch'))

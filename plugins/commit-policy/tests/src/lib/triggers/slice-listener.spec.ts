@@ -235,7 +235,7 @@ describe('slice listener', () => {
 		listener.stop();
 	});
 
-	it('processes a configured status when the index appears after startup', async () => {
+	it('treats the first successful index read as a silent baseline (f00417)', async () => {
 		const seen: string[] = [];
 		const listener = createSliceListener(
 			workspace,
@@ -248,7 +248,9 @@ describe('slice listener', () => {
 			1000,
 		);
 
+		// First poll: index missing — empty.
 		expect(await listener.check()).toEqual([]);
+		// Index now appears with 1 done slice.
 		await writeIndex(workspace, [
 			{
 				id: 'f00181',
@@ -257,10 +259,14 @@ describe('slice listener', () => {
 				],
 			},
 		]);
-
+		// Second poll: this is the BASELINE — silently acknowledge
+		// the new state without emitting a synthetic transition
+		// for the slice that was already done. (The pre-f00417
+		// behaviour was to replay every done slice as a new
+		// event, which produced the 2026-09-02 startup storm.)
 		const events = await listener.check();
-		expect(events).toHaveLength(1);
-		expect(seen).toEqual(['S3']);
+		expect(events).toEqual([]);
+		expect(seen).toEqual([]);
 	});
 
 	it('readCurrentSliceSnapshot returns the latest slice map', async () => {

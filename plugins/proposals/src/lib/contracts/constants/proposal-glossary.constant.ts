@@ -92,7 +92,8 @@ export type IProposalKind =
 	| 'spike'
 	| 'legacy'
 	| 'resume'
-	| 'plan';
+	| 'plan'
+	| 'repair';
 
 export interface IProposalKindInfo {
 	/** Single lowercase letter; unique across all 12 kinds (f00016 §2.2). */
@@ -197,6 +198,21 @@ export const PROPOSAL_KINDS: Readonly<
 		prefix: 'q',
 		glyph: '🗂️',
 		conventionalCommitType: '',
+		bump: 'none',
+	},
+	/**
+	 * q00013 S4: settlement-driven repair slices. Created by the
+	 * repair agent when a settlement run leaves `develop` red.
+	 * The proposal's body is restricted to the failing files
+	 * the runner produced. `e` (no other kind uses it; `r` is
+	 * `resume`). Conventional commit type `fix` so the history
+	 * is grep-friendly; `bump: none` because a repair is a
+	 * recovery, not a feature.
+	 */
+	repair: {
+		prefix: 'e',
+		glyph: '🩹',
+		conventionalCommitType: 'fix',
 		bump: 'none',
 	},
 };
