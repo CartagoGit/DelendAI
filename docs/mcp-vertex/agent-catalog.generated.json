@@ -1470,10 +1470,18 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00418",
+				"title": "x00418",
+				"track": "quality",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 19,
+			"ready": 20,
 			"in-progress": 6,
 			"review": 2,
 			"paused": 1,
