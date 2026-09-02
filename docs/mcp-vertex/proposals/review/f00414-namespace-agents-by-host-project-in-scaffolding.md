@@ -2,10 +2,13 @@
 id: f00414
 title: "Namespace agents by host project in scaffolding"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: scaffolding+agents+error-reporting
 date: 2026-08-31
+last-transition-id: affe87b0-c180-4c08-a5f3-2eb82706cf09
+last-correlation-id: affe87b0-c180-4c08-a5f3-2eb82706cf09
+last-transition-from: in-progress
 ---
 
 # f00414 — Namespace agents by host project in scaffolding
@@ -29,16 +32,18 @@ El scaffolding actual impone nombres `mcp-vertex-*` y mezcla namespaces entre pr
 - global_gate: type
 
 ### S1 — Shared scaffolding and namespace contract
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/**`, `plugins/**/src/**`, `docs/mcp-vertex/**`
 - **Gate**: type
 - acceptance:
   - "Definir un contrato compartido para scaffolding, naming de agentes y namespace MCP."
   - "Resolver el namespace del proyecto host sin asumir `mcp-vertex-*` como valor global."
   - "Documentar la referencia a GitHub issue #52."
-- review-state: in_review
+- review-state: done
 - review-implementer: implementation_runner
+- review-reviewer: mcp-vertex-delivery-verifier
 - review-log: requested_changes by delivery_verifier — Corregir adopt_project y adoption-assessment para propagar mcpServerName/namespacePrefix configurados por el host, eliminando el hardcode mcp-vertex/* en agentes generados. Validar con tests de adopt/scaffold y typecheck de core/CLI.
+- review-log: approved by mcp-vertex-delivery-verifier
 ### S2 — Host-specific adapters and stale artifact cleanup
 - **Status**: pending
 - **Files**: `.github/agents/**`, `.claude/agents/**`, `.codex/agents/**`, `extensions/vscode/**`, `apps/shared/**`
