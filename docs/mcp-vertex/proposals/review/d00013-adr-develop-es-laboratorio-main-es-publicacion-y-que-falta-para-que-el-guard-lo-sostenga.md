@@ -219,7 +219,8 @@ describe).
       se corrigieron a "ADR 0019" como parte de este slice.)
 - **Gate**: `bun tools/scripts/lint/proposals.script.ts` — verde;
   `bun tools/scripts/lint/check-adr-coverage.script.ts` — verde.
-
+- review-state: in_review
+- review-implementer: claude-code-worker
 ### S2 — Corregir `GOVERNANCE-BRANCH-PROTECTION.md`
 
 - **Status**: pending
@@ -227,7 +228,8 @@ describe).
     - `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`
 - **Gate**: `grep -n "Require a pull request before merging" docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`
   debe mostrar la instrucción aplicada a `main`, no a `develop`.
-
+- review-state: in_review
+- review-implementer: claude-code-worker
 ### S3 — Enlace desde AGENT-BOOTSTRAP.md
 
 - **Status**: pending
@@ -238,7 +240,8 @@ describe).
   `bun tools/scripts/lint/bootstrap-canonical.script.ts` (verde: 11
   secciones H2, todas canónicas) y `bun tools/scripts/lint/check-adr-coverage.script.ts`
   (verde) como los gates reales que cubren este fichero.
-
+- review-state: in_review
+- review-implementer: claude-code-worker
 ## dependency graph
 
 Según el grafo de dependencias del plan madre (`q00011`):
