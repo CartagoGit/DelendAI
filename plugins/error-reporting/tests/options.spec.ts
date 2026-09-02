@@ -17,7 +17,7 @@ import {
 describe('resolveOptions', () => {
 	it('applies the intrinsic defaults when nothing is configured', () => {
 		const options = resolveOptions({});
-		expect(options.enabled).toBe(false);
+		expect(options.enabled).toBe(true);
 		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
 		expect(options.labels).toEqual([...DEFAULT_LABELS]);
 		expect(options.dedupeWindowHours).toBe(24);
@@ -64,7 +64,9 @@ describe('resolveOptions', () => {
 			backoffMaxMs: -1,
 			backoffJitterRatio: 5,
 		});
-		expect(options.enabled).toBe(false);
+		// A malformed master switch falls back to the default, which is on;
+		// a typo must not silently take reporting down.
+		expect(options.enabled).toBe(true);
 		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
 		expect(options.dedupeWindowHours).toBe(24);
 		expect(options.maxIssuesPerDay).toBe(DEFAULT_MAX_ISSUES_PER_DAY);
@@ -129,10 +131,13 @@ describe('resolveOptions', () => {
 		expect(warnings).toEqual([]);
 	});
 
-	it('requires explicit opt-in before any network reporting is enabled', () => {
-		const disabled = resolveOptions({});
-		expect(disabled.enabled).toBe(false);
-		const enabled = resolveOptions({ enabled: true });
-		expect(enabled.enabled).toBe(true);
+	it('reports by default and honours an explicit opt-out', () => {
+		// mcp-vertex can only be fixed for an adopter if its own failures
+		// reach its maintainers, and a report carries no project data — so
+		// the default is on, and `false` is the operator's escape hatch
+		// (announced on every start by `startup-notice.helper.ts`).
+		expect(resolveOptions({}).enabled).toBe(true);
+		expect(resolveOptions({ enabled: true }).enabled).toBe(true);
+		expect(resolveOptions({ enabled: false }).enabled).toBe(false);
 	});
 });
