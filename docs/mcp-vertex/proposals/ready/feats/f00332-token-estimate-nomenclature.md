@@ -77,3 +77,32 @@ alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
 actual scope/acceptance for "token-estimate-nomenclature" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+The relevant TODO is actually MET-003/MET-004 (lines ~958-987), not
+MET-001 (which is the `estimateResultBytes` bytes-fix covered by
+f00330): MET-003 proposes a `ToolCost` shape with
+`contentTextBytes`/`structuredJsonBytes`/`wireEstimateBytes`/
+`estimatedTokens`, and MET-004 requires distinguishing the `~4
+bytes/token` heuristic from a real model token count instead of
+conflating them — concretely naming `estimatedTokens4B` vs.
+`actualModelTokens`.
+
+Real derived acceptance: the metrics cost type must expose separate,
+correctly-named fields for text bytes, structured-JSON bytes, the wire
+estimate, the byte-ratio token estimate, and (when available) the real
+model token count — never a single ambiguous "tokens" field.
+
+Already implemented, not net-new work: `estimateResultCost` in
+`packages/core/src/lib/metrics/metrics-registry.ts` returns exactly
+this shape — `contentTextBytes`, `structuredJsonBytes`,
+`wireEstimateBytes`, and `estimatedTokens: { estimatedTokens4B,
+actualModelTokens }` — matching MET-003/MET-004 field-for-field.
+Covered by `bytes-and-errors.spec.ts` ("separates text, structured
+JSON and estimated token costs": asserts `estimatedTokens4B ===
+Math.ceil(wireEstimateBytes / 4)` and `actualModelTokens` stays
+`undefined` when no real tokenizer count exists). Ran
+`npx vitest run packages/core/tests/src/lib/metrics/bytes-and-errors.spec.ts packages/core/tests/src/lib/metrics/metrics.spec.ts`
+on 2026-09-02: 2 files, 32 tests passing. No code change required;
+closing on this evidence.

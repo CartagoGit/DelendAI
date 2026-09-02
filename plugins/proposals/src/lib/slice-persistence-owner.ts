@@ -1,3 +1,5 @@
+import { announceLines } from '@mcp-vertex/core/public';
+
 import type { IAutoWorkPersistMode } from './tools/auto-work-persist';
 
 /**
@@ -61,15 +63,7 @@ export const resolveSlicePersistence = (input: {
 /** Write the notice. Never throws. */
 export const announceSlicePersistence = (
 	resolution: ISlicePersistenceResolution,
-	write: (line: string) => void = (line) => {
-		process.stderr.write(line);
-	},
+	write?: (line: string) => void,
 ): void => {
-	for (const line of resolution.lines) {
-		try {
-			write(`${line}\n`);
-		} catch {
-			// Best-effort by construction.
-		}
-	}
+	announceLines(resolution.lines, write);
 };

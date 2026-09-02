@@ -1,3 +1,5 @@
+import { announceLines } from '../shared/announce-lines';
+
 import type {
 	IPluginFailureAnnouncement,
 	IPluginLoadFailure,
@@ -93,17 +95,9 @@ export const buildPluginFailureAnnouncement = (input: {
  */
 export const announcePluginFailures = (
 	announcement: IPluginFailureAnnouncement,
-	write: (line: string) => void = (line) => {
-		process.stderr.write(line);
-	},
+	write?: (line: string) => void,
 ): void => {
-	for (const line of announcement.lines) {
-		try {
-			write(`${line}\n`);
-		} catch {
-			// Reporting is best-effort by construction.
-		}
-	}
+	announceLines(announcement.lines, write);
 };
 
 /**

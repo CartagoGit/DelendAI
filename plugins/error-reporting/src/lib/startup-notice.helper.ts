@@ -1,3 +1,5 @@
+import { announceLines } from '@mcp-vertex/core/public';
+
 /**
  * What the operator is told about automatic error reporting the moment
  * the server comes up.
@@ -60,15 +62,7 @@ export const buildErrorReportingStartupNotice = (input: {
  */
 export const announceErrorReportingStartup = (
 	notice: IErrorReportingStartupNotice,
-	write: (line: string) => void = (line) => {
-		process.stderr.write(line);
-	},
+	write?: (line: string) => void,
 ): void => {
-	for (const line of notice.lines) {
-		try {
-			write(`${line}\n`);
-		} catch {
-			// Best-effort by construction.
-		}
-	}
+	announceLines(notice.lines, write);
 };

@@ -1,3 +1,5 @@
+import { announceLines } from '../shared/announce-lines';
+
 /**
  * Why the managed-lazy surface was declined, said out loud.
  *
@@ -46,15 +48,7 @@ export const buildManagedLazyDemotionNotice = (input: {
 /** Write the notice. Never throws — see `announce-plugin-failures.ts`. */
 export const announceManagedLazyDemotion = (
 	notice: IManagedLazyDemotionNotice,
-	write: (line: string) => void = (line) => {
-		process.stderr.write(line);
-	},
+	write?: (line: string) => void,
 ): void => {
-	for (const line of notice.lines) {
-		try {
-			write(`${line}\n`);
-		} catch {
-			// Best-effort by construction.
-		}
-	}
+	announceLines(notice.lines, write);
 };
