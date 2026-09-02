@@ -849,7 +849,12 @@ export const runProposalTransition = async (
 						code: 'peer-review-missing',
 						blockerType: 'missing-peer-review',
 						reason: 'proposal requires at least one independent peer-review entry in peer-review.jsonl after its latest transition to review before it can move to done',
-						nextAction: `Run ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>" } before ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }. Emergency bypass: force:true (host-approved only).`,
+						// Two calls, not one: moving a proposal into review/
+						// does not open a review round, so an agent told only
+						// to "approve" gets `missing-submit-identity` and
+						// cannot fix it — submitting under its own name would
+						// make it the implementer and bar it from approving.
+						nextAction: `Open a review round, then have a DIFFERENT agent approve it: ${options.namespacePrefix}_proposal_review { action: "submit", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<implementer>", note: "<what was built>" }, then ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>", note: "<what was checked>" }. Then ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }. Emergency bypass: force:true (host-approved only).`,
 					},
 				};
 				return {
