@@ -513,6 +513,7 @@ export const assembleCliConfig = async (
 		pluginSummaries,
 		lazyToolActivators,
 		moduleLoading,
+		surfacePluginNames,
 		lazyPluginPackages,
 		lazyPluginActivators,
 		consumeLazyPluginRegistrations,
