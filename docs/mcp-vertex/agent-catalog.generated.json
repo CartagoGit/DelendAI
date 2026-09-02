@@ -1264,14 +1264,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "d00415",
-				"title": "d00415",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "docs",
-				"date": ""
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1466,8 +1458,8 @@
 		],
 		"byStatus": {
 			"ready": 14,
-			"in-progress": 10,
-			"review": 4,
+			"in-progress": 9,
+			"review": 5,
 			"paused": 1,
 			"done": 712,
 			"blocked": 23,
