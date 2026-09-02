@@ -82,6 +82,7 @@
 		"lint:no-absolute-local-imports": "bun tools/scripts/lint/no-absolute-local-imports.script.ts",
 		"lint:no-stdout-in-runtime": "bun tools/scripts/lint/no-stdout-in-runtime.script.ts",
 		"lint:no-global-git-config-in-tests": "bun tools/scripts/lint/no-global-git-config-in-tests.script.ts",
+		"lint:no-stashes": "bun tools/scripts/lint/no-stashes.script.ts",
 		"lint:workflow-command-duplication": "bun tools/scripts/lint/workflow-command-duplication.script.ts",
 		"lint:release-pr-gate": "bun tools/scripts/lint/release-pr-gate.script.ts",
 		"lint:test-unsafe-casts": "bun tools/scripts/lint/test-unsafe-casts.script.ts",
