@@ -2,7 +2,7 @@
 id: d00011
 title: "Manual editorial: qué se queda manual vs generado"
 kind: docs
-status: review
+status: done
 type: proposal
 track: docs
 date: 2026-08-25
@@ -108,11 +108,13 @@ inventarios, tablas de capabilities, dashboards).
 
 ### S1 — Documento editorial + enlaces cruzados
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md`, referencias en `c00140`, `r00027`, `d00009`, `d00010`, `f00190`, `tools/scripts/gen/*/README.md` (opcional)
 - **Gate**: type
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-docs
+- review-reviewer: sonnet-worker-review
+- review-log: approved by sonnet-worker-review — Verified docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md exists with philosophy/manual/generated/hybrid/rules-of-gold sections and no hardcoded quantitative numbers. Closed the bidirectionality gap: quantitative.script.ts, agent-md.script.ts, check-quantitative.script.ts, check-agent-md.script.ts now reference the doc back. lint:proposals green (775 files, 0 fatal).
 ## acceptance
 
 - Documento publicado y revisado.
