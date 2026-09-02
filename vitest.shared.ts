@@ -192,6 +192,13 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(auditOrchestrator, 'index.ts'),
 		},
 		{
+			// `external-mcps` has no separate public barrel, so `/public`
+			// resolves to its entry — the same convention `github`,
+			// `gitlab` and `remote-provider-core` use in tsconfig.base.json.
+			find: '@mcp-vertex/external-mcps/public',
+			replacement: resolve(externalMcps, 'index.ts'),
+		},
+		{
 			find: /^@mcp-vertex\/external-mcps\/lib\/(.*)$/,
 			replacement: `${resolve(externalMcps, 'lib')}/$1`,
 		},

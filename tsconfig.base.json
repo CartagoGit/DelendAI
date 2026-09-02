@@ -365,6 +365,9 @@
 			"@mcp-vertex/external-mcps": [
 				"./plugins/external-mcps/src/index.ts"
 			],
+			"@mcp-vertex/external-mcps/public": [
+				"./plugins/external-mcps/src/index.ts"
+			],
 			"@mcp-vertex/external-mcps/*": ["./plugins/external-mcps/src/*"]
 		}
 	},

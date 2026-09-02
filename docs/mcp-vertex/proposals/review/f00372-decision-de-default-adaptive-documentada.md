@@ -41,7 +41,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
 - **review-log**: approved by sonnet-reviewer-12 — read ADR 0016 and ADR 0017 (docs/mcp-vertex/adr/), confirmed 0017 documents the `managed` default supersedes 0016's `adaptive` default, and confirmed `decideSurfaceModeFromCapabilities` in packages/core/src/lib/surface/decide-mode.ts and `resolveInitialSurfaceMode` (default 'managed') implement exactly the precedence ADR 0017 documents. The audit's TOK2-004 ask (documented default decision) is satisfied.
 - review-state: in_review
-- review-implementer: sonnet-verifier-9
+- review-implementer: copilot-minimax-m3
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
