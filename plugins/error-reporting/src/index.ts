@@ -32,6 +32,10 @@ import {
 	REPORT_DISPATCH_CLAIM_MS,
 } from './lib/report-scheduler.helper';
 import { createReportStore } from './lib/report-store.service';
+import {
+	announceErrorReportingStartup,
+	buildErrorReportingStartupNotice,
+} from './lib/startup-notice.helper';
 import { createSafeReporter } from './lib/reporter.service';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
 
@@ -270,7 +274,7 @@ export const buildObservedFailureHandler = (input: {
 };
 
 /**
- * Explicit opt-in automatic error reporting. When enabled, the plugin
+ * Automatic error reporting, on by default. The plugin
  * observes tool-call failures so an adopter can report mcp-vertex bugs. The
  * plugin observes tool-call failures through the same lifecycle hook
  * the `logs` plugin uses; when a failure originates inside mcp-vertex,
@@ -282,7 +286,7 @@ export default definePlugin({
 	name: 'error-reporting',
 	version: '0.1.0',
 	describe:
-		'Explicit opt-in automatic error reporting: when options.enabled = true, opens de-duplicated GitHub issues for mcp-vertex-internal failures.',
+		'Automatic error reporting, on by default: opens de-duplicated GitHub issues for mcp-vertex-internal failures. Set options.enabled = false to turn it off.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		registerInternalRuntimePaths(import.meta.url);
@@ -291,6 +295,15 @@ export default definePlugin({
 				`${ERR_REPORTING_OPTION_DEPRECATED}: ${warning.message}`,
 			);
 		});
+		// Announced on every start, in both directions: a default that
+		// sends anything anywhere has to say so where the operator will
+		// see it, together with the line that turns it off.
+		announceErrorReportingStartup(
+			buildErrorReportingStartupNotice({
+				enabled: options.enabled,
+				targetRepo: options.targetRepo,
+			}),
+		);
 		const pluginCacheDirAbs = ctx.workspace.resolve(ctx.pluginCacheDir);
 		const store = createReportStore(pluginCacheDirAbs);
 		// Same directory as `reported.json`: both are accumulated
@@ -368,11 +381,14 @@ export default definePlugin({
 						id: 'error-reporting-disabled',
 						title: 'error-reporting is disabled',
 						body: [
-							'`@mcp-vertex/error-reporting` is loaded but disabled',
-							'by default until explicit operator opt-in.',
+							'`@mcp-vertex/error-reporting` is loaded but was',
+							'switched off in this workspace; reporting is on by',
+							'default.',
 							'',
 							'Set `plugins.error-reporting.options.enabled = true` to',
-							'enable automatic reporting of mcp-vertex-internal failures.',
+							'restore automatic reporting of mcp-vertex-internal',
+							'failures. Only mcp-vertex-internal errors are ever sent',
+							'— never project code, paths or data.',
 						].join('\n'),
 					},
 				],

@@ -2,13 +2,15 @@ import z from 'zod';
 
 /**
  * Options contract for `@mcp-vertex/error-reporting`. Everything is
- * optional: the plugin ships safe defaults so an adopter stays
- * fail-closed until automatic reporting is explicitly enabled.
+ * optional: the plugin ships safe defaults, and automatic reporting is
+ * on unless an adopter turns it off.
  */
 export const OptionsSchema = z.object({
 	/**
-	 * Master switch. Default `false` — network reporting is explicit
-	 * opt-in. Set `true` to enable dispatch entirely.
+	 * Master switch. Default `true` — mcp-vertex reports its OWN
+	 * internal failures so they can be fixed. Set `false` to disable
+	 * dispatch entirely; the server announces both the default and this
+	 * line on every start.
 	 */
 	enabled: z.boolean().optional(),
 	/**

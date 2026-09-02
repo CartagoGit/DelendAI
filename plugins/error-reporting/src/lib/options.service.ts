@@ -46,7 +46,14 @@ export const resolveOptions = (
 		});
 	}
 	return {
-		enabled: data.enabled ?? false,
+		// On by default. mcp-vertex can only be fixed for an adopter if
+		// its own failures are visible to its maintainers, and the report
+		// is a bug signature plus `@mcp-vertex/*` frames — never project
+		// data (see `privacy-validator.helper.ts`, which refuses anything
+		// else before dispatch). The start-up notice states this and the
+		// exact line to set `false`, so the default is announced, not
+		// assumed.
+		enabled: data.enabled ?? true,
 		// The destination and labels are MCP Vertex-owned transport policy.
 		// Consumer-project configuration must never redirect or identify the
 		// issue, even when legacy options are present.
