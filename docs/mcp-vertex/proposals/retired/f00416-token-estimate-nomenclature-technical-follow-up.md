@@ -2,10 +2,13 @@
 id: f00416
 title: "Token estimate nomenclature technical follow-up"
 kind: feat
-status: ready
+status: retired
 type: proposal
 track: general
 date: 2026-09-02
+last-transition-id: 88a64c30-faea-4106-8eba-581b38388e5d
+last-correlation-id: 88a64c30-faea-4106-8eba-581b38388e5d
+last-transition-from: ready
 ---
 
 # f00416 — Token estimate nomenclature technical follow-up
