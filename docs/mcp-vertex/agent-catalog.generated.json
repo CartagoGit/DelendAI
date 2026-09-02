@@ -1280,14 +1280,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00385",
-				"title": "f00385",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00394",
 				"title": "f00394",
 				"track": "vscode-shared-ui",
@@ -1481,13 +1473,13 @@
 			}
 		],
 		"byStatus": {
-			"ready": 20,
+			"ready": 19,
 			"in-progress": 6,
 			"review": 1,
 			"paused": 1,
 			"done": 712,
 			"blocked": 23,
-			"retired": 14,
+			"retired": 15,
 			"unspecified": 0
 		}
 	}
