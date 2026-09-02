@@ -13,7 +13,7 @@
  *
  * Usage:
  *   bun run test:coverage \
- *     -- --reporter=json-summary        # produce a fresh
+ *     -- --coverage.reporter=json-summary        # produce a fresh
  *                                        # .cache/coverage/coverage-summary.json
  *   bun tools/scripts/coverage-ratchet.script.ts   # check
  *
@@ -24,7 +24,7 @@
  *       (nothing to tighten) or is stricter.
  *   1 — coverage improved and `vitest.config.ts` was not tightened to
  *       match, or no coverage report was found (run `test:coverage`
- *       with `--reporter=json-summary` first).
+ *       with `--coverage.reporter=json-summary` first).
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -103,7 +103,7 @@ interface IVitestCoverageSummary {
 	readonly total: IVitestCoverageSummaryTotal;
 }
 
-/** Pure: parse vitest's `--reporter=json-summary` output shape. */
+/** Pure: parse vitest's `--coverage.reporter=json-summary` output shape. */
 export const parseCoverageSummary = (raw: string): ICoverageMetrics => {
 	const parsed = JSON.parse(raw) as IVitestCoverageSummary;
 	return {
