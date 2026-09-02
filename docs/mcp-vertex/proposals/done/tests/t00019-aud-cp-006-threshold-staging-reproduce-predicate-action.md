@@ -2,7 +2,7 @@
 id: t00019
 title: "AUD-CP-006 — Threshold staging: reproduce 'predicate ≠ action'"
 kind: test
-status: review
+status: done
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -150,7 +150,7 @@ bunx vitest run plugins/commit-policy/tests/src/lib/triggers/threshold-tracker.s
 
 ### S1 — Tests del threshold trigger con tabla y repro del bug
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/tests/src/lib/triggers/threshold-tracker.spec.ts`
 - **Gate**: type
 - **Dependency**: `x00264`, `f00182`
@@ -159,8 +159,10 @@ bunx vitest run plugins/commit-policy/tests/src/lib/triggers/threshold-tracker.s
   - "caso adversario staged-ajeno pasa"
   - "idempotencia entre ticks pasa"
   - "test rojo antes del fix de x00264; verde después"
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-implementer
+- review-reviewer: sonnet-worker-tests
+- review-log: approved by sonnet-worker-tests — Ran npx vitest run plugins/commit-policy/tests/src/lib/triggers/threshold-tracker.spec.ts: 10 passed, 1 skipped (documented historical repro). Covers threshold n-1/n/n+1, staged-foreign exclusion, dirty-set-change refire, idempotent repeated tick, rename-status extraction, and end-to-end git-boundary staging contract (gitAdd + gitCachedNames subset check).
 ## acceptance
 
 - `bunx vitest run` del archivo verde con 6 casos.
