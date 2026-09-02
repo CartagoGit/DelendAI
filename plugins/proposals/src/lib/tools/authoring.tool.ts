@@ -62,6 +62,7 @@ import {
 	recordAutoTransitionRepair,
 } from '../services/auto-transition';
 import {
+	diagnoseValidateEvidence,
 	resolveRecentValidateEvidence,
 	type IValidateEvidenceDeps,
 } from './proposal-transition.tool';
@@ -1052,12 +1053,30 @@ export const buildCloseSliceRegistration = (
 							deps: closeSliceOptions.validateEvidenceDeps,
 						});
 					if (validateEvidence === null) {
+						// Same loop, same cure as `proposal_transition`:
+						// "run validate" is only useful to an agent that
+						// has not. One that just watched it fail needs the
+						// failing steps, or it repeats the run forever.
+						const diagnosis = await diagnoseValidateEvidence({
+							workspaceRoot: options.workspaceRoot,
+							...(closeSliceOptions.validateEvidenceDeps !==
+							undefined
+								? {
+										deps: closeSliceOptions.validateEvidenceDeps,
+									}
+								: {}),
+						});
 						const envelope = {
 							ok: false as const,
 							blockerType: 'validate-required' as const,
+							validateState: diagnosis.state,
+							failedSteps: diagnosis.failedSteps,
+							...(diagnosis.lastRunAt !== undefined
+								? { lastValidateAt: diagnosis.lastRunAt }
+								: {}),
 							error: {
-								reason: 'close_slice requires validate evidence from the last 24h',
-								nextAction: 'bun run validate',
+								reason: diagnosis.reason,
+								nextAction: diagnosis.nextAction,
 							},
 							proposalId: entry.id,
 							sliceId: args.sliceId,
