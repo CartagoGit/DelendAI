@@ -1376,6 +1376,14 @@
 				"date": ""
 			},
 			{
+				"id": "q00013",
+				"title": "q00013",
+				"track": "quality",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
 				"id": "r00034",
 				"title": "r00034",
 				"track": "security",
@@ -1481,7 +1489,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 16,
+			"ready": 17,
 			"in-progress": 10,
 			"review": 4,
 			"paused": 1,

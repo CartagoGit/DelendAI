@@ -84,6 +84,21 @@ export default defineConfig({
 			'extensions/vscode',
 			'tools',
 		],
+		// r00418 / UX request 2026-09-02:
+		//   - `bail: 1` stops the run at the first failed test so a human
+		//     (or agent) running `bun run test` sees the failure in real
+		//     time instead of waiting for the whole 1500-test sweep. The
+		//     noise-recovery loop ("run, see only summary, run again with
+		//     `--reporter=verbose`") is gone.
+		//   - `reporters: ['verbose']` makes every test print its result
+		//     line-by-line as it executes; a failing test surfaces its
+		//     `expected/received` block on the FIRST run.
+		//   - Both can be overridden per invocation:
+		//       `bun run test --bail 0 --reporter=default`
+		//     when a host wants the exhaustive summary (e.g. CI coverage
+		//     ratchet scripts that already triage failures offline).
+		bail: 1,
+		reporters: ['verbose'],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
 		// `bun run test` stays fast.

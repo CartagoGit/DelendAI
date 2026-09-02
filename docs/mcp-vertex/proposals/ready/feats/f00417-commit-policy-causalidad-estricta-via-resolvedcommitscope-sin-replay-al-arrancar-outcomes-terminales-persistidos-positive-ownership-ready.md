@@ -1,7 +1,7 @@
 ---
 id: f00417
 title: "Commit-policy: causalidad estricta vía ResolvedCommitScope, sin replay al arrancar, outcomes terminales persistidos, positive ownership ready"
-kind: fix
+kind: feat
 status: ready
 type: proposal
 track: quality

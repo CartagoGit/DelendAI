@@ -188,22 +188,44 @@ const PIPELINE_STEPS = [
 type IPipelineStep = (typeof PIPELINE_STEPS)[number];
 type IPipelineOutcome = 'OK' | 'ERR' | 'SKIP';
 
+/**
+ * r00418 / UX request 2026-09-02: stop flooding stderr with one
+ * JSON line per pipeline step. The `OK` / `SKIP` steps are
+ * observable through the final `pipeline.summary` line below,
+ * which the host sees on stderr/stdout exactly once per event.
+ * `ERR` and `CAUSALITY_VIOLATION` / `WORKSPACE_HAS_NO_FILES`
+ * still surface as `console.warn` because those are actionable.
+ *
+ * Hosts that want per-step telemetry (debugging the engine,
+ * writing the audit pipeline) can pass `MCP_COMMIT_POLICY_DEBUG=1`
+ * in the env — it forces the per-step stream back to
+ * `console.debug`.
+ */
+const LOG_PIPELINE_DEBUG = process.env.MCP_COMMIT_POLICY_DEBUG === '1';
+
 const logPipelineStep = (
 	event: IEngineEvent,
 	step: IPipelineStep,
 	outcome: IPipelineOutcome,
 	details?: Record<string, unknown>,
 ): void => {
-	console.warn(
-		JSON.stringify({
-			event: 'pipeline.step',
-			trigger: event.kind,
-			eventId: event.eventId,
-			step,
-			outcome,
-			...(details ?? {}),
-		}),
-	);
+	const line = JSON.stringify({
+		event: 'pipeline.step',
+		trigger: event.kind,
+		eventId: event.eventId,
+		step,
+		outcome,
+		...(details ?? {}),
+	});
+	if (LOG_PIPELINE_DEBUG) {
+		console.debug(line);
+		return;
+	}
+	if (outcome === 'ERR') {
+		console.warn(line);
+	}
+	// OK / SKIP go to stderr at debug level only — the summary line
+	// below is the operator's single-line audit signal.
 };
 
 export interface IEngineOptions {
@@ -341,6 +363,33 @@ export const createCommitPolicyEngine = (
 				if (!completedSteps.has(step)) {
 					logPipelineStep(event, step, 'SKIP');
 				}
+			}
+			// r00418: emit one single-line summary so the operator can
+			// see the event's outcome without grepping through 8
+			// pipeline.step JSON blobs. ERR-only if there's an error,
+			// else debug (or nothing when LOG_PIPELINE_DEBUG is on,
+			// in which case the per-step stream already covers this).
+			const summaryLine = JSON.stringify({
+				event: 'pipeline.summary',
+				trigger: event.kind,
+				eventId: event.eventId,
+				outcome: result.ack,
+				...(result.ack === 'OK'
+					? {
+							committed: result.committed,
+							sha: result.commitSha,
+							files: result.commitSha
+								? (result.warnings?.length ?? 0)
+								: 0,
+						}
+					: result.ack === 'ALREADY_PROCESSED'
+						? { key: result.key }
+						: { code: result.code, reason: result.reason }),
+			});
+			if (LOG_PIPELINE_DEBUG) {
+				console.debug(summaryLine);
+			} else if (result.ack === 'ERR') {
+				console.warn(summaryLine);
 			}
 			return result;
 		};
