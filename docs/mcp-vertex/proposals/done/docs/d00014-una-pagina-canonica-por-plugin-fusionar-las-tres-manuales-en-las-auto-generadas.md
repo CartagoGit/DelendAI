@@ -2,7 +2,7 @@
 id: d00014
 title: "Una página canónica por plugin: fusionar las tres manuales en las auto-generadas"
 kind: docs
-status: review
+status: done
 type: proposal
 track: docs
 date: 2026-08-29
@@ -100,7 +100,7 @@ docs/mcp-vertex/plugins/auto-generated/<plugin-id>.md
 
 ### S1 — Extender el generador para inyectar una sección de notas manuales opcional
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `tools/scripts/generate/plugin-docs.script.ts` (generador real
       de `docs/mcp-vertex/plugins/auto-generated/`, invocado hoy por
@@ -120,11 +120,13 @@ docs/mcp-vertex/plugins/auto-generated/<plugin-id>.md
   y `bunx vitest run tools/scripts/generate/from-manifests.script.spec.ts`
   pasó 4/4 (incluye el nuevo caso "folds an optional plugin notes file
   into the generated page").
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-code-worker
+- review-reviewer: sonnet-worker-docs-2
+- review-log: approved by sonnet-worker-docs-2 — Verified S1: from-manifests.script.ts folds notes/<id>.notes.md into a Notes section; ran generate:plugin-docs for real (3 pages regenerated with Notes) and the spec suite.
 ### S2 — Migrar `context-for-change.md`, `error-reporting.md`, `impact-analysis.md`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `docs/mcp-vertex/plugins/context-for-change.md` → contenido
       movido a `docs/mcp-vertex/plugins/notes/context-for-change.notes.md`,
@@ -148,16 +150,21 @@ docs/mcp-vertex/plugins/auto-generated/<plugin-id>.md
   `docs/mcp-vertex/plugins/notes/error-reporting.notes.md` (su spec
   actualizado igual) para que el lint no rompiera al desaparecer el
   contenido real de la página manual.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-code-worker
+- review-reviewer: sonnet-worker-docs-2
+- review-log: approved by sonnet-worker-docs-2 — Verified S2: notes/*.notes.md created with migrated content, auto-generated pages regenerated with Notes sections, manual pages replaced with redirect stubs, privacy-internal-only.script.ts DOC_PATHS fixed and its spec passing.
 ### S3 — Lint que impide una página manual duplicando una auto-generada
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `tools/scripts/lint/no-manual-plugin-page-duplicate.script.ts` (nuevo)
     - `tools/scripts/lint/no-manual-plugin-page-duplicate.script.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run tools/scripts/lint/no-manual-plugin-page-duplicate.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-code-worker
+- review-reviewer: sonnet-worker-docs-2
+- review-log: approved by sonnet-worker-docs-2 — Verified S3: no-manual-plugin-page-duplicate.script.ts + spec (5/5) passing, wired into package.json and validate:run.
 ## dependency graph
 
 Ninguna. Independiente del resto de `q00011`. Dentro de esta
