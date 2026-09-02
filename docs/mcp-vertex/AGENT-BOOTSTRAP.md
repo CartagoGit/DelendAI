@@ -541,12 +541,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-09-02T20:58:50.616Z
+Generated at: 2026-09-02T23:41:51.555Z
 
 Plugins: 56
 Tools: 242
-Test specs: 536 (≈4371 cases)
+Test specs: 536 (≈4379 cases)
 Workspaces: 6 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 554 on disk (ready=17, in-progress=2, done=535)
+Proposals: 556 on disk (ready=19, in-progress=2, done=535)
 ```
 <!-- mcp-vertex:end quantitative -->
