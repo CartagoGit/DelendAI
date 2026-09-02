@@ -201,7 +201,7 @@ Como el bloque "Nivel 3" arriba. Vive en
 
 ### S1 — Lint estructural `commit-driver-guard`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/commit-driver-guard.script.ts`,
   `package.json` (añadir a `lint:`).
 - **Gate**: lint
@@ -209,8 +209,8 @@ Como el bloque "Nivel 3" arriba. Vive en
 
 ### S2 — Spec de orden sintáctico
 
-- **Status**: pending
-- **Files**: `plugins/commit-policy/tests/src/lib/services/commit-driver-order.spec.ts`.
+- **Status**: done
+- **Files**: `tools/scripts/lint/commit-driver-guard.script.spec.ts`.
 - **Gate**: type + test passing
 - **Depends on**: S1 + `x00269`
 
@@ -233,3 +233,31 @@ Como el bloque "Nivel 3" arriba. Vive en
   plugin), el lint o el spec de orden falla **antes** de poder
   mergear a `develop`.
 - `bun run validate` verde en CI.
+
+## notes
+
+- 2026-09-02 (sonnet-worker-tests-2): S1 (`commit-driver-guard.script.ts`
+  + `package.json`'s `lint:commit-driver-guard`) already existed and
+  passes (`bun tools/scripts/lint/commit-driver-guard.script.ts` → ok).
+  It already implements Nivel 1 (no raw `git commit`/`commit-tree`/
+  `update-ref` outside `commit-driver.ts`) AND Nivel 2 (order:
+  `add → assertSubset → commit` / `add → assertSubset → write-tree →
+  commit-tree`) in one script, via `assertSubsetInvariant` +
+  `assertOrder`. Its own spec,
+  `tools/scripts/lint/commit-driver-guard.script.spec.ts`, is the
+  order-lint test (asserts the real source passes, and that swapping
+  the order in either guard function is flagged) — functionally
+  identical to the literal S2 deliverable
+  (`commit-driver-order.spec.ts`), so S2's Files line was repointed to
+  the file that actually satisfies it instead of duplicating the same
+  coverage under a second name. Wrote S3 (missing): a runtime-spy
+  `it` in `commit-driver.spec.ts` for both the shared-index guard
+  (`buildFakeGit`'s existing `commands` log) and the isolated-index
+  guard (a spying `IGitRunner` wrapper over a real temp repo),
+  proving `assertSubset`'s `diff --cached` read always precedes
+  `commit`/`commit-tree` and that the real, non-isolated runner never
+  sees a raw commit primitive. `npx vitest run
+  plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts
+  tools/scripts/lint/commit-driver-guard.script.spec.ts` → 33/33
+  passing; `npx tsc -p plugins/commit-policy/tsconfig.json --noEmit`
+  clean.
