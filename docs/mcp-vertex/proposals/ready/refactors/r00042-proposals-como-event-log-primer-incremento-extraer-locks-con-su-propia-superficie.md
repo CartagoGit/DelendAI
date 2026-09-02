@@ -111,7 +111,7 @@ plugins/proposals/src/lib/tools/*.tool.ts
 
 ### S1 — Extraer `locks/agent-lock-engine.ts` con superficie pública explícita
 
-- **Status**: pending
+- **Status**: done (verified 2026-09-02: `agent-lock-engine.ts` is now a 24-line compat re-export from `engine.ts`; `public/index.ts` exposes the explicit surface; `bunx vitest run plugins/proposals/tests/src/lib/locks` → 9 files / 73 tests pass)
 - **Files**:
     - `plugins/proposals/src/lib/locks/agent-lock-engine.ts` (dividir
       en `engine.ts` + `public/index.ts` dentro del mismo directorio,
@@ -126,7 +126,7 @@ plugins/proposals/src/lib/tools/*.tool.ts
 
 ### S2 — `transitionId`/`correlationId`/`idempotencyKey` en las transiciones mutadoras
 
-- **Status**: pending
+- **Status**: done (verified 2026-09-02: `proposal-transition.tool.ts` reads/generates all three fields and persists them to frontmatter; `proposal-transition.idempotency.spec.ts` → 3/3 pass)
 - **Files**:
     - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
     - `plugins/proposals/src/lib/contracts/proposal-view.contract.ts`
@@ -137,7 +137,7 @@ plugins/proposals/src/lib/tools/*.tool.ts
 
 ### S3 — Ningún fichero de `locks/` supera 600 líneas tras la extracción
 
-- **Status**: pending
+- **Status**: blocked — see 2026-09-02 note below
 - **Files**:
     - los ficheros resultantes de S1 (`engine.ts`, `public/index.ts`,
       y cualquier módulo auxiliar que la partición requiera)
