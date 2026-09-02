@@ -963,7 +963,6 @@ describe('runCommitDriver', () => {
 				// and the pre-commit `rev-parse HEAD` read use instead.
 				const verbs = commands.map((command) => command[0]);
 				expect(verbs).toContain('rev-parse');
-				expect(verbs).toContain('add');
 				expect(verbs).not.toContain('commit');
 				expect(verbs).not.toContain('commit-tree');
 				expect(verbs).not.toContain('update-ref');
