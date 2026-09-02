@@ -1,7 +1,8 @@
 import type {
+	IForeignLockFilterResult,
 	IForeignLockHolding,
-	ForeignLockProvider,
-} from '../contracts/foreign-lock';
+	IForeignLockProvider,
+} from '../contracts/interfaces/foreign-lock.interface';
 
 /**
  * Keep another agent's in-flight edits out of this commit.
@@ -26,19 +27,12 @@ import type {
  * is a refusal with a next step, not a silent no-op.
  */
 
-export interface IForeignLockFilterResult {
-	/** Files safe to stage. */
-	readonly files: readonly string[];
-	/** What was withheld, and who holds it. Empty when nothing was. */
-	readonly withheld: readonly IForeignLockHolding[];
-}
-
 const normalize = (path: string): string => path.replace(/^\.\//u, '');
 
 export const filterForeignLockedFiles = async (input: {
 	readonly files: readonly string[];
 	readonly selfAgent: string | undefined;
-	readonly provider: ForeignLockProvider | undefined;
+	readonly provider: IForeignLockProvider | undefined;
 }): Promise<IForeignLockFilterResult> => {
 	if (input.provider === undefined || input.files.length === 0) {
 		return { files: input.files, withheld: [] };

@@ -7,9 +7,9 @@ import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
 
 import type {
-	ForeignLockProvider,
+	IForeignLockProvider,
 	IForeignLockHolding,
-} from '../contracts/foreign-lock';
+} from '../contracts/interfaces/foreign-lock.interface';
 import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 
 /**
@@ -43,7 +43,7 @@ const normalize = (path: string): string => path.replace(/^\.\//u, '');
 export const createAgentLockForeignLockProvider = (input: {
 	readonly lockFileAbs: string;
 	readonly policy: ILockExpiryPolicy;
-}): ForeignLockProvider => {
+}): IForeignLockProvider => {
 	return async ({ files, selfAgent }) => {
 		let parsed: { in_flight?: readonly ILockEntry[] };
 		try {

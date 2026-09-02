@@ -35,7 +35,15 @@ export interface IForeignLockHolding {
  * lock file returns an empty list, which degrades to today's behaviour
  * rather than stopping the commit.
  */
-export type ForeignLockProvider = (input: {
+export type IForeignLockProvider = (input: {
 	readonly files: readonly string[];
 	readonly selfAgent: string | undefined;
 }) => Promise<readonly IForeignLockHolding[]>;
+
+/** Outcome of filtering a staging list against the live claims. */
+export interface IForeignLockFilterResult {
+	/** Files safe to stage. */
+	readonly files: readonly string[];
+	/** What was withheld, and who holds it. Empty when nothing was. */
+	readonly withheld: readonly IForeignLockHolding[];
+}

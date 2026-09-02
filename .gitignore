@@ -7,7 +7,7 @@ node_modules/
 # files were never migrated and would otherwise show up as untracked.
 .verify-tmp/
 
-# Monorepo-wide artifact layout (see AGENTS.md → "Build / dist layout"):
+# Monorepo-wide artifact layout (see docs/mcp-vertex/AGENT-BOOTSTRAP.md → "Build / dist layout"):
 #   build/<group>/<name>/         — bundler/compiler outputs (typedoc, astrosite, vsce staging…)
 #   build/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
 # Per-package dist/ inside packages/*/ and plugins/*/ is intentionally kept

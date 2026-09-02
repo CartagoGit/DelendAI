@@ -50,7 +50,7 @@ import {
 	filterForeignLockedFiles,
 } from './foreign-lock-filter';
 
-import type { ForeignLockProvider } from '../contracts/foreign-lock';
+import type { IForeignLockProvider } from '../contracts/interfaces/foreign-lock.interface';
 
 /**
  * Non-slice trigger context. Threshold and interval events carry
@@ -150,7 +150,7 @@ export interface ICommitDriverOptions {
 	 * into" — it is an unfinished edit, and committing it is how a shared
 	 * branch goes red with nobody having broken it.
 	 */
-	readonly foreignLocks?: ForeignLockProvider | undefined;
+	readonly foreignLocks?: IForeignLockProvider | undefined;
 	/** This committer's agent id, so its own claims are not withheld. */
 	readonly selfAgent?: string | undefined;
 }

@@ -5,7 +5,7 @@ import {
 	filterForeignLockedFiles,
 } from '../../../../src/lib/services/foreign-lock-filter';
 
-import type { IForeignLockHolding } from '../../../../src/lib/contracts/foreign-lock';
+import type { IForeignLockHolding } from '../../../../src/lib/contracts/interfaces/foreign-lock.interface';
 
 const provider =
 	(holdings: readonly IForeignLockHolding[]) =>
