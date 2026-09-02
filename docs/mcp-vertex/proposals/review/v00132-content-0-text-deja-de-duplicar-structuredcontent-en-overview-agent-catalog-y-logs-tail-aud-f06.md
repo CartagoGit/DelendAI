@@ -148,7 +148,7 @@ es el trade-off explícito de esta propuesta, documentado en riesgos.
 
 ### S1 — `content[0].text` compacto en `overview`, `agent_catalog`, `logs_tail`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/shared/tool-response.ts` (nueva función
       `toolJsonWithSummary`)
@@ -260,6 +260,29 @@ propuesta no resuelve esa incertidumbre —eso es la arquitectura
 ideal, fuera de alcance—; solo deja de pagar el duplicado donde ya se
 verificó, código en mano, que nadie en este repositorio depende de
 que `content[0].text` lleve el JSON completo.
+
+**Verificación 2026-09-02 (cierre):** al revisar el repo antes de
+implementar, `overview` (`overview-tool.ts`) y `agent_catalog`
+(`agent-catalog-tool.ts`) **ya** usaban `toolJsonWithSummary` — podadas
+en una sesión previa no vinculada explícitamente a este id.
+`logs_tail` (`plugins/logs/src/lib/tools/tools.ts:328`, registro
+`tail`) seguía usando `toolJson(...)`, duplicando el payload completo
+en `content[0].text`. Se podó en esta sesión: import de
+`toolJsonWithSummary`, `summaryText` = `"<N> log lines, newest at
+<ts>"`. Se añadió un test de regresión en
+`plugins/logs/tests/tools.spec.ts` ("v00132 (AUD-F06): content[0].text
+is a compact summary, not a duplicate of structuredContent") que
+verifica `content[0].text !== JSON.stringify(structuredContent)` y que
+`JSON.parse(content[0].text)` sigue siendo válido. Medido con
+`token-budget-dashboard.script.ts`: sección "Fixture-gated surfaces"
+en `docs/mcp-vertex/TOKEN-BUDGETS.md` — `overview full` 47 B,
+`agent_catalog full` 33 B, `logs_tail` 28 B (antes: 11.727 B / 8.736 B
+/ 2.609 B según el hallazgo original). `bunx vitest run --project core`
+(270/270) y `--project logs` (9/9, 87 tests) en verde;
+`tokens:gate`, `tokens:ceiling-ratchet` y `tokens:dashboard:check` en
+verde sin subir ningún techo; `typecheck.script.ts` limpio. No se tocó
+ninguna tool de `plugins/proposals`; su invariante
+`structuredContent === parsed(content[0].text)` no se vio afectada.
 
 Ficheros de referencia:
 

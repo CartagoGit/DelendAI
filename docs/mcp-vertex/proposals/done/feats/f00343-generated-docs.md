@@ -2,11 +2,14 @@
 id: f00343
 title: "generated docs."
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#generated-docs
+last-transition-id: c466d79a-b1a9-4807-bcb1-dd99fce3817f
+last-correlation-id: c466d79a-b1a9-4807-bcb1-dd99fce3817f
+last-transition-from: in-progress
 ---
 
 # f00343 — generated docs.
@@ -27,8 +30,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
-- **Files**: `ready/feats/f00343-generated-docs.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/review/f00343-generated-docs.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -40,7 +43,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run tools/scripts/generate/from-manifests.script.spec.ts -> passing. Confirmed generated per-plugin docs + permission matrix per MAN-005.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
@@ -77,3 +83,33 @@ alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
 actual scope/acceptance for "generated-docs" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+MAN-005 ("Generator docs", line ~1982) calls for generating plugin
+documentation from manifests rather than hand-maintaining three
+separate manuals per plugin (the audit elsewhere — section on
+docs/manuals — flags docs and reality diverging).
+
+Real derived acceptance: per-plugin documentation pages (and the
+top-level manifest index) must be generated from plugin manifests,
+with any human-authored notes folded in from a single dedicated
+location rather than duplicated across generated and hand-written
+pages.
+
+Already implemented, not net-new work:
+`tools/scripts/generate/from-manifests.script.ts` generates
+`docs/mcp-vertex/generated/plugin-manifests.generated.md`,
+`docs/mcp-vertex/generated/plugin-manifests.generated.json`, one page
+per plugin under `docs/mcp-vertex/plugins/auto-generated/` (confirmed
+present: `error-reporting.md` and others), and
+`docs/mcp-vertex/security/permission-matrix.md`. The doc-comment
+above `PLUGIN_DOC_NOTES_DIR` in that script states the design
+explicitly: "`docs/mcp-vertex/plugins/notes/<id>.notes.md` is the ONE
+place a human note lives per plugin, and its content is folded into
+the auto-generated page" — i.e. exactly the "fusionar los manuales en
+las auto-generadas" requirement.
+
+Ran `npx vitest run tools/scripts/generate/from-manifests.script.spec.ts`
+on 2026-09-02: passing. No code change required; closing on this
+evidence.

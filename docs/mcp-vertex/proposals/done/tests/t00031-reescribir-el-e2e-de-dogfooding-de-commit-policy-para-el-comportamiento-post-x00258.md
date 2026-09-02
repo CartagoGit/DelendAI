@@ -159,7 +159,9 @@ ya tiene alcance propio (reescribir un e2e).
 - **Files**:
     - `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts` (línea 77
       en adelante: quitar `.skip`, renombrar el test, corregir la
-      lectura del log remoto para apuntar a `topic/e2e-test`)
+      lectura del log remoto para que apunte a la rama de trabajo
+      topic/e2e-test — sin comillas invertidas: dentro de un bloque
+      `**Files**` cualquier texto entrecomillado se lee como una ruta)
 - **Gate**: `bunx vitest run plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
 
 ### S2 — Caso de rechazo de push directo a rama protegida en el camino de dogfood completo

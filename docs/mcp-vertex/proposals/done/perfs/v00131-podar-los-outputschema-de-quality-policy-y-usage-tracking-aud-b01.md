@@ -114,9 +114,9 @@ declarado en el registro de la tool.
     - `plugins/quality-policy/src/lib/tools/quality-policy.tool.ts`
     - `plugins/usage-tracking/src/lib/tools/report.tool.ts`
     - `plugins/usage-tracking/src/lib/tools/session-hygiene.tool.ts`
-    - `plugins/quality-policy/tests/src/lib/tools/quality-policy.tool.spec.ts`
-    - `plugins/usage-tracking/tests/src/lib/tools/report.tool.spec.ts`
-    - `plugins/usage-tracking/tests/src/lib/tools/session-hygiene.tool.spec.ts`
+    - `plugins/quality-policy/tests/src/quality-policy.tool.spec.ts`
+    - `plugins/usage-tracking/tests/src/lib/tools.spec.ts`
+    - `plugins/usage-tracking/tests/src/lib/session-hygiene.spec.ts`
     - `docs/mcp-vertex/TOKEN-BUDGETS.md` (regenerado)
 - **Gate**: `bunx vitest run --project quality-policy`,
   `bunx vitest run --project usage-tracking`, `bun run tokens:gate`,

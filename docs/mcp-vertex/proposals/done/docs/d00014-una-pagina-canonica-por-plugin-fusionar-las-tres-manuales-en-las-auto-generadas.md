@@ -106,8 +106,10 @@ docs/mcp-vertex/plugins/auto-generated/<plugin-id>.md
       de `docs/mcp-vertex/plugins/auto-generated/`, invocado hoy por
       `bun run generate:plugin-docs`)
     - `docs/mcp-vertex/plugins/notes/` (nuevo directorio)
-    - `tools/scripts/generate/plugin-docs.script.spec.ts` (extender si
-      ya existe; crear si no)
+    - `tools/scripts/generate/from-manifests.script.ts` (el generador
+      real detrás de `plugin-docs.script.ts`, que es donde vive el
+      plegado de las notas)
+    - `tools/scripts/generate/from-manifests.script.spec.ts` (extendido)
 - **Gate**: `bun run generate:plugin-docs` ejecutado y verificado a
   mano contra un plugin fixture con y sin nota manual, seguido de
   `bunx vitest run tools/scripts/generate/plugin-docs.script.spec.ts`.
