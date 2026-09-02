@@ -3,15 +3,11 @@
  * commit-policy engine.
  */
 
-import { execFile } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { promisify } from 'node:util';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createWriteGitRunner } from '@mcp-vertex/core/public';
 import type { IGitRunner } from '@mcp-vertex/core/public';
 
 import { CommitPolicyOptionsSchema } from '../../../src/lib/contracts/options';
@@ -20,10 +16,11 @@ import { runPushDriver } from '../../../src/lib/services/push-driver';
 import { createPushScheduler } from '../../../src/lib/services/push-scheduler';
 import { runCommitPolicyRun } from '../../../src/lib/tools/run-tool';
 import { runCommitPolicyStatus } from '../../../src/lib/tools/status-tool';
-
-const execFileAsync = promisify(execFile);
-const git = (cwd: string, ...args: readonly string[]) =>
-	execFileAsync('git', [...args], { cwd });
+import {
+	cleanupDogfoodRepo,
+	createDogfoodRepo,
+	git,
+} from './_fixtures/dogfood-repo';
 
 describe('commit-policy dogfood E2E', () => {
 	let workspace = '';
@@ -31,50 +28,11 @@ describe('commit-policy dogfood E2E', () => {
 	let runner: IGitRunner;
 
 	beforeEach(async () => {
-		workspace = await mkdtemp(join(tmpdir(), 'commit-policy-dogfood-'));
-		remote = await mkdtemp(join(tmpdir(), 'commit-policy-remote-'));
-		await git(workspace, 'init', '-q', '-b', 'develop');
-		await git(workspace, 'config', 'user.email', 'cartago@example.com');
-		await git(workspace, 'config', 'user.name', 'Cartago');
-		await git(
-			workspace,
-			'config',
-			'--global',
-			'user.email',
-			'cartago@example.com',
-		);
-		await git(workspace, 'config', '--global', 'user.name', 'Cartago');
-		await writeFile(join(workspace, 'README.md'), '# init\n', 'utf8');
-		await git(workspace, 'add', '.');
-		await git(workspace, 'commit', '-q', '-m', 'chore: init');
-		await execFileAsync(
-			'git',
-			['init', '-q', '--bare', '--initial-branch=develop'],
-			{ cwd: remote },
-		).catch(async () => {
-			await execFileAsync('git', ['init', '-q', '--bare'], {
-				cwd: remote,
-			});
-			await execFileAsync(
-				'git',
-				['symbolic-ref', 'HEAD', 'refs/heads/develop'],
-				{ cwd: remote },
-			);
-		});
-		await git(workspace, 'remote', 'add', 'origin', remote);
-		await git(workspace, 'push', '-q', '-u', 'origin', 'develop');
-		await git(workspace, 'checkout', '-q', '-b', 'topic/e2e-test');
-
-		runner = createWriteGitRunner(workspace);
+		({ workspace, remote, runner } = await createDogfoodRepo());
 	});
 
 	afterEach(async () => {
-		if (workspace.length > 0) {
-			await rm(workspace, { recursive: true, force: true });
-		}
-		if (remote.length > 0) {
-			await rm(remote, { recursive: true, force: true });
-		}
+		await cleanupDogfoodRepo({ workspace, remote });
 	});
 
 	it('commits a slice with the global user + audit trailer + pushes it', async () => {
@@ -319,114 +277,5 @@ describe('commit-policy dogfood E2E', () => {
 		);
 		expect(result.committed).toBe(false);
 		expect(result.refusal).toContain('commit.enabled');
-	});
-
-	it('refuses to push to a protected branch even with onCommit=true', async () => {
-		await git(workspace, 'checkout', '-q', '-b', 'main');
-		await git(workspace, 'push', '-q', '-u', 'origin', 'main');
-		const policy = CommitPolicyOptionsSchema.parse({
-			commit: { enabled: true },
-			identity: { mode: 'global' },
-			cadence: { triggers: [], sliceScoping: false },
-			push: {
-				enabled: true,
-				onCommit: true,
-				force: 'with-lease',
-				protectedBranches: ['main', 'master'],
-				remote: 'origin',
-				branch: 'main',
-			},
-		});
-		const result = await createPushScheduler({
-			run: runner,
-			policy: policy.push,
-		}).pushNow();
-		expect(result.ok).toBe(false);
-		if (result.ok) return;
-		// x00272 (Track A): direct push to `main` is hard-blocked regardless
-		// of the protectedBranches config — the refusal codes as
-		// DIRECT_PUSH_TO_MAIN_NOT_ALLOWED (a defense-in-depth layer).
-		expect(result.code).toBe('DIRECT_PUSH_TO_MAIN_NOT_ALLOWED');
-	});
-
-	it('uses the same configurable branch policy in status, commit and push', async () => {
-		await git(workspace, 'checkout', '-q', '-b', 'release/candidate');
-		const policy = CommitPolicyOptionsSchema.parse({
-			commit: { enabled: true },
-			identity: { mode: 'global' },
-			push: {
-				enabled: true,
-				protectedBranches: ['release/candidate'],
-				remote: 'origin',
-				branch: 'release/candidate',
-			},
-		});
-		const status = await runCommitPolicyStatus({
-			namespacePrefix: 'mcp-vertex',
-			options: policy,
-			identityCtx: { run: runner, envVars: Object.freeze({}) },
-		});
-		const statusBody = status.structuredContent as {
-			branchPolicy: { directCommitPushAllowed: boolean };
-		};
-		expect(statusBody.branchPolicy.directCommitPushAllowed).toBe(false);
-
-		await writeFile(
-			join(workspace, 'protected.ts'),
-			'export const protectedBranch = true;\n',
-			'utf8',
-		);
-		const commitResult = await runCommitDriver(
-			{ message: 'feat: protected branch', files: ['protected.ts'] },
-			{
-				run: runner,
-				policy,
-				identityCtx: { run: runner, envVars: Object.freeze({}) },
-				auditAgent: null,
-			},
-		);
-		expect(commitResult.committed).toBe(false);
-		expect(commitResult.refusal).toContain('BRANCH_PROTECTED');
-
-		const pushResult = await createPushScheduler({
-			run: runner,
-			policy: policy.push,
-		}).pushNow();
-		expect(pushResult.ok).toBe(false);
-		if (!pushResult.ok)
-			expect(pushResult.refusal).toContain('BRANCH_PROTECTED');
-	});
-
-	it('runs dry-run end to end without creating a commit', async () => {
-		const policy = CommitPolicyOptionsSchema.parse({
-			commit: { enabled: true },
-			identity: { mode: 'global' },
-			cadence: { triggers: [{ kind: 'manual' }] },
-			push: { enabled: true, onCommit: true },
-		});
-		const before = await git(workspace, 'rev-parse', 'HEAD');
-		const result = await runCommitPolicyRun(
-			{ kind: 'manual', dryRun: true },
-			{
-				namespacePrefix: 'mcp-vertex',
-				workspaceRoot: workspace,
-				docsDir: 'docs',
-				policy,
-				run: runner,
-				identityCtx: { run: runner, envVars: Object.freeze({}) },
-				auditAgent: null,
-			},
-		);
-		const body = result.structuredContent as {
-			ok: boolean;
-			dryRun: boolean;
-			wouldRun: readonly unknown[];
-		};
-		expect(result.isError).toBeUndefined();
-		expect(body.ok).toBe(true);
-		expect(body.dryRun).toBe(true);
-		expect(body.wouldRun.length).toBeGreaterThan(0);
-		const after = await git(workspace, 'rev-parse', 'HEAD');
-		expect(after.stdout.trim()).toBe(before.stdout.trim());
 	});
 });

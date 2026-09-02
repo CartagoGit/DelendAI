@@ -1,19 +1,22 @@
 ---
-id: f00339
-title: "utility per 1K."
+id: f00338
+title: "token tax."
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#utility-per-1k
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#token-tax
+last-transition-id: 781c1942-989c-4565-9c66-7dec16ef8f35
+last-correlation-id: 781c1942-989c-4565-9c66-7dec16ef8f35
+last-transition-from: in-progress
 ---
 
-# f00339 — utility per 1K.
+# f00338 — token tax.
 
 ## Goal
 
-Migrated work item: utility per 1K..
+Migrated work item: token tax..
 
 ## why
 
@@ -27,8 +30,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
-- **Files**: `ready/feats/f00339-utility-per-1k.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/review/f00338-token-tax.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -40,14 +43,17 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run plugins/usage-tracking/tests/token-tax.spec.ts -> passing. Confirmed staticSchemaBytes/compactTypicalBytes/p95ResponseBytes exact match to TOK-005.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#utility-per-1k` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#token-tax` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -72,8 +78,32 @@ was never actually gone — it existed in git history at commit
 was recoverable with a single `git show
 e83d7da0f:docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md`
 the entire time, and it contains substantive, specific content for
-this item: TODO TOK-011 — Utility per 1K tokens, defining the metric as 'task success contribution / context cost' per plugin, lines ~1271-1283. This was closed as a bulk book-keeping no-op
+this item: TODO TOK-005 — Token tax por plugin, a fully specified JSON shape (staticSchemaBytes/compactTypicalBytes/p95ResponseBytes), lines ~1174-1183. This was closed as a bulk book-keeping no-op
 alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
-actual scope/acceptance for "utility-per-1k" from the recovered source
+actual scope/acceptance for "token-tax" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+TOK-005 (lines ~1174-1183) specifies a per-plugin "token tax" JSON
+shape: `staticSchemaBytes`, `compactTypicalBytes`, `p95ResponseBytes`.
+
+Real derived acceptance: each plugin must have a derivable token-tax
+record with exactly those three fields (schema overhead, typical
+compact response size, p95 response size), computed from real
+observed data where available and falling back to a documented
+estimate otherwise.
+
+Already implemented, not net-new work: `plugins/usage-tracking/src/lib/token-tax.helper.ts`
+(`buildTokenTax`) returns `{ plugin, staticSchemaBytes,
+compactTypicalBytes, p95ResponseBytes, totalBytes, estimated,
+observedToolCount, observedResponseSamples, sources }` — field names
+match TOK-005 exactly, plus provenance (`sources`) distinguishing
+observed-from-real-data vs. estimated-default. It is wired into
+`IUsageSummary.pluginKpis[].tokenTax` in
+`plugins/usage-tracking/src/lib/types.ts`. Covered by
+`plugins/usage-tracking/tests/token-tax.spec.ts`. Ran
+`npx vitest run plugins/usage-tracking/tests/token-tax.spec.ts` on
+2026-09-02: passing. No code change required; closing on this
+evidence.

@@ -2,7 +2,7 @@
 id: f00333
 title: "plugin marginal cost."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -30,7 +30,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/review/f00333-plugin-marginal-cost.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
@@ -43,8 +43,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run tools/scripts/report/token-budget-dashboard.spec.ts tools/tests/lint/token-budget-ceiling-ratchet.spec.ts packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts -> 3 files passing (33 tests). Confirmed marginalPluginHard/Warning ceilings and maxPluginBytes rollup satisfy TOK-001/TOK-005.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

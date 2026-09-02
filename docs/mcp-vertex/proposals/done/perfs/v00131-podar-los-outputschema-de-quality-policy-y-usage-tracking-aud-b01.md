@@ -2,11 +2,12 @@
 id: v00131
 title: "Podar los `outputSchema` de quality-policy y usage-tracking (AUD-B01)"
 kind: perf
-status: review
+status: done
 type: proposal
 track: tokens
 date: 2026-08-29
 priority: P1
+shipped-in: ["dbba6a207"]
 related:
     - q00011
     - v00129 # predecesor: los 5 outputSchema más baratos del core (mismo patrón)
@@ -133,7 +134,10 @@ de 200 B por `outputSchema` declarado en las tres tools.
 documento versionado contra una medición fresca; regenerar el
 documento primero lo deja siempre en verde y esconde si el gate estaba
 realmente comprobando algo.
-
+- review-state: done
+- review-implementer: sonnet-worker-tokens
+- review-reviewer: sonnet-verifier-tokens
+- review-log: approved by sonnet-verifier-tokens — Confirmed quality-policy.tool.ts declares compactOutputSchema(); usage-tracking report.tool.ts and session-hygiene.tool.ts already did. Ran tokens:gate (vertex 255,066B, no quality-policy/usage-tracking in top contributors), tokens:dashboard:check (in sync), tokens:ceiling-ratchet (54 checked, no undocumented raise), typecheck.script.ts (clean), vitest --project quality-policy (5/5) and --project usage-tracking (126/126).
 ## dependency graph
 
 S1 es la única slice. No depende de `v00129`/`v00130` en el código

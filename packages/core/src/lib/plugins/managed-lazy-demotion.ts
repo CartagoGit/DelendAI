@@ -1,3 +1,4 @@
+import type { IManagedLazyDemotionNotice } from '../contracts/interfaces/managed-lazy-demotion.interface';
 import { announceLines } from '../shared/announce-lines';
 
 /**
@@ -19,10 +20,7 @@ import { announceLines } from '../shared/announce-lines';
  * Nothing pointed at that, so the regression could sit for weeks
  * looking like "the server just got slower".
  */
-export interface IManagedLazyDemotionNotice {
-	readonly lines: readonly string[];
-	readonly unindexed: readonly string[];
-}
+export type { IManagedLazyDemotionNotice };
 
 /**
  * Build the notice for a demotion caused by unindexed plugins. Returns

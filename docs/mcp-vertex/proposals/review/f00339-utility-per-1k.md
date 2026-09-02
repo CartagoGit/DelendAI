@@ -1,19 +1,22 @@
 ---
-id: f00334
-title: "`tools/list` dashboard."
+id: f00339
+title: "utility per 1K."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#tools-list-dashboard
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#utility-per-1k
+last-transition-id: 57e5dc2b-1264-4bd0-84b4-66af32f031f6
+last-correlation-id: 57e5dc2b-1264-4bd0-84b4-66af32f031f6
+last-transition-from: in-progress
 ---
 
-# f00334 — `tools/list` dashboard.
+# f00339 — utility per 1K.
 
 ## Goal
 
-Migrated work item: `tools/list` dashboard..
+Migrated work item: utility per 1K..
 
 ## why
 
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: pending
-- **Files**: `ready/feats/f00334-tools-list-dashboard.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00339-utility-per-1k.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -47,7 +50,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#tools-list-dashboard` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#utility-per-1k` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -72,8 +75,28 @@ was never actually gone — it existed in git history at commit
 was recoverable with a single `git show
 e83d7da0f:docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md`
 the entire time, and it contains substantive, specific content for
-this item: the token-tax and dashboard checklist items (lines ~2739, ~3286-3305) describing a generated tools/list dashboard. This was closed as a bulk book-keeping no-op
+this item: TODO TOK-011 — Utility per 1K tokens, defining the metric as 'task success contribution / context cost' per plugin, lines ~1271-1283. This was closed as a bulk book-keeping no-op
 alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
-actual scope/acceptance for "tools-list-dashboard" from the recovered source
+actual scope/acceptance for "utility-per-1k" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+Real derived acceptance (TOK-011, lines ~1271-1283): a per-plugin
+metric measuring "task success contribution / context cost", scaled
+per 1K tokens.
+
+Already implemented, not net-new work:
+`plugins/usage-tracking/src/lib/types.ts` declares
+`pluginKpis[].utilityPer1kTokens: number` on `IUsageSummary`, and
+`plugins/usage-tracking/src/lib/usage-kpis.helper.ts`
+(`utilityPer1kTokensOf`) computes it exactly as specified: `0` when
+`successContribution <= 0 || contextBytes <= 0`, otherwise
+`successContribution / (contextBytes / (1_000 * BYTES_PER_TOKEN))`
+— success contribution scaled by context cost per 1K tokens. Covered
+by `plugins/usage-tracking/tests/token-tax.spec.ts` (via
+`summarizeLocalKpis`, which builds the same `pluginKpis` rows). Ran
+`npx vitest run plugins/usage-tracking/tests/token-tax.spec.ts` on
+2026-09-02: passing. No code change required; closing on this
+evidence.

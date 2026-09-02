@@ -18,14 +18,12 @@
  * The resolution itself stays first-wins and deterministic for both
  * slots. What changes is that the loser is named.
  */
-export interface ISingleSlotClaim {
-	readonly slot: 'logsSink' | 'isAgentStuck';
-	readonly pluginName: string;
-}
+import type {
+	ISingleSlotClaim,
+	ISingleSlotContention,
+} from '../contracts/interfaces/single-slot-hook.interface';
 
-export interface ISingleSlotContention {
-	readonly lines: readonly string[];
-}
+export type { ISingleSlotClaim, ISingleSlotContention };
 
 /**
  * Given the claims on one slot in resolution order, describe who won

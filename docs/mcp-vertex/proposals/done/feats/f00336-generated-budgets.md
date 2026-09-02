@@ -2,11 +2,14 @@
 id: f00336
 title: "generated budgets."
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#generated-budgets
+last-transition-id: c1e84a1c-1fd0-48c6-8535-325b742ba93d
+last-correlation-id: c1e84a1c-1fd0-48c6-8535-325b742ba93d
+last-transition-from: in-progress
 ---
 
 # f00336 — generated budgets.
@@ -27,8 +30,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
-- **Files**: `ready/feats/f00336-generated-budgets.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/review/f00336-generated-budgets.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -40,7 +43,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run tools/scripts/report/token-budget-dashboard.spec.ts -> passing. Confirmed TOKEN-BUDGETS.md is generated, not hand-maintained, satisfying TOK-004.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
@@ -77,3 +83,29 @@ alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
 actual scope/acceptance for "generated-budgets" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+TOK-004 confirmed as the correct source item (lines ~1160-1170):
+"Generar `TOKEN-BUDGETS.md`" — documentation and tests had diverged
+because numbers were hand-maintained; the fix is to generate the
+markdown from the same source the test uses, never hand-edit it.
+
+Real derived acceptance: `TOKEN-BUDGETS.md` must be a generated
+artifact, produced from the same contract module the governing test
+imports, with a script that can regenerate it and a lint/check that
+catches drift.
+
+Already implemented, not net-new work: `docs/mcp-vertex/TOKEN-BUDGETS.md`
+carries the header "generated: token-budget-dashboard.script.ts...
+generated — do not edit by hand" and states explicitly: "This file is
+generated from the same budget contract the e2e test imports:
+packages/core/src/lib/contracts/constants/token-budgets.constant.ts.
+Do not edit this markdown by hand; regenerate it with
+bun tools/scripts/report/token-budget-dashboard.script.ts." The
+generator lives at `tools/scripts/report/token-budget-dashboard.script.ts`
+and `tools/scripts/report/token-budget-report-lib.ts`, covered by
+`tools/scripts/report/token-budget-dashboard.spec.ts`. Ran
+`npx vitest run tools/scripts/report/token-budget-dashboard.spec.ts`
+on 2026-09-02: passing. No code change required; closing on this
+evidence.

@@ -20,19 +20,12 @@
  * `notification` must not import `proposals` (either has to run without
  * the other), but both have to answer this question the same way.
  */
-export interface ILockExpiryEntry {
-	readonly last_seen?: string | undefined;
-	readonly host?: string | undefined;
-	readonly pid?: number | undefined;
-}
+import type {
+	ILockExpiryEntry,
+	ILockExpiryPolicy,
+} from '../contracts/interfaces/lock-entry-expiry.interface';
 
-export interface ILockExpiryPolicy {
-	readonly staleAfterMinutes: number;
-	readonly nowMs?: number;
-	/** This host's id and a liveness probe; omit to skip the orphan check. */
-	readonly host?: string | undefined;
-	readonly isProcessAlive?: ((pid: number) => boolean) | undefined;
-}
+export type { ILockExpiryEntry, ILockExpiryPolicy };
 
 /**
  * Past its heartbeat window. A missing or unparseable `last_seen` counts

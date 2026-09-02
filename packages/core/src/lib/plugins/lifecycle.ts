@@ -32,6 +32,7 @@ import type {
 	Capability,
 	ICapabilityRefusal,
 } from '../capabilities/schema';
+import type { IPluginLifecycleActivation } from '../contracts/interfaces/plugin-lifecycle-activation.interface';
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 import type {
 	IMcpPlugin,
@@ -77,9 +78,7 @@ export type PreparedPlugin<P> = P;
  */
 export type ActivePlugin<A> = A;
 
-export type IPluginLifecycleActivation =
-	| IMcpPluginRegistrations
-	| IPluginRuntime<IMcpPluginRegistrations>;
+export type { IPluginLifecycleActivation };
 
 interface ILegacyPreparedPlugin {
 	readonly name: string;

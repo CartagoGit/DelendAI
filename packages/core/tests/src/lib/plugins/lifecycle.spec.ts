@@ -9,6 +9,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { adaptLegacyPlugin, definePlugin } from '@mcp-vertex/core/public';
+import { fakePartial } from '@mcp-vertex/test-kit/public';
 import {
 	hasPhasedLifecycle,
 	runLifecycle,
@@ -23,7 +24,10 @@ import type {
 	IPluginManifest,
 } from '../../../../src/lib/plugins/lazy-loader';
 import { createLazyPluginRouter } from '../../../../src/lib/plugins/router';
-import type { IMcpPluginContext } from '../../../../src/lib/plugins/plugin-contract';
+import type {
+	IMcpPlugin,
+	IMcpPluginContext,
+} from '../../../../src/lib/plugins/plugin-contract';
 
 describe('f00184 — phased plugin lifecycle', () => {
 	it('hasPhasedLifecycle returns true when all 3 methods exist', () => {
@@ -147,7 +151,9 @@ describe('f00184 — phased plugin lifecycle', () => {
 		const adapted = adaptLegacyPlugin(plugin);
 		const active = await adapted.activate(
 			{ name: 'legacy-1', plugin },
-			{} as never,
+			// This path never reads the context; declaring that with a
+			// fake keeps the compiler checking the shape it does use.
+			fakePartial<IMcpPluginContext>({}),
 		);
 		expect(active).toBeDefined();
 		// dispose is a no-op for legacy plugins (no IPluginRuntime).
@@ -160,9 +166,10 @@ describe('f00184 — phased plugin lifecycle', () => {
 		// Only `options` is read on this path; the cast goes through
 		// `unknown` because a partial context does not overlap the full
 		// interface.
-		const pluginContext = {
+		// Only `options` is read on this path.
+		const pluginContext = fakePartial<IMcpPluginContext, 'options'>({
 			options: { source: 'router' },
-		} as unknown as IMcpPluginContext;
+		});
 		const plugin = definePlugin({
 			name: 'legacy-ctx',
 			async register(ctx, receivedSignal) {
@@ -239,7 +246,7 @@ describe('f00184 — phased plugin lifecycle', () => {
 				return {
 					id,
 					manifest,
-					plugin: plugin as never,
+					plugin: fakePartial<IMcpPlugin, 'name'>(plugin),
 					firstLoadMs: 0,
 					loadedAt: Date.now(),
 				};
@@ -281,7 +288,10 @@ describe('f00184 — phased plugin lifecycle', () => {
 		const router = createLazyPluginRouter({
 			loader,
 			discovery,
-			buildContext: () => ({ options: { source: 'router' } }) as never,
+			buildContext: () =>
+				fakePartial<IMcpPluginContext, 'options'>({
+					options: { source: 'router' },
+				}),
 		});
 
 		const loaded = await router.loadToolOwner('phased_tool');

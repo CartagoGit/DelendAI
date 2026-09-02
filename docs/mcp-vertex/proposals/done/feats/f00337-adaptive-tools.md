@@ -2,11 +2,14 @@
 id: f00337
 title: "adaptive tools."
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#adaptive-tools
+last-transition-id: 7558b6ca-7577-4f7f-8ae4-4dc4b6d7ff3a
+last-correlation-id: 7558b6ca-7577-4f7f-8ae4-4dc4b6d7ff3a
+last-transition-from: in-progress
 ---
 
 # f00337 — adaptive tools.
@@ -27,8 +30,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
-- **Files**: `ready/feats/f00337-adaptive-tools.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/review/f00337-adaptive-tools.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -40,7 +43,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run packages/core/tests/src/lib/surface/decide-mode.spec.ts packages/core/tests/src/lib/surface/bootstrap.spec.ts packages/core/tests/src/lib/project/tool-surface-runtime.spec.ts packages/core/tests/src/lib/project/tool-surface-runtime.exposure.spec.ts -> 4 files, 30 tests passing. Confirmed managed/native/adaptive/compact modes satisfy TOK-006.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
@@ -77,3 +83,37 @@ alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
 actual scope/acceptance for "adaptive-tools" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+TOK-006 ("Activación dinámica de tools", lines ~1190-1214) proposes a
+minimal bootstrap surface — `overview`, `project_context`,
+`tool_search`, `plugin_activate`, `configuration_center` — with the
+rest of the catalog loaded on demand, and a static fallback for hosts
+that don't handle dynamic `tools/list` changes well.
+
+Real derived acceptance: the server must support a small default
+bootstrap tool surface with the rest of the catalog reachable
+on-demand, alongside a static/native fallback mode for hosts without
+dynamic-surface support, selectable per host/config.
+
+Already implemented, not net-new work:
+`docs/mcp-vertex/ADOPTER-SURFACE-MODE.md` documents exactly this —
+`managed` (default) is a "6-tool bootstrap surface (`overview`,
+`tool_search`, `plugin_activate`, `plugin_deactivate`, `status`,
+`vertex`) — the rest of the catalog is reachable via the `vertex`
+router without being exposed in `tools/list`" — while `native` is the
+static fallback for clients that don't handle `tools/list_changed`.
+`packages/core/src/lib/surface/decide-mode.ts`
+(`resolveInitialSurfaceMode`, `shouldRegisterSurfaceRouter`) and
+`packages/core/src/lib/contracts/interfaces/surface-mode.interface.ts`
+implement four surface modes (`native`/`managed`/`adaptive`/`compact`)
+with capability-detection-based fallback to `native` for unknown
+hosts (see the doc-comment on `resolveInitialSurfaceMode`'s caller in
+that file). Covered by `packages/core/tests/src/lib/surface/decide-mode.spec.ts`,
+`bootstrap.spec.ts`, and `packages/core/tests/src/lib/project/tool-surface-runtime*.spec.ts`.
+
+Ran
+`npx vitest run packages/core/tests/src/lib/surface/decide-mode.spec.ts packages/core/tests/src/lib/surface/bootstrap.spec.ts packages/core/tests/src/lib/project/tool-surface-runtime.spec.ts packages/core/tests/src/lib/project/tool-surface-runtime.exposure.spec.ts`
+on 2026-09-02: 4 files, 30 tests passing. No code change required;
+closing on this evidence.

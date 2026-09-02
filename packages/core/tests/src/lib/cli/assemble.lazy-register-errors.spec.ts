@@ -22,6 +22,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import type { IPluginRegisterErrorInfo } from '@mcp-vertex/core/lib/contracts/interfaces/plugin-lifecycle-error.interface';
+import { fakePartial } from '@mcp-vertex/test-kit/public';
 
 /**
  * Two ids that are real entries in `managed-lazy-catalog.generated.ts`
@@ -60,6 +61,23 @@ const importFor =
 		};
 	};
 
+/**
+ * The only part of the assembled config these cases read. Declared once,
+ * as a fake of the real shape, so the tests state what they depend on
+ * instead of casting the whole result away three times.
+ */
+interface IAssembledLazyView {
+	readonly config: {
+		readonly lazyPluginActivators?: ReadonlyMap<
+			string,
+			() => Promise<void>
+		>;
+	};
+}
+
+const lazyViewOf = (assembled: unknown): IAssembledLazyView =>
+	fakePartial<IAssembledLazyView, 'config'>(assembled as IAssembledLazyView);
+
 const assembleWith = async (seen: IPluginRegisterErrorInfo[]) =>
 	assembleCliConfig(
 		parseCliArgs(
@@ -91,14 +109,7 @@ describe('managed-lazy assembly — register-error observers', () => {
 		// leaves the generated catalog, assembly silently degrades to
 		// eager and the tests below would pass for the wrong reason.
 		const seen: IPluginRegisterErrorInfo[] = [];
-		const assembled = (await assembleWith(seen)) as unknown as {
-			readonly config: {
-				readonly lazyPluginActivators?: ReadonlyMap<
-					string,
-					() => Promise<void>
-				>;
-			};
-		};
+		const assembled = lazyViewOf(await assembleWith(seen));
 		expect(
 			assembled.config.lazyPluginActivators?.size ?? 0,
 		).toBeGreaterThan(0);
@@ -106,14 +117,7 @@ describe('managed-lazy assembly — register-error observers', () => {
 
 	it('reports a lazy activation failure to an already-activated observer', async () => {
 		const seen: IPluginRegisterErrorInfo[] = [];
-		const assembled = (await assembleWith(seen)) as unknown as {
-			readonly config: {
-				readonly lazyPluginActivators?: ReadonlyMap<
-					string,
-					() => Promise<void>
-				>;
-			};
-		};
+		const assembled = lazyViewOf(await assembleWith(seen));
 		const activators = assembled.config.lazyPluginActivators;
 		await activators?.get(OBSERVER_PLUGIN)?.();
 		await activators
@@ -136,14 +140,7 @@ describe('managed-lazy assembly — register-error observers', () => {
 		// and the reporting plugin is only activated later. Without the
 		// backlog the report is lost precisely when it matters.
 		const seen: IPluginRegisterErrorInfo[] = [];
-		const assembled = (await assembleWith(seen)) as unknown as {
-			readonly config: {
-				readonly lazyPluginActivators?: ReadonlyMap<
-					string,
-					() => Promise<void>
-				>;
-			};
-		};
+		const assembled = lazyViewOf(await assembleWith(seen));
 		const activators = assembled.config.lazyPluginActivators;
 		await activators
 			?.get(FAILING_PLUGIN)?.()

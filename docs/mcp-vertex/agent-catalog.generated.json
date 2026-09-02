@@ -1280,17 +1280,9 @@
 				"date": ""
 			},
 			{
-				"id": "f00333",
-				"title": "f00333",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00334",
-				"title": "f00334",
-				"track": "migrated",
+				"id": "f00332",
+				"title": "f00332",
+				"track": "metrics",
 				"status": "ready",
 				"kind": "feat",
 				"date": ""
@@ -1560,14 +1552,6 @@
 				"date": ""
 			},
 			{
-				"id": "v00131",
-				"title": "v00131",
-				"track": "tokens",
-				"status": "in-progress",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "v00132",
 				"title": "v00132",
 				"track": "tokens",
@@ -1585,11 +1569,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 33,
-			"in-progress": 6,
-			"review": 1,
+			"ready": 32,
+			"in-progress": 5,
+			"review": 2,
 			"paused": 1,
-			"done": 699,
+			"done": 701,
 			"blocked": 23,
 			"retired": 13,
 			"unspecified": 0

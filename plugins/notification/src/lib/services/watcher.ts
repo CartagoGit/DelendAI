@@ -1,10 +1,11 @@
 import { watch } from 'node:fs';
 import type { FSWatcher } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
-import { hostname } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 
 import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
+
+import { lockExpiryPolicyFor } from './lock-expiry-policy';
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 /** `fs/promises.stat` rejects on ENOENT; we only care whether the path exists. */
@@ -34,13 +35,6 @@ interface ILockEntryLite {
 }
 
 /**
- * Default when the lock file does not declare its own window. Mirrors
- * the engine's default; the file's own `stale_after_minutes` wins
- * whenever it is present, so the two cannot drift apart in practice.
- */
-const DEFAULT_STALE_AFTER_MINUTES = 10;
-
-/**
  * Read the current in-flight claims keyed by task_id. Missing/corrupt
  * lock file → empty map (the notifier never throws; a torn file just
  * means "nothing to compare yet").
@@ -65,23 +59,7 @@ export const readInFlight = async (
 		// lock that is simultaneously free and held is the worst possible
 		// answer to give an agent deciding what to do next, so both
 		// readers use the same rule from core.
-		const policy = {
-			staleAfterMinutes:
-				typeof parsed.stale_after_minutes === 'number'
-					? parsed.stale_after_minutes
-					: DEFAULT_STALE_AFTER_MINUTES,
-			host: hostname(),
-			isProcessAlive: (pid: number): boolean => {
-				try {
-					process.kill(pid, 0);
-					return true;
-				} catch (error) {
-					// ESRCH is the only answer that proves the owner is
-					// gone; EPERM means it exists but is not ours.
-					return (error as NodeJS.ErrnoException).code !== 'ESRCH';
-				}
-			},
-		};
+		const policy = lockExpiryPolicyFor(parsed.stale_after_minutes);
 		for (const entry of parsed.in_flight ?? []) {
 			if (typeof entry.task_id !== 'string') continue;
 			if (isLockEntryExpired(entry, policy)) continue;

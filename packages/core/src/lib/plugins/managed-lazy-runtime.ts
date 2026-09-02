@@ -15,6 +15,7 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from './plugin-contract';
+import type { IManagedLazyConfigurationResult } from '../contracts/interfaces/managed-lazy-configuration.interface';
 import type { IManagedLazyPluginCatalogEntry } from './managed-lazy-catalog.generated';
 import type { IManagedLazyDisposeAggregateError } from '../contracts/interfaces/plugin-activation-session.interface';
 import { activatePluginSession } from './plugin-activation-session';
@@ -107,15 +108,7 @@ export interface IManagedLazyRuntimeOptions {
  * The failure is returned instead, so the caller can announce it, route
  * it to the register-error observers, and start with everything else.
  */
-export interface IManagedLazyConfigurationResult {
-	/** Cross-plugin configuration problems, as before. */
-	readonly issues: readonly string[];
-	/** Plugins that could not be imported or whose options were invalid. */
-	readonly failures: ReadonlyArray<{
-		readonly specifier: string;
-		readonly message: string;
-	}>;
-}
+export type { IManagedLazyConfigurationResult };
 
 export const validateManagedLazyConfiguration = async (options: {
 	readonly plugins: readonly IManagedLazyPluginCatalogEntry[];

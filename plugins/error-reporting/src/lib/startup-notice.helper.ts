@@ -15,25 +15,14 @@ import { announceLines } from '@mcp-vertex/core/public';
  * means nobody ever reconsiders. It asks once, per start, and says what
  * the operator gets in return.
  */
-export interface IErrorReportingStartupNotice {
-	readonly lines: readonly string[];
-}
+import type { IErrorReportingStartupNotice } from './contracts/interfaces/startup-notice.interface';
+import {
+	ERROR_REPORTING_ENABLE_CONFIG,
+	ERROR_REPORTING_PRIVACY_SENTENCE,
+} from './contracts/constants/startup-notice.constant';
 
-/** The exact key an operator edits in `mcp-vertex.config.json`. */
-export const ERROR_REPORTING_ENABLE_CONFIG =
-	'plugins.error-reporting.options.enabled' as const;
-
-/**
- * One sentence on the privacy contract, in the notice itself rather
- * than behind a link. It is the claim the operator is being asked to
- * accept, so it has to be legible where the decision is made — and it
- * is enforced by `privacy-validator.helper.ts`, not merely promised
- * here: a report carries a bug signature, the failing `@mcp-vertex/*`
- * frames and version data, and a DTO that names any absolute path,
- * URL, email, branch, token or code fragment is refused before dispatch.
- */
-export const ERROR_REPORTING_PRIVACY_SENTENCE =
-	'Only mcp-vertex-internal errors are sent (error type, mcp-vertex stack frames, versions) — never your code, file contents, paths, branch names, environment or project data.';
+export type { IErrorReportingStartupNotice };
+export { ERROR_REPORTING_ENABLE_CONFIG, ERROR_REPORTING_PRIVACY_SENTENCE };
 
 export const buildErrorReportingStartupNotice = (input: {
 	readonly enabled: boolean;
