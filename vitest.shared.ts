@@ -33,6 +33,27 @@ export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 ];
 
 /**
+ * Reporters shared by every vitest project.
+ *
+ * `journal-reporter.ts` writes each run — green or red — to
+ * `.cache/mcp-vertex/results/logs/test-runs.jsonl`, so the failures of a
+ * run whose output has scrolled away can be read back with
+ * `bun run test:failures` instead of running the suite again. The root
+ * `vitest.config.ts` wires it for the repo-wide run; a package config
+ * that is executed on its own (`cd plugins/foo && vitest run`) should
+ * spread this in so its runs are journalled too:
+ *
+ *   reporters: sharedReporters(workspaceRoot),
+ *
+ * The reporter prints nothing and swallows its own errors, so adding it
+ * cannot change a run's outcome.
+ */
+export const sharedReporters = (workspaceRoot: string): string[] => [
+	'default',
+	resolve(workspaceRoot, 'tools/scripts/test/journal-reporter.ts'),
+];
+
+/**
  * Shared module aliases so specs can import via the public package
  * specifiers (`@mcp-vertex/core/...`, `@mcp-vertex/proposals/...`)
  * without a tsconfig-paths plugin. Mirrors `tsconfig.base.json` paths.

@@ -1,5 +1,5 @@
 ---
-id: x00419
+id: x00422
 title: "Estabilizar heartbeat de withFileMutex en secciones críticas largas"
 kind: fix
 status: ready
@@ -8,7 +8,7 @@ track: concurrency
 date: 2026-09-02
 ---
 
-# x00419 — Estabilizar heartbeat de withFileMutex en secciones críticas largas
+# x00422 — Estabilizar heartbeat de withFileMutex en secciones críticas largas
 
 ## Goal
 

@@ -1376,8 +1376,16 @@
 				"date": ""
 			},
 			{
-				"id": "q00013",
-				"title": "q00013",
+				"id": "q00014",
+				"title": "q00014",
+				"track": "quality",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00015",
+				"title": "q00015",
 				"track": "quality",
 				"status": "ready",
 				"kind": "plan",
@@ -1472,14 +1480,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00419",
-				"title": "x00419",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00420",
 				"title": "x00420",
 				"track": "concurrency",
@@ -1494,10 +1494,18 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00422",
+				"title": "x00422",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 18,
+			"ready": 19,
 			"in-progress": 10,
 			"review": 4,
 			"paused": 1,

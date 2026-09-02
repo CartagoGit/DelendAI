@@ -145,12 +145,13 @@ const formatFailure = (
 			}`,
 		);
 	}
-	if (failure.expected !== undefined || failure.actual !== undefined) {
-		out.push(`      expected: ${failure.expected ?? '(none)'}`);
-		out.push(`      received: ${failure.actual ?? '(none)'}`);
-	}
+	// The diff already contains both sides, so printing `expected:` /
+	// `received:` next to it doubles the output for no extra information.
 	if (options.showDiff && failure.diff !== undefined) {
-		out.push(indent(failure.diff, '      '));
+		out.push(indent(failure.diff.replace(/\n{2,}/g, '\n'), '      '));
+	} else if (failure.expected !== undefined || failure.actual !== undefined) {
+		out.push(indent(`expected: ${failure.expected ?? '(none)'}`, '      '));
+		out.push(indent(`received: ${failure.actual ?? '(none)'}`, '      '));
 	}
 	if (failure.stack !== undefined && failure.stack.length > 0) {
 		out.push(

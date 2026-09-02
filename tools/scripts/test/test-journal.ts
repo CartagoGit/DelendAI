@@ -26,7 +26,6 @@ import {
 	renameSync,
 	rmSync,
 	statSync,
-	writeFileSync,
 	writeSync,
 } from 'node:fs';
 import { dirname, isAbsolute, join, relative, sep } from 'node:path';
@@ -67,7 +66,7 @@ export interface ISourceFrame {
 	readonly file: string;
 	readonly line: number;
 	readonly column: number;
-	readonly method?: string;
+	readonly method?: string | undefined;
 }
 
 export interface ITestFailureRecord {
@@ -182,10 +181,10 @@ export const parseStackText = (stack: string): ISourceFrame[] => {
  * sort first — that is nearly always the line the agent must open.
  */
 export const selectSourceFrames = (input: {
-	readonly stacks?: readonly ISourceFrame[];
-	readonly stackText?: string;
+	readonly stacks?: readonly ISourceFrame[] | undefined;
+	readonly stackText?: string | undefined;
 	readonly workspaceRoot: string;
-	readonly testFile?: string;
+	readonly testFile?: string | undefined;
 }): ISourceFrame[] => {
 	const raw =
 		input.stacks !== undefined && input.stacks.length > 0
@@ -223,11 +222,11 @@ const stringifyValue = (value: unknown): string | undefined => {
 };
 
 export interface IRawTestError {
-	readonly name?: string;
-	readonly message?: string;
-	readonly stack?: string;
-	readonly stacks?: readonly ISourceFrame[];
-	readonly diff?: string;
+	readonly name?: string | undefined;
+	readonly message?: string | undefined;
+	readonly stack?: string | undefined;
+	readonly stacks?: readonly ISourceFrame[] | undefined;
+	readonly diff?: string | undefined;
 	readonly expected?: unknown;
 	readonly actual?: unknown;
 }
@@ -238,8 +237,8 @@ export const buildFailureRecord = (input: {
 	readonly workspaceRoot: string;
 	readonly name: string;
 	readonly fullName: string;
-	readonly project?: string;
-	readonly durationMs?: number;
+	readonly project?: string | undefined;
+	readonly durationMs?: number | undefined;
 	readonly kind: ITestFailureRecord['kind'];
 }): ITestFailureRecord => {
 	const frames = selectSourceFrames({
@@ -439,9 +438,3 @@ export const readRunEntries = (workspaceRoot: string): ITestRunEntry[] => {
 export const readLastRunEntry = (
 	workspaceRoot: string,
 ): ITestRunEntry | undefined => readRunEntries(workspaceRoot).at(-1);
-
-/** Used by both the writer (`writeFileSync` guard) and the specs. */
-export const writeJournalRaw = (path: string, contents: string): void => {
-	mkdirSync(dirname(path), { recursive: true });
-	writeFileSync(path, contents);
-};

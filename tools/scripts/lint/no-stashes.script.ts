@@ -37,7 +37,7 @@
  *     the exact recovery command;
  *   - any other stash is a real developer/agent stash and is a violation.
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, readlinkSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 /** Exact reflog subject lefthook uses for its partial-staging backup. */
@@ -136,24 +136,40 @@ export const formatDanglingLefthookBackup = (
 		'leftover is the only available mitigation.',
 	].join('\n');
 
+/** Absolute path of the worktree this check is inspecting. */
+export const currentRepoRoot = (): string => {
+	const result = spawnSync('git', ['rev-parse', '--show-toplevel'], {
+		encoding: 'utf8',
+	});
+	return (result.stdout ?? '').trim();
+};
+
 /**
- * True when a lefthook process is alive — meaning any `lefthook auto backup`
- * stash on disk is that run's live, transient backup rather than a leftover.
+ * True when a lefthook process is alive IN THIS WORKTREE — meaning a
+ * `lefthook auto backup` stash on disk is that run's live, transient backup
+ * rather than a leftover.
  *
- * Checked in two ways, cheapest first:
- *  1. our own ancestor chain via /proc (we are normally a grandchild of the
- *     lefthook binary that invoked this check);
- *  2. a repo-wide scan of /proc for any live lefthook process, which covers
- *     the concurrent-agent case where another agent's hook run owns the stash.
+ * Scoping to this worktree matters. A plain machine-wide `/proc` scan for the
+ * string "lefthook" matches other repos' hook runs, and — worse — matches any
+ * shell whose own command line merely mentions lefthook, including the agent
+ * shell running this very check. During development that made the guard
+ * report "a lefthook run is in flight" while looking at a stash whose owner
+ * had been SIGKILLed. So a match requires BOTH:
+ *   - argv[0] is the lefthook binary itself (basename `lefthook` or
+ *     `lefthook-<os>-<arch>`), not a shell that mentions it, and
+ *   - the process cwd is this worktree.
  *
- * On a platform without /proc we return `true` (assume transient): a false
- * "everything is fine" is far better than a false alarm that teaches agents
- * to ignore this guard.
+ * On a platform without /proc we return `true` (assume transient): a late
+ * report is better than a false alarm that teaches agents to ignore the
+ * guard.
  */
 export const isLefthookRunning = (
+	repoRoot: string = currentRepoRoot(),
 	readdir: () => readonly string[] = () => readdirSync('/proc'),
 	readCmdline: (pid: string) => string = (pid) =>
 		readFileSync(`/proc/${pid}/cmdline`, 'utf8'),
+	readCwd: (pid: string) => string = (pid) =>
+		readlinkSync(`/proc/${pid}/cwd`),
 ): boolean => {
 	let pids: readonly string[];
 	try {
@@ -164,10 +180,10 @@ export const isLefthookRunning = (
 	for (const pid of pids) {
 		if (!/^\d+$/.test(pid)) continue;
 		try {
-			const cmdline = readCmdline(pid).replace(/\0/g, ' ');
-			if (/(^|[/\s])lefthook(-linux[^\s]*)?($|[\s/])/.test(cmdline)) {
-				return true;
-			}
+			const argv0 = readCmdline(pid).split('\0')[0] ?? '';
+			const binary = argv0.slice(argv0.lastIndexOf('/') + 1);
+			if (!/^lefthook(-[a-z0-9]+)*$/.test(binary)) continue;
+			if (readCwd(pid) === repoRoot) return true;
 		} catch {
 			// process exited between readdir and read — ignore
 		}

@@ -1,5 +1,5 @@
 ---
-id: q00013
+id: q00015
 title: "Plan eventual settlement: commits atómicos con scope exacto sobre develop compartido; develop rojo es estado transitorio válido"
 kind: plan
 status: ready
@@ -8,7 +8,7 @@ track: quality
 date: 2026-09-02
 ---
 
-# q00013 — Plan eventual settlement sobre develop compartido
+# q00015 — Plan eventual settlement sobre develop compartido
 
 ## Goal
 

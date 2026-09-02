@@ -115,7 +115,9 @@ pre-commit:
         # a correctness bug and CI gates the same check via `bun run validate`.
         # Skips gracefully only when the regenerable proposal index is missing
         # (fresh checkout): the artifact cannot be verified without it.
-        # Bypass: LEFTHOOK_BYPASS=1 git commit ...
+        # Bypass: LEFTHOOK=0 git commit ... (this job is a raw shell
+        # command, so the per-script LEFTHOOK_BYPASS escape hatch used by the
+        # lint:* gates below does not apply to it).
         catalog-drift-check:
             glob:
                 - 'packages/core/skills/**'

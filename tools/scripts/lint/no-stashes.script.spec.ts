@@ -95,23 +95,52 @@ describe('lefthook backup classification', () => {
 });
 
 describe('isLefthookRunning', () => {
-	it('detects a live lefthook process from /proc cmdlines', () => {
+	const LEFTHOOK =
+		'/repo/node_modules/lefthook-linux-x64/bin/lefthook\0run\0pre-commit\0';
+
+	it('detects a lefthook binary running in this worktree', () => {
 		expect(
 			isLefthookRunning(
-				() => ['1', '42', 'self'],
-				(pid) =>
-					pid === '42'
-						? '/repo/node_modules/lefthook-linux-x64/bin/lefthook\0run\0pre-commit\0'
-						: '/usr/bin/bash\0',
+				'/repo',
+				() => ['1', '42'],
+				(pid) => (pid === '42' ? LEFTHOOK : '/usr/bin/bash\0'),
+				() => '/repo',
 			),
 		).toBe(true);
+	});
+
+	it('ignores a lefthook run in a DIFFERENT worktree', () => {
+		expect(
+			isLefthookRunning(
+				'/repo',
+				() => ['42'],
+				() => LEFTHOOK,
+				() => '/other-repo',
+			),
+		).toBe(false);
+	});
+
+	it('ignores a shell whose command line merely mentions lefthook', () => {
+		// This is the false positive that made the guard useless: the agent
+		// shell running the check has "lefthook" in its own argv.
+		expect(
+			isLefthookRunning(
+				'/repo',
+				() => ['42'],
+				() =>
+					'/usr/bin/zsh\0-c\0pkill -9 -f lefthook-linux-x64/bin/lefthook\0',
+				() => '/repo',
+			),
+		).toBe(false);
 	});
 
 	it('reports no lefthook when nothing in /proc matches', () => {
 		expect(
 			isLefthookRunning(
+				'/repo',
 				() => ['1', '42'],
 				() => '/usr/bin/bash\0-c\0git commit\0',
+				() => '/repo',
 			),
 		).toBe(false);
 	});
@@ -119,9 +148,11 @@ describe('isLefthookRunning', () => {
 	it('assumes transient when /proc is unavailable', () => {
 		expect(
 			isLefthookRunning(
+				'/repo',
 				() => {
 					throw new Error('ENOENT');
 				},
+				() => '',
 				() => '',
 			),
 		).toBe(true);

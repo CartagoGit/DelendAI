@@ -16,7 +16,7 @@
 import { execFileSync } from 'node:child_process';
 
 import type { Reporter } from 'vitest/reporters';
-import type { SerializedError, TestCase, TestModule } from 'vitest/node';
+import type { SerializedError, TestModule } from 'vitest/node';
 
 import {
 	buildFailureRecord,
@@ -139,6 +139,7 @@ export default class TestJournalReporter implements Reporter {
 											'test failed with no reported error',
 									},
 								];
+					const duration = testCase.diagnostic()?.duration;
 					for (const error of errors) {
 						failures.push(
 							buildFailureRecord({
@@ -148,12 +149,8 @@ export default class TestJournalReporter implements Reporter {
 								name: testCase.name,
 								fullName: testCase.fullName,
 								...(project !== undefined ? { project } : {}),
-								...(testCase.diagnostic()?.duration !==
-								undefined
-									? {
-											durationMs:
-												testCase.diagnostic()?.duration,
-										}
+								...(duration !== undefined
+									? { durationMs: duration }
 									: {}),
 								kind: 'test',
 							}),
