@@ -2,7 +2,7 @@
 id: t00019
 title: "AUD-CP-006 — Threshold staging: reproduce 'predicate ≠ action'"
 kind: test
-status: ready
+status: review
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -18,6 +18,9 @@ related:
     - q00006
     - x00264 # el fix que se cubre
     - f00182 # engine que ejecuta el staging
+last-transition-id: cf5f948f-2f09-4cad-9096-841f4e9ee827
+last-correlation-id: cf5f948f-2f09-4cad-9096-841f4e9ee827
+last-transition-from: in-progress
 ---
 
 # t00019 — Threshold staging: reproduce el bug "predicate ≠ action"
@@ -156,7 +159,8 @@ bunx vitest run plugins/commit-policy/tests/src/lib/triggers/threshold-tracker.s
   - "caso adversario staged-ajeno pasa"
   - "idempotencia entre ticks pasa"
   - "test rojo antes del fix de x00264; verde después"
-
+- review-state: in_review
+- review-implementer: sonnet-worker-implementer
 ## acceptance
 
 - `bunx vitest run` del archivo verde con 6 casos.

@@ -141,6 +141,14 @@ export interface IAssemblePluginsResult {
 	readonly consumeLazyPluginRegistrations?: () => readonly IMcpPluginRegistrations[];
 	readonly moduleLoading: 'lazy' | 'eager';
 	/**
+	 * Every plugin that is part of this server's surface, by plugin id —
+	 * on BOTH routes. `loadResult.loaded` is empty under managed-lazy
+	 * assembly (nothing is imported until it is called), so a caller that
+	 * asks "is plugin X part of this server?" by scanning it silently gets
+	 * `false` for every plugin under the default surface.
+	 */
+	readonly surfacePluginNames: readonly string[];
+	/**
 	 * Dispose every plugin runtime this assembly activated (eager: all of
 	 * them up front; lazy: whichever the session actually activated), in
 	 * reverse activation order, aggregating per-plugin failures instead of
@@ -697,6 +705,7 @@ const tryAssembleManagedLazy = async (input: {
 			return drained;
 		},
 		moduleLoading: 'lazy',
+		surfacePluginNames: pluginIds,
 		disposePlugins: idempotentDisposePlugins(async () => {
 			const failures = await lazyRuntime.disposeAll();
 			return failures.map((failure) => ({
@@ -1202,6 +1211,7 @@ export const assemblePlugins = async (
 			describe: entry.plugin.describe,
 		})),
 		moduleLoading: 'eager',
+		surfacePluginNames: loadResult.loaded.map((entry) => entry.plugin.name),
 		disposePlugins: idempotentDisposePlugins(async () => {
 			const failures: {
 				readonly pluginName: string;

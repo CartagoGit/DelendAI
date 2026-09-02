@@ -1154,9 +1154,14 @@ export const assembleCliConfig = async (
 	// that never loads `cache` can never trigger deletion. `'off'` skips
 	// the sweep entirely (empty report).
 	const cacheRunOnBoot = fileConfig.cache?.runOnBoot ?? 'dry-run';
-	const cachePluginLoaded = loadResult.loaded.some(
-		(entry) => entry.plugin.name === 'cache',
-	);
+	// Ask the surface, not `loaded`: under the managed-lazy route nothing
+	// is imported until it is called, so `loaded` is empty and this gate
+	// read `false` for every adopter on the default surface — silently
+	// turning a configured `apply` posture into a no-op. The plugin is
+	// startup-activated when a sweep is configured
+	// (`requiresBootSweepActivation`), so its rules are registered by the
+	// time the sweep runs.
+	const cachePluginLoaded = surfacePluginNames.includes('cache');
 	const cacheEvictionApply = cacheRunOnBoot === 'apply' && cachePluginLoaded;
 	const cacheEvictionBootReport: ICacheEvictionReport =
 		cacheRunOnBoot === 'off'
