@@ -10,7 +10,6 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { adaptLegacyPlugin, definePlugin } from '@mcp-vertex/core/public';
 import {
-	adaptLegacyLifecycle,
 	hasPhasedLifecycle,
 	runLifecycle,
 	safeDispose,
@@ -18,6 +17,7 @@ import {
 import type { IPhasedLifecycle } from '@mcp-vertex/core/public';
 import type { IToolRegistration } from '../../../../src/lib/contracts/interfaces/tool-registration.interface';
 import type { ILazyPluginDiscovery } from '../../../../src/lib/plugins/discovery';
+import { adaptLegacyLifecycle } from '../../../../src/lib/plugins/lifecycle';
 import type {
 	ILazyPluginLoader,
 	IPluginManifest,
