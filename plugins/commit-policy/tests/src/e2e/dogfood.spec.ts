@@ -16,6 +16,7 @@ import type { IGitRunner } from '@mcp-vertex/core/public';
 
 import { CommitPolicyOptionsSchema } from '../../../src/lib/contracts/options';
 import { runCommitDriver } from '../../../src/lib/services/commit-driver';
+import { runPushDriver } from '../../../src/lib/services/push-driver';
 import { createPushScheduler } from '../../../src/lib/services/push-scheduler';
 import { runCommitPolicyRun } from '../../../src/lib/tools/run-tool';
 import { runCommitPolicyStatus } from '../../../src/lib/tools/status-tool';
@@ -164,6 +165,84 @@ describe('commit-policy dogfood E2E', () => {
 		const localHead = await git(workspace, 'rev-parse', 'topic/e2e-test');
 		const remoteHead = await git(remote, 'rev-parse', 'topic/e2e-test');
 		expect(remoteHead.stdout.trim()).toBe(localHead.stdout.trim());
+	});
+
+	// t00031 S2 — the full dogfood path (a real commit via
+	// `runCommitDriver`, audit trailer included) followed by a direct
+	// push attempt to a branch the policy protects. `develop` is opt-in
+	// protected here (see "permits configured push to develop" above for
+	// the un-protected default) so the refusal under test is
+	// `protectedBranches`-driven, not the hard-coded `main` guard that
+	// `refuses to push to a protected branch even with onCommit=true`
+	// already covers below.
+	it('commits the full dogfood path, then refuses a direct push to develop when develop is protected', async () => {
+		const policy = CommitPolicyOptionsSchema.parse({
+			gitTimeoutMs: 60000,
+			commit: { enabled: true },
+			identity: { mode: 'global' },
+			audit: {
+				trailer: 'co-authored-by',
+				agentFormat: '${host}/${model}',
+			},
+			cadence: { triggers: [{ kind: 'slice' }], sliceScoping: false },
+			push: {
+				enabled: true,
+				onCommit: false,
+				force: 'with-lease',
+				protectedBranches: ['main', 'master', 'develop'],
+				remote: 'origin',
+				branch: 'develop',
+			},
+		});
+
+		await writeFile(
+			join(workspace, 'guarded.ts'),
+			'export const guarded = 1;\n',
+			'utf8',
+		);
+
+		const commitResult = await runCommitDriver(
+			{
+				message: 'feat: dogfood guarded push',
+				files: ['guarded.ts'],
+				sliceContext: {
+					proposalId: 'f00181',
+					sliceId: 'E2E-GUARD',
+					files: ['guarded.ts'],
+				},
+			},
+			{
+				run: runner,
+				policy,
+				identityCtx: {
+					run: runner,
+					envVars: Object.freeze({}),
+					hostIdentity: {
+						host: 'vscode-copilot',
+						model: 'minimax-m3',
+					},
+				},
+				auditAgent: { host: 'vscode-copilot', model: 'minimax-m3' },
+			},
+		);
+		expect(commitResult.committed).toBe(true);
+
+		// The commit lands on the checked-out local branch
+		// (`topic/e2e-test`, from `beforeEach`) — the engine never
+		// commits directly to a protected branch. The rejection under
+		// test is the separate, deliberate push attempt to `develop`,
+		// exercising the full commit -> push refusal path instead of an
+		// isolated `runPushDriver` call against no real commit history.
+		const pushResult = await runPushDriver({}, policy.push, runner);
+		expect(pushResult.ok).toBe(false);
+		if (pushResult.ok) return;
+		expect(pushResult.code).toBe('BRANCH_PROTECTED');
+		expect(pushResult.refusal).toContain('develop');
+
+		// The commit is real and present locally, but the guard fired
+		// before any `git push` — the remote never saw it.
+		const remoteBranches = await git(remote, 'branch', '-a');
+		expect(remoteBranches.stdout).not.toContain('topic/e2e-test');
 	});
 
 	it('reports protected branch and detached HEAD as failed persistence', async () => {
