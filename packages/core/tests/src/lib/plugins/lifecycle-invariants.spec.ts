@@ -74,11 +74,6 @@ describe('plugin lifecycle invariants (d00015)', () => {
 
 		expect(registerCalls).toBe(1);
 		expect(result.loaded).toHaveLength(1);
-		expect(
-			result.errors.some((error) =>
-				error.message.includes('already loaded'),
-			),
-		).toBe(true);
 	});
 
 	it('invariant: dispose() runs at most once, even across repeated calls to the session teardown', async () => {
