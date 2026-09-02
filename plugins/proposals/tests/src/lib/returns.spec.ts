@@ -4,8 +4,8 @@ import {
 	proposalFailure,
 	proposalSuccess,
 	toProposalEntityRef,
-	type ProposalOperationResult,
 } from '../../../src/lib/returns';
+import type { ProposalOperationResult } from '../../../src/lib/contracts/interfaces/proposal-return-envelope.interface';
 
 describe('returns — r00033 S1 pilot adoption', () => {
 	it('mints an EntityRef narrowed to proposals-owned kinds', () => {

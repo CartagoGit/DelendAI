@@ -4,11 +4,12 @@
  * `proposals` is the pilot plugin for the shared envelopes defined in
  * `@mcp-vertex/core/contracts` (Track M / q00006 §46,
  * `packages/core/src/lib/contracts/envelopes.contract.ts`). This module
- * is the plugin-scoped surface: it narrows the generic `EntityRef` to
- * the entity kinds `proposals` actually mints (`proposal`, `slice`),
- * and re-exports the `success`/`failure` constructors so the rest of
- * the plugin has one place to import from instead of reaching into
- * `@mcp-vertex/core/contracts` directly everywhere.
+ * is the plugin-scoped surface: it re-exports the `success`/`failure`
+ * constructors and a helper that mints an `EntityRef` narrowed to the
+ * entity kinds `proposals` actually produces (see
+ * `contracts/interfaces/proposal-return-envelope.interface.ts` for the
+ * types — inline exported types live under `contracts/` per this
+ * repo's `lint:types-in-contracts` convention).
  *
  * This is additive: it does not change any existing tool's wire
  * contract. New return sites (or a future migration of an existing
@@ -17,22 +18,12 @@
  * (`{ ok, value }` / `{ ok, error }`) already matches what most
  * `proposals` tools return today.
  */
-import {
-	failure,
-	success,
-	type EntityRef,
-	type OperationResult,
-	type Refusal,
-} from '@mcp-vertex/core/contracts';
+import { failure, success } from '@mcp-vertex/core/contracts';
 
-/** Entity kinds `proposals` mints an `EntityRef` for. */
-export type TProposalEntityKind = 'proposal' | 'slice' | 'plan';
-
-/** `EntityRef` narrowed to the kinds this plugin actually produces. */
-export type ProposalEntityRef = EntityRef<TProposalEntityKind>;
-
-/** `OperationResult` narrowed with the plugin's default `Refusal` shape. */
-export type ProposalOperationResult<T> = OperationResult<T, Refusal>;
+import type {
+	ProposalEntityRef,
+	TProposalEntityKind,
+} from './contracts/interfaces/proposal-return-envelope.interface';
 
 /** Build an `EntityRef` for a proposal, slice, or plan id. */
 export const toProposalEntityRef = (
