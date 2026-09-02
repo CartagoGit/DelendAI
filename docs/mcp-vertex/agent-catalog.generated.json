@@ -1267,7 +1267,7 @@
 				"id": "d00415",
 				"title": "d00415",
 				"track": "general",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "docs",
 				"date": ""
 			},
@@ -1481,8 +1481,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 17,
-			"in-progress": 9,
+			"ready": 16,
+			"in-progress": 10,
 			"review": 2,
 			"paused": 1,
 			"done": 712,

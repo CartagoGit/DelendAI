@@ -2,10 +2,13 @@
 id: d00415
 title: "Document pre-existing test failures in apps-ide (header-bar + settings i18n)"
 kind: docs
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-08-31
+last-transition-id: b0e84aa7-f57b-4ec6-af27-ea863fa63976
+last-correlation-id: b0e84aa7-f57b-4ec6-af27-ea863fa63976
+last-transition-from: ready
 ---
 
 # d00415 — Document pre-existing test failures in apps-ide (header-bar + settings i18n)
