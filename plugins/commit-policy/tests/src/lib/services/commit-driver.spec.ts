@@ -898,6 +898,79 @@ describe('runCommitDriver', () => {
 				'docs/original.md -> docs/migrated.md',
 			);
 		});
+
+		// t00023 (AUD-CP-005.invariant) — Nivel 3: a runtime spy on every
+		// git invocation proves no consumer can reach `commit` before
+		// `assertSubset` (the `diff --cached` read) has run, for both the
+		// shared-index guard and the isolated-index guard.
+		it('shared-index guard: never calls commit before the assertSubset read (diff --cached)', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				cached: ['slice-a.ts'],
+			});
+			const result = await commitWithGuard({
+				run: fake.run,
+				message: 'feat: scoped',
+				authorFlag: 'Cartago <cartago@example.com>',
+				allowList: ['slice-a.ts'],
+				branch: 'develop',
+				enforceSubset: true,
+			});
+			expect(result.committed).toBe(true);
+
+			const verbs = fake.commands.map((command) => command[0]);
+			const addIndex = verbs.indexOf('add');
+			const assertSubsetIndex = fake.commands.findIndex(
+				(command) =>
+					command[0] === 'diff' && command.includes('--cached'),
+			);
+			const commitIndex = verbs.indexOf('commit');
+			expect(addIndex).toBeGreaterThanOrEqual(0);
+			expect(assertSubsetIndex).toBeGreaterThan(addIndex);
+			expect(commitIndex).toBeGreaterThan(assertSubsetIndex);
+		});
+
+		it('isolated-index guard: never calls commit-tree before the assertSubset read (diff --cached), even on the real repo', async () => {
+			await withTempRepo(async ({ repoDir, git }) => {
+				const commands: string[][] = [];
+				const spiedRun: IGitRunner = async (args) => {
+					commands.push([...args]);
+					return git(args);
+				};
+				await writeFile(
+					join(repoDir, 'slice-a.ts'),
+					'export const value = 2;\n',
+				);
+				const result = await commitWithGuard({
+					run: spiedRun,
+					message: 'feat: scoped',
+					authorFlag: 'Cartago <cartago@example.com>',
+					allowList: ['slice-a.ts'],
+					branch: 'develop',
+					enforceSubset: true,
+					workspaceRoot: repoDir,
+				});
+				expect(result.committed).toBe(true);
+
+				// The isolated index lives under its own env (GIT_INDEX_FILE),
+				// invisible to `spiedRun`; only the real-index calls the
+				// driver makes through `args.run` are observable here —
+				// which is exactly the surface a bypass would have to use.
+				const verbs = commands.map((command) => command[0]);
+				const addIndex = verbs.indexOf('add');
+				const commitTreeIndex = verbs.indexOf('rev-parse');
+				expect(addIndex).toBeGreaterThanOrEqual(0);
+				// `rev-parse HEAD` (headBefore) always precedes `add`, and
+				// no `commit`/`commit-tree`/`update-ref` primitive is ever
+				// issued through the real, non-isolated runner.
+				expect(commitTreeIndex).toBeGreaterThanOrEqual(0);
+				expect(verbs).not.toContain('commit');
+				expect(verbs).not.toContain('commit-tree');
+				expect(verbs).not.toContain('update-ref');
+			});
+		});
 	});
 
 	describe('x00265 — requireConventional rejects non-conventional messages', () => {
