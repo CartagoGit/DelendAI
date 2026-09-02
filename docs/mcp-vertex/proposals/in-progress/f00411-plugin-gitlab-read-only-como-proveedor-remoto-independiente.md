@@ -2,10 +2,13 @@
 id: f00411
 title: "Plugin GitLab read-only como proveedor remoto independiente"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: gitlab-read-only
 date: 2026-08-31
+last-transition-id: 9c3d842e-91f5-4a4b-a1e2-49c08851224d
+last-correlation-id: 9c3d842e-91f5-4a4b-a1e2-49c08851224d
+last-transition-from: ready
 ---
 
 # f00411 — Plugin GitLab read-only como proveedor remoto independiente

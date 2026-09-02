@@ -1299,7 +1299,7 @@
 				"id": "f00411",
 				"title": "f00411",
 				"track": "gitlab-read-only",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1481,8 +1481,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 21,
-			"in-progress": 5,
+			"ready": 20,
+			"in-progress": 6,
 			"review": 1,
 			"paused": 1,
 			"done": 712,
