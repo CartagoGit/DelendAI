@@ -48,7 +48,8 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
   - "Existe una navegacion unica y usable para Overview, Tools, Memory, Proposals, Agents, KPIs, Plugins, Docs y configuracion."
   - "Memory y las nuevas secciones usan los componentes y estilos compartidos, sin HTML paralelo especifico de VS Code."
   - "Los estados de carga, vacio, error y no disponible son visibles y coherentes."
-
+- review-state: in_review
+- review-implementer: sparrow
 ### S3 — Puente VS Code del shell
 - **Status**: pending
 - **DependsOn**: [S1, S2]
