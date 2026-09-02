@@ -134,7 +134,8 @@ Medir el delta.
 
 `detail: compact | normal | full` en `advise_routing`, siguiendo el
 patrón ya existente de `advise_spend`.
-
+- review-state: in_review
+- review-implementer: sonnet-worker-tokens
 ### S4 — `scoringTrace` como recurso
 
 - **Status**: pending
@@ -155,7 +156,8 @@ de inline.
 
 Medir el objeto real del cable en vez de reconstruirlo, para que deje de
 omitir `execution`.
-
+- review-state: in_review
+- review-implementer: sonnet-worker-tokens
 ## dependency graph
 
 S1 → S2. S3 y S4 son independientes de S2 y entre sí. S5 es
