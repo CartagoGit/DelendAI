@@ -1584,14 +1584,6 @@
 				"date": ""
 			},
 			{
-				"id": "v00128",
-				"title": "v00128",
-				"track": "tokens",
-				"status": "in-progress",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "v00131",
 				"title": "v00131",
 				"track": "tokens",
@@ -1618,8 +1610,8 @@
 		],
 		"byStatus": {
 			"ready": 37,
-			"in-progress": 6,
-			"review": 1,
+			"in-progress": 5,
+			"review": 2,
 			"paused": 1,
 			"done": 695,
 			"blocked": 23,

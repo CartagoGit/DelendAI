@@ -109,7 +109,8 @@ detrás de un handle.
 
 Tests que fijen qué campos de `alternates` y de la decisión consume
 realmente cada llamante, para que S2 no sea adivinanza.
-
+- review-state: in_review
+- review-implementer: sonnet-worker-tokens
 ### S2 — `IAlternateSummary`
 
 - **Status**: pending
