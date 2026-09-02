@@ -9,6 +9,10 @@
  *   - `apps/web/src/data/pages/overview.md` claiming "50 plugins";
  * (and counting tests, packages, MCP resources, etc., all by hand).
  *
+ * Convention: this is a GENERATED artifact per
+ * `docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md` (d00011) — the
+ * `quantitative` block it emits may never be hand-edited.
+ *
  * This generator counts every important artifact directly from the
  * filesystem and emits TWO artifacts:
  *
