@@ -65,6 +65,7 @@
 		"diagnostics:codex-parse-noise:rewrite": "bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts --rewrite",
 		"lint:tools": "bun tools/scripts/lint/no-shell-python.script.ts",
 		"lint:audit-ids": "bun tools/scripts/lint/audit-ids.script.ts",
+		"lint:check-adr-coverage": "bun tools/scripts/lint/check-adr-coverage.script.ts",
 		"lint:setup": "bun tools/scripts/lint/preset-drift.script.ts",
 		"lint:self-host-dogfood": "bun tools/scripts/lint/self-host-dogfood.script.ts",
 		"lint:solid": "bun tools/scripts/lint/solid-compliance.script.ts --baseline=tools/scripts/lint/solid-compliance.baseline.json",

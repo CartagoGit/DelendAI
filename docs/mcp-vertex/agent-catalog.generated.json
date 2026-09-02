@@ -1619,7 +1619,7 @@
 				"id": "t00020",
 				"title": "t00020",
 				"track": "commit-policy",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "unspecified",
 				"date": ""
 			},
@@ -1705,8 +1705,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 49,
-			"in-progress": 5,
+			"ready": 48,
+			"in-progress": 6,
 			"review": 1,
 			"paused": 1,
 			"done": 684,
