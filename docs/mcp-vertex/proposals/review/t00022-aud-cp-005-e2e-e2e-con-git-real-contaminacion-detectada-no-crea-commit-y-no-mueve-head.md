@@ -268,7 +268,8 @@ dejen basura deben fallar (lint reviewer-monitor lo mide).
 - **Depends on**: S1 + `x00269` (suministra el contrato
   `commitCreated` / `headMoved`) + `x00270` (suministra el modo
   de aislamiento usado por Test 3).
-
+- review-state: in_review
+- review-implementer: claude-opus-orchestrator
 ### S3 — Spec de concurrencia 8x con `GIT_INDEX_FILE` aislado
 
 - **Status**: done

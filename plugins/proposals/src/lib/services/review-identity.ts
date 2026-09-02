@@ -193,11 +193,21 @@ export const checkApproveIdentity = async (input: {
 }): Promise<IApproveIdentityCheckResult> => {
 	const submitter = await readLatestSubmitIdentity(input);
 	if (submitter === null) {
+		// Moving a proposal into `review/` does not by itself open a
+		// review round, so a reviewer arriving straight afterwards finds
+		// nothing to approve. The reviewer cannot fix this alone either —
+		// submitting under its own name would make it the implementer and
+		// then bar it from approving. Naming the exact command, and whose
+		// it is, is the difference between an agent handing the round back
+		// and an agent stalling on a refusal it cannot act on.
 		return {
 			ok: false,
 			reason: 'missing-submit-identity',
 			nextAction:
-				'submit the slice for review before approving it so the implementer identity is recorded',
+				`no review round is open for ${input.proposalId} ${input.sliceId}. The IMPLEMENTER (not you, the reviewer) must open it first: ` +
+				`mcp-vertex_proposal_review { action: "submit", proposalId: "${input.proposalId}", sliceId: "${input.sliceId}", agent: "<implementer>", note: "<what was built>" } ` +
+				`— or from a terminal: bun tools/scripts/review/proposal-review.script.ts --id=${input.proposalId} --slice=${input.sliceId} --agent=<implementer> --action=submit --note="<what was built>". ` +
+				'Then retry this approve as a different agent.',
 		};
 	}
 	// f00157-fix: independence is keyed on the AGENT, not the process. A
@@ -211,8 +221,7 @@ export const checkApproveIdentity = async (input: {
 		return {
 			ok: false,
 			reason: 'self-approve',
-			nextAction:
-				'a different agent must call approve — the implementer submits and a different agent approves the slice',
+			nextAction: `"${input.approver.agent}" submitted this slice, so it cannot also approve it. A DIFFERENT agent must run approve for ${input.proposalId} ${input.sliceId} — hand the round to a reviewer rather than renaming yourself, which is the same self-approval the gate exists to refuse.`,
 			submitter,
 		};
 	}
