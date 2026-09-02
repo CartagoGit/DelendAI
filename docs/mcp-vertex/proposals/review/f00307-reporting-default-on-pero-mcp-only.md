@@ -66,3 +66,28 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
+
+### Blocked 2026-09-01 — needs an owner decision, not a code change
+
+An independent review found `plugins/error-reporting/src/lib/options.service.ts`
+resolving `enabled: data.enabled ?? false`, flipped from `?? true` by the
+unrelated 87-file squash `cc065ac0b` ("fix: disable agent commit and push
+automation"), which contradicts the shipped decision in `f00160` and the
+audit's ER-009 directive ("mantenerlo activo por defecto… sin convertirlo
+en opt-in").
+
+It was NOT restored, deliberately. `enabled` is the master switch for
+**network dispatch to an external repository**, and both the code and its
+own contract (`contracts/constants/options.constant.ts`) currently
+document `false` as intentional: "network reporting is explicit opt-in",
+"fail-closed until automatic reporting is explicitly enabled". Code and
+contract agree with each other; the conflict is with an older audit
+directive.
+
+Flipping a privacy-affecting default back on is the repository owner's
+call, not an agent's. Two clean resolutions:
+
+1. Restore `?? true` and update the contract doc comment to match, if
+   ER-009 still stands.
+2. Record ER-009 as superseded and close this proposal against the
+   fail-closed default that actually shipped.
