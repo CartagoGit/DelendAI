@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { buildAdoptProjectWriteEstimate } from '@mcp-vertex/core/lib/adopt/adopt-project-write-estimate';
 import { buildAdoptionAssessment } from '@mcp-vertex/core/lib/adopt/adoption-assessment.service';
+import * as adoptProjectWriteEstimate from '@mcp-vertex/core/lib/adopt/adopt-project-write-estimate';
 import type { IProjectAnalysis } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
 
 const baseAnalysis = (
@@ -156,5 +157,29 @@ describe('buildAdoptionAssessment', () => {
 				]),
 			}),
 		]);
+	});
+
+	it('forwards namespacePrefix and alternate mcpServerName to the write estimate host options', () => {
+		const estimateSpy = vi.spyOn(
+			adoptProjectWriteEstimate,
+			'buildAdoptProjectWriteEstimate',
+		);
+
+		buildAdoptionAssessment(baseAnalysis(), ['packages'], {
+			projectName: '@acme/platform',
+			namespacePrefix: 'acme',
+			mcpServerName: 'acme-tools',
+			docsDir: 'docs/acme',
+		});
+
+		expect(estimateSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				hostOptions: expect.objectContaining({
+					namespacePrefix: 'acme',
+					mcpServerName: 'acme-tools',
+				}),
+			}),
+		);
+		estimateSpy.mockRestore();
 	});
 });

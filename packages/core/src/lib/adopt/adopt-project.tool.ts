@@ -51,6 +51,7 @@ import { writeFileAtomic } from '../shared/atomic-write';
 import { toolError, toolOk } from '../shared/tool-response';
 import { withFileMutex } from '../shared/with-file-mutex';
 import { PROJECT_PROFILE_FILENAME } from '../contracts/interfaces/project-profile.interface';
+import { detectExistingMcpVertexInstall } from '../scaffold/detect-existing-install';
 
 const CONFIG_FILENAME = 'mcp-vertex.config.json';
 
@@ -288,8 +289,18 @@ const createScopedReader = (
 		reader.listDir(pathPosix.join(workspacePath, relativePath)),
 });
 
+const resolveAdoptionMcpServerName = async (
+	deps: IAdoptProjectToolDeps,
+	explicitMcpServerName: string | undefined,
+): Promise<string> => {
+	if (explicitMcpServerName !== undefined) return explicitMcpServerName;
+	const detected = await detectExistingMcpVertexInstall(deps.workspace);
+	return detected.mcpServerName ?? 'mcp-vertex';
+};
+
 const discoverProjectProfileWorkspaces = async (
 	deps: IAdoptProjectToolDeps,
+	mcpServerName: string,
 ): Promise<readonly IProjectProfileWorkspace[]> => {
 	const packageJsonText = await deps.reader.readFile('package.json');
 	const workspacePaths = await listWorkspaceCandidates(
@@ -304,7 +315,7 @@ const discoverProjectProfileWorkspaces = async (
 		const assessment = buildAdoptionAssessment(analysis, topLevelDirs, {
 			projectName: analysis.name ?? workspacePath,
 			namespacePrefix: deps.namespacePrefix,
-			mcpServerName: 'mcp-vertex',
+			mcpServerName,
 			docsDir: deps.corePaths.docsDir,
 		});
 		discovered.push({
@@ -364,9 +375,18 @@ export const buildAdoptProjectToolRegistration = (
 					: DEFAULT_ADOPTION_STAGE;
 				const analysis = await analyzeProject(deps.reader);
 				const topLevelDirs = await deps.reader.listDir('');
+				const namespacePrefix =
+					args.namespacePrefix ?? deps.namespacePrefix;
+				const mcpServerName = await resolveAdoptionMcpServerName(
+					deps,
+					args.mcpServerName,
+				);
 				const discoveredWorkspaces =
 					analysis.projectType === 'monorepo'
-						? await discoverProjectProfileWorkspaces(deps)
+						? await discoverProjectProfileWorkspaces(
+								deps,
+								mcpServerName,
+							)
 						: [];
 				const assessment = buildAdoptionAssessment(
 					analysis,
@@ -374,9 +394,8 @@ export const buildAdoptProjectToolRegistration = (
 					{
 						projectName:
 							args.projectName ?? analysis.name ?? 'Workspace',
-						namespacePrefix:
-							args.namespacePrefix ?? deps.namespacePrefix,
-						mcpServerName: args.mcpServerName ?? 'mcp-vertex',
+						namespacePrefix,
+						mcpServerName,
 						docsDir: deps.corePaths.docsDir,
 						...(args.defaultModel !== undefined
 							? { defaultModel: args.defaultModel }
@@ -390,9 +409,8 @@ export const buildAdoptProjectToolRegistration = (
 						topLevelDirs,
 						projectName:
 							args.projectName ?? analysis.name ?? 'Workspace',
-						namespacePrefix:
-							args.namespacePrefix ?? deps.namespacePrefix,
-						mcpServerName: args.mcpServerName ?? 'mcp-vertex',
+						namespacePrefix,
+						mcpServerName,
 						docsDir: deps.corePaths.docsDir,
 						...(args.defaultModel !== undefined
 							? { defaultModel: args.defaultModel }

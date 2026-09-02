@@ -36,9 +36,8 @@ El scaffolding actual impone nombres `mcp-vertex-*` y mezcla namespaces entre pr
   - "Definir un contrato compartido para scaffolding, naming de agentes y namespace MCP."
   - "Resolver el namespace del proyecto host sin asumir `mcp-vertex-*` como valor global."
   - "Documentar la referencia a GitHub issue #52."
-- review-state: changes_requested
-- review-implementer: copilot-implementation-runner
-- review-reviewer: delivery_verifier
+- review-state: in_review
+- review-implementer: implementation_runner
 - review-log: requested_changes by delivery_verifier — Corregir adopt_project y adoption-assessment para propagar mcpServerName/namespacePrefix configurados por el host, eliminando el hardcode mcp-vertex/* en agentes generados. Validar con tests de adopt/scaffold y typecheck de core/CLI.
 ### S2 — Host-specific adapters and stale artifact cleanup
 - **Status**: pending

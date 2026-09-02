@@ -208,6 +208,46 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(launch).toContain('--preset full');
 	});
 
+	it('detects an existing MCP server key and emits agents against that server', async () => {
+		mkdirSync(join(root, '.vscode'), { recursive: true });
+		writeFileSync(
+			join(root, '.vscode/mcp.json'),
+			JSON.stringify({
+				servers: {
+					'acme-tools': {
+						command: 'bunx',
+						args: [
+							'--package',
+							'@mcp-vertex/cli',
+							'mcpv',
+							'__serve',
+						],
+					},
+				},
+			}),
+			'utf8',
+		);
+
+		const result = parse(await adopt({ write: true }));
+		expect(result.ok).toBe(true);
+		const orchestrator = await readFile(
+			join(root, '.github/agents/orchestrator.agent.md'),
+			'utf8',
+		);
+		const instructions = await readFile(
+			join(root, '.github/copilot-instructions.md'),
+			'utf8',
+		);
+
+		expect(orchestrator).toContain(
+			'tools: [read, search, edit, execute, todo, agent, acme-tools/*]',
+		);
+		expect(orchestrator).toContain(
+			'tool: `acme-tools/mcp-vertex_overview`',
+		);
+		expect(instructions).toContain('The MCP server `acme-tools` rules.');
+	});
+
 	it('refuses to merge a malformed existing config', async () => {
 		writeFileSync(join(root, 'mcp-vertex.config.json'), '{nope', 'utf8');
 		const result = parse(await adopt({ write: true }));
