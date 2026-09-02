@@ -293,6 +293,10 @@ export {
 	VALIDATE_EVIDENCE_SCHEMA,
 	type IValidateEvidenceInput,
 } from '../lib/proposals/validate-evidence.schema';
+// Shared by every operator-facing boot notice in core AND in the
+// plugins, which is why it is public: four copies of the same
+// never-throw write loop had grown independently.
+export { announceLines } from '../lib/shared/announce-lines';
 export {
 	PLUGIN_DEFAULTS,
 	resolvePluginOptions,

@@ -2,14 +2,14 @@
 id: f00331
 title: "errors counted."
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#errors-counted
-last-transition-id: 99c7bc48-9a60-4763-be60-e22806aa443d
-last-correlation-id: 99c7bc48-9a60-4763-be60-e22806aa443d
-last-transition-from: ready
+last-transition-id: 6a6f5273-8ae2-42dd-8d52-f6c49222098a
+last-correlation-id: 6a6f5273-8ae2-42dd-8d52-f6c49222098a
+last-transition-from: in-progress
 ---
 
 # f00331 — errors counted.
@@ -30,8 +30,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/in-progress/f00331-errors-counted.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/review/f00331-errors-counted.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -43,7 +43,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run packages/core/tests/src/lib/metrics/bytes-and-errors.spec.ts packages/core/tests/src/lib/metrics/metrics.spec.ts -> 2 files, 32 tests passing. Confirmed estimateErrorCost computes non-zero cost for error responses and no private data leaks into aggregates, satisfying MET-002.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

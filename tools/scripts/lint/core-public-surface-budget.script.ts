@@ -2,7 +2,12 @@
 
 import { parseBarrel } from '../inspect/core-public-inventory.script';
 
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 750;
+// Raised by one, deliberately, for `announceLines`: it REMOVES four
+// duplicated copies of the same never-throw stderr write loop (two of
+// them in plugins, which `lint:solid` flags as cross-plugin
+// duplication). Spending a public export to delete four copies of a
+// safety guarantee is the trade this budget exists to make consciously.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 751;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;
