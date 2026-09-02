@@ -7,18 +7,6 @@ const execEval = async (
 	options?: Parameters<typeof runArgv>[1],
 ) => runArgv([process.execPath, '-e', script], options);
 
-const execShellEval = async (
-	script: string,
-	options?: Parameters<typeof runCommand>[1],
-) =>
-	runCommand(
-		`${JSON.stringify(process.execPath)} -e ${JSON.stringify(script)}`,
-		{
-			cwd: process.cwd(),
-			...options,
-		},
-	);
-
 describe('runArgv byte budgets (x00220)', () => {
 	it('caps stdout by real UTF-8 bytes, not UTF-16 code units', async () => {
 		const payload = '🙂é';
@@ -85,12 +73,9 @@ describe('runArgv byte budgets (x00220)', () => {
 	});
 
 	it('runCommand preserves stream-local UTF-8 decoding while sharing one byte budget', async () => {
-		const result = await execShellEval(
-			[
-				'process.stdout.write(Buffer.from([0xF0, 0x9F, 0x99]));',
-				"process.stderr.write('abc');",
-			].join('\n'),
-			{ maxOutputBytes: 3 },
+		const result = await runCommand(
+			"printf '\\360\\237\\231'; printf 'abc' >&2",
+			{ cwd: process.cwd(), maxOutputBytes: 3 },
 		);
 		expect(result.code).toBe(0);
 		expect(result.output).toBe('abc');

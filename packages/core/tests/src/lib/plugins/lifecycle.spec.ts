@@ -157,9 +157,12 @@ describe('f00184 — phased plugin lifecycle', () => {
 	it('adaptLegacyLifecycle passes the full plugin context and disposes runtimes once', async () => {
 		const dispose = vi.fn();
 		const signal = new AbortController().signal;
+		// Only `options` is read on this path; the cast goes through
+		// `unknown` because a partial context does not overlap the full
+		// interface.
 		const pluginContext = {
 			options: { source: 'router' },
-		} as IMcpPluginContext;
+		} as unknown as IMcpPluginContext;
 		const plugin = definePlugin({
 			name: 'legacy-ctx',
 			async register(ctx, receivedSignal) {
@@ -205,7 +208,9 @@ describe('f00184 — phased plugin lifecycle', () => {
 				server.registerTool(
 					'phased_tool',
 					{ description: 'phased tool' },
-					() => ({ ok: true }),
+					async () => ({
+						content: [{ type: 'text' as const, text: 'ok' }],
+					}),
 				);
 			},
 		};
