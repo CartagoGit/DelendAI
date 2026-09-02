@@ -30,6 +30,7 @@ import { join, relative, resolve } from 'node:path';
 import {
 	PACK_DEFAULTS_OVERLAY,
 	PACK_IDS,
+	MANAGED_LAZY_PLUGIN_CATALOG,
 	PRESET_CATALOG,
 	PRESET_KIND,
 	resolvePresetMembers,
@@ -77,6 +78,7 @@ export interface IPresetDriftFinding {
 		| 'host-only-chain-violation'
 		| 'stack-pack-overlay-drift'
 		| 'manifest-preset-drift'
+		| 'preset-member-not-lazy-indexed'
 		| 'vertex-config-drift'
 		| 'vertex-config-read-failure';
 	readonly detail: string;
@@ -277,6 +279,47 @@ export const findHostOnlyChainViolations = (
 			}));
 	});
 
+/**
+ * Every preset member must be indexed in
+ * `managed-lazy-catalog.generated.ts`.
+ *
+ * The managed-lazy surface is all-or-nothing: `tryAssembleManagedLazy`
+ * needs a catalog entry for EVERY effective plugin, because the runtime
+ * routes tool calls through that index. One preset member missing from
+ * it therefore does not degrade that plugin — it silently demotes the
+ * whole surface to eager loading for every adopter of that preset, so
+ * every plugin module is imported at boot and the entire tool surface is
+ * registered up front. The runtime now says so on stderr
+ * (`managed-lazy-demotion.ts`), but by then it has already shipped.
+ *
+ * This is the gate that keeps that from being committed at all. If you
+ * add a plugin to a preset, run
+ * `bun tools/scripts/generate/managed-lazy-catalog.script.ts` — do not
+ * relax this check.
+ */
+export const findPresetMembersNotLazyIndexed = (
+	catalog: readonly IPresetDefinition[] = PRESET_CATALOG,
+	lazyIndex: readonly { readonly id: string }[] = MANAGED_LAZY_PLUGIN_CATALOG,
+): readonly IPresetDriftFinding[] => {
+	const indexed = new Set(lazyIndex.map((entry) => entry.id));
+	const seen = new Set<string>();
+	const findings: IPresetDriftFinding[] = [];
+	for (const definition of catalog) {
+		for (const member of definition.members) {
+			if (indexed.has(member.plugin) || seen.has(member.plugin)) continue;
+			seen.add(member.plugin);
+			findings.push({
+				absPath: '',
+				relPath: 'packages/core/src/lib/plugins/preset-catalog.ts',
+				line: 0,
+				kind: 'preset-member-not-lazy-indexed',
+				detail: `preset member "${member.plugin}" is not in managed-lazy-catalog.generated.ts, so every preset that ships it falls back to EAGER loading for the whole surface. Run \`bun tools/scripts/generate/managed-lazy-catalog.script.ts\`.`,
+			});
+		}
+	}
+	return findings;
+};
+
 export const findPackOverlayDrift = (
 	packIds: readonly string[] = PACK_IDS,
 	overlay: Readonly<
@@ -344,6 +387,7 @@ export const detectCatalogPresetDrift = async (
 	}
 	findings.push(...findHostOnlyChainViolations());
 	findings.push(...findPackOverlayDrift());
+	findings.push(...findPresetMembersNotLazyIndexed());
 
 	try {
 		const configRaw = await readFile(resolve(rootDir, configPath), 'utf8');
