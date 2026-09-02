@@ -1,6 +1,6 @@
 ---
 id: x00273
-title: "Guard de push directo a main: cerrar el hueco que el ADR 0018 documenta"
+title: "Guard de push directo a main: cerrar el hueco que el ADR 0019 documenta"
 kind: fix
 status: done
 type: proposal
@@ -21,7 +21,7 @@ shipped-in:
 Ni un humano ni un agente pueden hacer aterrizar un commit en `main`
 con un `git push` directo: el único camino es una pull request. Esto
 cierra, en el lado que este repo puede controlar sin depender de un
-ajuste manual en GitHub, el hueco que documenta el ADR 0018
+ajuste manual en GitHub, el hueco que documenta el ADR 0019
 (`d00013`): hoy no existe **ningún** mecanismo — ni de GitHub, ni
 local — que lo impida.
 
@@ -48,7 +48,7 @@ Reproducido en esta sesión (2026-08-29):
 
 3. **`GOVERNANCE-BRANCH-PROTECTION.md` ya admite la brecha** ("`required_checks`
    alone does not stop a direct push") pero la resuelve pidiendo activar
-   el toggle **para `develop`**, instrucción que el ADR 0018
+   el toggle **para `develop`**, instrucción que el ADR 0019
    (`d00013`) corrige porque contradice la política actual
    (`develop` es deliberadamente flexible; `main` es la que necesita el
    candado).
@@ -111,7 +111,7 @@ if (remoteBranch === MAIN_BRANCH) {
     return {
         ok: false,
         blockers: [
-            'pushing directly to `main` — main only receives commits through a pull request (ADR 0018).',
+            'pushing directly to `main` — main only receives commits through a pull request (ADR 0019).',
             '',
             'next-action:',
             '  open a pull request from your branch into `main` instead of pushing directly.',
@@ -163,7 +163,7 @@ fuera de esta propuesta de `fix`).
 - review-state: done
 - review-implementer: owl
 - review-reviewer: delivery_verifier
-- review-log: approved by delivery_verifier — Comentario y doc de gobernanza verificados: main bloqueado vía PR (ADR 0018), guard local como capa complementaria, sin cambios de comportamiento. lint:content-integrity OK.
+- review-log: approved by delivery_verifier — Comentario y doc de gobernanza verificados: main bloqueado vía PR (ADR 0019), guard local como capa complementaria, sin cambios de comportamiento. lint:content-integrity OK.
 ### S3 — Test end-to-end del guard real (no solo la función pura)
 
 - **Status**: done
@@ -194,7 +194,7 @@ bypass), no solo la función pura.
 
 1. `git push origin <cualquier-rama>:main` hecho directamente (sin
    pasar por una pull request) es bloqueado por el pre-push hook,
-   exit 1, mensaje que cita el ADR 0018 y ofrece el bypass.
+   exit 1, mensaje que cita el ADR 0019 y ofrece el bypass.
 2. `LEFTHOOK_BYPASS=1 git push origin <rama>:main` pasa (escape hatch
    preservado, mismo patrón que el resto de guards del repo).
 3. Un push a `develop` sigue comportándose exactamente igual que hoy
@@ -238,7 +238,7 @@ Este guard es deliberadamente asimétrico respecto al de `develop`: en
 `develop` solo se bloquea a agentes (`wip/*`, `agent/*`), el operador
 puede pushear libremente; en `main` se bloquea a **cualquiera**,
 operador incluido, salvo bypass explícito — porque `main` es la rama
-de publicación y el ADR 0018 la trata como tal para todos los actores,
+de publicación y el ADR 0019 la trata como tal para todos los actores,
 no solo para agentes.
 
 Evidencia de la brecha actual, recogida en esta sesión (2026-08-29):
