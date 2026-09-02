@@ -110,8 +110,18 @@ docs/mcp-vertex/plugins/auto-generated/<plugin-id>.md
       ya existe; crear si no)
 - **Gate**: `bun run generate:plugin-docs` ejecutado y verificado a
   mano contra un plugin fixture con y sin nota manual, seguido de
-  `bunx vitest run tools/scripts/generate/plugin-docs.script.spec.ts`
-
+  `bunx vitest run tools/scripts/generate/plugin-docs.script.spec.ts`.
+  Corrección: `plugin-docs.script.ts` es un wrapper de una línea; el
+  generador real (y el fichero realmente editado) es
+  `tools/scripts/generate/from-manifests.script.ts`, con su spec
+  `from-manifests.script.spec.ts` (el `.spec.ts` que la propuesta
+  nombraba no existe con ese nombre). Ambos gates ejecutados y verdes:
+  `bun run generate:plugin-docs` escribió las 3 páginas con "## Notes",
+  y `bunx vitest run tools/scripts/generate/from-manifests.script.spec.ts`
+  pasó 4/4 (incluye el nuevo caso "folds an optional plugin notes file
+  into the generated page").
+- review-state: in_review
+- review-implementer: claude-code-worker
 ### S2 — Migrar `context-for-change.md`, `error-reporting.md`, `impact-analysis.md`
 
 - **Status**: pending
@@ -124,10 +134,22 @@ docs/mcp-vertex/plugins/auto-generated/<plugin-id>.md
     - `docs/mcp-vertex/plugins/auto-generated/context-for-change.md`,
       `error-reporting.md`, `impact-analysis.md` (regenerados vía
       `bun run generate:plugin-docs`, ahora con la sección "Notes")
-- **Gate**: `grep -rn "plugins/context-for-change\.md\|plugins/error-reporting\.md\|plugins/impact-analysis\.md" docs/ --include=*.md`
+- **Gate**: `grep -rn --include="*.md" "plugins/context-for-change\.md\|plugins/error-reporting\.md\|plugins/impact-analysis\.md" docs/`
   debe devolver cero coincidencias (ningún enlace del repo sigue
-  apuntando a las tres rutas eliminadas)
-
+  apuntando a las tres rutas eliminadas). Ejecutado: cero coincidencias
+  fuera de `docs/mcp-vertex/proposals/done/**` (registro histórico ya
+  enviado, no se reescribe) y de esta propia propuesta. Las tres rutas
+  manuales NO se eliminaron por completo: quedan como un stub corto de
+  redirección ("> **Merged (d00014).**...") en vez de un 404, mitigación
+  que la propia sección de riesgos de esta propuesta ya preveía.
+  `tools/scripts/lint/privacy-internal-only.script.ts` referenciaba
+  `docs/mcp-vertex/plugins/error-reporting.md` como fuente autorizada
+  para mencionar `internalOnly`; se corrigió a
+  `docs/mcp-vertex/plugins/notes/error-reporting.notes.md` (su spec
+  actualizado igual) para que el lint no rompiera al desaparecer el
+  contenido real de la página manual.
+- review-state: in_review
+- review-implementer: claude-code-worker
 ### S3 — Lint que impide una página manual duplicando una auto-generada
 
 - **Status**: pending

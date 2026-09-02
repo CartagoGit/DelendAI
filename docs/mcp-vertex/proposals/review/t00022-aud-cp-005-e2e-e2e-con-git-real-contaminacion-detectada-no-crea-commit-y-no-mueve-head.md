@@ -2,7 +2,8 @@
 id: t00022
 title: "AUD-CP-005.e2e — E2E con Git real: contaminación detectada NO crea commit y NO mueve HEAD"
 kind: test
-status: in-progress
+status: review
+shipped-in: ["2954b19f9"]
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -24,9 +25,9 @@ related:
     - f00182 # CommitPolicyEngine (target del test)
     - t00018 # slice event staging happy path (predecesor)
     - t00023 # invariante stage→validate→commit (hermano)
-last-transition-id: c4ab1edd-4eff-44a3-9493-1edbc9957fb0
-last-correlation-id: c4ab1edd-4eff-44a3-9493-1edbc9957fb0
-last-transition-from: ready
+last-transition-id: e0a8a271-d4ab-4403-9724-ae5a02ad517f
+last-correlation-id: e0a8a271-d4ab-4403-9724-ae5a02ad517f
+last-transition-from: in-progress
 ---
 
 # t00022 — AUD-CP-005.e2e: E2E con Git real (no mocks) verifica que la contaminación detectada no crea commit ni mueve HEAD
@@ -255,13 +256,13 @@ dejen basura deben fallar (lint reviewer-monitor lo mide).
 
 ### S1 — Fixture de repo Git temporal reutilizable
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/tests/integration/_fixtures/git-tmp.ts`.
 - **Gate**: type
 
 ### S2 — Spec de contaminación cross-agent con Git real
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/tests/integration/cross-agent-real.spec.ts`.
 - **Gate**: type + test passing
 - **Depends on**: S1 + `x00269` (suministra el contrato
@@ -270,7 +271,7 @@ dejen basura deben fallar (lint reviewer-monitor lo mide).
 
 ### S3 — Spec de concurrencia 8x con `GIT_INDEX_FILE` aislado
 
-- **Status**: pending
+- **Status**: done
 - **Files**: mismo spec.
 - **Gate**: test passing
 - **Depends on**: `x00270`.
