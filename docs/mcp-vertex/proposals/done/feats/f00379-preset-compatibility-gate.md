@@ -2,15 +2,15 @@
 id: f00379
 title: "preset compatibility gate."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#preset-compatibility-gate
 shipped-in: ["82c54bcc"]
-last-transition-id: 17f1fe0c-7d76-45c6-985a-9dfffd38955a
-last-correlation-id: 17f1fe0c-7d76-45c6-985a-9dfffd38955a
-last-transition-from: in-progress
+last-transition-id: d74b2d5f-6fcd-4b23-9a48-89e6af96c697
+last-correlation-id: d74b2d5f-6fcd-4b23-9a48-89e6af96c697
+last-transition-from: review
 ---
 
 # f00379 — preset compatibility gate.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00379-preset-compatibility-gate.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00379-preset-compatibility-gate.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
