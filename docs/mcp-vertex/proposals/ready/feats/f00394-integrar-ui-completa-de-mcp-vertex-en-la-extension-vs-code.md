@@ -48,8 +48,10 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
   - "Existe una navegacion unica y usable para Overview, Tools, Memory, Proposals, Agents, KPIs, Plugins, Docs y configuracion."
   - "Memory y las nuevas secciones usan los componentes y estilos compartidos, sin HTML paralelo especifico de VS Code."
   - "Los estados de carga, vacio, error y no disponible son visibles y coherentes."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: sparrow
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by delivery_verifier — Corregir selector activo de shell panels para que coincida con la clase doble y añadir estados error explícitos en el contrato/render de Memory. La integración render-panel.spec.ts falla por data-active ausente; validar sin ampliar alcance no declarado.
 ### S3 — Puente VS Code del shell
 - **Status**: pending
 - **DependsOn**: [S1, S2]
