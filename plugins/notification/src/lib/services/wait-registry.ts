@@ -6,6 +6,8 @@ import {
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
+import { WAIT_ENTRY_TTL_MS } from '../contracts/constants/wait-registry.constant';
+
 import type { IRegisteredWait } from '../contracts/interfaces/wait-diagnosis.interface';
 
 /**
@@ -42,13 +44,6 @@ interface IWaitFile {
 	readonly version: 1;
 	readonly waits: readonly IWaitRow[];
 }
-
-/**
- * Five minutes: 2.5× the longest wait `await_lock` will ever perform, so
- * no live waiter is ever pruned, and short enough that a row orphaned by
- * a hard kill cannot outlive the claim it referred to.
- */
-export const WAIT_ENTRY_TTL_MS = 300_000;
 
 /** Sibling of the lock file, so the two are always read from one place. */
 export const deriveWaitRegistryPath = (lockFile: string): string =>
