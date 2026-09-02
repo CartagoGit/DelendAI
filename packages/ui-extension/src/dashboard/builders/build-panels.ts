@@ -28,6 +28,8 @@ interface IPanelFragment {
 	readonly body: string;
 }
 
+type IWorkspacePanelState = IDashboardDataState | 'error';
+
 const extractPanelFragment = (
 	html: string,
 	fallbackTitle: string,
@@ -78,7 +80,7 @@ const renderPanelSection = (
 const renderWorkspacePanel = (
 	id: string,
 	title: string,
-	state: IDashboardDataState,
+	state: IWorkspacePanelState,
 	body: string,
 	text: (
 		key: string,
@@ -115,7 +117,7 @@ const renderWorkspacePanel = (
 								'This section is unavailable because the backing plugin or host capability is not loaded.',
 							),
 						)
-					: body.trim().length === 0
+					: state === 'error'
 						? renderStateCard(
 								title,
 								'error',
@@ -124,7 +126,16 @@ const renderWorkspacePanel = (
 									'This section returned an invalid payload and could not be rendered.',
 								),
 							)
-						: body;
+						: body.trim().length === 0
+							? renderStateCard(
+									title,
+									'error',
+									text(
+										'dashboard.state.error',
+										'This section returned an invalid payload and could not be rendered.',
+									),
+								)
+							: body;
 	return `
 <section class="mcpv-panel mcpv-panel--shell" id="panel-${id}" role="tabpanel" aria-labelledby="tab-${id}">
 	<h2 class="mcpv-panel__title">${escapeHtml(title)}</h2>
@@ -188,6 +199,11 @@ export function buildPanels(
 	settings?: IExtensionSettings,
 	options: IBuildPanelsOptions = {},
 ): string {
+	const memoryState =
+		(model.memory.state as IWorkspacePanelState | undefined) ??
+		(model.memory.notes.length === 0 && model.memory.total === 0
+			? 'empty'
+			: 'ready');
 	const docsModel =
 		model.docs ??
 		({
@@ -243,11 +259,7 @@ export function buildPanels(
 			data: model.plugins,
 		},
 		memory: {
-			state:
-				model.memory.state ??
-				(model.memory.notes.length === 0 && model.memory.total === 0
-					? 'empty'
-					: 'ready'),
+			state: memoryState,
 			data: model.memory,
 		},
 		proposals: {
@@ -482,8 +494,8 @@ export function buildPanels(
 			const id = idMatch?.[1] ?? `panel-${ix}`;
 			const active = id === `panel-${firstActive}` ? 'true' : 'false';
 			return html.replace(
-				'<section class="mcpv-panel"',
-				`<section class="mcpv-panel" data-active="${active}"`,
+				/<section class="mcpv-panel([^"]*)"/,
+				`<section class="mcpv-panel$1" data-active="${active}"`,
 			);
 		})
 		.join('');

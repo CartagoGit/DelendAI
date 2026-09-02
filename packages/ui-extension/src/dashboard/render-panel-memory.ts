@@ -13,35 +13,42 @@ export const renderPanelMemory = (
 		fallbackOrVars?: string | Readonly<Record<string, string | number>>,
 		vars?: Readonly<Record<string, string | number>>,
 	) => extensionText(lang, key, fallbackOrVars, vars);
+	const explicitState = model.state as
+		| IDashboardMemoryModel['state']
+		| 'error';
 	const state =
-		model.state ??
+		explicitState ??
 		(model.notes.length === 0 && model.total === 0 ? 'empty' : 'ready');
 	const rows =
 		state === 'loading'
 			? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.state.loading', 'Loading memory notes...'))}</td></tr>`
-			: state === 'unavailable'
-				? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.unavailable'))}</td></tr>`
-				: model.notes.length === 0
-					? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.none'))}</td></tr>`
-					: model.notes
-							.map(
-								(note) => `<tr>
+			: state === 'error'
+				? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.state.error', 'This section returned an invalid payload and could not be rendered.'))}</td></tr>`
+				: state === 'unavailable'
+					? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.unavailable'))}</td></tr>`
+					: model.notes.length === 0
+						? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.none'))}</td></tr>`
+						: model.notes
+								.map(
+									(note) => `<tr>
 			<td><code>${escapeHtml(note.id)}</code></td>
 			<td>${escapeHtml(note.title)}</td>
 			<td>${note.tags.map((tag) => `<code>${escapeHtml(tag)}</code>`).join(' ')}</td>
 		</tr>`,
-							)
-							.join('');
+								)
+								.join('');
 	const summaryLabel =
 		state === 'loading'
 			? text('dashboard.state.loadingShort', 'Loading')
-			: state === 'unavailable'
-				? text('dashboard.state.unavailableShort', 'Unavailable')
-				: state === 'empty'
-					? text('dashboard.state.emptyShort', 'Empty')
-					: text('common.ready', 'Ready');
+			: state === 'error'
+				? text('dashboard.state.errorShort', 'Error')
+				: state === 'unavailable'
+					? text('dashboard.state.unavailableShort', 'Unavailable')
+					: state === 'empty'
+						? text('dashboard.state.emptyShort', 'Empty')
+						: text('common.ready', 'Ready');
 	return `
-<section class="mcpv-panel" id="panel-memory" role="tabpanel" aria-labelledby="tab-memory">
+<section class="mcpv-panel" id="panel-memory" role="tabpanel" aria-labelledby="tab-memory" data-state="${escapeHtml(state)}">
 	<h2 class="mcpv-panel__title">${escapeHtml(text('dashboard.memory.title'))}</h2>
 	<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.durableNotes', { count: formatNumber(model.total) }))}</p>
 	<div class="mcpv-grid">
