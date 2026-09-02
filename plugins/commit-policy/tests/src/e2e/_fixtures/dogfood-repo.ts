@@ -18,8 +18,36 @@ import type { IGitRunner } from '@mcp-vertex/core/public';
 
 const execFileAsync = promisify(execFile);
 
-export const git = (cwd: string, ...args: readonly string[]) =>
-	execFileAsync('git', [...args], { cwd });
+/**
+ * Every git call in this fixture runs with `GIT_CONFIG_GLOBAL` pointed
+ * at a scratch file.
+ *
+ * The fixture needs a *global* config, because `identity: { mode:
+ * 'global' }` is one of the behaviours under test. It previously got one
+ * by running `git config --global user.email ...` — which writes to the
+ * developer's real `~/.gitconfig`. Two consequences, both observed on
+ * this machine: parallel test files raced for the config lock and one
+ * failed with `could not lock config file`, and, far worse, the
+ * machine's actual git identity was silently replaced with
+ * `cartago@example.com`, so commits made outside commit-policy's
+ * explicit-author path were attributed to a fixture address.
+ *
+ * A test may not write to anything outside its own temp directory.
+ * Scoping "global" per invocation gives the fixture exactly the config
+ * it needs, isolates parallel runs from each other, and leaves the
+ * developer's machine alone.
+ */
+export const git = (
+	cwd: string,
+	...args: readonly string[]
+): ReturnType<typeof execFileAsync> =>
+	execFileAsync('git', [...args], {
+		cwd,
+		env: {
+			...process.env,
+			GIT_CONFIG_GLOBAL: join(cwd, '.fixture-gitconfig'),
+		},
+	});
 
 export interface IDogfoodRepo {
 	workspace: string;
