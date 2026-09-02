@@ -13,6 +13,9 @@
  * then the drift check (`bun run check:quantitative`). Drift here
  * means the generator was skipped or the script silently broke.
  *
+ * This is the drift check for a GENERATED block per
+ * `docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md` (d00011, rule #6).
+ *
  * Privacy: the script enumerates registered docs only and never
  * surfaces host paths, secrets, or tool ids.
  *
