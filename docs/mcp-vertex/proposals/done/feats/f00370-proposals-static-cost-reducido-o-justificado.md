@@ -2,15 +2,15 @@
 id: f00370
 title: "proposals static cost reducido o justificado."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#proposals-static-cost-reducido-o-justificado
 shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
-last-transition-id: 5680b7ac-63ac-4b23-adca-021beda2eb51
-last-correlation-id: 5680b7ac-63ac-4b23-adca-021beda2eb51
-last-transition-from: in-progress
+last-transition-id: 7f80d72a-ce20-4f7b-b9e2-9b98e00c7459
+last-correlation-id: 7f80d72a-ce20-4f7b-b9e2-9b98e00c7459
+last-transition-from: review
 ---
 
 # f00370 — proposals static cost reducido o justificado.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00370-proposals-static-cost-reducido-o-justificado.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00370-proposals-static-cost-reducido-o-justificado.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

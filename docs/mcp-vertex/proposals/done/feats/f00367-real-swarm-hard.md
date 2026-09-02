@@ -2,15 +2,15 @@
 id: f00367
 title: "real swarm <= hard."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#real-swarm-hard
 shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
-last-transition-id: 17bf9b86-fe50-491c-a7d8-118c85ec5b67
-last-correlation-id: 17bf9b86-fe50-491c-a7d8-118c85ec5b67
-last-transition-from: in-progress
+last-transition-id: 0ed8d1de-3f7a-4944-a675-0a063cb8518b
+last-correlation-id: 0ed8d1de-3f7a-4944-a675-0a063cb8518b
+last-transition-from: review
 ---
 
 # f00367 — real swarm <= hard.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00367-real-swarm-hard.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00367-real-swarm-hard.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

@@ -2,15 +2,15 @@
 id: f00368
 title: "CI falla si real swarm > hard."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard
 shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
-last-transition-id: 7807c2d4-760c-4192-93d2-dc06f635cb11
-last-correlation-id: 7807c2d4-760c-4192-93d2-dc06f635cb11
-last-transition-from: in-progress
+last-transition-id: 6e1b17e8-ccf3-46fc-867c-5815fe127e21
+last-correlation-id: 6e1b17e8-ccf3-46fc-867c-5815fe127e21
+last-transition-from: review
 ---
 
 # f00368 — CI falla si real swarm > hard.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00368-ci-falla-si-real-swarm-hard.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00368-ci-falla-si-real-swarm-hard.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

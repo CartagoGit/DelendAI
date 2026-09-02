@@ -2,15 +2,15 @@
 id: f00371
 title: "vertex tiene budget explícito."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#vertex-tiene-budget-explicito
 shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
-last-transition-id: a417402b-23dd-4fbf-bee7-2fbb528a9b23
-last-correlation-id: a417402b-23dd-4fbf-bee7-2fbb528a9b23
-last-transition-from: in-progress
+last-transition-id: 440a13c1-e1d3-4f11-98f9-6a11c203901c
+last-correlation-id: 440a13c1-e1d3-4f11-98f9-6a11c203901c
+last-transition-from: review
 ---
 
 # f00371 — vertex tiene budget explícito.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00371-vertex-tiene-budget-explicito.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00371-vertex-tiene-budget-explicito.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

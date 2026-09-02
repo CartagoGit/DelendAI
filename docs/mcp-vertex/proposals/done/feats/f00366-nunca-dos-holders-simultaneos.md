@@ -2,15 +2,15 @@
 id: f00366
 title: "nunca dos holders simultáneos."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#nunca-dos-holders-simultaneos
 shipped-in: ["7bb6d35138db047d35491c68eebfd2435b897b12"]
-last-transition-id: fca52c18-60fe-4cef-87fc-6c010992ddbd
-last-correlation-id: fca52c18-60fe-4cef-87fc-6c010992ddbd
-last-transition-from: in-progress
+last-transition-id: cfe438bf-8afa-4202-b78c-83fe92a2ffb5
+last-correlation-id: cfe438bf-8afa-4202-b78c-83fe92a2ffb5
+last-transition-from: review
 ---
 
 # f00366 — nunca dos holders simultáneos.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00366-nunca-dos-holders-simultaneos.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00366-nunca-dos-holders-simultaneos.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

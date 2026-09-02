@@ -2,15 +2,15 @@
 id: f00364
 title: "privacy adversarial suite verde."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#privacy-adversarial-suite-verde
 shipped-in: ["e746316dca20027867ce1d8efee9248dde60c17e"]
-last-transition-id: deef4c2d-e64a-4e6c-89f7-e57418e9560a
-last-correlation-id: deef4c2d-e64a-4e6c-89f7-e57418e9560a
-last-transition-from: in-progress
+last-transition-id: ac7bae7b-41a9-4466-a7ef-e22eddd3cbf1
+last-correlation-id: ac7bae7b-41a9-4466-a7ef-e22eddd3cbf1
+last-transition-from: review
 ---
 
 # f00364 — privacy adversarial suite verde.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00364-privacy-adversarial-suite-verde.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00364-privacy-adversarial-suite-verde.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

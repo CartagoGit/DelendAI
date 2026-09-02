@@ -2,15 +2,15 @@
 id: f00369
 title: "token dashboard tracked está fresco."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#token-dashboard-tracked-esta-fresco
 shipped-in: ["82c54bccc94ab11c524f187c671da854e522ab7d"]
-last-transition-id: 8c3b41db-cebc-4820-8d3a-76e8f0597a87
-last-correlation-id: 8c3b41db-cebc-4820-8d3a-76e8f0597a87
-last-transition-from: in-progress
+last-transition-id: 304630d4-3479-46e8-a1d2-2163dd37d234
+last-correlation-id: 304630d4-3479-46e8-a1d2-2163dd37d234
+last-transition-from: review
 ---
 
 # f00369 — token dashboard tracked está fresco.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00369-token-dashboard-tracked-esta-fresco.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00369-token-dashboard-tracked-esta-fresco.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
