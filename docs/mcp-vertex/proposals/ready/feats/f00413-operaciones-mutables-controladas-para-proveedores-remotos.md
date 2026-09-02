@@ -67,7 +67,7 @@ Mutation tools are a separate capability and must remain disabled unless the hos
 ### S3 — Tests de mutaciones y documentación
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `plugins/gitlab/tests/mutations.spec.ts`, `plugins/github/tests/mutations.spec.ts`, `plugins/remote-provider-core/README.md`
+- **Files**: `plugins/gitlab/tests/src/lib/mutations.spec.ts`, `plugins/gitlab/tests/src/lib/write-tools.spec.ts`, `plugins/github/tests/src/lib/write-tools.spec.ts`, `plugins/remote-provider-core/README.md`
 - **Gate**: type
 - acceptance:
   - "Cubre confirmación ausente, retry/dispatch confirmado, 401/403/429, no-retry automático, auditoría y redacción."
