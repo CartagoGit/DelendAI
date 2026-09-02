@@ -19,35 +19,33 @@ import type { IGitRunner } from '@mcp-vertex/core/public';
 const execFileAsync = promisify(execFile);
 
 /**
- * Every git call in this fixture runs with `GIT_CONFIG_GLOBAL` pointed
- * at a scratch file.
+ * The scratch file this fixture uses as its "global" git config.
  *
- * The fixture needs a *global* config, because `identity: { mode:
- * 'global' }` is one of the behaviours under test. It previously got one
- * by running `git config --global user.email ...` — which writes to the
- * developer's real `~/.gitconfig`. Two consequences, both observed on
- * this machine: parallel test files raced for the config lock and one
- * failed with `could not lock config file`, and, far worse, the
- * machine's actual git identity was silently replaced with
- * `cartago@example.com`, so commits made outside commit-policy's
- * explicit-author path were attributed to a fixture address.
+ * The fixture genuinely needs a global config, because
+ * `identity: { mode: 'global' }` is one of the behaviours under test. It
+ * used to get one by running `git config --global user.email ...`, which
+ * writes to the developer's real `~/.gitconfig`. Two consequences, both
+ * observed on this machine: parallel test files raced for the config
+ * lock and one failed with `could not lock config file`, and — far worse
+ * — the machine's actual git identity was silently replaced with
+ * `cartago@example.com`, so every commit made outside commit-policy's
+ * explicit-author path was attributed to a fixture address.
  *
- * A test may not write to anything outside its own temp directory.
- * Scoping "global" per invocation gives the fixture exactly the config
- * it needs, isolates parallel runs from each other, and leaves the
- * developer's machine alone.
+ * A test may not write anywhere outside its own temp directory. Pointing
+ * `GIT_CONFIG_GLOBAL` at a scratch file gives the fixture exactly the
+ * config it needs, isolates parallel runs, and leaves the developer's
+ * machine alone. It lives OUTSIDE the workspace on purpose: a config
+ * file inside it would show up as an untracked path and be swept into
+ * the very commits these tests assert about.
  */
+let activeConfigDir: string | undefined;
+let previousConfigGlobal: string | undefined;
+let hadConfigGlobal = false;
+
 export const git = (
 	cwd: string,
 	...args: readonly string[]
-): ReturnType<typeof execFileAsync> =>
-	execFileAsync('git', [...args], {
-		cwd,
-		env: {
-			...process.env,
-			GIT_CONFIG_GLOBAL: join(cwd, '.fixture-gitconfig'),
-		},
-	});
+): ReturnType<typeof execFileAsync> => execFileAsync('git', [...args], { cwd });
 
 export interface IDogfoodRepo {
 	workspace: string;
@@ -59,6 +57,14 @@ export interface IDogfoodRepo {
 export const createDogfoodRepo = async (): Promise<IDogfoodRepo> => {
 	const workspace = await mkdtemp(join(tmpdir(), 'commit-policy-dogfood-'));
 	const remote = await mkdtemp(join(tmpdir(), 'commit-policy-remote-'));
+	// Redirect "global" git config BEFORE the first git call. The env var
+	// is set on the process rather than per-spawn because the code under
+	// test builds its own git runner, and it has to see the same global
+	// config the fixture wrote. `cleanupDogfoodRepo` restores it.
+	activeConfigDir = await mkdtemp(join(tmpdir(), 'commit-policy-gitcfg-'));
+	hadConfigGlobal = 'GIT_CONFIG_GLOBAL' in process.env;
+	previousConfigGlobal = process.env.GIT_CONFIG_GLOBAL;
+	process.env.GIT_CONFIG_GLOBAL = join(activeConfigDir, 'gitconfig');
 	await git(workspace, 'init', '-q', '-b', 'develop');
 	await git(workspace, 'config', 'user.email', 'cartago@example.com');
 	await git(workspace, 'config', 'user.name', 'Cartago');
@@ -100,5 +106,18 @@ export const cleanupDogfoodRepo = async (
 	}
 	if (repo.remote.length > 0) {
 		await rm(repo.remote, { recursive: true, force: true });
+	}
+	// Put the process env back exactly as it was, including the case
+	// where the variable was not set at all — leaving it pointing at a
+	// deleted directory would make every later git call in this worker
+	// silently run with no global config.
+	if (hadConfigGlobal) {
+		process.env.GIT_CONFIG_GLOBAL = previousConfigGlobal;
+	} else {
+		delete process.env.GIT_CONFIG_GLOBAL;
+	}
+	if (activeConfigDir !== undefined) {
+		await rm(activeConfigDir, { recursive: true, force: true });
+		activeConfigDir = undefined;
 	}
 };
