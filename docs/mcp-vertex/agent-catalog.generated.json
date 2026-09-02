@@ -1456,110 +1456,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00359",
-				"title": "f00359",
-				"track": "migrated",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00360",
-				"title": "f00360",
-				"track": "migrated",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00361",
-				"title": "f00361",
-				"track": "migrated",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00362",
-				"title": "f00362",
-				"track": "migrated",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00363",
-				"title": "f00363",
-				"track": "migrated",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00364",
-				"title": "f00364",
-				"track": "migrated",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00365",
-				"title": "f00365",
-				"track": "migrated",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00366",
-				"title": "f00366",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00367",
-				"title": "f00367",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00368",
-				"title": "f00368",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00369",
-				"title": "f00369",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00370",
-				"title": "f00370",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00371",
-				"title": "f00371",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00385",
 				"title": "f00385",
 				"track": "migrated",
@@ -1857,9 +1753,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 61,
-			"in-progress": 12,
-			"review": 14,
+			"ready": 55,
+			"in-progress": 5,
+			"review": 27,
 			"paused": 1,
 			"done": 652,
 			"blocked": 23,

@@ -1,23 +1,23 @@
 ---
-id: f00367
-title: "real swarm <= hard."
+id: f00366
+title: "nunca dos holders simultáneos."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#real-swarm-hard
-shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
-last-transition-id: 4972cc9b-1d1c-40d2-91af-e3ce35b19a85
-last-correlation-id: 4972cc9b-1d1c-40d2-91af-e3ce35b19a85
-last-transition-from: ready
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#nunca-dos-holders-simultaneos
+shipped-in: ["7bb6d35138db047d35491c68eebfd2435b897b12"]
+last-transition-id: fca52c18-60fe-4cef-87fc-6c010992ddbd
+last-correlation-id: fca52c18-60fe-4cef-87fc-6c010992ddbd
+last-transition-from: in-progress
 ---
 
-# f00367 — real swarm <= hard.
+# f00366 — nunca dos holders simultáneos.
 
 ## Goal
 
-Migrated work item: real swarm <= hard..
+Migrated work item: nunca dos holders simultáneos..
 
 ## why
 
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/in-progress/f00367-real-swarm-hard.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00366-nunca-dos-holders-simultaneos.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -51,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#real-swarm-hard` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#nunca-dos-holders-simultaneos` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -66,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): ran 'bun run tokens:gate' (tools/scripts/test/run-actual-preset-budget.script.ts) directly against the live tool registry. Measured output: '[swarm] 166 tools, 193,678 B tools/list — tools/list: 193,678 B (warning 204,000 / hard 210,000) => ok'. The real, currently-measured swarm preset cost is under its documented hard ceiling (packages/core/src/lib/contracts/constants/token-budgets.constant.ts, presets.swarm.toolsList.hard = 210_000). Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts contains dedicated invariant tests titled 'enumerated contender schedules never allow two simultaneous holders' and 'fast-check: three contenders never overlap across generated schedules', both passing as part of the 17/17 green run above (same CAS/lease fix, x00219, shipped-in 7bb6d3513). Acceptance genuinely met; closing.

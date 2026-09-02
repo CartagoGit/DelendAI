@@ -1,23 +1,23 @@
 ---
-id: f00369
-title: "token dashboard tracked está fresco."
+id: f00367
+title: "real swarm <= hard."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#token-dashboard-tracked-esta-fresco
-shipped-in: ["82c54bccc94ab11c524f187c671da854e522ab7d"]
-last-transition-id: 5fd4ac24-fede-4e63-9c83-9ccc7f7b6444
-last-correlation-id: 5fd4ac24-fede-4e63-9c83-9ccc7f7b6444
-last-transition-from: ready
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#real-swarm-hard
+shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
+last-transition-id: 17bf9b86-fe50-491c-a7d8-118c85ec5b67
+last-correlation-id: 17bf9b86-fe50-491c-a7d8-118c85ec5b67
+last-transition-from: in-progress
 ---
 
-# f00369 — token dashboard tracked está fresco.
+# f00367 — real swarm <= hard.
 
 ## Goal
 
-Migrated work item: token dashboard tracked está fresco..
+Migrated work item: real swarm <= hard..
 
 ## why
 
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/in-progress/f00369-token-dashboard-tracked-esta-fresco.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00367-real-swarm-hard.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -51,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#token-dashboard-tracked-esta-fresco` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#real-swarm-hard` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -66,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): ran 'bun run tokens:dashboard:check' (tools/scripts/test/run-token-dashboard-check.script.ts). Output: '[token-dashboard-check] in sync: /home/cartago/_projects/mcp-vertex/docs/mcp-vertex/TOKEN-BUDGETS.md' — the tracked dashboard doc matches the live-measured values, and this check is wired into validate:run so drift is caught in CI. Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): ran 'bun run tokens:gate' (tools/scripts/test/run-actual-preset-budget.script.ts) directly against the live tool registry. Measured output: '[swarm] 166 tools, 193,678 B tools/list — tools/list: 193,678 B (warning 204,000 / hard 210,000) => ok'. The real, currently-measured swarm preset cost is under its documented hard ceiling (packages/core/src/lib/contracts/constants/token-budgets.constant.ts, presets.swarm.toolsList.hard = 210_000). Acceptance genuinely met; closing.

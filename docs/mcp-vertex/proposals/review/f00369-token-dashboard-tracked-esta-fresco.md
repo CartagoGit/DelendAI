@@ -1,23 +1,23 @@
 ---
-id: f00368
-title: "CI falla si real swarm > hard."
+id: f00369
+title: "token dashboard tracked está fresco."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard
-shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
-last-transition-id: fd83041d-0d35-48b4-b727-ceb79dd4bf2c
-last-correlation-id: fd83041d-0d35-48b4-b727-ceb79dd4bf2c
-last-transition-from: ready
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#token-dashboard-tracked-esta-fresco
+shipped-in: ["82c54bccc94ab11c524f187c671da854e522ab7d"]
+last-transition-id: 8c3b41db-cebc-4820-8d3a-76e8f0597a87
+last-correlation-id: 8c3b41db-cebc-4820-8d3a-76e8f0597a87
+last-transition-from: in-progress
 ---
 
-# f00368 — CI falla si real swarm > hard.
+# f00369 — token dashboard tracked está fresco.
 
 ## Goal
 
-Migrated work item: CI falla si real swarm > hard..
+Migrated work item: token dashboard tracked está fresco..
 
 ## why
 
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/in-progress/f00368-ci-falla-si-real-swarm-hard.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00369-token-dashboard-tracked-esta-fresco.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -51,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#token-dashboard-tracked-esta-fresco` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -66,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): 'tokens:gate' and 'tokens:ceiling-ratchet' (tools/scripts/lint/token-budget-ceiling-ratchet.script.ts, shipped r00036, 71fb21cf597) are both wired into package.json's validate:run, which gates CI. Ran 'bun run tokens:ceiling-ratchet' directly: '✓ token-budget-ceiling-ratchet: 54 ceiling(s) checked, no undocumented raise.' The ratchet refuses any undocumented ceiling increase (including swarm's), and tokens:gate fails the build if a measured preset exceeds its hard ceiling — this is the CI-fails-if-over-hard mechanism. Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): ran 'bun run tokens:dashboard:check' (tools/scripts/test/run-token-dashboard-check.script.ts). Output: '[token-dashboard-check] in sync: /home/cartago/_projects/mcp-vertex/docs/mcp-vertex/TOKEN-BUDGETS.md' — the tracked dashboard doc matches the live-measured values, and this check is wired into validate:run so drift is caught in CI. Acceptance genuinely met; closing.

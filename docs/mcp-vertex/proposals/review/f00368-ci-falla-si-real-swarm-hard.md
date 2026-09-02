@@ -1,23 +1,23 @@
 ---
-id: f00366
-title: "nunca dos holders simultáneos."
+id: f00368
+title: "CI falla si real swarm > hard."
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#nunca-dos-holders-simultaneos
-shipped-in: ["7bb6d35138db047d35491c68eebfd2435b897b12"]
-last-transition-id: 641cb255-5c24-48a6-8e49-5a3e38c94be4
-last-correlation-id: 641cb255-5c24-48a6-8e49-5a3e38c94be4
-last-transition-from: ready
+migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard
+shipped-in: ["71fb21cf5977c16db1720c1b36463ec10029b50b"]
+last-transition-id: 7807c2d4-760c-4192-93d2-dc06f635cb11
+last-correlation-id: 7807c2d4-760c-4192-93d2-dc06f635cb11
+last-transition-from: in-progress
 ---
 
-# f00366 — nunca dos holders simultáneos.
+# f00368 — CI falla si real swarm > hard.
 
 ## Goal
 
-Migrated work item: nunca dos holders simultáneos..
+Migrated work item: CI falla si real swarm > hard..
 
 ## why
 
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/in-progress/f00366-nunca-dos-holders-simultaneos.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00368-ci-falla-si-real-swarm-hard.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -51,7 +51,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#nunca-dos-holders-simultaneos` by `proposal_adopt`
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#ci-falla-si-real-swarm-hard` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
 
@@ -66,4 +66,4 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### Verified 2026-09-01
 
-Independent re-verification (sonnet-verifier-8): packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts contains dedicated invariant tests titled 'enumerated contender schedules never allow two simultaneous holders' and 'fast-check: three contenders never overlap across generated schedules', both passing as part of the 17/17 green run above (same CAS/lease fix, x00219, shipped-in 7bb6d3513). Acceptance genuinely met; closing.
+Independent re-verification (sonnet-verifier-8): 'tokens:gate' and 'tokens:ceiling-ratchet' (tools/scripts/lint/token-budget-ceiling-ratchet.script.ts, shipped r00036, 71fb21cf597) are both wired into package.json's validate:run, which gates CI. Ran 'bun run tokens:ceiling-ratchet' directly: '✓ token-budget-ceiling-ratchet: 54 ceiling(s) checked, no undocumented raise.' The ratchet refuses any undocumented ceiling increase (including swarm's), and tokens:gate fails the build if a measured preset exceeds its hard ceiling — this is the CI-fails-if-over-hard mechanism. Acceptance genuinely met; closing.
