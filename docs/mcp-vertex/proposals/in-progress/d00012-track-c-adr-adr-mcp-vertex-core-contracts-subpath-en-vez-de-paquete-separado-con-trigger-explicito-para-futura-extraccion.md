@@ -2,7 +2,7 @@
 id: d00012
 title: "Track C.adr — ADR: `@mcp-vertex/core/contracts` (subpath) en vez de paquete separado, con trigger explícito para futura extracción"
 kind: docs
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -22,6 +22,9 @@ related:
     - r00030 # cliente importa de contracts (predecesor)
     - b00237 # deprecar nodeDynamicImport (predecesor)
     - c00146 # realinear Track C con subpath + trigger (hermano)
+last-transition-id: 72d3e433-71f7-46f6-aa6d-07e4eebaed9e
+last-correlation-id: 72d3e433-71f7-46f6-aa6d-07e4eebaed9e
+last-transition-from: ready
 ---
 
 # d00012 — ADR: `@mcp-vertex/core/contracts` (subpath) en vez de paquete separado
