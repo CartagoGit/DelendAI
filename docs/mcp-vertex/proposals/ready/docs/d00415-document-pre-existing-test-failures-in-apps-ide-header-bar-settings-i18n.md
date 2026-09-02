@@ -46,14 +46,14 @@ release can proceed.
 - **Gate**: none
 
 ### S2 — Follow-up: fix F1 + F2 (header-bar renderer + spec)
-- **Status**: pending (out of scope of this doc-only slice)
+- **Status**: retired (fixed incidentally by f00395 S3 before this proposal closed)
 - **Files**:
   - `packages/ui-extension/src/components/header-bar.ts`
   - `packages/ui-extension/tests/components/header-bar.spec.ts`
 - **Gate**: `bunx vitest run packages/ui-extension/tests/components/header-bar.spec.ts`
 
 ### S3 — Follow-up: fix F3 + i18n gap (settings copy + l10n dicts)
-- **Status**: pending (out of scope)
+- **Status**: retired (no longer reproduces — verified 2026-09-02, see closing note)
 - **Files**:
   - `apps/shared/src/i18n/shared.ts`
   - `apps/shared/src/i18n/langs/{en,es,...}.ts`
@@ -68,7 +68,27 @@ release can proceed.
 - [x] The three failures and the i18n gap are listed above with concrete file/line references.
 - [x] Reproduction commands are pinned to `origin/develop`.
 - [x] The diagnosis is preserved on disk so a future slice does not have to redo the investigation.
-- [ ] S2 + S3 are tracked as separate proposals (do not roll into the release cut).
+- [x] S2 + S3 no longer need separate follow-up proposals: verified 2026-09-02 that all three
+      failures and the i18n gap no longer reproduce on `develop` (see closing note); the doc-only
+      catalogue is the full remaining scope of this proposal.
+
+## Closing note (2026-09-02)
+
+Re-ran the exact reproduction from this proposal on current `develop`:
+
+```
+VITE_CONFIG_NATIVE_IGNORE_WARNING=true bunx vitest run \
+  tests/components/header-bar.spec.ts tests/settings/render-settings.spec.ts \
+  --reporter=verbose --maxWorkers=1
+```
+
+Result: **9 passed | 0 failed** (was 3 failed | 6 passed when this proposal was written).
+`bun run --cwd apps/web check:i18n` also now reports complete coverage (was reporting missing
+Spanish keys). `packages/ui-extension/src/components/header-bar.ts` was touched incidentally by
+`f00395` slice S3 (commit `9d6c16704`, 2026-08-31), which appears to have fixed F1/F2 as a side
+effect of unrelated dashboard-branding work; the i18n dictionaries were completed by a separate,
+untracked commit around the same window. No S2/S3 follow-up proposal is needed — there is nothing
+left to fix. Retiring S2/S3 in place rather than opening dead proposals for already-fixed bugs.
 
 ## Notes
 
