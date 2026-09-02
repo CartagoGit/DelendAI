@@ -1419,7 +1419,7 @@
 				"id": "r00045",
 				"title": "r00045",
 				"track": "architecture",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "refactor",
 				"date": ""
 			},
@@ -1449,8 +1449,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 13,
-			"in-progress": 9,
+			"ready": 12,
+			"in-progress": 10,
 			"review": 4,
 			"paused": 1,
 			"done": 714,
