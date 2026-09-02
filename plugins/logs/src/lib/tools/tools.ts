@@ -733,7 +733,7 @@ export const buildLogToolRegistrations = (
 			},
 		},
 		{
-			// f00153 S3 — auto-detector. Reads the curated error stream
+			// Auto-detector. Reads the curated error stream
 			// (NOT the main timeline) and clusters failing events by
 			// `(toolName, hash(error.message))` so recurring incidents
 			// surface as one record with a count.

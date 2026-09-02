@@ -95,7 +95,7 @@ export const buildQualityPolicyToolRegistrations = (
 			server.registerTool(
 				`${options.namespacePrefix}_quality_policy`,
 				{
-					// v00131 (AUD-B01): `QualityPolicyOutputSchema` is not
+					// `QualityPolicyOutputSchema` is not
 					// used as a runtime response validator anywhere in this
 					// handler — only declared here as the wire
 					// `outputSchema`. It stays exported for behavioural
