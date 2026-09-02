@@ -35,31 +35,6 @@ import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interface
  * fully testable without a filesystem and cannot itself block.
  */
 
-/** The subset of a lock entry this analysis reads. */
-export interface ILockEntrySnapshot {
-	readonly task_id?: string | undefined;
-	readonly agent?: string | undefined;
-	readonly ownership?: readonly string[] | undefined;
-	readonly last_seen?: string | undefined;
-	readonly host?: string | undefined;
-	readonly pid?: number | undefined;
-}
-
-export interface ILockSnapshot {
-	readonly in_flight: readonly ILockEntrySnapshot[];
-	readonly stale_after_minutes?: number | undefined;
-}
-
-/**
- * A wait another agent has registered and not yet finished: "agent
- * `waiter` is parked on task `waitingOnTaskId`". Edges in the wait-for
- * graph are derived by resolving that task to the agent that holds it.
- */
-export interface IRegisteredWait {
-	readonly waiter: string;
-	readonly waitingOnTaskId: string;
-}
-
 const describeHolder = (
 	entry: ILockEntrySnapshot,
 	nowMs: number,
