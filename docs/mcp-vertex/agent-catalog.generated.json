@@ -1264,14 +1264,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "d00015",
-				"title": "d00015",
-				"track": "governance",
-				"status": "ready",
-				"kind": "docs",
-				"date": ""
-			},
-			{
 				"id": "d00415",
 				"title": "d00415",
 				"track": "general",
@@ -1633,9 +1625,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 40,
+			"ready": 39,
 			"in-progress": 5,
-			"review": 1,
+			"review": 2,
 			"paused": 1,
 			"done": 693,
 			"blocked": 23,
