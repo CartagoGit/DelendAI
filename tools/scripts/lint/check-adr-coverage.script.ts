@@ -31,7 +31,7 @@
  *   0 — every referenced id resolves to a real proposal file.
  *   1 — at least one ADR cites an id with no matching proposal file.
  */
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, type Dirent } from 'node:fs';
 import { join } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
@@ -57,7 +57,7 @@ export interface IAdrReferenceIssue {
 }
 
 const listMarkdownFiles = (absDir: string): string[] => {
-	let entries: ReturnType<typeof readdirSync>;
+	let entries: Dirent[];
 	try {
 		entries = readdirSync(absDir, { withFileTypes: true });
 	} catch {
