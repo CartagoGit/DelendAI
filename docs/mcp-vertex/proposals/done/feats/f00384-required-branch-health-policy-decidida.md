@@ -2,15 +2,15 @@
 id: f00384
 title: "required branch health policy decidida."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#required-branch-health-policy-decidida
 shipped-in: ["1f82d68b"]
-last-transition-id: 368b1278-f3a1-458c-9b16-6213bfee77f8
-last-correlation-id: 368b1278-f3a1-458c-9b16-6213bfee77f8
-last-transition-from: in-progress
+last-transition-id: 59ad47a1-8ef7-4134-9052-afede3a59804
+last-correlation-id: 59ad47a1-8ef7-4134-9052-afede3a59804
+last-transition-from: review
 ---
 
 # f00384 — required branch health policy decidida.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00384-required-branch-health-policy-decidida.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00384-required-branch-health-policy-decidida.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
