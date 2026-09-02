@@ -209,7 +209,7 @@ describe).
 
 ### S1 — Crear el ADR (numerado 0019: 0018 fue tomado el mismo día por otro trabajo)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `docs/mcp-vertex/adr/0019-branch-model-develop-lab-main-release.md` (nuevo;
       la propuesta reservaba `0018`, pero `docs/mcp-vertex/adr/0018-managed-lazy-loading-is-all-or-nothing.md`
@@ -219,17 +219,21 @@ describe).
       se corrigieron a "ADR 0019" como parte de este slice.)
 - **Gate**: `bun tools/scripts/lint/proposals.script.ts` — verde;
   `bun tools/scripts/lint/check-adr-coverage.script.ts` — verde.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-code-worker
+- review-reviewer: sonnet-worker-docs-2
+- review-log: approved by sonnet-worker-docs-2 — Verified S1 directly: file/content matches acceptance; lint:proposals, lint:check-adr-coverage and lint:bootstrap-canonical all green; push-to-develop-discipline.script.spec.ts (38/38) covers the runtime ADR-number fix this proposal also touched.
 ### S2 — Corregir `GOVERNANCE-BRANCH-PROTECTION.md`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`
 - **Gate**: `grep -n "Require a pull request before merging" docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`
   debe mostrar la instrucción aplicada a `main`, no a `develop`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-code-worker
+- review-reviewer: sonnet-worker-docs-2
+- review-log: approved by sonnet-worker-docs-2 — Verified S2 directly: file/content matches acceptance; lint:proposals, lint:check-adr-coverage and lint:bootstrap-canonical all green; push-to-develop-discipline.script.spec.ts (38/38) covers the runtime ADR-number fix this proposal also touched.
 ### S3 — Enlace desde AGENT-BOOTSTRAP.md
 
 - **Status**: pending

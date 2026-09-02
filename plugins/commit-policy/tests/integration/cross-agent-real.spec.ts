@@ -86,13 +86,32 @@ const writeRepoFile = async (
 };
 
 describe('AUD-CP-005.e2e — cross-agent contamination with real Git (t00022 S2)', () => {
-	it('Test 1 — refuses, creates no commit, and never moves HEAD when an intruder file is pre-staged', async () => {
+	it('Test 1 — a foreign staged file never enters the commit, and stays staged for its own agent', async () => {
+		// What the audit actually demanded: prove from real Git that the
+		// intruder did not get committed — not that the engine SAID it
+		// refused.
+		//
+		// This test used to expect `ERR CROSS_AGENT_CONTAMINATION`, which
+		// was the pre-x00270 implementation's way of guaranteeing that:
+		// abort the whole commit whenever anything foreign was staged.
+		// The isolated index guarantees it structurally instead — the tree
+		// is built from `read-tree HEAD` plus the allowList, so a foreign
+		// path cannot be in it — and that is a stronger guarantee, not a
+		// weaker one.
+		//
+		// It also matters for a swarm. `allowForeignChanges: false` is
+		// documented as "do not INCLUDE other agents' changes", not "refuse
+		// while other agents have work staged". In a shared checkout the
+		// latter reading means every agent aborts whenever any other agent
+		// has staged anything, which is most of the time — agents stall
+		// with nothing to do and no way to make progress. Excluding the
+		// foreign work and committing your own is what the option says and
+		// what keeps the swarm moving.
 		const repo = await createRepo();
 		await writeRepoFile(repo, 'intruder.ts', '// staged by other agent\n');
 		await repo.git('add', '--', 'intruder.ts');
 		await writeRepoFile(repo, 'agent-a.ts', '// work of agent A\n');
 
-		const headBefore = await repo.readHead();
 		const logCountBefore = await repo.logCount();
 
 		const engine = createEngine(repo);
@@ -105,19 +124,24 @@ describe('AUD-CP-005.e2e — cross-agent contamination with real Git (t00022 S2)
 		});
 		await engine.dispose();
 
-		expect(result.ack).toBe('ERR');
-		if (result.ack === 'ERR') {
-			expect(result.code).toBe('CROSS_AGENT_CONTAMINATION');
-			expect(result.committed).toBe(false);
-			expect(result.commitCreated).toBe(false);
-			expect(result.headMoved).toBe(false);
-		}
+		expect(result.ack).toBe('OK');
 
 		// Re-read real Git state; never trust the engine's own report
 		// of itself (this is the exact gap the external audit found).
-		expect(await repo.readHead()).toBe(headBefore);
-		expect(await repo.logCount()).toBe(logCountBefore);
-		expect(await repo.stagedSet()).toEqual([]);
+		expect(await repo.logCount()).toBe(logCountBefore + 1);
+		const committed = (
+			await repo.git('show', '--pretty=format:', '--name-only', 'HEAD')
+		)
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
+		expect(committed).toEqual(['agent-a.ts']);
+		expect(committed).not.toContain('intruder.ts');
+
+		// The other agent's work is untouched: still staged, still
+		// uncommitted. Stealing or resetting it would be its own kind of
+		// cross-agent contamination.
+		expect(await repo.stagedSet()).toEqual(['intruder.ts']);
 	});
 
 	it('Test 2 — control: an allowList covering the intruder file commits successfully (rules out a false positive)', async () => {
