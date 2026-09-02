@@ -50,7 +50,7 @@ The plugin should report actionable errors for a missing token, unsupported host
 ### S1 — Plugin, configuración y contexto de GitLab
 - **Status**: pending
 - **DependsOn**: [f00410:S1]
-- **Files**: `plugins/gitlab/plugin.manifest.ts`, `plugins/gitlab/src/index.ts`, `plugins/gitlab/src/lib/config.ts`, `plugins/gitlab/src/lib/client.ts`, `plugins/gitlab/tests/plugin-options.spec.ts`
+- **Files**: `plugins/gitlab/plugin.manifest.ts`, `plugins/gitlab/src/index.ts`, `plugins/gitlab/src/lib/config.ts`, `plugins/gitlab/src/lib/client.ts`, `plugins/gitlab/tests/src/lib/plugin-options.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Plugin opcional y registrable sin git activado ni checkout local."
@@ -72,7 +72,7 @@ The plugin should report actionable errors for a missing token, unsupported host
 ### S3 — Tests herméticos y documentación GitLab
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `plugins/gitlab/tests/client.spec.ts`, `plugins/gitlab/tests/tools.spec.ts`, `plugins/gitlab/tests/security.spec.ts`, `plugins/gitlab/README.md`
+- **Files**: `plugins/gitlab/tests/src/lib/client.spec.ts`, `plugins/gitlab/tests/src/lib/tools.spec.ts`, `plugins/gitlab/tests/src/lib/security.spec.ts`, `plugins/gitlab/README.md`
 - **Gate**: type
 - acceptance:
   - "Cubre 200, paginación, 401, 403, 404, 429, timeout, respuesta inválida, logs/artefactos grandes, token ausente y token nunca visible."
