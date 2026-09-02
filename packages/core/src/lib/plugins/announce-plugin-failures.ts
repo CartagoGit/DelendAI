@@ -70,6 +70,19 @@ export const buildPluginFailureAnnouncement = (input: {
 		return { lines: [], failedCount: 0 };
 	}
 	const failedCount = lines.length;
+	// "Nothing loaded" only means "this workspace is not set up" when the
+	// failures are RESOLUTION failures. A load set assembled deliberately
+	// small — a verifier loading one plugin at a time, a preset probe —
+	// fails because a declared dependency is not IN that set, which says
+	// nothing about whether `bun install` was run. Telling that reader to
+	// install and rebuild sends them after a problem they do not have,
+	// which is the same mistake as answering "run validate" to someone
+	// whose validate just failed.
+	const looksUnresolvable = input.loadErrors.some((failure) =>
+		/cannot find|could not load|module not found|err_module/iu.test(
+			failure.message,
+		),
+	);
 	// Nothing loaded at all is a different situation from one degraded
 	// plugin, and it needs different advice. It almost always means the
 	// workspace itself is not ready — a fresh git worktree or a checkout
@@ -79,7 +92,7 @@ export const buildPluginFailureAnnouncement = (input: {
 	// build is the actual fix, and saying it here is what stops an agent
 	// from spelunking through a cascade of unrelated resolution errors.
 	lines.push(
-		input.loadedCount === 0 && input.atBoot !== false
+		input.loadedCount === 0 && input.atBoot !== false && looksUnresolvable
 			? `[mcp-vertex] ${failedCount} plugin(s) failed and NONE loaded. That usually means this workspace is not set up ` +
 					'(a fresh worktree or another project): run `bun install` and `bun run build` here, then retry. ' +
 					'The server is up but has no plugin tools.'

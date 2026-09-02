@@ -153,6 +153,30 @@ describe('asRegisterErrorInfo', () => {
 	});
 });
 
+describe('buildPluginFailureAnnouncement — dependency failures', () => {
+	it('does not blame the workspace when the failure is a missing dependency', () => {
+		// A verifier that loads one plugin at a time hits this on every
+		// plugin with a `dependsOn`: the dependency is not in that
+		// deliberately tiny load set. Nothing is wrong with the install,
+		// and "run bun install and bun run build" sends the reader after
+		// a problem they do not have.
+		const announcement = buildPluginFailureAnnouncement({
+			loadErrors: [
+				{
+					specifier: 'audit-orchestrator',
+					message:
+						'plugin "audit-orchestrator" requires "agent-orchestrator" (not in load set)',
+				},
+			],
+			registerErrors: [],
+			loadedCount: 0,
+		});
+		const closing = announcement.lines.at(-1) ?? '';
+		expect(closing).not.toContain('bun install');
+		expect(closing).toContain('do not retry');
+	});
+});
+
 describe('buildPluginFailureAnnouncement — runtime failures', () => {
 	it('does not blame the workspace for a failure that happens after boot', () => {
 		// A lazy plugin that fails when an agent first reaches for its
