@@ -938,11 +938,14 @@ const runCommitDriverUnlocked = async (
 			: {}),
 	});
 	if (!result.committed) {
-		return result;
+		return withheldForeignLocks.length > 0
+			? { ...result, withheldForeignLocks }
+			: result;
 	}
 
 	return {
 		...result,
+		...(withheldForeignLocks.length > 0 ? { withheldForeignLocks } : {}),
 		resolvedAuthor: {
 			displayName: identity.author.displayName,
 			email: identity.author.email,
