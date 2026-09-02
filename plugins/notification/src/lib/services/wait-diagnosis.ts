@@ -1,4 +1,7 @@
 import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
+import { waitsBackOnto as coreWaitsBackOnto } from '@mcp-vertex/core/lib/shared/wait-for-graph';
+
+import type { IWaitForEdge } from '@mcp-vertex/core/lib/contracts/interfaces/wait-for-graph.interface';
 
 import { lockExpiryPolicyFor } from './lock-expiry-policy';
 
@@ -62,13 +65,13 @@ const holderAgentOf = (
 	snapshot.in_flight.find((entry) => entry.task_id === taskId)?.agent;
 
 /**
- * Walk the wait-for graph from `waiter` and report whether it leads back
- * to `waiter`. Registered waits give agent → task edges; the lock file
- * resolves each task to the agent holding it, which is the agent edge.
+ * Does the holder's wait chain lead back to this waiter?
  *
- * A cycle of any length is a deadlock, not just the two-party case: A
- * waits on B, B on C, C on A is just as unresolvable and just as easy to
- * detect once the edges exist.
+ * Registered waits give agent → task edges; the lock file resolves each
+ * task to the agent holding it, which is the agent edge core's graph
+ * walk needs. The walk itself lives in core so that this plugin and
+ * `agents_lock_diagnose` cannot disagree about what counts as a
+ * deadlock.
  */
 const waitsBackOnto = (
 	input: {
@@ -78,21 +81,18 @@ const waitsBackOnto = (
 	},
 	startAgent: string,
 ): boolean => {
-	const seen = new Set<string>();
-	const queue: string[] = [startAgent];
-	while (queue.length > 0) {
-		const agent = queue.shift();
-		if (agent === undefined) break;
-		if (agent === input.waiter) return true;
-		if (seen.has(agent)) continue;
-		seen.add(agent);
-		for (const wait of input.waits) {
-			if (wait.waiter !== agent) continue;
-			const next = holderAgentOf(input.snapshot, wait.waitingOnTaskId);
-			if (next !== undefined) queue.push(next);
+	const edges: IWaitForEdge[] = [];
+	for (const wait of input.waits) {
+		const holder = holderAgentOf(input.snapshot, wait.waitingOnTaskId);
+		if (holder !== undefined) {
+			edges.push({ waiter: wait.waiter, holder });
 		}
 	}
-	return false;
+	return coreWaitsBackOnto({
+		edges,
+		start: startAgent,
+		target: input.waiter,
+	});
 };
 
 const NEXT_ACTION: Record<IWaitVerdict, string> = {

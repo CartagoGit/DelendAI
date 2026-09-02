@@ -187,7 +187,7 @@ if (import.meta.main) {
 	);
 	if (!existsSync(summaryPath)) {
 		process.stderr.write(
-			'coverage-ratchet: no .cache/coverage/coverage-summary.json found — run `bun run test:coverage -- --reporter=json-summary` first\n',
+			'coverage-ratchet: no .cache/coverage/coverage-summary.json found — run `bun run test:coverage -- --coverage.reporter=json-summary` first\n',
 		);
 		process.exit(1);
 	}
