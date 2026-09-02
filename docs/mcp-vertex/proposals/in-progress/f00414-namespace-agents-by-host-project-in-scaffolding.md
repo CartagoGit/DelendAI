@@ -2,13 +2,13 @@
 id: f00414
 title: "Namespace agents by host project in scaffolding"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: scaffolding+agents+error-reporting
 date: 2026-08-31
-last-transition-id: affe87b0-c180-4c08-a5f3-2eb82706cf09
-last-correlation-id: affe87b0-c180-4c08-a5f3-2eb82706cf09
-last-transition-from: in-progress
+last-transition-id: d80d1a60-161b-42d3-bb13-23c62495e8ce
+last-correlation-id: d80d1a60-161b-42d3-bb13-23c62495e8ce
+last-transition-from: review
 ---
 
 # f00414 — Namespace agents by host project in scaffolding
