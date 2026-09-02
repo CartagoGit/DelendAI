@@ -47,7 +47,7 @@ The plugin should report actionable errors for a missing token, unsupported host
 ### S1 — Plugin, configuración y cliente de GitHub
 - **Status**: pending
 - **DependsOn**: [f00410:S1]
-- **Files**: `plugins/github/plugin.manifest.ts`, `plugins/github/src/index.ts`, `plugins/github/src/lib/config.ts`, `plugins/github/src/lib/client.ts`, `plugins/github/tests/plugin-options.spec.ts`
+- **Files**: `plugins/github/plugin.manifest.ts`, `plugins/github/src/index.ts`, `plugins/github/src/lib/config.ts`, `plugins/github/src/lib/client.ts`, `plugins/github/tests/src/lib/plugin-options.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Plugin opcional y registrable sin git activado ni checkout local."
@@ -69,7 +69,7 @@ The plugin should report actionable errors for a missing token, unsupported host
 ### S3 — Tests herméticos y documentación GitHub
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `plugins/github/tests/client.spec.ts`, `plugins/github/tests/tools.spec.ts`, `plugins/github/tests/security.spec.ts`, `plugins/github/README.md`
+- **Files**: `plugins/github/tests/src/lib/client.spec.ts`, `plugins/github/tests/src/lib/tools.spec.ts`, `plugins/github/tests/src/lib/security.spec.ts`, `plugins/github/README.md`
 - **Gate**: type
 - acceptance:
   - "Cubre 200, paginación, 401, 403, 404, 429, timeout, respuesta inválida, logs/artefactos grandes, token ausente y token nunca visible."
