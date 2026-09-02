@@ -3,6 +3,9 @@ import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expir
 import { lockExpiryPolicyFor } from './lock-expiry-policy';
 
 import type {
+	ILockEntrySnapshot,
+	ILockSnapshot,
+	IRegisteredWait,
 	IWaitDiagnosis,
 	IWaitHolderInfo,
 	WaitVerdict,
