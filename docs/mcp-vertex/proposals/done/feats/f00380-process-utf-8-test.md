@@ -2,15 +2,15 @@
 id: f00380
 title: "process UTF-8 test."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#process-utf-8-test
 shipped-in: ["15cc1e95"]
-last-transition-id: 5d62115c-bb86-4462-a520-111831a95892
-last-correlation-id: 5d62115c-bb86-4462-a520-111831a95892
-last-transition-from: in-progress
+last-transition-id: 6211da2a-cf5c-482c-bc39-ec41a7b254bb
+last-correlation-id: 6211da2a-cf5c-482c-bc39-ec41a7b254bb
+last-transition-from: review
 ---
 
 # f00380 — process UTF-8 test.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00380-process-utf-8-test.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00380-process-utf-8-test.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
