@@ -19,6 +19,15 @@ min_version: 1.7.0
 no_tty: false
 colors: true
 
+# Sourced by every generated .git/hooks/* before lefthook itself runs.
+# Neutralises an unusable inherited locale (LC_ALL=en_US.UTF-8 forwarded from
+# a Windows SSH/VS Code client into a WSL box that only has C.UTF-8), which
+# made every hook command print
+#   /usr/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+# Changing this line requires re-running `bunx lefthook install -f`, because
+# the `rc` path is baked into the generated hook scripts.
+rc: tools/scripts/hooks/lefthook-rc.sh
+
 pre-commit:
     parallel: true
     commands:
@@ -39,29 +48,53 @@ pre-commit:
         # validate-time check stays as the backstop for a host that
         # bypassed the hook. Never blocks.
         quantitative-refresh:
-            glob_filter:
-                items:
-                    - '**/*.spec.ts'
-                    - 'plugins/*/src/**'
-                    - 'packages/core/src/**'
-                    - 'docs/mcp-vertex/AGENT-BOOTSTRAP.md'
+            glob:
+                - '**/*.spec.ts'
+                - 'plugins/*/src/**'
+                - 'packages/core/src/**'
+                - 'docs/mcp-vertex/AGENT-BOOTSTRAP.md'
             run: bun tools/scripts/gen/quantitative.script.ts >/dev/null 2>&1 || true
             stage_fixed: true
 
-        # Report dangling git stashes. This repo's policy is that stashes
-        # are forbidden — `tools/scripts/lint/no-stashes.script.ts` has
-        # said so, with tests, since it was written — but it was wired to
-        # nothing, so the policy was never enforced and stashes
-        # accumulated unseen. In a shared worktree they are the same
-        # hazard as a zombie lock: work an agent left behind when it
-        # stopped, invisible to everyone else, and a source of `git
-        # apply` conflicts when two hooks run at once.
+        # Report git stashes. This repo's policy is that stashes are
+        # forbidden — in a shared worktree they are the same hazard as a
+        # zombie lock: work an agent left behind, invisible to everyone
+        # else, and a source of `git apply` conflicts when two hooks run at
+        # once.
         #
-        # ADVISORY on purpose, and NOT in `bun run validate`. A stray
-        # stash must not block a commit that is otherwise fine, and it
-        # must never make validate red — a red validate blocks every
-        # agent in the swarm from closing anything, which is a far worse
-        # failure than the one being reported.
+        # LEFTHOOK MAKES ONE ITSELF. When a pre-commit hook runs while any
+        # file is PARTIALLY staged (same path has staged AND unstaged
+        # hunks), lefthook hides the unstaged hunks in a stash titled
+        # exactly `lefthook auto backup` and restores it when the run
+        # finishes. Verified against lefthook 2.1.10 in a throwaway repo:
+        # it fires on partial staging alone (not on `stage_fixed`), it does
+        # not fire when the staged and unstaged files are different, and if
+        # the run is INTERRUPTED (SIGINT / tool timeout / killed agent) the
+        # stash is never restored and dangles forever with real work in it.
+        #
+        # There is NO way to turn that off. The complete option set of
+        # lefthook 2.1.10, read out of the binary's own struct tags, has no
+        # `no_stash`, no `hide_unstaged`, and no LEFTHOOK_* env killswitch
+        # (the only ones it reads are LEFTHOOK, LEFTHOOK_BIN,
+        # LEFTHOOK_CONFIG, LEFTHOOK_EXCLUDE, LEFTHOOK_OUTPUT,
+        # LEFTHOOK_VERBOSE). An earlier `no_stash: true` here was silently
+        # ignored — worse than nothing, because it looked configured.
+        # Detecting the leftover is the only available mitigation.
+        #
+        # Because this check runs as a CHILD of lefthook, it always sees
+        # lefthook's own live backup. Reporting that would be a violation
+        # caused by the guard's own runner, so the script classifies:
+        # a `lefthook auto backup` stash is transient (ignored) only while a
+        # lefthook process is alive AND it is seconds old; an older one, or
+        # one with no lefthook running, is reported loudly as unrestored
+        # work with the `git stash pop` command to recover it. Everything
+        # else is a real developer/agent stash and a violation.
+        #
+        # ADVISORY on purpose, and NOT in `bun run validate`. A stray stash
+        # must not block a commit that is otherwise fine, and it must never
+        # make validate red — a red validate blocks every agent in the swarm
+        # from closing anything, which is a far worse failure than the one
+        # being reported.
         no-stashes-advisory:
             run: bun run lint:no-stashes || true
             stage_fixed: false
@@ -71,9 +104,8 @@ pre-commit:
         # check runs in `bun run validate` and CI.
         # Skips silently when no SCSS files are staged.
         lint-scss-staged:
-            glob_filter:
-                items:
-                    - 'apps/web/src/**/*.scss'
+            glob:
+                - 'apps/web/src/**/*.scss'
             run: bun run lint:scss || true
             stage_fixed: false
 
@@ -85,13 +117,12 @@ pre-commit:
         # (fresh checkout): the artifact cannot be verified without it.
         # Bypass: LEFTHOOK_BYPASS=1 git commit ...
         catalog-drift-check:
-            glob_filter:
-                items:
-                    - 'packages/core/skills/**'
-                    - 'docs/mcp-vertex/proposals/**'
-                    - 'docs/mcp-vertex/agent-catalog.generated.json'
-                    - 'plugins/*/src/**'
-                    - 'packages/core/src/**'
+            glob:
+                - 'packages/core/skills/**'
+                - 'docs/mcp-vertex/proposals/**'
+                - 'docs/mcp-vertex/agent-catalog.generated.json'
+                - 'plugins/*/src/**'
+                - 'packages/core/src/**'
             # REGENERATE, don't just assert. The catalog embeds live
             # proposal counts, so it goes stale the moment any agent moves
             # a proposal — and with a swarm closing proposals continuously
@@ -112,11 +143,10 @@ pre-commit:
             stage_fixed: true
 
         host-hints-drift-check:
-            glob_filter:
-                items:
-                    - 'docs/mcp-vertex/agent-catalog.generated.json'
-                    - 'tools/scripts/catalog/render-host-hints.script.ts'
-                    - 'docs/mcp-vertex/host-hints/agent-instructions.generated.md'
+            glob:
+                - 'docs/mcp-vertex/agent-catalog.generated.json'
+                - 'tools/scripts/catalog/render-host-hints.script.ts'
+                - 'docs/mcp-vertex/host-hints/agent-instructions.generated.md'
             run: bun run catalog:hints:check || true
             stage_fixed: false
 
@@ -143,9 +173,8 @@ pre-commit:
         # the cost on every commit. Bypass: LEFTHOOK_BYPASS=1
         # git commit ... (documented in the blocker text).
         bootstrap-canonical-discipline:
-            glob_filter:
-                items:
-                    - 'docs/mcp-vertex/AGENT-BOOTSTRAP.md'
+            glob:
+                - 'docs/mcp-vertex/AGENT-BOOTSTRAP.md'
             run: bun run lint:bootstrap-canonical || exit 1
 
         # f00083: anti-duplication guard for the auto-generated host-
@@ -154,9 +183,8 @@ pre-commit:
         # Bypass: LEFTHOOK_BYPASS=1 git commit ... (documented in
         # the blocker text).
         host-hints-fragments-discipline:
-            glob_filter:
-                items:
-                    - 'docs/mcp-vertex/host-hints/agent-instructions.generated.md'
+            glob:
+                - 'docs/mcp-vertex/host-hints/agent-instructions.generated.md'
             run: bun run lint:host-hints-fragments || exit 1
 
 pre-push:

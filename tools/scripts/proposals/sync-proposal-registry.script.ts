@@ -18,7 +18,7 @@
  *
  * Exit codes:
  *   0 — index was rebuilt (or was already in sync)
- *   1 — sync engine returned errors (printed as JSON)
+ *   1 — sync engine returned errors (JSON on stdout, human-readable\n *       diagnosis on stderr so a `>/dev/null` caller still sees it)
  *   2 — invocation error (missing root, etc.)
  */
 import { resolve } from 'node:path';
@@ -70,7 +70,38 @@ const main = async (): Promise<void> => {
 			2,
 		)}\n`,
 	);
-	if (result.errors.length > 0) process.exit(1);
+	if (result.errors.length > 0) {
+		// The JSON above goes to stdout, and EVERY caller of this script
+		// redirects stdout to /dev/null (`bun run sync:proposals >/dev/null`
+		// in the `catalog-drift-check` lefthook job and in the
+		// `catalog:check` package script). That made a BLOCKING pre-commit
+		// gate fail with exit 1 and literally zero output — nothing to act
+		// on, so agents just bypassed it. Diagnostics must go to stderr,
+		// which no caller redirects, and must name both the drift and the
+		// command that fixes it.
+		process.stderr.write(
+			[
+				'',
+				'sync:proposals FAILED — the proposal registry could not be rebuilt.',
+				`  index: ${result.indexPath}`,
+				`  ${result.errors.length} problem(s) on disk under docs/mcp-vertex/proposals/:`,
+				'',
+				...result.errors.map((message) => `  - ${message}`),
+				'',
+				'A duplicate id means two agents minted the same proposal id (the id',
+				'counter is per-machine gitignored state, so a swarm can race it).',
+				'Fix it by renaming ONE of the two files to a fresh id and updating',
+				'its frontmatter `id:` to match, then re-run:',
+				'',
+				'  bun run sync:proposals',
+				'  bun tools/scripts/proposals/sync-proposal-counters.script.ts',
+				'',
+				'Bypass this gate for one commit with: LEFTHOOK=0 git commit ...',
+				'',
+			].join('\n'),
+		);
+		process.exit(1);
+	}
 };
 
 try {
