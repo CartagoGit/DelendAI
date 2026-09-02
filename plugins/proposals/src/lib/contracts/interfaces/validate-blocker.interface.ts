@@ -13,7 +13,7 @@
  *
  * Three states, three different next steps.
  */
-export type ValidateBlockerState =
+export type IValidateBlockerState =
 	/** Nothing in the journal. Running validate is genuinely the fix. */
 	| 'never-ran'
 	/** The last run passed, but too long ago to still be evidence. */
@@ -22,7 +22,7 @@ export type ValidateBlockerState =
 	| 'red';
 
 export interface IValidateBlockerDiagnosis {
-	readonly state: ValidateBlockerState;
+	readonly state: IValidateBlockerState;
 	/** ISO timestamp of the most recent run, when there was one. */
 	readonly lastRunAt: string | undefined;
 	/** The steps that failed, when the journal recorded them. */
