@@ -36,8 +36,15 @@ describe('diagnoseWaitTimeout', () => {
 				taskId: 't1',
 				nowMs: NOW,
 			});
-			expect(diagnosis.nextAction).not.toMatch(/await_lock again/i);
-			expect(diagnosis.nextAction.length).toBeGreaterThan(0);
+			// Every verdict must name a concrete call that is not the
+			// one that just failed, and where it mentions waiting at
+			// all it must be to forbid it.
+			expect(diagnosis.nextAction).toMatch(/agent_lock/);
+			if (/await_lock/.test(diagnosis.nextAction)) {
+				expect(diagnosis.nextAction).toMatch(
+					/Do NOT (call await_lock again|park on it again)/,
+				);
+			}
 		}
 	});
 
