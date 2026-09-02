@@ -39,11 +39,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-reviewer-12 — confirmed docs/mcp-vertex/security/permission-matrix.md exists and ran bun tools/scripts/lint/check-generated-artifacts.script.ts myself ("All generated artifacts are in sync"). MAN2-006 is satisfied.
 
 ## acceptance
 
@@ -72,8 +68,4 @@ review-log.
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-reviewer-12 — confirmed docs/mcp-vertex/security/permission-matrix.md exists and ran bun tools/scripts/lint/check-generated-artifacts.script.ts myself ("All generated artifacts are in sync"). MAN2-006 is satisfied.

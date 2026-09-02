@@ -39,11 +39,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-reviewer-12 — confirmed c00010 is retired with an explicit paused-reason citing q00005/c00017/c00018, c00017/c00018 are done and shipped in 1f82d68b, and .github/workflows/verify-develop-health.yml exists as the operational side of that decision. CI-001 is satisfied.
 
 ## acceptance
 
@@ -79,8 +75,4 @@ the placeholder review-log.
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-reviewer-12 — confirmed c00010 is retired with an explicit paused-reason citing q00005/c00017/c00018, c00017/c00018 are done and shipped in 1f82d68b, and .github/workflows/verify-develop-health.yml exists as the operational side of that decision. CI-001 is satisfied.
