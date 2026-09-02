@@ -2,11 +2,14 @@
 id: f00342
 title: "generated preset data."
 kind: feat
-status: ready
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#generated-preset-data
+last-transition-id: 786f9fbc-ea85-4942-8e95-2ed8586a8630
+last-correlation-id: 786f9fbc-ea85-4942-8e95-2ed8586a8630
+last-transition-from: in-progress
 ---
 
 # f00342 — generated preset data.
@@ -27,8 +30,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
-- **Files**: `ready/feats/f00342-generated-preset-data.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/review/f00342-generated-preset-data.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -40,7 +43,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run tools/scripts/generate/from-manifests.script.spec.ts tools/scripts/lint/manifest-vs-presets.spec.ts -> passing. Confirmed generated preset/web-catalog data.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

@@ -2,7 +2,7 @@
 id: v00132
 title: "content[0].text deja de duplicar structuredContent en overview, agent_catalog y logs_tail (AUD-F06)"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-08-29
@@ -10,6 +10,9 @@ priority: P2
 related:
     - q00011
     - v00129 # mismo track de tokens, mismo tipo de poda "declarar menos, no cambiar el dato real"
+last-transition-id: 3449f996-e2ba-499b-9aa9-e1edf1ba2796
+last-correlation-id: 3449f996-e2ba-499b-9aa9-e1edf1ba2796
+last-transition-from: ready
 ---
 
 # v00132 — `content[0].text` deja de duplicar `structuredContent` (AUD-F06)
