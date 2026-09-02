@@ -17,7 +17,7 @@ Dejar constancia verificable de que el item 25047 no tiene una fuente recuperabl
 
 ## why
 
-La migracion produjo un placeholder sin especificacion tecnica real. La referencia `migrated-from` apunta a `docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md#item-25047`, pero la evidencia verificable disponible no contiene el texto del item 25047: las busquedas en el working tree solo devuelven esta propuesta y el catalogo generado, el audit historico existio en git pero no contiene `25047`, `item-25047` ni `f00385`, y las copias locales en `.worktrees/` repiten el mismo placeholder con review logs heredados. Mantener el documento como si pudiera implementarse introduce ruido en `ready` y posterga una decision que ya puede sostenerse con evidencia.
+La migracion produjo un registro sin especificacion tecnica real. La referencia `migrated-from` apunta a `docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md#item-25047`, pero la evidencia verificable disponible no contiene el texto del item 25047: las busquedas en el working tree solo devuelven esta propuesta y el catalogo generado, el audit historico existio en git pero no contiene `25047`, `item-25047` ni `f00385`, y las copias locales en `.worktrees/` repiten el mismo registro sin alcance adicional. Mantener el documento como si pudiera implementarse introduce ruido en `ready` y posterga una decision que ya puede sostenerse con evidencia.
 
 ## non-goals
 
