@@ -2,11 +2,14 @@
 id: f00340
 title: "plugin manifests."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#plugin-manifests
+last-transition-id: 157f8bd1-b41d-47df-bf58-cd768585939f
+last-correlation-id: 157f8bd1-b41d-47df-bf58-cd768585939f
+last-transition-from: in-progress
 ---
 
 # f00340 — plugin manifests.
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: pending
-- **Files**: `ready/feats/f00340-plugin-manifests.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00340-plugin-manifests.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -77,3 +80,39 @@ alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
 actual scope/acceptance for "plugin-manifests" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+Section 21 (lines ~1923-1990) specifies a `definePluginManifest`
+schema (id/package/visibility/maturity/summary/tags/dependencies/
+permissions/tokenProfile/presetHints) plus TODO MAN-001 (schema),
+MAN-002 (lint), MAN-009/MAN-010 (detect packages without a manifest
+and manifests without a package). The generator TODOs (MAN-003
+through MAN-008) are covered separately by f00341/f00342/f00343.
+
+Real derived acceptance: a typed, validated per-plugin manifest schema
+must exist, every first-party plugin must declare one, and a lint
+must catch both a public package missing a manifest and a manifest
+with no backing package.
+
+Already implemented, not net-new work:
+`packages/core/src/lib/manifest/define-plugin-manifest.ts`
+(`definePluginManifest`) implements the exact schema shape (id,
+package, visibility, maturity, summary, tags, dependencies,
+permissions, tokenBudget, presets) with Zod validation. Every first-
+party plugin under `plugins/*/plugin.manifest.ts` uses it (confirmed:
+`browser`, `rules`, `tech-debt`, `agent-orchestrator`, `status-marker`,
+`security`, `quality`, `remote-provider-core`, `link-check`,
+`auto-agent-selector`, `container`, `proposals`, `completion`,
+`project-kpis`, `logs`, `refactor`, `web-fetch`, and more).
+`tools/scripts/lint/plugin-manifest.script.ts`
+(`lintPluginManifests`) reports `manifest-without-package` and
+`public-package-missing-manifest` findings — MAN-009/MAN-010 — and
+`tools/scripts/lint/manifest-vs-package.script.ts` cross-checks
+manifest metadata against the real package/tool registration
+(MAN-002).
+
+Ran
+`npx vitest run tools/scripts/lint/plugin-manifest.script.spec.ts tools/scripts/lint/manifest-vs-package.spec.ts tools/scripts/lint/manifest-vs-presets.spec.ts`
+on 2026-09-02: passing. No code change required; closing on this
+evidence.
