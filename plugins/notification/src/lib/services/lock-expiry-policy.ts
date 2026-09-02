@@ -7,7 +7,7 @@ import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interface
  * the engine's default; the file's own `stale_after_minutes` wins
  * whenever it is present, so the two cannot drift apart in practice.
  */
-export const DEFAULT_STALE_AFTER_MINUTES = 10;
+const DEFAULT_STALE_AFTER_MINUTES = 10;
 
 /**
  * Signal 0 performs the permission and existence checks without
