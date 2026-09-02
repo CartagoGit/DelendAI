@@ -239,3 +239,42 @@ An independent verification pass against the declared `**Files**` and
 
 Every slice is back to `pending`. The `review-log` entries that approved
 them are not trustworthy for this proposal.
+
+### 2026-09-02 — S1 re-verified genuinely done; S2-S6 correctly left undone
+
+Confirmed the reopen note is still accurate for S2-S6, and re-verified
+S1 independently rather than trusting its review-log:
+
+- `bun run lint:effect-boundaries` runs for real, against a real
+  baseline (`tools/scripts/lint/effect-boundaries.baseline.json`,
+  ~108 entries across ~50 plugin files), and reports
+  `no new violations; debt shrank 109 → 108` — i.e. it is a live,
+  wired gate, not a stub. S1 is genuinely complete.
+- `IPluginEffectsCapability` (`packages/core/src/lib/contracts/interfaces/effect-capabilities.interface.ts`)
+  still declares only `git`. `effect-capability-factory.helper.ts` only
+  exports `createDryRunGatedGitRunner`. Confirms S2-S6 are still
+  entirely unimplemented, matching the reopen note.
+
+**What this session found, that changes the estimate for S2 going
+forward**: the underlying composition primitive
+(`packages/core/src/lib/capabilities/effect-broker.factory.ts`,
+`createEffectBroker`) is already generic — it takes a map of
+`{ kind, perform, describe? }` definitions and returns the matching
+guarded capability map, so adding an `fs` (or `spawn`/`network`)
+member is mechanically an interface addition plus one new entry in
+`assemble.ts`'s `createEffectBroker({...})` call, not a new gating
+mechanism. That lowers the effort for S2's plumbing.
+
+**Why S2 was not attempted anyway**: the acceptance bar is not "the
+capability exists" but "migrate the first plugin that writes files,
+with a test that proves PREVENTION (file not created), and the
+plugin fails to register if it declares mutation and doesn't receive
+`ctx.effects`". Picking a real target from the ~50-file baseline and
+changing its registration contract is a behavior change to a shipped
+plugin that this session cannot verify beyond its own unit tests (no
+live `bun run validate` available — the orchestrator's run was in
+flight; rule 3 forbids starting a second one). Shipping the interface
+addition without a real migrated consumer would recreate exactly the
+"capability with no consumer is dead code" anti-pattern the proposal's
+own "why this design" section warns against. S2-S6 are left `pending`
+in `ready/`.

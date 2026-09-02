@@ -190,7 +190,14 @@ gate failed"`.
 
 ### S1 — `verify-main-health.script.ts` + bifuración
 
-- **Status**: pending
+- **Status**: done — verified 2026-09-02: `tools/scripts/ci/verify-main-health.script.ts`
+  and `tools/scripts/ci/verify-main-health.spec.ts` exist (commit `19218caf5`, "feat(tools):
+  verify main health via GitHub API (v00127)"), target the real `CartagoGit/mcp-vertex`
+  repository, and `bunx vitest run tools/scripts/ci/verify-main-health.spec.ts` passes 9/9.
+  S2 (dashboard entry) and S3 (supersede `v00125` + `AGENT-BOOTSTRAP.md` link) remain
+  unimplemented — no `apps/web/src/data/health/`, no `MainHealthBadge`, no nightly CI wiring,
+  no `superseded-by` frontmatter on `v00125`, no bootstrap reference. This is real
+  remaining feature/doc work, not yet built.
 - **Files**:
   `tools/scripts/ci/verify-main-health.script.ts`,
   `tools/scripts/ci/verify-main-health.spec.ts`.
