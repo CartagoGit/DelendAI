@@ -26,7 +26,17 @@ interface ILockEntryLite {
 	task_id?: string;
 	agent?: string;
 	ownership?: string[];
+	last_seen?: string;
+	host?: string;
+	pid?: number;
 }
+
+/**
+ * Default when the lock file does not declare its own window. Mirrors
+ * the engine's default; the file's own `stale_after_minutes` wins
+ * whenever it is present, so the two cannot drift apart in practice.
+ */
+const DEFAULT_STALE_AFTER_MINUTES = 10;
 
 /**
  * Read the current in-flight claims keyed by task_id. Missing/corrupt
@@ -45,15 +55,39 @@ export const readInFlight = async (
 		).content;
 		const parsed = JSON.parse(raw) as {
 			in_flight?: ILockEntryLite[];
+			stale_after_minutes?: number;
+		};
+		// Expired claims are NOT in flight. Waiting on one means waiting
+		// for an agent that stopped working — for the whole timeout, while
+		// the lock engine has already handed the files to someone else. A
+		// lock that is simultaneously free and held is the worst possible
+		// answer to give an agent deciding what to do next, so both
+		// readers use the same rule from core.
+		const policy = {
+			staleAfterMinutes:
+				typeof parsed.stale_after_minutes === 'number'
+					? parsed.stale_after_minutes
+					: DEFAULT_STALE_AFTER_MINUTES,
+			host: hostname(),
+			isProcessAlive: (pid: number): boolean => {
+				try {
+					process.kill(pid, 0);
+					return true;
+				} catch (error) {
+					// ESRCH is the only answer that proves the owner is
+					// gone; EPERM means it exists but is not ours.
+					return (error as NodeJS.ErrnoException).code !== 'ESRCH';
+				}
+			},
 		};
 		for (const entry of parsed.in_flight ?? []) {
-			if (typeof entry.task_id === 'string') {
-				map.set(entry.task_id, {
-					taskId: entry.task_id,
-					agent: entry.agent ?? 'unknown',
-					files: entry.ownership ?? [],
-				});
-			}
+			if (typeof entry.task_id !== 'string') continue;
+			if (isLockEntryExpired(entry, policy)) continue;
+			map.set(entry.task_id, {
+				taskId: entry.task_id,
+				agent: entry.agent ?? 'unknown',
+				files: entry.ownership ?? [],
+			});
 		}
 	} catch {
 		// missing/corrupt/unreadable → treat as empty (no false releases)
