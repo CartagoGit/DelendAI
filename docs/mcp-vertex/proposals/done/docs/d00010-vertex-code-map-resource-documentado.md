@@ -2,7 +2,7 @@
 id: d00010
 title: "`vertex://code-map` resource documentado"
 kind: docs
-status: in-progress
+status: done
 type: proposal
 track: docs
 date: 2026-08-25
@@ -16,9 +16,9 @@ related:
     - q00006
     - f00190 # AGENT.md por package/plugin (fuente del mapa)
     - r00027 # inventario de core/public
-last-transition-id: efdff471-24c1-41c9-be6c-589ac2b12dff
-last-correlation-id: efdff471-24c1-41c9-be6c-589ac2b12dff
-last-transition-from: ready
+last-transition-id: 6eb5a546-46ea-455e-89c0-31c87ad86f3f
+last-correlation-id: 6eb5a546-46ea-455e-89c0-31c87ad86f3f
+last-transition-from: in-progress
 ---
 
 # d00010 — `vertex://code-map` resource documentado
@@ -114,10 +114,13 @@ los casos de uso en `docs/mcp-vertex/CODE-MAP.md`.
 
 ### S1 — Resource + documentación + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/code-map/resource.ts`, `packages/core/src/lib/code-map/generator.ts`, `packages/core/tests/src/lib/code-map/resource.spec.ts`, `docs/mcp-vertex/CODE-MAP.md`
 - **Gate**: type
-
+- review-state: done
+- review-implementer: sonnet-worker-docs
+- review-reviewer: sonnet-worker-review
+- review-log: approved by sonnet-worker-review — Verified vertex://code-map resource + generator already implement the acceptance contract: resources/read vertex://code-map responds, docs/mcp-vertex/CODE-MAP.md documents contract/schema/use-cases/privacy, tests assert no private paths or external tool names leak. All 7 unit tests pass.
 ## acceptance
 
 - Resource `vertex://code-map` responde.

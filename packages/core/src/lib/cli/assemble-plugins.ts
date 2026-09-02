@@ -59,6 +59,11 @@ import {
 	announceManagedLazyDemotion,
 	buildManagedLazyDemotionNotice,
 } from '../plugins/managed-lazy-demotion';
+import {
+	announceSingleSlotContention,
+	buildSingleSlotContention,
+	type ISingleSlotClaim,
+} from '../plugins/single-slot-hooks';
 import { disposeLoadedPlugins } from '../plugins/load-plugins-runtime.helper';
 import type { IToolSurfaceLazyBinding } from '../contracts/interfaces/tool-surface.interface';
 
@@ -392,6 +397,11 @@ const tryAssembleManagedLazy = async (input: {
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
 	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	let resolvedErrorSinks: IErrorSink[] = [];
+	// `logsSink` and `isAgentStuck` are single slots: the host routes logs
+	// to one destination and gets one answer about stuckness. Both resolve
+	// first-wins; the claims are recorded so a dropped second provider is
+	// named rather than silently never being called.
+	const singleSlotClaims: ISingleSlotClaim[] = [];
 	const lazyErrors: Array<{ specifier: string; message: string }> = [];
 	const lazyLoadResult: IPluginLoadResult = {
 		loaded: [],
@@ -440,7 +450,10 @@ const tryAssembleManagedLazy = async (input: {
 					handler: registrations.onHookError,
 				});
 			if (registrations.isAgentStuck) {
-				isAgentStuckFn = registrations.isAgentStuck;
+				claimSingleSlot(singleSlotClaims, 'isAgentStuck', plugin.name);
+				if (isAgentStuckFn === undefined) {
+					isAgentStuckFn = registrations.isAgentStuck;
+				}
 			}
 			if (registrations.getCheckpointAdvisory)
 				getCheckpointAdvisoryFns.push(
@@ -448,8 +461,11 @@ const tryAssembleManagedLazy = async (input: {
 				);
 			if (registrations.beforeToolCall)
 				beforeToolCallFns.push(registrations.beforeToolCall);
-			if (registrations.logsSink && resolvedLogsSink === undefined)
-				resolvedLogsSink = registrations.logsSink;
+			if (registrations.logsSink) {
+				claimSingleSlot(singleSlotClaims, 'logsSink', plugin.name);
+				if (resolvedLogsSink === undefined)
+					resolvedLogsSink = registrations.logsSink;
+			}
 			if (registrations.errorSinks)
 				resolvedErrorSinks = [
 					...resolvedErrorSinks,

@@ -2,7 +2,7 @@
 id: t00018
 title: "AUD-CP-005 — Slice event staging: cross-agent safe (dos agentes dirty simultáneos)"
 kind: test
-status: in-progress
+status: review
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -19,9 +19,9 @@ related:
     - x00260 # slice listener entrega files
     - x00263 # sliceScoping stagea exactos (el comportamiento que se cubre)
     - x00261 # dispose al reload
-last-transition-id: 8ee9639a-3ad2-47cb-af17-8ed3c7d9f4fb
-last-correlation-id: 8ee9639a-3ad2-47cb-af17-8ed3c7d9f4fb
-last-transition-from: ready
+last-transition-id: 6195e0b2-a76a-4293-ad6d-1b7e41e5c0a3
+last-correlation-id: 6195e0b2-a76a-4293-ad6d-1b7e41e5c0a3
+last-transition-from: in-progress
 ---
 
 # t00018 — Slice event staging cross-agent safe
@@ -161,7 +161,8 @@ bunx vitest run plugins/commit-policy/tests/integration/cross-agent.spec.ts
   - "5 escenarios verdes (ver tabla de la sección Casos extra)"
   - "assertSubset se llama y detecta contaminación si se reintroduce el bug"
   - "test rojo antes del fix de x00260/x00263; verde después"
-
+- review-state: in_review
+- review-implementer: sonnet-worker-implementer
 ## acceptance
 
 - `bunx vitest run` del archivo verde.
