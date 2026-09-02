@@ -10,7 +10,7 @@ describe('privacy-internal-only lint', () => {
 					'const legacy = "internalOnly";\n',
 				'plugins/error-reporting/README.md':
 					'- `internalOnly` — removed in x00236; legacy values are deprecated.\n',
-				'docs/mcp-vertex/plugins/error-reporting.md':
+				'docs/mcp-vertex/plugins/notes/error-reporting.notes.md':
 					'- `internalOnly` — removed in x00236; legacy values are deprecated.\n',
 			},
 		});
