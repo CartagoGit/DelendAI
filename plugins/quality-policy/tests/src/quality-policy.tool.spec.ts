@@ -1,3 +1,15 @@
+/**
+ * v00131 (AUD-B01) regression pin: `quality_policy` used to declare its
+ * full, exported `QualityPolicyOutputSchema` as the wire `outputSchema`
+ * (~7.9 KB in the `vertex` preset). It now declares `compactOutputSchema()`
+ * instead. `QualityPolicyOutputSchema` is not used as a runtime response
+ * validator anywhere in `quality-policy.tool.ts` (no `.parse()`/
+ * `.safeParse()` of it against the handler's return value there), so this
+ * suite parses the handler's `structuredContent` against the exported
+ * schema directly (not against `meta.outputSchema`) and separately asserts
+ * the declared schema stays compact. This fails the day the declared
+ * schema regrows.
+ */
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -10,8 +22,17 @@ import * as testConventionPublic from '@mcp-vertex/test-convention/public';
 
 import {
 	buildQualityPolicyToolRegistrations,
-	type QualityPolicyOutputSchema,
+	QualityPolicyOutputSchema,
 } from '../../src/public/index';
+
+const jsonSchemaBytesOf = (schema: unknown): number => {
+	const candidate = schema as { toJSONSchema?: () => unknown };
+	const json =
+		typeof candidate?.toJSONSchema === 'function'
+			? candidate.toJSONSchema()
+			: schema;
+	return Buffer.byteLength(JSON.stringify(json), 'utf8');
+};
 
 const createdRoots: string[] = [];
 
@@ -123,14 +144,17 @@ describe('quality_policy', () => {
 
 		const [, meta, handler] = registerTool.mock.calls[0] as [
 			string,
-			{ outputSchema: typeof QualityPolicyOutputSchema },
+			{ outputSchema: unknown },
 			(
 				args: Record<string, never>,
 			) => Promise<{ structuredContent?: unknown }>,
 		];
 		const result = await handler({});
-		const output = meta.outputSchema.parse(result.structuredContent);
+		const output = QualityPolicyOutputSchema.parse(
+			result.structuredContent,
+		);
 
+		expect(jsonSchemaBytesOf(meta.outputSchema)).toBeLessThanOrEqual(200);
 		expect(output.tests?.summary.length ?? 0).toBeGreaterThan(0);
 		expect(output.conventions?.summary.length ?? 0).toBeGreaterThan(0);
 		expect(output.lint?.summary.length ?? 0).toBeGreaterThan(0);
@@ -163,15 +187,17 @@ describe('quality_policy', () => {
 		> as McpServer;
 		await registrations[0]!.register(server);
 
-		const [, meta, handler] = registerTool.mock.calls[0] as [
+		const [, , handler] = registerTool.mock.calls[0] as [
 			string,
-			{ outputSchema: typeof QualityPolicyOutputSchema },
+			{ outputSchema: unknown },
 			(args: {
 				area: 'tests';
 			}) => Promise<{ structuredContent?: unknown }>,
 		];
 		const result = await handler({ area: 'tests' });
-		const output = meta.outputSchema.parse(result.structuredContent);
+		const output = QualityPolicyOutputSchema.parse(
+			result.structuredContent,
+		);
 
 		expect(output.tests?.mode).toBe('tests-after');
 		expect(output.conventions).toBeUndefined();
