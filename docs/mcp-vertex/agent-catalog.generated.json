@@ -1304,14 +1304,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00414",
-				"title": "f00414",
-				"track": "scaffolding+agents+error-reporting",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00415",
 				"title": "f00415",
 				"track": "remote-ci-diagnostics",
@@ -1466,8 +1458,8 @@
 		],
 		"byStatus": {
 			"ready": 18,
-			"in-progress": 6,
-			"review": 2,
+			"in-progress": 5,
+			"review": 3,
 			"paused": 1,
 			"done": 712,
 			"blocked": 23,
