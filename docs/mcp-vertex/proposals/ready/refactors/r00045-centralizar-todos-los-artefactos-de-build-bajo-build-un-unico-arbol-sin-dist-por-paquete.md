@@ -50,7 +50,7 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - ".gitignore deja de ignorar `dist/` raíz y `packages/*/dist/`, `plugins/*/dist/` (siguen ignorados por la nueva entrada `/build/`)"
 
 ### S2 — staging de publicación materializa `dist/` desde `build/` (manifests se quedan en `./dist/...`)
-- **Status**: pending
+- **Status**: done (verified 2026-09-02 — see Notes)
 - **Files**: `tools/scripts/publish/workspace-deps.ts`, `tools/scripts/release/release.script.ts`, `tools/scripts/smoke/pack.script.ts`, `tools/scripts/verify/external-install-smoke.script.ts`
 - **Gate**: e2e
 - **Corrección (2026-09-01):** el texto original de este slice pedía reescribir
@@ -83,7 +83,7 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "`git status` no muestra ningún `packages/*/dist/` ni `plugins/*/dist/` tras correr el pack-smoke o el publish real — el único `dist/` que existe en cualquier momento vive dentro de un directorio de staging bajo `tmpdir()`, borrado al terminar"
 
 ### S3 — lint:no-build-imports-from-src — anti-fuga entre `build/` y `src/`
-- **Status**: pending
+- **Status**: done (verified 2026-09-02: `bun run lint:no-build-imports-from-src` → 0 violations, wired into `validate:run`)
 - **Files**: `tools/scripts/lint/no-build-imports-from-src.script.ts`, `tools/scripts/lint/no-build-imports-from-src.spec.ts`, `package.json`
 - **Gate**: lint
 - acceptance:
@@ -94,7 +94,7 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "Tests cubren: import válido dentro del paquete, fuga `../src/`, fuga `../../packages/foo/src/`, import `@mcp-vertex/core` (debe pasar)"
 
 ### S4 — Runtime resolver: bun + vitest + tsc nunca resuelven a `build/`
-- **Status**: pending
+- **Status**: done except final `bun run validate` confirmation (verified 2026-09-02 — see Notes)
 - **Files**: `bunfig.toml`, `tsconfig.base.json`, `vitest.shared.ts`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: e2e
 - acceptance:
