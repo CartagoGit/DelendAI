@@ -1467,7 +1467,7 @@
 				"id": "x00417",
 				"title": "x00417",
 				"track": "quality",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			},
@@ -1475,14 +1475,14 @@
 				"id": "x00418",
 				"title": "x00418",
 				"track": "quality",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 16,
-			"in-progress": 10,
+			"ready": 14,
+			"in-progress": 12,
 			"review": 2,
 			"paused": 1,
 			"done": 712,

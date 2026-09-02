@@ -2,10 +2,13 @@
 id: x00418
 title: "Completar fixture de protección de ramas"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: quality
 date: 2026-09-02
+last-transition-id: 983513b0-927a-41de-9481-6cb7ccf4ef2f
+last-correlation-id: 983513b0-927a-41de-9481-6cb7ccf4ef2f
+last-transition-from: ready
 ---
 
 # x00418 — Completar fixture de protección de ramas
@@ -36,7 +39,8 @@ El typecheck actual falla porque declaredPolicy() omite restrictions, ahora obli
   - "El fixture cumple IDeclaredBranchRule con restrictions: null."
   - "El typecheck raíz pasa sin aumentar el baseline de errores."
   - "Las pruebas de verify-main-health siguen pasando."
-
+- review-state: in_review
+- review-implementer: x00418-branch-fixture-worker
 ## acceptance
 
 - El fixture cumple IDeclaredBranchRule con restrictions: null.

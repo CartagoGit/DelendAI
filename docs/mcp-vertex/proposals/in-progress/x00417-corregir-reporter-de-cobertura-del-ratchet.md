@@ -2,10 +2,13 @@
 id: x00417
 title: "Corregir reporter de cobertura del ratchet"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: quality
 date: 2026-09-02
+last-transition-id: d3e89155-95c3-4f34-8d77-6656ae3a1227
+last-correlation-id: d3e89155-95c3-4f34-8d77-6656ae3a1227
+last-transition-from: ready
 ---
 
 # x00417 — Corregir reporter de cobertura del ratchet
@@ -36,7 +39,8 @@ El gate actual falla antes de ejecutar tests porque usa --reporter=json-summary;
   - "coverage:ratchet usa --coverage.reporter=json-summary."
   - "El script y sus pruebas describen y verifican la forma correcta."
   - "El gate deja de fallar por resolución de json-summary."
-
+- review-state: in_review
+- review-implementer: x00417-coverage-ratchet-worker
 ## acceptance
 
 - coverage:ratchet usa --coverage.reporter=json-summary.
