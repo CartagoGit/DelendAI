@@ -319,6 +319,26 @@ export const buildCapabilityMatrixMarkdown = async (
 	return { markdown, violations };
 };
 
+/**
+ * Keep the previous `Generated <date>` stamp when the rest of the
+ * document is byte-identical.
+ *
+ * A date-only rewrite is not drift: it says the generator ran, not that
+ * anything changed. Treating it as drift made the pre-push gate fail
+ * every time the clock crossed midnight.
+ */
+export const preserveStampIfUnchanged = (
+	previous: string,
+	next: string,
+): string => {
+	const stamp = /(> Generated )\d{4}-\d{2}-\d{2}( from )/;
+	const previousStamp = previous.match(stamp);
+	if (previousStamp === null) return next;
+	const normalize = (text: string): string =>
+		text.replace(stamp, '$1<<date>>$2');
+	return normalize(previous) === normalize(next) ? previous : next;
+};
+
 const writeMatrix = async (
 	root: string,
 ): Promise<{
@@ -328,7 +348,14 @@ const writeMatrix = async (
 	const { markdown, violations } = await buildCapabilityMatrixMarkdown(root);
 	const abs = join(root, MATRIX_REL);
 	await mkdir(join(root, SECURITY_DIR), { recursive: true });
-	await writeFile(abs, markdown, 'utf8');
+	// The header carries a `Generated <date>` stamp, so a regeneration on a
+	// later day rewrote the file even when nothing about the capabilities
+	// had changed. `gen-all --check` gates `git push` with a raw
+	// `git diff --exit-code`, so a date rollover alone blocked every push
+	// until someone committed a one-line date bump. Keep the existing stamp
+	// whenever the substance is identical.
+	const previous = await readFile(abs, 'utf8').catch(() => '');
+	await writeFile(abs, preserveStampIfUnchanged(previous, markdown), 'utf8');
 	return { path: abs, violations };
 };
 

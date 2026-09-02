@@ -23,6 +23,7 @@ import { CAPABILITIES } from '@mcp-vertex/core/public';
 import {
 	buildCapabilityMatrixMarkdown,
 	computeMatrix,
+	preserveStampIfUnchanged,
 	renderMatrix,
 	type IPluginCapabilityRow,
 } from './capability-matrix.script';
@@ -232,5 +233,38 @@ describe('d00009 — capability matrix generator (Track F)', () => {
 			// alpha uses fs:read; beta declares network:fetch but doesn't use it.
 			expect(violations).toEqual([]);
 		});
+	});
+});
+
+describe('preserveStampIfUnchanged', () => {
+	const withDate = (date: string, body = 'rows'): string =>
+		`# Capability Matrix\n\n> Generated ${date} from plugin manifests + the \`lint:capabilities\` static analysis.\n\n${body}\n`;
+
+	it('keeps the old stamp when only the date moved', () => {
+		// A date-only rewrite says the generator ran, not that anything
+		// changed. `gen-all --check` gates `git push` with a raw
+		// `git diff --exit-code`, so a midnight rollover alone blocked
+		// every push until someone committed a one-line date bump.
+		expect(
+			preserveStampIfUnchanged(
+				withDate('2026-09-01'),
+				withDate('2026-09-02'),
+			),
+		).toBe(withDate('2026-09-01'));
+	});
+
+	it('takes the new document when the substance changed', () => {
+		expect(
+			preserveStampIfUnchanged(
+				withDate('2026-09-01', 'old rows'),
+				withDate('2026-09-02', 'new rows'),
+			),
+		).toBe(withDate('2026-09-02', 'new rows'));
+	});
+
+	it('falls back to the new document when there is no previous stamp', () => {
+		expect(preserveStampIfUnchanged('', withDate('2026-09-02'))).toBe(
+			withDate('2026-09-02'),
+		);
 	});
 });
