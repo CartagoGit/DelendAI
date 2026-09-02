@@ -262,3 +262,46 @@ S1's own review-log admits the workflow migration is follow-up work: `.github/ac
 
 Every slice is back to `pending`. The `review-log` entries that approved
 them are not trustworthy for this proposal.
+
+### 2026-09-02 — S1 genuinely implemented, S2 blocked, S3 already real
+
+Verified line-by-line against the actual working tree (concurrent agents
+touched these same files mid-session; final state confirmed by re-reading
+after each commit landed):
+
+- **S1 — done, for real.** `.github/actions/setup-bun-repo/action.yml`
+  had a YAML syntax bug (`runs\n\n:` instead of `runs:` — the file did
+  not parse as valid YAML at all) and referenced a non-existent
+  `bun.lockb` in its cache key (repo uses `bun.lock`). Fixed both, added
+  an optional `fetch-depth` input for the 5 jobs across
+  `ci.yml`/`tier1.yml`/`tier3.yml` that need full history for diffing.
+  All `actions/checkout@v7` + `setup-bun@v2` + `bun install` blocks in
+  `ci.yml`, `tier1.yml`, `tier2.yml`, `tier3.yml` now call
+  `uses: ./.github/actions/setup-bun-repo`. Verified: all four YAML
+  files still parse (`python3 -c "import yaml; yaml.safe_load(...)"`),
+  `bun tools/scripts/lint/referenced-scripts-exist.script.ts` passes,
+  `git diff` reviewed per file — no unrelated content dropped.
+- **S3 — already real**, not just a stub. `workflow-command-duplication.script.ts`
+  exists, runs, and reports `0 duplicates across 16 workflow(s)` against
+  the post-S1 state.
+- **S2 — still not done, and NOT attempted this session.** `tier2.yml`'s
+  `typecheck`/`tests`/`quality-gate` jobs still exist. They do not
+  textually duplicate `ci.yml` (ci.yml's `tests` job runs
+  `bun run test && bun run test:coverage`, tier2's runs
+  `bunx vitest run`; ci.yml's `quality-gate` runs `bun run quality:gate`
+  → `tools/scripts/quality/quality-gate.script.ts`, tier2's runs
+  `tools/scripts/ci/quality-gate.script.ts --real`, a **different
+  script** that itself re-runs typecheck+lint+validate+tokens+test —
+  a superset of nearly everything ci.yml's other jobs already do).
+  This is real, functional redundancy, just not textual — the S3 lint
+  correctly reports 0 because it only compares literal command strings.
+  This session did not remove any tier2 job because S2's own gate
+  requires "abrir un PR de prueba y contar jobs disparados" — a live
+  GitHub Actions run — which is not reproducible in this sandbox, and
+  guessing which of two non-identical quality-gate scripts to delete
+  without that feedback risks silently dropping CI coverage. Left
+  `tier2.yml` untouched. A human (or an agent with push access to open
+  a real PR and watch Actions) needs to do S2.
+
+Proposal stays in `ready/`: S1+S3 are genuinely complete, S2 is the
+proposal's core value and remains open.
