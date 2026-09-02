@@ -10,7 +10,14 @@ import {
 	type IPluginRuntime,
 } from '@mcp-vertex/core/public';
 
+import { hostname } from 'node:os';
+
 import { CommitPolicyOptionsSchema } from './lib/contracts/options';
+import { DEFAULT_AGENT_LOCK_STALE_MINUTES } from './lib/contracts/constants/agent-lock.constant';
+import {
+	createAgentLockForeignLockProvider,
+	deriveAgentLockPath,
+} from './lib/services/agent-lock-foreign-locks';
 import type { IIdentityResolverContext } from './lib/identity/resolver';
 import {
 	computeSliceTriggerEventId,
@@ -238,12 +245,31 @@ export default definePlugin({
 					}
 				: null;
 
+		// Consult the shared agent lock before staging anything. This is
+		// a file read at a well-known path, not a dependency on the
+		// proposals plugin: with no such file the provider reports
+		// nothing held and every commit behaves exactly as it did. It is
+		// what keeps a sweep-everything policy safe in a swarm — a file
+		// another agent is midway through writing is an unfinished edit,
+		// not "foreign changes the operator opted into".
+		const foreignLocks = createAgentLockForeignLockProvider({
+			lockFileAbs: deriveAgentLockPath(ctx.workspace.root),
+			policy: {
+				staleAfterMinutes: DEFAULT_AGENT_LOCK_STALE_MINUTES,
+				host: hostname(),
+			},
+		});
+
 		const sharedDriver = {
 			run,
 			policy,
 			identityCtx,
 			auditAgent,
 			pluginCacheDir: ctx.pluginCacheDir,
+			foreignLocks,
+			...(identityCtx.hostIdentity?.host !== undefined
+				? { selfAgent: identityCtx.hostIdentity.host }
+				: {}),
 		};
 		const configuredInterval = policy.cadence.triggers.find(
 			(t): t is Extract<typeof t, { kind: 'interval' }> =>
