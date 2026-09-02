@@ -2,7 +2,7 @@
 id: t00017
 title: "AUD-CP-001 — Conventional Commits parser: property-based + tabla de casos"
 kind: test
-status: ready
+status: in-progress
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -18,6 +18,9 @@ related:
     - q00006
     - x00259 # el fix cuya corrección se cubre
     - x00265 # requireConventional consume este parser
+last-transition-id: 31b31c4a-ceb9-4262-931f-eff6c22cc795
+last-correlation-id: 31b31c4a-ceb9-4262-931f-eff6c22cc795
+last-transition-from: ready
 ---
 
 # t00017 — Conventional Commits parser: property-based + tabla de casos
