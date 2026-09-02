@@ -1,5 +1,5 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -46,6 +46,58 @@ describe('lock-release watcher [N14]', async () => {
 		dir = mkdtempSync(join(tmpdir(), 'notify-'));
 		lockFile = join(dir, 'agents.lock.json');
 	});
+
+	it('does not treat a claim from a dead agent as in flight', async () => {
+		// The point of the shared expiry rule: the lock engine drops a
+		// claim whose owning process is gone, so a waiter that still saw
+		// it would wait out its whole timeout for an agent that stopped
+		// working — a lock simultaneously free and held.
+		writeFileSync(
+			lockFile,
+			lock([
+				{
+					task_id: 't-dead',
+					ownership: ['f.ts'],
+					host: hostname(),
+					// Never a live pid: the max on Linux is 2^22.
+					pid: 2 ** 26,
+				},
+			]),
+		);
+		expect((await readInFlight(lockFile)).has('t-dead')).toBe(false);
+	});
+
+	it('does not treat a claim past its heartbeat window as in flight', async () => {
+		writeFileSync(
+			lockFile,
+			lock([
+				{
+					task_id: 't-stale',
+					ownership: ['f.ts'],
+					last_seen: new Date(Date.now() - 11 * 60_000).toISOString(),
+				},
+			]),
+		);
+		expect((await readInFlight(lockFile)).has('t-stale')).toBe(false);
+	});
+
+	it('still holds a claim from a live process on this host', async () => {
+		// The other half: a slow-but-alive holder must never be released
+		// early, or two agents write the same files believing they own them.
+		writeFileSync(
+			lockFile,
+			lock([
+				{
+					task_id: 't-live',
+					ownership: ['f.ts'],
+					host: hostname(),
+					pid: process.pid,
+				},
+			]),
+		);
+		expect((await readInFlight(lockFile)).has('t-live')).toBe(true);
+	});
+
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	it('readInFlight maps claims by task_id (empty on missing/corrupt)', async () => {
