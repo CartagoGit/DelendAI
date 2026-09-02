@@ -46,14 +46,14 @@ release can proceed.
 - **Gate**: none
 
 ### S2 — Follow-up: fix F1 + F2 (header-bar renderer + spec)
-- **Status**: retired
+- **Status**: done
 - **Files**:
   - `packages/ui-extension/src/components/header-bar.ts`
   - `packages/ui-extension/tests/components/header-bar.spec.ts`
 - **Gate**: `bunx vitest run packages/ui-extension/tests/components/header-bar.spec.ts`
 
 ### S3 — Follow-up: fix F3 + i18n gap (settings copy + l10n dicts)
-- **Status**: retired
+- **Status**: done
 - **Files**:
   - `apps/shared/src/i18n/shared.ts`
   - `apps/shared/src/i18n/langs/{en,es,...}.ts`

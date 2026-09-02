@@ -109,7 +109,7 @@ package.json:
 
 ### S1 — Test de frontera: nada fuera de `client/node` importa `node:*` ni `@mcp-vertex/core` como valor
 
-- **Status**: pending
+- **Status**: done (verified 2026-09-02: `bunx vitest run packages/client/tests/architecture/no-node-outside-client-node.spec.ts` → 6/6 pass)
 - **Files**:
     - `packages/client/tests/architecture/no-node-outside-client-node.spec.ts` (nuevo,
       siguiendo el patrón de
@@ -121,7 +121,7 @@ package.json:
 
 ### S2 — Mover `write-scaffolded-files.ts` (y su import de `createFileSystemBatchWriter`) a `client/node`
 
-- **Status**: pending
+- **Status**: done (verified 2026-09-02: `packages/client/src/node/scaffold/write-scaffolded-files.ts` holds the real implementation; `packages/client/src/lib/scaffold/write-scaffolded-files.ts` is a compat re-export; S1's boundary test passes against this layout)
 - **Files**:
     - `packages/client/src/lib/scaffold/write-scaffolded-files.ts` →
       `packages/client/src/node/write-scaffolded-files.ts`
