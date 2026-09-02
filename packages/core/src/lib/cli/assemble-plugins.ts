@@ -213,6 +213,31 @@ const replayRegisterErrors = async (
 	}
 };
 
+/**
+ * Record a claim on a single-slot hook and, when it loses to an earlier
+ * claimant, say so immediately.
+ *
+ * Announcing at the moment of contention rather than at the end of
+ * assembly is what makes this work on BOTH routes: eager registers
+ * everything at boot, while a lazy plugin may claim a slot minutes
+ * later, when it is first activated.
+ */
+const claimSingleSlot = (
+	claims: ISingleSlotClaim[],
+	slot: ISingleSlotClaim['slot'],
+	pluginName: string,
+): void => {
+	const holder = claims.find((claim) => claim.slot === slot);
+	claims.push({ slot, pluginName });
+	if (holder === undefined) return;
+	announceSingleSlotContention(
+		buildSingleSlotContention([
+			{ slot, pluginName: holder.pluginName },
+			{ slot, pluginName },
+		]),
+	);
+};
+
 const lazyPluginIdFor = (specifier: string): string | undefined => {
 	if (MANAGED_LAZY_PLUGIN_BY_ID.has(specifier)) return specifier;
 	const prefix = '@mcp-vertex/';
@@ -809,6 +834,7 @@ export const assemblePlugins = async (
 	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	// Collect all error sinks from every plugin; dedupe by id.
 	let resolvedErrorSinks: readonly IErrorSink[] = [];
+	const eagerSingleSlotClaims: ISingleSlotClaim[] = [];
 	for (const { plugin, registrations } of loadResult.loaded) {
 		const resolvedSpecifier =
 			loadResult.loaded.find((entry) => entry.plugin.name === plugin.name)
@@ -847,14 +873,22 @@ export const assemblePlugins = async (
 				pluginName: plugin.name,
 				handler: registrations.onRegisterError,
 			});
-		if (registrations.isAgentStuck)
-			isAgentStuckFn = registrations.isAgentStuck;
+		if (registrations.isAgentStuck) {
+			claimSingleSlot(eagerSingleSlotClaims, 'isAgentStuck', plugin.name);
+			// First-wins, matching `logsSink`: the resolution must not
+			// depend on plugin order.
+			if (isAgentStuckFn === undefined)
+				isAgentStuckFn = registrations.isAgentStuck;
+		}
 		if (registrations.getCheckpointAdvisory)
 			getCheckpointAdvisoryFns.push(registrations.getCheckpointAdvisory);
 		if (registrations.beforeToolCall)
 			beforeToolCallFns.push(registrations.beforeToolCall);
-		if (registrations.logsSink && resolvedLogsSink === undefined) {
-			resolvedLogsSink = registrations.logsSink;
+		if (registrations.logsSink) {
+			claimSingleSlot(eagerSingleSlotClaims, 'logsSink', plugin.name);
+			if (resolvedLogsSink === undefined) {
+				resolvedLogsSink = registrations.logsSink;
+			}
 		}
 		if (registrations.errorSinks) {
 			// Deterministic dedupe by id, preserve first-seen order.
