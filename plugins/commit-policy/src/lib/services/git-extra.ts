@@ -91,7 +91,11 @@ export const gitDirtyFileCount = async (run: IGitRunner): Promise<number> => {
  * "what is dirty" wants the same answer: transient coordination files
  * are not work.
  */
-const TRANSIENT_PATH_PATTERN = /(^|\/)\.git\/|\.mutex$|\.tmp-[^/]*$|\.lock$/u;
+// Deliberately NOT `\.lock$`: `bun.lock` and `package-lock.json` are
+// real, committable files, and excluding them would quietly stop
+// dependency changes from ever being committed — a far worse bug than
+// the one being fixed.
+const TRANSIENT_PATH_PATTERN = /(^|\/)\.git\/|\.mutex$|\.tmp-[^/]*$/u;
 
 export const isTransientWorkspacePath = (path: string): boolean =>
 	TRANSIENT_PATH_PATTERN.test(path);
