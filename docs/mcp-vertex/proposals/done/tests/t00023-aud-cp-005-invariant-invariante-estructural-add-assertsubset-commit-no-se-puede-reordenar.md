@@ -15,6 +15,7 @@ audit-source:
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
     finding: AUD-CP-005
     external-reviewer: ChatGPT-5.6-Sol (close-out delta)
+shipped-in: ["04d223ca872af420caedbe343c8a53c0c270d828"]
 related:
     - q00006
     - x00263 # sliceScoping stagea archivos exactos (predecesor)
@@ -217,7 +218,7 @@ Como el bloque "Nivel 3" arriba. Vive en
 ### S3 — Spec runtime spy
 
 - **Status**: done
-- **Files**: `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts` (añadir `it`).
+- **Files**: `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts`.
 - **Gate**: test passing
 - **Depends on**: `x00269`
 - review-state: done

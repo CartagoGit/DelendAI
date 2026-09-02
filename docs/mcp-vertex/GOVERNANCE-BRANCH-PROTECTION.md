@@ -66,6 +66,13 @@ an explicit config override wins over the default.
 
 For `main`, configure:
 
+- **Require a pull request before merging:** ON — this is the setting that
+  closes the fast-forward gap: `required_checks` alone only demands that
+  `ci-complete` be green for the landing SHA, it does not demand that the SHA
+  arrived via a pull request. A SHA that already ran green on another branch
+  (e.g. `wip`) can otherwise land on `main` by a direct fast-forward push
+  with no pull request ever opened. See ADR 0019 for why `main`, and only
+  `main`, needs this toggle.
 - **Require status checks to pass before merging:** ON
 - **Require branches to be up to date before merging:** ON
 - **Required status checks:** `ci-complete`, `release-pr-gate`
@@ -75,11 +82,14 @@ For `main`, configure:
 - **Restrict who can push to matching branches:** OFF / empty
 - **Do not allow bypassing the above settings:** ON for admins
 
-For `develop`, leave required status checks, admin enforcement and linear
-history disabled. This keeps ordinary development commits and pushes flexible;
-CI may still provide advisory feedback through the development workflows.
-If the UI wording changes, the canonical values still live in
-[`.github/branch-protection.yml`](../../.github/branch-protection.yml).
+For `develop`, leave required status checks, admin enforcement, linear
+history, and "Require a pull request before merging" all disabled. `develop`
+is deliberately the operator's flexible working branch, not a second `main`
+— see [ADR 0019](adr/0019-branch-model-develop-lab-main-release.md) for the
+decision and its trigger for reversal. This keeps ordinary development
+commits and pushes flexible; CI may still provide advisory feedback through
+the development workflows. If the UI wording changes, the canonical values
+still live in [`.github/branch-protection.yml`](../../.github/branch-protection.yml).
 
 ### Step 3 — Apply via API if preferred
 
@@ -185,6 +195,7 @@ Bypass de emergencia: `LEFTHOOK_BYPASS=1 git push …`. CI re-confirma.
 
 ## Related
 
+- [ADR 0019 — Modelo de ramas: `develop` es laboratorio, `main` es publicación](adr/0019-branch-model-develop-lab-main-release.md)
 - [c00145 — `develop` no está protegida por defecto en `commit-policy`](../proposals/ready/chores/c00145-protectedbranches-default-main-only.md)
 - [x00257 — Eliminar `force-with-lease` para ramas protegidas](../proposals/ready/fixes/x00257-eliminar-force-with-lease-ramas-protegidas.md)
 - [x00299 — Permitir persistencia configurada hacia `develop`](../proposals/ready/fixes/x00299-permitir-persistencia-configurada-hacia-develop.md)

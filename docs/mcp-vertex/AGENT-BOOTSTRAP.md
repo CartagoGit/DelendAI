@@ -500,6 +500,7 @@ not only in commit messages. This section indexes the ones worth a
 newcomer's attention before they re-litigate a closed decision.
 
 - [ADR 0007 — `@mcp-vertex/core/contracts` (subpath) vs a separate package](adr/0007-core-contracts-subpath-vs-package.md)
+- [ADR 0019 — Branch model: `develop` is the lab, `main` is release](adr/0019-branch-model-develop-lab-main-release.md)
 
 ## Quantitative facts
 
