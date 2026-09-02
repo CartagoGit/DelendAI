@@ -1536,14 +1536,6 @@
 				"date": ""
 			},
 			{
-				"id": "q00013",
-				"title": "q00013",
-				"track": "master-hardening-release-stabilization",
-				"status": "in-progress",
-				"kind": "plan",
-				"date": ""
-			},
-			{
 				"id": "r00033",
 				"title": "r00033",
 				"track": "contracts",
@@ -1690,8 +1682,8 @@
 		],
 		"byStatus": {
 			"ready": 46,
-			"in-progress": 6,
-			"review": 0,
+			"in-progress": 5,
+			"review": 1,
 			"paused": 1,
 			"done": 687,
 			"blocked": 23,
