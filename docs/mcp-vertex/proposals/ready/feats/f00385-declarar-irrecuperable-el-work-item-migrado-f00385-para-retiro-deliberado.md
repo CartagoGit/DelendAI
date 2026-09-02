@@ -43,7 +43,8 @@ La migracion produjo un placeholder sin especificacion tecnica real. La referenc
   - "La propuesta documenta de forma explícita que no existe una fuente verificable del item 25047 en las ubicaciones permitidas revisadas."
   - "No quedan placeholders ni review logs heredados que aparenten una validacion o una implementacion inexistentes."
   - "El siguiente paso operativo queda claro y acotado: retirar deliberadamente esta propuesta mediante una transicion posterior, no intentar implementarla."
-
+- review-state: in_review
+- review-implementer: falcon
 ## acceptance
 
 - La propuesta describe un trabajo real y verificable: documentar la irrecuperabilidad del item migrado y preparar su retiro deliberado.
