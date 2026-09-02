@@ -31,6 +31,7 @@ import type { ICommitPolicyPush } from '../contracts/options';
 import { gitCurrentBranch, gitUnpushedCommitCount } from './git-extra';
 import { runPushDriver, type IPushDriverResult } from './push-driver';
 import { withGitWriteLock } from './git-write-lock';
+import { buildPushCircuitNotice, createPushCircuit } from './push-circuit';
 
 export interface IPushSchedulerOptions {
 	readonly run: IGitRunner;
@@ -78,6 +79,11 @@ export const createPushScheduler = (
 	options: IPushSchedulerOptions,
 ): IPushScheduler => {
 	let commitsSincePush = 0;
+	// Stops the automatic path from retrying a refusal that cannot
+	// change. Observed: a config asking for a push the repo's own
+	// pre-push discipline blocks, retried identically once a minute for
+	// twelve hours.
+	const circuit = createPushCircuit();
 	let interval: ReturnType<typeof setInterval> | undefined;
 	let pendingTick: Promise<void> | undefined;
 	let writeTail = Promise.resolve();
@@ -134,11 +140,25 @@ export const createPushScheduler = (
 			commitsSincePush = 0;
 		}
 		onAttempt(result);
+		const decision = circuit.record(result);
 		if (!result.ok) {
-			// Surface the reason for log triage — never throw.
-			console.warn(
-				`[push-scheduler] push failed (${reason}): ${result.refusal}`,
-			);
+			// Surface the reason for log triage — never throw. Once the
+			// breaker is open the per-attempt line stops too: repeating
+			// an unchanging message every minute is the same noise the
+			// breaker exists to end.
+			if (!decision.open) {
+				console.warn(
+					`[push-scheduler] push failed (${reason}): ${result.refusal}`,
+				);
+			}
+			if (decision.announce) {
+				console.warn(
+					buildPushCircuitNotice({
+						refusal: decision.refusal ?? String(result.refusal),
+						attempts: decision.identicalFailures,
+					}),
+				);
+			}
 		}
 		return result;
 	};
@@ -153,6 +173,7 @@ export const createPushScheduler = (
 			// Re-check inside the serialized lane so a timer tick
 			// queued behind a successful push observes the reset
 			// state and does not emit a duplicate push.
+			if (!circuit.shouldAttempt()) return;
 			if (!(await hasPendingAutomaticPush())) return;
 			if ((await branchRefusal()) !== null) return;
 			await push(`everyNMinutes=${options.policy.everyNMinutes ?? 0}`);
@@ -186,6 +207,11 @@ export const createPushScheduler = (
 				const shouldPushByCommit =
 					options.policy.onCommit === true && everyN === undefined;
 				if (!shouldPushByCommit && !shouldPushByCount) return null;
+				// The breaker gates the automatic path only. This is the
+				// branch that actually looped: `onCommit: true` plus a
+				// commit every few minutes meant one guaranteed-to-fail
+				// push per commit, forever.
+				if (!circuit.shouldAttempt()) return null;
 				// x00266: when both modes are active, the engine fires
 				// ONE push (not two). The counter is reset below.
 				return push(
@@ -196,6 +222,11 @@ export const createPushScheduler = (
 			});
 		},
 		pushNow() {
+			// An explicit push always gets a real attempt. Someone asking
+			// for one deserves the current answer, not a cached refusal,
+			// and a success is exactly the signal that whatever was
+			// blocking has been fixed.
+			circuit.reset();
 			return enqueueWrite(() => push('manual'));
 		},
 		async flush() {
