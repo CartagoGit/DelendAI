@@ -17,6 +17,7 @@ related:
     - r00027 # inventario necesario para decidir qué entra en cada subpath
     - r00029 # extraer @mcp-vertex/contracts es prerequisito lógico
     - r00030 # cliente importa de contracts
+    - d00012 # ADR 0007 documenta esta decisión (subpath, no paquete)
 shipped-in: ["10bb11612"]
 last-transition-id: 911c30cd-780f-4c46-8823-1823195c67bd
 last-correlation-id: 911c30cd-780f-4c46-8823-1823195c67bd

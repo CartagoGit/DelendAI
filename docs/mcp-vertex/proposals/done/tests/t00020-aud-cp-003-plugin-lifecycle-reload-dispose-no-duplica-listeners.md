@@ -2,7 +2,7 @@
 id: t00020
 title: "AUD-CP-003 — Plugin lifecycle: reload/dispose no duplica listeners"
 kind: test
-status: review
+status: done
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -150,7 +150,7 @@ bunx vitest run plugins/commit-policy/tests/src/index.spec.ts
 
 ### S1 — Lifecycle: reload N, dispose mid-register, dispose best-effort
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/tests/src/index.spec.ts`
 - **Gate**: type
 - **Dependency**: `x00261`, `f00182`
@@ -159,7 +159,10 @@ bunx vitest run plugins/commit-policy/tests/src/index.spec.ts
   - "register + dispose → 0 timers, 0 listeners"
   - "register falla + dispose → cleanup best-effort sin panic"
   - "scheduler se attach en register y detach en dispose"
-
+- review-state: done
+- review-implementer: sonnet-worker-implementer
+- review-reviewer: sonnet-worker-tests
+- review-log: approved by sonnet-worker-tests — Ran npx vitest run plugins/commit-policy/tests/src/index.spec.ts: 11/11 green. All 4 S1 acceptance bullets covered: register x N -> 1 listener after dispose, register+dispose -> 0 timers/listeners, register-fails-midway + no zombie timers, scheduler attach at register/detach at dispose. biome + tsc clean.
 ## acceptance
 
 - `bunx vitest run` del archivo verde.
