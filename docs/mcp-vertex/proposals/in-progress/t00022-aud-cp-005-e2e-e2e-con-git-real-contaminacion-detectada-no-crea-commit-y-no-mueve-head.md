@@ -2,7 +2,7 @@
 id: t00022
 title: "AUD-CP-005.e2e — E2E con Git real: contaminación detectada NO crea commit y NO mueve HEAD"
 kind: test
-status: ready
+status: in-progress
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -24,6 +24,9 @@ related:
     - f00182 # CommitPolicyEngine (target del test)
     - t00018 # slice event staging happy path (predecesor)
     - t00023 # invariante stage→validate→commit (hermano)
+last-transition-id: c4ab1edd-4eff-44a3-9493-1edbc9957fb0
+last-correlation-id: c4ab1edd-4eff-44a3-9493-1edbc9957fb0
+last-transition-from: ready
 ---
 
 # t00022 — AUD-CP-005.e2e: E2E con Git real (no mocks) verifica que la contaminación detectada no crea commit ni mueve HEAD

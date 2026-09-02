@@ -1264,14 +1264,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "d00014",
-				"title": "d00014",
-				"track": "docs",
-				"status": "ready",
-				"kind": "docs",
-				"date": ""
-			},
-			{
 				"id": "d00015",
 				"title": "d00015",
 				"track": "governance",
@@ -1603,7 +1595,7 @@
 				"id": "t00022",
 				"title": "t00022",
 				"track": "commit-policy",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "unspecified",
 				"date": ""
 			},
@@ -1649,9 +1641,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 42,
-			"in-progress": 5,
-			"review": 0,
+			"ready": 40,
+			"in-progress": 6,
+			"review": 1,
 			"paused": 1,
 			"done": 692,
 			"blocked": 23,
