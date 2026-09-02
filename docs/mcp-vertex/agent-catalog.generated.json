@@ -1459,7 +1459,7 @@
 				"id": "f00359",
 				"title": "f00359",
 				"track": "migrated",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1467,7 +1467,7 @@
 				"id": "f00360",
 				"title": "f00360",
 				"track": "migrated",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1475,7 +1475,7 @@
 				"id": "f00361",
 				"title": "f00361",
 				"track": "migrated",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1483,7 +1483,7 @@
 				"id": "f00362",
 				"title": "f00362",
 				"track": "migrated",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1491,7 +1491,7 @@
 				"id": "f00363",
 				"title": "f00363",
 				"track": "migrated",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1857,8 +1857,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 68,
-			"in-progress": 5,
+			"ready": 63,
+			"in-progress": 10,
 			"review": 14,
 			"paused": 1,
 			"done": 652,
