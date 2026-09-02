@@ -49,6 +49,17 @@ export const PLUGIN_DEFAULTS: Readonly<
 	'remote-provider-core': {},
 	github: {},
 	gitlab: {},
+	// Every first-party plugin needs an entry here even when it takes no
+	// options: `PLUGIN_DEFAULTS` is what tells the host the plugin is
+	// configurable at all. A missing entry leaves it wired but
+	// unconfigurable, which is the confusing half-state
+	// `verify:plugin-wiring` exists to catch.
+	'agent-orchestrator': {},
+	'audit-orchestrator': {},
+	cache: {},
+	'commit-policy': {},
+	'external-mcps': {},
+	'project-kpis': {},
 	deps: {
 		manifest: 'package.json',
 		allowNetwork: false,

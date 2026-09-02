@@ -39,11 +39,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-reviewer-12 — read ADR 0016 and ADR 0017 (docs/mcp-vertex/adr/), confirmed 0017 documents the `managed` default supersedes 0016's `adaptive` default, and confirmed `decideSurfaceModeFromCapabilities` in packages/core/src/lib/surface/decide-mode.ts and `resolveInitialSurfaceMode` (default 'managed') implement exactly the precedence ADR 0017 documents. The audit's TOK2-004 ask (documented default decision) is satisfied.
 - review-state: in_review
 - review-implementer: sonnet-verifier-9
 ## acceptance
@@ -82,8 +78,4 @@ evidence, not on the placeholder review-log.
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-reviewer-12 — read ADR 0016 and ADR 0017 (docs/mcp-vertex/adr/), confirmed 0017 documents the `managed` default supersedes 0016's `adaptive` default, and confirmed `decideSurfaceModeFromCapabilities` in packages/core/src/lib/surface/decide-mode.ts and `resolveInitialSurfaceMode` (default 'managed') implement exactly the precedence ADR 0017 documents. The audit's TOK2-004 ask (documented default decision) is satisfied.

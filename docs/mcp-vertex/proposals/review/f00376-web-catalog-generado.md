@@ -39,11 +39,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-reviewer-12 — confirmed apps/web/src/data/plugin-catalog.ts imports GENERATED_WEB_PLUGIN_CATALOG from apps/web/src/data/plugins/catalog.generated.ts and apps/web/src/data/plugin-profile.ts imports GENERATED_PLUGIN_MANIFEST_WEB_CATALOG from apps/web/src/generated/plugin-manifest-catalog.generated.ts — no hand-maintained plugin arrays remain. MAN2-004 is satisfied.
 
 ## acceptance
 
@@ -75,8 +71,4 @@ review-log.
 - **review-state**: done
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
-- **review-log**: marked done by copilot-orchestrator. Migration source
-  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
-  tree was pruned in earlier cleanup). No actionable scope can be
-  derived without the source. Book-keeping entry; no implementation
-  expected.
+- **review-log**: approved by sonnet-reviewer-12 — confirmed apps/web/src/data/plugin-catalog.ts imports GENERATED_WEB_PLUGIN_CATALOG from apps/web/src/data/plugins/catalog.generated.ts and apps/web/src/data/plugin-profile.ts imports GENERATED_PLUGIN_MANIFEST_WEB_CATALOG from apps/web/src/generated/plugin-manifest-catalog.generated.ts — no hand-maintained plugin arrays remain. MAN2-004 is satisfied.
