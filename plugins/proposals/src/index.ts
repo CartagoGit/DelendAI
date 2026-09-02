@@ -8,6 +8,10 @@ import {
 	definePlugin,
 } from '@mcp-vertex/core/public';
 import { createLogStore, logIncidents } from '@mcp-vertex/logs/public';
+import {
+	announceSlicePersistence,
+	resolveSlicePersistence,
+} from './lib/slice-persistence-owner';
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -341,12 +345,20 @@ export default definePlugin({
 						.protectedBranches
 				: ['main', 'master'];
 		const configuredPersist = parsedOptions.data.persist;
-		const effectivePersistMode = resolveProposalPersistMode(
-			configuredPersist?.mode,
-			commitPolicyOptions as
-				| Readonly<Record<string, unknown>>
-				| undefined,
-		);
+		// Same resolution as before — `resolveProposalPersistMode` is
+		// still the authority on the MODE — plus who ends up owning it, so
+		// a host where NOBODY commits finished slices is told at boot
+		// instead of discovering it as proposals that can never close.
+		const slicePersistence = resolveSlicePersistence({
+			configuredMode: configuredPersist?.mode,
+			commitPolicyOwnsSlices: commitPolicyOwnsSlicePersistence(
+				commitPolicyOptions as
+					| Readonly<Record<string, unknown>>
+					| undefined,
+			),
+		});
+		announceSlicePersistence(slicePersistence);
+		const effectivePersistMode = slicePersistence.mode;
 		const effectivePersist =
 			configuredPersist !== undefined
 				? {
