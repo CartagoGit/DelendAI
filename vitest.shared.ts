@@ -136,6 +136,11 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		workspaceRoot,
 		'plugins/agent-orchestrator/src',
 	);
+	const auditOrchestrator = resolve(
+		workspaceRoot,
+		'plugins/audit-orchestrator/src',
+	);
+	const externalMcps = resolve(workspaceRoot, 'plugins/external-mcps/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
 	const cli = resolve(workspaceRoot, 'packages/cli/src');
 	const testKit = resolve(workspaceRoot, 'packages/test-kit/src');
@@ -173,6 +178,26 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/impact-analysis',
 			replacement: resolve(impactAnalysis, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/audit-orchestrator/public',
+			replacement: resolve(auditOrchestrator, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/audit-orchestrator\/lib\/(.*)$/,
+			replacement: `${resolve(auditOrchestrator, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/audit-orchestrator',
+			replacement: resolve(auditOrchestrator, 'index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/external-mcps\/lib\/(.*)$/,
+			replacement: `${resolve(externalMcps, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/external-mcps',
+			replacement: resolve(externalMcps, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/agent-orchestrator/public',
