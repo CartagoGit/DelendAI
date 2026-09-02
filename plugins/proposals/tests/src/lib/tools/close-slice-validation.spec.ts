@@ -225,7 +225,12 @@ status: in-progress
 		);
 		expect(result.ok).toBe(false);
 		expect(result.blockerType).toBe('validate-required');
-		expect(result.error?.reason ?? '').toMatch(/validate evidence/i);
+		// The refusal now states which of the three blocked states this
+		// is, so an agent that already ran validate is not told to run
+		// it again. With an empty journal that state is `never-ran`.
+		expect(result.validateState).toBe('never-ran');
+		expect(result.error?.reason ?? '').toMatch(/no validate run/i);
+		expect(result.error?.nextAction ?? '').toContain('bun run validate');
 		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toContain('**Status**: pending');
 		expect(body).not.toMatch(/\*\*Status\*\*:\s*done/i);
