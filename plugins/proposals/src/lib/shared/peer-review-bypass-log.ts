@@ -65,7 +65,7 @@ export const recordPeerReviewBypass = (input: {
 	events.push(event);
 	gc(nowMs);
 	// eslint-disable-next-line no-console -- operator-visible audit trail
-	console.info(
+	console.warn(
 		`[mcp-vertex] peer-review-bypassed proposal=${event.proposalId} via=${event.via} agent=${event.agent} reason=${JSON.stringify(event.reason)}`,
 	);
 	return event;

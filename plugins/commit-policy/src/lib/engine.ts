@@ -186,7 +186,7 @@ const logPipelineStep = (
 	outcome: IPipelineOutcome,
 	details?: Record<string, unknown>,
 ): void => {
-	console.info(
+	console.warn(
 		JSON.stringify({
 			event: 'pipeline.step',
 			trigger: event.kind,

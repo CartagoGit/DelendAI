@@ -191,13 +191,13 @@ export default definePlugin({
 				.refresh()
 				.then((result) => {
 					if (!result.ok) {
-						console.info(
+						console.warn(
 							`[commit-policy] remote branch protection ${result.state}: ${result.reason}`,
 						);
 					}
 				})
 				.catch((error: unknown) => {
-					console.info(
+					console.warn(
 						`[commit-policy] remote branch protection refresh failed: ${error instanceof Error ? error.message : String(error)}`,
 					);
 				});
@@ -416,7 +416,7 @@ export default definePlugin({
 						eventId: computeSliceTriggerEventId(event),
 					});
 				} catch (error) {
-					console.info(
+					console.warn(
 						JSON.stringify({
 							event: 'slice.detected',
 							proposalId: event.proposalId,
@@ -426,7 +426,7 @@ export default definePlugin({
 					);
 					throw error;
 				}
-				console.info(
+				console.warn(
 					JSON.stringify({
 						event: 'slice.detected',
 						proposalId: event.proposalId,

@@ -64,7 +64,7 @@ export const recordPlanClosureBypass = (input: {
 	events.push(event);
 	gc(nowMs);
 	// eslint-disable-next-line no-console -- operator-visible audit trail
-	console.info(
+	console.warn(
 		`[mcp-vertex] plan-closure-bypassed proposal=${event.proposalId} via=${event.via} agent=${event.agent} reason=${JSON.stringify(event.reason)}`,
 	);
 	return event;
