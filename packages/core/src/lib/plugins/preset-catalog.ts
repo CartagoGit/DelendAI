@@ -195,6 +195,23 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'gitlab' },
 			{ plugin: 'prompt-eval' },
 			{ plugin: 'agent-orchestrator' },
+			// Loadable and configurable but, until now, reachable from no
+			// preset at all — `verify:plugin-wiring` flagged them for weeks.
+			// They ship only here, in `full`, because each one costs real
+			// tokens on an adopter's surface. That cost is bounded by lazy
+			// loading: they are in `managed-lazy-catalog.generated.ts`, so a
+			// `full` install pays for a catalog entry, not an imported
+			// module, until a tool of theirs is actually called. If you add a
+			// plugin to any preset, REGENERATE that catalog
+			// (`bun tools/scripts/generate/managed-lazy-catalog.script.ts`) —
+			// one unindexed plugin demotes the entire surface to eager
+			// loading for everyone (`managed-lazy-demotion.ts` now says so on
+			// stderr instead of letting it pass silently).
+			{ plugin: 'audit-orchestrator' },
+			{ plugin: 'browser' },
+			{ plugin: 'cache' },
+			{ plugin: 'external-mcps' },
+			{ plugin: 'observability' },
 			// `changelog` removed — private, unpublished.
 		],
 	},
