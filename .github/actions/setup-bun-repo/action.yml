@@ -16,12 +16,21 @@ inputs:
         description: Bun version to install.
         required: false
         default: '1.3.14'
+    fetch-depth:
+        description: >-
+            Passed through to actions/checkout. Jobs that diff against a
+            base ref (e.g. affected-file detection) need '0' for full
+            history; everything else keeps the default shallow clone.
+        required: false
+        default: '1'
 
 runs:
     using: composite
     steps:
         - name: checkout
           uses: actions/checkout@v7
+          with:
+              fetch-depth: ${{ inputs.fetch-depth }}
 
         - name: setup-bun
           uses: oven-sh/setup-bun@v2
