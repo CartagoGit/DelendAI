@@ -188,6 +188,15 @@ export function buildPanels(
 	settings?: IExtensionSettings,
 	options: IBuildPanelsOptions = {},
 ): string {
+	const docsModel =
+		model.docs ??
+		({
+			pluginLoaded: true,
+			tools: model.overview.tools.map((tool) => tool.name),
+			knowledge: model.overview.knowledgeIds.map((id) => ({ id })),
+			recommendedNextAction: model.overview.recommendedNextAction,
+		} satisfies IDashboardAllModels['docs']);
+	const proposalsModel = model.proposals ?? model.sessions;
 	const text = (
 		key: string,
 		fallbackOrVars?: string | Readonly<Record<string, string | number>>,
@@ -205,7 +214,7 @@ export function buildPanels(
 		model.metrics.sparklines,
 	);
 	const pluginsPanel = renderPanelPlugins(model.plugins, lang);
-	const sessionsPanel = renderPanelSessions(model.proposals, lang);
+	const sessionsPanel = renderPanelSessions(proposalsModel, lang);
 	const timesPanel = renderPanelTimes(model.times, lang);
 	const agentsPanel = renderPanelAgents(model.agents, lang);
 	const memoryPanel = renderPanelMemory(model.memory, lang);
@@ -253,16 +262,7 @@ export function buildPanels(
 		health: { state: 'ready', data: model.health },
 		docs: {
 			state: 'ready',
-			data:
-				model.docs ??
-				({
-					pluginLoaded: true,
-					tools: model.overview.tools.map((tool) => tool.name),
-					knowledge: model.overview.knowledgeIds.map((id) => ({
-						id,
-					})),
-					recommendedNextAction: model.overview.recommendedNextAction,
-				} satisfies IDashboardAllModels['docs']),
+			data: docsModel,
 		},
 	};
 	const overviewBody = [
@@ -351,7 +351,7 @@ export function buildPanels(
 	const docsBody = [
 		renderPanelSection(
 			text('tabDocs', 'Docs'),
-			docsSummary(model, text, docsUrl),
+			docsSummary({ ...model, docs: docsModel }, text, docsUrl),
 			text(
 				'dashboard.shell.docsLead',
 				'Docs availability is explicit before the iframe loads.',
