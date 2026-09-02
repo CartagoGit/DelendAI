@@ -466,6 +466,23 @@ const commitWithSharedIndexGuard = async (
 	args: ICommitWithGuardArgs,
 ): Promise<ICommitWithGuardResult> => {
 	const headBefore = await gitStdoutTrimmed(args.run, ['rev-parse', 'HEAD']);
+	// x00419 (2026-09-03 log): for non-slice triggers (interval /
+	// threshold / manual), the worker's main index may already hold
+	// entries from a previous session — `git add -- <allowList>`
+	// would NOT clear them, so the post-add `git diff --cached
+	// --name-only` would report those pre-existing staged entries
+	// as "extras not in trigger files" and we would refuse with
+	// CROSS_AGENT_CONTAMINATION. Reset the main index FIRST so the
+	// subset check below sees ONLY what we explicitly stage.
+	//
+	// Slice events do NOT take this path — they go through
+	// `commitWithIsolatedIndexGuard` (which uses an isolated index
+	// file) and `enforceSubset` is forced on for them via
+	// `engine.ts`. The reset below would otherwise wipe a slice's
+	// legitimately staged files.
+	if (args.sliceContext === undefined) {
+		await resetWholeStageSafely(args.run);
+	}
 	if (args.allowList.length > 0) {
 		const addResult = await gitAdd(args.run, args.allowList);
 		if (!addResult.ok) {

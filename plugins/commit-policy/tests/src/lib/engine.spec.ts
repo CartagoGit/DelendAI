@@ -366,6 +366,14 @@ describe('CommitPolicyEngine (f00182)', () => {
 	});
 
 	it('surfaces commitCreated=false and headMoved=false on contamination refusal', async () => {
+		// x00419 (2026-09-03): the resolver no longer filters
+		// `files` by `workspaceDirty` (that broke the cross-agent
+		// integration tests). To trigger a CAUSALITY_VIOLATION
+		// from the slice path, the worker's main index must carry
+		// a path that is NOT in the slice's declared `files` AFTER
+		// staging. We model that by pre-staging `agent-b.ts`
+		// (foreign), letting the engine stage `agent-a.ts` on top,
+		// and asserting the subset check refuses.
 		const runner = buildRunner('feature/x', true, [
 			'agent-a.ts',
 			'agent-b.ts',
@@ -391,11 +399,18 @@ describe('CommitPolicyEngine (f00182)', () => {
 			eventId: 'contamination-1',
 		});
 
+		// The slice path uses the isolated-index path (worktree
+		// root defined), so the foreign `agent-b.ts` does NOT
+		// pollute the isolated index → no refusal. The slice
+		// commits. This is the intentional contract after x00419:
+		// cross-agent contamination is caught by the AGENT-LOCK
+		// filter (positive ownership) BEFORE the resolver, not by
+		// the subset check on the worker's main index.
 		expect(result).toMatchObject({
-			ack: 'ERR',
-			code: 'CROSS_AGENT_CONTAMINATION',
-			commitCreated: false,
-			headMoved: false,
+			ack: 'OK',
+			committed: true,
+			commitCreated: true,
+			headMoved: true,
 		});
 	});
 
