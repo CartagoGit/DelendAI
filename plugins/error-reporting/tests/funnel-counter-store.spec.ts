@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -162,5 +162,25 @@ describe('createFunnelCounterStore', () => {
 		const counters = await store.read();
 		expect(counters.deduplicated).toBe(1);
 		expect(counters.rateLimited).toBe(1);
+	});
+	it('never throws when the counter file cannot be written', async () => {
+		// The funnel hangs off `onToolCall`, which hosts fire with `void`,
+		// so a throw here is not a lost counter — it is an unhandled
+		// rejection printed as a raw stack trace in the middle of somebody
+		// else's tool output. A transient workspace really can disappear
+		// between the mkdir and the lock acquire; a path whose parent is a
+		// FILE reproduces the same class of failure deterministically.
+		const dir = await makeDir();
+		await writeFile(join(dir, 'blocker'), 'not a directory', 'utf8');
+		const store = createFunnelCounterStore(join(dir, 'blocker', 'nested'));
+		await expect(
+			store.increment({
+				stage: 'observedFailures',
+				at: '2026-09-02T00:00:00.000Z',
+			}),
+		).resolves.toBeUndefined();
+		await expect(
+			store.markClassified('2026-09-02T00:00:00.000Z'),
+		).resolves.toBeUndefined();
 	});
 });
