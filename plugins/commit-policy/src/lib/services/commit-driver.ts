@@ -45,6 +45,12 @@ import {
 	gitDirtyFilePaths,
 	validateConventionalHeader,
 } from './git-extra';
+import {
+	buildForeignLockRefusal,
+	filterForeignLockedFiles,
+} from './foreign-lock-filter';
+
+import type { ForeignLockProvider } from '../contracts/foreign-lock';
 
 /**
  * Non-slice trigger context. Threshold and interval events carry
@@ -122,6 +128,23 @@ export interface ICommitDriverOptions {
 	readonly pluginCacheDir?: string | undefined;
 	/** Identity snapshot (host + model) used by the audit trailer. */
 	readonly auditAgent: IAuditAgent | null;
+	/**
+	 * Optional: asks another component which of these files a DIFFERENT
+	 * agent currently holds. Injected rather than imported, so
+	 * commit-policy stays independent of proposals — a host without it
+	 * passes nothing and the driver behaves exactly as before.
+	 *
+	 * This is the one safeguard that survives any policy: with
+	 * `sliceScoping: false` and `allowForeignChanges: true` the operator
+	 * has asked for the whole dirty worktree, and no care inside that
+	 * policy can avoid catching a file another agent is midway through
+	 * writing. A held file is not "foreign changes the operator opted
+	 * into" — it is an unfinished edit, and committing it is how a shared
+	 * branch goes red with nobody having broken it.
+	 */
+	readonly foreignLocks?: ForeignLockProvider | undefined;
+	/** This committer's agent id, so its own claims are not withheld. */
+	readonly selfAgent?: string | undefined;
 }
 
 export interface ICommitTrace {
@@ -866,7 +889,27 @@ const runCommitDriverUnlocked = async (
 		};
 	}
 
-	const normalizedFiles = files.map(normalizeStagePath);
+	// Drop anything another agent is still holding. This runs after
+	// every scoping decision precisely because it must hold regardless
+	// of them: an explicit slice list that overlaps someone else's claim
+	// is contention the lock exists to prevent, not an exception to it.
+	const lockFilter = await filterForeignLockedFiles({
+		files,
+		...(options.selfAgent !== undefined
+			? { selfAgent: options.selfAgent }
+			: { selfAgent: undefined }),
+		provider: options.foreignLocks,
+	});
+	if (lockFilter.files.length === 0 && lockFilter.withheld.length > 0) {
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			refusal: buildForeignLockRefusal(lockFilter.withheld),
+		};
+	}
+	const normalizedFiles = lockFilter.files.map(normalizeStagePath);
 	const result = await commitWithGuard({
 		run: options.run,
 		message: finalMessage,
