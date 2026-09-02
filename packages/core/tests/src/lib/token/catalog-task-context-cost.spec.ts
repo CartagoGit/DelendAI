@@ -83,8 +83,15 @@ describe('catalog-task-context-cost measurement', () => {
 		expect(output).toContain(
 			'| native core catalog | 28 | 42,768 | 36,508 | 11,533 | 24,975 | 0 |',
 		);
+		// These numbers are a ratchet, not a constant: every field added
+		// to a tool's outputSchema is paid for on every agent's surface.
+		// 2026-09-02 — 193,678 → 194,616 for the fields that stop two
+		// closing-path refusals from looping (`await_lock`'s timeout
+		// verdict/holder/nextAction and `close_slice`'s blockingReasons).
+		// ~940 bytes of schema to remove an unbounded retry loop is a
+		// trade worth recording rather than hiding.
 		expect(output).toContain(
-			'| swarm native preset | 166 | 193,678 | 157,987 | 48,031 | 109,956 | 50,347 |',
+			'| swarm native preset | 166 | 194,616 | 158,925 | 48,071 | 110,854 | 50,887 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
