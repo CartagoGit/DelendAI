@@ -46,8 +46,11 @@ describe('PRESET_CATALOG', async () => {
 		// (remote-provider-core, github, gitlab)
 		// (f00177 / MAN-001: `changelog` removed — `private: true`, never
 		// published to npm, cannot be a member of a preset an external
-		// adopter installs)
-		expect(PRESET_CATALOG[4]?.members.length).toBe(8);
+		// adopter installs), plus the 5 plugins that used to be reachable
+		// from no preset at all (audit-orchestrator, browser, cache,
+		// external-mcps, observability — lazily indexed, so they cost a
+		// catalog entry until one of their tools is called).
+		expect(PRESET_CATALOG[4]?.members.length).toBe(13);
 		// vertex: 38 members, exactly mirroring mcp-vertex.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
@@ -257,8 +260,9 @@ describe('resolvePresetMembers', async () => {
 		expect(resolvePresetMembers('swarm').length).toBe(27);
 		// f00177 / MAN-001: `changelog` removed from `full` (private,
 		// never published to npm); the three remote-provider plugins
-		// (remote-provider-core, github, gitlab) raise it back to 34.
-		expect(resolvePresetMembers('full').length).toBe(34);
+		// (remote-provider-core, github, gitlab) raise it back to 34, and
+		// the 5 previously preset-less plugins bring it to 39.
+		expect(resolvePresetMembers('full').length).toBe(39);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
