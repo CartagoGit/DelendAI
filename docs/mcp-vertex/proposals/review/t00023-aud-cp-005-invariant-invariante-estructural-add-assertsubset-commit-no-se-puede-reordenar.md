@@ -2,7 +2,7 @@
 id: t00023
 title: "AUD-CP-005.invariant — Invariante estructural: `add → assertSubset → commit` no se puede reordenar"
 kind: test
-status: ready
+status: review
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -24,6 +24,9 @@ related:
     - f00182 # CommitPolicyEngine (target)
     - t00018 # happy path (predecesor)
     - t00022 # E2E real Git (hermano)
+last-transition-id: e90e87ef-685b-4145-885c-b498d0523cd2
+last-correlation-id: e90e87ef-685b-4145-885c-b498d0523cd2
+last-transition-from: in-progress
 ---
 
 # t00023 — AUD-CP-005.invariant: el orden `stage → validate → commit` es un invariante estructural, no solo un comportamiento
