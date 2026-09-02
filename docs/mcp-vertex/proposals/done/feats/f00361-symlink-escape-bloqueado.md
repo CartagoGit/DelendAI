@@ -2,15 +2,15 @@
 id: f00361
 title: "symlink escape bloqueado."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#symlink-escape-bloqueado
 shipped-in: ["9819d8fe1e0637c998706e9eec31d1e6c2235fdb"]
-last-transition-id: 358772f9-5be5-4bed-a0ff-85563436983c
-last-correlation-id: 358772f9-5be5-4bed-a0ff-85563436983c
-last-transition-from: in-progress
+last-transition-id: c63a52e9-b7e3-4f10-b475-c8a83d4677a7
+last-correlation-id: c63a52e9-b7e3-4f10-b475-c8a83d4677a7
+last-transition-from: review
 ---
 
 # f00361 — symlink escape bloqueado.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00361-symlink-escape-bloqueado.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00361-symlink-escape-bloqueado.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

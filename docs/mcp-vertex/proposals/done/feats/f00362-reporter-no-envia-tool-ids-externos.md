@@ -2,15 +2,15 @@
 id: f00362
 title: "reporter no envía tool ids externos."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#reporter-no-envia-tool-ids-externos
 shipped-in: ["0d546d5eb59311e697f66cc89d5be736de144ad3"]
-last-transition-id: 3638961e-f221-4332-84d6-21c0893bd955
-last-correlation-id: 3638961e-f221-4332-84d6-21c0893bd955
-last-transition-from: in-progress
+last-transition-id: 4e4f39e7-4602-4d24-bf3a-b55c5ff93900
+last-correlation-id: 4e4f39e7-4602-4d24-bf3a-b55c5ff93900
+last-transition-from: review
 ---
 
 # f00362 — reporter no envía tool ids externos.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00362-reporter-no-envia-tool-ids-externos.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00362-reporter-no-envia-tool-ids-externos.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

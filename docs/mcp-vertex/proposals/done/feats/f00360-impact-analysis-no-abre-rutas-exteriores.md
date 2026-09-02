@@ -2,15 +2,15 @@
 id: f00360
 title: "impact-analysis no abre rutas exteriores."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#impact-analysis-no-abre-rutas-exteriores
 shipped-in: ["b3c72f6006054fbc89c856a45a4b81272ea5705a"]
-last-transition-id: 5c237beb-5eb9-4a2b-9451-b6e847478bcc
-last-correlation-id: 5c237beb-5eb9-4a2b-9451-b6e847478bcc
-last-transition-from: in-progress
+last-transition-id: 90edebf5-fbb1-4b2a-a4be-5a6a188a4d29
+last-correlation-id: 90edebf5-fbb1-4b2a-a4be-5a6a188a4d29
+last-transition-from: review
 ---
 
 # f00360 — impact-analysis no abre rutas exteriores.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00360-impact-analysis-no-abre-rutas-exteriores.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00360-impact-analysis-no-abre-rutas-exteriores.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 

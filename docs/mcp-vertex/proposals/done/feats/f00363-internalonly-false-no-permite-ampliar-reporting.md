@@ -2,15 +2,15 @@
 id: f00363
 title: "`internalOnly:false` no permite ampliar reporting."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#internalonly-false-no-permite-ampliar-reporting
 shipped-in: ["d98e052811910af27c7dee379ed418631d1c2578"]
-last-transition-id: 448c01c9-bf93-4a38-b187-d3eea766d61f
-last-correlation-id: 448c01c9-bf93-4a38-b187-d3eea766d61f
-last-transition-from: in-progress
+last-transition-id: b8b54518-9e89-4647-bb0b-805227fd35df
+last-correlation-id: b8b54518-9e89-4647-bb0b-805227fd35df
+last-transition-from: review
 ---
 
 # f00363 — `internalOnly:false` no permite ampliar reporting.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00363-internalonly-false-no-permite-ampliar-reporting.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00363-internalonly-false-no-permite-ampliar-reporting.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
