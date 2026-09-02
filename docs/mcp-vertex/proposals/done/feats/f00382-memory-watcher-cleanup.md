@@ -2,15 +2,15 @@
 id: f00382
 title: "memory watcher cleanup."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#memory-watcher-cleanup
 shipped-in: ["9a2ff04b"]
-last-transition-id: 16346f92-21f4-4279-bcc0-53a067357fce
-last-correlation-id: 16346f92-21f4-4279-bcc0-53a067357fce
-last-transition-from: in-progress
+last-transition-id: 0c39cbf9-ec1c-4a59-952f-7e0c6b7037e2
+last-correlation-id: 0c39cbf9-ec1c-4a59-952f-7e0c6b7037e2
+last-transition-from: review
 ---
 
 # f00382 — memory watcher cleanup.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00382-memory-watcher-cleanup.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00382-memory-watcher-cleanup.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
