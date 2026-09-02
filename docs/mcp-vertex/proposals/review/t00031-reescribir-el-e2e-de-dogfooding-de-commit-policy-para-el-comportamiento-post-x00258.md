@@ -2,7 +2,7 @@
 id: t00031
 title: "Reescribir el e2e de dogfooding de commit-policy para el comportamiento post-x00258"
 kind: test
-status: ready
+status: review
 type: proposal
 track: testing
 date: 2026-08-29
@@ -13,6 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P1
 related: [q00011]
+last-transition-id: f2ab4db3-1f0f-4268-a162-55ef1982a9e2
+last-correlation-id: f2ab4db3-1f0f-4268-a162-55ef1982a9e2
+last-transition-from: in-progress
 ---
 
 # t00031 — Reescribir el e2e de dogfooding de `commit-policy`
