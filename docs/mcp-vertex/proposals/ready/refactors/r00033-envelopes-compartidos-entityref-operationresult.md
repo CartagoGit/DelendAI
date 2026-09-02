@@ -132,6 +132,7 @@ y el core devuelven resultados al LLM: `EntityRef`,
 - **Status**: pending
 - **Files**: `packages/contracts/src/envelopes.ts`, `packages/contracts/tests/src/envelopes.spec.ts`, `plugins/proposals/src/lib/returns.ts` (migración ejemplo), `docs/mcp-vertex/ENVELOPES.md`
 - **Gate**: type
+- **Status**: done (verified 2026-09-02 — see Notes: full envelope set was already real in `packages/core/src/lib/contracts/envelopes.contract.ts`; the missing piece was proposals-plugin adoption, added this session as `plugins/proposals/src/lib/returns.ts`)
 - review-state: done
 - review-implementer: copilot-orchestrator-r00033-s1
 - review-reviewer: delivery-verifier-r00033-s1
@@ -155,3 +156,36 @@ S1 declares `plugins/proposals/src/lib/returns.ts`, which does not exist; the pl
 
 Every slice is back to `pending`. The `review-log` entries that approved
 them are not trustworthy for this proposal.
+
+### 2026-09-02 — envelopes were real all along, in a different file; adoption gap fixed
+
+Re-verified against the actual working tree rather than the reopen
+note's own file path, and found the reopen note was half right: the
+**full** envelope set this proposal specifies (`EntityRef`,
+`OperationResult`/`OperationSuccess`/`OperationFailure`, `Refusal`,
+`EnvelopeMeta`, `PagedResult`, `MutationResult`, `DiagnosticResult`,
+`ResourceResult`, plus `success()`/`failure()`/`isOperationSuccess()`/
+`isOperationFailure()` helpers) already existed, correctly implemented
+and re-exported through `@mcp-vertex/core/contracts` — just at
+`packages/core/src/lib/contracts/envelopes.contract.ts`, not
+`packages/contracts/src/envelopes.ts` (a different, narrower file that
+also happens to exist and export a differently-shaped
+`IToolOkEnvelope`/`IToolErrorEnvelope`). `docs/mcp-vertex/ENVELOPES.md`
+correctly described the real file all along.
+
+What the reopen note got right: **adoption** was genuinely zero.
+`grep -rn "OperationResult\|EntityRef" plugins/proposals/src` matched
+nothing before this session. Fixed by adding:
+
+- `plugins/proposals/src/lib/contracts/interfaces/proposal-return-envelope.interface.ts` —
+  `TProposalEntityKind`, `ProposalEntityRef`, `ProposalOperationResult<T>`
+  (types only, per `lint:types-in-contracts`).
+- `plugins/proposals/src/lib/returns.ts` — `toProposalEntityRef()`,
+  `proposalSuccess`/`proposalFailure` (re-exported `success`/`failure`).
+- `plugins/proposals/tests/src/lib/returns.spec.ts` — 3/3 passing.
+
+Verified: `bunx tsc --noEmit -p plugins/proposals` clean,
+`bun run lint:types-in-contracts` reports no new violations, the new
+spec passes. This is additive only — no existing tool's return shape
+was changed, so no wire-contract risk. Updated `ENVELOPES.md`'s
+adoption-status section to point at the real file. S1 is done.
