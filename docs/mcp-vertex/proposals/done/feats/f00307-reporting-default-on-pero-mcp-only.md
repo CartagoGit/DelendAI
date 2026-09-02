@@ -2,7 +2,7 @@
 id: f00307
 title: "Reporting default-on, pero MCP-only."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -51,9 +51,11 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   default-on restored, opt-out documented, and a start-up notice added in
   both directions. Verified empirically on a real `register()` call and by
   the full 130-test plugin suite.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-reviewer-f00307
+- review-reviewer: sonnet-reviewer-13
 - review-log: requested_changes by sonnet-reviewer-2 — review-log's 'no actionable scope, source pruned' rationale is factually wrong (source survives in done/audits/a00092-...md), and unlike the other 8 proposals in this batch the title's substantive claim does NOT currently hold. TODO ER-009 in a00092 (line 553) states explicitly: 'La decision de producto es mantenerlo activo por defecto... sin convertirlo en opt-in' - and proposal f00160 (done/feats/f00160-...) implemented exactly that: default-on, opt-out. But plugins/error-reporting/src/lib/options.service.ts currently resolves `enabled: data.enabled ?? false` (flipped from `?? true` in commit cc065ac0b, 2026-08-31, a large unrelated squash titled 'fix: disable agent commit and push automation' that also touched 87 unrelated files) - i.e. reporting is now opt-in/disabled-by-default, contradicting both f00160's shipped decision and this audit item's explicit design directive. The MCP-only scoping half of the claim is solid (verified via ISafeMcpVertexReport + privacy validator + 19/19 adversarial tests), but 'default-on' is false today. Please either: (a) find/link the proposal that deliberately superseded f00160's default-on decision and note it here as 'superseded by architecture change', or (b) treat this as a real regression against f00160 and fix the default back to true. Do not close as book-keeping-only - there is a live, checkable discrepancy.
+- review-log: approved by sonnet-reviewer-13 — Independently re-verified all 4 claims from scratch (not rubber-stamped): (1) options.service.ts:56 resolves enabled: data.enabled ?? true, and options.constant.ts documents default-on ('automatic reporting is on unless an adopter turns it off') — code and contract agree. (2) startup-notice.helper.ts exists, index.ts register() calls announceErrorReportingStartup unconditionally before any early return; ran a scratch bun script (register() with {} and with {enabled:false}) and observed the ON notice (with privacy sentence + opt-out line) and the OFF notice (with privacy sentence + opt-in ask) on stderr in both directions. (3) ISafeMcpVertexReport carries only reporterVersion/mcpVertexVersion/packageId/toolOwner/toolCategory/errorCode/failureClass/classification/fingerprint/mcpFrames/syntheticExample/environmentClass — no raw message, args, or non-mcp-vertex frames; privacy-validator.helper.ts's PRIVACY_BLOCKED_CLASSES list and regexes cover absolute-path, url-not-allowlisted, email, ip-address, uuid, token, git-metadata, branch-name, json/xml/sql-fragment exactly as claimed. (4) npx vitest run --project error-reporting: 131/131 tests passed, 20/20 files, 3.59s. Change is carried by commits 7789d3fbc (adds startup-notice.helper.ts + spec, x00203) and fa8cc612d (restores enabled ?? true, f00384), both ancestors of current develop HEAD b8e089a6e.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
