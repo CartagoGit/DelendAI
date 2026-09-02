@@ -5,6 +5,10 @@ import { findWaitForCycles } from '@mcp-vertex/core/lib/shared/wait-for-graph';
 
 import type { IWaitForEdge } from '@mcp-vertex/core/lib/contracts/interfaces/wait-for-graph.interface';
 import type { ILockEntry } from './agent-lock-engine';
+import type {
+	IWaitDiagnostics,
+	IWaitReport,
+} from '../contracts/interfaces/wait-diagnostics.interface';
 
 /**
  * Read the wait registry that `await_lock` publishes, so lock health can
@@ -26,19 +30,6 @@ interface IWaitRow {
 	readonly waiter?: string;
 	readonly waitingOnTaskId?: string;
 	readonly since?: string;
-}
-
-export interface IWaitReport {
-	readonly waiter: string;
-	readonly waitingOnTaskId: string;
-	readonly holder: string | null;
-	readonly waitingForSeconds: number | null;
-}
-
-export interface IWaitDiagnostics {
-	readonly waits: readonly IWaitReport[];
-	/** Closed cycles of waiters. A non-empty list is a real deadlock. */
-	readonly deadlocks: readonly (readonly string[])[];
 }
 
 /** Sibling of the lock file, matching what `await_lock` writes. */
