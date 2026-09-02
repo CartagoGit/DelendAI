@@ -492,3 +492,26 @@ auditoría.
 Y la regla que hubo que imponer por las malas: **un slice está `done` cuando
 pasa su gate, no cuando alguien ha escrito que lo está.**
 
+### Medición 2026-09-02 — la ruta «lazy» sigue importando los 54 módulos en el arranque
+
+`validateManagedLazyConfiguration` (`packages/core/src/lib/plugins/managed-lazy-runtime.ts:95`)
+recorre **todas** las entradas del catálogo y hace
+`await options.importFn(definition.packageSpecifier)` para normalizar
+opciones antes de ensamblar. Es decir: la ruta lazy difiere el
+`register()`, pero **no** el `import()`. La cabecera del catálogo
+generado afirma justo lo contrario ("the lazy runtime must know tool
+ownership without importing every plugin").
+
+Medido en este repo, `assembleCliConfig` con `--preset=full` y
+`loading: lazy`: **1463 ms**, 54 activadores de plugin, 212 activadores
+de herramienta. Ese coste es de importación de módulos, no de registro.
+
+No se ha tocado aquí a propósito: mover la validación de opciones al
+momento de activación cambia *cuándo* aparece un error de configuración
+(arranque → primer uso), y eso es exactamente el contrato de ciclo de
+vida que este plan reunifica (`r00038`, `t00029`). Queda anotado como
+dato de entrada del plan, no como arreglo suelto.
+
+Relacionado: `docs/mcp-vertex/adr/0018-managed-lazy-loading-is-all-or-nothing.md`
+(un plugin fuera del índice degrada TODA la superficie a eager; ahora hay
+lint + aviso por stderr).
