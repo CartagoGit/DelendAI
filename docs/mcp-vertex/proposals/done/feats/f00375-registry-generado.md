@@ -2,15 +2,15 @@
 id: f00375
 title: "registry generado."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md#registry-generado
 shipped-in: ["82c54bcc"]
-last-transition-id: 4140865c-7307-43c1-b707-9b344f08571f
-last-correlation-id: 4140865c-7307-43c1-b707-9b344f08571f
-last-transition-from: in-progress
+last-transition-id: 083d879b-a749-4beb-b234-b120641ec63b
+last-correlation-id: 083d879b-a749-4beb-b234-b120641ec63b
+last-transition-from: review
 ---
 
 # f00375 — registry generado.
@@ -32,7 +32,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/f00375-registry-generado.md`
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00375-registry-generado.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
