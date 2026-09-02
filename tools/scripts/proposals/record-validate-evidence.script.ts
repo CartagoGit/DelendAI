@@ -67,6 +67,16 @@ export interface IValidateJournalEntry {
 	readonly exitCode: number;
 	readonly logPath: string;
 	readonly command: string;
+	/**
+	 * The steps that failed, on a failing run only.
+	 *
+	 * Without these the journal records *that* validate is red and
+	 * nothing about *why*, so the closing tools could only answer an
+	 * agent with "run validate" — which it had just done. The agent then
+	 * runs it again, gets the same refusal, and loops. The names are the
+	 * cheapest possible thing that turns that refusal into work.
+	 */
+	readonly failedSteps?: readonly string[];
 }
 
 export interface IValidateJournalDeps {
@@ -85,12 +95,21 @@ export const buildValidateJournalEntry = (input: {
 	readonly timestamp: string;
 	readonly logPath: string;
 	readonly command?: string;
+	readonly failedSteps?: readonly string[];
 }): IValidateJournalEntry => ({
 	result: input.exitCode === 0 ? 'pass' : 'fail',
 	timestamp: input.timestamp,
 	exitCode: input.exitCode,
 	logPath: input.logPath,
 	command: input.command ?? `bun run ${VALIDATE_RUN_SCRIPT}`,
+	// Only on a failing run, and only when there is something to name: a
+	// passing entry has no blockers, and an empty array would read as
+	// "red for no reason".
+	...(input.exitCode !== 0 &&
+	input.failedSteps !== undefined &&
+	input.failedSteps.length > 0
+		? { failedSteps: [...input.failedSteps] }
+		: {}),
 });
 
 const createDeps = (): IValidateJournalDeps => ({
@@ -271,6 +290,9 @@ export const main = async (
 			exitCode,
 			timestamp: new Date().toISOString(),
 			logPath: join(workspaceRoot, VALIDATE_JOURNAL_RELATIVE_PATH),
+			failedSteps: results
+				.filter((entry) => entry.exitCode !== 0)
+				.map((entry) => entry.step),
 		}),
 	});
 	console.log(
