@@ -1283,7 +1283,7 @@
 				"id": "f00394",
 				"title": "f00394",
 				"track": "vscode-shared-ui",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1473,8 +1473,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 19,
-			"in-progress": 6,
+			"ready": 18,
+			"in-progress": 7,
 			"review": 1,
 			"paused": 1,
 			"done": 712,
