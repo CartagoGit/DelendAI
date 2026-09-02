@@ -24,6 +24,10 @@ const declaredPolicy = (
 		required_linear_history: true,
 		allow_force_pushes: false,
 		allow_deletions: false,
+		// Required, not optional, on IDeclaredBranchRule: the declared
+		// config always pins `restrictions` to null. Omitting it left the
+		// fixture one field short of the type it claimed to build.
+		restrictions: null,
 		...overrides,
 	},
 });
