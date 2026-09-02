@@ -185,14 +185,13 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				evidence: APPROVE_EVIDENCE,
 			}),
 		);
-		expect(approved).toEqual({
+		expect(approved).toMatchObject({
 			ok: false,
-			error: {
-				reason: 'missing-submit-identity',
-				nextAction:
-					'submit the slice for review before approving it so the implementer identity is recorded',
-			},
+			error: { reason: 'missing-submit-identity' },
 		});
+		expect(
+			(approved as { error: { nextAction: string } }).error.nextAction,
+		).toContain('IMPLEMENTER');
 	});
 
 	it('allows request_changes without empirical evidence', async () => {

@@ -121,11 +121,9 @@ describe('review identity service (a00074 S2)', () => {
 			},
 			deps,
 		});
-		expect(out).toEqual({
+		expect(out).toMatchObject({
 			ok: false,
 			reason: 'self-approve',
-			nextAction:
-				'a different agent must call approve — the implementer submits and a different agent approves the slice',
 			submitter: {
 				proposalId: 'a00074',
 				sliceId: 'S2',
@@ -135,6 +133,16 @@ describe('review identity service (a00074 S2)', () => {
 				ts: '2026-07-26T12:00:00.000Z',
 			},
 		});
+		// The refusal has to name who is blocked and what to do instead;
+		// an agent that only reads "a different agent must approve" tends
+		// to rename itself, which is the same self-approval this gate
+		// exists to refuse.
+		expect(out.ok).toBe(false);
+		if (!out.ok) {
+			expect(out.nextAction).toContain('delivery_verifier');
+			expect(out.nextAction).toContain('a00074 S2');
+			expect(out.nextAction).toContain('renaming yourself');
+		}
 	});
 
 	it('returns explicit missing-submit-identity before approve', async () => {
@@ -149,12 +157,19 @@ describe('review identity service (a00074 S2)', () => {
 			},
 			deps,
 		});
-		expect(out).toEqual({
-			ok: false,
-			reason: 'missing-submit-identity',
-			nextAction:
-				'submit the slice for review before approving it so the implementer identity is recorded',
-		});
+		expect(out.ok).toBe(false);
+		if (!out.ok) {
+			expect(out.reason).toBe('missing-submit-identity');
+			// A reviewer cannot open the round itself — submitting under
+			// its own name would make it the implementer and bar it from
+			// approving — so the refusal has to name the exact command AND
+			// whose it is, or the reviewer stalls on advice it cannot act
+			// on.
+			expect(out.nextAction).toContain('IMPLEMENTER');
+			expect(out.nextAction).toContain('action: "submit"');
+			expect(out.nextAction).toContain('a00074');
+			expect(out.nextAction).toContain('proposal-review.script.ts');
+		}
 	});
 
 	it('survives process restart by reading the existing JSONL on a new cycle', async () => {

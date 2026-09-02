@@ -2,7 +2,7 @@
 id: f00268
 title: "Lifecycle phases: `prepare()` / `activate()` separadas"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: lifecycle
 date: 2026-08-25
@@ -16,6 +16,9 @@ related:
     - q00006
     - f00269 # plugin states (consume el resultado de activate)
     - f00188 # capabilities se conceden en activate (Track F)
+last-transition-id: 014e5f19-628f-490b-a949-b7b98089d3b9
+last-correlation-id: 014e5f19-628f-490b-a949-b7b98089d3b9
+last-transition-from: ready
 ---
 
 # f00268 — Lifecycle phases: `prepare()` / `activate()` separadas
