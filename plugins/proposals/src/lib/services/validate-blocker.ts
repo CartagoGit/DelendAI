@@ -33,11 +33,15 @@ const timestampOf = (row: IValidateJournalRow): number =>
 const isPass = (row: IValidateJournalRow): boolean =>
 	row.result === 'pass' && (row.exitCode ?? 0) === 0;
 
-/** The newest row with a usable timestamp, or undefined. */
-export const latestValidateRow = (
-	rows: readonly IValidateJournalRow[],
-): IValidateJournalRow | undefined => {
-	let latest: IValidateJournalRow | undefined;
+/**
+ * The newest row with a usable timestamp, or undefined. Generic over the
+ * row shape so the transition tool can keep its own stricter entry type
+ * and still share the one definition of "most recent".
+ */
+export const latestValidateRow = <TRow extends IValidateJournalRow>(
+	rows: readonly TRow[],
+): TRow | undefined => {
+	let latest: TRow | undefined;
 	let latestMs = Number.NEGATIVE_INFINITY;
 	for (const row of rows) {
 		const ms = timestampOf(row);

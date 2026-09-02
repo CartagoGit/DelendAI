@@ -64,6 +64,11 @@ import {
 	parseFrontmatterBlock,
 } from '../proposals/frontmatter-parser';
 import { locateProposal } from '../proposals/locate';
+import {
+	diagnoseValidateBlocker,
+	latestValidateRow,
+} from '../services/validate-blocker';
+import type { IValidateBlockerDiagnosis } from '../contracts/interfaces/validate-blocker.interface';
 import type { ILocatedProposal } from '../proposals/locate';
 import {
 	readFrontmatterField,
@@ -476,23 +481,50 @@ export const resolveRecentValidateEvidence = async (input: {
 	const logPathAbs = join(input.workspaceRoot, VALIDATE_LOG_RELATIVE_PATH);
 	const deps = input.deps ?? { readValidateLog: readValidateLogEntries };
 	const entries = await deps.readValidateLog(logPathAbs);
-	let latest: IValidateEvidence | null = null;
-	let latestMs = Number.NEGATIVE_INFINITY;
-	for (const entry of entries) {
-		const evidence = toValidateEvidence(entry, logPathAbs);
-		if (evidence === null || !isFreshValidateEvidence(evidence)) continue;
-		const tsMs = Date.parse(evidence.timestamp);
-		if (Number.isNaN(tsMs) || tsMs <= latestMs) continue;
-		latest = evidence;
-		latestMs = tsMs;
-	}
-	return latest;
+	// The MOST RECENT run has to be the passing one. Scanning for the
+	// newest *pass* let an older green run vouch for a tree that had
+	// since gone red: validate passes at 10:00, fails at 11:00, and at
+	// 11:30 the gate still waves the close through on the 10:00 entry.
+	// That is how known-broken work shipped on a shared branch, and it
+	// is the one reading of "fresh evidence" that cannot be defended.
+	const newest = latestValidateRow(entries);
+	if (newest === undefined) return null;
+	const evidence = toValidateEvidence(newest, logPathAbs);
+	if (evidence === null || !isFreshValidateEvidence(evidence)) return null;
+	return evidence;
 };
 
-const buildValidateRequiredEnvelope = () => ({
+/**
+ * Why the gate refused, for the envelope. Costs one extra read of a
+ * small journal, and only on the path that was about to block an agent.
+ */
+export const diagnoseValidateEvidence = async (input: {
+	readonly workspaceRoot: string;
+	readonly deps?: IValidateEvidenceDeps | undefined;
+}): Promise<IValidateBlockerDiagnosis> => {
+	const logPathAbs = join(input.workspaceRoot, VALIDATE_LOG_RELATIVE_PATH);
+	const deps = input.deps ?? { readValidateLog: readValidateLogEntries };
+	try {
+		return diagnoseValidateBlocker(await deps.readValidateLog(logPathAbs));
+	} catch {
+		return diagnoseValidateBlocker([]);
+	}
+};
+
+const buildValidateRequiredEnvelope = (
+	diagnosis: IValidateBlockerDiagnosis,
+) => ({
 	ok: false as const,
 	error: 'validate required' as const,
-	nextAction: 'bun run validate' as const,
+	// `state` and `nextAction` are what stop the loop: an agent that has
+	// already run validate is told what failed, not told to run it again.
+	validateState: diagnosis.state,
+	reason: diagnosis.reason,
+	failedSteps: diagnosis.failedSteps,
+	...(diagnosis.lastRunAt !== undefined
+		? { lastValidateAt: diagnosis.lastRunAt }
+		: {}),
+	nextAction: diagnosis.nextAction,
 });
 
 const buildCodeError = (
@@ -745,7 +777,14 @@ export const runProposalTransition = async (
 			deps: options.validateEvidenceDeps,
 		});
 		if (validateEvidence === null) {
-			const envelope = buildValidateRequiredEnvelope();
+			const envelope = buildValidateRequiredEnvelope(
+				await diagnoseValidateEvidence({
+					workspaceRoot: options.workspaceRoot,
+					...(options.validateEvidenceDeps !== undefined
+						? { deps: options.validateEvidenceDeps }
+						: {}),
+				}),
+			);
 			return {
 				content: [
 					{
