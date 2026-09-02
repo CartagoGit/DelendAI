@@ -96,7 +96,10 @@ export const runCommitPolicyStorms = async (
 		}
 		const snapshot = detector.snapshot();
 		options.onSnapshot?.();
-		return toolOk(snapshot);
+		// `IStormSnapshot` is a closed interface, so it does not
+		// satisfy `Record<string, unknown>` structurally. Spreading
+		// it produces the same JSON with an index signature.
+		return toolOk({ ...snapshot });
 	} catch (error: unknown) {
 		return toolError(
 			'commit_policy_storms failed: ' +

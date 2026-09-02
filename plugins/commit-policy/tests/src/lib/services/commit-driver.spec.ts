@@ -645,7 +645,7 @@ describe('runCommitDriver', () => {
 			expect(fake.added).toEqual(['./slice-a.ts', 'slice-b.ts']);
 		});
 
-		it('captures the whole dirty workspace when sliceScoping is disabled', async () => {
+		it('still commits ONLY the slice files when sliceScoping is disabled', async () => {
 			const fake = buildFakeGit({
 				currentBranch: 'develop',
 				globalName: 'Cartago',
@@ -674,7 +674,14 @@ describe('runCommitDriver', () => {
 			);
 			expect(result.committed).toBe(true);
 			expect(result.commitCreated).toBe(true);
-			expect(fake.added).toEqual(['agent-a.ts', 'agent-b.ts']);
+			// This assertion used to read `['agent-a.ts',
+			// 'agent-b.ts']` — the cross-agent contamination bug
+			// written down as a specification. `sliceScoping: false`
+			// means "foreign edits may coexist in the worktree", not
+			// "agent A's commit may swallow agent B's half-written
+			// file". A slice's commit scope is now a non-configurable
+			// invariant: exactly what the slice declared.
+			expect(fake.added).toEqual(['agent-a.ts']);
 		});
 	});
 

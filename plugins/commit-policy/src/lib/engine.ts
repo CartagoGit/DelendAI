@@ -24,13 +24,11 @@
  * the interface is stable.
  */
 
-import { appendAuditTrailer } from './audit/trailer';
 import {
 	branchProtectedRefusal,
 	isBranchProtected,
 	type IBranchPolicy,
 } from './contracts/branch';
-import { resolveAuthor } from './identity/resolver';
 import {
 	computeIdempotencyKey,
 	ProcessedEventsStoreReadError,
@@ -38,9 +36,10 @@ import {
 } from './processed-events';
 import {
 	buildScopedMessage,
-	commitWithGuard,
+	runCommitDriver,
 	type ICommitDriverInput,
 	type ICommitDriverOptions,
+	type ICommitDriverResult,
 } from './services/commit-driver';
 import type { IPushDriverResult } from './services/push-driver';
 import {
@@ -119,6 +118,7 @@ export type IEngineRefusalCode =
 	| 'TRIGGER_HAS_NO_FILES'
 	| 'STORE_READ_ERROR'
 	| 'PUSH_FAILED'
+	| 'NOTHING_TO_COMMIT'
 	| 'SETTLEMENT_IN_PROGRESS';
 
 export const ENGINE_REFUSAL_CODES = [
@@ -330,14 +330,17 @@ export const createCommitPolicyEngine = (
 				kind: 'slice',
 				proposalId: event.proposalId,
 				sliceId: event.sliceId,
-				files: event.files.paths,
+				// Same reasoning as the `files ?? []` guards below:
+				// a trigger arriving without a `files` envelope must
+				// become a refusal, not a crash out of `handle()`.
+				files: event.files?.paths ?? [],
 				eventId,
 			};
 		}
 		if (event.kind === 'threshold' || event.kind === 'interval') {
 			return {
 				kind: event.kind,
-				files: event.files.paths,
+				files: event.files?.paths ?? [],
 				dirtyCount: event.dirtyCount,
 				eventId,
 			};
@@ -508,7 +511,15 @@ export const createCommitPolicyEngine = (
 		// non-empty files; threshold / interval carry the
 		// dirty set; manual events may pass files or let the
 		// caller pre-stage.
-		if (event.kind === 'slice' && event.files.length === 0) {
+		// `files` is typed non-optional, but this engine is fed by a
+		// plugin listener over a JSON event stream, where a malformed
+		// or older-schema event really can arrive without it. Reading
+		// `.length` off `undefined` threw out of `handleEvent` — the
+		// caller got a stack trace instead of a refusal, the event
+		// stayed pending, and the listener retried it forever. A
+		// missing file list is the same situation as an empty one:
+		// refuse it, say so, and let it be terminal.
+		if (event.kind === 'slice' && (event.files ?? []).length === 0) {
 			completeStep('idempotency', 'SKIP');
 			return failAt(
 				'stage',
@@ -518,7 +529,7 @@ export const createCommitPolicyEngine = (
 		}
 		if (
 			(event.kind === 'threshold' || event.kind === 'interval') &&
-			event.files.length === 0
+			(event.files ?? []).length === 0
 		) {
 			completeStep('idempotency', 'SKIP');
 			return failAt(
@@ -641,8 +652,6 @@ export const createCommitPolicyEngine = (
 		const driverInput = toDriverInput(
 			event,
 			baseMessage,
-			options.driver.policy.cadence.sliceScoping &&
-				options.driver.policy.cadence.allowForeignChanges !== true,
 			resolvedSliceScope,
 		);
 		// f00417: thread the resolved slice scope into the driver
@@ -673,6 +682,43 @@ export const createCommitPolicyEngine = (
 			});
 			if (refusal.ack !== 'ERR') {
 				return finish(refusal);
+			}
+			// Two refusals are FINAL ANSWERS, not failures, and
+			// retrying them can only produce the same answer again:
+			//
+			//   NOTHING_TO_COMMIT   the slice's files already match
+			//                       HEAD — the work IS persisted.
+			//   CAUSALITY_VIOLATION something outside the resolved
+			//                       scope reached the index. Staging
+			//                       is already rolled back; running
+			//                       it again re-stages the same extras.
+			//
+			// Both were falling through as `ack: 'ERR'`, which leaves
+			// the event pending in the listener and schedules another
+			// attempt — a single-slice retry loop. Record them as
+			// terminal so the event is never replayed, and answer OK
+			// so the caller stops.
+			const terminal = TERMINAL_REFUSAL_OUTCOMES[refusal.code];
+			if (terminal !== undefined) {
+				if (options.processedEvents !== undefined) {
+					await options.processedEvents.recordTerminal(
+						computeIdempotencyKey(event),
+						terminal,
+						refusal.reason,
+					);
+				}
+				completeStep('stage', 'SKIP', {
+					code: refusal.code,
+					reason: refusal.reason,
+				});
+				return finish({
+					ack: 'OK',
+					committed: false,
+					pushed: false,
+					commitCreated: false,
+					headMoved: false,
+					refusal: refusal.reason,
+				});
 			}
 			completeStep('stage', 'ERR', {
 				code: refusal.code,
@@ -867,7 +913,6 @@ const composeMessage = (event: IEngineEvent): string => {
 const toDriverInput = (
 	event: IEngineEvent,
 	message: string,
-	scopeSliceCommit: boolean,
 	resolvedSliceScope:
 		| {
 				readonly proposalId: string;
@@ -889,12 +934,15 @@ const toDriverInput = (
 				sliceContext: {
 					proposalId: event.proposalId,
 					sliceId: event.sliceId,
+					// Prefer the machine-resolved scope. When the
+					// resolver did not run, fall back to the files the
+					// slice DECLARED — never to an empty list (which the
+					// driver rightly refuses as SLICE_HAS_NO_FILES) and
+					// never to workspace dirt.
 					files:
 						resolvedSliceScope !== undefined
 							? resolvedSliceScope.files
-							: scopeSliceCommit
-								? event.files
-								: [],
+							: event.files,
 				},
 			};
 		case 'threshold':
@@ -923,10 +971,30 @@ const toDriverInput = (
 	}
 };
 
+/**
+ * Run the guarded commit for an engine event.
+ *
+ * This used to be a full second copy of the commit driver, living
+ * privately in this file: it re-resolved identity, re-checked branch
+ * protection, and — critically — re-derived the commit scope from
+ * `sliceScoping` / `allowForeignChanges`, falling back to
+ * `gitDirtyFilePaths()` for a slice. The consequence was that the
+ * AUTOMATIC slice listener (the only caller of this function) ran
+ * different code from `runCommitDriver`, which is what every commit
+ * test in this plugin exercises. The causality tests passed while the
+ * path that actually fires on every slice event kept the bug, and no
+ * e2e test covered it, because both were "the commit driver" by name.
+ *
+ * There is now exactly one implementation. `runCommitDriver` already
+ * resolves the branch itself, applies the foreign-lock filter, and
+ * threads `resolvedSliceScope` through to the post-stage subset check,
+ * so this is a straight delegation. `branchName` is kept in the
+ * signature only for the caller's logging.
+ */
 const executeGuardedCommit = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
-	branchName: string | undefined,
+	_branchName: string | undefined,
 ): Promise<{
 	readonly committed: boolean;
 	readonly pushed: false;
@@ -935,147 +1003,30 @@ const executeGuardedCommit = async (
 	readonly hash?: string | undefined;
 	readonly refusal?: string | undefined;
 }> => {
-	const scopeSliceCommit =
-		options.policy.cadence.sliceScoping &&
-		options.policy.cadence.allowForeignChanges !== true;
-	if (!options.policy.commit.enabled) {
-		return {
-			committed: false,
-			pushed: false,
-			commitCreated: false,
-			headMoved: false,
-			refusal: 'commit.enabled is false in plugins.commit-policy.options',
-		};
-	}
-
-	const identity = await resolveAuthor(
-		options.policy.identity,
-		options.identityCtx,
-	);
-	if (!identity.ok) {
-		return {
-			committed: false,
-			pushed: false,
-			commitCreated: false,
-			headMoved: false,
-			refusal: identity.reason,
-		};
-	}
-
-	if (branchName === undefined) {
-		return {
-			committed: false,
-			pushed: false,
-			commitCreated: false,
-			headMoved: false,
-			refusal:
-				'commit refused: HEAD is detached. Check out a branch first.',
-		};
-	}
-	if (
-		isBranchProtected(branchName, {
-			protected: options.policy.push.protectedBranches,
-			protectedPrefixes: options.policy.push.protectedPrefixes,
-		})
-	) {
-		return {
-			committed: false,
-			pushed: false,
-			commitCreated: false,
-			headMoved: false,
-			refusal: branchProtectedRefusal(branchName, {
-				protected: options.policy.push.protectedBranches,
-				protectedPrefixes: options.policy.push.protectedPrefixes,
-			}),
-		};
-	}
-
-	const message =
-		input.sliceContext !== undefined
-			? buildScopedMessage(
-					input.message,
-					input.sliceContext.proposalId,
-					options.policy.commit.autoScopeFromProposal,
-				)
-			: input.message;
-	const finalMessage = appendAuditTrailer(
-		message,
-		options.policy.audit.trailer,
-		options.policy.audit.agentFormat,
-		options.auditAgent,
-	);
-
-	const allowList =
-		input.sliceContext !== undefined && scopeSliceCommit
-			? input.sliceContext.files
-			: (input.files ??
-				(input.triggerContext !== undefined
-					? input.triggerContext.files
-					: input.sliceContext !== undefined
-						? await gitDirtyFilePaths(options.run)
-						: []));
-
-	if (
-		input.sliceContext !== undefined &&
-		scopeSliceCommit &&
-		allowList.length === 0
-	) {
-		return {
-			committed: false,
-			pushed: false,
-			commitCreated: false,
-			headMoved: false,
-			refusal: `SLICE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
-		};
-	}
-	if (
-		input.sliceContext !== undefined &&
-		!options.policy.cadence.sliceScoping &&
-		allowList.length === 0
-	) {
-		return {
-			committed: false,
-			pushed: false,
-			commitCreated: false,
-			headMoved: false,
-			refusal: `WORKSPACE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
-		};
-	}
-	if (input.triggerContext !== undefined && allowList.length === 0) {
-		return {
-			committed: false,
-			pushed: false,
-			commitCreated: false,
-			headMoved: false,
-			refusal: `TRIGGER_HAS_NO_FILES: ${input.triggerContext.kind} fired with zero dirty paths`,
-		};
-	}
-
-	const result = await commitWithGuard({
-		run: options.run,
-		message: finalMessage,
-		authorFlag: identity.author.authorFlag,
-		allowList,
-		enforceSubset:
-			input.triggerContext !== undefined ||
-			input.sliceContext !== undefined,
-		...(options.workspaceRoot !== undefined
-			? { workspaceRoot: options.workspaceRoot }
-			: {}),
-		branch: branchName,
-		gitTimeoutMs: options.policy.gitTimeoutMs,
-	});
-	if (!result.committed) {
-		return result;
-	}
-
+	const result: ICommitDriverResult = await runCommitDriver(input, options);
+	// The driver leaves `commitCreated` / `headMoved` optional for the
+	// early refusals that never reach git; the engine's pipeline
+	// reports booleans. Absent means "it did not happen".
 	return {
-		committed: result.commitCreated,
+		committed: result.committed,
 		pushed: false,
-		commitCreated: result.commitCreated,
-		headMoved: result.headMoved,
+		commitCreated: result.commitCreated ?? false,
+		headMoved: result.headMoved ?? false,
 		...(result.hash !== undefined ? { hash: result.hash } : {}),
+		...(result.refusal !== undefined ? { refusal: result.refusal } : {}),
 	};
+};
+
+/**
+ * Refusal codes that are terminal: replaying the event cannot change
+ * the answer, so the listener must stop rather than retry. Maps each
+ * to the outcome recorded in the processed-events store.
+ */
+const TERMINAL_REFUSAL_OUTCOMES: Partial<
+	Record<IEngineRefusalCode, 'NO_CHANGE' | 'CAUSALITY_VIOLATION'>
+> = {
+	NOTHING_TO_COMMIT: 'NO_CHANGE',
+	CAUSALITY_VIOLATION: 'CAUSALITY_VIOLATION',
 };
 
 /**
@@ -1102,8 +1053,20 @@ const refusalToEngine = (
 	if (refusal.includes('TRIGGER_HAS_NO_FILES')) {
 		return err('TRIGGER_HAS_NO_FILES', refusal, metadata);
 	}
+	if (refusal.includes('CAUSALITY_VIOLATION')) {
+		return err('CAUSALITY_VIOLATION', refusal, metadata);
+	}
 	if (refusal.includes('CROSS_AGENT_CONTAMINATION')) {
 		return err('CROSS_AGENT_CONTAMINATION', refusal, metadata);
+	}
+	// A slice whose files already match HEAD is DONE, not failed.
+	// Without this the refusal fell through to the generic
+	// `BRANCH_PROTECTED` fallback with `ack: 'ERR'`, the listener
+	// left the event pending, and it retried forever — the same
+	// shape of loop as the one we removed from the replay path,
+	// just one slice at a time instead of eighty-three.
+	if (/nothing to commit|no changes added/u.test(refusal)) {
+		return err('NOTHING_TO_COMMIT', refusal, metadata);
 	}
 	if (refusal.includes('WORKSPACE_HAS_NO_FILES')) {
 		return err('WORKSPACE_HAS_NO_FILES', refusal, metadata);

@@ -42,7 +42,6 @@ import { resolveAuthor } from '../identity/resolver';
 import {
 	gitCachedNames,
 	gitCurrentBranch,
-	gitDirtyFilePaths,
 	validateConventionalHeader,
 } from './git-extra';
 import {
@@ -480,9 +479,20 @@ const commitWithSharedIndexGuard = async (
 	// file) and `enforceSubset` is forced on for them via
 	// `engine.ts`. The reset below would otherwise wipe a slice's
 	// legitimately staged files.
-	if (args.sliceContext === undefined) {
-		await resetWholeStageSafely(args.run);
-	}
+	// Unconditional, and that is deliberate. Unstaging never loses
+	// work — the worktree bytes are untouched — and everything in
+	// `allowList` is re-staged immediately below. What it does buy
+	// is that the subset check afterwards sees ONLY what we chose to
+	// stage, so a foreign path left in the shared index by an
+	// earlier session or another agent can neither ride along into
+	// this commit nor be misreported as our contamination.
+	//
+	// This was previously guarded by `args.sliceContext === undefined`
+	// — a field that does not exist on this type, so the guard was
+	// always true and the reset always ran. Removing the dead guard
+	// keeps the behaviour that was actually shipping and makes the
+	// reasoning visible instead of accidental.
+	await resetWholeStageSafely(args.run);
 	if (args.allowList.length > 0) {
 		const addResult = await gitAdd(args.run, args.allowList);
 		if (!addResult.ok) {
@@ -907,15 +917,34 @@ const runCommitDriverUnlocked = async (
 		options.auditAgent,
 	);
 
+	// f00417 / external review 2026-09-03: a slice commit's scope is
+	// a NON-CONFIGURABLE invariant. It is always the files the caller
+	// named for that slice — never `gitDirtyFilePaths()`.
+	//
+	// This used to be gated on `scopeSliceCommit`, i.e. on
+	// `sliceScoping && !allowForeignChanges`. Under this repo's own
+	// (deliberate) config — `sliceScoping: false`,
+	// `allowForeignChanges: true` — that gate was false, so every
+	// slice commit fell through to "stage whatever is dirty" and
+	// swallowed the half-written files of every other agent sharing
+	// the checkout. That is the cross-agent contamination incident,
+	// and no amount of care further down could undo it: by the time
+	// the subset check runs, the foreign files ARE the allow-list, so
+	// it trivially passes.
+	//
+	// The two knobs keep their meaning for `manual`, `interval` and
+	// `threshold` commits, where "what is dirty right now" is the
+	// whole point of the trigger. They no longer have any say over a
+	// slice. `allowForeignChanges: true` means foreign edits may
+	// COEXIST in the worktree — it never meant they may enter someone
+	// else's commit.
 	const files =
-		input.sliceContext !== undefined && scopeSliceCommit
+		input.sliceContext !== undefined
 			? input.sliceContext.files
 			: (input.files ??
 				(input.triggerContext !== undefined
 					? input.triggerContext.files
-					: input.sliceContext !== undefined
-						? await gitDirtyFilePaths(options.run)
-						: []));
+					: []));
 
 	// x00263 (AUD-CP-005): when sliceScoping is on and the slice
 	// declared no files, refuse rather than fall back to
