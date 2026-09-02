@@ -124,7 +124,7 @@ public/index.ts queda como:
 
 ### S1 — Clasificar los 288 exports por nivel de estabilidad y subpath destino
 
-- **Status**: pending
+- **Status**: done (verified 2026-09-02 — see Notes; barrel annotation comments not added, report+spec do the classification)
 - **Files**:
     - `packages/core/src/public/index.ts` (anotar cada export con un
       comentario `@stable <subpath>` / `@experimental` / `@internal`)
