@@ -1371,7 +1371,7 @@
 				"id": "r00033",
 				"title": "r00033",
 				"track": "contracts",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "refactor",
 				"date": ""
 			},
@@ -1457,8 +1457,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 14,
-			"in-progress": 9,
+			"ready": 13,
+			"in-progress": 10,
 			"review": 4,
 			"paused": 1,
 			"done": 713,
