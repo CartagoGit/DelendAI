@@ -543,8 +543,19 @@ Exercise the configured persistence route over MCP.
 					}
 					await new Promise((resolve) => setTimeout(resolve, 100));
 				}
+				// A bare "timed out" told the reader nothing about WHY, so
+				// the only way to find out was to re-run the test with
+				// print statements. Report the state that was actually
+				// waited on: whether a commit happened at all, whether the
+				// remote ref exists, and what the worktree looked like.
+				const state = [
+					`head=${git(managed.workspace, 'rev-parse', 'HEAD').trim()}`,
+					`commits=${git(managed.workspace, 'rev-list', '--count', 'HEAD').trim()}`,
+					`remoteRef=${git(managed.workspace, 'ls-remote', 'origin', 'refs/heads/wip/x00298-s3').trim() || '(absent)'}`,
+					`status=${git(managed.workspace, 'status', '--porcelain').trim().replace(/\n/gu, ' | ') || '(clean)'}`,
+				].join(' ');
 				throw new Error(
-					'Timed out waiting for remote branch synchronization',
+					`Timed out waiting for remote branch synchronization. ${state}`,
 				);
 			};
 			await waitForRemoteHead();
