@@ -122,3 +122,12 @@ mcp-vertex-session-*.md
 
 
 .vscode/*.code-workspace
+
+# Coordination files created and deleted by `withFileMutex` while a write
+# is in flight. They are never work. Untracked, they still raced git:
+# `gen-all`'s drift-check (`git diff --exit-code`) saw one appear and
+# blocked a push, and commit-policy's dirty-set sweep staged one that
+# vanished before `git add` ran, failing the whole commit and losing a
+# batch of finished work. Invisible to git is the only correct state.
+*.mutex
+*.tmp-*
