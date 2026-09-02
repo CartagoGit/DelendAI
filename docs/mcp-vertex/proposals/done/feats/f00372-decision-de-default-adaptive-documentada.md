@@ -2,7 +2,7 @@
 id: f00372
 title: "decisión de default adaptive documentada."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -40,8 +40,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
 - **review-reviewer**: delivery-verifier-bulk-retire-placeholders
 - **review-log**: approved by sonnet-reviewer-12 — read ADR 0016 and ADR 0017 (docs/mcp-vertex/adr/), confirmed 0017 documents the `managed` default supersedes 0016's `adaptive` default, and confirmed `decideSurfaceModeFromCapabilities` in packages/core/src/lib/surface/decide-mode.ts and `resolveInitialSurfaceMode` (default 'managed') implement exactly the precedence ADR 0017 documents. The audit's TOK2-004 ask (documented default decision) is satisfied.
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-minimax-m3
+- review-reviewer: sonnet-reviewer-12
+- review-log: approved by sonnet-reviewer-12 — sonnet-reviewer-12: read ADR 0016 and ADR 0017 (docs/mcp-vertex/adr/), confirmed 0017 (Accepted) documents the managed default superseding 0016 adaptive default, and confirmed decideSurfaceModeFromCapabilities/resolveInitialSurfaceMode in packages/core/src/lib/surface/decide-mode.ts implement that precedence. Ran bun test packages/core/tests/src/lib/surface/decide-mode.spec.ts: 15/15 pass.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
