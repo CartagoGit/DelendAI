@@ -126,6 +126,13 @@ export interface McpVertexProposalsAgentsLockDiagnoseOutput {
 		latest_log_ts: string | null;
 		gap_seconds: number | null;
 	}>;
+	waits: Array<{
+		waiter: string;
+		waitingOnTaskId: string;
+		holder: string | null;
+		waitingForSeconds: number | null;
+	}>;
+	deadlocks: string[][];
 }
 
 export interface McpVertexProposalsAutoFixQueueOutput {
@@ -234,6 +241,8 @@ export interface McpVertexProposalsCloseSliceOutput {
 		resolvedScopes: string[];
 		snapshotId: string;
 		reason: string;
+		blockingReasons?: string[];
+		nextAction?: string;
 	};
 	lockReleased?: boolean;
 	assignmentReleased?: boolean;

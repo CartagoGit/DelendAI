@@ -18,6 +18,16 @@ export interface McpVertexNotificationAwaitLockOutput {
 	timedOut: boolean;
 	alreadyFree: boolean;
 	waitedMs: number;
+	verdict?: string;
+	holder?: {
+		taskId: string;
+		agent: string;
+		files: string[];
+		lastSeen?: string;
+		heldForMs?: number;
+	};
+	reason?: string;
+	nextAction?: string;
 }
 
 export interface McpVertexNotificationNotifyStatusOutput {
