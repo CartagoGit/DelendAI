@@ -26,6 +26,7 @@
  * `GIT_CONFIG_GLOBAL`.
  */
 import { readdir, readFile } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dir, '../../..');
@@ -41,7 +42,7 @@ interface IViolation {
 
 const collectTestFiles = async (dir: string): Promise<string[]> => {
 	const out: string[] = [];
-	let entries;
+	let entries: Dirent[];
 	try {
 		entries = await readdir(dir, { withFileTypes: true });
 	} catch {

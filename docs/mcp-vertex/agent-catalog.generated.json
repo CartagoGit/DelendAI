@@ -1446,10 +1446,18 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
+			},
+			{
+				"id": "x00419",
+				"title": "x00419",
+				"track": "quality",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 12,
+			"ready": 13,
 			"in-progress": 10,
 			"review": 4,
 			"paused": 1,
