@@ -1587,7 +1587,7 @@
 				"id": "v00128",
 				"title": "v00128",
 				"track": "tokens",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "unspecified",
 				"date": ""
 			},
@@ -1617,8 +1617,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 38,
-			"in-progress": 5,
+			"ready": 37,
+			"in-progress": 6,
 			"review": 1,
 			"paused": 1,
 			"done": 695,

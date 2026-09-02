@@ -2,16 +2,16 @@
 id: v00128
 title: "Reducir los dos outputSchema más caros del repo (advise_routing, invoke)"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-08-27
 priority: P1
 related:
     - r00034 # capa de capabilities — trabajo hermano de la misma sesión
-last-transition-id: 0dd75e76-cec8-42c7-a57a-526278cd67e9
-last-correlation-id: 0dd75e76-cec8-42c7-a57a-526278cd67e9
-last-transition-from: ready
+last-transition-id: 1fd3147b-5cbb-4609-b7cb-2f184888bdde
+last-correlation-id: 1fd3147b-5cbb-4609-b7cb-2f184888bdde
+last-transition-from: in-progress
 ---
 
 # v00128 — Reducir los dos `outputSchema` más caros del repo
