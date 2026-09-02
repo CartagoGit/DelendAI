@@ -46,7 +46,7 @@ release can proceed.
 - **Gate**: none
 
 ### S2 — Follow-up: fix F1 + F2 (header-bar renderer + spec)
-- **Status**: retired (fixed incidentally by f00395 S3 before this proposal closed)
+- **Status**: retired
 - **Files**:
   - `packages/ui-extension/src/components/header-bar.ts`
   - `packages/ui-extension/tests/components/header-bar.spec.ts`
