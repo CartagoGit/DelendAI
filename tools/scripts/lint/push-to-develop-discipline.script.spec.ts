@@ -75,7 +75,7 @@ describe('lintPushToDevelop', () => {
 		});
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
-			expect(result.blockers.join('\n')).toContain('ADR 0018');
+			expect(result.blockers.join('\n')).toContain('ADR 0019');
 			expect(result.blockers.join('\n')).toContain('LEFTHOOK_BYPASS=1');
 			expect(result.blockers.join('\n')).toContain('`main`');
 		}
@@ -90,7 +90,7 @@ describe('lintPushToDevelop', () => {
 		});
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
-			expect(result.blockers.join('\n')).toContain('ADR 0018');
+			expect(result.blockers.join('\n')).toContain('ADR 0019');
 			expect(result.blockers.join('\n')).toContain('pull request');
 			expect(result.blockers.join('\n')).not.toContain('into `develop`');
 		}
@@ -447,7 +447,7 @@ describe('lintPrePushStdinUpdates', () => {
 		]);
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
-			expect(result.blockers.join('\n')).toContain('ADR 0018');
+			expect(result.blockers.join('\n')).toContain('ADR 0019');
 		}
 	});
 

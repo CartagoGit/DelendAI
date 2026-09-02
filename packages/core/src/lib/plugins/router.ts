@@ -9,6 +9,13 @@ import type {
 } from './lazy-loader';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
+import {
+	adaptLegacyLifecycle,
+	hasPhasedLifecycle,
+	runLifecycle,
+	type IPhasedLifecycle,
+	type IPluginLifecycleActivation,
+} from './lifecycle';
 import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
@@ -231,6 +238,26 @@ const buildRouteMaps = (manifests: readonly IPluginManifest[]): IRouteCache => {
 const missingRouteError = (kind: PluginRouteKind, key: string): Error =>
 	new Error(`no ${kind} owner found for "${key}"`);
 
+const buildLifecycleContexts = (
+	pluginId: string,
+	manifest: IPluginManifest,
+	pluginContext: IMcpPluginContext,
+) => {
+	const prepareContext = {
+		name: pluginId,
+		manifest,
+		configResolved: { ...pluginContext.options },
+		logger: console,
+	};
+	return {
+		prepareContext,
+		activateContext: {
+			...prepareContext,
+			capabilities: {},
+		},
+	};
+};
+
 export const createLazyPluginRouter = (
 	options: ILazyPluginRouterOptions,
 ): ILazyPluginRouter => {
@@ -358,10 +385,27 @@ export const createLazyPluginRouter = (
 		const existing = activationCache.get(entry.id);
 		if (existing !== undefined) return existing;
 		const activation = (async () => {
-			const runtime = await entry.plugin.register(
+			const pluginContext =
 				options.buildContext?.(entry.id, entry.plugin.cacheNamespace) ??
-					({} as IMcpPluginContext),
-				options.signal,
+				({ options: {} } as IMcpPluginContext);
+			const lifecycle = (
+				hasPhasedLifecycle(entry.plugin)
+					? entry.plugin
+					: adaptLegacyLifecycle(
+							entry.plugin,
+							pluginContext,
+							options.signal,
+						)
+			) as IPhasedLifecycle<unknown, IPluginLifecycleActivation>;
+			const { prepareContext, activateContext } = buildLifecycleContexts(
+				entry.id,
+				entry.manifest,
+				pluginContext,
+			);
+			const runtime = await runLifecycle(
+				lifecycle,
+				prepareContext,
+				activateContext as never,
 			);
 			const registrations = runtimeToRegistrations(runtime);
 			return captureToolRegistrations(registrations.tools ?? []);

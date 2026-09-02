@@ -210,7 +210,7 @@ export const lintPushToDevelop = (
 		return {
 			ok: false,
 			blockers: [
-				'pushing directly to `main` — main only receives commits through a pull request (ADR 0018).',
+				'pushing directly to `main` — main only receives commits through a pull request (ADR 0019).',
 				'',
 				'next-action:',
 				'  open a pull request from your branch into `main` instead of pushing directly.',

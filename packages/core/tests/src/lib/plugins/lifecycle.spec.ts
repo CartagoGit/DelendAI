@@ -6,15 +6,24 @@
  * plugins so existing plugins keep working unchanged.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { adaptLegacyPlugin, definePlugin } from '@mcp-vertex/core/public';
 import {
+	adaptLegacyLifecycle,
 	hasPhasedLifecycle,
 	runLifecycle,
 	safeDispose,
 } from '@mcp-vertex/core/public';
 import type { IPhasedLifecycle } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '../../../../src/lib/contracts/interfaces/tool-registration.interface';
+import type { ILazyPluginDiscovery } from '../../../../src/lib/plugins/discovery';
+import type {
+	ILazyPluginLoader,
+	IPluginManifest,
+} from '../../../../src/lib/plugins/lazy-loader';
+import { createLazyPluginRouter } from '../../../../src/lib/plugins/router';
+import type { IMcpPluginContext } from '../../../../src/lib/plugins/plugin-contract';
 
 describe('f00184 — phased plugin lifecycle', () => {
 	it('hasPhasedLifecycle returns true when all 3 methods exist', () => {
@@ -143,6 +152,140 @@ describe('f00184 — phased plugin lifecycle', () => {
 		expect(active).toBeDefined();
 		// dispose is a no-op for legacy plugins (no IPluginRuntime).
 		await expect(adapted.dispose(active)).resolves.toBeUndefined();
+	});
+
+	it('adaptLegacyLifecycle passes the full plugin context and disposes runtimes once', async () => {
+		const dispose = vi.fn();
+		const signal = new AbortController().signal;
+		const pluginContext = {
+			options: { source: 'router' },
+		} as IMcpPluginContext;
+		const plugin = definePlugin({
+			name: 'legacy-ctx',
+			async register(ctx, receivedSignal) {
+				expect(ctx).toBe(pluginContext);
+				expect(receivedSignal).toBe(signal);
+				return {
+					registrations: { tools: [] },
+					dispose,
+				};
+			},
+		});
+		const lifecycle = adaptLegacyLifecycle(plugin, pluginContext, signal);
+		const prepared = await lifecycle.prepare({
+			name: 'legacy-ctx',
+			manifest: {},
+			configResolved: {},
+			logger: console,
+		});
+		const active = await lifecycle.activate(prepared, {
+			name: 'legacy-ctx',
+			manifest: {},
+			configResolved: {},
+			logger: console,
+			capabilities: {},
+		});
+		await lifecycle.dispose(active);
+		await lifecycle.dispose(active);
+		expect(dispose).toHaveBeenCalledTimes(1);
+	});
+
+	it('router runs phased prepare + activate before capturing tool bindings', async () => {
+		const calls: string[] = [];
+		const manifest: IPluginManifest = {
+			id: 'phased-plugin',
+			version: '1.0.0',
+			toolNames: ['phased_tool'],
+			promptNames: [],
+			resourceUris: [],
+		};
+		const registration: IToolRegistration = {
+			id: 'phased-tool-registration',
+			async register(server) {
+				server.registerTool(
+					'phased_tool',
+					{ description: 'phased tool' },
+					() => ({ ok: true }),
+				);
+			},
+		};
+		const plugin = {
+			name: 'phased-plugin',
+			async register() {
+				throw new Error('legacy register path should not run');
+			},
+			async prepare(ctx: { name: string; manifest: IPluginManifest }) {
+				calls.push(`prepare:${ctx.name}:${ctx.manifest.id}`);
+				return { prepared: true };
+			},
+			async activate(
+				prepared: { prepared: boolean },
+				ctx: { name: string; capabilities: Record<string, never> },
+			) {
+				calls.push(
+					`activate:${prepared.prepared}:${ctx.name}:${Object.keys(ctx.capabilities).length}`,
+				);
+				return { tools: [registration] };
+			},
+			async dispose() {},
+		};
+		const loader: Pick<ILazyPluginLoader, 'load' | 'warmup' | 'state'> = {
+			async load(id) {
+				return {
+					id,
+					manifest,
+					plugin: plugin as never,
+					firstLoadMs: 0,
+					loadedAt: Date.now(),
+				};
+			},
+			async warmup() {
+				return [];
+			},
+			state() {
+				return 'loaded';
+			},
+		};
+		const discovery: ILazyPluginDiscovery = {
+			async pluginIds() {
+				return [manifest.id];
+			},
+			async manifests() {
+				return [manifest];
+			},
+			async findToolOwner(toolName) {
+				return toolName === 'phased_tool' ? manifest : undefined;
+			},
+			async findPromptOwner() {
+				return undefined;
+			},
+			async findResourceOwner() {
+				return undefined;
+			},
+			invalidate() {},
+			stats() {
+				return {
+					cacheHits: 0,
+					cacheMisses: 0,
+					manifestReads: 0,
+					manifestCount: 1,
+					lastScanMs: 0,
+				};
+			},
+		};
+		const router = createLazyPluginRouter({
+			loader,
+			discovery,
+			buildContext: () => ({ options: { source: 'router' } }) as never,
+		});
+
+		const loaded = await router.loadToolOwner('phased_tool');
+
+		expect(loaded.binding?.description).toBe('phased tool');
+		expect(calls).toEqual([
+			'prepare:phased-plugin:phased-plugin',
+			'activate:true:phased-plugin:0',
+		]);
 	});
 
 	it('prepare-throws skips activate (router can rollback)', async () => {

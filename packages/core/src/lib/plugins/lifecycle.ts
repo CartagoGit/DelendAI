@@ -32,7 +32,12 @@ import type {
 	Capability,
 	ICapabilityRefusal,
 } from '../capabilities/schema';
-import type { IMcpPluginContext } from './plugin-contract';
+import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
+import type {
+	IMcpPlugin,
+	IMcpPluginContext,
+	IMcpPluginRegistrations,
+} from './plugin-contract';
 
 /**
  * Read-only context passed to `prepare()`. Capabilities are NOT
@@ -72,6 +77,17 @@ export type PreparedPlugin<P> = P;
  */
 export type ActivePlugin<A> = A;
 
+export type IPluginLifecycleActivation =
+	| IMcpPluginRegistrations
+	| IPluginRuntime<IMcpPluginRegistrations>;
+
+interface ILegacyPreparedPlugin {
+	readonly name: string;
+	readonly plugin: IMcpPlugin;
+	readonly pluginContext: IMcpPluginContext;
+	readonly signal: AbortSignal | undefined;
+}
+
 /**
  * Phased lifecycle contract. A plugin MAY implement this
  * interface instead of (or in addition to) the legacy
@@ -103,6 +119,11 @@ export const hasPhasedLifecycle = (
 	typeof (plugin as { prepare?: unknown }).prepare === 'function' &&
 	typeof (plugin as { activate?: unknown }).activate === 'function' &&
 	typeof (plugin as { dispose?: unknown }).dispose === 'function';
+
+const isPluginRuntime = (
+	active: IPluginLifecycleActivation,
+): active is IPluginRuntime<IMcpPluginRegistrations> =>
+	typeof active === 'object' && active !== null && 'registrations' in active;
 
 /**
  * Tracks the in-flight/settled disposal for a given `active` payload so
@@ -148,6 +169,40 @@ export const safeDispose = async <A extends object>(
 	disposalSettlements.set(active, settlement);
 	return settlement;
 };
+
+/**
+ * Wrap a legacy `register(ctx, signal)` plugin in the phased contract the
+ * router expects. The adapter keeps the full MCP plugin context via closure,
+ * so compatibility stays exact while the router can standardise on one
+ * `prepare -> activate -> dispose` execution path.
+ */
+export const adaptLegacyLifecycle = (
+	plugin: IMcpPlugin,
+	pluginContext: IMcpPluginContext,
+	signal?: AbortSignal,
+): IPhasedLifecycle<ILegacyPreparedPlugin, IPluginLifecycleActivation> => ({
+	async prepare(ctx) {
+		return {
+			name: ctx.name,
+			plugin,
+			pluginContext,
+			signal,
+		};
+	},
+	async activate(prepared) {
+		return prepared.plugin.register(
+			prepared.pluginContext,
+			prepared.signal,
+		);
+	},
+	async dispose(active) {
+		if (!isPluginRuntime(active) || active.dispose === undefined) return;
+		await safeDispose(
+			async () => Promise.resolve(active.dispose?.()),
+			active,
+		);
+	},
+});
 
 /**
  * Compose `prepare` + `activate` so callers don't have to repeat

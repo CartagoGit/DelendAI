@@ -39,7 +39,7 @@ describe('push-to-develop-discipline pre-push e2e', () => {
 
 		expect(result.status).toBe(1);
 		expect(result.stderr).toContain('push-to-develop-discipline: blocked');
-		expect(result.stderr).toContain('ADR 0018');
+		expect(result.stderr).toContain('ADR 0019');
 		expect(result.stderr).toContain('LEFTHOOK_BYPASS=1');
 		expect(result.stdout).toBe('');
 	});
