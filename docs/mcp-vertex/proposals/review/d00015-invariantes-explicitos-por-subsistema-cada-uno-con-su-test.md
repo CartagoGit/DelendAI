@@ -2,7 +2,7 @@
 id: d00015
 title: "Invariantes explícitos por subsistema, cada uno con su test"
 kind: docs
-status: ready
+status: in-progress
 type: proposal
 track: governance
 date: 2026-08-29
@@ -13,6 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P1
 related: [q00011, f00279]
+last-transition-id: f4cda70e-2d40-47e5-b788-3cf3a374ec8c
+last-correlation-id: f4cda70e-2d40-47e5-b788-3cf3a374ec8c
+last-transition-from: ready
 ---
 
 # d00015 — Invariantes explícitos por subsistema, cada uno con su test
