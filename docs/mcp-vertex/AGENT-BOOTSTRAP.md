@@ -493,46 +493,29 @@ or have their own config file. Use the same single-pointer pattern:
   picks it up on the next session.
 
 
-## Build / dist layout (r00045)
+## Build / dist layout
 
-Every compiled artifact in this monorepo lands under one root-anchored
-tree: `/build/{group}/{name}/{version}/...` (e.g.
-`build/packages/core/0.1.1/index.js`,
-`build/plugins/proposals/0.1.0/public/index.js`). There is no
-persistent `packages/*/dist/` or `plugins/*/dist/` on disk — `/build/`
-and `/dist/` are both gitignored, and `bun run build` (or
-`bun tools/scripts/compile/build.script.ts <pkg-dir>`) is the only
-producer.
+Compiled artifacts land under one root tree: `/build/{group}/{name}/{version}/`
+(e.g. `build/packages/core/0.1.1/index.js`). There is no persistent
+`packages/*/dist/` or `plugins/*/dist/`; `/build/` and `/dist/` are
+gitignored and `bun run build` is the only producer.
 
-**Scripts never resolve against `build/`.** `bun run <script>`,
-`vitest`, and `tsc --noEmit` all inject the `@mcp-vertex/source`
-condition (`bunfig.toml#run.conditions`,
-`tsconfig.base.json#compilerOptions.customConditions`, and
-`vitest.shared.ts`'s per-package `resolve.alias` entries pointing at
-`src/`), so every one of those consumers resolves `@mcp-vertex/*`
-straight to `src/`, never to a compiled artifact. If a script call
-prints a `require()`/import resolving into `build/`, that call is
-missing the source condition — fix the invocation, don't chase it as a
-build bug.
+**Scripts never resolve against `build/`.** `bun run`, `vitest` and
+`tsc --noEmit` all inject the `@mcp-vertex/source` condition
+(`bunfig.toml`, `tsconfig.base.json`, `vitest.shared.ts`), so
+`@mcp-vertex/*` resolves to `src/`. If a call resolves into `build/`,
+that invocation is missing the condition — fix the call, don't chase it
+as a build bug.
 
-**Package manifests keep `"main": "./dist/index.js"` and
-`exports["."] → "./dist/..."` on purpose** — Node/npm do not allow
-`package.json#exports` to point outside the package's own directory
-with `../build`, so a manifest cannot reference the root-level
-`build/` tree directly. `./dist/` is materialized only inside a
-temporary staging directory at publish/pack time
-(`stageBuildForPublish(pkgDir, buildDir, stageDir)` in
-`tools/scripts/publish/workspace-deps.ts`, used by
-`release.script.ts`, `tools/scripts/smoke/pack.script.ts`, and
-`tools/scripts/verify/external-install-smoke.script.ts`), which copies
-the package to a scratch directory, materializes its
-`build/<group>/<name>/<version>/` slice there as `dist/`, packs that
-copy, and deletes the staging directory afterward. No `dist/` is ever
-written back into `packages/*` or `plugins/*` on disk.
+**Manifests keep `"main": "./dist/index.js"` on purpose**: npm forbids
+`exports` pointing outside the package, so `./dist/` is materialized
+only in a temporary staging dir at pack/publish time
+(`stageBuildForPublish` in `tools/scripts/publish/workspace-deps.ts`).
+No `dist/` is ever written back into the repo.
 
-`lint:no-build-imports-from-src` (wired into `bun run validate`) fails
-if any emitted file under `build/**/*.js` imports `../src/` — a
-compiled artifact must never reach back into source.
+`lint:no-build-imports-from-src` fails if anything under `build/**/*.js`
+imports `../src/` — a compiled artifact must never reach back into
+source.
 
 ## Architecture decisions
 
