@@ -574,6 +574,24 @@ const tryAssembleManagedLazy = async (input: {
 			}
 		},
 	});
+	// Plugins that could not be imported (or whose options did not
+	// validate) at the configuration pass. They are unavailable, not
+	// fatal: announce them, keep them in this route's load errors so
+	// every downstream consumer sees them, and route them to the
+	// register-error observers so error-reporting can file them.
+	if (configuration.failures.length > 0) {
+		lazyErrors.push(...configuration.failures);
+		announcePluginFailures(
+			buildPluginFailureAnnouncement({
+				loadErrors: configuration.failures,
+				registerErrors: [],
+				loadedCount: pluginIds.length - configuration.failures.length,
+			}),
+		);
+		for (const failure of configuration.failures) {
+			reportRegisterError(asRegisterErrorInfo(failure));
+		}
+	}
 	const configuredStartupPlugins = definitions.filter((plugin) => {
 		const options = pluginConfigFor(input.fileConfig, plugin.id).options;
 		// Startup activation is a lifecycle guarantee, not an opt-in
