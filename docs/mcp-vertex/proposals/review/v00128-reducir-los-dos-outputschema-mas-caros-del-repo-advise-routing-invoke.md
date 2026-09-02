@@ -102,15 +102,17 @@ detrás de un handle.
 
 ### S1 — Cobertura de consumo
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bunx vitest run --root plugins/orchestrator-runner`
 - **Files**:
     - `plugins/orchestrator-runner/tests/`
 
 Tests que fijen qué campos de `alternates` y de la decisión consume
 realmente cada llamante, para que S2 no sea adivinanza.
-- review-state: in_review
+- review-state: done
 - review-implementer: sonnet-worker-tokens
+- review-reviewer: sonnet-verifier-tokens
+- review-log: approved by sonnet-verifier-tokens — Ran tokens:gate (orchestrator-runner 14,395B/11 tools, was 40,599B before v00128/v00130 work), tokens:dashboard:check (in sync), and npx vitest run advise-routing.tool.spec.ts + invoke.tool.spec.ts (9/9 passed). Detail levels, narrowed alternates, execution-aware measurement confirmed in source.
 ### S2 — `IAlternateSummary`
 
 - **Status**: pending
