@@ -32,6 +32,14 @@ export interface ICloseSliceValidationDecision {
 	readonly resolvedScopes: readonly string[];
 	readonly snapshotId: string;
 	readonly reason: string;
+	/**
+	 * The resolver's own account of what is wrong, and the call that
+	 * addresses it. Present on `blocked` only. Without these the caller
+	 * got one abstract sentence naming no file, no actor and no tool,
+	 * and had nothing to act on.
+	 */
+	readonly blockingReasons?: readonly string[];
+	readonly nextAction?: string;
 }
 
 export interface IAuthoringPersistConfig {

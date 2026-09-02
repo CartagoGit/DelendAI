@@ -67,6 +67,7 @@ import {
 	type IValidateEvidenceDeps,
 } from './proposal-transition.tool';
 import { locateProposal } from '../proposals/locate';
+import { buildCloseBlockerGuidance } from '../services/close-blocker';
 import type { IValidateEvidence } from '../services/transition-evidence';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type {
@@ -1139,11 +1140,26 @@ export const buildCloseSliceRegistration = (
 										sliceId: canonicalSliceId(args.sliceId),
 									},
 								);
+							const guidance =
+								decision.mode === 'blocked'
+									? buildCloseBlockerGuidance({
+											reason: decision.reason,
+											blockingReasons:
+												decision.blockingReasons ?? [],
+										})
+									: undefined;
 							validationDecision = {
 								mode: decision.mode,
 								resolvedScopes: [...decision.resolvedScopes],
 								snapshotId: decision.snapshotId,
 								reason: decision.reason,
+								...(guidance !== undefined
+									? {
+											blockingReasons:
+												guidance.blockingReasons,
+											nextAction: guidance.nextAction,
+										}
+									: {}),
 							};
 							if (decision.mode === 'blocked') {
 								const err: ICloseSliceThrownError =
