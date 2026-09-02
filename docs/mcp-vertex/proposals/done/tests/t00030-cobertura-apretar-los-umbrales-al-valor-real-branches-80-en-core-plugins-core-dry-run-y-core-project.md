@@ -149,7 +149,7 @@ exacta de configuración en un run real).
 
 El trinquete automático (S3) es un nuevo
 `tools/scripts/coverage-ratchet.script.ts` que, tras una corrida de
-`vitest run --coverage --reporter=json-summary`, lee
+`vitest run --coverage --coverage.reporter=json-summary`, lee
 `.cache/coverage/coverage-summary.json`, calcula `medida − 0,5` para
 cada una de las cuatro métricas globales, compara con los umbrales
 vigentes en `vitest.config.ts`, y falla (exit 1) si el fichero quedó
@@ -280,7 +280,7 @@ passing) — a pure `computeCoverageRatchetViolations` compares
 `coverage-summary.json` and flags any metric where
 `configured < floor(measured − 1.0)`, plus `package.json`'s new
 `coverage:ratchet` script (`vitest run --coverage
---reporter=json-summary && coverage-ratchet.script.ts`, not wired into
+--coverage.reporter=json-summary && coverage-ratchet.script.ts`, not wired into
 `validate` per the proposal's own S3 file note: "no bloquea validate
 ... si el runtime de test:coverage completo es costoso"). Ran the
 script standalone with no report present — it fails closed with a
