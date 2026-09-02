@@ -2,7 +2,7 @@
 id: d00014
 title: "Una página canónica por plugin: fusionar las tres manuales en las auto-generadas"
 kind: docs
-status: ready
+status: in-progress
 type: proposal
 track: docs
 date: 2026-08-29
@@ -13,6 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011]
+last-transition-id: 0e18c595-a799-4464-80a0-0b7e079359af
+last-correlation-id: 0e18c595-a799-4464-80a0-0b7e079359af
+last-transition-from: ready
 ---
 
 # d00014 — Una página canónica por plugin: fusionar las tres manuales en las auto-generadas
