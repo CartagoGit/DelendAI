@@ -2,7 +2,7 @@
 id: r00033
 title: "Envelopes compartidos (EntityRef, OperationResult, …)"
 kind: refactor
-status: in-progress
+status: review
 type: proposal
 track: contracts
 date: 2026-08-25
@@ -17,9 +17,9 @@ related:
     - r00029 # extraer @mcp-vertex/contracts (los envelopes van aquí)
     - f00198 # activation KPIs (consume envelopes)
     - f00199 # tool confusion rate (consume envelopes)
-last-transition-id: 0c59fbec-14e8-44b4-ace7-1216218cef15
-last-correlation-id: 0c59fbec-14e8-44b4-ace7-1216218cef15
-last-transition-from: ready
+last-transition-id: c13688a3-e6f5-493b-b66e-389829ec4d88
+last-correlation-id: c13688a3-e6f5-493b-b66e-389829ec4d88
+last-transition-from: in-progress
 ---
 
 # r00033 — Envelopes compartidos (EntityRef, OperationResult, …)
