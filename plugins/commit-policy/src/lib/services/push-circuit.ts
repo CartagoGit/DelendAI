@@ -1,6 +1,9 @@
 import { PUSH_CIRCUIT_THRESHOLD } from '../contracts/constants/push-circuit.constant';
 
-import type { IPushCircuitDecision } from '../contracts/interfaces/push-circuit.interface';
+import type {
+	IPushCircuit,
+	IPushCircuitDecision,
+} from '../contracts/interfaces/push-circuit.interface';
 
 /**
  * Stop retrying a push that cannot succeed.
@@ -24,18 +27,6 @@ import type { IPushCircuitDecision } from '../contracts/interfaces/push-circuit.
  * push gets a real attempt and a real answer, and a success closes the
  * breaker again.
  */
-
-export interface IPushCircuit {
-	/** Record an attempt's outcome and get the resulting state. */
-	record(result: {
-		readonly ok: boolean;
-		readonly refusal?: string;
-	}): IPushCircuitDecision;
-	/** Should the AUTOMATIC path attempt a push at all? */
-	shouldAttempt(): boolean;
-	/** Force the breaker closed (an explicit push is about to run). */
-	reset(): void;
-}
 
 export const createPushCircuit = (
 	threshold: number = PUSH_CIRCUIT_THRESHOLD,

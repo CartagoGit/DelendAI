@@ -15,3 +15,16 @@ export interface IPushCircuitDecision {
 	/** The repeating refusal, when the breaker is open. */
 	readonly refusal?: string;
 }
+
+/** The breaker itself: record outcomes, gate the automatic path. */
+export interface IPushCircuit {
+	/** Record an attempt's outcome and get the resulting state. */
+	record(result: {
+		readonly ok: boolean;
+		readonly refusal?: string;
+	}): IPushCircuitDecision;
+	/** Should the AUTOMATIC path attempt a push at all? */
+	shouldAttempt(): boolean;
+	/** Force the breaker closed (an explicit push is about to run). */
+	reset(): void;
+}
