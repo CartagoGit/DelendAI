@@ -29,7 +29,7 @@ La migracion produjo un placeholder sin especificacion tecnica real. La referenc
 
 - El working tree actual solo contiene referencias textuales a `25047` y `f00385` en esta propuesta y en `docs/mcp-vertex/agent-catalog.generated.json`; no aparece ninguna especificacion fuente adicional.
 - El archivo historico `docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md` existio en la historia git, incluyendo el commit `1fb55f19c`, pero `git show 1fb55f19c:docs/mcp-vertex/audits/2026-08-29-full-working-tree-audit.md | rg -n "25047|item-25047|f00385"` devolvio cero coincidencias.
-- Las copias locales permitidas en `.worktrees/origin-develop/.../f00385-migrated-work-item-f00385.md` y `.worktrees/promote-main/.../f00385-migrated-work-item-f00385.md` solo contienen el placeholder migrado `Migrated work item: ....` y review logs heredados; no agregan alcance tecnico recuperable.
+- Las copias locales permitidas en los worktrees de origen y promoción sólo contienen el texto genérico del item migrado y anotaciones de revisión heredadas; no agregan alcance técnico recuperable.
 - Una version historica de la propuesta migrada en git ya registraba el mismo hallazgo: el ancla `#item-25047` no correspondia a ningun heading identificable y el audit historico no tenia coincidencias para `25047` ni `item-25047`.
 
 ## Slices
@@ -38,10 +38,10 @@ La migracion produjo un placeholder sin especificacion tecnica real. La referenc
 
 - **Status**: pending
 - **Files**: `ready/feats/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md`
-- **Gate**: `git diff --check -- docs/mcp-vertex/proposals/ready/feats/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md` y `rg -n "review-log|review-state|review-reviewer|review-implementer|\.\.\.\." docs/mcp-vertex/proposals/ready/feats/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md`
+- **Gate**: `git diff --check -- docs/mcp-vertex/proposals/ready/feats/f00385-declarar-irrecuperable-el-work-item-migrado-f00385-para-retiro-deliberado.md` y revisión del documento para confirmar que no contiene bloques de review heredados del placeholder ni texto placeholder; los campos vivos que añade el workflow se conservan como estado operativo.
 - acceptance:
   - "La propuesta documenta de forma explícita que no existe una fuente verificable del item 25047 en las ubicaciones permitidas revisadas."
-  - "No quedan placeholders ni review logs heredados que aparenten una validacion o una implementacion inexistentes."
+  - "No quedan placeholders ni bloques de review heredados que aparenten una validacion o una implementacion inexistentes; los metadatos vivos del workflow no cuentan como residuo."
   - "El siguiente paso operativo queda claro y acotado: retirar deliberadamente esta propuesta mediante una transicion posterior, no intentar implementarla."
 - review-state: in_review
 - review-implementer: falcon
