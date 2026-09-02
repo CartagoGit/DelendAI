@@ -2,7 +2,7 @@
 id: f00340
 title: "plugin manifests."
 kind: feat
-status: review
+status: done
 type: proposal
 track: migrated
 date: 2026-08-30
@@ -30,7 +30,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ### S1 — Review migrated proposal
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/review/f00340-plugin-manifests.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
@@ -43,7 +43,10 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   tree was pruned in earlier cleanup). No actionable scope can be
   derived without the source. Book-keeping entry; no implementation
   expected.
-
+- review-state: done
+- review-implementer: sonnet-worker-migrated
+- review-reviewer: sonnet-verifier-migrated
+- review-log: approved by sonnet-verifier-migrated — Ran npx vitest run tools/scripts/lint/plugin-manifest.script.spec.ts tools/scripts/lint/manifest-vs-package.spec.ts tools/scripts/lint/manifest-vs-presets.spec.ts -> passing. Confirmed manifest schema/lint per MAN-001/002/009/010.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.

@@ -2,11 +2,14 @@
 id: f00341
 title: "generated registry."
 kind: feat
-status: ready
+status: review
 type: proposal
 track: migrated
 date: 2026-08-30
 migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#generated-registry
+last-transition-id: 41c1e964-71da-4cb8-9d41-81b7ac9eb494
+last-correlation-id: 41c1e964-71da-4cb8-9d41-81b7ac9eb494
+last-transition-from: in-progress
 ---
 
 # f00341 — generated registry.
@@ -28,7 +31,7 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 ### S1 — Review migrated proposal
 
 - **Status**: pending
-- **Files**: `ready/feats/f00341-generated-registry.md`
+- **Files**: `docs/mcp-vertex/proposals/review/f00341-generated-registry.md`
 - **Gate**: `git diff --quiet` (proposal-only edit; no code change)
 
 
@@ -77,3 +80,26 @@ alongside dozens of siblings without anyone re-running that one `git
 show`. Reopening S1 to `pending`; the real next step is to derive an
 actual scope/acceptance for "generated-registry" from the recovered source
 before this proposal can be marked done.
+
+### Verified 2026-09-02
+
+MAN-003 ("Generator de registry", line ~1979, part of section 21's
+generator suite) calls for generating the first-party plugin registry
+from plugin manifests instead of a hand-maintained array.
+
+Real derived acceptance: the first-party plugin registry entries must
+be a generated artifact, produced from `plugin.manifest.ts` files by
+a script, not manually written.
+
+Already implemented, not net-new work:
+`packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts`
+is a generated file (`GENERATED_FIRST_PARTY_MANIFEST_ENTRIES`)
+produced by `tools/scripts/generate/from-manifests.script.ts`
+(`GENERATED_FIRST_PARTY_INDEX_PATH`), which discovers every plugin's
+manifest via `discoverPluginManifests`/`parsePluginManifest` and
+writes the registry entries (id, package, summary, tags, permissions,
+tokenBudgetBytes) from that source of truth.
+
+Ran `npx vitest run tools/scripts/generate/from-manifests.script.spec.ts`
+on 2026-09-02: passing. No code change required; closing on this
+evidence.
