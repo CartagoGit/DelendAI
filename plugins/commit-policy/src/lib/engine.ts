@@ -634,7 +634,16 @@ export const createCommitPolicyEngine = (
 				);
 			}
 			if (scope.foreignDirtyExcluded.length > 0) {
-				console.warn(
+				// `console.debug`, not `console.warn`. This list is
+				// documented in the resolver as purely informational —
+				// declared paths that were not dirty when the slice
+				// fired, which is the NORMAL case for a slice whose
+				// files are already committed. Emitting it as a warning
+				// put one alarming line on the operator's console for
+				// essentially every slice, which is how a healthy
+				// system ends up looking broken and how real warnings
+				// stop being read.
+				console.debug(
 					JSON.stringify({
 						event: 'commit-policy.scope.foreignDirtyExcluded',
 						proposalId: event.proposalId,

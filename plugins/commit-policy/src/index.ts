@@ -497,16 +497,19 @@ export default definePlugin({
 					);
 					throw error;
 				}
-				console.warn(
+				// A slice that succeeded is not a warning. Emitting every
+				// outcome — including OK and ALREADY_PROCESSED — through
+				// `console.warn` meant a quiet, correct run still painted
+				// the operator's console with hundreds of warning lines.
+				// Only the outcomes that need a human keep that level.
+				const ok =
+					result.ack === 'OK' || result.ack === 'ALREADY_PROCESSED';
+				(ok ? console.debug : console.warn)(
 					JSON.stringify({
 						event: 'slice.detected',
 						proposalId: event.proposalId,
 						sliceId: event.sliceId,
-						engine:
-							result.ack === 'OK' ||
-							result.ack === 'ALREADY_PROCESSED'
-								? 'OK'
-								: 'ERR',
+						engine: ok ? 'OK' : 'ERR',
 					}),
 				);
 				// `ALREADY_PROCESSED` is the idempotency win: the
