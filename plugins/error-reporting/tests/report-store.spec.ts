@@ -1,8 +1,8 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { createReportStore } from '../src/lib/report-store.service';
 
@@ -141,5 +141,48 @@ describe('createReportStore', () => {
 			writeFile(join(dir, 'reported.json'), '{not json', 'utf8'),
 		);
 		expect(await store.get('missing')).toBeUndefined();
+	});
+});
+
+describe('report store — a state file we cannot read', () => {
+	// `catch { return {} }` collapsed "missing" and "unreadable" into the
+	// same answer, and the next write persisted that emptiness over the
+	// real file. This store is what stops a recurring failure from
+	// opening a SECOND GitHub issue for the same fingerprint, so losing
+	// it means mcp-vertex re-reports everything it has ever reported —
+	// into the user's repository.
+	let dir = '';
+	beforeEach(async () => {
+		dir = await mkdtemp(join(tmpdir(), 'error-reporting-store-corrupt-'));
+	});
+	afterEach(async () => {
+		await rm(dir, { recursive: true, force: true });
+	});
+
+	it('does not overwrite a corrupt state file with an empty one', async () => {
+		const statePath = join(dir, 'reported.json');
+		const corrupt = '{"abc": {"fingerprint": "abc", tor';
+		await writeFile(statePath, corrupt, 'utf8');
+
+		const store = createReportStore(dir);
+		await store.recordAttempt('abc', {
+			classification: 'INTERNAL',
+			at: new Date().toISOString(),
+		});
+
+		// The bytes are evidence of a torn write. Destroying them loses
+		// the de-duplication history AND any chance of diagnosing it.
+		expect(await readFile(statePath, 'utf8')).toBe(corrupt);
+	});
+
+	it('still treats a MISSING file as an empty state, which it is', async () => {
+		const store = createReportStore(dir);
+		await store.recordAttempt('abc', {
+			classification: 'INTERNAL',
+			at: new Date().toISOString(),
+		});
+		expect((await store.all()).map((record) => record.fingerprint)).toEqual(
+			['abc'],
+		);
 	});
 });

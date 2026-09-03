@@ -117,19 +117,70 @@ const normalizeRecord = (
 	};
 };
 
-const readAll = async (statePath: string): Promise<IStateFile> => {
+/**
+ * The outcome of reading `reported.json`.
+ *
+ * `trusted: false` means we could not establish what the file contains —
+ * it exists but is unreadable or unparseable. That is NOT the same as
+ * "it is empty", and collapsing the two is how this store used to lose
+ * its entire memory: `catch { return {} }` turned any read error into an
+ * empty state, and the very next `writeState` persisted that emptiness
+ * over the real file.
+ *
+ * The consequence is user-visible. This store is what stops a recurring
+ * failure from opening a second GitHub issue for the same fingerprint,
+ * and what remembers that the circuit breaker is open. Reset it and
+ * mcp-vertex re-reports everything it has ever reported — into the
+ * user's repository.
+ *
+ * A missing file is the one benign case (first run) and stays trusted.
+ */
+interface IReadState {
+	readonly records: IStateFile;
+	readonly trusted: boolean;
+}
+
+const warnedPaths = new Set<string>();
+
+const readAll = async (statePath: string): Promise<IReadState> => {
+	let raw: string;
 	try {
-		const raw = await readFile(statePath, 'utf8');
+		raw = await readFile(statePath, 'utf8');
+	} catch (error) {
+		const code = (error as NodeJS.ErrnoException | undefined)?.code;
+		if (code === 'ENOENT') return { records: {}, trusted: true };
+		// EACCES, EMFILE, EISDIR… — the file may well hold real state we
+		// simply cannot see right now. Refuse to speak for it.
+		if (!warnedPaths.has(statePath)) {
+			warnedPaths.add(statePath);
+			console.warn(
+				`error-reporting: cannot read ${statePath} (${String(code ?? 'unknown')}); de-duplication state is unavailable and will NOT be overwritten.`,
+			);
+		}
+		return { records: {}, trusted: false };
+	}
+	try {
 		const parsed: unknown = JSON.parse(raw);
-		if (typeof parsed !== 'object' || parsed === null) return {};
+		if (typeof parsed !== 'object' || parsed === null) {
+			return { records: {}, trusted: false };
+		}
 		const normalized: IStateFile = {};
 		for (const [key, value] of Object.entries(parsed)) {
 			const record = normalizeRecord(key, value);
 			if (record !== undefined) normalized[record.fingerprint] = record;
 		}
-		return normalized;
+		return { records: normalized, trusted: true };
 	} catch {
-		return {};
+		// Corrupt JSON — most likely a torn write. Preserve it: it is
+		// evidence, and overwriting it destroys the de-duplication
+		// history along with any chance of diagnosing the tear.
+		if (!warnedPaths.has(statePath)) {
+			warnedPaths.add(statePath);
+			console.warn(
+				`error-reporting: ${statePath} is not valid JSON; de-duplication state is unavailable and will NOT be overwritten.`,
+			);
+		}
+		return { records: {}, trusted: false };
 	}
 };
 
@@ -177,15 +228,16 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 	return {
 		statePath,
 		async get(fingerprint) {
-			return (await readAll(statePath))[fingerprint];
+			return (await readAll(statePath)).records[fingerprint];
 		},
 		async all() {
-			return Object.values(await readAll(statePath));
+			return Object.values((await readAll(statePath)).records);
 		},
 		async claimDispatch(fingerprint, claimedUntil, now) {
 			let claimed = false;
 			await withFileMutex(statePath, async () => {
-				const state = await readAll(statePath);
+				const { records: state, trusted } = await readAll(statePath);
+				if (!trusted) return;
 				const previous = state[fingerprint];
 				const activeClaim = parseIso(previous?.dispatchClaimedUntil);
 				if (
@@ -206,7 +258,8 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 		},
 		async recordAttempt(fingerprint, input) {
 			await withFileMutex(statePath, async () => {
-				const state = await readAll(statePath);
+				const { records: state, trusted } = await readAll(statePath);
+				if (!trusted) return;
 				const previous = state[fingerprint];
 				const next = nextRecord(fingerprint, previous);
 				state[fingerprint] = {
@@ -220,7 +273,8 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 		},
 		async recordFailure(fingerprint, input) {
 			await withFileMutex(statePath, async () => {
-				const state = await readAll(statePath);
+				const { records: state, trusted } = await readAll(statePath);
+				if (!trusted) return;
 				const previous = state[fingerprint];
 				const next = nextRecord(fingerprint, previous);
 				const {
@@ -242,7 +296,8 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 		},
 		async recordSuccess(fingerprint, input) {
 			await withFileMutex(statePath, async () => {
-				const state = await readAll(statePath);
+				const { records: state, trusted } = await readAll(statePath);
+				if (!trusted) return;
 				const previous = state[fingerprint];
 				const next = nextRecord(fingerprint, previous);
 				const {
