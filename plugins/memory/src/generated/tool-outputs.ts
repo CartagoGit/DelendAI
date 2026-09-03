@@ -25,6 +25,15 @@ export interface McpVertexMemoryCompactOutput {
 	persisted: boolean;
 	noteId?: string;
 	redactedSecrets: number;
+	preservation: {
+		ok: boolean;
+		droppedCount: number;
+		dropped: {
+			category: string;
+			text: string;
+		}[];
+		nextAction: string;
+	};
 }
 
 export interface McpVertexMemoryCompactionCheckOutput {

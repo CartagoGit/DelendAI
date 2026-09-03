@@ -53,7 +53,7 @@
 
 ## Token hotspots
 
-- `mcp-vertex_project-kpis_project_kpis` — 9,898 B total, 8,518 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `mcp-vertex_project-kpis_project_kpis` — 4,275 B total, 2,895 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 
 <!-- mcp-vertex:end agent-md -->
 

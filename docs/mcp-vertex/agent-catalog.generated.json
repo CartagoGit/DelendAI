@@ -86,15 +86,11 @@
 			"plugin": "commit-policy"
 		},
 		{
-			"name": "mcp-vertex_commit-policy_commit_policy_refresh_branch_protection",
-			"plugin": "commit-policy"
-		},
-		{
 			"name": "mcp-vertex_commit-policy_commit_policy_run",
 			"plugin": "commit-policy"
 		},
 		{
-			"name": "mcp-vertex_commit-policy_commit_policy_status",
+			"name": "mcp-vertex_commit-policy_commit_policy_storms",
 			"plugin": "commit-policy"
 		},
 		{
@@ -236,6 +232,10 @@
 		{
 			"name": "mcp-vertex_env_env_explains",
 			"plugin": "env"
+		},
+		{
+			"name": "mcp-vertex_error-reporting_diagnose_log",
+			"plugin": "error-reporting"
 		},
 		{
 			"name": "mcp-vertex_error-reporting_report_status",
@@ -699,6 +699,10 @@
 		},
 		{
 			"name": "mcp-vertex_quality-policy_quality_policy",
+			"plugin": "quality-policy"
+		},
+		{
+			"name": "mcp-vertex_quality-policy_quality_policy_run_settlement",
 			"plugin": "quality-policy"
 		},
 		{
