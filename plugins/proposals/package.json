@@ -49,6 +49,7 @@
 	"dependencies": {
 		"@mcp-vertex/error-reporting": "workspace:*",
 		"@mcp-vertex/logs": "workspace:*",
+		"@mcp-vertex/quality": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
@@ -56,6 +57,7 @@
 		"@mcp-vertex/core": "workspace:*",
 		"@mcp-vertex/error-reporting": "workspace:*",
 		"@mcp-vertex/logs": "workspace:*",
+		"@mcp-vertex/quality": "workspace:*",
 		"@mcp-vertex/test-kit": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",

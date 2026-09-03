@@ -43,6 +43,7 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
+		"@mcp-vertex/proposals": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"
