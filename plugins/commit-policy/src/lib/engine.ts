@@ -122,6 +122,7 @@ export type IEngineRefusalCode =
 	| 'PUSH_FAILED'
 	| 'NOTHING_TO_COMMIT'
 	| 'SLICE_FILES_MISSING'
+	| 'SLICE_FILES_IGNORED'
 	| 'UNKNOWN_REFUSAL'
 	| 'SETTLEMENT_IN_PROGRESS';
 
@@ -159,6 +160,7 @@ export const ENGINE_REFUSAL_CODES = [
 	'PUSH_FAILED',
 	'NOTHING_TO_COMMIT',
 	'SLICE_FILES_MISSING',
+	'SLICE_FILES_IGNORED',
 	'UNKNOWN_REFUSAL',
 	'SETTLEMENT_IN_PROGRESS',
 ] as const satisfies readonly IEngineRefusalCode[];
@@ -1085,7 +1087,7 @@ const executeGuardedCommit = async (
  * the answer, so the listener must stop rather than retry. Maps each
  * to the outcome recorded in the processed-events store.
  */
-const TERMINAL_REFUSAL_OUTCOMES: Partial<
+export const TERMINAL_REFUSAL_OUTCOMES: Partial<
 	Record<
 		IEngineRefusalCode,
 		'NO_CHANGE' | 'CAUSALITY_VIOLATION' | 'PERMANENT_REFUSAL'
@@ -1094,14 +1096,20 @@ const TERMINAL_REFUSAL_OUTCOMES: Partial<
 	NOTHING_TO_COMMIT: 'NO_CHANGE',
 	CAUSALITY_VIOLATION: 'CAUSALITY_VIOLATION',
 	SLICE_FILES_MISSING: 'PERMANENT_REFUSAL',
+	SLICE_FILES_IGNORED: 'PERMANENT_REFUSAL',
 };
 
 /**
  * Map driver-level refusal strings back to engine refusal codes.
  * Keeps the driver as a pure adapter while letting the engine
  * expose typed codes to callers / tests.
+ *
+ * Exported so a test can assert the mapping a REAL refusal string gets,
+ * rather than only that a code exists somewhere in a list. Every loop
+ * this repo has hit came from a refusal string reaching a classifier
+ * that did not recognise it — so the string is the thing worth pinning.
  */
-const refusalToEngine = (
+export const refusalToEngine = (
 	refusal: string,
 	metadata?: {
 		readonly committed?: boolean;
@@ -1139,6 +1147,17 @@ const refusalToEngine = (
 	// forever.
 	if (/did not match any files/u.test(refusal)) {
 		return err('SLICE_FILES_MISSING', refusal, metadata);
+	}
+	// A slice naming a gitignored path can NEVER be committed: `git add`
+	// refuses it, and no amount of retrying changes .gitignore. Observed
+	// live on 2026-09-03 — a slice declared `.cache/...` in its `Files:`
+	// and the refusal fell through to UNKNOWN_REFUSAL, which is not
+	// terminal, so the event was re-emitted indefinitely.
+	//
+	// The remedy belongs to the proposal author, not to the engine, so
+	// this is a permanent refusal that names what to change.
+	if (/paths are ignored by one of your .gitignore files/u.test(refusal)) {
+		return err('SLICE_FILES_IGNORED', refusal, metadata);
 	}
 	// A slice whose files already match HEAD is DONE, not failed.
 	// Without this the refusal fell through to the generic
