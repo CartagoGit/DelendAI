@@ -123,7 +123,11 @@ const createManagedPersistenceServer = async () => {
 			content: Array<{ text?: string }>;
 			structuredContent: T;
 		}> => {
-			const routed = name.startsWith('mcp-vertex_proposals_');
+			// `native` without progressive disclosure lists every proposals
+			// tool and hides only the router, so the direct call is the one
+			// that works here. Routing was unconditional and failed with
+			// `-32602 ... disabled` the moment disclosure became opt-in.
+			const routed = false;
 			const raw = (await client.callTool(
 				routed
 					? {

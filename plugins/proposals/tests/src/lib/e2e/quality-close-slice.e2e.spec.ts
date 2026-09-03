@@ -21,14 +21,15 @@ import qualityPlugin from '@mcp-vertex/quality';
 
 const workspaces: string[] = [];
 
+// Direct by name, not through the router. This harness pins `native`
+// and does not opt into progressive disclosure, so every proposals tool
+// is listed and callable — that is precisely what `native` promises. The
+// router is the one tool `native` HIDES, so routing through it here fails
+// with `-32602 ... disabled`.
 const syncProposals = (client: Client) =>
 	client.callTool({
-		name: 'mcp-vertex_vertex',
-		arguments: {
-			domain: 'proposals',
-			action: 'sync_proposals',
-			args: {},
-		},
+		name: 'mcp-vertex_proposals_sync_proposals',
+		arguments: {},
 	});
 
 const createQualityServer = async (command: string) => {
