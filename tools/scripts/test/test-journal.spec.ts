@@ -324,6 +324,7 @@ describe('test journal privacy and locking', () => {
 				actual: undefined,
 				diff: `- ${fakeKey}`,
 			},
+			kind: 'test',
 		});
 		const serialized = JSON.stringify(record);
 		expect(serialized).not.toContain(fakeKey);
