@@ -1,3 +1,7 @@
+import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+
+import reporterPackageJson from '../package.json';
+
 import {
 	definePlugin,
 	redactSecrets,
@@ -37,6 +41,7 @@ import {
 	buildErrorReportingStartupNotice,
 } from './lib/startup-notice.helper';
 import { createSafeReporter } from './lib/reporter.service';
+import { buildDiagnoseLogRegistration } from './lib/tools/diagnose-log.tool';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
 
 const redactReport = (report: ISafeMcpVertexReport): ISafeMcpVertexReport =>
@@ -339,6 +344,35 @@ export default definePlugin({
 			store,
 			funnel,
 		});
+		/**
+		 * q00014 S3. The reader and its tool were written and never
+		 * registered, so `error_reporting_diagnose_log` did not exist at
+		 * runtime: the whole point of the slice — an agent reading the
+		 * MCP log instead of a person pasting it into a chat — shipped
+		 * as dead code. Registering it is the slice.
+		 *
+		 * Available whether or not reporting is enabled, because
+		 * DIAGNOSING is read-only and local. Only `submit` is gated: it
+		 * is present when reporting is on and the caller passes an
+		 * explicit per-finding confirmation, and absent otherwise, so a
+		 * disabled plugin still answers "what is wrong with this log"
+		 * and simply cannot open an issue.
+		 */
+		const diagnoseLogTool = buildDiagnoseLogRegistration({
+			namespacePrefix: ctx.namespacePrefix,
+			mcpVertexVersion: MCP_VERTEX_VERSION,
+			reporterVersion: reporterPackageJson.version,
+			...(options.enabled
+				? {
+						submit: async (input) => {
+							const outcome = await reporter.submitSafeReport(
+								redactReport(input.report),
+							);
+							return { ok: outcome.ok };
+						},
+					}
+				: {}),
+		});
 		/** Lifecycle failures (register/hook) skip `onToolCall`'s
 		 * success/failure split — every call here IS a failure — but
 		 * still funnel through the same `observedFailures` /
@@ -374,7 +408,7 @@ export default definePlugin({
 
 		if (!options.enabled) {
 			return {
-				tools: [statusTool],
+				tools: [statusTool, diagnoseLogTool],
 				knowledge: [
 					...knowledge,
 					{
@@ -396,7 +430,7 @@ export default definePlugin({
 		}
 
 		return {
-			tools: [statusTool],
+			tools: [statusTool, diagnoseLogTool],
 			knowledge,
 			onToolCall: async (toolName, _args, result, error) => {
 				void reportObservedFailure(toolName, result, error);
