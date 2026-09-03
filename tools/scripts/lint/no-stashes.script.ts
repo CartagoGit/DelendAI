@@ -43,7 +43,7 @@ import { spawnSync } from 'node:child_process';
 /** Exact reflog subject lefthook uses for its partial-staging backup. */
 export const LEFTHOOK_BACKUP_SUBJECT = 'lefthook auto backup';
 
-export type StashKind = 'lefthook-backup' | 'user';
+export type IStashKind = 'lefthook-backup' | 'user';
 
 export interface IStashEntry {
 	readonly ref: string;
@@ -63,7 +63,7 @@ export interface IStashEntry {
 export const TRANSIENT_BACKUP_MAX_AGE_SECONDS = 600;
 
 export interface IClassifiedStash extends IStashEntry {
-	readonly kind: StashKind;
+	readonly kind: IStashKind;
 }
 
 export const parseStashList = (output: string): readonly IStashEntry[] =>
@@ -83,7 +83,7 @@ export const parseStashList = (output: string): readonly IStashEntry[] =>
 			};
 		});
 
-export const classifyStash = (entry: IStashEntry): StashKind =>
+export const classifyStash = (entry: IStashEntry): IStashKind =>
 	entry.message.trim() === LEFTHOOK_BACKUP_SUBJECT
 		? 'lefthook-backup'
 		: 'user';

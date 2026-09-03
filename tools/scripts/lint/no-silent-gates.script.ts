@@ -23,12 +23,21 @@
  * `with-compute-lock` wrapper). Adding a gate to the chain puts it under
  * this check automatically; removing one takes it out.
  *
- * Rule 1 — `discarded-stdout` (exact, syntactic, zero false positives).
- *   A package.json script in that closure may not redirect the stdout of a
- *   gate command to /dev/null (`>/dev/null`, `1>/dev/null`, `&>/dev/null`,
- *   `>&/dev/null`). This is the exact antipattern that caused the incident.
- *   If a command is too chatty, make the command quieter (a `--quiet` flag);
- *   do not blindfold its failure path.
+ * Rule 1 — `discarded-diagnosis` (exact, syntactic, zero false positives).
+ *   A package.json script in the closure that redirects a gate command's
+ *   stdout to /dev/null (`>/dev/null`, `1>/dev/null`, `&>/dev/null`,
+ *   `>&/dev/null`) is resolved through to the `.ts` file it ultimately runs.
+ *   If that file can fail non-zero and writes NOTHING to stderr, its only
+ *   voice is the stream the caller just threw away: violation. This is the
+ *   exact composition that caused the incident.
+ *
+ *   The redirect on its own is NOT a violation. `catalog:check` legitimately
+ *   discards `sync:proposals`' JSON summary, and that script — since the
+ *   incident — prints its diagnosis to stderr, which no caller redirects.
+ *   Flagging it anyway would mean the only available fix is to make the
+ *   command chatty again, and a gate whose fix is "add noise" gets waived.
+ *   Every verified-safe redirect is still counted in the success line, so
+ *   the pattern stays visible instead of invisible.
  *
  * Rule 2 — `silent-exit` (static, file-level, conservative).
  *   A reachable script that can terminate non-zero — `process.exit(<not the
@@ -59,7 +68,11 @@
  *   - Non-zero exits caused by an uncaught async rejection, a `throw` inside
  *     a callback, or a child process the script forwards the code of.
  *   - Redirection performed anywhere other than a package.json script in the
- *     closure — inside a shell script, a lefthook job, or CI YAML.
+ *     closure — inside a shell script, a lefthook job, or CI YAML. The
+ *     `catalog-drift-check` lefthook job carries the same redirect and is
+ *     out of reach of this gate.
+ *   - Whether the stderr write a redirect-target has is on the failure path.
+ *     Rules 2 and 3 already carry that burden for the file itself.
  *   - stderr being discarded (`2>/dev/null`). It is equally destructive, but
  *     it is a different antipattern from the one that happened here and it
  *     has legitimate uses inside compound git commands; keeping Rule 1 to
@@ -75,13 +88,13 @@ const REPO_ROOT = resolve(import.meta.dir, '../../..');
 
 /* ───────────────────────── types ───────────────────────── */
 
-export type SilentGateRule =
-	| 'discarded-stdout'
+export type ISilentGateRule =
+	| 'discarded-diagnosis'
 	| 'silent-exit'
 	| 'silent-failure-branch';
 
 export interface ISilentGateViolation {
-	readonly rule: SilentGateRule;
+	readonly rule: ISilentGateRule;
 	/** Repo-relative file, or `package.json` for Rule 1. */
 	readonly file: string;
 	readonly line: number;
@@ -95,6 +108,8 @@ export interface ISilentGateResult {
 	readonly scriptFiles: readonly string[];
 	/** Leaf commands that are not repo `.ts` files (external tools). */
 	readonly unresolved: readonly string[];
+	/** stdout redirects whose target proved to speak on stderr. */
+	readonly safeRedirects: readonly string[];
 }
 
 /* ─────────────────── chain resolution (pure) ─────────────────── */
@@ -202,58 +217,135 @@ export const resolveChain = (
 	};
 };
 
-/* ─────────────────── rule 1: discarded stdout ─────────────────── */
+/* ─────────── shared failure/output predicates (used by every rule) ─────────── */
 
-/** stdout (or stdout+stderr) sent to /dev/null. `2>/dev/null` is out of scope. */
-const STDOUT_TO_DEVNULL_RE =
-	/(?<![\d2])(?:1?>|&>|>&)\s*\/dev\/null|(?:>\s*\/dev\/null\s*2>&1)/u;
-
-export const findDiscardedStdout = (
-	scripts: Readonly<Record<string, string>>,
-	closure: IChainClosure,
-	packageJsonText: string,
-): readonly ISilentGateViolation[] => {
-	const lines = packageJsonText.split('\n');
-	const violations: ISilentGateViolation[] = [];
-	for (const name of closure.scriptNames) {
-		const command = scripts[name] ?? '';
-		for (const segment of splitCommandSegments(command)) {
-			if (!STDOUT_TO_DEVNULL_RE.test(segment)) continue;
-			const isGate =
-				BUN_RUN_RE.test(segment) || BUN_SCRIPT_RE.test(segment);
-			if (!isGate) continue;
-			const line =
-				lines.findIndex((text) =>
-					new RegExp(`"${name}"\\s*:`, 'u').test(text),
-				) + 1;
-			violations.push({
-				rule: 'discarded-stdout',
-				file: 'package.json',
-				line: line > 0 ? line : 1,
-				detail: `script "${name}" discards the stdout of a gate command: ${segment}`,
-				fix: 'remove the `>/dev/null`. If the command is too chatty, give it a --quiet flag; a gate whose stdout is discarded fails with an empty screen.',
-			});
-		}
-	}
-	return violations;
-};
-
-/* ─────────────────── rules 2 & 3: silent failure paths ─────────────────── */
-
+/**
+ * A write to the operator's screen. Covers the two spellings used in this
+ * repo — `console.*` and `<stream>.write(...)` — including the injected
+ * `stdout` / `stderr` / `writer` parameters that the testable gates take
+ * instead of touching `process` directly.
+ */
 const OUTPUT_CALL_RE =
-	/\bconsole\.(?:log|info|warn|error|debug|table|trace)\s*\(|\bprocess\.(?:stdout|stderr)\.write\s*\(/u;
+	/\bconsole\.(?:log|info|warn|error|debug|table|trace)\s*\(|\b(?:process\.)?(?:stdout|stderr|writer|logStream)\.write\s*\(/u;
+
+/** The subset of the above that reaches stderr, which no caller redirects. */
+const STDERR_CALL_RE =
+	/\bconsole\.(?:warn|error)\s*\(|\b(?:process\.)?stderr\.write\s*\(/u;
+
 const NON_ZERO_LITERAL_EXIT_RE =
 	/\bprocess\.exit\(\s*([1-9]\d*)\s*\)|\bprocess\.exitCode\s*=\s*([1-9]\d*)/u;
 const ANY_FAILURE_EXIT_RE =
 	/\bprocess\.exit\(\s*(?!0\s*\))|\bprocess\.exitCode\s*=\s*(?!0\b)/u;
 
-/** Strip line comments and string bodies so tokens inside them do not count. */
+/** Can this file terminate the process non-zero at all? */
+const canFailNonZero = (body: string): boolean =>
+	ANY_FAILURE_EXIT_RE.test(body) || /^\s*throw\s+/mu.test(body);
+
+/* ─────────────────── rule 1: discarded diagnosis ─────────────────── */
+
+/** stdout (or stdout+stderr) sent to /dev/null. `2>/dev/null` is out of scope. */
+const STDOUT_TO_DEVNULL_RE =
+	/(?<![\d2])(?:1?>|&>|>&)\s*\/dev\/null|(?:>\s*\/dev\/null\s*2>&1)/u;
+
+/**
+ * Every repo `.ts` entry point a single shell segment can end up running,
+ * following `bun run <name>` indirections through package.json.
+ */
+export const resolveSegmentFiles = (
+	scripts: Readonly<Record<string, string>>,
+	segment: string,
+	seen: ReadonlySet<string> = new Set(),
+): readonly string[] => {
+	const asFile = BUN_SCRIPT_RE.exec(segment);
+	if (asFile?.[1] !== undefined) return [asFile[1]];
+	const asRun = BUN_RUN_RE.exec(segment);
+	const name = asRun?.[1];
+	if (name === undefined || seen.has(name)) return [];
+	const command = scripts[name];
+	if (command === undefined) return [];
+	const nextSeen = new Set([...seen, name]);
+	return splitCommandSegments(command).flatMap((inner) =>
+		resolveSegmentFiles(scripts, inner, nextSeen),
+	);
+};
+
+export interface IRedirectAudit {
+	readonly violations: readonly ISilentGateViolation[];
+	readonly safe: readonly string[];
+}
+
+export const auditDiscardedStdout = (
+	scripts: Readonly<Record<string, string>>,
+	closure: IChainClosure,
+	packageJsonText: string,
+	readScript: (relPath: string) => string | undefined,
+): IRedirectAudit => {
+	const lines = packageJsonText.split('\n');
+	const violations: ISilentGateViolation[] = [];
+	const safe: string[] = [];
+	for (const name of closure.scriptNames) {
+		const command = scripts[name] ?? '';
+		for (const segment of splitCommandSegments(command)) {
+			if (!STDOUT_TO_DEVNULL_RE.test(segment)) continue;
+			if (!BUN_RUN_RE.test(segment) && !BUN_SCRIPT_RE.test(segment))
+				continue;
+			const line =
+				lines.findIndex((text) =>
+					new RegExp(`"${name}"\\s*:`, 'u').test(text),
+				) + 1;
+			const at = { file: 'package.json', line: line > 0 ? line : 1 };
+			const targets = resolveSegmentFiles(scripts, segment);
+			if (targets.length === 0) {
+				violations.push({
+					rule: 'discarded-diagnosis',
+					...at,
+					detail: `script "${name}" discards the stdout of \`${segment}\`, and this gate cannot resolve which script that runs — so it cannot prove the failure message survives`,
+					fix: 'drop the `>/dev/null`, or point it at a `bun run <script>` / `bun <path>.ts` command this gate can follow.',
+				});
+				continue;
+			}
+			for (const target of targets) {
+				const source = readScript(target);
+				if (source === undefined) continue;
+				const scoped = scanScopes(source);
+				const body = scoped.map((entry) => entry.text).join('\n');
+				if (!canFailNonZero(body)) continue;
+				const mute = scoped.some(
+					(entry, index) =>
+						NON_ZERO_LITERAL_EXIT_RE.test(entry.text) &&
+						!enclosingScopePrints(scoped, index, STDERR_CALL_RE),
+				);
+				if (!mute) {
+					safe.push(`${name}: ${segment} -> ${target}`);
+					continue;
+				}
+				violations.push({
+					rule: 'discarded-diagnosis',
+					...at,
+					detail: `script "${name}" sends the stdout of ${target} to /dev/null, and ${target} can exit non-zero while writing only to stdout — its failure message is destroyed by this very line`,
+					fix: `either drop the \`>/dev/null\` here, or make ${target} write its diagnosis with \`process.stderr.write\` / \`console.error\` (no caller redirects stderr). Do not "fix" it by silencing the script further.`,
+				});
+			}
+		}
+	}
+	return { violations, safe };
+};
+
+/* ─────────────────── rules 2 & 3: silent failure paths ─────────────────── */
+
+/**
+ * Blank out string bodies FIRST, then line comments. The order matters:
+ * `if (!pattern.endsWith('/*'))` is real code that contains a block-comment
+ * opener inside a string literal, and stripping comments first made the
+ * scanner treat the whole rest of the file as one comment — which is
+ * exactly how an early version of this gate reported two false positives.
+ */
 const stripNoise = (line: string): string =>
 	line
-		.replace(/\/\/.*$/u, '')
 		.replace(/'(?:[^'\\]|\\.)*'/gu, "''")
 		.replace(/"(?:[^"\\]|\\.)*"/gu, '""')
-		.replace(/`(?:[^`\\]|\\.)*`/gu, '``');
+		.replace(/`(?:[^`\\]|\\.)*`/gu, '``')
+		.replace(/\/\/.*$/u, '');
 
 /**
  * Brace depth at the START of each line, plus the cleaned line text.
@@ -267,7 +359,7 @@ const scanScopes = (
 	let depth = 0;
 	let inBlockComment = false;
 	for (const raw of source.split('\n')) {
-		let text = raw;
+		let text = stripNoise(raw);
 		if (inBlockComment) {
 			const end = text.indexOf('*/');
 			if (end < 0) {
@@ -278,7 +370,7 @@ const scanScopes = (
 			inBlockComment = false;
 		}
 		const start = text.indexOf('/*');
-		if (start >= 0 && !text.slice(0, start).includes('//')) {
+		if (start >= 0) {
 			const end = text.indexOf('*/', start + 2);
 			if (end < 0) {
 				inBlockComment = true;
@@ -287,9 +379,8 @@ const scanScopes = (
 				text = text.slice(0, start) + text.slice(end + 2);
 			}
 		}
-		const clean = stripNoise(text);
-		out.push({ depth, text: clean });
-		for (const char of clean) {
+		out.push({ depth, text });
+		for (const char of text) {
 			if (char === '{') depth += 1;
 			else if (char === '}') depth -= 1;
 		}
@@ -298,12 +389,21 @@ const scanScopes = (
 };
 
 /**
- * True when some enclosing scope of `index` — innermost outwards, module
- * scope included — contains an output call.
+ * True when some scope enclosing `index` — innermost outwards, module scope
+ * included — contains a matching output call ON OR BEFORE that line.
+ *
+ * "Before" is the cheap stand-in for dominance. A gate whose only stderr
+ * write sits in a top-level `catch` block *after* the failing `process.exit`
+ * has not spoken on the path that exited, and that is precisely the shape
+ * `sync-proposal-registry` had when the incident happened. Requiring the
+ * write to appear earlier in the file costs one comparison and turns the
+ * check from "the file mentions stderr somewhere" into "this exit had
+ * something to say".
  */
 const enclosingScopePrints = (
 	lines: readonly { readonly depth: number; readonly text: string }[],
 	index: number,
+	pattern: RegExp = OUTPUT_CALL_RE,
 ): boolean => {
 	const target = lines[index];
 	if (target === undefined) return false;
@@ -315,15 +415,8 @@ const enclosingScopePrints = (
 				break;
 			}
 		}
-		let end = lines.length - 1;
-		for (let i = index; i < lines.length; i += 1) {
-			if ((lines[i]?.depth ?? 0) < depth) {
-				end = i;
-				break;
-			}
-		}
-		for (let i = start; i <= end; i += 1) {
-			if (OUTPUT_CALL_RE.test(lines[i]?.text ?? '')) return true;
+		for (let i = start; i <= index; i += 1) {
+			if (pattern.test(lines[i]?.text ?? '')) return true;
 		}
 	}
 	return false;
@@ -337,11 +430,10 @@ export const lintScriptSource = (
 	const body = lines.map((entry) => entry.text).join('\n');
 	const violations: ISilentGateViolation[] = [];
 
-	const canFail =
-		ANY_FAILURE_EXIT_RE.test(body) || /^\s*throw\s+/mu.test(body);
-	if (canFail && !OUTPUT_CALL_RE.test(body)) {
+	if (canFailNonZero(body) && !OUTPUT_CALL_RE.test(body)) {
 		const line =
-			lines.findIndex((entry) => ANY_FAILURE_EXIT_RE.test(entry.text)) + 1;
+			lines.findIndex((entry) => ANY_FAILURE_EXIT_RE.test(entry.text)) +
+			1;
 		violations.push({
 			rule: 'silent-exit',
 			file,
@@ -383,9 +475,13 @@ export const lintSilentGates = (
 	};
 	const scripts = manifest.scripts ?? {};
 	const closure = resolveChain(scripts, inputs.entry);
-	const violations: ISilentGateViolation[] = [
-		...findDiscardedStdout(scripts, closure, inputs.packageJsonText),
-	];
+	const redirects = auditDiscardedStdout(
+		scripts,
+		closure,
+		inputs.packageJsonText,
+		inputs.readScript,
+	);
+	const violations: ISilentGateViolation[] = [...redirects.violations];
 	for (const file of closure.files) {
 		const source = inputs.readScript(file);
 		if (source === undefined) continue;
@@ -398,12 +494,17 @@ export const lintSilentGates = (
 		violations,
 		scriptFiles: closure.files,
 		unresolved: closure.unresolved,
+		safeRedirects: redirects.safe,
 	};
 };
 
 export const formatReport = (result: ISilentGateResult): string => {
 	if (result.violations.length === 0) {
-		return `✓ no-silent-gates: ${result.scriptFiles.length} gate script(s) in the validate:run chain all report on their failure path.`;
+		const redirects =
+			result.safeRedirects.length === 0
+				? ''
+				: ` ${result.safeRedirects.length} stdout redirect(s) checked: the target speaks on stderr.`;
+		return `✓ no-silent-gates: ${result.scriptFiles.length} gate script(s) in the validate:run chain all report on their failure path.${redirects}`;
 	}
 	return [
 		`✖ no-silent-gates: ${result.violations.length} silent failure path(s):`,
@@ -427,7 +528,8 @@ if (isMainModule()) {
 		process.argv
 			.find((arg) => arg.startsWith(`${flag}=`))
 			?.slice(flag.length + 1);
-	const manifestPath = argOf('--package-json') ?? join(REPO_ROOT, 'package.json');
+	const manifestPath =
+		argOf('--package-json') ?? join(REPO_ROOT, 'package.json');
 	const root = argOf('--root') ?? REPO_ROOT;
 	const entry = argOf('--entry') ?? 'validate:run';
 	const result = lintSilentGates({
@@ -442,6 +544,8 @@ if (isMainModule()) {
 		},
 	});
 	if (process.argv.includes('--verbose')) {
+		for (const redirect of result.safeRedirects)
+			console.log(`  redirect (safe) ${redirect}`);
 		console.log(
 			`chain: ${result.scriptFiles.length} ts entry point(s), ${result.unresolved.length} external leaf command(s)`,
 		);
