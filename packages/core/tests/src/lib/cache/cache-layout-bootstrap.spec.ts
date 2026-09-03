@@ -87,6 +87,38 @@ describe('bootstrapCacheLayout', () => {
 		);
 	});
 
+	it('removes an empty doubly-nested legacy cache root', async () => {
+		const workspace = createTestWorkspace('mcp-vertex-cache-');
+		workspaces.push(workspace);
+		const cacheDir = join(workspace, '.runtime/cache');
+		await mkdir(join(cacheDir, '.cache/mcp-vertex/cache'), {
+			recursive: true,
+		});
+
+		await bootstrapCacheLayout({
+			workspaceRootAbs: workspace,
+			cacheDirAbs: cacheDir,
+		});
+
+		await expect(readFile(join(cacheDir, '.cache'))).rejects.toThrow();
+	});
+
+	it('preserves non-empty doubly-nested cache data', async () => {
+		const workspace = createTestWorkspace('mcp-vertex-cache-');
+		workspaces.push(workspace);
+		const cacheDir = join(workspace, '.runtime/cache');
+		const nestedFile = join(cacheDir, '.cache/mcp-vertex/state.json');
+		await mkdir(join(cacheDir, '.cache/mcp-vertex'), { recursive: true });
+		await writeFile(nestedFile, '{"keep":true}\n');
+
+		await bootstrapCacheLayout({
+			workspaceRootAbs: workspace,
+			cacheDirAbs: cacheDir,
+		});
+
+		expect(await readFile(nestedFile, 'utf8')).toContain('"keep":true');
+	});
+
 	it('reports legacy paths without changing the workspace in dry-run mode', async () => {
 		const workspace = createTestWorkspace('mcp-vertex-cache-');
 		workspaces.push(workspace);

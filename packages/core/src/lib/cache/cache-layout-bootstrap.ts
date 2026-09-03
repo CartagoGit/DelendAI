@@ -31,6 +31,8 @@ const LEGACY_DIRS: Readonly<Record<string, string>> = {
 	'.verify-tmp': 'verify-tmp',
 };
 
+const NESTED_CACHE_ROOT = ['.cache', 'mcp-vertex'] as const;
+
 const isMissing = async (path: string): Promise<boolean> => {
 	try {
 		await lstat(path);
@@ -100,6 +102,28 @@ const reconcilePath = async (
 	return moveDirectoryContents(source, destination, apply);
 };
 
+const isEmptyTree = async (path: string): Promise<boolean> => {
+	const entries = await readdir(path, { withFileTypes: true });
+	for (const entry of entries) {
+		if (!entry.isDirectory()) return false;
+		if (!(await isEmptyTree(join(path, entry.name)))) return false;
+	}
+	return true;
+};
+
+const removeEmptyNestedCacheRoot = async (
+	cacheDirAbs: string,
+	apply: boolean,
+): Promise<void> => {
+	const nestedCacheRoot = join(cacheDirAbs, ...NESTED_CACHE_ROOT);
+	const nestedCacheParent = join(cacheDirAbs, NESTED_CACHE_ROOT[0]);
+	if (await isMissing(nestedCacheRoot)) return;
+	if (!(await isEmptyTree(nestedCacheRoot)) || !apply) return;
+	await rm(nestedCacheRoot, { recursive: true });
+	if (await isEmptyTree(nestedCacheParent))
+		await rm(nestedCacheParent, { recursive: true });
+};
+
 /** Establish the shared cache layout and migrate known runtime directories. */
 export const bootstrapCacheLayout = async (
 	options: ICacheLayoutBootstrapOptions,
@@ -153,6 +177,10 @@ export const bootstrapCacheLayout = async (
 			migrated.push({ from: source, to: destination });
 		}
 	}
+	// Older hosts resolved the configured cache root twice and created
+	// `<cacheDir>/.cache/mcp-vertex`. Remove that exact empty legacy
+	// directory, but never delete files or non-empty cache data implicitly.
+	await removeEmptyNestedCacheRoot(contained.abs, apply);
 
 	if (options.createPluginDirs === true) {
 		const directories = new Set([
