@@ -14,7 +14,7 @@
  * <code>/<date>` slug is not re-created.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { IStorm } from './storm-detector';
@@ -157,18 +157,19 @@ export const fileRepairProposals = (
 		const sourceFile = inferSourceFile(storm.suggestedFix);
 		const filename = buildRepairProposalFilename(storm, now);
 		const fullPath = join(options.docsDir, 'proposals', 'ready', filename);
-		if (existsSync(fullPath)) {
-			results.push({
-				storm,
-				filePath: filename,
-				proposed: false,
-				reason: 'already exists',
-			});
-			continue;
-		}
 		try {
 			mkdirSync(repairsDir, { recursive: true });
-			writeFileSync(fullPath, buildBody(storm, sourceFile), 'utf8');
+			// `wx` is the idempotency check AND the write in one atomic
+			// syscall. The previous `existsSync` guard followed by a plain
+			// write was a check-then-act race, and this repo runs several
+			// agents against one worktree: two of them observing "does not
+			// exist" for the same storm both proceeded, and the second
+			// silently overwrote the first proposal. EEXIST is the answer
+			// to "already exists", reported below rather than thrown.
+			writeFileSync(fullPath, buildBody(storm, sourceFile), {
+				encoding: 'utf8',
+				flag: 'wx',
+			});
 			results.push({
 				storm,
 				filePath: filename,
@@ -176,6 +177,18 @@ export const fileRepairProposals = (
 				reason: 'created',
 			});
 		} catch (error: unknown) {
+			// EEXIST is not a failure: it is the atomic answer to the
+			// question the old `existsSync` asked, and the caller
+			// distinguishes "already filed" from "could not file".
+			if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+				results.push({
+					storm,
+					filePath: filename,
+					proposed: false,
+					reason: 'already exists',
+				});
+				continue;
+			}
 			results.push({
 				storm,
 				filePath: filename,

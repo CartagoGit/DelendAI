@@ -6,7 +6,13 @@ import { isAbsolute, join, relative } from 'node:path';
 const REPO_ROOT = process.cwd();
 const DEFAULT_SCAN_ROOT = 'packages/core/src';
 const SKIP_SEGMENTS: readonly string[] = ['/generated/'];
-const SKIP_SUFFIXES: readonly string[] = ['.generated.ts'];
+// `.d.ts` is skipped for the same reason `.generated.ts` is: under this
+// repo's `.gitignore` (`packages/*/src/**/*.d.ts`) those are emitted build
+// artifacts, not source. Scanning them reported architecture violations in
+// files that are not in the repository and cannot be edited to fix
+// anything — the fix always belongs in the `.ts` the lint already reads,
+// so the `.d.ts` hit is a duplicate of evidence it already has.
+const SKIP_SUFFIXES: readonly string[] = ['.generated.ts', '.d.ts'];
 const SOURCE_FILE = /\.(?:[cm]?ts|tsx)$/;
 const IMPORT_SPECIFIER =
 	/\b(?:import|export)\b(?:[\s\S]*?\bfrom\s*)?["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)|require\s*\(\s*["']([^"']+)["']\s*\)/g;

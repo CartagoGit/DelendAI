@@ -18,7 +18,6 @@ import {
 	readdirSync,
 	readFileSync,
 	writeFileSync,
-	existsSync,
 	unlinkSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -56,8 +55,16 @@ export class StormLog {
 		mkdirSync(this.dir, { recursive: true });
 	}
 
+	/**
+	 * The `existsSync` guards this method and `readOne` used to carry are
+	 * gone on purpose. Each was a check-then-read race — the directory or
+	 * file can vanish between the two calls, and in a swarm that writes
+	 * these entries concurrently it will — while the `catch` immediately
+	 * below already produced the identical answer for a missing path. Two
+	 * syscalls to learn what one already told us, and the pair was less
+	 * correct than the single call.
+	 */
 	readAll(now: number = Date.now()): IStormLogEntry[] {
-		if (!existsSync(this.dir)) return [];
 		const cutoff = now - this.maxAgeMs;
 		const entries: IStormLogEntry[] = [];
 		let names: string[];
@@ -126,7 +133,6 @@ export class StormLog {
 	 */
 	readOne(trigger: string, code: string): IStormLogEntry | undefined {
 		const path = join(this.dir, `${keyFor(trigger, code)}.json`);
-		if (!existsSync(path)) return undefined;
 		try {
 			const raw = readFileSync(path, 'utf8');
 			const parsed = JSON.parse(raw) as IStormLogEntry | IStormLogEntry[];

@@ -107,6 +107,23 @@ const SYNC_IO_ALLOWLIST = new Set<string>([
 	'plugins/project-kpis/src/lib/services/kpi-history.service.ts:92',
 	'plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1',
 	'plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1005',
+	// commit-policy's storm log is seeded during `register()`, which the
+	// plugin contract declares synchronous, and the host boot step that
+	// files repair proposals runs AFTER registration and reads the
+	// detector this seeding fills. Making the read async would let boot
+	// observe an empty detector and re-file storms that were already
+	// recorded, so the ordering guarantee is the constraint, not
+	// convenience. The check-then-read `existsSync` guards these two
+	// reads used to carry are gone: the surrounding `catch` already
+	// answered "missing path", and in a swarm the check-then-act pair was
+	// a race as well as a wasted syscall.
+	'plugins/commit-policy/src/lib/services/storm-log.ts:79',
+	'plugins/commit-policy/src/lib/services/storm-log.ts:137',
+	// Same boot path. `mkdirSync` + `writeFileSync(..., { flag: 'wx' })`
+	// is one atomic create: `wx` IS the idempotency check, replacing an
+	// `existsSync` guard under which two agents could both observe "does
+	// not exist" for one storm and the second overwrite the first.
+	'plugins/commit-policy/src/lib/services/repair-proposer.ts:17',
 ]);
 
 const SYNC_IO_PATTERN =

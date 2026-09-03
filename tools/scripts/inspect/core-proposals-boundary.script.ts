@@ -1171,9 +1171,14 @@ const shouldScanSourceLine = (line: string): boolean => {
 	return CANDIDATE_PATTERN.test(trimmed);
 };
 
+// `.d.ts` joins `.generated.ts` here for the same reason it does in the
+// lint: `.gitignore` treats `packages/*/src/**/*.d.ts` as emitted build
+// output, so an inventory entry for one names a file that is not in the
+// repository and duplicates the `.ts` the scan already covers.
 const shouldSkipFile = (relPath: string): boolean =>
 	relPath.startsWith('packages/core/src/generated/') ||
-	relPath.endsWith('.generated.ts');
+	relPath.endsWith('.generated.ts') ||
+	relPath.endsWith('.d.ts');
 
 const walk = async (dir: string): Promise<readonly string[]> => {
 	const entries = await readdir(dir, { withFileTypes: true });
