@@ -25,6 +25,7 @@ import {
 	type IContextItem,
 	type IContextItemKind,
 } from '../services/compaction';
+import { verifySummaryPreserves } from '../compaction/preserve-rules';
 import { SESSION_DIGEST_TITLE_PREFIX } from '../contracts/constants/session-digest.constant';
 import { saveNote } from '../services/store';
 import { NoteQuotaExceededError } from '../services/store-records';
@@ -110,6 +111,25 @@ export const buildCompactToolRegistration = (
 						persisted: z.boolean(),
 						noteId: z.string().optional(),
 						redactedSecrets: z.number(),
+						/**
+						 * q00014 S6: what the digest DROPPED that the raw
+						 * items said was load-bearing. A compaction that
+						 * loses a user constraint or a commit SHA does not
+						 * look like a failure — it looks like a shorter
+						 * context — so the caller is told before it throws
+						 * the original away.
+						 */
+						preservation: z.object({
+							ok: z.boolean(),
+							droppedCount: z.number(),
+							dropped: z.array(
+								z.object({
+									category: z.string(),
+									text: z.string(),
+								}),
+							),
+							nextAction: z.string(),
+						}),
 					}),
 				},
 				async (args: {
@@ -151,6 +171,40 @@ export const buildCompactToolRegistration = (
 							: {},
 					);
 
+					// Check the digest against the raw items BEFORE the
+					// caller acts on it. The distiller decides what to keep
+					// by an item's `kind`; this asks the different question
+					// of whether anything load-bearing fell out of the text
+					// regardless of kind — a constraint the user set, a
+					// cause someone established, a SHA. Advisory, never a
+					// refusal: the caller may have good reason to compact
+					// anyway, and a compaction tool that refuses to compact
+					// is its own kind of dead end.
+					const preservationVerdict = verifySummaryPreserves({
+						source: items
+							.map((item) =>
+								[item.label, item.detail]
+									.filter(
+										(part): part is string =>
+											part !== undefined,
+									)
+									.join(' — '),
+							)
+							.join('\n'),
+						summary: result.digest,
+					});
+					const preservation = {
+						ok: preservationVerdict.ok,
+						droppedCount: preservationVerdict.dropped.length,
+						dropped: preservationVerdict.dropped
+							.slice(0, 10)
+							.map((fragment) => ({
+								category: fragment.category,
+								text: fragment.text,
+							})),
+						nextAction: preservationVerdict.nextAction,
+					};
+
 					const persist = args.persist ?? true;
 					if (!persist) {
 						return toolJson({
@@ -159,6 +213,7 @@ export const buildCompactToolRegistration = (
 							tokenAccounting: result.tokenAccounting,
 							persisted: false,
 							redactedSecrets: 0,
+							preservation,
 						});
 					}
 
@@ -198,6 +253,7 @@ export const buildCompactToolRegistration = (
 							persisted: true,
 							noteId: saved.note.id,
 							redactedSecrets: saved.redactions,
+							preservation,
 						});
 					});
 				},
