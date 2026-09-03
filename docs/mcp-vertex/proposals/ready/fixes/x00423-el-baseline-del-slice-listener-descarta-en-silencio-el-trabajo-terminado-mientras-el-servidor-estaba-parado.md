@@ -67,7 +67,7 @@ slice: el listener nunca emitió el que el test espera.
 
 ### S1 — El baseline consulta el almacén de eventos procesados
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/commit-policy/src/lib/triggers/slice-listener.ts` — el primer sondeo deja de ser incondicionalmente mudo. Para cada slice en `onStatuses`, pregunta al `IProcessedEventsStore` si su clave de idempotencia ya tiene un resultado terminal. Si lo tiene, es historia: baseline silencioso. Si no lo tiene, terminó sin que nadie la persistiera: se emite.
   - `plugins/commit-policy/src/lib/triggers/slice-listener.ts` — el listener recibe el store por inyección; ausente, conserva el comportamiento actual (mudo) en vez de arriesgar una tormenta.
@@ -75,7 +75,7 @@ slice: el listener nunca emitió el que el test espera.
 
 ### S2 — Cota y aviso para el arranque en frío
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/commit-policy/src/lib/triggers/slice-listener.ts` — en un repo cuyo store está vacío (instalación nueva, o `.commit-policy/` borrado) TODAS las slices `done` parecerían no persistidas. Cota explícita: como mucho `BASELINE_EMIT_LIMIT` eventos en el primer sondeo, los más recientes primero, y una línea de stderr que diga cuántos se omitieron y con qué comando revisarlos. Nunca una tormenta, nunca un descarte mudo.
   - `plugins/commit-policy/src/lib/contracts/constants/slice-listener.constant.ts` (nuevo) — `BASELINE_EMIT_LIMIT`.
@@ -83,7 +83,7 @@ slice: el listener nunca emitió el que el test espera.
 
 ### S3 — Tests que fijan las dos mitades del contrato
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/commit-policy/tests/src/lib/triggers/slice-listener-baseline.spec.ts` (nuevo) — dos casos que hoy no se pueden distinguir: (a) 83 slices `done` con resultado terminal en el store → cero eventos; (b) una slice `done` ausente del store → exactamente un evento. Y el caso de cota: 200 slices desconocidas → `BASELINE_EMIT_LIMIT` eventos más un aviso que nombra el resto.
 - **Gate**: lint, types, test
