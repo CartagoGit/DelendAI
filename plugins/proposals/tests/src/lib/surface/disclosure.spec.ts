@@ -87,7 +87,12 @@ describe('proposals disclosure policy (q00016 S8) — pure', () => {
 
 describe('proposals disclosure — real wire measurement (q00016 S8)', () => {
 	it('exposes only the essential ids in a real native tools/list, below the 20 KB ceiling', async () => {
-		const harness = await createAssembledProposalsServer();
+		// Disclosure is opt-in: `native` without it lists everything, which
+		// is the mode's documented promise and what every other e2e spec
+		// here relies on. This spec is the one that wants it on.
+		const harness = await createAssembledProposalsServer({
+			progressiveDisclosure: true,
+		});
 		try {
 			const { tools } = await harness.client.listTools();
 			const proposalsTools = tools.filter((tool) =>
@@ -121,7 +126,12 @@ describe('proposals disclosure — real wire measurement (q00016 S8)', () => {
 	});
 
 	it('a hidden (contextual/administrative) proposals tool is still callable through the router', async () => {
-		const harness = await createAssembledProposalsServer();
+		// Disclosure is opt-in: `native` without it lists everything, which
+		// is the mode's documented promise and what every other e2e spec
+		// here relies on. This spec is the one that wants it on.
+		const harness = await createAssembledProposalsServer({
+			progressiveDisclosure: true,
+		});
 		try {
 			// `state_health` is `administrative` — hidden from tools/list —
 			// but must still be a real, invokable tool: the plan's own risk
