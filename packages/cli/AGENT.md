@@ -34,12 +34,12 @@ _(none)_
 
 ## Do not
 
-- Do not introduce project-specific code; `@mcp-vertex/core` is project-agnostic.
-- Do not read files via `node:fs`; always go through the `IFileReader` abstraction.
+- Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
+- Do not hand-edit content between `<!-- mcp-vertex:begin -->`/`<!-- mcp-vertex:end -->` markers; regenerate via the owning `gen:*` script instead.
 
 ## Token hotspots
 
-- packages/cli/src/lib/init/init-answers.schema.ts
+_(none)_
 
 <!-- mcp-vertex:end agent-md -->
 

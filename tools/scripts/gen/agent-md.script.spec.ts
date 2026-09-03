@@ -9,6 +9,8 @@ import {
 	renderAgentMdBlock,
 	readPackageJson,
 	readPluginManifest,
+	parseTopToolsByBytes,
+	tokenHotspotsFromMeasurement,
 	type IAgentScope,
 } from './agent-md.script';
 
@@ -262,6 +264,129 @@ describe('renderAgentMdBlock', () => {
 			tokenHotspots: [],
 		});
 		expect(block).toContain('_(none)_');
+	});
+});
+
+describe('doNot invariants come from declared metadata, not `isPlugin ? A : B` (q00016 S1)', () => {
+	const CORE_ONLY_RULES = [
+		'`@mcp-vertex/core` is project-agnostic',
+		'always go through the `IFileReader` abstraction',
+	];
+
+	it('a non-core package NEVER receives the two core-specific rules', async () => {
+		// `packages/client` is a real, non-plugin, non-core workspace.
+		// Before this fix it inherited CORE_RULES via
+		// `scope.isPlugin ? PLUGIN_RULES : CORE_RULES` — both branches
+		// were wrong for it (one is written specifically for
+		// `packages/core`, the other for plugins).
+		const sections = await composeAgentMd({
+			dir: 'packages/client',
+			packageJson: 'packages/client/package.json',
+			isPlugin: false,
+		});
+		const doNotText = sections.doNot.join('\n');
+		for (const fragment of CORE_ONLY_RULES) {
+			expect(doNotText).not.toContain(fragment);
+		}
+	});
+
+	it('a plugin workspace also never receives the core-specific rules', async () => {
+		const sections = await composeAgentMd({
+			dir: 'plugins/proposals',
+			packageJson: 'plugins/proposals/package.json',
+			isPlugin: true,
+		});
+		const doNotText = sections.doNot.join('\n');
+		for (const fragment of CORE_ONLY_RULES) {
+			expect(doNotText).not.toContain(fragment);
+		}
+	});
+
+	it('`packages/core` itself still receives its own rules', async () => {
+		const sections = await composeAgentMd({
+			dir: 'packages/core',
+			packageJson: 'packages/core/package.json',
+			isPlugin: false,
+		});
+		const doNotText = sections.doNot.join('\n');
+		for (const fragment of CORE_ONLY_RULES) {
+			expect(doNotText).toContain(fragment);
+		}
+	});
+
+	it('a workspace that declares nothing still gets the repo-universal rules', async () => {
+		const sections = await composeAgentMd({
+			dir: 'packages/contracts',
+			packageJson: 'packages/contracts/package.json',
+			isPlugin: false,
+		});
+		expect(sections.doNot.some((rule) => rule.includes('git stash'))).toBe(
+			true,
+		);
+	});
+});
+
+describe('token hotspots come from the real measurement, not a filename guess (q00016 S2)', () => {
+	const DASHBOARD_FIXTURE = [
+		'## Top tools by bytes (vertex preset, native surface)',
+		'',
+		'| Tool | Owner | Total Bytes | Name Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Annotations Bytes | Other Bytes | Envelope Bytes |',
+		'| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+		'| mcp-vertex_project-kpis_project_kpis | project-kpis | 9,898 | 38 | 118 | 1,129 | 8,518 | 0 | 27 | 68 |',
+		'| mcp-vertex_adaptive-optimizer_adaptive_facade | adaptive-optimizer | 4,771 | 47 | 127 | 836 | 3,666 | 0 | 27 | 68 |',
+		'',
+		'## Next section',
+		'',
+		'unrelated content',
+	].join('\n');
+
+	it('parseTopToolsByBytes reads the real per-tool measurement table', () => {
+		const rows = parseTopToolsByBytes(DASHBOARD_FIXTURE);
+		expect(rows).toEqual([
+			{
+				tool: 'mcp-vertex_project-kpis_project_kpis',
+				owner: 'project-kpis',
+				totalBytes: 9898,
+				outputSchemaBytes: 8518,
+			},
+			{
+				tool: 'mcp-vertex_adaptive-optimizer_adaptive_facade',
+				owner: 'adaptive-optimizer',
+				totalBytes: 4771,
+				outputSchemaBytes: 3666,
+			},
+		]);
+	});
+
+	it("given a measurement attributing 8,518 B to project_kpis' outputSchema, that plugin names it", () => {
+		const hotspots = tokenHotspotsFromMeasurement(
+			{ dir: 'plugins/project-kpis', isPlugin: true },
+			DASHBOARD_FIXTURE,
+			4,
+		);
+		expect(hotspots.length).toBeGreaterThan(0);
+		const text = hotspots.join('\n');
+		expect(text).toContain('project_kpis');
+		expect(text).toContain('8,518');
+	});
+
+	it('says the measurement is unavailable instead of silently claiming none, when the dashboard is missing', () => {
+		const hotspots = tokenHotspotsFromMeasurement(
+			{ dir: 'plugins/project-kpis', isPlugin: true },
+			undefined,
+			4,
+		);
+		expect(hotspots.length).toBeGreaterThan(0);
+		expect(hotspots.join('\n')).toContain('unmeasured');
+	});
+
+	it('a plugin with no rows in the measurement gets an empty list (genuinely not a hotspot), not an unmeasured claim', () => {
+		const hotspots = tokenHotspotsFromMeasurement(
+			{ dir: 'plugins/nonexistent-plugin', isPlugin: true },
+			DASHBOARD_FIXTURE,
+			4,
+		);
+		expect(hotspots).toEqual([]);
 	});
 });
 

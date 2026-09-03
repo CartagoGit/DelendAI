@@ -45,14 +45,15 @@
 
 ## Do not
 
+- Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
+- Do not hand-edit content between `<!-- mcp-vertex:begin -->`/`<!-- mcp-vertex:end -->` markers; regenerate via the owning `gen:*` script instead.
 - Do not import `@mcp-vertex/core/lib/...`; use `@mcp-vertex/core/public`.
 - Do not run user-facing shell or destructive tools without `dryRunSupported: true`.
 - Do not surface absolute host paths; use `workspaceRoot`-relative paths only.
 
 ## Token hotspots
 
-- plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts
-- plugins/project-kpis/src/lib/tools/project-kpis-output.schema.ts
+- `mcp-vertex_project-kpis_project_kpis` — 9,898 B total, 8,518 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 
 <!-- mcp-vertex:end agent-md -->
 

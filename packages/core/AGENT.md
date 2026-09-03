@@ -44,13 +44,17 @@ _(none)_
 
 ## Do not
 
+- Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
+- Do not hand-edit content between `<!-- mcp-vertex:begin -->`/`<!-- mcp-vertex:end -->` markers; regenerate via the owning `gen:*` script instead.
 - Do not introduce project-specific code; `@mcp-vertex/core` is project-agnostic.
 - Do not read files via `node:fs`; always go through the `IFileReader` abstraction.
 
 ## Token hotspots
 
-- packages/core/src/lib/manifest/permissions.schema.ts
-- packages/core/src/lib/proposals/validate-evidence.schema.ts
+- `mcp-vertex_configuration_center` — 3,988 B total, 3,486 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `mcp-vertex_create_project` — 3,704 B total, 395 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `mcp-vertex_adopt_project` — 3,626 B total, 2,957 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `mcp-vertex_scaffold` — 2,522 B total, 784 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 
 <!-- mcp-vertex:end agent-md -->
 
