@@ -9,7 +9,7 @@ date: 2026-07-24
 closed-by: cartago (close pass 2026-07-24, restored 2026-07-26)
 closed-evidence:
   - S1-S3 ratified — plugins/usage-tracking/src/lib/host-lifecycle.ts persists validated events
-  - tools/scripts/host/record-claude-lifecycle.script.ts is the non-blocking command-hook recorder
+  - tools/scripts/host/record-lifecycle.script.ts is the non-blocking command-hook recorder
 shipped-in:
   - dd7ba156 # capture Claude lifecycle session evidence
   - a921589d # checkpoint freshness
@@ -52,7 +52,7 @@ those boundaries without sending a tool result back into every model turn.
 - review-log: approved by delivery_verifier — Slice S1 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S2 — Install a non-blocking Claude command-hook recorder
 - **Status**: done
-- **Files**: `tools/scripts/host/record-claude-lifecycle.script.ts`, `tools/scripts/host/record-claude-lifecycle.script.spec.ts`, `config/external/claude-code/session-hygiene.hooks.json`, `config/external/claude-code/README.md`
+- **Files**: `tools/scripts/host/record-lifecycle.script.ts`, `tools/scripts/host/record-lifecycle.script.spec.ts`, `config/external/claude/session-hygiene.hooks.json`, `config/external/claude/README.md`
 - **Gate**: recorder tests + JSON validation
 - **Acceptance**: documented Claude events append a redacted, mutex-guarded
   local row; malformed input or I/O failure exits cleanly and never blocks a

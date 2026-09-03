@@ -18,7 +18,7 @@ import {
 const LIFECYCLE_FILE = 'host-lifecycle.claude-code.jsonl';
 const USAGE_TRACKING_CACHE_REL = `${DEFAULT_CORE_PATHS.cacheDir}/results/usage-tracking`;
 
-export type ClaudeHookEventName =
+export type IClaudeHookEventName =
 	| 'UserPromptSubmit'
 	| 'PreCompact'
 	| 'PostCompact'
@@ -33,7 +33,7 @@ export interface IClaudeLifecycleRow {
 }
 
 const EVENT_MAP: Readonly<
-	Record<ClaudeHookEventName, IClaudeLifecycleRow['event']>
+	Record<IClaudeHookEventName, IClaudeLifecycleRow['event']>
 > = {
 	UserPromptSubmit: 'turn',
 	PreCompact: 'pre-compact',
@@ -68,7 +68,7 @@ export const toClaudeLifecycleRow = (
 		version: 1,
 		host: 'claude-code',
 		hostSessionId: sessionId,
-		event: EVENT_MAP[hookEventName as ClaudeHookEventName],
+		event: EVENT_MAP[hookEventName as IClaudeHookEventName],
 		at: now.toISOString(),
 	};
 };

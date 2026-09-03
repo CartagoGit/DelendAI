@@ -55,6 +55,10 @@ Es la diferencia entre **eventually consistent** y **strongly consistent**: el s
 - **NO** reemplaza el sistema de proposals existente. Solo añade una capa de orchestration alrededor.
 - **NO** exige que cada slice valide el repo entero antes de committear. Eso sería strongly consistent y mata el swarm.
 
+- Commit queueing global (strongly consistent). Explícitamente rechazado: mataría el swarm.
+- Per-agent worktree isolation. Explícitamente fuera del roadmap.
+- Negative tests para validate (injects failures on purpose). S5 lo cubre de forma contenida.
+
 ## Slices
 
 - global_gate: lint, types, test
@@ -116,19 +120,13 @@ Es la diferencia entre **eventually consistent** y **strongly consistent**: el s
   4. La transición `settling → stable` es observable vía `commit-policy:settlement_status` y emite un evento `settlement.completed`.
   5. `git log --first-parent --since=<settlement-start>` muestra solo commits de la ronda activos (sin ruido de repair anterior).
 
-## Risk
+## risks and mitigations
 
 - **R1**: settlement infinite loop si el repair agent introduce regresiones. Mitigación: `maxRounds = 3`, después escalar a `ESCALATE` (cubierto por `f00418` retry taxonomy).
 - **R2**: race entre `worker-registry` writes (varios workers registrando/disponiendo concurrentemente). Mitigación: usar `withFileMutex` (ya existe en core) sobre el fichero de estado.
 - **R3**: hooks de barrera consumen un poco de latencia por commit (consulta de estado). Aceptable porque la consulta es local + cache.
 
-## Out of scope
-
-- Commit queueing global (strongly consistent). Explícitamente rechazado: mataría el swarm.
-- Per-agent worktree isolation. Explícitamente fuera del roadmap.
-- Negative tests para validate (injects failures on purpose). S5 lo cubre de forma contenida.
-
-## Relación con otras propuestas
+### Relación con otras propuestas
 
 - `f00417` S1 introduce `positiveOwnership` desde el agent-lock store. Esa es la **infraestructura** sobre la que q00015 S2 (settlement gate) decide si acepta más commits.
 - `f00418` (retry taxonomy) provee `DEAD_LETTER` y `ESCALATE`. q00015 R1 depende de eso.

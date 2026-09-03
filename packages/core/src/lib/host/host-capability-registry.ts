@@ -1,13 +1,13 @@
 import type {
 	IHostCapabilityManifest,
 	IHostCapabilityProjection,
-	THostCapabilityKey,
+	IHostCapabilityKey,
 } from '@mcp-vertex/contracts';
 
 export type {
 	IHostCapabilityManifest,
 	IHostCapabilityProjection,
-	THostCapabilityKey,
+	IHostCapabilityKey,
 } from '@mcp-vertex/contracts';
 
 /**
@@ -40,7 +40,7 @@ export const CANONICAL_HOST_CAPABILITY_MANIFESTS: readonly IHostCapabilityManife
 	[GENERIC_MCP_HOST_CAPABILITY_MANIFEST];
 
 const CAPABILITY_READERS: Readonly<
-	Record<THostCapabilityKey, (manifest: IHostCapabilityManifest) => boolean>
+	Record<IHostCapabilityKey, (manifest: IHostCapabilityManifest) => boolean>
 > = {
 	tools: (manifest) => manifest.mcp.tools,
 	prompts: (manifest) => manifest.mcp.prompts,
@@ -118,7 +118,7 @@ export class HostCapabilityRegistry {
 	}
 
 	/** Generic view used by adapters that discover capabilities dynamically. */
-	supports(hostId: string, capability: THostCapabilityKey): boolean {
+	supports(hostId: string, capability: IHostCapabilityKey): boolean {
 		const manifest = this.#manifests.get(hostId);
 		const reader = CAPABILITY_READERS[capability];
 		return manifest === undefined || reader === undefined

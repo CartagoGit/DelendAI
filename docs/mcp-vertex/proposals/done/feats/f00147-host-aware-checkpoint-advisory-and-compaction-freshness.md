@@ -52,7 +52,7 @@ summary.
 - review-log: approved by delivery_verifier — Slice S1 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S2 — Surface a one-shot, host-event-aware advisory
 - **Status**: done
-- **Files**: `plugins/memory/src/lib/tools/checkpoint-packet.tool.ts`, `plugins/memory/tests/src/lib/checkpoint-packet.spec.ts`, `config/external/claude-code/session-hygiene.hooks.json`, `config/external/claude-code/README.md`
+- **Files**: `plugins/memory/src/lib/tools/checkpoint-packet.tool.ts`, `plugins/memory/tests/src/lib/checkpoint-packet.spec.ts`, `config/external/claude/session-hygiene.hooks.json`, `config/external/claude/README.md`
 - **Gate**: memory tests + hook JSON validation
 - **Acceptance**: a compaction boundary can request a small advisory; it
   reports only action/reason/freshness and never creates or overwrites memory.
@@ -62,7 +62,7 @@ summary.
 - review-log: approved by delivery_verifier — Slice S2 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S3 — Make the semantic checkpoint responsibility explicit
 - **Status**: done
-- **Files**: `docs/mcp-vertex/examples/host-checkpoint-adapter.md`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `docs/mcp-vertex/wiki/external/claude-code.md`
+- **Files**: `docs/mcp-vertex/examples/host-checkpoint-adapter.md`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `docs/mcp-vertex/wiki/external/claude.md`
 - **Gate**: docs/link checks + bootstrap budget check
 - **Acceptance**: hosts receive a short protocol for creating an explicit
   digest before compaction; detailed guidance stays on demand, not bootstrap.

@@ -14,7 +14,7 @@ import type {
 	IHostCapabilityProjection,
 } from '@mcp-vertex/contracts';
 
-export type THostManifestDriftField =
+export type IHostManifestDriftField =
 	| 'hostId'
 	| 'mcp.tools'
 	| 'mcp.prompts'
@@ -27,13 +27,13 @@ export type THostManifestDriftField =
 
 export interface IHostManifestDrift {
 	readonly hostId: string;
-	readonly field: THostManifestDriftField;
+	readonly field: IHostManifestDriftField;
 	readonly manifestValue: string | boolean | undefined;
 	readonly projectionValue: string | boolean | undefined;
 }
 
 const fields: readonly {
-	readonly field: THostManifestDriftField;
+	readonly field: IHostManifestDriftField;
 	readonly read: (
 		value: IHostCapabilityManifest | IHostCapabilityProjection,
 	) => string | boolean | undefined;

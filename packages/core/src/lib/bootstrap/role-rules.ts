@@ -1,9 +1,9 @@
-import type { IProjectRoleFinding, TProjectRole } from '@mcp-vertex/contracts';
+import type { IProjectRoleFinding, IProjectRole } from '@mcp-vertex/contracts';
 
 import type { IProjectShapeContext } from './project-shape';
 
 export interface IProjectRoleRule {
-	readonly id: TProjectRole;
+	readonly id: IProjectRole;
 	readonly priority: number;
 	readonly matches: (
 		ctx: IProjectShapeContext,
@@ -65,7 +65,7 @@ const hasDependency = (
 	);
 
 const role = (
-	id: TProjectRole,
+	id: IProjectRole,
 	priority: number,
 	matches: IProjectRoleRule['matches'],
 ): IProjectRoleRule => ({ id, priority, matches });

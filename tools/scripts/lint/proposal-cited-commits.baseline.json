@@ -35,6 +35,15 @@
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
 			"recordedAt": "2026-08-24T23:44:46.361Z"
+		},
+		{
+			"hash": "59325969",
+			"proposals": [
+				"docs/mcp-vertex/proposals/done/audits/a00085-auditoria-exhaustiva-bugs-fixes-y-mantenibilidad-copilot-grok-4-6.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-03T23:25:49.169Z"
 		}
 	]
 }

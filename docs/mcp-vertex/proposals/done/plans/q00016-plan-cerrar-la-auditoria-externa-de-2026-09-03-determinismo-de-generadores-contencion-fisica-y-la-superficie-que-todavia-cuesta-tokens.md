@@ -112,7 +112,7 @@ acoplar el runtime genérico al estado interno de una propuesta.
 - **Files**:
   - `tools/scripts/gen/agent-md.script.ts` — las invariantes salen de metadatos declarados por el workspace, no de `scope.isPlugin ? PLUGIN_RULES : CORE_RULES`. Un paquete que no declara nada recibe sólo las reglas universales del repo, nunca las de `core`.
   - `tools/scripts/gen/agent-md-rules.ts` — registro tipado: qué invariante aplica a qué clase de workspace y por qué. Puro, sin I/O.
-  - `tools/scripts/gen/agent-md.script.spec.ts` — un paquete que no es `core` NUNCA recibe "`@mcp-vertex/core` es agnóstico" ni "no leas con `node:fs`".
+  - `tools/scripts/gen/agent-md.script.spec.ts` — un paquete que no es `core` NUNCA recibe la invariante "core es agnóstico" ni la de "no leas con node:fs".
 - **Gate**: lint, types, test
 
 ### S2 — Los hotspots de tokens salen de la medición real, no del nombre del fichero

@@ -3374,7 +3374,7 @@ confirmed / probable / review / improvement
 
 ## Scope
 
-## Out of scope
+## non-goals
 
 ## Security/privacy implications
 

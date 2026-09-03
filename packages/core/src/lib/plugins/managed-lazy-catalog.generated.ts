@@ -5,7 +5,7 @@
  * The source is the eager assembled plugin registration catalog; the
  * runtime consumes this compact index without importing every plugin.
  */
-import type { TToolDisclosureLevel } from '../contracts/interfaces/tool-surface.interface';
+import type { IToolDisclosureLevel } from '../contracts/interfaces/tool-surface.interface';
 
 export interface IManagedLazyPluginCatalogEntry {
 	readonly id: string;
@@ -20,7 +20,7 @@ export interface IManagedLazyPluginCatalogEntry {
 	readonly tags?: readonly string[] | undefined;
 	readonly startupActivation?: boolean | undefined;
 	readonly toolDisclosure?:
-		| Readonly<Record<string, TToolDisclosureLevel>>
+		| Readonly<Record<string, IToolDisclosureLevel>>
 		| undefined;
 }
 

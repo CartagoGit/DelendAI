@@ -20,7 +20,7 @@ export type IToolAccessState = 'visible' | 'hidden' | 'deactivated';
 export type IToolExposureState = 'visible' | 'hidden' | 'unknown';
 
 /** Static visibility tier used by opt-in progressive tool surfaces. */
-export type TToolDisclosureLevel =
+export type IToolDisclosureLevel =
 	| 'essential'
 	| 'contextual'
 	| 'administrative';
@@ -44,7 +44,7 @@ export interface IToolSurfaceDescriptor {
 	 * `'contextual'`/`'administrative'` hide the tool from `native`-mode
 	 * `tools/list` while leaving it fully callable through the router.
 	 */
-	readonly disclosure?: TToolDisclosureLevel | undefined;
+	readonly disclosure?: IToolDisclosureLevel | undefined;
 }
 
 export interface IToolSurfacePluginDescriptor {

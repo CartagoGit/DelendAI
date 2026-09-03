@@ -61,6 +61,11 @@ slice: el listener nunca emitió el que el test espera.
   arrancar. El scope sigue siendo el resuelto de la slice (invariante de
   `f00417`, ya cerrada).
 
+- Cambiar el formato de `eventId` (hoy es el evento entero serializado,
+  lo que hincha el store y el log). El log ya se arregló por separado
+  usando un digest sólo para imprimir; cambiar la identidad exige
+  migración y va en su propia propuesta.
+
 ## Slices
 
 - global_gate: lint, types, test
@@ -98,17 +103,10 @@ slice: el listener nunca emitió el que el test espera.
 4. Un store vacío nunca emite más de `BASELINE_EMIT_LIMIT` eventos, y
    dice por stderr cuántos omitió.
 
-## Risk
+## risks and mitigations
 
 - **R1**: el store se corrompe o no se puede leer y todo parece no
   persistido. Mitigación: un error de lectura del store cae al
   comportamiento actual (baseline mudo) y lo anuncia; es el fallo seguro.
 - **R2**: la clave de idempotencia cambia de formato y el store deja de
   reconocer lo ya procesado — un replay acotado por S2, no una tormenta.
-
-## Out of scope
-
-- Cambiar el formato de `eventId` (hoy es el evento entero serializado,
-  lo que hincha el store y el log). El log ya se arregló por separado
-  usando un digest sólo para imprimir; cambiar la identidad exige
-  migración y va en su propia propuesta.

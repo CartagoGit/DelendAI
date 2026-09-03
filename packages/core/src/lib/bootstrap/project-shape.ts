@@ -1,7 +1,7 @@
 import type {
 	IProjectShape,
-	TProjectRole,
-	TWorkspaceShape,
+	IProjectRole,
+	IWorkspaceShape,
 } from '@mcp-vertex/contracts';
 
 import type { IFileReader, IPackageJson } from './analyze-project';
@@ -15,7 +15,7 @@ export interface IProjectShapeContext {
 }
 
 export interface IWorkspaceShapeRule {
-	readonly result: TWorkspaceShape;
+	readonly result: IWorkspaceShape;
 	readonly priority: number;
 	readonly matches: (ctx: IProjectShapeContext) => Promise<boolean> | boolean;
 }
@@ -97,7 +97,7 @@ export const DEFAULT_WORKSPACE_SHAPE_RULES: readonly IWorkspaceShapeRule[] = [
 export const detectWorkspaceShape = async (
 	ctx: IProjectShapeContext,
 	rules: readonly IWorkspaceShapeRule[] = DEFAULT_WORKSPACE_SHAPE_RULES,
-): Promise<TWorkspaceShape> => {
+): Promise<IWorkspaceShape> => {
 	for (const rule of [...rules].sort((a, b) => b.priority - a.priority)) {
 		if (await rule.matches(ctx)) return rule.result;
 	}
@@ -157,4 +157,4 @@ export const buildProjectShape = async (
 export const detectProjectShape = buildProjectShape;
 
 /** Type-only convenience for consumers that need to name role values. */
-export type { IProjectShape, TProjectRole, TWorkspaceShape };
+export type { IProjectShape, IProjectRole, IWorkspaceShape };

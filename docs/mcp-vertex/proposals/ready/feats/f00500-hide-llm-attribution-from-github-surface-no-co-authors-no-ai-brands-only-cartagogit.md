@@ -20,7 +20,7 @@ Asegurar que cualquier visitante del repositorio en GitHub solo vea al maintaine
 
 3. **Branch names**: si `agentWorktree: true` se activa alguna vez, las branches serán `agent/copilot-minimax-m3-<name>-<task>`. Visibles en PR titles, branch list, reflog.
 
-4. **Repo surface filenames**: `docs/mcp-vertex/proposals/done/audits/a00007-...codex-gpt-5-5.md`, `n00001-...claude-code.md` y `config/external/claude-code/` están committed y muestran LLM brands.
+4. **Repo surface filenames**: `docs/mcp-vertex/proposals/done/audits/a00007-...codex-gpt-5-5.md`, `n00001-...claude-code.md` y `config/external/claude/` están committed y muestran LLM brands.
 
 **Estado objetivo**: nuevo commit del repo solo muestra a Cartago como autor (sin trailer, sin co-author); contributor graph solo lista Cartago (+ Mario + dependabot[bot] histórico que el maintainer decida mantener); nombres de ficheros y carpetas del repo no contienen marcas de LLM; branch names no revelan host/model cuando `agentWorktree` esté activo.
 
@@ -157,7 +157,7 @@ manualmente cuando lo necesite.
 
 ### S4 — Repo surface cleanup: renombrar filenames que contienen marcas de LLM
 - **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/done/audits/a00007-*.md`, `docs/mcp-vertex/proposals/done/audits/a00006-*.md`, `docs/mcp-vertex/proposals/done/resumes/n00001-*.md`, `docs/mcp-vertex/proposals/done/resumes/n00002-*.md`, `docs/mcp-vertex/proposals/done/README.md`, `docs/mcp-vertex/proposals/done/resumes/README.md`, `config/external/claude-code/`, `config/external/README.md`, `.gitignore`
+- **Files**: `docs/mcp-vertex/proposals/done/audits/a00007-*.md`, `docs/mcp-vertex/proposals/done/audits/a00006-*.md`, `docs/mcp-vertex/proposals/done/resumes/n00001-*.md`, `docs/mcp-vertex/proposals/done/resumes/n00002-*.md`, `docs/mcp-vertex/proposals/done/README.md`, `docs/mcp-vertex/proposals/done/resumes/README.md`, `config/external/claude/`, `config/external/README.md`, `.gitignore`
 - **Gate**: lint
 
 Renombrar (sin contenido) los archivos cuyo nombre lleva una marca de LLM
@@ -171,7 +171,7 @@ Pasos:
    - `<id>-...-codex-gpt-5-5.md` → `<id>-...-codex.md`
    - `<id>-...-claude-code-opus-4-8.md` → `<id>-...-claude.md`
    - `<id>-...-claude-code.md` → `<id>-...-claude.md`
-   - `config/external/claude-code/` → `config/external/claude/`
+   - `config/external/claude/` → `config/external/claude/`
    La regla heurística: el último segmento del nombre (separado por `-`)
    suele ser el modelo o el host; si contiene un número de versión o un
    vendor específico, recortar a la parte genérica.
@@ -197,7 +197,7 @@ No tocar `docs/mcp-vertex/wiki/` ni nada que documente adapters externos
 con su nombre canónico: el wiki puede y debe mencionar Claude/Codex/Copilot.
 - acceptance:
   - "Renombrar los 4 proposal filenames sustituyendo el sufijo de modelo (`codex-gpt-5-5`, `claude-code-opus-4-8`, `claude-code`) por sufijos neutros (`codex`, `claude`, `claude`, `claude` — quitar `-code` / `-gpt-5-5` etc.). Patrón: `<id>-<slug>-<host>.md` donde `<host>` es genérico (e.g. `codex`, `claude`)."
-  - "Renombrar `config/external/claude-code/` a `config/external/claude/` y actualizar el `README.md` interno + el de `config/external/README.md`."
+  - "Renombrar `config/external/claude/` a `config/external/claude/` y actualizar el `README.md` interno + el de `config/external/README.md`."
   - "Añadir línea defensiva `.cache/chat-with-llms/` a `.gitignore` (verificar primero si ya está; si no, añadir)."
   - "Actualizar las dos tablas que referencian los filenames renombrados."
   - "Correr `bun tools/scripts/proposals/sync-proposal-registry.script.ts` y verificar `errorCount: 0`."
@@ -468,7 +468,9 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
   - "El script NO se ejecuta automáticamente como parte de `bun run validate` — es `none` gate, manual con check-in explícito del maintainer."
   - "`.mailmap` se commitea y se pushea independientemente del rewrite; el rewrite requiere un window de freeze y un announcement."
 
-## Surfaces → slices (mapa rápido)
+## notes
+
+### Surfaces → slices (mapa rápido)
 
 | Surface (lo que ve el visitor en GitHub) | Estado hoy | Slice que lo arregla | Tipo de fix |
 |---|---|---|---|
@@ -478,12 +480,12 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
 | Commits históricos con autor LLM | ~80 commits (`copilot-minimax-m3`, `GitHub Copilot`, `mcp-vertex@MiniMax.local`) | **S8** | `.mailmap` (instant) + rewrite |
 | Branch names cuando `agentWorktree: true` | leak latente | **S3** | opt-in flag `redactIdentity` |
 | Filenames en `docs/mcp-vertex/proposals/done/` | 4 archivos con sufijo de modelo | **S4** | rename + sync |
-| Carpeta `config/external/claude-code/` | leak visible | **S4** | rename |
+| Carpeta `config/external/claude/` | leak visible | **S4** | rename |
 | Defensa en profundidad (un agente externo inyecta trailers) | sin red de seguridad | **S5** | hook + lint script |
 | Documentación de la política | inexistente | **S6** | `docs/PRIVACY.md` + CONTRIBUTING + README |
 | Validación empírica | sin test | **S7** | `tools/scripts/verify/post-slice-f00500-evidence.script.ts` |
 
-## Riesgos y mitigaciones
+## risks and mitigations
 
 - **S2 cambia un default** del plugin commit-policy. Para downstream
   consumers que dependan del default `co-authored-by`, será un cambio
@@ -521,7 +523,7 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
 - Tests nuevos para el camino redactado; tests viejos no se rompen.
 - El wiring de la config va a través de `IMcpVertexPluginConfig.options` y `proposals/index.ts` lo lee — el campo puede ser opcional, default `false`.
 - Renombrar los 4 proposal filenames sustituyendo el sufijo de modelo (`codex-gpt-5-5`, `claude-code-opus-4-8`, `claude-code`) por sufijos neutros (`codex`, `claude`, `claude`, `claude` — quitar `-code` / `-gpt-5-5` etc.). Patrón: `<id>-<slug>-<host>.md` donde `<host>` es genérico (e.g. `codex`, `claude`).
-- Renombrar `config/external/claude-code/` a `config/external/claude/` y actualizar el `README.md` interno + el de `config/external/README.md`.
+- Renombrar `config/external/claude/` a `config/external/claude/` y actualizar el `README.md` interno + el de `config/external/README.md`.
 - Añadir línea defensiva `.cache/chat-with-llms/` a `.gitignore` (verificar primero si ya está; si no, añadir).
 - Actualizar las dos tablas que referencian los filenames renombrados.
 - Correr `bun tools/scripts/proposals/sync-proposal-registry.script.ts` y verificar `errorCount: 0`.

@@ -60,6 +60,12 @@ El driver actual apenas normaliza (trim, slashes, renames `old -> new`); no pars
 - **NO** modifica el procesado-events store más allá de añadir `recordTerminal` y la columna `outcome`.
 - **NO** cambia el formato de `index.json` ni el listener de `proposals/`.
 
+- Outbox/journal de transiciones → `r00042-proposals-como-event-log-primer-incremento-extraer-locks-con-su-propia-superficie.md` (existe)
+- Retry taxonomy con backoff + dead-letter → `f00418` (siguiente, mismo track, draft)
+- Eventual settlement (modelo `ACTIVE SWARM → SETTLING → STABLE GREEN`) → `f00419` (siguiente)
+- Worktree por agente (`agentWorktree: true`) → **fuera del roadmap próximo**. La estrategia operativa es explícitamente shared checkout.
+- Linter que exija paths canónicos en `Files:` para auto-commit → `f00420` (siguiente)
+
 ## Slices
 
 - global_gate: lint, types, test, coverage:ratchet
@@ -159,17 +165,9 @@ assertions:
   6. Cualquier outcome terminal está persistido. Re-arrancar el listener con un index completo NO emite eventos históricos.
   7. `misattributed_commit_count === 0` en métricas post-merge (medible vía `git log --since=<merge> --format=%s`).
 
-## Risk
+## risks and mitigations
 
 - **R1**: dogfood tests configuran `sliceScoping: false` (`dogfood.spec.ts:45`, `dogfood-branch-policy.spec.ts:47`). Con S1, ese flag deja de controlar slice events pero sigue controlando manual/interval/threshold. Hay que actualizar esos tests para: (a) probar que el camino manual/interval sí respeta el flag (regression guard), (b) probar que el camino slice lo ignora y usa ResolvedCommitScope.
 - **R2**: propuestas históricas con `Files:` en formato Markdown. Con S1, sus slices se marcan como `NO_CHANGE` y nunca se auto-committean. Esto **es el comportamiento correcto** — eran inútiles como auto-commit anyway. Los agentes que cierren esas slices deben hacerlo vía commit manual o reformatear la sección Files.
 - **R3**: el listener retiene pending en memoria. Tras commit+merge, hay que re-arrancar MCP para drenar el in-memory pending map de los eventos `WORKSPACE_HAS_NO_FILES` viejos. La transición es: merge → restart MCP → confirmado via `processed-events.jsonl` que solo aparecen `NO_CHANGE` terminales nuevos.
 - **R4**: el `agent-lock-positive-ownership` fail-closed (devuelve `[]` si no puede leer) puede bloquear commits de agentes legítimos durante ventanas de race. Se mitiga con backoff (cubierto en `f00418` retry taxonomy).
-
-## Out of scope (referencias a propuestas separadas)
-
-- Outbox/journal de transiciones → `r00042-proposals-como-event-log-primer-incremento-extraer-locks-con-su-propia-superficie.md` (existe)
-- Retry taxonomy con backoff + dead-letter → `f00418` (siguiente, mismo track, draft)
-- Eventual settlement (modelo `ACTIVE SWARM → SETTLING → STABLE GREEN`) → `f00419` (siguiente)
-- Worktree por agente (`agentWorktree: true`) → **fuera del roadmap próximo**. La estrategia operativa es explícitamente shared checkout.
-- Linter que exija paths canónicos en `Files:` para auto-commit → `f00420` (siguiente)

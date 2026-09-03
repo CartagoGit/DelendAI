@@ -148,7 +148,7 @@ El plan cierra los tres frentes con un índice + tres hijas nuevas
 - Renombrar este plan a `q00018`. El id lo asigna el servidor; el
   prefijo `q` se representa semánticamente por `track` + `type`.
 
-## Status snapshot (lo que YA está hecho en 2026-09-04)
+### Status snapshot
 
 ### Capa 1 — Servidor MCP (`packages/core/`)
 ✅ Estables desde commits previos del track C:
@@ -245,7 +245,7 @@ estos cinco plugins cuando se cargan juntos. Lo confirma `grep -rnE
 El sistema existente de presets + `assembleCliConfig` es el terreno
 sobre el que el Track 1 construye el sniffer.
 
-## Architecture (cómo se compone)
+## architecture
 
 ```
                 ┌───────────────────────────────────────────────────────┐
@@ -434,7 +434,9 @@ Track 2 es un e2e test (corre sobre assembleCliConfig), Track 3 es una
 anexo a una propuesta ya cerrada. Ninguna requiere a las otras; las
 tres se pueden ejecutar en paralelo si el swarm lo permite.
 
-## acceptance (cierre del plan padre)
+## acceptance
+
+### cierre del plan padre
 
 - `bun run validate` queda verde con los 5 plugins del scope cargados
   (uno por preset canónico, no todos a la vez necesariamente).
@@ -561,7 +563,7 @@ tres se pueden ejecutar en paralelo si el swarm lo permite.
 
 ---
 
-## Solo-execution handoff (para el agente ejecutor sin swarm)
+### Solo-execution handoff (para el agente ejecutor sin swarm)
 
 > **Propósito**: este apartado deja el plan **ejecutable por un solo
 > agente sin asistencia**, asumiendo que otros agentes pueden estar
@@ -690,7 +692,7 @@ git push --force-with-lease origin agent/copilot-minimax-m3-q00018
 
 ---
 
-## Fallo-mode playbook (qué hacer si algo no sale como C espera)
+### Fallo-mode playbook (qué hacer si algo no sale como C espera)
 
 | Síntoma | Diagnóstico probable | Fix |
 |---|---|---|
@@ -703,7 +705,7 @@ git push --force-with-lease origin agent/copilot-minimax-m3-q00018
 
 ---
 
-## Resumen ejecutivo (1 párrafo, para que el humano copie/pegue)
+### Resumen ejecutivo (1 párrafo, para que el humano copie/pegue)
 
 `c00160` (rama `agent/copilot-minimax-m3-q00018`, commit `910876191`)
 consolida en un único plan canónico la capacidad que el usuario pidió:

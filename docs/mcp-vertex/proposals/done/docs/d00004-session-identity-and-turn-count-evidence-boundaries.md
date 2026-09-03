@@ -8,7 +8,7 @@ track: agent-discipline+host-adapters
 date: 2026-07-24
 closed-by: cartago (close pass 2026-07-24, restored 2026-07-26)
 closed-evidence:
-  - S1 + S2 documented in CROSS-IDE.md and config/external/claude-code/README.md
+  - S1 + S2 documented in CROSS-IDE.md and config/external/claude/README.md
   - docs/mcp-vertex/AGENT-BOOTSTRAP.md updated with checkpoint/compact guidance
 shipped-in:
   - a921589d # feat: advise checkpoint freshness at host boundaries
@@ -41,14 +41,14 @@ turn count only where a host emits an explicit event.
 
 ### S1 — Document identity and evidence boundaries for adopters
 - **Status**: done
-- **Files**: `docs/mcp-vertex/CROSS-IDE.md`, `config/external/claude-code/README.md`
+- **Files**: `docs/mcp-vertex/CROSS-IDE.md`, `config/external/claude/README.md`
 - **Gate**: docs/link checks
 - **Acceptance**: installation guidance distinguishes MCP-only observations,
   explicit host lifecycle observations, and literal id matching.
 - review-state: done
 - review-implementer: copilot-minimax-m3
 - review-reviewer: delivery_verifier
-- review-log: approved by delivery_verifier — CROSS-IDE.md and config/external/claude-code/README.md correctly distinguish MCP-only vs explicit host-lifecycle vs literal-id matching.
+- review-log: approved by delivery_verifier — CROSS-IDE.md and config/external/claude/README.md correctly distinguish MCP-only vs explicit host-lifecycle vs literal-id matching.
 ### S2 — Keep the operational rule compact and universal
 - **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `docs/mcp-vertex/TOKEN-BUDGETS.md`

@@ -76,7 +76,7 @@ cannot run hooks or resume work after a response.
 ### S3 — Concrete packs and honest fallbacks
 - **Status**: done
 - **Files**: `config/external/README.md`, `config/external/codex/README.md`,
-  `config/external/claude-code/README.md`, `docs/mcp-vertex/examples/host-capability-adapter.md`
+  `config/external/claude/README.md`, `docs/mcp-vertex/examples/host-capability-adapter.md`
 - **Gate**: docs + type
 - **Acceptance**:
   - Codex, Claude Code and the generic MCP profile are documented as adapter

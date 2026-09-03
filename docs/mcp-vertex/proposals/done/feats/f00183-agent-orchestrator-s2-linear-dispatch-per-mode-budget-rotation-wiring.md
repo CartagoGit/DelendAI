@@ -51,7 +51,7 @@ src/lib/tools/dispatch.tool.ts           # <ns>_dispatch / _budget / _plan_ref
 tests/src/lib/dispatch/linear-dispatcher.spec.ts  # 6 tests
 ```
 
-## Out of scope (deferred)
+## non-goals
 
 - Swarm parallel dispatch (S3 — punted to a follow-up; the
   contract is in place, the runtime is not).

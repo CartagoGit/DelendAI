@@ -46,7 +46,7 @@ the gap that a generic MCP server cannot safely infer from tool timestamps.
 - review-log: approved by delivery_verifier — Slice S1 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S2 — Claude Code adapter research and implementation
 - **Status**: done
-- **Files**: `config/external/claude-code/`, `docs/mcp-vertex/wiki/external/claude-code.md`, host-adapter tests
+- **Files**: `config/external/claude/`, `docs/mcp-vertex/wiki/external/claude.md`, host-adapter tests
 - **Gate**: documented host smoke test
 - **Acceptance**: use only documented current lifecycle hooks; if no supported
   hook can invoke MCP, ship instructions rather than a fake integration.

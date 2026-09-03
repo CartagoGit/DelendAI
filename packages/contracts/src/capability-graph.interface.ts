@@ -52,7 +52,7 @@
  *   (a `.js` file in a mostly-Python repo; `three` as a dependency,
  *   which serves CAD and scientific visualisation as readily as games).
  */
-export type TSignalConfidence = 'certain' | 'strong' | 'weak';
+export type ISignalConfidence = 'certain' | 'strong' | 'weak';
 
 /**
  * One observation by one detector.
@@ -68,7 +68,7 @@ export interface ICapabilitySignal {
 	readonly value: string;
 	/** Where it was observed: a repo-relative path, optionally `#key`. */
 	readonly evidence: string;
-	readonly confidence: TSignalConfidence;
+	readonly confidence: ISignalConfidence;
 	/** Optional human-readable reason, for signals whose evidence is indirect. */
 	readonly note?: string | undefined;
 }
@@ -89,7 +89,7 @@ export interface ILanguageFinding {
  * How the workspace is laid out. Answers a structural question only,
  * and says nothing about what the workspace contains.
  */
-export type TWorkspaceShape =
+export type IWorkspaceShape =
 	| 'single-package'
 	| 'monorepo'
 	| 'polyglot-workspace'
@@ -104,7 +104,7 @@ export type TWorkspaceShape =
  * Django and Celery included. When nothing matches, the honest answer
  * is that nothing matched.
  */
-export type TProjectRole =
+export type IProjectRole =
 	| 'library'
 	| 'cli'
 	| 'web-client'
@@ -117,7 +117,7 @@ export type TProjectRole =
 
 /** One detected role, with the evidence that produced it. */
 export interface IProjectRoleFinding {
-	readonly role: TProjectRole;
+	readonly role: IProjectRole;
 	readonly signals: readonly ICapabilitySignal[];
 }
 
@@ -128,7 +128,7 @@ export interface IProjectRoleFinding {
  * different and more useful statement than a confident `generic`.
  */
 export interface IProjectShape {
-	readonly workspace: TWorkspaceShape;
+	readonly workspace: IWorkspaceShape;
 	readonly roles: readonly IProjectRoleFinding[];
 }
 

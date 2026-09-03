@@ -15,7 +15,7 @@ export const HOST_CAPABILITY_MANIFEST_CONTRACT =
 export const HOST_CAPABILITY_MANIFEST_VERSION = 1 as const;
 
 /** A host-native capability or an equivalent MCP-backed integration. */
-export type THostSurfaceSupport = 'none' | 'native' | 'mcp-tool';
+export type IHostSurfaceSupport = 'none' | 'native' | 'mcp-tool';
 
 /** Capabilities negotiated on the MCP transport. */
 export interface IHostMcpCapabilities {
@@ -34,7 +34,7 @@ export interface IHostMcpCapabilities {
 }
 
 /** Capability names accepted by a host registry query. */
-export type THostCapabilityKey =
+export type IHostCapabilityKey =
 	| 'tools'
 	| 'prompts'
 	| 'resources'
@@ -48,8 +48,8 @@ export type THostCapabilityKey =
 export interface IHostCapabilityProjection {
 	readonly hostId: string;
 	readonly mcp: IHostMcpCapabilities;
-	readonly skills: THostSurfaceSupport;
-	readonly subagents: THostSurfaceSupport;
+	readonly skills: IHostSurfaceSupport;
+	readonly subagents: IHostSurfaceSupport;
 }
 
 /**
@@ -66,6 +66,6 @@ export interface IHostCapabilityManifest {
 	/** Stable kebab-case integration identifier. */
 	readonly hostId: string;
 	readonly mcp: IHostMcpCapabilities;
-	readonly skills: THostSurfaceSupport;
-	readonly subagents: THostSurfaceSupport;
+	readonly skills: IHostSurfaceSupport;
+	readonly subagents: IHostSurfaceSupport;
 }

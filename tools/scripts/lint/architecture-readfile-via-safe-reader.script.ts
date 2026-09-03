@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { readFileSync, writeFileSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
@@ -264,14 +265,74 @@ export const formatReadFileViaSafeReaderReport = (
 	return `${lines.join('\n')}\n`;
 };
 
+const BASELINE_REL =
+	'tools/scripts/lint/architecture-readfile-via-safe-reader.baseline.json';
+
+/** Stable key for one finding: the rule at a path, ignoring line drift. */
+export const findingKey = (finding: IReadFileInvariantFinding): string =>
+	`${finding.rule}:${finding.relPath}`;
+
+const readBaseline = (): ReadonlySet<string> => {
+	try {
+		return new Set(
+			JSON.parse(
+				readFileSync(join(REPO_ROOT, BASELINE_REL), 'utf8'),
+			) as string[],
+		);
+	} catch {
+		return new Set();
+	}
+};
+
+/**
+ * Ratchet, not an absolute rule — and the reason is worth stating,
+ * because the alternative is a gate that punishes honesty.
+ *
+ * This lint picks its scope by reading each manifest's `permissions` for
+ * `filesystem-read`. That inference held only while the declaration
+ * happened to correlate with "already migrated or migrating". On
+ * 2026-09-04 q00017 S6 made every manifest declare the effects its
+ * plugin actually uses — `plugins/git` really does read the filesystem —
+ * and roughly twenty plugins were silently enrolled in a migration
+ * nobody had scoped for them: 50 violations, none of them a new
+ * regression, all of them the same day the declarations became true.
+ *
+ * Declaring a permission is a statement of fact. Enrolling in an
+ * architectural migration is a decision. Conflating the two teaches
+ * authors to under-declare, which is precisely what
+ * `lint:plugin-permissions-declared` exists to prevent.
+ *
+ * So known violations are recorded and NEW ones still fail. The
+ * architectural pressure survives; the perverse incentive does not.
+ */
 export const main = async (): Promise<number> => {
 	const findings = await scanReadFileViaSafeReader();
-	const report = formatReadFileViaSafeReaderReport(findings);
-	if (findings.length === 0) {
-		process.stdout.write(report);
+	if (process.argv.includes('--update')) {
+		writeFileSync(
+			join(REPO_ROOT, BASELINE_REL),
+			`${JSON.stringify([...new Set(findings.map(findingKey))].sort(), null, '\t')}\n`,
+			'utf8',
+		);
+		process.stdout.write(
+			`architecture-readfile-via-safe-reader: baseline updated — ${String(findings.length)} finding(s).\n`,
+		);
 		return 0;
 	}
-	process.stderr.write(report);
+	const baseline = readBaseline();
+	const fresh = findings.filter(
+		(finding) => !baseline.has(findingKey(finding)),
+	);
+	if (fresh.length === 0) {
+		process.stdout.write(
+			`architecture-readfile-via-safe-reader: no new violations (${String(findings.length)} baselined).\n`,
+		);
+		return 0;
+	}
+	process.stderr.write(formatReadFileViaSafeReaderReport(fresh));
+	process.stderr.write(
+		'\nThese are NEW relative to the baseline. Route the read through SafeWorkspaceReader, or\n' +
+			'run this script with --update if the growth is deliberate and reviewed.\n',
+	);
 	return 1;
 };
 

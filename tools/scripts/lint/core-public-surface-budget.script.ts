@@ -7,7 +7,16 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // them in plugins, which `lint:solid` flags as cross-plugin
 // duplication). Spending a public export to delete four copies of a
 // safety guarantee is the trade this budget exists to make consciously.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 751;
+//
+// Raised by eight more (2026-09-04) for q00017's capability ontology and
+// host capability registry. This is the trade the budget exists to force
+// out into the open, so here it is: the eight exports replace TWO
+// detectors that answered the same question with different shapes —
+// `analyze-project` and `detect-stack` — and the eight canonical types
+// are what let the second become a projection of the first instead of a
+// rival source of truth. A public surface that grows to delete a
+// duplicate truth is worth more than one that stays small by keeping it.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 759;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

@@ -1,6 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import type { TToolDisclosureLevel } from './tool-surface.interface';
+import type { IToolDisclosureLevel } from './tool-surface.interface';
 
 /**
  * What a tool can DO beyond reading, so a host/agent can reason about trust and
@@ -116,7 +116,7 @@ export interface IToolRegistration {
 	 *   `deactivated` — the tool costs no `tools/list` bytes until an
 	 *   agent asks for it, but nothing about calling it changes.
 	 */
-	readonly disclosure?: TToolDisclosureLevel | undefined;
+	readonly disclosure?: IToolDisclosureLevel | undefined;
 	register(server: McpServer): Promise<void>;
 }
 

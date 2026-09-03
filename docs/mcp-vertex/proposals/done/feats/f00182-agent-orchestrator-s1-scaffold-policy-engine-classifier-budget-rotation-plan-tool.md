@@ -95,7 +95,7 @@ plugins/agent-orchestrator/
 | `rotation/loop-detector.spec.ts` | 6 | every rotation trigger + isolation |
 | **total** | **56** | |
 
-## Out of scope (deferred)
+## non-goals
 
 - Dispatch tools, swarm fan-out, auto telemetry — see q00007 S2..S5.
 - Dogfooding this repo with `defaultMode: "auto"` — S5.
