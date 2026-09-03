@@ -74,6 +74,21 @@ export interface IManagedSurfaceConfig {
 	readonly loading?: 'lazy' | 'eager';
 	readonly idleTtlMs?: number | null;
 	readonly maxWarmPlugins?: number | null;
+	/**
+	 * Let `native` mode honour per-tool `disclosure` levels (q00016 S8).
+	 *
+	 * Off by default, and that default is the decision, not an oversight.
+	 * `native` is chosen explicitly by a host whose promise is "every tool
+	 * up front, no discovery round-trip"; such a host may never call the
+	 * router, and the MCP SDK has no state for "unlisted but callable" —
+	 * `disable()` refuses invocation too. Turning this on unconditionally
+	 * took six read-only `proposals` tools off `tools/list` AND made a
+	 * direct call to them fail with `-32602 ... disabled`.
+	 *
+	 * Turn it on when the host does use the router and wants the smaller
+	 * surface: `proposals` alone drops from ~51 KB to the essential flow.
+	 */
+	readonly progressiveDisclosure?: boolean;
 }
 
 /** Runtime evidence retention and boot cleanup policy. */

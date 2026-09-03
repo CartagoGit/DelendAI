@@ -783,6 +783,9 @@ export const assembleCliConfig = async (
 			? { explicitMode: explicitSurfaceMode }
 			: {}),
 		bootstrapToolIds: [...BOOTSTRAP_CORE_TOOL_IDS],
+		...(fileConfig.managedSurface?.progressiveDisclosure === true
+			? { progressiveDisclosure: true }
+			: {}),
 		// The vertex router is ALWAYS registered as a tool
 		// (see assemble-core-tools.ts) and the plan records its id so
 		// the runtime can hide it in `native` mode (the operator has

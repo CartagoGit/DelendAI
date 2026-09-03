@@ -93,6 +93,15 @@ export interface ICreateAssembledProposalsServerOptions {
 	readonly requirePeerReview?: boolean;
 	/** Load proposals through the production Node/Bun runtime importer. */
 	readonly useRuntimeImporter?: boolean;
+	/**
+	 * Opt `native` mode into per-tool disclosure levels (q00016 S8).
+	 *
+	 * Off by default so the many e2e specs that call proposals tools
+	 * DIRECTLY BY NAME keep working — that is exactly what `native`
+	 * promises, and the disclosure spec is the only one that wants the
+	 * smaller surface.
+	 */
+	readonly progressiveDisclosure?: boolean;
 }
 
 export const createAssembledProposalsServer = async (
@@ -121,20 +130,29 @@ export const createAssembledProposalsServer = async (
 			: async () => ({ default: proposalsPlugin }),
 		// No on-disk config file: the harness owns the workspace, the
 		// plugin receives pure defaults from ctx.corePaths.
-		readFile: async (path) =>
-			path.endsWith('mcp-vertex.config.json') &&
-			options.requirePeerReview !== undefined
-				? JSON.stringify({
-						plugins: {
-							proposals: {
-								options: {
-									requirePeerReview:
-										options.requirePeerReview,
+		readFile: async (path) => {
+			if (!path.endsWith('mcp-vertex.config.json')) return undefined;
+			const hasPeerReview = options.requirePeerReview !== undefined;
+			const hasDisclosure = options.progressiveDisclosure === true;
+			if (!hasPeerReview && !hasDisclosure) return undefined;
+			return JSON.stringify({
+				...(hasDisclosure
+					? { managedSurface: { progressiveDisclosure: true } }
+					: {}),
+				...(hasPeerReview
+					? {
+							plugins: {
+								proposals: {
+									options: {
+										requirePeerReview:
+											options.requirePeerReview,
+									},
 								},
 							},
-						},
-					})
-				: undefined,
+						}
+					: {}),
+			});
+		},
 	});
 	const assembled = await createMcpProject(config);
 	const [clientTransport, serverTransport] =
