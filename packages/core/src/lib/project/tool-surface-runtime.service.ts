@@ -6,6 +6,7 @@ import type {
 	IProjectContextSnapshot,
 	IToolAccessState,
 	IToolExposureState,
+	IToolSurfaceDescriptor,
 	IToolSurfacePlan,
 	IToolSurfaceModeChange,
 	IToolSurfacePluginEvictedEvent,
@@ -59,6 +60,8 @@ interface IBoundToolRecord {
 	readonly namespace?: string | undefined;
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
+	/** See `IToolSurfaceDescriptor.disclosure`. */
+	readonly disclosure?: IToolSurfaceDescriptor['disclosure'];
 	readonly detailsId: string;
 	readonly description?: string | undefined;
 	readonly inputSchema?: unknown;
@@ -320,7 +323,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		const visibleToolNames: string[] = [];
 		const previousMode = this.currentMode;
 		for (const record of this.recordsByName.values()) {
-			const wantsVisible = this.shouldExpose(record.registrationId, mode);
+			const wantsVisible = this.shouldExpose(record, mode);
 			// A deactivated tool's `access` is left untouched here — a
 			// surface-mode change is a visibility intent only, and can
 			// never re-authorize a deactivated tool.
@@ -342,8 +345,9 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	async applySurfaceModeAsync(
 		mode: IToolSurfacePlan['mode'],
 	): Promise<IToolSurfaceModeChange> {
-		// Only `native` needs this: it is the one mode whose whole promise
-		// is "every tool up front, no discovery round-trip" (AUD-C01). A
+		// Only `native` needs this: it is the one mode whose compatibility
+		// promise is "every ordinary tool up front". Registrations that opt
+		// into progressive disclosure remain router-discoverable instead. A
 		// plugin still sitting behind `bindLazyTool`'s fake handle has no
 		// real SDK `RegisteredTool` yet, so `applySurfaceMode` flipping
 		// `access` to `visible` changes nothing an unrecognised client can
@@ -459,7 +463,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	): Readonly<Record<string, number>> {
 		const result: Record<string, number> = {};
 		for (const record of this.recordsByName.values()) {
-			if (!this.shouldExpose(record.registrationId, mode)) continue;
+			if (!this.shouldExpose(record, mode)) continue;
 			result[record.registrationId] = measureToolWireBytes({
 				name: record.name,
 				description: record.description,
@@ -722,13 +726,17 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		for (const registrationId of plugin.toolRegistrationIds) {
 			const record = this.recordsByRegistrationId.get(registrationId);
 			if (record === undefined) continue;
-			// `plugin_activate` / `plugin_deactivate` drive AUTHORIZATION, not
-			// just visibility: deactivating forces `deactivated` (hidden AND
-			// refused by invokeTool); activating restores full `visible`
-			// access, overriding whatever the current surface mode would
-			// otherwise compute — an explicit activation is a stronger
-			// signal than the ambient mode.
-			record.access = active ? 'visible' : 'deactivated';
+			// `plugin_activate` / `plugin_deactivate` drive authorization.
+			// Explicit activation normally restores full visibility, but an
+			// opt-in progressive-disclosure policy remains authoritative:
+			// contextual/administrative tools stay routable without returning
+			// to `tools/list` as an accidental side effect of activation.
+			record.access = active
+				? record.disclosure === 'contextual' ||
+					record.disclosure === 'administrative'
+					? 'hidden'
+					: 'visible'
+				: 'deactivated';
 			if (syncHandleVisibility(record))
 				changedToolNames.push(record.name);
 			if (isToolVisible(record.access))
@@ -947,15 +955,48 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}
 
 	private shouldExpose(
-		registrationId: string,
+		record: IBoundToolRecord,
 		mode: IToolSurfacePlan['mode'],
 	): boolean {
+		const registrationId = record.registrationId;
 		if (mode === 'native') {
-			return this.plan.routerToolId !== registrationId;
+			// Native normally does not need the compact router because it
+			// lists every ordinary tool. Once a plugin opts into progressive
+			// disclosure, however, the router is the stable invocation path
+			// for intentionally hidden tools and must remain visible.
+			if (this.plan.routerToolId === registrationId) {
+				return this.hasProgressivelyHiddenTools();
+			}
+			// A registration that opts into progressive
+			// disclosure (`contextual`/`administrative`) is left off the
+			// static `native` `tools/list`, but nothing else about it
+			// changes — it stays authorized and reachable through
+			// `invokeTool`/`resolveRoute`/`searchTools` (the `hidden`
+			// access state). Omitted or `'essential'` behaves exactly as
+			// before this field existed: always listed.
+			if (
+				record.disclosure === 'contextual' ||
+				record.disclosure === 'administrative'
+			) {
+				return false;
+			}
+			return true;
 		}
 		if (this.plan.bootstrapToolIds.includes(registrationId)) return true;
 		if (mode === 'compact' && this.plan.routerToolId === registrationId) {
 			return true;
+		}
+		return false;
+	}
+
+	private hasProgressivelyHiddenTools(): boolean {
+		for (const record of this.recordsByName.values()) {
+			if (
+				record.disclosure === 'contextual' ||
+				record.disclosure === 'administrative'
+			) {
+				return true;
+			}
 		}
 		return false;
 	}

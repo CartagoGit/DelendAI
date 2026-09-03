@@ -118,22 +118,52 @@ const createManagedPersistenceServer = async () => {
 		callTool: async <T>(
 			name: string,
 			args: Record<string, unknown> = {},
-		) => {
-			const raw = (await client.callTool({
-				name,
-				arguments: args,
-			})) as {
+		): Promise<{
+			isError?: boolean;
+			content: Array<{ text?: string }>;
+			structuredContent: T;
+		}> => {
+			const routed = name.startsWith('mcp-vertex_proposals_');
+			const raw = (await client.callTool(
+				routed
+					? {
+							name: 'mcp-vertex_vertex',
+							arguments: {
+								domain: 'proposals',
+								action: name.replace(
+									'mcp-vertex_proposals_',
+									'',
+								),
+								args,
+							},
+						}
+					: { name, arguments: args },
+			)) as {
 				isError?: boolean;
 				content: Array<{ text?: string }>;
-				structuredContent?: T;
+				structuredContent?: unknown;
 			};
+			if (routed) {
+				const envelope = raw.structuredContent as {
+					isError?: boolean;
+					text?: string;
+					structuredContent?: T;
+				};
+				const text = envelope.text ?? '{}';
+				return {
+					...raw,
+					content: [{ text }],
+					structuredContent:
+						envelope.structuredContent ?? (JSON.parse(text) as T),
+				};
+			}
 			const first = raw.content[0];
 			return {
 				...raw,
 				structuredContent:
 					(raw.structuredContent &&
-					Object.keys(raw.structuredContent).length > 0
-						? raw.structuredContent
+					Object.keys(raw.structuredContent as object).length > 0
+						? (raw.structuredContent as T)
 						: undefined) ?? (JSON.parse(first?.text ?? '{}') as T),
 			};
 		},

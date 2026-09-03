@@ -78,7 +78,33 @@ const attachSessionCleanup = (server: unknown, lockPathAbs: string): void => {
 	};
 };
 
+const AGENT_LOCK_SESSION_SCHEMA = z.object({
+	claims: z.number(),
+	releases: z.number(),
+	imbalance: z.number(),
+});
+
+const AGENT_LOCK_IDENTITY_SCHEMA = z.object({
+	host: z.string().optional(),
+	model: z.string().optional(),
+	agent_name: z.string().optional(),
+	task_id: z.string().optional(),
+});
+
+const AGENT_LOCK_ENTRY_SCHEMA = z.object({
+	task_id: z.string(),
+	agent: z.string(),
+	ownership: z.array(z.string()),
+	started_at: z.string(),
+	last_seen: z.string(),
+	parent_task_id: z.string().optional(),
+	host: z.string().optional(),
+	pid: z.number().optional(),
+});
+
 export const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
+	$schema: z.string().optional(),
+	description: z.string().optional(),
 	tool: z.string().optional(),
 	action: z
 		.enum(['claim', 'heartbeat', 'release', 'status', 'gc'])
@@ -87,12 +113,30 @@ export const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	lock_path: z.string().optional(),
 	task_id: z.string().optional(),
 	agent: z.string().optional(),
-	error: z.unknown().optional(),
+	error: z
+		.union([
+			z.string(),
+			z.object({
+				reason: z.string(),
+				nextAction: z.string().optional(),
+			}),
+		])
+		.optional(),
 	blockerType: z.string().optional(),
 	nextAction: z.string().optional(),
 	summary: z.string().optional(),
 	refreshed: z.boolean().optional(),
 	ownership_count: z.number().optional(),
+	heldFiles: z.array(z.string()).optional(),
+	added_files: z.array(z.string()).optional(),
+	not_granted: z
+		.array(
+			z.object({
+				file: z.string(),
+				conflicting_task: z.string(),
+			}),
+		)
+		.optional(),
 	// x00155 S2 / x00153 S5 — when `release` detects a caller-host
 	// mismatch (recorded pid != live pid), the engine stamps
 	// `cross_process_release: true` and echoes the original pid so
@@ -105,22 +149,26 @@ export const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	conflicting_agent: z.string().optional(),
 	overlapping_files: z.array(z.string()).optional(),
 	claimed: z.boolean().optional(),
+	released: z.boolean().optional(),
 	removed: z.number().optional(),
 	exists: z.boolean().optional(),
 	active_write_lanes: z.number().optional(),
 	dropped: z.number().optional(),
 	version: z.number().optional(),
 	stale_after_minutes: z.number().optional(),
-	in_flight: z.unknown().optional(),
+	in_flight: z.array(AGENT_LOCK_ENTRY_SCHEMA).optional(),
+	last_seen: z.string().optional(),
+	reason: z.string().optional(),
+	held_ms: z.number().optional(),
 	// Every terminal lock outcome is a canonical success/error envelope.
 	// Consumers must not infer success from action-specific fields such as
 	// `claimed` or `removed`.
 	ok: z.boolean(),
-	session: z.unknown().optional(),
+	session: AGENT_LOCK_SESSION_SCHEMA.optional(),
 	// f00082 S3: the tool re-echoes the composite identity it was
 	// called with, so a caller can attribute the lock op to a
 	// (host, model, agent, task) without consulting the registry.
-	identity: z.unknown().optional(),
+	identity: AGENT_LOCK_IDENTITY_SCHEMA.optional(),
 });
 
 export const AGENT_LOCK_INPUT_SCHEMA = z.object({

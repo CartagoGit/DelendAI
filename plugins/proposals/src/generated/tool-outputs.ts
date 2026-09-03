@@ -13,18 +13,29 @@
  */
 
 export interface McpVertexProposalsAgentLockOutput {
+	$schema?: string;
+	description?: string;
 	tool?: string;
 	action?: "claim" | "heartbeat" | "release" | "status" | "gc";
 	path?: string;
 	lock_path?: string;
 	task_id?: string;
 	agent?: string;
-	error?: unknown;
+	error?: string | {
+		reason: string;
+		nextAction?: string;
+	};
 	blockerType?: string;
 	nextAction?: string;
 	summary?: string;
 	refreshed?: boolean;
 	ownership_count?: number;
+	heldFiles?: string[];
+	added_files?: string[];
+	not_granted?: {
+		file: string;
+		conflicting_task: string;
+	}[];
 	cross_process_release?: boolean;
 	original_pid?: number;
 	blocked?: boolean;
@@ -33,16 +44,38 @@ export interface McpVertexProposalsAgentLockOutput {
 	conflicting_agent?: string;
 	overlapping_files?: string[];
 	claimed?: boolean;
+	released?: boolean;
 	removed?: number;
 	exists?: boolean;
 	active_write_lanes?: number;
 	dropped?: number;
 	version?: number;
 	stale_after_minutes?: number;
-	in_flight?: unknown;
+	in_flight?: {
+		task_id: string;
+		agent: string;
+		ownership: string[];
+		started_at: string;
+		last_seen: string;
+		parent_task_id?: string;
+		host?: string;
+		pid?: number;
+	}[];
+	last_seen?: string;
+	reason?: string;
+	held_ms?: number;
 	ok: boolean;
-	session?: unknown;
-	identity?: unknown;
+	session?: {
+		claims: number;
+		releases: number;
+		imbalance: number;
+	};
+	identity?: {
+		host?: string;
+		model?: string;
+		agent_name?: string;
+		task_id?: string;
+	};
 }
 
 export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
@@ -406,7 +439,7 @@ export interface McpVertexProposalsProposalAdoptOutput {
 		proposals: Array<{
 			file: string;
 			id: string;
-			kind: "feat" | "breaking" | "fix" | "refactor" | "perf" | "audit" | "chore" | "docs" | "test" | "infra" | "spike" | "legacy" | "resume" | "plan";
+			kind: "feat" | "breaking" | "fix" | "refactor" | "perf" | "audit" | "chore" | "docs" | "test" | "infra" | "spike" | "legacy" | "resume" | "plan" | "repair";
 			status: string;
 		}>;
 		folders: string[];

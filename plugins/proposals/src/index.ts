@@ -34,6 +34,7 @@ import type { IObservedToolCall } from './lib/services/checkpoint-advisory-micro
 import { assessMicroValidationLoop } from './lib/services/checkpoint-advisory-micro-validation.service';
 import { registerProposalsWorkflowContribution } from './lib/skills/proposals-workflow-contribution';
 import { buildCloseSliceValidationProvider } from './lib/swarm/validation-provider';
+import { applyProposalsDisclosure } from './lib/surface/disclosure';
 import { buildAdoptRegistration } from './lib/tools/adopt.tool';
 import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
@@ -530,7 +531,14 @@ export default definePlugin({
 		};
 
 		return {
-			tools: [
+			// Progressive disclosure. Every one of the 34 tool
+			// builders below is untouched — `applyProposalsDisclosure`
+			// tags each returned registration with its static
+			// essential/contextual/administrative level from
+			// `./lib/surface/disclosure.ts` (the one file that owns the
+			// policy) and throws if a registration id has no assigned
+			// level, so a new tool can never silently ship unlabelled.
+			tools: applyProposalsDisclosure([
 				buildAgentLockRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					lockPathAbs: abs(layout.lockFile),
@@ -826,7 +834,7 @@ export default definePlugin({
 							}
 						: { requirePeerReview: true }),
 				}),
-			],
+			]),
 			resources: [
 				buildProposalTemplatesResourceRegistration({
 					proposalsDir: layout.proposalsDir,

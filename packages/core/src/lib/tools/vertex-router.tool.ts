@@ -3,7 +3,11 @@ import z from 'zod';
 import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { ToolNotAuthorizedError } from '../project/tool-surface-runtime.helper';
-import { toolError, toolJson } from '../shared/tool-response';
+import {
+	injectToolResultMeta,
+	toolError,
+	toolJson,
+} from '../shared/tool-response';
 
 const ROUTER_RESULT = z.object({
 	routed: z.literal(true),
@@ -88,7 +92,7 @@ export const buildVertexRouterToolRegistration = (input: {
 									| undefined
 							)?.find((entry) => entry.type === 'text')?.text
 						: undefined;
-				return toolJson({
+				const routedResult = toolJson({
 					routed: true,
 					domain: args.domain,
 					action: args.action,
@@ -103,6 +107,28 @@ export const buildVertexRouterToolRegistration = (input: {
 						? { structuredContent: structured }
 						: {}),
 				});
+				const innerMeta =
+					result && typeof result === 'object'
+						? (result as { _meta?: unknown })._meta
+						: undefined;
+				if (
+					innerMeta !== null &&
+					typeof innerMeta === 'object' &&
+					!Array.isArray(innerMeta)
+				) {
+					injectToolResultMeta(
+						routedResult,
+						innerMeta as Record<string, unknown>,
+					);
+				}
+				if (
+					result &&
+					typeof result === 'object' &&
+					(result as { isError?: boolean }).isError === true
+				) {
+					routedResult.isError = true;
+				}
+				return routedResult;
 			},
 		);
 	},

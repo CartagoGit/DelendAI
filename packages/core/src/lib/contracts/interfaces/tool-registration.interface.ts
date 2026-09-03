@@ -1,5 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
+import type { TToolDisclosureLevel } from './tool-surface.interface';
+
 /**
  * What a tool can DO beyond reading, so a host/agent can reason about trust and
  * gate dangerous capabilities. A tool with no declared effects is
@@ -97,6 +99,24 @@ export interface IToolRegistration {
 	 * registration to give `logs_incidents` a per-plugin signature.
 	 */
 	readonly incidentType?: string | undefined;
+	/**
+	 * Progressive-disclosure hint for `native`-mode
+	 * `tools/list`. Strictly opt-in and backwards compatible — a
+	 * registration that declares nothing (the default for every existing
+	 * tool) stays `visible`, exactly as before this field existed.
+	 *
+	 * - omitted / `'essential'` — listed in `tools/list` (unchanged
+	 *   behaviour).
+	 * - `'contextual'` / `'administrative'` — NOT listed in `native`-mode
+	 *   `tools/list`, but the tool is otherwise untouched: still
+	 *   registered, still authorized, still reachable through the
+	 *   router (`invokeTool`/`resolveRoute`) and discoverable via
+	 *   `searchTools`. This is the `hidden` access state
+	 *   (`IToolAccessState` in `tool-surface.interface.ts`), never
+	 *   `deactivated` — the tool costs no `tools/list` bytes until an
+	 *   agent asks for it, but nothing about calling it changes.
+	 */
+	readonly disclosure?: TToolDisclosureLevel | undefined;
 	register(server: McpServer): Promise<void>;
 }
 

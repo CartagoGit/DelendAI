@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { MANAGED_LAZY_PLUGIN_BY_ID } from '@mcp-vertex/core/lib/plugins/managed-lazy-catalog.generated';
 import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
 
 const makeHandle = (enabled = true) => ({
@@ -19,6 +20,11 @@ const buildRuntime = () =>
 		routerToolId: 'vertex',
 		descriptors: [
 			{
+				registrationId: 'vertex',
+				name: 'mcp-vertex_vertex',
+				toolId: 'vertex',
+			},
+			{
 				registrationId: 'reports_run',
 				name: 'mcp-vertex_reports_run',
 				toolId: 'run',
@@ -31,6 +37,42 @@ const buildRuntime = () =>
 				id: 'reports',
 				namespace: 'reports',
 				toolRegistrationIds: ['reports_run'],
+			},
+		],
+	});
+
+/** q00016 S8: a runtime with one `essential` (undeclared, defaults
+ * visible) and one `administrative` (declared, must be hidden) tool. */
+const buildDisclosureRuntime = () =>
+	createToolSurfaceRuntime({
+		mode: 'native',
+		bootstrapToolIds: ['overview'],
+		routerToolId: 'vertex',
+		descriptors: [
+			{
+				registrationId: 'proposals_auto_work',
+				name: 'mcp-vertex_proposals_auto_work',
+				toolId: 'auto_work',
+				pluginId: 'proposals',
+				namespace: 'proposals',
+			},
+			{
+				registrationId: 'proposals_state_repair',
+				name: 'mcp-vertex_proposals_state_repair',
+				toolId: 'state_repair',
+				pluginId: 'proposals',
+				namespace: 'proposals',
+				disclosure: 'administrative',
+			},
+		],
+		plugins: [
+			{
+				id: 'proposals',
+				namespace: 'proposals',
+				toolRegistrationIds: [
+					'proposals_auto_work',
+					'proposals_state_repair',
+				],
 			},
 		],
 	});
@@ -86,5 +128,160 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 			'hidden',
 		);
 		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(false);
+	});
+
+	describe('q00016 S8 — disclosure-hidden tools stay callable', () => {
+		it('leaves an undeclared registration visible (backwards compatible)', () => {
+			const runtime = buildDisclosureRuntime();
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_auto_work',
+				name: 'mcp-vertex_proposals_auto_work',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_state_repair',
+				name: 'mcp-vertex_proposals_state_repair',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.finalizeInitialSurface();
+
+			expect(
+				runtime.getToolExposure('mcp-vertex_proposals_auto_work'),
+			).toBe('visible');
+		});
+
+		it('hides a `disclosure: administrative` registration from native tools/list', () => {
+			const runtime = buildDisclosureRuntime();
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_auto_work',
+				name: 'mcp-vertex_proposals_auto_work',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_state_repair',
+				name: 'mcp-vertex_proposals_state_repair',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.finalizeInitialSurface();
+
+			expect(
+				runtime.getToolExposure('mcp-vertex_proposals_state_repair'),
+			).toBe('hidden');
+		});
+
+		it('keeps the router visible in native mode when progressive disclosure hides tools', () => {
+			const runtime = buildDisclosureRuntime();
+			runtime.bindRegisteredTool({
+				registrationId: 'vertex',
+				name: 'mcp-vertex_vertex',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_state_repair',
+				name: 'mcp-vertex_proposals_state_repair',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.finalizeInitialSurface();
+
+			expect(runtime.getToolExposure('mcp-vertex_vertex')).toBe(
+				'visible',
+			);
+		});
+
+		it('does not reveal administrative tools when their plugin is reactivated', () => {
+			const runtime = buildDisclosureRuntime();
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_auto_work',
+				name: 'mcp-vertex_proposals_auto_work',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_state_repair',
+				name: 'mcp-vertex_proposals_state_repair',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.finalizeInitialSurface();
+
+			runtime.deactivatePlugin('proposals');
+			runtime.activatePlugin('proposals');
+
+			expect(
+				runtime.getToolExposure('mcp-vertex_proposals_auto_work'),
+			).toBe('visible');
+			expect(
+				runtime.getToolExposure('mcp-vertex_proposals_state_repair'),
+			).toBe('hidden');
+		});
+
+		it('preserves proposals disclosure metadata in the managed-lazy catalog', () => {
+			const proposals = MANAGED_LAZY_PLUGIN_BY_ID.get('proposals');
+			expect(proposals?.toolDisclosure?.state_repair).toBe(
+				'administrative',
+			);
+			expect(proposals?.toolDisclosure?.proposal_transition).toBe(
+				'contextual',
+			);
+			expect(proposals?.toolDisclosure?.auto_work).toBeUndefined();
+		});
+
+		it('CRITICAL INVARIANT: a hidden administrative tool is still callable through invokeTool', async () => {
+			const runtime = buildDisclosureRuntime();
+			const handler = vi.fn(async () => ({ ok: true, ranHidden: true }));
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_auto_work',
+				name: 'mcp-vertex_proposals_auto_work',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_state_repair',
+				name: 'mcp-vertex_proposals_state_repair',
+				handler,
+				handle: makeHandle(true),
+			});
+			runtime.finalizeInitialSurface();
+
+			// hidden, not deactivated: getToolExposure/isToolExposed say no...
+			expect(
+				runtime.getToolExposure('mcp-vertex_proposals_state_repair'),
+			).toBe('hidden');
+			// ...but the router still dispatches to it.
+			const result = await runtime.invokeTool(
+				'mcp-vertex_proposals_state_repair',
+				{},
+				{},
+			);
+			expect(handler).toHaveBeenCalledTimes(1);
+			expect(result).toEqual({ ok: true, ranHidden: true });
+		});
+
+		it('CRITICAL INVARIANT: a hidden administrative tool is still findable via resolveRoute', () => {
+			const runtime = buildDisclosureRuntime();
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_auto_work',
+				name: 'mcp-vertex_proposals_auto_work',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.bindRegisteredTool({
+				registrationId: 'proposals_state_repair',
+				name: 'mcp-vertex_proposals_state_repair',
+				handler: async () => ({ ok: true }),
+				handle: makeHandle(true),
+			});
+			runtime.finalizeInitialSurface();
+
+			const found = runtime.resolveRoute('proposals', 'state_repair');
+			expect(found?.name).toBe('mcp-vertex_proposals_state_repair');
+			expect(found?.active).toBe(false);
+		});
 	});
 });

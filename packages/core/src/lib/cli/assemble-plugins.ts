@@ -645,6 +645,9 @@ const tryAssembleManagedLazy = async (input: {
 				namespace,
 				summary: plugin.summary,
 				tags,
+				...(plugin.toolDisclosure?.[toolId] !== undefined
+					? { disclosure: plugin.toolDisclosure[toolId] }
+					: {}),
 			});
 			lazyToolActivators.set(name, () => lazyRuntime.activateTool(name));
 		}
@@ -1045,6 +1048,9 @@ export const assemblePlugins = async (
 					? { summary: tool.summary }
 					: {}),
 				...(tool.tags !== undefined ? { tags: tool.tags } : {}),
+				...(tool.disclosure !== undefined
+					? { disclosure: tool.disclosure }
+					: {}),
 			});
 		}
 	}

@@ -19,6 +19,12 @@ export type IToolAccessState = 'visible' | 'hidden' | 'deactivated';
 
 export type IToolExposureState = 'visible' | 'hidden' | 'unknown';
 
+/** Static visibility tier used by opt-in progressive tool surfaces. */
+export type TToolDisclosureLevel =
+	| 'essential'
+	| 'contextual'
+	| 'administrative';
+
 export interface ISurfaceListChangeBatcher {
 	batch<T>(work: () => Promise<T>): Promise<T>;
 	batchSync<T>(work: () => T): T;
@@ -32,6 +38,13 @@ export interface IToolSurfaceDescriptor {
 	readonly namespace?: string | undefined;
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
+	/**
+	 * Mirrors `IToolRegistration.disclosure`. Omitted (or
+	 * `'essential'`) behaves exactly as before this field existed —
+	 * `'contextual'`/`'administrative'` hide the tool from `native`-mode
+	 * `tools/list` while leaving it fully callable through the router.
+	 */
+	readonly disclosure?: TToolDisclosureLevel | undefined;
 }
 
 export interface IToolSurfacePluginDescriptor {
@@ -143,8 +156,9 @@ export interface IToolSurfaceRuntime {
 	/**
 	 * Async counterpart to `applySurfaceMode` for the one transition a
 	 * pure bookkeeping flip cannot fulfil: switching TO `native` must put
-	 * every configured plugin's tools on the wire as real `tools/list`
-	 * entries immediately (AUD-C01) — a tool still behind `lazyActivate`
+	 * every configured plugin's ordinary tools on the wire as real
+	 * `tools/list` entries immediately. Explicitly progressive-disclosure
+	 * tools remain router-discoverable. A tool still behind `lazyActivate`
 	 * has no live SDK `RegisteredTool` for `applySurfaceMode`'s
 	 * `handle.enable()` to affect, so flipping `access` alone leaves it
 	 * invisible to the client. This materializes every plugin that has

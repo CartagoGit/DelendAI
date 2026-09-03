@@ -91,6 +91,8 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		' * The source is the eager assembled plugin registration catalog; the',
 		' * runtime consumes this compact index without importing every plugin.',
 		' */',
+		"import type { TToolDisclosureLevel } from '../contracts/interfaces/tool-surface.interface';",
+		'',
 		'export interface IManagedLazyPluginCatalogEntry {',
 		'\treadonly id: string;',
 		'\treadonly packageSpecifier: string;',
@@ -103,6 +105,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\treadonly summary?: string | undefined;',
 		'\treadonly tags?: readonly string[] | undefined;',
 		'\treadonly startupActivation?: boolean | undefined;',
+		'\treadonly toolDisclosure?: Readonly<Record<string, TToolDisclosureLevel>> | undefined;',
 		'}',
 		'',
 		'const tools = (',
@@ -114,7 +117,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\tknowledgeIds: readonly string[],',
 		'\tskillIds: readonly string[],',
 		'\tdependencies: readonly string[],',
-		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags' | 'startupActivation'> = {},",
+		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags' | 'startupActivation' | 'toolDisclosure'> = {},",
 		'): IManagedLazyPluginCatalogEntry => ({',
 		'\tid,',
 		'\tpackageSpecifier,',
@@ -131,10 +134,27 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\t[',
 		...entries.flatMap(([id, registrations]) => {
 			const metadata = packageById.get(id);
-			const metadataLiteral =
-				metadata === undefined
-					? '{}'
-					: `{ summary: ${quote(metadata.summary)}, tags: ${renderTools(metadata.tags)}${metadata.startupActivation === true ? ', startupActivation: true' : ''} }`;
+			const disclosureEntries = (registrations.tools ?? []).flatMap(
+				(tool) =>
+					tool.disclosure === undefined
+						? []
+						: [`${quote(tool.id)}: ${quote(tool.disclosure)}`],
+			);
+			const metadataFields = [
+				...(metadata === undefined
+					? []
+					: [
+							`summary: ${quote(metadata.summary)}`,
+							`tags: ${renderTools(metadata.tags)}`,
+							...(metadata.startupActivation === true
+								? ['startupActivation: true']
+								: []),
+						]),
+				...(disclosureEntries.length === 0
+					? []
+					: [`toolDisclosure: { ${disclosureEntries.join(', ')} }`]),
+			];
+			const metadataLiteral = `{ ${metadataFields.join(', ')} }`;
 			return [
 				`\t\ttools(${quote(id)}, ${quote(metadata?.package ?? `@mcp-vertex/${id}`)}, ${renderTools((registrations.tools ?? []).map((tool) => tool.id))}, ${renderTools((registrations.prompts ?? []).map((prompt) => prompt.id))}, ${renderTools((registrations.resources ?? []).map((resource) => resource.id))}, ${renderTools((registrations.knowledge ?? []).map((entry) => entry.id))}, ${renderTools((registrations.skills ?? []).map((skill) => skill.id))}, ${renderTools(assembled.loadResult.loaded.find((entry) => entry.plugin.name === id)?.plugin.dependsOn ?? [])}, ${metadataLiteral}),`,
 			];

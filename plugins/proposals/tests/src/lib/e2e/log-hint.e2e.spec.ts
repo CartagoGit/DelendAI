@@ -101,6 +101,7 @@ describe('e2e: tool failure carries a logHint over the wire (f00045 S4)', async 
 			.logHint;
 		const hint = fromMeta ?? fromStructured ?? fromText;
 
+		expect(res.raw.isError).toBe(true);
 		expect(hint).toBeDefined();
 		expect(hint?.path).toMatch(
 			/[/\\]logs-errors[/\\]\d{4}-\d{2}-\d{2}\.jsonl$/,

@@ -5,6 +5,8 @@
  * The source is the eager assembled plugin registration catalog; the
  * runtime consumes this compact index without importing every plugin.
  */
+import type { TToolDisclosureLevel } from '../contracts/interfaces/tool-surface.interface';
+
 export interface IManagedLazyPluginCatalogEntry {
 	readonly id: string;
 	readonly packageSpecifier: string;
@@ -17,6 +19,9 @@ export interface IManagedLazyPluginCatalogEntry {
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
 	readonly startupActivation?: boolean | undefined;
+	readonly toolDisclosure?:
+		| Readonly<Record<string, TToolDisclosureLevel>>
+		| undefined;
 }
 
 const tools = (
@@ -30,7 +35,7 @@ const tools = (
 	dependencies: readonly string[],
 	metadata: Pick<
 		IManagedLazyPluginCatalogEntry,
-		'summary' | 'tags' | 'startupActivation'
+		'summary' | 'tags' | 'startupActivation' | 'toolDisclosure'
 	> = {},
 ): IManagedLazyPluginCatalogEntry => ({
 	id,
@@ -202,11 +207,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'commit-policy',
 			'@mcp-vertex/commit-policy',
 			[
-				'commit_policy_status',
-				'commit_policy_refresh_branch_protection',
 				'commit_policy_commit',
 				'commit_policy_push',
 				'commit_policy_run',
+				'commit_policy_storms',
 			],
 			[],
 			[],
@@ -379,7 +383,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'error-reporting',
 			'@mcp-vertex/error-reporting',
-			['report_status'],
+			['report_status', 'diagnose_log'],
 			[],
 			[],
 			['error-reporting-surface'],
@@ -791,6 +795,34 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Proposals workflow + multi-agent (swarm) orchestration.',
 				tags: ['proposals', 'swarm', 'orchestration'],
+				toolDisclosure: {
+					agents_lock_diagnose: 'administrative',
+					agent_worktree: 'contextual',
+					branch_status: 'contextual',
+					branch_gc: 'administrative',
+					swarm_hygiene: 'contextual',
+					task_queue: 'contextual',
+					sync_proposals: 'contextual',
+					proposal_get: 'contextual',
+					round_context: 'contextual',
+					agent_names: 'contextual',
+					plan: 'contextual',
+					delegate: 'contextual',
+					proposal_transition: 'contextual',
+					proposals_close_plan: 'contextual',
+					proposal_review: 'contextual',
+					proposal_board: 'contextual',
+					inherit_host_instructions: 'administrative',
+					incident_proposals: 'contextual',
+					auto_fix_queue: 'administrative',
+					state_health: 'administrative',
+					state_repair: 'administrative',
+					proposal_stale_list: 'administrative',
+					agent_lock_release_orphan: 'administrative',
+					proposal_force_transition: 'administrative',
+					proposal_reconcile_folder: 'administrative',
+					proposal_diagnose: 'administrative',
+				},
 			},
 		),
 		tools(
@@ -816,7 +848,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'quality-policy',
 			'@mcp-vertex/quality-policy',
-			['quality_policy'],
+			['quality_policy', 'quality_policy_run_settlement'],
 			[],
 			[],
 			[],

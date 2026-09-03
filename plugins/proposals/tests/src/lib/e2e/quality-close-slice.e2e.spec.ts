@@ -21,6 +21,16 @@ import qualityPlugin from '@mcp-vertex/quality';
 
 const workspaces: string[] = [];
 
+const syncProposals = (client: Client) =>
+	client.callTool({
+		name: 'mcp-vertex_vertex',
+		arguments: {
+			domain: 'proposals',
+			action: 'sync_proposals',
+			args: {},
+		},
+	});
+
 const createQualityServer = async (command: string) => {
 	const workspace = mkdtempSync(join(tmpdir(), 'proposals-quality-e2e-'));
 	workspaces.push(workspace);
@@ -103,10 +113,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			await createQualityServer('false');
 		try {
 			seedSlice(workspace, 'f04200');
-			const sync = await client.callTool({
-				name: 'mcp-vertex_proposals_sync_proposals',
-				arguments: {},
-			});
+			const sync = await syncProposals(client);
 			expect(sync.isError).toBeFalsy();
 			const plan = await client.callTool({
 				name: 'mcp-vertex_proposals_auto_work',
@@ -164,10 +171,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			await createQualityServer('true');
 		try {
 			seedSlice(workspace, 'f04201');
-			const sync = await client.callTool({
-				name: 'mcp-vertex_proposals_sync_proposals',
-				arguments: {},
-			});
+			const sync = await syncProposals(client);
 			expect(sync.isError).toBeFalsy();
 			const plan = await client.callTool({
 				name: 'mcp-vertex_proposals_auto_work',

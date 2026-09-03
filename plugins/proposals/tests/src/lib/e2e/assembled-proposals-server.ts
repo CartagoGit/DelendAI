@@ -60,7 +60,12 @@ export interface IAssembledProposalsServer {
 	readonly workspace: string;
 	/** Resolved module specifier recorded by the real plugin loader. */
 	readonly resolvedPlugin: string;
-	/** Call a proposals tool over the real protocol and parse its response. */
+	/**
+	 * Call a proposals tool over the real protocol and parse its response.
+	 * Progressively hidden tools travel through the public router; the helper
+	 * unwraps that transport envelope so existing behavioural assertions keep
+	 * exercising the target tool's own contract.
+	 */
 	callTool<T = unknown>(
 		name: string,
 		args?: Record<string, unknown>,
@@ -140,12 +145,47 @@ export const createAssembledProposalsServer = async (
 		{ capabilities: {} },
 	);
 	await client.connect(clientTransport);
+	const listedToolNames = new Set(
+		(await client.listTools()).tools.map((tool) => tool.name),
+	);
 
 	const callTool = async <T = unknown>(
 		name: string,
 		toolArgs: Record<string, unknown> = {},
 	): Promise<IAssembledToolResult<T>> => {
-		const raw = await client.callTool({ name, arguments: toolArgs });
+		const routed =
+			name.startsWith('mcp-vertex_proposals_') &&
+			!listedToolNames.has(name);
+		const raw = await client.callTool(
+			routed
+				? {
+						name: 'mcp-vertex_vertex',
+						arguments: {
+							domain: 'proposals',
+							action: name.replace('mcp-vertex_proposals_', ''),
+							args: toolArgs,
+						},
+					}
+				: { name, arguments: toolArgs },
+		);
+		if (routed) {
+			const envelope = raw.structuredContent as
+				| {
+						readonly isError?: boolean;
+						readonly text?: string;
+						readonly structuredContent?: unknown;
+				  }
+				| undefined;
+			const text = envelope?.text ?? '{}';
+			const structured = (envelope?.structuredContent ??
+				JSON.parse(text)) as T;
+			return {
+				ok: envelope?.isError !== true,
+				raw,
+				structured,
+				text,
+			};
+		}
 		const first = (
 			raw.content as Array<{ type: string; text?: string }>
 		)[0];
