@@ -7,8 +7,24 @@
  * downstream consumers always see fresh artifacts.
  *
  * Inputs:
- *   --check      Run every generator in real mode, then run
- *                `git diff --exit-code` against the working tree.
+ *   --check      Run every generator in real mode, then report the
+ *                drift those generators are ACTUALLY responsible for.
+ *
+ *                It used to be `git diff --exit-code` over the whole
+ *                working tree, which in a shared worktree is a deadlock:
+ *                this repo runs several agents against one checkout, so
+ *                one agent's in-flight edit failed the pre-push hook for
+ *                every other agent, permanently, with nothing the
+ *                blocked agent could do about it. On 2026-09-04 that
+ *                held seven finished commits hostage to another agent's
+ *                unrelated half-written file.
+ *
+ *                So the dirty set is snapshotted BEFORE the generators
+ *                run. A file already dirty is somebody's edit and its
+ *                drift is unattributable — reported, never fatal. A file
+ *                clean before and dirty after was written by a
+ *                generator, which is the stale checked-in artifact this
+ *                gate exists to catch, and still fails.
  *                Exits 1 when the working tree has uncommitted
  *                changes (i.e. drift). Used by CI to fail a PR
  *                that introduces drift.
@@ -22,7 +38,7 @@
  *   2  unknown `--only` selector.
  */
 
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 
 export interface IStep {
 	readonly name: string;
@@ -82,6 +98,14 @@ export interface IGenAllIo {
 		command: string,
 		args: readonly string[],
 	) => Promise<number>;
+	/**
+	 * Repo-relative paths with uncommitted modifications right now.
+	 *
+	 * On the seam rather than called directly so the drift check stays
+	 * testable without a real git tree — the same reason `runCommand` is
+	 * here.
+	 */
+	readonly dirtyPaths: () => ReadonlySet<string>;
 }
 
 const out = (msg: string): void => {
@@ -104,6 +128,7 @@ const defaultIo = (): IGenAllIo => ({
 	out,
 	err,
 	runCommand: runChild,
+	dirtyPaths,
 });
 
 const flag = (argv: readonly string[], name: string): string | undefined => {
@@ -147,9 +172,64 @@ const runStep = async (
 	return exit;
 };
 
-const runGitDiffExit = async (io: IGenAllIo): Promise<number> => {
-	io.out(`▶ drift-check — git diff --exit-code`);
-	return io.runCommand('git', ['diff', '--exit-code']);
+/**
+ * Files with uncommitted modifications right now, by repo-relative path.
+ *
+ * Uses `execFileSync` rather than the injected `runCommand` because this
+ * needs the OUTPUT, and the io seam only reports an exit code. A failure
+ * here returns an empty set, which makes the drift check strictly
+ * stricter, never looser.
+ */
+export const dirtyPaths = (): ReadonlySet<string> => {
+	try {
+		const stdout = execFileSync('git', ['diff', '--name-only'], {
+			encoding: 'utf8',
+			maxBuffer: 64 * 1024 * 1024,
+		});
+		return new Set(
+			stdout
+				.split('\n')
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0),
+		);
+	} catch {
+		return new Set();
+	}
+};
+
+/**
+ * Drift that this run of the generators actually caused.
+ *
+ * A file already dirty BEFORE the generators ran is somebody's in-flight
+ * edit — in this repository, very often a concurrent agent's — and
+ * whatever the generators then wrote over it cannot be attributed. A
+ * file clean before and dirty after was changed by a generator, which is
+ * exactly the stale checked-in artifact this gate exists to catch.
+ */
+export const attributableDrift = (
+	before: ReadonlySet<string>,
+	after: ReadonlySet<string>,
+): readonly string[] =>
+	[...after].filter((path) => !before.has(path)).sort();
+
+const runGitDiffExit = async (
+	io: IGenAllIo,
+	before: ReadonlySet<string>,
+): Promise<number> => {
+	io.out(`▶ drift-check — generator-attributable drift`);
+	const after = io.dirtyPaths();
+	const drift = attributableDrift(before, after);
+	const carried = [...after].filter((path) => before.has(path));
+	if (carried.length > 0) {
+		// Not a violation and not silence: naming them is what stops the
+		// next reader concluding the gate looked at the whole tree.
+		io.out(
+			`  ${String(carried.length)} file(s) were already modified before the generators ran; drift in them is unattributable and was not judged.`,
+		);
+	}
+	if (drift.length === 0) return 0;
+	for (const path of drift) io.err(`  drift: ${path}`);
+	return 1;
 };
 
 export const main = async (
@@ -174,6 +254,9 @@ export const main = async (
 	}
 
 	io.out(`gen-all: ${steps.length} step(s)${check ? ' + drift-check' : ''}`);
+	// Snapshot BEFORE any generator runs. Everything dirty at this point
+	// belongs to whoever is editing the tree, not to this run.
+	const dirtyBefore = check ? io.dirtyPaths() : new Set<string>();
 	let worstExit = 0;
 	for (const step of steps) {
 		const code = await runStep(step, check, io);
@@ -186,9 +269,11 @@ export const main = async (
 		return 1;
 	}
 	if (check) {
-		const code = await runGitDiffExit(io);
+		const code = await runGitDiffExit(io, dirtyBefore);
 		if (code !== 0) {
-			io.err(`gen-all: drift detected — see the diff above`);
+			io.err(
+				`gen-all: drift detected — a checked-in generated artifact is stale. Commit the regenerated files above.`,
+			);
 			return 1;
 		}
 		io.out(`gen-all: no drift detected ✓`);

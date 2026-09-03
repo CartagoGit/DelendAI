@@ -11,8 +11,9 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 - **[VISION-AND-OPERATING-MODEL.md](./docs/mcp-vertex/VISION-AND-OPERATING-MODEL.md)** — north star,
   growth rule, two speeds, dogfooding loop, privacy motto.
 - **[CONTRIBUTING.md](./.github/CONTRIBUTING.md)** · **[SECURITY.md](./.github/SECURITY.md)** ·
-  **[AGENTS.md](./AGENTS.md)** — how to contribute, report vulnerabilities, and the
-  rules agents follow.
+  **[AGENTS.md](./AGENTS.md)** · **[PRIVACY.md](./docs/PRIVACY.md)** — how to contribute, report
+  vulnerabilities, the rules agents follow, and the attribution policy (no LLM
+  brands on the public GitHub surface).
 
 ## Layout
 

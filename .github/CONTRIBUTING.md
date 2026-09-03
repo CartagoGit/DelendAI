@@ -90,6 +90,12 @@ Versioning is **automatic** on push to `main`, derived from commit type:
 
 Scope with the package/plugin you touched. No manual version bumps.
 
+> **No AI attribution.** `Co-authored-by:` trailers toward AI assistants
+> (Claude, MiniMax, GPT-5, Gemini, Codex, Copilot, …) are not accepted.
+> See [`docs/PRIVACY.md`](../docs/PRIVACY.md) for the full policy. The
+> pre-commit hook (`bun tools/scripts/lint/no-llm-attribution.script.ts`,
+> wired in `lefthook.yml`) refuses them with a clear error.
+
 ## Adding a plugin
 
 See the [`mcp-vertex-plugin-authoring`](skills/mcp-vertex-plugin-authoring/SKILL.md)

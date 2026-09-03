@@ -123,6 +123,7 @@
 		"lint:cache": "bun tools/scripts/lint/check-cache.script.ts",
 		"lint:no-cleartext-secrets": "bun tools/scripts/lint/no-cleartext-secrets.script.ts",
 		"lint:no-secrets": "bun tools/scripts/lint/no-secrets.script.ts --all",
+		"lint:no-llm-attribution": "bun tools/scripts/lint/no-llm-attribution.script.ts",
 		"lint:workflow-bootstrap": "bun tools/scripts/lint/workflow-local-action-bootstrap.script.ts",
 		"lint:no-empty-commits": "bun tools/scripts/lint/no-empty-commits.script.ts",
 		"lint:generated-determinism": "bun tools/scripts/lint/generated-determinism.script.ts",

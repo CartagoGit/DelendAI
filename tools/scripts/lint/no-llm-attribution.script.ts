@@ -163,7 +163,15 @@ const matchesLlmPhrase = (
 const matchesLlmDomain = (value: string): string | null => {
 	const lower = value.toLowerCase();
 	for (const d of LLM_DOMAINS) {
-		if (lower.includes(`@${d}`) || lower.endsWith(`@${d}`)) return d;
+		// Match when the domain appears after an @ (so `copilot@local`
+		// matches) OR when the value is the bare domain (so a `Local-Part:
+		// copilot@local` still trips). We require a word boundary before
+		// `@` so `notllmatminimax.ai` doesn't false-positive on `minimax.ai`.
+		const re = new RegExp(
+			`(?:^|[^a-z0-9])@?${d.replace(/\./gu, '\\.')}`,
+			'iu',
+		);
+		if (re.test(lower)) return d;
 	}
 	return null;
 };
@@ -198,7 +206,7 @@ const scanText = (text: string, source: string): Violation[] => {
 		}
 		const [, key, value] = m;
 		if (!TRAILER_KEY.test(key)) continue;
-		const valueClean = value.replace(/^[<"]+|[>"]+$/gu, '').trim();
+		const valueClean = value.replace(/[<>"'`]+/gu, ' ').trim();
 		// Tokenize the WHOLE value (name + email local-part), so
 		// "Claude Opus 5 <noreply@anthropic.com>" → ["claude","opus","5","noreply","anthropic","com"]
 		// and the phrase "claude opus" matches.

@@ -133,6 +133,20 @@ pre-commit:
             run: bun tools/scripts/lint/no-secrets.script.ts --fix
             stage_fixed: true
 
+        # f00500 S5: refuse any commit message or staged file that names
+        # an LLM brand in a Co-authored-by / Signed-off-by / Generated-with
+        # trailer. BLOCKING (no `|| true`) — this is the final line of
+        # defence against accidental LLM attribution leaking to GitHub
+        # after f00500's S1+S2+S4 make it a config/code/surface issue.
+        # Bypass: LEFTHOOK=0 git commit ... (or --no-verify, like every
+        # other lefthook gate). The script accepts an optional
+        # commit-msg-file argv; the pre-commit invocation passes
+        # $(git rev-parse --git-dir)/COMMIT_EDITMSG so the staged message
+        # is scanned even when the agent writes the message programmatically.
+        no-llm-attribution:
+            env: *hook-locale
+            run: bun tools/scripts/lint/no-llm-attribution.script.ts "$(git rev-parse --git-dir)/COMMIT_EDITMSG"
+
         catalog-drift-check:
             env: *hook-locale
             glob:

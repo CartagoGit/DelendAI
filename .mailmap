@@ -1,0 +1,61 @@
+# .mailmap — f00500 S8a.
+#
+# Maps every author/email pair that was ever attributed to an LLM (or to a
+# placeholder bot / catch-all) onto the canonical maintainer identity. Git
+# and GitHub both honour this file for `git log` and the contributor graph
+# WITHOUT rewriting history — the SHA-1 hashes stay the same, only the
+# displayed author changes.
+#
+# Format reference: https://git-scm.com/docs/gitmailmap
+#   Proper Name <commit@email.xx> <commit@email.xx>
+#   Proper Name <commit@email.xx> <alias@email.xx>
+# The first form maps a (name, email) tuple to the canonical (name, email).
+# The second maps a specific (name, email) alias to the canonical.
+
+# -------------------------------------------------------------------
+# Canonical: Cartago <cartago.relaxingcup@gmail.com>
+# -------------------------------------------------------------------
+
+# Same email, mixed casing of the name
+Cartago <cartago.relaxingcup@gmail.com> cartago <cartago.relaxingcup@gmail.com>
+
+# Author was "Cartago" but the email was a placeholder / typo / older alias
+Cartago <cartago.relaxingcup@gmail.com> Cartago <cartago@example.com>
+Cartago <cartago.relaxingcup@gmail.com> Cartago <cartago@local>
+Cartago <cartago.relaxingcup@gmail.com> Cartago <cartago@relaxingcup.dev>
+Cartago <cartago.relaxingcup@gmail.com> cartago <cartago@local>
+
+# -------------------------------------------------------------------
+# LLM-attributed authors. Every line here represents a real commit whose
+# `git config user.name|email` was set to a model/host. The maintainer
+# wrote the code; the LLM supplied the temporary identity.
+# -------------------------------------------------------------------
+Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot-minimax-m3>
+Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot-minimax-m3@mcp-vertex.local>
+Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot@MiniMax>
+Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot@MiniMax.ai>
+Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot@local>
+Cartago <cartago.relaxingcup@gmail.com> copilot <copilot@local>
+Cartago <cartago.relaxingcup@gmail.com> copilot-default <copilot@MiniMax.ai>
+Cartago <cartago.relaxingcup@gmail.com> copilot-orchestrator-night-shift <night-shift@local>
+Cartago <cartago.relaxingcup@gmail.com> GitHub Copilot <copilot@anthropic.com>
+Cartago <cartago.relaxingcup@gmail.com> MCP-V Bot <ci@anthropic.com>
+Cartago <cartago.relaxingcup@gmail.com> MiniMax-M3 <noreply@MiniMax.local>
+Cartago <cartago.relaxingcup@gmail.com> mcp-vertex <mcp-vertex@MiniMax.local>
+Cartago <cartago.relaxingcup@gmail.com> mcp-vertex <mcp-vertex@local>
+Cartago <cartago.relaxingcup@gmail.com> mcp-vertex bot <ci@local>
+Cartago <cartago.relaxingcup@gmail.com> mcp-vertex-bot <bot@mcp-vertex.local>
+Cartago <cartago.relaxingcup@gmail.com> mcp-vertex-bot <mcp-vertex-bot@users.noreply.github.com>
+Cartago <cartago.relaxingcup@gmail.com> mensa-orchestrator <mensa-orchestrator@copilot>
+Cartago <cartago.relaxingcup@gmail.com> vertex <auto@vertex>
+
+# -------------------------------------------------------------------
+# Bots the maintainer ran interactively (smoke tests, WIP recovery,
+# agent release cuts). All authored by the maintainer.
+# -------------------------------------------------------------------
+Cartago <cartago.relaxingcup@gmail.com> smoke-tester <smoke@local>
+Cartago <cartago.relaxingcup@gmail.com> WIP Salvage <wip@local>
+Cartago <cartago.relaxingcup@gmail.com> release-s5-agent <release-s5-agent@local>
+Cartago <cartago.relaxingcup@gmail.com> Track-E Bot <bot@mcp-vertex.dev>
+Cartago <cartago.relaxingcup@gmail.com> Track-I-Subagent <subagent@local>
+Cartago <cartago.relaxingcup@gmail.com> Cartago Agent <agent@cartago.dev>
