@@ -32,14 +32,14 @@ El gate actual falla antes de ejecutar tests porque usa --reporter=json-summary;
 - global_gate: type
 
 ### S1 — Corregir comando y documentación del ratchet
-- **Status**: pending
+- **Status**: done — verificado en el árbol vivo: `package.json` usa `vitest run --coverage --coverage.reporter=json-summary`, y el script y su spec describen esa forma (24 tests verdes junto con verify-main-health). El gate ya no falla resolviendo `json-summary`.
 - **Files**: `package.json`, `tools/scripts/coverage-ratchet.script.ts`, `tools/scripts/coverage-ratchet.script.spec.ts`, `docs/mcp-vertex/proposals/done/tests/t00030-cobertura-apretar-los-umbrales-al-valor-real-branches-80-en-core-plugins-core-dry-run-y-core-project.md`
 - **Gate**: type
 - acceptance:
   - "coverage:ratchet usa --coverage.reporter=json-summary."
   - "El script y sus pruebas describen y verifican la forma correcta."
   - "El gate deja de fallar por resolución de json-summary."
-- review-state: in_review
+- review-state: approved
 - review-implementer: x00417-coverage-ratchet-worker
 ## acceptance
 

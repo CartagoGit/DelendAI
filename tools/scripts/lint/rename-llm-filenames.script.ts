@@ -227,7 +227,7 @@ const main = (): void => {
 
 	// After renames, surface READMEs that likely reference the old names so
 	// the operator can fix links in a follow-up commit.
-	const renames = new Map(plan.map((p) => [p.from, p.to]));
+	const _renames = new Map(plan.map((p) => [p.from, p.to]));
 	const readmes = files.filter((f) => /\/README\.md$/u.test(f));
 	const suspects: string[] = [];
 	for (const readme of readmes) {

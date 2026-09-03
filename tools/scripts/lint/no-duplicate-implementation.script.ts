@@ -75,7 +75,7 @@
  * a diff a reviewer sees, with a written reason — see the array's doc.
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join, relative, resolve, sep } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 
 const REPO_ROOT = resolve(import.meta.dir, '../../..');
 

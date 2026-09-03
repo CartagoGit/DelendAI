@@ -121,13 +121,16 @@ describe('gen-all.script', () => {
 		// The drift the generators caused: nothing was dirty going in, a
 		// generated file is dirty coming out.
 		const { io, errors } = createIo({});
-		let call = 0;
+		// Clean going in, one generated file dirty coming out.
+		let calls = 0;
 		const withDirt: IGenAllIo = {
 			...io,
-			dirtyPaths: () =>
-				(call += 1) === 1
+			dirtyPaths: () => {
+				calls += 1;
+				return calls === 1
 					? new Set<string>()
-					: new Set(['docs/mcp-vertex/TOKEN-BUDGETS.md']),
+					: new Set(['docs/mcp-vertex/TOKEN-BUDGETS.md']);
+			},
 		};
 
 		const exit = await main(['--check'], withDirt);

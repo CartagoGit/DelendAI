@@ -8,7 +8,7 @@
  * as the entry point for fixture tests).
  */
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';

@@ -32,14 +32,14 @@ El typecheck actual falla porque declaredPolicy() omite restrictions, ahora obli
 - global_gate: type
 
 ### S1 — Añadir restrictions al fixture
-- **Status**: pending
+- **Status**: done — `tools/scripts/ci/verify-main-health.spec.ts` fija `restrictions: null` con el comentario que explica por qué el contrato lo exige, y el typecheck raíz pasa sin subir el baseline.
 - **Files**: `tools/scripts/ci/verify-main-health.spec.ts`
 - **Gate**: type
 - acceptance:
   - "El fixture cumple IDeclaredBranchRule con restrictions: null."
   - "El typecheck raíz pasa sin aumentar el baseline de errores."
   - "Las pruebas de verify-main-health siguen pasando."
-- review-state: in_review
+- review-state: approved
 - review-implementer: x00418-branch-fixture-worker
 ## acceptance
 
