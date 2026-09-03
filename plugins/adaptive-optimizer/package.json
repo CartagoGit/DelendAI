@@ -51,6 +51,7 @@
 		"@mcp-vertex/auto-plugin-selector": "workspace:*",
 		"@mcp-vertex/perf": "workspace:*",
 		"@mcp-vertex/prompt-eval": "workspace:*",
+		"@mcp-vertex/proposals": "workspace:*",
 		"@mcp-vertex/usage-tracking": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
@@ -61,6 +62,7 @@
 		"@mcp-vertex/core": "workspace:*",
 		"@mcp-vertex/perf": "workspace:*",
 		"@mcp-vertex/prompt-eval": "workspace:*",
+		"@mcp-vertex/proposals": "workspace:*",
 		"@mcp-vertex/usage-tracking": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",

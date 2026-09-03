@@ -200,6 +200,7 @@
         "@mcp-vertex/auto-plugin-selector": "workspace:*",
         "@mcp-vertex/perf": "workspace:*",
         "@mcp-vertex/prompt-eval": "workspace:*",
+        "@mcp-vertex/proposals": "workspace:*",
         "@mcp-vertex/usage-tracking": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -210,6 +211,7 @@
         "@mcp-vertex/core": "workspace:*",
         "@mcp-vertex/perf": "workspace:*",
         "@mcp-vertex/prompt-eval": "workspace:*",
+        "@mcp-vertex/proposals": "workspace:*",
         "@mcp-vertex/usage-tracking": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
@@ -543,10 +545,12 @@
       "name": "@mcp-vertex/error-reporting",
       "version": "0.1.0",
       "dependencies": {
+        "@mcp-vertex/commit-policy": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
+        "@mcp-vertex/commit-policy": "workspace:*",
         "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",

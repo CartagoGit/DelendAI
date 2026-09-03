@@ -46,10 +46,12 @@
 		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
+		"@mcp-vertex/commit-policy": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
+		"@mcp-vertex/commit-policy": "workspace:*",
 		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
