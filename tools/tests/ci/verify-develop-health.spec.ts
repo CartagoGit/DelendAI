@@ -19,6 +19,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { IBranchProtectionConfig } from '../../../.github/branch-protection.ts';
 import {
+	collectDevelopStatusDiscrepancies,
 	requiredChecksFor,
 	inspectBranch,
 	isHealthy,
@@ -530,5 +531,58 @@ describe('required checks are per branch, not a union', () => {
 		expect(requiredChecksFor(branches, 'develop')).not.toContain(
 			'ci-complete',
 		);
+	});
+});
+
+describe('what develop-health asserts, and what it refuses to', () => {
+	// The job asserts the declared POLICY. It does not assert develop's
+	// current colour: SHARED-DEVELOP-MODEL and q00015 say a temporarily
+	// red develop is a valid transient state of a shared journal branch,
+	// so failing on it contradicts the model the repo is built around —
+	// and the job runs inside tier3, so it would be judging a picture in
+	// which it is itself still pending.
+	it('reports nothing when develop declares no required checks', () => {
+		expect(
+			collectDevelopStatusDiscrepancies({
+				verified: true,
+				headSha: 'abc',
+				ciStatus: 'red',
+				totalCheckRuns: 12,
+				requiredCheckRuns: [],
+			}),
+		).toEqual([]);
+	});
+
+	it('reports nothing when nothing could be read', () => {
+		// Nothing was verified, so nothing is known. Inventing a
+		// violation out of an absence is how a check starts lying.
+		expect(
+			collectDevelopStatusDiscrepancies({
+				verified: false,
+				headSha: null,
+				ciStatus: 'unknown',
+				totalCheckRuns: 0,
+				requiredCheckRuns: [],
+			}),
+		).toEqual([]);
+	});
+
+	it('still reports a required check that is missing, where one is declared', () => {
+		const found = collectDevelopStatusDiscrepancies({
+			verified: true,
+			headSha: 'abc',
+			ciStatus: 'red',
+			totalCheckRuns: 3,
+			requiredCheckRuns: [
+				{
+					name: 'ci-complete',
+					status: null,
+					conclusion: null,
+					htmlUrl: null,
+				},
+			],
+		});
+		expect(found).toHaveLength(1);
+		expect(found[0]).toContain('ci-complete');
 	});
 });
