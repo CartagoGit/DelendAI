@@ -3,7 +3,7 @@ import type {
 	ISystemProfile,
 	IToolPresence,
 } from '@mcp-vertex/core/lib/contracts/interfaces/system-profile.interface';
-import { crossOsMountPrefixesFor } from '@mcp-vertex/core/lib/platform/system-profile';
+import { crossOsMountPrefixesFor } from '@mcp-vertex/core/lib/platform/system-profile.helper';
 
 const ALL_COMMANDS: readonly IKnownCommand[] = [
 	'bun',

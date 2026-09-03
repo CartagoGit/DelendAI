@@ -2,7 +2,7 @@
  * settlement.interface.ts — the shapes of the settlement phase and the
  * worker registry that drives it.
  *
- * Split out of `settlement/worker-registry.ts` per the
+ * Split out of `settlement/worker.registry.ts` per the
  * `types-in-contracts` convention, so a reader that only needs to know
  * what a phase IS does not have to import the registry.
  */

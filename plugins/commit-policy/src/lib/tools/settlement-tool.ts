@@ -14,7 +14,7 @@
 
 import { z } from 'zod';
 
-import { createWorkerRegistry } from '../settlement/worker-registry';
+import { createWorkerRegistry } from '../settlement/worker.registry';
 
 import type {
 	ISettlementStatusOutput,

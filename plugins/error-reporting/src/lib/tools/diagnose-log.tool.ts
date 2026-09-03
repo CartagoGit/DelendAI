@@ -8,8 +8,8 @@ import z from 'zod';
 import {
 	buildLogFindingReport,
 	diagnoseServerLog,
-} from '../intake/log-diagnosis';
-import { readServerLogText } from '../intake/server-log-reader';
+} from '../intake/log-diagnosis.helper';
+import { readServerLogText } from '../intake/server-log-reader.helper';
 import {
 	validateSafeReport,
 	validateSerializedSafeReport,

@@ -10,7 +10,7 @@ import {
 	needsFnmEnv,
 	parseLocaleStatus,
 	requestedLocale,
-} from '@mcp-vertex/core/lib/platform/system-profile';
+} from '@mcp-vertex/core/lib/platform/system-profile.helper';
 
 // Captured verbatim from a WSL2 box and a native Ubuntu box; the pure
 // classifiers are tested against these strings so nothing here depends on

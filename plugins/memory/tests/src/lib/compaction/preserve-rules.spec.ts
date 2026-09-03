@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	extractLoadBearing,
 	verifySummaryPreserves,
-} from '../../../../src/lib/compaction/preserve-rules';
+} from '../../../../src/lib/compaction/preserve-rules.helper';
 
 describe('extractLoadBearing', () => {
 	it('marks a user constraint in either language', () => {

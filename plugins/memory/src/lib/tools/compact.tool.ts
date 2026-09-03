@@ -25,7 +25,7 @@ import {
 	type IContextItem,
 	type IContextItemKind,
 } from '../services/compaction';
-import { verifySummaryPreserves } from '../compaction/preserve-rules';
+import { verifySummaryPreserves } from '../compaction/preserve-rules.helper';
 import { SESSION_DIGEST_TITLE_PREFIX } from '../contracts/constants/session-digest.constant';
 import { saveNote } from '../services/store';
 import { NoteQuotaExceededError } from '../services/store-records';

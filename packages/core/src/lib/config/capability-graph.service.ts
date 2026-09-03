@@ -24,7 +24,18 @@ const parsePackageJson = (
 	}
 };
 
-const confidenceFor = (evidence: string): ICapabilitySignal['confidence'] => {
+/**
+ * How much one piece of language evidence is worth.
+ *
+ * Named for the evidence, not just "confidence", because
+ * `budgets/roi.ts` exports a `confidenceFor` that maps a SAMPLE SIZE to
+ * an ROI confidence. Two unrelated meanings under one name in the same
+ * package is how a call site ends up importing the wrong one and its
+ * tests never notice, since each copy is only covered by its own.
+ */
+const confidenceForEvidence = (
+	evidence: string,
+): ICapabilitySignal['confidence'] => {
 	if (evidence === 'Cargo.toml' || evidence === 'go.mod') return 'certain';
 	if (evidence === 'package.json') return 'weak';
 	return 'strong';
@@ -55,7 +66,7 @@ export const buildCapabilityGraph = async (
 				source: 'language-rules',
 				value: language.id,
 				evidence,
-				confidence: confidenceFor(evidence),
+				confidence: confidenceForEvidence(evidence),
 			})),
 		})),
 		primaryLanguage: languages[0]?.id,
