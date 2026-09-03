@@ -3,7 +3,7 @@ id: database
 package: @mcp-vertex/database
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Database
@@ -28,6 +28,7 @@ Database schema/introspection tools (read-only, offline).
 
 ## Permissions
 
+- env-read
 - database
 
 ## Dependencies

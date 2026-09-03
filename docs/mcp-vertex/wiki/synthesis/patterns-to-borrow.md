@@ -29,7 +29,7 @@ itself when omitted.
 
 ## 2. Claude Code's `opusplan` as the LLM-as-advisor's first primitive
 
-**From:** [Claude Code](../external/claude-code.md).
+**From:** [Claude Code](../external/claude.md).
 
 **Idea:** don't make the advisor pick a model by reading the
 prompt — make it pick a *mode* (`plan`, `explore`, `implement`,

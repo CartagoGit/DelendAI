@@ -3,7 +3,7 @@ id: commit-policy
 package: @mcp-vertex/commit-policy
 version: 0.1.0
 maturity: experimental
-generated: 2026-08-30T15:46:29.397Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Commit Policy
@@ -28,10 +28,13 @@ Commit-authority plugin: configurable identity, cadence and audit-trail policy w
 
 ## Permissions
 
+- filesystem-read
+- filesystem-write
+- process
+- network
 - git-read
 - git-write
-- network
-- process
+- env-read
 
 ## Dependencies
 

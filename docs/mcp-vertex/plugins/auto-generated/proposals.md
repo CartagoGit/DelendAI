@@ -3,7 +3,7 @@ id: proposals
 package: @mcp-vertex/proposals
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Proposals
@@ -30,8 +30,10 @@ Proposals workflow + multi-agent (swarm) orchestration.
 
 - filesystem-read
 - filesystem-write
+- process
 - git-read
 - git-write
+- env-read
 
 ## Dependencies
 

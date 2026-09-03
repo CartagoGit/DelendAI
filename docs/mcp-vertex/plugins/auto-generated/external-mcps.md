@@ -3,7 +3,7 @@ id: external-mcps
 package: @mcp-vertex/external-mcps
 version: 0.1.1
 maturity: stable
-generated: 2026-09-02T01:21:12.948Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # External Mcps
@@ -25,8 +25,10 @@ Compose third-party MCP servers through the catalog + human ack.
 
 ## Permissions
 
-- network
+- filesystem-read
 - process
+- network
+- env-read
 
 ## Dependencies
 

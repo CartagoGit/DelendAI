@@ -3,7 +3,7 @@ id: error-reporting
 package: @mcp-vertex/error-reporting
 version: 0.1.0
 maturity: stable
-generated: 2026-09-02T06:52:14.677Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Error Reporting
@@ -29,6 +29,8 @@ Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for inte
 
 ## Permissions
 
+- filesystem-read
+- filesystem-write
 - network
 - forge-write
 

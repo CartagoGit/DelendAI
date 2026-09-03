@@ -3,7 +3,7 @@ id: cache
 package: @mcp-vertex/cache
 version: 0.1.1
 maturity: stable
-generated: 2026-09-02T01:21:12.948Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Cache
@@ -27,6 +27,7 @@ Cache-eviction rules and lifecycle for plugin scratch dirs.
 
 - filesystem-read
 - filesystem-write
+- env-read
 
 ## Dependencies
 

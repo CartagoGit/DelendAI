@@ -127,58 +127,58 @@
 | adaptive-optimizer | filesystem-read |  |
 | agent-orchestrator | process |  |
 | api | process, network |  |
-| audit | filesystem-read, filesystem-write, network |  |
+| audit | filesystem-read, filesystem-write, network, env-read |  |
 | audit-orchestrator | filesystem-read, process |  |
-| auto-agent-selector | process, network |  |
+| auto-agent-selector | filesystem-read, process, network, env-read |  |
 | auto-plugin-selector | filesystem-read |  |
-| browser | browser, network |  |
-| cache | filesystem-read, filesystem-write |  |
-| changelog | git-read |  |
-| commit-policy | git-read, git-write, network, process | commit_policy_status: git-read; commit_policy_commit: git-write; commit_policy_push: git-write; commit_policy_run: git-write; commit_policy_refresh_branch_protection: network, process |
+| browser | filesystem-write, process, network, browser |  |
+| cache | filesystem-read, filesystem-write, env-read |  |
+| changelog | process, git-read |  |
+| commit-policy | filesystem-read, filesystem-write, process, network, git-read, git-write, env-read | commit_policy_status: git-read; commit_policy_commit: git-write; commit_policy_push: git-write; commit_policy_run: git-write; commit_policy_refresh_branch_protection: network, process |
 | completion | filesystem-read, filesystem-write |  |
-| container | process, container | container_inspect: container; container_logs: container; container_lint: filesystem-read; k8s_apply: container, process; container_build: container, process |
+| container | filesystem-read, process, container | container_inspect: container; container_logs: container; container_lint: filesystem-read; k8s_apply: container, process; container_build: container, process |
 | context-for-change | filesystem-read |  |
 | conventions | filesystem-read |  |
-| database | database |  |
+| database | env-read, database |  |
 | deps | filesystem-read, network |  |
 | diagram | filesystem-read, filesystem-write |  |
 | docs | filesystem-read, filesystem-write |  |
-| env | env-read |  |
-| error-reporting | network, forge-write | report_status: network, forge-write |
-| external-mcps | network, process |  |
-| forge | forge-read, forge-write, network | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |
-| git | git-read, git-write | status: git-read; changed: git-read; diff: git-read; log: git-read; blame: git-read; show: git-read; worktree: git-read; changelog: git-read; commit: git-write; push: git-write |
-| github | network |  |
-| gitlab | network |  |
+| env | filesystem-read, env-read |  |
+| error-reporting | filesystem-read, filesystem-write, network, forge-write | report_status: network, forge-write |
+| external-mcps | filesystem-read, process, network, env-read |  |
+| forge | filesystem-read, process, network, forge-read, forge-write | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |
+| git | filesystem-read, process, git-read, git-write | status: git-read; changed: git-read; diff: git-read; log: git-read; blame: git-read; show: git-read; worktree: git-read; changelog: git-read; commit: git-write; push: git-write |
+| github | filesystem-write, network, env-read |  |
+| gitlab | filesystem-write, network, env-read |  |
 | i18n | filesystem-read |  |
 | impact-analysis | filesystem-read |  |
-| issues | forge-read, forge-write, network | issues_list: forge-read, network; issues_fetch: forge-read, network; issues_analyze: forge-read; issues_ingest: forge-read, network; issues_resolve: forge-write, network; setup_github: forge-write, network, secrets |
+| issues | filesystem-read, filesystem-write, process, network, forge-read, forge-write, env-read | issues_list: forge-read, network; issues_fetch: forge-read, network; issues_analyze: forge-read; issues_ingest: forge-read, network; issues_resolve: forge-write, network; setup_github: forge-write, network, secrets |
 | issues-triage | forge-read, forge-write, filesystem-read, filesystem-write, network |  |
 | link-check | filesystem-read |  |
 | logs | filesystem-read, filesystem-write |  |
 | memory | filesystem-read, filesystem-write |  |
 | notification | filesystem-read, filesystem-write |  |
-| observability | filesystem-read, filesystem-write |  |
-| orchestrator-runner | process, network |  |
-| perf | filesystem-read, process |  |
+| observability | filesystem-read, filesystem-write, network, env-read |  |
+| orchestrator-runner | filesystem-read, process, network, env-read |  |
+| perf | filesystem-read, filesystem-write, process |  |
 | project-health | filesystem-read |  |
 | project-kpis | filesystem-read, filesystem-write |  |
 | prompt-eval | filesystem-read, process |  |
 | prompts-pack | filesystem-read |  |
-| proposals | filesystem-read, filesystem-write, git-read, git-write | auto_work: filesystem-read, filesystem-write, git-read; plan: filesystem-read, filesystem-write; delegate: filesystem-read, filesystem-write; get_proposal_workflow: filesystem-read; round_context: filesystem-read; agent_lock: filesystem-read, filesystem-write; agent_worktree: filesystem-read, filesystem-write, git-write; agent_names: filesystem-read; branch_status: git-read; branch_gc: git-read, git-write; close_slice: filesystem-read, filesystem-write; proposal_transition: filesystem-read, filesystem-write; proposal_review: filesystem-read; proposal_adopt: filesystem-read, filesystem-write, git-write; proposal_diagnose: filesystem-read; state_health: filesystem-read; state_repair: filesystem-read, filesystem-write; agent_lock_release_orphan: filesystem-read, filesystem-write |
+| proposals | filesystem-read, filesystem-write, process, git-read, git-write, env-read | auto_work: filesystem-read, filesystem-write, git-read; plan: filesystem-read, filesystem-write; delegate: filesystem-read, filesystem-write; get_proposal_workflow: filesystem-read; round_context: filesystem-read; agent_lock: filesystem-read, filesystem-write; agent_worktree: filesystem-read, filesystem-write, git-write; agent_names: filesystem-read; branch_status: git-read; branch_gc: git-read, git-write; close_slice: filesystem-read, filesystem-write; proposal_transition: filesystem-read, filesystem-write; proposal_review: filesystem-read; proposal_adopt: filesystem-read, filesystem-write, git-write; proposal_diagnose: filesystem-read; state_health: filesystem-read; state_repair: filesystem-read, filesystem-write; agent_lock_release_orphan: filesystem-read, filesystem-write |
 | quality | filesystem-read, process |  |
-| quality-policy | filesystem-read |  |
+| quality-policy | filesystem-read, process |  |
 | refactor | filesystem-read, filesystem-write |  |
 | remote-provider-core | filesystem-read |  |
-| rules | filesystem-read |  |
-| search | filesystem-read |  |
-| security | filesystem-read, env-read |  |
+| rules | filesystem-read, network, env-read |  |
+| search | filesystem-read, process, env-read |  |
+| security | filesystem-read, filesystem-write, process, env-read |  |
 | skills-pack | filesystem-read |  |
 | status-marker | filesystem-read |  |
 | tech-debt | filesystem-read |  |
 | test-convention | filesystem-read |  |
 | test-policy | filesystem-read, filesystem-write |  |
-| usage-tracking | filesystem-read, filesystem-write |  |
+| usage-tracking | filesystem-read, filesystem-write, network, env-read |  |
 | web-fetch | network |  |
 
 ## Compatibility matrix

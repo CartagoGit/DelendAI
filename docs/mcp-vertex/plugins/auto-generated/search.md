@@ -3,7 +3,7 @@ id: search
 package: @mcp-vertex/search
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Search
@@ -35,6 +35,8 @@ Code search (semantic + symbol + references).
 ## Permissions
 
 - filesystem-read
+- process
+- env-read
 
 ## Dependencies
 

@@ -3,7 +3,7 @@ id: git
 package: @mcp-vertex/git
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Git
@@ -33,6 +33,8 @@ Git wrappers (PR list/view, diff, changelog, extended).
 
 ## Permissions
 
+- filesystem-read
+- process
 - git-read
 - git-write
 

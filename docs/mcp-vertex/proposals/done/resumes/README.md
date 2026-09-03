@@ -51,11 +51,11 @@ tier as `kind: legacy` (prefix `l`) per f00016 §4.3.
 
 | # | File | Date | Author | Session |
 |---|---|---|---|---|
-| n00001 | `n00001-15-06-2026-resumen-sesion-autonoma-claude-code.md` | 2026-06-15 madrugada → ~08:05 | Claude Code · Opus 4.8 | autónoma (sin supervisión) |
-| n00002 | `n00002-15-06-2026-resumen-sesion-oficina-claude-code.md` | 2026-06-15 08:55 → 20:10 | Claude Code · Sonnet 4.6 + Opus 4.8 | oficina (con revisión) |
-| n00003 | `n00003-16-06-2026-resumen-sesion-2a-ronda-claude-code.md` | 2026-06-15 noche → 06-16 | Claude Code · Opus 4.8 | 2ª ronda (consolidación 2 auditorías) |
-| n00004 | `n00004-16-06-2026-resumen-sesion-3a-ronda-claude-code.md` | 2026-06-16 08:27 → ~13:50 | Claude Code · Opus 4.8 | 3ª ronda (N16/N17/N19) |
-| n00005 | `n00005-16-06-2026-resumen-sesion-4a-ronda-claude-code.md` | 2026-06-16 tarde/noche | Claude Code · Opus 4.8 | 4ª ronda (N20 + SDK de tipos → 11/10) |
+| n00001 | `n00001-15-06-2026-resumen-sesion-autonoma-claude.md` | 2026-06-15 madrugada → ~08:05 | Claude Code · Opus 4.8 | autónoma (sin supervisión) |
+| n00002 | `n00002-15-06-2026-resumen-sesion-oficina-claude.md` | 2026-06-15 08:55 → 20:10 | Claude Code · Sonnet 4.6 + Opus 4.8 | oficina (con revisión) |
+| n00003 | `n00003-16-06-2026-resumen-sesion-2a-ronda-claude.md` | 2026-06-15 noche → 06-16 | Claude Code · Opus 4.8 | 2ª ronda (consolidación 2 auditorías) |
+| n00004 | `n00004-16-06-2026-resumen-sesion-3a-ronda-claude.md` | 2026-06-16 08:27 → ~13:50 | Claude Code · Opus 4.8 | 3ª ronda (N16/N17/N19) |
+| n00005 | `n00005-16-06-2026-resumen-sesion-4a-ronda-claude.md` | 2026-06-16 tarde/noche | Claude Code · Opus 4.8 | 4ª ronda (N20 + SDK de tipos → 11/10) |
 | n00006 | `n00006-17-06-2026-resumen-sesion-handoff-copilot.md` | 2026-06-17 (casa → oficina) | GitHub Copilot · MiniMax-M3 | handoff cross-agent |
 
 ## How to write a new one

@@ -116,7 +116,7 @@ property. Worth keeping as a fallback.
 
 **The wiki's recommended approach.** Hybrid of B (catalog freshness
 via declared roster) and C (LLM as the advisor), with a strong
-opinion borrowed from Claude Code's `opusplan` ([external/claude-code.md](external/claude-code.md)):
+opinion borrowed from Claude Code's `opusplan` ([external/claude.md](external/claude.md)):
 
 1. **The roster is declared, not hardcoded.** User maintains
    `mcp-vertex.config.json#providers`. Each entry has:

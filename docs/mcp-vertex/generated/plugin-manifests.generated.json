@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-09-02T01:21:12.948Z",
+	"generatedAt": "2026-09-03T22:08:20.315Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -123,7 +123,8 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write",
-				"network"
+				"network",
+				"env-read"
 			],
 			"presets": [
 				"vertex"
@@ -191,8 +192,10 @@
 			],
 			"maturity": "stable",
 			"permissions": [
+				"filesystem-read",
 				"process",
-				"network"
+				"network",
+				"env-read"
 			],
 			"presets": [
 				"standard",
@@ -262,8 +265,10 @@
 			],
 			"maturity": "stable",
 			"permissions": [
-				"browser",
-				"network"
+				"filesystem-write",
+				"process",
+				"network",
+				"browser"
 			],
 			"presets": [
 				"full"
@@ -295,7 +300,8 @@
 			"maturity": "stable",
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"env-read"
 			],
 			"presets": [
 				"full"
@@ -327,6 +333,7 @@
 			],
 			"maturity": "experimental",
 			"permissions": [
+				"process",
 				"git-read"
 			],
 			"presets": [],
@@ -359,10 +366,13 @@
 			],
 			"maturity": "experimental",
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"network",
 				"git-read",
 				"git-write",
-				"network",
-				"process"
+				"env-read"
 			],
 			"toolPermissions": {
 				"commit_policy_status": [
@@ -453,6 +463,7 @@
 			],
 			"maturity": "stable",
 			"permissions": [
+				"filesystem-read",
 				"process",
 				"container"
 			],
@@ -589,6 +600,7 @@
 			],
 			"maturity": "stable",
 			"permissions": [
+				"env-read",
 				"database"
 			],
 			"presets": [
@@ -742,6 +754,7 @@
 			],
 			"maturity": "stable",
 			"permissions": [
+				"filesystem-read",
 				"env-read"
 			],
 			"presets": [
@@ -781,6 +794,8 @@
 			],
 			"maturity": "stable",
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
 				"network",
 				"forge-write"
 			],
@@ -831,8 +846,10 @@
 			],
 			"maturity": "stable",
 			"permissions": [
+				"filesystem-read",
+				"process",
 				"network",
-				"process"
+				"env-read"
 			],
 			"presets": [
 				"full"
@@ -864,9 +881,11 @@
 			],
 			"maturity": "stable",
 			"permissions": [
+				"filesystem-read",
+				"process",
+				"network",
 				"forge-read",
-				"forge-write",
-				"network"
+				"forge-write"
 			],
 			"toolPermissions": {
 				"pr_list": [
@@ -950,6 +969,8 @@
 			],
 			"maturity": "stable",
 			"permissions": [
+				"filesystem-read",
+				"process",
 				"git-read",
 				"git-write"
 			],
@@ -1029,7 +1050,9 @@
 			],
 			"maturity": "experimental",
 			"permissions": [
-				"network"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"presets": [
 				"full"
@@ -1061,7 +1084,9 @@
 			],
 			"maturity": "experimental",
 			"permissions": [
-				"network"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"presets": [
 				"full"
@@ -1167,9 +1192,13 @@
 			],
 			"maturity": "beta",
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"network",
 				"forge-read",
 				"forge-write",
-				"network"
+				"env-read"
 			],
 			"toolPermissions": {
 				"issues_list": [
@@ -1423,7 +1452,9 @@
 			"maturity": "stable",
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"presets": [
 				"full"
@@ -1453,8 +1484,10 @@
 			],
 			"maturity": "stable",
 			"permissions": [
+				"filesystem-read",
 				"process",
-				"network"
+				"network",
+				"env-read"
 			],
 			"presets": [
 				"vertex"
@@ -1487,6 +1520,7 @@
 			"maturity": "stable",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process"
 			],
 			"presets": [
@@ -1663,8 +1697,10 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write",
+				"process",
 				"git-read",
-				"git-write"
+				"git-write",
+				"env-read"
 			],
 			"toolPermissions": {
 				"auto_work": [
@@ -1823,7 +1859,8 @@
 			],
 			"maturity": "experimental",
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process"
 			],
 			"presets": [
 				"vertex"
@@ -1926,7 +1963,9 @@
 			],
 			"maturity": "stable",
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"network",
+				"env-read"
 			],
 			"presets": [
 				"standard",
@@ -1964,7 +2003,9 @@
 			],
 			"maturity": "stable",
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process",
+				"env-read"
 			],
 			"presets": [
 				"minimal",
@@ -2013,6 +2054,8 @@
 			"maturity": "stable",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
+				"process",
 				"env-read"
 			],
 			"presets": [
@@ -2220,7 +2263,9 @@
 			"maturity": "stable",
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"presets": [
 				"vertex"
@@ -2335,7 +2380,8 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write",
-				"network"
+				"network",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -2366,8 +2412,10 @@
 				"agents"
 			],
 			"permissions": [
+				"filesystem-read",
 				"process",
-				"network"
+				"network",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700,
 			"example": {
@@ -2399,8 +2447,10 @@
 				"automation"
 			],
 			"permissions": [
-				"browser",
-				"network"
+				"filesystem-write",
+				"process",
+				"network",
+				"browser"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -2415,7 +2465,8 @@
 			],
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -2429,6 +2480,7 @@
 				"release"
 			],
 			"permissions": [
+				"process",
 				"git-read"
 			],
 			"tokenBudgetBytes": 2700
@@ -2446,10 +2498,13 @@
 				"f00181"
 			],
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"network",
 				"git-read",
 				"git-write",
-				"network",
-				"process"
+				"env-read"
 			],
 			"tokenBudgetBytes": 4200,
 			"toolPermissions": {
@@ -2497,6 +2552,7 @@
 				"kubernetes"
 			],
 			"permissions": [
+				"filesystem-read",
 				"process",
 				"container"
 			],
@@ -2560,6 +2616,7 @@
 				"schema"
 			],
 			"permissions": [
+				"env-read",
 				"database"
 			],
 			"tokenBudgetBytes": 2700
@@ -2619,6 +2676,7 @@
 				"config"
 			],
 			"permissions": [
+				"filesystem-read",
 				"env-read"
 			],
 			"tokenBudgetBytes": 2700
@@ -2634,6 +2692,8 @@
 				"issues"
 			],
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
 				"network",
 				"forge-write"
 			],
@@ -2656,8 +2716,10 @@
 				"composition"
 			],
 			"permissions": [
+				"filesystem-read",
+				"process",
 				"network",
-				"process"
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700,
 			"example": {
@@ -2691,9 +2753,11 @@
 				"ci"
 			],
 			"permissions": [
+				"filesystem-read",
+				"process",
+				"network",
 				"forge-read",
-				"forge-write",
-				"network"
+				"forge-write"
 			],
 			"tokenBudgetBytes": 6800,
 			"toolPermissions": {
@@ -2750,6 +2814,8 @@
 				"changelog"
 			],
 			"permissions": [
+				"filesystem-read",
+				"process",
 				"git-read",
 				"git-write"
 			],
@@ -2797,7 +2863,9 @@
 				"provider"
 			],
 			"permissions": [
-				"network"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -2811,7 +2879,9 @@
 				"provider"
 			],
 			"permissions": [
-				"network"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -2855,9 +2925,13 @@
 				"triage"
 			],
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"network",
 				"forge-read",
 				"forge-write",
-				"network"
+				"env-read"
 			],
 			"tokenBudgetBytes": 4900,
 			"toolPermissions": {
@@ -2977,7 +3051,9 @@
 			],
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -2991,8 +3067,10 @@
 				"runner"
 			],
 			"permissions": [
+				"filesystem-read",
 				"process",
-				"network"
+				"network",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -3007,6 +3085,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process"
 			],
 			"tokenBudgetBytes": 2700
@@ -3084,8 +3163,10 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write",
+				"process",
 				"git-read",
-				"git-write"
+				"git-write",
+				"env-read"
 			],
 			"tokenBudgetBytes": 12400,
 			"example": {
@@ -3199,7 +3280,8 @@
 				"f00167"
 			],
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -3243,7 +3325,9 @@
 				"lint"
 			],
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"network",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -3258,7 +3342,9 @@
 				"f00136"
 			],
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -3273,6 +3359,8 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
+				"process",
 				"env-read"
 			],
 			"tokenBudgetBytes": 2700
@@ -3378,7 +3466,9 @@
 			],
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -3511,7 +3601,8 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write",
-				"network"
+				"network",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -3569,8 +3660,10 @@
 				"agents"
 			],
 			"permissions": [
+				"filesystem-read",
 				"process",
-				"network"
+				"network",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -3624,8 +3717,10 @@
 				"automation"
 			],
 			"permissions": [
-				"browser",
-				"network"
+				"filesystem-write",
+				"process",
+				"network",
+				"browser"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -3652,7 +3747,8 @@
 			],
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -3680,10 +3776,13 @@
 				"commit-policy"
 			],
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"network",
 				"git-read",
 				"git-write",
-				"network",
-				"process"
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 4800,
@@ -3745,6 +3844,7 @@
 				"kubernetes"
 			],
 			"permissions": [
+				"filesystem-read",
 				"process",
 				"container"
 			],
@@ -3828,6 +3928,7 @@
 				"schema"
 			],
 			"permissions": [
+				"env-read",
 				"database"
 			],
 			"tokenBudget": {
@@ -3958,6 +4059,7 @@
 				"config"
 			],
 			"permissions": [
+				"filesystem-read",
 				"env-read"
 			],
 			"tokenBudget": {
@@ -3989,6 +4091,8 @@
 				"issues"
 			],
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
 				"network",
 				"forge-write"
 			],
@@ -4016,8 +4120,10 @@
 				"composition"
 			],
 			"permissions": [
+				"filesystem-read",
+				"process",
 				"network",
-				"process"
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -4047,9 +4153,11 @@
 				"ci"
 			],
 			"permissions": [
+				"filesystem-read",
+				"process",
+				"network",
 				"forge-read",
-				"forge-write",
-				"network"
+				"forge-write"
 			],
 			"tokenBudget": {
 				"warning": 7400,
@@ -4083,6 +4191,8 @@
 				"changelog"
 			],
 			"permissions": [
+				"filesystem-read",
+				"process",
 				"git-read",
 				"git-write"
 			],
@@ -4110,7 +4220,9 @@
 				"remote-provider"
 			],
 			"permissions": [
-				"network"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -4136,7 +4248,9 @@
 				"remote-provider"
 			],
 			"permissions": [
-				"network"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -4221,9 +4335,13 @@
 				"triage"
 			],
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"network",
 				"forge-read",
 				"forge-write",
-				"network"
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 5300,
@@ -4366,7 +4484,9 @@
 			],
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -4392,8 +4512,10 @@
 				"runner"
 			],
 			"permissions": [
+				"filesystem-read",
 				"process",
-				"network"
+				"network",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -4421,6 +4543,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process"
 			],
 			"tokenBudget": {
@@ -4564,8 +4687,10 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write",
+				"process",
 				"git-read",
-				"git-write"
+				"git-write",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 13500,
@@ -4624,7 +4749,8 @@
 				"quality-policy"
 			],
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -4711,7 +4837,9 @@
 				"lint"
 			],
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"network",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -4748,7 +4876,9 @@
 				"hybrid-search"
 			],
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -4775,6 +4905,8 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
+				"process",
 				"env-read"
 			],
 			"tokenBudget": {
@@ -4946,7 +5078,9 @@
 			],
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"network",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -5345,7 +5479,8 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write",
-				"network"
+				"network",
+				"env-read"
 			]
 		},
 		{
@@ -5358,8 +5493,10 @@
 		{
 			"id": "auto-agent-selector",
 			"permissions": [
+				"filesystem-read",
 				"process",
-				"network"
+				"network",
+				"env-read"
 			]
 		},
 		{
@@ -5371,30 +5508,37 @@
 		{
 			"id": "browser",
 			"permissions": [
-				"browser",
-				"network"
+				"filesystem-write",
+				"process",
+				"network",
+				"browser"
 			]
 		},
 		{
 			"id": "cache",
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"env-read"
 			]
 		},
 		{
 			"id": "changelog",
 			"permissions": [
+				"process",
 				"git-read"
 			]
 		},
 		{
 			"id": "commit-policy",
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"network",
 				"git-read",
 				"git-write",
-				"network",
-				"process"
+				"env-read"
 			],
 			"toolPermissions": {
 				"commit_policy_status": [
@@ -5425,6 +5569,7 @@
 		{
 			"id": "container",
 			"permissions": [
+				"filesystem-read",
 				"process",
 				"container"
 			],
@@ -5463,6 +5608,7 @@
 		{
 			"id": "database",
 			"permissions": [
+				"env-read",
 				"database"
 			]
 		},
@@ -5490,12 +5636,15 @@
 		{
 			"id": "env",
 			"permissions": [
+				"filesystem-read",
 				"env-read"
 			]
 		},
 		{
 			"id": "error-reporting",
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
 				"network",
 				"forge-write"
 			],
@@ -5509,16 +5658,20 @@
 		{
 			"id": "external-mcps",
 			"permissions": [
+				"filesystem-read",
+				"process",
 				"network",
-				"process"
+				"env-read"
 			]
 		},
 		{
 			"id": "forge",
 			"permissions": [
+				"filesystem-read",
+				"process",
+				"network",
 				"forge-read",
-				"forge-write",
-				"network"
+				"forge-write"
 			],
 			"toolPermissions": {
 				"pr_list": [
@@ -5567,6 +5720,8 @@
 		{
 			"id": "git",
 			"permissions": [
+				"filesystem-read",
+				"process",
 				"git-read",
 				"git-write"
 			],
@@ -5606,13 +5761,17 @@
 		{
 			"id": "github",
 			"permissions": [
-				"network"
+				"filesystem-write",
+				"network",
+				"env-read"
 			]
 		},
 		{
 			"id": "gitlab",
 			"permissions": [
-				"network"
+				"filesystem-write",
+				"network",
+				"env-read"
 			]
 		},
 		{
@@ -5630,9 +5789,13 @@
 		{
 			"id": "issues",
 			"permissions": [
+				"filesystem-read",
+				"filesystem-write",
+				"process",
+				"network",
 				"forge-read",
 				"forge-write",
-				"network"
+				"env-read"
 			],
 			"toolPermissions": {
 				"issues_list": [
@@ -5702,20 +5865,25 @@
 			"id": "observability",
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"network",
+				"env-read"
 			]
 		},
 		{
 			"id": "orchestrator-runner",
 			"permissions": [
+				"filesystem-read",
 				"process",
-				"network"
+				"network",
+				"env-read"
 			]
 		},
 		{
 			"id": "perf",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process"
 			]
 		},
@@ -5750,8 +5918,10 @@
 			"permissions": [
 				"filesystem-read",
 				"filesystem-write",
+				"process",
 				"git-read",
-				"git-write"
+				"git-write",
+				"env-read"
 			],
 			"toolPermissions": {
 				"auto_work": [
@@ -5834,7 +6004,8 @@
 		{
 			"id": "quality-policy",
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process"
 			]
 		},
 		{
@@ -5853,19 +6024,25 @@
 		{
 			"id": "rules",
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"network",
+				"env-read"
 			]
 		},
 		{
 			"id": "search",
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process",
+				"env-read"
 			]
 		},
 		{
 			"id": "security",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
+				"process",
 				"env-read"
 			]
 		},
@@ -5904,7 +6081,9 @@
 			"id": "usage-tracking",
 			"permissions": [
 				"filesystem-read",
-				"filesystem-write"
+				"filesystem-write",
+				"network",
+				"env-read"
 			]
 		},
 		{

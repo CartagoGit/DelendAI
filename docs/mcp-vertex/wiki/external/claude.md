@@ -105,7 +105,7 @@ $20 Pro / $100 Max / $200 Ultra per month; API via Anthropic Console.
 
 Claude Code documents `PostCompact` hooks and MCP-tool hook handlers. The
 repository ships a deliberately narrow, opt-in fragment at
-[`config/external/claude-code/session-hygiene.hooks.json`](../../../../config/external/claude-code/session-hygiene.hooks.json).
+[`config/external/claude/session-hygiene.hooks.json`](../../../../config/external/claude/session-hygiene.hooks.json).
 After a manual or automatic compaction it requests the latest
 `mcp-vertex_memory_checkpoint_packet` from the already-connected
 `mcp-vertex` server.
@@ -125,7 +125,7 @@ Do not attach this hook to `SessionStart`: Claude Code documents that MCP
 servers may still be connecting at that point. Do not use `PreCompact` to
 invent a digest: lifecycle input does not contain the semantic working state
 needed for a truthful one. Installation and a focused smoke test are in the
-[adapter README](../../../../config/external/claude-code/README.md).
+[adapter README](../../../../config/external/claude/README.md).
 
 Sources: [Claude Code hooks reference](https://code.claude.com/docs/en/hooks)
 and [MCP connection guidance](https://code.claude.com/docs/en/mcp).

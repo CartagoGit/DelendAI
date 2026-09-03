@@ -12,7 +12,7 @@ is the first one listed.
 An LLM (or rule system) consulted at routing time to pick which model
 should handle a task. The advisor is itself a model call; it's the
 "brain" of the routing decision. See Claude Code's
-`advisorModel` ([external/claude-code.md](external/claude-code.md)) and
+`advisorModel` ([external/claude.md](external/claude.md)) and
 OpenRouter's `openrouter/auto` ([external/openrouter.md](external/openrouter.md))
 for two production examples.
 
@@ -170,7 +170,7 @@ between Opus (for plan mode / architecture reasoning) and Sonnet (for
 execution / code generation). **The cleanest declarative primitive in
 the field for mode-keyed routing.** We propose copying this pattern
 under a different name in Option D. See
-[external/claude-code.md](external/claude-code.md).
+[external/claude.md](external/claude.md).
 
 ---
 

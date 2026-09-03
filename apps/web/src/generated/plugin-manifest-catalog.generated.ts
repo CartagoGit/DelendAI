@@ -107,7 +107,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"permissions": [
 			"filesystem-read",
 			"filesystem-write",
-			"network"
+			"network",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -165,8 +166,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"agents"
 		],
 		"permissions": [
+			"filesystem-read",
 			"process",
-			"network"
+			"network",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -220,8 +223,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"automation"
 		],
 		"permissions": [
-			"browser",
-			"network"
+			"filesystem-write",
+			"process",
+			"network",
+			"browser"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -248,7 +253,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"permissions": [
 			"filesystem-read",
-			"filesystem-write"
+			"filesystem-write",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -276,10 +282,13 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"commit-policy"
 		],
 		"permissions": [
+			"filesystem-read",
+			"filesystem-write",
+			"process",
+			"network",
 			"git-read",
 			"git-write",
-			"network",
-			"process"
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 4800,
@@ -341,6 +350,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"kubernetes"
 		],
 		"permissions": [
+			"filesystem-read",
 			"process",
 			"container"
 		],
@@ -424,6 +434,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"schema"
 		],
 		"permissions": [
+			"env-read",
 			"database"
 		],
 		"tokenBudget": {
@@ -554,6 +565,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"config"
 		],
 		"permissions": [
+			"filesystem-read",
 			"env-read"
 		],
 		"tokenBudget": {
@@ -585,6 +597,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"issues"
 		],
 		"permissions": [
+			"filesystem-read",
+			"filesystem-write",
 			"network",
 			"forge-write"
 		],
@@ -612,8 +626,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"composition"
 		],
 		"permissions": [
+			"filesystem-read",
+			"process",
 			"network",
-			"process"
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -643,9 +659,11 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"ci"
 		],
 		"permissions": [
+			"filesystem-read",
+			"process",
+			"network",
 			"forge-read",
-			"forge-write",
-			"network"
+			"forge-write"
 		],
 		"tokenBudget": {
 			"warning": 7400,
@@ -679,6 +697,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"changelog"
 		],
 		"permissions": [
+			"filesystem-read",
+			"process",
 			"git-read",
 			"git-write"
 		],
@@ -706,7 +726,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"remote-provider"
 		],
 		"permissions": [
-			"network"
+			"filesystem-write",
+			"network",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -732,7 +754,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"remote-provider"
 		],
 		"permissions": [
-			"network"
+			"filesystem-write",
+			"network",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -817,9 +841,13 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"triage"
 		],
 		"permissions": [
+			"filesystem-read",
+			"filesystem-write",
+			"process",
+			"network",
 			"forge-read",
 			"forge-write",
-			"network"
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 5300,
@@ -962,7 +990,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"permissions": [
 			"filesystem-read",
-			"filesystem-write"
+			"filesystem-write",
+			"network",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -988,8 +1018,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"runner"
 		],
 		"permissions": [
+			"filesystem-read",
 			"process",
-			"network"
+			"network",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -1017,6 +1049,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"permissions": [
 			"filesystem-read",
+			"filesystem-write",
 			"process"
 		],
 		"tokenBudget": {
@@ -1160,8 +1193,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"permissions": [
 			"filesystem-read",
 			"filesystem-write",
+			"process",
 			"git-read",
-			"git-write"
+			"git-write",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 13500,
@@ -1220,7 +1255,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"quality-policy"
 		],
 		"permissions": [
-			"filesystem-read"
+			"filesystem-read",
+			"process"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -1307,7 +1343,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"lint"
 		],
 		"permissions": [
-			"filesystem-read"
+			"filesystem-read",
+			"network",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -1344,7 +1382,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"hybrid-search"
 		],
 		"permissions": [
-			"filesystem-read"
+			"filesystem-read",
+			"process",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -1371,6 +1411,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"permissions": [
 			"filesystem-read",
+			"filesystem-write",
+			"process",
 			"env-read"
 		],
 		"tokenBudget": {
@@ -1542,7 +1584,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"permissions": [
 			"filesystem-read",
-			"filesystem-write"
+			"filesystem-write",
+			"network",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 2700,

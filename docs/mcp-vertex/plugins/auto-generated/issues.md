@@ -3,7 +3,7 @@ id: issues
 package: @mcp-vertex/issues
 version: 0.1.1
 maturity: beta
-generated: 2026-08-25T20:45:05.060Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Issues
@@ -26,9 +26,13 @@ Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.
 
 ## Permissions
 
+- filesystem-read
+- filesystem-write
+- process
+- network
 - forge-read
 - forge-write
-- network
+- env-read
 
 ## Dependencies
 

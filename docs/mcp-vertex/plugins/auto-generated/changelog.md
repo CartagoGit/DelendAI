@@ -3,7 +3,7 @@ id: changelog
 package: @mcp-vertex/changelog
 version: 0.1.1
 maturity: experimental
-generated: 2026-08-25T15:05:09.716Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Changelog
@@ -25,6 +25,7 @@ Conventional-commits changelog + release plan generator.
 
 ## Permissions
 
+- process
 - git-read
 
 ## Dependencies

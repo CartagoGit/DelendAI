@@ -5,13 +5,13 @@
 | adaptive-optimizer | public | * | filesystem-read |
 | agent-orchestrator | public | * | process |
 | api | public | * | process, network |
-| audit | public | * | filesystem-read, filesystem-write, network |
+| audit | public | * | filesystem-read, filesystem-write, network, env-read |
 | audit-orchestrator | public | * | filesystem-read, process |
-| auto-agent-selector | public | * | process, network |
+| auto-agent-selector | public | * | filesystem-read, process, network, env-read |
 | auto-plugin-selector | public | * | filesystem-read |
-| browser | public | * | browser, network |
-| cache | public | * | filesystem-read, filesystem-write |
-| changelog | private | * | git-read |
+| browser | public | * | filesystem-write, process, network, browser |
+| cache | public | * | filesystem-read, filesystem-write, env-read |
+| changelog | private | * | process, git-read |
 | commit-policy | public | commit_policy_status | git-read |
 | commit-policy | public | commit_policy_commit | git-write |
 | commit-policy | public | commit_policy_push | git-write |
@@ -25,13 +25,13 @@
 | container | public | container_build | container, process |
 | context-for-change | public | * | filesystem-read |
 | conventions | public | * | filesystem-read |
-| database | public | * | database |
+| database | public | * | env-read, database |
 | deps | public | * | filesystem-read, network |
 | diagram | public | * | filesystem-read, filesystem-write |
 | docs | public | * | filesystem-read, filesystem-write |
-| env | public | * | env-read |
+| env | public | * | filesystem-read, env-read |
 | error-reporting | public | report_status | network, forge-write |
-| external-mcps | public | * | network, process |
+| external-mcps | public | * | filesystem-read, process, network, env-read |
 | forge | public | pr_list | forge-read, network |
 | forge | public | pr_show | forge-read, network |
 | forge | public | ci_status | forge-read, network |
@@ -52,8 +52,8 @@
 | git | public | changelog | git-read |
 | git | public | commit | git-write |
 | git | public | push | git-write |
-| github | public | * | network |
-| gitlab | public | * | network |
+| github | public | * | filesystem-write, network, env-read |
+| gitlab | public | * | filesystem-write, network, env-read |
 | i18n | public | * | filesystem-read |
 | impact-analysis | public | * | filesystem-read |
 | issues | public | issues_list | forge-read, network |
@@ -67,9 +67,9 @@
 | logs | public | * | filesystem-read, filesystem-write |
 | memory | public | * | filesystem-read, filesystem-write |
 | notification | public | * | filesystem-read, filesystem-write |
-| observability | public | * | filesystem-read, filesystem-write |
-| orchestrator-runner | public | * | process, network |
-| perf | public | * | filesystem-read, process |
+| observability | public | * | filesystem-read, filesystem-write, network, env-read |
+| orchestrator-runner | public | * | filesystem-read, process, network, env-read |
+| perf | public | * | filesystem-read, filesystem-write, process |
 | project-health | public | * | filesystem-read |
 | project-kpis | public | * | filesystem-read, filesystem-write |
 | prompt-eval | public | * | filesystem-read, process |
@@ -93,16 +93,16 @@
 | proposals | public | state_repair | filesystem-read, filesystem-write |
 | proposals | public | agent_lock_release_orphan | filesystem-read, filesystem-write |
 | quality | public | * | filesystem-read, process |
-| quality-policy | public | * | filesystem-read |
+| quality-policy | public | * | filesystem-read, process |
 | refactor | public | * | filesystem-read, filesystem-write |
 | remote-provider-core | public | * | filesystem-read |
-| rules | public | * | filesystem-read |
-| search | public | * | filesystem-read |
-| security | public | * | filesystem-read, env-read |
+| rules | public | * | filesystem-read, network, env-read |
+| search | public | * | filesystem-read, process, env-read |
+| security | public | * | filesystem-read, filesystem-write, process, env-read |
 | skills-pack | public | * | filesystem-read |
 | status-marker | public | * | filesystem-read |
 | tech-debt | public | * | filesystem-read |
 | test-convention | public | * | filesystem-read |
 | test-policy | public | * | filesystem-read, filesystem-write |
-| usage-tracking | public | * | filesystem-read, filesystem-write |
+| usage-tracking | public | * | filesystem-read, filesystem-write, network, env-read |
 | web-fetch | public | * | network |

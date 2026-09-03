@@ -10,10 +10,10 @@ as sub-folders so the closure view scales.
 
 | Sub-folder | Prefix | Holds | Examples |
 |---|---|---|---|
-| `audits/` | `a<NNN>-` | Closed audit documents | `a00007-…-codex-gpt-5-5.md` … `a00006-…-claude-code-opus-4-8.md` |
+| `audits/` | `a<NNN>-` | Closed audit documents | `a00007-…-codex.md` … `a00006-…-claude.md` |
 | `feats/` | `f<NNN>-` | Closed feature proposals | `f00004-…-multi-model-audit-plugin.md` … `f00018-…-rules-compact-findings.md` |
 | `fixes/` | `x<NNN>-` | Closed fix proposals | `x00004-…-web-bugfixes-and-ux-overhaul.md`, `x00002-…-fix-gen-skills-recursion.md`, … |
-| `resumes/` | `n<NNN>-` | Closed cross-session handoff summaries | `n00001-…-autonoma-claude-code.md` … `n00006-…-handoff-copilot.md` |
+| `resumes/` | `n<NNN>-` | Closed cross-session handoff summaries | `n00001-…-autonoma-claude.md` … `n00006-…-handoff-copilot.md` |
 
 We only create a sub-folder when the second file of that kind lands in
 `done/`. Buckets for `refactor/`, `chore/`, `docs/`, `test/`,

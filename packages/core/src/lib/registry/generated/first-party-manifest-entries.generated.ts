@@ -35,7 +35,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/audit',
 			summary: 'Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop.',
 			tags: ['audit', 'multi-model', 'self-improvement'],
-			permissions: ['filesystem-read', 'filesystem-write', 'network'],
+			permissions: ['filesystem-read', 'filesystem-write', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -53,7 +53,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/auto-agent-selector',
 			summary: 'Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation).',
 			tags: ['routing', 'agents'],
-			permissions: ['process', 'network'],
+			permissions: ['filesystem-read', 'process', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 			example: {
 				"costQualityTradeoff": 7
@@ -74,7 +74,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/browser',
 			summary: 'Headless browser automation tools.',
 			tags: ['browser', 'automation'],
-			permissions: ['browser', 'network'],
+			permissions: ['filesystem-write', 'process', 'network', 'browser'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -83,7 +83,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/cache',
 			summary: 'Cache-eviction rules and lifecycle for plugin scratch dirs.',
 			tags: ['cache', 'lifecycle'],
-			permissions: ['filesystem-read', 'filesystem-write'],
+			permissions: ['filesystem-read', 'filesystem-write', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -92,7 +92,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/changelog',
 			summary: 'Conventional-commits changelog + release plan generator.',
 			tags: ['changelog', 'release'],
-			permissions: ['git-read'],
+			permissions: ['process', 'git-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -101,7 +101,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/commit-policy',
 			summary: 'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 			tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
-			permissions: ['git-read', 'git-write', 'network', 'process'],
+			permissions: ['filesystem-read', 'filesystem-write', 'process', 'network', 'git-read', 'git-write', 'env-read'],
 			tokenBudgetBytes: 4200,
 			toolPermissions: { 'commit_policy_status': ['git-read'], 'commit_policy_commit': ['git-write'], 'commit_policy_push': ['git-write'], 'commit_policy_run': ['git-write'], 'commit_policy_refresh_branch_protection': ['network', 'process'] },
 		},
@@ -120,7 +120,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/container',
 			summary: 'Container inspection + lint (docker ps/images, k8s, Dockerfile rules).',
 			tags: ['container', 'docker', 'kubernetes'],
-			permissions: ['process', 'container'],
+			permissions: ['filesystem-read', 'process', 'container'],
 			tokenBudgetBytes: 6200,
 			toolPermissions: { 'container_inspect': ['container'], 'container_logs': ['container'], 'container_lint': ['filesystem-read'], 'k8s_apply': ['container', 'process'], 'container_build': ['container', 'process'] },
 		},
@@ -148,7 +148,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/database',
 			summary: 'Database schema/introspection tools (read-only, offline).',
 			tags: ['database', 'schema'],
-			permissions: ['database'],
+			permissions: ['env-read', 'database'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -184,7 +184,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/env',
 			summary: 'Environment config validation (.env check + schema + env_explains).',
 			tags: ['env', 'config'],
-			permissions: ['env-read'],
+			permissions: ['filesystem-read', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -193,7 +193,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/error-reporting',
 			summary: 'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.',
 			tags: ['error-reporting', 'github', 'issues'],
-			permissions: ['network', 'forge-write'],
+			permissions: ['filesystem-read', 'filesystem-write', 'network', 'forge-write'],
 			tokenBudgetBytes: 3500,
 			startupActivation: true,
 			toolPermissions: { 'report_status': ['network', 'forge-write'] },
@@ -204,7 +204,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/external-mcps',
 			summary: 'Compose third-party MCP servers through the catalog + human ack.',
 			tags: ['external-mcps', 'composition'],
-			permissions: ['network', 'process'],
+			permissions: ['filesystem-read', 'process', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 			example: {
 				"servers": {
@@ -232,7 +232,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/forge',
 			summary: 'Forge (GitHub/GitLab) wrappers — PRs, CI, issues.',
 			tags: ['forge', 'git', 'ci'],
-			permissions: ['forge-read', 'forge-write', 'network'],
+			permissions: ['filesystem-read', 'process', 'network', 'forge-read', 'forge-write'],
 			tokenBudgetBytes: 6800,
 			toolPermissions: { 'pr_list': ['forge-read', 'network'], 'pr_show': ['forge-read', 'network'], 'ci_status': ['forge-read', 'network'], 'issue_list': ['forge-read', 'network'], 'issue_show': ['forge-read', 'network'], 'release': ['forge-read', 'forge-write', 'network'], 'search_code': ['forge-read', 'network'], 'pr_create': ['forge-write', 'network'], 'pr_comment': ['forge-write', 'network'], 'issue_create': ['forge-write', 'network'] },
 		},
@@ -242,7 +242,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/git',
 			summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
 			tags: ['git', 'changelog'],
-			permissions: ['git-read', 'git-write'],
+			permissions: ['filesystem-read', 'process', 'git-read', 'git-write'],
 			tokenBudgetBytes: 5800,
 			toolPermissions: { 'status': ['git-read'], 'changed': ['git-read'], 'diff': ['git-read'], 'log': ['git-read'], 'blame': ['git-read'], 'show': ['git-read'], 'worktree': ['git-read'], 'changelog': ['git-read'], 'commit': ['git-write'], 'push': ['git-write'] },
 		},
@@ -252,7 +252,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/github',
 			summary: 'GitHub read-only provider context, HTTP client and remote resource tools.',
 			tags: ['github', 'provider'],
-			permissions: ['network'],
+			permissions: ['filesystem-write', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -261,7 +261,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/gitlab',
 			summary: 'GitLab read-only provider context, HTTP client and resource tools.',
 			tags: ['gitlab', 'provider'],
-			permissions: ['network'],
+			permissions: ['filesystem-write', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -288,7 +288,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/issues',
 			summary: 'Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.',
 			tags: ['issues', 'forge', 'triage'],
-			permissions: ['forge-read', 'forge-write', 'network'],
+			permissions: ['filesystem-read', 'filesystem-write', 'process', 'network', 'forge-read', 'forge-write', 'env-read'],
 			tokenBudgetBytes: 4900,
 			toolPermissions: { 'issues_list': ['forge-read', 'network'], 'issues_fetch': ['forge-read', 'network'], 'issues_analyze': ['forge-read'], 'issues_ingest': ['forge-read', 'network'], 'issues_resolve': ['forge-write', 'network'], 'setup_github': ['forge-write', 'network', 'secrets'] },
 		},
@@ -343,7 +343,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/observability',
 			summary: 'Observability surface (metrics, errors, telemetry).',
 			tags: ['observability'],
-			permissions: ['filesystem-read', 'filesystem-write'],
+			permissions: ['filesystem-read', 'filesystem-write', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -352,7 +352,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/orchestrator-runner',
 			summary: 'Orchestrator-runner runtime utilities.',
 			tags: ['orchestrator', 'runner'],
-			permissions: ['process', 'network'],
+			permissions: ['filesystem-read', 'process', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -361,7 +361,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/perf',
 			summary: 'Performance bench/bundle/profile tools.',
 			tags: ['perf', 'benchmark'],
-			permissions: ['filesystem-read', 'process'],
+			permissions: ['filesystem-read', 'filesystem-write', 'process'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -406,7 +406,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/proposals',
 			summary: 'Proposals workflow + multi-agent (swarm) orchestration.',
 			tags: ['proposals', 'swarm', 'orchestration'],
-			permissions: ['filesystem-read', 'filesystem-write', 'git-read', 'git-write'],
+			permissions: ['filesystem-read', 'filesystem-write', 'process', 'git-read', 'git-write', 'env-read'],
 			tokenBudgetBytes: 12400,
 			example: {
 				"validationCommand": "bun run validate",
@@ -438,7 +438,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/quality-policy',
 			summary: 'Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.',
 			tags: ['quality', 'policy', 'aggregation', 'f00167'],
-			permissions: ['filesystem-read'],
+			permissions: ['filesystem-read', 'process'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -465,7 +465,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/rules',
 			summary: 'Lint/type rules engine (frameworks, dogmas, presets).',
 			tags: ['rules', 'lint'],
-			permissions: ['filesystem-read'],
+			permissions: ['filesystem-read', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -474,7 +474,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/search',
 			summary: 'Code search (semantic + symbol + references).',
 			tags: ['search', 'symbol', 'f00136'],
-			permissions: ['filesystem-read'],
+			permissions: ['filesystem-read', 'process', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -483,7 +483,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/security',
 			summary: 'Security audit (CVEs, SAST, secrets, env).',
 			tags: ['security', 'audit'],
-			permissions: ['filesystem-read', 'env-read'],
+			permissions: ['filesystem-read', 'filesystem-write', 'process', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -558,7 +558,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/usage-tracking',
 			summary: 'Per-token/per-call usage tracking (spend, budget).',
 			tags: ['usage', 'spend'],
-			permissions: ['filesystem-read', 'filesystem-write'],
+			permissions: ['filesystem-read', 'filesystem-write', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{

@@ -3,7 +3,7 @@ id: gitlab
 package: @mcp-vertex/gitlab
 version: 0.1.0
 maturity: experimental
-generated: 2026-08-31T21:30:02.436Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Gitlab
@@ -25,7 +25,9 @@ GitLab read-only provider context, HTTP client and resource tools.
 
 ## Permissions
 
+- filesystem-write
 - network
+- env-read
 
 ## Dependencies
 

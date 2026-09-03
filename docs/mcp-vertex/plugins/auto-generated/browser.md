@@ -3,7 +3,7 @@ id: browser
 package: @mcp-vertex/browser
 version: 0.1.1
 maturity: stable
-generated: 2026-09-02T01:21:12.948Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Browser
@@ -25,8 +25,10 @@ Headless browser automation tools.
 
 ## Permissions
 
-- browser
+- filesystem-write
+- process
 - network
+- browser
 
 ## Dependencies
 

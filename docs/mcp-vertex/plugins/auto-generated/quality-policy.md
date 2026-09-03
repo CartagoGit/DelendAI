@@ -3,7 +3,7 @@ id: quality-policy
 package: @mcp-vertex/quality-policy
 version: 0.1.0
 maturity: experimental
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-09-03T22:08:20.315Z
 ---
 
 # Quality Policy
@@ -28,6 +28,7 @@ Unified quality-policy surface: cheap tests, conventions, lint, types and covera
 ## Permissions
 
 - filesystem-read
+- process
 
 ## Dependencies
 
