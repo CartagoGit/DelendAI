@@ -77,7 +77,7 @@ trabajo redundante.
 
 ### S1 — Perfil de sistema: elegir el comando más barato para esta máquina
 
-- **Status**: pending
+- **Status**: done — 5/5 ficheros en `develop`, incluidos los dos specs
 - **Files**:
   - `packages/core/src/lib/platform/system-profile.ts` — detecta y cachea: SO y si es WSL, gestor de paquetes disponible (`bun`/`node`+`fnm`/`npm`), núcleos y memoria, si hay `rg`/`fd`/`jq`, locale utilizable, y si el FS es un montaje cruzado Windows↔Linux (que cambia radicalmente el coste de E/S).
   - `packages/core/src/lib/platform/command-preference.ts` — dado un propósito (`search-text`, `list-files`, `run-tests`, `typecheck`), devuelve el comando preferido para ESTE perfil y por qué. Pura, sin efectos.
@@ -88,7 +88,7 @@ trabajo redundante.
 
 ### S2 — Diario de fallos de test legible sin relanzar la suite
 
-- **Status**: pending
+- **Status**: done — el diario vive en `tools/scripts/test/`, no en `packages/test-kit/` como decía el plan; `bun run test:failures` funciona
 - **Files**:
   - `packages/test-kit/src/lib/reporters/failure-journal.reporter.ts` — reporter de vitest que escribe JSONL a `.cache/mcp-vertex/results/logs/test-runs.jsonl`: fichero, nombre, aserción, diff esperado/recibido, primer frame en código propio, duración, id de ejecución. Nunca lanza; un fallo al escribir no puede tumbar la suite.
   - `packages/test-kit/src/lib/reporters/failure-journal.contract.ts` — `ITestFailureRecord`, `ITestRunRecord`.
@@ -98,7 +98,7 @@ trabajo redundante.
 
 ### S3 — Lector de la salida del servidor MCP: del log al diagnóstico
 
-- **Status**: pending
+- **Status**: in-progress — parser, diagnóstico y herramienta existen Y ESTÁN REGISTRADOS (la herramienta era código muerto hasta 2026-09-03); falta el spec con fixtures de log reales anonimizados
 - **Files**:
   - `plugins/error-reporting/src/lib/intake/server-log-reader.ts` — parsea el log de stderr del servidor (el que el host escribe: VS Code, Claude Code, Codex) y extrae eventos estructurados: refusals repetidos, `Failed to parse message`, tormentas de reintentos, plugins que no cargaron, fallos de push.
   - `plugins/error-reporting/src/lib/intake/log-diagnosis.ts` — convierte esos eventos en un diagnóstico con causa probable y siguiente acción. Reutiliza `storm-detector` de `commit-policy` en vez de duplicar la detección de bucles.
@@ -109,7 +109,7 @@ trabajo redundante.
 
 ### S4 — Plugin `self-learning`: superficie y almacén
 
-- **Status**: pending
+- **Status**: pending — sin empezar; `plugins/self-learning/` no existe
 - **Files**:
   - `plugins/self-learning/package.json`
   - `plugins/self-learning/src/index.ts` — registro del plugin, `cacheNamespace: 'self-learning'`, desactivado por defecto (opt-in explícito).
@@ -121,7 +121,7 @@ trabajo redundante.
 
 ### S5 — Plugin `self-learning`: lecciones y recomendaciones
 
-- **Status**: pending
+- **Status**: pending — sin empezar; depende de S4
 - **Files**:
   - `plugins/self-learning/src/lib/lessons/derive-lessons.ts` — de observaciones a lecciones con evidencia y confianza: "en este proyecto `bun run lint:web` falla tras tocar `packages/core` sin reconstruir dist (visto 6 veces)". Cada lección cita las observaciones que la sostienen y caduca si dejan de reproducirse.
   - `plugins/self-learning/src/lib/lessons/confidence.ts` — soporte, recencia y contraejemplos. Una lección con contraejemplos recientes se degrada sola.
@@ -131,7 +131,7 @@ trabajo redundante.
 
 ### S6 — Compactación automática de conversación con criterio de pérdida
 
-- **Status**: pending
+- **Status**: in-progress — `preserve-rules.ts` existe y está integrado; faltan `auto-compaction-policy.ts` y hacer la preservación VINCULANTE en compactación automática (hoy es advisory y persiste un resumen que sabe incompleto)
 - **Files**:
   - `plugins/memory/src/lib/compaction/auto-compaction-policy.ts` — decide CUÁNDO compactar (presupuesto consumido, antigüedad, saturación de un tema) en vez de que lo pida el agente. Se apoya en `memory_compaction_check`, que ya existe.
   - `plugins/memory/src/lib/compaction/preserve-rules.ts` — qué NO puede perderse nunca en un resumen: decisiones del usuario, restricciones declaradas, causas raíz ya diagnosticadas, identificadores (SHA, ids de propuesta, rutas). Es la parte que hace la compactación segura, y se prueba con casos que antes se perdían.
@@ -140,7 +140,7 @@ trabajo redundante.
 
 ### S7 — Higiene: que los defectos pequeños no puedan reaparecer
 
-- **Status**: pending
+- **Status**: done — ambos lints existen y `noUnusedImports` es `error`
 - **Files**:
   - `biome.json` — `noUnusedImports` pasa de warning a error. Un import muerto tras un refactor debe romper la build, no quedarse en un aviso que nadie lee.
   - `tools/scripts/lint/no-silent-gates.script.ts` — un gate que sale con código distinto de cero sin escribir NADA es un fallo del gate. Comprueba que cada script de `validate:run` produce salida en su camino de error.
@@ -169,7 +169,7 @@ trabajo redundante.
    implementación duplicada rompe `validate`. Probado reintroduciendo
    cada uno de los tres.
 
-## Risk
+## risks and mitigations
 
 - **R1**: el autoaprendizaje aprende de un periodo malo y recomienda
   algo peor. Mitigación: toda lección lleva evidencia y caduca; el
@@ -185,10 +185,26 @@ trabajo redundante.
   Mitigación: parser tolerante que ignora lo que no reconoce, con
   fixtures de más de un host.
 
-## Out of scope
+### Out of scope
 
 - Enviar observaciones o lecciones fuera del equipo.
 - Sustituir `auto-plugin-selector` por el recomendador de S5; S5 le
   aporta señal histórica, no lo reemplaza.
 - Reescribir el resumidor de conversación; S6 aporta la política de
   cuándo compactar y el contrato de qué no perder.
+
+## notes
+
+### Estado real frente a este documento
+
+Verificado fichero a fichero contra `develop` el 2026-09-03. Las siete
+slices decían `pending` mientras cinco estaban implementadas total o
+parcialmente, lo que en un enjambre no es un detalle de forma: otro
+agente podía reclamar S1, reimplementar el perfil de sistema, y quemar
+una sesión reescribiendo código que ya existía. Una auditoría externa lo
+señaló como riesgo de gobernanza, no de código, y tenía razón.
+
+Los `Status` de abajo son ahora observaciones sobre el árbol, no
+intenciones. Dos anotan además una divergencia real entre lo planificado
+y lo construido (S2 vive en `tools/scripts/`, no en `packages/test-kit/`),
+que se deja escrita en lugar de corregirla en silencio.
