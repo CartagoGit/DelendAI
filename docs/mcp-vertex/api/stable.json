@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-08-31T21:57:15.145Z"
+		"generatedAt": "2026-09-03T22:30:11.166Z"
 	},
 	"tools": [
 		{
@@ -58,6 +58,12 @@
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"type": "object",
 				"properties": {
+					"$schema": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
 					"tool": {
 						"type": "string"
 					},
@@ -83,7 +89,26 @@
 					"agent": {
 						"type": "string"
 					},
-					"error": {},
+					"error": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"properties": {
+									"reason": {
+										"type": "string"
+									},
+									"nextAction": {
+										"type": "string"
+									}
+								},
+								"required": ["reason"],
+								"additionalProperties": false
+							}
+						]
+					},
 					"blockerType": {
 						"type": "string"
 					},
@@ -98,6 +123,34 @@
 					},
 					"ownership_count": {
 						"type": "number"
+					},
+					"heldFiles": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"added_files": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"not_granted": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"file": {
+									"type": "string"
+								},
+								"conflicting_task": {
+									"type": "string"
+								}
+							},
+							"required": ["file", "conflicting_task"],
+							"additionalProperties": false
+						}
 					},
 					"cross_process_release": {
 						"type": "boolean"
@@ -126,6 +179,9 @@
 					"claimed": {
 						"type": "boolean"
 					},
+					"released": {
+						"type": "boolean"
+					},
 					"removed": {
 						"type": "number"
 					},
@@ -144,12 +200,95 @@
 					"stale_after_minutes": {
 						"type": "number"
 					},
-					"in_flight": {},
+					"in_flight": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"task_id": {
+									"type": "string"
+								},
+								"agent": {
+									"type": "string"
+								},
+								"ownership": {
+									"type": "array",
+									"items": {
+										"type": "string"
+									}
+								},
+								"started_at": {
+									"type": "string"
+								},
+								"last_seen": {
+									"type": "string"
+								},
+								"parent_task_id": {
+									"type": "string"
+								},
+								"host": {
+									"type": "string"
+								},
+								"pid": {
+									"type": "number"
+								}
+							},
+							"required": [
+								"task_id",
+								"agent",
+								"ownership",
+								"started_at",
+								"last_seen"
+							],
+							"additionalProperties": false
+						}
+					},
+					"last_seen": {
+						"type": "string"
+					},
+					"reason": {
+						"type": "string"
+					},
+					"held_ms": {
+						"type": "number"
+					},
 					"ok": {
 						"type": "boolean"
 					},
-					"session": {},
-					"identity": {}
+					"session": {
+						"type": "object",
+						"properties": {
+							"claims": {
+								"type": "number"
+							},
+							"releases": {
+								"type": "number"
+							},
+							"imbalance": {
+								"type": "number"
+							}
+						},
+						"required": ["claims", "releases", "imbalance"],
+						"additionalProperties": false
+					},
+					"identity": {
+						"type": "object",
+						"properties": {
+							"host": {
+								"type": "string"
+							},
+							"model": {
+								"type": "string"
+							},
+							"agent_name": {
+								"type": "string"
+							},
+							"task_id": {
+								"type": "string"
+							}
+						},
+						"additionalProperties": false
+					}
 				},
 				"required": ["ok"],
 				"additionalProperties": false

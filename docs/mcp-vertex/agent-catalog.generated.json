@@ -1268,6 +1268,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "c00160",
+				"title": "c00160",
+				"track": "routing-policy",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1557,7 +1565,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 24,
+			"ready": 25,
 			"in-progress": 11,
 			"review": 4,
 			"paused": 1,

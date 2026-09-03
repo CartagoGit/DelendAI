@@ -272,14 +272,12 @@ interactions.
   one composition root and one resource registration set. The
   `lint:self-host-dogfood` gate must remain green.
 - **Scratch files never touch the repository.** Repro scripts, captured
-  output, throwaway fixtures and experiment directories go in your host's
-  own scratchpad, outside the working tree — not the repo root, and not
-  `.cache/mcp-vertex/`, which is reserved for engine and plugin state.
-  "I will delete it afterwards" is not sufficient: commit-policy sweeps
-  the whole dirty worktree on a timer, so anything you leave in the tree
-  can be committed and pushed inside another agent's commit before you
-  get back to it. `lint:stray-cache-files` fails on an untracked
-  directory at the root for exactly this reason.
+  output and throwaway fixtures go in your host's own scratchpad, outside
+  the working tree — not the repo root, and not `.cache/mcp-vertex/`
+  (engine and plugin state). "I will delete it afterwards" is not enough:
+  commit-policy sweeps the whole dirty worktree on a timer, so anything
+  left in the tree can be pushed inside another agent's commit first.
+  `lint:stray-cache-files` fails on an untracked root directory.
 - Core stays agnostic. No project vocabulary (role enums, model names,
   folder names) inside `packages/core`. Plugins receive everything
   resolved through `IMcpPluginContext`.
@@ -289,7 +287,11 @@ interactions.
 - Workspace-scoped path inputs are contained via `resolveWorkspaceContained`.
 - Token budget is a protected invariant. `overview` (compact) +
   `auto_work` stay under their measured budgets.
-- **Every agent MUST hold an active lock claim (`agent_lock`) for the files it edits.** The validation gate enforces this via `lint:agent-claims`, and commits/pushes violating this will be rejected by git hooks. (x00080) The claim check itself is a lefthook-installed TypeScript hook (`tools/scripts/hooks/pre-commit.ts`), not a raw `.sh` git hook template — every hook in this repo is TypeScript, per rule #10 below.
+- **Every agent MUST hold an active `agent_lock` claim for the files it
+  edits.** `lint:agent-claims` enforces it and the git hooks reject
+  violations (x00080). The check is a lefthook-installed TypeScript hook
+  (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
+  per rule #10 below.
   - **`develop` is the shared snapshot journal; `main` is the release boundary.**
     With `agentWorktree: false` (the repository default), agents work in the
     shared checkout. The commit policy serializes `stage → commit → push`, so
@@ -550,12 +552,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-09-03T22:09:36.327Z
+Generated at: 2026-09-03T22:30:02.458Z
 
 Plugins: 56
 Tools: 242
-Test specs: 554 (≈4546 cases)
+Test specs: 554 (≈4550 cases)
 Workspaces: 6 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 562 on disk (ready=24, in-progress=2, done=536)
+Proposals: 563 on disk (ready=25, in-progress=2, done=536)
 ```
 <!-- mcp-vertex:end quantitative -->
