@@ -2,10 +2,21 @@
 id: q00016
 title: "Plan cerrar la auditoría externa de 2026-09-03: determinismo de generadores, contención física y la superficie que todavía cuesta tokens"
 kind: plan
-status: ready
+status: done
 type: proposal
 track: quality
 date: 2026-09-03
+shipped-in:
+  - "93b532128"
+  - "6a38d1790"
+  - "8f4a11dd1"
+  - "829d7ba35"
+  - "9284894b5"
+  - "902b56cb3"
+  - "a297618fd"
+last-transition-id: a27cf75e-2137-4cb2-896d-1e943995e3cb
+last-correlation-id: a27cf75e-2137-4cb2-896d-1e943995e3cb
+last-transition-from: review
 ---
 
 # q00016 — Cerrar el delta de la auditoría externa de 2026-09-03
