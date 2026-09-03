@@ -72,11 +72,11 @@ as an **eventually consistent** batch:
 
 ## Boundaries
 
-| Phase        | Slice commits | Push to develop | Repair agent | Timeout |
-| ------------ | ------------- | --------------- | ------------ | ------- |
-| ACTIVE       | yes           | yes             | dormant      | none    |
-| SETTLING     | refused       | blocked         | active       | 600s    |
-| STABLE       | yes           | yes             | dormant      | none    |
+| Phase    | Slice commits | Push to develop | Repair agent | Timeout |
+| -------- | ------------- | --------------- | ------------ | ------- |
+| ACTIVE   | yes           | yes             | dormant      | none    |
+| SETTLING | refused       | blocked         | active       | 600s    |
+| STABLE   | yes           | yes             | dormant      | none    |
 
 ## What this is NOT
 

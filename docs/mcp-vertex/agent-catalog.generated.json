@@ -1400,6 +1400,22 @@
 				"date": ""
 			},
 			{
+				"id": "q00016",
+				"title": "q00016",
+				"track": "quality",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00017",
+				"title": "q00017",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
 				"id": "r00034",
 				"title": "r00034",
 				"track": "security",
@@ -1482,7 +1498,7 @@
 			{
 				"id": "x00419",
 				"title": "x00419",
-				"track": "quality",
+				"track": "unspecified",
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
@@ -1491,14 +1507,6 @@
 				"id": "x00420",
 				"title": "x00420",
 				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00421",
-				"title": "x00421",
-				"track": "unspecified",
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
@@ -1518,10 +1526,18 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00424",
+				"title": "x00424",
+				"track": "quality",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 21,
+			"ready": 23,
 			"in-progress": 10,
 			"review": 4,
 			"paused": 1,
