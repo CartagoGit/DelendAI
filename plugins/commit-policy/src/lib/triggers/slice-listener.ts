@@ -241,18 +241,16 @@ const diffSlices = (
  * gets the old silent baseline, which is the safe direction: a missed
  * commit is recoverable by hand, a storm is not.
  */
-const buildBaselineEvents = async (
+const collectUnpersistedBaseline = async (
 	curr: ReadonlyMap<string, SliceSnapshotEntry>,
 	onStatuses: readonly string[],
 	isAlreadyPersisted: (event: ITriggerEvent) => Promise<boolean>,
 ): Promise<{
-	events: ITriggerEvent[];
+	queue: ITriggerEvent[];
 	refusals: readonly { readonly key: string; readonly reason: string }[];
-	skipped: number;
 }> => {
-	const events: ITriggerEvent[] = [];
+	const queue: ITriggerEvent[] = [];
 	const refusals: { key: string; reason: string }[] = [];
-	let skipped = 0;
 	for (const [key, entry] of curr) {
 		if (!onStatuses.includes(entry.status)) continue;
 		const candidate = createSliceEvent(key, entry);
@@ -268,14 +266,9 @@ const buildBaselineEvents = async (
 			// store cannot turn into a replay of the whole history.
 			persisted = true;
 		}
-		if (persisted) continue;
-		if (events.length >= BASELINE_EMIT_LIMIT) {
-			skipped += 1;
-			continue;
-		}
-		events.push(candidate);
+		if (!persisted) queue.push(candidate);
 	}
-	return { events, refusals, skipped };
+	return { queue, refusals };
 };
 
 export const computeSliceTriggerEventId = (event: ITriggerEvent): string =>
@@ -317,7 +310,7 @@ export const createSliceListener = (
 	/**
 	 * x00423: lets the FIRST poll distinguish the repo's already-
 	 * committed history from work that finished while nobody was
-	 * listening. See `buildBaselineEvents`. Omitted means the old
+	 * listening. See `collectUnpersistedBaseline`. Omitted means the old
 	 * unconditional silent baseline.
 	 */
 	isAlreadyPersisted?: (event: ITriggerEvent) => Promise<boolean>,
@@ -325,6 +318,12 @@ export const createSliceListener = (
 	const indexRel = join(indexDir, 'proposals', 'index.json');
 	let prev = new Map<string, SliceSnapshotEntry>();
 	let initialized = false;
+	/**
+	 * Un-persisted slices found on the first poll that the per-poll cap
+	 * has not reached yet. Normal diffing waits until this is empty, so
+	 * a capped batch is deferred rather than lost.
+	 */
+	let baselineQueue: ITriggerEvent[] = [];
 	// `indexWasUnavailable` used to live here, to tell "the first read
 	// failed, so the next success is the baseline" from "the first read
 	// succeeded". x00423 removed that distinction: what matters is not
@@ -455,36 +454,45 @@ export const createSliceListener = (
 		// x00423: but "baseline" must not mean "emit nothing, ever".
 		// A slice that reached `done` while this listener was not
 		// running is NOT history — nothing has persisted it, and
-		// silence loses the commit. `buildBaselineEvents` asks the
-		// processed-events store which is which.
-		const { events: newEvents, refusals: newRefusals } = initialized
-			? diffSlices(prev, curr, config.onStatuses)
-			: isAlreadyPersisted === undefined
-				? { events: [], refusals: [] }
-				: await (async () => {
-						const baseline = await buildBaselineEvents(
-							curr,
-							config.onStatuses,
-							isAlreadyPersisted,
-						);
-						if (baseline.events.length > 0) {
-							console.warn(
-								JSON.stringify({
-									event: 'commit-policy.baseline.unpersisted',
-									emitted: baseline.events.length,
-									skipped: baseline.skipped,
-									note:
-										baseline.skipped > 0
-											? `Capped at ${String(BASELINE_EMIT_LIMIT)} on the first poll. The remaining slices have no recorded outcome either — re-check after this batch settles.`
-											: 'These slices finished while no listener was running; committing them now.',
-								}),
-							);
-						}
-						return {
-							events: baseline.events,
-							refusals: baseline.refusals,
-						};
-					})();
+		// silence loses the commit.
+		//
+		// The cap is DRAINED, not discarded. The first version of this
+		// emitted ten and counted the rest as "skipped" — but the very
+		// next line sets `prev = curr`, so on the following poll those
+		// slices show no status change and are never emitted again.
+		// The log said "re-check after this batch settles" while the
+		// listener had already made that re-check impossible: a silent
+		// drop wearing the costume of a bounded one. So the remainder
+		// lives in a queue that later polls work through, and normal
+		// diffing only begins once it is empty.
+		if (!initialized && isAlreadyPersisted !== undefined) {
+			const collected = await collectUnpersistedBaseline(
+				curr,
+				config.onStatuses,
+				isAlreadyPersisted,
+			);
+			baselineQueue = [...collected.queue];
+			if (collected.refusals.length > 0) {
+				refusals.push(...collected.refusals);
+			}
+			if (baselineQueue.length > 0) {
+				console.warn(
+					JSON.stringify({
+						event: 'commit-policy.baseline.unpersisted',
+						total: baselineQueue.length,
+						perPoll: BASELINE_EMIT_LIMIT,
+						note: 'These slices finished while no listener was running. Committing them a batch at a time.',
+					}),
+				);
+			}
+		}
+
+		const drainedBaseline = baselineQueue.splice(0, BASELINE_EMIT_LIMIT);
+		const { events: diffedEvents, refusals: newRefusals } =
+			initialized && baselineQueue.length === 0
+				? diffSlices(prev, curr, config.onStatuses)
+				: { events: [], refusals: [] };
+		const newEvents = [...drainedBaseline, ...diffedEvents];
 		prev = curr;
 		initialized = true;
 		if (newRefusals.length > 0) refusals.push(...newRefusals);

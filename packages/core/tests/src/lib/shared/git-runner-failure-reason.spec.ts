@@ -19,7 +19,7 @@
  * So this is a loop-prevention test wearing an error-message costume.
  */
 
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -57,6 +57,39 @@ describe('createGitRunner failure reasons', () => {
 		const result = await run(['add', '--', 'does/not/exist.ts']);
 		expect(result.ok).toBe(false);
 		expect(result.reason).toContain('did not match any files');
+	});
+
+	it('finds git’s reason under a hook runner that floods stderr', async () => {
+		// The 2026-09-03 relapse. lefthook prints a banner and one
+		// "(skip)" line per hook — to STDERR — on every commit. The
+		// runner read `stderr || stdout`, so stderr was never empty,
+		// stdout was never consulted, and "nothing to commit" vanished
+		// again. Reason: 600 chars of box-drawing; code: UNKNOWN_REFUSAL;
+		// effect: the same infinite re-emit, one fix later.
+		const hook = join(repo, '.git', 'hooks', 'pre-commit');
+		await writeFile(
+			hook,
+			[
+				'#!/bin/sh',
+				'echo "╭──────────────────────────────────────────╮" >&2',
+				'echo "│ 🥊 lefthook v2.1.10  hook: pre-commit    │" >&2',
+				'echo "╰──────────────────────────────────────────╯" >&2',
+				'i=0; while [ $i -lt 20 ]; do',
+				'  echo "│  stray-files-check (skip) no matching staged files" >&2',
+				'  i=$((i+1));',
+				'done',
+				'echo "summary: (done in 0.02 seconds)" >&2',
+				'exit 0',
+			].join('\n'),
+		);
+		await chmod(hook, 0o755);
+
+		const run = createGitRunner(repo);
+		const result = await run(['commit', '-m', 'chore: nothing staged']);
+		expect(result.ok).toBe(false);
+		// The classifier matches on a substring of this exact string, so
+		// surviving the cap is the whole assertion.
+		expect(result.reason).toMatch(/nothing to commit|no changes added/iu);
 	});
 
 	it('still reports stderr when git uses it', async () => {

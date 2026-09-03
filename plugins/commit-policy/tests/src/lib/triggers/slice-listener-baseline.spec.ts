@@ -106,6 +106,39 @@ describe('slice listener first-poll baseline', () => {
 		expect(seen).toHaveLength(BASELINE_EMIT_LIMIT);
 	});
 
+	it('drains the capped remainder over later polls instead of dropping it', async () => {
+		// The first version of the cap emitted ten and counted the rest
+		// as "skipped" — but the very next line set `prev = curr`, so on
+		// the following poll those slices showed no status change and
+		// were never emitted again. The log said "re-check after this
+		// batch settles" while the listener had already made that
+		// re-check impossible: a silent drop wearing the costume of a
+		// bounded one.
+		await seedIndex(25);
+		const seen: ITriggerEvent[] = [];
+		const listener = createSliceListener(
+			workspace,
+			join('.cache', 'mcp-vertex'),
+			SLICE_TRIGGER,
+			async (event) => {
+				seen.push(event);
+				return { ack: 'OK' };
+			},
+			undefined,
+			join('.cache', 'mcp-vertex'),
+			async () => false,
+		);
+		await listener.check();
+		expect(seen).toHaveLength(BASELINE_EMIT_LIMIT);
+		await listener.check();
+		expect(seen).toHaveLength(BASELINE_EMIT_LIMIT * 2);
+		await listener.check();
+		listener.stop?.();
+		// 25 total: 10 + 10 + 5, none dropped.
+		expect(seen).toHaveLength(25);
+		expect(new Set(seen.map((event) => event.proposalId)).size).toBe(25);
+	});
+
 	it('falls back to silence when the store cannot be read', async () => {
 		// A missed commit is recoverable by hand; a storm is not. So an
 		// unreadable store must not become a replay.

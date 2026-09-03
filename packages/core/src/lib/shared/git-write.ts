@@ -70,6 +70,28 @@ const looksLikeFailureLine = (line: string): boolean =>
 	);
 
 /**
+ * Phrases every caller in this repo classifies as a TERMINAL outcome.
+ *
+ * These outrank even failure-looking lines. "nothing to commit" carries
+ * no error vocabulary at all, so the generic ranking above sorts it
+ * BELOW any hook that happened to print the word "failed" — and below
+ * fifteen lines of a hook runner's box-drawing, which is how a real
+ * commit-policy loop survived the last two fixes to this function.
+ */
+const looksLikeTerminalLine = (line: string): boolean =>
+	/nothing to commit|nothing added to commit|no changes added|working tree clean|untracked files present/iu.test(
+		line,
+	);
+
+/**
+ * Pure decoration from a hook runner: box-drawing frames, its banner,
+ * and the per-hook "(skip)" lines. Never dropped — only sorted last, so
+ * the cap trims the noise instead of the diagnosis.
+ */
+const looksLikeDecorationLine = (line: string): boolean =>
+	/^[╭╰│─┌└├🥊|\s]*$/u.test(line) || /\(skip\)/u.test(line);
+
+/**
  * Cap on a captured git failure reason. Long enough for git's full
  * diagnosis, short enough that one failure cannot flood a log line.
  */
@@ -133,8 +155,19 @@ export const createGitRunner =
 						// on substrings, so dropping the tail is what
 						// broke the classification in the first place.
 						// Bounded and flattened to stay one log line.
+						// BOTH streams, not `stderr || stdout`. The
+						// previous form short-circuited on a non-empty
+						// stderr — and a hook runner (lefthook) writes
+						// its banner there on every single commit. So
+						// stderr was never empty, stdout was never
+						// read, and git's own "nothing to commit" on
+						// stdout stayed invisible: the exact loop the
+						// stdout fallback was added to close, reopened
+						// by anything that decorates stderr.
 						const raw = stripAnsi(
-							stderr || stdout || err.message || '',
+							[stderr, stdout].filter(Boolean).join('\n') ||
+								err.message ||
+								'',
 						).trim();
 						const lines = raw
 							.split('\n')
@@ -144,12 +177,21 @@ export const createGitRunner =
 									line.length > 0 &&
 									!line.startsWith('Command failed:'),
 							);
-						const flattened = [
-							...lines.filter(looksLikeFailureLine),
-							...lines.filter(
-								(line) => !looksLikeFailureLine(line),
-							),
-						].join(' | ');
+						const rank = (line: string): number => {
+							if (looksLikeTerminalLine(line)) return 0;
+							if (looksLikeDecorationLine(line)) return 3;
+							if (looksLikeFailureLine(line)) return 1;
+							return 2;
+						};
+						const flattened = lines
+							.map((line, index) => ({ line, index }))
+							.sort(
+								(a, b) =>
+									rank(a.line) - rank(b.line) ||
+									a.index - b.index,
+							)
+							.map((item) => item.line)
+							.join(' | ');
 						reason =
 							flattened.length > 0
 								? flattened.slice(0, GIT_FAILURE_REASON_MAX)

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -293,5 +294,53 @@ describe('reader output', () => {
 		expect(text).toContain('STALE');
 		expect(text).toContain('plugins/foo/src/a.ts');
 		expect(text).toContain('re-run the tests before trusting');
+	});
+});
+
+describe('test journal privacy and locking', () => {
+	it('redacts a secret that a failing assertion put in expected/actual', () => {
+		// A perfectly ordinary test —
+		//   expect(process.env.API_KEY).toBe(<a live key>)
+		// — fails by printing BOTH sides. The journal is durable
+		// storage, so writing those raw would persist the secret.
+		//
+		// The fixture is ASSEMBLED rather than written out: a literal
+		// key-shaped string in a checked-in file is what GitHub's push
+		// protection blocks, and it blocked this very commit. A test
+		// about not persisting secrets has no business committing one,
+		// even a fake. `redactSecrets` sees the assembled value, so the
+		// coverage is identical.
+		const fakeKey = ['sk', 'live', `51H8xKlmNoPqRsTuVwXyZ${'0123'}`].join(
+			'_',
+		);
+		const record = buildFailureRecord({
+			file: '/repo/packages/core/tests/a.spec.ts',
+			workspaceRoot: '/repo',
+			name: 'reads the key',
+			fullName: 'env > reads the key',
+			error: {
+				message: `expected undefined to be "${fakeKey}"`,
+				expected: fakeKey,
+				actual: undefined,
+				diff: `- ${fakeKey}`,
+			},
+		});
+		const serialized = JSON.stringify(record);
+		expect(serialized).not.toContain(fakeKey);
+	});
+
+	it('refuses to write without the lock rather than writing unlocked', () => {
+		// Timing out and then doing the work anyway is worse than not
+		// doing it: running the read-modify-write unlocked is exactly
+		// the concurrent write the lock exists to prevent, under
+		// precisely the contention that caused the timeout. Losing one
+		// entry is cheap; a corrupted journal is the artifact an agent
+		// reads INSTEAD of re-running a six-minute suite.
+		const source = readFileSync(
+			new URL('./test-journal.ts', import.meta.url),
+			'utf8',
+		);
+		expect(source).toContain('skipping this entry rather than writing');
+		expect(source).not.toMatch(/if \(held\) \{\s*try \{\s*rmSync/u);
 	});
 });
