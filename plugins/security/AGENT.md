@@ -38,10 +38,10 @@
 
 ## Tests
 
-- plugins/security/tests/src/lib/scan-secrets.spec.ts
-- plugins/security/tests/src/lib/run-scan.spec.ts
-- plugins/security/tests/src/lib/tools/security-sast.tool.spec.ts
-- plugins/security/tests/src/lib/tools/security-gate.spec.ts
+- plugins/security/src/lib/deps/audit.spec.ts
+- plugins/security/src/lib/deps/osv.spec.ts
+- plugins/security/src/lib/deps/parsers.spec.ts
+- plugins/security/src/lib/sast/parsers.spec.ts
 
 ## Do not
 

@@ -41,9 +41,9 @@
 
 ## Tests
 
-- plugins/adaptive-optimizer/tests/src/optimize-run.tool.spec.ts
-- plugins/adaptive-optimizer/tests/src/adaptive-facade.tool.spec.ts
+- plugins/adaptive-optimizer/src/lib/metrics/activation-metrics-registry.spec.ts
 - plugins/adaptive-optimizer/tests/src/activation-metrics.tool.spec.ts
+- plugins/adaptive-optimizer/tests/src/adaptive-facade.tool.spec.ts
 - plugins/adaptive-optimizer/tests/src/optimization-scoring.spec.ts
 
 ## Do not

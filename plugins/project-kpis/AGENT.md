@@ -38,10 +38,10 @@
 
 ## Tests
 
-- plugins/project-kpis/tests/src/kpi-history.spec.ts
-- plugins/project-kpis/tests/src/kpi-aggregation.spec.ts
+- plugins/project-kpis/tests/project-kpis.e2e.spec.ts
 - plugins/project-kpis/tests/src/audit-report.spec.ts
-- plugins/project-kpis/tests/src/project-kpis.tool.spec.ts
+- plugins/project-kpis/tests/src/kpi-aggregation.spec.ts
+- plugins/project-kpis/tests/src/kpi-history.spec.ts
 
 ## Do not
 
@@ -51,7 +51,8 @@
 
 ## Token hotspots
 
-_(none)_
+- plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts
+- plugins/project-kpis/src/lib/tools/project-kpis-output.schema.ts
 
 <!-- mcp-vertex:end agent-md -->
 

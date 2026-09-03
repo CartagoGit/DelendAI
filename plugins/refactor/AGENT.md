@@ -29,7 +29,10 @@
 
 ## Tests
 
-_(none)_
+- plugins/refactor/src/lib/codemod/codemod-runner.spec.ts
+- plugins/refactor/src/lib/codemod/recipes.spec.ts
+- plugins/refactor/src/lib/nav/nav-engine.spec.ts
+- plugins/refactor/src/lib/rename/rename-planner.spec.ts
 
 ## Do not
 

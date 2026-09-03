@@ -36,7 +36,10 @@
 
 ## Tests
 
-_(none)_
+- plugins/prompt-eval/src/index.spec.ts
+- plugins/prompt-eval/src/lib/calibrate/write-through.spec.ts
+- plugins/prompt-eval/src/lib/eval/eval-harness.spec.ts
+- plugins/prompt-eval/src/lib/score/score.spec.ts
 
 ## Do not
 

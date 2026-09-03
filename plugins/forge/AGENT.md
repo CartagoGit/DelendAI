@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/forge/tests/src/lib/services/forge-search.spec.ts
-- plugins/forge/tests/src/lib/services/forge.spec.ts
-- plugins/forge/tests/src/lib/services/forge-release.spec.ts
-- plugins/forge/tests/src/lib/services/forge-write.spec.ts
+- plugins/forge/src/lib/contracts/constants/forge-read.constant.spec.ts
+- plugins/forge/src/lib/contracts/constants/forge-release.constant.spec.ts
+- plugins/forge/src/lib/contracts/constants/forge-write.constant.spec.ts
+- plugins/forge/src/lib/detect.spec.ts
 
 ## Do not
 

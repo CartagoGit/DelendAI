@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/memory/tests/src/lib/checkpoint-packet.spec.ts
 - plugins/memory/tests/src/lib/checkpoint-advisory.spec.ts
-- plugins/memory/tests/src/lib/session-digest-recall.spec.ts
-- plugins/memory/tests/src/lib/compaction.spec.ts
+- plugins/memory/tests/src/lib/checkpoint-freshness.spec.ts
+- plugins/memory/tests/src/lib/checkpoint-packet.spec.ts
+- plugins/memory/tests/src/lib/compact-tool.spec.ts
 
 ## Do not
 

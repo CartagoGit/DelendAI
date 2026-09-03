@@ -39,9 +39,9 @@
 
 ## Tests
 
-- plugins/logs/tests/normalize-event.spec.ts
-- plugins/logs/tests/tools.spec.ts
-- plugins/logs/tests/subscribe.spec.ts
+- plugins/logs/src/lib/services/error-sink-adapter.spec.ts
+- plugins/logs/tests/correlate.spec.ts
+- plugins/logs/tests/incidents-search.spec.ts
 - plugins/logs/tests/index.spec.ts
 
 ## Do not

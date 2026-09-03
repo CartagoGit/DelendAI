@@ -38,9 +38,9 @@ _(none)_
 ## Tests
 
 - packages/core/tests/config-schema.spec.ts
-- packages/core/tests/src/public/surface-classification.spec.ts
-- packages/core/tests/src/public/deprecation.spec.ts
-- packages/core/tests/src/public/public-logs-api.spec.ts
+- packages/core/tests/derive-version.spec.ts
+- packages/core/tests/lint-proposals.spec.ts
+- packages/core/tests/release-finalize/index.spec.ts
 
 ## Do not
 
@@ -49,7 +49,8 @@ _(none)_
 
 ## Token hotspots
 
-_(none)_
+- packages/core/src/lib/manifest/permissions.schema.ts
+- packages/core/src/lib/proposals/validate-evidence.schema.ts
 
 <!-- mcp-vertex:end agent-md -->
 

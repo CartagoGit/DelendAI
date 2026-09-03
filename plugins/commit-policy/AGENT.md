@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/commit-policy/tests/integration/cross-agent.spec.ts
+- plugins/commit-policy/src/lib/branch-policy/index.spec.ts
+- plugins/commit-policy/src/lib/engine.spec.ts
+- plugins/commit-policy/src/lib/release-finalize/index.spec.ts
 - plugins/commit-policy/tests/integration/cross-agent-real.spec.ts
-- plugins/commit-policy/tests/src/lifecycle.spec.ts
-- plugins/commit-policy/tests/src/index.spec.ts
 
 ## Do not
 

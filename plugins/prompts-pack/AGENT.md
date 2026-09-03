@@ -29,7 +29,7 @@
 
 ## Tests
 
-_(none)_
+- plugins/prompts-pack/src/prompts/prompts.spec.ts
 
 ## Do not
 

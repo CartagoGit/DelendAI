@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/error-reporting/tests/report-builder.spec.ts
 - plugins/error-reporting/tests/frame-extractor.spec.ts
-- plugins/error-reporting/tests/origin-analyzer.spec.ts
-- plugins/error-reporting/tests/internal-classifier.spec.ts
+- plugins/error-reporting/tests/funnel-counter-store.spec.ts
+- plugins/error-reporting/tests/funnel-reconciliation.spec.ts
+- plugins/error-reporting/tests/index.spec.ts
 
 ## Do not
 

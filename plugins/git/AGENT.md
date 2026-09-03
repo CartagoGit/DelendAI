@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/git/tests/transactions/lifecycle.spec.ts
-- plugins/git/tests/src/plugin-options.spec.ts
-- plugins/git/tests/src/lib/git-extended.tool.spec.ts
-- plugins/git/tests/src/lib/git.spec.ts
+- plugins/git/tests/release-finalize/e2e.spec.ts
+- plugins/git/tests/release-finalize/index.spec.ts
+- plugins/git/tests/release-pr/index.spec.ts
+- plugins/git/tests/release/r2.spec.ts
 
 ## Do not
 

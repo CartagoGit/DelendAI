@@ -38,10 +38,10 @@
 
 ## Tests
 
+- plugins/rules/src/__typecheck_solid.spec.ts
 - plugins/rules/tests/src/__typecheck_solid.spec.ts
-- plugins/rules/tests/src/lib/plugin.spec.ts
-- plugins/rules/tests/src/lib/rules.spec.ts
 - plugins/rules/tests/src/lib/e2e-polyglot.spec.ts
+- plugins/rules/tests/src/lib/frameworks/dogmas/dogma-registry.spec.ts
 
 ## Do not
 

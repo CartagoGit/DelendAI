@@ -39,9 +39,9 @@
 
 ## Tests
 
-- plugins/deps/tests/src/lib/licenses.spec.ts
+- plugins/deps/tests/src/lib/audit.spec.ts
+- plugins/deps/tests/src/lib/deps-polyglot.spec.ts
 - plugins/deps/tests/src/lib/deps-tree.spec.ts
-- plugins/deps/tests/src/lib/write-tools.spec.ts
 - plugins/deps/tests/src/lib/deps.spec.ts
 
 ## Do not

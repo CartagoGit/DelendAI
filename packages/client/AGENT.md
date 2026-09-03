@@ -38,10 +38,10 @@ _(none)_
 
 ## Tests
 
-- packages/client/tests/node/runtime-events.spec.ts
-- packages/client/tests/services/dashboard.service.spec.ts
-- packages/client/tests/services/health.service.spec.ts
-- packages/client/tests/services/memory.service.spec.ts
+- packages/client/src/tests/create-plugin-script.spec.ts
+- packages/client/src/tests/namespace-aware-services.spec.ts
+- packages/client/src/tests/plugin-activation.service.spec.ts
+- packages/client/src/tests/project-plugins.spec.ts
 
 ## Do not
 

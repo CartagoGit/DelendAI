@@ -26,10 +26,10 @@
 
 ## Tests
 
+- plugins/issues/src/lib/services/error-sink-adapter.spec.ts
 - plugins/issues/tests/index.spec.ts
-- plugins/issues/tests/src/lib/github-client-security.spec.ts
-- plugins/issues/tests/src/lib/github-setup.spec.ts
-- plugins/issues/tests/src/lib/services/error-sink-adapter.spec.ts
+- plugins/issues/tests/src/lib/frontmatter.spec.ts
+- plugins/issues/tests/src/lib/github-client-security-dependabot-code-scanning.spec.ts
 
 ## Do not
 

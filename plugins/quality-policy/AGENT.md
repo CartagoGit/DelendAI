@@ -34,8 +34,8 @@
 
 ## Tests
 
-- plugins/quality-policy/tests/src/quality-policy.tool.spec.ts
 - plugins/quality-policy/tests/src/lib/services/quality-policy-format.service.spec.ts
+- plugins/quality-policy/tests/src/quality-policy.tool.spec.ts
 
 ## Do not
 

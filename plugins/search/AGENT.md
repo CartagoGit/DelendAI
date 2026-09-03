@@ -39,10 +39,10 @@
 
 ## Tests
 
-- plugins/search/tests/src/lib/services/search-rg-context.service.spec.ts
-- plugins/search/tests/src/lib/services/search.service.spec.ts
-- plugins/search/tests/src/lib/services/search-engine.backends.spec.ts
-- plugins/search/tests/src/lib/services/search-gitignore.service.spec.ts
+- plugins/search/tests/src/lib/embed/build-api-embedder.spec.ts
+- plugins/search/tests/src/lib/embed/embed-pipeline.spec.ts
+- plugins/search/tests/src/lib/embed/embedder.spec.ts
+- plugins/search/tests/src/lib/embed/index-store.spec.ts
 
 ## Do not
 

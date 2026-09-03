@@ -31,7 +31,7 @@
 
 ## Tests
 
-_(none)_
+- plugins/skills-pack/src/skills/skills.spec.ts
 
 ## Do not
 

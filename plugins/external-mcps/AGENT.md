@@ -25,10 +25,10 @@ _(none)_
 
 ## Tests
 
-- plugins/external-mcps/tests/src/lib/detect-rules.spec.ts
-- plugins/external-mcps/tests/src/lib/catalog.spec.ts
-- plugins/external-mcps/tests/src/lib/discover-gate.spec.ts
+- plugins/external-mcps/src/lib/subprocess/env-filter.spec.ts
 - plugins/external-mcps/tests/src/lib/activation-policy.spec.ts
+- plugins/external-mcps/tests/src/lib/catalog.spec.ts
+- plugins/external-mcps/tests/src/lib/configuration-metadata.spec.ts
 
 ## Do not
 

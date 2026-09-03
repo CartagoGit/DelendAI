@@ -38,7 +38,10 @@
 
 ## Tests
 
-_(none)_
+- plugins/observability/src/index.spec.ts
+- plugins/observability/src/lib/correlate/correlate-errors.spec.ts
+- plugins/observability/src/lib/correlate/real-deps.spec.ts
+- plugins/observability/src/lib/errors/ierror-source.spec.ts
 
 ## Do not
 

@@ -39,9 +39,9 @@
 
 ## Tests
 
+- plugins/issues-triage/tests/analysis.spec.ts
 - plugins/issues-triage/tests/bot-notice.spec.ts
 - plugins/issues-triage/tests/github.spec.ts
-- plugins/issues-triage/tests/analysis.spec.ts
 - plugins/issues-triage/tests/proposal-draft.spec.ts
 
 ## Do not
@@ -52,7 +52,7 @@
 
 ## Token hotspots
 
-_(none)_
+- plugins/issues-triage/src/lib/tools/triage.tools.ts
 
 <!-- mcp-vertex:end agent-md -->
 

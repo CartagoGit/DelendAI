@@ -36,7 +36,10 @@
 
 ## Tests
 
-_(none)_
+- plugins/container/src/lib/inspect/docker-images.spec.ts
+- plugins/container/src/lib/inspect/docker-ps.spec.ts
+- plugins/container/src/lib/inspect/parse-docker-images.spec.ts
+- plugins/container/src/lib/inspect/parse-docker-ps.spec.ts
 
 ## Do not
 

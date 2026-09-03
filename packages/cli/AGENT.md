@@ -27,7 +27,10 @@ _(none)_
 
 ## Tests
 
-_(none)_
+- packages/cli/src/commands/doctor.spec.ts
+- packages/cli/src/commands/groups/agents.spec.ts
+- packages/cli/src/commands/groups/conventions.spec.ts
+- packages/cli/src/commands/groups/core.spec.ts
 
 ## Do not
 
@@ -36,7 +39,7 @@ _(none)_
 
 ## Token hotspots
 
-_(none)_
+- packages/cli/src/lib/init/init-answers.schema.ts
 
 <!-- mcp-vertex:end agent-md -->
 

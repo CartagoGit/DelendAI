@@ -30,7 +30,10 @@
 
 ## Tests
 
-_(none)_
+- plugins/auto-plugin-selector/src/index.spec.ts
+- plugins/auto-plugin-selector/src/lib/apply/config-diff.spec.ts
+- plugins/auto-plugin-selector/src/lib/catalog/first-party-candidates.spec.ts
+- plugins/auto-plugin-selector/src/lib/refine/llm-rationale.spec.ts
 
 ## Do not
 
