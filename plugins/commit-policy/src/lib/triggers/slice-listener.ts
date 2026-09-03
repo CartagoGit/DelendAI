@@ -332,7 +332,11 @@ export const createSliceListener = (
 	const indexRel = join(indexDir, 'proposals', 'index.json');
 	let prev = new Map<string, SliceSnapshotEntry>();
 	let initialized = false;
-	let indexWasUnavailable = false;
+	// `indexWasUnavailable` used to live here, to tell "the first read
+	// failed, so the next success is the baseline" from "the first read
+	// succeeded". x00423 removed that distinction: what matters is not
+	// which poll first saw the index, it is whether each already-`done`
+	// slice was ever actually persisted — and only the store knows that.
 	let timer: ReturnType<typeof setInterval> | undefined;
 	let checkInFlight: Promise<readonly ITriggerEvent[]> | undefined;
 	const pending = new Map<string, ITriggerEvent>();
@@ -395,7 +399,6 @@ export const createSliceListener = (
 		try {
 			raw = (await reader.readText(indexRel)).content;
 		} catch {
-			indexWasUnavailable = true;
 			return [];
 		}
 		const curr = (
@@ -443,7 +446,6 @@ export const createSliceListener = (
 					})();
 		prev = curr;
 		initialized = true;
-		indexWasUnavailable = false;
 		if (newRefusals.length > 0) refusals.push(...newRefusals);
 		if (newEvents.length > 0) {
 			for (const event of newEvents) {
