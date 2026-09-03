@@ -50,7 +50,14 @@ La revisión de las propuestas `done` (siguiendo las instrucciones iniciales: "r
 
 ### S3 — `lint:stray-cache-files`: directorio stray `agent-queue`
 - **Status**: done
-- **Files**: `.cache/mcp-vertex/agent-queue/queue.json`
+- **Files**: `tools/scripts/lint/check-stray-cache-files.script.ts`
+- **Nota (2026-09-03)**: esta slice declaraba
+  `.cache/mcp-vertex/agent-queue/queue.json`, que `.gitignore` excluye. El
+  entregable era BORRAR ese directorio stray, no versionar un fichero — pero
+  `Files:` alimenta el staging de commit-policy, así que `git add` lo rechazaba
+  y el evento se reemitía varias veces por segundo mientras el servidor
+  estuviera vivo. Ahora apunta al gate que impide la reaparición, que es el
+  artefacto que realmente cambió en el repositorio.
 - **Gate**: none
 - acceptance:
   - "`bun run lint:stray-cache-files` sale 0 (el dir `agent-queue` deja de existir o se mueve a `tools/scripts/`)."

@@ -28,6 +28,7 @@
  *   bun tools/scripts/lint/proposal-slice-completeness.script.ts --report   # counts only
  */
 
+import { execFileSync } from 'node:child_process';
 import {
 	existsSync,
 	mkdirSync,
@@ -73,9 +74,61 @@ const frontmatter = (content: string): Record<string, string> => {
 
 export interface IIssue {
 	readonly proposal: string;
-	readonly kind: 'pending-slice' | 'missing-file';
+	readonly kind: 'pending-slice' | 'missing-file' | 'ignored-file';
 	readonly detail: string;
 }
+
+/**
+ * Paths git is told to ignore, out of a candidate list, in one call.
+ *
+ * A slice that names a gitignored path can NEVER be committed: `git add`
+ * refuses it, and no retry changes `.gitignore`. Observed live on
+ * 2026-09-03 — x00213 S3 declared `.cache/mcp-vertex/agent-queue/queue.json`
+ * and commit-policy re-emitted the event several times a second for as
+ * long as the server ran, because the refusal was not recognised as
+ * terminal. That classification is fixed, but a terminal refusal is
+ * still a refusal: the slice can never ship. This catches it while the
+ * proposal is being written, which is the only point where it is free
+ * to fix.
+ *
+ * Batched through `--stdin` because a per-path call over every slice of
+ * every proposal is thousands of processes.
+ */
+const gitIgnoredPaths = (
+	root: string,
+	candidates: readonly string[],
+): ReadonlySet<string> => {
+	if (candidates.length === 0) return new Set();
+	try {
+		const stdout = execFileSync('git', ['check-ignore', '--stdin'], {
+			cwd: root,
+			input: `${candidates.join('\n')}\n`,
+			encoding: 'utf8',
+			maxBuffer: 16 * 1024 * 1024,
+		});
+		return new Set(
+			stdout
+				.split('\n')
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0),
+		);
+	} catch (error) {
+		// `git check-ignore` exits 1 when NOTHING matched, which is the
+		// good case and not an error. Any other failure (not a repo, git
+		// missing) contributes nothing rather than failing the gate for
+		// an unrelated reason.
+		const result = error as { status?: number; stdout?: string };
+		if (result.status === 1) {
+			return new Set(
+				(result.stdout ?? '')
+					.split('\n')
+					.map((line) => line.trim())
+					.filter((line) => line.length > 0),
+			);
+		}
+		return new Set();
+	}
+};
 
 /** Pure over the filesystem it's given; every path check is rooted at `root`. */
 export const findIssues = (root: string): readonly IIssue[] => {
@@ -116,6 +169,49 @@ export const findIssues = (root: string): readonly IIssue[] => {
 			}
 		}
 	}
+
+	// The ignored-path check runs over EVERY state, not just `done`.
+	// A slice in `ready` that names an ignored path is a storm waiting
+	// to happen; by the time it reaches `done` the damage is done.
+	const declared = new Map<string, { proposal: string; slice: string }>();
+	for (const state of ['ready', 'done'] as const) {
+		for (const kind of PROPOSAL_KINDS) {
+			const dir = join(
+				root,
+				'docs',
+				'mcp-vertex',
+				'proposals',
+				state,
+				kind,
+			);
+			if (!existsSync(dir)) continue;
+			for (const f of readdirSync(dir)) {
+				if (extname(f) !== '.md' || f === 'README.md') continue;
+				const content = readFileSync(join(dir, f), 'utf8');
+				for (const slice of collectSliceStatuses(content)) {
+					for (const file of slice.files) {
+						if (!declared.has(file)) {
+							declared.set(file, {
+								proposal: f,
+								slice: slice.id,
+							});
+						}
+					}
+				}
+			}
+		}
+	}
+	const ignored = gitIgnoredPaths(root, [...declared.keys()]);
+	for (const path of ignored) {
+		const origin = declared.get(path);
+		if (origin === undefined) continue;
+		out.push({
+			proposal: origin.proposal,
+			kind: 'ignored-file',
+			detail: `${origin.slice} declares ${path}, which .gitignore excludes — git add can never stage it`,
+		});
+	}
+
 	return out;
 };
 

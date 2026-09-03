@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -210,5 +211,93 @@ describe('proposal-slice-completeness lint', () => {
 			);
 			expect(run(root, new Set(['--report']))).toBe(0);
 		});
+	});
+});
+
+describe('ignored slice files', () => {
+	// x00213 S3 declared `.cache/mcp-vertex/agent-queue/queue.json`.
+	// `git add` refuses a gitignored path and no retry changes
+	// .gitignore, so commit-policy re-emitted that slice several times
+	// a second for as long as the server ran. The engine now treats it
+	// as terminal, but a terminal refusal is still a refusal — the
+	// slice can never ship. Catching it while the proposal is written
+	// is the only point where it costs nothing to fix.
+	it('flags a slice whose declared path .gitignore excludes', () => {
+		const root = mkdtempSync(join(tmpdir(), 'slice-ignored-'));
+		try {
+			execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: root });
+			writeFileSync(join(root, '.gitignore'), '.cache/\n');
+			const dir = join(
+				root,
+				'docs',
+				'mcp-vertex',
+				'proposals',
+				'ready',
+				'fixes',
+			);
+			mkdirSync(dir, { recursive: true });
+			mkdirSync(join(root, '.cache'), { recursive: true });
+			writeFileSync(join(root, '.cache', 'queue.json'), '{}');
+			writeFileSync(
+				join(dir, 'x00001-example.md'),
+				[
+					'---',
+					'id: x00001',
+					'status: ready',
+					'---',
+					'',
+					'### S1 — example',
+					'- **Status**: pending',
+					'- **Files**: `.cache/queue.json`',
+					'',
+				].join('\n'),
+			);
+			const issues = findIssues(root);
+			expect(
+				issues.filter((issue) => issue.kind === 'ignored-file'),
+			).toHaveLength(1);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('does not flag a tracked path', () => {
+		const root = mkdtempSync(join(tmpdir(), 'slice-tracked-'));
+		try {
+			execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: root });
+			writeFileSync(join(root, '.gitignore'), '.cache/\n');
+			const dir = join(
+				root,
+				'docs',
+				'mcp-vertex',
+				'proposals',
+				'ready',
+				'fixes',
+			);
+			mkdirSync(dir, { recursive: true });
+			mkdirSync(join(root, 'src'), { recursive: true });
+			writeFileSync(join(root, 'src', 'a.ts'), 'export const a = 1;\n');
+			writeFileSync(
+				join(dir, 'x00002-example.md'),
+				[
+					'---',
+					'id: x00002',
+					'status: ready',
+					'---',
+					'',
+					'### S1 — example',
+					'- **Status**: pending',
+					'- **Files**: `src/a.ts`',
+					'',
+				].join('\n'),
+			);
+			expect(
+				findIssues(root).filter(
+					(issue) => issue.kind === 'ignored-file',
+				),
+			).toEqual([]);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });
