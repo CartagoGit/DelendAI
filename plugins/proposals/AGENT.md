@@ -58,6 +58,7 @@
 ## Token hotspots
 
 - `mcp-vertex_proposals_agent_lock` — 3,199 B total, 2,501 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `mcp-vertex_proposals_proposal_get` — 2,772 B total, 2,565 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 - `mcp-vertex_proposals_proposal_adopt` — 2,606 B total, 2,090 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 - `mcp-vertex_proposals_close_slice` — 2,488 B total, 1,786 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 

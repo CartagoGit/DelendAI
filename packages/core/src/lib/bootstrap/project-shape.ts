@@ -125,18 +125,23 @@ const packageDependencies = (
 	...(packageJson?.devDependencies ?? {}),
 });
 
-/** Build the canonical shape from an injected, workspace-contained reader. */
 /**
- * `packageJson` is passed in rather than read here. Every caller has
- * already parsed it, and re-reading turned one shared bootstrap analysis
- * into three reads of the same file — a regression `plan-tool.spec.ts`
- * catches by counting them. Omit it only when there is genuinely nothing
- * parsed yet.
+ * Build the canonical shape from an injected, workspace-contained reader.
+ *
+ * `parsedPackageJson` is an optimisation, not a requirement: every caller
+ * inside `analyzeProject` has already parsed the file, and re-reading it
+ * turned one shared bootstrap analysis into three reads of the same file
+ * (`plan-tool.spec.ts` catches that by counting). When it is omitted the
+ * function still reads the file itself — an argument that silently
+ * changes the ANSWER when you leave it out is a trap, not a default.
  */
 export const buildProjectShape = async (
 	reader: IFileReader,
-	packageJson?: IPackageJson | undefined,
+	parsedPackageJson?: IPackageJson | undefined,
 ): Promise<IProjectShape> => {
+	const packageJson =
+		parsedPackageJson ??
+		parsePackageJson(await reader.readFile('package.json'));
 	const context: IProjectShapeContext = {
 		reader,
 		...(packageJson === undefined ? {} : { packageJson }),

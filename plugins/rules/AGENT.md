@@ -54,7 +54,6 @@
 ## Token hotspots
 
 - `mcp-vertex_rules_check_rules` — 2,650 B total, 2,303 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
-- `mcp-vertex_rules_get_rules` — 2,302 B total, 1,826 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 
 <!-- mcp-vertex:end agent-md -->
 
