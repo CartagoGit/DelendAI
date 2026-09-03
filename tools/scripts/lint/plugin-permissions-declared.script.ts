@@ -122,9 +122,9 @@ export interface IPermissionFinding {
 }
 
 const walk = (dir: string, out: string[] = []): string[] => {
-	let entries: ReturnType<typeof readdirSync>;
+	let entries: readonly { name: string; isDirectory(): boolean }[];
 	try {
-		entries = readdirSync(dir, { withFileTypes: true });
+		entries = readdirSync(dir, { withFileTypes: true, encoding: 'utf8' });
 	} catch {
 		return out;
 	}
