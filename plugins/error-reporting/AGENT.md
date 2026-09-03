@@ -24,6 +24,7 @@
 
 ## Depends on
 
+- @mcp-vertex/commit-policy
 - @modelcontextprotocol/sdk
 - zod
 - @mcp-vertex/core

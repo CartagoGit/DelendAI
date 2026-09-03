@@ -78,6 +78,41 @@ export const resolveWorkspaceBinary = (
 export const createDtsTempDir = (): string =>
 	mkdtempSync(join(tmpdir(), 'mcp-vertex-dts-'));
 
+// tsconfig `extends` does not merge `paths` — a child that sets `paths`
+// replaces the parent's map wholesale (documented TS behaviour, easy to
+// miss). The throwaway dts tsconfig below sets its own `paths` so a
+// package's DIRECT `@mcp-vertex/*` deps resolve to their BUILT `.d.ts`
+// instead of full source. But a direct dep's own source can itself
+// deep-import a THIRD plugin the package being built never declared
+// (e.g. adaptive-optimizer → proposals → error-reporting →
+// commit-policy/lib/*) — a real chain found via x00419/q00014. Node's
+// package-exports wildcard patterns (`"./lib/*"`) do the literal `*`
+// substitution without extension probing, so an extensionless deep
+// import that resolves fine under tsconfig.base.json's full `paths`
+// (every `@mcp-vertex/<pkg>/*` wildcard, used by plain `tsc`/`bun run
+// typecheck`) becomes "Cannot find module" the moment `paths` is
+// narrowed to only the package's own deps. Loading the base config's
+// `paths` and layering the narrowed, built-dist map on top keeps the
+// fast path for direct deps while still resolving any transitively
+// reached plugin from source, exactly like the non-throwaway build.
+// tsconfig.base.json's `paths` values are relative TO THAT FILE (repo
+// root). The throwaway config below lives under `/tmp`, so copying those
+// relative strings in verbatim would resolve them against the wrong
+// directory — same class of bug corePaths already avoids by building
+// its targets with `join(ROOT, ...)`. Re-root every value the same way.
+const rawBasePaths: Record<string, string[]> =
+	(
+		JSON.parse(readFileSync(join(ROOT, 'tsconfig.base.json'), 'utf8')) as {
+			compilerOptions?: { paths?: Record<string, string[]> };
+		}
+	).compilerOptions?.paths ?? {};
+const basePaths: Record<string, string[]> = Object.fromEntries(
+	Object.entries(rawBasePaths).map(([specifier, targets]) => [
+		specifier,
+		targets.map((target) => join(ROOT, target)),
+	]),
+);
+
 const discover = (): string[] =>
 	['packages', 'plugins']
 		.flatMap((group) =>
@@ -334,7 +369,10 @@ const buildPackage = (rel: string): void => {
 						// workspace node_modules so `types: ["bun", "node"]`
 						// (inherited from tsconfig.base.json) resolves.
 						typeRoots: [join(ROOT, 'node_modules/@types')],
-						paths: corePaths,
+						// Base wildcard paths first (source fallback for any
+						// transitively reached plugin), corePaths on top (built
+						// `.d.ts` wins for the package's own direct deps).
+						paths: { ...basePaths, ...corePaths },
 					},
 					include: [
 						join(dir, 'src/**/*'),

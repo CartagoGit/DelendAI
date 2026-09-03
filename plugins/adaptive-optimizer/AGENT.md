@@ -25,10 +25,10 @@
 - @mcp-vertex/auto-plugin-selector
 - @mcp-vertex/perf
 - @mcp-vertex/prompt-eval
+- @mcp-vertex/proposals
 - @mcp-vertex/usage-tracking
 - @modelcontextprotocol/sdk
 - zod
-- @mcp-vertex/core
 
 ## Writes
 
