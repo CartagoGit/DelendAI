@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Security audit (CVEs, SAST, secrets, env).',
 	tags: ['security', 'audit'],
 	maturity: 'stable',
-	permissions: ['filesystem-read', 'env-read'],
+	permissions: ['filesystem-read', 'filesystem-write', 'process', 'env-read'],
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [

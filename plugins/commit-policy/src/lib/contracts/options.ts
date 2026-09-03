@@ -115,8 +115,19 @@ export const AUDIT_TRAILERS = [
 export type AuditTrailerKind = (typeof AUDIT_TRAILERS)[number];
 
 export const AuditSchema = z.object({
-	/** Default `co-authored-by` — preserves the canonical trailer form. */
-	trailer: z.enum(AUDIT_TRAILERS).default('co-authored-by'),
+	/**
+	 * Default `none` — keeps LLM attribution off GitHub commits. Pre-f00500
+	 * the default was `co-authored-by`; that was flipped because even when
+	 * the project's `identity.mode === 'explicit'` (so the commit author is
+	 * always the human maintainer), the `Co-Authored-By:` trailer still
+	 * leaked the host+model of the agent that drafted the change
+	 * (`Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`), and GitHub
+	 * surfaces that on the commit page and — when the email resolves — adds
+	 * the brand to the contributor graph. Hosts that need the audit
+	 * trailer (e.g. for human-human `Co-authored-by` lines) can still set
+	 * the value explicitly; the field is fully configurable.
+	 */
+	trailer: z.enum(AUDIT_TRAILERS).default('none'),
 	/**
 	 * Template for the agent portion of the trailer. Supports the
 	 * placeholders `${host}`, `${model}`, `${date}`. Default

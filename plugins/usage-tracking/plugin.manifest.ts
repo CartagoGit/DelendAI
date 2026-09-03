@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Per-token/per-call usage tracking (spend, budget).',
 	tags: ['usage', 'spend'],
 	maturity: 'stable',
-	permissions: ['filesystem-read', 'filesystem-write'],
+	permissions: ['filesystem-read', 'filesystem-write', 'network', 'env-read'],
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],

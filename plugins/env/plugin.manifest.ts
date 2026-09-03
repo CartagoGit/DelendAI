@@ -9,7 +9,7 @@ export default definePluginManifest({
 		'Environment config validation (.env check + schema + env_explains).',
 	tags: ['env', 'config'],
 	maturity: 'stable',
-	permissions: ['env-read'],
+	permissions: ['filesystem-read', 'env-read'],
 	presets: [
 		'standard',
 		'swarm',

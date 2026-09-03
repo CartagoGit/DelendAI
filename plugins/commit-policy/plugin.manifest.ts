@@ -9,7 +9,15 @@ export default definePluginManifest({
 		'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 	tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
 	maturity: 'experimental',
-	permissions: ['git-read', 'git-write', 'network', 'process'],
+	permissions: [
+		'filesystem-read',
+		'filesystem-write',
+		'process',
+		'network',
+		'git-read',
+		'git-write',
+		'env-read',
+	],
 	presets: ['vertex'],
 	// Per-tool permissions: read-only inspection on `_status`, write
 	// effects on `_commit`/`_push`/`_run` (only when the host has

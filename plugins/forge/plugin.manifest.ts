@@ -8,7 +8,13 @@ export default definePluginManifest({
 	summary: 'Forge (GitHub/GitLab) wrappers — PRs, CI, issues.',
 	tags: ['forge', 'git', 'ci'],
 	maturity: 'stable',
-	permissions: ['forge-read', 'forge-write', 'network'],
+	permissions: [
+		'filesystem-read',
+		'process',
+		'network',
+		'forge-read',
+		'forge-write',
+	],
 	presets: ['swarm', 'full', 'vertex'],
 	// f00180 S2 / MAN-004 — per-tool permission map. `network` is
 	// pinned only on the tools that actually call the GH API

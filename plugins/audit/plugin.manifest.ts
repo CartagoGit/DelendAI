@@ -9,7 +9,7 @@ export default definePluginManifest({
 		'Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop.',
 	tags: ['audit', 'multi-model', 'self-improvement'],
 	maturity: 'stable',
-	permissions: ['filesystem-read', 'filesystem-write', 'network'],
+	permissions: ['filesystem-read', 'filesystem-write', 'network', 'env-read'],
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],

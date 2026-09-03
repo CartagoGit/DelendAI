@@ -9,7 +9,7 @@ export default definePluginManifest({
 		'GitLab read-only provider context, HTTP client and resource tools.',
 	tags: ['gitlab', 'provider'],
 	maturity: 'experimental',
-	permissions: ['network'],
+	permissions: ['filesystem-write', 'network', 'env-read'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@mcp-vertex/contracts', 'zod'],

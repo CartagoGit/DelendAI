@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Observability surface (metrics, errors, telemetry).',
 	tags: ['observability'],
 	maturity: 'stable',
-	permissions: ['filesystem-read', 'filesystem-write'],
+	permissions: ['filesystem-read', 'filesystem-write', 'network', 'env-read'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@mcp-vertex/web-fetch'],

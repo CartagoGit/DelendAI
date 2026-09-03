@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Cache-eviction rules and lifecycle for plugin scratch dirs.',
 	tags: ['cache', 'lifecycle'],
 	maturity: 'stable',
-	permissions: ['filesystem-read', 'filesystem-write'],
+	permissions: ['filesystem-read', 'filesystem-write', 'env-read'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],

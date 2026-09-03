@@ -9,7 +9,15 @@ export default definePluginManifest({
 		'Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.',
 	tags: ['issues', 'forge', 'triage'],
 	maturity: 'beta',
-	permissions: ['forge-read', 'forge-write', 'network'],
+	permissions: [
+		'filesystem-read',
+		'filesystem-write',
+		'process',
+		'network',
+		'forge-read',
+		'forge-write',
+		'env-read',
+	],
 	presets: ['full'],
 	// f00180 S2 / MAN-004 — per-tool permission map. Read tools
 	// declare `forge-read` + `network`; write tools add `forge-write`.

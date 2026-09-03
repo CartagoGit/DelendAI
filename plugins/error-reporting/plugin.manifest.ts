@@ -9,7 +9,12 @@ export default definePluginManifest({
 		'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.',
 	tags: ['error-reporting', 'github', 'issues'],
 	maturity: 'stable',
-	permissions: ['network', 'forge-write'],
+	permissions: [
+		'filesystem-read',
+		'filesystem-write',
+		'network',
+		'forge-write',
+	],
 	presets: ['standard', 'swarm', 'full', 'vertex'],
 	startupActivation: true,
 	// f00180 S2 / MAN-004 — per-tool permission map. Even though

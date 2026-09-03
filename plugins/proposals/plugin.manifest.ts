@@ -11,8 +11,10 @@ export default definePluginManifest({
 	permissions: [
 		'filesystem-read',
 		'filesystem-write',
+		'process',
 		'git-read',
 		'git-write',
+		'env-read',
 	],
 	presets: ['swarm', 'full', 'vertex'],
 	// f00180 S2 / MAN-004 — per-tool permission map. The proposal

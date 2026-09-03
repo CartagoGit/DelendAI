@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
 	tags: ['git', 'changelog'],
 	maturity: 'stable',
-	permissions: ['git-read', 'git-write'],
+	permissions: ['filesystem-read', 'process', 'git-read', 'git-write'],
 	presets: [
 		'minimal',
 		'lean',

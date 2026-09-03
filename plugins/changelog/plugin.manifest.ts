@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Conventional-commits changelog + release plan generator.',
 	tags: ['changelog', 'release'],
 	maturity: 'experimental',
-	permissions: ['git-read'],
+	permissions: ['process', 'git-read'],
 	// f00177 (MAN-001): `changelog` is `private: true` / never published to
 	// npm (see `plugins/changelog/package.json`). It previously listed
 	// `full`/`cli-tool` as member presets, which meant an external adopter

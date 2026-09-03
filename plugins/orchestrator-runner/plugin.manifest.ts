@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Orchestrator-runner runtime utilities.',
 	tags: ['orchestrator', 'runner'],
 	maturity: 'stable',
-	permissions: ['process', 'network'],
+	permissions: ['filesystem-read', 'process', 'network', 'env-read'],
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],

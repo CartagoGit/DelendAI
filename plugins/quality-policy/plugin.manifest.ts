@@ -9,7 +9,7 @@ export default definePluginManifest({
 		'Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.',
 	tags: ['quality', 'policy', 'aggregation', 'f00167'],
 	maturity: 'experimental',
-	permissions: ['filesystem-read'],
+	permissions: ['filesystem-read', 'process'],
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [

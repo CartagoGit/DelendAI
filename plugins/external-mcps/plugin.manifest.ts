@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Compose third-party MCP servers through the catalog + human ack.',
 	tags: ['external-mcps', 'composition'],
 	maturity: 'stable',
-	permissions: ['network', 'process'],
+	permissions: ['filesystem-read', 'process', 'network', 'env-read'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', 'zod'],

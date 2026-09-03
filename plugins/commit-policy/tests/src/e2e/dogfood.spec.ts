@@ -33,13 +33,15 @@ describe('commit-policy dogfood E2E', () => {
 		await cleanupDogfoodRepo({ workspace, remote });
 	});
 
-	it('commits a slice with the global user + audit trailer + pushes it', async () => {
+	it('commits a slice with the global user, no audit trailer (f00500 default) + pushes it', async () => {
+		// f00500: the engine's default `audit.trailer` flipped from
+		// 'co-authored-by' to 'none'. This test pins the new default
+		// end-to-end: the resulting commit message has no trailer at all.
 		const policy = CommitPolicyOptionsSchema.parse({
 			gitTimeoutMs: 60000,
 			commit: { enabled: true },
 			identity: { mode: 'global' },
 			audit: {
-				trailer: 'co-authored-by',
 				agentFormat: '${host}/${model}',
 			},
 			cadence: { triggers: [{ kind: 'slice' }], sliceScoping: false },
@@ -102,9 +104,10 @@ describe('commit-policy dogfood E2E', () => {
 		const subject = log.stdout.split('\n')[0] ?? '';
 		expect(subject).toContain('Cartago');
 		expect(subject).toContain('feat(f00181): dogfood smoke');
-		expect(log.stdout).toContain(
-			'Co-authored-by: vscode-copilot/minimax-m3',
-		);
+		// f00500 default: the message body must NOT contain a Co-authored-by
+		// trailer (or any other audit trailer) toward the agent host/model.
+		expect(log.stdout).not.toMatch(/^co-authored-by:/im);
+		expect(log.stdout).not.toMatch(/^signed-off-by:/im);
 
 		// The bare remote keeps `develop` as HEAD, so inspect the exact sibling
 		// ref that was pushed instead of the remote's default branch history.

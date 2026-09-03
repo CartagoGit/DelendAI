@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Performance bench/bundle/profile tools.',
 	tags: ['perf', 'benchmark'],
 	maturity: 'stable',
-	permissions: ['filesystem-read', 'process'],
+	permissions: ['filesystem-read', 'filesystem-write', 'process'],
 	presets: ['vertex', 'cli-tool'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],

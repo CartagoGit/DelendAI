@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Database schema/introspection tools (read-only, offline).',
 	tags: ['database', 'schema'],
 	maturity: 'stable',
-	permissions: ['database'],
+	permissions: ['env-read', 'database'],
 	presets: ['standard', 'swarm', 'full', 'backend-api'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', 'better-sqlite3', 'zod'],

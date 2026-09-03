@@ -119,7 +119,7 @@ const basePolicy = (
 	},
 	stash: { enabled: false },
 	identity: { mode: 'global' },
-	audit: { trailer: 'co-authored-by', agentFormat: '${host}/${model}' },
+	audit: { trailer: 'none', agentFormat: '${host}/${model}' },
 	cadence: {
 		triggers: [],
 		sliceScoping: true,

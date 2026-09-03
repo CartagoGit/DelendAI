@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Headless browser automation tools.',
 	tags: ['browser', 'automation'],
 	maturity: 'stable',
-	permissions: ['browser', 'network'],
+	permissions: ['filesystem-write', 'process', 'network', 'browser'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', 'playwright'],

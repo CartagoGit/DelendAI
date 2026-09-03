@@ -87,7 +87,7 @@ const buildPolicy = (
 			mode: 'global' as const,
 		},
 		audit: {
-			trailer: 'co-authored-by' as const,
+			trailer: 'none' as const,
 			agentFormat: '${host}/${model}',
 		},
 	};

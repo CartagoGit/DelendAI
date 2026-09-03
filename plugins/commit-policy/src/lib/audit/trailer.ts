@@ -3,13 +3,22 @@
  * messages produced by `commit_policy_commit`.
  *
  * Three trailer kinds:
- *   - 'none'           → no trailer at all (commit body untouched)
+ *   - 'none'           → no trailer at all (commit body untouched)  ← default
  *   - 'co-authored-by' → append `Co-authored-by: <formatted-agent>`
  *                        in the canonical trailer form
  *   - 'body-metadata'  → append a fenced `[agent-meta]` block at the
  *                        end of the body with the raw host + model
  *                        (parseable by internal scripts without
  *                        breaking trailer-aware tooling)
+ *
+ * Default behaviour: `none` (post-f00500). The previous default
+ * `co-authored-by` leaked the agent's `host` and `model` (e.g.
+ * `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`) onto every
+ * commit the engine produced, which GitHub surfaces on the commit
+ * page and — when the email resolves — adds the brand to the contributor
+ * graph. The default now keeps LLM attribution off GitHub by default;
+ * hosts that want the trailer back (e.g. for human-human Co-authored-by)
+ * set `audit.trailer` explicitly in `mcp-vertex.config.json`.
  *
  * The function is pure over `(message, kind, format, agent)`.
  */

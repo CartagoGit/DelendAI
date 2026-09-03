@@ -9,7 +9,7 @@ export default definePluginManifest({
 		'GitHub read-only provider context, HTTP client and remote resource tools.',
 	tags: ['github', 'provider'],
 	maturity: 'experimental',
-	permissions: ['network'],
+	permissions: ['filesystem-write', 'network', 'env-read'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@mcp-vertex/contracts', 'zod'],

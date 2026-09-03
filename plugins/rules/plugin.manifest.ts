@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Lint/type rules engine (frameworks, dogmas, presets).',
 	tags: ['rules', 'lint'],
 	maturity: 'stable',
-	permissions: ['filesystem-read'],
+	permissions: ['filesystem-read', 'network', 'env-read'],
 	presets: ['standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],

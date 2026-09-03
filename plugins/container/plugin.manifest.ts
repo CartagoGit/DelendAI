@@ -9,7 +9,7 @@ export default definePluginManifest({
 		'Container inspection + lint (docker ps/images, k8s, Dockerfile rules).',
 	tags: ['container', 'docker', 'kubernetes'],
 	maturity: 'stable',
-	permissions: ['process', 'container'],
+	permissions: ['filesystem-read', 'process', 'container'],
 	presets: ['standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api'],
 	// f00180 S2 / MAN-004 — per-tool permission map. Container
 	// inspection tools need only `container` (read-only docker /

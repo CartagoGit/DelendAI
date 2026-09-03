@@ -132,7 +132,7 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 ### S2 — Lenguajes en plural, con evidencia
 
-- **Status**: pending
+- **Status**: done — `f3fa13adf`, corregida en `622c3bc4d`. Verificado sobre la aceptación del propio plan: `tsconfig.json` + `Cargo.toml` + `go.mod` devuelve los tres con evidencia (typescript←tsconfig.json, go←go.mod, rust←Cargo.toml). Dos pérdidas de información en espejo se arreglaron por el camino: la primera versión BORRABA `javascript` en cuanto aparecía cualquier otro lenguaje — el mismo modelo escalar, apuntando al revés — y los `priority` seguían siendo el orden de una cascada, así que un `package.json` pelado puntuaba 60 y le ganaba a un `pyproject.toml` con 50. Es literalmente el caso que este plan cita. Ahora un manifiesto dedicado vale 90-100 y un `package.json` genérico 20.
 - **Files**:
   - `packages/core/src/lib/config/detect-stack-defaults.helper.ts` — `detectLanguageSignals` devuelve TODOS los lenguajes con señal, cada uno con su evidencia. Hoy construye un array y le mete sólo `detectPrimaryLanguage`.
   - `packages/core/src/lib/bootstrap/language-rules.ts` — de first-match por prioridad a puntuación acumulativa: varias reglas pueden acertar a la vez. `primary` se deriva del resultado, no lo sustituye.
@@ -141,7 +141,7 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 ### S3 — Forma y roles, ortogonales
 
-- **Status**: pending
+- **Status**: done — `f3fa13adf`. `role-rules.ts` + `project-shape.ts`: Django/FastAPI/Celery dejan de ser `library`, Go con `cmd/*/main.go` es `cli`, y `three` sola ya no produce `game`. `roles` vacío cuando nada encaja, porque «no encajó nada» es más útil que un `generic` con aplomo.
 - **Files**:
   - `packages/core/src/lib/bootstrap/project-shape.ts` — `{ workspace, roles[] }` en lugar de un `projectType` escalar. Un monorepo puede declarar cuatro roles.
   - `packages/core/src/lib/bootstrap/role-rules.ts` — reglas de rol con las clasificaciones que hoy fallan: Python con Django/FastAPI/Celery/Typer no es `library`; Go con `cmd/*/main.go` es `cli`; `three` sola no basta para `game`.
@@ -150,7 +150,7 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 ### S4 — Un solo detector: `analyze-project` deriva del grafo
 
-- **Status**: pending
+- **Status**: done — `f3fa13adf`, con dos correcciones en `3ec9e5cc5`. `analyzeProject` proyecta desde el grafo y no detecta por su cuenta. `projectLegacyLanguage` mapea a `unknown` un lenguaje que el enum antiguo no conocía, en vez de al vecino más cercano: ensanchar el enum es un cambio deliberado, decir que Java es JavaScript es una mentira que el llamador no puede ver. Y el grafo releía `package.json`, convirtiendo un análisis compartido en tres lecturas del mismo fichero — `plan-tool.spec.ts` lo caza contándolas.
 - **Files**:
   - `packages/core/src/lib/bootstrap/analyze-project.ts` — pasa a proyectar su forma antigua desde el grafo, sin lógica de detección propia. Las dos verdades no coexisten: hay una y una proyección.
   - `packages/core/src/lib/config/capability-graph.ts` — el agregador: recoge señales de los detectores existentes y produce el grafo. Puro respecto a la decisión; el I/O queda en los probes que ya existen.
@@ -159,7 +159,7 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 ### S5 — Manifiesto de host y guard de divergencia
 
-- **Status**: pending
+- **Status**: done — `f3fa13adf`. Los manifiestos canónicos estaban declarados DENTRO de un script de verificación mientras el runtime llevaba su propia vista: esa es exactamente la divergencia que la slice cierra. Ahora viven en `host-capability-registry.ts` con `lint:host-manifest-drift` en `validate`. El registro importaba `GENERIC_MCP_HOST_CAPABILITY_MANIFEST` con `import type` y lo usaba como valor — compilaba y reventaba en ejecución; el default vive en el runtime, porque es una decisión sobre qué puede suponerse de un host genérico, no una forma.
 - **Files**:
   - `packages/contracts/src/lib/host/host-capability-manifest.interface.ts` — declaración canónica por host: MCP, prompts, resources, `structuredContent`, cambios dinámicos, notificaciones, skills, subagentes.
   - `packages/core/src/lib/host/host-capability-registry.ts` — el registro, con el manifiesto como única fuente y los `supportsX()` derivados de él.

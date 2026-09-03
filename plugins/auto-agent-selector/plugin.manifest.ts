@@ -9,7 +9,7 @@ export default definePluginManifest({
 		'Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation).',
 	tags: ['routing', 'agents'],
 	maturity: 'stable',
-	permissions: ['process', 'network'],
+	permissions: ['filesystem-read', 'process', 'network', 'env-read'],
 	presets: ['standard', 'swarm', 'full', 'vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
