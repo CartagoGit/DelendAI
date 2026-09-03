@@ -26,6 +26,7 @@
 
 - @mcp-vertex/error-reporting
 - @mcp-vertex/logs
+- @mcp-vertex/quality
 - @modelcontextprotocol/sdk
 - zod
 - @mcp-vertex/core
