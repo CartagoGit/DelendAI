@@ -280,28 +280,52 @@ export const composeAgentMd = async (
 	if (scope.isPlugin) {
 		entry.push('src/index.ts (default export → IMcpPlugin)');
 	}
-	const tests: string[] = [];
-	const testsDir = scope.isPlugin
-		? join(REPO_ROOT, scope.dir, 'tests')
-		: join(REPO_ROOT, scope.dir, 'tests');
 	const { readdir } = await import('node:fs/promises');
-	const walkTests = async (path: string): Promise<void> => {
+	/**
+	 * Collect EVERY match, then sort, then cut.
+	 *
+	 * This used to walk `readdir()` in whatever order the filesystem
+	 * handed back and `break` once it had four. Both halves are
+	 * non-deterministic: the order varies between machines (and, on some
+	 * filesystems, between runs), and the `break` means the order decides
+	 * WHICH four survive. AGENT.md is checked in and `gen:all --check`
+	 * compares it byte-for-byte, so the generator disagreed with itself:
+	 * 42 of the 43 files reported as drift on 2026-09-03 were AGENT.md,
+	 * which failed CI and blocked every push behind the pre-push gate.
+	 *
+	 * A generator whose output depends on directory iteration order can
+	 * never pass its own drift check. Sorting before the cut is the whole
+	 * fix; the cut itself stays, since AGENT.md is a token budget.
+	 */
+	const collectSpecFiles = async (path: string): Promise<string[]> => {
 		try {
 			const entries = await readdir(path, { withFileTypes: true });
+			const found: string[] = [];
 			for (const entry of entries) {
-				if (tests.length >= MAX_TESTS) break;
 				const full = join(path, entry.name);
 				if (entry.isDirectory()) {
-					await walkTests(full);
+					if (entry.name === 'node_modules' || entry.name === 'dist')
+						continue;
+					found.push(...(await collectSpecFiles(full)));
 				} else if (entry.isFile() && entry.name.endsWith('.spec.ts')) {
-					tests.push(relative(REPO_ROOT, full));
+					found.push(relative(REPO_ROOT, full));
 				}
 			}
+			return found;
 		} catch {
-			// tests/ missing or unreadable — leave the list empty.
+			// Directory missing or unreadable — contributes nothing.
+			return [];
 		}
 	};
-	await walkTests(testsDir);
+	// `tests/` is the convention, but a good part of the repo keeps specs
+	// next to the code as `src/**/*.spec.ts`. Looking only in `tests/`
+	// left those packages advertising no tests at all.
+	const tests = [
+		...(await collectSpecFiles(join(REPO_ROOT, scope.dir, 'tests'))),
+		...(await collectSpecFiles(join(REPO_ROOT, scope.dir, 'src'))),
+	]
+		.sort((a, b) => a.localeCompare(b, 'en'))
+		.slice(0, MAX_TESTS);
 	const doNot: string[] = scope.isPlugin
 		? [
 				`Do not import \`@mcp-vertex/core/lib/...\`; use \`@mcp-vertex/core/public\`.`,
@@ -312,21 +336,37 @@ export const composeAgentMd = async (
 				`Do not introduce project-specific code; \`@mcp-vertex/core\` is project-agnostic.`,
 				`Do not read files via \`node:fs\`; always go through the \`IFileReader\` abstraction.`,
 			];
-	const tokenHotspots: string[] = [];
+	// Same two defects as the test walk: unordered iteration feeding a
+	// cut, and — here — only the FIRST level of `src/`, which is where
+	// almost no plugin actually keeps its `*.tools.ts`. The hotspots
+	// section was therefore usually empty for the packages that have the
+	// biggest schemas.
 	const srcDir = join(REPO_ROOT, scope.dir, 'src');
-	try {
-		const entries = await readdir(srcDir, { withFileTypes: true });
-		for (const entry of entries) {
-			if (entry.isFile() && /\.(schema|tools)\.ts$/.test(entry.name)) {
-				tokenHotspots.push(
-					relative(REPO_ROOT, join(srcDir, entry.name)),
-				);
-				if (tokenHotspots.length >= MAX_HOTSPOTS) break;
+	const collectHotspots = async (path: string): Promise<string[]> => {
+		try {
+			const entries = await readdir(path, { withFileTypes: true });
+			const found: string[] = [];
+			for (const entry of entries) {
+				const full = join(path, entry.name);
+				if (entry.isDirectory()) {
+					if (entry.name === 'node_modules' || entry.name === 'dist')
+						continue;
+					found.push(...(await collectHotspots(full)));
+				} else if (
+					entry.isFile() &&
+					/\.(schema|tools)\.ts$/.test(entry.name)
+				) {
+					found.push(relative(REPO_ROOT, full));
+				}
 			}
+			return found;
+		} catch {
+			return [];
 		}
-	} catch {
-		// src/ missing — leave empty.
-	}
+	};
+	const tokenHotspots = (await collectHotspots(srcDir))
+		.sort((a, b) => a.localeCompare(b, 'en'))
+		.slice(0, MAX_HOTSPOTS);
 	const summary = scope.isPlugin
 		? (
 				await readPluginManifest(

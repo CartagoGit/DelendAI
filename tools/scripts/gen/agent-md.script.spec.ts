@@ -1,6 +1,6 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
@@ -171,6 +171,62 @@ describe('composeAgentMd', () => {
 		expect(Array.isArray(sections.tests)).toBe(true);
 		expect(Array.isArray(sections.doNot)).toBe(true);
 		expect(Array.isArray(sections.tokenHotspots)).toBe(true);
+	});
+});
+
+describe('composeAgentMd determinism (external review 2026-09-03)', () => {
+	const ROOT = join(tmpdir(), `agent-md-determinism-${String(Date.now())}`);
+	const dir = 'packages/many-tests';
+
+	beforeAll(async () => {
+		await mkdir(join(ROOT, dir, 'src', 'nested'), { recursive: true });
+		await mkdir(join(ROOT, dir, 'tests', 'lib'), { recursive: true });
+		await writeFile(
+			join(ROOT, dir, 'package.json'),
+			`${JSON.stringify({ name: 'x', version: '0.0.0' })}\n`,
+		);
+		// Written in an order that is NOT the sorted order, so a
+		// generator that cuts before sorting keeps the wrong four.
+		for (const name of ['zulu', 'alpha', 'mike', 'bravo', 'yankee']) {
+			await writeFile(
+				join(ROOT, dir, 'tests', 'lib', `${name}.spec.ts`),
+				'it("a", () => {});\n',
+			);
+		}
+		// A spec living next to the code, which `tests/`-only discovery
+		// never saw.
+		await writeFile(
+			join(ROOT, dir, 'src', 'nested', 'aaa-colocated.spec.ts'),
+			'it("a", () => {});\n',
+		);
+	});
+
+	afterAll(async () => {
+		await rm(ROOT, { recursive: true, force: true });
+	});
+
+	it('picks the same tests every run, and picks them in sorted order', async () => {
+		// AGENT.md is checked in and `gen:all --check` compares it
+		// byte-for-byte, so a generator whose output depends on
+		// `readdir()` order can never pass its own drift check: 42 of
+		// the 43 drifting files on 2026-09-03 were AGENT.md, which
+		// failed CI and blocked every push behind the pre-push gate.
+		const scope: IAgentScope = {
+			dir: relative(process.cwd(), join(ROOT, dir)),
+			packageJson: relative(
+				process.cwd(),
+				join(ROOT, dir, 'package.json'),
+			),
+			isPlugin: false,
+		};
+		const first = await composeAgentMd(scope);
+		const second = await composeAgentMd(scope);
+
+		expect(first.tests).toEqual(second.tests);
+		expect(first.tests).toEqual([...first.tests].sort());
+		// The colocated spec sorts first and must be present: discovery
+		// used to look in `tests/` only.
+		expect(first.tests.some((t) => t.includes('aaa-colocated'))).toBe(true);
 	});
 });
 
