@@ -146,8 +146,14 @@ export const buildFsToolRegistrations = (
 							authorizedRoots,
 						);
 						if (!result.found) {
+							// q00016 S4: when the refusal came from containment
+							// (lexical escape or a symlink resolving outside the
+							// workspace), `reason` names the path and the cause
+							// so it's diagnosable instead of a generic
+							// "not found" that looks identical to a typo.
 							return toolError(
-								'file not found or path escapes workspace',
+								result.reason ??
+									'file not found or path escapes workspace',
 								'Pass a workspace-relative path; absolute paths and `..` are rejected.',
 							);
 						}

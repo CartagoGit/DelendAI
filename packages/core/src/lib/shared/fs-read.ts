@@ -13,16 +13,16 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { resolveAgainstRoots } from './contain-path';
-import { realpathContained } from './contain-realpath';
+import { resolveExistingWorkspaceContained } from './contain-realpath';
 import type { IFsReadResult } from './fs-tools-options';
 
-const notFound = (path: string): IFsReadResult => ({
+const notFound = (path: string, reason?: string): IFsReadResult => ({
 	path,
 	found: false,
 	content: null,
 	totalLines: null,
 	range: null,
+	...(reason !== undefined ? { reason } : {}),
 });
 
 /**
@@ -43,24 +43,21 @@ export const fsRead = async (
 	range?: readonly [number, number],
 	authorizedRoots: readonly string[] = [],
 ): Promise<IFsReadResult> => {
-	const contained = resolveAgainstRoots(
+	// a00068 / q00016 S4: the PHYSICAL containment check — lexical
+	// containment (`../`, absolute paths) plus a `realpath` comparison so a
+	// workspace symlink pointing outside (e.g. at /etc/passwd or an
+	// attacker-controlled `foo -> ~/.ssh`) is rejected before the file is
+	// ever opened. This is the read side's exploitable gap: a write creates
+	// its target, so it can't be tricked by a pre-existing symlink the same
+	// way; a read follows whatever is already on disk. Symmetric with
+	// fsWrite's use of the same primitive family.
+	const contained = await resolveExistingWorkspaceContained(
 		workspaceRootAbs,
-		authorizedRoots,
 		relativePath,
+		authorizedRoots,
 	);
 	if (!contained.ok) {
-		return notFound(relativePath);
-	}
-	// a00068: reject a read whose resolved path escapes via a symlink
-	// (e.g. a workspace symlink pointing at /etc/passwd) — the lexical
-	// check above never follows links. Symmetric with fsWrite.
-	if (
-		!(await realpathContained(contained.abs, [
-			workspaceRootAbs,
-			...authorizedRoots,
-		]))
-	) {
-		return notFound(relativePath);
+		return notFound(relativePath, contained.reason);
 	}
 	try {
 		const raw = await readFile(contained.abs, 'utf8');

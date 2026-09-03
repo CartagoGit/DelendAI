@@ -153,6 +153,24 @@ export const resolveWorkspaceContained = (
 };
 
 /**
+ * Explicit alias for {@link resolveWorkspaceContained} (q00016 S4).
+ *
+ * Two primitives exist because one function cannot serve both cases: this
+ * one is LEXICAL — string manipulation only, no filesystem access — which
+ * is exactly what a path that does not exist yet requires (a write creates
+ * it, so `realpath` cannot be called on it). For a path that DOES exist
+ * (a read), prefer {@link resolveExistingWorkspaceContained} in
+ * `contain-realpath.ts`, which additionally compares `realpath` of the
+ * workspace root against `realpath` of the target so a symlink committed
+ * inside the workspace that points outside it cannot be used to escape.
+ *
+ * Byte-identical behaviour to `resolveWorkspaceContained` — same function,
+ * new name, so existing callers that only need the lexical check (or that
+ * genuinely operate on not-yet-existing paths) keep working unchanged.
+ */
+export const resolveWorkspaceContainedLexical = resolveWorkspaceContained;
+
+/**
  * Resolve `child` against the workspace root first, then each of the
  * `authorizedRoots` in order, returning the first containment hit.
  *

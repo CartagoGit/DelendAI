@@ -473,8 +473,14 @@ export {
 export {
 	resolveAgainstRoots,
 	resolveWorkspaceContained,
+	resolveWorkspaceContainedLexical,
 } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
+export {
+	realResolvePath,
+	realpathContained,
+	resolveExistingWorkspaceContained,
+} from '../lib/shared/contain-realpath';
 export { SafeWorkspaceReader } from '../lib/filesystem/safe-workspace-reader';
 export { readAbsoluteTextSafe } from '../lib/filesystem/safe-workspace-reader.helpers';
 export { WorkspaceContainmentError } from '../lib/filesystem/safe-workspace-reader.errors';

@@ -20,6 +20,15 @@ export interface IFsReadResult {
 	readonly content: string | null;
 	readonly totalLines: number | null;
 	readonly range: readonly [number, number] | null;
+	/**
+	 * Why `found` is `false`, set only for a containment rejection (lexical
+	 * escape or a symlink resolving outside the workspace/authorized roots)
+	 * — q00016 S4. Names the offending path so the refusal is diagnosable
+	 * instead of looking identical to a plain "file does not exist". Left
+	 * `undefined` for an ordinary missing file / read error, matching the
+	 * existing `found:false` contract for those cases.
+	 */
+	readonly reason?: string;
 }
 
 export interface IFsWriteResult {

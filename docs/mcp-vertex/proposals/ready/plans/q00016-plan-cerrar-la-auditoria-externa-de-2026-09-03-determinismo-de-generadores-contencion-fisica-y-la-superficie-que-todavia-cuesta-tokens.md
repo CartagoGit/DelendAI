@@ -121,7 +121,7 @@ hacen falta.
 
 ### S4 — Contención física en el camino de lectura
 
-- **Status**: pending
+- **Status**: done — con una corrección al diagnóstico. La auditoría dio el escape por symlink como abierto, y yo lo repetí aquí. NO lo estaba: `fs-read.ts` compone la comprobación léxica con `realpathContained` desde el 2026-07-22 (a00068, `17ed8d82a`), y `SafeWorkspaceReader` implementa por su cuenta la misma separación léxico/físico con sus propios tests de symlinks reales. Lo que la auditoría leyó fue el comentario del primitivo léxico — que describe correctamente ESE primitivo — sin mirar a sus llamadores. Lo que faltaba de verdad, y es lo que se entrega: el primitivo físico con nombre y reutilizable que este plan pedía, y un motivo diagnosticable, porque hasta ahora "se escapó por un symlink" y "no existe" devolvían exactamente lo mismo
 - **Files**:
   - `packages/core/src/lib/shared/contain-path.ts` — separa `resolveWorkspaceContainedLexical` (rutas que aún no existen) de `resolveExistingWorkspaceContained` (compara `realpath` de raíz y destino).
   - `packages/core/src/lib/shared/fs-read.ts` — el camino de lectura usa la variante física. `fs-write` ya lo hace; leer es el lado que un repositorio hostil puede aprovechar.
