@@ -90,8 +90,16 @@ describe('catalog-task-context-cost measurement', () => {
 		// verdict/holder/nextAction and `close_slice`'s blockingReasons).
 		// ~940 bytes of schema to remove an unbounded retry loop is a
 		// trade worth recording rather than hiding.
+		// 2026-09-03 — 194,616 → 197,637 and 166 → 167 tools. Two
+		// movements in opposite directions, recorded separately because
+		// the net figure hides both: q00016 S7 cut `project_kpis`'s
+		// outputSchema from 8,518 B to 2,895 B (86% of that one tool's
+		// discovery cost was describing its own output), while a newly
+		// registered tool and the capability-graph work added more than
+		// the saving. The ratchet is doing its job precisely by making a
+		// 3 KB increase visible instead of letting the S7 win absorb it.
 		expect(output).toContain(
-			'| swarm native preset | 166 | 194,616 | 158,925 | 48,071 | 110,854 | 50,887 |',
+			'| swarm native preset | 167 | 197,637 | 161,730 | 48,892 | 112,838 | 52,319 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);

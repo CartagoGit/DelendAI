@@ -1,8 +1,7 @@
-import {
-	HOST_CAPABILITY_MANIFEST_CONTRACT,
-	type ICapabilityGraph,
-	type ICapabilitySignal,
-	type IProjectRoleFinding,
+import type {
+	ICapabilityGraph,
+	ICapabilitySignal,
+	IProjectRoleFinding,
 } from '@mcp-vertex/contracts';
 
 import type {
@@ -13,10 +12,6 @@ import type {
 } from '../bootstrap/analyze-project';
 import { matchLanguageSignals } from '../bootstrap/language-rules';
 import { buildProjectShape } from '../bootstrap/project-shape';
-
-// Importing this constant at compile time guards an accidental collision
-// between the project graph and the separate host-manifest contract.
-void HOST_CAPABILITY_MANIFEST_CONTRACT;
 
 const parsePackageJson = (
 	raw: string | undefined,
@@ -42,8 +37,14 @@ const confidenceFor = (evidence: string): ICapabilitySignal['confidence'] => {
  */
 export const buildCapabilityGraph = async (
 	reader: IFileReader,
+	parsedPackageJson?: IPackageJson | undefined,
 ): Promise<ICapabilityGraph> => {
-	const packageJson = parsePackageJson(await reader.readFile('package.json'));
+	// Callers that already parsed `package.json` pass it in: the graph is
+	// built inside `analyzeProject`, which read the file a statement
+	// earlier, and reading it again is invisible until something counts.
+	const packageJson =
+		parsedPackageJson ??
+		parsePackageJson(await reader.readFile('package.json'));
 	const languages = await matchLanguageSignals(reader, packageJson);
 	return {
 		contract: 'mcp-vertex.capability-graph',
@@ -58,7 +59,7 @@ export const buildCapabilityGraph = async (
 			})),
 		})),
 		primaryLanguage: languages[0]?.id,
-		shape: await buildProjectShape(reader),
+		shape: await buildProjectShape(reader, packageJson),
 		signals: [],
 	};
 };
