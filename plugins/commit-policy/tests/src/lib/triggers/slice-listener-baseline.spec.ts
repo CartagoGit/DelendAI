@@ -25,6 +25,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	BASELINE_EMIT_LIMIT,
+	MAX_DELIVERY_ATTEMPTS,
 	createSliceListener,
 	type ITriggerEvent,
 } from '../../../../src/lib/triggers/slice-listener';
@@ -132,5 +133,93 @@ describe('slice listener first-poll baseline', () => {
 		await listener.check();
 		listener.stop?.();
 		expect(seen).toHaveLength(0);
+	});
+});
+
+describe('slice listener delivery bounds', () => {
+	let workspace = '';
+
+	const seedOneDoneSlice = async (root: string): Promise<void> => {
+		const cacheDir = join(root, '.cache', 'mcp-vertex');
+		await mkdir(join(cacheDir, 'proposals'), { recursive: true });
+		await writeFile(
+			join(cacheDir, 'proposals', 'index.json'),
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'p00001',
+						slices: [{ id: 'S1', status: 'done', files: ['a.ts'] }],
+					},
+				],
+			}),
+			'utf8',
+		);
+	};
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'slice-attempts-'));
+		await seedOneDoneSlice(workspace);
+	});
+	afterEach(async () => {
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('stops re-emitting an event that keeps failing identically', async () => {
+		// "Leave it pending; the next poll re-emits" is guaranteed
+		// delivery, and an infinite loop the moment the refusal is
+		// permanent. An adopter project re-emitted eight slices about
+		// once a second, indefinitely, because their declared files did
+		// not exist and no retry could change that.
+		let calls = 0;
+		const listener = createSliceListener(
+			workspace,
+			join('.cache', 'mcp-vertex'),
+			SLICE_TRIGGER,
+			async () => {
+				calls += 1;
+				return { ack: 'ERR', reason: 'pre-commit hook failed' };
+			},
+			undefined,
+			join('.cache', 'mcp-vertex'),
+			async () => false,
+		);
+		for (let poll = 0; poll < 12; poll += 1) {
+			await listener.check();
+		}
+		listener.stop?.();
+
+		expect(calls).toBeLessThanOrEqual(MAX_DELIVERY_ATTEMPTS);
+		const refusals = listener.drainRefusals();
+		expect(refusals).toHaveLength(1);
+		expect(refusals[0]?.reason).toContain('gave up');
+		expect(refusals[0]?.reason).toContain('pre-commit hook failed');
+		expect(refusals[0]?.reason).toContain('will NOT be retried');
+	});
+
+	it('keeps retrying while the failure is still transient', async () => {
+		// The bound must not punish a slow remote or a held index lock:
+		// an event that succeeds on the third try still lands.
+		let calls = 0;
+		const listener = createSliceListener(
+			workspace,
+			join('.cache', 'mcp-vertex'),
+			SLICE_TRIGGER,
+			async () => {
+				calls += 1;
+				return calls < 3
+					? { ack: 'ERR', reason: 'index.lock held' }
+					: { ack: 'OK' };
+			},
+			undefined,
+			join('.cache', 'mcp-vertex'),
+			async () => false,
+		);
+		for (let poll = 0; poll < 6; poll += 1) {
+			await listener.check();
+		}
+		listener.stop?.();
+
+		expect(calls).toBe(3);
+		expect(listener.drainRefusals()).toEqual([]);
 	});
 });

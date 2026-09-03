@@ -16,10 +16,13 @@ import { join } from 'node:path';
 
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
-import { BASELINE_EMIT_LIMIT } from '../contracts/constants/slice-listener.constant';
+import {
+	BASELINE_EMIT_LIMIT,
+	MAX_DELIVERY_ATTEMPTS,
+} from '../contracts/constants/slice-listener.constant';
 import type { ITriggerEvent, ISliceTriggerConfig } from './trigger-types';
 
-export { BASELINE_EMIT_LIMIT };
+export { BASELINE_EMIT_LIMIT, MAX_DELIVERY_ATTEMPTS };
 
 export type { ITriggerEvent };
 
@@ -331,22 +334,70 @@ export const createSliceListener = (
 	let checkInFlight: Promise<readonly ITriggerEvent[]> | undefined;
 	const pending = new Map<string, ITriggerEvent>();
 	const acknowledged = new Map<string, string>();
+	/** Consecutive failed delivery attempts, keyed by event id. */
+	const attempts = new Map<string, number>();
 	const refusals: ISliceRefusal[] = [];
 	const reader = new SafeWorkspaceReader(workspaceRoot);
 
 	/** Apply a single event against the engine; mark seen only on OK. */
+	/**
+	 * Deliver one event, and give up on it if it will clearly never
+	 * land.
+	 *
+	 * "Leave it pending; the next poll re-emits" is guaranteed delivery
+	 * — the right default, and the reason x00260 introduced it. But
+	 * unbounded, it is also a guaranteed infinite loop the moment a
+	 * refusal is permanent rather than transient. An adopter project on
+	 * 2026-09-03 re-emitted eight slices roughly once a second,
+	 * indefinitely: their `Files:` lists named paths from an older repo
+	 * layout, and the pre-commit hook was failing outright. No number
+	 * of retries could have changed either.
+	 *
+	 * The engine already classifies the refusals it recognises as
+	 * terminal. This is the backstop for the ones it does not, and for
+	 * anything genuinely new: after `MAX_DELIVERY_ATTEMPTS` consecutive
+	 * failures on the SAME event, stop, and say so once with the last
+	 * reason attached.
+	 *
+	 * The counter is keyed on the event id, not the slot, so a slice
+	 * that changes — new files, a re-close — starts fresh. Retrying a
+	 * different event is progress; retrying an identical one that has
+	 * failed five times is not.
+	 */
 	const deliverOne = async (event: ITriggerEvent): Promise<void> => {
 		const slotKey = getSliceSlotKey(event);
 		const eventId = getSliceEventId(event);
+		const giveUp = (reason: string): void => {
+			pending.delete(slotKey);
+			attempts.delete(eventId);
+			refusals.push({
+				key: slotKey,
+				reason:
+					`gave up after ${String(MAX_DELIVERY_ATTEMPTS)} identical failed attempts. ` +
+					`Last reason: ${reason}. This event will NOT be retried — retrying it ` +
+					'produced the same answer every time. Fix the cause, then re-close the ' +
+					'slice to emit a fresh event.',
+			});
+		};
 		try {
 			const ack = await onHandler(event);
 			if (ack.ack === 'OK') {
 				acknowledged.set(slotKey, eventId);
 				pending.delete(slotKey);
+				attempts.delete(eventId);
+				return;
 			}
-			// Otherwise: leave it pending; next poll re-emits.
-		} catch {
-			// Engine threw: keep event pending; next poll re-emits.
+			const failed = (attempts.get(eventId) ?? 0) + 1;
+			attempts.set(eventId, failed);
+			if (failed >= MAX_DELIVERY_ATTEMPTS) {
+				giveUp(ack.reason ?? 'no reason reported');
+			}
+		} catch (error) {
+			const failed = (attempts.get(eventId) ?? 0) + 1;
+			attempts.set(eventId, failed);
+			if (failed >= MAX_DELIVERY_ATTEMPTS) {
+				giveUp(error instanceof Error ? error.message : 'engine threw');
+			}
 		}
 	};
 

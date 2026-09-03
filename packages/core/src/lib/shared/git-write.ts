@@ -52,6 +52,24 @@ import type {
  * throws: failures come back as `{ ok: false, reason }`.
  */
 /**
+ * Does this line look like it names a failure?
+ *
+ * Ordering beats filtering here. The first attempt at this dropped
+ * lines that looked decorative, which worked until a hook runner whose
+ * output is ALL decoration reduced the reason to its own footer —
+ * "git commit failed: summary: (done in 0.02 seconds)" — losing the
+ * diagnosis just as thoroughly as reading only stderr had.
+ *
+ * So nothing is discarded. Lines that carry a failure signal are moved
+ * to the front, so the cap trims context rather than the answer, and
+ * this stays correct for a runner whose format we have never seen.
+ */
+const looksLikeFailureLine = (line: string): boolean =>
+	/error|failed|failure|fatal|refus|denied|abort|not allowed|✖|✗|×/iu.test(
+		line,
+	);
+
+/**
  * Cap on a captured git failure reason. Long enough for git's full
  * diagnosis, short enough that one failure cannot flood a log line.
  */
@@ -118,15 +136,20 @@ export const createGitRunner =
 						const raw = stripAnsi(
 							stderr || stdout || err.message || '',
 						).trim();
-						const flattened = raw
+						const lines = raw
 							.split('\n')
 							.map((line) => line.trim())
 							.filter(
 								(line) =>
 									line.length > 0 &&
 									!line.startsWith('Command failed:'),
-							)
-							.join(' | ');
+							);
+						const flattened = [
+							...lines.filter(looksLikeFailureLine),
+							...lines.filter(
+								(line) => !looksLikeFailureLine(line),
+							),
+						].join(' | ');
 						reason =
 							flattened.length > 0
 								? flattened.slice(0, GIT_FAILURE_REASON_MAX)

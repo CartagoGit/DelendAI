@@ -14,3 +14,15 @@
  * silent drop.
  */
 export const BASELINE_EMIT_LIMIT = 10;
+
+/**
+ * How many consecutive identical failures the listener tolerates
+ * before it stops re-emitting an event.
+ *
+ * Guaranteed delivery (x00260) is right for a transient failure — a
+ * held index lock, a busy remote. It is an infinite loop for a
+ * permanent one. Five attempts is enough for anything genuinely
+ * transient and short enough that a permanent failure is reported in
+ * seconds rather than filling a console for hours.
+ */
+export const MAX_DELIVERY_ATTEMPTS = 5;
