@@ -92,6 +92,38 @@ describe('createGitRunner failure reasons', () => {
 		expect(result.reason).toMatch(/nothing to commit|no changes added/iu);
 	});
 
+	it('sorts mcp-vertex’s own banner below git’s explanation', async () => {
+		// A hook in this repo boots mcp-vertex, so a push captures our
+		// own startup notice and generator progress. On 2026-09-03 a
+		// real push failure came back as "failed to push some refs"
+		// followed by three lines of privacy notice, and the 600-char
+		// cap cut git's actual explanation of WHY it was rejected.
+		const hook = join(repo, '.git', 'hooks', 'pre-commit');
+		await writeFile(
+			hook,
+			[
+				'#!/bin/sh',
+				'i=0; while [ $i -lt 30 ]; do',
+				'  echo "[mcp-vertex] error-reporting is ON: bugs are reported automatically." >&2',
+				'  echo "gen:agent-md → plugins/error-reporting/AGENT.md" >&2',
+				'  i=$((i+1));',
+				'done',
+				'exit 0',
+			].join('\n'),
+		);
+		await chmod(hook, 0o755);
+
+		const run = createGitRunner(repo);
+		const result = await run(['commit', '-m', 'chore: nothing staged']);
+		expect(result.ok).toBe(false);
+		expect(result.reason).toMatch(/nothing to commit|no changes added/iu);
+		// Our own banner may appear, but never ahead of the diagnosis.
+		const reason = result.reason ?? '';
+		const bannerAt = reason.indexOf('[mcp-vertex]');
+		const causeAt = reason.search(/nothing to commit|no changes added/iu);
+		expect(bannerAt === -1 || causeAt < bannerAt).toBe(true);
+	});
+
 	it('still reports stderr when git uses it', async () => {
 		const run = createGitRunner(repo);
 		const result = await run(['rev-parse', 'no-such-ref']);
