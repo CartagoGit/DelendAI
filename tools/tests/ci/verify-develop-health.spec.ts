@@ -544,6 +544,7 @@ describe('what develop-health asserts, and what it refuses to', () => {
 	it('reports nothing when develop declares no required checks', () => {
 		expect(
 			collectDevelopStatusDiscrepancies({
+				ref: 'develop' as const,
 				verified: true,
 				headSha: 'abc',
 				ciStatus: 'red',
@@ -558,6 +559,7 @@ describe('what develop-health asserts, and what it refuses to', () => {
 		// violation out of an absence is how a check starts lying.
 		expect(
 			collectDevelopStatusDiscrepancies({
+				ref: 'develop' as const,
 				verified: false,
 				headSha: null,
 				ciStatus: 'unknown',
@@ -569,6 +571,7 @@ describe('what develop-health asserts, and what it refuses to', () => {
 
 	it('still reports a required check that is missing, where one is declared', () => {
 		const found = collectDevelopStatusDiscrepancies({
+			ref: 'develop' as const,
 			verified: true,
 			headSha: 'abc',
 			ciStatus: 'red',

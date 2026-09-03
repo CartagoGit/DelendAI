@@ -17,18 +17,34 @@
  * what `gen-all --check` does: `git diff` cannot tell a non-deterministic
  * generator apart from an artifact somebody simply has not committed
  * yet. In a swarm the working tree is essentially never clean, so that
- * check answers a different question than the one being asked here. Two
- * runs against the same tree isolate the generator itself, and this gate
- * is therefore usable while other agents are mid-edit — the exact
- * condition under which the bug was introduced.
+ * check answers a different question than the one being asked here.
  *
- * Exit codes: 0 — every artifact is stable. 1 — at least one differs
- * between runs. 2 — a generator failed to run at all.
+ * Two runs isolate the generator only if the INPUTS held still, and in
+ * this repository they frequently do not: agents edit continuously and a
+ * commit-policy sweeper commits the whole dirty tree on a timer. The
+ * first version of this gate assumed the tree was frozen and printed
+ * "nothing changed in the repository between those runs" as an
+ * established fact. On 2026-09-03 that sentence was false the first time
+ * it fired — a concurrent agent had edited a plugin's output schema, so
+ * the measured byte counts in TOKEN-BUDGETS.md legitimately moved, and
+ * the gate accused the generator of a bug that belonged to nobody. A
+ * check that names the wrong culprit is worse than no check, because it
+ * sends whoever reads it to the wrong file.
+ *
+ * So the inputs are fingerprinted before the first run and after the
+ * second. If they moved, the comparison proves nothing and says exactly
+ * that. Three outcomes, never collapsed into two: stable, inconclusive,
+ * violation.
+ *
+ * Exit codes: 0 — every artifact is stable, OR the run was inconclusive
+ * because the inputs moved (reported as a warning). 1 — an artifact
+ * differs across two runs over an unchanged tree. 2 — a generator failed
+ * to run at all.
  */
 
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { promisify } from 'node:util';
 
 import { STEPS } from '../gen-all.script';
@@ -61,6 +77,44 @@ const digestOf = async (abs: string): Promise<string> => {
 		// rather than being skipped.
 		return 'absent';
 	}
+};
+
+/**
+ * Fingerprint the generator INPUTS: every tracked file that is not
+ * itself a generated artifact, by path, size and mtime.
+ *
+ * Content hashing the whole tree would be more precise and far slower,
+ * and precision is not what this needs — it only has to answer "did
+ * anything move underneath me", and a size-or-mtime change is enough to
+ * make the answer honest. False "inconclusive" is a cheap failure mode;
+ * false "the generator is broken" is the expensive one.
+ */
+export const fingerprintInputs = async (
+	root: string,
+	artifacts: ReadonlySet<string>,
+): Promise<string> => {
+	const { stdout } = await exec('git', ['ls-files', '-z'], {
+		cwd: root,
+		maxBuffer: 64 * 1024 * 1024,
+	}).catch(() => ({ stdout: '' }));
+	const paths = stdout
+		.split('\0')
+		.filter((line) => line.length > 0 && !artifacts.has(line))
+		.sort();
+	const hash = createHash('sha256');
+	for (const path of paths) {
+		try {
+			const info = await stat(`${root}/${path}`);
+			hash.update(
+				`${path}\u0000${String(info.size)}\u0000${String(info.mtimeMs)}\n`,
+			);
+		} catch {
+			// A file listed by git that is gone from the worktree is
+			// itself movement, and recording it as such is the point.
+			hash.update(`${path}\u0000absent\n`);
+		}
+	}
+	return hash.digest('hex');
 };
 
 const listArtifacts = async (root: string): Promise<readonly string[]> => {
@@ -110,6 +164,8 @@ const runGenerators = async (root: string): Promise<void> => {
 
 export const main = async (): Promise<number> => {
 	const root = repoRoot();
+	const artifactSet = new Set(await listArtifacts(root));
+	const inputsBefore = await fingerprintInputs(root, artifactSet);
 	try {
 		await runGenerators(root);
 	} catch (error) {
@@ -132,6 +188,20 @@ export const main = async (): Promise<number> => {
 	const second = await snapshotArtifacts(root, paths);
 
 	const unstable = diffSnapshots(first, second);
+	const inputsAfter = await fingerprintInputs(root, artifactSet);
+	if (unstable.length > 0 && inputsBefore !== inputsAfter) {
+		// Something edited the tree while the two runs were in flight,
+		// so a difference in the artifacts is fully explained without
+		// blaming the generator. Saying "unstable" here would be a
+		// guess presented as a finding.
+		console.warn(
+			`⚠ generated-determinism: inconclusive — the working tree changed while the generators ran, so ${String(unstable.length)} differing artifact(s) prove nothing about determinism. Re-run on a quiet tree.`,
+		);
+		for (const artifact of unstable) {
+			console.warn(`  (differed, unattributed) ${artifact.path}`);
+		}
+		return 0;
+	}
 	if (unstable.length === 0) {
 		console.log(
 			`✓ generated-determinism: ${String(paths.length)} artifact(s) identical across two runs.`,
@@ -149,7 +219,7 @@ export const main = async (): Promise<number> => {
 	}
 	console.error('');
 	console.error(
-		'  Nothing changed in the repository between those runs, so the difference',
+		'  The tree was verified unchanged across both runs, so the difference',
 	);
 	console.error(
 		'  comes from the generator: unordered directory iteration, a wall clock, or',
