@@ -26,6 +26,7 @@
  * mode that motivated the new check.
  */
 
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -258,6 +259,77 @@ describe('findStrayRootFiles (f00082)', () => {
 		const summary = await findStrayRootFiles(join(root, 'does-not-exist'));
 		expect(summary.ok).toBe(true);
 		expect(summary.strays).toEqual([]);
+	});
+});
+
+describe('findStrayRootFiles — untracked scratch directories', () => {
+	// `.scratch-repro/noderes.mjs` sat in the repo root and no gate saw
+	// it: the file checks are not recursive, so a scratch DIRECTORY
+	// slipped past all of them. commit-policy sweeps the whole dirty
+	// worktree on a timer, so it was one sweep away from being
+	// committed and pushed inside somebody else's commit.
+	let root = '';
+	const git = (...args: string[]): void => {
+		execFileSync('git', args, { cwd: root, stdio: 'ignore' });
+	};
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'stray-root-dirs-'));
+		git('init', '-q', '-b', 'main');
+		git('config', 'user.email', 'test@example.com');
+		git('config', 'user.name', 'Test');
+		writeFile(join(root, 'README.md'), '# x\n');
+		git('add', 'README.md');
+		git('commit', '-q', '-m', 'chore: seed');
+	});
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+	});
+
+	it('flags an untracked scratch directory at the root', () => {
+		mkdirSync(join(root, '.scratch-repro'), { recursive: true });
+		writeFile(join(root, '.scratch-repro', 'noderes.mjs'), 'x');
+		return findStrayRootFiles(root).then((summary) => {
+			expect(summary.ok).toBe(false);
+			expect(
+				summary.strays.map((stray) => ({
+					relPath: stray.relPath,
+					reason: stray.reason,
+				})),
+			).toContainEqual({
+				relPath: '.scratch-repro/',
+				reason: 'root-untracked-directory',
+			});
+		});
+	});
+
+	it('does not flag a directory git is told to ignore', async () => {
+		// An ignored directory was a deliberate decision, and a sweep
+		// will never pick it up. Flagging it would make the gate noise.
+		writeFile(join(root, '.gitignore'), 'build-output/\n');
+		git('add', '.gitignore');
+		git('commit', '-q', '-m', 'chore: ignore build output');
+		mkdirSync(join(root, 'build-output'), { recursive: true });
+		writeFile(join(root, 'build-output', 'x.mjs'), 'x');
+		const summary = await findStrayRootFiles(root);
+		expect(
+			summary.strays.filter(
+				(stray) => stray.reason === 'root-untracked-directory',
+			),
+		).toEqual([]);
+	});
+
+	it('does not flag a tracked directory', async () => {
+		mkdirSync(join(root, 'packages'), { recursive: true });
+		writeFile(join(root, 'packages', 'a.ts'), 'export const a = 1;\n');
+		git('add', 'packages/a.ts');
+		git('commit', '-q', '-m', 'feat: a');
+		const summary = await findStrayRootFiles(root);
+		expect(
+			summary.strays.filter(
+				(stray) => stray.reason === 'root-untracked-directory',
+			),
+		).toEqual([]);
 	});
 });
 

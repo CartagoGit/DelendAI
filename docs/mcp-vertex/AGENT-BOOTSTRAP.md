@@ -271,6 +271,15 @@ interactions.
   argument. A restarted host must be started explicitly so each session has
   one composition root and one resource registration set. The
   `lint:self-host-dogfood` gate must remain green.
+- **Scratch files never touch the repository.** Repro scripts, captured
+  output, throwaway fixtures and experiment directories go in your host's
+  own scratchpad, outside the working tree — not the repo root, and not
+  `.cache/mcp-vertex/`, which is reserved for engine and plugin state.
+  "I will delete it afterwards" is not sufficient: commit-policy sweeps
+  the whole dirty worktree on a timer, so anything you leave in the tree
+  can be committed and pushed inside another agent's commit before you
+  get back to it. `lint:stray-cache-files` fails on an untracked
+  directory at the root for exactly this reason.
 - Core stays agnostic. No project vocabulary (role enums, model names,
   folder names) inside `packages/core`. Plugins receive everything
   resolved through `IMcpPluginContext`.
@@ -541,11 +550,11 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-09-03T12:43:20.165Z
+Generated at: 2026-09-03T13:02:38.638Z
 
 Plugins: 56
 Tools: 242
-Test specs: 541 (≈4444 cases)
+Test specs: 541 (≈4447 cases)
 Workspaces: 6 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
 Proposals: 557 on disk (ready=20, in-progress=2, done=535)
 ```

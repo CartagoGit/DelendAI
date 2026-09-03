@@ -351,7 +351,10 @@ export const findStrayCacheFiles = async (
 export interface IStrayRootFile {
 	readonly absPath: string;
 	readonly relPath: string;
-	readonly reason: 'root-executable-extension' | 'root-without-extension';
+	readonly reason:
+		| 'root-executable-extension'
+		| 'root-without-extension'
+		| 'root-untracked-directory';
 	readonly extension: string;
 }
 
@@ -405,10 +408,70 @@ const SANCTIONED_ROOT_FILES: ReadonlySet<string> = new Set([
  *
  * Pure over the filesystem; pass an injected root for tests.
  */
+/**
+ * Top-level directories git can see but that nothing tracks or ignores.
+ *
+ * The file-level checks below are not recursive, so a scratch DIRECTORY
+ * slips straight past them: `.scratch-repro/noderes.mjs` is one level
+ * down and was invisible to every gate. That matters more here than in
+ * most repos, because commit-policy sweeps the whole dirty worktree on
+ * a timer — an agent's throwaway repro directory is one sweep away from
+ * being committed and pushed by somebody else's commit.
+ *
+ * Asking git is what makes this self-maintaining: anything tracked is by
+ * definition legitimate, anything ignored was a deliberate decision, and
+ * what is left is precisely the set that a sweep would pick up. No
+ * hardcoded allowlist to drift out of date.
+ *
+ * Temporary files belong in the agent harness's own scratchpad, outside
+ * the repository entirely — not in the root, and not in
+ * `.cache/mcp-vertex/`, which is reserved for engine and plugin state.
+ */
+const findUntrackedRootDirectories = async (
+	repoRootAbs: string,
+): Promise<readonly string[]> => {
+	const { execFile } = await import('node:child_process');
+	const { promisify } = await import('node:util');
+	const run = promisify(execFile);
+	let stdout = '';
+	try {
+		({ stdout } = await run(
+			'git',
+			['status', '--porcelain', '--untracked-files=normal'],
+			{ cwd: repoRootAbs, maxBuffer: 16 * 1024 * 1024 },
+		));
+	} catch {
+		// Not a git repo, or git unavailable: this check contributes
+		// nothing rather than failing the gate for an unrelated reason.
+		return [];
+	}
+	return (
+		stdout
+			.split('\n')
+			.filter((line) => line.startsWith('?? '))
+			.map((line) => line.slice(3).trim())
+			// `git status` reports an untracked DIRECTORY with a trailing
+			// slash and does not descend into it.
+			.filter(
+				(path) =>
+					path.endsWith('/') && !path.slice(0, -1).includes('/'),
+			)
+			.map((path) => path.slice(0, -1))
+	);
+};
+
 export const findStrayRootFiles = async (
 	repoRootAbs: string,
 ): Promise<IStrayRootFilesSummary> => {
 	const strays: IStrayRootFile[] = [];
+	for (const name of await findUntrackedRootDirectories(repoRootAbs)) {
+		strays.push({
+			absPath: join(repoRootAbs, name),
+			relPath: `${name}/`,
+			reason: 'root-untracked-directory',
+			extension: '',
+		});
+	}
 	const entries = await readdir(repoRootAbs, { withFileTypes: true }).catch(
 		() => [],
 	);
@@ -490,9 +553,42 @@ if (isMainModule()) {
 					`  ${s.reason}: ${s.relPath} (ext=${s.extension || '∅'})`,
 				);
 			}
-			console.error(
-				'  fix: move the file to tools/scripts/ (if it is a real script) or delete it (if it was a mis-redirection).',
-			);
+			if (
+				rootSummary.strays.some(
+					(stray) => stray.reason === 'root-untracked-directory',
+				)
+			) {
+				console.error(
+					'  fix (directory): scratch and repro directories go in the agent',
+				);
+				console.error(
+					'    harness scratchpad, OUTSIDE the repository — not the repo root and',
+				);
+				console.error(
+					'    not .cache/mcp-vertex/, which is reserved for engine and plugin',
+				);
+				console.error(
+					'    state. commit-policy sweeps the whole dirty worktree on a timer, so',
+				);
+				console.error(
+					'    anything left here can be committed and pushed by another agent',
+				);
+				console.error(
+					'    before you delete it. If the directory IS part of the project, track',
+				);
+				console.error(
+					'    it; if it is generated, add it to .gitignore.',
+				);
+			}
+			if (
+				rootSummary.strays.some(
+					(stray) => stray.reason !== 'root-untracked-directory',
+				)
+			) {
+				console.error(
+					'  fix (file): move it to tools/scripts/ (if it is a real script) or delete it (if it was a mis-redirection).',
+				);
+			}
 		} else {
 			console.log(
 				'✓ check-stray-root-files: repo root has no stray executable files.',
