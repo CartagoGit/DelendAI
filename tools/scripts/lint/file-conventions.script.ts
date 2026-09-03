@@ -122,6 +122,13 @@ export const walkAndClassify = async (
 			}
 			if (!entry.isFile()) continue;
 			if (!/\.tsx?$/.test(entry.name)) continue;
+			// `.d.ts` is emitted build output, not authored source:
+			// `.gitignore` excludes `packages/*/src/**/*.d.ts`. Judging it
+			// reported 113 "unmatched" files that are not in the
+			// repository and that no naming convention could ever apply
+			// to, since their names are chosen by `tsc` from the `.ts`
+			// this walk already classified.
+			if (entry.name.endsWith('.d.ts')) continue;
 			const role = classifyPath(childRel, DEFAULT_TS_RULES);
 			if (role === 'other') {
 				findings.push({ relPath: childRel, role, reason: 'unmatched' });
