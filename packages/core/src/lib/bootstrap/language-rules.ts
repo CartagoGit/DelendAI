@@ -51,8 +51,25 @@ export interface ILanguageMatch {
 	readonly evidence: readonly string[];
 }
 
+/**
+ * `priority` is the STRENGTH of the evidence, not its position in a
+ * cascade.
+ *
+ * These numbers were written for a first-match matcher, where they only
+ * had to order the checks: TypeScript before JavaScript before Python,
+ * so 100 / 60 / 50 / 40 / 30. Under cumulative scoring the same numbers
+ * became claims about how much each signal is worth, and one of them was
+ * badly wrong: a bare `package.json` scored 60 and outranked a
+ * `pyproject.toml` at 50. That is the exact misclassification q00017
+ * names — a FastAPI backend with a small npm frontend reported as
+ * `javascript`, "porque 60 > 50".
+ *
+ * So a dedicated manifest, which exists to declare one language and
+ * nothing else, scores high; a generic `package.json`, which every Node
+ * repository has whatever it is written in, scores low. Ordering in this
+ * array no longer carries meaning.
+ */
 export const DEFAULT_LANGUAGE_RULES: readonly ILanguageRule[] = [
-	// TypeScript first — `tsconfig.json` is the strongest signal.
 	{
 		id: 'typescript',
 		priority: 100,
@@ -61,18 +78,9 @@ export const DEFAULT_LANGUAGE_RULES: readonly ILanguageRule[] = [
 			paths: ['tsconfig.json', 'tsconfig.base.json'],
 		},
 	},
-	// The `javascript` rule fires when the project ships a
-	// `package.json` AND none of the previous rules (tsconfig,
-	// pyproject, etc.) matched. We model that as `has-package-json`
-	// with priority 60 (lower than Rust/Go/Python manifests).
-	{
-		id: 'javascript',
-		priority: 60,
-		evidence: { kind: 'has-package-json' },
-	},
 	{
 		id: 'python',
-		priority: 50,
+		priority: 90,
 		evidence: {
 			kind: 'any-exists',
 			paths: ['pyproject.toml', 'requirements.txt', 'setup.py'],
@@ -80,13 +88,21 @@ export const DEFAULT_LANGUAGE_RULES: readonly ILanguageRule[] = [
 	},
 	{
 		id: 'go',
-		priority: 40,
+		priority: 90,
 		evidence: { kind: 'exists', path: 'go.mod' },
 	},
 	{
 		id: 'rust',
-		priority: 30,
+		priority: 90,
 		evidence: { kind: 'exists', path: 'Cargo.toml' },
+	},
+	// The weakest language evidence there is: every Node repository ships
+	// one, including TypeScript repositories and repositories that carry
+	// a package.json only for a build script.
+	{
+		id: 'javascript',
+		priority: 20,
+		evidence: { kind: 'has-package-json' },
 	},
 ];
 
@@ -110,13 +126,21 @@ const matchedEvidence = async (
 	return pkg === undefined ? [] : ['package.json'];
 };
 
-const isFallbackJavaScript = (id: IProjectLanguage): boolean =>
-	id === 'javascript';
-
 /**
  * Match every language rule and rank the resulting languages by accumulated
- * rule score.  JavaScript is a package.json fallback: when a stronger
- * language manifest is present it is not allowed to mask that language.
+ * rule score.
+ *
+ * The one suppression left is TypeScript over JavaScript, and only that
+ * pair. They are the same ecosystem reading the same evidence: a
+ * TypeScript project has a `package.json` too, so reporting `javascript`
+ * beside it adds a second name for one fact.
+ *
+ * Rust, Go and Python deliberately do NOT suppress it. An earlier version
+ * dropped `javascript` whenever ANY other language was found, which is
+ * the scalar thinking this whole plan exists to remove: a React frontend
+ * beside a FastAPI backend really is both, and answering "python" alone
+ * is the mirror image of the bug where a small npm frontend hid the
+ * Python backend.
  */
 export const matchLanguageSignals = async (
 	reader: IFileReader,
@@ -136,10 +160,7 @@ export const matchLanguageSignals = async (
 		grouped.set(rule.id, current);
 	}
 
-	const hasNonFallbackLanguage = [...grouped.keys()].some(
-		(id) => !isFallbackJavaScript(id),
-	);
-	if (hasNonFallbackLanguage) grouped.delete('javascript');
+	if (grouped.has('typescript')) grouped.delete('javascript');
 
 	return [...grouped.entries()]
 		.map(([id, match]) => ({
