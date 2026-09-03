@@ -94,11 +94,10 @@ the equivalent and equally cheap.
 ## 4. Workflow loop
 
 - **Delegate non-trivial work.** For any real change to `packages/core`,
-  a plugin, the build/release scripts, `apps/web`, or the VS Code
-  extension, use the `mcp-vertex-orchestrator` subagent (or the agent
-  the host registers as orchestrator). The orchestrator owns the
-  proposal state machine, locks, drift guards, and recovery from
-  `stop: true`.
+  a plugin, the build/release scripts, `apps/web` or the VS Code
+  extension, use the `mcp-vertex-orchestrator` subagent (or whichever
+  agent the host registers as orchestrator). It owns the proposal state
+  machine, locks, drift guards and `stop: true` recovery.
 - **Don't poll.** When you need a lock another agent holds, wait for
   the `lock-released` notification (notification plugin). When
   `auto_work` returns `stop: true`, recover by calling
@@ -110,14 +109,12 @@ the equivalent and equally cheap.
   this. Re-reading unchanged content is the #1 token waste.
 
 - **Archived proposals are frozen.** `legacy/closed/<kind>/` is the
-  reaper's destination (f00076). Reaped proposals stay indexed (with
-  `archived: true` in the registry), keep their `status: done`, and
-  **must not** be transitioned, edited, or have their slice statuses
-  changed. The `lint:closed-frozen-guard` script enforces this in
-  `bun run validate`. Reaper entry point:
-  `bun run archive:proposals:reap` (dry-run by default; pass `--apply`
-  via the underlying `tools/scripts/lint/reap-legacy-proposals.script.ts`
-  to actually move files).
+  reaper's destination (f00076). Reaped proposals stay indexed
+  (`archived: true`), keep `status: done`, and must not be transitioned,
+  edited, or have slice statuses changed — `lint:closed-frozen-guard`
+  enforces it in `bun run validate`. Reaper:
+  `bun run archive:proposals:reap` (dry-run; `--apply` on
+  `tools/scripts/lint/reap-legacy-proposals.script.ts` moves files).
 
 ### 4.c Session hygiene — keep host usage intentional
 
