@@ -118,6 +118,19 @@ pre-commit:
         # Bypass: LEFTHOOK=0 git commit ... (this job is a raw shell
         # command, so the per-script LEFTHOOK_BYPASS escape hatch used by the
         # lint:* gates below does not apply to it).
+        # The gate that would have caught the `sk_live_…` fixture before
+        # it reached a commit — and, once there, a history rewrite. Runs
+        # in `--fix` mode ON PURPOSE: refusing the commit leaves the
+        # credential in the working tree, one `--no-verify` from the
+        # remote. Replacing it removes the value at the only moment we
+        # are certain to be looking at it, and `stage_fixed: true` puts
+        # the neutralised line in the commit the author is making.
+        # Exits non-zero when it replaced something, so nobody discovers
+        # the substitution later by accident.
+        no-secrets:
+            run: bun tools/scripts/lint/no-secrets.script.ts --fix
+            stage_fixed: true
+
         catalog-drift-check:
             glob:
                 - 'packages/core/skills/**'
@@ -209,6 +222,14 @@ pre-push:
         # artifact is a correctness bug, and this mirrors the GitHub
         # Actions `drift` workflow.
         # Bypass: LEFTHOOK_BYPASS=1 git push ...
+        # Second line of defence: the pre-commit hook can be skipped, a
+        # commit can arrive by cherry-pick or rebase, and only the push
+        # is irreversible. BLOCKING and NOT in --fix mode here — by this
+        # point the value is already in a commit object, so editing the
+        # worktree would not remove it; the author has to rewrite it out.
+        no-secrets-push:
+            run: bun tools/scripts/lint/no-secrets.script.ts --push-range
+
         drift-check:
             run: bun tools/scripts/gen-all.script.ts --check
 
