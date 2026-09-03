@@ -321,6 +321,13 @@ export const createSliceListener = (
 	onHandler: ITriggerHandler,
 	pollMs: number = DEFAULT_POLL_MS,
 	proposalsDir: string = indexDir,
+	/**
+	 * x00423: lets the FIRST poll distinguish the repo's already-
+	 * committed history from work that finished while nobody was
+	 * listening. See `buildBaselineEvents`. Omitted means the old
+	 * unconditional silent baseline.
+	 */
+	isAlreadyPersisted?: (event: ITriggerEvent) => Promise<boolean>,
 ): ISliceListener => {
 	const indexRel = join(indexDir, 'proposals', 'index.json');
 	let prev = new Map<string, SliceSnapshotEntry>();
@@ -396,19 +403,44 @@ export const createSliceListener = (
 		).slices;
 		pruneAcknowledged(curr, config.onStatuses);
 		refreshPending(curr, config.onStatuses);
+		// f00417: the first successful poll is a BASELINE, not a
+		// snapshot-vs-empty diff. Replaying every `done` slice as a
+		// fresh transition is what drove the 2026-09-02 storm (83
+		// events on startup).
+		//
+		// x00423: but "baseline" must not mean "emit nothing, ever".
+		// A slice that reached `done` while this listener was not
+		// running is NOT history — nothing has persisted it, and
+		// silence loses the commit. `buildBaselineEvents` asks the
+		// processed-events store which is which.
 		const { events: newEvents, refusals: newRefusals } = initialized
 			? diffSlices(prev, curr, config.onStatuses)
-			: indexWasUnavailable
-				? // f00417: when the first poll failed, the next successful
-					// poll is the BASELINE — not a snapshot-vs-empty diff.
-					// Replaying every `done` slice as a fresh transition
-					// would have driven the 2026-09-02 storm (83 events
-					// emitted on startup). The new state is acknowledged
-					// silently; future polls diff against it.
-					{ events: [], refusals: [] }
-				: // First poll ever, first read succeeded. Same
-					// reasoning: no transitions to emit yet.
-					{ events: [], refusals: [] };
+			: isAlreadyPersisted === undefined
+				? { events: [], refusals: [] }
+				: await (async () => {
+						const baseline = await buildBaselineEvents(
+							curr,
+							config.onStatuses,
+							isAlreadyPersisted,
+						);
+						if (baseline.events.length > 0) {
+							console.warn(
+								JSON.stringify({
+									event: 'commit-policy.baseline.unpersisted',
+									emitted: baseline.events.length,
+									skipped: baseline.skipped,
+									note:
+										baseline.skipped > 0
+											? `Capped at ${String(BASELINE_EMIT_LIMIT)} on the first poll. The remaining slices have no recorded outcome either — re-check after this batch settles.`
+											: 'These slices finished while no listener was running; committing them now.',
+								}),
+							);
+						}
+						return {
+							events: baseline.events,
+							refusals: baseline.refusals,
+						};
+					})();
 		prev = curr;
 		initialized = true;
 		indexWasUnavailable = false;
