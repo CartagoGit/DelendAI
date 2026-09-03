@@ -726,14 +726,17 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		for (const registrationId of plugin.toolRegistrationIds) {
 			const record = this.recordsByRegistrationId.get(registrationId);
 			if (record === undefined) continue;
-			// `plugin_activate` / `plugin_deactivate` drive authorization.
-			// Explicit activation normally restores full visibility, but an
-			// opt-in progressive-disclosure policy remains authoritative:
-			// contextual/administrative tools stay routable without returning
-			// to `tools/list` as an accidental side effect of activation.
+			// `plugin_activate` / `plugin_deactivate` drive AUTHORIZATION,
+			// and an explicit activation stays a stronger signal than the
+			// ambient mode: it restores full `visible` access even in a mode
+			// that would otherwise list nothing. The one exception is a host
+			// that opted into progressive disclosure, where a
+			// contextual/administrative tool stays routable rather than
+			// returning to `tools/list` as a side effect of activation.
 			record.access = active
-				? record.disclosure === 'contextual' ||
-					record.disclosure === 'administrative'
+				? this.plan.progressiveDisclosure === true &&
+					(record.disclosure === 'contextual' ||
+						record.disclosure === 'administrative')
 					? 'hidden'
 					: 'visible'
 				: 'deactivated';
@@ -960,10 +963,16 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	): boolean {
 		const registrationId = record.registrationId;
 		if (mode === 'native') {
+			// A native host that has not opted into progressive disclosure
+			// keeps the mode's documented promise: every ordinary tool
+			// listed, the router hidden, and every tool callable by name.
+			if (this.plan.progressiveDisclosure !== true) {
+				return this.plan.routerToolId !== registrationId;
+			}
 			// Native normally does not need the compact router because it
-			// lists every ordinary tool. Once a plugin opts into progressive
-			// disclosure, however, the router is the stable invocation path
-			// for intentionally hidden tools and must remain visible.
+			// lists every ordinary tool. Once the host opts into progressive
+			// disclosure, the router is the stable invocation path for
+			// intentionally hidden tools and must remain visible.
 			if (this.plan.routerToolId === registrationId) {
 				return this.hasProgressivelyHiddenTools();
 			}

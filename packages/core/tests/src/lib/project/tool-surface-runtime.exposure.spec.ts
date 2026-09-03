@@ -42,10 +42,16 @@ const buildRuntime = () =>
 	});
 
 /** q00016 S8: a runtime with one `essential` (undeclared, defaults
- * visible) and one `administrative` (declared, must be hidden) tool. */
+ * visible) and one `administrative` (declared, must be hidden) tool.
+ *
+ * `progressiveDisclosure` is opt-in and this harness opts in, because
+ * `native` without it must keep listing everything — that is the mode's
+ * documented promise (AUD-C01) and the reason the flag exists. See
+ * `IToolSurfacePlan.progressiveDisclosure`. */
 const buildDisclosureRuntime = () =>
 	createToolSurfaceRuntime({
 		mode: 'native',
+		progressiveDisclosure: true,
 		bootstrapToolIds: ['overview'],
 		routerToolId: 'vertex',
 		descriptors: [

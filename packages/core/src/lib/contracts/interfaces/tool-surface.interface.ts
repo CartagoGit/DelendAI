@@ -65,6 +65,26 @@ export interface IToolSurfacePlan {
 	readonly mode: IMcpToolSurfaceMode;
 	readonly explicitMode?: IMcpToolSurfaceMode | undefined;
 	readonly bootstrapToolIds: readonly string[];
+	/**
+	 * Whether `native` mode honours per-registration `disclosure` levels.
+	 *
+	 * Off by default, and that default is the whole point. `native` is not
+	 * the ambient mode — the default is `managed`, which already lists
+	 * nothing but the bootstrap tools and the router. `native` is an
+	 * explicit choice by a host whose documented promise (AUD-C01) is
+	 * "every tool up front, no discovery round-trip", and such a host may
+	 * not call the router at all.
+	 *
+	 * Honouring disclosure there unconditionally took six read-only
+	 * `proposals` tools off `tools/list` AND made a direct call to them
+	 * fail with `-32602 ... disabled`, because the MCP SDK has no state for
+	 * "unlisted but callable": `disable()` refuses invocation too. A host
+	 * that opted OUT of discovery was forced into it and given a dead end.
+	 *
+	 * So the token saving is available to anyone who asks for it, and a
+	 * host that asked for the full surface keeps getting the full surface.
+	 */
+	readonly progressiveDisclosure?: boolean | undefined;
 	readonly routerToolId?: string | undefined;
 	readonly workingSet?: IToolSurfaceWorkingSetPolicy | undefined;
 	readonly descriptors: readonly IToolSurfaceDescriptor[];
