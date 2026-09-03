@@ -19,6 +19,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { IBranchProtectionConfig } from '../../../.github/branch-protection.ts';
 import {
+	requiredChecksFor,
 	inspectBranch,
 	isHealthy,
 	main as healthMain,
@@ -494,4 +495,40 @@ describe('parity — verify-branch-protection and verify-develop-health agree', 
 			}
 		});
 	}
+});
+
+describe('required checks are per branch, not a union', () => {
+	// The union of every protected branch's required checks was being
+	// asserted against develop's latest commit, so this job demanded
+	// `ci-complete` and `release-pr-gate` there. Those belong to main.
+	// `.github/branch-protection.ts` declares develop `protected: false`
+	// with `required_checks: []` on purpose — it is the shared snapshot
+	// journal a swarm pushes to, and main is the review boundary. The
+	// job was failing develop for not satisfying a policy that
+	// explicitly exempts it.
+	const branches: IBranchProtectionConfig['branches'] = [
+		{ name: 'develop', protected: false, required_checks: [] },
+		{
+			name: 'main',
+			protected: true,
+			required_checks: ['ci-complete', 'release-pr-gate'],
+		},
+	];
+
+	it('asks nothing of develop, because the policy asks nothing of it', () => {
+		expect(requiredChecksFor(branches, 'develop')).toEqual([]);
+	});
+
+	it('still asks main for both of its checks', () => {
+		expect(requiredChecksFor(branches, 'main')).toEqual([
+			'ci-complete',
+			'release-pr-gate',
+		]);
+	});
+
+	it('does not leak one branch’s requirements into another', () => {
+		expect(requiredChecksFor(branches, 'develop')).not.toContain(
+			'ci-complete',
+		);
+	});
 });

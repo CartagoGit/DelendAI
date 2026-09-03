@@ -156,6 +156,36 @@ const githubHeaders = (token: string | undefined): Record<string, string> => {
 	return headers;
 };
 
+/**
+ * The checks a GIVEN branch requires, per the policy — not the union of
+ * what every protected branch requires.
+ *
+ * The union was being asserted against develop's latest commit, so this
+ * job demanded `ci-complete` and `release-pr-gate` there. Those belong
+ * to `main`. `.github/branch-protection.ts` declares develop with
+ * `protected: false` and `required_checks: []` deliberately: it is the
+ * shared snapshot journal a swarm pushes to, and main is the review
+ * boundary. So the health check was failing develop for not satisfying
+ * a policy that explicitly exempts it — the same confusion `drift.yml`'s
+ * comment used to spread in prose, here materialised as a red job.
+ */
+export const requiredChecksFor = (
+	branches: IBranchProtectionConfig['branches'],
+	name: string,
+): string[] =>
+	Array.from(
+		new Set(
+			branches
+				.filter((branch) => branch.name === name)
+				.flatMap((branch) => branch.required_checks),
+		),
+	).sort();
+
+/**
+ * Every check named anywhere in the policy. Used for the dashboard's
+ * inventory, which is a summary of the policy rather than an assertion
+ * about any one branch.
+ */
 const collectRequiredChecks = (
 	branches: IBranchProtectionConfig['branches'],
 ): string[] =>
@@ -538,7 +568,8 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		repo,
 		token,
 		tokenExplicit,
-		requiredChecks,
+		// develop's OWN required checks, which the policy declares empty.
+		requiredChecks: requiredChecksFor(config.branches, 'develop'),
 	});
 	const discrepancies = [
 		...collectBranchDiscrepancies(branches),
