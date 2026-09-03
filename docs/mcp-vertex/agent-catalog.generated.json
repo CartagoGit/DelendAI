@@ -1502,10 +1502,18 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00423",
+				"title": "x00423",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 19,
+			"ready": 20,
 			"in-progress": 10,
 			"review": 4,
 			"paused": 1,

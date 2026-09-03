@@ -208,6 +208,83 @@ const diffSlices = (
 	return { events, refusals };
 };
 
+/**
+ * How many un-persisted slices the FIRST poll may emit.
+ *
+ * The bound exists for the cold-start case: a fresh clone, or a repo
+ * whose `.commit-policy/` was deleted, has an empty processed-events
+ * store, so every historical `done` slice looks un-persisted. Without a
+ * cap that is the 83-event startup storm again. With it, the listener
+ * does the most recent handful and says out loud how many it skipped —
+ * bounded work and an honest report, instead of either a flood or a
+ * silent drop.
+ */
+export const BASELINE_EMIT_LIMIT = 10;
+
+/**
+ * Decide what the FIRST poll should emit.
+ *
+ * The two situations a baseline has to tell apart:
+ *
+ *   - The repo's history. Hundreds of slices that reached `done` weeks
+ *     ago and were committed at the time. Re-emitting them is the
+ *     storm; they must stay silent.
+ *
+ *   - Work that finished while nobody was listening. A slice closed
+ *     during a server restart, or before this plugin was lazily
+ *     activated. Nothing has persisted it. Staying silent here means
+ *     the commit never happens — no error, no retry, no trace — and
+ *     the changes sit dirty until some sweep commits them under
+ *     another proposal's name.
+ *
+ * Treating both as "baseline" is what the previous unconditional
+ * `{ events: [] }` did. The processed-events store already knows the
+ * difference: it holds a terminal outcome for everything that was
+ * genuinely handled. So ask it.
+ *
+ * `isAlreadyPersisted` is injected rather than the store itself, so
+ * the listener stays free of storage concerns and a test can drive
+ * both branches directly. When it is absent — or throws — the caller
+ * gets the old silent baseline, which is the safe direction: a missed
+ * commit is recoverable by hand, a storm is not.
+ */
+const buildBaselineEvents = async (
+	curr: ReadonlyMap<string, SliceSnapshotEntry>,
+	onStatuses: readonly string[],
+	isAlreadyPersisted: (event: ITriggerEvent) => Promise<boolean>,
+): Promise<{
+	events: ITriggerEvent[];
+	refusals: readonly { readonly key: string; readonly reason: string }[];
+	skipped: number;
+}> => {
+	const events: ITriggerEvent[] = [];
+	const refusals: { key: string; reason: string }[] = [];
+	let skipped = 0;
+	for (const [key, entry] of curr) {
+		if (!onStatuses.includes(entry.status)) continue;
+		const candidate = createSliceEvent(key, entry);
+		if ('reason' in candidate) {
+			refusals.push(candidate);
+			continue;
+		}
+		let persisted = true;
+		try {
+			persisted = await isAlreadyPersisted(candidate);
+		} catch {
+			// Store unreadable. Fail to "already persisted" so a broken
+			// store cannot turn into a replay of the whole history.
+			persisted = true;
+		}
+		if (persisted) continue;
+		if (events.length >= BASELINE_EMIT_LIMIT) {
+			skipped += 1;
+			continue;
+		}
+		events.push(candidate);
+	}
+	return { events, refusals, skipped };
+};
+
 export const computeSliceTriggerEventId = (event: ITriggerEvent): string =>
 	getSliceEventId(event);
 
