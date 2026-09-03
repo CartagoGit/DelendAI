@@ -354,9 +354,11 @@ const buildPackage = (rel: string): void => {
 				'\t',
 			),
 		);
+		console.error('DEBUG_TSCONFIG_PATH=' + dtsConfig);
 		run(workspaceTsc, ['-p', dtsConfig], dir);
 	} finally {
-		rmSync(dtsTempDir, { recursive: true, force: true });
+		if (!process.env.KEEP_DTS_TMP)
+			rmSync(dtsTempDir, { recursive: true, force: true });
 	}
 
 	// Mirror the canonical tree into the package's own `dist/`.

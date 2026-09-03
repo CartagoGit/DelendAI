@@ -38,6 +38,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      # A `uses: ./path` step can only be resolved once the repo holding
+      # that path is on disk, and setup-bun-repo's own first internal step
+      # IS the checkout — so it can never bootstrap itself as a job's very
+      # first step. Every job needs this bare checkout ahead of it; the
+      # composite action then re-checks out with whatever fetch-depth it
+      # needs. See docs.github.com/en/actions/creating-actions/creating-a-composite-action.
+      - name: Checkout (required to resolve the local composite action)
+        uses: actions/checkout@v7
+
       - name: Setup repo (checkout + bun + install)
         uses: ./.github/actions/setup-bun-repo
 
@@ -59,6 +68,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      # See pack-smoke above: bootstraps the local composite action.
+      - name: Checkout (required to resolve the local composite action)
+        uses: actions/checkout@v7
+
       - name: Setup repo (checkout + bun + install)
         uses: ./.github/actions/setup-bun-repo
         with:
@@ -72,6 +85,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # See pack-smoke above: bootstraps the local composite action.
+      - name: Checkout (required to resolve the local composite action)
+        uses: actions/checkout@v7
+
       - name: Setup repo (checkout + bun + install)
         uses: ./.github/actions/setup-bun-repo
         with:
@@ -92,6 +109,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # See pack-smoke above: bootstraps the local composite action.
+      - name: Checkout (required to resolve the local composite action)
+        uses: actions/checkout@v7
+
       - name: Setup repo (checkout + bun + install)
         uses: ./.github/actions/setup-bun-repo
 
@@ -111,6 +132,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # See pack-smoke above: bootstraps the local composite action.
+      - name: Checkout (required to resolve the local composite action)
+        uses: actions/checkout@v7
+
       - name: Setup repo (checkout + bun + install)
         uses: ./.github/actions/setup-bun-repo
 
@@ -127,6 +152,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      # See pack-smoke above: bootstraps the local composite action.
+      - name: Checkout (required to resolve the local composite action)
+        uses: actions/checkout@v7
+
       - name: Setup repo (checkout + bun + install)
         uses: ./.github/actions/setup-bun-repo
 
