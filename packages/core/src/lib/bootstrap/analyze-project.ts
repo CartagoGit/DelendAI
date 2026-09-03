@@ -26,7 +26,7 @@ import {
 	buildCapabilityGraph,
 	projectLegacyLanguage,
 	projectLegacyProjectType,
-} from '../config/capability-graph';
+} from '../config/capability-graph.service';
 
 /**
  * Read-only, injectable view of the target project. The default

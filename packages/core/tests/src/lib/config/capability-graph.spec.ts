@@ -7,7 +7,7 @@ import {
 import {
 	buildCapabilityGraph,
 	projectLegacyProjectType,
-} from '@mcp-vertex/core/lib/config/capability-graph';
+} from '@mcp-vertex/core/lib/config/capability-graph.service';
 
 const reader = (files: Readonly<Record<string, string>>): IFileReader => ({
 	readFile: async (path) => files[path],
