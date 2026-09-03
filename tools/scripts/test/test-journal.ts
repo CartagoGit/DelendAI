@@ -30,6 +30,8 @@ import {
 } from 'node:fs';
 import { dirname, isAbsolute, join, relative, sep } from 'node:path';
 
+import { redactSecrets } from '@mcp-vertex/core/public';
+
 /**
  * Kept in the same directory as `validate.jsonl`
  * (`VALIDATE_JOURNAL_RELATIVE_PATH` in
@@ -122,6 +124,28 @@ export interface ITestRunEntry {
 /* ------------------------------------------------------------------ */
 /* pure helpers                                                        */
 /* ------------------------------------------------------------------ */
+
+/**
+ * Redact, then truncate.
+ *
+ * The journal is durable storage — that is its whole value — and it
+ * records assertion messages, expected/received values, diffs and stack
+ * text. A perfectly ordinary test can put a secret in any of them:
+ *
+ *   expect(process.env.API_KEY).toBe('sk-live-...')
+ *
+ * fails by printing both sides. Every other durable store in this repo
+ * redacts before writing; this one was writing raw.
+ *
+ * Redaction runs BEFORE truncation on purpose. Truncating first can cut
+ * a secret in half, leaving a fragment that no longer matches any rule
+ * and is written out verbatim.
+ */
+export const sanitize = (
+	value: string | undefined,
+	max: number,
+): string | undefined =>
+	value === undefined ? undefined : truncate(redactSecrets(value).text, max);
 
 export const truncate = (
 	value: string | undefined,
@@ -243,19 +267,19 @@ export const buildFailureRecord = (input: {
 }): ITestFailureRecord => {
 	const frames = selectSourceFrames({
 		stacks: input.error.stacks,
-		stackText: truncate(input.error.stack, JOURNAL_BOUNDS.maxStackChars),
+		stackText: sanitize(input.error.stack, JOURNAL_BOUNDS.maxStackChars),
 		workspaceRoot: input.workspaceRoot,
 		testFile: input.file,
 	});
-	const expected = truncate(
+	const expected = sanitize(
 		stringifyValue(input.error.expected),
 		JOURNAL_BOUNDS.maxValueChars,
 	);
-	const actual = truncate(
+	const actual = sanitize(
 		stringifyValue(input.error.actual),
 		JOURNAL_BOUNDS.maxValueChars,
 	);
-	const diff = truncate(input.error.diff, JOURNAL_BOUNDS.maxDiffChars);
+	const diff = sanitize(input.error.diff, JOURNAL_BOUNDS.maxDiffChars);
 	return {
 		file: toRepoRelative(input.file, input.workspaceRoot),
 		...(input.project !== undefined ? { project: input.project } : {}),
@@ -265,7 +289,7 @@ export const buildFailureRecord = (input: {
 			? { errorName: input.error.name }
 			: {}),
 		message:
-			truncate(input.error.message, JOURNAL_BOUNDS.maxMessageChars) ??
+			sanitize(input.error.message, JOURNAL_BOUNDS.maxMessageChars) ??
 			'(no message)',
 		...(expected !== undefined ? { expected } : {}),
 		...(actual !== undefined ? { actual } : {}),
@@ -351,15 +375,29 @@ const withDirLock = <T>(path: string, work: () => T): T => {
 			Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
 		}
 	}
+	if (!held) {
+		// Timing out and then doing the work anyway is worse than not
+		// doing it: the whole point of the lock is the read-modify-write
+		// this function performs, and running it unlocked is exactly the
+		// concurrent write it exists to prevent — under precisely the
+		// contention that caused the timeout.
+		//
+		// Losing one telemetry entry is cheap. A corrupted journal is
+		// not: it is the artifact an agent reads INSTEAD of re-running a
+		// six-minute suite, so a wrong answer there is worse than no
+		// answer. `safeAppendRunEntry` catches this, reports it on
+		// stderr, and never fails the suite.
+		throw new Error(
+			`test-journal: could not acquire ${lockPath} within ${String(LOCK_STALE_MS)}ms; skipping this entry rather than writing without the lock`,
+		);
+	}
 	try {
 		return work();
 	} finally {
-		if (held) {
-			try {
-				rmSync(lockPath, { recursive: true, force: true });
-			} catch {
-				/* ignore */
-			}
+		try {
+			rmSync(lockPath, { recursive: true, force: true });
+		} catch {
+			/* ignore */
 		}
 	}
 };
