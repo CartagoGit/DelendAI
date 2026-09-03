@@ -1060,6 +1060,23 @@ export const assembleCliConfig = async (
 				.map((skill) => skill.id),
 		]),
 	);
+	// A configured `plugins.<id>.path` contributes the RAW PATH as an id in
+	// `effectivePlugins`, but `loadResult.loaded` carries the resolved plugin
+	// NAME (`IMcpPlugin.name`). Comparing the two directly made the startup
+	// report mark every path-mounted plugin as 'failed' even when it loaded
+	// fine ('unavailable (1): <path>' in the boot summary while every one of
+	// its tools worked). Canonicalize: a configured id that successfully
+	// loaded contributes the name it resolved to; only ids with no loaded
+	// plugin behind them keep their original form so genuine failures still
+	// show up.
+	const loadedNames = new Set(loadResult.loaded.map((e) => e.plugin.name));
+	const configuredPluginIds = effectivePlugins.map((pluginId) => {
+		if (loadedNames.has(pluginId)) return pluginId;
+		const loadedBySpecifier = loadResult.loaded.find(
+			(entry) => entry.specifier === pluginId,
+		);
+		return loadedBySpecifier?.plugin.name ?? pluginId;
+	});
 	const buildStartupReport = (
 		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
 	) =>
@@ -1069,7 +1086,7 @@ export const assembleCliConfig = async (
 			version: args.serverVersion,
 			workspace: args.workspace,
 			preset: args.tokens.preset ?? 'custom',
-			configuredPluginIds: effectivePlugins,
+			configuredPluginIds: configuredPluginIds,
 			loadedPluginIds: loadResult.loaded.map(
 				(entry) => entry.plugin.name,
 			),

@@ -244,68 +244,110 @@ const buildPackage = (rel: string): void => {
 		}
 		return dependencyMeta.version;
 	};
-	const builtDepPaths = (pkg: string): Record<string, string[]> => {
-		const version = dependencyVersion('packages', pkg);
-		return {
-			[`@mcp-vertex/${pkg}`]: [
-				join(ROOT, `build/packages/${pkg}/${version}/index.d.ts`),
-			],
-			[`@mcp-vertex/${pkg}/public`]: [
-				join(
-					ROOT,
-					`build/packages/${pkg}/${version}/public/index.d.ts`,
-				),
-			],
-			// Deep imports (e.g. apps/shared → @mcp-vertex/client/lib/contracts/…)
-			// resolve file-by-file against the built declarations.
-			[`@mcp-vertex/${pkg}/lib/*`]: [
-				join(ROOT, `build/packages/${pkg}/${version}/lib/*`),
-			],
+	// Path mappings are derived from each dependency's OWN
+	// `package.json#exports`, not a hardcoded ['.', './public'] guess —
+	// a dependency (e.g. `@mcp-vertex/core`) can declare arbitrarily many
+	// subpaths (`./contracts`, `./runtime`, `./plugin`, `./node`, `./cli`,
+	// `./version`, `./manifest`, …), and a consumer that only imports one
+	// of them (e.g. `@mcp-vertex/client` re-exporting `@mcp-vertex/core/
+	// contracts`) still needs it mapped. Each export condition's own
+	// `@mcp-vertex/source` `types` path (e.g. "./src/contracts/index.ts")
+	// already names the real source file, so the built `.d.ts` location is
+	// derived from that instead of re-deriving it from the subpath name —
+	// subpaths like `./cli` (→ `src/cli.ts`, not `src/cli/index.ts`) and
+	// `./manifest` (→ the SAME source file as `./public`) don't follow the
+	// `<subpath>/index.ts` shape the old hardcoded mapping assumed.
+	const builtDepPaths = (
+		group: 'packages' | 'plugins',
+		pkg: string,
+	): Record<string, string[]> => {
+		const version = dependencyVersion(group, pkg);
+		const outRoot = join(ROOT, `build/${group}/${pkg}/${version}`);
+		const depPkgJsonPath = join(ROOT, group, pkg, 'package.json');
+		const depMeta = JSON.parse(readFileSync(depPkgJsonPath, 'utf8')) as {
+			exports?: Record<
+				string,
+				{ '@mcp-vertex/source'?: { types?: string } }
+			>;
 		};
+		const paths: Record<string, string[]> = {};
+		for (const [subpath, condition] of Object.entries(
+			depMeta.exports ?? {},
+		)) {
+			const sourceTypes = condition?.['@mcp-vertex/source']?.types;
+			if (typeof sourceTypes !== 'string') continue;
+			// "./src/contracts/index.ts" -> "contracts/index.d.ts"
+			const relDts = sourceTypes
+				.replace(/^\.\/src\//, '')
+				.replace(/\.ts$/, '.d.ts');
+			const specifier =
+				subpath === '.'
+					? `@mcp-vertex/${pkg}`
+					: `@mcp-vertex/${pkg}/${subpath.slice(2)}`;
+			paths[specifier] = [join(outRoot, relDts)];
+		}
+		// Deep imports (e.g. apps/shared → @mcp-vertex/client/lib/contracts/…)
+		// resolve file-by-file against the built declarations — these are
+		// not declared subpaths in `exports`, so they're added separately.
+		paths[`@mcp-vertex/${pkg}/lib/*`] = [join(outRoot, 'lib/*')];
+		return paths;
 	};
-	const builtPluginPaths = (plugin: string): Record<string, string[]> => {
-		const version = dependencyVersion('plugins', plugin);
-		return {
-			[`@mcp-vertex/${plugin}`]: [
-				join(ROOT, `build/plugins/${plugin}/${version}/index.d.ts`),
-			],
-			[`@mcp-vertex/${plugin}/public`]: [
-				join(
-					ROOT,
-					`build/plugins/${plugin}/${version}/public/index.d.ts`,
-				),
-			],
-			[`@mcp-vertex/${plugin}/lib/*`]: [
-				join(ROOT, `build/plugins/${plugin}/${version}/lib/*`),
-			],
+	// Introspect package.json so cross-package deep imports (e.g.
+	// auto-plugin-selector → auto-agent-selector/lib/ranking/*, or
+	// ui-extension → client → core/contracts) resolve to the BUILT `.d.ts`
+	// files of the dependency. This walks the TRANSITIVE `@mcp-vertex/*`
+	// dependency graph, not just direct dependencies: a re-exported type
+	// from a dependency-of-a-dependency (client re-exporting
+	// `@mcp-vertex/core/contracts` to ui-extension, which never depends on
+	// core directly) needs the same mapping a direct dependency would get,
+	// or resolution falls through to `node_modules` — where bun's
+	// per-package (non-hoisted) linking only puts `@mcp-vertex/core` inside
+	// packages that declare it directly, not inside every transitive
+	// consumer. Build order guarantees each dependency's dist exists:
+	// `packages/core` is always rank 0, and `discover()` otherwise sorts
+	// alphabetically within each rank, so e.g. `auto-agent-selector` builds
+	// before `auto-plugin-selector`.
+	const selfName = pkgMeta.name?.replace(/^@mcp-vertex\//, '');
+	const mcpDeps = new Set<string>(); // "packages/x" | "plugins/x", transitive
+	const queue: string[] = [rel];
+	while (queue.length > 0) {
+		const currentRel = queue.shift()!;
+		const currentPkgJsonPath = join(ROOT, currentRel, 'package.json');
+		if (!existsSync(currentPkgJsonPath)) continue;
+		const currentMeta = JSON.parse(
+			readFileSync(currentPkgJsonPath, 'utf8'),
+		) as {
+			dependencies?: Record<string, string>;
+			peerDependencies?: Record<string, string>;
 		};
-	};
-	// Introspect package.json so plugin-to-plugin deep imports (e.g.
-	// auto-plugin-selector → auto-agent-selector/lib/ranking/*) resolve to
-	// the BUILT .d.ts files of the dependency plugin. Build order guarantees
-	// the dependency's dist exists: discover() sorts alphabetically within
-	// rank 2 (plugins), so e.g. `auto-agent-selector` builds before
-	// `auto-plugin-selector`.
-	const mcpDeps = new Set<string>();
-	for (const section of ['dependencies', 'peerDependencies'] as const) {
-		const map = pkgMeta[section] ?? {};
-		for (const dep of Object.keys(map)) {
-			if (dep.startsWith('@mcp-vertex/')) {
-				mcpDeps.add(dep.replace(/^@mcp-vertex\//, ''));
+		for (const section of ['dependencies', 'peerDependencies'] as const) {
+			const map = currentMeta[section] ?? {};
+			for (const dep of Object.keys(map)) {
+				if (!dep.startsWith('@mcp-vertex/')) continue;
+				const depName = dep.replace(/^@mcp-vertex\//, '');
+				if (depName === selfName) continue;
+				const depPkgRel = `packages/${depName}`;
+				const depPluginRel = `plugins/${depName}`;
+				const depRel = existsSync(join(ROOT, depPkgRel, 'package.json'))
+					? depPkgRel
+					: existsSync(join(ROOT, depPluginRel, 'package.json'))
+						? depPluginRel
+						: undefined;
+				if (depRel === undefined || depRel === rel) continue;
+				if (!mcpDeps.has(depRel)) {
+					mcpDeps.add(depRel);
+					queue.push(depRel);
+				}
 			}
 		}
 	}
-	const selfName = pkgMeta.name?.replace(/^@mcp-vertex\//, '');
-	if (selfName) mcpDeps.delete(selfName);
 	const corePaths: Record<string, string[]> = {};
-	for (const dep of mcpDeps) {
-		const pkgPath = join(ROOT, 'packages', dep);
-		const pluginPath = join(ROOT, 'plugins', dep);
-		if (existsSync(pkgPath) && rel !== `packages/${dep}`) {
-			Object.assign(corePaths, builtDepPaths(dep));
-		} else if (existsSync(pluginPath) && rel !== `plugins/${dep}`) {
-			Object.assign(corePaths, builtPluginPaths(dep));
-		}
+	for (const depRel of mcpDeps) {
+		const [group, name] = depRel.split('/') as [
+			'packages' | 'plugins',
+			string,
+		];
+		Object.assign(corePaths, builtDepPaths(group, name));
 	}
 	// apps/shared (compiled into the ui-extension dts program) imports
 	// @mcp-vertex/client deep paths; client's build is produced before
