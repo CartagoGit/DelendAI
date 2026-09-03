@@ -567,7 +567,10 @@ export type {
 	IFsWriteOptions,
 	IFsWriteResult,
 } from '../lib/shared/fs-tools';
-export { redactSecrets } from '../lib/shared/redact';
+export {
+	HIGH_CONFIDENCE_SECRET_PATTERNS,
+	redactSecrets,
+} from '../lib/shared/redact';
 export type { IRedactResult } from '../lib/shared/redact';
 export {
 	UNICODE_TOKEN_LEGEND,

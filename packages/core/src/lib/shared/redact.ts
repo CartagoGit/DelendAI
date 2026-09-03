@@ -20,40 +20,91 @@ interface IRule {
 	readonly re: RegExp;
 	/** Replacement; defaults to the whole match → `[REDACTED]`. */
 	readonly replace?: (match: string, ...groups: string[]) => string;
+	/**
+	 * True when the pattern identifies a credential by its issuer's own
+	 * prefix or structure (`sk_live_…`, `ghp_…`, a PEM block, a JWT) —
+	 * i.e. a match is a credential, not a guess.
+	 *
+	 * The two heuristic rules at the end of the list match on a
+	 * secret-ish NAME instead, which is right for redacting a log and
+	 * wrong for blocking a commit: `token: "placeholder"` in a fixture
+	 * is not a leak. `lint:no-secrets` gates on the high-confidence set
+	 * only, so it can be blocking without ever crying wolf.
+	 */
+	readonly highConfidence?: boolean;
 }
 
 const RULES: readonly IRule[] = [
 	// PEM private key blocks (RSA/EC/OPENSSH/PGP…).
 	{
 		name: 'private-key',
+		highConfidence: true,
 		re: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----/g,
 	},
 	// JSON Web Tokens (three base64url segments).
 	{
 		name: 'jwt',
+		highConfidence: true,
 		re: /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g,
 	},
 	// AWS access key id.
-	{ name: 'aws-access-key', re: /\bAKIA[0-9A-Z]{16}\b/g },
+	{
+		name: 'aws-access-key',
+		highConfidence: true,
+		re: /\bAKIA[0-9A-Z]{16}\b/g,
+	},
 	// GitHub tokens (classic + fine-grained).
-	{ name: 'github-token', re: /\bgh[posru]_[A-Za-z0-9]{36,}\b/g },
-	{ name: 'github-pat', re: /\bgithub_pat_[A-Za-z0-9_]{22,}\b/g },
+	{
+		name: 'github-token',
+		highConfidence: true,
+		re: /\bgh[posru]_[A-Za-z0-9]{36,}\b/g,
+	},
+	{
+		name: 'github-pat',
+		highConfidence: true,
+		re: /\bgithub_pat_[A-Za-z0-9_]{22,}\b/g,
+	},
 	// Google API key.
-	{ name: 'google-api-key', re: /\bAIza[0-9A-Za-z_-]{35}\b/g },
+	{
+		name: 'google-api-key',
+		highConfidence: true,
+		re: /\bAIza[0-9A-Za-z_-]{35}\b/g,
+	},
 	// Slack token.
-	{ name: 'slack-token', re: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g },
+	{
+		name: 'slack-token',
+		highConfidence: true,
+		re: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g,
+	},
 	// Stripe secret key.
-	{ name: 'stripe-key', re: /\bsk_(?:live|test)_[0-9A-Za-z]{16,}\b/g },
+	{
+		name: 'stripe-key',
+		highConfidence: true,
+		re: /\bsk_(?:live|test)_[0-9A-Za-z]{16,}\b/g,
+	},
 	// Anthropic + OpenRouter keys — hyphenated bodies (`sk-ant-api03-…`,
 	// `sk-or-v1-…`) the alnum-only `openai-key` rule below stops short of.
 	// Listed first so the more specific prefix wins. (f00067 S8)
-	{ name: 'anthropic-key', re: /\bsk-ant-[A-Za-z0-9-]{16,}/g },
-	{ name: 'openrouter-key', re: /\bsk-or-[A-Za-z0-9-]{16,}/g },
+	{
+		name: 'anthropic-key',
+		highConfidence: true,
+		re: /\bsk-ant-[A-Za-z0-9-]{16,}/g,
+	},
+	{
+		name: 'openrouter-key',
+		highConfidence: true,
+		re: /\bsk-or-[A-Za-z0-9-]{16,}/g,
+	},
 	// OpenAI-style secret key.
-	{ name: 'openai-key', re: /\bsk-[A-Za-z0-9]{20,}\b/g },
+	{
+		name: 'openai-key',
+		highConfidence: true,
+		re: /\bsk-[A-Za-z0-9]{20,}\b/g,
+	},
 	// `Authorization: Bearer <token>` headers.
 	{
 		name: 'bearer',
+		highConfidence: true,
 		re: /\bBearer\s+[A-Za-z0-9._-]{16,}/g,
 		replace: () => `Bearer ${REDACTED}`,
 	},
@@ -84,6 +135,23 @@ export interface IRedactResult {
 	/** Number of secrets redacted. */
 	readonly redactions: number;
 }
+
+/**
+ * The rules whose match IS a credential, exposed so a single definition
+ * serves both redaction and the `lint:no-secrets` commit/push gate.
+ *
+ * One list, two readers: the fake `sk_live_…` fixture that GitHub push
+ * protection caught on 2026-09-03 got through precisely because the
+ * repo's own knowledge of what a secret looks like lived only in the
+ * redactor and nothing consulted it before writing a commit.
+ */
+export const HIGH_CONFIDENCE_SECRET_PATTERNS: readonly {
+	readonly name: string;
+	readonly re: RegExp;
+}[] = RULES.filter((rule) => rule.highConfidence === true).map((rule) => ({
+	name: rule.name,
+	re: rule.re,
+}));
 
 /** Redact high-confidence secrets from `input`. Pure; never throws. */
 export const redactSecrets = (input: string): IRedactResult => {
