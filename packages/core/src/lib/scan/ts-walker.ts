@@ -3,7 +3,17 @@
  *
  * Async walker for a set of repository-relative roots. Skips directories
  * that are not part of the source tree (node_modules, dist, build, .cache,
- * .git). Returns every `.ts`/`.tsx` file, sorted by relative path.
+ * .git) and emitted `.d.ts` declarations. Returns every authored
+ * `.ts`/`.tsx` file, sorted by relative path.
+ *
+ * `.d.ts` is excluded because it is build output, not source:
+ * `.gitignore` carries `packages/*\/src/**\/*.d.ts`, so those files are
+ * not in the repository at all. Every consumer of this walker is a
+ * convention or architecture lint, and on 2026-09-04 four of them
+ * reported findings in emitted declarations — 113 "unmatched" filenames
+ * chosen by `tsc`, and working-directory violations in generated type
+ * signatures. None of them named a line anybody could edit, and the fix
+ * always belonged in the `.ts` this walk already returns.
  *
  * The walker is the only helper in the scan barrel that performs I/O; the
  * rest are pure text/pattern scanners that operate on the file map.
@@ -12,6 +22,7 @@ import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const TS_EXTS = /\.tsx?$/;
+const DECLARATION_FILE = /\.d\.tsx?$/;
 
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', '.cache', '.git']);
 
@@ -44,6 +55,7 @@ export const walkTsFiles = async (
 			}
 			if (!entry.isFile()) continue;
 			if (!TS_EXTS.test(entry.name)) continue;
+			if (DECLARATION_FILE.test(entry.name)) continue;
 			out.push(childRel);
 		}
 	}
