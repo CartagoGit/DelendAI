@@ -41,8 +41,8 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 | auto_work work plan | native | 159 | 40 | 2,400 | 2,600 | within hard |
 | agent_catalog compact | native | 32 | 8 | 800 | 900 | within hard |
 | agent_catalog full | native | 33 | 9 | 9,800 | 10,500 | within hard |
-| analyze_project {} | native | 829 | 208 | 1,600 | 1,800 | within hard |
-| plan_mcp_project {} | native | 836 | 209 | 1,800 | 2,000 | within hard |
+| analyze_project {} | native | 830 | 208 | 1,600 | 1,800 | within hard |
+| plan_mcp_project {} | native | 856 | 214 | 1,800 | 2,000 | within hard |
 | search_search | native | 874 | 219 | 2,700 | 3,000 | within hard |
 | docs_docs_list | native | 209 | 53 | 2,200 | 2,500 | within hard |
 | proposals_round_context | native | 66 | 17 | 2,700 | 3,000 | within hard |

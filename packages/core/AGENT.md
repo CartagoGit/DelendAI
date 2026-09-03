@@ -24,6 +24,7 @@
 
 ## Depends on
 
+- @mcp-vertex/contracts
 - @modelcontextprotocol/sdk
 - zod
 

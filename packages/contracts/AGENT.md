@@ -23,6 +23,7 @@ _(none)_
 
 ## Tests
 
+- packages/contracts/tests/src/capability-graph.spec.ts
 - packages/contracts/tests/src/envelopes.spec.ts
 - packages/contracts/tests/src/no-node-imports.spec.ts
 
