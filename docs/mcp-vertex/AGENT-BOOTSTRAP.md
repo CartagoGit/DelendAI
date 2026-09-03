@@ -292,22 +292,19 @@ interactions.
   violations (x00080). The check is a lefthook-installed TypeScript hook
   (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
   per rule #10 below.
-  - **`develop` is the shared snapshot journal; `main` is the release boundary.**
-    With `agentWorktree: false` (the repository default), agents work in the
-    shared checkout. The commit policy serializes `stage → commit → push`, so
-    concurrent agents can leave frequent, visible, reversible snapshots on
-    `develop`. Agents must not create a WIP branch merely to isolate those
-    snapshots. `main` remains protected and is promoted only through a pull
-    request after the configured quality checks. When `agentWorktree: true` is
-    explicitly enabled, isolated agent branches and worktrees are appropriate;
-    that is a separate operating mode from the shared snapshot journal.
+  - **`develop` is the shared snapshot journal; `main` is the release
+    boundary.** With `agentWorktree: false` (the default) agents share one
+    checkout; the commit policy serializes `stage → commit → push`, so
+    concurrent agents leave frequent, reversible snapshots on `develop`.
+    Never create a WIP branch just to isolate them. `main` is protected and
+    promoted only by pull request. `agentWorktree: true` is a separate mode
+    where isolated branches and worktrees are appropriate.
 - **No orphaned branches or stashes — always reconcile (this repo).**
-  Before closing any work or session, run `bun run reclaim:orphans` and
-  reconcile every listed orphan: merge-if-valuable into `develop`
-  (fixing discrepancies/bugs until 100% functional) or delete-if-not.
-  `bun run reclaim:orphans --apply` deletes only lossless branches
+  Before closing any session run `bun run reclaim:orphans` and resolve
+  every orphan: merge into `develop` if valuable (fixing it until it
+  works), delete if not. `--apply` removes only lossless branches
   (`ahead === 0`); stashes and unique-commit branches are never
-  auto-deleted. This is a repo-level policy, not a plugin behaviour.
+  auto-deleted. Repo policy, not plugin behaviour.
 - **Slice commits are causally bounded (f00417).** A slice commit is
   only valid if the staged paths are a subset of the **machine-resolved
   scope** at the moment the transition was emitted. The resolver
