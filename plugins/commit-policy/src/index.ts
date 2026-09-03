@@ -32,7 +32,10 @@ import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { createPushScheduler } from './lib/services/push-scheduler';
 import { createCommitPolicyEngine, type IEngineResult } from './lib/engine';
-import { createProcessedEventsStore } from './lib/processed-events';
+import {
+	computeIdempotencyKey,
+	createProcessedEventsStore,
+} from './lib/processed-events';
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { StormDetector } from './lib/services/storm-detector';
 import { StormLog } from './lib/services/storm-log';
@@ -527,6 +530,28 @@ export default definePlugin({
 				handler,
 				undefined,
 				ctx.docsDir,
+				// x00423: the first poll asks the store whether each
+				// already-`done` slice was ever actually handled. The
+				// repo's history has terminal outcomes recorded and
+				// stays silent; a slice closed while the server was
+				// down does not, and gets committed instead of lost.
+				async (event) => {
+					if (
+						event.proposalId === undefined ||
+						event.sliceId === undefined
+					) {
+						return true;
+					}
+					return await processedEvents.has(
+						computeIdempotencyKey({
+							kind: 'slice',
+							proposalId: event.proposalId,
+							sliceId: event.sliceId,
+							files: event.files?.paths ?? [],
+							eventId: computeSliceTriggerEventId(event),
+						}),
+					);
+				},
 			);
 			sliceListener.start();
 		}
