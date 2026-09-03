@@ -352,7 +352,11 @@ describe('runCommitDriver', () => {
 		expect(fake.committed.count).toBe(1);
 	});
 
-	it('commits with the resolved global author + audit trailer', async () => {
+	it('commits with the resolved global author (no audit trailer, f00500 default)', async () => {
+		// f00500: `audit.trailer` default is now 'none' so the commit body
+		// must not contain a Co-authored-by trailer at all. The other
+		// 'co-authored-by' code path is exercised separately in trailer.spec.ts
+		// with a neutral format.
 		const fake = buildFakeGit({
 			currentBranch: 'develop',
 			globalName: 'Cartago',
@@ -368,7 +372,7 @@ describe('runCommitDriver', () => {
 				run: fake.run,
 				policy: basePolicy(),
 				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
-				auditAgent: { host: 'vscode-copilot', model: 'minimax-m3' },
+				auditAgent: { host: 'test-host', model: 'test-model' },
 			},
 		);
 		expect(result.committed).toBe(true);
@@ -378,9 +382,43 @@ describe('runCommitDriver', () => {
 		expect(fake.committed.count).toBe(1);
 		const committed = fake.committed.messages[0] ?? '';
 		expect(committed).toContain('feat(commit-policy): add driver');
-		expect(committed).toContain(
-			'Co-authored-by: vscode-copilot/minimax-m3',
+		// f00500: no audit trailer of any kind, regardless of agent identity.
+		expect(committed).not.toMatch(/^co-authored-by:/im);
+		expect(committed).not.toMatch(/^signed-off-by:/im);
+	});
+
+	it('appends Co-authored-by trailer only when the policy explicitly opts in', async () => {
+		// Companion to the previous test: pin the 'co-authored-by' code path
+		// with a neutral format so the engine contract stays covered without
+		// baking any LLM brand into a committed test fixture.
+		const fake = buildFakeGit({
+			currentBranch: 'develop',
+			globalName: 'Cartago',
+			globalEmail: 'cartago@example.com',
+			cached: ['plugins/commit-policy/src/index.ts'],
+		});
+		const policy = basePolicy({
+			audit: {
+				trailer: 'co-authored-by',
+				agentFormat: 'human-pair',
+			},
+		});
+		const result = await runCommitDriver(
+			{
+				message: 'feat(commit-policy): add driver',
+				files: ['plugins/commit-policy/src/index.ts'],
+			},
+			{
+				run: fake.run,
+				policy,
+				identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+				auditAgent: { host: 'test-host', model: 'test-model' },
+			},
 		);
+		expect(result.committed).toBe(true);
+		const committed = fake.committed.messages[0] ?? '';
+		expect(committed).toContain('feat(commit-policy): add driver');
+		expect(committed).toContain('Co-authored-by: human-pair');
 	});
 
 	it('auto-scopes the message with the proposal id when slice context is present', async () => {

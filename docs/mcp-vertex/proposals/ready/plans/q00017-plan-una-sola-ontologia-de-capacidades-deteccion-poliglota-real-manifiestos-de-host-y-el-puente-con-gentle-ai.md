@@ -169,7 +169,7 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 ### S6 — Permisos declarativos por plugin
 
-- **Status**: pending
+- **Status**: done. La mayor parte ya existía y no hacía falta construirla: `PermissionCategory` (13 categorías, más rica que la lista del plan), `IPluginManifest.permissions`, permisos por herramienta, y `permissionRisk` leyendo ya la declaración vía `scorePermissionRiskForManifest`. Los 56 manifiestos declaraban. Lo que faltaba era el cruce: nada comparaba el efecto que un plugin USA con el que DECLARA, así que `git` anunciaba `['git-read','git-write']` mientras lanzaba procesos con `node:child_process` — un host mostraba «git: read + write» de un plugin que además podía ejecutar comandos. `lint:plugin-permissions-declared` cierra ese hueco y encontró 45 efectos sin declarar en 25 plugins. Se corrigieron las declaraciones en vez de baselinearlas, así que el gate arranca con CERO deuda. Es asimétrico a propósito: infra-declarar falla, sobre-declarar solo se informa, porque fallar por amplitud honesta empuja al autor a declarar de menos para callar el gate, que es justo lo contrario de para lo que existe.
 - **Files**:
   - `packages/contracts/src/lib/plugin/plugin-permissions.interface.ts` — `filesystem.read`, `filesystem.write`, `network`, `process.spawn`, `git.write`, `git.push`, `secrets.read`, `browser`, `externalMcp`.
   - `plugins/*/plugin.manifest.ts` — cada plugin declara lo que necesita. Un host puede entonces mostrar "git: read + write + push" en vez de adivinarlo.
