@@ -319,7 +319,7 @@ export default definePlugin({
 		pushScheduler.start();
 		disposables.push(() => pushScheduler.stop());
 
-		// x00419 S2+S3+S4: shared StormDetector so the host boot hook
+		// Share the StormDetector so the host boot hook
 		// (S5) and the storms-tool see the same in-memory buckets.
 		// S4: the StormLog persists entries under
 		// `<pluginCacheDir>/storms/<key>.json` and replays them
@@ -335,7 +335,7 @@ export default definePlugin({
 		stormLog.ensureDir();
 		stormLog.replayInto(stormDetector);
 
-		// x00419 S5: file a `kind: repair` proposal for any storm
+		// File a `kind: repair` proposal for any storm
 		// that crossed the threshold. Idempotent — a proposal with
 		// the same slug is not re-created. The host boot step runs
 		// after plugin registration, so by the time `register()`
@@ -387,7 +387,7 @@ export default definePlugin({
 				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
 				onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
 			}),
-			// x00419 S3: surface the engine's stderr as a structured
+			// Surface the engine's stderr as a structured
 			// snapshot agents can read. The detector is shared with
 			// the host boot hook (S5) so a storm detected at boot
 			// is visible to agents calling this tool.
@@ -530,7 +530,7 @@ export default definePlugin({
 				handler,
 				undefined,
 				ctx.docsDir,
-				// x00423: the first poll asks the store whether each
+				// The first poll asks the store whether each
 				// already-`done` slice was ever actually handled. The
 				// repo's history has terminal outcomes recorded and
 				// stays silent; a slice closed while the server was

@@ -96,6 +96,13 @@
 			},
 			"types": "./dist/capability-graph.interface.d.ts",
 			"import": "./dist/capability-graph.interface.js"
+		},
+		"./host": {
+			"@mcp-vertex/source": {
+				"types": "./src/host-capability-manifest.interface.ts"
+			},
+			"types": "./dist/host-capability-manifest.interface.d.ts",
+			"import": "./dist/host-capability-manifest.interface.js"
 		}
 	},
 	"scripts": {

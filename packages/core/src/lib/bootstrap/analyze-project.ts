@@ -7,11 +7,9 @@ import {
 	QUALITY_ROLES,
 	QUALITY_ROLE_ALIASES,
 } from './script-rules';
-import { matchProjectType } from './project-type-rules';
-import { isGameProject, matchFramework } from './framework-rules';
+import { matchFramework } from './framework-rules';
 import { matchCi } from './ci-rules';
 import { matchAgentConfigs } from './agent-config-rules';
-import { matchLanguage } from './language-rules';
 import { matchMonorepoTool } from './monorepo-rules';
 import { matchPackageManager } from './package-manager-rules';
 import { detectMcpEvidence } from './mcp-evidence-rules';
@@ -24,6 +22,11 @@ import {
 	detectConflicts,
 	detectDocsConventions,
 } from './adoption-signal-rules';
+import {
+	buildCapabilityGraph,
+	projectLegacyLanguage,
+	projectLegacyProjectType,
+} from '../config/capability-graph';
 
 /**
  * Read-only, injectable view of the target project. The default
@@ -124,10 +127,6 @@ const detectFramework = (deps: Record<string, string>): string | undefined =>
 	// function is a thin adapter.
 	matchFramework(deps);
 
-const detectGame = (deps: Record<string, string>): boolean =>
-	// Same idea: the engine list is data, not control flow.
-	isGameProject(deps);
-
 const detectPackageManager = async (
 	reader: IFileReader,
 ): Promise<IProjectAnalysis['packageManager']> => {
@@ -192,16 +191,6 @@ const detectMonorepoTool = async (
 	return await matchMonorepoTool(reader, pkg);
 };
 
-const detectLanguage = async (
-	reader: IFileReader,
-	pkg: IPackageJson | undefined,
-): Promise<IProjectLanguage> => {
-	// The language rule table lives in `language-rules.ts`; this
-	// function is a thin adapter. Adding a language is a one-line
-	// table entry, not an edit to this function.
-	return await matchLanguage(reader, pkg);
-};
-
 const detectCi = async (reader: IFileReader): Promise<readonly string[]> => {
 	// The CI rule table lives in `ci-rules.ts`; this function is a
 	// thin adapter. Adding a CI system is a one-line table entry,
@@ -216,28 +205,6 @@ const detectAgentConfigs = async (
 	// this function is a thin adapter. Adding an editor is a
 	// one-line table entry, not an edit to this function.
 	return await matchAgentConfigs(reader);
-};
-
-const detectProjectType = async (
-	reader: IFileReader,
-	pkg: IPackageJson | undefined,
-	deps: Record<string, string>,
-	framework: string | undefined,
-	monorepoTool: string | undefined,
-): Promise<IProjectType> => {
-	// The actual rule table lives in `project-type-rules.ts`; this
-	// function only translates the analysis inputs into the rule
-	// context. Adding a new project type is a one-line table entry,
-	// not an edit to this function.
-	return await matchProjectType({
-		reader,
-		hasBin: pkg?.bin !== undefined,
-		hasExports: pkg?.exports !== undefined,
-		hasMain: pkg?.main !== undefined,
-		framework,
-		monorepoTool,
-		isGame: detectGame(deps),
-	});
 };
 
 const detectMcp = async (
@@ -290,18 +257,13 @@ export const analyzeProject = async (
 	const deps = allDeps(pkg);
 	const scripts = pkg?.scripts ?? {};
 	const framework = await detectFramework(deps);
-	const language = await detectLanguage(reader, pkg);
+	const capabilityGraph = await buildCapabilityGraph(reader);
+	const language = projectLegacyLanguage(capabilityGraph);
 	const monorepoTool = await detectMonorepoTool(reader, pkg);
 	const mcp = await detectMcp(reader, deps);
 	const hasCustomExtraTools = await detectCustomExtraTools(reader);
 	const hasCustomVertexConfig = await detectCustomVertexConfig(reader);
-	const projectType = await detectProjectType(
-		reader,
-		pkg,
-		deps,
-		framework,
-		monorepoTool,
-	);
+	const projectType = projectLegacyProjectType(capabilityGraph);
 	const ci = await detectCi(reader);
 	const ciProvider = detectCiProvider(ci);
 	const agentConfigs = await detectAgentConfigs(reader);

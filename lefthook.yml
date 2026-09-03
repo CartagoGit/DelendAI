@@ -19,14 +19,9 @@ min_version: 1.7.0
 no_tty: false
 colors: true
 
-# Sourced by every generated .git/hooks/* before lefthook itself runs.
-# Neutralises an unusable inherited locale (LC_ALL=en_US.UTF-8 forwarded from
-# a Windows SSH/VS Code client into a WSL box that only has C.UTF-8), which
-# made every hook command print
-#   /usr/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
-# Changing this line requires re-running `bunx lefthook install -f`, because
-# the `rc` path is baked into the generated hook scripts.
-rc: tools/scripts/hooks/lefthook-rc.sh
+# Git clients can forward a locale that does not exist in the execution host.
+# Keep every hook command deterministic without an rc shell shim: Lefthook
+# applies this environment before it starts the command runner.
 
 pre-commit:
     parallel: true
@@ -35,6 +30,9 @@ pre-commit:
         # files itself and re-stages the formatted bytes; it NEVER blocks
         # the commit (Biome CI mode in `bun run validate` is the gate).
         format-staged:
+            env: &hook-locale
+                LC_ALL: C.UTF-8
+                LANG: C.UTF-8
             run: bun tools/scripts/hooks/pre-commit.ts || true
             stage_fixed: false
 
@@ -48,6 +46,7 @@ pre-commit:
         # validate-time check stays as the backstop for a host that
         # bypassed the hook. Never blocks.
         quantitative-refresh:
+            env: *hook-locale
             glob:
                 - '**/*.spec.ts'
                 - 'plugins/*/src/**'
@@ -96,6 +95,7 @@ pre-commit:
         # from closing anything, which is a far worse failure than the one
         # being reported.
         no-stashes-advisory:
+            env: *hook-locale
             run: bun run lint:no-stashes || true
             stage_fixed: false
 
@@ -104,6 +104,7 @@ pre-commit:
         # check runs in `bun run validate` and CI.
         # Skips silently when no SCSS files are staged.
         lint-scss-staged:
+            env: *hook-locale
             glob:
                 - 'apps/web/src/**/*.scss'
             run: bun run lint:scss || true
@@ -128,10 +129,12 @@ pre-commit:
         # Exits non-zero when it replaced something, so nobody discovers
         # the substitution later by accident.
         no-secrets:
+            env: *hook-locale
             run: bun tools/scripts/lint/no-secrets.script.ts --fix
             stage_fixed: true
 
         catalog-drift-check:
+            env: *hook-locale
             glob:
                 - 'packages/core/skills/**'
                 - 'docs/mcp-vertex/proposals/**'
@@ -158,6 +161,7 @@ pre-commit:
             stage_fixed: true
 
         host-hints-drift-check:
+            env: *hook-locale
             glob:
                 - 'docs/mcp-vertex/agent-catalog.generated.json'
                 - 'tools/scripts/catalog/render-host-hints.script.ts'
@@ -171,6 +175,7 @@ pre-commit:
         # and will fail the CI run. The hook is here so the agent
         # authoring the commit sees the violation immediately.
         stray-files-check:
+            env: *hook-locale
             run: bun run lint:stray-cache-files || true
 
         # f00086: config-driven branch discipline. BLOCKING. With
@@ -179,6 +184,7 @@ pre-commit:
         # arbitrary working branches are rejected; release/* is the sole
         # operator-created branch for the release PR flow.
         commit-branch-discipline:
+            env: *hook-locale
             run: bun run lint:commit-branch -- --staged {staged_files}
 
         # f00083: anti-duplication guard for the universal bootstrap.
@@ -188,6 +194,7 @@ pre-commit:
         # the cost on every commit. Bypass: LEFTHOOK_BYPASS=1
         # git commit ... (documented in the blocker text).
         bootstrap-canonical-discipline:
+            env: *hook-locale
             glob:
                 - 'docs/mcp-vertex/AGENT-BOOTSTRAP.md'
             run: bun run lint:bootstrap-canonical || exit 1
@@ -198,6 +205,7 @@ pre-commit:
         # Bypass: LEFTHOOK_BYPASS=1 git commit ... (documented in
         # the blocker text).
         host-hints-fragments-discipline:
+            env: *hook-locale
             glob:
                 - 'docs/mcp-vertex/host-hints/agent-instructions.generated.md'
             run: bun run lint:host-hints-fragments || exit 1
@@ -208,12 +216,15 @@ pre-push:
         # Full-repo format check before pushing. Advisory: prints the
         # unformatted files but never blocks the push.
         format-check-all:
+            env: *hook-locale
             run: bun run format:all:check || true
         format-check-web:
+            env: *hook-locale
             run: bun run format:web:check || true
         # Full-site SCSS BEM lint (matches what `bun run validate` runs in CI).
         # Advisory: prints violations but does not block the push.
         lint-scss-all:
+            env: *hook-locale
             run: bun run lint:scss || true
 
         # c00133 (AUD-P0-003): drift check on every push. Runs every
@@ -228,6 +239,7 @@ pre-push:
         # point the value is already in a commit object, so editing the
         # worktree would not remove it; the author has to rewrite it out.
         no-secrets-push:
+            env: *hook-locale
             run: bun tools/scripts/lint/no-secrets.script.ts --push-range
 
         # An empty commit that says it shipped a slice is worse than no
@@ -237,9 +249,11 @@ pre-push:
         # arriving from other paths, so this checks the OUTCOME rather
         # than guessing at causes.
         no-empty-commits:
+            env: *hook-locale
             run: bun tools/scripts/lint/no-empty-commits.script.ts
 
         drift-check:
+            env: *hook-locale
             run: bun tools/scripts/gen-all.script.ts --check
 
         # f00086: config-driven branch discipline. BLOCKING. With
@@ -260,6 +274,7 @@ pre-push:
         # anything. Without `use_stdin: true`, do not remove the script's
         # own `process.stdin.isTTY` guard — see the script's header comment.
         push-to-develop-discipline:
+            env: *hook-locale
             use_stdin: true
             run: bun run lint:push-to-develop -- {1} {2}
 
@@ -269,6 +284,7 @@ pre-push:
         # atrapa antes de subir, CI confirma en PR. Bypass:
         # LEFTHOOK_BYPASS=1 git push ...
         release-pr-gate:
+            env: *hook-locale
             use_stdin: true
             run: bun run lint:release-pr-gate -- {1} {2} || exit 1
 
@@ -278,10 +294,12 @@ commit-msg:
     parallel: false
     commands:
         commit-msg-conventional:
+            env: *hook-locale
             run: bun run lint:commit-msg -- {1}
 
 # Manual hooks (run with `lefthook run <name>`).
 format_web:
     commands:
         format-web:
+            env: *hook-locale
             run: bun run format:web

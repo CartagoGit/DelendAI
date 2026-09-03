@@ -27,7 +27,7 @@ export default definePlugin({
 			workspaceRootAbs: ctx.workspace.root,
 			maxBytes: parsed.data.maxBytes ?? DEFAULT_QUALITY_POLICY_MAX_BYTES,
 		});
-		// q00013 S3: settlement-runner tool — optional until the
+		// The settlement-runner tool is optional until the
 		// host wires the settlement gate. Hosts that don't want
 		// it can ignore the registration; the gate is opt-in.
 		const settlement = buildSettlementToolRegistration({

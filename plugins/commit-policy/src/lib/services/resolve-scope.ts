@@ -188,7 +188,7 @@ export const resolveCommitScope = (
 	}
 
 	// Foreign-dirty-excluded: paths in `files` not currently dirty.
-	// x00419 / 2026-09-02 log storm regression.
+	// Log storm regression observed on 2026-09-02.
 	//
 	// IMPORTANT — DO NOT filter `files` by `workspaceDirty` here. The
 	// resolver's job is to produce the canonical git-path scope from the

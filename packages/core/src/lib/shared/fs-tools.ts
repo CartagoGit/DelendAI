@@ -191,7 +191,7 @@ export const buildFsToolRegistrations = (
 						content: string;
 						createDirs?: boolean | undefined;
 					}) => {
-						// r00003 S3 (F-003): reject a stray `atomic`
+						// Reject a stray `atomic`
 						// argument explicitly rather than silently
 						// dropping it. A caller passing `atomic:false`
 						// expects a non-durable write; surfacing a

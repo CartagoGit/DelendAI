@@ -936,7 +936,7 @@ const runCommitDriverUnlocked = async (
 		options.auditAgent,
 	);
 
-	// f00417 / external review 2026-09-03: a slice commit's scope is
+	// External review 2026-09-03: a slice commit's scope is
 	// a NON-CONFIGURABLE invariant. It is always the files the caller
 	// named for that slice — never `gitDirtyFilePaths()`.
 	//
@@ -965,7 +965,7 @@ const runCommitDriverUnlocked = async (
 					? input.triggerContext.files
 					: []));
 
-	// x00263 (AUD-CP-005): when sliceScoping is on and the slice
+	// When sliceScoping is on and the slice
 	// declared no files, refuse rather than fall back to
 	// `skipAdd: true`. The previous behaviour allowed an empty
 	// list to "stage whatever the worktree had", which is the
@@ -997,7 +997,7 @@ const runCommitDriverUnlocked = async (
 		};
 	}
 
-	// x00264 (AUD-CP-006): a non-slice trigger fired with zero
+	// A non-slice trigger fired with zero
 	// dirty paths. Same fail-closed semantics as the slice case
 	// — an implicit `skipAdd: true` would let the driver commit
 	// whatever happened to be staged, which has nothing to do

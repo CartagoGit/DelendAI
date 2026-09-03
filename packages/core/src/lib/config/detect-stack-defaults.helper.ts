@@ -138,25 +138,82 @@ export const detectPackageManager = (
 	return 'unknown';
 };
 
-export const detectPrimaryLanguage = (
+export interface ILanguageDetectionSignal {
+	readonly language: IDetectedLanguage;
+	readonly evidence: string;
+	readonly score: number;
+}
+
+const hasTypeScriptEvidence = (
+	deps: Readonly<Record<string, string>>,
+	paths: readonly string[],
+): boolean =>
+	Object.hasOwn(deps, 'typescript') ||
+	paths.some(
+		(path) => path.endsWith('tsconfig.json') || path.includes('tsconfig.'),
+	);
+
+const firstPath = (
+	paths: readonly string[],
+	suffixes: readonly string[],
+): string | undefined =>
+	paths.find((path) => suffixes.some((suffix) => path.endsWith(suffix)));
+
+/**
+ * Collect every language signal instead of selecting the first manifest.
+ * Scores preserve the established primary-language ordering while evidence
+ * makes each detection explainable to the capability graph built later.
+ */
+export const detectLanguageSignalDetails = (
 	deps: Readonly<Record<string, string>>,
 	paths: readonly string[],
 	pyText: string,
 	cargoText: string | null,
 	goModText: string | null,
-): IDetectedLanguage => {
-	if (cargoText !== null) return 'rust';
-	if (goModText !== null) return 'go';
-	if (pyText.trim().length > 0) return 'python';
-	const hasTsSignals =
-		Object.hasOwn(deps, 'typescript') ||
-		paths.some(
-			(path) =>
-				path.endsWith('tsconfig.json') || path.includes('tsconfig.'),
-		);
-	if (hasTsSignals) return 'typescript';
-	if (Object.keys(deps).length > 0) return 'javascript';
-	return 'unknown';
+): readonly ILanguageDetectionSignal[] => {
+	const out: ILanguageDetectionSignal[] = [];
+	if (hasTypeScriptEvidence(deps, paths)) {
+		out.push({
+			language: 'typescript',
+			evidence:
+				firstPath(paths, ['tsconfig.json']) ??
+				(Object.hasOwn(deps, 'typescript')
+					? 'package.json#typescript'
+					: 'tsconfig.json'),
+			score: 100,
+		});
+	}
+	if (pyText.trim().length > 0) {
+		out.push({
+			language: 'python',
+			evidence:
+				firstPath(paths, [
+					'pyproject.toml',
+					'requirements.txt',
+					'setup.py',
+				]) ?? 'pyproject.toml',
+			score: 50,
+		});
+	}
+	if (goModText !== null) {
+		out.push({ language: 'go', evidence: 'go.mod', score: 40 });
+	}
+	if (cargoText !== null) {
+		out.push({ language: 'rust', evidence: 'Cargo.toml', score: 30 });
+	}
+	// package.json is only a JavaScript signal when no more specific language
+	// manifest was found. This avoids calling a Python project JavaScript just
+	// because it contains a small npm frontend or tooling package.
+	if (Object.keys(deps).length > 0 && out.length === 0) {
+		out.push({
+			language: 'javascript',
+			evidence: 'package.json#dependencies',
+			score: 60,
+		});
+	}
+	return out.sort(
+		(a, b) => b.score - a.score || a.language.localeCompare(b.language),
+	);
 };
 
 export const detectLanguageSignals = (
@@ -165,18 +222,20 @@ export const detectLanguageSignals = (
 	pyText: string,
 	cargoText: string | null,
 	goModText: string | null,
-): readonly string[] => {
-	const out: string[] = [];
-	const primary = detectPrimaryLanguage(
-		deps,
-		paths,
-		pyText,
-		cargoText,
-		goModText,
+): readonly string[] =>
+	detectLanguageSignalDetails(deps, paths, pyText, cargoText, goModText).map(
+		({ language }) => language,
 	);
-	if (primary !== 'unknown') out.push(primary);
-	return out;
-};
+
+export const detectPrimaryLanguage = (
+	deps: Readonly<Record<string, string>>,
+	paths: readonly string[],
+	pyText: string,
+	cargoText: string | null,
+	goModText: string | null,
+): IDetectedLanguage =>
+	detectLanguageSignalDetails(deps, paths, pyText, cargoText, goModText)[0]
+		?.language ?? 'unknown';
 
 export const detectTestRunner = (
 	deps: Readonly<Record<string, string>>,

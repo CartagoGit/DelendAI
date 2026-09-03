@@ -134,6 +134,14 @@ export type {
 	IHostCapabilityAction,
 	IHostCapabilityPlan,
 } from '../lib/hosts/host-capability-profile';
+export {
+	HostCapabilityRegistry,
+	createHostCapabilityRegistry,
+} from '../lib/host/host-capability-registry';
+export type {
+	IHostCapabilityProjection,
+	THostCapabilityKey,
+} from '../lib/host/host-capability-registry';
 // File-convention profile (f00037 / f00057 S8) — the canonical
 // TypeScript rule chain used by both the lint engine and the
 // `@mcp-vertex/conventions` plugin.

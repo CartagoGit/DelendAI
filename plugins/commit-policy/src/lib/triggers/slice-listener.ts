@@ -451,7 +451,7 @@ export const createSliceListener = (
 		// fresh transition is what drove the 2026-09-02 storm (83
 		// events on startup).
 		//
-		// x00423: but "baseline" must not mean "emit nothing, ever".
+		// But "baseline" must not mean "emit nothing, ever".
 		// A slice that reached `done` while this listener was not
 		// running is NOT history — nothing has persisted it, and
 		// silence loses the commit.
@@ -519,7 +519,7 @@ export const createSliceListener = (
 
 	return {
 		check,
-		// x00263: both drain helpers are *true* drains — they
+		// Both drain helpers are *true* drains — they
 		// clear the queue. Pending events are also cleared by
 		// `deliverOne` on OK; refusals have no auto-clear path,
 		// so the engine must drain them to keep memory bounded.

@@ -318,8 +318,8 @@ export const PROPOSAL_SCAN_FOLDERS: readonly string[] = [
 	// all — never saw the proposals that live in `ready/<kind>/`. The
 	// counters therefore reported a maximum id lower than the one
 	// already taken, and two agents minting a proposal minutes apart
-	// were handed the SAME id. That is not hypothetical: q00013 and
-	// x00419 were each claimed twice on 2026-09-02, which then blocked
+	// were handed the SAME id. That is not hypothetical: two proposals
+	// were each claimed twice on 2026-09-02, which then blocked
 	// `catalog-drift-check` for every agent in the workspace.
 	//
 	// Walkers tolerate folders that do not exist, so listing the full

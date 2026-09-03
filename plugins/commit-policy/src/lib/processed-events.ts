@@ -99,7 +99,7 @@ export const createProcessedEventsStore = (
 						typeof parsed.key === 'string' &&
 						typeof parsed.ts === 'number'
 					) {
-						// f00417: legacy records (pre-f00417) only had
+						// Legacy records only had
 						// `{ key, sha, ts }` with sha always a commit
 						// hash. New records carry `outcome` and may
 						// have `sha: null` for non-APPLIED outcomes.

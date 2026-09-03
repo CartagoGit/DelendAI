@@ -1404,14 +1404,6 @@
 				"date": ""
 			},
 			{
-				"id": "q00016",
-				"title": "q00016",
-				"track": "quality",
-				"status": "ready",
-				"kind": "plan",
-				"date": ""
-			},
-			{
 				"id": "q00017",
 				"title": "q00017",
 				"track": "architecture",
@@ -1538,14 +1530,30 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00425",
+				"title": "x00425",
+				"track": "quality",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00426",
+				"title": "x00426",
+				"track": "tooling",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
 			"ready": 23,
-			"in-progress": 10,
+			"in-progress": 11,
 			"review": 4,
 			"paused": 1,
-			"done": 714,
+			"done": 715,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0

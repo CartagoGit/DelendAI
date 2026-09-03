@@ -423,7 +423,7 @@ export const createCommitPolicyEngine = (
 					logPipelineStep(event, step, 'SKIP');
 				}
 			}
-			// r00418: emit one single-line summary so the operator can
+			// Emit one single-line summary so the operator can
 			// see the event's outcome without grepping through 8
 			// pipeline.step JSON blobs. ERR-only if there's an error,
 			// else debug (or nothing when LOG_PIPELINE_DEBUG is on,
@@ -626,7 +626,7 @@ export const createCommitPolicyEngine = (
 		// and commits through the isolated index flow when the
 		// workspace metadata is available.
 		//
-		// f00417: before composing the driver input, resolve the
+		// Before composing the driver input, resolve the
 		// slice's machine-readable commit scope. The resolver
 		// classifies every declared entry as either canonical
 		// git-path or unresolved (recorded in WARN, never
@@ -691,7 +691,7 @@ export const createCommitPolicyEngine = (
 			};
 			if (scope.files.length === 0) {
 				// No canonical, agent-owned, dirty paths.
-				// f00417 S2: terminal NO_CHANGE, persisted.
+				// Terminal NO_CHANGE, persisted.
 				completeStep('idempotency', 'SKIP');
 				const reason =
 					scope.unresolvedEntries.length > 0
@@ -719,7 +719,7 @@ export const createCommitPolicyEngine = (
 			baseMessage,
 			resolvedSliceScope,
 		);
-		// f00417: thread the resolved slice scope into the driver
+		// Thread the resolved slice scope into the driver
 		// so the post-stage subset check can upgrade
 		// CROSS_AGENT_CONTAMINATION to CAUSALITY_VIOLATION. Manual
 		// events carrying a sliceContext still go through the older
@@ -988,7 +988,7 @@ const toDriverInput = (
 ): ICommitDriverInput => {
 	switch (event.kind) {
 		case 'slice':
-			// f00417: slice events ALWAYS commit only the
+			// Slice events ALWAYS commit only the
 			// machine-resolved scope. `sliceScoping`/`allowForeignChanges`
 			// no longer control this path; they still apply to
 			// threshold/interval/manual. The subset check
