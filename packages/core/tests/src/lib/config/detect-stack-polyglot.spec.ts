@@ -87,8 +87,39 @@ describe('detectStack language detection', () => {
 
 		expect(matches).toEqual([
 			{ id: 'typescript', score: 100, evidence: ['tsconfig.json'] },
-			{ id: 'go', score: 40, evidence: ['go.mod'] },
-			{ id: 'rust', score: 30, evidence: ['Cargo.toml'] },
+			{ id: 'go', score: 90, evidence: ['go.mod'] },
+			{ id: 'rust', score: 90, evidence: ['Cargo.toml'] },
 		]);
+	});
+
+	it('reports JavaScript alongside Python instead of deleting it', async () => {
+		// The mirror image of the bug this plan was written for. The first
+		// fix suppressed `javascript` whenever ANY other language matched,
+		// which answered "python" alone for a React frontend beside a
+		// FastAPI backend — the same information loss, pointed the other
+		// way. Rust, Go and Python are separate ecosystems and do not get
+		// to delete a real signal.
+		const matches = await matchLanguageSignals(reader(['pyproject.toml']), {
+			dependencies: { react: '^18' },
+		});
+
+		expect(matches.map((match) => match.id)).toEqual([
+			'python',
+			'javascript',
+		]);
+		// Primary follows evidence strength, not array order: a manifest
+		// that exists to declare one language outranks a `package.json`
+		// that every Node repository has whatever it is written in.
+		expect(matches[0]?.evidence).toEqual(['pyproject.toml']);
+	});
+
+	it('lets TypeScript, and only TypeScript, absorb JavaScript', async () => {
+		// These two read the same evidence: a TypeScript project ships a
+		// package.json too, so naming both is two names for one fact.
+		const matches = await matchLanguageSignals(reader(['tsconfig.json']), {
+			dependencies: {},
+		});
+
+		expect(matches.map((match) => match.id)).toEqual(['typescript']);
 	});
 });

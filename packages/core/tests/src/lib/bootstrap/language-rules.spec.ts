@@ -17,13 +17,17 @@ const reader = (files: Record<string, string>): IFileReader => ({
 
 describe('DEFAULT_LANGUAGE_RULES (declarative table)', async () => {
 	it('lists the five built-in languages', async () => {
+		// Order is no longer meaningful: the matcher accumulates scores
+		// across every rule instead of stopping at the first match, so a
+		// set comparison is what this actually asserts. Pinning the array
+		// order would pin an implementation detail that stopped existing.
 		const ids = DEFAULT_LANGUAGE_RULES.map((r) => r.id);
-		expect(ids).toEqual([
-			'typescript',
+		expect([...ids].sort()).toEqual([
+			'go',
 			'javascript',
 			'python',
-			'go',
 			'rust',
+			'typescript',
 		]);
 	});
 	it('typescript outranks python (a ts project may have a stray pyproject.toml)', async () => {

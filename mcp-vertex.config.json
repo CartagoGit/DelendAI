@@ -264,7 +264,7 @@
 					}
 				},
 				"audit": {
-					"trailer": "co-authored-by",
+					"trailer": "none",
 					"agentFormat": "${host}/${model}"
 				}
 			}
