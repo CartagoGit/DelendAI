@@ -493,9 +493,22 @@ export const withFileMutex = async <T>(
 						);
 					}
 				}
-			} catch {
-				// The sidecar vanished between open and stat: retry now.
-				continue;
+			} catch (error) {
+				// f00154/q00016 S5: only ENOENT (the sidecar vanished between
+				// open and stat, or between rename and revalidate) is benign
+				// and worth a retry. This catch also sits above the nested
+				// reclaimError/guardError/commitError rethrows above, so an
+				// unfiltered `catch { continue }` here would silently turn
+				// THEIR already-correct propagation back into a retry too —
+				// and because this `continue` re-enters the for(;;) loop
+				// BEFORE the `deadline` check below, a persistent non-ENOENT
+				// error (EACCES, EIO, EISDIR — e.g. a tampered or
+				// permission-denied lock directory) doesn't even surface as
+				// a bounded LockContentionError: it hangs forever.
+				if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+					continue;
+				}
+				throw error;
 			}
 			if (Date.now() >= deadline) {
 				// A live holder outlived the timeout (a stale one was already
