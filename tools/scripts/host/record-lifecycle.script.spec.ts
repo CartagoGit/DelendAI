@@ -8,7 +8,7 @@ import {
 	appendClaudeLifecycleRow,
 	parseOptions,
 	toClaudeLifecycleRow,
-} from './record-claude-lifecycle.script';
+} from './record-lifecycle.script';
 
 const created: string[] = [];
 

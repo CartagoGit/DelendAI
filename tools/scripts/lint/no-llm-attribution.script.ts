@@ -205,6 +205,11 @@ const scanText = (text: string, source: string): Violation[] => {
 			continue;
 		}
 		const [, key, value] = m;
+		// A regex group is `string | undefined` under
+		// `noUncheckedIndexedAccess`, and a trailer line whose value is
+		// empty is a trailer with nothing to judge — skipping it is the
+		// answer, not asserting the group is present.
+		if (key === undefined || value === undefined) continue;
 		if (!TRAILER_KEY.test(key)) continue;
 		const valueClean = value.replace(/[<>"'`]+/gu, ' ').trim();
 		// Tokenize the WHOLE value (name + email local-part), so
