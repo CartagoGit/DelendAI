@@ -124,10 +124,10 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 ### S1 — El contrato del grafo de capacidades
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  - `packages/contracts/src/lib/capability-graph/capability-graph.interface.ts` — `ICapabilityGraph`, `ICapabilitySignal`, `IProjectShape`, `IProjectRole`. En `contracts` porque es TypeScript puro y un consumidor externo no debe arrastrar el runtime para leer la forma de un proyecto.
-  - `packages/contracts/src/lib/capability-graph/capability-signal.interface.ts` — una señal lleva `source`, `evidence` (el fichero o clave que la produjo) y `confidence`. Sin evidencia no es una señal, es una opinión.
+  - `packages/contracts/src/capability-graph.interface.ts` — `ICapabilityGraph`, `ICapabilitySignal`, `IProjectShape`, `IProjectRoleFinding` y sus vocabularios. En `contracts` porque es TypeScript puro y un consumidor externo no debe arrastrar el runtime para leer la forma de un proyecto. La señal lleva `source`, `evidence` (el fichero o clave que la produjo) y `confidence`; sin evidencia no es una señal, es una opinión.
+  - `packages/contracts/tests/src/capability-graph.spec.ts` — fixture tipado de un proyecto políglota con varios roles y evidencia, más el resultado vacío honesto.
 - **Gate**: lint, types
 
 ### S2 — Lenguajes en plural, con evidencia

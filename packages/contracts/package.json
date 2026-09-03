@@ -89,6 +89,13 @@
 			},
 			"types": "./dist/primitives.d.ts",
 			"import": "./dist/primitives.js"
+		},
+		"./capability-graph": {
+			"@mcp-vertex/source": {
+				"types": "./src/capability-graph.interface.ts"
+			},
+			"types": "./dist/capability-graph.interface.d.ts",
+			"import": "./dist/capability-graph.interface.js"
 		}
 	},
 	"scripts": {
