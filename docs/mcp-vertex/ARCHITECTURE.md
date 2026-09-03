@@ -30,7 +30,7 @@ graph TD
         METRICS["metrics registry + tool"]
     end
 
-    subgraph plugins["plugins/* — opt-in capability (16 shipped)"]
+    subgraph plugins["plugins/* — opt-in capability"]
         PLUGINS["proposals · memory · quality · rules ·<br/>search · docs · deps · git · notification ·<br/>audit · conventions · issues · logs ·<br/>status-marker · test-convention · web-fetch"]
     end
 
@@ -54,7 +54,7 @@ graph TD
 | **Plugins**      | `plugins/*`                  | One capability each, namespaced. Receive `IMcpPluginContext`.                                              | `@mcp-vertex/core/public`               |
 | **Site**         | `apps/web`                   | Astro product/docs site, generated from the **live** registry.                                             | core + all plugins (build-time only)    |
 | **Examples**     | `docs/mcp-vertex/examples/*` | Minimal host, custom plugin, swarm.                                                                        | core (+ plugins)                        |
-| **Scripts**      | `scripts/*`                  | build · derive-version · release · type/schema generation. Pure planning split from side-effecting shells. | core                                    |
+| **Scripts**      | `tools/scripts/*`            | build · derive-version · release · type/schema generation. Pure planning split from side-effecting shells. | core                                    |
 
 The dependency arrow only ever points **plugin → core**, never the reverse.
 

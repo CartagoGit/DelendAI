@@ -1,9 +1,15 @@
 # drift.yml — c00133 (AUD-P0-003).
 #
-# Required status check on `develop` and `main` (see
-# `.github/branch-protection.ts`). Runs every generator and fails
-# the PR when the working tree drifts from what the generators
-# produce.
+# NOT a required status check. `.github/branch-protection.ts` is the
+# source of truth and declares `develop` deliberately unprotected — an
+# open snapshot journal a swarm pushes to — with `main` as the protected
+# release boundary, where the single required aggregate is `ci-complete`.
+# This comment used to claim the opposite, which sent more than one
+# reader looking for a protection rule that does not exist.
+#
+# It runs every generator and fails when the working tree drifts from
+# what the generators produce, which is a correctness signal regardless
+# of whether anything is gated on it.
 
 name: drift
 
