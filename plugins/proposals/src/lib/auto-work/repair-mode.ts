@@ -13,8 +13,6 @@
  * it with the right conventional commit type.
  */
 
-import type { IProposalKind } from '../contracts/constants/proposal-glossary.constant';
-
 import type {
 	IRepairDraft,
 	IRepairDraftInput,

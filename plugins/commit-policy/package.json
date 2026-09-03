@@ -37,11 +37,17 @@
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
-		"./lib/*": {
+		"./lib/services/storm-detector": {
 			"@mcp-vertex/source": {
-				"types": "./src/lib/*"
+				"types": "./src/lib/services/storm-detector.ts"
 			},
-			"types": "./dist/lib/*"
+			"types": "./dist/lib/services/storm-detector.d.ts"
+		},
+		"./lib/services/push-circuit": {
+			"@mcp-vertex/source": {
+				"types": "./src/lib/services/push-circuit.ts"
+			},
+			"types": "./dist/lib/services/push-circuit.d.ts"
 		}
 	},
 	"scripts": {
