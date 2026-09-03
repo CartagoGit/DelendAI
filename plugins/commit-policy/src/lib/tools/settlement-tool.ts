@@ -16,6 +16,16 @@ import { z } from 'zod';
 
 import { createWorkerRegistry } from '../settlement/worker-registry';
 
+import type {
+	ISettlementStatusOutput,
+	ISettlementToolDeps,
+} from '../contracts/interfaces/settlement-tool.interface';
+
+export type {
+	ISettlementStatusOutput,
+	ISettlementToolDeps,
+} from '../contracts/interfaces/settlement-tool.interface';
+
 export const SettlementStatusInput = z.object({}).strict();
 
 export const SettlementEnterInput = z
@@ -31,16 +41,6 @@ export const SettlementCompleteInput = z
 		notes: z.string().optional(),
 	})
 	.strict();
-
-export interface ISettlementStatusOutput {
-	readonly phase: 'active' | 'settling' | 'stable';
-	readonly activeWorkers: number;
-	readonly lastGreenHead?: string;
-}
-
-export interface ISettlementToolDeps {
-	readonly workspaceRoot: string;
-}
 
 export const createSettlementTool = (deps: ISettlementToolDeps) => {
 	const registry = createWorkerRegistry({

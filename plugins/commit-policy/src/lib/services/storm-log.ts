@@ -25,20 +25,15 @@ import { join } from 'node:path';
 
 import type { IStormEvent } from './storm-detector';
 
-export interface IStormLogEntry {
-	readonly trigger: string;
-	readonly code: string;
-	readonly firstSeenAt: number;
-	readonly lastSeenAt: number;
-	readonly timestamps: readonly number[];
-	readonly sampleProposalIds: readonly string[];
-	readonly suggestedFix?: string;
-}
+import type {
+	IStormLogEntry,
+	IStormLogOptions,
+} from '../contracts/interfaces/storm-log.interface';
 
-export interface IStormLogOptions {
-	readonly cacheDir: string;
-	readonly maxAgeMs?: number;
-}
+export type {
+	IStormLogEntry,
+	IStormLogOptions,
+} from '../contracts/interfaces/storm-log.interface';
 
 const DEFAULT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 

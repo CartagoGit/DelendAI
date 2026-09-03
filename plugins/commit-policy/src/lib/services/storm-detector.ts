@@ -31,46 +31,21 @@
  *     flag. The caller decides what to do.
  */
 
-export interface IStormDetectorOptions {
-	/** Sliding window in seconds. Default 30. */
-	readonly windowSeconds?: number;
-	/** Threshold for `count >= threshold` flag. Default 5. */
-	readonly threshold?: number;
-	/** Cap on sampleProposalIds collected per storm. Default 5. */
-	readonly maxSamplesPerStorm?: number;
-	/** Cap on active keys kept in memory. Default 256. */
-	readonly maxTrackedKeys?: number;
-}
+import type {
+	IStorm,
+	IStormDetectorOptions,
+	IStormEvent,
+	IStormSnapshot,
+} from '../contracts/interfaces/storm-detector.interface';
+
+export type {
+	IStorm,
+	IStormDetectorOptions,
+	IStormEvent,
+	IStormSnapshot,
+} from '../contracts/interfaces/storm-detector.interface';
 
 /** The shape of an event the detector cares about. */
-export interface IStormEvent {
-	readonly timestamp: number; // ms since epoch
-	readonly code: string; // e.g. 'WORKSPACE_HAS_NO_FILES'
-	readonly trigger: string; // 'slice' | 'manual' | 'threshold' | 'interval' | ...
-	readonly proposalId?: string;
-	readonly sliceId?: string;
-	/** Optional short hint from the producer. */
-	readonly suggestedFix?: string;
-}
-
-export interface IStorm {
-	readonly code: string;
-	readonly trigger: string;
-	readonly count: number;
-	readonly windowSeconds: number;
-	readonly sampleProposalIds: readonly string[];
-	readonly firstSeenAt: number;
-	readonly lastSeenAt: number;
-	readonly suggestedFix?: string;
-	readonly exceedsThreshold: boolean;
-}
-
-export interface IStormSnapshot {
-	readonly storms: readonly IStorm[];
-	readonly totalEventsInWindow: number;
-	readonly windowSeconds: number;
-	readonly threshold: number;
-}
 
 interface IBucket {
 	timestamps: number[];

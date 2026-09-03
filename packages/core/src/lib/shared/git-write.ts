@@ -51,6 +51,12 @@ import type {
  * a slow/hanging git never blocks the MCP server's event loop. Never
  * throws: failures come back as `{ ok: false, reason }`.
  */
+/**
+ * Cap on a captured git failure reason. Long enough for git's full
+ * diagnosis, short enough that one failure cannot flood a log line.
+ */
+const GIT_FAILURE_REASON_MAX = 600;
+
 export const createGitRunner =
 	(cwd: string, timeoutMs = 60_000): IGitRunner =>
 	(args) =>
@@ -79,12 +85,52 @@ export const createGitRunner =
 					} else if (err.killed || err.signal === 'SIGTERM') {
 						reason = `git timed out after ${timeoutMs}ms`;
 					} else {
-						reason =
-							stripAnsi(
-								stderr || err.message || 'git command failed',
+						// git does NOT put everything on stderr. `git
+						// commit` with an empty index writes "nothing to
+						// commit, working tree clean" to STDOUT and exits
+						// 1, leaving stderr empty. Reading stderr alone
+						// then falls through to `err.message`, which is
+						// just the command echo —
+						// "Command failed: git commit --author=… -m …" —
+						// with no reason in it at all.
+						//
+						// That is not merely unhelpful, it is a live
+						// infinite loop: commit-policy classifies
+						// "nothing to commit" as a TERMINAL outcome so a
+						// slice whose work is already committed stops
+						// retrying. The classifier matches on this reason
+						// string. With the reason reduced to the command
+						// echo it never matches, the event stays pending,
+						// and the listener re-emits it about once a second
+						// forever (observed in an adopter project on
+						// 2026-09-03).
+						//
+						// So: prefer stderr, fall back to stdout, and only
+						// then to the exec error.
+						//
+						// Keep the WHOLE output, not just its first line.
+						// git's diagnosis is frequently not on line one —
+						// "nothing to commit" sits under "On branch main"
+						// and a summary of untracked paths. Callers match
+						// on substrings, so dropping the tail is what
+						// broke the classification in the first place.
+						// Bounded and flattened to stay one log line.
+						const raw = stripAnsi(
+							stderr || stdout || err.message || '',
+						).trim();
+						const flattened = raw
+							.split('\n')
+							.map((line) => line.trim())
+							.filter(
+								(line) =>
+									line.length > 0 &&
+									!line.startsWith('Command failed:'),
 							)
-								.trim()
-								.split('\n')[0] ?? 'git command failed';
+							.join(' | ');
+						reason =
+							flattened.length > 0
+								? flattened.slice(0, GIT_FAILURE_REASON_MAX)
+								: 'git command failed';
 					}
 					resolve({ ok: false, output: '', reason });
 				},

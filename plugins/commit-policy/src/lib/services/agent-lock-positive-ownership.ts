@@ -23,6 +23,8 @@ import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
 import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 
+export type { IPositiveOwnership } from '../contracts/interfaces/positive-ownership.interface';
+
 interface ILockEntry {
 	readonly task_id?: string;
 	readonly agent?: string;
@@ -33,12 +35,6 @@ interface ILockEntry {
 }
 
 const normalize = (path: string): string => path.replace(/^\.\//u, '');
-
-export interface IPositiveOwnership {
-	readonly agentId: string;
-	readonly taskId: string;
-	readonly ownedFiles: readonly string[];
-}
 
 /**
  * Read `.cache/mcp-vertex/agents.lock.json`, filter by agent+task,

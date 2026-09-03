@@ -23,7 +23,7 @@ import type {
 	IResolveScopeInput,
 	IResolvedCommitScope,
 	IUnresolvedScopeEntry,
-	ResolvedScopeSource,
+	IResolvedScopeSource,
 } from '../contracts/interfaces/resolved-scope.interface';
 
 /** Normalise to repo-relative POSIX form, matching `commit-driver.ts`. */
@@ -47,11 +47,36 @@ import type {
  */
 const stripCodeSpan = (raw: string): string => {
 	const trimmed = raw.trim();
-	return trimmed.length >= 2 &&
+	if (
+		trimmed.length >= 2 &&
 		trimmed.startsWith('`') &&
 		trimmed.endsWith('`')
-		? trimmed.slice(1, -1).trim()
-		: trimmed;
+	) {
+		return trimmed.slice(1, -1).trim();
+	}
+	// The repo's actual proposal style is a sub-bullet per file:
+	//
+	//   - **Files**:
+	//     - `packages/core/src/lib/foo.ts` — what this slice does to it
+	//
+	// The path is the backticked token; everything after the em-dash is
+	// prose written for a human. Classifying the WHOLE entry rejected it
+	// as `vague-language`, so the slice resolved to zero files and never
+	// committed — observed live on 2026-09-03 for x00423's own slices.
+	//
+	// Demanding that four hundred proposals be rewritten to put a bare
+	// path on one line is the wrong way round: a backticked token inside
+	// a file list is unambiguously the path, and reading it is cheaper
+	// and safer than rewriting the corpus. An entry with NO backticks
+	// still falls through to the strict classification below, so genuine
+	// prose ("see files list below") is still rejected.
+	// The code span must LEAD the entry, after an optional list marker.
+	// In a file list the entry's subject comes first: "- `a/b.ts` — why"
+	// names a path. "every `.md` under `docs/`" does not — there the
+	// code spans are fragments of a description, and the entry as a
+	// whole is still the vague language the strict classifier rejects.
+	const leadingCodeSpan = /^(?:[-*]\s+)?`([^`\n]+)`/u.exec(trimmed);
+	return leadingCodeSpan?.[1]?.trim() ?? trimmed;
 };
 
 export const normalizeRepoPath = (raw: string): string => {
@@ -140,7 +165,7 @@ export const resolveCommitScope = (
 	}
 
 	// Ownership intersection (when provided).
-	let source: ResolvedScopeSource;
+	let source: IResolvedScopeSource;
 	let files: readonly string[];
 	if (input.ownership !== undefined) {
 		const owned = new Set(

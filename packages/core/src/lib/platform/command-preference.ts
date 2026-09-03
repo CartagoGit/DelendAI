@@ -127,56 +127,60 @@ const listFilesChain = (
 		: [fd, gitLsFiles, baseline];
 };
 
+/**
+ * Argv per package manager and purpose. A literal, not a lookup table
+ * with a fallback: every purpose has a real answer for every manager, and
+ * a missing one should be a type error rather than an empty argv.
+ */
+const PACKAGE_MANAGER_ARGV = {
+	bun: {
+		'run-tests': ['run', 'test'],
+		typecheck: ['x', 'tsc', '--noEmit'],
+		'install-deps': ['install'],
+	},
+	pnpm: {
+		'run-tests': ['test'],
+		typecheck: ['exec', 'tsc', '--noEmit'],
+		'install-deps': ['install'],
+	},
+	npm: {
+		'run-tests': ['test'],
+		typecheck: ['exec', '--', 'tsc', '--noEmit'],
+		'install-deps': ['install'],
+	},
+} as const;
+
 /** Package-manager chain, shared by run-tests / typecheck / install-deps. */
 const packageManagerChain = (
 	purpose: Extract<
 		ICommandPurpose,
 		'run-tests' | 'typecheck' | 'install-deps'
 	>,
-): readonly ICandidate[] => {
-	const argv: Readonly<Record<string, Readonly<Record<string, string[]>>>> = {
-		bun: {
-			'run-tests': ['run', 'test'],
-			typecheck: ['x', 'tsc', '--noEmit'],
-			'install-deps': ['install'],
-		},
-		pnpm: {
-			'run-tests': ['test'],
-			typecheck: ['exec', 'tsc', '--noEmit'],
-			'install-deps': ['install'],
-		},
-		npm: {
-			'run-tests': ['test'],
-			typecheck: ['exec', '--', 'tsc', '--noEmit'],
-			'install-deps': ['install'],
-		},
-	};
-	return [
-		{
-			requires: 'bun',
-			command: 'bun',
-			argv: argv['bun']?.[purpose] ?? [],
-			reason:
-				'bun is installed and needs no version-manager shim, so it ' +
-				'runs in any shell.',
-			optimal: true,
-		},
-		{
-			requires: 'pnpm',
-			command: 'pnpm',
-			argv: argv['pnpm']?.[purpose] ?? [],
-			reason: 'bun is absent; pnpm is the next cheapest runner here.',
-			optimal: true,
-		},
-		{
-			requires: 'npm',
-			command: 'npm',
-			argv: argv['npm']?.[purpose] ?? [],
-			reason: 'Only npm resolves here.',
-			optimal: false,
-		},
-	];
-};
+): readonly ICandidate[] => [
+	{
+		requires: 'bun',
+		command: 'bun',
+		argv: PACKAGE_MANAGER_ARGV.bun[purpose],
+		reason:
+			'bun is installed and needs no version-manager shim, so it runs ' +
+			'in any shell.',
+		optimal: true,
+	},
+	{
+		requires: 'pnpm',
+		command: 'pnpm',
+		argv: PACKAGE_MANAGER_ARGV.pnpm[purpose],
+		reason: 'bun is absent; pnpm is the next cheapest runner here.',
+		optimal: true,
+	},
+	{
+		requires: 'npm',
+		command: 'npm',
+		argv: PACKAGE_MANAGER_ARGV.npm[purpose],
+		reason: 'Only npm resolves here.',
+		optimal: false,
+	},
+];
 
 const chainFor = (
 	purpose: ICommandPurpose,

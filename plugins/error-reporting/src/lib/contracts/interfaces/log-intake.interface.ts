@@ -25,7 +25,7 @@ export const SERVER_LOG_EVENT_KINDS = [
 	'event-repetition',
 ] as const;
 
-export type ServerLogEventKind = (typeof SERVER_LOG_EVENT_KINDS)[number];
+export type IServerLogEventKind = (typeof SERVER_LOG_EVENT_KINDS)[number];
 
 /**
  * One recognised line, reduced to its classification.
@@ -41,7 +41,7 @@ export type ServerLogEventKind = (typeof SERVER_LOG_EVENT_KINDS)[number];
  * `buildLogFindingReport` in `log-diagnosis.ts`.
  */
 export interface IServerLogEvent {
-	readonly kind: ServerLogEventKind;
+	readonly kind: IServerLogEventKind;
 	readonly lineNumber: number;
 	readonly atMs?: number | undefined;
 	readonly level?: string | undefined;
@@ -56,7 +56,7 @@ export interface IServerLogShapeCount {
 	readonly shapeId: string;
 	readonly count: number;
 	readonly firstLineNumber: number;
-	readonly kind?: ServerLogEventKind | undefined;
+	readonly kind?: IServerLogEventKind | undefined;
 }
 
 export interface IServerLogReadResult {
@@ -94,9 +94,9 @@ export const LOG_DIAGNOSIS_CAUSES = [
 	'log-flood',
 ] as const;
 
-export type LogDiagnosisCause = (typeof LOG_DIAGNOSIS_CAUSES)[number];
+export type ILogDiagnosisCause = (typeof LOG_DIAGNOSIS_CAUSES)[number];
 
-export type LogDiagnosisConfidence = 'high' | 'medium' | 'low';
+export type ILogDiagnosisConfidence = 'high' | 'medium' | 'low';
 
 /** Fixed remediation copy for one cause. Pure data, no log input. */
 export interface ILogRemediation {
@@ -107,8 +107,8 @@ export interface ILogRemediation {
 }
 
 export interface ILogFinding {
-	readonly cause: LogDiagnosisCause;
-	readonly confidence: LogDiagnosisConfidence;
+	readonly cause: ILogDiagnosisCause;
+	readonly confidence: ILogDiagnosisConfidence;
 	readonly occurrences: number;
 	readonly shapeId: string;
 	readonly code?: string | undefined;

@@ -19,17 +19,15 @@ import { join } from 'node:path';
 
 import type { IStorm } from './storm-detector';
 
-export interface IRepairProposerOptions {
-	readonly docsDir: string;
-	readonly now?: Date;
-}
+import type {
+	IRepairProposalResult,
+	IRepairProposerOptions,
+} from '../contracts/interfaces/repair-proposer.interface';
 
-export interface IRepairProposalResult {
-	readonly storm: IStorm;
-	readonly filePath: string;
-	readonly proposed: boolean;
-	readonly reason: string;
-}
+export type {
+	IRepairProposalResult,
+	IRepairProposerOptions,
+} from '../contracts/interfaces/repair-proposer.interface';
 
 const safeName = (s: string): string =>
 	s.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 60);

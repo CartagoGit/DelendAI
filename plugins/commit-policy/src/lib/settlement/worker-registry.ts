@@ -18,15 +18,19 @@ import { dirname, join } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
-export type SettlementPhase = 'active' | 'settling' | 'stable';
+import type {
+	ISettlementState,
+	IWorkerRegistry,
+	IWorkerRegistryOptions,
+	ISettlementPhase,
+} from '../contracts/interfaces/settlement.interface';
 
-export interface ISettlementState {
-	readonly activeWorkers: number;
-	readonly phase: SettlementPhase;
-	readonly lastZeroAt?: number;
-	readonly lastGreenHead?: string;
-	readonly registeringAt: { readonly [agentId: string]: number };
-}
+export type {
+	ISettlementState,
+	IWorkerRegistry,
+	IWorkerRegistryOptions,
+	ISettlementPhase,
+} from '../contracts/interfaces/settlement.interface';
 
 const DEFAULT_STATE: ISettlementState = {
 	activeWorkers: 0,
@@ -46,7 +50,7 @@ const parseState = (raw: string): ISettlementState => {
 			isFiniteNumber(obj.activeWorkers) && obj.activeWorkers >= 0
 				? obj.activeWorkers
 				: 0;
-		const phase: SettlementPhase =
+		const phase: ISettlementPhase =
 			obj.phase === 'settling' || obj.phase === 'stable'
 				? obj.phase
 				: 'active';
@@ -69,19 +73,6 @@ const parseState = (raw: string): ISettlementState => {
 		return DEFAULT_STATE;
 	}
 };
-
-export interface IWorkerRegistry {
-	register(agentId: string): Promise<void>;
-	dispose(agentId: string): Promise<void>;
-	read(): Promise<ISettlementState>;
-	setPhase(phase: SettlementPhase): Promise<void>;
-	markGreen(headSha: string): Promise<void>;
-}
-
-export interface IWorkerRegistryOptions {
-	readonly workspaceRoot: string;
-	readonly fileRel?: string | undefined;
-}
 
 export const createWorkerRegistry = (
 	options: IWorkerRegistryOptions,

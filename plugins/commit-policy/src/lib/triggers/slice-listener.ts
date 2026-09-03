@@ -16,7 +16,10 @@ import { join } from 'node:path';
 
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
+import { BASELINE_EMIT_LIMIT } from '../contracts/constants/slice-listener.constant';
 import type { ITriggerEvent, ISliceTriggerConfig } from './trigger-types';
+
+export { BASELINE_EMIT_LIMIT };
 
 export type { ITriggerEvent };
 
@@ -207,19 +210,6 @@ const diffSlices = (
 	}
 	return { events, refusals };
 };
-
-/**
- * How many un-persisted slices the FIRST poll may emit.
- *
- * The bound exists for the cold-start case: a fresh clone, or a repo
- * whose `.commit-policy/` was deleted, has an empty processed-events
- * store, so every historical `done` slice looks un-persisted. Without a
- * cap that is the 83-event startup storm again. With it, the listener
- * does the most recent handful and says out loud how many it skipped —
- * bounded work and an honest report, instead of either a flood or a
- * silent drop.
- */
-export const BASELINE_EMIT_LIMIT = 10;
 
 /**
  * Decide what the FIRST poll should emit.

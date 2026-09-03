@@ -13,34 +13,24 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
+import type {
+	ISettlementRunnerOptions,
+	ISettlementOutcome,
+} from '../contracts/interfaces/settlement-runner.interface';
+
+export type {
+	ISettlementRunnerOptions,
+	ISettlementOutcome,
+} from '../contracts/interfaces/settlement-runner.interface';
+
 const execFileAsync = promisify(execFile);
-
-export interface ISettlementRunnerOptions {
-	readonly cwd: string;
-	readonly maxAttempts?: number;
-	readonly backoffMs?: (attempt: number) => number;
-	readonly validateCommand?: string;
-}
-
-export type SettlementOutcome =
-	| {
-			readonly green: true;
-			readonly headSha: string;
-			readonly attempts: number;
-	  }
-	| {
-			readonly green: false;
-			readonly attempts: number;
-			readonly failingFiles: readonly string[];
-			readonly lastError: string;
-	  };
 
 const defaultBackoff = (attempt: number): number =>
 	Math.min(60_000, 1000 * 2 ** Math.max(0, attempt - 1));
 
 export const runSettlement = async (
 	options: ISettlementRunnerOptions,
-): Promise<SettlementOutcome> => {
+): Promise<ISettlementOutcome> => {
 	const maxAttempts = options.maxAttempts ?? 3;
 	const backoffMs = options.backoffMs ?? defaultBackoff;
 	const cmd = options.validateCommand ?? 'bun run validate';

@@ -59,8 +59,8 @@ export const isWslEnvironment = (input: {
 }): boolean => {
 	if (classifyOsFamily(input.platformId) !== 'linux') return false;
 	if (
-		input.env['WSL_DISTRO_NAME'] !== undefined ||
-		input.env['WSL_INTEROP'] !== undefined
+		input.env.WSL_DISTRO_NAME !== undefined ||
+		input.env.WSL_INTEROP !== undefined
 	) {
 		return true;
 	}
@@ -122,7 +122,7 @@ export const parseLocaleStatus = (
 export const requestedLocale = (
 	env: Readonly<Record<string, string | undefined>>,
 ): string => {
-	const value = env['LC_ALL'] ?? env['LANG'] ?? '';
+	const value = env.LC_ALL ?? env.LANG ?? '';
 	return value.trim() === '' ? 'C' : value.trim();
 };
 
@@ -159,10 +159,10 @@ export const needsFnmEnv = (
 const resolveCommand = (bin: string): Promise<IToolPresence> =>
 	new Promise((resolve) => {
 		const done = (error: unknown, stdout: string): void => {
-			const found = error === null && stdout.trim() !== '';
+			const first = stdout.trim().split('\n')[0]?.trim() ?? '';
 			resolve(
-				found
-					? { available: true, path: stdout.trim().split('\n')[0] }
+				error === null && first !== ''
+					? { available: true, path: first }
 					: { available: false },
 			);
 		};
@@ -213,7 +213,8 @@ let cachedProfile: ISystemProfile | null = null;
 export const detectSystemProfile = async (
 	options: { readonly refresh?: boolean } = {},
 ): Promise<ISystemProfile> => {
-	if (cachedProfile !== null && options.refresh !== true) return cachedProfile;
+	if (cachedProfile !== null && options.refresh !== true)
+		return cachedProfile;
 	const [presences, localeList] = await Promise.all([
 		Promise.all(PROBED_COMMANDS.map((bin) => resolveCommand(bin))),
 		readGeneratedLocales(),

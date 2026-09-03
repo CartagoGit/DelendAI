@@ -121,18 +121,47 @@ export type IEngineRefusalCode =
 	| 'STORE_READ_ERROR'
 	| 'PUSH_FAILED'
 	| 'NOTHING_TO_COMMIT'
+	| 'SLICE_FILES_MISSING'
+	| 'UNKNOWN_REFUSAL'
 	| 'SETTLEMENT_IN_PROGRESS';
 
+/**
+ * Every refusal code, as a runtime value.
+ *
+ * This array and `IEngineRefusalCode` used to be maintained
+ * separately, and had silently drifted apart: the union carried
+ * sixteen codes while the array carried eight, one of which
+ * (`ALREADY_PROCESSED`) is not a refusal at all. Anything validating
+ * against the array accepted a different set from anything typed
+ * against the union — the same reader/writer mismatch that has cost
+ * this project several days elsewhere.
+ *
+ * `satisfies` makes the compiler enforce that they stay one set:
+ * a code added to the union and not to this array no longer
+ * compiles.
+ */
 export const ENGINE_REFUSAL_CODES = [
-	'SLICE_NOT_FOUND',
-	'INCOMPLETE_SELECTOR',
 	'SELECTOR_REQUIRED',
-	'BRANCH_PROTECTED',
-	'NON_CONVENTIONAL_MESSAGE',
+	'INCOMPLETE_SELECTOR',
+	'SLICE_NOT_FOUND',
+	'SLICE_NOT_IN_CONFIGURED_STATUS',
 	'SLICE_HAS_NO_FILES',
+	'WORKSPACE_HAS_NO_FILES',
+	'BRANCH_PROTECTED',
+	'EMPTY_HEADER',
+	'MALFORMED_HEADER',
+	'UNKNOWN_TYPE',
+	'NON_CONVENTIONAL_MESSAGE',
 	'CROSS_AGENT_CONTAMINATION',
-	'ALREADY_PROCESSED',
-] as const;
+	'CAUSALITY_VIOLATION',
+	'TRIGGER_HAS_NO_FILES',
+	'STORE_READ_ERROR',
+	'PUSH_FAILED',
+	'NOTHING_TO_COMMIT',
+	'SLICE_FILES_MISSING',
+	'UNKNOWN_REFUSAL',
+	'SETTLEMENT_IN_PROGRESS',
+] as const satisfies readonly IEngineRefusalCode[];
 
 export type IEngineResult =
 	| {
@@ -1057,10 +1086,14 @@ const executeGuardedCommit = async (
  * to the outcome recorded in the processed-events store.
  */
 const TERMINAL_REFUSAL_OUTCOMES: Partial<
-	Record<IEngineRefusalCode, 'NO_CHANGE' | 'CAUSALITY_VIOLATION'>
+	Record<
+		IEngineRefusalCode,
+		'NO_CHANGE' | 'CAUSALITY_VIOLATION' | 'PERMANENT_REFUSAL'
+	>
 > = {
 	NOTHING_TO_COMMIT: 'NO_CHANGE',
 	CAUSALITY_VIOLATION: 'CAUSALITY_VIOLATION',
+	SLICE_FILES_MISSING: 'PERMANENT_REFUSAL',
 };
 
 /**
@@ -1093,6 +1126,20 @@ const refusalToEngine = (
 	if (refusal.includes('CROSS_AGENT_CONTAMINATION')) {
 		return err('CROSS_AGENT_CONTAMINATION', refusal, metadata);
 	}
+	// A slice naming files that do not exist in this repository can
+	// NEVER succeed: `git add -- <path>` fails with "did not match any
+	// files" every single time. Retrying is a loop by construction, and
+	// that is exactly what an adopter project hit on 2026-09-03 — eight
+	// slices from an older repo layout re-emitted about once a second,
+	// indefinitely.
+	//
+	// This is a real problem the operator has to fix (the proposal's
+	// `Files:` list is stale), so it is reported rather than swallowed —
+	// but it is reported ONCE, as a terminal outcome, instead of
+	// forever.
+	if (/did not match any files/u.test(refusal)) {
+		return err('SLICE_FILES_MISSING', refusal, metadata);
+	}
 	// A slice whose files already match HEAD is DONE, not failed.
 	// Without this the refusal fell through to the generic
 	// `BRANCH_PROTECTED` fallback with `ack: 'ERR'`, the listener
@@ -1117,7 +1164,14 @@ const refusalToEngine = (
 		}
 		return err('NON_CONVENTIONAL_MESSAGE', refusal, metadata);
 	}
-	// Fallback: surface the raw refusal under BRANCH_PROTECTED
-	// slot (engine has no generic code; callers see the reason).
-	return err('BRANCH_PROTECTED', refusal, metadata);
+	// Anything we do not recognise gets its OWN code, not
+	// `BRANCH_PROTECTED`.
+	//
+	// The old fallback reused the branch-protection slot for every
+	// unclassified failure, so a log full of `code: BRANCH_PROTECTED`
+	// was really a log full of "we have no idea" — and a reader chasing
+	// a branch-protection problem that did not exist. A refusal must
+	// never name a cause it has not established; saying "unknown" is
+	// more useful than saying something false.
+	return err('UNKNOWN_REFUSAL', refusal, metadata);
 };

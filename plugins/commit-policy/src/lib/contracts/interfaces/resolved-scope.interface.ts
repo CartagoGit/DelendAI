@@ -12,7 +12,7 @@
  * staged by accident, is a CAUSALITY_VIOLATION.
  */
 
-export type ResolvedScopeSource = 'declared' | 'ownership' | 'mixed';
+export type IResolvedScopeSource = 'declared' | 'ownership' | 'mixed';
 
 /**
  * A single entry from the slice's `Files:` block that we could not
@@ -50,7 +50,7 @@ export interface IResolvedCommitScope {
 	 * - `mixed`: both — some entries came from declared and others from
 	 *   ownership filtering.
 	 */
-	readonly source: ResolvedScopeSource;
+	readonly source: IResolvedScopeSource;
 	/**
 	 * Canonical, repo-relative, POSIX paths the engine may stage.
 	 * Subset of this is what gets committed; subset ⊆ staged is the
