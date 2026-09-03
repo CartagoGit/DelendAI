@@ -209,8 +209,7 @@ export const dirtyPaths = (): ReadonlySet<string> => {
 export const attributableDrift = (
 	before: ReadonlySet<string>,
 	after: ReadonlySet<string>,
-): readonly string[] =>
-	[...after].filter((path) => !before.has(path)).sort();
+): readonly string[] => [...after].filter((path) => !before.has(path)).sort();
 
 const runGitDiffExit = async (
 	io: IGenAllIo,

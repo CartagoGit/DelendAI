@@ -139,13 +139,8 @@ pre-commit:
         # defence against accidental LLM attribution leaking to GitHub
         # after f00500's S1+S2+S4 make it a config/code/surface issue.
         # Bypass: LEFTHOOK=0 git commit ... (or --no-verify, like every
-        # other lefthook gate). The script accepts an optional
-        # commit-msg-file argv; the pre-commit invocation passes
-        # $(git rev-parse --git-dir)/COMMIT_EDITMSG so the staged message
-        # is scanned even when the agent writes the message programmatically.
-        no-llm-attribution:
-            env: *hook-locale
-            run: bun tools/scripts/lint/no-llm-attribution.script.ts "$(git rev-parse --git-dir)/COMMIT_EDITMSG"
+        # other lefthook gate). The message check itself runs in
+        # `commit-msg`, not here — see the note on that hook below.
 
         catalog-drift-check:
             env: *hook-locale
@@ -310,6 +305,24 @@ commit-msg:
         commit-msg-conventional:
             env: *hook-locale
             run: bun run lint:commit-msg -- {1}
+
+        # f00500 S5: no LLM brand in the author/co-author trailers.
+        #
+        # This ran in `pre-commit` against
+        # $(git rev-parse --git-dir)/COMMIT_EDITMSG, and that file is
+        # always ONE COMMIT BEHIND: git writes it after pre-commit has
+        # already passed. So the gate judged the PREVIOUS message, and
+        # the moment any message containing an LLM trailer reached that
+        # file, every subsequent commit was refused no matter what it
+        # said — with a refusal instructing the author to change a
+        # message they had already changed. A permanent deadlock, and
+        # the author had no way to see why.
+        #
+        # `commit-msg` is the hook that receives the real message file as
+        # {1}, exactly like the conventional-commit check beside it.
+        no-llm-attribution:
+            env: *hook-locale
+            run: bun tools/scripts/lint/no-llm-attribution.script.ts {1}
 
 # Manual hooks (run with `lefthook run <name>`).
 format_web:
