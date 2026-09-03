@@ -31,6 +31,8 @@ import {
 	buildCatalog,
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
+import { syncProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
+import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import type {
 	ICatalogSources,
 	IProposalSummary,
@@ -274,6 +276,17 @@ const readProposalSummaries = async (
 	readonly generatedAt: string;
 }> => {
 	const proposalIndexPath = join(root, DEFAULT_PROPOSALS_INDEX_PATH);
+	// The index is a gitignored cache artifact (x00052): the MCP server
+	// rebuilds it lazily on the next `auto_work` / `continue_proposal`
+	// call, but a fresh checkout — like the CI runner behind the `drift`
+	// workflow — has no server and no cache, only the checked-in proposal
+	// markdown under `docs/mcp-vertex/proposals/`. Without this self-heal
+	// the generator threw "proposal index not found" on every CI run
+	// (the artifact was never actually stale, the cache was just absent),
+	// which gen-all reported as a generator crash rather than real drift.
+	if ((await io.readText(proposalIndexPath)) === undefined) {
+		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT);
+	}
 	const parsed = await parseJsonFile<IProposalIndexFile>(
 		proposalIndexPath,
 		io.readText,

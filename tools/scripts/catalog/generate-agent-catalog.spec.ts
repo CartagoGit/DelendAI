@@ -110,6 +110,13 @@ const createFixtureRoot = async (options?: {
 	readonly manifest?: any;
 	readonly proposals?: typeof baseProposals;
 	readonly skillBodies?: Readonly<Record<string, string>>;
+	// x00xxx (drift-in-CI fix): a fresh checkout — like the `drift`
+	// workflow's CI runner — has the checked-in proposal markdown but no
+	// gitignored `.cache/mcp-vertex/proposals/index.json`. These two let a
+	// test reproduce exactly that shape instead of always pre-seeding the
+	// cache file the way every other fixture in this suite does.
+	readonly skipProposalsIndex?: boolean;
+	readonly proposalMarkdownFiles?: Readonly<Record<string, string>>;
 }): Promise<string> => {
 	const root = await mkdtemp(join(tmpdir(), 'agent-catalog-'));
 	const manifest = options?.manifest ?? baseManifest;
@@ -151,11 +158,20 @@ const createFixtureRoot = async (options?: {
 		`${JSON.stringify(manifest, null, '\t')}\n`,
 		'utf8',
 	);
-	await writeFile(
-		join(root, '.cache/mcp-vertex/proposals/index.json'),
-		`${JSON.stringify(proposals, null, '\t')}\n`,
-		'utf8',
-	);
+	for (const [relativePath, content] of Object.entries(
+		options?.proposalMarkdownFiles ?? {},
+	)) {
+		const absPath = join(root, 'docs/mcp-vertex/proposals', relativePath);
+		await mkdir(join(absPath, '..'), { recursive: true });
+		await writeFile(absPath, content, 'utf8');
+	}
+	if (options?.skipProposalsIndex !== true) {
+		await writeFile(
+			join(root, '.cache/mcp-vertex/proposals/index.json'),
+			`${JSON.stringify(proposals, null, '\t')}\n`,
+			'utf8',
+		);
+	}
 	return root;
 };
 
@@ -370,6 +386,51 @@ describe('generate-agent-catalog script', async () => {
 			expect(result.artifact.proposals.actionable).toHaveLength(2);
 			expect(result.artifact.proposals.byStatus.done).toBe(1);
 		});
+	});
+
+	it('self-heals the proposal index from checked-in markdown when the cache is absent (fresh CI checkout)', async () => {
+		// Reproduces the `drift` workflow's actual failure mode: a fresh
+		// `actions/checkout` has `docs/mcp-vertex/proposals/**` (tracked)
+		// but no `.cache/mcp-vertex/proposals/index.json` (gitignored —
+		// only ever built by the MCP server or an explicit sync). The
+		// generator must rebuild the index from the markdown, not throw.
+		await withFixture(
+			async (root) => {
+				const result = await buildAgentCatalogArtifact(
+					{ root, mode: 'full' },
+					{
+						...testIo(),
+						fixedGeneratedAt: FIXED_NOW,
+						loadTools: async () => [...baseTools],
+					},
+				);
+				const ids = result.artifact.proposals.all?.map(
+					(proposal) => proposal.id,
+				);
+				expect(ids).toContain('f00001');
+			},
+			{
+				skipProposalsIndex: true,
+				proposalMarkdownFiles: {
+					'ready/f00001-self-heal-example.md': [
+						'---',
+						'id: f00001',
+						'title: "Self-heal example"',
+						'kind: feat',
+						'status: ready',
+						'type: proposal',
+						'track: general',
+						'date: 2026-06-20',
+						'---',
+						'',
+						'# f00001 — Self-heal example',
+						'',
+						'Body.',
+						'',
+					].join('\n'),
+				},
+			},
+		);
 	});
 
 	it('sorts deterministically even when inputs arrive in different orders', async () => {
