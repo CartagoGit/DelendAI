@@ -230,6 +230,15 @@ pre-push:
         no-secrets-push:
             run: bun tools/scripts/lint/no-secrets.script.ts --push-range
 
+        # An empty commit that says it shipped a slice is worse than no
+        # commit: a proposal can close on its SHA while the work it
+        # claims is nowhere. Four such commits reached develop. The
+        # `commit-tree` path that minted them is fixed, but they kept
+        # arriving from other paths, so this checks the OUTCOME rather
+        # than guessing at causes.
+        no-empty-commits:
+            run: bun tools/scripts/lint/no-empty-commits.script.ts
+
         drift-check:
             run: bun tools/scripts/gen-all.script.ts --check
 
