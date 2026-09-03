@@ -490,10 +490,20 @@ tres se pueden ejecutar en paralelo si el swarm lo permite.
   `in-progress/plans/`; este plan vive en `ready/chores/` por la
   asignación del server, no por decisión del agente.
 - **Hashes del Status snapshot**: son los del HEAD de `develop` al
-  momento de redactar este plan (2026-09-04). El agente que cierre
-  este plan debe re-confirmar cada uno con `git log -1 --oneline --
+  momento de redactar este plan (2026-09-04 22:59Z, `behind=7` por
+  background activity normal). El agente que cierre este plan debe
+  re-confirmar cada uno con `git log -1 --oneline --
   <path>` antes de la transición a `done`. Si algún hash cambió, el
   cierre documenta el delta (sin reescribir el snapshot histórico).
+
+- **Pertenencia de las secciones `## Solo-execution handoff`,
+  `## Fallo-mode playbook` y `## Resumen ejecutivo`**: estos bloques
+  son NO Standard of plan en este repo (los `q00007..q00017` no los
+  tienen). Se añaden aquí porque el requerimiento explícito del
+  usuario fue "deja la propuesta para que un agente libre lo haga
+  sin otros agentes molestando". Si el equipo decide estandarizar
+  este bloque para todos los planes, propuesta `d00NNN` lo
+  documenta — NO abrirla desde aquí.
 - **Hijas nuevas (`<NEW-1>`, `<NEW-2>`, `<NEW-3>`)**: no tienen id
   todavía. Se crearán cuando el `auto_work` las arranque vía
   `create_proposal`. La pista de qué tipo de hija son está en
@@ -524,4 +534,189 @@ tres se pueden ejecutar en paralelo si el swarm lo permite.
 - **No se han creado PRs ni merges**. El plan queda en la rama
   `agent/copilot-minimax-m3-q00018`; el `commit-policy` plugin se
   encargará del push y del will-record del scope.
+
+- **Riesgo de GC de la rama** (medido por `branch_gc`):
+  `branch_gc` con `staleMinutes=120` reporta la rama como **fresh**
+  (`age 25m < 120`). Para evitar que el GC la barra por inactividad
+  mientras las hijas están siendo implementadas por un agente
+  solitario, el agente ejecutor debe correr `git fetch origin
+  agent/copilot-minimax-m3-q00018` cada vez que aterrice y, al cerrar
+  la primera hija (`<NEW-1>` sniffer), el commit empuja la rama
+  hacia delante, lo que resetea el contador de `lastCommitMinutesAgo`
+  a 0. La sección `## Solo-execution handoff` (abajo) lo recuerda
+  paso a paso.
+
+- **Riesgo de "otros agentes molestando" en el checkout principal**:
+  el `branch_status` reporta `behind=7` a las 2026-09-04 22:59 — es
+  decir, `develop` recibió ~7 commits durante la redacción del plan.
+  Es background activity normal. El agente ejecutor **debe**:
+    1. NO tocar `develop` directamente.
+    2. Hacer el merge de `develop` en su rama SOLO cuando vaya a
+       cerrar la primera hija (Track 1) — el `commit-policy`
+       resolverá conflictos por scope.
+    3. NO abrir PR hasta haber cerrado las 3 hijas.
+    4. Si una herramienta reporta colisión con otra rama
+       `agent/*` ya mergeada, aceptar y proceder (regla `c00012`
+       de coexistencia con trabajo paralelo).
+
+---
+
+## Solo-execution handoff (para el agente ejecutor sin swarm)
+
+> **Propósito**: este apartado deja el plan **ejecutable por un solo
+> agente sin asistencia**, asumiendo que otros agentes pueden estar
+> tocando otras áreas del repo pero NO este plan. Cada paso es un
+> comando concreto. Si un paso falla, ver **Fallo-mode playbook** al
+> final.
+
+### A — Setup único (al arrancar la sesión)
+
+```bash
+# A.1 — Cambiar al worktree aislado y rama de trabajo.
+cd /home/cartago/_projects/mcp-vertex/.worktrees/q00018
+git status --porcelain                                     # debe salir vacío
+git log -1 --oneline                                       # debe ser 910876191
+git branch --show-current                                  # agent/copilot-minimax-m3-q00018
+
+# A.2 — NO rebasear todavía. Primero actualizar develop a tu rama para
+# re-confirmar que c00160 sigue intacta:
+git fetch origin develop agent/copilot-minimax-m3-q00018
+git log origin/agent/copilot-minimax-m3-q00018 --oneline -5
+```
+
+### B — Reclamar (claim) las 3 hijas antes que cualquier otro agente
+
+Antes de tocar código, ejecuta **estos 3 commands de lock** vía el
+tool `mcp-vertex_proposals_agent_lock` (uno por hija; el path es la
+lista `Files:` exacta del slice). Si el `agent_lock` reporta conflicto
+con otro agente, **NO pelees**: déjalo en `Prose-only: handoff-blocked`
+y vuelve al modo colaborativo normal.
+
+```text
+# Track 1 — <NEW-1> sniffer (path raíz que toca dos archivos nuevos)
+mcp-vertex_proposals_agent_lock {
+  files: ["tools/scripts/lint/routing-coherence.script.ts",
+          "tools/scripts/lint/routing-coherence.spec.ts",
+          "package.json"],                                 # el wire-up a `bun run validate`
+  agentName: "<tu-nombre-de-agente>"
+}
+
+# Track 2 — <NEW-2> smoke E2E
+mcp-vertex_proposals_agent_lock {
+  files: ["tests/e2e/routing/full-pipeline.e2e.spec.ts",
+          "tests/e2e/routing/fake-subprocess.ts"],
+  agentName: "<tu-nombre-de-agente>"
+}
+
+# Track 3 — <NEW-3> dogfood fresh verify (anexo a propuesta cerrada)
+mcp-vertex_proposals_agent_lock {
+  files: ["docs/mcp-vertex/proposals/done/feats/f00186-agent-orchestrator-s5-dogfood-on-develop-with-defaultmode-auto-regen.md",
+          "mcp-vertex.config.json",
+          "apps/web/src/data/plugins/agent-orchestrator.ts"],
+  agentName: "<tu-nombre-de-agente>"
+}
+```
+
+> Tres locks separados **garantizan** que ningún otro agente pisa
+> estos paths. El `commit-policy` plugin rechazará push con scope
+> overlapping de otro agente.
+
+### C — Trabajar en este orden (las hijas son independientes,
+        pero Track 1 < Track 2 < Track 3 por dependencia de datos)
+
+| Step | Acción | Comando / Tool | Resultado esperado |
+|---|---|---|---|
+| **C.1** | Confirmar que c00160 sigue apuntando a la rama | `git log -1 --oneline` | `910876191` (o el HEAD actual de la rama) |
+| **C.2** | Crear la hija `<NEW-1>` con id del servidor | `mcp-vertex_proposals_create_proposal { kind:"chore", title:"Sniffer cross-plugin de coherencia entre los 5 plugins de routing", goal:"...", track:"routing-coherence" }` | Devuelve `id` (algo tipo `c00161`) y path |
+| **C.3** | Reemplazar `<NEW-1>` por ese id en el `contains:` de c00160 (en este archivo) y commitear | `replace_string_in_file` + `git commit -m "docs(c00160): pin real id for <NEW-1>"` | `git status --porcelain` vacío |
+| **C.4** | Implementar Track 1 (sniffer) | Seguir `### S1 — Sniffer cross-plugin` abajo. Gate: `bun run typecheck && bun tools/scripts/lint/routing-coherence.script.ts` | Script existe + spec verde + lint pasa |
+| **C.5** | Cerrar Track 1 vía `proposal_review action=submit` y luego `proposal_review action=approve` (debe hacerlo un agente diferente; para auto-flujo usar `force:true` con justificación) | `mcp-vertex_proposals_proposal_review` | Review-state: done + lock liberado |
+| **C.6** | Repetir C.2-C.5 para `<NEW-2>` | — | Idem |
+| **C.7** | Repetir C.2-C.5 para `<NEW-3>` | — | Idem |
+| **C.8** | Cerrar c00160 | `mcp-vertex_proposals_proposal_transition { id:"c00160", to:"done", reason:"..." }` | c00160 → `in-progress/` → `done/` |
+
+### D — Heartbeats para mantener la rama viva (anti-GC)
+
+`branch_gc` barre ramas con `staleMinutes >= 120` (2h). Corre un
+heartbeat por cada hija cerrada. Comando:
+
+```bash
+# Cada 90 min mientras se ejecuta una hija:
+cd /home/cartago/_projects/mcp-vertex/.worktrees/q00018
+git commit --allow-empty -m "chore: heartbeat for c00160 branch pin"
+git push origin agent/copilot-minimax-m3-q00018
+```
+
+### E — Si la base `develop` se mueve mucho (riesgo medido: `behind=7` ya)
+
+NO rebases en mitad de una hija. En vez de eso:
+
+```bash
+# Al TERMINAR la Track 1, justo antes de abrir PR:
+git fetch origin develop
+git rebase origin/develop               # o merge si rebase complica
+# Resolver conflictos (esperados solo en preset-catalog.ts y AGENT-BOOTSTRAP.md)
+git push --force-with-lease origin agent/copilot-minimax-m3-q00018
+```
+
+### F — Anti-molestia: invariantes para el agente ejecutor
+
+1. **NO** abrir PR mientras haya una hija `pending`. Solo cuando
+   las 3 estén `done` y el reviewer haya aprobado.
+2. **NO** modificar archivos fuera de los `Files:` declarados
+   en cada slice. Si necesitas tocar otro path, crear nueva hija.
+3. **NO** usar `git stash` (regla del repo: `no-stashes.script.ts`
+   bloquea).
+4. **NO** resetear/clean la rama — si otro agente modificó algo
+   en ella, aceptar y proceder (regla `c00012`).
+5. **NO** añadir nuevos commits `Co-authored-by:` ni atribución
+   LLM (regla `f00500`).
+6. **SÍ** usar `mcp-vertex_overview { compact:true }` como primera
+   acción (regla `AGENT-BOOTSTRAP.md §1`).
+
+### G — Definition of Done para c00160
+
+- Las 3 hijas (`<NEW-1>..<NEW-3>`) están `status: done` con
+  `review-state: done` y lock liberado.
+- `bun run validate` queda verde con los 5 plugins del scope
+  cargados.
+- El anexo a `f00186` está escrito y enlaza al SHA del HEAD que
+  cerró el plan.
+- El commit de cierre usa conventional commit:
+  `docs(c00160): close routing-policy plan after 3 children done`.
+- Push de la rama hecho vía `git push origin agent/copilot-minimax-m3-q00018`.
+- NO se abre PR. NO se mergea a `develop` desde este plan.
+  Eso lo hace `commit-policy` o el humano.
+
+---
+
+## Fallo-mode playbook (qué hacer si algo no sale como C espera)
+
+| Síntoma | Diagnóstico probable | Fix |
+|---|---|---|
+| `git log -1 --oneline` no muestra `910876191` | Alguien cerró c00160 o rebasó la rama | `git fetch origin agent/copilot-minimax-m3-q00018 && git checkout agent/copilot-minimax-m3-q00018 && git reset --hard origin/agent/copilot-minimax-m3-q00018` |
+| `agent_lock` reporta conflicto en uno de los 3 paths | Otro agente los está tocando | Aceptar y proceder por orden de prioridad (Track 1 primero); si las 3 están bloqueadas, esperar al cierre de actividad de la otra agente (`lock-released` notification) |
+| `proposal_board` no muestra las hijas aún | Estás viendo antes de la primera sincronización | Esperar 30s y reintentar; o invocar `mcp-vertex_proposals_sync_proposals` |
+| `bun run validate` falla con error de plugin | Un plugin del scope no está en el preset correcto | Seguir el flujo de Track 1 (sniffer) — su salida es la lista de peer-deps y presets que fallan |
+| Aparece un `agent-dead` notification | El agente remoto crasheó | `mcp-vertex_proposals_state_health` para diagnóstico, luego `state_repair` con `dryRun:true` primero |
+| El reviewer rechaza una hija | Esperado — leer la objeción, no reimplementar desde cero | Cerrar la review con `proposal_review action=request_changes` (en este caso agente ejecutor = implementer = reviewer, usar `force:true` con justificación documentada en la razón) |
+
+---
+
+## Resumen ejecutivo (1 párrafo, para que el humano copie/pegue)
+
+`c00160` (rama `agent/copilot-minimax-m3-q00018`, commit `910876191`)
+consolida en un único plan canónico la capacidad que el usuario pidió:
+que el agente LLM sepa elegir y usar subagentes automáticamente,
+gastando el mínimo de tokens y con las tools del MCP. Las 6 capas
+(Capa 1 servidor MCP, Capa 2-3 los dos selectores ya en v0.1.1,
+Capa 4 agent-orchestrator cerrado en q00007, Capa 5
+orchestrator-runner cerrado en f00067, Capa 6 token-budget discipline)
+ya están operativas y verificadas con hashes reales. Las 3 hijas
+verdaderamente nuevas (`<NEW-1>` sniffer, `<NEW-2>` smoke E2E,
+`<NEW-3>` dogfood fresh verify post-S6) están listadas en `contains:`
+con paths exactos para que `agent_lock` las proteja contra otros
+agentes. El ejecutor único puede tomar este archivo, reclamar los
+3 paths, crear las hijas vía `create_proposal`, implementarlas en
+orden, y cerrar c00160 — sin necesidad de swarm ni orquestador.
 
