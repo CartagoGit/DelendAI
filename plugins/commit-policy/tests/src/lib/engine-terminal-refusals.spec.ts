@@ -22,6 +22,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	ENGINE_REFUSAL_CODES,
+	type IEngineRefusalCode,
 	refusalToEngine,
 	TERMINAL_REFUSAL_OUTCOMES,
 } from '../../../src/lib/engine';
@@ -53,8 +54,20 @@ describe('classifying a REAL refusal string', () => {
 	// asserting that git's own words reach it. Every loop this repo has
 	// hit came from a refusal STRING arriving at a classifier that did
 	// not recognise it, so these pin the strings.
+	/**
+	 * `IEngineResult` is a union: `code` lives only on the ERR variant,
+	 * so it has to be narrowed rather than read off the union. Reading
+	 * it directly type-checks nowhere and passes under vitest, which
+	 * does not type-check — the same gap that let this file's earlier
+	 * version compile in the runner and fail `bun run typecheck`.
+	 */
+	const codeOf = (refusal: string): IEngineRefusalCode | undefined => {
+		const result = refusalToEngine(refusal);
+		return result.ack === 'ERR' ? result.code : undefined;
+	};
+
 	const terminal = (refusal: string): boolean => {
-		const code = refusalToEngine(refusal).code;
+		const code = codeOf(refusal);
 		return (
 			code !== undefined && TERMINAL_REFUSAL_OUTCOMES[code] !== undefined
 		);
@@ -68,7 +81,7 @@ describe('classifying a REAL refusal string', () => {
 		// re-emitted indefinitely.
 		const refusal =
 			'git add failed: The following paths are ignored by one of your .gitignore files: | .cache | hint: Use -f if you really want to add them.';
-		expect(refusalToEngine(refusal).code).toBe('SLICE_FILES_IGNORED');
+		expect(codeOf(refusal)).toBe('SLICE_FILES_IGNORED');
 		expect(terminal(refusal)).toBe(true);
 	});
 
@@ -77,14 +90,14 @@ describe('classifying a REAL refusal string', () => {
 		// why the whole line is used here rather than a tidy excerpt.
 		const refusal =
 			'git commit failed: nothing to commit, working tree clean | On branch develop | ╭───────╮ | 🥊 lefthook';
-		expect(refusalToEngine(refusal).code).toBe('NOTHING_TO_COMMIT');
+		expect(codeOf(refusal)).toBe('NOTHING_TO_COMMIT');
 		expect(terminal(refusal)).toBe(true);
 	});
 
 	it('treats a stale Files: list as final', () => {
 		const refusal =
 			"git add failed: fatal: pathspec 'src/gone.ts' did not match any files";
-		expect(refusalToEngine(refusal).code).toBe('SLICE_FILES_MISSING');
+		expect(codeOf(refusal)).toBe('SLICE_FILES_MISSING');
 		expect(terminal(refusal)).toBe(true);
 	});
 });

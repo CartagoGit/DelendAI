@@ -166,7 +166,7 @@ describe('report store — a state file we cannot read', () => {
 
 		const store = createReportStore(dir);
 		await store.recordAttempt('abc', {
-			classification: 'INTERNAL',
+			classification: 'BUG',
 			at: new Date().toISOString(),
 		});
 
@@ -178,7 +178,7 @@ describe('report store — a state file we cannot read', () => {
 	it('still treats a MISSING file as an empty state, which it is', async () => {
 		const store = createReportStore(dir);
 		await store.recordAttempt('abc', {
-			classification: 'INTERNAL',
+			classification: 'BUG',
 			at: new Date().toISOString(),
 		});
 		expect((await store.all()).map((record) => record.fingerprint)).toEqual(
