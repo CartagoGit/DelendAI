@@ -51,6 +51,7 @@ import {
 } from '../services/kpi-history.service';
 import { buildKpiTrendReport } from '../services/kpi-trends.service';
 import {
+	ProjectKpisEnvelopeSchema,
 	ProjectKpisOutputSchema,
 	type IProjectKpisOutput,
 } from './project-kpis-output.schema';
@@ -1452,6 +1453,12 @@ const buildViewPayload = async (
 			state.snapshot.health.next,
 			state,
 		).slice(0, DETAIL_LIMITS[query.detail].recommendations),
+		// Flat projection of the display metrics this view already
+		// computed — today that is `snapshot.highlights` whenever a
+		// snapshot is present (every view but `audit`). No new numbers are
+		// derived here; `audit` has no natural display-metric-shaped
+		// values, so it honestly gets an empty array.
+		metrics: view === 'audit' ? [] : snapshot.highlights,
 		...(view === 'audit' ? {} : { snapshot }),
 		...(view === 'activation'
 			? {
@@ -1526,7 +1533,7 @@ export const buildProjectKpisToolRegistrations = (
 					description:
 						'Return bounded KPI views for summary, history, usage, economics, models, agents, plugins, errors, efficiency and audit. Every response keeps explicit source status, privacy limits, recommendations and time-window or dimension filters without inventing missing data.',
 					inputSchema: InputSchema,
-					outputSchema: ProjectKpisOutputSchema,
+					outputSchema: ProjectKpisEnvelopeSchema,
 				},
 				async (args: IProjectKpisToolArgs) =>
 					runProjectKpis(args, options),
@@ -1537,6 +1544,7 @@ export const buildProjectKpisToolRegistrations = (
 
 export {
 	InputSchema as ProjectKpisInputSchema,
+	ProjectKpisEnvelopeSchema,
 	ProjectKpisOutputSchema,
 	DEFAULT_KPI_MAX_BYTES,
 	DEFAULT_KPI_WINDOW_DAYS,

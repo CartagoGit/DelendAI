@@ -241,6 +241,18 @@ export const ProjectKpisOutputSchema = z
 			})
 			.strict(),
 		recommendations: z.array(ProjectKpisRecommendationSchema),
+		/**
+		 * Flat, view-independent projection of the display metrics this
+		 * response already computed (today: `snapshot.highlights`, when a
+		 * snapshot is present). Lets an agent read headline numbers without
+		 * knowing which named section they live in. Never invents a number
+		 * that isn't already present elsewhere in the payload.
+		 */
+		metrics: z.array(ProjectKpisDisplayMetricSchema),
+		/** Where to fetch the full-detail payload for this view, if the caller wants it. */
+		detailUri: z.string().optional(),
+		/** Opaque cursor for a follow-up call that continues a paginated view. */
+		nextCursor: z.string().optional(),
 		snapshot: ProjectKpisSnapshotSectionSchema.optional(),
 		history: ProjectKpisHistorySectionSchema.optional(),
 		breakdowns: z.array(ProjectKpisBreakdownSchema).optional(),
@@ -254,3 +266,121 @@ export const ProjectKpisOutputSchema = z
 	.strict();
 
 export type IProjectKpisOutput = z.infer<typeof ProjectKpisOutputSchema>;
+
+/**
+ * Discovery envelope: this — not `ProjectKpisOutputSchema` — is what gets
+ * registered as the tool's `outputSchema`. It describes the invariant
+ * frame (`contract`, `version`, `view`, `detail`, `status`, `generatedAt`,
+ * `summary`, `metrics[]`, `bytes`, `truncated`, plus optional
+ * `detailUri`/`nextCursor`) in full, and accepts every voluminous
+ * per-view section (`snapshot`, `history`, `breakdowns`, `issues`,
+ * `findings`, `activation`, `window`, `dimensions`, `filter`, `sources`,
+ * `privacy`, `recommendations`, `originalBytes`) as opaque `z.unknown()`
+ * rather than re-describing their shape at discovery time.
+ *
+ * HARD CONSTRAINT: this schema MUST accept every payload
+ * `ProjectKpisOutputSchema` accepts — MCP clients validate
+ * `structuredContent` against whichever `outputSchema` the tool
+ * advertised, so an envelope that is any stricter than the real contract
+ * would reject genuine responses. `output-schema-size.spec.ts` and the
+ * round-trip test in `project-kpis.tool.spec.ts` both assert this by
+ * parsing the same real payload against both schemas. The full typed
+ * contract (`ProjectKpisOutputSchema`) is unchanged and stays the asset
+ * — only what gets described at discovery time shrinks.
+ */
+export const ProjectKpisEnvelopeSchema = z
+	.object({
+		contract: z.literal('project-kpis.view'),
+		version: z.literal(1),
+		view: z.enum(PROJECT_KPI_VIEWS),
+		detail: z.enum(KPI_DETAIL_LEVELS),
+		status: z.enum(KPI_VIEW_STATUSES),
+		generatedAt: z.string(),
+		summary: z.string(),
+		metrics: z.array(ProjectKpisDisplayMetricSchema),
+		bytes: z.number().int().positive(),
+		truncated: z.boolean(),
+		detailUri: z.string().optional(),
+		nextCursor: z.string().optional(),
+		window: z
+			.unknown()
+			.optional()
+			.describe(
+				'Full shape: ProjectKpisOutputSchema.window (project-kpis.view contract).',
+			),
+		dimensions: z
+			.unknown()
+			.optional()
+			.describe(
+				'Full shape: ProjectKpisOutputSchema.dimensions (project-kpis.view contract).',
+			),
+		filter: z
+			.unknown()
+			.optional()
+			.describe(
+				'Full shape: ProjectKpisOutputSchema.filter (project-kpis.view contract).',
+			),
+		sources: z
+			.unknown()
+			.optional()
+			.describe(
+				'Full shape: ProjectKpisOutputSchema.sources (project-kpis.view contract).',
+			),
+		privacy: z
+			.unknown()
+			.optional()
+			.describe(
+				'Full shape: ProjectKpisOutputSchema.privacy (project-kpis.view contract).',
+			),
+		recommendations: z
+			.unknown()
+			.optional()
+			.describe(
+				'Full shape: ProjectKpisOutputSchema.recommendations (project-kpis.view contract).',
+			),
+		snapshot: z
+			.unknown()
+			.optional()
+			.describe(
+				'Voluminous per-view section; full shape: ProjectKpisOutputSchema.snapshot (project-kpis.view contract).',
+			),
+		history: z
+			.unknown()
+			.optional()
+			.describe(
+				'Voluminous per-view section; full shape: ProjectKpisOutputSchema.history (project-kpis.view contract).',
+			),
+		breakdowns: z
+			.unknown()
+			.optional()
+			.describe(
+				'Voluminous per-view section; full shape: ProjectKpisOutputSchema.breakdowns (project-kpis.view contract).',
+			),
+		issues: z
+			.unknown()
+			.optional()
+			.describe(
+				'Voluminous per-view section; full shape: ProjectKpisOutputSchema.issues (project-kpis.view contract).',
+			),
+		findings: z
+			.unknown()
+			.optional()
+			.describe(
+				'Voluminous per-view section; full shape: ProjectKpisOutputSchema.findings (project-kpis.view contract).',
+			),
+		activation: z
+			.unknown()
+			.optional()
+			.describe(
+				'Voluminous per-view section; full shape: ProjectKpisOutputSchema.activation (project-kpis.view contract).',
+			),
+		originalBytes: z
+			.unknown()
+			.optional()
+			.describe(
+				'Full shape: ProjectKpisOutputSchema.originalBytes (project-kpis.view contract).',
+			),
+	})
+	.strict();
+
+export type IProjectKpisEnvelope = z.infer<typeof ProjectKpisEnvelopeSchema>;

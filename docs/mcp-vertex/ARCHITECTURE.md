@@ -31,7 +31,7 @@ graph TD
     end
 
     subgraph plugins["plugins/* — opt-in capability"]
-        PLUGINS["proposals · memory · quality · rules ·<br/>search · docs · deps · git · notification ·<br/>audit · conventions · issues · logs ·<br/>status-marker · test-convention · web-fetch"]
+        PLUGINS["one capability each, by family:<br/>coordination · knowledge · quality ·<br/>forge · observability · policy<br/>(inventory: the generated catalog, never a list here)"]
     end
 
     PLUGINS -.->|"import shared helpers"| SHARED
@@ -57,6 +57,13 @@ graph TD
 | **Scripts**      | `tools/scripts/*`            | build · derive-version · release · type/schema generation. Pure planning split from side-effecting shells. | core                                    |
 
 The dependency arrow only ever points **plugin → core**, never the reverse.
+
+The plugin inventory is deliberately not written down here. It changes every
+week, and a hand-maintained list is a document that quietly starts lying — this
+one named sixteen plugins while the tree held fifty-six. The live inventory is
+the generated catalog: `bun run catalog:generate`, rendered into
+[`host-hints/agent-instructions.generated.md`](host-hints/agent-instructions.generated.md),
+and served at runtime by `mcp-vertex_overview` / `mcp-vertex_agent_catalog`.
 
 ## Core/plugin boundary
 
@@ -171,12 +178,12 @@ So CHECK-005 does not justify a package split today. A future physical SDK packa
 
 ## Build, test, release
 
-- **Build:** `bun scripts/build.ts` → per-package `dist/` (`bun build` ESM + `tsc
+- **Build:** `bun run build` (`tools/scripts/compile/build.script.ts`) → per-package `dist/` (`bun build` ESM + `tsc
   --emitDeclarationOnly`); `exports`/`bin` point at `.js`/`.d.ts` so `npx`/`node` work.
 - **Test:** Vitest — unit, concurrent-chaos (multi-process locks), e2e over a real
   in-memory MCP server (outputSchema + token budget), drift-guards.
 - **Release:** push to `main` → Conventional Commits derive the version
-  (`scripts/derive-version.ts`) → tag + publish, lockstep, no commit-back loop.
+  (`tools/scripts/release/derive-version.script.ts`) → tag + publish, lockstep, no commit-back loop.
 - **CI:** lint · typecheck+coverage · pack-smoke (`npm pack --dry-run` + a functional
   stdio smoke of the compiled CLI) · Pages (site in `--strict`).
 
