@@ -19,6 +19,16 @@ jobs:
         name: lint-biome
         runs-on: ubuntu-latest
         steps:
+            # A `uses: ./path` step can only be resolved once the repo holding
+            # that path is on disk, and setup-bun-repo's own first internal step
+            # IS the checkout — so it can never bootstrap itself as a job's very
+            # first step. Every job in this file failed here, with every later
+            # step reported as `skipped`, from 2026-08-31 until this was added.
+            # The composite action then re-checks out at whatever fetch-depth it
+            # needs, so this bare one costs a shallow clone and nothing else.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -32,6 +42,10 @@ jobs:
         name: lint-architecture
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -58,6 +72,10 @@ jobs:
         name: lint-presets
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -87,6 +105,10 @@ jobs:
         name: lint-docs
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -107,6 +129,10 @@ jobs:
         name: lint-security
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -126,6 +152,10 @@ jobs:
             # Full history: this job verifies that commits cited by proposals
             # actually exist. The default shallow checkout has none of them, so
             # every citation reads as dangling and the gate could never pass.
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
               with:
@@ -155,6 +185,10 @@ jobs:
         name: typecheck
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -165,6 +199,10 @@ jobs:
         name: tests
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -181,6 +219,10 @@ jobs:
         name: quality-gate
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -191,6 +233,10 @@ jobs:
         name: verify-runtime
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -209,6 +255,10 @@ jobs:
         name: tokens-budget-real
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -222,6 +272,10 @@ jobs:
         name: manifests-check
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -237,6 +291,10 @@ jobs:
         name: generated-artifacts-check
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -251,6 +309,10 @@ jobs:
         name: web site build
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -261,6 +323,10 @@ jobs:
         name: pack smoke (publishable packages)
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
@@ -312,6 +378,10 @@ jobs:
         name: metrics longitudinal regression gate (f00027)
         runs-on: ubuntu-latest
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 

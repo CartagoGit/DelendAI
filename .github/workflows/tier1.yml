@@ -44,6 +44,16 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 5
         steps:
+            # A `uses: ./path` step can only be resolved once the repo holding
+            # that path is on disk, and setup-bun-repo's own first internal step
+            # IS the checkout — so it can never bootstrap itself as a job's very
+            # first step. Every job in this file failed here, with every later
+            # step reported as `skipped`, from 2026-08-31 until this was added.
+            # The composite action then re-checks out at whatever fetch-depth it
+            # needs, so this bare one costs a shallow clone and nothing else.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
               with:
@@ -80,6 +90,10 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 5
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
               with:
@@ -109,6 +123,10 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 5
         steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
               with:
