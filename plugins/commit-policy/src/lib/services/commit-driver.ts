@@ -686,12 +686,31 @@ export const commitWithGuard = async (
 				}
 				const tree = writeTreeResult.output.trim();
 
+				// Compare against the tree of the PARENT WE ARE ABOUT TO
+				// USE, not of whatever HEAD happens to be now.
+				//
+				// `headBefore` is read before this mutex is acquired, so
+				// on a shared branch HEAD can already have moved by the
+				// time we get here. The old form asked `rev-parse
+				// HEAD^{tree}`: when HEAD != headBefore the guard
+				// compared the new tree against an unrelated commit,
+				// found them different, and let `commit-tree -p
+				// headBefore` mint a commit whose tree is byte-identical
+				// to its own parent's.
+				//
+				// That is how nine of the last twenty-five commits on
+				// develop ended up empty — including four
+				// "feat(xNNNNN): commit via slice SN" commits, which
+				// told the proposals engine a slice had shipped while
+				// carrying not one changed byte. Porcelain `git commit`
+				// refuses an empty commit; `commit-tree` is plumbing and
+				// will happily create one, so the check has to be ours.
 				const headTree =
 					headBefore === undefined
 						? undefined
 						: await gitStdoutTrimmed(args.run, [
 								'rev-parse',
-								'HEAD^{tree}',
+								`${headBefore}^{tree}`,
 							]);
 				if (headTree !== undefined && tree === headTree) {
 					return {

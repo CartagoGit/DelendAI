@@ -784,6 +784,47 @@ describe('runCommitDriver', () => {
 	});
 
 	describe('commitWithGuard', () => {
+		it('never mints a commit whose tree equals its own parent', async () => {
+			// The isolated path commits with `commit-tree`, which is
+			// plumbing: unlike porcelain `git commit` it will happily
+			// create a commit identical to its parent. The emptiness
+			// guard used to compare the new tree against `HEAD^{tree}`,
+			// but the parent it actually passes is `headBefore`, read
+			// BEFORE the mutex. On a shared branch those diverge, the
+			// guard then compares against an unrelated commit, and an
+			// empty commit is minted — nine of them in twenty-five on
+			// develop, four announcing slices that shipped nothing.
+			//
+			// Simulated here by answering the HEAD-tree question with a
+			// tree that is not the parent's. A guard that asks about the
+			// parent is unaffected; the old one proceeds and commits.
+			await withTempRepo(async ({ repoDir, git }) => {
+				const headBefore = await runGit(repoDir, ['rev-parse', 'HEAD']);
+				const movedRun: IGitRunner = async (args) =>
+					args[0] === 'rev-parse' && args[1] === 'HEAD^{tree}'
+						? {
+								ok: true,
+								output: '0000000000000000000000000000000000000000\n',
+							}
+						: git(args);
+
+				const result = await commitWithGuard({
+					run: movedRun,
+					message: 'feat(x00000): commit via slice S1',
+					authorFlag: 'Cartago <cartago@example.com>',
+					allowList: ['slice-a.ts'],
+					branch: 'develop',
+					workspaceRoot: repoDir,
+					enforceSubset: true,
+				});
+
+				expect(result.committed).toBe(false);
+				expect(await runGit(repoDir, ['rev-parse', 'HEAD'])).toBe(
+					headBefore,
+				);
+			});
+		});
+
 		it('creates a commit from an isolated index without rewriting the real .git/index', async () => {
 			await withTempRepo(
 				async ({ repoDir, git, trackedFile, lockPath }) => {
