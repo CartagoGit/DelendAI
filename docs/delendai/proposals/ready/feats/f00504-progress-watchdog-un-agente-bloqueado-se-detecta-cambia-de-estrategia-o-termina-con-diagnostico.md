@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: execution-policy
 date: 2026-09-04
+related:
+    - f00050 # S-H parks the brake contract; this proposal inherits its chaos-spec gate
 ---
 
 # f00504 — Progress Watchdog: un agente bloqueado se detecta, cambia de estrategia o termina con diagnóstico
@@ -24,6 +26,14 @@ Esto no es trabajo desde cero y no debe tratarse como tal. Ya existen dos detect
 - `plugins/agent-orchestrator/src/lib/rotation/loop-detector.ts` — presupuesto agotado, salida repetida, tormenta de errores y violación de schema, con historia por `slotId` para que la rotación herede el contexto.
 
 Lo que no existe es lo que los une: una noción común de "ha habido progreso" y una respuesta escalonada. Hoy cada detector dispara su propia acción local y ninguno puede decir si la tarea, en conjunto, está avanzando. Un agente puede repetir legítimamente una herramienta, así que mirar sólo la herramienta produce falsos positivos; lo que decide es si el estado evoluciona.
+
+Un apunte de gobierno: cambiar el freno no es libre. `f00050` S-H lo tiene
+aparcado desde 2026-06-23 precisamente para que nadie lo toque de pasada, y
+S2 de esta propuesta lo toca — los dos detectores dejan de tener su propia
+noción de repetición. No hace falta promover S-H, porque el trabajo ya vive
+aquí; lo que sí hace falta es heredar la única garantía que S-H añade y esta
+propuesta no tenía: el spec de caos con 5 o más agentes concurrentes. Está
+incorporado a la aceptación de S2.
 
 ## non-goals
 
@@ -55,6 +65,7 @@ Lo que no existe es lo que los une: una noción común de "ha habido progreso" y
   - "Una repetición legítima con estado que evoluciona no se marca como bucle."
   - "Una revalidación sobre el mismo digest sin cambios sí lo hace."
   - "Los dos detectores existentes alimentan este fingerprint en lugar de mantener su propia noción de repetición."
+  - "Un spec de caos con 5 o más agentes concurrentes sobre un repositorio de fixture demuestra que el nuevo contrato del freno maneja el modo de fallo, y los tests de presupuesto de `auto_work` siguen pasando."
 
 ### S3 — Escalera de recuperación
 - **Status**: pending
@@ -76,6 +87,7 @@ Lo que no existe es lo que los une: una noción común de "ha habido progreso" y
 - Una repetición legítima con estado que evoluciona no se marca como bucle.
 - Una revalidación sobre el mismo digest sin cambios sí lo hace.
 - Los dos detectores existentes alimentan este fingerprint en lugar de mantener su propia noción de repetición.
+- Un spec de caos con 5 o más agentes concurrentes sobre un repositorio de fixture demuestra que el nuevo contrato del freno maneja el modo de fallo, y los tests de presupuesto de `auto_work` siguen pasando.
 - La recuperación avanza por peldanos de coste creciente: compactar estado, reevaluar bloqueo, cambiar estrategia, herramienta alternativa, rotar agente, escalar a ruta más fuerte autorizada y, por último, terminar como bloqueado.
 - Escalar nunca supera los permisos ni el presupuesto que la configuración autoriza.
 - Terminar como bloqueado produce un diagnóstico compacto y accionable, no un volcado.
