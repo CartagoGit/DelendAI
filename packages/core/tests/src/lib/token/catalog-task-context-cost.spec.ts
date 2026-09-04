@@ -75,13 +75,13 @@ describe('catalog-task-context-cost measurement', () => {
 		const output = runMeasurementScript();
 
 		expect(output).toContain(
-			'| agent_catalog compact | native | 727 | 186 |',
+			'| agent_catalog compact | native | 727 | 182 |',
 		);
 		expect(output).toContain(
-			'| agent_catalog full | native | 9,519 | 2,380 |',
+			'| agent_catalog full | native | 9,329 | 2,333 |',
 		);
 		expect(output).toContain(
-			'| native core catalog | 28 | 42,768 | 36,508 | 11,533 | 24,975 | 0 |',
+			'| native core catalog | 28 | 42,720 | 36,522 | 11,573 | 24,949 | 0 |',
 		);
 		// These numbers are a ratchet, not a constant: every field added
 		// to a tool's outputSchema is paid for on every agent's surface.
@@ -98,8 +98,16 @@ describe('catalog-task-context-cost measurement', () => {
 		// registered tool and the capability-graph work added more than
 		// the saving. The ratchet is doing its job precisely by making a
 		// 3 KB increase visible instead of letting the S7 win absorb it.
+		// 2026-09-04 — 197,637 → 196,597, a 1,040-byte REDUCTION, and the
+		// only entry here that nobody designed. The product was renamed
+		// and the new name is two characters shorter, so every one of the
+		// 167 tool names, every namespaced id inside every schema, and
+		// every routed action string lost two bytes. It is a reminder that
+		// this surface is paid for per tool per agent per session: two
+		// characters, multiplied by the catalog, is a kilobyte off every
+		// cold start.
 		expect(output).toContain(
-			'| swarm native preset | 167 | 197,637 | 161,730 | 48,892 | 112,838 | 52,319 |',
+			'| swarm native preset | 167 | 196,597 | 161,036 | 48,908 | 112,128 | 51,852 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);

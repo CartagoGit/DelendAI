@@ -68,7 +68,7 @@
 		"replace": "carrying a \"generated with\" footer, 30 synthetic author identities"
 	},
 	{
-		"find": "(`concurrent-agent`, `delendai@MiniMax.local`, `MCP-V Bot",
+		"find": "(`concurrent-agent`, `mcp-vertex@MiniMax.local`, `MCP-V Bot",
 		"replace": "(three synthetic bot identities"
 	},
 	{

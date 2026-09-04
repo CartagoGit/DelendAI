@@ -47,7 +47,7 @@ describe('identity policy', () => {
 
 	it('rewrites every synthetic agent identity, named vendor or not', () => {
 		for (const email of [
-			'delendai@MiniMax.local',
+			'mcp-vertex@MiniMax.local',
 			'copilot@anthropic.com',
 			'ci@anthropic.com',
 			'mensa-orchestrator@copilot',

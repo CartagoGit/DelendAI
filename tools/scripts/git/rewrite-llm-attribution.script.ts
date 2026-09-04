@@ -5,7 +5,7 @@
  * Strips LLM attribution from git history: the `Co-Authored-By: <model>`
  * trailers, the `Generated with <tool>` footers, the agent branch names
  * baked into merge subjects, and the ~30 synthetic author/committer
- * identities (`copilot-minimax-m3`, `delendai@MiniMax.local`,
+ * identities (`copilot-minimax-m3`, `mcp-vertex@MiniMax.local`,
  * `MCP-V Bot <ci@anthropic.com>`, ...) that swarm runs recorded before
  * `commit-policy` was switched to `identity.mode: 'explicit'`.
  *
@@ -36,6 +36,11 @@
  * Usage:
  *   bun tools/scripts/git/rewrite-llm-attribution.script.ts
  *   bun tools/scripts/git/rewrite-llm-attribution.script.ts --repo <path> --apply
+ *
+ * The identities and spellings named in this file are LITERAL history. They
+ * must keep matching what is actually recorded in git, so the 2026-09-04
+ * product rename deliberately does not apply to them: renaming a historical
+ * fact makes the tool that reads history stop finding it.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
