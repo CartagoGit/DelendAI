@@ -13,12 +13,13 @@ import type {
 	IMcpJsonWriteResult,
 } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
-import { mergeDerivedConfig, parseJsonc } from '@delendai/core/public';
+import { applyJsoncEdits, parseJsonc } from '@delendai/core/public';
 import {
 	writeConfigSafely,
 	writeConfigTextSafely,
 	writeWorkspaceFileSafely,
 } from '../config-file.service';
+import { planConfigMergeEdits } from './config-merge-edits';
 import { buildCoreSkillProjection } from './core-skill-projection.service';
 import {
 	mergeDelendaiServerEntry,
@@ -38,9 +39,15 @@ export type { IInitWrite, IMcpJsonWriteResult };
  * f00502 S4: `sourceText` is the rendered JSONC document, comments and
  * all. When the config is being created (or forced), it is written
  * verbatim so the comments survive; a caller that only has a value
- * still gets the stringified path. The merge branch below still goes
- * through the value path — preserving an EXISTING user's comments
- * across a merge is config-sync work, not init's.
+ * still gets the stringified path.
+ *
+ * The merge branch preserves the EXISTING user's comments too, because
+ * that is where they matter most: a user only has comments to lose once
+ * they have written some, and the merge is what runs on every later
+ * upgrade. It fills the gaps as edits against the file's own text, so
+ * everything already in there — comments, key order, spacing — stays
+ * byte-for-byte, and a merge that finds no gap does not rewrite the file
+ * at all.
  */
 export const writeDelendaiConfig = async (
 	workspace: string,
@@ -63,9 +70,8 @@ export const writeDelendaiConfig = async (
 	}
 	// The file on disk is JSONC: a user who commented their own config
 	// must not have it declared unreadable and silently skipped.
-	const { value: existing, errors } = parseJsonc(
-		await readFile(path, 'utf8'),
-	);
+	const currentText = await readFile(path, 'utf8');
+	const { value: existing, errors } = parseJsonc(currentText);
 	if (errors.length > 0) return { kind: 'exists', path };
 	if (
 		existing === null ||
@@ -74,9 +80,14 @@ export const writeDelendaiConfig = async (
 	) {
 		return { kind: 'exists', path };
 	}
-	const written = await writeConfigSafely(
+	const edits = planConfigMergeEdits(
+		value,
+		existing as Record<string, unknown>,
+	);
+	if (edits.length === 0) return { kind: 'merged', path };
+	const written = await writeConfigTextSafely(
 		workspace,
-		mergeDerivedConfig(value, existing as Record<string, unknown>),
+		applyJsoncEdits(currentText, edits),
 	);
 	return { kind: 'merged', path: written };
 };

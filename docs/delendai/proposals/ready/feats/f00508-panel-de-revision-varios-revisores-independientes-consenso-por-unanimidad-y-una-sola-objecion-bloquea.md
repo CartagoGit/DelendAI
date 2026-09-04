@@ -42,7 +42,8 @@ La divergencia entre revisores se registra en el log del slice en vez de resolve
   - "Una sola petición de cambios de cualquier miembro deja el slice en changes_requested de inmediato, sin esperar al resto del panel."
   - "Reabrir un round descarta las aprobaciones acumuladas: son prueba sobre un código que ya cambió."
   - "Con cuórum 1 el comportamiento es byte a byte el de hoy, de modo que desactivar el panel no es un camino de código aparte."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S2 — Persistencia y lectura del cuórum en el documento de la propuesta
 - **Status**: pending
 - **DependsOn**: [S1]
