@@ -31,5 +31,5 @@ export interface ISaveResult {
  * override it. Kept as a constant (not `export const MAX_NOTES`) so
  * callers go through `getMaxNotes(options)` instead of importing the
  * raw constant — this is the SOLID hook that makes the limit
- * configurable from `mcp-vertex.config.json#plugins.memory.options.maxNotes`. */
+ * configurable from `delendai.config.json#plugins.memory.options.maxNotes`. */
 export const DEFAULT_MAX_NOTES = 1000;

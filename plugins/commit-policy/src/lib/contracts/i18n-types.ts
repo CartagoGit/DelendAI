@@ -99,7 +99,7 @@ const english: IStringCatalog = {
 		},
 		commit: {
 			refuseDisabled:
-				'commit_policy_commit refused: commit.enabled is false in mcp-vertex.config.json.',
+				'commit_policy_commit refused: commit.enabled is false in delendai.config.json.',
 			refuseNoIdentity: ({ mode }) =>
 				`commit_policy_commit refused: identity.mode="${mode}" resolved to an empty author.`,
 			refuseProtectedBranch: ({ branch }) =>
@@ -107,7 +107,7 @@ const english: IStringCatalog = {
 			success: ({ hash, author }) =>
 				`commit_policy_commit committed ${hash} as ${author}`,
 			nextActionCommit:
-				'Set plugins.commit-policy.options.commit.enabled=true in mcp-vertex.config.json, or call commit_policy_run with kind="manual".',
+				'Set plugins.commit-policy.options.commit.enabled=true in delendai.config.json, or call commit_policy_run with kind="manual".',
 			nextActionIdentity:
 				'Set GIT_AUTHOR_NAME + GIT_AUTHOR_EMAIL, or change plugins.commit-policy.options.identity to a different mode.',
 			nextActionProtected:
@@ -115,7 +115,7 @@ const english: IStringCatalog = {
 		},
 		push: {
 			refuseDisabled:
-				'commit_policy_push refused: push.enabled is false in mcp-vertex.config.json.',
+				'commit_policy_push refused: push.enabled is false in delendai.config.json.',
 			refuseProtected: ({ branch }) =>
 				`commit_policy_push refused: pushing to protected branch "${branch}" is not allowed.`,
 			refuseNotImplemented:
@@ -129,7 +129,7 @@ const english: IStringCatalog = {
 		},
 		run: {
 			refuseDisabled:
-				'commit_policy_run refused: commit.enabled is false in mcp-vertex.config.json.',
+				'commit_policy_run refused: commit.enabled is false in delendai.config.json.',
 			noTrigger: ({ kind }) =>
 				`commit_policy_run: no trigger of kind "${kind}" is configured. Pass it under cadence.triggers.`,
 			fired: ({ kind, committed, pushed }) =>
@@ -160,7 +160,7 @@ const spanish: IStringCatalog = {
 		},
 		commit: {
 			refuseDisabled:
-				'commit_policy_commit rechazado: commit.enabled está en false en mcp-vertex.config.json.',
+				'commit_policy_commit rechazado: commit.enabled está en false en delendai.config.json.',
 			refuseNoIdentity: ({ mode }) =>
 				`commit_policy_commit rechazado: identity.mode="${mode}" resolvió un autor vacío.`,
 			refuseProtectedBranch: ({ branch }) =>
@@ -168,7 +168,7 @@ const spanish: IStringCatalog = {
 			success: ({ hash, author }) =>
 				`commit_policy_commit creó el commit ${hash} como ${author}`,
 			nextActionCommit:
-				'Activa plugins.commit-policy.options.commit.enabled=true en mcp-vertex.config.json o llama a commit_policy_run con kind="manual".',
+				'Activa plugins.commit-policy.options.commit.enabled=true en delendai.config.json o llama a commit_policy_run con kind="manual".',
 			nextActionIdentity:
 				'Define GIT_AUTHOR_NAME + GIT_AUTHOR_EMAIL o cambia plugins.commit-policy.options.identity a otro modo.',
 			nextActionProtected:
@@ -176,7 +176,7 @@ const spanish: IStringCatalog = {
 		},
 		push: {
 			refuseDisabled:
-				'commit_policy_push rechazado: push.enabled está en false en mcp-vertex.config.json.',
+				'commit_policy_push rechazado: push.enabled está en false en delendai.config.json.',
 			refuseProtected: ({ branch }) =>
 				`commit_policy_push rechazado: no se permite hacer push a la rama protegida "${branch}".`,
 			refuseNotImplemented:
@@ -190,7 +190,7 @@ const spanish: IStringCatalog = {
 		},
 		run: {
 			refuseDisabled:
-				'commit_policy_run rechazado: commit.enabled está en false en mcp-vertex.config.json.',
+				'commit_policy_run rechazado: commit.enabled está en false en delendai.config.json.',
 			noTrigger: ({ kind }) =>
 				`commit_policy_run: no hay disparador de tipo "${kind}" configurado. Añádelo bajo cadence.triggers.`,
 			fired: ({ kind, committed, pushed }) =>
@@ -211,7 +211,7 @@ export const SUPPORTED_LOCALES: readonly Locale[] = Object.keys(
 /**
  * Look up a localized string (or any value the caller wants to pull
  * from the catalog). Falls back to English when the locale is
- * unknown (hosts can pass `process.env.MCP_VERTEX_LOCALE` and the
+ * unknown (hosts can pass `process.env.DELENDAI_LOCALE` and the
  * plugin resolves it; absent = English). Generic so callers can
  * extract either a single string or an object literal (e.g.
  * `{ summary, nextAction }`) — the catalog returns whatever the

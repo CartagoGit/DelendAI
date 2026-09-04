@@ -249,7 +249,7 @@ const main = (): void => {
 	// the normal node_modules walk-up — the adopter's real resolution.
 	const cacheRoot = join(ROOT, 'node_modules/.cache');
 	mkdirSync(cacheRoot, { recursive: true });
-	const scratch = mkdtempSync(join(cacheRoot, 'mcp-vertex-scaffold-tc-'));
+	const scratch = mkdtempSync(join(cacheRoot, 'delendai-scaffold-tc-'));
 	try {
 		const results = KINDS.map((kind) => typecheckKind(scratch, kind));
 		const failed = KINDS.filter((_kind, i) => !results[i]).map(

@@ -38,12 +38,12 @@ describe('buildAdoptionAssessment', () => {
 		const estimate = buildAdoptProjectWriteEstimate({
 			hostOptions: {
 				projectName: '@acme/platform',
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				projectPackageName: '@delendai/adopted',
-				mcpServerName: 'mcp-vertex',
-				existingMcpVertex: true,
+				mcpServerName: 'delendai',
+				existingDelendai: true,
 			},
-			docsDir: 'docs/mcp-vertex',
+			docsDir: 'docs/delendai',
 		});
 		const assessment = buildAdoptionAssessment(
 			baseAnalysis(),
@@ -59,9 +59,9 @@ describe('buildAdoptionAssessment', () => {
 			],
 			{
 				projectName: '@acme/platform',
-				namespacePrefix: 'mcp-vertex',
-				mcpServerName: 'mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				namespacePrefix: 'delendai',
+				mcpServerName: 'delendai',
+				docsDir: 'docs/delendai',
 			},
 		);
 
@@ -137,8 +137,8 @@ describe('buildAdoptionAssessment', () => {
 			['packages'],
 			{
 				projectName: '@acme/platform',
-				namespacePrefix: 'mcp-vertex',
-				mcpServerName: 'mcp-vertex',
+				namespacePrefix: 'delendai',
+				mcpServerName: 'delendai',
 			},
 		);
 

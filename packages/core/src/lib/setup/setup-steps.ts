@@ -22,7 +22,7 @@ export interface IGithubSetupContext {
 	readonly repo: string | null;
 	/** Which auth tier is currently available. */
 	readonly tier: GithubAuthTier;
-	/** True when `mcp-vertex.config.json` already declares the issues plugin. */
+	/** True when `delendai.config.json` already declares the issues plugin. */
 	readonly configured: boolean;
 	/** Workspace-relative config path (for the "edit this file" step). */
 	readonly configPath: string;
@@ -67,7 +67,7 @@ const configStep = (ctx: IGithubSetupContext): ISetupStep => {
 		detail: `Declare the repo the issues plugin reads. ${
 			ctx.configured
 				? 'It is already present — verify the repo is correct.'
-				: 'mcp-vertex never loads issues unless you opt in here.'
+				: 'delendai never loads issues unless you opt in here.'
 		}`,
 		command: JSON.stringify(
 			{ plugins: { issues: { options: { repo } } } },
@@ -81,14 +81,14 @@ const loadStep = (): ISetupStep => ({
 	id: 'load',
 	title: 'Load the host with proposals + issues',
 	detail: 'issues hard-depends on proposals; load both in the same set.',
-	command: 'mcp-vertex --plugins=proposals,issues',
+	command: 'delendai --plugins=proposals,issues',
 });
 
 const verifyStep = (): ISetupStep => ({
 	id: 'verify',
 	title: 'Verify the setup',
 	detail: 'List open issues to confirm the repo + auth tier resolve.',
-	command: 'mcpv issues list   # or call the issues_list MCP tool',
+	command: 'delendai issues list   # or call the issues_list MCP tool',
 });
 
 /**

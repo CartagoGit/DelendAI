@@ -244,8 +244,8 @@ describe('renderAgentMdBlock', () => {
 			doNot: ['no imports from internal core'],
 			tokenHotspots: [],
 		});
-		expect(block).toContain('<!-- mcp-vertex:begin agent-md -->');
-		expect(block).toContain('<!-- mcp-vertex:end agent-md -->');
+		expect(block).toContain('<!-- delendai:begin agent-md -->');
+		expect(block).toContain('<!-- delendai:end agent-md -->');
 		expect(block).toContain('Test purpose.');
 		expect(block).toContain('## Public API');
 		expect(block).toContain('## Depends on');
@@ -332,8 +332,8 @@ describe('token hotspots come from the real measurement, not a filename guess (q
 		'',
 		'| Tool | Owner | Total Bytes | Name Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Annotations Bytes | Other Bytes | Envelope Bytes |',
 		'| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
-		'| mcp-vertex_project-kpis_project_kpis | project-kpis | 9,898 | 38 | 118 | 1,129 | 8,518 | 0 | 27 | 68 |',
-		'| mcp-vertex_adaptive-optimizer_adaptive_facade | adaptive-optimizer | 4,771 | 47 | 127 | 836 | 3,666 | 0 | 27 | 68 |',
+		'| delendai_project-kpis_project_kpis | project-kpis | 9,898 | 38 | 118 | 1,129 | 8,518 | 0 | 27 | 68 |',
+		'| delendai_adaptive-optimizer_adaptive_facade | adaptive-optimizer | 4,771 | 47 | 127 | 836 | 3,666 | 0 | 27 | 68 |',
 		'',
 		'## Next section',
 		'',
@@ -344,13 +344,13 @@ describe('token hotspots come from the real measurement, not a filename guess (q
 		const rows = parseTopToolsByBytes(DASHBOARD_FIXTURE);
 		expect(rows).toEqual([
 			{
-				tool: 'mcp-vertex_project-kpis_project_kpis',
+				tool: 'delendai_project-kpis_project_kpis',
 				owner: 'project-kpis',
 				totalBytes: 9898,
 				outputSchemaBytes: 8518,
 			},
 			{
-				tool: 'mcp-vertex_adaptive-optimizer_adaptive_facade',
+				tool: 'delendai_adaptive-optimizer_adaptive_facade',
 				owner: 'adaptive-optimizer',
 				totalBytes: 4771,
 				outputSchemaBytes: 3666,

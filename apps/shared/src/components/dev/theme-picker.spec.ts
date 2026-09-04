@@ -3,16 +3,16 @@
  * `renderThemePicker` unit tests (f00102 S4.5).
  *
  * Contract pinned:
- *   - root is `<fieldset class="mcpv-theme-picker__field">` with a
+ *   - root is `<fieldset class="delendai-theme-picker__field">` with a
  *     `<legend>Theme</legend>` and a `<div role="radiogroup">`
  *   - six radios by default (system / light / dark / midnight /
  *     solarized / nord), in that order — mirrors
  *     `apps/shared/src/styles/_themes.scss`
  *   - hosts may pass `themes:` to restrict to a subset
  *   - the radio matching `current` carries `checked`
- *   - `hint` is rendered as `<p class="mcpv-theme-picker__hint">`
- *   - `inline: true` collapses to `<label class="mcpv-theme-picker
- *     mcpv-theme-picker--inline">` with no fieldset
+ *   - `hint` is rendered as `<p class="delendai-theme-picker__hint">`
+ *   - `inline: true` collapses to `<label class="delendai-theme-picker
+ *     delendai-theme-picker--inline">` with no fieldset
  *   - all interpolations are HTML-escaped
  */
 import { describe, expect, it } from 'vitest';
@@ -36,10 +36,12 @@ const ALL_VALUES: ReadonlyArray<ThemeChoice> = [
 describe('renderThemePicker', () => {
 	it('emits the canonical fieldset + radios', () => {
 		const out = renderThemePicker({ current: 'system' });
-		expect(out).toContain('<fieldset class="mcpv-theme-picker__field">');
+		expect(out).toContain(
+			'<fieldset class="delendai-theme-picker__field">',
+		);
 		expect(out).toContain('<legend>Theme</legend>');
 		expect(out).toContain(
-			'<div class="mcpv-theme-picker__radios" role="radiogroup">',
+			'<div class="delendai-theme-picker__radios" role="radiogroup">',
 		);
 	});
 
@@ -90,13 +92,13 @@ describe('renderThemePicker', () => {
 			hint: 'Pick a theme',
 		});
 		expect(out).toContain(
-			'<p class="mcpv-theme-picker__hint">Pick a theme</p>',
+			'<p class="delendai-theme-picker__hint">Pick a theme</p>',
 		);
 	});
 
 	it('omits the hint paragraph when hint is missing', () => {
 		const out = renderThemePicker({ current: 'system' });
-		expect(out).not.toContain('mcpv-theme-picker__hint');
+		expect(out).not.toContain('delendai-theme-picker__hint');
 	});
 
 	it('honours a custom name', () => {
@@ -107,7 +109,7 @@ describe('renderThemePicker', () => {
 	it('renders the inline variant without a fieldset', () => {
 		const out = renderThemePicker({ current: 'system', inline: true });
 		expect(out).toContain(
-			'<label class="mcpv-theme-picker mcpv-theme-picker--inline">',
+			'<label class="delendai-theme-picker delendai-theme-picker--inline">',
 		);
 		expect(out).not.toContain('<fieldset');
 		expect(out).not.toContain('<legend>');

@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexGitBlameOutput {
+export interface DelendaiGitBlameOutput {
 	lines: {
 		line: number;
 		hash: string;
@@ -22,11 +22,11 @@ export interface McpVertexGitBlameOutput {
 	}[];
 }
 
-export interface McpVertexGitChangedOutput {
+export interface DelendaiGitChangedOutput {
 	changed: string[];
 }
 
-export interface McpVertexGitChangelogOutput {
+export interface DelendaiGitChangelogOutput {
 	bump: "major" | "minor" | "patch" | "none";
 	total: number;
 	groups: {
@@ -40,18 +40,18 @@ export interface McpVertexGitChangelogOutput {
 	}[];
 }
 
-export interface McpVertexGitDiffOutput {
+export interface DelendaiGitDiffOutput {
 	stat: string;
 }
 
-export interface McpVertexGitLogOutput {
+export interface DelendaiGitLogOutput {
 	commits: {
 		hash: string;
 		subject: string;
 	}[];
 }
 
-export interface McpVertexGitPrListOutput {
+export interface DelendaiGitPrListOutput {
 	available: boolean;
 	note?: string;
 	prs: {
@@ -63,7 +63,7 @@ export interface McpVertexGitPrListOutput {
 	}[];
 }
 
-export interface McpVertexGitPrViewOutput {
+export interface DelendaiGitPrViewOutput {
 	available: boolean;
 	note?: string;
 	pr?: {
@@ -82,7 +82,7 @@ export interface McpVertexGitPrViewOutput {
 	};
 }
 
-export interface McpVertexGitShowOutput {
+export interface DelendaiGitShowOutput {
 	hash: string;
 	author: string;
 	date: string;
@@ -90,7 +90,7 @@ export interface McpVertexGitShowOutput {
 	stat: string;
 }
 
-export interface McpVertexGitStatusOutput {
+export interface DelendaiGitStatusOutput {
 	branch?: string;
 	clean: boolean;
 	entries: {
@@ -99,7 +99,7 @@ export interface McpVertexGitStatusOutput {
 	}[];
 }
 
-export interface McpVertexGitWorktreeOutput {
+export interface DelendaiGitWorktreeOutput {
 	worktrees: {
 		path: string;
 		head: string;
@@ -111,14 +111,14 @@ export interface McpVertexGitWorktreeOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface GitToolOutputs {
-	"mcp-vertex_git_blame": McpVertexGitBlameOutput;
-	"mcp-vertex_git_changed": McpVertexGitChangedOutput;
-	"mcp-vertex_git_changelog": McpVertexGitChangelogOutput;
-	"mcp-vertex_git_diff": McpVertexGitDiffOutput;
-	"mcp-vertex_git_log": McpVertexGitLogOutput;
-	"mcp-vertex_git_pr_list": McpVertexGitPrListOutput;
-	"mcp-vertex_git_pr_view": McpVertexGitPrViewOutput;
-	"mcp-vertex_git_show": McpVertexGitShowOutput;
-	"mcp-vertex_git_status": McpVertexGitStatusOutput;
-	"mcp-vertex_git_worktree": McpVertexGitWorktreeOutput;
+	"delendai_git_blame": DelendaiGitBlameOutput;
+	"delendai_git_changed": DelendaiGitChangedOutput;
+	"delendai_git_changelog": DelendaiGitChangelogOutput;
+	"delendai_git_diff": DelendaiGitDiffOutput;
+	"delendai_git_log": DelendaiGitLogOutput;
+	"delendai_git_pr_list": DelendaiGitPrListOutput;
+	"delendai_git_pr_view": DelendaiGitPrViewOutput;
+	"delendai_git_show": DelendaiGitShowOutput;
+	"delendai_git_status": DelendaiGitStatusOutput;
+	"delendai_git_worktree": DelendaiGitWorktreeOutput;
 }

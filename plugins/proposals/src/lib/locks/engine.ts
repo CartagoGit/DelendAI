@@ -123,7 +123,7 @@ export type IAgentLockResponse = {
 };
 
 // x00155 S2 / x00153 S5 — one JSONL line per cross-process release.
-// Lives under `.cache/mcp-vertex/agents.lock.releases.jsonl`; operators
+// Lives under `.cache/delendai/agents.lock.releases.jsonl`; operators
 // grep this to find host-restart patterns in production.
 export type IReleaseAuditEntry = {
 	readonly task_id: string;
@@ -231,12 +231,12 @@ export const resetAgentLockSessionBalance = async (): Promise<void> => {
  * x00163 fix: this used to check only ONE level up (`basename(parent)
  * === '.cache'`), which is correct for a lock path shaped
  * `<root>/.cache/agents.lock.json` but wrong for the real, canonical
- * shape `<root>/.cache/mcp-vertex/agents.lock.json` (the plugin cache
- * dir adds an extra `mcp-vertex` segment). On the real shape the old
- * code returned `<root>/.cache/mcp-vertex` itself as the "workspace
- * root", which `sessionLogPath` then re-joined with `.cache/mcp-vertex`
+ * shape `<root>/.cache/delendai/agents.lock.json` (the plugin cache
+ * dir adds an extra `delendai` segment). On the real shape the old
+ * code returned `<root>/.cache/delendai` itself as the "workspace
+ * root", which `sessionLogPath` then re-joined with `.cache/delendai`
  * again — producing a doubly-nested
- * `<root>/.cache/mcp-vertex/.cache/mcp-vertex/agents.lock.session.jsonl`
+ * `<root>/.cache/delendai/.cache/delendai/agents.lock.session.jsonl`
  * on every real session (confirmed live: this exact stray path exists
  * on disk in this repo's own `.cache/`). Walk up from the lock path
  * looking for a directory literally named `.cache` and return ITS
@@ -1196,7 +1196,7 @@ async function executeLockAction(
 		// shell). The new caller is the same agent by name — and is
 		// the legitimate release path — so we force-release and write
 		// a JSONL audit line under
-		// `.cache/mcp-vertex/agents.lock.releases.jsonl`.
+		// `.cache/delendai/agents.lock.releases.jsonl`.
 		const caller = resolveCallerHostId(deps);
 
 		// (1) Agent-name check. If the caller explicitly identifies

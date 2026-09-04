@@ -159,7 +159,7 @@ export const buildAdviseRoutingRegistration = (
 	tags: ['orchestrator-runner', 'lazy', 'routing'],
 	summary:
 		'Score the provider roster for a task and advise which provider to route to (no spend).',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_advise_routing',
+	descriptionKey: 'delendai_orchestrator-runner_advise_routing',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_advise_routing`,

@@ -42,8 +42,8 @@ export const buildStandaloneCoreToolRegistrations = (
 		serverName = `${namespacePrefix}-mcp-server`,
 		serverVersion = '0.1.0',
 		corePaths = {
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 		},
 		keepLegacy = false,
 	} = options;

@@ -3,7 +3,7 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const repoRoot = process.cwd();
-const proposalsRoot = join(repoRoot, 'docs/mcp-vertex/proposals');
+const proposalsRoot = join(repoRoot, 'docs/delendai/proposals');
 const activeRoots = ['ready', 'blocked', 'review'];
 const canonicalSections = new Set([
 	'goal',

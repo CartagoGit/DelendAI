@@ -2,7 +2,7 @@
 	"name": "@delendai/refactor",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), safe rename, and rule-based codemods with dry-run diffs. Load with `mcp-vertex --plugins=refactor`.",
+	"description": "AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), safe rename, and rule-based codemods with dry-run diffs. Load with `delendai --plugins=refactor`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

@@ -12,7 +12,7 @@
  *
  * Precedence order (highest first):
  *
- *   1. `workspace`  — local overrides under `.mcp-vertex/skills/`
+ *   1. `workspace`  — local overrides under `.delendai/skills/`
  *   2. `plugin`     — skills bundled with the active plugin package
  *   3. `package`    — skills bundled with `@delendai/core`
  *   4. `core`       — same as `package` in this revision; reserved for

@@ -19,8 +19,8 @@ const VITEST_SHARED = 'vitest.shared.ts';
 const PLUGIN_DEFAULTS_FILE = 'packages/core/src/lib/plugins/plugin-defaults.ts';
 const RELEASE_PLAN_FILE = 'tools/scripts/release/release-plan.ts';
 const PRESET_CATALOG_FILE = 'packages/core/src/lib/plugins/preset-catalog.ts';
-const CATALOG_ARTIFACT = 'docs/mcp-vertex/agent-catalog.generated.json';
-const HOST_CONFIG_FILE = 'mcp-vertex.config.json';
+const CATALOG_ARTIFACT = 'docs/delendai/agent-catalog.generated.json';
+const HOST_CONFIG_FILE = 'delendai.config.json';
 const FIRST_PARTY_INDEX_FILE =
 	'packages/core/src/lib/registry/first-party-index.ts';
 
@@ -220,7 +220,7 @@ const buildLoadDiagnostics = async (
  * `vitest.shared.ts`, the three core files) and the agent catalog.
  *
  * The catalog-regen check is **skipped** when the plugin is not in
- * `mcp-vertex.config.json` (opt-in plugins like `web-fetch` or `audit`
+ * `delendai.config.json` (opt-in plugins like `web-fetch` or `audit`
  * are not loaded by the host by default; the catalog reflects what the
  * host loads). For an opt-in plugin, the catalog not listing it is the
  * correct state.

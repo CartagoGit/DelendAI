@@ -45,7 +45,7 @@ export const createTempGitRepo = async (
 	const {
 		branch = 'develop',
 		userName = 'CI',
-		userEmail = 'ci@mcp-vertex',
+		userEmail = 'ci@delendai',
 		seedFile = 'README.md',
 		seedContents = '# init\n',
 		seedCommitMessage = 'chore: init',

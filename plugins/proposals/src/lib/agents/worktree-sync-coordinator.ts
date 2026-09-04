@@ -7,7 +7,7 @@
  * (`syncProposalRegistry.run()`) reads + rewrites
  * `<cacheDir>/proposals/index.json` (the regenerable registry
  * index — see x00052 for the move from
- * `docs/mcp-vertex/proposals/index.json`).
+ * `docs/delendai/proposals/index.json`).
  * When the two run concurrently, the registry sync can read a half-updated
  * view (a worktree dir that exists but whose branch ref is not yet visible)
  * and persist a stale index.

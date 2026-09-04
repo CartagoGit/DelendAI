@@ -99,9 +99,9 @@ These go beyond LSP — they can run code, manage processes, plan edits:
 | Server | What it does | Recommendation |
 |---|---|---|
 | `desktop-commander` | "Swiss-army-knife" file/process/exec tool. ~100k+ weekly visitors. | **Skip if you already have native Bash + file tools**. It duplicates them. |
-| `code-mcp` ([ezyang](https://github.com/ezyang/codemcp)) | Coding agent with read/write/exec | Skip; mcp-vertex already has this primitive. |
+| `code-mcp` ([ezyang](https://github.com/ezyang/codemcp)) | Coding agent with read/write/exec | Skip; delendai already has this primitive. |
 | `wcgw` / `gabrielmaialva33/winx-code-agent` | Rust coding agent | Skip. |
-| `claude-code` (community CLI wrappers) | Wraps Claude Code CLI | Skip; you're already in mcp-vertex. |
+| `claude-code` (community CLI wrappers) | Wraps Claude Code CLI | Skip; you're already in delendai. |
 
 ## What f00068 needs to update
 

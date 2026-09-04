@@ -29,7 +29,7 @@ afterEach(async () => {
 
 describe('scssPlugin', () => {
 	it('compiles relative Sass modules and exposes named and default exports', async () => {
-		const directory = await mkdtemp(join(tmpdir(), 'mcp-vertex-scss-'));
+		const directory = await mkdtemp(join(tmpdir(), 'delendai-scss-'));
 		temporaryDirectories.push(directory);
 		await writeFile(join(directory, '_tokens.scss'), '$accent: #5b8cff;');
 		await writeFile(
@@ -45,7 +45,7 @@ describe('scssPlugin', () => {
 		}) as { path: string; namespace: string };
 		expect(resolved).toEqual({
 			path: join(directory, 'fixture.scss'),
-			namespace: 'mcp-vertex-scss',
+			namespace: 'delendai-scss',
 		});
 		const loaded = (await loadCallback({ path: resolved.path })) as {
 			contents: string;
@@ -75,7 +75,7 @@ describe('scssPlugin', () => {
 	// string — reproduced live under `bun test --preload`. Falls back
 	// to `dirname(importer)`.
 	it('falls back to dirname(importer) when resolveDir is empty (global-plugin registration edge case)', async () => {
-		const directory = await mkdtemp(join(tmpdir(), 'mcp-vertex-scss-'));
+		const directory = await mkdtemp(join(tmpdir(), 'delendai-scss-'));
 		temporaryDirectories.push(directory);
 		await writeFile(
 			join(directory, 'fixture.scss'),
@@ -90,12 +90,12 @@ describe('scssPlugin', () => {
 		}) as { path: string; namespace: string };
 		expect(resolved).toEqual({
 			path: join(directory, 'fixture.scss'),
-			namespace: 'mcp-vertex-scss',
+			namespace: 'delendai-scss',
 		});
 	});
 
 	it('fails the bundle when Sass is invalid', async () => {
-		const directory = await mkdtemp(join(tmpdir(), 'mcp-vertex-scss-'));
+		const directory = await mkdtemp(join(tmpdir(), 'delendai-scss-'));
 		temporaryDirectories.push(directory);
 		await writeFile(join(directory, 'broken.scss'), '.broken { color: ;');
 

@@ -1,4 +1,4 @@
-export const MCP_VERTEX_ERROR_CODES = [
+export const DELENDAI_ERROR_CODES = [
 	'PLUGIN_REGISTER_TIMEOUT',
 	'PLUGIN_LOAD_FAILED',
 	'PLUGIN_DISPOSE_FAILED',
@@ -9,10 +9,10 @@ export const MCP_VERTEX_ERROR_CODES = [
 	'PROCESS_TIMEOUT',
 ] as const;
 
-export type McpVertexErrorCode = (typeof MCP_VERTEX_ERROR_CODES)[number];
+export type DelendaiErrorCode = (typeof DELENDAI_ERROR_CODES)[number];
 
-export const isMcpVertexErrorCode = (
+export const isDelendaiErrorCode = (
 	value: unknown,
-): value is McpVertexErrorCode =>
+): value is DelendaiErrorCode =>
 	typeof value === 'string' &&
-	(MCP_VERTEX_ERROR_CODES as readonly string[]).includes(value);
+	(DELENDAI_ERROR_CODES as readonly string[]).includes(value);

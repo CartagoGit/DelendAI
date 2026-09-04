@@ -2,7 +2,7 @@
 /**
  * rename-proposals-padded.ts — f00023 s1.
  *
- * Scans every `.md` under `docs/mcp-vertex/proposals/{ready,done,in-progress,paused,
+ * Scans every `.md` under `docs/delendai/proposals/{ready,done,in-progress,paused,
  * blocked,retired}/`, extracts the `id:` from the YAML frontmatter, looks
  * up the file's *first-commit* date (`git log --diff-filter=A --format=%aI
  * -- <path> | tail -1`), sorts within each family by (creationDate ASC,
@@ -14,7 +14,7 @@
  * rewritten). Pass `--apply` to perform the renames via `git mv` and
  * rewrite each file's `id:` field in-place.
  *
- * Design choices (see docs/mcp-vertex/proposals/ready/f00023-…md §"Slices"):
+ * Design choices (see docs/delendai/proposals/ready/f00023-…md §"Slices"):
  *   - 5-digit padding (not 6, not 7) — `a00001..a99999` per family = 99 999
  *     proposals/family, enough for decades. Approved in the proposal.
  *   - Order within a family is by **creation date** (first commit), not by
@@ -116,7 +116,7 @@ const gitFirstCommitIso = async (absPath: string): Promise<string> => {
 
 const walkProposals = async (root: string): Promise<IProposalFile[]> => {
 	const out: IProposalFile[] = [];
-	const proposalsRoot = join(root, 'docs', 'mcp-vertex', 'proposals');
+	const proposalsRoot = join(root, 'docs', 'delendai', 'proposals');
 
 	const visit = async (dirAbs: string): Promise<void> => {
 		let entries: Dirent<string>[];
@@ -133,7 +133,7 @@ const walkProposals = async (root: string): Promise<IProposalFile[]> => {
 			if (ent.isDirectory()) {
 				// Recurse into sub-folders (e.g. `done/audits/`, `done/feats/`,
 				// `done/fixes/`, `done/resumes/`). We do NOT recurse into the
-				// `docs/mcp-vertex/proposals/audit*` / `n00001-*.md` session notes etc.
+				// `docs/delendai/proposals/audit*` / `n00001-*.md` session notes etc.
 				await visit(abs);
 				continue;
 			}
@@ -243,7 +243,7 @@ if (import.meta.main) {
 		await applyRenames(map);
 		console.error(
 			`Applied ${map.renames.length} renames across ${Object.keys(map.stats.byFamily).length} families. ` +
-				`Run bun run lint:proposals and mcp-vertex.proposals.sync_proposals to refresh the index.`,
+				`Run bun run lint:proposals and delendai.proposals.sync_proposals to refresh the index.`,
 		);
 	} else {
 		console.log(JSON.stringify(map, null, 2));

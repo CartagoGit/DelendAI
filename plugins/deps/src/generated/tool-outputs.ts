@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexDepsDepsAuditOutput {
+export interface DelendaiDepsDepsAuditOutput {
 	tool: string;
 	findings: Array<{
 		ruleId: string;
@@ -38,7 +38,7 @@ export interface McpVertexDepsDepsAuditOutput {
 	worst: string;
 }
 
-export interface McpVertexDepsDepsCheckOutput {
+export interface DelendaiDepsDepsCheckOutput {
 	manifest: string;
 	lockfile: {
 		present: boolean;
@@ -52,7 +52,7 @@ export interface McpVertexDepsDepsCheckOutput {
 	healthy: boolean;
 }
 
-export interface McpVertexDepsDepsLicensesOutput {
+export interface DelendaiDepsDepsLicensesOutput {
 	tool: string;
 	findings: Array<{
 		ruleId: string;
@@ -75,7 +75,7 @@ export interface McpVertexDepsDepsLicensesOutput {
 	worst: string;
 }
 
-export interface McpVertexDepsDepsListOutput {
+export interface DelendaiDepsDepsListOutput {
 	detail?: "compact" | "normal" | "full";
 	manifest: string;
 	found: boolean;
@@ -92,7 +92,7 @@ export interface McpVertexDepsDepsListOutput {
 	}[];
 }
 
-export interface McpVertexDepsDepsOutdatedOutput {
+export interface DelendaiDepsDepsOutdatedOutput {
 	manifest: string;
 	checked: number;
 	outdatedCount: number;
@@ -108,7 +108,7 @@ export interface McpVertexDepsDepsOutdatedOutput {
 	truncated: boolean;
 }
 
-export interface McpVertexDepsDepsPolyglotOutput {
+export interface DelendaiDepsDepsPolyglotOutput {
 	detail?: "compact" | "normal" | "full";
 	manifests: {
 		ecosystem: string;
@@ -122,7 +122,7 @@ export interface McpVertexDepsDepsPolyglotOutput {
 	}[];
 }
 
-export interface McpVertexDepsDepsTreeOutput {
+export interface DelendaiDepsDepsTreeOutput {
 	manifest: string;
 	lockfile: string;
 	lockfileFound: boolean;
@@ -142,11 +142,11 @@ export interface McpVertexDepsDepsTreeOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface DepsToolOutputs {
-	"mcp-vertex_deps_deps_audit": McpVertexDepsDepsAuditOutput;
-	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;
-	"mcp-vertex_deps_deps_licenses": McpVertexDepsDepsLicensesOutput;
-	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
-	"mcp-vertex_deps_deps_outdated": McpVertexDepsDepsOutdatedOutput;
-	"mcp-vertex_deps_deps_polyglot": McpVertexDepsDepsPolyglotOutput;
-	"mcp-vertex_deps_deps_tree": McpVertexDepsDepsTreeOutput;
+	"delendai_deps_deps_audit": DelendaiDepsDepsAuditOutput;
+	"delendai_deps_deps_check": DelendaiDepsDepsCheckOutput;
+	"delendai_deps_deps_licenses": DelendaiDepsDepsLicensesOutput;
+	"delendai_deps_deps_list": DelendaiDepsDepsListOutput;
+	"delendai_deps_deps_outdated": DelendaiDepsDepsOutdatedOutput;
+	"delendai_deps_deps_polyglot": DelendaiDepsDepsPolyglotOutput;
+	"delendai_deps_deps_tree": DelendaiDepsDepsTreeOutput;
 }

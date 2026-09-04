@@ -65,17 +65,17 @@ describe('setup-wizard', () => {
 	describe('emitted commands agree with the catalog / canonical guide', () => {
 		it('launch command uses --preset=full (not a hand-typed plugin list)', () => {
 			expect(launchCommand()).toBe(
-				'bunx --package @delendai/cli mcpv __serve --workspace . --preset full',
+				'bunx --package @delendai/cli delendai __serve --workspace . --preset full',
 			);
 		});
 
 		it('mcp.json snippet uses the same preset arg', () => {
 			const snippet = mcpJsonSnippet();
 			const parsed = JSON.parse(snippet);
-			expect(parsed.servers['mcp-vertex'].args).toEqual([
+			expect(parsed.servers['delendai'].args).toEqual([
 				'--package',
 				'@delendai/cli',
-				'mcpv',
+				'delendai',
 				'__serve',
 				'--workspace',
 				'.',

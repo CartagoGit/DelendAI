@@ -3,7 +3,7 @@
  * `task_queue` over the real MCP protocol.
  *
  * Slice S4 of f00044. Drives the swarm-coordination tool surface
- * through a real `Client` connected to an assembled mcp-vertex server
+ * through a real `Client` connected to an assembled delendai server
  * over an in-memory transport. The `agent_lock` engine keys ownership
  * on the `agent` ARGUMENT (not the client connection), so a single
  * client driving two distinct `agent` values reproduces the two-agent
@@ -32,7 +32,7 @@ import {
 	type IAssembledProposalsServer,
 } from './assembled-proposals-server';
 
-const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
+const PROPOSALS_RELDIR = 'docs/delendai/proposals';
 
 interface LockOutput {
 	readonly ok?: boolean;
@@ -68,7 +68,7 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 	it('agent_lock claim records ownership; a conflicting claim is rejected; release frees it', async () => {
 		const files = ['src/a.ts', 'src/b.ts'];
 		const claim = await harness.callTool<LockOutput>(
-			'mcp-vertex_proposals_agent_lock',
+			'delendai_proposals_agent_lock',
 			{ action: 'claim', task_id: 'task-A', agent: 'agent-A', files },
 		);
 		expect(claim.ok).toBe(true);
@@ -76,7 +76,7 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 
 		// Status reflects agent-A owning both files.
 		const status = await harness.callTool<LockOutput>(
-			'mcp-vertex_proposals_agent_lock',
+			'delendai_proposals_agent_lock',
 			{ action: 'status' },
 		);
 		const entryA = (status.structured.in_flight ?? []).find(
@@ -90,7 +90,7 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 		// agent-B claiming an overlapping file is blocked, naming the
 		// conflicting task and the overlapping file.
 		const conflict = await harness.callTool<LockOutput>(
-			'mcp-vertex_proposals_agent_lock',
+			'delendai_proposals_agent_lock',
 			{
 				action: 'claim',
 				task_id: 'task-B',
@@ -106,12 +106,12 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 
 		// agent-A releases; the files leave the in-flight set.
 		const release = await harness.callTool<LockOutput>(
-			'mcp-vertex_proposals_agent_lock',
+			'delendai_proposals_agent_lock',
 			{ action: 'release', task_id: 'task-A', agent: 'agent-A' },
 		);
 		expect(release.ok).toBe(true);
 		const after = await harness.callTool<LockOutput>(
-			'mcp-vertex_proposals_agent_lock',
+			'delendai_proposals_agent_lock',
 			{ action: 'status' },
 		);
 		expect(
@@ -123,7 +123,7 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 
 	it('sync_proposals picks up a freshly dropped proposal into the index', async () => {
 		const before = await harness.callTool<{ count: number }>(
-			'mcp-vertex_proposals_sync_proposals',
+			'delendai_proposals_sync_proposals',
 			{},
 		);
 		const baseline = before.structured.count;
@@ -154,7 +154,7 @@ Seed for the sync e2e.
 		const after = await harness.callTool<{
 			count: number;
 			errors: unknown[];
-		}>('mcp-vertex_proposals_sync_proposals', {});
+		}>('delendai_proposals_sync_proposals', {});
 		expect(after.ok).toBe(true);
 		expect(after.structured.errors).toEqual([]);
 		expect(after.structured.count).toBe(baseline + 1);
@@ -182,7 +182,7 @@ Seed for the sync e2e.
 			const result = await runtime.callTool<{
 				count: number;
 				errors: string[];
-			}>('mcp-vertex_proposals_sync_proposals');
+			}>('delendai_proposals_sync_proposals');
 			expect(result.ok).toBe(true);
 			expect(result.structured.errors).toEqual([]);
 			expect(result.structured.count).toBeGreaterThanOrEqual(2);
@@ -215,7 +215,7 @@ Seed for the sync e2e.
 				action: string;
 				path?: string;
 				created?: boolean;
-			}>('mcp-vertex_proposals_agent_worktree', {
+			}>('delendai_proposals_agent_worktree', {
 				action: 'create',
 				agent: 'agent-A',
 				base_branch: 'HEAD',
@@ -225,7 +225,7 @@ Seed for the sync e2e.
 			expect(res.structured.path).toBeDefined();
 			const wtPath = res.structured.path as string;
 			expect(wtPath).toBe(
-				join(ws, '.cache', 'mcp-vertex', '.worktrees', 'agent-a'),
+				join(ws, '.cache', 'delendai', '.worktrees', 'agent-a'),
 			);
 			expect(existsSync(wtPath)).toBe(true);
 
@@ -245,7 +245,7 @@ Seed for the sync e2e.
 			ok: boolean;
 			action: string;
 			reason?: string;
-		}>('mcp-vertex_proposals_agent_worktree', {
+		}>('delendai_proposals_agent_worktree', {
 			action: 'create',
 			agent: 'agent-A',
 		});
@@ -253,7 +253,7 @@ Seed for the sync e2e.
 		expect(res.structured.ok).toBe(false);
 		expect(res.structured.action).toBe('create');
 		expect(res.structured.reason).toBe(
-			'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in mcp-vertex.config.json to enable.',
+			'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in delendai.config.json to enable.',
 		);
 	});
 
@@ -261,7 +261,7 @@ Seed for the sync e2e.
 		const enqueue = await harness.callTool<{
 			taskId?: string;
 			status?: string;
-		}>('mcp-vertex_proposals_task_queue', {
+		}>('delendai_proposals_task_queue', {
 			action: 'enqueue',
 			params: {
 				taskId: 'follow-up-1',
@@ -279,7 +279,7 @@ Seed for the sync e2e.
 		const again = await harness.callTool<{
 			taskId?: string;
 			status?: string;
-		}>('mcp-vertex_proposals_task_queue', {
+		}>('delendai_proposals_task_queue', {
 			action: 'enqueue',
 			params: {
 				taskId: 'follow-up-1',
@@ -294,7 +294,7 @@ Seed for the sync e2e.
 		// observable here: the double-enqueue leaves exactly ONE queued entry,
 		// not two (a duplicate would also make the file parseQueue-invalid).
 		const report = await harness.callTool<{ queuedCount?: number }>(
-			'mcp-vertex_proposals_task_queue',
+			'delendai_proposals_task_queue',
 			{ action: 'report', params: {} },
 		);
 		expect(report.ok).toBe(true);
@@ -303,7 +303,7 @@ Seed for the sync e2e.
 
 	it('a successful lock claim satisfies the outputSchema parity invariant', async () => {
 		const claim = await harness.callTool<LockOutput>(
-			'mcp-vertex_proposals_agent_lock',
+			'delendai_proposals_agent_lock',
 			{
 				action: 'claim',
 				task_id: 'task-P',

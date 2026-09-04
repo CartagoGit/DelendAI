@@ -19,7 +19,7 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 	beforeEach(async () => {
 		workspace = mkdtempSync(join(tmpdir(), 'mcp-json-parity-'));
 		writeFileSync(
-			join(workspace, 'mcp-vertex.config.json'),
+			join(workspace, 'delendai.config.json'),
 			JSON.stringify({
 				plugins: {
 					memory: { options: {} },
@@ -60,11 +60,11 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 	it('loads config-declared plugins even when mcp.json passes only workspace', async () => {
 		const { tools } = await client.listTools();
 		const names = tools.map((tool) => tool.name);
-		expect(names).toContain('mcp-vertex_memory_save');
-		expect(names).toContain('mcp-vertex_memory_recall');
+		expect(names).toContain('delendai_memory_save');
+		expect(names).toContain('delendai_memory_recall');
 
 		const res = await client.callTool({
-			name: 'mcp-vertex_overview',
+			name: 'delendai_overview',
 			arguments: { compact: true },
 		});
 		const overview = res.structuredContent as {
@@ -93,7 +93,7 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 		);
 		try {
 			writeFileSync(
-				join(badWorkspace, 'mcp-vertex.config.json'),
+				join(badWorkspace, 'delendai.config.json'),
 				JSON.stringify({
 					plugins: {
 						memory: { options: {} },
@@ -128,10 +128,10 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 				const names = tools.map((tool) => tool.name);
 				// The host still boots and the plugin that DID resolve is fully
 				// usable — a missing plugin must not take down the surface.
-				expect(names).toContain('mcp-vertex_memory_save');
+				expect(names).toContain('delendai_memory_save');
 
 				const res = await badClient.callTool({
-					name: 'mcp-vertex_overview',
+					name: 'delendai_overview',
 					arguments: { compact: true },
 				});
 				const overview = res.structuredContent as {

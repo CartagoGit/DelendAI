@@ -98,7 +98,7 @@ const resolvePluginCacheDir = (options: ISearchSemanticToolOptions): string => {
 	// x00156 S6: workspaceRootAbs is already required on this options
 	// interface — no process.cwd() fallback needed or allowed
 	// (AGENTS.md rule 2).
-	return join(options.workspaceRootAbs, '.cache', 'mcp-vertex', 'search');
+	return join(options.workspaceRootAbs, '.cache', 'delendai', 'search');
 };
 
 const scoreToRankedHits = (

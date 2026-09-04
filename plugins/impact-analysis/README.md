@@ -7,7 +7,7 @@ impact analysis for a change slice and focused test selection for that slice.
 ## Load it
 
 ```bash
-mcp-vertex --plugins=impact-analysis
+delendai --plugins=impact-analysis
 ```
 
 This registers two tools, `<prefix>_impact_analyze` and
@@ -30,7 +30,7 @@ This registers two tools, `<prefix>_impact_analyze` and
 Both tools stay within a bounded byte budget and truncate deterministically
 when the payload would exceed the configured limit.
 
-## Configuration (`mcp-vertex.config.json`)
+## Configuration (`delendai.config.json`)
 
 ```json
 {

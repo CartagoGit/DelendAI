@@ -2,7 +2,7 @@
 	"name": "@delendai/docs",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Project documentation plugin for @delendai/core: catalogue + read the repo markdown (docs_list / docs_read). Load with `mcp-vertex --plugins=docs`.",
+	"description": "Project documentation plugin for @delendai/core: catalogue + read the repo markdown (docs_list / docs_read). Load with `delendai --plugins=docs`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

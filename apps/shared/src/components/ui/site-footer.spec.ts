@@ -4,7 +4,7 @@
  *
  * Contract pinned:
  *   - root is a sequence of <div>s the host wraps in
- *     `<footer class="mcpv-sitefoot sitefoot">`
+ *     `<footer class="delendai-sitefoot sitefoot">`
  *   - 3 columns: brand (with tagline + madeBy), sections nav,
  *     resources nav (5 external/internal links)
  *   - the base row carries the year + the `built` label
@@ -30,16 +30,16 @@ describe('renderSiteFooter', () => {
 			year: 2026,
 			labels: {},
 		});
-		expect(out).toContain('<div class="mcpv-sitefoot__inner">');
-		expect(out).toContain('mcpv-sitefoot__col--brand');
+		expect(out).toContain('<div class="delendai-sitefoot__inner">');
+		expect(out).toContain('delendai-sitefoot__col--brand');
 		expect(out).toContain(
-			'<nav class="mcpv-sitefoot__col" aria-label="Sections">',
+			'<nav class="delendai-sitefoot__col" aria-label="Sections">',
 		);
 		expect(out).toContain(
-			'<nav class="mcpv-sitefoot__col" aria-label="Resources">',
+			'<nav class="delendai-sitefoot__col" aria-label="Resources">',
 		);
-		expect(out).toContain('<div class="mcpv-sitefoot__base">');
-		expect(out).toContain('© 2026 mcp-vertex');
+		expect(out).toContain('<div class="delendai-sitefoot__base">');
+		expect(out).toContain('© 2026 delendai');
 	});
 
 	it('renders the 7 default sections', () => {

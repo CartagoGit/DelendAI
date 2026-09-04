@@ -26,7 +26,7 @@ export interface IToastOptions {
 	readonly closeLabel?: string;
 }
 
-const kindClass = (kind: ToastKind): string => `mcpv-toast--${kind}`;
+const kindClass = (kind: ToastKind): string => `delendai-toast--${kind}`;
 
 /**
  * `renderToast` — returns the HTML string for a toast. The host
@@ -41,10 +41,10 @@ export const renderToast = (opts: IToastOptions): string => {
 	// so it MUST give the user a way out (close button + Esc), otherwise
 	// it is a permanent obstruction (H25).
 	const sticky = ttl <= 0;
-	const ttlAttr = ttl > 0 ? ` data-mcpv-toast-ttl="${ttl}"` : '';
-	const stickyAttr = sticky ? ' data-mcpv-toast-sticky="true"' : '';
+	const ttlAttr = ttl > 0 ? ` data-delendai-toast-ttl="${ttl}"` : '';
+	const stickyAttr = sticky ? ' data-delendai-toast-sticky="true"' : '';
 	const action = opts.action
-		? `<button type="button" class="mcpv-toast__action" data-mcpv-action="${escapeHtml(opts.action.id)}" data-mcpv-toast-id="${escapeHtml(opts.id)}">${escapeHtml(opts.action.label)}</button>`
+		? `<button type="button" class="delendai-toast__action" data-delendai-action="${escapeHtml(opts.action.id)}" data-delendai-toast-id="${escapeHtml(opts.id)}">${escapeHtml(opts.action.label)}</button>`
 		: '';
 	// a00083 F22: sticky toasts REQUIRE a `closeLabel` (i18n-sourced).
 	// Throw early instead of silently shipping English a11y text.
@@ -58,16 +58,16 @@ export const renderToast = (opts: IToastOptions): string => {
 				})()
 			: '');
 	const close = sticky
-		? `<button type="button" class="mcpv-toast__close" aria-label="${escapeHtml(closeLabel)}" data-mcpv-toast-close="${escapeHtml(opts.id)}">×</button>`
+		? `<button type="button" class="delendai-toast__close" aria-label="${escapeHtml(closeLabel)}" data-delendai-toast-close="${escapeHtml(opts.id)}">×</button>`
 		: '';
 	return `<div
 	id="${escapeHtml(opts.id)}"
-	class="mcpv-toast ${kindClass(kind)}"
+	class="delendai-toast ${kindClass(kind)}"
 	role="status"
 	aria-live="polite"${ttlAttr}${stickyAttr}
-	data-mcpv-toast="${escapeHtml(opts.id)}"
+	data-delendai-toast="${escapeHtml(opts.id)}"
 >
-	<span class="mcpv-toast__message">${escapeHtml(opts.message)}</span>
+	<span class="delendai-toast__message">${escapeHtml(opts.message)}</span>
 	${action}
 	${close}
 </div>`;

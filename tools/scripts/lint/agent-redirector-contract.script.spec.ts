@@ -19,10 +19,10 @@ description: A hand-rolled workflow that restates the orchestrator contract.
 
 # example (hand-rolled)
 
-This agent does NOT redirect to mcp-vertex. Instead it restates the
+This agent does NOT redirect to delendai. Instead it restates the
 entire workflow in prose:
 
-1. Call mcp-vertex_overview.
+1. Call delendai_overview.
 2. Read AGENTS.md.
 3. Pick the next proposal.
 4. Claim files with agent_lock.
@@ -45,18 +45,18 @@ description: Thin redirector.
 # example (redirector)
 
 This file is a thin redirector. The canonical contract lives in the
-\`mcp-vertex\` MCP server. On the first call of every turn, invoke
-\`mcp-vertex_overview\` and follow its \`recommendedNextAction\`. Do not
+\`delendai\` MCP server. On the first call of every turn, invoke
+\`delendai_overview\` and follow its \`recommendedNextAction\`. Do not
 restate the workflow here.
 `;
 
-const MCP_VERTEX_NAMED_BUT_NOT_REDIRECTOR = `---
-name: mcp-vertex-orchestrator
+const DELENDAI_NAMED_BUT_NOT_REDIRECTOR = `---
+name: delendai-orchestrator
 description: Restates the whole workflow instead of redirecting.
 tools: Read, Edit, Write, Bash
 ---
 
-# mcp-vertex-orchestrator
+# delendai-orchestrator
 
 1. Do step one.
 2. Do step two.
@@ -74,13 +74,13 @@ tools: Read, Edit, Write, Bash
 `;
 
 describe('checkGithubAgentFile', async () => {
-	it('stays silent on the actual mcp-vertex.agent.md redirector after f00031 S1', async () => {
+	it('stays silent on the actual delendai.agent.md redirector after f00031 S1', async () => {
 		const text = await readFile(
-			join(root, '.github', 'agents', 'mcp-vertex.agent.md'),
+			join(root, '.github', 'agents', 'delendai.agent.md'),
 			'utf8',
 		);
 		expect(
-			checkGithubAgentFile('.github/agents/mcp-vertex.agent.md', text),
+			checkGithubAgentFile('.github/agents/delendai.agent.md', text),
 		).toBeUndefined();
 	});
 
@@ -90,13 +90,13 @@ describe('checkGithubAgentFile', async () => {
 				root,
 				'.github',
 				'agents',
-				'mcp-vertex-implementation-runner.agent.md',
+				'delendai-implementation-runner.agent.md',
 			),
 			'utf8',
 		);
 		expect(
 			checkGithubAgentFile(
-				'.github/agents/mcp-vertex-implementation-runner.agent.md',
+				'.github/agents/delendai-implementation-runner.agent.md',
 				text,
 			),
 		).toBeUndefined();
@@ -108,7 +108,7 @@ describe('checkGithubAgentFile', async () => {
 				root,
 				'.github',
 				'agents',
-				'mcp-vertex-implementation-runner.agent.md',
+				'delendai-implementation-runner.agent.md',
 			),
 			'utf8',
 		);
@@ -119,7 +119,7 @@ describe('checkGithubAgentFile', async () => {
 		expect(finding).toBeDefined();
 		expect(finding?.kind).toBe('subagent-filename-mismatch');
 		expect(finding?.detail).toContain(
-			'.github/agents/mcp-vertex-implementation-runner.agent.md',
+			'.github/agents/delendai-implementation-runner.agent.md',
 		);
 	});
 
@@ -158,7 +158,7 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-project
 
 	it('fails a bounded subagent that still declares user-invocable: true', () => {
 		const finding = checkGithubAgentFile(
-			'.github/agents/mcp-vertex-implementation-runner.agent.md',
+			'.github/agents/delendai-implementation-runner.agent.md',
 			BOUNDED_SUBAGENT_BODY,
 		);
 		expect(finding).toBeDefined();
@@ -173,7 +173,7 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-project
 		);
 		expect(
 			checkGithubAgentFile(
-				'.github/agents/mcp-vertex-implementation-runner.agent.md',
+				'.github/agents/delendai-implementation-runner.agent.md',
 				compliant,
 			),
 		).toBeUndefined();
@@ -181,21 +181,21 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-project
 });
 
 describe('checkCanonicalRedirectorPresent (x00201 S3)', () => {
-	it('fails when mcp-vertex.agent.md is absent from the listing', () => {
+	it('fails when delendai.agent.md is absent from the listing', () => {
 		const finding = checkCanonicalRedirectorPresent([
-			'mcp-vertex-delivery-verifier.agent.md',
-			'mcp-vertex-implementation-runner.agent.md',
+			'delendai-delivery-verifier.agent.md',
+			'delendai-implementation-runner.agent.md',
 		]);
 		expect(finding).toBeDefined();
 		expect(finding?.kind).toBe('missing-redirector');
 		expect(isFatalFinding(finding?.kind as never)).toBe(true);
 	});
 
-	it('is silent when mcp-vertex.agent.md is present', () => {
+	it('is silent when delendai.agent.md is present', () => {
 		expect(
 			checkCanonicalRedirectorPresent([
-				'mcp-vertex.agent.md',
-				'mcp-vertex-implementation-runner.agent.md',
+				'delendai.agent.md',
+				'delendai-implementation-runner.agent.md',
 			]),
 		).toBeUndefined();
 	});
@@ -204,7 +204,7 @@ describe('checkCanonicalRedirectorPresent (x00201 S3)', () => {
 describe('isFatalFinding (x00201 S3)', () => {
 	it('treats pre-existing advisory kinds as non-fatal', () => {
 		expect(isFatalFinding('not-a-redirector')).toBe(false);
-		expect(isFatalFinding('mcp-vertex-name-not-redirector')).toBe(false);
+		expect(isFatalFinding('delendai-name-not-redirector')).toBe(false);
 		expect(isFatalFinding('subagent-filename-mismatch')).toBe(false);
 	});
 
@@ -215,7 +215,7 @@ describe('isFatalFinding (x00201 S3)', () => {
 });
 
 describe('checkClaudeAgentFile', async () => {
-	it('is silent on a non-mcp-vertex-named file', async () => {
+	it('is silent on a non-delendai-named file', async () => {
 		expect(
 			checkClaudeAgentFile(
 				'.claude/agents/unrelated.md',
@@ -224,22 +224,22 @@ describe('checkClaudeAgentFile', async () => {
 		).toBeUndefined();
 	});
 
-	it('is silent on a redirector-shaped mcp-vertex* file', async () => {
+	it('is silent on a redirector-shaped delendai* file', async () => {
 		expect(
 			checkClaudeAgentFile(
-				'.claude/agents/mcp-vertex-example.md',
+				'.claude/agents/delendai-example.md',
 				REDIRECTOR_BODY,
 			),
 		).toBeUndefined();
 	});
 
-	it('warns when name starts with mcp-vertex but body is not the redirector shape', async () => {
+	it('warns when name starts with delendai but body is not the redirector shape', async () => {
 		const finding = checkClaudeAgentFile(
-			'.claude/agents/mcp-vertex-orchestrator.md',
-			MCP_VERTEX_NAMED_BUT_NOT_REDIRECTOR,
+			'.claude/agents/delendai-orchestrator.md',
+			DELENDAI_NAMED_BUT_NOT_REDIRECTOR,
 		);
 		expect(finding).toBeDefined();
-		expect(finding?.kind).toBe('mcp-vertex-name-not-redirector');
-		expect(finding?.detail).toContain('mcp-vertex-orchestrator');
+		expect(finding?.kind).toBe('delendai-name-not-redirector');
+		expect(finding?.detail).toContain('delendai-orchestrator');
 	});
 });

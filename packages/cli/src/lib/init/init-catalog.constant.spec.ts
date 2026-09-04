@@ -56,22 +56,22 @@ describe('loadAgentDescriptors (f00088 S3)', () => {
 		}
 	});
 
-	it('defaults namespacePrefix to mcp-vertex when none is supplied', async () => {
+	it('defaults namespacePrefix to delendai when none is supplied', async () => {
 		const descriptors = await loadAgentDescriptors('/no-catalog');
 		const orchestrator = descriptors.find((d) => d.role === 'orchestrator');
-		expect(orchestrator?.body).toContain('mcp-vertex_overview');
+		expect(orchestrator?.body).toContain('delendai_overview');
 	});
 
 	// x00202 S1: the fallback used to hardcode plugin-specific tool names
 	// (auto_work, fs_write, search_search, quality_run_quality, …) in a
 	// `tools` array AND in the body prose. At least one had already
 	// rotted (search_search is not a real tool; search is) and this
-	// shipped to every mcpv init adopter silently, because the "read the
+	// shipped to every delendai init adopter silently, because the "read the
 	// live catalog" branch is dead code (nothing in this repo ever writes
 	// an `agents` array into agent-catalog.generated.json). Pin that no
 	// plugin-specific tool name survives anywhere in the fallback bodies
 	// — the only tool name a body may ever contain is `overview`, a core
-	// contract every mcp-vertex server guarantees.
+	// contract every delendai server guarantees.
 	it('never hardcodes a plugin-specific tool name in any fallback body (either locale)', async () => {
 		const rottenNames = [
 			'auto_work',

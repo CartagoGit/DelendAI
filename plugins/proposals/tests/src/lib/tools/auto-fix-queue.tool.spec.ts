@@ -59,12 +59,12 @@ describe('auto_fix_queue tool', () => {
 	): IIncidentProposalToolOptions => ({
 		namespacePrefix: 'proposals',
 		workspaceRoot: root,
-		proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-		indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+		proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+		indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 		counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 		layout: {
-			proposalsDir: 'docs/mcp-vertex/proposals',
-			proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+			proposalsDir: 'docs/delendai/proposals',
+			proposalIndexFile: '.cache/delendai/proposals/index.json',
 		},
 		readIncidents: async () => ({
 			incidents,
@@ -104,7 +104,7 @@ describe('auto_fix_queue tool', () => {
 		expect(result.autoFixable[1]?.classification).toBe('DUPLICATE');
 		expect(result.needsHuman[0]?.classification).toBe('NEEDS_REPRODUCTION');
 		expect(result.written).toBeUndefined();
-		expect(existsSync(join(root, 'docs/mcp-vertex/proposals'))).toBe(false);
+		expect(existsSync(join(root, 'docs/delendai/proposals'))).toBe(false);
 	});
 
 	it('writes only the auto-fixable proposals through create_proposal path', async () => {
@@ -134,7 +134,7 @@ describe('auto_fix_queue tool', () => {
 		expect(result.written).toBe(2);
 		expect(result.files).toHaveLength(2);
 		for (const file of result.files) {
-			const path = join(root, 'docs/mcp-vertex/proposals', file);
+			const path = join(root, 'docs/delendai/proposals', file);
 			const body = readFileSync(path, 'utf8');
 			expect(body).toContain('auto_fix_candidate: true');
 			expect(body).toContain('public_contract_safe: true');

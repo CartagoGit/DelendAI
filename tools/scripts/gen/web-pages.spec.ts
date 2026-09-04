@@ -163,7 +163,7 @@ describe('web-pages.script.ts (c00142)', () => {
 			argv: ['--check'],
 			spawn: makeSpawn(
 				1,
-				' M docs/mcp-vertex/generated/observability-provenance.generated.md\n',
+				' M docs/delendai/generated/observability-provenance.generated.md\n',
 			),
 		});
 		const text = stderr.text();
@@ -171,7 +171,7 @@ describe('web-pages.script.ts (c00142)', () => {
 		expect(exit).toBe(1);
 		expect(text).toContain('observability-provenance drifted');
 		expect(text).toContain(
-			'docs/mcp-vertex/generated/observability-provenance.generated.md',
+			'docs/delendai/generated/observability-provenance.generated.md',
 		);
 		expect(text).toContain('provenance-truth.script.ts');
 	});

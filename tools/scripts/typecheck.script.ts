@@ -3,14 +3,14 @@
  * typecheck.script.ts — c00123 / a00067 S5 follow-up / AUD-A12.
  *
  * Wrapper around `tsc --noEmit` that supports one workspace-level opt-out:
- *   MCP_VERTEX_RELAX_EXACT_OPTIONAL=1  → use tsconfig.relax.json
+ *   DELENDAI_RELAX_EXACT_OPTIONAL=1  → use tsconfig.relax.json
  *                                       (sets exactOptionalPropertyTypes: false)
  *   unset / anything else              → use tsconfig.json
  *                                       (keeps exactOptionalPropertyTypes: true,
  *                                       the default since 2026-06)
  *
  * The flag adds friction for LLMs without lifting the runtime quality bar
- * (a00067 F3 / DC5); see `docs/mcp-vertex/AGENT-BOOTSTRAP.md` for the trade
+ * (a00067 F3 / DC5); see `docs/delendai/AGENT-BOOTSTRAP.md` for the trade
  * note (c00123 S2). On by default, opt-out only.
  *
  * AUD-A12: `tsc -p tsconfig.json` never covered `tools/**` — 303 files /
@@ -26,7 +26,7 @@
  * actually fixing/reducing errors — never to paper over a regression).
  *
  * Acceptance (c00123 S1):
- *   - `MCP_VERTEX_RELAX_EXACT_OPTIONAL=1 npm run typecheck` succeeds with flag off.
+ *   - `DELENDAI_RELAX_EXACT_OPTIONAL=1 npm run typecheck` succeeds with flag off.
  *   - Default run (env unset) keeps the flag ON and the project typechecks.
  *   - `bun run validate` is unchanged.
  *
@@ -43,7 +43,7 @@ import { join, resolve } from 'node:path';
 
 import { repoRoot } from './lib/monorepo-paths';
 
-const RELAX_ENV = 'MCP_VERTEX_RELAX_EXACT_OPTIONAL';
+const RELAX_ENV = 'DELENDAI_RELAX_EXACT_OPTIONAL';
 const DEFAULT_PROJECT = 'tsconfig.json';
 const RELAXED_PROJECT = 'tsconfig.relax.json';
 const TOOLS_PROJECT = 'tools/tsconfig.json';

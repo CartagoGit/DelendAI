@@ -12,13 +12,13 @@ describe('buildFooter', () => {
 		} as unknown as IDashboardAllModels;
 
 		const options = {
-			refreshCommand: 'mcp-vertex.refresh',
+			refreshCommand: 'delendai.refresh',
 			docsUrl: 'https://docs.mcp.vertex',
 		};
 
 		const html = buildFooter(mockModel, options, dictsByLang.en);
-		expect(html).toContain('mcpv-footer');
-		expect(html).toContain('mcp-vertex.refresh');
+		expect(html).toContain('delendai-footer');
+		expect(html).toContain('delendai.refresh');
 		expect(html).toContain('https://docs.mcp.vertex');
 		expect(html).toContain('2026-06-28T19:00:00Z');
 	});

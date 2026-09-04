@@ -35,13 +35,13 @@ describe('buildTransitionOptions', () => {
 
 	it('resolves every path against the given workspace root', () => {
 		expect(options.proposalsDirAbs).toBe(
-			resolve('/repo', 'docs/mcp-vertex/proposals'),
+			resolve('/repo', 'docs/delendai/proposals'),
 		);
 		expect(options.indexPathAbs).toBe(
-			resolve('/repo', '.cache/mcp-vertex/proposals/index.json'),
+			resolve('/repo', '.cache/delendai/proposals/index.json'),
 		);
 		expect(options.peerReviewLogPathAbs).toBe(
-			resolve('/repo', '.cache/mcp-vertex/proposals/peer-review.jsonl'),
+			resolve('/repo', '.cache/delendai/proposals/peer-review.jsonl'),
 		);
 	});
 

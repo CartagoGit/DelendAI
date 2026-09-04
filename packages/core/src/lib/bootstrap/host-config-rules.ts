@@ -92,7 +92,7 @@ export const DEFAULT_HOST_CONFIG_RULES: readonly IHostConfigRule[] = [
 /**
  * Pure: read the `host-config.ts` (if any) and produce the
  * matcher context. The two candidates are
- * `libs/mcp-project/src/lib/shared/host-config.ts` (the mcp-vertex
+ * `libs/mcp-project/src/lib/shared/host-config.ts` (the delendai
  * monorepo layout) and `src/lib/shared/host-config.ts` (the
  * standalone project layout). The first hit wins.
  */

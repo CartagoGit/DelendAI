@@ -127,12 +127,12 @@ describe('decide-surface-mode (q00009 / f00254)', () => {
 			expect(decision.reason).toContain('listChanged');
 		});
 
-		it('an unknown client that declares mcp-vertex/surface listChanged support resolves to managed, and the reason names it', () => {
+		it('an unknown client that declares delendai/surface listChanged support resolves to managed, and the reason names it', () => {
 			const decision = decideSurfaceModeFromCapabilities({
 				clientInfo: { name: 'totally-unknown-host', version: '1.0.0' },
 				capabilities: {
 					extensions: {
-						'mcp-vertex/surface': { toolsListChanged: true },
+						'delendai/surface': { toolsListChanged: true },
 					},
 				},
 			});

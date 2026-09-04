@@ -72,8 +72,8 @@ const buildReg = (
 	buildRunRegistration({
 		namespacePrefix: 'audit',
 		workspaceRoot,
-		defaultAuditDir: 'docs/mcp-vertex/proposals/done/audits',
-		defaultProposalsDir: 'docs/mcp-vertex/proposals/ready',
+		defaultAuditDir: 'docs/delendai/proposals/done/audits',
+		defaultProposalsDir: 'docs/delendai/proposals/ready',
 		transport,
 		now,
 		// The auto-scaffolder only writes proposals when the
@@ -225,7 +225,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 			join(
 				workspaceRoot,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				'done',
 				'audits',
@@ -233,7 +233,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 			{ recursive: true },
 		);
 		await mkdir(
-			join(workspaceRoot, 'docs', 'mcp-vertex', 'proposals', 'ready'),
+			join(workspaceRoot, 'docs', 'delendai', 'proposals', 'ready'),
 			{ recursive: true },
 		);
 	});
@@ -347,7 +347,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 			join(
 				workspaceRoot,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				'done',
 				'audits',
@@ -379,7 +379,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 		const readyDir = join(
 			workspaceRoot,
 			'docs',
-			'mcp-vertex',
+			'delendai',
 			'proposals',
 			'ready',
 		);
@@ -395,13 +395,13 @@ describe('audit_run (alcance B, f00077)', async () => {
 		// `related` (we did not pass auditId, so the scaffold
 		// pre-fills a placeholder).
 		const files = await readdir(
-			join(workspaceRoot, 'docs', 'mcp-vertex', 'proposals', 'ready'),
+			join(workspaceRoot, 'docs', 'delendai', 'proposals', 'ready'),
 		);
 		const body = await readFile(
 			join(
 				workspaceRoot,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				'ready',
 				proposalFolderForKind(proposal?.kind ?? 'fix'),
@@ -416,7 +416,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 			join(
 				workspaceRoot,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				'ready',
 				proposalFolderForKind(plan?.kind ?? 'plan'),
@@ -430,7 +430,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 			join(
 				workspaceRoot,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				'ready',
 				proposalFolderForKind(audit?.kind ?? 'audit'),
@@ -737,8 +737,8 @@ describe('audit_run (alcance B, f00077)', async () => {
 		const reg = buildRunRegistration({
 			namespacePrefix: 'audit',
 			workspaceRoot,
-			defaultAuditDir: 'docs/mcp-vertex/proposals/done/audits',
-			defaultProposalsDir: 'docs/mcp-vertex/proposals/ready',
+			defaultAuditDir: 'docs/delendai/proposals/done/audits',
+			defaultProposalsDir: 'docs/delendai/proposals/ready',
 			transport,
 			now: () => new Date('2026-06-28T00:00:00Z'),
 			knownProposalIds: new Set(['x00001', 'x00002']),

@@ -25,20 +25,20 @@ describe('resolveDocsUrl', async () => {
 	});
 
 	it('honours a custom default', async () => {
-		expect(resolveDocsUrl({}, 'https://staging.mcp-vertex.dev')).toBe(
-			'https://staging.mcp-vertex.dev',
+		expect(resolveDocsUrl({}, 'https://staging.delendai.dev')).toBe(
+			'https://staging.delendai.dev',
 		);
 	});
 });
 
 describe('validateDocsUrl', async () => {
 	it('accepts a public https URL', async () => {
-		const r = validateDocsUrl('https://mcp-vertex.dev');
+		const r = validateDocsUrl('https://delendai.dev');
 		expect(r.ok).toBe(true);
 	});
 
 	it('rejects http URLs', async () => {
-		const r = validateDocsUrl('http://mcp-vertex.dev');
+		const r = validateDocsUrl('http://delendai.dev');
 		expect(r.ok).toBe(false);
 		expect(r.reason).toBe('https-required');
 	});
@@ -87,7 +87,7 @@ describe('EmbedService', async () => {
 		const svc = new EmbedService();
 		const r = svc.resolve({});
 		expect(r.url).toBe(DEFAULT_DOCS_URL);
-		expect(r.host).toBe('mcp-vertex.dev');
+		expect(r.host).toBe('delendai.dev');
 	});
 
 	it('throws on rejected URLs', async () => {

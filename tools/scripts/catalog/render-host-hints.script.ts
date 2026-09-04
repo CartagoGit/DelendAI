@@ -6,22 +6,22 @@
  *
  * The contract this script enforces (the "agnostic bootstrap" model):
  *
- *   1. Every host file MUST point at `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
+ *   1. Every host file MUST point at `docs/delendai/AGENT-BOOTSTRAP.md`
  *      (the single source of truth for orient / discover / close / invariants).
  *   2. The fragment this script writes DOES NOT enumerate tools, skills, or
  *      proposal ids. The server is the only source of truth for that — the
- *      agent asks `mcp-vertex_agent_catalog` instead of reading a stale list.
+ *      agent asks `delendai_agent_catalog` instead of reading a stale list.
  *   3. The fragment exists so a downstream project that copies the host-file
  *      shape still gets a deterministic, drift-detectable include. The
  *      host-file templates still include the bootstrap by reference; this
- *      generator only emits the fragment under `docs/mcp-vertex/host-hints/`.
+ *      generator only emits the fragment under `docs/delendai/host-hints/`.
  *
  * f00092: there is EXACTLY ONE fragment. The 3-fragment model (copilot,
  * claude, agents) collapsed because the only host-specific content was
  * a 1-line footnote pointing at an appendix in the canonical bootstrap
  * itself — that footnote now lives inline in each hand-edited host
- * file (between the `<!-- mcp-vertex:begin -->` /
- * `<!-- mcp-vertex:end -->` markers), where the rest of the host
+ * file (between the `<!-- delendai:begin -->` /
+ * `<!-- delendai:end -->` markers), where the rest of the host
  * file already lives. The script guards the single-fragment invariant
  * with a final directory walk that fails loudly if anyone tries to
  * re-split it.
@@ -44,11 +44,11 @@
 import { join, resolve } from 'node:path';
 import { mkdir, readdir, rm } from 'node:fs/promises';
 
-export const DEFAULT_OUTPUT_DIR = 'docs/mcp-vertex/host-hints';
-export const BOOTSTRAP_PATH = 'docs/mcp-vertex/AGENT-BOOTSTRAP.md';
+export const DEFAULT_OUTPUT_DIR = 'docs/delendai/host-hints';
+export const BOOTSTRAP_PATH = 'docs/delendai/AGENT-BOOTSTRAP.md';
 
 // S5 raised the budget from 1 200 to 1 300 to match the agent-catalog budget
-// (docs/mcp-vertex/AGENT-BOOTSTRAP.md is the canonical reference and the
+// (docs/delendai/AGENT-BOOTSTRAP.md is the canonical reference and the
 // fragment is intentionally minimal but still has to point at it; the 100B
 // headroom keeps the budget honest). f00092: the single fragment is even
 // smaller than the old 3 fragments (~700B vs. ~1100B), so the 1300B budget
@@ -82,7 +82,7 @@ const SHARED_FOOTER = [
 	'> file and add only the rules the server cannot enforce (e.g. the',
 	'> status-marker close contract on Copilot, the keep-main-thread-cheap',
 	'> rule on Claude Code). Tools, skills, and proposal ids are NEVER',
-	'> enumerated here — they are served live by `mcp-vertex_agent_catalog`.',
+	'> enumerated here — they are served live by `delendai_agent_catalog`.',
 ].join('\n');
 
 const renderFragment = (): string =>
@@ -93,8 +93,8 @@ const renderFragment = (): string =>
 		'',
 		'Follow the universal bootstrap at',
 		`[\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_PATH}). The canonical first move is`,
-		'`mcp-vertex_overview { compact: true }` followed by',
-		'`mcp-vertex_agent_catalog` whenever routing to a tool, skill, or',
+		'`delendai_overview { compact: true }` followed by',
+		'`delendai_agent_catalog` whenever routing to a tool, skill, or',
 		'actionable proposal.',
 		'',
 		SHARED_FOOTER,

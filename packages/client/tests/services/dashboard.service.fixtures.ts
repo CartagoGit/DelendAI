@@ -48,58 +48,58 @@ export const createFakeTransport = (
 };
 
 export const overviewFixture = {
-	server: { name: 'mcp-vertex', version: '0.1.0' },
-	namespacePrefix: 'mcp-vertex',
+	server: { name: 'delendai', version: '0.1.0' },
+	namespacePrefix: 'delendai',
 	plugins: [
 		{ name: 'proposals', version: '0.1.0' },
 		{ name: 'memory', version: '0.1.0' },
 		{ name: 'quality', version: '0.1.0' },
 	],
 	tools: [
-		{ name: 'mcp-vertex_overview', tags: ['orientation'] },
-		{ name: 'mcp-vertex_metrics', tags: ['observability'] },
-		{ name: 'mcp-vertex_proposals_proposal_board', tags: ['proposals'] },
-		{ name: 'mcp-vertex_memory_recall', tags: ['memory'] },
-		{ name: 'mcp-vertex_quality_run_quality', tags: ['quality'] },
+		{ name: 'delendai_overview', tags: ['orientation'] },
+		{ name: 'delendai_metrics', tags: ['observability'] },
+		{ name: 'delendai_proposals_proposal_board', tags: ['proposals'] },
+		{ name: 'delendai_memory_recall', tags: ['memory'] },
+		{ name: 'delendai_quality_run_quality', tags: ['quality'] },
 	],
 	knowledge: [
 		{ id: 'overview', title: 'Overview' },
 		{ id: 'plugins', title: 'Plugins' },
 	],
-	recommendedNextAction: 'Call mcp-vertex_overview to orient.',
+	recommendedNextAction: 'Call delendai_overview to orient.',
 };
 
 export const metricsFixture = {
 	tools: {
-		'mcp-vertex_overview': {
+		delendai_overview: {
 			calls: 12,
 			errors: 0,
 			totalMs: 240,
 			maxMs: 60,
 			totalBytes: 2400,
 		},
-		'mcp-vertex_metrics': {
+		delendai_metrics: {
 			calls: 8,
 			errors: 0,
 			totalMs: 80,
 			maxMs: 20,
 			totalBytes: 1600,
 		},
-		'mcp-vertex_proposals_proposal_board': {
+		delendai_proposals_proposal_board: {
 			calls: 4,
 			errors: 1,
 			totalMs: 320,
 			maxMs: 200,
 			totalBytes: 3200,
 		},
-		'mcp-vertex_proposals_agent_names': {
+		delendai_proposals_agent_names: {
 			calls: 2,
 			errors: 0,
 			totalMs: 20,
 			maxMs: 10,
 			totalBytes: 200,
 		},
-		'mcp-vertex_quality_run_quality': {
+		delendai_quality_run_quality: {
 			calls: 1,
 			errors: 0,
 			totalMs: 1500,
@@ -146,8 +146,8 @@ export const agentsFixture = {
 };
 
 export const allResponsesFixture: ResponseMap = {
-	'mcp-vertex_overview': overviewFixture,
-	'mcp-vertex_metrics': metricsFixture,
-	'mcp-vertex_proposals_proposal_board': proposalsFixture,
-	'mcp-vertex_proposals_agent_names': agentsFixture,
+	delendai_overview: overviewFixture,
+	delendai_metrics: metricsFixture,
+	delendai_proposals_proposal_board: proposalsFixture,
+	delendai_proposals_agent_names: agentsFixture,
 };

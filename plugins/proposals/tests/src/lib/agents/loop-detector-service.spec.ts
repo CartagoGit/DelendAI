@@ -18,7 +18,7 @@ describe('AgentLoopDetectorService', async () => {
 	let dir = '';
 	let mockCtx: IMcpPluginContext;
 	// Spy on process.stderr.write so the production loop-detector
-	// diagnostic ("[mcp-vertex] loop-detector: agent X is stuck") does
+	// diagnostic ("[delendai] loop-detector: agent X is stuck") does
 	// not leak into the validate stream. Tests that need to verify
 	// the diagnostic was emitted read `stderrSpy.mock.calls` directly.
 	let stderrSpy: ReturnType<typeof vi.spyOn>;
@@ -34,14 +34,14 @@ describe('AgentLoopDetectorService', async () => {
 		mockCtx = {
 			workspace,
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
-			cacheDir: join(dir, '.cache/mcp-vertex'),
-			docsDir: join(dir, 'docs/mcp-vertex'),
+			cacheDir: join(dir, '.cache/delendai'),
+			docsDir: join(dir, 'docs/delendai'),
 			keepLegacy: false,
-			pluginCacheDir: join(dir, '.cache/mcp-vertex/proposals'),
-			pluginDocsDir: join(dir, 'docs/mcp-vertex/proposals'),
+			pluginCacheDir: join(dir, '.cache/delendai/proposals'),
+			pluginDocsDir: join(dir, 'docs/delendai/proposals'),
 			namespacePrefix: 'proposals',
 			options: {},
 			args: {},
@@ -60,9 +60,7 @@ describe('AgentLoopDetectorService', async () => {
 	});
 
 	it('prunes expired handoffs on the first healthy tool call', async () => {
-		const handoffDir = mockCtx.workspace.resolve(
-			'.cache/mcp-vertex/handoff',
-		);
+		const handoffDir = mockCtx.workspace.resolve('.cache/delendai/handoff');
 		mkdirSync(handoffDir, { recursive: true });
 		const expired = join(handoffDir, 'expired.json');
 		const current = join(handoffDir, 'current.json');
@@ -124,7 +122,7 @@ describe('AgentLoopDetectorService', async () => {
 
 		// Check if the handoff packet was written to cache
 		const handoffDirAbs = mockCtx.workspace.resolve(
-			'.cache/mcp-vertex/handoff',
+			'.cache/delendai/handoff',
 		);
 		expect(existsSync(handoffDirAbs)).toBe(true);
 	});
@@ -200,7 +198,7 @@ describe('AgentLoopDetectorService', async () => {
 
 		// Read written handoff file
 		const handoffDirAbs = mockCtx.workspace.resolve(
-			'.cache/mcp-vertex/handoff',
+			'.cache/delendai/handoff',
 		);
 		const files = await import('node:fs/promises').then((fs) =>
 			fs.readdir(handoffDirAbs),
@@ -256,7 +254,7 @@ describe('AgentLoopDetectorService', async () => {
 		it('resolves the active agent from a real lock file written asynchronously', async () => {
 			const service = new AgentLoopDetectorService(mockCtx);
 			const lockPath = mockCtx.workspace.resolve(
-				'.cache/mcp-vertex/agents.lock.json',
+				'.cache/delendai/agents.lock.json',
 			);
 			const { mkdir, writeFile } = await import('node:fs/promises');
 			await mkdir(join(lockPath, '..'), { recursive: true });
@@ -588,7 +586,7 @@ describe('AgentLoopDetectorService', async () => {
 			expect(service.getInteractiveCheckpointAdvisory()).toBeNull();
 			// And no handoff packet was written either.
 			const handoffDirAbs = mockCtx.workspace.resolve(
-				'.cache/mcp-vertex/handoff',
+				'.cache/delendai/handoff',
 			);
 			if (existsSync(handoffDirAbs)) {
 				const { readdir } = await import('node:fs/promises');
@@ -649,7 +647,7 @@ describe('AgentLoopDetectorService', async () => {
 			// own naming convention. This is the documented extension
 			// point for hosts whose interactive session is not `*-default`.
 			const configPath = mockCtx.workspace.resolve(
-				'mcp-vertex.config.json',
+				'delendai.config.json',
 			);
 			const { writeFile, unlink } = await import('node:fs/promises');
 			await writeFile(
@@ -682,7 +680,7 @@ describe('AgentLoopDetectorService', async () => {
 
 		it('interactive pattern honours the empty-list opt-out (CI / universal monitoring)', async () => {
 			const configPath = mockCtx.workspace.resolve(
-				'mcp-vertex.config.json',
+				'delendai.config.json',
 			);
 			const { writeFile, unlink } = await import('node:fs/promises');
 			await writeFile(

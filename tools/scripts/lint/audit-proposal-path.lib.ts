@@ -5,13 +5,13 @@ import { join } from 'node:path';
 export const assertNoLegacyAuditDirectory = async (
 	root: string,
 ): Promise<void> => {
-	const legacyPath = join(root, 'docs', 'mcp-vertex', 'audits');
+	const legacyPath = join(root, 'docs', 'delendai', 'audits');
 	try {
 		await access(legacyPath);
 	} catch {
 		return;
 	}
 	throw new Error(
-		`legacy audit directory found at ${legacyPath}; move audit reports into docs/mcp-vertex/proposals/<status>/audits/ and run sync_proposals`,
+		`legacy audit directory found at ${legacyPath}; move audit reports into docs/delendai/proposals/<status>/audits/ and run sync_proposals`,
 	);
 };

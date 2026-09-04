@@ -4,7 +4,7 @@
  *
  * Pure CLI wrapper around `buildStableManifest`. Reads the package
  * version from `packages/core/package.json`, builds the manifest,
- * and writes it to `docs/mcp-vertex/api/stable.json`.
+ * and writes it to `docs/delendai/api/stable.json`.
  *
  * SOLID notes:
  *   - **SRP**: this file does I/O only. The manifest shape lives in

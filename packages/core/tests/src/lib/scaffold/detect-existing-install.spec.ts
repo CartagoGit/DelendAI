@@ -6,26 +6,26 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	createWorkspacePathProvider,
-	detectExistingMcpVertexInstall,
-	findMcpVertexServerName,
-	isMcpVertexLaunchShape,
+	detectExistingDelendaiInstall,
+	findDelendaiServerName,
+	isDelendaiLaunchShape,
 } from '@delendai/core/public';
 
-// x00201 S2 — the postman-exporter project (mcp-vertex's own empirical
+// x00201 S2 — the postman-exporter project (delendai's own empirical
 // adopter testbed) really is wired exactly this way: a `.vscode/mcp.json`
-// with an `mcp-vertex` server launched via this repo's
+// with an `delendai` server launched via this repo's
 // `host-server.script.ts`, alongside an unrelated `filesystem` MCP
 // server. This fixture reproduces that shape structurally (no secrets,
 // no project-specific paths beyond what the detector itself inspects).
 const POSTMAN_EXPORTER_SHAPED_VSCODE_MCP_JSON = JSON.stringify({
 	servers: {
-		'mcp-vertex': {
+		delendai: {
 			type: 'stdio',
 			command: 'bun',
 			args: [
-				'${userHome}/_projects/mcp-vertex/tools/scripts/host/host-server.script.ts',
+				'${userHome}/_projects/delendai/tools/scripts/host/host-server.script.ts',
 				'--workspace=${workspaceFolder}',
-				'--config=${workspaceFolder}/mcp-vertex.config.json',
+				'--config=${workspaceFolder}/delendai.config.json',
 			],
 		},
 		filesystem: {
@@ -39,10 +39,10 @@ const POSTMAN_EXPORTER_SHAPED_VSCODE_MCP_JSON = JSON.stringify({
 	},
 });
 
-// mcp-vertex's own root `.mcp.json` shape (`mcpServers`, not `servers`).
-const MCP_VERTEX_OWN_DOT_MCP_JSON = JSON.stringify({
+// delendai's own root `.mcp.json` shape (`mcpServers`, not `servers`).
+const DELENDAI_OWN_DOT_MCP_JSON = JSON.stringify({
 	mcpServers: {
-		'mcp-vertex': {
+		delendai: {
 			type: 'stdio',
 			command: 'bun',
 			args: ['tools/scripts/host/host-server.script.ts', '--workspace=.'],
@@ -50,10 +50,10 @@ const MCP_VERTEX_OWN_DOT_MCP_JSON = JSON.stringify({
 	},
 });
 
-describe('isMcpVertexLaunchShape', () => {
+describe('isDelendaiLaunchShape', () => {
 	it('matches a repo-local host-server.script.ts launch', () => {
 		expect(
-			isMcpVertexLaunchShape({
+			isDelendaiLaunchShape({
 				command: 'bun',
 				args: ['tools/scripts/host/host-server.script.ts'],
 			}),
@@ -62,16 +62,16 @@ describe('isMcpVertexLaunchShape', () => {
 
 	it('matches a published @delendai/cli launch', () => {
 		expect(
-			isMcpVertexLaunchShape({
+			isDelendaiLaunchShape({
 				command: 'bunx',
-				args: ['--package', '@delendai/cli', 'mcpv', '__serve'],
+				args: ['--package', '@delendai/cli', 'delendai', '__serve'],
 			}),
 		).toBe(true);
 	});
 
 	it('does not match an unrelated MCP server', () => {
 		expect(
-			isMcpVertexLaunchShape({
+			isDelendaiLaunchShape({
 				command: 'bunx',
 				args: ['-y', '@modelcontextprotocol/server-filesystem'],
 			}),
@@ -79,22 +79,22 @@ describe('isMcpVertexLaunchShape', () => {
 	});
 });
 
-describe('findMcpVertexServerName', () => {
-	it('finds the mcp-vertex key in a .vscode/mcp.json-shaped ("servers") config, ignoring unrelated servers', () => {
+describe('findDelendaiServerName', () => {
+	it('finds the delendai key in a .vscode/mcp.json-shaped ("servers") config, ignoring unrelated servers', () => {
 		expect(
-			findMcpVertexServerName(POSTMAN_EXPORTER_SHAPED_VSCODE_MCP_JSON),
-		).toBe('mcp-vertex');
+			findDelendaiServerName(POSTMAN_EXPORTER_SHAPED_VSCODE_MCP_JSON),
+		).toBe('delendai');
 	});
 
-	it('finds the mcp-vertex key in a .mcp.json-shaped ("mcpServers") config', () => {
-		expect(findMcpVertexServerName(MCP_VERTEX_OWN_DOT_MCP_JSON)).toBe(
-			'mcp-vertex',
+	it('finds the delendai key in a .mcp.json-shaped ("mcpServers") config', () => {
+		expect(findDelendaiServerName(DELENDAI_OWN_DOT_MCP_JSON)).toBe(
+			'delendai',
 		);
 	});
 
 	it('returns undefined when no server matches', () => {
 		expect(
-			findMcpVertexServerName(
+			findDelendaiServerName(
 				JSON.stringify({
 					servers: { filesystem: { command: 'bunx' } },
 				}),
@@ -103,15 +103,15 @@ describe('findMcpVertexServerName', () => {
 	});
 
 	it('returns undefined on malformed JSON instead of throwing', () => {
-		expect(findMcpVertexServerName('{not json')).toBeUndefined();
+		expect(findDelendaiServerName('{not json')).toBeUndefined();
 	});
 });
 
-describe('detectExistingMcpVertexInstall', () => {
+describe('detectExistingDelendaiInstall', () => {
 	let root = '';
 
 	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'mcp-vertex-detect-install-'));
+		root = mkdtempSync(join(tmpdir(), 'delendai-detect-install-'));
 	});
 
 	afterEach(() => {
@@ -120,7 +120,7 @@ describe('detectExistingMcpVertexInstall', () => {
 
 	it('detects a postman-exporter-shaped guest install: config + .vscode/mcp.json server', async () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({ plugins: {} }),
 		);
 		mkdirSync(join(root, '.vscode'), { recursive: true });
@@ -129,43 +129,43 @@ describe('detectExistingMcpVertexInstall', () => {
 			POSTMAN_EXPORTER_SHAPED_VSCODE_MCP_JSON,
 		);
 
-		const result = await detectExistingMcpVertexInstall(
+		const result = await detectExistingDelendaiInstall(
 			createWorkspacePathProvider(root),
 		);
 		expect(result).toEqual({
-			existingMcpVertex: true,
-			mcpServerName: 'mcp-vertex',
+			existingDelendai: true,
+			mcpServerName: 'delendai',
 		});
 	});
 
-	it('detects an existing install via .mcp.json alone (no mcp-vertex.config.json read yet)', async () => {
-		writeFileSync(join(root, '.mcp.json'), MCP_VERTEX_OWN_DOT_MCP_JSON);
+	it('detects an existing install via .mcp.json alone (no delendai.config.json read yet)', async () => {
+		writeFileSync(join(root, '.mcp.json'), DELENDAI_OWN_DOT_MCP_JSON);
 
-		const result = await detectExistingMcpVertexInstall(
+		const result = await detectExistingDelendaiInstall(
 			createWorkspacePathProvider(root),
 		);
 		expect(result).toEqual({
-			existingMcpVertex: true,
-			mcpServerName: 'mcp-vertex',
+			existingDelendai: true,
+			mcpServerName: 'delendai',
 		});
 	});
 
-	it('reports existingMcpVertex without a server name when only the config file is present', async () => {
+	it('reports existingDelendai without a server name when only the config file is present', async () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({ plugins: {} }),
 		);
 
-		const result = await detectExistingMcpVertexInstall(
+		const result = await detectExistingDelendaiInstall(
 			createWorkspacePathProvider(root),
 		);
-		expect(result).toEqual({ existingMcpVertex: true });
+		expect(result).toEqual({ existingDelendai: true });
 	});
 
-	it('defaults to greenfield (existingMcpVertex: false) for an empty workspace', async () => {
-		const result = await detectExistingMcpVertexInstall(
+	it('defaults to greenfield (existingDelendai: false) for an empty workspace', async () => {
+		const result = await detectExistingDelendaiInstall(
 			createWorkspacePathProvider(root),
 		);
-		expect(result).toEqual({ existingMcpVertex: false });
+		expect(result).toEqual({ existingDelendai: false });
 	});
 });

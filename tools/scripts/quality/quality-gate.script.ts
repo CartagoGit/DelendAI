@@ -14,7 +14,7 @@
  * the rule of "the plugin owns the logic, the runner is a CLI"
  * holds. No re-implementation.
  *
- * Configuration is read from `mcp-vertex.config.json` under
+ * Configuration is read from `delendai.config.json` under
  * `quality.scopes` (a `Record<string, readonly string[]>` — each
  * scope name maps to the list of shell commands to run). When the
  * config is missing or malformed, the gate fails closed because
@@ -47,7 +47,7 @@ interface IFlatFileReader {
 }
 
 // x00186 (F27 sibling): `--workspace <abs>` (space or `=` form) takes
-// precedence, then MCP_VERTEX_WORKSPACE, else cwd with a warning — the
+// precedence, then DELENDAI_WORKSPACE, else cwd with a warning — the
 // same fallback order host-server.script.ts uses for the same flag.
 const resolveWorkspace = (argv: readonly string[]): string => {
 	for (let i = 0; i < argv.length; i += 1) {
@@ -60,9 +60,9 @@ const resolveWorkspace = (argv: readonly string[]): string => {
 			if (next !== undefined) return next;
 		}
 	}
-	const fromEnv = process.env.MCP_VERTEX_WORKSPACE;
+	const fromEnv = process.env.DELENDAI_WORKSPACE;
 	if (fromEnv !== undefined && fromEnv !== '') return fromEnv;
-	err('[mcp-vertex] warning: using cwd as workspace');
+	err('[delendai] warning: using cwd as workspace');
 	return process.cwd();
 };
 
@@ -94,7 +94,7 @@ const flatReader = (cwd: string): IFlatFileReader => ({
 const loadQualityScopes = async (
 	cwd: string,
 ): Promise<Record<string, readonly string[]>> => {
-	const configPath = join(cwd, 'mcp-vertex.config.json');
+	const configPath = join(cwd, 'delendai.config.json');
 	try {
 		const raw = await readFile(configPath, 'utf8');
 		const parsed = JSON.parse(raw) as {

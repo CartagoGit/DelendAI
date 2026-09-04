@@ -51,7 +51,7 @@ pre-commit:
                 - '**/*.spec.ts'
                 - 'plugins/*/src/**'
                 - 'packages/core/src/**'
-                - 'docs/mcp-vertex/AGENT-BOOTSTRAP.md'
+                - 'docs/delendai/AGENT-BOOTSTRAP.md'
             run: bun tools/scripts/gen/quantitative.script.ts >/dev/null 2>&1 || true
             stage_fixed: true
 
@@ -146,8 +146,8 @@ pre-commit:
             env: *hook-locale
             glob:
                 - 'packages/core/skills/**'
-                - 'docs/mcp-vertex/proposals/**'
-                - 'docs/mcp-vertex/agent-catalog.generated.json'
+                - 'docs/delendai/proposals/**'
+                - 'docs/delendai/agent-catalog.generated.json'
                 - 'plugins/*/src/**'
                 - 'packages/core/src/**'
             # REGENERATE, don't just assert. The catalog embeds live
@@ -166,20 +166,20 @@ pre-commit:
             # disk, so it falls behind the moment anyone authors a proposal,
             # and it lives in gitignored per-machine state that no commit
             # could ever carry.
-            run: 'if [ -f .cache/mcp-vertex/proposals/index.json ]; then bun run sync:proposals >/dev/null && bun tools/scripts/proposals/sync-proposal-counters.script.ts >/dev/null && bun tools/scripts/catalog/generate-agent-catalog.script.ts --mode=compact >/dev/null; else echo "catalog-drift-check: skipped (proposal index not present yet)"; fi'
+            run: 'if [ -f .cache/delendai/proposals/index.json ]; then bun run sync:proposals >/dev/null && bun tools/scripts/proposals/sync-proposal-counters.script.ts >/dev/null && bun tools/scripts/catalog/generate-agent-catalog.script.ts --mode=compact >/dev/null; else echo "catalog-drift-check: skipped (proposal index not present yet)"; fi'
             stage_fixed: true
 
         host-hints-drift-check:
             env: *hook-locale
             glob:
-                - 'docs/mcp-vertex/agent-catalog.generated.json'
+                - 'docs/delendai/agent-catalog.generated.json'
                 - 'tools/scripts/catalog/render-host-hints.script.ts'
-                - 'docs/mcp-vertex/host-hints/agent-instructions.generated.md'
+                - 'docs/delendai/host-hints/agent-instructions.generated.md'
             run: bun run catalog:hints:check || true
             stage_fixed: false
 
         # f00082: catch stray executable files at the repo root and under
-        # .cache/mcp-vertex/ before they sneak in. Advisory like the
+        # .cache/delendai/ before they sneak in. Advisory like the
         # other drift checks — `bun run validate` is the source of truth
         # and will fail the CI run. The hook is here so the agent
         # authoring the commit sees the violation immediately.
@@ -198,14 +198,14 @@ pre-commit:
 
         # f00083: anti-duplication guard for the universal bootstrap.
         # BLOCKING (no `|| true`). Runs the canonical-scaffold lint
-        # against docs/mcp-vertex/AGENT-BOOTSTRAP.md only when that
+        # against docs/delendai/AGENT-BOOTSTRAP.md only when that
         # file is staged — the lint is file-scoped, so we don't pay
         # the cost on every commit. Bypass: LEFTHOOK_BYPASS=1
         # git commit ... (documented in the blocker text).
         bootstrap-canonical-discipline:
             env: *hook-locale
             glob:
-                - 'docs/mcp-vertex/AGENT-BOOTSTRAP.md'
+                - 'docs/delendai/AGENT-BOOTSTRAP.md'
             run: bun run lint:bootstrap-canonical || exit 1
 
         # f00083: anti-duplication guard for the auto-generated host-
@@ -216,7 +216,7 @@ pre-commit:
         host-hints-fragments-discipline:
             env: *hook-locale
             glob:
-                - 'docs/mcp-vertex/host-hints/agent-instructions.generated.md'
+                - 'docs/delendai/host-hints/agent-instructions.generated.md'
             run: bun run lint:host-hints-fragments || exit 1
 
 pre-push:

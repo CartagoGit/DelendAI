@@ -27,7 +27,7 @@ import {
 } from './check-proposal-id-drift.script.ts';
 
 const makeFixture = (root: string): string => {
-	const proposalsDirAbs = join(root, 'docs', 'mcp-vertex', 'proposals');
+	const proposalsDirAbs = join(root, 'docs', 'delendai', 'proposals');
 	for (const folder of ['ready', 'in-progress', 'done', 'paused']) {
 		mkdirSync(join(proposalsDirAbs, folder), { recursive: true });
 	}
@@ -48,7 +48,7 @@ const writeCounter = (root: string, counters: Record<string, number>): void => {
 	const countersAbs = join(
 		root,
 		'.cache',
-		'mcp-vertex',
+		'delendai',
 		'proposal-id-counters.json',
 	);
 	mkdirSync(join(countersAbs, '..'), { recursive: true });
@@ -146,7 +146,7 @@ describe('detectProposalIdDrift (f00080)', () => {
 	});
 
 	const countersPath = (): string =>
-		join(root, '.cache', 'mcp-vertex', 'proposal-id-counters.json');
+		join(root, '.cache', 'delendai', 'proposal-id-counters.json');
 
 	it('clean tree: counter matches filesystem max per prefix → ok', async () => {
 		writeProposal(proposalsDirAbs, 'ready', 'f00001-a.md');

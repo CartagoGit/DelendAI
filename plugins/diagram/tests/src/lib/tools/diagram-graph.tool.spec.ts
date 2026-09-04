@@ -50,7 +50,7 @@ describe('diagram_modules — packageRoot containment (x00168)', () => {
 		);
 		try {
 			const registrations = buildDiagramGraphToolRegistrations({
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs,
 			});
 			const modules = registrations.find(
@@ -73,7 +73,7 @@ describe('diagram_modules — packageRoot containment (x00168)', () => {
 		);
 		try {
 			const registrations = buildDiagramGraphToolRegistrations({
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs,
 			});
 			const modules = registrations.find(
@@ -108,7 +108,7 @@ describe('diagram_modules — packageRoot containment (x00168)', () => {
 				'utf8',
 			);
 			const registrations = buildDiagramGraphToolRegistrations({
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs,
 			});
 			const modules = registrations.find(
@@ -137,7 +137,7 @@ describe('diagram graph limit support (x00235)', () => {
 			],
 		};
 		const registrations = buildDiagramGraphToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: '/workspace',
 			deps,
 		});
@@ -161,7 +161,7 @@ describe('diagram graph limit support (x00235)', () => {
 			],
 		};
 		const registrations = buildDiagramGraphToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: '/workspace',
 			deps,
 		});
@@ -183,7 +183,7 @@ describe('diagram graph limit support (x00235)', () => {
 			},
 		};
 		const registrations = buildDiagramGraphToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: '/workspace',
 			moduleDeps,
 			modulePackageRootAbs: '/workspace/plugins/diagram',

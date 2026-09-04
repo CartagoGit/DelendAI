@@ -31,10 +31,10 @@ const emptyToolRegistry: IToolIdentityRegistry = {
 
 const llmToolRegistry: IToolIdentityRegistry = {
 	get: (toolName) =>
-		toolName === 'mcp-vertex_orchestrator-runner_invoke'
+		toolName === 'delendai_orchestrator-runner_invoke'
 			? {
 					packageName: '@delendai/orchestrator-runner',
-					owner: 'mcp-vertex',
+					owner: 'delendai',
 					publicToolName: 'invoke',
 					category: 'orchestration',
 				}
@@ -42,10 +42,10 @@ const llmToolRegistry: IToolIdentityRegistry = {
 	list: () =>
 		new Map([
 			[
-				'mcp-vertex_orchestrator-runner_invoke',
+				'delendai_orchestrator-runner_invoke',
 				{
 					packageName: '@delendai/orchestrator-runner',
-					owner: 'mcp-vertex',
+					owner: 'delendai',
 					publicToolName: 'invoke',
 					category: 'orchestration',
 				},
@@ -100,7 +100,7 @@ describe('buildReportErrorHandler', () => {
 		const reportError = buildReportErrorHandler({
 			options: {
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: 'CartagoGit/delendai',
 				labels: ['auto-reported'],
 				dedupeWindowHours: 24,
 				maxIssuesPerDay: 10,
@@ -144,7 +144,7 @@ describe('buildReportErrorHandler', () => {
 		const reportError = buildReportErrorHandler({
 			options: {
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: 'CartagoGit/delendai',
 				labels: ['auto-reported'],
 				dedupeWindowHours: 24,
 				maxIssuesPerDay: 10,
@@ -181,7 +181,7 @@ describe('buildReportErrorHandler', () => {
 		const observe = buildObservedFailureHandler({
 			options: {
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: 'CartagoGit/delendai',
 				labels: ['auto-reported'],
 				dedupeWindowHours: 24,
 				maxIssuesPerDay: 10,
@@ -200,7 +200,7 @@ describe('buildReportErrorHandler', () => {
 		});
 
 		await observe(
-			'mcp-vertex_orchestrator-runner_invoke',
+			'delendai_orchestrator-runner_invoke',
 			{
 				structuredContent: {
 					error: {
@@ -229,7 +229,7 @@ describe('buildReportErrorHandler', () => {
 		const observe = buildObservedFailureHandler({
 			options: {
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: 'CartagoGit/delendai',
 				labels: ['auto-reported'],
 				dedupeWindowHours: 24,
 				maxIssuesPerDay: 10,
@@ -286,7 +286,7 @@ describe('buildReportErrorHandler', () => {
 		const observe = buildObservedFailureHandler({
 			options: {
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: 'CartagoGit/delendai',
 				labels: ['auto-reported'],
 				dedupeWindowHours: 24,
 				maxIssuesPerDay: 10,
@@ -305,7 +305,7 @@ describe('buildReportErrorHandler', () => {
 		});
 
 		await observe(
-			'mcp-vertex_orchestrator-runner_invoke',
+			'delendai_orchestrator-runner_invoke',
 			{
 				structuredContent: {
 					error: {

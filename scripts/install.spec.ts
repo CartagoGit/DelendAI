@@ -69,9 +69,9 @@ describe('detectTarget', () => {
 
 describe('writeDispatcher', () => {
 	it('writes an executable bun dispatcher to the target path', () => {
-		const dir = mkdtempSync(join(tmpdir(), 'mcpv-disp-'));
+		const dir = mkdtempSync(join(tmpdir(), 'delendai-disp-'));
 		try {
-			const target = join(dir, 'mcp-vertex');
+			const target = join(dir, 'delendai');
 			writeDispatcher(target, '/tmp/fake-cli/index.ts');
 			expect(existsSync(target)).toBe(true);
 			const content = readFileSync(target, 'utf8');
@@ -86,7 +86,7 @@ describe('writeDispatcher', () => {
 describe('main()', () => {
 	let dir: string;
 	beforeEach(() => {
-		dir = mkdtempSync(join(tmpdir(), 'mcpv-install-'));
+		dir = mkdtempSync(join(tmpdir(), 'delendai-install-'));
 	});
 	afterEach(() => {
 		rmSync(dir, { recursive: true, force: true });
@@ -137,7 +137,7 @@ describe('main()', () => {
 	it('--local writes a bun dispatcher', async () => {
 		const { code, stderr } = await run(['--dir', dir, '--local']);
 		expect(code).toBe(0);
-		const target = join(dir, 'mcp-vertex');
+		const target = join(dir, 'delendai');
 		expect(existsSync(target)).toBe(true);
 		expect(readFileSync(target, 'utf8')).toContain('exec bun');
 		expect(stderr).toContain('local install');

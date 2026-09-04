@@ -5,15 +5,15 @@ import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
-export const SHOW_METRICS_COMMAND = 'mcp-vertex.showMetrics';
+export const SHOW_METRICS_COMMAND = 'delendai.showMetrics';
 
 export const registerShowMetricsCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(SHOW_METRICS_COMMAND, async () => {
 		try {
 			const snapshot = await new MetricsService(deps.client).snapshot();
 			const panel = deps.vscode.window.createWebviewPanel(
-				'mcpVertexMetrics',
-				'mcp-vertex Metrics',
+				'delendaiMetrics',
+				'delendai Metrics',
 				deps.vscode.ViewColumn.One,
 				{ enableScripts: false },
 			);
@@ -21,7 +21,7 @@ export const registerShowMetricsCommand = (deps: ICommandDeps) =>
 				snapshot,
 				viewCopyFor(
 					resolveViewLang(
-						deps.globalState?.get<unknown>('mcpv:lang'),
+						deps.globalState?.get<unknown>('delendai:lang'),
 					),
 				),
 			);

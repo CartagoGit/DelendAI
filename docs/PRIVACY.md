@@ -21,7 +21,7 @@ The author of every commit is the human maintainer:
   owner fixed to that pair, so no agent (Copilot, Claude, MiniMax, …)
   can override the author at commit time.
 - See [`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md) and
-  `mcp-vertex.config.json#plugins.commit-policy.options.identity` for
+  `delendai.config.json#plugins.commit-policy.options.identity` for
   the exact configuration.
 
 ## Co-authored-by trailers
@@ -30,7 +30,7 @@ The repo does not accept `Co-authored-by:` (or `Signed-off-by:`,
 `Generated with:`, `🤖`, etc.) trailers that name an LLM brand.
 
 - `commit-policy.audit.trailer` is set to `"none"` in
-  `mcp-vertex.config.json`. The default for downstream consumers of
+  `delendai.config.json`. The default for downstream consumers of
   `@delendai/core` is also `"none"` (post-f00500).
 - A pre-commit hook (`tools/scripts/lint/no-llm-attribution.script.ts`,
   wired in `lefthook.yml`) refuses any staged commit message or staged
@@ -65,7 +65,7 @@ became `config/external/claude/`. The rename was mechanical and tracked
 by `tools/scripts/lint/rename-llm-filenames.script.ts` (idempotent;
 re-runnable with `--apply`).
 
-The wiki (`docs/mcp-vertex/wiki/`) does mention LLM brands where the
+The wiki (`docs/delendai/wiki/`) does mention LLM brands where the
 documentation legitimately describes an adapter for that brand. That
 is **intentional** — the wiki is the integration guide, not the
 attribution surface.
@@ -75,7 +75,7 @@ attribution surface.
 For projects that want a clean history (no `Co-authored-by: Claude
 Opus 5` lines on old commits, no LLM-attributed author on
 `git show <sha>`), see
-[`docs/mcp-vertex/wiki/git-history-rewrite.md`](wiki/git-history-rewrite.md)
+[`docs/delendai/wiki/git-history-rewrite.md`](wiki/git-history-rewrite.md)
 for the runbook. The runbook uses `git filter-repo` (preferred) or
 `git filter-branch` (fallback) to:
 
@@ -99,7 +99,7 @@ history rewrite is the only path to that.
   to commit under their own identity; the policy only constrains
   attribution to LLMs in trailers and branch names.
 - It is **not** a ban on naming models. Internal documentation
-  (`docs/mcp-vertex/wiki/external/claude.md`, scenario walkthroughs,
+  (`docs/delendai/wiki/external/claude.md`, scenario walkthroughs,
   adapter specs) keeps the canonical names because that documentation
   exists to explain how to integrate with each host.
 
@@ -113,7 +113,7 @@ bun tools/scripts/verify/post-slice-f00500-evidence.script.ts
 
 It runs `bun run validate`, scans the working tree for LLM markers,
 checks the last commit message for forbidden trailers, and confirms
-`mcp-vertex.config.json#plugins.commit-policy.options.audit.trailer`
+`delendai.config.json#plugins.commit-policy.options.audit.trailer`
 is `"none"`.
 
 ## Changing the policy

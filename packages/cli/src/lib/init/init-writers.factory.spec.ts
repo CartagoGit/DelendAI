@@ -30,7 +30,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 	const launch = buildCanonicalLaunch({ workspace: '${workspaceFolder}' });
 
 	beforeEach(async () => {
-		workspace = await mkdtemp(join(tmpdir(), 'mcpv-writers-'));
+		workspace = await mkdtemp(join(tmpdir(), 'delendai-writers-'));
 	});
 
 	afterEach(async () => {
@@ -56,7 +56,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 		) as { servers: Record<string, unknown> };
 		expect(Object.keys(onDisk.servers).sort()).toEqual([
 			'filesystem',
-			'mcp-vertex',
+			'delendai',
 		]);
 
 		// And `.mcp.json` must NOT exist — the merge must not have leaked
@@ -84,7 +84,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 		) as { mcpServers: Record<string, unknown> };
 		expect(Object.keys(onDisk.mcpServers).sort()).toEqual([
 			'filesystem',
-			'mcp-vertex',
+			'delendai',
 		]);
 
 		// And `.vscode/mcp.json` must NOT exist — the merge must not have

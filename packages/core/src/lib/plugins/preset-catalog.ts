@@ -19,7 +19,7 @@ import { derivePresetBudget, derivePresetSummary } from './preset-derived';
  *      membership is the union of every preceding preset.
  *   2. The chain is `full, vertex ⊇ swarm ⊇ standard ⊇ minimal`,
  *      where `vertex` is an alternative sibling to `full` (its
- *      delta on top of `swarm` covers everything the mcp-vertex
+ *      delta on top of `swarm` covers everything the delendai
  *      project itself ships, including host-only + opt-in
  *      plugins). Presets marked `independent: true` skip the
  *      chain accumulation and resolve to their own members only.
@@ -110,7 +110,7 @@ type IPresetSeed = Omit<IPresetDefinition, 'summary' | 'budget'>;
  * `vertex`) is the largest. Two presets are `independent: true` and
  * skip chain accumulation: `lean` (right after `minimal`) and
  * `vertex` (last). `lean` resolves to exactly its own 4 essentials;
- * `vertex` mirrors the mcp-vertex project's own config (which is NOT
+ * `vertex` mirrors the delendai project's own config (which is NOT
  * a superset of `swarm`). Because both are independent, they do NOT
  * alter the resolved membership of the chain presets around them.
  */
@@ -216,20 +216,20 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 		],
 	},
 	{
-		// `vertex` mirrors the plugin set of the mcp-vertex project
-		// itself (`mcp-vertex.config.json` at the repo root) — every
+		// `vertex` mirrors the plugin set of the delendai project
+		// itself (`delendai.config.json` at the repo root) — every
 		// key under its `plugins` object, INCLUDING `proposals` (the
-		// orchestration/swarm engine): mcp-vertex dogfoods its own
+		// orchestration/swarm engine): delendai dogfoods its own
 		// orchestrator in its own dev surface, and this preset is what
-		// a new adopter gets via `mcpv init:default`'s default, so it
+		// a new adopter gets via `delendai init:default`'s default, so it
 		// must include `proposals` too (x00166 — the orchestrator is
-		// the whole point of adopting mcp-vertex; this preset used to
+		// the whole point of adopting delendai; this preset used to
 		// silently omit it, a stale drift caught live 2026-07-29).
 		// Marked `independent: true` so `resolvePresetMembers` skips the
 		// chain accumulation and returns ONLY the members listed
 		// below — the exact snapshot the project ships. `preset-drift`
 		// verifies this list against the live root
-		// `mcp-vertex.config.json` plugin keys on every validate pass.
+		// `delendai.config.json` plugin keys on every validate pass.
 		id: 'vertex',
 		title: 'vertex',
 		role: PRESET_ROLES.vertex!,

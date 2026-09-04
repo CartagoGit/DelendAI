@@ -14,14 +14,14 @@
  * can consume it at build time or runtime. The spec enforces this.
  */
 
-/** Brand + product copy shared across every mcp-vertex UI surface. */
+/** Brand + product copy shared across every delendai UI surface. */
 export const SHARED_UI_STRINGS = {
 	/** The published package / canonical product name. */
 	productName: '@delendai/core',
 	/** The brand display name (used in headers, titles). */
-	brandName: 'MCP Vertex',
+	brandName: 'DelendAI',
 	/** The stdio MCP server name (and default tool namespace). */
-	serverName: 'mcp-vertex',
+	serverName: 'delendai',
 	/** One-line product description. */
 	shortTagline: 'An MCP server core + plugin loader for any project.',
 	/** Full tagline. */
@@ -35,7 +35,7 @@ export const SHARED_UI_STRINGS = {
 	// renamed, the gate names this line.
 	repoUrl: 'https://github.com/CartagoGit/delendai',
 	/** Canonical docs site. */
-	docsUrl: 'https://mcp-vertex.dev',
+	docsUrl: 'https://delendai.dev',
 } as const;
 
 export type SharedUiStringKey = keyof typeof SHARED_UI_STRINGS;
@@ -45,6 +45,6 @@ export type SharedUiStringKey = keyof typeof SHARED_UI_STRINGS;
  * the extension header render the same gradient from these tokens.
  */
 export const BRAND_TOKENS = {
-	blue: '--mcpv-brand-blue',
-	purple: '--mcpv-brand-purple',
+	blue: '--delendai-brand-blue',
+	purple: '--delendai-brand-purple',
 } as const;

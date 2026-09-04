@@ -122,7 +122,7 @@ export interface IProposalDetail {
 
 export interface IProposalsSnapshotSourceOptions {
 	readonly client: Pick<McpStdioClient, 'request'>;
-	/** Host tool prefix; `undefined` → the default `mcp-vertex_`. */
+	/** Host tool prefix; `undefined` → the default `delendai_`. */
 	readonly namespacePrefix?: string;
 	/** Cache lifetime in ms; a fresh `get()` inside the window is served from cache. */
 	readonly ttlMs?: number;

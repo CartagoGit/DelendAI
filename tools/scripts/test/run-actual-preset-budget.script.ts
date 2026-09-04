@@ -121,7 +121,7 @@ const main = async (): Promise<number> => {
 		process.exit(2);
 	}
 	console.log(
-		'[tokens:gate] Measures serialized BYTES of tools/list per preset (the real MCP wire payload), not native LLM tokens. See docs/mcp-vertex/TOKEN-BUDGETS.md for the component breakdown and per-model token counts (real tokenizer encode where available, byte-ratio estimate elsewhere).',
+		'[tokens:gate] Measures serialized BYTES of tools/list per preset (the real MCP wire payload), not native LLM tokens. See docs/delendai/TOKEN-BUDGETS.md for the component breakdown and per-model token counts (real tokenizer encode where available, byte-ratio estimate elsewhere).',
 	);
 	const workspace = createTokenBudgetFixtureWorkspace();
 	let breached = false;
@@ -157,7 +157,7 @@ const main = async (): Promise<number> => {
 				if (presetBudget.overviewCompact !== undefined) {
 					const overviewCompact = await measureToolTextBytes(
 						connection.client,
-						'mcp-vertex_overview',
+						'delendai_overview',
 						{ compact: true },
 					);
 					printMeasuredSurface({
@@ -173,7 +173,7 @@ const main = async (): Promise<number> => {
 				if (presetBudget.roundContext !== undefined) {
 					const roundContext = await measureToolTextBytes(
 						connection.client,
-						'mcp-vertex_proposals_round_context',
+						'delendai_proposals_round_context',
 						{},
 					);
 					printMeasuredSurface({

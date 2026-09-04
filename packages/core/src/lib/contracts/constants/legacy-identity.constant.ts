@@ -13,13 +13,13 @@
 
 /** Every spelling of the previous identity that appears in a workspace. */
 export const LEGACY_IDENTITY_SPELLINGS = [
-	'mcp-vertex',
-	'mcp_vertex',
-	'mcpvertex',
-	'MCP Vertex',
-	'MCP-VERTEX',
-	'@mcp-vertex',
-	'mcpv',
+	'delendai',
+	'delendai',
+	'delendai',
+	'DelendAI',
+	'DELENDAI',
+	'@delendai',
+	'delendai',
 ] as const;
 
 /**

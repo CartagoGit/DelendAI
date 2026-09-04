@@ -1,5 +1,5 @@
 /**
- * `mcp-vertex.toolSearch` — VS Code command that opens a QuickPick
+ * `delendai.toolSearch` — VS Code command that opens a QuickPick
  * populated with tools + knowledge entries matching the user's
  * query. Hit Enter on a tool to call it and show the result in an
  * output channel; hit Enter on a knowledge entry to show its body.
@@ -28,7 +28,7 @@ import type { IQuickPickItem } from '@delendai/ui-extension/public';
 import { openProposalPreview, openSkillPreview } from './open-agent-catalog';
 import type { ICommandDeps } from './types';
 
-export const TOOL_SEARCH_COMMAND = 'mcp-vertex.toolSearch';
+export const TOOL_SEARCH_COMMAND = 'delendai.toolSearch';
 
 const toolItemsOf = (
 	tools: ReadonlyArray<{
@@ -40,7 +40,7 @@ const toolItemsOf = (
 	tools.map((tool) => ({
 		id: `tool:${tool.name}`,
 		label: tool.name,
-		description: `Tools · ${tool.plugin ?? 'mcp-vertex'}`,
+		description: `Tools · ${tool.plugin ?? 'delendai'}`,
 		...(tool.summary === undefined ? {} : { detail: tool.summary }),
 	}));
 
@@ -157,8 +157,8 @@ export const registerToolSearchCommand = (deps: ICommandDeps) =>
 			if (items.length === 0) {
 				await deps.vscode.window.showInformationMessage?.(
 					query.length === 0
-						? 'mcp-vertex: no tools or knowledge entries to search.'
-						: `mcp-vertex: no matches for "${query}".`,
+						? 'delendai: no tools or knowledge entries to search.'
+						: `delendai: no matches for "${query}".`,
 				);
 				return;
 			}
@@ -171,7 +171,7 @@ export const registerToolSearchCommand = (deps: ICommandDeps) =>
 				const toolName = pickedId.slice('tool:'.length);
 				const result = await deps.client.request(toolName, {});
 				await deps.vscode.window.showInformationMessage?.(
-					`mcp-vertex: ${toolName} → ${JSON.stringify(result).slice(0, 200)}`,
+					`delendai: ${toolName} → ${JSON.stringify(result).slice(0, 200)}`,
 				);
 				return;
 			}
@@ -195,7 +195,7 @@ export const registerToolSearchCommand = (deps: ICommandDeps) =>
 				const id = pickedId.slice('knowledge:'.length);
 				const entry = await knowledge.getKnowledge(id);
 				await deps.vscode.window.showInformationMessage?.(
-					`mcp-vertex: ${entry.title}\n\n${entry.body.slice(0, 500)}`,
+					`delendai: ${entry.title}\n\n${entry.body.slice(0, 500)}`,
 				);
 				return;
 			}

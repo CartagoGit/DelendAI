@@ -63,7 +63,7 @@ const DEFAULT_OPTIONS = {
 /**
  * Persistent project memory. Save/recall/list/forget small notes stored
  * in one JSON file under the cache dir, so any agent keeps continuity
- * across sessions with minimal tokens. Load with `mcp-vertex --plugins=memory`.
+ * across sessions with minimal tokens. Load with `delendai --plugins=memory`.
  */
 export default definePlugin({
 	name: 'memory',

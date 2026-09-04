@@ -18,7 +18,7 @@
  * page and — when the email resolves — adds the brand to the contributor
  * graph. The default now keeps LLM attribution off GitHub by default;
  * hosts that want the trailer back (e.g. for human-human Co-authored-by)
- * set `audit.trailer` explicitly in `mcp-vertex.config.json`.
+ * set `audit.trailer` explicitly in `delendai.config.json`.
  *
  * The function is pure over `(message, kind, format, agent)`.
  */

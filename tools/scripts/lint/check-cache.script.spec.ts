@@ -19,14 +19,14 @@ describe('findStrayCacheDirs (f00065 S2)', () => {
 	});
 
 	it('returns [] when only the canonical root .cache exists', async () => {
-		mkdirSync(join(root, '.cache', 'mcp-vertex'), { recursive: true });
-		writeFileSync(join(root, '.cache', 'mcp-vertex', 'state.json'), '{}');
+		mkdirSync(join(root, '.cache', 'delendai'), { recursive: true });
+		writeFileSync(join(root, '.cache', 'delendai', 'state.json'), '{}');
 		expect(await findStrayCacheDirs(root)).toEqual([]);
 	});
 
 	it('flags a per-folder .cache outside the root', async () => {
 		mkdirSync(join(root, '.cache'), { recursive: true });
-		mkdirSync(join(root, 'tools', 'scripts', '.cache', 'mcp-vertex'), {
+		mkdirSync(join(root, 'tools', 'scripts', '.cache', 'delendai'), {
 			recursive: true,
 		});
 		expect(await findStrayCacheDirs(root)).toEqual([

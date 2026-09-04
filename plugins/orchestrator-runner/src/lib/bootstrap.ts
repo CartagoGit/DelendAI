@@ -10,7 +10,7 @@
  *   3. write `${cacheDir}/orchestrator-runner/roster.draft.json` (a DRAFT,
  *      never the confirmed config) durably.
  *   4. build an RFC 6902 JSON Patch (CRITICAL I13) the caller applies — via
- *      MCP elicitation / a CLI prompt — to `mcp-vertex.config.json#providers`
+ *      MCP elicitation / a CLI prompt — to `delendai.config.json#providers`
  *      on user confirm. The wizard NEVER writes the confirmed config itself:
  *      confirmed intent is the user's to own (the trust gradient, §1).
  *
@@ -157,7 +157,7 @@ export const probeAuthTier = async (
 
 /** The draft schema tag written to `roster.draft.json`. */
 export const ROSTER_DRAFT_SCHEMA =
-	'mcp-vertex/orchestrator-runner/roster-draft/1' as const;
+	'delendai/orchestrator-runner/roster-draft/1' as const;
 
 /** The auto-discovered roster draft (cache-only; never the confirmed config). */
 export interface IRosterDraft {
@@ -247,7 +247,7 @@ export const draftProviderEntry = (
 
 /**
  * Build the RFC 6902 JSON Patch (CRITICAL I13) that copies newly-discovered
- * providers into `mcp-vertex.config.json#providers` on user confirm.
+ * providers into `delendai.config.json#providers` on user confirm.
  *
  * - If the confirmed config has no `/providers` array yet, the first op
  *   creates it (`{op:'add', path:'/providers', value:[]}`).
@@ -310,7 +310,7 @@ export const composeBootstrapBrief = (discovery: IDiscoveryResult): string => {
 		'To finish setup, ask the user, in their own language: (1) their spend preference — minimize / balanced / maximize quality; (2) the kinds of tasks they will route here; (3) whether to add any missing tool.',
 	);
 	lines.push(
-		'A DRAFT roster was written to the cache. When the user confirms, apply the returned RFC 6902 JSON Patch to `mcp-vertex.config.json#providers` (via elicitation or a CLI prompt) — the wizard never writes the confirmed config itself.',
+		'A DRAFT roster was written to the cache. When the user confirms, apply the returned RFC 6902 JSON Patch to `delendai.config.json#providers` (via elicitation or a CLI prompt) — the wizard never writes the confirmed config itself.',
 	);
 	return lines.join(' ');
 };

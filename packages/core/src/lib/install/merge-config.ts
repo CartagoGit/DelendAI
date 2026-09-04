@@ -1,7 +1,7 @@
 /**
  * Pure merge of one MCP server entry into an IDE config document.
  *
- * The whole point of `mcp-vertex init` is to be SAFE: it must add our server
+ * The whole point of `delendai init` is to be SAFE: it must add our server
  * without touching the user's existing servers or any other settings in the
  * file. This function does exactly that, purely (no I/O), so it is trivially
  * testable — it parses the existing JSON, sets `root[kind][serverName] = entry`

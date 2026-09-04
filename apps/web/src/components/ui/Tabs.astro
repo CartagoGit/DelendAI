@@ -10,9 +10,9 @@
  * future product surface (extension webviews, JetBrains / etc.)
  * emit the same HTML.
  *
- * Class name migration: the wrapper applies both `mcpv-tabs` and
+ * Class name migration: the wrapper applies both `delendai-tabs` and
  * `ui-tabs` to the root while the rest of `apps/web` keeps emitting
- * `.ui-tabs*` markup. The shared SCSS has a `@extend .mcpv-tabs` alias
+ * `.ui-tabs*` markup. The shared SCSS has a `@extend .delendai-tabs` alias
  * for `.ui-tabs`, so both spellings work today. Future slices rename
  * the markup page-by-page.
  *
@@ -33,12 +33,12 @@ const initial = defaultTab ?? tabs[0]?.id ?? '';
 ---
 
 <section
-	class:list={['mcpv-tabs', 'ui-tabs', `mcpv-tabs--${variant ?? 'underline'}`]}
+	class:list={['delendai-tabs', 'ui-tabs', `delendai-tabs--${variant ?? 'underline'}`]}
 	data-ui-tabs
 	data-default-tab={initial}
 >
 	<Fragment set:html={renderTabs({ tabs, defaultTab, variant, label })} />
-	<div class="mcpv-tabs__panels">
+	<div class="delendai-tabs__panels">
 		<slot />
 	</div>
 </section>

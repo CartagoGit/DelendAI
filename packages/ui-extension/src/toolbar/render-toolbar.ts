@@ -1,10 +1,10 @@
 /**
  * `renderToolbar` — the in-extension toolbar webview (the
- * `mcp-vertex.toolbar` activity-bar entry).
+ * `delendai.toolbar` activity-bar entry).
  *
  * Renders the shared `HeaderBar` + a 3-column grid of action cards
- * grouped by category. Each card carries `data-mcpv-action="<id>"`
- * and `data-mcpv-command="<command>"` so the runtime dispatches the
+ * grouped by category. Each card carries `data-delendai-action="<id>"`
+ * and `data-delendai-command="<command>"` so the runtime dispatches the
  * right command to the host.
  *
  * Pure string. The host injects it via
@@ -75,12 +75,12 @@ const groupByCategory = (
 
 const renderCard = (action: QuickAction, label: string): string => `<button
 	type="button"
-	class="mcpv-toolbar__card"
-	data-mcpv-action="${escapeHtml(action.id)}"
-	data-mcpv-command="${escapeHtml(action.command)}"
+	class="delendai-toolbar__card"
+	data-delendai-action="${escapeHtml(action.id)}"
+	data-delendai-command="${escapeHtml(action.command)}"
 >
-	<span class="mcpv-toolbar__card-icon" aria-hidden="true">${escapeHtml(action.icon)}</span>
-	<span class="mcpv-toolbar__card-label">${escapeHtml(label)}</span>
+	<span class="delendai-toolbar__card-icon" aria-hidden="true">${escapeHtml(action.icon)}</span>
+	<span class="delendai-toolbar__card-label">${escapeHtml(label)}</span>
 </button>`;
 
 const renderCategory = (
@@ -89,9 +89,9 @@ const renderCategory = (
 	dict: ILangDict,
 ): string => {
 	if (actions.length === 0) return '';
-	return `<section class="mcpv-toolbar__group" data-category="${escapeHtml(cat)}">
-		<h2 class="mcpv-toolbar__group-title">${escapeHtml(categoryLabel(cat, dict))}</h2>
-		<div class="mcpv-toolbar__grid">
+	return `<section class="delendai-toolbar__group" data-category="${escapeHtml(cat)}">
+		<h2 class="delendai-toolbar__group-title">${escapeHtml(categoryLabel(cat, dict))}</h2>
+		<div class="delendai-toolbar__grid">
 			${actions.map((a) => renderCard(a, actionLabel(a, dict))).join('')}
 		</div>
 	</section>`;
@@ -100,7 +100,7 @@ const renderCategory = (
 /**
  * `renderToolbar` — returns the HTML for the toolbar webview.
  * The host injects this verbatim; the runtime (from S3) handles
- * `data-mcpv-action` clicks.
+ * `data-delendai-action` clicks.
  */
 export const renderToolbar = (options: IRenderToolbarOptions): string => {
 	const all = [
@@ -115,9 +115,9 @@ export const renderToolbar = (options: IRenderToolbarOptions): string => {
 	const text = (key: string) => extensionText(options.lang, key);
 	const grouped = groupByCategory(visible);
 	const header = renderHeaderBar({
-		brandName: 'mcp-vertex',
+		brandName: 'delendai',
 		version: options.version,
-		actions: `<span class="mcpv-toolbar__host" data-host="${escapeHtml(options.host)}">${escapeHtml(options.host)}</span>`,
+		actions: `<span class="delendai-toolbar__host" data-host="${escapeHtml(options.host)}">${escapeHtml(options.host)}</span>`,
 	});
 	const groups = QUICK_ACTION_CATEGORIES.map((cat) =>
 		renderCategory(cat, grouped.get(cat) ?? [], options.lang),
@@ -130,37 +130,37 @@ export const renderToolbar = (options: IRenderToolbarOptions): string => {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>${escapeHtml(text('toolbar.title'))}</title>
 	<style>${componentCss}
-	.mcpv-toolbar__host {
-		font-size: 11px; color: var(--mcpv-fg-muted, #9aa4b2);
-		padding: 4px 8px; border: 1px solid var(--mcpv-line, #2a3038);
-		border-radius: var(--mcpv-radius-sm, 4px);
+	.delendai-toolbar__host {
+		font-size: 11px; color: var(--delendai-fg-muted, #9aa4b2);
+		padding: 4px 8px; border: 1px solid var(--delendai-line, #2a3038);
+		border-radius: var(--delendai-radius-sm, 4px);
 	}
-	.mcpv-toolbar__group { margin: 16px 20px; }
-	.mcpv-toolbar__group-title {
+	.delendai-toolbar__group { margin: 16px 20px; }
+	.delendai-toolbar__group-title {
 		font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-		color: var(--mcpv-fg-muted, #9aa4b2); margin: 0 0 8px;
+		color: var(--delendai-fg-muted, #9aa4b2); margin: 0 0 8px;
 	}
-	.mcpv-toolbar__grid {
+	.delendai-toolbar__grid {
 		display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
 	}
-	.mcpv-toolbar__card {
+	.delendai-toolbar__card {
 		display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
 		padding: 12px;
-		background: var(--mcpv-bg-soft, #11161d);
-		color: var(--mcpv-fg, #e6edf3);
-		border: 1px solid var(--mcpv-line, #2a3038);
-		border-radius: var(--mcpv-radius, 8px);
+		background: var(--delendai-bg-soft, #11161d);
+		color: var(--delendai-fg, #e6edf3);
+		border: 1px solid var(--delendai-line, #2a3038);
+		border-radius: var(--delendai-radius, 8px);
 		font: inherit; text-align: left; cursor: pointer;
-		transition: border-color var(--mcpv-transition-fast, 120ms ease-out);
+		transition: border-color var(--delendai-transition-fast, 120ms ease-out);
 	}
-	.mcpv-toolbar__card:hover { border-color: var(--mcpv-brand-blue); }
-	.mcpv-toolbar__card-icon { font-size: 18px; }
-	.mcpv-toolbar__card-label { font-size: 12px; }
+	.delendai-toolbar__card:hover { border-color: var(--delendai-brand-blue); }
+	.delendai-toolbar__card-icon { font-size: 18px; }
+	.delendai-toolbar__card-label { font-size: 12px; }
 	</style>
 </head>
 <body>
 	${header}
-	<main class="mcpv-toolbar__main">
+	<main class="delendai-toolbar__main">
 		${groups}
 	</main>
 	${renderHostBridge()}

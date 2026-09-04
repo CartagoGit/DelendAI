@@ -42,7 +42,7 @@
  * `fs` member yet (a deliberate YAGNI, see
  * `effect-capabilities.interface.ts`), so a handler calling
  * `writeFileSync` directly is still only detected, not prevented.
- * `docs/mcp-vertex/security/dry-run-contract.md` states the guarantee
+ * `docs/delendai/security/dry-run-contract.md` states the guarantee
  * per capability kind; `x00288`'s effect-boundary lint is what keeps
  * new direct calls from appearing
  */

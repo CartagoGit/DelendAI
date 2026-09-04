@@ -17,8 +17,8 @@ export interface IMemento {
 	update(key: string, value: unknown): Thenable<void>;
 }
 
-const STATUS_KEY = 'mcp-vertex.proposals.filters.status';
-const TEXT_KEY = 'mcp-vertex.proposals.filters.text';
+const STATUS_KEY = 'delendai.proposals.filters.status';
+const TEXT_KEY = 'delendai.proposals.filters.text';
 
 export const createProposalFilterStore = (
 	memento: IMemento,

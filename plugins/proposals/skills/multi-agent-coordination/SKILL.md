@@ -1,10 +1,10 @@
 ---
-name: mcp-vertex-multi-agent-coordination
+name: delendai-multi-agent-coordination
 appliesTo: ['@delendai/proposals', '@delendai/notification']
 description: How to coordinate several agents safely in this repo: when to use agent_lock vs agent_worktree, how to wait on lock-released instead of polling, and how to keep repeated MCP reads under control with round_context digests.
 ---
 
-# mcp-vertex multi-agent coordination
+# delendai multi-agent coordination
 
 Use this when more than one agent is active in the repo, or when a slice
 may overlap another agent's file set.
@@ -31,7 +31,7 @@ Do not use `agent_lock` for:
 
 ### `agent_worktree`
 
-Read `mcp-vertex.config.json#agentWorktree` (or the `--agent-worktree` CLI
+Read `delendai.config.json#agentWorktree` (or the `--agent-worktree` CLI
 flag) first. If `false`/unset — do not call `proposals_agent_worktree`;
 commit to the active branch instead. The tool stays registered but, when the
 host has not enabled the capability, returns a structured `ok: false` error
@@ -64,7 +64,7 @@ agent doing right now?" without grep, by inspecting every `agent/*` local
 branch and every `git worktree` in the workspace. Reports ahead/behind
 counts vs `develop`, last-commit age, merged flag, and per-worktree
 dirty + untracked file counts. Worktrees whose path lives outside
-`<cacheDir>/mcp-vertex/.worktrees` are flagged `outOfCache: true` (AGENTS.md
+`<cacheDir>/delendai/.worktrees` are flagged `outOfCache: true` (AGENTS.md
 invariant violation).
 
 The orchestrator's `auto_work` plan already carries a `branchStatusWarnings`
@@ -141,8 +141,8 @@ index, and the active branch to change under you between writes. That is
 the normal state, not a failure.
 
 The full five-point rule lives in
-[`docs/mcp-vertex/AGENT-BOOTSTRAP.md` § 4.b "Coexistence with parallel
-work"](../../../docs/mcp-vertex/AGENT-BOOTSTRAP.md) — that is the
+[`docs/delendai/AGENT-BOOTSTRAP.md` § 4.b "Coexistence with parallel
+work"](../../../docs/delendai/AGENT-BOOTSTRAP.md) — that is the
 single source of truth, always loaded by every host. This skill restates
 the swarm-specific micro-pattern:
 
@@ -179,7 +179,7 @@ const outcome = await withShellFallback('bun run validate', {
 Ring 1 detects the sentinel, Ring 2 re-issues as `mode: "async"` and
 polls (this resolves the case), Ring 3 falls back to file/MCP tools —
 use `mapShellIntentToTool({ command, args })` to map `cat`/`grep`/`git
-status`/… to `read_file`/`grep_search`/`mcp-vertex_git_status`/….
+status`/… to `read_file`/`grep_search`/`delendai_git_status`/….
 
 ## `round_context` is a digest cache, not a reason to re-read everything
 
@@ -245,14 +245,14 @@ After implementing and verifying a slice, follow the standard close path:
 1. Commit the changes.
 2. Call `proposals_force_transition` (or `proposals_proposal_transition`) with `to: "done"` and specify the commit SHA in the `reason` so that the registry reflects the new state without waiting for the next sync cycle.
 
-The claim-or-no-touch enforcement itself (x00080) shipped as a lefthook-driven `tools/scripts/hooks/pre-commit.ts` TypeScript hook plus the `lint:agent-claims` gate, not the raw `.sh` git-hook templates originally sketched — every hook in this repo is TypeScript and installed through lefthook (see `docs/mcp-vertex/AGENT-BOOTSTRAP.md` §6).
+The claim-or-no-touch enforcement itself (x00080) shipped as a lefthook-driven `tools/scripts/hooks/pre-commit.ts` TypeScript hook plus the `lint:agent-claims` gate, not the raw `.sh` git-hook templates originally sketched — every hook in this repo is TypeScript and installed through lefthook (see `docs/delendai/AGENT-BOOTSTRAP.md` §6).
 
 ## Three condensed session examples
 
 ### Example A — Two doc slices, disjoint files
 
 - Agent A claims `packages/core/skills/manifest.json` + one new `SKILL.md`
-- Agent B claims one unrelated proposal doc under `docs/mcp-vertex/proposals/`
+- Agent B claims one unrelated proposal doc under `docs/delendai/proposals/`
 - Both succeed immediately because the file sets are disjoint
 - No polling is needed; both validate and close independently
 
@@ -281,7 +281,7 @@ The claim-or-no-touch enforcement itself (x00080) shipped as a lefthook-driven `
 ## Protocol enforcement (f00078)
 
 The swarm protocol is **enforced at the primitives**, not just documented.
-When `agentWorktree: true` in `mcp-vertex.config.json`, the following
+When `agentWorktree: true` in `delendai.config.json`, the following
 gates fire:
 
 | `auto_work` state     | Means                                                            | Action                                                                    |
@@ -305,7 +305,7 @@ in a loop, which the loop detector will then fire on.
 A minimal healthy multi-agent flow looks like this:
 
 ```text
-mcp-vertex_overview { compact: true }
+delendai_overview { compact: true }
 -> proposals_auto_work {}
 -> proposals_continue_proposal { id, mode: "plan" }
 -> proposals_agent_lock { action: "claim", agent, task_id, files }

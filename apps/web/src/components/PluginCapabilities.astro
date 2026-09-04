@@ -89,7 +89,7 @@ const ordered = [...packages].sort((a, b) =>
 				ordered.map((pkg) => {
 					const slug = shortName(pkg.name);
 					// a00085: `namespace` fields are always the plugin's own
-					// short name — no "core" → "mcp-vertex" remapping needed
+					// short name — no "core" → "delendai" remapping needed
 					// (the old mapping hid every core-plugin capability).
 					const pkgTools = tools
 						.filter((tool) => tool.namespace === slug)

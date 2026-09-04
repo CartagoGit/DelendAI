@@ -27,7 +27,7 @@ import type {
 const execCtxFor = (input: IRunSastRunnerInput): IMcpPluginContext =>
 	({
 		pluginCacheDir:
-			input.pluginCacheDir ?? join(input.cwd, '.cache', 'mcp-vertex'),
+			input.pluginCacheDir ?? join(input.cwd, '.cache', 'delendai'),
 	}) as IMcpPluginContext;
 
 const SEMGREP_TOOL: IExternalTool = {

@@ -4,8 +4,8 @@ import { buildProposalsAdoptionExtension } from '@delendai/proposals/lib/adoptio
 
 const derivedConfig = {
 	$schema: 'https://example.test/schema.json',
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	plugins: {},
 } as const;
 
@@ -39,17 +39,17 @@ describe('buildProposalsAdoptionExtension', () => {
 				analysis,
 				topLevelDirs: ['docs'],
 				projectName: 'Workspace',
-				namespacePrefix: 'mcp-vertex',
-				mcpServerName: 'mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				namespacePrefix: 'delendai',
+				mcpServerName: 'delendai',
+				docsDir: 'docs/delendai',
 			},
 			plan: {
 				config: { plugins: {} },
 				rationale: ['derived rationale'],
 				files: [],
 				residual: [
-					'Launch the host: bunx --package @delendai/cli mcpv __serve --workspace . --preset standard',
-					'(Optional) Wire GitHub issues later: run `mcp-vertex_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug.',
+					'Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset standard',
+					'(Optional) Wire GitHub issues later: run `delendai_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug.',
 				],
 			},
 		});
@@ -60,11 +60,11 @@ describe('buildProposalsAdoptionExtension', () => {
 		expect(result).toBeDefined();
 		expect(plugins.plugins.proposals).toBeDefined();
 		expect(result?.files).toContainEqual({
-			path: 'docs/mcp-vertex/proposals/README.md',
+			path: 'docs/delendai/proposals/README.md',
 			content: expect.stringContaining('# Proposals'),
 		});
 		expect(result?.files).toContainEqual({
-			path: 'docs/mcp-vertex/proposals/ready/.gitkeep',
+			path: 'docs/delendai/proposals/ready/.gitkeep',
 			content: '',
 		});
 		expect(
@@ -87,9 +87,9 @@ describe('buildProposalsAdoptionExtension', () => {
 				analysis,
 				topLevelDirs: ['docs'],
 				projectName: 'Workspace',
-				namespacePrefix: 'mcp-vertex',
-				mcpServerName: 'mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				namespacePrefix: 'delendai',
+				mcpServerName: 'delendai',
+				docsDir: 'docs/delendai',
 				repo: 'acme/widgets',
 			},
 			plan: {
@@ -97,7 +97,7 @@ describe('buildProposalsAdoptionExtension', () => {
 				rationale: ['derived rationale'],
 				files: [],
 				residual: [
-					'Launch the host: bunx --package @delendai/cli mcpv __serve --workspace . --preset standard',
+					'Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset standard',
 					'GitHub repo provided (acme/widgets). Wire plugin-specific adoption explicitly if you want issue ingestion during adoption.',
 				],
 			},
@@ -117,7 +117,7 @@ describe('buildProposalsAdoptionExtension', () => {
 		expect(
 			result?.residual.some((line) =>
 				line.includes(
-					'Verify GitHub issues: run `mcp-vertex_setup_github`',
+					'Verify GitHub issues: run `delendai_setup_github`',
 				),
 			),
 		).toBe(true);

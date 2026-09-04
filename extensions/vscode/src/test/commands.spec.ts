@@ -75,7 +75,7 @@ describe('command wiring', async () => {
 		await commands.get(REFRESH_COMMAND)?.();
 
 		expect(refreshed).toBe(true);
-		expect(messages).toEqual(['mcp-vertex refreshed']);
+		expect(messages).toEqual(['delendai refreshed']);
 	});
 
 	it('runs validation commands and renders their result', async () => {
@@ -86,7 +86,7 @@ describe('command wiring', async () => {
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
 					calls.push(input.name);
-					if (input.name === 'mcp-vertex_get_validation_matrix') {
+					if (input.name === 'delendai_get_validation_matrix') {
 						return { structuredContent: { scopes: { all: [] } } };
 					}
 					return {
@@ -103,10 +103,10 @@ describe('command wiring', async () => {
 		await commands.get(RUN_VALIDATION_COMMAND)?.();
 
 		expect(calls).toEqual([
-			'mcp-vertex_get_validation_matrix',
-			'mcp-vertex_quality_run_quality',
+			'delendai_get_validation_matrix',
+			'delendai_quality_run_quality',
 		]);
-		expect(panels[0]?.webview.html).toContain('mcp-vertex Validation');
+		expect(panels[0]?.webview.html).toContain('delendai Validation');
 	});
 
 	it('shows an error when validation commands fail', async () => {
@@ -123,7 +123,7 @@ describe('command wiring', async () => {
 		await commands.get(RUN_VALIDATION_COMMAND)?.();
 
 		expect(errors).toEqual([
-			'mcp-vertex: run validation failed: Failed to call MCP tool "mcp-vertex_get_validation_matrix": server offline',
+			'delendai: run validation failed: Failed to call MCP tool "delendai_get_validation_matrix": server offline',
 		]);
 		expect(panels).toHaveLength(0);
 	});
@@ -135,7 +135,7 @@ describe('command wiring', async () => {
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
 					expect(input.name).toBe(
-						'mcp-vertex_proposals_proposal_board',
+						'delendai_proposals_proposal_board',
 					);
 					return {
 						structuredContent: {
@@ -171,7 +171,7 @@ describe('command wiring', async () => {
 		await commands.get(OPEN_PROPOSAL_COMMAND)?.();
 
 		expect(errors).toEqual([
-			'mcp-vertex: open proposals failed: Failed to call MCP tool "mcp-vertex_proposals_proposal_board": proposal tool missing',
+			'delendai: open proposals failed: Failed to call MCP tool "delendai_proposals_proposal_board": proposal tool missing',
 		]);
 		expect(panels).toHaveLength(0);
 	});
@@ -190,7 +190,7 @@ describe('command wiring', async () => {
 		await commands.get(SHOW_OVERVIEW_COMMAND)?.();
 
 		expect(errors).toEqual([
-			'mcp-vertex: show overview failed: Failed to call MCP tool "mcp-vertex_overview": overview unavailable',
+			'delendai: show overview failed: Failed to call MCP tool "delendai_overview": overview unavailable',
 		]);
 		expect(panels).toHaveLength(0);
 	});
@@ -201,12 +201,12 @@ describe('command wiring', async () => {
 			vscode,
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
-					expect(input.name).toBe('mcp-vertex_overview');
+					expect(input.name).toBe('delendai_overview');
 					expect(input.arguments).toEqual({ compact: true });
 					return {
 						structuredContent: {
-							server: { name: 'mcp-vertex', version: '0.1.0' },
-							namespacePrefix: 'mcp-vertex',
+							server: { name: 'delendai', version: '0.1.0' },
+							namespacePrefix: 'delendai',
 							plugins: [],
 							tools: [],
 							knowledge: [],
@@ -219,7 +219,7 @@ describe('command wiring', async () => {
 
 		await commands.get(SHOW_OVERVIEW_COMMAND)?.();
 
-		expect(panels[0]?.webview.html).toContain('mcp-vertex Overview');
+		expect(panels[0]?.webview.html).toContain('delendai Overview');
 	});
 
 	it('shows an error when the metrics command fails', async () => {
@@ -236,7 +236,7 @@ describe('command wiring', async () => {
 		await commands.get(SHOW_METRICS_COMMAND)?.();
 
 		expect(errors).toEqual([
-			'mcp-vertex: show metrics failed: Failed to call MCP tool "mcp-vertex_metrics": metrics unavailable',
+			'delendai: show metrics failed: Failed to call MCP tool "delendai_metrics": metrics unavailable',
 		]);
 		expect(panels).toHaveLength(0);
 	});

@@ -103,14 +103,14 @@ const collectExportTargets = (exportsField: unknown): string[] => {
 };
 
 const packageSlugFromName = (packageName: string): string => {
-	if (packageName === 'mcp-vertex') {
-		return 'mcp-vertex';
+	if (packageName === 'delendai') {
+		return 'delendai';
 	}
 	return packageName.replace(/^@delendai\//, '');
 };
 
 const packageNameLooksValid = (packageName: string): boolean =>
-	packageName === 'mcp-vertex' || packageName.startsWith('@delendai/');
+	packageName === 'delendai' || packageName.startsWith('@delendai/');
 
 const filesList = (filesField: unknown): string[] =>
 	Array.isArray(filesField)
@@ -300,7 +300,7 @@ export const verifyPackage = (
 
 	if (!packageNameLooksValid(packageName)) {
 		reasons.push(
-			`package name must be @delendai/* or mcp-vertex, got "${packageName}"`,
+			`package name must be @delendai/* or delendai, got "${packageName}"`,
 		);
 	}
 	const version =

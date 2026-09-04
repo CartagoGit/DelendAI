@@ -9,7 +9,7 @@
  *
  *   - The JSON envelope on stdout stays byte-identical and pipe-safe.
  *   - The operator sees a one-screen recap with icons, paths and
- *     the next-action hint (e.g. "run mcpv validate", "open
+ *     the next-action hint (e.g. "run delendai validate", "open
  *     .vscode/mcp.json", "review f00001") without scrolling.
  *
  * Color is suppressed when:
@@ -72,9 +72,9 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 	lines.push(
 		enabled
 			? heading(
-					`mcp-vertex › ${dryRun ? 'dry-run preview' : 'bootstrap complete'}`,
+					`delendai › ${dryRun ? 'dry-run preview' : 'bootstrap complete'}`,
 				)
-			: `mcp-vertex › ${dryRun ? 'dry-run preview' : 'bootstrap complete'}`,
+			: `delendai › ${dryRun ? 'dry-run preview' : 'bootstrap complete'}`,
 	);
 	lines.push(enabled ? hint(horiz) : horiz);
 
@@ -214,9 +214,9 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 	lines.push('');
 	lines.push(enabled ? subheading("What's next") : "What's next");
 	const nextActions: string[] = [];
-	if (written.some((w) => w.path.endsWith('mcp-vertex.config.json'))) {
+	if (written.some((w) => w.path.endsWith('delendai.config.json'))) {
 		nextActions.push(
-			`review ${brand('mcp-vertex.config.json')} (cacheDir, docsDir, plugin set)`,
+			`review ${brand('delendai.config.json')} (cacheDir, docsDir, plugin set)`,
 		);
 		// x00102 S2: not every consumer has a `validate` script — phrase
 		// the gate hint conditionally instead of prescribing a command
@@ -253,7 +253,7 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 	// first-match told the operator to "open .gitkeep".
 	const adoptionProposal = written.find(
 		(w) =>
-			w.path.includes('/docs/mcp-vertex/proposals/ready/') &&
+			w.path.includes('/docs/delendai/proposals/ready/') &&
 			w.path.endsWith('.md'),
 	);
 	if (adoptionProposal !== undefined) {
@@ -265,10 +265,10 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		);
 	}
 	if (answers.migrateFromLegacy) {
-		// `mcpv` is a binary (from `bunx --package @delendai/cli mcpv` or
-		// a global install) — `bun mcpv …` was not a runnable command.
+		// `delendai` is a binary (from `bunx --package @delendai/cli delendai` or
+		// a global install) — `bun delendai …` was not a runnable command.
 		nextActions.push(
-			`if you had a foreign proposals layout, run ${brand(`mcpv scaffold ${answers.preset}`)} to migrate`,
+			`if you had a foreign proposals layout, run ${brand(`delendai scaffold ${answers.preset}`)} to migrate`,
 		);
 	}
 	if (nextActions.length === 0) {
@@ -321,8 +321,8 @@ export const renderInitFailureSummary = (
 	const enabled = true;
 	const lines: string[] = [
 		enabled
-			? heading('mcp-vertex › bootstrap failed')
-			: 'mcp-vertex › bootstrap failed',
+			? heading('delendai › bootstrap failed')
+			: 'delendai › bootstrap failed',
 	];
 	lines.push(failure(reason));
 	if (hintText !== undefined && hintText.length > 0) {

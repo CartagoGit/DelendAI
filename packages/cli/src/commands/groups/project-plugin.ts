@@ -21,7 +21,7 @@ export const projectPluginCreateCommand: ICliCommand = {
 				'project-plugin create <name> [--description=...] [--namespace=...] [--dry-run]',
 			);
 		return data(
-			await request(ctx, 'mcp-vertex_project_plugins_create', {
+			await request(ctx, 'delendai_project_plugins_create', {
 				name,
 				...(scalarArg(args, 'description') !== undefined
 					? { description: scalarArg(args, 'description') }
@@ -42,7 +42,7 @@ export const projectPluginInspectCommand: ICliCommand = {
 		const name = projectPluginName(args);
 		if (name === undefined) return usage('project-plugin inspect <name>');
 		return data(
-			await request(ctx, 'mcp-vertex_project_plugins_inspect', { name }),
+			await request(ctx, 'delendai_project_plugins_inspect', { name }),
 		);
 	},
 };
@@ -54,7 +54,7 @@ export const projectPluginRepairCommand: ICliCommand = {
 		const name = projectPluginName(args);
 		if (name === undefined) return usage('project-plugin repair <name>');
 		return data(
-			await request(ctx, 'mcp-vertex_project_plugins_repair', { name }),
+			await request(ctx, 'delendai_project_plugins_repair', { name }),
 		);
 	},
 };

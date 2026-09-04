@@ -2,13 +2,13 @@
 import { runAutoWork } from '@delendai/proposals/lib/tools/auto-work.tool';
 import { join } from 'node:path';
 
-const workspaceRoot = '/home/cartago/_projects/mcp-vertex';
-const proposalsDirAbs = join(workspaceRoot, 'docs/mcp-vertex/proposals');
+const workspaceRoot = '/home/cartago/_projects/delendai';
+const proposalsDirAbs = join(workspaceRoot, 'docs/delendai/proposals');
 
 const result = await runAutoWork({
 	namespacePrefix: 'proposals',
-	indexPathAbs: join(workspaceRoot, '.cache/mcp-vertex/proposals/index.json'),
-	lockPathAbs: join(workspaceRoot, '.cache/mcp-vertex/agents.lock.json'),
+	indexPathAbs: join(workspaceRoot, '.cache/delendai/proposals/index.json'),
+	lockPathAbs: join(workspaceRoot, '.cache/delendai/agents.lock.json'),
 	proposalsDirAbs,
 	workspaceRoot,
 });

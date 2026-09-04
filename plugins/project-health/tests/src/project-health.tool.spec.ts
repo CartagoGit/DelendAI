@@ -81,7 +81,7 @@ describe('project_health', () => {
 		const secretSpy = vi.spyOn(securityPublic, 'runSecretScan');
 		const depsSpy = vi.spyOn(depsPublic, 'runDepsAudit');
 		const registrations = buildProjectHealthToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			maxBytes: 2000,
 		});
@@ -129,7 +129,7 @@ describe('project_health', () => {
 		const result = await runProjectHealth(
 			{ domain: 'security' },
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				maxBytes: 2000,
 			},

@@ -13,11 +13,11 @@ export function buildFooter(
 		vars?: Readonly<Record<string, string | number>>,
 	) => extensionText(lang, key, vars);
 	return `
-	<footer class="mcpv-footer">
+	<footer class="delendai-footer">
 		<span>${escapeHtml(text('dashboard.footerRefresh'))}: <code>${escapeHtml(options.refreshCommand)}</code></span>
-		<span class="mcpv-footer__sep">·</span>
+		<span class="delendai-footer__sep">·</span>
 		<span>${escapeHtml(text('dashboard.footerDocs'))}: <code>${escapeHtml(options.docsUrl)}</code></span>
-		<span class="mcpv-footer__sep">·</span>
+		<span class="delendai-footer__sep">·</span>
 		<span>${escapeHtml(text('dashboard.footerFetched'))}: <code>${escapeHtml(model.server.fetchedAt)}</code></span>
 	</footer>
 `.trim();

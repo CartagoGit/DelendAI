@@ -12,20 +12,20 @@
 // -----------
 // - Selectors are flat in CSS. SCSS gives us the choice; we choose
 //   **BEM with `&` nesting** so the source stays compact and the
-//   `.mcpv-card {...}` family reads as one block, not six loose rules.
-//   SCSS compiles `&__title` to `.mcpv-card__title`, exactly the class
+//   `.delendai-card {...}` family reads as one block, not six loose rules.
+//   SCSS compiles `&__title` to `.delendai-card__title`, exactly the class
 //   `renderCard(...)` emits.
 // - Selectors are still flat at the **runtime** level — no wrapper
 //   nesting — because callers (`renderDashboard`, `renderToolDetail`,
 //   `renderMetrics`) wrap panels differently across surfaces and
-//   none of them owns a `.mcpv-dashboard` parent.
+//   none of them owns a `.delendai-dashboard` parent.
 // - All values come from CSS custom properties published by
 //   `apps/shared/src/styles/_tokens.scss` and `_themes.scss`. No
 //   hardcoded px / `em` / fonts except in legacy fallbacks that
 //   already existed before this refactor (kept verbatim so the
 //   visual surface doesn't shift in this slice).
 // - No brand hex literals (`#58a6ff`, `#a371f7`). Use
-//   `var(--mcpv-brand-*)` only; the linter
+//   `var(--delendai-brand-*)` only; the linter
 //   `tools/scripts/lint/no-duplicate-brand-hex.script.ts` enforces
 //   this across the source tree.
 
@@ -38,7 +38,7 @@
 // inherits the brand colours and palette variables (`--bg`, `--fg`,
 // `--accent`, etc.) that the marketing site uses — the same five
 // themes (dark, light, midnight, solarized, nord) and the same brand
-// hex literals. Combined with the `--mcpv-*` tokens declared by
+// hex literals. Combined with the `--delendai-*` tokens declared by
 // `_tokens.scss`, every dashboard panel lives entirely on shared
 // design variables; there is no surface value that the docs site
 // and the editor cannot keep aligned.
@@ -47,82 +47,82 @@
 // Wrapper
 // ---------------------------------------------------------------------------
 
-.mcpv-shell {
+.delendai-shell {
 	display: grid;
 	grid-template-columns: 220px minmax(0, 1fr);
-	gap: var(--mcpv-s-4);
+	gap: var(--delendai-s-4);
 	align-items: start;
-	margin: 0 var(--mcpv-s-4) var(--mcpv-s-4);
+	margin: 0 var(--delendai-s-4) var(--delendai-s-4);
 }
 @media (max-width: 900px) {
-	.mcpv-shell {
+	.delendai-shell {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
 
-.mcpv-main {
-	font-family: var(--mcpv-font-prose);
+.delendai-main {
+	font-family: var(--delendai-font-prose);
 	font-size: 14px;
-	color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
-	background: var(--mcpv-bg, var(--vscode-editor-background, transparent));
-	padding: var(--mcpv-s-2);
+	color: var(--delendai-fg, var(--vscode-foreground, #d4d4d4));
+	background: var(--delendai-bg, var(--vscode-editor-background, transparent));
+	padding: var(--delendai-s-2);
 	min-width: 0;
 }
 
-.mcpv-content {
+.delendai-content {
 	min-width: 0;
 	display: contents;
 }
 
 // ---------------------------------------------------------------------------
 // Dashboard application navigation. The sidebar is the first column of the
-// `mcpv-shell` grid; it stays sticky inside that column so it never
+// `delendai-shell` grid; it stays sticky inside that column so it never
 // overlaps the main content. The horizontal tab strip is the second
 // row spanning both columns on wide screens, collapsing into a single
 // column under 900px.
 // ---------------------------------------------------------------------------
 
-.mcpv-app-nav {
+.delendai-app-nav {
 	position: sticky;
 	top: 0;
 	width: 100%;
-	padding: var(--mcpv-s-3);
-	background: var(--mcpv-bg-card, var(--vscode-sideBar-background, #252526));
-	border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
-	border-radius: var(--mcpv-radius);
-	max-height: calc(100vh - var(--mcpv-s-6));
+	padding: var(--delendai-s-3);
+	background: var(--delendai-bg-card, var(--vscode-sideBar-background, #252526));
+	border: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--delendai-radius);
+	max-height: calc(100vh - var(--delendai-s-6));
 	overflow-y: auto;
 	pointer-events: auto;
-	transition: border-color var(--mcpv-transition-fast),
-		box-shadow var(--mcpv-transition-fast);
+	transition: border-color var(--delendai-transition-fast),
+		box-shadow var(--delendai-transition-fast);
 	z-index: 1;
 
 	&__group {
-		margin-bottom: var(--mcpv-s-4);
+		margin-bottom: var(--delendai-s-4);
 
 		& > summary {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			padding: var(--mcpv-s-1) var(--mcpv-s-2);
-			border-radius: var(--mcpv-radius-sm);
+			padding: var(--delendai-s-1) var(--delendai-s-2);
+			border-radius: var(--delendai-radius-sm);
 			cursor: pointer;
 			user-select: none;
 			font-size: 11px;
 			font-weight: 600;
 			text-transform: uppercase;
 			letter-spacing: 0.5px;
-			color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
-			transition: background var(--mcpv-transition-fast),
-				color var(--mcpv-transition-fast);
+			color: var(--delendai-fg-muted, var(--vscode-descriptionForeground, #858585));
+			transition: background var(--delendai-transition-fast),
+				color var(--delendai-transition-fast);
 
 			&:hover {
-				background: var(--mcpv-bg-soft, var(--vscode-list-hoverBackground, transparent));
-				color: var(--mcpv-fg);
+				background: var(--delendai-bg-soft, var(--vscode-list-hoverBackground, transparent));
+				color: var(--delendai-fg);
 			}
 
 			& > span {
-				transition: transform var(--mcpv-transition-fast);
+				transition: transform var(--delendai-transition-fast);
 			}
 		}
 
@@ -134,7 +134,7 @@
 	&__items {
 		display: grid;
 		gap: 2px;
-		margin-top: var(--mcpv-s-1);
+		margin-top: var(--delendai-s-1);
 	}
 
 	&__item {
@@ -145,24 +145,24 @@
 		color: inherit;
 		font: inherit;
 		text-align: start;
-		padding: var(--mcpv-s-1) var(--mcpv-s-2);
+		padding: var(--delendai-s-1) var(--delendai-s-2);
 		cursor: pointer;
-		border-radius: 0 var(--mcpv-radius-sm) var(--mcpv-radius-sm) 0;
-		transition: background var(--mcpv-transition-fast),
-			border-color var(--mcpv-transition-fast),
-			color var(--mcpv-transition-fast);
+		border-radius: 0 var(--delendai-radius-sm) var(--delendai-radius-sm) 0;
+		transition: background var(--delendai-transition-fast),
+			border-color var(--delendai-transition-fast),
+			color var(--delendai-transition-fast);
 
 		& > span {
 			display: inline-block;
 			transform: translateX(0);
-			transition: transform var(--mcpv-transition-fast);
+			transition: transform var(--delendai-transition-fast);
 		}
 	}
 
 	&__item:hover,
 	&__item:focus-visible {
-		background: var(--mcpv-bg-soft, var(--vscode-list-hoverBackground, transparent));
-		color: var(--mcpv-fg);
+		background: var(--delendai-bg-soft, var(--vscode-list-hoverBackground, transparent));
+		color: var(--delendai-fg);
 
 		& > span {
 			transform: translateX(2px);
@@ -170,9 +170,9 @@
 	}
 
 	&__item[aria-current='page'] {
-		background: var(--mcpv-bg-soft, var(--vscode-list-hoverBackground, transparent));
-		border-left-color: var(--mcpv-brand-blue);
-		color: var(--mcpv-fg);
+		background: var(--delendai-bg-soft, var(--vscode-list-hoverBackground, transparent));
+		border-left-color: var(--delendai-brand-blue);
+		color: var(--delendai-fg);
 		font-weight: 600;
 	}
 
@@ -180,33 +180,33 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 2px;
-		padding-top: var(--mcpv-s-2);
-		border-top: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+		padding-top: var(--delendai-s-2);
+		border-top: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
 	}
 }
 
-.mcpv-app-nav__mobile {
+.delendai-app-nav__mobile {
 	display: none;
 }
 
 // ---------------------------------------------------------------------------
-// Header strip — `mcpv-header` + `&__logo`, `&__brand`, `&__name`,
+// Header strip — `delendai-header` + `&__logo`, `&__brand`, `&__name`,
 // `&__version`, `&__strip`. The block owns its children.
 // ---------------------------------------------------------------------------
 
-.mcpv-header {
+.delendai-header {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: var(--mcpv-s-3);
-	padding: var(--mcpv-s-3) 0;
-	border-bottom: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
-	margin-bottom: var(--mcpv-s-4);
+	gap: var(--delendai-s-3);
+	padding: var(--delendai-s-3) 0;
+	border-bottom: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
+	margin-bottom: var(--delendai-s-4);
 
 	&__logo {
 		width: 28px;
 		height: 28px;
-		border-radius: var(--mcpv-radius-sm);
+		border-radius: var(--delendai-radius-sm);
 		flex: 0 0 auto;
 	}
 
@@ -224,23 +224,23 @@
 
 	&__version {
 		font-size: 12px;
-		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		color: var(--delendai-fg-muted, var(--vscode-descriptionForeground, #858585));
 	}
 
 	&__strip {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--mcpv-s-2);
+		gap: var(--delendai-s-2);
 	}
 }
 
 // ---------------------------------------------------------------------------
-// Tab strip — `mcpv-tab` element. Selected / hover / focus variants as
+// Tab strip — `delendai-tab` element. Selected / hover / focus variants as
 // `&[aria-selected]` / `&:hover` so the block reads top-to-bottom.
 // ---------------------------------------------------------------------------
 
-.mcpv-tabs {
-	padding: 0 var(--mcpv-s-4);
+.delendai-tabs {
+	padding: 0 var(--delendai-s-4);
 	overflow-x: auto;
 	grid-column: 2;
 	grid-row: 1;
@@ -262,19 +262,19 @@
 	}
 }
 
-.mcpv-tab {
+.delendai-tab {
 	appearance: none;
 	position: relative;
 	background: transparent;
 	border: none;
-	color: var(--mcpv-fg-muted, var(--vscode-tab-inactiveForeground, #858585));
-	padding: var(--mcpv-s-2) var(--mcpv-s-3);
+	color: var(--delendai-fg-muted, var(--vscode-tab-inactiveForeground, #858585));
+	padding: var(--delendai-s-2) var(--delendai-s-3);
 	font: inherit;
 	cursor: pointer;
 	white-space: nowrap;
 	transition:
-		color var(--mcpv-transition-fast),
-		background var(--mcpv-transition-fast);
+		color var(--delendai-transition-fast),
+		background var(--delendai-transition-fast);
 
 	&::after {
 		content: '';
@@ -285,18 +285,18 @@
 		height: 2px;
 		background: linear-gradient(
 			90deg,
-			var(--mcpv-brand-blue),
-			var(--mcpv-brand-purple)
+			var(--delendai-brand-blue),
+			var(--delendai-brand-purple)
 		);
 		border-radius: 999px;
 		transform: scaleX(0);
 		transform-origin: center;
-		transition: transform var(--mcpv-transition-medium);
+		transition: transform var(--delendai-transition-medium);
 	}
 
 	&:hover {
-		color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
-		background: var(--mcpv-bg-soft, transparent);
+		color: var(--delendai-fg, var(--vscode-foreground, #d4d4d4));
+		background: var(--delendai-bg-soft, transparent);
 
 		&::after {
 			transform: scaleX(0.3);
@@ -305,14 +305,14 @@
 	}
 
 	&:focus-visible {
-		color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
-		outline: 2px solid var(--mcpv-brand-blue);
+		color: var(--delendai-fg, var(--vscode-foreground, #d4d4d4));
+		outline: 2px solid var(--delendai-brand-blue);
 		outline-offset: 2px;
 		border-radius: 4px;
 	}
 
 	&[aria-selected='true'] {
-		color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
+		color: var(--delendai-fg, var(--vscode-foreground, #d4d4d4));
 
 		&::after {
 			transform: scaleX(1);
@@ -322,26 +322,26 @@
 }
 
 // ---------------------------------------------------------------------------
-// KPI grid — `mcpv-kpis` (the responsive grid) and `mcpv-kpi` (one cell).
+// KPI grid — `delendai-kpis` (the responsive grid) and `delendai-kpi` (one cell).
 // ---------------------------------------------------------------------------
 
-.mcpv-kpis {
+.delendai-kpis {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-	gap: var(--mcpv-gap);
-	margin-bottom: var(--mcpv-s-4);
+	gap: var(--delendai-gap);
+	margin-bottom: var(--delendai-s-4);
 }
 
-.mcpv-kpi {
-	padding: var(--mcpv-s-3);
-	background: var(--mcpv-bg-card, var(--vscode-editorWidget-background, #252526));
-	border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
-	border-radius: var(--mcpv-radius);
+.delendai-kpi {
+	padding: var(--delendai-s-3);
+	background: var(--delendai-bg-card, var(--vscode-editorWidget-background, #252526));
+	border: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--delendai-radius);
 
 	&__label {
 		display: block;
 		font-size: 12px;
-		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		color: var(--delendai-fg-muted, var(--vscode-descriptionForeground, #858585));
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 	}
@@ -350,25 +350,25 @@
 		display: block;
 		font-size: 20px;
 		font-weight: 600;
-		margin-top: var(--mcpv-s-1);
+		margin-top: var(--delendai-s-1);
 	}
 
 	&__hint {
 		display: block;
-		margin-top: var(--mcpv-s-1);
+		margin-top: var(--delendai-s-1);
 		font-size: 12px;
-		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		color: var(--delendai-fg-muted, var(--vscode-descriptionForeground, #858585));
 	}
 }
 
 // ---------------------------------------------------------------------------
-// Panels + cards. `mcpv-panel` owns its title + grid; `mcpv-card` is a single
+// Panels + cards. `delendai-panel` owns its title + grid; `delendai-card` is a single
 // tile. Modifiers `&--half` / `&--third` resize the card inside the grid
 // without rewriting the parent.
 // ---------------------------------------------------------------------------
 
-.mcpv-panel {
-	margin-bottom: var(--mcpv-s-4);
+.delendai-panel {
+	margin-bottom: var(--delendai-s-4);
 
 	&[data-active='false'] {
 		display: none;
@@ -377,42 +377,42 @@
 	&__title {
 		font-size: 13px;
 		font-weight: 600;
-		margin: 0 0 var(--mcpv-s-2);
+		margin: 0 0 var(--delendai-s-2);
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
-		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		color: var(--delendai-fg-muted, var(--vscode-descriptionForeground, #858585));
 	}
 
 	&__grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-		gap: var(--mcpv-gap);
+		gap: var(--delendai-gap);
 	}
 }
 
-.mcpv-grid {
+.delendai-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-	gap: var(--mcpv-gap);
+	gap: var(--delendai-gap);
 }
 
-.mcpv-banner {
-	padding: var(--mcpv-s-2) var(--mcpv-s-4);
-	border-block: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
-	background: var(--mcpv-bg-soft, var(--vscode-sideBar-background, transparent));
-	color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, currentColor));
+.delendai-banner {
+	padding: var(--delendai-s-2) var(--delendai-s-4);
+	border-block: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
+	background: var(--delendai-bg-soft, var(--vscode-sideBar-background, transparent));
+	color: var(--delendai-fg-muted, var(--vscode-descriptionForeground, currentColor));
 }
 
-.mcpv-card {
-	padding: var(--mcpv-s-3) var(--mcpv-s-4);
-	background: var(--mcpv-bg-card, var(--vscode-editorWidget-background, #252526));
-	border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
-	border-radius: var(--mcpv-radius);
+.delendai-card {
+	padding: var(--delendai-s-3) var(--delendai-s-4);
+	background: var(--delendai-bg-card, var(--vscode-editorWidget-background, #252526));
+	border: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--delendai-radius);
 
 	&__title {
 		font-size: 14px;
 		font-weight: 600;
-		margin: 0 0 var(--mcpv-s-1);
+		margin: 0 0 var(--delendai-s-1);
 	}
 
 	&--half {
@@ -428,27 +428,27 @@
 // Tables, sparklines, bars, rows
 // ---------------------------------------------------------------------------
 
-.mcpv-table-wrap {
+.delendai-table-wrap {
 	overflow-x: auto;
-	border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
-	border-radius: var(--mcpv-radius);
+	border: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--delendai-radius);
 }
 
-.mcpv-table {
+.delendai-table {
 	width: 100%;
 	border-collapse: collapse;
 	font-size: 13px;
 
 	& th,
 	& td {
-		padding: var(--mcpv-s-2) var(--mcpv-s-3);
+		padding: var(--delendai-s-2) var(--delendai-s-3);
 		text-align: left;
-		border-bottom: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+		border-bottom: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
 		white-space: nowrap;
 	}
 
 	& th {
-		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		color: var(--delendai-fg-muted, var(--vscode-descriptionForeground, #858585));
 		font-weight: 600;
 	}
 
@@ -457,48 +457,48 @@
 	}
 }
 
-.mcpv-spark {
+.delendai-spark {
 	display: inline-block;
 	vertical-align: middle;
-	margin-right: var(--mcpv-s-1);
+	margin-right: var(--delendai-s-1);
 }
 
-.mcpv-bar {
+.delendai-bar {
 	display: block;
 	height: 100%;
-	background: var(--mcpv-brand-blue);
+	background: var(--delendai-brand-blue);
 
 	&--ok {
-		background: var(--mcpv-ok);
+		background: var(--delendai-ok);
 	}
 
 	&--warn {
-		background: var(--mcpv-warn);
+		background: var(--delendai-warn);
 	}
 
 	&--err {
-		background: var(--mcpv-error);
+		background: var(--delendai-error);
 	}
 }
 
-.mcpv-bar-track {
+.delendai-bar-track {
 	display: inline-block;
 	width: 100%;
 	min-width: 80px;
 	max-width: 200px;
 	height: 6px;
-	background: var(--mcpv-bg-soft, var(--vscode-sideBar-background, #2d2d2d));
+	background: var(--delendai-bg-soft, var(--vscode-sideBar-background, #2d2d2d));
 	border-radius: 3px;
 	vertical-align: middle;
 	overflow: hidden;
 }
 
-.mcpv-row {
+.delendai-row {
 	display: flex;
 	align-items: center;
-	gap: var(--mcpv-s-2);
-	padding: var(--mcpv-s-1) 0;
-	border-bottom: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+	gap: var(--delendai-s-2);
+	padding: var(--delendai-s-1) 0;
+	border-bottom: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
 
 	&:last-child {
 		border-bottom: none;
@@ -521,7 +521,7 @@
 	&__bar-value {
 		flex: 0 0 auto;
 		font-variant-numeric: tabular-nums;
-		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		color: var(--delendai-fg-muted, var(--vscode-descriptionForeground, #858585));
 	}
 }
 
@@ -531,54 +531,54 @@
 // whole monorepo).
 // ---------------------------------------------------------------------------
 
-@media (min-width: bp.$mcpv-bp-sm) {
-	.mcpv-panel__grid {
+@media (min-width: bp.$delendai-bp-sm) {
+	.delendai-panel__grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
 
-@media (min-width: bp.$mcpv-bp-md) {
-	.mcpv-panel__grid {
+@media (min-width: bp.$delendai-bp-md) {
+	.delendai-panel__grid {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 }
 
-@media (max-width: bp.$mcpv-bp-sm) {
-	.mcpv-app-nav__mobile {
+@media (max-width: bp.$delendai-bp-sm) {
+	.delendai-app-nav__mobile {
 		display: block;
-		padding: 0 var(--mcpv-s-4) var(--mcpv-s-2);
+		padding: 0 var(--delendai-s-4) var(--delendai-s-2);
 	}
 
-	.mcpv-app-nav__menu {
+	.delendai-app-nav__menu {
 		appearance: none;
-		border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
-		background: var(--mcpv-bg-card, var(--vscode-sideBar-background, #252526));
+		border: 1px solid var(--delendai-border, var(--vscode-widget-border, transparent));
+		background: var(--delendai-bg-card, var(--vscode-sideBar-background, #252526));
 		color: inherit;
 		font: inherit;
-		padding: var(--mcpv-s-2) var(--mcpv-s-3);
+		padding: var(--delendai-s-2) var(--delendai-s-3);
 		cursor: pointer;
 	}
 
-	.mcpv-app-nav {
+	.delendai-app-nav {
 		float: none;
 		position: absolute;
 		display: none;
-		width: calc(100% - (2 * var(--mcpv-s-4)));
-		margin: 0 var(--mcpv-s-4);
+		width: calc(100% - (2 * var(--delendai-s-4)));
+		margin: 0 var(--delendai-s-4);
 	}
 
-	.mcpv-tabs {
+	.delendai-tabs {
 		display: block;
 		grid-column: 1;
 		grid-row: 2;
 	}
 
-	.mcpv-main {
+	.delendai-main {
 		grid-column: 1;
 		grid-row: 3;
 	}
 
-	.mcpv-app-nav.is-open {
+	.delendai-app-nav.is-open {
 		display: block;
 	}
 }
@@ -586,7 +586,7 @@
 // ---------------------------------------------------------------------------
 // d-00018 / d-00019 / d-00020 — Status, Logs and Settings polish.
 // All new selectors are block-scoped, never touch existing tokens, and
-// degrade gracefully when the host theme doesn't expose `--mcpv-*`.
+// degrade gracefully when the host theme doesn't expose `--delendai-*`.
 // ---------------------------------------------------------------------------
 
 // ─── Themes — paints the whole dashboard via [data-theme] on <html>. ─────
@@ -597,73 +597,73 @@
 // hasn't imported the shared themes module (f00047 S4 + f00147).
 
 @mixin theme-light {
-	--mcpv-bg: #ffffff;
-	--mcpv-fg: #1f2328;
-	--mcpv-bg-card: #f6f8fa;
-	--mcpv-bg-soft: #eaeef2;
-	--mcpv-fg-muted: #57606a;
-	--mcpv-border: #d0d7de;
-	--mcpv-brand-blue: #0969da;
-	--mcpv-brand-purple: #8250df;
-	--mcpv-ok: #1a7f37;
-	--mcpv-warn: #9a6700;
-	--mcpv-error: #d1242f;
+	--delendai-bg: #ffffff;
+	--delendai-fg: #1f2328;
+	--delendai-bg-card: #f6f8fa;
+	--delendai-bg-soft: #eaeef2;
+	--delendai-fg-muted: #57606a;
+	--delendai-border: #d0d7de;
+	--delendai-brand-blue: #0969da;
+	--delendai-brand-purple: #8250df;
+	--delendai-ok: #1a7f37;
+	--delendai-warn: #9a6700;
+	--delendai-error: #d1242f;
 }
 
 @mixin theme-dark {
-	--mcpv-bg: #0d1117;
-	--mcpv-fg: #d4d4d4;
-	--mcpv-bg-card: #161b22;
-	--mcpv-bg-soft: #1f242c;
-	--mcpv-fg-muted: #8b949e;
-	--mcpv-border: #30363d;
-	--mcpv-brand-blue: #58a6ff;
-	--mcpv-brand-purple: #a371f7;
-	--mcpv-ok: #3fb950;
-	--mcpv-warn: #d29922;
-	--mcpv-error: #f85149;
+	--delendai-bg: #0d1117;
+	--delendai-fg: #d4d4d4;
+	--delendai-bg-card: #161b22;
+	--delendai-bg-soft: #1f242c;
+	--delendai-fg-muted: #8b949e;
+	--delendai-border: #30363d;
+	--delendai-brand-blue: #58a6ff;
+	--delendai-brand-purple: #a371f7;
+	--delendai-ok: #3fb950;
+	--delendai-warn: #d29922;
+	--delendai-error: #f85149;
 }
 
 @mixin theme-midnight {
-	--mcpv-bg: #050816;
-	--mcpv-fg: #c9d1d9;
-	--mcpv-bg-card: #0d1117;
-	--mcpv-bg-soft: #161b22;
-	--mcpv-fg-muted: #7d8590;
-	--mcpv-border: #1f2937;
-	--mcpv-brand-blue: #a371f7;
-	--mcpv-brand-purple: #58a6ff;
-	--mcpv-ok: #34d399;
-	--mcpv-warn: #fbbf24;
-	--mcpv-error: #f87171;
+	--delendai-bg: #050816;
+	--delendai-fg: #c9d1d9;
+	--delendai-bg-card: #0d1117;
+	--delendai-bg-soft: #161b22;
+	--delendai-fg-muted: #7d8590;
+	--delendai-border: #1f2937;
+	--delendai-brand-blue: #a371f7;
+	--delendai-brand-purple: #58a6ff;
+	--delendai-ok: #34d399;
+	--delendai-warn: #fbbf24;
+	--delendai-error: #f87171;
 }
 
 @mixin theme-solarized {
-	--mcpv-bg: #fdf6e3;
-	--mcpv-fg: #586e75;
-	--mcpv-bg-card: #eee8d5;
-	--mcpv-bg-soft: #e3dcc6;
-	--mcpv-fg-muted: #93a1a1;
-	--mcpv-border: #d8d2bc;
-	--mcpv-brand-blue: #268bd2;
-	--mcpv-brand-purple: #6c71c4;
-	--mcpv-ok: #859900;
-	--mcpv-warn: #b58900;
-	--mcpv-error: #dc322f;
+	--delendai-bg: #fdf6e3;
+	--delendai-fg: #586e75;
+	--delendai-bg-card: #eee8d5;
+	--delendai-bg-soft: #e3dcc6;
+	--delendai-fg-muted: #93a1a1;
+	--delendai-border: #d8d2bc;
+	--delendai-brand-blue: #268bd2;
+	--delendai-brand-purple: #6c71c4;
+	--delendai-ok: #859900;
+	--delendai-warn: #b58900;
+	--delendai-error: #dc322f;
 }
 
 @mixin theme-nord {
-	--mcpv-bg: #2e3440;
-	--mcpv-fg: #d8dee9;
-	--mcpv-bg-card: #3b4252;
-	--mcpv-bg-soft: #434c5e;
-	--mcpv-fg-muted: #9aa5b1;
-	--mcpv-border: #4c566a;
-	--mcpv-brand-blue: #88c0d0;
-	--mcpv-brand-purple: #b48ead;
-	--mcpv-ok: #a3be8c;
-	--mcpv-warn: #ebcb8b;
-	--mcpv-error: #bf616a;
+	--delendai-bg: #2e3440;
+	--delendai-fg: #d8dee9;
+	--delendai-bg-card: #3b4252;
+	--delendai-bg-soft: #434c5e;
+	--delendai-fg-muted: #9aa5b1;
+	--delendai-border: #4c566a;
+	--delendai-brand-blue: #88c0d0;
+	--delendai-brand-purple: #b48ead;
+	--delendai-ok: #a3be8c;
+	--delendai-warn: #ebcb8b;
+	--delendai-error: #bf616a;
 }
 
 :root,
@@ -691,20 +691,20 @@
 }
 
 // ─── Status panel (d-00018) ──────────────────────────────────────────────
-.mcpv-status {
+.delendai-status {
 	display: grid;
-	gap: var(--mcpv-s-4);
+	gap: var(--delendai-s-4);
 
 	&__identity {
 		display: flex;
-		gap: var(--mcpv-s-3);
+		gap: var(--delendai-s-3);
 		align-items: flex-start;
-		padding: var(--mcpv-s-4);
+		padding: var(--delendai-s-4);
 		background: linear-gradient(135deg,
 			rgba(88, 166, 255, 0.08),
 			rgba(163, 113, 247, 0.05));
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
 	}
 
 	&__pulse {
@@ -712,13 +712,13 @@
 		width: 14px;
 		height: 14px;
 		border-radius: 50%;
-		background: var(--mcpv-ok);
+		background: var(--delendai-ok);
 		box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.5);
-		animation: mcpv-status-pulse 2.4s ease-out infinite;
+		animation: delendai-status-pulse 2.4s ease-out infinite;
 		margin-top: 6px;
 	}
 	&__pulse[data-state='lost'] {
-		background: var(--mcpv-error);
+		background: var(--delendai-error);
 		box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.5);
 	}
 
@@ -729,18 +729,18 @@
 		font-size: 12px;
 		font-weight: 600;
 		background: rgba(63, 185, 80, 0.15);
-		color: var(--mcpv-ok);
+		color: var(--delendai-ok);
 	}
 	&__chip[data-state='lost'] {
 		background: rgba(248, 81, 73, 0.15);
-		color: var(--mcpv-error);
+		color: var(--delendai-error);
 	}
 
 	&__action {
-		padding: var(--mcpv-s-3);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
-		background: var(--mcpv-bg-card);
+		padding: var(--delendai-s-3);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
+		background: var(--delendai-bg-card);
 
 		& summary {
 			cursor: pointer;
@@ -748,10 +748,10 @@
 		}
 
 		& pre {
-			margin: var(--mcpv-s-2) 0 0;
-			padding: var(--mcpv-s-3);
-			background: var(--mcpv-bg-soft);
-			border-radius: var(--mcpv-radius-sm);
+			margin: var(--delendai-s-2) 0 0;
+			padding: var(--delendai-s-3);
+			background: var(--delendai-bg-soft);
+			border-radius: var(--delendai-radius-sm);
 			white-space: pre-wrap;
 		}
 	}
@@ -759,85 +759,85 @@
 	&__kpis {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-		gap: var(--mcpv-s-3);
+		gap: var(--delendai-s-3);
 	}
 
 	&__kpi {
-		padding: var(--mcpv-s-3);
-		background: var(--mcpv-bg-card);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
-		transition: border-color var(--mcpv-transition-fast),
-			transform var(--mcpv-transition-fast);
+		padding: var(--delendai-s-3);
+		background: var(--delendai-bg-card);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
+		transition: border-color var(--delendai-transition-fast),
+			transform var(--delendai-transition-fast);
 
 		&:hover {
-			border-color: var(--mcpv-brand-blue);
+			border-color: var(--delendai-brand-blue);
 			transform: translateY(-1px);
 		}
 
 		& h4 {
-			margin: 0 0 var(--mcpv-s-1);
+			margin: 0 0 var(--delendai-s-1);
 			font-size: 12px;
 			text-transform: uppercase;
 			letter-spacing: 0.5px;
-			color: var(--mcpv-fg-muted);
+			color: var(--delendai-fg-muted);
 		}
 	}
 
 	&__row {
 		display: grid;
 		grid-template-columns: 2fr 1fr;
-		gap: var(--mcpv-s-3);
+		gap: var(--delendai-s-3);
 	}
 	@media (max-width: 720px) {
 		&__row { grid-template-columns: 1fr; }
 	}
 
 	&__activity {
-		padding: var(--mcpv-s-3);
-		background: var(--mcpv-bg-card);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
+		padding: var(--delendai-s-3);
+		background: var(--delendai-bg-card);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
 
 		&--idle {
 			border-style: dashed;
-			color: var(--mcpv-fg-muted);
+			color: var(--delendai-fg-muted);
 		}
 
-		& ul { margin: var(--mcpv-s-2) 0 0; padding: 0 0 0 var(--mcpv-s-4); }
-		& li { margin-bottom: var(--mcpv-s-1); }
+		& ul { margin: var(--delendai-s-2) 0 0; padding: 0 0 0 var(--delendai-s-4); }
+		& li { margin-bottom: var(--delendai-s-1); }
 	}
 
 	&__panel {
-		padding: var(--mcpv-s-3);
-		background: var(--mcpv-bg-card);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
+		padding: var(--delendai-s-3);
+		background: var(--delendai-bg-card);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
 		overflow-x: auto;
 
 		&--wide { grid-column: 1 / -1; }
 	}
 }
 
-@keyframes mcpv-status-pulse {
+@keyframes delendai-status-pulse {
 	0% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.5); }
 	70% { box-shadow: 0 0 0 12px rgba(63, 185, 80, 0); }
 	100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
 }
 
 // ─── Logs panel (d-00019) ───────────────────────────────────────────────
-.mcpv-logs {
+.delendai-logs {
 	display: grid;
-	gap: var(--mcpv-s-3);
+	gap: var(--delendai-s-3);
 
 	&__controls {
 		display: grid;
 		grid-template-columns: 2fr 1fr 1fr 1fr;
-		gap: var(--mcpv-s-2);
-		padding: var(--mcpv-s-3);
-		background: var(--mcpv-bg-card);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
+		gap: var(--delendai-s-2);
+		padding: var(--delendai-s-3);
+		background: var(--delendai-bg-card);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
 	}
 	@media (max-width: 720px) {
 		&__controls { grid-template-columns: 1fr 1fr; }
@@ -848,15 +848,15 @@
 		display: grid;
 		gap: 4px;
 		font-size: 12px;
-		color: var(--mcpv-fg-muted);
+		color: var(--delendai-fg-muted);
 
 		& select,
 		& input {
 			padding: 6px 8px;
-			background: var(--mcpv-bg-soft);
-			border: 1px solid var(--mcpv-border);
-			border-radius: var(--mcpv-radius-sm);
-			color: var(--mcpv-fg);
+			background: var(--delendai-bg-soft);
+			border: 1px solid var(--delendai-border);
+			border-radius: var(--delendai-radius-sm);
+			color: var(--delendai-fg);
 			font: inherit;
 		}
 	}
@@ -864,14 +864,14 @@
 	&__actions {
 		grid-column: 1 / -1;
 		display: flex;
-		gap: var(--mcpv-s-2);
+		gap: var(--delendai-s-2);
 		flex-wrap: wrap;
 	}
 
 	&__status {
 		grid-column: 1 / -1;
 		font-size: 12px;
-		color: var(--mcpv-fg-muted);
+		color: var(--delendai-fg-muted);
 		margin: 0;
 	}
 
@@ -880,7 +880,7 @@
 		padding: 0;
 		margin: 0;
 		display: grid;
-		gap: var(--mcpv-s-1);
+		gap: var(--delendai-s-1);
 		max-height: 60vh;
 		overflow-y: auto;
 	}
@@ -888,55 +888,55 @@
 	&__row {
 		display: grid;
 		grid-template-columns: 80px 100px 100px 1fr auto;
-		gap: var(--mcpv-s-2);
+		gap: var(--delendai-s-2);
 		padding: 6px 10px;
 		font-size: 12px;
-		border-radius: var(--mcpv-radius-sm);
-		background: var(--mcpv-bg-card);
-		border: 1px solid var(--mcpv-border);
+		border-radius: var(--delendai-radius-sm);
+		background: var(--delendai-bg-card);
+		border: 1px solid var(--delendai-border);
 	}
 	&__row[data-outcome='failed'],
 	&__row[data-outcome='timed-out'],
 	&__row[data-outcome='dead'] {
-		border-color: var(--mcpv-error);
+		border-color: var(--delendai-error);
 		background: rgba(248, 81, 73, 0.07);
 	}
 	&__row[data-outcome='ok'] {
-		border-color: var(--mcpv-ok);
+		border-color: var(--delendai-ok);
 		background: rgba(63, 185, 80, 0.05);
 	}
 
-	&__ts { color: var(--mcpv-fg-muted); font-variant-numeric: tabular-nums; }
-	&__kind { color: var(--mcpv-brand-blue); font-weight: 600; }
+	&__ts { color: var(--delendai-fg-muted); font-variant-numeric: tabular-nums; }
+	&__kind { color: var(--delendai-brand-blue); font-weight: 600; }
 	&__summary { white-space: pre-wrap; word-break: break-word; }
 	&__copy {
 		appearance: none;
 		background: transparent;
 		border: 0;
-		color: var(--mcpv-fg-muted);
+		color: var(--delendai-fg-muted);
 		cursor: pointer;
 		font: inherit;
 		padding: 0 4px;
 	}
-	&__copy:hover { color: var(--mcpv-fg); }
+	&__copy:hover { color: var(--delendai-fg); }
 
 	&__empty {
 		text-align: center;
-		padding: var(--mcpv-s-4);
-		color: var(--mcpv-fg-muted);
+		padding: var(--delendai-s-4);
+		color: var(--delendai-fg-muted);
 	}
 }
 
 // ─── Settings panel (d-00020) ───────────────────────────────────────────
-.mcpv-settings {
+.delendai-settings {
 	display: grid;
-	gap: var(--mcpv-s-4);
+	gap: var(--delendai-s-4);
 
 	&__section {
-		padding: var(--mcpv-s-4);
-		background: var(--mcpv-bg-card);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
+		padding: var(--delendai-s-4);
+		background: var(--delendai-bg-card);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
 	}
 	&__section--preview {
 		background: linear-gradient(135deg,
@@ -945,24 +945,24 @@
 	}
 
 	&__section-header {
-		margin-bottom: var(--mcpv-s-3);
+		margin-bottom: var(--delendai-s-3);
 
 		& h3 {
-			margin: 0 0 var(--mcpv-s-1);
+			margin: 0 0 var(--delendai-s-1);
 			font-size: 14px;
 			font-weight: 600;
 		}
 		& p {
 			margin: 0;
-			color: var(--mcpv-fg-muted);
+			color: var(--delendai-fg-muted);
 			font-size: 12px;
 		}
 	}
 
 	&__group {
 		display: grid;
-		gap: var(--mcpv-s-2);
-		margin-bottom: var(--mcpv-s-3);
+		gap: var(--delendai-s-2);
+		margin-bottom: var(--delendai-s-3);
 
 		&--inline {
 			grid-template-columns: 1fr 220px;
@@ -978,30 +978,30 @@
 		gap: 4px;
 
 		& span { font-weight: 600; }
-		& small { color: var(--mcpv-fg-muted); font-size: 12px; }
+		& small { color: var(--delendai-fg-muted); font-size: 12px; }
 	}
 
 	&__theme-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-		gap: var(--mcpv-s-2);
+		gap: var(--delendai-s-2);
 	}
 
 	&__theme {
 		display: grid;
-		gap: var(--mcpv-s-1);
-		padding: var(--mcpv-s-2);
-		background: var(--mcpv-bg-soft);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
+		gap: var(--delendai-s-1);
+		padding: var(--delendai-s-2);
+		background: var(--delendai-bg-soft);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
 		cursor: pointer;
-		transition: border-color var(--mcpv-transition-fast),
-			transform var(--mcpv-transition-fast);
+		transition: border-color var(--delendai-transition-fast),
+			transform var(--delendai-transition-fast);
 
 		& input { display: none; }
 		&:hover { transform: translateY(-1px); }
 		&[aria-pressed='true'] {
-			border-color: var(--mcpv-brand-blue);
+			border-color: var(--delendai-brand-blue);
 			box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
 		}
 	}
@@ -1010,9 +1010,9 @@
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		height: 28px;
-		border-radius: var(--mcpv-radius-sm);
+		border-radius: var(--delendai-radius-sm);
 		overflow: hidden;
-		border: 1px solid var(--mcpv-border);
+		border: 1px solid var(--delendai-border);
 	}
 	&__theme-swatch-band { display: block; height: 100%; }
 	&__theme-label {
@@ -1025,26 +1025,26 @@
 	&__lang-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-		gap: var(--mcpv-s-2);
+		gap: var(--delendai-s-2);
 	}
 
 	&__lang {
 		display: grid;
 		grid-template-columns: auto 1fr auto;
 		align-items: center;
-		gap: var(--mcpv-s-2);
-		padding: var(--mcpv-s-2);
-		background: var(--mcpv-bg-soft);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
+		gap: var(--delendai-s-2);
+		padding: var(--delendai-s-2);
+		background: var(--delendai-bg-soft);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
 		cursor: pointer;
-		transition: border-color var(--mcpv-transition-fast),
-			transform var(--mcpv-transition-fast);
+		transition: border-color var(--delendai-transition-fast),
+			transform var(--delendai-transition-fast);
 
 		& input { display: none; }
 		&:hover { transform: translateY(-1px); }
 		&[aria-pressed='true'] {
-			border-color: var(--mcpv-brand-purple);
+			border-color: var(--delendai-brand-purple);
 			box-shadow: 0 0 0 2px rgba(163, 113, 247, 0.15);
 		}
 	}
@@ -1054,19 +1054,19 @@
 		place-items: center;
 		width: 28px;
 		height: 20px;
-		background: var(--mcpv-bg);
-		border: 1px solid var(--mcpv-border);
+		background: var(--delendai-bg);
+		border: 1px solid var(--delendai-border);
 		border-radius: 3px;
 		font-size: 11px;
 		font-weight: 600;
 		letter-spacing: 0.5px;
-		color: var(--mcpv-fg-muted);
+		color: var(--delendai-fg-muted);
 	}
 
 	&__lang-native {
 		font-size: 11px;
-		color: var(--mcpv-fg-muted);
-		font-family: var(--mcpv-font-mono);
+		color: var(--delendai-fg-muted);
+		font-family: var(--delendai-font-mono);
 	}
 
 	&__select-compact {
@@ -1075,26 +1075,26 @@
 	&__select {
 		width: 100%;
 		padding: 6px 8px;
-		background: var(--mcpv-bg-soft);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius-sm);
-		color: var(--mcpv-fg);
+		background: var(--delendai-bg-soft);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius-sm);
+		color: var(--delendai-fg);
 		font: inherit;
 	}
 
 	&__field {
 		display: grid;
 		gap: 4px;
-		margin-bottom: var(--mcpv-s-3);
+		margin-bottom: var(--delendai-s-3);
 
 		& span { font-weight: 600; }
-		& small { color: var(--mcpv-fg-muted); font-size: 12px; }
+		& small { color: var(--delendai-fg-muted); font-size: 12px; }
 		& input {
 			padding: 8px 10px;
-			background: var(--mcpv-bg-soft);
-			border: 1px solid var(--mcpv-border);
-			border-radius: var(--mcpv-radius-sm);
-			color: var(--mcpv-fg);
+			background: var(--delendai-bg-soft);
+			border: 1px solid var(--delendai-border);
+			border-radius: var(--delendai-radius-sm);
+			color: var(--delendai-fg);
 			font: inherit;
 		}
 	}
@@ -1102,27 +1102,27 @@
 	&__check {
 		display: grid;
 		grid-template-columns: auto 1fr;
-		gap: var(--mcpv-s-2);
-		padding: var(--mcpv-s-2);
-		border: 1px solid var(--mcpv-border);
-		border-radius: var(--mcpv-radius);
-		background: var(--mcpv-bg-soft);
-		margin-bottom: var(--mcpv-s-2);
+		gap: var(--delendai-s-2);
+		padding: var(--delendai-s-2);
+		border: 1px solid var(--delendai-border);
+		border-radius: var(--delendai-radius);
+		background: var(--delendai-bg-soft);
+		margin-bottom: var(--delendai-s-2);
 
 		& span { font-weight: 600; }
 		& small {
 			grid-column: 2;
-			color: var(--mcpv-fg-muted);
+			color: var(--delendai-fg-muted);
 			font-size: 12px;
 		}
 	}
 
 	&__preview {
-		margin-top: var(--mcpv-s-2);
-		padding: var(--mcpv-s-3);
-		border-radius: var(--mcpv-radius);
-		border: 1px solid var(--mcpv-border);
-		background: var(--mcpv-bg-soft);
+		margin-top: var(--delendai-s-2);
+		padding: var(--delendai-s-3);
+		border-radius: var(--delendai-radius);
+		border: 1px solid var(--delendai-border);
+		background: var(--delendai-bg-soft);
 
 		&[data-theme-preview='light'] { background: #f6f8fa; color: #1f2328; }
 		&[data-theme-preview='dark'] { background: #161b22; color: #d4d4d4; }
@@ -1135,48 +1135,48 @@
 
 	&__preview-actions {
 		display: flex;
-		gap: var(--mcpv-s-2);
-		margin-top: var(--mcpv-s-2);
+		gap: var(--delendai-s-2);
+		margin-top: var(--delendai-s-2);
 	}
 
 	&__actions {
 		display: flex;
-		gap: var(--mcpv-s-2);
+		gap: var(--delendai-s-2);
 		justify-content: flex-end;
-		padding-top: var(--mcpv-s-2);
+		padding-top: var(--delendai-s-2);
 	}
 }
 
-.mcpv-settings-panel__status {
+.delendai-settings-panel__status {
 	margin: 0;
-	padding: var(--mcpv-s-2) var(--mcpv-s-3);
-	border-radius: var(--mcpv-radius-sm);
-	background: var(--mcpv-bg-soft);
-	color: var(--mcpv-fg-muted);
+	padding: var(--delendai-s-2) var(--delendai-s-3);
+	border-radius: var(--delendai-radius-sm);
+	background: var(--delendai-bg-soft);
+	color: var(--delendai-fg-muted);
 	font-size: 12px;
 }
-.mcpv-settings-panel__status[data-error='true'] {
+.delendai-settings-panel__status[data-error='true'] {
 	background: rgba(248, 81, 73, 0.1);
-	color: var(--mcpv-error);
+	color: var(--delendai-error);
 }
 
-.mcpv-button {
+.delendai-button {
 	appearance: none;
-	border: 1px solid var(--mcpv-border);
-	background: var(--mcpv-bg-soft);
-	color: var(--mcpv-fg);
+	border: 1px solid var(--delendai-border);
+	background: var(--delendai-bg-soft);
+	color: var(--delendai-fg);
 	padding: 7px 14px;
 	font: inherit;
-	border-radius: var(--mcpv-radius-sm);
+	border-radius: var(--delendai-radius-sm);
 	cursor: pointer;
-	transition: background var(--mcpv-transition-fast),
-		border-color var(--mcpv-transition-fast);
+	transition: background var(--delendai-transition-fast),
+		border-color var(--delendai-transition-fast);
 
-	&:hover { background: var(--mcpv-bg-card); border-color: var(--mcpv-brand-blue); }
-	&:focus-visible { outline: 2px solid var(--mcpv-brand-blue); outline-offset: 2px; }
+	&:hover { background: var(--delendai-bg-card); border-color: var(--delendai-brand-blue); }
+	&:focus-visible { outline: 2px solid var(--delendai-brand-blue); outline-offset: 2px; }
 
 	&--primary {
-		background: linear-gradient(135deg, var(--mcpv-brand-blue), var(--mcpv-brand-purple));
+		background: linear-gradient(135deg, var(--delendai-brand-blue), var(--delendai-brand-purple));
 		color: #fff;
 		border-color: transparent;
 	}
@@ -1184,71 +1184,71 @@
 }
 
 // Header pickers (theme + language).
-.mcpv-header__lang-picker,
-.mcpv-header__theme-picker {
+.delendai-header__lang-picker,
+.delendai-header__theme-picker {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 	font-size: 12px;
-	color: var(--mcpv-fg-muted);
-	background: var(--mcpv-bg-soft);
-	border: 1px solid var(--mcpv-border);
-	border-radius: var(--mcpv-radius-sm);
+	color: var(--delendai-fg-muted);
+	background: var(--delendai-bg-soft);
+	border: 1px solid var(--delendai-border);
+	border-radius: var(--delendai-radius-sm);
 	padding: 4px 8px;
 
 	& select {
 		appearance: none;
 		border: 0;
 		background: transparent;
-		color: var(--mcpv-fg);
+		color: var(--delendai-fg);
 		font: inherit;
 		padding: 0 4px;
 		cursor: pointer;
 	}
 }
-.mcpv-header__lang-picker span {
+.delendai-header__lang-picker span {
 	font-weight: 600;
 	letter-spacing: 0.5px;
-	color: var(--mcpv-fg);
+	color: var(--delendai-fg);
 }
 
 // Logs source chip bar
-.mcpv-logs__source-bar {
+.delendai-logs__source-bar {
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--mcpv-s-1);
-	padding: var(--mcpv-s-2);
-	background: var(--mcpv-bg-card);
-	border: 1px solid var(--mcpv-border);
-	border-radius: var(--mcpv-radius);
+	gap: var(--delendai-s-1);
+	padding: var(--delendai-s-2);
+	background: var(--delendai-bg-card);
+	border: 1px solid var(--delendai-border);
+	border-radius: var(--delendai-radius);
 }
 
-.mcpv-logs__chip {
+.delendai-logs__chip {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
 	padding: 6px 12px;
 	font-size: 12px;
 	font-weight: 600;
-	background: var(--mcpv-bg-soft);
-	border: 1px solid var(--mcpv-border);
+	background: var(--delendai-bg-soft);
+	border: 1px solid var(--delendai-border);
 	border-radius: 999px;
-	color: var(--mcpv-fg-muted);
+	color: var(--delendai-fg-muted);
 	cursor: pointer;
-	transition: background var(--mcpv-transition-fast),
-		border-color var(--mcpv-transition-fast),
-		color var(--mcpv-transition-fast);
+	transition: background var(--delendai-transition-fast),
+		border-color var(--delendai-transition-fast),
+		color var(--delendai-transition-fast);
 }
-.mcpv-logs__chip:hover {
-	border-color: var(--mcpv-brand-blue);
-	color: var(--mcpv-fg);
+.delendai-logs__chip:hover {
+	border-color: var(--delendai-brand-blue);
+	color: var(--delendai-fg);
 }
-.mcpv-logs__chip[aria-pressed='true'] {
-	background: linear-gradient(135deg, var(--mcpv-brand-blue), var(--mcpv-brand-purple));
+.delendai-logs__chip[aria-pressed='true'] {
+	background: linear-gradient(135deg, var(--delendai-brand-blue), var(--delendai-brand-purple));
 	color: #fff;
 	border-color: transparent;
 }
-.mcpv-logs__chip-icon {
+.delendai-logs__chip-icon {
 	display: inline-grid;
 	place-items: center;
 	width: 18px;
@@ -1256,56 +1256,56 @@
 	font-size: 13px;
 }
 
-.mcpv-status__sparkline {
+.delendai-status__sparkline {
 	display: block;
 	width: 100%;
 	height: 36px;
-	margin-top: var(--mcpv-s-2);
-	color: var(--mcpv-brand-blue);
+	margin-top: var(--delendai-s-2);
+	color: var(--delendai-brand-blue);
 	opacity: 0.85;
 }
 
-.mcpv-logs__detail {
+.delendai-logs__detail {
 	position: relative;
-	padding: var(--mcpv-s-3);
-	border: 1px solid var(--mcpv-border);
-	border-radius: var(--mcpv-radius);
-	background: var(--mcpv-bg-card);
+	padding: var(--delendai-s-3);
+	border: 1px solid var(--delendai-border);
+	border-radius: var(--delendai-radius);
+	background: var(--delendai-bg-card);
 	display: grid;
-	gap: var(--mcpv-s-2);
-	margin-top: var(--mcpv-s-2);
+	gap: var(--delendai-s-2);
+	margin-top: var(--delendai-s-2);
 
 	&[hidden] { display: none; }
 
-	& dt { color: var(--mcpv-fg-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-	& dd { margin: 0; font-family: var(--mcpv-font-mono); font-size: 13px; word-break: break-word; }
+	& dt { color: var(--delendai-fg-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+	& dd { margin: 0; font-family: var(--delendai-font-mono); font-size: 13px; word-break: break-word; }
 
 	& pre {
 		margin: 0;
-		padding: var(--mcpv-s-2);
-		background: var(--mcpv-bg-soft);
-		border-radius: var(--mcpv-radius-sm);
+		padding: var(--delendai-s-2);
+		background: var(--delendai-bg-soft);
+		border-radius: var(--delendai-radius-sm);
 		max-height: 280px;
 		overflow: auto;
 		font-size: 12px;
 	}
 }
-.mcpv-logs__detail-head {
+.delendai-logs__detail-head {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: var(--mcpv-s-2);
+	gap: var(--delendai-s-2);
 
 	& h3 { margin: 0; font-size: 14px; font-weight: 600; }
 }
 
-.mcpv-status__ring {
+.delendai-status__ring {
 	display: grid;
-	gap: var(--mcpv-s-1);
-	padding: var(--mcpv-s-3);
-	background: var(--mcpv-bg-card);
-	border: 1px solid var(--mcpv-border);
-	border-radius: var(--mcpv-radius);
+	gap: var(--delendai-s-1);
+	padding: var(--delendai-s-3);
+	background: var(--delendai-bg-card);
+	border: 1px solid var(--delendai-border);
+	border-radius: var(--delendai-radius);
 	text-align: center;
 
 	& h4 {
@@ -1313,121 +1313,121 @@
 		font-size: 12px;
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
-		color: var(--mcpv-fg-muted);
+		color: var(--delendai-fg-muted);
 	}
 
-	& svg { display: block; margin: 0 auto; width: 64px; height: 64px; color: var(--mcpv-fg); }
+	& svg { display: block; margin: 0 auto; width: 64px; height: 64px; color: var(--delendai-fg); }
 }
 
 // Compact dashboard mode: tighter padding on cards + panels. Opt-in via
-// the .mcpv-panel--compact modifier emitted by the settings panel.
-.mcpv-panel--compact .mcpv-settings__section,
-.mcpv-panel--compact .mcpv-status__panel,
-.mcpv-panel--compact .mcpv-status__kpi,
-.mcpv-panel--compact .mcpv-status__ring,
-.mcpv-panel--compact .mcpv-card {
-	padding: var(--mcpv-s-2);
+// the .delendai-panel--compact modifier emitted by the settings panel.
+.delendai-panel--compact .delendai-settings__section,
+.delendai-panel--compact .delendai-status__panel,
+.delendai-panel--compact .delendai-status__kpi,
+.delendai-panel--compact .delendai-status__ring,
+.delendai-panel--compact .delendai-card {
+	padding: var(--delendai-s-2);
 }
-.mcpv-panel--compact .mcpv-status__kpis {
-	gap: var(--mcpv-s-2);
+.delendai-panel--compact .delendai-status__kpis {
+	gap: var(--delendai-s-2);
 }
 
-.mcpv-logs__search {
+.delendai-logs__search {
 	display: flex;
 	align-items: center;
-	gap: var(--mcpv-s-2);
-	padding: var(--mcpv-s-2);
-	background: var(--mcpv-bg-card);
-	border: 1px solid var(--mcpv-border);
-	border-radius: var(--mcpv-radius);
+	gap: var(--delendai-s-2);
+	padding: var(--delendai-s-2);
+	background: var(--delendai-bg-card);
+	border: 1px solid var(--delendai-border);
+	border-radius: var(--delendai-radius);
 
 	& input {
 		flex: 1;
 		appearance: none;
 		background: transparent;
 		border: 0;
-		color: var(--mcpv-fg);
+		color: var(--delendai-fg);
 		font: inherit;
 		padding: 6px 8px;
 		outline: none;
 	}
 
 	& input:focus-visible {
-		outline: 2px solid var(--mcpv-brand-blue);
+		outline: 2px solid var(--delendai-brand-blue);
 		outline-offset: 2px;
-		border-radius: var(--mcpv-radius-sm);
+		border-radius: var(--delendai-radius-sm);
 	}
 }
 
 // Flag icon inside the language picker — fixed-aspect 24×18 to match the
-// .mcpv-header__lang-flag <svg>.
-.mcpv-header__lang-picker,
-.mcpv-header__theme-picker {
+// .delendai-header__lang-flag <svg>.
+.delendai-header__lang-picker,
+.delendai-header__theme-picker {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 	font-size: 12px;
-	color: var(--mcpv-fg-muted);
-	background: var(--mcpv-bg-soft);
-	border: 1px solid var(--mcpv-border);
-	border-radius: var(--mcpv-radius-sm);
+	color: var(--delendai-fg-muted);
+	background: var(--delendai-bg-soft);
+	border: 1px solid var(--delendai-border);
+	border-radius: var(--delendai-radius-sm);
 	padding: 4px 8px;
-	transition: border-color var(--mcpv-transition-fast),
-		background var(--mcpv-transition-fast);
+	transition: border-color var(--delendai-transition-fast),
+		background var(--delendai-transition-fast);
 
 	&:hover {
-		border-color: var(--mcpv-brand-blue);
-		background: var(--mcpv-bg-card);
+		border-color: var(--delendai-brand-blue);
+		background: var(--delendai-bg-card);
 	}
 
 	& select {
 		appearance: none;
 		border: 0;
 		background: transparent;
-		color: var(--mcpv-fg);
+		color: var(--delendai-fg);
 		font: inherit;
 		padding: 0 4px;
 		cursor: pointer;
 	}
 }
 
-.mcpv-header__lang-flag {
+.delendai-header__lang-flag {
 	display: inline-grid;
 	place-items: center;
 	width: 28px;
 	height: 18px;
 	border-radius: 2px;
 	overflow: hidden;
-	background: var(--mcpv-bg);
-	border: 1px solid var(--mcpv-border);
+	background: var(--delendai-bg);
+	border: 1px solid var(--delendai-border);
 }
 
-.mcpv-header__lang-flag svg {
+.delendai-header__lang-flag svg {
 	width: 100%;
 	height: 100%;
 	display: block;
 }
 
-.mcpv-header__theme-icon {
+.delendai-header__theme-icon {
 	display: inline-grid;
 	place-items: center;
 	width: 18px;
 	height: 18px;
-	color: var(--mcpv-brand-blue);
+	color: var(--delendai-brand-blue);
 	font-size: 16px;
 	line-height: 1;
 }
 
 // Brand badge inside plugin/header cards.
-.mcpv-badge {
+.delendai-badge {
 	display: inline-grid;
 	place-items: center;
-	width: var(--mcpv-badge-size, 24px);
-	height: var(--mcpv-badge-size, 24px);
+	width: var(--delendai-badge-size, 24px);
+	height: var(--delendai-badge-size, 24px);
 	border-radius: 6px;
 	flex: 0 0 auto;
-	color: var(--mcpv-fg);
-	transition: transform var(--mcpv-transition-fast);
+	color: var(--delendai-fg);
+	transition: transform var(--delendai-transition-fast);
 
 	& svg {
 		width: 100%;
@@ -1450,11 +1450,11 @@
 
 // Smooth panel transitions: fade-in + subtle slide up. Exports in
 // every panel so a tab change feels like navigation, not a swap.
-.mcpv-panel {
-	animation: mcpv-panel-in var(--mcpv-transition-medium, 220ms) ease-out;
+.delendai-panel {
+	animation: delendai-panel-in var(--delendai-transition-medium, 220ms) ease-out;
 }
 
-@keyframes mcpv-panel-in {
+@keyframes delendai-panel-in {
 	0% {
 		opacity: 0;
 		transform: translateY(4px);
@@ -1465,91 +1465,91 @@
 	}
 }
 
-.mcpv-panel[data-active='false'] {
+.delendai-panel[data-active='false'] {
 	display: none;
 }
 
 // Legacy tab underline rule removed — the active indicator now lives in
-// the main `.mcpv-tab` block (gradient + scaleX transition). The
+// the main `.delendai-tab` block (gradient + scaleX transition). The
 // selector kept here intentionally for clarity: any stray CSS that
-// targets the old `.mcpv-tab[aria-selected='true']::after` will be a
+// targets the old `.delendai-tab[aria-selected='true']::after` will be a
 // no-op because the new rule is a superset.
 
 // Button transitions.
-.mcpv-button,
-.mcpv-logs__chip {
+.delendai-button,
+.delendai-logs__chip {
 	transition:
-		background var(--mcpv-transition-fast, 120ms),
-		color var(--mcpv-transition-fast, 120ms),
-		border-color var(--mcpv-transition-fast, 120ms),
-		transform var(--mcpv-transition-fast, 120ms),
-		box-shadow var(--mcpv-transition-fast, 120ms);
+		background var(--delendai-transition-fast, 120ms),
+		color var(--delendai-transition-fast, 120ms),
+		border-color var(--delendai-transition-fast, 120ms),
+		transform var(--delendai-transition-fast, 120ms),
+		box-shadow var(--delendai-transition-fast, 120ms);
 }
 
 // Honour the user's "reduced motion" preference at the dashboard level
 // by switching the CSS variable — every animation reads from it.
 :root[data-motion='reduced'] {
-	--mcpv-transition-fast: 0ms;
-	--mcpv-transition-medium: 0ms;
-	--mcpv-transition-slow: 0ms;
+	--delendai-transition-fast: 0ms;
+	--delendai-transition-medium: 0ms;
+	--delendai-transition-slow: 0ms;
 }
 :root {
-	--mcpv-transition-fast: 120ms;
-	--mcpv-transition-medium: 220ms;
-	--mcpv-transition-slow: 320ms;
+	--delendai-transition-fast: 120ms;
+	--delendai-transition-medium: 220ms;
+	--delendai-transition-slow: 320ms;
 }
 
-.mcpv-plugins__name {
+.delendai-plugins__name {
 	display: inline-flex;
 	align-items: center;
-	gap: var(--mcpv-s-2);
+	gap: var(--delendai-s-2);
 }
-.mcpv-plugins__name > code {
+.delendai-plugins__name > code {
 	font-size: 13px;
 }
 
-.mcpv-tabs__action-btn svg,
-.mcpv-header__lang-picker svg,
-.mcpv-header__theme-picker svg {
+.delendai-tabs__action-btn svg,
+.delendai-header__lang-picker svg,
+.delendai-header__theme-picker svg {
 	width: 16px;
 	height: 16px;
 	display: block;
 	color: currentColor;
 	fill: currentColor;
 }
-.mcpv-tabs__action-btn {
-	color: var(--mcpv-fg-muted);
-	transition: color var(--mcpv-transition-fast),
-		transform var(--mcpv-transition-fast);
+.delendai-tabs__action-btn {
+	color: var(--delendai-fg-muted);
+	transition: color var(--delendai-transition-fast),
+		transform var(--delendai-transition-fast);
 }
-.mcpv-tabs__action-btn:hover {
-	color: var(--mcpv-brand-blue);
+.delendai-tabs__action-btn:hover {
+	color: var(--delendai-brand-blue);
 	transform: scale(1.1);
 }
 
-.mcpv-help {
+.delendai-help {
 	display: grid;
-	gap: var(--mcpv-s-2);
+	gap: var(--delendai-s-2);
 	max-width: 880px;
 }
 
-.mcpv-help__entry {
-	padding: var(--mcpv-s-3);
-	background: var(--mcpv-bg-card);
-	border: 1px solid var(--mcpv-border);
-	border-radius: var(--mcpv-radius);
-	transition: border-color var(--mcpv-transition-fast);
+.delendai-help__entry {
+	padding: var(--delendai-s-3);
+	background: var(--delendai-bg-card);
+	border: 1px solid var(--delendai-border);
+	border-radius: var(--delendai-radius);
+	transition: border-color var(--delendai-transition-fast);
 
 	& > summary {
 		display: flex;
 		align-items: baseline;
-		gap: var(--mcpv-s-2);
+		gap: var(--delendai-s-2);
 		cursor: pointer;
 		user-select: none;
 		list-style: none;
 
 		& strong {
-			color: var(--mcpv-brand-blue);
+			color: var(--delendai-brand-blue);
 			font-size: 14px;
 		}
 
@@ -1563,45 +1563,45 @@
 			display: inline-grid;
 			place-items: center;
 			width: 14px;
-			color: var(--mcpv-fg-muted);
-			transition: transform var(--mcpv-transition-fast);
+			color: var(--delendai-fg-muted);
+			transition: transform var(--delendai-transition-fast);
 		}
 	}
 
 	&[open] > summary::before { transform: rotate(90deg); }
 
 	& > p {
-		margin: var(--mcpv-s-2) 0 0;
+		margin: var(--delendai-s-2) 0 0;
 		padding-left: 22px;
-		color: var(--mcpv-fg-muted);
+		color: var(--delendai-fg-muted);
 		font-size: 13px;
 		line-height: 1.5;
 	}
 
-	&:hover { border-color: var(--mcpv-brand-blue); }
+	&:hover { border-color: var(--delendai-brand-blue); }
 }
 
-.mcpv-header[data-connection='lost'] .mcpv-header__logo {
+.delendai-header[data-connection='lost'] .delendai-header__logo {
 	filter: hue-rotate(-25deg) saturate(1.4);
 	opacity: 0.6;
 }
-.mcpv-header[data-connection='lost'] .mcpv-header__name {
-	color: var(--mcpv-error);
+.delendai-header[data-connection='lost'] .delendai-header__name {
+	color: var(--delendai-error);
 }
-.mcpv-header__logo {
-	transition: filter var(--mcpv-transition-medium),
-		opacity var(--mcpv-transition-medium),
-		transform var(--mcpv-transition-medium);
+.delendai-header__logo {
+	transition: filter var(--delendai-transition-medium),
+		opacity var(--delendai-transition-medium),
+		transform var(--delendai-transition-medium);
 }
-.mcpv-header__logo:hover {
+.delendai-header__logo:hover {
 	transform: scale(1.05) rotate(-2deg);
 }
 
-.mcpv-settings-panel__status {
-	animation: mcpv-status-toast var(--mcpv-transition-medium) ease-out;
+.delendai-settings-panel__status {
+	animation: delendai-status-toast var(--delendai-transition-medium) ease-out;
 }
 
-@keyframes mcpv-status-toast {
+@keyframes delendai-status-toast {
 	0% {
 		opacity: 0;
 		transform: translateY(-4px);
@@ -1612,11 +1612,11 @@
 	}
 }
 
-.mcpv-settings-panel__status[data-error='true'] {
-	animation: mcpv-status-toast-shake var(--mcpv-transition-medium) ease-out;
+.delendai-settings-panel__status[data-error='true'] {
+	animation: delendai-status-toast-shake var(--delendai-transition-medium) ease-out;
 }
 
-@keyframes mcpv-status-toast-shake {
+@keyframes delendai-status-toast-shake {
 	0%, 100% { transform: translateX(0); }
 	25% { transform: translateX(-3px); }
 	75% { transform: translateX(3px); }

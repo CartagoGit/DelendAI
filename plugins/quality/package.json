@@ -2,7 +2,7 @@
 	"name": "@delendai/quality",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Quality-gate runner plugin for @delendai/core: executes the project's validation commands (lint/test/build/typecheck) per scope and returns a structured pass/fail report. Load with `mcp-vertex --plugins=quality`.",
+	"description": "Quality-gate runner plugin for @delendai/core: executes the project's validation commands (lint/test/build/typecheck) per scope and returns a structured pass/fail report. Load with `delendai --plugins=quality`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

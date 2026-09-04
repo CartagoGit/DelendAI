@@ -68,7 +68,7 @@ export const runHumanCli = async (
 		process.stderr.write(
 			`Unknown command: ${parsed.commandPath.join(' ')}\n`,
 		);
-		process.stderr.write('Run `mcpv --help`.\n');
+		process.stderr.write('Run `delendai --help`.\n');
 		return EXIT_CODE.USAGE;
 	}
 
@@ -90,7 +90,7 @@ export const runHumanCli = async (
 		// where to write (see noop-context.factory.ts) — they never look
 		// at `ctx.globals.workspace`. Passing the raw `cwd` (the CLI
 		// process's own process.cwd()) here silently ignored `--workspace`,
-		// so `mcpv init:default --workspace=<other-dir>` bootstrapped/
+		// so `delendai init:default --workspace=<other-dir>` bootstrapped/
 		// overwrote files in whatever directory the command happened to
 		// be run from instead of the intended target — a real data-loss
 		// risk caught live. `parsed.globals.workspace` already resolves
@@ -126,7 +126,7 @@ export const runHumanCli = async (
 			//     because a command with NO bespoke human output and
 			//     no `--json` used to be entirely silent (exit 0, zero
 			//     stdout/stderr) — indistinguishable from a hang for a
-			//     human running e.g. `mcpv status` the obvious way
+			//     human running e.g. `delendai status` the obvious way
 			//     (a00087). Pretty JSON on stdout is a strictly better
 			//     default than nothing.
 			//

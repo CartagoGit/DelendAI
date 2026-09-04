@@ -189,7 +189,7 @@ const buildRunQualityToolRegistration = (
 				if (names.length === 0) {
 					return toolError(
 						'no quality scopes configured',
-						'Add scripts to package.json, a validationMatrix to mcp-vertex.config.json, or `scopes` to the plugin options.',
+						'Add scripts to package.json, a validationMatrix to delendai.config.json, or `scopes` to the plugin options.',
 					);
 				}
 				const scope =
@@ -229,7 +229,7 @@ const buildRunQualityToolRegistration = (
  * (lint/test/build/typecheck) per scope and returns a structured
  * pass/fail report. Commands come from plugin options, the config's
  * validationMatrix, or package.json scripts. Load with
- * `mcp-vertex --plugins=quality`.
+ * `delendai --plugins=quality`.
  */
 export default definePlugin({
 	name: 'quality',
@@ -306,7 +306,7 @@ export default definePlugin({
 						`Tools: \`${ctx.namespacePrefix}_get_quality_scopes\` (list), \`${ctx.namespacePrefix}_run_quality\` (execute one scope), \`${ctx.namespacePrefix}_quality_run_all\` (execute every configured scope, one aggregated report).`,
 						'',
 						'- Before closing work, run the relevant scope and ensure it passes.',
-						'- Scopes come from plugin options → mcp-vertex.config.json validationMatrix → package.json scripts.',
+						'- Scopes come from plugin options → delendai.config.json validationMatrix → package.json scripts.',
 						'- `run_quality` executes real commands; read the per-command `ok`/`tail` to fix failures.',
 					].join('\n'),
 				},

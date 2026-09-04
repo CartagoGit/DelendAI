@@ -18,15 +18,15 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mcpv-setup` / `mcpv-setup__*` for the wizard
- *   and `mcpv-status-banner` / `mcpv-status-banner--{ok,warn}` for
+ * - Class namespace: `delendai-setup` / `delendai-setup__*` for the wizard
+ *   and `delendai-status-banner` / `delendai-status-banner--{ok,warn}` for
  *   the status banner. Legacy `setup__*` / `settings__status*`
  *   selectors are kept in the companion SCSS via `@extend`, so
  *   the existing dev preview keeps matching during the
  *   deprecation window.
  * - `suggestion` is shown as the hint paragraph at the top of
  *   the wizard; it is the host's free-form text describing what
- *   the user should do next ("run `bunx mcp-vertex init`", etc.).
+ *   the user should do next ("run `bunx delendai init`", etc.).
  * - `signals` is the detection list — each row is one
  *   "is `<path>` present?" check, rendered with a ✓ or ·
  *   glyph plus the absolute path and an optional detail
@@ -34,7 +34,7 @@
  * - The CTA label is computed from `kind`:
  *   - `configured`    → "Re-install (idempotent)"
  *   - `partial`       → "Finish setup"
- *   - `unconfigured`  → "Install mcp-vertex here"
+ *   - `unconfigured`  → "Install delendai here"
  *   Hosts that want different copy pass an explicit `ctaLabel`.
  */
 import { escapeAttr } from '../../lib/escape';
@@ -64,10 +64,10 @@ export interface IRenderSetupWizardOptions {
 const DEFAULT_CTA: Readonly<Record<SetupStatusKind, string>> = {
 	configured: 'Re-install (idempotent)',
 	partial: 'Finish setup',
-	unconfigured: 'Install mcp-vertex here',
+	unconfigured: 'Install delendai here',
 };
 
-const DEFAULT_HEADING = "mcp-vertex isn't fully wired in this workspace";
+const DEFAULT_HEADING = "delendai isn't fully wired in this workspace";
 
 export const renderSetupWizard = (
 	status: ISetupWizardStatus,
@@ -78,27 +78,27 @@ export const renderSetupWizard = (
 	const signalsHtml = status.signals
 		.map(
 			(s) =>
-				`<li class="mcpv-setup__signal setup__signal ${s.present ? 'is-on' : 'is-off'}">
-					<span class="mcpv-setup__signal-icon setup__signal-icon" aria-hidden="true">${s.present ? '✓' : '·'}</span>
+				`<li class="delendai-setup__signal setup__signal ${s.present ? 'is-on' : 'is-off'}">
+					<span class="delendai-setup__signal-icon setup__signal-icon" aria-hidden="true">${s.present ? '✓' : '·'}</span>
 					<code>${escapeAttr(s.path)}</code>
-					${s.detail ? `<span class="mcpv-setup__signal-detail setup__signal-detail">— ${escapeAttr(s.detail)}</span>` : ''}
+					${s.detail ? `<span class="delendai-setup__signal-detail setup__signal-detail">— ${escapeAttr(s.detail)}</span>` : ''}
 				</li>`,
 		)
 		.join('');
 
-	return `<section class="mcpv-setup setup" data-kind="${status.kind}">
-			<header class="mcpv-setup__head setup__head">
+	return `<section class="delendai-setup setup" data-kind="${status.kind}">
+			<header class="delendai-setup__head setup__head">
 				<h1>${escapeAttr(heading)}</h1>
-				<p class="mcpv-setup__hint setup__hint">${escapeAttr(status.suggestion)}</p>
+				<p class="delendai-setup__hint setup__hint">${escapeAttr(status.suggestion)}</p>
 			</header>
-			<aside class="mcpv-setup__signals setup__signals" aria-label="Detection signals">
+			<aside class="delendai-setup__signals setup__signals" aria-label="Detection signals">
 				<h2>Detection</h2>
 				<ul>${signalsHtml}</ul>
 			</aside>
-			<footer class="mcpv-setup__cta setup__cta">
-				<button type="button" id="setup-install" class="mcpv-setup__primary setup__primary">${escapeAttr(ctaLabel)}</button>
-				<button type="button" id="setup-refresh" class="mcpv-setup__secondary setup__secondary">Re-check</button>
-				<span class="mcpv-setup__status setup__status" id="setup-status" role="status" aria-live="polite"></span>
+			<footer class="delendai-setup__cta setup__cta">
+				<button type="button" id="setup-install" class="delendai-setup__primary setup__primary">${escapeAttr(ctaLabel)}</button>
+				<button type="button" id="setup-refresh" class="delendai-setup__secondary setup__secondary">Re-check</button>
+				<span class="delendai-setup__status setup__status" id="setup-status" role="status" aria-live="polite"></span>
 			</footer>
 		</section>`;
 };
@@ -120,8 +120,8 @@ export const renderStatusBanner = (
 	const okLabel = options.okLabel ?? DEFAULT_OK;
 	if (status.kind === 'configured') {
 		return (
-			`<p class="mcpv-status-banner mcpv-status-banner--ok settings__status settings__status--ok">` +
-			`<span class="mcpv-setup__signal-icon setup__signal-icon">✓</span>` +
+			`<p class="delendai-status-banner delendai-status-banner--ok settings__status settings__status--ok">` +
+			`<span class="delendai-setup__signal-icon setup__signal-icon">✓</span>` +
 			` ${okLabel}` +
 			`</p>`
 		);
@@ -131,8 +131,8 @@ export const renderStatusBanner = (
 		options.warnPrefix ??
 		`Workspace isn't fully wired (${status.kind}). ${verb} the setup below to drop the missing files.`;
 	return (
-		`<p class="mcpv-status-banner mcpv-status-banner--warn settings__status settings__status--warn">` +
-		`<span class="mcpv-setup__signal-icon setup__signal-icon">!</span>` +
+		`<p class="delendai-status-banner delendai-status-banner--warn settings__status settings__status--warn">` +
+		`<span class="delendai-setup__signal-icon setup__signal-icon">!</span>` +
 		` ${escapeAttr(prefix)}` +
 		`</p>`
 	);

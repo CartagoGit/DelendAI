@@ -2,7 +2,7 @@
  * options.ts — ICommitPolicyOptions + its zod schema.
  *
  * The plugin's option tree is the contract between the host config
- * (`mcp-vertex.config.json#plugins.commit-policy.options`) and the
+ * (`delendai.config.json#plugins.commit-policy.options`) and the
  * engine. Every branch is a discriminated union so the resolver
  * knows exactly which other branches are live at runtime — no
  * `if (options.identity.mode === ...)` chains sprinkled across the

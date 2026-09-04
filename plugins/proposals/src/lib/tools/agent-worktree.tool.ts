@@ -22,7 +22,7 @@ export interface IAgentWorktreeToolOptions {
 	 * When `false`/absent the tool stays registered but returns a
 	 * structured `ok: false` error and never invokes the engine. Default
 	 * off — a host opts in via `--agent-worktree=true` or
-	 * `agentWorktree: true` in `mcp-vertex.config.json`.
+	 * `agentWorktree: true` in `delendai.config.json`.
 	 */
 	readonly enabled?: boolean | undefined;
 }
@@ -33,7 +33,7 @@ export interface IAgentWorktreeToolOptions {
  * assert byte-identical text (f00052 S5/S7).
  */
 export const AGENT_WORKTREE_DISABLED_REASON =
-	'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in mcp-vertex.config.json to enable.';
+	'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in delendai.config.json to enable.';
 
 const WORKTREE_ENTRY_OUTPUT_SCHEMA = z.object({
 	path: z.string(),

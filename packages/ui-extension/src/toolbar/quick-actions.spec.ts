@@ -29,7 +29,7 @@ describe('defaultQuickActions', async () => {
 			expect(a.id).toMatch(/^[a-z]+\.[a-zA-Z]+$/);
 			expect(a.labelKey.length).toBeGreaterThan(0);
 			expect(a.icon.length).toBeGreaterThan(0);
-			expect(a.command.startsWith('mcp-vertex.')).toBe(true);
+			expect(a.command.startsWith('delendai.')).toBe(true);
 			expect(QUICK_ACTION_CATEGORIES).toContain(a.category);
 		}
 	});

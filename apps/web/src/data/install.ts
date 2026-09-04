@@ -1,9 +1,9 @@
-// Install matrix data: how to run @mcp-vertex with each package manager, and
+// Install matrix data: how to run @delendai with each package manager, and
 // where the MCP config lives for each IDE/agent. Verified against each tool's
 // 2026 docs. The published package name is the single source of truth here.
 
 export const PACKAGE = '@delendai/core';
-export const SERVER_NAME = 'mcp-vertex';
+export const SERVER_NAME = 'delendai';
 
 export interface IPackageManager {
 	readonly id: string;
@@ -80,7 +80,7 @@ export const packageManagers: readonly IPackageManager[] = [
 		args: [PACKAGE],
 		init: `bunx ${PACKAGE} init`,
 		run: `bunx ${PACKAGE} --check`,
-		note: 'mcp-vertex itself is built with bun.',
+		note: 'delendai itself is built with bun.',
 		dummiesKey: 'bun',
 	},
 	{
@@ -95,7 +95,7 @@ export const packageManagers: readonly IPackageManager[] = [
 ];
 
 /**
- * A target ecosystem / runtime a junior installs mcp-vertex into. mcp-vertex
+ * A target ecosystem / runtime a junior installs delendai into. delendai
  * ships as a Node package; non-Node ecosystems reach it through their idiomatic
  * "run an npm CLI" bridge (Python via `uv`/`pipx` wrappers around `npx`, PHP via
  * Composer scripts / Artisan), so every packager below ultimately spawns the
@@ -118,7 +118,7 @@ export interface IEcosystem {
 export type EcosystemKey = 'node' | 'python' | 'php';
 
 /**
- * Python packagers. mcp-vertex is not published to PyPI; Python developers run
+ * Python packagers. delendai is not published to PyPI; Python developers run
  * it through the Node toolchain their environment already has, or through `uv`,
  * which can execute an npm package without a global Node install. The commands
  * stay honest: they all end up running the same `@delendai/core` stdio server.
@@ -131,7 +131,7 @@ const pythonPackagers: readonly IPackageManager[] = [
 		args: ['-y', PACKAGE],
 		init: `npx -y ${PACKAGE} init`,
 		run: `npx -y ${PACKAGE} --check`,
-		note: 'mcp-vertex is a Node CLI; pip users typically already have Node + npx available.',
+		note: 'delendai is a Node CLI; pip users typically already have Node + npx available.',
 		dummiesKey: 'pip',
 	},
 	{
@@ -141,7 +141,7 @@ const pythonPackagers: readonly IPackageManager[] = [
 		args: ['-y', PACKAGE],
 		init: `pipx run --spec nodejs-bin npx -y ${PACKAGE} init`,
 		run: `pipx run --spec nodejs-bin npx -y ${PACKAGE} --check`,
-		note: 'pipx runs CLI tools in throwaway environments; here it provisions Node, then npx fetches mcp-vertex.',
+		note: 'pipx runs CLI tools in throwaway environments; here it provisions Node, then npx fetches delendai.',
 		dummiesKey: 'pipx',
 	},
 	{
@@ -151,7 +151,7 @@ const pythonPackagers: readonly IPackageManager[] = [
 		args: ['-y', PACKAGE],
 		init: `uvx --from nodejs-bin npx -y ${PACKAGE} init`,
 		run: `uvx --from nodejs-bin npx -y ${PACKAGE} --check`,
-		note: 'uv (uvx) is the fast modern Python runner; it can pull a Node shim and run mcp-vertex with no global install.',
+		note: 'uv (uvx) is the fast modern Python runner; it can pull a Node shim and run delendai with no global install.',
 		dummiesKey: 'uv',
 	},
 	{
@@ -168,7 +168,7 @@ const pythonPackagers: readonly IPackageManager[] = [
 
 /**
  * PHP packagers. Composer is PHP's package manager; Artisan is the Laravel
- * project's command runner. Neither installs mcp-vertex itself — both wrap the
+ * project's command runner. Neither installs delendai itself — both wrap the
  * same Node CLI so a Laravel/PHP team can register the MCP server from the
  * tooling they already script their projects with.
  */
@@ -197,7 +197,7 @@ const phpPackagers: readonly IPackageManager[] = [
 
 /**
  * Single source of truth for the icon+name language selector. Order = tab order.
- * Node first (mcp-vertex’s native runtime), then Python and PHP.
+ * Node first (delendai’s native runtime), then Python and PHP.
  */
 export const ecosystems: readonly IEcosystem[] = [
 	{

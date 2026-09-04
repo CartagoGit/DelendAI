@@ -168,7 +168,7 @@ const site = {
 		troubleshooting: 'Dépannage',
 	},
 	hero: {
-		title: { a: 'Le ', b: 'MCP Vertex', c: ' agnostique' },
+		title: { a: 'Le ', b: 'DelendAI', c: ' agnostique' },
 		subheader:
 			'Un cœur de serveur MCP + chargeur de plugins pour tout projet.',
 		tagline:
@@ -183,7 +183,7 @@ const site = {
 	},
 	concept: {
 		title: 'Un petit cœur, beaucoup de plugins',
-		body: "mcp-vertex est le cœur hermétique : enregistrement déterministe des outils, chemins de workspace injectés, un chargeur de plugins en CLI et une surface d'outils mesurée en tokens. Tout ce qui est spécifique au domaine est un plugin — ne chargez que ce dont vous avez besoin, sous n'importe quel hôte ou modèle.",
+		body: "delendai est le cœur hermétique : enregistrement déterministe des outils, chemins de workspace injectés, un chargeur de plugins en CLI et une surface d'outils mesurée en tokens. Tout ce qui est spécifique au domaine est un plugin — ne chargez que ce dont vous avez besoin, sous n'importe quel hôte ou modèle.",
 		f1: {
 			t: 'Agnostique au projet',
 			b: "Aucun code métier dans le cœur. Le même plugin se comporte de façon identique sous n'importe quel hôte ou modèle.",
@@ -203,13 +203,13 @@ const site = {
 	},
 	install: {
 		title: 'Installer & lancer',
-		lead: 'Ajoutez-le et pointez votre client MCP vers le binaire mcp-vertex :',
+		lead: 'Ajoutez-le et pointez votre client MCP vers le binaire delendai :',
 		verify: "Vérifiez qu'il démarre",
 		addto: 'Ajoutez-le à votre IDE / agent',
 		presets: 'Presets :',
 		oneCmd: 'Une commande · tout IDE',
 		oneCmdNote:
-			'Détecte votre IDE et ajoute mcp-vertex — sans toucher à vos autres serveurs MCP.',
+			'Détecte votre IDE et ajoute delendai — sans toucher à vos autres serveurs MCP.',
 		config: "Choisissez un preset (minimal · standard · swarm · full) ou listez les plugins. Lancez avec --check pour l'autodiagnostic.",
 		excludeHelp:
 			"Retirez des plugins de l'ensemble résolu avec --exclude-plugins= (alias : --excludePlugins=). Utile pour exclure un plugin d'un preset sans le forker — p. ex. --preset=swarm --exclude-plugins=notification pour une session à un seul agent.",
@@ -244,7 +244,7 @@ const site = {
 		faqQ2: 'Mon IDE n’est pas listé — que faire ?',
 		faqA2: 'Tout IDE qui accepte un serveur MCP stdio fonctionne. Prenez le JSON de VS Code, changez le chemin du fichier pour celui attendu par votre IDE, et enregistrez la même commande + arguments.',
 		faqQ3: 'Puis-je exécuter plusieurs presets à la fois ?',
-		faqA3: 'Non — un serveur, un preset. Pour des ensembles de plugins différents par projet, déposez un `mcp-vertex.config.json` dans ce projet et le chargeur le lit en premier.',
+		faqA3: 'Non — un serveur, un preset. Pour des ensembles de plugins différents par projet, déposez un `delendai.config.json` dans ce projet et le chargeur le lit en premier.',
 	},
 	tools: {
 		title: 'Outils',
@@ -271,7 +271,7 @@ const site = {
 			title: "Coût d'orientation · mesuré en direct",
 			note: "Tokens du texte que voit un agent (≈4 octets/token), mesurés en direct sur le protocole avec proposals+memory. La ligne de base est une estimation illustrative d'une orientation manuelle — pas la mesure d'un outil tiers.",
 		},
-		baseline: 'sans mcp-vertex (à la main · estimation)',
+		baseline: 'sans delendai (à la main · estimation)',
 	},
 	plugins: {
 		title: 'Plugins',
@@ -352,7 +352,7 @@ const site = {
 	},
 	firstFiveMinutes: {
 		title: 'Les 5 premières minutes',
-		lead: 'Trois guides de démarrage à copier-coller. Choisissez celui qui correspond à la façon dont vous exécutez mcp-vertex.',
+		lead: 'Trois guides de démarrage à copier-coller. Choisissez celui qui correspond à la façon dont vous exécutez delendai.',
 		profileTabBunNode: 'Bun / Node',
 		profileTabVscode: 'VS Code / Copilot',
 		profileTabClaude: 'Claude Code',
@@ -361,20 +361,20 @@ const site = {
 			intro: "Aucune intégration d'éditeur nécessaire : lancez le host server depuis un terminal et pointez n'importe quel client MCP vers son transport stdio.",
 			steps: [
 				'Installer : `bun add @delendai/core` (ou `npm install @delendai/core`).',
-				'Lancer : `bunx mcp-vertex --preset=standard` (ou `npx mcp-vertex --preset=standard`).',
+				'Lancer : `bunx delendai --preset=standard` (ou `npx delendai --preset=standard`).',
 				"Vérifier : le processus affiche la liste des plugins chargés et attend sur stdio — Ctrl+C pour l'arrêter.",
 				'Pointez la config de votre client MCP vers le binaire avec `--preset=minimal|standard|swarm|full` (voir Installer pour la liste complète des flags).',
-				'Appelez `mcp-vertex_overview { compact: true }` en premier — il vous dit quoi faire ensuite.',
+				'Appelez `delendai_overview { compact: true }` en premier — il vous dit quoi faire ensuite.',
 			],
 		},
 		vscode: {
 			title: 'VS Code / GitHub Copilot',
-			intro: "L'installateur en une commande détecte VS Code et ajoute mcp-vertex à votre liste de serveurs MCP sans toucher aux serveurs existants.",
+			intro: "L'installateur en une commande détecte VS Code et ajoute delendai à votre liste de serveurs MCP sans toucher aux serveurs existants.",
 			steps: [
 				"Lancez l'installateur en une commande depuis la page Installer (détecte votre IDE automatiquement).",
 				'Rechargez la fenêtre (`Developer: Reload Window`) pour que Copilot prenne en compte le nouveau serveur.',
-				"Ouvrez le panneau de chat Copilot et sélectionnez l'agent `mcp-vertex` dans le sélecteur d'agents.",
-				'Demandez-lui d’appeler `mcp-vertex_overview` — il doit indiquer le preset chargé et une action recommandée.',
+				"Ouvrez le panneau de chat Copilot et sélectionnez l'agent `delendai` dans le sélecteur d'agents.",
+				'Demandez-lui d’appeler `delendai_overview` — il doit indiquer le preset chargé et une action recommandée.',
 				'Si le serveur n’apparaît pas, consultez Dépannage → "MCP server not detected".',
 			],
 		},
@@ -384,16 +384,16 @@ const site = {
 			steps: [
 				"Lancez l'installateur en une commande — il détecte Claude Code et écrit `.mcp.json`.",
 				'Redémarrez Claude Code (ou lancez `/mcp` pour recharger les serveurs) pour qu’il prenne en compte la nouvelle entrée.',
-				'Dans une session neuve, les fichiers toujours chargés `AGENTS.md` + `CLAUDE.md` pointent déjà vers `mcp-vertex_overview` comme premier appel.',
-				'Confirmez avec `mcp-vertex_overview { compact: true }` — le champ `recommendedNextAction` vous dit quoi faire ensuite.',
-				'Pour les sessions multi-agent, lisez le skill `mcp-vertex-proposal-swarm-runner` avant de réclamer un slice.',
+				'Dans une session neuve, les fichiers toujours chargés `AGENTS.md` + `CLAUDE.md` pointent déjà vers `delendai_overview` comme premier appel.',
+				'Confirmez avec `delendai_overview { compact: true }` — le champ `recommendedNextAction` vous dit quoi faire ensuite.',
+				'Pour les sessions multi-agent, lisez le skill `delendai-proposal-swarm-runner` avant de réclamer un slice.',
 			],
 		},
 		nextSteps: 'Où aller ensuite',
 		nextToolsCta: 'Parcourir tous les outils',
 		nextTroubleshootingCta: 'Quelque chose ne fonctionne pas ? Dépannage',
 		overviewHint:
-			'Après le démarrage du serveur, appelez mcp-vertex_overview avec compact: true ; recommendedNextAction indique précisément la prochaine action à l’agent.',
+			'Après le démarrage du serveur, appelez delendai_overview avec compact: true ; recommendedNextAction indique précisément la prochaine action à l’agent.',
 	},
 	troubleshooting: {
 		title: 'Dépannage',
@@ -473,16 +473,16 @@ const extension = {
 	// x00103: accessibility labels for the shared components
 	a11yCloseToast: 'Fermer',
 	a11yLanguageSelector: 'Langue',
-	overviewTitle: 'Vue d ensemble mcp-vertex',
-	refresh: 'mcp-vertex: Actualiser',
-	runValidation: 'mcp-vertex: Lancer la validation',
-	openProposalBoard: 'mcp-vertex: Ouvrir le tableau des propositions',
-	showMetrics: 'mcp-vertex: Afficher les metriques',
-	toolsView: 'Outils mcp-vertex',
-	proposalsView: 'Propositions mcp-vertex',
-	statusTooltip: 'statut mcp-vertex',
-	openDashboard: 'mcp-vertex: Ouvrir le tableau de bord',
-	openDocs: 'mcp-vertex: Ouvrir la documentation',
+	overviewTitle: 'Vue d ensemble delendai',
+	refresh: 'delendai: Actualiser',
+	runValidation: 'delendai: Lancer la validation',
+	openProposalBoard: 'delendai: Ouvrir le tableau des propositions',
+	showMetrics: 'delendai: Afficher les metriques',
+	toolsView: 'Outils delendai',
+	proposalsView: 'Propositions delendai',
+	statusTooltip: 'statut delendai',
+	openDashboard: 'delendai: Ouvrir le tableau de bord',
+	openDocs: 'delendai: Ouvrir la documentation',
 	tabOverview: 'Apercu',
 	tabMetrics: 'Metriques',
 	tabTokens: 'Tokens',
@@ -501,13 +501,13 @@ const extension = {
 	kpiWall: 'Temps total',
 	kpiAgents: 'Agents',
 	refreshDashboard: 'Actualiser le tableau de bord',
-	docsUrlRejected: 'mcp-vertex: URL de docs rejetee',
-	openKnowledge: 'mcp-vertex: Ouvrir le navigateur de connaissances',
-	toolSearch: 'mcp-vertex: Rechercher des outils',
-	restartServer: 'mcp-vertex: Redemarrer le serveur MCP',
-	openSettings: 'mcp-vertex: Ouvrir les reglages',
-	memorySave: 'mcp-vertex: Enregistrer une note memoire',
-	memoryForget: 'mcp-vertex: Oublier une note memoire',
+	docsUrlRejected: 'delendai: URL de docs rejetee',
+	openKnowledge: 'delendai: Ouvrir le navigateur de connaissances',
+	toolSearch: 'delendai: Rechercher des outils',
+	restartServer: 'delendai: Redemarrer le serveur MCP',
+	openSettings: 'delendai: Ouvrir les reglages',
+	memorySave: 'delendai: Enregistrer une note memoire',
+	memoryForget: 'delendai: Oublier une note memoire',
 	tabHealth: 'Sante',
 	healthHealthy: 'Sain',
 	healthDegraded: 'Degrade',
@@ -515,13 +515,13 @@ const extension = {
 	healthStale: 'Agents inactifs',
 	healthQueue: 'File',
 	serverRestartHint:
-		'mcp-vertex: veuillez redemarrer l extension pour relancer le serveur MCP.',
-	openLogsToday: "mcp-vertex : ouvrir le journal d'aujourd'hui",
-	gitStatus: 'mcp-vertex : état Git',
-	openMemory: 'mcp-vertex : ouvrir la recherche mémoire',
-	notificationTest: 'mcp-vertex : tester la notification',
-	depsCheck: 'mcp-vertex : vérifier les dépendances',
-	webFetch: 'mcp-vertex : récupérer une page web',
+		'delendai: veuillez redemarrer l extension pour relancer le serveur MCP.',
+	openLogsToday: "delendai : ouvrir le journal d'aujourd'hui",
+	gitStatus: 'delendai : état Git',
+	openMemory: 'delendai : ouvrir la recherche mémoire',
+	notificationTest: 'delendai : tester la notification',
+	depsCheck: 'delendai : vérifier les dépendances',
+	webFetch: 'delendai : récupérer une page web',
 	toolbarCategoryProposals: 'Propositions',
 	toolbarCategoryKnowledge: 'Connaissance',
 	toolbarCategoryLogs: 'Journaux',
@@ -532,7 +532,7 @@ const extension = {
 	toolbarCategoryNotification: 'Notifications',
 	toolbarCategoryDeps: 'Dépendances',
 	toolbarCategoryTools: 'Outils',
-	setupGithub: 'mcp-vertex : Configurer les issues GitHub',
+	setupGithub: 'delendai : Configurer les issues GitHub',
 };
 
 const dev = {
@@ -540,11 +540,11 @@ const dev = {
 	quickStartLede:
 		'Une orientation unique. Le workspace est configuré et le tableau de bord récupère maintenant les données réelles — voici ce que fait chaque onglet.',
 	quickStartDismiss: 'Fermer le démarrage rapide',
-	firstRunHeading: 'Bienvenue dans mcp-vertex',
+	firstRunHeading: 'Bienvenue dans delendai',
 	firstRunLede:
-		"Cette extension fournit un tableau de bord, des paramètres et un panneau d'outils pour le serveur MCP mcp-vertex. Le serveur MCP n'est pas encore installé dans ce workspace — une fois installé, le tableau de bord passera à la récupération de données réelles.",
+		"Cette extension fournit un tableau de bord, des paramètres et un panneau d'outils pour le serveur MCP delendai. Le serveur MCP n'est pas encore installé dans ce workspace — une fois installé, le tableau de bord passera à la récupération de données réelles.",
 	firstRunSkip: 'Ignorer — afficher quand même le tableau de bord',
-	firstRunInstall: 'Installer mcp-vertex dans ce workspace',
+	firstRunInstall: 'Installer delendai dans ce workspace',
 };
 
 const dict: ILangDict = {

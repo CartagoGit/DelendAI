@@ -8,9 +8,9 @@ const categories = {
 		{ id: 'proposals_state_machine', title: 'Proposal state machine' },
 		{ id: 'proposals_lifecycle', title: 'Proposal lifecycle' },
 	],
-	'mcp-vertex': [
-		{ id: 'mcp-vertex_overview', title: 'Overview' },
-		{ id: 'mcp-vertex_metrics', title: 'Metrics' },
+	delendai: [
+		{ id: 'delendai_overview', title: 'Overview' },
+		{ id: 'delendai_metrics', title: 'Metrics' },
 	],
 };
 
@@ -19,13 +19,13 @@ describe('renderKnowledgeNavigator', async () => {
 		const html = renderKnowledgeNavigator({
 			categories,
 			lang: dictsByLang.en,
-			onOpenEntry: 'mcp-vertex.openKnowledgeEntry',
-			onSearch: 'mcp-vertex.searchKnowledge',
+			onOpenEntry: 'delendai.openKnowledgeEntry',
+			onSearch: 'delendai.searchKnowledge',
 		});
 		expect(html).toContain('data-category="proposals"');
-		expect(html).toContain('data-category="mcp-vertex"');
-		// Entries are listed in sorted order (mcp-vertex < proposals).
-		const mcpIx = html.indexOf('data-category="mcp-vertex"');
+		expect(html).toContain('data-category="delendai"');
+		// Entries are listed in sorted order (delendai < proposals).
+		const mcpIx = html.indexOf('data-category="delendai"');
 		const propIx = html.indexOf('data-category="proposals"');
 		expect(mcpIx).toBeLessThan(propIx);
 	});
@@ -52,7 +52,7 @@ describe('renderKnowledgeNavigator', async () => {
 			onOpenEntry: 'cmd',
 			onSearch: 'cmd',
 		});
-		expect(html).toContain('<span class="mcpv-kn-count">2</span>');
+		expect(html).toContain('<span class="delendai-kn-count">2</span>');
 	});
 
 	it('renders a preview pane, even when empty', async () => {
@@ -62,7 +62,7 @@ describe('renderKnowledgeNavigator', async () => {
 			onOpenEntry: 'cmd',
 			onSearch: 'cmd',
 		});
-		expect(empty).toContain('mcpv-kn-preview--empty');
+		expect(empty).toContain('delendai-kn-preview--empty');
 		expect(empty).toContain('Select an entry');
 
 		const previewed = renderKnowledgeNavigator({

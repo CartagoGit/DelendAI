@@ -47,7 +47,7 @@ interface IToolDetailViewModel {
 }
 
 const MOCK_TOOL: IToolDescriptor = {
-	name: 'mcp-vertex_search',
+	name: 'delendai_search',
 	plugin: 'search',
 	summary: 'Low-token grep over workspace text files.',
 	tags: ['search', 'read'],
@@ -56,8 +56,8 @@ const MOCK_TOOL: IToolDescriptor = {
 
 const MOCK_METRICS: IMetricsSnapshot = {
 	tools: {
-		'mcp-vertex_search': metric(318, 1, 14_910, 420, 0),
-		'mcp-vertex_overview': metric(412, 2, 7_416, 80, 0),
+		delendai_search: metric(318, 1, 14_910, 420, 0),
+		delendai_overview: metric(412, 2, 7_416, 80, 0),
 	},
 	totals: {
 		calls: 730,

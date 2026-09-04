@@ -23,7 +23,7 @@
  *     cross-process (lockfile-based) mutex keyed on the workspace root —
  *     not a process-local promise chain, which only serialized calls
  *     within a single Node instance and did nothing for two separate
- *     `mcp-vertex` processes (or a CLI script + a running host) writing
+ *     `delendai` processes (or a CLI script + a running host) writing
  *     the same workspace concurrently (x00183 F2).
  */
 
@@ -71,7 +71,7 @@ import { withFileMutex } from './with-file-mutex';
 /**
  * Default implementation: a cross-process mutex (keyed on the absolute
  * workspace root) serializes every `writeAll` call targeting the same
- * workspace — two separate `mcp-vertex` processes (or a CLI script and
+ * workspace — two separate `delendai` processes (or a CLI script and
  * a running host) writing the same workspace concurrently now
  * genuinely serialize, not just two callers inside one Node instance.
  * Concurrent batches targeting different workspaces do not block each

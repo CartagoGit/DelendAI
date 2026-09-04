@@ -3,7 +3,7 @@
  * proposal-cited-commits.script.ts — x00153 S4.
  *
  * Lint that audits commit hashes cited by `done/*` proposals
- * under `docs/mcp-vertex/proposals/done/`. Every backticked
+ * under `docs/delendai/proposals/done/`. Every backticked
  * 7+-char hex string is treated as a commit short-SHA and checked
  * against `git cat-file -t <hash>`. Anything that does not resolve
  * is reported as an orphan.
@@ -38,7 +38,7 @@ import { join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const REPO_ROOT = process.cwd();
-const PROPOSALS_DIR = 'docs/mcp-vertex/proposals';
+const PROPOSALS_DIR = 'docs/delendai/proposals';
 const DONE_DIRS = [
 	'done/feats',
 	'done/fixes',

@@ -39,8 +39,8 @@ const REPO_ROOT = resolve(import.meta.dir, '..', '..', '..');
 // contend with (or deadlock behind) a real, concurrently-running agent's
 // heavy compute against the actual repo lock file.
 const LOCK_PATH =
-	process.env.MCP_VERTEX_TEST_COMPUTE_LOCK_PATH ??
-	resolve(REPO_ROOT, '.cache/mcp-vertex/state/heavy-compute.lock');
+	process.env.DELENDAI_TEST_COMPUTE_LOCK_PATH ??
+	resolve(REPO_ROOT, '.cache/delendai/state/heavy-compute.lock');
 
 // Generous: a waiter should outlast even a very slow `bun test`/`tsc`
 // run by a peer rather than give up and run alongside it.

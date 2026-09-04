@@ -1,13 +1,13 @@
 ---
 title: इंस्टॉल और चलाएँ
-description: mcp-vertex इंस्टॉल करें, इसे अपने IDE से जोड़ें, एक प्रीसेट चुनें, और काम शुरू करने से पहले सर्वर सत्यापित करें।
+description: delendai इंस्टॉल करें, इसे अपने IDE से जोड़ें, एक प्रीसेट चुनें, और काम शुरू करने से पहले सर्वर सत्यापित करें।
 order: 1
 navLabel: इंस्टॉल
 ---
 
 # इंस्टॉल और चलाएँ
 
-mcp-vertex को अपने workflow में जोड़ें, अपने MCP client को binary की ओर इंगित करें, और पहली session से पहले resolved plugin set को verify करें।
+delendai को अपने workflow में जोड़ें, अपने MCP client को binary की ओर इंगित करें, और पहली session से पहले resolved plugin set को verify करें।
 
 ## अपना package manager चुनें
 
@@ -42,7 +42,7 @@ yarn dlx @delendai/cli validate
 
 ### bun
 
-bun runtime और package manager को एक ही tool में जोड़ता है, और mcp-vertex खुद bun से build होता है, इसलिए अगर machine पर bun पहले से है तो यह सबसे सीधा रास्ता है।
+bun runtime और package manager को एक ही tool में जोड़ता है, और delendai खुद bun से build होता है, इसलिए अगर machine पर bun पहले से है तो यह सबसे सीधा रास्ता है।
 
 ```bash
 bunx @delendai/cli init
@@ -70,13 +70,13 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "servers": {
-    "mcp-vertex": {
+    "delendai": {
       "type": "stdio",
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -96,12 +96,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -121,12 +121,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -146,12 +146,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -171,12 +171,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -196,12 +196,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -221,12 +221,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "context_servers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -326,4 +326,4 @@ Deno पहली बार चलने पर npm package को resolve औ�
 
 ### क्या मैं एक साथ कई preset चला सकता हूँ?
 
-नहीं। एक server instance एक समय में केवल एक preset resolve करता है। अगर अलग-अलग project को अलग plugin set चाहिए, तो हर project में अलग mcp-vertex.config.json रखें और loader को workspace के हिसाब से resolve करने दें।
+नहीं। एक server instance एक समय में केवल एक preset resolve करता है। अगर अलग-अलग project को अलग plugin set चाहिए, तो हर project में अलग delendai.config.json रखें और loader को workspace के हिसाब से resolve करने दें।

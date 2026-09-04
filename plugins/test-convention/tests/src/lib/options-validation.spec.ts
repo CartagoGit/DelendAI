@@ -22,7 +22,7 @@ describe('test-convention plugin — options validation (r00003 S9-residual)', a
 			keepLegacy: false,
 			pluginCacheDir: '.cache/test-convention',
 			pluginDocsDir: 'docs/test-convention',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			options: {},
 			args: {},
 		};
@@ -39,7 +39,7 @@ describe('test-convention plugin — options validation (r00003 S9-residual)', a
 			keepLegacy: false,
 			pluginCacheDir: '.cache/test-convention',
 			pluginDocsDir: 'docs/test-convention',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			options: {
 				specExtension: '.spec.ts',
 				mockStyle: 'vi' as const,
@@ -60,7 +60,7 @@ describe('test-convention plugin — options validation (r00003 S9-residual)', a
 			keepLegacy: false,
 			pluginCacheDir: '.cache/test-convention',
 			pluginDocsDir: 'docs/test-convention',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			options: {
 				// mockStyle is `vi | jest | auto`; `mocha` is rejected by
 				// the schema but was silently accepted by the old
@@ -90,7 +90,7 @@ describe('test-convention plugin — options validation (r00003 S9-residual)', a
 			keepLegacy: false,
 			pluginCacheDir: '.cache/test-convention',
 			pluginDocsDir: 'docs/test-convention',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			options: {
 				coverageThreshold: { lines: 150 }, // schema caps at 100
 			},

@@ -814,7 +814,7 @@ describe('gate decision 8 — ext.* names round-trip usage-tracking record→rep
 		// RecordBuffer NDJSON append (the plugin's durable writer).
 		const record = buildRecord({
 			toolName: extName,
-			corePrefix: 'mcp-vertex',
+			corePrefix: 'delendai',
 			peerPrefixes: ['external-mcps', 'usage-tracking'],
 			agent: { id: 'spec', kind: 'test', extension: 'vitest' },
 			sessionId: 's-1',

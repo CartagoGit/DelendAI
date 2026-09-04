@@ -28,7 +28,7 @@ const CTX = {
 	pluginName: 'test-plugin',
 } as const;
 
-const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-errors-');
+const WRITABLE_WORKSPACE = createTestWorkspace('delendai-errors-');
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 const buildArgs = (plugins: string[]) =>

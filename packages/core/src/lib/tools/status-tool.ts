@@ -18,7 +18,7 @@ export interface IStatusResult {
  * throws is captured in `errors` (never sinks the whole call). This is
  * the consumer that makes the `statusCollectors` host seam real: a host
  * wraps its runtime (e.g. a game loop) in a collector and this tool
- * surfaces it; the CLI also registers a built-in `mcp-vertex` collector
+ * surfaces it; the CLI also registers a built-in `delendai` collector
  * reporting loaded plugins + counts.
  */
 export const collectStatus = async (
@@ -54,7 +54,7 @@ export const buildStatusToolRegistration = (
 			`${namespacePrefix}_status`,
 			{
 				description:
-					'Aggregate the runtime status of every registered status collector (e.g. a host game-loop, plus the built-in mcp-vertex collector with loaded plugins + counts). Returns { collectors: {id: payload}, errors }. Read-only.',
+					'Aggregate the runtime status of every registered status collector (e.g. a host game-loop, plus the built-in delendai collector with loaded plugins + counts). Returns { collectors: {id: payload}, errors }. Read-only.',
 				inputSchema: z.object({}),
 				outputSchema: z.object({
 					collectors: z.record(z.string(), z.unknown()),

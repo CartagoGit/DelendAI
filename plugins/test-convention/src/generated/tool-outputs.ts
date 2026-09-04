@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexTestConventionGetConventionOutput {
+export interface DelendaiTestConventionGetConventionOutput {
 	convention: {
 		specExtension: string;
 		specLayout: "colocate" | "tests-mirror" | "tests-flat";
@@ -31,7 +31,7 @@ export interface McpVertexTestConventionGetConventionOutput {
 	markdown: string;
 }
 
-export interface McpVertexTestConventionScanDriftOutput {
+export interface DelendaiTestConventionScanDriftOutput {
 	ok: boolean;
 	counts: {
 		error: number;
@@ -49,7 +49,7 @@ export interface McpVertexTestConventionScanDriftOutput {
 	scannedFiles: number;
 }
 
-export interface McpVertexTestConventionSuggestSpecPathOutput {
+export interface DelendaiTestConventionSuggestSpecPathOutput {
 	specPath: string;
 	rationale: string;
 	skeleton: string;
@@ -57,7 +57,7 @@ export interface McpVertexTestConventionSuggestSpecPathOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface TestConventionToolOutputs {
-	"mcp-vertex_test-convention_get_convention": McpVertexTestConventionGetConventionOutput;
-	"mcp-vertex_test-convention_scan_drift": McpVertexTestConventionScanDriftOutput;
-	"mcp-vertex_test-convention_suggest_spec_path": McpVertexTestConventionSuggestSpecPathOutput;
+	"delendai_test-convention_get_convention": DelendaiTestConventionGetConventionOutput;
+	"delendai_test-convention_scan_drift": DelendaiTestConventionScanDriftOutput;
+	"delendai_test-convention_suggest_spec_path": DelendaiTestConventionSuggestSpecPathOutput;
 }

@@ -37,7 +37,7 @@ const fromScripts = async (reader: IFileReader): Promise<IScopeMap> => {
 
 /**
  * Resolve the scope→commands map, in precedence order:
- * 1. plugin options (`scopes`), 2. `mcp-vertex.config.json` validationMatrix,
+ * 1. plugin options (`scopes`), 2. `delendai.config.json` validationMatrix,
  * 3. detected package.json scripts (as one `all` scope).
  */
 export const resolveScopes = async (
@@ -54,7 +54,7 @@ export const resolveScopes = async (
 		return out;
 	}
 	const config = parseConfigFile(
-		await reader.readFile('mcp-vertex.config.json'),
+		await reader.readFile('delendai.config.json'),
 	);
 	const matrix = config.validationMatrix?.scopes;
 	if (matrix && Object.keys(matrix).length > 0) {

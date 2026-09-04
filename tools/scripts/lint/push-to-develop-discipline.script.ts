@@ -59,7 +59,7 @@ export interface IPushToDevelopInput {
 	readonly remoteName: string;
 	readonly remoteBranch: string;
 	readonly currentBranch: string | null;
-	/** Resolved `mcp-vertex.config.json#agentWorktree` (default false). */
+	/** Resolved `delendai.config.json#agentWorktree` (default false). */
 	readonly agentWorktreeEnabled?: boolean;
 }
 

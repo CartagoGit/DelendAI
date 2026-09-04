@@ -7,7 +7,7 @@
  *   - `locateByIndex(indexPathAbs, proposalId)` — fast O(1) lookup via
  *     `<cacheDir>/proposals/index.json` (the regenerable registry
  *     index; see x00052 for the move from
- *     `docs/mcp-vertex/proposals/index.json`). Preferred when the index is fresh
+ *     `docs/delendai/proposals/index.json`). Preferred when the index is fresh
  *     (most callers run `sync_proposals` at boot).
  *   - `locateByScan(proposalsDirAbs, proposalId)` — fallback that walks
  *     the 7 status folders. Useful when the index is stale or missing
@@ -118,7 +118,7 @@ export const locateByIndex = async (
 	}
 	// x00052: `entry.file` is proposalsDir-relative (e.g.
 	// `done/feats/f00121-forge-plugin.md`). The index itself may live under
-	// `.cache/mcp-vertex/proposals/index.json`, so joining against the
+	// `.cache/delendai/proposals/index.json`, so joining against the
 	// index parent would resolve to a non-existent cache path.
 	const proposalsDir = proposalsDirAbs ?? join(indexPathAbs, '..');
 	const absPath = entry.file.startsWith('/')

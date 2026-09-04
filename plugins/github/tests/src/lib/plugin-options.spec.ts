@@ -53,7 +53,7 @@ describe('@delendai/github optionsSchema', async () => {
 				allowWrite: true,
 				defaultRepository: {
 					owner: 'cartago',
-					repository: 'mcp-vertex',
+					repository: 'delendai',
 				},
 			}).success,
 		).toBe(true);
@@ -71,7 +71,7 @@ describe('@delendai/github optionsSchema', async () => {
 					apiUrl: 'https://api.github.example',
 					defaultRepository: {
 						owner: 'cartago',
-						repository: 'mcp-vertex',
+						repository: 'delendai',
 					},
 				}),
 			);
@@ -81,7 +81,7 @@ describe('@delendai/github optionsSchema', async () => {
 					allowWrite: true,
 					defaultRepository: {
 						owner: 'cartago',
-						repository: 'mcp-vertex',
+						repository: 'delendai',
 					},
 				}),
 			);
@@ -156,7 +156,7 @@ describe('@delendai/github optionsSchema', async () => {
 				baseCtx({
 					defaultRepository: {
 						owner: 'cartago',
-						repository: 'mcp-vertex',
+						repository: 'delendai',
 					},
 				}),
 			);
@@ -165,7 +165,7 @@ describe('@delendai/github optionsSchema', async () => {
 					allowWrite: true,
 					defaultRepository: {
 						owner: 'cartago',
-						repository: 'mcp-vertex',
+						repository: 'delendai',
 					},
 				}),
 			);
@@ -327,12 +327,12 @@ describe('createGitHubHttpClient', () => {
 		);
 
 		const result = await client.request({
-			path: '/repos/cartago/mcp-vertex',
+			path: '/repos/cartago/delendai',
 			responseSchema: z.object({ ok: z.boolean() }).strict(),
 		});
 
 		expect(seenUrl).toBe(
-			'https://api.github.example/repos/cartago/mcp-vertex',
+			'https://api.github.example/repos/cartago/delendai',
 		);
 		expect(seenHeaders.authorization).toBe('Bearer secret-token');
 		expect(result.meta.requestId).toBe('req-123');

@@ -20,8 +20,8 @@ describe('shared-ui-strings', () => {
 			expect(typeof value).toBe('string');
 			expect(value.length).toBeGreaterThan(0);
 		}
-		expect(SHARED_UI_STRINGS.productName).toContain('mcp-vertex');
-		expect(SHARED_UI_STRINGS.serverName).toBe('mcp-vertex');
+		expect(SHARED_UI_STRINGS.productName).toContain('delendai');
+		expect(SHARED_UI_STRINGS.serverName).toBe('delendai');
 		expect(SHARED_UI_STRINGS.repoUrl.startsWith('https://')).toBe(true);
 		expect(SHARED_UI_STRINGS.docsUrl.startsWith('https://')).toBe(true);
 		expect(BRAND_TOKENS.blue.startsWith('--')).toBe(true);

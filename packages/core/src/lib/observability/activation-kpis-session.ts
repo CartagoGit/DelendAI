@@ -29,7 +29,7 @@ export interface IActivationKpiSessionStoreOptions {
 	readonly writeFile?: (path: string, content: string) => Promise<void>;
 }
 
-const DEFAULT_RELATIVE_PATH = join('.vscode', 'mcp-vertex', 'kpis.json');
+const DEFAULT_RELATIVE_PATH = join('.vscode', 'delendai', 'kpis.json');
 
 export const createActivationKpiSessionStore = (
 	options: IActivationKpiSessionStoreOptions,

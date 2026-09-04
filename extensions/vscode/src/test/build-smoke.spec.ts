@@ -18,9 +18,7 @@ afterEach(async () => {
 
 describe('VS Code production build', () => {
 	it('bundles shared SCSS-backed dashboard styles', async () => {
-		const outdir = await mkdtemp(
-			join(tmpdir(), 'mcp-vertex-vscode-build-'),
-		);
+		const outdir = await mkdtemp(join(tmpdir(), 'delendai-vscode-build-'));
 		temporaryDirectories.push(outdir);
 
 		const result = spawnSync(
@@ -31,7 +29,7 @@ describe('VS Code production build', () => {
 
 		expect(result.status, result.stderr || result.stdout).toBe(0);
 		const bundle = await readFile(join(outdir, 'extension.js'), 'utf8');
-		expect(bundle).toContain('.mcpv-tabs__bar');
+		expect(bundle).toContain('.delendai-tabs__bar');
 		expect(bundle).not.toContain('SCSS compile failed');
 	});
 });

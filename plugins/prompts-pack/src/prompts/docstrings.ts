@@ -34,7 +34,7 @@ export const buildGenerateDocstringsPrompt = (
 			[
 				`Generate JSDoc or TSDoc docstrings for every exported declaration in ${file}.`,
 				'',
-				'Use `mcp-vertex_refactor_refactor_symbols` first to enumerate the exported functions, classes, interfaces, types, and constants before drafting comments.',
+				'Use `delendai_refactor_refactor_symbols` first to enumerate the exported functions, classes, interfaces, types, and constants before drafting comments.',
 				'',
 				'Rules:',
 				'- Preserve the existing public API and naming.',

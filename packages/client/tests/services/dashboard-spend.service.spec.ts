@@ -92,8 +92,8 @@ describe('DashboardService — real spend telemetry (f00118 S1)', () => {
 	it('joins real cost/savings from usage_report when usage-tracking is loaded', async () => {
 		const { service, calls } = makeService({
 			...allResponsesFixture,
-			'mcp-vertex_overview': overviewWithUsageTracking,
-			'mcp-vertex_usage-tracking_usage_report': usageReportFixture,
+			delendai_overview: overviewWithUsageTracking,
+			'delendai_usage-tracking_usage_report': usageReportFixture,
 		});
 		const { spend } = await service.getAllModels();
 		expect(spend).not.toBeNull();
@@ -105,7 +105,7 @@ describe('DashboardService — real spend telemetry (f00118 S1)', () => {
 		expect(spend?.byProvider[0]?.costUsd).toBe(1.0);
 		expect(
 			calls.some(
-				(c) => c.tool === 'mcp-vertex_usage-tracking_usage_report',
+				(c) => c.tool === 'delendai_usage-tracking_usage_report',
 			),
 		).toBe(true);
 	});
@@ -113,12 +113,12 @@ describe('DashboardService — real spend telemetry (f00118 S1)', () => {
 	it('degrades to null (not a thrown error) when usage_report itself fails', async () => {
 		const { transport } = createFakeTransport({
 			...allResponsesFixture,
-			'mcp-vertex_overview': overviewWithUsageTracking,
+			delendai_overview: overviewWithUsageTracking,
 		});
 		const failingTransport = {
 			...transport,
 			async callTool(args: { name: string; arguments?: object }) {
-				if (args.name === 'mcp-vertex_usage-tracking_usage_report') {
+				if (args.name === 'delendai_usage-tracking_usage_report') {
 					throw new Error('boom');
 				}
 				return transport.callTool(args);
@@ -133,8 +133,8 @@ describe('DashboardService — real spend telemetry (f00118 S1)', () => {
 	it('getSpendModel is available standalone (not only via getAllModels)', async () => {
 		const { service } = makeService({
 			...allResponsesFixture,
-			'mcp-vertex_overview': overviewWithUsageTracking,
-			'mcp-vertex_usage-tracking_usage_report': usageReportFixture,
+			delendai_overview: overviewWithUsageTracking,
+			'delendai_usage-tracking_usage_report': usageReportFixture,
 		});
 		const spend = await service.getSpendModel();
 		expect(spend?.totalCostUsd).toBe(1.23);

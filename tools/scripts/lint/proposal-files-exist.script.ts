@@ -31,7 +31,7 @@ import { join, relative } from 'node:path';
 import { repoRoot } from '../lib/monorepo-paths';
 
 const SCAN_DIRS: readonly string[] = ['done', 'review', 'in-progress'];
-const PROPOSALS_ROOT = 'docs/mcp-vertex/proposals';
+const PROPOSALS_ROOT = 'docs/delendai/proposals';
 const BASELINE_REL = 'tools/scripts/lint/proposal-files-exist.baseline.json';
 
 const NON_PATH = new Set(['none', 'n/a', 'tbd']);

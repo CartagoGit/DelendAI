@@ -13,7 +13,7 @@
  *   1. Every local branch matching `agent/*` must satisfy
  *      `^agent/[a-z][a-z0-9-]+-[a-z][a-z0-9-]+(-[a-z][a-z0-9-]+)?$`
  *      (model token + proposal-id token + optional slice token).
- *   2. When `agentWorktree` is not true in mcp-vertex.config.json,
+ *   2. When `agentWorktree` is not true in delendai.config.json,
  *      ANY local `agent/*` branch is a violation (shared-checkout
  *      mode forbids agent worktree branches — agents work on `wip/*`
  *      or commit on `develop` instead).
@@ -100,7 +100,7 @@ export interface IAgentBranchSnapshot {
 
 export interface IAgentBranchNamingInput {
 	readonly branches: readonly IAgentBranchSnapshot[];
-	/** Resolved `mcp-vertex.config.json#agentWorktree` (default false). */
+	/** Resolved `delendai.config.json#agentWorktree` (default false). */
 	readonly agentWorktreeEnabled: boolean;
 }
 

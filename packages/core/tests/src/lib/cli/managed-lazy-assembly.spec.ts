@@ -34,7 +34,7 @@ describe('managed lazy assembly defaults', () => {
 	});
 
 	it('uses lazy module loading when managedSurface.loading is omitted', async () => {
-		const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-lazy-'));
+		const workspace = mkdtempSync(join(tmpdir(), 'delendai-lazy-'));
 		workspaces.push(workspace);
 		const args = parseCliArgs(
 			[`--plugins=memory`, `--workspace=${workspace}`],
@@ -53,10 +53,10 @@ describe('managed lazy assembly defaults', () => {
 		expect(assembled.loadResult.loaded).toEqual([]);
 		expect(assembled.startupReport.runtime.moduleLoading).toBe('lazy');
 		expect(
-			assembled.config.lazyToolActivators?.has('mcp-vertex_memory_save'),
+			assembled.config.lazyToolActivators?.has('delendai_memory_save'),
 		).toBe(true);
 		const descriptor = assembled.config.toolSurfacePlan?.descriptors.find(
-			(entry) => entry.registrationId === 'mcp-vertex_memory_save',
+			(entry) => entry.registrationId === 'delendai_memory_save',
 		);
 		expect(descriptor?.summary).toBeTruthy();
 		expect(descriptor?.tags).toContain('lazy');
@@ -75,7 +75,7 @@ describe('managed lazy assembly defaults', () => {
 	});
 
 	it('keeps explicit native surface on the eager compatibility path', async () => {
-		const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-native-'));
+		const workspace = mkdtempSync(join(tmpdir(), 'delendai-native-'));
 		workspaces.push(workspace);
 		const args = parseCliArgs(
 			[
@@ -87,7 +87,7 @@ describe('managed lazy assembly defaults', () => {
 		);
 		const assembled = await assembleCliConfig(args, {
 			readFile: async (absolutePath) =>
-				absolutePath.endsWith('mcp-vertex.config.json')
+				absolutePath.endsWith('delendai.config.json')
 					? JSON.stringify({ managedSurface: { loading: 'lazy' } })
 					: undefined,
 			import: async () => ({
@@ -104,7 +104,7 @@ describe('managed lazy assembly defaults', () => {
 	});
 
 	it('activates configured automatic plugins before the first tool call', async () => {
-		const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-startup-'));
+		const workspace = mkdtempSync(join(tmpdir(), 'delendai-startup-'));
 		workspaces.push(workspace);
 		let registered = 0;
 		const args = parseCliArgs(
@@ -113,7 +113,7 @@ describe('managed lazy assembly defaults', () => {
 		);
 		const assembled = await assembleCliConfig(args, {
 			readFile: async (absolutePath) =>
-				absolutePath.endsWith('mcp-vertex.config.json')
+				absolutePath.endsWith('delendai.config.json')
 					? JSON.stringify({
 							plugins: {
 								'commit-policy': {
@@ -151,7 +151,7 @@ describe('managed lazy assembly defaults', () => {
 
 	it('activates startup plugins without explicit options', async () => {
 		const workspace = mkdtempSync(
-			join(tmpdir(), 'mcp-vertex-startup-manifest-'),
+			join(tmpdir(), 'delendai-startup-manifest-'),
 		);
 		workspaces.push(workspace);
 		let registered = 0;

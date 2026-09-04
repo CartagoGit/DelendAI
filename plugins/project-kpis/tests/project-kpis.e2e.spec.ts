@@ -27,7 +27,7 @@ import { persistKpiSnapshotHistory } from '../src/lib/services/kpi-history.servi
 import { buildProjectKpisToolRegistrations } from '../src/lib/tools/project-kpis.tool';
 import type { ProjectKpisOutputSchema } from '../src/lib/tools/project-kpis.tool';
 
-const CACHE_DIR = '.cache/mcp-vertex';
+const CACHE_DIR = '.cache/delendai';
 const createdRoots: string[] = [];
 
 const metric = (
@@ -117,7 +117,7 @@ describe('project-kpis end-to-end smoke', () => {
 	it('registers project_kpis over the assembled tool path and returns a bounded schema-valid view', async () => {
 		const root = await setupWorkspace();
 		const tool = buildProjectKpisToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			cacheDir: CACHE_DIR,
 			maxBytes: 12000,
@@ -155,7 +155,7 @@ describe('project-kpis end-to-end smoke', () => {
 	it('surfaces honest unavailable statuses when no invocation telemetry exists', async () => {
 		const root = await setupWorkspace();
 		const tool = buildProjectKpisToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			cacheDir: CACHE_DIR,
 			maxBytes: 12000,
@@ -190,12 +190,12 @@ describe('project-kpis end-to-end smoke', () => {
 	it('does not leak secret material into the rendered output', async () => {
 		const root = await setupWorkspace();
 		await writeFile(
-			join(root, '.cache', 'mcp-vertex', 'token.txt'),
+			join(root, '.cache', 'delendai', 'token.txt'),
 			'super-secret-token-value',
 			'utf8',
 		);
 		const tool = buildProjectKpisToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			cacheDir: CACHE_DIR,
 			maxBytes: 12000,

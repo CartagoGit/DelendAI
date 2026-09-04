@@ -81,12 +81,12 @@ describe('createGitHubHttpClient', () => {
 
 		const result = await client.request({
 			path: '/search/repositories',
-			query: { page: 2, per_page: 30, q: 'mcp-vertex' },
+			query: { page: 2, per_page: 30, q: 'delendai' },
 			responseSchema: z.object({ items: z.array(z.unknown()) }).strict(),
 		});
 
 		expect(seenUrl).toBe(
-			'https://ghe.example/api/v3/search/repositories?page=2&per_page=30&q=mcp-vertex',
+			'https://ghe.example/api/v3/search/repositories?page=2&per_page=30&q=delendai',
 		);
 		expect(result.data.items).toHaveLength(1);
 		expect(result.meta.pagination).toMatchObject({

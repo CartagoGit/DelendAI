@@ -2,7 +2,7 @@
  * End-to-end: `proposals_proposal_transition` over the real MCP protocol.
  *
  * Slice S3 of f00044. Drives the registered `proposal_transition` tool
- * through a real `Client` connected to an assembled mcp-vertex server
+ * through a real `Client` connected to an assembled delendai server
  * over an in-memory transport, proving the DFA enforcement the unit
  * spec exercises is exactly what the wire delivers — including the
  * folder move and the structured rejection envelope for illegal
@@ -46,7 +46,7 @@ interface TransitionOutput {
 	readonly logHint?: unknown;
 }
 
-const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
+const PROPOSALS_RELDIR = 'docs/delendai/proposals';
 
 const RECENT_VALIDATE = {
 	timestamp: new Date().toISOString(),
@@ -68,7 +68,7 @@ const callTransition = async (
 	},
 ): Promise<IAssembledToolResult<TransitionOutput>> =>
 	server.callTool<TransitionOutput>(
-		'mcp-vertex_proposals_proposal_transition',
+		'delendai_proposals_proposal_transition',
 		args,
 	);
 
@@ -110,7 +110,7 @@ Seed for the proposal_transition e2e harness.
 		'utf8',
 	);
 	const sync = await server.callTool<{ ok: boolean }>(
-		'mcp-vertex_proposals_sync_proposals',
+		'delendai_proposals_sync_proposals',
 		{},
 	);
 	expect(sync.ok).toBe(true);

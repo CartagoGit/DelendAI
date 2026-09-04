@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * lint-proposals.ts — f00016 S3: walk every `.md` under `docs/mcp-vertex/proposals/`
+ * lint-proposals.ts — f00016 S3: walk every `.md` under `docs/delendai/proposals/`
  * and run `lintProposalMarkdown` (S2) against it.
  *
  * The legacy proposals — `pNNN-*.md` (pre-S11), `lNNN-*.md` (post-
@@ -39,7 +39,7 @@ const isLegacyFilename = (filename: string, absPath: string): boolean => {
 
 // Only files shaped like a proposal with the canonical padded id are
 // proposals at all.
-// `docs/mcp-vertex/proposals/` also holds non-proposal documents this linter must
+// `docs/delendai/proposals/` also holds non-proposal documents this linter must
 // never touch: audit session reports under `audits/` (and some loose
 // ones that ended up in `done/`), `n00001-*` session notes,
 // `index.json`, READMEs. Those aren't "legacy proposals that need
@@ -222,7 +222,7 @@ if (import.meta.main) {
 		console.error(error instanceof Error ? error.message : String(error));
 		process.exit(1);
 	}
-	const proposalsDirAbs = join(repoRoot, 'docs', 'mcp-vertex', 'proposals');
+	const proposalsDirAbs = join(repoRoot, 'docs', 'delendai', 'proposals');
 	const summary = await lintProposalsDir(proposalsDirAbs);
 	const duplicateNote =
 		summary.duplicateIds.length === 0

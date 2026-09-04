@@ -1,7 +1,7 @@
 /**
  * open-proposal-argument.spec.ts — f00079 S5 (closes a00040 H6).
  *
- * `mcp-vertex.openProposal` is invoked by the proposals TreeDataProvider
+ * `delendai.openProposal` is invoked by the proposals TreeDataProvider
  * nodes with `arguments: [proposal.id]`, but the previous handler took no
  * argument and always rendered the global board. This pins the new
  * contract:

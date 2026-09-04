@@ -20,9 +20,9 @@ const jsonValue = (value: unknown): string =>
 	JSON.stringify(value ?? null, null, 2);
 
 const fieldControl = (field: IConfigurationField): string => {
-	const common = `class="mcpv-config__control" id="${attr(field.id)}" data-config-path="${pathAttr(field)}" data-config-kind="${attr(field.kind)}"${field.required ? ' required' : ' data-config-optional="true"'}${field.readOnly || field.kind === 'unsupported' ? ' readonly' : ''}`;
+	const common = `class="delendai-config__control" id="${attr(field.id)}" data-config-path="${pathAttr(field)}" data-config-kind="${attr(field.kind)}"${field.required ? ' required' : ' data-config-optional="true"'}${field.readOnly || field.kind === 'unsupported' ? ' readonly' : ''}`;
 	if (field.kind === 'boolean') {
-		return `<label class="mcpv-config__checkbox"><input id="${attr(field.id)}" type="checkbox" data-config-path="${pathAttr(field)}" data-config-kind="boolean"${field.value === true ? ' checked' : ''}${field.readOnly ? ' disabled' : ''} /> <span>${attr(field.label)}</span></label>`;
+		return `<label class="delendai-config__checkbox"><input id="${attr(field.id)}" type="checkbox" data-config-path="${pathAttr(field)}" data-config-kind="boolean"${field.value === true ? ' checked' : ''}${field.readOnly ? ' disabled' : ''} /> <span>${attr(field.label)}</span></label>`;
 	}
 	if (field.kind === 'select') {
 		return `<select ${common}>${(field.choices ?? [])
@@ -48,15 +48,15 @@ const renderField = (
 		: field.kind === 'unsupported'
 			? model.copy.unsupportedField
 			: field.description;
-	return `<div class="mcpv-config__field" data-invalid="false">
+	return `<div class="delendai-config__field" data-invalid="false">
 		${
 			boolean
 				? ''
-				: `<label class="mcpv-config__field-label" for="${attr(field.id)}">${attr(field.label)}${field.required ? '<span class="mcpv-config__required" aria-hidden="true">*</span>' : ''}${!field.known ? `<span class="mcpv-config__badge">${attr(model.copy.custom)}</span>` : ''}</label>`
+				: `<label class="delendai-config__field-label" for="${attr(field.id)}">${attr(field.label)}${field.required ? '<span class="delendai-config__required" aria-hidden="true">*</span>' : ''}${!field.known ? `<span class="delendai-config__badge">${attr(model.copy.custom)}</span>` : ''}</label>`
 		}
-		${hint === undefined ? '' : `<p class="mcpv-config__description">${attr(hint)}</p>`}
+		${hint === undefined ? '' : `<p class="delendai-config__description">${attr(hint)}</p>`}
 		${fieldControl(field)}
-		<p class="mcpv-config__field-error" role="alert">${attr(model.copy.invalid)}</p>
+		<p class="delendai-config__field-error" role="alert">${attr(model.copy.invalid)}</p>
 	</div>`;
 };
 
@@ -65,7 +65,7 @@ const renderFields = (
 	model: IConfigurationCenterModel,
 ): string =>
 	fields.length === 0
-		? `<p class="mcpv-config__empty">${attr(model.copy.empty)}</p>`
+		? `<p class="delendai-config__empty">${attr(model.copy.empty)}</p>`
 		: fields.map((field) => renderField(field, model)).join('');
 
 const originLabel = (
@@ -169,12 +169,12 @@ const renderPlugin = (
 	];
 	const highlighted =
 		highlightPluginId !== undefined && highlightPluginId === plugin.id;
-	return `<article class="mcpv-config__card${highlighted ? ' mcpv-config__card--highlight' : ''}" data-config-search-text="${attr(`${plugin.id} ${plugin.origin} ${plugin.source}`)}" id="${attr(`config-plugin-${plugin.id}`)}">
-		<header class="mcpv-config__card-head">
-			<div><h3 class="mcpv-config__card-title">${attr(plugin.id)}</h3><p class="mcpv-config__card-meta">${plugin.capabilities.tools} ${attr(model.copy.capabilityTools)} · ${plugin.capabilities.prompts} ${attr(model.copy.capabilityPrompts)} · ${plugin.capabilities.resources} ${attr(model.copy.capabilityResources)}</p></div>
-			<div class="mcpv-config__badges"><span class="mcpv-config__badge">${attr(originLabel(plugin.origin, model))}</span><span class="mcpv-config__badge mcpv-config__badge--${plugin.active ? 'active' : 'inactive'}">${attr(plugin.active ? model.copy.active : model.copy.inactive)}</span></div>
+	return `<article class="delendai-config__card${highlighted ? ' delendai-config__card--highlight' : ''}" data-config-search-text="${attr(`${plugin.id} ${plugin.origin} ${plugin.source}`)}" id="${attr(`config-plugin-${plugin.id}`)}">
+		<header class="delendai-config__card-head">
+			<div><h3 class="delendai-config__card-title">${attr(plugin.id)}</h3><p class="delendai-config__card-meta">${plugin.capabilities.tools} ${attr(model.copy.capabilityTools)} · ${plugin.capabilities.prompts} ${attr(model.copy.capabilityPrompts)} · ${plugin.capabilities.resources} ${attr(model.copy.capabilityResources)}</p></div>
+			<div class="delendai-config__badges"><span class="delendai-config__badge">${attr(originLabel(plugin.origin, model))}</span><span class="delendai-config__badge delendai-config__badge--${plugin.active ? 'active' : 'inactive'}">${attr(plugin.active ? model.copy.active : model.copy.inactive)}</span></div>
 		</header>
-		${plugin.schemaStatus === 'unavailable' ? `<p class="mcpv-config__notice">${attr(model.copy.schemaUnavailable)}</p>` : ''}
+		${plugin.schemaStatus === 'unavailable' ? `<p class="delendai-config__notice">${attr(model.copy.schemaUnavailable)}</p>` : ''}
 		${renderFields(fields, model)}
 	</article>`;
 };
@@ -182,9 +182,9 @@ const renderPlugin = (
 const renderArtifact = (
 	artifact: IConfigurationArtifactModel,
 	model: IConfigurationCenterModel,
-): string => `<div class="mcpv-config__artifact" data-config-search-text="${attr(`${artifact.id} ${artifact.ownerLabel} ${artifact.owner.origin}`)}">
-	<span class="mcpv-config__artifact-id">${attr(artifact.id)}</span>
-	<span class="mcpv-config__badges"><span class="mcpv-config__badge">${attr(artifact.ownerLabel)}</span><span class="mcpv-config__badge">${attr(originLabel(artifact.owner.origin, model))}</span></span>
+): string => `<div class="delendai-config__artifact" data-config-search-text="${attr(`${artifact.id} ${artifact.ownerLabel} ${artifact.owner.origin}`)}">
+	<span class="delendai-config__artifact-id">${attr(artifact.id)}</span>
+	<span class="delendai-config__badges"><span class="delendai-config__badge">${attr(artifact.ownerLabel)}</span><span class="delendai-config__badge">${attr(originLabel(artifact.owner.origin, model))}</span></span>
 </div>`;
 
 const panel = (
@@ -193,11 +193,11 @@ const panel = (
 	body: string,
 	model: IConfigurationCenterModel,
 ): string =>
-	`<section class="mcpv-config__panel" id="config-panel-${id}" role="tabpanel" aria-labelledby="config-tab-${id}" data-config-panel="${id}"${model.activeTab === id ? '' : ' hidden'}><h2 class="mcpv-config__panel-title">${attr(title)}</h2>${body}</section>`;
+	`<section class="delendai-config__panel" id="config-panel-${id}" role="tabpanel" aria-labelledby="config-tab-${id}" data-config-panel="${id}"${model.activeTab === id ? '' : ' hidden'}><h2 class="delendai-config__panel-title">${attr(title)}</h2>${body}</section>`;
 
 const banner = (model: IConfigurationCenterModel): string => {
 	if (model.state === 'conflict') {
-		return `<p class="mcpv-config__banner mcpv-config__banner--conflict" role="alert">${attr(model.copy.conflict)}</p>`;
+		return `<p class="delendai-config__banner delendai-config__banner--conflict" role="alert">${attr(model.copy.conflict)}</p>`;
 	}
 	if (model.state === 'invalid' || model.issues.length > 0) {
 		const details = model.issues
@@ -206,7 +206,7 @@ const banner = (model: IConfigurationCenterModel): string => {
 					`${issue.path.map(String).join('.')}: ${issue.message}`,
 			)
 			.join(' · ');
-		return `<p class="mcpv-config__banner mcpv-config__banner--invalid" role="alert">${attr(details || model.copy.invalid)}</p>`;
+		return `<p class="delendai-config__banner delendai-config__banner--invalid" role="alert">${attr(details || model.copy.invalid)}</p>`;
 	}
 	return '';
 };
@@ -219,19 +219,19 @@ export const renderConfigurationCenter = (
 		options.nonce === undefined ? '' : ` nonce="${attr(options.nonce)}"`;
 	const pluginBody =
 		model.plugins.length === 0
-			? `<p class="mcpv-config__empty">${attr(model.copy.empty)}</p>`
-			: `<div class="mcpv-config__grid">${model.plugins
+			? `<p class="delendai-config__empty">${attr(model.copy.empty)}</p>`
+			: `<div class="delendai-config__grid">${model.plugins
 					.map((entry) =>
 						renderPlugin(entry, model, options.pluginId),
 					)
 					.join('')}</div>`;
 	const providerBody =
 		model.providers.length === 0
-			? `<p class="mcpv-config__empty">${attr(model.copy.empty)}</p>`
-			: `<div class="mcpv-config__grid">${model.providers
+			? `<p class="delendai-config__empty">${attr(model.copy.empty)}</p>`
+			: `<div class="delendai-config__grid">${model.providers
 					.map(
 						(provider) =>
-							`<article class="mcpv-config__card" data-config-search-text="${attr(`${provider.id} ${provider.kind} ${provider.modelId}`)}"><header class="mcpv-config__card-head"><div><h3 class="mcpv-config__card-title">${attr(provider.id)}</h3><p class="mcpv-config__card-meta">${attr(provider.kind)} · ${attr(provider.modelId)}</p></div></header>${renderField(provider.field, model)}</article>`,
+							`<article class="delendai-config__card" data-config-search-text="${attr(`${provider.id} ${provider.kind} ${provider.modelId}`)}"><header class="delendai-config__card-head"><div><h3 class="delendai-config__card-title">${attr(provider.id)}</h3><p class="delendai-config__card-meta">${attr(provider.kind)} · ${attr(provider.modelId)}</p></div></header>${renderField(provider.field, model)}</article>`,
 					)
 					.join('')}</div>`;
 	const artifactPanel = (
@@ -239,28 +239,28 @@ export const renderConfigurationCenter = (
 	): string => {
 		const tab = model.tabs.find((entry) => entry.id === id)!;
 		const body = tab.unavailable
-			? `<p class="mcpv-config__notice">${attr(model.copy.unavailable)}</p>`
+			? `<p class="delendai-config__notice">${attr(model.copy.unavailable)}</p>`
 			: model.artifacts[id].length === 0
-				? `<p class="mcpv-config__empty">${attr(model.copy.empty)}</p>`
-				: `<div class="mcpv-config__card">${model.artifacts[id].map((artifact) => renderArtifact(artifact, model)).join('')}</div>`;
+				? `<p class="delendai-config__empty">${attr(model.copy.empty)}</p>`
+				: `<div class="delendai-config__card">${model.artifacts[id].map((artifact) => renderArtifact(artifact, model)).join('')}</div>`;
 		return panel(id, model.copy.tabs[id], body, model);
 	};
 	return `<!doctype html>
 <html lang="${attr(options.lang ?? 'en')}">
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>${attr(model.copy.title)}</title><style${nonce}>${configurationCenterCss()}</style></head>
 <body>
-<main class="mcpv-config" data-mcpv-configuration-center data-state="${attr(model.state)}" data-dirty="false" data-config-digest="${attr(model.document.digest)}" data-copy-saved="${attr(model.copy.saved)}" data-copy-restart="${attr(model.copy.restartRequired)}" data-copy-conflict="${attr(model.copy.conflict)}" data-copy-invalid="${attr(model.copy.invalid)}">
-	<header class="mcpv-config__header"><div class="mcpv-config__heading"><h1>${attr(model.copy.title)}</h1><p>${attr(model.copy.subtitle)}</p></div><input class="mcpv-config__search" type="search" data-config-search aria-label="${attr(model.copy.searchPlaceholder)}" placeholder="${attr(model.copy.searchPlaceholder)}" /></header>
-	<div class="mcpv-config__body">
-		<nav class="mcpv-config__nav" role="tablist" aria-label="${attr(model.copy.title)}">${model.tabs
+<main class="delendai-config" data-delendai-configuration-center data-state="${attr(model.state)}" data-dirty="false" data-config-digest="${attr(model.document.digest)}" data-copy-saved="${attr(model.copy.saved)}" data-copy-restart="${attr(model.copy.restartRequired)}" data-copy-conflict="${attr(model.copy.conflict)}" data-copy-invalid="${attr(model.copy.invalid)}">
+	<header class="delendai-config__header"><div class="delendai-config__heading"><h1>${attr(model.copy.title)}</h1><p>${attr(model.copy.subtitle)}</p></div><input class="delendai-config__search" type="search" data-config-search aria-label="${attr(model.copy.searchPlaceholder)}" placeholder="${attr(model.copy.searchPlaceholder)}" /></header>
+	<div class="delendai-config__body">
+		<nav class="delendai-config__nav" role="tablist" aria-label="${attr(model.copy.title)}">${model.tabs
 			.map(
 				(tab) =>
-					`<button class="mcpv-config__tab" id="config-tab-${tab.id}" type="button" role="tab" data-config-tab="${tab.id}" aria-controls="config-panel-${tab.id}" aria-selected="${model.activeTab === tab.id ? 'true' : 'false'}" tabindex="${model.activeTab === tab.id ? '0' : '-1'}"><span>${attr(tab.label)}</span>${tab.unavailable ? '<span class="mcpv-config__tab-warning" aria-hidden="true">!</span>' : ''}<span class="mcpv-config__tab-count">${tab.count}</span></button>`,
+					`<button class="delendai-config__tab" id="config-tab-${tab.id}" type="button" role="tab" data-config-tab="${tab.id}" aria-controls="config-panel-${tab.id}" aria-selected="${model.activeTab === tab.id ? 'true' : 'false'}" tabindex="${model.activeTab === tab.id ? '0' : '-1'}"><span>${attr(tab.label)}</span>${tab.unavailable ? '<span class="delendai-config__tab-warning" aria-hidden="true">!</span>' : ''}<span class="delendai-config__tab-count">${tab.count}</span></button>`,
 			)
 			.join('')}</nav>
-		<div class="mcpv-config__content">${banner(model)}${panel('general', model.copy.tabs.general, renderFields(model.generalFields, model), model)}${panel('plugins', model.copy.tabs.plugins, pluginBody, model)}${panel('providers', model.copy.tabs.providers, providerBody, model)}${artifactPanel('agents')}${artifactPanel('skills')}${artifactPanel('prompts')}${artifactPanel('resources')}${artifactPanel('knowledge')}</div>
+		<div class="delendai-config__content">${banner(model)}${panel('general', model.copy.tabs.general, renderFields(model.generalFields, model), model)}${panel('plugins', model.copy.tabs.plugins, pluginBody, model)}${panel('providers', model.copy.tabs.providers, providerBody, model)}${artifactPanel('agents')}${artifactPanel('skills')}${artifactPanel('prompts')}${artifactPanel('resources')}${artifactPanel('knowledge')}</div>
 	</div>
-	<footer class="mcpv-config__footer"><span class="mcpv-config__status" data-config-status aria-live="polite"></span><button class="mcpv-config__button mcpv-config__button--secondary" type="button" data-config-discard disabled>${attr(model.copy.discard)}</button><button class="mcpv-config__button mcpv-config__button--primary" type="button" data-config-save disabled>${attr(model.state === 'saving' ? model.copy.saving : model.copy.save)}</button></footer>
+	<footer class="delendai-config__footer"><span class="delendai-config__status" data-config-status aria-live="polite"></span><button class="delendai-config__button delendai-config__button--secondary" type="button" data-config-discard disabled>${attr(model.copy.discard)}</button><button class="delendai-config__button delendai-config__button--primary" type="button" data-config-save disabled>${attr(model.state === 'saving' ? model.copy.saving : model.copy.save)}</button></footer>
 </main>
 <script${nonce}>${configurationCenterScript()}</script>
 </body></html>`;

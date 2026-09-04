@@ -24,22 +24,22 @@ let skillIds: ReadonlySet<string> = new Set();
 beforeEach(() => {
 	workspaceRoot = mkdtempSync(join(tmpdir(), 'host-instructions-'));
 	// Load the real skill manifest from the repo so the lint can distinguish
-	// mcp-vertex-* skill ids from similarly-shaped lint-script names.
+	// delendai-* skill ids from similarly-shaped lint-script names.
 	skillIds = new Set([
-		'mcp-vertex-operator',
-		'mcp-vertex-plugin-authoring',
-		'mcp-vertex-failure-modes',
-		'mcp-vertex-conventional-commits-and-release',
-		'mcp-vertex-token-budget-playbook',
-		'mcp-vertex-mcp-vertex-audit-playbook',
-		'mcp-vertex-mcp-vertex-audit-runner',
-		'mcp-vertex-concurrency-patterns',
-		'mcp-vertex-legacy-proposal-migration',
-		'mcp-vertex-multi-agent-coordination',
-		'mcp-vertex-proposal-swarm-runner',
-		'mcp-vertex-proposals-workflow-playbook',
-		'mcp-vertex-status-marker-and-closure',
-		'mcp-vertex-tabs-component',
+		'delendai-operator',
+		'delendai-plugin-authoring',
+		'delendai-failure-modes',
+		'delendai-conventional-commits-and-release',
+		'delendai-token-budget-playbook',
+		'delendai-delendai-audit-playbook',
+		'delendai-delendai-audit-runner',
+		'delendai-concurrency-patterns',
+		'delendai-legacy-proposal-migration',
+		'delendai-multi-agent-coordination',
+		'delendai-proposal-swarm-runner',
+		'delendai-proposals-workflow-playbook',
+		'delendai-status-marker-and-closure',
+		'delendai-tabs-component',
 	]);
 });
 
@@ -62,10 +62,10 @@ const writeHostFile = (file: string, contents: string): void => {
 
 const CLEAN_HOST_FILE = (suffix: string): string => `# Host
 
-> Follow docs/mcp-vertex/AGENT-BOOTSTRAP.md ${suffix}
+> Follow docs/delendai/AGENT-BOOTSTRAP.md ${suffix}
 
 All agent rules live in that file. Do not enumerate tool or skill ids.
-Use \`mcp-vertex_overview\` to orient, then \`mcp-vertex_agent_catalog\` to route.
+Use \`delendai_overview\` to orient, then \`delendai_agent_catalog\` to route.
 `;
 
 describe('host-instructions lint', () => {
@@ -100,15 +100,15 @@ describe('host-instructions lint', () => {
 			(v) => v.kind === 'missing-bootstrap-link',
 		);
 		expect(missing).toBeDefined();
-		expect(missing?.fix).toContain('docs/mcp-vertex/AGENT-BOOTSTRAP.md');
+		expect(missing?.fix).toContain('docs/delendai/AGENT-BOOTSTRAP.md');
 	});
 
 	it('host file enumerating a skill id fails with the right line number', async () => {
 		const content = `# Host
 
-> Follow docs/mcp-vertex/AGENT-BOOTSTRAP.md
+> Follow docs/delendai/AGENT-BOOTSTRAP.md
 
-Use \`mcp-vertex-operator\` whenever you start a session.
+Use \`delendai-operator\` whenever you start a session.
 `;
 		writeHostFile('AGENTS.md', content);
 		const violations = await lintHostFile(
@@ -121,15 +121,15 @@ Use \`mcp-vertex-operator\` whenever you start a session.
 		expect(skill?.line).toBe(5);
 		// The fix message contains the skill id; we check the violation
 		// directly so the snippet truncation does not bite us.
-		expect(skill?.snippet).toContain('mcp-vertex-operator');
+		expect(skill?.snippet).toContain('delendai-operator');
 	});
 
 	it('host file enumerating a tool id (non-bootstrap entry point) fails', async () => {
 		const content = `# Host
 
-> Follow docs/mcp-vertex/AGENT-BOOTSTRAP.md
+> Follow docs/delendai/AGENT-BOOTSTRAP.md
 
-Call \`mcp-vertex_proposals_auto_work\` for orchestration.
+Call \`delendai_proposals_auto_work\` for orchestration.
 `;
 		writeHostFile('AGENTS.md', content);
 		const violations = await lintHostFile(
@@ -139,15 +139,15 @@ Call \`mcp-vertex_proposals_auto_work\` for orchestration.
 		);
 		const tool = violations.find((v) => v.kind === 'tool-id-enumeration');
 		expect(tool).toBeDefined();
-		expect(tool?.fix).toContain('mcp-vertex_proposals_auto_work');
+		expect(tool?.fix).toContain('delendai_proposals_auto_work');
 	});
 
 	it('host file mentioning bootstrap entry points passes', async () => {
 		const content = `# Host
 
-> Follow docs/mcp-vertex/AGENT-BOOTSTRAP.md
+> Follow docs/delendai/AGENT-BOOTSTRAP.md
 
-Call \`mcp-vertex_overview\` then \`mcp-vertex_agent_catalog\`. Use the bootstrap prompt \`mcp-vertex_agent_bootstrap\` if the host surfaces prompts.
+Call \`delendai_overview\` then \`delendai_agent_catalog\`. Use the bootstrap prompt \`delendai_agent_bootstrap\` if the host surfaces prompts.
 `;
 		writeHostFile('AGENTS.md', content);
 		const violations = await lintHostFile(
@@ -161,7 +161,7 @@ Call \`mcp-vertex_overview\` then \`mcp-vertex_agent_catalog\`. Use the bootstra
 	it('host file enumerating a proposal id fails', async () => {
 		const content = `# Host
 
-> Follow docs/mcp-vertex/AGENT-BOOTSTRAP.md
+> Follow docs/delendai/AGENT-BOOTSTRAP.md
 
 See also \`f00056\` and \`f00084\`.
 `;

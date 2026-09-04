@@ -173,7 +173,7 @@ Canonical pattern: specs colocated with the source; they use injected mocks/stub
  * `IBriefOptions.crossCuttingAdditions`; they are rendered AFTER the
  * universal defaults so the brief stays self-explanatory.
  *
- * The historical (mcp-vertex-specific) defaults — `mcp-vertex_metrics`,
+ * The historical (delendai-specific) defaults — `delendai_metrics`,
  * `ctx.keepLegacy`, `tool-outputs.ts` — were promoted to **host-added**
  * invariants because they describe one project's vocabulary. Other
  * projects will have their own observability primitive, their own

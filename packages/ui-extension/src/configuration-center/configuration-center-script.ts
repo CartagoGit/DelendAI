@@ -1,7 +1,7 @@
 export const configurationCenterScript = (): string => `
 (function () {
   'use strict';
-  var root = document.querySelector('[data-mcpv-configuration-center]');
+  var root = document.querySelector('[data-delendai-configuration-center]');
   if (!root) return;
   var edits = new Map();
   var save = root.querySelector('[data-config-save]');
@@ -15,7 +15,7 @@ export const configurationCenterScript = (): string => `
       host.post(message);
       return;
     }
-    window.dispatchEvent(new CustomEvent('mcpv-configuration-message', { detail: message }));
+    window.dispatchEvent(new CustomEvent('delendai-configuration-message', { detail: message }));
   }
 
   function activateTab(id, focus) {
@@ -61,7 +61,7 @@ export const configurationCenterScript = (): string => `
 
   root.querySelectorAll('[data-config-path]').forEach(function (control) {
     control.addEventListener('change', function () {
-      var field = control.closest('.mcpv-config__field');
+      var field = control.closest('.delendai-config__field');
       try {
         var path = JSON.parse(control.getAttribute('data-config-path'));
         var kind = control.getAttribute('data-config-kind');
@@ -121,7 +121,7 @@ export const configurationCenterScript = (): string => `
   // config-plugin-<id> id present in the DOM. Keeps the
   // right-click "Configure plugin" UX anchored instead of forcing
   // the user to scroll through the whole grid.
-  var deepLink = root.querySelector('.mcpv-config__card--highlight');
+  var deepLink = root.querySelector('.delendai-config__card--highlight');
   if (deepLink) deepLink.scrollIntoView({ behavior: 'smooth', block: 'start' });
 })();
 `;

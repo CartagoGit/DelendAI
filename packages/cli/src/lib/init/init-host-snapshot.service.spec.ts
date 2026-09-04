@@ -105,11 +105,11 @@ describe('captureHostFiles (f00093)', () => {
 
 	it('recognises a canonical block (with the host-specific footnote) as alreadyCanonical', async () => {
 		const canonicalCopilot =
-			'<!-- mcp-vertex:begin -->\n\n' +
-			'# mcp-vertex host hints\n\n' +
-			'See `docs/mcp-vertex/host-hints/agent-instructions.generated.md` for the live catalog.\n\n' +
+			'<!-- delendai:begin -->\n\n' +
+			'# delendai host hints\n\n' +
+			'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live catalog.\n\n' +
 			'- Bootstrap §8.1 (Copilot close-marker contract) is in effect.\n' +
-			'<!-- mcp-vertex:end -->';
+			'<!-- delendai:end -->';
 		const reader = dirReader({
 			'.github/copilot-instructions.md': canonicalCopilot,
 			'CLAUDE.md': '# legacy\n',
@@ -122,13 +122,13 @@ describe('captureHostFiles (f00093)', () => {
 		expect(claude?.alreadyCanonical).toBe(false);
 	});
 
-	it('marks a file with a mcp-vertex block but a non-canonical body as non-canonical', async () => {
+	it('marks a file with a delendai block but a non-canonical body as non-canonical', async () => {
 		// Block region exists, but inner content is NOT the canonical one
 		// (user added a custom rule inside the markers).
 		const tampered =
-			'<!-- mcp-vertex:begin -->\n\n' +
+			'<!-- delendai:begin -->\n\n' +
 			'# custom rule the user wants to keep\n\n' +
-			'<!-- mcp-vertex:end -->';
+			'<!-- delendai:end -->';
 		const reader = dirReader({
 			'.github/copilot-instructions.md': tampered,
 			'CLAUDE.md': '# legacy\n',
@@ -142,15 +142,15 @@ describe('captureHostFiles (f00093)', () => {
 
 describe('isCanonicalHostBlock (f00093)', () => {
 	const canonical = (host: 'copilot' | 'claude' | 'agents') =>
-		'<!-- mcp-vertex:begin -->\n\n' +
-		'# mcp-vertex host hints\n\n' +
-		'See `docs/mcp-vertex/host-hints/agent-instructions.generated.md` for the live catalog.\n\n' +
+		'<!-- delendai:begin -->\n\n' +
+		'# delendai host hints\n\n' +
+		'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live catalog.\n\n' +
 		(host === 'copilot'
 			? '- Bootstrap §8.1 (Copilot close-marker contract) is in effect.\n'
 			: host === 'claude'
 				? '- Bootstrap §8.2 (keep the main thread cheap) is in effect.\n'
 				: '- Bootstrap §7 (repo-level rules) is in effect.\n') +
-		'<!-- mcp-vertex:end -->';
+		'<!-- delendai:end -->';
 
 	it('accepts the exact canonical block for each host', () => {
 		expect(isCanonicalHostBlock(canonical('copilot'), 'copilot')).toBe(
@@ -166,7 +166,7 @@ describe('isCanonicalHostBlock (f00093)', () => {
 
 	it('rejects a block with a non-canonical inner body', () => {
 		const tampered = canonical('claude').replace(
-			'# mcp-vertex host hints',
+			'# delendai host hints',
 			'# custom replacement',
 		);
 		expect(isCanonicalHostBlock(tampered, 'claude')).toBe(false);
@@ -281,15 +281,15 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 
 	it('returns [] when all host files are already canonical (no audit needed)', async () => {
 		const canonical = (host: 'copilot' | 'claude' | 'agents') =>
-			'<!-- mcp-vertex:begin -->\n\n' +
-			'# mcp-vertex host hints\n\n' +
-			'See `docs/mcp-vertex/host-hints/agent-instructions.generated.md` for the live catalog.\n\n' +
+			'<!-- delendai:begin -->\n\n' +
+			'# delendai host hints\n\n' +
+			'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live catalog.\n\n' +
 			(host === 'copilot'
 				? '- Bootstrap §8.1 (Copilot close-marker contract) is in effect.\n'
 				: host === 'claude'
 					? '- Bootstrap §8.2 (keep the main thread cheap) is in effect.\n'
 					: '- Bootstrap §7 (repo-level rules) is in effect.\n') +
-			'<!-- mcp-vertex:end -->';
+			'<!-- delendai:end -->';
 		const reader = dirReader({
 			'.github/copilot-instructions.md': canonical('copilot'),
 			'CLAUDE.md': canonical('claude'),
@@ -306,7 +306,7 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 			'.github/copilot-instructions.md':
 				'# custom copilot rule the user wants to keep\n',
 			'CLAUDE.md': '# legacy claude rule\n',
-			'AGENTS.md': '# mcp-vertex:begin -->\n',
+			'AGENTS.md': '# delendai:begin -->\n',
 		});
 		const out = await renderSnapshotHostInstructionsProposal(baseAnswers, {
 			reader,
@@ -316,7 +316,7 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 		expect(snap).toBeDefined();
 		// Filename + content hold the audit trail.
 		expect(snap!.relPath).toMatch(
-			/^docs\/mcp-vertex\/proposals\/ready\/f\d{5}-review-replaced-host-instructions-/,
+			/^docs\/delendai\/proposals\/ready\/f\d{5}-review-replaced-host-instructions-/,
 		);
 		expect(snap!.content).toContain('# custom copilot rule');
 		expect(snap!.content).toContain('# legacy claude rule');
@@ -333,7 +333,7 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 	it('allocates the next FREE id against the shared adoption pool (no hardcoded f00001)', async () => {
 		const reader = dirReader({
 			// pre-existing proposal at f00007 pushes the counter forward
-			'docs/mcp-vertex/proposals/ready/f00007-prior-proposal.md':
+			'docs/delendai/proposals/ready/f00007-prior-proposal.md':
 				'# prior\n',
 			'.github/copilot-instructions.md': '# legacy\n',
 		});

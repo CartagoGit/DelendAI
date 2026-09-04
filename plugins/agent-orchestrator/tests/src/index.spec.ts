@@ -12,12 +12,12 @@ const ROOT = '/workspace';
 
 const makeCtx = (options: Record<string, unknown> = {}): IMcpPluginContext => ({
 	workspace: { root: ROOT, resolve: (rel: string) => join(ROOT, rel) },
-	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	corePaths: { cacheDir: '.cache/delendai', docsDir: 'docs/delendai' },
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: '.cache/mcp-vertex/agent-orchestrator',
-	pluginDocsDir: 'docs/mcp-vertex/agent-orchestrator',
+	pluginCacheDir: '.cache/delendai/agent-orchestrator',
+	pluginDocsDir: 'docs/delendai/agent-orchestrator',
 	namespacePrefix: 'agent-orchestrator',
 	options,
 	args: {},

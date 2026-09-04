@@ -2,7 +2,7 @@
 	"name": "@delendai/usage-tracking",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Observability plugin for @delendai/core: records every tool invocation (agent, plugin, model, extension) to an append-only NDJSON log under the cache dir and surfaces aggregate usage/cost reports. Load with `mcp-vertex --plugins=usage-tracking`.",
+	"description": "Observability plugin for @delendai/core: records every tool invocation (agent, plugin, model, extension) to an append-only NDJSON log under the cache dir and surfaces aggregate usage/cost reports. Load with `delendai --plugins=usage-tracking`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

@@ -1,4 +1,4 @@
-import type { ISafeMcpVertexReport } from './reporter.interface';
+import type { ISafeDelendaiReport } from './reporter.interface';
 
 /**
  * The closed set of shapes the server-log reader recognises.
@@ -143,14 +143,14 @@ export interface ILogDiagnosisOptions {
  * title; there is no channel here for raw log text by construction.
  */
 export interface ILogFindingReport {
-	readonly report: ISafeMcpVertexReport;
+	readonly report: ISafeDelendaiReport;
 	readonly title: string;
 	readonly body: string;
 }
 
 export interface IDiagnoseLogToolOptions {
 	readonly namespacePrefix: string;
-	readonly mcpVertexVersion: string;
+	readonly delendaiVersion: string;
 	readonly reporterVersion: string;
 	/** Injected so the tool can open an issue only when asked to. */
 	readonly submit?:

@@ -44,7 +44,7 @@ export const rewriteStaleProposalSelfPaths = (
 	// `- **Files**: \`ready/f.md\`` and `- files: ready/f.md` rewrite.
 	// The lookbehind stops a proposals-dir-relative form (`ready/x.md`)
 	// from matching INSIDE an already repo-root-relative one
-	// (`docs/mcp-vertex/proposals/ready/x.md`), which would splice the
+	// (`docs/delendai/proposals/ready/x.md`), which would splice the
 	// prefix in twice. It lets the caller run both forms through this
 	// helper in one pass without them corrupting each other.
 	const token = new RegExp(`(?<![A-Za-z0-9_/.-])(\`?)${escaped}(\`?)`, 'g');

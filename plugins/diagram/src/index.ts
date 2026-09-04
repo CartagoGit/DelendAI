@@ -25,7 +25,7 @@ const PLUGIN_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
  *
  * All four render natively in the docs site and in artifacts, so an
  * agent can *see* the project's structure. Offline, pure, no
- * external tools. Load with `mcp-vertex --plugins=diagram`.
+ * external tools. Load with `delendai --plugins=diagram`.
  */
 const OptionsSchema = z.object({});
 

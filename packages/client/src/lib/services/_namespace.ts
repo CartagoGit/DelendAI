@@ -2,18 +2,18 @@
  * Namespace-prefix helpers shared by the client service layer (f00081).
  *
  * The host namespaces every tool as `<prefix><suffix>`, where the
- * default prefix is `mcp-vertex_`. A deployment started with
+ * default prefix is `delendai_`. A deployment started with
  * `--prefix=acme` reports its prefix via
- * `mcp-vertex_overview { compact: true }` (`snap.namespacePrefix`) and the
+ * `delendai_overview { compact: true }` (`snap.namespacePrefix`) and the
  * client threads it through to each service constructor.
  *
  * These helpers keep the `prefix ?? DEFAULT_NAMESPACE_PREFIX` semantics
- * in one place so no service hardcodes the literal `mcp-vertex_` namespace
+ * in one place so no service hardcodes the literal `delendai_` namespace
  * in its `request(...)` calls.
  */
 
 /** The host's default tool-name prefix when no `--prefix` is supplied. */
-export const DEFAULT_NAMESPACE_PREFIX = 'mcp-vertex_' as const;
+export const DEFAULT_NAMESPACE_PREFIX = 'delendai_' as const;
 
 /** A resolved, trailing-underscore-terminated namespace prefix. */
 export type INamespacePrefix = string;
@@ -22,7 +22,7 @@ export type INamespacePrefix = string;
  * Normalise a raw prefix value into a usable namespace prefix.
  *
  * - `undefined`, `null` or an empty/whitespace string → the default
- *   `mcp-vertex_`.
+ *   `delendai_`.
  * - A value missing the trailing `_` separator gets one appended, so both
  *   `'acme'` and `'acme_'` resolve to `'acme_'`.
  */
@@ -40,7 +40,7 @@ export const parsePrefix = (
  * tool suffix (the part after the host namespace, e.g. `overview`,
  * `notification_notify_status`).
  *
- * `formatToolName(undefined, 'overview')` → `'mcp-vertex_overview'`
+ * `formatToolName(undefined, 'overview')` → `'delendai_overview'`
  * `formatToolName('acme', 'overview')`    → `'acme_overview'`
  */
 export const formatToolName = (

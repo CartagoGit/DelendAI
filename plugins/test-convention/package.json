@@ -2,7 +2,7 @@
 	"name": "@delendai/test-convention",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Canonical test convention for any mcp-vertex project: the rules the repo expects its tests to follow, plus tools to suggest spec paths and audit drift. Load with `mcp-vertex --plugins=test-convention`.",
+	"description": "Canonical test convention for any delendai project: the rules the repo expects its tests to follow, plus tools to suggest spec paths and audit drift. Load with `delendai --plugins=test-convention`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

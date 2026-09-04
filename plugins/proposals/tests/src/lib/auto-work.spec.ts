@@ -753,7 +753,7 @@ describe('auto_work + loop-detector interaction (a00033 S3)', async () => {
 	// tool is in the disable list.
 	const stuckDetector = {
 		isAgentStuck: () => ({
-			handoffPath: '.cache/mcp-vertex/handoff/stuck-agent.json',
+			handoffPath: '.cache/delendai/handoff/stuck-agent.json',
 			suggestedAction: 'call proposals_continue_proposal mode:auto',
 		}),
 	};
@@ -788,7 +788,7 @@ describe('auto_work + loop-detector interaction (a00033 S3)', async () => {
 		expect(out.stop).toBe(true);
 		expect(out.reason).toBe('stuck-detected');
 		expect(out.handoffPath).toBe(
-			'.cache/mcp-vertex/handoff/stuck-agent.json',
+			'.cache/delendai/handoff/stuck-agent.json',
 		);
 	});
 

@@ -18,7 +18,7 @@ const NOW = 1_700_000_000_000;
 
 const META = {
 	source: 'registry' as const,
-	cachePath: '.cache/mcp-vertex/registry-versions.json',
+	cachePath: '.cache/delendai/registry-versions.json',
 	latestCachedVersion: pickLatestPublishedVersion(PUBLISHED) ?? 'n/a',
 };
 
@@ -137,10 +137,10 @@ describe('main (focused CLI behavior)', () => {
 	it('fails in offline mode with a stale cache', async () => {
 		const root = await createTempRoot();
 		await writeFile(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			'{"$schema":"test"}\n',
 		);
-		await mkdir(join(root, '.cache', 'mcp-vertex'), { recursive: true });
+		await mkdir(join(root, '.cache', 'delendai'), { recursive: true });
 		await writeFile(
 			join(root, CACHE_REL),
 			JSON.stringify(
@@ -172,7 +172,7 @@ describe('main (focused CLI behavior)', () => {
 	it('succeeds in offline mode with a fresh cache', async () => {
 		const root = await createTempRoot();
 		await writeFile(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			'{"$schema":"test","coreVersion":"0.4.5"}\n',
 		);
 		await writeRegistryCache(
@@ -199,7 +199,7 @@ describe('main (focused CLI behavior)', () => {
 	it('falls back to bun.lock when npm lookup fails', async () => {
 		const root = await createTempRoot();
 		await writeFile(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			'{"$schema":"test","coreVersion":"0.1.0"}\n',
 		);
 		await writeFile(

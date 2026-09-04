@@ -34,12 +34,12 @@ describe('create_proposal concurrency', () => {
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			peerReviewLogPathAbs: join(
 				root,
-				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+				'.cache/delendai/proposals/peer-review.jsonl',
 			),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			requirePeerReview: false,

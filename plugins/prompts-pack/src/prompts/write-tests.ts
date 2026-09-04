@@ -41,8 +41,8 @@ export const buildWriteTestsForPrompt = (
 			return [
 				`Write ${requestedStyle} tests for ${file}.`,
 				'',
-				'Load the workspace testing rules with `mcp-vertex_test-convention_get_convention` before drafting anything.',
-				'Choose the spec path with `mcp-vertex_test-convention_suggest_spec_path` and validate the resulting layout with `mcp-vertex_test-convention_scan_drift` after the draft exists.',
+				'Load the workspace testing rules with `delendai_test-convention_get_convention` before drafting anything.',
+				'Choose the spec path with `delendai_test-convention_suggest_spec_path` and validate the resulting layout with `delendai_test-convention_scan_drift` after the draft exists.',
 				'',
 				'Deliverables:',
 				'- The target spec path and why it matches the convention.',

@@ -1,10 +1,10 @@
 ---
-name: mcp-vertex-status-marker-and-closure
+name: delendai-status-marker-and-closure
 appliesTo: ['@delendai/status-marker']
 description: The 8 canonical close-marker states an agent response must end with, which ones require a reason, and the exact tools (status_marker_close / status_marker_validate) that generate and audit the line so you never hand-format it. Use at the end of every response when the status-marker plugin is loaded.
 ---
 
-# mcp-vertex status marker + closure
+# delendai status marker + closure
 
 ## Decision tree
 
@@ -19,7 +19,7 @@ description: The 8 canonical close-marker states an agent response must end with
    `<prefix>_validate { text: <full draft> }` and check `ok`.
 
 (`<prefix>` is the plugin's namespace prefix, e.g. `status_marker` —
-confirm via `mcp-vertex_overview`.)
+confirm via `delendai_overview`.)
 
 ## The 8 canonical states
 

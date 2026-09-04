@@ -6,7 +6,7 @@
  * owns the declarative forwarder table that drives that translation.
  *
  * The mapper table below is the **single source of truth** for which
- * mcpv globals map to which host flags, and how each renders. Adding a
+ * delendai globals map to which host flags, and how each renders. Adding a
  * host flag is **append one row** to the relevant concern group
  * (`IDENTITY_RULES`, `PLUGIN_RULES`, …) — the consumer
  * (`buildServerArgs`) never changes.
@@ -17,7 +17,7 @@
  *     host argv bridge. Splitting them across two files forced every
  *     reviewer to keep two mental models of the same concern in sync
  *     (a00036 follow-up).
- *   - Open/Closed (the original F-001 win): each mcpv global that needs
+ *   - Open/Closed (the original F-001 win): each delendai global that needs
  *     forwarding becomes one new entry in `SERVER_ARG_MAPPER`. The
  *     consumer walks the table once via `forwardAll()`.
  *   - Interface segregation: the rule kinds `flag | option | repeatable
@@ -132,14 +132,14 @@ const BOOTSTRAP_RULES: readonly IAutoForwardRule[] = [
 
 /**
  * f00052: host-capability gates. `agent_worktree` is host-scoped, so the
- * mcpv flag forwards an explicit `--agent-worktree[=false]` to the host.
+ * delendai flag forwards an explicit `--agent-worktree[=false]` to the host.
  */
 const CAPABILITY_RULES: readonly IAutoForwardRule[] = [
 	triStateFlag('agentWorktree', 'agent-worktree'),
 ];
 
 /**
- * Declarative table of mcpv → host flag forwarding rules.
+ * Declarative table of delendai → host flag forwarding rules.
  *
  * Adding a new flag is **append one entry** to the relevant concern
  * group, not edit `buildServerArgs`. Order within the table is not

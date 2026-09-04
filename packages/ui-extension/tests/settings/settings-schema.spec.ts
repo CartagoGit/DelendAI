@@ -12,7 +12,7 @@ import {
 
 describe('ExtensionSettingsSchema (f00062 S1)', () => {
 	const valid: IExtensionSettings = {
-		docsUrl: 'https://mcp-vertex.dev/docs',
+		docsUrl: 'https://delendai.dev/docs',
 		allowLocalhost: false,
 		allowPrivateIps: false,
 		logLevel: 'info',

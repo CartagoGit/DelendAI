@@ -1,7 +1,7 @@
 # `@delendai/cache`
 
 Opt-in cache eviction plugin (f00072). Makes the shared
-`.cache/mcp-vertex/` root self-cleaning by declaring eviction as
+`.cache/delendai/` root self-cleaning by declaring eviction as
 **data** — a set of TTL / keep-last rules contributed to the core
 eviction registry — and exposing a single tool to preview or apply the
 sweep. **No network, no secrets.**
@@ -9,7 +9,7 @@ sweep. **No network, no secrets.**
 ## Activate
 
 ```bash
-mcp-vertex --plugins=cache
+delendai --plugins=cache
 ```
 
 Hosts that never load it keep the current grow-forever behaviour.
@@ -18,7 +18,7 @@ Hosts that never load it keep the current grow-forever behaviour.
 
 ### `cache_gc { dryRun?, onlyOwner? }`
 
-Run the eviction registry over `.cache/mcp-vertex`.
+Run the eviction registry over `.cache/delendai`.
 
 - `dryRun: true` (default) — return a report of what **would** be
   removed; delete nothing.
@@ -49,7 +49,7 @@ so a host can **shorten** (never silently lengthen) the defaults.
 ## Boot sweep
 
 The core runs the registry once on boot. Posture is governed by
-`config.cache.runOnBoot` in `mcp-vertex.config.json`:
+`config.cache.runOnBoot` in `delendai.config.json`:
 
 - `'dry-run'` (default) — log the report, delete nothing.
 - `'apply'` — delete on boot (only when this plugin is loaded).

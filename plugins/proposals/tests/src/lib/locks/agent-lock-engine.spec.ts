@@ -532,20 +532,20 @@ describe('runAgentLockEngine — file-level claims', async () => {
 // x00163 regression — every existing fixture in this file puts
 // `agents.lock.json` either directly in the workspace or one level
 // under `.cache/`, neither of which exercises the REAL production
-// shape (`<root>/.cache/mcp-vertex/agents.lock.json`, an extra
-// `mcp-vertex` segment from the plugin cache dir). That real shape
+// shape (`<root>/.cache/delendai/agents.lock.json`, an extra
+// `delendai` segment from the plugin cache dir). That real shape
 // made `resolveSessionWorkspaceRoot` return the CACHE DIR itself
 // instead of the workspace root, and `sessionLogPath` then re-joined
-// `.cache/mcp-vertex` onto it a second time — confirmed live: this
+// `.cache/delendai` onto it a second time — confirmed live: this
 // exact doubly-nested path
-// (`.cache/mcp-vertex/.cache/mcp-vertex/agents.lock.session.jsonl`)
+// (`.cache/delendai/.cache/delendai/agents.lock.session.jsonl`)
 // existed on disk in this very repo's own `.cache/`.
-describe('runAgentLockEngine — session log path with the real .cache/mcp-vertex/ shape (x00163)', () => {
-	it('writes the session log under <root>/.cache/mcp-vertex/, not doubly nested', async () => {
+describe('runAgentLockEngine — session log path with the real .cache/delendai/ shape (x00163)', () => {
+	it('writes the session log under <root>/.cache/delendai/, not doubly nested', async () => {
 		const realLockPath = join(
 			workspace,
 			'.cache',
-			'mcp-vertex',
+			'delendai',
 			'agents.lock.json',
 		);
 		await run(
@@ -559,16 +559,16 @@ describe('runAgentLockEngine — session log path with the real .cache/mcp-verte
 		);
 		const expectedSessionPath = sessionLogPath(workspace);
 		expect(expectedSessionPath).toBe(
-			join(workspace, '.cache/mcp-vertex', 'agents.lock.session.jsonl'),
+			join(workspace, '.cache/delendai', 'agents.lock.session.jsonl'),
 		);
 		expect(readFileSync(expectedSessionPath, 'utf8').trim()).not.toBe('');
 		// The bug's exact symptom: a doubly-nested path must NOT exist.
 		const doublyNested = join(
 			workspace,
 			'.cache',
-			'mcp-vertex',
+			'delendai',
 			'.cache',
-			'mcp-vertex',
+			'delendai',
 			'agents.lock.session.jsonl',
 		);
 		expect(() => readFileSync(doublyNested, 'utf8')).toThrow();

@@ -39,7 +39,7 @@ export interface IPackageRoute {
 }
 
 export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
-	'mcp-vertex': { dir: 'packages/core', label: 'McpVertex' },
+	delendai: { dir: 'packages/core', label: 'Delendai' },
 	git: { dir: 'plugins/git', label: 'Git' },
 	memory: { dir: 'plugins/memory', label: 'Memory' },
 	search: { dir: 'plugins/search', label: 'Search' },
@@ -91,23 +91,23 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 export const GENERATED_REL_PATH = 'src/generated/tool-outputs.ts';
 
 const PLUGIN_ROUTE_PREFIXES = Object.keys(PACKAGE_ROUTES)
-	.filter((prefix) => prefix !== 'mcp-vertex')
+	.filter((prefix) => prefix !== 'delendai')
 	.sort((left, right) => right.length - left.length);
 
 const packagePrefixForTool = (toolName: string): string => {
-	if (!toolName.startsWith('mcp-vertex_')) {
+	if (!toolName.startsWith('delendai_')) {
 		return toolName.split('_')[0] ?? '';
 	}
-	const unqualified = toolName.slice('mcp-vertex_'.length);
+	const unqualified = toolName.slice('delendai_'.length);
 	const pluginPrefix = PLUGIN_ROUTE_PREFIXES.find((prefix) =>
 		unqualified.startsWith(`${prefix}_`),
 	);
-	return pluginPrefix ?? 'mcp-vertex';
+	return pluginPrefix ?? 'delendai';
 };
 
 const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
-/** PascalCase a snake/kebab tool name: `mcp-vertex_git_status` → `GitStatus`. */
+/** PascalCase a snake/kebab tool name: `delendai_git_status` → `GitStatus`. */
 export const pascalCase = (name: string): string =>
 	name
 		.split(/[_\-/]+/)
@@ -115,7 +115,7 @@ export const pascalCase = (name: string): string =>
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join('');
 
-/** Interface name for a tool's output, e.g. `mcp-vertex_git_status` → `GitStatusOutput`. */
+/** Interface name for a tool's output, e.g. `delendai_git_status` → `GitStatusOutput`. */
 export const outputInterfaceName = (toolName: string): string =>
 	`${pascalCase(toolName)}Output`;
 

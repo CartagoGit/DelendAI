@@ -124,8 +124,8 @@ describe('i18n_validate tool', () => {
 			args: {},
 			namespacePrefix: 'i18n',
 			pluginCacheDir: 'i18n',
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			workspace: {
 				root: '/workspace',
 				resolve: (rel: string) => rel,

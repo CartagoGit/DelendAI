@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexProposalsAgentLockOutput {
+export interface DelendaiProposalsAgentLockOutput {
 	$schema?: string;
 	description?: string;
 	tool?: string;
@@ -78,14 +78,14 @@ export interface McpVertexProposalsAgentLockOutput {
 	};
 }
 
-export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
+export interface DelendaiProposalsAgentLockReleaseOrphanOutput {
 	ok: boolean;
 	taskId: string;
 	agent: string;
 	released: boolean;
 }
 
-export interface McpVertexProposalsAgentNamesOutput {
+export interface DelendaiProposalsAgentNamesOutput {
 	error?: string;
 	nextAction?: string;
 	blocked?: boolean;
@@ -104,7 +104,7 @@ export interface McpVertexProposalsAgentNamesOutput {
 	[key: string]: unknown;
 }
 
-export interface McpVertexProposalsAgentWorktreeOutput {
+export interface DelendaiProposalsAgentWorktreeOutput {
 	ok: boolean;
 	action: "create" | "list" | "remove";
 	reason?: string;
@@ -136,7 +136,7 @@ export interface McpVertexProposalsAgentWorktreeOutput {
 	}[];
 }
 
-export interface McpVertexProposalsAgentsLockDiagnoseOutput {
+export interface DelendaiProposalsAgentsLockDiagnoseOutput {
 	ok: true;
 	zombies: {
 		task_id: string;
@@ -168,7 +168,7 @@ export interface McpVertexProposalsAgentsLockDiagnoseOutput {
 	deadlocks: string[][];
 }
 
-export interface McpVertexProposalsAutoFixQueueOutput {
+export interface DelendaiProposalsAutoFixQueueOutput {
 	ok: true;
 	autoFixable: unknown;
 	needsHuman: unknown;
@@ -179,7 +179,7 @@ export interface McpVertexProposalsAutoFixQueueOutput {
 	indexCount?: number;
 }
 
-export interface McpVertexProposalsAutoWorkOutput {
+export interface DelendaiProposalsAutoWorkOutput {
 	state: "idle" | "work";
 	idleStreak?: number;
 	reason?: string;
@@ -207,7 +207,7 @@ export interface McpVertexProposalsAutoWorkOutput {
 	blockers?: string[];
 }
 
-export interface McpVertexProposalsBranchGcOutput {
+export interface DelendaiProposalsBranchGcOutput {
 	ok: boolean;
 	reason?: string;
 	baseBranch?: string;
@@ -235,7 +235,7 @@ export interface McpVertexProposalsBranchGcOutput {
 	};
 }
 
-export interface McpVertexProposalsBranchStatusOutput {
+export interface DelendaiProposalsBranchStatusOutput {
 	ok: boolean;
 	reason?: string;
 	baseBranch?: string;
@@ -248,7 +248,7 @@ export interface McpVertexProposalsBranchStatusOutput {
 	generatedAt?: string;
 }
 
-export interface McpVertexProposalsCloseSliceOutput {
+export interface DelendaiProposalsCloseSliceOutput {
 	ok: boolean;
 	blockerType?: string;
 	blockerDetail?: {
@@ -291,7 +291,7 @@ export interface McpVertexProposalsCloseSliceOutput {
 	validationOutput?: string;
 }
 
-export interface McpVertexProposalsCompactStatusOutput {
+export interface DelendaiProposalsCompactStatusOutput {
 	locks?: {
 		active: number;
 	};
@@ -308,7 +308,7 @@ export interface McpVertexProposalsCompactStatusOutput {
 	};
 }
 
-export interface McpVertexProposalsContinueProposalOutput {
+export interface DelendaiProposalsContinueProposalOutput {
 	kind: "next-proposal" | "no-proposal" | "all-claimed" | "slice-mode-error" | "slice-plan" | "slice-claim-rejected" | "slice-claim";
 	reason?: string;
 	nextAction?: string;
@@ -331,7 +331,7 @@ export interface McpVertexProposalsContinueProposalOutput {
 	pickedFromPaused?: boolean;
 }
 
-export interface McpVertexProposalsCreateProposalOutput {
+export interface DelendaiProposalsCreateProposalOutput {
 	ok: true;
 	file: string;
 	path: string;
@@ -344,7 +344,7 @@ export interface McpVertexProposalsCreateProposalOutput {
 	redactedSecrets?: number;
 }
 
-export interface McpVertexProposalsDelegateOutput {
+export interface DelendaiProposalsDelegateOutput {
 	ok: boolean;
 	stage?: "assign" | "worktree" | "lock";
 	detail?: Record<string, unknown>;
@@ -368,7 +368,7 @@ export interface McpVertexProposalsDelegateOutput {
 	instruction?: string;
 }
 
-export interface McpVertexProposalsGetProposalWorkflowOutput {
+export interface DelendaiProposalsGetProposalWorkflowOutput {
 	families: {
 		prefix: string;
 		kind?: string;
@@ -381,7 +381,7 @@ export interface McpVertexProposalsGetProposalWorkflowOutput {
 	template: string;
 }
 
-export interface McpVertexProposalsIncidentProposalsOutput {
+export interface DelendaiProposalsIncidentProposalsOutput {
 	ok: true;
 	drafts: {
 		signature: string;
@@ -409,7 +409,7 @@ export interface McpVertexProposalsIncidentProposalsOutput {
 	indexCount?: number;
 }
 
-export interface McpVertexProposalsInheritHostInstructionsOutput {
+export interface DelendaiProposalsInheritHostInstructionsOutput {
 	ok: true;
 	scope: "repo" | "all";
 	files: string[];
@@ -421,13 +421,13 @@ export interface McpVertexProposalsInheritHostInstructionsOutput {
 	redactedSecrets?: number;
 }
 
-export interface McpVertexProposalsPlanOutput {
+export interface DelendaiProposalsPlanOutput {
 	plan: unknown;
 	disjointnessIssues: unknown[];
 	claimableSliceIds: string[];
 }
 
-export interface McpVertexProposalsProposalAdoptOutput {
+export interface DelendaiProposalsProposalAdoptOutput {
 	ok: true;
 	root: string;
 	layout: {
@@ -467,7 +467,7 @@ export interface McpVertexProposalsProposalAdoptOutput {
 	};
 }
 
-export interface McpVertexProposalsProposalBoardOutput {
+export interface DelendaiProposalsProposalBoardOutput {
 	proposals: Array<{
 		id: string;
 		status: string;
@@ -481,7 +481,7 @@ export interface McpVertexProposalsProposalBoardOutput {
 	}>;
 }
 
-export interface McpVertexProposalsProposalDiagnoseOutput {
+export interface DelendaiProposalsProposalDiagnoseOutput {
 	ok: boolean;
 	id: string;
 	file: string;
@@ -505,7 +505,7 @@ export interface McpVertexProposalsProposalDiagnoseOutput {
 	crossProposalStaleAgents: string[];
 }
 
-export interface McpVertexProposalsProposalForceTransitionOutput {
+export interface DelendaiProposalsProposalForceTransitionOutput {
 	ok: boolean;
 	id: string;
 	from: string;
@@ -516,7 +516,7 @@ export interface McpVertexProposalsProposalForceTransitionOutput {
 	warning?: string;
 }
 
-export interface McpVertexProposalsProposalGetOutput {
+export interface DelendaiProposalsProposalGetOutput {
 	proposals?: Array<{
 		id: string;
 		status: string;
@@ -571,7 +571,7 @@ export interface McpVertexProposalsProposalGetOutput {
 	}>;
 }
 
-export interface McpVertexProposalsProposalReconcileFolderOutput {
+export interface DelendaiProposalsProposalReconcileFolderOutput {
 	ok: boolean;
 	id: string;
 	changed?: boolean;
@@ -594,7 +594,7 @@ export interface McpVertexProposalsProposalReconcileFolderOutput {
 	warning?: string;
 }
 
-export interface McpVertexProposalsProposalReviewOutput {
+export interface DelendaiProposalsProposalReviewOutput {
 	ok: true;
 	proposalId: string;
 	sliceId: string;
@@ -612,7 +612,7 @@ export interface McpVertexProposalsProposalReviewOutput {
 	redactedSecrets: number;
 }
 
-export interface McpVertexProposalsProposalStaleListOutput {
+export interface DelendaiProposalsProposalStaleListOutput {
 	ok: boolean;
 	count: number;
 	zombies: Array<{
@@ -626,7 +626,7 @@ export interface McpVertexProposalsProposalStaleListOutput {
 	}>;
 }
 
-export interface McpVertexProposalsProposalTransitionOutput {
+export interface DelendaiProposalsProposalTransitionOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -650,7 +650,7 @@ export interface McpVertexProposalsProposalTransitionOutput {
 	filesRewritten?: number;
 }
 
-export interface McpVertexProposalsProposalsClosePlanOutput {
+export interface DelendaiProposalsProposalsClosePlanOutput {
 	dryRun: boolean;
 	wouldChange?: Array<{
 		kind: "write" | "delete" | "rename" | "create" | "patch";
@@ -685,7 +685,7 @@ export interface McpVertexProposalsProposalsClosePlanOutput {
 	};
 }
 
-export interface McpVertexProposalsRoundContextOutput {
+export interface DelendaiProposalsRoundContextOutput {
 	digest: {
 		roundId: string;
 		activeProposalId: string;
@@ -700,7 +700,7 @@ export interface McpVertexProposalsRoundContextOutput {
 	[key: string]: unknown;
 }
 
-export interface McpVertexProposalsStateHealthOutput {
+export interface DelendaiProposalsStateHealthOutput {
 	locks: {
 		active: number;
 		stale: number;
@@ -745,7 +745,7 @@ export interface McpVertexProposalsStateHealthOutput {
 	[key: string]: unknown;
 }
 
-export interface McpVertexProposalsStateRepairOutput {
+export interface DelendaiProposalsStateRepairOutput {
 	mode: "dry-run" | "execute";
 	diagnosis: unknown;
 	wouldRepair?: unknown;
@@ -754,7 +754,7 @@ export interface McpVertexProposalsStateRepairOutput {
 	[key: string]: unknown;
 }
 
-export interface McpVertexProposalsSwarmHygieneOutput {
+export interface DelendaiProposalsSwarmHygieneOutput {
 	ok: boolean;
 	reason?: string;
 	baseBranch?: string;
@@ -771,14 +771,14 @@ export interface McpVertexProposalsSwarmHygieneOutput {
 	[key: string]: unknown;
 }
 
-export interface McpVertexProposalsSyncProposalsOutput {
+export interface DelendaiProposalsSyncProposalsOutput {
 	changed: boolean;
 	count: number;
 	indexPath: string;
 	errors: string[];
 }
 
-export interface McpVertexProposalsTaskQueueOutput {
+export interface DelendaiProposalsTaskQueueOutput {
 	error?: string;
 	taskId?: string;
 	status?: string;
@@ -819,38 +819,38 @@ export interface McpVertexProposalsTaskQueueOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface ProposalsToolOutputs {
-	"mcp-vertex_proposals_agent_lock": McpVertexProposalsAgentLockOutput;
-	"mcp-vertex_proposals_agent_lock_release_orphan": McpVertexProposalsAgentLockReleaseOrphanOutput;
-	"mcp-vertex_proposals_agent_names": McpVertexProposalsAgentNamesOutput;
-	"mcp-vertex_proposals_agent_worktree": McpVertexProposalsAgentWorktreeOutput;
-	"mcp-vertex_proposals_agents_lock_diagnose": McpVertexProposalsAgentsLockDiagnoseOutput;
-	"mcp-vertex_proposals_auto_fix_queue": McpVertexProposalsAutoFixQueueOutput;
-	"mcp-vertex_proposals_auto_work": McpVertexProposalsAutoWorkOutput;
-	"mcp-vertex_proposals_branch_gc": McpVertexProposalsBranchGcOutput;
-	"mcp-vertex_proposals_branch_status": McpVertexProposalsBranchStatusOutput;
-	"mcp-vertex_proposals_close_slice": McpVertexProposalsCloseSliceOutput;
-	"mcp-vertex_proposals_compact_status": McpVertexProposalsCompactStatusOutput;
-	"mcp-vertex_proposals_continue_proposal": McpVertexProposalsContinueProposalOutput;
-	"mcp-vertex_proposals_create_proposal": McpVertexProposalsCreateProposalOutput;
-	"mcp-vertex_proposals_delegate": McpVertexProposalsDelegateOutput;
-	"mcp-vertex_proposals_get_proposal_workflow": McpVertexProposalsGetProposalWorkflowOutput;
-	"mcp-vertex_proposals_incident_proposals": McpVertexProposalsIncidentProposalsOutput;
-	"mcp-vertex_proposals_inherit_host_instructions": McpVertexProposalsInheritHostInstructionsOutput;
-	"mcp-vertex_proposals_plan": McpVertexProposalsPlanOutput;
-	"mcp-vertex_proposals_proposal_adopt": McpVertexProposalsProposalAdoptOutput;
-	"mcp-vertex_proposals_proposal_board": McpVertexProposalsProposalBoardOutput;
-	"mcp-vertex_proposals_proposal_diagnose": McpVertexProposalsProposalDiagnoseOutput;
-	"mcp-vertex_proposals_proposal_force_transition": McpVertexProposalsProposalForceTransitionOutput;
-	"mcp-vertex_proposals_proposal_get": McpVertexProposalsProposalGetOutput;
-	"mcp-vertex_proposals_proposal_reconcile_folder": McpVertexProposalsProposalReconcileFolderOutput;
-	"mcp-vertex_proposals_proposal_review": McpVertexProposalsProposalReviewOutput;
-	"mcp-vertex_proposals_proposal_stale_list": McpVertexProposalsProposalStaleListOutput;
-	"mcp-vertex_proposals_proposal_transition": McpVertexProposalsProposalTransitionOutput;
-	"mcp-vertex_proposals_proposals_close_plan": McpVertexProposalsProposalsClosePlanOutput;
-	"mcp-vertex_proposals_round_context": McpVertexProposalsRoundContextOutput;
-	"mcp-vertex_proposals_state_health": McpVertexProposalsStateHealthOutput;
-	"mcp-vertex_proposals_state_repair": McpVertexProposalsStateRepairOutput;
-	"mcp-vertex_proposals_swarm_hygiene": McpVertexProposalsSwarmHygieneOutput;
-	"mcp-vertex_proposals_sync_proposals": McpVertexProposalsSyncProposalsOutput;
-	"mcp-vertex_proposals_task_queue": McpVertexProposalsTaskQueueOutput;
+	"delendai_proposals_agent_lock": DelendaiProposalsAgentLockOutput;
+	"delendai_proposals_agent_lock_release_orphan": DelendaiProposalsAgentLockReleaseOrphanOutput;
+	"delendai_proposals_agent_names": DelendaiProposalsAgentNamesOutput;
+	"delendai_proposals_agent_worktree": DelendaiProposalsAgentWorktreeOutput;
+	"delendai_proposals_agents_lock_diagnose": DelendaiProposalsAgentsLockDiagnoseOutput;
+	"delendai_proposals_auto_fix_queue": DelendaiProposalsAutoFixQueueOutput;
+	"delendai_proposals_auto_work": DelendaiProposalsAutoWorkOutput;
+	"delendai_proposals_branch_gc": DelendaiProposalsBranchGcOutput;
+	"delendai_proposals_branch_status": DelendaiProposalsBranchStatusOutput;
+	"delendai_proposals_close_slice": DelendaiProposalsCloseSliceOutput;
+	"delendai_proposals_compact_status": DelendaiProposalsCompactStatusOutput;
+	"delendai_proposals_continue_proposal": DelendaiProposalsContinueProposalOutput;
+	"delendai_proposals_create_proposal": DelendaiProposalsCreateProposalOutput;
+	"delendai_proposals_delegate": DelendaiProposalsDelegateOutput;
+	"delendai_proposals_get_proposal_workflow": DelendaiProposalsGetProposalWorkflowOutput;
+	"delendai_proposals_incident_proposals": DelendaiProposalsIncidentProposalsOutput;
+	"delendai_proposals_inherit_host_instructions": DelendaiProposalsInheritHostInstructionsOutput;
+	"delendai_proposals_plan": DelendaiProposalsPlanOutput;
+	"delendai_proposals_proposal_adopt": DelendaiProposalsProposalAdoptOutput;
+	"delendai_proposals_proposal_board": DelendaiProposalsProposalBoardOutput;
+	"delendai_proposals_proposal_diagnose": DelendaiProposalsProposalDiagnoseOutput;
+	"delendai_proposals_proposal_force_transition": DelendaiProposalsProposalForceTransitionOutput;
+	"delendai_proposals_proposal_get": DelendaiProposalsProposalGetOutput;
+	"delendai_proposals_proposal_reconcile_folder": DelendaiProposalsProposalReconcileFolderOutput;
+	"delendai_proposals_proposal_review": DelendaiProposalsProposalReviewOutput;
+	"delendai_proposals_proposal_stale_list": DelendaiProposalsProposalStaleListOutput;
+	"delendai_proposals_proposal_transition": DelendaiProposalsProposalTransitionOutput;
+	"delendai_proposals_proposals_close_plan": DelendaiProposalsProposalsClosePlanOutput;
+	"delendai_proposals_round_context": DelendaiProposalsRoundContextOutput;
+	"delendai_proposals_state_health": DelendaiProposalsStateHealthOutput;
+	"delendai_proposals_state_repair": DelendaiProposalsStateRepairOutput;
+	"delendai_proposals_swarm_hygiene": DelendaiProposalsSwarmHygieneOutput;
+	"delendai_proposals_sync_proposals": DelendaiProposalsSyncProposalsOutput;
+	"delendai_proposals_task_queue": DelendaiProposalsTaskQueueOutput;
 }

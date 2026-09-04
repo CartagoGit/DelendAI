@@ -3,8 +3,8 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import type { ZodType } from 'zod';
 
 import {
-	MCP_VERTEX_CLIENT_NAME,
-	MCP_VERTEX_CLIENT_VERSION,
+	DELENDAI_CLIENT_NAME,
+	DELENDAI_CLIENT_VERSION,
 } from '../contracts/constants/client-package.constant';
 import { MCP_TRANSPORT_ERROR_CODES } from '../contracts/constants/mcp-transport-error.constant';
 import type {
@@ -220,8 +220,8 @@ export class McpStdioClient {
 	): Promise<McpStdioClient> {
 		const client = new sdkBindings.ClientCtor(
 			{
-				name: MCP_VERTEX_CLIENT_NAME,
-				version: MCP_VERTEX_CLIENT_VERSION,
+				name: DELENDAI_CLIENT_NAME,
+				version: DELENDAI_CLIENT_VERSION,
 			},
 			{ capabilities: {} },
 		);

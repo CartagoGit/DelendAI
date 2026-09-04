@@ -21,7 +21,7 @@ import {
 	validateSafeReport,
 	validateSerializedSafeReport,
 } from './privacy-validator.helper';
-import { McpVertexInternalError } from './mcp-internal-error.helper';
+import { DelendaiInternalError } from './mcp-internal-error.helper';
 import { ghIssueExec } from './reporter.service';
 import { DEFAULT_TARGET_REPO } from './contracts/constants/options.constant';
 
@@ -35,9 +35,9 @@ const PROBE_FILE_NAME = '.selftest-probe.json';
 /** Fabricates the same synthetic-internal-error shape the plugin already
  * relies on for lifecycle errors (`withSyntheticSafeStack`) — no real
  * failure needs to happen for this check to prove the pipeline works. */
-const buildSyntheticFailure = (): McpVertexInternalError =>
+const buildSyntheticFailure = (): DelendaiInternalError =>
 	withSyntheticSafeStack(
-		new McpVertexInternalError({
+		new DelendaiInternalError({
 			code: 'TOOL_EXECUTION_FAILED',
 			packageId: SELF_TEST_PACKAGE_ID,
 			componentId: SELF_TEST_COMPONENT_ID,
@@ -92,7 +92,7 @@ const runGhCheck = async (input: {
 };
 
 /**
- * AUD-G01: lets `mcpv doctor --deep error-reporting` (once wired — see
+ * AUD-G01: lets `delendai doctor --deep error-reporting` (once wired — see
  * plugin README) answer "is this plugin working?" without ever creating
  * a GitHub issue. Runs the real classification/privacy pipeline against
  * a synthetic failure and, only with `live: true`, four read-only `gh`
@@ -126,7 +126,7 @@ export const runErrorReportingSelfTest = async (
 		ok: reportable !== undefined,
 		...(reportable === undefined
 			? {
-					detail: 'origin analysis did not classify the synthetic failure as mcp-vertex-internal',
+					detail: 'origin analysis did not classify the synthetic failure as delendai-internal',
 				}
 			: {}),
 	});

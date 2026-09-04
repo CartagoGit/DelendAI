@@ -5,7 +5,7 @@
  * stale-docs, permissions) and produces one `IDoctorSection` per check.
  *
  * Server-dependent sections (plugins, tools) live in the command
- * group itself because they call `request('mcp-vertex_overview', …)`
+ * group itself because they call `request('delendai_overview', …)`
  * via the `ICliCommandContext`. The runner is intentionally pure: it
  * reads files, never opens sockets, never throws (a misbehaving check
  * is reported as an `error` section, not propagated up).

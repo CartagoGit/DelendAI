@@ -1,6 +1,6 @@
 /**
  * f00046 S5 — unit tests for the fs / knowledge / project group. Each
- * command delegates 1:1 to its `mcp-vertex_*` core meta-tool and maps
+ * command delegates 1:1 to its `delendai_*` core meta-tool and maps
  * CLI flags onto the tool's inputSchema. Recording-stub ctx.
  */
 import { describe, expect, it } from 'vitest';
@@ -61,7 +61,7 @@ describe('core extra group (f00046 S5)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('fs read').run(['src/a.ts', '--start=1', '--end=5'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_fs_read',
+			tool: 'delendai_fs_read',
 			args: { path: 'src/a.ts', range: [1, 5] },
 		});
 	});
@@ -79,7 +79,7 @@ describe('core extra group (f00046 S5)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_fs_write',
+			tool: 'delendai_fs_write',
 			args: {
 				path: 'out/x.txt',
 				content: 'hi',
@@ -107,7 +107,7 @@ describe('core extra group (f00046 S5)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('knowledge').run(['some-id'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_knowledge',
+			tool: 'delendai_knowledge',
 			args: { id: 'some-id' },
 		});
 	});
@@ -121,7 +121,7 @@ describe('core extra group (f00046 S5)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_create_project',
+			tool: 'delendai_create_project',
 			args: { kind: 'plugin', pluginName: 'widgets' },
 		});
 	});
@@ -138,7 +138,7 @@ describe('core extra group (f00046 S5)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_adopt_project',
+			tool: 'delendai_adopt_project',
 			args: {
 				analyze: true,
 				repo: 'acme/widgets',

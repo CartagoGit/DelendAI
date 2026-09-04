@@ -24,7 +24,7 @@ const dict: LangDict = {
 		troubleshooting: 'समस्या निवारण',
 	},
 	hero: {
-		title: { a: 'प्रोजेक्ट-निरपेक्ष ', b: 'MCP Vertex', c: '' },
+		title: { a: 'प्रोजेक्ट-निरपेक्ष ', b: 'DelendAI', c: '' },
 		subheader: 'किसी भी प्रोजेक्ट के लिए MCP सर्वर कोर + प्लगइन लोडर।',
 		tagline:
 			'एक प्रोजेक्ट-निरपेक्ष Model Context Protocol सर्वर कोर। कोर को आपके डोमेन के बारे में कुछ नहीं पता — क्षमताएँ प्लगइन के रूप में आती हैं जिन्हें आप माँग पर लोड करते हैं, सभी कम टोकन लागत के लिए मापी गई।',
@@ -38,7 +38,7 @@ const dict: LangDict = {
 	},
 	concept: {
 		title: 'एक छोटा कोर, कई प्लगइन',
-		body: 'mcp-vertex वह सीलबंद कोर है: नियतात्मक टूल पंजीकरण, इंजेक्ट किए गए workspace पथ, एक CLI प्लगइन लोडर, और टोकन में मापी गई टूल सतह। डोमेन-विशिष्ट सब कुछ एक प्लगइन है — केवल वही लोड करें जो चाहिए, किसी भी होस्ट या मॉडल के तहत।',
+		body: 'delendai वह सीलबंद कोर है: नियतात्मक टूल पंजीकरण, इंजेक्ट किए गए workspace पथ, एक CLI प्लगइन लोडर, और टोकन में मापी गई टूल सतह। डोमेन-विशिष्ट सब कुछ एक प्लगइन है — केवल वही लोड करें जो चाहिए, किसी भी होस्ट या मॉडल के तहत।',
 		f1: {
 			t: 'प्रोजेक्ट-निरपेक्ष',
 			b: 'कोर में कोई डोमेन कोड नहीं। वही प्लगइन हर होस्ट या मॉडल पर एक जैसा व्यवहार करता है।',
@@ -81,7 +81,7 @@ const dict: LangDict = {
 			title: 'अभिविन्यास लागत · सीधे मापा गया',
 			note: 'एजेंट जो परिणाम पाठ देखता है उसके टोकन (≈4 बाइट/टोकन), proposals+memory के साथ प्रोटोकॉल पर सीधे मापे गए। बेसलाइन हाथ से अभिविन्यास का एक उदाहरणात्मक अनुमान है — किसी तीसरे-पक्ष टूल का माप नहीं।',
 		},
-		baseline: 'mcp-vertex के बिना (हाथ से · अनुमान)',
+		baseline: 'delendai के बिना (हाथ से · अनुमान)',
 	},
 	plugins: {
 		title: 'प्लगइन',
@@ -153,7 +153,7 @@ const dict: LangDict = {
 			description:
 				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
 			requires: 'requires',
-			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+			installSnippet: 'delendai --plugins=proposals,issues',
 		},
 	},
 	toolpage: {
@@ -176,7 +176,7 @@ const dict: LangDict = {
 	},
 	firstFiveMinutes: {
 		title: 'पहले 5 मिनट',
-		lead: 'कॉपी-पेस्ट करने योग्य तीन क्विकस्टार्ट। वह चुनें जो आपके mcp-vertex चलाने के तरीके से मेल खाता है।',
+		lead: 'कॉपी-पेस्ट करने योग्य तीन क्विकस्टार्ट। वह चुनें जो आपके delendai चलाने के तरीके से मेल खाता है।',
 		profileTabBunNode: 'Bun / Node',
 		profileTabVscode: 'VS Code / Copilot',
 		profileTabClaude: 'Claude Code',
@@ -185,20 +185,20 @@ const dict: LangDict = {
 			intro: 'किसी एडिटर इंटीग्रेशन की आवश्यकता नहीं: टर्मिनल से host server चलाएँ और किसी भी MCP क्लाइंट को उसके stdio ट्रांसपोर्ट की ओर इंगित करें।',
 			steps: [
 				'इंस्टॉल करें: `bun add @delendai/core` (या `npm install @delendai/core`)।',
-				'चलाएँ: `bunx mcp-vertex --preset=standard` (या `npx mcp-vertex --preset=standard`)।',
+				'चलाएँ: `bunx delendai --preset=standard` (या `npx delendai --preset=standard`)।',
 				'जाँचें: प्रोसेस लोड किए गए प्लगइन की सूची प्रिंट करता है और stdio पर प्रतीक्षा करता है — रोकने के लिए Ctrl+C।',
 				'अपने MCP क्लाइंट कॉन्फ़िग को `--preset=minimal|standard|swarm|full` के साथ बाइनरी पर इंगित करें (पूरी फ्लैग सूची के लिए इंस्टॉल देखें)।',
-				'पहले `mcp-vertex_overview { compact: true }` कॉल करें — यह बताता है कि आगे क्या करना है।',
+				'पहले `delendai_overview { compact: true }` कॉल करें — यह बताता है कि आगे क्या करना है।',
 			],
 		},
 		vscode: {
 			title: 'VS Code / GitHub Copilot',
-			intro: 'एक-कमांड इंस्टॉलर VS Code का पता लगाता है और मौजूदा सर्वरों को छुए बिना mcp-vertex को आपकी MCP सर्वर सूची में जोड़ता है।',
+			intro: 'एक-कमांड इंस्टॉलर VS Code का पता लगाता है और मौजूदा सर्वरों को छुए बिना delendai को आपकी MCP सर्वर सूची में जोड़ता है।',
 			steps: [
 				'इंस्टॉल पेज से एक-कमांड इंस्टॉलर चलाएँ (आपके IDE का स्वतः पता लगाता है)।',
 				'विंडो रीलोड करें (`Developer: Reload Window`) ताकि Copilot नए सर्वर को पहचान सके।',
-				'Copilot चैट पैनल खोलें और एजेंट पिकर में `mcp-vertex` एजेंट चुनें।',
-				'उससे `mcp-vertex_overview` कॉल करने को कहें — इसे लोड किए गए प्रीसेट और एक अनुशंसित अगला कदम रिपोर्ट करना चाहिए।',
+				'Copilot चैट पैनल खोलें और एजेंट पिकर में `delendai` एजेंट चुनें।',
+				'उससे `delendai_overview` कॉल करने को कहें — इसे लोड किए गए प्रीसेट और एक अनुशंसित अगला कदम रिपोर्ट करना चाहिए।',
 				'यदि सर्वर दिखाई नहीं देता, तो समस्या निवारण → "MCP server not detected" देखें।',
 			],
 		},
@@ -208,16 +208,16 @@ const dict: LangDict = {
 			steps: [
 				'एक-कमांड इंस्टॉलर चलाएँ — यह Claude Code का पता लगाता है और `.mcp.json` लिखता है।',
 				'Claude Code को रीस्टार्ट करें (या सर्वर रीलोड करने के लिए `/mcp` चलाएँ) ताकि नई प्रविष्टि पहचानी जाए।',
-				'एक नए सत्र में, हमेशा लोड होने वाली `AGENTS.md` + `CLAUDE.md` पहले से ही पहली कॉल के रूप में `mcp-vertex_overview` की ओर इंगित करती हैं।',
-				'`mcp-vertex_overview { compact: true }` से पुष्टि करें — `recommendedNextAction` फ़ील्ड बताता है कि आगे क्या करना है।',
-				'मल्टी-एजेंट सत्रों के लिए, slice claim करने से पहले `mcp-vertex-proposal-swarm-runner` स्किल पढ़ें।',
+				'एक नए सत्र में, हमेशा लोड होने वाली `AGENTS.md` + `CLAUDE.md` पहले से ही पहली कॉल के रूप में `delendai_overview` की ओर इंगित करती हैं।',
+				'`delendai_overview { compact: true }` से पुष्टि करें — `recommendedNextAction` फ़ील्ड बताता है कि आगे क्या करना है।',
+				'मल्टी-एजेंट सत्रों के लिए, slice claim करने से पहले `delendai-proposal-swarm-runner` स्किल पढ़ें।',
 			],
 		},
 		nextSteps: 'आगे कहाँ जाएँ',
 		nextToolsCta: 'सभी टूल देखें',
 		nextTroubleshootingCta: 'कुछ काम नहीं कर रहा? समस्या निवारण',
 		overviewHint:
-			'सर्वर शुरू होने के बाद compact: true के साथ mcp-vertex_overview कॉल करें; recommendedNextAction एजेंट को अगला कदम ठीक-ठीक बताता है।',
+			'सर्वर शुरू होने के बाद compact: true के साथ delendai_overview कॉल करें; recommendedNextAction एजेंट को अगला कदम ठीक-ठीक बताता है।',
 	},
 	troubleshooting: {
 		title: 'समस्या निवारण',
@@ -278,7 +278,7 @@ const dict: LangDict = {
 	},
 	setup: {
 		title: 'क्रॉस-प्रोजेक्ट सेटअप',
-		lead: 'mcp-vertex को किसी भी रिपॉज़िटरी में जोड़ें और उस रिपॉज़िटरी के लिए GitHub issues प्लगइन तैयार करें — वही 7 चरण जो setup-github कमांड चलाता है।',
+		lead: 'delendai को किसी भी रिपॉज़िटरी में जोड़ें और उस रिपॉज़िटरी के लिए GitHub issues प्लगइन तैयार करें — वही 7 चरण जो setup-github कमांड चलाता है।',
 		stepsTitle: '7 चरण',
 		docsLinkLabel: 'क्रॉस-प्रोजेक्ट सेटअप की आधिकारिक गाइड पढ़ें',
 		detectRepoTitle: 'रिपॉज़िटरी पहचानें',
@@ -292,7 +292,7 @@ const dict: LangDict = {
 			'जब gh auth status सफल हो तो gh, जब GITHUB_TOKEN सेट हो तो rest-authed, अन्यथा rest-anon (प्रति घंटे 60 अनुरोध तक सीमित) का उपयोग करें।',
 		writeConfigTitle: 'कॉन्फ़िग लिखें',
 		writeConfigBody:
-			'plugins.issues.options.repo को mcp-vertex.config.json में लिखता है, अन्य प्लगइन सेटिंग्स को छुए बिना।',
+			'plugins.issues.options.repo को delendai.config.json में लिखता है, अन्य प्लगइन सेटिंग्स को छुए बिना।',
 		verifyTierTitle: 'स्तर सत्यापित करें',
 		verifyTierBody:
 			'issues प्लगइन लोड करके होस्ट शुरू करें ताकि चुना गया प्रमाणीकरण स्तर एंड-टू-एंड परखा जा सके।',
@@ -328,7 +328,7 @@ const dict: LangDict = {
 			{ id: 'yarn', note: 'npm का क्लासिक विकल्प।' },
 			{
 				id: 'bun',
-				note: 'ऑल-इन-वन रनटाइम + पैकेज मैनेजर — mcp-vertex खुद bun से बना है।',
+				note: 'ऑल-इन-वन रनटाइम + पैकेज मैनेजर — delendai खुद bun से बना है।',
 			},
 			{
 				id: 'deno',
@@ -393,7 +393,7 @@ const dict: LangDict = {
 				id: 'setup',
 				label: 'क्रॉस-प्रोजेक्ट सेटअप',
 				summary:
-					'mcp-vertex को किसी भी रेपो में जोड़ें और issues प्लगइन तैयार करें।',
+					'delendai को किसी भी रेपो में जोड़ें और issues प्लगइन तैयार करें।',
 				href: 'setup',
 				icon: '/logos/github.png',
 			},
@@ -402,7 +402,7 @@ const dict: LangDict = {
 	cli: {
 		title: 'CLI गाइड',
 		description:
-			'mcpv / @delendai/core CLI को चलाने का तरीका: वैश्विक फ़्लैग, प्रति-प्लगइन कमांड समूह, और सामान्य वर्कफ़्लो।',
+			'delendai / @delendai/core CLI को चलाने का तरीका: वैश्विक फ़्लैग, प्रति-प्लगइन कमांड समूह, और सामान्य वर्कफ़्लो।',
 	},
 	guide: {
 		title: 'गाइड',
@@ -418,7 +418,7 @@ const dict: LangDict = {
 			'7. कौशल',
 			'8. i18n',
 			'9. गुणवत्ता गेट्स और बहु-भाषा',
-			'10. mcp-vertex का विस्तार',
+			'10. delendai का विस्तार',
 			'11. टोकन बजट',
 			'12. दृश्य संक्रमण',
 			'13. अक्सर पूछे जाने वाले प्रश्न',

@@ -36,14 +36,14 @@ const buildCtx = async (): Promise<{
 	const ctx: IMcpPluginContext = {
 		workspace: { root, resolve: (p: string) => join(root, p) },
 		corePaths: {
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 		},
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 		keepLegacy: false,
-		pluginCacheDir: '.cache/mcp-vertex/results/logs',
-		pluginDocsDir: 'docs/mcp-vertex/logs',
+		pluginCacheDir: '.cache/delendai/results/logs',
+		pluginDocsDir: 'docs/delendai/logs',
 		namespacePrefix: 'logs',
 		options: {},
 		args: {},
@@ -102,7 +102,7 @@ describe('logs plugin error-sink adapter — integration (f00251 S3)', () => {
 		expect(buffer.events[0]!.fingerprint).toBe(captured.fingerprint);
 
 		// Main JSONL stream has the incident-error line.
-		const logsDir = join(root, '.cache/mcp-vertex/results/logs');
+		const logsDir = join(root, '.cache/delendai/results/logs');
 		const mainStore = await createLogStore(logsDir);
 		const mainEvents = await mainStore.tail({ limit: 10 });
 		const errorLine = mainEvents.find(
@@ -113,10 +113,7 @@ describe('logs plugin error-sink adapter — integration (f00251 S3)', () => {
 		expect(errorLine!.meta.sink).toBe('logs-error');
 
 		// Curated error JSONL stream also has the same line.
-		const errorLogsDir = join(
-			root,
-			'.cache/mcp-vertex/results/logs-errors',
-		);
+		const errorLogsDir = join(root, '.cache/delendai/results/logs-errors');
 		const errorStore = await createLogStore(errorLogsDir);
 		const errorEvents = await errorStore.tail({ limit: 10 });
 		const sameInErrorStream = errorEvents.find(

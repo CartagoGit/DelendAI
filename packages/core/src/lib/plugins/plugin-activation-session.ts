@@ -51,7 +51,7 @@ export const normalizePluginOptions = (
 	if (!parsed.success) {
 		return {
 			ok: false,
-			message: `plugin "${plugin.name}" rejected its options (mcp-vertex.config.json → plugins.${plugin.name}.options).`,
+			message: `plugin "${plugin.name}" rejected its options (delendai.config.json → plugins.${plugin.name}.options).`,
 		};
 	}
 	const parsedOptions =

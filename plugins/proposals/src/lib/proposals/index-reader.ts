@@ -4,7 +4,7 @@
  * Pure async readers for the proposal index
  * (`<cacheDir>/proposals/index.json`; the regenerable registry that
  * `proposals_sync_proposals` rewrites — see x00052 for the move from
- * `docs/mcp-vertex/proposals/index.json`).
+ * `docs/delendai/proposals/index.json`).
  * and for arbitrary text/json files. Single source of truth for the
  * "read, parse if possible, return null on failure" pattern that the
  * tools repeat across the codebase.

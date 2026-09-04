@@ -2,7 +2,7 @@
  * migrate-foreign.spec.ts — f00116 S2.
  *
  * The migration engine converts FOREIGN proposal schemes into canonical
- * mcp-vertex proposals: rfc-style docs, TODO checklists, and ad-hoc
+ * delendai proposals: rfc-style docs, TODO checklists, and ad-hoc
  * frontmatter files. Copies + converts with provenance; originals are
  * never touched; secrets never persist.
  */
@@ -50,7 +50,7 @@ describe('migrateForeign (f00116 S2)', () => {
 
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'migrate-foreign-'));
-		proposalsDirAbs = join(root, 'docs/mcp-vertex/proposals');
+		proposalsDirAbs = join(root, 'docs/delendai/proposals');
 		mkdirSync(join(proposalsDirAbs, 'ready'), { recursive: true });
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
@@ -143,7 +143,7 @@ describe('migrateForeign (f00116 S2)', () => {
 	it('never writes outside the proposals dir and skips the store itself', async () => {
 		write('docs/rfcs/one.md', '# One\n\nBody.\n');
 		const before = await readdir(join(root, 'docs/rfcs'));
-		await run(['docs/rfcs', 'docs/mcp-vertex/proposals']);
+		await run(['docs/rfcs', 'docs/delendai/proposals']);
 		const after = await readdir(join(root, 'docs/rfcs'));
 		expect(after).toEqual(before);
 	});
@@ -210,17 +210,15 @@ describe('migrateForeign (f00116 S2)', () => {
 
 	it('archives audit reports as done/audits proposals and removes the source', async () => {
 		write(
-			'docs/mcp-vertex/audits/2026-08-30-audit.md',
+			'docs/delendai/audits/2026-08-30-audit.md',
 			'# Full project audit\n\nEvidence and findings.\n',
 		);
-		const report = await runAuditMigration(['docs/mcp-vertex/audits']);
+		const report = await runAuditMigration(['docs/delendai/audits']);
 		expect(report.migrated).toHaveLength(1);
 		expect(report.migrated[0]!.id).toMatch(/^a\d{5}$/);
 		expect(report.migrated[0]!.target).toContain('done/audits/');
 		expect(
-			existsSync(
-				join(root, 'docs/mcp-vertex/audits/2026-08-30-audit.md'),
-			),
+			existsSync(join(root, 'docs/delendai/audits/2026-08-30-audit.md')),
 		).toBe(false);
 		const body = await readFile(
 			join(root, report.migrated[0]!.target),

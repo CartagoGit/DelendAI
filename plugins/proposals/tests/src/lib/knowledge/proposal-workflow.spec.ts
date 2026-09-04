@@ -6,7 +6,7 @@ import { PROPOSAL_KINDS } from '../../../../src/lib/contracts/constants/proposal
 
 describe('buildProposalWorkflow (f00024 cascade families)', async () => {
 	const workflow = buildProposalWorkflow(
-		'docs/mcp-vertex/proposals',
+		'docs/delendai/proposals',
 		'index.json',
 	);
 
@@ -42,9 +42,7 @@ describe('buildProposalWorkflow (f00024 cascade families)', async () => {
 	});
 
 	it('preserves the public signature: (proposalsDir, indexFile) -> IProposalWorkflow', async () => {
-		expect(workflow.locations.proposalsDir).toBe(
-			'docs/mcp-vertex/proposals',
-		);
+		expect(workflow.locations.proposalsDir).toBe('docs/delendai/proposals');
 		expect(workflow.locations.indexFile).toBe('index.json');
 		expect(typeof workflow.naming).toBe('string');
 		expect(Array.isArray(workflow.rules)).toBe(true);

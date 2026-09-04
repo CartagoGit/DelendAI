@@ -34,8 +34,8 @@ const stubOptions = fakePartial<
 	IProposalTransitionToolOptions,
 	'proposalsDirAbs'
 >({
-	proposalsDirAbs: '/tmp/mcp-vertex-x00153-s9-compat',
-	indexPathAbs: '/tmp/mcp-vertex-x00153-s9-compat/index.json',
+	proposalsDirAbs: '/tmp/delendai-x00153-s9-compat',
+	indexPathAbs: '/tmp/delendai-x00153-s9-compat/index.json',
 });
 
 describe('x00153 S9 — PROPOSAL_TRANSITION_COMPAT window metadata', () => {

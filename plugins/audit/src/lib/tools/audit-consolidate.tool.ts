@@ -171,7 +171,7 @@ export interface IConsolidateToolOptions {
 	/**
 	 * Project name rendered in the master document header. Host wires
 	 * this from `ctx.options.projectName` so the consolidated markdown
-	 * does not hardcode mcp-vertex vocabulary.
+	 * does not hardcode delendai vocabulary.
 	 */
 	readonly projectName?: string;
 	/**
@@ -292,7 +292,7 @@ export const buildConsolidateRegistration = (
 					const proposalsDir =
 						args.proposalsDir ??
 						options.defaultProposalsDir ??
-						'docs/mcp-vertex/proposals/ready';
+						'docs/delendai/proposals/ready';
 					const proposalsDirContained = resolveWorkspaceContained(
 						options.workspaceRoot,
 						proposalsDir,

@@ -10,7 +10,7 @@
 # tools/scripts/host/host-server.script.ts`) while `@delendai/cli` is not
 # published to npm; switch back to the published `bunx` launch on release.
 
-[mcp_servers.mcp-vertex]
+[mcp_servers.delendai]
 command = "bun"
 args = ["tools/scripts/host/host-server.script.ts", "--workspace=."]
 cwd = ".."

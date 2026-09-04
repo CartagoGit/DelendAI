@@ -9,7 +9,7 @@ import {
 	buildConfigSchema,
 } from '../../../tools/scripts/types/generate-config-schema.script';
 
-describe('mcp-vertex.config.json JSON Schema (drift guard)', async () => {
+describe('delendai.config.json JSON Schema (drift guard)', async () => {
 	it('the committed schema matches the Zod source of truth', async () => {
 		const repoRoot = resolve(
 			dirname(fileURLToPath(import.meta.url)),

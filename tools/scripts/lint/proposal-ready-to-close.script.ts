@@ -34,7 +34,7 @@ import {
 } from '../../../plugins/proposals/src/lib/proposals/frontmatter-parser';
 import { repoRoot } from '../lib/monorepo-paths';
 
-const _PROPOSALS_ROOT = 'docs/mcp-vertex/proposals';
+const _PROPOSALS_ROOT = 'docs/delendai/proposals';
 const PROPOSAL_FILENAME = /^[a-z]\d{5}-[a-z0-9-]+\.md$/;
 const SCAN_DIRS: readonly string[] = ['in-progress'];
 
@@ -194,7 +194,7 @@ const main = (): number => {
 	const proposalArg = [...args]
 		.find((arg) => arg.startsWith('--proposal='))
 		?.split('=')[1];
-	const proposalsDirAbs = join(repoRoot(), 'docs', 'mcp-vertex', 'proposals');
+	const proposalsDirAbs = join(repoRoot(), 'docs', 'delendai', 'proposals');
 	const findings = scanReadyToClose(proposalsDirAbs, {
 		...(proposalArg !== undefined ? { proposalId: proposalArg } : {}),
 	});

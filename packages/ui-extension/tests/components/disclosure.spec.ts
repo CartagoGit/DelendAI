@@ -5,8 +5,10 @@ import { renderDisclosure } from '../../src/components/disclosure';
 describe('renderDisclosure', async () => {
 	it('renders a <details> with a <summary> and the given label', async () => {
 		const html = renderDisclosure({ summary: 'Settings' });
-		expect(html).toMatch(/<details class="mcpv-disclosure"/);
-		expect(html).toContain('<summary class="mcpv-disclosure__summary">');
+		expect(html).toMatch(/<details class="delendai-disclosure"/);
+		expect(html).toContain(
+			'<summary class="delendai-disclosure__summary">',
+		);
 		expect(html).toContain('Settings');
 	});
 
@@ -25,9 +27,9 @@ describe('renderDisclosure', async () => {
 		expect(html).toContain('id="settings-section"');
 	});
 
-	it('includes a body slot with data-mcpv-disclosure-body', async () => {
+	it('includes a body slot with data-delendai-disclosure-body', async () => {
 		const html = renderDisclosure({ summary: 'S' });
-		expect(html).toContain('data-mcpv-disclosure-body');
+		expect(html).toContain('data-delendai-disclosure-body');
 	});
 
 	it('escapes the summary', async () => {

@@ -18,12 +18,12 @@ const probeWith = (existing: ReadonlySet<string>): IPathProbe => ({
 
 describe('resolveHostEntryPath (f00088 S2)', () => {
 	it('honours the explicit override when set and the file exists', () => {
-		const probe = probeWith(new Set(['/opt/mcp-vertex/host.ts']));
+		const probe = probeWith(new Set(['/opt/delendai/host.ts']));
 		const resolved = resolveHostEntryPath('/workspace', {
-			explicitRoot: '/opt/mcp-vertex/host.ts',
+			explicitRoot: '/opt/delendai/host.ts',
 			probe,
 		});
-		expect(resolved.path).toBe('/opt/mcp-vertex/host.ts');
+		expect(resolved.path).toBe('/opt/delendai/host.ts');
 		expect(resolved.source).toBe('flag');
 	});
 
@@ -50,63 +50,63 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		expect(resolved.source).toBe('npm_dist');
 	});
 
-	it('falls back to ../mcp-vertex/ sibling checkout', () => {
+	it('falls back to ../delendai/ sibling checkout', () => {
 		const probe = probeWith(
-			new Set(['/mcp-vertex/tools/scripts/host/host-server.script.ts']),
+			new Set(['/delendai/tools/scripts/host/host-server.script.ts']),
 		);
 		const resolved = resolveHostEntryPath('/workspace', { probe });
 		expect(resolved.source).toBe('sibling');
 		expect(resolved.path).toBe(
-			'/mcp-vertex/tools/scripts/host/host-server.script.ts',
+			'/delendai/tools/scripts/host/host-server.script.ts',
 		);
 	});
 
-	it('falls back to ../mcp-vertex-core/ alternate sibling name', () => {
+	it('falls back to ../delendai-core/ alternate sibling name', () => {
 		const probe = probeWith(
 			new Set([
-				'/mcp-vertex-core/tools/scripts/host/host-server.script.ts',
+				'/delendai-core/tools/scripts/host/host-server.script.ts',
 			]),
 		);
 		const resolved = resolveHostEntryPath('/workspace', { probe });
 		expect(resolved.source).toBe('sibling_alt');
 		expect(resolved.path).toBe(
-			'/mcp-vertex-core/tools/scripts/host/host-server.script.ts',
+			'/delendai-core/tools/scripts/host/host-server.script.ts',
 		);
 	});
 
-	it("falls back to ../propios/mcp-vertex/ (operator's nested layout, f00103)", () => {
+	it("falls back to ../propios/delendai/ (operator's nested layout, f00103)", () => {
 		const probe = probeWith(
 			new Set([
-				'/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
+				'/propios/delendai/tools/scripts/host/host-server.script.ts',
 			]),
 		);
 		const resolved = resolveHostEntryPath('/workspace', { probe });
 		expect(resolved.source).toBe('sibling_nested');
 		expect(resolved.path).toBe(
-			'/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
+			'/propios/delendai/tools/scripts/host/host-server.script.ts',
 		);
 	});
 
 	it('recovers via sibling_walk when the checkout lives at an irregular path (f00103)', () => {
 		// The walk is the last-resort branch. It only fires when none
 		// of the explicit candidates match. Workspace lives at
-		// `/parent/workspace` and the mcp-vertex checkout lives at
-		// `/parent/worktrees/mcp-vertex` — neither the canonical
-		// `../mcp-vertex/` nor `../mcp-vertex-core/` nor
-		// `../propios/mcp-vertex/` candidates exist, so the
+		// `/parent/workspace` and the delendai checkout lives at
+		// `/parent/worktrees/delendai` — neither the canonical
+		// `../delendai/` nor `../delendai-core/` nor
+		// `../propios/delendai/` candidates exist, so the
 		// walk-up finds the entry at the irregular path.
 		const entry =
-			'/parent/worktrees/mcp-vertex/tools/scripts/host/host-server.script.ts';
+			'/parent/worktrees/delendai/tools/scripts/host/host-server.script.ts';
 		const probe: IPathProbe = {
 			exists: (p) => p === entry,
 			// The walk enumerates the parent of the workspace and then
 			// descends one level into its children. `worktrees` does
-			// not contain `mcp-vertex` itself — but its child
-			// `mcp-vertex` does, so the depth-2 walk finds it.
+			// not contain `delendai` itself — but its child
+			// `delendai` does, so the depth-2 walk finds it.
 			readDirNames: (dir) => {
 				if (dir === '/parent')
 					return ['workspace', 'worktrees', 'README.md'];
-				if (dir === '/parent/worktrees') return ['mcp-vertex'];
+				if (dir === '/parent/worktrees') return ['delendai'];
 				return [];
 			},
 		};

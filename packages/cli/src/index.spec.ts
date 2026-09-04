@@ -77,16 +77,16 @@ describe('init/init:default honor --workspace (a00061)', () => {
 	});
 
 	it('writes into --workspace, NOT the process cwd it was invoked from', async () => {
-		const fakeCwd = mktemp('mcpv-fake-cwd-');
-		const targetWorkspace = mktemp('mcpv-target-workspace-');
+		const fakeCwd = mktemp('delendai-fake-cwd-');
+		const targetWorkspace = mktemp('delendai-target-workspace-');
 		await runHumanCli(
 			['init:default', `--workspace=${targetWorkspace}`, '--json'],
 			fakeCwd,
 		);
-		expect(
-			existsSync(join(targetWorkspace, 'mcp-vertex.config.json')),
-		).toBe(true);
-		expect(existsSync(join(fakeCwd, 'mcp-vertex.config.json'))).toBe(false);
+		expect(existsSync(join(targetWorkspace, 'delendai.config.json'))).toBe(
+			true,
+		);
+		expect(existsSync(join(fakeCwd, 'delendai.config.json'))).toBe(false);
 	});
 });
 

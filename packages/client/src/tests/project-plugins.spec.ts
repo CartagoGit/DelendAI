@@ -3,7 +3,7 @@
  *
  * Covers the four behaviours the U4 contract requires:
  *  1. generation from a declarative spec (correct, complete plugin);
- *  2. auto-registration of `plugins.<name>.path` in mcp-vertex.config.json;
+ *  2. auto-registration of `plugins.<name>.path` in delendai.config.json;
  *  3. idempotent / non-destructive registration (re-run, existing entries);
  *  4. a plugin spec with several tools.
  */
@@ -29,7 +29,7 @@ const readConfig = async (): Promise<{
 	[k: string]: unknown;
 }> => {
 	const raw = await readFile(
-		join(workspaceRoot, 'mcp-vertex.config.json'),
+		join(workspaceRoot, 'delendai.config.json'),
 		'utf8',
 	);
 	return JSON.parse(raw);
@@ -81,14 +81,14 @@ describe('createProjectPlugin — generation from spec', () => {
 		expect(result.pluginDir).toBe(
 			join(
 				workspaceRoot,
-				'packages/mcp-vertex/plugins/mcp-vertex_acme-notes',
+				'packages/delendai/plugins/delendai_acme-notes',
 			),
 		);
 
 		// registered by PATH
 		const config = await readConfig();
 		expect(config.plugins?.['acme-notes']?.path).toBe(
-			'./packages/mcp-vertex/plugins/mcp-vertex_acme-notes/src/index.ts',
+			'./packages/delendai/plugins/delendai_acme-notes/src/index.ts',
 		);
 		expect(result.registration.action).toBe('added');
 		expect(result.tools).toEqual(['acme-notes_add']);
@@ -141,7 +141,7 @@ describe('createProjectPlugin — multiple tools', () => {
 		const config = await readConfig();
 		expect(config.plugins?.multi?.prefix).toBe('mx');
 		expect(config.plugins?.multi?.path).toBe(
-			'./packages/mcp-vertex/plugins/mcp-vertex_multi/src/index.ts',
+			'./packages/delendai/plugins/delendai_multi/src/index.ts',
 		);
 	});
 });
@@ -171,7 +171,7 @@ describe('createProjectPlugin — idempotent, non-destructive registration', () 
 	it('does not clobber unrelated plugin entries or top-level keys', async () => {
 		// Seed a config with an existing, unrelated plugin + a top-level key.
 		await writeFile(
-			join(workspaceRoot, 'mcp-vertex.config.json'),
+			join(workspaceRoot, 'delendai.config.json'),
 			`${JSON.stringify(
 				{
 					cacheDir: '.cache/mv',
@@ -200,7 +200,7 @@ describe('createProjectPlugin — idempotent, non-destructive registration', () 
 		expect(config.cacheDir).toBe('.cache/mv');
 		// new entry added alongside
 		expect(config.plugins?.['project-x']?.path).toBe(
-			'./packages/mcp-vertex/plugins/mcp-vertex_project-x/src/index.ts',
+			'./packages/delendai/plugins/delendai_project-x/src/index.ts',
 		);
 		expect(Object.keys(config.plugins ?? {}).sort()).toEqual([
 			'project-x',
@@ -210,7 +210,7 @@ describe('createProjectPlugin — idempotent, non-destructive registration', () 
 
 	it('updates only the path when an entry with the same name exists', async () => {
 		await writeFile(
-			join(workspaceRoot, 'mcp-vertex.config.json'),
+			join(workspaceRoot, 'delendai.config.json'),
 			`${JSON.stringify(
 				{
 					plugins: {
@@ -239,7 +239,7 @@ describe('createProjectPlugin — idempotent, non-destructive registration', () 
 		expect(config.plugins?.widget).toEqual({
 			prefix: 'wg',
 			options: { k: 'v' },
-			path: './packages/mcp-vertex/plugins/mcp-vertex_widget/src/index.ts',
+			path: './packages/delendai/plugins/delendai_widget/src/index.ts',
 		});
 	});
 
@@ -258,10 +258,10 @@ describe('createProjectPlugin — idempotent, non-destructive registration', () 
 			'beta',
 		]);
 		expect(config.plugins?.alpha?.path).toBe(
-			'./packages/mcp-vertex/plugins/mcp-vertex_alpha/src/index.ts',
+			'./packages/delendai/plugins/delendai_alpha/src/index.ts',
 		);
 		expect(config.plugins?.beta?.path).toBe(
-			'./packages/mcp-vertex/plugins/mcp-vertex_beta/src/index.ts',
+			'./packages/delendai/plugins/delendai_beta/src/index.ts',
 		);
 	});
 });

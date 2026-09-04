@@ -27,28 +27,30 @@ import {
 } from './shared-ui-ratchet.script';
 
 describe('shared-ui-ratchet / findInlineClasses', () => {
-	it('flags a `class="mcpv-callout ..."` literal in a .ts file', () => {
-		const src = `const html = '<aside class="mcpv-callout">x</aside>';`;
+	it('flags a `class="delendai-callout ..."` literal in a .ts file', () => {
+		const src = `const html = '<aside class="delendai-callout">x</aside>';`;
 		const out = findInlineClasses('apps/web/src/test.ts', src);
 		expect(out).toHaveLength(1);
 		expect(out[0]?.kind).toBe('inline-class');
-		expect(out[0]?.className).toBe('mcpv-callout');
+		expect(out[0]?.className).toBe('delendai-callout');
 		expect(out[0]?.file).toBe('apps/web/src/test.ts');
 	});
 
 	it('flags Astro JSX class="..." with classPrefix variants', () => {
 		const src = `
-<aside class="mcpv-copybtn mcpv-copybtn--solid">Click</aside>
+<aside class="delendai-copybtn delendai-copybtn--solid">Click</aside>
 `;
 		const out = findInlineClasses('extensions/vscode/src/x.tsx', src);
 		expect(out.length).toBeGreaterThanOrEqual(1);
-		expect(out.find((v) => v.className === 'mcpv-copybtn')).toBeTruthy();
+		expect(
+			out.find((v) => v.className === 'delendai-copybtn'),
+		).toBeTruthy();
 	});
 
 	it('does NOT flag a literal in a comment', () => {
 		const src = `
 /**
- * Use class="mcpv-callout" in the future — but for now we render
+ * Use class="delendai-callout" in the future — but for now we render
  * via shared.
  */
 `;
@@ -60,23 +62,23 @@ describe('shared-ui-ratchet / findInlineClasses', () => {
 		expect(out.length).toBeGreaterThan(0);
 	});
 
-	it('does NOT flag non-shared classes (e.g. mcpv-bespoke)', () => {
-		const src = `class="mcpv-bespoke-card"`;
+	it('does NOT flag non-shared classes (e.g. delendai-bespoke)', () => {
+		const src = `class="delendai-bespoke-card"`;
 		const out = findInlineClasses('apps/web/src/test.ts', src);
 		expect(out).toHaveLength(0);
 	});
 });
 
 describe('shared-ui-ratchet / findForkedScss', () => {
-	it('flags .mcpv-callout selectors in extensions/vscode/src/*.scss', () => {
-		const src = `.mcpv-callout { color: red; }`;
+	it('flags .delendai-callout selectors in extensions/vscode/src/*.scss', () => {
+		const src = `.delendai-callout { color: red; }`;
 		const out = findForkedScss('extensions/vscode/src/dev/test.scss', src);
 		expect(out).toHaveLength(1);
 		expect(out[0]?.kind).toBe('forked-scss');
 	});
 
 	it('does NOT flag the shared partial itself', () => {
-		const src = `.mcpv-callout { color: red; }`;
+		const src = `.delendai-callout { color: red; }`;
 		const out = findForkedScss(
 			'apps/shared/src/styles/components/callout.scss',
 			src,
@@ -85,7 +87,7 @@ describe('shared-ui-ratchet / findForkedScss', () => {
 	});
 
 	it('flags nested & selectors too', () => {
-		const src = `.foo { .mcpv-stepper { color: red; } }`;
+		const src = `.foo { .delendai-stepper { color: red; } }`;
 		const out = findForkedScss('packages/ui-extension/src/x.scss', src);
 		expect(out).toHaveLength(1);
 	});
@@ -113,7 +115,7 @@ describe('shared-ui-ratchet / loadWaivers', () => {
 			JSON.stringify([
 				{
 					file: 'apps/web/src/x.ts',
-					className: 'mcpv-callout',
+					className: 'delendai-callout',
 					reason: 'TODO',
 				},
 			]),
@@ -130,8 +132,8 @@ describe('shared-ui-ratchet / loadWaivers', () => {
 			JSON.stringify([
 				{
 					file: 'apps/web/src/x.ts',
-					className: 'mcpv-callout',
-					reason: 'SiteNav forks mcpv-callout deliberately — see f00102 S3.3',
+					className: 'delendai-callout',
+					reason: 'SiteNav forks delendai-callout deliberately — see f00102 S3.3',
 				},
 			]),
 		);

@@ -8,7 +8,7 @@ import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import externalMcps from '../../../../../../plugins/external-mcps/src/index';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
-const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-config-e2e-');
+const WRITABLE_WORKSPACE = createTestWorkspace('delendai-config-e2e-');
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 const callTool = async (
@@ -63,7 +63,7 @@ describe('Configuration Center end-to-end metadata network', () => {
 		);
 		const { config } = await assembleCliConfig(args, {
 			readFile: async (path) =>
-				path.endsWith('mcp-vertex.config.json')
+				path.endsWith('delendai.config.json')
 					? JSON.stringify(configDocument)
 					: undefined,
 			import: async (specifier) =>

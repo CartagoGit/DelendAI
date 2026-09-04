@@ -82,7 +82,7 @@ describe('metrics sparkline', async () => {
 			totals: totals(0, 0, 0, 0),
 		});
 
-		expect(html).toContain('mcp-vertex Metrics');
+		expect(html).toContain('delendai Metrics');
 		expect(html).toContain('0 calls, 0 errors');
 	});
 
@@ -92,7 +92,7 @@ describe('metrics sparkline', async () => {
 			totals: totals(7, 1, 42, 0),
 		});
 
-		expect(body).toContain('mcp-vertex Metrics');
+		expect(body).toContain('delendai Metrics');
 		expect(body).toContain('7 calls, 1 error');
 		// The body renderer must not wrap its output in an
 		// <html>/<head>/<body> shell — the dev preview mounts

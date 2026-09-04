@@ -24,7 +24,7 @@ const issues: readonly IObsIssue[] = [
 const logs: readonly IReadonlyLocalLogLine[] = [
 	{
 		ts: '2026-07-25T11:58:00.000Z',
-		logFile: '.cache/mcp-vertex/results/logs/2026-07-25.jsonl',
+		logFile: '.cache/delendai/results/logs/2026-07-25.jsonl',
 		line: '{"ts":"2026-07-25T11:58:00.000Z","summary":"tool-failed: TypeError Cannot read properties of undefined"}',
 		lineNumber: 7,
 	},
@@ -61,10 +61,10 @@ describe('obs_correlate', () => {
 		expect(out.matches).toEqual([
 			{
 				issueId: 'issue-1',
-				logFile: '.cache/mcp-vertex/results/logs/2026-07-25.jsonl',
+				logFile: '.cache/delendai/results/logs/2026-07-25.jsonl',
 				line: 7,
 				summary:
-					'TypeError matched local log .cache/mcp-vertex/results/logs/2026-07-25.jsonl:7 — {"ts":"2026-07-25T11:58:00.000Z","summary":"tool-failed: TypeError Cannot read properties of undefined"}',
+					'TypeError matched local log .cache/delendai/results/logs/2026-07-25.jsonl:7 — {"ts":"2026-07-25T11:58:00.000Z","summary":"tool-failed: TypeError Cannot read properties of undefined"}',
 			},
 		]);
 	});

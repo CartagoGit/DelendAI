@@ -1,11 +1,11 @@
 /**
  * settings-persist.spec.ts — pinning contract for the
- * `mcp-vertex.saveSettings` / `mcp-vertex.resetSettings` handlers
+ * `delendai.saveSettings` / `delendai.resetSettings` handlers
  * (Fix #7 in `extensions/vscode/src/commands/open-settings.ts`).
  *
  * Before this test, the settings webview (rendered by `renderSettings`)
- * posted messages to `mcp-vertex.saveSettings` and
- * `mcp-vertex.resetSettings`, but those commands were never registered.
+ * posted messages to `delendai.saveSettings` and
+ * `delendai.resetSettings`, but those commands were never registered.
  * Every save was silently dropped on the floor.
  *
  * This test pins the new behaviour: the save handler persists the
@@ -171,7 +171,7 @@ describe('settings persistence to globalState', async () => {
 					},
 				},
 			],
-			['mcpv:lang', 'es'],
+			['delendai:lang', 'es'],
 		]);
 		const store = createGlobalStateSettingsStore(createMemento(backing));
 		await expect(store.read()).resolves.toMatchObject({

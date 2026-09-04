@@ -31,7 +31,7 @@ describe('preset-table', () => {
 			// First ids come from minimal (git, search)
 			expect(ids[0]).toBe('git');
 			expect(ids[1]).toBe('search');
-			// x00166: vertex now mirrors mcp-vertex.config.json exactly —
+			// x00166: vertex now mirrors delendai.config.json exactly —
 			// its tail now also carries the manifest-driven plugins that only
 			// appear there. Adding prompt-eval to full raises the total unique
 			// plugin columns to 43.
@@ -78,7 +78,7 @@ describe('preset-table', () => {
 			expect(minimal?.effective).toEqual(['git', 'search']);
 			expect(swarm?.effective).toContain('proposals');
 			// `audit` is opt-in as of a00032 S7 — not in any chain preset,
-			// but it IS in `vertex` (which mirrors the mcp-vertex project
+			// but it IS in `vertex` (which mirrors the delendai project
 			// config that loads it directly).
 			expect(swarm?.effective).not.toContain('audit');
 			expect(full?.effective).not.toContain('audit');
@@ -88,7 +88,7 @@ describe('preset-table', () => {
 			expect(full?.effective).toContain('issues');
 			// x00166: `vertex` is independent — its effective membership
 			// equals its 34 declared members, exactly mirroring
-			// mcp-vertex.config.json
+			// delendai.config.json
 			// (including `proposals`, the orchestration plugin —
 			// previously excluded, a stale drift).
 			expect(vertex?.effective.length).toBe(38);

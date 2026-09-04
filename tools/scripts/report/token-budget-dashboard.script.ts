@@ -108,11 +108,11 @@ export const DASHBOARD_SURFACES = [
 
 export const TOKEN_BUDGET_DASHBOARD_PATH = [
 	'docs',
-	'mcp-vertex',
+	'delendai',
 	'TOKEN-BUDGETS.md',
 ] as const;
 
-const ACTIVATION_KPIS_PATH = ['.vscode', 'mcp-vertex', 'kpis.json'] as const;
+const ACTIVATION_KPIS_PATH = ['.vscode', 'delendai', 'kpis.json'] as const;
 
 const GENERATED_MARKER = [
 	'<!-- generated: token-budget-dashboard.script.ts -->',
@@ -269,7 +269,7 @@ const loadActivationKpisMarkdown = async (): Promise<string> => {
  * before this fix (the fixture's implicit default), which is also the
  * surface their ceilings were calibrated against — see the historical
  * `overviewFull` ceiling comment and the pre-AUD-C01 measurements captured
- * in `docs/mcp-vertex/proposals/ready/fixes/x00296-*.md`.
+ * in `docs/delendai/proposals/ready/fixes/x00296-*.md`.
  */
 const measureFixtureSurfaces = async (
 	workspace: string,
@@ -297,17 +297,17 @@ const measureFixtureSurfaces = async (
 	try {
 		const logsTail = await measureToolTextBytes(
 			logs.client,
-			'mcp-vertex_logs_tail',
+			'delendai_logs_tail',
 			{ limit: 1, kindFilter: 'token-budget-fixture-absent' },
 		);
 		const overviewFull = await measureToolTextBytes(
 			overviewSurface.client,
-			'mcp-vertex_overview',
+			'delendai_overview',
 			{},
 		);
 		const overviewCompact = await measureToolTextBytes(
 			overviewSurface.client,
-			'mcp-vertex_overview',
+			'delendai_overview',
 			{ compact: true },
 		);
 		// x00296 S2 (AUD-B06): the `native` surface counterpart, measured
@@ -315,66 +315,66 @@ const measureFixtureSurfaces = async (
 		// for `auto_work`/`analyze_project`/`plan_mcp_project`).
 		const overviewFullNative = await measureToolTextBytes(
 			base.client,
-			'mcp-vertex_overview',
+			'delendai_overview',
 			{},
 		);
 		const overviewCompactNative = await measureToolTextBytes(
 			base.client,
-			'mcp-vertex_overview',
+			'delendai_overview',
 			{ compact: true },
 		);
 		const autoWorkIdle = await measureToolTextBytes(
 			base.client,
-			'mcp-vertex_proposals_auto_work',
+			'delendai_proposals_auto_work',
 			{},
 		);
 		await seedAutoWorkReadyProposal(workspace, base.client);
 		const autoWorkWorkPlan = await measureToolTextBytes(
 			base.client,
-			'mcp-vertex_proposals_auto_work',
+			'delendai_proposals_auto_work',
 			{},
 		);
 		const agentCatalogCompact = await measureToolTextBytes(
 			catalog.client,
-			'mcp-vertex_agent_catalog',
+			'delendai_agent_catalog',
 			{ mode: 'compact' },
 		);
 		const agentCatalogFull = await measureToolTextBytes(
 			catalog.client,
-			'mcp-vertex_agent_catalog',
+			'delendai_agent_catalog',
 			{ mode: 'full' },
 		);
 		const analyzeCompact = await measureToolTextBytes(
 			base.client,
-			'mcp-vertex_analyze_project',
+			'delendai_analyze_project',
 			{},
 		);
 		const planCompact = await measureToolTextBytes(
 			base.client,
-			'mcp-vertex_plan_mcp_project',
+			'delendai_plan_mcp_project',
 			{},
 		);
 		await extra.client.callTool({
-			name: 'mcp-vertex_search_search',
+			name: 'delendai_search_search',
 			arguments: { query: 'proposal', maxResults: 5, context: 0 },
 		});
 		await extra.client.callTool({
-			name: 'mcp-vertex_docs_docs_list',
+			name: 'delendai_docs_docs_list',
 			arguments: { limit: 10 },
 		});
 		const search = await measureToolTextBytes(
 			extra.client,
-			'mcp-vertex_search_search',
+			'delendai_search_search',
 			{ query: 'proposal', maxResults: 5, context: 0 },
 		);
 		const docsList = await measureToolTextBytes(
 			extra.client,
-			'mcp-vertex_docs_docs_list',
+			'delendai_docs_docs_list',
 			{ limit: 10 },
 		);
 		const roundContext = await measureToolTextBytes(
 			extra.client,
-			'mcp-vertex_proposals_round_context',
+			'delendai_proposals_round_context',
 			{},
 		);
 		return {
@@ -442,12 +442,12 @@ export const measurePresetDashboard = async (
 		);
 		const overviewCompactBytes = await maybeMeasure(
 			connection,
-			'mcp-vertex_overview',
+			'delendai_overview',
 			{ compact: true },
 		);
 		const roundContextBytes = await maybeMeasure(
 			connection,
-			'mcp-vertex_proposals_round_context',
+			'delendai_proposals_round_context',
 			{},
 		);
 		return {

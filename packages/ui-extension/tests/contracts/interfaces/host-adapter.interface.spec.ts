@@ -21,20 +21,20 @@ describe('IHostAdapter (fake)', () => {
 	it('registers commands and tracks call counts via dispatch()', () => {
 		const host = createFakeHostAdapter();
 		const calls: string[] = [];
-		host.registerCommand('mcp-vertex.refresh', () => {
+		host.registerCommand('delendai.refresh', () => {
 			calls.push('refresh');
 			return 'ok';
 		});
-		expect(host.__spy.commands.get('mcp-vertex.refresh')?.calls).toBe(0);
-		const result = host.dispatch('mcp-vertex.refresh');
+		expect(host.__spy.commands.get('delendai.refresh')?.calls).toBe(0);
+		const result = host.dispatch('delendai.refresh');
 		expect(result).toBe('ok');
 		expect(calls).toEqual(['refresh']);
-		expect(host.__spy.commands.get('mcp-vertex.refresh')?.calls).toBe(1);
+		expect(host.__spy.commands.get('delendai.refresh')?.calls).toBe(1);
 	});
 
 	it('dispatch returns undefined for unknown command ids', () => {
 		const host = createFakeHostAdapter();
-		expect(host.dispatch('mcp-vertex.does-not-exist')).toBeUndefined();
+		expect(host.dispatch('delendai.does-not-exist')).toBeUndefined();
 	});
 
 	it('createStatusBarItem yields a unique visible item that can be hidden', () => {
@@ -56,15 +56,15 @@ describe('IHostAdapter (fake)', () => {
 			onDidChangeTreeData: () => ({ dispose: () => undefined }),
 			getChildren: () => [],
 		};
-		host.registerTreeDataProvider('mcp-vertex.tools', provider);
-		expect(host.__spy.treeProviders.get('mcp-vertex.tools')).toBe(provider);
+		host.registerTreeDataProvider('delendai.tools', provider);
+		expect(host.__spy.treeProviders.get('delendai.tools')).toBe(provider);
 	});
 
 	it('createWebviewPanel returns a panel whose html can be replaced', () => {
 		const host = createFakeHostAdapter();
 		const panel = host.createWebviewPanel(
-			'mcpVertexDashboard',
-			'mcp-vertex Dashboard',
+			'delendaiDashboard',
+			'delendai Dashboard',
 			1,
 			{ enableScripts: true, localResourceRoots: ['media/'] },
 		);
@@ -100,8 +100,8 @@ describe('IHostAdapter (fake)', () => {
 
 	it('getConfiguration records the section read', () => {
 		const host = createFakeHostAdapter();
-		host.getConfiguration('mcp-vertex');
-		expect(host.__spy.configurationReads).toEqual(['mcp-vertex']);
+		host.getConfiguration('delendai');
+		expect(host.__spy.configurationReads).toEqual(['delendai']);
 	});
 
 	it('FakeHostAdapter satisfies IHostAdapter at compile time', () => {

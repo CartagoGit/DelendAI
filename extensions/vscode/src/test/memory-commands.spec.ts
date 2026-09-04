@@ -53,7 +53,7 @@ describe('memory commands', async () => {
 			vscode,
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
-					expect(input.name).toBe('mcp-vertex_memory_save');
+					expect(input.name).toBe('delendai_memory_save');
 					return {
 						structuredContent: {
 							ok: true,
@@ -130,8 +130,8 @@ describe('memory commands', async () => {
 		});
 		const children = await provider.getChildren();
 		expect(children.map((child) => child.contextValue)).toEqual([
-			'mcpVertexMemoryNote',
-			'mcpVertexMemoryMore',
+			'delendaiMemoryNote',
+			'delendaiMemoryMore',
 		]);
 		expect(children[1]?.label).toBe('2 more memory notes');
 	});

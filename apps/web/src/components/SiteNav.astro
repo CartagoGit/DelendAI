@@ -11,7 +11,7 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const repo = 'https://github.com/CartagoGit/delendai';
 const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
 
 // One section = one page. Tabs (if any) live on the page itself, not in the
@@ -85,7 +85,7 @@ const drawerLinks = [
 		<Fragment set:html={renderBrandMark({
 			href: homeHref,
 			logoSrc: `${base}/logo.svg`,
-			brandText: '@mcp-vertex',
+			brandText: '@delendai',
 		})} />
 		<div class="nav__links" role="navigation">
 			{navSections.map((l) => (
@@ -99,7 +99,7 @@ const drawerLinks = [
 			    outside-click + Esc from one place. We pass
 			    `classPrefix: 'nav__more'` so the BEM shape stays
 			    aligned with the existing `_nav.scss` rules instead
-			    of forcing a parallel `mcpv-dropdown__*` style layer. */}
+			    of forcing a parallel `delendai-dropdown__*` style layer. */}
 			<Fragment set:html={renderDropdown({
 				id: 'nav-more',
 				idPrefix: 'nav-more',
@@ -166,7 +166,7 @@ const drawerLinks = [
 				brand: {
 					href: homeHref,
 					logoSrc: `${base}/logo.svg`,
-					brandText: '@mcp-vertex',
+					brandText: '@delendai',
 				},
 				links: [
 					...drawerLinks.map((l) => ({
@@ -247,7 +247,7 @@ const drawerLinks = [
 
 	// "More" dropdown. The runtime injected by `Base.astro` (the
 	// `componentScript` from `@delendai/ui-extension`) drives every
-	// `[data-mcpv-toggle="dropdown"]` panel on the page: click toggles,
+	// `[data-delendai-toggle="dropdown"]` panel on the page: click toggles,
 	// outside click closes, Esc closes. We delegate open/close to that
 	// single source of truth so a future dropdown added anywhere on
 	// the site automatically picks up the same behaviour with zero

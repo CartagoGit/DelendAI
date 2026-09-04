@@ -118,11 +118,11 @@ export interface ICommandDeps {
 	readonly client: McpStdioClient;
 	readonly toolTree?: Pick<ToolTreeDataProvider, 'refresh'>;
 	readonly memoryTree?: Pick<MemoryTreeDataProvider, 'refresh'>;
-	/** Proposals board provider (f00097 S4). `mcp-vertex.refresh` and
-	 * `mcp-vertex.proposals.refresh` invalidate its snapshot + repaint. */
+	/** Proposals board provider (f00097 S4). `delendai.refresh` and
+	 * `delendai.proposals.refresh` invalidate its snapshot + repaint. */
 	readonly proposalsTree?: Pick<ProposalBoardProvider, 'refresh'>;
 	/** Optional host persistence layer (f00050 S7). Used by commands that
-	 * resolve the user's preferred language from `mcpv:lang`. */
+	 * resolve the user's preferred language from `delendai:lang`. */
 	readonly globalState?: {
 		get<T>(key: string): T | undefined;
 		update(key: string, value: unknown): Thenable<void> | Promise<void>;
@@ -133,9 +133,9 @@ export interface ICommandDeps {
 	 * resolve. Omitted → every action is shown (legacy behaviour). */
 	readonly loadedPlugins?: readonly string[];
 	/** Host namespace prefix (f00081 S2). Resolved from
-	 * `mcp-vertex.server.prefix` at activation and threaded into every
+	 * `delendai.server.prefix` at activation and threaded into every
 	 * service so a deployment started with `--prefix=acme` calls
-	 * `acme_*` tools. Omitted → the default `mcp-vertex_` is used. */
+	 * `acme_*` tools. Omitted → the default `delendai_` is used. */
 	readonly namespacePrefix?: string;
 	/** Shared read-only proposals snapshot source (f00097 S3). When present,
 	 * the open-proposal command reuses it so the detail webview draws from the
@@ -171,7 +171,7 @@ export const showCommandError = async (
 	err: unknown,
 ): Promise<void> => {
 	const detail = err instanceof Error ? err.message : String(err);
-	const message = `mcp-vertex: ${action} failed: ${detail}`;
+	const message = `delendai: ${action} failed: ${detail}`;
 
 	// f00045 S3: when the failure carries a `logHint` (the server
 	// persisted the event and the client transport attached it to the

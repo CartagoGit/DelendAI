@@ -2,7 +2,7 @@
 	"name": "@delendai/status-marker",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Cierre obligatorio coloreado para agentes: 8 estados canónicos (HECHO/CAP/RE-PIVOT/CHECKPOINT-REQUIRED/REPAIR-NEEDED/BLOQUEADO/SIN PROPUESTAS LIBRES/SIN PROPUESTA DE NINGUN TIPO), herramientas `close` y `validate`, knowledge entry con la tabla. Load with `mcp-vertex --plugins=status-marker`.",
+	"description": "Cierre obligatorio coloreado para agentes: 8 estados canónicos (HECHO/CAP/RE-PIVOT/CHECKPOINT-REQUIRED/REPAIR-NEEDED/BLOQUEADO/SIN PROPUESTAS LIBRES/SIN PROPUESTA DE NINGUN TIPO), herramientas `close` y `validate`, knowledge entry con la tabla. Load with `delendai --plugins=status-marker`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

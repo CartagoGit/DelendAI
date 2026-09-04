@@ -33,7 +33,7 @@ describe('init_config (f00117 S2)', () => {
 		const workspace = createWorkspacePathProvider(root);
 		init = await capture(
 			buildInitConfigToolRegistration({
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspace,
 				reader: createWorkspaceFileReader(workspace),
 			}),
@@ -49,19 +49,19 @@ describe('init_config (f00117 S2)', () => {
 		expect(result.rationale.length).toBeGreaterThan(0);
 	});
 
-	it('write:true persists mcp-vertex.config.json atomically', async () => {
+	it('write:true persists delendai.config.json atomically', async () => {
 		const result = parse(await init({ write: true }));
 		expect(result.ok).toBe(true);
 		expect(result.wrote).toBe(true);
 		const written = JSON.parse(
-			await readFile(join(root, 'mcp-vertex.config.json'), 'utf8'),
+			await readFile(join(root, 'delendai.config.json'), 'utf8'),
 		);
 		expect(written.plugins).toBeDefined();
 	});
 
 	it('merges an existing config without replacing project preferences', async () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({
 				cacheDir: '.project-cache',
 				plugins: {
@@ -79,7 +79,7 @@ describe('init_config (f00117 S2)', () => {
 
 	it('overwrite:true replaces an existing config', async () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			'{"plugins":{}}',
 			'utf8',
 		);
@@ -87,13 +87,13 @@ describe('init_config (f00117 S2)', () => {
 		expect(result.ok).toBe(true);
 		expect(result.wrote).toBe(true);
 		const written = JSON.parse(
-			await readFile(join(root, 'mcp-vertex.config.json'), 'utf8'),
+			await readFile(join(root, 'delendai.config.json'), 'utf8'),
 		);
 		expect(Object.keys(written.plugins).length).toBeGreaterThan(0);
 	});
 
 	it('refuses to merge a malformed config unless replacement is explicit', async () => {
-		writeFileSync(join(root, 'mcp-vertex.config.json'), '{nope', 'utf8');
+		writeFileSync(join(root, 'delendai.config.json'), '{nope', 'utf8');
 		const result = parse(await init({ write: true }));
 		expect(result.ok).toBe(false);
 		expect(result.error.reason).toContain('not valid JSON');
@@ -112,7 +112,7 @@ describe('init_config (f00117 S2)', () => {
 		expect(parse(a).ok).toBe(true);
 		expect(parse(b).ok).toBe(true);
 		const written = JSON.parse(
-			await readFile(join(root, 'mcp-vertex.config.json'), 'utf8'),
+			await readFile(join(root, 'delendai.config.json'), 'utf8'),
 		);
 		expect(written.plugins).toBeDefined();
 	});

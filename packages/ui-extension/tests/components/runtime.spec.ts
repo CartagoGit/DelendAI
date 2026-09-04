@@ -9,9 +9,9 @@ describe('runtime', async () => {
 	});
 
 	it('componentScript wires the three delegations', async () => {
-		expect(componentScript).toContain('data-mcpv-action');
-		expect(componentScript).toContain('data-mcpv-toggle');
-		expect(componentScript).toContain('data-mcpv-lang');
+		expect(componentScript).toContain('data-delendai-action');
+		expect(componentScript).toContain('data-delendai-toggle');
+		expect(componentScript).toContain('data-delendai-lang');
 	});
 
 	it('componentScript closes dropdowns on outside-click and Esc', async () => {

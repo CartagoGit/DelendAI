@@ -69,8 +69,8 @@ const buildCliContext = (
 	listTools:
 		options.listTools ??
 		(async () => [
-			{ name: 'mcp-vertex_overview' },
-			{ name: 'mcp-vertex_status' },
+			{ name: 'delendai_overview' },
+			{ name: 'delendai_status' },
 		]),
 	close: async () => {},
 });
@@ -172,7 +172,7 @@ describe('renderDoctorSummary', () => {
 describe('doctor checks', () => {
 	it('config: validates parseable config JSON', async () => {
 		const result = await checkConfig(
-			buildDoctorContext({ 'mcp-vertex.config.json': '{"plugins":{}}' }),
+			buildDoctorContext({ 'delendai.config.json': '{"plugins":{}}' }),
 		);
 		expect(result).toMatchObject({ name: 'config', status: 'ok' });
 	});
@@ -274,7 +274,7 @@ describe('doctor checks', () => {
 	it('stale-docs: reports drifted generated artifacts', async () => {
 		const probe: IStaleDocsProbe = {
 			staleFiles: async () => [
-				'docs/mcp-vertex/generated/plugin-manifests.generated.md',
+				'docs/delendai/generated/plugin-manifests.generated.md',
 			],
 		};
 		const result = await createStaleDocsCheck(probe)(

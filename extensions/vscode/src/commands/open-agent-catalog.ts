@@ -8,7 +8,7 @@ import { renderAgentCatalogWebview } from '../views/agent-catalog-webview';
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { escapeHtml, renderJsonHtml, showCommandError } from './types';
 
-export const OPEN_AGENT_CATALOG_COMMAND = 'mcp-vertex.openAgentCatalog';
+export const OPEN_AGENT_CATALOG_COMMAND = 'delendai.openAgentCatalog';
 
 type IProposalBoardOutput = {
 	readonly proposals: readonly {
@@ -51,7 +51,7 @@ const executeToolPreview = async (
 ): Promise<void> => {
 	const result = await deps.client.request(toolName, {});
 	await deps.vscode.window.showInformationMessage?.(
-		`mcp-vertex: ${toolName} → ${JSON.stringify(result).slice(0, 200)}`,
+		`delendai: ${toolName} → ${JSON.stringify(result).slice(0, 200)}`,
 	);
 };
 
@@ -83,8 +83,8 @@ export const openSkillPreview = async (
 		const body = await service.getSkillBody(id);
 		createReadonlyPanel(
 			deps.vscode,
-			'mcpVertexSkillPreview',
-			`mcp-vertex Skill ${id}`,
+			'delendaiSkillPreview',
+			`delendai Skill ${id}`,
 			renderTextHtml(id, body),
 		);
 	} catch (err) {
@@ -108,9 +108,9 @@ export const openProposalPreview = async (
 		}
 		createReadonlyPanel(
 			deps.vscode,
-			'mcpVertexProposalPreview',
-			`mcp-vertex Proposal ${id}`,
-			renderJsonHtml(`mcp-vertex Proposal ${id}`, proposal),
+			'delendaiProposalPreview',
+			`delendai Proposal ${id}`,
+			renderJsonHtml(`delendai Proposal ${id}`, proposal),
 		);
 	} catch (err) {
 		await showCommandError(deps.vscode, `open proposal ${id}`, err);
@@ -128,16 +128,18 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 					: { namespacePrefix: deps.namespacePrefix },
 			);
 			const copy = viewCopyFor(
-				resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
+				resolveViewLang(
+					deps.globalState?.get<unknown>('delendai:lang'),
+				),
 			);
 			const panel = deps.vscode.window.createWebviewPanel(
-				'mcpVertexAgentCatalog',
-				'mcp-vertex Agent Catalog',
+				'delendaiAgentCatalog',
+				'delendai Agent Catalog',
 				deps.vscode.ViewColumn.One,
 				{ enableScripts: true },
 			);
 			panel.webview.html = renderTextHtml(
-				'mcp-vertex Agent Catalog',
+				'delendai Agent Catalog',
 				'Loading catalog...',
 			);
 			try {
@@ -162,7 +164,7 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 					}
 					if (message.command === 'copied') {
 						await deps.vscode.window.showInformationMessage?.(
-							'mcp-vertex: bootstrap prompt copied',
+							'delendai: bootstrap prompt copied',
 						);
 						return;
 					}
@@ -186,7 +188,7 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 				return panel;
 			} catch (err) {
 				panel.webview.html = renderTextHtml(
-					'mcp-vertex Agent Catalog unavailable',
+					'delendai Agent Catalog unavailable',
 					err instanceof Error ? err.message : String(err),
 				);
 				return panel;

@@ -17,7 +17,7 @@ export const buildAgentCatalogResourceRegistration = (
 ): IResourceRegistration => ({
 	id: `resource:agent-catalog:${options.mode}`,
 	register: async (server) => {
-		const uri = `mcp-vertex://catalog/${options.mode}`;
+		const uri = `delendai://catalog/${options.mode}`;
 		server.registerResource(
 			`agent-catalog-${options.mode}`,
 			uri,

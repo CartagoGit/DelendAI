@@ -4,7 +4,7 @@
  * The core package publishes its transversal skill bodies under `skills/`.
  * `init` copies those bodies into the consumer's configured docs directory so
  * the running server can load them through its legacy/project manifest fallback
- * even when the consumer is not the mcp-vertex monorepo.
+ * even when the consumer is not the delendai monorepo.
  */
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';

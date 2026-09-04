@@ -14,12 +14,12 @@ const ctx = (): IMcpPluginContext => ({
 		root: '/ws',
 		resolve: (relativePath: string) => `/ws/${relativePath}`,
 	},
-	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	corePaths: { cacheDir: '.cache/delendai', docsDir: 'docs/delendai' },
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: '.cache/mcp-vertex/proposals',
-	pluginDocsDir: 'docs/mcp-vertex/proposals',
+	pluginCacheDir: '.cache/delendai/proposals',
+	pluginDocsDir: 'docs/delendai/proposals',
 	namespacePrefix: 'proposals',
 	options: {},
 	args: {},
@@ -245,7 +245,7 @@ describe('@delendai/proposals plugin', async () => {
 		expect(result?.structuredContent?.ok).toBe(false);
 		expect(result?.structuredContent?.action).toBe('create');
 		expect(result?.structuredContent?.reason).toBe(
-			'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in mcp-vertex.config.json to enable.',
+			'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in delendai.config.json to enable.',
 		);
 	});
 });

@@ -26,7 +26,7 @@ export const resolvePublicToolIdentity = (
 
 	if (entry.packageName.startsWith('@delendai/')) {
 		return {
-			owner: 'mcp-vertex',
+			owner: 'delendai',
 			safeToolId: asSafeToolId(
 				`${entry.packageName}.${entry.publicToolName ?? toolName}`,
 			),

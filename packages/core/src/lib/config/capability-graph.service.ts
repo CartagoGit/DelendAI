@@ -58,7 +58,7 @@ export const buildCapabilityGraph = async (
 		parsePackageJson(await reader.readFile('package.json'));
 	const languages = await matchLanguageSignals(reader, packageJson);
 	return {
-		contract: 'mcp-vertex.capability-graph',
+		contract: 'delendai.capability-graph',
 		version: 1,
 		languages: languages.map((language) => ({
 			id: language.id,

@@ -55,7 +55,7 @@ describe('detectSkillInventory (f00089 U2)', () => {
 		expect(inv.canonicalSkills).toBe(CANONICAL_SKILLS);
 		expect(inv.canonicalSkills.length).toBeGreaterThan(0);
 		expect(
-			inv.canonicalSkills.some((s) => s.id === 'mcp-vertex-operator'),
+			inv.canonicalSkills.some((s) => s.id === 'delendai-operator'),
 		).toBe(true);
 	});
 
@@ -113,9 +113,9 @@ describe('buildToolUnification (f00089 U2)', () => {
 			ourPlugins: ['proposals', 'git', 'search'],
 		});
 		expect(u.ours.map((n) => n.namespace)).toEqual([
-			'mcp-vertex_git',
-			'mcp-vertex_proposals',
-			'mcp-vertex_search',
+			'delendai_git',
+			'delendai_proposals',
+			'delendai_search',
 		]);
 		expect(u.theirs).toHaveLength(0);
 		expect(u.collisions).toHaveLength(0);
@@ -125,7 +125,7 @@ describe('buildToolUnification (f00089 U2)', () => {
 		const u = await buildToolUnification(
 			dirReader({
 				'.mcp.json': JSON.stringify({
-					servers: { 'acme-tools': {}, 'mcp-vertex': {} },
+					servers: { 'acme-tools': {}, delendai: {} },
 				}),
 			}),
 			{ ourPlugins: ['git'] },
@@ -164,7 +164,7 @@ describe('renderSkillMigrationSection (f00089 U2)', () => {
 		expect(md).toContain('### S3 — skill migration');
 		expect(md).toContain('- **Status**: pending');
 		expect(md).toContain('advisory');
-		expect(md).toContain('mcp-vertex-operator');
+		expect(md).toContain('delendai-operator');
 		expect(md).toContain('No existing skills were detected');
 		expect(md).not.toContain('_Pending');
 	});
@@ -197,8 +197,8 @@ describe('renderToolUnificationSection (f00089 U2)', () => {
 		expect(md).toContain('### S4 — tool-namespace unification');
 		expect(md).toContain('- **Status**: pending');
 		expect(md).toContain('prefix-per-plugin');
-		expect(md).toContain('mcp-vertex_git');
-		expect(md).toContain('mcp-vertex_proposals');
+		expect(md).toContain('delendai_git');
+		expect(md).toContain('delendai_proposals');
 		expect(md).toContain('No collisions');
 		expect(md).not.toContain('_Pending');
 	});
@@ -224,7 +224,7 @@ describe('renderAdoptionSections (f00089 U2)', () => {
 		expect(out.skillSection).toContain('### S3');
 		expect(out.toolSection).toContain('### S4');
 		expect(out.skillInventory.canonicalSkills.length).toBeGreaterThan(0);
-		expect(out.toolUnification.ours[0]?.namespace).toBe('mcp-vertex_git');
+		expect(out.toolUnification.ours[0]?.namespace).toBe('delendai_git');
 	});
 });
 
@@ -244,8 +244,8 @@ describe('renderAdoptionPlan embeds U2 sections (f00089 U2)', () => {
 		expect(plan.content).not.toContain('_Pending f00089 U2._');
 		expect(plan.content).toContain('### S3 — skill migration');
 		expect(plan.content).toContain('### S4 — tool-namespace unification');
-		expect(plan.content).toContain('mcp-vertex-operator');
-		expect(plan.content).toContain('mcp-vertex_proposals');
+		expect(plan.content).toContain('delendai-operator');
+		expect(plan.content).toContain('delendai_proposals');
 		expect(plan.content).toContain('.claude/skills/foo');
 		// a00066: S5 is now self-contained adopter guidance — no leaked
 		// internal roadmap id / `_Pending` placeholder in the adopter body.

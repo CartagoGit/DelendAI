@@ -450,15 +450,15 @@ describe('initTabs — cross-fade (f00069 S1)', () => {
 
 	// f00099 audit follow-up: the shared `renderTabs` no longer
 	// emits inline `onerror=` JavaScript. The renderer stamps a
-	// `<span data-mcpv-icon>` wrapper around the icon; the
+	// `<span data-delendai-icon>` wrapper around the icon; the
 	// controller (this file) wires `img.error` → wrapper
 	// `is-broken` so the shared SCSS reveals the first-letter
 	// fallback span. This test pins that the controller source
 	// contains the wiring (it is exercised end-to-end by the
 	// docs site — visit /install and watch the PM icon fall
 	// back to a circle with the first letter if the SVG 404s).
-	it('contains the [data-mcpv-icon] fallback wiring in source (f00099 audit follow-up)', () => {
-		// We can't easily inject a real <span data-mcpv-icon> via
+	it('contains the [data-delendai-icon] fallback wiring in source (f00099 audit follow-up)', () => {
+		// We can't easily inject a real <span data-delendai-icon> via
 		// the bare-node DOM fake, so we read the controller
 		// source and pin the wiring contract. The same contract
 		// is exercised end-to-end on the docs site; the spec
@@ -475,7 +475,7 @@ describe('initTabs — cross-fade (f00069 S1)', () => {
 			'utf8',
 		);
 		expect(src).toContain('bindIconFallbacks');
-		expect(src).toContain('[data-mcpv-icon]');
+		expect(src).toContain('[data-delendai-icon]');
 		expect(src).toContain('is-broken');
 		expect(src).toContain("img.addEventListener('error'");
 	});
@@ -506,13 +506,13 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 	// f00102 S2.1 — the apps/web partial is now a shim that
 	// `@forward`s the shared tabs stylesheet. The CSS-contract
 	// assertions must read the shared source of truth, not the
-	// shim wrapper, otherwise `.mcpv-tabs` never appears in the
+	// shim wrapper, otherwise `.delendai-tabs` never appears in the
 	// inspected bytes.
 	const _styles = readFileSync(
 		resolve(here, '../../../shared/src/styles/components/_tabs.scss'),
 		'utf8',
 	);
-	expect(_styles).toContain('.mcpv-tabs');
+	expect(_styles).toContain('.delendai-tabs');
 	expect(readFileSync(tabsScssPath, 'utf8').includes('@forward')).toBe(true);
 
 	// f00102 S2.1 — the tablist markup moved from `Tabs.astro` into
@@ -520,7 +520,7 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 	// `apps/shared/src/components/ui/tabs.ts`. f00102 S4-real-extract
 	// also fixed a pre-existing bug in the shared SCSS where the
 	// `--underline` / `--pill` / `--plugin` variant modifiers applied
-	// to `.ui-tabs__*` (legacy alias) instead of `.mcpv-tabs__*` (the
+	// to `.ui-tabs__*` (legacy alias) instead of `.delendai-tabs__*` (the
 	// real BEM namespace emitted by `renderTabs`). The DOM-shape +
 	// variant + CSS-contract assertions below now read the SHARED
 	// source (renderer + SCSS) directly — `Tabs.astro` is just the
@@ -547,22 +547,24 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 		expect(sharedSource).toMatch(/readonly variant\?: TabsVariant/);
 	});
 
-	it('renders a `<button class="mcpv-tabs__tab">` per entry', () => {
-		expect(sharedSource).toContain('class="mcpv-tabs__tab"');
+	it('renders a `<button class="delendai-tabs__tab">` per entry', () => {
+		expect(sharedSource).toContain('class="delendai-tabs__tab"');
 		expect(sharedSource).toContain('data-tab-trigger=');
 	});
 
 	it('keeps the tab styling in the `_tabs.scss` partial, not a scoped <style>', () => {
 		// The component must not re-grow a `<style>` block; the partial owns
-		// every `.mcpv-tabs__*` / `.ui-tabs__*` rule.
-		expect(source).not.toContain('.mcpv-tabs__tab {');
-		expect(sharedStyles).toContain('.mcpv-tabs');
+		// every `.delendai-tabs__*` / `.ui-tabs__*` rule.
+		expect(source).not.toContain('.delendai-tabs__tab {');
+		expect(sharedStyles).toContain('.delendai-tabs');
 	});
 
-	it('emits `.mcpv-tabs--plugin` selector with the deleted PluginTabs look', () => {
-		// Authored as a nested modifier (`&--plugin { .mcpv-tabs__tab { … } }`)
-		// so the resolved selector is `.mcpv-tabs--plugin .mcpv-tabs__tab`.
-		expect(sharedStyles).toMatch(/&--plugin[\s\S]{0,80}\.mcpv-tabs__tab/);
+	it('emits `.delendai-tabs--plugin` selector with the deleted PluginTabs look', () => {
+		// Authored as a nested modifier (`&--plugin { .delendai-tabs__tab { … } }`)
+		// so the resolved selector is `.delendai-tabs--plugin .delendai-tabs__tab`.
+		expect(sharedStyles).toMatch(
+			/&--plugin[\s\S]{0,80}\.delendai-tabs__tab/,
+		);
 		expect(sharedStyles).toContain('padding: 0.5rem 0.9rem');
 		expect(sharedStyles).toContain('border-bottom: 2px solid currentColor');
 		// Active label gets 600 weight in the plugin variant.
@@ -589,11 +591,11 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 
 	it('renders the optional icon before the label when `t.icon` is set', () => {
 		expect(sharedSource).toContain('renderIcon');
-		expect(sharedSource).toContain('class="mcpv-tabs__icon"');
+		expect(sharedSource).toContain('class="delendai-tabs__icon"');
 		// f00102 audit follow-up: the icon wrapper is now a
-		// `<span data-mcpv-icon>` containing the <img> + a
+		// `<span data-delendai-icon>` containing the <img> + a
 		// first-letter fallback span. No inline `onerror=` JS.
-		expect(sharedSource).toContain('data-mcpv-icon');
-		expect(sharedSource).toContain('mcpv-tabs__icon-fallback');
+		expect(sharedSource).toContain('data-delendai-icon');
+		expect(sharedSource).toContain('delendai-tabs__icon-fallback');
 	});
 });

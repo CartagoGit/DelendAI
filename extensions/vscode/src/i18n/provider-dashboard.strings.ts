@@ -80,7 +80,7 @@ const en: IProviderDashboardStrings = {
 	installHint: 'Install hint',
 	noQuota: 'no quota data',
 	emptyRoster:
-		'No providers configured — add a root-level providers block to mcp-vertex.config.json.',
+		'No providers configured — add a root-level providers block to delendai.config.json.',
 	checkedAt: 'Checked at',
 	total: 'total',
 	available: 'available',
@@ -123,7 +123,7 @@ const es: IProviderDashboardStrings = {
 	installHint: 'Pista de instalación',
 	noQuota: 'sin datos de cuota',
 	emptyRoster:
-		'No hay proveedores configurados — añade un bloque providers de nivel raíz a mcp-vertex.config.json.',
+		'No hay proveedores configurados — añade un bloque providers de nivel raíz a delendai.config.json.',
 	checkedAt: 'Comprobado a las',
 	total: 'en total',
 	available: 'disponibles',
@@ -167,7 +167,7 @@ const fr: IProviderDashboardStrings = {
 	installHint: 'Aide à l’installation',
 	noQuota: 'pas de données de quota',
 	emptyRoster:
-		'Aucun fournisseur configuré — ajoutez un bloc providers à la racine de mcp-vertex.config.json.',
+		'Aucun fournisseur configuré — ajoutez un bloc providers à la racine de delendai.config.json.',
 	checkedAt: 'Vérifié à',
 	total: 'au total',
 	available: 'disponibles',
@@ -212,7 +212,7 @@ const de: IProviderDashboardStrings = {
 	installHint: 'Installationshinweis',
 	noQuota: 'keine Kontingentdaten',
 	emptyRoster:
-		'Keine Provider konfiguriert — füge einen providers-Block auf Wurzelebene in mcp-vertex.config.json hinzu.',
+		'Keine Provider konfiguriert — füge einen providers-Block auf Wurzelebene in delendai.config.json hinzu.',
 	checkedAt: 'Geprüft um',
 	total: 'gesamt',
 	available: 'verfügbar',
@@ -257,7 +257,7 @@ const it: IProviderDashboardStrings = {
 	installHint: 'Suggerimento di installazione',
 	noQuota: 'nessun dato di quota',
 	emptyRoster:
-		'Nessun provider configurato — aggiungi un blocco providers a livello radice in mcp-vertex.config.json.',
+		'Nessun provider configurato — aggiungi un blocco providers a livello radice in delendai.config.json.',
 	checkedAt: 'Verificato alle',
 	total: 'in totale',
 	available: 'disponibili',
@@ -302,7 +302,7 @@ const pt: IProviderDashboardStrings = {
 	installHint: 'Dica de instalação',
 	noQuota: 'sem dados de cota',
 	emptyRoster:
-		'Nenhum provedor configurado — adicione um bloco providers de nível raiz em mcp-vertex.config.json.',
+		'Nenhum provedor configurado — adicione um bloco providers de nível raiz em delendai.config.json.',
 	checkedAt: 'Verificado às',
 	total: 'no total',
 	available: 'disponíveis',
@@ -346,7 +346,7 @@ const ja: IProviderDashboardStrings = {
 	installHint: 'インストールのヒント',
 	noQuota: 'クォータデータなし',
 	emptyRoster:
-		'プロバイダーが未設定です — mcp-vertex.config.json のルートに providers ブロックを追加してください。',
+		'プロバイダーが未設定です — delendai.config.json のルートに providers ブロックを追加してください。',
 	checkedAt: '確認時刻',
 	total: '合計',
 	available: '利用可能',
@@ -390,7 +390,7 @@ const zh: IProviderDashboardStrings = {
 	installHint: '安装提示',
 	noQuota: '无配额数据',
 	emptyRoster:
-		'未配置任何提供方 — 请在 mcp-vertex.config.json 的根级添加 providers 块。',
+		'未配置任何提供方 — 请在 delendai.config.json 的根级添加 providers 块。',
 	checkedAt: '检查时间',
 	total: '总计',
 	available: '可用',
@@ -433,7 +433,7 @@ const hi: IProviderDashboardStrings = {
 	installHint: 'इंस्टॉल संकेत',
 	noQuota: 'कोटा डेटा नहीं',
 	emptyRoster:
-		'कोई प्रोवाइडर कॉन्फ़िगर नहीं — mcp-vertex.config.json में रूट-स्तरीय providers ब्लॉक जोड़ें।',
+		'कोई प्रोवाइडर कॉन्फ़िगर नहीं — delendai.config.json में रूट-स्तरीय providers ब्लॉक जोड़ें।',
 	checkedAt: 'जाँच समय',
 	total: 'कुल',
 	available: 'उपलब्ध',
@@ -476,7 +476,7 @@ const ar: IProviderDashboardStrings = {
 	installHint: 'تلميح التثبيت',
 	noQuota: 'لا بيانات حصة',
 	emptyRoster:
-		'لا يوجد مزوّدون مُهيّأون — أضف كتلة providers في جذر mcp-vertex.config.json.',
+		'لا يوجد مزوّدون مُهيّأون — أضف كتلة providers في جذر delendai.config.json.',
 	checkedAt: 'تم الفحص في',
 	total: 'الإجمالي',
 	available: 'متاح',
@@ -519,7 +519,7 @@ const th: IProviderDashboardStrings = {
 	installHint: 'คำแนะนำการติดตั้ง',
 	noQuota: 'ไม่มีข้อมูลโควตา',
 	emptyRoster:
-		'ยังไม่ได้กำหนดผู้ให้บริการ — เพิ่มบล็อก providers ระดับรากใน mcp-vertex.config.json',
+		'ยังไม่ได้กำหนดผู้ให้บริการ — เพิ่มบล็อก providers ระดับรากใน delendai.config.json',
 	checkedAt: 'ตรวจสอบเมื่อ',
 	total: 'ทั้งหมด',
 	available: 'พร้อมใช้งาน',
@@ -562,7 +562,7 @@ const vi: IProviderDashboardStrings = {
 	installHint: 'Gợi ý cài đặt',
 	noQuota: 'không có dữ liệu hạn mức',
 	emptyRoster:
-		'Chưa cấu hình nhà cung cấp nào — thêm khối providers ở cấp gốc vào mcp-vertex.config.json.',
+		'Chưa cấu hình nhà cung cấp nào — thêm khối providers ở cấp gốc vào delendai.config.json.',
 	checkedAt: 'Kiểm tra lúc',
 	total: 'tổng',
 	available: 'khả dụng',

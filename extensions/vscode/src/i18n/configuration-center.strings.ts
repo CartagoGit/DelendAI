@@ -72,12 +72,12 @@ const en = strings(
 		},
 	},
 	{
-		panelTitle: 'mcp-vertex Configuration Center',
+		panelTitle: 'delendai Configuration Center',
 		workspaceRequired:
-			'mcp-vertex: open a workspace before configuring the project.',
+			'delendai: open a workspace before configuring the project.',
 		invalidMessage:
-			'mcp-vertex: Configuration Center rejected an invalid message.',
-		savedMessage: 'mcp-vertex: configuration saved.',
+			'delendai: Configuration Center rejected an invalid message.',
+		savedMessage: 'delendai: configuration saved.',
 		restartAction: 'Restart server',
 		saveAction: 'save configuration',
 	},
@@ -139,12 +139,12 @@ const es = strings(
 		},
 	},
 	{
-		panelTitle: 'Centro de configuración de mcp-vertex',
+		panelTitle: 'Centro de configuración de delendai',
 		workspaceRequired:
-			'mcp-vertex: abre un espacio de trabajo antes de configurar el proyecto.',
+			'delendai: abre un espacio de trabajo antes de configurar el proyecto.',
 		invalidMessage:
-			'mcp-vertex: el Centro de configuración rechazó un mensaje no válido.',
-		savedMessage: 'mcp-vertex: configuración guardada.',
+			'delendai: el Centro de configuración rechazó un mensaje no válido.',
+		savedMessage: 'delendai: configuración guardada.',
 		restartAction: 'Reiniciar servidor',
 		saveAction: 'guardar la configuración',
 	},
@@ -209,12 +209,12 @@ const fr = strings(
 		},
 	},
 	{
-		panelTitle: 'Centre de configuration mcp-vertex',
+		panelTitle: 'Centre de configuration delendai',
 		workspaceRequired:
-			'mcp-vertex : ouvrez un espace de travail avant de configurer le projet.',
+			'delendai : ouvrez un espace de travail avant de configurer le projet.',
 		invalidMessage:
-			'mcp-vertex : le Centre de configuration a rejeté un message invalide.',
-		savedMessage: 'mcp-vertex : configuration enregistrée.',
+			'delendai : le Centre de configuration a rejeté un message invalide.',
+		savedMessage: 'delendai : configuration enregistrée.',
 		restartAction: 'Redémarrer le serveur',
 		saveAction: 'enregistrer la configuration',
 	},
@@ -277,12 +277,12 @@ const de = strings(
 		},
 	},
 	{
-		panelTitle: 'mcp-vertex Konfigurationszentrum',
+		panelTitle: 'delendai Konfigurationszentrum',
 		workspaceRequired:
-			'mcp-vertex: Öffne einen Arbeitsbereich, bevor du das Projekt konfigurierst.',
+			'delendai: Öffne einen Arbeitsbereich, bevor du das Projekt konfigurierst.',
 		invalidMessage:
-			'mcp-vertex: Das Konfigurationszentrum hat eine ungültige Nachricht abgelehnt.',
-		savedMessage: 'mcp-vertex: Konfiguration gespeichert.',
+			'delendai: Das Konfigurationszentrum hat eine ungültige Nachricht abgelehnt.',
+		savedMessage: 'delendai: Konfiguration gespeichert.',
 		restartAction: 'Server neu starten',
 		saveAction: 'Konfiguration speichern',
 	},
@@ -344,12 +344,12 @@ const it = strings(
 		},
 	},
 	{
-		panelTitle: 'Centro configurazione mcp-vertex',
+		panelTitle: 'Centro configurazione delendai',
 		workspaceRequired:
-			'mcp-vertex: apri uno spazio di lavoro prima di configurare il progetto.',
+			'delendai: apri uno spazio di lavoro prima di configurare il progetto.',
 		invalidMessage:
-			'mcp-vertex: il Centro configurazione ha rifiutato un messaggio non valido.',
-		savedMessage: 'mcp-vertex: configurazione salvata.',
+			'delendai: il Centro configurazione ha rifiutato un messaggio non valido.',
+		savedMessage: 'delendai: configurazione salvata.',
 		restartAction: 'Riavvia server',
 		saveAction: 'salvare la configurazione',
 	},
@@ -411,12 +411,12 @@ const pt = strings(
 		},
 	},
 	{
-		panelTitle: 'Central de configuração do mcp-vertex',
+		panelTitle: 'Central de configuração do delendai',
 		workspaceRequired:
-			'mcp-vertex: abra um espaço de trabalho antes de configurar o projeto.',
+			'delendai: abra um espaço de trabalho antes de configurar o projeto.',
 		invalidMessage:
-			'mcp-vertex: a Central de configuração rejeitou uma mensagem inválida.',
-		savedMessage: 'mcp-vertex: configuração salva.',
+			'delendai: a Central de configuração rejeitou uma mensagem inválida.',
+		savedMessage: 'delendai: configuração salva.',
 		restartAction: 'Reiniciar servidor',
 		saveAction: 'salvar a configuração',
 	},
@@ -478,12 +478,12 @@ const ja = strings(
 		},
 	},
 	{
-		panelTitle: 'mcp-vertex 設定センター',
+		panelTitle: 'delendai 設定センター',
 		workspaceRequired:
-			'mcp-vertex: プロジェクトを設定する前にワークスペースを開いてください。',
+			'delendai: プロジェクトを設定する前にワークスペースを開いてください。',
 		invalidMessage:
-			'mcp-vertex: 設定センターが無効なメッセージを拒否しました。',
-		savedMessage: 'mcp-vertex: 設定を保存しました。',
+			'delendai: 設定センターが無効なメッセージを拒否しました。',
+		savedMessage: 'delendai: 設定を保存しました。',
 		restartAction: 'サーバーを再起動',
 		saveAction: '設定の保存',
 	},
@@ -540,10 +540,10 @@ const zh = strings(
 		},
 	},
 	{
-		panelTitle: 'mcp-vertex 配置中心',
-		workspaceRequired: 'mcp-vertex：请先打开工作区再配置项目。',
-		invalidMessage: 'mcp-vertex：配置中心拒绝了无效消息。',
-		savedMessage: 'mcp-vertex：配置已保存。',
+		panelTitle: 'delendai 配置中心',
+		workspaceRequired: 'delendai：请先打开工作区再配置项目。',
+		invalidMessage: 'delendai：配置中心拒绝了无效消息。',
+		savedMessage: 'delendai：配置已保存。',
 		restartAction: '重启服务器',
 		saveAction: '保存配置',
 	},
@@ -602,10 +602,10 @@ const hi = strings(
 		},
 	},
 	{
-		panelTitle: 'mcp-vertex कॉन्फ़िगरेशन केंद्र',
-		workspaceRequired: 'mcp-vertex: प्रोजेक्ट कॉन्फ़िगर करने से पहले वर्कस्पेस खोलें।',
-		invalidMessage: 'mcp-vertex: कॉन्फ़िगरेशन केंद्र ने अमान्य संदेश अस्वीकार किया।',
-		savedMessage: 'mcp-vertex: कॉन्फ़िगरेशन सहेजा गया।',
+		panelTitle: 'delendai कॉन्फ़िगरेशन केंद्र',
+		workspaceRequired: 'delendai: प्रोजेक्ट कॉन्फ़िगर करने से पहले वर्कस्पेस खोलें।',
+		invalidMessage: 'delendai: कॉन्फ़िगरेशन केंद्र ने अमान्य संदेश अस्वीकार किया।',
+		savedMessage: 'delendai: कॉन्फ़िगरेशन सहेजा गया।',
 		restartAction: 'सर्वर पुनः शुरू करें',
 		saveAction: 'कॉन्फ़िगरेशन सहेजना',
 	},
@@ -662,10 +662,10 @@ const ar = strings(
 		},
 	},
 	{
-		panelTitle: 'مركز إعدادات mcp-vertex',
-		workspaceRequired: 'mcp-vertex: افتح مساحة عمل قبل إعداد المشروع.',
-		invalidMessage: 'mcp-vertex: رفض مركز الإعدادات رسالة غير صالحة.',
-		savedMessage: 'mcp-vertex: تم حفظ الإعدادات.',
+		panelTitle: 'مركز إعدادات delendai',
+		workspaceRequired: 'delendai: افتح مساحة عمل قبل إعداد المشروع.',
+		invalidMessage: 'delendai: رفض مركز الإعدادات رسالة غير صالحة.',
+		savedMessage: 'delendai: تم حفظ الإعدادات.',
 		restartAction: 'إعادة تشغيل الخادم',
 		saveAction: 'حفظ الإعدادات',
 	},
@@ -722,10 +722,10 @@ const th = strings(
 		},
 	},
 	{
-		panelTitle: 'ศูนย์การกำหนดค่า mcp-vertex',
-		workspaceRequired: 'mcp-vertex: เปิดเวิร์กสเปซก่อนกำหนดค่าโปรเจกต์',
-		invalidMessage: 'mcp-vertex: ศูนย์การกำหนดค่าปฏิเสธข้อความที่ไม่ถูกต้อง',
-		savedMessage: 'mcp-vertex: บันทึกการกำหนดค่าแล้ว',
+		panelTitle: 'ศูนย์การกำหนดค่า delendai',
+		workspaceRequired: 'delendai: เปิดเวิร์กสเปซก่อนกำหนดค่าโปรเจกต์',
+		invalidMessage: 'delendai: ศูนย์การกำหนดค่าปฏิเสธข้อความที่ไม่ถูกต้อง',
+		savedMessage: 'delendai: บันทึกการกำหนดค่าแล้ว',
 		restartAction: 'รีสตาร์ทเซิร์ฟเวอร์',
 		saveAction: 'บันทึกการกำหนดค่า',
 	},
@@ -787,12 +787,12 @@ const vi = strings(
 		},
 	},
 	{
-		panelTitle: 'Trung tâm cấu hình mcp-vertex',
+		panelTitle: 'Trung tâm cấu hình delendai',
 		workspaceRequired:
-			'mcp-vertex: hãy mở workspace trước khi cấu hình dự án.',
+			'delendai: hãy mở workspace trước khi cấu hình dự án.',
 		invalidMessage:
-			'mcp-vertex: Trung tâm cấu hình đã từ chối thông điệp không hợp lệ.',
-		savedMessage: 'mcp-vertex: đã lưu cấu hình.',
+			'delendai: Trung tâm cấu hình đã từ chối thông điệp không hợp lệ.',
+		savedMessage: 'delendai: đã lưu cấu hình.',
 		restartAction: 'Khởi động lại máy chủ',
 		saveAction: 'lưu cấu hình',
 	},

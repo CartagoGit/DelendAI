@@ -38,18 +38,18 @@ export const createFakeTransport = (
 };
 
 export const healthyFixture = {
-	'mcp-vertex_proposals_state_health': {
+	delendai_proposals_state_health: {
 		healthy: true,
 		locks: { active: 3 },
 		queue: null,
 		registry: { orphans: 0, threshold: '1d' },
 	},
-	'mcp-vertex_proposals_proposal_stale_list': {
+	delendai_proposals_proposal_stale_list: {
 		ok: true,
 		count: 0,
 		zombies: [],
 	},
-	'mcp-vertex_proposals_agent_names': {
+	delendai_proposals_agent_names: {
 		assignments: [
 			{ agent_name: 'a1', status: 'active' },
 			{ agent_name: 'a2', status: 'active' },
@@ -58,7 +58,7 @@ export const healthyFixture = {
 };
 
 export const unhealthyFixture = {
-	'mcp-vertex_proposals_state_health': {
+	delendai_proposals_state_health: {
 		healthy: false,
 		locks: { active: 7 },
 		queue: {
@@ -70,7 +70,7 @@ export const unhealthyFixture = {
 		},
 		registry: { orphans: 2, threshold: '1d' },
 	},
-	'mcp-vertex_proposals_proposal_stale_list': {
+	delendai_proposals_proposal_stale_list: {
 		ok: true,
 		count: 1,
 		zombies: [
@@ -85,7 +85,7 @@ export const unhealthyFixture = {
 			},
 		],
 	},
-	'mcp-vertex_proposals_agent_names': {
+	delendai_proposals_agent_names: {
 		assignments: [
 			{ agent_name: 'a1', status: 'active' },
 			{ agent_name: 'a-stale', status: 'active' },

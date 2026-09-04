@@ -12,7 +12,7 @@
  *   prefix convention.
  *
  *   The reminder is rendered as a markdown block that is appended to
- *   the `mcp-vertex_self_review_gate` response payload, and is always
+ *   the `delendai_self_review_gate` response payload, and is always
  *   safe to render (it contains no executable code, only guidance).
  *
  *   The helper lives in

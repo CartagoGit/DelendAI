@@ -46,7 +46,7 @@ export const buildHealthcheckProvidersRegistration = (
 	effects: ['spawn', 'write'],
 	summary:
 		'Probe each configured provider CLI on PATH and report install/auth/model availability.',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_healthcheck_providers',
+	descriptionKey: 'delendai_orchestrator-runner_healthcheck_providers',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_healthcheck_providers`,

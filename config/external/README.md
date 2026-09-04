@@ -30,7 +30,7 @@ Current root-discovered configs:
 - `.continue/**` — Continue.dev workspace config for its IDE assistant.
 
 Generated state does not belong here. Runtime state for this repo goes under
-`.cache/mcp-vertex/**`; other tool caches use `.cache/<tool>/**` when supported.
+`.cache/delendai/**`; other tool caches use `.cache/<tool>/**` when supported.
 
 ## Universal adapter packs
 
@@ -42,4 +42,4 @@ and retain the portable handoff fallback.
 
 The concrete Codex and Claude Code profiles are documented beside their
 configuration. The generic contract and a template for another host are in
-[`docs/mcp-vertex/examples/host-capability-adapter.md`](../../docs/mcp-vertex/examples/host-capability-adapter.md).
+[`docs/delendai/examples/host-capability-adapter.md`](../../docs/delendai/examples/host-capability-adapter.md).

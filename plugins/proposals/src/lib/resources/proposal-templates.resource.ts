@@ -12,7 +12,7 @@ export interface IProposalTemplatesResourceOptions {
 export const buildProposalTemplatesResourceRegistration = (
 	options: IProposalTemplatesResourceOptions,
 ): IResourceRegistration => {
-	const uri = options.uri ?? 'mcp-vertex://proposals/templates';
+	const uri = options.uri ?? 'delendai://proposals/templates';
 
 	return {
 		id: 'resource:proposal-templates',

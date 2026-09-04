@@ -1,7 +1,7 @@
 # @delendai/memory
 
 Persistent **project memory** plugin for
-[`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Save/recall/list/forget
+[`@delendai/core`](../../docs/delendai/README-DELENDAI.md). Save/recall/list/forget
 small notes stored in one JSON file under the cache dir, so any agent keeps
 continuity across sessions with minimal tokens.
 
@@ -10,7 +10,7 @@ continuity across sessions with minimal tokens.
 ```jsonc
 {
 	"servers": {
-		"mcp-vertex": {
+		"delendai": {
 			"command": "bunx",
 			"args": ["@delendai/core", "--plugins=memory"]
 		}
@@ -30,13 +30,13 @@ continuity across sessions with minimal tokens.
 | `memory_compact` | Distil and optionally persist a session digest. |
 | `memory_compaction_check` | Decide whether context compaction is useful. |
 
-Notes persist in `.cache/mcp-vertex/results/memory/notes.json`.
+Notes persist in `.cache/delendai/results/memory/notes.json`.
 Writes redact secrets, use atomic replacement and enforce the configured note
 quota inside the store mutex.
 
 Missing or stale explicit session digests produce a `STALE_CHECKPOINT`
 recommend advisory (`create-semantic-checkpoint`) without reading host
 transcripts. See
-[`CHECKPOINT-ADVISORIES.md`](../../docs/mcp-vertex/CHECKPOINT-ADVISORIES.md).
+[`CHECKPOINT-ADVISORIES.md`](../../docs/delendai/CHECKPOINT-ADVISORIES.md).
 
 BSD-3-Clause © Cartago

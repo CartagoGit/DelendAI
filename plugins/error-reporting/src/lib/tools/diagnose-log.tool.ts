@@ -133,7 +133,7 @@ export const submitLogFinding = async (input: {
 	const { finding, options } = input;
 	const built = buildLogFindingReport({
 		finding,
-		mcpVertexVersion: options.mcpVertexVersion,
+		delendaiVersion: options.delendaiVersion,
 		reporterVersion: options.reporterVersion,
 	});
 

@@ -119,7 +119,7 @@ const PLUGIN_LIST =
  * background watcher keeps the process (or the test runner) alive.
  */
 export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
-	const harvestWorkspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-types-'));
+	const harvestWorkspace = mkdtempSync(join(tmpdir(), 'delendai-types-'));
 	const args = parseCliArgs(
 		[
 			`--plugins=${PLUGIN_LIST}`,
@@ -141,7 +141,7 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 		// pr_view). Every other plugin still sees no config file (default
 		// options), matching the real CLI default.
 		readFile: async (absolutePath: string) =>
-			absolutePath.endsWith('mcp-vertex.config.json')
+			absolutePath.endsWith('delendai.config.json')
 				? JSON.stringify({
 						plugins: {
 							deps: { options: { allowNetwork: true } },

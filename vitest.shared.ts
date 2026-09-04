@@ -36,7 +36,7 @@ export const sharedSetupFiles = (workspaceRoot: string): string[] => [
  * Reporters shared by every vitest project.
  *
  * `journal-reporter.ts` writes each run — green or red — to
- * `.cache/mcp-vertex/results/logs/test-runs.jsonl`, so the failures of a
+ * `.cache/delendai/results/logs/test-runs.jsonl`, so the failures of a
  * run whose output has scrolled away can be read back with
  * `bun run test:failures` instead of running the suite again. The root
  * `vitest.config.ts` wires it for the repo-wide run; a package config

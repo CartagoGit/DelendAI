@@ -196,7 +196,7 @@ export const buildDiscoverToolRegistration = (
 	effects: ['network'],
 	summary:
 		'Live npm search for external MCP servers — OFF unless allowDiscoverySearch is enabled.',
-	descriptionKey: 'mcp-vertex_external-mcps_discover',
+	descriptionKey: 'delendai_external-mcps_discover',
 	register: async (server) => {
 		const search = options.search ?? createDefaultNpmSearch();
 		const now = options.now ?? (() => Date.now());

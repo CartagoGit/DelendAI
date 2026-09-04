@@ -8,7 +8,7 @@ describe('renderPanelHelp', () => {
 	it('renders the panel shell + lead text', () => {
 		const html = renderPanelHelp(dictsByLang.en);
 		expect(html).toContain('panel-help');
-		expect(html).toContain('mcpv-help');
+		expect(html).toContain('delendai-help');
 	});
 
 	it('lists every primary panel as a help entry', () => {

@@ -20,16 +20,16 @@ import {
 } from '../extension';
 
 const overviewFixture: IOverview = {
-	server: { name: 'mcp-vertex', version: '0.1.0' },
-	namespacePrefix: 'mcp-vertex',
+	server: { name: 'delendai', version: '0.1.0' },
+	namespacePrefix: 'delendai',
 	plugins: ['core'],
-	tools: ['mcp-vertex_overview'],
+	tools: ['delendai_overview'],
 	knowledge: [],
 	recommendedNextAction: 'Call overview first.',
 };
 
 describe('dashboard registration with injected vscode', async () => {
-	it('registers mcp-vertex.openDashboard even when deps.vscode is provided', async () => {
+	it('registers delendai.openDashboard even when deps.vscode is provided', async () => {
 		const commands = new Map<
 			string,
 			(...args: readonly unknown[]) => unknown
@@ -88,12 +88,12 @@ describe('dashboard registration with injected vscode', async () => {
 			createClient: async () => client,
 		});
 
-		expect(commands.has('mcp-vertex.openDashboard')).toBe(true);
+		expect(commands.has('delendai.openDashboard')).toBe(true);
 
 		// Invoking the registered command must produce a panel whose
 		// HTML is the rendered dashboard (i.e. goes through the
 		// fake-host adapter, not the no-op stub).
-		await commands.get('mcp-vertex.openDashboard')?.();
+		await commands.get('delendai.openDashboard')?.();
 		expect(panels.length).toBeGreaterThanOrEqual(1);
 		const html = panels[panels.length - 1]?.webview.html ?? '';
 		expect(html.length).toBeGreaterThan(0);

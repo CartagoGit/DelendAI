@@ -1,10 +1,10 @@
 ---
-name: mcp-vertex-failure-modes
+name: delendai-failure-modes
 appliesTo: ['@delendai/*']
-description: What to do when an mcp-vertex tool returns a failure envelope — lock conflict, corrupt file, state inconsistency, command-policy block, or a timeout. Use when a tool reports ok:false or a swarm gets stuck.
+description: What to do when an delendai tool returns a failure envelope — lock conflict, corrupt file, state inconsistency, command-policy block, or a timeout. Use when a tool reports ok:false or a swarm gets stuck.
 ---
 
-# mcp-vertex failure modes
+# delendai failure modes
 
 Tools return a structured error envelope: `{ ok:false, error:{ reason, nextAction } }`.
 Read `nextAction` first — it usually names the recovery tool. Common reasons:
@@ -44,4 +44,4 @@ than hammering the claim.
 ## General
 
 - Never loop calling tools after `stop: true` — that's the anti-idle brake firing.
-- When unsure of current state, `mcp-vertex_overview` + `compact_status` re-orient cheaply.
+- When unsure of current state, `delendai_overview` + `compact_status` re-orient cheaply.

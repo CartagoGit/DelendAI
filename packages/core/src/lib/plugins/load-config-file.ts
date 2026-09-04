@@ -11,7 +11,7 @@ import { CONFIG_FILE_SCHEMA } from './config-file-schema';
  * that just wants the core paths (cacheDir/docsDir) does NOT have to
  * import the loop detector config type, the bootstrap overrides, etc.
  *
- * The composite `IMcpVertexConfigFile` is the union of every sub-
+ * The composite `IDelendaiConfigFile` is the union of every sub-
  * interface — it stays exported as a single type for callers that
  * really do want everything (e.g. the parser / doctor).
  */
@@ -52,7 +52,7 @@ export interface IBootstrapPatternOverrides {
  * reads at least these. Consumers that only need the paths can
  * depend on this and ignore the rest.
  */
-export interface IMcpVertexCorePathsConfig {
+export interface IDelendaiCorePathsConfig {
 	readonly cacheDir?: string;
 	readonly docsDir?: string;
 	/**
@@ -110,7 +110,7 @@ export interface IEvidenceConfig {
  * Default `[]` (or omitted): the native fs tools keep their single-root,
  * reject-absolute behaviour — every user already reads their own project;
  * external paths stay off until explicitly authorized here. Because the
- * list lives in the committed `mcp-vertex.config.json`, authorization is
+ * list lives in the committed `delendai.config.json`, authorization is
  * durable and reviewable, never LLM-expanded.
  */
 export interface IFilesystemConfig {
@@ -133,7 +133,7 @@ export interface IFilesystemConfig {
  * — the other modes ignore them so a user can leave the fields
  * unset.
  */
-export interface IMcpVertexCommitAuthorConfig {
+export interface IDelendaiCommitAuthorConfig {
 	/** Which strategy to apply. Defaults to `'git'`. */
 	readonly mode?: CommitAuthorMode;
 	/** MCP `clientInfo.name` mapped through the host's extension table. */
@@ -147,7 +147,7 @@ export interface IMcpVertexCommitAuthorConfig {
 }
 
 /**
- * Solid-ISP: per-plugin configuration loaded from `mcp-vertex.config.json`.
+ * Solid-ISP: per-plugin configuration loaded from `delendai.config.json`.
  * Each plugin gets a typed `options` object (any JSON — nested
  * objects, arrays…) plus an optional tool-namespace `prefix`. CLI
  * flags override these roots; the file is the place for anything
@@ -161,7 +161,7 @@ export interface IMcpVertexCommitAuthorConfig {
  * }
  * ```
  */
-export interface IMcpVertexPluginConfig {
+export interface IDelendaiPluginConfig {
 	/**
 	 * Explicit activation override. `false` suppresses the plugin even when a
 	 * preset or `--plugins` selected it; `true` keeps/activates the entry.
@@ -238,14 +238,14 @@ export interface ILoopDetectorConfig {
  *   the most-recent `keepLastN` crashed-agent worktrees under
  *   `<cacheDir>/.worktrees/`, prune the rest. Default on, keep 3.
  */
-export interface IMcpVertexCacheWorktreesConfig {
+export interface IDelendaiCacheWorktreesConfig {
 	/** Default true. When false the worktree-orphan rule never applies. */
 	readonly enabled?: boolean;
 	/** Default 3. Keep the most-recent N worktrees by mtime. */
 	readonly keepLastN?: number;
 }
 
-export interface IMcpVertexCachePolicyConfig {
+export interface IDelendaiCachePolicyConfig {
 	/**
 	 * Boot-sweep posture. `'dry-run'` (default) only logs a report;
 	 * `'apply'` deletes the evictable entries; `'off'` runs nothing.
@@ -254,7 +254,7 @@ export interface IMcpVertexCachePolicyConfig {
 	/** Upper cap (days) applied to every `olderThanDays` rule. Default 30. */
 	readonly maxAgeDays?: number;
 	/** Orphan-worktree sweeper tuning (f00072 S5). */
-	readonly worktrees?: IMcpVertexCacheWorktreesConfig;
+	readonly worktrees?: IDelendaiCacheWorktreesConfig;
 }
 
 /**
@@ -262,9 +262,9 @@ export interface IMcpVertexCachePolicyConfig {
  * Kept exported because callers that legitimately want everything
  * (the parser, the doctor) need a single type. Callers that only
  * want a slice should depend on the relevant sub-interface instead
- * (e.g. `IMcpVertexCorePathsConfig`).
+ * (e.g. `IDelendaiCorePathsConfig`).
  */
-export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
+export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	/** Optional editor hint pointing at the published JSON Schema. */
 	readonly $schema?: string;
 	/** Optional explicit surface override. Omitted => managed. */
@@ -278,23 +278,23 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	/**
 	 * Host-scoped capability gate for `agent_worktree`. Default `false`.
 	 * When `false` (or unset) the proposals plugin's
-	 * `mcp-vertex_proposals_agent_worktree` tool stays registered but returns a
+	 * `delendai_proposals_agent_worktree` tool stays registered but returns a
 	 * structured `ok: false` error telling the caller how to enable it.
 	 * A host that needs multi-agent worktree isolation flips it to
 	 * `true` here (or via the `--agent-worktree` CLI flag, which wins).
 	 */
 	readonly agentWorktree?: boolean;
 	/** Core-owned runtime and agent policies. */
-	readonly core?: IMcpVertexCoreConfig;
+	readonly core?: IDelendaiCoreConfig;
 	/**
 	 * f00082: how every commit produced by the shared git engine
 	 * should be attributed. Defaults to `'git'` (the current
 	 * `git config user.name` / `user.email`). See
 	 * `commit-author.ts` for the full mode matrix and
-	 * `IMcpVertexCommitAuthorConfig` for the schema.
+	 * `IDelendaiCommitAuthorConfig` for the schema.
 	 */
-	readonly commitAuthor?: IMcpVertexCommitAuthorConfig;
-	readonly plugins?: Readonly<Record<string, IMcpVertexPluginConfig>>;
+	readonly commitAuthor?: IDelendaiCommitAuthorConfig;
+	readonly plugins?: Readonly<Record<string, IDelendaiPluginConfig>>;
 	/**
 	 * f00067a S1: root-level multi-model provider roster. Entries mirror
 	 * `IProviderCapabilities` field-for-field (the Zod schema in
@@ -314,9 +314,9 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 * f00072 S3: cache eviction policy. Governs the boot-time sweep over
 	 * `<cacheDir>` and the opt-in `@delendai/cache` plugin. Omitted ⇒
 	 * `runOnBoot: 'dry-run'` (safe: logs the report, deletes nothing).
-	 * See {@link IMcpVertexCachePolicyConfig}.
+	 * See {@link IDelendaiCachePolicyConfig}.
 	 */
-	readonly cache?: IMcpVertexCachePolicyConfig;
+	readonly cache?: IDelendaiCachePolicyConfig;
 	/**
 	 * Optional bootstrap layer configuration. Hosts use this to teach
 	 * the bootstrap blueprint about project types, tool lists and
@@ -337,17 +337,17 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	readonly coreVersion?: string;
 }
 
-export interface IMcpVertexCoreConfig {
+export interface IDelendaiCoreConfig {
 	/** Global agent execution mode and engineering principles. */
-	readonly agentPolicy?: IMcpVertexAgentPolicyConfig;
+	readonly agentPolicy?: IDelendaiAgentPolicyConfig;
 }
 
-export interface IMcpVertexAgentPolicyConfig {
+export interface IDelendaiAgentPolicyConfig {
 	readonly autonomous?: boolean;
 	readonly principles?: ReadonlyArray<string>;
 }
 
-export const DEFAULT_AGENT_POLICY: Required<IMcpVertexAgentPolicyConfig> = {
+export const DEFAULT_AGENT_POLICY: Required<IDelendaiAgentPolicyConfig> = {
 	autonomous: true,
 	principles: [
 		'Apply SOLID architecture where it improves ownership and changeability.',
@@ -358,7 +358,7 @@ export const DEFAULT_AGENT_POLICY: Required<IMcpVertexAgentPolicyConfig> = {
 };
 
 /** Default config file name looked up at the workspace root. */
-export const DEFAULT_CONFIG_FILENAME = 'mcp-vertex.config.json';
+export const DEFAULT_CONFIG_FILENAME = 'delendai.config.json';
 
 /**
  * Solid-SRP: re-export the Zod schema from its own module so callers
@@ -404,12 +404,12 @@ export const diagnoseConfigFile = (
  */
 export const parseConfigFile = (
 	raw: string | undefined,
-): IMcpVertexConfigFile => {
+): IDelendaiConfigFile => {
 	if (raw === undefined) return {};
 	try {
 		const value = JSON.parse(raw) as unknown;
 		if (value && typeof value === 'object' && !Array.isArray(value)) {
-			return value as IMcpVertexConfigFile;
+			return value as IDelendaiConfigFile;
 		}
 		return {};
 	} catch {
@@ -419,9 +419,9 @@ export const parseConfigFile = (
 
 /** Resolve the per-plugin entry, never undefined. */
 export const pluginConfigFor = (
-	config: IMcpVertexConfigFile,
+	config: IDelendaiConfigFile,
 	pluginName: string,
-): IMcpVertexPluginConfig => config.plugins?.[pluginName] ?? {};
+): IDelendaiPluginConfig => config.plugins?.[pluginName] ?? {};
 
 /** A path that `resolvePluginSpecifier` already accepts verbatim. */
 const isAbsoluteOrSchemeSpec = (value: string): boolean =>
@@ -443,7 +443,7 @@ const isAbsoluteOrSchemeSpec = (value: string): boolean =>
  * transforms the path.
  */
 export const resolveConfigPluginSpecifiers = (
-	config: IMcpVertexConfigFile,
+	config: IDelendaiConfigFile,
 	workspaceRoot: string,
 ): readonly string[] => {
 	const plugins = config.plugins ?? {};
@@ -481,7 +481,7 @@ export const resolveConfigPluginSpecifiers = (
  * instead of letting the loader fail later with a less obvious error.
  */
 export const diagnosePluginPathConfig = (
-	entry: IMcpVertexPluginConfig,
+	entry: IDelendaiPluginConfig,
 	pluginName: string,
 ): readonly string[] => {
 	const issues: string[] = [];

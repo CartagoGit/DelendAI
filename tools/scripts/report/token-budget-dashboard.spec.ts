@@ -12,7 +12,7 @@ import {
 } from './token-budget-dashboard.script';
 
 const TOKEN_BUDGETS_ARTIFACT = new URL(
-	'../../../docs/mcp-vertex/TOKEN-BUDGETS.md',
+	'../../../docs/delendai/TOKEN-BUDGETS.md',
 	import.meta.url,
 );
 const measurementPromise = measureCatalogAndTaskContextCost();

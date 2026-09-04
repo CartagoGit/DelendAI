@@ -52,14 +52,14 @@ type IOverviewish = IOverview;
  * string[]>` — compact mode groups by plugin). The previous hand-rolled
  * `IOverviewish.tools?: readonly unknown[]` only ever matched the array
  * shape, so `overview.tools?.length` silently read `undefined` (→ 0)
- * against the Record shape `doctor` actually receives — `mcpv doctor`
+ * against the Record shape `doctor` actually receives — `delendai doctor`
  * always reported "0 tool(s) registered" / a false `warn`, regardless
  * of how many tools were really loaded. This is the same drift class
  * x00105/f00118 fixed elsewhere: use ONE shared type, don't hand-roll
  * the shape per call site.
  *
  * v00129 S1 (AUD-B01): that one shared type used to be the generated
- * `McpVertexToolOutputs['mcp-vertex_overview']` (derived straight from
+ * `DelendaiToolOutputs['delendai_overview']` (derived straight from
  * the wire-declared `outputSchema`). `overview`'s `outputSchema` is now
  * a deliberately permissive `compactOutputSchema()` to save tokens —
  * see `packages/core/src/lib/surface/compact-output-schema.ts` — so it
@@ -97,7 +97,7 @@ export { analyzeConfigRoots };
  * a00060: `doctor` returns its report via `data()`, which the CLI runner
  * only prints to stdout in `--json` mode (by design, to avoid the
  * duplicate-JSON-dump bug `init` used to have). Unlike `init`, `doctor`
- * never grew its own human-readable recap, so running `mcpv doctor`
+ * never grew its own human-readable recap, so running `delendai doctor`
  * without `--json` printed literally nothing — a "sectioned health
  * report" a human can't actually read. `printDoctorSummary` closes that
  * gap the same way `printInitHumanSummary` does for `init`: a pure
@@ -176,7 +176,7 @@ export const runDoctorBody = async (
 	// Config-vs-reality (a00064): configured roots must exist here.
 	try {
 		const configRaw = readFileSync(
-			join(ctx.globals.workspace, 'mcp-vertex.config.json'),
+			join(ctx.globals.workspace, 'delendai.config.json'),
 			'utf8',
 		);
 		sections.push(
@@ -205,11 +205,9 @@ export const runDoctorBody = async (
 
 	// Plugins + tools — derived from the live server overview.
 	try {
-		const overview = await request<IOverviewish>(
-			ctx,
-			'mcp-vertex_overview',
-			{ compact: true },
-		);
+		const overview = await request<IOverviewish>(ctx, 'delendai_overview', {
+			compact: true,
+		});
 		const pluginCount = overview.plugins?.length ?? 0;
 		const toolCount = countTools(overview.tools);
 		const missing = overview.pluginDiagnostic?.missing ?? [];
@@ -261,7 +259,7 @@ const SHELLS: readonly Shell[] = ['bash', 'zsh', 'fish'];
 
 const completionCommand: ICliCommand = {
 	name: 'completion',
-	summary: 'Print a shell-completion script (bash|zsh|fish) for mcpv.',
+	summary: 'Print a shell-completion script (bash|zsh|fish) for delendai.',
 	async run(args, _ctx) {
 		const shell = positionalArg(args);
 		if (shell === undefined || !SHELLS.includes(shell as Shell)) {

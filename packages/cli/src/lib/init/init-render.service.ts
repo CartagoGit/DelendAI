@@ -49,7 +49,7 @@ const dedupe = (items: readonly string[]): readonly string[] =>
 /**
  * a00063: real top-level dirs of the TARGET workspace, so search/
  * conventions roots reflect the adopter's actual layout instead of
- * mcp-vertex's own monorepo shape. Missing/unreadable workspace →
+ * delendai's own monorepo shape. Missing/unreadable workspace →
  * empty list → roots omitted → the engine walks `.` (safe anywhere).
  */
 const readTopLevelDirs = (workspaceRoot: string): readonly string[] => {
@@ -98,8 +98,8 @@ export const resolvePluginSet = (answers: IInitAnswers): readonly string[] => {
 	return merged.filter((p) => !answers.excludedPlugins.includes(p));
 };
 
-/** Renders `mcp-vertex.config.json` with the chosen preset + plugins. */
-export const renderMcpVertexConfig = (
+/** Renders `delendai.config.json` with the chosen preset + plugins. */
+export const renderDelendaiConfig = (
 	answers: IInitAnswers,
 	resolvedPlugins: readonly string[],
 ): IRenderedFile => {
@@ -121,9 +121,9 @@ export const renderMcpVertexConfig = (
 	}
 	const config: Record<string, unknown> = {
 		$schema:
-			'https://unpkg.com/@delendai/core/schema/mcp-vertex.config.schema.json',
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+			'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 		plugins: pluginsBlock,
 	};
 	// f00088 S4: when the S1 detector picked a non-default
@@ -142,22 +142,22 @@ export const renderMcpVertexConfig = (
 		};
 	}
 	return {
-		relPath: 'mcp-vertex.config.json',
+		relPath: 'delendai.config.json',
 		content: `${JSON.stringify(config, null, '\t')}\n`,
 	};
 };
 
 /**
- * Render the canonical `mcp-vertex` server entry.
+ * Render the canonical `delendai` server entry.
  *
  * Pure — no IO. The launcher args follow the same template that
  * `.vscode/mcp.json` has shipped since f00093 S2: the host entry
  * path is the first arg (resolved against the operator's
- * `--mcp-vertex-root`); the remaining two args use VS Code's
+ * `--delendai-root`); the remaining two args use VS Code's
  * `${workspaceFolder}` substitution so the same launch line works
  * for any consumer checkout.
  */
-export const renderMcpVertexServerEntry = (
+export const renderDelendaiServerEntry = (
 	launch: ICanonicalLaunch,
 ): {
 	readonly type: 'stdio';
@@ -170,10 +170,10 @@ export const renderMcpVertexServerEntry = (
 });
 
 /**
- * Render the `mcp-vertex` server entry as a plain JSON-friendly
+ * Render the `delendai` server entry as a plain JSON-friendly
  * object (mutable-typed for the merge step below).
  */
-const renderMcpVertexServerEntryRaw = (
+const renderDelendaiServerEntryRaw = (
 	launch: ICanonicalLaunch,
 ): { type: string; command: string; args: string[] } => ({
 	type: 'stdio',
@@ -182,7 +182,7 @@ const renderMcpVertexServerEntryRaw = (
 });
 
 /**
- * Merge the canonical `mcp-vertex` entry into an existing
+ * Merge the canonical `delendai` entry into an existing
  * `.vscode/mcp.json` document. Returns the new document content
  * (or `undefined` when the existing content is not parseable, in
  * which case the writer leaves the file untouched).
@@ -190,7 +190,7 @@ const renderMcpVertexServerEntryRaw = (
  * Rules:
  *
  *   - Existing `servers` map is preserved verbatim; the canonical
- *     entry is upserted at `servers["mcp-vertex"]`. Every other
+ *     entry is upserted at `servers["delendai"]`. Every other
  *     server the operator has configured (filesystem, github,
  *     docker, …) stays as-is.
  *   - Top-level non-`servers` keys are preserved (inputs,
@@ -206,11 +206,11 @@ const renderMcpVertexServerEntryRaw = (
  * who want their server entries mutated should edit the file
  * themselves; `init` should never silently destroy tool wiring.
  */
-export const mergeMcpVertexServerEntry = (
+export const mergeDelendaiServerEntry = (
 	launch: ICanonicalLaunch,
 	existingContent: string,
 	kind: 'servers' | 'mcpServers' = 'servers',
-	serverName = 'mcp-vertex',
+	serverName = 'delendai',
 ): string | undefined => {
 	let parsed: unknown;
 	try {
@@ -226,7 +226,7 @@ export const mergeMcpVertexServerEntry = (
 		return undefined;
 	}
 	const doc = parsed as Record<string, unknown>;
-	const incoming = renderMcpVertexServerEntryRaw(launch);
+	const incoming = renderDelendaiServerEntryRaw(launch);
 	const existingServers = doc[kind];
 	const nextServers: Record<string, unknown> =
 		existingServers !== undefined &&
@@ -238,7 +238,7 @@ export const mergeMcpVertexServerEntry = (
 	// The canonical entry uses `${workspaceFolder}` which VS Code
 	// resolves per-workspace. If the existing entry already uses a
 	// different hostEntryPath (e.g. the operator pointed at a
-	// specific mcp-vertex checkout), we still overwrite it with the
+	// specific delendai checkout), we still overwrite it with the
 	// freshly-resolved path — that's the point of running `init`
 	// again: it brings the launcher up to date.
 	nextServers[serverName] = incoming;
@@ -249,11 +249,11 @@ export const mergeMcpVertexServerEntry = (
 /** Renders `.vscode/mcp.json` with the canonical launch shape. */
 export const renderVscodeMcpJson = (
 	launch: ICanonicalLaunch,
-	serverName = 'mcp-vertex',
+	serverName = 'delendai',
 ): IRenderedFile => {
 	const content = {
 		servers: {
-			[serverName]: renderMcpVertexServerEntry(launch),
+			[serverName]: renderDelendaiServerEntry(launch),
 		},
 	};
 	return {
@@ -264,26 +264,26 @@ export const renderVscodeMcpJson = (
 
 export const renderGenericMcpJson = (
 	launch: ICanonicalLaunch,
-	serverName = 'mcp-vertex',
+	serverName = 'delendai',
 ): IRenderedFile => ({
 	relPath: '.mcp.json',
 	content: `${JSON.stringify(
-		{ mcpServers: { [serverName]: renderMcpVertexServerEntry(launch) } },
+		{ mcpServers: { [serverName]: renderDelendaiServerEntry(launch) } },
 		null,
 		'\t',
 	)}\n`,
 });
 
 /**
- * x00202 S1: `tools:` now grants the fixed `mcp-vertex/*` wildcard
+ * x00202 S1: `tools:` now grants the fixed `delendai/*` wildcard
  * (matching `renderVscodeMcpJson`/`renderGenericMcpJson`, which always
- * register the server under the literal key `mcp-vertex` regardless of
+ * register the server under the literal key `delendai` regardless of
  * `namespacePrefix` — the tool NAMES are prefixed, the server KEY is
  * not) instead of the descriptor's own tool list, which had no server
  * qualification and at least one stale entry. `user-invocable: false`
  * on every role but `orchestrator` is the flag that keeps a bounded
  * subagent out of the Copilot agent picker (f00031) — previously
- * omitted here entirely, so every `mcpv init` adopter got all 5 agents
+ * omitted here entirely, so every `delendai init` adopter got all 5 agents
  * visible and selectable.
  */
 const renderAgentFile = (
@@ -292,8 +292,8 @@ const renderAgentFile = (
 		description: string;
 		body: string;
 	},
-	namespacePrefix = 'mcp-vertex',
-	serverName = 'mcp-vertex',
+	namespacePrefix = 'delendai',
+	serverName = 'delendai',
 ): IRenderedFile => {
 	const isRoot = descriptor.role === 'orchestrator';
 	const tools = isRoot
@@ -318,8 +318,8 @@ const renderAgentFile = (
  * (`.claude/agents/*.md`), rendered alongside the Copilot `.agent.md`
  * variant above. AGENT-BOOTSTRAP.md §8.2 unconditionally tells every
  * Claude Code host to delegate to the orchestrator subagent; without
- * this, `mcpv init` never created one — reproduced live in
- * mcp-vertex's own repo, whose `.claude/agents/` didn't exist at all.
+ * this, `delendai init` never created one — reproduced live in
+ * delendai's own repo, whose `.claude/agents/` didn't exist at all.
  *
  * Schema verified against Claude Code's documented subagent contract
  * (code.claude.com/docs/en/sub-agents): required `name` (kebab-case)
@@ -336,7 +336,7 @@ const renderClaudeAgentFile = (
 		description: string;
 		body: string;
 	},
-	namespacePrefix = 'mcp-vertex',
+	namespacePrefix = 'delendai',
 ): IRenderedFile => {
 	const frontmatter = [
 		'---',
@@ -367,7 +367,7 @@ const renderCodexAgentFile = (
 		description: string;
 		body: string;
 	},
-	namespacePrefix = 'mcp-vertex',
+	namespacePrefix = 'delendai',
 ): IRenderedFile => {
 	const frontmatter = [
 		'---',
@@ -381,7 +381,7 @@ const renderCodexAgentFile = (
 	};
 };
 
-/** S3 — render `.github/agents/mcp-vertex-<role>.agent.md` from the live catalog. */
+/** S3 — render `.github/agents/delendai-<role>.agent.md` from the live catalog. */
 export const renderAgentFiles = async (
 	workspaceRoot: string,
 	options: {
@@ -390,12 +390,12 @@ export const renderAgentFiles = async (
 		readonly serverName?: string;
 	} = {},
 ): Promise<readonly IRenderedFile[]> => {
-	const namespacePrefix = options.namespacePrefix ?? 'mcp-vertex';
+	const namespacePrefix = options.namespacePrefix ?? 'delendai';
 	const serverName = options.serverName ?? namespacePrefix;
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
 	// x00160 S2: one Copilot file + one Claude Code file per role.
 	// Extended to emit Codex CLI files as well so a Codex adopter of
-	// `mcpv init` gets the subagents AGENT-BOOTSTRAP.md §8.3 references.
+	// `delendai init` gets the subagents AGENT-BOOTSTRAP.md §8.3 references.
 	return descriptors.flatMap((descriptor) => [
 		renderAgentFile(descriptor, namespacePrefix, serverName),
 		renderClaudeAgentFile(descriptor, namespacePrefix),
@@ -405,12 +405,12 @@ export const renderAgentFiles = async (
 
 // f00092: the 3-fragment model collapsed to a single canonical fragment.
 // The host-specific footnote now lives inline in each hand-edited host
-// file (between its `<!-- mcp-vertex:begin -->` / `<!-- mcp-vertex:end -->`
+// file (between its `<!-- delendai:begin -->` / `<!-- delendai:end -->`
 // markers), so the same canonical body is written into the 3 host files
 // and the footnote is appended per host by `hostFootnoteFor()`.
 const HOST_INSTRUCTIONS_CANONICAL_BODY =
-	'# mcp-vertex host hints (auto-generated)\n\n' +
-	'See `docs/mcp-vertex/host-hints/agent-instructions.generated.md` for the live agent catalog.';
+	'# delendai host hints (auto-generated)\n\n' +
+	'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live agent catalog.';
 
 const HOST_INSTRUCTIONS_TARGETS: ReadonlyArray<{
 	relPath: string;
@@ -438,8 +438,8 @@ const hostFootnoteFor = (host: 'copilot' | 'claude' | 'agents'): string =>
 
 /**
  * S4 — render host-instructions blocks honouring idempotent append.
- * When the file already has a `<!-- mcp-vertex:begin -->` /
- * `<!-- mcp-vertex:end -->` block, the block is replaced in place;
+ * When the file already has a `<!-- delendai:begin -->` /
+ * `<!-- delendai:end -->` block, the block is replaced in place;
  * otherwise the block is appended.
  */
 export const renderHostInstructionsBlocks = async (
@@ -500,7 +500,7 @@ export const renderInitBundle = async (
 		options.launch ??
 		buildCanonicalLaunch({ workspace: '${workspaceFolder}' });
 	const files: IRenderedFile[] = [
-		renderMcpVertexConfig(answers, resolvedPlugins),
+		renderDelendaiConfig(answers, resolvedPlugins),
 		renderVscodeMcpJson(launch, answers.serverName),
 		renderGenericMcpJson(
 			buildCanonicalLaunch({ workspace: '.' }),
@@ -534,7 +534,7 @@ export const renderInitBundle = async (
 		files.push(...snapshot);
 	} catch (err) {
 		process.stderr.write(
-			`mcp-vertex › host-instructions snapshot skipped: ${(err as Error).message ?? err}\n`,
+			`delendai › host-instructions snapshot skipped: ${(err as Error).message ?? err}\n`,
 		);
 	}
 	// f00016: seed the canonical 7 status folders with `.gitkeep`
@@ -596,8 +596,8 @@ export const renderInitBundle = async (
  * itself is created via `mkdir -p` semantics on first write.
  *
  * Rel path: `<docsDir>/proposals/<status>/.gitkeep` where
- * `docsDir` is resolved through the canonical mcp-vertex default
- * (`docs/mcp-vertex`). This mirrors
+ * `docsDir` is resolved through the canonical delendai default
+ * (`docs/delendai`). This mirrors
  * `plugins/proposals/src/lib/contracts/constants/default-path-layout.constant.ts#DEFAULT_PATH_LAYOUT.proposalsDir`
  * so the seed lands exactly where the proposals plugin will look
  * for it.
@@ -625,7 +625,7 @@ export { PROPOSAL_STATUS_FOLDERS };
  */
 export const renderProposalStatusFolders = (): readonly IRenderedFile[] =>
 	PROPOSAL_STATUS_FOLDERS.map((folder) => ({
-		relPath: `docs/mcp-vertex/proposals/${folder}/.gitkeep`,
+		relPath: `docs/delendai/proposals/${folder}/.gitkeep`,
 		content:
 			`# Keeps ${folder}/ in git even when empty.\n` +
 			`# Required by the f00016 proposal state machine — proposals\n` +

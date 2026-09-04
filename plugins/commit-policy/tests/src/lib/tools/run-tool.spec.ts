@@ -77,7 +77,7 @@ const runOptions = (workspaceRoot: string) => {
 	return {
 		workspaceRoot,
 		docsDir: 'docs',
-		namespacePrefix: 'mcp-vertex',
+		namespacePrefix: 'delendai',
 		policy: buildPolicy(),
 		run,
 		identityCtx: {

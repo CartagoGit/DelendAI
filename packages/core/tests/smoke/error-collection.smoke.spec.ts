@@ -108,7 +108,7 @@ describe('error-collection end-to-end smoke', () => {
 		// --- JSONL file assertions (logs-errors stream) ---
 		const errorLogsDir = join(
 			tmpDir,
-			'.cache/mcp-vertex/results/logs-errors',
+			'.cache/delendai/results/logs-errors',
 		);
 		const files = await readdir(errorLogsDir);
 		expect(files.length).toBeGreaterThanOrEqual(1);

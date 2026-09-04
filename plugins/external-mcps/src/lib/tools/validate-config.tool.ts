@@ -65,7 +65,7 @@ export const buildValidateConfigToolRegistration = (
 	tags: ['external-mcps', 'lazy', 'config'],
 	summary:
 		'Dry-run a proposed external-servers config patch against the schema — never writes.',
-	descriptionKey: 'mcp-vertex_external-mcps_validate_config',
+	descriptionKey: 'delendai_external-mcps_validate_config',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_validate_config`,

@@ -44,7 +44,7 @@ const createVscode = () => {
 	return { vscode, panels, messages, errors, commands };
 };
 
-describe('mcp-vertex.openKnowledge', async () => {
+describe('delendai.openKnowledge', async () => {
 	it('opens a webview with a category-grouped list', async () => {
 		const { vscode, panels, commands } = createVscode();
 		registerOpenKnowledgeCommand({
@@ -59,7 +59,7 @@ describe('mcp-vertex.openKnowledge', async () => {
 									title: 'Proposal state machine',
 								},
 								{
-									id: 'mcp-vertex_overview',
+									id: 'delendai_overview',
 									title: 'Overview',
 								},
 							],
@@ -72,9 +72,9 @@ describe('mcp-vertex.openKnowledge', async () => {
 		await commands.get(OPEN_KNOWLEDGE_COMMAND)?.();
 		expect(panels).toHaveLength(1);
 		expect(panels[0]?.webview.html).toContain('data-category="proposals"');
-		expect(panels[0]?.webview.html).toContain('data-category="mcp-vertex"');
+		expect(panels[0]?.webview.html).toContain('data-category="delendai"');
 		expect(panels[0]?.webview.html).toContain('Proposal state machine');
-		expect(panels[0]?.webview.html).toContain('mcp-vertex Knowledge');
+		expect(panels[0]?.webview.html).toContain('delendai Knowledge');
 	});
 
 	it('shows an error info message when the body is missing', async () => {

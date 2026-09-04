@@ -9,8 +9,8 @@
 		"extensions/vscode/src/**/*",
 		"plugins/*/src/**/*",
 		"plugins/*/tests/**/*",
-		"docs/mcp-vertex/examples/*/src/**/*",
-		"docs/mcp-vertex/examples/*/tests/**/*",
+		"docs/delendai/examples/*/src/**/*",
+		"docs/delendai/examples/*/tests/**/*",
 		"scripts/**/*"
 	],
 	"exclude": []

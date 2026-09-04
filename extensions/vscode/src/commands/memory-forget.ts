@@ -2,7 +2,7 @@ import { MemoryService } from '@delendai/client';
 
 import type { ICommandDeps } from './types';
 
-export const MEMORY_FORGET_COMMAND = 'mcp-vertex.memoryForget';
+export const MEMORY_FORGET_COMMAND = 'delendai.memoryForget';
 
 export const registerMemoryForgetCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(
@@ -18,21 +18,21 @@ export const registerMemoryForgetCommand = (deps: ICommandDeps) =>
 			const id = typeof rawId === 'string' ? rawId : undefined;
 			if (id === undefined || id.trim().length === 0) {
 				await deps.vscode.window.showErrorMessage?.(
-					'mcp-vertex: memoryForget requires a note id.',
+					'delendai: memoryForget requires a note id.',
 				);
 				return { ok: false as const, reason: 'missing-id' as const };
 			}
 			try {
 				const result = await new MemoryService(deps.client).forget(id);
 				await deps.vscode.window.showInformationMessage?.(
-					`mcp-vertex: removed memory note ${result.removed}`,
+					`delendai: removed memory note ${result.removed}`,
 				);
 				deps.memoryTree?.refresh();
 				return { ok: true as const, removed: result.removed };
 			} catch (err) {
 				const detail = err instanceof Error ? err.message : String(err);
 				await deps.vscode.window.showErrorMessage?.(
-					`mcp-vertex: forget failed: ${detail}`,
+					`delendai: forget failed: ${detail}`,
 				);
 				return { ok: false as const, reason: 'forget-failed' as const };
 			}

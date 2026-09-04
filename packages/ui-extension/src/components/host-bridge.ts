@@ -15,7 +15,7 @@
  *     commandId}` to the host. The action id is forwarded
  *     verbatim so the host can decide what to do (the toolbar uses
  *     the action id to look up the action's command, but the bridge
- *     ALSO includes `data-mcpv-command` if the element has it, so the
+ *     ALSO includes `data-delendai-command` if the element has it, so the
  *     host can shortcut that lookup).
  *   - Exposes `setLanguage(lang)` / `persistLanguage(lang)` for the
  *     language picker (the existing surface).
@@ -45,14 +45,14 @@ export const renderHostBridge = (): string =>
   function findActionEl(evt) {
     var t = evt && evt.target;
     if (!(t instanceof Element)) return null;
-    return t.closest('[data-mcpv-action]');
+    return t.closest('[data-delendai-action]');
   }
 
   window.__MCPV_HOST__ = {
     id: 'webview',
     dispatch: function (actionId, evt) {
       var el = evt && evt.originalEvent ? findActionEl(evt.originalEvent) : null;
-      var commandId = el ? el.getAttribute('data-mcpv-command') : null;
+      var commandId = el ? el.getAttribute('data-delendai-command') : null;
       post({
         command: 'mcpvAction',
         action: actionId,

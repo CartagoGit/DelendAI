@@ -12,7 +12,7 @@
 
 import { createHash } from 'node:crypto';
 
-export const TRUST_FINGERPRINT_KEY = 'mcp-vertex.trust.fingerprint';
+export const TRUST_FINGERPRINT_KEY = 'delendai.trust.fingerprint';
 export interface IServerLaunch {
 	readonly command: string;
 	readonly args: readonly string[];

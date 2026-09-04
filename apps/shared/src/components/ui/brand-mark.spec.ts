@@ -3,9 +3,9 @@
  * `renderBrandMark` unit tests (f00102 S3.3).
  *
  * Contract pinned:
- *   - root is `<a class="mcpv-brand mcpv-brand--{variant}" href="...">`
- *   - logo is `<img class="mcpv-brand__logo" loading="lazy" decoding="async">`
- *   - text is `<span class="mcpv-brand__text">{brandText}</span>`
+ *   - root is `<a class="delendai-brand delendai-brand--{variant}" href="...">`
+ *   - logo is `<img class="delendai-brand__logo" loading="lazy" decoding="async">`
+ *   - text is `<span class="delendai-brand__text">{brandText}</span>`
  *   - default variant is `pill`
  *   - empty `brandText` is allowed (logo-only mark)
  *   - all interpolations are HTML-escaped
@@ -19,16 +19,16 @@ describe('renderBrandMark', () => {
 		const out = renderBrandMark({
 			href: '/es/',
 			logoSrc: '/logo.svg',
-			brandText: '@mcp-vertex',
+			brandText: '@delendai',
 		});
-		expect(out).toContain('class="mcpv-brand mcpv-brand--pill"');
+		expect(out).toContain('class="delendai-brand delendai-brand--pill"');
 		expect(out).toContain('href="/es/"');
-		expect(out).toContain('class="mcpv-brand__logo"');
+		expect(out).toContain('class="delendai-brand__logo"');
 		expect(out).toContain('src="/logo.svg"');
 		expect(out).toContain('loading="lazy"');
 		expect(out).toContain('decoding="async"');
-		expect(out).toContain('class="mcpv-brand__text"');
-		expect(out).toContain('@mcp-vertex');
+		expect(out).toContain('class="delendai-brand__text"');
+		expect(out).toContain('@delendai');
 	});
 
 	it('respects the variant=plain modifier', () => {
@@ -38,7 +38,7 @@ describe('renderBrandMark', () => {
 			brandText: 'X',
 			variant: 'plain',
 		});
-		expect(out).toContain('class="mcpv-brand mcpv-brand--plain"');
+		expect(out).toContain('class="delendai-brand delendai-brand--plain"');
 	});
 
 	it('defaults the logo size to 26×26', () => {
@@ -69,7 +69,7 @@ describe('renderBrandMark', () => {
 			logoSrc: '/logo.svg',
 			brandText: '',
 		});
-		expect(out).toContain('class="mcpv-brand__text"></span>');
+		expect(out).toContain('class="delendai-brand__text"></span>');
 	});
 
 	it('escapes HTML in the href', () => {
@@ -90,7 +90,7 @@ describe('renderBrandMark', () => {
 		});
 		expect(out).toContain('src="/logo.svg?x=&quot;&amp;&lt;&gt;"');
 		expect(out).toContain(
-			'<span class="mcpv-brand__text">&lt;bad&gt;</span>',
+			'<span class="delendai-brand__text">&lt;bad&gt;</span>',
 		);
 	});
 

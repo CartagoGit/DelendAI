@@ -51,7 +51,7 @@ const readWorkspaceSignals = async (
 	workspaceRootAbs: string,
 ): Promise<IWorkspaceConfigSignals> => {
 	const raw = await new SafeWorkspaceReader(workspaceRootAbs)
-		.readText('mcp-vertex.config.json')
+		.readText('delendai.config.json')
 		.then((result) => result.content)
 		.catch(() => undefined);
 	const parsed = parseConfigFile(raw);

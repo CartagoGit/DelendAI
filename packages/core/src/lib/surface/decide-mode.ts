@@ -24,7 +24,7 @@ export const resolveInitialSurfaceMode = (
 ): IMcpToolSurfaceMode => explicitMode ?? 'managed';
 
 /**
- * The router (`mcp-vertex_vertex`) is registered in every mode this
+ * The router (`delendai_vertex`) is registered in every mode this
  * function is asked about — `native` only HIDES it from `tools/list`
  * (see `shouldExpose()` in `tool-surface-runtime.service.ts`), it never
  * stops the router from working, because a native host that later
@@ -55,7 +55,7 @@ export const shouldRegisterSurfaceRouter = (
  *      already verified keeps exactly the mode the matrix documents,
  *      regardless of what capabilities it declares.
  *   3. Capability detection (`detectClientSurfaceCapabilities`) — an
- *      unrecognised host that declares `mcp-vertex/surface` support
+ *      unrecognised host that declares `delendai/surface` support
  *      gets `managed`; one that declares nothing gets `native`, because
  *      an unknown client with no signal that it can discover
  *      lazily-activated tools must not be handed a surface where most
@@ -65,7 +65,7 @@ export const shouldRegisterSurfaceRouter = (
  * field for clients to declare — `tools.listChanged` is a SERVER
  * capability, not a client one. The audit's literal snippet
  * (`capabilities.tools.listChanged`) does not exist on the wire; the
- * real, already-built equivalent signal is the `mcp-vertex/surface`
+ * real, already-built equivalent signal is the `delendai/surface`
  * extension `detectClientSurfaceCapabilities` reads.
  */
 export const decideSurfaceModeFromCapabilities = (input: {
@@ -90,7 +90,7 @@ export const decideSurfaceModeFromCapabilities = (input: {
 	if (detected.listChangedSupport) {
 		return {
 			mode: 'managed',
-			reason: `client "${input.clientInfo?.name ?? 'unknown'}" declared mcp-vertex/surface listChanged support -> managed`,
+			reason: `client "${input.clientInfo?.name ?? 'unknown'}" declared delendai/surface listChanged support -> managed`,
 		};
 	}
 	return {

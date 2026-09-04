@@ -1,6 +1,6 @@
 /**
  * Talks to GitHub for one repo (`owner/name`, injected by the caller —
- * this module never reads `mcp-vertex.config.json` itself; that's the
+ * this module never reads `delendai.config.json` itself; that's the
  * plugin's `register()`, wired in a later slice).
  *
  * Single Responsibility: this module only knows how to fetch issue data

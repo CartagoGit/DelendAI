@@ -2,7 +2,7 @@
  * skills/sources/types.ts — q00009 / f00262.
  *
  * Portable skill resolver types. The whole point of this module is
- * that a consumer project that only ever installed `mcp-vertex` from
+ * that a consumer project that only ever installed `delendai` from
  * `npm` (or `bun add`) can resolve skills WITHOUT having the monorepo
  * layout on disk.
  *

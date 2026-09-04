@@ -1,6 +1,6 @@
 # @delendai/cli
 
-Single human-facing CLI for `mcp-vertex`. It exposes the same MCP tool
+Single human-facing CLI for `delendai`. It exposes the same MCP tool
 surface used by IDE hosts, but from a terminal.
 
 ```bash
@@ -24,7 +24,7 @@ not yet wired into registerAllCommands.
 When the slice opens registry edits, the adapter is one import plus one spread:
 load kpisCommands from src/commands/kpis.command.ts and append it in
 src/commands/registry.ts. No extra aggregation work is needed because the
-command already consumes the bounded mcp-vertex_project_kpis snapshot together
+command already consumes the bounded delendai_project_kpis snapshot together
 with persisted history.json and usage-summary.json evidence.
 
 The supported views are summary, history, usage, costs, models, agents,
@@ -36,7 +36,7 @@ expressions such as --threshold=health.score>=80 or
 
 ## Commands
 
-`mcpv --help` lists the full surface grouped by group; `--help --lang=es`
+`delendai --help` lists the full surface grouped by group; `--help --lang=es`
 (and 11 other locales) renders the same help translated. Every plugin
 tool has a 1:1 subcommand — the CLI is pure delegation, no domain logic.
 
@@ -54,7 +54,7 @@ tool has a 1:1 subcommand — the CLI is pure delegation, no domain logic.
 | **conventions**                              | `conventions check/plan/apply`                                                                                                                                                                                                                                 |
 | **doctor / completion**                      | `doctor` (sectioned health, exit 0/1/2), `completion bash\|zsh\|fish`                                                                                                                                                                                          |
 
-`mcpv doctor --json` returns `{ status, sections }` for CI. `eval "$(mcpv
+`delendai doctor --json` returns `{ status, sections }` for CI. `eval "$(delendai
 completion bash)"` installs shell completion derived from the live
 command registry.
 
@@ -64,7 +64,7 @@ command registry.
 bun run cli -- status --json
 bun run cli -- plugin list --plugins=docs,search
 bun run cli -- docs list --max=10 --json
-bun run cli -- docs read docs/mcp-vertex/ARCHITECTURE.md
+bun run cli -- docs read docs/delendai/ARCHITECTURE.md
 bun run cli -- config get plugins.docs.options.roots
 ```
 
@@ -81,16 +81,16 @@ bun run cli -- --workspace "$tmp" scaffold tool --name=demo --out=demo.tool.ts
 
 ### Global host setup
 
-Use `init:global` once per user account to merge the shared `mcp-vertex` server
+Use `init:global` once per user account to merge the shared `delendai` server
 into every supported global host configuration. It does not write project files
 such as `.vscode/mcp.json`, `.cursor/mcp.json`, or `.mcp.json`.
 
 ```bash
 # Install into all supported global hosts for the current platform.
-mcpv init:global --all
+delendai init:global --all
 
 # Install only selected global targets.
-mcpv init:global --ide=cursor-global,windsurf,claude-desktop,antigravity,zed
+delendai init:global --ide=cursor-global,windsurf,claude-desktop,antigravity,zed
 ```
 
 The valid global target ids are `cursor-global`, `windsurf`,
@@ -99,7 +99,7 @@ The valid global target ids are `cursor-global`, `windsurf`,
 explicit `--ide=<id>` for those. An empty or unknown `--ide` value is also an
 error and never falls back to project autodetection.
 
-The installer merges only the `mcp-vertex` entry and preserves unrelated MCP
+The installer merges only the `delendai` entry and preserves unrelated MCP
 servers and host settings. Runner and preset flags are shared with `init`, for
 example `--via=bunx --preset=swarm`. On WSL, the command writes to the Linux
 home by default; Windows-side applications may require an explicit target path
@@ -107,7 +107,7 @@ or host-native setup.
 
 `init:global` installs the MCP connection, not a second copy of agent rules.
 All agents should follow the canonical bootstrap at
-`docs/mcp-vertex/AGENT-BOOTSTRAP.md`; use `init` or `init:default` inside a
+`docs/delendai/AGENT-BOOTSTRAP.md`; use `init` or `init:default` inside a
 project when that project needs host-specific pointer files and generated
 agent adapters. MCP provides the same server tools to Claude, Copilot, Cursor,
 Codex, Continue, Aider, and other MCP-capable hosts, while each host retains

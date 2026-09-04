@@ -31,7 +31,7 @@ describe('@delendai/forge optionsSchema', async () => {
 			'pr_create',
 			'pr_comment',
 			'issue_create',
-			'mcp_vertex_issue_create',
+			'delendai_issue_create',
 			'release',
 			'search_code',
 		]);

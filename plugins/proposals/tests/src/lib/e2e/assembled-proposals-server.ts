@@ -3,7 +3,7 @@
  *
  * Mirrors the pattern at
  * `packages/core/tests/src/lib/e2e/server-client.e2e.spec.ts`: spin up
- * a real `mcp-vertex` server (core meta-tools + the proposals plugin)
+ * a real `delendai` server (core meta-tools + the proposals plugin)
  * and drive it through the REAL MCP protocol from a real `Client` over
  * an in-memory transport pair — not by calling handlers directly. This
  * proves the full assembly (registration, request routing, output
@@ -75,7 +75,7 @@ export interface IAssembledProposalsServer {
 }
 
 /**
- * Assemble a real mcp-vertex server with the proposals plugin, attach
+ * Assemble a real delendai server with the proposals plugin, attach
  * a real `Client` over an in-memory transport, and return a tiny
  * helper API. Each call creates a fresh tmpdir; the caller is
  * responsible for awaiting `close()` to release the transport and
@@ -131,7 +131,7 @@ export const createAssembledProposalsServer = async (
 		// No on-disk config file: the harness owns the workspace, the
 		// plugin receives pure defaults from ctx.corePaths.
 		readFile: async (path) => {
-			if (!path.endsWith('mcp-vertex.config.json')) return undefined;
+			if (!path.endsWith('delendai.config.json')) return undefined;
 			const hasPeerReview = options.requirePeerReview !== undefined;
 			const hasDisclosure = options.progressiveDisclosure === true;
 			if (!hasPeerReview && !hasDisclosure) return undefined;
@@ -172,15 +172,15 @@ export const createAssembledProposalsServer = async (
 		toolArgs: Record<string, unknown> = {},
 	): Promise<IAssembledToolResult<T>> => {
 		const routed =
-			name.startsWith('mcp-vertex_proposals_') &&
+			name.startsWith('delendai_proposals_') &&
 			!listedToolNames.has(name);
 		const raw = await client.callTool(
 			routed
 				? {
-						name: 'mcp-vertex_vertex',
+						name: 'delendai_vertex',
 						arguments: {
 							domain: 'proposals',
-							action: name.replace('mcp-vertex_proposals_', ''),
+							action: name.replace('delendai_proposals_', ''),
 							args: toolArgs,
 						},
 					}

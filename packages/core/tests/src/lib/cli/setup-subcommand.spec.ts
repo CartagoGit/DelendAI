@@ -40,7 +40,7 @@ const deps = (
 	hasGhCli: () => false,
 	githubToken: () => 'tok',
 	readConfig: async () => undefined,
-	configPath: 'mcp-vertex.config.json',
+	configPath: 'delendai.config.json',
 	...over,
 });
 
@@ -51,7 +51,7 @@ describe('buildSetupGithubReport', async () => {
 			repo: 'owner/name',
 			tier: 'rest-authed',
 			configured: false,
-			configPath: 'mcp-vertex.config.json',
+			configPath: 'delendai.config.json',
 		});
 		expect(guide).toContain('# GitHub issues — setup guide');
 		expect(guide).toContain('owner/name');

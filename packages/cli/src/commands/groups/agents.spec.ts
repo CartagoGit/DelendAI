@@ -60,7 +60,7 @@ describe('agents group', () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_auto-agent-selector_auto_run',
+			tool: 'delendai_auto-agent-selector_auto_run',
 			args: {
 				task: 'refactor',
 				costQualityTradeoff: 7,
@@ -74,7 +74,7 @@ describe('agents group', () => {
 		const { ctx, calls } = buildStubContext();
 		await find('agents status').run([], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_auto-agent-selector_auto_status',
+			tool: 'delendai_auto-agent-selector_auto_status',
 			args: {},
 		});
 	});
@@ -83,7 +83,7 @@ describe('agents group', () => {
 		const { ctx, calls } = buildStubContext();
 		await find('agents recommend').run(['--dial=3', '--pin=claude'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_auto-agent-selector_auto_recommend',
+			tool: 'delendai_auto-agent-selector_auto_recommend',
 			args: { costQualityTradeoff: 3, pin: 'claude' },
 		});
 	});
@@ -97,7 +97,7 @@ describe('agents group', () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_auto-agent-selector_auto_record',
+			tool: 'delendai_auto-agent-selector_auto_record',
 			args: { providerId: 'gemini', success: true, taskType: 'review' },
 		});
 	});

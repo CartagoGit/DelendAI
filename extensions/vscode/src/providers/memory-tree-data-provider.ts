@@ -9,9 +9,9 @@ export interface IMemoryTreeNode {
 	readonly tooltip?: string;
 	readonly collapsibleState: TreeItemCollapsibleState;
 	readonly contextValue:
-		| 'mcpVertexMemoryRoot'
-		| 'mcpVertexMemoryNote'
-		| 'mcpVertexMemoryMore';
+		| 'delendaiMemoryRoot'
+		| 'delendaiMemoryNote'
+		| 'delendaiMemoryMore';
 	readonly note?: IMemoryListEntry;
 }
 
@@ -57,7 +57,7 @@ export class MemoryTreeDataProvider {
 					id: 'memory:not-configured',
 					label: 'Configure MCP server to load memory',
 					collapsibleState: TreeItemCollapsibleState.None,
-					contextValue: 'mcpVertexMemoryRoot',
+					contextValue: 'delendaiMemoryRoot',
 				},
 			];
 		}
@@ -74,7 +74,7 @@ export class MemoryTreeDataProvider {
 					id: 'memory:error',
 					label: `Memory unavailable: ${error instanceof Error ? error.message : String(error)}`,
 					collapsibleState: TreeItemCollapsibleState.None,
-					contextValue: 'mcpVertexMemoryRoot',
+					contextValue: 'delendaiMemoryRoot',
 				},
 			];
 		}
@@ -84,7 +84,7 @@ export class MemoryTreeDataProvider {
 					id: 'memory:empty',
 					label: 'No memory notes',
 					collapsibleState: TreeItemCollapsibleState.None,
-					contextValue: 'mcpVertexMemoryRoot',
+					contextValue: 'delendaiMemoryRoot',
 				},
 			];
 		}
@@ -94,7 +94,7 @@ export class MemoryTreeDataProvider {
 			description: note.tags.join(', '),
 			tooltip: note.id,
 			collapsibleState: TreeItemCollapsibleState.None,
-			contextValue: 'mcpVertexMemoryNote',
+			contextValue: 'delendaiMemoryNote',
 			note,
 		}));
 		if (notes.total > notes.notes.length) {
@@ -104,7 +104,7 @@ export class MemoryTreeDataProvider {
 				description: `showing first ${notes.limit}`,
 				tooltip: 'Refresh or use memory search/recall for more notes.',
 				collapsibleState: TreeItemCollapsibleState.None,
-				contextValue: 'mcpVertexMemoryMore',
+				contextValue: 'delendaiMemoryMore',
 			});
 		}
 		return nodes;

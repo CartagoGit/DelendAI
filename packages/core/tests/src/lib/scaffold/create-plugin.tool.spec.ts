@@ -36,7 +36,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 \t\t\treplacement: resolve(proposals, 'public/index.ts'),
 \t\t},
 \t\t{
-\t\t\tfind: /^@mcp-vertex\\/proposals\\/lib\\/(.*)$/,
+\t\t\tfind: /^@delendai\\/proposals\\/lib\\/(.*)$/,
 \t\t\treplacement: \`\${resolve(proposals, 'lib')}/$1\`,
 \t\t},
 \t\t{
@@ -95,7 +95,7 @@ const FIRST_PARTY_INDEX_SEED = `export const FIRST_PARTY_PLUGIN_INDEX = {
 			origin: 'first-party',
 			id: 'api',
 			package: '@delendai/api',
-			summary: 'REST/GraphQL API surface for mcp-vertex plugins.',
+			summary: 'REST/GraphQL API surface for delendai plugins.',
 			tags: ['api'],
 			permissions: [],
 		},
@@ -149,7 +149,7 @@ const appendCatalogEntry = async ({
 	pluginId,
 	fs,
 }: IRegenerateCatalogArgs): Promise<void> => {
-	const path = 'docs/mcp-vertex/agent-catalog.generated.json';
+	const path = 'docs/delendai/agent-catalog.generated.json';
 	const parsed = JSON.parse(await fs.readFile(path)) as {
 		tools: Array<Record<string, unknown>>;
 	};
@@ -167,10 +167,10 @@ const buildSeed = (): Record<string, string> => ({
 	'packages/core/src/lib/plugins/preset-catalog.ts': PRESET_CATALOG_SEED,
 	'packages/core/src/lib/registry/first-party-index.ts':
 		FIRST_PARTY_INDEX_SEED,
-	'docs/mcp-vertex/agent-catalog.generated.json': CATALOG_SEED,
+	'docs/delendai/agent-catalog.generated.json': CATALOG_SEED,
 	// A minimal host config that loads the plugin under test — the doctor
 	// uses this to decide whether the catalog-regen check is required.
-	'mcp-vertex.config.json': JSON.stringify({
+	'delendai.config.json': JSON.stringify({
 		plugins: { demo: {} },
 	}),
 });
@@ -204,7 +204,7 @@ describe('runCreatePlugin (f00120 S4)', () => {
 				?.includes('GENERATED_FIRST_PARTY_MANIFEST_ENTRIES'),
 		).toBe(true);
 		expect(
-			JSON.parse(fs.files.get('mcp-vertex.config.json') ?? '{}').plugins[
+			JSON.parse(fs.files.get('delendai.config.json') ?? '{}').plugins[
 				'demo-plugin'
 			],
 		).toEqual({ options: {} });
@@ -216,7 +216,7 @@ describe('runCreatePlugin (f00120 S4)', () => {
 		// doctor to actually check the catalog-regen point for `doctor-miss`
 		// (rather than opt-in-skip it), the host config must list the plugin
 		// under test.
-		seed['mcp-vertex.config.json'] = JSON.stringify({
+		seed['delendai.config.json'] = JSON.stringify({
 			plugins: { demo: {}, 'doctor-miss': {} },
 		});
 		const fs = createMemoryFs(seed);

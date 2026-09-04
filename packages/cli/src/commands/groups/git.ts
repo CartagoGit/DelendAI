@@ -4,13 +4,13 @@
  * the CLI, all options come from the public MCP `inputSchema`.
  *
  * Tools mapped:
- *   - `mcp-vertex_git_status`   (no args)
- *   - `mcp-vertex_git_changed`  (no args)
- *   - `mcp-vertex_git_diff`     ({ staged?, path? })
- *   - `mcp-vertex_git_log`      ({ limit? })
- *   - `mcp-vertex_git_blame`    ({ path, startLine?, endLine? })
- *   - `mcp-vertex_git_show`     ({ ref?, path? })
- *   - `mcp-vertex_git_worktree` (no args)
+ *   - `delendai_git_status`   (no args)
+ *   - `delendai_git_changed`  (no args)
+ *   - `delendai_git_diff`     ({ staged?, path? })
+ *   - `delendai_git_log`      ({ limit? })
+ *   - `delendai_git_blame`    ({ path, startLine?, endLine? })
+ *   - `delendai_git_show`     ({ ref?, path? })
+ *   - `delendai_git_worktree` (no args)
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
@@ -20,7 +20,7 @@ export const gitStatusCommand: ICliCommand = {
 	name: 'git status',
 	summary: 'Working-tree status (branch + clean flag + entries).',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'mcp-vertex_git_status', {}));
+		return data(await request(ctx, 'delendai_git_status', {}));
 	},
 };
 
@@ -28,7 +28,7 @@ export const gitChangedCommand: ICliCommand = {
 	name: 'git changed',
 	summary: 'List of changed file paths in the working tree.',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'mcp-vertex_git_changed', {}));
+		return data(await request(ctx, 'delendai_git_changed', {}));
 	},
 };
 
@@ -39,7 +39,7 @@ export const gitDiffCommand: ICliCommand = {
 		const staged = hasFlag(args, 'staged');
 		const path = scalarArg(args, 'path');
 		return data(
-			await request(ctx, 'mcp-vertex_git_diff', {
+			await request(ctx, 'delendai_git_diff', {
 				...(staged ? { staged: true } : {}),
 				...(path !== undefined ? { path } : {}),
 			}),
@@ -53,7 +53,7 @@ export const gitLogCommand: ICliCommand = {
 	async run(args, ctx) {
 		const limit = scalarArg(args, 'limit') ?? scalarArg(args, 'max');
 		return data(
-			await request(ctx, 'mcp-vertex_git_log', {
+			await request(ctx, 'delendai_git_log', {
 				...(limit !== undefined ? { limit: Number(limit) } : {}),
 			}),
 		);
@@ -68,7 +68,7 @@ export const gitChangelogCommand: ICliCommand = {
 		const range = scalarArg(args, 'range');
 		const limit = scalarArg(args, 'limit');
 		return data(
-			await request(ctx, 'mcp-vertex_git_changelog', {
+			await request(ctx, 'delendai_git_changelog', {
 				...(range !== undefined ? { range } : {}),
 				...(limit !== undefined ? { limit: Number(limit) } : {}),
 			}),
@@ -93,7 +93,7 @@ export const gitBlameCommand: ICliCommand = {
 		const endLine =
 			scalarArg(args, 'end-line') ?? scalarArg(args, 'endLine');
 		return data(
-			await request(ctx, 'mcp-vertex_git_blame', {
+			await request(ctx, 'delendai_git_blame', {
 				path: positional,
 				...(startLine !== undefined
 					? { startLine: Number(startLine) }
@@ -111,7 +111,7 @@ export const gitShowCommand: ICliCommand = {
 		const positional = args.find((arg) => !arg.startsWith('-'));
 		const path = scalarArg(args, 'path');
 		return data(
-			await request(ctx, 'mcp-vertex_git_show', {
+			await request(ctx, 'delendai_git_show', {
 				...(positional !== undefined ? { ref: positional } : {}),
 				...(path !== undefined ? { path } : {}),
 			}),
@@ -123,7 +123,7 @@ export const gitWorktreeCommand: ICliCommand = {
 	name: 'git worktree',
 	summary: 'List existing git worktrees for this repo (read-only).',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'mcp-vertex_git_worktree', {}));
+		return data(await request(ctx, 'delendai_git_worktree', {}));
 	},
 };
 
@@ -132,7 +132,7 @@ export const gitPrListCommand: ICliCommand = {
 	summary:
 		'List open pull requests via gh (opt-in via allowForge, read-only).',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'mcp-vertex_git_pr_list', {}));
+		return data(await request(ctx, 'delendai_git_pr_list', {}));
 	},
 };
 
@@ -144,7 +144,7 @@ export const gitPrViewCommand: ICliCommand = {
 		const pr =
 			args.find((arg) => !arg.startsWith('-')) ?? scalarArg(args, 'pr');
 		return data(
-			await request(ctx, 'mcp-vertex_git_pr_view', {
+			await request(ctx, 'delendai_git_pr_view', {
 				...(pr !== undefined ? { pr } : {}),
 			}),
 		);

@@ -4,12 +4,12 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { buildStableManifest, STABLE_API_TOOLS } from '@delendai/core/public';
-import { MCP_VERTEX_VERSION } from '@delendai/core/version';
+import { DELENDAI_VERSION } from '@delendai/core/version';
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
 
 const REPO_ROOT = process.cwd();
-const STABLE_MANIFEST_PATH = join(REPO_ROOT, 'docs/mcp-vertex/api/stable.json');
+const STABLE_MANIFEST_PATH = join(REPO_ROOT, 'docs/delendai/api/stable.json');
 
 describe('stable-manifest builder (f00152 S2)', () => {
 	it('round-trips the facade list without crashing', () => {
@@ -68,7 +68,7 @@ describe('stable-manifest builder (f00152 S2)', () => {
 		) as ReturnType<typeof buildStableManifest>;
 		const fresh = buildStableManifest(
 			STABLE_API_TOOLS,
-			MCP_VERTEX_VERSION,
+			DELENDAI_VERSION,
 			onDisk.version.generatedAt,
 		);
 		expect(onDisk).toEqual(fresh);

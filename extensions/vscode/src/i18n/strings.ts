@@ -1,9 +1,9 @@
 /**
  * strings.ts — setup-github webview copy, 12 languages (f00030 S4).
  *
- * The VS Code `mcp-vertex.setupGithub` webview mirrors the web wizard
+ * The VS Code `delendai.setupGithub` webview mirrors the web wizard
  * (`apps/web/src/pages/setup.astro`) and the canonical 7-step guide in
- * `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`. The command *title* lives in the shared
+ * `docs/delendai/CROSS-PROJECT-SETUP.md`. The command *title* lives in the shared
  * dictionary (`@delendai/shared/i18n` → `extension.setupGithub`) so it
  * passes the extension i18n gate; the multi-step webview body is here, in
  * one self-contained typed table, so the wizard copy stays cohesive and
@@ -52,7 +52,7 @@ export interface ISetupGithubStrings {
 
 const en: ISetupGithubStrings = {
 	title: 'Cross-project setup',
-	intro: 'Wire mcp-vertex into this repository and get the GitHub issues plugin ready — the same 7 steps the setup-github command runs.',
+	intro: 'Wire delendai into this repository and get the GitHub issues plugin ready — the same 7 steps the setup-github command runs.',
 	docsLink: 'Read the canonical cross-project setup guide',
 	next: 'Next',
 	back: 'Back',
@@ -76,7 +76,7 @@ const en: ISetupGithubStrings = {
 		},
 		{
 			title: 'Write config',
-			body: 'Write plugins.issues.options.repo into mcp-vertex.config.json.',
+			body: 'Write plugins.issues.options.repo into delendai.config.json.',
 		},
 		{
 			title: 'Verify tier',
@@ -95,7 +95,7 @@ const en: ISetupGithubStrings = {
 
 const es: ISetupGithubStrings = {
 	title: 'Configuración entre proyectos',
-	intro: 'Integra mcp-vertex en este repositorio y deja listo el plugin de issues de GitHub: los mismos 7 pasos que ejecuta el comando setup-github.',
+	intro: 'Integra delendai en este repositorio y deja listo el plugin de issues de GitHub: los mismos 7 pasos que ejecuta el comando setup-github.',
 	docsLink: 'Lee la guía canónica de configuración entre proyectos',
 	next: 'Siguiente',
 	back: 'Atrás',
@@ -119,7 +119,7 @@ const es: ISetupGithubStrings = {
 		},
 		{
 			title: 'Escribir la configuración',
-			body: 'Escribe plugins.issues.options.repo en mcp-vertex.config.json.',
+			body: 'Escribe plugins.issues.options.repo en delendai.config.json.',
 		},
 		{
 			title: 'Verificar el nivel',
@@ -138,7 +138,7 @@ const es: ISetupGithubStrings = {
 
 const fr: ISetupGithubStrings = {
 	title: 'Configuration multi-projets',
-	intro: 'Intégrez mcp-vertex dans ce dépôt et préparez le plugin issues de GitHub — les mêmes 7 étapes que la commande setup-github.',
+	intro: 'Intégrez delendai dans ce dépôt et préparez le plugin issues de GitHub — les mêmes 7 étapes que la commande setup-github.',
 	docsLink: 'Lire le guide canonique de configuration multi-projets',
 	next: 'Suivant',
 	back: 'Précédent',
@@ -162,7 +162,7 @@ const fr: ISetupGithubStrings = {
 		},
 		{
 			title: 'Écrire la configuration',
-			body: 'Écrit plugins.issues.options.repo dans mcp-vertex.config.json.',
+			body: 'Écrit plugins.issues.options.repo dans delendai.config.json.',
 		},
 		{
 			title: 'Vérifier le niveau',
@@ -181,7 +181,7 @@ const fr: ISetupGithubStrings = {
 
 const de: ISetupGithubStrings = {
 	title: 'Projektübergreifende Einrichtung',
-	intro: 'Binde mcp-vertex in dieses Repository ein und mach das GitHub-Issues-Plugin bereit — dieselben 7 Schritte wie der Befehl setup-github.',
+	intro: 'Binde delendai in dieses Repository ein und mach das GitHub-Issues-Plugin bereit — dieselben 7 Schritte wie der Befehl setup-github.',
 	docsLink:
 		'Lies den kanonischen Leitfaden zur projektübergreifenden Einrichtung',
 	next: 'Weiter',
@@ -206,7 +206,7 @@ const de: ISetupGithubStrings = {
 		},
 		{
 			title: 'Konfiguration schreiben',
-			body: 'Schreibt plugins.issues.options.repo in mcp-vertex.config.json.',
+			body: 'Schreibt plugins.issues.options.repo in delendai.config.json.',
 		},
 		{
 			title: 'Stufe verifizieren',
@@ -225,7 +225,7 @@ const de: ISetupGithubStrings = {
 
 const pt: ISetupGithubStrings = {
 	title: 'Configuração entre projetos',
-	intro: 'Integre o mcp-vertex neste repositório e deixe o plugin de issues do GitHub pronto — os mesmos 7 passos que o comando setup-github executa.',
+	intro: 'Integre o delendai neste repositório e deixe o plugin de issues do GitHub pronto — os mesmos 7 passos que o comando setup-github executa.',
 	docsLink: 'Leia o guia canônico de configuração entre projetos',
 	next: 'Próximo',
 	back: 'Voltar',
@@ -249,7 +249,7 @@ const pt: ISetupGithubStrings = {
 		},
 		{
 			title: 'Gravar a configuração',
-			body: 'Grava plugins.issues.options.repo em mcp-vertex.config.json.',
+			body: 'Grava plugins.issues.options.repo em delendai.config.json.',
 		},
 		{
 			title: 'Verificar o nível',
@@ -268,7 +268,7 @@ const pt: ISetupGithubStrings = {
 
 const it: ISetupGithubStrings = {
 	title: 'Configurazione tra progetti',
-	intro: 'Integra mcp-vertex in questo repository e prepara il plugin issues di GitHub — gli stessi 7 passaggi eseguiti dal comando setup-github.',
+	intro: 'Integra delendai in questo repository e prepara il plugin issues di GitHub — gli stessi 7 passaggi eseguiti dal comando setup-github.',
 	docsLink: 'Leggi la guida canonica alla configurazione tra progetti',
 	next: 'Avanti',
 	back: 'Indietro',
@@ -292,7 +292,7 @@ const it: ISetupGithubStrings = {
 		},
 		{
 			title: 'Scrivi la configurazione',
-			body: 'Scrive plugins.issues.options.repo in mcp-vertex.config.json.',
+			body: 'Scrive plugins.issues.options.repo in delendai.config.json.',
 		},
 		{
 			title: 'Verifica il livello',
@@ -311,7 +311,7 @@ const it: ISetupGithubStrings = {
 
 const zh: ISetupGithubStrings = {
 	title: '跨项目配置',
-	intro: '将 mcp-vertex 接入此仓库，并准备好 GitHub issues 插件——与 setup-github 命令执行的 7 个步骤一致。',
+	intro: '将 delendai 接入此仓库，并准备好 GitHub issues 插件——与 setup-github 命令执行的 7 个步骤一致。',
 	docsLink: '阅读权威的跨项目配置指南',
 	next: '下一步',
 	back: '上一步',
@@ -332,7 +332,7 @@ const zh: ISetupGithubStrings = {
 		},
 		{
 			title: '写入配置',
-			body: '将 plugins.issues.options.repo 写入 mcp-vertex.config.json。',
+			body: '将 plugins.issues.options.repo 写入 delendai.config.json。',
 		},
 		{
 			title: '验证级别',
@@ -348,7 +348,7 @@ const zh: ISetupGithubStrings = {
 
 const hi: ISetupGithubStrings = {
 	title: 'क्रॉस-प्रोजेक्ट सेटअप',
-	intro: 'mcp-vertex को इस रिपॉज़िटरी में जोड़ें और GitHub issues प्लगइन तैयार करें — वही 7 चरण जो setup-github कमांड चलाता है।',
+	intro: 'delendai को इस रिपॉज़िटरी में जोड़ें और GitHub issues प्लगइन तैयार करें — वही 7 चरण जो setup-github कमांड चलाता है।',
 	docsLink: 'क्रॉस-प्रोजेक्ट सेटअप की आधिकारिक गाइड पढ़ें',
 	next: 'अगला',
 	back: 'पीछे',
@@ -372,7 +372,7 @@ const hi: ISetupGithubStrings = {
 		},
 		{
 			title: 'कॉन्फ़िग लिखें',
-			body: 'plugins.issues.options.repo को mcp-vertex.config.json में लिखता है।',
+			body: 'plugins.issues.options.repo को delendai.config.json में लिखता है।',
 		},
 		{
 			title: 'स्तर सत्यापित करें',
@@ -391,7 +391,7 @@ const hi: ISetupGithubStrings = {
 
 const ar: ISetupGithubStrings = {
 	title: 'الإعداد عبر المشاريع',
-	intro: 'اربط mcp-vertex بهذا المستودع وجهّز إضافة issues الخاصة بـ GitHub — نفس الخطوات السبع التي ينفّذها أمر setup-github.',
+	intro: 'اربط delendai بهذا المستودع وجهّز إضافة issues الخاصة بـ GitHub — نفس الخطوات السبع التي ينفّذها أمر setup-github.',
 	docsLink: 'اقرأ الدليل المرجعي للإعداد عبر المشاريع',
 	next: 'التالي',
 	back: 'السابق',
@@ -415,7 +415,7 @@ const ar: ISetupGithubStrings = {
 		},
 		{
 			title: 'كتابة الإعدادات',
-			body: 'يكتب plugins.issues.options.repo في mcp-vertex.config.json.',
+			body: 'يكتب plugins.issues.options.repo في delendai.config.json.',
 		},
 		{
 			title: 'التحقق من المستوى',
@@ -434,7 +434,7 @@ const ar: ISetupGithubStrings = {
 
 const ja: ISetupGithubStrings = {
 	title: 'クロスプロジェクト設定',
-	intro: 'このリポジトリに mcp-vertex を組み込み、GitHub issues プラグインを準備します。setup-github コマンドと同じ 7 ステップです。',
+	intro: 'このリポジトリに delendai を組み込み、GitHub issues プラグインを準備します。setup-github コマンドと同じ 7 ステップです。',
 	docsLink: '正規のクロスプロジェクト設定ガイドを読む',
 	next: '次へ',
 	back: '戻る',
@@ -458,7 +458,7 @@ const ja: ISetupGithubStrings = {
 		},
 		{
 			title: '設定の書き込み',
-			body: 'plugins.issues.options.repo を mcp-vertex.config.json に書き込みます。',
+			body: 'plugins.issues.options.repo を delendai.config.json に書き込みます。',
 		},
 		{
 			title: 'ティアの検証',
@@ -477,7 +477,7 @@ const ja: ISetupGithubStrings = {
 
 const vi: ISetupGithubStrings = {
 	title: 'Thiết lập đa dự án',
-	intro: 'Kết nối mcp-vertex vào kho này và chuẩn bị plugin issues của GitHub — đúng 7 bước mà lệnh setup-github thực hiện.',
+	intro: 'Kết nối delendai vào kho này và chuẩn bị plugin issues của GitHub — đúng 7 bước mà lệnh setup-github thực hiện.',
 	docsLink: 'Đọc hướng dẫn thiết lập đa dự án chính thức',
 	next: 'Tiếp',
 	back: 'Quay lại',
@@ -501,7 +501,7 @@ const vi: ISetupGithubStrings = {
 		},
 		{
 			title: 'Ghi cấu hình',
-			body: 'Ghi plugins.issues.options.repo vào mcp-vertex.config.json.',
+			body: 'Ghi plugins.issues.options.repo vào delendai.config.json.',
 		},
 		{
 			title: 'Xác minh cấp',
@@ -520,7 +520,7 @@ const vi: ISetupGithubStrings = {
 
 const th: ISetupGithubStrings = {
 	title: 'การตั้งค่าข้ามโปรเจกต์',
-	intro: 'เชื่อม mcp-vertex เข้ากับรีโพนี้ และเตรียมปลั๊กอิน issues ของ GitHub — เป็น 7 ขั้นตอนเดียวกับที่คำสั่ง setup-github ทำงาน',
+	intro: 'เชื่อม delendai เข้ากับรีโพนี้ และเตรียมปลั๊กอิน issues ของ GitHub — เป็น 7 ขั้นตอนเดียวกับที่คำสั่ง setup-github ทำงาน',
 	docsLink: 'อ่านคู่มือการตั้งค่าข้ามโปรเจกต์ฉบับหลัก',
 	next: 'ถัดไป',
 	back: 'ย้อนกลับ',
@@ -544,7 +544,7 @@ const th: ISetupGithubStrings = {
 		},
 		{
 			title: 'เขียนการตั้งค่า',
-			body: 'เขียน plugins.issues.options.repo ลงใน mcp-vertex.config.json',
+			body: 'เขียน plugins.issues.options.repo ลงใน delendai.config.json',
 		},
 		{
 			title: 'ตรวจสอบระดับ',

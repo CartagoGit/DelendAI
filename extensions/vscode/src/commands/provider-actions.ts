@@ -15,7 +15,7 @@
  *
  * Refresh model (f00098 non-goal: no polling): the panel repaints when
  * one of these commands runs — including `providers.healthcheck`, which
- * the global `mcp-vertex.refresh` can dispatch — never on a timer.
+ * the global `delendai.refresh` can dispatch — never on a timer.
  */
 import { formatToolName, type McpStdioClient } from '@delendai/client';
 import {
@@ -44,12 +44,12 @@ import { showCommandError } from './types';
 import { HOST_LANG_KEY } from './setup-github';
 
 export const PROVIDERS_OPEN_DASHBOARD_COMMAND =
-	'mcp-vertex.providers.openDashboard';
-export const PROVIDERS_HEALTHCHECK_COMMAND = 'mcp-vertex.providers.healthcheck';
-export const PROVIDERS_PAUSE_COMMAND = 'mcp-vertex.providers.pause';
-export const PROVIDERS_RESUME_COMMAND = 'mcp-vertex.providers.resume';
-export const USAGE_REPORT_COMMAND = 'mcp-vertex.usage.report';
-export const USAGE_CLEAR_COMMAND = 'mcp-vertex.usage.clear';
+	'delendai.providers.openDashboard';
+export const PROVIDERS_HEALTHCHECK_COMMAND = 'delendai.providers.healthcheck';
+export const PROVIDERS_PAUSE_COMMAND = 'delendai.providers.pause';
+export const PROVIDERS_RESUME_COMMAND = 'delendai.providers.resume';
+export const USAGE_REPORT_COMMAND = 'delendai.usage.report';
+export const USAGE_CLEAR_COMMAND = 'delendai.usage.clear';
 
 /**
  * Solid-ISP: the two dialog capabilities this module needs beyond
@@ -170,7 +170,7 @@ export const registerProvidersOpenDashboardCommand = (
 		async () => {
 			const s = stringsFor(deps);
 			const panel = deps.vscode.window.createWebviewPanel(
-				'mcpVertexProviderDashboard',
+				'delendaiProviderDashboard',
 				s.title,
 				deps.vscode.ViewColumn.One,
 				{ enableScripts: false },
@@ -224,7 +224,7 @@ export const registerProvidersHealthcheckCommand = (
 				);
 				await repaintIfOpen(deps);
 				await deps.vscode.window.showInformationMessage?.(
-					`mcp-vertex: ${stringsFor(deps).healthcheckDone}`,
+					`delendai: ${stringsFor(deps).healthcheckDone}`,
 				);
 			} catch (err) {
 				await showCommandError(
@@ -291,7 +291,7 @@ const setProviderState = async (
 	);
 	await repaintIfOpen(deps);
 	await deps.vscode.window.showInformationMessage?.(
-		`mcp-vertex: ${providerId} — ${doneInfo(stringsFor(deps))}`,
+		`delendai: ${providerId} — ${doneInfo(stringsFor(deps))}`,
 	);
 };
 
@@ -345,7 +345,7 @@ export const registerUsageClearCommand = (deps: IProviderActionsDeps) =>
 			);
 			await repaintIfOpen(deps);
 			await deps.vscode.window.showInformationMessage?.(
-				`mcp-vertex: ${s.clearedInfo}`,
+				`delendai: ${s.clearedInfo}`,
 			);
 		} catch (err) {
 			await showCommandError(deps.vscode, 'clear usage log', err);

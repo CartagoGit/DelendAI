@@ -23,7 +23,7 @@ import { parseSwarmFrontmatter } from '@delendai/proposals/lib/swarm/swarm-parse
 let workdir: string;
 
 beforeEach(() => {
-	workdir = mkdtempSync(join(tmpdir(), 'mcp-vertex-swarm-budget-'));
+	workdir = mkdtempSync(join(tmpdir(), 'delendai-swarm-budget-'));
 	mkdirSync(join(workdir, 'docs', 'proposals'), { recursive: true });
 });
 

@@ -170,8 +170,7 @@ export const realPerfProfileDeps = (
 ): IPerfProfileDeps => {
 	const probeDeps = options.probeDeps ?? realProbeDeps();
 	const pluginCacheDir =
-		options.pluginCacheDir ??
-		join(workspaceRootAbs, '.cache', 'mcp-vertex');
+		options.pluginCacheDir ?? join(workspaceRootAbs, '.cache', 'delendai');
 	const ctx = execCtxFor(pluginCacheDir);
 	void resolveExecPath(ctx, '.keep', { skipMkdir: true }).catch(
 		() => undefined,

@@ -3,9 +3,9 @@
  * `status-marker_*` MCP tool. Pure 1:1 delegation.
  *
  * Tools mapped:
- *   - `mcp-vertex_status-marker_close`    ({ state, reason? })
- *   - `mcp-vertex_status-marker_validate` ({ text })
- *   - `mcp-vertex_status-marker_ping`     (no args)
+ *   - `delendai_status-marker_close`    ({ state, reason? })
+ *   - `delendai_status-marker_validate` ({ text })
+ *   - `delendai_status-marker_ping`     (no args)
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import {
@@ -26,7 +26,7 @@ const closeCommand: ICliCommand = {
 		}
 		const reason = scalarArg(args, 'reason');
 		return data(
-			await request(ctx, 'mcp-vertex_status-marker_close', {
+			await request(ctx, 'delendai_status-marker_close', {
 				state,
 				...(reason !== undefined ? { reason } : {}),
 			}),
@@ -41,7 +41,7 @@ const validateCommand: ICliCommand = {
 		const text = positionalArg(args) ?? scalarArg(args, 'text');
 		if (text === undefined) return usage('status-marker validate <text>');
 		return data(
-			await request(ctx, 'mcp-vertex_status-marker_validate', { text }),
+			await request(ctx, 'delendai_status-marker_validate', { text }),
 		);
 	},
 };
@@ -50,7 +50,7 @@ const pingCommand: ICliCommand = {
 	name: 'status-marker ping',
 	summary: 'Echo plugin identity + resolved paths (confirm it is loaded).',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'mcp-vertex_status-marker_ping', {}));
+		return data(await request(ctx, 'delendai_status-marker_ping', {}));
 	},
 };
 

@@ -10,7 +10,7 @@ import { SKILLS_PACK_SKILLS } from './catalog';
 const workspaceRoot = resolve(import.meta.dirname, '../../../..');
 const agentCatalogPath = resolve(
 	workspaceRoot,
-	'docs/mcp-vertex/agent-catalog.generated.json',
+	'docs/delendai/agent-catalog.generated.json',
 );
 const pluginsRoot = resolve(workspaceRoot, 'plugins');
 
@@ -69,7 +69,7 @@ const collectPluginToolIds = async (
 		const source = (await reader.readText(absPath)).content;
 		for (const match of source.matchAll(/id:\s*'([^']+)'/gu)) {
 			const toolId = match[1];
-			if (toolId) ids.add(`mcp-vertex_${pluginName}_${toolId}`);
+			if (toolId) ids.add(`delendai_${pluginName}_${toolId}`);
 		}
 	}
 	return ids;

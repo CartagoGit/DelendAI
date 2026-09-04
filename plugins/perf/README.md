@@ -43,7 +43,7 @@ install hint, never a crash.
 ## Load
 
 ```bash
-mcp-vertex --plugins=perf
+delendai --plugins=perf
 ```
 
 ## License

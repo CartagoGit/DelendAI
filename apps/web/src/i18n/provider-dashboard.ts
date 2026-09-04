@@ -74,7 +74,7 @@ const en: IProviderDashboardTranslations = {
 	},
 	roster: {
 		title: 'The provider roster',
-		body: 'Providers are declared once, in the root-level providers block of mcp-vertex.config.json. Each entry names the model, how to invoke it (api, cli, subscription, or mcp-server), its context window, a 1–5 cost tier, and capability strengths/weaknesses used by routing.',
+		body: 'Providers are declared once, in the root-level providers block of delendai.config.json. Each entry names the model, how to invoke it (api, cli, subscription, or mcp-server), its context window, a 1–5 cost tier, and capability strengths/weaknesses used by routing.',
 		secretsTitle: 'Secrets are env-var names, never keys',
 		secretsBody:
 			'The config file is committed, so it never carries a literal API key. An api provider declares only the NAME of the environment variable holding the key ("envVar": "OPENAI_API_KEY") — ${OPENAI_API_KEY}-style references by name, resolved by the runtime. A cleartext key in any config file fails the repo-wide lint:no-cleartext-secrets gate.',
@@ -140,7 +140,7 @@ const es: IProviderDashboardTranslations = {
 	},
 	roster: {
 		title: 'El roster de proveedores',
-		body: 'Los proveedores se declaran una sola vez, en el bloque providers de nivel raíz de mcp-vertex.config.json. Cada entrada indica el modelo, cómo invocarlo (api, cli, subscription o mcp-server), su ventana de contexto, un nivel de coste de 1 a 5 y las fortalezas/debilidades de capacidad que usa el enrutado.',
+		body: 'Los proveedores se declaran una sola vez, en el bloque providers de nivel raíz de delendai.config.json. Cada entrada indica el modelo, cómo invocarlo (api, cli, subscription o mcp-server), su ventana de contexto, un nivel de coste de 1 a 5 y las fortalezas/debilidades de capacidad que usa el enrutado.',
 		secretsTitle:
 			'Los secretos son nombres de variables de entorno, nunca claves',
 		secretsBody:

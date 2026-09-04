@@ -1,10 +1,10 @@
 ---
-name: mcp-vertex-audit-runner
+name: delendai-audit-runner
 appliesTo: ['@delendai/audit']
-description: The tool-level workflow for running and consolidating an mcp-vertex audit (audit_plan -> fresh session -> save .md -> audit_consolidate), the 5-band/9-dimension rubric, and the ready-vs-done lifecycle decision. For the exhaustive code-reading methodology itself, see the mcp-vertex-audit-playbook skill instead — this one is the surface contract, not the reading checklist.
+description: The tool-level workflow for running and consolidating an delendai audit (audit_plan -> fresh session -> save .md -> audit_consolidate), the 5-band/9-dimension rubric, and the ready-vs-done lifecycle decision. For the exhaustive code-reading methodology itself, see the delendai-audit-playbook skill instead — this one is the surface contract, not the reading checklist.
 ---
 
-# mcp-vertex audit runner
+# delendai audit runner
 
 ## Decision tree
 
@@ -17,7 +17,7 @@ description: The tool-level workflow for running and consolidating an mcp-vertex
    one orchestrating) — the brief is the contract that keeps multiple
    reviewers' outputs comparable.
 4. Save that session's output as a `.md` following the exact filename rule
-   (below) under `docs/mcp-vertex/proposals/in-progress/` (or wherever the brief says).
+   (below) under `docs/delendai/proposals/in-progress/` (or wherever the brief says).
 5. Have 2+ reports? -> `audit_consolidate { auditDir?, topActions? }` to
    dedupe findings by title+file and average per-dimension scores.
 6. Closing the audit -> internal slices exist? `ready/` with `status: ready`.
@@ -31,17 +31,17 @@ audit_plan { scope: "plugins" }
   -> { scope, markdown, dimensions }       # paste markdown into a fresh session
 # fresh session produces the audit report
 # save it as a .md with the canonical filename (see below)
-audit_consolidate { auditDir: "docs/mcp-vertex/proposals/done/audits", topActions: 5 }
+audit_consolidate { auditDir: "docs/delendai/proposals/done/audits", topActions: 5 }
   -> { auditsFound, skipped, consensus, findings, topActions, markdown }
 ```
 
 `audit_plan` is pure (no I/O) — same scope always returns the same brief.
 `audit_consolidate` reads every `*.md` (except `README.md`) under `auditDir`
-(default `docs/mcp-vertex/proposals/done/audits`), parses each as an audit document, and
+(default `docs/delendai/proposals/done/audits`), parses each as an audit document, and
 deduplicates findings across reviewers via `seenBy`.
 
 ## Filename convention (AGENTS.md rule)
 
 Use the filename emitted by `audit_plan`; do not invent a second naming
 scheme. For the code-reading checklist, use
-[mcp-vertex-audit-playbook](../mcp-vertex-audit-playbook/SKILL.md).
+[delendai-audit-playbook](../delendai-audit-playbook/SKILL.md).

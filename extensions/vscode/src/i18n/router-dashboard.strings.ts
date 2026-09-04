@@ -43,7 +43,7 @@ const en: IRouterDashboardStrings = {
 	totalCalls: 'Total calls',
 	reachable: 'Reachable & ranked',
 	emptyRows: 'No providers to display yet — load the router + usage plugins.',
-	footer: 'Pin a provider from the command palette to force it first next time. Same view-model renders in `mcpv router-dashboard`.',
+	footer: 'Pin a provider from the command palette to force it first next time. Same view-model renders in `delendai router-dashboard`.',
 	colProvider: 'Provider',
 	colLabel: 'Label',
 	colTier: 'Tier',

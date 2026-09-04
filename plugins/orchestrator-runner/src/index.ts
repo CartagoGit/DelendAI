@@ -10,7 +10,7 @@
  * (the loader refuses the whole batch when it is missing) and re-checked
  * defensively from `register()` against the peer registry.
  *
- * Load with `mcp-vertex --plugins=usage-tracking,orchestrator-runner`.
+ * Load with `delendai --plugins=usage-tracking,orchestrator-runner`.
  */
 import { definePlugin, joinRel, runCommand } from '@delendai/core/public';
 import type {
@@ -78,7 +78,7 @@ export default definePlugin({
 		// The wizard READS it to diff (never WRITES it): confirmed intent is
 		// the user's to own (CRITICAL I13 — patch is returned, applied on
 		// confirm via elicitation / a CLI prompt).
-		const configPath = ctx.workspace.resolve('mcp-vertex.config.json');
+		const configPath = ctx.workspace.resolve('delendai.config.json');
 		// The usage-tracking sibling writes `limitsStatus` + the spend rollup
 		// into its own cache dir; the runner reads that file (no cross-plugin
 		// import) for the S7 spend guard and `advise_spend`.
@@ -194,7 +194,7 @@ export default definePlugin({
 						'- `bootstrap_providers` runs the wizard: probe + best-effort auth',
 						'  RPC, writes a draft roster to the cache, and returns a prose brief',
 						'  plus an RFC 6902 JSON Patch for the user to confirm into',
-						'  `mcp-vertex.config.json#providers`. It never writes the confirmed',
+						'  `delendai.config.json#providers`. It never writes the confirmed',
 						'  config itself.',
 						'- `get_quota` reads the quota snapshot (the 3-source quota merge in',
 						'  `quota.ts` writes it; S6 feeds it live header/RPC samples).',

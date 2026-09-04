@@ -27,7 +27,7 @@
  *     MCPV_REDACTED_SECRET_STRIPE_KEY
  *
  * so that a human, and equally an agent reading the file later, can see
- * that a real value stood here, that mcp-vertex removed it because it
+ * that a real value stood here, that delendai removed it because it
  * was credential-shaped, and that it must not be restored — rather than
  * finding an empty string and "fixing" it back.
  *
@@ -42,7 +42,7 @@
  * and wrong for blocking a commit, and a gate that cries wolf is a gate
  * that gets bypassed.
  *
- * Escape hatch: put `mcpv-allow-secret` in a comment on the same line.
+ * Escape hatch: put `delendai-allow-secret` in a comment on the same line.
  * Deliberate, visible, and reviewable in the diff — unlike a bypass
  * env var, which leaves no trace of what was waved through.
  *
@@ -62,7 +62,7 @@ import { HIGH_CONFIDENCE_SECRET_PATTERNS } from '@delendai/core/public';
 
 const exec = promisify(execFile);
 
-const ALLOW_MARKER = 'mcpv-allow-secret';
+const ALLOW_MARKER = 'delendai-allow-secret';
 
 /**
  * Findings that predate the gate.
@@ -330,7 +330,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 			'  Each now reads MCPV_REDACTED_SECRET_<KIND>. That is not a value to',
 		);
 		console.error(
-			'  restore: a real credential stood there and mcp-vertex removed it before',
+			'  restore: a real credential stood there and delendai removed it before',
 		);
 		console.error(
 			'  it could reach a commit, a push, or an issue. If the line only needed',

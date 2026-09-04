@@ -42,14 +42,14 @@ let root = '';
 const mkCtx = () => ({
 	workspace: { root, resolve: (rel: string) => join(root, rel) },
 	corePaths: {
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 	},
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: '.cache/mcp-vertex/proposals',
-	pluginDocsDir: 'docs/mcp-vertex/proposals',
+	pluginCacheDir: '.cache/delendai/proposals',
+	pluginDocsDir: 'docs/delendai/proposals',
 	namespacePrefix: 'proposals',
 	options: {},
 	args: {},
@@ -72,7 +72,7 @@ describe('orientation nudge when the store is missing (f00116 S3)', () => {
 	});
 
 	it('is absent once the store exists', async () => {
-		mkdirSync(join(root, 'docs/mcp-vertex/proposals/ready'), {
+		mkdirSync(join(root, 'docs/delendai/proposals/ready'), {
 			recursive: true,
 		});
 		const result = await proposalsPlugin.register(mkCtx() as never);
@@ -96,10 +96,10 @@ describe('apply + migrate compose in one call (f00116 S3)', () => {
 			buildAdoptRegistration({
 				namespacePrefix: 'proposals',
 				workspaceRoot: root,
-				proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
+				proposalsDirAbs: join(root, 'docs/delendai/proposals'),
 				indexPathAbs: join(
 					root,
-					'.cache/mcp-vertex/proposals/index.json',
+					'.cache/delendai/proposals/index.json',
 				),
 				lockPathAbs: join(root, '.cache/agents.lock.json'),
 				counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
@@ -116,13 +116,13 @@ describe('apply + migrate compose in one call (f00116 S3)', () => {
 			existsSync(
 				join(
 					root,
-					`docs/mcp-vertex/proposals/ready/feats/${migratedId}-ship-exports.md`,
+					`docs/delendai/proposals/ready/feats/${migratedId}-ship-exports.md`,
 				),
 			),
 		).toBe(true);
 		// The migrated proposal is visible to the freshly built index.
 		expect(
-			existsSync(join(root, '.cache/mcp-vertex/proposals/index.json')),
+			existsSync(join(root, '.cache/delendai/proposals/index.json')),
 		).toBe(true);
 	});
 });

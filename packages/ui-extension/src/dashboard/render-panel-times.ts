@@ -24,27 +24,27 @@ export const renderPanelTimes = (
 	);
 	const slowest = model.slowestTool;
 	return `
-<section class="mcpv-panel" id="panel-times" role="tabpanel" aria-labelledby="tab-times">
-	<h2 class="mcpv-panel__title">${escapeHtml(text('tabTimes'))}</h2>
-	<div class="mcpv-grid">
-		<div class="mcpv-card mcpv-card--third">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.times.totalWall'))}</h3>
-			<p class="mcpv-kpi__value">${formatMs(model.totalWallMs)}</p>
+<section class="delendai-panel" id="panel-times" role="tabpanel" aria-labelledby="tab-times">
+	<h2 class="delendai-panel__title">${escapeHtml(text('tabTimes'))}</h2>
+	<div class="delendai-grid">
+		<div class="delendai-card delendai-card--third">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.times.totalWall'))}</h3>
+			<p class="delendai-kpi__value">${formatMs(model.totalWallMs)}</p>
 		</div>
-		<div class="mcpv-card mcpv-card--third">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.times.p50Latency'))}</h3>
-			<p class="mcpv-kpi__value">${formatMs(model.p50Ms)}</p>
+		<div class="delendai-card delendai-card--third">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.times.p50Latency'))}</h3>
+			<p class="delendai-kpi__value">${formatMs(model.p50Ms)}</p>
 		</div>
-		<div class="mcpv-card mcpv-card--third">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.times.p95Latency'))}</h3>
-			<p class="mcpv-kpi__value">${formatMs(model.p95Ms)}</p>
+		<div class="delendai-card delendai-card--third">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.times.p95Latency'))}</h3>
+			<p class="delendai-kpi__value">${formatMs(model.p95Ms)}</p>
 		</div>
-		<div class="mcpv-card">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.times.histogram'))}</h3>
+		<div class="delendai-card">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.times.histogram'))}</h3>
 			${chart}
-			<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.times.toolBuckets', { count: formatNumber(model.histogram.reduce((s, b) => s + b.count, 0)) }))}</p>
+			<p class="delendai-fg-muted">${escapeHtml(text('dashboard.times.toolBuckets', { count: formatNumber(model.histogram.reduce((s, b) => s + b.count, 0)) }))}</p>
 		</div>
-		${slowest === undefined ? '' : `<div class="mcpv-card"><h3 class="mcpv-card__title">${escapeHtml(text('dashboard.times.slowestTool'))}</h3><p><code>${escapeHtml(slowest.tool)}</code> — ${formatMs(slowest.maxMs)}</p></div>`}
+		${slowest === undefined ? '' : `<div class="delendai-card"><h3 class="delendai-card__title">${escapeHtml(text('dashboard.times.slowestTool'))}</h3><p><code>${escapeHtml(slowest.tool)}</code> — ${formatMs(slowest.maxMs)}</p></div>`}
 	</div>
 </section>
 `;

@@ -92,7 +92,7 @@ const seedRecentValidateLog = async (workspaceRoot: string) => {
 			ts: new Date().toISOString(),
 			result: 'pass',
 			exitCode: 0,
-			logPath: '.cache/mcp-vertex/results/logs/validate.latest.log',
+			logPath: '.cache/delendai/results/logs/validate.latest.log',
 		})}\n`,
 		'utf8',
 	);
@@ -162,11 +162,8 @@ describe('proposals_close_plan dryRun contract', () => {
 
 	beforeEach(async () => {
 		root = await mkdtemp(join(tmpdir(), 'close-plan-'));
-		const proposalsDirAbs = join(root, 'docs/mcp-vertex/proposals');
-		const indexPathAbs = join(
-			root,
-			'.cache/mcp-vertex/proposals/index.json',
-		);
+		const proposalsDirAbs = join(root, 'docs/delendai/proposals');
+		const indexPathAbs = join(root, '.cache/delendai/proposals/index.json');
 		await mkdir(join(proposalsDirAbs, 'in-progress'), { recursive: true });
 		await mkdir(join(indexPathAbs, '..'), { recursive: true });
 		await writeFile(

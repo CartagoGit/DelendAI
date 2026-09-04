@@ -7,8 +7,8 @@
 		"agents": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.openAutoAgentSelector",
-				"note": "f00119 S6: surfaces auto_status + (optional) auto_recommend; pin via the CLI or mcp-vertex.openConfigurationCenter"
+				"id": "delendai.openAutoAgentSelector",
+				"note": "f00119 S6: surfaces auto_status + (optional) auto_recommend; pin via the CLI or delendai.openConfigurationCenter"
 			}
 		},
 		"audit": {
@@ -20,7 +20,7 @@
 		"config": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.openSettings"
+				"id": "delendai.openSettings"
 			}
 		},
 		"conventions": {
@@ -32,7 +32,7 @@
 		"docs": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.openDocs"
+				"id": "delendai.openDocs"
 			}
 		},
 		"doctor": {
@@ -56,7 +56,7 @@
 		"knowledge": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.openKnowledge"
+				"id": "delendai.openKnowledge"
 			}
 		},
 		"logs": {
@@ -65,13 +65,13 @@
 		"memory": {
 			"ui": {
 				"kind": "vscode-view",
-				"id": "mcp-vertex.memory"
+				"id": "delendai.memory"
 			}
 		},
 		"metrics": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.showMetrics"
+				"id": "delendai.showMetrics"
 			}
 		},
 		"notification": {
@@ -80,13 +80,13 @@
 		"overview": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.showOverview"
+				"id": "delendai.showOverview"
 			}
 		},
 		"plugin": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.openDashboard",
+				"id": "delendai.openDashboard",
 				"note": "the dashboard lists loaded plugins and their tools"
 			}
 		},
@@ -96,7 +96,7 @@
 		"proposals": {
 			"ui": {
 				"kind": "vscode-view",
-				"id": "mcp-vertex.proposals"
+				"id": "delendai.proposals"
 			}
 		},
 		"quality": {
@@ -120,7 +120,7 @@
 		"status": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.openDashboard"
+				"id": "delendai.openDashboard"
 			}
 		},
 		"status-marker": {
@@ -132,20 +132,20 @@
 		"usage-tracking": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.providers.openDashboard",
+				"id": "delendai.providers.openDashboard",
 				"note": "f00098 S3: the provider dashboard renders the usage-cost card (usage_report + advise_spend)"
 			}
 		},
 		"validate": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.runValidation"
+				"id": "delendai.runValidation"
 			}
 		},
 		"validate-matrix": {
 			"ui": {
 				"kind": "vscode-command",
-				"id": "mcp-vertex.runValidation",
+				"id": "delendai.runValidation",
 				"note": "the validation command surfaces the configured matrix"
 			}
 		},
@@ -154,126 +154,126 @@
 		}
 	},
 	"vscodeCommands": {
-		"mcp-vertex.openAutoAgentSelector": {
+		"delendai.openAutoAgentSelector": {
 			"cli": "agents",
-			"note": "f00119 S6: surfaces auto_status + (optional) auto_recommend; pin via the CLI or mcp-vertex.openConfigurationCenter"
+			"note": "f00119 S6: surfaces auto_status + (optional) auto_recommend; pin via the CLI or delendai.openConfigurationCenter"
 		},
-		"mcp-vertex.openAgentCatalog": {
+		"delendai.openAgentCatalog": {
 			"cli": "overview",
 			"note": "the agent catalog is the overview snapshot rendered as a webview"
 		},
-		"mcp-vertex.openAgentTimeline": {
+		"delendai.openAgentTimeline": {
 			"waiver": "VS Code-only observability viewer for the persisted agent timeline; no standalone CLI timeline command is registered yet"
 		},
-		"mcp-vertex.openRuntimeLog": {
+		"delendai.openRuntimeLog": {
 			"waiver": "VS Code-only runtime log viewer; the CLI exposes log querying but no equivalent command opens the persisted viewer"
 		},
-		"mcp-vertex.openDashboard": {
+		"delendai.openDashboard": {
 			"cli": "status"
 		},
-		"mcp-vertex.openDashboardTab": {
+		"delendai.openDashboardTab": {
 			"cli": "status",
-			"note": "same dashboard as mcp-vertex.openDashboard, opened in an editor tab instead of the side panel; one CLI counterpart serves both placements"
+			"note": "same dashboard as delendai.openDashboard, opened in an editor tab instead of the side panel; one CLI counterpart serves both placements"
 		},
-		"mcp-vertex.providers.openDashboard": {
+		"delendai.providers.openDashboard": {
 			"cli": "usage-tracking report",
 			"note": "f00098 S3: the panel's usage card is the report; the provider half wraps agent tools (healthcheck_providers/get_quota) with no CLI group"
 		},
-		"mcp-vertex.providers.healthcheck": {
+		"delendai.providers.healthcheck": {
 			"waiver": "wraps the agent tool orchestrator-runner healthcheck_providers; the orchestrator has no CLI group (agent/MCP-first surface)"
 		},
-		"mcp-vertex.providers.pause": {
+		"delendai.providers.pause": {
 			"waiver": "wraps the agent tool set_provider_state (manual availability override); no CLI group for the orchestrator yet"
 		},
-		"mcp-vertex.providers.resume": {
+		"delendai.providers.resume": {
 			"waiver": "wraps the agent tool set_provider_state (manual availability override); no CLI group for the orchestrator yet"
 		},
-		"mcp-vertex.usage.report": {
+		"delendai.usage.report": {
 			"cli": "usage-tracking report"
 		},
-		"mcp-vertex.usage.clear": {
+		"delendai.usage.clear": {
 			"cli": "usage-tracking clear",
 			"note": "both surfaces confirm: the CLI needs --confirm, the command shows a modal"
 		},
-		"mcp-vertex.showOverview": {
+		"delendai.showOverview": {
 			"cli": "overview"
 		},
-		"mcp-vertex.refresh": {
+		"delendai.refresh": {
 			"waiver": "UI refresh affordance; re-running the corresponding CLI command is the scriptable equivalent"
 		},
-		"mcp-vertex.runValidation": {
+		"delendai.runValidation": {
 			"cli": "validate"
 		},
-		"mcp-vertex.openProposal": {
+		"delendai.openProposal": {
 			"cli": "proposals board"
 		},
-		"mcp-vertex.proposals.refresh": {
+		"delendai.proposals.refresh": {
 			"waiver": "view-title refresh button for the proposals view; UI mechanics only"
 		},
-		"mcp-vertex.proposals.copyError": {
+		"delendai.proposals.copyError": {
 			"waiver": "clipboard affordance for the proposals view error state; UI mechanics only"
 		},
-		"mcp-vertex.showMetrics": {
+		"delendai.showMetrics": {
 			"cli": "metrics"
 		},
-		"mcp-vertex.openDocs": {
+		"delendai.openDocs": {
 			"cli": "docs list"
 		},
-		"mcp-vertex.openDocsApi": {
+		"delendai.openDocsApi": {
 			"cli": "docs read"
 		},
-		"mcp-vertex.openKnowledge": {
+		"delendai.openKnowledge": {
 			"cli": "knowledge"
 		},
-		"mcp-vertex.toolSearch": {
+		"delendai.toolSearch": {
 			"cli": "overview",
 			"note": "overview --full prints the complete tool map; fuzzy filtering is UI-side sugar"
 		},
-		"mcp-vertex.openToolDetail": {
+		"delendai.openToolDetail": {
 			"cli": "overview",
 			"note": "tool leaf detail view combines overview/listTools schemas and metrics for one tool"
 		},
-		"mcp-vertex.restartServer": {
+		"delendai.restartServer": {
 			"waiver": "extension-host process lifecycle; the CLI is a client of that server and cannot restart the host's instance"
 		},
-		"mcp-vertex.plugins.activation": {
+		"delendai.plugins.activation": {
 			"cli": "config show",
 			"note": "f00107 S3: overview activation report plus merge-aware config enabled toggles"
 		},
-		"mcp-vertex.openSettings": {
+		"delendai.openSettings": {
 			"cli": "config show"
 		},
-		"mcp-vertex.openConfigurationCenter": {
+		"delendai.openConfigurationCenter": {
 			"cli": "config show",
 			"note": "schema-driven project configuration editor; config show is the read-only terminal counterpart"
 		},
-		"mcp-vertex.saveSettings": {
+		"delendai.saveSettings": {
 			"cli": "config show",
 			"note": "internal settings-webview save handler; hidden from the command palette"
 		},
-		"mcp-vertex.resetSettings": {
+		"delendai.resetSettings": {
 			"cli": "config show",
 			"note": "internal settings-webview reset handler; hidden from the command palette"
 		},
-		"mcp-vertex.openToolbar": {
+		"delendai.openToolbar": {
 			"waiver": "UI navigation into the webview toolbar; no scriptable behaviour"
 		},
-		"mcp-vertex.memorySave": {
+		"delendai.memorySave": {
 			"cli": "memory save"
 		},
-		"mcp-vertex.memoryForget": {
+		"delendai.memoryForget": {
 			"cli": "memory forget"
 		},
-		"mcp-vertex.setupGithub": {
+		"delendai.setupGithub": {
 			"waiver": "guided IDE onboarding flow for GitHub issues; no CLI counterpart yet"
 		},
-		"mcp-vertex.externalMcps.ack": {
+		"delendai.externalMcps.ack": {
 			"waiver": "f00068 S5: wraps the external-mcps plugin's external_mcp_ack tool (human accept/reject of an external-server activation); the external-mcps discovery/ack surface is agent/MCP-first with no CLI group"
 		},
-		"mcp-vertex.startServerUntrusted": {
+		"delendai.startServerUntrusted": {
 			"waiver": "x00072 SEC-001 S1: manual override that spawns the stdio child in an untrusted workspace after the user reads the warning. No CLI counterpart (CLI refuses untrusted workspaces entirely); the gate is purely a VS Code affordance."
 		},
-		"mcp-vertex.openPluginConfig": {
+		"delendai.openPluginConfig": {
 			"cli": "config show",
 			"note": "f00098: reuses Configuration Center (config show is the read-only CLI counterpart) with optional pluginId narrowing"
 		}

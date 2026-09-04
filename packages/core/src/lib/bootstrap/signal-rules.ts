@@ -13,7 +13,7 @@
 //
 // SOLID — Dependency Inversion. Hosts inject their own rule list
 // (e.g. a corporate stack that wants its own compliance signal).
-// The default rules are the ones mcp-vertex ships out of the box.
+// The default rules are the ones delendai ships out of the box.
 //
 // SOLID — Interface Segregation. `summary` is a function of
 // `ISignalContext`, not a string template with embedded
@@ -113,7 +113,7 @@ export const DEFAULT_SIGNAL_RULES: readonly ISignalRule[] = [
 		id: 'custom-vertex-config',
 		priority: 50,
 		condition: ({ hasCustomVertexConfig }) => hasCustomVertexConfig,
-		summary: () => 'mcp-vertex.config.json has plugin or validation config',
+		summary: () => 'delendai.config.json has plugin or validation config',
 	},
 	{
 		id: 'ci',

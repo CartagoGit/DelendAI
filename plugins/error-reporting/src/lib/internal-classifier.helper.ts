@@ -1,5 +1,5 @@
-import type { McpVertexErrorCode } from './contracts/constants/error-codes.constant';
-import { isMcpVertexErrorCode } from './contracts/constants/error-codes.constant';
+import type { DelendaiErrorCode } from './contracts/constants/error-codes.constant';
+import { isDelendaiErrorCode } from './contracts/constants/error-codes.constant';
 import type {
 	IssueClassification,
 	SafeFailureClass,
@@ -11,7 +11,7 @@ import {
 	registerInternalRuntimePaths,
 	resetInternalPathRegistry,
 } from './frame-extractor.helper';
-import { McpVertexInternalError } from './mcp-internal-error.helper';
+import { DelendaiInternalError } from './mcp-internal-error.helper';
 
 const INTERNAL_BOUNDARY = Symbol.for(
 	'@delendai/error-reporting/internal-boundary',
@@ -23,14 +23,12 @@ const componentIdFromFrame = (packageId: string, frameFile: string): string => {
 	return frameFile.slice(prefix.length);
 };
 
-const internalErrorCodeOf = (
-	error: unknown,
-): McpVertexErrorCode | undefined => {
-	if (error instanceof McpVertexInternalError) return error.code;
+const internalErrorCodeOf = (error: unknown): DelendaiErrorCode | undefined => {
+	if (error instanceof DelendaiInternalError) return error.code;
 	if (typeof error !== 'object' || error === null) return undefined;
-	const record = error as { mcpVertexErrorCode?: unknown };
-	return isMcpVertexErrorCode(record.mcpVertexErrorCode)
-		? record.mcpVertexErrorCode
+	const record = error as { delendaiErrorCode?: unknown };
+	return isDelendaiErrorCode(record.delendaiErrorCode)
+		? record.delendaiErrorCode
 		: undefined;
 };
 
@@ -38,7 +36,7 @@ const packageIdOf = (
 	error: unknown,
 	frames: readonly { readonly file: string }[],
 ): string | undefined => {
-	if (error instanceof McpVertexInternalError) return error.packageId;
+	if (error instanceof DelendaiInternalError) return error.packageId;
 	for (const frame of frames) {
 		const packageId = packageIdFromSafeFrame(frame);
 		if (packageId !== undefined) return packageId;
@@ -51,7 +49,7 @@ const componentIdOf = (
 	packageId: string | undefined,
 	frames: readonly { readonly file: string }[],
 ): string | undefined => {
-	if (error instanceof McpVertexInternalError) return error.componentId;
+	if (error instanceof DelendaiInternalError) return error.componentId;
 	if (packageId === undefined) return undefined;
 	const frame = frames[0];
 	if (frame === undefined) return undefined;
@@ -62,7 +60,7 @@ export const classificationFromEvidence = (input: {
 	readonly toolId?: string | undefined;
 	readonly packageId?: string | undefined;
 	readonly componentId?: string | undefined;
-	readonly errorCode?: McpVertexErrorCode | undefined;
+	readonly errorCode?: DelendaiErrorCode | undefined;
 	readonly failureClass: SafeFailureClass;
 }): IssueClassification => {
 	const haystack = [
@@ -114,7 +112,7 @@ export const isMarkedInternalBoundary = (error: unknown): boolean =>
 	(error as Record<PropertyKey, unknown>)[INTERNAL_BOUNDARY] === true;
 
 export const safeFailureClassOf = (error: unknown): SafeFailureClass => {
-	if (error instanceof McpVertexInternalError) {
+	if (error instanceof DelendaiInternalError) {
 		if (error.code.includes('TIMEOUT')) return 'INTERNAL_TIMEOUT';
 		if (error.code.includes('VALID')) return 'INTERNAL_VALIDATION_ERROR';
 		return 'INTERNAL_TYPED_ERROR';
@@ -133,7 +131,7 @@ export const classificationOf = (input: {
 	readonly toolId?: string | undefined;
 	readonly packageId?: string | undefined;
 	readonly componentId?: string | undefined;
-	readonly errorCode?: McpVertexErrorCode | undefined;
+	readonly errorCode?: DelendaiErrorCode | undefined;
 	readonly failureClass: SafeFailureClass;
 }): IssueClassification => {
 	const hasPositiveEvidence =
@@ -164,7 +162,7 @@ export const classifyInternalError = (input: {
 	const isInternal =
 		hasMcpPackageFrame ||
 		hasRegisteredPathFrame ||
-		input.error instanceof McpVertexInternalError ||
+		input.error instanceof DelendaiInternalError ||
 		errorCode !== undefined ||
 		boundaryMarked;
 
@@ -187,16 +185,16 @@ export const classifyInternalError = (input: {
 		evidence: [
 			...(hasMcpPackageFrame ? ['mcp-package-frame'] : []),
 			...(hasRegisteredPathFrame ? ['registered-internal-path'] : []),
-			...(input.error instanceof McpVertexInternalError
+			...(input.error instanceof DelendaiInternalError
 				? ['typed-internal-error']
 				: []),
-			...(errorCode !== undefined ? ['mcp-vertex-error-code'] : []),
+			...(errorCode !== undefined ? ['delendai-error-code'] : []),
 			...(boundaryMarked ? ['internal-boundary'] : []),
 		] as const,
 	};
 };
 
-export const isMcpVertexInternal = (error: unknown): boolean =>
+export const isDelendaiInternal = (error: unknown): boolean =>
 	classifyInternalError({ error }).isInternal;
 
 export {

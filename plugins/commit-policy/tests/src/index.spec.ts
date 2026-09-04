@@ -23,14 +23,14 @@ const buildCtx = (workspace: string): IMcpPluginContext => ({
 		resolve: (p: string) => join(workspace, p),
 	},
 	corePaths: {
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 	},
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: '.cache/mcp-vertex/commit-policy',
-	pluginDocsDir: 'docs/mcp-vertex/commit-policy',
+	pluginCacheDir: '.cache/delendai/commit-policy',
+	pluginDocsDir: 'docs/delendai/commit-policy',
 	namespacePrefix: 'commit-policy',
 	options: {
 		commit: { enabled: false },
@@ -54,11 +54,11 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 
 	beforeEach(async () => {
 		workspace = await mkdtemp(join(tmpdir(), 'commit-policy-index-'));
-		await mkdir(join(workspace, 'docs', 'mcp-vertex', 'proposals'), {
+		await mkdir(join(workspace, 'docs', 'delendai', 'proposals'), {
 			recursive: true,
 		});
 		await writeFile(
-			join(workspace, 'docs', 'mcp-vertex', 'proposals', 'index.json'),
+			join(workspace, 'docs', 'delendai', 'proposals', 'index.json'),
 			JSON.stringify({ proposals: [] }, null, 2),
 			'utf8',
 		);
@@ -103,7 +103,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 	afterEach(async () => {
 		vi.restoreAllMocks();
 		delete process.env
-			.MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER;
+			.DELENDAI_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER;
 		if (workspace) await rm(workspace, { recursive: true, force: true });
 	});
 
@@ -136,7 +136,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 	});
 
 	it('register() refreshes remote branch protection when the opt-in env var is true', async () => {
-		process.env.MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER =
+		process.env.DELENDAI_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER =
 			'true';
 		const runExternalToolSpy = vi
 			.spyOn(corePublic, 'runExternalTool')
@@ -203,7 +203,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 
 	it('handles a missing proposals index when running standalone', async () => {
 		await rm(
-			join(workspace, 'docs', 'mcp-vertex', 'proposals', 'index.json'),
+			join(workspace, 'docs', 'delendai', 'proposals', 'index.json'),
 			{ force: true },
 		);
 		const runtime = asRuntime(

@@ -26,21 +26,21 @@ describe('assessContextDrift', () => {
 		expect(
 			assessContextDrift([
 				{
-					tool: 'mcp-vertex_overview',
+					tool: 'delendai_overview',
 					madeProgress: false,
 					progressHash: 'same',
 					agentId: 'copilot',
 					isOrientation: true,
 				},
 				{
-					tool: 'mcp-vertex_overview',
+					tool: 'delendai_overview',
 					madeProgress: false,
 					progressHash: 'same',
 					agentId: 'copilot',
 					isOrientation: true,
 				},
 				{
-					tool: 'mcp-vertex_overview',
+					tool: 'delendai_overview',
 					madeProgress: false,
 					progressHash: 'same',
 					agentId: 'copilot',

@@ -14,21 +14,21 @@ describe('buildErrorReportingStartupNotice', () => {
 		// default into a trick.
 		const notice = buildErrorReportingStartupNotice({
 			enabled: true,
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 		});
 		const text = notice.lines.join('\n');
 		expect(text).toContain('error-reporting is ON');
-		expect(text).toContain('CartagoGit/mcp-vertex');
+		expect(text).toContain('CartagoGit/delendai');
 		expect(text).toContain(`${ERROR_REPORTING_ENABLE_CONFIG} = false`);
 	});
 
 	it('states the privacy contract in the notice itself, not behind a link', () => {
 		const text = buildErrorReportingStartupNotice({
 			enabled: true,
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 		}).lines.join('\n');
 		expect(text).toContain('never your code');
-		expect(text).toContain('mcp-vertex-internal errors');
+		expect(text).toContain('delendai-internal errors');
 	});
 
 	it('asks the operator to switch it on when it is OFF', () => {
@@ -37,7 +37,7 @@ describe('buildErrorReportingStartupNotice', () => {
 		// disabled it once and forgot.
 		const text = buildErrorReportingStartupNotice({
 			enabled: false,
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 		}).lines.join('\n');
 		expect(text).toContain('error-reporting is OFF');
 		expect(text).toContain(`${ERROR_REPORTING_ENABLE_CONFIG} = true`);
@@ -51,7 +51,7 @@ describe('announceErrorReportingStartup', () => {
 		announceErrorReportingStartup(
 			buildErrorReportingStartupNotice({
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: 'CartagoGit/delendai',
 			}),
 			(line) => written.push(line),
 		);
@@ -65,7 +65,7 @@ describe('announceErrorReportingStartup', () => {
 			announceErrorReportingStartup(
 				buildErrorReportingStartupNotice({
 					enabled: false,
-					targetRepo: 'CartagoGit/mcp-vertex',
+					targetRepo: 'CartagoGit/delendai',
 				}),
 				() => {
 					throw new Error('stderr is closed');

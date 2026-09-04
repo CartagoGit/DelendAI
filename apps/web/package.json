@@ -10,7 +10,7 @@
 		"gen:manifests": "bun run gen:pages && bun run gen:capabilities && bun run gen:skills",
 		"gen:manifests:strict": "bun run gen:pages --strict && bun run gen:capabilities --strict && bun run gen:skills --strict",
 		"dev": "bun run sync:public-api && bun run gen:manifests && bun run dev:api & PAGES_BASE='' astro dev",
-		"dev:api": "bun run --cwd ../.. docs:api:watch >/tmp/mcp-vertex-typedoc.log 2>&1",
+		"dev:api": "bun run --cwd ../.. docs:api:watch >/tmp/delendai-typedoc.log 2>&1",
 		"preview": "bun run sync:public-api && bun run gen:manifests && astro preview",
 		"check:i18n": "bun scripts/check-i18n.ts",
 		"lint:web:jsx-literals": "bun scripts/scan-jsx-literals.ts",

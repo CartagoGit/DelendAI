@@ -3,10 +3,10 @@
  *
  * The two local, read-only commands the proposals board owns:
  *
- *  - `mcp-vertex.proposals.refresh` — invalidate the shared snapshot and
- *    repaint the sidebar tree (also the handler `mcp-vertex.refresh` delegates
+ *  - `delendai.proposals.refresh` — invalidate the shared snapshot and
+ *    repaint the sidebar tree (also the handler `delendai.refresh` delegates
  *    to, so a global refresh keeps the board fresh);
- *  - `mcp-vertex.proposals.copyError` — copy the raw `recoverable` payload the
+ *  - `delendai.proposals.copyError` — copy the raw `recoverable` payload the
  *    board banner carries to the clipboard (its `arguments: [raw]`), so a
  *    reviewer can file the schema-drift without retyping it.
  *
@@ -14,8 +14,8 @@
  */
 import type { ICommandDeps } from './types';
 
-export const PROPOSALS_REFRESH_COMMAND = 'mcp-vertex.proposals.refresh';
-export const PROPOSALS_COPY_ERROR_COMMAND = 'mcp-vertex.proposals.copyError';
+export const PROPOSALS_REFRESH_COMMAND = 'delendai.proposals.refresh';
+export const PROPOSALS_COPY_ERROR_COMMAND = 'delendai.proposals.copyError';
 
 export const registerProposalsRefreshCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(
@@ -23,7 +23,7 @@ export const registerProposalsRefreshCommand = (deps: ICommandDeps) =>
 		async () => {
 			deps.proposalsTree?.refresh();
 			await deps.vscode.window.showInformationMessage?.(
-				'mcp-vertex: proposals board refreshed',
+				'delendai: proposals board refreshed',
 			);
 		},
 	);
@@ -35,7 +35,7 @@ export const registerProposalsCopyErrorCommand = (deps: ICommandDeps) =>
 			const text = typeof raw === 'string' ? raw : JSON.stringify(raw);
 			await deps.vscode.env?.clipboard.writeText(text ?? '');
 			await deps.vscode.window.showInformationMessage?.(
-				'mcp-vertex: proposal error copied to clipboard',
+				'delendai: proposal error copied to clipboard',
 			);
 		},
 	);

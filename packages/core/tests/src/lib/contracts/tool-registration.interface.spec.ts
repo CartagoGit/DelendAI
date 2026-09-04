@@ -26,18 +26,18 @@ describe('IToolRegistration', async () => {
 	it('accepts a registration with descriptionKey', async () => {
 		const reg: IToolRegistration = {
 			id: 'auto_work',
-			descriptionKey: 'mcp-vertex_proposals_auto_work',
+			descriptionKey: 'delendai_proposals_auto_work',
 			register: noopRegister,
 		};
-		expect(reg.descriptionKey).toBe('mcp-vertex_proposals_auto_work');
+		expect(reg.descriptionKey).toBe('delendai_proposals_auto_work');
 	});
 
 	it('preserves the i18n key convention (namespace_tool) via type-level guard', async () => {
 		// The catalogue convention is `<hostPrefix>_<namespace>_<tool>`
 		// (matches the fully-qualified MCP tool name). This test pins the
 		// most common shape so a renaming regression surfaces here.
-		const proposalsKey = 'mcp-vertex_proposals_auto_work';
+		const proposalsKey = 'delendai_proposals_auto_work';
 		expect(proposalsKey.split('_').length).toBeGreaterThanOrEqual(3);
-		expect(proposalsKey.startsWith('mcp-vertex_proposals_')).toBe(true);
+		expect(proposalsKey.startsWith('delendai_proposals_')).toBe(true);
 	});
 });

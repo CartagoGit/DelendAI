@@ -2,7 +2,7 @@
  * adopt-project.tool.ts — `<prefix>_adopt_project`, the one-call
  * project adoption orchestrator (f00157 S1).
  *
- * Dropping mcp-vertex into a project used to require chaining 5-7
+ * Dropping delendai into a project used to require chaining 5-7
  * disconnected steps: derive config → pick a launch shape → generate
  * agents/instructions → apply any plugin-owned adoption bootstrap →
  * relaunch. This tool composes the pieces the CORE already owns —
@@ -51,9 +51,9 @@ import { writeFileAtomic } from '../shared/atomic-write';
 import { toolError, toolOk } from '../shared/tool-response';
 import { withFileMutex } from '../shared/with-file-mutex';
 import { PROJECT_PROFILE_FILENAME } from '../contracts/interfaces/project-profile.interface';
-import { detectExistingMcpVertexInstall } from '../scaffold/detect-existing-install';
+import { detectExistingDelendaiInstall } from '../scaffold/detect-existing-install';
 
-const CONFIG_FILENAME = 'mcp-vertex.config.json';
+const CONFIG_FILENAME = 'delendai.config.json';
 
 /**
  * Pure: compute the full adoption plan (config + generated files +
@@ -72,7 +72,7 @@ export const buildAdoptProjectPlan = (
 		namespacePrefix: input.namespacePrefix,
 		projectPackageName: '@delendai/adopted',
 		mcpServerName: input.mcpServerName,
-		existingMcpVertex: true,
+		existingDelendai: true,
 		...(input.defaultModel !== undefined
 			? { defaultModel: input.defaultModel }
 			: {}),
@@ -86,7 +86,7 @@ export const buildAdoptProjectPlan = (
 			rationale: derived.rationale,
 			files: [...buildAgentFiles(hostOptions)],
 			residual: [
-				`Launch the host: bunx --package @delendai/cli mcpv __serve --workspace . --preset ${derived.preset}`,
+				`Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset ${derived.preset}`,
 				input.repo !== undefined
 					? `GitHub repo provided (${input.repo}). Wire plugin-specific adoption explicitly if you want issue ingestion during adoption.`
 					: `(Optional) Wire GitHub issues later: run \`${input.namespacePrefix}_setup_github\`, then set \`plugins.issues.options.repo\` to your \`owner/name\` slug.`,
@@ -294,8 +294,8 @@ const resolveAdoptionMcpServerName = async (
 	explicitMcpServerName: string | undefined,
 ): Promise<string> => {
 	if (explicitMcpServerName !== undefined) return explicitMcpServerName;
-	const detected = await detectExistingMcpVertexInstall(deps.workspace);
-	return detected.mcpServerName ?? 'mcp-vertex';
+	const detected = await detectExistingDelendaiInstall(deps.workspace);
+	return detected.mcpServerName ?? 'delendai';
 };
 
 const discoverProjectProfileWorkspaces = async (
@@ -345,7 +345,7 @@ export const buildAdoptProjectToolRegistration = (
 			`${deps.namespacePrefix}_adopt_project`,
 			{
 				description:
-					'Adopt THIS project for mcp-vertex in one call. Composes the config derivation (init_config), the host agent/instructions scaffold, and any adoption extensions contributed by loaded plugins — writing only what is missing and never overwriting project-owned files. Dry-run by default: returns the resolved config, rationale, the exact file list and the residual manual steps. Pass `write: true` to persist. `overwrite: true` replaces an existing config instead of merging; `repo: "owner/name"` is available to explicit adoption extensions that wire GitHub-aware plugins.',
+					'Adopt THIS project for delendai in one call. Composes the config derivation (init_config), the host agent/instructions scaffold, and any adoption extensions contributed by loaded plugins — writing only what is missing and never overwriting project-owned files. Dry-run by default: returns the resolved config, rationale, the exact file list and the residual manual steps. Pass `write: true` to persist. `overwrite: true` replaces an existing config instead of merging; `repo: "owner/name"` is available to explicit adoption extensions that wire GitHub-aware plugins.',
 				inputSchema: z.object({
 					analyze: z.boolean().optional(),
 					write: z.boolean().optional(),

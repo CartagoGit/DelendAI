@@ -5,7 +5,7 @@
  * Demonstrates, end-to-end, that the opt-in `@delendai/cache` plugin's
  * static rules actually evict and that a second apply is a no-op:
  *
- *   1. Seed a TEMP cache (never the real `.cache/mcp-vertex/`, per R3)
+ *   1. Seed a TEMP cache (never the real `.cache/delendai/`, per R3)
  *      with the artefacts the static rules target: stale one-shot
  *      snapshots, stale driver snapshots, an orphan worktree.
  *   2. `dryRun: true` reports AT LEAST 4 evictable items (the umbrella's
@@ -208,7 +208,7 @@ export const formatReport = (result: IEvictionVerifyResult): string => {
 
 const main = async (): Promise<number> => {
 	const workspaceRoot = await mkdtemp(join(tmpdir(), 'cache-evict-verify-'));
-	const cacheRoot = join(workspaceRoot, '.cache/mcp-vertex');
+	const cacheRoot = join(workspaceRoot, '.cache/delendai');
 	try {
 		const result = await runEvictionDemonstration(workspaceRoot, cacheRoot);
 		process.stdout.write(`${formatReport(result)}\n`);

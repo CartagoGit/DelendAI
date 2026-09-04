@@ -7,16 +7,16 @@ describe('prompt-eval plugin registration (f00127 S3)', () => {
 		const registrations = await plugin.register({
 			namespacePrefix: 'eval',
 			options: {},
-			cacheDir: '.cache/mcp-vertex',
-			pluginCacheDir: '.cache/mcp-vertex/prompt-eval',
+			cacheDir: '.cache/delendai',
+			pluginCacheDir: '.cache/delendai/prompt-eval',
 			pluginDocsDir: 'docs/plugins/prompt-eval',
 			workspace: {
 				root: '/workspace',
 				resolve: (path: string) => `/workspace/${path}`,
 			},
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
 			keepLegacy: false,
 			agentWorktreeEnabled: false,
@@ -49,16 +49,16 @@ describe('prompt-eval plugin registration (f00127 S3)', () => {
 			options: {
 				providers: [{ id: 'p1', label: 'P1', costTier: 1 }],
 			},
-			cacheDir: '.cache/mcp-vertex',
-			pluginCacheDir: '.cache/mcp-vertex/prompt-eval',
+			cacheDir: '.cache/delendai',
+			pluginCacheDir: '.cache/delendai/prompt-eval',
 			pluginDocsDir: 'docs/plugins/prompt-eval',
 			workspace: {
 				root: '/workspace',
 				resolve: (path: string) => `/workspace/${path}`,
 			},
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
 			keepLegacy: false,
 			agentWorktreeEnabled: false,

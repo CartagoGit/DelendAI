@@ -12,12 +12,12 @@ import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contra
 
 const ctx = (name: string, cacheNamespace?: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	corePaths: { cacheDir: '.cache/delendai', docsDir: 'docs/delendai' },
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: `.cache/mcp-vertex/${cacheNamespace ? `${cacheNamespace}/${name}` : name}`,
-	pluginDocsDir: `docs/mcp-vertex/${name}`,
+	pluginCacheDir: `.cache/delendai/${cacheNamespace ? `${cacheNamespace}/${name}` : name}`,
+	pluginDocsDir: `docs/delendai/${name}`,
 	namespacePrefix: name,
 	options: {},
 	args: {},
@@ -104,7 +104,7 @@ describe('loadPlugins', async () => {
 		expect(result.errors[0]?.message).toContain('TEST_CONFLICT');
 		expect(result.errors[0]?.message).toContain('plugins.a.options.mode');
 		expect(result.errors[0]?.message).toContain(
-			'mcp-vertex.config.json patch',
+			'delendai.config.json patch',
 		);
 	});
 
@@ -124,7 +124,7 @@ describe('loadPlugins', async () => {
 			import: async () => ({ default: fakePlugin }),
 		});
 		expect(result.errors).toEqual([]);
-		expect(seenPluginCacheDir).toBe('.cache/mcp-vertex/results/logs');
+		expect(seenPluginCacheDir).toBe('.cache/delendai/results/logs');
 	});
 
 	it('dedups a plugin requested twice (loads once, notes the dup)', async () => {
@@ -168,7 +168,7 @@ describe('loadPlugins', async () => {
 	});
 
 	it('loads a plugin from an absolute path specifier', async () => {
-		const pluginDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-plugin-'));
+		const pluginDir = mkdtempSync(join(tmpdir(), 'delendai-plugin-'));
 		const pluginPath = join(pluginDir, 'index.js');
 		writeFileSync(
 			pluginPath,
@@ -196,7 +196,7 @@ describe('loadPlugins', async () => {
 	});
 
 	it('resolves a relative path specifier against the workspace root', async () => {
-		const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-workspace-'));
+		const workspace = mkdtempSync(join(tmpdir(), 'delendai-workspace-'));
 		const pluginDir = join(workspace, 'plugins', 'my-plugin');
 		mkdirSync(pluginDir, { recursive: true });
 		const pluginPath = join(pluginDir, 'index.js');

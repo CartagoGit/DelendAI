@@ -16,32 +16,31 @@ import { buildServerArgs } from './server-args.service';
  * entrypoint that the CLI spawns back over stdio).
  *
  * Why this is non-trivial: `cwd` is the **consumer workspace** (e.g.
- * logistics-app), NOT the mcp-vertex repo. Naively `join(cwd, 'packages/cli/src/index.ts')`
+ * logistics-app), NOT the delendai repo. Naively `join(cwd, 'packages/cli/src/index.ts')`
  * resolves to a non-existent path and the spawned server dies with
  * `MCP error -32000: Connection closed` against the stdio client.
  *
  * Resolution order:
- *   1. `MCP_VERTEX_SERVER_BIN` env override (escape hatch).
+ *   1. `DELENDAI_SERVER_BIN` env override (escape hatch).
  *   2. Relative to `cwd` (works when the CLI happens to be run from
- *      inside the mcp-vertex repo itself).
+ *      inside the delendai repo itself).
  *   3. Relative to the location of THIS file (`import.meta.url`). This
- *      file lives at `<mcp-vertex>/packages/cli/src/lib/`, so the
- *      server entrypoint `<mcp-vertex>/packages/cli/src/index.ts` is
+ *      file lives at `<delendai>/packages/cli/src/lib/`, so the
+ *      server entrypoint `<delendai>/packages/cli/src/index.ts` is
  *      one level up: `../index.ts`.
  *   4. Last-resort dist path: `../../dist/index.js`.
  */
 const resolveServerEntrypoint = (cwd: string): string => {
-	if (process.env.MCP_VERTEX_SERVER_BIN)
-		return process.env.MCP_VERTEX_SERVER_BIN;
+	if (process.env.DELENDAI_SERVER_BIN) return process.env.DELENDAI_SERVER_BIN;
 	const localSource = join(cwd, 'packages/cli/src/index.ts');
 	if (existsSync(localSource)) return localSource;
 	const here = dirname(fileURLToPath(import.meta.url));
-	// this file lives at <mcp-vertex>/packages/cli/src/lib/stdio-context.factory.ts,
-	// so the server entrypoint <mcp-vertex>/packages/cli/src/index.ts is one
+	// this file lives at <delendai>/packages/cli/src/lib/stdio-context.factory.ts,
+	// so the server entrypoint <delendai>/packages/cli/src/index.ts is one
 	// level up: `../index.ts`.
 	const sourceFromHere = join(here, '..', 'index.ts');
 	if (existsSync(sourceFromHere)) return sourceFromHere;
-	// Last-resort dist path: <mcp-vertex>/packages/cli/dist/index.js requires
+	// Last-resort dist path: <delendai>/packages/cli/dist/index.js requires
 	// two levels up: `../../dist/index.js`.
 	const distFromHere = join(here, '..', '..', 'dist', 'index.js');
 	if (existsSync(distFromHere)) return distFromHere;

@@ -45,7 +45,7 @@ export const KPI_CLI_USAGE =
 
 const DEFAULT_WATCH_INTERVAL_MS = 5_000;
 const DEFAULT_LIMIT = 10;
-const DEFAULT_CACHE_DIR = '.cache/mcp-vertex';
+const DEFAULT_CACHE_DIR = '.cache/delendai';
 
 const isView = (value: string): value is TKpiCliView =>
 	KPI_VIEWS.includes(value as TKpiCliView);

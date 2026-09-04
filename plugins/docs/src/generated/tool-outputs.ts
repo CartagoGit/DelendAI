@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexDocsDocsListOutput {
+export interface DelendaiDocsDocsListOutput {
 	count: number;
 	total: number;
 	offset: number;
@@ -25,7 +25,7 @@ export interface McpVertexDocsDocsListOutput {
 	}[];
 }
 
-export interface McpVertexDocsDocsReadOutput {
+export interface DelendaiDocsDocsReadOutput {
 	path: string;
 	title: string;
 	content: string;
@@ -34,7 +34,7 @@ export interface McpVertexDocsDocsReadOutput {
 	reason?: string;
 }
 
-export interface McpVertexDocsDocsSearchOutput {
+export interface DelendaiDocsDocsSearchOutput {
 	ok: false;
 	error: {
 		reason: "deprecated";
@@ -46,7 +46,7 @@ export interface McpVertexDocsDocsSearchOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface DocsToolOutputs {
-	"mcp-vertex_docs_docs_list": McpVertexDocsDocsListOutput;
-	"mcp-vertex_docs_docs_read": McpVertexDocsDocsReadOutput;
-	"mcp-vertex_docs_docs_search": McpVertexDocsDocsSearchOutput;
+	"delendai_docs_docs_list": DelendaiDocsDocsListOutput;
+	"delendai_docs_docs_read": DelendaiDocsDocsReadOutput;
+	"delendai_docs_docs_search": DelendaiDocsDocsSearchOutput;
 }

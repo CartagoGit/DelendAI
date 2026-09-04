@@ -1,5 +1,5 @@
 /**
- * derive-config.ts — recommend a full `mcp-vertex.config.json` from the
+ * derive-config.ts — recommend a full `delendai.config.json` from the
  * live project analysis (f00117 S1).
  *
  * Pure: no I/O. The caller (the `init_config` tool) supplies the
@@ -53,7 +53,7 @@ const ROOT_CANDIDATES = [
  * Filter the workspace's real top-level dirs down to the source-ish
  * candidates worth scanning. Shared by the `init_config` MCP tool and
  * the CLI `init` renderer so BOTH bootstrap paths derive roots from the
- * actual project layout (a00063: `init` used to stamp mcp-vertex's own
+ * actual project layout (a00063: `init` used to stamp delendai's own
  * monorepo roots into every adopter's config — an Angular app got
  * `roots: ["packages", ...]`, none of which existed, so every search
  * silently scanned 0 files). An empty result means "omit roots": the
@@ -66,7 +66,7 @@ export const deriveSourceRoots = (
 	ROOT_CANDIDATES.filter((dir) => topLevelDirs.includes(dir));
 
 const CONFIG_SCHEMA_URL =
-	'https://unpkg.com/@delendai/core/schema/mcp-vertex.config.schema.json';
+	'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json';
 
 const isTsLike = (language: IProjectAnalysis['language']): boolean =>
 	language === 'typescript' || language === 'javascript';
@@ -124,7 +124,7 @@ export const deriveConfig = (
 	}
 	if (analysis.hasMcpProject) {
 		rationale.push(
-			'An MCP server already exists in this repo — mcp-vertex coexists; see plan_mcp_project for integration notes.',
+			'An MCP server already exists in this repo — delendai coexists; see plan_mcp_project for integration notes.',
 		);
 	}
 

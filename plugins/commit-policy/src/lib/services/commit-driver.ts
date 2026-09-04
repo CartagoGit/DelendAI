@@ -636,7 +636,7 @@ export const commitWithGuard = async (
 		buildIsolatedGitEnv(join(tmpDir, 'index'), args.authorFlag),
 		args.gitTimeoutMs,
 	);
-	const lockPath = join(args.workspaceRoot, '.mcp-vertex', 'index-lock');
+	const lockPath = join(args.workspaceRoot, '.delendai', 'index-lock');
 	return await withFileMutex(
 		lockPath,
 		async () => {

@@ -134,25 +134,25 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 					<section id="config" class="guide__section">
 						<h2>4. Configuration</h2>
 						<p>
-							Place a <code>mcp-vertex.config.json</code> at the workspace root.
+							Place a <code>delendai.config.json</code> at the workspace root.
 							The loader auto-detects it. Schema lives at
-							<code>packages/core/schema/mcp-vertex.config.schema.json</code>.
+							<code>packages/core/schema/delendai.config.schema.json</code>.
 						</p>
 						<CodeBlock
 							code={`{
-  "cacheDir": ".cache/mcp-vertex",
-  "docsDir": "docs/mcp-vertex",
+  "cacheDir": ".cache/delendai",
+  "docsDir": "docs/delendai",
   "plugins": {
     "memory": { "options": { "ttlSeconds": 86400 } },
     "proposals": { "prefix": "work" }
   }
 }`}
 							lang="json"
-							filename="mcp-vertex.config.json"
+							filename="delendai.config.json"
 							lang_label={lang}
 						/>
 						<Callout variant="tip" lang_label={lang}>
-							Project-local <code>mcp-vertex.config.json</code> wins over any
+							Project-local <code>delendai.config.json</code> wins over any
 							user-global config — a single repo can be developed by many
 							contributors without stepping on each other.
 						</Callout>
@@ -233,7 +233,7 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 							core defines <code>IValidationCommand = &#123; command, expect &#125;</code>
 							and <code>IValidationMatrix = &#123; scopes: Record&lt;string, IValidationCommand[]&gt; &#125;</code>
 							(both re-exported from <code>@delendai/core/public</code>), and
-							the JSON schema in <code>mcp-vertex.config.json</code> validates
+							the JSON schema in <code>delendai.config.json</code> validates
 							the shape. Any command that returns exit-code 0 works —
 							<code>tsc</code>, <code>mypy</code>, <code>cargo check</code>,
 							<code>go vet</code>, <code>ruff</code>, <code>detekt</code>,
@@ -242,7 +242,7 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 						<p>Three sources of scopes, in precedence order:</p>
 						<ol>
 							<li>Plugin options — <code>quality.scopes = &#123; feature: ["..."] &#125;</code>.</li>
-							<li><code>mcp-vertex.config.json</code> →
+							<li><code>delendai.config.json</code> →
 							<code>validationMatrix.scopes</code> (the canonical surface).</li>
 							<li>Detected <code>package.json</code> scripts
 							(<code>lint</code>, <code>typecheck</code>, <code>test</code>,
@@ -273,7 +273,7 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
   }
 }`}
 							lang="json"
-							filename="mcp-vertex.config.json"
+							filename="delendai.config.json"
 							lang_label={lang}
 						/>
 						<Callout variant="note" lang_label={lang}>
@@ -287,7 +287,7 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 						<p>
 							<strong>Trust boundary:</strong> <code>run_quality</code>
 							executes whatever the host config says. The commands come from
-							<em>your</em> <code>mcp-vertex.config.json</code> or your plugin
+							<em>your</em> <code>delendai.config.json</code> or your plugin
 							options — so the trust boundary is the host, not the agent. To
 							harden a setup where a less-trusted agent can call
 							<code>run_quality</code>, restrict which binaries may run with
@@ -309,7 +309,7 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
   }
 }`}
 							lang="json"
-							filename="mcp-vertex.config.json"
+							filename="delendai.config.json"
 							lang_label={lang}
 						/>
 						<p>
@@ -321,18 +321,18 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 					</section>
 
 					<section id="extending" class="guide__section">
-						<h2>10. Extending mcp-vertex</h2>
+						<h2>10. Extending delendai</h2>
 						<Stepper
 							steps={[
 								'Copy the custom-plugin example into your workspace and rename its package.',
 								'Export `IMcpPlugin` from `src/index.ts` — declare your tools, prompts, knowledge, skills.',
-								'Add the package to `mcp-vertex.config.json` under `plugins.<id>`.',
+								'Add the package to `delendai.config.json` under `plugins.<id>`.',
 								'Run `bun run check` to validate the plugin shape and the i18n gate.',
 							]}
 						/>
 						<p>
 							See the
-							<a href="https://github.com/CartagoGit/mcp-vertex/tree/main/docs/mcp-vertex/examples/custom-plugin">custom-plugin example</a>
+							<a href="https://github.com/CartagoGit/delendai/tree/main/docs/delendai/examples/custom-plugin">custom-plugin example</a>
 							for a working starter (counts the words in a workspace).
 						</p>
 					</section>
@@ -363,7 +363,7 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 						<h2>13. FAQ</h2>
 						<h3>How is this different from the official MCP SDK?</h3>
 						<p>
-							The official SDK gives you the protocol primitives; mcp-vertex
+							The official SDK gives you the protocol primitives; delendai
 							gives you a project-agnostic <em>server</em> with a plugin loader,
 							a tool registry, view transitions, and a measured token budget.
 						</p>

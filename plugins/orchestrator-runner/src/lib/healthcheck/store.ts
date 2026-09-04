@@ -19,12 +19,12 @@ import {
 } from '@delendai/core/public';
 
 interface IHealthSnapshot {
-	readonly schema: 'mcp-vertex/orchestrator-runner/healthcheck/1';
+	readonly schema: 'delendai/orchestrator-runner/healthcheck/1';
 	readonly updatedAt: string;
 	readonly providers: readonly IProviderAvailability[];
 }
 
-const SCHEMA = 'mcp-vertex/orchestrator-runner/healthcheck/1' as const;
+const SCHEMA = 'delendai/orchestrator-runner/healthcheck/1' as const;
 
 export class HealthStore {
 	private readonly mirror = new Map<string, IProviderAvailability>();

@@ -47,22 +47,22 @@ describe('startup-report/stdio-guard (q00009 / f00259 partial)', () => {
 			expect(resolveOutputChannel({ env: {} })).toBe('stderr');
 		});
 
-		it('honours MCP_VERTEX_LOG=host', () => {
+		it('honours DELENDAI_LOG=host', () => {
 			expect(
-				resolveOutputChannel({ env: { MCP_VERTEX_LOG: 'host' } }),
+				resolveOutputChannel({ env: { DELENDAI_LOG: 'host' } }),
 			).toBe('host');
 		});
 
-		it('honours MCP_VERTEX_LOG=discard (silences the report)', () => {
+		it('honours DELENDAI_LOG=discard (silences the report)', () => {
 			expect(
-				resolveOutputChannel({ env: { MCP_VERTEX_LOG: 'discard' } }),
+				resolveOutputChannel({ env: { DELENDAI_LOG: 'discard' } }),
 			).toBe('discard');
 		});
 
 		it('forced channel overrides env', () => {
 			expect(
 				resolveOutputChannel({
-					env: { MCP_VERTEX_LOG: 'host' },
+					env: { DELENDAI_LOG: 'host' },
 					forced: 'stderr',
 				}),
 			).toBe('stderr');
@@ -155,7 +155,7 @@ describe('startup-report/stdio-guard (q00009 / f00259 partial)', () => {
 		it('combines level and channel resolution in one call', () => {
 			const dispatch = resolveStartupReportDispatch({
 				cliLevel: 'high',
-				channelInput: { env: { MCP_VERTEX_LOG: 'host' } },
+				channelInput: { env: { DELENDAI_LOG: 'host' } },
 			});
 			expect(dispatch.level.level).toBe('high');
 			expect(dispatch.level.source).toBe('cli');

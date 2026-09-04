@@ -256,7 +256,7 @@ export const KNOWN_PROBE_INPUTS: IProbeInputBuilder = (id) => {
 			return { path: 'plugins/audit/README.md' };
 		case 'fs_write':
 			return {
-				path: '.cache/mcp-vertex/verify/probe.txt',
+				path: '.cache/delendai/verify/probe.txt',
 				content: 'plugin-tool-verify probe',
 			};
 		case 'scaffold':

@@ -212,13 +212,13 @@ describe('mapShellIntentToTool (Ring 3 adapter)', () => {
 	it('maps git status/diff/log → git MCP tools', () => {
 		expect(
 			mapShellIntentToTool({ command: 'git', args: ['status'] })?.tool,
-		).toBe('mcp-vertex_git_status');
+		).toBe('delendai_git_status');
 		expect(
 			mapShellIntentToTool({ command: 'git', args: ['diff'] })?.tool,
-		).toBe('mcp-vertex_git_diff');
+		).toBe('delendai_git_diff');
 		expect(
 			mapShellIntentToTool({ command: 'git', args: ['log'] })?.tool,
-		).toBe('mcp-vertex_git_log');
+		).toBe('delendai_git_log');
 	});
 
 	it('returns null for an uncovered git sub-command', () => {

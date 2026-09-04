@@ -157,14 +157,14 @@ describe('matchSignals', async () => {
 			'host-config has custom extraTools',
 		);
 	});
-	it('emits the custom-vertex-config signal when mcp-vertex.config.json has config', async () => {
+	it('emits the custom-vertex-config signal when delendai.config.json has config', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({}),
 			hasCustomExtraTools: false,
 			hasCustomVertexConfig: true,
 		};
 		expect(matchSignals(ctx)).toContain(
-			'mcp-vertex.config.json has plugin or validation config',
+			'delendai.config.json has plugin or validation config',
 		);
 	});
 	it('emits the ci signal listing the CI systems', async () => {
@@ -220,7 +220,7 @@ describe('matchSignals', async () => {
 describe('integration: analyzeProject uses the rule table', async () => {
 	it('emits the same signals as the pre-refactor chain (regression guard)', async () => {
 		// A TypeScript + React project with a tsconfig + AGENTS.md
-		// + a CI workflow directory + an mcp-vertex.config.json
+		// + a CI workflow directory + an delendai.config.json
 		// with a plugin.
 		const analysis = await analyzeProject(
 			reader({
@@ -231,7 +231,7 @@ describe('integration: analyzeProject uses the rule table', async () => {
 				}),
 				'AGENTS.md': '# guide',
 				'.github/workflows': 'ci.yml',
-				'mcp-vertex.config.json': JSON.stringify({
+				'delendai.config.json': JSON.stringify({
 					plugins: { quality: {} },
 				}),
 			}),
@@ -252,7 +252,7 @@ describe('integration: analyzeProject uses the rule table', async () => {
 		);
 		// custom-vertex-config.
 		expect(analysis.signals).toContain(
-			'mcp-vertex.config.json has plugin or validation config',
+			'delendai.config.json has plugin or validation config',
 		);
 		// ci.
 		expect(analysis.signals).toContain('CI: github-actions');

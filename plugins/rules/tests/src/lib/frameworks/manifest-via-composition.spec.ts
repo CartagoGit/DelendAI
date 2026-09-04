@@ -79,7 +79,7 @@ describe('manifest-via-composition (DIP, S)', async () => {
 		const manifest = buildManifestViaComposition(
 			reader,
 			'demo',
-			'.cache/mcp-vertex/rules',
+			'.cache/delendai/rules',
 			'mixed',
 			root,
 		);
@@ -92,7 +92,7 @@ describe('manifest-via-composition (DIP, S)', async () => {
 		// The project does not ship its own clippy.toml; only
 		// the cache default is listed.
 		expect((await manifest).projects.demo?.['apps/svc']?.eslint).toEqual([
-			'.cache/mcp-vertex/rules/rust-clippy.clippy.toml',
+			'.cache/delendai/rules/rust-clippy.clippy.toml',
 		]);
 	});
 
@@ -104,7 +104,7 @@ describe('manifest-via-composition (DIP, S)', async () => {
 		const manifest = buildManifestViaComposition(
 			reader,
 			'demo',
-			'.cache/mcp-vertex/rules',
+			'.cache/delendai/rules',
 			'strict',
 			root,
 			{ root: 'rust-clippy' },
@@ -125,14 +125,14 @@ describe('manifest-via-composition (DIP, S)', async () => {
 		const a = buildManifestViaComposition(
 			reader,
 			'demo',
-			'.cache/mcp-vertex/rules',
+			'.cache/delendai/rules',
 			'mixed',
 			root,
 		);
 		const b = buildManifestViaComposition(
 			reader,
 			'demo',
-			'.cache/mcp-vertex/rules',
+			'.cache/delendai/rules',
 			'mixed',
 			root,
 		);
@@ -153,7 +153,7 @@ describe('manifest-via-composition (DIP, S)', async () => {
 		const manifest = buildManifestViaComposition(
 			reader,
 			'demo',
-			'.cache/mcp-vertex/rules',
+			'.cache/delendai/rules',
 			'mixed',
 			root,
 		);

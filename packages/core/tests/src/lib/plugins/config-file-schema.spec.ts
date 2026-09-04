@@ -6,16 +6,16 @@ import type {
 	IBootstrapPatternOverrides,
 	IFilesystemConfig,
 	ILoopDetectorConfig,
-	IMcpVertexCachePolicyConfig,
-	IMcpVertexConfigFile,
-	IMcpVertexCorePathsConfig,
-	IMcpVertexPluginConfig,
+	IDelendaiCachePolicyConfig,
+	IDelendaiConfigFile,
+	IDelendaiCorePathsConfig,
+	IDelendaiPluginConfig,
 	IValidationMatrixConfig,
 	IValidationMatrixScope,
 } from '@delendai/core/public';
 
 describe('config-file-schema (Solid SRP extraction)', async () => {
-	describe('schema shape (mirrors IMcpVertexConfigFile)', async () => {
+	describe('schema shape (mirrors IDelendaiConfigFile)', async () => {
 		it('accepts a minimal valid config (empty object)', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({});
 			expect(res.success).toBe(true);
@@ -23,8 +23,8 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 
 		it('accepts a config with only the core paths', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			});
 			expect(res.success).toBe(true);
 		});
@@ -155,7 +155,7 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 								},
 							],
 							recommendedPlugins: ['deps'],
-							knowledgeHints: ['docs/mcp-vertex/proposals'],
+							knowledgeHints: ['docs/delendai/proposals'],
 						},
 					},
 				},
@@ -348,16 +348,16 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 	});
 });
 
-describe('IMcpVertexConfigFile ISP segregation', async () => {
-	it('IMcpVertexCorePathsConfig is structurally compatible with the parent', async () => {
-		// Solid-LSP: a value typed as IMcpVertexCorePathsConfig is
-		// assignable to IMcpVertexConfigFile (it extends it).
-		const core: IMcpVertexCorePathsConfig = {
+describe('IDelendaiConfigFile ISP segregation', async () => {
+	it('IDelendaiCorePathsConfig is structurally compatible with the parent', async () => {
+		// Solid-LSP: a value typed as IDelendaiCorePathsConfig is
+		// assignable to IDelendaiConfigFile (it extends it).
+		const core: IDelendaiCorePathsConfig = {
 			cacheDir: '/x',
 			docsDir: '/y',
 			keepLegacy: true,
 		};
-		const asConfig: IMcpVertexConfigFile = core;
+		const asConfig: IDelendaiConfigFile = core;
 		expect(asConfig.cacheDir).toBe('/x');
 		expect(asConfig.keepLegacy).toBe(true);
 	});
@@ -373,7 +373,7 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 				],
 			},
 		};
-		const asConfig: IMcpVertexConfigFile = { validationMatrix: scopes };
+		const asConfig: IDelendaiConfigFile = { validationMatrix: scopes };
 		expect(asConfig.validationMatrix?.scopes.full?.[0]?.command).toBe(
 			'bun test',
 		);
@@ -390,7 +390,7 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 		const overrides: IBootstrapPatternOverrides = {
 			patternOverrides: { 'ts-lib': override },
 		};
-		const asConfig: IMcpVertexConfigFile = { bootstrap: overrides };
+		const asConfig: IDelendaiConfigFile = { bootstrap: overrides };
 		expect(asConfig.bootstrap?.patternOverrides?.['ts-lib']?.type).toBe(
 			'library',
 		);
@@ -401,17 +401,17 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 			enabled: false,
 			interactiveAgentPatterns: [],
 		};
-		const asConfig: IMcpVertexConfigFile = { loopDetector: ld };
+		const asConfig: IDelendaiConfigFile = { loopDetector: ld };
 		expect(asConfig.loopDetector?.interactiveAgentPatterns).toEqual([]);
 	});
 
-	it('IMcpVertexPluginConfig keeps the per-plugin {prefix, options} contract', async () => {
-		const pc: IMcpVertexPluginConfig = {
+	it('IDelendaiPluginConfig keeps the per-plugin {prefix, options} contract', async () => {
+		const pc: IDelendaiPluginConfig = {
 			enabled: false,
 			prefix: 'work',
 			options: { docsDir: '/x' },
 		};
-		const asConfig: IMcpVertexConfigFile = {
+		const asConfig: IDelendaiConfigFile = {
 			plugins: { proposals: pc },
 		};
 		expect(asConfig.plugins?.proposals?.prefix).toBe('work');
@@ -421,17 +421,17 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 
 	it('IFilesystemConfig narrows the filesystem.authorizedRoots field (f00089 U5)', async () => {
 		const fs: IFilesystemConfig = { authorizedRoots: ['/data/shared'] };
-		const asConfig: IMcpVertexConfigFile = { filesystem: fs };
+		const asConfig: IDelendaiConfigFile = { filesystem: fs };
 		expect(asConfig.filesystem?.authorizedRoots).toEqual(['/data/shared']);
 	});
 
-	it('IMcpVertexCachePolicyConfig narrows the cache field (f00072 S3)', async () => {
-		const cache: IMcpVertexCachePolicyConfig = {
+	it('IDelendaiCachePolicyConfig narrows the cache field (f00072 S3)', async () => {
+		const cache: IDelendaiCachePolicyConfig = {
 			runOnBoot: 'dry-run',
 			maxAgeDays: 30,
 			worktrees: { enabled: true, keepLastN: 3 },
 		};
-		const asConfig: IMcpVertexConfigFile = { cache };
+		const asConfig: IDelendaiConfigFile = { cache };
 		expect(asConfig.cache?.runOnBoot).toBe('dry-run');
 		expect(asConfig.cache?.worktrees?.keepLastN).toBe(3);
 	});
@@ -469,13 +469,13 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 	});
 });
 
-describe('LSP — sub-interfaces compose into IMcpVertexConfigFile', async () => {
+describe('LSP — sub-interfaces compose into IDelendaiConfigFile', async () => {
 	it('every sub-interface is a structural subset of the composite', async () => {
 		// This is the Solid-LSP guard: a function typed against the
 		// composite must accept values typed against any sub-interface.
-		const consumer = (c: IMcpVertexConfigFile): string =>
+		const consumer = (c: IDelendaiConfigFile): string =>
 			`${c.cacheDir ?? ''}|${c.docsDir ?? ''}`;
-		const onlyPaths: IMcpVertexCorePathsConfig = {
+		const onlyPaths: IDelendaiCorePathsConfig = {
 			cacheDir: '/a',
 			docsDir: '/b',
 		};

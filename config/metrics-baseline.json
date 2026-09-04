@@ -1,77 +1,77 @@
 {
 	"at": "2026-07-13T23:02:15.434Z",
 	"tools": {
-		"mcp-vertex_agent_catalog": {
+		"delendai_agent_catalog": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 2,
 			"maxMs": 1,
 			"totalBytes": 1068
 		},
-		"mcp-vertex_analyze_project": {
+		"delendai_analyze_project": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 16,
 			"maxMs": 6,
 			"totalBytes": 2487
 		},
-		"mcp-vertex_docs_docs_list": {
+		"delendai_docs_docs_list": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 2,
 			"maxMs": 1,
 			"totalBytes": 180
 		},
-		"mcp-vertex_docs_docs_search": {
+		"delendai_docs_docs_search": {
 			"calls": 3,
 			"errors": 3,
 			"totalMs": 1,
 			"maxMs": 0,
 			"totalBytes": 0
 		},
-		"mcp-vertex_logs_tail": {
+		"delendai_logs_tail": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 238,
 			"maxMs": 104,
 			"totalBytes": 6384
 		},
-		"mcp-vertex_overview": {
+		"delendai_overview": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 2,
 			"maxMs": 1,
 			"totalBytes": 6828
 		},
-		"mcp-vertex_plan_mcp_project": {
+		"delendai_plan_mcp_project": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 15,
 			"maxMs": 5,
 			"totalBytes": 2508
 		},
-		"mcp-vertex_proposals_auto_work": {
+		"delendai_proposals_auto_work": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 20,
 			"maxMs": 8,
 			"totalBytes": 598
 		},
-		"mcp-vertex_proposals_compact_status": {
+		"delendai_proposals_compact_status": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 3,
 			"maxMs": 2,
 			"totalBytes": 441
 		},
-		"mcp-vertex_proposals_round_context": {
+		"delendai_proposals_round_context": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 4,
 			"maxMs": 2,
 			"totalBytes": 477
 		},
-		"mcp-vertex_search_search": {
+		"delendai_search_search": {
 			"calls": 3,
 			"errors": 0,
 			"totalMs": 4,

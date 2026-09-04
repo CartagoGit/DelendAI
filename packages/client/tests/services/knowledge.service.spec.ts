@@ -17,19 +17,19 @@ const fakeClient = (responses: Record<string, unknown>) =>
 	});
 
 const fullFixture = {
-	'mcp-vertex_knowledge': {
+	delendai_knowledge: {
 		entries: [
-			{ id: 'mcp-vertex_overview', title: 'Overview' },
-			{ id: 'mcp-vertex_metrics', title: 'Metrics' },
+			{ id: 'delendai_overview', title: 'Overview' },
+			{ id: 'delendai_metrics', title: 'Metrics' },
 			{ id: 'proposals_state_machine', title: 'Proposal state machine' },
 			{ id: 'proposals_lifecycle', title: 'Proposal lifecycle' },
-			{ id: 'mcp-vertex_memory_recall', title: 'Memory recall' },
+			{ id: 'delendai_memory_recall', title: 'Memory recall' },
 		],
 	},
 };
 
 describe('KnowledgeService (f126 S3a)', async () => {
-	it('listKnowledge forwards to mcp-vertex_knowledge', async () => {
+	it('listKnowledge forwards to delendai_knowledge', async () => {
 		const service = new KnowledgeService(fakeClient(fullFixture));
 		const out = await service.listKnowledge();
 		expect(out).toHaveLength(5);
@@ -39,7 +39,7 @@ describe('KnowledgeService (f126 S3a)', async () => {
 		const service = new KnowledgeService(fakeClient(fullFixture));
 		const grouped = await service.listByCategory();
 		const keys = Object.keys(grouped).sort();
-		expect(keys).toContain('mcp-vertex');
+		expect(keys).toContain('delendai');
 		expect(keys).toContain('proposals');
 		expect(keys).toContain('memory');
 	});
@@ -47,7 +47,7 @@ describe('KnowledgeService (f126 S3a)', async () => {
 	it('listByCategory sorts each bucket by title', async () => {
 		const service = new KnowledgeService(
 			fakeClient({
-				'mcp-vertex_knowledge': {
+				delendai_knowledge: {
 					entries: [
 						{ id: 'p_state_machine', title: 'Z-state' },
 						{ id: 'p_lifecycle', title: 'A-lifecycle' },
@@ -64,9 +64,9 @@ describe('KnowledgeService (f126 S3a)', async () => {
 
 	describe('filterByQuery', async () => {
 		const entries = [
-			{ id: 'mcp-vertex_overview', title: 'Overview' },
+			{ id: 'delendai_overview', title: 'Overview' },
 			{ id: 'proposals_state_machine', title: 'Proposal state machine' },
-			{ id: 'mcp-vertex_memory_recall', title: 'Memory recall' },
+			{ id: 'delendai_memory_recall', title: 'Memory recall' },
 		];
 
 		it('returns all entries when query is empty', async () => {
@@ -80,9 +80,9 @@ describe('KnowledgeService (f126 S3a)', async () => {
 			const service = new KnowledgeService(fakeClient({}));
 			const filtered = service.filterByQuery(
 				entries,
-				'mcp-vertex_overview',
+				'delendai_overview',
 			);
-			expect(filtered[0]?.id).toBe('mcp-vertex_overview');
+			expect(filtered[0]?.id).toBe('delendai_overview');
 		});
 
 		it('finds by substring in title', async () => {
@@ -95,9 +95,9 @@ describe('KnowledgeService (f126 S3a)', async () => {
 
 		it('respects limit', async () => {
 			const service = new KnowledgeService(fakeClient({}));
-			expect(
-				service.filterByQuery(entries, 'mcp-vertex', 1),
-			).toHaveLength(1);
+			expect(service.filterByQuery(entries, 'delendai', 1)).toHaveLength(
+				1,
+			);
 		});
 
 		it('returns [] for non-matching query', async () => {
@@ -109,20 +109,20 @@ describe('KnowledgeService (f126 S3a)', async () => {
 	it('getKnowledge returns the full entry', async () => {
 		const service = new KnowledgeService(
 			fakeClient({
-				'mcp-vertex_knowledge': {
-					id: 'mcp-vertex_overview',
+				delendai_knowledge: {
+					id: 'delendai_overview',
 					title: 'Overview',
 					body: 'Detailed body',
 				},
 			}),
 		);
-		const entry = await service.getKnowledge('mcp-vertex_overview');
+		const entry = await service.getKnowledge('delendai_overview');
 		expect(entry.body).toBe('Detailed body');
 	});
 
 	it('getKnowledge throws KnowledgeNotFoundError when missing', async () => {
 		const service = new KnowledgeService(
-			fakeClient({ 'mcp-vertex_knowledge': { entries: [] } }),
+			fakeClient({ delendai_knowledge: { entries: [] } }),
 		);
 		await expect(service.getKnowledge('missing')).rejects.toBeInstanceOf(
 			KnowledgeNotFoundError,
@@ -133,8 +133,8 @@ describe('KnowledgeService (f126 S3a)', async () => {
 describe('categoryOf', async () => {
 	it('returns the plugin prefix (everything before the first _)', async () => {
 		expect(categoryOf('proposals_state_machine')).toBe('proposals');
-		expect(categoryOf('mcp-vertex_overview')).toBe('mcp-vertex');
-		expect(categoryOf('mcp-vertex_memory_recall')).toBe('memory');
+		expect(categoryOf('delendai_overview')).toBe('delendai');
+		expect(categoryOf('delendai_memory_recall')).toBe('memory');
 	});
 
 	it('returns "other" when the id has no underscore', async () => {

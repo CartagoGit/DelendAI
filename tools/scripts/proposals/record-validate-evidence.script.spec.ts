@@ -2,7 +2,7 @@
  * The writer/reader contract for the validate-evidence journal.
  *
  * The gate that blocks `close_slice` and `proposal_transition` reads
- * `.cache/mcp-vertex/results/logs/validate.jsonl`. Before this script
+ * `.cache/delendai/results/logs/validate.jsonl`. Before this script
  * existed nothing wrote that file, so the gate could never be satisfied
  * by actually running `bun run validate` — an agent could only pass a
  * hand-written `validateEvidence` argument, and an honest agent looped

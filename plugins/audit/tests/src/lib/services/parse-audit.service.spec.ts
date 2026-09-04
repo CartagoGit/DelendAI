@@ -7,7 +7,7 @@ import type {
 	IAuditScore,
 } from '../../../../src/lib/contracts/interfaces/audit.interface';
 
-const SAMPLE_AUDIT = `# 🔍 Auditoría Exhaustiva — \`mcp-vertex\` y Plugins
+const SAMPLE_AUDIT = `# 🔍 Auditoría Exhaustiva — \`delendai\` y Plugins
 
 > **Fecha**: 14 jun 2026 | **Revisor**: Antigravity (Claude Sonnet 4.6 Thinking)
 > **Metodología**: Lectura completa del código fuente, contratos, lógica de engines, configuración, tests y documentación.
@@ -71,7 +71,7 @@ A diferencia de \`persistQueue\` (que usa \`tmp + rename\` correctamente).
 describe('parseAuditBody', async () => {
 	it('extracts the source identity from a conventional filename', async () => {
 		const doc = parseAuditBody(
-			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/delendai/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		expect(doc.source.host).toBe('Antigravity');
@@ -82,7 +82,7 @@ describe('parseAuditBody', async () => {
 
 	it('captures the executive summary (first non-empty paragraph block)', async () => {
 		const doc = parseAuditBody(
-			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/delendai/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		expect(doc.summary).toContain('arquitectónicamente sólido');
@@ -91,7 +91,7 @@ describe('parseAuditBody', async () => {
 
 	it('classifies findings by their section header severity', async () => {
 		const doc = parseAuditBody(
-			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/delendai/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		const fatals = doc.findings.filter(
@@ -112,7 +112,7 @@ describe('parseAuditBody', async () => {
 
 	it('does not treat leftover markdown list tokens as cited files', async () => {
 		const doc = parseAuditBody(
-			'docs/mcp-vertex/proposals/done/23-08-2026- Copilot (Grok).md',
+			'docs/delendai/proposals/done/23-08-2026- Copilot (Grok).md',
 			`# Audit
 
 ## 🔴 FATAL
@@ -130,7 +130,7 @@ describe('parseAuditBody', async () => {
 
 	it('extracts the per-dimension scoring table', async () => {
 		const doc = parseAuditBody(
-			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/delendai/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		const arch = doc.scores.find(
@@ -149,7 +149,7 @@ describe('parseAuditBody', async () => {
 
 	it('captures the final note', async () => {
 		const doc = parseAuditBody(
-			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/delendai/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		expect(doc.note).toContain('8/10');
@@ -257,11 +257,11 @@ describe('the shapes the audit brief actually asks for', () => {
 	it('preserves the exact extracted document for a representative brief-shaped audit', () => {
 		expect(
 			parseAuditBody(
-				'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+				'docs/delendai/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 				BRIEF_SHAPED,
 			),
 		).toEqual({
-			path: 'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			path: 'docs/delendai/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			slug: '14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking)',
 			source: {
 				host: 'Antigravity',
@@ -346,7 +346,7 @@ describe('the shapes the audit brief actually asks for', () => {
 	it('handles long unmatched separators without stalling', () => {
 		const longNoise = '('.repeat(4000);
 		const doc = parseAuditBody(
-			`docs/mcp-vertex/proposals/done/14-06-2026- Auditoría ${longNoise}.md`,
+			`docs/delendai/proposals/done/14-06-2026- Auditoría ${longNoise}.md`,
 			[
 				'# Audit',
 				'',

@@ -331,10 +331,10 @@ if (isMainModule()) {
 		process.env.METRICS_BASELINE_PATH ?? 'metrics-baseline.json';
 	const candidatePath =
 		process.env.METRICS_CANDIDATE_PATH ??
-		'.cache/mcp-vertex/metrics/candidate.json';
+		'.cache/delendai/metrics/candidate.json';
 	// Repo-tracked fallback so the token-budget gate is armed even before
 	// the first GitHub release publishes a baseline snapshot. Promote a
-	// fresh candidate with `cp .cache/mcp-vertex/metrics/candidate.json config/metrics-baseline.json`.
+	// fresh candidate with `cp .cache/delendai/metrics/candidate.json config/metrics-baseline.json`.
 	const fallbackBaselinePath = 'config/metrics-baseline.json';
 	const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 

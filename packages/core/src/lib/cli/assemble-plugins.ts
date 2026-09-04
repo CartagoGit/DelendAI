@@ -8,7 +8,7 @@
  * projections.
  */
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
-import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type {
 	IPromptRegistration,
 	IResourceRegistration,
@@ -22,7 +22,7 @@ import {
 	pluginConfigFor,
 	resolveConfigPluginSpecifiers,
 } from '../plugins/load-config-file';
-import type { IMcpVertexConfigFile } from '../plugins/load-config-file';
+import type { IDelendaiConfigFile } from '../plugins/load-config-file';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import {
@@ -41,7 +41,7 @@ import type {
 	IPluginRegisterErrorInfo,
 } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import type { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
-import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
+import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { serializeConfigurationSchema } from '../configuration-center/configuration-center';
 import type { IOverviewToolEntry } from '../tools/overview-tool';
 import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surface.interface';
@@ -85,8 +85,8 @@ const idempotentDisposePlugins = (
 
 /** Inputs `assemblePlugins` needs from the config-resolution phase. */
 export interface IAssemblePluginsInput {
-	readonly args: IMcpVertexCliArgs;
-	readonly fileConfig: IMcpVertexConfigFile;
+	readonly args: IDelendaiCliArgs;
+	readonly fileConfig: IDelendaiConfigFile;
 	readonly corePrefix: string;
 	readonly configPluginNames: readonly string[];
 	readonly disabledConfigPlugins: ReadonlySet<string>;
@@ -109,12 +109,12 @@ export interface IAssemblePluginsResult {
 	readonly onToolStarts: readonly IPluginToolStartObserver[];
 	readonly onToolCancels: readonly IPluginToolCancelObserver[];
 	readonly onHookErrors: readonly IPluginHookErrorObserver[];
-	readonly isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
+	readonly isAgentStuckFn: IDelendaiHostConfig['isAgentStuck'];
 	readonly getCheckpointAdvisoryFns: Array<
-		NonNullable<IMcpVertexHostConfig['getCheckpointAdvisory']>
+		NonNullable<IDelendaiHostConfig['getCheckpointAdvisory']>
 	>;
 	readonly beforeToolCallFns: Array<
-		NonNullable<IMcpVertexHostConfig['beforeToolCall']>
+		NonNullable<IDelendaiHostConfig['beforeToolCall']>
 	>;
 	readonly logsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	readonly errorSinks: readonly IErrorSink[];
@@ -183,19 +183,19 @@ interface IOverviewPluginEntry {
 interface IPluginToolCallObserver {
 	readonly pluginName: string;
 	readonly resolvedSpecifier: string;
-	readonly handler: NonNullable<IMcpVertexHostConfig['onToolCall']>;
+	readonly handler: NonNullable<IDelendaiHostConfig['onToolCall']>;
 }
 
 interface IPluginToolStartObserver {
 	readonly pluginName: string;
 	readonly resolvedSpecifier: string;
-	readonly handler: NonNullable<IMcpVertexHostConfig['onToolStart']>;
+	readonly handler: NonNullable<IDelendaiHostConfig['onToolStart']>;
 }
 
 interface IPluginToolCancelObserver {
 	readonly pluginName: string;
 	readonly resolvedSpecifier: string;
-	readonly handler: NonNullable<IMcpVertexHostConfig['onToolCancel']>;
+	readonly handler: NonNullable<IDelendaiHostConfig['onToolCancel']>;
 }
 
 interface IPluginHookErrorObserver {
@@ -219,7 +219,7 @@ const replayRegisterErrors = async (
 				await observer.handler(info);
 			} catch (error) {
 				process.stderr.write(
-					`[mcp-vertex] onRegisterError error (${observer.pluginName}): ${error instanceof Error ? error.message : String(error)}\n`,
+					`[delendai] onRegisterError error (${observer.pluginName}): ${error instanceof Error ? error.message : String(error)}\n`,
 				);
 			}
 		}
@@ -263,7 +263,7 @@ const lazyPluginIdFor = (specifier: string): string | undefined => {
 
 const sourceForLazyPlugin = (input: {
 	readonly id: string;
-	readonly args: IMcpVertexCliArgs;
+	readonly args: IDelendaiCliArgs;
 	readonly configPluginNames: readonly string[];
 	readonly disabledConfigPlugins: ReadonlySet<string>;
 }): 'preset' | 'config' | 'flag' => {
@@ -290,7 +290,7 @@ const sourceForLazyPlugin = (input: {
  */
 export const requiresBootSweepActivation = (
 	pluginId: string,
-	fileConfig: Pick<IMcpVertexConfigFile, 'cache'>,
+	fileConfig: Pick<IDelendaiConfigFile, 'cache'>,
 ): boolean =>
 	pluginId === 'cache' &&
 	(fileConfig.cache?.runOnBoot ?? 'dry-run') !== 'off';
@@ -346,8 +346,8 @@ export const requiresPolicyStartupActivation = (
 };
 
 const tryAssembleManagedLazy = async (input: {
-	readonly args: IMcpVertexCliArgs;
-	readonly fileConfig: IMcpVertexConfigFile;
+	readonly args: IDelendaiCliArgs;
+	readonly fileConfig: IDelendaiConfigFile;
 	readonly corePrefix: string;
 	readonly configPluginNames: readonly string[];
 	readonly disabledConfigPlugins: ReadonlySet<string>;
@@ -437,12 +437,12 @@ const tryAssembleManagedLazy = async (input: {
 		void replayRegisterErrors(onRegisterErrors, [info]);
 	};
 	const getCheckpointAdvisoryFns: Array<
-		NonNullable<IMcpVertexHostConfig['getCheckpointAdvisory']>
+		NonNullable<IDelendaiHostConfig['getCheckpointAdvisory']>
 	> = [];
 	const beforeToolCallFns: Array<
-		NonNullable<IMcpVertexHostConfig['beforeToolCall']>
+		NonNullable<IDelendaiHostConfig['beforeToolCall']>
 	> = [];
-	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
+	let isAgentStuckFn: IDelendaiHostConfig['isAgentStuck'];
 	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	let resolvedErrorSinks: IErrorSink[] = [];
 	// `logsSink` and `isAgentStuck` are single slots: the host routes logs
@@ -863,7 +863,7 @@ export const assemblePlugins = async (
 		!loadResult.loaded.some((p) => p.plugin.name === 'logs')
 	) {
 		process.stderr.write(
-			'[mcp-vertex] --strict-logs: auto-loading the `logs` plugin to persist lifecycle events.\n',
+			'[delendai] --strict-logs: auto-loading the `logs` plugin to persist lifecycle events.\n',
 		);
 		const autoLoad = await loadPlugins({
 			specifiers: [...effectivePlugins, 'logs'],
@@ -925,12 +925,12 @@ export const assemblePlugins = async (
 			info: IPluginRegisterErrorInfo,
 		) => Promise<void> | void;
 	}> = [];
-	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
+	let isAgentStuckFn: IDelendaiHostConfig['isAgentStuck'];
 	const getCheckpointAdvisoryFns: Array<
-		NonNullable<IMcpVertexHostConfig['getCheckpointAdvisory']>
+		NonNullable<IDelendaiHostConfig['getCheckpointAdvisory']>
 	> = [];
 	const beforeToolCallFns: Array<
-		NonNullable<IMcpVertexHostConfig['beforeToolCall']>
+		NonNullable<IDelendaiHostConfig['beforeToolCall']>
 	> = [];
 	// S2 — every plugin can register a logsSink; we pick the
 	// first one that does. The `logs` plugin's sink is the canonical
@@ -1006,7 +1006,7 @@ export const assemblePlugins = async (
 		}
 		for (const tool of registrations.tools ?? []) {
 			// Every plugin tool is qualified with the host's core namespace
-			// prefix (`mcp-vertex` by default) followed by the plugin's own
+			// prefix (`delendai` by default) followed by the plugin's own
 			// prefix. This makes the tool owner discoverable at a glance
 			// when several MCP servers are loaded side by side, and keeps
 			// the in-plugin uniqueness guarantee of `${ns}_${tool.id}`.

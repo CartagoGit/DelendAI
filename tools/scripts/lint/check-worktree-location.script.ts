@@ -3,9 +3,9 @@
  * check-worktree-location.script.ts — f00086 S3 / c00086 re-tie.
  *
  * Worktree-location discipline. The 28-Jun incident surfaced a
- * worktree at `/home/cartago/_projects/mcp-vertex/.worktrees/lacerta`
+ * worktree at `/home/cartago/_projects/delendai/.worktrees/lacerta`
  * — outside the canonical cache root
- * `/home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/`.
+ * `/home/cartago/_projects/delendai/.cache/delendai/.worktrees/`.
  * That is an AGENTS.md R13 violation (the cache is for engine
  * state, not for ad-hoc agent dirs) AND a R14 violation (root
  * has no whitelisted executable dirs).
@@ -20,7 +20,7 @@
  *   - The MAIN worktree (`<workspace>` itself) is always
  *     allowed.
  *   - Any worktree whose path starts with
- *     `<workspace>/.cache/mcp-vertex/.worktrees/` is allowed
+ *     `<workspace>/.cache/delendai/.worktrees/` is allowed
  *     (the canonical cache root).
  *   - Any worktree whose path starts with
  *     `<workspace>/.worktrees/` is BLOCKED (legacy / out-of-cache).
@@ -29,7 +29,7 @@
  */
 import { spawnSync } from 'node:child_process';
 
-const CANONICAL_WORKTREE_PREFIX = '.cache/mcp-vertex/.worktrees/';
+const CANONICAL_WORKTREE_PREFIX = '.cache/delendai/.worktrees/';
 const LEGACY_WORKTREE_PREFIX = '.worktrees/';
 
 export interface IWorktreeLocationInput {

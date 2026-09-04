@@ -3,8 +3,8 @@
  *
  * x00053 S1: the default `CORE_DOCS` constant in
  * `round-context-types.ts` was hardcoded to
- * `docs/mcp-vertex/proposals/index.json` after the index moved to
- * `.cache/mcp-vertex/proposals/index.json` (x00052). The hash helper
+ * `docs/delendai/proposals/index.json` after the index moved to
+ * `.cache/delendai/proposals/index.json` (x00052). The hash helper
  * `computeCoreDocHashes` returns `'rh-missing'` when the path does
  * not resolve, so the default was silently always-missing — the
  * index's digest was frozen. The default now points at the cache
@@ -35,7 +35,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CORE_DOCS } from '@delendai/proposals/lib/swarm/round-context-types';
 import { computeCoreDocHashes } from '@delendai/proposals/lib/swarm/round-context-hash';
 
-const INDEX_REL = '.cache/mcp-vertex/proposals/index.json';
+const INDEX_REL = '.cache/delendai/proposals/index.json';
 
 describe('round-context CORE_DOCS default (x00053 S1)', () => {
 	let root = '';
@@ -48,11 +48,11 @@ describe('round-context CORE_DOCS default (x00053 S1)', () => {
 
 	it('default CORE_DOCS points at the cache-relative index (not docs/)', () => {
 		expect(CORE_DOCS).toContain(INDEX_REL);
-		expect(CORE_DOCS).not.toContain('docs/mcp-vertex/proposals/index.json');
+		expect(CORE_DOCS).not.toContain('docs/delendai/proposals/index.json');
 	});
 
 	it('hashes a real index file when it exists at the cache path (no rh-missing)', async () => {
-		const dir = join(root, '.cache/mcp-vertex/proposals');
+		const dir = join(root, '.cache/delendai/proposals');
 		mkdirSync(dir, { recursive: true });
 		writeFileSync(
 			join(root, INDEX_REL),
@@ -87,14 +87,14 @@ describe('round-context CORE_DOCS default (x00053 S1)', () => {
 		// pick it up. If a future refactor reintroduces the old path
 		// in `CORE_DOCS`, this test will fail because the result map
 		// will not contain the cache key.
-		const oldDir = join(root, 'docs/mcp-vertex/proposals');
+		const oldDir = join(root, 'docs/delendai/proposals');
 		mkdirSync(oldDir, { recursive: true });
 		writeFileSync(
-			join(root, 'docs/mcp-vertex/proposals/index.json'),
+			join(root, 'docs/delendai/proposals/index.json'),
 			JSON.stringify({ proposals: [] }),
 		);
 		const result = await computeCoreDocHashes(root);
-		expect(result['docs/mcp-vertex/proposals/index.json']).toBeUndefined();
+		expect(result['docs/delendai/proposals/index.json']).toBeUndefined();
 		expect(result[INDEX_REL]).toBe('rh-missing');
 	});
 });

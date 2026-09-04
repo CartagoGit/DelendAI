@@ -2,7 +2,7 @@
 /**
  * feature-flags.script.ts — f00152 S5 (L3 — feature flags lint).
  *
- * Verifies the catalog at `docs/mcp-vertex/api/feature-flags.md` is
+ * Verifies the catalog at `docs/delendai/api/feature-flags.md` is
  * well-formed (every entry has name, sinceVersion, defaultValue,
  * removalVersion, description). The lint does NOT scan source for
  * flag *usage* — that is the responsibility of the proposal that
@@ -19,7 +19,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const REPO_ROOT = process.cwd();
-const CATALOG_REL = 'docs/mcp-vertex/api/feature-flags.md';
+const CATALOG_REL = 'docs/delendai/api/feature-flags.md';
 
 /** Row-shaped mirror of `IFeatureFlagEntry`. Kept structural; the runtime type is in `@delendai/core/public`. */
 export interface IFeatureFlagCatalogEntry {

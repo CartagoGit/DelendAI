@@ -7,7 +7,7 @@ import { buildDebtScanRegistration } from './lib/tools/debt-scan.tool';
  * Tech-debt plugin. `debt_scan` surfaces marker comments
  * (TODO/FIXME/HACK/XXX/BUG/DEPRECATED/NOTE) across the workspace as
  * severity-ranked findings — a fast "what's left?" over a codebase. Offline,
- * read-only. Load with `mcp-vertex --plugins=tech-debt`.
+ * read-only. Load with `delendai --plugins=tech-debt`.
  */
 const OptionsSchema = z.object({});
 

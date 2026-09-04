@@ -1,7 +1,7 @@
 /**
  * cli-guide.ts — DATA for the CLI usage guide page (f00053 S5).
  *
- * Documents how to drive the `mcpv` / `@delendai/core` CLI: the global
+ * Documents how to drive the `delendai` / `@delendai/core` CLI: the global
  * flags, the per-plugin command groups, and the common workflows. It is
  * DATA only (open/closed: documenting a new command group is a new entry,
  * never a code change), and the plugin command groups are DERIVED from
@@ -71,7 +71,7 @@ const GLOBAL_FLAGS: readonly ICliFlag[] = [
 	{
 		flag: '--config=<path>',
 		summary:
-			'Path to the mcp-vertex.config.json (autodetected at the workspace otherwise).',
+			'Path to the delendai.config.json (autodetected at the workspace otherwise).',
 	},
 	{
 		flag: '--agent-worktree[=true|false]',
@@ -139,7 +139,7 @@ const WORKFLOWS: readonly ICliWorkflow[] = [
 ];
 
 export const CLI_GUIDE: ICliGuide = {
-	binary: 'mcpv',
+	binary: 'delendai',
 	serverName: SERVER_NAME,
 	globalFlags: GLOBAL_FLAGS,
 	commandGroups: [...PLUGIN_COMMAND_GROUPS, ...CORE_COMMAND_GROUPS],

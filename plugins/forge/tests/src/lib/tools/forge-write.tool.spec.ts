@@ -5,7 +5,7 @@ import type { IRunExternalToolInput } from '@delendai/core/public';
 import {
 	buildForgeWriteToolRegistrations,
 	runForgeIssueCreate,
-	runForgeMcpVertexIssueCreate,
+	runForgeDelendaiIssueCreate,
 	runForgePrComment,
 	runForgePrCreate,
 } from '../../../../src/lib/tools/forge-write.tool';
@@ -21,7 +21,7 @@ const fakeExec: IForgeWriteExec = async (input: IRunExternalToolInput) => {
 		return {
 			ok: true,
 			code: 0,
-			stdout: 'git@github.com:CartagoGit/mcp-vertex.git\n',
+			stdout: 'git@github.com:CartagoGit/delendai.git\n',
 			stderr: '',
 			timedOut: false,
 			unavailable: false,
@@ -39,15 +39,14 @@ const fakeExec: IForgeWriteExec = async (input: IRunExternalToolInput) => {
 	}
 	if (input.tool.bin === 'gh' && input.args[0] === 'api') {
 		const path = input.args[1];
-		if (path === 'repos/CartagoGit/mcp-vertex/pulls') {
+		if (path === 'repos/CartagoGit/delendai/pulls') {
 			return {
 				ok: true,
 				code: 0,
 				stdout: JSON.stringify({
 					number: 10,
 					title: 'feat(f00121): forge plugin write surface (S2)',
-					html_url:
-						'https://github.com/CartagoGit/mcp-vertex/pull/10',
+					html_url: 'https://github.com/CartagoGit/delendai/pull/10',
 					draft: false,
 				}),
 				stderr: '',
@@ -55,13 +54,13 @@ const fakeExec: IForgeWriteExec = async (input: IRunExternalToolInput) => {
 				unavailable: false,
 			};
 		}
-		if (path === 'repos/CartagoGit/mcp-vertex/issues/10/comments') {
+		if (path === 'repos/CartagoGit/delendai/issues/10/comments') {
 			return {
 				ok: true,
 				code: 0,
 				stdout: JSON.stringify({
 					html_url:
-						'https://github.com/CartagoGit/mcp-vertex/pull/10#issuecomment-2',
+						'https://github.com/CartagoGit/delendai/pull/10#issuecomment-2',
 					body: 'hello',
 				}),
 				stderr: '',
@@ -82,7 +81,7 @@ const fakeExec: IForgeWriteExec = async (input: IRunExternalToolInput) => {
 					number: 42,
 					title: 'forge issue',
 					html_url:
-						'https://github.com/CartagoGit/mcp-vertex/issues/42',
+						'https://github.com/CartagoGit/delendai/issues/42',
 					labels: [{ name: 'triage' }],
 				}),
 				stderr: '',
@@ -132,7 +131,7 @@ describe('forge write tools', () => {
 			'pr_create',
 			'pr_comment',
 			'issue_create',
-			'mcp_vertex_issue_create',
+			'delendai_issue_create',
 		]);
 	});
 
@@ -203,7 +202,7 @@ describe('forge write tools', () => {
 		expect(body.data.issue.labels).toEqual(['triage']);
 	});
 
-	it('posts mcp-vertex issues to the canonical repository', async () => {
+	it('posts delendai issues to the canonical repository', async () => {
 		const calls: string[][] = [];
 		const exec: IForgeWriteExec = async (input) => {
 			calls.push([...input.args]);
@@ -219,7 +218,7 @@ describe('forge write tools', () => {
 					number: 99,
 					title: 'internal failure',
 					html_url:
-						'https://github.com/CartagoGit/mcp-vertex/issues/99',
+						'https://github.com/CartagoGit/delendai/issues/99',
 					labels: [{ name: 'bug' }],
 				}),
 				stderr: '',
@@ -227,7 +226,7 @@ describe('forge write tools', () => {
 				unavailable: false,
 			};
 		};
-		const result = await runForgeMcpVertexIssueCreate(
+		const result = await runForgeDelendaiIssueCreate(
 			{ title: 'internal failure', confirm: true },
 			{ ...options, forgeExec: exec },
 		);
@@ -237,7 +236,7 @@ describe('forge write tools', () => {
 		};
 		expect(body.ok).toBe(true);
 		expect(body.data.issue.url).toContain(
-			'https://github.com/CartagoGit/mcp-vertex/issues/99',
+			'https://github.com/CartagoGit/delendai/issues/99',
 		);
 		expect(calls).toHaveLength(1);
 		expect(calls[0]).toContain(`repos/${REPOSITORY_SLUG}/issues`);

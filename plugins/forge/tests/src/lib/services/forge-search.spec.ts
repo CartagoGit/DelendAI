@@ -29,19 +29,17 @@ const failRun = (stderr: string): IExternalToolRun => ({
 const githubExec =
 	(): IForgeSearchExec => async (input: IRunExternalToolInput) => {
 		if (input.tool.bin === 'git') {
-			return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			return okRun('git@github.com:CartagoGit/delendai.git\n');
 		}
 		if (input.tool.bin === 'gh' && input.args[0] === 'search') {
 			expect(input.args).toContain('code');
 			expect(input.args.join(' ')).toContain('language:ts');
-			expect(input.args.join(' ')).toContain(
-				'repo:CartagoGit/mcp-vertex',
-			);
+			expect(input.args.join(' ')).toContain('repo:CartagoGit/delendai');
 			return okRun(
 				JSON.stringify([
 					{
 						path: 'plugins/forge/src/index.ts',
-						repository: { fullName: 'CartagoGit/mcp-vertex' },
+						repository: { fullName: 'CartagoGit/delendai' },
 						textMatches: [
 							{ fragment: "definePlugin({ name: 'forge' })" },
 						],
@@ -57,7 +55,7 @@ const githubExec =
 const gitlabExec =
 	(): IForgeSearchExec => async (input: IRunExternalToolInput) => {
 		if (input.tool.bin === 'git') {
-			return okRun('git@gitlab.com:CartagoGit/mcp-vertex.git\n');
+			return okRun('git@gitlab.com:CartagoGit/delendai.git\n');
 		}
 		if (input.tool.bin === 'glab' && input.args[0] === 'search') {
 			expect(input.args).toContain('code');
@@ -66,7 +64,7 @@ const gitlabExec =
 					{
 						path: 'plugins/forge/src/index.ts',
 						project: {
-							path_with_namespace: 'CartagoGit/mcp-vertex',
+							path_with_namespace: 'CartagoGit/delendai',
 						},
 						data: "definePlugin({ name: 'forge' })",
 					},
@@ -85,7 +83,7 @@ describe('forge search service', () => {
 			{
 				query: 'definePlugin',
 				language: 'ts',
-				repo: 'CartagoGit/mcp-vertex',
+				repo: 'CartagoGit/delendai',
 				limit: 5,
 			},
 			githubExec(),
@@ -94,7 +92,7 @@ describe('forge search service', () => {
 		if (!result.ok) return;
 		expect(result.hits[0]).toEqual({
 			path: 'plugins/forge/src/index.ts',
-			repository: 'CartagoGit/mcp-vertex',
+			repository: 'CartagoGit/delendai',
 			fragment: "definePlugin({ name: 'forge' })",
 		});
 	});
@@ -120,7 +118,7 @@ describe('forge search service', () => {
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.provider).toBe('gitlab');
-		expect(result.hits[0]?.repository).toBe('CartagoGit/mcp-vertex');
+		expect(result.hits[0]?.repository).toBe('CartagoGit/delendai');
 		expect(result.hits[0]?.path).toBe('plugins/forge/src/index.ts');
 	});
 
@@ -128,7 +126,7 @@ describe('forge search service', () => {
 		const calls: string[][] = [];
 		const exec: IForgeSearchExec = async (input: IRunExternalToolInput) => {
 			if (input.tool.bin === 'git') {
-				return okRun('git@gitlab.com:CartagoGit/mcp-vertex.git\n');
+				return okRun('git@gitlab.com:CartagoGit/delendai.git\n');
 			}
 			if (input.tool.bin === 'glab' && input.args[0] === 'search') {
 				calls.push([...input.args]);
@@ -145,7 +143,7 @@ describe('forge search service', () => {
 	it('returns a structured failure when the forge call fails', async () => {
 		const exec: IForgeSearchExec = async (input: IRunExternalToolInput) => {
 			if (input.tool.bin === 'git') {
-				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+				return okRun('git@github.com:CartagoGit/delendai.git\n');
 			}
 			return failRun('gh search code failed');
 		};

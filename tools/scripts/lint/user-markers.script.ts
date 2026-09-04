@@ -3,7 +3,7 @@
  * user-markers.script.ts — proposal f00071 S7.
  *
  * CI lint that the host's declared close-markers (under
- * `plugins.status-marker.options.markers` in `mcp-vertex.config.json`)
+ * `plugins.status-marker.options.markers` in `delendai.config.json`)
  * collide cleanly with the built-ins. A host that adds a `REVIEW` marker
  * but reuses a built-in emoji (or disables the floor state `HECHO`) would
  * otherwise only discover the misconfiguration when the plugin throws at
@@ -43,7 +43,7 @@ export interface IUserMarkersLintResult {
 }
 
 /**
- * Lint a parsed `mcp-vertex.config.json` object. Pure: no I/O, so tests
+ * Lint a parsed `delendai.config.json` object. Pure: no I/O, so tests
  * can pass a literal. Reads only `plugins.status-marker.options.markers`.
  */
 export const lintUserMarkers = (config: unknown): IUserMarkersLintResult => {
@@ -108,11 +108,11 @@ const isMainModule = (): boolean => {
 if (isMainModule()) {
 	void (async () => {
 		const root = repoRoot();
-		const configPath = join(root, 'mcp-vertex.config.json');
+		const configPath = join(root, 'delendai.config.json');
 		const raw = await readFile(configPath, 'utf8').catch(() => undefined);
 		if (raw === undefined) {
 			console.log(
-				'✓ user-markers: no mcp-vertex.config.json — nothing to lint.',
+				'✓ user-markers: no delendai.config.json — nothing to lint.',
 			);
 			return;
 		}
@@ -121,7 +121,7 @@ if (isMainModule()) {
 			config = JSON.parse(raw);
 		} catch (err) {
 			console.error(
-				`✖ user-markers: mcp-vertex.config.json is not valid JSON: ${String(err)}`,
+				`✖ user-markers: delendai.config.json is not valid JSON: ${String(err)}`,
 			);
 			process.exit(1);
 		}

@@ -56,7 +56,7 @@ describe('security group', () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_security_security_secrets',
+			tool: 'delendai_security_security_secrets',
 			args: { scope: 'tracked', includeTests: true },
 		});
 	});
@@ -65,7 +65,7 @@ describe('security group', () => {
 		const { ctx, calls } = buildStubContext();
 		await find('security audit').run([], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_security_security_audit',
+			tool: 'delendai_security_security_audit',
 			args: {},
 		});
 	});

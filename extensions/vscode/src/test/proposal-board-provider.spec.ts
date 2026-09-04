@@ -3,7 +3,7 @@
  *
  * Pins the evolved `ProposalBoardProvider`: header chips, status-group roots
  * built from the snapshot, proposal leaves that route to
- * `mcp-vertex.openProposal`, filters that narrow WITHOUT refetching, and a
+ * `delendai.openProposal`, filters that narrow WITHOUT refetching, and a
  * recoverable banner (never a crash) for malformed board payloads.
  */
 import { describe, expect, it, vi } from 'vitest';
@@ -26,7 +26,7 @@ const clientFor = (tools: IStubTools, onCall?: (name: string) => void) =>
 	McpStdioClient.fromTransport({
 		async callTool(input) {
 			onCall?.(input.name);
-			const suffix = input.name.replace(/^mcp-vertex_/, '');
+			const suffix = input.name.replace(/^delendai_/, '');
 			const map: Record<string, unknown> = {
 				proposals_proposal_board: tools.board ?? { proposals: [] },
 				proposals_compact_status: tools.compact ?? {},
@@ -95,7 +95,7 @@ describe('ProposalBoardProvider (f00097 S2)', () => {
 			label: 'f2',
 			description: 'in-progress • 1 slices',
 			tooltip: '1 claimable slices',
-			command: { command: 'mcp-vertex.openProposal', arguments: ['f2'] },
+			command: { command: 'delendai.openProposal', arguments: ['f2'] },
 		});
 	});
 
@@ -155,7 +155,7 @@ describe('ProposalBoardProvider (f00097 S2)', () => {
 		const roots = await provider.getChildren();
 		const banner = roots.find((n) => n.nodeType === 'banner');
 		expect(banner).toBeDefined();
-		expect(banner?.command?.command).toBe('mcp-vertex.proposals.copyError');
+		expect(banner?.command?.command).toBe('delendai.proposals.copyError');
 		expect(banner?.command?.arguments?.[0]).toContain('nope');
 		// Still no crash and no groups.
 		expect(groups(roots)).toHaveLength(0);

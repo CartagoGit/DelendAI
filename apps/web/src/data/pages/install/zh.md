@@ -1,13 +1,13 @@
 ---
 title: 安装与运行
-description: 安装 mcp-vertex，把它接到你的 IDE，选择一个预设，并在开始工作前验证服务器。
+description: 安装 delendai，把它接到你的 IDE，选择一个预设，并在开始工作前验证服务器。
 order: 1
 navLabel: 安装
 ---
 
 # 安装与运行
 
-把 mcp-vertex 接入你的工作流，让 MCP 客户端指向对应二进制，并在第一次会话前先验证解析出的插件集合。
+把 delendai 接入你的工作流，让 MCP 客户端指向对应二进制，并在第一次会话前先验证解析出的插件集合。
 
 ## 选择你的包管理器
 
@@ -42,7 +42,7 @@ yarn dlx @delendai/cli validate
 
 ### bun
 
-bun 把 runtime 和包管理器合在一个工具里，而 mcp-vertex 本身就是用 bun 构建的，所以如果机器上已经有 bun，这就是最直接的路径。
+bun 把 runtime 和包管理器合在一个工具里，而 delendai 本身就是用 bun 构建的，所以如果机器上已经有 bun，这就是最直接的路径。
 
 ```bash
 bunx @delendai/cli init
@@ -70,13 +70,13 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "servers": {
-    "mcp-vertex": {
+    "delendai": {
       "type": "stdio",
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -96,12 +96,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -121,12 +121,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -146,12 +146,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -171,12 +171,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -196,12 +196,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -221,12 +221,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "context_servers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -326,4 +326,4 @@ Deno 在第一次运行时会解析并验证 npm 包。后续执行会复用 `~/
 
 ### 我可以同时运行多个预设吗？
 
-不可以。一个服务器实例一次只解析一个预设。如果不同项目需要不同的插件集合，就在每个项目里放一个专用的 mcp-vertex.config.json，让 loader 按 workspace 分别解析。
+不可以。一个服务器实例一次只解析一个预设。如果不同项目需要不同的插件集合，就在每个项目里放一个专用的 delendai.config.json，让 loader 按 workspace 分别解析。

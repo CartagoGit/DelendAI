@@ -4,19 +4,19 @@
  *
  * r00029 (Track C / §10): pure types only. No runtime, no Node.
  * The discriminated `ok` flag is the canonical pattern across the
- * mcp-vertex surface — see `primitives.ts` for the generic
+ * delendai surface — see `primitives.ts` for the generic
  * `OperationResult`.
  */
 
 import type { IOperationError } from './primitives';
 
-/** Envelope returned by every mcp-vertex tool on success. */
+/** Envelope returned by every delendai tool on success. */
 export interface IToolOkEnvelope<T = unknown> {
 	readonly ok: true;
 	readonly value: T;
 }
 
-/** Envelope returned by every mcp-vertex tool on failure. */
+/** Envelope returned by every delendai tool on failure. */
 export interface IToolErrorEnvelope {
 	readonly ok: false;
 	readonly error: IOperationError;

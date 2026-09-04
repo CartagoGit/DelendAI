@@ -2,7 +2,7 @@
  * proposal-narrative-patterns.spec.ts — r00003 S7 (F2, S + O + D).
  *
  * The host-specific narrative catalogue (Spanish audit phrasings, emoji
- * sections, `copilot · minimax-m3`, `mcp-vertex`, …) used to live inline
+ * sections, `copilot · minimax-m3`, `delendai`, …) used to live inline
  * in `proposal-scaffold-linter.ts`. It now lives behind an injectable
  * `INarrativePatternProvider`. These specs pin:
  *
@@ -58,7 +58,7 @@ const narrativeProposal = [
 	'',
 ].join('\n');
 const fixturePath =
-	'docs/mcp-vertex/proposals/ready/r99999-narrative-headings-fixture.md';
+	'docs/delendai/proposals/ready/r99999-narrative-headings-fixture.md';
 
 describe('narrative pattern providers', async () => {
 	it('default provider carries the historical audit catalogue', async () => {

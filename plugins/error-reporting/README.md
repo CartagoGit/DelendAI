@@ -2,10 +2,10 @@
 
 Automatic, intrinsic error reporting for [`@delendai/core`](../../packages/core).
 
-When a tool call fails and the failure **originates inside mcp-vertex itself**
+When a tool call fails and the failure **originates inside delendai itself**
 (typed internal error or an `@delendai/*` frame is present), the plugin
 opens a de-duplicated GitHub issue on the target repository using a safe DTO
-built only from MCP Vertex-owned metadata.
+built only from DelendAI-owned metadata.
 
 ## Status
 
@@ -17,7 +17,7 @@ built only from MCP Vertex-owned metadata.
 - **Intrinsic & disabled by default.** Loaded with the standard preset; set
   `plugins.error-reporting.options.enabled = true` to enable dispatch.
 - **External project data is non-reportable by construction.** The reporter
-  accepts only mcp-vertex-internal failures backed by typed internal errors
+  accepts only delendai-internal failures backed by typed internal errors
   or `@delendai/*` frame evidence. A host project's own errors are never
   sent upstream, and there is no runtime flag that re-enables them.
 - **Privacy by construction.** Raw error messages, raw stack traces, tool
@@ -33,8 +33,8 @@ built only from MCP Vertex-owned metadata.
 
 ## Privacy policy
 
-This plugin reports only MCP Vertex-owned diagnostic data for failures that
-originate inside mcp-vertex itself. It does not collect or transmit host
+This plugin reports only DelendAI-owned diagnostic data for failures that
+originate inside delendai itself. It does not collect or transmit host
 project context, source files, prompts, docs, repository names, branches,
 workspace paths, cwd, tool args, tool outputs, raw exception messages, raw
 stacks, environment variables or request headers from the consuming project.
@@ -53,8 +53,8 @@ not forward project-specific headers or environment variables.
 External project data is **non-reportable by construction**.
 
 This is not a configurable option. The reporter accepts only
-`ISafeMcpVertexReport` DTOs whose provenance has been resolved through
-MCP Vertex-owned metadata and whose frames have been normalized to
+`ISafeDelendaiReport` DTOs whose provenance has been resolved through
+DelendAI-owned metadata and whose frames have been normalized to
 package-relative `@delendai/*` paths. There is no API surface, schema
 field, runtime option or feature flag that re-enables reporting of external
 project data.
@@ -70,14 +70,14 @@ Each auto-created issue carries:
 
 Exact transmitted fields:
 
-- Safe DTO fields: `reporterVersion`, `mcpVertexVersion`, `packageId`,
+- Safe DTO fields: `reporterVersion`, `delendaiVersion`, `packageId`,
   `safeToolId`, `toolOwner`, `toolCategory`, `errorCode`,
   `failureClass`, `classification`, `fingerprint`, `mcpFrames`,
   `syntheticExample`, `environmentClass`.
-- `mcpVertexVersion` is sourced from the published `@delendai/core`
+- `delendaiVersion` is sourced from the published `@delendai/core`
   package version, not the monorepo root `package.json`.
 - Issue-body table fields: `packageId`, `reporterVersion`,
-  `mcpVertexVersion`, `classification`, `failureClass`, `fingerprint`,
+  `delendaiVersion`, `classification`, `failureClass`, `fingerprint`,
   `safeToolId`, `toolOwner`, `toolCategory`, `errorCode`,
   `environmentClass`.
 - Issue-body sections: `mcpFrames`, `syntheticExample`, the serialized safe
@@ -101,7 +101,7 @@ Inspect the current state with the `<prefix>_report_status` tool.
 | ------------------- | ---------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
 | `enabled`           | `boolean`  | `false`                    | Master switch. `true` explicitly enables reporting.                                             |
 | `targetRepo`        | `string`   | `CartagoGit/delendai`    | Deprecated and ignored. The destination is fixed and cannot be changed by the consumer project. |
-| `labels`            | `string[]` | `["auto-reported", "bug"]` | Deprecated and ignored. MCP Vertex applies only its canonical labels.                           |
+| `labels`            | `string[]` | `["auto-reported", "bug"]` | Deprecated and ignored. DelendAI applies only its canonical labels.                           |
 | `dedupeWindowHours` | `number`   | `24`                       | De-duplication window in hours.                                                                 |
 
 ## Removed option
@@ -115,7 +115,7 @@ Inspect the current state with the `<prefix>_report_status` tool.
 - The plugin observes tool-call failures through the same lifecycle hook the
   `logs` plugin uses (`onToolCall` with an `error` argument). No polling, no
   separate process.
-- The network seam accepts only `ISafeMcpVertexReport`; production uses the
+- The network seam accepts only `ISafeDelendaiReport`; production uses the
   shared `runExternalTool` runner wrapping the host's authenticated `gh` CLI —
   the plugin never stores or prompts for a PAT.
 - The read-only `<prefix>_report_status` tool exposes the fixed destination,

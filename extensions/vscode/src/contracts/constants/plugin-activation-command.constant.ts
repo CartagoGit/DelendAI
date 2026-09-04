@@ -1,1 +1,1 @@
-export const PLUGIN_ACTIVATION_COMMAND = 'mcp-vertex.plugins.activation';
+export const PLUGIN_ACTIVATION_COMMAND = 'delendai.plugins.activation';

@@ -27,7 +27,7 @@ describe('drift_check tool', async () => {
 	let root: string;
 
 	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'mcp-vertex-drift-tool-'));
+		root = mkdtempSync(join(tmpdir(), 'delendai-drift-tool-'));
 	});
 
 	afterEach(() => {
@@ -43,7 +43,7 @@ describe('drift_check tool', async () => {
 		const tools = buildBootstrapToolRegistrations({
 			workspace: createWorkspacePathProvider(root),
 			namespacePrefix: 'app',
-			cacheDir: '.cache/mcp-vertex',
+			cacheDir: '.cache/delendai',
 		});
 		const drift = tools.find((t) => t.id === 'drift_check');
 		expect(drift).toBeDefined();
@@ -59,7 +59,7 @@ describe('drift_check tool', async () => {
 		const tools = buildBootstrapToolRegistrations({
 			workspace: createWorkspacePathProvider(root),
 			namespacePrefix: 'app',
-			cacheDir: '.cache/mcp-vertex',
+			cacheDir: '.cache/delendai',
 		});
 		const drift = tools.find((t) => t.id === 'drift_check')!;
 		await callTool(drift); // first call persists
@@ -75,7 +75,7 @@ describe('drift_check tool', async () => {
 		const tools = buildBootstrapToolRegistrations({
 			workspace: createWorkspacePathProvider(root),
 			namespacePrefix: 'app',
-			cacheDir: '.cache/mcp-vertex',
+			cacheDir: '.cache/delendai',
 		});
 		const drift = tools.find((t) => t.id === 'drift_check')!;
 		await callTool(drift); // baseline
@@ -99,7 +99,7 @@ describe('drift_check tool', async () => {
 		const tools = buildBootstrapToolRegistrations({
 			workspace: createWorkspacePathProvider(root),
 			namespacePrefix: 'app',
-			cacheDir: '.cache/mcp-vertex',
+			cacheDir: '.cache/delendai',
 		});
 		const drift = tools.find((t) => t.id === 'drift_check')!;
 		await callTool(drift, { persist: false });
@@ -114,7 +114,7 @@ describe('drift_check tool', async () => {
 		const tools = buildBootstrapToolRegistrations({
 			workspace: createWorkspacePathProvider(root),
 			namespacePrefix: 'app',
-			cacheDir: '.cache/mcp-vertex',
+			cacheDir: '.cache/delendai',
 		});
 		const ids = tools.map((t) => t.id);
 		expect(ids).toContain('drift_check');

@@ -5,17 +5,17 @@
  * terminal, without an MCP client.
  *
  * Tools mapped:
- *   - `mcp-vertex_auto-agent-selector_auto_status`    (no args)
- *   - `mcp-vertex_auto-agent-selector_auto_recommend` ({ costQualityTradeoff?, pin? })
- *   - `mcp-vertex_auto-agent-selector_auto_record`    ({ providerId, success, taskType? })
+ *   - `delendai_auto-agent-selector_auto_status`    (no args)
+ *   - `delendai_auto-agent-selector_auto_recommend` ({ costQualityTradeoff?, pin? })
+ *   - `delendai_auto-agent-selector_auto_record`    ({ providerId, success, taskType? })
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, request, scalarArg } from './group-helpers';
 
-const STATUS = 'mcp-vertex_auto-agent-selector_auto_status';
-const RECOMMEND = 'mcp-vertex_auto-agent-selector_auto_recommend';
-const RECORD = 'mcp-vertex_auto-agent-selector_auto_record';
+const STATUS = 'delendai_auto-agent-selector_auto_status';
+const RECOMMEND = 'delendai_auto-agent-selector_auto_recommend';
+const RECORD = 'delendai_auto-agent-selector_auto_record';
 
 const agentsStatusCommand: ICliCommand = {
 	name: 'agents status',
@@ -105,7 +105,7 @@ const agentsRunCommand: ICliCommand = {
 		return data(
 			await request(
 				ctx,
-				'mcp-vertex_auto-agent-selector_auto_run',
+				'delendai_auto-agent-selector_auto_run',
 				payload,
 			),
 		);

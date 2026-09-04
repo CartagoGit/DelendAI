@@ -2,7 +2,7 @@
 	"name": "@delendai/audit",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with network/write effects and optional proposal scaffolding. Load with mcp-vertex --plugins=audit.",
+	"description": "Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with network/write effects and optional proposal scaffolding. Load with delendai --plugins=audit.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

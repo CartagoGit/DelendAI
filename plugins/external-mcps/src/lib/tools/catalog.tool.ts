@@ -118,7 +118,7 @@ export const buildCatalogToolRegistration = (
 	tags: ['external-mcps', 'lazy', 'catalog'],
 	summary:
 		'Search the external MCP server catalog (compact id+category+one-liner rows; detail per id).',
-	descriptionKey: 'mcp-vertex_external-mcps_catalog',
+	descriptionKey: 'delendai_external-mcps_catalog',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_catalog`,

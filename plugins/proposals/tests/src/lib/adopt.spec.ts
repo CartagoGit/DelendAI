@@ -30,7 +30,7 @@ describe('analyzeProposals (adoption)', async () => {
 		];
 		// x00209: hasIndex is the caller-observed cache index (3rd arg),
 		// not a top-level index.json inside the folder.
-		const r = analyzeProposals('docs/mcp-vertex/proposals', entries, true);
+		const r = analyzeProposals('docs/delendai/proposals', entries, true);
 		expect(r.scan.hasIndex).toBe(true);
 		expect(r.scan.hasReadme).toBe(true);
 		expect(r.scan.proposals.map((p) => [p.id, p.kind])).toEqual([

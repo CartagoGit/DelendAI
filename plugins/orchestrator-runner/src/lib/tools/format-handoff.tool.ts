@@ -53,7 +53,7 @@ export const buildFormatHandoffRegistration = (
 	tags: ['orchestrator-runner', 'lazy', 'handoff'],
 	summary:
 		'Format a routing decision into a ready-to-run CLI command or curl template (no spend).',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_format_handoff',
+	descriptionKey: 'delendai_orchestrator-runner_format_handoff',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_format_handoff`,

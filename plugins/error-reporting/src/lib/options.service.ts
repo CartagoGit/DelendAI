@@ -21,7 +21,7 @@ const LEGACY_INTERNAL_ONLY_MESSAGE =
 	'"internalOnly" is deprecated and ignored. External project data is non-reportable by construction.';
 
 const FIXED_TRANSPORT_POLICY_MESSAGE =
-	'"targetRepo" and "labels" are fixed by MCP Vertex and ignored. Consumer project configuration cannot redirect or identify issues.';
+	'"targetRepo" and "labels" are fixed by DelendAI and ignored. Consumer project configuration cannot redirect or identify issues.';
 
 const hasLegacyInternalOnly = (
 	raw: Readonly<Record<string, unknown>>,
@@ -46,7 +46,7 @@ export const resolveOptions = (
 		});
 	}
 	return {
-		// On by default. mcp-vertex can only be fixed for an adopter if
+		// On by default. delendai can only be fixed for an adopter if
 		// its own failures are visible to its maintainers, and the report
 		// is a bug signature plus `@delendai/*` frames — never project
 		// data (see `privacy-validator.helper.ts`, which refuses anything
@@ -54,7 +54,7 @@ export const resolveOptions = (
 		// exact line to set `false`, so the default is announced, not
 		// assumed.
 		enabled: data.enabled ?? true,
-		// The destination and labels are MCP Vertex-owned transport policy.
+		// The destination and labels are DelendAI-owned transport policy.
 		// Consumer-project configuration must never redirect or identify the
 		// issue, even when legacy options are present.
 		targetRepo: DEFAULT_TARGET_REPO,

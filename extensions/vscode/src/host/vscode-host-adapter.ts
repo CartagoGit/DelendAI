@@ -104,10 +104,7 @@ class VscodeWebviewPanel implements IWebviewPanel {
 				try {
 					cb();
 				} catch (e) {
-					console.error(
-						'[mcp-vertex] onDidDispose callback threw:',
-						e,
-					);
+					console.error('[delendai] onDidDispose callback threw:', e);
 				}
 			}
 			this.disposeListeners.clear();
@@ -138,7 +135,7 @@ class VscodeWebviewPanel implements IWebviewPanel {
 				const sub = owner.panel.webview.onDidReceiveMessage((msg) => {
 					void Promise.resolve(cb(msg)).catch((e: unknown) => {
 						console.error(
-							'[mcp-vertex] onDidReceiveMessage handler threw:',
+							'[delendai] onDidReceiveMessage handler threw:',
 							e,
 						);
 					});
@@ -193,7 +190,7 @@ class VscodeWebviewViewPanel implements IWebviewPanel {
 						void Promise.resolve(cb(msg)).catch(
 							(error: unknown) => {
 								console.error(
-									'[mcp-vertex] KPI webview message handler threw:',
+									'[delendai] KPI webview message handler threw:',
 									error,
 								);
 							},
@@ -397,7 +394,7 @@ export const createVscodeHostAdapter = (
 				return qp;
 			});
 			const result = await vscode.window.showQuickPick(picks, {
-				placeHolder: 'mcp-vertex',
+				placeHolder: 'delendai',
 			});
 			if (result === undefined) return undefined;
 			// Match by id (now in `description`); fall back to label so

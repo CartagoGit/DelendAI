@@ -103,10 +103,7 @@ import { MemoryTreeDataProvider } from './providers/memory-tree-data-provider';
 import { ProposalBoardProvider } from './providers/proposal-board-provider';
 import { createProposalFilterStore } from './host/proposal-filter-store';
 import { ProposalsSnapshotSource } from './lib/proposals-snapshot';
-import {
-	type IStatusBarItem,
-	McpVertexStatusBar,
-} from './providers/status-bar';
+import { type IStatusBarItem, DelendaiStatusBar } from './providers/status-bar';
 import {
 	createRuntimeHandle,
 	type IRuntimeHandle,
@@ -156,14 +153,14 @@ const connectWithTimeout = async (
 	}
 };
 
-export const CLIENT_STATE_KEY = 'mcp-vertex.client';
-export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
-export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
-export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
-export const PROPOSALS_VIEW_ID = 'mcp-vertex.proposals';
-export const KPI_VIEW_ID = 'mcp-vertex.kpis';
-export const DASHBOARD_VIEW_ID = 'mcp-vertex.dashboard';
-export const OPEN_RUNTIME_LOG_COMMAND = 'mcp-vertex.openRuntimeLog';
+export const CLIENT_STATE_KEY = 'delendai.client';
+export const SHOW_OVERVIEW_COMMAND = 'delendai.showOverview';
+export const TOOLS_VIEW_ID = 'delendai.tools';
+export const MEMORY_VIEW_ID = 'delendai.memory';
+export const PROPOSALS_VIEW_ID = 'delendai.proposals';
+export const KPI_VIEW_ID = 'delendai.kpis';
+export const DASHBOARD_VIEW_ID = 'delendai.dashboard';
+export const OPEN_RUNTIME_LOG_COMMAND = 'delendai.openRuntimeLog';
 export { OPEN_TOOL_DETAIL_COMMAND };
 export { OPEN_AUTO_AGENT_SELECTOR_COMMAND };
 
@@ -327,15 +324,15 @@ const createResilientClient = (
 			]);
 			const prefix = namespacePrefix?.trim()
 				? namespacePrefix.trim().replace(/_?$/, '_')
-				: 'mcp-vertex_';
+				: 'delendai_';
 			const suffix = input.name.startsWith(prefix)
 				? input.name.slice(prefix.length)
 				: undefined;
 			if (suffix !== undefined && !directTools.has(suffix)) {
 				const router = `${prefix}vertex`;
 				// Build a candidate ladder so calls like
-				//   mcp-vertex_project_kpis      (single underscore)
-				//   mcp-vertex_project_kpis_now  (two underscores)
+				//   delendai_project_kpis      (single underscore)
+				//   delendai_project_kpis_now  (two underscores)
 				// all reach the right domain/action. The router stores
 				// tools under `<prefix>_<plugin>_<stem>` where `<plugin>`
 				// uses a hyphen (e.g. project-kpis). So:
@@ -506,9 +503,9 @@ export const activate = async (
 		| ((client: McpStdioClient) => Promise<void>)
 		| undefined;
 	handle.register(
-		'command:mcp-vertex.startServerUntrusted',
+		'command:delendai.startServerUntrusted',
 		vscode.commands.registerCommand(
-			'mcp-vertex.startServerUntrusted',
+			'delendai.startServerUntrusted',
 			async () => {
 				try {
 					const { registerStartServerUntrusted } = await import(
@@ -530,9 +527,9 @@ export const activate = async (
 		),
 	);
 	// S2: resolve the host's tool-name namespace from
-	// `mcp-vertex.server.prefix` once, and thread it into every service so
+	// `delendai.server.prefix` once, and thread it into every service so
 	// a `--prefix=acme` deployment calls `acme_*` tools instead of silently
-	// failing. `undefined` keeps the default `mcp-vertex_` behaviour.
+	// failing. `undefined` keeps the default `delendai_` behaviour.
 	const namespacePrefix = resolveNamespacePrefix(vscode);
 	// SEC-001 S1: refuse to spawn the stdio child when the
 	// workspace is not trusted. The UI/services still register so the user
@@ -543,12 +540,12 @@ export const activate = async (
 			? true
 			: (vscode.workspace?.isTrusted ?? true);
 	const startupReportChannel =
-		vscode.window.createOutputChannel?.('MCP Vertex');
+		vscode.window.createOutputChannel?.('DelendAI');
 	if (startupReportChannel !== undefined) {
 		handle.register('startup-report-channel', startupReportChannel);
 	}
 	const runtimeChannel =
-		vscode.window.createOutputChannel?.('MCP Vertex Runtime');
+		vscode.window.createOutputChannel?.('DelendAI Runtime');
 	if (runtimeChannel !== undefined) {
 		handle.register('runtime-channel', runtimeChannel);
 	}
@@ -586,7 +583,7 @@ export const activate = async (
 		initialClient = disconnectedClient(
 			configuredLaunch === undefined
 				? new Error(
-						'No MCP server launch is configured for the mcp-vertex extension',
+						'No MCP server launch is configured for the delendai extension',
 					)
 				: new Error('MCP server is connecting'),
 		);
@@ -617,7 +614,7 @@ export const activate = async (
 	// register disposables that depend on it.
 	setRuntimeHandle(handle);
 	// Fix #1 (real bug): close the stdio transport on deactivation so the
-	// `bun run mcp-vertex` child process is not orphaned on every window
+	// `bun run delendai` child process is not orphaned on every window
 	// reload. Before this, the child leaked because `client.close()` was
 	// never called from `deactivate()` and VS Code does not dispose
 	// `IExtensionContext.subscriptions` automatically.
@@ -665,7 +662,7 @@ export const activate = async (
 		const message = error instanceof Error ? error.message : String(error);
 		runtimeChannel?.append(`Dashboard registration failed: ${message}\n`);
 		await vscode.window.showErrorMessage?.(
-			`MCP Vertex dashboard could not be registered: ${message}`,
+			`DelendAI dashboard could not be registered: ${message}`,
 		);
 	});
 	if (runtimeChannel !== undefined) {
@@ -676,7 +673,7 @@ export const activate = async (
 				join(
 					workspaceRoot,
 					'.cache',
-					'mcp-vertex',
+					'delendai',
 					'runtime',
 					'events.jsonl',
 				),
@@ -691,7 +688,7 @@ export const activate = async (
 		vscode.commands.registerCommand(OPEN_RUNTIME_LOG_COMMAND, () =>
 			runtimeChannel === undefined
 				? vscode.window.showInformationMessage?.(
-						'MCP Vertex runtime log is unavailable in this host.',
+						'DelendAI runtime log is unavailable in this host.',
 					)
 				: runtimeChannel.show?.(true),
 		),
@@ -766,7 +763,7 @@ export const activate = async (
 	// registered. A slow MCP overview must not prevent the workbench from
 	// attaching the providers declared by the extension manifest.
 	if (statusBarItem !== undefined) {
-		const statusBar = new McpVertexStatusBar(
+		const statusBar = new DelendaiStatusBar(
 			statusBarItem,
 			overview,
 			client,
@@ -797,7 +794,7 @@ export const activate = async (
 	let watcher: IFileSystemWatcher | undefined;
 	try {
 		watcher = vscode.workspace?.createFileSystemWatcher?.(
-			'**/mcp-vertex.config.json',
+			'**/delendai.config.json',
 		);
 	} catch {
 		watcher = undefined;
@@ -859,7 +856,7 @@ export const activate = async (
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
 	// S1: VSCode Agent Timeline view. Reads
-	// `.vscode/mcp-vertex/timeline.json` (written by the core
+	// `.vscode/delendai/timeline.json` (written by the core
 	// `TimelineBuffer`) and renders a vertical timeline of
 	// claim/activate/change/test/cost/commit/close events.
 	track(
@@ -926,7 +923,7 @@ export const activate = async (
 	};
 	track(registerExternalMcpsAckCommand(externalMcpsAckDeps));
 	// Fix #7: `openSettings` renders a webview that posts messages to
-	// `mcp-vertex.saveSettings` / `mcp-vertex.resetSettings`. Those
+	// `delendai.saveSettings` / `delendai.resetSettings`. Those
 	// handlers were never registered, so changes the user made in the
 	// webview were silently dropped. We now wire them to the same
 	// `SettingsService` + `ISettingsStore` used by `openSettings`.
@@ -996,7 +993,7 @@ export const resolveServerCommand = async (
 	{ command: string; args: readonly string[]; cwd?: string } | undefined
 > => {
 	const root = vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath;
-	const config = vscode.workspace?.getConfiguration?.('mcp-vertex.server');
+	const config = vscode.workspace?.getConfiguration?.('delendai.server');
 	const command = config?.get<string>('command');
 	const rawArgs = config?.get<unknown>('args');
 	const configCwd = config?.get<string>('cwd');
@@ -1022,7 +1019,7 @@ export const resolveServerCommand = async (
 			resolvedCwd = discovered.cwd;
 		} else if (await hasProjectConfig(root)) {
 			resolvedCommand = 'bun';
-			args = ['run', 'mcp-vertex'];
+			args = ['run', 'delendai'];
 		}
 	}
 	if (
@@ -1058,7 +1055,7 @@ const readWorkspaceMcpLaunch = async (
 			readonly mcpServers?: Record<string, unknown>;
 			readonly servers?: Record<string, unknown>;
 		};
-		const entry = (raw.mcpServers ?? raw.servers)?.['mcp-vertex'];
+		const entry = (raw.mcpServers ?? raw.servers)?.['delendai'];
 		if (entry === null || typeof entry !== 'object') return undefined;
 		const value = entry as {
 			readonly command?: unknown;
@@ -1083,7 +1080,7 @@ const readWorkspaceMcpLaunch = async (
 
 const hasProjectConfig = async (root: string): Promise<boolean> => {
 	try {
-		await readFile(join(root, 'mcp-vertex.config.json'), 'utf8');
+		await readFile(join(root, 'delendai.config.json'), 'utf8');
 		return true;
 	} catch {
 		return false;
@@ -1091,17 +1088,17 @@ const hasProjectConfig = async (root: string): Promise<boolean> => {
 };
 
 /**
- * Read `mcp-vertex.server.prefix` from the workspace configuration
+ * Read `delendai.server.prefix` from the workspace configuration
  * (f00081 S2). This is the host's tool-name namespace — the same value
  * passed to the server's `--prefix` flag. When unset, the services fall
- * back to the default `mcp-vertex_` prefix, so existing deployments are
+ * back to the default `delendai_` prefix, so existing deployments are
  * unaffected. Returns `undefined` (not the literal default) so each
- * service applies its own `prefix ?? 'mcp-vertex_'` default.
+ * service applies its own `prefix ?? 'delendai_'` default.
  */
 export const resolveNamespacePrefix = (
 	vscode: IVscodeApi,
 ): string | undefined => {
-	const config = vscode.workspace?.getConfiguration?.('mcp-vertex.server');
+	const config = vscode.workspace?.getConfiguration?.('delendai.server');
 	const prefix = config?.get<string>('prefix');
 	return typeof prefix === 'string' && prefix.trim().length > 0
 		? prefix.trim()
@@ -1116,7 +1113,7 @@ export const createDefaultClient = async (
 	const launch = await resolveServerCommand(api);
 	if (launch === undefined) {
 		throw new Error(
-			'Configure mcp-vertex.server.command and mcp-vertex.server.args before starting the MCP server.',
+			'Configure delendai.server.command and delendai.server.args before starting the MCP server.',
 		);
 	}
 	const { command, args, cwd } = launch;
@@ -1136,7 +1133,7 @@ export const createDefaultClient = async (
 export const renderOverviewHtml = (overview: IOverview): string => {
 	const toolCount = overview.tools.length;
 	const pluginCount = overview.plugins.length;
-	return renderJsonHtml('mcp-vertex Overview', {
+	return renderJsonHtml('delendai Overview', {
 		summary: `${pluginCount} plugins · ${toolCount} tools`,
 		overview,
 	});
@@ -1159,7 +1156,7 @@ const registerDevelopmentAutoReload = (
 	track: (disposable: IDisposable) => IDisposable,
 ): void => {
 	const enabled = vscode.workspace
-		?.getConfiguration?.('mcp-vertex')
+		?.getConfiguration?.('delendai')
 		?.get<boolean>('development.autoReload', false);
 	const extensionPath = context.extensionPath;
 	if (enabled !== true || extensionPath === undefined) return;
@@ -1217,7 +1214,7 @@ const registerDashboardSurfaces = async (
 			// Keep the canonical dashboard registrable even when an optional
 			// host adapter import fails during extension-host startup.
 			void vscode.window.showErrorMessage?.(
-				`MCP Vertex host adapter unavailable: ${error instanceof Error ? error.message : String(error)}`,
+				`DelendAI host adapter unavailable: ${error instanceof Error ? error.message : String(error)}`,
 			);
 			host = createFakeHostFromVscode(vscode);
 		}

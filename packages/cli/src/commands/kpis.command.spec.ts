@@ -47,7 +47,7 @@ const snapshot = {
 		},
 		next: [
 			{
-				tool: 'mcp-vertex_quality_run_quality',
+				tool: 'delendai_quality_run_quality',
 				reason: 'Run the quality gate for fresh evidence.',
 			},
 		],
@@ -364,7 +364,7 @@ const buildStubContext = (): ICliCommandContext => ({
 		plugins: [],
 	},
 	request: async <TOut>(tool: string): Promise<TOut> => {
-		if (tool !== 'mcp-vertex_project_kpis') {
+		if (tool !== 'delendai_project_kpis') {
 			throw new Error(`unexpected tool: ${tool}`);
 		}
 		return snapshot as TOut;

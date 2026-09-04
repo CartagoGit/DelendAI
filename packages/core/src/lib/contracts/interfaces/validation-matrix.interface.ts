@@ -1,5 +1,5 @@
 /**
- * The host's quality-gate commands, grouped by scope. mcp-vertex tools
+ * The host's quality-gate commands, grouped by scope. delendai tools
  * (e.g. run-quality engines, once migrated) execute these commands
  * verbatim instead of hardcoding `bun run ...` invocations.
  */

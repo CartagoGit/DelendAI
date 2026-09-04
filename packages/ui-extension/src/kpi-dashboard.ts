@@ -161,17 +161,17 @@ body {
 	background: var(--vscode-editor-background);
 }
 
-.mcpv-kpi-dashboard {
+.delendai-kpi-dashboard {
 	padding: 1rem;
 	display: grid;
 	gap: 1rem;
 }
 
-.mcpv-kpi-dashboard .mcpv-header {
+.delendai-kpi-dashboard .delendai-header {
 	margin-bottom: 0;
 }
 
-.mcpv-kpi-toolbar {
+.delendai-kpi-toolbar {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
@@ -183,14 +183,14 @@ body {
 	background: var(--vscode-sideBar-background, var(--vscode-editor-background));
 }
 
-.mcpv-kpi-toolbar__group {
+.delendai-kpi-toolbar__group {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.5rem;
 	align-items: center;
 }
 
-.mcpv-kpi-button {
+.delendai-kpi-button {
 	border: 1px solid var(--vscode-widget-border, #8884);
 	background: var(--vscode-button-secondaryBackground, transparent);
 	color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
@@ -200,18 +200,18 @@ body {
 	cursor: pointer;
 }
 
-.mcpv-kpi-button[data-selected="true"] {
+.delendai-kpi-button[data-selected="true"] {
 	background: color-mix(in srgb, var(--vscode-button-background, #0e639c) 18%, transparent);
 	border-color: var(--vscode-button-background, #0e639c);
 	color: var(--vscode-button-foreground, var(--vscode-foreground));
 }
 
-.mcpv-kpi-button:focus-visible {
+.delendai-kpi-button:focus-visible {
 	outline: 2px solid var(--vscode-focusBorder, #007fd4);
 	outline-offset: 2px;
 }
 
-.mcpv-kpi-status {
+.delendai-kpi-status {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.4rem;
@@ -224,92 +224,92 @@ body {
 	border: 1px solid transparent;
 }
 
-.mcpv-kpi-status--ready {
+.delendai-kpi-status--ready {
 	background: color-mix(in srgb, var(--vscode-charts-green, #2a9d3f) 18%, transparent);
 	color: var(--vscode-charts-green, #2a9d3f);
 	border-color: color-mix(in srgb, var(--vscode-charts-green, #2a9d3f) 40%, transparent);
 }
 
-.mcpv-kpi-status--partial,
-.mcpv-kpi-status--loading {
+.delendai-kpi-status--partial,
+.delendai-kpi-status--loading {
 	background: color-mix(in srgb, var(--vscode-charts-yellow, #e0a800) 18%, transparent);
 	color: var(--vscode-charts-yellow, #a07800);
 	border-color: color-mix(in srgb, var(--vscode-charts-yellow, #e0a800) 40%, transparent);
 }
 
-.mcpv-kpi-status--unavailable,
-.mcpv-kpi-status--disconnected,
-.mcpv-kpi-status--empty {
+.delendai-kpi-status--unavailable,
+.delendai-kpi-status--disconnected,
+.delendai-kpi-status--empty {
 	background: color-mix(in srgb, var(--vscode-charts-red, #d64545) 14%, transparent);
 	color: var(--vscode-charts-red, #d64545);
 	border-color: color-mix(in srgb, var(--vscode-charts-red, #d64545) 28%, transparent);
 }
 
-.mcpv-kpi-banner,
-.mcpv-kpi-card,
-.mcpv-kpi-section,
-.mcpv-kpi-trend {
+.delendai-kpi-banner,
+.delendai-kpi-card,
+.delendai-kpi-section,
+.delendai-kpi-trend {
 	border: 1px solid var(--vscode-widget-border, #8884);
 	border-radius: 12px;
 	background: var(--vscode-sideBar-background, var(--vscode-editor-background));
 	padding: 1rem;
 }
 
-.mcpv-kpi-banner {
+.delendai-kpi-banner {
 	display: grid;
 	gap: 0.35rem;
 }
 
-.mcpv-kpi-banner__summary {
+.delendai-kpi-banner__summary {
 	font-size: 0.95rem;
 	font-weight: 600;
 }
 
-.mcpv-kpi-muted {
+.delendai-kpi-muted {
 	color: var(--vscode-descriptionForeground);
 	font-size: 0.84rem;
 	line-height: 1.45;
 }
 
-.mcpv-kpi-grid,
-.mcpv-kpi-trends,
-.mcpv-kpi-sections {
+.delendai-kpi-grid,
+.delendai-kpi-trends,
+.delendai-kpi-sections {
 	display: grid;
 	gap: 1rem;
 }
 
-.mcpv-kpi-grid {
+.delendai-kpi-grid {
 	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
-.mcpv-kpi-trends {
+.delendai-kpi-trends {
 	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
-.mcpv-kpi-sections {
+.delendai-kpi-sections {
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 	align-items: start;
 }
 
-.mcpv-kpi-card__label,
-.mcpv-kpi-metric__label,
-.mcpv-kpi-row__meta,
-.mcpv-kpi-trend__meta {
+.delendai-kpi-card__label,
+.delendai-kpi-metric__label,
+.delendai-kpi-row__meta,
+.delendai-kpi-trend__meta {
 	font-size: 0.78rem;
 	color: var(--vscode-descriptionForeground);
 }
 
-.mcpv-kpi-card__value,
-.mcpv-kpi-metric__value {
+.delendai-kpi-card__value,
+.delendai-kpi-metric__value {
 	font-size: 1.15rem;
 	font-weight: 700;
 	margin-top: 0.3rem;
 	display: block;
 }
 
-.mcpv-kpi-trend__head,
-.mcpv-kpi-section__head,
-.mcpv-kpi-foot__head {
+.delendai-kpi-trend__head,
+.delendai-kpi-section__head,
+.delendai-kpi-foot__head {
 	display: flex;
 	justify-content: space-between;
 	gap: 0.75rem;
@@ -317,9 +317,9 @@ body {
 	margin-bottom: 0.75rem;
 }
 
-.mcpv-kpi-section__title,
-.mcpv-kpi-trend__title,
-.mcpv-kpi-foot__title {
+.delendai-kpi-section__title,
+.delendai-kpi-trend__title,
+.delendai-kpi-foot__title {
 	font-size: 0.98rem;
 	font-weight: 700;
 	margin: 0;
@@ -328,50 +328,50 @@ body {
 	align-items: center;
 }
 
-.mcpv-kpi-section__metrics {
+.delendai-kpi-section__metrics {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 	gap: 0.75rem;
 	margin-bottom: 0.9rem;
 }
 
-.mcpv-kpi-rowlist {
+.delendai-kpi-rowlist {
 	display: grid;
 	gap: 0.7rem;
 }
 
-.mcpv-kpi-row {
+.delendai-kpi-row {
 	border-top: 1px solid var(--vscode-widget-border, #8884);
 	padding-top: 0.75rem;
 	display: grid;
 	gap: 0.4rem;
 }
 
-.mcpv-kpi-row:first-child {
+.delendai-kpi-row:first-child {
 	border-top: 0;
 	padding-top: 0;
 }
 
-.mcpv-kpi-row__head {
+.delendai-kpi-row__head {
 	display: flex;
 	justify-content: space-between;
 	gap: 0.75rem;
 	align-items: flex-start;
 }
 
-.mcpv-kpi-row__title {
+.delendai-kpi-row__title {
 	font-weight: 600;
 	margin: 0;
 	font-size: 0.9rem;
 }
 
-.mcpv-kpi-row__values {
+.delendai-kpi-row__values {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.45rem;
 }
 
-.mcpv-kpi-pill {
+.delendai-kpi-pill {
 	display: inline-flex;
 	gap: 0.35rem;
 	align-items: center;
@@ -383,23 +383,23 @@ body {
 	font-family: var(--vscode-editor-font-family, monospace);
 }
 
-.mcpv-kpi-pill[data-tone="muted"] {
+.delendai-kpi-pill[data-tone="muted"] {
 	opacity: 0.78;
 }
 
-.mcpv-kpi-pill[data-tone="danger"] {
+.delendai-kpi-pill[data-tone="danger"] {
 	background: color-mix(in srgb, var(--vscode-charts-red, #d64545) 16%, transparent);
 	color: var(--vscode-charts-red, #d64545);
 }
 
-.mcpv-kpi-trend__legend {
+.delendai-kpi-trend__legend {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.5rem;
 	margin-top: 0.6rem;
 }
 
-.mcpv-kpi-legend {
+.delendai-kpi-legend {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35rem;
@@ -407,14 +407,14 @@ body {
 	color: var(--vscode-descriptionForeground);
 }
 
-.mcpv-kpi-legend__dot {
+.delendai-kpi-legend__dot {
 	width: 0.6rem;
 	height: 0.6rem;
 	border-radius: 999px;
 	display: inline-block;
 }
 
-.mcpv-kpi-trend__svg {
+.delendai-kpi-trend__svg {
 	width: 100%;
 	height: 86px;
 	display: block;
@@ -428,25 +428,25 @@ body {
 	overflow: hidden;
 }
 
-.mcpv-kpi-trend__axis {
+.delendai-kpi-trend__axis {
 	stroke: color-mix(in srgb, var(--vscode-widget-border, #8884) 72%, transparent);
 	stroke-width: 1;
 }
 
-.mcpv-kpi-trend__line--primary {
+.delendai-kpi-trend__line--primary {
 	stroke: var(--vscode-charts-blue, #4d8eff);
 	stroke-width: 2.25;
 	fill: none;
 }
 
-.mcpv-kpi-trend__line--secondary {
+.delendai-kpi-trend__line--secondary {
 	stroke: var(--vscode-charts-yellow, #e0a800);
 	stroke-width: 2;
 	fill: none;
 	stroke-dasharray: 4 3;
 }
 
-.mcpv-kpi-list {
+.delendai-kpi-list {
 	margin: 0;
 	padding-left: 1.1rem;
 	display: grid;
@@ -454,15 +454,15 @@ body {
 }
 
 @media (max-width: 640px) {
-	.mcpv-kpi-dashboard {
+	.delendai-kpi-dashboard {
 		padding: 0.75rem;
 	}
 
-	.mcpv-kpi-toolbar,
-	.mcpv-kpi-banner,
-	.mcpv-kpi-card,
-	.mcpv-kpi-section,
-	.mcpv-kpi-trend {
+	.delendai-kpi-toolbar,
+	.delendai-kpi-banner,
+	.delendai-kpi-card,
+	.delendai-kpi-section,
+	.delendai-kpi-trend {
 		padding: 0.85rem;
 	}
 	}
@@ -562,36 +562,36 @@ const sparklinePath = (
 };
 
 const renderStatusChip = (state: TKpiDashboardViewState): string =>
-	`<span class="mcpv-kpi-status mcpv-kpi-status--${escapeHtml(state)}">${escapeHtml(stateLabel(state))}</span>`;
+	`<span class="delendai-kpi-status delendai-kpi-status--${escapeHtml(state)}">${escapeHtml(stateLabel(state))}</span>`;
 
 const renderMetricCard = (metric: IKpiDashboardMetric): string =>
-	`<article class="mcpv-kpi-card">
-		<div class="mcpv-kpi-card__label">${escapeHtml(metric.label)}</div>
-		<span class="mcpv-kpi-card__value">${escapeHtml(formatMetricValue(metric))}</span>
-		<div class="mcpv-kpi-muted">${escapeHtml(metricStatusLabel(metric.status))}${metric.observedAt === undefined ? '' : ` · ${escapeHtml(formatDate(metric.observedAt))}`}</div>
+	`<article class="delendai-kpi-card">
+		<div class="delendai-kpi-card__label">${escapeHtml(metric.label)}</div>
+		<span class="delendai-kpi-card__value">${escapeHtml(formatMetricValue(metric))}</span>
+		<div class="delendai-kpi-muted">${escapeHtml(metricStatusLabel(metric.status))}${metric.observedAt === undefined ? '' : ` · ${escapeHtml(formatDate(metric.observedAt))}`}</div>
 	</article>`;
 
 const renderSectionMetric = (metric: IKpiDashboardMetric): string =>
-	`<div class="mcpv-kpi-metric">
-		<div class="mcpv-kpi-metric__label">${escapeHtml(metric.label)}</div>
-		<span class="mcpv-kpi-metric__value">${escapeHtml(formatMetricValue(metric))}</span>
-		<div class="mcpv-kpi-muted">${escapeHtml(metricStatusLabel(metric.status))}</div>
+	`<div class="delendai-kpi-metric">
+		<div class="delendai-kpi-metric__label">${escapeHtml(metric.label)}</div>
+		<span class="delendai-kpi-metric__value">${escapeHtml(formatMetricValue(metric))}</span>
+		<div class="delendai-kpi-muted">${escapeHtml(metricStatusLabel(metric.status))}</div>
 	</div>`;
 
 const renderRowValue = (value: IKpiDashboardRowValue): string =>
-	`<span class="mcpv-kpi-pill" data-tone="${escapeHtml(value.tone ?? 'default')}"><strong>${escapeHtml(value.label)}:</strong> ${escapeHtml(value.value)}</span>`;
+	`<span class="delendai-kpi-pill" data-tone="${escapeHtml(value.tone ?? 'default')}"><strong>${escapeHtml(value.label)}:</strong> ${escapeHtml(value.value)}</span>`;
 
 const renderRow = (row: IKpiDashboardRow): string =>
-	`<article class="mcpv-kpi-row">
-		<div class="mcpv-kpi-row__head">
+	`<article class="delendai-kpi-row">
+		<div class="delendai-kpi-row__head">
 			<div>
-				<p class="mcpv-kpi-row__title">${escapeHtml(row.label)}</p>
-				${row.subtitle === undefined ? '' : `<div class="mcpv-kpi-row__meta">${escapeHtml(row.subtitle)}</div>`}
+				<p class="delendai-kpi-row__title">${escapeHtml(row.label)}</p>
+				${row.subtitle === undefined ? '' : `<div class="delendai-kpi-row__meta">${escapeHtml(row.subtitle)}</div>`}
 			</div>
 			${renderStatusChip(row.state)}
 		</div>
-		${row.values.length === 0 ? '' : `<div class="mcpv-kpi-row__values">${row.values.map(renderRowValue).join('')}</div>`}
-		${row.note === undefined ? '' : `<div class="mcpv-kpi-muted">${escapeHtml(row.note)}</div>`}
+		${row.values.length === 0 ? '' : `<div class="delendai-kpi-row__values">${row.values.map(renderRowValue).join('')}</div>`}
+		${row.note === undefined ? '' : `<div class="delendai-kpi-muted">${escapeHtml(row.note)}</div>`}
 	</article>`;
 
 const renderSeriesSvg = (
@@ -607,16 +607,16 @@ const renderSeriesSvg = (
 		}))
 		.filter((entry) => entry.values.length > 0);
 	if (plotted.length === 0) {
-		return `<div class="mcpv-kpi-muted">No numeric samples in the selected window.</div>`;
+		return `<div class="delendai-kpi-muted">No numeric samples in the selected window.</div>`;
 	}
-	return `<svg class="mcpv-kpi-trend__svg" viewBox="0 0 240 86" preserveAspectRatio="none" aria-hidden="true">
-		<line class="mcpv-kpi-trend__axis" x1="0" y1="84" x2="240" y2="84"></line>
+	return `<svg class="delendai-kpi-trend__svg" viewBox="0 0 240 86" preserveAspectRatio="none" aria-hidden="true">
+		<line class="delendai-kpi-trend__axis" x1="0" y1="84" x2="240" y2="84"></line>
 		${plotted
 			.map(({ values, index }) => {
 				const klass =
 					index === 0
-						? 'mcpv-kpi-trend__line--primary'
-						: 'mcpv-kpi-trend__line--secondary';
+						? 'delendai-kpi-trend__line--primary'
+						: 'delendai-kpi-trend__line--secondary';
 				return `<path class="${klass}" d="${sparklinePath(values, 240, 76)}"></path>`;
 			})
 			.join('')}
@@ -624,19 +624,19 @@ const renderSeriesSvg = (
 };
 
 const renderTrendCard = (card: IKpiDashboardTrendCard): string =>
-	`<article class="mcpv-kpi-trend">
-		<div class="mcpv-kpi-trend__head">
+	`<article class="delendai-kpi-trend">
+		<div class="delendai-kpi-trend__head">
 			<div>
-				<h3 class="mcpv-kpi-trend__title">${escapeHtml(card.title)}</h3>
-				${card.note === undefined ? '' : `<div class="mcpv-kpi-trend__meta">${escapeHtml(card.note)}</div>`}
+				<h3 class="delendai-kpi-trend__title">${escapeHtml(card.title)}</h3>
+				${card.note === undefined ? '' : `<div class="delendai-kpi-trend__meta">${escapeHtml(card.note)}</div>`}
 			</div>
 			${renderStatusChip(card.state)}
 		</div>
 		${renderSeriesSvg(card.series)}
-		<div class="mcpv-kpi-trend__legend">${card.series
+		<div class="delendai-kpi-trend__legend">${card.series
 			.map(
 				(entry, index) =>
-					`<span class="mcpv-kpi-legend"><span class="mcpv-kpi-legend__dot" style="background:${
+					`<span class="delendai-kpi-legend"><span class="delendai-kpi-legend__dot" style="background:${
 						index === 0
 							? 'var(--vscode-charts-blue, #4d8eff)'
 							: 'var(--vscode-charts-yellow, #e0a800)'
@@ -646,27 +646,28 @@ const renderTrendCard = (card: IKpiDashboardTrendCard): string =>
 	</article>`;
 
 const renderSection = (section: IKpiDashboardSection): string =>
-	`<section class="mcpv-kpi-section">
-		<div class="mcpv-kpi-section__head">
+	`<section class="delendai-kpi-section">
+		<div class="delendai-kpi-section__head">
 			<div>
-				<h3 class="mcpv-kpi-section__title"><span aria-hidden="true">${escapeHtml(section.icon)}</span>${escapeHtml(section.title)}</h3>
-				${section.note === undefined ? '' : `<div class="mcpv-kpi-muted">${escapeHtml(section.note)}</div>`}
+				<h3 class="delendai-kpi-section__title"><span aria-hidden="true">${escapeHtml(section.icon)}</span>${escapeHtml(section.title)}</h3>
+				${section.note === undefined ? '' : `<div class="delendai-kpi-muted">${escapeHtml(section.note)}</div>`}
 			</div>
 			${renderStatusChip(section.state)}
 		</div>
-		${section.metrics.length === 0 ? '' : `<div class="mcpv-kpi-section__metrics">${section.metrics.map(renderSectionMetric).join('')}</div>`}
-		${section.rows.length === 0 ? `<div class="mcpv-kpi-muted">No drill-down rows for this section in the selected window.</div>` : `<div class="mcpv-kpi-rowlist">${section.rows.map(renderRow).join('')}</div>`}
+		${section.metrics.length === 0 ? '' : `<div class="delendai-kpi-section__metrics">${section.metrics.map(renderSectionMetric).join('')}</div>`}
+		${section.rows.length === 0 ? `<div class="delendai-kpi-muted">No drill-down rows for this section in the selected window.</div>` : `<div class="delendai-kpi-rowlist">${section.rows.map(renderRow).join('')}</div>`}
 	</section>`;
 
 const renderFooterList = (title: string, items: readonly string[]): string => {
 	if (items.length === 0) return '';
-	return `<section class="mcpv-kpi-card">
-		<div class="mcpv-kpi-foot__head">
-			<h3 class="mcpv-kpi-foot__title">${escapeHtml(title)}</h3>
+	return `<section class="delendai-kpi-card">
+		<div class="delendai-kpi-foot__head">
+			<h3 class="delendai-kpi-foot__title">${escapeHtml(title)}</h3>
 		</div>
-		<ol class="mcpv-kpi-list">${items
+		<ol class="delendai-kpi-list">${items
 			.map(
-				(item) => `<li class="mcpv-kpi-muted">${escapeHtml(item)}</li>`,
+				(item) =>
+					`<li class="delendai-kpi-muted">${escapeHtml(item)}</li>`,
 			)
 			.join('')}</ol>
 	</section>`;
@@ -676,14 +677,14 @@ const renderRecommendations = (
 	recommendations: readonly IKpiDashboardRecommendation[],
 ): string => {
 	if (recommendations.length === 0) return '';
-	return `<section class="mcpv-kpi-card">
-		<div class="mcpv-kpi-foot__head">
-			<h3 class="mcpv-kpi-foot__title">Next actions</h3>
+	return `<section class="delendai-kpi-card">
+		<div class="delendai-kpi-foot__head">
+			<h3 class="delendai-kpi-foot__title">Next actions</h3>
 		</div>
-		<ol class="mcpv-kpi-list">${recommendations
+		<ol class="delendai-kpi-list">${recommendations
 			.map(
 				(item) =>
-					`<li class="mcpv-kpi-muted"><strong>${escapeHtml(item.priority)}</strong> · ${escapeHtml(item.tool)} · ${escapeHtml(item.reason)}</li>`,
+					`<li class="delendai-kpi-muted"><strong>${escapeHtml(item.priority)}</strong> · ${escapeHtml(item.tool)} · ${escapeHtml(item.reason)}</li>`,
 			)
 			.join('')}</ol>
 	</section>`;
@@ -713,7 +714,7 @@ export const renderKpiDashboard = (
 	options: IRenderKpiDashboardOptions = {},
 ): string => {
 	const header = renderHeaderBar({
-		brandName: options.brandName ?? 'mcp-vertex KPI Dashboard',
+		brandName: options.brandName ?? 'delendai KPI Dashboard',
 		version: options.version ?? '0.1.0',
 	});
 	return `<!DOCTYPE html>
@@ -727,32 +728,32 @@ export const renderKpiDashboard = (
 	${STYLE}
 </head>
 <body>
-	<div class="mcpv-kpi-dashboard">
+	<div class="delendai-kpi-dashboard">
 		${header}
-		<section class="mcpv-kpi-toolbar">
-			<div class="mcpv-kpi-toolbar__group">
+		<section class="delendai-kpi-toolbar">
+			<div class="delendai-kpi-toolbar__group">
 				${renderStatusChip(model.state)}
-				<span class="mcpv-kpi-muted">${escapeHtml(model.windowLabel)}</span>
-				${model.generatedAt === undefined ? '' : `<span class="mcpv-kpi-muted">Updated ${escapeHtml(formatDate(model.generatedAt))}</span>`}
+				<span class="delendai-kpi-muted">${escapeHtml(model.windowLabel)}</span>
+				${model.generatedAt === undefined ? '' : `<span class="delendai-kpi-muted">Updated ${escapeHtml(formatDate(model.generatedAt))}</span>`}
 			</div>
-			<div class="mcpv-kpi-toolbar__group">
+			<div class="delendai-kpi-toolbar__group">
 				${model.windows
 					.map(
 						(option) =>
-							`<button class="mcpv-kpi-button" data-kpi-window-days="${option.days}" data-selected="${option.selected ? 'true' : 'false'}">${escapeHtml(option.label)}</button>`,
+							`<button class="delendai-kpi-button" data-kpi-window-days="${option.days}" data-selected="${option.selected ? 'true' : 'false'}">${escapeHtml(option.label)}</button>`,
 					)
 					.join('')}
-				<button class="mcpv-kpi-button" data-kpi-action="refresh">Refresh</button>
+				<button class="delendai-kpi-button" data-kpi-action="refresh">Refresh</button>
 			</div>
 		</section>
-		<section class="mcpv-kpi-banner">
-			<div class="mcpv-kpi-banner__summary">${escapeHtml(bannerSummary(model))}</div>
-			<div class="mcpv-kpi-muted">${escapeHtml(model.summary)}</div>
-			${model.errors.length === 0 ? '' : `<div class="mcpv-kpi-muted">${escapeHtml(model.errors.join(' | '))}</div>`}
+		<section class="delendai-kpi-banner">
+			<div class="delendai-kpi-banner__summary">${escapeHtml(bannerSummary(model))}</div>
+			<div class="delendai-kpi-muted">${escapeHtml(model.summary)}</div>
+			${model.errors.length === 0 ? '' : `<div class="delendai-kpi-muted">${escapeHtml(model.errors.join(' | '))}</div>`}
 		</section>
-		<section class="mcpv-kpi-grid">${model.summaryMetrics.map(renderMetricCard).join('')}</section>
-		<section class="mcpv-kpi-trends">${model.trends.map(renderTrendCard).join('')}</section>
-		<section class="mcpv-kpi-sections">${model.sections.map(renderSection).join('')}</section>
+		<section class="delendai-kpi-grid">${model.summaryMetrics.map(renderMetricCard).join('')}</section>
+		<section class="delendai-kpi-trends">${model.trends.map(renderTrendCard).join('')}</section>
+		<section class="delendai-kpi-sections">${model.sections.map(renderSection).join('')}</section>
 		${renderRecommendations(model.recommendations)}
 		${renderFooterList('Limitations', model.limitations)}
 	</div>

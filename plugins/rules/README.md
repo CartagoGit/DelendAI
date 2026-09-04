@@ -1,7 +1,7 @@
 # @delendai/rules
 
 Lint/type **rules** plugin for
-[`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Ships per-framework default
+[`@delendai/core`](../../docs/delendai/README-DELENDAI.md). Ships per-framework default
 ESLint + TypeScript presets, detects each project area's framework, materialises
 the defaults to cache, and lets any agent apply them with a configurable
 enforcement mode — **the project's own config always wins**.
@@ -12,7 +12,7 @@ enforcement mode — **the project's own config always wins**.
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-vertex": {
+		"delendai": {
 			"command": "bunx",
 			"args": ["@delendai/core", "--plugins=rules", "--rules-mode=mixed"]
 		}
@@ -24,15 +24,15 @@ enforcement mode — **the project's own config always wins**.
 
 Rules are resolved **per project area** (a Vue app and a Laravel API in the same
 repo get different rules). On first run the plugin writes
-`.cache/mcp-vertex/rules/rules-map.json`:
+`.cache/delendai/rules/rules-map.json`:
 
 ```jsonc
 {
 	"mode": "mixed",
 	"projects": {
 		"demo": {
-			"apps/web":  { "framework": "vue",     "eslint": ["apps/web/eslint.config.mjs", ".cache/mcp-vertex/rules/vue.eslint.config.mjs"], "typecheck": ["apps/web/tsconfig.json", ".cache/mcp-vertex/rules/vue.tsconfig.json"] },
-			"apps/admin":{ "framework": "angular", "eslint": [".cache/mcp-vertex/rules/angular.eslint.config.mjs"], "typecheck": ["apps/admin/tsconfig.json", ".cache/mcp-vertex/rules/angular.tsconfig.json"] }
+			"apps/web":  { "framework": "vue",     "eslint": ["apps/web/eslint.config.mjs", ".cache/delendai/rules/vue.eslint.config.mjs"], "typecheck": ["apps/web/tsconfig.json", ".cache/delendai/rules/vue.tsconfig.json"] },
+			"apps/admin":{ "framework": "angular", "eslint": [".cache/delendai/rules/angular.eslint.config.mjs"], "typecheck": ["apps/admin/tsconfig.json", ".cache/delendai/rules/angular.tsconfig.json"] }
 		}
 	}
 }
@@ -300,7 +300,7 @@ For every area the plugin must answer one question: *which linter command should
 |---|---|---|---|
 | 1 | **project** | The area ships its own linter config (e.g. `apps/web/eslint.config.mjs`, `pyproject.toml [tool.ruff]`, `Cargo.toml [lints]`, `go.mod`'s `gofmt` directive, `build.zig` settings, `.editorconfig`, etc.). | `IAreaRules.configs[0]` (project's config is always first). |
 | 2 | **dogma** | No project config. The language's `IDogmaAdapter` is registered in the `DogmaRegistry` and resolves to a non-empty command set. | `dogmas/<lang>.dogma.ts`. |
-| 3 | **default** | Neither project nor dogma applies. | The preset's vendored config under `.cache/mcp-vertex/rules/`. |
+| 3 | **default** | Neither project nor dogma applies. | The preset's vendored config under `.cache/delendai/rules/`. |
 
 Every tool surfaces the full resolution:
 
@@ -323,7 +323,7 @@ A repo with `services/rs-thing/Cargo.toml` (no project `clippy.toml`) and the sh
 }
 ```
 
-Add a `services/rs-thing/clippy.toml` and the same call returns `effective: "project"` with the project-resolved command — the project layer wins without any tool change. See [`mcp-vertex-rules-dogma-priority`](./skills/mcp-vertex-rules-dogma-priority/SKILL.md) for the full per-language matrix and the contributor seam map.
+Add a `services/rs-thing/clippy.toml` and the same call returns `effective: "project"` with the project-resolved command — the project layer wins without any tool change. See [`delendai-rules-dogma-priority`](./skills/delendai-rules-dogma-priority/SKILL.md) for the full per-language matrix and the contributor seam map.
 
 ---
 

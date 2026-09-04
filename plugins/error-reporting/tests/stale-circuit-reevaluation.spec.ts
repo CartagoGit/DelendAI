@@ -98,7 +98,7 @@ describe('AUD-G01: a stale circuit breaker re-evaluates instead of staying stuck
 		const reportError = buildReportErrorHandler({
 			options: {
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: 'CartagoGit/delendai',
 				labels: ['auto-reported'],
 				dedupeWindowHours: 24,
 				maxIssuesPerDay: 10,
@@ -131,7 +131,7 @@ describe('AUD-G01: a stale circuit breaker re-evaluates instead of staying stuck
 		const primeReportError = buildReportErrorHandler({
 			options: {
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: 'CartagoGit/delendai',
 				labels: ['auto-reported'],
 				dedupeWindowHours: 24,
 				maxIssuesPerDay: 10,

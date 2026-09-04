@@ -9,11 +9,11 @@ const ALLOWED_RUNTIME_FILE =
 	'plugins/error-reporting/src/lib/options.service.ts';
 const DOC_PATHS = [
 	'plugins/error-reporting/README.md',
-	// d00014: the manual `docs/mcp-vertex/plugins/error-reporting.md` page
+	// d00014: the manual `docs/delendai/plugins/error-reporting.md` page
 	// was folded into the auto-generated page's "## Notes" section; its
 	// prose now lives at this notes source file (the one place a human
 	// edits it) rather than at a second, undrift-checked page.
-	'docs/mcp-vertex/plugins/notes/error-reporting.notes.md',
+	'docs/delendai/plugins/notes/error-reporting.notes.md',
 ] as const;
 
 export interface IPrivacyInternalOnlyLintResult {

@@ -137,7 +137,7 @@ const collectDoneProposals = (
 
 const main = async (): Promise<number> => {
 	const root = repoRoot();
-	const proposalsDir = resolve(root, 'docs', 'mcp-vertex', 'proposals');
+	const proposalsDir = resolve(root, 'docs', 'delendai', 'proposals');
 	let argv: ReturnType<typeof parseReaperArgs>;
 	try {
 		argv = parseReaperArgs(process.argv.slice(2));

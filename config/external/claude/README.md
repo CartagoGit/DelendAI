@@ -13,7 +13,7 @@ stdout is not returned to Claude, the turn counter has no per-turn MCP context
 tax.
 
 After a manual or automatic compaction it also calls the connected
-`mcp-vertex` server's bounded checkpoint-packet tool. The returned packet has
+`delendai` server's bounded checkpoint-packet tool. The returned packet has
 only the last explicit digest, useful pointers and the next open action.
 
 Before compaction, the fragment asks a small read-only checkpoint advisory
@@ -24,11 +24,11 @@ actual work state; a hook cannot do that truthfully.
 
 Prerequisites:
 
-- Register the MCP server under the `mcp-vertex` name.
+- Register the MCP server under the `delendai` name.
 - Load the `memory` plugin.
 - Load the `usage-tracking` plugin to read the optional local lifecycle
   report. With the default cache configuration, its log is written under
-  `.cache/mcp-vertex/results/usage-tracking/`.
+  `.cache/delendai/results/usage-tracking/`.
 - Create an explicit digest with `memory_compact` before context pressure; a
   hook cannot safely create one from a private host transcript.
 
@@ -56,7 +56,7 @@ are intentionally non-blocking.
 Claude Code receives the same live MCP baseline as every compatible host. Its
 workspace instructions and native skills are optional host capabilities; the
 hook fragment is an optional lifecycle capability. None of those additions
-changes which mcp-vertex tools, prompts or resources the connected server
+changes which delendai tools, prompts or resources the connected server
 exposes.
 
 This adapter records and advises at documented lifecycle boundaries but does

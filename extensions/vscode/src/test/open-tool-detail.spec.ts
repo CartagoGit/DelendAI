@@ -12,11 +12,11 @@ import type { ICommandVscodeApi } from '../commands/types';
 const createClient = () =>
 	McpStdioClient.fromTransport({
 		async callTool(input) {
-			if (input.name === 'mcp-vertex_overview') {
+			if (input.name === 'delendai_overview') {
 				return {
 					structuredContent: {
-						namespacePrefix: 'mcp-vertex',
-						server: { name: 'mcp-vertex', version: '0.1.0' },
+						namespacePrefix: 'delendai',
+						server: { name: 'delendai', version: '0.1.0' },
 						plugins: ['proposals'],
 						tools: {
 							proposals: ['proposal_board'],
@@ -26,11 +26,11 @@ const createClient = () =>
 					},
 				};
 			}
-			if (input.name === 'mcp-vertex_metrics') {
+			if (input.name === 'delendai_metrics') {
 				return {
 					structuredContent: {
 						tools: {
-							'mcp-vertex_proposals_proposal_board': {
+							delendai_proposals_proposal_board: {
 								calls: 2,
 								errors: 0,
 								totalMs: 30,
@@ -40,7 +40,7 @@ const createClient = () =>
 					},
 				};
 			}
-			if (input.name === 'mcp-vertex_knowledge') {
+			if (input.name === 'delendai_knowledge') {
 				return {
 					structuredContent: {
 						entries: [
@@ -58,7 +58,7 @@ const createClient = () =>
 			return {
 				tools: [
 					{
-						name: 'mcp-vertex_proposals_proposal_board',
+						name: 'delendai_proposals_proposal_board',
 						description: 'Show proposals',
 						inputSchema: {
 							type: 'object',
@@ -76,19 +76,19 @@ const createClient = () =>
 		},
 	});
 
-describe('mcp-vertex.openToolDetail', () => {
+describe('delendai.openToolDetail', () => {
 	it('renders schemas and metrics for a selected tool', async () => {
 		const { html, model } = await buildToolDetailHtml(
 			{ client: createClient() },
-			'mcp-vertex_proposals_proposal_board',
+			'delendai_proposals_proposal_board',
 		);
 
-		expect(html).toContain('mcp-vertex_proposals_proposal_board');
+		expect(html).toContain('delendai_proposals_proposal_board');
 		expect(html).toContain('Input schema');
 		expect(html).toContain('Output schema');
 		expect(html).toContain('2 calls, 0 errors, max 20ms');
 		expect(html).toContain('proposals');
-		expect(model.tool.name).toBe('mcp-vertex_proposals_proposal_board');
+		expect(model.tool.name).toBe('delendai_proposals_proposal_board');
 	});
 
 	it('registers the command and opens a webview panel', async () => {
@@ -116,7 +116,7 @@ describe('mcp-vertex.openToolDetail', () => {
 
 		registerOpenToolDetailCommand({ vscode, client: createClient() });
 		await commands.get(OPEN_TOOL_DETAIL_COMMAND)?.(
-			'mcp-vertex_proposals_proposal_board',
+			'delendai_proposals_proposal_board',
 		);
 
 		expect(panels).toHaveLength(1);

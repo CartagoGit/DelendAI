@@ -155,7 +155,7 @@ export const buildInvokeRegistration = (
 	tags: ['orchestrator-runner', 'lazy', 'invoke', 'spend'],
 	summary:
 		'Execute a task on the best provider (with fallback). Gated by executeApi + a signed confirmation token — never spends silently.',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_invoke',
+	descriptionKey: 'delendai_orchestrator-runner_invoke',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_invoke`,

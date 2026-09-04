@@ -16,12 +16,12 @@ describe('surface bootstrap measurement (AUD-B04 / x00284)', () => {
 		// you tried to pass the old descriptor shape here).
 		const measurement = measureBootstrapBytes([
 			{
-				name: 'mcp-vertex_overview',
+				name: 'delendai_overview',
 				description: 'Orient in one call.',
 				inputSchema: { type: 'object', properties: {} },
 			},
 			{
-				name: 'mcp-vertex_status',
+				name: 'delendai_status',
 				description: 'Server status.',
 				inputSchema: { type: 'object', properties: {} },
 			},
@@ -35,10 +35,10 @@ describe('surface bootstrap measurement (AUD-B04 / x00284)', () => {
 	});
 
 	it('omits description/outputSchema/annotations when undefined, matching JSON.stringify over a real tools/list entry', () => {
-		const bare = measureToolWireBytes({ name: 'mcp-vertex_bare' });
+		const bare = measureToolWireBytes({ name: 'delendai_bare' });
 		const expected = Buffer.byteLength(
 			JSON.stringify({
-				name: 'mcp-vertex_bare',
+				name: 'delendai_bare',
 				inputSchema: { type: 'object', properties: {} },
 			}),
 			'utf8',
@@ -65,7 +65,7 @@ describe('surface bootstrap measurement (AUD-B04 / x00284)', () => {
 
 	it('a growing outputSchema moves the measurement — the exact gap AUD-B04 named ("no puede ver un outputSchema crecer en absoluto")', () => {
 		const base = {
-			name: 'mcp-vertex_grows',
+			name: 'delendai_grows',
 			inputSchema: { type: 'object', properties: {} },
 		} as const;
 		const smallOutputSchema = measureToolWireBytes({

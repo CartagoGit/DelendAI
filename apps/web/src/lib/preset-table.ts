@@ -11,7 +11,7 @@
  *   - `absent`    — the plugin is not in the preset (renders as "—").
  *
  * The output is plain data so the Astro page (and any future consumer
- * — dashboard panel, CLI `mcpv presets list`, etc.) renders it without
+ * — dashboard panel, CLI `delendai presets list`, etc.) renders it without
  * re-implementing the catalog logic.
  *
  * Pure function: no I/O, no `process.env`, no `fs`. Unit-tested under

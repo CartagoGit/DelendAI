@@ -104,7 +104,7 @@ const selectBinName = (
 	if (bin === undefined) {
 		throw new Error(`${packageName} does not declare a bin entry`);
 	}
-	if ('mcpv' in bin) return 'mcpv';
+	if ('delendai' in bin) return 'delendai';
 	const first = Object.keys(bin)[0];
 	if (first === undefined) {
 		throw new Error(`${packageName} declares an empty bin map`);
@@ -162,7 +162,7 @@ const main = async (): Promise<void> => {
 		packageVersions: await collectWorkspacePackageVersions(),
 	};
 	const binName = selectBinName(candidatePkg.bin, candidatePkg.name);
-	const scratch = await mkdtemp(join(tmpdir(), 'mcp-vertex-publish-smoke-'));
+	const scratch = await mkdtemp(join(tmpdir(), 'delendai-publish-smoke-'));
 
 	try {
 		await writeFile(

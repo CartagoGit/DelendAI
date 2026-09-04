@@ -23,5 +23,5 @@ export {
  */
 export { nodeDynamicImport } from '../lib/plugins/load-plugins';
 export { assemblePlugins } from '../lib/cli/assemble-plugins';
-export type { IMcpVertexCliArgs } from '../lib/plugins/parse-cli-args';
+export type { IDelendaiCliArgs } from '../lib/plugins/parse-cli-args';
 export { parseCliArgs } from '../lib/plugins/parse-cli-args';

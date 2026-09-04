@@ -42,9 +42,9 @@ import {
 	CONFIG_FILE_SCHEMA,
 	pluginConfigFor,
 } from '../plugins/load-config-file';
-import type { IMcpVertexConfigFile } from '../plugins/load-config-file';
+import type { IDelendaiConfigFile } from '../plugins/load-config-file';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
-import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
+import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
 import { buildSkillPromptRegistrations } from '../prompts/skill-prompts';
 import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
@@ -90,11 +90,11 @@ type TPluginPhase = Awaited<ReturnType<typeof assemblePlugins>>;
 type TSkillsPhase = Awaited<ReturnType<typeof assembleSkills>>;
 
 export interface IAssembleCoreToolsInput {
-	readonly args: IMcpVertexCliArgs;
+	readonly args: IDelendaiCliArgs;
 	readonly corePrefix: string;
 	readonly corePaths: ICorePaths;
 	readonly workspace: IWorkspacePathProvider;
-	readonly fileConfig: IMcpVertexConfigFile;
+	readonly fileConfig: IDelendaiConfigFile;
 	readonly configDiagnostic: {
 		readonly present: boolean;
 		readonly issues: readonly string[];
@@ -216,9 +216,9 @@ export const assembleCoreTools = (
 	if (!configDiagnostic.present) {
 		knowledge.push({
 			id: 'no-config-file',
-			title: 'No mcp-vertex.config.json yet',
+			title: 'No delendai.config.json yet',
 			body: [
-				'# No mcp-vertex.config.json yet',
+				'# No delendai.config.json yet',
 				'',
 				'This workspace has no config file. Call',
 				`\`${corePrefix}_adopt_project\` to self-configure the project`,
@@ -337,7 +337,7 @@ export const assembleCoreTools = (
 	// collectors: reports the live plugin-load result. A programmatic host
 	// adds its own collectors (e.g. a game loop) via the same tool.
 	const coreCollector: IStatusCollector = {
-		id: 'mcp-vertex',
+		id: 'delendai',
 		collect: async () => ({
 			requestedPlugins: effectivePlugins,
 			loadedPlugins: loadResult.loaded.map((e) => e.plugin.name),
@@ -465,7 +465,7 @@ export const assembleCoreTools = (
 				: {}),
 		}),
 		// S2: the server-side self-init — any MCP client can derive
-		// (and, with write:true, persist) mcp-vertex.config.json without
+		// (and, with write:true, persist) delendai.config.json without
 		// the CLI.
 		buildInitConfigToolRegistration({
 			namespacePrefix: corePrefix,
@@ -502,9 +502,9 @@ export const assembleCoreTools = (
 	// old parse-the-name approach was doubly wrong: `id.includes('_')` treated
 	// every core tool with an underscore in its id (`agent_catalog`,
 	// `fs_read`, `get_validation_matrix`, …) as already-qualified and dropped
-	// the `mcp-vertex_` prefix — so the catalog advertised a NON-CALLABLE name
+	// the `delendai_` prefix — so the catalog advertised a NON-CALLABLE name
 	// — and `namespaceFromToolName` split on the FIRST `_`, reporting the host
-	// segment (`mcp-vertex`) as the plugin for every plugin tool. Carrying the
+	// segment (`delendai`) as the plugin for every plugin tool. Carrying the
 	// values explicitly (core tools → the host prefix; plugin tools → their
 	// resolved `ns`) makes both correct by construction.
 	catalogToolEntries = [

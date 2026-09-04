@@ -48,7 +48,7 @@ describe('runErrorReportingSelfTest', () => {
 		const result = await runErrorReportingSelfTest({
 			reportObservedFailure: async () => {},
 			probeDirAbs: await makeDir(),
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 			exec,
 		});
 		expect(result.ok).toBe(true);
@@ -70,7 +70,7 @@ describe('runErrorReportingSelfTest', () => {
 		await runErrorReportingSelfTest({
 			reportObservedFailure: async () => {},
 			probeDirAbs: await makeDir(),
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 			live: true,
 			exec,
 		});
@@ -85,7 +85,7 @@ describe('runErrorReportingSelfTest', () => {
 		const result = await runErrorReportingSelfTest({
 			reportObservedFailure: async () => {},
 			probeDirAbs: await makeDir(),
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 			live: true,
 			exec,
 		});
@@ -104,7 +104,7 @@ describe('runErrorReportingSelfTest', () => {
 		const result = await runErrorReportingSelfTest({
 			reportObservedFailure: async () => {},
 			probeDirAbs: await makeDir(),
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 			live: true,
 			exec,
 		});
@@ -124,7 +124,7 @@ describe('runErrorReportingSelfTest', () => {
 		const result = await runErrorReportingSelfTest({
 			reportObservedFailure: async () => {},
 			probeDirAbs: await makeDir(),
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 			live: true,
 			exec,
 		});
@@ -139,12 +139,12 @@ describe('runErrorReportingSelfTest', () => {
 			.fn()
 			.mockResolvedValueOnce(ok('gh version 2.4.0'))
 			.mockResolvedValueOnce(ok('logged in'))
-			.mockResolvedValueOnce(ok('{"name":"mcp-vertex"}'))
+			.mockResolvedValueOnce(ok('{"name":"delendai"}'))
 			.mockResolvedValueOnce(ok('false'));
 		const result = await runErrorReportingSelfTest({
 			reportObservedFailure: async () => {},
 			probeDirAbs: await makeDir(),
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 			live: true,
 			exec,
 		});
@@ -160,12 +160,12 @@ describe('runErrorReportingSelfTest', () => {
 			.fn()
 			.mockResolvedValueOnce(ok('gh version 2.4.0'))
 			.mockResolvedValueOnce(ok('logged in'))
-			.mockResolvedValueOnce(ok('{"name":"mcp-vertex"}'))
+			.mockResolvedValueOnce(ok('{"name":"delendai"}'))
 			.mockResolvedValueOnce(ok('true'));
 		const result = await runErrorReportingSelfTest({
 			reportObservedFailure: async () => {},
 			probeDirAbs: await makeDir(),
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 			live: true,
 			exec,
 		});
@@ -183,7 +183,7 @@ describe('runErrorReportingSelfTest', () => {
 			// must fail with ENOTDIR — proves the check surfaces a real
 			// write failure instead of always reporting ok.
 			probeDirAbs: join(blockerFile, 'unreachable'),
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 		});
 		const writable = result.checks.find(
 			(check) => check.id === 'report-store-writable',
@@ -197,7 +197,7 @@ describe('runErrorReportingSelfTest', () => {
 		const result = await runErrorReportingSelfTest({
 			reportObservedFailure: async () => {},
 			probeDirAbs: await makeDir(),
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 		});
 		expect(
 			result.checks.find((c) => c.id === 'synthetic-failure-observed')

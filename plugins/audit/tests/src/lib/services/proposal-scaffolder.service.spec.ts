@@ -23,17 +23,17 @@ const consolidationWith = (files: readonly string[]): IConsolidation => ({
 });
 
 // x00165 (S-B): `scaffoldProposals` is a public, project-agnostic
-// export — its own defaults must not hardcode mcp-vertex vocabulary,
+// export — its own defaults must not hardcode delendai vocabulary,
 // and its track-inference heuristic must be overridable by hosts
 // whose folder layout does not match this repo's monorepo shape.
 describe('scaffoldProposals — agnostic contract (x00165)', () => {
-	it('defaults outputDir to a generic path, no mcp-vertex literal, when the caller omits it', () => {
+	it('defaults outputDir to a generic path, no delendai literal, when the caller omits it', () => {
 		const proposal = scaffoldProposals(
 			consolidationWith(['src/x.ts']),
 		).find((candidate) => candidate.kind === 'fix');
 		expect(proposal).toBeDefined();
 		expect(proposal!.body).toContain('docs/proposals/ready');
-		expect(proposal!.body).not.toContain('mcp-vertex');
+		expect(proposal!.body).not.toContain('delendai');
 	});
 
 	it('lets a host override the track-inference heuristic', () => {
@@ -50,7 +50,7 @@ describe('scaffoldProposals — agnostic contract (x00165)', () => {
 		expect(proposal!.body).toContain('track: core+fix');
 	});
 
-	it('does not leak mcp-vertex-internal roadmap vocabulary into the generated body', () => {
+	it('does not leak delendai-internal roadmap vocabulary into the generated body', () => {
 		const proposal = scaffoldProposals(
 			consolidationWith(['src/x.ts']),
 		).find((candidate) => candidate.kind === 'fix');
@@ -65,7 +65,7 @@ describe('scaffoldProposals — agnostic contract (x00165)', () => {
 		const proposal = scaffoldProposals(
 			consolidationWith([
 				'[',
-				'[sync-proposal-registry.ts#L311](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L311)',
+				'[sync-proposal-registry.ts#L311](file:///home/cartago/_projects/delendai/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L311)',
 			]),
 		).find((candidate) => candidate.kind === 'fix');
 		expect(proposal!.files).toEqual([

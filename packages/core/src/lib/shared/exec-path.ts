@@ -23,7 +23,7 @@
  *   2. The `check-cache` lint refuses stray siblings at the cache root.
  *   3. The plugin loader can `rm -rf <pluginCacheDir>` on `--reset` and
  *      recover the whole scratch surface in one shot.
- *   4. A human can `ls .cache/mcp-vertex/<plugin>/exec/` to debug a
+ *   4. A human can `ls .cache/delendai/<plugin>/exec/` to debug a
  *      misbehaving agent — the artefact is not stranded under
  *      `/tmp/<random>` where nobody will ever find it.
  *

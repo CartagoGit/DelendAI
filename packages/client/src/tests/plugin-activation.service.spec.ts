@@ -8,7 +8,7 @@ import { setPluginActivation } from '../lib/services/plugin-activation.service';
 
 const roots: string[] = [];
 const workspace = async (): Promise<string> => {
-	const root = await mkdtemp(join(tmpdir(), 'mcpv-activation-'));
+	const root = await mkdtemp(join(tmpdir(), 'delendai-activation-'));
 	roots.push(root);
 	return root;
 };
@@ -22,7 +22,7 @@ afterEach(async () => {
 describe('setPluginActivation', () => {
 	it('creates a new config only when the file is absent', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 
 		const result = await setPluginActivation({
 			workspaceRoot: root,
@@ -39,7 +39,7 @@ describe('setPluginActivation', () => {
 
 	it('merges a native enabled override without losing its path/options', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		await writeFile(
 			file,
 			JSON.stringify({
@@ -65,7 +65,7 @@ describe('setPluginActivation', () => {
 
 	it('toggles one external server without disturbing its definition', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		await writeFile(
 			file,
 			JSON.stringify({
@@ -121,7 +121,7 @@ describe('setPluginActivation', () => {
 
 	it('fails closed on corrupt JSON and preserves the original bytes', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		const original = '{\n\t"plugins": { "git": true }\n';
 		await writeFile(file, original);
 
@@ -138,7 +138,7 @@ describe('setPluginActivation', () => {
 
 	it('fails closed on read errors and preserves the original bytes', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		const original = '{"plugins":{"git":{"enabled":true}}}\n';
 		await writeFile(file, original);
 		await chmod(file, 0o000);
@@ -186,7 +186,7 @@ describe('setPluginActivation', () => {
 				id: 'git',
 				origin: 'bundled',
 				active: true,
-				configFileName: '/etc/mcpv-escaped.config.json',
+				configFileName: '/etc/delendai-escaped.config.json',
 			}),
 		).rejects.toThrow('configFileName is not contained in the workspace');
 	});

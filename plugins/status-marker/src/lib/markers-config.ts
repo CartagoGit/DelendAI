@@ -4,7 +4,7 @@
  * The 8 built-in close-marker states live in {@link ./markers}. A host may
  * extend that table — *without forking the plugin* — by declaring a
  * `markers` block under `plugins.status-marker.options` in
- * `mcp-vertex.config.json`. This module owns the Zod schema for that block;
+ * `delendai.config.json`. This module owns the Zod schema for that block;
  * the merge semantics (built-in ⊕ user-set ⊕ overrides) live in
  * {@link ./markers}'s `mergeMarkerTable`.
  *

@@ -49,7 +49,7 @@ export const findLinkedProposalId = async (
 	branch: string,
 	cwd: string,
 ): Promise<string | undefined> => {
-	const proposalRoot = `${cwd}/docs/mcp-vertex/proposals`;
+	const proposalRoot = `${cwd}/docs/delendai/proposals`;
 	const files = await collectMarkdownFiles(proposalRoot);
 	for (const filePath of files) {
 		const content = await readFile(filePath, 'utf8').catch(() => undefined);

@@ -1,55 +1,55 @@
 // `apps/shared/src/styles/components/_setup-wizard.scss`
 //
-// BEM-nested styles for the `<section class="mcpv-setup">` block
-// emitted by `renderSetupWizard` and the `<p class="mcpv-status-banner">`
+// BEM-nested styles for the `<section class="delendai-setup">` block
+// emitted by `renderSetupWizard` and the `<p class="delendai-status-banner">`
 // block emitted by `renderStatusBanner` in
 // `apps/shared/src/components/dev/setup-wizard.ts` (f00102 S4.6).
 //
-// Class namespace is `mcpv-setup` / `mcpv-setup__*` and
-// `mcpv-status-banner` / `mcpv-status-banner--{ok,warn}`. The trailing
+// Class namespace is `delendai-setup` / `delendai-setup__*` and
+// `delendai-status-banner` / `delendai-status-banner--{ok,warn}`. The trailing
 // @extend block keeps the legacy `.setup__*` and `.settings__status*`
 // selectors working so the existing dev preview keeps matching
 // during the deprecation window.
 //
 // The real visual rules live in `apps/shared/src/styles/dev-wizard.scss`
 // and target the legacy `setup` / `settings__status` blocks. This
-// partial only adds the `mcpv-*` aliases.
+// partial only adds the `delendai-*` aliases.
 
-.mcpv-setup {
+.delendai-setup {
 	display: flex;
 	flex-direction: column;
 	gap: 1.25rem;
 	padding: 1.25rem 1.5rem;
 }
 
-.mcpv-setup__head {
+.delendai-setup__head {
 	display: flex;
 	flex-direction: column;
 	gap: 0.4rem;
 }
 
-.mcpv-setup__hint {
+.delendai-setup__hint {
 	margin: 0;
-	color: var(--mcpv-fg-muted, var(--muted));
+	color: var(--delendai-fg-muted, var(--muted));
 	font-size: 0.9rem;
 	line-height: 1.4;
 }
 
-.mcpv-setup__signals {
+.delendai-setup__signals {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 }
 
-.mcpv-setup__signals h2 {
+.delendai-setup__signals h2 {
 	margin: 0;
 	font-size: 0.78rem;
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
-	color: var(--mcpv-fg-muted, var(--muted));
+	color: var(--delendai-fg-muted, var(--muted));
 }
 
-.mcpv-setup__signals ul {
+.delendai-setup__signals ul {
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -58,51 +58,51 @@
 	gap: 0.25rem;
 }
 
-.mcpv-setup__signal {
+.delendai-setup__signal {
 	display: flex;
 	gap: 0.4rem;
 	align-items: baseline;
 	font-size: 0.85rem;
-	font-family: var(--mcpv-font-mono, ui-monospace, monospace);
+	font-family: var(--delendai-font-mono, ui-monospace, monospace);
 
 	& code {
-		color: var(--mcpv-fg, var(--fg));
+		color: var(--delendai-fg, var(--fg));
 	}
 
 	&.is-off {
-		color: var(--mcpv-fg-muted, var(--muted));
+		color: var(--delendai-fg-muted, var(--muted));
 	}
 
 	&.is-on {
-		color: var(--mcpv-fg, var(--fg));
+		color: var(--delendai-fg, var(--fg));
 	}
 }
 
-.mcpv-setup__signal-icon {
+.delendai-setup__signal-icon {
 	display: inline-block;
 	width: 1ch;
-	color: var(--mcpv-fg-muted, var(--muted));
+	color: var(--delendai-fg-muted, var(--muted));
 
 	.is-on & {
-		color: var(--mcpv-link, var(--accent));
+		color: var(--delendai-link, var(--accent));
 	}
 }
 
-.mcpv-setup__signal-detail {
-	color: var(--mcpv-fg-muted, var(--muted));
+.delendai-setup__signal-detail {
+	color: var(--delendai-fg-muted, var(--muted));
 }
 
-.mcpv-setup__cta {
+.delendai-setup__cta {
 	display: flex;
 	gap: 0.5rem;
 	flex-wrap: wrap;
 	align-items: center;
 }
 
-.mcpv-setup__primary,
-.mcpv-setup__secondary {
+.delendai-setup__primary,
+.delendai-setup__secondary {
 	appearance: none;
-	border: 1px solid var(--mcpv-border, var(--line));
+	border: 1px solid var(--delendai-border, var(--line));
 	border-radius: 8px;
 	padding: 0.5rem 0.9rem;
 	font: inherit;
@@ -112,9 +112,9 @@
 		border-color 0.18s ease;
 }
 
-.mcpv-setup__primary {
-	background: var(--mcpv-link, var(--accent));
-	color: var(--mcpv-fg-on-brand, #ffffff);
+.delendai-setup__primary {
+	background: var(--delendai-link, var(--accent));
+	color: var(--delendai-fg-on-brand, #ffffff);
 	border-color: transparent;
 	font-weight: 600;
 
@@ -123,23 +123,23 @@
 	}
 }
 
-.mcpv-setup__secondary {
+.delendai-setup__secondary {
 	background: transparent;
-	color: var(--mcpv-fg, var(--fg));
+	color: var(--delendai-fg, var(--fg));
 
 	&:hover {
-		background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 12%, transparent);
+		background: color-mix(in srgb, var(--delendai-link, var(--accent)) 12%, transparent);
 	}
 }
 
-.mcpv-setup__status {
-	color: var(--mcpv-fg-muted, var(--muted));
+.delendai-setup__status {
+	color: var(--delendai-fg-muted, var(--muted));
 	font-size: 0.85rem;
 }
 
 // Status banner
 
-.mcpv-status-banner {
+.delendai-status-banner {
 	display: flex;
 	gap: 0.5rem;
 	align-items: baseline;
@@ -150,56 +150,56 @@
 	line-height: 1.4;
 }
 
-.mcpv-status-banner--ok {
-	background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 14%, transparent);
-	color: var(--mcpv-fg, var(--fg));
+.delendai-status-banner--ok {
+	background: color-mix(in srgb, var(--delendai-link, var(--accent)) 14%, transparent);
+	color: var(--delendai-fg, var(--fg));
 }
 
-.mcpv-status-banner--warn {
-	background: color-mix(in srgb, var(--mcpv-fg-muted, var(--muted)) 14%, transparent);
-	color: var(--mcpv-fg, var(--fg));
+.delendai-status-banner--warn {
+	background: color-mix(in srgb, var(--delendai-fg-muted, var(--muted)) 14%, transparent);
+	color: var(--delendai-fg, var(--fg));
 }
 
 // Legacy aliases — keep `.setup__*` and `.settings__status*`
-// selectors visually equivalent to the new `.mcpv-*` tree.
+// selectors visually equivalent to the new `.delendai-*` tree.
 .setup {
-	@extend .mcpv-setup;
+	@extend .delendai-setup;
 }
 .setup__head {
-	@extend .mcpv-setup__head;
+	@extend .delendai-setup__head;
 }
 .setup__hint {
-	@extend .mcpv-setup__hint;
+	@extend .delendai-setup__hint;
 }
 .setup__signals {
-	@extend .mcpv-setup__signals;
+	@extend .delendai-setup__signals;
 }
 .setup__signal {
-	@extend .mcpv-setup__signal;
+	@extend .delendai-setup__signal;
 }
 .setup__signal-icon {
-	@extend .mcpv-setup__signal-icon;
+	@extend .delendai-setup__signal-icon;
 }
 .setup__signal-detail {
-	@extend .mcpv-setup__signal-detail;
+	@extend .delendai-setup__signal-detail;
 }
 .setup__cta {
-	@extend .mcpv-setup__cta;
+	@extend .delendai-setup__cta;
 }
 .setup__primary {
-	@extend .mcpv-setup__primary;
+	@extend .delendai-setup__primary;
 }
 .setup__secondary {
-	@extend .mcpv-setup__secondary;
+	@extend .delendai-setup__secondary;
 }
 .setup__status {
-	@extend .mcpv-setup__status;
+	@extend .delendai-setup__status;
 }
 .settings__status--ok {
-	@extend .mcpv-status-banner;
-	@extend .mcpv-status-banner--ok;
+	@extend .delendai-status-banner;
+	@extend .delendai-status-banner--ok;
 }
 .settings__status--warn {
-	@extend .mcpv-status-banner;
-	@extend .mcpv-status-banner--warn;
+	@extend .delendai-status-banner;
+	@extend .delendai-status-banner--warn;
 }

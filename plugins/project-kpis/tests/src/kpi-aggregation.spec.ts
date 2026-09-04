@@ -19,7 +19,7 @@ const healthPayload: IProjectHealthOutput = {
 	debt: 76,
 	next: [
 		{
-			tool: 'mcp-vertex_quality_run_quality',
+			tool: 'delendai_quality_run_quality',
 			reason: 'Quality scopes are heuristic until the owning tool executes.',
 		},
 	],
@@ -66,12 +66,12 @@ const records: IInvocationRecord[] = [
 describe('buildKpiSnapshot', async () => {
 	it('builds a versioned snapshot and distinguishes measured estimated unavailable and not-configured values', async () => {
 		const snapshot = await buildKpiSnapshot({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: '/workspace',
 			usageSummaryPathAbs:
-				'/workspace/.mcp-vertex/cache/results/usage-tracking/usage-summary.json',
+				'/workspace/.delendai/cache/results/usage-tracking/usage-summary.json',
 			usageInvocationsPathAbs:
-				'/workspace/.mcp-vertex/cache/results/usage-tracking/invocations.jsonl',
+				'/workspace/.delendai/cache/results/usage-tracking/invocations.jsonl',
 			now: FIXED_NOW,
 			pathExists: (path) => path.endsWith('invocations.jsonl'),
 			readUsageInvocations: async () => records,
@@ -162,12 +162,12 @@ describe('buildKpiSnapshot', async () => {
 		};
 
 		const first = await buildKpiSnapshot({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: '/workspace',
 			usageSummaryPathAbs:
-				'/workspace/.mcp-vertex/cache/results/usage-tracking/usage-summary.json',
+				'/workspace/.delendai/cache/results/usage-tracking/usage-summary.json',
 			usageInvocationsPathAbs:
-				'/workspace/.mcp-vertex/cache/results/usage-tracking/invocations.jsonl',
+				'/workspace/.delendai/cache/results/usage-tracking/invocations.jsonl',
 			now: FIXED_NOW,
 			maxBytes: 900,
 			pathExists: (path) => path.endsWith('usage-summary.json'),
@@ -195,12 +195,12 @@ describe('buildKpiSnapshot', async () => {
 		});
 
 		const second = await buildKpiSnapshot({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: '/workspace',
 			usageSummaryPathAbs:
-				'/workspace/.mcp-vertex/cache/results/usage-tracking/usage-summary.json',
+				'/workspace/.delendai/cache/results/usage-tracking/usage-summary.json',
 			usageInvocationsPathAbs:
-				'/workspace/.mcp-vertex/cache/results/usage-tracking/invocations.jsonl',
+				'/workspace/.delendai/cache/results/usage-tracking/invocations.jsonl',
 			now: FIXED_NOW,
 			maxBytes: 900,
 			pathExists: (path) => path.endsWith('usage-summary.json'),

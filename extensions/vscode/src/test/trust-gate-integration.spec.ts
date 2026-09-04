@@ -64,9 +64,9 @@ const buildHarness = (isTrusted: boolean, cwd: string) => {
 			workspaceFolders: [{ uri: { fsPath: cwd } }],
 			getConfiguration: (section?: string) => ({
 				get: <T>(key: string, defaultValue?: T): T | undefined => {
-					if (section === 'mcp-vertex.server' && key === 'command')
+					if (section === 'delendai.server' && key === 'command')
 						return 'node' as T;
-					if (section === 'mcp-vertex.server' && key === 'args')
+					if (section === 'delendai.server' && key === 'args')
 						return ['server.js'] as T;
 					return defaultValue;
 				},
@@ -112,7 +112,7 @@ describe('x00072 SEC-001 S3 explicit launch integration', () => {
 				harness.vscode as never as {
 					commands: { _registered: Set<string> };
 				}
-			).commands._registered.has('mcp-vertex.startServerUntrusted'),
+			).commands._registered.has('delendai.startServerUntrusted'),
 		).toBe(true);
 	});
 

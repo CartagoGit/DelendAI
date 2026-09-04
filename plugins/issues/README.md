@@ -8,12 +8,12 @@ proposal — without ever embedding an LLM client in the MCP server itself.
 > **Hard dependency: requires the `proposals` plugin.**
 > `@delendai/issues` cannot run without `@delendai/proposals` loaded in
 > the same process — every `issues_*` tool reads/writes scaffold files under
-> `docs/mcp-vertex/proposals/retired/issues/**`, which is part of the `proposals`
+> `docs/delendai/proposals/retired/issues/**`, which is part of the `proposals`
 > plugin's managed namespace. Loading `issues` without `proposals` fails the
 > **entire** plugin load (no partial registration, exit code ≠ 0):
 >
 > ```bash
-> mcp-vertex --plugins=proposals,issues
+> delendai --plugins=proposals,issues
 > ```
 >
 > ```json
@@ -30,16 +30,16 @@ tools (`issues_list`, `issues_fetch`, `issues_ingest`, `issues_analyze`,
 `src/index.ts#register(ctx)` and register conditionally on the `repo` option
 being set.
 
-The recommended setup path is `mcp-vertex setup-github`, which detects the
+The recommended setup path is `delendai setup-github`, which detects the
 repo from `git remote get-url origin`, asks you to confirm it, and writes the
-config atomically. Manual `mcp-vertex.config.json` wiring still works when you
+config atomically. Manual `delendai.config.json` wiring still works when you
 need it.
 
 | Tool | Purpose | File |
 |---|---|---|
 | `issues_list` | List issues filtered by `state` / `labels` / `assignee`. | `src/lib/tools/list-issues.tool.ts` |
 | `issues_fetch` | Fetch a single issue (cached, redacted). | `src/lib/tools/fetch-issue.tool.ts` |
-| `issues_ingest` | Fetch + write a scaffold file under `docs/mcp-vertex/proposals/retired/issues/`. | `src/lib/tools/ingest-issue.tool.ts` |
+| `issues_ingest` | Fetch + write a scaffold file under `docs/delendai/proposals/retired/issues/`. | `src/lib/tools/ingest-issue.tool.ts` |
 | `issues_analyze` | Mechanical pre-analysis (labels, linked PRs, comments count). | `src/lib/tools/analyze-issue.tool.ts` |
 | `issues_resolve` | Record promotion or dismissal in scaffold frontmatter. | `src/lib/tools/resolve-issue.tool.ts` |
 | `issues_list_dependabot` | List Dependabot alerts (read-only). | `src/lib/tools/list-dependabot.tool.ts` |
@@ -47,14 +47,14 @@ need it.
 | `issues_list_secret_scanning` | List secret-scanning alerts (read-only). | `src/lib/tools/list-secret-scanning.tool.ts` |
 | `issues_list_advisories` | List repository security advisories (read-only). | `src/lib/tools/list-advisories.tool.ts` |
 
-See `docs/mcp-vertex/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md`
-for the full design, and `docs/mcp-vertex/proposals/in-progress/feats/f00281-issues-herramientas-security-findings-github.md`
+See `docs/delendai/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md`
+for the full design, and `docs/delendai/proposals/in-progress/feats/f00281-issues-herramientas-security-findings-github.md`
 for the security-findings tools.
 
 ## Load it
 
 ```bash
-mcp-vertex --plugins=proposals,issues
+delendai --plugins=proposals,issues
 ```
 
 Without `proposals` in the same `--plugins` list, the server refuses to
@@ -67,26 +67,26 @@ plugin "issues" requires "proposals" (not in load set)
 ### Without `repo` configured
 
 If the plugin loads with `--plugins=proposals,issues` but
-`plugins.issues.options.repo` is **not set in `mcp-vertex.config.json`**
+`plugins.issues.options.repo` is **not set in `delendai.config.json`**
 (or is the empty string), the plugin **registers zero tools** but does
 **not** error. It also emits a single `IKnowledgeEntry` named
 `issues-needs-repo-config` that explains how to fix the situation. Agents
-that boot the server can discover the entry via `mcp-vertex_knowledge`
-or read it from `mcp-vertex_overview` (which lists knowledge ids).
+that boot the server can discover the entry via `delendai_knowledge`
+or read it from `delendai_overview` (which lists knowledge ids).
 
 **Two ways to fix it:**
 
 1. Run the interactive setup subcommand (recommended):
 
   ```bash
-  mcp-vertex setup-github
+  delendai setup-github
   ```
 
   The subcommand detects the GitHub repo from `git remote get-url
   origin`, verifies the auth tier (`gh` / `GITHUB_TOKEN` / anonymous),
   writes the config block, and prints the canonical launch shape.
 
-2. Edit `mcp-vertex.config.json` manually:
+2. Edit `delendai.config.json` manually:
 
    ```jsonc
    {
@@ -116,7 +116,7 @@ or read it from `mcp-vertex_overview` (which lists knowledge ids).
     "issues": {
       "options": {
         "repo": "owner/name",            // required for the 5 tools to register
-        "scaffoldDir": "docs/mcp-vertex/proposals/retired/issues" // optional override
+        "scaffoldDir": "docs/delendai/proposals/retired/issues" // optional override
       }
     }
   }
@@ -125,8 +125,8 @@ or read it from `mcp-vertex_overview` (which lists knowledge ids).
 
 | Option | Type | Default | Purpose |
 |---|---|---|---|
-| `repo` | `string` (e.g. `"CartagoGit/delendai"`) | — | The GitHub repo to fetch issues from. **Without it, the plugin registers zero tools + emits an `issues-needs-repo-config` knowledge entry** (discoverable via `mcp-vertex_overview` and `mcp-vertex_knowledge`). |
-| `scaffoldDir` | workspace-relative path | `docs/mcp-vertex/proposals/retired/issues` | Where `issues_ingest` / `issues_resolve` write scaffold files. Must stay inside the workspace (validated by `resolveWorkspaceContained`). |
+| `repo` | `string` (e.g. `"CartagoGit/delendai"`) | — | The GitHub repo to fetch issues from. **Without it, the plugin registers zero tools + emits an `issues-needs-repo-config` knowledge entry** (discoverable via `delendai_overview` and `delendai_knowledge`). |
+| `scaffoldDir` | workspace-relative path | `docs/delendai/proposals/retired/issues` | Where `issues_ingest` / `issues_resolve` write scaffold files. Must stay inside the workspace (validated by `resolveWorkspaceContained`). |
 
 ## Tools in detail
 
@@ -197,6 +197,6 @@ persisted strings are secret-redacted before serialization.
 
 ## See also
 
-- `docs/mcp-vertex/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md` — the original design proposal.
-- `docs/mcp-vertex/proposals/ready/f00030-cross-project-setup-and-github-config.md` — `setup-github` subcommand + cross-project setup guide.
-- `docs/mcp-vertex/CROSS-PROJECT-SETUP.md` — canonical cross-project setup.
+- `docs/delendai/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md` — the original design proposal.
+- `docs/delendai/proposals/ready/f00030-cross-project-setup-and-github-config.md` — `setup-github` subcommand + cross-project setup guide.
+- `docs/delendai/CROSS-PROJECT-SETUP.md` — canonical cross-project setup.

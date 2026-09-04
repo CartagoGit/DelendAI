@@ -3,7 +3,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
-import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
 import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
 import { toolError, toolOk } from '@delendai/core/lib/shared/tool-response';
@@ -24,8 +24,8 @@ const ERROR_SCHEMA = z.object({
 
 const hostConfig = (
 	extraTools: readonly IToolRegistration[],
-	extra?: Partial<IMcpVertexHostConfig>,
-): IMcpVertexHostConfig => ({
+	extra?: Partial<IDelendaiHostConfig>,
+): IDelendaiHostConfig => ({
 	metadata: {
 		name: 'meta-envelope-spec',
 		version: '0.0.0',
@@ -34,8 +34,8 @@ const hostConfig = (
 	namespacePrefix: 'spec',
 	workspace: createWorkspacePathProvider('/tmp/spec-meta-envelope'),
 	corePaths: {
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 	},
 	validationMatrix: { scopes: {} },
 	extraTools,
@@ -61,7 +61,7 @@ const registerTool = (
 	},
 });
 
-const connect = async (config: IMcpVertexHostConfig) => {
+const connect = async (config: IDelendaiHostConfig) => {
 	const assembled = await createMcpProject(config);
 	const [clientTransport, serverTransport] =
 		InMemoryTransport.createLinkedPair();
@@ -132,7 +132,7 @@ describe('MCP metadata envelope compatibility', async () => {
 				],
 				{
 					isAgentStuck: () => ({
-						handoffPath: '.cache/mcp-vertex/handoffs/agent.json',
+						handoffPath: '.cache/delendai/handoffs/agent.json',
 						suggestedAction:
 							'delegate the next slice to another agent',
 					}),
@@ -161,7 +161,7 @@ describe('MCP metadata envelope compatibility', async () => {
 				)._meta?.stuck,
 			).toEqual({
 				detected: true,
-				handoffPath: '.cache/mcp-vertex/handoffs/agent.json',
+				handoffPath: '.cache/delendai/handoffs/agent.json',
 				suggestedAction: 'delegate the next slice to another agent',
 			});
 		} finally {

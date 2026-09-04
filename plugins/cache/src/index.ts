@@ -8,7 +8,7 @@ import { buildGcRegistration } from './lib/tools/gc-tool';
 /**
  * `@delendai/cache` — opt-in cache eviction plugin (f00072 S2/S5).
  *
- * Makes `.cache/mcp-vertex/` self-cleaning by declaring eviction as
+ * Makes `.cache/delendai/` self-cleaning by declaring eviction as
  * DATA: a set of TTL / keep-last rules contributed to the shared core
  * {@link ICacheEvictionRegistry} (handed in via
  * `ctx.cacheEvictionRegistry`). The plugin owns only the policy; the
@@ -28,7 +28,7 @@ import { buildGcRegistration } from './lib/tools/gc-tool';
  * `state/` journal, and the orphan git worktrees crashed agents leave
  * under `.worktrees/` (f00072 S5).
  *
- * Activation is opt-in: `mcp-vertex --plugins=cache`. No network, no
+ * Activation is opt-in: `delendai --plugins=cache`. No network, no
  * secrets, no `process.env`. Hosts that never load it keep the current
  * grow-forever behaviour.
  */
@@ -60,7 +60,7 @@ export default definePlugin({
 	name: 'cache',
 	version: '0.1.1',
 	describe:
-		'Opt-in cache eviction: declarative TTL/keep-last rules for `.cache/mcp-vertex` + `cache_gc` (dry-run by default). No network, no secrets.',
+		'Opt-in cache eviction: declarative TTL/keep-last rules for `.cache/delendai` + `cache_gc` (dry-run by default). No network, no secrets.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options);
@@ -98,7 +98,7 @@ export default definePlugin({
 					body: [
 						'# Cache eviction (`@delendai/cache`)',
 						'',
-						'Makes `.cache/mcp-vertex/` self-cleaning via declarative',
+						'Makes `.cache/delendai/` self-cleaning via declarative',
 						'TTL / keep-last rules contributed to the shared core',
 						'eviction registry. Run `cache_gc` to preview or apply:',
 						'',
@@ -112,7 +112,7 @@ export default definePlugin({
 						`Owner tag: \`${CACHE_OWNER}\`. Built-in rules: ${registeredIds.join(', ') || '(none — no registry supplied)'}.`,
 						'',
 						'The boot sweep posture is governed by `config.cache.runOnBoot`',
-						"('dry-run' default, 'apply', or 'off') in mcp-vertex.config.json.",
+						"('dry-run' default, 'apply', or 'off') in delendai.config.json.",
 					].join('\n'),
 				},
 			],

@@ -219,7 +219,7 @@ export const logForcedRegression = async (input: {
 	const logPath = join(
 		input.workspaceRoot,
 		'.cache',
-		'mcp-vertex',
+		'delendai',
 		'proposals-state.log',
 	);
 	const line = JSON.stringify({

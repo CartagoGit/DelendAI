@@ -22,7 +22,7 @@ export const README_PLUGIN_TABLE_START =
 export const README_PLUGIN_TABLE_END =
 	'<!-- END GENERATED: plugin-layout-table -->';
 export const GENERATED_CATALOG_PATH =
-	'docs/mcp-vertex/generated/plugin-catalog.generated.md';
+	'docs/delendai/generated/plugin-catalog.generated.md';
 
 export interface ICatalogIo {
 	readonly readText: (absPath: string) => Promise<string | undefined>;

@@ -100,7 +100,7 @@ to show the user a diff before committing.
 
 `rules_resolve_map` is the read-only tool that returns the
 detected mapping of project area → framework → preset. The
-plugin caches this in `.cache/mcp-vertex/rules/rules-map.json`
+plugin caches this in `.cache/delendai/rules/rules-map.json`
 so a CI run doesn't re-detect on every invocation.
 
 ```json

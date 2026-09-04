@@ -12,18 +12,18 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexQualityPolicyQualityPolicyOutput {
+export interface DelendaiQualityPolicyQualityPolicyOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexQualityPolicyRunSettlementOutput {
+export interface DelendaiQualityPolicyRunSettlementOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface QualityPolicyToolOutputs {
-	"mcp-vertex_quality-policy_quality_policy": McpVertexQualityPolicyQualityPolicyOutput;
-	"mcp-vertex_quality-policy_run_settlement": McpVertexQualityPolicyRunSettlementOutput;
+	"delendai_quality-policy_quality_policy": DelendaiQualityPolicyQualityPolicyOutput;
+	"delendai_quality-policy_run_settlement": DelendaiQualityPolicyRunSettlementOutput;
 }

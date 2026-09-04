@@ -50,8 +50,8 @@ export interface IHostInstructionFile {
 	/** True when the file existed and was readable. */
 	readonly present: boolean;
 	/**
-	 * True when the file is ALREADY managed by mcp-vertex (it carries
-	 * the `<!-- mcp-vertex:begin -->` / `end` markers). Canonical files
+	 * True when the file is ALREADY managed by delendai (it carries
+	 * the `<!-- delendai:begin -->` / `end` markers). Canonical files
 	 * are skipped in the audit — there is nothing foreign to review.
 	 * User-home files are never canonical (they are foreign config).
 	 */

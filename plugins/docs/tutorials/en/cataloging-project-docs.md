@@ -19,7 +19,7 @@ plugin enumerates them once, extracts the title (from the first
 `# heading` or frontmatter `title:`), and serves a low-token
 index. The body is only fetched on demand.
 
-Configuration lives in `mcp-vertex.config.json`:
+Configuration lives in `delendai.config.json`:
 
 ```jsonc
 {
@@ -51,20 +51,20 @@ Response (truncated):
   "truncated": false,
   "docs": [
     { "path": "README.md", "title": "@delendai/core" },
-    { "path": "docs/mcp-vertex/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/mcp-vertex/proposals/l100-…md", "title": "l100 — Web: i18n real…" },
+    { "path": "docs/delendai/ARCHITECTURE.md", "title": "Architecture" },
+    { "path": "docs/delendai/proposals/l100-…md", "title": "l100 — Web: i18n real…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }
 ```
 
 The list is sorted by path. Pass `roots` to scope the list to a
-subset (e.g. just `["docs/mcp-vertex/proposals"]`):
+subset (e.g. just `["docs/delendai/proposals"]`):
 
 ```json
 {
   "tool": "docs_list",
-  "args": { "roots": ["docs/mcp-vertex/proposals"] }
+  "args": { "roots": ["docs/delendai/proposals"] }
 }
 ```
 
@@ -73,7 +73,7 @@ subset (e.g. just `["docs/mcp-vertex/proposals"]`):
 ```json
 {
   "tool": "docs_read",
-  "args": { "path": "docs/mcp-vertex/ARCHITECTURE.md" }
+  "args": { "path": "docs/delendai/ARCHITECTURE.md" }
 }
 ```
 
@@ -81,7 +81,7 @@ Response:
 
 ```json
 {
-  "path": "docs/mcp-vertex/ARCHITECTURE.md",
+  "path": "docs/delendai/ARCHITECTURE.md",
   "title": "Architecture",
   "content": "# Architecture\n\n…full body…",
   "truncated": false,

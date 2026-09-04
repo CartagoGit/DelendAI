@@ -10,7 +10,7 @@ describe('buildCoreSkillProjection', () => {
 	let root = '';
 
 	beforeEach(async () => {
-		root = await mkdtemp(join(tmpdir(), 'mcpv-core-skills-'));
+		root = await mkdtemp(join(tmpdir(), 'delendai-core-skills-'));
 		await mkdir(join(root, 'operator'), { recursive: true });
 		await mkdir(join(root, 'plugin-only'), { recursive: true });
 		await writeFile(
@@ -19,7 +19,7 @@ describe('buildCoreSkillProjection', () => {
 				generatedAt: '2026-07-25T00:00:00.000Z',
 				skills: [
 					{
-						id: 'mcp-vertex-operator',
+						id: 'delendai-operator',
 						version: '1.0.0',
 						minCoreVersion: '0.1.0',
 						summary: 'orient',
@@ -48,11 +48,11 @@ describe('buildCoreSkillProjection', () => {
 		});
 		expect(projection.map((file) => file.relPath)).toEqual([
 			'docs/agent/skills/manifest.json',
-			'docs/agent/skills/mcp-vertex-operator/SKILL.md',
+			'docs/agent/skills/delendai-operator/SKILL.md',
 		]);
 		const manifest = JSON.parse(projection[0]?.content ?? '{}');
 		expect(manifest.skills[0].bodyPath).toBe(
-			'docs/agent/skills/mcp-vertex-operator/SKILL.md',
+			'docs/agent/skills/delendai-operator/SKILL.md',
 		);
 	});
 });

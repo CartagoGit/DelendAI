@@ -40,7 +40,7 @@ export const CANONICAL_PROFILES: readonly IHostCapabilityProfile[] = [
 		},
 	},
 	{
-		// Codex (per docs/mcp-vertex/examples/host-capability-adapter.md +
+		// Codex (per docs/delendai/examples/host-capability-adapter.md +
 		// config/external/codex/README.md) — MCP baseline only; uses
 		// prompt-time instructions; no native skills, no hooks; manual
 		// continuation.
@@ -126,7 +126,7 @@ const validateOne = (
 		!profile.capabilities.mcp.resources
 	) {
 		// A host with zero MCP surface has no business advertising an
-		// adapter pack — mcp-vertex is unreachable to it. Record the
+		// adapter pack — delendai is unreachable to it. Record the
 		// finding BEFORE calling the builder because the builder's
 		// assertProfile throws on the same condition.
 		out.push(

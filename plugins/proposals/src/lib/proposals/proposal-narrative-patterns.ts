@@ -4,7 +4,7 @@
  * The structural proposal linter (`proposal-scaffold-linter.ts`) used to
  * carry a large hardcoded catalogue of *narrative* H2-heading aliases —
  * Spanish audit phrasings, emoji section titles, and host/project-specific
- * strings like `copilot · minimax-m3` and `mcp-vertex`. That data is not
+ * strings like `copilot · minimax-m3` and `delendai`. That data is not
  * structural: it encodes the history of one project's audit notes. Baking
  * it into the runtime linter violated:
  *
@@ -22,7 +22,7 @@
  *     linter validates pure structure.
  *   - The historical catalogue below stays available as an opt-in default
  *     (`createDefaultNarrativePatternProvider`) so this repo's own audits
- *     under `docs/mcp-vertex/proposals/done/audits/` keep linting clean.
+ *     under `docs/delendai/proposals/done/audits/` keep linting clean.
  *
  * The aliases map a normalised H2 heading to ONE OR MORE canonical section
  * names; the first entry is the canonical default. The list is a tuple

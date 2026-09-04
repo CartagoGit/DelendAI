@@ -6,7 +6,7 @@ export default definePluginManifest({
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
-		'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.',
+		'Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.',
 	tags: ['error-reporting', 'github', 'issues'],
 	maturity: 'stable',
 	permissions: [

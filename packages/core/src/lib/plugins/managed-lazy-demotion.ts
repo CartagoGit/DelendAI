@@ -37,8 +37,8 @@ export const buildManagedLazyDemotionNotice = (input: {
 	return {
 		unindexed,
 		lines: [
-			`[mcp-vertex] lazy plugin loading is OFF: ${unindexed.join(', ')} ${unindexed.length === 1 ? 'is' : 'are'} not in the managed-lazy catalog, so the whole surface fell back to eager loading.`,
-			'[mcp-vertex] Every tool still works; boot is slower and the full tool surface is registered up front. Fix with `bun tools/scripts/generate/managed-lazy-catalog.script.ts`.',
+			`[delendai] lazy plugin loading is OFF: ${unindexed.join(', ')} ${unindexed.length === 1 ? 'is' : 'are'} not in the managed-lazy catalog, so the whole surface fell back to eager loading.`,
+			'[delendai] Every tool still works; boot is slower and the full tool surface is registered up front. Fix with `bun tools/scripts/generate/managed-lazy-catalog.script.ts`.',
 		],
 	};
 };

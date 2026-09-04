@@ -60,7 +60,7 @@ const buildRuntimeWithHandler = (
 		descriptors: [
 			{
 				registrationId: 'writer_run',
-				name: 'mcp-vertex_writer_run',
+				name: 'delendai_writer_run',
 				toolId: 'run',
 				pluginId: 'writer',
 				namespace: 'writer',
@@ -76,7 +76,7 @@ const buildRuntimeWithHandler = (
 	});
 	runtime.bindRegisteredTool({
 		registrationId: 'writer_run',
-		name: 'mcp-vertex_writer_run',
+		name: 'delendai_writer_run',
 		handler,
 		handle: makeHandle(),
 	});
@@ -99,7 +99,7 @@ describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', 
 		});
 
 		const result = (await runtime.invokeTool(
-			'mcp-vertex_writer_run',
+			'delendai_writer_run',
 			{ dryRun: true },
 			{},
 		)) as { isError?: boolean; content: Array<{ text: string }> };
@@ -123,7 +123,7 @@ describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', 
 		}));
 
 		const result = (await runtime.invokeTool(
-			'mcp-vertex_writer_run',
+			'delendai_writer_run',
 			{ dryRun: true },
 			{},
 		)) as { isError?: boolean; content: Array<{ text: string }> };
@@ -144,7 +144,7 @@ describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', 
 		const runtime = buildRuntimeWithHandler(async () => plan);
 
 		const result = await runtime.invokeTool(
-			'mcp-vertex_writer_run',
+			'delendai_writer_run',
 			{ dryRun: true },
 			{},
 		);
@@ -158,12 +158,12 @@ describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', 
 			committed: true,
 		}));
 
-		await runtime.invokeTool('mcp-vertex_writer_run', { dryRun: true }, {});
+		await runtime.invokeTool('delendai_writer_run', { dryRun: true }, {});
 
 		const violations = listDryRunViolations();
 		expect(violations).toHaveLength(1);
 		expect(violations[0]).toMatchObject({
-			tool: 'mcp-vertex_writer_run',
+			tool: 'delendai_writer_run',
 			pluginId: 'writer',
 			reason: 'handler ignored args.dryRun and returned a non-dryRun payload',
 		});
@@ -178,7 +178,7 @@ describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', 
 		};
 		const runtime = buildRuntimeWithHandler(async () => plan);
 
-		await runtime.invokeTool('mcp-vertex_writer_run', { dryRun: true }, {});
+		await runtime.invokeTool('delendai_writer_run', { dryRun: true }, {});
 
 		expect(listDryRunViolations()).toEqual([]);
 	});
@@ -189,11 +189,7 @@ describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', 
 			committed: true,
 		}));
 
-		const result = await runtime.invokeTool(
-			'mcp-vertex_writer_run',
-			{},
-			{},
-		);
+		const result = await runtime.invokeTool('delendai_writer_run', {}, {});
 
 		expect(result).toEqual({ ok: true, committed: true });
 	});

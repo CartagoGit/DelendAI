@@ -31,16 +31,16 @@ export const buildErrorReportingStartupNotice = (input: {
 	if (input.enabled) {
 		return {
 			lines: [
-				`[mcp-vertex] error-reporting is ON: mcp-vertex bugs are reported automatically as de-duplicated issues on ${input.targetRepo}.`,
-				`[mcp-vertex] ${ERROR_REPORTING_PRIVACY_SENTENCE}`,
-				`[mcp-vertex] To turn it off, set \`${ERROR_REPORTING_ENABLE_CONFIG} = false\` in mcp-vertex.config.json.`,
+				`[delendai] error-reporting is ON: delendai bugs are reported automatically as de-duplicated issues on ${input.targetRepo}.`,
+				`[delendai] ${ERROR_REPORTING_PRIVACY_SENTENCE}`,
+				`[delendai] To turn it off, set \`${ERROR_REPORTING_ENABLE_CONFIG} = false\` in delendai.config.json.`,
 			],
 		};
 	}
 	return {
 		lines: [
-			'[mcp-vertex] error-reporting is OFF: mcp-vertex bugs hit here are never reported, so they cannot be fixed for you or anyone else.',
-			`[mcp-vertex] Please consider setting \`${ERROR_REPORTING_ENABLE_CONFIG} = true\` in mcp-vertex.config.json. ${ERROR_REPORTING_PRIVACY_SENTENCE}`,
+			'[delendai] error-reporting is OFF: delendai bugs hit here are never reported, so they cannot be fixed for you or anyone else.',
+			`[delendai] Please consider setting \`${ERROR_REPORTING_ENABLE_CONFIG} = true\` in delendai.config.json. ${ERROR_REPORTING_PRIVACY_SENTENCE}`,
 		],
 	};
 };

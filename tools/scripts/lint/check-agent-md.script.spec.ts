@@ -20,7 +20,7 @@ describe('diffScope (f00190)', () => {
 		);
 		await writeFile(
 			`${VENDOR}/pkg/AGENT.md`,
-			`# AGENT.md — package \`pkg\`\n\n<!-- mcp-vertex:begin agent-md -->\n## Purpose\n\n- placeholder.\n<!-- mcp-vertex:end agent-md -->\n`,
+			`# AGENT.md — package \`pkg\`\n\n<!-- delendai:begin agent-md -->\n## Purpose\n\n- placeholder.\n<!-- delendai:end agent-md -->\n`,
 		);
 	});
 

@@ -1,6 +1,6 @@
 # @delendai/test-convention
 
-**Canonical test convention for any mcp-vertex project.** Publishes the rules
+**Canonical test convention for any delendai project.** Publishes the rules
 the repo expects its tests to follow (extension, layout, mock API, coverage,
 forbidden patterns) and gives the agent three tools to apply them:
 
@@ -12,9 +12,9 @@ forbidden patterns) and gives the agent three tools to apply them:
   specs and sources against the convention, return a structured drift
   report (`{ ok, counts, violations, scannedFiles }`).
 
-Designed for [`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
+Designed for [`@delendai/core`](../../docs/delendai/README-DELENDAI.md).
 
-## Defaults (override everything in `mcp-vertex.config.json`)
+## Defaults (override everything in `delendai.config.json`)
 
 | Field               | Default                             | Notes |
 |---------------------|-------------------------------------|-------|
@@ -32,7 +32,7 @@ Designed for [`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 ```jsonc
 {
 	"servers": {
-		"mcp-vertex": {
+		"delendai": {
 			"command": "bunx",
 			"args": [
 				"@delendai/core",
@@ -44,7 +44,7 @@ Designed for [`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 ```
 
 The plugin ships in the **`swarm` preset** (see
-[`docs/mcp-vertex/examples/swarm/README.md`](../../docs/mcp-vertex/examples/swarm/README.md)) because the
+[`docs/delendai/examples/swarm/README.md`](../../docs/delendai/examples/swarm/README.md)) because the
 orchestrator benefits most from a single source of truth on test rules.
 For a single-agent setup you can enable it explicitly with
 `--plugins=test-convention`.
@@ -52,7 +52,7 @@ For a single-agent setup you can enable it explicitly with
 ## Override per-project
 
 ```jsonc
-// mcp-vertex.config.json
+// delendai.config.json
 {
 	"plugins": {
 		"test-convention": {
@@ -121,7 +121,7 @@ const where = suggestSpecPath('src/lib/foo.ts', c);
 
 ## See also
 
-- Proposal [`l108`](../../docs/mcp-vertex/proposals/l108-feat-test-convention-plugin.md).
+- Proposal [`l108`](../../docs/delendai/proposals/l108-feat-test-convention-plugin.md).
 - Companion plugin: [`@delendai/quality`](../quality) — executes the
   scopes; `test-convention` teaches how to write them.
 - Companion plugin: [`@delendai/status-marker`](../status-marker) — the

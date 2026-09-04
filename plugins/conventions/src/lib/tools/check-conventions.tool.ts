@@ -25,7 +25,7 @@ import {
 /**
  * Default roots to scan when the caller does not narrow the set.
  * a00064: `''` = the workspace root itself (the scan's SKIP_DIRS keep
- * node_modules/dist/.git out). The old default stamped mcp-vertex's own
+ * node_modules/dist/.git out). The old default stamped delendai's own
  * monorepo layout (packages/plugins/…) — on any repo shaped differently
  * every scan silently classified 0 files, the same silent-zero class
  * that caused the a00063 adopter-agent meltdown.
@@ -86,7 +86,7 @@ export const runCheckConventions = async (
 		if (result.total === 0) {
 			diagnostic =
 				result.missingRoots.length > 0
-					? `scanned 0 files: configured roots do not exist in this workspace: ${result.missingRoots.join(', ')}. Fix plugins.conventions.options.roots in mcp-vertex.config.json (omit roots to scan the whole workspace).`
+					? `scanned 0 files: configured roots do not exist in this workspace: ${result.missingRoots.join(', ')}. Fix plugins.conventions.options.roots in delendai.config.json (omit roots to scan the whole workspace).`
 					: `scanned 0 files: no ${resolution.profile.id} files found under roots [${roots.map((r) => r || '.').join(', ')}] — check the profile or the roots.`;
 		}
 		return toolOk({

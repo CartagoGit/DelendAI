@@ -3,9 +3,9 @@
  * `renderDrawer` unit tests (f00102 S3.3).
  *
  * Contract pinned:
- *   - root `<div class="mcpv-drawer mcpv-drawer--{side}" id role dialog
+ *   - root `<div class="delendai-drawer delendai-drawer--{side}" id role dialog
  *     aria-modal aria-label hidden>` is emitted by default
- *   - panel is `<aside class="mcpv-drawer__panel mcpv-drawer__panel--{side}">`
+ *   - panel is `<aside class="delendai-drawer__panel delendai-drawer__panel--{side}">`
  *   - backdrop carries `data-drawer-close`
  *   - close button carries `data-drawer-close` and `aria-label`
  *   - link list carries `data-drawer-link` by default; pass
@@ -32,33 +32,33 @@ const baseProps = (overrides: Partial<IDrawerProps> = {}): IDrawerProps => ({
 describe('renderDrawer', () => {
 	it('emits the canonical right-side root + panel', () => {
 		const out = renderDrawer(baseProps());
-		expect(out).toContain('class="mcpv-drawer mcpv-drawer--right"');
+		expect(out).toContain('class="delendai-drawer delendai-drawer--right"');
 		expect(out).toContain('id="nav-drawer"');
 		expect(out).toContain('role="dialog"');
 		expect(out).toContain('aria-modal="true"');
 		expect(out).toContain('aria-label="Primary menu"');
 		expect(out).toContain('hidden');
 		expect(out).toContain(
-			'<aside class="mcpv-drawer__panel mcpv-drawer__panel--right">',
+			'<aside class="delendai-drawer__panel delendai-drawer__panel--right">',
 		);
 	});
 
 	it('honours the left side modifier', () => {
 		const out = renderDrawer(baseProps({ side: 'left' }));
-		expect(out).toContain('mcpv-drawer--left');
-		expect(out).toContain('mcpv-drawer__panel--left');
+		expect(out).toContain('delendai-drawer--left');
+		expect(out).toContain('delendai-drawer__panel--left');
 	});
 
 	it('emits the backdrop with the close affordance hook', () => {
 		const out = renderDrawer(baseProps());
 		expect(out).toContain(
-			'<div class="mcpv-drawer__backdrop" data-drawer-close>',
+			'<div class="delendai-drawer__backdrop" data-drawer-close>',
 		);
 	});
 
 	it('emits a close button with aria-label', () => {
 		const out = renderDrawer(baseProps());
-		expect(out).toContain('class="mcpv-drawer__close"');
+		expect(out).toContain('class="delendai-drawer__close"');
 		expect(out).toContain('data-drawer-close');
 		expect(out).toContain('aria-label="Close menu"');
 	});
@@ -105,13 +105,13 @@ describe('renderDrawer', () => {
 				brand: {
 					href: '/',
 					logoSrc: '/logo.svg',
-					brandText: '@mcp-vertex',
+					brandText: '@delendai',
 				},
 			}),
 		);
-		expect(out).toContain('class="mcpv-drawer__brand"');
+		expect(out).toContain('class="delendai-drawer__brand"');
 		expect(out).toContain(
-			'<strong class="mcpv-drawer__brand-text">@mcp-vertex</strong>',
+			'<strong class="delendai-drawer__brand-text">@delendai</strong>',
 		);
 	});
 
@@ -120,25 +120,27 @@ describe('renderDrawer', () => {
 			baseProps({ footHtml: '<button>OK</button>' }),
 		);
 		expect(out).toContain(
-			'<div class="mcpv-drawer__foot"><button>OK</button></div>',
+			'<div class="delendai-drawer__foot"><button>OK</button></div>',
 		);
 	});
 
 	it('panelOnly=true emits body only (no root div)', () => {
 		const out = renderDrawer(baseProps(), { panelOnly: true });
-		// The body still contains `mcpv-drawer__backdrop` /
-		// `mcpv-drawer__panel` / `mcpv-drawer__head`, so we pin the
-		// absence of the root specifically — no `mcpv-drawer--{side}`
+		// The body still contains `delendai-drawer__backdrop` /
+		// `delendai-drawer__panel` / `delendai-drawer__head`, so we pin the
+		// absence of the root specifically — no `delendai-drawer--{side}`
 		// root modifier and no `role="dialog"`.
 		expect(out).not.toContain('role="dialog"');
-		expect(out).not.toContain('mcpv-drawer--right"');
-		expect(out).toContain('<aside class="mcpv-drawer__panel');
+		expect(out).not.toContain('delendai-drawer--right"');
+		expect(out).toContain('<aside class="delendai-drawer__panel');
 		expect(out).toContain('data-drawer-close');
 	});
 
 	it('className option appends extra classes to the root', () => {
 		const out = renderDrawer(baseProps(), { className: 'drawer' });
-		expect(out).toContain('class="mcpv-drawer mcpv-drawer--right drawer"');
+		expect(out).toContain(
+			'class="delendai-drawer delendai-drawer--right drawer"',
+		);
 	});
 
 	it('escapes HTML in id, label, href, link label', () => {

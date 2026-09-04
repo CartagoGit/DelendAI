@@ -13,7 +13,7 @@
  * exposes branch protection via REST endpoints that require the
  * `admin:repo` OAuth scope; CI must NEVER assume that scope.
  * Instead, a human operator applies the equivalent UI/API settings
- * (documented in `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`)
+ * (documented in `docs/delendai/GOVERNANCE-BRANCH-PROTECTION.md`)
  * and the verifier compares the result against this file.
  *
  * Schema (deliberately small — only the keys we enforce):

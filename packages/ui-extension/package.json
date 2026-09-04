@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"license": "BSD-3-Clause",
-	"description": "Host-agnostic UI shell (dashboard, panels, command palette, brand assets) consumed by every @mcp-vertex extension host (vscode today; jetbrains, zed, cursor, antigravity tomorrow). Pure HTML + CSS + vanilla JS, no host imports.",
+	"description": "Host-agnostic UI shell (dashboard, panels, command palette, brand assets) consumed by every @delendai extension host (vscode today; jetbrains, zed, cursor, antigravity tomorrow). Pure HTML + CSS + vanilla JS, no host imports.",
 	"scripts": {
 		"type": "tsc --noEmit -p tsconfig.json",
 		"test": "vitest run",

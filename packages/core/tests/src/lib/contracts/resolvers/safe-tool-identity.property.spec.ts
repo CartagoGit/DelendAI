@@ -50,13 +50,13 @@ describe('resolvePublicToolIdentity properties', () => {
 				fc.stringMatching(/^[a-z0-9-]{1,24}$/),
 				fc.stringMatching(/^[a-z0-9_]{1,24}$/),
 				(pluginId, toolId) => {
-					const toolName = `mcp-vertex_${pluginId}_${toolId}`;
+					const toolName = `delendai_${pluginId}_${toolId}`;
 					const identity = resolvePublicToolIdentity(
 						toolName,
 						registryOf({
 							[toolName]: {
 								packageName: `@delendai/${pluginId}`,
-								owner: 'mcp-vertex',
+								owner: 'delendai',
 								publicToolName: toolId,
 								category: 'analysis',
 							},

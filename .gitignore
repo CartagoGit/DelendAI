@@ -1,13 +1,13 @@
 node_modules/
 
 # Legacy plugin tool verification scratch dir. The proposals lock
-# specs now write ephemeral state under `.cache/mcp-vertex/verify-tmp/`
+# specs now write ephemeral state under `.cache/delendai/verify-tmp/`
 # (the canonical cache root, see `DEFAULT_CORE_PATHS.cacheDir`); this
 # entry is kept for old local runs whose `.verify-tmp/agents.lock.*`
 # files were never migrated and would otherwise show up as untracked.
 .verify-tmp/
 
-# Monorepo-wide artifact layout (see docs/mcp-vertex/AGENT-BOOTSTRAP.md → "Build / dist layout"):
+# Monorepo-wide artifact layout (see docs/delendai/AGENT-BOOTSTRAP.md → "Build / dist layout"):
 #   build/<group>/<name>/         — bundler/compiler outputs (typedoc, astrosite, vsce staging…)
 #   build/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
 # Per-package `dist/` inside packages/*/ and plugins/*/ IS ignored (see the
@@ -53,7 +53,7 @@ apps/*/*.vsix
 extensions/*/*.vsix
 
 .cache/
-.mcp-vertex/
+.delendai/
 .worktrees/
 site/
 .astro/
@@ -63,13 +63,13 @@ coverage/
 apps/web/src/data/capabilities.json
 apps/web/src/data/manifests/
 # x00052: proposals/index.json — regenerable cache artefact. Lives under
-# .cache/mcp-vertex/proposals/index.json (see plugins/proposals/src/lib/
+# .cache/delendai/proposals/index.json (see plugins/proposals/src/lib/
 # contracts/constants/default-path-layout.constant.ts#proposalIndexFile);
 # the legacy docs/ path is ignored here so an old checkout cannot
 # accidentally re-commit it. The on-disk copy in docs/ is harmless
 # (no longer written by proposals_sync_proposals) and can be deleted
 # manually.
-docs/mcp-vertex/proposals/index.json
+docs/delendai/proposals/index.json
 # Generated symlink: apps/web/public/api -> ../../../build/docs-api.
 # Created by `apps/web/scripts/sync-public-api.ts` (run automatically by
 # apps/web dev/build). Do NOT commit the symlink itself.
@@ -100,15 +100,15 @@ plugins/*/src/**/*.d.ts
 # Agent session notes dropped at the repo root. These are transient
 # per-session digests (consolidation steps, workarounds, lessons
 # learned) that belong in the agent's memory / notes system, not in
-# the public history. The `mcp-vertex-session-*.md` glob matches the
+# the public history. The `delendai-session-*.md` glob matches the
 # convention used by recent sessions.
 #
 # NOTE (2026-06-21, n007): the broader `*session*.md` glob was removed.
 # Cross-session handoff summaries are now first-class proposals of kind
-# `resume` (prefix `n`) living under `docs/mcp-vertex/proposals/done/resumes/` and
-# MUST be tracked. The narrower `mcp-vertex-session-*.md` glob below
+# `resume` (prefix `n`) living under `docs/delendai/proposals/done/resumes/` and
+# MUST be tracked. The narrower `delendai-session-*.md` glob below
 # still catches the ad-hoc transient notes that show up at the repo root.
-mcp-vertex-session-*.md
+delendai-session-*.md
 !.agents/sessions/
 
 # f00065 S2: the repo has exactly ONE cache root — the root `.cache/`
@@ -117,10 +117,10 @@ mcp-vertex-session-*.md
 # process was launched with cwd=tools/scripts) is no longer a documented
 # default: `bun run lint:cache` (tools/scripts/lint/check-cache.script.ts)
 # FAILS if any `.cache` appears outside the root, so a stray per-folder cache is
-# caught instead of silently ignored. Run mcp-vertex tools from the repo root.
+# caught instead of silently ignored. Run delendai tools from the repo root.
 
 # metrics gate run artifacts. The candidate snapshot now lives under
-# `.cache/mcp-vertex/metrics/candidate.json` (covered by the `.cache/` rule);
+# `.cache/delendai/metrics/candidate.json` (covered by the `.cache/` rule);
 # the tracked fallback baseline lives in config/. The root rules below are
 # legacy protection for pre-migration local copies.
 /metrics-candidate.json

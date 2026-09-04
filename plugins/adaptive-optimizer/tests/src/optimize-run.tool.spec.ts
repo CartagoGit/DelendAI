@@ -17,7 +17,7 @@ const makeWorkspace = async (): Promise<string> => {
 	await mkdir(join(root, 'docs'), { recursive: true });
 	await mkdir(join(root, 'packages/cli'), { recursive: true });
 	await writeFile(
-		join(root, 'mcp-vertex.config.json'),
+		join(root, 'delendai.config.json'),
 		'{"plugins":{}}\n',
 		'utf8',
 	);
@@ -41,7 +41,7 @@ describe('optimize_run', () => {
 				consent: false,
 			},
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				maxBytes: 2000,
 				discoverRosterFn: async () => ({ available: [], missing: [] }),
@@ -63,7 +63,7 @@ describe('optimize_run', () => {
 				consent: true,
 			},
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				maxBytes: 2000,
 				discoverRosterFn: async () => ({ available: [], missing: [] }),
@@ -114,7 +114,7 @@ describe('optimize_run', () => {
 				consent: true,
 			},
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				maxBytes: 2000,
 				hostName: 'GitHub Copilot Chat',

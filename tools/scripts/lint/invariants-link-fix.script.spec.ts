@@ -6,7 +6,7 @@ describe('invariants-link-fix lint', () => {
 	it('passes when a CIERTO invariant has no proposal reference at all', () => {
 		const result = lintInvariantsLinkFix({
 			files: {
-				'docs/mcp-vertex/architecture/invariants/effects.md':
+				'docs/delendai/architecture/invariants/effects.md':
 					'## Invariante: capabilities are observable\n\n**Estado actual**: CIERTO.\n',
 			},
 			knownProposalIds: new Set(),
@@ -17,7 +17,7 @@ describe('invariants-link-fix lint', () => {
 	it('passes when a FALSO invariant references a real proposal id', () => {
 		const result = lintInvariantsLinkFix({
 			files: {
-				'docs/mcp-vertex/architecture/invariants/adaptive-surface.md':
+				'docs/delendai/architecture/invariants/adaptive-surface.md':
 					'## Invariante: hysteresis\n\n**Estado actual**: NO IMPLEMENTADO (`AUD-C03`).\n\n**Si es FALSO/no implementado**: `f00273`.\n',
 			},
 			knownProposalIds: new Set(['f00273']),
@@ -28,7 +28,7 @@ describe('invariants-link-fix lint', () => {
 	it('fails when a FALSO invariant references no proposal id at all', () => {
 		const result = lintInvariantsLinkFix({
 			files: {
-				'docs/mcp-vertex/architecture/invariants/effects.md':
+				'docs/delendai/architecture/invariants/effects.md':
 					'## Invariante: dry-run blocks effects\n\n**Estado actual**: FALSO.\n\nno fix mentioned here.\n',
 			},
 			knownProposalIds: new Set(['r00037']),
@@ -40,7 +40,7 @@ describe('invariants-link-fix lint', () => {
 	it('fails when a FALSO invariant cites an id that does not resolve to any real proposal', () => {
 		const result = lintInvariantsLinkFix({
 			files: {
-				'docs/mcp-vertex/architecture/invariants/effects.md':
+				'docs/delendai/architecture/invariants/effects.md':
 					'## Invariante: dry-run blocks effects\n\n**Estado actual**: FALSO.\n\nSee `r99999` for the fix.\n',
 			},
 			knownProposalIds: new Set(['r00037']),

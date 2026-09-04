@@ -44,7 +44,7 @@ const mountDocument = (
 	// dev shell it lives below preview chrome, so bind it to the available page
 	// slot or the sticky save bar lands one header-height below the viewport.
 	const center = root.querySelector<HTMLElement>(
-		'[data-mcpv-configuration-center]',
+		'[data-delendai-configuration-center]',
 	);
 	if (center) center.style.height = '100%';
 	window.__MCPV_CONFIGURATION_HOST__ = host;

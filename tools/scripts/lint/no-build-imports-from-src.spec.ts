@@ -17,7 +17,7 @@ afterEach(async () => {
 });
 
 const createFixture = async (source: string): Promise<string> => {
-	const directory = await mkdtemp('/tmp/mcp-vertex-build-src-test-');
+	const directory = await mkdtemp('/tmp/delendai-build-src-test-');
 	temporaryDirectories.push(directory);
 	await writeFile(join(directory, 'index.js'), source, 'utf8');
 	return directory;

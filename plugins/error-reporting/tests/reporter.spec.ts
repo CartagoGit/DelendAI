@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import type {
 	IIssueExec,
-	ISafeMcpVertexReport,
+	ISafeDelendaiReport,
 } from '../src/lib/contracts/interfaces/reporter.interface';
 import { createSafeReporter, shouldReport } from '../src/lib/reporter.service';
 import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 // @ts-expect-error raw message must not be accepted by the safe report DTO.
-const _compileRejectsRawMessage: ISafeMcpVertexReport = { message: 'boom' };
+const _compileRejectsRawMessage: ISafeDelendaiReport = { message: 'boom' };
 void _compileRejectsRawMessage;
 
 describe('shouldReport', () => {
@@ -58,7 +58,7 @@ describe('shouldReport', () => {
 describe('createSafeReporter.submitSafeReport', () => {
 	const base = {
 		reporterVersion: '0.1.0',
-		mcpVertexVersion: '0.1.0',
+		delendaiVersion: '0.1.0',
 		packageId: '@delendai/error-reporting',
 		toolOwner: 'host-project',
 		toolCategory: 'host-specific',
@@ -74,7 +74,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 				fn: 'reportError',
 			},
 		],
-	} satisfies ISafeMcpVertexReport;
+	} satisfies ISafeDelendaiReport;
 	const reporter = createSafeReporter({
 		targetRepo: 'consumer/private-project',
 		labels: ['consumer-private-label'],
@@ -85,7 +85,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		const exec: IIssueExec = async () => ({
 			ok: true,
 			code: 0,
-			stdout: 'https://github.com/CartagoGit/mcp-vertex/issues/1234\n',
+			stdout: 'https://github.com/CartagoGit/delendai/issues/1234\n',
 			stderr: '',
 		});
 		const outcome = await reporter.submitSafeReport(base, exec);
@@ -93,7 +93,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		if (outcome.ok) {
 			expect(outcome.issueNumber).toBe(1234);
 			expect(outcome.issueUrl).toBe(
-				'https://github.com/CartagoGit/mcp-vertex/issues/1234',
+				'https://github.com/CartagoGit/delendai/issues/1234',
 			);
 		}
 	});
@@ -120,12 +120,12 @@ describe('createSafeReporter.submitSafeReport', () => {
 			return {
 				ok: true,
 				code: 0,
-				stdout: 'https://github.com/CartagoGit/mcp-vertex/issues/1\n',
+				stdout: 'https://github.com/CartagoGit/delendai/issues/1\n',
 				stderr: '',
 			};
 		};
 		const offlineReporter = createSafeReporter({
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 			labels: ['auto-reported', 'bug'],
 			workspaceRootAbs: '/tmp/proj',
 			networkProbe: async () => false,
@@ -144,7 +144,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 	it('allows gh after a reachable GitHub preflight, including auth responses', async () => {
 		let execCalls = 0;
 		const authenticatedReporter = createSafeReporter({
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: 'CartagoGit/delendai',
 			labels: ['auto-reported', 'bug'],
 			workspaceRootAbs: '/tmp/proj',
 			networkProbe: async () => true,
@@ -154,7 +154,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 			return {
 				ok: true,
 				code: 0,
-				stdout: 'https://github.com/CartagoGit/mcp-vertex/issues/2\n',
+				stdout: 'https://github.com/CartagoGit/delendai/issues/2\n',
 				stderr: '',
 			};
 		};
@@ -206,7 +206,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 			return {
 				ok: true,
 				code: 0,
-				stdout: 'https://github.com/CartagoGit/mcp-vertex/issues/9\n',
+				stdout: 'https://github.com/CartagoGit/delendai/issues/9\n',
 				stderr: '',
 			};
 		};

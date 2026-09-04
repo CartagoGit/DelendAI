@@ -16,23 +16,23 @@ import {
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 const contributions: IVscodeContributions = {
-	commands: ['mcp-vertex.showMetrics', 'mcp-vertex.refresh'],
-	views: ['mcp-vertex.memory'],
+	commands: ['delendai.showMetrics', 'delendai.refresh'],
+	views: ['delendai.memory'],
 };
 
 const passingMap: IParityMap = {
 	cliGroups: {
 		metrics: {
-			ui: { kind: 'vscode-command', id: 'mcp-vertex.showMetrics' },
+			ui: { kind: 'vscode-command', id: 'delendai.showMetrics' },
 		},
-		memory: { ui: { kind: 'vscode-view', id: 'mcp-vertex.memory' } },
+		memory: { ui: { kind: 'vscode-view', id: 'delendai.memory' } },
 		completion: {
 			waiver: 'shell-only: prints completion scripts, meaningless in a UI host',
 		},
 	},
 	vscodeCommands: {
-		'mcp-vertex.showMetrics': { cli: 'metrics' },
-		'mcp-vertex.refresh': {
+		'delendai.showMetrics': { cli: 'metrics' },
+		'delendai.refresh': {
 			waiver: 'UI refresh affordance; no scriptable counterpart needed',
 		},
 	},
@@ -124,7 +124,7 @@ describe('cli-ui-parity.script', () => {
 	});
 
 	it('flags an unmapped contributed VS Code command', () => {
-		const { 'mcp-vertex.refresh': _dropped, ...rest } =
+		const { 'delendai.refresh': _dropped, ...rest } =
 			passingMap.vscodeCommands;
 		const findings = checkParity(groups, contributions, {
 			...passingMap,
@@ -142,12 +142,12 @@ describe('cli-ui-parity.script', () => {
 			},
 			vscodeCommands: {
 				...passingMap.vscodeCommands,
-				'mcp-vertex.ghost': { cli: 'metrics' },
+				'delendai.ghost': { cli: 'metrics' },
 			},
 		});
 		expect(findings).toHaveLength(2);
 		expect(findings[0]?.subject).toBe('cliGroups["ghost"]');
-		expect(findings[1]?.subject).toBe('vscodeCommands["mcp-vertex.ghost"]');
+		expect(findings[1]?.subject).toBe('vscodeCommands["delendai.ghost"]');
 	});
 
 	it('flags a ui affordance that is not actually contributed', () => {
@@ -156,13 +156,13 @@ describe('cli-ui-parity.script', () => {
 			cliGroups: {
 				...passingMap.cliGroups,
 				metrics: {
-					ui: { kind: 'vscode-command', id: 'mcp-vertex.missing' },
+					ui: { kind: 'vscode-command', id: 'delendai.missing' },
 				},
 			},
 		});
 		expect(findings).toHaveLength(1);
 		expect(findings[0]?.reason).toContain(
-			'"mcp-vertex.missing" is not a contributed command',
+			'"delendai.missing" is not a contributed command',
 		);
 	});
 
@@ -171,7 +171,7 @@ describe('cli-ui-parity.script', () => {
 			...passingMap,
 			vscodeCommands: {
 				...passingMap.vscodeCommands,
-				'mcp-vertex.showMetrics': { cli: 'telemetry report' },
+				'delendai.showMetrics': { cli: 'telemetry report' },
 			},
 		});
 		expect(findings).toHaveLength(1);
@@ -187,7 +187,7 @@ describe('cli-ui-parity.script', () => {
 				...passingMap.cliGroups,
 				completion: { waiver: 'TODO' },
 				memory: {
-					ui: { kind: 'vscode-view', id: 'mcp-vertex.memory' },
+					ui: { kind: 'vscode-view', id: 'delendai.memory' },
 					waiver: 'also waived, which is ambiguous',
 				},
 			},
@@ -225,7 +225,7 @@ describe('cli-ui-parity.script', () => {
 		});
 		expect(result.findings).toEqual([]);
 		expect(result.groups).toContain('usage-tracking');
-		expect(result.vscodeCommands).toContain('mcp-vertex.openDashboard');
+		expect(result.vscodeCommands).toContain('delendai.openDashboard');
 		expect(formatReport(result)).toContain('✓ cli-ui-parity');
 	});
 });

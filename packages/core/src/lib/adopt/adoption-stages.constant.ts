@@ -10,7 +10,7 @@
  *
  * Default stage is `core` — the minimum viable adoption
  * (version control + code discovery + project docs + memory) so a
- * brand-new user can drop mcp-vertex in without committing to the
+ * brand-new user can drop delendai in without committing to the
  * full toolkit up front.
  */
 

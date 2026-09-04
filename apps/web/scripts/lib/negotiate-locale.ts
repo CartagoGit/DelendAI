@@ -3,7 +3,7 @@
  * locale from a list of inputs in priority order:
  *
  *   1. Explicit override (`?lang=es` query string).
- *   2. Persisted cookie (`mcp_vertex_locale=es`).
+ *   2. Persisted cookie (`delendai_locale=es`).
  *   3. Browser `navigator.languages` / `Accept-Language` header.
  *
  * The function is DOM-free: it takes raw strings and returns the
@@ -33,7 +33,7 @@ import {
 export type NegotiateInput = {
 	/** Explicit override from the URL (e.g. `?lang=es`). May be invalid. */
 	readonly queryLang: string | null;
-	/** Persisted choice from a previous visit (`mcp_vertex_locale`). */
+	/** Persisted choice from a previous visit (`delendai_locale`). */
 	readonly cookieLang: string | null;
 	/**
 	 * Either the raw `Accept-Language` HTTP header value, or a JSON-ish
@@ -51,7 +51,7 @@ export type NegotiateResult = {
 };
 
 /** Cookie name shared between server-set and client-set code paths. */
-export const LOCALE_COOKIE = 'mcp_vertex_locale';
+export const LOCALE_COOKIE = 'delendai_locale';
 
 /** Type guard — true when `code` is one of the 12 supported Lang codes. */
 const isSupported = (code: string): code is Lang =>

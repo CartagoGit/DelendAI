@@ -1,6 +1,6 @@
 # AGENT.md — package `packages/core`
 
-> Below the `<!-- mcp-vertex:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.
@@ -46,16 +46,16 @@ _(none)_
 ## Do not
 
 - Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
-- Do not hand-edit content between `<!-- mcp-vertex:begin -->`/`<!-- mcp-vertex:end -->` markers; regenerate via the owning `gen:*` script instead.
+- Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
 - Do not introduce project-specific code; `@delendai/core` is project-agnostic.
 - Do not read files via `node:fs`; always go through the `IFileReader` abstraction.
 
 ## Token hotspots
 
-- `mcp-vertex_configuration_center` — 3,969 B total, 3,467 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
-- `mcp-vertex_create_project` — 3,704 B total, 395 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
-- `mcp-vertex_adopt_project` — 3,626 B total, 2,957 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
-- `mcp-vertex_scaffold` — 2,522 B total, 784 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `delendai_configuration_center` — 3,969 B total, 3,467 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_create_project` — 3,704 B total, 395 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_adopt_project` — 3,626 B total, 2,957 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_scaffold` — 2,522 B total, 784 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
-<!-- mcp-vertex:end agent-md -->
+<!-- delendai:end agent-md -->
 

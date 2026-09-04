@@ -7,7 +7,7 @@
  *
  * The implementation deliberately does NOT use a real TypeScript
  * parser: a regex over the "from ..." form is enough for the
- * "import" / "export ... from" shapes the mcp-vertex codebase uses,
+ * "import" / "export ... from" shapes the delendai codebase uses,
  * and it keeps the I/O layer dependency-free.
  */
 

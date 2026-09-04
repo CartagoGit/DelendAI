@@ -29,7 +29,7 @@ export const buildCancelInvocationRegistration = (
 	tags: ['orchestrator-runner', 'lazy', 'invoke'],
 	summary:
 		'Cancel an in-flight invocation by id, applying the per-kind cancellation ladder.',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_cancel_invocation',
+	descriptionKey: 'delendai_orchestrator-runner_cancel_invocation',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_cancel_invocation`,

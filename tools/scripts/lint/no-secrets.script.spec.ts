@@ -32,7 +32,7 @@ describe('no-secrets scanning', () => {
 	it('honours an explicit, visible opt-out on the line', () => {
 		const findings = scanText(
 			'a.ts',
-			`const k = '${stripeKey}'; // mcpv-allow-secret`,
+			`const k = '${stripeKey}'; // delendai-allow-secret`,
 		);
 		expect(findings).toEqual([]);
 	});
@@ -100,7 +100,7 @@ describe('no-secrets neutralising', () => {
 	});
 
 	it('respects the opt-out marker when neutralising too', () => {
-		const line = `const k = '${stripeKey}'; // mcpv-allow-secret`;
+		const line = `const k = '${stripeKey}'; // delendai-allow-secret`;
 		expect(redactTextInPlace(line).text).toBe(line);
 	});
 

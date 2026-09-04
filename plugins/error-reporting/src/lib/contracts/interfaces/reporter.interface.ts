@@ -5,9 +5,9 @@ import type {
 	ToolOwner,
 } from '@delendai/core/public';
 import type { SafeReporterTransportFailureCode } from '../constants/safe-reporter-failure-codes.constant';
-import type { McpVertexErrorCode } from '../constants/error-codes.constant';
+import type { DelendaiErrorCode } from '../constants/error-codes.constant';
 import {
-	McpVertexInternalError,
+	DelendaiInternalError,
 	isSafeScalar,
 } from '../../mcp-internal-error.helper';
 
@@ -76,14 +76,14 @@ export interface IEnvironmentClass {
 	readonly platformFamily: 'windows' | 'linux' | 'macos' | 'unknown';
 }
 
-export interface ISafeMcpVertexReport {
+export interface ISafeDelendaiReport {
 	readonly reporterVersion: string;
-	readonly mcpVertexVersion: string;
+	readonly delendaiVersion: string;
 	readonly packageId: string;
 	readonly safeToolId?: SafeToolId | undefined;
 	readonly toolOwner: ToolOwner;
 	readonly toolCategory: SafeToolCategory;
-	readonly errorCode?: McpVertexErrorCode | undefined;
+	readonly errorCode?: DelendaiErrorCode | undefined;
 	readonly failureClass: SafeFailureClass;
 	readonly classification: IssueClassification;
 	readonly fingerprint: string;
@@ -92,7 +92,7 @@ export interface ISafeMcpVertexReport {
 	readonly environmentClass?: IEnvironmentClass | undefined;
 }
 
-export { McpVertexInternalError, isSafeScalar };
+export { DelendaiInternalError, isSafeScalar };
 
 export interface ISafeReporterConfig {
 	readonly targetRepo: string;
@@ -103,7 +103,7 @@ export interface ISafeReporterConfig {
 
 export interface ISafeReporter {
 	submitSafeReport(
-		report: ISafeMcpVertexReport,
+		report: ISafeDelendaiReport,
 		exec?: IIssueExec,
 	): Promise<ISubmitIssueOutcome>;
 }

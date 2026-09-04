@@ -52,7 +52,7 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 		const auditsDir = join(
 			workspaceRoot,
 			'docs',
-			'mcp-vertex',
+			'delendai',
 			'proposals',
 			'done',
 			'audits',
@@ -96,14 +96,14 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 		buildConsolidateRegistration({
 			namespacePrefix: 'audit',
 			workspaceRoot,
-			defaultAuditDir: 'docs/mcp-vertex/proposals/done/audits',
+			defaultAuditDir: 'docs/delendai/proposals/done/audits',
 			peerPlugins,
 		});
 
 	it('accepts a normal relative path inside the workspace', async () => {
 		const out = parse(
 			await invoke(buildReg(), {
-				auditDir: 'docs/mcp-vertex/proposals/done/audits',
+				auditDir: 'docs/delendai/proposals/done/audits',
 			}),
 		);
 		expect(out.detail).toBe('normal');
@@ -113,7 +113,7 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 	it('supports compact detail by trimming consensus, findings and markdown', async () => {
 		const out = parse(
 			await invoke(buildReg(), {
-				auditDir: 'docs/mcp-vertex/proposals/done/audits',
+				auditDir: 'docs/delendai/proposals/done/audits',
 				detail: 'compact',
 			}),
 		);
@@ -140,7 +140,7 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 		const out = parse(
 			await invoke(buildReg(), {
 				auditDir:
-					'docs/mcp-vertex/proposals/done/audits/../../../../../../outside-fixture',
+					'docs/delendai/proposals/done/audits/../../../../../../outside-fixture',
 			}),
 		);
 		// Either rejected by containment (escape) or surfaced as a read

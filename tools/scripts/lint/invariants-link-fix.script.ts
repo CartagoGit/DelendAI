@@ -2,7 +2,7 @@
 /**
  * invariants-link-fix.script.ts — d00015 (AUD-G05).
  *
- * `docs/mcp-vertex/architecture/invariants/*.md` documents invariants
+ * `docs/delendai/architecture/invariants/*.md` documents invariants
  * per subsystem, each tagged with an "Estado actual" line. When that
  * line says the invariant is broken or missing (`FALSO` /
  * `NO IMPLEMENTADO`), the whole point of writing it down is to point
@@ -12,7 +12,7 @@
  * This lint fails when a broken/missing invariant's block has no
  * proposal-id-shaped reference (`[a-z]\d{4,5}`, e.g. `r00037`,
  * `x00288`, `f00273`) that resolves to a real file under
- * `docs/mcp-vertex/proposals/**` (any lifecycle folder — retired,
+ * `docs/delendai/proposals/**` (any lifecycle folder — retired,
  * blocked, and done all count; only a reference to an id that never
  * existed on disk is an error).
  *
@@ -28,8 +28,8 @@ import { readdir, readFile } from 'node:fs/promises';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
-export const INVARIANTS_DIR = 'docs/mcp-vertex/architecture/invariants';
-const PROPOSALS_DIR = 'docs/mcp-vertex/proposals';
+export const INVARIANTS_DIR = 'docs/delendai/architecture/invariants';
+const PROPOSALS_DIR = 'docs/delendai/proposals';
 
 const ID_RE = /\b([a-z]\d{4,5})\b/g;
 const BROKEN_STATE_RE = /\*\*Estado actual\*\*:\s*(FALSO|NO IMPLEMENTADO)/i;

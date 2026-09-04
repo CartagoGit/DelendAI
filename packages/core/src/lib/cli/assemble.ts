@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path';
 
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
-import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type {
 	IToolIdentityRegistry,
 	IToolRegistryEntry,
@@ -23,7 +23,7 @@ import type { WorkspacePathStatus } from '../contracts/interfaces/workspace-layo
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
 import { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
-import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
+import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { classifyOrigin } from '../plugins/classify-origin';
 import { joinRel } from '../shared/paths';
 import {
@@ -82,7 +82,7 @@ const toolOwnerFromOrigin = (
 ): ToolOwner => {
 	switch (origin) {
 		case 'bundled':
-			return 'mcp-vertex';
+			return 'delendai';
 		case 'external':
 			return 'external-mcp';
 		default:
@@ -132,7 +132,7 @@ const toolCategoryOf = (input: {
 };
 
 export interface IAssembledCliConfig {
-	readonly config: IMcpVertexHostConfig;
+	readonly config: IDelendaiHostConfig;
 	/** Operator-only report; never sent through the MCP protocol. */
 	readonly startupReport: import('../startup-report/model').IStartupReport;
 	/** Rebuild the report after MCP registration exposes the real schemas. */
@@ -191,14 +191,14 @@ export interface IAssembleCliDeps {
 /**
  * Build the full host config from parsed CLI args: resolve the
  * workspace and core paths (CLI flag > config file > default), load
- * every `--plugins` entry passing each its `mcp-vertex.config.json`
+ * every `--plugins` entry passing each its `delendai.config.json`
  * options, merge the registrations, and always expose the core
  * meta-tools (scaffold + the hybrid analyze/create_project bootstrap).
  * Pure except for the injectable importer/reader, so it is fully
  * testable.
  */
 export const assembleCliConfig = async (
-	args: IMcpVertexCliArgs,
+	args: IDelendaiCliArgs,
 	deps: IAssembleCliDeps = {},
 ): Promise<IAssembledCliConfig> => {
 	const workspace = createWorkspacePathProvider(args.workspace);
@@ -220,7 +220,7 @@ export const assembleCliConfig = async (
 			}
 		});
 
-	// Config file: --config, else `mcp-vertex.config.json` at the workspace.
+	// Config file: --config, else `delendai.config.json` at the workspace.
 	// Read the raw text ONCE and derive both the parsed config and the
 	// diagnostic, so the doctor reuses this instead of re-reading.
 	const configPath =
@@ -281,7 +281,7 @@ export const assembleCliConfig = async (
 			...layoutIssues,
 		],
 	};
-	const corePrefix = args.namespacePrefix ?? 'mcp-vertex';
+	const corePrefix = args.namespacePrefix ?? 'delendai';
 	const keepLegacy = fileConfig.keepLegacy ?? false;
 	// U5: native authorized-roots filesystem allowlist. The config
 	// lists absolute roots the operator authorizes for `fs_read`/`fs_write`
@@ -714,7 +714,7 @@ export const assembleCliConfig = async (
 
 		toolRegistryEntries.set(`${corePrefix}_${registration.id}`, {
 			packageName: '@delendai/core',
-			owner: 'mcp-vertex',
+			owner: 'delendai',
 			publicToolName: registration.id,
 			category: toolCategoryOf({
 				packageName: '@delendai/core',
@@ -735,7 +735,7 @@ export const assembleCliConfig = async (
 		const packageName = `@delendai/${descriptor.pluginId}`;
 		toolRegistryEntries.set(descriptor.name, {
 			packageName,
-			owner: 'mcp-vertex',
+			owner: 'delendai',
 			publicToolName: descriptor.toolId,
 			category: toolCategoryOf({
 				packageName,
@@ -830,17 +830,17 @@ export const assembleCliConfig = async (
 				await observer.handler(info);
 			} catch (hookError) {
 				process.stderr.write(
-					`[mcp-vertex] onHookError error (${observer.pluginName}): ${hookError instanceof Error ? hookError.message : String(hookError)}\n`,
+					`[delendai] onHookError error (${observer.pluginName}): ${hookError instanceof Error ? hookError.message : String(hookError)}\n`,
 				);
 			}
 		}
 	};
 
-	const config: IMcpVertexHostConfig = {
+	const config: IDelendaiHostConfig = {
 		metadata: {
 			name: args.serverName,
 			version: args.serverVersion,
-			description: 'mcp-vertex server (CLI plugin loader).',
+			description: 'delendai server (CLI plugin loader).',
 		},
 		namespacePrefix: corePrefix,
 		workspace,
@@ -871,7 +871,7 @@ export const assembleCliConfig = async (
 								await observer.handler(toolName, toolArgs);
 							} catch (e) {
 								process.stderr.write(
-									`[mcp-vertex] onToolStart error: ${e instanceof Error ? e.message : String(e)}\n`,
+									`[delendai] onToolStart error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
 								await emitHookError({
 									pluginName: observer.pluginName,
@@ -925,7 +925,7 @@ export const assembleCliConfig = async (
 								});
 							} catch (e) {
 								process.stderr.write(
-									`[mcp-vertex] cancellation log error: ${e instanceof Error ? e.message : String(e)}\n`,
+									`[delendai] cancellation log error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
 							}
 						}
@@ -939,7 +939,7 @@ export const assembleCliConfig = async (
 								);
 							} catch (e) {
 								process.stderr.write(
-									`[mcp-vertex] onToolCancel error: ${e instanceof Error ? e.message : String(e)}\n`,
+									`[delendai] onToolCancel error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
 								await emitHookError({
 									pluginName: observer.pluginName,
@@ -976,7 +976,7 @@ export const assembleCliConfig = async (
 								);
 							} catch (e) {
 								process.stderr.write(
-									`[mcp-vertex] onToolCall error: ${e instanceof Error ? e.message : String(e)}\n`,
+									`[delendai] onToolCall error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
 								await emitHookError({
 									pluginName: observer.pluginName,

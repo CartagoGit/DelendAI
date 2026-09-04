@@ -6,9 +6,9 @@
  * tool and every knowledge entry consumes this object so that the
  * defaults stay coherent.
  *
- * Conventions are project-scoped: defaults match the mcp-vertex
+ * Conventions are project-scoped: defaults match the delendai
  * monorepo itself (vitest, colocated specs, `*.spec.ts`), but every
- * field is overridable from `mcp-vertex.config.json`.
+ * field is overridable from `delendai.config.json`.
  */
 
 export type SpecLayout = 'colocate' | 'tests-mirror' | 'tests-flat';

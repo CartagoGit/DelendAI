@@ -4,35 +4,35 @@
 // emitted by `renderPageHeader` in
 // `apps/shared/src/components/ui/page-header.ts` (f00102 S3.1).
 //
-// The Astro wrapper applies `<header class="mcpv-page-header">` to
-// the root and embeds the inner `<div class="mcpv-page-header__inner">`
-// from the renderer. The class namespace is `mcpv-page-header` /
-// `mcpv-page-header__*`; the trailing @extend block keeps `.page-header`
+// The Astro wrapper applies `<header class="delendai-page-header">` to
+// the root and embeds the inner `<div class="delendai-page-header__inner">`
+// from the renderer. The class namespace is `delendai-page-header` /
+// `delendai-page-header__*`; the trailing @extend block keeps `.page-header`
 // valid for one slice so the docs site keeps emitting markup
 // without a rename.
 
-.mcpv-page-header {
-	padding: var(--mcpv-s-6, 3rem) var(--mcpv-s-4, 1rem);
-	border-bottom: 1px solid var(--mcpv-border, var(--line));
+.delendai-page-header {
+	padding: var(--delendai-s-6, 3rem) var(--delendai-s-4, 1rem);
+	border-bottom: 1px solid var(--delendai-border, var(--line));
 
 	&__inner {
-		max-width: var(--mcpv-maxw, 68rem);
+		max-width: var(--delendai-maxw, 68rem);
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
-		gap: var(--mcpv-s-3, 0.75rem);
+		gap: var(--delendai-s-3, 0.75rem);
 	}
 
 	&__crumb {
 		display: inline-flex;
 		align-items: center;
 		flex-wrap: wrap;
-		gap: var(--mcpv-s-1, 0.4rem);
+		gap: var(--delendai-s-1, 0.4rem);
 		font-size: 0.85rem;
-		color: var(--mcpv-fg-muted, var(--muted));
+		color: var(--delendai-fg-muted, var(--muted));
 
 		& a {
-			color: var(--mcpv-link, var(--accent, currentColor));
+			color: var(--delendai-link, var(--accent, currentColor));
 			text-decoration: none;
 
 			&:hover {
@@ -41,12 +41,12 @@
 		}
 
 		& [aria-current='page'] {
-			color: var(--mcpv-fg, var(--fg));
+			color: var(--delendai-fg, var(--fg));
 			font-weight: 600;
 		}
 
 		& [aria-hidden='true'] {
-			color: var(--mcpv-fg-muted, var(--muted));
+			color: var(--delendai-fg-muted, var(--muted));
 			opacity: 0.6;
 		}
 	}
@@ -56,15 +56,15 @@
 		font-size: clamp(1.6rem, 4vw, 2.4rem);
 		font-weight: 700;
 		letter-spacing: -0.01em;
-		color: var(--mcpv-fg, var(--fg));
+		color: var(--delendai-fg, var(--fg));
 		line-height: 1.2;
 	}
 }
 
 // Legacy alias — kept so `apps/web` pages that still ship
 // `<header class="page-header">` keep working without a markup
-// change. Remove once the rename to `.mcpv-page-header*` lands.
+// change. Remove once the rename to `.delendai-page-header*` lands.
 
 .page-header {
-	@extend .mcpv-page-header;
+	@extend .delendai-page-header;
 }

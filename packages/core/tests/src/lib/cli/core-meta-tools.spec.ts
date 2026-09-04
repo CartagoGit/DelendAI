@@ -11,7 +11,7 @@ import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/
 
 const workspaces: string[] = [];
 const testWorkspace = (): string => {
-	const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-core-meta-'));
+	const workspace = mkdtempSync(join(tmpdir(), 'delendai-core-meta-'));
 	workspaces.push(workspace);
 	return workspace;
 };
@@ -128,7 +128,7 @@ describe('core meta-tools', async () => {
 		);
 		expect(
 			snap.tools.find(
-				(t: { name: string }) => t.name === 'mcp-vertex_demo_do',
+				(t: { name: string }) => t.name === 'delendai_demo_do',
 			)?.summary,
 		).toBe('does the thing');
 		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
@@ -177,7 +177,7 @@ describe('core meta-tools', async () => {
 		const first = await callTool(byId('overview'));
 		expect(first.unusedActivePlugins).toEqual(['demo']);
 
-		config.metricsRegistry?.record('mcp-vertex_demo_do', {
+		config.metricsRegistry?.record('delendai_demo_do', {
 			ms: 1,
 			bytes: 0,
 			isError: false,
@@ -226,7 +226,7 @@ describe('core meta-tools', async () => {
 				},
 			}),
 			readFile: async (absolutePath) =>
-				absolutePath.endsWith('mcp-vertex.config.json')
+				absolutePath.endsWith('delendai.config.json')
 					? JSON.stringify({
 							plugins: {
 								'my-local': { path: './local.js' },
@@ -298,10 +298,10 @@ describe('core meta-tools', async () => {
 		expect(typeof compact.tools).toBe('object');
 		// core tools (e.g. overview) are grouped under `core` as bare stems.
 		expect(compact.tools.core).toContain('overview');
-		// the demo plugin's tools are stems (no `mcp-vertex_demo_` prefix).
+		// the demo plugin's tools are stems (no `delendai_demo_` prefix).
 		expect(Array.isArray(compact.tools.demo)).toBe(true);
 		expect(
-			compact.tools.demo.every((s: string) => !s.includes('mcp-vertex_')),
+			compact.tools.demo.every((s: string) => !s.includes('delendai_')),
 		).toBe(true);
 		expect(compact.plugins).toContain('demo');
 		expect(compact.activationReport).toBeUndefined();
@@ -324,7 +324,7 @@ describe('core meta-tools', async () => {
 		const { byId } = await assemble();
 		const snap = await callTool(byId('overview'));
 		const summary = snap.tools.find(
-			(t: { name: string }) => t.name === 'mcp-vertex_demo_long',
+			(t: { name: string }) => t.name === 'delendai_demo_long',
 		)?.summary;
 		expect(summary).toHaveLength(96);
 		expect(summary.endsWith('...')).toBe(true);

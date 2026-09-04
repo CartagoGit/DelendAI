@@ -27,7 +27,7 @@ const main = (): number => {
 	const archiveRoot = join(
 		root,
 		'docs',
-		'mcp-vertex',
+		'delendai',
 		'proposals',
 		'legacy',
 		'closed',

@@ -67,15 +67,14 @@ describe('repo-root normalisation (the two spellings must not corrupt each other
 	it('does not splice the prefix in twice when the long form is already present', () => {
 		// Running the short pass over a doc that already holds the
 		// repo-root path used to yield
-		// `docs/mcp-vertex/proposals/docs/mcp-vertex/proposals/review/x.md`.
-		const markdown =
-			'- **Files**: `docs/mcp-vertex/proposals/ready/x.md`\n';
+		// `docs/delendai/proposals/docs/delendai/proposals/review/x.md`.
+		const markdown = '- **Files**: `docs/delendai/proposals/ready/x.md`\n';
 		const result = rewriteStaleProposalSelfPaths(markdown, {
 			oldRelPath: 'ready/x.md',
-			newRelPath: 'docs/mcp-vertex/proposals/review/x.md',
+			newRelPath: 'docs/delendai/proposals/review/x.md',
 		});
 		expect(result.markdown).not.toContain(
-			'proposals/docs/mcp-vertex/proposals',
+			'proposals/docs/delendai/proposals',
 		);
 		expect(result.replacements).toBe(0);
 	});
@@ -85,11 +84,11 @@ describe('repo-root normalisation (the two spellings must not corrupt each other
 			'- **Files**: `ready/x.md`\n',
 			{
 				oldRelPath: 'ready/x.md',
-				newRelPath: 'docs/mcp-vertex/proposals/review/x.md',
+				newRelPath: 'docs/delendai/proposals/review/x.md',
 			},
 		);
 		expect(result.markdown).toContain(
-			'`docs/mcp-vertex/proposals/review/x.md`',
+			'`docs/delendai/proposals/review/x.md`',
 		);
 		expect(result.replacements).toBe(1);
 	});

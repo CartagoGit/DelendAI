@@ -30,7 +30,7 @@ surface knowledge at orientation get it for free.
 ## Config
 
 ```jsonc
-// mcp-vertex.config.json
+// delendai.config.json
 {
 	"plugins": {
 		"test-policy": {
@@ -44,7 +44,7 @@ surface knowledge at orientation get it for free.
 }
 ```
 
-Load standalone with `mcp-vertex --plugins=test-policy`; it ships in the
+Load standalone with `delendai --plugins=test-policy`; it ships in the
 `standard` preset (and everything above it) and in `vertex`.
 
 ## State

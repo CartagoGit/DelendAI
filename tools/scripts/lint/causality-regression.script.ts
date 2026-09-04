@@ -51,7 +51,7 @@ const writeIndex = async (
 		}[];
 	}[],
 ): Promise<void> => {
-	const docsDir = join(workspace, 'docs', 'mcp-vertex');
+	const docsDir = join(workspace, 'docs', 'delendai');
 	await mkdir(join(docsDir, 'proposals'), { recursive: true });
 	await writeFile(
 		join(docsDir, 'proposals', 'index.json'),
@@ -90,10 +90,10 @@ const expect = (name: string, value: boolean, detail: string): void => {
 const main = async (): Promise<number> => {
 	const workspace = await (async () => {
 		const dir = await mkdtemp(
-			join(tmpdir(), 'mcp-vertex-causality-regression-'),
+			join(tmpdir(), 'delendai-causality-regression-'),
 		);
 		// mkdtemp under tmpdir is outside any repo; write the index
-		// under <workspace>/docs/mcp-vertex/proposals/index.json
+		// under <workspace>/docs/delendai/proposals/index.json
 		return dir;
 	})();
 
@@ -101,11 +101,11 @@ const main = async (): Promise<number> => {
 		// Step 1 — start the listener with NO index file present.
 		const listener = createSliceListener(
 			workspace,
-			join(workspace, 'docs', 'mcp-vertex'),
+			join(workspace, 'docs', 'delendai'),
 			{ kind: 'slice', onStatuses: ['done'] },
 			handler,
 			200,
-			join(workspace, 'docs', 'mcp-vertex'),
+			join(workspace, 'docs', 'delendai'),
 		);
 		listener.start();
 

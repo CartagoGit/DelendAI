@@ -85,9 +85,9 @@ describe('checkAdrCoverage (integration: real filesystem under a temp dir)', () 
 		await rm(root, { recursive: true, force: true });
 	});
 
-	const adrDir = (r: string) => join(r, 'docs', 'mcp-vertex', 'adr');
+	const adrDir = (r: string) => join(r, 'docs', 'delendai', 'adr');
 	const proposalsDir = (r: string) =>
-		join(r, 'docs', 'mcp-vertex', 'proposals');
+		join(r, 'docs', 'delendai', 'proposals');
 
 	it('reports zero issues when every referenced id has a proposal file', async () => {
 		await mkdir(adrDir(root), { recursive: true });
@@ -117,7 +117,7 @@ describe('checkAdrCoverage (integration: real filesystem under a temp dir)', () 
 		const { issues } = checkAdrCoverage(root);
 		expect(issues).toEqual([
 			{
-				adrFile: 'docs/mcp-vertex/adr/0007-example.md',
+				adrFile: 'docs/delendai/adr/0007-example.md',
 				referencedId: 'r99999',
 			},
 		]);

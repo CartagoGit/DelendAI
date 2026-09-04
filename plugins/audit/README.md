@@ -9,7 +9,7 @@ entregados por el host.
 ### Activation
 
 ```bash
-mcp-vertex --plugins=audit
+delendai --plugins=audit
 ```
 
 ## Tools
@@ -49,7 +49,7 @@ El brief incluye:
 
 ### `audit_consolidate { auditDir?, topActions? }` — consolida N auditorías
 
-Lee cada `*.md` de `auditDir` (default `docs/mcp-vertex/proposals/done/audits`), los
+Lee cada `*.md` de `auditDir` (default `docs/delendai/proposals/done/audits`), los
 parsea con `parseAuditBody`, deduplica los hallazgos por **título +
 archivo citado**, promedia las puntuaciones por dimensión, y devuelve:
 
@@ -95,7 +95,7 @@ omitida; no existe un modo silencioso de fingir que se materializó.
 ## Configuración
 
 ```jsonc
-// mcp-vertex.config.json
+// delendai.config.json
 {
   "plugins": {
     "audit": { "options": { "topActions": 5, "autoScaffoldProposals": true } }
@@ -109,7 +109,7 @@ es la fuente autoritativa de tipos y límites.
 
 ## Ver también
 
-- `docs/mcp-vertex/proposals/done/audits/` — los archivos `.md` de auditorías individuales
+- `docs/delendai/proposals/done/audits/` — los archivos `.md` de auditorías individuales
   que este plugin parsea.
 
 ### `audit_run { scope, targets, ... }` — ejecuta revisores configurados
@@ -129,7 +129,7 @@ items as proposal drafts for human review.
 ## Activate
 
 ```bash
-mcp-vertex --plugins=audit
+delendai --plugins=audit
 ```
 
 ### Inputs
@@ -174,7 +174,7 @@ Result shape:
   "skipped": 2,
   "drafts": [
     {
-      "absPath": "/repo/docs/mcp-vertex/proposals/ready/f0012345-fix-issue.md",
+      "absPath": "/repo/docs/delendai/proposals/ready/f0012345-fix-issue.md",
       "proposalId": "f0012345",
       "rank": 1,
       "finding": {
@@ -190,5 +190,5 @@ Result shape:
 
 ### Design reference
 
-See [docs/mcp-vertex/proposals/done/feats/f00139-self-audit-dogfood-loop.md](docs/mcp-vertex/proposals/done/feats/f00139-self-audit-dogfood-loop.md)
+See [docs/delendai/proposals/done/feats/f00139-self-audit-dogfood-loop.md](docs/delendai/proposals/done/feats/f00139-self-audit-dogfood-loop.md)
 for the original S3 design notes and acceptance criteria.

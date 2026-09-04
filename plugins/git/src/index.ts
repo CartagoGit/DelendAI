@@ -31,12 +31,12 @@ const requireEffects = (
  * Read-only git orientation, PLUS opt-in write tools. Exposes
  * status / changed / diff / log / blame / show / worktree as structured
  * JSON so any agent sees what changed cheaply, in any repo. Load with
- * `mcp-vertex --plugins=git`.
+ * `delendai --plugins=git`.
  *
  * `git_commit`/`git_push` are NOT registered by default — they break the
  * plugin's read-only posture (f00020 R1), so a host must opt in
  * explicitly via `{ "plugins": { "git": { "options": { "allowWrite": true } } } }`
- * in `mcp-vertex.config.json`. Mirrors the same `options.allowWrite`
+ * in `delendai.config.json`. Mirrors the same `options.allowWrite`
  * gate used by other write-capable plugins in this repo.
  */
 

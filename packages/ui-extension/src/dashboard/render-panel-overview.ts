@@ -19,7 +19,7 @@ export const renderPanelOverview = (
 	const pluginRows = model.plugins
 		.map(
 			(p) =>
-				`<li><code>${escapeHtml(p.name)}</code>${p.version === undefined ? '' : ` <span class="mcpv-fg-muted">v${escapeHtml(p.version)}</span>`}</li>`,
+				`<li><code>${escapeHtml(p.name)}</code>${p.version === undefined ? '' : ` <span class="delendai-fg-muted">v${escapeHtml(p.version)}</span>`}</li>`,
 		)
 		.join('');
 	const knowledgeRows = model.knowledgeIds
@@ -27,30 +27,30 @@ export const renderPanelOverview = (
 		.join('');
 
 	return `
-<section class="mcpv-panel" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
-	<h2 class="mcpv-panel__title">${escapeHtml(text('tabOverview'))}</h2>
-	<div class="mcpv-grid">
-		<div class="mcpv-card mcpv-card--half">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.overview.server'))}</h3>
+<section class="delendai-panel" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+	<h2 class="delendai-panel__title">${escapeHtml(text('tabOverview'))}</h2>
+	<div class="delendai-grid">
+		<div class="delendai-card delendai-card--half">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.overview.server'))}</h3>
 			<p><strong>${escapeHtml(model.serverName)}</strong> v${escapeHtml(model.serverVersion)}</p>
-			<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.overview.namespacePrefix'))}: <code>${escapeHtml(model.namespacePrefix)}</code></p>
+			<p class="delendai-fg-muted">${escapeHtml(text('dashboard.overview.namespacePrefix'))}: <code>${escapeHtml(model.namespacePrefix)}</code></p>
 			<p>${escapeHtml(text('dashboard.overview.recommendedNextAction'))}:</p>
 			<pre>${escapeHtml(model.recommendedNextAction)}</pre>
 		</div>
-		<div class="mcpv-card mcpv-card--half">
-			<h3 class="mcpv-card__title">${escapeHtml(text('tabPlugins'))} (${formatNumber(model.plugins.length)})</h3>
+		<div class="delendai-card delendai-card--half">
+			<h3 class="delendai-card__title">${escapeHtml(text('tabPlugins'))} (${formatNumber(model.plugins.length)})</h3>
 			<ul>${pluginRows}</ul>
 		</div>
-		<div class="mcpv-card mcpv-card--half">
-			<h3 class="mcpv-card__title">${escapeHtml(text('tabTools'))} (${formatNumber(model.tools.length)})</h3>
+		<div class="delendai-card delendai-card--half">
+			<h3 class="delendai-card__title">${escapeHtml(text('tabTools'))} (${formatNumber(model.tools.length)})</h3>
 			<ul>${model.tools
 				.slice(0, 12)
 				.map((t) => `<li><code>${escapeHtml(t.name)}</code></li>`)
 				.join('')}</ul>
-			${model.tools.length > 12 ? `<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.overview.toolsMore', { count: model.tools.length - 12 }))}</p>` : ''}
+			${model.tools.length > 12 ? `<p class="delendai-fg-muted">${escapeHtml(text('dashboard.overview.toolsMore', { count: model.tools.length - 12 }))}</p>` : ''}
 		</div>
-		<div class="mcpv-card mcpv-card--half">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.overview.knowledge'))} (${formatNumber(model.knowledgeIds.length)})</h3>
+		<div class="delendai-card delendai-card--half">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.overview.knowledge'))} (${formatNumber(model.knowledgeIds.length)})</h3>
 			<ul>${knowledgeRows}</ul>
 		</div>
 	</div>

@@ -32,7 +32,7 @@ const sumComponents = (breakdown: {
 describe('measureToolComponentBytes', () => {
 	it('decomposes a synthetic tool entry into parts that sum to the whole', () => {
 		const tool = {
-			name: 'mcp-vertex_proposals_round_context',
+			name: 'delendai_proposals_round_context',
 			description: 'Return the current proposal round context.',
 			inputSchema: { type: 'object', properties: {} },
 			outputSchema: {
@@ -92,11 +92,11 @@ describe('measureToolComponentBytes', () => {
 					// like this one, so it must never be negative.
 					expect(breakdown.otherFieldBytes).toBeGreaterThanOrEqual(0);
 				}
-				// mcp-vertex_overview is always registered by core and always
+				// delendai_overview is always registered by core and always
 				// carries the SDK's `execution` field, so this real,
 				// previously-unaccounted wire cost should show up here.
 				const overview = metrics.toolBreakdowns.find(
-					(row) => row.name === 'mcp-vertex_overview',
+					(row) => row.name === 'delendai_overview',
 				);
 				expect(overview?.otherFieldBytes).toBeGreaterThan(0);
 				const ownerSum = metrics.ownerRows.reduce(

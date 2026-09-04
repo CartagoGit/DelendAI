@@ -77,7 +77,7 @@ export const buildSetupGithubReport = async (
 	};
 };
 
-const CONFIG_FILENAME = 'mcp-vertex.config.json';
+const CONFIG_FILENAME = 'delendai.config.json';
 
 /** Production probes: git remote, `gh auth status`, env, config read. */
 const defaultDeps = (cwd: string): ISetupGithubCliDeps => {
@@ -118,7 +118,7 @@ const defaultDeps = (cwd: string): ISetupGithubCliDeps => {
 	};
 };
 
-/** `mcp-vertex setup-github`: print the GitHub-issues setup guide. */
+/** `delendai setup-github`: print the GitHub-issues setup guide. */
 export const runSetupGithubSubcommand = async (
 	_argv: readonly string[],
 	cwd: string,

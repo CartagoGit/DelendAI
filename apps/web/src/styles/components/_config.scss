@@ -2,7 +2,7 @@
 // (PluginPage.astro): a paste-ready JSON <pre> with a floating copy
 // button. The <pre> chrome comes from the global reset; this block
 // anchors the copy control, which mirrors the shared code-block copy
-// button (apps/shared `.mcpv-code__copy`) mapped onto the site's legacy
+// button (apps/shared `.delendai-code__copy`) mapped onto the site's legacy
 // tokens (f00099 S1 — both classes previously had no styles).
 
 .config__snippet {

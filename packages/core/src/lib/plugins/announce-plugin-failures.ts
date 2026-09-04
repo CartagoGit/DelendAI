@@ -58,12 +58,12 @@ export const buildPluginFailureAnnouncement = (input: {
 	const lines: string[] = [];
 	for (const failure of input.loadErrors) {
 		lines.push(
-			`[mcp-vertex] plugin "${failure.specifier}" did NOT load: ${failure.message}`,
+			`[delendai] plugin "${failure.specifier}" did NOT load: ${failure.message}`,
 		);
 	}
 	for (const failure of input.registerErrors) {
 		lines.push(
-			`[mcp-vertex] plugin "${failure.pluginName}" failed during ${failure.phase}: ${describeError(failure.error)}`,
+			`[delendai] plugin "${failure.pluginName}" failed during ${failure.phase}: ${describeError(failure.error)}`,
 		);
 	}
 	if (lines.length === 0) {
@@ -93,10 +93,10 @@ export const buildPluginFailureAnnouncement = (input: {
 	// from spelunking through a cascade of unrelated resolution errors.
 	lines.push(
 		input.loadedCount === 0 && input.atBoot !== false && looksUnresolvable
-			? `[mcp-vertex] ${failedCount} plugin(s) failed and NONE loaded. That usually means this workspace is not set up ` +
+			? `[delendai] ${failedCount} plugin(s) failed and NONE loaded. That usually means this workspace is not set up ` +
 					'(a fresh worktree or another project): run `bun install` and `bun run build` here, then retry. ' +
 					'The server is up but has no plugin tools.'
-			: `[mcp-vertex] ${failedCount} plugin(s) are unavailable; the server started anyway with ${input.loadedCount} working plugin(s). ` +
+			: `[delendai] ${failedCount} plugin(s) are unavailable; the server started anyway with ${input.loadedCount} working plugin(s). ` +
 					'Their tools are absent, not broken — do not retry them, and do not treat the gap as work to do.',
 	);
 	return { lines, failedCount };

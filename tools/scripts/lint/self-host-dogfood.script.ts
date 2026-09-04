@@ -2,8 +2,8 @@
 /**
  * Keep checked-in MCP clients on one of the two canonical launches:
  *
- *   1. the published-package launch `mcpv init` emits for external
- *      consumers (`bunx --package @delendai/cli mcpv __serve …`), or
+ *   1. the published-package launch `delendai init` emits for external
+ *      consumers (`bunx --package @delendai/cli delendai __serve …`), or
  *   2. the repo-local dogfood launch that runs the host from source
  *      (`bun tools/scripts/host/host-server.script.ts --workspace=…`) while
  *      `@delendai/cli` is not published to npm
@@ -89,18 +89,18 @@ export const detectSelfHostDogfoodDrift = async (
 		}
 
 		const entries = config[target.collection];
-		const entry = entries?.['mcp-vertex'];
+		const entry = entries?.['delendai'];
 		if (entry === undefined) {
 			findings.push({
 				file: target.file,
-				detail: `missing ${target.collection}.mcp-vertex`,
+				detail: `missing ${target.collection}.delendai`,
 			});
 			continue;
 		}
 		if (entry.type !== 'stdio') {
 			findings.push({
 				file: target.file,
-				detail: 'mcp-vertex entry must use type "stdio"',
+				detail: 'delendai entry must use type "stdio"',
 			});
 		}
 		const accepted: readonly ILaunchShape[] = [

@@ -7,7 +7,7 @@ description: >
   logs", "why is this code repeating", or after a slice returns ERR.
 invokes:
   - commit_policy_storms
-  - mcp-vertex_overview
+  - delendai_overview
   - proposals_list
   - proposals_get
 ---
@@ -22,7 +22,7 @@ Invoke this skill when:
 - A slice just returned `ERR` and the operator wants to know if
   the same code has been firing repeatedly.
 - The host boot hook filed a `kind: repair` proposal under
-  `docs/mcp-vertex/proposals/ready/repairs/` and you want to
+  `docs/delendai/proposals/ready/repairs/` and you want to
   verify it is correct before claiming it.
 - `commit-policy` started emitting WARN lines you do not
   understand — the structured snapshot will replace the wall of
@@ -96,7 +96,7 @@ files when `count >= threshold`), file one by hand:
    in the frontmatter, `Files:` set to the source file from
    `suggestedFix`, `Slices: [{id: S1, title: 'Fix <code>'}]`.
 3. Write it under
-   `docs/mcp-vertex/proposals/ready/repairs/x00NNN-fix-<code>-<date>.md`
+   `docs/delendai/proposals/ready/repairs/x00NNN-fix-<code>-<date>.md`
    where `00NNN` is the proposal registry's next free id.
 
 If a proposal already exists under that path (from a previous

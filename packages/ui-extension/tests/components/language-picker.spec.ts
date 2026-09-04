@@ -45,7 +45,7 @@ describe('language-picker', async () => {
 			// a00083 F23: ariaLabel is required and must come from i18n.
 			ariaLabel: 'Language',
 		});
-		expect(html).toContain('data-mcpv-lang');
+		expect(html).toContain('data-delendai-lang');
 		expect(html).toContain('value="en"');
 		expect(html).toContain('value="es"');
 		expect(html).toContain('value="zh"');
@@ -72,25 +72,25 @@ describe('language-picker', async () => {
 	});
 
 	it('readInitialLang returns the stored value when valid', async () => {
-		localStorage.setItem('mcpv:lang', 'fr');
+		localStorage.setItem('delendai:lang', 'fr');
 		expect(readInitialLang(languages)).toBe('fr');
-		localStorage.removeItem('mcpv:lang');
+		localStorage.removeItem('delendai:lang');
 	});
 
 	it('readInitialLang falls back to en when no stored value', async () => {
-		localStorage.removeItem('mcpv:lang');
+		localStorage.removeItem('delendai:lang');
 		expect(readInitialLang(languages, 'en')).toBe('en');
 	});
 
 	it('readInitialLang ignores invalid stored values', async () => {
-		localStorage.setItem('mcpv:lang', 'klingon');
+		localStorage.setItem('delendai:lang', 'klingon');
 		expect(readInitialLang(languages, 'en')).toBe('en');
-		localStorage.removeItem('mcpv:lang');
+		localStorage.removeItem('delendai:lang');
 	});
 
 	it('writeLang persists to localStorage', async () => {
 		writeLang('de');
-		expect(localStorage.getItem('mcpv:lang')).toBe('de');
-		localStorage.removeItem('mcpv:lang');
+		expect(localStorage.getItem('delendai:lang')).toBe('de');
+		localStorage.removeItem('delendai:lang');
 	});
 });

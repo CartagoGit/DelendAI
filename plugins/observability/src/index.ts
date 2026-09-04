@@ -103,7 +103,7 @@ export default definePlugin({
 						'# Correlating remote issues with local logs',
 						'',
 						'Use `obs_correlate` after `obs_errors` when a remote issue title needs a local execution trail.',
-						'It reads recent issues from the configured observability source, scans local JSONL logs under `.cache/mcp-vertex/results/logs/` and `.cache/mcp-vertex/results/logs-errors/`, and returns every issue x log-line pair whose line mentions the same exception title or context inside the requested window.',
+						'It reads recent issues from the configured observability source, scans local JSONL logs under `.cache/delendai/results/logs/` and `.cache/delendai/results/logs-errors/`, and returns every issue x log-line pair whose line mentions the same exception title or context inside the requested window.',
 						`\`sinceMinutes\` defaults to ${DEFAULT_CORRELATION_WINDOW_MINUTES} (24h). Output includes the local file path, line number, and a one-line summary you can pivot on before calling into the logs plugin for deeper timeline work.`,
 					].join('\n'),
 				},

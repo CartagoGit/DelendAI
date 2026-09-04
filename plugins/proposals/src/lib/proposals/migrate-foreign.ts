@@ -1,6 +1,6 @@
 /**
  * migrate-foreign.ts — convert FOREIGN proposal schemes into canonical
- * mcp-vertex proposals (f00116 S2).
+ * delendai proposals (f00116 S2).
  *
  * Three shapes are recognised, in priority order per file:
  *

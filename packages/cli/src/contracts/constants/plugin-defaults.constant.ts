@@ -1,6 +1,6 @@
 /**
  * f00084 S2 (patch) + f00087 S1 (preview) — canonical default options
- * for every plugin that ships in the mcp-vertex monorepo.
+ * for every plugin that ships in the delendai monorepo.
  *
  * The `init` command uses this map to populate `plugins.<id>.options`
  * so the bootstrap never produces an empty `options: {}` block when the
@@ -25,7 +25,7 @@ export type { IPluginDefaults };
 export const PLUGIN_DEFAULTS: IPluginDefaults = {
 	git: {},
 	// a00063: no materialised search defaults — the old block stamped
-	// mcp-vertex's own monorepo roots and a narrower-than-engine
+	// delendai's own monorepo roots and a narrower-than-engine
 	// extension list into every adopter's config (an Angular app got
 	// roots that don't exist there → every search scanned 0 files).
 	// `init` derives real roots per-workspace (deriveSourceRoots); the
@@ -38,7 +38,7 @@ export const PLUGIN_DEFAULTS: IPluginDefaults = {
 		maxNotes: 1000,
 	},
 	docs: {
-		roots: ['docs/mcp-vertex', 'README.md'],
+		roots: ['docs/delendai', 'README.md'],
 		extensions: ['md', 'mdx'],
 		ignoreDirs: ['node_modules', '.cache', 'dist'],
 	},
@@ -73,7 +73,7 @@ export const PLUGIN_DEFAULTS: IPluginDefaults = {
 		// `repo` is REQUIRED before the plugin registers tools, but
 		// we cannot infer the right `owner/name` from a fresh
 		// workspace. The user must fill this in by hand.
-		scaffoldDir: 'docs/mcp-vertex/proposals/retired/issues',
+		scaffoldDir: 'docs/delendai/proposals/retired/issues',
 	},
 	audit: {
 		auditDir: 'docs/proposals/done/audits',

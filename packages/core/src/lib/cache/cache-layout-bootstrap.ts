@@ -31,7 +31,7 @@ const LEGACY_DIRS: Readonly<Record<string, string>> = {
 	'.verify-tmp': 'verify-tmp',
 };
 
-const NESTED_CACHE_ROOT = ['.cache', 'mcp-vertex'] as const;
+const NESTED_CACHE_ROOT = ['.cache', 'delendai'] as const;
 
 const isMissing = async (path: string): Promise<boolean> => {
 	try {
@@ -178,7 +178,7 @@ export const bootstrapCacheLayout = async (
 		}
 	}
 	// Older hosts resolved the configured cache root twice and created
-	// `<cacheDir>/.cache/mcp-vertex`. Remove that exact empty legacy
+	// `<cacheDir>/.cache/delendai`. Remove that exact empty legacy
 	// directory, but never delete files or non-empty cache data implicitly.
 	await removeEmptyNestedCacheRoot(contained.abs, apply);
 

@@ -69,7 +69,7 @@ const readQualityOptions = async (
 	const workspace = createWorkspacePathProvider(workspaceRoot);
 	const reader = createWorkspaceFileReader(workspace);
 	const config = parseConfigFile(
-		await reader.readFile('mcp-vertex.config.json'),
+		await reader.readFile('delendai.config.json'),
 	);
 	const raw = (config.plugins?.quality?.options ?? {}) as {
 		scopes?: Readonly<Record<string, readonly string[]>>;

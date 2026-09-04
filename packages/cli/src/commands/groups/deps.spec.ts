@@ -61,7 +61,7 @@ describe('deps group (f00046 S3)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(depsCommands, 'deps audit').run([], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_deps_deps_audit',
+			tool: 'delendai_deps_deps_audit',
 			args: {},
 		});
 	});
@@ -70,7 +70,7 @@ describe('deps group (f00046 S3)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(depsCommands, 'deps list').run(['--manifest=apps/web'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_deps_deps_list',
+			tool: 'delendai_deps_deps_list',
 			args: { manifest: 'apps/web' },
 		});
 	});
@@ -79,7 +79,7 @@ describe('deps group (f00046 S3)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(depsCommands, 'deps polyglot').run([], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_deps_deps_polyglot',
+			tool: 'delendai_deps_deps_polyglot',
 			args: {},
 		});
 	});
@@ -93,7 +93,7 @@ describe('rules group (f00046 S3)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_rules_check_rules',
+			tool: 'delendai_rules_check_rules',
 			args: { area: 'cli', compact: true },
 		});
 	});
@@ -105,7 +105,7 @@ describe('rules group (f00046 S3)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_rules_apply_rules',
+			tool: 'delendai_rules_apply_rules',
 			args: { files: ['a.ts', 'b.ts'] },
 		});
 	});

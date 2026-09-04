@@ -15,7 +15,7 @@ const SCSS_FILTER = /\.scss(\?raw)?$/;
  * the same stylesheet semantics without shipping Sass in either bundle.
  */
 export const scssPlugin: BunPlugin = {
-	name: 'mcp-vertex-scss',
+	name: 'delendai-scss',
 	setup(build) {
 		build.onResolve({ filter: SCSS_FILTER }, (args) => {
 			const cleanPath = args.path.split('?')[0] ?? args.path;
@@ -32,12 +32,12 @@ export const scssPlugin: BunPlugin = {
 					: dirname(args.importer);
 			return {
 				path: resolve(baseDir, cleanPath),
-				namespace: 'mcp-vertex-scss',
+				namespace: 'delendai-scss',
 			};
 		});
 
 		build.onLoad(
-			{ filter: SCSS_FILTER, namespace: 'mcp-vertex-scss' },
+			{ filter: SCSS_FILTER, namespace: 'delendai-scss' },
 			async (args) => {
 				const source = await readFile(args.path, 'utf8');
 				let compiledCss: string;

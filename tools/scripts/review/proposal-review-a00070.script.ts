@@ -9,25 +9,25 @@ import { join } from 'node:path';
 import { buildReviewRegistration } from '@delendai/proposals/lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from '@delendai/proposals/lib/tools/authoring.tool';
 
-const workspaceRoot = '/home/cartago/_projects/mcp-vertex';
+const workspaceRoot = '/home/cartago/_projects/delendai';
 
 const options: IAuthoringToolOptions = {
 	namespacePrefix: 'proposals',
 	workspaceRoot,
-	proposalsDirAbs: join(workspaceRoot, 'docs/mcp-vertex/proposals'),
-	indexPathAbs: join(workspaceRoot, '.cache/mcp-vertex/proposals/index.json'),
-	lockPathAbs: join(workspaceRoot, '.cache/mcp-vertex/agents.lock.json'),
+	proposalsDirAbs: join(workspaceRoot, 'docs/delendai/proposals'),
+	indexPathAbs: join(workspaceRoot, '.cache/delendai/proposals/index.json'),
+	lockPathAbs: join(workspaceRoot, '.cache/delendai/agents.lock.json'),
 	peerReviewLogPathAbs: join(
 		workspaceRoot,
-		'.cache/mcp-vertex/peer-review.log',
+		'.cache/delendai/peer-review.log',
 	),
 	counterPathAbs: join(
 		workspaceRoot,
-		'.cache/mcp-vertex/proposals/proposal-id-counters.json',
+		'.cache/delendai/proposals/proposal-id-counters.json',
 	),
 	layout: {
-		proposalsDir: 'docs/mcp-vertex/proposals',
-		proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+		proposalsDir: 'docs/delendai/proposals',
+		proposalIndexFile: '.cache/delendai/proposals/index.json',
 	},
 	extraFolders: [],
 	validationCommand: 'bun run validate',

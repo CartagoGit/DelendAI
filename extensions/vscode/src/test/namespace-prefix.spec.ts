@@ -1,10 +1,10 @@
 /**
  * namespace-prefix.spec.ts — f00081 S2.
  *
- * Verifies the VS Code host reads `mcp-vertex.server.prefix` from the
+ * Verifies the VS Code host reads `delendai.server.prefix` from the
  * workspace configuration and threads it into the client services so a
  * `--prefix=acme` deployment calls `acme_*` tools instead of the default
- * `mcp-vertex_*` ones.
+ * `delendai_*` ones.
  */
 import { describe, expect, it } from 'vitest';
 
@@ -12,7 +12,7 @@ import { McpStdioClient } from '@delendai/client';
 
 import { resolveNamespacePrefix, type IVscodeApi } from '../extension';
 import {
-	McpVertexStatusBar,
+	DelendaiStatusBar,
 	type IStatusBarItem,
 } from '../providers/status-bar';
 
@@ -22,7 +22,7 @@ const apiWithPrefix = (prefix: unknown): IVscodeApi =>
 		workspace: {
 			getConfiguration: (section: string) => ({
 				get: (key: string) =>
-					section === 'mcp-vertex.server' && key === 'prefix'
+					section === 'delendai.server' && key === 'prefix'
 						? prefix
 						: undefined,
 			}),
@@ -39,7 +39,7 @@ const createItem = (): IStatusBarItem => {
 };
 
 describe('resolveNamespacePrefix', () => {
-	it('reads mcp-vertex.server.prefix from config', () => {
+	it('reads delendai.server.prefix from config', () => {
 		expect(resolveNamespacePrefix(apiWithPrefix('acme'))).toBe('acme');
 		expect(resolveNamespacePrefix(apiWithPrefix('acme_'))).toBe('acme_');
 	});
@@ -56,7 +56,7 @@ describe('resolveNamespacePrefix', () => {
 
 describe('status bar honours the namespace prefix', () => {
 	const buildBar = (prefix: string | undefined, calls: string[]) =>
-		new McpVertexStatusBar(
+		new DelendaiStatusBar(
 			createItem(),
 			{
 				async listTools() {
@@ -86,12 +86,12 @@ describe('status bar honours the namespace prefix', () => {
 			prefix,
 		);
 
-	it('default prefix probes mcp-vertex_* tools', async () => {
+	it('default prefix probes delendai_* tools', async () => {
 		const calls: string[] = [];
 		await buildBar(undefined, calls).update();
-		expect(calls).toContain('mcp-vertex_proposals_proposal_board');
-		expect(calls).toContain('mcp-vertex_metrics');
-		expect(calls).toContain('mcp-vertex_proposals_agent_names');
+		expect(calls).toContain('delendai_proposals_proposal_board');
+		expect(calls).toContain('delendai_metrics');
+		expect(calls).toContain('delendai_proposals_agent_names');
 	});
 
 	it('custom prefix probes <prefix>_* tools', async () => {
@@ -100,6 +100,6 @@ describe('status bar honours the namespace prefix', () => {
 		expect(calls).toContain('acme_proposals_proposal_board');
 		expect(calls).toContain('acme_metrics');
 		expect(calls).toContain('acme_proposals_agent_names');
-		expect(calls.some((c) => c.startsWith('mcp-vertex_'))).toBe(false);
+		expect(calls.some((c) => c.startsWith('delendai_'))).toBe(false);
 	});
 });

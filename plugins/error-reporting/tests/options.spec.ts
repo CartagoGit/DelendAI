@@ -101,7 +101,7 @@ describe('resolveOptions', () => {
 		expect(options.labels).toEqual([...DEFAULT_LABELS]);
 		expect(warnings).toEqual([
 			`${ERR_REPORTING_OPTION_DEPRECATED}: "internalOnly" is deprecated and ignored. External project data is non-reportable by construction.`,
-			`${ERR_REPORTING_OPTION_DEPRECATED}: "targetRepo" and "labels" are fixed by MCP Vertex and ignored. Consumer project configuration cannot redirect or identify issues.`,
+			`${ERR_REPORTING_OPTION_DEPRECATED}: "targetRepo" and "labels" are fixed by DelendAI and ignored. Consumer project configuration cannot redirect or identify issues.`,
 		]);
 	});
 
@@ -132,7 +132,7 @@ describe('resolveOptions', () => {
 	});
 
 	it('reports by default and honours an explicit opt-out', () => {
-		// mcp-vertex can only be fixed for an adopter if its own failures
+		// delendai can only be fixed for an adopter if its own failures
 		// reach its maintainers, and a report carries no project data — so
 		// the default is on, and `false` is the operator's escape hatch
 		// (announced on every start by `startup-notice.helper.ts`).

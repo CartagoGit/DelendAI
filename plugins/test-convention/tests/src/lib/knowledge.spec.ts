@@ -69,6 +69,6 @@ describe('renderCoverageMarkdown', async () => {
 	it('documents the per-project override shape', async () => {
 		const md = renderCoverageMarkdown(DEFAULT_CONVENTION);
 		expect(md).toContain('coverageThreshold');
-		expect(md).toContain('mcp-vertex.config.json');
+		expect(md).toContain('delendai.config.json');
 	});
 });

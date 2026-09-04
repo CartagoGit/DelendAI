@@ -66,14 +66,14 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 	it('lists the core + plugin tools over the protocol', async () => {
 		const { tools } = await client.listTools();
 		const names = tools.map((t) => t.name);
-		expect(names).toContain('mcp-vertex_overview');
-		expect(names).toContain('mcp-vertex_memory_save');
-		expect(names).toContain('mcp-vertex_memory_recall');
+		expect(names).toContain('delendai_overview');
+		expect(names).toContain('delendai_memory_save');
+		expect(names).toContain('delendai_memory_recall');
 	});
 
 	it('overview (callTool) maps the loaded memory plugin', async () => {
 		const res = await client.callTool({
-			name: 'mcp-vertex_overview',
+			name: 'delendai_overview',
 			arguments: {},
 		});
 		const snap = res.structuredContent as {
@@ -86,14 +86,14 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 
 	it('round-trips a note through save → recall over the protocol', async () => {
 		const saved = await client.callTool({
-			name: 'mcp-vertex_memory_save',
+			name: 'delendai_memory_save',
 			arguments: {
 				title: 'E2E decision',
 				body: 'we ship via in-memory',
 				tags: ['e2e'],
 			},
 		});
-		// N16: mcp-vertex_memory_save declares an outputSchema, so the SDK validated the
+		// N16: delendai_memory_save declares an outputSchema, so the SDK validated the
 		// structuredContent on the way out, and a modern client reads it
 		// directly. A wrong schema would have thrown McpError here.
 		const savedStructured = saved.structuredContent as {
@@ -104,7 +104,7 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 		expect(savedStructured.saved.title).toBe('E2E decision');
 
 		const res = await client.callTool({
-			name: 'mcp-vertex_memory_recall',
+			name: 'delendai_memory_recall',
 			arguments: { query: 'in-memory' },
 		});
 		const text = (res.content as Array<{ type: string; text: string }>)[0]
@@ -120,7 +120,7 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 	it('validates core meta-tool outputSchemas over the protocol (N16)', async () => {
 		// A wrong outputSchema would make the SDK throw on these calls.
 		const vm = await client.callTool({
-			name: 'mcp-vertex_get_validation_matrix',
+			name: 'delendai_get_validation_matrix',
 			arguments: {},
 		});
 		expect(
@@ -128,7 +128,7 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 		).toBeDefined();
 
 		const kn = await client.callTool({
-			name: 'mcp-vertex_knowledge',
+			name: 'delendai_knowledge',
 			arguments: {},
 		});
 		expect(
@@ -140,7 +140,7 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 
 	it('reports an unknown tool as a protocol error', async () => {
 		const res = await client.callTool({
-			name: 'mcp-vertex_does_not_exist',
+			name: 'delendai_does_not_exist',
 			arguments: {},
 		});
 		expect(res.isError).toBe(true);

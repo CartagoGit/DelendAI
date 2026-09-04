@@ -228,7 +228,7 @@ const isMainModule = (): boolean => {
 if (isMainModule()) {
 	const outFile =
 		process.env.METRICS_CANDIDATE_PATH ??
-		'.cache/mcp-vertex/metrics/candidate.json';
+		'.cache/delendai/metrics/candidate.json';
 	collectCandidateSnapshot(outFile)
 		.then(() => console.log(`✓ collect-candidate: wrote ${outFile}`))
 		.catch((err: unknown) => {

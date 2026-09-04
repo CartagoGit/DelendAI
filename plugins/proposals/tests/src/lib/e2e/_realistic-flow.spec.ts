@@ -9,7 +9,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { VALIDATE_LOG_RELATIVE_PATH } from '@delendai/proposals/lib/contracts/constants/proposal-paths.constant';
 
-const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
+const PROPOSALS_RELDIR = 'docs/delendai/proposals';
 
 describe('realistic close_plan flow', async () => {
 	let harness: IAssembledProposalsServer;
@@ -95,7 +95,7 @@ describe('realistic close_plan flow', async () => {
 		);
 
 		const sync = await harness.callTool<{ ok: boolean }>(
-			'mcp-vertex_proposals_sync_proposals',
+			'delendai_proposals_sync_proposals',
 			{},
 		);
 		expect(sync.ok).toBe(true);
@@ -129,7 +129,7 @@ describe('realistic close_plan flow', async () => {
 		const claimed = await harness.callTool<{
 			ok?: boolean;
 			blocked?: boolean;
-		}>('mcp-vertex_proposals_agent_lock', {
+		}>('delendai_proposals_agent_lock', {
 			action: 'claim',
 			task_id: 'f09995-S1',
 			agent: 'implementer-A',
@@ -154,7 +154,7 @@ describe('realistic close_plan flow', async () => {
 			from?: string;
 			to?: string;
 			error?: { reason?: string };
-		}>('mcp-vertex_proposals_proposal_transition', {
+		}>('delendai_proposals_proposal_transition', {
 			id: 'f09995',
 			to: 'review',
 			reason: 'ready for peer review',
@@ -178,7 +178,7 @@ describe('realistic close_plan flow', async () => {
 			ok: boolean;
 			status?: string;
 			error?: { reason?: string };
-		}>('mcp-vertex_proposals_proposal_review', {
+		}>('delendai_proposals_proposal_review', {
 			proposalId: 'f09995',
 			sliceId: 'S1',
 			action: 'submit',
@@ -202,7 +202,7 @@ describe('realistic close_plan flow', async () => {
 			ok: boolean;
 			status?: string;
 			error?: { reason?: string };
-		}>('mcp-vertex_proposals_proposal_review', {
+		}>('delendai_proposals_proposal_review', {
 			proposalId: 'f09995',
 			sliceId: 'S1',
 			action: 'approve',
@@ -237,7 +237,7 @@ describe('realistic close_plan flow', async () => {
 			blockers?: ReadonlyArray<unknown>;
 			preview?: { from: string; to: string };
 			error?: { reason: string };
-		}>('mcp-vertex_proposals_proposals_close_plan', {
+		}>('delendai_proposals_proposals_close_plan', {
 			planId: 'q09994',
 			reason: 'all contained proposals are done',
 		});

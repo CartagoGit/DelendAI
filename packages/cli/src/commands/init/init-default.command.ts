@@ -9,13 +9,13 @@
  * Defaults — matching the answers selected at the top of f00088 S2's
  * reference prompt flow:
  *
- *   - preset:               vertex    (snapshot of mcp-vertex.config.json —
+ *   - preset:               vertex    (snapshot of delendai.config.json —
  *                                    conventions, docs, search, git,
  *                                    web-fetch, status-marker, test-convention,
  *                                    quality, issues, audit)
  *   - extraPlugins:         []        (no additions on top of the preset)
  *   - excludedPlugins:      []        (nothing filtered out)
- *   - hostInstructions:     append (replace only the managed mcp-vertex block)
+ *   - hostInstructions:     append (replace only the managed delendai block)
  *   - copyCoreSkills:       true      (publish core skills under docs/)
  *   - generateAgentMd:      true      (emit .github/agents/*.agent.md)
  *   - migrateFromLegacy:    true      (scaffold f00001 if proposals is loaded)
@@ -24,9 +24,9 @@
  * No interactive prompts — safe to run from a shell script, a CI
  * bootstrap, or a fresh checkout. The host-entry path resolution still
  * goes through `host-entry-resolver` and surfaces the typed hint when
- * it fails (use `--mcp-vertex-root=<abs/path>` to override).
+ * it fails (use `--delendai-root=<abs/path>` to override).
  *
- * Same flag surface as `init` (`--dry-run`, `--force`, `--mcp-vertex-root`,
+ * Same flag surface as `init` (`--dry-run`, `--force`, `--delendai-root`,
  * `--plugin-paths-root`, `--options-<plugin>-<k>=<v>`).
  */
 import type {
@@ -60,12 +60,12 @@ export const initDefaultCommand: ICliCommand = {
 	name: 'init:default',
 	summary:
 		'Non-interactive bootstrap with safe project-preserving defaults (vertex preset + managed instructions + skills + agents + scaffold).',
-	usage: 'init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
+	usage: 'init:default [--dry-run] [--delendai-root=<path>] [--plugin-paths-root=<path>]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
 		// Honour `--help` / `-h` as an early-return before any IO. The
 		// global dispatcher (`runHumanCli`) only handles `--help` at the
 		// top level; per-command help must be intercepted here so that
-		// running `mcpv init:default --help` does NOT trigger a real
+		// running `delendai init:default --help` does NOT trigger a real
 		// bootstrap in the operator's cwd. The help renderer respects
 		// `FORCE_COLOR` / `NO_COLOR` via `colorOn()` so piped output
 		// stays greppable while interactive shells get the brand
@@ -82,7 +82,7 @@ export const initDefaultCommand: ICliCommand = {
 		// (The structured, coloured recap is rendered AFTER the run
 		// returns, see below; this banner is just a heartbeat.)
 		process.stderr.write(
-			'mcp-vertex › workspace bootstrap (defaults: vertex preset + managed instructions + skills + agents + scaffold)\n',
+			'delendai › workspace bootstrap (defaults: vertex preset + managed instructions + skills + agents + scaffold)\n',
 		);
 
 		const answers = await detectAndDecorateAnswers(

@@ -3,7 +3,7 @@
  * capability-matrix.script.ts — d00009 (Track F / security).
  *
  * Generate the readable capability matrix at
- * `docs/mcp-vertex/security/capability-matrix.md`. Rows are
+ * `docs/delendai/security/capability-matrix.md`. Rows are
  * plugins, columns are the canonical capabilities declared by
  * the `Capability` union (f00188). Each cell shows one of:
  *
@@ -30,7 +30,7 @@ import {
 	type ICapabilityLintViolation,
 } from '../lint/capabilities-declared.script.ts';
 
-const SECURITY_DIR = 'docs/mcp-vertex/security';
+const SECURITY_DIR = 'docs/delendai/security';
 const MATRIX_REL = `${SECURITY_DIR}/capability-matrix.md`;
 
 // ---------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 /**
  * f00084 S4 — host-instructions centralizer with idempotent append.
  *
- * The block is delimited by `<!-- mcp-vertex:begin -->` and
- * `<!-- mcp-vertex:end -->` markers. When the target file already
+ * The block is delimited by `<!-- delendai:begin -->` and
+ * `<!-- delendai:end -->` markers. When the target file already
  * contains the block, it is replaced in place. When it does not, the
  * block is appended at the end. When the file does not exist, it is
  * created with the block as the only content.
@@ -23,7 +23,7 @@
  * (1) inventories the scattered sources, (2) collapses their content
  * into a single canonical doc preserving each source's provenance, and
  * (3) emits *pointer* blocks for the legacy locations (inside the
- * `mcp-vertex:begin`/`end` markers, so the original prose above the
+ * `delendai:begin`/`end` markers, so the original prose above the
  * block is untouched). Re-running is idempotent: the canonical doc and
  * the pointers are byte-stable, and a location that is already nothing
  * but a pointer is not collapsed a second time.
@@ -43,8 +43,8 @@ export type { IConsolidationPlan } from '../../contracts/interfaces/init.interfa
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
-const BEGIN_MARKER = '<!-- mcp-vertex:begin -->';
-const END_MARKER = '<!-- mcp-vertex:end -->';
+const BEGIN_MARKER = '<!-- delendai:begin -->';
+const END_MARKER = '<!-- delendai:end -->';
 
 const wrapBlock = (body: string, withTrailingNewline: boolean): string => {
 	const base = `${BEGIN_MARKER}\n\n${body.trim()}\n\n${END_MARKER}`;
@@ -103,13 +103,13 @@ export const readHostInstructionsFile = async (
 /**
  * Relative path of the canonical agent-instruction doc this consolidation
  * produces — the foreign-project analogue of this repo's
- * `docs/mcp-vertex/AGENT-BOOTSTRAP.md`. Kept under the mcp-vertex docs tree so
+ * `docs/delendai/AGENT-BOOTSTRAP.md`. Kept under the delendai docs tree so
  * it never collides with a file the target already owns.
  */
-export const CANONICAL_AGENT_DOC_REL = 'docs/mcp-vertex/AGENT-BOOTSTRAP.md';
+export const CANONICAL_AGENT_DOC_REL = 'docs/delendai/AGENT-BOOTSTRAP.md';
 
 /** Marker that flags a fully consolidated (pointer-only) legacy file. */
-const POINTER_MARKER = '<!-- mcp-vertex:pointer -->';
+const POINTER_MARKER = '<!-- delendai:pointer -->';
 
 /**
  * The well-known agent-instruction sources `init` scans for in the target
@@ -184,7 +184,7 @@ export const classifyInstructionSource = (
 
 /**
  * Pure: extract the user-authored prose from a file's content, i.e. the
- * content with any `mcp-vertex:begin`/`end` block removed. Used both to detect
+ * content with any `delendai:begin`/`end` block removed. Used both to detect
  * "pointer-only" files and to carry only original prose into the canonical
  * doc (so re-running never re-imports a pointer we wrote).
  */
@@ -242,7 +242,7 @@ export const discoverInstructionSources = async (
  * Pure: collapse the discovered sources into the body of the single canonical
  * doc. Each source contributes a provenance-stamped section carrying ONLY its
  * original prose (pointer-only files contribute nothing — idempotency). The
- * returned body is wrapped by the caller in the standard mcp-vertex block.
+ * returned body is wrapped by the caller in the standard delendai block.
  *
  * The shape mirrors this repo's bootstrap: a short canonical preamble, then one
  * section per absorbed source, each headed by the source path so provenance is
@@ -254,8 +254,8 @@ export const collapseToCanonicalBody = (
 	const header = [
 		'# Agent instructions — single source of truth',
 		'',
-		'> Consolidated by `mcp-vertex init`. This file is the canonical agent',
-		'> bootstrap for this project (the analogue of mcp-vertex’s own',
+		'> Consolidated by `delendai init`. This file is the canonical agent',
+		'> bootstrap for this project (the analogue of delendai’s own',
 		'> `AGENT-BOOTSTRAP.md`). The legacy instruction files below were left in',
 		'> place and now point here; edit THIS file, not the pointers.',
 	].join('\n');
@@ -286,7 +286,7 @@ const flattenSections = (sections: readonly string[]): string[] => {
 };
 
 /**
- * Pure: the pointer body that replaces a legacy location's mcp-vertex block.
+ * Pure: the pointer body that replaces a legacy location's delendai block.
  * It links back to the canonical doc and names the source for the reader. The
  * `POINTER_MARKER` lets a later run recognise a pointer-only file.
  */
@@ -311,13 +311,13 @@ export const renderLegacyPointerBody = (
  *
  *   - One `canonical` write: the single source of truth doc.
  *   - One `pointer` write per source that still carries original prose — its
- *     mcp-vertex block becomes a pointer, while the user's prose ABOVE the
+ *     delendai block becomes a pointer, while the user's prose ABOVE the
  *     block is preserved verbatim (non-destruction).
  *
  * Idempotency / non-destruction guarantees:
  *   - A pointer-only source contributes no new pointer write (already done).
  *   - `computeHostInstructionsWrite(..., 'append')` replaces only the
- *     mcp-vertex block, never the user's prose, and is byte-stable on re-run.
+ *     delendai block, never the user's prose, and is byte-stable on re-run.
  *   - When there is nothing to absorb (no sources with prose), the plan still
  *     emits the canonical doc (empty-absorb form) but no pointer writes.
  */

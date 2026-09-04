@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import { registerAllCommands } from './registry';
 
-/** Minimal fake context: `request` answers with a canned `mcp-vertex_overview`
+/** Minimal fake context: `request` answers with a canned `delendai_overview`
  * snapshot regardless of the tool name, matching how every command here
  * only ever calls `overview()` for plugin/tool introspection. */
 const fakeOverviewCtx = (
@@ -21,18 +21,18 @@ const fakeOverviewCtx = (
 	},
 	request: async () =>
 		({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			plugins: [
 				{ name: 'core' },
 				{ name: 'proposals' },
 				{ name: 'search' },
 			],
 			tools: [
-				{ name: 'mcp-vertex_overview' },
-				{ name: 'mcp-vertex_status' },
-				{ name: 'mcp-vertex_proposals_agent_lock' },
-				{ name: 'mcp-vertex_proposals_close_slice' },
-				{ name: 'mcp-vertex_search_search' },
+				{ name: 'delendai_overview' },
+				{ name: 'delendai_status' },
+				{ name: 'delendai_proposals_agent_lock' },
+				{ name: 'delendai_proposals_close_slice' },
+				{ name: 'delendai_search_search' },
 			],
 		}) as never,
 	listTools: async () => [],
@@ -204,8 +204,8 @@ describe('plugin inspect (a00087)', async () => {
 		expect(
 			(data.tools as Array<{ name: string }>).map((t) => t.name),
 		).toEqual([
-			'mcp-vertex_proposals_agent_lock',
-			'mcp-vertex_proposals_close_slice',
+			'delendai_proposals_agent_lock',
+			'delendai_proposals_close_slice',
 		]);
 	});
 
@@ -213,8 +213,8 @@ describe('plugin inspect (a00087)', async () => {
 		const result = await inspect('core');
 		const data = result.data as { tools: Array<{ name: string }> };
 		expect(data.tools.map((t) => t.name)).toEqual([
-			'mcp-vertex_overview',
-			'mcp-vertex_status',
+			'delendai_overview',
+			'delendai_status',
 		]);
 	});
 

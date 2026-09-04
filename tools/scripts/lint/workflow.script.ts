@@ -3,11 +3,11 @@
  * workflow.script.ts — f00049 S10 (workflow-shape lint).
  *
  * Runs every `IWorkflowRule` against the live tree and reports the
- * four "never do" patterns from `plugins/proposals/skills/mcp-vertex-proposal-swarm-runner/SKILL.md`:
+ * four "never do" patterns from `plugins/proposals/skills/delendai-proposal-swarm-runner/SKILL.md`:
  *
- *   1. Hand-edited `docs/mcp-vertex/proposals/index.json` (the regenerator owns it).
+ *   1. Hand-edited `docs/delendai/proposals/index.json` (the regenerator owns it).
  *   2. `main` local head diverges from upstream (push-from-main drift).
- *   3. `mcp-vertex_proposals_sync_proposals` invoked < 60 s after a slice close
+ *   3. `delendai_proposals_sync_proposals` invoked < 60 s after a slice close
  *      by a different agent (race heuristic — noop until MCP telemetry).
  *   4. `auto_work` invoked > 3× in 60 s with no file change (orchestrator
  *      loop heuristic — noop until MCP telemetry).

@@ -1,5 +1,5 @@
 /**
- * Merge a generated mcp-vertex configuration into a consumer-owned one.
+ * Merge a generated delendai configuration into a consumer-owned one.
  *
  * Bootstrap recommendations are deliberately additive.  The consuming project
  * owns its configuration: its root values, plugin activation and plugin
@@ -7,7 +7,7 @@
  * safe to run repeatedly while still letting a first bootstrap fill in a
  * complete, useful baseline.
  */
-import type { IMcpVertexConfigFile } from '../plugins/load-config-file';
+import type { IDelendaiConfigFile } from '../plugins/load-config-file';
 
 type ConfigRecord = Record<string, unknown>;
 
@@ -38,7 +38,7 @@ const mergePluginEntry = (recommended: unknown, existing: unknown): unknown => {
  */
 export const mergeDerivedConfig = (
 	recommended: Readonly<ConfigRecord>,
-	projectConfig: Readonly<IMcpVertexConfigFile | ConfigRecord>,
+	projectConfig: Readonly<IDelendaiConfigFile | ConfigRecord>,
 ): ConfigRecord => {
 	const merged: ConfigRecord = {
 		...cloneRecord(recommended),

@@ -76,7 +76,7 @@ export const createSettingsPage = (options: ISettingsPageOptions): IPage => {
 						// Trigger a soft re-render by dispatching a
 						// custom event the orchestrator listens to.
 						window.dispatchEvent(
-							new CustomEvent('mcpv:dev:lang-changed', {
+							new CustomEvent('delendai:dev:lang-changed', {
 								detail: lang,
 							}),
 						);

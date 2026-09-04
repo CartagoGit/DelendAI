@@ -19,7 +19,7 @@ export interface IAgentCatalogViewModel {
 const renderToolRow = (tool: IToolSummary): string => `
 			<button class="row" data-command="callTool" data-id="${escapeHtml(tool.name)}">
 				<strong>${escapeHtml(tool.name)}</strong>
-				<span>${escapeHtml(tool.plugin ?? 'mcp-vertex')}</span>
+				<span>${escapeHtml(tool.plugin ?? 'delendai')}</span>
 				<span>${escapeHtml((tool.tags ?? []).join(', '))}</span>
 			</button>`;
 
@@ -46,7 +46,7 @@ export const renderAgentCatalogWebview = (
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex · ${escapeHtml(copy.agentCatalogTitle)}</title>
+	<title>delendai · ${escapeHtml(copy.agentCatalogTitle)}</title>
 	<style>
 		:root {
 			color-scheme: light dark;

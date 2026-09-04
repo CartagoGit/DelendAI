@@ -2,7 +2,7 @@
 	"name": "@delendai/orchestrator-runner",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "The routing brain for @delendai/core: healthchecks installed model providers, scores them against a task's capability hints, and advises which provider to route to. Headless (no subprocess spawning). Depends on the usage-tracking plugin. Load with `mcp-vertex --plugins=usage-tracking,orchestrator-runner`.",
+	"description": "The routing brain for @delendai/core: healthchecks installed model providers, scores them against a task's capability hints, and advises which provider to route to. Headless (no subprocess spawning). Depends on the usage-tracking plugin. Load with `delendai --plugins=usage-tracking,orchestrator-runner`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

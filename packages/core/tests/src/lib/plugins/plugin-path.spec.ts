@@ -12,7 +12,7 @@ import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
-const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-plugin-path-');
+const WRITABLE_WORKSPACE = createTestWorkspace('delendai-plugin-path-');
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 describe('resolveConfigPluginSpecifiers (f00087 S1)', () => {
@@ -101,7 +101,7 @@ describe('diagnosePluginPathConfig (f00087 S1)', () => {
 	});
 });
 
-describe('IMcpVertexPluginConfig (f00087 S1)', () => {
+describe('IDelendaiPluginConfig (f00087 S1)', () => {
 	it('round-trips a path field through parseConfigFile', () => {
 		const config = parseConfigFile(
 			JSON.stringify({

@@ -61,11 +61,11 @@ const tryParse = (raw: string): Record<string, unknown> | null => {
  * Check whether `obj` already exposes `dotted`. Two patterns:
  *
  *   - **flat key** — the whole string is one JSON key, with a dot
- *     inside the name. E.g. `'mcp-vertex.server'` matches the
+ *     inside the name. E.g. `'delendai.server'` matches the
  *     VS Code extension-prefix convention. We try the flat lookup
  *     first.
  *   - **nested path** — fall back to walking the segments. E.g.
- *     `'servers.mcp-vertex'` matches `obj.servers['mcp-vertex']`.
+ *     `'servers.delendai'` matches `obj.servers['delendai']`.
  *
  * `spliceKeyIntoFile` (flat key) and `spliceIntoNestedObject`
  * (nested object insertion) have to agree with this predicate —
@@ -97,7 +97,7 @@ const spliceKeyIntoFile = (
 	const raw = readFileSync(path, 'utf8');
 	// Compute insertion: find the matching top-level key (or root key
 	// for nested paths) and append a new key block. Naive but safe —
-	// works for the simple mcp-vertex patches we emit, and refuses
+	// works for the simple delendai patches we emit, and refuses
 	// (returns false) if anything looks unusual so the operator can
 	// inspect manually.
 	const topKey = dotted.split('.')[0] ?? '';
@@ -149,10 +149,10 @@ const spliceKeyIntoFile = (
 	const needsComma = lastChar !== '{' && lastChar !== ',';
 
 	const nested = dotted.includes('.');
-	// For dotted paths (`mcp-vertex.server`) we emit a single flat key
+	// For dotted paths (`delendai.server`) we emit a single flat key
 	// — JSON keys are arbitrary strings, the dot is just a character, so
-	// `"mcp-vertex.server": { … }` is valid JSON-with-comments and is
-	// what VS Code expects when reading `mcp-vertex.server.command`.
+	// `"delendai.server": { … }` is valid JSON-with-comments and is
+	// what VS Code expects when reading `delendai.server.command`.
 	const serialized = nested
 		? `${JSON.stringify(dotted)}: ${JSON.stringify(value, null, 2)
 				.split('\n')
@@ -249,22 +249,22 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 
 	const mcpPath = join(cwd, '.vscode', 'mcp.json');
 	const settingsPath = join(cwd, '.vscode', 'settings.json');
-	const configPath = join(cwd, 'mcp-vertex.config.json');
+	const configPath = join(cwd, 'delendai.config.json');
 
 	const mcpPatch = {
 		servers: {
-			'mcp-vertex': {
+			delendai: {
 				type: 'stdio',
 				command: 'bun',
-				args: ['run', 'mcp-vertex'],
+				args: ['run', 'delendai'],
 			},
 		},
 	};
 	const settingsPatch = {
 		command: 'bun',
-		args: ['run', 'mcp-vertex'],
+		args: ['run', 'delendai'],
 	};
-	// Mirror the repo's own `mcp-vertex.config.json` so a fresh install
+	// Mirror the repo's own `delendai.config.json` so a fresh install
 	// can launch a useful plugin surface (overview / metrics / memory
 	// / proposals / quality / rules). Users can edit this freely; the
 	// install is fully idempotent.
@@ -279,7 +279,7 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 			'quality',
 			'rules',
 		],
-		namespacePrefix: 'mcp-vertex',
+		namespacePrefix: 'delendai',
 	};
 
 	const written: string[] = [];
@@ -293,10 +293,10 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 		const parsed = tryParse(readFileSync(mcpPath, 'utf8'));
 		if (parsed === null) {
 			skipped.push(`${relative(cwd, mcpPath)} (unparseable)`);
-		} else if (hasKey(parsed, 'servers.mcp-vertex')) {
+		} else if (hasKey(parsed, 'servers.delendai')) {
 			skipped.push(`${relative(cwd, mcpPath)} (already declared)`);
 		} else {
-			// Existing mcp.json without the mcp-vertex server, with valid
+			// Existing mcp.json without the delendai server, with valid
 			// JSON. Splice the new server entry inside the `servers` object
 			// instead of a full-file rewrite, so comments / sibling servers
 			// / formatting stay intact. Refuse to write anything if either:
@@ -310,20 +310,20 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 			) {
 				skipped.push(
 					relative(cwd, mcpPath) +
-						' (existing "servers" is missing or not an object; add the mcp-vertex entry manually)',
+						' (existing "servers" is missing or not an object; add the delendai entry manually)',
 				);
 			} else {
 				const ok = spliceIntoNestedObject(
 					mcpPath,
 					'servers',
-					'mcp-vertex',
-					mcpPatch.servers['mcp-vertex'],
+					'delendai',
+					mcpPatch.servers['delendai'],
 				);
 				if (ok) written.push(relative(cwd, mcpPath));
 				else
 					skipped.push(
 						relative(cwd, mcpPath) +
-							' (could not locate the servers object; add the mcp-vertex entry manually)',
+							' (could not locate the servers object; add the delendai entry manually)',
 					);
 			}
 		}
@@ -331,18 +331,18 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 
 	// .vscode/settings.json
 	if (!existsSync(settingsPath)) {
-		writeNewFile(settingsPath, { 'mcp-vertex.server': settingsPatch });
+		writeNewFile(settingsPath, { 'delendai.server': settingsPatch });
 		written.push(relative(cwd, settingsPath));
 	} else {
 		const parsed = tryParse(readFileSync(settingsPath, 'utf8'));
 		if (parsed === null) {
 			skipped.push(`${relative(cwd, settingsPath)} (unparseable)`);
-		} else if (hasKey(parsed, 'mcp-vertex.server')) {
+		} else if (hasKey(parsed, 'delendai.server')) {
 			skipped.push(`${relative(cwd, settingsPath)} (already declared)`);
 		} else {
 			const ok = spliceKeyIntoFile(
 				settingsPath,
-				'mcp-vertex.server',
+				'delendai.server',
 				settingsPatch,
 			);
 			if (ok) written.push(relative(cwd, settingsPath));
@@ -350,7 +350,7 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 		}
 	}
 
-	// mcp-vertex.config.json — only create when missing. Existing
+	// delendai.config.json — only create when missing. Existing
 	// configs (the user's curated preset) are left alone.
 	if (!existsSync(configPath)) {
 		writeNewFile(configPath, configPatch);
@@ -361,7 +361,7 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 
 	const note =
 		skipped.length === 0
-			? 'Wrote the missing mcp-vertex files. Refresh the preview to start fetching real data.'
+			? 'Wrote the missing delendai files. Refresh the preview to start fetching real data.'
 			: `Some files were skipped: ${skipped.join(', ')}. No existing content was modified.`;
 
 	return { ok: true, written, skipped, note };

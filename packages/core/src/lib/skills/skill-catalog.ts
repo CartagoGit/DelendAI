@@ -166,7 +166,7 @@ export const buildSkillCatalog = async (
 					? '@delendai/core'
 					: primaryOwner;
 			const source: ISkillDescriptor['source'] =
-				bundle.bodyPath.startsWith('.mcp-vertex/')
+				bundle.bodyPath.startsWith('.delendai/')
 					? 'workspace'
 					: owner === '@delendai/core'
 						? 'core'

@@ -3,8 +3,8 @@ import { joinRel } from '@delendai/core/public';
 
 /**
  * Derive the full swarm path layout from a cache root and a docs root.
- * The mcp-vertex CLI resolves `--cacheDir` (default `.cache/mcp-vertex`)
- * and `--docsDir` (default `docs/mcp-vertex`) and hands the proposals
+ * The delendai CLI resolves `--cacheDir` (default `.cache/delendai`)
+ * and `--docsDir` (default `docs/delendai`) and hands the proposals
  * plugin those resolved roots. Cache artefacts (locks, queue,
  * checkpoints, worktrees, **and** the proposals registry index — see
  * x00052) live under `cacheDir`; human-edited proposals live under
@@ -42,15 +42,15 @@ export const buildSwarmPaths = (
 });
 
 /**
- * Default proposals layout, aligned with the mcp-vertex CLI defaults so the
- * fallback and the live server agree: cache/state under `.cache/mcp-vertex`,
- * human-edited proposals under `docs/mcp-vertex/proposals`. Everything the
- * project writes lives under the single `docs/mcp-vertex` root; override it
+ * Default proposals layout, aligned with the delendai CLI defaults so the
+ * fallback and the live server agree: cache/state under `.cache/delendai`,
+ * human-edited proposals under `docs/delendai/proposals`. Everything the
+ * project writes lives under the single `docs/delendai` root; override it
  * with `--docsDir` (and `--cacheDir`) — the proposals dir always follows as
  * `<docsDir>/proposals`. Every engine and tool shares this one layout, so
  * locks, queue, round-context and the proposal store agree on where state lives.
  */
 export const DEFAULT_PATH_LAYOUT: IHostPathLayout = buildSwarmPaths(
-	'.cache/mcp-vertex',
-	'docs/mcp-vertex',
+	'.cache/delendai',
+	'docs/delendai',
 );

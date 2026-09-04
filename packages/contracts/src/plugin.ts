@@ -1,6 +1,6 @@
 /**
  * plugin.ts — types describing how a plugin registers with the
- * mcp-vertex host.
+ * delendai host.
  *
  * r00029 (Track C / §10): pure types only.
  */

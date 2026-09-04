@@ -9,7 +9,7 @@
  * Design notes (SRP + OCP):
  *   - The store is a value object (POJO + a tiny ring-buffer
  *     helper). No file I/O lives here — the host owns the path
- *     (`.vscode/mcp-vertex/timeline.json` in VSCode, `/tmp` in CI).
+ *     (`.vscode/delendai/timeline.json` in VSCode, `/tmp` in CI).
  *   - `serialize` / `deserialize` round-trip through JSON. Versioned
  *     (`version: 1`) so the host can fail loudly when reading an
  *     older schema.

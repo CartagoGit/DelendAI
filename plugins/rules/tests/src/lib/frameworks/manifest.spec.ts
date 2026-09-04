@@ -31,9 +31,9 @@ describe('ensureRulesCache (l00008 s2 durable-write fix)', async () => {
 
 	const baseOptions = (manifest: IRulesManifest) => ({
 		resolve: (rel: string) => join(root, rel),
-		cacheRelDir: '.cache/mcp-vertex/rules',
+		cacheRelDir: '.cache/delendai/rules',
 		manifest,
-		manifestRelPath: '.cache/mcp-vertex/rules/rules-map.json',
+		manifestRelPath: '.cache/delendai/rules/rules-map.json',
 	});
 
 	it('happy path: materialises presets and writes the manifest on first run', async () => {
@@ -71,7 +71,7 @@ describe('ensureRulesCache (l00008 s2 durable-write fix)', async () => {
 		await ensureRulesCache(baseOptions(manifest));
 
 		const onDisk = await readFile(
-			join(root, '.cache/mcp-vertex/rules/rules-map.json'),
+			join(root, '.cache/delendai/rules/rules-map.json'),
 			'utf8',
 		);
 		// Content is always a complete, parseable JSON document — never a
@@ -95,7 +95,7 @@ describe('ensureRulesCache (l00008 s2 durable-write fix)', async () => {
 
 		const onDisk = JSON.parse(
 			await readFile(
-				join(root, '.cache/mcp-vertex/rules/rules-map.json'),
+				join(root, '.cache/delendai/rules/rules-map.json'),
 				'utf8',
 			),
 		) as IRulesManifest;

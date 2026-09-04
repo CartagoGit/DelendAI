@@ -14,20 +14,20 @@ type Registrations = Awaited<ReturnType<typeof logsPlugin.register>>;
 const buildCtx = async (
 	options: Record<string, unknown> = {},
 ): Promise<{ ctx: IMcpPluginContext; rules: ICacheEvictionRule[] }> => {
-	const root = await mkdtemp(join(tmpdir(), 'mcp-vertex-logs-plugin-'));
+	const root = await mkdtemp(join(tmpdir(), 'delendai-logs-plugin-'));
 	const rules: ICacheEvictionRule[] = [];
 	const ctx: IMcpPluginContext = {
 		workspace: { root, resolve: (p: string) => join(root, p) },
 		corePaths: {
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 		},
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 		keepLegacy: false,
 		// Matches the real loader: `joinRel(cacheDir, cacheNamespace + '/' + pluginName)`.
-		pluginCacheDir: '.cache/mcp-vertex/results/logs',
-		pluginDocsDir: 'docs/mcp-vertex/logs',
+		pluginCacheDir: '.cache/delendai/results/logs',
+		pluginDocsDir: 'docs/delendai/logs',
 		namespacePrefix: 'logs',
 		options,
 		args: {},

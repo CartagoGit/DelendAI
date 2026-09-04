@@ -95,27 +95,27 @@ describe('integration: detectCustomVertexConfig uses the rule table', async () =
 	it('analyzer sets the corresponding signal when plugins is non-empty', async () => {
 		const analysis = await analyzeProject(
 			reader({
-				'mcp-vertex.config.json': JSON.stringify({
+				'delendai.config.json': JSON.stringify({
 					plugins: { quality: {} },
 				}),
 				'package.json': '{"name":"svc"}',
 			}),
 		);
 		expect(analysis.signals).toContain(
-			'mcp-vertex.config.json has plugin or validation config',
+			'delendai.config.json has plugin or validation config',
 		);
 	});
 	it('analyzer does NOT set the signal when plugins is empty', async () => {
 		const analysis = await analyzeProject(
 			reader({
-				'mcp-vertex.config.json': JSON.stringify({
+				'delendai.config.json': JSON.stringify({
 					plugins: {},
 				}),
 				'package.json': '{"name":"svc"}',
 			}),
 		);
 		expect(analysis.signals).not.toContain(
-			'mcp-vertex.config.json has plugin or validation config',
+			'delendai.config.json has plugin or validation config',
 		);
 	});
 });

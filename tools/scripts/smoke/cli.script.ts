@@ -1,7 +1,7 @@
 /**
  * Functional smoke: drive the COMPILED core CLI over stdio under plain Node
  * and call a real tool. The `--check` smoke only validates config and exits; this
- * actually connects an MCP client, lists tools and calls `mcp-vertex_overview`,
+ * actually connects an MCP client, lists tools and calls `delendai_overview`,
  * proving the published artifact serves the protocol under `node` (not just bun)
  * — the #1 adoption risk. Run after `bun run build`.
  *
@@ -35,19 +35,19 @@ const main = async (): Promise<void> => {
 
 		const { tools } = await client.listTools();
 		const names = new Set(tools.map((t) => t.name));
-		if (!names.has('mcp-vertex_overview')) {
+		if (!names.has('delendai_overview')) {
 			throw new Error(
-				`mcp-vertex_overview not registered (got ${tools.length} tools)`,
+				`delendai_overview not registered (got ${tools.length} tools)`,
 			);
 		}
 
 		const res = (await client.callTool({
-			name: 'mcp-vertex_overview',
+			name: 'delendai_overview',
 			arguments: { compact: true },
 		})) as { content?: Array<{ text?: string }>; isError?: boolean };
 		const text = res.content?.[0]?.text ?? '';
 		if (res.isError || text.length === 0) {
-			throw new Error('mcp-vertex_overview returned no payload');
+			throw new Error('delendai_overview returned no payload');
 		}
 
 		console.log(

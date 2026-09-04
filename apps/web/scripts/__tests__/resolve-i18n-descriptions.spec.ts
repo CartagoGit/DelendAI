@@ -32,7 +32,7 @@ describe('resolveI18nDescriptions', () => {
 		const out = resolveI18nDescriptions();
 		const codes = languages.map((l) => l.code);
 		const codeSet = new Set(codes);
-		// 5 entries currently: mcp-vertex_overview, proposals_auto_work,
+		// 5 entries currently: delendai_overview, proposals_auto_work,
 		// memory_save, audit_plan, audit_consolidate. If a future slice
 		// adds more, the test still passes as long as every block is
 		// 12-lang complete (which `check-i18n.ts` enforces separately).

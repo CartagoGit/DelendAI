@@ -104,7 +104,7 @@ describe('usage-tracking tools', () => {
 
 	const regs = () =>
 		buildUsageTrackingToolRegistrations({
-			namespacePrefix: 'mcp-vertex_usage-tracking',
+			namespacePrefix: 'delendai_usage-tracking',
 			invocationsPath,
 			summaryPath,
 			hostLifecyclePath,

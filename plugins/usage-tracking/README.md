@@ -8,7 +8,7 @@ reports by **agent**, **plugin**, **model** and **extension**.
 Load it with:
 
 ```sh
-mcp-vertex --plugins=usage-tracking
+delendai --plugins=usage-tracking
 ```
 
 ## What it records
@@ -79,7 +79,7 @@ as `estimated` when no comparable baseline exists.
 `SESSION_TOO_LONG` (`recommend`; `strong` when several independent
 thresholds fire). Age alone never blocks. Configure via
 `plugins.usage-tracking.options.sessionHygiene`. See
-[`CHECKPOINT-ADVISORIES.md`](../../docs/mcp-vertex/CHECKPOINT-ADVISORIES.md).
+[`CHECKPOINT-ADVISORIES.md`](../../docs/delendai/CHECKPOINT-ADVISORIES.md).
 
 ## Durable, non-blocking append
 

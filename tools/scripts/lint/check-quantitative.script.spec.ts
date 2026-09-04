@@ -29,8 +29,8 @@ describe('diffDoc (c00140)', () => {
 			// the script uses. We rebuild the doc block via
 			// renderBlockForCompare to keep this test independent of
 			// any on-disk artefact.
-			const MARKER_BEGIN = '<!-- mcp-vertex:begin quantitative -->';
-			const MARKER_END = '<!-- mcp-vertex:end quantitative -->';
+			const MARKER_BEGIN = '<!-- delendai:begin quantitative -->';
+			const MARKER_END = '<!-- delendai:end quantitative -->';
 			const block = [
 				MARKER_BEGIN,
 				'```',
@@ -74,9 +74,9 @@ describe('diffDoc (c00140)', () => {
 		const stale = [
 			'# Heading',
 			'',
-			'<!-- mcp-vertex:begin quantitative -->',
+			'<!-- delendai:begin quantitative -->',
 			'old',
-			'<!-- mcp-vertex:end quantitative -->',
+			'<!-- delendai:end quantitative -->',
 		].join('\n');
 		const drift = diffDoc(stale, SNAP);
 		expect(drift).not.toBeNull();
@@ -92,7 +92,7 @@ describe('formatReport', () => {
 	it('lists each drift with path and reason', () => {
 		const out = formatReport([
 			{
-				relPath: 'docs/mcp-vertex/AGENT-BOOTSTRAP.md',
+				relPath: 'docs/delendai/AGENT-BOOTSTRAP.md',
 				onDiskLen: 100,
 				refreshedLen: 110,
 				diffLines: ['block mismatch'],

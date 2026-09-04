@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexSearchSearchOutput {
+export interface DelendaiSearchSearchOutput {
 	detail?: "compact" | "normal" | "full";
 	query: string;
 	count: number;
@@ -36,5 +36,5 @@ export interface McpVertexSearchSearchOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface SearchToolOutputs {
-	"mcp-vertex_search_search": McpVertexSearchSearchOutput;
+	"delendai_search_search": DelendaiSearchSearchOutput;
 }

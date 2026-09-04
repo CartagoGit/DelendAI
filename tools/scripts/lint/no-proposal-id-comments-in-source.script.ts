@@ -7,7 +7,7 @@
  * forbidden. The code must be atemporal: traceability lives in
  *
  *   - commit messages (`<kind>(<id>): …` per Conventional Commits);
- *   - the proposal graph (`docs/mcp-vertex/proposals/**`);
+ *   - the proposal graph (`docs/delendai/proposals/**`);
  *   - `git log --grep=<id>`.
  *
  * The pattern matched is
@@ -65,8 +65,8 @@ const SCAN_EXCLUDE_PREFIXES: readonly string[] = [
 	'dist/',
 	'build/',
 	'node_modules/',
-	'docs/mcp-vertex/plugins/auto-generated/',
-	'docs/mcp-vertex/generated/',
+	'docs/delendai/plugins/auto-generated/',
+	'docs/delendai/generated/',
 	'apps/web/src/generated/',
 	'apps/web/public/generated/',
 	'apps/web/src/data/plugins/', // also auto-generated

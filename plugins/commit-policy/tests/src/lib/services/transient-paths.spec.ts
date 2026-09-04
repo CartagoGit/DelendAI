@@ -11,7 +11,7 @@ describe('isTransientWorkspacePath', () => {
 		// of finished work was lost to a file nobody meant to commit.
 		expect(
 			isTransientWorkspacePath(
-				'docs/mcp-vertex/proposals/review/f00339-utility-per-1k.md.mutex',
+				'docs/delendai/proposals/review/f00339-utility-per-1k.md.mutex',
 			),
 		).toBe(true);
 	});

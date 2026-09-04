@@ -1,7 +1,7 @@
 /**
  * proposal-board-provider.ts — f00097 S2 (evolves f00079 S4).
  *
- * The `mcp-vertex.proposals` sidebar `TreeDataProvider`. f00079 S4 shipped a
+ * The `delendai.proposals` sidebar `TreeDataProvider`. f00079 S4 shipped a
  * flat, single-tool version; S2 evolves THAT provider (rather than adding a
  * parallel one) into the read-only observability board the proposal asks for:
  *
@@ -10,7 +10,7 @@
  *  - **status-group roots** (Ready, In progress, …) built dynamically from
  *    whatever statuses the snapshot actually carries, in a canonical order;
  *  - **proposal leaves** under each group, each routing to
- *    `mcp-vertex.openProposal`;
+ *    `delendai.openProposal`;
  *  - a **recoverable banner** node when the board payload cannot be projected
  *    (with a Copy-error command), instead of a crash;
  *  - status + text **filters** that narrow the rendered tree WITHOUT
@@ -151,7 +151,7 @@ export class ProposalBoardProvider {
 							id: 'banner:not-configured',
 							label: 'Configure MCP server to load proposals',
 							collapsibleState: TreeItemCollapsibleState.None,
-							contextValue: 'mcpVertexProposalBanner',
+							contextValue: 'delendaiProposalBanner',
 						},
 					]
 				: [];
@@ -166,7 +166,7 @@ export class ProposalBoardProvider {
 
 	/**
 	 * Explicit / focus refresh: drop the cached snapshot and repaint. Wired to
-	 * `mcp-vertex.proposals.refresh` and window-focus in S4.
+	 * `delendai.proposals.refresh` and window-focus in S4.
 	 */
 	refresh(): void {
 		this.source.invalidate();
@@ -259,7 +259,7 @@ const chipNode = (id: string, label: string, value: string): IProposalNode => ({
 	label: `${label} (${value})`,
 	tooltip: `${label}: ${value}`,
 	collapsibleState: TreeItemCollapsibleState.None,
-	contextValue: 'mcpVertexProposalChip',
+	contextValue: 'delendaiProposalChip',
 });
 
 const bannerNode = (recoverable: {
@@ -273,9 +273,9 @@ const bannerNode = (recoverable: {
 	tooltip:
 		'Board data could not be fully projected — click to copy the raw payload',
 	collapsibleState: TreeItemCollapsibleState.None,
-	contextValue: 'mcpVertexProposalBanner',
+	contextValue: 'delendaiProposalBanner',
 	command: {
-		command: 'mcp-vertex.proposals.copyError',
+		command: 'delendai.proposals.copyError',
 		title: 'Copy error',
 		arguments: [recoverable.raw],
 	},
@@ -288,7 +288,7 @@ const groupNode = (status: string, count: number): IProposalNode => ({
 	label: labelForStatus(status),
 	description: String(count),
 	collapsibleState: TreeItemCollapsibleState.Collapsed,
-	contextValue: 'mcpVertexProposalGroup',
+	contextValue: 'delendaiProposalGroup',
 	groupStatus: status,
 });
 
@@ -303,10 +303,10 @@ const proposalNode = (proposal: IProposalSummary): IProposalNode => ({
 			? `${proposal.claimableSliceIds.length} claimable slices`
 			: proposal.status,
 	collapsibleState: TreeItemCollapsibleState.None,
-	contextValue: 'mcpVertexProposal',
+	contextValue: 'delendaiProposal',
 	proposal,
 	command: {
-		command: 'mcp-vertex.openProposal',
+		command: 'delendai.openProposal',
 		title: 'Open Proposal',
 		arguments: [proposal.id],
 	},

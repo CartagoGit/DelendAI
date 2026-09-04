@@ -1,10 +1,10 @@
 ---
-name: mcp-vertex-plugin-authoring
+name: delendai-plugin-authoring
 appliesTo: ['@delendai/*']
-description: How to author or modify an mcp-vertex plugin — the contract, the namespace, outputSchema discipline, durable state, path containment, and the test/build gates. Use when adding a tool, creating a plugin, or changing a plugin's surface.
+description: How to author or modify an delendai plugin — the contract, the namespace, outputSchema discipline, durable state, path containment, and the test/build gates. Use when adding a tool, creating a plugin, or changing a plugin's surface.
 ---
 
-# Authoring an mcp-vertex plugin
+# Authoring an delendai plugin
 
 A plugin is an opt-in capability the core loads by specifier. The core stays
 agnostic; the plugin receives everything resolved through `IMcpPluginContext`.
@@ -35,7 +35,7 @@ export default definePlugin({
 
 - No `process.cwd()` — resolve paths from `ctx.workspace` / injected options.
 - Runtime cache and scratch data MUST use `ctx.pluginCacheDir` or
-   `ctx.cachePath(relativePath)`. Never write `.cache/mcp-vertex`, a dot-folder,
+   `ctx.cachePath(relativePath)`. Never write `.cache/delendai`, a dot-folder,
    or a temporary file in the workspace root directly. Legacy locations must be
    declared through `legacyCachePaths` on the plugin contract so boot-time
    reconciliation can move them without overwriting canonical data.

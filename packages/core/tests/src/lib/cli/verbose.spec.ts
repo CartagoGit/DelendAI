@@ -6,7 +6,7 @@ import {
 } from '@delendai/core/lib/cli/run-cli';
 import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import type { IPluginLoadResult } from '@delendai/core/lib/plugins/load-plugins';
-import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
 
 const args = parseCliArgs(
 	[
@@ -28,16 +28,16 @@ const loadResult = {
 
 const config = {
 	metadata: { name: 's', version: '0' },
-	namespacePrefix: 'mcp-vertex',
+	namespacePrefix: 'delendai',
 	extraTools: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
 	extraPrompts: [{ id: 'p' }],
 	extraResources: [],
-} as unknown as IMcpVertexHostConfig;
+} as unknown as IDelendaiHostConfig;
 
 describe('--verbose diagnostics (N23)', async () => {
 	it('buildAssemblyDiagnostics snapshots plugins, counts and order', async () => {
 		const d = buildAssemblyDiagnostics(args, loadResult, config, [
-			'mcp-vertex_overview',
+			'delendai_overview',
 			'demo_x',
 		]);
 		expect(d.workspace).toBe('/ws');
@@ -49,14 +49,14 @@ describe('--verbose diagnostics (N23)', async () => {
 		]);
 		expect(d.plugins.errors).toEqual(['boom']);
 		expect(d.counts).toEqual({ tools: 3, prompts: 1, resources: 0 });
-		expect(d.registrationOrder).toEqual(['mcp-vertex_overview', 'demo_x']);
+		expect(d.registrationOrder).toEqual(['delendai_overview', 'demo_x']);
 	});
 
 	it('formatVerbose renders stderr lines with version + counts + order', async () => {
 		const out = formatVerbose(
 			buildAssemblyDiagnostics(args, loadResult, config, ['t1']),
 		);
-		expect(out).toContain('[mcp-vertex] verbose:');
+		expect(out).toContain('[delendai] verbose:');
 		expect(out).toContain('loaded=[demo@1.2.3, other]');
 		expect(out).toContain('errors=1');
 		expect(out).toContain('tools=3 prompts=1 resources=0');

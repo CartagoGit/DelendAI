@@ -70,9 +70,7 @@ describe('proposal templates resource registration', () => {
 			template?: string;
 		};
 
-		expect(result.contents[0]?.uri).toBe(
-			'mcp-vertex://proposals/templates',
-		);
+		expect(result.contents[0]?.uri).toBe('delendai://proposals/templates');
 		expect(result.contents[0]?.mimeType).toBe('application/json');
 		expect(body.naming).toBeTypeOf('string');
 		expect(body.template).toBeTypeOf('string');

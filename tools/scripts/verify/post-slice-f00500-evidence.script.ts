@@ -34,12 +34,12 @@ const _grepInTree = (
 	return res.stdout.split('\n').filter((l) => l.length > 0).length;
 };
 
-// 1) audit.trailer in mcp-vertex.config.json must be "none"
+// 1) audit.trailer in delendai.config.json must be "none"
 checks.push({
-	name: "mcp-vertex.config.json#plugins.commit-policy.options.audit.trailer = 'none'",
+	name: "delendai.config.json#plugins.commit-policy.options.audit.trailer = 'none'",
 	fn: () => {
-		if (!existsSync('mcp-vertex.config.json')) return false;
-		const text = readFileSync('mcp-vertex.config.json', 'utf8');
+		if (!existsSync('delendai.config.json')) return false;
+		const text = readFileSync('delendai.config.json', 'utf8');
 		return /"trailer"\s*:\s*"none"/u.test(text);
 	},
 });
@@ -98,9 +98,9 @@ checks.push({
 
 // 7) No remaining 'claude-code-' filenames in proposals/done/audits
 checks.push({
-	name: "no filenames with 'claude-code-' under docs/mcp-vertex/proposals/done/ (S4)",
+	name: "no filenames with 'claude-code-' under docs/delendai/proposals/done/ (S4)",
 	fn: () => {
-		const out = run(['ls-files', 'docs/mcp-vertex/proposals/done/']);
+		const out = run(['ls-files', 'docs/delendai/proposals/done/']);
 		if (!out.ok) return true;
 		return !/(^|\/)claude-code-/u.test(out.stdout);
 	},
@@ -128,7 +128,7 @@ checks.push({
 			'copilot-minimax-m3',
 			'copilot@anthropic.com',
 			'noreply@MiniMax.local',
-			'mcp-vertex-bot',
+			'delendai-bot',
 			'release-s5-agent',
 		];
 		return required.every((r) => text.includes(r));
@@ -140,7 +140,7 @@ checks.push({
 	name: 'history rewrite script + runbook exist (S8b, S8d)',
 	fn: () =>
 		existsSync('tools/scripts/git/rewrite-llm-attribution.script.ts') &&
-		existsSync('docs/mcp-vertex/wiki/git-history-rewrite.md'),
+		existsSync('docs/delendai/wiki/git-history-rewrite.md'),
 });
 
 // 12) The last commit's full body has no LLM trailer

@@ -35,7 +35,7 @@ const failRun = (stderr: string): IExternalToolRun => ({
 const githubExec =
 	(): IForgeWriteExec => async (input: IRunExternalToolInput) => {
 		if (input.tool.bin === 'git' && input.args[0] === 'remote') {
-			return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			return okRun('git@github.com:CartagoGit/delendai.git\n');
 		}
 		if (input.tool.bin === 'git' && input.args[0] === 'log') {
 			return okRun(
@@ -44,34 +44,34 @@ const githubExec =
 		}
 		if (input.tool.bin === 'gh' && input.args[0] === 'api') {
 			const path = input.args[1];
-			if (path === 'repos/CartagoGit/mcp-vertex/pulls') {
+			if (path === 'repos/CartagoGit/delendai/pulls') {
 				return okRun(
 					JSON.stringify({
 						number: 21,
 						title: 'feat(f00121): forge plugin write surface (S2)',
 						html_url:
-							'https://github.com/CartagoGit/mcp-vertex/pull/21',
+							'https://github.com/CartagoGit/delendai/pull/21',
 						draft: true,
 					}),
 				);
 			}
-			if (path === 'repos/CartagoGit/mcp-vertex/issues/21/comments') {
+			if (path === 'repos/CartagoGit/delendai/issues/21/comments') {
 				return okRun(
 					JSON.stringify({
 						id: 1,
 						html_url:
-							'https://github.com/CartagoGit/mcp-vertex/pull/21#issuecomment-1',
+							'https://github.com/CartagoGit/delendai/pull/21#issuecomment-1',
 						body: 'Looks good',
 					}),
 				);
 			}
-			if (path === 'repos/CartagoGit/mcp-vertex/issues') {
+			if (path === 'repos/CartagoGit/delendai/issues') {
 				return okRun(
 					JSON.stringify({
 						number: 77,
 						title: 'forge write follow-up',
 						html_url:
-							'https://github.com/CartagoGit/mcp-vertex/issues/77',
+							'https://github.com/CartagoGit/delendai/issues/77',
 						labels: [{ name: 'triage' }, { name: 'forge' }],
 					}),
 				);
@@ -123,7 +123,7 @@ describe('forge write service', () => {
 
 	// x00168 (S5): `proposalId` used to reach a bare `path.join` with zero
 	// containment check — a caller could read any `.md` file outside
-	// docs/mcp-vertex/proposals/ via `../` traversal, and its content
+	// docs/delendai/proposals/ via `../` traversal, and its content
 	// would be embedded verbatim into a PR body posted to the real,
 	// public origin forge by `createPr`.
 	it('refuses a proposalId containing path traversal', async () => {

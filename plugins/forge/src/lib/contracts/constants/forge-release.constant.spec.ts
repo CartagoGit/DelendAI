@@ -22,7 +22,7 @@ describe('forge release schemas', () => {
 				ok: true,
 				provider: 'github',
 				tag: 'v0.2.0',
-				url: 'https://github.com/CartagoGit/mcp-vertex/releases/tag/v0.2.0',
+				url: 'https://github.com/CartagoGit/delendai/releases/tag/v0.2.0',
 			}).success,
 		).toBe(true);
 	});

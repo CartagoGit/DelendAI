@@ -19,7 +19,7 @@ describe('detectContention', () => {
 	beforeEach(() => {
 		// Canonical scratch location: `verifyTmpRoot()` resolves the
 		// repo root via `import.meta.url` (see ./verify-tmp-root.ts) so
-		// the resulting `<repoRoot>/.cache/mcp-vertex/verify-tmp/<prefix>-XXXXXX/`
+		// the resulting `<repoRoot>/.cache/delendai/verify-tmp/<prefix>-XXXXXX/`
 		// stays under the canonical cache even when the suite runs from
 		// an agent worktree. Pinning this to `process.cwd()` here
 		// would leak a `.cache/` inside every swarm worktree.

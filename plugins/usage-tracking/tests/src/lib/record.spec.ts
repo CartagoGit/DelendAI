@@ -108,7 +108,7 @@ describe('resolveSessionId', () => {
 
 describe('buildRecord', () => {
 	const base = {
-		corePrefix: 'mcp-vertex',
+		corePrefix: 'delendai',
 		peerPrefixes: ['proposals', 'usage-tracking'],
 		agent: {
 			id: 'copilot-1',
@@ -125,7 +125,7 @@ describe('buildRecord', () => {
 	it('records a successful call with attribution + duration', () => {
 		const record = buildRecord({
 			...base,
-			toolName: 'mcp-vertex_proposals_auto_work',
+			toolName: 'delendai_proposals_auto_work',
 			result: { ok: true },
 			responseBytes: 123,
 		});
@@ -141,7 +141,7 @@ describe('buildRecord', () => {
 	it('records an error outcome from a thrown error', () => {
 		const record = buildRecord({
 			...base,
-			toolName: 'mcp-vertex_proposals_auto_work',
+			toolName: 'delendai_proposals_auto_work',
 			result: undefined,
 			error: new Error('boom'),
 		});
@@ -152,7 +152,7 @@ describe('buildRecord', () => {
 	it('records an error outcome from an isError result envelope', () => {
 		const record = buildRecord({
 			...base,
-			toolName: 'mcp-vertex_proposals_auto_work',
+			toolName: 'delendai_proposals_auto_work',
 			result: {
 				isError: true,
 				structuredContent: { error: { code: 'e1', message: 'nope' } },
@@ -166,7 +166,7 @@ describe('buildRecord', () => {
 		const record = buildRecord({
 			...base,
 			startedAt: undefined,
-			toolName: 'mcp-vertex_overview',
+			toolName: 'delendai_overview',
 			result: { ok: true },
 		});
 		expect(record.durationMs).toBeNull();
@@ -181,7 +181,7 @@ describe('buildRecord', () => {
 		const record = buildRecord({
 			...base,
 			costOf,
-			toolName: 'mcp-vertex_orchestrator-runner_invoke',
+			toolName: 'delendai_orchestrator-runner_invoke',
 			peerPrefixes: ['orchestrator-runner'],
 			result: {
 				structuredContent: {
@@ -202,7 +202,7 @@ describe('buildRecord', () => {
 		};
 		const record = buildRecord({
 			...base,
-			toolName: 'mcp-vertex_memory_compact',
+			toolName: 'delendai_memory_compact',
 			result: { tokenAccounting: { tokensSaved: 240 } },
 			fallbackModel,
 		});
@@ -213,7 +213,7 @@ describe('buildRecord', () => {
 	it('uses a configured plugin/tool baseline when the result has none', () => {
 		const record = buildRecord({
 			...base,
-			toolName: 'mcp-vertex_orchestrator-runner_invoke',
+			toolName: 'delendai_orchestrator-runner_invoke',
 			peerPrefixes: ['orchestrator-runner'],
 			result: {
 				structuredContent: {
@@ -238,7 +238,7 @@ describe('buildRecord', () => {
 	it('does not attribute ordinary plugin calls to the last model', () => {
 		const record = buildRecord({
 			...base,
-			toolName: 'mcp-vertex_docs_docs_list',
+			toolName: 'delendai_docs_docs_list',
 			result: { ok: true },
 			fallbackModel: {
 				provider: 'openai',

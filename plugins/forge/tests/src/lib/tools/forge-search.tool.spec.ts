@@ -17,7 +17,7 @@ const fakeExec: IForgeSearchExec = async (input: IRunExternalToolInput) => {
 		return {
 			ok: true,
 			code: 0,
-			stdout: 'git@github.com:CartagoGit/mcp-vertex.git\n',
+			stdout: 'git@github.com:CartagoGit/delendai.git\n',
 			stderr: '',
 			timedOut: false,
 			unavailable: false,
@@ -30,7 +30,7 @@ const fakeExec: IForgeSearchExec = async (input: IRunExternalToolInput) => {
 			stdout: JSON.stringify([
 				{
 					path: 'plugins/forge/src/lib/tools/forge-search.tool.ts',
-					repository: { fullName: 'CartagoGit/mcp-vertex' },
+					repository: { fullName: 'CartagoGit/delendai' },
 					textMatches: [
 						{ fragment: "registerTool('forge_search_code'" },
 					],
@@ -101,6 +101,6 @@ describe('forge search tool', () => {
 			hits: { repository: string }[];
 		};
 		expect(body.ok).toBe(true);
-		expect(body.hits[0]?.repository).toBe('CartagoGit/mcp-vertex');
+		expect(body.hits[0]?.repository).toBe('CartagoGit/delendai');
 	});
 });

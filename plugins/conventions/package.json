@@ -2,7 +2,7 @@
 	"name": "@delendai/conventions",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical suffixes + contract folders, f00037) exposed as MCP tools that classify paths and report convention drift. Load with `mcp-vertex --plugins=conventions`.",
+	"description": "File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical suffixes + contract folders, f00037) exposed as MCP tools that classify paths and report convention drift. Load with `delendai --plugins=conventions`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

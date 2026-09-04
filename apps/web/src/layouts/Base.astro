@@ -94,9 +94,9 @@ const FOOTER_BY_LANG = Object.fromEntries(
 		    via `transition:persist`, so they never remount and never "jump". */}
 		<ClientRouter />
 		{/* Shared UI runtime from `@delendai/ui-extension`. Drives every
-		    `[data-mcpv-toggle="dropdown"]` and `[data-mcpv-action]` host
+		    `[data-delendai-toggle="dropdown"]` and `[data-delendai-action]` host
 		    gesture on the page (the "More" dropdown in the nav, any
-		    `[data-mcpv-toast-ttl]`, etc.). Without this, dropdowns are
+		    `[data-delendai-toast-ttl]`, etc.). Without this, dropdowns are
 		    markup-only and never open. The script is idempotent and
 		    survives View Transitions because it binds once on
 		    `document`, not on the persisting element. */}
@@ -108,8 +108,8 @@ const FOOTER_BY_LANG = Object.fromEntries(
 			// the same inline bytes after a swap; promoting it to a real
 			// `<script>` lets us register an `astro:after-swap` listener that
 			// re-runs the same restore on every navigation.
-			const KEY_THEME = 'mcpvertex-theme';
-			const KEY_MOTION = 'mcpvertex-motion';
+			const KEY_THEME = 'delendai-theme';
+			const KEY_MOTION = 'delendai-motion';
 			const applyTheme = () => {
 				try {
 					const t = localStorage.getItem(KEY_THEME);

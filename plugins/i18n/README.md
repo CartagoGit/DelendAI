@@ -14,7 +14,7 @@ None. Both tools are read-only and operate on workspace files only. They do not 
 ## Load
 
 ```bash
-mcp-vertex --plugins=i18n
+delendai --plugins=i18n
 ```
 
 ## Tool: i18n_check
@@ -31,7 +31,7 @@ Example invocation:
 
 ```json
 {
-  "tool": "mcp-vertex_i18n_check",
+  "tool": "delendai_i18n_check",
   "arguments": {
     "localesDir": "apps/web/src/i18n/locales"
   }
@@ -94,7 +94,7 @@ Example invocation:
 
 ```json
 {
-  "tool": "mcp-vertex_i18n_validate",
+  "tool": "delendai_i18n_validate",
   "arguments": {
     "localesDir": "apps/web/src/i18n/locales"
   }

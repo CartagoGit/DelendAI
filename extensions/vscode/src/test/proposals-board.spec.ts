@@ -57,7 +57,7 @@ const stubClient = (options: IStubOptions = {}) =>
 	McpStdioClient.fromTransport({
 		async callTool(input) {
 			options.onCall?.(input.name);
-			const suffix = input.name.replace(/^mcp-vertex_/, '');
+			const suffix = input.name.replace(/^delendai_/, '');
 			if (suffix === 'proposals_proposal_board') {
 				return { structuredContent: options.board ?? onePerFamily };
 			}
@@ -122,7 +122,7 @@ describe('proposals board e2e (f00097 S6)', () => {
 			(n) => n.label === 'In progress',
 		);
 		const [leaf] = await provider.getChildren(inProgress);
-		expect(leaf?.command?.command).toBe('mcp-vertex.openProposal');
+		expect(leaf?.command?.command).toBe('delendai.openProposal');
 		const clickedId = leaf?.command?.arguments?.[0];
 		expect(clickedId).toBe('f00002');
 
@@ -156,7 +156,7 @@ describe('proposals board e2e (f00097 S6)', () => {
 			client: stubClient(),
 			proposalsSource: source,
 		});
-		await commands.get('mcp-vertex.openProposal')?.(clickedId);
+		await commands.get('delendai.openProposal')?.(clickedId);
 		expect(panels).toHaveLength(1);
 		expect(panels[0]?.title).toContain('f00002');
 		expect(panels[0]?.webview.html).toContain('f00002');

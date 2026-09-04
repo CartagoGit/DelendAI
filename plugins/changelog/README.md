@@ -9,7 +9,7 @@ network.
 ## Activate
 
 ```bash
-mcp-vertex --plugins=changelog
+delendai --plugins=changelog
 ```
 
 Hosts that do not load it keep the current "edit files manually"

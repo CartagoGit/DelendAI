@@ -2,7 +2,7 @@
  * End-to-end: `proposals_continue_proposal` over the real MCP protocol.
  *
  * Slice S2 of f00044. Drives the registered `continue_proposal` tool
- * through a real `Client` connected to an assembled mcp-vertex server
+ * through a real `Client` connected to an assembled delendai server
  * (core meta-tools + the proposals plugin) over an in-memory transport.
  * This proves the cross-tool contract (cascade resolution for
  * `mode:"auto"`, slice-plan parsing for `mode:"plan"`, slice claim for
@@ -74,11 +74,11 @@ const callContinue = async (
 	args: Record<string, unknown> = {},
 ): Promise<IAssembledToolResult<ContinueProposalOutput>> =>
 	server.callTool<ContinueProposalOutput>(
-		'mcp-vertex_proposals_continue_proposal',
+		'delendai_proposals_continue_proposal',
 		args,
 	);
 
-const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
+const PROPOSALS_RELDIR = 'docs/delendai/proposals';
 
 /** Slugify a title the same way the proposals scaffolder does. */
 const slugify = (title: string): string =>
@@ -150,7 +150,7 @@ ${slicesBlock}`,
 		'utf8',
 	);
 	const sync = await server.callTool<{ ok: boolean }>(
-		'mcp-vertex_proposals_sync_proposals',
+		'delendai_proposals_sync_proposals',
 		{},
 	);
 	expect(sync.ok).toBe(true);

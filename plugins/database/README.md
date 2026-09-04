@@ -1,6 +1,6 @@
 # `@delendai/database`
 
-Driver-agnostic database introspection + query tools for mcp-vertex.
+Driver-agnostic database introspection + query tools for delendai.
 
 ## Slice status (proposal f00128)
 

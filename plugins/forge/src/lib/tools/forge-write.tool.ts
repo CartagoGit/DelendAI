@@ -5,7 +5,7 @@ import { toolJsonBounded, type IToolRegistration } from '@delendai/core/public';
 import {
 	FORGE_ISSUE_CREATE_INPUT_SCHEMA,
 	FORGE_ISSUE_CREATE_OUTPUT_SCHEMA,
-	FORGE_MCP_VERTEX_ISSUE_CREATE_INPUT_SCHEMA,
+	FORGE_DELENDAI_ISSUE_CREATE_INPUT_SCHEMA,
 	FORGE_PR_COMMENT_INPUT_SCHEMA,
 	FORGE_PR_COMMENT_OUTPUT_SCHEMA,
 	FORGE_PR_CREATE_INPUT_SCHEMA,
@@ -14,7 +14,7 @@ import {
 import type {
 	ICommentPrOptions,
 	ICreateIssueOptions,
-	ICreateMcpVertexIssueOptions,
+	ICreateDelendaiIssueOptions,
 	ICreatePrOptions,
 	IForgeWriteExec,
 } from '../contracts/interfaces/forge-write.interface';
@@ -22,7 +22,7 @@ import type { IProposalReadFile } from '../services/forge-write';
 import {
 	commentOnPr,
 	createIssue,
-	createMcpVertexIssue,
+	createDelendaiIssue,
 	createPr,
 } from '../services/forge-write';
 import { REPOSITORY_SLUG } from '@delendai/core/public';
@@ -63,12 +63,12 @@ export const runForgeIssueCreate = async (
 		await createIssue(options.workspaceRootAbs, args, options.forgeExec),
 	);
 
-export const runForgeMcpVertexIssueCreate = async (
-	args: ICreateMcpVertexIssueOptions,
+export const runForgeDelendaiIssueCreate = async (
+	args: ICreateDelendaiIssueOptions,
 	options: IForgeWriteToolOptions,
 ) =>
 	toolJsonBounded(
-		await createMcpVertexIssue(
+		await createDelendaiIssue(
 			options.workspaceRootAbs,
 			args,
 			options.forgeExec,
@@ -138,21 +138,21 @@ export const buildForgeWriteToolRegistrations = (
 		},
 	},
 	{
-		id: 'mcp_vertex_issue_create',
-		tags: ['forge', 'issues', 'mcp-vertex', 'network', 'write'],
+		id: 'delendai_issue_create',
+		tags: ['forge', 'issues', 'delendai', 'network', 'write'],
 		effects: ['write', 'network'],
 		summary:
-			'Create an internal mcp-vertex issue in the canonical mcp-vertex repository.',
+			'Create an internal delendai issue in the canonical delendai repository.',
 		register: async (server) => {
 			server.registerTool(
-				`${options.namespacePrefix}_mcp_vertex_issue_create`,
+				`${options.namespacePrefix}_delendai_issue_create`,
 				{
-					description: `Create an issue for an mcp-vertex error or defect in ${REPOSITORY_SLUG}. This destination is fixed and does not use the consuming project origin. Requires confirm:true.`,
-					inputSchema: FORGE_MCP_VERTEX_ISSUE_CREATE_INPUT_SCHEMA,
+					description: `Create an issue for an delendai error or defect in ${REPOSITORY_SLUG}. This destination is fixed and does not use the consuming project origin. Requires confirm:true.`,
+					inputSchema: FORGE_DELENDAI_ISSUE_CREATE_INPUT_SCHEMA,
 					outputSchema: FORGE_ISSUE_CREATE_OUTPUT_SCHEMA,
 				},
-				async (args: ICreateMcpVertexIssueOptions) =>
-					runForgeMcpVertexIssueCreate(args, options),
+				async (args: ICreateDelendaiIssueOptions) =>
+					runForgeDelendaiIssueCreate(args, options),
 			);
 		},
 	},

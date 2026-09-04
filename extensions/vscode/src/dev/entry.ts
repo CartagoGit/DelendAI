@@ -144,7 +144,7 @@ if (sidebar) {
 
 bootstrapPersistedPrefs();
 
-// `mcpv:dev:lang-changed` is dispatched from `pages/settings.ts`
+// `delendai:dev:lang-changed` is dispatched from `pages/settings.ts`
 // when the user picks a new language. Every page bakes the dict
 // into its render call, so re-render whatever view is active —
 // x00100 S2 acceptance: "changing the language selector re-renders
@@ -152,7 +152,7 @@ bootstrapPersistedPrefs();
 // refreshed the dashboard, leaving configuration/tool-detail/
 // metrics in the old language). Re-rendering the settings page
 // itself is an idempotent repaint of the same content.
-window.addEventListener('mcpv:dev:lang-changed', () => {
+window.addEventListener('delendai:dev:lang-changed', () => {
 	void render(getActiveView());
 });
 

@@ -16,7 +16,7 @@ import type { IPendingIntegrationEntry } from '@delendai/proposals/lib/contracts
  */
 
 const ROOT = '/ws';
-const CACHE_WT = `${ROOT}/.cache/mcp-vertex/.worktrees`;
+const CACHE_WT = `${ROOT}/.cache/delendai/.worktrees`;
 const BASE = 'develop';
 const FIXED_NOW = Date.parse('2026-07-02T12:00:00.000Z');
 

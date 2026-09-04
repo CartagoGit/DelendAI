@@ -55,7 +55,7 @@ const makeResult = (i: number): unknown => ({
 const buildOneRecord = (result: unknown): unknown =>
 	buildRecord({
 		toolName: 'orchestrator-runner_invoke',
-		corePrefix: 'mcp-vertex',
+		corePrefix: 'delendai',
 		peerPrefixes: ['orchestrator-runner'],
 		agent: { id: 'agent-a', kind: 'claude-code', extension: 'cli' },
 		sessionId: 'sess-latency',

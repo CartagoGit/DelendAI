@@ -5,10 +5,10 @@
  * host-config contract already owns a different `IHostIdentity` (server
  * name / version / namespace). This one is the boot-resolved AGENT identity.
  *
- * The boot-resolved identity of the host driving this mcp-vertex process:
+ * The boot-resolved identity of the host driving this delendai process:
  * which client/IDE (`host`) and which model (`model`). It is resolved ONCE
  * at assembly time from the same source as the commit-author policy
- * (`mcp-vertex.config.json#commitAuthor` or the `agent-client` / `agent-model`
+ * (`delendai.config.json#commitAuthor` or the `agent-client` / `agent-model`
  * programmatic args) and handed to every plugin on {@link IMcpPluginContext}.
  *
  * Plugins that record who did a piece of work (the proposals swarm registry)

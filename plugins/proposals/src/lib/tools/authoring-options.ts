@@ -90,7 +90,7 @@ export interface IAuthoringToolOptions {
 	 * until a reviewer has no objection (x00056).
 	 *
 	 * Hosts opt out by setting `proposals.options.requirePeerReview:
-	 * false` in mcp-vertex.config.json. The default-on mirrors the
+	 * false` in delendai.config.json. The default-on mirrors the
 	 * plan-of-plans policy (`closureGate.requirePeerReview: true`),
 	 * extending the same gate to every slice of every proposal kind.
 	 */
@@ -98,7 +98,7 @@ export interface IAuthoringToolOptions {
 	/**
 	 * When true (default), `close_slice` refuses to mark a slice done
 	 * without a passing `bun run validate` from the last 24h, journalled
-	 * to `.cache/mcp-vertex/results/logs/validate.jsonl`.
+	 * to `.cache/delendai/results/logs/validate.jsonl`.
 	 *
 	 * Not every adopter has a validate chain worth blocking on — a docs
 	 * repo, a spike, a project whose CI is the real gate. Those hosts set

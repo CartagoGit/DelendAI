@@ -91,7 +91,7 @@ export const createLocalPluginImporter =
 /**
  * Optional override for `readFile` (the verify script ships a
  * synthetic config; the generate script routes deps.allowNetwork).
- * Default: no file (mcp-vertex.config.json not present).
+ * Default: no file (delendai.config.json not present).
  */
 export interface IPluginTestBedOptions {
 	readonly workspaceRoot: string;
@@ -100,7 +100,7 @@ export interface IPluginTestBedOptions {
 	/**
 	 * When provided, the synthetic config payload. The `readFile`
 	 * adapter returns this for every path ending in
-	 * `mcp-vertex.config.json` and `undefined` for everything else.
+	 * `delendai.config.json` and `undefined` for everything else.
 	 */
 	readonly syntheticConfig?: Record<string, unknown>;
 }
@@ -160,7 +160,7 @@ export const assemblePluginForTest = async (
 		...(options.syntheticConfig !== undefined
 			? {
 					readFile: async (absolutePath: string) =>
-						absolutePath.endsWith('mcp-vertex.config.json')
+						absolutePath.endsWith('delendai.config.json')
 							? JSON.stringify(options.syntheticConfig)
 							: undefined,
 				}

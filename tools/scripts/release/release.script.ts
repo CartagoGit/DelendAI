@@ -232,19 +232,19 @@ function bumpConfigCoreVersion(
 	newVersion: string,
 	logger: IReleaseLogger,
 ): void {
-	const configPath = join(ROOT, 'mcp-vertex.config.json');
+	const configPath = join(ROOT, 'delendai.config.json');
 	const raw = JSON.parse(readFileSync(configPath, 'utf8')) as {
 		coreVersion?: string;
 	};
 	const next = resolveBumpCoreVersion(raw, newVersion);
 	if (next === raw) {
 		logger.info(
-			`  mcp-vertex.config.json#coreVersion unchanged (${raw.coreVersion ?? 'unset'} tracks the latest tag).`,
+			`  delendai.config.json#coreVersion unchanged (${raw.coreVersion ?? 'unset'} tracks the latest tag).`,
 		);
 		return;
 	}
 	writeFileSync(configPath, `${JSON.stringify(next, null, '\t')}\n`);
-	logger.info(`  bumped mcp-vertex.config.json#coreVersion → ${newVersion}`);
+	logger.info(`  bumped delendai.config.json#coreVersion → ${newVersion}`);
 }
 
 function run(cmd: string, args: readonly string[], cwd: string): void {
@@ -293,7 +293,7 @@ async function publishAll(
 				'support provenance attestations); ignoring. Use --tool=npm.',
 		);
 	}
-	const stagingRoot = mkdtempSync(join(tmpdir(), 'mcp-vertex-release-'));
+	const stagingRoot = mkdtempSync(join(tmpdir(), 'delendai-release-'));
 	try {
 		const workspacePlan = createWorkspaceDepsPlan(plan);
 		const stagedDirs: string[] = [];
@@ -386,12 +386,12 @@ async function main(): Promise<void> {
 	if (versionChange && flags.write) {
 		applyPlan(plan, logger);
 		// f00152 S7: regenerate the stable facade manifest after every
-		// release so `docs/mcp-vertex/api/stable.json` stays in sync
+		// release so `docs/delendai/api/stable.json` stays in sync
 		// with `packages/core/src/lib/api/stable-facade.ts`. Idempotent
 		// (the builder exits early when the file is unchanged).
 		logger.info('Regenerating stable facade manifest (f00152 S7)…\n');
 		run('bun', ['run', 'build:stable-manifest'], ROOT);
-		// Also bump `coreVersion` in mcp-vertex.config.json so a
+		// Also bump `coreVersion` in delendai.config.json so a
 		// self-host agent's pin either matches the new release or
 		// stays on the sentinel (`latest-published`). The release
 		// script always moves the pin to the new version; CI

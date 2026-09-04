@@ -1,8 +1,8 @@
 /**
  * f00141 S2 — `plugin` commands. One subcommand per registry tool:
- *   - `mcpv plugin search <query>` -> `<prefix>_plugin_search` tool
+ *   - `delendai plugin search <query>` -> `<prefix>_plugin_search` tool
  *     (delegates to the resolver; read-only).
- *   - `mcpv plugin add <id>` -> `<prefix>_plugin_add` tool (returns
+ *   - `delendai plugin add <id>` -> `<prefix>_plugin_add` tool (returns
  *     the install + wire + config recipe; the CLI echoes it as
  *     plain text or JSON).
  *
@@ -37,7 +37,7 @@ const pluginSearchCommand: ICliCommand = {
 	async run(args, ctx) {
 		const query = args[0];
 		return data(
-			await request(ctx, 'mcp-vertex_plugin_search', {
+			await request(ctx, 'delendai_plugin_search', {
 				...(query !== undefined ? { query } : {}),
 			}),
 		);
@@ -60,7 +60,7 @@ const pluginAddCommand: ICliCommand = {
 			});
 		}
 		const consent = args.includes('--consent') || args.includes('-y');
-		const result = (await request(ctx, 'mcp-vertex_plugin_add', {
+		const result = (await request(ctx, 'delendai_plugin_add', {
 			id,
 			...(consent ? { consent: true } : {}),
 		})) as

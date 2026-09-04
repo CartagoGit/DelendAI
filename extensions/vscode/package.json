@@ -1,6 +1,6 @@
 {
-	"name": "mcp-vertex-vscode",
-	"displayName": "MCP Vertex for VS Code",
+	"name": "delendai-vscode",
+	"displayName": "DelendAI for VS Code",
 	"description": "VS Code host implementation that consumes @delendai/ui-extension to render the dashboard and panels inside the IDE.",
 	"version": "0.1.0",
 	"publisher": "cartago",
@@ -23,33 +23,33 @@
 	],
 	"activationEvents": [
 		"onStartupFinished",
-		"workspaceContains:**/mcp-vertex.config.json"
+		"workspaceContains:**/delendai.config.json"
 	],
 	"contributes": {
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "mcp-vertex",
-					"title": "mcp-vertex",
+					"id": "delendai",
+					"title": "delendai",
 					"icon": "media/logo.svg"
 				}
 			]
 		},
 		"views": {
-			"mcp-vertex": [
+			"delendai": [
 				{
-					"id": "mcp-vertex.dashboard",
+					"id": "delendai.dashboard",
 					"name": "Dashboard",
 					"type": "webview",
 					"icon": "media/logo.svg"
 				},
 				{
-					"id": "mcp-vertex.proposals",
+					"id": "delendai.proposals",
 					"name": "Proposals",
 					"type": "tree"
 				},
 				{
-					"id": "mcp-vertex.memory",
+					"id": "delendai.memory",
 					"name": "Memory",
 					"type": "tree"
 				}
@@ -57,203 +57,203 @@
 		},
 		"commands": [
 			{
-				"command": "mcp-vertex.openAgentCatalog",
+				"command": "delendai.openAgentCatalog",
 				"title": "Open Agent Catalog",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(list-tree)"
 			},
 			{
-				"command": "mcp-vertex.openAgentTimeline",
+				"command": "delendai.openAgentTimeline",
 				"title": "Open Agent Timeline",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(history)"
 			},
 			{
-				"command": "mcp-vertex.openAutoAgentSelector",
+				"command": "delendai.openAutoAgentSelector",
 				"title": "Open Auto-agent Selector",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(robot)"
 			},
 			{
-				"command": "mcp-vertex.openDashboard",
+				"command": "delendai.openDashboard",
 				"title": "Open Dashboard",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(dashboard)"
 			},
 			{
-				"command": "mcp-vertex.openDashboardTab",
+				"command": "delendai.openDashboardTab",
 				"title": "Open Dashboard in Editor Tab",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(dashboard)"
 			},
 			{
-				"command": "mcp-vertex.showOverview",
+				"command": "delendai.showOverview",
 				"title": "Show Overview",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.openRuntimeLog",
+				"command": "delendai.openRuntimeLog",
 				"title": "Open Runtime Log",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(pulse)"
 			},
 			{
-				"command": "mcp-vertex.refresh",
+				"command": "delendai.refresh",
 				"title": "Refresh",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "mcp-vertex.runValidation",
+				"command": "delendai.runValidation",
 				"title": "Run Validation",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.openProposal",
+				"command": "delendai.openProposal",
 				"title": "Open Proposal Board",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.proposals.refresh",
+				"command": "delendai.proposals.refresh",
 				"title": "Refresh Proposals",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "mcp-vertex.proposals.copyError",
+				"command": "delendai.proposals.copyError",
 				"title": "Copy Proposals Error",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.showMetrics",
+				"command": "delendai.showMetrics",
 				"title": "Show Metrics",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.openDocs",
+				"command": "delendai.openDocs",
 				"title": "Open Documentation",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(book)"
 			},
 			{
-				"command": "mcp-vertex.openDocsApi",
+				"command": "delendai.openDocsApi",
 				"title": "Open Docs / API / How-to-use",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.openKnowledge",
+				"command": "delendai.openKnowledge",
 				"title": "Open Knowledge Navigator",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.toolSearch",
+				"command": "delendai.toolSearch",
 				"title": "Search Tools",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(search)"
 			},
 			{
-				"command": "mcp-vertex.openToolDetail",
+				"command": "delendai.openToolDetail",
 				"title": "Open Tool Detail",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.restartServer",
+				"command": "delendai.restartServer",
 				"title": "Restart MCP Server",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.plugins.activation",
+				"command": "delendai.plugins.activation",
 				"title": "Manage Plugin Activation",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(extensions)"
 			},
 			{
-				"command": "mcp-vertex.openSettings",
+				"command": "delendai.openSettings",
 				"title": "Open Settings",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(gear)"
 			},
 			{
-				"command": "mcp-vertex.openConfigurationCenter",
+				"command": "delendai.openConfigurationCenter",
 				"title": "Open Configuration Center",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "mcp-vertex.openPluginConfig",
+				"command": "delendai.openPluginConfig",
 				"title": "Configure Plugin",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "mcp-vertex.saveSettings",
+				"command": "delendai.saveSettings",
 				"title": "Save Settings",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.resetSettings",
+				"command": "delendai.resetSettings",
 				"title": "Reset Settings",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.openToolbar",
+				"command": "delendai.openToolbar",
 				"title": "Open Toolbar",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.memorySave",
+				"command": "delendai.memorySave",
 				"title": "Save Memory Note",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.memoryForget",
+				"command": "delendai.memoryForget",
 				"title": "Forget Memory Note",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.setupGithub",
+				"command": "delendai.setupGithub",
 				"title": "Set up GitHub Issues",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.providers.openDashboard",
+				"command": "delendai.providers.openDashboard",
 				"title": "Open Provider Dashboard",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(dashboard)"
 			},
 			{
-				"command": "mcp-vertex.providers.healthcheck",
+				"command": "delendai.providers.healthcheck",
 				"title": "Refresh Provider Healthcheck",
-				"category": "MCP Vertex",
+				"category": "DelendAI",
 				"icon": "$(pulse)"
 			},
 			{
-				"command": "mcp-vertex.providers.pause",
+				"command": "delendai.providers.pause",
 				"title": "Pause Provider",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.providers.resume",
+				"command": "delendai.providers.resume",
 				"title": "Resume Provider",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.usage.report",
+				"command": "delendai.usage.report",
 				"title": "Open Usage Report",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.usage.clear",
+				"command": "delendai.usage.clear",
 				"title": "Clear Usage Log",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.externalMcps.ack",
+				"command": "delendai.externalMcps.ack",
 				"title": "Review External Server Activations",
-				"category": "MCP Vertex"
+				"category": "DelendAI"
 			},
 			{
-				"command": "mcp-vertex.startServerUntrusted",
+				"command": "delendai.startServerUntrusted",
 				"title": "MCP-Vertex: Start Server (Untrusted)",
 				"category": "MCP-Vertex"
 			}
@@ -261,130 +261,130 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "mcp-vertex.refresh",
-					"when": "view == mcp-vertex.tools",
+					"command": "delendai.refresh",
+					"when": "view == delendai.tools",
 					"group": "navigation"
 				},
 				{
-					"command": "mcp-vertex.openAgentCatalog",
-					"when": "view == mcp-vertex.tools",
+					"command": "delendai.openAgentCatalog",
+					"when": "view == delendai.tools",
 					"group": "navigation"
 				},
 				{
-					"command": "mcp-vertex.openAutoAgentSelector",
-					"when": "view == mcp-vertex.tools",
+					"command": "delendai.openAutoAgentSelector",
+					"when": "view == delendai.tools",
 					"group": "navigation"
 				},
 				{
-					"command": "mcp-vertex.toolSearch",
-					"when": "view == mcp-vertex.tools",
+					"command": "delendai.toolSearch",
+					"when": "view == delendai.tools",
 					"group": "navigation"
 				},
 				{
-					"command": "mcp-vertex.providers.openDashboard",
-					"when": "view == mcp-vertex.tools",
+					"command": "delendai.providers.openDashboard",
+					"when": "view == delendai.tools",
 					"group": "navigation"
 				},
 				{
-					"command": "mcp-vertex.providers.healthcheck",
-					"when": "view == mcp-vertex.tools",
+					"command": "delendai.providers.healthcheck",
+					"when": "view == delendai.tools",
 					"group": "navigation"
 				},
 				{
-					"command": "mcp-vertex.proposals.refresh",
-					"when": "view == mcp-vertex.proposals",
+					"command": "delendai.proposals.refresh",
+					"when": "view == delendai.proposals",
 					"group": "navigation"
 				},
 				{
-					"command": "mcp-vertex.openProposal",
-					"when": "view == mcp-vertex.proposals",
+					"command": "delendai.openProposal",
+					"when": "view == delendai.proposals",
 					"group": "navigation"
 				},
 				{
-					"command": "mcp-vertex.refresh",
-					"when": "view == mcp-vertex.memory",
+					"command": "delendai.refresh",
+					"when": "view == delendai.memory",
 					"group": "navigation"
 				},
 				{
-					"command": "mcp-vertex.openToolDetail",
-					"when": "view == mcp-vertex.tools && viewItem == mcpVertexTool",
+					"command": "delendai.openToolDetail",
+					"when": "view == delendai.tools && viewItem == delendaiTool",
 					"group": "inline"
 				}
 			],
 			"view/item/context": [
 				{
-					"command": "mcp-vertex.openToolDetail",
-					"when": "view == mcp-vertex.tools && viewItem == mcpVertexTool",
+					"command": "delendai.openToolDetail",
+					"when": "view == delendai.tools && viewItem == delendaiTool",
 					"group": "inline"
 				},
 				{
-					"command": "mcp-vertex.openPluginConfig",
-					"when": "view == mcp-vertex.tools && viewItem == mcpVertexPlugin",
+					"command": "delendai.openPluginConfig",
+					"when": "view == delendai.tools && viewItem == delendaiPlugin",
 					"group": "configure"
 				},
 				{
-					"command": "mcp-vertex.plugins.activation",
-					"when": "view == mcp-vertex.tools && viewItem == mcpVertexPlugin",
+					"command": "delendai.plugins.activation",
+					"when": "view == delendai.tools && viewItem == delendaiPlugin",
 					"group": "configure"
 				}
 			],
 			"commandPalette": [
 				{
-					"command": "mcp-vertex.openAgentCatalog",
+					"command": "delendai.openAgentCatalog",
 					"when": "true"
 				},
 				{
-					"command": "mcp-vertex.openAutoAgentSelector",
+					"command": "delendai.openAutoAgentSelector",
 					"when": "true"
 				},
 				{
-					"command": "mcp-vertex.proposals.copyError",
+					"command": "delendai.proposals.copyError",
 					"when": "false"
 				},
 				{
-					"command": "mcp-vertex.saveSettings",
+					"command": "delendai.saveSettings",
 					"when": "false"
 				},
 				{
-					"command": "mcp-vertex.resetSettings",
+					"command": "delendai.resetSettings",
 					"when": "false"
 				}
 			]
 		},
 		"walkthroughs": [
 			{
-				"id": "mcp-vertex.gettingStarted",
-				"title": "Get Started with MCP Vertex",
+				"id": "delendai.gettingStarted",
+				"title": "Get Started with DelendAI",
 				"description": "Connect the MCP server, explore your tools, and start coordinating agent work.",
 				"steps": [
 					{
-						"id": "mcp-vertex.gettingStarted.connect",
+						"id": "delendai.gettingStarted.connect",
 						"title": "Connect the MCP Server",
-						"description": "Ensure the mcp-vertex server is running. Check the status bar for the connection indicator.\n\n[Restart Server](command:mcp-vertex.restartServer)",
+						"description": "Ensure the delendai server is running. Check the status bar for the connection indicator.\n\n[Restart Server](command:delendai.restartServer)",
 						"media": {
 							"markdown": "media/walkthrough/connect.md"
 						}
 					},
 					{
-						"id": "mcp-vertex.gettingStarted.overview",
+						"id": "delendai.gettingStarted.overview",
 						"title": "View the Overview",
-						"description": "Get a compact map of all loaded plugins, tools, and knowledge entries.\n\n[Show Overview](command:mcp-vertex.showOverview)",
+						"description": "Get a compact map of all loaded plugins, tools, and knowledge entries.\n\n[Show Overview](command:delendai.showOverview)",
 						"media": {
 							"markdown": "media/walkthrough/overview.md"
 						}
 					},
 					{
-						"id": "mcp-vertex.gettingStarted.dashboard",
+						"id": "delendai.gettingStarted.dashboard",
 						"title": "Open the Dashboard",
-						"description": "The dashboard shows provider status, routing decisions, and usage metrics at a glance.\n\n[Open Dashboard](command:mcp-vertex.providers.openDashboard)",
+						"description": "The dashboard shows provider status, routing decisions, and usage metrics at a glance.\n\n[Open Dashboard](command:delendai.providers.openDashboard)",
 						"media": {
 							"markdown": "media/walkthrough/dashboard.md"
 						}
 					},
 					{
-						"id": "mcp-vertex.gettingStarted.proposals",
+						"id": "delendai.gettingStarted.proposals",
 						"title": "Explore Proposals",
-						"description": "Browse and manage proposals \u2014 the units of work that agents claim, implement, and close.\n\n[Open Proposals](command:mcp-vertex.openProposal)",
+						"description": "Browse and manage proposals \u2014 the units of work that agents claim, implement, and close.\n\n[Open Proposals](command:delendai.openProposal)",
 						"media": {
 							"markdown": "media/walkthrough/proposals.md"
 						}
@@ -393,14 +393,14 @@
 			}
 		],
 		"configuration": {
-			"title": "MCP Vertex server",
+			"title": "DelendAI server",
 			"properties": {
-				"mcp-vertex.server.command": {
+				"delendai.server.command": {
 					"type": "string",
-					"markdownDescription": "Executable used to spawn the MCP server for the extension. Optional when the workspace contains `mcp-vertex.config.json`: the extension then uses `bun run mcp-vertex`.",
+					"markdownDescription": "Executable used to spawn the MCP server for the extension. Optional when the workspace contains `delendai.config.json`: the extension then uses `bun run delendai`.",
 					"scope": "machine"
 				},
-				"mcp-vertex.server.args": {
+				"delendai.server.args": {
 					"type": [
 						"array",
 						"string"
@@ -408,20 +408,20 @@
 					"items": {
 						"type": "string"
 					},
-					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Optional when the workspace contains `mcp-vertex.config.json`; provide an array to preserve argument boundaries exactly.",
+					"markdownDescription": "Arguments passed to `delendai.server.command`. Optional when the workspace contains `delendai.config.json`; provide an array to preserve argument boundaries exactly.",
 					"scope": "machine"
 				},
-				"mcp-vertex.server.cwd": {
+				"delendai.server.cwd": {
 					"type": "string",
 					"markdownDescription": "Working directory for the extension's MCP server process. Leave empty to use the first workspace folder.",
 					"scope": "machine"
 				},
-				"mcp-vertex.server.prefix": {
+				"delendai.server.prefix": {
 					"type": "string",
-					"markdownDescription": "Tool-name namespace prefix the server was started with (the value passed to the server's `--prefix` flag, e.g. `acme`). When set, every service call is namespaced as `<prefix>_<tool>`. Leave empty to use the default `mcp-vertex_` namespace.",
+					"markdownDescription": "Tool-name namespace prefix the server was started with (the value passed to the server's `--prefix` flag, e.g. `acme`). When set, every service call is namespaced as `<prefix>_<tool>`. Leave empty to use the default `delendai_` namespace.",
 					"scope": "machine"
 				},
-				"mcp-vertex.development.autoReload": {
+				"delendai.development.autoReload": {
 					"type": "boolean",
 					"default": false,
 					"markdownDescription": "Development-only: reload the VS Code window when the locally built extension bundle changes. Enable only when the extension is loaded from this workspace.",

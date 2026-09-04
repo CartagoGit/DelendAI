@@ -3,13 +3,13 @@
  * check-stray-cache-files.script.ts — f00081 + f00082.
  *
  * f00081: any executable-looking file (`*.ts`, `*.mjs`, `*.sh`, `*.py`,
- * …) under `.cache/mcp-vertex/<weird>/` is a stray — the cache root is
+ * …) under `.cache/delendai/<weird>/` is a stray — the cache root is
  * for engine state, not for agent-authored code. Real scripts live
  * under `tools/scripts/`.
  *
  * f00082: extends the same defence to the repo root. The root
  * contains 19 legitimate files (AGENTS.md, package.json, biome.json,
- * lefthook.yml, mcp-vertex.config.json, …) but **none of them has an
+ * lefthook.yml, delendai.config.json, …) but **none of them has an
  * executable extension**. A file like `-la` (output of `ls -la`),
  * `tmp.sh`, `probe.py`, `experiment.ts` at the root is almost always
  * an agent whose shell mis-redirection landed in the wrong place. The
@@ -19,7 +19,7 @@
  *
  * Sanctioned cache layout (f00081, for reference):
  *
- *   .cache/mcp-vertex/
+ *   .cache/delendai/
  *     bootstrap/      (engine boot snapshots — derivable, safe to delete)
  *     drift/          (drift-store snapshots — derivable, safe to delete)
  *     proposals/      (regenerable index.json — derivable, safe to delete)
@@ -42,7 +42,7 @@
  * The previous lints only checked *what runtime code wrote* (os.tmpdir,
  * /tmp, homedir) and *where the cache root lived* (only `.cache/`
  * itself). Neither caught agents writing driver scripts directly to
- * `.cache/mcp-vertex/<weird>/` or stray files at the repo root. This
+ * `.cache/delendai/<weird>/` or stray files at the repo root. This
  * closes both gaps.
  */
 
@@ -172,7 +172,7 @@ const classifyCacheEntry = async (
 	if (isDirectory && pluginNames.has(entryName)) return null;
 
 	// Per-plugin exec subdirs (f00080) live as `<pluginCacheDir>/<plugin>/exec/`,
-	// but the cache-rooted view sees them as `mcp-vertex/<plugin>/exec/`.
+	// but the cache-rooted view sees them as `delendai/<plugin>/exec/`.
 	// We accept any entry whose depth-1 name is a plugin cache subdir AND
 	// whose path is under that subdir (so an agent can't smuggle code
 	// by giving it a `<plugin>-exec/`-shaped name).
@@ -384,7 +384,7 @@ const SANCTIONED_ROOT_FILES: ReadonlySet<string> = new Set([
 	'bunfig.toml',
 	'bun.lock',
 	'lefthook.yml',
-	'mcp-vertex.config.json',
+	'delendai.config.json',
 	'stylelint.config.mjs',
 	'tsconfig.base.json',
 	'tsconfig.json',
@@ -425,7 +425,7 @@ const SANCTIONED_ROOT_FILES: ReadonlySet<string> = new Set([
  *
  * Temporary files belong in the agent harness's own scratchpad, outside
  * the repository entirely — not in the root, and not in
- * `.cache/mcp-vertex/`, which is reserved for engine and plugin state.
+ * `.cache/delendai/`, which is reserved for engine and plugin state.
  */
 const findUntrackedRootDirectories = async (
 	repoRootAbs: string,
@@ -520,7 +520,7 @@ const isMainModule = (): boolean => {
 if (isMainModule()) {
 	void (async () => {
 		const root = repoRoot();
-		const cacheRootAbs = join(root, '.cache', 'mcp-vertex');
+		const cacheRootAbs = join(root, '.cache', 'delendai');
 		const cacheSummary = await findStrayCacheFiles(cacheRootAbs);
 		const rootSummary = await findStrayRootFiles(root);
 
@@ -565,7 +565,7 @@ if (isMainModule()) {
 					'    harness scratchpad, OUTSIDE the repository — not the repo root and',
 				);
 				console.error(
-					'    not .cache/mcp-vertex/, which is reserved for engine and plugin',
+					'    not .cache/delendai/, which is reserved for engine and plugin',
 				);
 				console.error(
 					'    state. commit-policy sweeps the whole dirty worktree on a timer, so',

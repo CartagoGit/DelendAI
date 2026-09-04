@@ -2,7 +2,7 @@
 /**
  * proposal-id-prefix.script.ts — f00049 S9.
  *
- * Ensures proposal markdown files under `docs/mcp-vertex/proposals/**` have a
+ * Ensures proposal markdown files under `docs/delendai/proposals/**` have a
  * frontmatter `id:` prefix consistent with their parent status folder policy:
  *
  * - `ready/` -> any active proposal kind (`f|x|b|a|c|r|v|d|t|i|s|q`)
@@ -120,7 +120,7 @@ export const lintProposalIdPrefixes = async (
 
 if (import.meta.main) {
 	const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
-	const proposalsDirAbs = join(repoRoot, 'docs', 'mcp-vertex', 'proposals');
+	const proposalsDirAbs = join(repoRoot, 'docs', 'delendai', 'proposals');
 	const issues = await lintProposalIdPrefixes(proposalsDirAbs);
 	for (const issue of issues) {
 		console.log(`${issue.relPath}: ${issue.message}`);

@@ -4,7 +4,7 @@
  * `tools/scripts/lint/audit-ids.script.ts`.
  *
  * The script enforces the AGENTS.md §"Audits File Naming" uniqueness
- * half: every audit file under `docs/mcp-vertex/proposals/done/audits/` must carry
+ * half: every audit file under `docs/delendai/proposals/done/audits/` must carry
  * a unique `aNNNNN` id. The pure engine (`detectCollisions`) and the
  * pure parser (`parseIdFromFilename`) are tested in isolation here;
  * the I/O shell (`listAuditFiles`, `main`) is exercised via the CLI
@@ -86,11 +86,11 @@ describe('collectAuditCollisions (integration: real filesystem under a temp dir)
 		try {
 			// Use the audit-ids "root" semantics: it appends AUDITS_DIR
 			// internally, so we point the script at the parent of a fake
-			// `docs/mcp-vertex/proposals/done/audits/` layout.
+			// `docs/delendai/proposals/done/audits/` layout.
 			const auditsDir = join(
 				fixtureRoot,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				'done',
 				'audits',
@@ -118,7 +118,7 @@ describe('collectAuditCollisions (integration: real filesystem under a temp dir)
 			const auditsDir = join(
 				fixtureRoot,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				'done',
 				'audits',

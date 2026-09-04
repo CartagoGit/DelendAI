@@ -56,7 +56,7 @@ describe('record-claude-lifecycle', () => {
 		expect(parseOptions(['--workspace=/tmp/project'])).toMatchObject({
 			workspace: '/tmp/project',
 			lifecyclePath:
-				'/tmp/project/.cache/mcp-vertex/results/usage-tracking/host-lifecycle.claude-code.jsonl',
+				'/tmp/project/.cache/delendai/results/usage-tracking/host-lifecycle.claude-code.jsonl',
 		});
 		expect(
 			parseOptions([

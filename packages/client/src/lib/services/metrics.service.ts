@@ -1,8 +1,8 @@
-import type { McpVertexToolOutputs } from '@delendai/core/contracts';
+import type { DelendaiToolOutputs } from '@delendai/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 
-export type IMetricsSnapshot = McpVertexToolOutputs['mcp-vertex_metrics'];
+export type IMetricsSnapshot = DelendaiToolOutputs['delendai_metrics'];
 
 export interface IMetricsSnapshotOptions {
 	readonly reset?: boolean;
@@ -20,7 +20,7 @@ export class MetricsService {
 		options: IMetricsSnapshotOptions = {},
 	): Promise<IMetricsSnapshot> {
 		return this.client.request<IMetricsSnapshotOptions, IMetricsSnapshot>(
-			'mcp-vertex_metrics',
+			'delendai_metrics',
 			options,
 		);
 	}

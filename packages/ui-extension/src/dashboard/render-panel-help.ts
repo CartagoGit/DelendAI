@@ -20,7 +20,7 @@ const HELP_ENTRIES: ReadonlyArray<IHelpEntry> = [
 	{
 		id: 'status',
 		label: 'Status',
-		purpose: 'Live state of the mcp-vertex MCP server.',
+		purpose: 'Live state of the delendai MCP server.',
 		tip: 'Use this as the home tab. The pulse chip flips to "lost" when MCP is unreachable, the two rings show tokens saved and error rate, and the bottom table lists every active agent with its current proposal and slice.',
 	},
 	{
@@ -110,17 +110,17 @@ export const renderPanelHelp = (lang: ILangDict): string => {
 	const text = (key: string, fallback: string): string =>
 		extensionText(lang, key) || fallback;
 	const items = HELP_ENTRIES.map(
-		(entry) => `<details class="mcpv-help__entry" open>
+		(entry) => `<details class="delendai-help__entry" open>
 			<summary>
 				<strong>${escapeHtml(entry.label)}</strong>
-				<span class="mcpv-fg-muted">${escapeHtml(entry.purpose)}</span>
+				<span class="delendai-fg-muted">${escapeHtml(entry.purpose)}</span>
 			</summary>
 			<p>${escapeHtml(entry.tip)}</p>
 		</details>`,
 	).join('');
-	return `<section class="mcpv-panel" id="panel-help" role="tabpanel" aria-labelledby="tab-help">
-	<h2 class="mcpv-panel__title">${escapeHtml(text('tabHelp', 'Help'))}</h2>
-	<p class="mcpv-fg-muted">${escapeHtml(text('help.lead', 'A short tour of every dashboard panel so you can pick the right tab without guessing.'))}</p>
-	<div class="mcpv-help">${items}</div>
+	return `<section class="delendai-panel" id="panel-help" role="tabpanel" aria-labelledby="tab-help">
+	<h2 class="delendai-panel__title">${escapeHtml(text('tabHelp', 'Help'))}</h2>
+	<p class="delendai-fg-muted">${escapeHtml(text('help.lead', 'A short tour of every dashboard panel so you can pick the right tab without guessing.'))}</p>
+	<div class="delendai-help">${items}</div>
 </section>`;
 };

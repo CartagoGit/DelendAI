@@ -20,7 +20,7 @@ import {
 } from './render-host-hints.script.ts';
 
 const ID_PATTERN = /`[a-z][0-9]{4,5}`/g;
-const TOOL_NAME_PATTERN = /`mcp-vertex_[a-z_]+`/g;
+const TOOL_NAME_PATTERN = /`delendai_[a-z_]+`/g;
 
 describe('renderHostHints (agnostic bootstrap, f00092 single fragment)', () => {
 	it('emits exactly one canonical fragment', () => {
@@ -49,13 +49,13 @@ describe('renderHostHints (agnostic bootstrap, f00092 single fragment)', () => {
 	it('no fragment enumerates tool names', () => {
 		for (const fragment of renderHostHints()) {
 			const tools = fragment.text.match(TOOL_NAME_PATTERN) ?? [];
-			// The bootstrap path includes "mcp-vertex_agent_catalog" — that one
+			// The bootstrap path includes "delendai_agent_catalog" — that one
 			// is allowed because it is the routing entry point, not a list.
 			const nonBootstrapTools = tools.filter(
 				(name) =>
-					name !== '`mcp-vertex_agent_catalog`' &&
-					name !== '`mcp-vertex_overview`' &&
-					name !== '`mcp-vertex_proposals_auto_work`',
+					name !== '`delendai_agent_catalog`' &&
+					name !== '`delendai_overview`' &&
+					name !== '`delendai_proposals_auto_work`',
 			);
 			expect(
 				nonBootstrapTools,
@@ -87,7 +87,7 @@ describe('renderHostHints (agnostic bootstrap, f00092 single fragment)', () => {
 		const rendered = renderHostHints();
 		const text = rendered[0]?.text ?? '';
 		const canonicalFirstMove =
-			'`mcp-vertex_overview { compact: true }` followed by';
+			'`delendai_overview { compact: true }` followed by';
 		expect(text).toContain(canonicalFirstMove);
 	});
 

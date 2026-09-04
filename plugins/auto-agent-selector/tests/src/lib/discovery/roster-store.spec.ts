@@ -27,7 +27,7 @@ describe('realRosterSnapshotStore', () => {
 			missing: [],
 		});
 		const snapshot = await readFile(path, 'utf8');
-		expect(snapshot).toContain('mcp-vertex/auto-agent-selector/roster/1');
+		expect(snapshot).toContain('delendai/auto-agent-selector/roster/1');
 		expect(snapshot).toContain('"defaultCostQualityTradeoff": 8');
 		expect(snapshot).toContain('OPENAI_API_KEY');
 		expect(snapshot).not.toContain('sk-');

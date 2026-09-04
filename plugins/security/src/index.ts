@@ -10,7 +10,7 @@ import { buildSecuritySastRegistration } from './lib/tools/security-sast.tool';
  * Security scanning plugin. `security_secrets` detects leaked secrets
  * (private keys, cloud/API tokens) with high-precision offline rules and
  * reports them as normalized findings (r00012 shape). Offline, no network,
- * no bundled binaries. Load with `mcp-vertex --plugins=security`.
+ * no bundled binaries. Load with `delendai --plugins=security`.
  */
 const OptionsSchema = z.object({});
 

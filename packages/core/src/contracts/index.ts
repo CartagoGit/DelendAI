@@ -15,15 +15,15 @@
  */
 
 export type { IGracefulShutdownOptions } from '../lib/cli/graceful-shutdown';
-export type { IMcpVertexProject } from '../lib/project/create-mcp-project';
+export type { IDelendaiProject } from '../lib/project/create-mcp-project';
 export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
 export type { IMcpToolSurfaceMode } from '../lib/contracts/interfaces/surface-mode.interface';
 export type { IWorkspacePathProvider } from '../lib/contracts/interfaces/workspace-paths.interface';
 export type { IPluginConfigExample } from '../lib/contracts/interfaces/plugin-config-example.interface';
-export type { IMcpVertexProjectMetadata } from '../lib/contracts/interfaces/project-metadata.interface';
+export type { IDelendaiProjectMetadata } from '../lib/contracts/interfaces/project-metadata.interface';
 export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type { IResolvedHostIdentity } from '../lib/contracts/interfaces/resolved-host-identity.interface';
-export type { IMcpVertexCliArgs } from '../lib/plugins/parse-cli-args';
+export type { IDelendaiCliArgs } from '../lib/plugins/parse-cli-args';
 export type {
 	IToolRegistration,
 	IPromptRegistration,
@@ -80,7 +80,7 @@ export type {
 	IAdoptProjectToolDeps,
 	IAdoptProjectPreset,
 } from '../lib/contracts/interfaces/adopt-project.interface';
-export type { IExistingMcpVertexInstall } from '../lib/contracts/interfaces/existing-mcp-vertex-install.interface';
+export type { IExistingDelendaiInstall } from '../lib/contracts/interfaces/existing-delendai-install.interface';
 export type {
 	IDependencyGraphPluginInput,
 	IDependencyGraphMissingDependency,
@@ -119,7 +119,7 @@ export type {
 	IMutexMetricsCollector,
 	IMutexMetricsSnapshot,
 } from '../lib/contracts/interfaces/mutex-metrics.interface';
-export type { McpVertexToolOutputs } from '../generated/tool-outputs';
+export type { DelendaiToolOutputs } from '../generated/tool-outputs';
 export type {
 	IPrepareContext,
 	IActivateContext,

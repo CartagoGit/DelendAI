@@ -55,7 +55,7 @@ describe('F3 — engines honor a relocated path layout', async () => {
 		// Index lands under the relocated docs root, NOT under docs/proposals.
 		expect(result.indexPath).toBe(join(root, layout.proposalIndexFile));
 		expect(
-			existsSync(join(root, 'docs/mcp-vertex/proposals/index.json')),
+			existsSync(join(root, 'docs/delendai/proposals/index.json')),
 		).toBe(false);
 		const index = JSON.parse(
 			readFileSync(join(root, layout.proposalIndexFile), 'utf8'),
@@ -88,7 +88,7 @@ describe('F3 — engines honor a relocated path layout', async () => {
 
 	it('defaults to DEFAULT_PATH_LAYOUT when no layout is passed (legacy host back-compat)', async () => {
 		writeFileEnsured(
-			join(root, 'docs/mcp-vertex/proposals/p02-default.md'),
+			join(root, 'docs/delendai/proposals/p02-default.md'),
 			[
 				'---',
 				'id: p02',
@@ -106,7 +106,7 @@ describe('F3 — engines honor a relocated path layout', async () => {
 		// `<docsDir>/proposals/index.json` (the index is a
 		// regenerable cache artefact, not a human-edited source).
 		expect(result.indexPath).toBe(
-			join(root, '.cache/mcp-vertex/proposals/index.json'),
+			join(root, '.cache/delendai/proposals/index.json'),
 		);
 	});
 });

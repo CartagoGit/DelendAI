@@ -9,7 +9,7 @@ import { normalizeEvent } from '../src/lib/services/normalize-event';
 
 describe('correlateEvents', async () => {
 	it('builds a task chain and detects long gaps', async () => {
-		const dir = await mkdtemp(join(tmpdir(), 'mcp-vertex-correlate-'));
+		const dir = await mkdtemp(join(tmpdir(), 'delendai-correlate-'));
 		const store = createLogStore(dir);
 		await (await store).appendEvent(
 			normalizeEvent(
@@ -48,7 +48,7 @@ describe('correlateEvents', async () => {
 	});
 
 	it('requires exactly one correlation key', async () => {
-		const dir = await mkdtemp(join(tmpdir(), 'mcp-vertex-correlate-'));
+		const dir = await mkdtemp(join(tmpdir(), 'delendai-correlate-'));
 		const store = createLogStore(dir);
 		await expect(correlateEvents(await store, {})).rejects.toThrow(
 			'Provide exactly one',

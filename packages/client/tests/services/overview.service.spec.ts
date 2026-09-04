@@ -9,13 +9,13 @@ import {
 } from '../../src/public/index';
 
 const overviewFixture: IOverview = {
-	server: { name: 'mcp-vertex', version: '0.1.0' },
-	namespacePrefix: 'mcp-vertex',
+	server: { name: 'delendai', version: '0.1.0' },
+	namespacePrefix: 'delendai',
 	plugins: [{ name: 'proposals', version: '0.1.0' }, 'quality'],
 	tools: [
-		'mcp-vertex_status',
+		'delendai_status',
 		{
-			name: 'mcp-vertex_proposals_proposal_board',
+			name: 'delendai_proposals_proposal_board',
 			summary: 'Show proposal board',
 			tags: ['workflow'],
 			effects: ['write'],
@@ -30,7 +30,7 @@ describe('OverviewService', async () => {
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
 				expect(input).toEqual({
-					name: 'mcp-vertex_overview',
+					name: 'delendai_overview',
 					arguments: { compact: true, tag: 'workflow' },
 				});
 				return { structuredContent: overviewFixture };
@@ -49,7 +49,7 @@ describe('OverviewService', async () => {
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
 				expect(input).toEqual({
-					name: 'mcp-vertex_overview',
+					name: 'delendai_overview',
 					arguments: { compact: true },
 				});
 				return { structuredContent: overviewFixture };
@@ -58,13 +58,13 @@ describe('OverviewService', async () => {
 
 		await expect(new OverviewService(client).listTools()).resolves.toEqual([
 			{
-				name: 'mcp-vertex_status',
-				plugin: 'mcp-vertex',
+				name: 'delendai_status',
+				plugin: 'delendai',
 				tags: [],
 				effects: [],
 			},
 			{
-				name: 'mcp-vertex_proposals_proposal_board',
+				name: 'delendai_proposals_proposal_board',
 				plugin: 'proposals',
 				summary: 'Show proposal board',
 				tags: ['workflow'],
@@ -76,8 +76,8 @@ describe('OverviewService', async () => {
 
 describe('normalizeTool', async () => {
 	it('supports compact string entries and object entries', async () => {
-		expect(normalizeTool('mcp-vertex_quality_run_quality')).toEqual({
-			name: 'mcp-vertex_quality_run_quality',
+		expect(normalizeTool('delendai_quality_run_quality')).toEqual({
+			name: 'delendai_quality_run_quality',
 			plugin: 'quality',
 			tags: [],
 			effects: [],
@@ -98,6 +98,6 @@ describe('normalizeTool', async () => {
 
 describe('pluginFromToolName', async () => {
 	it('keeps the core namespace intact', async () => {
-		expect(pluginFromToolName('mcp-vertex_overview')).toBe('mcp-vertex');
+		expect(pluginFromToolName('delendai_overview')).toBe('delendai');
 	});
 });

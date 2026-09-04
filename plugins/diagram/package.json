@@ -2,7 +2,7 @@
 	"name": "@delendai/diagram",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency graph as a mermaid flowchart. Offline, pure. Load with `mcp-vertex --plugins=diagram`.",
+	"description": "Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency graph as a mermaid flowchart. Offline, pure. Load with `delendai --plugins=diagram`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

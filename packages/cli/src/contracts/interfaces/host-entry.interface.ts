@@ -1,5 +1,5 @@
 /**
- * host-entry.interface.ts — types for resolving the mcp-vertex host-server
+ * host-entry.interface.ts — types for resolving the delendai host-server
  * entry script (f00088 S2 + f00103 sibling-walk).
  *
  * Per repo convention every interface/type lives under

@@ -16,16 +16,16 @@ describe('observability plugin registration (x00185 F13)', () => {
 		const registrations = await plugin.register({
 			namespacePrefix: 'obs',
 			options: {},
-			cacheDir: '.cache/mcp-vertex',
-			pluginCacheDir: '.cache/mcp-vertex/observability',
+			cacheDir: '.cache/delendai',
+			pluginCacheDir: '.cache/delendai/observability',
 			pluginDocsDir: 'docs/plugins/observability',
 			workspace: {
 				root: '/workspace',
 				resolve: (path: string) => `/workspace/${path}`,
 			},
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
 			keepLegacy: false,
 			agentWorktreeEnabled: false,
@@ -54,16 +54,16 @@ describe('observability plugin registration (x00185 F13)', () => {
 		const registrations = await plugin.register({
 			namespacePrefix: 'obs',
 			options: {},
-			cacheDir: '.cache/mcp-vertex',
-			pluginCacheDir: '.cache/mcp-vertex/observability',
+			cacheDir: '.cache/delendai',
+			pluginCacheDir: '.cache/delendai/observability',
 			pluginDocsDir: 'docs/plugins/observability',
 			workspace: {
 				root: '/workspace',
 				resolve: (path: string) => `/workspace/${path}`,
 			},
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
 			keepLegacy: false,
 			agentWorktreeEnabled: false,

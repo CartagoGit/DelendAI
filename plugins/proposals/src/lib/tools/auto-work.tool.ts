@@ -74,7 +74,7 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	readonly validationCommand?: string;
 	/**
 	 * Default persistence mode for this workspace. Configured via
-	 * `mcp-vertex.config.json#plugins.proposals.persist.mode`. The
+	 * `delendai.config.json#plugins.proposals.persist.mode`. The
 	 * orchestrator can still override per call via `args.persist`.
 	 */
 	readonly persist?: IAutoWorkPersistConfig;
@@ -96,7 +96,7 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	 * auto_work plan falls back to a paused-proposals cascade when
 	 * the standard cascade has no actionable candidates. Default false
 	 * — paused proposals never interrupt the normal pick. Configurable
-	 * per workspace via `mcp-vertex.config.json#plugins.proposals.
+	 * per workspace via `delendai.config.json#plugins.proposals.
 	 * autoWork.includePaused` so a single-agent session that is happy
 	 * to reopen paused work can default-on it without re-typing the
 	 * arg on every call.
@@ -105,7 +105,7 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	/**
 	 * f00078 S1: when `true`, the auto_work front-hook refuses to
 	 * return a plan unless the active branch is `agent/<name>`.
-	 * Hosts that have the agentWorktree gate on (mcp-vertex.config.json
+	 * Hosts that have the agentWorktree gate on (delendai.config.json
 	 * has `agentWorktree: true`) MUST pass `true` here. Hosts that
 	 * run solo without worktree isolation pass `false` (or omit).
 	 */

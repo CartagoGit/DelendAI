@@ -15,7 +15,7 @@
  * the whitelist stays correct even when a host renames the prefix.
  *
  * The canonical rationale (per-tool, allow/deny) lives in
- * `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` → "VS Code read-only proposals
+ * `docs/delendai/PLUGINS-DELENDAI.md` → "VS Code read-only proposals
  * surface". Keep the two in sync; S6 greps this module for the denied names.
  *
  * S2 EVOLVES the existing `ProposalBoardProvider`

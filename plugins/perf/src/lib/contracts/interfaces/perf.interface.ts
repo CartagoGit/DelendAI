@@ -103,7 +103,7 @@ export interface IPerfProfileDeps {
 /** Optional seams for the production deps adapter tests. */
 export interface IRealPerfProfileDepsOptions {
 	readonly probeDeps?: IProbeDeps;
-	/** Override the scratch root (defaults to `<workspaceRootAbs>/.cache/mcp-vertex`). */
+	/** Override the scratch root (defaults to `<workspaceRootAbs>/.cache/delendai`). */
 	readonly pluginCacheDir?: string;
 }
 

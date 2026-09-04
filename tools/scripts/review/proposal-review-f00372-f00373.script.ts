@@ -2,30 +2,30 @@
 /**
  * Records peer-review approval for f00372/f00373 slice S1, using the
  * on-disk peer-review log path the transition CLI actually reads
- * (`.cache/mcp-vertex/proposals/peer-review.jsonl`).
+ * (`.cache/delendai/proposals/peer-review.jsonl`).
  */
 import { join } from 'node:path';
 import { buildReviewRegistration } from '@delendai/proposals/lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from '@delendai/proposals/lib/tools/authoring.tool';
 
-const workspaceRoot = '/home/cartago/_projects/mcp-vertex';
+const workspaceRoot = '/home/cartago/_projects/delendai';
 const options: IAuthoringToolOptions = {
 	namespacePrefix: 'proposals',
 	workspaceRoot,
-	proposalsDirAbs: join(workspaceRoot, 'docs/mcp-vertex/proposals'),
-	indexPathAbs: join(workspaceRoot, '.cache/mcp-vertex/proposals/index.json'),
-	lockPathAbs: join(workspaceRoot, '.cache/mcp-vertex/agents.lock.json'),
+	proposalsDirAbs: join(workspaceRoot, 'docs/delendai/proposals'),
+	indexPathAbs: join(workspaceRoot, '.cache/delendai/proposals/index.json'),
+	lockPathAbs: join(workspaceRoot, '.cache/delendai/agents.lock.json'),
 	peerReviewLogPathAbs: join(
 		workspaceRoot,
-		'.cache/mcp-vertex/proposals/peer-review.jsonl',
+		'.cache/delendai/proposals/peer-review.jsonl',
 	),
 	counterPathAbs: join(
 		workspaceRoot,
-		'.cache/mcp-vertex/proposals/proposal-id-counters.json',
+		'.cache/delendai/proposals/proposal-id-counters.json',
 	),
 	layout: {
-		proposalsDir: 'docs/mcp-vertex/proposals',
-		proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+		proposalsDir: 'docs/delendai/proposals',
+		proposalIndexFile: '.cache/delendai/proposals/index.json',
 	},
 	extraFolders: [],
 	validationCommand: 'bun run validate',
@@ -52,7 +52,7 @@ const jobs = [
 			testsPassing: 15,
 			testsTotal: 15,
 		},
-		note: 'sonnet-reviewer-12: read ADR 0016 and ADR 0017 (docs/mcp-vertex/adr/), confirmed 0017 (Accepted) documents the managed default superseding 0016 adaptive default, and confirmed decideSurfaceModeFromCapabilities/resolveInitialSurfaceMode in packages/core/src/lib/surface/decide-mode.ts implement that precedence. Ran bun test packages/core/tests/src/lib/surface/decide-mode.spec.ts: 15/15 pass.',
+		note: 'sonnet-reviewer-12: read ADR 0016 and ADR 0017 (docs/delendai/adr/), confirmed 0017 (Accepted) documents the managed default superseding 0016 adaptive default, and confirmed decideSurfaceModeFromCapabilities/resolveInitialSurfaceMode in packages/core/src/lib/surface/decide-mode.ts implement that precedence. Ran bun test packages/core/tests/src/lib/surface/decide-mode.spec.ts: 15/15 pass.',
 	},
 	{
 		proposalId: 'f00373',

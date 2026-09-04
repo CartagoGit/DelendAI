@@ -3,14 +3,14 @@
  * tool exposed by the opt-in `usage-tracking` plugin. Pure 1:1 delegation.
  *
  * Tools mapped:
- *   - `mcp-vertex_usage-tracking_usage_report`
+ *   - `delendai_usage-tracking_usage_report`
  *       ({ groupBy?, windowDays? })
- *   - `mcp-vertex_usage-tracking_usage_clear`
+ *   - `delendai_usage-tracking_usage_clear`
  *       ({ confirm })  — destructive, guarded by --confirm
  *
  * The plugin is not part of any preset, so these commands only resolve when
  * the user has loaded `usage-tracking` (via `--plugins` or a
- * `plugins.usage-tracking` block in `mcp-vertex.config.json`).
+ * `plugins.usage-tracking` block in `delendai.config.json`).
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import {
@@ -31,7 +31,7 @@ const usageReportCommand: ICliCommand = {
 		const groupBy = scalarArg(args, 'group-by');
 		const windowDays = numberArg(args, 'window-days');
 		return data(
-			await request(ctx, 'mcp-vertex_usage-tracking_usage_report', {
+			await request(ctx, 'delendai_usage-tracking_usage_report', {
 				...(groupBy !== undefined ? { groupBy } : {}),
 				...(windowDays !== undefined ? { windowDays } : {}),
 			}),
@@ -49,7 +49,7 @@ const usageClearCommand: ICliCommand = {
 			return usage('usage-tracking clear --confirm');
 		}
 		return data(
-			await request(ctx, 'mcp-vertex_usage-tracking_usage_clear', {
+			await request(ctx, 'delendai_usage-tracking_usage_clear', {
 				confirm: true,
 			}),
 		);

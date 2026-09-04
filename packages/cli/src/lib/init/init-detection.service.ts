@@ -191,14 +191,14 @@ export const fallbackDetection = (): IInitDetection => ({
 export type { IFileReader, IProjectAnalysis };
 
 /**
- * Tiny helper: load the existing `mcp-vertex.config.json` from disk
+ * Tiny helper: load the existing `delendai.config.json` from disk
  * (if any) so the renderer can preserve the operator's prior choices
  * for `prefix`, `plugins`, and the new `convention` block.
  */
 export const loadExistingConfig = async (
 	workspace: string,
 ): Promise<Record<string, unknown> | undefined> => {
-	const path = join(workspace, 'mcp-vertex.config.json');
+	const path = join(workspace, 'delendai.config.json');
 	if (!existsSync(path)) return undefined;
 	try {
 		const raw = await readFile(path, 'utf8');

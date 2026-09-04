@@ -1,5 +1,5 @@
 /**
- * Host-neutral capabilities used to build mcp-vertex adapter packs.
+ * Host-neutral capabilities used to build delendai adapter packs.
  *
  * MCP guarantees the live tool/prompt/resource transport. Native skills,
  * durable instructions, lifecycle hooks and automatic continuation are host

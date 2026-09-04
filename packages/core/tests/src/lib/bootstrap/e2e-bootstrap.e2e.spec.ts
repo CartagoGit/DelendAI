@@ -1,9 +1,9 @@
 // f00051 S6 — e2e for the bootstrap flow.
 //
 // Drives `analyze_project` → `plan_mcp_project` → `create_project` over
-// the real `docs/mcp-vertex/examples/*` projects on disk. The point is to prove the
+// the real `docs/delendai/examples/*` projects on disk. The point is to prove the
 // end-to-end contract holds for a project that:
-//   - has a `mcp-vertex.config.json` and no `package.json`
+//   - has a `delendai.config.json` and no `package.json`
 //   - is shaped like an example (intentionally minimal)
 //
 // The test is read-only: it builds a `FileReader` rooted at the
@@ -55,10 +55,10 @@ const fsReader = (root: string): IFileReader => ({
 
 const analyse = async (root: string) => await analyzeProject(fsReader(root));
 
-const examplesRoot = join(repoRoot, 'docs', 'mcp-vertex', 'examples');
+const examplesRoot = join(repoRoot, 'docs', 'delendai', 'examples');
 
-describe('bootstrap e2e over docs/mcp-vertex/examples/', async () => {
-	it('analyzes docs/mcp-vertex/examples/minimal without crashing (no package.json)', async () => {
+describe('bootstrap e2e over docs/delendai/examples/', async () => {
+	it('analyzes docs/delendai/examples/minimal without crashing (no package.json)', async () => {
 		const root = join(examplesRoot, 'minimal');
 		expect(statSync(root).isDirectory()).toBe(true);
 		const analysis = analyse(root);
@@ -70,7 +70,7 @@ describe('bootstrap e2e over docs/mcp-vertex/examples/', async () => {
 		expect((await analysis).signals.length).toBeGreaterThan(0);
 	});
 
-	it('produces a usable server plan for docs/mcp-vertex/examples/minimal', async () => {
+	it('produces a usable server plan for docs/delendai/examples/minimal', async () => {
 		const root = join(examplesRoot, 'minimal');
 		const analysis = analyse(root);
 		const plan = await recommendServerPlan(await analysis, {
@@ -88,7 +88,7 @@ describe('bootstrap e2e over docs/mcp-vertex/examples/', async () => {
 		expect(entry?.args).toContain('@delendai/core');
 	});
 
-	it('builds an exhaustive blueprint for docs/mcp-vertex/examples/minimal', async () => {
+	it('builds an exhaustive blueprint for docs/delendai/examples/minimal', async () => {
 		const root = join(examplesRoot, 'minimal');
 		const analysis = analyse(root);
 		const bp = buildServerBlueprint(await analysis);

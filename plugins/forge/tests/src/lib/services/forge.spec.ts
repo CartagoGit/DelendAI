@@ -150,7 +150,7 @@ const githubExec = (): IForgeExec => {
 	});
 	return async (input: IRunExternalToolInput) => {
 		if (input.tool.bin === 'git')
-			return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			return okRun('git@github.com:CartagoGit/delendai.git\n');
 		const joined = input.args.join(' ');
 		if (joined.includes('pr list')) return okRun(pulls);
 		if (joined.includes('pr view')) return okRun(pr);

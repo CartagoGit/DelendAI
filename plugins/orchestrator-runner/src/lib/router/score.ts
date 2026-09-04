@@ -2,7 +2,7 @@
  * score.ts — the deterministic provider scorer (CRITICAL C5).
  *
  * This is the CANONICAL home of the scoring function. Both the wiki
- * (`docs/mcp-vertex/wiki/07-plugin-orchestrator-runner.md` §"advise_routing")
+ * (`docs/delendai/wiki/07-plugin-orchestrator-runner.md` §"advise_routing")
  * and `04-recommended-approach.md` §4.1 reference this exact file; it is
  * not duplicated in `proposals/` or `core/`.
  *

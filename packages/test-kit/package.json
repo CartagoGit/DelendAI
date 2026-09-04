@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"license": "BSD-3-Clause",
-	"description": "Internal, test-only helpers shared across @mcp-vertex workspaces (never published). Home of the typed partial-fake helper that replaces `as unknown as T` casts in test files.",
+	"description": "Internal, test-only helpers shared across @delendai workspaces (never published). Home of the typed partial-fake helper that replaces `as unknown as T` casts in test files.",
 	"scripts": {
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"test": "vitest run",

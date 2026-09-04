@@ -6,7 +6,7 @@ import {
 	type IStableToolDescriptor,
 } from '@delendai/core/lib/api/stable-facade';
 import type { IStableManifestTool } from '@delendai/core/public';
-import { MCP_VERTEX_VERSION } from '@delendai/core/version';
+import { DELENDAI_VERSION } from '@delendai/core/version';
 import {
 	CREATE_PROPOSAL_INPUT_SCHEMA,
 	CREATE_PROPOSAL_OUTPUT_SCHEMA,
@@ -49,7 +49,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'proposal_transition',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: PROPOSAL_TRANSITION_INPUT_SCHEMA,
 			outputSchema: PROPOSAL_TRANSITION_OUTPUT_SCHEMA,
@@ -58,7 +58,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'proposals_close_plan',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: CLOSE_PLAN_INPUT_SCHEMA,
 			outputSchema: CLOSE_PLAN_OUTPUT_SCHEMA,
@@ -67,7 +67,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'proposal_create',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: CREATE_PROPOSAL_INPUT_SCHEMA,
 			outputSchema: CREATE_PROPOSAL_OUTPUT_SCHEMA,
@@ -77,7 +77,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'auto_work',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: AUTO_WORK_INPUT_SCHEMA,
 			outputSchema: AUTO_WORK_OUTPUT_SCHEMA,
@@ -87,7 +87,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'agent_lock',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: AGENT_LOCK_INPUT_SCHEMA,
 			outputSchema: AGENT_LOCK_OUTPUT_SCHEMA,
@@ -96,7 +96,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'agent_worktree',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: AGENT_WORKTREE_INPUT_SCHEMA,
 			outputSchema: AGENT_WORKTREE_OUTPUT_SCHEMA,
@@ -105,7 +105,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'proposal_review',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: REVIEW_INPUT_SCHEMA,
 			outputSchema: REVIEW_OUTPUT_SCHEMA,
@@ -114,7 +114,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'task_queue_enqueue',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: TASK_QUEUE_INPUT_SCHEMA,
 			outputSchema: TASK_QUEUE_OUTPUT_SCHEMA,
@@ -123,7 +123,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'state_repair',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: STATE_REPAIR_INPUT_SCHEMA,
 			outputSchema: STATE_REPAIR_OUTPUT_SCHEMA,
@@ -133,7 +133,7 @@ export const PROPOSALS_STABLE_TOOLS: readonly IStableToolDescriptor[] =
 		describeStableTool({
 			name: 'proposal_force_transition',
 			plugin: 'proposals',
-			sinceVersion: MCP_VERTEX_VERSION,
+			sinceVersion: DELENDAI_VERSION,
 			semverGuarantee: 'additive-only',
 			inputSchema: FORCE_TRANSITION_INPUT_SCHEMA,
 			outputSchema: FORCE_TRANSITION_OUTPUT_SCHEMA,

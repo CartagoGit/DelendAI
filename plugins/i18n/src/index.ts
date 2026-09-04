@@ -7,7 +7,7 @@ import { buildI18nValidateRegistration } from './lib/tools/i18n-validate.tool';
 /**
  * i18n plugin. `i18n_check` diffs key usage vs locale files; `i18n_validate`
  * validates interpolation / ICU consistency. Offline, pure. Load with
- * `mcp-vertex --plugins=i18n`.
+ * `delendai --plugins=i18n`.
  */
 const OptionsSchema = z.object({});
 

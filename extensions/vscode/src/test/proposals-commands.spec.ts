@@ -1,9 +1,9 @@
 /**
  * proposals-commands.spec.ts — f00097 S4.
  *
- * Pins the board's local commands: `mcp-vertex.proposals.refresh` repaints via
- * the provider, `mcp-vertex.proposals.copyError` copies the raw payload to the
- * clipboard, and the global `mcp-vertex.refresh` also refreshes the board.
+ * Pins the board's local commands: `delendai.proposals.refresh` repaints via
+ * the provider, `delendai.proposals.copyError` copies the raw payload to the
+ * clipboard, and the global `delendai.refresh` also refreshes the board.
  */
 import { describe, expect, it } from 'vitest';
 

@@ -42,7 +42,7 @@ const EMBED_INDEX_FILE = 'embed-index.json';
 
 const resolveCacheRoot = (options: IEmbedIndexStoreOptions): string => {
 	if (options.cacheDir === undefined) {
-		return join(options.workspaceRootAbs, '.cache', 'mcp-vertex');
+		return join(options.workspaceRootAbs, '.cache', 'delendai');
 	}
 	return joinUnderRoot(options.workspaceRootAbs, options.cacheDir);
 };

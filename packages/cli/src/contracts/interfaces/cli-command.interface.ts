@@ -44,7 +44,7 @@ export interface ICliCommandResult {
 	 * tells the runner not to ALSO dump `data` as JSON in non-`--json`
 	 * mode. Every other command with `data` set and no bespoke output of
 	 * its own gets that pretty-printed JSON fallback instead of the
-	 * previous silent-by-default behaviour (a hung-looking `mcpv status`
+	 * previous silent-by-default behaviour (a hung-looking `delendai status`
 	 * with exit 0 and zero stdout/stderr).
 	 */
 	readonly suppressDefaultPrint?: boolean | undefined;

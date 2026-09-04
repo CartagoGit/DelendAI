@@ -239,7 +239,7 @@ const detectCustomVertexConfig = async (
 	// of hit ids; the boolean is `any hit` for backward
 	// compatibility with the boolean contract this function
 	// used to have.
-	const rawCfg = await reader.readFile('mcp-vertex.config.json');
+	const rawCfg = await reader.readFile('delendai.config.json');
 	const hits = matchVertexConfigFromRaw(rawCfg);
 	return hits.length > 0;
 };

@@ -2,7 +2,7 @@
 	"name": "@delendai/issues",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Opt-in GitHub issues plugin for @delendai/core: ingest, mechanically pre-analyse and (optionally) promote GitHub issues to proposals. Requires the `proposals` plugin to be loaded in the same load set. Load with `mcp-vertex --plugins=proposals,issues`.",
+	"description": "Opt-in GitHub issues plugin for @delendai/core: ingest, mechanically pre-analyse and (optionally) promote GitHub issues to proposals. Requires the `proposals` plugin to be loaded in the same load set. Load with `delendai --plugins=proposals,issues`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

@@ -5,7 +5,7 @@
  *
  * The core is project-agnostic and knows nothing about proposals,
  * swarms or any domain. Domain behaviour ships as plugins loaded by
- * the CLI (`mcp-vertex --plugins=...`) that implement `IMcpPlugin`.
+ * the CLI (`delendai --plugins=...`) that implement `IMcpPlugin`.
  */
 
 // --- server assembly -------------------------------------------------------
@@ -17,7 +17,7 @@ export {
 	createMcpProject,
 	planRegistrationOrder,
 } from '../lib/project/create-mcp-project';
-export type { IGracefulShutdownOptions, IMcpVertexProject } from '../contracts';
+export type { IGracefulShutdownOptions, IDelendaiProject } from '../contracts';
 
 // --- workspace + paths -----------------------------------------------------
 export { DEFAULT_CORE_PATHS } from '../lib/contracts/interfaces/core-paths.interface';
@@ -61,14 +61,14 @@ export type {
 	IHostObservability,
 	IHostPaths,
 	IHostRegistrations,
-	IMcpVertexHostConfig,
+	IDelendaiHostConfig,
 } from '../lib/contracts/interfaces/host-config.interface';
 export type {
 	IHostCapabilities,
 	IKnowledgeEntry,
 	ISkillEntry,
 	IPluginConfigExample,
-	IMcpVertexProjectMetadata,
+	IDelendaiProjectMetadata,
 	IStatusCollector,
 	IPromptRegistration,
 	IResourceRegistration,
@@ -199,7 +199,7 @@ export type {
 	WorkspaceLayoutProbe,
 	WorkspacePathStatus,
 	PluginOrigin,
-	IMcpVertexCliArgs,
+	IDelendaiCliArgs,
 	IMcpPlugin,
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
@@ -390,14 +390,14 @@ export type {
 	IBootstrapPatternOverride,
 	IBootstrapPatternOverrides,
 	IFilesystemConfig,
-	IMcpVertexAgentPolicyConfig,
-	IMcpVertexCoreConfig,
+	IDelendaiAgentPolicyConfig,
+	IDelendaiCoreConfig,
 	ILoopDetectorConfig,
-	IMcpVertexCachePolicyConfig,
-	IMcpVertexCacheWorktreesConfig,
-	IMcpVertexConfigFile,
-	IMcpVertexCorePathsConfig,
-	IMcpVertexPluginConfig,
+	IDelendaiCachePolicyConfig,
+	IDelendaiCacheWorktreesConfig,
+	IDelendaiConfigFile,
+	IDelendaiCorePathsConfig,
+	IDelendaiPluginConfig,
 	IValidationMatrixConfig,
 	IValidationMatrixScope,
 } from '../lib/plugins/load-config-file';
@@ -441,12 +441,12 @@ export type {
 } from '../lib/scaffold/extract-plugin';
 export { scaffoldExtensionHostFiles } from '../lib/scaffold/scaffold-extension-host';
 export {
-	detectExistingMcpVertexInstall,
-	findMcpVertexServerName,
-	isMcpVertexLaunchShape,
+	detectExistingDelendaiInstall,
+	findDelendaiServerName,
+	isDelendaiLaunchShape,
 	resolveHostScaffoldDefaults,
 } from '../lib/scaffold/detect-existing-install';
-export type { IExistingMcpVertexInstall } from '../contracts';
+export type { IExistingDelendaiInstall } from '../contracts';
 export {
 	scaffoldAgentFile,
 	scaffoldClaudeAgentFile,
@@ -524,7 +524,7 @@ export type {
 // --- ephemeral exec paths (f00080) -----------------------------------------
 // Canonical home for artefacts a plugin or agent creates, runs (or
 // parses), and then deletes. Resolves through `IMcpPluginContext` so the
-// path is derived, never hardcoded. See `docs/mcp-vertex/proposals/
+// path is derived, never hardcoded. See `docs/delendai/proposals/
 // done/f00080-canonical-ephemeral-exec-paths-in-plugin-cache.md`.
 export {
 	EXEC_SUBDIR_NAME,
@@ -612,7 +612,7 @@ export type {
 export { walkAllowedFiles } from '../lib/shared/walk-allowed-files';
 export type { IWalkAllowedFilesOptions } from '../lib/shared/walk-allowed-files';
 
-// --- IDE install helper (`mcp-vertex init`) ---------------------------------
+// --- IDE install helper (`delendai init`) ---------------------------------
 export { IDE_TARGETS, targetById } from '../lib/install/ide-targets';
 export type {
 	IIdeInstallTarget,

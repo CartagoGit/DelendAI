@@ -1,12 +1,12 @@
 ---
-name: mcp-vertex-external-mcps
+name: delendai-external-mcps
 appliesTo: ['@delendai/external-mcps']
-description: The token-lean, human-acked workflow for composing third-party MCP servers under the host — catalog (discover on demand) → suggest (propose a pinned config patch) → validate_config (dry-run) → ack (human gate) → call (lazy ext.<server>.<tool> proxy). Use when a workspace needs a capability the native mcp-vertex tools do not cover.
+description: The token-lean, human-acked workflow for composing third-party MCP servers under the host — catalog (discover on demand) → suggest (propose a pinned config patch) → validate_config (dry-run) → ack (human gate) → call (lazy ext.<server>.<tool> proxy). Use when a workspace needs a capability the native delendai tools do not cover.
 ---
 
-# mcp-vertex external-mcps
+# delendai external-mcps
 
-Use this when the native mcp-vertex tool surface (`fs_*`, `search`, `git_*`, …)
+Use this when the native delendai tool surface (`fs_*`, `search`, `git_*`, …)
 does not cover a capability the workspace needs — a database adapter, a browser
 driver, an Angular/CLI helper — and a published third-party MCP server does.
 
@@ -37,7 +37,7 @@ the autonomy knobs and the human ack.
 
 Describe the capability gap in free text (`need`). Get up to 3 candidates, each
 with a one-line rationale, plus an **RFC 6902 JSON Patch** that ADDS them to
-`mcp-vertex.config.json#plugins.external-mcps.options.servers` (pinned versions,
+`delendai.config.json#plugins.external-mcps.options.servers` (pinned versions,
 env var NAMES only; already-declared ids skipped). `suggest` **never writes** —
 it hands you a patch to review.
 
@@ -72,6 +72,6 @@ structured hint pointing you back to step 4.
 - **Pin everything.** `npx -y pkg@latest` is a supply-chain hole; the schema
   rejects it. Copy the catalog's `pinExample`.
 - **Secrets by NAME.** Declare env variable NAMES in config; values live in the
-  host/shell secret store, never in `mcp-vertex.config.json`.
+  host/shell secret store, never in `delendai.config.json`.
 - **Never skip the ack.** Detection and suggestion are advisory. A server only
   runs after a human accepts it.

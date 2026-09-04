@@ -33,9 +33,9 @@ const isButton = (n: EventTarget | null): n is HTMLButtonElement => {
 };
 
 export const initTabs = (root: ParentNode): void => {
-	// Bind the [data-mcpv-icon] fallback glue once per call, scoped
+	// Bind the [data-delendai-icon] fallback glue once per call, scoped
 	// to the current root. Any future surface (a different
-	// component that adopts the shared data-mcpv-icon pattern)
+	// component that adopts the shared data-delendai-icon pattern)
 	// automatically picks up the same behaviour without each
 	// host re-implementing the load/error listeners.
 	bindIconFallbacks(root);
@@ -174,7 +174,7 @@ const bindOne = (root: HTMLElement): void => {
 };
 
 const bindIconFallbacks = (root: ParentNode): void => {
-	const wrappers = root.querySelectorAll<HTMLElement>('[data-mcpv-icon]');
+	const wrappers = root.querySelectorAll<HTMLElement>('[data-delendai-icon]');
 	for (const wrapper of wrappers) {
 		if (wrapper.dataset.mcpvIconBound === '1') continue;
 		wrapper.dataset.mcpvIconBound = '1';

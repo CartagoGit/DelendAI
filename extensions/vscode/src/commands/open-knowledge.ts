@@ -1,5 +1,5 @@
 /**
- * `mcp-vertex.openKnowledge` — opens the Knowledge navigator
+ * `delendai.openKnowledge` — opens the Knowledge navigator
  * webview. The list is grouped by plugin (derived client-side via
  * `categoryOf`); clicking an entry updates the preview pane
  * without reloading the webview.
@@ -14,7 +14,7 @@ import {
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { HOST_LANG_KEY } from './setup-github';
 
-export const OPEN_KNOWLEDGE_COMMAND = 'mcp-vertex.openKnowledge';
+export const OPEN_KNOWLEDGE_COMMAND = 'delendai.openKnowledge';
 
 const resolveLang = (deps: ICommandDeps): Lang => {
 	const persisted = deps.globalState?.get<unknown>(HOST_LANG_KEY);
@@ -32,11 +32,11 @@ export const registerOpenKnowledgeCommand = (deps: ICommandDeps) =>
 			categories: grouped,
 			lang: dictsByLang[lang],
 			onOpenEntry: OPEN_KNOWLEDGE_COMMAND,
-			onSearch: 'mcp-vertex.searchKnowledge',
+			onSearch: 'delendai.searchKnowledge',
 		});
 		const panel = deps.vscode.window.createWebviewPanel(
-			'mcpVertexKnowledge',
-			'mcp-vertex Knowledge',
+			'delendaiKnowledge',
+			'delendai Knowledge',
 			deps.vscode.ViewColumn.One,
 			{ enableScripts: true },
 		);
@@ -95,7 +95,7 @@ export const fetchKnowledgeEntry = async (
 		return { id: entry.id, title: entry.title, body: entry.body };
 	} catch (err) {
 		await vscode.window.showErrorMessage?.(
-			`mcp-vertex: knowledge entry "${id}" not found.`,
+			`delendai: knowledge entry "${id}" not found.`,
 		);
 		throw err;
 	}

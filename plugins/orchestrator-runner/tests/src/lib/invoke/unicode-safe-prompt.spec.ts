@@ -1,7 +1,7 @@
 /**
  * unicode-safe-prompt.spec.ts — x00207 S2.
  *
- * The whale emoji (U+1F433) must leave mcp-vertex as the named ASCII
+ * The whale emoji (U+1F433) must leave delendai as the named ASCII
  * token `[emoji:whale U+1F433]` on every hop: manager, cli argv, mcp
  * tools/call, api JSON body, formatHandoff. Never a raw surrogate pair.
  */

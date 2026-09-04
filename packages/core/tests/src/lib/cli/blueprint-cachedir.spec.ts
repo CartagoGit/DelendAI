@@ -4,7 +4,7 @@
  * The server blueprint must land under the SAME resolved cacheDir as the rest
  * of the store — including when cacheDir comes from the config file (no CLI
  * flag). Previously it re-derived from the CLI flag only and drifted to the
- * default `.cache/mcp-vertex`.
+ * default `.cache/delendai`.
  */
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -32,7 +32,7 @@ describe('prepareServerBlueprintOnStart cacheDir (M15/H5)', async () => {
 	it('falls back to the default cacheDir when none is resolved', async () => {
 		const args = parseCliArgs([`--workspace=${ws}`], ws);
 		const res = await prepareServerBlueprintOnStart(args);
-		expect(res.path).toBe('.cache/mcp-vertex/bootstrap/blueprint.json');
+		expect(res.path).toBe('.cache/delendai/bootstrap/blueprint.json');
 	});
 
 	it('collapses trailing slashes in the resolved cacheDir path', async () => {

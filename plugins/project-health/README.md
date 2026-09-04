@@ -8,7 +8,7 @@ details on demand.
 ## Load it
 
 ```bash
-mcp-vertex --plugins=project-health
+delendai --plugins=project-health
 ```
 
 This registers one tool, `<prefix>_project_health`.
@@ -23,7 +23,7 @@ The summary mode returns `score`, per-domain scores, `next`, `bytes`, and a
 `truncated` marker. Detail modes stay lazy: they do not run the heavy scanners;
 instead they point to the real tool that should be called next.
 
-## Configuration (`mcp-vertex.config.json`)
+## Configuration (`delendai.config.json`)
 
 ```json
 {

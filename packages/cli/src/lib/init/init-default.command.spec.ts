@@ -14,12 +14,12 @@
  *      vertex preset's plugin set.
  *   3. The host-entry path resolution surfaces the typed
  *      `HostEntryNotFoundError` envelope when no probe branch matches
- *      and the operator did not pass `--mcp-vertex-root`.
+ *      and the operator did not pass `--delendai-root`.
  *   4. Flag parsing matches `init`'s surface (`--dry-run`,
- *      `--mcp-vertex-root`, `--plugin-paths-root`).
+ *      `--delendai-root`, `--plugin-paths-root`).
  *
  * The fake host-entry script lives inside the tmpdir and is wired
- * through `--mcp-vertex-root` so the resolver's `flag` branch wins —
+ * through `--delendai-root` so the resolver's `flag` branch wins —
  * no need to stub the filesystem probe.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -81,7 +81,7 @@ describe('init:default (f00103)', () => {
 	let fakeHostEntry: string;
 
 	beforeEach(async () => {
-		tmp = await mkdtemp(join(tmpdir(), 'mcpv-init-default-'));
+		tmp = await mkdtemp(join(tmpdir(), 'delendai-init-default-'));
 		fakeHostEntry = join(tmp, 'fake-host/host-server.script.ts');
 		await mkdir(dirname(fakeHostEntry), { recursive: true });
 		await writeFile(fakeHostEntry, '// fake host entry for tests\n');
@@ -99,7 +99,7 @@ describe('init:default (f00103)', () => {
 			INIT_DEFAULT_ANSWERS,
 		);
 		// `vertex` is the operator's chosen default — mirrors the
-		// mcp-vertex project's own plugin set.
+		// delendai project's own plugin set.
 		expect(answers.preset).toBe('vertex');
 		expect(answers.extraPlugins).toEqual([]);
 		expect(answers.excludedPlugins).toEqual([]);
@@ -113,11 +113,11 @@ describe('init:default (f00103)', () => {
 	it('parses the same flag surface as init', () => {
 		const flags = parseFlags([
 			'--dry-run',
-			`--mcp-vertex-root=${fakeHostEntry}`,
+			`--delendai-root=${fakeHostEntry}`,
 			'--plugin-paths-root=libs',
 		]);
 		expect(flags.dryRun).toBe(true);
-		expect(flags.mcpVertexRoot).toBe(fakeHostEntry);
+		expect(flags.delendaiRoot).toBe(fakeHostEntry);
 		expect(flags.pluginPathsRoot).toBe('libs');
 		expect(flags.force).toBe(false);
 	});
@@ -125,7 +125,7 @@ describe('init:default (f00103)', () => {
 	it('runs the full pipeline end-to-end against a tmpdir with managed host instructions', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run(
-			['--dry-run', `--mcp-vertex-root=${fakeHostEntry}`],
+			['--dry-run', `--delendai-root=${fakeHostEntry}`],
 			ctx,
 		);
 		expect(result.code).toBe(EXIT_CODE.OK);
@@ -140,23 +140,23 @@ describe('init:default (f00103)', () => {
 		expect(Array.isArray(data.files)).toBe(true);
 		const rels = data.files.map((f) => f.relPath);
 		// The vertex preset must populate every expected file family.
-		expect(rels).toContain('mcp-vertex.config.json');
+		expect(rels).toContain('delendai.config.json');
 		expect(rels).toContain('.vscode/mcp.json');
 		expect(rels).toContain('AGENTS.md');
 		expect(rels).toContain('CLAUDE.md');
 		expect(rels).toContain('.github/copilot-instructions.md');
 		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
-		expect(rels).toContain('docs/mcp-vertex/skills/manifest.json');
+		expect(rels).toContain('docs/delendai/skills/manifest.json');
 
 		// The config must include every vertex member — x00166: vertex
-		// now mirrors mcp-vertex.config.json's `plugins` keys exactly
+		// now mirrors delendai.config.json's `plugins` keys exactly
 		// (28 total), INCLUDING `proposals` (orchestration/swarm) since
-		// mcp-vertex dogfoods its own orchestrator and every adopter via
+		// delendai dogfoods its own orchestrator and every adopter via
 		// `init:default` must get it too. Previously vertex silently
 		// excluded proposals/memory/rules/deps/notification/logs and
 		// included 6 phantom plugins that were never actually loaded.
 		const configFile = data.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		expect(configFile).toBeDefined();
 		const config = JSON.parse(configFile?.content ?? '{}') as {
@@ -212,7 +212,7 @@ describe('init:default (f00103)', () => {
 	it('writes the bundle to disk when --dry-run is absent', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run(
-			[`--mcp-vertex-root=${fakeHostEntry}`],
+			[`--delendai-root=${fakeHostEntry}`],
 			ctx,
 		);
 		expect(result.code).toBe(EXIT_CODE.OK);
@@ -226,7 +226,7 @@ describe('init:default (f00103)', () => {
 
 		// The config file landed on disk with the rendered vertex preset.
 		const configOnDisk = JSON.parse(
-			await readFile(join(tmp, 'mcp-vertex.config.json'), 'utf8'),
+			await readFile(join(tmp, 'delendai.config.json'), 'utf8'),
 		) as { plugins: Record<string, unknown> };
 		expect(configOnDisk.plugins.git).toBeDefined();
 		expect(configOnDisk.plugins.audit).toBeDefined();
@@ -241,37 +241,37 @@ describe('init:default (f00103)', () => {
 
 		// Host-instructions centralizer wrote its managed canonical block.
 		const agentsContent = await readFile(join(tmp, 'AGENTS.md'), 'utf8');
-		expect(agentsContent).toContain('<!-- mcp-vertex:begin -->');
-		expect(agentsContent).toContain('<!-- mcp-vertex:end -->');
+		expect(agentsContent).toContain('<!-- delendai:begin -->');
+		expect(agentsContent).toContain('<!-- delendai:end -->');
 	});
 
 	it('does not project skills when a malformed project config was preserved', async () => {
-		await writeFile(join(tmp, 'mcp-vertex.config.json'), '{broken', 'utf8');
+		await writeFile(join(tmp, 'delendai.config.json'), '{broken', 'utf8');
 		const result = await initDefaultCommand.run(
-			[`--mcp-vertex-root=${fakeHostEntry}`],
+			[`--delendai-root=${fakeHostEntry}`],
 			noopCtx(tmp, minimalGlobals()),
 		);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		await expect(
-			readFile(join(tmp, 'docs/mcp-vertex/skills/manifest.json'), 'utf8'),
+			readFile(join(tmp, 'docs/delendai/skills/manifest.json'), 'utf8'),
 		).rejects.toThrow();
 	});
 
-	it('uses the published canonical launcher when --mcp-vertex-root is absent', async () => {
+	it('uses the published canonical launcher when --delendai-root is absent', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run([], ctx);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		const vscode = JSON.parse(
 			await readFile(join(tmp, '.vscode/mcp.json'), 'utf8'),
 		) as {
-			servers: { 'mcp-vertex': { command: string; args: string[] } };
+			servers: { delendai: { command: string; args: string[] } };
 		};
-		expect(vscode.servers['mcp-vertex']).toMatchObject({
+		expect(vscode.servers['delendai']).toMatchObject({
 			command: 'bunx',
 			args: [
 				'--package',
 				'@delendai/cli',
-				'mcpv',
+				'delendai',
 				'__serve',
 				'--workspace',
 				'${workspaceFolder}',
@@ -283,7 +283,7 @@ describe('init:default (f00103)', () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const flags = parseFlags([
 			'--dry-run',
-			`--mcp-vertex-root=${fakeHostEntry}`,
+			`--delendai-root=${fakeHostEntry}`,
 			'--force',
 		]);
 		const answers = await detectAndDecorateAnswers(
@@ -308,7 +308,7 @@ describe('init:default (f00103)', () => {
 		try {
 			const flags = parseFlags([
 				'--dry-run',
-				`--mcp-vertex-root=${HOST_ENTRY_PATH}`,
+				`--delendai-root=${HOST_ENTRY_PATH}`,
 			]);
 			const answers = await detectAndDecorateAnswers(tmp, flags, {
 				preset: 'standard',
@@ -329,7 +329,7 @@ describe('init:default (f00103)', () => {
 			const stderrText = stderr.mock.calls
 				.map(([line]) => String(line))
 				.join('');
-			expect(stderrText).toContain('mcp-vertex › env warning');
+			expect(stderrText).toContain('delendai › env warning');
 			expect(stderrText).toContain('DATABASE_URL');
 		} finally {
 			stderr.mockRestore();

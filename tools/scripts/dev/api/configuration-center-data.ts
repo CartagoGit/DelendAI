@@ -15,7 +15,7 @@ import { invalidateClient, leaseClient } from './client-pool';
 const configurationTool = async (client: McpStdioClient): Promise<string> => {
 	const names = (await client.listTools()).map((tool) => tool.name);
 	const exact = names.find(
-		(name) => name === 'mcp-vertex_configuration_center',
+		(name) => name === 'delendai_configuration_center',
 	);
 	const discovered =
 		exact ?? names.find((name) => name.endsWith('_configuration_center'));

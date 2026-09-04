@@ -79,7 +79,7 @@ describe('toolbar webview CSP (f00079 S1)', () => {
 		};
 
 		registerOpenToolbarCommand(deps);
-		await commands.get('mcp-vertex.openToolbar')?.();
+		await commands.get('delendai.openToolbar')?.();
 
 		expect(html).toContain('http-equiv="Content-Security-Policy"');
 		expect(html).toContain("script-src 'unsafe-inline'");

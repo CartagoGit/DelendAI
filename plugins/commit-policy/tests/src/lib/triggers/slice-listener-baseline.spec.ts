@@ -37,7 +37,7 @@ describe('slice listener first-poll baseline', () => {
 
 	/** Write an index.json holding `count` done slices. */
 	const seedIndex = async (count: number): Promise<void> => {
-		const cacheDir = join(workspace, '.cache', 'mcp-vertex');
+		const cacheDir = join(workspace, '.cache', 'delendai');
 		await mkdir(join(cacheDir, 'proposals'), { recursive: true });
 		const proposals = Array.from({ length: count }, (_unused, index) => ({
 			id: `p${String(index).padStart(5, '0')}`,
@@ -62,14 +62,14 @@ describe('slice listener first-poll baseline', () => {
 		const seen: ITriggerEvent[] = [];
 		const listener = createSliceListener(
 			workspace,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 			SLICE_TRIGGER,
 			async (event) => {
 				seen.push(event);
 				return { ack: 'OK' };
 			},
 			undefined,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 			isAlreadyPersisted,
 		);
 		await listener.check();
@@ -118,14 +118,14 @@ describe('slice listener first-poll baseline', () => {
 		const seen: ITriggerEvent[] = [];
 		const listener = createSliceListener(
 			workspace,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 			SLICE_TRIGGER,
 			async (event) => {
 				seen.push(event);
 				return { ack: 'OK' };
 			},
 			undefined,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 			async () => false,
 		);
 		await listener.check();
@@ -154,14 +154,14 @@ describe('slice listener first-poll baseline', () => {
 		const seen: ITriggerEvent[] = [];
 		const listener = createSliceListener(
 			workspace,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 			SLICE_TRIGGER,
 			async (event) => {
 				seen.push(event);
 				return { ack: 'OK' };
 			},
 			undefined,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 		);
 		await listener.check();
 		listener.stop?.();
@@ -173,7 +173,7 @@ describe('slice listener delivery bounds', () => {
 	let workspace = '';
 
 	const seedOneDoneSlice = async (root: string): Promise<void> => {
-		const cacheDir = join(root, '.cache', 'mcp-vertex');
+		const cacheDir = join(root, '.cache', 'delendai');
 		await mkdir(join(cacheDir, 'proposals'), { recursive: true });
 		await writeFile(
 			join(cacheDir, 'proposals', 'index.json'),
@@ -206,14 +206,14 @@ describe('slice listener delivery bounds', () => {
 		let calls = 0;
 		const listener = createSliceListener(
 			workspace,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 			SLICE_TRIGGER,
 			async () => {
 				calls += 1;
 				return { ack: 'ERR', reason: 'pre-commit hook failed' };
 			},
 			undefined,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 			async () => false,
 		);
 		for (let poll = 0; poll < 12; poll += 1) {
@@ -235,7 +235,7 @@ describe('slice listener delivery bounds', () => {
 		let calls = 0;
 		const listener = createSliceListener(
 			workspace,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 			SLICE_TRIGGER,
 			async () => {
 				calls += 1;
@@ -244,7 +244,7 @@ describe('slice listener delivery bounds', () => {
 					: { ack: 'OK' };
 			},
 			undefined,
-			join('.cache', 'mcp-vertex'),
+			join('.cache', 'delendai'),
 			async () => false,
 		);
 		for (let poll = 0; poll < 6; poll += 1) {

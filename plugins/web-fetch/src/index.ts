@@ -16,7 +16,7 @@ import { buildWebToolRegistrations } from './lib/tools';
  * (`PLUGIN_PRESETS` in `packages/core/src/lib/plugins/parse-cli-args.ts`
  * deliberately keeps opt-in capabilities like this one out of `minimal`/
  * `standard`/`swarm`, mirroring the precedent set by the `audit` plugin).
- * Load with `mcp-vertex --plugins=web-fetch` and configure the allow-list
+ * Load with `delendai --plugins=web-fetch` and configure the allow-list
  * via `plugins.web-fetch.options.allowList: string[]` — an empty/missing
  * allow-list means `web_fetch` rejects every call (fail closed, not open).
  */
@@ -66,7 +66,7 @@ export default definePlugin({
 						`- Allow-list: ${allowList.length > 0 ? allowList.join(', ') : '(none configured — every call is rejected)'}.`,
 						'- The hostname of the URL (and of every redirect hop) must match the allow-list exactly or via a `*.suffix` wildcard.',
 						'- Response body is capped (default 50 KiB); `truncated:true` signals the cap was hit, not a failure.',
-						'- Opt-in by design: not part of any preset. Configure `plugins.web-fetch.options.allowList` in `mcp-vertex.config.json` to enable it.',
+						'- Opt-in by design: not part of any preset. Configure `plugins.web-fetch.options.allowList` in `delendai.config.json` to enable it.',
 					].join('\n'),
 				},
 			],

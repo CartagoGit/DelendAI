@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { setMaxListeners } from 'node:events';
 
-import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { decideSurfaceModeFromCapabilities } from '../surface/decide-mode';
 import { instrumentToolHandlers } from './instrument-tool-handlers.helper';
@@ -89,7 +89,7 @@ const installListChangeBatching = (
  * the stdio transport; `registrationOrder` exposes the exact tool
  * registration sequence for audits and tests.
  */
-export interface IMcpVertexProject {
+export interface IDelendaiProject {
 	readonly server: McpServer;
 	readonly registrationOrder: readonly string[];
 	start(): Promise<void>;
@@ -121,13 +121,13 @@ export function planRegistrationOrder(
 	const seen = new Set(core.map((registration) => registration.id));
 	if (seen.size !== core.length) {
 		throw new Error(
-			'[mcp-vertex] duplicate registration id in core sequence',
+			'[delendai] duplicate registration id in core sequence',
 		);
 	}
 	for (const extra of extras) {
 		if (seen.has(extra.id)) {
 			throw new Error(
-				`[mcp-vertex] duplicate registration id "${extra.id}"`,
+				`[delendai] duplicate registration id "${extra.id}"`,
 			);
 		}
 		seen.add(extra.id);
@@ -140,7 +140,7 @@ export function planRegistrationOrder(
 		);
 		if (anchorIndex < 0) {
 			throw new Error(
-				`[mcp-vertex] unknown registerAfter anchor "${extra.registerAfter}" for "${extra.id}"`,
+				`[delendai] unknown registerAfter anchor "${extra.registerAfter}" for "${extra.id}"`,
 			);
 		}
 		let insertIndex = anchorIndex + 1;
@@ -161,8 +161,8 @@ export function planRegistrationOrder(
  * caller starts the stdio transport via `start()`.
  */
 export async function createMcpProject(
-	config: IMcpVertexHostConfig,
-): Promise<IMcpVertexProject> {
+	config: IDelendaiHostConfig,
+): Promise<IDelendaiProject> {
 	const server = new McpServer({
 		name: config.metadata.name,
 		version: config.metadata.version,

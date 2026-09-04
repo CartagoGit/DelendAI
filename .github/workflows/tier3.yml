@@ -119,7 +119,7 @@ jobs:
       - name: Verify branch protection
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Optional repo-admin-scoped PAT (see docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md).
+          # Optional repo-admin-scoped PAT (see docs/delendai/GOVERNANCE-BRANCH-PROTECTION.md).
           # Without it the ambient GITHUB_TOKEN above is used, which
           # cannot read branch protection (no `administration` scope) —
           # the script reports that explicitly as `unverified` rather

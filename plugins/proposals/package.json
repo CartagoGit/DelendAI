@@ -2,7 +2,7 @@
 	"name": "@delendai/proposals",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `mcp-vertex --plugins=proposals`.",
+	"description": "Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `delendai --plugins=proposals`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

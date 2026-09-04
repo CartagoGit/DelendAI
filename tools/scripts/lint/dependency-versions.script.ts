@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
-const POLICY_RELATIVE_PATH = 'docs/mcp-vertex/DEPENDENCY-VERSIONS.md';
+const POLICY_RELATIVE_PATH = 'docs/delendai/DEPENDENCY-VERSIONS.md';
 const ROOT_MANIFEST = 'package.json';
 const DEPENDENCY_SECTIONS = [
 	'dependencies',

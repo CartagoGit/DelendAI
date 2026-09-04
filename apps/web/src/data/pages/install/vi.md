@@ -1,13 +1,13 @@
 ---
 title: Cài đặt và chạy
-description: Cài mcp-vertex, nối nó vào IDE của bạn, chọn một preset và kiểm tra máy chủ trước khi bắt đầu làm việc.
+description: Cài delendai, nối nó vào IDE của bạn, chọn một preset và kiểm tra máy chủ trước khi bắt đầu làm việc.
 order: 1
 navLabel: Cài đặt
 ---
 
 # Cài đặt và chạy
 
-Thêm mcp-vertex vào workflow của bạn, trỏ client MCP tới binary, rồi kiểm tra tập plugin đã được resolve trước phiên đầu tiên.
+Thêm delendai vào workflow của bạn, trỏ client MCP tới binary, rồi kiểm tra tập plugin đã được resolve trước phiên đầu tiên.
 
 ## Chọn trình quản lý gói
 
@@ -42,7 +42,7 @@ yarn dlx @delendai/cli validate
 
 ### bun
 
-bun gộp runtime và trình quản lý gói vào cùng một công cụ, và bản thân mcp-vertex cũng được build bằng bun, nên đây là con đường trực tiếp nhất khi máy đã có bun.
+bun gộp runtime và trình quản lý gói vào cùng một công cụ, và bản thân delendai cũng được build bằng bun, nên đây là con đường trực tiếp nhất khi máy đã có bun.
 
 ```bash
 bunx @delendai/cli init
@@ -70,13 +70,13 @@ Phạm vi: project
 ```json
 {
   "servers": {
-    "mcp-vertex": {
+    "delendai": {
       "type": "stdio",
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -96,12 +96,12 @@ Phạm vi: project / global
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -121,12 +121,12 @@ Phạm vi: global
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -146,12 +146,12 @@ Phạm vi: project
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -171,12 +171,12 @@ Phạm vi: global
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -196,12 +196,12 @@ Phạm vi: global
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -221,12 +221,12 @@ Phạm vi: global
 ```json
 {
   "context_servers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -326,4 +326,4 @@ Bất kỳ IDE nào chấp nhận stdio MCP server đều có thể chạy cùng
 
 ### Tôi có thể chạy nhiều preset cùng lúc không?
 
-Không. Mỗi instance của server chỉ resolve một preset tại một thời điểm. Nếu các project khác nhau cần các tập plugin khác nhau, hãy đặt một mcp-vertex.config.json riêng trong từng project và để loader resolve theo từng workspace.
+Không. Mỗi instance của server chỉ resolve một preset tại một thời điểm. Nếu các project khác nhau cần các tập plugin khác nhau, hãy đặt một delendai.config.json riêng trong từng project và để loader resolve theo từng workspace.

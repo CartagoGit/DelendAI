@@ -78,7 +78,7 @@ const text = (
  * `search`, `docs *`, `scaffold`, `plugin inspect`) never grew that
  * recap — they returned bare `data(...)` and were **completely silent**
  * by default (exit 0, zero stdout/stderr), indistinguishable from a
- * hang for a human running `mcpv status` the obvious way. Until each
+ * hang for a human running `delendai status` the obvious way. Until each
  * gets a bespoke formatter, fall back to pretty-printed JSON through
  * the `.text` channel (always emitted) instead of `.data` (json-gated).
  */
@@ -92,7 +92,7 @@ const dataOrText = (
 		: text(JSON.stringify(value, null, 2), code);
 
 const overview = async (ctx: ICliCommandContext, compact = false) =>
-	request<Record<string, unknown>>(ctx, 'mcp-vertex_overview', { compact });
+	request<Record<string, unknown>>(ctx, 'delendai_overview', { compact });
 
 const runProcess = async (
 	command: string,
@@ -180,7 +180,7 @@ const inspectCommand: ICliCommand = {
 		const namespacePrefix =
 			typeof snapshot.namespacePrefix === 'string'
 				? snapshot.namespacePrefix
-				: 'mcp-vertex';
+				: 'delendai';
 		const toolNameOf = (tool: unknown): string =>
 			typeof tool === 'string'
 				? tool
@@ -221,7 +221,7 @@ export const registerAllCommands = async (): Promise<
 		name: 'status',
 		summary: 'Show runtime status collectors.',
 		async run(_args, ctx) {
-			return dataOrText(await request(ctx, 'mcp-vertex_status'), ctx);
+			return dataOrText(await request(ctx, 'delendai_status'), ctx);
 		},
 	},
 	{
@@ -238,7 +238,7 @@ export const registerAllCommands = async (): Promise<
 		summary: 'Show per-tool metrics.',
 		async run(args, ctx) {
 			return dataOrText(
-				await request(ctx, 'mcp-vertex_metrics', {
+				await request(ctx, 'delendai_metrics', {
 					reset: hasFlag(args, 'reset'),
 					persist: hasFlag(args, 'persist'),
 				}),
@@ -251,7 +251,7 @@ export const registerAllCommands = async (): Promise<
 		summary: 'Show configured validation matrix.',
 		async run(_args, ctx) {
 			return dataOrText(
-				await request(ctx, 'mcp-vertex_get_validation_matrix'),
+				await request(ctx, 'delendai_get_validation_matrix'),
 				ctx,
 			);
 		},
@@ -277,7 +277,7 @@ export const registerAllCommands = async (): Promise<
 				ctx.globals.workspace,
 			);
 			if (generated.code !== EXIT_CODE.OK) return generated;
-			const path = `${ctx.globals.workspace}/packages/core/schema/mcp-vertex.config.schema.json`;
+			const path = `${ctx.globals.workspace}/packages/core/schema/delendai.config.schema.json`;
 			if (!existsSync(path))
 				return {
 					code: EXIT_CODE.NOT_FOUND,
@@ -356,7 +356,7 @@ export const registerAllCommands = async (): Promise<
 	{
 		name: 'init',
 		summary:
-			'Interactive workspace bootstrap for mcp-vertex (f00084 S2). Writes config, .vscode/mcp.json, .agent.md, host-instructions.',
+			'Interactive workspace bootstrap for delendai (f00084 S2). Writes config, .vscode/mcp.json, .agent.md, host-instructions.',
 		usage: 'init [--dry-run] [--force]',
 		async run(args, ctx) {
 			// f00084 S2: forward to the new interactive command while keeping
@@ -376,7 +376,7 @@ export const registerAllCommands = async (): Promise<
 		name: 'init:default',
 		summary:
 			'Non-interactive workspace bootstrap with operator defaults (swarm + overwrite + skills + agents + scaffold).',
-		usage: 'init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
+		usage: 'init:default [--dry-run] [--delendai-root=<path>] [--plugin-paths-root=<path>]',
 		async run(args, ctx) {
 			const { initDefaultCommand } = await import(
 				'./init/init-default.command'
@@ -387,7 +387,7 @@ export const registerAllCommands = async (): Promise<
 	{
 		name: 'init:global',
 		summary:
-			'Install the shared mcp-vertex MCP server into the user-level host configurations.',
+			'Install the shared delendai MCP server into the user-level host configurations.',
 		usage: 'init:global [--all] [--ide=<ids>] [--via=<runner>] [--preset=<name>]',
 		async run(args, ctx) {
 			const { runGlobalInit } = await import(
@@ -413,7 +413,7 @@ export const registerAllCommands = async (): Promise<
 			const context =
 				contextRaw !== undefined ? Number(contextRaw) : undefined;
 			return dataOrText(
-				await request(ctx, 'mcp-vertex_search_search', {
+				await request(ctx, 'delendai_search_search', {
 					query,
 					maxResults: Number(scalarArg(args, 'max') ?? 20),
 					regex: hasFlag(args, 'regex'),
@@ -432,7 +432,7 @@ export const registerAllCommands = async (): Promise<
 		summary: 'List project documentation.',
 		async run(args, ctx) {
 			return dataOrText(
-				await request(ctx, 'mcp-vertex_docs_docs_list', {
+				await request(ctx, 'delendai_docs_docs_list', {
 					limit: Number(
 						scalarArg(args, 'limit') ??
 							scalarArg(args, 'max') ??
@@ -456,7 +456,7 @@ export const registerAllCommands = async (): Promise<
 				};
 			const result = await request<Record<string, unknown>>(
 				ctx,
-				'mcp-vertex_docs_docs_read',
+				'delendai_docs_docs_read',
 				{ path },
 			);
 			return dataOrText(
@@ -479,7 +479,7 @@ export const registerAllCommands = async (): Promise<
 					error: 'usage: scaffold <kind> --name=<name>',
 				};
 			}
-			const report = await request(ctx, 'mcp-vertex_scaffold', {
+			const report = await request(ctx, 'delendai_scaffold', {
 				kind,
 				name,
 				dryRun: true,

@@ -23,7 +23,7 @@ import {
 	joinRel,
 	parseConfigFile,
 	SafeWorkspaceReader,
-	type IMcpVertexConfigFile,
+	type IDelendaiConfigFile,
 	type IWorkspacePathProvider,
 } from '@delendai/core/public';
 
@@ -63,14 +63,14 @@ export interface ILoopDetectorServiceOptions {
  */
 export interface IConfigFileReader {
 	/** Return the parsed config object, or `undefined` if the file is absent. */
-	readGlobalConfig(): Promise<IMcpVertexConfigFile>;
+	readGlobalConfig(): Promise<IDelendaiConfigFile>;
 }
 
-/** Production reader: reads `mcp-vertex.config.json` from the workspace. */
+/** Production reader: reads `delendai.config.json` from the workspace. */
 export const createFsConfigFileReader = async (
 	workspace: IWorkspacePathProvider,
 ): Promise<IConfigFileReader> => {
-	const path = workspace.resolve('mcp-vertex.config.json');
+	const path = workspace.resolve('delendai.config.json');
 	return {
 		async readGlobalConfig() {
 			try {
@@ -99,8 +99,8 @@ export interface IResolveLoopDetectorConfigInput {
 	/**
 	 * x00054: workspace-relative `cacheDir` used to derive the
 	 * fallback `handoffDir` so it stays under the host's configured
-	 * cache root, not at the historical `.cache/mcp-vertex/handoff`
-	 * literal. Tests inject `'.cache/mcp-vertex'` to preserve the
+	 * cache root, not at the historical `.cache/delendai/handoff`
+	 * literal. Tests inject `'.cache/delendai'` to preserve the
 	 * pre-fix fixture.
 	 */
 	readonly cacheDir: string;
@@ -129,9 +129,9 @@ export const LOOP_DETECTOR_DEFAULTS: ILoopDetectorServiceOptions = {
 	// that derives from the host-resolved `cacheDir` — see
 	// `LOOP_DETECTOR_DEFAULTS_FOR(cacheDir)` below. Keeping the literal
 	// default in this const would silently strand handoffs at
-	// `.cache/mcp-vertex/handoff` whenever a host reconfigures the
+	// `.cache/delendai/handoff` whenever a host reconfigures the
 	// cache root (the same family of bug as x00052).
-	handoffDir: '.cache/mcp-vertex/handoff',
+	handoffDir: '.cache/delendai/handoff',
 	handoffTtlDays: 7,
 	notifyOnDetect: true,
 	// Universal host-session shapes — Copilot, Cursor, Windsurf and
@@ -145,7 +145,7 @@ export const LOOP_DETECTOR_DEFAULTS: ILoopDetectorServiceOptions = {
 /**
  * x00054: build a default options object whose `handoffDir` is
  * anchored to the host-resolved `cacheDir` (not the historical
- * `.cache/mcp-vertex` default). Hosts that pass an explicit
+ * `.cache/delendai` default). Hosts that pass an explicit
  * `handoffDir` via the config file or CLI still win — this only
  * affects the fallback.
  */
@@ -250,7 +250,7 @@ export const resolveLoopDetectorConfig = (
 		);
 
 export const resolveLoopDetectorConfigFromFileConfig = (
-	globalConfig: IMcpVertexConfigFile,
+	globalConfig: IDelendaiConfigFile,
 	cliArgs: Readonly<Record<string, string>>,
 	cacheDir: string,
 ): ILoopDetectorServiceOptions => {

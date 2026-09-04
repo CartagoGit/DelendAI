@@ -29,12 +29,12 @@ const baseCtx = (
 	rawOptions: Readonly<Record<string, unknown>>,
 ): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (path: string) => `/ws/${path}` },
-	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	corePaths: { cacheDir: '.cache/delendai', docsDir: 'docs/delendai' },
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: '.cache/mcp-vertex/sync-plugin',
-	pluginDocsDir: 'docs/mcp-vertex/sync-plugin',
+	pluginCacheDir: '.cache/delendai/sync-plugin',
+	pluginDocsDir: 'docs/delendai/sync-plugin',
 	namespacePrefix: 'sync-plugin',
 	options: rawOptions,
 	args: {},
@@ -152,7 +152,7 @@ const activateLazy = async (
 			}),
 	};
 	const runtime = createManagedLazyRuntime({
-		namespacePrefix: 'mcp-vertex',
+		namespacePrefix: 'delendai',
 		plugins: [
 			{
 				id: 'sync-plugin',

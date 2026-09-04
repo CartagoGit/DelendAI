@@ -36,7 +36,7 @@ const createVscode = () => {
 	return { vscode, commands, panels, messages };
 };
 
-describe('mcp-vertex.openDocs', async () => {
+describe('delendai.openDocs', async () => {
 	it('opens an iframe with the configured docs URL', async () => {
 		const { vscode, commands, panels, messages } = createVscode();
 		registerOpenDocsCommand({ vscode });
@@ -44,7 +44,7 @@ describe('mcp-vertex.openDocs', async () => {
 
 		await commands.get(OPEN_DOCS_COMMAND)?.();
 		expect(panels).toHaveLength(1);
-		expect(panels[0]?.webview.html).toContain('https://mcp-vertex.dev');
+		expect(panels[0]?.webview.html).toContain('https://delendai.dev');
 		expect(panels[0]?.webview.html).toContain('<iframe');
 		expect(messages).toEqual([]);
 	});

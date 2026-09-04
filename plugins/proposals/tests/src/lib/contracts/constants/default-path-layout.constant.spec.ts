@@ -27,13 +27,13 @@ describe('buildSwarmPaths', async () => {
 });
 
 describe('DEFAULT_PATH_LAYOUT', async () => {
-	it('defaults to the mcp-vertex layout (.cache/mcp-vertex + docs/mcp-vertex/proposals)', async () => {
-		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache/mcp-vertex');
+	it('defaults to the delendai layout (.cache/delendai + docs/delendai/proposals)', async () => {
+		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache/delendai');
 		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe(
-			'.cache/mcp-vertex/agents.lock.json',
+			'.cache/delendai/agents.lock.json',
 		);
 		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe(
-			'docs/mcp-vertex/proposals',
+			'docs/delendai/proposals',
 		);
 	});
 

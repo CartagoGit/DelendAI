@@ -6,7 +6,7 @@ import type {
 /**
  * f00109 S1 — dead-config diagnostics.
  *
- * A consumer project that copies `mcp-vertex.config.json` from another
+ * A consumer project that copies `delendai.config.json` from another
  * repo boots silently on a layout that does not exist: `docsDir` points
  * nowhere, every `options.roots` entry names a folder from the other
  * repo, and each plugin quietly scans an empty tree. The agent then
@@ -28,7 +28,7 @@ const describeDocsDir = (
 ): string =>
 	status === 'escapes'
 		? `docsDir: "${docsDir}" escapes the workspace root`
-		: `docsDir: "${docsDir}" does not exist in this workspace — agent docs and the proposals layout resolve under it; scaffold it (mcp-vertex init) or point docsDir at the real docs root`;
+		: `docsDir: "${docsDir}" does not exist in this workspace — agent docs and the proposals layout resolve under it; scaffold it (delendai init) or point docsDir at the real docs root`;
 
 const describeRoot = (
 	pluginName: string,

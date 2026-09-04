@@ -2,7 +2,7 @@
 	"name": "@delendai/external-mcps",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM-assisted config validation with mandatory version pins, and (later slices) lazy subprocess boot with human-acked activation. Load with `mcp-vertex --plugins=external-mcps`.",
+	"description": "Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM-assisted config validation with mandatory version pins, and (later slices) lazy subprocess boot with human-acked activation. Load with `delendai --plugins=external-mcps`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

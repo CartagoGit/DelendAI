@@ -37,10 +37,10 @@ export const loopDetectorTranslations: Record<
 			"Triggers when an agent invokes file-modifying tools (like edit_file, write_file) consecutively without causing any changes in the repository's git diff status.",
 		configTitle: 'Configuration',
 		configDesc:
-			'You can customize thresholds and behaviors at the root level of your mcp-vertex.config.json file, or override them per-session using CLI flags.',
+			'You can customize thresholds and behaviors at the root level of your delendai.config.json file, or override them per-session using CLI flags.',
 		handoffTitle: 'Handoff Packet',
 		handoffDesc:
-			'When a loop is detected, a state packet is written to .mcp-vertex/handoff/<agent>-<timestamp>.json containing active locks, git status/diff summaries, and recent tool calls with redacted secrets.',
+			'When a loop is detected, a state packet is written to .delendai/handoff/<agent>-<timestamp>.json containing active locks, git status/diff summaries, and recent tool calls with redacted secrets.',
 		backToPlugins: 'Back to Plugins',
 	},
 	es: {
@@ -61,10 +61,10 @@ export const loopDetectorTranslations: Record<
 			'Se activa cuando un agente invoca herramientas que modifican archivos (como edit_file, write_file) consecutivamente sin causar ningún cambio en el diff de git.',
 		configTitle: 'Configuración',
 		configDesc:
-			'Puedes personalizar los umbrales y comportamientos en el nivel raíz de tu archivo mcp-vertex.config.json, o sobrescribirlos por sesión usando flags de CLI.',
+			'Puedes personalizar los umbrales y comportamientos en el nivel raíz de tu archivo delendai.config.json, o sobrescribirlos por sesión usando flags de CLI.',
 		handoffTitle: 'Paquete de Transferencia (Handoff)',
 		handoffDesc:
-			'Cuando se detecta un bucle, se escribe un paquete de estado en .mcp-vertex/handoff/<agent>-<timestamp>.json con locks activos, estado de git y llamadas a herramientas recientes con secretos redactados.',
+			'Cuando se detecta un bucle, se escribe un paquete de estado en .delendai/handoff/<agent>-<timestamp>.json con locks activos, estado de git y llamadas a herramientas recientes con secretos redactados.',
 		backToPlugins: 'Volver a Plugins',
 	},
 	fr: {
@@ -85,10 +85,10 @@ export const loopDetectorTranslations: Record<
 			'Se déclenche lorsque des outils de modification de fichiers sont appelés consécutivement sans provoquer de changement dans le git diff.',
 		configTitle: 'Configuration',
 		configDesc:
-			'Personnalisez les seuils dans mcp-vertex.config.json ou via les drapeaux CLI au démarrage.',
+			'Personnalisez les seuils dans delendai.config.json ou via les drapeaux CLI au démarrage.',
 		handoffTitle: 'Paquet de Transfert',
 		handoffDesc:
-			"Un fichier d'état est écrit sous .mcp-vertex/handoff/ avec les verrous actifs, l'état git et l'historique des appels expurgé de tout secret.",
+			"Un fichier d'état est écrit sous .delendai/handoff/ avec les verrous actifs, l'état git et l'historique des appels expurgé de tout secret.",
 		backToPlugins: 'Retour aux Plugins',
 	},
 	de: {
@@ -108,10 +108,10 @@ export const loopDetectorTranslations: Record<
 			'Wird ausgelöst, wenn modifizierende Tools aufgerufen werden, ohne dass Änderungen im Git-Diff entstehen.',
 		configTitle: 'Konfiguration',
 		configDesc:
-			'Passen Sie die Schwellenwerte in mcp-vertex.config.json an oder überschreiben Sie diese per CLI-Flags.',
+			'Passen Sie die Schwellenwerte in delendai.config.json an oder überschreiben Sie diese per CLI-Flags.',
 		handoffTitle: 'Übergabepaket',
 		handoffDesc:
-			'Ein Zustandspaket wird unter .mcp-vertex/handoff/ gespeichert. Es enthält aktive Sperren und den bereinigten Verlauf.',
+			'Ein Zustandspaket wird unter .delendai/handoff/ gespeichert. Es enthält aktive Sperren und den bereinigten Verlauf.',
 		backToPlugins: 'Zurück zu Plugins',
 	},
 	pt: {
@@ -132,10 +132,10 @@ export const loopDetectorTranslations: Record<
 			'Disparado ao usar ferramentas de modificação consecutivamente sem alterar o git diff.',
 		configTitle: 'Configuração',
 		configDesc:
-			'Personalize os limites no mcp-vertex.config.json ou sobrescreva via CLI.',
+			'Personalize os limites no delendai.config.json ou sobrescreva via CLI.',
 		handoffTitle: 'Pacote de Transferência',
 		handoffDesc:
-			'Grava o estado em .mcp-vertex/handoff/ com os locks ativos e o histórico recente sem segredos.',
+			'Grava o estado em .delendai/handoff/ com os locks ativos e o histórico recente sem segredos.',
 		backToPlugins: 'Voltar para Plugins',
 	},
 	it: {
@@ -156,10 +156,10 @@ export const loopDetectorTranslations: Record<
 			'Si attiva quando si invocano strumenti di modifica consecutivamente senza alcuna variazione nel git diff.',
 		configTitle: 'Configurazione',
 		configDesc:
-			'Personalizza le soglie in mcp-vertex.config.json o sovrascrivi con flag CLI.',
+			'Personalizza le soglie in delendai.config.json o sovrascrivi con flag CLI.',
 		handoffTitle: 'Pacchetto di Handoff',
 		handoffDesc:
-			'Registra lo stato in .mcp-vertex/handoff/ con i lock attivi e le ultime chiamate con segreti oscurati.',
+			'Registra lo stato in .delendai/handoff/ con i lock attivi e le ultime chiamate con segreti oscurati.',
 		backToPlugins: 'Torna ai Plugin',
 	},
 	zh: {
@@ -179,10 +179,10 @@ export const loopDetectorTranslations: Record<
 			'当代理连续调用文件修改工具而未引起git diff状态发生任何变化时触发。',
 		configTitle: '配置',
 		configDesc:
-			'您可以在mcp-vertex.config.json的根级别自定义阈值，或使用CLI参数进行临时覆盖。',
+			'您可以在delendai.config.json的根级别自定义阈值，或使用CLI参数进行临时覆盖。',
 		handoffTitle: '移交数据包',
 		handoffDesc:
-			'检测到循环时，状态包将写入.mcp-vertex/handoff/目录，包含活动锁和已脱敏的历史调用。',
+			'检测到循环时，状态包将写入.delendai/handoff/目录，包含活动锁和已脱敏的历史调用。',
 		backToPlugins: '返回插件列表',
 	},
 	hi: {
@@ -202,10 +202,10 @@ export const loopDetectorTranslations: Record<
 			'तब ट्रिगर होता है जब कोई एजेंट गिट डिफ़ॉल्ट में कोई बदलाव किए बिना लगातार फाइल-मॉडिफाइंग टूल कॉल करता है।',
 		configTitle: 'कॉन्फ़िगरेशन',
 		configDesc:
-			'आप mcp-vertex.config.json में सीमाएं बदल सकते हैं, या CLI फ़्लैग का उपयोग करके उन्हें ओवरराइड कर सकते हैं।',
+			'आप delendai.config.json में सीमाएं बदल सकते हैं, या CLI फ़्लैग का उपयोग करके उन्हें ओवरराइड कर सकते हैं।',
 		handoffTitle: 'हैंडऑफ पैकेट',
 		handoffDesc:
-			'लूप का पता चलने पर, .mcp-vertex/handoff/ में स्टेट पैकेट लिखा जाता है जिसमें सक्रिय लॉक और सुरक्षित इतिहास शामिल होता है।',
+			'लूप का पता चलने पर, .delendai/handoff/ में स्टेट पैकेट लिखा जाता है जिसमें सक्रिय लॉक और सुरक्षित इतिहास शामिल होता है।',
 		backToPlugins: 'प्लगइन्स पर वापस जाएं',
 	},
 	ar: {
@@ -225,10 +225,10 @@ export const loopDetectorTranslations: Record<
 			'يتم تشغيله عند استدعاء أدوات تعديل الملفات بشكل متتالٍ دون إحداث أي تغيير في git diff.',
 		configTitle: 'الإعدادات',
 		configDesc:
-			'يمكنك تخصيص الحدود في ملف mcp-vertex.config.json أو تجاوزها عبر وسيطات CLI.',
+			'يمكنك تخصيص الحدود في ملف delendai.config.json أو تجاوزها عبر وسيطات CLI.',
 		handoffTitle: 'حزمة التسليم',
 		handoffDesc:
-			'تُكتب الحزمة في .mcp-vertex/handoff/ وتتضمن الأقفال النشطة وسجل الاستدعاءات بعد تنقيح الأسرار.',
+			'تُكتب الحزمة في .delendai/handoff/ وتتضمن الأقفال النشطة وسجل الاستدعاءات بعد تنقيح الأسرار.',
 		backToPlugins: 'العودة إلى الإضافات',
 	},
 	ja: {
@@ -248,10 +248,10 @@ export const loopDetectorTranslations: Record<
 			'ファイル変更ツールを連続して実行したにもかかわらず、Gitの差分（diff）に変化がない場合にトリガーされます。',
 		configTitle: '設定',
 		configDesc:
-			'mcp-vertex.config.jsonのルートレベルで閾値をカスタマイズするか、起動時にCLIフラグで上書きできます。',
+			'delendai.config.jsonのルートレベルで閾値をカスタマイズするか、起動時にCLIフラグで上書きできます。',
 		handoffTitle: 'ハンドオフパッケージ',
 		handoffDesc:
-			'ループ検出時に.mcp-vertex/handoff/以下に状態ファイルが保存され、アクティブなロックとマスクされた履歴が含まれます。',
+			'ループ検出時に.delendai/handoff/以下に状態ファイルが保存され、アクティブなロックとマスクされた履歴が含まれます。',
 		backToPlugins: 'プラグイン一覧に戻る',
 	},
 	vi: {
@@ -272,10 +272,10 @@ export const loopDetectorTranslations: Record<
 			'Kích hoạt khi gọi các công cụ sửa đổi tệp liên tiếp mà không gây ra bất kỳ thay đổi nào trong git diff.',
 		configTitle: 'Cấu hình',
 		configDesc:
-			'Tùy chỉnh các ngưỡng trong mcp-vertex.config.json hoặc ghi đè thông qua các cờ CLI.',
+			'Tùy chỉnh các ngưỡng trong delendai.config.json hoặc ghi đè thông qua các cờ CLI.',
 		handoffTitle: 'Gói bàn giao',
 		handoffDesc:
-			'Ghi lại trạng thái trong thư mục .mcp-vertex/handoff/ chứa các khóa đang hoạt động và lịch sử đã ẩn thông tin nhạy cảm.',
+			'Ghi lại trạng thái trong thư mục .delendai/handoff/ chứa các khóa đang hoạt động và lịch sử đã ẩn thông tin nhạy cảm.',
 		backToPlugins: 'Quay lại Plugins',
 	},
 	th: {
@@ -295,10 +295,10 @@ export const loopDetectorTranslations: Record<
 			'ทำงานเมื่อมีการเรียกใช้เครื่องมือแก้ไขไฟล์ติดต่อกันแต่ไม่มีการเปลี่ยนแปลงใดๆ ใน git diff',
 		configTitle: 'การตั้งค่า',
 		configDesc:
-			'คุณสามารถปรับแต่งค่าเกณฑ์ต่างๆ ใน mcp-vertex.config.json หรือแทนที่ผ่าน CLI flags',
+			'คุณสามารถปรับแต่งค่าเกณฑ์ต่างๆ ใน delendai.config.json หรือแทนที่ผ่าน CLI flags',
 		handoffTitle: 'แพ็กเก็ตส่งต่อ (Handoff)',
 		handoffDesc:
-			'เมื่อพบลูป แพ็กเก็ตสถานะจะถูกบันทึกไว้ที่ .mcp-vertex/handoff/ โดยจะซ่อนข้อมูลที่เป็นความลับในอาร์กิวเมนต์ล่าสุด',
+			'เมื่อพบลูป แพ็กเก็ตสถานะจะถูกบันทึกไว้ที่ .delendai/handoff/ โดยจะซ่อนข้อมูลที่เป็นความลับในอาร์กิวเมนต์ล่าสุด',
 		backToPlugins: 'กลับไปยังหน้าปลั๊กอิน',
 	},
 };

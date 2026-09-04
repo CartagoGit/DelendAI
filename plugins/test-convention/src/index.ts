@@ -15,7 +15,7 @@ import {
 
 /**
  * Strongly-typed options the host can supply via
- * `mcp-vertex.config.json#plugins.test-convention.options`.
+ * `delendai.config.json#plugins.test-convention.options`.
  * Every field is optional — the plugin fills missing values with
  * {@link DEFAULT_CONVENTION}.
  */

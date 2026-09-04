@@ -16,10 +16,10 @@ const project = {
 	provider: 'github' as const,
 	host: 'github.example',
 	owner: 'cartago',
-	repository: 'mcp-vertex',
-	displayName: 'cartago/mcp-vertex',
-	webUrl: 'https://github.example/cartago/mcp-vertex',
-	apiUrl: 'https://github.example/api/v3/repos/cartago/mcp-vertex',
+	repository: 'delendai',
+	displayName: 'cartago/delendai',
+	webUrl: 'https://github.example/cartago/delendai',
+	apiUrl: 'https://github.example/api/v3/repos/cartago/delendai',
 };
 
 const branchRef = {
@@ -27,7 +27,7 @@ const branchRef = {
 	name: 'main',
 	fullName: 'refs/heads/main',
 	sha: 'abc123def456',
-	url: 'https://github.example/cartago/mcp-vertex/tree/main',
+	url: 'https://github.example/cartago/delendai/tree/main',
 };
 
 const artifact = (id: string, name: string): IRemoteDiagnosticArtifact => ({
@@ -59,7 +59,7 @@ const runCandidate = (
 		finishedAt: '2026-08-31T12:05:00.000Z',
 		sha: 'abc123def456',
 		ref: branchRef,
-		webUrl: 'https://github.example/cartago/mcp-vertex/actions/runs/1',
+		webUrl: 'https://github.example/cartago/delendai/actions/runs/1',
 	},
 	...overrides,
 });
@@ -254,7 +254,7 @@ describe('diagnoseRemoteExecution', () => {
 				project: {
 					provider: 'github',
 					host: 'gitlab.example',
-					projectPath: 'cartago/mcp-vertex',
+					projectPath: 'cartago/delendai',
 				},
 			},
 			runs: [

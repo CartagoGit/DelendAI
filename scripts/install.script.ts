@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 /**
- * install.script.ts — f00148 S2: install the mcp-vertex polyglot shim.
+ * install.script.ts — f00148 S2: install the delendai polyglot shim.
  *
  * Flags:
  *   --version <tag>   Git tag to install (default: latest)
- *   --repo   <slug>   GitHub org/repo (default: cartago-git/mcp-vertex)
+ *   --repo   <slug>   GitHub org/repo (default: cartago-git/delendai)
  *   --dir    <path>   Install directory (default: ~/.local/bin)
  *   --local          Write a bun-dispatcher into --dir (development fallback)
  *   --help           Show this message
@@ -13,7 +13,7 @@
  *
  * Pure CLI: no MCP server boot, no plugin resolution. When the prebuilt
  * binary is not yet published, this script degrades gracefully and
- * writes a tiny `bun`-dispatcher shell stub so `~/.local/bin/mcp-vertex
+ * writes a tiny `bun`-dispatcher shell stub so `~/.local/bin/delendai
  * --help` still exits 0 against the local repo. `--local` always uses
  * the bun-dispatcher path (development fallback).
  */
@@ -32,12 +32,12 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const REPO = process.env['MCP_VERTEX_REPO'] ?? 'cartago-git/mcp-vertex';
-const VERSION = process.env['MCP_VERTEX_VERSION'] ?? 'latest';
+const REPO = process.env['DELENDAI_REPO'] ?? 'cartago-git/delendai';
+const VERSION = process.env['DELENDAI_VERSION'] ?? 'latest';
 const INSTALL_DIR =
-	process.env['MCP_VERTEX_INSTALL_DIR'] ??
+	process.env['DELENDAI_INSTALL_DIR'] ??
 	`${process.env['HOME'] ?? ''}/.local/bin`;
-const BIN_NAME = 'mcp-vertex';
+const BIN_NAME = 'delendai';
 
 type Args = {
 	version: string;
@@ -48,18 +48,18 @@ type Args = {
 };
 
 const log = (msg: string): void => {
-	process.stderr.write(`\x1b[1;34m[mcpv-install]\x1b[0m ${msg}\n`);
+	process.stderr.write(`\x1b[1;34m[delendai-install]\x1b[0m ${msg}\n`);
 };
 const err = (msg: string): void => {
-	process.stderr.write(`\x1b[1;31m[mcpv-install]\x1b[0m ${msg}\n`);
+	process.stderr.write(`\x1b[1;31m[delendai-install]\x1b[0m ${msg}\n`);
 };
 
 const usage = (): void => {
 	const text = [
-		'install.script.ts — install the mcp-vertex polyglot shim.',
+		'install.script.ts — install the delendai polyglot shim.',
 		'',
 		'  --version <tag>   Git tag to install (default: latest)',
-		'  --repo   <slug>   GitHub org/repo (default: cartago-git/mcp-vertex)',
+		'  --repo   <slug>   GitHub org/repo (default: cartago-git/delendai)',
 		'  --dir    <path>   Install directory (default: ~/.local/bin)',
 		'  --local          Write a bun-dispatcher into --dir (development)',
 		'  --help           Show this message',
@@ -159,7 +159,7 @@ const main = async (): Promise<number> => {
 	mkdirSync(args.dir, { recursive: true });
 
 	const { os, arch } = detectTarget();
-	const asset = `mcp-vertex-shim-${os}-${arch}`;
+	const asset = `delendai-shim-${os}-${arch}`;
 	const target = join(args.dir, BIN_NAME);
 
 	// Resolve the absolute path to the CLI entry (used by --local and
@@ -185,7 +185,7 @@ const main = async (): Promise<number> => {
 	const url = `${urlBase}/${asset}`;
 	log(`downloading ${asset} from ${url}`);
 
-	const tmpDir = mkdtempSync(join(tmpdir(), 'mcpv-install-'));
+	const tmpDir = mkdtempSync(join(tmpdir(), 'delendai-install-'));
 	const tmp = join(tmpDir, asset);
 	const ok = download(url, tmp);
 	if (!ok) {
@@ -196,7 +196,7 @@ const main = async (): Promise<number> => {
 			'this is expected when no release has been published yet; install the',
 		);
 		log('local dev fallback with --local, or build the binary via:');
-		log('    go build -o dist/mcp-vertex-shim ./bin/mcp-vertex-shim');
+		log('    go build -o dist/delendai-shim ./bin/delendai-shim');
 		writeDispatcher(target, cliEntry);
 		log(`ok — wrote bun dispatcher at ${target}.`);
 		try {

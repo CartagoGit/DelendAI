@@ -3,7 +3,7 @@
  * (extensions/vscode/src/extension.ts: `activate` -> `deactivate`).
  *
  * Before this test, every window reload leaked:
- *   - the stdio child process (`bun run mcp-vertex`), because nothing
+ *   - the stdio child process (`bun run delendai`), because nothing
  *     ever called `client.close()`;
  *   - the runtime handle was populated with no client-disposable, so
  *     even the listeners we DID track could not stop the client.
@@ -25,10 +25,10 @@ import {
 } from '../extension';
 
 const overviewFixture: IOverview = {
-	server: { name: 'mcp-vertex', version: '0.1.0' },
-	namespacePrefix: 'mcp-vertex',
+	server: { name: 'delendai', version: '0.1.0' },
+	namespacePrefix: 'delendai',
 	plugins: ['core'],
-	tools: ['mcp-vertex_overview'],
+	tools: ['delendai_overview'],
 	knowledge: [],
 	recommendedNextAction: 'Call overview first.',
 };

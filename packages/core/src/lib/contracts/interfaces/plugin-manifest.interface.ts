@@ -43,7 +43,7 @@ export interface IPluginManifest {
 	readonly permissions: readonly PermissionCategory[];
 	/**
 	 * Per-tool permission set (f00180 S1, MAN-004). Keys are bare
-	 * tool ids (before the `mcp-vertex_<plugin>_` namespace prefix).
+	 * tool ids (before the `delendai_<plugin>_` namespace prefix).
 	 * `resolveToolPermissions(perTool, global, toolId)` returns the
 	 * per-tool entry when present, falling back to the global
 	 * `permissions` set when absent.

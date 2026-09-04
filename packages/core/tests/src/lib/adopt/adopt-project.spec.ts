@@ -45,11 +45,11 @@ describe('adopt_project (f00157 S1)', () => {
 		const workspace = createWorkspacePathProvider(root);
 		adopt = await capture(
 			buildAdoptProjectToolRegistration({
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspace,
 				corePaths: {
-					cacheDir: '.cache/mcp-vertex',
-					docsDir: 'docs/mcp-vertex',
+					cacheDir: '.cache/delendai',
+					docsDir: 'docs/delendai',
 				},
 				reader: createWorkspaceFileReader(workspace),
 			}),
@@ -68,7 +68,7 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(result.config.plugins).toBeDefined();
 		expect(result.rationale.length).toBeGreaterThan(0);
 		expect(Array.isArray(result.residual)).toBe(true);
-		expect(existsSync(join(root, 'mcp-vertex.config.json'))).toBe(false);
+		expect(existsSync(join(root, 'delendai.config.json'))).toBe(false);
 	});
 
 	it('analyze:true returns a read-only adoption assessment without writing', async () => {
@@ -80,7 +80,7 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(Array.isArray(result.assessment.pluginRecommendations)).toBe(
 			true,
 		);
-		expect(existsSync(join(root, 'mcp-vertex.config.json'))).toBe(false);
+		expect(existsSync(join(root, 'delendai.config.json'))).toBe(false);
 	});
 
 	it('write:true without extensions persists config and agent files only', async () => {
@@ -89,7 +89,7 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(result.wrote).toBe(true);
 		// config
 		const written = JSON.parse(
-			await readFile(join(root, 'mcp-vertex.config.json'), 'utf8'),
+			await readFile(join(root, 'delendai.config.json'), 'utf8'),
 		);
 		expect(written.plugins).toBeDefined();
 		// orchestrator + subagents in every host format
@@ -104,7 +104,7 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(
 			result.created.filter(
 				(p: string) =>
-					p.startsWith('docs/mcp-vertex/proposals/') &&
+					p.startsWith('docs/delendai/proposals/') &&
 					p.endsWith('.gitkeep'),
 			),
 		).toHaveLength(0);
@@ -117,17 +117,17 @@ describe('adopt_project (f00157 S1)', () => {
 		const result = parse(await adopt({ write: true }));
 		expect(result.ok).toBe(true);
 		expect(result.wrote).toBe(true);
-		expect(result.created).toContain('docs/mcp-vertex/proposals/README.md');
+		expect(result.created).toContain('docs/delendai/proposals/README.md');
 		expect(result.created).toContain(
-			'docs/mcp-vertex/proposals/ready/.gitkeep',
+			'docs/delendai/proposals/ready/.gitkeep',
 		);
 		expect(result.created).toContain(
-			'docs/mcp-vertex/proposals/retired/.gitkeep',
+			'docs/delendai/proposals/retired/.gitkeep',
 		);
 		expect(
 			result.created.filter(
 				(p: string) =>
-					p.startsWith('docs/mcp-vertex/proposals/') &&
+					p.startsWith('docs/delendai/proposals/') &&
 					p.endsWith('.gitkeep'),
 			),
 		).toHaveLength(7);
@@ -135,7 +135,7 @@ describe('adopt_project (f00157 S1)', () => {
 
 	it('never overwrites project-owned files: existing config is merged, existing files skipped', async () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({
 				cacheDir: '.project-cache',
 				plugins: { search: { options: { roots: ['app'] } } },
@@ -164,14 +164,14 @@ describe('adopt_project (f00157 S1)', () => {
 
 	it('overwrite:true replaces an existing config', async () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			'{"plugins":{}}',
 			'utf8',
 		);
 		const result = parse(await adopt({ write: true, overwrite: true }));
 		expect(result.ok).toBe(true);
 		const written = JSON.parse(
-			await readFile(join(root, 'mcp-vertex.config.json'), 'utf8'),
+			await readFile(join(root, 'delendai.config.json'), 'utf8'),
 		);
 		expect(Object.keys(written.plugins).length).toBeGreaterThan(0);
 	});
@@ -216,7 +216,12 @@ describe('adopt_project (f00157 S1)', () => {
 				servers: {
 					'acme-tools': {
 						command: 'bunx',
-						args: ['--package', '@delendai/cli', 'mcpv', '__serve'],
+						args: [
+							'--package',
+							'@delendai/cli',
+							'delendai',
+							'__serve',
+						],
 					},
 				},
 			}),
@@ -237,14 +242,12 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(orchestrator).toContain(
 			'tools: [read, search, edit, execute, todo, agent, acme-tools/*]',
 		);
-		expect(orchestrator).toContain(
-			'tool: `acme-tools/mcp-vertex_overview`',
-		);
+		expect(orchestrator).toContain('tool: `acme-tools/delendai_overview`');
 		expect(instructions).toContain('The MCP server `acme-tools` rules.');
 	});
 
 	it('refuses to merge a malformed existing config', async () => {
-		writeFileSync(join(root, 'mcp-vertex.config.json'), '{nope', 'utf8');
+		writeFileSync(join(root, 'delendai.config.json'), '{nope', 'utf8');
 		const result = parse(await adopt({ write: true }));
 		expect(result.ok).toBe(false);
 		expect(result.error.reason).toContain('not valid JSON');

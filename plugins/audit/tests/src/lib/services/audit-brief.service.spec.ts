@@ -5,12 +5,12 @@ import { buildBrief } from '../../../../src/lib/services/audit-brief.service';
 /**
  * The brief is the contract every model-side auditor reads before
  * producing a report. It must stay **project-agnostic** by default so
- * the same brief works for any host (mcp-vertex or not); hosts that
+ * the same brief works for any host (delendai or not); hosts that
  * want to inject project-specific invariants pass them via
  * {@link IBriefOptions.crossCuttingAdditions}.
  *
  * These tests pin the agnostic contract:
- *  - The default brief must NOT leak mcp-vertex-specific vocabulary.
+ *  - The default brief must NOT leak delendai-specific vocabulary.
  *  - The default brief must still surface the 3 universal cross-cutting
  *    invariants (observability, flag honoring, generated typed outputs)
  *    in project-agnostic language.
@@ -18,17 +18,17 @@ import { buildBrief } from '../../../../src/lib/services/audit-brief.service';
  *    appear in every scope's brief (not just `full`).
  */
 describe('buildBrief — project-agnostic defaults', async () => {
-	it('does NOT leak mcp-vertex-specific vocabulary in the default brief', async () => {
+	it('does NOT leak delendai-specific vocabulary in the default brief', async () => {
 		const md = buildBrief('full');
-		expect(md).not.toContain('mcp-vertex_metrics');
+		expect(md).not.toContain('delendai_metrics');
 		expect(md).not.toContain('ctx.keepLegacy');
 		expect(md).not.toContain('tool-outputs.ts');
 		expect(md).not.toContain('types:generate');
 	});
 
-	it('does NOT mention mcp-vertex.config.json in the default brief', async () => {
+	it('does NOT mention delendai.config.json in the default brief', async () => {
 		const md = buildBrief('full');
-		expect(md).not.toContain('mcp-vertex.config.json');
+		expect(md).not.toContain('delendai.config.json');
 	});
 
 	it('surfaces the 3 universal cross-cutting invariants in agnostic language', async () => {
@@ -58,7 +58,7 @@ describe('buildBrief — project-agnostic defaults', async () => {
 
 	it('injects host `crossCuttingAdditions` into every scope', async () => {
 		const customInvariant =
-			'- **mcp-vertex_metrics**: primitiva canónica de observabilidad (host-specific).';
+			'- **delendai_metrics**: primitiva canónica de observabilidad (host-specific).';
 		for (const scope of [
 			'full',
 			'security',
@@ -69,7 +69,7 @@ describe('buildBrief — project-agnostic defaults', async () => {
 			const md = buildBrief(scope, {
 				crossCuttingAdditions: [customInvariant],
 			});
-			expect(md).toContain('mcp-vertex_metrics');
+			expect(md).toContain('delendai_metrics');
 			expect(md).toContain('host-specific');
 		}
 	});

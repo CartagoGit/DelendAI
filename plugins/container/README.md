@@ -6,7 +6,7 @@ for `@delendai/core`.
 ## Load it
 
 ```bash
-mcp-vertex --plugins=container
+delendai --plugins=container
 ```
 
 Registers `<prefix>_container_inspect`, `<prefix>_container_logs`, and

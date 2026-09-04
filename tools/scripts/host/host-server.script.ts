@@ -21,7 +21,7 @@ import {
 
 // x00186 (F27): `--workspace <abs>` (space or `=` form) already threads
 // through parseCliArgs's own `tokens.workspace ?? cwd` resolution
-// regardless of this function — but there was no MCP_VERTEX_WORKSPACE
+// regardless of this function — but there was no DELENDAI_WORKSPACE
 // env-var fallback, and no signal when the caller silently got cwd.
 // Resolving it explicitly here adds both.
 export const resolveWorkspaceFlag = (
@@ -48,7 +48,7 @@ const run = async (): Promise<void> => {
 	if (hasHelpFlag(forwarded)) {
 		process.stdout.write(
 			`${[
-				'mcp-vertex MCP host',
+				'delendai MCP host',
 				'',
 				'Usage: bun tools/scripts/host/host-server.script.ts [options]',
 				'',
@@ -62,13 +62,13 @@ const run = async (): Promise<void> => {
 		return;
 	}
 	const explicitWorkspace =
-		resolveWorkspaceFlag(forwarded) ?? process.env.MCP_VERTEX_WORKSPACE;
+		resolveWorkspaceFlag(forwarded) ?? process.env.DELENDAI_WORKSPACE;
 	const cwd =
 		explicitWorkspace !== undefined && explicitWorkspace !== ''
 			? explicitWorkspace
 			: process.cwd();
 	if (explicitWorkspace === undefined || explicitWorkspace === '') {
-		process.stderr.write('[mcp-vertex] warning: using cwd as workspace\n');
+		process.stderr.write('[delendai] warning: using cwd as workspace\n');
 	}
 	const parsedForwarded = parseCliArgs(forwarded, cwd);
 	// Repo default: when the caller did not explicitly choose a plugin surface,
@@ -78,12 +78,12 @@ const run = async (): Promise<void> => {
 		? forwarded
 		: ['--preset=swarm', ...forwarded];
 	// `assembleCliConfig` then adds plugin entries from
-	// `mcp-vertex.config.json` and applies exclude-plugins to the final set.
+	// `delendai.config.json` and applies exclude-plugins to the final set.
 	const args = parseCliArgs(effectiveArgv, cwd);
 	const { config, loadResult, startupReportColor, buildStartupReport } =
 		await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
-		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
+		process.stderr.write(`[delendai] plugin error: ${error.message}\n`);
 	}
 
 	const assembled = await createMcpProject(config);
@@ -117,7 +117,7 @@ const run = async (): Promise<void> => {
 	// terminate the process with the signal still set. The handler
 	// closure captures `assembled`, which is assigned synchronously
 	// before `start()` resolves, so the reference is always live by
-	// the time a signal can arrive. See docs/mcp-vertex/proposals/done/fixes/x00006.
+	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
 	const onSignal = (code: number): void => {
 		void gracefulShutdown(assembled.server, { exitCode: code });
 	};
@@ -139,8 +139,8 @@ const run = async (): Promise<void> => {
 	// case the child would exit cleanly with code 0 before the parent has a
 	// chance to send SIGTERM. Production hosts never see this marker; only
 	// opt-in tests do.
-	if (process.env.MCP_VERTEX_TEST_READY === '1') {
-		process.stderr.write('[mcp-vertex] signal-handlers-ready\n');
+	if (process.env.DELENDAI_TEST_READY === '1') {
+		process.stderr.write('[delendai] signal-handlers-ready\n');
 		// Keep the event loop alive until a signal arrives. Without this,
 		// `start()` can return synchronously when the workspace has 0 plugins,
 		// the loop drains, and the host exits cleanly with code 0 before the
@@ -164,7 +164,7 @@ const run = async (): Promise<void> => {
 // rejection that CI wrappers / host supervisors cannot parse.
 const handleBootFailure = (err: unknown): void => {
 	process.stderr.write(
-		`[mcp-vertex] boot failed: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`,
+		`[delendai] boot failed: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`,
 	);
 	process.exit(1);
 };

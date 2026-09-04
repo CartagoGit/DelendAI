@@ -11,7 +11,7 @@ import type {
 import type {
 	ICommentPrOptions,
 	ICreateIssueOptions,
-	ICreateMcpVertexIssueOptions,
+	ICreateDelendaiIssueOptions,
 	ICreatePrOptions,
 	IIssueCreateResult,
 	IPrCommentResult,
@@ -121,7 +121,7 @@ const proposalPathsFor = (
 		join(
 			workspaceRootAbs,
 			'docs',
-			'mcp-vertex',
+			'delendai',
 			'proposals',
 			folder,
 			`${stem}.md`,
@@ -273,7 +273,7 @@ const repoPathFor = (
 const gitlabProjectId = (repoPath: string): string =>
 	encodeURIComponent(repoPath);
 
-const MCP_VERTEX_REPOSITORY = REPOSITORY_SLUG;
+const DELENDAI_REPOSITORY = REPOSITORY_SLUG;
 
 const parsePrCreateResult = (
 	payload: Record<string, unknown>,
@@ -521,9 +521,9 @@ export const createIssue = async (
 		: { ok: true, provider: response.provider, data: { issue } };
 };
 
-export const createMcpVertexIssue = async (
+export const createDelendaiIssue = async (
 	_workspaceRootAbs: string,
-	options: ICreateMcpVertexIssueOptions,
+	options: ICreateDelendaiIssueOptions,
 	exec: IForgeWriteExec = runExternalTool,
 ): Promise<IIssueCreateResult> => {
 	if (options.confirm !== true) return failure('confirm: true required');
@@ -542,7 +542,7 @@ export const createMcpVertexIssue = async (
 		},
 		args: [
 			'api',
-			`repos/${MCP_VERTEX_REPOSITORY}/issues`,
+			`repos/${DELENDAI_REPOSITORY}/issues`,
 			'--method',
 			'POST',
 			'-f',

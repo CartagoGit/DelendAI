@@ -2,7 +2,7 @@
 	"name": "@delendai/commit-policy",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Commit-authority plugin for @delendai/core: configurable identity, cadence and audit-trail policy on top of the git plugin primitives. Load with `mcp-vertex --plugins=commit-policy`.",
+	"description": "Commit-authority plugin for @delendai/core: configurable identity, cadence and audit-trail policy on top of the git plugin primitives. Load with `delendai --plugins=commit-policy`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

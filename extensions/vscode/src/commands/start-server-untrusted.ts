@@ -37,7 +37,7 @@ export const registerStartServerUntrusted = async (
 	const launch = await resolveServerCommand(vscode);
 	if (launch === undefined) {
 		await vscode.window.showErrorMessage?.(
-			'Configure mcp-vertex.server.command and mcp-vertex.server.args before starting the MCP server.',
+			'Configure delendai.server.command and delendai.server.args before starting the MCP server.',
 		);
 		return;
 	}
@@ -46,7 +46,7 @@ export const registerStartServerUntrusted = async (
 		const client = await (
 			deps.createClient ?? (() => createDefaultClient(vscode))
 		)();
-		await context.globalState.update('mcp-vertex.client', client);
+		await context.globalState.update('delendai.client', client);
 		await deps.onClientConnected?.(client);
 		return;
 	}
@@ -68,7 +68,7 @@ export const registerStartServerUntrusted = async (
 	const client = await (
 		deps.createClient ?? (() => createDefaultClient(vscode))
 	)();
-	await context.globalState.update('mcp-vertex.client', client);
+	await context.globalState.update('delendai.client', client);
 	await deps.onClientConnected?.(client);
 	await recordApproval(store, launch);
 	await vscode.window.showInformationMessage?.(

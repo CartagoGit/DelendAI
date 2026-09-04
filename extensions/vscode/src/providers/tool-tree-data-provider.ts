@@ -65,7 +65,7 @@ export class ToolTreeDataProvider {
 			return element === undefined
 				? [
 						serverNode(
-							'Configure mcp-vertex.server.command and server.args to connect',
+							'Configure delendai.server.command and server.args to connect',
 						),
 					]
 				: [];
@@ -81,7 +81,7 @@ export class ToolTreeDataProvider {
 						label: 'Skills',
 						description: `${skills.length} skills`,
 						collapsibleState: TreeItemCollapsibleState.Collapsed,
-						contextValue: 'mcpVertexSkillGroup',
+						contextValue: 'delendaiSkillGroup',
 						plugin: '__skills__',
 					});
 				}
@@ -93,7 +93,7 @@ export class ToolTreeDataProvider {
 						label: 'Actionable proposals',
 						description: `${proposals.length} proposals`,
 						collapsibleState: TreeItemCollapsibleState.Collapsed,
-						contextValue: 'mcpVertexProposalGroup',
+						contextValue: 'delendaiProposalGroup',
 						plugin: '__actionable_proposals__',
 					});
 				}
@@ -111,7 +111,7 @@ export class ToolTreeDataProvider {
 				description: skill.summary,
 				tooltip: skill.summary,
 				collapsibleState: TreeItemCollapsibleState.None,
-				contextValue: 'mcpVertexSkill',
+				contextValue: 'delendaiSkill',
 				plugin: '__skills__',
 			}));
 		}
@@ -123,7 +123,7 @@ export class ToolTreeDataProvider {
 				description: `${proposal.status} · ${proposal.title}`,
 				tooltip: proposal.title,
 				collapsibleState: TreeItemCollapsibleState.None,
-				contextValue: 'mcpVertexProposal',
+				contextValue: 'delendaiProposal',
 				plugin: '__actionable_proposals__',
 			}));
 		}
@@ -249,7 +249,7 @@ const statusNode = (error: unknown): IToolTreeNode => ({
 		error instanceof Error ? error.message : String(error)
 	}`,
 	collapsibleState: TreeItemCollapsibleState.None,
-	contextValue: 'mcpVertexStatus',
+	contextValue: 'delendaiStatus',
 });
 
 export type ITreeItemCollapsibleState = TreeItemCollapsibleState;

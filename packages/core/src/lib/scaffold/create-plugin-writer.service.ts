@@ -54,7 +54,7 @@ export const writeHostConfig = async ({
 	readonly pluginId: string;
 	readonly fs: IPluginWiringFs;
 }): Promise<void> => {
-	const path = 'mcp-vertex.config.json';
+	const path = 'delendai.config.json';
 	const parsed = JSON.parse(await fs.readFile(path)) as {
 		plugins?: Record<string, unknown>;
 		[key: string]: unknown;

@@ -3,7 +3,7 @@
 > Plugin de autoridad de commit para `@delendai/core`. Política configurable
 > de identidad, cadencia y rastro de auditoría sobre las primitivas del plugin
 > [`git`](../../git). **Desactivado por defecto** — hay que activarlo desde
-> `mcp-vertex.config.json`.
+> `delendai.config.json`.
 
 ## Qué hace
 
@@ -26,7 +26,7 @@ menos que lo active explícitamente.
 ## Configuración
 
 ```jsonc
-// mcp-vertex.config.json
+// delendai.config.json
 {
   "plugins": {
     "commit-policy": {
@@ -63,7 +63,7 @@ CLI autenticadas; los hosts autoalojados pueden mapearse con
 `push.providerByHost`; los hosts sin mapear devuelven el estado explícito
 `unsupported` y conservan la configuración local. El refresh no se ejecuta al registrar el
 plugin salvo que el host establezca explícitamente
-`MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true`.
+`DELENDAI_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true`.
 
 ### Reglas de ramas
 
@@ -110,7 +110,7 @@ sin opciones es un no-op.
 
 ## Dogfooding en este repo
 
-La `mcp-vertex.config.json` raíz lo activa con:
+La `delendai.config.json` raíz lo activa con:
 
 ```jsonc
 "commit-policy": {

@@ -49,7 +49,7 @@ const totals = (
 
 const MODEL = {
 	tool: {
-		name: 'mcp-vertex_search',
+		name: 'delendai_search',
 		plugin: 'search',
 		summary: 'Low-token grep over workspace text files.',
 		tags: ['search', 'read'],
@@ -70,7 +70,7 @@ const MODEL = {
 	knowledgeBody: '# search\n\nLow-token grep.',
 	metrics: {
 		tools: {
-			'mcp-vertex_search': metric(318, 1, 14_910, 420, 0),
+			delendai_search: metric(318, 1, 14_910, 420, 0),
 		},
 		totals: totals(318, 1, 14_910, 0),
 	},
@@ -80,7 +80,7 @@ describe('tool-detail webview', () => {
 	it('renders a full HTML document for the production webview', () => {
 		const html = renderToolDetailHtml(MODEL);
 		expect(html).toContain('<!DOCTYPE html>');
-		expect(html).toContain('mcp-vertex_search');
+		expect(html).toContain('delendai_search');
 		expect(html).toContain('Knowledge');
 		expect(html).toContain('318 calls');
 	});
@@ -94,7 +94,7 @@ describe('tool-detail webview', () => {
 		expect(body).not.toContain('<html');
 		expect(body).not.toMatch(/<head>/);
 		// It still has the real content.
-		expect(body).toContain('mcp-vertex_search');
+		expect(body).toContain('delendai_search');
 		expect(body).toContain('Knowledge');
 		expect(body).toContain('318 calls');
 	});

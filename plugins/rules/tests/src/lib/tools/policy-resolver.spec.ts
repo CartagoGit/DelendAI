@@ -44,15 +44,15 @@ const projectCmd: ICommandSet = {
 
 const dogmaCmd: ICommandSet = {
 	checkCommand:
-		'eslint apps/web --config .cache/mcp-vertex/rules/react-ts.eslint.config.mjs',
+		'eslint apps/web --config .cache/delendai/rules/react-ts.eslint.config.mjs',
 	fixCommand:
-		'eslint apps/web --config .cache/mcp-vertex/rules/react-ts.eslint.config.mjs --fix',
+		'eslint apps/web --config .cache/delendai/rules/react-ts.eslint.config.mjs --fix',
 	typecheckCommand: 'tsc --noEmit -p apps/web/tsconfig.json',
 };
 
 const defaultCmd: ICommandSet = {
 	checkCommand:
-		'eslint apps/web --config .cache/mcp-vertex/rules/vanilla-ts.eslint.config.mjs',
+		'eslint apps/web --config .cache/delendai/rules/vanilla-ts.eslint.config.mjs',
 	typecheckCommand: 'tsc --noEmit',
 };
 

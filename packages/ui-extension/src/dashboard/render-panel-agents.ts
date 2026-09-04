@@ -31,29 +31,29 @@ export const renderPanelAgents = (
 			const proposalId = proposalIdOf(a.currentProposal);
 			const proposal = proposalId
 				? `<a href="#" data-proposal="${escapeHtml(proposalId)}"><code>${escapeHtml(proposalId)}</code></a>`
-				: '<span class="mcpv-fg-muted">—</span>';
+				: '<span class="delendai-fg-muted">—</span>';
 			const slice = a.currentSlice
 				? `<code>${escapeHtml(a.currentSlice)}</code>`
-				: '<span class="mcpv-fg-muted">—</span>';
+				: '<span class="delendai-fg-muted">—</span>';
 			const heartbeat = a.lastHeartbeat
 				? formatRelativeTime(a.lastHeartbeat)
-				: '<span class="mcpv-fg-muted">—</span>';
+				: '<span class="delendai-fg-muted">—</span>';
 			return `<tr>
 				<td><strong>${escapeHtml(a.name)}</strong></td>
 				<td>${proposal}</td>
 				<td>${slice}</td>
-				<td class="mcpv-fg-muted">${heartbeat}</td>
+				<td class="delendai-fg-muted">${heartbeat}</td>
 			</tr>`;
 		})
 		.join('');
 	return `
-<section class="mcpv-panel" id="panel-agents" role="tabpanel" aria-labelledby="tab-agents">
-	<h2 class="mcpv-panel__title">${escapeHtml(text('tabAgents'))}</h2>
+<section class="delendai-panel" id="panel-agents" role="tabpanel" aria-labelledby="tab-agents">
+	<h2 class="delendai-panel__title">${escapeHtml(text('tabAgents'))}</h2>
 	<p>${escapeHtml(text('dashboard.agents.active', { count: formatNumber(model.totalActive) }))}</p>
-	<div class="mcpv-card">
-		<table class="mcpv-table">
+	<div class="delendai-card">
+		<table class="delendai-table">
 			<thead><tr><th>${escapeHtml(text('common.agent'))}</th><th>${escapeHtml(text('dashboard.agents.currentProposal'))}</th><th>${escapeHtml(text('dashboard.agents.slice'))}</th><th>${escapeHtml(text('dashboard.agents.lastHeartbeat'))}</th></tr></thead>
-			<tbody>${rows || `<tr><td colspan="4" class="mcpv-fg-muted">${escapeHtml(text('dashboard.agents.none'))}</td></tr>`}</tbody>
+			<tbody>${rows || `<tr><td colspan="4" class="delendai-fg-muted">${escapeHtml(text('dashboard.agents.none'))}</td></tr>`}</tbody>
 		</table>
 	</div>
 </section>

@@ -3,7 +3,7 @@
  *
  * One client-callable action that lets a *target project's LLM* author a
  * complete, correct `IMcpPlugin` from a declarative spec AND register it on
- * the host **by PATH**, without ever reading mcp-vertex's core or its
+ * the host **by PATH**, without ever reading delendai's core or its
  * internal plugins.
  */
 import { readFile } from 'node:fs/promises';
@@ -16,8 +16,8 @@ import {
 } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 import type {
-	IMcpVertexConfigFile,
-	IMcpVertexPluginConfig,
+	IDelendaiConfigFile,
+	IDelendaiPluginConfig,
 	IScaffoldedFile,
 } from '@delendai/core/public';
 
@@ -161,7 +161,7 @@ const renderSpecIndex = (
 	tools: readonly IPluginToolSpec[],
 ): string => {
 	const safe = sanitizeText(description);
-	return `import { definePlugin } from '@delendai/core/plugin';\nimport z from 'zod';\n\n/** Free-form, validated options this plugin accepts from mcp-vertex.config.json. */\nexport const OptionsSchema = z.object({}).passthrough();\n\n/**\n * ${safe}\n *\n * Loaded by mcp-vertex from \`mcp-vertex.config.json#plugins.${id}.path\`.\n * Every tool is namespaced by the plugin prefix (default '${prefix}') and\n * returns structured JSON so any agent or model can consume it\n * deterministically.\n */\nexport default definePlugin({\n\tname: '${id}',\n\tversion: '0.1.0',\n\tdescribe: '${safe}',\n\tregister(ctx) {\n\t\tconst prefix = ctx.namespacePrefix;\n\t\tOptionsSchema.parse(ctx.options ?? {});\n\t\treturn {\n\t\t\ttools: [\n${renderToolEntries(tools)}\n\t\t\t],\n\t\t\tknowledge: [\n\t\t\t\t{\n\t\t\t\t\tid: '${id}-overview',\n\t\t\t\t\ttitle: '${id} plugin',\n\t\t\t\t\tbody: '${safe}',\n\t\t\t\t},\n\t\t\t],\n\t\t};\n\t},\n});\n`;
+	return `import { definePlugin } from '@delendai/core/plugin';\nimport z from 'zod';\n\n/** Free-form, validated options this plugin accepts from delendai.config.json. */\nexport const OptionsSchema = z.object({}).passthrough();\n\n/**\n * ${safe}\n *\n * Loaded by delendai from \`delendai.config.json#plugins.${id}.path\`.\n * Every tool is namespaced by the plugin prefix (default '${prefix}') and\n * returns structured JSON so any agent or model can consume it\n * deterministically.\n */\nexport default definePlugin({\n\tname: '${id}',\n\tversion: '0.1.0',\n\tdescribe: '${safe}',\n\tregister(ctx) {\n\t\tconst prefix = ctx.namespacePrefix;\n\t\tOptionsSchema.parse(ctx.options ?? {});\n\t\treturn {\n\t\t\ttools: [\n${renderToolEntries(tools)}\n\t\t\t],\n\t\t\tknowledge: [\n\t\t\t\t{\n\t\t\t\t\tid: '${id}-overview',\n\t\t\t\t\ttitle: '${id} plugin',\n\t\t\t\t\tbody: '${safe}',\n\t\t\t\t},\n\t\t\t],\n\t\t};\n\t},\n});\n`;
 };
 
 const generatePluginFiles = (
@@ -225,7 +225,7 @@ const registerPluginPath = async (
 	configFile: string,
 	name: string,
 	pluginPath: string,
-	extra: IMcpVertexPluginConfig | undefined,
+	extra: IDelendaiPluginConfig | undefined,
 ): Promise<IProjectPluginRegistration> =>
 	withFileMutex(configFile, async () => {
 		let raw: string | undefined;
@@ -234,8 +234,8 @@ const registerPluginPath = async (
 		} catch {
 			raw = undefined;
 		}
-		const current: IMcpVertexConfigFile = parseConfigFile(raw);
-		const plugins: Record<string, IMcpVertexPluginConfig> = {
+		const current: IDelendaiConfigFile = parseConfigFile(raw);
+		const plugins: Record<string, IDelendaiPluginConfig> = {
 			...(current.plugins ?? {}),
 		};
 		const existing = plugins[name];
@@ -247,13 +247,13 @@ const registerPluginPath = async (
 					? 'unchanged'
 					: 'updated';
 
-		const merged: IMcpVertexPluginConfig = {
+		const merged: IDelendaiPluginConfig = {
 			...(extra ?? {}),
 			...(existing ?? {}),
 			path: pluginPath,
 		};
 
-		const next: IMcpVertexConfigFile = {
+		const next: IDelendaiConfigFile = {
 			...current,
 			plugins: { ...plugins, [name]: merged },
 		};
@@ -299,8 +299,8 @@ const projectPluginInternal = async (
 		? join(options.workspaceRoot, options.pluginsRoot, id)
 		: join(
 				options.workspaceRoot,
-				'packages/mcp-vertex/plugins',
-				`mcp-vertex_${id}`,
+				'packages/delendai/plugins',
+				`delendai_${id}`,
 			);
 
 	const writeResult = await writeScaffoldedFiles(pluginDir, files, {
@@ -327,9 +327,9 @@ const projectPluginInternal = async (
 	const nextSteps =
 		`Plugin "${id}" was written to ${toPosix(relative(options.workspaceRoot, pluginDir))} ` +
 		`and registered in ${configFileName} as plugins.${id}.path = "${pluginPath}". ` +
-		`Restart the mcp-vertex host (or your editor's MCP server) to load it; ` +
+		`Restart the delendai host (or your editor's MCP server) to load it; ` +
 		`its tools (${tools.join(', ')}) will appear under the "${prefix}" namespace. ` +
-		`No mcp-vertex internals need to be read — edit ${toPosix(join(relative(options.workspaceRoot, pluginDir), 'src/index.ts'))} to fill in each tool's logic.`;
+		`No delendai internals need to be read — edit ${toPosix(join(relative(options.workspaceRoot, pluginDir), 'src/index.ts'))} to fill in each tool's logic.`;
 
 	return {
 		name: id,

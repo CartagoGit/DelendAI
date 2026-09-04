@@ -89,17 +89,17 @@ export const SHELL_INTENT_MAP: Readonly<Record<string, IntentHandler>> = {
 		switch (sub) {
 			case 'status':
 				return {
-					tool: 'mcp-vertex_git_status',
+					tool: 'delendai_git_status',
 					note: 'read-only working-tree status via the git MCP tool',
 				};
 			case 'diff':
 				return {
-					tool: 'mcp-vertex_git_diff',
+					tool: 'delendai_git_diff',
 					note: 'read-only diff via the git MCP tool',
 				};
 			case 'log':
 				return {
-					tool: 'mcp-vertex_git_log',
+					tool: 'delendai_git_log',
 					note: 'read-only history via the git MCP tool',
 				};
 			default:

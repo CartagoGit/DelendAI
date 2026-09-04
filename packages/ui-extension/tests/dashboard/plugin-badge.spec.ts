@@ -52,13 +52,13 @@ describe('brand-icons', () => {
 describe('renderPluginBadge', () => {
 	it('embeds the GitHub brand SVG for the github plugin', () => {
 		const html = renderPluginBadge({ code: 'github', label: 'GitHub' });
-		expect(html).toContain('mcpv-badge--brand');
+		expect(html).toContain('delendai-badge--brand');
 		expect(html).toContain('aria-label="GitHub"');
 	});
 
 	it('falls back to initials for plugins without a brand mark', () => {
 		const html = renderPluginBadge({ code: 'memory', label: 'Memory' });
-		expect(html).toContain('mcpv-badge--initials');
+		expect(html).toContain('delendai-badge--initials');
 		expect(html).toContain('M');
 	});
 
@@ -68,6 +68,6 @@ describe('renderPluginBadge', () => {
 			label: 'GitHub',
 			size: 32,
 		});
-		expect(html).toContain('--mcpv-badge-size:32px');
+		expect(html).toContain('--delendai-badge-size:32px');
 	});
 });

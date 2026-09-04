@@ -71,10 +71,10 @@ describe('resolveAutoScaffold — proposals availability', async () => {
 	});
 
 	// x00165 (S-B): the generated proposal body used to embed
-	// "Alcance B (f00077)" — an mcp-vertex-internal roadmap slice +
+	// "Alcance B (f00077)" — an delendai-internal roadmap slice +
 	// proposal id — directly into every scaffolded proposal, for any
 	// downstream host. It must now read as a generic, portable note.
-	it('scaffolds a proposal body with no mcp-vertex-internal vocabulary leaked into it', async () => {
+	it('scaffolds a proposal body with no delendai-internal vocabulary leaked into it', async () => {
 		const dir = await mkTmp();
 		try {
 			const outcome = await resolveAutoScaffold(

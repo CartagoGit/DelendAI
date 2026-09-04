@@ -5,7 +5,7 @@
  * l110 s1.
  *
  * The catalogue at `apps/web/src/i18n/tools/index.ts` is a runtime registry
- * keyed by `<namespace>_<tool>` (e.g. `mcp-vertex_overview`). Each entry
+ * keyed by `<namespace>_<tool>` (e.g. `delendai_overview`). Each entry
  * carries `description: Record<Lang, string>`. We resolve that record into
  * the exact shape we want to dump — `{ [lang]: description }` — so the
  * site never has to call `describeTool()` for the active language at
@@ -36,7 +36,7 @@ export type IResolvedDescriptions = Readonly<
  * Returned shape:
  *
  *   {
- *     "mcp-vertex_overview": { en: "...", es: "...", ... },
+ *     "delendai_overview": { en: "...", es: "...", ... },
  *     "proposals_auto_work": { en: "...", es: "...", ... },
  *     ...
  *   }

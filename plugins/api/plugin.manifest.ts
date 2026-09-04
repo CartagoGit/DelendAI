@@ -5,7 +5,7 @@ export default definePluginManifest({
 	package: '@delendai/api',
 	version: '0.1.1',
 	visibility: 'public',
-	summary: 'REST/GraphQL API surface for mcp-vertex plugins.',
+	summary: 'REST/GraphQL API surface for delendai plugins.',
 	tags: ['api', 'surface'],
 	maturity: 'stable',
 	permissions: ['process', 'network'],

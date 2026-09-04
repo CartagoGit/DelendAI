@@ -1,5 +1,5 @@
 /**
- * skill-paths.ts — the single source of truth for where mcp-vertex skills
+ * skill-paths.ts — the single source of truth for where delendai skills
  * live on disk (f00065 S1).
  *
  * Skills are owned by the package/plugin they apply to, NOT stored in `docs`:
@@ -14,7 +14,7 @@
  * Every consumer — the core loader (`load-skills.ts`), the CLI assembler
  * (`assemble.ts`), the web catalogue generator (`gen-skills.ts`), and the
  * `check-skills` lint gate — resolves skill locations through THIS module so
- * the path is defined exactly once. `docs/mcp-vertex/skills/**` is no longer a
+ * the path is defined exactly once. `docs/delendai/skills/**` is no longer a
  * skill store; it is documentation only.
  */
 

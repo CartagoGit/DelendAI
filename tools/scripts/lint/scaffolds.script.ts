@@ -54,7 +54,7 @@ export const lintScaffolds = async (
 if (import.meta.main) {
 	const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 	const issues = await lintScaffolds(
-		join(repoRoot, 'docs', 'mcp-vertex', 'scaffolds'),
+		join(repoRoot, 'docs', 'delendai', 'scaffolds'),
 	);
 	for (const issue of issues) {
 		console.log(`${issue.file}: ${issue.message}`);

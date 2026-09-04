@@ -80,7 +80,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 \t\t\treplacement: resolve(proposals, 'public/index.ts'),
 \t\t},
 \t\t{
-\t\t\tfind: /^@mcp-vertex\\/proposals\\/lib\\/(.*)$/,
+\t\t\tfind: /^@delendai\\/proposals\\/lib\\/(.*)$/,
 \t\t\treplacement: \`\${resolve(proposals, 'lib')}/$1\`,
 \t\t},
 \t\t{
@@ -323,8 +323,8 @@ describe('wirePluginIntoMonorepo (façade)', () => {
 				PRESET_CATALOG_SEED,
 			'packages/core/src/lib/registry/first-party-index.ts':
 				"export const FIRST_PARTY_PLUGIN_INDEX = { entries: [{ id: 'demo' }] };\n",
-			'docs/mcp-vertex/agent-catalog.generated.json': '{"tools":[]}',
-			'mcp-vertex.config.json': JSON.stringify({ plugins: { git: {} } }),
+			'docs/delendai/agent-catalog.generated.json': '{"tools":[]}',
+			'delendai.config.json': JSON.stringify({ plugins: { git: {} } }),
 			'plugins/demo/src/index.ts': 'export default {}\n',
 		});
 		const report = await diagnosePluginWiring('demo', fs);

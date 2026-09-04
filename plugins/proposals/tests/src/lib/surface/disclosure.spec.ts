@@ -96,14 +96,14 @@ describe('proposals disclosure — real wire measurement (q00016 S8)', () => {
 		try {
 			const { tools } = await harness.client.listTools();
 			const proposalsTools = tools.filter((tool) =>
-				tool.name.startsWith('mcp-vertex_proposals_'),
+				tool.name.startsWith('delendai_proposals_'),
 			);
 
 			// The wiring in plugins/proposals/src/index.ts must have hidden
 			// every contextual/administrative tool from this real,
 			// protocol-level tools/list — not just the pure policy map.
 			const exposedIds = proposalsTools
-				.map((tool) => tool.name.replace('mcp-vertex_proposals_', ''))
+				.map((tool) => tool.name.replace('delendai_proposals_', ''))
 				.sort();
 			expect(exposedIds).toEqual(
 				[...PROPOSALS_ESSENTIAL_TOOL_IDS].sort(),
@@ -116,7 +116,7 @@ describe('proposals disclosure — real wire measurement (q00016 S8)', () => {
 
 			// Before progressive disclosure: 50,896 B across all 34 tools (measured by
 			// bun tools/scripts/report/token-budget-dashboard.script.ts,
-			// pinned in docs/mcp-vertex/TOKEN-BUDGETS.md's plugin-marginal
+			// pinned in docs/delendai/TOKEN-BUDGETS.md's plugin-marginal
 			// dashboard, "proposals" row, swarm/full/vertex presets).
 			expect(measured.bytes).toBeGreaterThan(0);
 			expect(measured.bytes).toBeLessThanOrEqual(20_000);
@@ -141,12 +141,12 @@ describe('proposals disclosure — real wire measurement (q00016 S8)', () => {
 			// exact failure this repo's standing rule forbids.
 			const { tools } = await harness.client.listTools();
 			const listedNames = new Set(tools.map((tool) => tool.name));
-			expect(listedNames.has('mcp-vertex_proposals_state_health')).toBe(
+			expect(listedNames.has('delendai_proposals_state_health')).toBe(
 				false,
 			);
-			expect(listedNames.has('mcp-vertex_vertex')).toBe(true);
+			expect(listedNames.has('delendai_vertex')).toBe(true);
 
-			const result = await harness.callTool('mcp-vertex_vertex', {
+			const result = await harness.callTool('delendai_vertex', {
 				domain: 'proposals',
 				action: 'state_health',
 				args: {},
@@ -154,7 +154,7 @@ describe('proposals disclosure — real wire measurement (q00016 S8)', () => {
 			expect(result.ok).toBe(true);
 			expect(result.structured).toMatchObject({
 				routed: true,
-				tool: 'mcp-vertex_proposals_state_health',
+				tool: 'delendai_proposals_state_health',
 				isError: false,
 			});
 		} finally {

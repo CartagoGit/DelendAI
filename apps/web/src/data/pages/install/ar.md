@@ -1,13 +1,13 @@
 ---
 title: التثبيت والتشغيل
-description: ثبّت mcp-vertex، وصِله ببيئة IDE الخاصة بك، واختر إعدادًا مسبقًا، ثم تحقّق من الخادم قبل بدء العمل.
+description: ثبّت delendai، وصِله ببيئة IDE الخاصة بك، واختر إعدادًا مسبقًا، ثم تحقّق من الخادم قبل بدء العمل.
 order: 1
 navLabel: التثبيت
 ---
 
 # التثبيت والتشغيل
 
-أضف mcp-vertex إلى سير العمل لديك، ووجّه عميل MCP إلى الملف التنفيذي، ثم تحقّق من مجموعة الإضافات المُحلولة قبل أول جلسة.
+أضف delendai إلى سير العمل لديك، ووجّه عميل MCP إلى الملف التنفيذي، ثم تحقّق من مجموعة الإضافات المُحلولة قبل أول جلسة.
 
 ## اختر مدير الحزم
 
@@ -42,7 +42,7 @@ yarn dlx @delendai/cli validate
 
 ### bun
 
-يجمع bun بين الـ runtime ومدير الحزم في أداة واحدة، كما أن mcp-vertex نفسه مبني باستخدام bun، لذلك فهو الطريق الأكثر مباشرة عندما يكون bun متاحًا على الجهاز.
+يجمع bun بين الـ runtime ومدير الحزم في أداة واحدة، كما أن delendai نفسه مبني باستخدام bun، لذلك فهو الطريق الأكثر مباشرة عندما يكون bun متاحًا على الجهاز.
 
 ```bash
 bunx @delendai/cli init
@@ -70,13 +70,13 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "servers": {
-    "mcp-vertex": {
+    "delendai": {
       "type": "stdio",
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -96,12 +96,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -121,12 +121,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -146,12 +146,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -171,12 +171,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -196,12 +196,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -221,12 +221,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "context_servers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -326,4 +326,4 @@ bunx @delendai/cli --preset=swarm --exclude-plugins=notification validate
 
 ### هل يمكنني تشغيل عدة إعدادات مسبقة في الوقت نفسه؟
 
-لا. كل نسخة من الخادم تحل إعدادًا مسبقًا واحدًا فقط في كل مرة. إذا كانت المشاريع المختلفة تحتاج إلى مجموعات إضافات مختلفة، فضع ملف mcp-vertex.config.json مخصصًا داخل كل مشروع واترك الـ loader يحلّه لكل workspace.
+لا. كل نسخة من الخادم تحل إعدادًا مسبقًا واحدًا فقط في كل مرة. إذا كانت المشاريع المختلفة تحتاج إلى مجموعات إضافات مختلفة، فضع ملف delendai.config.json مخصصًا داخل كل مشروع واترك الـ loader يحلّه لكل workspace.

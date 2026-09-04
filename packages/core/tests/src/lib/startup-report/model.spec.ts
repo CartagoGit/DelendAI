@@ -71,25 +71,25 @@ const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 		exposedTools: [
 			{
 				registrationId: 'overview',
-				name: 'mcp-vertex_overview',
+				name: 'delendai_overview',
 				toolId: 'overview',
 				summary: 'orient',
 			},
 			{
 				registrationId: 'tool_search',
-				name: 'mcp-vertex_tool_search',
+				name: 'delendai_tool_search',
 				toolId: 'tool_search',
 				summary: 'search',
 			},
 			{
 				registrationId: 'vertex',
-				name: 'mcp-vertex_vertex',
+				name: 'delendai_vertex',
 				toolId: 'vertex',
 				summary: 'route',
 			},
 			{
 				registrationId: 'status',
-				name: 'mcp-vertex_status',
+				name: 'delendai_status',
 				toolId: 'status',
 				summary: 'health',
 			},
@@ -102,7 +102,7 @@ const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 		status: 'loaded-hidden',
 		availableTools: Array.from({ length: 10 }, (_, i) => ({
 			registrationId: `g${i}`,
-			name: `mcp-vertex_git_${i}`,
+			name: `delendai_git_${i}`,
 			toolId: `git_${i}`,
 			summary: `git tool ${i}`,
 		})),
@@ -115,7 +115,7 @@ const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 		status: 'loaded-hidden',
 		availableTools: Array.from({ length: 34 }, (_, i) => ({
 			registrationId: `p${i}`,
-			name: `mcp-vertex_proposals_${i}`,
+			name: `delendai_proposals_${i}`,
 			toolId: `proposals_${i}`,
 			summary: `proposal tool ${i}`,
 		})),

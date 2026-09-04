@@ -1,6 +1,6 @@
 /**
- * f00046 S6 — `docs search` delegates to mcp-vertex_docs_docs_search, and the
- * extended `search` command forwards `--context` to mcp-vertex_search_search.
+ * f00046 S6 — `docs search` delegates to delendai_docs_docs_search, and the
+ * extended `search` command forwards `--context` to delendai_search_search.
  */
 import { describe, expect, it } from 'vitest';
 
@@ -51,19 +51,19 @@ describe('docs search (f00046 S6)', async () => {
 		expect(missing.code).toBe(EXIT_CODE.USAGE);
 		await command.run(['budgets', '--include=docs/**', '--limit=5'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'mcp-vertex_docs_docs_search',
+			tool: 'delendai_docs_docs_search',
 			args: { query: 'budgets', include: ['docs/**'], limit: 5 },
 		});
 	});
 });
 
 describe('search --context extension (f00046 S6)', async () => {
-	it('forwards context to mcp-vertex_search_search', async () => {
+	it('forwards context to delendai_search_search', async () => {
 		const { ctx, calls } = buildStubContext();
 		await (await find('search')).run(['needle', '--context=3'], ctx);
 		const call = calls[0];
 		if (call === undefined) throw new Error('expected search tool call');
-		expect(call.tool).toBe('mcp-vertex_search_search');
+		expect(call.tool).toBe('delendai_search_search');
 		expect((call.args as { context?: number }).context).toBe(3);
 	});
 

@@ -1,5 +1,5 @@
 /**
- * `mcp-vertex.openDocsApi` — surface the documentation / how-to-use / API
+ * `delendai.openDocsApi` — surface the documentation / how-to-use / API
  * from inside the IDE (f00053 S6).
  *
  * Where `openDocs` opens the docs home in a webview, this command offers a
@@ -17,7 +17,7 @@ import { SHARED_UI_STRINGS, escapeHtml } from '@delendai/ui-extension/public';
 
 import type { ICommandVscodeApi } from './types';
 
-export const OPEN_DOCS_API_COMMAND = 'mcp-vertex.openDocsApi';
+export const OPEN_DOCS_API_COMMAND = 'delendai.openDocsApi';
 // f00053 S7: the docs URL has one source of truth (the shared strings
 // module), consumed here instead of re-typed.
 export const DEFAULT_DOCS_BASE_URL = SHARED_UI_STRINGS.docsUrl;
@@ -81,7 +81,7 @@ const buildHtml = (target: IDocsTarget): string => `<!DOCTYPE html>
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex — ${escapeHtml(target.label)}</title>
+	<title>delendai — ${escapeHtml(target.label)}</title>
 	<style>
 		body { margin: 0; font-family: var(--vscode-font-family); color: var(--vscode-foreground); background: var(--vscode-editor-background); }
 		header { padding: 8px 12px; border-bottom: 1px solid var(--vscode-widget-border); font-size: 11px; color: var(--vscode-description-foreground); }
@@ -116,13 +116,13 @@ export const registerOpenDocsApiCommand = (deps: {
 		const validation = embed.validate(target.url);
 		if (!validation.ok) {
 			await deps.vscode.window.showInformationMessage?.(
-				`mcp-vertex: docs URL rejected (${validation.reason ?? 'unknown'}).`,
+				`delendai: docs URL rejected (${validation.reason ?? 'unknown'}).`,
 			);
 			return undefined;
 		}
 		const panel = deps.vscode.window.createWebviewPanel(
-			'mcpVertexDocsApi',
-			`mcp-vertex — ${target.label}`,
+			'delendaiDocsApi',
+			`delendai — ${target.label}`,
 			deps.vscode.ViewColumn.One,
 			{ enableScripts: true },
 		);

@@ -11,8 +11,8 @@ import { setFrontmatterBlockField } from '../../../plugins/proposals/src/lib/pro
 
 const execFileAsync = promisify(execFile);
 
-const PROPOSALS_DIR_RELATIVE_PATH = 'docs/mcp-vertex/proposals';
-const PROPOSALS_INDEX_RELATIVE_PATH = '.cache/mcp-vertex/proposals/index.json';
+const PROPOSALS_DIR_RELATIVE_PATH = 'docs/delendai/proposals';
+const PROPOSALS_INDEX_RELATIVE_PATH = '.cache/delendai/proposals/index.json';
 
 export interface ICiRunEvidence {
 	readonly name: string;

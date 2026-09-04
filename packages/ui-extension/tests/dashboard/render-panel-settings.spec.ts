@@ -6,7 +6,7 @@ import { dictsByLang } from '@delendai/shared/i18n';
 import { renderPanelSettings } from '../../src/dashboard/render-panel-settings';
 
 const baseSettings: IExtensionSettings = {
-	docsUrl: 'https://mcp-vertex.dev',
+	docsUrl: 'https://delendai.dev',
 	allowLocalhost: false,
 	allowPrivateIps: false,
 	logLevel: 'info',
@@ -23,8 +23,8 @@ describe('renderPanelSettings', () => {
 		expect(html).toContain('settings-section-workspace');
 		expect(html).toContain('settings-section-diagnostics');
 		expect(html).toContain('settings-section-preview');
-		expect(html).toContain('mcpv-settings__theme-grid');
-		expect(html).toContain('mcpv-settings__lang-grid');
+		expect(html).toContain('delendai-settings__theme-grid');
+		expect(html).toContain('delendai-settings__lang-grid');
 	});
 
 	it('renders the compact-mode toggle', () => {
@@ -34,7 +34,7 @@ describe('renderPanelSettings', () => {
 
 	it('marks the compact mode as enabled when compact=true', () => {
 		const html = renderPanelSettings(baseSettings, dictsByLang.en, true);
-		expect(html).toContain('mcpv-panel--compact');
+		expect(html).toContain('delendai-panel--compact');
 		expect(html).toMatch(/data-settings-compact[^>]*checked/);
 	});
 

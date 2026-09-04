@@ -129,7 +129,7 @@ describe('gen-all.script', () => {
 				calls += 1;
 				return calls === 1
 					? new Set<string>()
-					: new Set(['docs/mcp-vertex/TOKEN-BUDGETS.md']);
+					: new Set(['docs/delendai/TOKEN-BUDGETS.md']);
 			},
 		};
 
@@ -193,10 +193,10 @@ describe('drift attribution', () => {
 		const before = new Set(['plugins/other/src/in-flight.ts']);
 		const after = new Set([
 			'plugins/other/src/in-flight.ts',
-			'docs/mcp-vertex/TOKEN-BUDGETS.md',
+			'docs/delendai/TOKEN-BUDGETS.md',
 		]);
 		expect(attributableDrift(before, after)).toEqual([
-			'docs/mcp-vertex/TOKEN-BUDGETS.md',
+			'docs/delendai/TOKEN-BUDGETS.md',
 		]);
 	});
 

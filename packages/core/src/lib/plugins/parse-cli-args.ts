@@ -11,10 +11,10 @@ import {
 import { resolve as resolvePath } from 'node:path';
 
 /**
- * Parsed mcp-vertex CLI invocation. Pure data so the loader and tests
+ * Parsed delendai CLI invocation. Pure data so the loader and tests
  * never touch `process.argv` directly.
  */
-export interface IMcpVertexCliArgs {
+export interface IDelendaiCliArgs {
 	/** Effective plugin specifiers after merging preset + flag and exclusions. */
 	readonly plugins: readonly string[];
 	/** Preset members that remain active after `--exclude-plugins`. */
@@ -74,7 +74,7 @@ export interface IMcpVertexCliArgs {
 export const DEFAULT_CLI_ARGS = {
 	cacheDir: DEFAULT_CORE_PATHS.cacheDir,
 	docsDir: DEFAULT_CORE_PATHS.docsDir,
-	serverName: 'mcp-vertex',
+	serverName: 'delendai',
 	serverVersion: '0.1.0',
 } as const;
 
@@ -143,7 +143,7 @@ export const resolvePreset = (name: string | undefined): readonly string[] =>
 
 /** Whether the caller explicitly selected the plugin surface. */
 export const hasExplicitPluginSurfaceSelection = (
-	args: Pick<IMcpVertexCliArgs, 'tokens'>,
+	args: Pick<IDelendaiCliArgs, 'tokens'>,
 ): boolean =>
 	args.tokens.preset !== undefined || args.tokens.plugins !== undefined;
 
@@ -191,7 +191,7 @@ const parseSurfaceMode = (value: string | undefined): IMcpToolSurfaceMode => {
 };
 
 /**
- * Parse an mcp-vertex argv (without the `node script` prefix) against a
+ * Parse an delendai argv (without the `node script` prefix) against a
  * working directory. Unknown `--key=value` flags land in `extra` and
  * are forwarded to every plugin, so a plugin like proposals can read
  * `--proposalsDir` without the core knowing about it.
@@ -199,7 +199,7 @@ const parseSurfaceMode = (value: string | undefined): IMcpToolSurfaceMode => {
 export const parseCliArgs = (
 	argv: readonly string[],
 	cwd: string,
-): IMcpVertexCliArgs => {
+): IDelendaiCliArgs => {
 	const tokens = tokenize(argv);
 	const extra: Record<string, string> = {};
 	for (const [key, value] of Object.entries(tokens)) {

@@ -80,7 +80,7 @@
 		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
 	},
 	{
-		"path": "apps/web/src/i18n/tools/mcp-vertex_docs_docs_search.ts",
+		"path": "apps/web/src/i18n/tools/delendai_docs_docs_search.ts",
 		"lines": [3],
 		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
 	},

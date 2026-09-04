@@ -66,9 +66,9 @@ describe('proposal authoring (create → board → close)', async () => {
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
+			proposalsDirAbs: join(root, 'docs/delendai/proposals'),
 			// x00052: indexPathAbs moved to the cache root.
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			agentNames: {
 				namespacePrefix: 'proposals',
@@ -80,7 +80,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			},
 			peerReviewLogPathAbs: join(
 				root,
-				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+				'.cache/delendai/proposals/peer-review.jsonl',
 			),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			// a00069 S5: default stub so suites with acceptance that demand
@@ -655,12 +655,12 @@ describe('proposal_board — el índice apunta a un fichero que no existe', () =
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			peerReviewLogPathAbs: join(
 				root,
-				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+				'.cache/delendai/proposals/peer-review.jsonl',
 			),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			runValidation: async () => ({
@@ -673,7 +673,7 @@ describe('proposal_board — el índice apunta a un fichero que no existe', () =
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 	it('lo dice en vez de devolver una lista de slices vacía', async () => {
-		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+		mkdirSync(join(root, '.cache/delendai/proposals'), {
 			recursive: true,
 		});
 		writeFileSync(
@@ -700,14 +700,14 @@ describe('proposal_board — el índice apunta a un fichero que no existe', () =
 	});
 
 	it('una propuesta sin sección de slices tampoco se confunde', async () => {
-		mkdirSync(join(root, 'docs/mcp-vertex/proposals/ready'), {
+		mkdirSync(join(root, 'docs/delendai/proposals/ready'), {
 			recursive: true,
 		});
-		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+		mkdirSync(join(root, '.cache/delendai/proposals'), {
 			recursive: true,
 		});
 		writeFileSync(
-			join(root, 'docs/mcp-vertex/proposals/ready/x00002-sin-slices.md'),
+			join(root, 'docs/delendai/proposals/ready/x00002-sin-slices.md'),
 			'---\nid: x00002\nstatus: ready\n---\n\n# Sin slices\n',
 		);
 		writeFileSync(
@@ -744,12 +744,12 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			peerReviewLogPathAbs: join(
 				root,
-				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+				'.cache/delendai/proposals/peer-review.jsonl',
 			),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 		};

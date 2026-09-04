@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexAdoptProjectOutput {
+export interface DelendaiAdoptProjectOutput {
 	ok: true;
 	preset: "lean" | "standard" | "minimal" | "swarm";
 	stage?: "core" | "standard" | "agents" | "specialized";
@@ -62,17 +62,17 @@ export interface McpVertexAdoptProjectOutput {
 	residual: string[];
 }
 
-export interface McpVertexAgentCatalogOutput {
+export interface DelendaiAgentCatalogOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexAnalyzeProjectOutput {
+export interface DelendaiAnalyzeProjectOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexBrowserBrowserA11yOutput {
+export interface DelendaiBrowserBrowserA11yOutput {
 	url: string;
 	findings: Array<{
 		ruleId: string;
@@ -89,7 +89,7 @@ export interface McpVertexBrowserBrowserA11yOutput {
 	worst: "critical" | "high" | "medium" | "low" | "info" | "none";
 }
 
-export interface McpVertexBrowserBrowserAssertOutput {
+export interface DelendaiBrowserBrowserAssertOutput {
 	url: string;
 	passed: boolean;
 	findings: Array<{
@@ -105,21 +105,21 @@ export interface McpVertexBrowserBrowserAssertOutput {
 	}>;
 }
 
-export interface McpVertexBrowserBrowserClickOutput {
+export interface DelendaiBrowserBrowserClickOutput {
 	target: string;
 	action: "click" | "fill";
 	url: string;
 	matched: number;
 }
 
-export interface McpVertexBrowserBrowserFillOutput {
+export interface DelendaiBrowserBrowserFillOutput {
 	target: string;
 	action: "click" | "fill";
 	url: string;
 	matched: number;
 }
 
-export type McpVertexBrowserBrowserOpenOutput = {
+export type DelendaiBrowserBrowserOpenOutput = {
 	url: string;
 	title: string;
 	html: string;
@@ -130,7 +130,7 @@ export type McpVertexBrowserBrowserOpenOutput = {
 	hint: string;
 };
 
-export type McpVertexBrowserBrowserQueryOutput = {
+export type DelendaiBrowserBrowserQueryOutput = {
 	url: string;
 	matches: string[];
 	status: "ok";
@@ -140,7 +140,7 @@ export type McpVertexBrowserBrowserQueryOutput = {
 	hint: string;
 };
 
-export type McpVertexBrowserBrowserScreenshotOutput = {
+export type DelendaiBrowserBrowserScreenshotOutput = {
 	url: string;
 	path: string;
 	status: "ok";
@@ -150,7 +150,7 @@ export type McpVertexBrowserBrowserScreenshotOutput = {
 	hint: string;
 };
 
-export interface McpVertexBrowserBrowserVerifyPageOutput {
+export interface DelendaiBrowserBrowserVerifyPageOutput {
 	url: string;
 	ok: boolean;
 	checks: {
@@ -162,13 +162,13 @@ export interface McpVertexBrowserBrowserVerifyPageOutput {
 	installHint?: string;
 }
 
-export interface McpVertexCompletionClearOutput {
+export interface DelendaiCompletionClearOutput {
 	ok: boolean;
 	cleared: boolean;
 	taskId: string;
 }
 
-export interface McpVertexCompletionReportCompleteOutput {
+export interface DelendaiCompletionReportCompleteOutput {
 	ok: boolean;
 	record: {
 		taskId: string;
@@ -179,7 +179,7 @@ export interface McpVertexCompletionReportCompleteOutput {
 	};
 }
 
-export interface McpVertexCompletionStatusOutput {
+export interface DelendaiCompletionStatusOutput {
 	ok: boolean;
 	records: {
 		taskId: string;
@@ -190,7 +190,7 @@ export interface McpVertexCompletionStatusOutput {
 	}[];
 }
 
-export interface McpVertexConfigurationCenterOutput {
+export interface DelendaiConfigurationCenterOutput {
 	section: "summary" | "config" | "plugins" | "artifacts";
 	page: {
 		cursor: number;
@@ -246,7 +246,7 @@ export interface McpVertexConfigurationCenterOutput {
 	}>;
 }
 
-export type McpVertexContainerContainerBuildOutput = {
+export type DelendaiContainerContainerBuildOutput = {
 	ok: true;
 	command: string;
 	exitCode: number;
@@ -267,7 +267,7 @@ export type McpVertexContainerContainerBuildOutput = {
 	};
 };
 
-export type McpVertexContainerContainerInspectOutput = {
+export type DelendaiContainerContainerInspectOutput = {
 	ok: true;
 	kind: "docker-ps";
 	items: {
@@ -304,7 +304,7 @@ export type McpVertexContainerContainerInspectOutput = {
 	hint: string;
 };
 
-export interface McpVertexContainerContainerLintOutput {
+export interface DelendaiContainerContainerLintOutput {
 	ok: true;
 	findings: Array<{
 		ruleId: string;
@@ -318,7 +318,7 @@ export interface McpVertexContainerContainerLintOutput {
 	}>;
 }
 
-export type McpVertexContainerContainerLogsOutput = {
+export type DelendaiContainerContainerLogsOutput = {
 	ok: true;
 	container: string;
 	lines: Array<{
@@ -331,7 +331,7 @@ export type McpVertexContainerContainerLogsOutput = {
 	hint: string;
 };
 
-export type McpVertexContainerK8sApplyOutput = {
+export type DelendaiContainerK8sApplyOutput = {
 	ok: true;
 	command: string;
 	exitCode: number;
@@ -351,7 +351,7 @@ export type McpVertexContainerK8sApplyOutput = {
 	};
 };
 
-export interface McpVertexCreatePluginOutput {
+export interface DelendaiCreatePluginOutput {
 	ok: boolean;
 	scaffolded: {
 		files: string[];
@@ -386,7 +386,7 @@ export interface McpVertexCreatePluginOutput {
 	pluginId: string;
 }
 
-export interface McpVertexCreateProjectOutput {
+export interface DelendaiCreateProjectOutput {
 	kind: "host" | "plugin" | "client" | "extension-host";
 	files: {
 		path: string;
@@ -394,7 +394,7 @@ export interface McpVertexCreateProjectOutput {
 	}[];
 }
 
-export interface McpVertexDiagramDiagramDepsOutput {
+export interface DelendaiDiagramDiagramDepsOutput {
 	mermaid: string;
 	nodes: string[];
 	edges: {
@@ -404,13 +404,13 @@ export interface McpVertexDiagramDiagramDepsOutput {
 	truncated?: boolean;
 }
 
-export interface McpVertexDiagramDiagramErdOutput {
+export interface DelendaiDiagramDiagramErdOutput {
 	mermaid: string;
 	tables: number;
 	relationships: number;
 }
 
-export interface McpVertexDiagramDiagramModulesOutput {
+export interface DelendaiDiagramDiagramModulesOutput {
 	mermaid: string;
 	nodes: string[];
 	edges: {
@@ -421,14 +421,14 @@ export interface McpVertexDiagramDiagramModulesOutput {
 	truncated?: boolean;
 }
 
-export interface McpVertexDiagramDiagramProposalsOutput {
+export interface DelendaiDiagramDiagramProposalsOutput {
 	mermaid: string;
 	statuses: string[];
 	edges: number;
 	annotated: string[];
 }
 
-export interface McpVertexDriftCheckOutput {
+export interface DelendaiDriftCheckOutput {
 	hasDrift: boolean;
 	changes: Array<{
 		kind: "script-added" | "script-dropped" | "framework-changed" | "language-changed" | "monorepo-changed" | "package-manager-changed" | "test-runner-changed" | "mcp-server-added" | "mcp-server-dropped" | "ci-changed" | "agent-config-changed";
@@ -439,7 +439,7 @@ export interface McpVertexDriftCheckOutput {
 	summary: string;
 }
 
-export interface McpVertexEnvEnvCheckOutput {
+export interface DelendaiEnvEnvCheckOutput {
 	found: boolean;
 	path: string;
 	findings: Array<{
@@ -463,7 +463,7 @@ export interface McpVertexEnvEnvCheckOutput {
 	worst: string;
 }
 
-export interface McpVertexEnvEnvExplainsOutput {
+export interface DelendaiEnvEnvExplainsOutput {
 	found: boolean;
 	path: string;
 	explain: {
@@ -494,7 +494,7 @@ export interface McpVertexEnvEnvExplainsOutput {
 	};
 }
 
-export interface McpVertexFsReadOutput {
+export interface DelendaiFsReadOutput {
 	path: string;
 	found: boolean;
 	content: string | null;
@@ -502,21 +502,21 @@ export interface McpVertexFsReadOutput {
 	range: unknown[] | null;
 }
 
-export interface McpVertexFsWriteOutput {
+export interface DelendaiFsWriteOutput {
 	path: string;
 	ok: boolean;
 	bytesWritten: number;
 	error?: string;
 }
 
-export interface McpVertexGetValidationMatrixOutput {
+export interface DelendaiGetValidationMatrixOutput {
 	scopes: Record<string, {
 		command: string;
 		expect: string;
 	}[]>;
 }
 
-export interface McpVertexI18nI18nCheckOutput {
+export interface DelendaiI18nI18nCheckOutput {
 	localesDir: string;
 	locales: string[];
 	findings: Array<{
@@ -540,7 +540,7 @@ export interface McpVertexI18nI18nCheckOutput {
 	worst: string;
 }
 
-export interface McpVertexI18nI18nValidateOutput {
+export interface DelendaiI18nI18nValidateOutput {
 	localesDir: string;
 	sourceLocale: string;
 	locales: string[];
@@ -565,7 +565,7 @@ export interface McpVertexI18nI18nValidateOutput {
 	worst: string;
 }
 
-export interface McpVertexInitConfigOutput {
+export interface DelendaiInitConfigOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -578,7 +578,7 @@ export interface McpVertexInitConfigOutput {
 	path?: string;
 }
 
-export interface McpVertexKnowledgeOutput {
+export interface DelendaiKnowledgeOutput {
 	entries?: {
 		id: string;
 		title: string;
@@ -588,7 +588,7 @@ export interface McpVertexKnowledgeOutput {
 	body?: string;
 }
 
-export interface McpVertexLinkCheckLinkCheckOutput {
+export interface DelendaiLinkCheckLinkCheckOutput {
 	docsScanned: number;
 	total: number;
 	findings: Array<{
@@ -613,7 +613,7 @@ export interface McpVertexLinkCheckLinkCheckOutput {
 	worst: string;
 }
 
-export interface McpVertexMetricsOutput {
+export interface DelendaiMetricsOutput {
 	tools: Record<string, {
 		calls: number;
 		errors: number;
@@ -649,7 +649,7 @@ export interface McpVertexMetricsOutput {
 	snapshots?: number;
 }
 
-export interface McpVertexObservabilityObsCorrelateOutput {
+export interface DelendaiObservabilityObsCorrelateOutput {
 	matches: {
 		issueId: string;
 		logFile: string;
@@ -661,7 +661,7 @@ export interface McpVertexObservabilityObsCorrelateOutput {
 	summary: string;
 }
 
-export interface McpVertexObservabilityObsErrorsOutput {
+export interface DelendaiObservabilityObsErrorsOutput {
 	source: "sentry" | "datadog" | "custom";
 	issues: Array<{
 		id: string;
@@ -677,7 +677,7 @@ export interface McpVertexObservabilityObsErrorsOutput {
 	redactions: number;
 }
 
-export interface McpVertexObservabilityObsReleaseHealthOutput {
+export interface DelendaiObservabilityObsReleaseHealthOutput {
 	versions: {
 		version: string;
 		totalSessions: number;
@@ -694,7 +694,7 @@ export interface McpVertexObservabilityObsReleaseHealthOutput {
 	worst: "critical" | "high" | "medium" | "low" | "info" | null;
 }
 
-export interface McpVertexObservabilityObsRuntimeMetricsOutput {
+export interface DelendaiObservabilityObsRuntimeMetricsOutput {
 	calls: number;
 	responses: {
 		hasSamples: false;
@@ -704,7 +704,7 @@ export interface McpVertexObservabilityObsRuntimeMetricsOutput {
 	};
 }
 
-export interface McpVertexObservabilityObsTraceOutput {
+export interface DelendaiObservabilityObsTraceOutput {
 	sampleSize: number;
 	groups: Array<{
 		service: string;
@@ -724,12 +724,12 @@ export interface McpVertexObservabilityObsTraceOutput {
 	worst: "critical" | "high" | "medium" | "low" | "info" | null;
 }
 
-export interface McpVertexOverviewOutput {
+export interface DelendaiOverviewOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexPerfPerfBenchOutput {
+export interface DelendaiPerfPerfBenchOutput {
 	results: {
 		name: string;
 		ops: number;
@@ -746,7 +746,7 @@ export interface McpVertexPerfPerfBenchOutput {
 	}[];
 }
 
-export interface McpVertexPerfPerfBundleOutput {
+export interface DelendaiPerfPerfBundleOutput {
 	globs: string[];
 	fileCount: number;
 	totalBytes: number;
@@ -775,7 +775,7 @@ export interface McpVertexPerfPerfBundleOutput {
 	worst: string;
 }
 
-export type McpVertexPerfPerfProfileOutput = {
+export type DelendaiPerfPerfProfileOutput = {
 	ok: true;
 	profiler: string;
 	hotspots: Array<{
@@ -799,12 +799,12 @@ export type McpVertexPerfPerfProfileOutput = {
 	hint: string;
 };
 
-export interface McpVertexPlanMcpProjectOutput {
+export interface DelendaiPlanMcpProjectOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexPluginActivateOutput {
+export interface DelendaiPluginActivateOutput {
 	change: {
 		pluginId: string;
 		namespace: string;
@@ -815,7 +815,7 @@ export interface McpVertexPluginActivateOutput {
 	} | null;
 }
 
-export interface McpVertexPluginAddOutput {
+export interface DelendaiPluginAddOutput {
 	entry: {
 		id: string;
 		package: string;
@@ -832,7 +832,7 @@ export interface McpVertexPluginAddOutput {
 	alreadyAdopted: boolean;
 }
 
-export interface McpVertexPluginDeactivateOutput {
+export interface DelendaiPluginDeactivateOutput {
 	change: {
 		pluginId: string;
 		namespace: string;
@@ -843,7 +843,7 @@ export interface McpVertexPluginDeactivateOutput {
 	} | null;
 }
 
-export interface McpVertexPluginSearchOutput {
+export interface DelendaiPluginSearchOutput {
 	entries: Array<{
 		id: string;
 		package: string;
@@ -856,7 +856,7 @@ export interface McpVertexPluginSearchOutput {
 	truncated: boolean;
 }
 
-export interface McpVertexProjectContextOutput {
+export interface DelendaiProjectContextOutput {
 	surfaceMode: "managed" | "native" | "adaptive" | "compact";
 	workspaceRoot: string;
 	cacheDir?: string;
@@ -869,7 +869,7 @@ export interface McpVertexProjectContextOutput {
 	visibleDomains: string[];
 }
 
-export interface McpVertexProjectPluginsCreateOutput {
+export interface DelendaiProjectPluginsCreateOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -906,7 +906,7 @@ export interface McpVertexProjectPluginsCreateOutput {
 	nextSteps?: string;
 }
 
-export interface McpVertexProjectPluginsInspectOutput {
+export interface DelendaiProjectPluginsInspectOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -943,7 +943,7 @@ export interface McpVertexProjectPluginsInspectOutput {
 	nextSteps?: string;
 }
 
-export interface McpVertexProjectPluginsRepairOutput {
+export interface DelendaiProjectPluginsRepairOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -980,7 +980,7 @@ export interface McpVertexProjectPluginsRepairOutput {
 	nextSteps?: string;
 }
 
-export interface McpVertexPromptEvalEvalReportOutput {
+export interface DelendaiPromptEvalEvalReportOutput {
 	tool: "eval_report";
 	rows: Array<{
 		providerId: string;
@@ -998,7 +998,7 @@ export interface McpVertexPromptEvalEvalReportOutput {
 	markdown: string;
 }
 
-export interface McpVertexPromptEvalEvalRunOutput {
+export interface DelendaiPromptEvalEvalRunOutput {
 	tool: "eval_run";
 	taskType: string | null;
 	attempts: {
@@ -1013,13 +1013,13 @@ export interface McpVertexPromptEvalEvalRunOutput {
 	winner: string | null;
 }
 
-export interface McpVertexRefactorRefactorApplyOutput {
+export interface DelendaiRefactorRefactorApplyOutput {
 	written: string[];
 	gateCommand: string;
 	consentToken: string;
 }
 
-export interface McpVertexRefactorRefactorCodemodOutput {
+export interface DelendaiRefactorRefactorCodemodOutput {
 	files: {
 		path: string;
 		diff: string;
@@ -1028,7 +1028,7 @@ export interface McpVertexRefactorRefactorCodemodOutput {
 	language: string;
 }
 
-export interface McpVertexRefactorRefactorDefinitionOutput {
+export interface DelendaiRefactorRefactorDefinitionOutput {
 	hit: {
 		file: string;
 		line: number;
@@ -1039,7 +1039,7 @@ export interface McpVertexRefactorRefactorDefinitionOutput {
 	} | null;
 }
 
-export interface McpVertexRefactorRefactorReferencesOutput {
+export interface DelendaiRefactorRefactorReferencesOutput {
 	hits: {
 		file: string;
 		line: number;
@@ -1050,7 +1050,7 @@ export interface McpVertexRefactorRefactorReferencesOutput {
 	}[];
 }
 
-export interface McpVertexRefactorRefactorRenameOutput {
+export interface DelendaiRefactorRefactorRenameOutput {
 	files: Array<{
 		path: string;
 		before: string;
@@ -1077,7 +1077,7 @@ export interface McpVertexRefactorRefactorRenameOutput {
 	}[];
 }
 
-export interface McpVertexRefactorRefactorSymbolsOutput {
+export interface DelendaiRefactorRefactorSymbolsOutput {
 	hits: {
 		file: string;
 		line: number;
@@ -1088,7 +1088,7 @@ export interface McpVertexRefactorRefactorSymbolsOutput {
 	}[];
 }
 
-export interface McpVertexScaffoldOutput {
+export interface DelendaiScaffoldOutput {
 	kind: "tool" | "prompt" | "skill" | "agent" | "host" | "plugin" | "client";
 	dryRun: boolean;
 	files: {
@@ -1102,7 +1102,7 @@ export interface McpVertexScaffoldOutput {
 	errors: string[];
 }
 
-export interface McpVertexSecuritySecurityAuditOutput {
+export interface DelendaiSecuritySecurityAuditOutput {
 	scanned: number;
 	tools: string[];
 	worst: string;
@@ -1130,7 +1130,7 @@ export interface McpVertexSecuritySecurityAuditOutput {
 	}[];
 }
 
-export interface McpVertexSecuritySecurityDepsOutput {
+export interface DelendaiSecuritySecurityDepsOutput {
 	ok: boolean;
 	tool?: string;
 	scanned?: number;
@@ -1157,7 +1157,7 @@ export interface McpVertexSecuritySecurityDepsOutput {
 	hint?: string;
 }
 
-export interface McpVertexSecuritySecuritySastOutput {
+export interface DelendaiSecuritySecuritySastOutput {
 	tool: "sast";
 	scanned: number;
 	findings: Array<{
@@ -1181,7 +1181,7 @@ export interface McpVertexSecuritySecuritySastOutput {
 	worst: string;
 }
 
-export interface McpVertexSecuritySecuritySecretsOutput {
+export interface DelendaiSecuritySecuritySecretsOutput {
 	tool: string;
 	scanned: number;
 	findings: Array<{
@@ -1205,7 +1205,7 @@ export interface McpVertexSecuritySecuritySecretsOutput {
 	worst: string;
 }
 
-export interface McpVertexSkillOutput {
+export interface DelendaiSkillOutput {
 	skills?: {
 		id: string;
 		version: string;
@@ -1221,7 +1221,7 @@ export interface McpVertexSkillOutput {
 	body?: string;
 }
 
-export interface McpVertexStatusOutput {
+export interface DelendaiStatusOutput {
 	collectors: Record<string, unknown>;
 	errors: {
 		id: string;
@@ -1229,7 +1229,7 @@ export interface McpVertexStatusOutput {
 	}[];
 }
 
-export interface McpVertexTechDebtDebtScanOutput {
+export interface DelendaiTechDebtDebtScanOutput {
 	filesScanned: number;
 	total: number;
 	findings: Array<{
@@ -1254,7 +1254,7 @@ export interface McpVertexTechDebtDebtScanOutput {
 	worst: string;
 }
 
-export interface McpVertexToolSearchOutput {
+export interface DelendaiToolSearchOutput {
 	entries: {
 		registrationId: string;
 		name: string;
@@ -1268,22 +1268,22 @@ export interface McpVertexToolSearchOutput {
 	}[];
 }
 
-export interface McpVertexUsageTrackingSessionHygieneOutput {
+export interface DelendaiUsageTrackingSessionHygieneOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexUsageTrackingUsageClearOutput {
+export interface DelendaiUsageTrackingUsageClearOutput {
 	ok: true;
 	cleared: string[];
 }
 
-export interface McpVertexUsageTrackingUsageReportOutput {
+export interface DelendaiUsageTrackingUsageReportOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexVertexOutput {
+export interface DelendaiVertexOutput {
 	routed: true;
 	domain: string;
 	action: string;
@@ -1295,82 +1295,82 @@ export interface McpVertexVertexOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface McpVertexToolOutputs {
-	"mcp-vertex_adopt_project": McpVertexAdoptProjectOutput;
-	"mcp-vertex_agent_catalog": McpVertexAgentCatalogOutput;
-	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
-	"mcp-vertex_browser_browser_a11y": McpVertexBrowserBrowserA11yOutput;
-	"mcp-vertex_browser_browser_assert": McpVertexBrowserBrowserAssertOutput;
-	"mcp-vertex_browser_browser_click": McpVertexBrowserBrowserClickOutput;
-	"mcp-vertex_browser_browser_fill": McpVertexBrowserBrowserFillOutput;
-	"mcp-vertex_browser_browser_open": McpVertexBrowserBrowserOpenOutput;
-	"mcp-vertex_browser_browser_query": McpVertexBrowserBrowserQueryOutput;
-	"mcp-vertex_browser_browser_screenshot": McpVertexBrowserBrowserScreenshotOutput;
-	"mcp-vertex_browser_browser_verify_page": McpVertexBrowserBrowserVerifyPageOutput;
-	"mcp-vertex_completion_clear": McpVertexCompletionClearOutput;
-	"mcp-vertex_completion_report_complete": McpVertexCompletionReportCompleteOutput;
-	"mcp-vertex_completion_status": McpVertexCompletionStatusOutput;
-	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
-	"mcp-vertex_container_container_build": McpVertexContainerContainerBuildOutput;
-	"mcp-vertex_container_container_inspect": McpVertexContainerContainerInspectOutput;
-	"mcp-vertex_container_container_lint": McpVertexContainerContainerLintOutput;
-	"mcp-vertex_container_container_logs": McpVertexContainerContainerLogsOutput;
-	"mcp-vertex_container_k8s_apply": McpVertexContainerK8sApplyOutput;
-	"mcp-vertex_create_plugin": McpVertexCreatePluginOutput;
-	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
-	"mcp-vertex_diagram_diagram_deps": McpVertexDiagramDiagramDepsOutput;
-	"mcp-vertex_diagram_diagram_erd": McpVertexDiagramDiagramErdOutput;
-	"mcp-vertex_diagram_diagram_modules": McpVertexDiagramDiagramModulesOutput;
-	"mcp-vertex_diagram_diagram_proposals": McpVertexDiagramDiagramProposalsOutput;
-	"mcp-vertex_drift_check": McpVertexDriftCheckOutput;
-	"mcp-vertex_env_env_check": McpVertexEnvEnvCheckOutput;
-	"mcp-vertex_env_env_explains": McpVertexEnvEnvExplainsOutput;
-	"mcp-vertex_fs_read": McpVertexFsReadOutput;
-	"mcp-vertex_fs_write": McpVertexFsWriteOutput;
-	"mcp-vertex_get_validation_matrix": McpVertexGetValidationMatrixOutput;
-	"mcp-vertex_i18n_i18n_check": McpVertexI18nI18nCheckOutput;
-	"mcp-vertex_i18n_i18n_validate": McpVertexI18nI18nValidateOutput;
-	"mcp-vertex_init_config": McpVertexInitConfigOutput;
-	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
-	"mcp-vertex_link-check_link_check": McpVertexLinkCheckLinkCheckOutput;
-	"mcp-vertex_metrics": McpVertexMetricsOutput;
-	"mcp-vertex_observability_obs_correlate": McpVertexObservabilityObsCorrelateOutput;
-	"mcp-vertex_observability_obs_errors": McpVertexObservabilityObsErrorsOutput;
-	"mcp-vertex_observability_obs_release_health": McpVertexObservabilityObsReleaseHealthOutput;
-	"mcp-vertex_observability_obs_runtime_metrics": McpVertexObservabilityObsRuntimeMetricsOutput;
-	"mcp-vertex_observability_obs_trace": McpVertexObservabilityObsTraceOutput;
-	"mcp-vertex_overview": McpVertexOverviewOutput;
-	"mcp-vertex_perf_perf_bench": McpVertexPerfPerfBenchOutput;
-	"mcp-vertex_perf_perf_bundle": McpVertexPerfPerfBundleOutput;
-	"mcp-vertex_perf_perf_profile": McpVertexPerfPerfProfileOutput;
-	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
-	"mcp-vertex_plugin_activate": McpVertexPluginActivateOutput;
-	"mcp-vertex_plugin_add": McpVertexPluginAddOutput;
-	"mcp-vertex_plugin_deactivate": McpVertexPluginDeactivateOutput;
-	"mcp-vertex_plugin_search": McpVertexPluginSearchOutput;
-	"mcp-vertex_project_context": McpVertexProjectContextOutput;
-	"mcp-vertex_project_plugins_create": McpVertexProjectPluginsCreateOutput;
-	"mcp-vertex_project_plugins_inspect": McpVertexProjectPluginsInspectOutput;
-	"mcp-vertex_project_plugins_repair": McpVertexProjectPluginsRepairOutput;
-	"mcp-vertex_prompt-eval_eval_report": McpVertexPromptEvalEvalReportOutput;
-	"mcp-vertex_prompt-eval_eval_run": McpVertexPromptEvalEvalRunOutput;
-	"mcp-vertex_refactor_refactor_apply": McpVertexRefactorRefactorApplyOutput;
-	"mcp-vertex_refactor_refactor_codemod": McpVertexRefactorRefactorCodemodOutput;
-	"mcp-vertex_refactor_refactor_definition": McpVertexRefactorRefactorDefinitionOutput;
-	"mcp-vertex_refactor_refactor_references": McpVertexRefactorRefactorReferencesOutput;
-	"mcp-vertex_refactor_refactor_rename": McpVertexRefactorRefactorRenameOutput;
-	"mcp-vertex_refactor_refactor_symbols": McpVertexRefactorRefactorSymbolsOutput;
-	"mcp-vertex_scaffold": McpVertexScaffoldOutput;
-	"mcp-vertex_security_security_audit": McpVertexSecuritySecurityAuditOutput;
-	"mcp-vertex_security_security_deps": McpVertexSecuritySecurityDepsOutput;
-	"mcp-vertex_security_security_sast": McpVertexSecuritySecuritySastOutput;
-	"mcp-vertex_security_security_secrets": McpVertexSecuritySecuritySecretsOutput;
-	"mcp-vertex_skill": McpVertexSkillOutput;
-	"mcp-vertex_status": McpVertexStatusOutput;
-	"mcp-vertex_tech-debt_debt_scan": McpVertexTechDebtDebtScanOutput;
-	"mcp-vertex_tool_search": McpVertexToolSearchOutput;
-	"mcp-vertex_usage-tracking_session_hygiene": McpVertexUsageTrackingSessionHygieneOutput;
-	"mcp-vertex_usage-tracking_usage_clear": McpVertexUsageTrackingUsageClearOutput;
-	"mcp-vertex_usage-tracking_usage_report": McpVertexUsageTrackingUsageReportOutput;
-	"mcp-vertex_vertex": McpVertexVertexOutput;
+export interface DelendaiToolOutputs {
+	"delendai_adopt_project": DelendaiAdoptProjectOutput;
+	"delendai_agent_catalog": DelendaiAgentCatalogOutput;
+	"delendai_analyze_project": DelendaiAnalyzeProjectOutput;
+	"delendai_browser_browser_a11y": DelendaiBrowserBrowserA11yOutput;
+	"delendai_browser_browser_assert": DelendaiBrowserBrowserAssertOutput;
+	"delendai_browser_browser_click": DelendaiBrowserBrowserClickOutput;
+	"delendai_browser_browser_fill": DelendaiBrowserBrowserFillOutput;
+	"delendai_browser_browser_open": DelendaiBrowserBrowserOpenOutput;
+	"delendai_browser_browser_query": DelendaiBrowserBrowserQueryOutput;
+	"delendai_browser_browser_screenshot": DelendaiBrowserBrowserScreenshotOutput;
+	"delendai_browser_browser_verify_page": DelendaiBrowserBrowserVerifyPageOutput;
+	"delendai_completion_clear": DelendaiCompletionClearOutput;
+	"delendai_completion_report_complete": DelendaiCompletionReportCompleteOutput;
+	"delendai_completion_status": DelendaiCompletionStatusOutput;
+	"delendai_configuration_center": DelendaiConfigurationCenterOutput;
+	"delendai_container_container_build": DelendaiContainerContainerBuildOutput;
+	"delendai_container_container_inspect": DelendaiContainerContainerInspectOutput;
+	"delendai_container_container_lint": DelendaiContainerContainerLintOutput;
+	"delendai_container_container_logs": DelendaiContainerContainerLogsOutput;
+	"delendai_container_k8s_apply": DelendaiContainerK8sApplyOutput;
+	"delendai_create_plugin": DelendaiCreatePluginOutput;
+	"delendai_create_project": DelendaiCreateProjectOutput;
+	"delendai_diagram_diagram_deps": DelendaiDiagramDiagramDepsOutput;
+	"delendai_diagram_diagram_erd": DelendaiDiagramDiagramErdOutput;
+	"delendai_diagram_diagram_modules": DelendaiDiagramDiagramModulesOutput;
+	"delendai_diagram_diagram_proposals": DelendaiDiagramDiagramProposalsOutput;
+	"delendai_drift_check": DelendaiDriftCheckOutput;
+	"delendai_env_env_check": DelendaiEnvEnvCheckOutput;
+	"delendai_env_env_explains": DelendaiEnvEnvExplainsOutput;
+	"delendai_fs_read": DelendaiFsReadOutput;
+	"delendai_fs_write": DelendaiFsWriteOutput;
+	"delendai_get_validation_matrix": DelendaiGetValidationMatrixOutput;
+	"delendai_i18n_i18n_check": DelendaiI18nI18nCheckOutput;
+	"delendai_i18n_i18n_validate": DelendaiI18nI18nValidateOutput;
+	"delendai_init_config": DelendaiInitConfigOutput;
+	"delendai_knowledge": DelendaiKnowledgeOutput;
+	"delendai_link-check_link_check": DelendaiLinkCheckLinkCheckOutput;
+	"delendai_metrics": DelendaiMetricsOutput;
+	"delendai_observability_obs_correlate": DelendaiObservabilityObsCorrelateOutput;
+	"delendai_observability_obs_errors": DelendaiObservabilityObsErrorsOutput;
+	"delendai_observability_obs_release_health": DelendaiObservabilityObsReleaseHealthOutput;
+	"delendai_observability_obs_runtime_metrics": DelendaiObservabilityObsRuntimeMetricsOutput;
+	"delendai_observability_obs_trace": DelendaiObservabilityObsTraceOutput;
+	"delendai_overview": DelendaiOverviewOutput;
+	"delendai_perf_perf_bench": DelendaiPerfPerfBenchOutput;
+	"delendai_perf_perf_bundle": DelendaiPerfPerfBundleOutput;
+	"delendai_perf_perf_profile": DelendaiPerfPerfProfileOutput;
+	"delendai_plan_mcp_project": DelendaiPlanMcpProjectOutput;
+	"delendai_plugin_activate": DelendaiPluginActivateOutput;
+	"delendai_plugin_add": DelendaiPluginAddOutput;
+	"delendai_plugin_deactivate": DelendaiPluginDeactivateOutput;
+	"delendai_plugin_search": DelendaiPluginSearchOutput;
+	"delendai_project_context": DelendaiProjectContextOutput;
+	"delendai_project_plugins_create": DelendaiProjectPluginsCreateOutput;
+	"delendai_project_plugins_inspect": DelendaiProjectPluginsInspectOutput;
+	"delendai_project_plugins_repair": DelendaiProjectPluginsRepairOutput;
+	"delendai_prompt-eval_eval_report": DelendaiPromptEvalEvalReportOutput;
+	"delendai_prompt-eval_eval_run": DelendaiPromptEvalEvalRunOutput;
+	"delendai_refactor_refactor_apply": DelendaiRefactorRefactorApplyOutput;
+	"delendai_refactor_refactor_codemod": DelendaiRefactorRefactorCodemodOutput;
+	"delendai_refactor_refactor_definition": DelendaiRefactorRefactorDefinitionOutput;
+	"delendai_refactor_refactor_references": DelendaiRefactorRefactorReferencesOutput;
+	"delendai_refactor_refactor_rename": DelendaiRefactorRefactorRenameOutput;
+	"delendai_refactor_refactor_symbols": DelendaiRefactorRefactorSymbolsOutput;
+	"delendai_scaffold": DelendaiScaffoldOutput;
+	"delendai_security_security_audit": DelendaiSecuritySecurityAuditOutput;
+	"delendai_security_security_deps": DelendaiSecuritySecurityDepsOutput;
+	"delendai_security_security_sast": DelendaiSecuritySecuritySastOutput;
+	"delendai_security_security_secrets": DelendaiSecuritySecuritySecretsOutput;
+	"delendai_skill": DelendaiSkillOutput;
+	"delendai_status": DelendaiStatusOutput;
+	"delendai_tech-debt_debt_scan": DelendaiTechDebtDebtScanOutput;
+	"delendai_tool_search": DelendaiToolSearchOutput;
+	"delendai_usage-tracking_session_hygiene": DelendaiUsageTrackingSessionHygieneOutput;
+	"delendai_usage-tracking_usage_clear": DelendaiUsageTrackingUsageClearOutput;
+	"delendai_usage-tracking_usage_report": DelendaiUsageTrackingUsageReportOutput;
+	"delendai_vertex": DelendaiVertexOutput;
 }

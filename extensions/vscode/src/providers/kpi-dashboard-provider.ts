@@ -31,7 +31,7 @@ import {
 	type TKpiDashboardWindowDays,
 } from '../contracts/interfaces/kpi-dashboard.interface';
 
-const DEFAULT_VIEW_ID = 'mcp-vertex.kpis';
+const DEFAULT_VIEW_ID = 'delendai.kpis';
 const DEFAULT_QUERY: IKpiDashboardQuery = {
 	windowDays: 7,
 	detail: 'standard',
@@ -43,7 +43,7 @@ const DISCONNECTED_RE =
 const formatToolName = (prefix: string | undefined, suffix: string): string => {
 	const trimmed = prefix?.trim();
 	if (trimmed === undefined || trimmed.length === 0) {
-		return `mcp-vertex_${suffix}`;
+		return `delendai_${suffix}`;
 	}
 	return `${trimmed.endsWith('_') ? trimmed : `${trimmed}_`}${suffix}`;
 };
@@ -697,7 +697,7 @@ const buildModel = (
 					? 'partial'
 					: 'ready';
 	return {
-		title: 'mcp-vertex Project KPIs',
+		title: 'delendai Project KPIs',
 		state,
 		summary:
 			summaryView?.summary ??
@@ -724,7 +724,7 @@ const buildModel = (
 };
 
 const loadingModel = (query: IKpiDashboardQuery): IKpiDashboardModel => ({
-	title: 'mcp-vertex Project KPIs',
+	title: 'delendai Project KPIs',
 	state: 'loading',
 	summary: 'Loading KPI views.',
 	windowLabel: `${query.windowDays}-day window`,
@@ -746,7 +746,7 @@ const notConfiguredModel = (query: IKpiDashboardQuery): IKpiDashboardModel => ({
 	...loadingModel(query),
 	state: 'unavailable',
 	summary:
-		'Configure mcp-vertex.server.command and server.args to load project KPIs.',
+		'Configure delendai.server.command and server.args to load project KPIs.',
 });
 
 export const buildKpiDashboardModel = async (
@@ -756,7 +756,7 @@ export const buildKpiDashboardModel = async (
 	const tool = formatToolName(deps.namespacePrefix, 'project_kpis');
 	// S3: detect whether the KPI plugin is even loaded. The dashboard
 	// contract is owned by `project-kpis`, which is opt-in via
-	// `mcp-vertex.config.json`. In a workspace that did not enable it,
+	// `delendai.config.json`. In a workspace that did not enable it,
 	// the proxy still resolves the tool name but the server returns
 	// `Tool … not found`. Probe once, surface a clear English
 	// unavailable state, and skip the per-view fan-out so the user
@@ -785,7 +785,7 @@ export const buildKpiDashboardModel = async (
 			model: {
 				...notConfiguredModel(query),
 				summary:
-					'The project-kpis plugin is not enabled in this workspace. Add it under plugins in mcp-vertex.config.json or open the Configuration Center to see usage_report and observability metrics instead.',
+					'The project-kpis plugin is not enabled in this workspace. Add it under plugins in delendai.config.json or open the Configuration Center to see usage_report and observability metrics instead.',
 			},
 			loadedViews: [],
 		};

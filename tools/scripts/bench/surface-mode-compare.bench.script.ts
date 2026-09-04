@@ -81,7 +81,7 @@ const measureSurface = async (
 		);
 		const overviewCompactBytes = await measureToolTextBytes(
 			connection.client,
-			'mcp-vertex_overview',
+			'delendai_overview',
 			{ compact: true },
 		);
 		return {
@@ -168,7 +168,7 @@ const main = async (): Promise<void> => {
 		const outputPath = join(
 			repoRoot(),
 			'docs',
-			'mcp-vertex',
+			'delendai',
 			'configuration',
 			'surface-mode-decision.yaml',
 		);

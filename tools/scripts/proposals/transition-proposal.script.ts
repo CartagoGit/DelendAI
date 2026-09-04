@@ -28,8 +28,8 @@ import { resolve } from 'node:path';
 import { buildSwarmPaths } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import { runProposalTransition } from '../../../plugins/proposals/src/lib/tools/proposal-transition.tool';
 
-const CACHE_DIR = '.cache/mcp-vertex';
-const DOCS_DIR = 'docs/mcp-vertex';
+const CACHE_DIR = '.cache/delendai';
+const DOCS_DIR = 'docs/delendai';
 
 export interface ITransitionCliArgs {
 	readonly id: string;
@@ -67,7 +67,7 @@ export const buildTransitionOptions = (workspaceRoot: string) => {
 	const abs = (relativePath: string): string =>
 		resolve(workspaceRoot, relativePath);
 	return {
-		namespacePrefix: 'mcp-vertex',
+		namespacePrefix: 'delendai',
 		workspaceRoot,
 		proposalsDirAbs: abs(layout.proposalsDir),
 		indexPathAbs: abs(layout.proposalIndexFile),

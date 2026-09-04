@@ -24,7 +24,7 @@ const dict: LangDict = {
 		troubleshooting: 'حل المشكلات',
 	},
 	hero: {
-		title: { a: '', b: 'MCP Vertex', c: ' المحايد للمشروع' },
+		title: { a: '', b: 'DelendAI', c: ' المحايد للمشروع' },
 		subheader: 'نواة خادم MCP + مُحمّل إضافات لأي مشروع.',
 		tagline:
 			'نواة خادم Model Context Protocol محايدة للمشروع. النواة لا تعرف شيئًا عن مجالك — تأتي القدرات كإضافات تُحمّلها عند الطلب، وكلها مُقاسة لتكلفة منخفضة من الـ tokens.',
@@ -35,7 +35,7 @@ const dict: LangDict = {
 	marquee: { runtimes: 'مبني بـ · يعمل على', clients: 'عملاء MCP والنماذج' },
 	concept: {
 		title: 'نواة صغيرة، إضافات كثيرة',
-		body: 'mcp-vertex هي النواة المُحكمة: تسجيل أدوات حتمي، مسارات workspace محقونة، مُحمّل إضافات عبر CLI، وسطح أدوات مُقاس بالـ tokens. كل ما هو خاص بالمجال هو إضافة — حمّل ما تحتاجه فقط، تحت أي مضيف أو نموذج.',
+		body: 'delendai هي النواة المُحكمة: تسجيل أدوات حتمي، مسارات workspace محقونة، مُحمّل إضافات عبر CLI، وسطح أدوات مُقاس بالـ tokens. كل ما هو خاص بالمجال هو إضافة — حمّل ما تحتاجه فقط، تحت أي مضيف أو نموذج.',
 		f1: {
 			t: 'محايد للمشروع',
 			b: 'لا كود مجال في النواة. الإضافة نفسها تتصرف بشكل متطابق تحت أي مضيف أو نموذج.',
@@ -78,7 +78,7 @@ const dict: LangDict = {
 			title: 'تكلفة التوجيه · مُقاسة حيًّا',
 			note: 'عدد الـ tokens لنص النتيجة الذي يراه الوكيل (≈4 بايت/token)، مُقاس حيًّا عبر البروتوكول مع proposals+memory. خط الأساس تقدير توضيحي للتوجّه يدويًا — ليس قياسًا لأداة طرف ثالث.',
 		},
-		baseline: 'بدون mcp-vertex (يدويًا · تقدير)',
+		baseline: 'بدون delendai (يدويًا · تقدير)',
 	},
 	plugins: {
 		title: 'الإضافات',
@@ -151,7 +151,7 @@ const dict: LangDict = {
 			description:
 				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
 			requires: 'requires',
-			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+			installSnippet: 'delendai --plugins=proposals,issues',
 		},
 	},
 	toolpage: {
@@ -174,7 +174,7 @@ const dict: LangDict = {
 	},
 	firstFiveMinutes: {
 		title: 'أول 5 دقائق',
-		lead: 'ثلاثة بدايات سريعة قابلة للنسخ واللصق. اختر ما يطابق طريقة تشغيلك لـ mcp-vertex.',
+		lead: 'ثلاثة بدايات سريعة قابلة للنسخ واللصق. اختر ما يطابق طريقة تشغيلك لـ delendai.',
 		profileTabBunNode: 'Bun / Node',
 		profileTabVscode: 'VS Code / Copilot',
 		profileTabClaude: 'Claude Code',
@@ -183,20 +183,20 @@ const dict: LangDict = {
 			intro: 'لا حاجة لتكامل محرر: شغّل host server من الطرفية ووجّه أي عميل MCP إلى نقل stdio الخاص به.',
 			steps: [
 				'التثبيت: `bun add @delendai/core` (أو `npm install @delendai/core`).',
-				'التشغيل: `bunx mcp-vertex --preset=standard` (أو `npx mcp-vertex --preset=standard`).',
+				'التشغيل: `bunx delendai --preset=standard` (أو `npx delendai --preset=standard`).',
 				'التحقق: تطبع العملية قائمة الإضافات المُحمّلة وتنتظر على stdio — اضغط Ctrl+C للتوقف.',
 				'وجّه إعدادات عميل MCP لديك إلى الثنائي مع `--preset=minimal|standard|swarm|full` (راجع التثبيت لقائمة كاملة بالأعلام).',
-				'استدعِ `mcp-vertex_overview { compact: true }` أولًا — يخبرك بما يجب فعله بعد ذلك.',
+				'استدعِ `delendai_overview { compact: true }` أولًا — يخبرك بما يجب فعله بعد ذلك.',
 			],
 		},
 		vscode: {
 			title: 'VS Code / GitHub Copilot',
-			intro: 'يكتشف مُثبّت الأمر الواحد VS Code ويضيف mcp-vertex إلى قائمة خوادم MCP لديك دون لمس الخوادم الحالية.',
+			intro: 'يكتشف مُثبّت الأمر الواحد VS Code ويضيف delendai إلى قائمة خوادم MCP لديك دون لمس الخوادم الحالية.',
 			steps: [
 				'شغّل مُثبّت الأمر الواحد من صفحة التثبيت (يكتشف IDE تلقائيًا).',
 				'أعد تحميل النافذة (`Developer: Reload Window`) ليتعرف Copilot على الخادم الجديد.',
-				'افتح لوحة محادثة Copilot واختر وكيل `mcp-vertex` من منتقي الوكلاء.',
-				'اطلب منه استدعاء `mcp-vertex_overview` — يجب أن يُبلغ عن الإعداد المسبق المُحمّل وإجراء تالٍ موصى به.',
+				'افتح لوحة محادثة Copilot واختر وكيل `delendai` من منتقي الوكلاء.',
+				'اطلب منه استدعاء `delendai_overview` — يجب أن يُبلغ عن الإعداد المسبق المُحمّل وإجراء تالٍ موصى به.',
 				'إذا لم يظهر الخادم، راجع حل المشكلات → "MCP server not detected".',
 			],
 		},
@@ -206,16 +206,16 @@ const dict: LangDict = {
 			steps: [
 				'شغّل مُثبّت الأمر الواحد — يكتشف Claude Code ويكتب `.mcp.json`.',
 				'أعد تشغيل Claude Code (أو شغّل `/mcp` لإعادة تحميل الخوادم) ليتعرف على الإدخال الجديد.',
-				'في جلسة جديدة، يشير ملفا `AGENTS.md` + `CLAUDE.md` المُحمّلان دائمًا بالفعل إلى `mcp-vertex_overview` كأول استدعاء.',
-				'أكّد باستخدام `mcp-vertex_overview { compact: true }` — يخبرك حقل `recommendedNextAction` بما يجب فعله بعد ذلك.',
-				'في الجلسات متعددة الوكلاء، اقرأ مهارة `mcp-vertex-proposal-swarm-runner` قبل المطالبة بشريحة.',
+				'في جلسة جديدة، يشير ملفا `AGENTS.md` + `CLAUDE.md` المُحمّلان دائمًا بالفعل إلى `delendai_overview` كأول استدعاء.',
+				'أكّد باستخدام `delendai_overview { compact: true }` — يخبرك حقل `recommendedNextAction` بما يجب فعله بعد ذلك.',
+				'في الجلسات متعددة الوكلاء، اقرأ مهارة `delendai-proposal-swarm-runner` قبل المطالبة بشريحة.',
 			],
 		},
 		nextSteps: 'إلى أين بعد ذلك',
 		nextToolsCta: 'تصفّح جميع الأدوات',
 		nextTroubleshootingCta: 'هل هناك شيء لا يعمل؟ حل المشكلات',
 		overviewHint:
-			'بعد بدء الخادم، استدعِ mcp-vertex_overview مع compact: true؛ تخبر recommendedNextAction الوكيل بما يجب فعله تالياً بدقة.',
+			'بعد بدء الخادم، استدعِ delendai_overview مع compact: true؛ تخبر recommendedNextAction الوكيل بما يجب فعله تالياً بدقة.',
 	},
 	troubleshooting: {
 		title: 'حل المشكلات',
@@ -277,7 +277,7 @@ const dict: LangDict = {
 	},
 	setup: {
 		title: 'الإعداد عبر المشاريع',
-		lead: 'اربط mcp-vertex بأي مستودع وجهّز إضافة issues الخاصة بـ GitHub لذلك المستودع — نفس الخطوات السبع التي ينفّذها أمر setup-github.',
+		lead: 'اربط delendai بأي مستودع وجهّز إضافة issues الخاصة بـ GitHub لذلك المستودع — نفس الخطوات السبع التي ينفّذها أمر setup-github.',
 		stepsTitle: 'الخطوات السبع',
 		docsLinkLabel: 'اقرأ الدليل المرجعي للإعداد عبر المشاريع',
 		detectRepoTitle: 'اكتشاف المستودع',
@@ -291,7 +291,7 @@ const dict: LangDict = {
 			'استخدم gh عندما ينجح gh auth status، وrest-authed عند ضبط GITHUB_TOKEN، وإلا rest-anon (محدود بـ 60 طلبًا في الساعة).',
 		writeConfigTitle: 'كتابة الإعدادات',
 		writeConfigBody:
-			'يكتب plugins.issues.options.repo في mcp-vertex.config.json دون المساس بإعدادات الإضافات الأخرى.',
+			'يكتب plugins.issues.options.repo في delendai.config.json دون المساس بإعدادات الإضافات الأخرى.',
 		verifyTierTitle: 'التحقق من المستوى',
 		verifyTierBody:
 			'شغّل المضيف مع تحميل إضافة issues لاختبار مستوى المصادقة المختار من البداية إلى النهاية.',
@@ -327,7 +327,7 @@ const dict: LangDict = {
 			{ id: 'yarn', note: 'البديل الكلاسيكي لـ npm.' },
 			{
 				id: 'bun',
-				note: 'وقت تشغيل + مدير حزم شامل — mcp-vertex نفسه مبنيّ بـ bun.',
+				note: 'وقت تشغيل + مدير حزم شامل — delendai نفسه مبنيّ بـ bun.',
 			},
 			{
 				id: 'deno',
@@ -390,7 +390,7 @@ const dict: LangDict = {
 			{
 				id: 'setup',
 				label: 'الإعداد عبر المشاريع',
-				summary: 'ادمج mcp-vertex في أي مستودع وجهّز إضافة issues.',
+				summary: 'ادمج delendai في أي مستودع وجهّز إضافة issues.',
 				href: 'setup',
 				icon: '/logos/github.png',
 			},
@@ -399,7 +399,7 @@ const dict: LangDict = {
 	cli: {
 		title: 'دليل CLI',
 		description:
-			'كيفية تشغيل CLI mcpv / @delendai/core: الأعلام العامة، مجموعات الأوامر لكل مكون إضافي، وسير العمل المشترك.',
+			'كيفية تشغيل CLI delendai / @delendai/core: الأعلام العامة، مجموعات الأوامر لكل مكون إضافي، وسير العمل المشترك.',
 	},
 	guide: {
 		title: 'الدليل',
@@ -415,7 +415,7 @@ const dict: LangDict = {
 			'7. مهارات',
 			'8. تدويل (i18n)',
 			'9. بوابات الجودة ولغات متعددة',
-			'10. توسيع mcp-vertex',
+			'10. توسيع delendai',
 			'11. ميزانية الرموز',
 			'12. انتقالات العرض',
 			'13. الأسئلة الشائعة',

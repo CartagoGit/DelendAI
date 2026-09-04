@@ -12,30 +12,30 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexQualityGetQualityScopesOutput {
+export interface DelendaiQualityGetQualityScopesOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexQualityQualityCancelOutput {
+export interface DelendaiQualityQualityCancelOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexQualityQualityRunAllOutput {
+export interface DelendaiQualityQualityRunAllOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface McpVertexQualityRunQualityOutput {
+export interface DelendaiQualityRunQualityOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface QualityToolOutputs {
-	"mcp-vertex_quality_get_quality_scopes": McpVertexQualityGetQualityScopesOutput;
-	"mcp-vertex_quality_quality_cancel": McpVertexQualityQualityCancelOutput;
-	"mcp-vertex_quality_quality_run_all": McpVertexQualityQualityRunAllOutput;
-	"mcp-vertex_quality_run_quality": McpVertexQualityRunQualityOutput;
+	"delendai_quality_get_quality_scopes": DelendaiQualityGetQualityScopesOutput;
+	"delendai_quality_quality_cancel": DelendaiQualityQualityCancelOutput;
+	"delendai_quality_quality_run_all": DelendaiQualityQualityRunAllOutput;
+	"delendai_quality_run_quality": DelendaiQualityRunQualityOutput;
 }

@@ -1,6 +1,6 @@
 import type { ICommandDeps } from './types';
 
-export const REFRESH_COMMAND = 'mcp-vertex.refresh';
+export const REFRESH_COMMAND = 'delendai.refresh';
 
 /**
  * Optional dashboard refreshers. The host wires them when the
@@ -34,7 +34,5 @@ export const registerRefreshCommand = (deps: ICommandDeps & IRefreshExtras) =>
 				() => undefined,
 			),
 		]);
-		await deps.vscode.window.showInformationMessage?.(
-			'mcp-vertex refreshed',
-		);
+		await deps.vscode.window.showInformationMessage?.('delendai refreshed');
 	});

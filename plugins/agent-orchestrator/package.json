@@ -2,7 +2,7 @@
 	"name": "@delendai/agent-orchestrator",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Workflow policy plugin for @delendai/core: decides whether the main agent works task-by-task (linear), spawns parallel subagents (swarm), does it all alone (single), or classifies per-task and routes accordingly (auto, default). Enforces token budgets, iteration caps, and mid-task subagent rotation when a subordinate goes off-rails. Defaults to the strategy configured in mcp-vertex.config.json, with `auto` as the project-wide default.",
+	"description": "Workflow policy plugin for @delendai/core: decides whether the main agent works task-by-task (linear), spawns parallel subagents (swarm), does it all alone (single), or classifies per-task and routes accordingly (auto, default). Enforces token budgets, iteration caps, and mid-task subagent rotation when a subordinate goes off-rails. Defaults to the strategy configured in delendai.config.json, with `auto` as the project-wide default.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

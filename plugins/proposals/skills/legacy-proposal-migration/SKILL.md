@@ -1,14 +1,14 @@
 ---
-name: mcp-vertex-legacy-proposal-migration
+name: delendai-legacy-proposal-migration
 appliesTo: ['@delendai/proposals']
 description: The strict 3-script + 1-tool order for migrating pre-f00016 legacy proposals (pNNN-*.md) onto the current state machine, the legacy-status mapping table, and why the lint treats `l`-prefixed files as a permanent warning instead of an error. Use only when migrating historical pNNN proposals — never for ordinary day-to-day proposal work.
 ---
 
-# mcp-vertex legacy proposal migration
+# delendai legacy proposal migration
 
 ## Decision tree
 
-1. Found a `pNNN-*.md` file directly under `docs/mcp-vertex/proposals/` (not yet
+1. Found a `pNNN-*.md` file directly under `docs/delendai/proposals/` (not yet
    migrated)? -> this skill applies; otherwise (ordinary proposal work) it
    does not.
 2. Dry-run first, always: run each script with NO flags before `--apply` —
@@ -38,7 +38,7 @@ bun tools/scripts/proposals/normalize-legacy.script.ts --apply    # backfill kin
 Then, as an MCP tool call (NOT a script): `proposals_sync_proposals` to
 rebuild `<cacheDir>/proposals/index.json` (the regenerable registry
 index — see x00052 for the move from
-`docs/mcp-vertex/proposals/index.json`) from the migrated files.
+`docs/delendai/proposals/index.json`) from the migrated files.
 
 Order matters because `rewrite-refs.script.ts` imports `planMigration` from
 `migrate-legacy.script.ts` to know which `pNNN -> lNNN` renames are real (so
@@ -102,7 +102,7 @@ a stricter one.
 - Never hand-edit `<cacheDir>/proposals/index.json` after migrating
   — always finish with `proposals_sync_proposals` (the tool, not a
   script). (x00052: the index moved from
-  `docs/mcp-vertex/proposals/index.json`; the legacy path is
+  `docs/delendai/proposals/index.json`; the legacy path is
   gitignored and the registry is regenerated under
   `<cacheDir>/proposals/index.json`.)
 - Never try to "fix" the `l`-prefix lint warning by rewriting a legacy
@@ -116,6 +116,6 @@ a stricter one.
 ```
 bun tools/scripts/proposals/migrate-legacy.script.ts
 ```
-With zero `pNNN-*.md` files left under `docs/mcp-vertex/proposals/` (already migrated
+With zero `pNNN-*.md` files left under `docs/delendai/proposals/` (already migrated
 repo), prints `0 proposal(s) planned.` and exits 0 — confirms the script is
 idempotent and safe to re-run as a no-op check.

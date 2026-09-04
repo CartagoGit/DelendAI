@@ -48,9 +48,9 @@ const WORKSPACE_ALIASES = {
 	'@delendai/client/lib': resolve(REPO_ROOT, 'packages/client/src/lib'),
 };
 
-// Static build for GitHub Pages (project site → served under /mcp-vertex/).
+// Static build for GitHub Pages (project site → served under /delendai/).
 // Override the base with PAGES_BASE='' for a user/root deploy.
-const base = process.env.PAGES_BASE ?? '/mcp-vertex';
+const base = process.env.PAGES_BASE ?? '/delendai';
 // bumped: 2026-06-18 — force dev server to re-parse pages directory
 
 export default defineConfig({

@@ -48,7 +48,7 @@ const seedClosePlanFixture = (
 		readonly body?: string;
 	},
 ) => {
-	const proposalsDir = join(workspace, 'docs', 'mcp-vertex', 'proposals');
+	const proposalsDir = join(workspace, 'docs', 'delendai', 'proposals');
 	const folder = input.status === 'done' ? 'done/plans' : 'in-progress';
 	const file = `${folder}/${input.id}-fixture.md`;
 	mkdirSync(join(proposalsDir, folder), { recursive: true });
@@ -67,11 +67,11 @@ const seedClosePlanFixture = (
 			input.body ?? '## Goal\n\nok\n',
 		].join('\n'),
 	);
-	mkdirSync(join(workspace, '.cache', 'mcp-vertex', 'proposals'), {
+	mkdirSync(join(workspace, '.cache', 'delendai', 'proposals'), {
 		recursive: true,
 	});
 	writeFileSync(
-		join(workspace, '.cache', 'mcp-vertex', 'proposals', 'index.json'),
+		join(workspace, '.cache', 'delendai', 'proposals', 'index.json'),
 		JSON.stringify({
 			proposals: [
 				{
@@ -145,46 +145,46 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	// successful (non-error) result must carry structuredContent (the SDK
 	// would have thrown on a schema mismatch before we get here).
 	const READONLY_CALLS: ReadonlyArray<{ name: string; args?: unknown }> = [
-		{ name: 'mcp-vertex_overview' },
-		{ name: 'mcp-vertex_overview', args: { compact: true } },
-		{ name: 'mcp-vertex_knowledge' },
-		{ name: 'mcp-vertex_get_validation_matrix' },
-		{ name: 'mcp-vertex_status' },
-		{ name: 'mcp-vertex_metrics' },
-		{ name: 'mcp-vertex_analyze_project' },
+		{ name: 'delendai_overview' },
+		{ name: 'delendai_overview', args: { compact: true } },
+		{ name: 'delendai_knowledge' },
+		{ name: 'delendai_get_validation_matrix' },
+		{ name: 'delendai_status' },
+		{ name: 'delendai_metrics' },
+		{ name: 'delendai_analyze_project' },
 		// r00002 S1: hardened outputSchemas — side-effect-free (returns files
 		// for the agent to write; never touches disk itself).
-		{ name: 'mcp-vertex_create_project', args: { kind: 'plugin' } },
-		{ name: 'mcp-vertex_plan_mcp_project' },
+		{ name: 'delendai_create_project', args: { kind: 'plugin' } },
+		{ name: 'delendai_plan_mcp_project' },
 		// r00002 S2: dryRun defaults true — returns files without writing.
-		{ name: 'mcp-vertex_scaffold', args: { kind: 'tool', name: 'demo' } },
-		{ name: 'mcp-vertex_git_status' },
-		{ name: 'mcp-vertex_git_changed' },
-		{ name: 'mcp-vertex_git_diff' },
-		{ name: 'mcp-vertex_git_log' },
-		{ name: 'mcp-vertex_quality_get_quality_scopes' },
-		{ name: 'mcp-vertex_memory_list' },
-		{ name: 'mcp-vertex_search_search', args: { query: 'e2e' } },
-		{ name: 'mcp-vertex_notification_notify_status' },
-		{ name: 'mcp-vertex_docs_docs_list' },
-		{ name: 'mcp-vertex_docs_docs_read', args: { path: 'README.md' } },
-		{ name: 'mcp-vertex_deps_deps_list' },
-		{ name: 'mcp-vertex_deps_deps_check' },
-		{ name: 'mcp-vertex_proposals_state_health' },
-		{ name: 'mcp-vertex_proposals_proposal_board' },
-		{ name: 'mcp-vertex_proposals_compact_status' },
+		{ name: 'delendai_scaffold', args: { kind: 'tool', name: 'demo' } },
+		{ name: 'delendai_git_status' },
+		{ name: 'delendai_git_changed' },
+		{ name: 'delendai_git_diff' },
+		{ name: 'delendai_git_log' },
+		{ name: 'delendai_quality_get_quality_scopes' },
+		{ name: 'delendai_memory_list' },
+		{ name: 'delendai_search_search', args: { query: 'e2e' } },
+		{ name: 'delendai_notification_notify_status' },
+		{ name: 'delendai_docs_docs_list' },
+		{ name: 'delendai_docs_docs_read', args: { path: 'README.md' } },
+		{ name: 'delendai_deps_deps_list' },
+		{ name: 'delendai_deps_deps_check' },
+		{ name: 'delendai_proposals_state_health' },
+		{ name: 'delendai_proposals_proposal_board' },
+		{ name: 'delendai_proposals_compact_status' },
 		{
-			name: 'mcp-vertex_proposals_compact_status',
+			name: 'delendai_proposals_compact_status',
 			args: { fields: ['locks'] },
 		},
-		{ name: 'mcp-vertex_proposals_auto_work' },
+		{ name: 'delendai_proposals_auto_work' },
 		// action-multiplexed (read-only actions) — permissive object schema
-		{ name: 'mcp-vertex_proposals_task_queue', args: { action: 'report' } },
-		{ name: 'mcp-vertex_proposals_agent_names', args: { action: 'list' } },
-		{ name: 'mcp-vertex_proposals_agent_lock', args: { action: 'status' } },
-		{ name: 'mcp-vertex_proposals_round_context' },
-		{ name: 'mcp-vertex_proposals_sync_proposals' },
-		{ name: 'mcp-vertex_proposals_get_proposal_workflow' },
+		{ name: 'delendai_proposals_task_queue', args: { action: 'report' } },
+		{ name: 'delendai_proposals_agent_names', args: { action: 'list' } },
+		{ name: 'delendai_proposals_agent_lock', args: { action: 'status' } },
+		{ name: 'delendai_proposals_round_context' },
+		{ name: 'delendai_proposals_sync_proposals' },
+		{ name: 'delendai_proposals_get_proposal_workflow' },
 	];
 
 	it('every read-only tool returns schema-valid structuredContent', async () => {
@@ -209,7 +209,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	// M31: overview surfaces per-tool side effects; read-only tools have none.
 	it('overview declares tool side-effects (write/spawn) and omits them for read-only tools', async () => {
 		const res = await client.callTool({
-			name: 'mcp-vertex_overview',
+			name: 'delendai_overview',
 			arguments: {},
 		});
 		const tools = (
@@ -219,23 +219,21 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		).tools;
 		const effOf = (name: string) =>
 			tools.find((t) => t.name === name)?.effects;
-		expect(effOf('mcp-vertex_memory_save')).toContain('write');
-		expect(effOf('mcp-vertex_memory_forget')).toEqual(
+		expect(effOf('delendai_memory_save')).toContain('write');
+		expect(effOf('delendai_memory_forget')).toEqual(
 			expect.arrayContaining(['write', 'destructive']),
 		);
-		expect(effOf('mcp-vertex_quality_run_quality')).toContain('spawn');
-		expect(effOf('mcp-vertex_proposals_create_proposal')).toContain(
-			'write',
-		);
+		expect(effOf('delendai_quality_run_quality')).toContain('spawn');
+		expect(effOf('delendai_proposals_create_proposal')).toContain('write');
 		// genuinely read-only tools advertise no effects
-		expect(effOf('mcp-vertex_git_status')).toBeUndefined();
-		expect(effOf('mcp-vertex_search_search')).toBeUndefined();
-		expect(effOf('mcp-vertex_overview')).toBeUndefined();
+		expect(effOf('delendai_git_status')).toBeUndefined();
+		expect(effOf('delendai_search_search')).toBeUndefined();
+		expect(effOf('delendai_overview')).toBeUndefined();
 	});
 
 	it('overview keeps the full payload in structuredContent and a compact summary in text', async () => {
 		const res = await client.callTool({
-			name: 'mcp-vertex_overview',
+			name: 'delendai_overview',
 			arguments: {},
 		});
 		const text = (res.content as Array<{ text?: string }>)[0]?.text ?? '';
@@ -271,12 +269,12 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		});
 		const listed = await client.listTools();
 		const closePlan = listed.tools.find(
-			(tool) => tool.name === 'mcp-vertex_proposals_proposals_close_plan',
+			(tool) => tool.name === 'delendai_proposals_proposals_close_plan',
 		) as { outputSchema?: unknown } | undefined;
 		expect(closePlan?.outputSchema).toBeDefined();
 
 		const result = await client.callTool({
-			name: 'mcp-vertex_proposals_proposals_close_plan',
+			name: 'delendai_proposals_proposals_close_plan',
 			arguments: { planId: 'q12345', dryRun: true },
 		});
 		expect(result.isError, 'close_plan dry-run').toBeFalsy();
@@ -327,11 +325,11 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		try {
 			const initial = await managedClient.listTools();
 			expect(initial.tools.map((tool) => tool.name)).not.toContain(
-				'mcp-vertex_proposals_proposals_close_plan',
+				'delendai_proposals_proposals_close_plan',
 			);
 
 			const activated = await managedClient.callTool({
-				name: 'mcp-vertex_plugin_activate',
+				name: 'delendai_plugin_activate',
 				arguments: { plugin: 'proposals' },
 			});
 			expect(activated.isError, 'plugin_activate proposals').toBeFalsy();
@@ -339,12 +337,12 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 			const listed = await managedClient.listTools();
 			const closePlan = listed.tools.find(
 				(tool) =>
-					tool.name === 'mcp-vertex_proposals_proposals_close_plan',
+					tool.name === 'delendai_proposals_proposals_close_plan',
 			) as { outputSchema?: unknown } | undefined;
 			expect(closePlan?.outputSchema).toBeDefined();
 
 			const result = await managedClient.callTool({
-				name: 'mcp-vertex_proposals_proposals_close_plan',
+				name: 'delendai_proposals_proposals_close_plan',
 				arguments: { planId: 'q54321', dryRun: true },
 			});
 			expect(result.isError, 'managed close_plan dry-run').toBeFalsy();
@@ -371,7 +369,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 
 	it('coordinates proposals locks with notification await_lock over MCP', async () => {
 		const claimed = await client.callTool({
-			name: 'mcp-vertex_proposals_agent_lock',
+			name: 'delendai_proposals_agent_lock',
 			arguments: {
 				action: 'claim',
 				task_id: 'task-owner',
@@ -384,7 +382,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		expect((claimed.structuredContent as { ok?: boolean }).ok).toBe(true);
 
 		const conflict = await client.callTool({
-			name: 'mcp-vertex_proposals_agent_lock',
+			name: 'delendai_proposals_agent_lock',
 			arguments: {
 				action: 'claim',
 				task_id: 'task-waiter',
@@ -408,13 +406,13 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		).toBe('task-owner');
 
 		const waiting = client.callTool({
-			name: 'mcp-vertex_notification_await_lock',
+			name: 'delendai_notification_await_lock',
 			arguments: { taskId: 'task-owner', timeoutMs: 2_000 },
 		});
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
 		const released = await client.callTool({
-			name: 'mcp-vertex_proposals_agent_lock',
+			name: 'delendai_proposals_agent_lock',
 			arguments: {
 				action: 'release',
 				task_id: 'task-owner',
@@ -434,7 +432,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		});
 
 		const retried = await client.callTool({
-			name: 'mcp-vertex_proposals_agent_lock',
+			name: 'delendai_proposals_agent_lock',
 			arguments: {
 				action: 'claim',
 				task_id: 'task-waiter',
@@ -447,7 +445,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		expect((retried.structuredContent as { ok?: boolean }).ok).toBe(true);
 
 		const timedOut = await client.callTool({
-			name: 'mcp-vertex_notification_await_lock',
+			name: 'delendai_notification_await_lock',
 			arguments: { taskId: 'task-waiter', timeoutMs: 1_000 },
 		});
 		expect(timedOut.isError, 'await_lock timeout response').toBeFalsy();
@@ -459,7 +457,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		});
 
 		const finalRelease = await client.callTool({
-			name: 'mcp-vertex_proposals_agent_lock',
+			name: 'delendai_proposals_agent_lock',
 			arguments: {
 				action: 'release',
 				task_id: 'task-waiter',
@@ -481,10 +479,10 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	it('hardened bootstrap tool outputSchemas are no longer permissive catchalls', async () => {
 		const { tools } = await client.listTools();
 		const HARDENED = [
-			'mcp-vertex_analyze_project',
-			'mcp-vertex_create_project',
-			'mcp-vertex_plan_mcp_project',
-			'mcp-vertex_scaffold',
+			'delendai_analyze_project',
+			'delendai_create_project',
+			'delendai_plan_mcp_project',
+			'delendai_scaffold',
 		];
 		for (const name of HARDENED) {
 			const schema = tools.find((t) => t.name === name)?.outputSchema as
@@ -507,7 +505,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 
 	it('validates write-tool outputSchemas over the protocol (create_proposal → close_slice)', async () => {
 		const created = await client.callTool({
-			name: 'mcp-vertex_proposals_create_proposal',
+			name: 'delendai_proposals_create_proposal',
 			arguments: {
 				id: 'f00001',
 				title: 'demo',
@@ -520,7 +518,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		expect(cs.file).toContain('f00001');
 
 		const closed = await client.callTool({
-			name: 'mcp-vertex_proposals_close_slice',
+			name: 'delendai_proposals_close_slice',
 			arguments: { proposalId: 'f00001', sliceId: 's1', force: true },
 		});
 		expect(closed.isError, 'close_slice').toBeFalsy();

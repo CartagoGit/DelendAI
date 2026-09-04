@@ -4,7 +4,7 @@
  * Asserts that:
  *   1. Every `contributes.commands[].command` has a handler registered
  *      in `activate()`.
- *   2. Every `mcp-vertex.*` handler registered in `activate()` has a
+ *   2. Every `delendai.*` handler registered in `activate()` has a
  *      matching `contributes.commands` entry.
  *
  * Both directions, so dead-or-phantom commands fail the suite.
@@ -23,10 +23,10 @@ import {
 } from '../extension';
 
 const overviewFixture: IOverview = {
-	server: { name: 'mcp-vertex', version: '0.1.0' },
-	namespacePrefix: 'mcp-vertex',
+	server: { name: 'delendai', version: '0.1.0' },
+	namespacePrefix: 'delendai',
 	plugins: ['core'],
-	tools: ['mcp-vertex_overview'],
+	tools: ['delendai_overview'],
 	knowledge: [],
 	recommendedNextAction: 'Call overview first.',
 };
@@ -92,12 +92,12 @@ describe('f00100 S4 — contributes-completeness ratchet', () => {
 		).toEqual([]);
 	});
 
-	it('every registered mcp-vertex.* handler has a contributes entry', async () => {
+	it('every registered delendai.* handler has a contributes entry', async () => {
 		const contributed = new Set(readContributedCommands());
 		const registered = await collectRegisteredCommands();
 
 		const phantom = [...registered]
-			.filter((id) => id.startsWith('mcp-vertex.'))
+			.filter((id) => id.startsWith('delendai.'))
 			.filter((id) => !contributed.has(id));
 
 		expect(

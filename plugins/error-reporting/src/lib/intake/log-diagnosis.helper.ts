@@ -4,7 +4,7 @@ import {
 } from '@delendai/commit-policy/lib/services/storm-detector';
 import { createPushCircuit } from '@delendai/commit-policy/lib/services/push-circuit';
 
-import { isMcpVertexErrorCode } from '../contracts/constants/error-codes.constant';
+import { isDelendaiErrorCode } from '../contracts/constants/error-codes.constant';
 import {
 	buildIssueBody,
 	buildIssueTitle,
@@ -20,7 +20,7 @@ import type {
 	IServerLogReadResult,
 	ILogDiagnosisCause,
 } from '../contracts/interfaces/log-intake.interface';
-import type { ISafeMcpVertexReport } from '../contracts/interfaces/reporter.interface';
+import type { ISafeDelendaiReport } from '../contracts/interfaces/reporter.interface';
 
 /**
  * log-diagnosis.ts — q00014 S3.
@@ -53,7 +53,7 @@ import type { ISafeMcpVertexReport } from '../contracts/interfaces/reporter.inte
  * set. No branch of this module reads a finding's prose out of the log.
  * The only log-derived values that reach a finding are a count, a masked
  * shape digest, a timestamp and a refusal code — and the code is dropped
- * again at the DTO boundary unless it is a known mcp-vertex error code.
+ * again at the DTO boundary unless it is a known delendai error code.
  */
 
 const DEFAULT_WINDOW_SECONDS = 30;
@@ -400,35 +400,35 @@ const packageIdOf = (finding: ILogFinding): string => {
  * Constructed from the classification, never from the log. Every field
  * is either a constant of this module, a value from
  * {@link REMEDIATIONS}, a count, a masked shape digest, or a refusal
- * code that survived `isMcpVertexErrorCode` — a closed set. There is no
+ * code that survived `isDelendaiErrorCode` — a closed set. There is no
  * code path here that can copy a log line, a project path or a source
  * fragment into the DTO, which is why the privacy validator has nothing
  * left to catch by the time it runs. It still runs; see the tool.
  */
 export const buildLogFindingReport = (input: {
 	readonly finding: ILogFinding;
-	readonly mcpVertexVersion: string;
+	readonly delendaiVersion: string;
 	readonly reporterVersion: string;
 }): ILogFindingReport => {
 	const { finding } = input;
 	const packageId = packageIdOf(finding);
 	const frameFile = finding.suspectModule ?? '@delendai/error-reporting';
 	const errorCode =
-		finding.code !== undefined && isMcpVertexErrorCode(finding.code)
+		finding.code !== undefined && isDelendaiErrorCode(finding.code)
 			? finding.code
 			: undefined;
 
-	const report: ISafeMcpVertexReport = {
+	const report: ISafeDelendaiReport = {
 		reporterVersion: input.reporterVersion,
-		mcpVertexVersion: input.mcpVertexVersion,
+		delendaiVersion: input.delendaiVersion,
 		packageId,
-		toolOwner: 'mcp-vertex',
+		toolOwner: 'delendai',
 		toolCategory: 'analysis',
 		...(errorCode !== undefined ? { errorCode } : {}),
 		failureClass: 'UNKNOWN_INTERNAL',
 		classification: 'BUG',
 		fingerprint: signatureOf({
-			mcpVertexVersion: input.mcpVertexVersion,
+			delendaiVersion: input.delendaiVersion,
 			packageId,
 			componentId: finding.cause,
 			...(errorCode !== undefined ? { errorCode } : {}),

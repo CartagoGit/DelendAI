@@ -1,4 +1,4 @@
-/** The exact key an operator edits in `mcp-vertex.config.json`. */
+/** The exact key an operator edits in `delendai.config.json`. */
 export const ERROR_REPORTING_ENABLE_CONFIG =
 	'plugins.error-reporting.options.enabled' as const;
 
@@ -10,4 +10,4 @@ export const ERROR_REPORTING_ENABLE_CONFIG =
  * fragment is refused before dispatch.
  */
 export const ERROR_REPORTING_PRIVACY_SENTENCE =
-	'Only mcp-vertex-internal errors are sent (error type, mcp-vertex stack frames, versions) — never your code, file contents, paths, branch names, environment or project data.';
+	'Only delendai-internal errors are sent (error type, delendai stack frames, versions) — never your code, file contents, paths, branch names, environment or project data.';

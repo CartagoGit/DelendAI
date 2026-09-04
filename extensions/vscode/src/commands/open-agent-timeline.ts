@@ -1,6 +1,6 @@
 /**
  * `registerOpenAgentTimelineCommand` — opens (or refreshes) the
- * `mcp-vertex Agent Timeline` webview. The view renders an
+ * `delendai Agent Timeline` webview. The view renders an
  * append-only log of agent lifecycle events (`claim`, `activate`,
  * `change`, `test`, `cost`, `commit`, `close`) from a JSON file
  * persisted by the core's `TimelineBuffer`.
@@ -8,7 +8,7 @@
  * Source of truth: `packages/core/src/lib/observability/timeline.ts`
  * (f00192). The branch's S1 scope is the view + the underlying
  * pure buffer; the host adapter that writes
- * `.vscode/mcp-vertex/timeline.json` lives in a follow-up slice.
+ * `.vscode/delendai/timeline.json` lives in a follow-up slice.
  * Until that lands the command surfaces an empty-state log so the
  * view is exercisable end-to-end (CI gallery + manual smoke).
  *
@@ -32,16 +32,16 @@ import {
 	renderAgentTimeline,
 } from '../views/agent-timeline';
 
-export const OPEN_AGENT_TIMELINE_COMMAND = 'mcp-vertex.openAgentTimeline';
+export const OPEN_AGENT_TIMELINE_COMMAND = 'delendai.openAgentTimeline';
 
 /** Default on-disk location for the timeline JSON. Hosts MAY
  *  override via `IHostAdapter.state.get('timeline.path')`. */
-export const DEFAULT_TIMELINE_PATH = '.vscode/mcp-vertex/timeline.json';
+export const DEFAULT_TIMELINE_PATH = '.vscode/delendai/timeline.json';
 
 export interface IOpenAgentTimelineDeps {
 	readonly vscode: ICommandVscodeApi;
 	/** Absolute path to the workspace root; the timeline lives at
-	 *  `<root>/.vscode/mcp-vertex/timeline.json` by default. */
+	 *  `<root>/.vscode/delendai/timeline.json` by default. */
 	readonly workspaceRoot: string | null;
 	readonly globalState?: {
 		get<T>(key: string): T | undefined;
@@ -94,7 +94,9 @@ export const registerOpenAgentTimelineCommand = (
 		OPEN_AGENT_TIMELINE_COMMAND,
 		async () => {
 			const copy = viewCopyFor(
-				resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
+				resolveViewLang(
+					deps.globalState?.get<unknown>('delendai:lang'),
+				),
 			);
 			const log = loadTimelineLog(deps.workspaceRoot);
 			const model = projectTimelineView(log, {
@@ -106,7 +108,7 @@ export const registerOpenAgentTimelineCommand = (
 			// used by every other command. The view is fully static —
 			// no scripts, strict CSP — so we explicitly disable scripting.
 			const panel = deps.vscode.window.createWebviewPanel(
-				'mcp-vertex.agent-timeline',
+				'delendai.agent-timeline',
 				copy.timelineTitle,
 				1,
 				{

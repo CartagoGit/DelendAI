@@ -24,7 +24,7 @@ const dict: LangDict = {
 		troubleshooting: 'トラブルシューティング',
 	},
 	hero: {
-		title: { a: 'プロジェクト非依存の ', b: 'MCP Vertex', c: '' },
+		title: { a: 'プロジェクト非依存の ', b: 'DelendAI', c: '' },
 		subheader:
 			'あらゆるプロジェクト向けの MCP サーバーコア + プラグインローダー。',
 		tagline:
@@ -39,7 +39,7 @@ const dict: LangDict = {
 	},
 	concept: {
 		title: '小さなコア、多くのプラグイン',
-		body: 'mcp-vertex は密閉されたコアです：決定論的なツール登録、注入されたワークスペースパス、CLI プラグインローダー、トークンで計測されたツール表面。ドメイン固有のものはすべてプラグイン——必要なものだけを、どのホストやモデルでも読み込みます。',
+		body: 'delendai は密閉されたコアです：決定論的なツール登録、注入されたワークスペースパス、CLI プラグインローダー、トークンで計測されたツール表面。ドメイン固有のものはすべてプラグイン——必要なものだけを、どのホストやモデルでも読み込みます。',
 		f1: {
 			t: 'プロジェクト非依存',
 			b: 'コアにドメインコードはありません。同じプラグインがどのホストやモデルでも同一に動作します。',
@@ -82,7 +82,7 @@ const dict: LangDict = {
 			title: 'オリエンテーションのコスト · ライブ計測',
 			note: 'エージェントが見る結果テキストのトークン数（≈4バイト/トークン）を、proposals+memory でプロトコル上をライブ計測。ベースラインは手作業で方向付けする場合の参考推定で、第三者ツールの実測ではありません。',
 		},
-		baseline: 'mcp-vertex なし（手作業 · 推定）',
+		baseline: 'delendai なし（手作業 · 推定）',
 	},
 	plugins: {
 		title: 'プラグイン',
@@ -157,7 +157,7 @@ const dict: LangDict = {
 			description:
 				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
 			requires: 'requires',
-			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+			installSnippet: 'delendai --plugins=proposals,issues',
 		},
 	},
 	toolpage: {
@@ -180,7 +180,7 @@ const dict: LangDict = {
 	},
 	firstFiveMinutes: {
 		title: '最初の5分',
-		lead: 'コピー＆ペーストで使える3つのクイックスタート。mcp-vertex の実行方法に合うものを選んでください。',
+		lead: 'コピー＆ペーストで使える3つのクイックスタート。delendai の実行方法に合うものを選んでください。',
 		profileTabBunNode: 'Bun / Node',
 		profileTabVscode: 'VS Code / Copilot',
 		profileTabClaude: 'Claude Code',
@@ -189,20 +189,20 @@ const dict: LangDict = {
 			intro: 'エディタ統合は不要です。ターミナルから host server を実行し、任意の MCP クライアントをその stdio トランスポートに向けます。',
 			steps: [
 				'インストール：`bun add @delendai/core`（または `npm install @delendai/core`）。',
-				'実行：`bunx mcp-vertex --preset=standard`（または `npx mcp-vertex --preset=standard`）。',
+				'実行：`bunx delendai --preset=standard`（または `npx delendai --preset=standard`）。',
 				'確認：プロセスが読み込んだプラグイン一覧を表示し、stdio で待機します — 停止するには Ctrl+C。',
 				'MCP クライアントの設定をこのバイナリに向け、`--preset=minimal|standard|swarm|full` を指定します（フラグの全リストはインストールページを参照）。',
-				'最初に `mcp-vertex_overview { compact: true }` を呼び出してください — 次に何をすべきか教えてくれます。',
+				'最初に `delendai_overview { compact: true }` を呼び出してください — 次に何をすべきか教えてくれます。',
 			],
 		},
 		vscode: {
 			title: 'VS Code / GitHub Copilot',
-			intro: '1コマンドインストーラーが VS Code を検出し、既存のサーバーに触れずに mcp-vertex を MCP サーバー一覧に追加します。',
+			intro: '1コマンドインストーラーが VS Code を検出し、既存のサーバーに触れずに delendai を MCP サーバー一覧に追加します。',
 			steps: [
 				'インストールページから1コマンドインストーラーを実行します（IDE を自動検出）。',
 				'ウィンドウを再読み込み（`Developer: Reload Window`）して、Copilot が新しいサーバーを認識できるようにします。',
-				'Copilot のチャットパネルを開き、エージェント選択で `mcp-vertex` エージェントを選びます。',
-				'`mcp-vertex_overview` を呼び出してもらいます — 読み込まれたプリセットと推奨される次のアクションが報告されるはずです。',
+				'Copilot のチャットパネルを開き、エージェント選択で `delendai` エージェントを選びます。',
+				'`delendai_overview` を呼び出してもらいます — 読み込まれたプリセットと推奨される次のアクションが報告されるはずです。',
 				'サーバーが表示されない場合は、トラブルシューティング → "MCP server not detected" を参照してください。',
 			],
 		},
@@ -212,16 +212,16 @@ const dict: LangDict = {
 			steps: [
 				'1コマンドインストーラーを実行します — Claude Code を検出して `.mcp.json` を書き込みます。',
 				'Claude Code を再起動（または `/mcp` を実行してサーバーを再読み込み）して、新しいエントリを認識させます。',
-				'新しいセッションでは、常に読み込まれる `AGENTS.md` + `CLAUDE.md` が最初の呼び出しとして既に `mcp-vertex_overview` を指しています。',
-				'`mcp-vertex_overview { compact: true }` で確認してください — `recommendedNextAction` フィールドが次に何をすべきか教えてくれます。',
-				'マルチエージェントのセッションでは、スライスを claim する前に `mcp-vertex-proposal-swarm-runner` スキルを読んでください。',
+				'新しいセッションでは、常に読み込まれる `AGENTS.md` + `CLAUDE.md` が最初の呼び出しとして既に `delendai_overview` を指しています。',
+				'`delendai_overview { compact: true }` で確認してください — `recommendedNextAction` フィールドが次に何をすべきか教えてくれます。',
+				'マルチエージェントのセッションでは、スライスを claim する前に `delendai-proposal-swarm-runner` スキルを読んでください。',
 			],
 		},
 		nextSteps: '次に進む先',
 		nextToolsCta: 'すべてのツールを見る',
 		nextTroubleshootingCta: '何か動かない？トラブルシューティング',
 		overviewHint:
-			'サーバー起動後に compact: true で mcp-vertex_overview を呼び出すと、recommendedNextAction が次の操作をエージェントに正確に示します。',
+			'サーバー起動後に compact: true で delendai_overview を呼び出すと、recommendedNextAction が次の操作をエージェントに正確に示します。',
 	},
 	troubleshooting: {
 		title: 'トラブルシューティング',
@@ -283,7 +283,7 @@ const dict: LangDict = {
 	},
 	setup: {
 		title: 'クロスプロジェクト設定',
-		lead: '任意のリポジトリに mcp-vertex を組み込み、そのリポジトリ向けに GitHub issues プラグインを準備します。setup-github コマンドが実行するのと同じ 7 ステップです。',
+		lead: '任意のリポジトリに delendai を組み込み、そのリポジトリ向けに GitHub issues プラグインを準備します。setup-github コマンドが実行するのと同じ 7 ステップです。',
 		stepsTitle: '7 つのステップ',
 		docsLinkLabel: '正規のクロスプロジェクト設定ガイドを読む',
 		detectRepoTitle: 'リポジトリの検出',
@@ -297,7 +297,7 @@ const dict: LangDict = {
 			'gh auth status が成功すれば gh、GITHUB_TOKEN が設定されていれば rest-authed、それ以外は rest-anon（毎時 60 リクエスト上限）を使用します。',
 		writeConfigTitle: '設定の書き込み',
 		writeConfigBody:
-			'他のプラグイン設定に触れずに plugins.issues.options.repo を mcp-vertex.config.json に書き込みます。',
+			'他のプラグイン設定に触れずに plugins.issues.options.repo を delendai.config.json に書き込みます。',
 		verifyTierTitle: 'ティアの検証',
 		verifyTierBody:
 			'issues プラグインを読み込んだ状態でホストを起動し、選択した認証ティアをエンドツーエンドで検証します。',
@@ -333,7 +333,7 @@ const dict: LangDict = {
 			{ id: 'yarn', note: 'npm の古典的な代替。' },
 			{
 				id: 'bun',
-				note: 'オールインワンのランタイム＋パッケージマネージャ — mcp-vertex 自体も bun で構築。',
+				note: 'オールインワンのランタイム＋パッケージマネージャ — delendai 自体も bun で構築。',
 			},
 			{
 				id: 'deno',
@@ -400,7 +400,7 @@ const dict: LangDict = {
 				id: 'setup',
 				label: 'クロスプロジェクト設定',
 				summary:
-					'任意のリポジトリに mcp-vertex を組み込み、issues プラグインを準備。',
+					'任意のリポジトリに delendai を組み込み、issues プラグインを準備。',
 				href: 'setup',
 				icon: '/logos/github.png',
 			},
@@ -409,7 +409,7 @@ const dict: LangDict = {
 	cli: {
 		title: 'CLI ガイド',
 		description:
-			'mcpv / @delendai/core CLIの操作方法：グローバルフラグ、プラグインごとのコマンドグループ、一般的なワークフロー。',
+			'delendai / @delendai/core CLIの操作方法：グローバルフラグ、プラグインごとのコマンドグループ、一般的なワークフロー。',
 	},
 	guide: {
 		title: 'ガイド',
@@ -425,7 +425,7 @@ const dict: LangDict = {
 			'7. スキル',
 			'8. 国際化 (i18n)',
 			'9. 品質ゲートとマルチ言語',
-			'10. mcp-vertexの拡張',
+			'10. delendaiの拡張',
 			'11. トークン予算',
 			'12. ビュー遷移',
 			'13. FAQ',

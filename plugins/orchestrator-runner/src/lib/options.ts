@@ -2,7 +2,7 @@
  * options.ts — plugin option schema (Zod), incl. the provider roster.
  *
  * The canonical `providers` roster is a ROOT-level config block
- * (`mcp-vertex.config.json#providers`) so peers can read it without
+ * (`delendai.config.json#providers`) so peers can read it without
  * coupling to this plugin (wiki/07). Core does not yet surface that root
  * block on `IMcpPluginContext`, so in S4 the runner also accepts a roster
  * under its own `plugins.orchestrator-runner.options.providers` as a

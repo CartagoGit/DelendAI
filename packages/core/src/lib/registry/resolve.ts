@@ -4,7 +4,7 @@
  * Pure over its inputs: takes an array of sources (default = the
  * bundled first-party index) plus filter options, returns a sorted
  * list of matching entries. No fs, no network, no host config — the
- * `plugin_search` MCP tool and the `mcpv plugin search` CLI both
+ * `plugin_search` MCP tool and the `delendai plugin search` CLI both
  * compose this function; the runtime work (network install, config
  * wiring) is S2's job.
  *

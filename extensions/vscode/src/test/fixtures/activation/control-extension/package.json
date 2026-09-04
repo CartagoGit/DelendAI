@@ -1,6 +1,6 @@
 {
-	"name": "mcp-vertex-benchmark-control",
-	"displayName": "MCP Vertex Benchmark Control",
+	"name": "delendai-benchmark-control",
+	"displayName": "DelendAI Benchmark Control",
 	"publisher": "cartago",
 	"version": "0.0.0",
 	"engines": {

@@ -206,7 +206,7 @@ describe('proposal-state guards', () => {
 			caller: { host: 'test-host', pid: 1234, agent: 'agent-s1' },
 		});
 		const raw = await readFile(
-			join(root, '.cache', 'mcp-vertex', 'proposals-state.log'),
+			join(root, '.cache', 'delendai', 'proposals-state.log'),
 			'utf8',
 		);
 		const entry = JSON.parse(raw.trim()) as {

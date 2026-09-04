@@ -24,7 +24,7 @@ export type IProposalStatus =
 	| 'retired';
 
 export interface IProposalStatusInfo {
-	/** Folder under `docs/mcp-vertex/proposals/` this status lives in (f00016 §4.1). */
+	/** Folder under `docs/delendai/proposals/` this status lives in (f00016 §4.1). */
 	readonly folder: string;
 	/** Terminal statuses only leave via `proposal_retire` (rare, defensive). */
 	readonly terminal: boolean;

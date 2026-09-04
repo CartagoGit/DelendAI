@@ -68,10 +68,10 @@ const stripHtml = (html: string): string =>
 		.replace(/\s+/gu, ' ')
 		.trim();
 
-describe('mcp-vertex.openAutoAgentSelector', () => {
+describe('delendai.openAutoAgentSelector', () => {
 	it('exposes a single command id', () => {
 		expect(OPEN_AUTO_AGENT_SELECTOR_COMMAND).toBe(
-			'mcp-vertex.openAutoAgentSelector',
+			'delendai.openAutoAgentSelector',
 		);
 	});
 
@@ -79,7 +79,7 @@ describe('mcp-vertex.openAutoAgentSelector', () => {
 		const { vscode, commands, panels } = createVscode();
 		const client = createFakeClient([
 			{
-				tool: 'mcp-vertex_auto-agent-selector_auto_status',
+				tool: 'delendai_auto-agent-selector_auto_status',
 				response: {
 					available: [
 						{ id: 'claude', label: 'Claude Code', source: 'cli' },
@@ -111,7 +111,7 @@ describe('mcp-vertex.openAutoAgentSelector', () => {
 		const { vscode, commands, panels } = createVscode();
 		const client = createFakeClient([
 			{
-				tool: 'mcp-vertex_auto-agent-selector_auto_status',
+				tool: 'delendai_auto-agent-selector_auto_status',
 				response: {
 					available: [
 						{ id: 'claude', label: 'Claude Code', source: 'cli' },
@@ -122,7 +122,7 @@ describe('mcp-vertex.openAutoAgentSelector', () => {
 				},
 			},
 			{
-				tool: 'mcp-vertex_auto-agent-selector_auto_recommend',
+				tool: 'delendai_auto-agent-selector_auto_recommend',
 				response: {
 					recommendations: [{ id: 'claude', score: 0.9 }],
 				},

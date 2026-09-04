@@ -47,7 +47,7 @@ const buildPlan = (
 	dryRun,
 	installed: !dryRun,
 	configured: !dryRun,
-	...(dryRun ? {} : { configPath: 'mcp-vertex.config.json' }),
+	...(dryRun ? {} : { configPath: 'delendai.config.json' }),
 	notes: dryRun ? [] : [INSTALL_STUB_NOTE],
 });
 

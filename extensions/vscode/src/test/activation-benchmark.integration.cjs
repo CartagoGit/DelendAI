@@ -4,9 +4,9 @@ const { performance } = require('node:perf_hooks');
 const vscode = require('vscode');
 
 async function run() {
-	const outputFile = process.env.MCP_VERTEX_BENCH_OUTPUT_FILE;
-	const extensionId = process.env.MCP_VERTEX_BENCH_EXTENSION_ID;
-	const scenario = process.env.MCP_VERTEX_BENCH_SCENARIO;
+	const outputFile = process.env.DELENDAI_BENCH_OUTPUT_FILE;
+	const extensionId = process.env.DELENDAI_BENCH_EXTENSION_ID;
+	const scenario = process.env.DELENDAI_BENCH_SCENARIO;
 	if (!outputFile || !extensionId || !scenario) {
 		throw new Error('Missing activation benchmark environment variables');
 	}
@@ -23,7 +23,7 @@ async function run() {
 	const activationProbeMs = performance.now() - probeStarted;
 	const afterHeap = process.memoryUsage().heapUsed;
 	let workUnits = 0;
-	if (extensionId === 'cartago.mcp-vertex-vscode') {
+	if (extensionId === 'cartago.delendai-vscode') {
 		try {
 			const modulePath = join(
 				extension.extensionPath,
@@ -41,7 +41,7 @@ async function run() {
 	}
 	let observedToolCalls = null;
 	let observedToolCallsEvidence = 'missing-artifact';
-	const callLogPath = process.env.MCP_VERTEX_BENCH_CALL_LOG;
+	const callLogPath = process.env.DELENDAI_BENCH_CALL_LOG;
 	if (callLogPath) {
 		try {
 			const raw = await readFile(callLogPath, 'utf8');

@@ -53,7 +53,7 @@ export const runInPrivateTerminal = async (
 	}
 
 	const terminal = createTerminal({
-		name: 'MCP Vertex Validation (private)',
+		name: 'DelendAI Validation (private)',
 		hideFromUser: true,
 		...(options.cwd === undefined ? {} : { cwd: options.cwd }),
 	});

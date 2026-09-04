@@ -70,14 +70,14 @@ describe('e2e: agent catalog', async () => {
 		const manifestAbs = join(workspace, ...SKILL_MANIFEST_REL.split('/'));
 		mkdirSync(dirname(manifestAbs), { recursive: true });
 		const skillBodyRel =
-			'packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md';
+			'packages/core/skills/delendai-token-budget-playbook/SKILL.md';
 		const skillBodyAbs = join(workspace, ...skillBodyRel.split('/'));
 		mkdirSync(dirname(skillBodyAbs), { recursive: true });
 		writeFileSync(
 			skillBodyAbs,
 			[
 				'---',
-				'name: mcp-vertex-token-budget-playbook',
+				'name: delendai-token-budget-playbook',
 				"appliesTo: ['@delendai/*']",
 				'description: Budget every response before it drifts. Use when a tool reply risks blowing the context window.',
 				'---',
@@ -94,7 +94,7 @@ describe('e2e: agent catalog', async () => {
 					generatedAt: '2026-06-25T00:00:00.000Z',
 					skills: [
 						{
-							id: 'mcp-vertex-token-budget-playbook',
+							id: 'delendai-token-budget-playbook',
 							version: '1.0.0',
 							minCoreVersion: '0.1.0',
 							bodyPath: skillBodyRel,
@@ -151,7 +151,7 @@ describe('e2e: agent catalog', async () => {
 
 	const callCatalog = async (args: Record<string, unknown>) => {
 		const res = await client.callTool({
-			name: 'mcp-vertex_agent_catalog',
+			name: 'delendai_agent_catalog',
 			arguments: args,
 		});
 		return (res.structuredContent ??
@@ -185,30 +185,30 @@ describe('e2e: agent catalog', async () => {
 
 		// Regression: core tools whose id contains `_` (agent_catalog,
 		// fs_read, get_validation_matrix, …) used to be advertised WITHOUT the
-		// `mcp-vertex_` prefix — a non-callable name that made the discovery
+		// `delendai_` prefix — a non-callable name that made the discovery
 		// catalog lie to the agent. Every name must be host-qualified.
 		expect(tools.length).toBeGreaterThan(0);
-		expect(tools.every((tool) => tool.name.startsWith('mcp-vertex_'))).toBe(
+		expect(tools.every((tool) => tool.name.startsWith('delendai_'))).toBe(
 			true,
 		);
 
 		// A core tool with an underscore id is present under its full name.
 		expect(
-			tools.some((tool) => tool.name === 'mcp-vertex_agent_catalog'),
+			tools.some((tool) => tool.name === 'delendai_agent_catalog'),
 		).toBe(true);
 
-		// Regression: `plugin` used to be the host segment (`mcp-vertex`) for
+		// Regression: `plugin` used to be the host segment (`delendai`) for
 		// EVERY plugin tool. It must now be the real owning plugin.
 		const agentLock = tools.find(
-			(tool) => tool.name === 'mcp-vertex_proposals_agent_lock',
+			(tool) => tool.name === 'delendai_proposals_agent_lock',
 		);
 		expect(agentLock?.plugin).toBe('proposals');
 
 		// Core tools keep the host namespace as their plugin.
 		const overview = tools.find(
-			(tool) => tool.name === 'mcp-vertex_overview',
+			(tool) => tool.name === 'delendai_overview',
 		);
-		expect(overview?.plugin).toBe('mcp-vertex');
+		expect(overview?.plugin).toBe('delendai');
 	});
 
 	it('finds the catalog tool itself through section-scoped querying', async () => {
@@ -226,7 +226,7 @@ describe('e2e: agent catalog', async () => {
 
 	const callSkill = async (args: Record<string, unknown>) => {
 		const res = await client.callTool({
-			name: 'mcp-vertex_skill',
+			name: 'delendai_skill',
 			arguments: args,
 		});
 		return JSON.parse(
@@ -243,7 +243,7 @@ describe('e2e: agent catalog', async () => {
 			appliesTo: string[];
 		}>;
 		const entry = skills.find(
-			(s) => s.id === 'mcp-vertex-token-budget-playbook',
+			(s) => s.id === 'delendai-token-budget-playbook',
 		);
 		expect(entry).toBeDefined();
 		// The description comes from the SKILL.md frontmatter, not a stub.
@@ -257,14 +257,14 @@ describe('e2e: agent catalog', async () => {
 
 	it('loads a skill body on demand by id', async () => {
 		const loaded = await callSkill({
-			id: 'mcp-vertex-token-budget-playbook',
+			id: 'delendai-token-budget-playbook',
 		});
 		expect(loaded.body as string).toContain('# Token budget playbook');
 	});
 
 	it('errors for an unknown skill id', async () => {
 		const res = await client.callTool({
-			name: 'mcp-vertex_skill',
+			name: 'delendai_skill',
 			arguments: { id: 'does-not-exist' },
 		});
 		expect(res.isError).toBe(true);

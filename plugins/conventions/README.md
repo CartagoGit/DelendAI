@@ -2,14 +2,14 @@
 
 File-convention tools for `@delendai/core`. A consumer-facing surface
 over the repo's canonical file-convention profile (see
-[`docs/mcp-vertex/FILE-CONVENTIONS.md`](../../docs/mcp-vertex/FILE-CONVENTIONS.md), f00037):
+[`docs/delendai/FILE-CONVENTIONS.md`](../../docs/delendai/FILE-CONVENTIONS.md), f00037):
 two read-only MCP tools that classify paths into roles and report
 convention drift.
 
 Load it explicitly:
 
 ```bash
-mcp-vertex --plugins=conventions
+delendai --plugins=conventions
 ```
 
 ## Tools

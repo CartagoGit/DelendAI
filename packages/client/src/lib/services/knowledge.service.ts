@@ -1,4 +1,4 @@
-import type { McpVertexToolOutputs } from '@delendai/core/contracts';
+import type { DelendaiToolOutputs } from '@delendai/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import type {
@@ -6,7 +6,7 @@ import type {
 	IKnowledgeSummary,
 } from '../contracts/interfaces/tool-descriptor.interface';
 
-type IKnowledgeOutput = McpVertexToolOutputs['mcp-vertex_knowledge'];
+type IKnowledgeOutput = DelendaiToolOutputs['delendai_knowledge'];
 
 export class KnowledgeNotFoundError extends Error {
 	constructor(readonly id: string) {
@@ -26,16 +26,16 @@ export type IKnowledgeFullEntry = IKnowledgeEntry;
  * Entries that don't contain `_` fall back to `other`.
  */
 export const categoryOf = (id: string): string => {
-	// Host-namespaced ids are `mcp-vertex_<rest>`. A core meta-tool has
-	// no further segment (e.g. `mcp-vertex_overview`) and keeps the host
-	// namespace (`mcp-vertex`); a plugin tool (e.g. `mcp-vertex_memory_recall`)
+	// Host-namespaced ids are `delendai_<rest>`. A core meta-tool has
+	// no further segment (e.g. `delendai_overview`) and keeps the host
+	// namespace (`delendai`); a plugin tool (e.g. `delendai_memory_recall`)
 	// returns its plugin prefix (`memory`). Non-host ids fall back to the
 	// prefix before the first `_`, or `other` when there is none.
-	const HOST_PREFIX = 'mcp-vertex_';
+	const HOST_PREFIX = 'delendai_';
 	if (id.startsWith(HOST_PREFIX)) {
 		const stripped = id.slice(HOST_PREFIX.length);
 		const ix = stripped.indexOf('_');
-		if (ix < 0) return 'mcp-vertex';
+		if (ix < 0) return 'delendai';
 		return stripped.slice(0, ix);
 	}
 	const ix = id.indexOf('_');
@@ -50,7 +50,7 @@ export class KnowledgeService {
 		const output = await this.client.request<
 			Record<string, never>,
 			IKnowledgeOutput
-		>('mcp-vertex_knowledge', {});
+		>('delendai_knowledge', {});
 		return output.entries ?? [];
 	}
 
@@ -102,7 +102,7 @@ export class KnowledgeService {
 		const output = await this.client.request<
 			{ id: string },
 			IKnowledgeOutput
-		>('mcp-vertex_knowledge', { id });
+		>('delendai_knowledge', { id });
 		if (
 			output.id === undefined ||
 			output.title === undefined ||

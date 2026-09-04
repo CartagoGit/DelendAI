@@ -42,7 +42,7 @@ describe('with-compute-lock.script.ts', () => {
 			timeout: 15_000,
 			env: {
 				...process.env,
-				MCP_VERTEX_TEST_COMPUTE_LOCK_PATH: lockPath,
+				DELENDAI_TEST_COMPUTE_LOCK_PATH: lockPath,
 				...env,
 			},
 		});
@@ -84,7 +84,7 @@ describe('with-compute-lock.script.ts', () => {
 				const child = spawn('bun', [SCRIPT, ...args], {
 					env: {
 						...process.env,
-						MCP_VERTEX_TEST_COMPUTE_LOCK_PATH: lockPath,
+						DELENDAI_TEST_COMPUTE_LOCK_PATH: lockPath,
 					},
 				});
 				let stderr = '';

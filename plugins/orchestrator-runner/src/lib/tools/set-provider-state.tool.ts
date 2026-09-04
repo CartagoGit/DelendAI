@@ -42,7 +42,7 @@ export const buildSetProviderStateRegistration = (
 	tags: ['orchestrator-runner', 'lazy', 'routing'],
 	summary:
 		'Manually override a provider’s availability (e.g. force unavailable until a time).',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_set_provider_state',
+	descriptionKey: 'delendai_orchestrator-runner_set_provider_state',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_set_provider_state`,

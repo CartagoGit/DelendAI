@@ -4,7 +4,7 @@ import { buildHeader } from '../../../src/dashboard/builders/build-header';
 
 describe('buildHeader', () => {
 	const baseSettings = {
-		docsUrl: 'https://mcp-vertex.dev',
+		docsUrl: 'https://delendai.dev',
 		allowLocalhost: false,
 		allowPrivateIps: false,
 		logLevel: 'info',
@@ -15,7 +15,7 @@ describe('buildHeader', () => {
 
 	const mockModel = {
 		server: {
-			name: 'mcp-vertex-test',
+			name: 'delendai-test',
 			version: '1.2.3',
 			fetchedAt: '2026-06-28T19:00:00Z',
 		},
@@ -23,7 +23,7 @@ describe('buildHeader', () => {
 
 	it('renders the header correctly', () => {
 		const html = buildHeader(mockModel);
-		expect(html).toContain('mcp-vertex-test');
+		expect(html).toContain('delendai-test');
 		expect(html).toContain('1.2.3');
 	});
 

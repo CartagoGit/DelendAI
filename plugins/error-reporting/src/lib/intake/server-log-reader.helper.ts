@@ -62,7 +62,7 @@ const MAX_DETAIL_LENGTH = 160;
 
 /**
  * Bracketed tokens that are host framing rather than payload. Anything
- * else in brackets — `[push-scheduler]`, `[mcp-vertex]` — is the
+ * else in brackets — `[push-scheduler]`, `[delendai]` — is the
  * server's own text and stays in the payload where the classifiers can
  * see it.
  */

@@ -2,7 +2,7 @@
 	"name": "@delendai/remote-provider-core",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Shared remote-provider foundation for @mcp-vertex: validated provider config, injectable HTTP client and normalized read-only transport errors.",
+	"description": "Shared remote-provider foundation for @delendai: validated provider config, injectable HTTP client and normalized read-only transport errors.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

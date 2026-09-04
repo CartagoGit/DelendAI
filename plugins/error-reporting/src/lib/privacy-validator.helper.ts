@@ -1,4 +1,4 @@
-import type { ISafeMcpVertexReport } from './contracts/interfaces/reporter.interface';
+import type { ISafeDelendaiReport } from './contracts/interfaces/reporter.interface';
 import type { IPrivacyValidationResult } from './contracts/interfaces/privacy-validator.interface';
 
 const MAX_SAFE_STRING_LENGTH = 240;
@@ -116,7 +116,7 @@ const validateLeaf = (value: unknown): string | undefined => {
 };
 
 export const validateSafeReport = (
-	report: ISafeMcpVertexReport,
+	report: ISafeDelendaiReport,
 ): IPrivacyValidationResult => {
 	if (!report.packageId.startsWith('@delendai/')) {
 		return { ok: false, reasonCode: 'package-id' };

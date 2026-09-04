@@ -10,7 +10,7 @@ import { diagnoseConfigFile } from '@delendai/core/lib/plugins/load-config-file'
 
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
-const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-config-');
+const WRITABLE_WORKSPACE = createTestWorkspace('delendai-config-');
 const CLI_CACHE_DIR = '.cli';
 const FILE_CACHE_DIR = '.fromfile';
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
@@ -93,9 +93,9 @@ describe('assembleCliConfig + config file', async () => {
 		});
 		const known = config.knowledge?.find((entry) => entry.id === 'seen');
 		// After the host-namespace rename a plugin's ctx.namespacePrefix is
-		// host-qualified (`mcp-vertex_<prefix>`) so tools register as
-		// `mcp-vertex_<plugin>_<tool>`; the fake plugin echoes it as the title.
-		expect(known?.title).toBe('mcp-vertex_dd');
+		// host-qualified (`delendai_<prefix>`) so tools register as
+		// `delendai_<plugin>_<tool>`; the fake plugin echoes it as the title.
+		expect(known?.title).toBe('delendai_dd');
 		expect(JSON.parse(known?.body ?? '{}')).toEqual({
 			options: { k: 'v' },
 			keepLegacy: false,
@@ -123,7 +123,7 @@ describe('assembleCliConfig + config file', async () => {
 				};
 			},
 			readFile: async (absolutePath) =>
-				absolutePath.endsWith('mcp-vertex.config.json')
+				absolutePath.endsWith('delendai.config.json')
 					? JSON.stringify({ plugins: { git: { enabled: false } } })
 					: undefined,
 		});
@@ -222,9 +222,9 @@ describe('assembleCliConfig + config file', async () => {
 		]);
 		const known = config.knowledge?.find((entry) => entry.id === 'seen');
 		// After the host-namespace rename a plugin's ctx.namespacePrefix is
-		// host-qualified (`mcp-vertex_<prefix>`) so tools register as
-		// `mcp-vertex_<plugin>_<tool>`; the fake plugin echoes it as the title.
-		expect(known?.title).toBe('mcp-vertex_dd');
+		// host-qualified (`delendai_<prefix>`) so tools register as
+		// `delendai_<plugin>_<tool>`; the fake plugin echoes it as the title.
+		expect(known?.title).toBe('delendai_dd');
 	});
 
 	it('applies exclude-plugins to config-file plugins too', async () => {

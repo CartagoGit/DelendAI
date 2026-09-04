@@ -62,8 +62,8 @@ export const detectConflicts = async (
 	for (const name of ADOPTION_SCRIPT_CONFLICTS) {
 		if (scripts[name] !== undefined) out.push(`script:${name}`);
 	}
-	if (await reader.exists('mcp-vertex.config.json')) {
-		out.push('config:mcp-vertex.config.json');
+	if (await reader.exists('delendai.config.json')) {
+		out.push('config:delendai.config.json');
 	}
 	if (await reader.exists('.vscode/mcp.json')) {
 		out.push('config:.vscode/mcp.json');

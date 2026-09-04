@@ -9,7 +9,7 @@ import { detectStack } from './stack-detect';
 const workspace = async (
 	files: Readonly<Record<string, string>>,
 ): Promise<string> => {
-	const dir = await mkdtemp(join(tmpdir(), 'mcpv-stack-'));
+	const dir = await mkdtemp(join(tmpdir(), 'delendai-stack-'));
 	await Promise.all(
 		Object.entries(files).map(async ([path, content]) => {
 			const absolute = join(dir, path);

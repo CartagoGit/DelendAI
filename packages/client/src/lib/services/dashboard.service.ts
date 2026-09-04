@@ -11,8 +11,8 @@
  * Plugin attribution is AUTHORITATIVE: it comes from the overview (which
  * carries each tool's owning plugin) rather than parsing it out of the
  * qualified name. Parsing is unreliable because a core tool with an
- * underscore id (`mcp-vertex_fs_read`, `mcp-vertex_agent_catalog`) is
- * structurally identical to a plugin tool (`mcp-vertex_<plugin>_<id>`);
+ * underscore id (`delendai_fs_read`, `delendai_agent_catalog`) is
+ * structurally identical to a plugin tool (`delendai_<plugin>_<id>`);
  * `pluginFromToolName` is only the fallback for names the overview omits.
  *
  * `getAllModels` fetches each upstream payload EXACTLY ONCE and derives
@@ -70,7 +70,7 @@ const tokensFromBytes = (bytes: number): number =>
 /**
  * Compact responses are ~18% smaller on average in our reference dataset;
  * this is the conservative number reported in
- * `docs/mcp-vertex/TOKEN-BUDGETS.md`. Future revisions can compute this
+ * `docs/delendai/TOKEN-BUDGETS.md`. Future revisions can compute this
  * from a compact-vs-full diff if the server exposes it.
  */
 const estimateTokensSaved = (totalBytes: number): number =>
@@ -627,7 +627,7 @@ const buildWorkspaceModel = (input: {
 });
 
 const buildLoadingWorkspaceModel = (
-	namespacePrefix = 'mcp-vertex',
+	namespacePrefix = 'delendai',
 ): IDashboardWorkspaceModel => {
 	const overview: IDashboardOverviewModel = {
 		serverName: '',

@@ -1,6 +1,6 @@
 /**
  * `discoverTroubleshootingCases` — pure-function catalogue scanner for
- * `docs/mcp-vertex/troubleshooting/*.md` (l030 S4). Mirrors `discover-tutorials.spec.ts`:
+ * `docs/delendai/troubleshooting/*.md` (l030 S4). Mirrors `discover-tutorials.spec.ts`:
  * SRP lives in the module, this spec pins the contract.
  */
 import { describe, expect, it } from 'vitest';
@@ -11,7 +11,7 @@ import {
 } from '../lib/discover-troubleshooting';
 
 const fakeReader = (files: Record<string, string>): ITroubleshootingReader => {
-	const dir = 'docs/mcp-vertex/troubleshooting';
+	const dir = 'docs/delendai/troubleshooting';
 	const names = Object.keys(files)
 		.filter((p) => p.startsWith(`${dir}/`))
 		.map((p) => p.slice(dir.length + 1));
@@ -26,13 +26,13 @@ describe('discoverTroubleshootingCases', () => {
 	it('returns an empty list when the directory has no files', () => {
 		const r = fakeReader({});
 		expect(
-			discoverTroubleshootingCases('docs/mcp-vertex/troubleshooting', r),
+			discoverTroubleshootingCases('docs/delendai/troubleshooting', r),
 		).toEqual([]);
 	});
 
 	it('parses frontmatter (slug, symptom, cause, fix, tags, closedBy) and body', () => {
 		const r = fakeReader({
-			'docs/mcp-vertex/troubleshooting/example-case.md': [
+			'docs/delendai/troubleshooting/example-case.md': [
 				'---',
 				'slug: example-case',
 				'symptom: "Things break."',
@@ -46,7 +46,7 @@ describe('discoverTroubleshootingCases', () => {
 			].join('\n'),
 		});
 		const out = discoverTroubleshootingCases(
-			'docs/mcp-vertex/troubleshooting',
+			'docs/delendai/troubleshooting',
 			r,
 		);
 		expect(out).toHaveLength(1);
@@ -63,7 +63,7 @@ describe('discoverTroubleshootingCases', () => {
 
 	it('skips a file missing any required field', () => {
 		const r = fakeReader({
-			'docs/mcp-vertex/troubleshooting/incomplete.md': [
+			'docs/delendai/troubleshooting/incomplete.md': [
 				'---',
 				'slug: incomplete',
 				'symptom: "Only a symptom."',
@@ -72,14 +72,14 @@ describe('discoverTroubleshootingCases', () => {
 			].join('\n'),
 		});
 		expect(
-			discoverTroubleshootingCases('docs/mcp-vertex/troubleshooting', r),
+			discoverTroubleshootingCases('docs/delendai/troubleshooting', r),
 		).toEqual([]);
 	});
 
 	it('skips non-md files', () => {
 		const r = fakeReader({
-			'docs/mcp-vertex/troubleshooting/notes.txt': 'not a case',
-			'docs/mcp-vertex/troubleshooting/real.md': [
+			'docs/delendai/troubleshooting/notes.txt': 'not a case',
+			'docs/delendai/troubleshooting/real.md': [
 				'---',
 				'slug: real',
 				'symptom: "s"',
@@ -90,7 +90,7 @@ describe('discoverTroubleshootingCases', () => {
 			].join('\n'),
 		});
 		const out = discoverTroubleshootingCases(
-			'docs/mcp-vertex/troubleshooting',
+			'docs/delendai/troubleshooting',
 			r,
 		);
 		expect(out.map((c) => c.slug)).toEqual(['real']);
@@ -98,7 +98,7 @@ describe('discoverTroubleshootingCases', () => {
 
 	it('defaults tags to [] when absent', () => {
 		const r = fakeReader({
-			'docs/mcp-vertex/troubleshooting/no-tags.md': [
+			'docs/delendai/troubleshooting/no-tags.md': [
 				'---',
 				'slug: no-tags',
 				'symptom: "s"',
@@ -109,7 +109,7 @@ describe('discoverTroubleshootingCases', () => {
 			].join('\n'),
 		});
 		const out = discoverTroubleshootingCases(
-			'docs/mcp-vertex/troubleshooting',
+			'docs/delendai/troubleshooting',
 			r,
 		);
 		expect(out[0]?.tags).toEqual([]);
@@ -117,13 +117,13 @@ describe('discoverTroubleshootingCases', () => {
 
 	it('sorts by slug', () => {
 		const r = fakeReader({
-			'docs/mcp-vertex/troubleshooting/zeta.md':
+			'docs/delendai/troubleshooting/zeta.md':
 				'---\nslug: zeta\nsymptom: "s"\ncause: "c"\nfix: "f"\n---\nbody',
-			'docs/mcp-vertex/troubleshooting/alpha.md':
+			'docs/delendai/troubleshooting/alpha.md':
 				'---\nslug: alpha\nsymptom: "s"\ncause: "c"\nfix: "f"\n---\nbody',
 		});
 		const out = discoverTroubleshootingCases(
-			'docs/mcp-vertex/troubleshooting',
+			'docs/delendai/troubleshooting',
 			r,
 		);
 		expect(out.map((c) => c.slug)).toEqual(['alpha', 'zeta']);
@@ -131,11 +131,11 @@ describe('discoverTroubleshootingCases', () => {
 
 	it('handles a file with broken frontmatter (no closing ---) by skipping it', () => {
 		const r = fakeReader({
-			'docs/mcp-vertex/troubleshooting/broken.md':
+			'docs/delendai/troubleshooting/broken.md':
 				'---\nslug: broken\n# no closing fence',
 		});
 		expect(
-			discoverTroubleshootingCases('docs/mcp-vertex/troubleshooting', r),
+			discoverTroubleshootingCases('docs/delendai/troubleshooting', r),
 		).toEqual([]);
 	});
 });

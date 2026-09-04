@@ -2,7 +2,7 @@
  * lifecycle-invariants.spec.ts — d00015 (AUD-G05).
  *
  * These two invariants are documented at
- * `docs/mcp-vertex/architecture/invariants/plugin-lifecycle.md` as
+ * `docs/delendai/architecture/invariants/plugin-lifecycle.md` as
  * CIERTO today, unlike the eager/lazy-equivalence invariants in the
  * same document that were FALSO until `r00038`. They get their own
  * regression spec here so "true today" does not silently become
@@ -15,16 +15,16 @@ import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contra
 import type { IPluginRuntime } from '@delendai/core/lib/contracts/interfaces/plugin-runtime.interface';
 import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
 import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
-import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
 
 const ctx = (name: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (path: string) => `/ws/${path}` },
-	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	corePaths: { cacheDir: '.cache/delendai', docsDir: 'docs/delendai' },
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: `.cache/mcp-vertex/${name}`,
-	pluginDocsDir: `docs/mcp-vertex/${name}`,
+	pluginCacheDir: `.cache/delendai/${name}`,
+	pluginDocsDir: `docs/delendai/${name}`,
 	namespacePrefix: name,
 	options: {},
 	args: {},
@@ -42,8 +42,8 @@ const asImport =
 	};
 
 const baseHostConfig = (
-	overrides: Partial<IMcpVertexHostConfig>,
-): IMcpVertexHostConfig => ({
+	overrides: Partial<IDelendaiHostConfig>,
+): IDelendaiHostConfig => ({
 	metadata: {
 		name: 'spec-server',
 		version: '0.0.0',

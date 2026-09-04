@@ -7,7 +7,7 @@
  * this module owns only the policy (which artefacts, how old). Adding a
  * new built-in rule is a new entry here — no consumer changes (OCP).
  *
- * Defaults mirror the observed lifetimes in `.cache/mcp-vertex/`:
+ * Defaults mirror the observed lifetimes in `.cache/delendai/`:
  *
  * - `drift/`, `bootstrap/` — one-shot analyses; nothing rereferences
  *   them after ~2 weeks.
@@ -20,7 +20,7 @@
  *   (f00072 S5); keep the most-recent N, prune the rest.
  *
  * The `maxAgeDays` cap lets a host SHORTEN (never silently lengthen) the
- * built-in `olderThanDays` lifetimes from `mcp-vertex.config.json`
+ * built-in `olderThanDays` lifetimes from `delendai.config.json`
  * without forking this module: each rule's effective age is
  * `min(builtin, maxAgeDays)`.
  */

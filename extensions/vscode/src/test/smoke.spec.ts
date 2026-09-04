@@ -26,10 +26,10 @@ import {
 } from '../extension';
 
 const overviewFixture: IOverview = {
-	server: { name: 'mcp-vertex', version: '0.1.0' },
-	namespacePrefix: 'mcp-vertex',
+	server: { name: 'delendai', version: '0.1.0' },
+	namespacePrefix: 'delendai',
 	plugins: ['core'],
-	tools: ['mcp-vertex_overview'],
+	tools: ['delendai_overview'],
 	knowledge: [],
 	recommendedNextAction: 'Call overview first.',
 };
@@ -90,7 +90,7 @@ describe('VS Code extension smoke', async () => {
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
 				expect(input).toEqual({
-					name: 'mcp-vertex_overview',
+					name: 'delendai_overview',
 					arguments: { compact: true },
 				});
 				return { structuredContent: overviewFixture };
@@ -104,8 +104,8 @@ describe('VS Code extension smoke', async () => {
 
 		expect(stored.get(CLIENT_STATE_KEY)).toBeInstanceOf(McpStdioClient);
 		// f125 + f126/f00026: original commands + observability commands.
-		// f00047 S5: +1 for the new mcp-vertex.openToolbar command.
-		// f00030 S4: +1 for the new mcp-vertex.setupGithub command.
+		// f00047 S5: +1 for the new delendai.openToolbar command.
+		// f00030 S4: +1 for the new delendai.setupGithub command.
 		// f00047 S6 (settings wire-up): +3 for openDocs / saveSettings /
 		//   resetSettings — `renderSettings` posts to these commands, and
 		//   previously they were unregistered so saves were silently
@@ -113,18 +113,18 @@ describe('VS Code extension smoke', async () => {
 		// f00047 S6 (dashboard-always-registers): +1 for openDashboard,
 		//   which is now wired even when `deps.vscode` is injected (the
 		//   smoke test injects vscode → dashboard now shows up here).
-		// f00053 S6: +1 for the new mcp-vertex.openDocsApi command.
-		// f00056 S3: +1 for the new mcp-vertex.openAgentCatalog command
+		// f00053 S6: +1 for the new delendai.openDocsApi command.
+		// f00056 S3: +1 for the new delendai.openAgentCatalog command
 		//   that drives the AgentCatalogService-backed webview.
-		// f00097 S4: +2 for mcp-vertex.proposals.refresh and
-		//   mcp-vertex.proposals.copyError (the board's local commands).
+		// f00097 S4: +2 for delendai.proposals.refresh and
+		//   delendai.proposals.copyError (the board's local commands).
 		// f00098 S3: +6 for the provider dashboard command set
 		//   (providers.openDashboard / healthcheck / pause / resume,
 		//   usage.report / usage.clear).
-		// f00068 S5 (2026-07-11): +1 for mcp-vertex.externalMcps.ack, the
+		// f00068 S5 (2026-07-11): +1 for delendai.externalMcps.ack, the
 		//   external-server activation ack command. The non-modal
 		//   pending-ack notification is fire-and-forget (not tracked).
-		// f00100 S1: +1 for mcp-vertex.openToolDetail, wired from tool-tree
+		// f00100 S1: +1 for delendai.openToolDetail, wired from tool-tree
 		//   leaves to the existing tool-detail webview renderer.
 		// f00107 S3: +1 plugin activation switchboard command.
 		// Configuration Center host command adds one lifecycle-tracked registration.
@@ -136,8 +136,8 @@ describe('VS Code extension smoke', async () => {
 		// the runtime log command.
 		expect(subscriptions).toHaveLength(38);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
-		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
-		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);
+		expect(commands.has('delendai.proposals.refresh')).toBe(true);
+		expect(commands.has('delendai.proposals.copyError')).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_TOOL_DETAIL_COMMAND)).toBe(true);
@@ -148,8 +148,8 @@ describe('VS Code extension smoke', async () => {
 		await commands.get(SHOW_OVERVIEW_COMMAND)?.();
 
 		expect(panels).toHaveLength(1);
-		expect(panels[0]?.webview.html).toContain('mcp-vertex Overview');
-		expect(panels[0]?.webview.html).toContain('mcp-vertex_overview');
+		expect(panels[0]?.webview.html).toContain('delendai Overview');
+		expect(panels[0]?.webview.html).toContain('delendai_overview');
 	});
 
 	it('keeps activation successful when global state persistence rejects', async () => {
@@ -257,10 +257,10 @@ describe('VS Code extension smoke', async () => {
 		await expect(
 			activate(context, { vscode, createClient }),
 		).resolves.toBeUndefined();
-		expect(commands.has('mcp-vertex.providers.healthcheck')).toBe(true);
-		expect(commands.has('mcp-vertex.restartServer')).toBe(true);
+		expect(commands.has('delendai.providers.healthcheck')).toBe(true);
+		expect(commands.has('delendai.restartServer')).toBe(true);
 
-		await commands.get('mcp-vertex.restartServer')?.();
+		await commands.get('delendai.restartServer')?.();
 		expect(attempts).toBe(2);
 		await deactivate();
 	});
@@ -268,10 +268,10 @@ describe('VS Code extension smoke', async () => {
 	// Fix for "Error spawn bun ENOENT" on hosts where `bun` is not on
 	// the extension host's PATH (WSL installs at ~/.bun/bin/bun, custom
 	// devcontainer images, CI runners without a login shell profile).
-	// The extension must read `mcp-vertex.server.command` / `server.args`
+	// The extension must read `delendai.server.command` / `server.args`
 	// from the workspace configuration and forward them to the spawn
-	// instead of hardcoding `bun run mcp-vertex`.
-	it('createDefaultClient honours mcp-vertex.server.command and server.args', async () => {
+	// instead of hardcoding `bun run delendai`.
+	it('createDefaultClient honours delendai.server.command and server.args', async () => {
 		const calls: Array<{ command: string; args: readonly string[] }> = [];
 		const vscode: IVscodeApi = {
 			ViewColumn: { One: 1 },
@@ -301,7 +301,7 @@ describe('VS Code extension smoke', async () => {
 					};
 				},
 				getConfiguration(section) {
-					expect(section).toBe('mcp-vertex.server');
+					expect(section).toBe('delendai.server');
 					return {
 						get<T>(key: string, defaultValue?: T): T | undefined {
 							if (key === 'command')
@@ -309,7 +309,7 @@ describe('VS Code extension smoke', async () => {
 							if (key === 'args')
 								return [
 									'run',
-									'mcp-vertex',
+									'delendai',
 									'--preset=swarm',
 								] as unknown as T;
 							return defaultValue;
@@ -342,7 +342,7 @@ describe('VS Code extension smoke', async () => {
 
 		expect(calls).toHaveLength(1);
 		expect(calls[0]?.command).toBe('/home/cartago/.bun/bin/bun');
-		expect(calls[0]?.args).toEqual(['run', 'mcp-vertex', '--preset=swarm']);
+		expect(calls[0]?.args).toEqual(['run', 'delendai', '--preset=swarm']);
 	});
 
 	it('createDefaultClient refuses to spawn when no configuration is provided', async () => {
@@ -377,7 +377,7 @@ describe('VS Code extension smoke', async () => {
 		try {
 			const { createDefaultClient } = await import('../extension');
 			await expect(createDefaultClient(vscode)).rejects.toThrow(
-				'mcp-vertex.server.command and mcp-vertex.server.args',
+				'delendai.server.command and delendai.server.args',
 			);
 		} finally {
 			McpStdioClient.connect = originalConnect;
@@ -391,13 +391,13 @@ describe('VS Code extension smoke', async () => {
 		// instead of depending on the live repo root, where concurrent
 		// workers may change the file under test.
 		const workspaceRoot = await mkdtemp(
-			join(tmpdir(), 'mcp-vertex-vscode-launch-'),
+			join(tmpdir(), 'delendai-vscode-launch-'),
 		);
 		await writeFile(
 			join(workspaceRoot, '.mcp.json'),
 			JSON.stringify({
 				mcpServers: {
-					'mcp-vertex': {
+					delendai: {
 						command: 'bun',
 						args: [
 							'tools/scripts/host/host-server.script.ts',
@@ -465,11 +465,9 @@ describe('VS Code extension smoke', async () => {
 	});
 
 	it('resolveServerCommand falls back to bun for a configured workspace without .mcp.json', async () => {
-		const workspaceRoot = await mkdtemp(
-			join(tmpdir(), 'mcp-vertex-vscode-'),
-		);
+		const workspaceRoot = await mkdtemp(join(tmpdir(), 'delendai-vscode-'));
 		await writeFile(
-			join(workspaceRoot, 'mcp-vertex.config.json'),
+			join(workspaceRoot, 'delendai.config.json'),
 			'{}\n',
 			'utf8',
 		);
@@ -517,7 +515,7 @@ describe('VS Code extension smoke', async () => {
 
 			expect(await resolveServerCommand(vscode)).toEqual({
 				command: 'bun',
-				args: ['run', 'mcp-vertex'],
+				args: ['run', 'delendai'],
 				cwd: workspaceRoot,
 			});
 		} finally {

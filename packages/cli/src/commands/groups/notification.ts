@@ -3,8 +3,8 @@
  * MCP tool. Pure 1:1 delegation.
  *
  * Tools mapped:
- *   - `mcp-vertex_notification_notify_status` (no args)
- *   - `mcp-vertex_notification_await_lock`    ({ taskId, timeoutMs? })
+ *   - `delendai_notification_notify_status` (no args)
+ *   - `delendai_notification_await_lock`    ({ taskId, timeoutMs? })
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import {
@@ -21,7 +21,7 @@ const notifyStatusCommand: ICliCommand = {
 		'Report the lock-release notifier (watched file + recent releases).',
 	async run(_args, ctx) {
 		return data(
-			await request(ctx, 'mcp-vertex_notification_notify_status', {}),
+			await request(ctx, 'delendai_notification_notify_status', {}),
 		);
 	},
 };
@@ -37,7 +37,7 @@ const awaitLockCommand: ICliCommand = {
 		const timeoutMs =
 			numberArg(args, 'timeout') ?? numberArg(args, 'timeoutMs');
 		return data(
-			await request(ctx, 'mcp-vertex_notification_await_lock', {
+			await request(ctx, 'delendai_notification_await_lock', {
 				taskId,
 				...(timeoutMs !== undefined ? { timeoutMs } : {}),
 			}),

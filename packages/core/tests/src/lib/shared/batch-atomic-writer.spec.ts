@@ -152,7 +152,7 @@ describe('createFileSystemBatchWriter — serialization', async () => {
 	// x00183 (F2): the old mutex was a process-local promise chain —
 	// re-created fresh on every `createFileSystemBatchWriter(...)` call.
 	// Two INDEPENDENT writer instances against the same root (simulating
-	// two separate mcp-vertex processes, or a CLI script racing a running
+	// two separate delendai processes, or a CLI script racing a running
 	// host) never shared that chain and had zero real serialization,
 	// even though a single file's atomic rename alone already prevents a
 	// torn SINGLE-file read regardless of any mutex — the guarantee that

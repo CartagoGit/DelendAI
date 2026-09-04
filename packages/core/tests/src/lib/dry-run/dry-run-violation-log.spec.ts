@@ -20,7 +20,7 @@ const record = (
 	overrides: Partial<IDryRunContractViolationRecord> = {},
 ): IDryRunContractViolationRecord => ({
 	ts: '2026-08-29T00:00:00.000Z',
-	tool: 'mcp-vertex_writer_run',
+	tool: 'delendai_writer_run',
 	pluginId: 'writer',
 	reason: 'handler ignored args.dryRun and returned a non-dryRun payload',
 	issues: [],

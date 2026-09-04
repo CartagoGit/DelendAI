@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexImpactAnalysisImpactAnalyzeOutput {
+export interface DelendaiImpactAnalysisImpactAnalyzeOutput {
 	changedSymbols: string[];
 	dependents: string[];
 	affectedPackages: string[];
@@ -23,7 +23,7 @@ export interface McpVertexImpactAnalysisImpactAnalyzeOutput {
 	truncated: boolean;
 }
 
-export interface McpVertexImpactAnalysisTestsForChangeOutput {
+export interface DelendaiImpactAnalysisTestsForChangeOutput {
 	run: string[];
 	skip: string[];
 	coverageFocus: string[];
@@ -34,6 +34,6 @@ export interface McpVertexImpactAnalysisTestsForChangeOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface ImpactAnalysisToolOutputs {
-	"mcp-vertex_impact-analysis_impact_analyze": McpVertexImpactAnalysisImpactAnalyzeOutput;
-	"mcp-vertex_impact-analysis_tests_for_change": McpVertexImpactAnalysisTestsForChangeOutput;
+	"delendai_impact-analysis_impact_analyze": DelendaiImpactAnalysisImpactAnalyzeOutput;
+	"delendai_impact-analysis_tests_for_change": DelendaiImpactAnalysisTestsForChangeOutput;
 }

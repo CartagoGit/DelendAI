@@ -32,8 +32,8 @@ describe('extractAutoBypassed', () => {
 
 describe('buildRecord lifts the auto-bypass flag (not opt-in)', () => {
 	const base = {
-		toolName: 'mcp-vertex_orchestrator-runner_invoke',
-		corePrefix: 'mcp-vertex',
+		toolName: 'delendai_orchestrator-runner_invoke',
+		corePrefix: 'delendai',
 		peerPrefixes: [],
 		agent,
 		sessionId: 's',

@@ -23,7 +23,7 @@
 			"!apps/web/src/data/capabilities.json",
 			"!apps/web/src/data/skills.json",
 			"!apps/web/src/data/manifests",
-			"!docs/mcp-vertex/examples/custom-plugin/node_modules",
+			"!docs/delendai/examples/custom-plugin/node_modules",
 			"!packages/*/dist",
 			"!packages/*/node_modules",
 			"!plugins/*/dist",
@@ -93,7 +93,7 @@
 			"includes": [
 				"apps/web/src/data/capabilities.json",
 				"apps/web/src/data/skills.json",
-				"docs/mcp-vertex/agent-catalog.generated.json"
+				"docs/delendai/agent-catalog.generated.json"
 			],
 			"formatter": {
 				"enabled": false
@@ -105,8 +105,8 @@
 				"packages/core/src/lib/registry/generated/**/*.generated.ts",
 				"apps/web/src/generated/**/*.generated.ts",
 				"apps/web/src/data/plugins/catalog.generated.ts",
-				"docs/mcp-vertex/generated/**",
-				"packages/core/schema/mcp-vertex.config.schema.json"
+				"docs/delendai/generated/**",
+				"packages/core/schema/delendai.config.schema.json"
 			],
 			"formatter": {
 				"enabled": false

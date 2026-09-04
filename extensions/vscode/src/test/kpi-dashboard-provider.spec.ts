@@ -78,7 +78,7 @@ const baseOutput = (
 	},
 	recommendations: [
 		{
-			tool: 'mcp-vertex_project_kpis',
+			tool: 'delendai_project_kpis',
 			priority: 'next',
 			reason: `inspect ${view}`,
 		},
@@ -445,7 +445,7 @@ const createFixtures = (): Record<string, IKpiDashboardToolOutput> => ({
 		summary: 'Activation KPIs measured across 4 sessions.',
 		activation: {
 			status: 'measured',
-			source: 'activation-kpis/.vscode/mcp-vertex/kpis.json',
+			source: 'activation-kpis/.vscode/delendai/kpis.json',
 			sessionCount: 4,
 			meanPrecision: 0.75,
 			meanRecall: 0.5,
@@ -463,7 +463,7 @@ describe('KpiDashboardProvider', () => {
 				client: {
 					async request(_tool, args) {
 						if (
-							_tool === 'mcp-vertex_tool_search' ||
+							_tool === 'delendai_tool_search' ||
 							(args as { view?: string }).view === undefined
 						) {
 							return {
@@ -474,7 +474,7 @@ describe('KpiDashboardProvider', () => {
 						return fixtures[(args as { view: string }).view]!;
 					},
 				},
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 			},
 			{ windowDays: 7, detail: 'standard' },
 		);
@@ -574,7 +574,7 @@ describe('KpiDashboardProvider', () => {
 						return { entries: [{ pluginId: 'project-kpis' }] };
 					}
 					throw new Error(
-						'Failed to call MCP tool "mcp-vertex_project_kpis": connection closed',
+						'Failed to call MCP tool "delendai_project_kpis": connection closed',
 					);
 				},
 			},

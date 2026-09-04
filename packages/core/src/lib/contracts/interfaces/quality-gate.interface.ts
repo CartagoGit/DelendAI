@@ -1,5 +1,5 @@
 /**
- * A single quality gate the host can execute against the project. mcp-vertex
+ * A single quality gate the host can execute against the project. delendai
  * treats every gate as opaque data: the core knows only how to launch
  * `command` + measure the exit code; the actual toolchain semantics live in
  * presets shipped by plugins (see `@delendai/quality` for the canonical TS
@@ -13,7 +13,7 @@
  * - A preset (e.g. `ts-eslint`, `py-mypy`, `go-vet`) is a list of gates.
  *   The `quality` plugin loads presets from
  *   `@delendai/quality/presets/<lang>.ts` and merges them with whatever
- *   the project declares via `mcp-vertex.config.json#plugins.quality.extraGates`.
+ *   the project declares via `delendai.config.json#plugins.quality.extraGates`.
  * - `id` MUST be unique within the merged gate list. The runner uses it as
  *   the stable identifier reported in audit logs, knowledge entries and
  *   per-gate skip lists.
@@ -33,7 +33,7 @@
  *   surface in knowledge entries without having to grep the registry.
  *
  * The interface deliberately mirrors the JSON shape used in
- * `mcp-vertex.config.json#plugins.quality.extraGates[]` so the parser can
+ * `delendai.config.json#plugins.quality.extraGates[]` so the parser can
  * deserialise a user config into `IQualityGate[]` without a translation
  * step (verified by the config-schema test in `packages/core/tests/`).
  *
@@ -58,7 +58,7 @@ export type IQualityGateExpect = 'pass' | 'fail';
  * (TS, JS, Python, Rust, Go, Kotlin, shell, …) so future presets can add
  * tags without a core release. Presets MUST declare a non-empty array.
  *
- * Reserved short codes (matching the `mcp-vertex.config.json#language`
+ * Reserved short codes (matching the `delendai.config.json#language`
  * convention proposed in l107 §3.2):
  *
  * - `ts` / `tsx`  — TypeScript / TSX

@@ -3,7 +3,7 @@
  * policy (f00115 S2), or clear it back to the host config / default.
  * The host can disable this tool's writes with
  * `options.allowSetTool: false` (the policy then only changes through
- * `mcp-vertex.config.json`).
+ * `delendai.config.json`).
  */
 import z from 'zod';
 
@@ -63,7 +63,7 @@ export const buildSetPolicyRegistration = (
 				if (options.allowSetTool === false) {
 					return toolError(
 						'Runtime overrides are disabled by the host (allowSetTool: false).',
-						'Change plugins.test-policy.options.mode in mcp-vertex.config.json instead.',
+						'Change plugins.test-policy.options.mode in delendai.config.json instead.',
 					);
 				}
 				try {

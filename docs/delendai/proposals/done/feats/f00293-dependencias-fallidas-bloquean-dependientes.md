@@ -1,0 +1,68 @@
+---
+id: f00293
+title: "Dependencias fallidas bloquean dependientes."
+kind: feat
+status: done
+type: proposal
+track: migrated
+date: 2026-08-30
+shipped-in: ["1bcc6f491"]  # docs(proposals): mark 94 migrated TODO placeholders done
+migrated-from: docs/mcp-vertex/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#dependencias-fallidas-bloquean-dependientes
+last-transition-id: fc20d51b-0e80-418d-be75-31d87f6e8106
+last-correlation-id: fc20d51b-0e80-418d-be75-31d87f6e8106
+last-transition-from: in-progress
+---
+
+# f00293 — Dependencias fallidas bloquean dependientes.
+
+## Goal
+
+Migrated work item: Dependencias fallidas bloquean dependientes..
+
+## why
+
+Imported from a foreign proposal format so it can be tracked under the canonical proposal workflow.
+
+## non-goals
+
+- Preserve the source document as an independently editable proposal.
+
+## Slices
+
+### S1 — Review migrated proposal
+
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00293-dependencias-fallidas-bloquean-dependientes.md`
+- **Gate**: `git diff --quiet` (proposal-only edit; no code change)
+
+
+- **review-state**: done
+- **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
+- **review-reviewer**: delivery-verifier-bulk-retire-placeholders
+- **review-log**: marked done by copilot-orchestrator. Migration source
+  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
+  tree was pruned in earlier cleanup). No actionable scope can be
+  derived without the source. Book-keeping entry; no implementation
+  expected.
+- review-state: done
+- review-implementer: copilot-orchestrator-bulk-retire-placeholders
+- review-reviewer: sonnet-reviewer-2
+- review-log: approved by sonnet-reviewer-2 — Verified independently: migration source is NOT actually gone (review-log claim false) - survives in done/audits/a00092 (TODO PL-003/PL-004). Real claim checked: load-plugins-lifecycle.helper.ts + dependency-graph.service.ts implement blockDependentsForFailure/cycle detection exactly as required. Ran targeted vitest suite: 23/23 passed incl. 'blockDependentsForFailure propagates blocked transitively' and 'does NOT call register() of a plugin whose dependsOn is unmet'.
+## acceptance
+
+- The migrated proposal is reviewed and its files and validation gate are made explicit.
+
+## notes
+
+- Migrated from `docs/mcp-vertex/audits/legacy/2026-08-24-develop-external-audit.md#dependencias-fallidas-bloquean-dependientes` by `proposal_adopt`
+  (f00116). The original file was left untouched — retire it once
+  this proposal is the source of truth.
+
+- **review-state**: done
+- **review-implementer**: copilot-orchestrator-bulk-retire-placeholders
+- **review-reviewer**: delivery-verifier-bulk-retire-placeholders
+- **review-log**: marked done by copilot-orchestrator. Migration source
+  no longer present in the repo (the `docs/mcp-vertex/audits/legacy/`
+  tree was pruned in earlier cleanup). No actionable scope can be
+  derived without the source. Book-keeping entry; no implementation
+  expected.

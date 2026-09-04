@@ -2,7 +2,7 @@ import type { IPromptRegistration } from '../contracts/interfaces/tool-registrat
 import { buildCatalog } from '../catalog/agent-discovery-catalog';
 import {
 	DEFAULT_AGENT_POLICY,
-	type IMcpVertexAgentPolicyConfig,
+	type IDelendaiAgentPolicyConfig,
 } from '../plugins/load-config-file';
 import type {
 	IBuildCatalogOptions,
@@ -13,7 +13,7 @@ export interface ICatalogPromptOptions {
 	readonly sources: ICatalogSources;
 	readonly server: IBuildCatalogOptions['server'];
 	readonly now?: () => Date;
-	readonly agentPolicy?: IMcpVertexAgentPolicyConfig;
+	readonly agentPolicy?: IDelendaiAgentPolicyConfig;
 }
 
 export const buildAgentBootstrapPromptRegistration = (
@@ -26,7 +26,7 @@ export const buildAgentBootstrapPromptRegistration = (
 			`${namespacePrefix}_agent_bootstrap`,
 			{
 				description:
-					'One-click orientation for any agent connected to this MCP server. Calls `mcp-vertex_overview` first, then `mcp-vertex_agent_catalog` to discover the tools/skills/proposals you can use right now.',
+					'One-click orientation for any agent connected to this MCP server. Calls `delendai_overview` first, then `delendai_agent_catalog` to discover the tools/skills/proposals you can use right now.',
 			},
 			async () => {
 				const autonomous =
@@ -58,10 +58,10 @@ export const buildAgentBootstrapPromptRegistration = (
 									...principles.map(
 										(principle) => `- ${principle}`,
 									),
-									'1. Call `mcp-vertex_overview` first to map the server and confirm the loaded plugin surface.',
-									'2. Call `mcp-vertex_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
+									'1. Call `delendai_overview` first to map the server and confirm the loaded plugin surface.',
+									'2. Call `delendai_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
 									'3. Narrow with `section` or `query` before doing work, then pick the matching proposal or skill instead of rereading docs broadly.',
-									'4. To use a skill: call `mcp-vertex_skill` (no args) for the compact list of what each skill is and when to use it, then `mcp-vertex_skill { "id": "<skill-id>" }` to load that one skill body only when you are about to apply it (keeps token cost low).',
+									'4. To use a skill: call `delendai_skill` (no args) for the compact list of what each skill is and when to use it, then `delendai_skill { "id": "<skill-id>" }` to load that one skill body only when you are about to apply it (keeps token cost low).',
 									`Actionable proposals: ${actionable}`,
 								].join('\n'),
 							},

@@ -52,7 +52,7 @@ const loadArtifact = async (): Promise<IArtifactShape> => {
 	const here = dirname(fileURLToPath(import.meta.url));
 	const repoRoot = resolve(here, '../../../..');
 	const raw = await readFile(
-		resolve(repoRoot, 'docs/mcp-vertex/agent-catalog.generated.json'),
+		resolve(repoRoot, 'docs/delendai/agent-catalog.generated.json'),
 		'utf8',
 	);
 	return JSON.parse(raw) as IArtifactShape;
@@ -62,9 +62,9 @@ const createSnapshot = async () => {
 	const artifact = await loadArtifact();
 	return {
 		server: {
-			name: 'mcp-vertex',
+			name: 'delendai',
 			version: '0.1.0',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 		},
 		generatedAt: artifact.generatedAt,
 		mode: 'full' as const,
@@ -101,7 +101,7 @@ describe('AgentCatalogService', () => {
 		const service = new AgentCatalogService(
 			McpStdioClient.fromTransport({
 				async callTool(input) {
-					expect(input.name).toBe('mcp-vertex_agent_catalog');
+					expect(input.name).toBe('delendai_agent_catalog');
 					return { structuredContent: snapshot };
 				},
 			}),
@@ -109,9 +109,7 @@ describe('AgentCatalogService', () => {
 
 		const result = await service.search('agent_catalog');
 		expect(
-			result.tools.some(
-				(tool) => tool.name === 'mcp-vertex_agent_catalog',
-			),
+			result.tools.some((tool) => tool.name === 'delendai_agent_catalog'),
 		).toBe(true);
 	});
 
@@ -179,7 +177,7 @@ describe('renderAgentCatalogWebview', () => {
 	it('renders tools, skills and proposals in the expected order', async () => {
 		const snapshot = await createSnapshot();
 		const html = renderAgentCatalogWebview({
-			bootstrapPrompt: 'Call mcp-vertex_overview first.',
+			bootstrapPrompt: 'Call delendai_overview first.',
 			tools: snapshot.tools,
 			skills: snapshot.skills,
 			proposals: snapshot.proposals,
@@ -212,13 +210,13 @@ describe('registerOpenAgentCatalogCommand', () => {
 		McpStdioClient.fromTransport({
 			async callTool(input) {
 				onCall?.(input.name);
-				if (input.name === 'mcp-vertex_agent_catalog') {
+				if (input.name === 'delendai_agent_catalog') {
 					return { structuredContent: snapshot };
 				}
-				if (input.name === 'mcp-vertex_skill') {
+				if (input.name === 'delendai_skill') {
 					return { structuredContent: { body: '# Skill body' } };
 				}
-				if (input.name === 'mcp-vertex_proposals_proposal_board') {
+				if (input.name === 'delendai_proposals_proposal_board') {
 					return {
 						structuredContent: {
 							proposals: [{ id: 'x00001', title: 'Demo' }],
@@ -302,21 +300,21 @@ describe('registerOpenAgentCatalogCommand', () => {
 		calls.length = 0;
 
 		await send({ command: 'copied' });
-		expect(infos).toEqual(['mcp-vertex: bootstrap prompt copied']);
+		expect(infos).toEqual(['delendai: bootstrap prompt copied']);
 
 		await send({ command: 'refresh' });
-		expect(calls).toContain('mcp-vertex_agent_catalog');
+		expect(calls).toContain('delendai_agent_catalog');
 
 		calls.length = 0;
-		await send({ command: 'callTool', id: 'mcp-vertex_overview' });
-		expect(calls).toEqual(['mcp-vertex_overview']);
+		await send({ command: 'callTool', id: 'delendai_overview' });
+		expect(calls).toEqual(['delendai_overview']);
 
 		calls.length = 0;
 		await send({ command: 'openSkill', id: 'demo-skill' });
-		expect(calls).toEqual(['mcp-vertex_skill']);
+		expect(calls).toEqual(['delendai_skill']);
 
 		calls.length = 0;
 		await send({ command: 'openProposal', id: 'x00001' });
-		expect(calls).toEqual(['mcp-vertex_proposals_proposal_board']);
+		expect(calls).toEqual(['delendai_proposals_proposal_board']);
 	});
 });

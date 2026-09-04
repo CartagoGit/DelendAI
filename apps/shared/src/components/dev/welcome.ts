@@ -10,12 +10,12 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mcpv-welcome` / `mcpv-welcome__*` /
- *   `mcpv-quickstart` / `mcpv-quickstart__*`. Legacy `welcome__*` /
+ * - Class namespace: `delendai-welcome` / `delendai-welcome__*` /
+ *   `delendai-quickstart` / `delendai-quickstart__*`. Legacy `welcome__*` /
  *   `quickstart__*` selectors are kept in the companion SCSS via
  *   `@extend`, so the existing dev preview keeps matching during
  *   the deprecation window (a future slice renames the legacy
- *   selectors to `mcpv-*` and drops the aliases).
+ *   selectors to `delendai-*` and drops the aliases).
  * - `CARDS` is the canonical 4-card explainer used by both
  *   `renderFirstRunScreen` and `renderQuickStartMenu`. The dev
  *   preview's "Welcome" and "Quick start" surfaces differ only
@@ -43,7 +43,7 @@ export const CARDS: ReadonlyArray<IWelcomeCard> = [
 	{
 		icon: '⚙',
 		title: 'Settings',
-		body: 'Install the MCP server into this workspace (writes .vscode/mcp.json + .vscode/settings.json + a starter mcp-vertex.config.json). Also lets you pick the dashboard theme and language.',
+		body: 'Install the MCP server into this workspace (writes .vscode/mcp.json + .vscode/settings.json + a starter delendai.config.json). Also lets you pick the dashboard theme and language.',
 	},
 	{
 		icon: '◇',
@@ -57,7 +57,7 @@ export const CARDS: ReadonlyArray<IWelcomeCard> = [
 	},
 ];
 
-export const QUICK_START_KEY = 'mcpv:dev:quickstart-dismissed';
+export const QUICK_START_KEY = 'delendai:dev:quickstart-dismissed';
 
 export const isQuickStartDismissed = (): boolean => {
 	try {
@@ -81,7 +81,7 @@ export interface IRenderFirstRunScreenOptions {
 	 *  (e.g. a CLI init wizard that explains the 3 commands
 	 *  the user will run) can pass a translated list. */
 	readonly cards?: ReadonlyArray<IWelcomeCard>;
-	/** Heading shown in the panel head. Default: "Welcome to mcp-vertex". */
+	/** Heading shown in the panel head. Default: "Welcome to delendai". */
 	readonly heading?: string;
 	/** Lede paragraph. Default: the canonical English copy. The
 	 *  string is HTML, so the host can include `<code>` etc.;
@@ -96,34 +96,34 @@ export const renderFirstRunScreen = (
 	options: IRenderFirstRunScreenOptions = {},
 ): string => {
 	const cards = options.cards ?? CARDS;
-	const heading = options.heading ?? 'Welcome to mcp-vertex';
+	const heading = options.heading ?? 'Welcome to delendai';
 	const ledeHtml =
 		options.ledeHtml ??
-		'This extension ships a dashboard, settings, and a tools panel for the <code>mcp-vertex</code> MCP server. The MCP server is not installed in this workspace yet — once it is, the dashboard will switch to fetching real data from it.';
+		'This extension ships a dashboard, settings, and a tools panel for the <code>delendai</code> MCP server. The MCP server is not installed in this workspace yet — once it is, the dashboard will switch to fetching real data from it.';
 	const skipLabel =
 		options.skipLabel ?? 'Skip — show me the dashboard anyway';
 	const cardsHtml = cards
 		.map(
 			(card) =>
-				`<article class="mcpv-welcome__card welcome__card">
-				<div class="mcpv-welcome__card-icon welcome__card-icon" aria-hidden="true">${escapeAttr(card.icon)}</div>
+				`<article class="delendai-welcome__card welcome__card">
+				<div class="delendai-welcome__card-icon welcome__card-icon" aria-hidden="true">${escapeAttr(card.icon)}</div>
 				<h3>${escapeAttr(card.title)}</h3>
 				<p>${escapeAttr(card.body)}</p>
 			</article>`,
 		)
 		.join('');
 
-	return `<section class="mcpv-welcome welcome" data-first-run="true">
-			<header class="mcpv-welcome__head welcome__head">
+	return `<section class="delendai-welcome welcome" data-first-run="true">
+			<header class="delendai-welcome__head welcome__head">
 				<h1>${escapeAttr(heading)}</h1>
-				<p class="mcpv-welcome__lede welcome__lede">${ledeHtml}</p>
+				<p class="delendai-welcome__lede welcome__lede">${ledeHtml}</p>
 			</header>
-			<div class="mcpv-welcome__grid welcome__grid">
+			<div class="delendai-welcome__grid welcome__grid">
 				${cardsHtml}
 			</div>
-			<footer class="mcpv-welcome__cta welcome__cta">
-				<button type="button" id="welcome-install" class="mcpv-welcome__primary welcome__primary" data-action="open-settings">${escapeAttr(installLabel)}</button>
-				<button type="button" id="welcome-skip" class="mcpv-welcome__secondary welcome__secondary" data-action="skip-to-dashboard">${escapeAttr(skipLabel)}</button>
+			<footer class="delendai-welcome__cta welcome__cta">
+				<button type="button" id="welcome-install" class="delendai-welcome__primary welcome__primary" data-action="open-settings">${escapeAttr(installLabel)}</button>
+				<button type="button" id="welcome-skip" class="delendai-welcome__secondary welcome__secondary" data-action="skip-to-dashboard">${escapeAttr(skipLabel)}</button>
 			</footer>
 		</section>`;
 };
@@ -164,22 +164,22 @@ export const renderQuickStartMenu = (
 	const itemsHtml = cards
 		.map(
 			(card) =>
-				`<li class="mcpv-quickstart__item quickstart__item">
-				<span class="mcpv-quickstart__icon quickstart__icon" aria-hidden="true">${escapeAttr(card.icon)}</span>
+				`<li class="delendai-quickstart__item quickstart__item">
+				<span class="delendai-quickstart__icon quickstart__icon" aria-hidden="true">${escapeAttr(card.icon)}</span>
 				<div>
 					<strong>${escapeAttr(card.title)}.</strong>
-					<span class="mcpv-quickstart__desc quickstart__desc">${escapeAttr(card.body)}</span>
+					<span class="delendai-quickstart__desc quickstart__desc">${escapeAttr(card.body)}</span>
 				</div>
 			</li>`,
 		)
 		.join('');
 
-	return `<aside class="mcpv-quickstart quickstart" role="complementary">
-			<header class="mcpv-quickstart__head quickstart__head">
+	return `<aside class="delendai-quickstart quickstart" role="complementary">
+			<header class="delendai-quickstart__head quickstart__head">
 				<h2>${escapeAttr(heading)}</h2>
-				<button type="button" id="quickstart-dismiss" class="mcpv-quickstart__close quickstart__close" aria-label="${escapeAttr(dismissLabel)}">×</button>
+				<button type="button" id="quickstart-dismiss" class="delendai-quickstart__close quickstart__close" aria-label="${escapeAttr(dismissLabel)}">×</button>
 			</header>
-			<p class="mcpv-quickstart__lede quickstart__lede">${ledeHtml}</p>
-			<ul class="mcpv-quickstart__list quickstart__list">${itemsHtml}</ul>
+			<p class="delendai-quickstart__lede quickstart__lede">${ledeHtml}</p>
+			<ul class="delendai-quickstart__list quickstart__list">${itemsHtml}</ul>
 		</aside>`;
 };

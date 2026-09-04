@@ -16,7 +16,7 @@ export const PRESET_ROLES: Readonly<Record<string, string>> = {
 	standard: 'adaptive-task-aware',
 	swarm: 'multi-agent',
 	full: 'diagnostic',
-	vertex: 'mcp-vertex-dogfood',
+	vertex: 'delendai-dogfood',
 	'web-app': 'stack-pack-web',
 	'backend-api': 'stack-pack-backend',
 	'cli-tool': 'stack-pack-cli',

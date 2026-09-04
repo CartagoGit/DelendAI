@@ -89,7 +89,7 @@ describe('context_for_change', () => {
 	it('builds the registration and combines multiple sources for files + task', async () => {
 		const root = await makeWorkspace();
 		const registrations = buildContextForChangeToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			maxBytes: 3000,
 			docsRoots: ['docs', 'README.md'],
@@ -140,7 +140,7 @@ describe('context_for_change', () => {
 		const result = await runContextForChange(
 			{ files: ['src/lib/big.ts'], task: 'trim output' },
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				maxBytes: 220,
 				docsRoots: ['docs'],
@@ -183,7 +183,7 @@ describe('context_for_change', () => {
 			const result = await runContextForChange(
 				{ files: [file], task: 'reject containment bypass' },
 				{
-					namespacePrefix: 'mcp-vertex',
+					namespacePrefix: 'delendai',
 					workspaceRootAbs: root,
 					maxBytes: 3000,
 					docsRoots: ['docs'],
@@ -227,7 +227,7 @@ describe('context_for_change', () => {
 					task: 'reject containment bypass through gitDiff',
 				},
 				{
-					namespacePrefix: 'mcp-vertex',
+					namespacePrefix: 'delendai',
 					workspaceRootAbs: root,
 					maxBytes: 3000,
 					docsRoots: ['docs'],
@@ -243,7 +243,7 @@ describe('context_for_change', () => {
 		const result = await runContextForChange(
 			{ files: ['src/lib/link-inside.ts'], task: 'follow safe link' },
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				maxBytes: 3000,
 				docsRoots: ['docs'],
@@ -263,7 +263,7 @@ describe('context_for_change', () => {
 					task: 'property containment check',
 				},
 				{
-					namespacePrefix: 'mcp-vertex',
+					namespacePrefix: 'delendai',
 					workspaceRootAbs: root,
 					maxBytes: 3000,
 					docsRoots: ['docs'],

@@ -46,9 +46,9 @@ const baseContext = (
 		provider: 'github',
 		host: 'github.com',
 		owner: 'CartagoGit',
-		repository: 'mcp-vertex',
-		webUrl: 'https://github.com/CartagoGit/mcp-vertex',
-		apiUrl: 'https://api.github.com/repos/CartagoGit/mcp-vertex',
+		repository: 'delendai',
+		webUrl: 'https://github.com/CartagoGit/delendai',
+		apiUrl: 'https://api.github.com/repos/CartagoGit/delendai',
 	},
 	timeoutMs: 15000,
 	maxRetries: 2,
@@ -201,7 +201,7 @@ describe('@delendai/github tool registrations', () => {
 		const suite = await createSuite({
 			request: async (request) => {
 				expect(request.path).toBe(
-					'/repos/CartagoGit/mcp-vertex/actions/variables',
+					'/repos/CartagoGit/delendai/actions/variables',
 				);
 				expect(request.query).toMatchObject({ page: 2, per_page: 5 });
 				return makeResult(
@@ -276,7 +276,7 @@ describe('@delendai/github tool registrations', () => {
 									path: '.github/workflows/ci.yml',
 									state: 'active',
 									html_url:
-										'https://github.com/CartagoGit/mcp-vertex/actions/workflows/ci.yml',
+										'https://github.com/CartagoGit/delendai/actions/workflows/ci.yml',
 								},
 							],
 						},
@@ -438,7 +438,7 @@ describe('@delendai/github tool registrations', () => {
 				pluginCacheDir: tempRoot,
 				request: async (request) => {
 					expect(request.path).toBe(
-						'/repos/CartagoGit/mcp-vertex/actions/runs/77/artifacts',
+						'/repos/CartagoGit/delendai/actions/runs/77/artifacts',
 					);
 					return makeResult(
 						{

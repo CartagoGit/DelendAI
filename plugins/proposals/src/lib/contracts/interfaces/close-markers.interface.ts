@@ -1,6 +1,6 @@
 /**
  * A close marker is the mandatory trailing token of an agent's last
- * visible message (in the host project: 8 coloured emoji markers). mcp-vertex
+ * visible message (in the host project: 8 coloured emoji markers). delendai
  * knows the mechanics (validation, reason requirement, max length);
  * the host supplies the literal markers.
  */

@@ -57,7 +57,7 @@ const resolveDocsUrl = (
 	try {
 		return new EmbedService().resolve(getConfig()).url;
 	} catch {
-		return 'https://mcp-vertex.dev';
+		return 'https://delendai.dev';
 	}
 };
 
@@ -94,9 +94,9 @@ const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 	};
 	return {
 		overview: {
-			serverName: 'mcp-vertex',
+			serverName: 'delendai',
 			serverVersion: 'unavailable',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			plugins: [],
 			tools: [],
 			knowledgeIds: [],
@@ -156,9 +156,9 @@ const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 			overview: {
 				state: 'unavailable',
 				data: {
-					serverName: 'mcp-vertex',
+					serverName: 'delendai',
 					serverVersion: 'unavailable',
-					namespacePrefix: 'mcp-vertex',
+					namespacePrefix: 'delendai',
 					plugins: [],
 					tools: [],
 					knowledgeIds: [],
@@ -217,7 +217,7 @@ const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 			},
 		},
 		server: {
-			name: 'mcp-vertex',
+			name: 'delendai',
 			version: 'unavailable',
 			fetchedAt: now,
 		},

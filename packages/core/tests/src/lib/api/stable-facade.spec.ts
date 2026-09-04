@@ -16,7 +16,7 @@ import {
 	resetStableToolDescriptorRegistryForTests,
 } from '@delendai/core/lib/api/stable-facade';
 import { PROPOSALS_STABLE_TOOLS } from '@delendai/proposals/lib/api/proposals-stable-tools';
-import { MCP_VERTEX_VERSION } from '@delendai/core/version';
+import { DELENDAI_VERSION } from '@delendai/core/version';
 
 describe('stable-facade (f00152 S2)', () => {
 	beforeEach(() => {
@@ -59,7 +59,7 @@ describe('stable-facade (f00152 S2)', () => {
 	it('every descriptor has sinceVersion === current package version', () => {
 		registerStableToolDescriptors('proposals', PROPOSALS_STABLE_TOOLS);
 		for (const descriptor of STABLE_API_TOOLS) {
-			expect(descriptor.sinceVersion).toBe(MCP_VERTEX_VERSION);
+			expect(descriptor.sinceVersion).toBe(DELENDAI_VERSION);
 		}
 	});
 
@@ -123,6 +123,6 @@ describe('stable-manifest (f00152 S2)', () => {
 	});
 
 	it('STABLE_MANIFEST_REL is the canonical committed path', () => {
-		expect(STABLE_MANIFEST_REL).toBe('docs/mcp-vertex/api/stable.json');
+		expect(STABLE_MANIFEST_REL).toBe('docs/delendai/api/stable.json');
 	});
 });

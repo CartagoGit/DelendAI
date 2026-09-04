@@ -62,7 +62,7 @@ Example baseline shape:
 ## Load
 
 ```bash
-mcp-vertex --plugins=security
+delendai --plugins=security
 ```
 
 ## External CLIs

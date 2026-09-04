@@ -2,14 +2,14 @@
 	"name": "@delendai/cli",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Human-facing mcp-vertex CLI with local and stdio transports.",
+	"description": "Human-facing delendai CLI with local and stdio transports.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",
 		"cli",
-		"mcp-vertex"
+		"delendai"
 	],
 	"main": "./dist/index.js",
 	"files": [
@@ -18,8 +18,8 @@
 		"LICENSE"
 	],
 	"bin": {
-		"mcp-vertex": "./dist/index.js",
-		"mcpv": "./dist/index.js"
+		"delendai": "./dist/index.js",
+		"delendai": "./dist/index.js"
 	},
 	"exports": {
 		".": {

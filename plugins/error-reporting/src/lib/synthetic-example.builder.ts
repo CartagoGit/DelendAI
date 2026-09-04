@@ -1,4 +1,4 @@
-import type { McpVertexErrorCode } from './contracts/constants/error-codes.constant';
+import type { DelendaiErrorCode } from './contracts/constants/error-codes.constant';
 import type {
 	ISafeSyntheticExample,
 	SafeFailureClass,
@@ -25,7 +25,7 @@ interface IBuildSyntheticExampleInput {
 	readonly packageId: string;
 	readonly toolName: string;
 	readonly toolSeed?: string | undefined;
-	readonly errorCode?: McpVertexErrorCode | undefined;
+	readonly errorCode?: DelendaiErrorCode | undefined;
 	readonly failureClass: SafeFailureClass;
 	readonly toolSchema?: unknown;
 }
@@ -42,7 +42,7 @@ const AMOUNT_VARIANT_COUNT = 12;
 const DEFAULT_NUMBER_VARIANT_COUNT = 25;
 const DEFAULT_OPERATION_LABEL = 'internal failure';
 
-const OPERATION_BY_ERROR_CODE: Record<McpVertexErrorCode, string> = {
+const OPERATION_BY_ERROR_CODE: Record<DelendaiErrorCode, string> = {
 	PLUGIN_REGISTER_TIMEOUT: 'plugin registration',
 	PLUGIN_LOAD_FAILED: 'plugin load',
 	PLUGIN_DISPOSE_FAILED: 'plugin dispose',
@@ -126,7 +126,7 @@ const toolShapeOf = (schema: unknown): ISyntheticToolShape | undefined => {
 	return undefined;
 };
 
-const operationOf = (errorCode: McpVertexErrorCode | undefined): string => {
+const operationOf = (errorCode: DelendaiErrorCode | undefined): string => {
 	if (errorCode === undefined) return DEFAULT_OPERATION_LABEL;
 	return OPERATION_BY_ERROR_CODE[errorCode] ?? DEFAULT_OPERATION_LABEL;
 };

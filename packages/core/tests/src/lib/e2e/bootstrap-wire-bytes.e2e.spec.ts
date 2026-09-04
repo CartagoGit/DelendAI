@@ -61,7 +61,7 @@ describe.skipIf(!existsSync(CLI))(
 		it('serves at least the core bootstrap tools over a real node process', () => {
 			expect(realTools.length).toBeGreaterThan(0);
 			expect(realTools.map((tool) => tool.name)).toContain(
-				'mcp-vertex_overview',
+				'delendai_overview',
 			);
 		});
 

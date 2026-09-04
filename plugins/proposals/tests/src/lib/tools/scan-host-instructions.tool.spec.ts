@@ -36,7 +36,7 @@ const fakeHomeReader = (files: Record<string, string>): IUserHomeReader => ({
 });
 
 const MCP_BLOCK =
-	'<!-- mcp-vertex:begin -->\n# mcp-vertex host hints\n<!-- mcp-vertex:end -->';
+	'<!-- delendai:begin -->\n# delendai host hints\n<!-- delendai:end -->';
 
 const byPath = (
 	files: readonly IHostInstructionFile[],
@@ -80,7 +80,7 @@ describe('scanHostInstructions', () => {
 		expect(claude.canonical).toBe(false);
 	});
 
-	it('flags a file carrying the mcp-vertex markers as canonical (not counted)', async () => {
+	it('flags a file carrying the delendai markers as canonical (not counted)', async () => {
 		const inv = await scanHostInstructions(
 			{ repo: fakeRepoReader({ 'AGENTS.md': MCP_BLOCK }) },
 			{ scope: 'repo' },

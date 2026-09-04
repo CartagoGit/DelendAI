@@ -9,7 +9,7 @@
  * place, so a future refactor that quietly collapses two of these
  * axes into one boolean fails a test that says exactly what broke —
  * documented at
- * `docs/mcp-vertex/architecture/invariants/adaptive-surface.md`.
+ * `docs/delendai/architecture/invariants/adaptive-surface.md`.
  *
  * Axes, as this runtime actually implements them:
  *   - visible : `isToolExposed()` — appears in `tools/list` right now.
@@ -34,7 +34,7 @@ const makeHandle = (enabled = true) => ({
 	},
 });
 
-const TOOL_NAME = 'mcp-vertex_reports_run';
+const TOOL_NAME = 'delendai_reports_run';
 
 const buildRuntime = (mode: 'native' | 'compact' = 'native') =>
 	createToolSurfaceRuntime({

@@ -7,7 +7,7 @@ import {
 } from '../../src/dashboard/render-tool-detail';
 
 const TOOL: IToolDescriptor = {
-	name: 'mcp-vertex_demo_tool',
+	name: 'delendai_demo_tool',
 	plugin: 'demo',
 	summary: 'Demonstrates the shared tool detail renderer.',
 	tags: ['demo'],

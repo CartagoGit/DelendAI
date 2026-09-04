@@ -45,7 +45,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 \t\t\treplacement: resolve(proposals, 'public/index.ts'),
 \t\t},
 \t\t{
-\t\t\tfind: /^@mcp-vertex\\/proposals\\/lib\\/(.*)$/,
+\t\t\tfind: /^@delendai\\/proposals\\/lib\\/(.*)$/,
 \t\t\treplacement: \`\${resolve(proposals, 'lib')}/$1\`,
 \t\t},
 \t\t{
@@ -141,7 +141,7 @@ describe('plugin-wiring doctor (in-memory)', () => {
 				'packages/core/src/lib/registry/first-party-index.ts',
 				FIRST_PARTY_INDEX_SEED,
 			],
-			['docs/mcp-vertex/agent-catalog.generated.json', CATALOG_SEED],
+			['docs/delendai/agent-catalog.generated.json', CATALOG_SEED],
 		];
 		for (const [path, content] of seeds) {
 			seedPath(dir, path, content);
@@ -191,7 +191,7 @@ describe('plugin-wiring doctor (in-memory)', () => {
 		// happy.
 		const catalogPath = join(
 			dir,
-			'docs/mcp-vertex/agent-catalog.generated.json',
+			'docs/delendai/agent-catalog.generated.json',
 		);
 		const catalog = JSON.parse(readFileSync(catalogPath, 'utf8'));
 		catalog.tools.push({ name: 'x_demo', plugin: 'demo' });
@@ -228,7 +228,7 @@ describe('plugin-wiring doctor (in-memory)', () => {
 		// The real vitest.shared.ts carries JS RegExp literals with escaped
 		// slashes (`@delendai\/demo`). The doctor must accept both forms.
 		const candidatePath = 'vitest.shared.ts';
-		const escaped = `import { resolve } from 'node:path';\nexport const workspaceAliases = () => [\n\t{ find: '@delendai/demo', replacement: 'x' },\n\t{ find: '@delendai/demo/public', replacement: 'x' },\n\t{ find: /^@mcp-vertex\\/demo\\/lib\\/(.*)$/, replacement: 'x' },\n];\n`;
+		const escaped = `import { resolve } from 'node:path';\nexport const workspaceAliases = () => [\n\t{ find: '@delendai/demo', replacement: 'x' },\n\t{ find: '@delendai/demo/public', replacement: 'x' },\n\t{ find: /^@delendai\\/demo\\/lib\\/(.*)$/, replacement: 'x' },\n];\n`;
 		const canonical = `import { resolve } from 'node:path';\nexport const workspaceAliases = () => [\n\t{ find: '@delendai/demo', replacement: 'x' },\n\t{ find: '@delendai/demo/public', replacement: 'x' },\n\t{ find: /^@delendai/demo\\/lib\\/(.*)$/, replacement: 'x' },\n];\n`;
 		for (const text of [escaped, canonical]) {
 			const target = join(dir, candidatePath);

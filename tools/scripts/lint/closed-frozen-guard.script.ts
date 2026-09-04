@@ -7,7 +7,7 @@
  * `bun run validate`. The four drift kinds are documented in the lib
  * (`closed-frozen-guard.lib.ts`); this script is the I/O half:
  *
- *   - walks `docs/mcp-vertex/proposals/legacy/closed/<kind>/*.md`,
+ *   - walks `docs/delendai/proposals/legacy/closed/<kind>/*.md`,
  *   - parses frontmatter + slice statuses from each file,
  *   - reads the sidecar `<file>.archive-snapshot.json` if present,
  *   - feeds the four inputs into `detectFrozenDrift`,
@@ -163,7 +163,7 @@ const collectArchivedProposals = (
 
 const main = async (): Promise<number> => {
 	const root = repoRoot();
-	const proposalsDir = resolve(root, 'docs', 'mcp-vertex', 'proposals');
+	const proposalsDir = resolve(root, 'docs', 'delendai', 'proposals');
 	const collected = collectArchivedProposals(proposalsDir);
 
 	// `--seed` records today's content as the frozen baseline. Run it when

@@ -3,7 +3,7 @@
  * host-hints-fragments.script.ts — f00083 S3 + f00092.
  *
  * Verify the single auto-generated host-instructions fragment
- * (docs/mcp-vertex/host-hints/agent-instructions.generated.md)
+ * (docs/delendai/host-hints/agent-instructions.generated.md)
  * follows the same single-source-of-truth contract as the host
  * instruction files (see host-instructions.script.ts, f00083 S1):
  *
@@ -13,19 +13,19 @@
  *      `bun run catalog:hints`.
  *
  *   2. The fragment must contain a link to
- *      docs/mcp-vertex/AGENT-BOOTSTRAP.md. The fragment is a
+ *      docs/delendai/AGENT-BOOTSTRAP.md. The fragment is a
  *      pointer to the bootstrap; without the link it cannot
  *      fulfil its role.
  *
  *   3. The fragment must not enumerate skill / tool / proposal
- *      ids. Tools are served live by `mcp-vertex_agent_catalog`,
+ *      ids. Tools are served live by `delendai_agent_catalog`,
  *      skills live in packages/core/skills/manifest.json, and
- *      proposal ids live in docs/mcp-vertex/proposals/. Inlining
+ *      proposal ids live in docs/delendai/proposals/. Inlining
  *      any of those into a fragment makes it rot the moment the
  *      catalog changes.
  *
  * f00092: the single-fragment invariant. The output dir
- * (docs/mcp-vertex/host-hints/) MUST hold exactly one
+ * (docs/delendai/host-hints/) MUST hold exactly one
  * `*.generated.md` file. Any sibling is a hand-split attempt to
  * revive the old per-host footnote model and the lint fails
  * with an actionable fix message.
@@ -46,17 +46,17 @@ import {
 } from './host-instructions.script.ts';
 
 // f00092: collapsed from 3 to 1. The host-specific footnote now lives
-// inline in each hand-edited host file (between <!-- mcp-vertex:begin -->
-// and <!-- mcp-vertex:end -->); the fragment is the same for every host.
+// inline in each hand-edited host file (between <!-- delendai:begin -->
+// and <!-- delendai:end -->); the fragment is the same for every host.
 export const HOST_HINT_FRAGMENTS: readonly string[] = [
-	'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+	'docs/delendai/host-hints/agent-instructions.generated.md',
 ];
 
 // f00092: the canonical filename is exported so the renderer and the
 // lint agree on what counts as the single fragment.
 export { HOST_INSTRUCTIONS_FILENAME } from '../catalog/render-host-hints.script.ts';
 
-const HOST_HINTS_DIR = 'docs/mcp-vertex/host-hints';
+const HOST_HINTS_DIR = 'docs/delendai/host-hints';
 
 const BEGIN_MARKER = '<!-- BEGIN GENERATED:';
 const END_MARKER = '<!-- END GENERATED:';

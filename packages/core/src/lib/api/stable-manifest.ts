@@ -2,7 +2,7 @@
  * stable-manifest.ts — f00152 S2 (L4 — stable facade manifest).
  *
  * Pure builder for the deterministic, machine-readable manifest
- * published at `docs/mcp-vertex/api/stable.json`. The manifest is
+ * published at `docs/delendai/api/stable.json`. The manifest is
  * committed and regenerated on every release (see
  * `tools/scripts/build/stable-manifest.script.ts`).
  *
@@ -111,4 +111,4 @@ const schemaToJson = (schema: unknown): unknown => {
  * Single source of truth for the manifest's committed path. Both the
  * builder script and the verifier import it so the two never drift.
  */
-export const STABLE_MANIFEST_REL = 'docs/mcp-vertex/api/stable.json';
+export const STABLE_MANIFEST_REL = 'docs/delendai/api/stable.json';

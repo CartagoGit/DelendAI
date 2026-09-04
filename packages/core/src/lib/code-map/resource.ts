@@ -14,7 +14,7 @@
  *
  * Privacy: only emits workspace-relative paths and public npm
  * names (R1.1–R1.10 hold — see the architecture gate in
- * `docs/mcp-vertex/CODE-MAP.md`).
+ * `docs/delendai/CODE-MAP.md`).
  *
  * Surfaced via `assembleCliConfig` → `extraResources`; not auto-
  * mounted in adapter-only hosts because the map is workspace-

@@ -164,7 +164,7 @@ const MISSING_CWD_REASON = 'git runner requires an explicit workspace cwd';
  *
  * - `plugins/proposals/src/lib/foo.ts` → `plugins`
  * - `apps/web/src/pages/index.astro`   → `apps`
- * - `docs/mcp-vertex/proposals/l99.md`           → `docs`
+ * - `docs/delendai/proposals/l99.md`           → `docs`
  * - `package.json` (no segments)      → `chore`
  *
  * The lookup is intentionally dumb (no allowlist) — it does not try to

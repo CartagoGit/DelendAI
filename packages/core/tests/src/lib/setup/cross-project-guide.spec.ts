@@ -13,7 +13,7 @@ const ctx = (over: Partial<IGithubSetupContext> = {}): IGithubSetupContext => ({
 	repo: 'owner/name',
 	tier: 'gh',
 	configured: false,
-	configPath: 'mcp-vertex.config.json',
+	configPath: 'delendai.config.json',
 	...over,
 });
 

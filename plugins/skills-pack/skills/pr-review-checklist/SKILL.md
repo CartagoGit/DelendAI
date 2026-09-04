@@ -4,7 +4,7 @@ id: pr-review-checklist
 title: PR review checklist
 category: dev
 tags: ['review', 'pull-request', 'quality', 'security']
-tools: ['mcp-vertex_git_pr_list', 'mcp-vertex_git_pr_view', 'mcp-vertex_git_changelog', 'mcp-vertex_forge_ci_status', 'mcp-vertex_quality_quality_run_all', 'mcp-vertex_security_security_audit']
+tools: ['delendai_git_pr_list', 'delendai_git_pr_view', 'delendai_git_changelog', 'delendai_forge_ci_status', 'delendai_quality_quality_run_all', 'delendai_security_security_audit']
 appliesTo: ['@delendai/skills-pack', '@delendai/git', '@delendai/forge', '@delendai/quality', '@delendai/security']
 description: Review a PR systematically by checking scope, commit history, CI, project-wide quality gates, and security findings before approval.
 ---
@@ -23,17 +23,17 @@ commit that should land without hidden regressions.
 
 ## Steps
 
-1. Start with `mcp-vertex_git_pr_list` when you need to locate the candidate PR
+1. Start with `delendai_git_pr_list` when you need to locate the candidate PR
    or compare several open reviews.
-2. Inspect the target PR with `mcp-vertex_git_pr_view` and note scope, changed
+2. Inspect the target PR with `delendai_git_pr_view` and note scope, changed
    files, linked issues, and any obvious missing context.
-3. Read the history with `mcp-vertex_git_changelog` to see whether the branch
+3. Read the history with `delendai_git_changelog` to see whether the branch
    is coherent or hides unrelated churn.
-4. Check `mcp-vertex_forge_ci_status` before spending time on stylistic nits.
+4. Check `delendai_forge_ci_status` before spending time on stylistic nits.
    A red CI result changes review priority immediately.
-5. Run or inspect `mcp-vertex_quality_quality_run_all` when project-wide gates
+5. Run or inspect `delendai_quality_quality_run_all` when project-wide gates
    are part of the acceptance bar.
-6. Run `mcp-vertex_security_security_audit` when the diff changes inputs,
+6. Run `delendai_security_security_audit` when the diff changes inputs,
    dependencies, auth, file writes, or network behavior.
 7. If the repo policy requires extra shell gates such as `bun run verify:tools`,
    treat them as release checks, not as MCP tool references.
@@ -54,10 +54,10 @@ commit that should land without hidden regressions.
 
 ## References
 
-- `mcp-vertex_git_pr_list`
-- `mcp-vertex_git_pr_view`
-- `mcp-vertex_git_changelog`
-- `mcp-vertex_forge_ci_status`
-- `mcp-vertex_quality_quality_run_all`
-- `mcp-vertex_security_security_audit`
+- `delendai_git_pr_list`
+- `delendai_git_pr_view`
+- `delendai_git_changelog`
+- `delendai_forge_ci_status`
+- `delendai_quality_quality_run_all`
+- `delendai_security_security_audit`
   action.

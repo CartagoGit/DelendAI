@@ -38,7 +38,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Walk up from this file's directory until we find a directory that
-// contains `mcp-vertex.config.json` (or `.git`). That is the repo root.
+// contains `delendai.config.json` (or `.git`). That is the repo root.
 // This is robust against future moves of the script under
 // tools/scripts/<area>/<...>.<depth>.script.ts — the ROOT computation
 // doesn't break if the file is relocated one or more directories deeper.
@@ -46,7 +46,7 @@ const findRepoRoot = (start: string): string => {
 	let current = start;
 	for (let i = 0; i < 8; i++) {
 		if (
-			existsSync(join(current, 'mcp-vertex.config.json')) ||
+			existsSync(join(current, 'delendai.config.json')) ||
 			existsSync(join(current, '.git'))
 		) {
 			return current;
@@ -76,7 +76,7 @@ export const resolveWorkspaceBinary = (
 	);
 
 export const createDtsTempDir = (): string =>
-	mkdtempSync(join(tmpdir(), 'mcp-vertex-dts-'));
+	mkdtempSync(join(tmpdir(), 'delendai-dts-'));
 
 const discover = (): string[] =>
 	['packages', 'plugins']
@@ -112,7 +112,7 @@ class BuildError extends Error {
  * non-zero exit so the caller's `try/finally` blocks actually run.
  * The previous version called `process.exit()` directly, which
  * bypassed every `finally` and leaked `mkdtempSync` dirs under
- * `node_modules/.cache/mcp-vertex-dts/build-*` for every failed
+ * `node_modules/.cache/delendai-dts/build-*` for every failed
  * package build (CI runs would accumulate one leaked dir per failure).
  */
 const run = (cmd: string, args: string[], cwd: string): void => {

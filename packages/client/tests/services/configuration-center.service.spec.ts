@@ -11,7 +11,7 @@ import {
 
 const roots: string[] = [];
 const workspace = async (): Promise<string> => {
-	const root = await mkdtemp(join(tmpdir(), 'mcpv-config-center-'));
+	const root = await mkdtemp(join(tmpdir(), 'delendai-config-center-'));
 	roots.push(root);
 	return root;
 };
@@ -36,7 +36,7 @@ describe('configuration center document service', () => {
 	it('redacts secret material without exposing it in the display snapshot', async () => {
 		const root = await workspace();
 		await writeFile(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({
 				custom: { token: 'github_pat_abcdefghijklmnopqrstuv' },
 			}),
@@ -52,7 +52,7 @@ describe('configuration center document service', () => {
 
 	it('merges path edits while preserving unknown and plugin-owned fields', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		await writeFile(
 			file,
 			JSON.stringify({
@@ -98,7 +98,7 @@ describe('configuration center document service', () => {
 
 	it('round-trips disabled external MCP definitions and custom arguments losslessly', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		const externalServer = {
 			enabled: false,
 			version: '1.2.3',
@@ -156,7 +156,7 @@ describe('configuration center document service', () => {
 
 	it('returns a conflict and the fresh document after an external edit', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		await writeFile(file, '{"keepLegacy":false}\n');
 		const stale = await readConfigurationDocument({ workspaceRoot: root });
 		await writeFile(file, '{"keepLegacy":true}\n');
@@ -205,7 +205,7 @@ describe('configuration center document service', () => {
 
 	it('rejects schema-invalid edits and preserves the original bytes', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		const original = '{"keepLegacy":false}\n';
 		await writeFile(file, original);
 		const snapshot = await readConfigurationDocument({
@@ -226,7 +226,7 @@ describe('configuration center document service', () => {
 
 	it('rejects secret-valued edits and leaves hidden values untouched', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		const original = JSON.stringify({ custom: { retained: true } });
 		await writeFile(file, original);
 		const snapshot = await readConfigurationDocument({
@@ -253,7 +253,7 @@ describe('configuration center document service', () => {
 
 	it('allows deleting a secret field without ever returning its value', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		await writeFile(
 			file,
 			JSON.stringify({
@@ -315,7 +315,7 @@ describe('configuration center document service', () => {
 
 	it('fails closed on corrupt JSON and rejects escaping config names', async () => {
 		const root = await workspace();
-		const file = join(root, 'mcp-vertex.config.json');
+		const file = join(root, 'delendai.config.json');
 		const original = '{"plugins":';
 		await writeFile(file, original);
 
@@ -335,7 +335,7 @@ describe('configuration center document service', () => {
 		const root = await workspace();
 		const outside = join(await workspace(), 'outside.json');
 		await writeFile(outside, '{"keepLegacy":true}\n');
-		await symlink(outside, join(root, 'mcp-vertex.config.json'));
+		await symlink(outside, join(root, 'delendai.config.json'));
 
 		await expect(
 			readConfigurationDocument({ workspaceRoot: root }),

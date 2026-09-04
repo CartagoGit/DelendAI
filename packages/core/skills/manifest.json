@@ -3,16 +3,16 @@
 	"generatedAt": "2026-07-26T08:00:00.000Z",
 	"skills": [
 		{
-			"id": "mcp-vertex-plugin-authoring",
+			"id": "delendai-plugin-authoring",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"summary": "Use when adding or changing an mcp-vertex plugin so tools, schemas, state, path containment, and durability rules stay correct.",
+			"summary": "Use when adding or changing an delendai plugin so tools, schemas, state, path containment, and durability rules stay correct.",
 			"bodyPath": "packages/core/skills/plugin-authoring/SKILL.md",
 			"tags": ["plugin-authoring", "contract", "core"],
 			"appliesTo": ["@delendai/*"]
 		},
 		{
-			"id": "mcp-vertex-failure-modes",
+			"id": "delendai-failure-modes",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when a tool returns ok:false or a swarm stalls to recover from lock conflicts, corruption, state drift, policy blocks, or timeouts.",
@@ -21,7 +21,7 @@
 			"appliesTo": ["@delendai/*"]
 		},
 		{
-			"id": "mcp-vertex-operator",
+			"id": "delendai-operator",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use at session start to call overview first, read recommendedNextAction, and choose the right preset before touching plugin-specific tools.",
@@ -30,7 +30,7 @@
 			"appliesTo": ["@delendai/*"]
 		},
 		{
-			"id": "mcp-vertex-proposal-swarm-runner",
+			"id": "delendai-proposal-swarm-runner",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use as the compact entrypoint for proposal work when you need the canonical swarm workflow without re-deriving the process.",
@@ -39,7 +39,7 @@
 			"appliesTo": ["@delendai/proposals"]
 		},
 		{
-			"id": "mcp-vertex-proposals-workflow-playbook",
+			"id": "delendai-proposals-workflow-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use for end-to-end proposal execution: orient, select, claim, implement, validate, close, and sync without polling or hand-editing state.",
@@ -48,7 +48,7 @@
 			"appliesTo": ["@delendai/proposals"]
 		},
 		{
-			"id": "mcp-vertex-multi-agent-coordination",
+			"id": "delendai-multi-agent-coordination",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when several agents share this repo to choose locks, await release notifications, and avoid duplicate MCP reads.",
@@ -57,7 +57,7 @@
 			"appliesTo": ["@delendai/proposals", "@delendai/notification"]
 		},
 		{
-			"id": "mcp-vertex-state-repair-playbook",
+			"id": "delendai-state-repair-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when proposals state is inconsistent after crashes or stale locks to diagnose issues and repair queue, claims, and index drift.",
@@ -66,16 +66,16 @@
 			"appliesTo": ["@delendai/proposals"]
 		},
 		{
-			"id": "mcp-vertex-token-budget-playbook",
+			"id": "delendai-token-budget-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before verbose tools or when context grows too fast to keep sessions compact through compact calls, delegation, and metrics-aware discipline.",
-			"bodyPath": "packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md",
+			"bodyPath": "packages/core/skills/delendai-token-budget-playbook/SKILL.md",
 			"tags": ["metrics", "token-budget", "compact"],
 			"appliesTo": ["@delendai/*"]
 		},
 		{
-			"id": "mcp-vertex-concurrency-patterns",
+			"id": "delendai-concurrency-patterns",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when concurrent agents or processes may touch the same files to choose between withFileMutex and agent_lock or agent_worktree.",
@@ -84,16 +84,16 @@
 			"appliesTo": ["@delendai/proposals", "@delendai/notification"]
 		},
 		{
-			"id": "mcp-vertex-audit-playbook",
+			"id": "delendai-audit-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before creating an audit proposal to follow the mandatory reading order, evidence bar, and output contract for full repo audits.",
-			"bodyPath": "plugins/audit/skills/mcp-vertex-audit-playbook/SKILL.md",
+			"bodyPath": "plugins/audit/skills/delendai-audit-playbook/SKILL.md",
 			"tags": ["audit", "qualitative-analysis", "methodology"],
 			"appliesTo": ["@delendai/audit"]
 		},
 		{
-			"id": "mcp-vertex-conventional-commits-and-release",
+			"id": "delendai-conventional-commits-and-release",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before release-facing commits or bun run release so commit type, derived semver bump, and publish flow stay aligned with automation.",
@@ -102,7 +102,7 @@
 			"appliesTo": ["@delendai/core"]
 		},
 		{
-			"id": "mcp-vertex-token-budget-discipline",
+			"id": "delendai-token-budget-discipline",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use as the pointer to the canonical token-budget playbook whenever you need the current guidance for keeping sessions compact.",
@@ -111,7 +111,7 @@
 			"appliesTo": ["@delendai/core"]
 		},
 		{
-			"id": "mcp-vertex-status-marker-and-closure",
+			"id": "delendai-status-marker-and-closure",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when the status-marker plugin is loaded to choose the right close state, generate the canonical marker, and validate the final line.",
@@ -120,7 +120,7 @@
 			"appliesTo": ["@delendai/status-marker"]
 		},
 		{
-			"id": "mcp-vertex-audit-runner",
+			"id": "delendai-audit-runner",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when running or consolidating audits to follow the tool-level lifecycle, rubric, and ready-versus-done decision flow.",
@@ -129,7 +129,7 @@
 			"appliesTo": ["@delendai/audit"]
 		},
 		{
-			"id": "mcp-vertex-quality-and-rules-gates",
+			"id": "delendai-quality-and-rules-gates",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before run_quality or apply_rules to understand command resolution, commandPolicy boundaries, and why a rules plan was selected.",
@@ -138,7 +138,7 @@
 			"appliesTo": ["@delendai/quality", "@delendai/rules"]
 		},
 		{
-			"id": "mcp-vertex-rules-solid-architecture",
+			"id": "delendai-rules-solid-architecture",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding a rules preset, refactoring internals, or auditing the rules plugin so its SOLID boundaries remain intact.",
@@ -147,11 +147,11 @@
 			"appliesTo": ["@delendai/rules"]
 		},
 		{
-			"id": "mcp-vertex-rules-dogma-priority",
+			"id": "delendai-rules-dogma-priority",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when deciding which lint or typecheck command wins; it explains the priority order project, then dogma, then the vendored default.",
-			"bodyPath": "plugins/rules/skills/mcp-vertex-rules-dogma-priority/SKILL.md",
+			"bodyPath": "plugins/rules/skills/delendai-rules-dogma-priority/SKILL.md",
 			"tags": [
 				"rules",
 				"dogma",
@@ -162,7 +162,7 @@
 			"appliesTo": ["@delendai/rules"]
 		},
 		{
-			"id": "mcp-vertex-legacy-proposal-migration",
+			"id": "delendai-legacy-proposal-migration",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use only when migrating pre-f00016 pNNN proposals so the legacy mapping and required script order stay correct.",
@@ -180,7 +180,7 @@
 			"appliesTo": ["@delendai/*"]
 		},
 		{
-			"id": "mcp-vertex-external-mcps",
+			"id": "delendai-external-mcps",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when a workspace needs a capability native tools do not cover, to compose a third-party MCP server via catalog, suggest, validate_config, ack, and the lazy ext.<server>.<tool> call proxy.",

@@ -92,8 +92,8 @@ const renderInto = (lang: Lang): void => {
 		// x00100 S2: one canonical constant — the previous hardcoded
 		// GitHub Pages URL 404'd.
 		docsUrl: SHARED_UI_STRINGS.docsUrl,
-		refreshCommand: 'mcp-vertex.refresh',
-		openDocsCommand: 'mcp-vertex.openDocs',
+		refreshCommand: 'delendai.refresh',
+		openDocsCommand: 'delendai.openDocs',
 		lang: dictsByLang[lang],
 	});
 	hoistStyles(html);

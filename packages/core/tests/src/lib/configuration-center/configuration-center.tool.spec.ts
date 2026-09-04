@@ -6,7 +6,7 @@ import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/
 import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
-const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-config-tool-');
+const WRITABLE_WORKSPACE = createTestWorkspace('delendai-config-tool-');
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 const callTool = async (
@@ -47,9 +47,7 @@ describe('configuration_center tool', () => {
 		);
 		const { config } = await assembleCliConfig(args, {
 			readFile: async (path) =>
-				path.endsWith('mcp-vertex.config.json')
-					? configText
-					: undefined,
+				path.endsWith('delendai.config.json') ? configText : undefined,
 			import: async () => ({
 				default: {
 					name: 'demo',

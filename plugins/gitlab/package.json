@@ -2,7 +2,7 @@
 	"name": "@delendai/gitlab",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "GitLab read-only provider plugin for @delendai/core: configuration, provider context and hermetic HTTP client for future read tools. Load with `mcp-vertex --plugins=gitlab`.",
+	"description": "GitLab read-only provider plugin for @delendai/core: configuration, provider context and hermetic HTTP client for future read tools. Load with `delendai --plugins=gitlab`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

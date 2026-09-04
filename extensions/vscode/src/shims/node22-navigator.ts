@@ -23,12 +23,12 @@
 declare global {
 	interface GlobalThis {
 		navigator?: unknown;
-		__mcpVertexNode22NavigatorPatched?: boolean;
+		__delendaiNode22NavigatorPatched?: boolean;
 	}
 }
 
 type INode22NavigatorPatchedGlobal = typeof globalThis & {
-	__mcpVertexNode22NavigatorPatched?: boolean;
+	__delendaiNode22NavigatorPatched?: boolean;
 };
 
 (function patchNavigator(): void {
@@ -41,7 +41,7 @@ type INode22NavigatorPatchedGlobal = typeof globalThis & {
 		});
 		(
 			globalThis as INode22NavigatorPatchedGlobal
-		).__mcpVertexNode22NavigatorPatched = true;
+		).__delendaiNode22NavigatorPatched = true;
 	} catch {
 		// If defineProperty is blocked (rare), swallow — the worst case
 		// is the original zod failure, which we have already raised
@@ -50,4 +50,4 @@ type INode22NavigatorPatchedGlobal = typeof globalThis & {
 })();
 export const NAVIGATOR_PATCH_MARKER =
 	(globalThis as INode22NavigatorPatchedGlobal)
-		.__mcpVertexNode22NavigatorPatched === true;
+		.__delendaiNode22NavigatorPatched === true;

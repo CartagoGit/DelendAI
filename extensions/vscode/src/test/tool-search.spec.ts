@@ -51,20 +51,20 @@ const createVscode = () => {
 	return { vscode, commands, messages, picks, quickPickBatches };
 };
 
-describe('mcp-vertex.toolSearch', async () => {
+describe('delendai.toolSearch', async () => {
 	it('returns grouped tool, skill and proposal results for a multi-keyword query', async () => {
 		const { vscode, commands, quickPickBatches } = createVscode();
 		registerToolSearchCommand({
 			vscode,
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
-					if (input.name === 'mcp-vertex_agent_catalog') {
+					if (input.name === 'delendai_agent_catalog') {
 						return {
 							structuredContent: {
 								server: {
-									name: 'mcp-vertex',
+									name: 'delendai',
 									version: '0.1.0',
-									namespacePrefix: 'mcp-vertex',
+									namespacePrefix: 'delendai',
 								},
 								generatedAt: '2026-06-27T00:00:00.000Z',
 								mode: 'full',
@@ -128,13 +128,13 @@ describe('mcp-vertex.toolSearch', async () => {
 			vscode,
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
-					if (input.name === 'mcp-vertex_agent_catalog') {
+					if (input.name === 'delendai_agent_catalog') {
 						return {
 							structuredContent: {
 								server: {
-									name: 'mcp-vertex',
+									name: 'delendai',
 									version: '0.1.0',
-									namespacePrefix: 'mcp-vertex',
+									namespacePrefix: 'delendai',
 								},
 								generatedAt: '2026-06-27T00:00:00.000Z',
 								mode: 'full',
@@ -196,13 +196,13 @@ describe('mcp-vertex.toolSearch', async () => {
 			vscode,
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
-					if (input.name === 'mcp-vertex_agent_catalog') {
+					if (input.name === 'delendai_agent_catalog') {
 						return {
 							structuredContent: {
 								server: {
-									name: 'mcp-vertex',
+									name: 'delendai',
 									version: '0.1.0',
-									namespacePrefix: 'mcp-vertex',
+									namespacePrefix: 'delendai',
 								},
 								generatedAt: '2026-06-27T00:00:00.000Z',
 								mode: 'full',
@@ -223,18 +223,18 @@ describe('mcp-vertex.toolSearch', async () => {
 							},
 						};
 					}
-					if (input.name === 'mcp-vertex_overview') {
+					if (input.name === 'delendai_overview') {
 						return {
 							structuredContent: {
 								server: {
-									name: 'mcp-vertex',
+									name: 'delendai',
 									version: '0.1.0',
 								},
-								namespacePrefix: 'mcp-vertex',
+								namespacePrefix: 'delendai',
 								plugins: [],
 								tools: [
 									{
-										name: 'mcp-vertex_overview',
+										name: 'delendai_overview',
 										tags: ['overview'],
 									},
 								],
@@ -243,7 +243,7 @@ describe('mcp-vertex.toolSearch', async () => {
 							},
 						};
 					}
-					if (input.name === 'mcp-vertex_knowledge') {
+					if (input.name === 'delendai_knowledge') {
 						return { structuredContent: { entries: [] } };
 					}
 					return { structuredContent: {} };
@@ -251,6 +251,6 @@ describe('mcp-vertex.toolSearch', async () => {
 			}),
 		});
 		await commands.get(TOOL_SEARCH_COMMAND)?.({ query: 'overview' });
-		expect(quickPickBatches[0]?.[0]?.id).toBe('tool:mcp-vertex_overview');
+		expect(quickPickBatches[0]?.[0]?.id).toBe('tool:delendai_overview');
 	});
 });

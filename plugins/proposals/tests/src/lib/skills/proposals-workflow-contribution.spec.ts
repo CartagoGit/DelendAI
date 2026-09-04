@@ -23,7 +23,7 @@ describe('proposals workflow contribution', () => {
 		const contribution = await buildProposalsWorkflowContribution({
 			workspaceRoot: '/workspace',
 			cacheDir: '.cache',
-			corePrefix: 'mcp-vertex',
+			corePrefix: 'delendai',
 			readWorkspaceFile: async (path) => {
 				expect(path).toBe('/workspace/.cache/proposals/index.json');
 				return JSON.stringify({
@@ -59,7 +59,7 @@ describe('proposals workflow contribution', () => {
 			],
 		});
 		expect(contribution.recommendedNextAction?.detail).toBe(
-			'Call mcp-vertex_overview, then mcp-vertex_proposals_auto_work to start working.',
+			'Call delendai_overview, then delendai_proposals_auto_work to start working.',
 		);
 		expect(contribution.stableTools.length).toBeGreaterThan(0);
 		expect(contribution.stableTools[0]?.id).toBe('proposal_transition');
@@ -71,13 +71,13 @@ describe('proposals workflow contribution', () => {
 		const state = await assembleWorkflowContributions({
 			workspaceRoot: '/workspace',
 			cacheDir: '.cache',
-			corePrefix: 'mcp-vertex',
+			corePrefix: 'delendai',
 			readWorkspaceFile: async () => undefined,
 		});
 
 		expect(state.proposalSummaries).toEqual([]);
 		expect(state.recommendedNextActionText).toBe(
-			'Call mcp-vertex_overview, then mcp-vertex_proposals_auto_work to start working.',
+			'Call delendai_overview, then delendai_proposals_auto_work to start working.',
 		);
 		expect(state.summaries[0]?.detail).toBe(
 			'No proposals are indexed yet.',

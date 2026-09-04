@@ -266,7 +266,7 @@ export const buildAdviseSpendRegistration = (
 	tags: ['orchestrator-runner', 'lazy', 'spend', 'analyst'],
 	summary:
 		'Analyse recorded spend + limit status and recommend non-destructive cost actions (risk-graded).',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_advise_spend',
+	descriptionKey: 'delendai_orchestrator-runner_advise_spend',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_advise_spend`,

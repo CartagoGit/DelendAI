@@ -2,7 +2,7 @@
 	"name": "@delendai/link-check",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Docs-integrity plugin for @delendai/core: link_check flags broken markdown relative links + missing heading anchors across the workspace. Offline (external links never fetched). Load with `mcp-vertex --plugins=link-check`.",
+	"description": "Docs-integrity plugin for @delendai/core: link_check flags broken markdown relative links + missing heading anchors across the workspace. Offline (external links never fetched). Load with `delendai --plugins=link-check`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

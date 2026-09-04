@@ -5,8 +5,8 @@
  * `*.agent.md` under `.github/agents/` or `.claude/agents/` is neither:
  *
  *  1. a **redirector** — body is the canonical tiny contract that loads
- *     `mcp-vertex_overview` / `recommendedNextAction` and restates
- *     nothing else (the shape `.github/agents/mcp-vertex.agent.md`
+ *     `delendai_overview` / `recommendedNextAction` and restates
+ *     nothing else (the shape `.github/agents/delendai.agent.md`
  *     already uses),
  *     nor
  *  2. a **bounded subagent** — `name:` is one of the four scaffolded
@@ -56,17 +56,17 @@ export type ISubagentSlot = (typeof SUBAGENT_SLOTS)[number];
 
 /**
  * Per-slot expected filename under `.github/agents/`. Bounded subagents
- * in this repo are namespaced as `mcp-vertex-<slot>.agent.md` to avoid
+ * in this repo are namespaced as `delendai-<slot>.agent.md` to avoid
  * collisions in workspaces that host multiple MCP servers (e.g.
- * `mcp-vertex` + `mcp-other`). The slot id (frontmatter `name:`) stays
+ * `delendai` + `mcp-other`). The slot id (frontmatter `name:`) stays
  * unprefixed because that is the key the swarm uses for agent_lock,
  * task_queue, and the agent-registry store.
  */
 export const SUBAGENT_FILE_BY_SLOT: Readonly<Record<ISubagentSlot, string>> = {
-	proposal_guardian: 'mcp-vertex-proposal-guardian.agent.md',
-	implementation_runner: 'mcp-vertex-implementation-runner.agent.md',
-	delivery_verifier: 'mcp-vertex-delivery-verifier.agent.md',
-	technical_investigator: 'mcp-vertex-technical-investigator.agent.md',
+	proposal_guardian: 'delendai-proposal-guardian.agent.md',
+	implementation_runner: 'delendai-implementation-runner.agent.md',
+	delivery_verifier: 'delendai-delivery-verifier.agent.md',
+	technical_investigator: 'delendai-technical-investigator.agent.md',
 };
 
 const SUBAGENT_DISCLAIMER =
@@ -78,19 +78,19 @@ const MAX_REDIRECTOR_PROSE_LINES = 12;
 /**
  * x00201 S3: the canonical redirector filename for THIS repo's own
  * dogfood — the single Copilot-visible entry point f00031 established.
- * A project adopting mcp-vertex under a different namespace has its own
- * `<namespacePrefix>.agent.md`; this constant only governs mcp-vertex's
+ * A project adopting delendai under a different namespace has its own
+ * `<namespacePrefix>.agent.md`; this constant only governs delendai's
  * own self-check (`isMainModule()` block below), not the reusable
  * `checkGithubAgentFile` / `checkClaudeAgentFile` functions other
  * projects' tooling could call with their own filename.
  */
-const CANONICAL_REDIRECTOR_FILE = 'mcp-vertex.agent.md';
+const CANONICAL_REDIRECTOR_FILE = 'delendai.agent.md';
 
 export interface IAgentFileFinding {
 	readonly path: string;
 	readonly kind:
 		| 'not-a-redirector'
-		| 'mcp-vertex-name-not-redirector'
+		| 'delendai-name-not-redirector'
 		| 'subagent-filename-mismatch'
 		| 'missing-redirector'
 		| 'subagent-user-invocable-not-false';
@@ -131,7 +131,7 @@ const isBoundedSubagent = (frontmatter: string, body: string): boolean => {
  * duplicates the orchestrator in the Copilot agent picker — the whole
  * point of the redirector contract (f00031). Nothing previously verified
  * a hand-authored `.github/agents/*.agent.md` actually kept that flag;
- * mcp-vertex's own dogfood files drifted to `user-invocable: true` on
+ * delendai's own dogfood files drifted to `user-invocable: true` on
  * all four without this check ever catching it.
  */
 const hasUserInvocableFalse = (frontmatter: string): boolean =>
@@ -139,7 +139,7 @@ const hasUserInvocableFalse = (frontmatter: string): boolean =>
 
 const isRedirectorBody = (body: string): boolean => {
 	// Canonical shape: a short heading, then prose that defers entirely
-	// to mcp-vertex / AGENTS.md / skills — never restates a workflow.
+	// to delendai / AGENTS.md / skills — never restates a workflow.
 	// We don't pin the exact wording (it varies slightly per client),
 	// only the budget: short, and it must not contain numbered-step
 	// "## Compact lane" / "## Working loop" style restatements that
@@ -155,7 +155,7 @@ const isRedirectorBody = (body: string): boolean => {
  * input so it is unit-testable with fixtures instead of real files.
  *
  * For bounded subagents (name in SUBAGENT_SLOTS) the filename must
- * match the namespaced shape `mcp-vertex-<slot>.agent.md` — see
+ * match the namespaced shape `delendai-<slot>.agent.md` — see
  * SUBAGENT_FILE_BY_SLOT. Filename drift is the historical regression
  * that produced the 5+ duplicate entries in the VS Code agent
  * picker; the lint keeps it from coming back.
@@ -200,7 +200,7 @@ export const checkGithubAgentFile = (
 
 /**
  * Inspects one `.claude/agents/*.md` file (non-`.cc.md`). Warns only
- * when its `name:` starts with `mcp-vertex` but the body is not the
+ * when its `name:` starts with `delendai` but the body is not the
  * canonical redirector shape.
  */
 export const checkClaudeAgentFile = (
@@ -209,12 +209,12 @@ export const checkClaudeAgentFile = (
 ): IAgentFileFinding | undefined => {
 	const { frontmatter, body } = splitFrontmatter(text);
 	const name = frontmatterField(frontmatter, 'name');
-	if (name === undefined || !name.startsWith('mcp-vertex')) return undefined;
+	if (name === undefined || !name.startsWith('delendai')) return undefined;
 	if (isRedirectorBody(body)) return undefined;
 	return {
 		path,
-		kind: 'mcp-vertex-name-not-redirector',
-		detail: `${path} has name: "${name}" (mcp-vertex*) but its body is not the redirector shape (<= ${MAX_REDIRECTOR_PROSE_LINES} prose lines, no numbered workflow)`,
+		kind: 'delendai-name-not-redirector',
+		detail: `${path} has name: "${name}" (delendai*) but its body is not the redirector shape (<= ${MAX_REDIRECTOR_PROSE_LINES} prose lines, no numbered workflow)`,
 	};
 };
 
@@ -247,10 +247,10 @@ export const isFatalFinding = (kind: IAgentFileFinding['kind']): boolean =>
 
 /**
  * x00201 S3: `agent-redirector-contract`'s own checks only ever inspect
- * files that exist — 271c7cf5 deleted `mcp-vertex.agent.md` (f00031's
+ * files that exist — 271c7cf5 deleted `delendai.agent.md` (f00031's
  * single-orchestrator redirector) and nothing caught it, because an
  * absence was invisible to a check that only walks present files. This
- * closes that blind spot for mcp-vertex's own dogfood only (a generic
+ * closes that blind spot for delendai's own dogfood only (a generic
  * adopter project has its own differently-named redirector).
  */
 export const checkCanonicalRedirectorPresent = (
@@ -261,7 +261,7 @@ export const checkCanonicalRedirectorPresent = (
 	return {
 		path,
 		kind: 'missing-redirector',
-		detail: `${path} is missing — f00031's single-orchestrator redirector contract requires it to exist so the Copilot agent picker shows exactly one mcp-vertex entry. Restore it (see develop, or git log -- ${path}) instead of adding a new one.`,
+		detail: `${path} is missing — f00031's single-orchestrator redirector contract requires it to exist so the Copilot agent picker shows exactly one delendai entry. Restore it (see develop, or git log -- ${path}) instead of adding a new one.`,
 	};
 };
 

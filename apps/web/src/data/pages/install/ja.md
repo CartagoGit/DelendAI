@@ -1,13 +1,13 @@
 ---
 title: インストールと実行
-description: mcp-vertex をインストールし、IDE に接続し、プリセットを選び、作業前にサーバーを検証します。
+description: delendai をインストールし、IDE に接続し、プリセットを選び、作業前にサーバーを検証します。
 order: 1
 navLabel: インストール
 ---
 
 # インストールと実行
 
-mcp-vertex をワークフローに追加し、MCP クライアントをバイナリに向け、最初のセッション前に解決されたプラグインセットを確認します。
+delendai をワークフローに追加し、MCP クライアントをバイナリに向け、最初のセッション前に解決されたプラグインセットを確認します。
 
 ## パッケージマネージャを選ぶ
 
@@ -42,7 +42,7 @@ yarn dlx @delendai/cli validate
 
 ### bun
 
-bun は runtime と package manager を 1 つのツールにまとめており、mcp-vertex 自体も bun でビルドされています。マシンに bun があるなら、これが最も直接的な経路です。
+bun は runtime と package manager を 1 つのツールにまとめており、delendai 自体も bun でビルドされています。マシンに bun があるなら、これが最も直接的な経路です。
 
 ```bash
 bunx @delendai/cli init
@@ -70,13 +70,13 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "servers": {
-    "mcp-vertex": {
+    "delendai": {
       "type": "stdio",
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -96,12 +96,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -121,12 +121,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -146,12 +146,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -171,12 +171,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -196,12 +196,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -221,12 +221,12 @@ deno run -A npm:@delendai/cli validate
 ```json
 {
   "context_servers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -326,4 +326,4 @@ stdio MCP サーバーを受け入れられる IDE なら、同じサーバー�
 
 ### 複数のプリセットを同時に実行できますか？
 
-できません。1 つのサーバーインスタンスが一度に解決するプリセットは 1 つだけです。プロジェクトごとに異なるプラグインセットが必要なら、各プロジェクトに専用の mcp-vertex.config.json を置き、loader に workspace ごとに解決させてください。
+できません。1 つのサーバーインスタンスが一度に解決するプリセットは 1 つだけです。プロジェクトごとに異なるプラグインセットが必要なら、各プロジェクトに専用の delendai.config.json を置き、loader に workspace ごとに解決させてください。

@@ -1,7 +1,7 @@
 /**
  * skills/sources/workspace-source.ts — q00009 / f00262.
  *
- * Workspace skill source: skills under `<workspaceRoot>/.mcp-vertex/skills/<id>/`.
+ * Workspace skill source: skills under `<workspaceRoot>/.delendai/skills/<id>/`.
  *
  * The workspace always wins precedence over package and plugin skills
  * (q00009 §7.5). This is the operator's local override layer — useful
@@ -14,7 +14,7 @@ import type { ISkillSource, ISkillDescriptor, ILoadedSkill } from './types';
 export interface IWorkspaceSkillSourceInput {
 	readonly id: string;
 	readonly workspaceRoot: string;
-	/** Path of the local override root; default `.mcp-vertex/skills`. */
+	/** Path of the local override root; default `.delendai/skills`. */
 	readonly relativeRoot?: string;
 	readonly listDir?: (absPath: string) => Promise<readonly string[]>;
 	readonly readFile?: (absPath: string) => Promise<string>;
@@ -46,7 +46,7 @@ export const workspaceSkillSource = (
 	const enabled = input.enabled ?? true;
 	const listDir = input.listDir ?? defaultListDir;
 	const readFile = input.readFile ?? defaultReadFile;
-	const root = `${input.workspaceRoot}/${input.relativeRoot ?? '.mcp-vertex/skills'}`;
+	const root = `${input.workspaceRoot}/${input.relativeRoot ?? '.delendai/skills'}`;
 
 	return {
 		id: input.id,

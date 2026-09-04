@@ -8,15 +8,15 @@
  *   - CLAUDE.md
  *   - .github/copilot-instructions.md
  *
- * are about to be replaced with the canonical mcp-vertex block
+ * are about to be replaced with the canonical delendai block
  * (f00092: reference to the single `agent-instructions.generated.md`
  * fragment + host-specific footnote inline). Today, that overwrite is
  * silent: whatever custom instructions the previous agent was reading
  * get destroyed with no record.
  *
  * This module captures WHAT WAS THERE into a `ready` proposal under
- * `docs/mcp-vertex/proposals/ready/` so the next
- * `mcp-vertex_proposals_auto_work` pass can decide what to do with
+ * `docs/delendai/proposals/ready/` so the next
+ * `delendai_proposals_auto_work` pass can decide what to do with
  * each lost rule: drop (the bootstrap covers it), port to the
  * bootstrap, port to a project-local convention file, or keep
  * (rare — only when the rule is genuinely project-specific).
@@ -61,8 +61,8 @@ export const HOST_FILE_TARGETS: readonly {
 	{ relPath: 'AGENTS.md', host: 'agents' },
 ];
 
-const BEGIN_MARKER = '<!-- mcp-vertex:begin -->';
-const END_MARKER = '<!-- mcp-vertex:end -->';
+const BEGIN_MARKER = '<!-- delendai:begin -->';
+const END_MARKER = '<!-- delendai:end -->';
 
 /**
  * Canonical block the new `init` would write into the host files. We
@@ -85,13 +85,13 @@ const CANONICAL_HOST_BLOCK = (
 		agents: '- Bootstrap §7 (repo-level rules) is in effect.',
 	};
 	return (
-		`<!-- mcp-vertex:begin -->\n` +
+		`<!-- delendai:begin -->\n` +
 		`\n` +
-		`# mcp-vertex host hints\n\n` +
-		`See \`docs/mcp-vertex/host-hints/agent-instructions.generated.md\` for the live catalog.\n` +
+		`# delendai host hints\n\n` +
+		`See \`docs/delendai/host-hints/agent-instructions.generated.md\` for the live catalog.\n` +
 		`\n` +
 		`${FOOTNOTE[host]}\n` +
-		`<!-- mcp-vertex:end -->`
+		`<!-- delendai:end -->`
 	);
 };
 
@@ -118,7 +118,7 @@ export interface ICapturedHostFile {
 }
 
 /**
- * Check whether a host file's body between the mcp-vertex markers is
+ * Check whether a host file's body between the delendai markers is
  * byte-identical to the canonical block (the host-specific footnote
  * is part of the canonical block, per f00092). Returns `true` when
  * the file contains the markers and the inner body matches.
@@ -299,14 +299,14 @@ const renderProposalBody = (
 
 	const goal =
 		'## goal\n\n' +
-		'This proposal was scaffolded by `mcpv init` (f00093) because the\n' +
+		'This proposal was scaffolded by `delendai init` (f00093) because the\n' +
 		'last `init` run in this workspace was about to overwrite the\n' +
 		'three host files at ** `' +
 		workspaceRoot +
 		'` ** with the canonical\n' +
-		'mcp-vertex block (f00092).\n\n' +
-		'You already have the mcp-vertex bootstrap in context (via\n' +
-		'`mcp-vertex_overview`' +
+		'delendai block (f00092).\n\n' +
+		'You already have the delendai bootstrap in context (via\n' +
+		'`delendai_overview`' +
 		EMDASH +
 		'the new rules) AND the freshly-overwritten\n' +
 		'host files (the new canonical block, with the host-specific\n' +
@@ -315,12 +315,12 @@ const renderProposalBody = (
 		'Decisions, per rule:\n\n' +
 		'- **drop** ' +
 		EMDASH +
-		' the mcp-vertex bootstrap already covers the rule.\n' +
+		' the delendai bootstrap already covers the rule.\n' +
 		'- **port to bootstrap** ' +
 		EMDASH +
 		' the rule is genuinely orthogonal to the\n' +
-		'  mcp-vertex conventions and belongs as a new appendix in\n' +
-		'`docs/mcp-vertex/AGENT-BOOTSTRAP.md` (open a follow-up slice to\n' +
+		'  delendai conventions and belongs as a new appendix in\n' +
+		'`docs/delendai/AGENT-BOOTSTRAP.md` (open a follow-up slice to\n' +
 		'  propose the addition and route it through f00056 review).\n' +
 		'- **port to project-local** ' +
 		EMDASH +
@@ -333,7 +333,7 @@ const renderProposalBody = (
 		' rare; only when the rule is genuinely\n' +
 		'  host-specific (e.g. a model-specific close-marker variant). In\n' +
 		'  that case, edit the host file canonical block region (between\n' +
-		'`<!-- mcp-vertex:begin -->` and `<!-- mcp-vertex:end -->`)\n' +
+		'`<!-- delendai:begin -->` and `<!-- delendai:end -->`)\n' +
 		'  in place; the next `init` will preserve the change ONLY if the\n' +
 		'  future canonical block matches byte-for-byte (f00092 invariant).\n\n';
 
@@ -353,7 +353,7 @@ const renderProposalBody = (
 		'- **Do not delete this proposal when you close it.** It is the\n' +
 		'  audit log of what `init` replaced; closing it archives the\n' +
 		'  slice markers but keeps the proposal body on disk under\n' +
-		'`docs/mcp-vertex/proposals/done/`.\n\n';
+		'`docs/delendai/proposals/done/`.\n\n';
 
 	const slices =
 		'## slices\n\n' +
@@ -445,7 +445,7 @@ export const renderSnapshotHostInstructionsProposal = async (
 		workspaceHash,
 		captures,
 	);
-	const relPath = `docs/mcp-vertex/proposals/ready/${id}-review-replaced-host-instructions-${workspaceHash}.md`;
+	const relPath = `docs/delendai/proposals/ready/${id}-review-replaced-host-instructions-${workspaceHash}.md`;
 
 	return [{ relPath, content, id, captures }];
 };

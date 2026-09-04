@@ -19,11 +19,11 @@ import {
 import { REPOSITORY_URL } from '@delendai/core/public';
 
 const OUTPUT_REL =
-	'docs/mcp-vertex/generated/observability-provenance.generated.md';
-const OUTPUT_DIR_REL = 'docs/mcp-vertex/generated';
+	'docs/delendai/generated/observability-provenance.generated.md';
+const OUTPUT_DIR_REL = 'docs/delendai/generated';
 const REPO_URL = REPOSITORY_URL;
 const PROPOSAL_PATH =
-	'docs/mcp-vertex/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md';
+	'docs/delendai/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md';
 
 const REPO_ROOT_ABS = resolve(
 	dirname(fileURLToPath(import.meta.url)),

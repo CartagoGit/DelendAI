@@ -4,7 +4,7 @@ import type { INotificationEventName } from '@delendai/client';
 import { McpStdioClient, NotificationsService } from '@delendai/client';
 
 import {
-	McpVertexStatusBar,
+	DelendaiStatusBar,
 	type IStatusBarItem,
 	type IStatusBarEventConfig,
 } from '../providers/status-bar';
@@ -27,17 +27,17 @@ const createItem = (): IStatusBarItem & {
 	return item;
 };
 
-describe('McpVertexStatusBar', async () => {
+describe('DelendaiStatusBar', async () => {
 	it('shows tool, proposal, token and agent segments', async () => {
 		const item = createItem();
-		const bar = new McpVertexStatusBar(
+		const bar = new DelendaiStatusBar(
 			item,
 			{
 				async listTools() {
 					return [
 						{
-							name: 'mcp-vertex_overview',
-							plugin: 'mcp-vertex',
+							name: 'delendai_overview',
+							plugin: 'delendai',
 							tags: [],
 							effects: [],
 						},
@@ -46,14 +46,14 @@ describe('McpVertexStatusBar', async () => {
 			},
 			McpStdioClient.fromTransport({
 				async callTool(input) {
-					if (input.name === 'mcp-vertex_proposals_proposal_board') {
+					if (input.name === 'delendai_proposals_proposal_board') {
 						return {
 							structuredContent: {
 								proposals: [{ id: 'f00014' }, { id: 'f00015' }],
 							},
 						};
 					}
-					if (input.name === 'mcp-vertex_metrics') {
+					if (input.name === 'delendai_metrics') {
 						return {
 							structuredContent: {
 								tools: {},
@@ -66,7 +66,7 @@ describe('McpVertexStatusBar', async () => {
 							},
 						};
 					}
-					if (input.name === 'mcp-vertex_proposals_agent_names') {
+					if (input.name === 'delendai_proposals_agent_names') {
 						return {
 							structuredContent: {
 								assignments: [
@@ -90,18 +90,18 @@ describe('McpVertexStatusBar', async () => {
 		await bar.start();
 		await bar.update();
 
-		expect(item.text).toContain('mcp-vertex');
+		expect(item.text).toContain('delendai');
 		expect(item.text).toContain('1 tools');
 		expect(item.text).toContain('2 proposals');
 		expect(item.text).toContain('1.0k tok');
 		expect(item.text).toContain('2 agents');
-		expect(item.command).toBe('mcp-vertex.openDashboard');
+		expect(item.command).toBe('delendai.openDashboard');
 		expect(item.shown).toBe(true);
 	});
 
 	it('falls back gracefully when metrics and agents tools are missing', async () => {
 		const item = createItem();
-		const bar = new McpVertexStatusBar(
+		const bar = new DelendaiStatusBar(
 			item,
 			{
 				async listTools() {
@@ -128,12 +128,12 @@ describe('McpVertexStatusBar', async () => {
 		let toolCount = 1;
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
-				if (input.name === 'mcp-vertex_proposals_proposal_board') {
+				if (input.name === 'delendai_proposals_proposal_board') {
 					return {
 						structuredContent: { proposals: [{ id: 'f00014' }] },
 					};
 				}
-				if (input.name === 'mcp-vertex_metrics') {
+				if (input.name === 'delendai_metrics') {
 					return {
 						structuredContent: {
 							tools: {},
@@ -146,14 +146,14 @@ describe('McpVertexStatusBar', async () => {
 						},
 					};
 				}
-				if (input.name === 'mcp-vertex_proposals_agent_names') {
+				if (input.name === 'delendai_proposals_agent_names') {
 					return { structuredContent: { assignments: [] } };
 				}
 				return { structuredContent: {} };
 			},
 		});
 		const notifications = new NotificationsService(client);
-		const bar = new McpVertexStatusBar(
+		const bar = new DelendaiStatusBar(
 			item,
 			{
 				async listTools() {
@@ -182,7 +182,7 @@ describe('McpVertexStatusBar', async () => {
 
 	it('click opens the dashboard command', async () => {
 		const item = createItem();
-		const bar = new McpVertexStatusBar(
+		const bar = new DelendaiStatusBar(
 			item,
 			{
 				async listTools() {
@@ -196,7 +196,7 @@ describe('McpVertexStatusBar', async () => {
 			}),
 		);
 		await bar.start();
-		expect(item.command).toBe('mcp-vertex.openDashboard');
+		expect(item.command).toBe('delendai.openDashboard');
 		expect(item.tooltip).toContain('Dashboard');
 	});
 });
@@ -214,7 +214,7 @@ describe('STATUS_BAR_EVENTS discriminated union (H30)', () => {
 			},
 		};
 		const item = createItem();
-		const bar = new McpVertexStatusBar(
+		const bar = new DelendaiStatusBar(
 			item,
 			{
 				async listTools() {

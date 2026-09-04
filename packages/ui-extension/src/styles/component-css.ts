@@ -2,18 +2,18 @@
 // ui-extension component-CSS refactor. Imported by S2 (webview migration) and S3 (snapshot test).
 
 export interface IComponentCssTokens {
-	readonly '--mcpv-bg-primary': string;
-	readonly '--mcpv-fg-primary': string;
+	readonly '--delendai-bg-primary': string;
+	readonly '--delendai-fg-primary': string;
 }
 
 export const HOST_TOKEN_MIGRATION_MAP = Object.freeze({
-	'--vscode-editor-background': '--mcpv-bg-primary',
-	'--vscode-editor-foreground': '--mcpv-fg-primary',
+	'--vscode-editor-background': '--delendai-bg-primary',
+	'--vscode-editor-foreground': '--delendai-fg-primary',
 } satisfies Record<string, keyof IComponentCssTokens>);
 
 export const DEFAULT_TOKENS: IComponentCssTokens = Object.freeze({
-	'--mcpv-bg-primary': '#0d1117',
-	'--mcpv-fg-primary': '#c9d1d9',
+	'--delendai-bg-primary': '#0d1117',
+	'--delendai-fg-primary': '#c9d1d9',
 });
 
 export const renderComponentCssTokenRootCss = (

@@ -172,7 +172,7 @@ describe('collectProposalMarkdownFiles + detectMultipleFrontmatter', () => {
 
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'single-frontmatter-'));
-		proposalsDirAbs = join(root, 'docs', 'mcp-vertex', 'proposals');
+		proposalsDirAbs = join(root, 'docs', 'delendai', 'proposals');
 		mkdirSync(join(proposalsDirAbs, 'done', 'feats'), { recursive: true });
 		mkdirSync(join(proposalsDirAbs, 'legacy', 'closed', 'feats'), {
 			recursive: true,

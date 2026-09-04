@@ -2,7 +2,7 @@
 	"name": "@delendai/prompt-eval",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Benchmark a prompt across the providers auto-agent-selector discovers, scoring cost × quality on the project's own acceptance checks; writes the resulting win-rates into the auto-agent-selector calibration store. Load with mcp-vertex --plugins=prompt-eval.",
+	"description": "Benchmark a prompt across the providers auto-agent-selector discovers, scoring cost × quality on the project's own acceptance checks; writes the resulting win-rates into the auto-agent-selector calibration store. Load with delendai --plugins=prompt-eval.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

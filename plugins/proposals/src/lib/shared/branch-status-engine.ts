@@ -53,7 +53,7 @@ export interface IWorktreeStatusEntry {
 	readonly head: string;
 	/** Branch checked out in the worktree (empty when detached). */
 	readonly branch: string;
-	/** `true` when `path` is outside `<cacheDir>/mcp-vertex/.worktrees/`. */
+	/** `true` when `path` is outside `<cacheDir>/delendai/.worktrees/`. */
 	readonly outOfCache: boolean;
 	/** `git status --porcelain` row count (modified + deleted + staged). */
 	readonly dirtyFiles: number;
@@ -125,7 +125,7 @@ export interface IBranchStatusEngineOptions {
 	 * Absolute path of the canonical worktrees directory. A worktree
 	 * whose `path` does not live under here is flagged
 	 * `outOfCache: true` (AGENTS.md invariant violation).
-	 * Default: `<workspaceRoot>/.cache/mcp-vertex/.worktrees`.
+	 * Default: `<workspaceRoot>/.cache/delendai/.worktrees`.
 	 */
 	readonly canonicalWorktreesDir?: string;
 	/**
@@ -281,7 +281,7 @@ const resolveCanonicalWorktreesDir = (
 	options: IBranchStatusEngineOptions,
 ): string =>
 	options.canonicalWorktreesDir ??
-	resolve(options.workspaceRoot, '.cache', 'mcp-vertex', '.worktrees');
+	resolve(options.workspaceRoot, '.cache', 'delendai', '.worktrees');
 
 const isUnderDir = (path: string, dir: string): boolean => {
 	const rel = relative(dir, path);

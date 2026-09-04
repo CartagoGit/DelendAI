@@ -9,7 +9,7 @@
  * Lifecycle:
  *   1. A flag ships in `featureFlags: { name: true|false }` (default false).
  *   2. One release later, the flag is `@deprecated` in
- *      `docs/mcp-vertex/api/feature-flags.md` with a `removalVersion`.
+ *      `docs/delendai/api/feature-flags.md` with a `removalVersion`.
  *   3. On the release matching `removalVersion`, the flag is deleted
  *      and the new behavior becomes canonical.
  *

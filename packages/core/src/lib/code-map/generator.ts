@@ -11,7 +11,7 @@
  *     fields (the latter is the npm name, which is already public
  *     via the registry).
  *   - Never includes tool names that are NOT already public
- *     through the existing `mcp-vertex://catalog/{compact,full}`
+ *     through the existing `delendai://catalog/{compact,full}`
  *     resources.
  *
  * The schema is intentionally narrow (4 sections, no nested
@@ -31,7 +31,7 @@ const findWorkspaceRoot = (start: string): string => {
 	let current = start;
 	for (let depth = 0; depth < 8; depth += 1) {
 		if (
-			existsSync(join(current, 'mcp-vertex.config.json')) ||
+			existsSync(join(current, 'delendai.config.json')) ||
 			existsSync(join(current, '.git'))
 		) {
 			return current;

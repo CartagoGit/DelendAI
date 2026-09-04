@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexNotificationAwaitLockOutput {
+export interface DelendaiNotificationAwaitLockOutput {
 	taskId: string;
 	released: boolean;
 	timedOut: boolean;
@@ -30,7 +30,7 @@ export interface McpVertexNotificationAwaitLockOutput {
 	nextAction?: string;
 }
 
-export interface McpVertexNotificationNotifyStatusOutput {
+export interface DelendaiNotificationNotifyStatusOutput {
 	watching: string;
 	emitted: number;
 	lastReleases: {
@@ -43,6 +43,6 @@ export interface McpVertexNotificationNotifyStatusOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface NotificationToolOutputs {
-	"mcp-vertex_notification_await_lock": McpVertexNotificationAwaitLockOutput;
-	"mcp-vertex_notification_notify_status": McpVertexNotificationNotifyStatusOutput;
+	"delendai_notification_await_lock": DelendaiNotificationAwaitLockOutput;
+	"delendai_notification_notify_status": DelendaiNotificationNotifyStatusOutput;
 }

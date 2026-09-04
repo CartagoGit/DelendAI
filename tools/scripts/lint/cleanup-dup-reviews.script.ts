@@ -37,7 +37,7 @@ import { join, relative } from 'node:path';
 import { repoRoot } from '../lib/monorepo-paths';
 
 const ROOT = repoRoot();
-const PROPOSALS = join(ROOT, 'docs/mcp-vertex/proposals');
+const PROPOSALS = join(ROOT, 'docs/delendai/proposals');
 
 const FOLDER_PRIORITY = ['done', 'in-progress', 'review', 'ready'] as const;
 

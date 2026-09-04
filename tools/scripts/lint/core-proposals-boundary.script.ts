@@ -85,7 +85,7 @@ const TOKEN_RULES: readonly IBoundaryTokenRule[] = [
 		token: 'proposal-tool-id',
 		kind: 'literal',
 		test: (value) =>
-			/\b(?:create_proposal|sync_proposals|get_proposal_workflow|proposal_transition|mcp-vertex_proposals_[a-z_]+)\b/.test(
+			/\b(?:create_proposal|sync_proposals|get_proposal_workflow|proposal_transition|delendai_proposals_[a-z_]+)\b/.test(
 				value,
 			),
 	},
@@ -116,7 +116,7 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 		},
 		{
 			file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-			needle: 'This folder is the proposals store managed by the mcp-vertex',
+			needle: 'This folder is the proposals store managed by the delendai',
 			until: '2027-03-31',
 			classification: 'adapter',
 			reason: 'Bootstrap prose still explains the proposals store to adopters.',
@@ -292,7 +292,7 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 		},
 		{
 			file: 'packages/core/src/lib/knowledge/host-onboarding.knowledge.ts',
-			needle: 'docs/mcp-vertex/proposals/',
+			needle: 'docs/delendai/proposals/',
 			until: '2027-03-31',
 			classification: 'host-composition',
 			reason: 'Host-onboarding knowledge still documents the default proposal store path layout.',
@@ -332,7 +332,7 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 		},
 		{
 			file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
-			needle: 'docs/mcp-vertex/proposals/done/audits',
+			needle: 'docs/delendai/proposals/done/audits',
 			until: '2027-03-31',
 			classification: 'compatibility',
 			reason: 'Plugin defaults still point audits at the historical proposals docs tree.',
@@ -388,7 +388,7 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 		},
 		{
 			file: 'packages/core/src/lib/scaffold/scaffold-host.ts',
-			needle: 'mcp-vertex --plugins=proposals',
+			needle: 'delendai --plugins=proposals',
 			until: '2027-03-31',
 			classification: 'host-composition',
 			reason: 'Generated host instructions still show the proposals plugin launch example explicitly.',
@@ -412,7 +412,7 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 		},
 		{
 			file: 'packages/core/src/lib/setup/setup-steps.ts',
-			needle: 'mcp-vertex --plugins=proposals,issues',
+			needle: 'delendai --plugins=proposals,issues',
 			until: '2027-03-31',
 			classification: 'host-composition',
 			reason: 'The setup guide still needs a concrete launch command for the issues workflow.',

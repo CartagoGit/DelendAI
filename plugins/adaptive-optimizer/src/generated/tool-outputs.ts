@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexAdaptiveOptimizerActivationMetricsOutput {
+export interface DelendaiAdaptiveOptimizerActivationMetricsOutput {
 	activations: number;
 	responses: {
 		hasSamples: false;
@@ -22,7 +22,7 @@ export interface McpVertexAdaptiveOptimizerActivationMetricsOutput {
 	};
 }
 
-export interface McpVertexAdaptiveOptimizerAdaptiveFacadeOutput {
+export interface DelendaiAdaptiveOptimizerAdaptiveFacadeOutput {
 	intent: "orient" | "plan" | "claim" | "progress" | "close" | "recover";
 	preferredPath: {
 		intent: "orient" | "plan" | "claim" | "progress" | "close" | "recover";
@@ -81,7 +81,7 @@ export interface McpVertexAdaptiveOptimizerAdaptiveFacadeOutput {
 	truncated: boolean;
 }
 
-export interface McpVertexAdaptiveOptimizerOptimizeRunOutput {
+export interface DelendaiAdaptiveOptimizerOptimizeRunOutput {
 	ranked: {
 		id: string;
 		score: number;
@@ -100,7 +100,7 @@ export interface McpVertexAdaptiveOptimizerOptimizeRunOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface AdaptiveOptimizerToolOutputs {
-	"mcp-vertex_adaptive-optimizer_activation_metrics": McpVertexAdaptiveOptimizerActivationMetricsOutput;
-	"mcp-vertex_adaptive-optimizer_adaptive_facade": McpVertexAdaptiveOptimizerAdaptiveFacadeOutput;
-	"mcp-vertex_adaptive-optimizer_optimize_run": McpVertexAdaptiveOptimizerOptimizeRunOutput;
+	"delendai_adaptive-optimizer_activation_metrics": DelendaiAdaptiveOptimizerActivationMetricsOutput;
+	"delendai_adaptive-optimizer_adaptive_facade": DelendaiAdaptiveOptimizerAdaptiveFacadeOutput;
+	"delendai_adaptive-optimizer_optimize_run": DelendaiAdaptiveOptimizerOptimizeRunOutput;
 }

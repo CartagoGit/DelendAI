@@ -31,7 +31,7 @@ describe('proposal-slice-completeness lint', () => {
 	describe('findIssues', () => {
 		it('flags a done proposal with a non-done slice', () => {
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00001-thing.md',
+				'docs/delendai/proposals/done/feats/f00001-thing.md',
 				'---\nid: f00001\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: pending\n' +
@@ -51,7 +51,7 @@ describe('proposal-slice-completeness lint', () => {
 
 		it('flags a done slice whose declared file no longer exists, resolved against root', () => {
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00002-thing.md',
+				'docs/delendai/proposals/done/feats/f00002-thing.md',
 				'---\nid: f00002\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: done\n' +
@@ -71,7 +71,7 @@ describe('proposal-slice-completeness lint', () => {
 		it('passes a fully-shipped done proposal', () => {
 			write('packages/core/src/lib/real.ts', 'export const x = 1;\n');
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00003-thing.md',
+				'docs/delendai/proposals/done/feats/f00003-thing.md',
 				'---\nid: f00003\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: done\n' +
@@ -83,7 +83,7 @@ describe('proposal-slice-completeness lint', () => {
 
 		it('ignores proposals that are not status: done', () => {
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00004-thing.md',
+				'docs/delendai/proposals/done/feats/f00004-thing.md',
 				'---\nid: f00004\nstatus: ready\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: pending\n' +
@@ -94,10 +94,7 @@ describe('proposal-slice-completeness lint', () => {
 		});
 
 		it('ignores README.md under done/', () => {
-			write(
-				'docs/mcp-vertex/proposals/done/feats/README.md',
-				'# Index\n',
-			);
+			write('docs/delendai/proposals/done/feats/README.md', '# Index\n');
 			expect(findIssues(root)).toEqual([]);
 		});
 	});
@@ -133,7 +130,7 @@ describe('proposal-slice-completeness lint', () => {
 		it('exits 0 when a done proposal is fully shipped and unbaselined', () => {
 			write('packages/core/src/lib/real.ts', 'export const x = 1;\n');
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00005-thing.md',
+				'docs/delendai/proposals/done/feats/f00005-thing.md',
 				'---\nid: f00005\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: done\n' +
@@ -145,7 +142,7 @@ describe('proposal-slice-completeness lint', () => {
 
 		it('exits 1 for a new violation with no baseline entry', () => {
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00006-thing.md',
+				'docs/delendai/proposals/done/feats/f00006-thing.md',
 				'---\nid: f00006\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: pending\n' +
@@ -157,7 +154,7 @@ describe('proposal-slice-completeness lint', () => {
 
 		it('exits 0 when the violation count is already covered by the baseline', () => {
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00007-thing.md',
+				'docs/delendai/proposals/done/feats/f00007-thing.md',
 				'---\nid: f00007\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: pending\n' +
@@ -173,7 +170,7 @@ describe('proposal-slice-completeness lint', () => {
 
 		it('exits 1 when a proposal REGRESSES beyond its baselined count', () => {
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00008-thing.md',
+				'docs/delendai/proposals/done/feats/f00008-thing.md',
 				'---\nid: f00008\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: pending\n' +
@@ -189,7 +186,7 @@ describe('proposal-slice-completeness lint', () => {
 
 		it('--update writes the current issue counts as the new baseline', () => {
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00009-thing.md',
+				'docs/delendai/proposals/done/feats/f00009-thing.md',
 				'---\nid: f00009\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: pending\n' +
@@ -202,7 +199,7 @@ describe('proposal-slice-completeness lint', () => {
 
 		it('--report always exits 0 regardless of drift', () => {
 			write(
-				'docs/mcp-vertex/proposals/done/feats/f00010-thing.md',
+				'docs/delendai/proposals/done/feats/f00010-thing.md',
 				'---\nid: f00010\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: pending\n' +
@@ -215,7 +212,7 @@ describe('proposal-slice-completeness lint', () => {
 });
 
 describe('ignored slice files', () => {
-	// x00213 S3 declared `.cache/mcp-vertex/agent-queue/queue.json`.
+	// x00213 S3 declared `.cache/delendai/agent-queue/queue.json`.
 	// `git add` refuses a gitignored path and no retry changes
 	// .gitignore, so commit-policy re-emitted that slice several times
 	// a second for as long as the server ran. The engine now treats it
@@ -230,7 +227,7 @@ describe('ignored slice files', () => {
 			const dir = join(
 				root,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				'ready',
 				'fixes',
@@ -269,7 +266,7 @@ describe('ignored slice files', () => {
 			const dir = join(
 				root,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				'ready',
 				'fixes',

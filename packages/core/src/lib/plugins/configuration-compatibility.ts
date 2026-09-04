@@ -21,7 +21,7 @@ export const formatPluginConfigurationIssue = (
 	}
 	if (issue.suggestedConfig !== undefined) {
 		lines.push(
-			`mcp-vertex.config.json patch:\n${JSON.stringify(issue.suggestedConfig, null, 2)}`,
+			`delendai.config.json patch:\n${JSON.stringify(issue.suggestedConfig, null, 2)}`,
 		);
 	}
 	return lines.join('\n');

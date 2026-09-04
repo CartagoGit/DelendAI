@@ -52,12 +52,12 @@ describe('auto transition after approve (a00074 S3)', () => {
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			peerReviewLogPathAbs: join(
 				root,
-				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+				'.cache/delendai/proposals/peer-review.jsonl',
 			),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			runValidation: async () => ({
@@ -76,12 +76,12 @@ describe('auto transition after approve (a00074 S3)', () => {
 	it('marks a review proposal done in frontmatter when the last slice is approved', async () => {
 		const reviewPath = join(
 			root,
-			'docs/mcp-vertex/proposals/review/f00089-auto-move.md',
+			'docs/delendai/proposals/review/f00089-auto-move.md',
 		);
-		mkdirSync(join(root, 'docs/mcp-vertex/proposals/review'), {
+		mkdirSync(join(root, 'docs/delendai/proposals/review'), {
 			recursive: true,
 		});
-		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+		mkdirSync(join(root, '.cache/delendai/proposals'), {
 			recursive: true,
 		});
 		writeFileSync(
@@ -104,7 +104,7 @@ shipped-in: [30551533]
 			'utf8',
 		);
 		writeFileSync(
-			join(root, '.cache/mcp-vertex/proposals/index.json'),
+			join(root, '.cache/delendai/proposals/index.json'),
 			`${JSON.stringify({
 				proposals: [
 					{ id: 'f00089', file: 'review/f00089-auto-move.md' },
@@ -135,7 +135,7 @@ shipped-in: [30551533]
 			existsSync(
 				join(
 					root,
-					'docs/mcp-vertex/proposals/done/feats/f00089-auto-move.md',
+					'docs/delendai/proposals/done/feats/f00089-auto-move.md',
 				),
 			),
 		).toBe(true);

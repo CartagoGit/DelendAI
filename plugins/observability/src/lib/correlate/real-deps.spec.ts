@@ -15,9 +15,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { realReadLocalCorrelateDeps } from './real-deps';
 
-const LOGS_DIR = '.cache/mcp-vertex/results/logs';
-const ERRORS_DIR = '.cache/mcp-vertex/results/logs-errors';
-const METRICS_DIR = '.cache/mcp-vertex/results/metrics';
+const LOGS_DIR = '.cache/delendai/results/logs';
+const ERRORS_DIR = '.cache/delendai/results/logs-errors';
+const METRICS_DIR = '.cache/delendai/results/metrics';
 
 let root: string;
 

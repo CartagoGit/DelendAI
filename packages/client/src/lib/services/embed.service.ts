@@ -2,8 +2,8 @@
  * `EmbedService` — small, dependency-free helper that resolves and
  * validates the docs URL the IDE dashboard will embed in its Docs tab.
  *
- * Defaults to `https://mcp-vertex.dev`. Override via
- * `mcp-vertex.config.json#extension.docsUrl`.
+ * Defaults to `https://delendai.dev`. Override via
+ * `delendai.config.json#extension.docsUrl`.
  *
  * Safety rules:
  *   - HTTPS is required.
@@ -13,7 +13,7 @@
  *   - `file:`, `data:`, `javascript:` and other non-http schemes are
  *     blocked.
  */
-export const DEFAULT_DOCS_URL = 'https://mcp-vertex.dev';
+export const DEFAULT_DOCS_URL = 'https://delendai.dev';
 
 export interface IEmbedServiceOptions {
 	readonly allowLocalhost?: boolean;

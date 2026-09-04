@@ -76,7 +76,7 @@ export const buildGcRegistration = (
 				`${prefix}_cache_gc`,
 				{
 					description:
-						'Run the cache eviction registry over `.cache/mcp-vertex`. Default `dryRun: true` returns the report of what WOULD be removed; `dryRun: false` actually deletes and shrinks the cache. `onlyOwner` scopes the run to one contributing plugin. Idempotent: a second apply is a no-op.',
+						'Run the cache eviction registry over `.cache/delendai`. Default `dryRun: true` returns the report of what WOULD be removed; `dryRun: false` actually deletes and shrinks the cache. `onlyOwner` scopes the run to one contributing plugin. Idempotent: a second apply is a no-op.',
 					inputSchema: GcInputSchema,
 					outputSchema: GcOutputSchema,
 				},

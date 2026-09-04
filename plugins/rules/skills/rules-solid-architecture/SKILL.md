@@ -1,5 +1,5 @@
 ---
-name: mcp-vertex-rules-solid-architecture
+name: delendai-rules-solid-architecture
 appliesTo: ['@delendai/rules']
 description: How the `@delendai/rules` plugin applies SOLID — the contracts (ISP), the registries (DIP), the adapters (OCP), the data (S), the validators (OCP), the renderers (DIP), and the priority resolver (S). Use when adding a new language preset, refactoring a tool, or auditing a slice.
 ---
@@ -7,7 +7,7 @@ description: How the `@delendai/rules` plugin applies SOLID — the contracts (I
 # SOLID architecture of `@delendai/rules`
 
 This skill is the *ground truth* of the SOLID seams in the `rules`
-plugin. The proposal [f00051](../../../../docs/mcp-vertex/proposals/done/feats/f00051-multilanguage-rules-presets.md)
+plugin. The proposal [f00051](../../../../docs/delendai/proposals/done/feats/f00051-multilanguage-rules-presets.md)
 describes the *what* and *why*; this skill describes the *how* — the
 seams a contributor must respect to keep the plugin extensible.
 

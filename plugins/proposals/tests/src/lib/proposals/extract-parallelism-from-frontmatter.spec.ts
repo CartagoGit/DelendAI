@@ -65,7 +65,7 @@ describe('extractParallelismFromFrontmatter', async () => {
 		).toBeNull();
 	});
 
-	// M4: without knownTracks, mcp-vertex is track-agnostic — any non-empty
+	// M4: without knownTracks, delendai is track-agnostic — any non-empty
 	// string is a valid host track, so no vocabulary is imposed.
 	it('accepts arbitrary host tracks when no knownTracks set is supplied', async () => {
 		const raw = wrap(

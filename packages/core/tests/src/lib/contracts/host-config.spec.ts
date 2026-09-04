@@ -6,12 +6,12 @@ import type {
 	IHostObservability,
 	IHostPaths,
 	IHostRegistrations,
-	IMcpVertexHostConfig,
+	IDelendaiHostConfig,
 } from '@delendai/core/public';
 import type {
 	ICorePaths,
 	IKnowledgeEntry,
-	IMcpVertexProjectMetadata,
+	IDelendaiProjectMetadata,
 	IPromptRegistration,
 	IResourceRegistration,
 	IStatusCollector,
@@ -22,7 +22,7 @@ import type {
 
 /**
  * Solid-ISP: these tests pin the segregated sub-interfaces of
- * `IMcpVertexHostConfig`. Every sub-interface must be:
+ * `IDelendaiHostConfig`. Every sub-interface must be:
  *
  *   1. Assignable to the composite (LSP).
  *   2. Independently usable (a caller that depends only on the
@@ -30,9 +30,9 @@ import type {
  *   3. Structurally compatible — fields that overlap (none today,
  *      by design) MUST still satisfy both shapes.
  */
-describe('IMcpVertexHostConfig ISP segregation', async () => {
-	const metadata: IMcpVertexProjectMetadata = {
-		name: 'mcp-vertex-host',
+describe('IDelendaiHostConfig ISP segregation', async () => {
+	const metadata: IDelendaiProjectMetadata = {
+		name: 'delendai-host',
 		version: '1.0.0',
 		description: 'Test host metadata fixture',
 	};
@@ -74,12 +74,12 @@ describe('IMcpVertexHostConfig ISP segregation', async () => {
 	describe('IHostIdentity (slice)', async () => {
 		it('carries metadata + namespacePrefix', async () => {
 			const slice: IHostIdentity = { metadata, namespacePrefix: 'acme' };
-			expect(slice.metadata.name).toBe('mcp-vertex-host');
+			expect(slice.metadata.name).toBe('delendai-host');
 			expect(slice.namespacePrefix).toBe('acme');
 		});
-		it('is assignable to the composite IMcpVertexHostConfig (LSP)', async () => {
+		it('is assignable to the composite IDelendaiHostConfig (LSP)', async () => {
 			const slice: IHostIdentity = { metadata };
-			const composite: IMcpVertexHostConfig = {
+			const composite: IDelendaiHostConfig = {
 				...slice,
 				workspace,
 			};
@@ -101,7 +101,7 @@ describe('IMcpVertexHostConfig ISP segregation', async () => {
 		});
 		it('is assignable to the composite (LSP)', async () => {
 			const slice: IHostPaths = { workspace };
-			const composite: IMcpVertexHostConfig = {
+			const composite: IDelendaiHostConfig = {
 				...slice,
 				metadata,
 			};
@@ -124,7 +124,7 @@ describe('IMcpVertexHostConfig ISP segregation', async () => {
 		});
 		it('is assignable to the composite (LSP)', async () => {
 			const slice: IHostContent = { knowledge: [knowledgeEntry] };
-			const composite: IMcpVertexHostConfig = {
+			const composite: IDelendaiHostConfig = {
 				...slice,
 				metadata,
 				workspace,
@@ -148,7 +148,7 @@ describe('IMcpVertexHostConfig ISP segregation', async () => {
 			const slice: IHostObservability = {
 				statusCollectors: [statusCollector],
 			};
-			const composite: IMcpVertexHostConfig = {
+			const composite: IDelendaiHostConfig = {
 				...slice,
 				metadata,
 				workspace,
@@ -172,7 +172,7 @@ describe('IMcpVertexHostConfig ISP segregation', async () => {
 			const slice: IHostRegistrations = {
 				extraTools: [toolRegistration],
 			};
-			const composite: IMcpVertexHostConfig = {
+			const composite: IDelendaiHostConfig = {
 				...slice,
 				metadata,
 				workspace,
@@ -181,18 +181,18 @@ describe('IMcpVertexHostConfig ISP segregation', async () => {
 		});
 	});
 
-	describe('IMcpVertexHostConfig composite (Solid-LSP)', async () => {
+	describe('IDelendaiHostConfig composite (Solid-LSP)', async () => {
 		it('a minimal host config satisfies the contract (only required fields)', async () => {
 			// The minimum a host MUST inject: identity + paths. The
 			// rest is optional — this proves the slice-based design
 			// pays off (no test needs to fake a metrics registry).
-			const minimal: IMcpVertexHostConfig = { metadata, workspace };
-			expect(minimal.metadata.name).toBe('mcp-vertex-host');
+			const minimal: IDelendaiHostConfig = { metadata, workspace };
+			expect(minimal.metadata.name).toBe('delendai-host');
 			expect(minimal.workspace.root).toBe('/repo');
 		});
 
 		it('the full composite carries every sub-interface field', async () => {
-			const full: IMcpVertexHostConfig = {
+			const full: IDelendaiHostConfig = {
 				metadata,
 				namespacePrefix: 'full',
 				workspace,

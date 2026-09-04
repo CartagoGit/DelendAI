@@ -15,13 +15,13 @@ import { renderPanelTokens } from '../../src/dashboard/render-panel-tokens';
 import { renderPanelTools } from '../../src/dashboard/render-panel-tools';
 
 const baseOverview = {
-	serverName: 'mcp-vertex',
+	serverName: 'delendai',
 	serverVersion: '0.1.0',
-	namespacePrefix: 'mcp-vertex',
+	namespacePrefix: 'delendai',
 	plugins: [{ name: 'proposals', version: '0.1.0' }, { name: 'memory' }],
 	tools: [
-		{ name: 'mcp-vertex_overview', plugin: 'mcp-vertex' },
-		{ name: 'mcp-vertex_metrics', plugin: 'mcp-vertex' },
+		{ name: 'delendai_overview', plugin: 'delendai' },
+		{ name: 'delendai_metrics', plugin: 'delendai' },
 		{ name: 'proposals_proposal_board', plugin: 'proposals' },
 	],
 	knowledgeIds: ['overview', 'plugins'],
@@ -44,8 +44,8 @@ const baseMetrics = {
 	totals: { calls: 27, errors: 1, totalMs: 2160, totalBytes: 7800 },
 	rows: [
 		{
-			tool: 'mcp-vertex_overview',
-			plugin: 'mcp-vertex',
+			tool: 'delendai_overview',
+			plugin: 'delendai',
 			calls: 12,
 			errors: 0,
 			totalMs: 240,
@@ -96,7 +96,7 @@ const basePlugins = {
 			tokenSharePercent: 41,
 		},
 		{
-			plugin: 'mcp-vertex',
+			plugin: 'delendai',
 			tools: 2,
 			calls: 12,
 			errors: 0,
@@ -230,23 +230,23 @@ const fixture: IDashboardAllModels = {
 		},
 	},
 	server: {
-		name: 'mcp-vertex',
+		name: 'delendai',
 		version: '0.1.0',
 		fetchedAt: '2026-06-21T07:00:00Z',
 	},
 };
 
 const opts = {
-	docsUrl: 'https://mcp-vertex.dev',
-	refreshCommand: 'mcp-vertex.refresh',
-	openDocsCommand: 'mcp-vertex.openDocs',
+	docsUrl: 'https://delendai.dev',
+	refreshCommand: 'delendai.refresh',
+	openDocsCommand: 'delendai.openDocs',
 	lang: dictsByLang.en,
 };
 
 describe('renderPanelOverview', async () => {
 	it('renders the server name, version, and recommended next action', async () => {
 		const html = renderPanelOverview(baseOverview, dictsByLang.en);
-		expect(html).toContain('mcp-vertex');
+		expect(html).toContain('delendai');
 		expect(html).toContain('v0.1.0');
 		expect(html).toContain('Call overview first.');
 		expect(html).toContain('panel-overview');
@@ -269,7 +269,7 @@ describe('renderPanelMetrics', async () => {
 		expect(html).toContain('panel-metrics');
 		expect(html).toContain('Total calls');
 		expect(html).toContain('27');
-		expect(html).toContain('mcp-vertex_overview');
+		expect(html).toContain('delendai_overview');
 	});
 });
 
@@ -285,7 +285,7 @@ describe('renderPanelTokens', async () => {
 describe('renderPanelTools', async () => {
 	it('renders a sortable table with data-* attributes for client-side sort', async () => {
 		const html = renderPanelTools(baseTools, dictsByLang.en);
-		expect(html).toContain('mcpv-tools-table');
+		expect(html).toContain('delendai-tools-table');
 		expect(html).toContain('data-calls="12"');
 		expect(html).toContain('data-calls="4"');
 	});
@@ -386,10 +386,10 @@ describe('renderDashboard', async () => {
 	it('composes header, KPI strip, 8 tabs + 8 panels + Docs + footer', async () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toMatch(
-			/<header class="mcpv-header"[^>]*data-connection="ok"/,
+			/<header class="delendai-header"[^>]*data-connection="ok"/,
 		);
-		expect(html).toContain('mcpv-kpis');
-		expect(html).toContain('mcpv-tabs');
+		expect(html).toContain('delendai-kpis');
+		expect(html).toContain('delendai-tabs');
 		expect(html).toContain('tab-overview');
 		expect(html).toContain('tab-metrics');
 		expect(html).toContain('tab-tokens');
@@ -404,19 +404,19 @@ describe('renderDashboard', async () => {
 		expect(html).toContain('panel-overview');
 		expect(html).toContain('panel-metrics');
 		expect(html).toContain('panel-docs');
-		expect(html).toContain('mcpv-footer');
-		expect(html).toContain('https://mcp-vertex.dev');
+		expect(html).toContain('delendai-footer');
+		expect(html).toContain('https://delendai.dev');
 	});
 
-	it('inlines the brand logo SVG in the header (via shared --mcpv-brand-* tokens)', async () => {
+	it('inlines the brand logo SVG in the header (via shared --delendai-brand-* tokens)', async () => {
 		const html = renderDashboard(fixture, opts);
-		expect(html).toContain('mcpv-header__logo');
+		expect(html).toContain('delendai-header__logo');
 		expect(html).toContain('linearGradient');
 		// f00047 S3: brand hex literals moved to apps/shared; the webview
 		// references them via CSS variables so there is exactly one source
 		// of truth. Asserting the variable names keeps the test honest.
-		expect(html).toContain('--mcpv-brand-blue');
-		expect(html).toContain('--mcpv-brand-purple');
+		expect(html).toContain('--delendai-brand-blue');
+		expect(html).toContain('--delendai-brand-purple');
 	});
 
 	it('sets the first tab as active by default', async () => {
@@ -440,7 +440,7 @@ describe('renderDashboard', async () => {
 		// f00102 S4-real-extract: the client script now selects tabs
 		// via the shared `data-tab-trigger` attribute (stamped by
 		// `renderTabs` in `@delendai/shared/components/ui/tabs`)
-		// instead of the old `.mcpv-tabs [role="tab"]` selector. The
+		// instead of the old `.delendai-tabs [role="tab"]` selector. The
 		// attribute selector works for any host that delegates to
 		// the shared renderer.
 		expect(html).toContain('[data-tab-trigger]');

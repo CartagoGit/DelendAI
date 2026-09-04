@@ -20,7 +20,7 @@ export const buildOperationalEventLogKnowledge = (
 	return [
 		'# Operational event log',
 		'',
-		'The logs plugin persists redacted JSONL events under `.cache/mcp-vertex/results/logs/` (every event) and ALSO under `.cache/mcp-vertex/results/logs-errors/` (only events whose outcome is not `ok`/`idle` — failed, timed-out, dead, cancelled or unknown).',
+		'The logs plugin persists redacted JSONL events under `.cache/delendai/results/logs/` (every event) and ALSO under `.cache/delendai/results/logs-errors/` (only events whose outcome is not `ok`/`idle` — failed, timed-out, dead, cancelled or unknown).',
 		'',
 		'## Fields on every event',
 		'',
@@ -69,7 +69,7 @@ export const buildOperationalEventLogKnowledge = (
 		'',
 		'## Authoring',
 		'',
-		'For third-party plugin authors: see `docs/mcp-vertex/plugins/logs/AUTHORING.md` for the full `withIncidentLogging` recipe, the `IPluginLogInput` / `IPluginLogsHelper` types, the `incidentLoggingDisabled` opt-out, and the `--strict-logs` host flag.',
+		'For third-party plugin authors: see `docs/delendai/plugins/logs/AUTHORING.md` for the full `withIncidentLogging` recipe, the `IPluginLogInput` / `IPluginLogsHelper` types, the `incidentLoggingDisabled` opt-out, and the `--strict-logs` host flag.',
 		'',
 		'## Recipe — "what is broken right now?"',
 		'',

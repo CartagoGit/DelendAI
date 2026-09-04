@@ -16,8 +16,8 @@ interface IJsonRecord {
 	readonly [key: string]: unknown;
 }
 
-const LOGS_DIR = '.cache/mcp-vertex/results/logs';
-const ERRORS_DIR = '.cache/mcp-vertex/results/logs-errors';
+const LOGS_DIR = '.cache/delendai/results/logs';
+const ERRORS_DIR = '.cache/delendai/results/logs-errors';
 
 const isRecord = (value: unknown): value is IJsonRecord =>
 	typeof value === 'object' && value !== null;

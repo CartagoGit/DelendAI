@@ -2,7 +2,7 @@
 	"name": "@delendai/git",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and recent log as structured JSON, so agents cheaply see what changed. Load with `mcp-vertex --plugins=git`.",
+	"description": "Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and recent log as structured JSON, so agents cheaply see what changed. Load with `delendai --plugins=git`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

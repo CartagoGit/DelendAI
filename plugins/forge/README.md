@@ -29,7 +29,7 @@ The plugin covers three forge surfaces:
 ## Usage
 
 ```bash
-mcp-vertex --plugins=forge
+delendai --plugins=forge
 ```
 
 ```json

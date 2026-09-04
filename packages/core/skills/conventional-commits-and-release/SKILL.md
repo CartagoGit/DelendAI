@@ -1,10 +1,10 @@
 ---
-name: mcp-vertex-conventional-commits-and-release
+name: delendai-conventional-commits-and-release
 appliesTo: ['@delendai/core']
 description: How a commit message maps to the next semver bump, why `derive-version.ts` (not a human) decides the version, and the exact dry-run -> --write -> tag -> publish flow `release.script.ts` drives. Use before writing a commit message or running anything under `bun run release`.
 ---
 
-# mcp-vertex conventional commits + release
+# delendai conventional commits + release
 
 ## Decision tree
 

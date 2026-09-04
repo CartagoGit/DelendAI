@@ -62,7 +62,7 @@ const deps = (over: Partial<IGithubSetupDeps> = {}): IGithubSetupDeps => ({
 	hasGhCli: () => true,
 	githubToken: () => undefined,
 	readConfig: () => undefined,
-	configPath: 'mcp-vertex.config.json',
+	configPath: 'delendai.config.json',
 	...over,
 });
 
@@ -73,7 +73,7 @@ describe('runSetupGithub', async () => {
 			repo: 'me/proj',
 			tier: 'gh',
 			configured: false,
-			configPath: 'mcp-vertex.config.json',
+			configPath: 'delendai.config.json',
 		});
 		expect(result.steps.length).toBeGreaterThan(0);
 		expect(result.guide).toContain('me/proj');

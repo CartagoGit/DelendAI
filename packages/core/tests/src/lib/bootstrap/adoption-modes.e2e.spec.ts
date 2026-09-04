@@ -15,7 +15,7 @@ import { createWorkspacePathProvider } from '@delendai/core/public';
 const roots: string[] = [];
 
 const fixture = (files: Readonly<Record<string, string>>) => {
-	const root = mkdtempSync(join(tmpdir(), 'mcpv-adoption-'));
+	const root = mkdtempSync(join(tmpdir(), 'delendai-adoption-'));
 	roots.push(root);
 	for (const [path, content] of Object.entries(files)) {
 		const absolute = join(root, path);
@@ -98,12 +98,12 @@ describe('consumer adoption modes e2e', () => {
 					name: '@delendai/core-monorepo',
 					workspaces: ['packages/*', 'plugins/*'],
 				}),
-				'.vscode/mcp.json': '{ "servers": { "mcp-vertex": {} } }',
+				'.vscode/mcp.json': '{ "servers": { "delendai": {} } }',
 			}),
 		);
 		const blueprint = buildServerBlueprint(analysis);
 		const files = buildBlueprintFiles(blueprint);
-		expect(blueprint.namespacePrefix).toBe('mcp-vertex');
+		expect(blueprint.namespacePrefix).toBe('delendai');
 		expect(blueprint.targetDir).toBe('packages/core');
 		expect(
 			files.every(({ path }) => !path.startsWith('libs/mcp-project')),
@@ -111,7 +111,7 @@ describe('consumer adoption modes e2e', () => {
 		expect(
 			files
 				.filter(({ path }) => path.endsWith('.ts'))
-				.every(({ content }) => !content.includes('MCP-VERTEX')),
+				.every(({ content }) => !content.includes('DELENDAI')),
 		).toBe(true);
 	});
 });

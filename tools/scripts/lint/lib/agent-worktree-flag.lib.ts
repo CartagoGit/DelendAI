@@ -4,7 +4,7 @@
  * The same precedence rule is used by every lint that needs to know
  * whether per-agent worktrees/branches are allowed in this repo:
  *
- *   `--agent-worktree` CLI flag > `mcp-vertex.config.json#agentWorktree`
+ *   `--agent-worktree` CLI flag > `delendai.config.json#agentWorktree`
  *   > `false` (default off).
  *
  * The callers pass the already-resolved CLI value (from their own
@@ -16,8 +16,8 @@ import { join } from 'node:path';
 
 export const readAgentWorktreeFlag = (cwd: string): boolean => {
 	const candidates = [
-		join(cwd, 'mcp-vertex.config.json'),
-		join(cwd, '.mcp-vertex.config.json'),
+		join(cwd, 'delendai.config.json'),
+		join(cwd, '.delendai.config.json'),
 	];
 	for (const path of candidates) {
 		if (!existsSync(path)) continue;

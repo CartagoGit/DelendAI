@@ -28,7 +28,7 @@ export interface IServerPlan {
 	readonly serverName: string;
 	readonly namespacePrefix: string;
 	readonly targetDir: string;
-	/** mcp-vertex plugins to load via `--plugins`. */
+	/** delendai plugins to load via `--plugins`. */
 	readonly plugins: readonly string[];
 	/** Project-specific tools to scaffold. */
 	readonly tools: readonly IRecommendedTool[];
@@ -43,7 +43,7 @@ export interface IServerPlan {
 }
 
 const kebabHead = (name: string | undefined): string => {
-	if (name?.startsWith('@delendai/')) return 'mcp-vertex';
+	if (name?.startsWith('@delendai/')) return 'delendai';
 	if (!name) return 'app';
 	const cleaned = toKebabCase(stripPackageScope(name));
 	const head = cleaned.split('-')[0];

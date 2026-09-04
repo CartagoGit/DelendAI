@@ -104,7 +104,7 @@ describe('r00044-S3 — transaction lifecycle and grants', () => {
 				buildForgePrCreateStep({
 					args: { title: 'tx pr', confirm: true },
 					toolOptions: {
-						namespacePrefix: 'mcp-vertex_forge',
+						namespacePrefix: 'delendai_forge',
 						workspaceRootAbs: '/tmp/workspace',
 					},
 					capabilityGrant: forgePrGrant,

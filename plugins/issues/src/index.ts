@@ -23,7 +23,7 @@ import type { IGithubClient as IAdapterGithubClient } from './lib/services/error
 import { buildIssuesErrorCollectorKnowledge } from './lib/knowledge/error-collector';
 
 /** Default scaffold directory (workspace-relative), per the proposal's S3 spec. */
-const DEFAULT_SCAFFOLD_DIR = 'docs/mcp-vertex/proposals/retired/issues';
+const DEFAULT_SCAFFOLD_DIR = 'docs/delendai/proposals/retired/issues';
 
 /** Adapts the real `fetchIssue`/`listIssues` free functions (S2) into the `IGithubClient` port the tools depend on. */
 const createGithubClient = (repo: string): IGithubClient => ({
@@ -38,11 +38,11 @@ const createGithubClient = (repo: string): IGithubClient => ({
 
 /**
  * Knowledge entry surfaced when the plugin loads with `--plugins=proposals,issues`
- * but `plugins.issues.options.repo` is not set in `mcp-vertex.config.json`.
+ * but `plugins.issues.options.repo` is not set in `delendai.config.json`.
  * Without this entry, the user would see `issues_*` silently missing from
- * `mcp-vertex_overview` and have to read the code to discover the reason.
+ * `delendai_overview` and have to read the code to discover the reason.
  * Surfacing the entry as a discoverable knowledge item makes the failure
- * mode self-documenting and one `mcp-vertex_knowledge` call away.
+ * mode self-documenting and one `delendai_knowledge` call away.
  */
 const ISSUES_NEEDS_SETUP_BODY = [
 	'# issues plugin — repo not configured',
@@ -54,7 +54,7 @@ const ISSUES_NEEDS_SETUP_BODY = [
 	'1. **Interactive (recommended for first-time setup)**: run the `setup-github` subcommand once. It detects the repo from `git remote get-url origin`, asks you to confirm, and writes the config atomically.',
 	'',
 	'   ```bash',
-	'   mcp-vertex setup-github',
+	'   delendai setup-github',
 	'   ```',
 	'',
 	'2. **Manual**: edit `<config-file>` and add',
@@ -74,11 +74,11 @@ const ISSUES_NEEDS_SETUP_BODY = [
  * Opt-in GitHub issues plugin. Host-only, single-user productivity
  * tool (same shape as `plugins/logs` / `plugins/web-fetch`): not part
  * of the `swarm` preset, never loaded unless the user explicitly adds
- * `proposals,issues` to `--plugins` or `mcp-vertex.config.json`.
+ * `proposals,issues` to `--plugins` or `delendai.config.json`.
  *
  * `dependsOn: ['proposals']` is a HARD requirement, not a soft
  * coupling — every `issues_*` tool reads/writes scaffold files under
- * `docs/mcp-vertex/proposals/retired/issues/**`, which is part of the `proposals`
+ * `docs/delendai/proposals/retired/issues/**`, which is part of the `proposals`
  * plugin's managed namespace (see the proposal's "why this design"
  * section). The loader
  * (`packages/core/src/lib/plugins/load-plugins.ts`) refuses to
@@ -90,7 +90,7 @@ const ISSUES_NEEDS_SETUP_BODY = [
  * conditionally on the `repo` option being set; without it, the
  * plugin returns an `IKnowledgeEntry` (`issues-needs-repo-config`) so the
  * host agent can discover the missing-config situation via
- * `mcp-vertex_overview` or `mcp-vertex_knowledge`.
+ * `delendai_overview` or `delendai_knowledge`.
  */
 export default definePlugin({
 	name: 'issues',
@@ -101,7 +101,7 @@ export default definePlugin({
 	optionsSchema: z.object({
 		/** `'owner/name'`; required to register the 9 `issues_*` tools. */
 		repo: z.string().optional(),
-		/** Defaults to `docs/mcp-vertex/proposals/retired/issues`. */
+		/** Defaults to `docs/delendai/proposals/retired/issues`. */
 		scaffoldDir: z.string().optional(),
 		/** When `true`, opens a live issue for critical/alert/emergency errors. Default `false`. */
 		autoReport: z.boolean().optional(),
@@ -137,8 +137,8 @@ export default definePlugin({
 			// discoverable knowledge entry instead of throwing at boot.
 			// The contract: the rest of the plugin surface stays green
 			// (CI smoke, `--check`), and any agent that boots the server
-			// sees the hint via `mcp-vertex_overview` (lists knowledge
-			// ids) or via a direct `mcp-vertex_knowledge` call.
+			// sees the hint via `delendai_overview` (lists knowledge
+			// ids) or via a direct `delendai_knowledge` call.
 			return {
 				tools: [setupGithubTool],
 				knowledge: [

@@ -12,13 +12,13 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexMemoryCheckpointPacketOutput {
+export interface DelendaiMemoryCheckpointPacketOutput {
 	available: boolean;
 	packet: unknown | null;
 	advisory?: unknown;
 }
 
-export interface McpVertexMemoryCompactOutput {
+export interface DelendaiMemoryCompactOutput {
 	digest: string;
 	sections: unknown;
 	tokenAccounting: unknown;
@@ -36,7 +36,7 @@ export interface McpVertexMemoryCompactOutput {
 	};
 }
 
-export interface McpVertexMemoryCompactionCheckOutput {
+export interface DelendaiMemoryCompactionCheckOutput {
 	shouldCompact: boolean;
 	reason: "token-threshold" | "turn-threshold" | "below-threshold";
 	carriedTailTokens: number;
@@ -46,19 +46,19 @@ export interface McpVertexMemoryCompactionCheckOutput {
 	hint: string;
 }
 
-export interface McpVertexMemoryExportOutput {
+export interface DelendaiMemoryExportOutput {
 	ok: true;
 	format: "json" | "ndjson";
 	payload: string;
 	count: number;
 }
 
-export interface McpVertexMemoryForgetOutput {
+export interface DelendaiMemoryForgetOutput {
 	ok: true;
 	removed: string;
 }
 
-export interface McpVertexMemoryImportOutput {
+export interface DelendaiMemoryImportOutput {
 	ok: true;
 	imported: number;
 	skipped: number;
@@ -68,7 +68,7 @@ export interface McpVertexMemoryImportOutput {
 	redactedSecrets: number;
 }
 
-export interface McpVertexMemoryListOutput {
+export interface DelendaiMemoryListOutput {
 	notes: {
 		id: string;
 		title: string;
@@ -79,7 +79,7 @@ export interface McpVertexMemoryListOutput {
 	nextOffset?: number;
 }
 
-export interface McpVertexMemoryRecallOutput {
+export interface DelendaiMemoryRecallOutput {
 	notes: {
 		id: string;
 		title: string;
@@ -97,7 +97,7 @@ export interface McpVertexMemoryRecallOutput {
 	};
 }
 
-export interface McpVertexMemorySaveOutput {
+export interface DelendaiMemorySaveOutput {
 	ok: true;
 	saved: {
 		id: string;
@@ -113,13 +113,13 @@ export interface McpVertexMemorySaveOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface MemoryToolOutputs {
-	"mcp-vertex_memory_checkpoint_packet": McpVertexMemoryCheckpointPacketOutput;
-	"mcp-vertex_memory_compact": McpVertexMemoryCompactOutput;
-	"mcp-vertex_memory_compaction_check": McpVertexMemoryCompactionCheckOutput;
-	"mcp-vertex_memory_export": McpVertexMemoryExportOutput;
-	"mcp-vertex_memory_forget": McpVertexMemoryForgetOutput;
-	"mcp-vertex_memory_import": McpVertexMemoryImportOutput;
-	"mcp-vertex_memory_list": McpVertexMemoryListOutput;
-	"mcp-vertex_memory_recall": McpVertexMemoryRecallOutput;
-	"mcp-vertex_memory_save": McpVertexMemorySaveOutput;
+	"delendai_memory_checkpoint_packet": DelendaiMemoryCheckpointPacketOutput;
+	"delendai_memory_compact": DelendaiMemoryCompactOutput;
+	"delendai_memory_compaction_check": DelendaiMemoryCompactionCheckOutput;
+	"delendai_memory_export": DelendaiMemoryExportOutput;
+	"delendai_memory_forget": DelendaiMemoryForgetOutput;
+	"delendai_memory_import": DelendaiMemoryImportOutput;
+	"delendai_memory_list": DelendaiMemoryListOutput;
+	"delendai_memory_recall": DelendaiMemoryRecallOutput;
+	"delendai_memory_save": DelendaiMemorySaveOutput;
 }

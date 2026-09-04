@@ -5,7 +5,7 @@ import type {
 	IToolRegistryEntry,
 } from '@delendai/core/public';
 
-import { McpVertexInternalError } from '../src/lib/mcp-internal-error.helper';
+import { DelendaiInternalError } from '../src/lib/mcp-internal-error.helper';
 import { analyzeErrorOrigin } from '../src/lib/origin-analyzer.helper';
 
 const registryOf = (
@@ -28,11 +28,11 @@ describe('analyzeErrorOrigin', () => {
 
 		expect(
 			analyzeErrorOrigin({
-				toolName: 'mcp-vertex_orchestrator-runner_invoke',
+				toolName: 'delendai_orchestrator-runner_invoke',
 				toolRegistry: registryOf({
-					'mcp-vertex_orchestrator-runner_invoke': {
+					'delendai_orchestrator-runner_invoke': {
 						packageName: '@delendai/orchestrator-runner',
-						owner: 'mcp-vertex',
+						owner: 'delendai',
 						publicToolName: 'invoke',
 						category: 'orchestration',
 					},
@@ -49,7 +49,7 @@ describe('analyzeErrorOrigin', () => {
 	it('classifies external provider failures as provider', () => {
 		expect(
 			analyzeErrorOrigin({
-				toolName: 'mcp-vertex_orchestrator-runner_invoke',
+				toolName: 'delendai_orchestrator-runner_invoke',
 				toolRegistry: emptyRegistry,
 				error: new Error('api responded 429: rate limit exceeded'),
 			}),
@@ -84,7 +84,7 @@ describe('analyzeErrorOrigin', () => {
 					pluginName: 'error-reporting',
 					resolvedSpecifier: '@delendai/error-reporting',
 					hookName: 'onToolCall',
-					toolName: 'mcp-vertex_quality_run_quality',
+					toolName: 'delendai_quality_run_quality',
 					args: { path: '/home/private/repo' },
 					error: new Error('hook exploded'),
 				},
@@ -99,7 +99,7 @@ describe('analyzeErrorOrigin', () => {
 	it('classifies host project failures as project when there is no positive evidence', () => {
 		expect(
 			analyzeErrorOrigin({
-				toolName: 'mcp-vertex_quality_run_quality',
+				toolName: 'delendai_quality_run_quality',
 				toolRegistry: emptyRegistry,
 				error: new Error(
 					'eslint failed in /home/acme/project/src/index.ts',
@@ -112,12 +112,12 @@ describe('analyzeErrorOrigin', () => {
 		);
 	});
 
-	it('classifies typed mcp-vertex failures as internal', () => {
+	it('classifies typed delendai failures as internal', () => {
 		expect(
 			analyzeErrorOrigin({
-				toolName: 'mcp-vertex_quality_run_quality',
+				toolName: 'delendai_quality_run_quality',
 				toolRegistry: emptyRegistry,
-				error: new McpVertexInternalError({
+				error: new DelendaiInternalError({
 					code: 'HOOK_FAILED',
 					packageId: '@delendai/error-reporting',
 					componentId: 'test',

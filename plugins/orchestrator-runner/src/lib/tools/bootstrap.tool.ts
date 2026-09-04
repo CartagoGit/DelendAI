@@ -6,7 +6,7 @@
  * `${cacheDir}/orchestrator-runner/roster.draft.json` (durably) → return a
  * PROSE brief plus an RFC 6902 JSON Patch (CRITICAL I13) for the caller to
  * apply — via MCP elicitation or a CLI prompt — to
- * `mcp-vertex.config.json#providers` on user confirm.
+ * `delendai.config.json#providers` on user confirm.
  *
  * The wizard NEVER writes the confirmed config itself (the trust gradient,
  * §1): confirmed intent is the user's to own. It only writes the cache draft
@@ -48,13 +48,13 @@ export const buildBootstrapProvidersRegistration = (
 	effects: ['spawn', 'write'],
 	summary:
 		'Run the provider bootstrap wizard: probe, draft a roster, and return a prose brief + config patch.',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_bootstrap_providers',
+	descriptionKey: 'delendai_orchestrator-runner_bootstrap_providers',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_bootstrap_providers`,
 			{
 				description:
-					'Run the provider bootstrap wizard. Probes the PATH for provider CLIs, runs a best-effort auth/status RPC per detected tool to learn its tier, writes a DRAFT roster to the cache (roster.draft.json), and returns {detected, missing, rosterDraftPath, configPatch, brief, note}. The brief is prose the assistant relays to the user (asking spend preference + task types). `configPatch` is an RFC 6902 JSON Patch that ADDS the newly-discovered providers to mcp-vertex.config.json#providers — apply it via elicitation / a CLI prompt only after the user confirms. The wizard never writes the confirmed config itself. Spawns subprocesses and writes the cache draft; never spends on a model.',
+					'Run the provider bootstrap wizard. Probes the PATH for provider CLIs, runs a best-effort auth/status RPC per detected tool to learn its tier, writes a DRAFT roster to the cache (roster.draft.json), and returns {detected, missing, rosterDraftPath, configPatch, brief, note}. The brief is prose the assistant relays to the user (asking spend preference + task types). `configPatch` is an RFC 6902 JSON Patch that ADDS the newly-discovered providers to delendai.config.json#providers — apply it via elicitation / a CLI prompt only after the user confirms. The wizard never writes the confirmed config itself. Spawns subprocesses and writes the cache draft; never spends on a model.',
 				inputSchema: InputSchema,
 				outputSchema: BootstrapProvidersOutputSchema,
 			},
@@ -96,7 +96,7 @@ export const buildBootstrapProvidersRegistration = (
 					rosterDraftPath: options.rosterDraftPath,
 					configPatch,
 					brief: composeBootstrapBrief(enriched),
-					note: 'This is a draft. Review `configPatch` and apply it to mcp-vertex.config.json#providers only on user confirm (RFC 6902 JSON Patch). Re-running is non-destructive: it never overwrites an already-confirmed provider id.',
+					note: 'This is a draft. Review `configPatch` and apply it to delendai.config.json#providers only on user confirm (RFC 6902 JSON Patch). Re-running is non-destructive: it never overwrites an already-confirmed provider id.',
 				});
 			},
 		);

@@ -217,7 +217,7 @@ export const collectInitAnswers = async (
 	// Brand banner — non-fatal if the user has `NO_COLOR` set, the
 	// helpers are passthroughs in that mode.
 	process.stderr.write(
-		`\n${brand('mcp-vertex')} ${hint('›')} ${heading('workspace bootstrap')}\n\n`,
+		`\n${brand('delendai')} ${hint('›')} ${heading('workspace bootstrap')}\n\n`,
 	);
 
 	// f00088 S1: surface the detection summary at the top of the
@@ -265,7 +265,7 @@ export const collectInitAnswers = async (
 				},
 				{ label: 'full — swarm + web-fetch + issues', value: 'full' },
 				{
-					label: 'vertex — snapshot of mcp-vertex itself (recommended for your own projects)',
+					label: 'vertex — snapshot of delendai itself (recommended for your own projects)',
 					value: 'vertex',
 				},
 			],
@@ -320,13 +320,13 @@ export const collectInitAnswers = async (
 
 		const copyCoreSkills = await askConfirm(
 			rl,
-			'Copy core skills into docs/mcp-vertex/skills/?',
+			'Copy core skills into docs/delendai/skills/?',
 			true,
 		);
 
 		const generateAgentMd = await askConfirm(
 			rl,
-			'Generate .github/agents/mcp-vertex-*.agent.md from the live catalog?',
+			'Generate .github/agents/delendai-*.agent.md from the live catalog?',
 			true,
 		);
 

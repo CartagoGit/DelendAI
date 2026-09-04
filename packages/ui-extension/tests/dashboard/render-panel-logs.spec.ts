@@ -8,8 +8,8 @@ describe('renderPanelLogs', () => {
 	it('renders the panel shell + source chip bar', () => {
 		const html = renderPanelLogs(dictsByLang.en);
 		expect(html).toContain('panel-logs');
-		expect(html).toContain('mcpv-logs__list');
-		expect(html).toContain('mcpv-logs__source-bar');
+		expect(html).toContain('delendai-logs__list');
+		expect(html).toContain('delendai-logs__source-bar');
 		expect(html).toContain('data-source="host"');
 		expect(html).toContain('data-source="server"');
 		expect(html).toContain('data-source="notifications"');
@@ -42,12 +42,12 @@ describe('renderPanelLogs', () => {
 
 	it('renders the empty placeholder', () => {
 		const html = renderPanelLogs(dictsByLang.en);
-		expect(html).toContain('mcpv-logs__empty');
+		expect(html).toContain('delendai-logs__empty');
 	});
 
 	it('renders the detail overlay shell', () => {
 		const html = renderPanelLogs(dictsByLang.en);
-		expect(html).toContain('mcpv-logs__detail');
+		expect(html).toContain('delendai-logs__detail');
 		expect(html).toContain('data-logs-action="close-detail"');
 	});
 });

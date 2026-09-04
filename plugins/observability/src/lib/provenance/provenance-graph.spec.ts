@@ -48,9 +48,9 @@ describe('buildProvenanceGraph', () => {
 				pullRequests: [SECOND_PULL_REQUEST],
 			},
 			{
-				repoUrl: 'https://github.com/CartagoGit/mcp-vertex',
+				repoUrl: 'https://github.com/CartagoGit/delendai',
 				proposalPaths: {
-					f00392: 'docs/mcp-vertex/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md',
+					f00392: 'docs/delendai/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md',
 				},
 				toolPaths: {
 					obs_errors:
@@ -67,10 +67,10 @@ describe('buildProvenanceGraph', () => {
 			graph.nodes.map((node) => [node.id, node.href]),
 		);
 		expect(hrefById['proposal:f00392']).toBe(
-			'docs/mcp-vertex/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md',
+			'docs/delendai/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md',
 		);
 		expect(hrefById['slice:S2']).toBe(
-			'docs/mcp-vertex/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md#slices',
+			'docs/delendai/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md#slices',
 		);
 		expect(hrefById['tool:obs_errors']).toBe(
 			'plugins/observability/src/lib/tools/obs-errors.tool.ts',
@@ -81,13 +81,13 @@ describe('buildProvenanceGraph', () => {
 			],
 		).toBe('plugins/observability/src/lib/errors/list-errors.spec.ts');
 		expect(hrefById['commit:8514f99']).toBe(
-			'https://github.com/CartagoGit/mcp-vertex/commit/8514f99',
+			'https://github.com/CartagoGit/delendai/commit/8514f99',
 		);
 		expect(hrefById['release:v0.1.1']).toBe(
-			'https://github.com/CartagoGit/mcp-vertex/releases/tag/v0.1.1',
+			'https://github.com/CartagoGit/delendai/releases/tag/v0.1.1',
 		);
 		expect(hrefById[`pr:${SECOND_PULL_REQUEST}`]).toBe(
-			`https://github.com/CartagoGit/mcp-vertex/pull/${SECOND_PULL_REQUEST}`,
+			`https://github.com/CartagoGit/delendai/pull/${SECOND_PULL_REQUEST}`,
 		);
 	});
 });

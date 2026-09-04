@@ -28,7 +28,7 @@ const workspaces: string[] = [];
 // with `-32602 ... disabled`.
 const syncProposals = (client: Client) =>
 	client.callTool({
-		name: 'mcp-vertex_proposals_sync_proposals',
+		name: 'delendai_proposals_sync_proposals',
 		arguments: {},
 	});
 
@@ -41,7 +41,7 @@ const createQualityServer = async (command: string) => {
 			proposals: { options: { requirePeerReview: false } },
 		},
 	});
-	writeFileSync(join(workspace, 'mcp-vertex.config.json'), config, 'utf8');
+	writeFileSync(join(workspace, 'delendai.config.json'), config, 'utf8');
 	mkdirSync(join(workspace, 'tools/scripts/quality'), { recursive: true });
 	writeFileSync(
 		join(workspace, 'tools/scripts/quality/run-quality.script.ts'),
@@ -76,7 +76,7 @@ const createQualityServer = async (command: string) => {
 };
 
 const seedSlice = (workspace: string, id: string): string => {
-	const proposalDir = join(workspace, 'docs/mcp-vertex/proposals/ready');
+	const proposalDir = join(workspace, 'docs/delendai/proposals/ready');
 	mkdirSync(proposalDir, { recursive: true });
 	const proposalPath = join(proposalDir, `${id}-quality.md`);
 	writeFileSync(
@@ -88,7 +88,7 @@ const seedSlice = (workspace: string, id: string): string => {
 };
 
 const findProposalPath = (workspace: string, id: string): string => {
-	const proposalsDir = join(workspace, 'docs/mcp-vertex/proposals');
+	const proposalsDir = join(workspace, 'docs/delendai/proposals');
 	const entries = readdirSync(proposalsDir, { recursive: true }).filter(
 		(entry): entry is string => typeof entry === 'string',
 	);
@@ -117,7 +117,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			const sync = await syncProposals(client);
 			expect(sync.isError).toBeFalsy();
 			const plan = await client.callTool({
-				name: 'mcp-vertex_proposals_auto_work',
+				name: 'delendai_proposals_auto_work',
 				arguments: {},
 			});
 			expect(plan.isError).toBeFalsy();
@@ -126,7 +126,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				proposalId: 'f04200',
 			});
 			const sliceClaim = await client.callTool({
-				name: 'mcp-vertex_proposals_agent_lock',
+				name: 'delendai_proposals_agent_lock',
 				arguments: {
 					action: 'claim',
 					task_id: 'f04200-S1',
@@ -136,14 +136,14 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			});
 			expect(sliceClaim.isError).toBeFalsy();
 			const quality = await client.callTool({
-				name: 'mcp-vertex_quality_quality_run_all',
+				name: 'delendai_quality_quality_run_all',
 				arguments: {},
 			});
 			expect(quality.structuredContent).toMatchObject({
 				summary: { ok: false },
 			});
 			const result = await client.callTool({
-				name: 'mcp-vertex_proposals_close_slice',
+				name: 'delendai_proposals_close_slice',
 				arguments: {
 					proposalId: 'f04200',
 					sliceId: 'S1',
@@ -175,7 +175,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			const sync = await syncProposals(client);
 			expect(sync.isError).toBeFalsy();
 			const plan = await client.callTool({
-				name: 'mcp-vertex_proposals_auto_work',
+				name: 'delendai_proposals_auto_work',
 				arguments: {},
 			});
 			expect(plan.isError).toBeFalsy();
@@ -184,7 +184,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				proposalId: 'f04201',
 			});
 			const sliceClaim = await client.callTool({
-				name: 'mcp-vertex_proposals_agent_lock',
+				name: 'delendai_proposals_agent_lock',
 				arguments: {
 					action: 'claim',
 					task_id: 'f04201-S1',
@@ -194,7 +194,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 			});
 			expect(sliceClaim.isError).toBeFalsy();
 			const quality = await client.callTool({
-				name: 'mcp-vertex_quality_quality_run_all',
+				name: 'delendai_quality_quality_run_all',
 				arguments: {},
 			});
 			expect(quality.isError).toBeFalsy();
@@ -202,7 +202,7 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				summary: { ok: true },
 			});
 			const result = await client.callTool({
-				name: 'mcp-vertex_proposals_close_slice',
+				name: 'delendai_proposals_close_slice',
 				arguments: {
 					proposalId: 'f04201',
 					sliceId: 'S1',

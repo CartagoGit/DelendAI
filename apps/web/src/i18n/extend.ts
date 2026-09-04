@@ -37,7 +37,7 @@ const en: IExtendTranslations = {
 	lead: 'The extension surface is designed for VS Code today and other IDEs tomorrow. Use the TypeScript scaffold when you want the shared UI packages, or implement the MCP wire contract directly in another language.',
 	intro: {
 		title: 'One contract, many hosts',
-		body: 'mcp-vertex keeps host-specific APIs behind a small adapter. The server returns tool payloads as JSON, and each IDE decides how to render commands, panels, trees, and onboarding in its own native shell.',
+		body: 'delendai keeps host-specific APIs behind a small adapter. The server returns tool payloads as JSON, and each IDE decides how to render commands, panels, trees, and onboarding in its own native shell.',
 	},
 	tiers: {
 		title: 'Authoring tiers',
@@ -66,7 +66,7 @@ const en: IExtendTranslations = {
 		title: 'Scaffold quickstart',
 		body: 'Generate a compiling TypeScript reference host with an inert adapter, one overview command, a webview renderer, and a passing Vitest example.',
 		command:
-			'mcp-vertex_create_project {"kind":"extension-host","extensionHostName":"jetbrains","description":"JetBrains host adapter."}',
+			'delendai_create_project {"kind":"extension-host","extensionHostName":"jetbrains","description":"JetBrains host adapter."}',
 	},
 	contract: {
 		title: 'Compatibility surface',
@@ -82,7 +82,7 @@ const en: IExtendTranslations = {
 		title: 'Reference guide',
 		guide: 'Read EXTENSION-AUTHORING.md',
 		guideHref:
-			'https://github.com/cartago-git/mcp-vertex/blob/main/docs/mcp-vertex/EXTENSION-AUTHORING.md',
+			'https://github.com/cartago-git/delendai/blob/main/docs/delendai/EXTENSION-AUTHORING.md',
 	},
 };
 
@@ -91,7 +91,7 @@ const es: IExtendTranslations = {
 	lead: 'La superficie de extensión está diseñada para VS Code hoy y otros IDE mañana. Usa el scaffold TypeScript si quieres los paquetes de UI compartida, o implementa directamente el contrato MCP en otro lenguaje.',
 	intro: {
 		title: 'Un contrato, muchos hosts',
-		body: 'mcp-vertex mantiene las APIs específicas del host detrás de un adaptador pequeño. El servidor devuelve payloads JSON, y cada IDE decide cómo renderizar comandos, paneles, árboles y onboarding en su shell nativa.',
+		body: 'delendai mantiene las APIs específicas del host detrás de un adaptador pequeño. El servidor devuelve payloads JSON, y cada IDE decide cómo renderizar comandos, paneles, árboles y onboarding en su shell nativa.',
 	},
 	tiers: {
 		title: 'Niveles de autoría',
@@ -120,7 +120,7 @@ const es: IExtendTranslations = {
 		title: 'Quickstart del scaffold',
 		body: 'Genera un host TypeScript de referencia que compila, con adaptador inerte, un comando overview, renderer webview y un ejemplo Vitest verde.',
 		command:
-			'mcp-vertex_create_project {"kind":"extension-host","extensionHostName":"jetbrains","description":"JetBrains host adapter."}',
+			'delendai_create_project {"kind":"extension-host","extensionHostName":"jetbrains","description":"JetBrains host adapter."}',
 	},
 	contract: {
 		title: 'Superficie compatible',
@@ -136,7 +136,7 @@ const es: IExtendTranslations = {
 		title: 'Guia de referencia',
 		guide: 'Leer EXTENSION-AUTHORING.md',
 		guideHref:
-			'https://github.com/cartago-git/mcp-vertex/blob/main/docs/mcp-vertex/EXTENSION-AUTHORING.md',
+			'https://github.com/cartago-git/delendai/blob/main/docs/delendai/EXTENSION-AUTHORING.md',
 	},
 };
 

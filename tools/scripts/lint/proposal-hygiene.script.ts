@@ -179,7 +179,7 @@ const collectProposals = (root: string): Map<string, string> => {
 		}
 	};
 	for (const folder of JUDGED_FOLDERS)
-		walk(join(root, 'docs/mcp-vertex/proposals', folder));
+		walk(join(root, 'docs/delendai/proposals', folder));
 	return out;
 };
 

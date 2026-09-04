@@ -115,13 +115,13 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'peer-gate-'));
-		const proposalsDir = join(root, 'docs/mcp-vertex/proposals');
+		const proposalsDir = join(root, 'docs/delendai/proposals');
 		mkdirSync(join(proposalsDir, 'review'), { recursive: true });
 		mkdirSync(join(proposalsDir, 'done', 'feature'), { recursive: true });
 		docPath = join(proposalsDir, 'review', 'f00888-peer.md');
 		peerReviewLogPath = join(
 			root,
-			'.cache/mcp-vertex/proposals/peer-review.jsonl',
+			'.cache/delendai/proposals/peer-review.jsonl',
 		);
 		shippedFile = join(root, 'src', 'a.ts');
 		mkdirSync(dirname(shippedFile), { recursive: true });
@@ -140,7 +140,7 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 		JSON.parse(r.content[0]?.text ?? '{}');
 
 	const writeJournal = (entries: readonly Record<string, unknown>[]) => {
-		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+		mkdirSync(join(root, '.cache/delendai/proposals'), {
 			recursive: true,
 		});
 		writeFileSync(
@@ -240,11 +240,11 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 
 	it('blocks primary review→done until its dependent is done', async () => {
 		writeFileSync(docPath, doc(PEER_OK), 'utf8');
-		mkdirSync(join(root, 'docs/mcp-vertex/proposals', 'review'), {
+		mkdirSync(join(root, 'docs/delendai/proposals', 'review'), {
 			recursive: true,
 		});
 		writeFileSync(
-			join(root, 'docs/mcp-vertex/proposals/review/f00889-dependent.md'),
+			join(root, 'docs/delendai/proposals/review/f00889-dependent.md'),
 			'---\nid: f00889\nstatus: review\nblocked-by: [f00888]\n---\n',
 			'utf8',
 		);

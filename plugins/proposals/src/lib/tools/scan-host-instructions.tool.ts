@@ -34,7 +34,7 @@ import type {
 } from '../contracts/interfaces/host-instructions-inventory.interface';
 
 /**
- * A host file is "canonical" (already mcp-vertex-managed) when it
+ * A host file is "canonical" (already delendai-managed) when it
  * carries BOTH the begin and end markers f00092 writes. Canonical
  * in-repo files have nothing foreign left to audit, so the scan marks
  * them and the tool skips them. Deliberately looser than f00093's
@@ -42,8 +42,8 @@ import type {
  * already ours?" the marker presence is the signal that matters, and it
  * avoids coupling this plugin to the CLI's exact canonical block.
  */
-const MCP_BEGIN_MARKER = '<!-- mcp-vertex:begin -->';
-const MCP_END_MARKER = '<!-- mcp-vertex:end -->';
+const MCP_BEGIN_MARKER = '<!-- delendai:begin -->';
+const MCP_END_MARKER = '<!-- delendai:end -->';
 
 const isCanonicalHostBlock = (body: string): boolean =>
 	body.includes(MCP_BEGIN_MARKER) && body.includes(MCP_END_MARKER);

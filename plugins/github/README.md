@@ -4,7 +4,7 @@ GitHub provider for @delendai/core. The default surface is read-only. Remote mut
 
 ## What this plugin is for
 
-Use this plugin when you want mcp-vertex to read a GitHub repository directly over the GitHub API. For this repository, the remote project slug is `CartagoGit/delendai`.
+Use this plugin when you want delendai to read a GitHub repository directly over the GitHub API. For this repository, the remote project slug is `CartagoGit/delendai`.
 
 This is the normal fit when you need to:
 
@@ -17,8 +17,8 @@ This is the normal fit when you need to:
 
 The activation flow has two parts:
 
-1. export the token in the shell that launches mcp-vertex
-2. load the `github` plugin in `mcp-vertex.config.json`
+1. export the token in the shell that launches delendai
+2. load the `github` plugin in `delendai.config.json`
 
 Export the token only through the environment:
 
@@ -34,7 +34,7 @@ export GITHUB_API_URL=https://ghe.example/api/v3
 
 If `GITHUB_API_URL` is unset, the plugin targets GitHub.com.
 
-Do not place the token in `mcp-vertex.config.json`, tool arguments, snapshots, or logs.
+Do not place the token in `delendai.config.json`, tool arguments, snapshots, or logs.
 
 ## Configure the remote repository
 
@@ -44,10 +44,10 @@ Environment-based repository selection:
 
 ```sh
 export GITHUB_OWNER=CartagoGit
-export GITHUB_REPOSITORY=mcp-vertex
+export GITHUB_REPOSITORY=delendai
 ```
 
-Config-based repository selection in `mcp-vertex.config.json`:
+Config-based repository selection in `delendai.config.json`:
 
 ```json
 {
@@ -56,7 +56,7 @@ Config-based repository selection in `mcp-vertex.config.json`:
 			"options": {
 				"defaultRepository": {
 					"owner": "CartagoGit",
-					"repository": "mcp-vertex"
+					"repository": "delendai"
 				}
 			}
 		}
@@ -66,7 +66,7 @@ Config-based repository selection in `mcp-vertex.config.json`:
 
 If both environment variables and plugin options are present, the plugin can resolve repository context without needing a local checkout.
 
-## Minimal read-only setup for mcp-vertex
+## Minimal read-only setup for delendai
 
 The smallest practical setup for read-only access to the remote repository is:
 
@@ -77,7 +77,7 @@ The smallest practical setup for read-only access to the remote repository is:
 			"options": {
 				"defaultRepository": {
 					"owner": "CartagoGit",
-					"repository": "mcp-vertex"
+					"repository": "delendai"
 				}
 			}
 		}
@@ -116,7 +116,7 @@ This plugin is designed to operate independently.
 - It does not need a local `origin` remote to discover the repository.
 - It can resolve the remote repository directly from `GITHUB_OWNER` and `GITHUB_REPOSITORY`, or from `plugins.github.options.defaultRepository`.
 
-That means you can point mcp-vertex at the remote repository even from a clean environment that only has the plugin configuration and the required environment variables.
+That means you can point delendai at the remote repository even from a clean environment that only has the plugin configuration and the required environment variables.
 
 ## Optional composition with git
 

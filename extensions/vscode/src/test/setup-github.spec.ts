@@ -55,7 +55,7 @@ const noopClient = () =>
 		},
 	});
 
-describe('mcp-vertex.setupGithub', async () => {
+describe('delendai.setupGithub', async () => {
 	describe('i18n parity (all 12 languages)', async () => {
 		it('every language has setup-github webview strings', async () => {
 			expect(Object.keys(setupGithubStringsByLang).sort()).toEqual(
@@ -132,7 +132,7 @@ describe('mcp-vertex.setupGithub', async () => {
 			expect(SETUP_GITHUB_COMMANDS).toHaveLength(7);
 			expect(html).toContain('git remote get-url origin');
 			expect(html).toContain(
-				'bunx --package @delendai/cli mcpv __serve --workspace . --preset full',
+				'bunx --package @delendai/cli delendai __serve --workspace . --preset full',
 			);
 		});
 
@@ -140,7 +140,7 @@ describe('mcp-vertex.setupGithub', async () => {
 			// The launch command must use a catalog preset id, NOT a hand-typed
 			// plugin list mirroring a full preset (forbidden by lint:setup).
 			expect(SETUP_GITHUB_COMMANDS).toContain(
-				'bunx --package @delendai/cli mcpv __serve --workspace . --preset full',
+				'bunx --package @delendai/cli delendai __serve --workspace . --preset full',
 			);
 			// No emitted command may carry a `--plugins=…` flag at all (a
 			// verbatim preset membership list is what the drift gate forbids).
@@ -154,13 +154,13 @@ describe('mcp-vertex.setupGithub', async () => {
 	});
 
 	describe('command registration', async () => {
-		it('registers mcp-vertex.setupGithub and opens a webview', async () => {
+		it('registers delendai.setupGithub and opens a webview', async () => {
 			const { vscode, panels, commands } = createVscode();
 			registerSetupGithubCommand({ vscode, client: noopClient() });
 			expect(commands.has(SETUP_GITHUB_COMMAND)).toBe(true);
 			commands.get(SETUP_GITHUB_COMMAND)?.();
 			expect(panels).toHaveLength(1);
-			expect(panels[0]?.viewType).toBe('mcpVertexSetupGithub');
+			expect(panels[0]?.viewType).toBe('delendaiSetupGithub');
 			expect(panels[0]?.webview.html).toContain('data-step="0"');
 		});
 	});

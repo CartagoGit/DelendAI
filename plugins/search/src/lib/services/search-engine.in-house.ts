@@ -5,7 +5,7 @@
  * injected absolute root: walks `roots`, reads allow-listed text files
  * (capped in size), returns the matching lines (capped in count). No
  * persisted index — cheap and always fresh for the small/medium trees
- * an MCP host serves. mcp-vertex stays agnostic: roots / extensions /
+ * an MCP host serves. delendai stays agnostic: roots / extensions /
  * ignored dirs are all injectable.
  *
  * Solid-SRP: lives in its own module so the dispatcher (`search-engine
@@ -67,7 +67,7 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 		const roots =
 			options.roots && options.roots.length > 0 ? options.roots : ['.'];
 		// a00062: `extensionOf()` returns a bare, dot-less extension
-		// ("ts", not ".ts"), but `mcp-vertex.config.json`'s own committed
+		// ("ts", not ".ts"), but `delendai.config.json`'s own committed
 		// `plugins.search.options.extensions` (and every host's natural
 		// authoring instinct, matching `path.extname()`) writes the
 		// dot-prefixed form (".ts"). A config-supplied list therefore
@@ -238,10 +238,10 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 			}
 			if (parts.length === 0) {
 				parts.push(
-					`0 files matched the filters under roots [${roots.join(', ')}] — check plugins.search.options (extensions/include/exclude) in mcp-vertex.config.json`,
+					`0 files matched the filters under roots [${roots.join(', ')}] — check plugins.search.options (extensions/include/exclude) in delendai.config.json`,
 				);
 			}
-			diagnostic = `scanned 0 files: ${parts.join('; ')}. Fix plugins.search.options.roots in mcp-vertex.config.json (omit roots to scan the whole workspace).`;
+			diagnostic = `scanned 0 files: ${parts.join('; ')}. Fix plugins.search.options.roots in delendai.config.json (omit roots to scan the whole workspace).`;
 		}
 
 		return {

@@ -179,7 +179,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 					identityCtx: { run: runner, envVars: Object.freeze({}) },
 					auditAgent: null,
 					workspaceRoot: '/tmp/workspace',
-					pluginCacheDir: '.cache/mcp-vertex/commit-policy',
+					pluginCacheDir: '.cache/delendai/commit-policy',
 				},
 				branchPolicy: DEFAULT_BRANCH_POLICY,
 			});
@@ -334,7 +334,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 				},
 				auditAgent: null,
 				workspaceRoot: '/tmp/workspace',
-				pluginCacheDir: '.cache/mcp-vertex/commit-policy',
+				pluginCacheDir: '.cache/delendai/commit-policy',
 			},
 			branchPolicy: DEFAULT_BRANCH_POLICY,
 		});
@@ -361,7 +361,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 				},
 				auditAgent: null,
 				workspaceRoot: '/tmp/workspace',
-				pluginCacheDir: '.cache/mcp-vertex/commit-policy',
+				pluginCacheDir: '.cache/delendai/commit-policy',
 			},
 			branchPolicy: DEFAULT_BRANCH_POLICY,
 			onCommitSucceeded: async () => ({

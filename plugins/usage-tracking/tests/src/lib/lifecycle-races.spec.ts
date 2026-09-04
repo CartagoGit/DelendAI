@@ -109,7 +109,7 @@ describe('usage-tracking lifecycle races (x00097 S3)', () => {
 			docsDir: 'docs',
 			keepLegacy: false,
 			pluginCacheDir: 'usage-tracking',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			options: { maxDelayMs: 10_000 },
 			args: {},
 		} as unknown as IMcpPluginContext;
@@ -127,12 +127,12 @@ describe('usage-tracking lifecycle races (x00097 S3)', () => {
 		for (const reg of regs.tools ?? []) await reg.register(server);
 
 		// Buffer two records WITHOUT flushing, then wipe.
-		regs.onToolCall?.('mcp-vertex_overview', {}, undefined, undefined);
-		regs.onToolCall?.('mcp-vertex_overview', {}, undefined, undefined);
-		await handlers.get('mcp-vertex_usage_clear')!({ confirm: true });
+		regs.onToolCall?.('delendai_overview', {}, undefined, undefined);
+		regs.onToolCall?.('delendai_overview', {}, undefined, undefined);
+		await handlers.get('delendai_usage_clear')!({ confirm: true });
 
 		// A later record is new history; the two pre-clear ones must be gone.
-		regs.onToolCall?.('mcp-vertex_status', {}, undefined, undefined);
+		regs.onToolCall?.('delendai_status', {}, undefined, undefined);
 		await drainLiveBuffers();
 
 		const logPath = join(dir, 'usage-tracking', 'invocations.jsonl');

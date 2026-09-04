@@ -45,9 +45,9 @@ export const resolveOutputChannel = (
 ): IOutputChannel => {
 	if (input.forced !== undefined) return input.forced;
 	const env = input.env ?? process.env;
-	if (env.MCP_VERTEX_LOG === 'stderr') return 'stderr';
-	if (env.MCP_VERTEX_LOG === 'host') return 'host';
-	if (env.MCP_VERTEX_LOG === 'discard') return 'discard';
+	if (env.DELENDAI_LOG === 'stderr') return 'stderr';
+	if (env.DELENDAI_LOG === 'host') return 'host';
+	if (env.DELENDAI_LOG === 'discard') return 'discard';
 	return 'stderr';
 };
 

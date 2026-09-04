@@ -1,9 +1,9 @@
 // `apps/shared/src/styles/components/_code.scss`
 //
-// BEM-nested styles for the `<figure class="mcpv-code">` block emitted
+// BEM-nested styles for the `<figure class="delendai-code">` block emitted
 // by `apps/shared/src/components/ui/code-block.ts` (renderCodeBlock).
 // Reachable from any host that @uses the shared styles index. Class
-// namespace is `mcpv-code` / `mcpv-code__*` / `mcpv-code--inline`; a trailing
+// namespace is `delendai-code` / `delendai-code__*` / `delendai-code--inline`; a trailing
 // @extend block keeps the legacy `.ui-code*` selectors working until
 // the host renames its markup.
 //
@@ -11,18 +11,18 @@
 // `apps/web/src/components/ui/CodeBlock.astro` (f00102 S2.2). The
 // styles are now a regular partial so the wrapper Astro stays markup
 // only and the stylesheet composes with the rest of the design
-// tokens via `var(--mcpv-*)`.
+// tokens via `var(--delendai-*)`.
 //
-// The copy-button state (`.mcpv-code__copy[data-state='copied']`) is
+// The copy-button state (`.delendai-code__copy[data-state='copied']`) is
 // toggled by the same runtime glue that handles CopyButton — see
 // `_code-copy-controller.ts` in apps/web for the wiring.
 
-.mcpv-code {
+.delendai-code {
 	position: relative;
-	margin: var(--mcpv-s-4, 1rem) 0;
-	border: 1px solid var(--mcpv-border, var(--line));
-	border-radius: var(--mcpv-radius, var(--radius, 8px));
-	background: color-mix(in srgb, var(--mcpv-bg-card, var(--card)) 80%, transparent);
+	margin: var(--delendai-s-4, 1rem) 0;
+	border: 1px solid var(--delendai-border, var(--line));
+	border-radius: var(--delendai-radius, var(--radius, 8px));
+	background: color-mix(in srgb, var(--delendai-bg-card, var(--card)) 80%, transparent);
 	overflow: hidden;
 
 	&--inline {
@@ -35,39 +35,39 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: var(--mcpv-s-2, 0.5rem);
+		gap: var(--delendai-s-2, 0.5rem);
 		padding: 0.45rem 0.6rem;
-		border-bottom: 1px solid var(--mcpv-border, var(--line));
-		background: color-mix(in srgb, var(--mcpv-bg-card, var(--card)) 50%, transparent);
+		border-bottom: 1px solid var(--delendai-border, var(--line));
+		background: color-mix(in srgb, var(--delendai-bg-card, var(--card)) 50%, transparent);
 		font-size: 0.85rem;
 	}
 
 	&__head-l {
 		display: inline-flex;
 		align-items: center;
-		gap: var(--mcpv-s-2, 0.5rem);
+		gap: var(--delendai-s-2, 0.5rem);
 		min-width: 0;
 	}
 
 	&__file {
-		font-family: var(--mcpv-font-mono, var(--font-mono, ui-monospace, SFMono-Regular, monospace));
-		color: var(--mcpv-fg, var(--fg));
+		font-family: var(--delendai-font-mono, var(--font-mono, ui-monospace, SFMono-Regular, monospace));
+		color: var(--delendai-fg, var(--fg));
 	}
 
 	&__lang {
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		font-size: 0.7rem;
-		color: var(--mcpv-fg-muted, var(--muted));
+		color: var(--delendai-fg-muted, var(--muted));
 	}
 
 	&__caption {
-		color: var(--mcpv-fg-muted, var(--muted));
+		color: var(--delendai-fg-muted, var(--muted));
 	}
 
 	&__copy {
 		appearance: none;
-		border: 1px solid var(--mcpv-border, var(--line));
+		border: 1px solid var(--delendai-border, var(--line));
 		background: transparent;
 		color: inherit;
 		font: inherit;
@@ -78,10 +78,10 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
-		transition: background-color var(--mcpv-transition-fast, 0.18s ease);
+		transition: background-color var(--delendai-transition-fast, 0.18s ease);
 
 		&:hover {
-			background: color-mix(in srgb, var(--mcpv-fg, currentColor) 8%, transparent);
+			background: color-mix(in srgb, var(--delendai-fg, currentColor) 8%, transparent);
 		}
 
 		&:focus-visible {
@@ -90,8 +90,8 @@
 		}
 
 		&[data-state='copied'] {
-			color: color-mix(in srgb, var(--mcpv-ok, #16a34a) 90%, transparent);
-			border-color: color-mix(in srgb, var(--mcpv-ok, #16a34a) 40%, transparent);
+			color: color-mix(in srgb, var(--delendai-ok, #16a34a) 90%, transparent);
+			border-color: color-mix(in srgb, var(--delendai-ok, #16a34a) 40%, transparent);
 		}
 	}
 
@@ -99,7 +99,7 @@
 		margin: 0;
 		padding: 0.9rem 1rem;
 		overflow-x: auto;
-		font-family: var(--mcpv-font-mono, var(--font-mono, ui-monospace, SFMono-Regular, monospace));
+		font-family: var(--delendai-font-mono, var(--font-mono, ui-monospace, SFMono-Regular, monospace));
 		font-size: 0.88rem;
 		line-height: 1.55;
 
@@ -121,11 +121,11 @@
 
 // Legacy alias — kept so `apps/web` pages that still ship
 // `<figure class="ui-code">` keep working without a markup
-// change. Remove once the rename to `.mcpv-code*` lands.
+// change. Remove once the rename to `.delendai-code*` lands.
 
 .ui-code {
-	@extend .mcpv-code;
+	@extend .delendai-code;
 }
 .ui-code--inline {
-	@extend .mcpv-code--inline;
+	@extend .delendai-code--inline;
 }

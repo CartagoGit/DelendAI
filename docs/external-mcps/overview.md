@@ -35,7 +35,7 @@ opt-in for specific projects.
 - **Servers with `@latest` only** — we always require pinned versions.
 - **Servers whose GitHub repo is unreachable or 404** (this caught several
   Angular servers; see [`frameworks.md`](./frameworks.md)).
-- **Servers that duplicate functionality already in mcp-vertex native tools**
+- **Servers that duplicate functionality already in delendai native tools**
   (e.g. don't wire `mcp-fs` if `fs_read` covers your use case).
 - **Servers with no commits in 12+ months** unless they're official reference
   servers that are intentionally stable.

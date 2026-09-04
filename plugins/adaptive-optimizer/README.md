@@ -9,7 +9,7 @@ explicit optional path on top.
 ## Load it
 
 ```bash
-mcp-vertex --plugins=adaptive-optimizer
+delendai --plugins=adaptive-optimizer
 ```
 
 This registers one tool, `<prefix>_optimize_run`.
@@ -31,7 +31,7 @@ default it does not run the full eval harness or a real profiler capture.
 The result always includes `ranked`, `budget`, `consent`, `bytes`, and
 `truncated`.
 
-## Configuration (`mcp-vertex.config.json`)
+## Configuration (`delendai.config.json`)
 
 ```json
 {

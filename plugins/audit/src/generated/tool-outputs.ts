@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexAuditAuditConsolidateOutput {
+export interface DelendaiAuditAuditConsolidateOutput {
 	detail: "compact" | "normal" | "full";
 	auditType: "plan" | "valuation";
 	auditsFound: number;
@@ -53,7 +53,7 @@ export interface McpVertexAuditAuditConsolidateOutput {
 	};
 }
 
-export interface McpVertexAuditAuditPlanOutput {
+export interface DelendaiAuditAuditPlanOutput {
 	detail: "compact" | "normal" | "full";
 	auditType: "plan" | "valuation";
 	scope: string;
@@ -68,7 +68,7 @@ export interface McpVertexAuditAuditPlanOutput {
 	projects: string[];
 }
 
-export interface McpVertexAuditAuditRunOutput {
+export interface DelendaiAuditAuditRunOutput {
 	detail: "compact" | "normal" | "full";
 	auditType: "plan" | "valuation";
 	scope: string;
@@ -113,7 +113,7 @@ export interface McpVertexAuditAuditRunOutput {
 	projects: string[];
 }
 
-export interface McpVertexAuditSelfAuditOutput {
+export interface DelendaiAuditSelfAuditOutput {
 	ranAt: string;
 	worst: "critical" | "high" | "medium" | "low" | "info" | "none";
 	summary: {
@@ -149,8 +149,8 @@ export interface McpVertexAuditSelfAuditOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface AuditToolOutputs {
-	"mcp-vertex_audit_audit_consolidate": McpVertexAuditAuditConsolidateOutput;
-	"mcp-vertex_audit_audit_plan": McpVertexAuditAuditPlanOutput;
-	"mcp-vertex_audit_audit_run": McpVertexAuditAuditRunOutput;
-	"mcp-vertex_audit_self_audit": McpVertexAuditSelfAuditOutput;
+	"delendai_audit_audit_consolidate": DelendaiAuditAuditConsolidateOutput;
+	"delendai_audit_audit_plan": DelendaiAuditAuditPlanOutput;
+	"delendai_audit_audit_run": DelendaiAuditAuditRunOutput;
+	"delendai_audit_self_audit": DelendaiAuditSelfAuditOutput;
 }

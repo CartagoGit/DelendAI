@@ -17,7 +17,7 @@ import {
 } from '../../src/lib/services/kpi-history.service';
 import { buildKpiTrendReport } from '../../src/lib/services/kpi-trends.service';
 
-const CACHE_DIR = '.cache/mcp-vertex';
+const CACHE_DIR = '.cache/delendai';
 
 const metric = (
 	status: TKpiValueStatus,

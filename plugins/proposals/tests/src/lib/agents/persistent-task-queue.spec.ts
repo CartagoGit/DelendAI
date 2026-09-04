@@ -46,7 +46,7 @@ import type {
 const TEMP_DIRS: string[] = [];
 
 const createTempDir = (): string => {
-	const dir = mkdtempSync(join(tmpdir(), 'mcp-vertex-ptq-'));
+	const dir = mkdtempSync(join(tmpdir(), 'delendai-ptq-'));
 	TEMP_DIRS.push(dir);
 	return dir;
 };
@@ -624,7 +624,7 @@ describe('subscribe — returns digests for observed tasks', async () => {
 				taskId: 'p40c-t0',
 				closedAt: '2026-06-05T09:00:00.000Z',
 				agentName: 'root_agent',
-				filesOwned: ['docs/mcp-vertex/proposals/p40c.md'],
+				filesOwned: ['docs/delendai/proposals/p40c.md'],
 				diffSummary: 'Created p40c proposal',
 			},
 		];

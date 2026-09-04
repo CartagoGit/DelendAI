@@ -1,13 +1,13 @@
 // `apps/shared/src/styles/components/_welcome.scss`
 //
-// BEM-nested styles for the `<section class="mcpv-welcome">` block
+// BEM-nested styles for the `<section class="delendai-welcome">` block
 // emitted by `renderFirstRunScreen` in
 // `apps/shared/src/components/dev/welcome.ts` (f00102 S4.6).
-// The companion `<aside class="mcpv-quickstart">` block (emitted by
+// The companion `<aside class="delendai-quickstart">` block (emitted by
 // `renderQuickStartMenu`) follows at the bottom.
 //
-// Class namespace is `mcpv-welcome` / `mcpv-welcome__*` and
-// `mcpv-quickstart` / `mcpv-quickstart__*`. The trailing @extend
+// Class namespace is `delendai-welcome` / `delendai-welcome__*` and
+// `delendai-quickstart` / `delendai-quickstart__*`. The trailing @extend
 // block keeps the legacy `.welcome__*` and `.quickstart__*`
 // selectors working so the existing dev preview keeps matching
 // during the deprecation window.
@@ -15,7 +15,7 @@
 // The real visual rules (grid, padding, cards) live in
 // `apps/shared/src/styles/dev-wizard.scss` and target the
 // legacy `welcome` / `quickstart` blocks. This partial only
-// adds the `mcpv-*` aliases via @extend — a future slice moves
+// adds the `delendai-*` aliases via @extend — a future slice moves
 // the real rules to the new namespace.
 //
 // Grid layout
@@ -26,7 +26,7 @@
 // columns at 1280px viewports; the 2×2 layout is the more
 // balanced tradeoff for a 4-card explainer.
 
-.mcpv-welcome {
+.delendai-welcome {
 	display: flex;
 	flex-direction: column;
 	gap: 1.5rem;
@@ -43,61 +43,61 @@
 	}
 }
 
-.mcpv-welcome__head {
+.delendai-welcome__head {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 }
 
-.mcpv-welcome__lede {
-	color: var(--mcpv-fg-muted, var(--muted));
+.delendai-welcome__lede {
+	color: var(--delendai-fg-muted, var(--muted));
 	font-size: 0.95rem;
 	line-height: 1.45;
 	margin: 0;
 }
 
-.mcpv-welcome__grid {
+.delendai-welcome__grid {
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 0.75rem;
 }
 
 @media (min-width: 640px) {
-	.mcpv-welcome__grid {
+	.delendai-welcome__grid {
 		grid-template-columns: repeat(2, 1fr);
 	}
 }
 
-.mcpv-welcome__card {
+.delendai-welcome__card {
 	display: flex;
 	flex-direction: column;
 	gap: 0.4rem;
 	padding: 1rem;
-	border: 1px solid var(--mcpv-border, var(--line));
+	border: 1px solid var(--delendai-border, var(--line));
 	border-radius: 12px;
-	background: color-mix(in srgb, var(--mcpv-bg, var(--bg)) 96%, transparent);
+	background: color-mix(in srgb, var(--delendai-bg, var(--bg)) 96%, transparent);
 	min-width: 0;
 }
 
-.mcpv-welcome__card p {
+.delendai-welcome__card p {
 	overflow-wrap: anywhere;
 }
 
-.mcpv-welcome__card-icon {
+.delendai-welcome__card-icon {
 	font-size: 1.4rem;
-	color: var(--mcpv-link, var(--accent));
+	color: var(--delendai-link, var(--accent));
 }
 
-.mcpv-welcome__cta {
+.delendai-welcome__cta {
 	display: flex;
 	gap: 0.5rem;
 	flex-wrap: wrap;
 }
 
-.mcpv-welcome__primary,
-.mcpv-welcome__secondary {
+.delendai-welcome__primary,
+.delendai-welcome__secondary {
 	appearance: none;
-	border: 1px solid var(--mcpv-border, var(--line));
+	border: 1px solid var(--delendai-border, var(--line));
 	border-radius: 8px;
 	padding: 0.5rem 0.9rem;
 	font: inherit;
@@ -107,9 +107,9 @@
 		border-color 0.18s ease;
 }
 
-.mcpv-welcome__primary {
-	background: var(--mcpv-link, var(--accent));
-	color: var(--mcpv-fg-on-brand, #ffffff);
+.delendai-welcome__primary {
+	background: var(--delendai-link, var(--accent));
+	color: var(--delendai-fg-on-brand, #ffffff);
 	border-color: transparent;
 	font-weight: 600;
 
@@ -118,56 +118,56 @@
 	}
 }
 
-.mcpv-welcome__secondary {
+.delendai-welcome__secondary {
 	background: transparent;
-	color: var(--mcpv-fg, var(--fg));
+	color: var(--delendai-fg, var(--fg));
 
 	&:hover {
-		background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 12%, transparent);
+		background: color-mix(in srgb, var(--delendai-link, var(--accent)) 12%, transparent);
 	}
 }
 
 // Quickstart
 
-.mcpv-quickstart {
+.delendai-quickstart {
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
 	padding: 1rem 1.25rem;
-	border: 1px solid var(--mcpv-border, var(--line));
+	border: 1px solid var(--delendai-border, var(--line));
 	border-radius: 12px;
-	background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 4%, transparent);
+	background: color-mix(in srgb, var(--delendai-link, var(--accent)) 4%, transparent);
 }
 
-.mcpv-quickstart__head {
+.delendai-quickstart__head {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 0.5rem;
 }
 
-.mcpv-quickstart__close {
+.delendai-quickstart__close {
 	appearance: none;
 	background: transparent;
 	border: 0;
-	color: var(--mcpv-fg-muted, var(--muted));
+	color: var(--delendai-fg-muted, var(--muted));
 	cursor: pointer;
 	font-size: 1.1rem;
 	padding: 0 0.4rem;
 
 	&:hover {
-		color: var(--mcpv-fg, var(--fg));
+		color: var(--delendai-fg, var(--fg));
 	}
 }
 
-.mcpv-quickstart__lede {
+.delendai-quickstart__lede {
 	margin: 0;
-	color: var(--mcpv-fg-muted, var(--muted));
+	color: var(--delendai-fg-muted, var(--muted));
 	font-size: 0.85rem;
 	line-height: 1.4;
 }
 
-.mcpv-quickstart__list {
+.delendai-quickstart__list {
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -176,74 +176,74 @@
 	gap: 0.5rem;
 }
 
-.mcpv-quickstart__item {
+.delendai-quickstart__item {
 	display: flex;
 	gap: 0.6rem;
 	font-size: 0.88rem;
 	line-height: 1.4;
 }
 
-.mcpv-quickstart__icon {
+.delendai-quickstart__icon {
 	flex: 0 0 auto;
 	font-size: 1rem;
-	color: var(--mcpv-link, var(--accent));
+	color: var(--delendai-link, var(--accent));
 }
 
-.mcpv-quickstart__desc {
-	color: var(--mcpv-fg-muted, var(--muted));
+.delendai-quickstart__desc {
+	color: var(--delendai-fg-muted, var(--muted));
 }
 
 // Legacy aliases — keep `.welcome__*` and `.quickstart__*`
-// selectors visually equivalent to the new `.mcpv-*` tree.
+// selectors visually equivalent to the new `.delendai-*` tree.
 .welcome {
-	@extend .mcpv-welcome;
+	@extend .delendai-welcome;
 }
 .welcome__head {
-	@extend .mcpv-welcome__head;
+	@extend .delendai-welcome__head;
 }
 .welcome__lede {
-	@extend .mcpv-welcome__lede;
+	@extend .delendai-welcome__lede;
 }
 .welcome__grid {
-	@extend .mcpv-welcome__grid;
+	@extend .delendai-welcome__grid;
 }
 .welcome__card {
-	@extend .mcpv-welcome__card;
+	@extend .delendai-welcome__card;
 }
 .welcome__card-icon {
-	@extend .mcpv-welcome__card-icon;
+	@extend .delendai-welcome__card-icon;
 }
 .welcome__cta {
-	@extend .mcpv-welcome__cta;
+	@extend .delendai-welcome__cta;
 }
 .welcome__primary {
-	@extend .mcpv-welcome__primary;
+	@extend .delendai-welcome__primary;
 }
 .welcome__secondary {
-	@extend .mcpv-welcome__secondary;
+	@extend .delendai-welcome__secondary;
 }
 
 .quickstart {
-	@extend .mcpv-quickstart;
+	@extend .delendai-quickstart;
 }
 .quickstart__head {
-	@extend .mcpv-quickstart__head;
+	@extend .delendai-quickstart__head;
 }
 .quickstart__close {
-	@extend .mcpv-quickstart__close;
+	@extend .delendai-quickstart__close;
 }
 .quickstart__lede {
-	@extend .mcpv-quickstart__lede;
+	@extend .delendai-quickstart__lede;
 }
 .quickstart__list {
-	@extend .mcpv-quickstart__list;
+	@extend .delendai-quickstart__list;
 }
 .quickstart__item {
-	@extend .mcpv-quickstart__item;
+	@extend .delendai-quickstart__item;
 }
 .quickstart__icon {
-	@extend .mcpv-quickstart__icon;
+	@extend .delendai-quickstart__icon;
 }
 .quickstart__desc {
-	@extend .mcpv-quickstart__desc;
+	@extend .delendai-quickstart__desc;
 }

@@ -7,7 +7,7 @@
  * a refinement that consults the frozen plugin catalog at
  * `contracts/constants/init-answers.constant.ts`.
  *
- * Conventions (see `docs/mcp-vertex/FILE-CONVENTIONS.md` and the
+ * Conventions (see `docs/delendai/FILE-CONVENTIONS.md` and the
  * project `AGENTS.md` rule #2):
  *
  *   - No `process.cwd()` — workspace paths come from the CLI context.
@@ -15,7 +15,7 @@
  *     safe to import from any layer (CLI, MCP, test) without side
  *     effects.
  *   - Defaults reflect the operator's chosen workflow: preset `vertex`
- *     (snapshot of mcp-vertex.config.json), extras empty,
+ *     (snapshot of delendai.config.json), extras empty,
  *     host-instructions `append` (safe), skills + agent-md generated,
  *     migration offered.
  */
@@ -44,13 +44,13 @@ const initPluginId = z
  */
 export const InitAnswers = z.object({
 	/** Namespace prefix used for generated MCP tools and host agent names. */
-	namespacePrefix: z.string().min(1).default('mcp-vertex'),
+	namespacePrefix: z.string().min(1).default('delendai'),
 
 	/** Server key used by generated MCP host configuration files. */
-	serverName: z.string().min(1).default('mcp-vertex'),
+	serverName: z.string().min(1).default('delendai'),
 
 	/** Resolved preset id. `vertex` is the operator's recommended default
-	 * (snapshot of mcp-vertex.config.json — see `init:default`). */
+	 * (snapshot of delendai.config.json — see `init:default`). */
 	preset: z.enum(PRESET_KIND).default('vertex'),
 
 	/** Plugins added on top of the preset (e.g. `audit`). */
@@ -67,10 +67,10 @@ export const InitAnswers = z.object({
 	 */
 	hostInstructions: z.enum(['append', 'overwrite', 'skip']).default('append'),
 
-	/** Copy core skills from the bundled mcp-vertex repo to `docs/mcp-vertex/skills/`. */
+	/** Copy core skills from the bundled delendai repo to `docs/delendai/skills/`. */
 	copyCoreSkills: z.boolean().default(true),
 
-	/** Generate `.github/agents/mcp-vertex-<role>.agent.md` from the live catalog. */
+	/** Generate `.github/agents/delendai-<role>.agent.md` from the live catalog. */
 	generateAgentMd: z.boolean().default(true),
 
 	/**
@@ -80,7 +80,7 @@ export const InitAnswers = z.object({
 	 */
 	migrateFromLegacy: z.boolean().default(true),
 
-	/** Overwrite existing `mcp-vertex.config.json` without prompting. */
+	/** Overwrite existing `delendai.config.json` without prompting. */
 	force: z.boolean().default(false),
 
 	/** Optional `owner/name` repo for the `issues` plugin. */

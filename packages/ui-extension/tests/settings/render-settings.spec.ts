@@ -15,20 +15,22 @@ describe('renderSettings', async () => {
 				language: 'en',
 				motion: 'system',
 			},
-			saveCommand: 'mcp-vertex.saveSettings',
-			resetCommand: 'mcp-vertex.resetSettings',
+			saveCommand: 'delendai.saveSettings',
+			resetCommand: 'delendai.resetSettings',
 			lang: dictsByLang.en,
 		});
-		expect(html).toContain('mcp-vertex Settings');
+		expect(html).toContain('delendai Settings');
 		expect(html).toContain('https://example.com/docs');
 		expect(html).toContain('value="debug" selected');
 		expect(html).toContain('value="dark" selected');
 		expect(html).toContain('value="midnight"');
 		expect(html).toContain('value="es"');
 		expect(html).toContain('name="motion"');
-		expect(html).toContain('mcp-vertex.saveSettings');
+		expect(html).toContain('delendai.saveSettings');
 		expect(html).toContain('aria-live="polite"');
-		expect(html).toContain('aria-describedby="mcpv-docs-url-description"');
+		expect(html).toContain(
+			'aria-describedby="delendai-docs-url-description"',
+		);
 		expect(html).toContain('@media (prefers-reduced-motion: reduce)');
 	});
 
@@ -43,8 +45,8 @@ describe('renderSettings', async () => {
 				language: 'en',
 				motion: 'system',
 			},
-			saveCommand: 'mcp-vertex.saveSettings',
-			resetCommand: 'mcp-vertex.resetSettings',
+			saveCommand: 'delendai.saveSettings',
+			resetCommand: 'delendai.resetSettings',
 			lang: dictsByLang.en,
 		});
 		// The renderer must NOT stringify booleans to 'true' / 'false' anymore —
@@ -70,8 +72,8 @@ describe('renderSettings', async () => {
 				language: 'es',
 				motion: 'reduced',
 			},
-			saveCommand: 'mcp-vertex.saveSettings',
-			resetCommand: 'mcp-vertex.resetSettings',
+			saveCommand: 'delendai.saveSettings',
+			resetCommand: 'delendai.resetSettings',
 			lang: dictsByLang.es,
 		});
 		expect(html).toContain('<html lang="es" dir="ltr">');

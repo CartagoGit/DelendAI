@@ -1,6 +1,6 @@
 /**
  * `defaultQuickActions` — the canonical 10-action set surfaced by the
- * in-extension toolbar (`mcp-vertex.toolbar` webview).
+ * in-extension toolbar (`delendai.toolbar` webview).
  *
  * Hosts can extend the set via `additionalQuickActions` when calling
  * `renderToolbar({ ... })`. New plugins can ship their own actions
@@ -59,24 +59,24 @@ export const defaultQuickActions = (): readonly QuickAction[] => [
 		icon: '📋',
 		// FIX (T3): the previous command id (`openProposalBoard`) was
 		// never registered in package.json. The registered command is
-		// `mcp-vertex.openProposal` (it takes the proposal id as an
+		// `delendai.openProposal` (it takes the proposal id as an
 		// optional argument). Clicking the toolbar card now opens the
 		// board view that actually exists.
-		command: 'mcp-vertex.openProposal',
+		command: 'delendai.openProposal',
 		category: 'proposals',
 	},
 	{
 		id: 'knowledge.openNavigator',
 		labelKey: 'openKnowledge',
 		icon: '📚',
-		command: 'mcp-vertex.openKnowledge',
+		command: 'delendai.openKnowledge',
 		category: 'knowledge',
 	},
 	{
 		id: 'logs.openToday',
 		labelKey: 'openLogsToday',
 		icon: '📜',
-		command: 'mcp-vertex.openLogsToday',
+		command: 'delendai.openLogsToday',
 		category: 'logs',
 		requires: ['logs'],
 	},
@@ -84,21 +84,21 @@ export const defaultQuickActions = (): readonly QuickAction[] => [
 		id: 'docs.openApi',
 		labelKey: 'openDocs',
 		icon: '📖',
-		command: 'mcp-vertex.openDocs',
+		command: 'delendai.openDocs',
 		category: 'docs',
 	},
 	{
 		id: 'quality.runValidation',
 		labelKey: 'runValidation',
 		icon: '✅',
-		command: 'mcp-vertex.runValidation',
+		command: 'delendai.runValidation',
 		category: 'quality',
 	},
 	{
 		id: 'git.status',
 		labelKey: 'gitStatus',
 		icon: '🔀',
-		command: 'mcp-vertex.gitStatus',
+		command: 'delendai.gitStatus',
 		category: 'git',
 		requires: ['git'],
 	},
@@ -106,14 +106,14 @@ export const defaultQuickActions = (): readonly QuickAction[] => [
 		id: 'memory.search',
 		labelKey: 'openMemory',
 		icon: '🧠',
-		command: 'mcp-vertex.openMemory',
+		command: 'delendai.openMemory',
 		category: 'memory',
 	},
 	{
 		id: 'notification.test',
 		labelKey: 'notificationTest',
 		icon: '🔔',
-		command: 'mcp-vertex.notificationTest',
+		command: 'delendai.notificationTest',
 		category: 'notification',
 		requires: ['notification'],
 	},
@@ -121,7 +121,7 @@ export const defaultQuickActions = (): readonly QuickAction[] => [
 		id: 'deps.check',
 		labelKey: 'depsCheck',
 		icon: '📦',
-		command: 'mcp-vertex.depsCheck',
+		command: 'delendai.depsCheck',
 		category: 'deps',
 		requires: ['deps'],
 	},
@@ -129,7 +129,7 @@ export const defaultQuickActions = (): readonly QuickAction[] => [
 		id: 'web.fetch',
 		labelKey: 'webFetch',
 		icon: '🌐',
-		command: 'mcp-vertex.webFetch',
+		command: 'delendai.webFetch',
 		category: 'tools',
 		requires: ['web-fetch'],
 	},
@@ -139,7 +139,7 @@ export const defaultQuickActions = (): readonly QuickAction[] => [
  * `filterByHost` — drop actions whose `requires` includes a plugin
  * not in `loadedPlugins`. The `requires` check is the only one today;
  * future hosts can add host-specific filters (e.g. jetbrains can't
- * dispatch `mcp-vertex.gitStatus` because it requires the VS Code
+ * dispatch `delendai.gitStatus` because it requires the VS Code
  * SCM) but for now we trust the `requires` field to encode that.
  */
 export const filterByHost = (

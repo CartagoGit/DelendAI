@@ -9,7 +9,7 @@ peer plugins can record structured incidents without writing JSONL by hand.
 Load it with:
 
 ```bash
-mcp-vertex --plugins=logs
+delendai --plugins=logs
 ```
 
 ## Storage
@@ -17,8 +17,8 @@ mcp-vertex --plugins=logs
 The plugin writes redacted JSONL records under two independently-retained
 streams:
 
-- `.cache/mcp-vertex/results/logs/` — every event (the full timeline).
-- `.cache/mcp-vertex/results/logs-errors/` — only events whose outcome is
+- `.cache/delendai/results/logs/` — every event (the full timeline).
+- `.cache/delendai/results/logs-errors/` — only events whose outcome is
   not `ok`/`idle` (failed, timed-out, dead, cancelled, unknown), each with
   full context (args, error message + stack, `elapsedMs`). Start here when
   debugging or auditing — it points at exactly where execution didn't reach
@@ -28,7 +28,7 @@ Both streams are day-rotated JSONL, capturing tool start/completion/failure/
 cancellation through the core instrumentation hooks, and are each retained
 independently to the newest `retentionCount` files (default 10, oldest
 dropped first — see `plugins.logs.options.retentionCount` in
-`mcp-vertex.config.json`), so history from earlier sessions survives as long
+`delendai.config.json`), so history from earlier sessions survives as long
 as it fits that window.
 
 ## Fields on every event
@@ -235,7 +235,7 @@ calling (`ctx.logs?.log(...)`).
 ## Configuration
 
 ```jsonc
-// mcp-vertex.config.json
+// delendai.config.json
 {
   "plugins": {
     "logs": {

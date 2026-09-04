@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexProjectHealthProjectHealthOutput {
+export interface DelendaiProjectHealthProjectHealthOutput {
 	detail?: "compact" | "normal" | "full";
 	score?: number;
 	security?: number;
@@ -34,5 +34,5 @@ export interface McpVertexProjectHealthProjectHealthOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface ProjectHealthToolOutputs {
-	"mcp-vertex_project-health_project_health": McpVertexProjectHealthProjectHealthOutput;
+	"delendai_project-health_project_health": DelendaiProjectHealthProjectHealthOutput;
 }

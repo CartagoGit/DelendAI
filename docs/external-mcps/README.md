@@ -1,9 +1,9 @@
 # External MCP servers — research dossier
 
 > **Purpose:** a curated, opinionated map of the external MCP server ecosystem
-> that an `mcp-vertex` workspace might want to consume through the
+> that an `delendai` workspace might want to consume through the
 > `external-mcps` plugin (see
-> [`f00068-external-mcps-plugin-paused.md`](../mcp-vertex/proposals/paused/f00068-external-mcps-plugin-paused.md)).
+> [`f00068-external-mcps-plugin-paused.md`](../delendai/proposals/paused/f00068-external-mcps-plugin-paused.md)).
 >
 > Each file in this directory documents one slice of the ecosystem with
 > **verified** package names, maintainer reputation, last-update signals, and a
@@ -43,7 +43,7 @@ Each category file follows the same shape:
    commit date.
 3. **Listed-but-unverified** — names that appear in catalogs but for which I
    could not find a current canonical repo. Treat as "may be abandoned".
-4. **Recommendation** — concise verdict on whether to wire it into mcp-vertex.
+4. **Recommendation** — concise verdict on whether to wire it into delendai.
 
 Files:
 

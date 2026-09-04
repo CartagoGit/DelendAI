@@ -68,8 +68,8 @@ const options = {
 	workspace,
 	reader: realReader,
 	projectName: 'polyglot',
-	cacheRelDir: '.cache/mcp-vertex/rules',
-	manifestRelPath: '.cache/mcp-vertex/rules/rules-map.json',
+	cacheRelDir: '.cache/delendai/rules',
+	manifestRelPath: '.cache/delendai/rules/rules-map.json',
 	mode: 'mixed' as const,
 };
 

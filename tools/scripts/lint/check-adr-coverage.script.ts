@@ -2,7 +2,7 @@
 /**
  * check-adr-coverage.script.ts — d00012 (Track C.adr).
  *
- * ADRs under `docs/mcp-vertex/adr/**` reference the proposals that
+ * ADRs under `docs/delendai/adr/**` reference the proposals that
  * produced them, superseded them, or depend on them (usually under a
  * `## References` heading, e.g. "`r00028` — subpath exports
  * implementation"). Those references are prose, not structured data,
@@ -13,7 +13,7 @@
  * This lint extracts every proposal-id-shaped token
  * (`[a-z]\d{4,5}`, e.g. `r00028`, `d00012`, `q00006`, `x00241`) from
  * every ADR file and verifies each one resolves to a real proposal
- * file somewhere under `docs/mcp-vertex/proposals/**` (in ANY
+ * file somewhere under `docs/delendai/proposals/**` (in ANY
  * lifecycle folder — a retired or done proposal is still a valid
  * reference; only a reference to an id that never existed on disk is
  * an error).
@@ -36,8 +36,8 @@ import { join } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
-const ADR_DIR = 'docs/mcp-vertex/adr';
-const PROPOSALS_DIR = 'docs/mcp-vertex/proposals';
+const ADR_DIR = 'docs/delendai/adr';
+const PROPOSALS_DIR = 'docs/delendai/proposals';
 
 // Proposal id shapes used across the repo: one letter + 4-5 digits.
 // `\d{4,5}` covers both the legacy 4-digit ids and the current 5-digit

@@ -216,7 +216,7 @@ export const rewriteWorkspaceDeps = async (
 
 const hasMatchingWorkspaceDeps = (
 	pkg: Record<string, unknown>,
-	mcpVertexPackages: ReadonlySet<string>,
+	delendaiPackages: ReadonlySet<string>,
 ): boolean => {
 	for (const section of DEP_SECTIONS) {
 		const deps = pkg[section];
@@ -224,7 +224,7 @@ const hasMatchingWorkspaceDeps = (
 		for (const [name, range] of Object.entries(
 			deps as Record<string, unknown>,
 		)) {
-			if (!mcpVertexPackages.has(name)) continue;
+			if (!delendaiPackages.has(name)) continue;
 			if (typeof range === 'string' && range.startsWith('workspace:')) {
 				return true;
 			}
@@ -260,7 +260,7 @@ const walkPackageJsonFiles = async (
 
 export const findWorkspaceConsumers = async (
 	rootDir: string,
-	mcpVertexPackages: ReadonlySet<string>,
+	delendaiPackages: ReadonlySet<string>,
 ): Promise<readonly string[]> => {
 	const packageJsons = await walkPackageJsonFiles(rootDir);
 	const consumers: string[] = [];
@@ -268,7 +268,7 @@ export const findWorkspaceConsumers = async (
 		const pkgDir = dirname(pkgPath);
 		const text = await readPackageJsonText(pkgDir);
 		const pkg = parsePackageJson(text, pkgDir);
-		if (hasMatchingWorkspaceDeps(pkg, mcpVertexPackages)) {
+		if (hasMatchingWorkspaceDeps(pkg, delendaiPackages)) {
 			consumers.push(pkgPath);
 		}
 	}

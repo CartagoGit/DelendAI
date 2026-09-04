@@ -93,7 +93,7 @@ describe('buildServerBlueprint', async () => {
 			}),
 		);
 		const bp = buildServerBlueprint(analysis);
-		expect(bp.namespacePrefix).toBe('mcp-vertex');
+		expect(bp.namespacePrefix).toBe('delendai');
 		expect(bp.targetDir).toBe('packages/core');
 		const paths = buildBlueprintFiles(bp).map(({ path }) => path);
 		expect(paths.length).toBeGreaterThan(0);

@@ -8,7 +8,7 @@
  * run already had in memory.
  *
  * So the run itself writes what it knows to
- * `.cache/mcp-vertex/results/logs/test-runs.jsonl` — the established home
+ * `.cache/delendai/results/logs/test-runs.jsonl` — the established home
  * for accumulated results, alongside `validate.jsonl`, and written with
  * the same conventions: JSONL, append, atomic, bounded.
  *
@@ -41,7 +41,7 @@ import { redactSecrets } from '@delendai/core/public';
  */
 export const TEST_JOURNAL_RELATIVE_PATH = join(
 	'.cache',
-	'mcp-vertex',
+	'delendai',
 	'results',
 	'logs',
 	'test-runs.jsonl',

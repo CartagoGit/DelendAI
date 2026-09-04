@@ -12,10 +12,10 @@ describe('collectStatus (IStatusCollector, N23)', async () => {
 	it('aggregates every collector keyed by id', async () => {
 		const res = await collectStatus([
 			collector('engine', async () => ({ loop: 'running', fps: 60 })),
-			collector('mcp-vertex', async () => ({ loadedPlugins: ['git'] })),
+			collector('delendai', async () => ({ loadedPlugins: ['git'] })),
 		]);
 		expect(res.collectors.engine).toEqual({ loop: 'running', fps: 60 });
-		expect(res.collectors['mcp-vertex']).toEqual({
+		expect(res.collectors['delendai']).toEqual({
 			loadedPlugins: ['git'],
 		});
 		expect(res.errors).toEqual([]);

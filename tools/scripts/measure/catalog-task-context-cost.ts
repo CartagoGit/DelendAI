@@ -200,7 +200,7 @@ export const measureToolResultPayloadBytes = (
 const measureProjectContextBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
 ): Promise<number> =>
-	measureToolResultBytes(client, 'mcp-vertex_vertex', PROJECT_CONTEXT_ROUTE);
+	measureToolResultBytes(client, 'delendai_vertex', PROJECT_CONTEXT_ROUTE);
 
 const measureToolResultBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
@@ -221,7 +221,7 @@ const measureTaskContextCost = async (
 	for (const step of TASK_CONTEXT_CORPUS) {
 		if (step.route !== null) {
 			await client.callTool({
-				name: 'mcp-vertex_vertex',
+				name: 'delendai_vertex',
 				arguments: step.route,
 			});
 		}
@@ -264,12 +264,12 @@ export const measureCatalogAndTaskContextCost =
 		try {
 			const compactBytes = await measureToolResultBytes(
 				nativeCore.client,
-				'mcp-vertex_agent_catalog',
+				'delendai_agent_catalog',
 				{ mode: 'compact' },
 			);
 			const fullBytes = await measureToolResultBytes(
 				nativeCore.client,
-				'mcp-vertex_agent_catalog',
+				'delendai_agent_catalog',
 				{ mode: 'full' },
 			);
 			const [nativeCoreMetrics, swarmNativeMetrics, taskContext] =
@@ -386,7 +386,7 @@ export const renderCatalogAndTaskContextMarkdown = (
 			],
 		),
 		'',
-		'Task context corpus: `cold start -> search.search -> docs.docs_list -> logs.tail`, measured as `mcp-vertex_vertex { domain: "core", action: "project_context" }` on the `swarm` preset under `managed`.',
+		'Task context corpus: `cold start -> search.search -> docs.docs_list -> logs.tail`, measured as `delendai_vertex { domain: "core", action: "project_context" }` on the `swarm` preset under `managed`.',
 		'',
 		markdownTable(
 			['Task context sample', 'Bytes', 'Est. Tokens'],

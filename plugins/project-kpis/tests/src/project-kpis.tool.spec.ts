@@ -13,7 +13,7 @@ import {
 	runProjectKpis,
 } from '../../src/lib/tools/project-kpis.tool';
 
-const CACHE_DIR = '.cache/mcp-vertex';
+const CACHE_DIR = '.cache/delendai';
 const createdRoots: string[] = [];
 
 const metric = (
@@ -53,7 +53,7 @@ const buildSnapshot = (options: {
 		debt: metric('estimated', 'score', 'test/health', 70),
 		next: [
 			{
-				tool: 'mcp-vertex_quality_run_quality',
+				tool: 'delendai_quality_run_quality',
 				reason: 'Quality execution is still required for ground truth.',
 			},
 		],
@@ -250,7 +250,7 @@ describe('project_kpis tool', () => {
 				windowDays: 7,
 			},
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				cacheDir,
 				maxBytes: 12000,
@@ -282,7 +282,7 @@ describe('project_kpis tool', () => {
 				windowDays: 7,
 			},
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				cacheDir,
 				maxBytes: 12000,
@@ -315,7 +315,7 @@ describe('project_kpis tool', () => {
 				filter: { outcome: 'error' },
 			},
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				cacheDir,
 				maxBytes: 12000,
@@ -340,7 +340,7 @@ describe('project_kpis tool', () => {
 				dimensions: ['error', 'outcome'],
 			},
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				cacheDir,
 				maxBytes: 12000,
@@ -366,7 +366,7 @@ describe('project_kpis tool', () => {
 	it('exports a registration shape ready for index and assembleCliConfig wiring', async () => {
 		const { root, cacheDir } = await setupWorkspace();
 		const tool = buildProjectKpisToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			cacheDir,
 			maxBytes: 12000,

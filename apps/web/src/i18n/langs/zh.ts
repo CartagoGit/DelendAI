@@ -24,7 +24,7 @@ const dict: LangDict = {
 		troubleshooting: '故障排查',
 	},
 	hero: {
-		title: { a: '与项目无关的 ', b: 'MCP Vertex', c: '' },
+		title: { a: '与项目无关的 ', b: 'DelendAI', c: '' },
 		subheader: '适用于任何项目的 MCP 服务器内核 + 插件加载器。',
 		tagline:
 			'一个与项目无关的 Model Context Protocol 服务器内核。内核对你的领域一无所知——能力以插件形式按需加载，并且都以低 token 成本为目标进行度量。',
@@ -35,7 +35,7 @@ const dict: LangDict = {
 	marquee: { runtimes: '构建与运行环境', clients: 'MCP 客户端与模型' },
 	concept: {
 		title: '一个小内核，许多插件',
-		body: 'mcp-vertex 是密封的内核：确定性的工具注册、注入的工作区路径、CLI 插件加载器，以及以 token 度量的工具表面。所有领域相关的东西都是插件——只加载你需要的，适用于任何宿主或模型。',
+		body: 'delendai 是密封的内核：确定性的工具注册、注入的工作区路径、CLI 插件加载器，以及以 token 度量的工具表面。所有领域相关的东西都是插件——只加载你需要的，适用于任何宿主或模型。',
 		f1: {
 			t: '与项目无关',
 			b: '内核中没有领域代码。同一个插件在任何宿主或模型下表现一致。',
@@ -78,7 +78,7 @@ const dict: LangDict = {
 			title: '定位成本 · 实时测量',
 			note: '智能体看到的结果文本的 token 数（≈4 字节/token），用 proposals+memory 在协议上实时测量。基线是手动定位的示意性估算——并非某个第三方工具的实测。',
 		},
-		baseline: '不用 mcp-vertex（手动 · 估算）',
+		baseline: '不用 delendai（手动 · 估算）',
 	},
 	plugins: {
 		title: '插件',
@@ -149,7 +149,7 @@ const dict: LangDict = {
 			description:
 				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
 			requires: 'requires',
-			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+			installSnippet: 'delendai --plugins=proposals,issues',
 		},
 	},
 	toolpage: {
@@ -172,7 +172,7 @@ const dict: LangDict = {
 	},
 	firstFiveMinutes: {
 		title: '最初5分钟',
-		lead: '三份可直接复制粘贴的快速入门指南。选择与你运行 mcp-vertex 方式相符的一份。',
+		lead: '三份可直接复制粘贴的快速入门指南。选择与你运行 delendai 方式相符的一份。',
 		profileTabBunNode: 'Bun / Node',
 		profileTabVscode: 'VS Code / Copilot',
 		profileTabClaude: 'Claude Code',
@@ -181,20 +181,20 @@ const dict: LangDict = {
 			intro: '无需编辑器集成：在终端运行 host server，并让任意 MCP 客户端指向其 stdio 传输。',
 			steps: [
 				'安装：`bun add @delendai/core`（或 `npm install @delendai/core`）。',
-				'运行：`bunx mcp-vertex --preset=standard`（或 `npx mcp-vertex --preset=standard`）。',
+				'运行：`bunx delendai --preset=standard`（或 `npx delendai --preset=standard`）。',
 				'验证：进程会打印已加载的插件列表并在 stdio 上等待——按 Ctrl+C 停止。',
 				'将你的 MCP 客户端配置指向该可执行文件，并加上 `--preset=minimal|standard|swarm|full`（完整 flag 列表见“安装”页）。',
-				'先调用 `mcp-vertex_overview { compact: true }`——它会告诉你接下来该做什么。',
+				'先调用 `delendai_overview { compact: true }`——它会告诉你接下来该做什么。',
 			],
 		},
 		vscode: {
 			title: 'VS Code / GitHub Copilot',
-			intro: '一条命令的安装程序会检测 VS Code，并将 mcp-vertex 加入你的 MCP 服务器列表，不会触碰已有服务器。',
+			intro: '一条命令的安装程序会检测 VS Code，并将 delendai 加入你的 MCP 服务器列表，不会触碰已有服务器。',
 			steps: [
 				'从“安装”页运行一条命令的安装程序（自动检测你的 IDE）。',
 				'重新加载窗口（`Developer: Reload Window`），让 Copilot 识别新服务器。',
-				'打开 Copilot 聊天面板，在智能体选择器中选择 `mcp-vertex` 智能体。',
-				'让它调用 `mcp-vertex_overview`——应当报告已加载的预设和一个建议的下一步操作。',
+				'打开 Copilot 聊天面板，在智能体选择器中选择 `delendai` 智能体。',
+				'让它调用 `delendai_overview`——应当报告已加载的预设和一个建议的下一步操作。',
 				'如果服务器没有出现，请查看“故障排查” → "MCP server not detected"。',
 			],
 		},
@@ -204,16 +204,16 @@ const dict: LangDict = {
 			steps: [
 				'运行一条命令的安装程序——它会检测 Claude Code 并写入 `.mcp.json`。',
 				'重启 Claude Code（或运行 `/mcp` 重新加载服务器），使其识别新条目。',
-				'在新会话中，始终加载的 `AGENTS.md` + `CLAUDE.md` 已经指向 `mcp-vertex_overview` 作为首个调用。',
-				'用 `mcp-vertex_overview { compact: true }` 确认——`recommendedNextAction` 字段会告诉你接下来该做什么。',
-				'对于多智能体会话，在认领某个 slice 之前先阅读 `mcp-vertex-proposal-swarm-runner` 技能。',
+				'在新会话中，始终加载的 `AGENTS.md` + `CLAUDE.md` 已经指向 `delendai_overview` 作为首个调用。',
+				'用 `delendai_overview { compact: true }` 确认——`recommendedNextAction` 字段会告诉你接下来该做什么。',
+				'对于多智能体会话，在认领某个 slice 之前先阅读 `delendai-proposal-swarm-runner` 技能。',
 			],
 		},
 		nextSteps: '接下来去哪里',
 		nextToolsCta: '浏览所有工具',
 		nextTroubleshootingCta: '有什么不工作？故障排查',
 		overviewHint:
-			'服务器启动后，以 compact: true 调用 mcp-vertex_overview；recommendedNextAction 会准确告诉代理下一步该做什么。',
+			'服务器启动后，以 compact: true 调用 delendai_overview；recommendedNextAction 会准确告诉代理下一步该做什么。',
 	},
 	troubleshooting: {
 		title: '故障排查',
@@ -274,7 +274,7 @@ const dict: LangDict = {
 	},
 	setup: {
 		title: '跨项目配置',
-		lead: '将 mcp-vertex 接入任意仓库，并为该仓库准备好 GitHub issues 插件——与 setup-github 命令执行的 7 个步骤一致。',
+		lead: '将 delendai 接入任意仓库，并为该仓库准备好 GitHub issues 插件——与 setup-github 命令执行的 7 个步骤一致。',
 		stepsTitle: '7 个步骤',
 		docsLinkLabel: '阅读权威的跨项目配置指南',
 		detectRepoTitle: '检测仓库',
@@ -288,7 +288,7 @@ const dict: LangDict = {
 			'当 gh auth status 成功时使用 gh；当设置了 GITHUB_TOKEN 时使用 rest-authed；否则使用 rest-anon（每小时限 60 次请求）。',
 		writeConfigTitle: '写入配置',
 		writeConfigBody:
-			'将 plugins.issues.options.repo 写入 mcp-vertex.config.json，不触碰其他插件设置。',
+			'将 plugins.issues.options.repo 写入 delendai.config.json，不触碰其他插件设置。',
 		verifyTierTitle: '验证级别',
 		verifyTierBody:
 			'在加载 issues 插件的情况下启动宿主，以端到端方式验证所选的认证级别。',
@@ -324,7 +324,7 @@ const dict: LangDict = {
 			{ id: 'yarn', note: 'npm 的经典替代。' },
 			{
 				id: 'bun',
-				note: '集运行时与包管理器于一身 — mcp-vertex 本身就是用 bun 构建的。',
+				note: '集运行时与包管理器于一身 — delendai 本身就是用 bun 构建的。',
 			},
 			{ id: 'deno', note: '默认安全的运行时，自带一流的 TypeScript。' },
 		],
@@ -383,7 +383,7 @@ const dict: LangDict = {
 			{
 				id: 'setup',
 				label: '跨项目配置',
-				summary: '将 mcp-vertex 接入任何仓库并准备好 issues 插件。',
+				summary: '将 delendai 接入任何仓库并准备好 issues 插件。',
 				href: 'setup',
 				icon: '/logos/github.png',
 			},
@@ -392,7 +392,7 @@ const dict: LangDict = {
 	cli: {
 		title: 'CLI 指南',
 		description:
-			'如何使用 mcpv / @delendai/core CLI：全局标志、每个插件的命令组以及常见工作流。',
+			'如何使用 delendai / @delendai/core CLI：全局标志、每个插件的命令组以及常见工作流。',
 	},
 	guide: {
 		title: '指南',
@@ -408,7 +408,7 @@ const dict: LangDict = {
 			'7. 技能',
 			'8. 国际化 (i18n)',
 			'9. 质量门禁与多语言',
-			'10. 扩展 mcp-vertex',
+			'10. 扩展 delendai',
 			'11. Token 预算',
 			'12. 视图过渡',
 			'13. 常见问题解答',

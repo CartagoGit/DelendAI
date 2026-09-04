@@ -4,7 +4,7 @@
  * The LLM-assisted config flow: given a free-text `need`, match the seed
  * catalog (reusing the S1 data + filter logic — never duplicated) and
  * return an RFC 6902 JSON Patch proposal targeting
- * `plugins.external-mcps.options.servers` in `mcp-vertex.config.json`,
+ * `plugins.external-mcps.options.servers` in `delendai.config.json`,
  * following the f00067 bootstrap-wizard patch convention.
  *
  * Token-lean and trust-gradient by design:
@@ -75,7 +75,7 @@ export const SuggestOutputSchema = z.object({
 	/** TOTAL catalog matches (may exceed the ≤3 returned candidates). */
 	total: z.number().int().nonnegative(),
 	candidates: z.array(CandidateSchema).max(MAX_SUGGEST_CANDIDATES),
-	/** RFC 6902 JSON Patch for `mcp-vertex.config.json` — NEVER applied here. */
+	/** RFC 6902 JSON Patch for `delendai.config.json` — NEVER applied here. */
 	patch: z.array(PatchOpSchema),
 	note: z.string(),
 });
@@ -211,13 +211,13 @@ export const buildSuggestToolRegistration = (
 	tags: ['external-mcps', 'lazy', 'config'],
 	summary:
 		'Propose a config patch (RFC 6902) for external servers matching a free-text need — never writes.',
-	descriptionKey: 'mcp-vertex_external-mcps_suggest',
+	descriptionKey: 'delendai_external-mcps_suggest',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_suggest`,
 			{
 				description:
-					'Describe a capability gap in free text (`need`) and get up to 3 catalog candidates, each with a one-line rationale, plus an RFC 6902 JSON Patch that ADDS them to `mcp-vertex.config.json#plugins.external-mcps.options.servers` (pinned versions, env var NAMES only; already-declared ids are skipped). This tool NEVER writes: dry-run the patch with `validate_config`, apply it only on user confirm, and remember activation is still gated by the human ack flow.',
+					'Describe a capability gap in free text (`need`) and get up to 3 catalog candidates, each with a one-line rationale, plus an RFC 6902 JSON Patch that ADDS them to `delendai.config.json#plugins.external-mcps.options.servers` (pinned versions, env var NAMES only; already-declared ids are skipped). This tool NEVER writes: dry-run the patch with `validate_config`, apply it only on user confirm, and remember activation is still gated by the human ack flow.',
 				inputSchema: InputSchema,
 				outputSchema: SuggestOutputSchema,
 			},
@@ -245,7 +245,7 @@ export const buildSuggestToolRegistration = (
 					note:
 						candidates.length === 0
 							? 'No catalog match. Broaden the need or browse via the catalog tool; live npm discovery stays behind allowDiscoverySearch.'
-							: 'Proposal only — apply the patch to mcp-vertex.config.json on user confirm (dry-run via validate_config first). This tool never writes.',
+							: 'Proposal only — apply the patch to delendai.config.json on user confirm (dry-run via validate_config first). This tool never writes.',
 				});
 			},
 		);

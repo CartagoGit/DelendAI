@@ -4,7 +4,7 @@
  * Pure HTML renderer for the router recommendation + spend dashboard
  * panel. Consumes the shared `IDashboardViewModel` produced by
  * `buildDashboard` in `@delendai/auto-agent-selector/public` so the
- * VS Code extension renders the same rows the `mcpv router` CLI prints
+ * VS Code extension renders the same rows the `delendai router` CLI prints
  * — no second projection, no second copy of the view-model.
  *
  * The webview never calls a tool: the host's command wiring

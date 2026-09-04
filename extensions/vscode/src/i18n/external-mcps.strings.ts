@@ -2,7 +2,7 @@
  * external-mcps.strings.ts — external-server ack command copy, 12 languages
  * (f00068 S5).
  *
- * Self-contained typed table for the `mcp-vertex.externalMcps.ack` command
+ * Self-contained typed table for the `delendai.externalMcps.ack` command
  * and its pending-ack notification, following the
  * `provider-dashboard.strings.ts` convention: the copy lives here —
  * cohesive and testable — instead of inflating the shared flat-key

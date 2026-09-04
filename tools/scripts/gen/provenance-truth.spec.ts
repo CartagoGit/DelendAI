@@ -17,16 +17,16 @@ const createPluginContext = () =>
 	({
 		namespacePrefix: 'obs',
 		options: {},
-		cacheDir: '.cache/mcp-vertex',
-		pluginCacheDir: '.cache/mcp-vertex/observability',
+		cacheDir: '.cache/delendai',
+		pluginCacheDir: '.cache/delendai/observability',
 		pluginDocsDir: 'docs/plugins/observability',
 		workspace: {
 			root: '/workspace',
 			resolve: (path: string) => `/workspace/${path}`,
 		},
 		corePaths: {
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 		},
 		keepLegacy: false,
 		agentWorktreeEnabled: false,
@@ -105,7 +105,7 @@ describe('provenance-truth.script.ts', () => {
 		const exit = await run({
 			argv: ['--check'],
 			outputPath:
-				'docs/mcp-vertex/generated/observability-provenance.generated.md',
+				'docs/delendai/generated/observability-provenance.generated.md',
 			readText: async () => '# stale\n',
 			writeText: async () => undefined,
 		});
@@ -120,7 +120,7 @@ describe('provenance-truth.script.ts', () => {
 		const exit = await run({
 			argv: ['--check'],
 			outputPath:
-				'docs/mcp-vertex/generated/observability-provenance.generated.md',
+				'docs/delendai/generated/observability-provenance.generated.md',
 			readText: async () => current,
 			writeText: async () => undefined,
 		});

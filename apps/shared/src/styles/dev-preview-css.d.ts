@@ -5,11 +5,11 @@
  *
  * Replaces `dev-wizard-css.ts` so the bundle sees BOTH the legacy
  * `.setup`/`.welcome`/`.settings`/`.quickstart` rules AND the new
- * shared `.mcpv-*` rules. The shared renderers from f00102 (S4.5 +
- * S4.6) emit dual-class markup (`class="mcpv-welcome welcome"`,
- * `class="mcpv-setup setup"`, …) so each island needs both
+ * shared `.delendai-*` rules. The shared renderers from f00102 (S4.5 +
+ * S4.6) emit dual-class markup (`class="delendai-welcome welcome"`,
+ * `class="delendai-setup setup"`, …) so each island needs both
  * namespaces; compiling only the legacy block left the new
- * `.mcpv-*` selectors without rules.
+ * `.delendai-*` selectors without rules.
  *
  * Constraints
  * ----------
@@ -33,7 +33,7 @@
  * Compiled CSS string.
  *
  * Resolved by the SCSS Bun.build plugin in
- * `tools/scripts/dev/dev.script.ts` (`mcp-vertex-scss` plugin).
+ * `tools/scripts/dev/dev.script.ts` (`delendai-scss` plugin).
  * The plugin reads `*.scss?raw` and emits a string module via
  * `sass.compileString`, so consumers do NOT need to import `sass`.
  *

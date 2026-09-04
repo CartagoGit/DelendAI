@@ -75,7 +75,7 @@ describe('AUD-G01: funnel/log reconciliation', () => {
 		const observe = buildObservedFailureHandler({
 			options: {
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: 'CartagoGit/delendai',
 				labels: ['auto-reported'],
 				dedupeWindowHours: 24,
 				maxIssuesPerDay: 10,
@@ -93,7 +93,7 @@ describe('AUD-G01: funnel/log reconciliation', () => {
 
 		// Simulate the same tool-call window a host's incident logger
 		// would see: a mix of successful calls and failures, some of
-		// which are mcp-vertex-internal and some project-local.
+		// which are delendai-internal and some project-local.
 		// A plain object (no `.stack`) carries zero frame evidence, so it
 		// is unambiguously "not internal" regardless of which real file
 		// this test happens to run from — unlike a genuine thrown `Error`,
@@ -102,7 +102,7 @@ describe('AUD-G01: funnel/log reconciliation', () => {
 		const hostProjectFailure = {
 			structuredContent: {
 				error: {
-					reason: 'host project failure, no mcp-vertex evidence',
+					reason: 'host project failure, no delendai evidence',
 				},
 			},
 		};

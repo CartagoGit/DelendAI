@@ -9,8 +9,8 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mcpv-theme-picker` / `mcpv-theme-picker__*`
- *   with the optional `mcpv-theme-picker--inline` modifier. Legacy
+ * - Class namespace: `delendai-theme-picker` / `delendai-theme-picker__*`
+ *   with the optional `delendai-theme-picker--inline` modifier. Legacy
  *   `.settings__*` selectors are kept via `@extend` in the
  *   companion SCSS so the existing dev preview keeps working
  *   without a markup rename.
@@ -104,7 +104,7 @@ export const renderThemePicker = (
 	const radios = order
 		.map(
 			(opt) =>
-				`<label class="mcpv-theme-picker__radio">` +
+				`<label class="delendai-theme-picker__radio">` +
 				`<input type="radio" name="${escapeAttr(name)}" value="${escapeAttr(opt)}"` +
 				` ${opt === options.current ? 'checked' : ''} />` +
 				`<span>${escapeAttr(capitalise(opt))}</span>` +
@@ -114,20 +114,20 @@ export const renderThemePicker = (
 
 	if (options.inline) {
 		return (
-			`<label class="mcpv-theme-picker mcpv-theme-picker--inline">` +
+			`<label class="delendai-theme-picker delendai-theme-picker--inline">` +
 			`<span>Theme</span>` +
-			`<div class="mcpv-theme-picker__radios" role="radiogroup">${radios}</div>` +
+			`<div class="delendai-theme-picker__radios" role="radiogroup">${radios}</div>` +
 			`</label>`
 		);
 	}
 	const hintHtml = options.hint
-		? `<p class="mcpv-theme-picker__hint">${escapeAttr(options.hint)}</p>`
+		? `<p class="delendai-theme-picker__hint">${escapeAttr(options.hint)}</p>`
 		: '';
 	return (
-		`<fieldset class="mcpv-theme-picker__field">` +
+		`<fieldset class="delendai-theme-picker__field">` +
 		`<legend>Theme</legend>` +
 		hintHtml +
-		`<div class="mcpv-theme-picker__radios" role="radiogroup">${radios}</div>` +
+		`<div class="delendai-theme-picker__radios" role="radiogroup">${radios}</div>` +
 		`</fieldset>`
 	);
 };

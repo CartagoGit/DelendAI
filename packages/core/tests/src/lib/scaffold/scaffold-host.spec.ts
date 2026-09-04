@@ -69,19 +69,19 @@ describe('scaffold-host generators', () => {
 
 	it('sanitizes hyphenated namespaces for generated TypeScript symbols', () => {
 		const file = scaffoldToolFile(
-			'mcp-vertex',
+			'delendai',
 			'project state',
 			'State.',
 			'packages/core',
 		);
 		expect(file.path).toBe(
-			'packages/core/src/lib/tools/mcp-vertex-project-state.tool.ts',
+			'packages/core/src/lib/tools/delendai-project-state.tool.ts',
 		);
 		expect(file.content).toContain(
-			'export const MCP_VERTEX_PROJECT_STATE_TOOL',
+			'export const DELENDAI_PROJECT_STATE_TOOL',
 		);
-		expect(file.content).toContain("name: 'mcp-vertex_project_state'");
-		expect(file.content).not.toContain('MCP-VERTEX');
+		expect(file.content).toContain("name: 'delendai_project_state'");
+		expect(file.content).not.toContain('DELENDAI');
 	});
 
 	it('generates skills with canonical frontmatter', () => {
@@ -143,7 +143,7 @@ describe('scaffold-host generators', () => {
 		expect(orchestrator.content).not.toContain('acme_check_project_state');
 		const runner = scaffoldAgentFile(HOST, 'implementation_runner');
 		expect(runner.content).toContain('user-invocable: false');
-		expect(runner.content).not.toContain('mcp-vertex_');
+		expect(runner.content).not.toContain('delendai_');
 	});
 
 	// x00160 S1 — the Copilot `.agent.md` variant was the ONLY subagent
@@ -172,7 +172,7 @@ describe('scaffold-host generators', () => {
 		// kebab-case.
 		expect(runner.path).toBe('.claude/agents/implementation-runner.md');
 		expect(runner.content).toMatch(/^---\nname: implementation-runner\n/);
-		expect(runner.content).not.toContain('mcp-vertex_');
+		expect(runner.content).not.toContain('delendai_');
 	});
 
 	it('scaffoldClaudeAgentFile omits an unrecognised model rather than emitting an invalid value', () => {
@@ -260,14 +260,14 @@ describe('scaffold-host generators', () => {
 		expect(instructions?.content).toContain('Orchestration threshold');
 		// The generated project must not leak the host's own namespace.
 		for (const file of files) {
-			expect(file.content, file.path).not.toContain('mcp-vertex_');
+			expect(file.content, file.path).not.toContain('delendai_');
 		}
 	});
 
 	it('places host sources and VS Code cwd under an explicit target', () => {
 		const files = scaffoldHostProject({
 			...HOST,
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			targetDir: 'packages/core',
 		});
 		const paths = files.map(({ path }) => path);
@@ -323,10 +323,10 @@ describe('scaffold-host generators', () => {
 		expect(paths).toContain('.codex/agents/technical-investigator.md');
 	});
 
-	it('existingMcpVertex=true skips the libs/mcp-project bootstrap and the .vscode/mcp.json', () => {
+	it('existingDelendai=true skips the libs/mcp-project bootstrap and the .vscode/mcp.json', () => {
 		const files = scaffoldHostProject({
 			...HOST,
-			existingMcpVertex: true,
+			existingDelendai: true,
 		});
 		const paths = files.map((f) => f.path);
 		// No host bootstrap.
@@ -346,32 +346,32 @@ describe('scaffold-host generators', () => {
 		).toBe(true);
 	});
 
-	it('existingMcpVertex=false (default) still emits the libs/mcp-project bootstrap', () => {
+	it('existingDelendai=false (default) still emits the libs/mcp-project bootstrap', () => {
 		const files = scaffoldHostProject(HOST);
 		const paths = files.map((f) => f.path);
 		expect(paths).toContain('libs/mcp-project/src/server.ts');
 		expect(paths).toContain('.vscode/mcp.json');
 	});
 
-	// x00201 S1 — guest-mode adopters (existingMcpVertex: true) already have
+	// x00201 S1 — guest-mode adopters (existingDelendai: true) already have
 	// their OWN registered MCP server name (postman-exporter's real key is
-	// `mcp-vertex`, not the greenfield `mcp-project-<prefix>` default).
+	// `delendai`, not the greenfield `mcp-project-<prefix>` default).
 	// Without `mcpServerName`, every generated agent's first tool call
 	// addressed a server that does not exist.
 	it('mcpServerName overrides the greenfield mcp-project-<prefix> default in every Copilot-facing surface', () => {
-		const withRealServerName = { ...HOST, mcpServerName: 'mcp-vertex' };
+		const withRealServerName = { ...HOST, mcpServerName: 'delendai' };
 		const orchestrator = scaffoldAgentFile(
 			withRealServerName,
 			'orchestrator',
 		);
-		expect(orchestrator.content).toContain('mcp-vertex/*');
-		expect(orchestrator.content).toContain('mcp-vertex/acme_overview');
+		expect(orchestrator.content).toContain('delendai/*');
+		expect(orchestrator.content).toContain('delendai/acme_overview');
 		expect(orchestrator.content).not.toContain('mcp-project-acme');
 
 		const instructions = scaffoldHostProject(withRealServerName).find(
 			(file) => file.path.endsWith('copilot-instructions.md'),
 		);
-		expect(instructions?.content).toContain('mcp-vertex` rules');
+		expect(instructions?.content).toContain('delendai` rules');
 		expect(instructions?.content).not.toContain('mcp-project-acme');
 	});
 
@@ -501,7 +501,7 @@ describe('scaffold tool report', () => {
 	let options: IScaffoldToolOptions;
 
 	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'mcp-vertex-scaffold-'));
+		root = mkdtempSync(join(tmpdir(), 'delendai-scaffold-'));
 		options = {
 			...HOST,
 			workspace: createWorkspacePathProvider(root),

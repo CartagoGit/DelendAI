@@ -3,7 +3,7 @@
  *
  * `assembleCliConfig` resolves the host-scoped `agent_worktree` gate
  * with precedence host CLI > config file > `false` default, surfaces the
- * resolved value on `IMcpVertexHostConfig.agentWorktreeEnabled` (audit
+ * resolved value on `IDelendaiHostConfig.agentWorktreeEnabled` (audit
  * summary), and projects it onto every plugin's `IMcpPluginContext` as
  * `agentWorktreeEnabled`.
  */
@@ -35,7 +35,7 @@ const fileReader =
 	async (_path: string): Promise<string | undefined> =>
 		file;
 
-const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-assemble-');
+const WRITABLE_WORKSPACE = createTestWorkspace('delendai-assemble-');
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 const baseArgs = (extra: readonly string[] = []) =>

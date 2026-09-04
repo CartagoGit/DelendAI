@@ -1,5 +1,5 @@
 /**
- * Code form of `docs/mcp-vertex/host-compatibility-matrix.md` (AUD-C01 /
+ * Code form of `docs/delendai/host-compatibility-matrix.md` (AUD-C01 /
  * x00285). Every row of that table that names a specific host is
  * reproduced here so a host this repo has already verified keeps exactly
  * the mode the matrix documents, independent of whatever capabilities it
@@ -52,7 +52,7 @@ export const HOST_MODE_PROFILES: readonly IHostModeProfile[] = [
 		rationale: 'host-compatibility-matrix.md: MCP Inspector -> managed',
 	},
 	{
-		match: nameIncludes('mcp-vertex', 'vertex-aware'),
+		match: nameIncludes('delendai', 'vertex-aware'),
 		mode: 'managed',
 		rationale:
 			'host-compatibility-matrix.md: vertex-aware client -> managed',

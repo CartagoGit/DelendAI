@@ -15,7 +15,7 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 	{
 		"slug": "api",
 		"displayName": "Api",
-		"purpose": "REST/GraphQL API surface for mcp-vertex plugins.",
+		"purpose": "REST/GraphQL API surface for delendai plugins.",
 		"category": "integration"
 	},
 	{
@@ -117,7 +117,7 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 	{
 		"slug": "error-reporting",
 		"displayName": "Error Reporting",
-		"purpose": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.",
+		"purpose": "Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.",
 		"category": "integration"
 	},
 	{

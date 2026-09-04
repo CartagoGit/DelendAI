@@ -855,7 +855,7 @@ export async function syncProposalRegistry(
 		'proposalsDir' | 'proposalIndexFile'
 	> = DEFAULT_PATH_LAYOUT,
 	// Host-specific proposal subfolders (relative to proposalsDir), e.g.
-	// `paused/demos`. Injected from ctx.options so mcp-vertex's generic
+	// `paused/demos`. Injected from ctx.options so delendai's generic
 	// proposal model carries no host vocabulary.
 	extraFolders: readonly string[] = [],
 	// f00016 S5: injectable for tests; defaults to a real `git mv` in `root`.

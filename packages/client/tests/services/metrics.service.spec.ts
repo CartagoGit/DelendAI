@@ -30,7 +30,7 @@ const metric = (
 
 const firstSnapshot: IMetricsSnapshot = {
 	tools: {
-		'mcp-vertex_overview': metric(1, 0, 3, 3, 128),
+		delendai_overview: metric(1, 0, 3, 3, 128),
 	},
 	totals: {
 		calls: 1,
@@ -54,7 +54,7 @@ describe('MetricsService', async () => {
 			McpStdioClient.fromTransport({
 				async callTool(input) {
 					expect(input).toEqual({
-						name: 'mcp-vertex_metrics',
+						name: 'delendai_metrics',
 						arguments: { persist: true },
 					});
 					return { structuredContent: firstSnapshot };

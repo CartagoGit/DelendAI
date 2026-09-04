@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexContextForChangeContextForChangeOutput {
+export interface DelendaiContextForChangeContextForChangeOutput {
 	dependsOn: string[];
 	files: string[];
 	sections: Array<{
@@ -26,5 +26,5 @@ export interface McpVertexContextForChangeContextForChangeOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface ContextForChangeToolOutputs {
-	"mcp-vertex_context-for-change_context_for_change": McpVertexContextForChangeContextForChangeOutput;
+	"delendai_context-for-change_context_for_change": DelendaiContextForChangeContextForChangeOutput;
 }

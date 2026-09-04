@@ -50,8 +50,8 @@ describe('useful-tokens service', () => {
 			{
 				sessionId: 's-zero',
 				tools: [
-					tool('mcp-vertex_search_search'),
-					tool('mcp-vertex_docs_docs_list'),
+					tool('delendai_search_search'),
+					tool('delendai_docs_docs_list'),
 				],
 			},
 		];
@@ -72,8 +72,8 @@ describe('useful-tokens service', () => {
 			{
 				sessionId: 's-full',
 				tools: [
-					tool('mcp-vertex_overview'),
-					tool('mcp-vertex_proposals_auto_work'),
+					tool('delendai_overview'),
+					tool('delendai_proposals_auto_work'),
 				],
 			},
 		];
@@ -96,12 +96,12 @@ describe('useful-tokens service', () => {
 			{
 				sessionId: 's-partial',
 				tools: [
-					tool('mcp-vertex_search_search', 'short'),
+					tool('delendai_search_search', 'short'),
 					tool(
-						'mcp-vertex_docs_docs_list',
+						'delendai_docs_docs_list',
 						'this description is intentionally much longer so byte weight differs materially',
 					),
-					tool('mcp-vertex_memory_recall', 'medium description'),
+					tool('delendai_memory_recall', 'medium description'),
 				],
 			},
 		];
@@ -122,7 +122,7 @@ describe('useful-tokens service', () => {
 	});
 
 	it('isolates used tool matching by sessionId when different sessions serve the same wire name', () => {
-		const sharedTool = tool('mcp-vertex_logs_search');
+		const sharedTool = tool('delendai_logs_search');
 		const surfaces: ISessionToolSurface[] = [
 			{
 				sessionId: 's-invoked',
@@ -184,18 +184,18 @@ describe('useful-tokens service', () => {
 		const surfaces: ISessionToolSurface[] = [
 			{
 				sessionId: 's-repeat',
-				tools: [tool('mcp-vertex_overview')],
+				tools: [tool('delendai_overview')],
 			},
 			{
 				sessionId: 's-repeat',
 				tools: [
-					tool('mcp-vertex_overview'),
-					tool('mcp-vertex_search_search'),
+					tool('delendai_overview'),
+					tool('delendai_search_search'),
 				],
 			},
 			{
 				sessionId: 's-other',
-				tools: [tool('mcp-vertex_memory_recall')],
+				tools: [tool('delendai_memory_recall')],
 			},
 		];
 		const invocations = [

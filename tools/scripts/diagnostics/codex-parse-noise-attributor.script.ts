@@ -7,7 +7,7 @@
 // bundle inside the openai.chatgpt extension is minified and ships
 // only the literal string, so the warning is useless on its own. The
 // user only sees the symptom and has no way to know that the source
-// is the Codex IPC / WebSocket router (not mcp-vertex, not Copilot).
+// is the Codex IPC / WebSocket router (not delendai, not Copilot).
 //
 // This script walks every Codex.log under the running VSCode instance
 // (default HOME/.vscode-server/data/logs, overridable via --root=path),
@@ -144,7 +144,7 @@ const EXPLANATION_LINES: readonly string[] = [
 	'[ATTRIBUTED] is silently dropped and the parser logs this warning instead of',
 	'[ATTRIBUTED] failing hard.',
 	'[ATTRIBUTED]',
-	'[ATTRIBUTED] This is NOT emitted by mcp-vertex or by GitHub Copilot Chat.',
+	'[ATTRIBUTED] This is NOT emitted by delendai or by GitHub Copilot Chat.',
 	'[ATTRIBUTED] To silence it permanently:',
 	'[ATTRIBUTED]   1. Uninstall the extension:  code --uninstall-extension openai.chatgpt',
 	'[ATTRIBUTED]   2. Or disable it workspace-only via the VSCode command palette',
@@ -233,7 +233,7 @@ const main = async (): Promise<void> => {
 			console.log(`    ${channel.padEnd(20)} ${count}`);
 		}
 	}
-	console.log('  attribution:    openai.chatgpt (Codex) — NOT mcp-vertex');
+	console.log('  attribution:    openai.chatgpt (Codex) — NOT delendai');
 	if (totalNoise > 0 && !flags.rewrite) process.exit(1);
 };
 

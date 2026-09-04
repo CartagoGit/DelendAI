@@ -36,7 +36,7 @@ import type { ICommandSet } from '../frameworks/contracts';
  *                  new code; the project's toolchain is the
  *                  enforcer for existing code)
  *   3. `default` — the plugin's vendored preset under
- *                  `.cache/mcp-vertex/rules/`
+ *                  `.cache/delendai/rules/`
  *
  * The `effective` field of `IResolvedCommand` reports which
  * layer won for a given area.

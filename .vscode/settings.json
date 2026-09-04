@@ -108,12 +108,12 @@
 	"github.copilot.telemetry.enabled": false,
 
 	// ──────────────────────────────────────────────────────────────────────
-	// Agent skills — make `mcp-vertex-status-marker-and-closure` discoverable
+	// Agent skills — make `delendai-status-marker-and-closure` discoverable
 	// in this workspace so the canonical close-marker behaviour is injected
 	// on every response. The skill itself lives at
-	// `plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/`
+	// `plugins/status-marker/skills/delendai-status-marker-and-closure/`
 	// and is owned by the `@delendai/status-marker` plugin (per the SOLID
-	// ownership rules in `docs/mcp-vertex/skills/README.md`).
+	// ownership rules in `docs/delendai/skills/README.md`).
 	// Core + transversal skills are added for completeness so the host can
 	// discover every skill shipped by the project.
 	// ──────────────────────────────────────────────────────────────────────
@@ -137,7 +137,7 @@
 		"./plugins/rules/skills": true,
 		"./plugins/issues/skills": true
 	},
-	"mcp-vertex.development.autoReload": true,
+	"delendai.development.autoReload": true,
 
 	// ──────────────────────────────────────────────────────────────────────
 	// Peacock — workspace-scoped visual identity (morado agradable)

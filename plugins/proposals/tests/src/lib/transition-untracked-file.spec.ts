@@ -70,7 +70,7 @@ describe('proposal_transition on fresh vs tracked files (x00106 S2)', () => {
 		git(root, 'init', '-b', 'main');
 		git(root, 'config', 'user.email', 'spec@example.com');
 		git(root, 'config', 'user.name', 'spec');
-		proposalsDirAbs = join(root, 'docs/mcp-vertex/proposals');
+		proposalsDirAbs = join(root, 'docs/delendai/proposals');
 		for (const folder of ['ready', 'in-progress']) {
 			mkdirSync(join(proposalsDirAbs, folder), { recursive: true });
 		}

@@ -16,7 +16,7 @@
 // 1. Tokens & themes — define design variables first so everything below
 //    can reference them.
 //
-// The shared package (`apps/shared`) owns the brand tokens (`--mcpv-*`),
+// The shared package (`apps/shared`) owns the brand tokens (`--delendai-*`),
 // the brand hex literals and the canonical 5 palettes. We re-export them
 // here as the base layer; the local `tokens` / `themes` partials (right
 // below) keep the existing legacy names (`--bg`, `--fg`, `--accent`, …)

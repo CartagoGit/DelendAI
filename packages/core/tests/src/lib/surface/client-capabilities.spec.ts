@@ -14,7 +14,7 @@ describe('surface capability negotiation', () => {
 			clientInfo: { name: 'claude-code', version: '1.0.0' },
 			capabilities: {
 				extensions: {
-					'mcp-vertex/surface': {
+					'delendai/surface': {
 						toolsListChanged: true,
 						preferredMode: 'adaptive',
 					},
@@ -26,12 +26,12 @@ describe('surface capability negotiation', () => {
 		expect(detected.source).toBe('extensions');
 	});
 
-	it('keeps managed for a client that declares mcp-vertex/surface support, native otherwise (AUD-C01 / x00285)', () => {
+	it('keeps managed for a client that declares delendai/surface support, native otherwise (AUD-C01 / x00285)', () => {
 		expect(
 			decideSurfaceModeFromCapabilities({
 				capabilities: {
 					extensions: {
-						'mcp-vertex/surface': { toolsListChanged: true },
+						'delendai/surface': { toolsListChanged: true },
 					},
 				},
 			}).mode,

@@ -279,7 +279,7 @@ describe('handoff watcher', async () => {
 		writeFileSync(
 			join(handoffDir, 'prev.json'),
 			JSON.stringify({
-				schema: 'mcp-vertex/handoff/1',
+				schema: 'delendai/handoff/1',
 				reason: 'exact-repeat',
 				from: { agent: 'a1' },
 			}),
@@ -309,7 +309,7 @@ describe('handoff watcher', async () => {
 		writeFileSync(
 			join(handoffDir, 'new.json'),
 			JSON.stringify({
-				schema: 'mcp-vertex/handoff/1',
+				schema: 'delendai/handoff/1',
 				reason: 'no-progress',
 				from: { agent: 'a2' },
 			}),
@@ -354,14 +354,14 @@ describe('notification plugin', async () => {
 	): IMcpPluginContext => ({
 		workspace: { root, resolve: (p: string) => join(root, p) },
 		corePaths: {
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 		},
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 		keepLegacy: false,
-		pluginCacheDir: '.cache/mcp-vertex/notification',
-		pluginDocsDir: 'docs/mcp-vertex/notification',
+		pluginCacheDir: '.cache/delendai/notification',
+		pluginDocsDir: 'docs/delendai/notification',
 		namespacePrefix: 'notification',
 		options,
 		args: {},
@@ -419,14 +419,14 @@ describe('notification plugin', async () => {
 		const ctx = {
 			workspace: { root: dir, resolve: (p: string) => join(dir, p) },
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			keepLegacy: false,
-			pluginCacheDir: '.cache/mcp-vertex/notification',
-			pluginDocsDir: 'docs/mcp-vertex/notification',
+			pluginCacheDir: '.cache/delendai/notification',
+			pluginDocsDir: 'docs/delendai/notification',
 			namespacePrefix: 'notification',
 			options: {
 				intervalMs: 50,
@@ -442,7 +442,7 @@ describe('notification plugin', async () => {
 		expect(reg.knowledge?.[0]?.id).toBe('lock-notifications');
 
 		// Create handoff directory
-		const handoffDir = join(dir, '.cache/mcp-vertex/handoff');
+		const handoffDir = join(dir, '.cache/delendai/handoff');
 		require('node:fs').mkdirSync(handoffDir, { recursive: true });
 
 		// Wire a fake server to capture logging notifications + the tool handler.
@@ -473,7 +473,7 @@ describe('notification plugin', async () => {
 		writeFileSync(
 			join(handoffDir, 'stuck-agent.json'),
 			JSON.stringify({
-				schema: 'mcp-vertex/handoff/1',
+				schema: 'delendai/handoff/1',
 				reason: 'exact-repeat',
 				from: { agent: 'my-agent' },
 			}),
@@ -497,7 +497,7 @@ describe('notification plugin', async () => {
 		expect(stuckEvent?.level).toBe('warning');
 		expect(stuckEvent?.data?.agent).toBe('my-agent');
 		expect(stuckEvent?.data?.handoffPath).toBe(
-			'.cache/mcp-vertex/handoff/stuck-agent.json',
+			'.cache/delendai/handoff/stuck-agent.json',
 		);
 
 		// stop the watcher via the server onclose hook (no leaked timer)
@@ -510,14 +510,14 @@ describe('notification plugin', async () => {
 		const ctx = {
 			workspace: { root: dir, resolve: (p: string) => join(dir, p) },
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			keepLegacy: false,
-			pluginCacheDir: '.cache/mcp-vertex/notification',
-			pluginDocsDir: 'docs/mcp-vertex/notification',
+			pluginCacheDir: '.cache/delendai/notification',
+			pluginDocsDir: 'docs/delendai/notification',
 			namespacePrefix: 'notification',
 			options: { intervalMs: 50 },
 			args: {},

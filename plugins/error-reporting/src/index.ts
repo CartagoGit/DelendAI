@@ -1,4 +1,4 @@
-import { MCP_VERTEX_VERSION } from '@delendai/core/version';
+import { DELENDAI_VERSION } from '@delendai/core/version';
 
 import reporterPackageJson from '../package.json';
 
@@ -10,7 +10,7 @@ import {
 } from '@delendai/core/public';
 
 import { OptionsSchema } from './lib/contracts/constants/options.constant';
-import type { ISafeMcpVertexReport } from './lib/contracts/interfaces/reporter.interface';
+import type { ISafeDelendaiReport } from './lib/contracts/interfaces/reporter.interface';
 import type { IErrorReportingOptions } from './lib/contracts/interfaces/options.interface';
 import {
 	ERR_REPORTING_OPTION_DEPRECATED,
@@ -44,10 +44,10 @@ import { createSafeReporter } from './lib/reporter.service';
 import { buildDiagnoseLogRegistration } from './lib/tools/diagnose-log.tool';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
 
-const redactReport = (report: ISafeMcpVertexReport): ISafeMcpVertexReport =>
+const redactReport = (report: ISafeDelendaiReport): ISafeDelendaiReport =>
 	JSON.parse(
 		redactSecrets(JSON.stringify(report)).text,
-	) as ISafeMcpVertexReport;
+	) as ISafeDelendaiReport;
 
 const logPrivacyBlock = (reasonCode: string): void => {
 	console.warn(`report blocked by privacy validator: ${reasonCode}`);
@@ -280,9 +280,9 @@ export const buildObservedFailureHandler = (input: {
 
 /**
  * Automatic error reporting, on by default. The plugin
- * observes tool-call failures so an adopter can report mcp-vertex bugs. The
+ * observes tool-call failures so an adopter can report delendai bugs. The
  * plugin observes tool-call failures through the same lifecycle hook
- * the `logs` plugin uses; when a failure originates inside mcp-vertex,
+ * the `logs` plugin uses; when a failure originates inside delendai,
  * it asynchronously opens (or de-duplicates) an issue on the target
  * repo. All network work is fire-and-forget and fully guarded — a hook
  * must never throw.
@@ -291,7 +291,7 @@ export default definePlugin({
 	name: 'error-reporting',
 	version: '0.1.0',
 	describe:
-		'Automatic error reporting, on by default: opens de-duplicated GitHub issues for mcp-vertex-internal failures. Set options.enabled = false to turn it off.',
+		'Automatic error reporting, on by default: opens de-duplicated GitHub issues for delendai-internal failures. Set options.enabled = false to turn it off.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		registerInternalRuntimePaths(import.meta.url);
@@ -360,7 +360,7 @@ export default definePlugin({
 		 */
 		const diagnoseLogTool = buildDiagnoseLogRegistration({
 			namespacePrefix: ctx.namespacePrefix,
-			mcpVertexVersion: MCP_VERTEX_VERSION,
+			delendaiVersion: DELENDAI_VERSION,
 			reporterVersion: reporterPackageJson.version,
 			...(options.enabled
 				? {
@@ -398,7 +398,7 @@ export default definePlugin({
 		const knowledge = [
 			{
 				id: 'error-reporting-surface',
-				title: 'Automatic mcp-vertex error reporting',
+				title: 'Automatic delendai error reporting',
 				body: buildErrorReportingKnowledge({
 					prefix: ctx.namespacePrefix,
 					targetRepo: options.targetRepo,
@@ -420,8 +420,8 @@ export default definePlugin({
 							'default.',
 							'',
 							'Set `plugins.error-reporting.options.enabled = true` to',
-							'restore automatic reporting of mcp-vertex-internal',
-							'failures. Only mcp-vertex-internal errors are ever sent',
+							'restore automatic reporting of delendai-internal',
+							'failures. Only delendai-internal errors are ever sent',
 							'— never project code, paths or data.',
 						].join('\n'),
 					},

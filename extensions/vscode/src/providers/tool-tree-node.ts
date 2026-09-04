@@ -31,15 +31,15 @@ export interface IToolTreeNode {
 
 export const serverNode = (description?: string): IToolTreeNode => ({
 	kind: 'server',
-	// The user feedback was that the tree header read "mcp-vertex →
-	// mcp-vertex" which was confusing. Use a stable "Server" label
+	// The user feedback was that the tree header read "delendai →
+	// delendai" which was confusing. Use a stable "Server" label
 	// and surface the namespace in the description so the user can
 	// tell at a glance which deployment they are looking at.
 	id: 'server:root',
 	label: 'Server',
-	description: description ?? 'mcp-vertex tools',
+	description: description ?? 'delendai tools',
 	collapsibleState: TreeItemCollapsibleState.Expanded,
-	contextValue: 'mcpVertexServer',
+	contextValue: 'delendaiServer',
 	iconId: SERVER_ICON_ID,
 });
 
@@ -53,10 +53,10 @@ export const pluginNode = (
 	label: plugin,
 	description: `${toolCount} tools${options.loaded === false ? ' · lazy' : ''}`,
 	collapsibleState: TreeItemCollapsibleState.Collapsed,
-	contextValue: 'mcpVertexPlugin',
+	contextValue: 'delendaiPlugin',
 	plugin,
 	command: {
-		command: 'mcp-vertex.openPluginConfig',
+		command: 'delendai.openPluginConfig',
 		title: 'Open Plugin Configuration',
 		arguments: [plugin],
 	},
@@ -73,11 +73,11 @@ export const toolNode = (
 	...(tool.summary === undefined ? {} : { description: tool.summary }),
 	tooltip: tool.summary ?? tool.name,
 	collapsibleState: TreeItemCollapsibleState.None,
-	contextValue: 'mcpVertexTool',
+	contextValue: 'delendaiTool',
 	plugin: tool.plugin,
 	tool,
 	command: {
-		command: 'mcp-vertex.openToolDetail',
+		command: 'delendai.openToolDetail',
 		title: 'Open Tool Detail',
 		arguments: [tool],
 	},

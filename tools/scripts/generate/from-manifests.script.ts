@@ -23,14 +23,13 @@ export const GENERATED_WEB_CATALOG_PATH =
 export const GENERATED_WEB_DATA_CATALOG_PATH =
 	'apps/web/src/data/plugins/catalog.generated.ts';
 export const GENERATED_DOCS_MARKDOWN_PATH =
-	'docs/mcp-vertex/generated/plugin-manifests.generated.md';
+	'docs/delendai/generated/plugin-manifests.generated.md';
 export const GENERATED_DOCS_JSON_PATH =
-	'docs/mcp-vertex/generated/plugin-manifests.generated.json';
-export const GENERATED_PLUGIN_DOCS_DIR =
-	'docs/mcp-vertex/plugins/auto-generated';
-export const PLUGIN_DOC_NOTES_DIR = 'docs/mcp-vertex/plugins/notes';
+	'docs/delendai/generated/plugin-manifests.generated.json';
+export const GENERATED_PLUGIN_DOCS_DIR = 'docs/delendai/plugins/auto-generated';
+export const PLUGIN_DOC_NOTES_DIR = 'docs/delendai/plugins/notes';
 export const GENERATED_PERMISSION_MATRIX_PATH =
-	'docs/mcp-vertex/security/permission-matrix.md';
+	'docs/delendai/security/permission-matrix.md';
 
 type PresetId = (typeof PRESET_KIND)[number];
 
@@ -634,7 +633,7 @@ const renderDocsMarkdown = (artifact: IPluginManifestArtifact): string => {
 /**
  * Reads the optional hand-written notes file for a plugin (d00014).
  *
- * `docs/mcp-vertex/plugins/notes/<id>.notes.md` is the ONE place a
+ * `docs/delendai/plugins/notes/<id>.notes.md` is the ONE place a
  * human/agent may write prose about a plugin that the manifest cannot
  * derive (design decisions, use cases, operational caveats). It has no
  * drift check of its own (it is prose), but it has exactly one location

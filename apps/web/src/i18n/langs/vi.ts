@@ -24,7 +24,7 @@ const dict: LangDict = {
 		troubleshooting: 'Khắc phục sự cố',
 	},
 	hero: {
-		title: { a: '', b: 'MCP Vertex', c: ' bất khả tri với dự án' },
+		title: { a: '', b: 'DelendAI', c: ' bất khả tri với dự án' },
 		subheader: 'Lõi máy chủ MCP + trình tải plugin cho mọi dự án.',
 		tagline:
 			'Một lõi máy chủ Model Context Protocol bất khả tri với dự án. Lõi không biết gì về lĩnh vực của bạn — các khả năng đến dưới dạng plugin bạn tải theo nhu cầu, tất cả đều được đo lường để chi phí token thấp.',
@@ -38,7 +38,7 @@ const dict: LangDict = {
 	},
 	concept: {
 		title: 'Một lõi nhỏ, nhiều plugin',
-		body: 'mcp-vertex là lõi kín: đăng ký công cụ tất định, đường dẫn workspace được tiêm vào, trình tải plugin qua CLI, và bề mặt công cụ đo bằng token. Mọi thứ riêng cho lĩnh vực đều là plugin — chỉ tải thứ bạn cần, dưới mọi host hay mô hình.',
+		body: 'delendai là lõi kín: đăng ký công cụ tất định, đường dẫn workspace được tiêm vào, trình tải plugin qua CLI, và bề mặt công cụ đo bằng token. Mọi thứ riêng cho lĩnh vực đều là plugin — chỉ tải thứ bạn cần, dưới mọi host hay mô hình.',
 		f1: {
 			t: 'Bất khả tri với dự án',
 			b: 'Không có mã lĩnh vực trong lõi. Cùng một plugin hoạt động giống hệt dưới mọi host hay mô hình.',
@@ -81,7 +81,7 @@ const dict: LangDict = {
 			title: 'Chi phí định hướng · đo trực tiếp',
 			note: 'Token của văn bản kết quả mà tác tử thấy (≈4 byte/token), đo trực tiếp qua giao thức với proposals+memory. Đường cơ sở là ước tính minh họa cho việc định hướng thủ công — không phải số đo của công cụ bên thứ ba.',
 		},
-		baseline: 'không có mcp-vertex (thủ công · ước tính)',
+		baseline: 'không có delendai (thủ công · ước tính)',
 	},
 	plugins: {
 		title: 'Plugin',
@@ -155,7 +155,7 @@ const dict: LangDict = {
 			description:
 				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
 			requires: 'requires',
-			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+			installSnippet: 'delendai --plugins=proposals,issues',
 		},
 	},
 	toolpage: {
@@ -178,7 +178,7 @@ const dict: LangDict = {
 	},
 	firstFiveMinutes: {
 		title: '5 phút đầu tiên',
-		lead: 'Ba hướng dẫn nhanh có thể copy-paste. Chọn cái phù hợp với cách bạn chạy mcp-vertex.',
+		lead: 'Ba hướng dẫn nhanh có thể copy-paste. Chọn cái phù hợp với cách bạn chạy delendai.',
 		profileTabBunNode: 'Bun / Node',
 		profileTabVscode: 'VS Code / Copilot',
 		profileTabClaude: 'Claude Code',
@@ -187,20 +187,20 @@ const dict: LangDict = {
 			intro: 'Không cần tích hợp editor: chạy host server từ terminal và trỏ bất kỳ client MCP nào tới transport stdio của nó.',
 			steps: [
 				'Cài đặt: `bun add @delendai/core` (hoặc `npm install @delendai/core`).',
-				'Chạy: `bunx mcp-vertex --preset=standard` (hoặc `npx mcp-vertex --preset=standard`).',
+				'Chạy: `bunx delendai --preset=standard` (hoặc `npx delendai --preset=standard`).',
 				'Xác minh: tiến trình in ra danh sách plugin đã tải và chờ trên stdio — Ctrl+C để dừng.',
 				'Trỏ cấu hình client MCP của bạn tới binary với `--preset=minimal|standard|swarm|full` (xem Cài đặt để có danh sách flag đầy đủ).',
-				'Gọi `mcp-vertex_overview { compact: true }` trước tiên — nó cho bạn biết phải làm gì tiếp theo.',
+				'Gọi `delendai_overview { compact: true }` trước tiên — nó cho bạn biết phải làm gì tiếp theo.',
 			],
 		},
 		vscode: {
 			title: 'VS Code / GitHub Copilot',
-			intro: 'Trình cài đặt một lệnh phát hiện VS Code và thêm mcp-vertex vào danh sách máy chủ MCP của bạn mà không đụng tới các máy chủ hiện có.',
+			intro: 'Trình cài đặt một lệnh phát hiện VS Code và thêm delendai vào danh sách máy chủ MCP của bạn mà không đụng tới các máy chủ hiện có.',
 			steps: [
 				'Chạy trình cài đặt một lệnh từ trang Cài đặt (tự phát hiện IDE của bạn).',
 				'Tải lại cửa sổ (`Developer: Reload Window`) để Copilot nhận ra máy chủ mới.',
-				'Mở panel chat Copilot và chọn tác tử `mcp-vertex` trong bộ chọn tác tử.',
-				'Yêu cầu nó gọi `mcp-vertex_overview` — nó sẽ báo cáo preset đã tải và một hành động tiếp theo được đề xuất.',
+				'Mở panel chat Copilot và chọn tác tử `delendai` trong bộ chọn tác tử.',
+				'Yêu cầu nó gọi `delendai_overview` — nó sẽ báo cáo preset đã tải và một hành động tiếp theo được đề xuất.',
 				'Nếu máy chủ không xuất hiện, xem Khắc phục sự cố → "MCP server not detected".',
 			],
 		},
@@ -210,16 +210,16 @@ const dict: LangDict = {
 			steps: [
 				'Chạy trình cài đặt một lệnh — nó phát hiện Claude Code và viết `.mcp.json`.',
 				'Khởi động lại Claude Code (hoặc chạy `/mcp` để tải lại máy chủ) để nhận ra mục mới.',
-				'Trong một phiên mới, các file luôn được tải `AGENTS.md` + `CLAUDE.md` đã trỏ tới `mcp-vertex_overview` như lệnh gọi đầu tiên.',
-				'Xác nhận với `mcp-vertex_overview { compact: true }` — trường `recommendedNextAction` cho bạn biết phải làm gì tiếp theo.',
-				'Với các phiên đa tác tử, đọc kỹ năng `mcp-vertex-proposal-swarm-runner` trước khi claim một slice.',
+				'Trong một phiên mới, các file luôn được tải `AGENTS.md` + `CLAUDE.md` đã trỏ tới `delendai_overview` như lệnh gọi đầu tiên.',
+				'Xác nhận với `delendai_overview { compact: true }` — trường `recommendedNextAction` cho bạn biết phải làm gì tiếp theo.',
+				'Với các phiên đa tác tử, đọc kỹ năng `delendai-proposal-swarm-runner` trước khi claim một slice.',
 			],
 		},
 		nextSteps: 'Tiếp theo nên đi đâu',
 		nextToolsCta: 'Xem tất cả công cụ',
 		nextTroubleshootingCta: 'Có gì không hoạt động? Khắc phục sự cố',
 		overviewHint:
-			'Sau khi máy chủ khởi động, hãy gọi mcp-vertex_overview với compact: true; recommendedNextAction cho tác nhân biết chính xác việc cần làm tiếp theo.',
+			'Sau khi máy chủ khởi động, hãy gọi delendai_overview với compact: true; recommendedNextAction cho tác nhân biết chính xác việc cần làm tiếp theo.',
 	},
 	troubleshooting: {
 		title: 'Khắc phục sự cố',
@@ -280,7 +280,7 @@ const dict: LangDict = {
 	},
 	setup: {
 		title: 'Thiết lập đa dự án',
-		lead: 'Kết nối mcp-vertex vào bất kỳ kho lưu trữ nào và chuẩn bị plugin issues của GitHub cho kho đó — đúng 7 bước mà lệnh setup-github thực hiện.',
+		lead: 'Kết nối delendai vào bất kỳ kho lưu trữ nào và chuẩn bị plugin issues của GitHub cho kho đó — đúng 7 bước mà lệnh setup-github thực hiện.',
 		stepsTitle: '7 bước',
 		docsLinkLabel: 'Đọc hướng dẫn thiết lập đa dự án chính thức',
 		detectRepoTitle: 'Phát hiện kho',
@@ -294,7 +294,7 @@ const dict: LangDict = {
 			'Dùng gh khi gh auth status thành công, rest-authed khi GITHUB_TOKEN được đặt, ngược lại dùng rest-anon (giới hạn 60 yêu cầu/giờ).',
 		writeConfigTitle: 'Ghi cấu hình',
 		writeConfigBody:
-			'Ghi plugins.issues.options.repo vào mcp-vertex.config.json mà không động đến các thiết lập plugin khác.',
+			'Ghi plugins.issues.options.repo vào delendai.config.json mà không động đến các thiết lập plugin khác.',
 		verifyTierTitle: 'Xác minh cấp',
 		verifyTierBody:
 			'Khởi chạy host với plugin issues đã nạp để kiểm tra đầu cuối cấp xác thực đã chọn.',
@@ -333,7 +333,7 @@ const dict: LangDict = {
 			{ id: 'yarn', note: 'Lựa chọn cổ điển thay cho npm.' },
 			{
 				id: 'bun',
-				note: 'Runtime + trình quản lý gói tất cả trong một — chính mcp-vertex được dựng bằng bun.',
+				note: 'Runtime + trình quản lý gói tất cả trong một — chính delendai được dựng bằng bun.',
 			},
 			{
 				id: 'deno',
@@ -398,7 +398,7 @@ const dict: LangDict = {
 				id: 'setup',
 				label: 'Thiết lập đa dự án',
 				summary:
-					'Cắm mcp-vertex vào bất kỳ repo nào và chuẩn bị plugin issues.',
+					'Cắm delendai vào bất kỳ repo nào và chuẩn bị plugin issues.',
 				href: 'setup',
 				icon: '/logos/github.png',
 			},
@@ -407,7 +407,7 @@ const dict: LangDict = {
 	cli: {
 		title: 'Hướng dẫn CLI',
 		description:
-			'Cách vận hành CLI mcpv / @delendai/core: các cờ toàn cục, nhóm lệnh theo từng plugin và luồng công việc phổ biến.',
+			'Cách vận hành CLI delendai / @delendai/core: các cờ toàn cục, nhóm lệnh theo từng plugin và luồng công việc phổ biến.',
 	},
 	guide: {
 		title: 'Hướng dẫn',
@@ -423,7 +423,7 @@ const dict: LangDict = {
 			'7. Kỹ năng',
 			'8. i18n',
 			'9. Cổng chất lượng & Đa ngôn ngữ',
-			'10. Mở rộng mcp-vertex',
+			'10. Mở rộng delendai',
 			'11. Ngân sách token',
 			'12. Hiệu ứng chuyển cảnh',
 			'13. Câu hỏi thường gặp',

@@ -82,7 +82,7 @@ const run = (command: string, args: readonly string[], cwd: string): string => {
 			'--norc',
 			'-c',
 			'exec "$@"',
-			'mcpv-smoke',
+			'delendai-smoke',
 			command,
 			...args,
 		],
@@ -132,7 +132,7 @@ const readJson = <T>(path: string): T =>
 	JSON.parse(readFileSync(path, 'utf8')) as T;
 
 const main = async (): Promise<void> => {
-	const scratch = mkdtempSync(join(tmpdir(), 'mcp-vertex-external-'));
+	const scratch = mkdtempSync(join(tmpdir(), 'delendai-external-'));
 	const tarballsDir = join(scratch, 'tarballs');
 	const project = join(scratch, 'consumer');
 	try {
@@ -152,7 +152,7 @@ const main = async (): Promise<void> => {
 		// before packing, exactly as `release.script.ts` does. Packing the
 		// raw workspace dir (as this used to do) packs a manifest whose
 		// `./dist/...` entrypoint was never written on disk, so the
-		// installed `mcpv` bin resolves to nothing.
+		// installed `delendai` bin resolves to nothing.
 		//
 		// The staged copy also can't be packed with `bun pm pack` (as
 		// before): bun resolves `workspace:*` ranges by walking up to the
@@ -210,7 +210,7 @@ const main = async (): Promise<void> => {
 			join(project, 'package.json'),
 			`${JSON.stringify(
 				{
-					name: 'mcp-vertex-external-smoke',
+					name: 'delendai-external-smoke',
 					private: true,
 					type: 'module',
 					dependencies,
@@ -225,7 +225,7 @@ const main = async (): Promise<void> => {
 			project,
 		);
 
-		const installedBin = join(project, 'node_modules', '.bin', 'mcpv');
+		const installedBin = join(project, 'node_modules', '.bin', 'delendai');
 		const initOutput = run(
 			'bun',
 			[installedBin, 'init', '--force'],
@@ -234,20 +234,20 @@ const main = async (): Promise<void> => {
 
 		// x00102 S3: the recap's "What's next" must give runnable steps —
 		// regression guard for the `.gitkeep`-instead-of-proposal bug and
-		// the invalid `bun mcpv …` hint.
+		// the invalid `bun delendai …` hint.
 		if (initOutput.includes('open .gitkeep')) {
 			throw new Error(
 				"init What's-next linked .gitkeep instead of the adoption proposal",
 			);
 		}
-		if (initOutput.includes('bun mcpv ')) {
+		if (initOutput.includes('bun delendai ')) {
 			throw new Error(
-				"init What's-next suggested the non-runnable `bun mcpv …` form",
+				"init What's-next suggested the non-runnable `bun delendai …` form",
 			);
 		}
 
 		const config = readJson<IWrittenMcpConfig>(join(project, '.mcp.json'));
-		const written = config.mcpServers?.['mcp-vertex'];
+		const written = config.mcpServers?.['delendai'];
 		if (
 			typeof written?.command !== 'string' ||
 			!Array.isArray(written.args) ||
@@ -260,11 +260,11 @@ const main = async (): Promise<void> => {
 		// the full preset can be rendered, while the installed-server checks
 		// below isolate the portable package path with one published plugin.
 		writeFileSync(
-			join(project, 'mcp-vertex.config.json'),
+			join(project, 'delendai.config.json'),
 			`${JSON.stringify(
 				{
 					$schema:
-						'https://unpkg.com/@delendai/core/schema/mcp-vertex.config.schema.json',
+						'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json',
 					surfaceMode: 'managed',
 					managedSurface: { loading: 'lazy' },
 					startupReport: { level: 'full', color: 'never' },
@@ -277,21 +277,18 @@ const main = async (): Promise<void> => {
 				2,
 			)}\n`,
 		);
-		mkdirSync(
-			join(project, '.mcp-vertex', 'skills', 'mcp-vertex-operator'),
-			{
-				recursive: true,
-			},
-		);
+		mkdirSync(join(project, '.delendai', 'skills', 'delendai-operator'), {
+			recursive: true,
+		});
 		writeFileSync(
 			join(
 				project,
-				'.mcp-vertex',
+				'.delendai',
 				'skills',
-				'mcp-vertex-operator',
+				'delendai-operator',
 				'SKILL.md',
 			),
-			'---\nname: mcp-vertex-operator\ndescription: Consumer override\n---\nWORKSPACE OVERRIDE\n',
+			'---\nname: delendai-operator\ndescription: Consumer override\n---\nWORKSPACE OVERRIDE\n',
 		);
 
 		const expected = buildCanonicalLaunch({ workspace: '.' });
@@ -318,14 +315,14 @@ const main = async (): Promise<void> => {
 			childStderr += String(chunk);
 		});
 		const client = new Client(
-			{ name: 'mcp-vertex-external-smoke', version: '0.0.0' },
+			{ name: 'delendai-external-smoke', version: '0.0.0' },
 			{ capabilities: {} },
 		);
 		try {
 			await withTimeout(client.connect(transport), 'MCP connect');
 			const result = (await withTimeout(
 				client.callTool({
-					name: 'mcp-vertex_overview',
+					name: 'delendai_overview',
 					arguments: { compact: true, activation: true },
 				}),
 				'overview call',
@@ -364,14 +361,12 @@ const main = async (): Promise<void> => {
 					`managed tools/list is not compact: ${listed.tools.length} visible vs ${context.loadedToolCount} loaded`,
 				);
 			}
-			if (
-				!listed.tools.some((tool) => tool.name === 'mcp-vertex_vertex')
-			) {
+			if (!listed.tools.some((tool) => tool.name === 'delendai_vertex')) {
 				throw new Error(
 					'managed tools/list omitted the internal router',
 				);
 			}
-			if (listed.tools.some((tool) => tool.name === 'mcp-vertex_skill')) {
+			if (listed.tools.some((tool) => tool.name === 'delendai_skill')) {
 				throw new Error(
 					'managed tools/list leaked the internal skill tool',
 				);
@@ -379,7 +374,7 @@ const main = async (): Promise<void> => {
 
 			const activation = (await withTimeout(
 				client.callTool({
-					name: 'mcp-vertex_plugin_activate',
+					name: 'delendai_plugin_activate',
 					arguments: { plugin: 'prompts-pack' },
 				}),
 				'prompt plugin activation',
@@ -395,7 +390,7 @@ const main = async (): Promise<void> => {
 				!prompts.prompts.some(
 					(prompt) =>
 						prompt.name ===
-						'mcp-vertex_prompts-pack_explain-this-code',
+						'delendai_prompts-pack_explain-this-code',
 				)
 			) {
 				throw new Error('lazy plugin prompt was not registered');
@@ -418,7 +413,7 @@ const main = async (): Promise<void> => {
 			const compactSkills = routedPayload(
 				(await withTimeout(
 					client.callTool({
-						name: 'mcp-vertex_vertex',
+						name: 'delendai_vertex',
 						arguments: {
 							domain: 'core',
 							action: 'skill',
@@ -433,7 +428,7 @@ const main = async (): Promise<void> => {
 				| undefined;
 			if (
 				!compactSkillRows?.skills?.some(
-					(skill) => skill.id === 'mcp-vertex-operator',
+					(skill) => skill.id === 'delendai-operator',
 				)
 			) {
 				throw new Error(
@@ -444,11 +439,11 @@ const main = async (): Promise<void> => {
 			const workspaceSkill = routedPayload(
 				(await withTimeout(
 					client.callTool({
-						name: 'mcp-vertex_vertex',
+						name: 'delendai_vertex',
 						arguments: {
 							domain: 'core',
 							action: 'skill',
-							args: { id: 'mcp-vertex-operator' },
+							args: { id: 'delendai-operator' },
 						},
 					}),
 					'workspace skill call',
@@ -467,11 +462,11 @@ const main = async (): Promise<void> => {
 			const pluginSkill = routedPayload(
 				(await withTimeout(
 					client.callTool({
-						name: 'mcp-vertex_vertex',
+						name: 'delendai_vertex',
 						arguments: {
 							domain: 'core',
 							action: 'skill',
-							args: { id: 'mcp-vertex-proposal-swarm-runner' },
+							args: { id: 'delendai-proposal-swarm-runner' },
 						},
 					}),
 					'plugin skill call',
@@ -487,11 +482,11 @@ const main = async (): Promise<void> => {
 			const routedSkill = structured(
 				(await withTimeout(
 					client.callTool({
-						name: 'mcp-vertex_vertex',
+						name: 'delendai_vertex',
 						arguments: {
 							domain: 'core',
 							action: 'skill',
-							args: { id: 'mcp-vertex-operator' },
+							args: { id: 'delendai-operator' },
 						},
 					}),
 					'routed internal call',
@@ -504,7 +499,7 @@ const main = async (): Promise<void> => {
 			}
 			const lazyPluginCall = (await withTimeout(
 				client.callTool({
-					name: 'mcp-vertex_vertex',
+					name: 'delendai_vertex',
 					arguments: {
 						domain: 'proposals',
 						action: 'get_proposal_workflow',

@@ -61,7 +61,7 @@ export const POLICY_GUIDANCE: Readonly<
 };
 
 export interface IResolveTestPolicyInput {
-	/** Mode from `mcp-vertex.config.json#plugins.test-policy.options.mode`. */
+	/** Mode from `delendai.config.json#plugins.test-policy.options.mode`. */
 	readonly configMode?: ITestPolicyMode | undefined;
 	/** Mode from the durable runtime override (set tool), when present. */
 	readonly override?: ITestPolicyMode | undefined;

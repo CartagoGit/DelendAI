@@ -1,7 +1,7 @@
 /**
  * End-to-end: full one-slice proposal loop over the real MCP protocol.
  *
- * Drives an assembled mcp-vertex server (core + proposals) through the
+ * Drives an assembled delendai server (core + proposals) through the
  * exact tool loop an operator expects for a one-slice proposal:
  * sync -> auto_work -> agent_lock claim -> proposal_transition(review)
  * -> proposal_review submit/approve -> final parent closure.
@@ -30,7 +30,7 @@ import {
 	type IAssembledToolResult,
 } from './assembled-proposals-server';
 
-const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
+const PROPOSALS_RELDIR = 'docs/delendai/proposals';
 
 const MINIMAL_APPROVE_EVIDENCE = {
 	commitHash: 'abc1234',
@@ -134,7 +134,7 @@ const activeFolderFor = (status: 'ready' | 'in-progress' | 'review'): string =>
 const callAutoWork = async (
 	server: IAssembledProposalsServer,
 ): Promise<IAssembledToolResult<AutoWorkOutput>> =>
-	server.callTool<AutoWorkOutput>('mcp-vertex_proposals_auto_work', {});
+	server.callTool<AutoWorkOutput>('delendai_proposals_auto_work', {});
 
 const callLock = async (
 	server: IAssembledProposalsServer,
@@ -146,7 +146,7 @@ const callLock = async (
 		onContention?: 'fail';
 	},
 ): Promise<IAssembledToolResult<LockOutput>> =>
-	server.callTool<LockOutput>('mcp-vertex_proposals_agent_lock', args);
+	server.callTool<LockOutput>('delendai_proposals_agent_lock', args);
 
 const callTransition = async (
 	server: IAssembledProposalsServer,
@@ -162,7 +162,7 @@ const callTransition = async (
 	},
 ): Promise<IAssembledToolResult<TransitionOutput>> =>
 	server.callTool<TransitionOutput>(
-		'mcp-vertex_proposals_proposal_transition',
+		'delendai_proposals_proposal_transition',
 		args,
 	);
 
@@ -176,14 +176,14 @@ const callReview = async (
 		evidence?: typeof MINIMAL_APPROVE_EVIDENCE;
 	},
 ): Promise<IAssembledToolResult<ReviewOutput>> =>
-	server.callTool<ReviewOutput>('mcp-vertex_proposals_proposal_review', args);
+	server.callTool<ReviewOutput>('delendai_proposals_proposal_review', args);
 
 const callClosePlan = async (
 	server: IAssembledProposalsServer,
 	args: { planId: string; reason: string },
 ): Promise<IAssembledToolResult<ClosePlanOutput>> =>
 	server.callTool<ClosePlanOutput>(
-		'mcp-vertex_proposals_proposals_close_plan',
+		'delendai_proposals_proposals_close_plan',
 		args,
 	);
 
@@ -199,7 +199,7 @@ const callCloseSlice = async (
 		};
 	},
 ): Promise<IAssembledToolResult<CloseSliceOutput>> =>
-	server.callTool<CloseSliceOutput>('mcp-vertex_proposals_close_slice', args);
+	server.callTool<CloseSliceOutput>('delendai_proposals_close_slice', args);
 
 const seedValidateArtifacts = (workspace: string) => {
 	const validateLogPath = join(workspace, '.cache', 'validate.log');
@@ -293,7 +293,7 @@ Seed for the full proposal loop e2e harness.
 	mkdirSync(dirname(declaredFile), { recursive: true });
 	writeFileSync(declaredFile, 'export const completed = true;\n', 'utf8');
 	const sync = await server.callTool<{ ok: boolean }>(
-		'mcp-vertex_proposals_sync_proposals',
+		'delendai_proposals_sync_proposals',
 		{},
 	);
 	expect(sync.ok).toBe(true);
@@ -510,7 +510,7 @@ describe('e2e: full one-slice proposal loop over the real MCP protocol', async (
 			'utf8',
 		);
 		const sync = await harness.callTool<{ ok: boolean }>(
-			'mcp-vertex_proposals_sync_proposals',
+			'delendai_proposals_sync_proposals',
 			{},
 		);
 		expect(sync.ok).toBe(true);
@@ -523,7 +523,7 @@ describe('e2e: full one-slice proposal loop over the real MCP protocol', async (
 			action: 'close',
 		});
 		expect(autoWork.structured.nextAction).toContain(
-			'mcp-vertex_proposals_proposal_transition',
+			'delendai_proposals_proposal_transition',
 		);
 	});
 

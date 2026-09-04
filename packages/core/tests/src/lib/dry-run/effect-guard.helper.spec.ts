@@ -33,7 +33,7 @@ describe('f00189 follow-up — guardEffectCapability prevents the mutation', () 
 	let workDir: string;
 
 	beforeEach(() => {
-		workDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-dry-run-guard-'));
+		workDir = mkdtempSync(join(tmpdir(), 'delendai-dry-run-guard-'));
 	});
 
 	afterEach(() => {

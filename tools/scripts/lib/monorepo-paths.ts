@@ -278,11 +278,11 @@ export const buildTopLevel = (name: string): string => {
 
 /**
  * The single canonical cache root for this repo: ALWAYS the root
- * `<repo-root>/.cache/mcp-vertex` (f00065 S2). There is no per-folder,
- * per-app, or per-package cache — every runtime-generated mcp-vertex state
+ * `<repo-root>/.cache/delendai` (f00065 S2). There is no per-folder,
+ * per-app, or per-package cache — every runtime-generated delendai state
  * lives under this one directory.
  *
- * The workspace-relative segment (`.cache/mcp-vertex`) is reused from core's
+ * The workspace-relative segment (`.cache/delendai`) is reused from core's
  * `DEFAULT_CORE_PATHS.cacheDir` so the path is defined exactly once across the
  * runtime engine and the tooling, the same single-source-of-truth pattern as
  * `skill-paths.ts`. Tools that need to read/clean the cache resolve it here;
@@ -293,7 +293,7 @@ export const buildTopLevel = (name: string): string => {
 export const cacheRoot = (): string =>
 	join(repoRoot(), ...DEFAULT_CORE_PATHS.cacheDir.split('/'));
 
-/** Workspace-relative canonical cache dir (`.cache/mcp-vertex`). */
+/** Workspace-relative canonical cache dir (`.cache/delendai`). */
 export const CACHE_DIR_REL = DEFAULT_CORE_PATHS.cacheDir;
 
 /**
@@ -309,7 +309,7 @@ export const WELL_KNOWN = {
 	/** VS Code extension build output. */
 	vscode: () => buildDir('extensions', 'vscode'),
 	/** VS Code packaged .vsix output under the canonical build tree. The flat `name` in
-	 *  `extensions/vscode/package.json` is kept as `mcp-vertex-vscode`
+	 *  `extensions/vscode/package.json` is kept as `delendai-vscode`
 	 *  because `vsce` rejects scoped names; the `displayName` is the
 	 *  new `@delendai/extension-vscode` for users. The packaging
 	 *  script reads `manifest.name` to compute this directly, so this
@@ -319,7 +319,7 @@ export const WELL_KNOWN = {
 			'extensions',
 			'vscode',
 			version,
-			`mcp-vertex-vscode-${version}.vsix`,
+			`delendai-vscode-${version}.vsix`,
 		),
 } as const;
 

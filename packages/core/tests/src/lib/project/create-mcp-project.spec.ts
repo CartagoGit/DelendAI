@@ -8,7 +8,7 @@ import {
 	planRegistrationOrder,
 } from '@delendai/core/lib/project/create-mcp-project';
 import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
-import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
 import type {
 	IResourceRegistration,
 	IToolRegistration,
@@ -28,7 +28,7 @@ const registration = (
 
 const hostConfig = (
 	extraTools: readonly IToolRegistration[],
-): IMcpVertexHostConfig => ({
+): IDelendaiHostConfig => ({
 	metadata: {
 		name: 'spec-server',
 		version: '0.0.0',
@@ -146,7 +146,7 @@ describe('createMcpProject', async () => {
 });
 
 describe('instrumented tool hooks (f00111 S1)', async () => {
-	const connect = async (config: IMcpVertexHostConfig) => {
+	const connect = async (config: IDelendaiHostConfig) => {
 		const assembled = await createMcpProject(config);
 		const [clientTransport, serverTransport] =
 			InMemoryTransport.createLinkedPair();
@@ -388,7 +388,7 @@ describe('checkpoint advisory injection (f00156 S1)', async () => {
 		},
 	});
 
-	const connect = async (config: IMcpVertexHostConfig) => {
+	const connect = async (config: IDelendaiHostConfig) => {
 		const assembled = await createMcpProject(config);
 		const [clientTransport, serverTransport] =
 			InMemoryTransport.createLinkedPair();

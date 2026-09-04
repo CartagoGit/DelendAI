@@ -28,7 +28,7 @@ export interface ICreateIssueOptions {
 	readonly confirm?: boolean | undefined;
 }
 
-export interface ICreateMcpVertexIssueOptions {
+export interface ICreateDelendaiIssueOptions {
 	readonly title: string;
 	readonly body?: string | undefined;
 	readonly labels?: readonly string[] | undefined;

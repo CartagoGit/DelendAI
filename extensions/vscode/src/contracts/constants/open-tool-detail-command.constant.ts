@@ -1,1 +1,1 @@
-export const OPEN_TOOL_DETAIL_COMMAND = 'mcp-vertex.openToolDetail';
+export const OPEN_TOOL_DETAIL_COMMAND = 'delendai.openToolDetail';

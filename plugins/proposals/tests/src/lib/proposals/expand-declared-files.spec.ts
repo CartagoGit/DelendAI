@@ -37,13 +37,13 @@ describe('expandDeclaredFiles', () => {
 	it('expands a brace pattern mixed with a sibling path across lines (x00155 S1 regression)', () => {
 		const text = [
 			'- **Files**:',
-			'  - `docs/mcp-vertex/proposals/done/{resumes,chores,audits}/*` (frontmatter + slice rows in those proposals only)',
+			'  - `docs/delendai/proposals/done/{resumes,chores,audits}/*` (frontmatter + slice rows in those proposals only)',
 			'  - `tools/scripts/proposals/sync-proposal-registry.script.ts` (re-run at the end)',
 		].join('\n');
 		expect(expandDeclaredFiles(text)).toEqual([
-			'docs/mcp-vertex/proposals/done/resumes/*',
-			'docs/mcp-vertex/proposals/done/chores/*',
-			'docs/mcp-vertex/proposals/done/audits/*',
+			'docs/delendai/proposals/done/resumes/*',
+			'docs/delendai/proposals/done/chores/*',
+			'docs/delendai/proposals/done/audits/*',
 			'tools/scripts/proposals/sync-proposal-registry.script.ts',
 		]);
 	});

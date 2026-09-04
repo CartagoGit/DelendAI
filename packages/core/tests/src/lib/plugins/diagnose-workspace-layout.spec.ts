@@ -30,7 +30,7 @@ describe('diagnoseWorkspaceLayout (f00109 S1)', () => {
 			diagnoseWorkspaceLayout({
 				config: {},
 				configPresent: false,
-				docsDir: 'docs/mcp-vertex',
+				docsDir: 'docs/delendai',
 				probe: probeOf([]),
 			}),
 		).toEqual([]);
@@ -45,8 +45,8 @@ describe('diagnoseWorkspaceLayout (f00109 S1)', () => {
 					},
 				},
 				configPresent: true,
-				docsDir: 'docs/mcp-vertex',
-				probe: probeOf(['docs/mcp-vertex', 'src', 'docs']),
+				docsDir: 'docs/delendai',
+				probe: probeOf(['docs/delendai', 'src', 'docs']),
 			}),
 		).toEqual([]);
 	});
@@ -62,11 +62,11 @@ describe('diagnoseWorkspaceLayout (f00109 S1)', () => {
 				},
 			},
 			configPresent: true,
-			docsDir: 'docs/mcp-vertex',
+			docsDir: 'docs/delendai',
 			probe: probeOf(['src', 'README.md']),
 		});
 		expect(issues).toHaveLength(3);
-		expect(issues[0]).toMatch(/docsDir: "docs\/mcp-vertex" does not exist/);
+		expect(issues[0]).toMatch(/docsDir: "docs\/delendai" does not exist/);
 		expect(
 			issues.some((issue) =>
 				/plugins\.search\.options\.roots: "packages"/.test(issue),
@@ -97,7 +97,7 @@ describe('diagnoseWorkspaceLayout (f00109 S1)', () => {
 });
 
 describe('assembleCliConfig — dead-config surfacing (f00109 S1)', () => {
-	const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-diagnose-');
+	const WRITABLE_WORKSPACE = createTestWorkspace('delendai-diagnose-');
 	afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 	const args = () =>
 		parseCliArgs(
@@ -105,7 +105,7 @@ describe('assembleCliConfig — dead-config surfacing (f00109 S1)', () => {
 			WRITABLE_WORKSPACE,
 		);
 	const deadConfig = JSON.stringify({
-		docsDir: 'docs/mcp-vertex',
+		docsDir: 'docs/delendai',
 		plugins: { search: { options: { roots: ['packages'] } } },
 	});
 	// Serve the config file only for the config path — every other read
@@ -113,9 +113,7 @@ describe('assembleCliConfig — dead-config surfacing (f00109 S1)', () => {
 	const configOnlyReader = async (
 		absolutePath: string,
 	): Promise<string | undefined> =>
-		absolutePath.endsWith('mcp-vertex.config.json')
-			? deadConfig
-			: undefined;
+		absolutePath.endsWith('delendai.config.json') ? deadConfig : undefined;
 
 	it('folds layout issues into configDiagnostic and the compact overview', async () => {
 		const { configDiagnostic, config } = await assembleCliConfig(args(), {
@@ -127,7 +125,7 @@ describe('assembleCliConfig — dead-config surfacing (f00109 S1)', () => {
 		});
 		expect(
 			configDiagnostic.issues.some((issue) =>
-				/docsDir: "docs\/mcp-vertex" does not exist/.test(issue),
+				/docsDir: "docs\/delendai" does not exist/.test(issue),
 			),
 		).toBe(true);
 		expect(
@@ -149,7 +147,7 @@ describe('assembleCliConfig — dead-config surfacing (f00109 S1)', () => {
 		await client.connect(clientTransport);
 		try {
 			const res = await client.callTool({
-				name: 'mcp-vertex_overview',
+				name: 'delendai_overview',
 				arguments: { compact: true },
 			});
 			const overview = res.structuredContent as {

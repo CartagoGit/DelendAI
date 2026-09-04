@@ -96,7 +96,7 @@ const publishWithBun = async (
 	input: IPublishTarballsInput,
 	tarballPath: string,
 ): Promise<IPublishTarballResult> => {
-	const extractDir = await mkdtemp(join(tmpdir(), 'mcp-vertex-bun-publish-'));
+	const extractDir = await mkdtemp(join(tmpdir(), 'delendai-bun-publish-'));
 	try {
 		const extract = await runSpawn(
 			'tar',

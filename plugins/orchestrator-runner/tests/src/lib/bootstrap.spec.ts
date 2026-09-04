@@ -157,7 +157,7 @@ describe('readConfirmedProviders', () => {
 			detected: unknown[];
 		};
 		expect(parsed.schema).toBe(
-			'mcp-vertex/orchestrator-runner/roster-draft/1',
+			'delendai/orchestrator-runner/roster-draft/1',
 		);
 		expect(parsed.detected).toHaveLength(1);
 	});

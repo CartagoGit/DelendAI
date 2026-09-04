@@ -2,7 +2,7 @@
  * status-bar-dispose.spec.ts — pinning contract for the reload-leak fix
  * in `extensions/vscode/src/providers/status-bar.ts`.
  *
- * Before this test, `McpVertexStatusBar.start()` called
+ * Before this test, `DelendaiStatusBar.start()` called
  * `notifications.addEventListener(...)` three times and never removed
  * the listeners. On every window reload, three more listeners
  * accumulated on the same `NotificationsService`, multiplying the
@@ -15,7 +15,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	McpVertexStatusBar,
+	DelendaiStatusBar,
 	type IStatusBarItem,
 } from '../providers/status-bar';
 
@@ -48,13 +48,13 @@ const fakeNotifications = (
 	},
 });
 
-describe('McpVertexStatusBar disposal (reload-leak contract)', async () => {
+describe('DelendaiStatusBar disposal (reload-leak contract)', async () => {
 	it('removes every listener it registered, with the same callback refs', async () => {
 		const recorder: IRecordingNotifications = {
 			addCalls: [],
 			removeCalls: [],
 		};
-		const bar = new McpVertexStatusBar(
+		const bar = new DelendaiStatusBar(
 			fakeItem(),
 			{
 				async listTools() {
@@ -93,7 +93,7 @@ describe('McpVertexStatusBar disposal (reload-leak contract)', async () => {
 			addCalls: [],
 			removeCalls: [],
 		};
-		const bar = new McpVertexStatusBar(
+		const bar = new DelendaiStatusBar(
 			fakeItem(),
 			{
 				async listTools() {
@@ -119,7 +119,7 @@ describe('McpVertexStatusBar disposal (reload-leak contract)', async () => {
 			addCalls: [],
 			removeCalls: [],
 		};
-		const bar = new McpVertexStatusBar(
+		const bar = new DelendaiStatusBar(
 			fakeItem(),
 			{
 				async listTools() {

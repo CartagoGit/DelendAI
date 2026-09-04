@@ -1,6 +1,6 @@
 /**
  * `registerOpenDashboardCommand` — opens (or refreshes) the
- * `mcp-vertex Dashboard` webview. The dashboard's HTML is produced
+ * `delendai Dashboard` webview. The dashboard's HTML is produced
  * by `@delendai/ui-extension/public`'s `renderDashboard(...)`, fed
  * by a `DashboardService` over the same `McpStdioClient` used by
  * every other command.
@@ -34,8 +34,8 @@ import { OPEN_CONFIGURATION_CENTER_COMMAND } from './open-configuration-center';
 import { REFRESH_COMMAND } from './refresh';
 import { HOST_LANG_KEY } from './setup-github';
 
-export const OPEN_DASHBOARD_COMMAND = 'mcp-vertex.openDashboard';
-export const OPEN_DASHBOARD_TAB_COMMAND = 'mcp-vertex.openDashboardTab';
+export const OPEN_DASHBOARD_COMMAND = 'delendai.openDashboard';
+export const OPEN_DASHBOARD_TAB_COMMAND = 'delendai.openDashboardTab';
 
 const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 	const message = error instanceof Error ? error.message : String(error);
@@ -54,9 +54,9 @@ const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 	};
 	return {
 		overview: {
-			serverName: 'mcp-vertex',
+			serverName: 'delendai',
 			serverVersion: 'unavailable',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			plugins: [],
 			tools: [],
 			knowledgeIds: [],
@@ -111,9 +111,9 @@ const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 			overview: {
 				state: 'unavailable',
 				data: {
-					serverName: 'mcp-vertex',
+					serverName: 'delendai',
 					serverVersion: 'unavailable',
-					namespacePrefix: 'mcp-vertex',
+					namespacePrefix: 'delendai',
 					plugins: [],
 					tools: [],
 					knowledgeIds: [],
@@ -171,7 +171,7 @@ const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 				},
 			},
 		},
-		server: { name: 'mcp-vertex', version: 'unavailable', fetchedAt: now },
+		server: { name: 'delendai', version: 'unavailable', fetchedAt: now },
 	};
 };
 
@@ -222,7 +222,7 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 			try {
 				return embed.resolve(deps.getConfig()).url;
 			} catch {
-				return 'https://mcp-vertex.dev';
+				return 'https://delendai.dev';
 			}
 		})();
 		const settings = deps.settingsStore
@@ -239,8 +239,8 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 			}),
 		);
 		const panel = deps.host.createWebviewPanel(
-			'mcpVertexDashboard',
-			'mcp-vertex Dashboard',
+			'delendaiDashboard',
+			'delendai Dashboard',
 			1,
 			{ enableScripts: true, retainContextWhenHidden: true },
 		);
@@ -423,7 +423,7 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) => {
 				try {
 					await deps.host.executeCommand(
 						'workbench.action.openView',
-						'mcp-vertex.dashboard',
+						'delendai.dashboard',
 					);
 					return;
 				} catch {

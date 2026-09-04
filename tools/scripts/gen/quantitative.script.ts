@@ -5,12 +5,12 @@
  * Single source of truth for every *machine-readable* number the
  * project surfaces in docs. The proposal-driven audit (§34) caught
  * two stale facts:
- *   - `docs/mcp-vertex/AGENT-BOOTSTRAP.md` claiming "48 plugins";
+ *   - `docs/delendai/AGENT-BOOTSTRAP.md` claiming "48 plugins";
  *   - `apps/web/src/data/pages/overview.md` claiming "50 plugins";
  * (and counting tests, packages, MCP resources, etc., all by hand).
  *
  * Convention: this is a GENERATED artifact per
- * `docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md` (d00011) — the
+ * `docs/delendai/DOCS-MANUAL-VS-GENERATED.md` (d00011) — the
  * `quantitative` block it emits may never be hand-edited.
  *
  * This generator counts every important artifact directly from the
@@ -20,7 +20,7 @@
  *      Schema-versioned (`schemaVersion`) so consumers can refuse to
  *      load incompatible fixtures.
  *
- *   2. `<!-- mcp-vertex:begin quantitative -->` / `--end--` blocks
+ *   2. `<!-- delendai:begin quantitative -->` / `--end--` blocks
  *      embedded in target docs (AGENT-BOOTSTRAP.md, overview.md, and
  *      any future consumer via a per-file registry). The block is the
  *      human-readable projection; the JSON is the canonical view.
@@ -41,8 +41,8 @@ import { isAbsolute, join, relative } from 'node:path';
 
 const REPO_ROOT = process.cwd();
 
-const MARKER_BEGIN = '<!-- mcp-vertex:begin quantitative -->';
-const MARKER_END = '<!-- mcp-vertex:end quantitative -->';
+const MARKER_BEGIN = '<!-- delendai:begin quantitative -->';
+const MARKER_END = '<!-- delendai:end quantitative -->';
 const GENERATED_AT_RE = /(Generated at: )[^\n]+/;
 
 function escapeForRegex(text: string): string {
@@ -309,7 +309,7 @@ export const countPackages = async (): Promise<IPackageCount> => {
 
 /** Count proposals by reading the file-system tree (not the registry). */
 export const countProposals = async (): Promise<IProposalCount> => {
-	const proposalsRoot = join(REPO_ROOT, 'docs/mcp-vertex/proposals');
+	const proposalsRoot = join(REPO_ROOT, 'docs/delendai/proposals');
 	const byKind = new Map<string, number>();
 	const byStatus = new Map<string, number>();
 	let total = 0;
@@ -394,7 +394,7 @@ export const formatSnapshot = (snap: IQuantitativeSnapshot): string => {
 	return lines.join('\n');
 };
 
-/** Render a `<!-- mcp-vertex:begin quantitative -->` block. */
+/** Render a `<!-- delendai:begin quantitative -->` block. */
 export const renderBlock = (snap: IQuantitativeSnapshot): string => {
 	return [MARKER_BEGIN, '```', formatSnapshot(snap), '```', MARKER_END].join(
 		'\n',
@@ -482,7 +482,7 @@ export const updateDocBlock = (
 };
 
 const DEFAULT_DOCS: Readonly<Record<string, string>> = {
-	'docs/mcp-vertex/AGENT-BOOTSTRAP.md': 'Quantitative facts',
+	'docs/delendai/AGENT-BOOTSTRAP.md': 'Quantitative facts',
 	// NOTE: `apps/web/src/data/pages/overview.md` was referenced in the
 	// original c00140 plan but does not exist in this tree — the generator
 	// keeps the registry to only docs that actually ship (missing files

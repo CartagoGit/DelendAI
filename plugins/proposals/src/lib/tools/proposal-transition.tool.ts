@@ -182,13 +182,13 @@ const readValidateLogEntries = async (
 
 export interface IProposalTransitionToolOptions {
 	readonly namespacePrefix: string;
-	/** Absolute path to `docs/mcp-vertex/proposals/` (the 7 status folders live here). */
+	/** Absolute path to `docs/delendai/proposals/` (the 7 status folders live here). */
 	readonly proposalsDirAbs: string;
 	readonly workspaceRoot: string;
 	/**
 	 * f00016 + q00001: absolute path to `<cacheDir>/proposals/index.json`
 	 * (the regenerable registry index — see x00052 for the move from
-	 * `docs/mcp-vertex/proposals/index.json`). Used by the q00001
+	 * `docs/delendai/proposals/index.json`). Used by the q00001
 	 * plan-closure guard to look up child proposal statuses when the
 	 * caller transitions a `type: plan` proposal to `done`. Optional —
 	 * when absent, the plan-closure guard is skipped (legacy hosts
@@ -209,7 +209,7 @@ export interface IProposalTransitionToolOptions {
 	/**
 	 * When true (default), `→ review` and `→ done` require a passing
 	 * `bun run validate` from the last 24h, journalled to
-	 * `.cache/mcp-vertex/results/logs/validate.jsonl`.
+	 * `.cache/delendai/results/logs/validate.jsonl`.
 	 *
 	 * Not every adopter has a validate chain worth blocking on — a docs
 	 * repo, a spike, a project whose CI is the real gate. Those hosts set

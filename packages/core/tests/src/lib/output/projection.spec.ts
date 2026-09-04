@@ -14,7 +14,7 @@ interface ISampleTool {
 }
 
 const tool = (overrides: Partial<ISampleTool> = {}): ISampleTool => ({
-	id: 'mcp-vertex_proposals_auto_work',
+	id: 'delendai_proposals_auto_work',
 	name: 'auto_work',
 	plugin: 'proposals',
 	summary: 'orient a swarm',

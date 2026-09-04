@@ -4,13 +4,13 @@
  * Regression guard for the FASE-0 worktree-path-coherence bug. The
  * `agent_worktree` engine creates worktrees under
  * `<root>/<layout.worktreesDir>/<slug>` (default
- * `.cache/mcp-vertex/.worktrees/<slug>`). The `branch_status` tool must
+ * `.cache/delendai/.worktrees/<slug>`). The `branch_status` tool must
  * treat that SAME directory as the canonical worktrees root, otherwise it
  * flags every correctly-placed worktree as `outOfCache: true`.
  *
  * The historical wiring double-prefixed the path
- * (`.cache/mcp-vertex/${layout.worktreesDir}` →
- * `.cache/mcp-vertex/.cache/mcp-vertex/.worktrees`), which can never match
+ * (`.cache/delendai/${layout.worktreesDir}` →
+ * `.cache/delendai/.cache/delendai/.worktrees`), which can never match
  * a real worktree path. This spec drives the registration's handler with a
  * fake git runner that reports a worktree at the canonical location and
  * asserts it is NOT flagged out-of-cache when the tool is wired with
@@ -86,14 +86,14 @@ const makeRunner = (worktreeAbsPath: string): IGitRunner => {
 
 describe('buildBranchStatusRegistration — canonical worktrees dir coherence', async () => {
 	it('does NOT flag a worktree at layout.worktreesDir as outOfCache', async () => {
-		const layout = buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
+		const layout = buildSwarmPaths('.cache/delendai', 'docs/delendai');
 		// What the agent_worktree engine actually creates:
 		// join(root, layout.worktreesDir, slug).
 		const worktreeAbsPath = `/ws/${layout.worktreesDir}/orion`;
 		const handler = await captureHandler(
 			makeRunner(worktreeAbsPath),
 			// FASE 0 fix: the tool is wired with the same relative dir the
-			// engine resolves — NOT `.cache/mcp-vertex/${layout.worktreesDir}`.
+			// engine resolves — NOT `.cache/delendai/${layout.worktreesDir}`.
 			layout.worktreesDir,
 		);
 
@@ -114,7 +114,7 @@ describe('buildBranchStatusRegistration — canonical worktrees dir coherence', 
 	});
 
 	it('still flags a worktree outside the canonical dir as outOfCache', async () => {
-		const layout = buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
+		const layout = buildSwarmPaths('.cache/delendai', 'docs/delendai');
 		// A worktree at the repo-root `.worktrees/` (the orphan-dir failure
 		// mode) is correctly outside the canonical cache dir.
 		const handler = await captureHandler(

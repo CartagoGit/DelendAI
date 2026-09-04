@@ -13,13 +13,13 @@
  * the host-restart pattern in production.
  *
  * The log lives next to `agents.lock.json` so all lock state is
- * colocated under `.cache/mcp-vertex/`.
+ * colocated under `.cache/delendai/`.
  */
 import { join } from 'node:path';
 
 /** Cross-process release audit log. One JSONL line per force-release. */
 export const RELEASE_AUDIT_LOG_RELATIVE_PATH = join(
 	'.cache',
-	'mcp-vertex',
+	'delendai',
 	'agents.lock.releases.jsonl',
 );

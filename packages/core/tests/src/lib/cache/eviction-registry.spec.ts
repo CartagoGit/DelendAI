@@ -3,7 +3,7 @@
  *
  * Unit tests for `createCacheEvictionRegistry`. Every test runs
  * against a per-test temp directory so it never touches the real
- * `.cache/mcp-vertex/`. Coverage:
+ * `.cache/delendai/`. Coverage:
  *
  *   - validation (id/owner/path, workspace containment)
  *   - the four strategies (olderThanDays, olderThanMtimeDays,
@@ -39,7 +39,7 @@ describe('createCacheEvictionRegistry', () => {
 
 	beforeEach(async () => {
 		workspace = await mkdtemp(join(tmpdir(), 'evict-test-'));
-		cacheDir = join(workspace, '.cache/mcp-vertex');
+		cacheDir = join(workspace, '.cache/delendai');
 		await mkdir(cacheDir, { recursive: true });
 		registry = createCacheEvictionRegistry({
 			workspaceRootAbs: workspace,
@@ -99,7 +99,7 @@ describe('createCacheEvictionRegistry', () => {
 		it('rejects a `dir/*` glob whose base escapes the workspace', () => {
 			// Construct a workspace where cacheDir sits deep enough that
 			// `../../../etc` would exit the workspace.
-			// Because cacheDir in tests is `<workspace>/.cache/mcp-vertex`,
+			// Because cacheDir in tests is `<workspace>/.cache/delendai`,
 			// `../..` resolves to `.cache/` (still inside). Use enough
 			// `..` segments to climb past the workspace root.
 			const tooDeep = '../../../etc/*';

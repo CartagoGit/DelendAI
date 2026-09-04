@@ -91,9 +91,9 @@ export const buildInMemoryResolver = (
 export interface IDiskPlanResolverOptions {
 	/** Absolute path to `<cacheDir>/proposals/index.json` (the
 	 * regenerable registry — see x00052 for the move from
-	 * `docs/mcp-vertex/proposals/index.json`). */
+	 * `docs/delendai/proposals/index.json`). */
 	readonly indexPathAbs: string;
-	/** Absolute path to the `docs/mcp-vertex/proposals/` directory. */
+	/** Absolute path to the `docs/delendai/proposals/` directory. */
 	readonly proposalsDirAbs: string;
 	/**
 	 * Optional Map of own-slice statuses, typically produced by

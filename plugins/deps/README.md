@@ -8,7 +8,7 @@ agnostic (no network, no CVE database).
 ## Load it
 
 ```bash
-mcp-vertex --plugins=deps
+delendai --plugins=deps
 ```
 
 Registers `<prefix>_deps_list`, `<prefix>_deps_check` and the offline
@@ -25,7 +25,7 @@ Registers `<prefix>_deps_list`, `<prefix>_deps_check` and the offline
   Offline health: missing lockfile (non-reproducible builds), unpinned ranges
   (`*`, `latest`), and deps declared in more than one section.
 
-## Configuration (`mcp-vertex.config.json`)
+## Configuration (`delendai.config.json`)
 
 ```json
 { "plugins": { "deps": { "options": { "manifest": "package.json" } } } }

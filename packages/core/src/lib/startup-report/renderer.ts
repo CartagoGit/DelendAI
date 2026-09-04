@@ -48,7 +48,7 @@ const ANSI_RESET = '\u001B[0m';
 /**
  * Resolve whether ANSI colours should be emitted. Automatic colour is only
  * enabled for an actual terminal; MCP clients commonly pipe stderr and may
- * display escape sequences literally. `MCP_VERTEX_COLOR=always` and
+ * display escape sequences literally. `DELENDAI_COLOR=always` and
  * `FORCE_COLOR=1` remain explicit opt-ins for compatible hosts.
  */
 export const shouldUseAnsiColors = (
@@ -58,8 +58,8 @@ export const shouldUseAnsiColors = (
 	const disable = env.NO_COLOR;
 	if (disable !== undefined && disable !== '') return false;
 	if (force === '1' || force === 'true') return true;
-	if (env.MCP_VERTEX_COLOR === 'always') return true;
-	if (env.MCP_VERTEX_COLOR === 'never') return false;
+	if (env.DELENDAI_COLOR === 'always') return true;
+	if (env.DELENDAI_COLOR === 'never') return false;
 	return process.stderr.isTTY === true;
 };
 

@@ -28,7 +28,7 @@ export const buildGetQuotaRegistration = (
 	tags: ['orchestrator-runner', 'lazy', 'quota'],
 	summary:
 		'Read the per-provider quota snapshot (populated by the bootstrap layer in a later slice).',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_get_quota',
+	descriptionKey: 'delendai_orchestrator-runner_get_quota',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_get_quota`,

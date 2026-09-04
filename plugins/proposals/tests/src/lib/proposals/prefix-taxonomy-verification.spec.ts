@@ -22,7 +22,7 @@ import {
 const PROPOSALS_DIR = resolve(
 	__dirname,
 	'../../../../../..',
-	'docs/mcp-vertex/proposals',
+	'docs/delendai/proposals',
 );
 
 /** Same filename filter the sync registry applies (README etc. skipped). */

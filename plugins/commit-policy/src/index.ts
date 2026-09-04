@@ -158,7 +158,7 @@ export default definePlugin({
 	version: '0.1.0',
 	legacyCachePaths: [
 		{ source: '.commit-policy/processed-events.jsonl' },
-		{ source: '.cache/mcp-vertex/commit-policy', destination: '.' },
+		{ source: '.cache/delendai/commit-policy', destination: '.' },
 	],
 	describe:
 		'Commit-authority plugin wrapping @delendai/git primitives with configurable identity, cadence, audit and push policies. Off by default.',
@@ -189,7 +189,7 @@ export default definePlugin({
 		});
 		if (
 			process.env
-				.MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER ===
+				.DELENDAI_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER ===
 			'true'
 		) {
 			void branchProtectionAdapter
@@ -370,7 +370,7 @@ export default definePlugin({
 				...sharedDriver,
 				namespacePrefix: ctx.namespacePrefix,
 				policy,
-				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
+				locale: process.env.DELENDAI_LOCALE ?? 'en',
 				onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
 			}),
 			buildPushToolRegistration({
@@ -380,7 +380,7 @@ export default definePlugin({
 				workspaceRoot: ctx.workspace.root,
 				pluginCacheDir: ctx.pluginCacheDir,
 				identityCtx,
-				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
+				locale: process.env.DELENDAI_LOCALE ?? 'en',
 			}),
 			buildRunToolRegistration({
 				...sharedDriver,
@@ -389,7 +389,7 @@ export default definePlugin({
 				workspaceRoot: ctx.workspace.root,
 				docsDir: ctx.docsDir,
 				...(intervalTimer !== undefined ? { intervalTimer } : {}),
-				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
+				locale: process.env.DELENDAI_LOCALE ?? 'en',
 				onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
 			}),
 			// Surface the engine's stderr as a structured
@@ -632,12 +632,12 @@ export default definePlugin({
 					'- Branches matching `push.protectedPrefixes` are protected too; no prefixes are assumed when the list is empty.',
 					'- Any other branch permits direct commit and push when `commit.enabled` and `push.enabled` are true. The configured lists are the only local protection source.',
 					'- Call `commit_policy_status` before an automatic operation to inspect `branchPolicy.current`, the effective protected lists, and `directCommitPushAllowed`.',
-					'- Remote branch protection refresh is manual by default via `commit_policy_refresh_branch_protection`; set `MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true` only when the host explicitly opts into that spawn/network side effect at register time.',
+					'- Remote branch protection refresh is manual by default via `commit_policy_refresh_branch_protection`; set `DELENDAI_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true` only when the host explicitly opts into that spawn/network side effect at register time.',
 					'',
 					'**Off by default.** Hosts must opt in:',
 					'',
 					'```jsonc',
-					'// mcp-vertex.config.json',
+					'// delendai.config.json',
 					'{',
 					'  "plugins": {',
 					'    "commit-policy": {',

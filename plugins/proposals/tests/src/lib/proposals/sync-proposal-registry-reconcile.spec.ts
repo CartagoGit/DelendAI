@@ -391,7 +391,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 		// used to fall back to its filename as the "id" — so multiple
 		// frontmatter-less README.md files under different folders all
 		// collided on id "README.md". Confirmed live against the real
-		// `docs/mcp-vertex/proposals` tree (5 README.md files, one false
+		// `docs/delendai/proposals` tree (5 README.md files, one false
 		// "duplicate" report) before this fix.
 		it('does not treat multiple frontmatter-less README.md files as duplicate ids', async () => {
 			for (const folder of ['done', 'done/audits', 'legacy/closed']) {

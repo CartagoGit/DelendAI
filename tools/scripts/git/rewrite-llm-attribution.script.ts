@@ -5,7 +5,7 @@
  * Strips LLM attribution from git history: the `Co-Authored-By: <model>`
  * trailers, the `Generated with <tool>` footers, the agent branch names
  * baked into merge subjects, and the ~30 synthetic author/committer
- * identities (`copilot-minimax-m3`, `mcp-vertex@MiniMax.local`,
+ * identities (`copilot-minimax-m3`, `delendai@MiniMax.local`,
  * `MCP-V Bot <ci@anthropic.com>`, ...) that swarm runs recorded before
  * `commit-policy` was switched to `identity.mode: 'explicit'`.
  *
@@ -92,7 +92,7 @@ export const readOwnerIdentity = (
 	throw new Error(
 		`no owner identity found in: ${searchPaths.join(', ')}\n` +
 			'Set plugins.commit-policy.options.identity.owner in ' +
-			'mcp-vertex.config.json, or pass --owner-config <path>. This ' +
+			'delendai.config.json, or pass --owner-config <path>. This ' +
 			'script will not fall back to the ambient git config.',
 	);
 };
@@ -362,7 +362,7 @@ const git = (repo: string, args: readonly string[]): string => {
 };
 
 /**
- * The owner declared by `commit-policy` in `mcp-vertex.config.json`.
+ * The owner declared by `commit-policy` in `delendai.config.json`.
  *
  * Returns `undefined` rather than throwing when the file is absent or the
  * field is unset: this script must also work in a bare clone (the safest
@@ -372,7 +372,7 @@ const git = (repo: string, args: readonly string[]): string => {
 function readConfiguredOwner(repo: string): IGitIdentity | undefined {
 	const file = repo.endsWith('.json')
 		? repo
-		: join(repo, 'mcp-vertex.config.json');
+		: join(repo, 'delendai.config.json');
 	const raw = ((): string | undefined => {
 		try {
 			return readFileSync(file, 'utf8');

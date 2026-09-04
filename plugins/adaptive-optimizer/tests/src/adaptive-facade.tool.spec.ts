@@ -9,7 +9,7 @@ import {
 } from '../../src/public/index';
 
 const defaultFacadeOptions = {
-	namespacePrefix: 'mcp-vertex',
+	namespacePrefix: 'delendai',
 	maxBytes: DEFAULT_ADAPTIVE_OPTIMIZER_MAX_BYTES,
 } as const;
 

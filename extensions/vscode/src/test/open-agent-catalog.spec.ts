@@ -31,15 +31,15 @@ const loadSnapshot = async () => {
 	const here = dirname(fileURLToPath(import.meta.url));
 	const repoRoot = resolve(here, '../../../..');
 	const raw = await readFile(
-		resolve(repoRoot, 'docs/mcp-vertex/agent-catalog.generated.json'),
+		resolve(repoRoot, 'docs/delendai/agent-catalog.generated.json'),
 		'utf8',
 	);
 	const artifact = JSON.parse(raw) as IArtifactShape;
 	return {
 		server: {
-			name: 'mcp-vertex',
+			name: 'delendai',
 			version: '0.1.0',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 		},
 		generatedAt: artifact.generatedAt,
 		mode: 'full' as const,
@@ -64,7 +64,7 @@ const loadSnapshot = async () => {
 	};
 };
 
-describe('mcp-vertex.openAgentCatalog — message schema (a00083 F21)', () => {
+describe('delendai.openAgentCatalog — message schema (a00083 F21)', () => {
 	it('drops an unknown command and never invalidates the catalog cache', async () => {
 		const snapshot = await loadSnapshot();
 		let toolCalls = 0;
@@ -153,9 +153,7 @@ describe('mcp-vertex.openAgentCatalog — message schema (a00083 F21)', () => {
 
 			// A valid, known command still works after invalid ones were dropped.
 			await receive?.({ command: 'copied' });
-			expect(infoMessages).toEqual([
-				'mcp-vertex: bootstrap prompt copied',
-			]);
+			expect(infoMessages).toEqual(['delendai: bootstrap prompt copied']);
 		} finally {
 			console.warn = originalWarn;
 		}

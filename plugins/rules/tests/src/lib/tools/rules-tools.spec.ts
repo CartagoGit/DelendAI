@@ -58,8 +58,8 @@ describe('get_rules — areas[].rules outputSchema (l00008 s4)', async () => {
 			workspace,
 			reader: emptyReader,
 			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-vertex/rules',
-			manifestRelPath: '.cache/mcp-vertex/rules/rules-map.json',
+			cacheRelDir: '.cache/delendai/rules',
+			manifestRelPath: '.cache/delendai/rules/rules-map.json',
 			mode: 'mixed',
 		});
 
@@ -104,8 +104,8 @@ describe('get_rules — areas[].rules outputSchema (l00008 s4)', async () => {
 			workspace,
 			reader: emptyReader,
 			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-vertex/rules',
-			manifestRelPath: '.cache/mcp-vertex/rules/rules-map.json',
+			cacheRelDir: '.cache/delendai/rules',
+			manifestRelPath: '.cache/delendai/rules/rules-map.json',
 			mode: 'mixed',
 		});
 
@@ -126,8 +126,8 @@ describe('get_rules — areas[].rules outputSchema (l00008 s4)', async () => {
 			workspace,
 			reader: emptyReader,
 			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-vertex/rules',
-			manifestRelPath: '.cache/mcp-vertex/rules/rules-map.json',
+			cacheRelDir: '.cache/delendai/rules',
+			manifestRelPath: '.cache/delendai/rules/rules-map.json',
 			mode: 'mixed',
 		});
 

@@ -116,7 +116,7 @@ describe('impact-analysis tools', () => {
 	it('returns changed symbols, affected packages, recommended tests and a valid risk', async () => {
 		const root = await makeWorkspace();
 		const registrations = buildImpactAnalysisToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			maxBytes: 3000,
 		});
@@ -162,7 +162,7 @@ describe('impact-analysis tools', () => {
 		const result = await runTestsForChange(
 			{ files: ['packages/core/src/lib/foo.ts'] },
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				maxBytes: 3000,
 			},
@@ -212,7 +212,7 @@ describe('impact-analysis tools', () => {
 			const result = await runTestsForChange(
 				{ files: [file] },
 				{
-					namespacePrefix: 'mcp-vertex',
+					namespacePrefix: 'delendai',
 					workspaceRootAbs: root,
 					maxBytes: 3000,
 				},
@@ -250,7 +250,7 @@ describe('impact-analysis tools', () => {
 			const result = await runImpactAnalyze(
 				{ files: [file] },
 				{
-					namespacePrefix: 'mcp-vertex',
+					namespacePrefix: 'delendai',
 					workspaceRootAbs: root,
 					maxBytes: 3000,
 				},
@@ -292,7 +292,7 @@ describe('impact-analysis tools', () => {
 					].join('\n'),
 				},
 				{
-					namespacePrefix: 'mcp-vertex',
+					namespacePrefix: 'delendai',
 					workspaceRootAbs: root,
 					maxBytes: 3000,
 				},
@@ -307,7 +307,7 @@ describe('impact-analysis tools', () => {
 		const result = await runTestsForChange(
 			{ files: ['plugins/demo/src/link-inside.ts'] },
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				maxBytes: 3000,
 			},
@@ -325,7 +325,7 @@ describe('impact-analysis tools', () => {
 					],
 				},
 				{
-					namespacePrefix: 'mcp-vertex',
+					namespacePrefix: 'delendai',
 					workspaceRootAbs: root,
 					maxBytes: 3000,
 				},

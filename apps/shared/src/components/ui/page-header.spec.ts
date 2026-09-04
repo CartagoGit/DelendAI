@@ -3,9 +3,9 @@
  * `renderPageHeader` unit tests.
  *
  * Contract pinned:
- *   - root is `<div class="mcpv-page-header__inner">` (the host
- *     wraps it in `<header class="mcpv-page-header">`)
- *   - `title` renders inside `<h1 class="mcpv-page-header__title">`
+ *   - root is `<div class="delendai-page-header__inner">` (the host
+ *     wraps it in `<header class="delendai-page-header">`)
+ *   - `title` renders inside `<h1 class="delendai-page-header__title">`
  *   - when `crumbs` is empty + `baseHref` is provided, the renderer
  *     adds a single "Home" crumb (current page); when 1+ crumbs
  *     are passed, a "Home" crumb is prepended automatically
@@ -13,7 +13,7 @@
  *     `<span aria-current="page">`; earlier crumbs are
  *     `<a href="...">`
  *   - the crumb list is wrapped in
- *     `<nav class="mcpv-page-header__crumb" aria-label="breadcrumb">`
+ *     `<nav class="delendai-page-header__crumb" aria-label="breadcrumb">`
  *   - `homeHref` is a legacy alias for `baseHref`
  *   - all interpolations are HTML-escaped
  */
@@ -22,22 +22,24 @@ import { describe, expect, it } from 'vitest';
 import { renderPageHeader } from './page-header';
 
 describe('renderPageHeader', () => {
-	it('emits the canonical mcpv-page-header__inner root', () => {
+	it('emits the canonical delendai-page-header__inner root', () => {
 		const out = renderPageHeader({
 			lang: 'en',
 			title: 'Tools',
 			baseHref: '/',
 		});
-		expect(out).toContain('<div class="mcpv-page-header__inner">');
+		expect(out).toContain('<div class="delendai-page-header__inner">');
 	});
 
-	it('renders the title in an <h1 class="mcpv-page-header__title">', () => {
+	it('renders the title in an <h1 class="delendai-page-header__title">', () => {
 		const out = renderPageHeader({
 			lang: 'en',
 			title: 'Tools',
 			baseHref: '/',
 		});
-		expect(out).toContain('<h1 class="mcpv-page-header__title">Tools</h1>');
+		expect(out).toContain(
+			'<h1 class="delendai-page-header__title">Tools</h1>',
+		);
 	});
 
 	it('omits the crumb nav when no crumbs are provided', () => {
@@ -46,7 +48,7 @@ describe('renderPageHeader', () => {
 			title: 'Tools',
 			baseHref: '/',
 		});
-		expect(out).not.toContain('mcpv-page-header__crumb');
+		expect(out).not.toContain('delendai-page-header__crumb');
 	});
 
 	it('prepends an automatic "Home" crumb when crumbs are non-empty', () => {
@@ -57,7 +59,7 @@ describe('renderPageHeader', () => {
 			baseHref: '/',
 		});
 		expect(out).toContain(
-			'<nav class="mcpv-page-header__crumb" aria-label="breadcrumb">',
+			'<nav class="delendai-page-header__crumb" aria-label="breadcrumb">',
 		);
 		expect(out).toContain('href="/"');
 		expect(out).toContain('>Home</a>');

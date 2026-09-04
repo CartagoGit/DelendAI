@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { McpVertexInternalError } from '../src/lib/contracts/interfaces/reporter.interface';
+import { DelendaiInternalError } from '../src/lib/contracts/interfaces/reporter.interface';
 import {
 	classifyInternalError,
 	markErrorAsInternalBoundary,
@@ -11,7 +11,7 @@ import {
 describe('classifyInternalError', () => {
 	it('does not classify a consumer plugins path as internal', () => {
 		resetInternalPathRegistry();
-		registerInternalPath('/home/empresa/mcp-vertex');
+		registerInternalPath('/home/empresa/delendai');
 		const error = new Error('boom');
 		error.stack = [
 			'Error: boom',
@@ -26,7 +26,7 @@ describe('classifyInternalError', () => {
 	});
 
 	it('classifies typed timeouts as internal performance failures', () => {
-		const error = new McpVertexInternalError({
+		const error = new DelendaiInternalError({
 			code: 'PLUGIN_REGISTER_TIMEOUT',
 			packageId: '@delendai/error-reporting',
 			componentId: 'register',

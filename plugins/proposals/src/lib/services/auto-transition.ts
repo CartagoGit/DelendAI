@@ -30,7 +30,7 @@ export interface IAutoTransitionRepairDeps {
 
 export const AUTO_TRANSITION_REPAIRS_RELATIVE_PATH = join(
 	'.cache',
-	'mcp-vertex',
+	'delendai',
 	'proposals',
 	'auto-transition-repairs.json',
 );

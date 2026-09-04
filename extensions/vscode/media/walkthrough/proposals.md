@@ -1,6 +1,6 @@
 # Explore Proposals
 
-**Proposals** are the units of work in mcp-vertex. They represent features,
+**Proposals** are the units of work in delendai. They represent features,
 fixes, refactors, and chores that agents can claim, implement, and close.
 
 ## The Proposals Board

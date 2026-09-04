@@ -2,7 +2,7 @@
 	"name": "@delendai/notification",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Lock-release notification plugin for @delendai/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-vertex --plugins=notification`.",
+	"description": "Lock-release notification plugin for @delendai/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `delendai --plugins=notification`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

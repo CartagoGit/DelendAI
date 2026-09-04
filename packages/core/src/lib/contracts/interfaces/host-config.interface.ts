@@ -1,7 +1,7 @@
 import type { ICorePaths } from './core-paths.interface';
 import type { ICommitAuthorResolution } from './commit-author.interface';
 import type { IKnowledgeEntry, ISkillEntry } from './knowledge.interface';
-import type { IMcpVertexProjectMetadata } from './project-metadata.interface';
+import type { IDelendaiProjectMetadata } from './project-metadata.interface';
 import type { IStatusCollector } from './status-collector.interface';
 import type { IMetricsRegistry } from '../../metrics/metrics-registry';
 import type { IRuntimeEventSink } from '../../observability/runtime-events';
@@ -18,7 +18,7 @@ import type {
 } from './tool-surface.interface';
 
 /**
- * Solid-ISP (2026-06-23): `IMcpVertexHostConfig` used to be a single
+ * Solid-ISP (2026-06-23): `IDelendaiHostConfig` used to be a single
  * 14-field mega-interface that forced every consumer to know every
  * concern (identity, paths, knowledge, observability, extra
  * registrations). It is now the **composite** of five
@@ -30,7 +30,7 @@ import type {
  *   - `IHostObservability`— status collectors, metrics registry, lifecycle hooks.
  *   - `IHostRegistrations`— extra tool / prompt / resource registrations.
  *
- * The composite `IMcpVertexHostConfig` is the **union** of every
+ * The composite `IDelendaiHostConfig` is the **union** of every
  * sub-interface (it `extends` each one). Existing callers that
  * pass the composite keep working; new callers that only need a
  * slice can depend on the relevant sub-interface (e.g. tests can
@@ -40,10 +40,10 @@ import type {
 
 /** Solid-ISP: server identity + namespace prefix. */
 export interface IHostIdentity {
-	readonly metadata: IMcpVertexProjectMetadata;
+	readonly metadata: IDelendaiProjectMetadata;
 	/**
 	 * Prefix for host tool names, e.g. `acme` → `acme_*`. Optional:
-	 * plugins namespace their own tools. mcp-vertex never invents tool
+	 * plugins namespace their own tools. delendai never invents tool
 	 * names outside a declared namespace.
 	 */
 	readonly namespacePrefix?: string | undefined;
@@ -64,7 +64,7 @@ export interface IHostPaths {
 	readonly keepLegacy?: boolean | undefined;
 	/**
 	 * Host-scoped `agent_worktree` capability, resolved at boot (host CLI
-	 * `--agent-worktree` > `mcp-vertex.config.json#agentWorktree` >
+	 * `--agent-worktree` > `delendai.config.json#agentWorktree` >
 	 * `false`). Surfaced on the host config so an a00036-style audit can
 	 * confirm the effective value without re-reading the CLI parser.
 	 * Optional on the interface (programmatic hosts may omit it); the CLI
@@ -75,7 +75,7 @@ export interface IHostPaths {
 	 * f00082: the resolved commit-author policy, applied by the shared
 	 * git engine to every commit produced by `@delendai/git` and
 	 * `@delendai/proposals#auto_work`. The CLI loader builds this
-	 * from `mcp-vertex.config.json#commitAuthor` (mode + identity +
+	 * from `delendai.config.json#commitAuthor` (mode + identity +
 	 * human-name/email) and the MCP `clientInfo` payload. Optional on
 	 * the interface so existing programmatic hosts keep compiling —
 	 * when absent, the engine falls back to the active git config
@@ -235,7 +235,7 @@ export interface IHostRegistrations {
 
 /**
  * Everything a host injects to assemble an MCP server on top of
- * mcp-vertex. The core is project-agnostic: it owns deterministic
+ * delendai. The core is project-agnostic: it owns deterministic
  * registration and workspace resolution only. It knows NOTHING about
  * proposals, swarms, models or quality gates — those are plugin
  * concerns (see `IMcpPlugin`). The host (or the CLI plugin loader)
@@ -245,7 +245,7 @@ export interface IHostRegistrations {
  * Solid-ISP: this composite is the union of five sub-interfaces;
  * callers that only need a slice can depend on the slice directly.
  */
-export interface IMcpVertexHostConfig
+export interface IDelendaiHostConfig
 	extends IHostIdentity,
 		IHostPaths,
 		IHostContent,

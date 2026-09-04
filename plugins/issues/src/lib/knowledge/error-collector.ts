@@ -34,7 +34,7 @@ export const buildIssuesErrorCollectorKnowledge = (
 		'',
 		'**Safe-mode (default, `autoReport: false`)**',
 		'A redacted markdown file is written to',
-		'`docs/mcp-vertex/proposals/retired/issues/_errors/<fingerprint>.md`.',
+		'`docs/delendai/proposals/retired/issues/_errors/<fingerprint>.md`.',
 		'No network call is made. This is the privacy-by-construction default.',
 		'',
 		'**Live-mode (`autoReport: true`)**',

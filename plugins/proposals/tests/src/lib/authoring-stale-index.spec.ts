@@ -50,8 +50,8 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			runValidation: async () => ({

@@ -48,10 +48,10 @@ describe('formatSnapshot (c00140)', () => {
 });
 
 describe('renderBlock', () => {
-	it('wraps the snapshot inside a `<-- mcp-vertex:begin quantitative -->` block', () => {
+	it('wraps the snapshot inside a `<-- delendai:begin quantitative -->` block', () => {
 		const block = renderBlock(SAMPLE_SNAP);
-		expect(block).toContain('<!-- mcp-vertex:begin quantitative -->');
-		expect(block).toContain('<!-- mcp-vertex:end quantitative -->');
+		expect(block).toContain('<!-- delendai:begin quantitative -->');
+		expect(block).toContain('<!-- delendai:end quantitative -->');
 		expect(block).toContain('Plugins: 51');
 	});
 
@@ -175,7 +175,7 @@ describe('buildSnapshot over a vendor root', () => {
 
 describe('idempotence over volatile lines', () => {
 	const BLOCK = [
-		'<!-- mcp-vertex:begin quantitative -->',
+		'<!-- delendai:begin quantitative -->',
 		'```',
 		'Generated at: 2026-09-01T08:00:00.000Z',
 		'',
@@ -185,7 +185,7 @@ describe('idempotence over volatile lines', () => {
 		'Workspaces: 6 packages, 2 apps, 1 extensions, 4 tooling workspace(s).',
 		'Proposals: 543 on disk (ready=76, in-progress=2, done=465)',
 		'```',
-		'<!-- mcp-vertex:end quantitative -->',
+		'<!-- delendai:end quantitative -->',
 	].join('\n');
 
 	const snapshotWith = (proposalsTotal: number): IQuantitativeSnapshot =>

@@ -167,7 +167,7 @@ describe('x00264 — non-slice triggers carry the dirty files they saw', () => {
 				[
 					'status\u0000--porcelain=v1',
 					ok(
-						' M docs/mcp-vertex/proposals/ready/f00286-f00286.md -> docs/mcp-vertex/proposals/ready/f00286-migrated-work-item-f00286.md\n',
+						' M docs/delendai/proposals/ready/f00286-f00286.md -> docs/delendai/proposals/ready/f00286-migrated-work-item-f00286.md\n',
 					),
 				],
 			]),
@@ -175,7 +175,7 @@ describe('x00264 — non-slice triggers carry the dirty files they saw', () => {
 		const timer = createIntervalTimer(run, { minutes: 1 });
 		const fired = await timer.check(60_000);
 		expect(fired?.files?.paths).toEqual([
-			'docs/mcp-vertex/proposals/ready/f00286-migrated-work-item-f00286.md',
+			'docs/delendai/proposals/ready/f00286-migrated-work-item-f00286.md',
 		]);
 	});
 });

@@ -1,16 +1,16 @@
 /**
  * f00046 S5 — fs + knowledge + project commands. One subcommand per the
- * corresponding `mcp-vertex_*` core meta-tool. The fs tools are
+ * corresponding `delendai_*` core meta-tool. The fs tools are
  * workspace-contained (the core rejects `../`/absolute paths) and
  * `fs write` is atomic-by-default (mutex+rename) inside the plugin.
  *
  * Tools mapped:
- *   - `mcp-vertex_fs_read`         ({ path, range? })
- *   - `mcp-vertex_fs_write`        ({ path, content, createDirs? })
- *   - `mcp-vertex_knowledge`       ({ id? })
- *   - `mcp-vertex_analyze_project` ({ serverName?, namespacePrefix?, ... })
- *   - `mcp-vertex_plan_mcp_project`({ serverName?, namespacePrefix?, tests? })
- *   - `mcp-vertex_create_project`  ({ kind, ... })
+ *   - `delendai_fs_read`         ({ path, range? })
+ *   - `delendai_fs_write`        ({ path, content, createDirs? })
+ *   - `delendai_knowledge`       ({ id? })
+ *   - `delendai_analyze_project` ({ serverName?, namespacePrefix?, ... })
+ *   - `delendai_plan_mcp_project`({ serverName?, namespacePrefix?, tests? })
+ *   - `delendai_create_project`  ({ kind, ... })
  */
 import {
 	createWorkspacePathProvider,
@@ -42,9 +42,7 @@ const fsReadCommand: ICliCommand = {
 			start !== undefined && end !== undefined
 				? { range: [start, end] as [number, number] }
 				: {};
-		return data(
-			await request(ctx, 'mcp-vertex_fs_read', { path, ...range }),
-		);
+		return data(await request(ctx, 'delendai_fs_read', { path, ...range }));
 	},
 };
 
@@ -67,11 +65,11 @@ const fsWriteCommand: ICliCommand = {
 		if (hasFlag(args, 'no-atomic')) {
 			return data({
 				ok: false,
-				error: '--no-atomic is no longer supported via the CLI: the `mcp-vertex_fs_write` tool is always atomic. For non-atomic writes, use the in-process `fsWrite` helper from a Bun script.',
+				error: '--no-atomic is no longer supported via the CLI: the `delendai_fs_write` tool is always atomic. For non-atomic writes, use the in-process `fsWrite` helper from a Bun script.',
 			});
 		}
 		return data(
-			await request(ctx, 'mcp-vertex_fs_write', {
+			await request(ctx, 'delendai_fs_write', {
 				path,
 				content,
 				...(hasFlag(args, 'create-dirs') ? { createDirs: true } : {}),
@@ -86,7 +84,7 @@ const knowledgeCommand: ICliCommand = {
 	async run(args, ctx) {
 		const id = positionalArg(args);
 		return data(
-			await request(ctx, 'mcp-vertex_knowledge', {
+			await request(ctx, 'delendai_knowledge', {
 				...(id !== undefined ? { id } : {}),
 			}),
 		);
@@ -101,7 +99,7 @@ const projectAnalyzeCommand: ICliCommand = {
 		const serverName = scalarArg(args, 'server-name');
 		const namespacePrefix = scalarArg(args, 'prefix');
 		return data(
-			await request(ctx, 'mcp-vertex_analyze_project', {
+			await request(ctx, 'delendai_analyze_project', {
 				...(serverName !== undefined ? { serverName } : {}),
 				...(namespacePrefix !== undefined ? { namespacePrefix } : {}),
 			}),
@@ -118,7 +116,7 @@ const projectPlanCommand: ICliCommand = {
 		const namespacePrefix = scalarArg(args, 'prefix');
 		const noTests = hasFlag(args, 'no-tests');
 		return data(
-			await request(ctx, 'mcp-vertex_plan_mcp_project', {
+			await request(ctx, 'delendai_plan_mcp_project', {
 				...(serverName !== undefined ? { serverName } : {}),
 				...(namespacePrefix !== undefined ? { namespacePrefix } : {}),
 				...(noTests ? { tests: false } : {}),
@@ -144,7 +142,7 @@ const projectCreateCommand: ICliCommand = {
 		const namespacePrefix = scalarArg(args, 'prefix');
 		const description = scalarArg(args, 'description');
 		return data(
-			await request(ctx, 'mcp-vertex_create_project', {
+			await request(ctx, 'delendai_create_project', {
 				kind,
 				...(projectName !== undefined ? { projectName } : {}),
 				...(pluginName !== undefined ? { pluginName } : {}),
@@ -158,10 +156,10 @@ const projectCreateCommand: ICliCommand = {
 
 const adoptCommand: ICliCommand = {
 	name: 'adopt',
-	summary: 'Assess or scaffold mcp-vertex adoption for the current project.',
+	summary: 'Assess or scaffold delendai adoption for the current project.',
 	async run(args, ctx) {
 		return data(
-			await request(ctx, 'mcp-vertex_adopt_project', {
+			await request(ctx, 'delendai_adopt_project', {
 				...(hasFlag(args, 'analyze') ? { analyze: true } : {}),
 				...(hasFlag(args, 'write') ? { write: true } : {}),
 				...(hasFlag(args, 'overwrite') ? { overwrite: true } : {}),

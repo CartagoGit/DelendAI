@@ -26,7 +26,7 @@ export const buildApplyingRulesKnowledge = (
 		'Priority order (project > dogma > default) — codified in `IPolicyResolver`:',
 		'- **project** wins when the area ships its own linter config (eslint.config.mjs, pyproject.toml [tool.ruff], Cargo.toml [lints], go.mod, build.zig, etc.).',
 		"- **dogma** wins when the project has no opinion; the language's `IDogmaAdapter` ships a baseline (Rust → clippy + Result/Option + snake_case; Python → ruff + EAFP; etc.).",
-		'- **default** wins only when neither project nor dogma applies; the vendored preset under `.cache/mcp-vertex/rules/` runs.',
+		'- **default** wins only when neither project nor dogma applies; the vendored preset under `.cache/delendai/rules/` runs.',
 		'- `check_rules` reports the winning layer in `evidence.effective` plus a one-sentence `evidence.rationale`; quote the rationale when explaining the decision to the user.',
 		'',
 		'Linter & Dogma Family Mapping:',

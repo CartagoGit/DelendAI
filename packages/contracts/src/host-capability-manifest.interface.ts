@@ -9,7 +9,7 @@
 
 /** Stable discriminator for persisted or exchanged host manifests. */
 export const HOST_CAPABILITY_MANIFEST_CONTRACT =
-	'mcp-vertex.host-capability-manifest' as const;
+	'delendai.host-capability-manifest' as const;
 
 /** Current schema version for {@link IHostCapabilityManifest}. */
 export const HOST_CAPABILITY_MANIFEST_VERSION = 1 as const;
@@ -19,7 +19,7 @@ export type IHostSurfaceSupport = 'none' | 'native' | 'mcp-tool';
 
 /** Capabilities negotiated on the MCP transport. */
 export interface IHostMcpCapabilities {
-	/** Every mcp-vertex host must be able to list and invoke tools. */
+	/** Every delendai host must be able to list and invoke tools. */
 	readonly tools: boolean;
 	/** Whether the host can consume MCP prompts. */
 	readonly prompts: boolean;

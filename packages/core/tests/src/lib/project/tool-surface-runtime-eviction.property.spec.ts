@@ -31,7 +31,7 @@ const buildRuntime = (maxWarmPlugins: number) => {
 		workingSet: { idleTtlMs: null, maxWarmPlugins },
 		descriptors: Array.from({ length: PLUGIN_COUNT }, (_, index) => ({
 			registrationId: `plugin${index}_run`,
-			name: `mcp-vertex_plugin${index}_run`,
+			name: `delendai_plugin${index}_run`,
 			toolId: 'run',
 			pluginId: `plugin${index}`,
 			namespace: `plugin${index}`,
@@ -51,7 +51,7 @@ const buildRuntime = (maxWarmPlugins: number) => {
 		});
 		runtime.bindRegisteredTool({
 			registrationId: `plugin${index}_run`,
-			name: `mcp-vertex_plugin${index}_run`,
+			name: `delendai_plugin${index}_run`,
 			handler: async () => ({ ok: true }),
 			handle: makeHandle(),
 		});
@@ -74,7 +74,7 @@ describe('tool-surface-runtime working-set property (x00286 / AUD-C02)', () => {
 					const runtime = buildRuntime(maxWarmPlugins);
 					for (const operation of operations) {
 						const namespace = `plugin${operation.pluginIndex}`;
-						const toolName = `mcp-vertex_${namespace}_run`;
+						const toolName = `delendai_${namespace}_run`;
 						if (operation.kind === 'touch') {
 							runtime.resolveRoute(namespace, 'run');
 						} else if (operation.kind === 'invoke') {

@@ -14,7 +14,7 @@ export type PluginRegistryOrigin = 'first-party' | 'community';
 
 /** Tags surfaced for filtering. Mirrors the keywords already in each plugin's package.json. */
 export interface IPluginRegistryEntry {
-	/** Stable kebab-case id (matches `plugins.<id>` in mcp-vertex.config.json). */
+	/** Stable kebab-case id (matches `plugins.<id>` in delendai.config.json). */
 	readonly id: string;
 	/** npm package name (e.g. `@delendai/audit`). */
 	readonly package: string;

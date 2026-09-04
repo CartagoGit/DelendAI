@@ -314,7 +314,7 @@ const buildDashboard = (
 		'generatedAt' | 'branches' | 'developStatus' | 'discrepancies'
 	> & { readonly requiredChecks: readonly string[] },
 ): IDevelopHealthDashboard => ({
-	$schema: 'https://mcp-vertex.dev/schemas/develop-health.v1.json',
+	$schema: 'https://delendai.dev/schemas/develop-health.v1.json',
 	lastVerifiedAt:
 		report.developStatus.verified &&
 		report.branches.some((branch) => branch.verified)

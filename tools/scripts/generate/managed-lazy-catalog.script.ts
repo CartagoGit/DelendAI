@@ -52,7 +52,7 @@ const renderTools = (ids: readonly string[]): string => {
 
 export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 	const root = repoRoot();
-	const configPath = join(root, 'mcp-vertex.config.json');
+	const configPath = join(root, 'delendai.config.json');
 	const rawConfig = await readFile(configPath, 'utf8');
 	const parsedConfig = JSON.parse(rawConfig) as Record<string, unknown>;
 	const managedSurface =

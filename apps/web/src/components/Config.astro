@@ -45,7 +45,7 @@ const hrefFor = (code: Lang) => {
 // re-derive it from `Astro.cookies` so the SSR HTML matches what the
 // client picks up on hydration. Falls back to `dark` when the user
 // has not made an explicit choice yet.
-const COOKIE_THEME = 'mcpvertex-theme';
+const COOKIE_THEME = 'delendai-theme';
 const cookieTheme = Astro.cookies.get(COOKIE_THEME)?.value;
 const isThemeChoice = (v: unknown): v is ThemeChoice =>
 	typeof v === 'string' && (ALL_THEMES as readonly string[]).includes(v);
@@ -108,8 +108,8 @@ const langLinksHtml = renderLangLinks({
 	// Settings modal: theme + language + motion. Re-runs after every Astro view
 	// transition (the `astro:page-load` event) so listeners don't accumulate.
 	// We use an AbortController to revoke the previous batch cleanly.
-	const KEY_THEME = 'mcpvertex-theme';
-	const KEY_MOTION = 'mcpvertex-motion';
+	const KEY_THEME = 'delendai-theme';
+	const KEY_MOTION = 'delendai-motion';
 	const root = document.documentElement;
 	let cfgAbort: AbortController | undefined;
 	type WebMotion = 'system' | 'full' | 'reduced';

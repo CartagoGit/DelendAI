@@ -28,7 +28,7 @@ import {
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
-export const OPEN_PLUGIN_CONFIG_COMMAND = 'mcp-vertex.openPluginConfig';
+export const OPEN_PLUGIN_CONFIG_COMMAND = 'delendai.openPluginConfig';
 
 const bridgeScript = `<script>
 (function () {
@@ -138,7 +138,7 @@ export const registerOpenPluginConfigCommand = (deps: ICommandDeps) =>
 					),
 				);
 				const panel = deps.vscode.window.createWebviewPanel(
-					'mcpVertexPluginConfig',
+					'delendaiPluginConfig',
 					pluginId === undefined
 						? strings.panelTitle
 						: `${strings.panelTitle} — ${pluginId}`,

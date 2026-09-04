@@ -2,13 +2,13 @@
 	{
 		"file": "apps/web/src/components/Home.astro",
 		"kind": "attribute",
-		"literal": "mcp-vertex",
+		"literal": "delendai",
 		"reason": "Product name in the home-page logo alternative text."
 	},
 	{
 		"file": "apps/web/src/components/Home.astro",
 		"kind": "text",
-		"literal": "@mcp-vertex",
+		"literal": "@delendai",
 		"reason": "Canonical package scope and product wordmark."
 	},
 	{

@@ -10,7 +10,7 @@ import {
 } from '../src/lib/services/normalize-event';
 
 const tempLogs = async (): Promise<string> =>
-	mkdtemp(join(tmpdir(), 'mcp-vertex-logs-'));
+	mkdtemp(join(tmpdir(), 'delendai-logs-'));
 
 describe('x00153 S2 — tail/readRange only open day-files in scope', async () => {
 	const { writeFile } = await import('node:fs/promises');
@@ -387,12 +387,12 @@ describe('x00154 S1 — appendEvent + readAllFiles derive severity + incidentTyp
 		await seedLegacyLine(dir, '2026-07-25', {
 			ts: '2026-07-25T10:00:00.000Z',
 			kind: 'tool-started',
-			tool: 'mcp-vertex_logs_query',
+			tool: 'delendai_logs_query',
 			agent: null,
-			taskId: 'mcp-vertex_logs_query',
+			taskId: 'delendai_logs_query',
 			outcome: 'ok',
 			files: [],
-			summary: 'tool-started: mcp-vertex_logs_query',
+			summary: 'tool-started: delendai_logs_query',
 			meta: {},
 		});
 		const store = await createLogStore(dir);
@@ -416,10 +416,10 @@ describe('x00154 S1 — appendEvent + readAllFiles derive severity + incidentTyp
 			ts: '2026-07-25T10:01:00.000Z',
 			kind: 'tool-started',
 			agent: null,
-			taskId: 'mcp-vertex_logs_query',
+			taskId: 'delendai_logs_query',
 			outcome: 'ok',
 			files: [],
-			summary: 'tool-started: mcp-vertex_logs_query',
+			summary: 'tool-started: delendai_logs_query',
 			meta: {},
 			// severity: undefined
 			// incidentType: undefined

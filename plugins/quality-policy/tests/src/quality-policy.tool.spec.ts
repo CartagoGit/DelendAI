@@ -58,7 +58,7 @@ const makeWorkspace = async (): Promise<string> => {
 		'utf8',
 	);
 	await writeFile(
-		join(root, 'mcp-vertex.config.json'),
+		join(root, 'delendai.config.json'),
 		`${JSON.stringify(
 			{
 				plugins: {
@@ -130,7 +130,7 @@ describe('quality_policy', () => {
 		const runAllScopesSpy = vi.spyOn(qualityPublic, 'runAllScopes');
 		const scanDriftSpy = vi.spyOn(testConventionPublic, 'scanDrift');
 		const registrations = buildQualityPolicyToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			maxBytes: 4000,
 		});
@@ -175,7 +175,7 @@ describe('quality_policy', () => {
 	it('returns only the requested area when area=tests', async () => {
 		const root = await makeWorkspace();
 		const registrations = buildQualityPolicyToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			maxBytes: 4000,
 		});

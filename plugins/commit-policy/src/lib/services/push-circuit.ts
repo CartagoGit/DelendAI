@@ -85,5 +85,5 @@ export const buildPushCircuitNotice = (input: {
 	readonly refusal: string;
 	readonly attempts: number;
 }): string =>
-	`[mcp-vertex] commit-policy has stopped pushing automatically: the last ${input.attempts} attempts failed identically, so this is a policy refusal, not a race, and retrying cannot change it. Reason: ${input.refusal}. ` +
+	`[delendai] commit-policy has stopped pushing automatically: the last ${input.attempts} attempts failed identically, so this is a policy refusal, not a race, and retrying cannot change it. Reason: ${input.refusal}. ` +
 	'Nothing is lost — commits are still being made locally and an explicit push still works. Fix the configuration that is being refused (commonly `push.branch` naming a branch this repo only accepts through a pull request), then push once to clear this.';

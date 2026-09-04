@@ -36,7 +36,7 @@ to a local model.
 | `mcp-xai` (community) | xAI Grok. |
 | `mcp-anthropic` (alt) | Anthropic. |
 
-**Caveat**: in mcp-vertex, you already have a configured model via f00067
+**Caveat**: in delendai, you already have a configured model via f00067
 (multi-model orchestrator). These MCPs are useful only if you want the
 agent to **call a different model than its own** for a specific subtask.
 

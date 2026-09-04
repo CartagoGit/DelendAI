@@ -124,7 +124,7 @@ describe('emitIncident (f00154 S3)', () => {
 		await emitIncident(
 			sink,
 			{ incidentType: 'security-failure' },
-			'mcp-vertex_security_secrets',
+			'delendai_security_secrets',
 			{ path: 'src/x.ts' },
 			{
 				isError: true,
@@ -141,7 +141,7 @@ describe('emitIncident (f00154 S3)', () => {
 		await emitIncident(
 			sink,
 			{ incidentType: 'security-failure' },
-			'mcp-vertex_security_secrets',
+			'delendai_security_secrets',
 			{ path: 'src/x.ts' },
 			{ isError: false, structuredContent: { ok: true } },
 		);

@@ -69,7 +69,7 @@ const STATUS_BAR_EVENT_NAMES = Object.keys(
 ) as readonly INotificationEventName[];
 
 /**
- * `McpVertexStatusBar` — VS Code status bar summary, upgraded in f00022
+ * `DelendaiStatusBar` — VS Code status bar summary, upgraded in f00022
  * to include the same KPIs the dashboard exposes (tools, proposals,
  * tokens, agents). Click → open the dashboard.
  *
@@ -79,7 +79,7 @@ const STATUS_BAR_EVENT_NAMES = Object.keys(
  * `deactivate()` -> `runtimeHandle.disposeAll()` cleans up cleanly on
  * every window reload.
  */
-export class McpVertexStatusBar {
+export class DelendaiStatusBar {
 	/** The callbacks we registered, keyed by event name. Used for
 	 * `removeEventListener` on dispose — we MUST keep the same function
 	 * references for `removeEventListener` to match. */
@@ -104,8 +104,8 @@ export class McpVertexStatusBar {
 	start(): void {
 		if (this.disposed) return;
 		this.item.command = this.openDashboardCommand;
-		this.item.tooltip = 'mcp-vertex Dashboard (click to open)';
-		this.item.text = '$(mcp-vertex) mcp-vertex';
+		this.item.tooltip = 'delendai Dashboard (click to open)';
+		this.item.text = '$(delendai) delendai';
 		for (const event of STATUS_BAR_EVENT_NAMES) {
 			const handler = (): void => {
 				void this.update();
@@ -129,7 +129,7 @@ export class McpVertexStatusBar {
 		const proposalCount = await this.proposalCount();
 		const tokenSummary = await this.tokensSummary();
 		const agentCount = await this.agentCount();
-		const segments: string[] = ['$(mcp-vertex) mcp-vertex'];
+		const segments: string[] = ['$(delendai) delendai'];
 		segments.push(`${tools.length} tools`);
 		segments.push(`${proposalCount} proposals`);
 		if (tokenSummary !== undefined) segments.push(tokenSummary);

@@ -71,7 +71,7 @@ export const recordPeerReviewBypass = (input: {
 	// "Failed to parse message" with no hint of where it came from.
 	// `lint:no-stdout-in-runtime` enforces this.
 	console.warn(
-		`[mcp-vertex] peer-review-bypassed proposal=${event.proposalId} via=${event.via} agent=${event.agent} reason=${JSON.stringify(event.reason)}`,
+		`[delendai] peer-review-bypassed proposal=${event.proposalId} via=${event.via} agent=${event.agent} reason=${JSON.stringify(event.reason)}`,
 	);
 	return event;
 };

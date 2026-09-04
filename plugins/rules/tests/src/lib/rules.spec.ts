@@ -288,7 +288,7 @@ describe('buildRulesManifest', async () => {
 				'apps/api/tsconfig.json': '{}',
 			}),
 			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-vertex/rules',
+			cacheRelDir: '.cache/delendai/rules',
 			mode: 'mixed',
 		});
 		const web = (await manifest).projects.demo?.['apps/web'];
@@ -296,7 +296,7 @@ describe('buildRulesManifest', async () => {
 		// project's own config first, ours behind
 		expect(web?.eslint[0]).toBe('apps/web/eslint.config.mjs');
 		expect(web?.eslint[1]).toBe(
-			'.cache/mcp-vertex/rules/vue.eslint.config.mjs',
+			'.cache/delendai/rules/vue.eslint.config.mjs',
 		);
 		const api = (await manifest).projects.demo?.['apps/api'];
 		expect(api?.framework).toBe('angular');
@@ -309,7 +309,7 @@ describe('buildRulesManifest', async () => {
 				'package.json': JSON.stringify({ name: 'demo' }),
 			}),
 			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-vertex/rules',
+			cacheRelDir: '.cache/delendai/rules',
 			mode: 'strict',
 			overrides: { root: 'react-ts' },
 		});
@@ -331,7 +331,7 @@ describe('buildRulesManifest', async () => {
 				'services/go-thing/go.mod': 'module x\n\ngo 1.22',
 			}),
 			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-vertex/rules',
+			cacheRelDir: '.cache/delendai/rules',
 			mode: 'mixed',
 		});
 		const areas = (await manifest).projects.demo;

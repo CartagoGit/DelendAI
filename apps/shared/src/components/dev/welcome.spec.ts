@@ -7,11 +7,11 @@
  *   - `CARDS` has the canonical 4 entries (Dashboard, Settings,
  *     Tool detail, Metrics) in that order
  *   - `renderFirstRunScreen(installLabel)` returns a
- *     `<section class="mcpv-welcome welcome" data-first-run="true">`
- *     with 4 `<article class="mcpv-welcome__card welcome__card">`
+ *     `<section class="delendai-welcome welcome" data-first-run="true">`
+ *     with 4 `<article class="delendai-welcome__card welcome__card">`
  *     children + install + skip CTAs
  *   - `renderQuickStartMenu()` returns an
- *     `<aside class="mcpv-quickstart quickstart">` with 4 list
+ *     `<aside class="delendai-quickstart quickstart">` with 4 list
  *     items + dismiss button
  *   - all interpolations are HTML-escaped (label, body, icon)
  *   - `isQuickStartDismissed` / `dismissQuickStart` round-trip
@@ -71,16 +71,18 @@ describe('welcome — CARDS', () => {
 
 describe('renderFirstRunScreen', () => {
 	it('emits the canonical section + cards + CTAs', () => {
-		const out = renderFirstRunScreen('Install mcp-vertex');
+		const out = renderFirstRunScreen('Install delendai');
 		expect(out).toContain(
-			'<section class="mcpv-welcome welcome" data-first-run="true">',
+			'<section class="delendai-welcome welcome" data-first-run="true">',
 		);
 		expect(out).toContain(
-			'<header class="mcpv-welcome__head welcome__head">',
+			'<header class="delendai-welcome__head welcome__head">',
 		);
-		expect(out).toContain('<div class="mcpv-welcome__grid welcome__grid">');
 		expect(out).toContain(
-			'<footer class="mcpv-welcome__cta welcome__cta">',
+			'<div class="delendai-welcome__grid welcome__grid">',
+		);
+		expect(out).toContain(
+			'<footer class="delendai-welcome__cta welcome__cta">',
 		);
 		expect(out).toContain('<button type="button" id="welcome-install"');
 		expect(out).toContain('<button type="button" id="welcome-skip"');
@@ -89,7 +91,7 @@ describe('renderFirstRunScreen', () => {
 	it('renders all 4 cards with the canonical classes', () => {
 		const out = renderFirstRunScreen('Install');
 		const matches = out.match(
-			/<article class="mcpv-welcome__card welcome__card">/g,
+			/<article class="delendai-welcome__card welcome__card">/g,
 		);
 		expect(matches).toHaveLength(4);
 	});
@@ -105,10 +107,10 @@ describe('renderQuickStartMenu', () => {
 	it('emits the canonical aside + list + dismiss', () => {
 		const out = renderQuickStartMenu();
 		expect(out).toContain(
-			'<aside class="mcpv-quickstart quickstart" role="complementary">',
+			'<aside class="delendai-quickstart quickstart" role="complementary">',
 		);
 		expect(out).toContain(
-			'<ul class="mcpv-quickstart__list quickstart__list">',
+			'<ul class="delendai-quickstart__list quickstart__list">',
 		);
 		expect(out).toContain('<button type="button" id="quickstart-dismiss"');
 	});
@@ -116,7 +118,7 @@ describe('renderQuickStartMenu', () => {
 	it('renders all 4 list items', () => {
 		const out = renderQuickStartMenu();
 		const matches = out.match(
-			/<li class="mcpv-quickstart__item quickstart__item">/g,
+			/<li class="delendai-quickstart__item quickstart__item">/g,
 		);
 		expect(matches).toHaveLength(4);
 	});
@@ -124,7 +126,7 @@ describe('renderQuickStartMenu', () => {
 
 describe('isQuickStartDismissed / dismissQuickStart', () => {
 	it('round-trips through sessionStorage', () => {
-		const KEY = 'mcpv:dev:quickstart-dismissed';
+		const KEY = 'delendai:dev:quickstart-dismissed';
 		sessionStorage.removeItem(KEY);
 		expect(isQuickStartDismissed()).toBe(false);
 		dismissQuickStart();
@@ -133,7 +135,7 @@ describe('isQuickStartDismissed / dismissQuickStart', () => {
 	});
 
 	it('returns false when sessionStorage is empty', () => {
-		sessionStorage.removeItem('mcpv:dev:quickstart-dismissed');
+		sessionStorage.removeItem('delendai:dev:quickstart-dismissed');
 		expect(isQuickStartDismissed()).toBe(false);
 	});
 });

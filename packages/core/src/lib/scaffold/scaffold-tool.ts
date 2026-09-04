@@ -81,13 +81,13 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 		.describe(
 			'Override the config-level keepLegacy for this scaffold call.',
 		),
-	existingMcpVertex: z
+	existingDelendai: z
 		.boolean()
 		.optional()
 		.describe(
 			'For kind: "host". When true, skip emitting libs/mcp-project/, ' +
 				'.vscode/mcp.json and host-config.ts — the project already wires ' +
-				'mcp-vertex via its own mcp-vertex.config.json + plugins/. ' +
+				'delendai via its own delendai.config.json + plugins/. ' +
 				'Agents / instructions / skill are still emitted. Defaults to false.',
 		),
 	mcpServerName: z
@@ -98,7 +98,7 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 				'config (.vscode/mcp.json / .mcp.json). Copilot agent files and ' +
 				'instructions reference this key to qualify tool names. Defaults ' +
 				'to "mcp-project-<namespacePrefix>" (the greenfield key). Pass the ' +
-				"project's real key when existingMcpVertex is true — it almost " +
+				"project's real key when existingDelendai is true — it almost " +
 				'never matches the greenfield default.',
 		),
 });
@@ -197,7 +197,7 @@ export const buildScaffoldReport = async (
 		options.batchWriter ??
 		createFileSystemBatchWriter(options.workspace.root);
 
-	// x00201 S2: an explicit args.existingMcpVertex/mcpServerName always
+	// x00201 S2: an explicit args.existingDelendai/mcpServerName always
 	// wins; an omitted value auto-detects from the workspace instead of
 	// defaulting to the greenfield shape a guest-mode project doesn't want.
 	const resolvedInstall = await resolveHostScaffoldDefaults(
@@ -268,8 +268,8 @@ export const buildScaffoldReport = async (
 		case 'host':
 			files = scaffoldHostProject({
 				...hostOptions,
-				...(resolvedInstall?.existingMcpVertex !== undefined
-					? { existingMcpVertex: resolvedInstall.existingMcpVertex }
+				...(resolvedInstall?.existingDelendai !== undefined
+					? { existingDelendai: resolvedInstall.existingDelendai }
 					: {}),
 			});
 			break;
@@ -417,7 +417,7 @@ export const buildScaffoldToolRegistration = (
 				{
 					outputSchema: SCAFFOLD_REPORT_SCHEMA,
 					description:
-						'Generate host artefacts from mcp-vertex templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes skip existing files unless keepLegacy moves them under legacy/ first.',
+						'Generate host artefacts from delendai templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes skip existing files unless keepLegacy moves them under legacy/ first.',
 					inputSchema: SCAFFOLD_INPUT_SCHEMA,
 				},
 				async (args: IScaffoldArgs) => {

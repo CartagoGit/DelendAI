@@ -3,7 +3,7 @@ import type {
 	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
-	McpVertexToolOutputs,
+	DelendaiToolOutputs,
 } from '@delendai/core/public';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
@@ -29,7 +29,7 @@ const DEFAULT_AGENT_POLICY = {
  * v00129 S1 (AUD-B01): `agent_catalog`'s WIRE-DECLARED `outputSchema` is
  * now a permissive `compactOutputSchema()` (see
  * `packages/core/src/lib/surface/compact-output-schema.ts`), so it can no
- * longer be derived from `McpVertexToolOutputs`. `ICatalogSnapshot` is the
+ * longer be derived from `DelendaiToolOutputs`. `ICatalogSnapshot` is the
  * hand-kept interface `agent-catalog-tool.ts`'s handler actually builds
  * its response from (`buildCatalog` + `applyQuery`/`applySection`) — it
  * describes what the server truly returns, which has not changed. `ok`/
@@ -40,7 +40,7 @@ type IAgentCatalogOutput = ICatalogSnapshot & {
 	readonly ok?: boolean;
 	readonly matches?: number;
 };
-type ISkillToolOutput = McpVertexToolOutputs['mcp-vertex_skill'];
+type ISkillToolOutput = DelendaiToolOutputs['delendai_skill'];
 
 export interface IAgentCatalogSearchResult {
 	readonly tools: IToolSummary[];
@@ -186,10 +186,10 @@ const promptTextOf = async (snapshot: ICatalogSnapshot): Promise<string> => {
 						...DEFAULT_AGENT_POLICY.principles.map(
 							(principle) => `- ${principle}`,
 						),
-						'1. Call `mcp-vertex_overview` first to map the server and confirm the loaded plugin surface.',
-						'2. Call `mcp-vertex_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
+						'1. Call `delendai_overview` first to map the server and confirm the loaded plugin surface.',
+						'2. Call `delendai_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
 						'3. Narrow with `section` or `query` before doing work, then pick the matching proposal or skill instead of rereading docs broadly.',
-						'4. To use a skill: call `mcp-vertex_skill` (no args) for the compact list of what each skill is and when to use it, then `mcp-vertex_skill { "id": "<skill-id>" }` to load that one skill body only when you are about to apply it (keeps token cost low).',
+						'4. To use a skill: call `delendai_skill` (no args) for the compact list of what each skill is and when to use it, then `delendai_skill { "id": "<skill-id>" }` to load that one skill body only when you are about to apply it (keeps token cost low).',
 						`Actionable proposals: ${actionable}`,
 					].join('\n'),
 				},

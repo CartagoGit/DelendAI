@@ -61,7 +61,7 @@ describe('privacy adversarial invariant — llm-suffix spoofing (t00011)', () =>
 		'plan-mandated adversarial case: $toolName',
 		({ toolName, foreignPackageName, errorCode, reason }) => {
 			// Host fixture A: the adopter registered the spoofed-suffix tool
-			// under its own (non-mcp-vertex) package.
+			// under its own (non-delendai) package.
 			const hostFixtureA: IToolIdentityRegistry = registryOf({
 				[toolName]: {
 					packageName: foreignPackageName,

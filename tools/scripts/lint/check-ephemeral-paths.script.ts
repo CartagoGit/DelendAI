@@ -51,7 +51,7 @@ const isSanctionedIsolatedGitIndexTmpDir = (
 	token.includes('mkdtemp') &&
 	source.includes("join(tmpdir(), 'cp-index-')") &&
 	source.includes('GIT_INDEX_FILE') &&
-	source.includes("join(args.workspaceRoot, '.mcp-vertex', 'index-lock')") &&
+	source.includes("join(args.workspaceRoot, '.delendai', 'index-lock')") &&
 	source.includes('await rm(tmpDir, { recursive: true, force: true })');
 
 const shouldScanFile = (relPath: string): boolean =>

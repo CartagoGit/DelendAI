@@ -7,10 +7,10 @@ import {
 import type { ISkillBundle } from '@delendai/core/lib/skills/load-skills';
 
 const bundle = (over: Partial<ISkillBundle> = {}): ISkillBundle => ({
-	id: 'mcp-vertex-operator',
+	id: 'delendai-operator',
 	version: '1.0.0',
 	minCoreVersion: '0.1.0',
-	bodyPath: 'packages/core/skills/mcp-vertex-operator/SKILL.md',
+	bodyPath: 'packages/core/skills/delendai-operator/SKILL.md',
 	tags: ['orientation'],
 	appliesTo: ['@delendai/*'],
 	...over,
@@ -65,8 +65,8 @@ describe('extractSkillDescription', () => {
 	});
 
 	it('falls back to "Skill <id>" when there is no usable text', () => {
-		expect(extractSkillDescription('mcp-vertex-x', '')).toBe(
-			'Skill mcp-vertex-x',
+		expect(extractSkillDescription('delendai-x', '')).toBe(
+			'Skill delendai-x',
 		);
 	});
 });
@@ -99,16 +99,14 @@ describe('buildSkillCatalog', () => {
 			throw new Error('missing');
 		};
 		const catalog = await buildSkillCatalog('/ws', [bundle()], reader);
-		expect(catalog.entries[0]?.description).toBe(
-			'Skill mcp-vertex-operator',
-		);
+		expect(catalog.entries[0]?.description).toBe('Skill delendai-operator');
 	});
 
 	it('loadBody returns the full body lazily for a known id', async () => {
 		const reader = async (): Promise<string> =>
 			'---\ndescription: d\n---\nFULL BODY';
 		const catalog = await buildSkillCatalog('/ws', [bundle()], reader);
-		expect(await catalog.loadBody('mcp-vertex-operator')).toContain(
+		expect(await catalog.loadBody('delendai-operator')).toContain(
 			'FULL BODY',
 		);
 	});

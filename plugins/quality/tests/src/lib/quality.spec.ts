@@ -39,7 +39,7 @@ describe('resolveScopes', async () => {
 	it('falls back to the config validationMatrix, then scripts', async () => {
 		const fromConfig = await resolveScopes(
 			reader({
-				'mcp-vertex.config.json': JSON.stringify({
+				'delendai.config.json': JSON.stringify({
 					validationMatrix: {
 						scopes: {
 							full: [{ command: 'bun test', expect: 'exit0' }],
@@ -93,14 +93,14 @@ describe('run_quality dryRun (a00085 #4)', async () => {
 					resolve: (p: string) => `/ws/${p}`,
 				},
 				corePaths: {
-					cacheDir: '.cache/mcp-vertex',
-					docsDir: 'docs/mcp-vertex',
+					cacheDir: '.cache/delendai',
+					docsDir: 'docs/delendai',
 				},
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 				keepLegacy: false,
-				pluginCacheDir: '.cache/mcp-vertex/quality',
-				pluginDocsDir: 'docs/mcp-vertex/quality',
+				pluginCacheDir: '.cache/delendai/quality',
+				pluginDocsDir: 'docs/delendai/quality',
 				namespacePrefix: 'quality',
 				options: { scopes: { lint: ['eslint .'] } },
 				args: {},
@@ -138,14 +138,14 @@ describe('quality plugin', async () => {
 		const reg = await plugin.register({
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			keepLegacy: false,
-			pluginCacheDir: '.cache/mcp-vertex/quality',
-			pluginDocsDir: 'docs/mcp-vertex/quality',
+			pluginCacheDir: '.cache/delendai/quality',
+			pluginDocsDir: 'docs/delendai/quality',
 			namespacePrefix: 'quality',
 			options: {},
 			args: {},
@@ -180,14 +180,14 @@ describe('quality plugin', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			keepLegacy: false,
-			pluginCacheDir: '.cache/mcp-vertex/quality',
-			pluginDocsDir: 'docs/mcp-vertex/quality',
+			pluginCacheDir: '.cache/delendai/quality',
+			pluginDocsDir: 'docs/delendai/quality',
 			namespacePrefix: 'quality',
 			options: {},
 			args: {},

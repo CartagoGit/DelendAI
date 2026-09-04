@@ -120,7 +120,7 @@ const EMPTY_PRICING: IPricingTable = {
  * invocation (agent, plugin, model, extension) to an append-only NDJSON
  * log under the cache dir and surfaces aggregate usage/cost reports.
  * Metadata only: no message content, no credentials (redacted before
- * write). Load with `mcp-vertex --plugins=usage-tracking`.
+ * write). Load with `delendai --plugins=usage-tracking`.
  */
 export default definePlugin({
 	name: 'usage-tracking',

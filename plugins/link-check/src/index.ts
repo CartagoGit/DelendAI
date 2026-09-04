@@ -7,7 +7,7 @@ import { buildLinkCheckRegistration } from './lib/tools/link-check.tool';
  * Link-check plugin. `link_check` verifies markdown relative-link and anchor
  * integrity across the workspace — catching broken doc links before readers
  * (or the site build) do. Offline, read-only. Load with
- * `mcp-vertex --plugins=link-check`.
+ * `delendai --plugins=link-check`.
  */
 const OptionsSchema = z.object({});
 

@@ -29,8 +29,8 @@ describe('external-mcps plugin dispose (AUD-D05)', () => {
 			args: {},
 			namespacePrefix: 'external-mcps',
 			pluginCacheDir: 'external-mcps',
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			workspace: {
 				root: '/tmp/external-mcps-dispose-spec',
 				resolve: (rel: string) =>
@@ -46,8 +46,8 @@ describe('external-mcps plugin dispose (AUD-D05)', () => {
 			args: {},
 			namespacePrefix: 'external-mcps',
 			pluginCacheDir: 'external-mcps',
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			workspace: {
 				root: '/tmp/external-mcps-dispose-spec',
 				resolve: (rel: string) =>

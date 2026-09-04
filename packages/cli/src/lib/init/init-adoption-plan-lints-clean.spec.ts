@@ -1,7 +1,7 @@
 /**
  * init-adoption-plan-lints-clean.spec.ts — a00066 (adopter onboarding).
  *
- * The single highest-impact onboarding failure: `mcpv init` scaffolds an
+ * The single highest-impact onboarding failure: `delendai init` scaffolds an
  * adoption/migration proposal INTO the adopter's repo, and that proposal's
  * own `acceptance` block requires `bun run validate` to pass — which runs
  * `lint:proposals` over exactly the file init just wrote. If the generated
@@ -67,7 +67,7 @@ describe('generated adoption plan lints clean against the real proposal linter',
 		expectLintsClean(plan.relPath, plan.content);
 	});
 
-	it('does NOT leak mcp-vertex internal roadmap placeholders into the adopter body', () => {
+	it('does NOT leak delendai internal roadmap placeholders into the adopter body', () => {
 		// The plan lands in the ADOPTER's repo. Its body must be
 		// self-contained advisory content — never a dangling "_Pending
 		// f000NN._" / "filled by f000NN" / "<!-- f000NN … -->" reference to

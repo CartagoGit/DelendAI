@@ -56,12 +56,12 @@ describe('incident_proposals tool', () => {
 	const buildOptions = (): IIncidentProposalToolOptions => ({
 		namespacePrefix: 'proposals',
 		workspaceRoot: root,
-		proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-		indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+		proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+		indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 		counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 		layout: {
-			proposalsDir: 'docs/mcp-vertex/proposals',
-			proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+			proposalsDir: 'docs/delendai/proposals',
+			proposalIndexFile: '.cache/delendai/proposals/index.json',
 		},
 		readIncidents: async () => ({
 			incidents: [incident()],
@@ -78,7 +78,7 @@ describe('incident_proposals tool', () => {
 		expect(result.ok).toBe(true);
 		expect(result.drafts).toHaveLength(1);
 		expect(result.written).toBeUndefined();
-		expect(existsSync(join(root, 'docs/mcp-vertex/proposals'))).toBe(false);
+		expect(existsSync(join(root, 'docs/delendai/proposals'))).toBe(false);
 	});
 
 	it('writes ready proposals once and dedupes them on later runs', async () => {
@@ -91,7 +91,7 @@ describe('incident_proposals tool', () => {
 		expect(first.written).toBe(1);
 		expect(first.files).toHaveLength(1);
 
-		const docPath = join(root, 'docs/mcp-vertex/proposals', first.files[0]);
+		const docPath = join(root, 'docs/delendai/proposals', first.files[0]);
 		const body = readFileSync(docPath, 'utf8');
 		expect(body).toContain('signature:');
 		expect(body).toContain(

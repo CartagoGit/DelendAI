@@ -1,13 +1,13 @@
 ---
 title: Installa ed esegui
-description: Installa mcp-vertex, collegalo al tuo IDE, scegli un preset e verifica il server prima di iniziare a lavorare.
+description: Installa delendai, collegalo al tuo IDE, scegli un preset e verifica il server prima di iniziare a lavorare.
 order: 1
 navLabel: Installa
 ---
 
 # Installa ed esegui
 
-Aggiungi mcp-vertex al tuo flusso di lavoro, punta il client MCP al binario e verifica il set di plugin risolto prima della prima sessione.
+Aggiungi delendai al tuo flusso di lavoro, punta il client MCP al binario e verifica il set di plugin risolto prima della prima sessione.
 
 ## Scegli il tuo gestore di pacchetti
 
@@ -42,7 +42,7 @@ yarn dlx @delendai/cli validate
 
 ### bun
 
-bun unisce runtime e gestore di pacchetti in un solo strumento, e mcp-vertex stesso è costruito con bun, quindi questo è il percorso più diretto quando bun è già disponibile sulla macchina.
+bun unisce runtime e gestore di pacchetti in un solo strumento, e delendai stesso è costruito con bun, quindi questo è il percorso più diretto quando bun è già disponibile sulla macchina.
 
 ```bash
 bunx @delendai/cli init
@@ -70,13 +70,13 @@ Ambito: progetto
 ```json
 {
   "servers": {
-    "mcp-vertex": {
+    "delendai": {
       "type": "stdio",
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -96,12 +96,12 @@ Ambito: progetto / globale
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -121,12 +121,12 @@ Ambito: globale
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -146,12 +146,12 @@ Ambito: progetto
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -171,12 +171,12 @@ Ambito: globale
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -196,12 +196,12 @@ Ambito: globale
 ```json
 {
   "mcpServers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -221,12 +221,12 @@ Ambito: globale
 ```json
 {
   "context_servers": {
-    "mcp-vertex": {
+    "delendai": {
       "command": "bunx",
       "args": [
         "--package",
         "@delendai/cli",
-        "mcpv",
+        "delendai",
         "__serve",
         "--workspace",
         ".",
@@ -326,4 +326,4 @@ Qualsiasi IDE che accetti un server MCP via stdio può eseguire lo stesso server
 
 ### Posso eseguire più preset insieme?
 
-No. Una singola istanza del server risolve un solo preset alla volta. Se progetti diversi hanno bisogno di set di plugin differenti, metti un mcp-vertex.config.json dedicato in ogni progetto e lascia che il loader lo risolva per workspace.
+No. Una singola istanza del server risolve un solo preset alla volta. Se progetti diversi hanno bisogno di set di plugin differenti, metti un delendai.config.json dedicato in ogni progetto e lascia che il loader lo risolva per workspace.

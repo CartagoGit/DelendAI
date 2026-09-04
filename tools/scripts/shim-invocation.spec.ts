@@ -1,12 +1,12 @@
 /**
  * shim-invocation.spec.ts — f00148 S3: end-to-end invocation of the
- * prebuilt mcp-vertex-shim Go binary. Builds the binary on the fly
+ * prebuilt delendai-shim Go binary. Builds the binary on the fly
  * when Go is available; skips the e2e assertions otherwise (the
  * S1 source-only fallback is documented in the proposal).
  *
  * Run with `bun run --cwd scripts test shim-invocation`. The test
  * exercises:
- *   1. `--help` exits 0 and prints the live `mcpv --help` banner.
+ *   1. `--help` exits 0 and prints the live `delendai --help` banner.
  *   2. `config show --json` exits 0 and emits a JSON object with the
  *      expected `$schema` key (proves stdin/stdout are wired through
  *      to the bun child).
@@ -17,7 +17,7 @@ import { existsSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const REPO_ROOT = new URL('../..', import.meta.url).pathname;
-const BINARY = `${REPO_ROOT}dist/mcp-vertex-shim`;
+const BINARY = `${REPO_ROOT}dist/delendai-shim`;
 const GO = '/tmp/go/go/bin/go';
 
 const hasGo = (): boolean => existsSync(GO);
@@ -28,7 +28,7 @@ const build = (): void => {
 		throw new Error('Go 1.22+ not available at /tmp/go/go/bin/go');
 	}
 	const r = spawnSync(GO, ['build', '-o', BINARY, '.'], {
-		cwd: `${REPO_ROOT}bin/mcp-vertex-shim`,
+		cwd: `${REPO_ROOT}bin/delendai-shim`,
 		stdio: 'inherit',
 	});
 	if (r.status !== 0) {
@@ -50,7 +50,7 @@ const runBinary = (
 	};
 };
 
-describe('mcp-vertex-shim end-to-end', { timeout: 30_000 }, () => {
+describe('delendai-shim end-to-end', { timeout: 30_000 }, () => {
 	if (!hasBinary() && hasGo()) {
 		// Auto-build on the fly when Go is present so the test
 		// is self-contained on a CI box with Go installed.
@@ -70,9 +70,9 @@ describe('mcp-vertex-shim end-to-end', { timeout: 30_000 }, () => {
 	it('--help exits 0 and prints the live banner', () => {
 		const r = runBinary(['--help']);
 		expect(r.status).toBe(0);
-		expect(r.stdout).toContain('mcp-vertex 0.1.0');
+		expect(r.stdout).toContain('delendai 0.1.0');
 		expect(r.stdout).toContain('Usage:');
-		expect(r.stdout).toContain('mcpv [global flags]');
+		expect(r.stdout).toContain('delendai [global flags]');
 	});
 
 	it('config show --json exits 0 and emits a JSON object', () => {

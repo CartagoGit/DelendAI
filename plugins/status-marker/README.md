@@ -4,7 +4,7 @@
 8-state table that every agent response must end with, plus the
 `close` / `validate` MCP tools that produce and audit the closing line.
 
-Designed for [`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
+Designed for [`@delendai/core`](../../docs/delendai/README-DELENDAI.md).
 
 ## The 8 states
 
@@ -32,7 +32,7 @@ Designed for [`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 ```jsonc
 {
 	"servers": {
-		"mcp-vertex": {
+		"delendai": {
 			"command": "bunx",
 			"args": ["@delendai/core", "--plugins=status-marker"]
 		}
@@ -48,7 +48,7 @@ Designed for [`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 | `<prefix>_validate` | Audits a block of text; reports whether the last line is a valid close. |
 | `<prefix>_ping` | Health check for the plugin. |
 
-Prefix defaults to `status-marker`; override via `mcp-vertex.config.json`:
+Prefix defaults to `status-marker`; override via `delendai.config.json`:
 
 ```jsonc
 { "plugins": { "status-marker": { "prefix": "close" } } }
@@ -57,7 +57,7 @@ Prefix defaults to `status-marker`; override via `mcp-vertex.config.json`:
 ## Extend the marker set (no fork)
 
 A host can add, disable, or override close-markers from
-`mcp-vertex.config.json` — without forking the plugin (proposal `f00071`).
+`delendai.config.json` — without forking the plugin (proposal `f00071`).
 The block lives under `plugins.status-marker.options.markers` and has three
 disjoint fields:
 
@@ -124,8 +124,8 @@ const audit = validateCloseMarker(line);
 
 ## See also
 
-- Proposal [`l104`](../../docs/mcp-vertex/proposals/l104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md).
-- Proposal [`f00071`](../../docs/mcp-vertex/proposals/ready/f00071-status-marker-user-configurable-set.md) — user-configurable marker set.
-- Plugin guide: [`docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`](../../docs/mcp-vertex/PLUGINS-MCP-VERTEX.md).
+- Proposal [`l104`](../../docs/delendai/proposals/l104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md).
+- Proposal [`f00071`](../../docs/delendai/proposals/ready/f00071-status-marker-user-configurable-set.md) — user-configurable marker set.
+- Plugin guide: [`docs/delendai/PLUGINS-DELENDAI.md`](../../docs/delendai/PLUGINS-DELENDAI.md).
 
 BSD-3-Clause © Cartago

@@ -4,7 +4,7 @@
  * Warns (does NOT fail) when the working tree is dirty. A clean
  * tree is a CI pre-condition, not a runtime one — agents routinely
  * run with in-flight slices — so we keep this strictly warn-only and
- * keep the `mcpv doctor` exit code at zero.
+ * keep the `delendai doctor` exit code at zero.
  */
 import type { DoctorCheck, IDoctorFs } from '../types';
 

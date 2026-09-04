@@ -7,9 +7,9 @@ describe('buildPanels', () => {
 	it('renders all panels', () => {
 		const mockModel = {
 			overview: {
-				serverName: 'mcp-vertex',
+				serverName: 'delendai',
 				serverVersion: '0.1.0',
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				plugins: [],
 				tools: [],
 				knowledgeIds: [],

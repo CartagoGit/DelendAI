@@ -20,7 +20,7 @@
  * Pinned contract:
  *   1. Empty workspace         → all three files written fresh.
  *   2. mcp.json already has    → skipped, no write.
- *      servers.mcp-vertex
+ *      servers.delendai
  *   3. mcp.json with other     → splice (comments + sibling
  *      server preserved).
  *   4. mcp.json with            → skipped with descriptive
@@ -28,8 +28,8 @@
  *   5. mcp.json unparseable     → skipped with "unparseable".
  *   6. settings.json missing   → written fresh.
  *   7. settings.json with      → skipped.
- *      mcp-vertex.server
- *   8. mcp-vertex.config.json  → skipped (always; never
+ *      delendai.server
+ *   8. delendai.config.json  → skipped (always; never
  *      existing                 overwritten).
  *
  * Every test uses a fresh `mkdtempSync` dir to keep the cases
@@ -78,22 +78,22 @@ describe('runSetupInstall', () => {
 		expect(result.ok).toBe(true);
 		expect(result.written).toContain('.vscode/mcp.json');
 		expect(result.written).toContain('.vscode/settings.json');
-		expect(result.written).toContain('mcp-vertex.config.json');
+		expect(result.written).toContain('delendai.config.json');
 		expect(result.skipped).toEqual([]);
 		const mcp = readJsonc(join(cwd, '.vscode/mcp.json')) as {
-			servers: { 'mcp-vertex': { command: string } };
+			servers: { delendai: { command: string } };
 		};
-		expect(mcp.servers['mcp-vertex'].command).toBe('bun');
+		expect(mcp.servers['delendai'].command).toBe('bun');
 	});
 
-	it('skips mcp.json when servers.mcp-vertex is already declared (no rewrite)', () => {
+	it('skips mcp.json when servers.delendai is already declared (no rewrite)', () => {
 		const mcpPath = join(cwd, '.vscode', 'mcp.json');
 		const before = `{
   "servers": {
-    "mcp-vertex": {
+    "delendai": {
       "type": "stdio",
       "command": "bun",
-      "args": ["run", "mcp-vertex"]
+      "args": ["run", "delendai"]
     }
   }
 }
@@ -104,7 +104,7 @@ describe('runSetupInstall', () => {
 		expect(readFileSync(mcpPath, 'utf8')).toBe(before);
 	});
 
-	it('splices mcp-vertex into an existing mcp.json with sibling server + JSONC comment', () => {
+	it('splices delendai into an existing mcp.json with sibling server + JSONC comment', () => {
 		const mcpPath = join(cwd, '.vscode', 'mcp.json');
 		const before = `{
   // my own server
@@ -119,16 +119,16 @@ describe('runSetupInstall', () => {
 		const after = readFileSync(mcpPath, 'utf8');
 		expect(after).toContain('// my own server');
 		expect(after).toContain('"my-server"');
-		expect(after).toContain('"mcp-vertex"');
+		expect(after).toContain('"delendai"');
 		// Round-trip: parsed result must contain both servers.
 		const parsed = readJsonc(mcpPath) as {
 			servers: Record<string, { command: string }>;
 		};
 		expect(Object.keys(parsed.servers).sort()).toEqual([
-			'mcp-vertex',
+			'delendai',
 			'my-server',
 		]);
-		expect(parsed.servers['mcp-vertex']?.command).toBe('bun');
+		expect(parsed.servers['delendai']?.command).toBe('bun');
 		expect(parsed.servers['my-server']?.command).toBe('foo');
 	});
 
@@ -146,7 +146,7 @@ describe('runSetupInstall', () => {
 
 	it('skips mcp.json when it is unparseable (does not clobber)', () => {
 		const mcpPath = join(cwd, '.vscode', 'mcp.json');
-		const before = '{ servers: { mcp-vertex: { oops, } }\n';
+		const before = '{ servers: { delendai: { oops, } }\n';
 		writeFileSync(mcpPath, before);
 		const result = runSetupInstall(cwd);
 		expect(result.written).not.toContain('.vscode/mcp.json');
@@ -156,29 +156,29 @@ describe('runSetupInstall', () => {
 		expect(readFileSync(mcpPath, 'utf8')).toBe(before);
 	});
 
-	it('skips an existing mcp-vertex.config.json (never overwrites curated preset)', () => {
-		const configPath = join(cwd, 'mcp-vertex.config.json');
+	it('skips an existing delendai.config.json (never overwrites curated preset)', () => {
+		const configPath = join(cwd, 'delendai.config.json');
 		const before = '{ "preset": "minimal", "plugins": [] }\n';
 		writeFileSync(configPath, before);
 		const result = runSetupInstall(cwd);
-		expect(result.written).not.toContain('mcp-vertex.config.json');
+		expect(result.written).not.toContain('delendai.config.json');
 		expect(
-			result.skipped.some((s) => s.includes('mcp-vertex.config.json')),
+			result.skipped.some((s) => s.includes('delendai.config.json')),
 		).toBe(true);
 		expect(readFileSync(configPath, 'utf8')).toBe(before);
 	});
 
-	it('skips settings.json when mcp-vertex.server is already declared', () => {
+	it('skips settings.json when delendai.server is already declared', () => {
 		const settingsPath = join(cwd, '.vscode', 'settings.json');
 		const before =
-			'{ "mcp-vertex.server": { "command": "bun", "args": [] } }\n';
+			'{ "delendai.server": { "command": "bun", "args": [] } }\n';
 		writeFileSync(settingsPath, before);
 		const result = runSetupInstall(cwd);
 		expect(result.written).not.toContain('.vscode/settings.json');
 		expect(readFileSync(settingsPath, 'utf8')).toBe(before);
 	});
 
-	it('splices mcp-vertex.server into an existing settings.json without clobbering siblings', () => {
+	it('splices delendai.server into an existing settings.json without clobbering siblings', () => {
 		const settingsPath = join(cwd, '.vscode', 'settings.json');
 		const before = '{\n  "editor.formatOnSave": true\n}\n';
 		writeFileSync(settingsPath, before);
@@ -186,18 +186,18 @@ describe('runSetupInstall', () => {
 		expect(result.written).toContain('.vscode/settings.json');
 		const after = readFileSync(settingsPath, 'utf8');
 		expect(after).toContain('"editor.formatOnSave": true');
-		expect(after).toContain('"mcp-vertex.server"');
+		expect(after).toContain('"delendai.server"');
 		const parsed = readJsonc(settingsPath) as {
 			'editor.formatOnSave': boolean;
-			'mcp-vertex.server': { command: string };
+			'delendai.server': { command: string };
 		};
 		expect(parsed['editor.formatOnSave']).toBe(true);
-		expect(parsed['mcp-vertex.server'].command).toBe('bun');
+		expect(parsed['delendai.server'].command).toBe('bun');
 	});
 
 	it('returns a non-empty note and an empty skipped list on a clean install', () => {
 		const result = runSetupInstall(cwd);
 		expect(result.skipped).toEqual([]);
-		expect(result.note).toMatch(/^Wrote the missing mcp-vertex files\./);
+		expect(result.note).toMatch(/^Wrote the missing delendai files\./);
 	});
 });

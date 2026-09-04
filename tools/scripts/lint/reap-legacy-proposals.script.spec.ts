@@ -155,9 +155,8 @@ describe('isReapCandidate', () => {
 });
 
 describe('buildVintageProposal', () => {
-	const proposalsDir = '/repo/docs/mcp-vertex/proposals';
-	const absPath =
-		'/repo/docs/mcp-vertex/proposals/done/feats/f00100-alpha.md';
+	const proposalsDir = '/repo/docs/delendai/proposals';
+	const absPath = '/repo/docs/delendai/proposals/done/feats/f00100-alpha.md';
 
 	it('builds the proposal record from a well-formed path', () => {
 		const v = buildVintageProposal(
@@ -178,7 +177,7 @@ describe('buildVintageProposal', () => {
 	it('returns undefined for a path outside done/', () => {
 		const v = buildVintageProposal(
 			fm(),
-			'/repo/docs/mcp-vertex/proposals/ready/f00100-alpha.md',
+			'/repo/docs/delendai/proposals/ready/f00100-alpha.md',
 			proposalsDir,
 			31,
 			'shipped-in',
@@ -189,7 +188,7 @@ describe('buildVintageProposal', () => {
 	it('returns undefined for an unknown kind folder', () => {
 		const v = buildVintageProposal(
 			fm(),
-			'/repo/docs/mcp-vertex/proposals/done/unknown/f00100-alpha.md',
+			'/repo/docs/delendai/proposals/done/unknown/f00100-alpha.md',
 			proposalsDir,
 			31,
 			'shipped-in',
@@ -199,12 +198,12 @@ describe('buildVintageProposal', () => {
 });
 
 describe('planMove', () => {
-	const proposalsDir = '/repo/docs/mcp-vertex/proposals';
+	const proposalsDir = '/repo/docs/delendai/proposals';
 	const v: IVintageProposal = {
 		id: 'f00100',
 		kind: 'feat',
 		sourceAbsPath:
-			'/repo/docs/mcp-vertex/proposals/done/feats/f00100-alpha.md',
+			'/repo/docs/delendai/proposals/done/feats/f00100-alpha.md',
 		sourceRelPath: 'done/feats/f00100-alpha.md',
 		sourceFolder: 'done/feats',
 		filename: 'f00100-alpha.md',
@@ -218,7 +217,7 @@ describe('planMove', () => {
 	it('computes the destination under legacy/closed/<kind>/', () => {
 		const plan = planMove(v, proposalsDir, '2026-07-26');
 		expect(plan.destAbsPath).toBe(
-			'/repo/docs/mcp-vertex/proposals/legacy/closed/feats/f00100-alpha.md',
+			'/repo/docs/delendai/proposals/legacy/closed/feats/f00100-alpha.md',
 		);
 		expect(plan.destRelPath).toContain('legacy/closed/feats/');
 		expect(plan.frontmatterPatch['archived-on']).toBe('2026-07-26');

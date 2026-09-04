@@ -138,10 +138,8 @@ describe('loadSkill', () => {
 		);
 
 		expect(loaded[0]?.body).toContain('# proposals workflow playbook');
-		expect(loaded[1]?.body).toContain('# mcp-vertex operator');
-		expect(loaded[2]?.body).toContain(
-			'# mcp-vertex status marker + closure',
-		);
+		expect(loaded[1]?.body).toContain('# delendai operator');
+		expect(loaded[2]?.body).toContain('# delendai status marker + closure');
 	});
 });
 
@@ -150,7 +148,7 @@ describe('loadSkillCached', () => {
 		const workspaceRoot = makeWorkspace();
 		const cachePath = writeSkill(
 			workspaceRoot,
-			'.cache/mcp-vertex/skills/operator.json',
+			'.cache/delendai/skills/operator.json',
 			JSON.stringify({
 				id: 'operator',
 				body: 'cached body',
@@ -188,7 +186,7 @@ describe('loadSkillCached', () => {
 		const workspaceRoot = makeWorkspace();
 		const cachePath = writeSkill(
 			workspaceRoot,
-			'.cache/mcp-vertex/skills/operator.json',
+			'.cache/delendai/skills/operator.json',
 			JSON.stringify({
 				id: 'operator',
 				body: 'stale body',
@@ -228,7 +226,7 @@ describe('loadSkillCached', () => {
 		const workspaceRoot = makeWorkspace();
 		const cachePath = writeSkill(
 			workspaceRoot,
-			'.cache/mcp-vertex/skills/operator.json',
+			'.cache/delendai/skills/operator.json',
 			'{bad json',
 		);
 		writeSkill(

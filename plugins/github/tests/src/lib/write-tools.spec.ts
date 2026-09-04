@@ -44,9 +44,9 @@ const baseContext = (
 		provider: 'github',
 		host: 'github.com',
 		owner: 'CartagoGit',
-		repository: 'mcp-vertex',
-		webUrl: 'https://github.com/CartagoGit/mcp-vertex',
-		apiUrl: 'https://api.github.com/repos/CartagoGit/mcp-vertex',
+		repository: 'delendai',
+		webUrl: 'https://github.com/CartagoGit/delendai',
+		apiUrl: 'https://api.github.com/repos/CartagoGit/delendai',
 	},
 	timeoutMs: 15000,
 	maxRetries: 2,
@@ -249,7 +249,7 @@ describe('@delendai/github write tool registrations', () => {
 		const suite = await createSuite({
 			respond: async (call) => {
 				expect(call.url).toBe(
-					'https://api.github.com/repos/CartagoGit/mcp-vertex/issues/42',
+					'https://api.github.com/repos/CartagoGit/delendai/issues/42',
 				);
 				expect(call.init.method).toBe('PATCH');
 				expect(call.init.body).toBe(
@@ -266,7 +266,7 @@ describe('@delendai/github write tool registrations', () => {
 						title: 'Ship f00413',
 						state: 'closed',
 						html_url:
-							'https://github.com/CartagoGit/mcp-vertex/issues/42',
+							'https://github.com/CartagoGit/delendai/issues/42',
 						user: { login: 'copilot' },
 						labels: [{ name: 'done' }],
 						comments: 3,
@@ -313,7 +313,7 @@ describe('@delendai/github write tool registrations', () => {
 		const suite = await createSuite({
 			respond: async (call) => {
 				expect(call.url).toBe(
-					'https://api.github.com/repos/CartagoGit/mcp-vertex/issues/42/comments',
+					'https://api.github.com/repos/CartagoGit/delendai/issues/42/comments',
 				);
 				expect(call.init.method).toBe('POST');
 				expect(call.init.body).toBe(
@@ -325,7 +325,7 @@ describe('@delendai/github write tool registrations', () => {
 						body: 'queued for deploy',
 						created_at: '2026-08-31T00:00:10.000Z',
 						html_url:
-							'https://github.com/CartagoGit/mcp-vertex/issues/42#issuecomment-1',
+							'https://github.com/CartagoGit/delendai/issues/42#issuecomment-1',
 						user: { login: 'copilot' },
 					}),
 					{ 'x-request-id': 'req-issue-comment' },
@@ -363,7 +363,7 @@ describe('@delendai/github write tool registrations', () => {
 		const suite = await createSuite({
 			respond: async (call) => {
 				expect(call.url).toBe(
-					'https://api.github.com/repos/CartagoGit/mcp-vertex/actions/workflows/deploy.yml/dispatches',
+					'https://api.github.com/repos/CartagoGit/delendai/actions/workflows/deploy.yml/dispatches',
 				);
 				expect(call.init.method).toBe('POST');
 				expect(call.init.body).toBe(
@@ -405,7 +405,7 @@ describe('@delendai/github write tool registrations', () => {
 		const suite = await createSuite({
 			respond: async (call) => {
 				expect(call.url).toBe(
-					'https://api.github.com/repos/CartagoGit/mcp-vertex/dispatches',
+					'https://api.github.com/repos/CartagoGit/delendai/dispatches',
 				);
 				expect(call.init.method).toBe('POST');
 				expect(call.init.body).toBe(
@@ -493,7 +493,7 @@ describe('@delendai/github write tool registrations', () => {
 						draft: false,
 						prerelease: false,
 						html_url:
-							'https://github.com/CartagoGit/mcp-vertex/releases/tag/v1.2.3',
+							'https://github.com/CartagoGit/delendai/releases/tag/v1.2.3',
 					}),
 					{ 'x-request-id': 'req-release-idempotent' },
 				);
@@ -541,7 +541,7 @@ describe('@delendai/github write tool registrations', () => {
 			},
 			audit: {
 				idempotency: {
-					key: 'release-create:CartagoGit/mcp-vertex:v1.2.3',
+					key: 'release-create:CartagoGit/delendai:v1.2.3',
 					replay: true,
 				},
 				remote: { attempts: 1, duplicate: true, status: 201 },
@@ -594,7 +594,7 @@ describe('@delendai/github write tool registrations', () => {
 			respond: async (call) => {
 				if (call.init.method === 'PATCH') {
 					expect(call.url).toBe(
-						'https://api.github.com/repos/CartagoGit/mcp-vertex/releases/77',
+						'https://api.github.com/repos/CartagoGit/delendai/releases/77',
 					);
 					expect(call.init.body).toBe(
 						JSON.stringify({
@@ -612,13 +612,13 @@ describe('@delendai/github write tool registrations', () => {
 							draft: false,
 							prerelease: false,
 							html_url:
-								'https://github.com/CartagoGit/mcp-vertex/releases/tag/v1.2.4',
+								'https://github.com/CartagoGit/delendai/releases/tag/v1.2.4',
 						}),
 						{ 'x-request-id': 'req-release-update' },
 					);
 				}
 				expect(call.url).toBe(
-					'https://api.github.com/repos/CartagoGit/mcp-vertex/releases/77',
+					'https://api.github.com/repos/CartagoGit/delendai/releases/77',
 				);
 				expect(call.init.method).toBe('DELETE');
 				return response(204, '', {
@@ -795,7 +795,7 @@ describe('@delendai/github write tool registrations', () => {
 		const suite = await createSuite({
 			respond: async (call) => {
 				expect(call.url).toBe(
-					'https://api.github.com/repos/CartagoGit/mcp-vertex/git/refs/tags/v1.2.3',
+					'https://api.github.com/repos/CartagoGit/delendai/git/refs/tags/v1.2.3',
 				);
 				expect(call.init.method).toBe('DELETE');
 				return response(204, '', { 'x-request-id': 'req-tag-delete' });

@@ -5,13 +5,13 @@ import type {
 	IToolIdentityRegistry,
 	IToolRegistryEntry,
 } from '@delendai/core/public';
-import { MCP_VERTEX_VERSION } from '@delendai/core/version';
+import { DELENDAI_VERSION } from '@delendai/core/version';
 
 import {
 	buildSafeReport,
 	withSyntheticSafeStack,
 } from '../src/lib/report-builder.helper';
-import { McpVertexInternalError } from '../src/lib/mcp-internal-error.helper';
+import { DelendaiInternalError } from '../src/lib/mcp-internal-error.helper';
 
 const registryOf = (
 	entries: Record<string, IToolRegistryEntry>,
@@ -21,9 +21,9 @@ const registryOf = (
 });
 
 describe('buildSafeReport', () => {
-	it('uses the published @delendai/core version as mcpVertexVersion', () => {
+	it('uses the published @delendai/core version as delendaiVersion', () => {
 		const error = withSyntheticSafeStack(
-			new McpVertexInternalError({
+			new DelendaiInternalError({
 				code: 'PLUGIN_REGISTER_TIMEOUT',
 				packageId: '@delendai/error-reporting',
 				componentId: 'createSafeReporter',
@@ -32,11 +32,11 @@ describe('buildSafeReport', () => {
 			'createSafeReporter',
 		);
 		const report = buildSafeReport({
-			toolName: 'mcp-vertex_quality_run_quality',
+			toolName: 'delendai_quality_run_quality',
 			toolRegistry: registryOf({
-				'mcp-vertex_quality_run_quality': {
+				delendai_quality_run_quality: {
 					packageName: '@delendai/quality',
-					owner: 'mcp-vertex',
+					owner: 'delendai',
 					publicToolName: 'run_quality',
 					category: 'analysis',
 				},
@@ -44,15 +44,15 @@ describe('buildSafeReport', () => {
 			error,
 		});
 		expect(report).toBeDefined();
-		expect(report?.mcpVertexVersion).toBe(MCP_VERTEX_VERSION);
-		expect(report?.mcpVertexVersion).toBe(corePackageJson.version);
+		expect(report?.delendaiVersion).toBe(DELENDAI_VERSION);
+		expect(report?.delendaiVersion).toBe(corePackageJson.version);
 		expect(report?.safeToolId).toBe('@delendai/quality.run_quality');
-		expect(report?.toolOwner).toBe('mcp-vertex');
+		expect(report?.toolOwner).toBe('delendai');
 	});
 
 	it('omits safeToolId for host tools and keeps the report invariant across hosts', () => {
 		const error = withSyntheticSafeStack(
-			new McpVertexInternalError({
+			new DelendaiInternalError({
 				code: 'PLUGIN_REGISTER_TIMEOUT',
 				packageId: '@delendai/error-reporting',
 				componentId: 'createSafeReporter',
@@ -92,7 +92,7 @@ describe('buildSafeReport', () => {
 
 	it('does not trust a deceptive vertex-looking prefix without a first-party registry entry', () => {
 		const error = withSyntheticSafeStack(
-			new McpVertexInternalError({
+			new DelendaiInternalError({
 				code: 'PLUGIN_REGISTER_TIMEOUT',
 				packageId: '@delendai/error-reporting',
 				componentId: 'createSafeReporter',
@@ -101,9 +101,9 @@ describe('buildSafeReport', () => {
 			'createSafeReporter',
 		);
 		const report = buildSafeReport({
-			toolName: 'mcp-vertex.create_proposal',
+			toolName: 'delendai.create_proposal',
 			toolRegistry: registryOf({
-				'mcp-vertex.create_proposal': {
+				'delendai.create_proposal': {
 					packageName: '/workspace/hosts/deceptive.ts',
 					owner: 'host-project',
 					category: 'host-specific',
@@ -114,7 +114,7 @@ describe('buildSafeReport', () => {
 
 		expect(report?.safeToolId).toBeUndefined();
 		expect(JSON.stringify(report)).not.toContain(
-			'mcp-vertex.create_proposal',
+			'delendai.create_proposal',
 		);
 	});
 });

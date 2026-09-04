@@ -38,23 +38,23 @@ describe('project plugins', () => {
 
 	it('registers the three project plugin operations', async () => {
 		const options = {
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspace: createWorkspacePathProvider('/tmp'),
 		};
 		expect(
 			await registrationNames(
 				buildProjectPluginsCreateToolRegistration(options),
 			),
-		).toBe('mcp-vertex_project_plugins_create');
+		).toBe('delendai_project_plugins_create');
 		expect(
 			await registrationNames(
 				buildProjectPluginsInspectToolRegistration(options),
 			),
-		).toBe('mcp-vertex_project_plugins_inspect');
+		).toBe('delendai_project_plugins_inspect');
 		expect(
 			await registrationNames(
 				buildProjectPluginsRepairToolRegistration(options),
 			),
-		).toBe('mcp-vertex_project_plugins_repair');
+		).toBe('delendai_project_plugins_repair');
 	});
 });

@@ -122,15 +122,15 @@ hand-maintained.
 ## Example invocations
 
 ```bash
-mcp-vertex --plugins=env
+delendai --plugins=env
 ```
 
 ```json
-{"tool":"mcp-vertex_env_check","arguments":{"path":".env"}}
+{"tool":"delendai_env_check","arguments":{"path":".env"}}
 ```
 
 ```json
-{"tool":"mcp-vertex_env_explains","arguments":{"path":".env"}}
+{"tool":"delendai_env_explains","arguments":{"path":".env"}}
 ```
 
 ## Integrations

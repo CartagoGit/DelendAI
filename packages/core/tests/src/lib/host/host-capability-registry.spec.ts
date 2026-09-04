@@ -12,7 +12,7 @@ import {
 } from '../../../../../../tools/scripts/lint/host-manifest-drift.script';
 
 const manifest = {
-	contract: 'mcp-vertex.host-capability-manifest',
+	contract: 'delendai.host-capability-manifest',
 	version: 1,
 	hostId: 'codex-cli',
 	mcp: {

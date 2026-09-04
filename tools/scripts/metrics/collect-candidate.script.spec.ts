@@ -52,11 +52,11 @@ describe('collect-candidate.script — tool-name drift guard (f00027)', () => {
 	it('the tracked suffixes match exactly what observability + adaptive-optimizer register', async () => {
 		const server = new FakeServer();
 		await buildObsRuntimeMetricsToolRegistration({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			registry: createRuntimeMetricsRegistry(),
 		}).register(server as never);
 		for (const registration of buildAdaptiveOptimizerToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: '/workspace',
 			maxBytes: 2000,
 			discoverRosterFn: async () => ({ available: [], missing: [] }),
@@ -78,17 +78,17 @@ describe('collectPluginMetrics — no-samples representation end to end', () => 
 	it('collects the discriminated no-samples state without ever seeing a null', async () => {
 		const server = new FakeServer();
 		await buildObsRuntimeMetricsToolRegistration({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			registry: createRuntimeMetricsRegistry(),
 		}).register(server as never);
-		const fakeClient = new FakeClient(server, 'mcp-vertex');
+		const fakeClient = new FakeClient(server, 'delendai');
 
 		const collected = await collectPluginMetrics(
 			fakeClient as never,
 			fakeClient.toolList,
 		);
 
-		const entry = collected['mcp-vertex_obs_runtime_metrics'];
+		const entry = collected['delendai_obs_runtime_metrics'];
 		expect(entry).toBeDefined();
 		expect(entry?.responses).toEqual({ hasSamples: false });
 		expect(entry?.responses).not.toHaveProperty('p95PayloadBytes');
@@ -98,7 +98,7 @@ describe('collectPluginMetrics — no-samples representation end to end', () => 
 		const registry = createRuntimeMetricsRegistry();
 		const server = new FakeServer();
 		await buildObsHealthToolRegistration({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			tracesDeps: {
 				listTraceRecords: async () => [
 					{
@@ -112,20 +112,20 @@ describe('collectPluginMetrics — no-samples representation end to end', () => 
 			metricsRegistry: registry,
 		}).register(server as never);
 		await buildObsRuntimeMetricsToolRegistration({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			registry,
 		}).register(server as never);
-		const fakeClient = new FakeClient(server, 'mcp-vertex');
+		const fakeClient = new FakeClient(server, 'delendai');
 
 		await fakeClient.callTool({
-			name: 'mcp-vertex_obs_trace',
+			name: 'delendai_obs_trace',
 			arguments: { limit: 10 },
 		});
 		const collected = await collectPluginMetrics(fakeClient as never, [
-			{ name: 'mcp-vertex_obs_runtime_metrics' },
+			{ name: 'delendai_obs_runtime_metrics' },
 		]);
 
-		const entry = collected['mcp-vertex_obs_runtime_metrics'];
+		const entry = collected['delendai_obs_runtime_metrics'];
 		expect(entry?.responses.hasSamples).toBe(true);
 		if (entry?.responses.hasSamples === true) {
 			expect(Number.isFinite(entry.responses.p95PayloadBytes)).toBe(true);
@@ -143,7 +143,7 @@ describe('collectPluginMetrics — no-samples representation end to end', () => 
 
 	it('drops a tool whose response fails validation instead of writing malformed data', async () => {
 		const server = new FakeServer();
-		server.registerTool('mcp-vertex_obs_runtime_metrics', {}, async () => ({
+		server.registerTool('delendai_obs_runtime_metrics', {}, async () => ({
 			content: [
 				{
 					type: 'text',
@@ -154,10 +154,10 @@ describe('collectPluginMetrics — no-samples representation end to end', () => 
 				},
 			],
 		}));
-		const fakeClient = new FakeClient(server, 'mcp-vertex');
+		const fakeClient = new FakeClient(server, 'delendai');
 
 		const collected = await collectPluginMetrics(fakeClient as never, [
-			{ name: 'mcp-vertex_obs_runtime_metrics' },
+			{ name: 'delendai_obs_runtime_metrics' },
 		]);
 
 		expect(collected).toEqual({});

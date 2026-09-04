@@ -42,7 +42,7 @@ const cleanFragment = (): string =>
 		'## Discovery',
 		'',
 		'Follow the universal bootstrap at',
-		'[`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](docs/mcp-vertex/AGENT-BOOTSTRAP.md).',
+		'[`docs/delendai/AGENT-BOOTSTRAP.md`](docs/delendai/AGENT-BOOTSTRAP.md).',
 		'',
 		'<!-- END GENERATED: f00056 S4 (agnostic bootstrap). -->',
 		'',
@@ -60,7 +60,7 @@ describe('host-hints-fragments lint (f00092 single fragment)', () => {
 	it('HOST_HINT_FRAGMENTS lists exactly one canonical fragment', () => {
 		expect(HOST_HINT_FRAGMENTS).toHaveLength(1);
 		expect(HOST_HINT_FRAGMENTS).toContain(
-			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+			'docs/delendai/host-hints/agent-instructions.generated.md',
 		);
 	});
 
@@ -99,11 +99,11 @@ describe('host-hints-fragments lint (f00092 single fragment)', () => {
 		const content = [
 			cleanFragment(),
 			'',
-			'See `mcp-vertex-operator` for the canonical first move.',
+			'See `delendai-operator` for the canonical first move.',
 			'',
 		].join('\n');
 		writeFragment(HOST_HINT_FRAGMENTS[0] ?? '', content);
-		const skillIds = new Set(['mcp-vertex-operator']);
+		const skillIds = new Set(['delendai-operator']);
 		const out = await lintHostHintFragment(
 			HOST_HINT_FRAGMENTS[0] ?? '',
 			workspaceRoot,
@@ -113,7 +113,7 @@ describe('host-hints-fragments lint (f00092 single fragment)', () => {
 			(v) => v.kind === 'skill-id-enumeration',
 		);
 		expect(skillViolations.length).toBeGreaterThan(0);
-		expect(skillViolations[0]?.fix).toContain('mcp-vertex_agent_catalog');
+		expect(skillViolations[0]?.fix).toContain('delendai_agent_catalog');
 	});
 
 	it('fragment missing the bootstrap link fails with kind=missing-bootstrap-link', async () => {
@@ -154,7 +154,7 @@ describe('host-hints-fragments lint (f00092 single fragment)', () => {
 
 	it('findStrayFragments returns empty when only the canonical fragment exists', async () => {
 		writeFragment(
-			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+			'docs/delendai/host-hints/agent-instructions.generated.md',
 			cleanFragment(),
 		);
 		const strays = await findStrayFragments(workspaceRoot);
@@ -163,11 +163,11 @@ describe('host-hints-fragments lint (f00092 single fragment)', () => {
 
 	it('findStrayFragments flags any sibling *.generated.md file', async () => {
 		writeFragment(
-			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+			'docs/delendai/host-hints/agent-instructions.generated.md',
 			cleanFragment(),
 		);
 		writeFragment(
-			'docs/mcp-vertex/host-hints/claude.generated.md',
+			'docs/delendai/host-hints/claude.generated.md',
 			cleanFragment(),
 		);
 		const strays = await findStrayFragments(workspaceRoot);
@@ -176,11 +176,11 @@ describe('host-hints-fragments lint (f00092 single fragment)', () => {
 
 	it('lintStrayFragments emits a stray-fragment violation with the f00092 fix', async () => {
 		writeFragment(
-			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+			'docs/delendai/host-hints/agent-instructions.generated.md',
 			cleanFragment(),
 		);
 		writeFragment(
-			'docs/mcp-vertex/host-hints/agents.generated.md',
+			'docs/delendai/host-hints/agents.generated.md',
 			cleanFragment(),
 		);
 		const violations = await lintStrayFragments(workspaceRoot);
@@ -195,7 +195,7 @@ describe('host-hints-fragments lint (f00092 single fragment)', () => {
 		const out = await lintAllHostHintFragments(REPO_ROOT);
 		expect(out).toHaveLength(1);
 		expect(out[0]?.file).toBe(
-			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+			'docs/delendai/host-hints/agent-instructions.generated.md',
 		);
 	});
 });

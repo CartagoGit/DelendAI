@@ -7,16 +7,16 @@ describe('auto-plugin-selector plugin registration (x00169)', () => {
 		const registrations = await plugin.register({
 			namespacePrefix: 'auto',
 			options: {},
-			cacheDir: '.cache/mcp-vertex',
-			pluginCacheDir: '.cache/mcp-vertex/auto-plugin-selector',
+			cacheDir: '.cache/delendai',
+			pluginCacheDir: '.cache/delendai/auto-plugin-selector',
 			pluginDocsDir: 'docs/plugins/auto-plugin-selector',
 			workspace: {
 				root: '/workspace',
 				resolve: (path: string) => `/workspace/${path}`,
 			},
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
 			keepLegacy: false,
 			agentWorktreeEnabled: false,
@@ -44,16 +44,16 @@ describe('auto-plugin-selector plugin registration (x00169)', () => {
 		const registrations = await plugin.register({
 			namespacePrefix: 'auto',
 			options: {},
-			cacheDir: '.cache/mcp-vertex',
-			pluginCacheDir: '.cache/mcp-vertex/auto-plugin-selector',
+			cacheDir: '.cache/delendai',
+			pluginCacheDir: '.cache/delendai/auto-plugin-selector',
 			pluginDocsDir: 'docs/plugins/auto-plugin-selector',
 			workspace: {
 				root: '/workspace',
 				resolve: (path: string) => `/workspace/${path}`,
 			},
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
 			keepLegacy: false,
 			agentWorktreeEnabled: false,

@@ -68,16 +68,16 @@ describe('McpStdioClient', async () => {
 		const out = await client.request<
 			{ compact: boolean },
 			{ ok: boolean; tool: string; args: { compact: boolean } }
-		>('mcp-vertex_overview', { compact: true });
+		>('delendai_overview', { compact: true });
 
 		expect(out).toEqual({
 			ok: true,
-			tool: 'mcp-vertex_overview',
+			tool: 'delendai_overview',
 			args: { compact: true },
 		});
 		expect(calls).toEqual([
 			{
-				name: 'mcp-vertex_overview',
+				name: 'delendai_overview',
 				arguments: { compact: true },
 			},
 		]);
@@ -227,7 +227,7 @@ describe('McpStdioClient', async () => {
 
 	it('attaches a logHint from structuredContent on an error result', async () => {
 		const logHint = {
-			path: '/tmp/x/.cache/mcp-vertex/logs/2026-06-22.jsonl',
+			path: '/tmp/x/.cache/delendai/logs/2026-06-22.jsonl',
 			line: 7,
 			ts: '2026-06-22T10:00:00.000Z',
 		};
@@ -252,7 +252,7 @@ describe('McpStdioClient', async () => {
 
 	it('attaches a logHint from the MCP _meta channel on an error result', async () => {
 		const logHint = {
-			path: '/tmp/z/.cache/mcp-vertex/logs/2026-06-22.jsonl',
+			path: '/tmp/z/.cache/delendai/logs/2026-06-22.jsonl',
 			line: 9,
 			ts: '2026-06-22T12:00:00.000Z',
 		};
@@ -273,7 +273,7 @@ describe('McpStdioClient', async () => {
 
 	it('attaches a logHint parsed from the text envelope when structuredContent is absent', async () => {
 		const logHint = {
-			path: '/tmp/y/.cache/mcp-vertex/logs/2026-06-22.jsonl',
+			path: '/tmp/y/.cache/delendai/logs/2026-06-22.jsonl',
 			line: 3,
 			ts: '2026-06-22T11:00:00.000Z',
 		};
@@ -341,7 +341,7 @@ describe('McpStdioClient', async () => {
 				return {
 					tools: [
 						{
-							name: 'mcp-vertex_overview',
+							name: 'delendai_overview',
 							description: 'Overview',
 						},
 					],
@@ -355,7 +355,7 @@ describe('McpStdioClient', async () => {
 
 		await expect(client.listTools()).resolves.toEqual([
 			{
-				name: 'mcp-vertex_overview',
+				name: 'delendai_overview',
 				description: 'Overview',
 			},
 		]);

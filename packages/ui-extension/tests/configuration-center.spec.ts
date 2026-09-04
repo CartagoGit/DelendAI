@@ -6,7 +6,7 @@ import { renderConfigurationCenter } from '../src/configuration-center/render-co
 
 const source = (): IConfigurationCenterSource => ({
 	document: {
-		configFile: '/workspace/mcp-vertex.config.json',
+		configFile: '/workspace/delendai.config.json',
 		exists: true,
 		digest: 'digest-1',
 		redactions: 1,
@@ -227,7 +227,7 @@ describe('renderConfigurationCenter', () => {
 		expect(html).toContain('height: 100vh');
 		expect(html).toContain('grid-template-rows: auto minmax(0, 1fr) auto');
 		expect(html).toContain("event.key !== 'ArrowDown'");
-		expect(html).toContain('mcpv-configuration-message');
+		expect(html).toContain('delendai-configuration-message');
 		expect(html).toContain('config-panel-resources');
 		expect(html).toContain('config-panel-knowledge');
 		expect(html).not.toContain('acquireVsCodeApi');

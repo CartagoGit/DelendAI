@@ -5,7 +5,7 @@
  *
  *   1. The MAIN worktree (the workspace root itself) is always
  *      allowed.
- *   2. A worktree under `<workspace>/.cache/mcp-vertex/.worktrees/`
+ *   2. A worktree under `<workspace>/.cache/delendai/.worktrees/`
  *      (the canonical cache root) is allowed.
  *   3. A worktree under `<workspace>/.worktrees/` (legacy /
  *      out-of-cache) is BLOCKED with a clear move command.
@@ -13,7 +13,7 @@
  *      allowed worktree root.
  *
  * The 28-Jun incident surfaced the third case
- * (`/home/cartago/_projects/mcp-vertex/.worktrees/lacerta`) and
+ * (`/home/cartago/_projects/delendai/.worktrees/lacerta`) and
  * the discipline had to be added because AGENTS.md R12/R13 was
  * advisory-only.
  */
@@ -21,7 +21,7 @@ import { describe, expect, it } from 'vitest';
 
 import { lintWorktreeLocations } from './check-worktree-location.script';
 
-const WS = '/home/cartago/_projects/mcp-vertex';
+const WS = '/home/cartago/_projects/delendai';
 
 describe('lintWorktreeLocations', () => {
 	it('allows the main worktree (the workspace root)', () => {
@@ -37,7 +37,7 @@ describe('lintWorktreeLocations', () => {
 			workspaceRoot: WS,
 			worktreePaths: [
 				WS,
-				`${WS}/.cache/mcp-vertex/.worktrees/copilot-minimax-m3`,
+				`${WS}/.cache/delendai/.worktrees/copilot-minimax-m3`,
 			],
 		});
 		expect(result.ok).toBe(true);
@@ -48,9 +48,9 @@ describe('lintWorktreeLocations', () => {
 			workspaceRoot: WS,
 			worktreePaths: [
 				WS,
-				`${WS}/.cache/mcp-vertex/.worktrees/orion`,
-				`${WS}/.cache/mcp-vertex/.worktrees/andromeda-1`,
-				`${WS}/.cache/mcp-vertex/.worktrees/andromeda-2`,
+				`${WS}/.cache/delendai/.worktrees/orion`,
+				`${WS}/.cache/delendai/.worktrees/andromeda-1`,
+				`${WS}/.cache/delendai/.worktrees/andromeda-2`,
 			],
 		});
 		expect(result.ok).toBe(true);

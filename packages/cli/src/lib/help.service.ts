@@ -44,10 +44,10 @@ export const renderHelp = (
 		],
 	);
 	return [
-		`mcp-vertex ${CLI_VERSION}`,
+		`delendai ${CLI_VERSION}`,
 		'',
 		t.usage,
-		'  mcpv [global flags] <command> [args]',
+		'  delendai [global flags] <command> [args]',
 		'',
 		t.globalFlags,
 		`  --workspace <path>   ${t.flagWorkspace}`,

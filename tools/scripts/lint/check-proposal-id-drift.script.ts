@@ -210,11 +210,11 @@ if (isMainModule()) {
 		// default-path-layout.constant.ts` so this lint and the runtime
 		// agree on the layout without sharing a single source of truth
 		// across the tools/ vs plugins/ boundary.
-		const proposalsDirAbs = join(root, 'docs', 'mcp-vertex', 'proposals');
+		const proposalsDirAbs = join(root, 'docs', 'delendai', 'proposals');
 		const countersPathAbs = join(
 			root,
 			'.cache',
-			'mcp-vertex',
+			'delendai',
 			'proposal-id-counters.json',
 		);
 		const summary = await detectProposalIdDrift(

@@ -1,6 +1,6 @@
 {
 	"mcpServers": {
-		"mcp-vertex": {
+		"delendai": {
 			"command": "npx",
 			"args": ["-y", "@delendai/core", "--preset=standard"]
 		}

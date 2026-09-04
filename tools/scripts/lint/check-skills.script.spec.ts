@@ -16,16 +16,15 @@ describe('checkSkillsManifest', async () => {
 		const issues = checkSkillsManifest(
 			manifest([
 				{
-					id: 'mcp-vertex-operator',
+					id: 'delendai-operator',
 					version: '1.0.0',
 					minCoreVersion: '0.1.0',
-					bodyPath:
-						'packages/core/skills/mcp-vertex-operator/SKILL.md',
+					bodyPath: 'packages/core/skills/delendai-operator/SKILL.md',
 					tags: ['operator'],
 					appliesTo: ['@delendai/*'],
 				},
 			]),
-			['packages/core/skills/mcp-vertex-operator/SKILL.md'],
+			['packages/core/skills/delendai-operator/SKILL.md'],
 		);
 
 		expect(issues).toEqual([]);

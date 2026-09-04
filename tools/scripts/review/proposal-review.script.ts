@@ -2,7 +2,7 @@
 /**
  * proposal-review.script.ts — record ONE peer-review verdict from the
  * terminal, against the same log the transition gate reads
- * (`.cache/mcp-vertex/proposals/peer-review.jsonl`).
+ * (`.cache/delendai/proposals/peer-review.jsonl`).
  *
  * This is not a bypass: it drives the same `buildReviewRegistration`
  * handler the MCP tool exposes, with the same independence rule
@@ -98,23 +98,23 @@ const main = async (argv = process.argv.slice(2)): Promise<number> => {
 	const options: IAuthoringToolOptions = {
 		namespacePrefix: 'proposals',
 		workspaceRoot,
-		proposalsDirAbs: join(workspaceRoot, 'docs/mcp-vertex/proposals'),
+		proposalsDirAbs: join(workspaceRoot, 'docs/delendai/proposals'),
 		indexPathAbs: join(
 			workspaceRoot,
-			'.cache/mcp-vertex/proposals/index.json',
+			'.cache/delendai/proposals/index.json',
 		),
-		lockPathAbs: join(workspaceRoot, '.cache/mcp-vertex/agents.lock.json'),
+		lockPathAbs: join(workspaceRoot, '.cache/delendai/agents.lock.json'),
 		peerReviewLogPathAbs: join(
 			workspaceRoot,
-			'.cache/mcp-vertex/proposals/peer-review.jsonl',
+			'.cache/delendai/proposals/peer-review.jsonl',
 		),
 		counterPathAbs: join(
 			workspaceRoot,
-			'.cache/mcp-vertex/proposals/proposal-id-counters.json',
+			'.cache/delendai/proposals/proposal-id-counters.json',
 		),
 		layout: {
-			proposalsDir: 'docs/mcp-vertex/proposals',
-			proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+			proposalsDir: 'docs/delendai/proposals',
+			proposalIndexFile: '.cache/delendai/proposals/index.json',
 		},
 		extraFolders: [],
 		validationCommand: 'bun run validate',

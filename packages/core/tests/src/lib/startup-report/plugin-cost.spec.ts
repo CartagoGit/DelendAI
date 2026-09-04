@@ -12,35 +12,35 @@ const tool = (
 	overrides: Partial<IToolSurfaceDescriptor> = {},
 ): IToolSurfaceDescriptor => ({
 	registrationId: 'reg',
-	name: 'mcp-vertex_test',
+	name: 'delendai_test',
 	toolId: 'test',
 	summary: 'desc',
 	...overrides,
 });
 
 const HIDDEN_PLUGIN_AVAILABLE: IToolSurfaceDescriptor[] = [
-	tool({ registrationId: 'h1', toolId: 'h1', name: 'mcp-vertex_hidden_1' }),
-	tool({ registrationId: 'h2', toolId: 'h2', name: 'mcp-vertex_hidden_2' }),
-	tool({ registrationId: 'h3', toolId: 'h3', name: 'mcp-vertex_hidden_3' }),
+	tool({ registrationId: 'h1', toolId: 'h1', name: 'delendai_hidden_1' }),
+	tool({ registrationId: 'h2', toolId: 'h2', name: 'delendai_hidden_2' }),
+	tool({ registrationId: 'h3', toolId: 'h3', name: 'delendai_hidden_3' }),
 ];
 
 const BOOTSTRAP_TOOLS: IToolSurfaceDescriptor[] = [
 	tool({
 		registrationId: 'overview',
 		toolId: 'overview',
-		name: 'mcp-vertex_overview',
+		name: 'delendai_overview',
 		summary: 'orient',
 	}),
 	tool({
 		registrationId: 'tool_search',
 		toolId: 'tool_search',
-		name: 'mcp-vertex_tool_search',
+		name: 'delendai_tool_search',
 		summary: 'search',
 	}),
 	tool({
 		registrationId: 'vertex',
 		toolId: 'vertex',
-		name: 'mcp-vertex_vertex',
+		name: 'delendai_vertex',
 		summary: 'route',
 	}),
 ];
@@ -51,7 +51,7 @@ const NATIVE_FULL_SURFACE: IToolSurfaceDescriptor[] = Array.from(
 		tool({
 			registrationId: `r${i}`,
 			toolId: `t${i}`,
-			name: `mcp-vertex_native_t${i}`,
+			name: `delendai_native_t${i}`,
 			summary: `native tool ${i}`,
 		}),
 );

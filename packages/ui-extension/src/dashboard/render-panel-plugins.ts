@@ -32,31 +32,31 @@ export const renderPanelPlugins = (
 	const rows = model.rows
 		.map(
 			(p) => `<tr>
-				<td class="mcpv-plugins__name">
+				<td class="delendai-plugins__name">
 					${renderPluginBadge({ code: p.plugin, label: p.plugin })}
 					<code>${escapeHtml(p.plugin)}</code>
 				</td>
-				<td class="mcpv-num">${formatNumber(p.tools)}</td>
-				<td class="mcpv-num">${formatNumber(p.calls)}</td>
-				<td class="mcpv-num">${formatNumber(p.errors)}</td>
-				<td class="mcpv-num">${formatMs(p.avgMs)}</td>
-				<td class="mcpv-num">${formatTokens(p.tokens)}</td>
-				<td class="mcpv-num">${p.tokenSharePercent}%</td>
+				<td class="delendai-num">${formatNumber(p.tools)}</td>
+				<td class="delendai-num">${formatNumber(p.calls)}</td>
+				<td class="delendai-num">${formatNumber(p.errors)}</td>
+				<td class="delendai-num">${formatMs(p.avgMs)}</td>
+				<td class="delendai-num">${formatTokens(p.tokens)}</td>
+				<td class="delendai-num">${p.tokenSharePercent}%</td>
 			</tr>`,
 		)
 		.join('');
 	return `
-<section class="mcpv-panel" id="panel-plugins" role="tabpanel" aria-labelledby="tab-plugins">
-	<h2 class="mcpv-panel__title">${escapeHtml(text('tabPlugins'))}</h2>
-	<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.plugins.rollupLead', 'Per-plugin tool count, calls, error rate, latency and token share.'))}</p>
-	<div class="mcpv-grid">
-		<div class="mcpv-card">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.plugins.tokenShareByPlugin'))}</h3>
+<section class="delendai-panel" id="panel-plugins" role="tabpanel" aria-labelledby="tab-plugins">
+	<h2 class="delendai-panel__title">${escapeHtml(text('tabPlugins'))}</h2>
+	<p class="delendai-fg-muted">${escapeHtml(text('dashboard.plugins.rollupLead', 'Per-plugin tool count, calls, error rate, latency and token share.'))}</p>
+	<div class="delendai-grid">
+		<div class="delendai-card">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.plugins.tokenShareByPlugin'))}</h3>
 			${chart}
 		</div>
-		<div class="mcpv-card">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.plugins.rollup'))}</h3>
-			<table class="mcpv-table">
+		<div class="delendai-card">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.plugins.rollup'))}</h3>
+			<table class="delendai-table">
 				<thead><tr><th>${escapeHtml(text('common.plugin'))}</th><th>${escapeHtml(text('tabTools'))}</th><th>${escapeHtml(text('common.calls'))}</th><th>${escapeHtml(text('common.errors'))}</th><th>${escapeHtml(text('common.avg'))}</th><th>${escapeHtml(text('common.tokens'))}</th><th>${escapeHtml(text('common.share'))}</th></tr></thead>
 				<tbody>${rows}</tbody>
 			</table>

@@ -60,10 +60,10 @@ export interface IUnstableArtifact {
 
 /** Which files the generators are allowed to touch. */
 const ARTIFACT_GLOBS = [
-	'docs/mcp-vertex/agent-catalog.generated.json',
-	'docs/mcp-vertex/security/capability-matrix.md',
-	'docs/mcp-vertex/TOKEN-BUDGETS.md',
-	'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+	'docs/delendai/agent-catalog.generated.json',
+	'docs/delendai/security/capability-matrix.md',
+	'docs/delendai/TOKEN-BUDGETS.md',
+	'docs/delendai/host-hints/agent-instructions.generated.md',
 ] as const;
 
 const digestOf = async (abs: string): Promise<string> => {

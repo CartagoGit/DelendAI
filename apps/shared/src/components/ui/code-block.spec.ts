@@ -3,16 +3,16 @@
  * `renderCodeBlock` unit tests.
  *
  * Contract pinned:
- *   - root is `<figure class="mcpv-code" data-lang="...">` (or
- *     `mcpv-code mcpv-code--inline` when `inline: true`)
- *   - body is `<pre class="mcpv-code__pre"><code id="..." class="language-...">`
+ *   - root is `<figure class="delendai-code" data-lang="...">` (or
+ *     `delendai-code delendai-code--inline` when `inline: true`)
+ *   - body is `<pre class="delendai-code__pre"><code id="..." class="language-...">`
  *   - the `code` is HTML-escaped
  *   - `id` defaults to `cb-XXXXXXX`; copy button `data-copy-target`
  *     links to the same id
  *   - `showCopy: false` omits the copy button + the header
- *   - filename renders as `<span class="mcpv-code__file">`; lang as
- *     `<span class="mcpv-code__lang">` (only if no filename); caption
- *     as `<span class="mcpv-code__caption">`
+ *   - filename renders as `<span class="delendai-code__file">`; lang as
+ *     `<span class="delendai-code__lang">` (only if no filename); caption
+ *     as `<span class="delendai-code__caption">`
  *   - all interpolations are HTML-escaped
  */
 import { describe, expect, it } from 'vitest';
@@ -27,8 +27,10 @@ const copyTargetOf = (html: string): string =>
 describe('renderCodeBlock', () => {
 	it('emits the canonical figure + pre + code root', () => {
 		const out = renderCodeBlock({ code: 'const x = 1;' });
-		expect(out).toContain('<figure class="mcpv-code" data-lang="text">');
-		expect(out).toContain('<pre class="mcpv-code__pre"><code id="cb-');
+		expect(out).toContain(
+			'<figure class="delendai-code" data-lang="text">',
+		);
+		expect(out).toContain('<pre class="delendai-code__pre"><code id="cb-');
 		expect(out).toContain('class="language-text"');
 		expect(out).toContain('const x = 1;');
 	});
@@ -62,7 +64,7 @@ describe('renderCodeBlock', () => {
 	it('emits a copy button by default, with the data-copy-target link', () => {
 		const out = renderCodeBlock({ code: 'x', id: 'cb-test' });
 		expect(out).toContain(
-			'<button type="button" class="mcpv-code__copy" data-copy-target="cb-test"',
+			'<button type="button" class="delendai-code__copy" data-copy-target="cb-test"',
 		);
 		expect(out).toContain('id="cb-test"');
 	});
@@ -74,25 +76,27 @@ describe('renderCodeBlock', () => {
 
 	it('omits the copy button when showCopy: false', () => {
 		const out = renderCodeBlock({ code: 'x', showCopy: false });
-		expect(out).not.toContain('mcpv-code__copy');
+		expect(out).not.toContain('delendai-code__copy');
 	});
 
-	it('renders filename as <span class="mcpv-code__file">', () => {
+	it('renders filename as <span class="delendai-code__file">', () => {
 		const out = renderCodeBlock({
 			code: 'x',
 			filename: 'index.ts',
 			showCopy: false,
 		});
-		expect(out).toContain('<span class="mcpv-code__file">index.ts</span>');
+		expect(out).toContain(
+			'<span class="delendai-code__file">index.ts</span>',
+		);
 	});
 
-	it('renders lang as <span class="mcpv-code__lang"> when no filename', () => {
+	it('renders lang as <span class="delendai-code__lang"> when no filename', () => {
 		const out = renderCodeBlock({
 			code: 'x',
 			lang: 'ts',
 			showCopy: false,
 		});
-		expect(out).toContain('<span class="mcpv-code__lang">ts</span>');
+		expect(out).toContain('<span class="delendai-code__lang">ts</span>');
 	});
 
 	it('omits lang label when filename is set', () => {
@@ -102,21 +106,23 @@ describe('renderCodeBlock', () => {
 			lang: 'ts',
 			showCopy: false,
 		});
-		expect(out).not.toContain('mcpv-code__lang');
+		expect(out).not.toContain('delendai-code__lang');
 	});
 
-	it('renders caption as <span class="mcpv-code__caption">', () => {
+	it('renders caption as <span class="delendai-code__caption">', () => {
 		const out = renderCodeBlock({
 			code: 'x',
 			caption: 'A demo',
 			showCopy: false,
 		});
-		expect(out).toContain('<span class="mcpv-code__caption">A demo</span>');
+		expect(out).toContain(
+			'<span class="delendai-code__caption">A demo</span>',
+		);
 	});
 
 	it('emits the inline variant', () => {
 		const out = renderCodeBlock({ code: 'x', inline: true });
-		expect(out).toContain('class="mcpv-code mcpv-code--inline"');
+		expect(out).toContain('class="delendai-code delendai-code--inline"');
 	});
 
 	it('escapes filename, lang, and caption', () => {
@@ -128,7 +134,7 @@ describe('renderCodeBlock', () => {
 			showCopy: false,
 		});
 		expect(out).toContain(
-			'<span class="mcpv-code__file">&lt;bad&gt;&amp;&quot;&#39;</span>',
+			'<span class="delendai-code__file">&lt;bad&gt;&amp;&quot;&#39;</span>',
 		);
 		expect(out).toContain('data-lang="&quot;&amp;&lt;&gt;"');
 	});

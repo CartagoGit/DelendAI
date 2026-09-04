@@ -130,7 +130,7 @@ const normalizeRecord = (
  * The consequence is user-visible. This store is what stops a recurring
  * failure from opening a second GitHub issue for the same fingerprint,
  * and what remembers that the circuit breaker is open. Reset it and
- * mcp-vertex re-reports everything it has ever reported — into the
+ * delendai re-reports everything it has ever reported — into the
  * user's repository.
  *
  * A missing file is the one benign case (first run) and stays trusted.

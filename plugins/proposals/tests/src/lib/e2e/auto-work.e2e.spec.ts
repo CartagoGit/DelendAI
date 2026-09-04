@@ -2,7 +2,7 @@
  * End-to-end: `proposals_auto_work` over the real MCP protocol.
  *
  * Slice S1 of f00044. Drives the registered `auto_work` tool through
- * a real `Client` connected to an assembled mcp-vertex server (core
+ * a real `Client` connected to an assembled delendai server (core
  * meta-tools + the proposals plugin) over an in-memory transport.
  * This proves the cross-tool contract (auto_work → continue_proposal
  * → cascade → idle/work plan) survives registration, request routing
@@ -92,11 +92,7 @@ const createManagedPersistenceServer = async () => {
 			},
 		},
 	});
-	writeFileSync(
-		join(workspace, 'mcp-vertex.config.json'),
-		configText,
-		'utf8',
-	);
+	writeFileSync(join(workspace, 'delendai.config.json'), configText, 'utf8');
 	const { config } = await assembleCliConfig(args, {
 		import: async (specifier) =>
 			specifier.includes('commit-policy')
@@ -131,13 +127,10 @@ const createManagedPersistenceServer = async () => {
 			const raw = (await client.callTool(
 				routed
 					? {
-							name: 'mcp-vertex_vertex',
+							name: 'delendai_vertex',
 							arguments: {
 								domain: 'proposals',
-								action: name.replace(
-									'mcp-vertex_proposals_',
-									'',
-								),
+								action: name.replace('delendai_proposals_', ''),
 								args,
 							},
 						}
@@ -230,10 +223,10 @@ const callAutoWork = async (
 	server: IAssembledProposalsServer,
 	args: Record<string, unknown> = {},
 ): Promise<IAssembledToolResult<AutoWorkOutput>> =>
-	server.callTool<AutoWorkOutput>('mcp-vertex_proposals_auto_work', args);
+	server.callTool<AutoWorkOutput>('delendai_proposals_auto_work', args);
 
 /**
- * Drop a fresh proposal under `<tmpdir>/docs/mcp-vertex/proposals/ready/`
+ * Drop a fresh proposal under `<tmpdir>/docs/delendai/proposals/ready/`
  * and rebuild the registry index via `proposals_sync_proposals` so the
  * rest of the proposals surface sees it. Without the sync, the index
  * is stale and `auto_work` would return `idle` because the proposal
@@ -245,10 +238,10 @@ const seedReadyProposal = async (
 ): Promise<{ file: string; relPath: string }> => {
 	const proposalsDir = join(
 		server.workspace,
-		'docs/mcp-vertex/proposals/ready',
+		'docs/delendai/proposals/ready',
 	);
 	mkdirSync(proposalsDir, { recursive: true });
-	const relPath = `docs/mcp-vertex/proposals/ready/${proposal.id}-${proposal.title
+	const relPath = `docs/delendai/proposals/ready/${proposal.id}-${proposal.title
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '')}.md`;
@@ -274,7 +267,7 @@ Seed for the auto_work e2e harness.
 		'utf8',
 	);
 	const sync = await server.callTool<{ ok: boolean }>(
-		'mcp-vertex_proposals_sync_proposals',
+		'delendai_proposals_sync_proposals',
 		{},
 	);
 	expect(sync.ok).toBe(true);
@@ -384,7 +377,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 			'utf8',
 		);
 		await harness.callTool<{ ok: boolean }>(
-			'mcp-vertex_proposals_sync_proposals',
+			'delendai_proposals_sync_proposals',
 			{},
 		);
 
@@ -423,7 +416,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		const fs = await import('node:fs/promises');
 		const readyDir = join(
 			harness.workspace,
-			'docs/mcp-vertex/proposals/ready',
+			'docs/delendai/proposals/ready',
 		);
 		const entries = await fs.readdir(readyDir);
 		for (const entry of entries) {
@@ -433,7 +426,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 			});
 		}
 		await harness.callTool<{ ok: boolean }>(
-			'mcp-vertex_proposals_sync_proposals',
+			'delendai_proposals_sync_proposals',
 			{},
 		);
 
@@ -458,7 +451,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		const res = await callAutoWork(harness);
 		expect(res.structured.state).toBe('work');
 		expect(res.structured.orchestration?.next).toMatch(
-			/^mcp-vertex_proposals_continue_proposal/,
+			/^delendai_proposals_continue_proposal/,
 		);
 		expect(res.structured.persist?.mode).toBe('none');
 	});
@@ -468,7 +461,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		try {
 			const readyDir = join(
 				managed.workspace,
-				'docs/mcp-vertex/proposals/ready',
+				'docs/delendai/proposals/ready',
 			);
 			mkdirSync(readyDir, { recursive: true });
 			writeFileSync(
@@ -502,16 +495,16 @@ Exercise the configured persistence route over MCP.
 			);
 
 			const activation = await managed.callTool<{ change: unknown }>(
-				'mcp-vertex_plugin_activate',
+				'delendai_plugin_activate',
 				{ plugin: 'proposals' },
 			);
 			expect(activation.isError).not.toBe(true);
 			const sync = await managed.callTool<{ ok: boolean }>(
-				'mcp-vertex_proposals_sync_proposals',
+				'delendai_proposals_sync_proposals',
 			);
 			expect(sync.isError).not.toBe(true);
 			const planRaw = await managed.callTool<AutoWorkOutput>(
-				'mcp-vertex_proposals_auto_work',
+				'delendai_proposals_auto_work',
 			);
 			const plan = planRaw.structuredContent ?? ({} as AutoWorkOutput);
 			expect(plan.state).toBe('work');
@@ -533,7 +526,7 @@ Exercise the configured persistence route over MCP.
 					pushed: boolean;
 					mode: string;
 				};
-			}>('mcp-vertex_proposals_close_slice', {
+			}>('delendai_proposals_close_slice', {
 				proposalId: 'p9995',
 				sliceId: 'S1',
 				force: true,
@@ -618,7 +611,7 @@ Exercise the configured persistence route over MCP.
 
 	it('includePaused: true falls back to a paused/ proposal (f00057)', async () => {
 		// Seed ONLY a paused proposal under
-		// `docs/mcp-vertex/proposals/paused/`. Without the flag the
+		// `docs/delendai/proposals/paused/`. Without the flag the
 		// standard cascade has nothing actionable (paused/ is not in
 		// the standard actionable folder set), so `auto_work` returns
 		// idle. With `includePaused: true`, the engine runs the
@@ -627,11 +620,10 @@ Exercise the configured persistence route over MCP.
 		const { writeFileSync } = await import('node:fs');
 		const pausedDir = join(
 			harness.workspace,
-			'docs/mcp-vertex/proposals/paused',
+			'docs/delendai/proposals/paused',
 		);
 		mkdirSync(pausedDir, { recursive: true });
-		const relPath =
-			'docs/mcp-vertex/proposals/paused/f00057-paused-demo.md';
+		const relPath = 'docs/delendai/proposals/paused/f00057-paused-demo.md';
 		const file = join(harness.workspace, relPath);
 		writeFileSync(
 			file,
@@ -653,7 +645,7 @@ Seed for the auto_work includePaused e2e harness.
 			'utf8',
 		);
 		const sync = await harness.callTool<{ ok: boolean }>(
-			'mcp-vertex_proposals_sync_proposals',
+			'delendai_proposals_sync_proposals',
 			{},
 		);
 		expect(sync.ok).toBe(true);

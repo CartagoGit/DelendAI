@@ -165,7 +165,7 @@ const scanLiveProposalEntries = async (
 	monorepoRoot: string,
 	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
 	// Host folder policy (e.g. `paused/demos`) is injected, not baked in:
-	// paths relative to `proposalsDir`. mcp-vertex stays agnostic.
+	// paths relative to `proposalsDir`. delendai stays agnostic.
 	extraFolders: readonly string[] = [],
 ): Promise<IScannedProposalEntry[]> => {
 	const proposalsDir = join(monorepoRoot, layout.proposalsDir);

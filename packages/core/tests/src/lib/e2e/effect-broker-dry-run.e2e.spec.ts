@@ -116,7 +116,7 @@ const buildRuntimeWithSyntheticPlugin = () => {
 		descriptors: [
 			{
 				registrationId: 'careless_run',
-				name: 'mcp-vertex_careless_run',
+				name: 'delendai_careless_run',
 				toolId: 'run',
 				pluginId: 'careless-plugin',
 				namespace: 'careless',
@@ -132,7 +132,7 @@ const buildRuntimeWithSyntheticPlugin = () => {
 	});
 	runtime.bindRegisteredTool({
 		registrationId: 'careless_run',
-		name: 'mcp-vertex_careless_run',
+		name: 'delendai_careless_run',
 		// This handler NEVER reads `args.dryRun` and calls every
 		// capability unconditionally — modelling a third-party plugin
 		// that ignores the flag entirely (the exact scenario AUD-D02
@@ -156,7 +156,7 @@ describe('EffectBroker end-to-end — a careless plugin cannot reach ANY guarded
 		const { runtime, reached } = buildRuntimeWithSyntheticPlugin();
 
 		await expect(
-			runtime.invokeTool('mcp-vertex_careless_run', { dryRun: true }, {}),
+			runtime.invokeTool('delendai_careless_run', { dryRun: true }, {}),
 		).rejects.toThrow(DryRunEffectRefusedError);
 
 		// PREVENTION, not detection: the FIRST guarded call inside the
@@ -170,7 +170,7 @@ describe('EffectBroker end-to-end — a careless plugin cannot reach ANY guarded
 		const { runtime, reached } = buildRuntimeWithSyntheticPlugin();
 
 		const result = (await runtime.invokeTool(
-			'mcp-vertex_careless_run',
+			'delendai_careless_run',
 			{},
 			{},
 		)) as { isError?: boolean };
@@ -183,11 +183,11 @@ describe('EffectBroker end-to-end — a careless plugin cannot reach ANY guarded
 		const { runtime, reached } = buildRuntimeWithSyntheticPlugin();
 
 		await expect(
-			runtime.invokeTool('mcp-vertex_careless_run', { dryRun: true }, {}),
+			runtime.invokeTool('delendai_careless_run', { dryRun: true }, {}),
 		).rejects.toThrow(DryRunEffectRefusedError);
-		await runtime.invokeTool('mcp-vertex_careless_run', {}, {});
+		await runtime.invokeTool('delendai_careless_run', {}, {});
 		await expect(
-			runtime.invokeTool('mcp-vertex_careless_run', { dryRun: true }, {}),
+			runtime.invokeTool('delendai_careless_run', { dryRun: true }, {}),
 		).rejects.toThrow(DryRunEffectRefusedError);
 
 		// Only the middle (real) call's effects appear — the dry-run
@@ -255,7 +255,7 @@ describe('EffectBroker end-to-end — a careless plugin cannot reach ANY guarded
 				descriptors: [
 					{
 						registrationId: 'careless_commit',
-						name: 'mcp-vertex_careless_commit',
+						name: 'delendai_careless_commit',
 						toolId: 'run',
 						pluginId: 'careless-plugin',
 						namespace: 'careless',
@@ -271,7 +271,7 @@ describe('EffectBroker end-to-end — a careless plugin cannot reach ANY guarded
 			});
 			runtime.bindRegisteredTool({
 				registrationId: 'careless_commit',
-				name: 'mcp-vertex_careless_commit',
+				name: 'delendai_careless_commit',
 				// Ignores args.dryRun entirely — writes a file to the real
 				// repo and commits it unconditionally.
 				handler: async () => {
@@ -292,7 +292,7 @@ describe('EffectBroker end-to-end — a careless plugin cannot reach ANY guarded
 
 			await expect(
 				runtime.invokeTool(
-					'mcp-vertex_careless_commit',
+					'delendai_careless_commit',
 					{ dryRun: true },
 					{},
 				),
@@ -310,7 +310,7 @@ describe('EffectBroker end-to-end — a careless plugin cannot reach ANY guarded
 
 			await expect(
 				runtime.invokeTool(
-					'mcp-vertex_careless_commit',
+					'delendai_careless_commit',
 					{ dryRun: true },
 					{},
 				),
@@ -333,7 +333,7 @@ describe('EffectBroker end-to-end — a careless plugin cannot reach ANY guarded
 			const commitsBefore = commitCountOf(repo);
 
 			const result = (await runtime.invokeTool(
-				'mcp-vertex_careless_commit',
+				'delendai_careless_commit',
 				{},
 				{},
 			)) as { isError?: boolean };

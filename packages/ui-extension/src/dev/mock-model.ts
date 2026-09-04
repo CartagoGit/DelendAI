@@ -21,9 +21,9 @@ import type { IDashboardAllModels } from '@delendai/client';
 
 export const mockDashboardModel: IDashboardAllModels = {
 	overview: {
-		serverName: 'mcp-vertex',
+		serverName: 'delendai',
 		serverVersion: '0.42.0',
-		namespacePrefix: 'mcp-vertex',
+		namespacePrefix: 'delendai',
 		recommendedNextAction: 'Pick a slice from the Proposals tab.',
 		plugins: [
 			{ name: 'core', version: '0.42.0' },
@@ -31,10 +31,10 @@ export const mockDashboardModel: IDashboardAllModels = {
 			{ name: 'proposals', version: '1.2.0' },
 		],
 		tools: [
-			{ name: 'mcp-vertex_overview', plugin: 'core' },
-			{ name: 'mcp-vertex_search', plugin: 'search' },
-			{ name: 'mcp-vertex_proposals_board', plugin: 'proposals' },
-			{ name: 'mcp-vertex_memory_recall', plugin: 'memory' },
+			{ name: 'delendai_overview', plugin: 'core' },
+			{ name: 'delendai_search', plugin: 'search' },
+			{ name: 'delendai_proposals_board', plugin: 'proposals' },
+			{ name: 'delendai_memory_recall', plugin: 'memory' },
 		],
 		knowledgeIds: ['p001-overview', 'p002-arch', 'p003-styleguide'],
 		totals: {
@@ -54,7 +54,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 		totals: { calls: 1284, errors: 4, totalMs: 38_211, totalBytes: 0 },
 		rows: [
 			{
-				tool: 'mcp-vertex_overview',
+				tool: 'delendai_overview',
 				plugin: 'core',
 				calls: 412,
 				errors: 2,
@@ -65,7 +65,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 				tokens: 0,
 			},
 			{
-				tool: 'mcp-vertex_search',
+				tool: 'delendai_search',
 				plugin: 'search',
 				calls: 318,
 				errors: 1,
@@ -76,7 +76,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 				tokens: 0,
 			},
 			{
-				tool: 'mcp-vertex_proposals_board',
+				tool: 'delendai_proposals_board',
 				plugin: 'proposals',
 				calls: 211,
 				errors: 0,
@@ -87,7 +87,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 				tokens: 0,
 			},
 			{
-				tool: 'mcp-vertex_memory_recall',
+				tool: 'delendai_memory_recall',
 				plugin: 'memory',
 				calls: 88,
 				errors: 0,
@@ -99,14 +99,12 @@ export const mockDashboardModel: IDashboardAllModels = {
 			},
 		],
 		sparklines: {
-			'mcp-vertex_overview': [12, 14, 18, 16, 18, 22, 18, 17, 19, 18],
-			'mcp-vertex_search': [30, 42, 47, 51, 60, 48, 44, 39, 50, 47],
-			'mcp-vertex_proposals_board': [
+			delendai_overview: [12, 14, 18, 16, 18, 22, 18, 17, 19, 18],
+			delendai_search: [30, 42, 47, 51, 60, 48, 44, 39, 50, 47],
+			delendai_proposals_board: [
 				88, 90, 95, 102, 110, 92, 89, 91, 95, 92,
 			],
-			'mcp-vertex_memory_recall': [
-				18, 20, 22, 24, 22, 21, 20, 22, 23, 22,
-			],
+			delendai_memory_recall: [18, 20, 22, 24, 22, 21, 20, 22, 23, 22],
 		},
 		collectedAt: '2026-06-21T11:30:00Z',
 	},
@@ -116,7 +114,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 		savingsPercent: 22,
 		topByTokens: [
 			{
-				tool: 'mcp-vertex_proposals_board',
+				tool: 'delendai_proposals_board',
 				plugin: 'proposals',
 				calls: 211,
 				errors: 0,
@@ -127,7 +125,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 				tokens: 980_000,
 			},
 			{
-				tool: 'mcp-vertex_search',
+				tool: 'delendai_search',
 				plugin: 'search',
 				calls: 318,
 				errors: 1,
@@ -148,7 +146,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 	tools: {
 		rows: [
 			{
-				tool: 'mcp-vertex_overview',
+				tool: 'delendai_overview',
 				plugin: 'core',
 				calls: 412,
 				errors: 2,
@@ -159,7 +157,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 				tokens: 0,
 			},
 			{
-				tool: 'mcp-vertex_search',
+				tool: 'delendai_search',
 				plugin: 'search',
 				calls: 318,
 				errors: 1,
@@ -170,7 +168,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 				tokens: 0,
 			},
 			{
-				tool: 'mcp-vertex_proposals_board',
+				tool: 'delendai_proposals_board',
 				plugin: 'proposals',
 				calls: 211,
 				errors: 0,
@@ -181,7 +179,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 				tokens: 0,
 			},
 			{
-				tool: 'mcp-vertex_memory_recall',
+				tool: 'delendai_memory_recall',
 				plugin: 'memory',
 				calls: 88,
 				errors: 0,
@@ -276,7 +274,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 	},
 	docs: {
 		pluginLoaded: true,
-		tools: ['mcp-vertex_docs_search', 'mcp-vertex_docs_open'],
+		tools: ['delendai_docs_search', 'delendai_docs_open'],
 		knowledge: [
 			{ id: 'p001-overview', title: 'Overview' },
 			{ id: 'p002-arch', title: 'Architecture' },
@@ -320,7 +318,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 	},
 	times: {
 		totalWallMs: 38_211,
-		slowestTool: { tool: 'mcp-vertex_search', maxMs: 420 },
+		slowestTool: { tool: 'delendai_search', maxMs: 420 },
 		p50Ms: 22,
 		p95Ms: 230,
 		histogram: [
@@ -377,19 +375,19 @@ export const mockDashboardModel: IDashboardAllModels = {
 		overview: {
 			state: 'ready',
 			data: {
-				serverName: 'mcp-vertex',
+				serverName: 'delendai',
 				serverVersion: '0.42.0',
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				plugins: [
 					{ name: 'core', version: '0.42.0' },
 					{ name: 'memory', version: '0.9.1' },
 					{ name: 'proposals', version: '1.2.0' },
 				],
 				tools: [
-					{ name: 'mcp-vertex_overview', plugin: 'core' },
-					{ name: 'mcp-vertex_search', plugin: 'search' },
-					{ name: 'mcp-vertex_proposals_board', plugin: 'proposals' },
-					{ name: 'mcp-vertex_memory_recall', plugin: 'memory' },
+					{ name: 'delendai_overview', plugin: 'core' },
+					{ name: 'delendai_search', plugin: 'search' },
+					{ name: 'delendai_proposals_board', plugin: 'proposals' },
+					{ name: 'delendai_memory_recall', plugin: 'memory' },
 				],
 				knowledgeIds: ['p001-overview', 'p002-arch', 'p003-styleguide'],
 				recommendedNextAction: 'Pick a slice from the Proposals tab.',
@@ -469,7 +467,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 			state: 'ready',
 			data: {
 				pluginLoaded: true,
-				tools: ['mcp-vertex_docs_search', 'mcp-vertex_docs_open'],
+				tools: ['delendai_docs_search', 'delendai_docs_open'],
 				knowledge: [
 					{ id: 'p001-overview', title: 'Overview' },
 					{ id: 'p002-arch', title: 'Architecture' },
@@ -479,7 +477,7 @@ export const mockDashboardModel: IDashboardAllModels = {
 		},
 	},
 	server: {
-		name: 'mcp-vertex',
+		name: 'delendai',
 		version: '0.42.0',
 		fetchedAt: '2026-06-21T11:30:00Z',
 	},

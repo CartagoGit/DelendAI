@@ -35,8 +35,8 @@ import {
 	type ISkillInventory,
 } from './init-skill-inventory.constant';
 
-/** The canonical default tool prefix mcp-vertex registers under. */
-export const DEFAULT_TOOL_PREFIX = 'mcp-vertex';
+/** The canonical default tool prefix delendai registers under. */
+export const DEFAULT_TOOL_PREFIX = 'delendai';
 
 /** One tool namespace owned by a side of the unification (ours/theirs). */
 
@@ -44,7 +44,7 @@ export const DEFAULT_TOOL_PREFIX = 'mcp-vertex';
 
 /**
  * Read the target's own MCP server/plugin ids from a pre-existing
- * `mcp-vertex.config.json` (a prior install, or a hand-written config).
+ * `delendai.config.json` (a prior install, or a hand-written config).
  * Returns the plugin ids the target already declares, so the plan can
  * show that re-running `init` does not duplicate them.
  *
@@ -54,7 +54,7 @@ export const DEFAULT_TOOL_PREFIX = 'mcp-vertex';
 const readTargetPlugins = async (
 	reader: IFileReader,
 ): Promise<readonly string[]> => {
-	const raw = await reader.readFile('mcp-vertex.config.json');
+	const raw = await reader.readFile('delendai.config.json');
 	if (raw === undefined) return [];
 	try {
 		const parsed = JSON.parse(raw) as { plugins?: Record<string, unknown> };
@@ -101,7 +101,7 @@ const readForeignMcpServers = async (
  *
  * `ourPlugins` is the resolved plugin set (`resolvePluginSet`), `prefix`
  * is the namespace prefix the target's server registers under (defaults
- * to `mcp-vertex`). The target's own tools are detected from its config
+ * to `delendai`). The target's own tools are detected from its config
  * / MCP server maps. Under prefix-per-plugin, ours are
  * `<prefix>_<plugin>` and theirs keep their own server ids, so the two
  * sets are disjoint by construction; `collisions` only fills if the
@@ -124,7 +124,7 @@ export const buildToolUnification = async (
 			namespace: `${prefix}_${plugin}`,
 		}));
 
-	// Their tools: declared mcp-vertex plugins already in their config are
+	// Their tools: declared delendai plugins already in their config are
 	// merged into OURS (same server, same prefix — no duplication), while a
 	// foreign MCP server is a distinct `theirs` namespace.
 	const theirForeign = await readForeignMcpServers(reader);
@@ -164,21 +164,21 @@ export const renderSkillMigrationSection = (
 				.join('\n')}\n\n` +
 			`These are **kept as-is**. \`init\` inventories them so the migration ` +
 			`does not clobber or duplicate them; the target's agents decide whether ` +
-			`to fold each one into the canonical \`docs/mcp-vertex/skills/\` layout.\n\n`
+			`to fold each one into the canonical \`docs/delendai/skills/\` layout.\n\n`
 		: `No existing skills were detected in this project. The canonical ` +
-			`skills above are migrated into \`docs/mcp-vertex/skills/\` from ` +
+			`skills above are migrated into \`docs/delendai/skills/\` from ` +
 			`scratch.\n\n`;
 
 	return (
 		`### S3 — skill migration\n\n` +
 		`- **Status**: pending\n` +
-		`- **Files**: \`docs/mcp-vertex/skills/\`\n` +
+		`- **Files**: \`docs/delendai/skills/\`\n` +
 		`- **Gate**: bun run validate\n\n` +
 		`Bring the project's skill surface onto the canonical layout. This is ` +
 		`**advisory**: \`init\` never writes, deletes, or moves a skill here — the ` +
 		`target's own agents execute the migration.\n\n` +
 		`**Migrate OUR canonical skills into the target** ` +
-		`(\`docs/mcp-vertex/skills/\`):\n\n` +
+		`(\`docs/delendai/skills/\`):\n\n` +
 		`${migrateLines}\n\n` +
 		`**Absorb the target's EXISTING skills** (inventory, do not clobber):\n\n` +
 		absorb
@@ -194,8 +194,7 @@ export const renderToolUnificationSection = (
 ): string => {
 	const oursLines = unification.ours
 		.map(
-			(n) =>
-				`- ${code(n.namespace)}_* — mcp-vertex \`${n.plugin}\` plugin`,
+			(n) => `- ${code(n.namespace)}_* — delendai \`${n.plugin}\` plugin`,
 		)
 		.join('\n');
 
@@ -209,7 +208,7 @@ export const renderToolUnificationSection = (
 					)
 					.join('\n')}\n\n`
 			: `No foreign MCP tool surface was detected in this project; only ` +
-				`mcp-vertex tools are registered.\n\n`;
+				`delendai tools are registered.\n\n`;
 
 	const collisionBlock =
 		unification.collisions.length > 0
@@ -226,7 +225,7 @@ export const renderToolUnificationSection = (
 		`- **Files**: \`.vscode/mcp.json\`\n` +
 		`- **Gate**: bun run validate\n\n` +
 		`Unify the tool surface under the **prefix-per-plugin** contract: every ` +
-		`mcp-vertex tool is exposed as \`<prefix>_<plugin>_<tool>\`, so plugins ` +
+		`delendai tool is exposed as \`<prefix>_<plugin>_<tool>\`, so plugins ` +
 		`never collide with each other or with the target's own tools. This is ` +
 		`**plan output**, not a runtime change — the host enforces the prefixing ` +
 		`when the server boots.\n\n` +

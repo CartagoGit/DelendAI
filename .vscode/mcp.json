@@ -1,6 +1,6 @@
 {
 	"servers": {
-		"mcp-vertex": {
+		"delendai": {
 			"type": "stdio",
 			"command": "bun",
 			"args": [

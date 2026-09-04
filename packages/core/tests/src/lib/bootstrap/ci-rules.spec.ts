@@ -33,7 +33,7 @@ describe('DEFAULT_CI_RULES (declarative table)', async () => {
 			'jenkins',
 		]);
 	});
-	it('github-actions is the highest-priority (most common in mcp-vertex projects)', async () => {
+	it('github-actions is the highest-priority (most common in delendai projects)', async () => {
 		const gh = DEFAULT_CI_RULES.find((r) => r.id === 'github-actions');
 		const jk = DEFAULT_CI_RULES.find((r) => r.id === 'jenkins');
 		expect(gh?.priority).toBeGreaterThan(jk?.priority ?? 0);

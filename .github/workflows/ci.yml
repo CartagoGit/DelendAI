@@ -80,7 +80,7 @@ jobs:
               uses: ./.github/actions/setup-bun-repo
 
             - name: Rebuild the proposal registry cache
-              # A fresh checkout has no `.cache/mcp-vertex/proposals/index.json`
+              # A fresh checkout has no `.cache/delendai/proposals/index.json`
               # (gitignored — it's a derived cache, see r00010). `catalog:check`
               # below needs it to exist to resolve at all. This mirrors what the
               # MCP server does lazily on its own `auto_work`/`continue_proposal`
@@ -206,8 +206,8 @@ jobs:
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
-            - name: Clean mcp-vertex cache
-              run: rm -rf .cache/mcp-vertex
+            - name: Clean delendai cache
+              run: rm -rf .cache/delendai
 
             - name: Run tests and coverage gate
               run: |
@@ -403,7 +403,7 @@ jobs:
             # candidate snapshot.
             - name: Collect candidate snapshot
               env:
-                  METRICS_CANDIDATE_PATH: .cache/mcp-vertex/metrics/candidate.json
+                  METRICS_CANDIDATE_PATH: .cache/delendai/metrics/candidate.json
               run: bun tools/scripts/metrics/collect-candidate.script.ts
 
             # Diffs candidate vs baseline; fails the job (non-zero exit) if any
@@ -412,7 +412,7 @@ jobs:
             - name: Diff snapshots against threshold
               env:
                   METRICS_BASELINE_PATH: metrics-baseline.json
-                  METRICS_CANDIDATE_PATH: .cache/mcp-vertex/metrics/candidate.json
+                  METRICS_CANDIDATE_PATH: .cache/delendai/metrics/candidate.json
                   METRICS_TOKEN_DELTA_PCT: '20'
                   METRICS_LATENCY_DELTA_PCT: '20'
                   METRICS_BYTES_DELTA_PCT: '20'

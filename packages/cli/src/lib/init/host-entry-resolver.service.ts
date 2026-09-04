@@ -1,29 +1,29 @@
 /**
  * host-entry-resolver.ts — f00088 S2 + f00103 sibling-walk.
  *
- * Resolve the absolute path to the repository-only mcp-vertex host-server entry
+ * Resolve the absolute path to the repository-only delendai host-server entry
  * script (`tools/scripts/host/host-server.script.ts`) for the
  * for explicit development/local-checkout mode. External consumers use
  * `buildCanonicalLaunch` from `server-args.service.ts`; this resolver must
  * never be used to construct the default published-package launch shape.
  * Replaces the previous hardcoded
- * `/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/...`
+ * `/home/cartago/_proyectos/propios/delendai/tools/scripts/...`
  * that shipped in every generated `.vscode/mcp.json`.
  *
  * Resolution order (first hit wins):
  *
- *   1. `--mcp-vertex-root=<abs>` flag → operator's explicit override
+ *   1. `--delendai-root=<abs>` flag → operator's explicit override
  *   2. `<workspace>/node_modules/@delendai/core/tools/scripts/host/host-server.script.ts`
  *   3. `<workspace>/node_modules/@delendai/core/dist/host/host-server.js`
- *   4. `<workspace>/../mcp-vertex/tools/scripts/host/host-server.script.ts`
+ *   4. `<workspace>/../delendai/tools/scripts/host/host-server.script.ts`
  *      (sibling checkout — common dev workflow)
- *   5. `<workspace>/../mcp-vertex-core/tools/scripts/host/host-server.script.ts`
+ *   5. `<workspace>/../delendai-core/tools/scripts/host/host-server.script.ts`
  *      (alternate sibling name)
- *   6. `<workspace>/../propios/mcp-vertex/...` and a one-level
+ *   6. `<workspace>/../propios/delendai/...` and a one-level
  *      upward walk that probes every sibling directory which
  *      contains `tools/scripts/host/host-server.script.ts` (last
  *      resort — recovers the operator's common
- *      `~/proyectos/propios/mcp-vertex` layout even when the
+ *      `~/proyectos/propios/delendai` layout even when the
  *      consumer lives at `~/proyectos/<consumer>/`).
  *
  * Returns the resolved path + a `source` tag (for diagnostics and
@@ -69,10 +69,10 @@ const upwardSiblingWalk = (
 ): string | null => {
 	// Walk up at most 2 levels above the workspace. At the FIRST
 	// hop (the parent of the workspace) we probe one level deeper
-	// to recover layouts like `<parent>/propios/mcp-vertex/`,
-	// `<parent>/worktrees/mcp-vertex/`, and symlinks. The second
+	// to recover layouts like `<parent>/propios/delendai/`,
+	// `<parent>/worktrees/delendai/`, and symlinks. The second
 	// hop only checks direct children (the common dev workflow is
-	// `<consumer>/../mcp-vertex/`, which is already covered by the
+	// `<consumer>/../delendai/`, which is already covered by the
 	// explicit candidate list above).
 	//
 	// The walk is bounded so `/tmp/` (thousands of entries) does
@@ -95,7 +95,7 @@ const upwardSiblingWalk = (
 			seen.add(head.dir);
 			const names = reader?.(head.dir) ?? [];
 			for (const name of names) {
-				if (!name.includes('mcp-vertex')) continue;
+				if (!name.includes('delendai')) continue;
 				const candidate = join(head.dir, name, HOST_SCRIPT_REL);
 				if (probe.exists(candidate)) return candidate;
 			}
@@ -166,18 +166,15 @@ export const resolveHostEntryPath = (
 			source: 'npm_dist',
 		},
 		{
-			path: resolve(workspace, `../mcp-vertex/${HOST_SCRIPT_REL}`),
+			path: resolve(workspace, `../delendai/${HOST_SCRIPT_REL}`),
 			source: 'sibling',
 		},
 		{
-			path: resolve(workspace, `../mcp-vertex-core/${HOST_SCRIPT_REL}`),
+			path: resolve(workspace, `../delendai-core/${HOST_SCRIPT_REL}`),
 			source: 'sibling_alt',
 		},
 		{
-			path: resolve(
-				workspace,
-				`../propios/mcp-vertex/${HOST_SCRIPT_REL}`,
-			),
+			path: resolve(workspace, `../propios/delendai/${HOST_SCRIPT_REL}`),
 			source: 'sibling_nested',
 		},
 	];
@@ -189,8 +186,8 @@ export const resolveHostEntryPath = (
 	}
 
 	// Last-resort: an upward walk that probes every directory whose
-	// name contains `mcp-vertex`. Catches `propios/mcp-vertex`,
-	// `worktrees/mcp-vertex`, symlinks, and other irregular
+	// name contains `delendai`. Catches `propios/delendai`,
+	// `worktrees/delendai`, symlinks, and other irregular
 	// layouts — but only after the explicit candidate list above
 	// has been exhausted (so the common cases remain O(1)).
 	const walked = upwardSiblingWalk(probe, workspace);
@@ -213,10 +210,10 @@ export class HostEntryNotFoundError extends Error {
 	constructor(workspace: string, attempted: readonly string[]) {
 		const hint =
 			'\nHint: install @delendai/core in this workspace (bun add @delendai/core),\n' +
-			'      or pass --mcp-vertex-root=<abs/path/to/mcp-vertex> to point at a local checkout,\n' +
-			'      or check out mcp-vertex as a sibling of this workspace (../mcp-vertex/).';
+			'      or pass --delendai-root=<abs/path/to/delendai> to point at a local checkout,\n' +
+			'      or check out delendai as a sibling of this workspace (../delendai/).';
 		super(
-			`could not locate the mcp-vertex host entry script for ${workspace}.\n` +
+			`could not locate the delendai host entry script for ${workspace}.\n` +
 				`Tried:\n${attempted.map((p) => `  - ${p}`).join('\n')}` +
 				hint,
 		);

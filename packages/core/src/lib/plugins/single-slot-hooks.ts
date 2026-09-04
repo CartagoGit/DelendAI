@@ -43,7 +43,7 @@ export const buildSingleSlotContention = (
 		if (plugins.length < 2) continue;
 		const [winner, ...losers] = plugins;
 		lines.push(
-			`[mcp-vertex] "${slot}" can only have one provider: "${winner}" holds it, so ${losers
+			`[delendai] "${slot}" can only have one provider: "${winner}" holds it, so ${losers
 				.map((name) => `"${name}"`)
 				.join(
 					', ',

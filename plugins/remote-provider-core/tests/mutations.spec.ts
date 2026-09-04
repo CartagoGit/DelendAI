@@ -46,9 +46,9 @@ describe('createRemoteMutationExecutor', () => {
 		const result = await executor.execute({
 			actor: 'copilot',
 			effect: 'create release',
-			resource: 'cartago/mcp-vertex#v1.0.0',
+			resource: 'cartago/delendai#v1.0.0',
 			method: 'POST',
-			path: '/repos/cartago/mcp-vertex/releases',
+			path: '/repos/cartago/delendai/releases',
 			responseSchema: z.object({ id: z.string() }).strict(),
 			auditDetails: {
 				note: 'token secret-token was used upstream',
@@ -137,9 +137,9 @@ describe('createRemoteMutationExecutor', () => {
 			confirm: true as const,
 			actor: 'copilot',
 			effect: 'create release',
-			resource: 'cartago/mcp-vertex#v1.0.0',
+			resource: 'cartago/delendai#v1.0.0',
 			method: 'POST' as const,
-			path: '/repos/cartago/mcp-vertex/releases',
+			path: '/repos/cartago/delendai/releases',
 			idempotencyKey: 'release:v1.0.0',
 			responseSchema: z.object({ id: z.string() }).strict(),
 		};
@@ -244,9 +244,9 @@ describe('createRemoteMutationExecutor', () => {
 			confirm: true,
 			actor: 'copilot',
 			effect: 'create release',
-			resource: 'cartago/mcp-vertex#v1.0.0',
+			resource: 'cartago/delendai#v1.0.0',
 			method: 'POST',
-			path: '/repos/cartago/mcp-vertex/releases',
+			path: '/repos/cartago/delendai/releases',
 			responseSchema: z.object({ id: z.string() }).strict(),
 			classifyDuplicate: ({ error }) =>
 				error?.status === 409

@@ -38,7 +38,7 @@ const qualifyInvocationTool = (
 
 export const usedToolsBySession = (
 	invocations: readonly IInvocationRecord[],
-	corePrefix = 'mcp-vertex',
+	corePrefix = 'delendai',
 ): ReadonlyMap<string, ReadonlySet<string>> => {
 	const sessions = new Map<string, Set<string>>();
 	for (const record of invocations) {
@@ -54,7 +54,7 @@ export const computeUsefulTokensSessions = (input: {
 	readonly invocations: readonly IInvocationRecord[];
 	readonly corePrefix?: string | undefined;
 }): IUsefulTokensSessionMetric[] => {
-	const corePrefix = input.corePrefix ?? 'mcp-vertex';
+	const corePrefix = input.corePrefix ?? 'delendai';
 	const usedBySession = usedToolsBySession(input.invocations, corePrefix);
 	const totals = new Map<
 		string,

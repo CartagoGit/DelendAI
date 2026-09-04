@@ -101,7 +101,7 @@ const countReachableModules = (entryAbsPath: string): number => {
 };
 
 const formatChildScript = (): string => `
-const specifier = process.env.MCP_VERTEX_COLD_START_SPECIFIER;
+const specifier = process.env.DELENDAI_COLD_START_SPECIFIER;
 if (!specifier) throw new Error('Missing module specifier');
 const before = process.memoryUsage();
 const start = performance.now();
@@ -124,7 +124,7 @@ const measureDynamicImport = (entryAbsPath: string): IImportMeasurement => {
 		stderr: 'pipe',
 		env: {
 			...process.env,
-			MCP_VERTEX_COLD_START_SPECIFIER: pathToFileURL(entryAbsPath).href,
+			DELENDAI_COLD_START_SPECIFIER: pathToFileURL(entryAbsPath).href,
 		},
 	});
 	if (child.exitCode !== 0) {
@@ -139,7 +139,7 @@ const buildBundleBytes = async (
 	target: ITarget,
 	entryAbsPath: string,
 ): Promise<number> => {
-	const outdir = mkdtempSync(join(tmpdir(), 'mcp-vertex-cold-start-'));
+	const outdir = mkdtempSync(join(tmpdir(), 'delendai-cold-start-'));
 	try {
 		const result = await Bun.build({
 			entrypoints: [entryAbsPath],

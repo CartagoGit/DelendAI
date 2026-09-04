@@ -19,7 +19,7 @@ const fakeExec: IForgeExec = async (input: IRunExternalToolInput) => {
 		return {
 			ok: true,
 			code: 0,
-			stdout: 'git@github.com:CartagoGit/mcp-vertex.git\n',
+			stdout: 'git@github.com:CartagoGit/delendai.git\n',
 			stderr: '',
 			timedOut: false,
 			unavailable: false,

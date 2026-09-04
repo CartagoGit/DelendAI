@@ -42,7 +42,7 @@ import type { IProjectAnalysis } from '@delendai/core/public';
 export interface IInitFlags {
 	readonly dryRun: boolean;
 	readonly force: boolean;
-	readonly mcpVertexRoot?: string;
+	readonly delendaiRoot?: string;
 	readonly pluginPathsRoot?: string;
 }
 
@@ -75,7 +75,7 @@ export interface IInitDetection {
 	/** Source-root kind the operator's project uses. */
 	readonly sourceRoot: ISourceRoot;
 	/**
-	 * Resolved path to the mcp-vertex host-server entry script.
+	 * Resolved path to the delendai host-server entry script.
 	 * Populated by `resolveHostEntryPath` in S2; `undefined` here so
 	 * S1 stays decoupled from disk-side resolution.
 	 */
@@ -143,7 +143,7 @@ export interface IInitWrite {
  *
  * Four terminal states:
  *
- *   - `written` — fresh install, the canonical `mcp-vertex`
+ *   - `written` — fresh install, the canonical `delendai`
  *     bundle landed on disk.
  *   - `merged`  — existing `.vscode/mcp.json` was updated via
  *     merge; every other server entry the operator had wired
@@ -170,18 +170,13 @@ export type IMcpJsonWriteResult =
 
 /**
  * Canonical id-numbering schemes a foreign proposal system can use.
- *   - `mcp-vertex`  — our own `f00001` / `p00012` padded prefix shape.
+ *   - `delendai`  — our own `f00001` / `p00012` padded prefix shape.
  *   - `rfc`         — `RFC-0001`, `rfc-12`, `0001-title` (rfc-style).
  *   - `adr`         — `0001-record-title.md` (ADR / MADR numbering).
  *   - `numeric`     — bare leading number with no recognised prefix.
  *   - `none`        — markdown present but no numbering signal found.
  */
-export type IForeignIdScheme =
-	| 'mcp-vertex'
-	| 'rfc'
-	| 'adr'
-	| 'numeric'
-	| 'none';
+export type IForeignIdScheme = 'delendai' | 'rfc' | 'adr' | 'numeric' | 'none';
 
 /**
  * The shape/convention family a detected directory belongs to. This is
@@ -235,13 +230,13 @@ export interface IForeignProposalInventory {
 
 /** One tool namespace owned by a side of the unification (ours/theirs). */
 export interface IToolNamespace {
-	/** `ours` (mcp-vertex) or `theirs` (the target's own MCP tools). */
+	/** `ours` (delendai) or `theirs` (the target's own MCP tools). */
 	readonly origin: 'ours' | 'theirs';
 	/** The plugin/server id contributing the namespace. */
 	readonly plugin: string;
 	/**
 	 * The resolved tool-name prefix for the namespace, e.g.
-	 * `mcp-vertex_proposals` — every tool of the plugin is
+	 * `delendai_proposals` — every tool of the plugin is
 	 * `<namespace>_<tool>` at runtime.
 	 */
 	readonly namespace: string;
@@ -257,7 +252,7 @@ export interface IToolUnification {
 	 * Namespaces that collide across the two sides (same string). Empty
 	 * under the prefix-per-plugin contract; surfaced so the plan can
 	 * assert the map is collision-free and flag the rare case where the
-	 * target also uses the literal `mcp-vertex` prefix.
+	 * target also uses the literal `delendai` prefix.
 	 */
 	readonly collisions: readonly string[];
 }
@@ -318,7 +313,7 @@ export interface ITargetSkill {
 	readonly name: string;
 }
 
-/** One OUR (mcp-vertex) canonical skill slated to land in the target. */
+/** One OUR (delendai) canonical skill slated to land in the target. */
 export interface ICanonicalSkill {
 	/** Canonical skill id (matches `packages/core/skills/manifest.json`). */
 	readonly id: string;
@@ -360,7 +355,7 @@ export interface IDiscoveredInstructionSource {
 	/** Raw on-disk content of the source (verbatim, never mutated). */
 	readonly content: string;
 	/**
-	 * `true` when the file's body — outside of any mcp-vertex block — is
+	 * `true` when the file's body — outside of any delendai block — is
 	 * empty, i.e. it is already nothing but a pointer we wrote earlier. Such
 	 * a file carries no original prose to collapse and is skipped by the
 	 * canonical merge (idempotency).

@@ -43,7 +43,7 @@ const jsonResponse = (body: unknown, status = 200): Response =>
 		headers: { 'content-type': 'application/json' },
 	});
 
-const REPO: IGitHubRepo = { owner: 'CartagoGit', repo: 'mcp-vertex' };
+const REPO: IGitHubRepo = { owner: 'CartagoGit', repo: 'delendai' };
 
 describe('local-repro (v00126) — pure helpers', () => {
 	it('selectFailedStep picks the first failed step', () => {
@@ -272,7 +272,7 @@ describe('local-repro (v00126) — CLI', () => {
 			'--run-id',
 			'12345',
 			'--repo',
-			'CartagoGit/mcp-vertex',
+			'CartagoGit/delendai',
 			'--dry-run',
 		]);
 		expect(code).toBe(0);

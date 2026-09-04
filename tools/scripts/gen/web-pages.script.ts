@@ -22,15 +22,15 @@
  *   4. `tools/scripts/generate/from-manifests.script.ts`
  *      → apps/web/src/data/plugins/catalog.generated.ts +
  *        apps/web/src/generated/plugin-manifest-catalog.generated.ts +
- *        docs/mcp-vertex/generated/plugin-manifests.generated.{md,json} +
+ *        docs/delendai/generated/plugin-manifests.generated.{md,json} +
  *        packages/core/src/lib/registry/generated/
  *          first-party-manifest-entries.generated.ts
  *      (the canonical plugin catalog + first-party registry)
  *   5. `tools/scripts/generate/web-catalog.script.ts`
- *      → docs/mcp-vertex/plugins/auto-generated/*.md
+ *      → docs/delendai/plugins/auto-generated/*.md
  *      (the per-plugin doc pages)
  *   6. `tools/scripts/gen/provenance-truth.script.ts`
- *      → docs/mcp-vertex/generated/observability-provenance.generated.md
+ *      → docs/delendai/generated/observability-provenance.generated.md
  *      (the observability provenance graph contract + example links)
  *
  * Flags:
@@ -45,7 +45,7 @@
  *   2  unknown --only selector.
  *
  * Privacy: this script touches only checked-in artifacts under
- * `apps/web/src/`, `docs/mcp-vertex/generated/`, and
+ * `apps/web/src/`, `docs/delendai/generated/`, and
  * `packages/core/src/lib/registry/generated/`. No network calls, no
  * telemetry.
  */
@@ -111,8 +111,8 @@ const STEPS: readonly IStep[] = [
 		outputs: [
 			'apps/web/src/data/plugins/catalog.generated.ts',
 			'apps/web/src/generated/plugin-manifest-catalog.generated.ts',
-			'docs/mcp-vertex/generated/plugin-manifests.generated.md',
-			'docs/mcp-vertex/generated/plugin-manifests.generated.json',
+			'docs/delendai/generated/plugin-manifests.generated.md',
+			'docs/delendai/generated/plugin-manifests.generated.json',
 			'packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts',
 		],
 		refresh: 'bun tools/scripts/generate/from-manifests.script.ts',
@@ -121,7 +121,7 @@ const STEPS: readonly IStep[] = [
 		name: 'web-catalog',
 		label: 'per-plugin doc pages',
 		cmd: ['bun', 'tools/scripts/generate/web-catalog.script.ts'],
-		outputs: ['docs/mcp-vertex/plugins/auto-generated/'],
+		outputs: ['docs/delendai/plugins/auto-generated/'],
 		refresh: 'bun tools/scripts/generate/web-catalog.script.ts',
 	},
 	{
@@ -129,7 +129,7 @@ const STEPS: readonly IStep[] = [
 		label: 'observability provenance generated truth',
 		cmd: ['bun', 'tools/scripts/gen/provenance-truth.script.ts'],
 		outputs: [
-			'docs/mcp-vertex/generated/observability-provenance.generated.md',
+			'docs/delendai/generated/observability-provenance.generated.md',
 		],
 		refresh: 'bun tools/scripts/gen/provenance-truth.script.ts',
 	},
@@ -220,7 +220,7 @@ const reportDrift = async (spawnFn: SpawnFn): Promise<number> => {
 		// it under the catch-all bucket so the user is not blind.
 		if (
 			!trackedOutputs.has(path) &&
-			!path.startsWith('docs/mcp-vertex/plugins/auto-generated/')
+			!path.startsWith('docs/delendai/plugins/auto-generated/')
 		) {
 			// Skip untracked files outside our outputs — those are not
 			// this script's responsibility.

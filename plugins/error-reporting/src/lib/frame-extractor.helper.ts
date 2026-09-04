@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import type { ISafeMcpFrame } from './contracts/interfaces/safe-frame.interface';
 
 const NODE_MODULES_SCOPE =
-	/(?:^|[\\/])node_modules[\\/]@mcp-vertex[\\/]([^\\/]+)[\\/](.+)$/;
+	/(?:^|[\\/])node_modules[\\/]@delendai[\\/]([^\\/]+)[\\/](.+)$/;
 const ALREADY_SAFE_SCOPE = /@delendai\/([^/]+)\/(.+)$/;
 const FRAME_LINE = /^\s*at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?$/;
 
@@ -144,7 +144,7 @@ export const registerInternalPath = (
 	const kind =
 		packageId !== undefined
 			? 'package-root'
-			: prefix.endsWith('/node_modules/@mcp-vertex')
+			: prefix.endsWith('/node_modules/@delendai')
 				? 'mcp-scope'
 				: 'monorepo-root';
 	internalPathRegistry.set(registerKeyOf(kind, prefix, packageId), {
@@ -161,7 +161,7 @@ export const resetInternalPathRegistry = (): void => {
 export const registerInternalRuntimePaths = (moduleUrl: string): void => {
 	const normalized = toPosix(fileURLToPath(moduleUrl));
 	const nodeModulesMatch =
-		/^(.*\/node_modules\/@mcp-vertex)(?:\/[^/]+\/.+)$/.exec(normalized);
+		/^(.*\/node_modules\/@delendai)(?:\/[^/]+\/.+)$/.exec(normalized);
 	if (nodeModulesMatch?.[1] !== undefined) {
 		registerInternalPath(nodeModulesMatch[1]);
 	}

@@ -45,7 +45,7 @@ describe('proposal_adopt — layout outputSchema (l00008 s4)', async () => {
 		const proposalsDirAbs = join(
 			workspaceRoot,
 			'docs',
-			'mcp-vertex',
+			'delendai',
 			'proposals',
 		);
 		await mkdir(proposalsDirAbs, { recursive: true });
@@ -59,12 +59,9 @@ describe('proposal_adopt — layout outputSchema (l00008 s4)', async () => {
 			indexPathAbs: join(proposalsDirAbs, 'index.json'),
 			lockPathAbs: join(
 				workspaceRoot,
-				'.cache/mcp-vertex/agents.lock.json',
+				'.cache/delendai/agents.lock.json',
 			),
-			counterPathAbs: join(
-				workspaceRoot,
-				'.cache/mcp-vertex/counter.json',
-			),
+			counterPathAbs: join(workspaceRoot, '.cache/delendai/counter.json'),
 		});
 
 		const result = await invoke(reg, {});

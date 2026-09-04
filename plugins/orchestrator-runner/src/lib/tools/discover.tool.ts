@@ -32,7 +32,7 @@ export const buildDiscoverProvidersRegistration = (
 	effects: ['spawn'],
 	summary:
 		'Probe the host PATH for known provider CLIs and report which are installed vs missing.',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_discover_providers',
+	descriptionKey: 'delendai_orchestrator-runner_discover_providers',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_discover_providers`,

@@ -1,13 +1,13 @@
 /**
  * `LanguagePicker` — webview-agnostic language picker. Reads the
- * current language from `localStorage['mcpv:lang']` (or the
+ * current language from `localStorage['delendai:lang']` (or the
  * `IHostAdapter` provided initial value), falls back to `'en'` if
  * neither is set. Calls `opts.onChange(lang)` and writes
- * `localStorage['mcpv:lang']` when the user picks a new language.
+ * `localStorage['delendai:lang']` when the user picks a new language.
  *
  * Renders as a native `<select>` (with the MV brand chevron) so
  * the keyboard navigation is free and the CSP is happy. The
- * `data-mcpv-lang` attribute lets the runtime delegate change events.
+ * `data-delendai-lang` attribute lets the runtime delegate change events.
  */
 import type { ILangMeta, Lang } from '@delendai/shared/i18n';
 
@@ -29,7 +29,7 @@ export interface ILanguagePickerOptions {
 	readonly ariaLabel?: string;
 }
 
-const STORAGE_KEY = 'mcpv:lang';
+const STORAGE_KEY = 'delendai:lang';
 
 const isLang = (v: string, langs: readonly ILangMeta[]): v is Lang =>
 	langs.some((l) => l.code === v);
@@ -76,9 +76,9 @@ export const renderLanguagePicker = (opts: ILanguagePickerOptions): string => {
 			'renderLanguagePicker: ariaLabel is required and must come from the active i18n dictionary (a00083 F23).',
 		);
 	}
-	return `<label class="mcpv-lang-picker"${idAttr}>
-	<span class="mcpv-lang-picker__label" aria-hidden="true">🌐</span>
-	<select class="mcpv-lang-picker__select" data-mcpv-lang aria-label="${escapeHtml(opts.ariaLabel)}">
+	return `<label class="delendai-lang-picker"${idAttr}>
+	<span class="delendai-lang-picker__label" aria-hidden="true">🌐</span>
+	<select class="delendai-lang-picker__select" data-delendai-lang aria-label="${escapeHtml(opts.ariaLabel)}">
 		${options}
 	</select>
 </label>`;

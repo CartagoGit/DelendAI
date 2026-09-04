@@ -57,7 +57,7 @@ agent to free-form parse strings — error-prone and slow.
 
 `universal-mcp-thingy` claims to be the one MCP to rule them all. In
 practice, these projects try to wrap too much and end up doing nothing well.
-The mcp-vertex `external-mcps` plugin should NOT adopt any universal-claim
+The delendai `external-mcps` plugin should NOT adopt any universal-claim
 server without manual code review.
 
 ### 6. Names that look like the official one but aren't

@@ -83,7 +83,7 @@ export interface IIssue {
  *
  * A slice that names a gitignored path can NEVER be committed: `git add`
  * refuses it, and no retry changes `.gitignore`. Observed live on
- * 2026-09-03 — x00213 S3 declared `.cache/mcp-vertex/agent-queue/queue.json`
+ * 2026-09-03 — x00213 S3 declared `.cache/delendai/agent-queue/queue.json`
  * and commit-policy re-emitted the event several times a second for as
  * long as the server ran, because the refusal was not recognised as
  * terminal. That classification is fixed, but a terminal refusal is
@@ -133,7 +133,7 @@ const gitIgnoredPaths = (
 /** Pure over the filesystem it's given; every path check is rooted at `root`. */
 export const findIssues = (root: string): readonly IIssue[] => {
 	const out: IIssue[] = [];
-	const doneRoot = join(root, 'docs', 'mcp-vertex', 'proposals', 'done');
+	const doneRoot = join(root, 'docs', 'delendai', 'proposals', 'done');
 	for (const kind of PROPOSAL_KINDS) {
 		const dir = join(doneRoot, kind);
 		if (!existsSync(dir)) continue;
@@ -179,7 +179,7 @@ export const findIssues = (root: string): readonly IIssue[] => {
 			const dir = join(
 				root,
 				'docs',
-				'mcp-vertex',
+				'delendai',
 				'proposals',
 				state,
 				kind,

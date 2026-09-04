@@ -5,7 +5,7 @@
  * `close_slice` and `proposal_transition` both refuse to act without
  * *fresh validate evidence* (`resolveRecentValidateEvidence` in
  * `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`). That
- * resolver reads `.cache/mcp-vertex/results/logs/validate.jsonl` — a
+ * resolver reads `.cache/delendai/results/logs/validate.jsonl` — a
  * journal that, until this script existed, **nothing ever wrote**. The
  * gate was therefore only satisfiable by an agent hand-crafting a
  * `validateEvidence` argument, which is exactly the shape of evidence a
@@ -27,7 +27,7 @@
  * first broken thing. A full pass here takes ~10 minutes, so fail-fast
  * meant one blocker discovered per pass — twelve independent breakages
  * cost twelve passes. Pass `--fail-fast` (or set
- * `MCP_VERTEX_VALIDATE_FAIL_FAST=1`) to restore stop-at-first-failure.
+ * `DELENDAI_VALIDATE_FAIL_FAST=1`) to restore stop-at-first-failure.
  *
  * stdio is inherited and the exit code is 0 only when every step passed,
  * so `bun run validate` stays a drop-in for every existing caller (CI,
@@ -52,7 +52,7 @@ import {
  */
 export const VALIDATE_JOURNAL_RELATIVE_PATH = join(
 	'.cache',
-	'mcp-vertex',
+	'delendai',
 	'results',
 	'logs',
 	'validate.jsonl',
@@ -279,7 +279,7 @@ export const main = async (
 	const workspaceRoot = process.cwd();
 	const failFast =
 		argv.includes('--fail-fast') ||
-		process.env.MCP_VERTEX_VALIDATE_FAIL_FAST === '1';
+		process.env.DELENDAI_VALIDATE_FAIL_FAST === '1';
 	const steps = await readValidateSteps(workspaceRoot);
 	const results = await runValidateSteps(steps, { failFast });
 	const exitCode = results.some((entry) => entry.exitCode !== 0) ? 1 : 0;

@@ -14,7 +14,7 @@
  * from this descriptor, at least one entry of which had already rotted
  * — `search_search` is not a real tool, `search` is). `body` is the
  * single source of tool guidance now, and it never hardcodes anything
- * beyond the one tool every mcp-vertex server guarantees: `overview`.
+ * beyond the one tool every delendai server guarantees: `overview`.
  */
 
 export type IAgentDescriptor = {

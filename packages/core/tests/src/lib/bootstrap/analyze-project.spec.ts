@@ -101,7 +101,7 @@ describe('analyzeProject', async () => {
 			}),
 		);
 		const plan = await recommendServerPlan(analysis);
-		expect(plan.namespacePrefix).toBe('mcp-vertex');
+		expect(plan.namespacePrefix).toBe('delendai');
 		expect(plan.targetDir).toBe('packages/core');
 	});
 
@@ -123,7 +123,7 @@ describe('analyzeProject', async () => {
 				'astro.config.mjs': 'export default {}',
 				'.github/workflows/ci.yml': 'name: ci',
 				'.vscode/mcp.json': '{}',
-				'mcp-vertex.config.json': '{}',
+				'delendai.config.json': '{}',
 			}),
 		);
 		expect(analysis.projectType).toBe('monorepo');
@@ -137,7 +137,7 @@ describe('analyzeProject', async () => {
 			'script:validate',
 			'script:lint',
 			'script:test',
-			'config:mcp-vertex.config.json',
+			'config:delendai.config.json',
 			'config:.vscode/mcp.json',
 		]);
 	});

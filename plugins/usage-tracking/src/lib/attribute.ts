@@ -4,7 +4,7 @@
  *
  * The core qualifies every plugin tool as `${corePrefix}_${pluginPrefix}_${toolId}`
  * (see `packages/core/src/lib/cli/assemble.ts`) and every core tool as
- * `${corePrefix}_${toolId}`. Neither `corePrefix` (`mcp-vertex`) nor a
+ * `${corePrefix}_${toolId}`. Neither `corePrefix` (`delendai`) nor a
  * plugin prefix contains an underscore, but a `toolId` may (e.g.
  * `usage_report`, `get_validation_matrix`), so the boundary cannot be
  * found by a blind `split('_')`.

@@ -46,7 +46,7 @@ describe('dev settings mount lifecycle', () => {
 			kind: 'unconfigured',
 			signals: [],
 			nextStep: 'install',
-			suggestion: 'Install mcp-vertex',
+			suggestion: 'Install delendai',
 		};
 		let mounted: ReturnType<typeof mountSettingsPanel>;
 		mounted = mountSettingsPanel(

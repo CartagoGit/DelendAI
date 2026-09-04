@@ -13,7 +13,7 @@
  *   - `hostOnly` members stay out of the non-host chain presets
  *   - stack-pack overlays only target plugins that the pack actually ships
  *   - migrated plugin manifests agree with preset membership where manifests exist
- *   - `vertex` matches the live root `mcp-vertex.config.json` plugin keys exactly
+ *   - `vertex` matches the live root `delendai.config.json` plugin keys exactly
  *
  * Usage:
  *   bun tools/scripts/lint/preset-drift.script.ts
@@ -374,7 +374,7 @@ export const detectCatalogPresetDrift = async (
 ): Promise<readonly IPresetDriftFinding[]> => {
 	const findings: IPresetDriftFinding[] = [];
 	const catalogPath = 'packages/core/src/lib/plugins/preset-catalog.ts';
-	const configPath = 'mcp-vertex.config.json';
+	const configPath = 'delendai.config.json';
 	const allMemberIds = new Set<string>();
 	for (const definition of PRESET_CATALOG) {
 		for (const member of definition.members) {
@@ -417,7 +417,7 @@ export const detectCatalogPresetDrift = async (
 				relPath: configPath,
 				line: 0,
 				kind: 'vertex-config-drift',
-				detail: `vertex must mirror the live mcp-vertex.config.json plugins exactly; ${parts.join('; ')}.`,
+				detail: `vertex must mirror the live delendai.config.json plugins exactly; ${parts.join('; ')}.`,
 			});
 		}
 	} catch (error) {

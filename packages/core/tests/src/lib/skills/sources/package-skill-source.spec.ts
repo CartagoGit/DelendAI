@@ -7,7 +7,7 @@ describe('packageSkillSource', () => {
 		const files: Record<string, string> = {
 			'/pkg/skills/portable/SKILL.md': [
 				'---',
-				'name: mcp-vertex-portable',
+				'name: delendai-portable',
 				'tags: [portable, package]',
 				"appliesTo: ['@delendai/core']",
 				'description: Use this skill for portable package checks.',
@@ -33,7 +33,7 @@ describe('packageSkillSource', () => {
 		const descriptors = await source.list();
 		expect(descriptors).toHaveLength(1);
 		expect(descriptors[0]).toMatchObject({
-			id: 'mcp-vertex-portable',
+			id: 'delendai-portable',
 			version: '1.2.3',
 			source: 'package',
 			owner: '@delendai/core',
@@ -44,7 +44,7 @@ describe('packageSkillSource', () => {
 		expect(descriptors[0]?.hash).toMatch(/^sha256:/u);
 		const readsAfterList = reads;
 
-		const loaded = await source.load('mcp-vertex-portable');
+		const loaded = await source.load('delendai-portable');
 		expect(loaded?.body).toContain('Full instructions');
 		expect(reads).toBeGreaterThan(readsAfterList);
 		expect(await source.load('../portable')).toBeNull();

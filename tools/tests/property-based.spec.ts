@@ -11,7 +11,7 @@ import {
 import {
 	validateSafeReport,
 	validateSerializedSafeReport,
-	type ISafeMcpVertexReport,
+	type ISafeDelendaiReport,
 } from '@delendai/error-reporting/public';
 
 const mulberry32 = (seed: number) => {
@@ -136,11 +136,11 @@ const SECRET_GENERATORS: ReadonlyArray<{
 	},
 ];
 
-const baseReport: ISafeMcpVertexReport = {
+const baseReport: ISafeDelendaiReport = {
 	reporterVersion: '0.1.0',
-	mcpVertexVersion: '0.1.0',
+	delendaiVersion: '0.1.0',
 	packageId: '@delendai/error-reporting',
-	toolOwner: 'mcp-vertex',
+	toolOwner: 'delendai',
 	toolCategory: 'reporting',
 	errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 	failureClass: 'INTERNAL_TIMEOUT',
@@ -300,7 +300,7 @@ describe('property-based privacy validation', () => {
 		for (const marker of privateMarkers) {
 			for (let trial = 0; trial < 8; trial += 1) {
 				const value = ` ${marker.build(rng)}`;
-				const report: ISafeMcpVertexReport = {
+				const report: ISafeDelendaiReport = {
 					...baseReport,
 					syntheticExample: {
 						summary: value,

@@ -22,7 +22,7 @@
 		],
 		"deny": [],
 		"defaultMode": "acceptEdits",
-		"additionalDirectories": ["/home/cartago/_projects/mcp-vertex"]
+		"additionalDirectories": ["/home/cartago/_projects/delendai"]
 	},
 
 	"skipDangerousModePermissionPrompt": true,

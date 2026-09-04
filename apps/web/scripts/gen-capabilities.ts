@@ -182,12 +182,12 @@ interface ICollected {
 }
 
 const namespaceOf = (toolName: string): string => {
-	// Tools are host-namespaced as `mcp-vertex_<rest>`. A core meta-tool
-	// has no further segment (e.g. `mcp-vertex_overview`) and belongs to
+	// Tools are host-namespaced as `delendai_<rest>`. A core meta-tool
+	// has no further segment (e.g. `delendai_overview`) and belongs to
 	// the core namespace (`core`, mapped back to the server name by
-	// `namespaceFor`); a plugin tool (`mcp-vertex_proposals_…`) returns
+	// `namespaceFor`); a plugin tool (`delendai_proposals_…`) returns
 	// its plugin prefix (`proposals`).
-	const HOST_PREFIX = 'mcp-vertex_';
+	const HOST_PREFIX = 'delendai_';
 	if (toolName.startsWith(HOST_PREFIX)) {
 		const stripped = toolName.slice(HOST_PREFIX.length);
 		return stripped.includes('_')
@@ -253,7 +253,7 @@ const buildClient = async (
 		// capabilities — every other plugin still sees no config file
 		// (default options), matching the real CLI default.
 		readFile: async (absolutePath: string) =>
-			absolutePath.endsWith('mcp-vertex.config.json')
+			absolutePath.endsWith('delendai.config.json')
 				? JSON.stringify({
 						plugins: { deps: { options: { allowNetwork: true } } },
 					})
@@ -270,7 +270,7 @@ const buildClient = async (
 	const toolNamespaces = new Map<string, string>(
 		agentCatalogTools.map((tool) => [
 			tool.name,
-			tool.plugin === undefined || tool.plugin === 'mcp-vertex'
+			tool.plugin === undefined || tool.plugin === 'delendai'
 				? 'core'
 				: tool.plugin,
 		]),
@@ -289,7 +289,7 @@ const buildClient = async (
 };
 
 // Benchmarks are measured on the documented cold-start config (proposals +
-// memory, matching docs/mcp-vertex/TOKEN-BUDGETS.md) so the figures line up with the
+// memory, matching docs/delendai/TOKEN-BUDGETS.md) so the figures line up with the
 // "<300 tokens to orient" promise — the full tool list above still shows all 9.
 const BENCH_PLUGINS = 'proposals,memory';
 
@@ -321,11 +321,11 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 			}
 		};
 		const measured = await Promise.all([
-			measure('overview_full', 'overview (full)', 'mcp-vertex_overview'),
+			measure('overview_full', 'overview (full)', 'delendai_overview'),
 			measure(
 				'overview_compact',
 				'overview (compact)',
-				'mcp-vertex_overview',
+				'delendai_overview',
 				{
 					compact: true,
 				},
@@ -376,7 +376,7 @@ const collectTools = async (): Promise<ICollected> => {
 		// Side effects (M31) live in overview, not the MCP tool definition — merge
 		// them in so the site can badge write/spawn/destructive tools.
 		const overview = (await client.callTool({
-			name: 'mcp-vertex_overview',
+			name: 'delendai_overview',
 			arguments: {},
 		})) as {
 			structuredContent?: {
@@ -552,9 +552,9 @@ const collectTutorials = (): ITutorial[] => {
 	return flat;
 };
 
-/** Walk `docs/mcp-vertex/troubleshooting/*.md` and return the flat catalogue (l030 S4). */
+/** Walk `docs/delendai/troubleshooting/*.md` and return the flat catalogue (l030 S4). */
 const collectTroubleshooting = (): ITroubleshootingCase[] => {
-	const dir = join(ROOT, 'docs/mcp-vertex/troubleshooting');
+	const dir = join(ROOT, 'docs/delendai/troubleshooting');
 	return [
 		...discoverTroubleshootingCases(dir, {
 			listFiles: (p) => {

@@ -70,7 +70,7 @@ const bashCompletion = (model: ICompletionModel): string => {
 				`      ${group}) COMPREPLY=( $(compgen -W "${uniqueSorted(verbs).join(' ')}" -- "$cur") ) ;;`,
 		)
 		.join('\n');
-	return `# mcp-vertex bash completion (generated)
+	return `# delendai bash completion (generated)
 _mcpv_complete() {
   local cur prev words cword
   _init_completion 2>/dev/null || { cur="\${COMP_WORDS[COMP_CWORD]}"; prev="\${COMP_WORDS[COMP_CWORD-1]}"; }
@@ -83,7 +83,7 @@ ${caseArms}
       *) COMPREPLY=() ;;
   esac
 }
-complete -F _mcpv_complete mcpv
+complete -F _mcpv_complete delendai
 `;
 };
 
@@ -95,7 +95,7 @@ const zshCompletion = (model: ICompletionModel): string => {
 				`    ${group}) compadd ${uniqueSorted(verbs).join(' ')} ;;`,
 		)
 		.join('\n');
-	return `# mcp-vertex zsh completion (generated)
+	return `# delendai zsh completion (generated)
 _mcpv() {
   if (( CURRENT == 2 )); then
     compadd ${firstWords}
@@ -105,19 +105,21 @@ _mcpv() {
 ${caseArms}
   esac
 }
-compdef _mcpv mcpv
+compdef _mcpv delendai
 `;
 };
 
 const fishCompletion = (model: ICompletionModel): string => {
-	const lines: string[] = ['# mcp-vertex fish completion (generated)'];
+	const lines: string[] = ['# delendai fish completion (generated)'];
 	for (const word of model.firstWords) {
-		lines.push(`complete -c mcpv -n '__fish_use_subcommand' -a '${word}'`);
+		lines.push(
+			`complete -c delendai -n '__fish_use_subcommand' -a '${word}'`,
+		);
 	}
 	for (const [group, verbs] of model.groups.entries()) {
 		for (const verb of uniqueSorted(verbs)) {
 			lines.push(
-				`complete -c mcpv -n '__fish_seen_subcommand_from ${group}' -a '${verb}'`,
+				`complete -c delendai -n '__fish_seen_subcommand_from ${group}' -a '${verb}'`,
 			);
 		}
 	}

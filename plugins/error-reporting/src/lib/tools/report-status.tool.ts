@@ -26,7 +26,7 @@ const MAX_RECENT_REPORTS = 20;
 
 const SAFE_DTO_FIELDS = [
 	'reporterVersion',
-	'mcpVertexVersion',
+	'delendaiVersion',
 	'packageId',
 	'safeToolId',
 	'toolOwner',
@@ -43,7 +43,7 @@ const SAFE_DTO_FIELDS = [
 const ISSUE_BODY_TABLE_FIELDS = [
 	'packageId',
 	'reporterVersion',
-	'mcpVertexVersion',
+	'delendaiVersion',
 	'classification',
 	'failureClass',
 	'fingerprint',
@@ -266,7 +266,7 @@ const buildOutput = (input: {
 	},
 	projectContextSent: false,
 	privacyStatement:
-		'Only the safe ISafeMcpVertexReport DTO and the issue body derived from it are transmitted. No host-project content is sent: no message, stack, args, workspace, paths, repo names, prompts, env, headers or tool outputs.',
+		'Only the safe ISafeDelendaiReport DTO and the issue body derived from it are transmitted. No host-project content is sent: no message, stack, args, workspace, paths, repo names, prompts, env, headers or tool outputs.',
 	enableConfig: 'plugins.error-reporting.options.enabled = true',
 	health: input.health,
 	funnel: input.funnel,
@@ -291,7 +291,7 @@ export const buildReportStatusRegistration = (
 			`${options.namespacePrefix}_report_status`,
 			{
 				description:
-					'Read-only transparency report for automatic mcp-vertex error reporting: enablement, fixed allowlisted destination, exact transmitted fields, privacy exclusions, and recent de-duplication records with classification.',
+					'Read-only transparency report for automatic delendai error reporting: enablement, fixed allowlisted destination, exact transmitted fields, privacy exclusions, and recent de-duplication records with classification.',
 				inputSchema: ReportStatusInputSchema,
 				outputSchema: compactOutputSchema(),
 			},

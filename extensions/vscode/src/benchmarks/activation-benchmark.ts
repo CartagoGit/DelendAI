@@ -445,12 +445,12 @@ const executeVsCodeScenario = async (
 			launchArgs: [request.workspacePath, '--disable-workspace-trust'],
 			extensionTestsEnv: {
 				...process.env,
-				MCP_VERTEX_BENCH_OUTPUT_FILE: outputFile,
-				MCP_VERTEX_BENCH_EXTENSION_ID: request.extensionId,
-				MCP_VERTEX_BENCH_SCENARIO: request.scenario,
+				DELENDAI_BENCH_OUTPUT_FILE: outputFile,
+				DELENDAI_BENCH_EXTENSION_ID: request.extensionId,
+				DELENDAI_BENCH_SCENARIO: request.scenario,
 				...(request.callLogPath === undefined
 					? {}
-					: { MCP_VERTEX_BENCH_CALL_LOG: request.callLogPath }),
+					: { DELENDAI_BENCH_CALL_LOG: request.callLogPath }),
 			},
 		});
 	} catch (error) {
@@ -516,7 +516,7 @@ export const runActivationBenchmark = async (
 		options.integrationRunnerPath ?? defaultIntegrationRunnerPath;
 	const executeScenario = options.executeScenario ?? executeVsCodeScenario;
 	const evidenceDir = await mkdtemp(
-		join(tmpdir(), 'mcp-vertex-vscode-activation-benchmark-'),
+		join(tmpdir(), 'delendai-vscode-activation-benchmark-'),
 	);
 	const cleanup = async (): Promise<void> => {
 		if (options.keepEvidence === true) return;
@@ -570,8 +570,8 @@ export const runActivationBenchmark = async (
 							: extensionRoot,
 					extensionId:
 						scenario === 'control'
-							? 'cartago.mcp-vertex-benchmark-control'
-							: 'cartago.mcp-vertex-vscode',
+							? 'cartago.delendai-benchmark-control'
+							: 'cartago.delendai-vscode',
 					workspacePath:
 						scenario === 'control'
 							? defaultControlWorkspacePath

@@ -13,8 +13,8 @@ remote error issues plus deterministic correlation against local agent logs.
   release crash-free rates when the traces capability is enabled.
 - **`obs_correlate`** — reads recent remote issues from the same source that
   powers `obs_errors`, then scans local JSONL runtime logs under
-  `.cache/mcp-vertex/results/logs/` and
-  `.cache/mcp-vertex/results/logs-errors/` for lines that mention the same
+  `.cache/delendai/results/logs/` and
+  `.cache/delendai/results/logs-errors/` for lines that mention the same
   exception title or context.
 
 ## Local correlation
@@ -38,9 +38,9 @@ Sample output:
 	"matches": [
 		{
 			"issueId": "issue-1",
-			"logFile": ".cache/mcp-vertex/results/logs/2026-07-25.jsonl",
+			"logFile": ".cache/delendai/results/logs/2026-07-25.jsonl",
 			"line": 7,
-			"summary": "TypeError matched local log .cache/mcp-vertex/results/logs/2026-07-25.jsonl:7 — {\"ts\":\"2026-07-25T11:58:00.000Z\",\"summary\":\"tool-failed: TypeError Cannot read properties of undefined\"}"
+			"summary": "TypeError matched local log .cache/delendai/results/logs/2026-07-25.jsonl:7 — {\"ts\":\"2026-07-25T11:58:00.000Z\",\"summary\":\"tool-failed: TypeError Cannot read properties of undefined\"}"
 		}
 	],
 	"totalIssues": 1,
@@ -55,7 +55,7 @@ troubleshooting loop without requiring a vendor SDK or any write scope.
 ## Load
 
 ```bash
-mcp-vertex --plugins=observability
+delendai --plugins=observability
 ```
 
 ## Security

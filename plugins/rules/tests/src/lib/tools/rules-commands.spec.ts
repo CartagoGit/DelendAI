@@ -65,8 +65,8 @@ const options = (files: Record<string, string>) => ({
 	workspace,
 	reader: reader(files),
 	projectName: 'demo',
-	cacheRelDir: '.cache/mcp-vertex/rules',
-	manifestRelPath: '.cache/mcp-vertex/rules/rules-map.json',
+	cacheRelDir: '.cache/delendai/rules',
+	manifestRelPath: '.cache/delendai/rules/rules-map.json',
 	mode: 'mixed' as const,
 });
 

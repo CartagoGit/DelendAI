@@ -56,7 +56,7 @@ let stderrSpy: ReturnType<typeof vi.spyOn>;
 let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
-	workDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-ctl-'));
+	workDir = mkdtempSync(join(tmpdir(), 'delendai-ctl-'));
 	TEMP_DIRS.push(workDir);
 	// Capture the corruption diagnostic. Cases that need to assert on
 	// it inspect `stderrSpy.mock.calls` / `consoleErrorSpy.mock.calls`.

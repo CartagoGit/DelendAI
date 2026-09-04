@@ -239,7 +239,7 @@ interface IKpiCommandRuntime {
 	readonly now?: () => Date;
 }
 
-const PROJECT_KPIS_TOOL = 'mcp-vertex_project_kpis';
+const PROJECT_KPIS_TOOL = 'delendai_project_kpis';
 const DAY_MS = 86_400_000;
 
 const asIso = (value: Date): string => value.toISOString();

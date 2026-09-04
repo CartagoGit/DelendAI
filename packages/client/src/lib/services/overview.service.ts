@@ -52,7 +52,7 @@ export const normalizeCompactTools = (
 };
 
 /**
- * Shape returned by `mcp-vertex_tool_search`. We re-declare it here
+ * Shape returned by `delendai_tool_search`. We re-declare it here
  * (instead of importing the runtime schema) to keep the client free of
  * server-side zod types.
  */
@@ -70,7 +70,7 @@ export interface IToolSearchEntry {
 
 /**
  * Enumerate every tool the server knows about (including lazy ones)
- * by calling `mcp-vertex_tool_search` with a high limit. This is the
+ * by calling `delendai_tool_search` with a high limit. This is the
  * canonical source for tree-style UIs that want to show all available
  * tools grouped by plugin — `overview.tools` only carries the visible
  * (bootstrap) surface, not the lazy 220+ behind it.
@@ -154,14 +154,14 @@ export const normalizeTool = (tool: IOverviewTool): IToolDescriptor => {
 	};
 };
 
-const HOST_NAMESPACE = 'mcp-vertex';
+const HOST_NAMESPACE = 'delendai';
 const HOST_PREFIX = `${HOST_NAMESPACE}_`;
 
 export const pluginFromToolName = (toolName: string): string => {
-	// Tools are namespaced by the host as `mcp-vertex_<rest>`. A core
-	// meta-tool has no further segment (e.g. `mcp-vertex_overview`,
-	// `mcp-vertex_status`) and keeps the host namespace (`mcp-vertex`);
-	// a plugin tool (e.g. `mcp-vertex_quality_run_quality`) returns its
+	// Tools are namespaced by the host as `delendai_<rest>`. A core
+	// meta-tool has no further segment (e.g. `delendai_overview`,
+	// `delendai_status`) and keeps the host namespace (`delendai`);
+	// a plugin tool (e.g. `delendai_quality_run_quality`) returns its
 	// plugin prefix (`quality`).
 	if (!toolName.startsWith(HOST_PREFIX)) {
 		const [prefix] = toolName.split('_', 1);

@@ -50,7 +50,7 @@ const BASE_PAGES: ReadonlyArray<Omit<Entry, 'lang'>> = [
 	{
 		title: 'Install & run',
 		href: '/install',
-		text: 'Install mcp-vertex under bun, npm, pnpm, yarn, Deno or Node.',
+		text: 'Install delendai under bun, npm, pnpm, yarn, Deno or Node.',
 	},
 	{
 		title: 'Tools',

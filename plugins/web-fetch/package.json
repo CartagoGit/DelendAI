@@ -2,7 +2,7 @@
 	"name": "@delendai/web-fetch",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Opt-in web/fetch plugin for @delendai/core: web_fetch resolves an allow-listed URL and returns capped text. Load with `mcp-vertex --plugins=web-fetch` and configure `plugins.web-fetch.options.allowList`.",
+	"description": "Opt-in web/fetch plugin for @delendai/core: web_fetch resolves an allow-listed URL and returns capped text. Load with `delendai --plugins=web-fetch` and configure `plugins.web-fetch.options.allowList`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

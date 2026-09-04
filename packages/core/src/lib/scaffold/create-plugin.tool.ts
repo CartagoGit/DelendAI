@@ -188,7 +188,7 @@ const appendSyntheticCatalogEntry = async ({
 	pluginId,
 	fs,
 }: IRegenerateCatalogArgs): Promise<void> => {
-	const path = 'docs/mcp-vertex/agent-catalog.generated.json';
+	const path = 'docs/delendai/agent-catalog.generated.json';
 	const parsed = JSON.parse(await fs.readFile(path)) as {
 		tools?: Array<Record<string, unknown>>;
 		[key: string]: unknown;
@@ -373,7 +373,7 @@ export const buildCreatePluginToolRegistration = (
 			`${options.namespacePrefix}_create_plugin`,
 			{
 				description:
-					'Scaffold a new first-party plugin: writes the plugin package scaffold, wires it into tsconfig.base/vitest.shared/PLUGIN_DEFAULTS/publish-order/preset-catalog, updates FIRST_PARTY_PLUGIN_INDEX and mcp-vertex.config.json, then self-checks via the doctor. Returns the full report.',
+					'Scaffold a new first-party plugin: writes the plugin package scaffold, wires it into tsconfig.base/vitest.shared/PLUGIN_DEFAULTS/publish-order/preset-catalog, updates FIRST_PARTY_PLUGIN_INDEX and delendai.config.json, then self-checks via the doctor. Returns the full report.',
 				inputSchema: CREATE_PLUGIN_INPUT_SCHEMA,
 				outputSchema: CREATE_PLUGIN_OUTPUT_SCHEMA,
 			},

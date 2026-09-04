@@ -5,7 +5,7 @@ import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 import type { ICommandDeps } from './types';
 import { renderJsonHtml, showCommandError } from './types';
 
-export const OPEN_PROPOSAL_COMMAND = 'mcp-vertex.openProposal';
+export const OPEN_PROPOSAL_COMMAND = 'delendai.openProposal';
 
 /**
  * f00079 S5 (closes a00040 H6): proposal id format. The canonical repo
@@ -66,7 +66,7 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 			const check = checkProposalId(rawProposalId);
 			if (check.kind === 'malformed') {
 				await deps.vscode.window.showErrorMessage?.(
-					`mcp-vertex: malformed proposal id "${check.proposalId}".`,
+					`delendai: malformed proposal id "${check.proposalId}".`,
 				);
 				return;
 			}
@@ -101,7 +101,7 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 							detail.diagnose.ok === false)
 					) {
 						await deps.vscode.window.showErrorMessage?.(
-							`mcp-vertex: proposal "${check.proposalId}" not found.`,
+							`delendai: proposal "${check.proposalId}" not found.`,
 						);
 						return;
 					}
@@ -109,8 +109,8 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 						(await deps.detailSink?.('proposal', detail)) === true;
 					if (sinkHandled) return;
 					const panel = deps.vscode.window.createWebviewPanel(
-						'mcpVertexProposals',
-						`mcp-vertex Proposal ${check.proposalId}`,
+						'delendaiProposals',
+						`delendai Proposal ${check.proposalId}`,
 						deps.vscode.ViewColumn.One,
 						{ enableScripts: false },
 					);
@@ -118,7 +118,7 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 						detail,
 						viewCopyFor(
 							resolveViewLang(
-								deps.globalState?.get<unknown>('mcpv:lang'),
+								deps.globalState?.get<unknown>('delendai:lang'),
 							),
 						),
 					);
@@ -138,13 +138,13 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 					{},
 				);
 				const panel = deps.vscode.window.createWebviewPanel(
-					'mcpVertexProposals',
-					'mcp-vertex Proposals',
+					'delendaiProposals',
+					'delendai Proposals',
 					deps.vscode.ViewColumn.One,
 					{ enableScripts: false },
 				);
 				panel.webview.html = renderJsonHtml(
-					'mcp-vertex Proposals',
+					'delendai Proposals',
 					board,
 				);
 			} catch (err) {

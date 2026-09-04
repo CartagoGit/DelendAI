@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexCacheCacheGcOutput {
+export interface DelendaiCacheCacheGcOutput {
 	dryRun: boolean;
 	appliedAt: string;
 	totalBytes: number;
@@ -33,7 +33,7 @@ export interface McpVertexCacheCacheGcOutput {
 	}[];
 }
 
-export interface McpVertexCacheReconcileOutput {
+export interface DelendaiCacheReconcileOutput {
 	cacheDirAbs: string;
 	created: string[];
 	migrated: {
@@ -48,6 +48,6 @@ export interface McpVertexCacheReconcileOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface CacheToolOutputs {
-	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
-	"mcp-vertex_cache_reconcile": McpVertexCacheReconcileOutput;
+	"delendai_cache_cache_gc": DelendaiCacheCacheGcOutput;
+	"delendai_cache_reconcile": DelendaiCacheReconcileOutput;
 }

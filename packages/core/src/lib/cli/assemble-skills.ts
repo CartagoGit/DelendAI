@@ -12,9 +12,9 @@ import { join } from 'node:path';
 
 import type { ISkillSummary } from '../catalog/agent-discovery-types';
 import type { IConfigurationArtifact } from '../contracts/interfaces/configuration-center.interface';
-import type { IMcpVertexConfigFile } from '../plugins/load-config-file';
+import type { IDelendaiConfigFile } from '../plugins/load-config-file';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
-import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
+import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { loadSkills } from '../skills/load-skills';
 import { SKILL_MANIFEST_REL } from '../skills/skill-paths';
 import { buildSkillCatalog } from '../skills/skill-catalog';
@@ -28,13 +28,13 @@ import {
 } from './workflow-contribution-assembly';
 
 export interface IAssembleSkillsInput {
-	readonly args: IMcpVertexCliArgs;
-	readonly fileConfig: IMcpVertexConfigFile;
+	readonly args: IDelendaiCliArgs;
+	readonly fileConfig: IDelendaiConfigFile;
 	readonly docsDir: string;
 	readonly cacheDir: string;
 	readonly corePrefix: string;
 	readonly docsDirMissing: boolean;
-	/** True when a real mcp-vertex.config.json exists at the workspace root. */
+	/** True when a real delendai.config.json exists at the workspace root. */
 	readonly configPresent: boolean;
 	readonly readFile: (absolutePath: string) => Promise<string | undefined>;
 	readonly loadResult: IPluginLoadResult;
@@ -49,7 +49,7 @@ export interface IAssembleSkillsInput {
 
 export interface IAssembleSkillsResult {
 	readonly validationMatrix: NonNullable<
-		IMcpVertexConfigFile['validationMatrix']
+		IDelendaiConfigFile['validationMatrix']
 	>;
 	readonly skillBundles: Awaited<ReturnType<typeof loadSkills>>;
 	readonly skillCatalog: Awaited<ReturnType<typeof buildSkillCatalog>>;
@@ -218,7 +218,7 @@ const applyWorkspaceOverrides = async (input: {
 			description: descriptor.description,
 			appliesTo: [...descriptor.appliesTo],
 			tags: [...descriptor.tags],
-			bodyPath: `.mcp-vertex/skills/${descriptor.id}/SKILL.md`,
+			bodyPath: `.delendai/skills/${descriptor.id}/SKILL.md`,
 			source: descriptor.source,
 			owner: descriptor.owner,
 			hash: descriptor.hash,
@@ -383,10 +383,10 @@ export const assembleSkills = async (
 	// to fixing the config first instead.
 	// When there is NO config file at all, the very first action is
 	// the one-call self-config (`adopt_project`) — before auto_work, before
-	// analyze_project. That is the "mcp-vertex self-configures on first use"
+	// analyze_project. That is the "delendai self-configures on first use"
 	// contract: one call writes config + agents + proposals store.
 	const recommendedNextAction = docsDirMissing
-		? `Config mismatch: docsDir "${docsDir}" does not exist in this workspace (see configIssues). Fix mcp-vertex.config.json or scaffold the layout (mcp-vertex init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.`
+		? `Config mismatch: docsDir "${docsDir}" does not exist in this workspace (see configIssues). Fix delendai.config.json or scaffold the layout (delendai init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.`
 		: !configPresent
 			? `Call ${corePrefix}_overview, then ${corePrefix}_adopt_project to self-configure this project (config + agents + proposals store) in one call before starting work.`
 			: workflowState.recommendedNextActionText + rulesClause;

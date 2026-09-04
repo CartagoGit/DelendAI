@@ -47,7 +47,7 @@ describe('buildTokenizerEstimates', () => {
 		// would silently stop being "real tokenization" and become the same
 		// disguised byte count the audit flagged.
 		const jsonText = JSON.stringify({
-			name: 'mcp-vertex_proposals_round_context',
+			name: 'delendai_proposals_round_context',
 			description:
 				'Return the current proposal round context, including active slices, owners, and gate status for the working proposal.',
 			inputSchema: { type: 'object', properties: {} },

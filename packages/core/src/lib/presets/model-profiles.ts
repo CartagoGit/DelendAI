@@ -52,7 +52,7 @@ export interface IModelProfile {
  * The default catalog. The numbers are the ones in the f00196
  * proposal; they are intentionally round (4K / 8K / 16K tokens) so a
  * human can reason about them at a glance. Hosts can override them
- * in `mcp-vertex.config.json#modelProfiles.<tier>`.
+ * in `delendai.config.json#modelProfiles.<tier>`.
  */
 export const DEFAULT_MODEL_PROFILES: Readonly<
 	Record<TModelTier, IModelProfile>

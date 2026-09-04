@@ -37,7 +37,7 @@ interface ILockEntry {
 const normalize = (path: string): string => path.replace(/^\.\//u, '');
 
 /**
- * Read `.cache/mcp-vertex/agents.lock.json`, filter by agent+task,
+ * Read `.cache/delendai/agents.lock.json`, filter by agent+task,
  * drop expired entries, return the union of `ownership[]`.
  *
  * On any I/O or parse error, returns `[]` and the caller logs WARN.
@@ -50,7 +50,7 @@ export const getPositiveOwnership = async (input: {
 	readonly lockFileRel?: string | undefined;
 }): Promise<readonly string[]> => {
 	const lockFileRel =
-		input.lockFileRel ?? join('.cache', 'mcp-vertex', 'agents.lock.json');
+		input.lockFileRel ?? join('.cache', 'delendai', 'agents.lock.json');
 	const lockFileAbs = join(input.workspaceRoot, lockFileRel);
 	let parsed: { in_flight?: readonly ILockEntry[] };
 	try {

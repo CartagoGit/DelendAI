@@ -5,7 +5,7 @@
  * values: `off`, `compact`, `medium`, `high`, `full`.
  *
  * The spec requires that the **default** is `medium`. When a host, CLI
- * flag or `mcp-vertex.config.json` is silent about the level, the
+ * flag or `delendai.config.json` is silent about the level, the
  * resolver MUST return `medium`. There must be exactly one place where
  * that default lives, and it must be the function exported below.
  *
@@ -79,7 +79,7 @@ export const coerceStartupReportLevel = (
 };
 
 export interface IResolveStartupReportLevelInput {
-	/** Value from `mcp-vertex.config.json#startupReport.level`. */
+	/** Value from `delendai.config.json#startupReport.level`. */
 	readonly configLevel?: string | undefined;
 	/** Value from CLI override (`--startup-report=...`). */
 	readonly cliLevel?: string | undefined;

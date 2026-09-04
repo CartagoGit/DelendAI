@@ -1,6 +1,6 @@
 # dependabot.yml — f00050 S8.
 #
-# Automated dependency updates for the mcp-vertex monorepo.
+# Automated dependency updates for the delendai monorepo.
 # Two ecosystems are in scope:
 #   - `npm`    → covers the bun-managed `package.json` workspaces
 #                (packages/*, plugins/*, apps/*, extensions/*, examples/*).

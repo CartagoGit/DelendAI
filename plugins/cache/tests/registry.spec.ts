@@ -3,7 +3,7 @@
  *
  * Tests the cache plugin's static rule set against a REAL core
  * eviction registry over a per-test temp cache (never the real
- * `.cache/mcp-vertex/`). Coverage:
+ * `.cache/delendai/`). Coverage:
  *
  *   - `buildStaticRules` shape + `maxAgeDays` cap + worktrees toggle
  *   - registration into the core registry (every rule is contained)
@@ -89,7 +89,7 @@ describe('registerStaticRules + end-to-end eviction', () => {
 
 	beforeEach(async () => {
 		workspace = await mkdtemp(join(tmpdir(), 'cache-plugin-test-'));
-		cacheDir = join(workspace, '.cache/mcp-vertex');
+		cacheDir = join(workspace, '.cache/delendai');
 		await mkdir(cacheDir, { recursive: true });
 		registry = createCacheEvictionRegistry({
 			workspaceRootAbs: workspace,

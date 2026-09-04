@@ -22,7 +22,7 @@ describe('findLinkedProposalId', () => {
 		try {
 			await writeProposal(
 				cwd,
-				'docs/mcp-vertex/proposals/ready/f00121-forge-plugin.md',
+				'docs/delendai/proposals/ready/f00121-forge-plugin.md',
 				['---', 'id: f00121', 'branch: feat/forge-write', '---'].join(
 					'\n',
 				),
@@ -40,7 +40,7 @@ describe('findLinkedProposalId', () => {
 		try {
 			await writeProposal(
 				cwd,
-				'docs/mcp-vertex/proposals/done/feats/f00121-forge-plugin.md',
+				'docs/delendai/proposals/done/feats/f00121-forge-plugin.md',
 				['---', 'id: f00121', 'kind: feat', '---'].join('\n'),
 			);
 			await expect(
@@ -56,7 +56,7 @@ describe('findLinkedProposalId', () => {
 		try {
 			await writeProposal(
 				cwd,
-				'docs/mcp-vertex/proposals/ready/f00121-forge-plugin.md',
+				'docs/delendai/proposals/ready/f00121-forge-plugin.md',
 				['---', 'id: f00121', 'kind: feat', '---'].join('\n'),
 			);
 			await expect(

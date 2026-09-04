@@ -45,7 +45,7 @@ export interface IToolRegistration {
 	 * contract and lets tools opt in incrementally.
 	 *
 	 * Convention: namespace-qualified (`<plugin>_<tool>`), e.g.
-	 * `mcp-vertex_proposals_auto_work`. Underscore-separated; matches the
+	 * `delendai_proposals_auto_work`. Underscore-separated; matches the
 	 * `IToolI18n` catalogue layout.
 	 */
 	readonly descriptionKey?: string | undefined;
@@ -72,7 +72,7 @@ export interface IToolRegistration {
 	 * envelope with `isError: true` so any caller learns the deprecation
 	 * before the tool is removed in a follow-up release.
 	 *
-	 * Hosts that surface tool metadata (the docs site, `mcp-vertex_overview`)
+	 * Hosts that surface tool metadata (the docs site, `delendai_overview`)
 	 * read this marker and render a strikethrough + replacement link instead
 	 * of treating the tool as a first-class entry. The replacement is the
 	 * unprefixed `id` of the recommended substitute (e.g. `search_search`); a

@@ -72,10 +72,10 @@ describe('logs_log (f00153 S2)', () => {
 	let handlers: Registered;
 	beforeEach(async () => {
 		const main = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'mcp-vertex-log-')),
+			await mkdtemp(join(tmpdir(), 'delendai-log-')),
 		);
 		const errors = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'mcp-vertex-log-err-')),
+			await mkdtemp(join(tmpdir(), 'delendai-log-err-')),
 		);
 		await seed(new Map(), errors);
 		handlers = new Map();
@@ -137,10 +137,10 @@ describe('logs_search (f00153 S2)', () => {
 	let handlers: Registered;
 	beforeEach(async () => {
 		const main = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'mcp-vertex-search-')),
+			await mkdtemp(join(tmpdir(), 'delendai-search-')),
 		);
 		const errors = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'mcp-vertex-search-err-')),
+			await mkdtemp(join(tmpdir(), 'delendai-search-err-')),
 		);
 		await main.appendEvent(
 			normalizeEvent(
@@ -253,10 +253,10 @@ describe('logs_incidents (f00153 S3)', () => {
 	let handlers: Registered;
 	beforeEach(async () => {
 		const main = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'mcp-vertex-inc-')),
+			await mkdtemp(join(tmpdir(), 'delendai-inc-')),
 		);
 		const errors = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'mcp-vertex-inc-err-')),
+			await mkdtemp(join(tmpdir(), 'delendai-inc-err-')),
 		);
 		await seed(new Map(), errors);
 		handlers = new Map();

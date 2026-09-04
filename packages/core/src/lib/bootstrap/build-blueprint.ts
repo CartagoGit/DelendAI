@@ -90,7 +90,7 @@ export interface IBlueprintOptions {
 }
 
 const kebabHead = (name: string | undefined): string => {
-	if (name?.startsWith('@delendai/')) return 'mcp-vertex';
+	if (name?.startsWith('@delendai/')) return 'delendai';
 	if (!name) return 'app';
 	const head = toKebabCase(stripPackageScope(name)).split('-')[0];
 	return head && head.length > 0 ? head : 'app';
@@ -155,10 +155,10 @@ const buildBlueprintDefaults = (
 	}
 	if (
 		analysis.signals.includes(
-			'mcp-vertex.config.json has plugin or validation config',
+			'delendai.config.json has plugin or validation config',
 		)
 	) {
-		reasons.push('mcp-vertex.config.json has plugin or validation config');
+		reasons.push('delendai.config.json has plugin or validation config');
 	}
 	if (
 		options.intent !== undefined &&

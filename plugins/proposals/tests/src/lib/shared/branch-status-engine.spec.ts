@@ -86,7 +86,7 @@ describe('parseStatusPorcelain', () => {
 });
 
 describe('runBranchStatusEngine', () => {
-	const workspaceRoot = '/home/cartago/_projects/mcp-vertex';
+	const workspaceRoot = '/home/cartago/_projects/delendai';
 
 	it('returns a structured failure when branch --list fails', async () => {
 		const runner: IGitRunner = makeRunner([], {
@@ -119,15 +119,15 @@ describe('runBranchStatusEngine', () => {
 				{
 					ok: true,
 					output: [
-						'worktree /home/cartago/_projects/mcp-vertex',
+						'worktree /home/cartago/_projects/delendai',
 						'HEAD abc1234',
 						'branch refs/heads/develop',
 						'',
-						'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/orion',
+						'worktree /home/cartago/_projects/delendai/.cache/delendai/.worktrees/orion',
 						'HEAD def5678',
 						'branch refs/heads/agent/orion',
 						'',
-						'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/vela',
+						'worktree /home/cartago/_projects/delendai/.cache/delendai/.worktrees/vela',
 						'HEAD 9abc123',
 						'branch refs/heads/agent/vela',
 					].join('\n'),
@@ -275,7 +275,7 @@ describe('runBranchStatusEngine', () => {
 				{
 					ok: true,
 					output: [
-						'worktree /home/cartago/_projects/mcp-vertex/.worktrees/orion',
+						'worktree /home/cartago/_projects/delendai/.worktrees/orion',
 						'HEAD def5678',
 						'branch refs/heads/agent/orion',
 					].join('\n'),
@@ -312,7 +312,7 @@ describe('runBranchStatusEngine', () => {
 						'HEAD abc1234',
 						'branch refs/heads/develop',
 						'',
-						'worktree /home/cartago/_projects/mcp-vertex/.worktrees/orion',
+						'worktree /home/cartago/_projects/delendai/.worktrees/orion',
 						'HEAD def5678',
 						'branch refs/heads/agent/orion',
 					].join('\n'),
@@ -345,11 +345,11 @@ describe('runBranchStatusEngine', () => {
 				{
 					ok: true,
 					output: [
-						'worktree /home/cartago/_projects/mcp-vertex',
+						'worktree /home/cartago/_projects/delendai',
 						'HEAD abc1234',
 						'branch refs/heads/agent/rogue',
 						'',
-						'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/rogue',
+						'worktree /home/cartago/_projects/delendai/.cache/delendai/.worktrees/rogue',
 						'HEAD abc1234',
 						'branch refs/heads/agent/rogue',
 					].join('\n'),
@@ -381,7 +381,7 @@ describe('runBranchStatusEngine', () => {
 				{
 					ok: true,
 					output: [
-						'worktree /home/cartago/_projects/mcp-vertex',
+						'worktree /home/cartago/_projects/delendai',
 						'HEAD abc1234',
 						'branch refs/heads/develop',
 					].join('\n'),

@@ -70,7 +70,7 @@ const buildRuntimeWithInjectedCapability = () => {
 		descriptors: [
 			{
 				registrationId: 'writer_run',
-				name: 'mcp-vertex_writer_run',
+				name: 'delendai_writer_run',
 				toolId: 'run',
 				pluginId: 'writer',
 				namespace: 'writer',
@@ -86,7 +86,7 @@ const buildRuntimeWithInjectedCapability = () => {
 	});
 	runtime.bindRegisteredTool({
 		registrationId: 'writer_run',
-		name: 'mcp-vertex_writer_run',
+		name: 'delendai_writer_run',
 		// This handler NEVER reads `args.dryRun` — it always calls the
 		// capability unconditionally, exactly like an unmigrated plugin
 		// handler that "forgot" the dry-run contract.
@@ -110,7 +110,7 @@ describe('capability-injection layer — ambient dry-run scope wired into invoke
 		// uncaught throw into an `isError` tool result, so this test
 		// asserts the throw directly.
 		await expect(
-			runtime.invokeTool('mcp-vertex_writer_run', { dryRun: true }, {}),
+			runtime.invokeTool('delendai_writer_run', { dryRun: true }, {}),
 		).rejects.toThrow(DryRunEffectRefusedError);
 
 		// The capability call never reached `realEffect` — this is
@@ -123,7 +123,7 @@ describe('capability-injection layer — ambient dry-run scope wired into invoke
 		const { runtime, calls } = buildRuntimeWithInjectedCapability();
 
 		const result = (await runtime.invokeTool(
-			'mcp-vertex_writer_run',
+			'delendai_writer_run',
 			{},
 			{},
 		)) as { isError?: boolean };
@@ -136,11 +136,11 @@ describe('capability-injection layer — ambient dry-run scope wired into invoke
 		const { runtime, calls } = buildRuntimeWithInjectedCapability();
 
 		await expect(
-			runtime.invokeTool('mcp-vertex_writer_run', { dryRun: true }, {}),
+			runtime.invokeTool('delendai_writer_run', { dryRun: true }, {}),
 		).rejects.toThrow(DryRunEffectRefusedError);
-		await runtime.invokeTool('mcp-vertex_writer_run', {}, {});
+		await runtime.invokeTool('delendai_writer_run', {}, {});
 		await expect(
-			runtime.invokeTool('mcp-vertex_writer_run', { dryRun: true }, {}),
+			runtime.invokeTool('delendai_writer_run', { dryRun: true }, {}),
 		).rejects.toThrow(DryRunEffectRefusedError);
 
 		// Only the middle (real) call reached the effect — proving the
@@ -158,7 +158,7 @@ describe('capability-injection layer — ambient dry-run scope wired into invoke
 			descriptors: [
 				{
 					registrationId: 'writer_run',
-					name: 'mcp-vertex_writer_run',
+					name: 'delendai_writer_run',
 					toolId: 'run',
 					pluginId: 'writer',
 					namespace: 'writer',
@@ -175,7 +175,7 @@ describe('capability-injection layer — ambient dry-run scope wired into invoke
 		let caught: unknown;
 		runtime.bindRegisteredTool({
 			registrationId: 'writer_run',
-			name: 'mcp-vertex_writer_run',
+			name: 'delendai_writer_run',
 			handler: async () => {
 				try {
 					guardEffectCapability({
@@ -194,7 +194,7 @@ describe('capability-injection layer — ambient dry-run scope wired into invoke
 		runtime.finalizeInitialSurface();
 
 		await expect(
-			runtime.invokeTool('mcp-vertex_writer_run', { dryRun: true }, {}),
+			runtime.invokeTool('delendai_writer_run', { dryRun: true }, {}),
 		).rejects.toThrow(DryRunEffectRefusedError);
 
 		expect(caught).toBeInstanceOf(DryRunEffectRefusedError);

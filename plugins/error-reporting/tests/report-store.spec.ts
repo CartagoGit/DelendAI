@@ -149,7 +149,7 @@ describe('report store — a state file we cannot read', () => {
 	// same answer, and the next write persisted that emptiness over the
 	// real file. This store is what stops a recurring failure from
 	// opening a SECOND GitHub issue for the same fingerprint, so losing
-	// it means mcp-vertex re-reports everything it has ever reported —
+	// it means delendai re-reports everything it has ever reported —
 	// into the user's repository.
 	let dir = '';
 	beforeEach(async () => {

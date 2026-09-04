@@ -1,6 +1,6 @@
 /**
  * `ConnectionHealthService` — pings the MCP server every N seconds
- * with the cheapest available tool (`mcp-vertex_status-marker_ping`) and emits
+ * with the cheapest available tool (`delendai_status-marker_ping`) and emits
  * `up` / `down` / `retrying` events via an `EventTarget`-style API.
  *
  * Used by the VS Code extension to:

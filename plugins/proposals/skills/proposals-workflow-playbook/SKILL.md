@@ -1,5 +1,5 @@
 ---
-name: mcp-vertex-proposals-workflow-playbook
+name: delendai-proposals-workflow-playbook
 appliesTo: ['@delendai/proposals']
 description: Canonical compact workflow for agents working through the proposals plugin: orient, select work, claim files, implement, validate, close, and sync without polling or hand-editing generated state.
 ---
@@ -7,27 +7,27 @@ description: Canonical compact workflow for agents working through the proposals
 # proposals workflow playbook
 
 Use this when a session needs to advance proposal work through MCP tools.
-It is the compact entrypoint; `mcp-vertex-proposal-swarm-runner` has the longer
+It is the compact entrypoint; `delendai-proposal-swarm-runner` has the longer
 background.
 
 ## Decision Tree
 
 ```
-mcp-vertex_overview { compact: true }
-  -> mcp-vertex_proposals_auto_work {}
-  -> mcp-vertex_proposals_continue_proposal { id, mode: "plan" }
-  -> mcp-vertex_proposals_delegate { taskId, slot, files }    # when the slice is non-trivial
+delendai_overview { compact: true }
+  -> delendai_proposals_auto_work {}
+  -> delendai_proposals_continue_proposal { id, mode: "plan" }
+  -> delendai_proposals_delegate { taskId, slot, files }    # when the slice is non-trivial
      (delegate assigns a name, claims the lock, and — when the host
       gate `agentWorktree: true` is on — creates the per-agent worktree
       + branch `agent/<assigned-name>` atomically; x00051)
   -> edit only the claimed files (inside the worktree path when present)
   -> run the slice gate, usually bun run validate
-  -> mcp-vertex_proposals_close_slice { id, sliceId }
-  -> mcp-vertex_proposals_sync_proposals after the final slice/status move
+  -> delendai_proposals_close_slice { id, sliceId }
+  -> delendai_proposals_sync_proposals after the final slice/status move
 ```
 
 The canonical path to spawn a subagent with isolation is
-`auto_work → delegate`. Manual `mcp-vertex_proposals_agent_worktree` is reserved for the
+`auto_work → delegate`. Manual `delendai_proposals_agent_worktree` is reserved for the
 rare case where the orchestrator wants a sidecar worktree without delegating
 (e.g. read-mostly investigation). You should **not** call `agent_worktree
 create` yourself before `delegate` — `delegate` does it for you when the
@@ -37,8 +37,8 @@ host gate is enabled.
 > registry index is a regenerable cache artefact, not a
 > human-edited source file. Since x00052 it lives at
 > `<cacheDir>/proposals/index.json` (default
-> `.cache/mcp-vertex/proposals/index.json`), not under
-> `docs/mcp-vertex/proposals/`. When an agent debugs "why is my
+> `.cache/delendai/proposals/index.json`), not under
+> `docs/delendai/proposals/`. When an agent debugs "why is my
 > proposal not appearing in the cascade", the answer is
 > `proposals_sync_proposals` regenerates the index — it lives in
 > the cache root, which is gitignored.
@@ -47,7 +47,7 @@ host gate is enabled.
 
 `auto_work` can plan persistence, but the default is still manual review:
 
-First, read `mcp-vertex.config.json#agentWorktree` (or the `--agent-worktree`
+First, read `delendai.config.json#agentWorktree` (or the `--agent-worktree`
 CLI flag). If `false`/unset — do not call `proposals_agent_worktree`; commit
 to the active branch instead. The `agent_worktree` path below applies only
 when the host has enabled the capability.
@@ -79,16 +79,16 @@ owns the files, wait for `notification_await_lock` or the
    has enabled it; if `agentWorktree` is `false`/unset, commit to the active
    branch instead — the tool is disabled by host configuration).
 3. Do not edit `<cacheDir>/proposals/index.json` by hand (x00052 —
-   used to be `docs/mcp-vertex/proposals/index.json`; moved to the
+   used to be `docs/delendai/proposals/index.json`; moved to the
    cache root because it is a regenerable cache artefact, not a
    source file).
-4. Do not run `mcp-vertex_proposals_sync_proposals` as a substitute for closing the
+4. Do not run `delendai_proposals_sync_proposals` as a substitute for closing the
    current slice or moving the proposal file.
 
 ## Smoke
 
-`mcp-vertex_knowledge` with no `id` should list entries, and
-`mcp-vertex_proposals_auto_work` should either return a claimable slice/proposal or
+`delendai_knowledge` with no `id` should list entries, and
+`delendai_proposals_auto_work` should either return a claimable slice/proposal or
 an explicit idle reason. A silent empty response is a host assembly bug,
 not a valid workflow state.
 
@@ -101,15 +101,15 @@ and own slice is `done` + peer-reviewed.
 
 ### Working with a plan
 
-1. Use `mcp-vertex_proposals_continue_proposal { planId: "q00001", mode: "plan" }`
+1. Use `delendai_proposals_continue_proposal { planId: "q00001", mode: "plan" }`
    to inspect its `## Slices` section and the `contains:` block.
 2. For each contained proposal, claim + close its slices as usual.
 3. For own slices, claim them via `agent_lock` like any other slice.
 4. When every child is done, call
-   `mcp-vertex_proposals_close_plan { planId: "q00001", reason: "..." }`. The tool
+   `delendai_proposals_close_plan { planId: "q00001", reason: "..." }`. The tool
    runs the closure preflight; if any child is still open, it returns a
    list of `blockers[]` you must resolve first.
-5. `mcp-vertex_proposals_proposal_transition { id: "q00001", to: "done" }` also
+5. `delendai_proposals_proposal_transition { id: "q00001", to: "done" }` also
    enforces the same rule (defence in depth) — both surfaces share the
    `evaluatePlanClosure` engine so they can never disagree.
 

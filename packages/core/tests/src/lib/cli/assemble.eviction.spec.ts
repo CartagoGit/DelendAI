@@ -70,7 +70,7 @@ describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 
 	beforeEach(async () => {
 		workspace = await mkdtemp(join(tmpdir(), 'evict-boot-'));
-		cacheDir = join(workspace, '.cache/mcp-vertex');
+		cacheDir = join(workspace, '.cache/delendai');
 		await mkdir(cacheDir, { recursive: true });
 	});
 

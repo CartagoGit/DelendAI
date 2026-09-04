@@ -16,7 +16,7 @@
  *
  * History: x00088 relaxed the previous "agent-claim guard" policy
  * (x00080). Claims are now advisory only — see
- * `bun run lint:agent-claims` and `docs/mcp-vertex/AGENT-BOOTSTRAP.md`.
+ * `bun run lint:agent-claims` and `docs/delendai/AGENT-BOOTSTRAP.md`.
  */
 import { spawnSync } from 'node:child_process';
 

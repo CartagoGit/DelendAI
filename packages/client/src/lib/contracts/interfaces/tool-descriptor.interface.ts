@@ -14,7 +14,7 @@ export type { IToolEffect };
  * `packages/core/src/lib/surface/compact-output-schema.ts`. That schema
  * is documentation for a caller deciding whether to call the tool, not
  * a type this client can safely derive its own internal contract from
- * any more (deriving it from the generated `McpVertexToolOutputs` type
+ * any more (deriving it from the generated `DelendaiToolOutputs` type
  * used to work only because that type happened to mirror the full
  * shape; now it degrades to `{ ok?: boolean; [k: string]: unknown }`).
  * This interface is hand-kept in sync with `overview-tool.ts`'s actual

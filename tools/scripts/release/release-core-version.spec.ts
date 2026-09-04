@@ -48,13 +48,13 @@ describe('resolveBumpCoreVersion (f00152 S7)', () => {
 		it('preserves all other fields in the config', () => {
 			const current = {
 				coreVersion: '0.1.0',
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 				plugins: { foo: { enabled: true } },
 			};
 			const next = resolveBumpCoreVersion(current, '0.2.0');
-			expect(next.cacheDir).toBe('.cache/mcp-vertex');
-			expect(next.docsDir).toBe('docs/mcp-vertex');
+			expect(next.cacheDir).toBe('.cache/delendai');
+			expect(next.docsDir).toBe('docs/delendai');
 			expect(next.plugins).toEqual({ foo: { enabled: true } });
 			expect(next.coreVersion).toBe('0.2.0');
 		});

@@ -5,7 +5,7 @@
  * Drift check that complements `tools/scripts/gen/quantitative.script.ts`.
  * For every doc registered in the quantitative `DEFAULT_DOCS` map, this
  * script reads the file as it stands on disk, regenerates the embedded
- * `<!-- mcp-vertex:begin quantitative -->` block from the live repo,
+ * `<!-- delendai:begin quantitative -->` block from the live repo,
  * and fails if the on-disk block differs from the regenerated one.
  *
  * Designed for CI: every host that wants a fresh doc tree should first
@@ -14,7 +14,7 @@
  * means the generator was skipped or the script silently broke.
  *
  * This is the drift check for a GENERATED block per
- * `docs/mcp-vertex/DOCS-MANUAL-VS-GENERATED.md` (d00011, rule #6).
+ * `docs/delendai/DOCS-MANUAL-VS-GENERATED.md` (d00011, rule #6).
  *
  * Privacy: the script enumerates registered docs only and never
  * surfaces host paths, secrets, or tool ids.
@@ -42,7 +42,7 @@ const REPO_ROOT = process.cwd();
  * placeholder for a future web page (`apps/web/src/data/pages/` does
  * not currently carry one).
  */
-export const DEFAULT_DOCS = ['docs/mcp-vertex/AGENT-BOOTSTRAP.md'] as const;
+export const DEFAULT_DOCS = ['docs/delendai/AGENT-BOOTSTRAP.md'] as const;
 
 export interface IQuantitativeDrift {
 	readonly relPath: string;
@@ -79,8 +79,8 @@ const normalizeVolatile = (text: string): string =>
 		text,
 	);
 
-const MARKER_BEGIN = '<!-- mcp-vertex:begin quantitative -->';
-const MARKER_END = '<!-- mcp-vertex:end quantitative -->';
+const MARKER_BEGIN = '<!-- delendai:begin quantitative -->';
+const MARKER_END = '<!-- delendai:end quantitative -->';
 
 const renderBlockForCompare = (snap: IQuantitativeSnapshot): string => {
 	// Reproduce the generator's block layout in-memory so the drift

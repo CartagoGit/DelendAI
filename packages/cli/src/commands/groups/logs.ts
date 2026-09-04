@@ -3,12 +3,12 @@
  * Pure 1:1 delegation over the redacted append-only MCP log store.
  *
  * Tools mapped:
- *   - `mcp-vertex_logs_query`       ({ since?, until?, kind?, agent?, taskId?, outcome?, limit?, cursor? })
- *   - `mcp-vertex_logs_tail`        ({ kindFilter?, outcomeFilter?, limit? })
- *   - `mcp-vertex_logs_subscribe`   ({ kindFilter?, outcomeFilter?, limit? })
- *   - `mcp-vertex_logs_correlate`   ({ taskId?, agent?, since?, until? })
- *   - `mcp-vertex_logs_errors_tail` ({ kindFilter?, limit? })
- *   - `mcp-vertex_logs_redact_test` ({ text })
+ *   - `delendai_logs_query`       ({ since?, until?, kind?, agent?, taskId?, outcome?, limit?, cursor? })
+ *   - `delendai_logs_tail`        ({ kindFilter?, outcomeFilter?, limit? })
+ *   - `delendai_logs_subscribe`   ({ kindFilter?, outcomeFilter?, limit? })
+ *   - `delendai_logs_correlate`   ({ taskId?, agent?, since?, until? })
+ *   - `delendai_logs_errors_tail` ({ kindFilter?, limit? })
+ *   - `delendai_logs_redact_test` ({ text })
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import {
@@ -33,7 +33,7 @@ const logsQueryCommand: ICliCommand = {
 		const limit = numberArg(args, 'limit') ?? numberArg(args, 'max');
 		const cursor = scalarArg(args, 'cursor');
 		return data(
-			await request(ctx, 'mcp-vertex_logs_query', {
+			await request(ctx, 'delendai_logs_query', {
 				...(since !== undefined ? { since } : {}),
 				...(until !== undefined ? { until } : {}),
 				...(kind !== undefined ? { kind } : {}),
@@ -55,7 +55,7 @@ const logsTailCommand: ICliCommand = {
 		const outcomeFilter = scalarArg(args, 'outcome');
 		const limit = numberArg(args, 'limit') ?? numberArg(args, 'max');
 		return data(
-			await request(ctx, 'mcp-vertex_logs_tail', {
+			await request(ctx, 'delendai_logs_tail', {
 				...(kindFilter !== undefined ? { kindFilter } : {}),
 				...(outcomeFilter !== undefined ? { outcomeFilter } : {}),
 				...(limit !== undefined ? { limit } : {}),
@@ -71,7 +71,7 @@ const logsErrorsTailCommand: ICliCommand = {
 		const kindFilter = scalarArg(args, 'kind');
 		const limit = numberArg(args, 'limit') ?? numberArg(args, 'max');
 		return data(
-			await request(ctx, 'mcp-vertex_logs_errors_tail', {
+			await request(ctx, 'delendai_logs_errors_tail', {
 				...(kindFilter !== undefined ? { kindFilter } : {}),
 				...(limit !== undefined ? { limit } : {}),
 			}),
@@ -87,7 +87,7 @@ const logsSubscribeCommand: ICliCommand = {
 		const outcomeFilter = scalarArg(args, 'outcome');
 		const limit = numberArg(args, 'limit') ?? numberArg(args, 'max');
 		return data(
-			await request(ctx, 'mcp-vertex_logs_subscribe', {
+			await request(ctx, 'delendai_logs_subscribe', {
 				...(kindFilter !== undefined ? { kindFilter } : {}),
 				...(outcomeFilter !== undefined ? { outcomeFilter } : {}),
 				...(limit !== undefined ? { limit } : {}),
@@ -106,7 +106,7 @@ const logsCorrelateCommand: ICliCommand = {
 		const since = scalarArg(args, 'since');
 		const until = scalarArg(args, 'until');
 		return data(
-			await request(ctx, 'mcp-vertex_logs_correlate', {
+			await request(ctx, 'delendai_logs_correlate', {
 				...(taskId !== undefined ? { taskId } : {}),
 				...(agent !== undefined ? { agent } : {}),
 				...(since !== undefined ? { since } : {}),
@@ -123,9 +123,7 @@ const logsRedactTestCommand: ICliCommand = {
 	async run(args, ctx) {
 		const text = positionalArg(args) ?? scalarArg(args, 'text');
 		if (text === undefined) return usage('logs redact-test <text>');
-		return data(
-			await request(ctx, 'mcp-vertex_logs_redact_test', { text }),
-		);
+		return data(await request(ctx, 'delendai_logs_redact_test', { text }));
 	},
 };
 

@@ -110,7 +110,7 @@ describe('existingToolsFromAnalysis', () => {
 				'package.json': JSON.stringify({ name: 'svc' }),
 				'.vscode/mcp.json': JSON.stringify({
 					servers: {
-						'mcp-vertex': {
+						delendai: {
 							command: 'bunx',
 							args: ['@delendai/core', '--plugins=proposals'],
 						},

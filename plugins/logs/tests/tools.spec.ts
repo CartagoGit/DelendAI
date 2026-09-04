@@ -13,10 +13,10 @@ type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 
 const registeredHandlers = async () => {
 	const store = await createLogStore(
-		await mkdtemp(join(tmpdir(), 'mcp-vertex-tools-')),
+		await mkdtemp(join(tmpdir(), 'delendai-tools-')),
 	);
 	const errorStore = await createLogStore(
-		await mkdtemp(join(tmpdir(), 'mcp-vertex-tools-errors-')),
+		await mkdtemp(join(tmpdir(), 'delendai-tools-errors-')),
 	);
 	await store.appendEvent(
 		normalizeEvent(

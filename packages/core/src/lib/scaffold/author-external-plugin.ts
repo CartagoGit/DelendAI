@@ -118,7 +118,7 @@ interface IProjectPluginsFiles {
 type PluginDiagnostic = z.infer<typeof DIAGNOSTIC_SCHEMA>;
 
 const configFileName = (options: IProjectPluginsOptions): string =>
-	options.configFileName ?? 'mcp-vertex.config.json';
+	options.configFileName ?? 'delendai.config.json';
 
 const pluginIdFor = (name: string): string => {
 	const id = toKebabCase(name);
@@ -131,7 +131,7 @@ const pluginIdFor = (name: string): string => {
 };
 
 const defaultPluginRoot = (options: IProjectPluginsOptions): string =>
-	options.pluginsRoot ?? 'packages/mcp-vertex/plugins';
+	options.pluginsRoot ?? 'packages/delendai/plugins';
 
 const pathExists = async (path: string): Promise<boolean> => {
 	try {
@@ -184,7 +184,7 @@ const structuralDiagnostics = async (
 			[
 				'define-plugin',
 				'definePlugin(',
-				'Create the plugin through the mcp-vertex `definePlugin` contract.',
+				'Create the plugin through the delendai `definePlugin` contract.',
 			],
 			['register-hook', 'register(', 'Provide the plugin register hook.'],
 			[
@@ -440,7 +440,7 @@ const runProjectPluginCreate = async (
 	const namespace = args.namespace ?? pluginId;
 	const description = args.description ?? `TODO: describe ${pluginId}.`;
 	const pluginDir = options.workspace.resolve(
-		`${defaultPluginRoot(options)}/mcp-vertex_${pluginId}`,
+		`${defaultPluginRoot(options)}/delendai_${pluginId}`,
 	);
 	const files = scaffoldPluginFiles({
 		pluginName: pluginId,
@@ -494,7 +494,7 @@ const runProjectPluginInspect = async (
 	const pluginId = pluginIdFor(args.name);
 	const namespace = pluginId;
 	const pluginDir = options.workspace.resolve(
-		`${defaultPluginRoot(options)}/mcp-vertex_${pluginId}`,
+		`${defaultPluginRoot(options)}/delendai_${pluginId}`,
 	);
 	const files = scaffoldPluginFiles({
 		pluginName: pluginId,
@@ -521,7 +521,7 @@ const runProjectPluginRepair = async (
 ): Promise<IProjectPluginsOutput> => {
 	const pluginId = pluginIdFor(args.name);
 	const pluginDir = options.workspace.resolve(
-		`${defaultPluginRoot(options)}/mcp-vertex_${pluginId}`,
+		`${defaultPluginRoot(options)}/delendai_${pluginId}`,
 	);
 	const files = scaffoldPluginFiles({
 		pluginName: pluginId,
@@ -615,7 +615,7 @@ export const buildProjectPluginsCreateToolRegistration = (
 ): IToolRegistration =>
 	buildProjectPluginsToolRegistration(
 		'project_plugins_create',
-		'Create and register a project-owned plugin under packages/mcp-vertex/plugins/mcp-vertex_<name>.',
+		'Create and register a project-owned plugin under packages/delendai/plugins/delendai_<name>.',
 		PROJECT_PLUGINS_CREATE_INPUT_SCHEMA,
 		runProjectPluginCreate,
 		options,

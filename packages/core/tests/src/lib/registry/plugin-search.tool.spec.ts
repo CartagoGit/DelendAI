@@ -42,7 +42,7 @@ const buildHandler = async () => {
 		  }) => Promise<unknown>)
 		| undefined;
 	const registration = buildPluginSearchRegistration({
-		namespacePrefix: 'mcp-vertex',
+		namespacePrefix: 'delendai',
 		sources: [COMMUNITY_SOURCE],
 	});
 	await registration.register({

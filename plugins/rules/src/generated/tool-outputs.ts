@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexRulesApplyRulesOutput {
+export interface DelendaiRulesApplyRulesOutput {
 	mode: string;
 	modeGuidance: string;
 	area: string;
@@ -24,7 +24,7 @@ export interface McpVertexRulesApplyRulesOutput {
 	steps: string[];
 }
 
-export interface McpVertexRulesCheckRulesOutput {
+export interface DelendaiRulesCheckRulesOutput {
 	compact: boolean;
 	checks: Array<{
 		project: string;
@@ -72,7 +72,7 @@ export interface McpVertexRulesCheckRulesOutput {
 	}>;
 }
 
-export interface McpVertexRulesGetRulesOutput {
+export interface DelendaiRulesGetRulesOutput {
 	mode: string;
 	modeGuidance: string;
 	supported: string[];
@@ -110,7 +110,7 @@ export interface McpVertexRulesGetRulesOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface RulesToolOutputs {
-	"mcp-vertex_rules_apply_rules": McpVertexRulesApplyRulesOutput;
-	"mcp-vertex_rules_check_rules": McpVertexRulesCheckRulesOutput;
-	"mcp-vertex_rules_get_rules": McpVertexRulesGetRulesOutput;
+	"delendai_rules_apply_rules": DelendaiRulesApplyRulesOutput;
+	"delendai_rules_check_rules": DelendaiRulesCheckRulesOutput;
+	"delendai_rules_get_rules": DelendaiRulesGetRulesOutput;
 }

@@ -16,7 +16,7 @@ import {
  * `notifications/message` ({ event: "lock-released", ... }) when a lock
  * frees, so waiting agents stop polling `agent_lock status`.
  *
- * Load it with `mcp-vertex --plugins=notification`. Pairs with the
+ * Load it with `delendai --plugins=notification`. Pairs with the
  * `proposals` plugin (which owns the lock file); the default watch path
  * matches its layout (`<cacheDir>/agents.lock.json`) and can be
  * overridden via the `watchLockFile` option.

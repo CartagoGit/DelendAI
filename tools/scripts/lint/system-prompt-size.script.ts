@@ -5,7 +5,7 @@
  * Byte-budget guardrail on the "system prompt" every host loads on cold
  * start: the three canonical host-instruction files
  * (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) plus the
- * shared bootstrap they all link to (`docs/mcp-vertex/AGENT-BOOTSTRAP.md`).
+ * shared bootstrap they all link to (`docs/delendai/AGENT-BOOTSTRAP.md`).
  *
  * These files are prepended to (or loaded alongside) the model's context
  * on the FIRST turn of every session, so their combined size is paid on
@@ -54,7 +54,7 @@ export interface IPromptSizeBudget {
  *   AGENTS.md                          16_539B
  *   CLAUDE.md                           2_481B
  *   .github/copilot-instructions.md     3_001B
- *   docs/mcp-vertex/AGENT-BOOTSTRAP.md 23_002B
+ *   docs/delendai/AGENT-BOOTSTRAP.md 23_002B
  *
  * Budgets are set ~10% above the baseline: enough headroom for small
  * edits, tight enough that a real bloat (a re-enumerated catalog, a
@@ -76,7 +76,7 @@ export const PROMPT_SIZE_BUDGETS: readonly IPromptSizeBudget[] = [
 	{ file: 'AGENTS.md', maxBytes: 1_000 },
 	{ file: 'CLAUDE.md', maxBytes: 1_000 },
 	{ file: '.github/copilot-instructions.md', maxBytes: 1_000 },
-	{ file: 'docs/mcp-vertex/AGENT-BOOTSTRAP.md', maxBytes: 30_000 },
+	{ file: 'docs/delendai/AGENT-BOOTSTRAP.md', maxBytes: 30_000 },
 ] as const;
 
 export interface IPromptSizeResult {

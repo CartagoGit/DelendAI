@@ -117,8 +117,8 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 });
 
 describe('SERVER_ARG_MAPPER — F-001 no silent flag drop', async () => {
-	it('forwards every host global mcpv is responsible for', async () => {
-		// The host parser knows these forwardable globals. mcpv used to
+	it('forwards every host global delendai is responsible for', async () => {
+		// The host parser knows these forwardable globals. delendai used to
 		// forward only 4; every one of these MUST have a mapper rule or
 		// the host loses a flag silently.
 		const requiredKeys: readonly (keyof ICliGlobalOptions)[] = [
@@ -174,11 +174,11 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 			lang: 'en',
 			noColor: false,
 			plugins: [],
-			config: 'mcp-vertex.config.json',
+			config: 'delendai.config.json',
 		});
 		expect(withCfg).toContain('--config');
 		expect(withCfg[withCfg.indexOf('--config') + 1]).toBe(
-			'mcp-vertex.config.json',
+			'delendai.config.json',
 		);
 
 		const withoutCfg = buildServerArgs({

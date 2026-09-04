@@ -8,8 +8,8 @@
  * Reuses the script-free `renderJsonHtml` policy (f00079 S1) so the
  * default-deny CSP applies as-is — same posture as show-overview /
  * metrics / validation / proposals. The user reviews the roster here
- * and pins a per-task choice through the CLI (`mcpv agents recommend
- * --pin=<provider>`) or `mcp-vertex.openConfigurationCenter`.
+ * and pins a per-task choice through the CLI (`delendai agents recommend
+ * --pin=<provider>`) or `delendai.openConfigurationCenter`.
  */
 import { formatToolName, type McpStdioClient } from '@delendai/client';
 
@@ -17,7 +17,7 @@ import type { ICommandDeps } from './types';
 import { renderJsonHtml } from './types';
 
 export const OPEN_AUTO_AGENT_SELECTOR_COMMAND =
-	'mcp-vertex.openAutoAgentSelector';
+	'delendai.openAutoAgentSelector';
 
 export interface IAutoAgentSelectorPayload {
 	readonly status: unknown;
@@ -44,7 +44,7 @@ export const registerOpenAutoAgentSelectorCommand = (deps: ICommandDeps) =>
 		OPEN_AUTO_AGENT_SELECTOR_COMMAND,
 		async (rawArgs?: unknown) => {
 			const panel = deps.vscode.window.createWebviewPanel(
-				'mcpVertexAutoAgentSelector',
+				'delendaiAutoAgentSelector',
 				'Auto-agent selector',
 				deps.vscode.ViewColumn.One,
 				{ enableScripts: false },
@@ -65,7 +65,7 @@ export const registerOpenAutoAgentSelectorCommand = (deps: ICommandDeps) =>
 						? args.costQualityTradeoff
 						: undefined;
 
-				const prefix = deps.namespacePrefix ?? 'mcp-vertex';
+				const prefix = deps.namespacePrefix ?? 'delendai';
 				const statusTool = formatToolName(
 					prefix,
 					'auto-agent-selector_auto_status',

@@ -104,7 +104,7 @@ export function createOrchestratorEngine(
 
 /**
  * Validate an arbitrary policy shape coming from
- * `mcp-vertex.config.json`. Throws on the first inconsistency so the
+ * `delendai.config.json`. Throws on the first inconsistency so the
  * plugin `register()` can fail fast.
  */
 export function assertPolicyValid(policy: IOrchestratorPolicy): void {

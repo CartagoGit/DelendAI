@@ -66,7 +66,7 @@ export default class TestJournalReporter implements Reporter {
 			this.startedAt = Date.now();
 			const root = (vitest as IVitestLike | undefined)?.config?.root;
 			// A project run reports its own root; the journal always belongs
-			// to the repository root that owns `.cache/mcp-vertex`.
+			// to the repository root that owns `.cache/delendai`.
 			this.workspaceRoot =
 				typeof root === 'string' && root !== '' ? root : process.cwd();
 		} catch {

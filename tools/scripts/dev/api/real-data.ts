@@ -43,7 +43,7 @@ const wrap = async <T>(
 					() =>
 						reject(
 							new Error(
-								`mcp-vertex dashboard call timed out after ${timeoutMs}ms`,
+								`delendai dashboard call timed out after ${timeoutMs}ms`,
 							),
 						),
 					timeoutMs,

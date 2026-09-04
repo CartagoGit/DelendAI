@@ -94,8 +94,8 @@ const fetchDashboardBody = async (lang: Lang): Promise<string | null> => {
 				// x00100 S2: one canonical constant (SHARED_UI_STRINGS.docsUrl) —
 				// the previous hardcoded GitHub Pages URL 404'd.
 				docsUrl: SHARED_UI_STRINGS.docsUrl,
-				refreshCommand: 'mcp-vertex.refresh',
-				openDocsCommand: 'mcp-vertex.openDocs',
+				refreshCommand: 'delendai.refresh',
+				openDocsCommand: 'delendai.openDocs',
 				lang: dictsByLang[lang],
 			},
 		);
@@ -115,8 +115,8 @@ const renderMockDashboardBody = async (
 		// x00100 S2: one canonical constant (SHARED_UI_STRINGS.docsUrl) —
 		// the previous hardcoded GitHub Pages URL 404'd.
 		docsUrl: SHARED_UI_STRINGS.docsUrl,
-		refreshCommand: 'mcp-vertex.refresh',
-		openDocsCommand: 'mcp-vertex.openDocs',
+		refreshCommand: 'delendai.refresh',
+		openDocsCommand: 'delendai.openDocs',
 		lang: dictsByLang[lang],
 	});
 	return { body: bodyWithHoistedStyles(html), fallback: true };
@@ -141,7 +141,7 @@ export const createDashboardPage = (options: IDashboardPageOptions): IPage => ({
 			const devDict = dictsByLang[deps.lang]?.dev;
 			root.innerHTML = renderFirstRunScreen(
 				devDict?.firstRunInstall ??
-					'Install mcp-vertex in this workspace',
+					'Install delendai in this workspace',
 				{
 					heading: devDict?.firstRunHeading,
 					ledeHtml: devDict?.firstRunLede,
@@ -211,10 +211,10 @@ export const createDashboardPage = (options: IDashboardPageOptions): IPage => ({
 		// Surface the MCP-unreachable warning.
 		if (usedFallback) {
 			const note = document.createElement('p');
-			note.className = 'mcpv-banner banner--warn';
+			note.className = 'delendai-banner banner--warn';
 			note.style.margin = '0';
 			note.textContent =
-				'MCP server unreachable. Showing mock data — start `bun run mcp-vertex` and click Refresh.';
+				'MCP server unreachable. Showing mock data — start `bun run delendai` and click Refresh.';
 			const quickstart = root.querySelector('.quickstart');
 			quickstart
 				? quickstart.insertAdjacentElement('afterend', note)

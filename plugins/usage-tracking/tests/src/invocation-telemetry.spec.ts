@@ -46,7 +46,7 @@ describe('invocation telemetry', () => {
 			keepLegacy: false,
 			pluginCacheDir: 'usage-tracking',
 			pluginDocsDir: 'docs/usage-tracking',
-			namespacePrefix: 'mcp-vertex_usage-tracking',
+			namespacePrefix: 'delendai_usage-tracking',
 			hostIdentity: { host: 'GitHub Copilot Chat' },
 			peerPlugins: {
 				list: () => ['orchestrator-runner', 'usage-tracking'],
@@ -64,8 +64,8 @@ describe('invocation telemetry', () => {
 
 	it('builds a redacted detailed invocation record with request and correlation metadata', () => {
 		const record = buildInvocationRecord({
-			toolName: 'mcp-vertex_orchestrator-runner_invoke',
-			corePrefix: 'mcp-vertex',
+			toolName: 'delendai_orchestrator-runner_invoke',
+			corePrefix: 'delendai',
 			peerPrefixes: ['orchestrator-runner', 'usage-tracking'],
 			agent: {
 				id: 'GitHub Copilot Chat',
@@ -122,9 +122,9 @@ describe('invocation telemetry', () => {
 
 	it('persists enriched telemetry and rollups without breaking append-only logging', async () => {
 		const reg = await plugin.register(makeCtx());
-		reg.onToolStart?.('mcp-vertex_orchestrator-runner_invoke', {});
+		reg.onToolStart?.('delendai_orchestrator-runner_invoke', {});
 		reg.onToolCall?.(
-			'mcp-vertex_orchestrator-runner_invoke',
+			'delendai_orchestrator-runner_invoke',
 			{
 				sessionId: 's_rollup',
 				requestType: 'execution',
@@ -148,7 +148,7 @@ describe('invocation telemetry', () => {
 			undefined,
 		);
 		reg.onToolCall?.(
-			'mcp-vertex_orchestrator-runner_invoke',
+			'delendai_orchestrator-runner_invoke',
 			{
 				sessionId: 's_rollup',
 				requestType: 'query',

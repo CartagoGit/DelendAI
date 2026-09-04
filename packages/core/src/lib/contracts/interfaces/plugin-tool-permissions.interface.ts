@@ -10,7 +10,7 @@
  * whole plugin or nothing.
  *
  * The new shape is a map from each tool id (the tool's bare id,
- * without the `mcp-vertex_<plugin>_` namespace prefix) to the
+ * without the `delendai_<plugin>_` namespace prefix) to the
  * permission set the tool actually requires. Hosts and the
  * `auto-plugin-selector` scorer consult the per-tool set when
  * deciding whether to grant a specific tool under a specific
@@ -29,7 +29,7 @@ import type { PermissionCategory } from '../constants/permission-categories.cons
 
 /**
  * Per-tool permission set. Keys are tool ids (the bare tool id
- * before the `mcp-vertex_<plugin>_` namespace prefix is applied).
+ * before the `delendai_<plugin>_` namespace prefix is applied).
  * Values are the permission categories the tool requires. Every
  * key SHOULD correspond to a tool registered by the plugin, but the
  * schema does NOT enforce that — plugins can evolve their tool

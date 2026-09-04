@@ -2,13 +2,13 @@
 
 Project-agnostic core for building MCP servers + a CLI plugin loader. Drop it
 into any project to analyze the repo and scaffold an optimal MCP server, and
-turn on capability with plugins (`mcp-vertex --plugins=...`).
+turn on capability with plugins (`delendai --plugins=...`).
 
 ```jsonc
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-vertex": {
+		"delendai": {
 			"command": "bunx",
 			"args": ["@delendai/core", "--plugins=proposals"]
 		}
@@ -23,7 +23,7 @@ turn on capability with plugins (`mcp-vertex --plugins=...`).
 
 ## Scaffold + migrations
 
-`mcp-vertex.config.json` accepts `keepLegacy` (default `false`). With the
+`delendai.config.json` accepts `keepLegacy` (default `false`). With the
 default, scaffold writes skip existing files. When `keepLegacy: true` is set
 globally, or passed to one `<prefix>_scaffold` call, an existing target is moved
 to `legacy/<basename>-<timestamp>.<ext>` before the fresh template is written.
@@ -35,6 +35,6 @@ Versioned JSON migrations expose the same preservation idea as a per-call
 escape hatch: `migrateJsonFile(..., { forceBackup: true })` writes a `.bak-*`
 snapshot even when no migrator runs.
 
-Full guide: **README-MCP-VERTEX.md** · Plugins: **PLUGINS-MCP-VERTEX.md** (docs folder).
+Full guide: **README-DELENDAI.md** · Plugins: **PLUGINS-DELENDAI.md** (docs folder).
 
 BSD-3-Clause © Cartago

@@ -90,7 +90,7 @@ const formatRuntimeEvent = (event: IRuntimeEvent): string => {
 
 export const observerIntervalMs = (vscode: IRuntimeObserverVscode): number => {
 	const configured = vscode.workspace
-		?.getConfiguration?.('mcp-vertex')
+		?.getConfiguration?.('delendai')
 		.get('observability.refreshMs', DEFAULT_INTERVAL_MS);
 	return typeof configured === 'number' && configured >= 500
 		? configured

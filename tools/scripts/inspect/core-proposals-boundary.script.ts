@@ -62,7 +62,7 @@ const REPO_ROOT = join(
 );
 const DOC_PATH = join(
 	REPO_ROOT,
-	'docs/mcp-vertex/CORE-PROPOSALS-BOUNDARY-INVENTORY.md',
+	'docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md',
 );
 
 export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
@@ -108,10 +108,10 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 	},
 	{
 		file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
-		symbolOrLiteral: 'proposals store managed by the mcp-vertex',
+		symbolOrLiteral: 'proposals store managed by the delendai',
 		category: 'message',
 		destination: 'adapter',
-		needle: 'This folder is the proposals store managed by the mcp-vertex',
+		needle: 'This folder is the proposals store managed by the delendai',
 		note: 'El estimador de escritura documenta el store de proposals como estructura propia.',
 	},
 	{
@@ -808,18 +808,18 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 	},
 	{
 		file: 'packages/core/src/lib/setup/setup-steps.ts',
-		symbolOrLiteral: 'mcp-vertex --plugins=proposals,issues',
+		symbolOrLiteral: 'delendai --plugins=proposals,issues',
 		category: 'plugin-name',
 		destination: 'adapter',
-		needle: "command: 'mcp-vertex --plugins=proposals,issues',",
+		needle: "command: 'delendai --plugins=proposals,issues',",
 		note: 'El comando sugerido fija el nombre del plugin proposals en el core.',
 	},
 	{
 		file: 'packages/core/src/lib/knowledge/host-onboarding.knowledge.ts',
-		symbolOrLiteral: 'docs/mcp-vertex/proposals/',
+		symbolOrLiteral: 'docs/delendai/proposals/',
 		category: 'path',
 		destination: 'adapter',
-		needle: 'docs/mcp-vertex/proposals/',
+		needle: 'docs/delendai/proposals/',
 		note: 'La knowledge base de onboarding sigue senalando la ruta concreta del store proposals.',
 	},
 	{
@@ -944,10 +944,10 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 	},
 	{
 		file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
-		symbolOrLiteral: 'docs/mcp-vertex/proposals/done/audits',
+		symbolOrLiteral: 'docs/delendai/proposals/done/audits',
 		category: 'path',
 		destination: 'adapter',
-		needle: "auditDir: 'docs/mcp-vertex/proposals/done/audits',",
+		needle: "auditDir: 'docs/delendai/proposals/done/audits',",
 		note: 'La ruta por defecto de auditorias sigue anclada al arbol proposals.',
 	},
 	{

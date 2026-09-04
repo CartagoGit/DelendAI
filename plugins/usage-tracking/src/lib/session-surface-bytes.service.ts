@@ -12,7 +12,7 @@ import { RecordBuffer } from './record-buffer';
 
 const TOOLS_LIST_METHOD = 'tools/list';
 const OBSERVER_INSTALLED = Symbol.for(
-	'mcp-vertex.usage-tracking.session-surface-bytes-observer',
+	'delendai.usage-tracking.session-surface-bytes-observer',
 );
 
 export interface ISessionSurfaceBytesRecord {

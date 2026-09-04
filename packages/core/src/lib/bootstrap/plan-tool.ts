@@ -87,7 +87,7 @@ export const buildPlanToolRegistration = (
 					// compact-output-schema.ts.
 					outputSchema: compactOutputSchema(),
 					description:
-						'Read-only. Analyze this project and plan a project-specific MCP server. Returns a bounded compact summary by DEFAULT (page detail with section/cursor/limit over tools, prompts, skills, agents, files or notes); pass full:true only when you need the EXHAUSTIVE blueprint plus every file to write (hundreds of KB on real projects). If a server already exists, the notes explain how to integrate it with mcp-vertex instead of replacing it.',
+						'Read-only. Analyze this project and plan a project-specific MCP server. Returns a bounded compact summary by DEFAULT (page detail with section/cursor/limit over tools, prompts, skills, agents, files or notes); pass full:true only when you need the EXHAUSTIVE blueprint plus every file to write (hundreds of KB on real projects). If a server already exists, the notes explain how to integrate it with delendai instead of replacing it.',
 					inputSchema: PLAN_INPUT_SCHEMA,
 				},
 				async (args: z.infer<typeof PLAN_INPUT_SCHEMA>) => {

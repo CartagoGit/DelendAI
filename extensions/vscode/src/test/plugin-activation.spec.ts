@@ -18,7 +18,7 @@ describe('plugin activation command', () => {
 		registerPluginActivationCommand({
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
-					expect(input.name).toBe('mcp-vertex_overview');
+					expect(input.name).toBe('delendai_overview');
 					expect(input.arguments).toEqual({
 						compact: true,
 						activation: true,
@@ -79,6 +79,6 @@ describe('plugin activation command', () => {
 				active: false,
 			},
 		]);
-		expect(executions).toEqual(['mcp-vertex.restartServer']);
+		expect(executions).toEqual(['delendai.restartServer']);
 	});
 });

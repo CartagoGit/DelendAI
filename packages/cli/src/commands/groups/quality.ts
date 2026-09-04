@@ -6,10 +6,10 @@
  * full structured report for parsing.
  *
  * Tools mapped:
- *   - `mcp-vertex_quality_get_quality_scopes` (no args)
- *   - `mcp-vertex_quality_run_quality`        ({ scope? })
- *   - `mcp-vertex_quality_quality_cancel`     ({ pid? })
- *   - `mcp-vertex_quality_quality_run_all`    (no args)
+ *   - `delendai_quality_get_quality_scopes` (no args)
+ *   - `delendai_quality_run_quality`        ({ scope? })
+ *   - `delendai_quality_quality_cancel`     ({ pid? })
+ *   - `delendai_quality_quality_run_all`    (no args)
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
@@ -41,7 +41,7 @@ const qualityScopesCommand: ICliCommand = {
 	summary: 'List the quality-gate scopes and the commands each runs.',
 	async run(_args, ctx) {
 		return data(
-			await request(ctx, 'mcp-vertex_quality_get_quality_scopes', {}),
+			await request(ctx, 'delendai_quality_get_quality_scopes', {}),
 		);
 	},
 };
@@ -51,7 +51,7 @@ const qualityRunCommand: ICliCommand = {
 	summary: "Execute a quality scope's commands and report pass/fail.",
 	async run(args, ctx) {
 		const scope = scalarArg(args, 'scope');
-		const report = await request(ctx, 'mcp-vertex_quality_run_quality', {
+		const report = await request(ctx, 'delendai_quality_run_quality', {
 			...(scope !== undefined ? { scope } : {}),
 		});
 		return data(report, codeFor(report));
@@ -64,7 +64,7 @@ const qualityCancelCommand: ICliCommand = {
 	async run(args, ctx) {
 		const pid = numberArg(args, 'pid');
 		return data(
-			await request(ctx, 'mcp-vertex_quality_quality_cancel', {
+			await request(ctx, 'delendai_quality_quality_cancel', {
 				...(pid !== undefined ? { pid } : {}),
 			}),
 		);
@@ -77,7 +77,7 @@ const qualityRunAllCommand: ICliCommand = {
 	async run(_args, ctx) {
 		const report = await request(
 			ctx,
-			'mcp-vertex_quality_quality_run_all',
+			'delendai_quality_quality_run_all',
 			{},
 		);
 		return data(report, codeFor(report));

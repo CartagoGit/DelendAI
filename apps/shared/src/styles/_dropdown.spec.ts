@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 /**
  * f00055 / S2 — `apps/shared/src/styles/_dropdown.spec.ts`
  *
- * Contract assertions for the `mcpv-dropdown__*` component styles
+ * Contract assertions for the `delendai-dropdown__*` component styles
  * shipped under `@delendai/shared/styles`.
  *
  * These are *text* assertions over the raw SCSS files. We deliberately
@@ -46,15 +46,15 @@ const readText = async (p: string): Promise<string> => {
 };
 
 const SEVEN_CLASS_SELECTORS = [
-	'.mcpv-dropdown',
-	'.mcpv-dropdown__trigger',
-	'.mcpv-dropdown__menu',
-	'.mcpv-dropdown__menu--left',
-	'.mcpv-dropdown__menu--right',
-	'.mcpv-dropdown__item',
-	'.mcpv-dropdown__label',
-	'.mcpv-dropdown__icon',
-	'.mcpv-dropdown__caret',
+	'.delendai-dropdown',
+	'.delendai-dropdown__trigger',
+	'.delendai-dropdown__menu',
+	'.delendai-dropdown__menu--left',
+	'.delendai-dropdown__menu--right',
+	'.delendai-dropdown__item',
+	'.delendai-dropdown__label',
+	'.delendai-dropdown__icon',
+	'.delendai-dropdown__caret',
 ] as const;
 
 describe('f00055 S2 — shared dropdown styles (@delendai/shared/styles)', () => {
@@ -76,8 +76,8 @@ describe('f00055 S2 — shared dropdown styles (@delendai/shared/styles)', () =>
 		for (const selector of SEVEN_CLASS_SELECTORS) {
 			// We assert the selector appears *as a selector*, not as
 			// part of a longer identifier (e.g. we don't want a stray
-			// `.mcpv-dropdown__trigger--foo` to satisfy the bare
-			// `.mcpv-dropdown__trigger` check). A word-boundary-like
+			// `.delendai-dropdown__trigger--foo` to satisfy the bare
+			// `.delendai-dropdown__trigger` check). A word-boundary-like
 			// check on both sides covers that without pulling in a
 			// CSS parser.
 			const escaped = selector.replace(/\./g, '\\.');
@@ -111,16 +111,16 @@ describe('f00055 S2 — shared dropdown styles (@delendai/shared/styles)', () =>
 			reduced,
 			'prefers-reduced-motion block must be present',
 		).not.toBeNull();
-		expect(reduced?.[1] ?? '').toMatch(/\.mcpv-dropdown__menu/);
+		expect(reduced?.[1] ?? '').toMatch(/\.delendai-dropdown__menu/);
 	});
 
-	it('uses the shared `--mcpv-transition-*` tokens (no hardcoded ms values)', async () => {
+	it('uses the shared `--delendai-transition-*` tokens (no hardcoded ms values)', async () => {
 		const partial = await readText(partialPath);
 		// The transition cadence is owned by the tokens layer
 		// (`_tokens.scss`). The partial must read it from there so a
 		// future token bump propagates automatically.
-		expect(partial).toContain('var(--mcpv-transition-fast)');
-		expect(partial).toContain('var(--mcpv-transition-base)');
+		expect(partial).toContain('var(--delendai-transition-fast)');
+		expect(partial).toContain('var(--delendai-transition-base)');
 		// Hardcoded `transition: …ms` literals would bypass the
 		// token layer. We forbid them in the component partial.
 		expect(partial).not.toMatch(/transition:\s*\d+m?s\s/);

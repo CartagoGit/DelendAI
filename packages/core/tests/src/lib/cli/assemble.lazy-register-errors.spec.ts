@@ -37,7 +37,7 @@ let workspace: string;
 const fileReader =
 	(config: string) =>
 	async (absolutePath: string): Promise<string | undefined> =>
-		absolutePath.endsWith('mcp-vertex.config.json') ? config : undefined;
+		absolutePath.endsWith('delendai.config.json') ? config : undefined;
 
 /**
  * Stand-ins for the two real packages: one registers an observer, the

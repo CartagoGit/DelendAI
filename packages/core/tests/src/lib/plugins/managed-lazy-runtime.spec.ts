@@ -9,7 +9,7 @@ describe('managed lazy plugin runtime', () => {
 	it('imports once for concurrent first-use activation and captures the real schema', async () => {
 		let imports = 0;
 		const runtime = createManagedLazyRuntime({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			plugins: [
 				{
 					id: 'demo',
@@ -35,7 +35,7 @@ describe('managed lazy plugin runtime', () => {
 									id: 'echo',
 									register: async (server: McpServer) => {
 										server.registerTool(
-											'mcp-vertex_demo_echo',
+											'delendai_demo_echo',
 											{
 												description: 'Echo',
 												inputSchema: z.object({
@@ -65,7 +65,7 @@ describe('managed lazy plugin runtime', () => {
 			},
 		});
 
-		const registrationId = 'mcp-vertex_demo_echo';
+		const registrationId = 'delendai_demo_echo';
 		const [first, second] = await Promise.all([
 			runtime.activateTool(registrationId),
 			runtime.activateTool(registrationId),
@@ -88,7 +88,7 @@ describe('managed lazy plugin runtime', () => {
 	it('activates dependencies before the requested plugin', async () => {
 		const calls: string[] = [];
 		const runtime = createManagedLazyRuntime({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			plugins: [
 				{
 					id: 'app',
@@ -131,7 +131,7 @@ describe('managed lazy plugin runtime', () => {
 												server: McpServer,
 											) => {
 												server.registerTool(
-													'mcp-vertex_app_run',
+													'delendai_app_run',
 													{ description: 'Run' },
 													async () => ({
 														content: [
@@ -152,7 +152,7 @@ describe('managed lazy plugin runtime', () => {
 			}),
 		});
 
-		await runtime.activateTool('mcp-vertex_app_run');
+		await runtime.activateTool('delendai_app_run');
 		expect(calls).toEqual(['@delendai/shared', '@delendai/app']);
 		expect(runtime.snapshot().loadedPluginIds).toEqual(['app', 'shared']);
 	});
@@ -160,7 +160,7 @@ describe('managed lazy plugin runtime', () => {
 	it('reports a missing dependency without importing the dependent again', async () => {
 		let imports = 0;
 		const runtime = createManagedLazyRuntime({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			plugins: [
 				{
 					id: 'app',
@@ -200,7 +200,7 @@ describe('managed lazy plugin runtime', () => {
 	it('reports a dependency registration failure and keeps the dependent unloaded', async () => {
 		const failures: string[] = [];
 		const runtime = createManagedLazyRuntime({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			plugins: [
 				{
 					id: 'app',
@@ -256,7 +256,7 @@ describe('managed lazy plugin runtime', () => {
 	it('disposes activated plugins in reverse order and only once', async () => {
 		const disposed: string[] = [];
 		const runtime = createManagedLazyRuntime({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			plugins: [
 				{
 					id: 'app',
@@ -310,7 +310,7 @@ describe('managed lazy plugin runtime', () => {
 	it('collects dispose failures and still disposes every activated plugin', async () => {
 		const disposed: string[] = [];
 		const runtime = createManagedLazyRuntime({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			plugins: [
 				{
 					id: 'first',

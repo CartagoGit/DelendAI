@@ -19,7 +19,7 @@
  *   current page (`<span aria-current="page">`); earlier items
  *   are anchored. A "Home" crumb is added automatically when the
  *   caller does not pass one explicitly.
- * - Class namespace: `mcpv-page-header` (root), `mcpv-page-header__*`
+ * - Class namespace: `delendai-page-header` (root), `delendai-page-header__*`
  *   for children. The companion SCSS keeps the legacy
  *   `.page-header` selector via `@extend` so existing markup on
  *   the docs site keeps working.
@@ -86,13 +86,13 @@ const renderCrumbs = (
 		})
 		.join('');
 
-	return `<nav class="mcpv-page-header__crumb" aria-label="breadcrumb">${items}</nav>`;
+	return `<nav class="delendai-page-header__crumb" aria-label="breadcrumb">${items}</nav>`;
 };
 
 /**
  * Render the page-header markup as a string.
  *
- * The host wraps the result in `<header class="mcpv-page-header">…</header>`
+ * The host wraps the result in `<header class="delendai-page-header">…</header>`
  * to keep the structural scope intact, and may opt in to Astro
  * View Transitions for the `<h1>` by adding `transition:name` /
  * `transition:animate` to the rendered element if it ships inside
@@ -114,9 +114,9 @@ export const renderPageHeader = (props: IPageHeaderProps): string => {
 	const crumbsHtml = renderCrumbs(crumbs, baseHref, homeLabel);
 
 	return (
-		`<div class="mcpv-page-header__inner">` +
+		`<div class="delendai-page-header__inner">` +
 		crumbsHtml +
-		`<h1 class="mcpv-page-header__title">${escapeHtml(props.title)}</h1>` +
+		`<h1 class="delendai-page-header__title">${escapeHtml(props.title)}</h1>` +
 		`</div>`
 	);
 };

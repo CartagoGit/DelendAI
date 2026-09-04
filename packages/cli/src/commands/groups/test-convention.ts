@@ -3,7 +3,7 @@
  * `test-convention_*` MCP tool. Pure 1:1 delegation.
  *
  * Tools mapped:
- *   - `mcp-vertex_test-convention_get_convention`    (no args)
+ *   - `delendai_test-convention_get_convention`    (no args)
  *   - `test-convention_suggest_spec_path` ({ sourcePath })
  *   - `test-convention_scan_drift`        ({ scope?, maxFiles? })
  */
@@ -22,7 +22,7 @@ const conventionGetCommand: ICliCommand = {
 	summary: 'Show the canonical test convention the workspace expects.',
 	async run(_args, ctx) {
 		return data(
-			await request(ctx, 'mcp-vertex_test-convention_get_convention', {}),
+			await request(ctx, 'delendai_test-convention_get_convention', {}),
 		);
 	},
 };

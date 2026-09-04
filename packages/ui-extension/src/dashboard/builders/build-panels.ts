@@ -37,12 +37,12 @@ const extractPanelFragment = (
 	const sectionMatch = html.match(/<section[^>]*>([\s\S]*)<\/section>\s*$/);
 	const inner = sectionMatch?.[1]?.trim() ?? html.trim();
 	const titleMatch = inner.match(
-		/<h2 class="mcpv-panel__title">([\s\S]*?)<\/h2>/,
+		/<h2 class="delendai-panel__title">([\s\S]*?)<\/h2>/,
 	);
 	return {
 		title: titleMatch?.[1]?.trim() ?? fallbackTitle,
 		body: inner
-			.replace(/<h2 class="mcpv-panel__title">[\s\S]*?<\/h2>/, '')
+			.replace(/<h2 class="delendai-panel__title">[\s\S]*?<\/h2>/, '')
 			.trim(),
 	};
 };
@@ -51,8 +51,8 @@ const renderStateCard = (
 	title: string,
 	tone: 'loading' | 'empty' | 'error' | 'unavailable',
 	message: string,
-): string => `<div class="mcpv-card mcpv-shell-state" data-state-tone="${tone}">
-	<h3 class="mcpv-card__title">${escapeHtml(title)}</h3>
+): string => `<div class="delendai-card delendai-shell-state" data-state-tone="${tone}">
+	<h3 class="delendai-card__title">${escapeHtml(title)}</h3>
 	<p>${escapeHtml(message)}</p>
 </div>`;
 
@@ -68,10 +68,10 @@ const renderPanelSection = (
 			'Unable to render this dashboard section.',
 		);
 	}
-	return `<section class="mcpv-shell-section">
-		<header class="mcpv-shell-section__head">
-			<h3 class="mcpv-shell-section__title">${escapeHtml(title)}</h3>
-			${lead === undefined ? '' : `<p class="mcpv-fg-muted">${escapeHtml(lead)}</p>`}
+	return `<section class="delendai-shell-section">
+		<header class="delendai-shell-section__head">
+			<h3 class="delendai-shell-section__title">${escapeHtml(title)}</h3>
+			${lead === undefined ? '' : `<p class="delendai-fg-muted">${escapeHtml(lead)}</p>`}
 		</header>
 		${body}
 	</section>`;
@@ -137,10 +137,10 @@ const renderWorkspacePanel = (
 								)
 							: body;
 	return `
-<section class="mcpv-panel mcpv-panel--shell" id="panel-${id}" role="tabpanel" aria-labelledby="tab-${id}">
-	<h2 class="mcpv-panel__title">${escapeHtml(title)}</h2>
-	${lead === undefined ? '' : `<p class="mcpv-fg-muted">${escapeHtml(lead)}</p>`}
-	<div class="mcpv-shell-stack">${stateBody}</div>
+<section class="delendai-panel delendai-panel--shell" id="panel-${id}" role="tabpanel" aria-labelledby="tab-${id}">
+	<h2 class="delendai-panel__title">${escapeHtml(title)}</h2>
+	${lead === undefined ? '' : `<p class="delendai-fg-muted">${escapeHtml(lead)}</p>`}
+	<div class="delendai-shell-stack">${stateBody}</div>
 </section>
 `;
 };
@@ -158,32 +158,32 @@ const docsSummary = (
 		.slice(0, 6)
 		.map(
 			(entry) =>
-				`<li><code>${escapeHtml(entry.id)}</code>${entry.title === undefined ? '' : ` <span class="mcpv-fg-muted">${escapeHtml(entry.title)}</span>`}</li>`,
+				`<li><code>${escapeHtml(entry.id)}</code>${entry.title === undefined ? '' : ` <span class="delendai-fg-muted">${escapeHtml(entry.title)}</span>`}</li>`,
 		)
 		.join('');
-	return `<div class="mcpv-grid">
-		<div class="mcpv-card mcpv-card--third">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.docs.status', 'Docs source'))}</h3>
-			<p class="mcpv-kpi__value">${escapeHtml(model.docs.pluginLoaded ? text('common.ready', 'Ready') : text('dashboard.state.unavailableShort', 'Unavailable'))}</p>
-			<p class="mcpv-kpi__hint">${escapeHtml(text('dashboard.docsEmbeddedFrom'))} ${escapeHtml(docsUrl)}</p>
+	return `<div class="delendai-grid">
+		<div class="delendai-card delendai-card--third">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.docs.status', 'Docs source'))}</h3>
+			<p class="delendai-kpi__value">${escapeHtml(model.docs.pluginLoaded ? text('common.ready', 'Ready') : text('dashboard.state.unavailableShort', 'Unavailable'))}</p>
+			<p class="delendai-kpi__hint">${escapeHtml(text('dashboard.docsEmbeddedFrom'))} ${escapeHtml(docsUrl)}</p>
 		</div>
-		<div class="mcpv-card mcpv-card--third">
-			<h3 class="mcpv-card__title">${escapeHtml(text('tabTools', 'Tools'))}</h3>
-			<p class="mcpv-kpi__value">${escapeHtml(String(model.docs.tools.length))}</p>
-			<p class="mcpv-kpi__hint">${escapeHtml(text('dashboard.docs.toolsLead', 'Tools documented in the current docs context.'))}</p>
+		<div class="delendai-card delendai-card--third">
+			<h3 class="delendai-card__title">${escapeHtml(text('tabTools', 'Tools'))}</h3>
+			<p class="delendai-kpi__value">${escapeHtml(String(model.docs.tools.length))}</p>
+			<p class="delendai-kpi__hint">${escapeHtml(text('dashboard.docs.toolsLead', 'Tools documented in the current docs context.'))}</p>
 		</div>
-		<div class="mcpv-card mcpv-card--third">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.overview.knowledge', 'Knowledge'))}</h3>
-			<p class="mcpv-kpi__value">${escapeHtml(String(model.docs.knowledge.length))}</p>
-			<p class="mcpv-kpi__hint">${escapeHtml(text('dashboard.docs.knowledgeLead', 'Knowledge packs advertised by the current workspace.'))}</p>
+		<div class="delendai-card delendai-card--third">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.overview.knowledge', 'Knowledge'))}</h3>
+			<p class="delendai-kpi__value">${escapeHtml(String(model.docs.knowledge.length))}</p>
+			<p class="delendai-kpi__hint">${escapeHtml(text('dashboard.docs.knowledgeLead', 'Knowledge packs advertised by the current workspace.'))}</p>
 		</div>
-		<div class="mcpv-card mcpv-card--half">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.overview.recommendedNextAction', 'Recommended next action'))}</h3>
+		<div class="delendai-card delendai-card--half">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.overview.recommendedNextAction', 'Recommended next action'))}</h3>
 			<pre>${escapeHtml(model.docs.recommendedNextAction)}</pre>
 		</div>
-		<div class="mcpv-card mcpv-card--half">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.overview.knowledge', 'Knowledge'))}</h3>
-			${knowledge.length === 0 ? `<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.none', 'No entries yet.'))}</p>` : `<ul>${knowledge}</ul>`}
+		<div class="delendai-card delendai-card--half">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.overview.knowledge', 'Knowledge'))}</h3>
+			${knowledge.length === 0 ? `<p class="delendai-fg-muted">${escapeHtml(text('dashboard.memory.none', 'No entries yet.'))}</p>` : `<ul>${knowledge}</ul>`}
 		</div>
 	</div>`;
 };
@@ -237,7 +237,7 @@ export function buildPanels(
 	const healthPanel = renderPanelHealth(model.health, lang);
 	const settingsPanel = renderPanelSettings(
 		settings ?? {
-			docsUrl: 'https://mcp-vertex.dev',
+			docsUrl: 'https://delendai.dev',
 			allowLocalhost: false,
 			allowPrivateIps: false,
 			logLevel: 'info',
@@ -369,7 +369,7 @@ export function buildPanels(
 				'Docs availability is explicit before the iframe loads.',
 			),
 		),
-		`<div class="mcpv-card"><iframe class="mcpv-docs-frame" src="${escapeHtml(docsUrl)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin"></iframe><p class="mcpv-fg-muted">${escapeHtml(text('dashboard.docsEmbeddedFrom'))} <a href="${escapeHtml(docsUrl)}">${escapeHtml(docsUrl)}</a></p></div>`,
+		`<div class="delendai-card"><iframe class="delendai-docs-frame" src="${escapeHtml(docsUrl)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin"></iframe><p class="delendai-fg-muted">${escapeHtml(text('dashboard.docsEmbeddedFrom'))} <a href="${escapeHtml(docsUrl)}">${escapeHtml(docsUrl)}</a></p></div>`,
 	].join('');
 	const settingsBody = renderPanelSection(
 		text('tabSettings', 'Configuration'),
@@ -494,8 +494,8 @@ export function buildPanels(
 			const id = idMatch?.[1] ?? `panel-${ix}`;
 			const active = id === `panel-${firstActive}` ? 'true' : 'false';
 			return html.replace(
-				/<section class="mcpv-panel([^"]*)"/,
-				`<section class="mcpv-panel$1" data-active="${active}"`,
+				/<section class="delendai-panel([^"]*)"/,
+				`<section class="delendai-panel$1" data-active="${active}"`,
 			);
 		})
 		.join('');

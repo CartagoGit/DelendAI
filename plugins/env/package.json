@@ -2,7 +2,7 @@
 	"name": "@delendai/env",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Env config validation plugin for @delendai/core: env_check flags duplicate/empty/malformed keys and missing required vars in a .env file. Offline, values never leaked. Load with `mcp-vertex --plugins=env`.",
+	"description": "Env config validation plugin for @delendai/core: env_check flags duplicate/empty/malformed keys and missing required vars in a .env file. Offline, values never leaked. Load with `delendai --plugins=env`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

@@ -23,7 +23,7 @@ import {
  * explicitly asked. `<prefix>_status` lists the durable records and
  * `<prefix>_clear` lets the operator acknowledge and dismiss one.
  *
- *   mcp-vertex --plugins=completion
+ *   delendai --plugins=completion
  *
  * The default records dir is the plugin cache (`<cacheDir>/completion/
  * records`); override with the `recordsDir` option. Unlike the

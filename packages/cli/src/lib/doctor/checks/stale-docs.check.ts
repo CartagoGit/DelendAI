@@ -15,7 +15,7 @@
  *   - Compare to the on-disk file. Equal → ok, different → warn.
  *
  * Why a lightweight check instead of running the generator:
- * `mcpv doctor` is meant to be fast and side-effect-free. Spawning the
+ * `delendai doctor` is meant to be fast and side-effect-free. Spawning the
  * full regeneration pipeline would couple the runtime check to the
  * generator's IO surface; running `git status` instead reports the
  * upstream symptom without re-running the heavy generator. The CI
@@ -34,8 +34,8 @@ export interface IStaleDocsProbe {
 export const TRACKED_GENERATED_PATHS = [
 	'apps/web/src/data/plugins/catalog.generated.ts',
 	'apps/web/src/generated/plugin-manifest-catalog.generated.ts',
-	'docs/mcp-vertex/generated/plugin-manifests.generated.md',
-	'docs/mcp-vertex/generated/plugin-manifests.generated.json',
+	'docs/delendai/generated/plugin-manifests.generated.md',
+	'docs/delendai/generated/plugin-manifests.generated.json',
 ] as const;
 
 export const defaultStaleDocsProbe: IStaleDocsProbe = {

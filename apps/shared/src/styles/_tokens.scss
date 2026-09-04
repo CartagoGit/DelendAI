@@ -1,4 +1,4 @@
-// _tokens.scss — design tokens for the @mcp-vertex ecosystem.
+// _tokens.scss — design tokens for the @delendai ecosystem.
 //
 // Theme-dependent values (colours) live in `_themes.scss`; everything
 // invariant (radii, layout max-width, font stacks, spacing scale) is
@@ -6,50 +6,50 @@
 // (apps/web, @delendai/ui-extension, host extensions) reaches for the
 // same names.
 //
-// All names are `mcpv-` prefixed so they cannot collide with host theme
+// All names are `delendai-` prefixed so they cannot collide with host theme
 // variables (e.g. `--vscode-editor-background`) or site legacy names
 // (`--bg`, `--fg`). Downstream surfaces that still want the legacy names
 // can alias them in their own partial.
 
 :root {
 	// --- radii ------------------------------------------------------------
-	--mcpv-radius: 8px;
-	--mcpv-radius-sm: 4px;
-	--mcpv-radius-lg: 12px;
+	--delendai-radius: 8px;
+	--delendai-radius-sm: 4px;
+	--delendai-radius-lg: 12px;
 
 	// --- layout ----------------------------------------------------------
-	--mcpv-maxw: 68rem;
-	--mcpv-gap: 16px;
+	--delendai-maxw: 68rem;
+	--delendai-gap: 16px;
 
 	// --- typography ------------------------------------------------------
-	--mcpv-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-	--mcpv-font-prose: system-ui, -apple-system, BlinkMacSystemFont,
+	--delendai-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+	--delendai-font-prose: system-ui, -apple-system, BlinkMacSystemFont,
 		'Segoe UI', Roboto, sans-serif;
 
 	// --- spacing scale ---------------------------------------------------
-	--mcpv-s-1: 4px;
-	--mcpv-s-2: 8px;
-	--mcpv-s-3: 12px;
-	--mcpv-s-4: 16px;
-	--mcpv-s-5: 24px;
-	--mcpv-s-6: 32px;
+	--delendai-s-1: 4px;
+	--delendai-s-2: 8px;
+	--delendai-s-3: 12px;
+	--delendai-s-4: 16px;
+	--delendai-s-5: 24px;
+	--delendai-s-6: 32px;
 
 	// --- transitions -----------------------------------------------------
-	--mcpv-transition-fast: 120ms ease-out;
-	--mcpv-transition-base: 180ms ease-out;
+	--delendai-transition-fast: 120ms ease-out;
+	--delendai-transition-base: 180ms ease-out;
 
 	// --- brand-on-primary -------------------------------------------------
 	// Text colour that sits on top of a brand-coloured surface (e.g. the
-	// --mcpv-link/--mcpv-brand-blue primary buttons). Kept as a token so
+	// --delendai-link/--delendai-brand-blue primary buttons). Kept as a token so
 	// surfaces that opt in to a different brand fill (midnight, nord,
 	// ...) can swap just this var without re-editing every component
 	// partial. Invariant: always lighter than the brand fill.
-	--mcpv-fg-on-brand: #ffffff;
+	--delendai-fg-on-brand: #ffffff;
 }
 
 @media (prefers-reduced-motion: reduce) {
 	:root {
-		--mcpv-transition-fast: 0ms;
-		--mcpv-transition-base: 0ms;
+		--delendai-transition-fast: 0ms;
+		--delendai-transition-base: 0ms;
 	}
 }

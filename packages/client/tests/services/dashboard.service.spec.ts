@@ -37,7 +37,7 @@ describe('DashboardService', async () => {
 		expect(model.totals.proposals).toBe(proposalsFixture.proposals.length);
 		expect(model.totals.agents).toBe(agentsFixture.assignments.length);
 		expect(
-			calls.find((c) => c.tool === 'mcp-vertex_proposals_agent_names')
+			calls.find((c) => c.tool === 'delendai_proposals_agent_names')
 				?.args,
 		).toEqual({ action: 'list' });
 	});
@@ -62,7 +62,7 @@ describe('DashboardService', async () => {
 		expect(model.tokensSaved).toBe(Math.round(model.tokensUsed * 0.18));
 		expect(model.savingsPercent).toBe(18);
 		expect(model.topByTokens[0]?.tool).toBe(
-			'mcp-vertex_proposals_proposal_board',
+			'delendai_proposals_proposal_board',
 		);
 	});
 
@@ -77,11 +77,11 @@ describe('DashboardService', async () => {
 	it('requests compact overview for dashboard totals', async () => {
 		const { service, calls } = makeService();
 		await service.getOverviewModel();
-		expect(
-			calls.find((c) => c.tool === 'mcp-vertex_overview')?.args,
-		).toEqual({
-			compact: true,
-		});
+		expect(calls.find((c) => c.tool === 'delendai_overview')?.args).toEqual(
+			{
+				compact: true,
+			},
+		);
 	});
 
 	it('getToolsModel returns sortable rows', async () => {
@@ -101,8 +101,8 @@ describe('DashboardService', async () => {
 		expect(proposals).toBeDefined();
 		expect(proposals?.tools).toBe(2);
 		expect(proposals?.calls).toBe(
-			metricsFixture.tools['mcp-vertex_proposals_proposal_board'].calls +
-				metricsFixture.tools['mcp-vertex_proposals_agent_names'].calls,
+			metricsFixture.tools['delendai_proposals_proposal_board'].calls +
+				metricsFixture.tools['delendai_proposals_agent_names'].calls,
 		);
 		const total = model.rows.reduce((s, r) => s + r.tokens, 0);
 		expect(total).toBeGreaterThan(0);
@@ -127,7 +127,7 @@ describe('DashboardService', async () => {
 	it('getTimesModel returns p50/p95/histogram and slowest tool', async () => {
 		const { service } = makeService();
 		const model = await service.getTimesModel();
-		expect(model.slowestTool?.tool).toBe('mcp-vertex_quality_run_quality');
+		expect(model.slowestTool?.tool).toBe('delendai_quality_run_quality');
 		expect(model.slowestTool?.maxMs).toBe(1500);
 		expect(model.p50Ms).toBeGreaterThan(0);
 		expect(model.p95Ms).toBeGreaterThanOrEqual(model.p50Ms);
@@ -155,22 +155,22 @@ describe('DashboardService', async () => {
 		expect(all.plugins.rows.length).toBeGreaterThan(0);
 		expect(all.sessions.total).toBe(3);
 		expect(all.times.slowestTool?.tool).toBe(
-			'mcp-vertex_quality_run_quality',
+			'delendai_quality_run_quality',
 		);
 		expect(all.agents.totalActive).toBe(2);
-		expect(all.server.name).toBe('mcp-vertex');
+		expect(all.server.name).toBe('delendai');
 		// The four upstream tools were each called exactly once.
 		const toolNames = calls.map((c) => c.tool);
 		expect(
-			toolNames.filter((n) => n === 'mcp-vertex_metrics').length,
+			toolNames.filter((n) => n === 'delendai_metrics').length,
 		).toBeGreaterThanOrEqual(1);
 	});
 
 	it('survives missing proposals/agents tools gracefully', async () => {
 		const { transport } = createFakeTransport({
-			'mcp-vertex_overview': overviewFixture,
-			'mcp-vertex_metrics': metricsFixture,
-			// mcp-vertex_proposals_proposal_board / mcp-vertex_proposals_agent_names are absent
+			delendai_overview: overviewFixture,
+			delendai_metrics: metricsFixture,
+			// delendai_proposals_proposal_board / delendai_proposals_agent_names are absent
 		});
 		const client = McpStdioClient.fromTransport(transport);
 		const service = new DashboardService({ client });
@@ -180,15 +180,15 @@ describe('DashboardService', async () => {
 	});
 
 	it('attributes core tools with an underscore id to the host, not a fake plugin', async () => {
-		// Regression: `mcp-vertex_fs_read` is a CORE tool (id `fs_read`), not a
+		// Regression: `delendai_fs_read` is a CORE tool (id `fs_read`), not a
 		// tool of a plugin called `fs`. The old code parsed the plugin out of
 		// the qualified name and mis-bucketed every core-underscore tool
 		// (fs_read→fs, agent_catalog→agent, …). The compact overview carries
 		// the real owner (core tools live under the `core` group), so the
 		// dashboard must trust it over name parsing.
 		const groupedOverview = {
-			server: { name: 'mcp-vertex', version: '0.1.0' },
-			namespacePrefix: 'mcp-vertex',
+			server: { name: 'delendai', version: '0.1.0' },
+			namespacePrefix: 'delendai',
 			plugins: [{ name: 'proposals', version: '0.1.0' }],
 			// Compact (grouped-by-plugin) shape — the production overview form.
 			tools: {
@@ -200,21 +200,21 @@ describe('DashboardService', async () => {
 		};
 		const metrics = {
 			tools: {
-				'mcp-vertex_fs_read': {
+				delendai_fs_read: {
 					calls: 5,
 					errors: 0,
 					totalMs: 50,
 					maxMs: 20,
 					totalBytes: 500,
 				},
-				'mcp-vertex_agent_catalog': {
+				delendai_agent_catalog: {
 					calls: 3,
 					errors: 0,
 					totalMs: 30,
 					maxMs: 15,
 					totalBytes: 300,
 				},
-				'mcp-vertex_proposals_agent_lock': {
+				delendai_proposals_agent_lock: {
 					calls: 2,
 					errors: 0,
 					totalMs: 20,
@@ -225,8 +225,8 @@ describe('DashboardService', async () => {
 			totals: { calls: 10, errors: 0, totalMs: 100, totalBytes: 1000 },
 		};
 		const { transport } = createFakeTransport({
-			'mcp-vertex_overview': groupedOverview,
-			'mcp-vertex_metrics': metrics,
+			delendai_overview: groupedOverview,
+			delendai_metrics: metrics,
 		});
 		const service = new DashboardService({
 			client: McpStdioClient.fromTransport(transport),
@@ -246,7 +246,7 @@ describe('DashboardService', async () => {
 		// The per-tool metrics rows carry the authoritative plugin too.
 		const metricsModel = await service.getMetricsModel();
 		const fsRow = metricsModel.rows.find(
-			(r) => r.tool === 'mcp-vertex_fs_read',
+			(r) => r.tool === 'delendai_fs_read',
 		);
 		expect(fsRow?.plugin).toBe('core');
 	});
@@ -276,10 +276,10 @@ describe('DashboardService', async () => {
 			metrics: metricsService as never,
 		});
 		const model = await service.getOverviewModel();
-		expect(model.serverName).toBe('mcp-vertex');
+		expect(model.serverName).toBe('delendai');
 		// Calls to the transport should be only proposals/agents.
 		const names = calls.map((c) => c.tool);
-		expect(names).not.toContain('mcp-vertex_overview');
-		expect(names).not.toContain('mcp-vertex_metrics');
+		expect(names).not.toContain('delendai_overview');
+		expect(names).not.toContain('delendai_metrics');
 	});
 });

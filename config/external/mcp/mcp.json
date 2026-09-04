@@ -1,12 +1,12 @@
 {
 	"mcpServers": {
-		"mcp-vertex": {
+		"delendai": {
 			"type": "stdio",
 			"command": "bun",
 			"args": [
 				"${workspaceFolder}/tools/scripts/host/host-server.script.ts",
 				"--workspace=${workspaceFolder}",
-				"--config=${workspaceFolder}/mcp-vertex.config.json",
+				"--config=${workspaceFolder}/delendai.config.json",
 				"--preset=swarm"
 			]
 		}

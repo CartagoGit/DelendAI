@@ -27,7 +27,7 @@ import {
 } from './init-render.service';
 import {
 	writeCoreSkillProjection,
-	writeMcpVertexConfig,
+	writeDelendaiConfig,
 } from './init-writers.factory';
 
 const parseAnswers = (
@@ -41,7 +41,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			parseAnswers({ preset: 'swarm' }, '/tmp/example-ws'),
 		);
 		const rels = bundle.files.map((f) => f.relPath);
-		expect(rels).toContain('mcp-vertex.config.json');
+		expect(rels).toContain('delendai.config.json');
 		expect(rels).toContain('.vscode/mcp.json');
 		expect(rels).toContain('.mcp.json');
 		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
@@ -58,7 +58,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		// f00089 U1: the migration offer now emits an adoption PLAN whose id
 		// is allocated against the canonical layout (empty here → f00001),
 		// not a hardcoded `f00001-migrate-legacy` stub.
-		expect(rels.some((r) => r.includes('adopt-mcp-vertex'))).toBe(true);
+		expect(rels.some((r) => r.includes('adopt-delendai'))).toBe(true);
 	});
 
 	it('renders both MCP config entries from the canonical launch builder', async () => {
@@ -66,18 +66,18 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const vscode = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
 				?.content ?? '{}',
-		) as { servers: { 'mcp-vertex': { command: string; args: string[] } } };
+		) as { servers: { delendai: { command: string; args: string[] } } };
 		const generic = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.mcp.json')
 				?.content ?? '{}',
 		) as {
-			mcpServers: { 'mcp-vertex': { command: string; args: string[] } };
+			mcpServers: { delendai: { command: string; args: string[] } };
 		};
 
-		expect(vscode.servers['mcp-vertex']).toMatchObject(
+		expect(vscode.servers['delendai']).toMatchObject(
 			buildCanonicalLaunch({ workspace: '${workspaceFolder}' }),
 		);
-		expect(generic.mcpServers['mcp-vertex']).toMatchObject(
+		expect(generic.mcpServers['delendai']).toMatchObject(
 			buildCanonicalLaunch({ workspace: '.' }),
 		);
 	});
@@ -115,7 +115,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			parseAnswers({ migrateFromLegacy: false }),
 		);
 		expect(
-			bundle.files.some((r) => r.relPath.includes('adopt-mcp-vertex')),
+			bundle.files.some((r) => r.relPath.includes('adopt-delendai')),
 		).toBe(false);
 	});
 
@@ -137,7 +137,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			parseAnswers({ preset: 'swarm' }),
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		expect(configFile).toBeDefined();
 		const parsed = JSON.parse(configFile?.content ?? '{}') as {
@@ -152,13 +152,13 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			parseAnswers({ preset: 'vertex' }, '/tmp/example-ws'),
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		expect(configFile).toBeDefined();
 		const config = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: Record<string, unknown>;
 		};
-		// x00166: vertex mirrors mcp-vertex.config.json's `plugins` keys
+		// x00166: vertex mirrors delendai.config.json's `plugins` keys
 		// exactly (38 total in the current dogfood snapshot), including
 		// proposals (orchestration/swarm) — no independent-preset chain
 		// inheritance involved, this is just what the live config loads.
@@ -209,7 +209,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 });
 
 describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)', () => {
-	// x00202: `mcpv init`'s fallback path (the ONLY path it has ever
+	// x00202: `delendai init`'s fallback path (the ONLY path it has ever
 	// exercised — nothing in this repo ever writes an `agents` array
 	// into agent-catalog.generated.json) never emitted `user-invocable`
 	// at all, so every adopter got all 5 agents visible/selectable in
@@ -224,7 +224,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		);
 		expect(githubFiles.length).toBeGreaterThan(0);
 		const orchestrator = githubFiles.find((f) =>
-			f.relPath.endsWith('mcp-vertex-orchestrator.agent.md'),
+			f.relPath.endsWith('delendai-orchestrator.agent.md'),
 		);
 		expect(orchestrator?.content).toContain('user-invocable: true');
 		const subagents = githubFiles.filter((f) => f !== orchestrator);
@@ -234,7 +234,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		}
 	});
 
-	it('grants the fixed mcp-vertex/* server key, never a bare or stale tool name', async () => {
+	it('grants the fixed delendai/* server key, never a bare or stale tool name', async () => {
 		const files = await renderAgentFiles('/no-catalog', {
 			namespacePrefix: 'acme',
 			locale: 'en',
@@ -288,7 +288,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 });
 
 describe('initCommand extraOptions (f00084 S8)', () => {
-	// The CLI requires the explicit `--mcp-vertex-root` to point at a file
+	// The CLI requires the explicit `--delendai-root` to point at a file
 	// that exists on disk. Resolve the host entry script relative to this
 	// spec file so the test is portable across checkouts (it used to
 	// hardcode the author's `/home/cartago/_proyectos/propios/...` path,
@@ -309,7 +309,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 	let stderrWrite: MockInstance<typeof process.stderr.write>;
 
 	beforeEach(async () => {
-		workspace = await mkdtemp(join(tmpdir(), 'mcpv-init-command-'));
+		workspace = await mkdtemp(join(tmpdir(), 'delendai-init-command-'));
 		stderrWrite = vi
 			.spyOn(process.stderr, 'write')
 			.mockImplementation(() => true);
@@ -329,7 +329,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 			// preset exceeds vitest's 5s default. The describe-level
 			// `TEST_TIMEOUT_MS` constant explains why.
 			const result = await initCommand.run(
-				[`--mcp-vertex-root=${HOST_ENTRY_PATH}`],
+				[`--delendai-root=${HOST_ENTRY_PATH}`],
 				{
 					cwd: workspace,
 					globals: {
@@ -355,7 +355,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 
 			expect(result.code).toBe(0);
 			const onDisk = await readFile(
-				join(workspace, 'mcp-vertex.config.json'),
+				join(workspace, 'delendai.config.json'),
 				'utf8',
 			);
 			const parsed = JSON.parse(onDisk) as {
@@ -376,7 +376,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 		'warns and skips when a CLI override targets a plugin outside the resolved set',
 		async () => {
 			const result = await initCommand.run(
-				[`--mcp-vertex-root=${HOST_ENTRY_PATH}`],
+				[`--delendai-root=${HOST_ENTRY_PATH}`],
 				{
 					cwd: workspace,
 					globals: {
@@ -409,7 +409,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 				'warning: init override ignored for unresolved plugin "web-fetch"\n',
 			);
 			const onDisk = await readFile(
-				join(workspace, 'mcp-vertex.config.json'),
+				join(workspace, 'delendai.config.json'),
 				'utf8',
 			);
 			const parsed = JSON.parse(onDisk) as {
@@ -423,11 +423,11 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 	);
 });
 
-describe('writeMcpVertexConfig (f00084 S2)', () => {
+describe('writeDelendaiConfig (f00084 S2)', () => {
 	let workspace: string;
 
 	beforeEach(async () => {
-		workspace = await mkdtemp(join(tmpdir(), 'mcpv-init-writer-'));
+		workspace = await mkdtemp(join(tmpdir(), 'delendai-init-writer-'));
 	});
 
 	afterEach(async () => {
@@ -435,14 +435,14 @@ describe('writeMcpVertexConfig (f00084 S2)', () => {
 	});
 
 	it('writes a fresh config in an empty workspace', async () => {
-		const result = await writeMcpVertexConfig(
+		const result = await writeDelendaiConfig(
 			workspace,
 			{ plugins: { git: { options: {} } } },
 			false,
 		);
 		expect(result.kind).toBe('written');
 		const onDisk = await readFile(
-			`${workspace}/mcp-vertex.config.json`,
+			`${workspace}/delendai.config.json`,
 			'utf8',
 		);
 		const parsed = JSON.parse(onDisk) as {
@@ -452,8 +452,8 @@ describe('writeMcpVertexConfig (f00084 S2)', () => {
 	});
 
 	it('merges generated defaults into a valid existing project config', async () => {
-		await writeMcpVertexConfig(workspace, { plugins: {} }, false);
-		const second = await writeMcpVertexConfig(
+		await writeDelendaiConfig(workspace, { plugins: {} }, false);
+		const second = await writeDelendaiConfig(
 			workspace,
 			{
 				cacheDir: '.generated-cache',
@@ -465,7 +465,7 @@ describe('writeMcpVertexConfig (f00084 S2)', () => {
 		);
 		expect(second.kind).toBe('merged');
 		const onDisk = await readFile(
-			`${workspace}/mcp-vertex.config.json`,
+			`${workspace}/delendai.config.json`,
 			'utf8',
 		);
 		const parsed = JSON.parse(onDisk) as {
@@ -475,15 +475,15 @@ describe('writeMcpVertexConfig (f00084 S2)', () => {
 	});
 
 	it('overwrites with --force', async () => {
-		await writeMcpVertexConfig(workspace, { plugins: {} }, false);
-		const second = await writeMcpVertexConfig(
+		await writeDelendaiConfig(workspace, { plugins: {} }, false);
+		const second = await writeDelendaiConfig(
 			workspace,
 			{ plugins: { proposals: { options: {} } } },
 			true,
 		);
 		expect(second.kind).toBe('written');
 		const onDisk = await readFile(
-			`${workspace}/mcp-vertex.config.json`,
+			`${workspace}/delendai.config.json`,
 			'utf8',
 		);
 		const parsed = JSON.parse(onDisk) as {
@@ -494,18 +494,18 @@ describe('writeMcpVertexConfig (f00084 S2)', () => {
 
 	it('preserves an invalid existing config unless replacement is explicit', async () => {
 		await fsWriteFile(
-			`${workspace}/mcp-vertex.config.json`,
+			`${workspace}/delendai.config.json`,
 			'{broken',
 			'utf8',
 		);
-		const result = await writeMcpVertexConfig(
+		const result = await writeDelendaiConfig(
 			workspace,
 			{ plugins: { git: { options: {} } } },
 			false,
 		);
 		expect(result.kind).toBe('exists');
 		expect(
-			await readFile(`${workspace}/mcp-vertex.config.json`, 'utf8'),
+			await readFile(`${workspace}/delendai.config.json`, 'utf8'),
 		).toBe('{broken');
 	});
 });
@@ -514,7 +514,7 @@ describe('writeCoreSkillProjection', () => {
 	let workspace: string;
 
 	beforeEach(async () => {
-		workspace = await mkdtemp(join(tmpdir(), 'mcpv-skill-writer-'));
+		workspace = await mkdtemp(join(tmpdir(), 'delendai-skill-writer-'));
 	});
 
 	afterEach(async () => {
@@ -524,25 +524,23 @@ describe('writeCoreSkillProjection', () => {
 	it('writes a project-owned manifest and core bodies, then preserves them', async () => {
 		const first = await writeCoreSkillProjection(
 			workspace,
-			'docs/mcp-vertex',
+			'docs/delendai',
 			false,
 		);
 		expect(first.length).toBeGreaterThan(1);
 		expect(first.every((write) => write.kind === 'written')).toBe(true);
 		const manifestPath = join(
 			workspace,
-			'docs/mcp-vertex/skills/manifest.json',
+			'docs/delendai/skills/manifest.json',
 		);
 		const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as {
 			skills: Array<{ bodyPath: string }>;
 		};
-		expect(manifest.skills[0]?.bodyPath).toContain(
-			'docs/mcp-vertex/skills/',
-		);
+		expect(manifest.skills[0]?.bodyPath).toContain('docs/delendai/skills/');
 
 		const second = await writeCoreSkillProjection(
 			workspace,
-			'docs/mcp-vertex',
+			'docs/delendai',
 			false,
 		);
 		expect(second.some((write) => write.kind === 'exists')).toBe(true);
@@ -556,7 +554,7 @@ describe('writeCoreSkillProjection', () => {
 		// same id and asserts the next merge collapses to a single row.
 		const manifestPath = join(
 			workspace,
-			'docs/mcp-vertex/skills/manifest.json',
+			'docs/delendai/skills/manifest.json',
 		);
 		await mkdir(dirname(manifestPath), { recursive: true });
 		await fsWriteFile(
@@ -564,8 +562,8 @@ describe('writeCoreSkillProjection', () => {
 			`${JSON.stringify(
 				{
 					skills: [
-						{ id: 'mcp-vertex-operator', bodyPath: 'a' },
-						{ id: 'mcp-vertex-operator', bodyPath: 'b' },
+						{ id: 'delendai-operator', bodyPath: 'a' },
+						{ id: 'delendai-operator', bodyPath: 'b' },
 						{ id: 'other-plugin', bodyPath: 'c' },
 					],
 				},
@@ -575,21 +573,21 @@ describe('writeCoreSkillProjection', () => {
 			'utf8',
 		);
 
-		await writeCoreSkillProjection(workspace, 'docs/mcp-vertex', false);
+		await writeCoreSkillProjection(workspace, 'docs/delendai', false);
 
 		const onDisk = JSON.parse(await readFile(manifestPath, 'utf8')) as {
 			skills: Array<{ id: string }>;
 		};
 		const operatorRows = onDisk.skills.filter(
-			(skill) => skill.id === 'mcp-vertex-operator',
+			(skill) => skill.id === 'delendai-operator',
 		);
 		expect(operatorRows).toHaveLength(1);
 	});
 });
 
 describe('computeHostInstructionsWrite (f00084 S4)', () => {
-	const BEGIN = '<!-- mcp-vertex:begin -->';
-	const END = '<!-- mcp-vertex:end -->';
+	const BEGIN = '<!-- delendai:begin -->';
+	const END = '<!-- delendai:end -->';
 
 	it('returns the block when current is undefined', () => {
 		const next = computeHostInstructionsWrite(undefined, 'hello', 'append');
@@ -661,9 +659,9 @@ describe('renderInitBundle end-to-end (f00084 S6)', () => {
 	let workspace: string;
 
 	beforeEach(async () => {
-		workspace = await mkdtemp(join(tmpdir(), 'mcpv-init-e2e-'));
+		workspace = await mkdtemp(join(tmpdir(), 'delendai-init-e2e-'));
 		await mkdir(`${workspace}/.github/agents`, { recursive: true });
-		await mkdir(`${workspace}/docs/mcp-vertex/proposals/ready`, {
+		await mkdir(`${workspace}/docs/delendai/proposals/ready`, {
 			recursive: true,
 		});
 	});
@@ -684,7 +682,7 @@ describe('renderInitBundle end-to-end (f00084 S6)', () => {
 
 		const second = await renderInitBundle(answers);
 		for (const file of second.files) {
-			if (file.relPath === 'mcp-vertex.config.json') continue;
+			if (file.relPath === 'delendai.config.json') continue;
 			const onDisk = await readFile(
 				`${workspace}/${file.relPath}`,
 				'utf8',
@@ -706,7 +704,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			),
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		const parsed = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: {
@@ -714,7 +712,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			};
 		};
 		expect(parsed.plugins.audit.options.auditDir).toBe(
-			'docs/mcp-vertex/proposals/done/audits',
+			'docs/delendai/proposals/done/audits',
 		);
 		expect(parsed.plugins.audit.options.topActions).toBe(5);
 	});
@@ -724,7 +722,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			parseAnswers({ preset: 'swarm' }),
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		const parsed = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: {
@@ -737,7 +735,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 
 	it('a00063: search roots are derived from the REAL workspace layout, not stamped from the monorepo', async () => {
 		// An Angular-shaped app: src/ + e2e/, no packages/plugins/apps.
-		// Stamping mcp-vertex's own monorepo roots here made every
+		// Stamping delendai's own monorepo roots here made every
 		// search scan 0 files — the "agent went crazy" incident.
 		const ws = await mkdtemp(join(tmpdir(), 'init-angular-'));
 		try {
@@ -747,7 +745,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 				parseAnswers({ preset: 'swarm' }, ws),
 			);
 			const configFile = bundle.files.find(
-				(f) => f.relPath === 'mcp-vertex.config.json',
+				(f) => f.relPath === 'delendai.config.json',
 			);
 			const parsed = JSON.parse(configFile?.content ?? '{}') as {
 				plugins: {
@@ -776,7 +774,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 				parseAnswers({ preset: 'swarm' }, ws),
 			);
 			const configFile = bundle.files.find(
-				(f) => f.relPath === 'mcp-vertex.config.json',
+				(f) => f.relPath === 'delendai.config.json',
 			);
 			const parsed = JSON.parse(configFile?.content ?? '{}') as {
 				plugins: { search: { options: { roots?: string[] } } };
@@ -790,7 +788,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 	it('web-fetch is empty by default (fail closed)', async () => {
 		const bundle = await renderInitBundle(parseAnswers({ preset: 'full' }));
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		const parsed = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: { 'web-fetch': { options: { allowList?: string[] } } };
@@ -806,7 +804,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			}),
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		const parsed = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: { issues: { options: { repo?: string } } };
@@ -822,7 +820,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			}),
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		const parsed = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: { 'web-fetch': { options: { allowList?: string[] } } };
@@ -838,7 +836,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			parseAnswers({ preset: 'minimal' }),
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		const parsed = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: { git: { options: Record<string, unknown> } };

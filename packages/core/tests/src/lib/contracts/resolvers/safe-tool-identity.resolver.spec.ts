@@ -16,11 +16,11 @@ const registryOf = (
 describe('resolvePublicToolIdentity', () => {
 	it('keeps the fully qualified safeToolId only for first-party tools', () => {
 		const identity = resolvePublicToolIdentity(
-			'mcp-vertex_proposals_create_proposal',
+			'delendai_proposals_create_proposal',
 			registryOf({
-				'mcp-vertex_proposals_create_proposal': {
+				delendai_proposals_create_proposal: {
 					packageName: '@delendai/proposals',
-					owner: 'mcp-vertex',
+					owner: 'delendai',
 					publicToolName: 'create_proposal',
 					category: 'orchestration',
 				},
@@ -28,7 +28,7 @@ describe('resolvePublicToolIdentity', () => {
 		);
 
 		expect(identity).toEqual({
-			owner: 'mcp-vertex',
+			owner: 'delendai',
 			safeToolId: '@delendai/proposals.create_proposal',
 			category: 'orchestration',
 		});
@@ -54,9 +54,9 @@ describe('resolvePublicToolIdentity', () => {
 
 	it('does not trust a deceptive vertex-looking prefix', () => {
 		const identity = resolvePublicToolIdentity(
-			'mcp_vertex_internal_fraud',
+			'delendai_internal_fraud',
 			registryOf({
-				mcp_vertex_internal_fraud: {
+				delendai_internal_fraud: {
 					packageName: '/workspace/evil/plugin.ts',
 					owner: 'host-project',
 					category: 'host-specific',
@@ -103,8 +103,8 @@ describe('resolvePublicToolIdentity', () => {
 			'privatecompany_reconciliation_execute',
 			'acme_hr_onboarding',
 			'superbank_internal_fraud',
-			'mcp_vertex_internal_fraud',
-			'mcp-vertex.create_proposal',
+			'delendai_internal_fraud',
+			'delendai.create_proposal',
 			'vertex.create_proposal',
 			'mcp_vert_x_evil',
 			'🔓host_secret_tool',
@@ -128,7 +128,7 @@ describe('resolvePublicToolIdentity', () => {
 			);
 
 			expect(identity.safeToolId).toBeUndefined();
-			expect(identity.owner).not.toBe('mcp-vertex');
+			expect(identity.owner).not.toBe('delendai');
 		}
 	});
 });

@@ -28,7 +28,7 @@ const failRun = (stderr: string): IExternalToolRun => ({
 const githubExec = (viewStdout: string): IForgeReleaseExec => {
 	return async (input: IRunExternalToolInput) => {
 		if (input.tool.bin === 'git')
-			return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+			return okRun('git@github.com:CartagoGit/delendai.git\n');
 		const joined = input.args.join(' ');
 		if (joined.startsWith('release create')) return okRun('');
 		if (joined.startsWith('release view')) return okRun(viewStdout);
@@ -65,7 +65,7 @@ describe('createRelease', () => {
 	// regression test for the always-fails-to-parse bug this exposed.
 	it('creates a github release and parses the view payload (numeric id, as real gh CLI output shapes it)', async () => {
 		const viewPayload = JSON.stringify({
-			url: 'https://github.com/CartagoGit/mcp-vertex/releases/tag/v1.0.0',
+			url: 'https://github.com/CartagoGit/delendai/releases/tag/v1.0.0',
 			id: 12345,
 			name: 'v1.0.0',
 			tagName: 'v1.0.0',
@@ -80,7 +80,7 @@ describe('createRelease', () => {
 		expect(result).toEqual({
 			ok: true,
 			provider: 'github',
-			url: 'https://github.com/CartagoGit/mcp-vertex/releases/tag/v1.0.0',
+			url: 'https://github.com/CartagoGit/delendai/releases/tag/v1.0.0',
 			id: '12345',
 			name: 'v1.0.0',
 			tag: 'v1.0.0',
@@ -107,7 +107,7 @@ describe('createRelease', () => {
 	it('propagates a failed release create without calling view', async () => {
 		const exec: IForgeReleaseExec = async (input) => {
 			if (input.tool.bin === 'git')
-				return okRun('git@github.com:CartagoGit/mcp-vertex.git\n');
+				return okRun('git@github.com:CartagoGit/delendai.git\n');
 			if (input.args.join(' ').startsWith('release create'))
 				return failRun('tag already exists');
 			throw new Error('should never reach release view');

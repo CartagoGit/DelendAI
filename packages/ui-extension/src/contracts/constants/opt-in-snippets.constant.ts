@@ -9,8 +9,8 @@
 
 /** Opt-in for the provider dashboard (runner depends on usage-tracking). */
 export const ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET =
-	'mcp-vertex --plugins=usage-tracking,orchestrator-runner';
+	'delendai --plugins=usage-tracking,orchestrator-runner';
 
 /** Opt-in for the usage cost card (usage-tracking alone). */
 export const USAGE_TRACKING_OPT_IN_SNIPPET =
-	'mcp-vertex --plugins=usage-tracking';
+	'delendai --plugins=usage-tracking';

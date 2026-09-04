@@ -20,8 +20,8 @@
 					},
 					{
 						"type": "mcp_tool",
-						"server": "mcp-vertex",
-						"tool": "mcp-vertex_memory_checkpoint_packet",
+						"server": "delendai",
+						"tool": "delendai_memory_checkpoint_packet",
 						"input": {
 							"hostEvent": "pre-compact"
 						}
@@ -39,8 +39,8 @@
 					},
 					{
 						"type": "mcp_tool",
-						"server": "mcp-vertex",
-						"tool": "mcp-vertex_memory_checkpoint_packet",
+						"server": "delendai",
+						"tool": "delendai_memory_checkpoint_packet",
 						"input": {
 							"maxDigestChars": 4000
 						}

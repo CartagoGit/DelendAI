@@ -4,8 +4,8 @@
  * `createMcpProject()` used to expose no way to close what it opened:
  * `config.disposePlugins` (assembled by `assemble-plugins.ts` from
  * whichever route — eager or lazy — actually activated plugins) was
- * never called by anything. These specs drive `IMcpVertexProject.dispose()`
- * directly against a hand-built `IMcpVertexHostConfig`, so they exercise
+ * never called by anything. These specs drive `IDelendaiProject.dispose()`
+ * directly against a hand-built `IDelendaiHostConfig`, so they exercise
  * the host's OWN responsibility (idempotency, error aggregation, and
  * draining in-flight work) independently of how the plugins were loaded.
  */
@@ -13,11 +13,11 @@ import { describe, expect, it } from 'vitest';
 
 import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
 import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
-import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
 
 const baseHostConfig = (
-	overrides: Partial<IMcpVertexHostConfig>,
-): IMcpVertexHostConfig => ({
+	overrides: Partial<IDelendaiHostConfig>,
+): IDelendaiHostConfig => ({
 	metadata: {
 		name: 'spec-server',
 		version: '0.0.0',

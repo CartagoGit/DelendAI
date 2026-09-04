@@ -16,7 +16,7 @@ Offline, pure, no external tools. The graph build + render are pure functions
 ## Load
 
 ```bash
-mcp-vertex --plugins=diagram
+delendai --plugins=diagram
 ```
 
 ## License

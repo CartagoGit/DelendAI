@@ -79,7 +79,7 @@ export class AgentLoopDetectorService {
 	>();
 
 	// Lock-file lookup cache (H1 mitigation). `isAgentStuck` is called
-	// inline on every tool call from core (`IMcpVertexHostConfig`), so a
+	// inline on every tool call from core (`IDelendaiHostConfig`), so a
 	// sync read on that hot path is forbidden by AGENTS.md rule 3. The
 	// lock file only changes when `agent_lock` claims/releases — both
 	// are routed through this service, which invalidates the cache. For
@@ -107,7 +107,7 @@ export class AgentLoopDetectorService {
 		// x00054: the default handoffDir is derived from the host's
 		// `cacheDir` via `LOOP_DETECTOR_DEFAULTS_FOR(ctx.cacheDir)`, so
 		// a host that reconfigures the cache root gets the handoff
-		// under that root (not the historical `.cache/mcp-vertex/handoff`
+		// under that root (not the historical `.cache/delendai/handoff`
 		// literal). Tests that need the legacy default pass an
 		// explicit `ctx.cacheDir` in the mock.
 		this.options = {
@@ -381,7 +381,7 @@ export class AgentLoopDetectorService {
 			// reusable) name inherited a false stuck verdict.
 			if (this.stuckAgents.delete(agent) && this.options.notifyOnDetect) {
 				process.stderr.write(
-					`[mcp-vertex] loop-detector: agent "${agent}" recovered; stuck flag cleared\n`,
+					`[delendai] loop-detector: agent "${agent}" recovered; stuck flag cleared\n`,
 				);
 			}
 		} else if (!this.stuckAgents.has(agent)) {
@@ -429,7 +429,7 @@ export class AgentLoopDetectorService {
 				// We can't access mcpServer easily here, but we can write to stderr
 				// which the host reads, and notify via event.
 				process.stderr.write(
-					`[mcp-vertex] loop-detector: agent "${agent}" is stuck (${reason}). Handoff written to ${handoffPathRel}\n`,
+					`[delendai] loop-detector: agent "${agent}" is stuck (${reason}). Handoff written to ${handoffPathRel}\n`,
 				);
 			}
 		}
@@ -437,7 +437,7 @@ export class AgentLoopDetectorService {
 
 	/**
 	 * l00008 s1 + audit-h1-fix: this method is intentionally synchronous,
-	 * not a hot-path oversight. `IMcpVertexHostConfig.isAgentStuck`
+	 * not a hot-path oversight. `IDelendaiHostConfig.isAgentStuck`
 	 * (packages/core host-config.interface.ts) declares a sync return
 	 * type and is invoked inline — without `await` — right after every
 	 * tool call in `create-mcp-project.ts`. Making this `async` would
@@ -602,7 +602,7 @@ export class AgentLoopDetectorService {
 		});
 
 		const packet = {
-			schema: 'mcp-vertex/handoff/1',
+			schema: 'delendai/handoff/1',
 			createdAt: new Date().toISOString(),
 			reason,
 			signals: {
@@ -667,7 +667,7 @@ export class AgentLoopDetectorService {
  *     observable failure)
  *
  * Pure function; safe to test in isolation. Mirrors the level of
- * detail that the core host config surfaces via `IMcpVertexHostConfig`.
+ * detail that the core host config surfaces via `IDelendaiHostConfig`.
  */
 export const RETRYABLE_ERROR_CODES: readonly string[] = [
 	'ENOENT',

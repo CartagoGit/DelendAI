@@ -28,10 +28,10 @@ export const renderPanelSpend = (
 
 	if (model === null) {
 		return `
-<section class="mcpv-panel" id="panel-spend" role="tabpanel" aria-labelledby="tab-spend">
-	<h2 class="mcpv-panel__title">${escapeHtml(text('tabSpend'))}</h2>
-	<div class="mcpv-card">
-		<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.spend.unavailable'))}</p>
+<section class="delendai-panel" id="panel-spend" role="tabpanel" aria-labelledby="tab-spend">
+	<h2 class="delendai-panel__title">${escapeHtml(text('tabSpend'))}</h2>
+	<div class="delendai-card">
+		<p class="delendai-fg-muted">${escapeHtml(text('dashboard.spend.unavailable'))}</p>
 	</div>
 </section>
 `;
@@ -47,32 +47,32 @@ export const renderPanelSpend = (
 		.map(
 			(p) => `<tr>
 				<td><code>${escapeHtml(p.provider)}</code></td>
-				<td class="mcpv-num">${formatUsd(p.costUsd)}</td>
-				<td class="mcpv-num">${p.calls}</td>
+				<td class="delendai-num">${formatUsd(p.costUsd)}</td>
+				<td class="delendai-num">${p.calls}</td>
 			</tr>`,
 		)
 		.join('');
 
 	return `
-<section class="mcpv-panel" id="panel-spend" role="tabpanel" aria-labelledby="tab-spend">
-	<h2 class="mcpv-panel__title">${escapeHtml(text('tabSpend'))} — ${escapeHtml(text('dashboard.spend.window', { days: model.windowDays }))}</h2>
-	<div class="mcpv-grid">
-		<div class="mcpv-card mcpv-card--third">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.spend.totalCost'))}</h3>
-			<p class="mcpv-kpi__value">${formatUsd(model.totalCostUsd)}</p>
+<section class="delendai-panel" id="panel-spend" role="tabpanel" aria-labelledby="tab-spend">
+	<h2 class="delendai-panel__title">${escapeHtml(text('tabSpend'))} — ${escapeHtml(text('dashboard.spend.window', { days: model.windowDays }))}</h2>
+	<div class="delendai-grid">
+		<div class="delendai-card delendai-card--third">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.spend.totalCost'))}</h3>
+			<p class="delendai-kpi__value">${formatUsd(model.totalCostUsd)}</p>
 		</div>
-		<div class="mcpv-card mcpv-card--third">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.spend.tokensSaved'))}</h3>
-			<p class="mcpv-kpi__value">${formatTokens(model.totalTokensSaved)}</p>
+		<div class="delendai-card delendai-card--third">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.spend.tokensSaved'))}</h3>
+			<p class="delendai-kpi__value">${formatTokens(model.totalTokensSaved)}</p>
 		</div>
-		<div class="mcpv-card mcpv-card--third">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.spend.savings'))}</h3>
-			<p class="mcpv-kpi__value">${model.savingsPercent}%</p>
+		<div class="delendai-card delendai-card--third">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.spend.savings'))}</h3>
+			<p class="delendai-kpi__value">${model.savingsPercent}%</p>
 		</div>
-		<div class="mcpv-card">
-			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.spend.byProvider'))}</h3>
+		<div class="delendai-card">
+			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.spend.byProvider'))}</h3>
 			${chart}
-			<table class="mcpv-table">
+			<table class="delendai-table">
 				<thead><tr><th>${escapeHtml(text('common.plugin'))}</th><th>${escapeHtml(text('dashboard.spend.totalCost'))}</th><th>${escapeHtml(text('common.calls'))}</th></tr></thead>
 				<tbody>${rows}</tbody>
 			</table>

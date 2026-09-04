@@ -2,12 +2,12 @@
 /**
  * core-version-pin.script.ts — f00152 S1 (L1 — version pin).
  *
- * Validates that `mcp-vertex.config.json#coreVersion` points at a real
+ * Validates that `delendai.config.json#coreVersion` points at a real
  * published `@delendai/core` version. The root config may omit the field;
  * omission means `latest-published`, which resolves to the newest published
  * version the cache/registry reports.
  *
- * The registry result is cached at `.cache/mcp-vertex/registry-versions.json`
+ * The registry result is cached at `.cache/delendai/registry-versions.json`
  * for 24h. `--offline` uses the cache only and fails when the cache is missing
  * or stale.
  */
@@ -21,8 +21,8 @@ import { readJsonOrNull } from '../../../plugins/proposals/src/lib/proposals/ind
 import { repoRoot } from '../lib/monorepo-paths';
 
 export const PACKAGE_NAME = '@delendai/core';
-export const CACHE_REL = '.cache/mcp-vertex/registry-versions.json';
-export const CONFIG_REL = 'mcp-vertex.config.json';
+export const CACHE_REL = '.cache/delendai/registry-versions.json';
+export const CONFIG_REL = 'delendai.config.json';
 export const SENTINEL_LATEST = 'latest-published';
 export const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 

@@ -54,7 +54,7 @@ describe('@delendai/gitlab optionsSchema', async () => {
 			plugin.optionsSchema?.safeParse({
 				baseUrl: 'https://gitlab.example/api/v4',
 				allowWrite: true,
-				defaultProject: { projectPath: 'cartago/mcp-vertex' },
+				defaultProject: { projectPath: 'cartago/delendai' },
 			}).success,
 		).toBe(true);
 		expect(
@@ -71,7 +71,7 @@ describe('@delendai/gitlab optionsSchema', async () => {
 			const regs = await plugin.register(
 				baseCtx({
 					baseUrl: 'https://gitlab.example/api/v4',
-					defaultProject: { projectPath: 'cartago/mcp-vertex' },
+					defaultProject: { projectPath: 'cartago/delendai' },
 				}),
 			);
 

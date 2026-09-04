@@ -192,7 +192,7 @@ export const buildBranchStatusRegistration = (
 				{
 					outputSchema: BRANCH_STATUS_OUTPUT_SCHEMA,
 					description:
-						'Read-only snapshot of every `agent/*` branch and every worktree in the workspace. Reports ahead/behind counts vs baseBranch (default develop), last-commit age, merged flag, and per-worktree dirty + untracked file counts. Worktrees whose path lives outside <cacheDir>/mcp-vertex/.worktrees are flagged `outOfCache: true`. Use this before merging, before pushing, or whenever the orchestrator needs to know what other agents are doing.',
+						'Read-only snapshot of every `agent/*` branch and every worktree in the workspace. Reports ahead/behind counts vs baseBranch (default develop), last-commit age, merged flag, and per-worktree dirty + untracked file counts. Worktrees whose path lives outside <cacheDir>/delendai/.worktrees are flagged `outOfCache: true`. Use this before merging, before pushing, or whenever the orchestrator needs to know what other agents are doing.',
 					inputSchema: z.object({
 						baseBranch: z.string().optional(),
 						agentPrefix: z.string().optional(),

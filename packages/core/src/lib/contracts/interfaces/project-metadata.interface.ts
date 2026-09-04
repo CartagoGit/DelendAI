@@ -1,8 +1,8 @@
 /**
- * Identity of an MCP server assembled on top of mcp-vertex. The host
- * project provides its own metadata; mcp-vertex never hardcodes a name.
+ * Identity of an MCP server assembled on top of delendai. The host
+ * project provides its own metadata; delendai never hardcodes a name.
  */
-export interface IMcpVertexProjectMetadata {
+export interface IDelendaiProjectMetadata {
 	readonly name: string;
 	readonly version: string;
 	readonly description: string;

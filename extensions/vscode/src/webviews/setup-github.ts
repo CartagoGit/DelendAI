@@ -1,12 +1,12 @@
 /**
  * setup-github.ts — the multi-step webview that mirrors the web wizard
  * (`apps/web/src/pages/setup.astro`) and the canonical 7-step guide in
- * `docs/mcp-vertex/CROSS-PROJECT-SETUP.md` (f00030 S4).
+ * `docs/delendai/CROSS-PROJECT-SETUP.md` (f00030 S4).
  *
  * The webview is intentionally minimal: 7 steps, one per screen, each with a
  * Back / Next pair and a "Copy command" button. All state (the current step)
  * lives in the webview itself — closing it forgets the state; nothing is
- * persisted beyond what `mcp-vertex_issues_setup_github` writes to disk.
+ * persisted beyond what `delendai_issues_setup_github` writes to disk.
  *
  * This module is a pure HTML producer: strings + step commands in, a single
  * self-contained HTML document out (no `vscode` API, no I/O), so it is fully
@@ -24,23 +24,23 @@ import type { ISetupGithubStrings } from '../i18n/strings';
 /** The 7 canonical commands, in guide order. Kept in lockstep with the guide. */
 export const SETUP_GITHUB_COMMANDS: readonly string[] = [
 	'git remote get-url origin',
-	'mcp-vertex setup-github',
+	'delendai setup-github',
 	'gh auth status   # or: export GITHUB_TOKEN=<your-token>',
 	JSON.stringify(
 		{ plugins: { issues: { options: { repo: 'owner/name' } } } },
 		null,
 		'\t',
 	),
-	'bunx --package @delendai/cli mcpv __serve --workspace . --preset full',
+	'bunx --package @delendai/cli delendai __serve --workspace . --preset full',
 	JSON.stringify(
 		{
 			servers: {
-				'mcp-vertex': {
+				delendai: {
 					command: 'bunx',
 					args: [
 						'--package',
 						'@delendai/cli',
-						'mcpv',
+						'delendai',
 						'__serve',
 						'--workspace',
 						'.',
@@ -53,12 +53,12 @@ export const SETUP_GITHUB_COMMANDS: readonly string[] = [
 		null,
 		'\t',
 	),
-	'mcp-vertex setup-github --mark-configured',
+	'delendai setup-github --mark-configured',
 ];
 
 /** Canonical source-of-truth guide every surface links back to. */
 export const SETUP_GITHUB_DOCS_URL =
-	'https://github.com/cv2mario/mcp-vertex/blob/main/docs/mcp-vertex/CROSS-PROJECT-SETUP.md';
+	'https://github.com/cv2mario/delendai/blob/main/docs/delendai/CROSS-PROJECT-SETUP.md';
 
 const escapeHtml = (value: string): string =>
 	value

@@ -58,7 +58,7 @@ export const registerPluginActivationCommand = (deps: IPluginActivationDeps) =>
 				);
 				if (model === undefined) {
 					await deps.vscode.window.showInformationMessage?.(
-						`mcp-vertex: ${strings.unavailable}`,
+						`delendai: ${strings.unavailable}`,
 					);
 					return;
 				}
@@ -82,7 +82,7 @@ export const registerPluginActivationCommand = (deps: IPluginActivationDeps) =>
 					deps.vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath;
 				if (workspaceRoot === undefined) {
 					await deps.vscode.window.showInformationMessage?.(
-						`mcp-vertex: ${strings.noWorkspace}`,
+						`delendai: ${strings.noWorkspace}`,
 					);
 					return;
 				}
@@ -94,12 +94,12 @@ export const registerPluginActivationCommand = (deps: IPluginActivationDeps) =>
 				});
 				const action =
 					await deps.vscode.window.showInformationMessage?.(
-						`mcp-vertex: ${strings.savedRestart}`,
+						`delendai: ${strings.savedRestart}`,
 						strings.restart,
 					);
 				if (action === strings.restart) {
 					await deps.vscode.commands.executeCommand?.(
-						'mcp-vertex.restartServer',
+						'delendai.restartServer',
 					);
 				}
 			} catch (error) {

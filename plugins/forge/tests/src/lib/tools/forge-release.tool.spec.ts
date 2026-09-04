@@ -13,7 +13,7 @@ const fakeExec: IForgeReleaseExec = async (input: IRunExternalToolInput) => {
 		return {
 			ok: true,
 			code: 0,
-			stdout: 'git@github.com:CartagoGit/mcp-vertex.git\n',
+			stdout: 'git@github.com:CartagoGit/delendai.git\n',
 			stderr: '',
 			timedOut: false,
 			unavailable: false,
@@ -35,7 +35,7 @@ const fakeExec: IForgeReleaseExec = async (input: IRunExternalToolInput) => {
 			ok: true,
 			code: 0,
 			stdout: JSON.stringify({
-				url: 'https://github.com/CartagoGit/mcp-vertex/releases/tag/v1.0.0',
+				url: 'https://github.com/CartagoGit/delendai/releases/tag/v1.0.0',
 				id: 12345,
 				name: 'v1.0.0',
 				tagName: 'v1.0.0',
@@ -86,7 +86,7 @@ describe('forge release tool', () => {
 		expect(result.structuredContent).toEqual({
 			ok: true,
 			provider: 'github',
-			url: 'https://github.com/CartagoGit/mcp-vertex/releases/tag/v1.0.0',
+			url: 'https://github.com/CartagoGit/delendai/releases/tag/v1.0.0',
 			id: '12345',
 			name: 'v1.0.0',
 			tag: 'v1.0.0',

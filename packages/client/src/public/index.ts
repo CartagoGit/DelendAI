@@ -220,9 +220,9 @@ export type {
 // --- project plugin scaffolding (f00089 U4) ---------------------------------
 // f00089 U4: one client-callable action that creates a complete, correct
 // `IMcpPlugin` from a declarative spec AND registers it on the host by PATH
-// (`plugins.<name>.path` in mcp-vertex.config.json). The target project's
+// (`plugins.<name>.path` in delendai.config.json). The target project's
 // LLM calls this to add project-specific plugins without ever reading the
-// mcp-vertex core or its internal plugins. Reuses the f00087 scaffold +
+// delendai core or its internal plugins. Reuses the f00087 scaffold +
 // writer machinery.
 export {
 	createProjectPlugin,

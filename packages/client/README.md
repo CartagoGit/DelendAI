@@ -1,12 +1,12 @@
 # @delendai/client
 
-IDE-agnostic TypeScript client for talking to an `mcp-vertex` server over
+IDE-agnostic TypeScript client for talking to an `delendai` server over
 MCP stdio. It spawns the server as a child process, speaks the MCP
 protocol over its stdin/stdout, and exposes a small, typed surface
 (`request`, `listTools`) plus higher-level services (overview, knowledge,
 metrics, memory, search, dashboard, …) built on top of that transport.
 Use it from any external host — a VS Code extension, a CLI, a web
-backend — that needs to drive an `mcp-vertex` server programmatically
+backend — that needs to drive an `delendai` server programmatically
 instead of through an LLM agent.
 
 ## Install
@@ -29,7 +29,7 @@ const client = await McpStdioClient.connect({
 const tools = await client.listTools();
 console.log(tools.map((t) => t.name));
 
-const result = await client.request('mcpvertex_overview', { compact: true });
+const result = await client.request('delendai_overview', { compact: true });
 console.log(result);
 ```
 
@@ -57,15 +57,15 @@ surface — that barrel is the only stable import path; everything under
 
 ## Namespace-aware services (f00081)
 
-The host namespaces every tool as `<prefix><suffix>` — `mcp-vertex_overview`,
-`mcp-vertex_metrics`, and so on. The default prefix is `mcp-vertex_`, but a
+The host namespaces every tool as `<prefix><suffix>` — `delendai_overview`,
+`delendai_metrics`, and so on. The default prefix is `delendai_`, but a
 deployment started with `--prefix=acme` (a valid `assemble` flag) namespaces
 every tool as `acme_overview`, `acme_metrics`, … If a service hardcoded the
 default prefix, every call against such a server would fail immediately.
 
 The prefix flows like this:
 
-1. The server reports its prefix via `mcp-vertex_overview { compact: true }`
+1. The server reports its prefix via `delendai_overview { compact: true }`
    (the `namespacePrefix` field of the result).
 2. The caller (host extension, IDE plugin, CLI) reads that prefix from its
    own boot config and passes it to each service constructor.
@@ -74,7 +74,7 @@ The prefix flows like this:
 
 Pass the prefix as the second constructor argument (or, for
 `DashboardService`, as the `namespacePrefix` option). Omitting it keeps the
-default `mcp-vertex_` behaviour bit-for-bit:
+default `delendai_` behaviour bit-for-bit:
 
 ```ts
 import {
@@ -83,7 +83,7 @@ import {
   formatToolName,
 } from '@delendai/client';
 
-// Default prefix → calls `mcp-vertex_overview`.
+// Default prefix → calls `delendai_overview`.
 const overview = new OverviewService(client);
 
 // Custom prefix → calls `acme_overview`.
@@ -94,12 +94,12 @@ const dashboard = new DashboardService({ client, namespacePrefix: 'acme' });
 
 // The shared helper that every service uses internally is also exported:
 formatToolName('acme', 'overview'); // → 'acme_overview'
-formatToolName(undefined, 'overview'); // → 'mcp-vertex_overview'
+formatToolName(undefined, 'overview'); // → 'delendai_overview'
 ```
 
 `OverviewService`, `NotificationsService`, `ConnectionHealthService` and
 `DashboardService` accept the prefix today; `formatToolName` and
-`parsePrefix` (which applies the `prefix ?? 'mcp-vertex_'` default) are
+`parsePrefix` (which applies the `prefix ?? 'delendai_'` default) are
 exported for any consumer that needs to namespace a tool name by hand.
 
 ## Scaffold a plugin from a script (f00087)
@@ -161,7 +161,7 @@ await repairProjectPlugin(spec, { workspaceRoot: '/path/to/project' });
 ```
 
 Without an explicit `pluginsRoot`, the default layout is
-`packages/mcp-vertex/plugins/mcp-vertex_<plugin-id>` relative to the
+`packages/delendai/plugins/delendai_<plugin-id>` relative to the
 workspace. `repairProjectPlugin` recreates missing generated files, preserves
 existing files, repairs `plugins.<id>.path`, and returns an actionable report.
 MCP tool and CLI surfaces are intentionally deferred to a separate slice.

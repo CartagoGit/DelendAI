@@ -12,7 +12,7 @@ const deps = (over: Partial<IGithubSetupDeps> = {}): IGithubSetupDeps => ({
 	hasGhCli: () => true,
 	githubToken: () => undefined,
 	readConfig: () => undefined,
-	configPath: 'mcp-vertex.config.json',
+	configPath: 'delendai.config.json',
 	...over,
 });
 

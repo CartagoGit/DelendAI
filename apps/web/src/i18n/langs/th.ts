@@ -24,7 +24,7 @@ const dict: LangDict = {
 		troubleshooting: 'การแก้ไขปัญหา',
 	},
 	hero: {
-		title: { a: '', b: 'MCP Vertex', c: ' ที่ไม่ผูกกับโปรเจกต์' },
+		title: { a: '', b: 'DelendAI', c: ' ที่ไม่ผูกกับโปรเจกต์' },
 		subheader: 'แกนเซิร์ฟเวอร์ MCP + ตัวโหลดปลั๊กอินสำหรับทุกโปรเจกต์',
 		tagline:
 			'แกนเซิร์ฟเวอร์ Model Context Protocol ที่ไม่ผูกกับโปรเจกต์ แกนไม่รู้อะไรเกี่ยวกับโดเมนของคุณ — ความสามารถมาในรูปปลั๊กอินที่คุณโหลดตามต้องการ ทั้งหมดวัดผลเพื่อต้นทุนโทเคนต่ำ',
@@ -35,7 +35,7 @@ const dict: LangDict = {
 	marquee: { runtimes: 'สร้างด้วย · ทำงานบน', clients: 'ไคลเอนต์ MCP และโมเดล' },
 	concept: {
 		title: 'แกนเล็กหนึ่งเดียว ปลั๊กอินมากมาย',
-		body: 'mcp-vertex คือแกนที่ปิดสนิท: การลงทะเบียนเครื่องมือแบบกำหนดได้ เส้นทาง workspace ที่ฉีดเข้ามา ตัวโหลดปลั๊กอินผ่าน CLI และพื้นผิวเครื่องมือที่วัดด้วยโทเคน ทุกสิ่งที่เฉพาะโดเมนคือปลั๊กอิน — โหลดเฉพาะที่ต้องการ ภายใต้โฮสต์หรือโมเดลใดก็ได้',
+		body: 'delendai คือแกนที่ปิดสนิท: การลงทะเบียนเครื่องมือแบบกำหนดได้ เส้นทาง workspace ที่ฉีดเข้ามา ตัวโหลดปลั๊กอินผ่าน CLI และพื้นผิวเครื่องมือที่วัดด้วยโทเคน ทุกสิ่งที่เฉพาะโดเมนคือปลั๊กอิน — โหลดเฉพาะที่ต้องการ ภายใต้โฮสต์หรือโมเดลใดก็ได้',
 		f1: {
 			t: 'ไม่ผูกกับโปรเจกต์',
 			b: 'ไม่มีโค้ดโดเมนในแกน ปลั๊กอินเดียวกันทำงานเหมือนกันภายใต้โฮสต์หรือโมเดลใดก็ได้',
@@ -78,7 +78,7 @@ const dict: LangDict = {
 			title: 'ต้นทุนการวางตำแหน่ง · วัดสด',
 			note: 'โทเคนของข้อความผลลัพธ์ที่เอเจนต์เห็น (≈4 ไบต์/โทเคน) วัดสดผ่านโปรโตคอลด้วย proposals+memory เส้นฐานเป็นการประมาณเชิงตัวอย่างของการวางตำแหน่งด้วยมือ — ไม่ใช่การวัดเครื่องมือของบุคคลที่สาม',
 		},
-		baseline: 'ไม่มี mcp-vertex (ด้วยมือ · ประมาณ)',
+		baseline: 'ไม่มี delendai (ด้วยมือ · ประมาณ)',
 	},
 	plugins: {
 		title: 'ปลั๊กอิน',
@@ -149,7 +149,7 @@ const dict: LangDict = {
 			description:
 				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
 			requires: 'requires',
-			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+			installSnippet: 'delendai --plugins=proposals,issues',
 		},
 	},
 	toolpage: {
@@ -172,7 +172,7 @@ const dict: LangDict = {
 	},
 	firstFiveMinutes: {
 		title: '5 นาทีแรก',
-		lead: 'สามแนวทางเริ่มต้นด่วนที่คัดลอกวางได้ เลือกแนวทางที่ตรงกับวิธีที่คุณรัน mcp-vertex',
+		lead: 'สามแนวทางเริ่มต้นด่วนที่คัดลอกวางได้ เลือกแนวทางที่ตรงกับวิธีที่คุณรัน delendai',
 		profileTabBunNode: 'Bun / Node',
 		profileTabVscode: 'VS Code / Copilot',
 		profileTabClaude: 'Claude Code',
@@ -181,20 +181,20 @@ const dict: LangDict = {
 			intro: 'ไม่ต้องผนวกกับตัวแก้ไข: รัน host server จากเทอร์มินัลแล้วชี้ไคลเอนต์ MCP ใดก็ได้ไปที่ stdio transport ของมัน',
 			steps: [
 				'ติดตั้ง: `bun add @delendai/core` (หรือ `npm install @delendai/core`)',
-				'รัน: `bunx mcp-vertex --preset=standard` (หรือ `npx mcp-vertex --preset=standard`)',
+				'รัน: `bunx delendai --preset=standard` (หรือ `npx delendai --preset=standard`)',
 				'ตรวจสอบ: โปรเซสจะพิมพ์รายการปลั๊กอินที่โหลดและรอบน stdio — กด Ctrl+C เพื่อหยุด',
 				'ชี้คอนฟิกไคลเอนต์ MCP ของคุณไปที่ไบนารีพร้อม `--preset=minimal|standard|swarm|full` (ดูรายการแฟล็กทั้งหมดที่หน้าติดตั้ง)',
-				'เรียก `mcp-vertex_overview { compact: true }` ก่อน — มันจะบอกว่าต้องทำอะไรต่อไป',
+				'เรียก `delendai_overview { compact: true }` ก่อน — มันจะบอกว่าต้องทำอะไรต่อไป',
 			],
 		},
 		vscode: {
 			title: 'VS Code / GitHub Copilot',
-			intro: 'ตัวติดตั้งคำสั่งเดียวจะตรวจจับ VS Code และเพิ่ม mcp-vertex ลงในรายการเซิร์ฟเวอร์ MCP ของคุณโดยไม่แตะเซิร์ฟเวอร์ที่มีอยู่',
+			intro: 'ตัวติดตั้งคำสั่งเดียวจะตรวจจับ VS Code และเพิ่ม delendai ลงในรายการเซิร์ฟเวอร์ MCP ของคุณโดยไม่แตะเซิร์ฟเวอร์ที่มีอยู่',
 			steps: [
 				'รันตัวติดตั้งคำสั่งเดียวจากหน้าติดตั้ง (ตรวจจับ IDE ของคุณอัตโนมัติ)',
 				'รีโหลดหน้าต่าง (`Developer: Reload Window`) เพื่อให้ Copilot รับรู้เซิร์ฟเวอร์ใหม่',
-				'เปิดแผงแชท Copilot และเลือกเอเจนต์ `mcp-vertex` ในตัวเลือกเอเจนต์',
-				'ขอให้มันเรียก `mcp-vertex_overview` — มันควรรายงานพรีเซ็ตที่โหลดและการดำเนินการต่อไปที่แนะนำ',
+				'เปิดแผงแชท Copilot และเลือกเอเจนต์ `delendai` ในตัวเลือกเอเจนต์',
+				'ขอให้มันเรียก `delendai_overview` — มันควรรายงานพรีเซ็ตที่โหลดและการดำเนินการต่อไปที่แนะนำ',
 				'ถ้าเซิร์ฟเวอร์ไม่ปรากฏ ดูการแก้ไขปัญหา → "MCP server not detected"',
 			],
 		},
@@ -204,16 +204,16 @@ const dict: LangDict = {
 			steps: [
 				'รันตัวติดตั้งคำสั่งเดียว — มันตรวจจับ Claude Code และเขียน `.mcp.json`',
 				'รีสตาร์ท Claude Code (หรือรัน `/mcp` เพื่อโหลดเซิร์ฟเวอร์ใหม่) เพื่อให้รับรู้รายการใหม่',
-				'ในเซสชันใหม่ ไฟล์ที่โหลดเสมอ `AGENTS.md` + `CLAUDE.md` ชี้ไปที่ `mcp-vertex_overview` เป็นการเรียกแรกอยู่แล้ว',
-				'ยืนยันด้วย `mcp-vertex_overview { compact: true }` — ฟิลด์ `recommendedNextAction` จะบอกว่าต้องทำอะไรต่อไป',
-				'สำหรับเซสชันหลายเอเจนต์ อ่านทักษะ `mcp-vertex-proposal-swarm-runner` ก่อนที่จะ claim slice',
+				'ในเซสชันใหม่ ไฟล์ที่โหลดเสมอ `AGENTS.md` + `CLAUDE.md` ชี้ไปที่ `delendai_overview` เป็นการเรียกแรกอยู่แล้ว',
+				'ยืนยันด้วย `delendai_overview { compact: true }` — ฟิลด์ `recommendedNextAction` จะบอกว่าต้องทำอะไรต่อไป',
+				'สำหรับเซสชันหลายเอเจนต์ อ่านทักษะ `delendai-proposal-swarm-runner` ก่อนที่จะ claim slice',
 			],
 		},
 		nextSteps: 'ไปที่ไหนต่อ',
 		nextToolsCta: 'ดูเครื่องมือทั้งหมด',
 		nextTroubleshootingCta: 'มีอะไรไม่ทำงาน? การแก้ไขปัญหา',
 		overviewHint:
-			'หลังเซิร์ฟเวอร์เริ่มทำงาน ให้เรียก mcp-vertex_overview ด้วย compact: true; recommendedNextAction จะบอกเอเจนต์อย่างชัดเจนว่าต้องทำอะไรต่อไป',
+			'หลังเซิร์ฟเวอร์เริ่มทำงาน ให้เรียก delendai_overview ด้วย compact: true; recommendedNextAction จะบอกเอเจนต์อย่างชัดเจนว่าต้องทำอะไรต่อไป',
 	},
 	troubleshooting: {
 		title: 'การแก้ไขปัญหา',
@@ -274,7 +274,7 @@ const dict: LangDict = {
 	},
 	setup: {
 		title: 'การตั้งค่าข้ามโปรเจกต์',
-		lead: 'เชื่อม mcp-vertex เข้ากับรีโพใดก็ได้ และเตรียมปลั๊กอิน issues ของ GitHub ให้พร้อมสำหรับรีโพนั้น — เป็น 7 ขั้นตอนเดียวกับที่คำสั่ง setup-github ทำงาน',
+		lead: 'เชื่อม delendai เข้ากับรีโพใดก็ได้ และเตรียมปลั๊กอิน issues ของ GitHub ให้พร้อมสำหรับรีโพนั้น — เป็น 7 ขั้นตอนเดียวกับที่คำสั่ง setup-github ทำงาน',
 		stepsTitle: '7 ขั้นตอน',
 		docsLinkLabel: 'อ่านคู่มือการตั้งค่าข้ามโปรเจกต์ฉบับหลัก',
 		detectRepoTitle: 'ตรวจหารีโพ',
@@ -287,7 +287,7 @@ const dict: LangDict = {
 			'ใช้ gh เมื่อ gh auth status สำเร็จ, ใช้ rest-authed เมื่อมีการตั้งค่า GITHUB_TOKEN, หรือใช้ rest-anon ในกรณีอื่น (จำกัด 60 คำขอต่อชั่วโมง)',
 		writeConfigTitle: 'เขียนการตั้งค่า',
 		writeConfigBody:
-			'เขียน plugins.issues.options.repo ลงใน mcp-vertex.config.json โดยไม่แตะการตั้งค่าปลั๊กอินอื่น',
+			'เขียน plugins.issues.options.repo ลงใน delendai.config.json โดยไม่แตะการตั้งค่าปลั๊กอินอื่น',
 		verifyTierTitle: 'ตรวจสอบระดับ',
 		verifyTierBody:
 			'เริ่มโฮสต์โดยโหลดปลั๊กอิน issues เพื่อทดสอบระดับการยืนยันตัวตนที่เลือกแบบครบวงจร',
@@ -323,7 +323,7 @@ const dict: LangDict = {
 			{ id: 'yarn', note: 'ทางเลือกคลาสสิกของ npm' },
 			{
 				id: 'bun',
-				note: 'runtime + ตัวจัดการแพ็กเกจแบบครบวงจร — mcp-vertex สร้างด้วย bun',
+				note: 'runtime + ตัวจัดการแพ็กเกจแบบครบวงจร — delendai สร้างด้วย bun',
 			},
 			{
 				id: 'deno',
@@ -385,7 +385,7 @@ const dict: LangDict = {
 			{
 				id: 'setup',
 				label: 'ตั้งค่าข้ามโปรเจกต์',
-				summary: 'เสียบ mcp-vertex เข้ากับรีโปใดก็ได้และเตรียมปลั๊กอิน issues',
+				summary: 'เสียบ delendai เข้ากับรีโปใดก็ได้และเตรียมปลั๊กอิน issues',
 				href: 'setup',
 				icon: '/logos/github.png',
 			},
@@ -394,7 +394,7 @@ const dict: LangDict = {
 	cli: {
 		title: 'คู่มือ CLI',
 		description:
-			'วิธีใช้งาน mcpv / @delendai/core CLI: แฟล็กส่วนกลาง, กลุ่มคำสั่งตามปลั๊กอิน, และขั้นตอนการทำงานทั่วไป',
+			'วิธีใช้งาน delendai / @delendai/core CLI: แฟล็กส่วนกลาง, กลุ่มคำสั่งตามปลั๊กอิน, และขั้นตอนการทำงานทั่วไป',
 	},
 	guide: {
 		title: 'คู่มือ',
@@ -410,7 +410,7 @@ const dict: LangDict = {
 			'7. ทักษะ',
 			'8. i18n',
 			'9. เกตคุณภาพและหลายภาษา',
-			'10. การขยายประสิทธิภาพ mcp-vertex',
+			'10. การขยายประสิทธิภาพ delendai',
 			'11. งบประมาณโทเค็น',
 			'12. ทรานซิชันของมุมมอง',
 			'13. คำถามที่พบบ่อย',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { IMcpVertexConfigFile } from '@delendai/core/public';
+import type { IDelendaiConfigFile } from '@delendai/core/public';
 
 import {
 	LOOP_DETECTOR_DEFAULTS,
@@ -63,7 +63,7 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 	});
 
 	describe('resolveLoopDetectorConfig — precedence: CLI > file > defaults', async () => {
-		const stubReader = (config: IMcpVertexConfigFile) => ({
+		const stubReader = (config: IDelendaiConfigFile) => ({
 			async readGlobalConfig() {
 				return config;
 			},
@@ -73,11 +73,9 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 			const out = await resolveLoopDetectorConfig({
 				configReader: stubReader({}),
 				cliArgs: {},
-				cacheDir: '.cache/mcp-vertex',
+				cacheDir: '.cache/delendai',
 			});
-			expect(out).toEqual(
-				LOOP_DETECTOR_DEFAULTS_FOR('.cache/mcp-vertex'),
-			);
+			expect(out).toEqual(LOOP_DETECTOR_DEFAULTS_FOR('.cache/delendai'));
 		});
 
 		it('file overrides defaults', async () => {
@@ -86,12 +84,12 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 					loopDetector: { repeatThreshold: 99 },
 				}),
 				cliArgs: {},
-				cacheDir: '.cache/mcp-vertex',
+				cacheDir: '.cache/delendai',
 			});
 			expect(out.repeatThreshold).toBe(99);
 			// Other keys still come from defaults
 			expect(out.nearRepeatThreshold).toBe(
-				LOOP_DETECTOR_DEFAULTS_FOR('.cache/mcp-vertex')
+				LOOP_DETECTOR_DEFAULTS_FOR('.cache/delendai')
 					.nearRepeatThreshold,
 			);
 		});
@@ -102,7 +100,7 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 					loopDetector: { repeatThreshold: 50, enabled: false },
 				}),
 				cliArgs: { 'loop-detector.repeat-threshold': '7' },
-				cacheDir: '.cache/mcp-vertex',
+				cacheDir: '.cache/delendai',
 			});
 			expect(out.repeatThreshold).toBe(7); // CLI wins
 			expect(out.enabled).toBe(false); // file wins over default (CLI did not set enabled)
@@ -115,7 +113,7 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 					'loop-detector.enabled': 'false',
 					'loop-detector.handoff-ttl-days': '30',
 				},
-				cacheDir: '.cache/mcp-vertex',
+				cacheDir: '.cache/delendai',
 			});
 			expect(out.enabled).toBe(false);
 			expect(out.handoffTtlDays).toBe(30);
@@ -129,16 +127,14 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 			const out = await resolveLoopDetectorConfig({
 				configReader: stubReader({}),
 				cliArgs: {},
-				cacheDir: '.cache/mcp-vertex',
+				cacheDir: '.cache/delendai',
 			});
-			expect(out).toEqual(
-				LOOP_DETECTOR_DEFAULTS_FOR('.cache/mcp-vertex'),
-			);
+			expect(out).toEqual(LOOP_DETECTOR_DEFAULTS_FOR('.cache/delendai'));
 		});
 
-		it('x00054: default handoffDir is anchored to the host cacheDir, not .cache/mcp-vertex/handoff', async () => {
+		it('x00054: default handoffDir is anchored to the host cacheDir, not .cache/delendai/handoff', async () => {
 			// Regression pin: before x00054, the default was a hardcoded
-			// '.cache/mcp-vertex/handoff' literal. Hosts that set
+			// '.cache/delendai/handoff' literal. Hosts that set
 			// `cacheDir: .cache/custom-cache` would get handoffs at the
 			// historical default, stranded outside the cache root. The
 			// default now derives from cacheDir.
@@ -148,7 +144,7 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 				cacheDir: '.cache/custom-cache',
 			});
 			expect(out.handoffDir).toBe('.cache/custom-cache/handoff');
-			expect(out.handoffDir).not.toBe('.cache/mcp-vertex/handoff');
+			expect(out.handoffDir).not.toBe('.cache/delendai/handoff');
 		});
 
 		it('x00054: explicit handoffDir in the file config still wins over the cacheDir-derived default', async () => {

@@ -3,7 +3,7 @@
  *
  * Given a StormDetector snapshot with one or more storms that
  * crossed the threshold, produce a `kind: repair` proposal under
- * `docs/mcp-vertex/proposals/ready/repairs/`. The proposal is
+ * `docs/delendai/proposals/ready/repairs/`. The proposal is
  * single-purpose: its `Files:` are the union of slice files
  * across the storm's `sampleProposalIds`, intersected with the
  * storm's `suggestedFix` hint (which usually points to a single

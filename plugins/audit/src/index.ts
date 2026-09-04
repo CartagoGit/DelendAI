@@ -30,13 +30,13 @@ import { buildSelfAuditRegistration } from './lib/tools/self-audit.tool';
  * Plus one knowledge entry that documents the brief contract for agents
  * that want to read it on demand instead of calling the tool.
  *
- * Activation is opt-in: `mcp-vertex --plugins=audit`. The `audit_plan`
+ * Activation is opt-in: `delendai --plugins=audit`. The `audit_plan`
  * and `audit_consolidate` tools make no network calls (no API fan-out,
  * no keys, no telemetry). `audit_run` DOES contact the configured LLM
  * providers — callers MUST supply API keys in the request. The plugin
  * never reads `process.env`; the host owns credential wiring.
  *
- * See `docs/mcp-vertex/proposals/f00077-automated-audit-run-tool.md` for
+ * See `docs/delendai/proposals/f00077-automated-audit-run-tool.md` for
  * the Alcance B design and `l99-feat-multi-model-audit-plugin.md` for
  * Alcance A.
  */
@@ -99,7 +99,7 @@ vacío ⇒ \`monorepo\`, \`scope === 'full'\` ⇒ \`general\`, en otro caso
    (OpenRouter / Anthropic / Google / OpenAI), guarda los reportes como
    \`DD-MM-YYYY- <provider>(<model>).md\`, los consolida, y scaffoldea
    un archivo de propuesta por hallazgo actionable (FATAL / MUY_MAL /
-   MEJORABLE) en \`docs/mcp-vertex/proposals/ready/\`. Las claves se
+   MEJORABLE) en \`docs/delendai/proposals/ready/\`. Las claves se
    reciben en la llamada — el plugin NO consulta variables de entorno.
 
 ## Escala de severidad (7 bandas, inglés puro)
@@ -169,7 +169,7 @@ the same MCP server**. The audit plugin auto-detects via the registry
 
 | Scenario | Behaviour |
 |---|---|
-| \`proposals\` is loaded (default — \`swarm\` preset includes it) | A native parent plan plus one linked child proposal per actionable finding (FATAL / BAD / MINOR) is scaffolded to \`docs/mcp-vertex/proposals/ready/\`. |
+| \`proposals\` is loaded (default — \`swarm\` preset includes it) | A native parent plan plus one linked child proposal per actionable finding (FATAL / BAD / MINOR) is scaffolded to \`docs/delendai/proposals/ready/\`. |
 | \`proposals\` is NOT loaded | No proposals are written. The \`audit_run\` / \`audit_consolidate\` output returns \`proposals_skipped: "proposals plugin not loaded"\` so callers know what happened. |
 | \`--plugins=audit\` only (\`proposals\` absent) | Same as above: no scaffolding. The audit still works. |
 | Tool called inside a host that embeds the audit plugin without proposals | Same as above: no scaffolding. |
@@ -181,14 +181,14 @@ pass \`autoScaffoldProposals: false\` on the tool call to opt out.
 ## Configuration (host-agnostic)
 
 \`\`\`jsonc
-// the host config file (e.g. mcp-vertex.config.json, app.toml, settings.yaml)
+// the host config file (e.g. delendai.config.json, app.toml, settings.yaml)
 {
   "plugins": {
     "audit": {
       "options": {
         "projectName": "<your project name>",
         "configFileName": "<your config file>",
-        "auditDir": "docs/mcp-vertex/proposals/done/audits",
+        "auditDir": "docs/delendai/proposals/done/audits",
         "topActions": 5,
         "autoScaffoldProposals": true,
         "dimensions": ["Architecture", "Tests", "Documentation", "Genericity"],
@@ -231,7 +231,7 @@ the model also checks host-specific rules.
  * back to the canonical defaults so existing hosts (no options block)
  * behave exactly as before. This is the OCP seam: the plugin's
  * defaults stay stable, hosts that need to override them pass
- * typed values via `mcp-vertex.config.json`.
+ * typed values via `delendai.config.json`.
  */
 const LayerSchema = z.object({
 	/** Unique scope identifier (e.g. `core`, `api`, `frontend`). */
@@ -303,7 +303,7 @@ const OptionsSchema = z
 		projectName: z.string().min(1).optional(),
 		/**
 		 * Config file path rendered in the "no layers configured" hint
-		 * (e.g. `mcp-vertex.config.json`, `app.toml`, `<config-file>`).
+		 * (e.g. `delendai.config.json`, `app.toml`, `<config-file>`).
 		 * Hosts that want to point the model at a concrete file can
 		 * pass it here; the default placeholder avoids leaking any
 		 * specific host vocabulary.
@@ -335,7 +335,7 @@ const OptionsSchema = z
 /**
  * Default values for {@link OptionsSchema} that do not depend on the
  * host's resolved `docsDir` (S-B/x00165: `auditDir`/`proposalsDir` used
- * to be static literals here too, hardcoding `docs/mcp-vertex/...`
+ * to be static literals here too, hardcoding `docs/delendai/...`
  * regardless of the host's actual configured docs root — now derived
  * from `ctx.docsDir` inside `register()` instead, matching the same
  * `IMcpPluginContext`-driven pattern `plugins/proposals` already uses).

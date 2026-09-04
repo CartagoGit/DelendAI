@@ -2,17 +2,17 @@
 /**
  * no-manual-plugin-page-duplicate.script.ts — d00014.
  *
- * `docs/mcp-vertex/plugins/{context-for-change,error-reporting,
+ * `docs/delendai/plugins/{context-for-change,error-reporting,
  * impact-analysis}.md` used to be hand-written pages that duplicated
  * the auto-generated page for the same plugin id, with no drift check
  * between the two (AUD-F07). d00014 folded their content into the
  * auto-generated page's "## Notes" section (sourced from
- * `docs/mcp-vertex/plugins/notes/<id>.notes.md`) and replaced the
+ * `docs/delendai/plugins/notes/<id>.notes.md`) and replaced the
  * manual page with a short redirect stub, so each plugin has exactly
  * one canonical page again.
  *
  * This lint is the regression guard: it fails if a manual page under
- * `docs/mcp-vertex/plugins/<id>.md` reappears with real content (more
+ * `docs/delendai/plugins/<id>.md` reappears with real content (more
  * than a redirect stub) for a plugin id that already has an
  * auto-generated page. It intentionally allows the redirect stub
  * pattern (a short blockquote pointing at the auto-generated page and
@@ -31,10 +31,10 @@ import { readdir, readFile } from 'node:fs/promises';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
-export const PLUGINS_DOCS_DIR = 'docs/mcp-vertex/plugins';
+export const PLUGINS_DOCS_DIR = 'docs/delendai/plugins';
 export const AUTO_GENERATED_SUBDIR = 'auto-generated';
 
-// Subdirectories under docs/mcp-vertex/plugins/ that are not
+// Subdirectories under docs/delendai/plugins/ that are not
 // per-plugin manual pages and must never be scanned as one.
 const NON_MANUAL_SUBDIRS = new Set([
 	'auto-generated',
@@ -60,7 +60,7 @@ const isRedirectStub = (content: string): boolean => {
 /**
  * Pure check: given the set of plugin ids with an auto-generated page
  * and the manual pages found directly under
- * `docs/mcp-vertex/plugins/*.md`, report any manual page whose id
+ * `docs/delendai/plugins/*.md`, report any manual page whose id
  * matches an auto-generated one and is not a redirect stub.
  */
 export const lintNoManualPluginPageDuplicate = (input: {

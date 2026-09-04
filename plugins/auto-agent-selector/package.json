@@ -2,7 +2,7 @@
 	"name": "@delendai/auto-agent-selector",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Zero-config multi-agent routing: auto-discovers every LLM/agent the user can reach (CLI on PATH + API keys), recommends the most cost-effective one per task (the user decides and can pin), and escalates to a stronger model only when the cheap one fails the project's acceptance gate. Load with `mcp-vertex --plugins=auto-agent-selector`.",
+	"description": "Zero-config multi-agent routing: auto-discovers every LLM/agent the user can reach (CLI on PATH + API keys), recommends the most cost-effective one per task (the user decides and can pin), and escalates to a stronger model only when the cheap one fails the project's acceptance gate. Load with `delendai --plugins=auto-agent-selector`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

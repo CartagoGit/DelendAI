@@ -32,15 +32,15 @@ export function buildKpiStrip(
 	) => extensionText(lang, key, vars);
 	const t = model.overview.totals;
 	return `
-<div class="mcpv-kpis">
-	<div class="mcpv-kpi"><span class="mcpv-kpi__label">${escapeHtml(text('kpiTools'))}</span><span class="mcpv-kpi__value">${formatNumber(t.tools)}</span></div>
-	<div class="mcpv-kpi"><span class="mcpv-kpi__label">${escapeHtml(text('kpiPlugins'))}</span><span class="mcpv-kpi__value">${formatNumber(t.plugins)}</span></div>
-	<div class="mcpv-kpi"><span class="mcpv-kpi__label">${escapeHtml(text('kpiProposals'))}</span><span class="mcpv-kpi__value">${formatNumber(t.proposals)}</span></div>
-	<div class="mcpv-kpi"><span class="mcpv-kpi__label">${escapeHtml(text('kpiCalls'))}</span><span class="mcpv-kpi__value">${formatNumber(t.calls)}</span></div>
-	<div class="mcpv-kpi"><span class="mcpv-kpi__label">${escapeHtml(text('kpiTokens'))}</span><span class="mcpv-kpi__value">${formatTokens(t.tokens)}</span></div>
-	<div class="mcpv-kpi"><span class="mcpv-kpi__label">${escapeHtml(text('kpiSaved'))}</span><span class="mcpv-kpi__value">${formatTokens(t.tokensSaved)}</span><span class="mcpv-kpi__hint">${t.savingsPercent}%</span></div>
-	<div class="mcpv-kpi"><span class="mcpv-kpi__label">${escapeHtml(text('kpiWall'))}</span><span class="mcpv-kpi__value">${formatMs(t.totalMs)}</span></div>
-	<div class="mcpv-kpi"><span class="mcpv-kpi__label">${escapeHtml(text('kpiAgents'))}</span><span class="mcpv-kpi__value">${formatNumber(t.agents)}</span></div>
+<div class="delendai-kpis">
+	<div class="delendai-kpi"><span class="delendai-kpi__label">${escapeHtml(text('kpiTools'))}</span><span class="delendai-kpi__value">${formatNumber(t.tools)}</span></div>
+	<div class="delendai-kpi"><span class="delendai-kpi__label">${escapeHtml(text('kpiPlugins'))}</span><span class="delendai-kpi__value">${formatNumber(t.plugins)}</span></div>
+	<div class="delendai-kpi"><span class="delendai-kpi__label">${escapeHtml(text('kpiProposals'))}</span><span class="delendai-kpi__value">${formatNumber(t.proposals)}</span></div>
+	<div class="delendai-kpi"><span class="delendai-kpi__label">${escapeHtml(text('kpiCalls'))}</span><span class="delendai-kpi__value">${formatNumber(t.calls)}</span></div>
+	<div class="delendai-kpi"><span class="delendai-kpi__label">${escapeHtml(text('kpiTokens'))}</span><span class="delendai-kpi__value">${formatTokens(t.tokens)}</span></div>
+	<div class="delendai-kpi"><span class="delendai-kpi__label">${escapeHtml(text('kpiSaved'))}</span><span class="delendai-kpi__value">${formatTokens(t.tokensSaved)}</span><span class="delendai-kpi__hint">${t.savingsPercent}%</span></div>
+	<div class="delendai-kpi"><span class="delendai-kpi__label">${escapeHtml(text('kpiWall'))}</span><span class="delendai-kpi__value">${formatMs(t.totalMs)}</span></div>
+	<div class="delendai-kpi"><span class="delendai-kpi__label">${escapeHtml(text('kpiAgents'))}</span><span class="delendai-kpi__value">${formatNumber(t.agents)}</span></div>
 </div>
 `.trim();
 }

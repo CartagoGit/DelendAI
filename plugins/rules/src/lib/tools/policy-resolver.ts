@@ -28,7 +28,7 @@ export type {
  * `policy-resolution.contract.ts`), not on this concrete
  * constant. A host can swap in a different policy (e.g. a
  * "treat dogma as advisory" policy for projects that opt in
- * via `mcp-vertex.config.json#plugins.rules.policy`) without
+ * via `delendai.config.json#plugins.rules.policy`) without
  * touching the tools.
  *
  * The default rationale strings are deliberately

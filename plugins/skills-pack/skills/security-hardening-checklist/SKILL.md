@@ -4,7 +4,7 @@ id: security-hardening-checklist
 title: Security hardening checklist
 category: safety
 tags: ['security', 'hardening', 'secrets', 'dependencies']
-tools: ['mcp-vertex_security_security_audit', 'mcp-vertex_security_security_deps', 'mcp-vertex_security_security_sast', 'mcp-vertex_security_security_secrets', 'mcp-vertex_env_env_check']
+tools: ['delendai_security_security_audit', 'delendai_security_security_deps', 'delendai_security_security_sast', 'delendai_security_security_secrets', 'delendai_env_env_check']
 appliesTo: ['@delendai/skills-pack', '@delendai/security', '@delendai/env']
 description: Harden a project's security posture by combining audit, dependency, static analysis, secret scanning, and environment validation into one checklist.
 ---
@@ -23,15 +23,15 @@ up on security-related findings from code review or operations.
 
 ## Steps
 
-1. Run `mcp-vertex_security_security_audit` first to establish the broad risk
+1. Run `delendai_security_security_audit` first to establish the broad risk
    surface and avoid duplicating work across narrower checks.
-2. Check dependency exposure with `mcp-vertex_security_security_deps` before
+2. Check dependency exposure with `delendai_security_security_deps` before
    editing application code.
-3. Run `mcp-vertex_security_security_sast` on the changed slice to catch unsafe
+3. Run `delendai_security_security_sast` on the changed slice to catch unsafe
    patterns in code flow.
-4. Run `mcp-vertex_security_security_secrets` on the workspace or changed files
+4. Run `delendai_security_security_secrets` on the workspace or changed files
    to catch leaked tokens, keys, and committed credentials.
-5. Validate the runtime environment contract with `mcp-vertex_env_env_check` so
+5. Validate the runtime environment contract with `delendai_env_env_check` so
    missing or malformed configuration does not masquerade as application bugs.
 6. Translate findings into fixes in severity order: secret exposure, vulnerable
    dependencies, unsafe code paths, then broader hardening work.
@@ -53,8 +53,8 @@ up on security-related findings from code review or operations.
 
 ## References
 
-- `mcp-vertex_security_security_audit`
-- `mcp-vertex_security_security_deps`
-- `mcp-vertex_security_security_sast`
-- `mcp-vertex_security_security_secrets`
-- `mcp-vertex_env_env_check`
+- `delendai_security_security_audit`
+- `delendai_security_security_deps`
+- `delendai_security_security_sast`
+- `delendai_security_security_secrets`
+- `delendai_env_env_check`

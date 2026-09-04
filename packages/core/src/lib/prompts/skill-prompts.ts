@@ -1,7 +1,7 @@
 /**
  * Skill prompts — the `/` (trigger-character) surface for skills.
  *
- * Slice E of f00065. The `mcp-vertex_skill` tool (slice B) lets an agent
+ * Slice E of f00065. The `delendai_skill` tool (slice B) lets an agent
  * *discover* skills, but MCP-capable hosts (Claude, Codex, Copilot, OpenCode,
  * …) only surface **prompts** under their `/` trigger. So a skill that is only
  * a tool result never appears when a user types `/`. This module registers one

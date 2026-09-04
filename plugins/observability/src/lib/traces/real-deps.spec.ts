@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { realReadReleaseHealthDeps, realReadTracesDeps } from './real-deps';
 
-const LOGS_DIR = '.cache/mcp-vertex/results/logs';
+const LOGS_DIR = '.cache/delendai/results/logs';
 
 let root: string;
 

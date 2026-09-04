@@ -22,7 +22,7 @@ import { join } from 'node:path';
 /** Peer-review log — every `proposal_review { action: 'submit'|'approve'|'request_changes' }` appends one line. */
 export const PEER_REVIEW_LOG_RELATIVE_PATH = join(
 	'.cache',
-	'mcp-vertex',
+	'delendai',
 	'results',
 	'logs',
 	'peer-review.jsonl',
@@ -31,7 +31,7 @@ export const PEER_REVIEW_LOG_RELATIVE_PATH = join(
 /** Validate log — every successful `bun run validate` run appends one line. Used by `proposal_transition`'s `validateEvidence` freshness check. */
 export const VALIDATE_LOG_RELATIVE_PATH = join(
 	'.cache',
-	'mcp-vertex',
+	'delendai',
 	'results',
 	'logs',
 	'validate.jsonl',
@@ -44,7 +44,7 @@ export const VALIDATE_LOG_RELATIVE_PATH = join(
  */
 export const FORCED_REGRESSION_LOG_RELATIVE_PATH = join(
 	'.cache',
-	'mcp-vertex',
+	'delendai',
 	'results',
 	'logs',
 	'forced-regressions.jsonl',

@@ -7,7 +7,7 @@ import { repoRoot } from '../lib/monorepo-paths';
 
 const main = async (): Promise<number> => {
 	const root = repoRoot();
-	const proposalsDirAbs = join(root, 'docs', 'mcp-vertex', 'proposals');
+	const proposalsDirAbs = join(root, 'docs', 'delendai', 'proposals');
 	const drift = await findProposalFolderDrift(proposalsDirAbs);
 	for (const entry of drift) {
 		console.log(

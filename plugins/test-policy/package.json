@@ -2,7 +2,7 @@
 	"name": "@delendai/test-policy",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Declarative test-writing policy for agents: tdd (default), tests-after, free or none. Exposes get/set tools plus a knowledge entry so every LLM sees the workspace's testing contract at orientation. Load with `mcp-vertex --plugins=test-policy` (member of the standard preset).",
+	"description": "Declarative test-writing policy for agents: tdd (default), tests-after, free or none. Exposes get/set tools plus a knowledge entry so every LLM sees the workspace's testing contract at orientation. Load with `delendai --plugins=test-policy` (member of the standard preset).",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

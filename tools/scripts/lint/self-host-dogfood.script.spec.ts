@@ -15,7 +15,7 @@ const canonicalEntry = (workspace: string) => ({
 	args: [
 		'--package',
 		'@delendai/cli',
-		'mcpv',
+		'delendai',
 		'__serve',
 		'--workspace',
 		workspace,
@@ -43,13 +43,13 @@ const makeRoot = async (
 	await mkdir(join(root, '.vscode'), { recursive: true });
 	await writeFile(
 		join(root, '.mcp.json'),
-		JSON.stringify({ mcpServers: { 'mcp-vertex': generic } }),
+		JSON.stringify({ mcpServers: { delendai: generic } }),
 	);
 	await writeFile(
 		join(root, '.vscode/mcp.json'),
 		JSON.stringify({
 			servers: {
-				'mcp-vertex': vscode,
+				delendai: vscode,
 				filesystem: { command: 'unrelated', args: [] },
 			},
 		}),

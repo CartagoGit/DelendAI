@@ -82,4 +82,4 @@ export const createAgentLockForeignLockProvider = (input: {
 
 /** Conventional location of the shared lock, relative to the workspace. */
 export const deriveAgentLockPath = (workspaceRoot: string): string =>
-	join(workspaceRoot, '.cache', 'mcp-vertex', 'agents.lock.json');
+	join(workspaceRoot, '.cache', 'delendai', 'agents.lock.json');

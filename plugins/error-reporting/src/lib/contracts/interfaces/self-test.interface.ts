@@ -1,6 +1,6 @@
 import type { IIssueExec } from './reporter.interface';
 
-/** Stable ids so a caller (e.g. `mcpv doctor --deep error-reporting`,
+/** Stable ids so a caller (e.g. `delendai doctor --deep error-reporting`,
  * once wired) can key off a specific check without string-matching text. */
 export const SELF_TEST_CHECK_IDS = [
 	'plugin-loaded',
@@ -46,7 +46,7 @@ export interface IRunErrorReportingSelfTestInput {
 	/** When true, also runs the four `gh` checks (installed, authenticated,
 	 * repo reachable, issue-create permission) via read-only subcommands.
 	 * Off by default so a routine self-test never spawns a process or
-	 * touches the network — see `mcpv doctor --deep error-reporting --live`. */
+	 * touches the network — see `delendai doctor --deep error-reporting --live`. */
 	readonly live?: boolean;
 	/** Injected exec seam so `gh` can be faked in tests. Defaults to the
 	 * real `gh` adapter. Never invoked with `issue create` — the self-test

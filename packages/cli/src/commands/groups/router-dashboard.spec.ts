@@ -42,7 +42,7 @@ const strongProvider = {
 };
 
 const stubReplyFor = (tool: string, args: object): unknown => {
-	if (tool === 'mcp-vertex_auto-agent-selector_auto_status') {
+	if (tool === 'delendai_auto-agent-selector_auto_status') {
 		return {
 			available: [cheapProvider, midProvider, strongProvider],
 			missing: [],
@@ -50,7 +50,7 @@ const stubReplyFor = (tool: string, args: object): unknown => {
 			persisted: true,
 		};
 	}
-	if (tool === 'mcp-vertex_auto-agent-selector_auto_recommend') {
+	if (tool === 'delendai_auto-agent-selector_auto_recommend') {
 		const taskType = (args as { taskType?: string }).taskType ?? '';
 		// mid is "best" for every task type — easiest deterministic ordering.
 		return {
@@ -76,7 +76,7 @@ const stubReplyFor = (tool: string, args: object): unknown => {
 			],
 		};
 	}
-	if (tool === 'mcp-vertex_usage-tracking_usage_report') {
+	if (tool === 'delendai_usage-tracking_usage_report') {
 		return {
 			groupBy: 'provider',
 			windowDays: 7,
@@ -148,16 +148,14 @@ describe('router dashboard group', () => {
 		const result = await find('router-dashboard').run([], ctx);
 		// 1 status + 4 default task types + 1 usage_report.
 		expect(calls.length).toBe(6);
-		expect(calls[0]?.tool).toBe(
-			'mcp-vertex_auto-agent-selector_auto_status',
-		);
+		expect(calls[0]?.tool).toBe('delendai_auto-agent-selector_auto_status');
 		expect(
 			calls.some(
-				(c) => c.tool === 'mcp-vertex_usage-tracking_usage_report',
+				(c) => c.tool === 'delendai_usage-tracking_usage_report',
 			),
 		).toBe(true);
 		expect(result.code).toBe(0);
-		expect(result.text ?? '').toContain('mcp-vertex router-dashboard');
+		expect(result.text ?? '').toContain('delendai router-dashboard');
 		expect(result.text ?? '').toContain('mid'); // best-ranked row label
 		expect(result.text ?? '').toContain('orphan'); // spend-only provider appears
 	});

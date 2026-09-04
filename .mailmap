@@ -31,7 +31,7 @@ Cartago <cartago.relaxingcup@gmail.com> cartago <cartago@local>
 # wrote the code; the LLM supplied the temporary identity.
 # -------------------------------------------------------------------
 Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot-minimax-m3>
-Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot-minimax-m3@mcp-vertex.local>
+Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot-minimax-m3@delendai.local>
 Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot@MiniMax>
 Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot@MiniMax.ai>
 Cartago <cartago.relaxingcup@gmail.com> copilot-minimax-m3 <copilot@local>
@@ -41,11 +41,11 @@ Cartago <cartago.relaxingcup@gmail.com> copilot-orchestrator-night-shift <night-
 Cartago <cartago.relaxingcup@gmail.com> GitHub Copilot <copilot@anthropic.com>
 Cartago <cartago.relaxingcup@gmail.com> MCP-V Bot <ci@anthropic.com>
 Cartago <cartago.relaxingcup@gmail.com> MiniMax-M3 <noreply@MiniMax.local>
-Cartago <cartago.relaxingcup@gmail.com> mcp-vertex <mcp-vertex@MiniMax.local>
-Cartago <cartago.relaxingcup@gmail.com> mcp-vertex <mcp-vertex@local>
-Cartago <cartago.relaxingcup@gmail.com> mcp-vertex bot <ci@local>
-Cartago <cartago.relaxingcup@gmail.com> mcp-vertex-bot <bot@mcp-vertex.local>
-Cartago <cartago.relaxingcup@gmail.com> mcp-vertex-bot <mcp-vertex-bot@users.noreply.github.com>
+Cartago <cartago.relaxingcup@gmail.com> delendai <delendai@MiniMax.local>
+Cartago <cartago.relaxingcup@gmail.com> delendai <delendai@local>
+Cartago <cartago.relaxingcup@gmail.com> delendai bot <ci@local>
+Cartago <cartago.relaxingcup@gmail.com> delendai-bot <bot@delendai.local>
+Cartago <cartago.relaxingcup@gmail.com> delendai-bot <delendai-bot@users.noreply.github.com>
 Cartago <cartago.relaxingcup@gmail.com> mensa-orchestrator <mensa-orchestrator@copilot>
 Cartago <cartago.relaxingcup@gmail.com> vertex <auto@vertex>
 
@@ -56,6 +56,6 @@ Cartago <cartago.relaxingcup@gmail.com> vertex <auto@vertex>
 Cartago <cartago.relaxingcup@gmail.com> smoke-tester <smoke@local>
 Cartago <cartago.relaxingcup@gmail.com> WIP Salvage <wip@local>
 Cartago <cartago.relaxingcup@gmail.com> release-s5-agent <release-s5-agent@local>
-Cartago <cartago.relaxingcup@gmail.com> Track-E Bot <bot@mcp-vertex.dev>
+Cartago <cartago.relaxingcup@gmail.com> Track-E Bot <bot@delendai.dev>
 Cartago <cartago.relaxingcup@gmail.com> Track-I-Subagent <subagent@local>
 Cartago <cartago.relaxingcup@gmail.com> Cartago Agent <agent@cartago.dev>

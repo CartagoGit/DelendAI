@@ -15,10 +15,10 @@ const makeCtx = (
 	({
 		options: over.options ?? {},
 		args: {},
-		namespacePrefix: 'mcp-vertex_orchestrator-runner',
+		namespacePrefix: 'delendai_orchestrator-runner',
 		pluginCacheDir: 'orchestrator-runner',
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 		workspace: {
 			root: dir,
 			resolve: (rel: string) => join(dir, rel),
@@ -68,7 +68,7 @@ describe('orchestrator-runner plugin', () => {
 		for (const tool of regs.tools ?? []) {
 			expect(tool.summary).toBeTruthy();
 			expect(tool.descriptionKey).toMatch(
-				/^mcp-vertex_orchestrator-runner_/,
+				/^delendai_orchestrator-runner_/,
 			);
 		}
 	});

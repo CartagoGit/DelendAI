@@ -1,7 +1,7 @@
 /**
  * f00084 S2 — `init` command entrypoint.
  *
- * Registers as a top-level CLI command (`mcpv init`). The `run` step:
+ * Registers as a top-level CLI command (`delendai init`). The `run` step:
  *   1. Collects answers (S1 schema, S2 prompts).
  *   2. Renders the bundle (S2 render).
  *   3. Writes the bundle via the safe-writer primitives (S2 writers).
@@ -53,7 +53,7 @@ import { buildCoreSkillProjection } from '../../lib/init/core-skill-projection.s
 import {
 	writeCoreSkillProjection,
 	writeGenericMcpJson,
-	writeMcpVertexConfig,
+	writeDelendaiConfig,
 	writeVscodeMcpJson,
 	writeWorkspaceText,
 } from '../../lib/init/init-writers.factory';
@@ -156,7 +156,7 @@ const readEnvWarningFindings = async (
 
 const printEnvWarningBlock = (findings: readonly IFinding[]): void => {
 	if (findings.length === 0) return;
-	process.stderr.write('mcp-vertex › env warning\n');
+	process.stderr.write('delendai › env warning\n');
 	process.stderr.write(
 		'high/critical env findings detected before bootstrap:\n',
 	);
@@ -205,14 +205,14 @@ export const parseFlags = (args: readonly string[]): IInitFlags => {
 	const out: {
 		dryRun: boolean;
 		force: boolean;
-		mcpVertexRoot?: string;
+		delendaiRoot?: string;
 		pluginPathsRoot?: string;
 	} = { dryRun: false, force: false };
 	for (const arg of args) {
 		if (arg === '--dry-run') out.dryRun = true;
 		else if (arg === '--force') out.force = true;
-		else if (arg.startsWith('--mcp-vertex-root='))
-			out.mcpVertexRoot = arg.slice('--mcp-vertex-root='.length);
+		else if (arg.startsWith('--delendai-root='))
+			out.delendaiRoot = arg.slice('--delendai-root='.length);
 		else if (arg.startsWith('--plugin-paths-root='))
 			out.pluginPathsRoot = arg.slice('--plugin-paths-root='.length);
 	}
@@ -283,24 +283,24 @@ export const runInitWithAnswers = async (
 	answers: IInitAnswers,
 ): Promise<ICliCommandResult> => {
 	// f00088 S2: resolve the host entry path before rendering. When
-	// `--mcp-vertex-root` is set, it wins; otherwise we probe the
+	// `--delendai-root` is set, it wins; otherwise we probe the
 	// consumer's workspace in priority order (node_modules, dist,
-	// sibling mcp-vertex/, sibling mcp-vertex-core/). A typed error
+	// sibling delendai/, sibling delendai-core/). A typed error
 	// surfaces the hint when nothing matches.
 	let launch: ICanonicalLaunch = buildCanonicalLaunch({
 		workspace: '${workspaceFolder}',
 	});
-	if (flags.mcpVertexRoot !== undefined) {
+	if (flags.delendaiRoot !== undefined) {
 		try {
 			const resolved = resolveHostEntryPath(ctx.cwd, {
-				explicitRoot: flags.mcpVertexRoot,
+				explicitRoot: flags.delendaiRoot,
 			});
 			launch = {
 				command: 'bun',
 				args: [
 					resolved.path,
 					'--workspace=${workspaceFolder}',
-					'--config=${workspaceFolder}/mcp-vertex.config.json',
+					'--config=${workspaceFolder}/delendai.config.json',
 				],
 			};
 		} catch (error) {
@@ -321,7 +321,7 @@ export const runInitWithAnswers = async (
 	const envWarningFindings = await readEnvWarningFindings(
 		answers.workspaceRoot,
 		resolvedPlugins,
-		flags.mcpVertexRoot,
+		flags.delendaiRoot,
 	);
 	if (!ctx.globals.json) {
 		printEnvWarningBlock(envWarningFindings);
@@ -332,7 +332,7 @@ export const runInitWithAnswers = async (
 	);
 	const skillProjection = answers.copyCoreSkills
 		? await buildCoreSkillProjection(
-				currentConfig.docsDir ?? 'docs/mcp-vertex',
+				currentConfig.docsDir ?? 'docs/delendai',
 			)
 		: [];
 
@@ -362,7 +362,7 @@ export const runInitWithAnswers = async (
 	}
 
 	// Narrow union for the `written` accumulator: `kind` is the
-	// string-literal union across every writer (writeMcpVertexConfig
+	// string-literal union across every writer (writeDelendaiConfig
 	// → 'written' | 'exists'; writeVscodeMcpJson → also 'merged' and
 	// 'skipped'; writeWorkspaceText → also 'skipped'), and
 	// `preserved` is only populated on the merge branch. Casting
@@ -376,13 +376,13 @@ export const runInitWithAnswers = async (
 	}> = [];
 	let configReadyForSkillProjection = true;
 	for (const file of bundle.files) {
-		if (file.relPath === 'mcp-vertex.config.json') {
+		if (file.relPath === 'delendai.config.json') {
 			const parsed = JSON.parse(file.content) as Record<string, unknown>;
 			const withOverrides =
 				ctx.globals.extraOptions === undefined
 					? parsed
 					: applyExtraOptions(parsed, ctx.globals.extraOptions);
-			const result = await writeMcpVertexConfig(
+			const result = await writeDelendaiConfig(
 				answers.workspaceRoot,
 				withOverrides,
 				answers.force,
@@ -395,7 +395,7 @@ export const runInitWithAnswers = async (
 		// merge-aware writer: the operator may already have other
 		// MCP servers wired up (filesystem, github, docker, …) and
 		// we must not silently overwrite them. `writeVscodeMcpJson`
-		// reads the existing document, upserts the `mcp-vertex`
+		// reads the existing document, upserts the `delendai`
 		// entry, and preserves everything else. See the writer for
 		// the three-way outcome (`written` / `merged` / `exists`).
 		//
@@ -404,7 +404,7 @@ export const runInitWithAnswers = async (
 		// the same name avoids the shadowing bug we hit when an
 		// earlier revision declared a separate local with the same
 		// name. We intentionally reuse the resolved launcher path
-		// (which honours `--mcp-vertex-root` and the priority chain
+		// (which honours `--delendai-root` and the priority chain
 		// in `host-entry-resolver`) rather than the detection-only
 		// `answers.detected?.hostEntryPath`, which can be undefined
 		// when detection fails.
@@ -469,7 +469,7 @@ export const runInitWithAnswers = async (
 		);
 		const skillWrites = await writeCoreSkillProjection(
 			answers.workspaceRoot,
-			config.docsDir ?? 'docs/mcp-vertex',
+			config.docsDir ?? 'docs/delendai',
 			answers.force,
 		);
 		written.push(...skillWrites);
@@ -497,8 +497,8 @@ export const runInitWithAnswers = async (
 
 export const initCommand: ICliCommand = {
 	name: 'init',
-	summary: 'Interactive workspace bootstrap for mcp-vertex.',
-	usage: 'init [--dry-run] [--force] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
+	summary: 'Interactive workspace bootstrap for delendai.',
+	usage: 'init [--dry-run] [--force] [--delendai-root=<path>] [--plugin-paths-root=<path>]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
 		const flags = parseFlags(args);
 		// Detect first so the prompts can show the operator what was

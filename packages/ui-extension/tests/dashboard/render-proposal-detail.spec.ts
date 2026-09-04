@@ -17,7 +17,7 @@ const DETAIL: IProposalDetail = {
 		],
 		claimableSliceIds: ['f00065-S3'],
 	},
-	diagnose: { folder: 'docs/mcp-vertex/proposals', ok: true },
+	diagnose: { folder: 'docs/delendai/proposals', ok: true },
 	logs: [
 		{
 			ts: '2026-08-31T10:00:00Z',

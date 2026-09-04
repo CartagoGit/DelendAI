@@ -129,7 +129,7 @@ describe('registered sink — draft-only mode', () => {
 			existsSync(
 				join(
 					tmpDir,
-					'docs/mcp-vertex/proposals/retired/issues',
+					'docs/delendai/proposals/retired/issues',
 					'_errors',
 					'fp-int-001.md',
 				),
@@ -186,7 +186,7 @@ describe('registered sink — fingerprint dedup', () => {
 			existsSync(
 				join(
 					tmpDir,
-					'docs/mcp-vertex/proposals/retired/issues',
+					'docs/delendai/proposals/retired/issues',
 					'_errors',
 					'fp-dedup-int.md',
 				),

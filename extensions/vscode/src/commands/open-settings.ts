@@ -21,13 +21,13 @@ import {
 	SETTINGS_STATE_KEY,
 } from '../contracts/constants/settings-state-key.constant';
 
-export const OPEN_SETTINGS_COMMAND = 'mcp-vertex.openSettings';
+export const OPEN_SETTINGS_COMMAND = 'delendai.openSettings';
 
 /** Save handler — wired to the `renderSettings` webview in f00047 S6. */
-export const SAVE_SETTINGS_COMMAND = 'mcp-vertex.saveSettings';
+export const SAVE_SETTINGS_COMMAND = 'delendai.saveSettings';
 
 /** Reset handler — wired to the `renderSettings` webview in f00047 S6. */
-export const RESET_SETTINGS_COMMAND = 'mcp-vertex.resetSettings';
+export const RESET_SETTINGS_COMMAND = 'delendai.resetSettings';
 
 const resolveLang = (deps: ICommandDeps): Lang => {
 	const persisted = deps.globalState?.get<unknown>(HOST_LANG_KEY);
@@ -150,8 +150,8 @@ export const registerOpenSettingsCommand = (
 		const service = new SettingsService(store);
 		const settings = await service.get();
 		const panel = deps.vscode.window.createWebviewPanel(
-			'mcpVertexSettings',
-			'mcp-vertex Settings',
+			'delendaiSettings',
+			'delendai Settings',
 			deps.vscode.ViewColumn.One,
 			{ enableScripts: true },
 		);
@@ -190,7 +190,7 @@ export const registerOpenSettingsCommand = (
 						message: 'Invalid settings payload.',
 					});
 					await deps.vscode.window.showErrorMessage?.(
-						'mcp-vertex: saveSettings received an invalid payload.',
+						'delendai: saveSettings received an invalid payload.',
 					);
 					return;
 				}
@@ -261,14 +261,14 @@ export const registerSaveSettingsCommand = (
 			const next = parseSettingsInput(rawInput);
 			if (next === undefined) {
 				await vscode.window.showErrorMessage?.(
-					'mcp-vertex: saveSettings received an invalid payload.',
+					'delendai: saveSettings received an invalid payload.',
 				);
 				return undefined;
 			}
 			const service = new SettingsService(store);
 			await service.set(next);
 			await vscode.window.showInformationMessage?.(
-				'mcp-vertex: settings saved.',
+				'delendai: settings saved.',
 			);
 			return { saved: true };
 		},
@@ -290,7 +290,7 @@ export const registerResetSettingsCommand = (
 			...DEFAULT_EXTENSION_SETTINGS,
 		});
 		await vscode.window.showInformationMessage?.(
-			'mcp-vertex: settings reset to defaults.',
+			'delendai: settings reset to defaults.',
 		);
 		return settings;
 	});

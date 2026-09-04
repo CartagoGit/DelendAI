@@ -14,7 +14,7 @@ import {
 
 import type { IDiscoveredRoster } from '../contracts/interfaces/roster.interface';
 
-const SCHEMA = 'mcp-vertex/auto-agent-selector/roster/1' as const;
+const SCHEMA = 'delendai/auto-agent-selector/roster/1' as const;
 
 /** Durable boundary for a discovered roster; injectable so tools stay pure. */
 export interface IRosterSnapshotStore {

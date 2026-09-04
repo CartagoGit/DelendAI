@@ -10,7 +10,7 @@ export const withGitWriteLock = async <T>(
 	operation: () => Promise<T>,
 ): Promise<T> => {
 	if (workspaceRoot === undefined) return operation();
-	const root = pluginCacheDir ?? '.cache/mcp-vertex/commit-policy';
+	const root = pluginCacheDir ?? '.cache/delendai/commit-policy';
 	return withFileMutex(join(workspaceRoot, root, LOCK_PATH), operation, {
 		onContention: 'wait',
 		timeoutMs: 120_000,

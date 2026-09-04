@@ -26,20 +26,20 @@ const renderServerIdentity = (
 			? text('status.connectionLost', 'lost')
 			: text('status.connectionOk', 'connected');
 	const recommended = overview.recommendedNextAction;
-	return `<div class="mcpv-status__identity">
-		<div class="mcpv-status__pulse" data-state="${overview.serverVersion === 'unavailable' ? 'lost' : 'ok'}" aria-hidden="true"></div>
+	return `<div class="delendai-status__identity">
+		<div class="delendai-status__pulse" data-state="${overview.serverVersion === 'unavailable' ? 'lost' : 'ok'}" aria-hidden="true"></div>
 		<div>
 			<h3>${escapeHtml(text('status.serverLabel', 'Server'))}: <code>${escapeHtml(overview.serverName)}</code></h3>
-			<p class="mcpv-fg-muted">
+			<p class="delendai-fg-muted">
 				${escapeHtml(text('status.versionLabel', 'Version'))}: <code>${escapeHtml(overview.serverVersion)}</code> ·
 				${escapeHtml(text('status.namespacePrefix', 'Namespace'))}: <code>${escapeHtml(overview.namespacePrefix)}</code>
 			</p>
 			<p>
-				<span class="mcpv-status__chip" data-state="${overview.serverVersion === 'unavailable' ? 'lost' : 'ok'}">${escapeHtml(text('status.connection', 'MCP connection'))}: ${escapeHtml(connection)}</span>
+				<span class="delendai-status__chip" data-state="${overview.serverVersion === 'unavailable' ? 'lost' : 'ok'}">${escapeHtml(text('status.connection', 'MCP connection'))}: ${escapeHtml(connection)}</span>
 			</p>
 		</div>
 	</div>
-	<details class="mcpv-status__action" open>
+	<details class="delendai-status__action" open>
 		<summary>${escapeHtml(text('status.recommendedNextAction', 'Recommended next action'))}</summary>
 		<pre>${escapeHtml(recommended)}</pre>
 	</details>`;
@@ -56,11 +56,11 @@ const renderCurrentActivity = (
 		return Number.isFinite(last) && Date.now() - last < 5 * 60 * 1000;
 	});
 	if (activeAgents.length === 0) {
-		return `<div class="mcpv-status__activity mcpv-status__activity--idle">
+		return `<div class="delendai-status__activity delendai-status__activity--idle">
 			<p>${escapeHtml(text('status.noCurrentAction', 'No MCP call is in flight right now.'))}</p>
 		</div>`;
 	}
-	return `<div class="mcpv-status__activity">
+	return `<div class="delendai-status__activity">
 		<p><strong>${escapeHtml(text('status.activeAgents', 'Active agents'))}:</strong> ${escapeHtml(formatNumber(activeAgents.length))}</p>
 		<ul>
 			${activeAgents
@@ -132,10 +132,10 @@ const renderKpis = (
 		arc: string,
 		colour: string,
 		caption: string,
-	): string => `<article class="mcpv-status__ring">
+	): string => `<article class="delendai-status__ring">
 		<h4>${escapeHtml(title)}</h4>
-		<svg viewBox="0 0 64 64" class="mcpv-status__ring-svg" role="img" aria-label="${escapeHtml(title)}">
-			<circle cx="32" cy="32" r="28" stroke="var(--mcpv-bg-soft)" stroke-width="6" fill="none" />
+		<svg viewBox="0 0 64 64" class="delendai-status__ring-svg" role="img" aria-label="${escapeHtml(title)}">
+			<circle cx="32" cy="32" r="28" stroke="var(--delendai-bg-soft)" stroke-width="6" fill="none" />
 			${
 				arc.length > 0
 					? `<path d="${arc}" stroke="${colour}" stroke-width="6" fill="none" stroke-linecap="round" />`
@@ -143,14 +143,14 @@ const renderKpis = (
 			}
 			<text x="32" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">${percent}%</text>
 		</svg>
-		<p class="mcpv-kpi__hint">${escapeHtml(caption)}</p>
+		<p class="delendai-kpi__hint">${escapeHtml(caption)}</p>
 	</article>`;
-	return `<div class="mcpv-status__kpis">
+	return `<div class="delendai-status__kpis">
 		${ringCard(
 			text('dashboard.tokens.savings', 'Savings'),
 			tokensSavedPercent,
 			tokensRingPath,
-			'var(--mcpv-brand-purple)',
+			'var(--delendai-brand-purple)',
 			text(
 				'dashboard.tokens.savedHint',
 				'Tokens saved vs compact:false baseline',
@@ -160,15 +160,15 @@ const renderKpis = (
 			text('dashboard.metrics.totalErrors', 'Errors'),
 			errorRate,
 			errorRingPath,
-			'var(--mcpv-error)',
+			'var(--delendai-error)',
 			text('dashboard.metrics.totalErrors', 'Errors as % of total calls'),
 		)}
 		${cards
 			.map(
-				(card) => `<article class="mcpv-status__kpi">
+				(card) => `<article class="delendai-status__kpi">
 					<h4>${escapeHtml(card.label)}</h4>
-					<p class="mcpv-kpi__value">${escapeHtml(card.value)}</p>
-					<p class="mcpv-kpi__hint">${escapeHtml(card.hint)}</p>
+					<p class="delendai-kpi__value">${escapeHtml(card.value)}</p>
+					<p class="delendai-kpi__hint">${escapeHtml(card.hint)}</p>
 				</article>`,
 			)
 			.join('')}
@@ -180,12 +180,12 @@ const renderLatency = (
 	text: (key: string, fallback: string) => string,
 ): string => {
 	const { times, metrics } = model;
-	const samples = metrics.sparklines['mcp-vertex_overview'] ?? [];
+	const samples = metrics.sparklines['delendai_overview'] ?? [];
 	const sparkPath = sparklinePath(samples, 240, 36);
-	return `<article class="mcpv-status__panel">
+	return `<article class="delendai-status__panel">
 		<h4>${escapeHtml(text('dashboard.times.totalWall', 'Total wall'))}</h4>
-		<p class="mcpv-kpi__value">${escapeHtml(formatMs(times.totalWallMs))}</p>
-		<dl class="mcpv-kv">
+		<p class="delendai-kpi__value">${escapeHtml(formatMs(times.totalWallMs))}</p>
+		<dl class="delendai-kv">
 			<dt>${escapeHtml(text('dashboard.times.p50Latency', 'p50 latency'))}</dt>
 			<dd>${escapeHtml(formatMs(times.p50Ms))}</dd>
 			<dt>${escapeHtml(text('dashboard.times.p95Latency', 'p95 latency'))}</dt>
@@ -195,7 +195,7 @@ const renderLatency = (
 		</dl>
 		${
 			sparkPath.length > 0
-				? `<svg class="mcpv-status__sparkline" viewBox="0 0 240 36" preserveAspectRatio="none" aria-label="${text('dashboard.times.sparkline', 'latency trend')}" role="img">
+				? `<svg class="delendai-status__sparkline" viewBox="0 0 240 36" preserveAspectRatio="none" aria-label="${text('dashboard.times.sparkline', 'latency trend')}" role="img">
 				<path d="${sparkPath}" fill="none" stroke="currentColor" stroke-width="1.5" />
 			</svg>`
 				: ''
@@ -209,9 +209,9 @@ const renderAgents = (
 ): string => {
 	const rows = model.agents.agents;
 	if (rows.length === 0) {
-		return `<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.agents.none', 'No active agents.'))}</p>`;
+		return `<p class="delendai-fg-muted">${escapeHtml(text('dashboard.agents.none', 'No active agents.'))}</p>`;
 	}
-	return `<table class="mcpv-table">
+	return `<table class="delendai-table">
 		<thead><tr>
 			<th>${escapeHtml(text('common.agent', 'Agent'))}</th>
 			<th>${escapeHtml(text('status.lastHeartbeat', 'Last heartbeat'))}</th>
@@ -222,7 +222,7 @@ const renderAgents = (
 			.map(
 				(agent) => `<tr>
 				<td><code>${escapeHtml(agent.name)}</code></td>
-				<td class="mcpv-fg-muted">${escapeHtml(agent.lastHeartbeat ?? '—')}</td>
+				<td class="delendai-fg-muted">${escapeHtml(agent.lastHeartbeat ?? '—')}</td>
 				<td>${typeof agent.currentProposal === 'string' ? `<code>${escapeHtml(agent.currentProposal)}</code>` : '—'}</td>
 				<td>${agent.currentSlice !== undefined ? `<code>${escapeHtml(agent.currentSlice)}</code>` : '—'}</td>
 			</tr>`,
@@ -237,17 +237,17 @@ export const renderPanelStatus = (
 ): string => {
 	const text = (key: string, fallback: string): string =>
 		extensionText(lang, key) || fallback;
-	return `<section class="mcpv-panel" id="panel-status" role="tabpanel" aria-labelledby="tab-status">
-	<h2 class="mcpv-panel__title">${escapeHtml(text('tabStatus', 'Status'))}</h2>
-	<p class="mcpv-fg-muted">${escapeHtml(text('status.headline', 'Live state of the mcp-vertex MCP server.'))}</p>
-	<div class="mcpv-status">
+	return `<section class="delendai-panel" id="panel-status" role="tabpanel" aria-labelledby="tab-status">
+	<h2 class="delendai-panel__title">${escapeHtml(text('tabStatus', 'Status'))}</h2>
+	<p class="delendai-fg-muted">${escapeHtml(text('status.headline', 'Live state of the delendai MCP server.'))}</p>
+	<div class="delendai-status">
 		${renderServerIdentity(model, text)}
 		${renderKpis(model, text)}
-		<div class="mcpv-status__row">
+		<div class="delendai-status__row">
 			${renderCurrentActivity(model, text)}
 			${renderLatency(model, text)}
 		</div>
-		<article class="mcpv-status__panel mcpv-status__panel--wide">
+		<article class="delendai-status__panel delendai-status__panel--wide">
 			<h4>${escapeHtml(text('status.activeAgents', 'Active agents'))}</h4>
 			${renderAgents(model, text)}
 		</article>

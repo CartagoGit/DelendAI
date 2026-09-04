@@ -29,7 +29,7 @@ import { basename, join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
-const PROPOSALS_RELDIR = join('docs', 'mcp-vertex', 'proposals');
+const PROPOSALS_RELDIR = join('docs', 'delendai', 'proposals');
 
 export interface ISelfPathRepair {
 	readonly file: string;

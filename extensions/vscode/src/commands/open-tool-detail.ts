@@ -143,7 +143,9 @@ export const buildToolDetailHtml = async (
 		...(metrics === undefined ? {} : { metrics }),
 		copy: projectToolDetailCopy(
 			viewCopyFor(
-				resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
+				resolveViewLang(
+					deps.globalState?.get<unknown>('delendai:lang'),
+				),
 			),
 		),
 	};
@@ -189,8 +191,8 @@ export const registerOpenToolDetailCommand = (deps: ICommandDeps) =>
 					(await deps.detailSink?.('tool', model)) === true;
 				if (sinkHandled) return undefined;
 				const panel = deps.vscode.window.createWebviewPanel(
-					'mcpVertexToolDetail',
-					'mcp-vertex Tool Detail',
+					'delendaiToolDetail',
+					'delendai Tool Detail',
 					deps.vscode.ViewColumn.One,
 					{ enableScripts: false },
 				);

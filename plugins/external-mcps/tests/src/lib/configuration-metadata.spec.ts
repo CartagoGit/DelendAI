@@ -15,7 +15,7 @@ afterEach(() => {
 
 describe('external MCP configuration metadata', () => {
 	it('publishes each child options, safe schema and example through activation', async () => {
-		const root = mkdtempSync(join(tmpdir(), 'mcpv-ext-metadata-'));
+		const root = mkdtempSync(join(tmpdir(), 'delendai-ext-metadata-'));
 		roots.push(root);
 		const server = {
 			enabled: false,
@@ -29,8 +29,8 @@ describe('external MCP configuration metadata', () => {
 			args: {},
 			namespacePrefix: 'external-mcps',
 			pluginCacheDir: 'external-mcps',
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			workspace: {
 				root,
 				resolve: (relative: string) => join(root, relative),

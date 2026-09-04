@@ -74,7 +74,7 @@ const formatInstallReport = (report: IInstallReport): string => {
 		}
 		lines.push('');
 		lines.push(
-			'mcp-vertex was merged into global host configs without touching project files.',
+			'delendai was merged into global host configs without touching project files.',
 		);
 	}
 	return `${lines.join('\n')}\n`;

@@ -3,7 +3,7 @@
  * sync-proposal-counters.script.ts — f00080 (the fix recipe the
  * `check-proposal-id-drift` lint surfaces).
  *
- * Regenerates `.cache/mcp-vertex/proposal-id-counters.json` from the
+ * Regenerates `.cache/delendai/proposal-id-counters.json` from the
  * filesystem, taking the max id per prefix. The allocator already does
  * this on first use (its `seedFromDisk` private helper) but that path
  * is invisible to operators — they only see the drift lint complain,
@@ -79,11 +79,11 @@ if (isMainModule()) {
 	void (async () => {
 		const dryRun = process.argv.includes('--dry-run');
 		const root = repoRoot();
-		const proposalsDirAbs = join(root, 'docs', 'mcp-vertex', 'proposals');
+		const proposalsDirAbs = join(root, 'docs', 'delendai', 'proposals');
 		const countersPathAbs = join(
 			root,
 			'.cache',
-			'mcp-vertex',
+			'delendai',
 			'proposal-id-counters.json',
 		);
 		const existing = await readFile(countersPathAbs, 'utf8')

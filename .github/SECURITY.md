@@ -19,7 +19,7 @@ please upgrade to the newest version before reporting.
 
 ## Security model — what the design already does
 
-`mcp-vertex` runs as an MCP server a host (an agent/IDE) drives. Its posture:
+`delendai` runs as an MCP server a host (an agent/IDE) drives. Its posture:
 
 - **Workspace containment.** Path inputs to read-only plugins (`search` roots,
   `docs` roots/paths, `deps` manifest) are resolved through

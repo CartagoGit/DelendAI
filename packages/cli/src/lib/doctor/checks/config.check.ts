@@ -1,7 +1,7 @@
 import type { DoctorCheck } from '../types';
 
 export const checkConfig: DoctorCheck = async ({ fs }) => {
-	const path = 'mcp-vertex.config.json';
+	const path = 'delendai.config.json';
 	const text = await fs.readFile(path);
 	if (text === undefined) {
 		return {

@@ -6,13 +6,13 @@ export type CommitAuthorMode = (typeof COMMIT_AUTHOR_MODES)[number];
 /**
  * Static, project-agnostic identification of the host/extension and
  * model currently driving the agent. The CLI loader fills these
- * from `mcp-vertex.config.json#commitAuthor` plus the MCP
+ * from `delendai.config.json#commitAuthor` plus the MCP
  * `clientInfo` payload; programmatic hosts pass them in directly.
  */
 export interface ICommitAuthorIdentity {
 	/**
 	 * MCP `clientInfo.name` mapped through the usage-tracking
-	 * extension table (see `docs/mcp-vertex/wiki/08-usage-tracking-plugin.md`).
+	 * extension table (see `docs/delendai/wiki/08-usage-tracking-plugin.md`).
 	 * `vscode-copilot`, `claude-code`, `codex-cli`, `cursor`,
 	 * `aider`, `continue`, … Falls back to `'agent'` when unknown.
 	 */

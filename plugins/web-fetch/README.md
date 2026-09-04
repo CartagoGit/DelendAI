@@ -7,7 +7,7 @@ Lets an agent fetch one allow-listed URL and get its (capped) text body back
 ## Load it
 
 ```bash
-mcp-vertex --plugins=web-fetch
+delendai --plugins=web-fetch
 ```
 
 Registers `<prefix>_web_fetch`.
@@ -20,7 +20,7 @@ Registers `<prefix>_web_fetch`.
   `reason` is one of `blocked-host`, `invalid-url`, `redirect-blocked`,
   `too-many-redirects`, `timeout`, `fetch-error`.
 
-## Configuration (`mcp-vertex.config.json`)
+## Configuration (`delendai.config.json`)
 
 ```json
 { "plugins": { "web-fetch": { "options": { "allowList": ["example.com", "*.docs.example.com"] } } } }

@@ -44,7 +44,7 @@ const dirReader = (files: Readonly<Record<string, string>>): IFileReader => ({
 });
 
 describe('detectForeignProposals (f00089 U1)', () => {
-	it('detects a docs/proposals convention with the mcp-vertex id scheme', async () => {
+	it('detects a docs/proposals convention with the delendai id scheme', async () => {
 		const reader = dirReader({
 			'docs/proposals/f00001-foo.md': '',
 			'docs/proposals/f00007-bar.md': '',
@@ -53,7 +53,7 @@ describe('detectForeignProposals (f00089 U1)', () => {
 		const inv = await detectForeignProposals(reader);
 		expect(inv.found).toBe(true);
 		expect(inv.primary?.kind).toBe('proposals');
-		expect(inv.primary?.idScheme).toBe('mcp-vertex');
+		expect(inv.primary?.idScheme).toBe('delendai');
 		// README.md is not a record; only the two f-files count.
 		expect(inv.primary?.documentCount).toBe(2);
 		expect(inv.primary?.maxNumericId).toBe(7);
@@ -113,8 +113,8 @@ describe('allocateNextAdoptionId (f00089 U1)', () => {
 
 	it('allocates the next free id past our canonical proposals (no hardcode)', async () => {
 		const reader = dirReader({
-			'docs/mcp-vertex/proposals/ready/f00041-x.md': '',
-			'docs/mcp-vertex/proposals/done/f00040-y.md': '',
+			'docs/delendai/proposals/ready/f00041-x.md': '',
+			'docs/delendai/proposals/done/f00040-y.md': '',
 		});
 		const inv = await detectForeignProposals(reader);
 		expect(await allocateNextAdoptionId(reader, inv)).toBe('f00042');
@@ -141,7 +141,7 @@ describe('describeConvention (f00089 U1)', () => {
 		const line = describeConvention(inv.primary!);
 		expect(line).toContain('proposals');
 		expect(line).toContain('docs/proposals');
-		expect(line).toContain('mcp-vertex');
+		expect(line).toContain('delendai');
 	});
 });
 
@@ -151,7 +151,7 @@ describe('renderAdoptionPlan (f00089 U1)', () => {
 
 	it('emits an advisory adoption plan with a non-hardcoded allocated id', async () => {
 		const reader = dirReader({
-			'docs/mcp-vertex/proposals/ready/f00050-existing.md': '',
+			'docs/delendai/proposals/ready/f00050-existing.md': '',
 			'docs/proposals/f00001-foreign.md': '',
 		});
 		const plan = await renderAdoptionPlan(answers('/tmp/acme-app'), {
@@ -160,7 +160,7 @@ describe('renderAdoptionPlan (f00089 U1)', () => {
 		// Next free id past f00050, NOT a hardcoded f00001.
 		expect(plan.id).toBe('f00051');
 		expect(plan.relPath).toBe(
-			'docs/mcp-vertex/proposals/ready/f00051-adopt-mcp-vertex-acme-app.md',
+			'docs/delendai/proposals/ready/f00051-adopt-delendai-acme-app.md',
 		);
 		expect(plan.content).toContain('advisory');
 		expect(plan.content).not.toMatch(

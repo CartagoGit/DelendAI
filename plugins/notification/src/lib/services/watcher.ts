@@ -333,7 +333,7 @@ export const createHandoffWatcher = (params: {
 				if (
 					parsed &&
 					typeof parsed.schema === 'string' &&
-					parsed.schema.startsWith('mcp-vertex/handoff/')
+					parsed.schema.startsWith('delendai/handoff/')
 				) {
 					events.push({
 						file,

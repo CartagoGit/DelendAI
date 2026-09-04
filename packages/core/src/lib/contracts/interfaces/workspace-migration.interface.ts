@@ -69,7 +69,7 @@ export interface IMigrationRunResult {
  *
  * `live` is the only category that must reach zero. The others exist
  * because "zero occurrences of the old name" is the wrong target: a
- * sentence like "mcp-vertex 0.1.x wrote its cache here" is TRUE, and
+ * sentence like "delendai 0.1.x wrote its cache here" is TRUE, and
  * rewriting it would falsify the record to make a counter look tidy.
  */
 export type IResidualClass = 'live' | 'historical' | 'vendored' | 'generated';

@@ -1,14 +1,14 @@
-# mcp-vertex monorepo
+# delendai monorepo
 
 Project-agnostic core for building MCP servers + a CLI plugin loader, by
-[@mcp-vertex](https://www.npmjs.com/org/mcp-vertex).
+[@delendai](https://www.npmjs.com/org/delendai).
 
-- **[README-MCP-VERTEX.md](./docs/mcp-vertex/README-MCP-VERTEX.md)** — what it is, how to use it,
+- **[README-DELENDAI.md](./docs/delendai/README-DELENDAI.md)** — what it is, how to use it,
   CLI arguments, built-in tools, the hybrid bootstrap flow.
-- **[PLUGINS-MCP-VERTEX.md](./docs/mcp-vertex/PLUGINS-MCP-VERTEX.md)** — how to create plugins.
-- **[ARCHITECTURE.md](./docs/mcp-vertex/ARCHITECTURE.md)** — layers, contracts, request flow,
+- **[PLUGINS-DELENDAI.md](./docs/delendai/PLUGINS-DELENDAI.md)** — how to create plugins.
+- **[ARCHITECTURE.md](./docs/delendai/ARCHITECTURE.md)** — layers, contracts, request flow,
   invariants (with a diagram).
-- **[VISION-AND-OPERATING-MODEL.md](./docs/mcp-vertex/VISION-AND-OPERATING-MODEL.md)** — north star,
+- **[VISION-AND-OPERATING-MODEL.md](./docs/delendai/VISION-AND-OPERATING-MODEL.md)** — north star,
   growth rule, two speeds, dogfooding loop, privacy motto.
 - **[CONTRIBUTING.md](./.github/CONTRIBUTING.md)** · **[SECURITY.md](./.github/SECURITY.md)** ·
   **[AGENTS.md](./AGENTS.md)** · **[PRIVACY.md](./docs/PRIVACY.md)** — how to contribute, report
@@ -25,7 +25,7 @@ The monorepo keeps the reusable runtime in `packages/core`, ships first-party ca
 | Path | Package | What |
 | --- | --- | --- |
 | `plugins/adaptive-optimizer` | `@delendai/adaptive-optimizer` | Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards. |
-| `plugins/api` | `@delendai/api` | REST/GraphQL API surface for mcp-vertex plugins. |
+| `plugins/api` | `@delendai/api` | REST/GraphQL API surface for delendai plugins. |
 | `plugins/audit` | `@delendai/audit` | Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop. |
 | `plugins/auto-agent-selector` | `@delendai/auto-agent-selector` | Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation). |
 | `plugins/auto-plugin-selector` | `@delendai/auto-plugin-selector` | Recommends the best plugin set for this project from its signals (manifest, files, git, task). |
@@ -41,7 +41,7 @@ The monorepo keeps the reusable runtime in `packages/core`, ships first-party ca
 | `plugins/diagram` | `@delendai/diagram` | Diagram generator (mermaid, dot) from code structure. |
 | `plugins/docs` | `@delendai/docs` | Doc generation, search, and rendered catalog. |
 | `plugins/env` | `@delendai/env` | Environment config validation (.env check + schema + env_explains). |
-| `plugins/error-reporting` | `@delendai/error-reporting` | Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default). |
+| `plugins/error-reporting` | `@delendai/error-reporting` | Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default). |
 | `plugins/external-mcps` | `@delendai/external-mcps` | Compose third-party MCP servers through the catalog + human ack. |
 | `plugins/forge` | `@delendai/forge` | Forge (GitHub/GitLab) wrappers — PRs, CI, issues. |
 | `plugins/git` | `@delendai/git` | Git wrappers (PR list/view, diff, changelog, extended). |
@@ -110,13 +110,13 @@ root; Claude Code and Codex read equivalents from `~/.claude.json` and
 | Claude Code | `~/.claude.json` | user home (`mcpServers.<name>`) |
 | Codex | `~/.codex/config.toml` | user home (`[mcp_servers.<name>]`) |
 
-The canonical launch is `bunx --package @delendai/cli mcpv __serve`
+The canonical launch is `bunx --package @delendai/cli delendai __serve`
 with `--workspace` and optional preset/plugin flags. Repository-only work may
-still pass `--mcp-vertex-root` to `mcpv init` for an explicit local checkout.
+still pass `--delendai-root` to `delendai init` for an explicit local checkout.
 The host uses the same
-loader as the CLI, so plugins declared in `mcp-vertex.config.json` are
+loader as the CLI, so plugins declared in `delendai.config.json` are
 loaded automatically in addition to the preset unless excluded with
-`--exclude-plugins`. See [`docs/mcp-vertex/README-MCP-VERTEX.md`](./docs/mcp-vertex/README-MCP-VERTEX.md)
+`--exclude-plugins`. See [`docs/delendai/README-DELENDAI.md`](./docs/delendai/README-DELENDAI.md)
 for the full snippet per client and the plugin-resolution precedence.
 
 ```bash

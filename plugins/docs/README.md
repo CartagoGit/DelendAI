@@ -7,7 +7,7 @@ markdown so an agent navigates curated docs by title/path instead of grepping.
 ## Load it
 
 ```bash
-mcp-vertex --plugins=docs
+delendai --plugins=docs
 ```
 
 Registers two tools, `<prefix>_docs_list` and `<prefix>_docs_read`.
@@ -32,9 +32,9 @@ Registers two tools, `<prefix>_docs_list` and `<prefix>_docs_read`.
   with `isError: true`. Removal is a follow-up once every known caller
   has migrated (f00057 S11).
 
-## Configuration (`mcp-vertex.config.json`)
+## Configuration (`delendai.config.json`)
 
-mcp-vertex is agnostic — the host owns which docs are served:
+delendai is agnostic — the host owns which docs are served:
 
 ```json
 {
@@ -54,9 +54,9 @@ Default roots are `docs/` + `README.md`. Use `search` to grep across the whole
 tree; use `docs` for curated, title-indexed navigation.
 
 > **Note (f00057 S11):** `setup-github` (the CLI helper invoked as
-> `mcp-vertex setup-github`) is a distinct surface from the `issues_*` MCP
+> `delendai setup-github`) is a distinct surface from the `issues_*` MCP
 > tools. `setup-github` runs **once** at install time to write
 > `plugins.issues.options.repo` and verify the auth tier; the `issues_*`
 > tools assume the repo is already configured and operate on that
-> configuration. See [`CROSS-PROJECT-SETUP.md`](../../docs/mcp-vertex/CROSS-PROJECT-SETUP.md)
+> configuration. See [`CROSS-PROJECT-SETUP.md`](../../docs/delendai/CROSS-PROJECT-SETUP.md)
 > for the full bootstrap flow.

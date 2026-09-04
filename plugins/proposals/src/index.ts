@@ -76,11 +76,11 @@ import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool'
 import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
 
 /**
- * The proposals workflow plugin. It turns mcp-vertex into a multi-agent
+ * The proposals workflow plugin. It turns delendai into a multi-agent
  * proposal runner: a file-based proposal store, file-level write locks
  * and a persistent task queue (the "swarm" coordination layer).
  *
- * Load it with `mcp-vertex --plugins=proposals`. Paths come from the
+ * Load it with `delendai --plugins=proposals`. Paths come from the
  * core's resolved roots: cache/state under `<cacheDir>/proposals`,
  * human-edited proposals under `<docsDir>/proposals`. Override the docs
  * root with `--docsDir`, the cache root with `--cacheDir`.
@@ -119,7 +119,7 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 		.optional(),
 	/**
 	 * r00003 S9 (F9): host-specific proposal subfolders (relative to the
-	 * proposals dir), e.g. `['paused/demos']`. mcp-vertex bakes none.
+	 * proposals dir), e.g. `['paused/demos']`. delendai bakes none.
 	 */
 	proposalFolders: z.array(z.string()).optional(),
 	/** Per-status folder layout. Unspecified statuses stay flat. */
@@ -171,7 +171,7 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	requirePeerReview: z.boolean().optional(),
 	/**
 	 * Require a passing `bun run validate` (journalled to
-	 * `.cache/mcp-vertex/results/logs/validate.jsonl`) before
+	 * `.cache/delendai/results/logs/validate.jsonl`) before
 	 * `close_slice` marks a slice done or `proposal_transition` moves a
 	 * proposal to review/done. Default true when omitted. Adopters
 	 * without a validate chain worth blocking on set this to false
@@ -323,7 +323,7 @@ export default definePlugin({
 			ctx.workspace.resolve(relativePath);
 
 		// Host-specific proposal subfolders (relative to proposalsDir),
-		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
+		// e.g. `['paused/demos']`. delendai bakes none — the host injects
 		// its folder policy via ctx.options (now schema-validated, S9).
 		const extraProposalFolders = parsedOptions.data.proposalFolders ?? [];
 		const folderPolicy: IProposalFolderPolicy = {
@@ -581,16 +581,16 @@ export default definePlugin({
 					defaultAgentPrefix: 'agent/',
 					// `layout.worktreesDir` is ALREADY the cache-rooted
 					// workspace-relative path (default
-					// `.cache/mcp-vertex/.worktrees`). The previous
-					// `.cache/mcp-vertex/${layout.worktreesDir}` double-prefixed
-					// it to `.cache/mcp-vertex/.cache/mcp-vertex/.worktrees`,
+					// `.cache/delendai/.worktrees`). The previous
+					// `.cache/delendai/${layout.worktreesDir}` double-prefixed
+					// it to `.cache/delendai/.cache/delendai/.worktrees`,
 					// which can never match a real worktree path — so
 					// branch-status / swarm-hygiene flagged EVERY
 					// correctly-placed worktree as `outOfCache: true`. The
 					// agent_worktree engine resolves the same
 					// `layout.worktreesDir`, so both must agree byte-for-byte.
 					canonicalWorktreesDirRel:
-						layout.worktreesDir || '.cache/mcp-vertex/.worktrees',
+						layout.worktreesDir || '.cache/delendai/.worktrees',
 				}),
 				// f00073: idempotent cleanup of orphan worktrees. dryRun by
 				// default; unmerged branches are sacred.

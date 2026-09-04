@@ -160,22 +160,22 @@ describe('close_slice validation gate (a00069 S5)', () => {
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(
 				root,
-				'.cache/mcp-vertex/proposals/counters.json',
+				'.cache/delendai/proposals/counters.json',
 			),
 			layout: {
-				proposalsDir: 'docs/mcp-vertex/proposals',
-				proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+				proposalsDir: 'docs/delendai/proposals',
+				proposalIndexFile: '.cache/delendai/proposals/index.json',
 			},
 			validationCommand: 'bun run validate',
 			requirePeerReview: false,
 		};
 		mkdirSync(opts.proposalsDirAbs, { recursive: true });
-		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+		mkdirSync(join(root, '.cache/delendai/proposals'), {
 			recursive: true,
 		});
 	});
@@ -187,7 +187,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 	const writeValidateLog = (entries: readonly Record<string, unknown>[]) => {
 		const logPath = join(
 			root,
-			'.cache/mcp-vertex/results/logs/validate.jsonl',
+			'.cache/delendai/results/logs/validate.jsonl',
 		);
 		mkdirSync(join(logPath, '..'), { recursive: true });
 		writeFileSync(

@@ -18,7 +18,7 @@ describe('runSastRunner', () => {
 
 	beforeEach(() => {
 		cwd = mkdtempSync(join(tmpdir(), 'sast-run-'));
-		pluginCacheDir = join(cwd, '.cache', 'mcp-vertex');
+		pluginCacheDir = join(cwd, '.cache', 'delendai');
 	});
 	afterEach(() => rmSync(cwd, { recursive: true, force: true }));
 

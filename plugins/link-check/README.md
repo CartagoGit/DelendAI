@@ -18,7 +18,7 @@ Offline, pure. The link + anchor checks are pure functions (exported from
 ## Load
 
 ```bash
-mcp-vertex --plugins=link-check
+delendai --plugins=link-check
 ```
 
 ## License

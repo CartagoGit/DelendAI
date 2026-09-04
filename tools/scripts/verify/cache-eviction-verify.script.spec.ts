@@ -2,7 +2,7 @@
  * cache-eviction-verify.script.spec.ts — f00072 S6.
  *
  * Drives the pure engine `runEvictionDemonstration` against an injected
- * temp cache (never the real `.cache/mcp-vertex/`), so the verifier's
+ * temp cache (never the real `.cache/delendai/`), so the verifier's
  * acceptance is itself unit-tested: ≥4 evictable on dry-run, apply
  * shrinks the cache, second apply is a no-op.
  */
@@ -24,7 +24,7 @@ describe('runEvictionDemonstration (f00072 S6)', () => {
 
 	beforeEach(async () => {
 		workspace = await mkdtemp(join(tmpdir(), 'cache-evict-spec-'));
-		cacheRoot = join(workspace, '.cache/mcp-vertex');
+		cacheRoot = join(workspace, '.cache/delendai');
 	});
 
 	afterEach(async () => {

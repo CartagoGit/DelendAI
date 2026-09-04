@@ -34,7 +34,7 @@ const CLIENT_SCRIPT = `
 	const host =
 		typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
   const root = document.documentElement;
-  const panels = document.querySelectorAll('.mcpv-panel');
+  const panels = document.querySelectorAll('.delendai-panel');
   // Only real tabs participate in selection + the roving tabindex; the
   // refresh button is an action (no role="tab"), so it is excluded
   // by the [data-tab-trigger] selector (renderTabs only stamps that
@@ -106,8 +106,8 @@ const CLIENT_SCRIPT = `
   });
 
   // ─── Settings bridge ─────────────────────────────────────────────
-  const settingsForm = document.getElementById('mcpv-dashboard-settings-form');
-  const settingsStatus = document.getElementById('mcpv-dashboard-settings-status');
+  const settingsForm = document.getElementById('delendai-dashboard-settings-form');
+  const settingsStatus = document.getElementById('delendai-dashboard-settings-status');
   const RTL = new Set(['ar']);
   function applyTheme(theme) {
     if (!theme) return;
@@ -117,7 +117,7 @@ const CLIENT_SCRIPT = `
     if (!language) return;
     root.setAttribute('lang', language);
     root.setAttribute('dir', RTL.has(language) ? 'rtl' : 'ltr');
-    const preview = document.querySelector('.mcpv-settings__preview');
+    const preview = document.querySelector('.delendai-settings__preview');
     if (preview) preview.setAttribute('dir', RTL.has(language) ? 'rtl' : 'ltr');
     document.querySelectorAll('[data-lang-card]').forEach((card) => {
       card.setAttribute('aria-pressed',
@@ -164,7 +164,7 @@ const CLIENT_SCRIPT = `
       document.querySelectorAll('[data-theme-card]').forEach((c) =>
         c.setAttribute('aria-pressed', c === card ? 'true' : 'false'));
       applyTheme(theme);
-      const preview = document.querySelector('.mcpv-settings__preview');
+      const preview = document.querySelector('.delendai-settings__preview');
       if (preview) preview.setAttribute('data-theme-preview', theme);
       postSettings('save');
     });
@@ -223,14 +223,14 @@ const CLIENT_SCRIPT = `
       const settingsPanels = document.querySelectorAll('#panel-settings');
       settingsPanels.forEach((panel) => {
         if (toggle instanceof HTMLInputElement && toggle.checked) {
-          panel.classList.add('mcpv-panel--compact');
+          panel.classList.add('delendai-panel--compact');
         } else {
-          panel.classList.remove('mcpv-panel--compact');
+          panel.classList.remove('delendai-panel--compact');
         }
       });
       try {
         window.localStorage.setItem(
-          'mcpv:dashboard-compact',
+          'delendai:dashboard-compact',
           toggle instanceof HTMLInputElement && toggle.checked ? '1' : '0',
         );
       } catch {
@@ -255,23 +255,23 @@ const CLIENT_SCRIPT = `
   // Restore the compact-mode toggle from localStorage so the user does
   // not have to flip it back every reload.
   try {
-    const stored = window.localStorage.getItem('mcpv:dashboard-compact');
+    const stored = window.localStorage.getItem('delendai:dashboard-compact');
     const compact = stored === '1';
     document.querySelectorAll('[data-settings-compact]').forEach((toggle) => {
       if (toggle instanceof HTMLInputElement) toggle.checked = compact;
     });
     document.querySelectorAll('#panel-settings').forEach((panel) => {
-      if (compact) panel.classList.add('mcpv-panel--compact');
+      if (compact) panel.classList.add('delendai-panel--compact');
     });
   } catch {
     /* localStorage might be disabled in this host; nothing to restore. */
   }
 
   // ─── Logs panel — realtime subscribe over the host bridge ─────────
-  const logsList = document.getElementById('mcpv-logs-list');
-  const logsEmpty = document.getElementById('mcpv-logs-empty');
-  const logsStatus = document.getElementById('mcpv-logs-status');
-  const logsControls = document.getElementById('mcpv-logs-controls');
+  const logsList = document.getElementById('delendai-logs-list');
+  const logsEmpty = document.getElementById('delendai-logs-empty');
+  const logsStatus = document.getElementById('delendai-logs-status');
+  const logsControls = document.getElementById('delendai-logs-controls');
   const logsState = { paused: false, source: 'all', followTail: true };
   function setLogsStatus(text) {
     if (logsStatus) logsStatus.textContent = text;
@@ -285,24 +285,24 @@ const CLIENT_SCRIPT = `
   function appendLogRow(payload) {
     if (!logsList) return;
     const row = document.createElement('li');
-    row.className = 'mcpv-logs__row';
+    row.className = 'delendai-logs__row';
     row.setAttribute('data-outcome', payload.outcome ?? 'unknown');
     row.tabIndex = 0;
     row.setAttribute('role', 'button');
     const ts = document.createElement('span');
-    ts.className = 'mcpv-logs__ts';
+    ts.className = 'delendai-logs__ts';
     ts.textContent = payload.ts ? new Date(payload.ts).toISOString().slice(11, 19) : '';
     const kind = document.createElement('span');
-    kind.className = 'mcpv-logs__kind';
+    kind.className = 'delendai-logs__kind';
     kind.textContent = payload.kind ?? '';
     const agent = document.createElement('span');
     agent.textContent = payload.agent ?? '';
     const summary = document.createElement('span');
-    summary.className = 'mcpv-logs__summary';
+    summary.className = 'delendai-logs__summary';
     summary.textContent = payload.summary ?? '';
     const copy = document.createElement('button');
     copy.type = 'button';
-    copy.className = 'mcpv-logs__copy';
+    copy.className = 'delendai-logs__copy';
     copy.title = 'Copy task id';
     copy.textContent = '#';
     copy.addEventListener('click', (evt) => {
@@ -329,9 +329,9 @@ const CLIENT_SCRIPT = `
     }
     logsVisible();
   }
-  const logsDetail = document.getElementById('mcpv-logs-detail');
-  const logsDetailTitle = document.getElementById('mcpv-logs-detail-title');
-  const logsDetailBody = document.getElementById('mcpv-logs-detail-body');
+  const logsDetail = document.getElementById('delendai-logs-detail');
+  const logsDetailTitle = document.getElementById('delendai-logs-detail-title');
+  const logsDetailBody = document.getElementById('delendai-logs-detail-body');
   function openLogDetail(payload) {
     if (!logsDetail || !logsDetailTitle || !logsDetailBody) return;
     logsDetailTitle.textContent = payload.kind ?? 'event';
@@ -424,7 +424,7 @@ const CLIENT_SCRIPT = `
     logsVisible();
     setLogsStatus('Cleared.');
   });
-  const logsSearch = document.getElementById('mcpv-logs-search');
+  const logsSearch = document.getElementById('delendai-logs-search');
   logsSearch?.addEventListener('input', () => {
     if (!(logsSearch instanceof HTMLInputElement)) return;
     const needle = logsSearch.value.trim().toLowerCase();
@@ -470,16 +470,16 @@ const CLIENT_SCRIPT = `
 		evt.preventDefault();
 		host?.postMessage({ command: 'openProposal', id });
 	});
-  const toolsTable = document.querySelector('.mcpv-tools-table');
+  const toolsTable = document.querySelector('.delendai-tools-table');
   // ── Host-pushed detail overlay ────────────────────────────────────
   // The dashboard provider can push hostToolDetail / hostProposalDetail
   // / hostHideDetail payloads so a click on a tool/proposal row opens
   // the detail inside the shell instead of a native webview panel.
   // The renderers are imported eagerly below as RENDER_TOOL_BODY and
   // RENDER_PROPOSAL_BODY.
-  const overlay = document.getElementById('mcpv-detail-overlay');
-  const overlayBody = document.getElementById('mcpv-detail-overlay-body');
-  const overlayTitle = document.getElementById('mcpv-detail-overlay-title');
+  const overlay = document.getElementById('delendai-detail-overlay');
+  const overlayBody = document.getElementById('delendai-detail-overlay-body');
+  const overlayTitle = document.getElementById('delendai-detail-overlay-title');
   function showOverlay(title, html) {
     if (!overlay || !overlayBody || !overlayTitle) return;
     overlayTitle.textContent = title;
@@ -570,23 +570,23 @@ export const renderDashboard = (
 	<style>${componentCss}</style>
 	<style>${dashboardCss}</style>
 	<style>
-    .mcpv-shell {
+    .delendai-shell {
       display: grid;
       grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
       gap: 1.25rem;
       align-items: start;
     }
-    .mcpv-main {
+    .delendai-main {
       min-width: 0;
     }
-    .mcpv-panel--shell {
+    .delendai-panel--shell {
       container-type: inline-size;
     }
-    .mcpv-shell-stack {
+    .delendai-shell-stack {
       display: grid;
       gap: 1rem;
     }
-    .mcpv-shell-section {
+    .delendai-shell-section {
       display: grid;
       gap: 0.85rem;
       padding: 1rem;
@@ -594,41 +594,41 @@ export const renderDashboard = (
       border-radius: 14px;
       background: var(--vscode-editor-background, #1e1e1e);
     }
-    .mcpv-shell-section__head {
+    .delendai-shell-section__head {
       display: grid;
       gap: 0.3rem;
     }
-    .mcpv-shell-section__head > p {
+    .delendai-shell-section__head > p {
       margin: 0;
     }
-    .mcpv-shell-section__title {
+    .delendai-shell-section__title {
       margin: 0;
       font-size: 1rem;
     }
-    .mcpv-shell-state {
+    .delendai-shell-state {
       border-left: 4px solid var(--vscode-textLink-foreground, #3794ff);
     }
-    .mcpv-shell-state[data-state-tone="empty"] {
+    .delendai-shell-state[data-state-tone="empty"] {
       border-left-color: var(--vscode-descriptionForeground, #9da5b4);
     }
-    .mcpv-shell-state[data-state-tone="error"] {
+    .delendai-shell-state[data-state-tone="error"] {
       border-left-color: var(--vscode-errorForeground, #f14c4c);
     }
-    .mcpv-shell-state[data-state-tone="unavailable"] {
+    .delendai-shell-state[data-state-tone="unavailable"] {
       border-left-color: var(--vscode-inputValidation-warningBorder, #cca700);
     }
     @media (max-width: 960px) {
-      .mcpv-shell {
+      .delendai-shell {
         grid-template-columns: 1fr;
       }
     }
-		.mcpv-detail-overlay {
+		.delendai-detail-overlay {
 			position: fixed; inset: 0; z-index: 9999;
 			display: flex; align-items: center; justify-content: center;
 			background: rgba(0, 0, 0, 0.55);
 		}
-		.mcpv-detail-overlay[hidden] { display: none; }
-		.mcpv-detail-overlay__card {
+		.delendai-detail-overlay[hidden] { display: none; }
+		.delendai-detail-overlay__card {
 			background: var(--vscode-editor-background, #1e1e1e);
 			color: var(--vscode-foreground, #ddd);
 			border: 1px solid var(--vscode-panel-border, #444);
@@ -638,42 +638,42 @@ export const renderDashboard = (
 			display: flex; flex-direction: column;
 			box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
 		}
-		.mcpv-detail-overlay__head {
+		.delendai-detail-overlay__head {
 			display: flex; align-items: center; justify-content: space-between;
 			padding: 10px 16px; border-bottom: 1px solid var(--vscode-panel-border, #444);
 		}
-		.mcpv-detail-overlay__head h2 {
+		.delendai-detail-overlay__head h2 {
 			margin: 0; font-size: 14px; font-weight: 600;
 		}
-		.mcpv-detail-overlay__close {
+		.delendai-detail-overlay__close {
 			background: transparent; border: 0; color: inherit;
 			font-size: 20px; cursor: pointer; line-height: 1;
 		}
-		.mcpv-detail-overlay__body {
+		.delendai-detail-overlay__body {
 			padding: 16px; overflow: auto; max-height: calc(90vh - 50px);
 		}
-		.mcpv-detail-overlay__body .tool-detail,
-		.mcpv-detail-overlay__body .card { color: inherit; }
-		.mcpv-detail-overlay__body h1, .mcpv-detail-overlay__body h2 { color: inherit; }
+		.delendai-detail-overlay__body .tool-detail,
+		.delendai-detail-overlay__body .card { color: inherit; }
+		.delendai-detail-overlay__body h1, .delendai-detail-overlay__body h2 { color: inherit; }
 	</style>
 </head>
 <body>
 	${header}
 	${kpiStrip}
-	<div class="mcpv-shell">
+	<div class="delendai-shell">
     ${tabsBar}
-    <main class="mcpv-main">
+    <main class="delendai-main">
       ${panels}
     </main>
 	</div>
 	${footer}
-	<div id="mcpv-detail-overlay" class="mcpv-detail-overlay" role="dialog" aria-modal="true" aria-labelledby="mcpv-detail-overlay-title" data-active="false" hidden>
-		<div class="mcpv-detail-overlay__card">
-			<header class="mcpv-detail-overlay__head">
-				<h2 id="mcpv-detail-overlay-title">Detail</h2>
-				<button type="button" class="mcpv-detail-overlay__close" data-detail-close aria-label="Close">×</button>
+	<div id="delendai-detail-overlay" class="delendai-detail-overlay" role="dialog" aria-modal="true" aria-labelledby="delendai-detail-overlay-title" data-active="false" hidden>
+		<div class="delendai-detail-overlay__card">
+			<header class="delendai-detail-overlay__head">
+				<h2 id="delendai-detail-overlay-title">Detail</h2>
+				<button type="button" class="delendai-detail-overlay__close" data-detail-close aria-label="Close">×</button>
 			</header>
-			<div id="mcpv-detail-overlay-body" class="mcpv-detail-overlay__body"></div>
+			<div id="delendai-detail-overlay-body" class="delendai-detail-overlay__body"></div>
 		</div>
 	</div>
 	<script>${CLIENT_SCRIPT}</script>

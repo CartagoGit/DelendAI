@@ -1,6 +1,6 @@
 /**
  * plugin-catalog.ts — the CANONICAL, host-agnostic source of truth for
- * what every mcp-vertex plugin is and does (f00053 S1).
+ * what every delendai plugin is and does (f00053 S1).
  *
  * Before this module, a plugin's human-facing "what it does" copy was
  * resolved ad-hoc in `PluginsSection.astro` with a scattered fallback
@@ -18,7 +18,7 @@
  *   - `resolvePluginPurpose` documents the ONE resolution order every
  *     consumer (web cards, detail page, the extension) must use.
  *
- * Host-agnostic: this module hardcodes no mcp-vertex-only runtime
+ * Host-agnostic: this module hardcodes no delendai-only runtime
  * assumption. A third-party host that ships its own plugins can build
  * the same shape from its own `capabilities.json` + its own catalog.
  */
@@ -64,7 +64,7 @@ export const PLUGIN_SLUGS: readonly string[] = Object.keys(PLUGIN_CATALOG);
 
 /**
  * Map a package short-name to its tool namespace. The core's tools are
- * namespaced under the server name (`mcp-vertex`), not `core`.
+ * namespaced under the server name (`delendai`), not `core`.
  */
 const namespaceFor = (slug: string): string =>
 	slug === 'core' ? SERVER_NAME : slug;

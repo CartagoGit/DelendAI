@@ -3,7 +3,7 @@
  * check-cache.script.ts — f00065 S2 (single canonical cache gate).
  *
  * The repo has exactly ONE cache root: the workspace root `.cache/`
- * (canonically `<repo-root>/.cache/mcp-vertex`, resolved through
+ * (canonically `<repo-root>/.cache/delendai`, resolved through
  * `monorepo-paths.ts#cacheRoot`). There is NO per-folder, per-app, or
  * per-package cache. A `.cache` directory anywhere other than the repo root is
  * a regression: some tool or runtime was launched with the wrong cwd/workspace
@@ -80,7 +80,7 @@ if (isMainModule()) {
 			);
 			for (const rel of stray) console.error(`  ${rel}`);
 			console.error(
-				'  Cache is ALWAYS the root .cache/mcp-vertex/ — never per-folder. ' +
+				'  Cache is ALWAYS the root .cache/delendai/ — never per-folder. ' +
 					'Delete the stray dir and re-run the offending tool from the repo root.',
 			);
 			process.exit(1);

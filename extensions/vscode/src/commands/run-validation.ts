@@ -1,10 +1,10 @@
-import type { McpVertexToolOutputs } from '@delendai/client';
+import type { DelendaiToolOutputs } from '@delendai/client';
 
 import type { ICommandDeps } from './types';
 import { renderJsonHtml, showCommandError } from './types';
 import { runInPrivateTerminalWithRetry } from './private-terminal-supervisor';
 
-export const RUN_VALIDATION_COMMAND = 'mcp-vertex.runValidation';
+export const RUN_VALIDATION_COMMAND = 'delendai.runValidation';
 
 interface IQualityRunOutput {
 	readonly scope: string;
@@ -23,12 +23,12 @@ export const registerRunValidationCommand = (deps: ICommandDeps) =>
 		try {
 			const matrix = await deps.client.request<
 				Record<string, never>,
-				McpVertexToolOutputs['mcp-vertex_get_validation_matrix']
-			>('mcp-vertex_get_validation_matrix', {});
+				DelendaiToolOutputs['delendai_get_validation_matrix']
+			>('delendai_get_validation_matrix', {});
 			const quality = await deps.client.request<
 				{ scope: string; dryRun: boolean },
 				IQualityRunOutput
-			>('mcp-vertex_quality_run_quality', { scope: 'all', dryRun: true });
+			>('delendai_quality_run_quality', { scope: 'all', dryRun: true });
 			const failedCommand = quality.results.find((result) => !result.ok);
 			const terminalRecovery =
 				failedCommand === undefined
@@ -43,12 +43,12 @@ export const registerRunValidationCommand = (deps: ICommandDeps) =>
 							},
 						);
 			const panel = deps.vscode.window.createWebviewPanel(
-				'mcpVertexValidation',
-				'mcp-vertex Validation',
+				'delendaiValidation',
+				'delendai Validation',
 				deps.vscode.ViewColumn.One,
 				{ enableScripts: false },
 			);
-			panel.webview.html = renderJsonHtml('mcp-vertex Validation', {
+			panel.webview.html = renderJsonHtml('delendai Validation', {
 				matrix,
 				quality,
 				...(terminalRecovery === undefined ? {} : { terminalRecovery }),

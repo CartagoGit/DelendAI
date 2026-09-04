@@ -36,7 +36,7 @@ export interface IConnectedBudgetClient {
 
 export const DYNAMIC_SURFACE_CLIENT_CAPABILITIES: ClientCapabilities = {
 	extensions: {
-		'mcp-vertex/surface': {
+		'delendai/surface': {
 			toolsListChanged: true,
 		},
 	},
@@ -92,7 +92,7 @@ export const classifyToolOwner = (
 	toolName: string,
 	pluginIds: readonly string[],
 ): string => {
-	const qualifiedPrefix = 'mcp-vertex_';
+	const qualifiedPrefix = 'delendai_';
 	const unqualified = toolName.startsWith(qualifiedPrefix)
 		? toolName.slice(qualifiedPrefix.length)
 		: toolName;
@@ -225,11 +225,11 @@ export const createTokenBudgetFixtureWorkspace = (): string => {
 			generatedAt: '2026-06-25T00:00:00.000Z',
 			skills: [
 				{
-					id: 'mcp-vertex-token-budget-playbook',
+					id: 'delendai-token-budget-playbook',
 					version: '1.0.0',
 					minCoreVersion: '0.1.0',
 					bodyPath:
-						'packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md',
+						'packages/core/skills/delendai-token-budget-playbook/SKILL.md',
 					tags: ['metrics', 'compact'],
 				},
 			],
@@ -285,7 +285,7 @@ export const connectTokenBudgetClient = async (
 	const argv = [
 		`--${options.preset === true ? 'preset' : 'plugins'}=${options.pluginList}`,
 		`--workspace=${workspace}`,
-		'--cacheDir=.cache/mcp-vertex',
+		'--cacheDir=.cache/delendai',
 		...(options.surfaceMode !== undefined
 			? [`--surface=${options.surfaceMode}`]
 			: []),
@@ -336,7 +336,7 @@ export const seedAutoWorkReadyProposal = async (
 	const proposalDir = join(
 		workspace,
 		'docs',
-		'mcp-vertex',
+		'delendai',
 		'proposals',
 		'ready',
 	);
@@ -366,7 +366,7 @@ title: token budget fixture
 `,
 	);
 	await client.callTool({
-		name: 'mcp-vertex_proposals_sync_proposals',
+		name: 'delendai_proposals_sync_proposals',
 		arguments: {},
 	});
 };

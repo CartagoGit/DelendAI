@@ -18,7 +18,7 @@ const createTempPath = (
 	filename: string,
 	content: string,
 ): string => {
-	const dir = mkdtempSync(join(tmpdir(), `mcp-vertex-test-${prefix}-`));
+	const dir = mkdtempSync(join(tmpdir(), `delendai-test-${prefix}-`));
 	TEMP_DIRS.push(dir);
 	const filePath = join(dir, filename);
 	writeFileSync(filePath, content, 'utf8');

@@ -1,19 +1,19 @@
-import { MCP_VERTEX_VERSION } from '@delendai/core/version';
+import { DELENDAI_VERSION } from '@delendai/core/version';
 import {
 	resolvePublicToolIdentity,
 	type IToolIdentityRegistry,
 } from '@delendai/core/public';
 
-import type { McpVertexErrorCode } from './contracts/constants/error-codes.constant';
+import type { DelendaiErrorCode } from './contracts/constants/error-codes.constant';
 import type {
-	ISafeMcpVertexReport,
+	ISafeDelendaiReport,
 	SafeFailureClass,
 } from './contracts/interfaces/reporter.interface';
 import {
 	classificationFromEvidence,
 	classifyInternalError,
 } from './internal-classifier.helper';
-import { McpVertexInternalError } from './mcp-internal-error.helper';
+import { DelendaiInternalError } from './mcp-internal-error.helper';
 import {
 	analyzeErrorOrigin,
 	resolveFirstPartyLlmToolProvenance,
@@ -50,7 +50,7 @@ const packageIdOf = (
 	pluginName: string,
 ): string | undefined => {
 	if (resolvedSpecifier.startsWith('@delendai/')) return resolvedSpecifier;
-	if (/(^|\/)mcp-vertex\//i.test(resolvedSpecifier)) {
+	if (/(^|\/)delendai\//i.test(resolvedSpecifier)) {
 		return `@delendai/${pluginName}`;
 	}
 	return undefined;
@@ -101,7 +101,7 @@ export const extractObservedFailure = (
 	return undefined;
 };
 
-const lifecycleErrorCodeOf = (error: unknown): McpVertexErrorCode => {
+const lifecycleErrorCodeOf = (error: unknown): DelendaiErrorCode => {
 	const phase =
 		isRecord(error) && typeof error.phase === 'string'
 			? error.phase
@@ -127,7 +127,7 @@ const syntheticExampleOf = (input: {
 	readonly packageId: string;
 	readonly toolName: string;
 	readonly toolSeed?: string | undefined;
-	readonly errorCode?: McpVertexErrorCode | undefined;
+	readonly errorCode?: DelendaiErrorCode | undefined;
 	readonly failureClass: SafeFailureClass;
 }) =>
 	buildSyntheticExample({
@@ -154,7 +154,7 @@ export const asReportableError = (
 	if (lifecyclePackageId !== undefined) {
 		const componentId = lifecycleComponentIdOf(error);
 		return withSyntheticSafeStack(
-			new McpVertexInternalError({
+			new DelendaiInternalError({
 				code: lifecycleErrorCodeOf(error),
 				packageId: lifecyclePackageId,
 				componentId,
@@ -172,7 +172,7 @@ export const asReportableError = (
 		if (llmTool === undefined) return undefined;
 		const componentId = `tools/${llmTool.safeToolId}/llm-format`;
 		return withSyntheticSafeStack(
-			new McpVertexInternalError({
+			new DelendaiInternalError({
 				code: 'TOOL_EXECUTION_FAILED',
 				packageId: llmTool.packageId,
 				componentId,
@@ -189,7 +189,7 @@ export const buildSafeReport = (input: {
 	readonly toolName: string;
 	readonly toolRegistry: Pick<IToolIdentityRegistry, 'get'>;
 	readonly error: unknown;
-}): ISafeMcpVertexReport | undefined => {
+}): ISafeDelendaiReport | undefined => {
 	const classified = classifyInternalError({
 		toolId: input.toolName,
 		error: input.error,
@@ -218,7 +218,7 @@ export const buildSafeReport = (input: {
 	});
 	const reportCore = {
 		reporterVersion: reporterPackageJson.version,
-		mcpVertexVersion: MCP_VERTEX_VERSION,
+		delendaiVersion: DELENDAI_VERSION,
 		packageId: classified.packageId,
 		...(identity.safeToolId !== undefined
 			? { safeToolId: identity.safeToolId }

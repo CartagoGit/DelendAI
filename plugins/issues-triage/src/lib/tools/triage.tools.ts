@@ -68,7 +68,7 @@ export const buildTriageListRegistration = (
 			`${options.namespacePrefix}_triage_list`,
 			{
 				description:
-					'List open GitHub issues on the configured triage repository (internal mcp-vertex issue bot).',
+					'List open GitHub issues on the configured triage repository (internal delendai issue bot).',
 				inputSchema: TriageListInputSchema,
 				outputSchema: TriageListOutputSchema,
 			},

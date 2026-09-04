@@ -17,7 +17,7 @@ through the existing skill surface.
 Load the plugin like any other bundled plugin:
 
 ```bash
-mcp-vertex --plugins=skills-pack
+delendai --plugins=skills-pack
 ```
 
 The plugin registers skill pointers only. It does not execute tools or mutate

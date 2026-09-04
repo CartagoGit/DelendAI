@@ -61,7 +61,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 	{
 		"id": "api",
 		"package": "@delendai/api",
-		"summary": "REST/GraphQL API surface for mcp-vertex plugins.",
+		"summary": "REST/GraphQL API surface for delendai plugins.",
 		"tags": [
 			"api",
 			"surface"
@@ -577,7 +577,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 	{
 		"id": "error-reporting",
 		"package": "@delendai/error-reporting",
-		"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.",
+		"summary": "Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.",
 		"tags": [
 			"error-reporting",
 			"github",

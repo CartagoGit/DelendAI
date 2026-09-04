@@ -17,7 +17,7 @@ import { repoRoot } from '../lib/monorepo-paths';
 
 const ROOT = repoRoot();
 const PLAN_ID = process.argv[2] ?? 'q00005';
-const REVIEW_DIR = join(ROOT, 'docs/mcp-vertex/proposals/review');
+const REVIEW_DIR = join(ROOT, 'docs/delendai/proposals/review');
 
 const allProposalsForPlan = (planId: string): string[] => {
 	const candidates = new Set<string>();

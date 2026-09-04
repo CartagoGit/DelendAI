@@ -67,7 +67,7 @@ describe('tool-response helpers — MCP modern structuredContent', async () => {
 
 	it('toolErrorWithLogHint attaches the hint and keeps the envelope', async () => {
 		const hint = {
-			path: '/abs/.cache/mcp-vertex/logs/2026-06-21.jsonl',
+			path: '/abs/.cache/delendai/logs/2026-06-21.jsonl',
 			line: 17,
 			ts: '2026-06-21T18:53:21.758Z',
 		};
@@ -83,7 +83,7 @@ describe('tool-response helpers — MCP modern structuredContent', async () => {
 
 	it('toolErrorWithLogHint omits nextAction when not given', async () => {
 		const hint = {
-			path: '/abs/.cache/mcp-vertex/logs/2026-06-21.jsonl',
+			path: '/abs/.cache/delendai/logs/2026-06-21.jsonl',
 			line: 1,
 			ts: '2026-06-21T18:53:21.758Z',
 		};

@@ -124,7 +124,7 @@ export const buildAgentCatalogToolRegistration = (
 	id: 'agent_catalog',
 	summary:
 		'Unified discovery catalog for loaded tools, versioned skills and actionable proposals. Read-only.',
-	descriptionKey: 'mcp-vertex_agent_catalog',
+	descriptionKey: 'delendai_agent_catalog',
 	tags: ['orientation'],
 	register: async (server) => {
 		server.registerTool(

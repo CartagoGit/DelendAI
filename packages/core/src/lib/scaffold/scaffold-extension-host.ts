@@ -254,12 +254,12 @@ export const openOverview = async (
 			options.namespacePrefix,
 		).getOverview({ compact: true });
 		const panel = host.createWebviewPanel(
-			'mcpVertexOverview',
-			'mcp-vertex Overview',
+			'delendaiOverview',
+			'delendai Overview',
 			1,
 			{ enableScripts: false },
 		);
-		panel.webview.setHtml(renderJsonHtml('mcp-vertex Overview', overview));
+		panel.webview.setHtml(renderJsonHtml('delendai Overview', overview));
 		panel.reveal();
 	} finally {
 		if (ownsClient) await client.close();
@@ -300,11 +300,11 @@ describe('openOverview', () => {
 		};
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
-				expect(input.name).toBe('mcp-vertex_overview');
+				expect(input.name).toBe('delendai_overview');
 				return {
 					structuredContent: {
-						namespacePrefix: 'mcp-vertex',
-						server: { name: 'mcp-vertex', version: '0.1.0' },
+						namespacePrefix: 'delendai',
+						server: { name: 'delendai', version: '0.1.0' },
 						plugins: [],
 						tools: {},
 						knowledge: [],
@@ -316,7 +316,7 @@ describe('openOverview', () => {
 
 		await openOverview(host, { client });
 
-		expect(panels[0]).toContain('mcp-vertex Overview');
+		expect(panels[0]).toContain('delendai Overview');
 		expect(panels[0]).toContain('recommendedNextAction');
 	});
 });
@@ -328,7 +328,7 @@ describe('openOverview', () => {
 
 ${safeDescription}
 
-This is a reference TypeScript host scaffold for mcp-vertex. Implement the
+This is a reference TypeScript host scaffold for delendai. Implement the
 adapter seams in \`src/host-adapter.ts\`, then wire host-native menus,
 views, and lifecycle hooks around \`openOverview\`.
 

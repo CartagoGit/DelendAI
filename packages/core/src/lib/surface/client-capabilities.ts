@@ -12,7 +12,7 @@ export interface IDetectedClientSurfaceCapabilities {
 	readonly clientName?: string | undefined;
 }
 
-const SURFACE_EXTENSION_KEY = 'mcp-vertex/surface';
+const SURFACE_EXTENSION_KEY = 'delendai/surface';
 
 const readSurfaceExtension = (
 	capabilities: ClientCapabilities | undefined,

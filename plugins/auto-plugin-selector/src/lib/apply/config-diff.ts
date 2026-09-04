@@ -32,7 +32,7 @@ import type {
  * Build the structured diff.
  *
  * @param current             Currently-loaded plugin ids (the host reads them
- *                            from `mcp-vertex.config.json` or a live preset).
+ *                            from `delendai.config.json` or a live preset).
  * @param recommendations     Output of `recommendPlugins(...)` for the same
  *                            project signals. May be empty.
  */

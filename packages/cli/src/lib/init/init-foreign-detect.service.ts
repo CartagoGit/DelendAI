@@ -39,7 +39,7 @@ export type { IForeignProposalInventory } from '../../contracts/interfaces/init.
 
 /**
  * Canonical id-numbering schemes a foreign proposal system can use.
- *   - `mcp-vertex`  — our own `f00001` / `p00012` padded prefix shape.
+ *   - `delendai`  — our own `f00001` / `p00012` padded prefix shape.
  *   - `rfc`         — `RFC-0001`, `rfc-12`, `0001-title` (rfc-style).
  *   - `adr`         — `0001-record-title.md` (ADR / MADR numbering).
  *   - `numeric`     — bare leading number with no recognised prefix.
@@ -75,8 +75,8 @@ const CANDIDATE_DIRS: readonly {
 
 const MAX_SAMPLES = 5;
 
-/** mcp-vertex / single-letter-prefix padded id, e.g. `f00001`, `p12`. */
-const MCP_VERTEX_RE = /^([a-z])(\d{2,})-/i;
+/** delendai / single-letter-prefix padded id, e.g. `f00001`, `p12`. */
+const DELENDAI_RE = /^([a-z])(\d{2,})-/i;
 /** RFC-style: `RFC-0001`, `rfc_12`, `rfc0007`. */
 const RFC_RE = /^rfc[-_]?(\d+)/i;
 /** ADR / MADR / leading-number style: `0001-title.md`, `12-foo.md`. */
@@ -101,8 +101,8 @@ const classifyEntry = (
 	const rfc = name.match(RFC_RE);
 	if (rfc) return { scheme: 'rfc', id: Number(rfc[1]) };
 
-	const mcp = name.match(MCP_VERTEX_RE);
-	if (mcp) return { scheme: 'mcp-vertex', id: Number(mcp[2]) };
+	const mcp = name.match(DELENDAI_RE);
+	if (mcp) return { scheme: 'delendai', id: Number(mcp[2]) };
 
 	const num = name.match(NUMERIC_RE);
 	if (num) return { scheme: 'numeric', id: Number(num[1]) };
@@ -122,7 +122,7 @@ const dominantScheme = (
 	kind: IForeignConventionKind,
 	schemes: readonly IForeignIdScheme[],
 ): IForeignIdScheme => {
-	if (schemes.includes('mcp-vertex')) return 'mcp-vertex';
+	if (schemes.includes('delendai')) return 'delendai';
 	if (schemes.includes('rfc')) return 'rfc';
 	if (schemes.includes('numeric')) return kind === 'adr' ? 'adr' : 'numeric';
 	return 'none';
@@ -195,11 +195,11 @@ export const detectForeignProposals = async (
  * Allocate the NEXT FREE id for the emitted adoption-plan proposal.
  *
  * The plan always lands under OUR canonical layout
- * (`docs/mcp-vertex/proposals/ready/`) with OUR `f`-prefix shape, so the
+ * (`docs/delendai/proposals/ready/`) with OUR `f`-prefix shape, so the
  * id is allocated against OUR convention. Two sources are consulted, in
  * order, and the maximum wins (never collide with either side):
  *
- *   1. ids already present under `docs/mcp-vertex/proposals/` in the
+ *   1. ids already present under `docs/delendai/proposals/` in the
  *      target (a prior `init` run, or a hand-started migration), and
  *   2. the highest numeric id observed in the FOREIGN primary system
  *      (so the migrated plan sorts after the work it supersedes when
@@ -222,21 +222,21 @@ export const allocateNextAdoptionId = async (
 	//    `review`, `blocked`, etc.) must still count against the id
 	//    allocator or we'd risk collisions on the next `init` run.
 	for (const folder of PROPOSAL_STATUS_FOLDERS) {
-		const dir = `docs/mcp-vertex/proposals/${folder}`;
+		const dir = `docs/delendai/proposals/${folder}`;
 		const entries = await reader.listDir(dir);
 		for (const name of entries) {
-			const m = name.match(MCP_VERTEX_RE);
+			const m = name.match(DELENDAI_RE);
 			if (m && m[1]?.toLowerCase() === 'f') {
 				const n = Number(m[2]);
 				if (Number.isFinite(n) && n > max) max = n;
 			}
 		}
 	}
-	// Plus the root `docs/mcp-vertex/proposals/` (legacy stubs + any
+	// Plus the root `docs/delendai/proposals/` (legacy stubs + any
 	// out-of-status proposals).
-	const rootEntries = await reader.listDir('docs/mcp-vertex/proposals');
+	const rootEntries = await reader.listDir('docs/delendai/proposals');
 	for (const name of rootEntries) {
-		const m = name.match(MCP_VERTEX_RE);
+		const m = name.match(DELENDAI_RE);
 		if (m && m[1]?.toLowerCase() === 'f') {
 			const n = Number(m[2]);
 			if (Number.isFinite(n) && n > max) max = n;
@@ -249,7 +249,7 @@ export const allocateNextAdoptionId = async (
 	const primary = inventory.primary;
 	if (
 		primary &&
-		(primary.idScheme === 'mcp-vertex' || primary.idScheme === 'numeric')
+		(primary.idScheme === 'delendai' || primary.idScheme === 'numeric')
 	) {
 		if (primary.maxNumericId > max) max = primary.maxNumericId;
 	}

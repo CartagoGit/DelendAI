@@ -2,7 +2,7 @@
 	"name": "@delendai/deps",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (lockfile, unpinned ranges, cross-section duplicates). No network. Load with `mcp-vertex --plugins=deps`.",
+	"description": "Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (lockfile, unpinned ranges, cross-section duplicates). No network. Load with `delendai --plugins=deps`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

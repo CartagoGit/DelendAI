@@ -50,7 +50,7 @@ const setupEmptyWorkspace = async (): Promise<{
 }> => {
 	const root = await mkdtemp(join(tmpdir(), 'project-kpis-envelope-'));
 	createdRoots.push(root);
-	return { root, cacheDir: '.cache/mcp-vertex' };
+	return { root, cacheDir: '.cache/delendai' };
 };
 
 describe('project_kpis outputSchema wire size', () => {
@@ -58,7 +58,7 @@ describe('project_kpis outputSchema wire size', () => {
 		const { root, cacheDir } = await setupEmptyWorkspace();
 		const server = new McpServer({ name: 'test', version: '0.0.0' });
 		const registration = buildProjectKpisToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			cacheDir,
 			maxBytes: 12000,
@@ -75,7 +75,7 @@ describe('project_kpis outputSchema wire size', () => {
 			{ sessionId: 'session-1' },
 		);
 		const tool = result?.tools.find(
-			(entry) => entry.name === 'mcp-vertex_project_kpis',
+			(entry) => entry.name === 'delendai_project_kpis',
 		);
 		expect(tool).toBeDefined();
 		expect(tool?.outputSchema).toBeDefined();
@@ -88,7 +88,7 @@ describe('project_kpis outputSchema wire size', () => {
 		// Before this slice the full `ProjectKpisOutputSchema` cost 8,518
 		// bytes as this tool's `outputSchema` — 86% of the tool's entire
 		// 9,898-byte `tools/list` entry (see
-		// docs/mcp-vertex/TOKEN-BUDGETS.md), spent describing an output
+		// docs/delendai/TOKEN-BUDGETS.md), spent describing an output
 		// shape nobody had asked for yet. The envelope keeps only the
 		// invariant frame (contract/version/view/detail/status/
 		// generatedAt/summary/metrics[]/bytes/truncated/detailUri?/
@@ -112,7 +112,7 @@ describe('envelope accepts every payload the full contract accepts', () => {
 		const result = await runProjectKpis(
 			{ view: 'summary', detail: 'compact' },
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				cacheDir,
 				maxBytes: 12000,
@@ -134,7 +134,7 @@ describe('envelope accepts every payload the full contract accepts', () => {
 		const result = await runProjectKpis(
 			{ view: 'audit', detail: 'compact' },
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				cacheDir,
 				maxBytes: 12000,
@@ -161,7 +161,7 @@ describe('envelope accepts every payload the full contract accepts', () => {
 		const result = await runProjectKpis(
 			{ view: 'models', detail: 'compact' },
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRootAbs: root,
 				cacheDir,
 				maxBytes: 12000,

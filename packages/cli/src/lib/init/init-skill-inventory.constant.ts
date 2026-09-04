@@ -3,7 +3,7 @@
  *
  * The adoption plan's `A3` section answers two questions:
  *
- *   2a. which of OUR (mcp-vertex) canonical skills should land in the
+ *   2a. which of OUR (delendai) canonical skills should land in the
  *       target so its agents inherit the workflow, and
  *   2b. which skills the target ALREADY ships, so we absorb/inventory
  *       them instead of clobbering them.
@@ -62,57 +62,57 @@ export type {
  * honest, this table keeps the PLAN honest).
  */
 export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
-	{ id: 'mcp-vertex-operator', appliesTo: '@delendai/*' },
-	{ id: 'mcp-vertex-plugin-authoring', appliesTo: '@delendai/*' },
-	{ id: 'mcp-vertex-failure-modes', appliesTo: '@delendai/*' },
-	{ id: 'mcp-vertex-token-budget-discipline', appliesTo: '@delendai/*' },
+	{ id: 'delendai-operator', appliesTo: '@delendai/*' },
+	{ id: 'delendai-plugin-authoring', appliesTo: '@delendai/*' },
+	{ id: 'delendai-failure-modes', appliesTo: '@delendai/*' },
+	{ id: 'delendai-token-budget-discipline', appliesTo: '@delendai/*' },
 	{
-		id: 'mcp-vertex-token-budget-playbook',
+		id: 'delendai-token-budget-playbook',
 		appliesTo: '@delendai/*',
 	},
 	{
-		id: 'mcp-vertex-conventional-commits-and-release',
+		id: 'delendai-conventional-commits-and-release',
 		appliesTo: '@delendai/*',
 	},
 	{
-		id: 'mcp-vertex-proposals-workflow-playbook',
+		id: 'delendai-proposals-workflow-playbook',
 		appliesTo: '@delendai/proposals',
 	},
 	{
-		id: 'mcp-vertex-proposal-swarm-runner',
+		id: 'delendai-proposal-swarm-runner',
 		appliesTo: '@delendai/proposals',
 	},
 	{
-		id: 'mcp-vertex-multi-agent-coordination',
+		id: 'delendai-multi-agent-coordination',
 		appliesTo: '@delendai/proposals',
 	},
 	{
-		id: 'mcp-vertex-concurrency-patterns',
+		id: 'delendai-concurrency-patterns',
 		appliesTo: '@delendai/proposals',
 	},
 	{
-		id: 'mcp-vertex-state-repair-playbook',
+		id: 'delendai-state-repair-playbook',
 		appliesTo: '@delendai/proposals',
 	},
 	{
-		id: 'mcp-vertex-legacy-proposal-migration',
+		id: 'delendai-legacy-proposal-migration',
 		appliesTo: '@delendai/proposals',
 	},
 	{
-		id: 'mcp-vertex-status-marker-and-closure',
+		id: 'delendai-status-marker-and-closure',
 		appliesTo: '@delendai/status-marker',
 	},
 	{
-		id: 'mcp-vertex-quality-and-rules-gates',
+		id: 'delendai-quality-and-rules-gates',
 		appliesTo: '@delendai/quality',
 	},
 	{
-		id: 'mcp-vertex-rules-solid-architecture',
+		id: 'delendai-rules-solid-architecture',
 		appliesTo: '@delendai/rules',
 	},
-	{ id: 'mcp-vertex-rules-dogma-priority', appliesTo: '@delendai/rules' },
-	{ id: 'mcp-vertex-audit-runner', appliesTo: '@delendai/audit' },
-	{ id: 'mcp-vertex-audit-playbook', appliesTo: '@delendai/audit' },
+	{ id: 'delendai-rules-dogma-priority', appliesTo: '@delendai/rules' },
+	{ id: 'delendai-audit-runner', appliesTo: '@delendai/audit' },
+	{ id: 'delendai-audit-playbook', appliesTo: '@delendai/audit' },
 ];
 
 /**
@@ -128,7 +128,7 @@ const SKILL_DIRS: readonly {
 	{ location: '.claude/skills', kind: 'claude-skills' },
 	{ location: 'skills', kind: 'skills-dir' },
 	{ location: 'docs/skills', kind: 'docs-skills' },
-	{ location: 'docs/mcp-vertex/skills', kind: 'docs-skills' },
+	{ location: 'docs/delendai/skills', kind: 'docs-skills' },
 	{ location: '.github/skills', kind: 'skills-dir' },
 ];
 

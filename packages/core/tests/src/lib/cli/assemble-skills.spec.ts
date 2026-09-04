@@ -24,7 +24,7 @@ const createInput = (workspace: string): IAssembleSkillsInput => ({
 		docsDir: 'docs',
 		workspace,
 		surfaceMode: 'managed',
-		serverName: 'mcp-vertex',
+		serverName: 'delendai',
 		serverVersion: '0.1.0',
 		mcpProjectCreate: true,
 		mcpProjectTests: true,
@@ -33,14 +33,14 @@ const createInput = (workspace: string): IAssembleSkillsInput => ({
 	},
 	fileConfig: {
 		$schema:
-			'https://unpkg.com/@delendai/core/schema/mcp-vertex.config.schema.json',
+			'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json',
 		coreVersion: 'latest-published',
 		cacheDir: '.cache',
 		docsDir: 'docs',
 	},
 	docsDir: 'docs',
 	cacheDir: '.cache',
-	corePrefix: 'mcp-vertex',
+	corePrefix: 'delendai',
 	docsDirMissing: false,
 	configPresent: true,
 	readFile: async () => undefined,
@@ -113,7 +113,7 @@ describe('assembleSkills workflow contributions', () => {
 
 		expect(result.proposalSummaries).toEqual(proposalSummaries);
 		expect(result.recommendedNextAction).toBe(
-			'Call mcp-vertex_overview, then mcp-vertex_proposals_auto_work to start working. ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.',
+			'Call delendai_overview, then delendai_proposals_auto_work to start working. ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.',
 		);
 	});
 
@@ -122,7 +122,7 @@ describe('assembleSkills workflow contributions', () => {
 
 		expect(result.proposalSummaries).toEqual([]);
 		expect(result.recommendedNextAction).toBe(
-			'Call mcp-vertex_analyze_project to see what this project needs.',
+			'Call delendai_analyze_project to see what this project needs.',
 		);
 	});
 
@@ -146,7 +146,7 @@ describe('assembleSkills workflow contributions', () => {
 		});
 
 		expect(result.recommendedNextAction).toBe(
-			'Config mismatch: docsDir "missing-docs" does not exist in this workspace (see configIssues). Fix mcp-vertex.config.json or scaffold the layout (mcp-vertex init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.',
+			'Config mismatch: docsDir "missing-docs" does not exist in this workspace (see configIssues). Fix delendai.config.json or scaffold the layout (delendai init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.',
 		);
 	});
 });

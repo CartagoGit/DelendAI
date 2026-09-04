@@ -9,7 +9,7 @@
 # workflow. Workflows that need a custom bun version or non-frozen install
 # should opt out and inline their own block.
 name: setup-bun-repo
-description: Checkout + setup-bun + frozen install for the mcp-vertex repo.
+description: Checkout + setup-bun + frozen install for the delendai repo.
 
 inputs:
     bun-version:

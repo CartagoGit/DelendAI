@@ -46,7 +46,7 @@ const scanSource = (
 	const violations: IPluginCachePathViolation[] = [];
 	for (const [lineIndex, line] of sanitized.split('\n').entries()) {
 		const hasWriter = WRITE_CALL_RE.test(line);
-		const hasLegacyLiteral = line.includes('.cache/mcp-vertex');
+		const hasLegacyLiteral = line.includes('.cache/delendai');
 		const hasCwd = codeLines[lineIndex]?.includes('process.cwd()') === true;
 		if ((!hasWriter || !hasLegacyLiteral) && !hasCwd) continue;
 		const token: IPluginCachePathViolation['token'] = hasCwd

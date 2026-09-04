@@ -1,6 +1,6 @@
 # @delendai/auto-agent-selector
 
-Zero-config multi-agent routing for [mcp-vertex](https://github.com/CartagoGit/delendai).
+Zero-config multi-agent routing for [delendai](https://github.com/CartagoGit/delendai).
 
 Add the plugin and it **auto-discovers every LLM/agent the workspace can
 reach** — CLIs found on `PATH` (Claude Code, Codex, Copilot, Gemini, Aider)
@@ -12,7 +12,7 @@ prompts.
 ## Use
 
 ```jsonc
-// mcp-vertex.config.json
+// delendai.config.json
 {
 	"plugins": {
 		"auto-agent-selector": {
@@ -23,7 +23,7 @@ prompts.
 }
 ```
 
-or ad-hoc: `mcp-vertex --plugins=auto-agent-selector`.
+or ad-hoc: `delendai --plugins=auto-agent-selector`.
 
 ## Tools
 
@@ -44,7 +44,7 @@ or ad-hoc: `mcp-vertex --plugins=auto-agent-selector`.
   orchestrator-runner's `invoke`) and runs the gate between. Headless,
   spend-free.
 
-More tools land as the [f00119](../../docs/mcp-vertex/proposals/ready/f00119-auto-agent-selector-plugin.md)
+More tools land as the [f00119](../../docs/delendai/proposals/ready/f00119-auto-agent-selector-plugin.md)
 slices ship: `auto_evaluate` (fold in new/cheaper models, optionally from
 live pricing).
 

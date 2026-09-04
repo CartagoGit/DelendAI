@@ -1,7 +1,7 @@
 # @delendai/proposals
 
 The **proposals workflow** plugin for
-[`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md): a file-based proposal store,
+[`@delendai/core`](../../docs/delendai/README-DELENDAI.md): a file-based proposal store,
 file-level agent locks, a persistent task queue and multi-agent ("swarm")
 coordination — including naming the whole agent tree (orchestrator included).
 
@@ -11,7 +11,7 @@ coordination — including naming the whole agent tree (orchestrator included).
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-vertex": {
+		"delendai": {
 			"command": "bunx",
 			"args": ["@delendai/core", "--plugins=proposals"]
 		}
@@ -34,7 +34,7 @@ coordination — including naming the whole agent tree (orchestrator included).
 | `get_proposal_workflow`           | Families, locations, naming and template as JSON.                                                                                                                                                                                                                      |
 | `create_proposal` / `close_slice` | Author a proposal (frontmatter + disjoint slices); mark a slice done + release its lock.                                                                                                                                                                               |
 | `proposal_review`                 | Peer-review loop: `submit` a finished slice → a **different** agent `approve`s (→ done) or `request_changes` (→ reworkable); repeat until no objection.                                                                                                                |
-| `proposal_adopt`                  | Make an existing proposals folder followable: canonical layout + a scan of the real folder + a plan to organize it for mcp-vertex (read-only; you run the steps).                                                                                                      |
+| `proposal_adopt`                  | Make an existing proposals folder followable: canonical layout + a scan of the real folder + a plan to organize it for delendai (read-only; you run the steps).                                                                                                      |
 | `proposals_close_plan`            | Close a `type: plan` proposal (prefix `q`). Refuses with a `blockers[]` list until every contained proposal, sub-plan, and own slice is done + peer-reviewed. `dryRun: true` runs the preflight without applying the transition. See **Plan-of-plans (q00001)** below. |
 
 ### Checkpoint advisories (f00156)
@@ -43,12 +43,12 @@ Composes requirement drift, micro-validation, interactive context drift
 and stale-acceptance push guards into `getCheckpointAdvisory` /
 `beforeToolCall`. Swarm `isAgentStuck` handoff is unchanged. Options:
 `plugins.proposals.options.checkpointAdvisories`. See
-[`CHECKPOINT-ADVISORIES.md`](../../docs/mcp-vertex/CHECKPOINT-ADVISORIES.md).
+[`CHECKPOINT-ADVISORIES.md`](../../docs/delendai/CHECKPOINT-ADVISORIES.md).
 
-### Folder layout (`<docsDir>/proposals`, default `docs/mcp-vertex/proposals`)
+### Folder layout (`<docsDir>/proposals`, default `docs/delendai/proposals`)
 
 ```
-docs/mcp-vertex/proposals/
+docs/delendai/proposals/
 ├─ index.json          machine-readable registry (run sync_proposals to (re)build)
 ├─ README.md           human guide to this folder
 ├─ p<N>-<title>.md     a proposal (feature/refactor) — frontmatter: id, type, status
@@ -57,10 +57,10 @@ docs/mcp-vertex/proposals/
                        (+ optional host buckets via the `extraFolders` option)
 ```
 
-Pointing mcp-vertex at a project that already has a proposals folder? Call
+Pointing delendai at a project that already has a proposals folder? Call
 `proposal_adopt` — it explains this layout, scans what you have, and hands you a plan.
 
-## Configure (`mcp-vertex.config.json`)
+## Configure (`delendai.config.json`)
 
 ```jsonc
 {
@@ -121,7 +121,7 @@ project) > `'none'` (default):
   `claim.files`; it never runs `git add .` so a slice can't drag in
   unrelated changes.
 
-The full spec lives in [docs/mcp-vertex/proposals/l109-feat-auto-work-persist-modes.md](../../docs/mcp-vertex/proposals/l109-feat-auto-work-persist-modes.md).
+The full spec lives in [docs/delendai/proposals/l109-feat-auto-work-persist-modes.md](../../docs/delendai/proposals/l109-feat-auto-work-persist-modes.md).
 
 ### Proposal folder policy
 
@@ -158,9 +158,9 @@ transitions, automatic blocked resolution, and registry reconciliation.
 
 ## Paths
 
-State under `.cache/mcp-vertex/`; disposable agent worktrees under
-`.cache/mcp-vertex/.worktrees/`; human-edited proposals under
-`docs/mcp-vertex/proposals/`. All tools share one layout so locks, queue,
+State under `.cache/delendai/`; disposable agent worktrees under
+`.cache/delendai/.worktrees/`; human-edited proposals under
+`docs/delendai/proposals/`. All tools share one layout so locks, queue,
 round-context, worktrees and the store always agree.
 
 ## Concurrency model
@@ -171,7 +171,7 @@ agents stay read-only or wait on locks. That keeps proposal markdown, the git
 index and the cache-backed registries moving in one predictable order.
 
 When ids are auto-allocated, the proposal counter is serialized through
-`withFileMutex` around `.cache/mcp-vertex/proposal-id-counters.json`, and each
+`withFileMutex` around `.cache/delendai/proposal-id-counters.json`, and each
 allocation also reconciles against the highest id already present on disk. That
 protects the shared counter from duplicate ids even when multiple tool calls hit
 `create_proposal` concurrently.
@@ -180,7 +180,7 @@ For real multi-agent parallelism, do **not** share one checkout and hope the
 index behaves. Use `agent_worktree` so each agent gets its own worktree while
 still coordinating proposal files through `agent_lock`. The repo bootstrap's
 parallel-work guidance in
-[`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../../docs/mcp-vertex/AGENT-BOOTSTRAP.md)
+[`docs/delendai/AGENT-BOOTSTRAP.md`](../../docs/delendai/AGENT-BOOTSTRAP.md)
 is the source of truth for how to behave when another agent lands changes while
 you are mid-slice.
 

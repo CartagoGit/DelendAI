@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexStatusMarkerCloseOutput {
+export interface DelendaiStatusMarkerCloseOutput {
 	ok: true;
 	state: "HECHO" | "CAP" | "RE-PIVOT" | "CHECKPOINT-REQUIRED" | "REPAIR-NEEDED" | "BLOQUEADO" | "SIN PROPUESTAS LIBRES" | "SIN PROPUESTA DE NINGUN TIPO";
 	reason?: string;
@@ -20,7 +20,7 @@ export interface McpVertexStatusMarkerCloseOutput {
 	line: string;
 }
 
-export interface McpVertexStatusMarkerPingOutput {
+export interface DelendaiStatusMarkerPingOutput {
 	plugin: "status-marker";
 	cacheDir: string;
 	docsDir: string;
@@ -34,7 +34,7 @@ export interface McpVertexStatusMarkerPingOutput {
 	};
 }
 
-export type McpVertexStatusMarkerValidateOutput = {
+export type DelendaiStatusMarkerValidateOutput = {
 	ok: true;
 	state: "HECHO" | "CAP" | "RE-PIVOT" | "CHECKPOINT-REQUIRED" | "REPAIR-NEEDED" | "BLOQUEADO" | "SIN PROPUESTAS LIBRES" | "SIN PROPUESTA DE NINGUN TIPO";
 	reason?: string;
@@ -50,7 +50,7 @@ export type McpVertexStatusMarkerValidateOutput = {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface StatusMarkerToolOutputs {
-	"mcp-vertex_status-marker_close": McpVertexStatusMarkerCloseOutput;
-	"mcp-vertex_status-marker_ping": McpVertexStatusMarkerPingOutput;
-	"mcp-vertex_status-marker_validate": McpVertexStatusMarkerValidateOutput;
+	"delendai_status-marker_close": DelendaiStatusMarkerCloseOutput;
+	"delendai_status-marker_ping": DelendaiStatusMarkerPingOutput;
+	"delendai_status-marker_validate": DelendaiStatusMarkerValidateOutput;
 }

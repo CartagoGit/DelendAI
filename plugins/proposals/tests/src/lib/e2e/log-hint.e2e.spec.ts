@@ -31,7 +31,7 @@ interface LogHint {
 	readonly ts: string;
 }
 
-const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
+const PROPOSALS_RELDIR = 'docs/delendai/proposals';
 
 const seedReady = async (
 	server: IAssembledProposalsServer,
@@ -60,7 +60,7 @@ Seed for the log-hint e2e.
 		'utf8',
 	);
 	const sync = await server.callTool<{ ok: boolean }>(
-		'mcp-vertex_proposals_sync_proposals',
+		'delendai_proposals_sync_proposals',
 		{},
 	);
 	expect(sync.ok).toBe(true);
@@ -85,7 +85,7 @@ describe('e2e: tool failure carries a logHint over the wire (f00045 S4)', async 
 		const res = await harness.callTool<{
 			ok: boolean;
 			logHint?: LogHint;
-		}>('mcp-vertex_proposals_proposal_transition', {
+		}>('delendai_proposals_proposal_transition', {
 			id: 'f06001',
 			to: 'done',
 			reason: 'force an error',
@@ -120,7 +120,7 @@ describe('e2e: tool failure carries a logHint over the wire (f00045 S4)', async 
 		const res = await harness.callTool<{
 			ok: boolean;
 			logHint?: LogHint;
-		}>('mcp-vertex_proposals_proposal_transition', {
+		}>('delendai_proposals_proposal_transition', {
 			id: 'f06002',
 			to: 'in-progress',
 			reason: 'legal move',

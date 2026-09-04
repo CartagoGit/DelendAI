@@ -2,7 +2,7 @@
 	"name": "@delendai/cache",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Opt-in cache eviction plugin: declares static TTL/keep-last rules for the shared `.cache/mcp-vertex` root and exposes `cache_gc` (dry-run by default) to preview or apply eviction. No network, no secrets. Load with `mcp-vertex --plugins=cache`.",
+	"description": "Opt-in cache eviction plugin: declares static TTL/keep-last rules for the shared `.cache/delendai` root and exposes `cache_gc` (dry-run by default) to preview or apply eviction. No network, no secrets. Load with `delendai --plugins=cache`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

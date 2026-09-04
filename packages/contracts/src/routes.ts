@@ -8,7 +8,7 @@
 import type { NonEmptyString, PluginId } from './primitives';
 
 /** Canonical MCP resource URI scheme. */
-export type ResourceUriScheme = 'mcp-vertex' | 'mcp' | 'https' | 'file';
+export type ResourceUriScheme = 'delendai' | 'mcp' | 'https' | 'file';
 
 /** A parsed MCP resource URI. */
 export interface IResourceRoute {

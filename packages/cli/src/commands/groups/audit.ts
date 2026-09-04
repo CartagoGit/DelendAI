@@ -3,8 +3,8 @@
  * Pure 1:1 delegation.
  *
  * Tools mapped:
- *   - `mcp-vertex_audit_audit_plan`        ({ scope? })
- *   - `mcp-vertex_audit_audit_consolidate` ({ auditDir?, topActions? })
+ *   - `delendai_audit_audit_plan`        ({ scope? })
+ *   - `delendai_audit_audit_consolidate` ({ auditDir?, topActions? })
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, numberArg, request, scalarArg } from './group-helpers';
@@ -17,7 +17,7 @@ const auditPlanCommand: ICliCommand = {
 		// the proposal documents `audit plan --kind=security`.
 		const scope = scalarArg(args, 'scope') ?? scalarArg(args, 'kind');
 		return data(
-			await request(ctx, 'mcp-vertex_audit_audit_plan', {
+			await request(ctx, 'delendai_audit_audit_plan', {
 				...(scope !== undefined ? { scope } : {}),
 			}),
 		);
@@ -32,7 +32,7 @@ const auditConsolidateCommand: ICliCommand = {
 		const topActions =
 			numberArg(args, 'top') ?? numberArg(args, 'topActions');
 		return data(
-			await request(ctx, 'mcp-vertex_audit_audit_consolidate', {
+			await request(ctx, 'delendai_audit_audit_consolidate', {
 				...(auditDir !== undefined ? { auditDir } : {}),
 				...(topActions !== undefined ? { topActions } : {}),
 			}),

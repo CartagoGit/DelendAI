@@ -158,7 +158,7 @@ export const buildAdoptRegistration = (
 			`${options.namespacePrefix}_proposal_adopt`,
 			{
 				description:
-					'Make a proposals folder followable. Returns the canonical layout (index.json, README, status folders), a scan of the actual folder (proposals/fixes with status, subfolders, files without proposal frontmatter, missing index/README) and an ordered plan to organize it for mcp-vertex. Analysis-only by default; pass `apply: true` to EXECUTE the bootstrap: create the 7 status folders (+.gitkeep), seed a README (existing files are never overwritten) and rebuild the index — idempotent, atomic. Pass `dir` (workspace-relative) to target a folder other than the configured proposals dir.',
+					'Make a proposals folder followable. Returns the canonical layout (index.json, README, status folders), a scan of the actual folder (proposals/fixes with status, subfolders, files without proposal frontmatter, missing index/README) and an ordered plan to organize it for delendai. Analysis-only by default; pass `apply: true` to EXECUTE the bootstrap: create the 7 status folders (+.gitkeep), seed a README (existing files are never overwritten) and rebuild the index — idempotent, atomic. Pass `dir` (workspace-relative) to target a folder other than the configured proposals dir.',
 				inputSchema: z.object({
 					dir: z.string().optional(),
 					apply: z.boolean().optional(),

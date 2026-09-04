@@ -96,17 +96,17 @@ describe('usage-tracking tools/list served bytes', () => {
 					join(workspace, relativePath),
 			},
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			keepLegacy: false,
 			pluginCacheDir: 'results/usage-tracking',
 			cachePath: (relativePath = '') =>
 				join(workspace, 'results/usage-tracking', relativePath),
-			pluginDocsDir: 'docs/mcp-vertex/usage-tracking',
-			namespacePrefix: 'mcp-vertex_usage-tracking',
+			pluginDocsDir: 'docs/delendai/usage-tracking',
+			namespacePrefix: 'delendai_usage-tracking',
 			options: { maxBatch: 1, maxDelayMs: 10 },
 			args: {},
 		} as Parameters<typeof usageTrackingPlugin.register>[0]);

@@ -4,10 +4,10 @@
  *
  * Use when the MCP server isn't loaded (raw shell, agent worktree without the
  * swarm preset, etc.) and you need to rebuild the proposals index after a
- * rename/move under `docs/mcp-vertex/proposals/`.
+ * rename/move under `docs/delendai/proposals/`.
  *
  * Why it exists: x00052 moved the canonical index from
- * `docs/mcp-vertex/proposals/index.json` (gitignored, 62 KB, stale) to
+ * `docs/delendai/proposals/index.json` (gitignored, 62 KB, stale) to
  * `<cacheDir>/proposals/index.json`. The MCP server regenerates it lazily on
  * the next `auto_work` / `continue_proposal` call. Outside the server we have
  * no lazy regenerator, so this script wires `syncProposalRegistry` directly.
@@ -84,7 +84,7 @@ const main = async (): Promise<void> => {
 				'',
 				'sync:proposals FAILED — the proposal registry could not be rebuilt.',
 				`  index: ${result.indexPath}`,
-				`  ${result.errors.length} problem(s) on disk under docs/mcp-vertex/proposals/:`,
+				`  ${result.errors.length} problem(s) on disk under docs/delendai/proposals/:`,
 				'',
 				...result.errors.map((message) => `  - ${message}`),
 				'',

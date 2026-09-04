@@ -2,7 +2,7 @@
 /**
  * no-absolute-local-imports — forbid machine-absolute import specifiers.
  *
- * A specifier like `/home/cartago/_projects/mcp-vertex/plugins/.../foo`
+ * A specifier like `/home/cartago/_projects/delendai/plugins/.../foo`
  * resolves perfectly on the machine that wrote it and nowhere else. Local
  * `typecheck` therefore reports a clean tree while CI fails with
  * `TS2307: Cannot find module`, which is the worst possible split: the

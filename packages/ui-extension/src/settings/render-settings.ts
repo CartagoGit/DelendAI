@@ -39,8 +39,8 @@ const clientScript = (copy: ISettingsTranslations): string =>
   const vscode = (typeof window.acquireVsCodeApi === 'function')
     ? window.acquireVsCodeApi()
     : null;
-  const form = document.getElementById('mcpv-settings-form');
-  const banner = document.getElementById('mcpv-settings-banner');
+  const form = document.getElementById('delendai-settings-form');
+  const banner = document.getElementById('delendai-settings-banner');
   const sessionId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
   let sequence = 0;
   let pending = null;
@@ -66,7 +66,7 @@ const clientScript = (copy: ISettingsTranslations): string =>
   function announce(message, isError) {
     banner.textContent = message;
     banner.hidden = false;
-    banner.classList.toggle('mcpv-banner--error', isError === true);
+    banner.classList.toggle('delendai-banner--error', isError === true);
     banner.setAttribute('role', isError ? 'alert' : 'status');
   }
 
@@ -165,57 +165,57 @@ export const renderSettings = (options: IRenderSettingsOptions): string => {
 	<style>
 		${renderComponentCssTokenRootCss()}
 		* { box-sizing: border-box; }
-		body { font-family: var(--vscode-font-family, system-ui); padding: 20px; color: var(--mcpv-fg-primary); background: var(--mcpv-bg-primary); }
+		body { font-family: var(--vscode-font-family, system-ui); padding: 20px; color: var(--delendai-fg-primary); background: var(--delendai-bg-primary); }
 		main { width: min(100%, 680px); margin: 0 auto; }
 		h1 { font-size: 20px; margin: 0 0 6px; }
-		.mcpv-lede, .mcpv-description { color: var(--vscode-descriptionForeground, var(--mcpv-fg-muted)); }
-		.mcpv-lede { margin: 0 0 20px; line-height: 1.5; }
-		.mcpv-field { display: block; margin: 0 0 18px; font-size: 13px; font-weight: 600; }
-		.mcpv-description { display: block; margin-top: 5px; font-size: 12px; font-weight: 400; line-height: 1.45; }
-		.mcpv-check { display: grid; grid-template-columns: auto 1fr; gap: 0 8px; align-items: start; }
-		.mcpv-check .mcpv-description { grid-column: 2; }
+		.delendai-lede, .delendai-description { color: var(--vscode-descriptionForeground, var(--delendai-fg-muted)); }
+		.delendai-lede { margin: 0 0 20px; line-height: 1.5; }
+		.delendai-field { display: block; margin: 0 0 18px; font-size: 13px; font-weight: 600; }
+		.delendai-description { display: block; margin-top: 5px; font-size: 12px; font-weight: 400; line-height: 1.45; }
+		.delendai-check { display: grid; grid-template-columns: auto 1fr; gap: 0 8px; align-items: start; }
+		.delendai-check .delendai-description { grid-column: 2; }
 		input[type="url"], select { display: block; width: 100%; margin-top: 6px; padding: 8px 10px; font: inherit; color: var(--vscode-input-foreground, #c9d1d9); background: var(--vscode-input-background, #0d1117); border: 1px solid var(--vscode-input-border, #30363d); border-radius: 4px; outline: none; }
 		input[type="checkbox"] { margin: 2px 0 0; accent-color: var(--vscode-focusBorder, #007acc); }
 		input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--vscode-focusBorder, #007acc); outline-offset: 2px; }
-		.mcpv-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
-		.mcpv-actions { display: flex; gap: 8px; margin-top: 20px; }
-		.mcpv-actions button { min-height: 34px; padding: 7px 16px; font: inherit; color: var(--vscode-button-foreground, #fff); background: var(--vscode-button-background, #007acc); border: 1px solid var(--vscode-button-border, transparent); border-radius: 4px; cursor: pointer; }
-		.mcpv-actions button:hover:not(:disabled) { background: var(--vscode-button-hoverBackground, #1f8ad2); }
-		.mcpv-actions button[type="reset"] { color: var(--vscode-button-secondaryForeground, #c9d1d9); background: var(--vscode-button-secondaryBackground, #3a3d41); }
-		.mcpv-actions button:disabled { cursor: wait; opacity: .65; }
-		.mcpv-banner { margin: 0 0 16px; padding: 9px 12px; font-size: 12px; color: var(--vscode-notificationsInfo-foreground, #c9d1d9); background: var(--vscode-notificationsInfo-background, #007acc20); border-inline-start: 3px solid var(--vscode-notificationsInfo-border, #007acc); border-radius: 3px; }
-		.mcpv-banner--error { color: var(--vscode-errorForeground, #f48771); border-inline-start-color: var(--vscode-inputValidation-errorBorder, #f48771); }
-		@media (max-width: 520px) { body { padding: 14px; } .mcpv-grid { grid-template-columns: 1fr; } }
+		.delendai-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+		.delendai-actions { display: flex; gap: 8px; margin-top: 20px; }
+		.delendai-actions button { min-height: 34px; padding: 7px 16px; font: inherit; color: var(--vscode-button-foreground, #fff); background: var(--vscode-button-background, #007acc); border: 1px solid var(--vscode-button-border, transparent); border-radius: 4px; cursor: pointer; }
+		.delendai-actions button:hover:not(:disabled) { background: var(--vscode-button-hoverBackground, #1f8ad2); }
+		.delendai-actions button[type="reset"] { color: var(--vscode-button-secondaryForeground, #c9d1d9); background: var(--vscode-button-secondaryBackground, #3a3d41); }
+		.delendai-actions button:disabled { cursor: wait; opacity: .65; }
+		.delendai-banner { margin: 0 0 16px; padding: 9px 12px; font-size: 12px; color: var(--vscode-notificationsInfo-foreground, #c9d1d9); background: var(--vscode-notificationsInfo-background, #007acc20); border-inline-start: 3px solid var(--vscode-notificationsInfo-border, #007acc); border-radius: 3px; }
+		.delendai-banner--error { color: var(--vscode-errorForeground, #f48771); border-inline-start-color: var(--vscode-inputValidation-errorBorder, #f48771); }
+		@media (max-width: 520px) { body { padding: 14px; } .delendai-grid { grid-template-columns: 1fr; } }
 		@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
 	</style>
 </head>
 <body>
 	<main>
 		<h1>${escapeHtml(copy.title)}</h1>
-		<p class="mcpv-lede">${escapeHtml(copy.description)}</p>
-		<p id="mcpv-settings-banner" class="mcpv-banner" role="status" aria-live="polite" aria-atomic="true" hidden></p>
-		<form id="mcpv-settings-form" data-save-command="${escapeHtml(options.saveCommand)}" data-reset-command="${escapeHtml(options.resetCommand)}">
-			<label class="mcpv-field" for="mcpv-docs-url">${escapeHtml(copy.docsUrl)}
-				<input id="mcpv-docs-url" name="docsUrl" type="url" required aria-describedby="mcpv-docs-url-description" value="${escapeHtml(settings.docsUrl)}" />
-				<span id="mcpv-docs-url-description" class="mcpv-description">${escapeHtml(copy.docsUrlDescription)}</span>
+		<p class="delendai-lede">${escapeHtml(copy.description)}</p>
+		<p id="delendai-settings-banner" class="delendai-banner" role="status" aria-live="polite" aria-atomic="true" hidden></p>
+		<form id="delendai-settings-form" data-save-command="${escapeHtml(options.saveCommand)}" data-reset-command="${escapeHtml(options.resetCommand)}">
+			<label class="delendai-field" for="delendai-docs-url">${escapeHtml(copy.docsUrl)}
+				<input id="delendai-docs-url" name="docsUrl" type="url" required aria-describedby="delendai-docs-url-description" value="${escapeHtml(settings.docsUrl)}" />
+				<span id="delendai-docs-url-description" class="delendai-description">${escapeHtml(copy.docsUrlDescription)}</span>
 			</label>
-			<label class="mcpv-field mcpv-check" for="mcpv-localhost">
-				<input id="mcpv-localhost" type="checkbox" name="allowLocalhost" aria-describedby="mcpv-localhost-description"${settings.allowLocalhost ? ' checked' : ''} />
+			<label class="delendai-field delendai-check" for="delendai-localhost">
+				<input id="delendai-localhost" type="checkbox" name="allowLocalhost" aria-describedby="delendai-localhost-description"${settings.allowLocalhost ? ' checked' : ''} />
 				<span>${escapeHtml(copy.allowLocalhostDocsUrl)}</span>
-				<span id="mcpv-localhost-description" class="mcpv-description">${escapeHtml(copy.allowLocalhostDocsUrlDescription)}</span>
+				<span id="delendai-localhost-description" class="delendai-description">${escapeHtml(copy.allowLocalhostDocsUrlDescription)}</span>
 			</label>
-			<label class="mcpv-field mcpv-check" for="mcpv-private-ips">
-				<input id="mcpv-private-ips" type="checkbox" name="allowPrivateIps" aria-describedby="mcpv-private-ips-description"${settings.allowPrivateIps ? ' checked' : ''} />
+			<label class="delendai-field delendai-check" for="delendai-private-ips">
+				<input id="delendai-private-ips" type="checkbox" name="allowPrivateIps" aria-describedby="delendai-private-ips-description"${settings.allowPrivateIps ? ' checked' : ''} />
 				<span>${escapeHtml(copy.allowPrivateIpsDocsUrl)}</span>
-				<span id="mcpv-private-ips-description" class="mcpv-description">${escapeHtml(copy.allowPrivateIpsDocsUrlDescription)}</span>
+				<span id="delendai-private-ips-description" class="delendai-description">${escapeHtml(copy.allowPrivateIpsDocsUrlDescription)}</span>
 			</label>
-			<div class="mcpv-grid">
-				<label class="mcpv-field" for="mcpv-log-level">${escapeHtml(copy.logLevel)}<select id="mcpv-log-level" name="logLevel">${logLevelOptions}</select></label>
-				<label class="mcpv-field" for="mcpv-theme">${escapeHtml(copy.theme)}<select id="mcpv-theme" name="theme">${themeOptions}</select></label>
-				<label class="mcpv-field" for="mcpv-language">${escapeHtml(copy.language)}<select id="mcpv-language" name="language">${languageOptions}</select></label>
-				<label class="mcpv-field" for="mcpv-motion">${escapeHtml(copy.motion)}<select id="mcpv-motion" name="motion">${motionOptions}</select></label>
+			<div class="delendai-grid">
+				<label class="delendai-field" for="delendai-log-level">${escapeHtml(copy.logLevel)}<select id="delendai-log-level" name="logLevel">${logLevelOptions}</select></label>
+				<label class="delendai-field" for="delendai-theme">${escapeHtml(copy.theme)}<select id="delendai-theme" name="theme">${themeOptions}</select></label>
+				<label class="delendai-field" for="delendai-language">${escapeHtml(copy.language)}<select id="delendai-language" name="language">${languageOptions}</select></label>
+				<label class="delendai-field" for="delendai-motion">${escapeHtml(copy.motion)}<select id="delendai-motion" name="motion">${motionOptions}</select></label>
 			</div>
-			<div class="mcpv-actions">
+			<div class="delendai-actions">
 				<button type="submit">${escapeHtml(copy.save)}</button>
 				<button type="reset">${escapeHtml(copy.reset)}</button>
 			</div>

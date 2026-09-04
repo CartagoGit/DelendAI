@@ -16,7 +16,7 @@
  *      `IProviderStatusReadyModel`, `IProviderStatusAbsentModel`.
  *      `reachable` keeps its one-line meaning (`state === 'available'`,
  *      core `IProviderSummary.reachable`).
- *   2. **Roster config schema** — the `mcp-vertex.config.json` example
+ *   2. **Roster config schema** — the `delendai.config.json` example
  *      mirrors the root-level `providers` block from
  *      `packages/core/src/lib/plugins/config-file-schema.ts`
  *      (`PROVIDER_ENTRY_SCHEMA` / `PROVIDER_INVOKE_SCHEMA`, f00067a S1).
@@ -128,10 +128,10 @@ export const PROVIDER_STATES: readonly ProviderState[] = [
  * S1 builder — the runner hard-depends on usage-tracking, so both load).
  */
 export const ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET =
-	'mcp-vertex --plugins=usage-tracking,orchestrator-runner';
+	'delendai --plugins=usage-tracking,orchestrator-runner';
 
 /**
- * Root-level `providers` roster example for `mcp-vertex.config.json`
+ * Root-level `providers` roster example for `delendai.config.json`
  * (f00067a S1). Field-for-field valid against `PROVIDER_ENTRY_SCHEMA`:
  * one entry per invoke kind (`api`, `cli`, `subscription`), kebab-case
  * ids, capability tags from `CAPABILITY_TAGS`. Note the api entry's

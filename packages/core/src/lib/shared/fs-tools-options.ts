@@ -55,7 +55,7 @@ export interface IFsToolOptions {
 	/**
 	 * f00089 U5 — additional absolute roots an operator has explicitly
 	 * authorized for `fs_read` / `fs_write`, sourced from the committed
-	 * `mcp-vertex.config.json` (`filesystem.authorizedRoots`). A path
+	 * `delendai.config.json` (`filesystem.authorizedRoots`). A path
 	 * (relative or absolute) is allowed when it falls inside the workspace
 	 * root OR inside one of these roots. Off by default (`[]` / omitted):
 	 * with no authorized roots the tools behave byte-identically to the

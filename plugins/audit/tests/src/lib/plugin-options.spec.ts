@@ -4,7 +4,7 @@
  *
  * 1. `optionsSchema` is `strict` — unknown fields are rejected.
  * 2. The plugin's defaults match the documented constants
- *    (`docs/mcp-vertex/proposals/done/audits`, 5, canonical dimensions).
+ *    (`docs/delendai/proposals/done/audits`, 5, canonical dimensions).
  * 3. Hosts that pass `options.dimensions: []` get the canonical
  *    dimensions back (explicit reset), not an empty rubric.
  * 4. Per-tool-call overrides on `audit_consolidate` win over the
@@ -94,14 +94,14 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 			reader: fakeReader,
 		},
 		corePaths: {
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 		},
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 		keepLegacy: false,
-		pluginCacheDir: '.cache/mcp-vertex/audit',
-		pluginDocsDir: 'docs/mcp-vertex/audit',
+		pluginCacheDir: '.cache/delendai/audit',
+		pluginDocsDir: 'docs/delendai/audit',
 		namespacePrefix: 'audit',
 		options,
 	}) as unknown as IMcpPluginContext;
@@ -171,15 +171,15 @@ describe('@delendai/audit optionsSchema', async () => {
 	});
 
 	// x00165 (S-B): `auditDir`/`proposalsDir` used to default to the
-	// literal string `docs/mcp-vertex/proposals/...` regardless of the
+	// literal string `docs/delendai/proposals/...` regardless of the
 	// host's actual resolved `docsDir` — now derived from `ctx.docsDir`
 	// so a host with a custom docs root gets a matching default.
-	it('derives the auditDir default from ctx.docsDir, not a hardcoded mcp-vertex literal', async () => {
+	it('derives the auditDir default from ctx.docsDir, not a hardcoded delendai literal', async () => {
 		const customCtx: IMcpPluginContext = {
 			...baseCtx(),
 			docsDir: 'docs/my-other-project',
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
+				cacheDir: '.cache/delendai',
 				docsDir: 'docs/my-other-project',
 			},
 			pluginDocsDir: 'docs/my-other-project/audit',
@@ -190,7 +190,7 @@ describe('@delendai/audit optionsSchema', async () => {
 		expect(JSON.stringify(out)).toContain(
 			'docs/my-other-project/proposals/done/audits',
 		);
-		expect(JSON.stringify(out)).not.toContain('docs/mcp-vertex/proposals');
+		expect(JSON.stringify(out)).not.toContain('docs/delendai/proposals');
 	});
 
 	it('wires the host-supplied auditDir into the consolidate tool default', async () => {

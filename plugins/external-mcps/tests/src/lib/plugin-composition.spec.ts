@@ -66,8 +66,8 @@ describe('external-mcps ack ↔ call composition (x00097 S1)', () => {
 			args: {},
 			namespacePrefix: 'external-mcps',
 			pluginCacheDir: 'external-mcps',
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 			workspace: {
 				root: workspaceRoot,
 				resolve: (rel: string) => join(workspaceRoot, rel),
@@ -88,7 +88,7 @@ describe('external-mcps ack ↔ call composition (x00097 S1)', () => {
 		servers: {
 			demo: {
 				version: '1.0.0',
-				command: 'mcp-vertex-test-binary-that-does-not-exist',
+				command: 'delendai-test-binary-that-does-not-exist',
 				args: [],
 			},
 		},

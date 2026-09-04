@@ -180,7 +180,7 @@ describe('Comprehensive language detection, manifests, and dogmas', () => {
 					[`apps/app/${lang.file}`]: lang.content,
 				}),
 				'demo',
-				'.cache/mcp-vertex/rules',
+				'.cache/delendai/rules',
 				'mixed',
 				comp,
 			);

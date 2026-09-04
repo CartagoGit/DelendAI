@@ -112,9 +112,9 @@ describe('state_health / state_repair [N15]', async () => {
 	});
 
 	it('reads persisted session imbalance from the JSONL store', async () => {
-		mkdirSync(join(dir, '.cache/mcp-vertex'), { recursive: true });
+		mkdirSync(join(dir, '.cache/delendai'), { recursive: true });
 		writeFileSync(
-			join(dir, '.cache/mcp-vertex/agents.lock.session.jsonl'),
+			join(dir, '.cache/delendai/agents.lock.session.jsonl'),
 			`${[
 				JSON.stringify({
 					ts: '2026-07-26T00:00:00.000Z',

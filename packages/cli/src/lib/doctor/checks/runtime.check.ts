@@ -4,7 +4,7 @@
  * Verifies the active runtime is Bun and meets the minimum version
  * declared by `package.json#engines.bun`. The project is Bun-first
  * (see `packageManager: "bun@<x>"` + every test runner is Bun),
- * so running `mcpv doctor` on plain Node is a guaranteed surprise.
+ * so running `delendai doctor` on plain Node is a guaranteed surprise.
  *
  * Reads the engines constraint from `package.json` rather than
  * hard-coding it: when the floor moves in `package.json`, this check

@@ -13,8 +13,8 @@ import {
 
 const manifestEvents = [
 	'onStartupFinished',
-	'onView:mcp-vertex.tools',
-	'workspaceContains:**/mcp-vertex.config.json',
+	'onView:delendai.tools',
+	'workspaceContains:**/delendai.config.json',
 ] as const;
 
 const sample = (
@@ -41,12 +41,12 @@ describe('activation benchmark', () => {
 
 		expect(evidence.startupEventPresent).toBe(true);
 		expect(evidence.lazyFallbackEvents).toEqual([
-			'onView:mcp-vertex.tools',
-			'workspaceContains:**/mcp-vertex.config.json',
+			'onView:delendai.tools',
+			'workspaceContains:**/delendai.config.json',
 		]);
 		expect(evidence.fallbackDocumentation).toContain('onStartupFinished');
 		expect(evidence.fallbackDocumentation).toContain(
-			'workspaceContains:**/mcp-vertex.config.json',
+			'workspaceContains:**/delendai.config.json',
 		);
 	});
 
@@ -195,7 +195,7 @@ describe('activation benchmark', () => {
 	});
 
 	it('treats an empty call-log artifact as missing evidence instead of zero observed calls', async () => {
-		const tmp = mkdtempSync(join(tmpdir(), 'mcp-vertex-bench-empty-'));
+		const tmp = mkdtempSync(join(tmpdir(), 'delendai-bench-empty-'));
 		const emptyLog = join(tmp, 'empty.jsonl');
 		writeFileSync(emptyLog, '', 'utf8');
 		const queue = [

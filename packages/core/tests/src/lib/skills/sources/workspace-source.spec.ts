@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { workspaceSkillSource } from '@delendai/core/lib/skills/sources/workspace-source';
 
 const FILES: Readonly<Record<string, string>> = {
-	'/ws/.mcp-vertex/skills/operator/SKILL.md': '# operator\nbody of operator',
-	'/ws/.mcp-vertex/skills/token-budget/SKILL.md': '# token-budget\nbe lean',
+	'/ws/.delendai/skills/operator/SKILL.md': '# operator\nbody of operator',
+	'/ws/.delendai/skills/token-budget/SKILL.md': '# token-budget\nbe lean',
 };
 
 const listDir = async (abs: string): Promise<readonly string[]> => {
-	if (abs === '/ws/.mcp-vertex/skills') {
+	if (abs === '/ws/.delendai/skills') {
 		return ['operator', 'token-budget'];
 	}
 	return [];
@@ -20,7 +20,7 @@ const readFile = async (abs: string): Promise<string> => {
 };
 
 describe('skills/sources/workspace-source (q00009 / f00262)', () => {
-	it('lists all skills under <workspaceRoot>/.mcp-vertex/skills/<id>/', async () => {
+	it('lists all skills under <workspaceRoot>/.delendai/skills/<id>/', async () => {
 		const src = workspaceSkillSource({
 			id: 'ws',
 			workspaceRoot: '/ws',

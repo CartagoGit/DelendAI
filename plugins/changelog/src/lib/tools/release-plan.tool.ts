@@ -1,7 +1,7 @@
 /**
  * f00131 S2.b — `release_plan` tool.
  *
- * Read-only preview of the internal mcp-vertex publish-order. The plugin
+ * Read-only preview of the internal delendai publish-order. The plugin
  * exposes the same `PUBLISH_ORDER` + `computeReleasePlan` semantics the
  * project's own release script uses, so an adopter can ask "what would my
  * release look like?" without granting consent for npm publish.

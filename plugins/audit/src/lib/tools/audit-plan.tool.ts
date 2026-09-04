@@ -106,7 +106,7 @@ export interface IPlanToolOptions {
 	readonly projectName?: string;
 	/**
 	 * Config file path rendered in the "no layers configured" hint
-	 * (e.g. `mcp-vertex.config.json`, `app.toml`, `<config-file>`).
+	 * (e.g. `delendai.config.json`, `app.toml`, `<config-file>`).
 	 * Wired from `ctx.options.configFileName`. Defaults to
 	 * `"<config-file>"` to avoid leaking any specific host vocabulary.
 	 */

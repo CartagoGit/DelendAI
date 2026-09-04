@@ -38,7 +38,7 @@ export const assertUsageTrackingLoaded = (
 		throw new Error(
 			`orchestrator-runner requires the "${USAGE_TRACKING_PLUGIN}" plugin to be loaded (CRITICAL I15): ` +
 				`every routing decision it advises must be recorded for spend auditing. ` +
-				`Load it too, e.g. \`mcp-vertex --plugins=${USAGE_TRACKING_PLUGIN},orchestrator-runner\`. ` +
+				`Load it too, e.g. \`delendai --plugins=${USAGE_TRACKING_PLUGIN},orchestrator-runner\`. ` +
 				`It is also declared as a hard \`dependsOn\`, so the loader refuses the batch when it is missing.`,
 		);
 	}

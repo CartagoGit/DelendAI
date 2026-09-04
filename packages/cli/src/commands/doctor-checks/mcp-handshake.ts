@@ -14,7 +14,7 @@ const countOverviewTools = (tools: unknown): number | undefined => {
 export const checkMcpHandshake: IDoctorCommandCheck = async ({ cli }) => {
 	try {
 		const overview = await cli.request<Record<string, unknown>>(
-			'mcp-vertex_overview',
+			'delendai_overview',
 			{ compact: true },
 		);
 		let toolCount: number | undefined;

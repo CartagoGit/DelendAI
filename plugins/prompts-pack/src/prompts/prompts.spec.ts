@@ -18,7 +18,7 @@ import { buildWriteTestsForPrompt } from './write-tests';
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../../../..');
 const providerPattern = /\b(claude|gpt|anthropic|openai)\b/i;
-const toolIdPattern = /\bmcp-vertex_[a-z0-9-]+(?:_[a-z0-9-]+)+\b/g;
+const toolIdPattern = /\bdelendai_[a-z0-9-]+(?:_[a-z0-9-]+)+\b/g;
 
 type Prompt = ITemplatedPromptRegistration<Record<string, unknown>>;
 
@@ -123,7 +123,7 @@ const loadCatalogToolIds = async (): Promise<Set<string>> => {
 	for (const absPath of files) {
 		const relativePath = absPath.slice(workspaceRoot.length + 1);
 		const source = (await reader.readText(relativePath)).content;
-		for (const match of source.match(/"mcp-vertex_[^"]+"/g) ?? []) {
+		for (const match of source.match(/"delendai_[^"]+"/g) ?? []) {
 			ids.add(match.slice(1, -1));
 		}
 	}

@@ -140,11 +140,11 @@ const IGNORE_SELECTORS = [
 	// motion rule to every descendant of the root element.
 	/^:root\[[^\]]+\]\s+\*(?:::before|::after)?$/,
 	// Intentional leaf elements inside dashboard components.
-	/^\.mcpv-header__lang-picker\s+span$/,
-	/^\.mcpv-header__lang-picker\s+.*svg$/,
-	/^\.mcpv-header__lang-flag\s+svg$/,
-	/^\.mcpv-tabs__action-btn\s+svg$/,
-	/^\.mcpv-header__theme-picker\s+svg$/,
+	/^\.delendai-header__lang-picker\s+span$/,
+	/^\.delendai-header__lang-picker\s+.*svg$/,
+	/^\.delendai-header__lang-flag\s+svg$/,
+	/^\.delendai-tabs__action-btn\s+svg$/,
+	/^\.delendai-header__theme-picker\s+svg$/,
 	/^&:not\(\[open\]\)\s*>\s*summary\s*>\s*span$/,
 	// `html[attr]`, `html`, `body`, `*`, `pre`, `code`, `footer` — global
 	// element selectors used for document-level overrides (RTL, motion,
@@ -307,11 +307,11 @@ function isAcceptable(selector) {
 	const STATEFUL_BLOCK =
 		/^\.([a-z][a-z0-9-]*)(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?\.[a-z][a-z0-9-]*$/;
 	const COMPACT_DESCENDANT =
-		/^\.mcpv-panel--compact\s+\.mcpv-[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?$/;
+		/^\.delendai-panel--compact\s+\.delendai-[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?$/;
 	const COMPONENT_CHILD =
-		/^\.(?:mcpv-[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?)\s+>\s+(?:span|svg|code)$/;
+		/^\.(?:delendai-[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?)\s+>\s+(?:span|svg|code)$/;
 	const HEADER_STATE_CHILD =
-		/^\.mcpv-header\[[^\]]+\]\s+\.mcpv-header__[a-z0-9-]+$/;
+		/^\.delendai-header\[[^\]]+\]\s+\.delendai-header__[a-z0-9-]+$/;
 	if (
 		/^(\.([a-z][a-z0-9-]*)(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?|html\[[^\]]+\])\s+([a-z][a-z0-9-]*|\.[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?)/.test(
 			sel,

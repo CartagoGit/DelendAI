@@ -14,10 +14,10 @@ export interface ITabsProps {
 	readonly variant?: TabsVariant;
 	/** Accessible label for the tablist (`aria-label`). */
 	readonly label?: string;
-	/** Override the default `mcpv-` id prefix. The docs site uses
-	 *  `mcpv-tab-{id}` / `mcpv-panel-{id}`; the dashboard uses
+	/** Override the default `delendai-` id prefix. The docs site uses
+	 *  `delendai-tab-{id}` / `delendai-panel-{id}`; the dashboard uses
 	 *  `tab-{id}` / `panel-{id}` to keep its existing CSS +
-	 *  client-script selectors working. Default `mcpv-`. */
+	 *  client-script selectors working. Default `delendai-`. */
 	readonly idPrefix?: string;
 	/** Extra `<li>` content rendered after the real tabs. Used
 	 *  by the dashboard for the refresh button (action, not a
@@ -28,9 +28,9 @@ export interface ITabsProps {
  * Render the tablist `<nav>` portion of a Tabs widget as a string.
  *
  * The caller is expected to:
- *   1. Wrap this in `<section class="mcpv-tabs ui-tabs mcpv-tabs--{variant}" data-ui-tabs data-default-tab="{initial}">`.
- *   2. Provide the panels below via `<div class="mcpv-tabs__panels">…</div>` containing
- *      `<section role="tabpanel" id="mcpv-panel-{id}" data-tab-panel="{id}" hidden>…</section>` blocks.
+ *   1. Wrap this in `<section class="delendai-tabs ui-tabs delendai-tabs--{variant}" data-ui-tabs data-default-tab="{initial}">`.
+ *   2. Provide the panels below via `<div class="delendai-tabs__panels">…</div>` containing
+ *      `<section role="tabpanel" id="delendai-panel-{id}" data-tab-panel="{id}" hidden>…</section>` blocks.
  *
  * The shared wrapper (`apps/web/src/components/ui/Tabs.astro`) handles
  * these for the docs site. Other hosts bring their own glue.

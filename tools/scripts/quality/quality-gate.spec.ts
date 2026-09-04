@@ -51,7 +51,7 @@ describe('quality:gate script (a00072 S3.b)', () => {
 
 	it('exits 0 when every scope is clean', () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({
 				plugins: {
 					quality: {
@@ -69,7 +69,7 @@ describe('quality:gate script (a00072 S3.b)', () => {
 
 	it('exits 1 when a scope fails', () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({
 				plugins: {
 					quality: {
@@ -93,19 +93,16 @@ describe('quality:gate script (a00072 S3.b)', () => {
 	});
 
 	it('exits 2 when config is malformed', () => {
-		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
-			'{ this is not json',
-		);
+		writeFileSync(join(root, 'delendai.config.json'), '{ this is not json');
 		const r = run(root);
 		expect(r.status).toBe(2);
 	});
 
-	// x00186 (F28): the gate used to read `mcp-vertex.config.json` from
+	// x00186 (F28): the gate used to read `delendai.config.json` from
 	// `process.cwd()` unconditionally — no `--workspace` support at all.
 	it('honors --workspace instead of process.cwd()', () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({
 				plugins: {
 					quality: { options: { scopes: { smoke: ['echo clean'] } } },
@@ -122,9 +119,9 @@ describe('quality:gate script (a00072 S3.b)', () => {
 		}
 	});
 
-	it('honors MCP_VERTEX_WORKSPACE when no --workspace flag is given', () => {
+	it('honors DELENDAI_WORKSPACE when no --workspace flag is given', () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({
 				plugins: {
 					quality: { options: { scopes: { smoke: ['echo clean'] } } },
@@ -133,7 +130,7 @@ describe('quality:gate script (a00072 S3.b)', () => {
 		);
 		const elsewhere = mkdtempSync(join(tmpdir(), 'qgate-elsewhere-'));
 		try {
-			const r = runWith(elsewhere, [], { MCP_VERTEX_WORKSPACE: root });
+			const r = runWith(elsewhere, [], { DELENDAI_WORKSPACE: root });
 			expect(r.status).toBe(0);
 			expect(r.stdout).toMatch(/quality:gate: passed/);
 		} finally {
@@ -143,7 +140,7 @@ describe('quality:gate script (a00072 S3.b)', () => {
 
 	it('warns to stderr only when falling back to cwd, not when --workspace is explicit', () => {
 		writeFileSync(
-			join(root, 'mcp-vertex.config.json'),
+			join(root, 'delendai.config.json'),
 			JSON.stringify({
 				plugins: {
 					quality: { options: { scopes: { smoke: ['echo clean'] } } },

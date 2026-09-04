@@ -31,7 +31,7 @@ import {
 } from '@delendai/core/public';
 
 export const PENDING_ACKS_SCHEMA =
-	'mcp-vertex/external-mcps/pending-acks/1' as const;
+	'delendai/external-mcps/pending-acks/1' as const;
 
 /** One activation request and (once decided) its human verdict. */
 export interface IPendingAck {

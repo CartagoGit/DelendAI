@@ -3,7 +3,7 @@
  * no-duplicate-brand-hex.script.ts — f00047 S4 (brand asset provenance gate).
  *
  * The brand hex literals `#58a6ff` (blue) and `#a371f7` (purple) are
- * the canonical source of truth for the mcp-vertex brand gradient.
+ * the canonical source of truth for the delendai brand gradient.
  * They MUST live in exactly two files:
  *
  *   - `apps/shared/src/styles/_themes.scss`     (the CSS variable)

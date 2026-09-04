@@ -2,7 +2,7 @@
 /**
  * stable-manifest.script.ts — f00152 S2 (L4 — stable facade manifest verifier).
  *
- * Reads the committed `docs/mcp-vertex/api/stable.json` and checks:
+ * Reads the committed `docs/delendai/api/stable.json` and checks:
  *   1. The file exists.
  *   2. It is a valid manifest (parses + matches the IStableManifest
  *      structural shape).
@@ -21,7 +21,7 @@ import {
 	STABLE_MANIFEST_REL,
 	buildStableManifest,
 } from '@delendai/core/public';
-import { MCP_VERTEX_VERSION } from '@delendai/core/version';
+import { DELENDAI_VERSION } from '@delendai/core/version';
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
 
@@ -72,9 +72,9 @@ const main = (): number => {
 			outputSchema?: unknown;
 		}>;
 	};
-	if (manifest.version.packageVersion !== MCP_VERTEX_VERSION) {
+	if (manifest.version.packageVersion !== DELENDAI_VERSION) {
 		errors.push(
-			`manifest packageVersion "${String(manifest.version.packageVersion)}" does not match "${MCP_VERTEX_VERSION}"`,
+			`manifest packageVersion "${String(manifest.version.packageVersion)}" does not match "${DELENDAI_VERSION}"`,
 		);
 	}
 	for (const tool of manifest.tools) {
@@ -120,7 +120,7 @@ const main = (): number => {
 
 	// Cross-check that rebuilding with the same descriptors reproduces
 	// the committed file byte-for-byte (catches drift in the builder).
-	const fresh = buildStableManifest(STABLE_API_TOOLS, MCP_VERTEX_VERSION);
+	const fresh = buildStableManifest(STABLE_API_TOOLS, DELENDAI_VERSION);
 	const onDiskJson = JSON.stringify(onDisk, null, 2);
 	const freshJson = JSON.stringify(fresh, null, 2);
 	if (

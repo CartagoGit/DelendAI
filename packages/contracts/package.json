@@ -2,7 +2,7 @@
 	"name": "@delendai/contracts",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Pure-TypeScript type-only contracts shared across the mcp-vertex ecosystem. NO Node imports, NO @delendai/core dependency. Plugins and external consumers can depend on this package without dragging in the runtime weight of `@delendai/core`.",
+	"description": "Pure-TypeScript type-only contracts shared across the delendai ecosystem. NO Node imports, NO @delendai/core dependency. Plugins and external consumers can depend on this package without dragging in the runtime weight of `@delendai/core`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

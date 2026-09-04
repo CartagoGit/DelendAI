@@ -10,7 +10,7 @@ const SCRIPT = join(
 );
 
 const REMOTE_NAME = 'origin';
-const REMOTE_URL = 'git@github.com:CartagoGit/mcp-vertex.git';
+const REMOTE_URL = 'git@github.com:CartagoGit/delendai.git';
 const LOCAL_SHA = 'a'.repeat(40);
 const REMOTE_SHA = 'b'.repeat(40);
 

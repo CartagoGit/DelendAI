@@ -134,17 +134,10 @@ describe('affected (c00138) — graph + closure', () => {
 			standardDirs('@delendai/core'),
 		);
 		const result = computeAffected(
-			[
-				'README.md',
-				'mcp-vertex.config.json',
-				'packages/core/src/index.ts',
-			],
+			['README.md', 'delendai.config.json', 'packages/core/src/index.ts'],
 			graph,
 		);
-		expect(result.rootFiles).toEqual([
-			'README.md',
-			'mcp-vertex.config.json',
-		]);
+		expect(result.rootFiles).toEqual(['README.md', 'delendai.config.json']);
 		expect(result.affected).toEqual(['@delendai/core']);
 	});
 

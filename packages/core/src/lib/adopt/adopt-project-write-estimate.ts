@@ -23,7 +23,7 @@ const PROPOSAL_STATUS_FOLDERS = [
 const PROPOSALS_README = [
 	'# Proposals',
 	'',
-	'This folder is the proposals store managed by the mcp-vertex',
+	'This folder is the proposals store managed by the delendai',
 	'`proposals` plugin. Each proposal is one markdown file with',
 	'frontmatter (`id`, `kind`, `status`, `type`, `track`) and lives in',
 	'the folder matching its status:',
@@ -90,7 +90,7 @@ export const buildAdoptProjectWriteEstimate = (input: {
 	const breakdown: IAdoptProjectWriteEstimateBreakdownEntry[] = [
 		{
 			kind: 'config',
-			description: 'Project config file (mcp-vertex.config.json).',
+			description: 'Project config file (delendai.config.json).',
 			count: 1,
 			exact: true,
 		},

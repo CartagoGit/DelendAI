@@ -143,7 +143,7 @@ export interface IProjectShape {
  */
 export interface ICapabilityGraph {
 	/** Contract marker, so a persisted graph identifies itself. */
-	readonly contract: 'mcp-vertex.capability-graph';
+	readonly contract: 'delendai.capability-graph';
 	readonly version: 1;
 	/** Every language with a signal, in descending order of accumulated weight. */
 	readonly languages: readonly ILanguageFinding[];

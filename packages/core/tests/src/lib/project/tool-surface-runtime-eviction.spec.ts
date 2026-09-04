@@ -30,7 +30,7 @@ const buildEvictableRuntime = (workingSet: {
 		descriptors: [
 			{
 				registrationId: 'memory_save',
-				name: 'mcp-vertex_memory_save',
+				name: 'delendai_memory_save',
 				toolId: 'save',
 				pluginId: 'memory',
 				namespace: 'memory',
@@ -54,7 +54,7 @@ const buildEvictableRuntime = (workingSet: {
 	});
 	runtime.bindRegisteredTool({
 		registrationId: 'memory_save',
-		name: 'mcp-vertex_memory_save',
+		name: 'delendai_memory_save',
 		handler: async () => ({ ok: true, activationCount }),
 		handle: makeHandle(),
 	});
@@ -90,14 +90,14 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 			descriptors: [
 				{
 					registrationId: 'alpha_run',
-					name: 'mcp-vertex_alpha_run',
+					name: 'delendai_alpha_run',
 					toolId: 'run',
 					pluginId: 'alpha',
 					namespace: 'alpha',
 				},
 				{
 					registrationId: 'beta_run',
-					name: 'mcp-vertex_beta_run',
+					name: 'delendai_beta_run',
 					toolId: 'run',
 					pluginId: 'beta',
 					namespace: 'beta',
@@ -124,8 +124,8 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 		runtime.onPluginEvicted?.((event) => evictedEvents.push(event));
 
 		for (const [registrationId, name] of [
-			['alpha_run', 'mcp-vertex_alpha_run'],
-			['beta_run', 'mcp-vertex_beta_run'],
+			['alpha_run', 'delendai_alpha_run'],
+			['beta_run', 'delendai_beta_run'],
 		] as const) {
 			runtime.bindLazyTool({
 				registrationId,
@@ -163,7 +163,7 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 
 		// Transparent reactivation: the next invocation through the
 		// evicted plugin still works, going back through `lazyActivate`.
-		const result = await runtime.invokeTool('mcp-vertex_alpha_run', {}, {});
+		const result = await runtime.invokeTool('delendai_alpha_run', {}, {});
 		expect(result).toEqual({ ok: true });
 	});
 
@@ -175,14 +175,14 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 			descriptors: [
 				{
 					registrationId: 'alpha_run',
-					name: 'mcp-vertex_alpha_run',
+					name: 'delendai_alpha_run',
 					toolId: 'run',
 					pluginId: 'alpha',
 					namespace: 'alpha',
 				},
 				{
 					registrationId: 'beta_run',
-					name: 'mcp-vertex_beta_run',
+					name: 'delendai_beta_run',
 					toolId: 'run',
 					pluginId: 'beta',
 					namespace: 'beta',
@@ -215,7 +215,7 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 		});
 		runtime.bindRegisteredTool({
 			registrationId: 'alpha_run',
-			name: 'mcp-vertex_alpha_run',
+			name: 'delendai_alpha_run',
 			handler: async () => {
 				markStarted();
 				await blocked;
@@ -229,13 +229,13 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 		});
 		runtime.bindRegisteredTool({
 			registrationId: 'beta_run',
-			name: 'mcp-vertex_beta_run',
+			name: 'delendai_beta_run',
 			handler: async () => ({ ok: true }),
 			handle: makeHandle(),
 		});
 
 		runtime.resolveRoute('alpha', 'run');
-		const call = runtime.invokeTool('mcp-vertex_alpha_run', {}, {});
+		const call = runtime.invokeTool('delendai_alpha_run', {}, {});
 		await started;
 		// Touch beta while alpha's call is in flight: alpha would be the
 		// oldest touch and the LRU pick, but it must be skipped because
@@ -255,7 +255,7 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 			descriptors: [
 				{
 					registrationId: 'alpha_run',
-					name: 'mcp-vertex_alpha_run',
+					name: 'delendai_alpha_run',
 					toolId: 'run',
 					pluginId: 'alpha',
 					namespace: 'alpha',
@@ -275,7 +275,7 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 		});
 		ttlDisabled.bindRegisteredTool({
 			registrationId: 'alpha_run',
-			name: 'mcp-vertex_alpha_run',
+			name: 'delendai_alpha_run',
 			handler: async () => undefined,
 			handle: makeHandle(),
 		});
@@ -309,11 +309,7 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 
 		// Despite the throwing dispose, the plugin is still relazied and
 		// reachable on the next call.
-		const result = await runtime.invokeTool(
-			'mcp-vertex_memory_save',
-			{},
-			{},
-		);
+		const result = await runtime.invokeTool('delendai_memory_save', {}, {});
 		expect(result).toEqual({ ok: true, activationCount: 1 });
 	});
 
@@ -325,7 +321,7 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 			descriptors: [
 				{
 					registrationId: 'eager_run',
-					name: 'mcp-vertex_eager_run',
+					name: 'delendai_eager_run',
 					toolId: 'run',
 					pluginId: 'eager',
 					namespace: 'eager',
@@ -343,7 +339,7 @@ describe('tool-surface-runtime eviction (x00286 / AUD-C02)', () => {
 		// genuinely eager-only plugin.
 		runtime.bindRegisteredTool({
 			registrationId: 'eager_run',
-			name: 'mcp-vertex_eager_run',
+			name: 'delendai_eager_run',
 			handler: async () => undefined,
 			handle: makeHandle(),
 		});

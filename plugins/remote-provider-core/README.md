@@ -8,27 +8,27 @@ secret redaction, hard output limits, and SSRF-safe URL validation.
 
 ### GitHub
 
-To use a remote provider against the repository that hosts `mcp-vertex` on GitHub:
+To use a remote provider against the repository that hosts `delendai` on GitHub:
 
 1. Enable the `github` plugin in the host configuration.
 2. Set `GITHUB_TOKEN` to a token owned by the user or automation identity running
-   mcp-vertex. The token is read at runtime and **must never** be committed,
+   delendai. The token is read at runtime and **must never** be committed,
    persisted in config, logged, or returned by a tool.
 3. Set `GITHUB_API_URL` **only** when using GitHub Enterprise Server.  Leave it
    unset for GitHub.com (the provider uses `https://api.github.com` by default).
 4. Provide the repository as `owner` and `repository`, or configure equivalent
-   defaults. Use the GitHub owner and repository that actually host `mcp-vertex`;
+   defaults. Use the GitHub owner and repository that actually host `delendai`;
    do not infer them from the local folder name.
 5. For read-only inspection, grant the minimum `repo` visibility required by the
    selected tools. A token with write permissions is not required.
 
 ### GitLab
 
-To use a remote provider against the repository that hosts `mcp-vertex` on GitLab:
+To use a remote provider against the repository that hosts `delendai` on GitLab:
 
 1. Enable the `gitlab` plugin in the host configuration.
 2. Set `GITLAB_TOKEN` (or the documented legacy `GITLAB_PRIVATE_TOKEN` variable)
-   to a token owned by the user or automation identity running mcp-vertex. The
+   to a token owned by the user or automation identity running delendai. The
    token is read at runtime and **must never** be committed, persisted in config,
    logged, or returned by a tool.
 3. Set `GITLAB_URL` when using GitLab self-managed. Leave it unset for GitLab.com
@@ -36,7 +36,7 @@ To use a remote provider against the repository that hosts `mcp-vertex` on GitLa
    `https://` URL; `http://` and bare IP addresses are rejected at startup.
 4. Provide the project as a numeric project ID or URL-encoded `namespace/project`
    path, or configure an equivalent default. Use the GitLab project that actually
-   hosts `mcp-vertex`; do not infer it from the local folder name.
+   hosts `delendai`; do not infer it from the local folder name.
 5. For read-only inspection, grant the minimum `read_api` and `read_repository`
    access required by the selected tools. A token with write permissions is not
    required.

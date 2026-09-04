@@ -15,7 +15,7 @@
  *   audit via `related: [aNNNNN]`, and surface a deterministic
  *   title derived from the finding. Hosts can edit freely.
  * - **The scaffolder is project-agnostic.** It does not know the
- *   mcp-vertex proposal-lint rules — it only knows the universal
+ *   delendai proposal-lint rules — it only knows the universal
  *   shape (id, kind, status, title, related, slices). The lint will
  *   still complain if a host customises this template; that is the
  *   host's problem, not ours.

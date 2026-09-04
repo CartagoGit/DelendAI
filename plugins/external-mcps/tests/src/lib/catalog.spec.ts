@@ -137,8 +137,8 @@ describe('external-mcps plugin manifest (token-lean)', () => {
 		args: {},
 		namespacePrefix: 'external-mcps',
 		pluginCacheDir: 'external-mcps',
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 		workspace: {
 			root: '/tmp/external-mcps-spec',
 			resolve: (rel: string) => `/tmp/external-mcps-spec/${rel}`,
@@ -208,7 +208,7 @@ describe('external-mcps plugin manifest (token-lean)', () => {
 		const regs = registrationsOf(await plugin.register(ctx));
 		for (const tool of regs.tools ?? []) {
 			expect(tool.summary).toBeTruthy();
-			expect(tool.descriptionKey).toMatch(/^mcp-vertex_external-mcps_/);
+			expect(tool.descriptionKey).toMatch(/^delendai_external-mcps_/);
 		}
 	});
 });

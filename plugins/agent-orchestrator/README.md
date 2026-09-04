@@ -16,11 +16,11 @@ rotation.
 | S5 | pending | dogfooding on `develop` |
 | S6 | pending | i18n keys |
 
-Track the proposal in `docs/mcp-vertex/proposals/in-progress/plans/q00007-plan-agent-orchestrator-plugin.md`.
+Track the proposal in `docs/delendai/proposals/in-progress/plans/q00007-plan-agent-orchestrator-plugin.md`.
 
 ## Install
 
-Add to `mcp-vertex.config.json` plugin list:
+Add to `delendai.config.json` plugin list:
 
 ```jsonc
 {
@@ -53,8 +53,8 @@ Add to `mcp-vertex.config.json` plugin list:
 Or via the CLI preset:
 
 ```bash
-mcp-vertex --plugins=agent-orchestrator
-mcp-vertex --plugins=agent-orchestrator,auto-agent-selector
+delendai --plugins=agent-orchestrator
+delendai --plugins=agent-orchestrator,auto-agent-selector
 ```
 
 ## Modes

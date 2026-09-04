@@ -51,7 +51,7 @@ const slugFromPath = (relPath: string): string => {
 	const skillsIdx = segs.indexOf('skills');
 	if (skillsIdx >= 0 && segs.length > skillsIdx + 1)
 		return segs[skillsIdx + 1] as string;
-	// legacy repo shape: docs/mcp-vertex/skills/<slug>/SKILL.md handled above
+	// legacy repo shape: docs/delendai/skills/<slug>/SKILL.md handled above
 	// via the `skills` anchor; fall back to the first segment otherwise.
 	return segs[0] as string;
 };
@@ -81,7 +81,7 @@ const firstSentence = (body: string): string => {
 
 /**
  * Recursive skill walker. The top-level call is invoked with a
- * `dir` — typically `<repo>/docs/mcp-vertex/skills` from the CLI, or any path
+ * `dir` — typically `<repo>/docs/delendai/skills` from the CLI, or any path
  * under which SKILL.md files are arranged as `<dir>/<name>/SKILL.md`.
  *
  * The internal `anchor` is the basename of the original `dir`

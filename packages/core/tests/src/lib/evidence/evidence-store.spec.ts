@@ -31,7 +31,7 @@ afterEach(async () => {
 
 const makeStore = async (retentionDays = 30) => {
 	const workspaceRootAbs = await mkdtemp(
-		join(tmpdir(), 'mcp-vertex-evidence-'),
+		join(tmpdir(), 'delendai-evidence-'),
 	);
 	roots.push(workspaceRootAbs);
 	const cacheDirAbs = join(workspaceRootAbs, '.cache');

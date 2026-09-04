@@ -25,7 +25,7 @@ export const buildVsCodeExtension = async (
 		// the bundle, before any module body — guaranteed to fire on
 		// extension host startup. Keep it dependency-free.
 		banner: [
-			'/* mcp-vertex: node22 navigator shim — must stay first */',
+			'/* delendai: node22 navigator shim — must stay first */',
 			'try { Object.defineProperty(globalThis, "navigator", { value: undefined, writable: true, configurable: true }); } catch (_) { /* ignore */ }',
 		].join('\n'),
 	});

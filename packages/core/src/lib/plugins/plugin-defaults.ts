@@ -9,7 +9,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 > = {
 	git: {},
 	// a00063: search ships NO materialised defaults. The old block
-	// stamped mcp-vertex's own monorepo roots (packages/plugins/...)
+	// stamped delendai's own monorepo roots (packages/plugins/...)
 	// and a NARROWER extension list than the engine's built-ins into
 	// every adopter's config — an Angular app got roots that don't
 	// exist and lost html/scss, so every search scanned 0 files. The
@@ -103,7 +103,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 		scaffoldDir: 'docs/proposals/retired/issues',
 	},
 	audit: {
-		auditDir: 'docs/mcp-vertex/proposals/done/audits',
+		auditDir: 'docs/delendai/proposals/done/audits',
 		topActions: 5,
 		layers: [],
 	},

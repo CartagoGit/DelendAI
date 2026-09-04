@@ -14,7 +14,7 @@ import {
 	configurationCenterStringsByLang,
 } from '../i18n/configuration-center.strings';
 
-const OPEN_CONFIGURATION_CENTER_COMMAND = 'mcp-vertex.openConfigurationCenter';
+const OPEN_CONFIGURATION_CENTER_COMMAND = 'delendai.openConfigurationCenter';
 const roots: string[] = [];
 afterEach(async () => {
 	await Promise.all(
@@ -83,7 +83,7 @@ const createClient = (): McpStdioClient =>
 		},
 	});
 
-describe('mcp-vertex.openConfigurationCenter', () => {
+describe('delendai.openConfigurationCenter', () => {
 	it('has complete typed copy for every supported language', () => {
 		expect(assertConfigurationCenterStringsComplete()).toEqual([]);
 		expect(configurationCenterStringsByLang.es.copy.title).toBe(
@@ -92,7 +92,7 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 	});
 
 	it('renders the real center and only persists schema-validated messages', async () => {
-		const root = await mkdtemp(join(tmpdir(), 'mcpv-vscode-config-'));
+		const root = await mkdtemp(join(tmpdir(), 'delendai-vscode-config-'));
 		roots.push(root);
 		const commands = new Map<
 			string,
@@ -168,7 +168,7 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 
 		await receive?.({ command: 'saveConfiguration', edits: [] });
 		expect(errors).toEqual([
-			'mcp-vertex: el Centro de configuración rechazó un mensaje no válido.',
+			'delendai: el Centro de configuración rechazó un mensaje no válido.',
 		]);
 		expect(
 			(await readConfigurationDocument({ workspaceRoot: root })).exists,
@@ -184,7 +184,7 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 		});
 		expect(
 			JSON.parse(
-				await readFile(join(root, 'mcp-vertex.config.json'), 'utf8'),
+				await readFile(join(root, 'delendai.config.json'), 'utf8'),
 			),
 		).toEqual({
 			keepLegacy: true,
@@ -192,7 +192,7 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 		expect(outbound).toEqual([
 			expect.objectContaining({ command: 'configurationSaved' }),
 		]);
-		expect(executed).toEqual(['mcp-vertex.restartServer']);
+		expect(executed).toEqual(['delendai.restartServer']);
 
 		const htmlBeforeDispose = panel.webview.html;
 		disposePanel?.();

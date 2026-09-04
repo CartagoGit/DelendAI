@@ -69,7 +69,7 @@ const defaultListDir = async (absPath: string): Promise<readonly string[]> => {
 };
 
 const cachePathFor = (workspaceRoot: string, id: string): string =>
-	join(workspaceRoot, '.cache', 'mcp-vertex', 'skills', `${id}.json`);
+	join(workspaceRoot, '.cache', 'delendai', 'skills', `${id}.json`);
 
 const isCacheFresh = (
 	cacheStat: ICacheStatLike | null,

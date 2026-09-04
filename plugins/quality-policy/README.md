@@ -8,7 +8,7 @@ tests, conventions, lint, types and coverage to behave.
 ## Load it
 
 ```bash
-mcp-vertex --plugins=quality-policy
+delendai --plugins=quality-policy
 ```
 
 This registers one tool, `<prefix>_quality_policy`.
@@ -27,7 +27,7 @@ heavy scanners or quality commands.
 It does not execute `runAllScopes`, `scanDrift`, `run_quality`, or any other
 runner. The response always includes `dependsOn`, `bytes`, and `truncated`.
 
-## Configuration (`mcp-vertex.config.json`)
+## Configuration (`delendai.config.json`)
 
 ```json
 {

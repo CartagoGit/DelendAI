@@ -174,7 +174,7 @@ describe('negotiateLocale (priority order)', () => {
 	});
 
 	it('exposes the shared cookie name', () => {
-		expect(LOCALE_COOKIE).toBe('mcp_vertex_locale');
+		expect(LOCALE_COOKIE).toBe('delendai_locale');
 		expect(localeCookieAttrs()).toContain('SameSite=Lax');
 		expect(localeCookieAttrs()).toContain('max-age=31536000');
 		expect(localeCookieAttrs()).toContain('path=/');

@@ -9,21 +9,21 @@ describe('ToolTreeDataProvider', async () => {
 			async listTools() {
 				return [
 					{
-						name: 'mcp-vertex_proposals_proposal_board',
+						name: 'delendai_proposals_proposal_board',
 						plugin: 'proposals',
 						summary: 'Show proposals',
 						tags: ['workflow'],
 						effects: [],
 					},
 					{
-						name: 'mcp-vertex_quality_run_quality',
+						name: 'delendai_quality_run_quality',
 						plugin: 'quality',
 						summary: 'Run quality',
 						tags: ['quality'],
 						effects: ['spawn'],
 					},
 					{
-						name: 'mcp-vertex_proposals_continue',
+						name: 'delendai_proposals_continue',
 						plugin: 'proposals',
 						tags: [],
 						effects: [],
@@ -51,18 +51,18 @@ describe('ToolTreeDataProvider', async () => {
 
 		const proposalTools = await provider.getChildren(plugins[0]);
 		expect(proposalTools.map((tool) => tool.label)).toEqual([
-			'mcp-vertex_proposals_continue',
-			'mcp-vertex_proposals_proposal_board',
+			'delendai_proposals_continue',
+			'delendai_proposals_proposal_board',
 		]);
 		expect(proposalTools[1]).toMatchObject({
 			description: 'Show proposals',
 			tooltip: 'Show proposals',
 			collapsibleState: TreeItemCollapsibleState.None,
 			command: {
-				command: 'mcp-vertex.openToolDetail',
+				command: 'delendai.openToolDetail',
 				arguments: [
 					{
-						name: 'mcp-vertex_proposals_proposal_board',
+						name: 'delendai_proposals_proposal_board',
 						plugin: 'proposals',
 						summary: 'Show proposals',
 					},

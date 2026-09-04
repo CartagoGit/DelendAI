@@ -40,10 +40,9 @@ import type {
 	IToolSummary,
 } from '@delendai/core/public';
 
-export const DEFAULT_OUTPUT_PATH =
-	'docs/mcp-vertex/agent-catalog.generated.json';
+export const DEFAULT_OUTPUT_PATH = 'docs/delendai/agent-catalog.generated.json';
 export const DEFAULT_PROPOSALS_INDEX_PATH =
-	'.cache/mcp-vertex/proposals/index.json';
+	'.cache/delendai/proposals/index.json';
 export const DEFAULT_SKILL_MANIFEST_PATH = 'packages/core/skills/manifest.json';
 export const DEFAULT_WARNINGS_SUFFIX = '.lint-warnings.txt';
 
@@ -280,7 +279,7 @@ const readProposalSummaries = async (
 	// rebuilds it lazily on the next `auto_work` / `continue_proposal`
 	// call, but a fresh checkout — like the CI runner behind the `drift`
 	// workflow — has no server and no cache, only the checked-in proposal
-	// markdown under `docs/mcp-vertex/proposals/`. Without this self-heal
+	// markdown under `docs/delendai/proposals/`. Without this self-heal
 	// the generator threw "proposal index not found" on every CI run
 	// (the artifact was never actually stale, the cache was just absent),
 	// which gen-all reported as a generator crash rather than real drift.
@@ -431,9 +430,9 @@ export const buildAgentCatalogArtifact = async (
 		mode: options.mode,
 		now: () => new Date(generatedAt),
 		server: {
-			name: 'mcp-vertex',
+			name: 'delendai',
 			version: '0.1.0',
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 		},
 	});
 	const artifact = buildArtifact(snapshot);

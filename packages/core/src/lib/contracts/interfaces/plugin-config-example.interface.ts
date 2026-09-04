@@ -1,6 +1,6 @@
 /**
  * `IPluginConfigExample` — contract a plugin can implement so the docs
- * site can render a ready-to-copy `mcp-vertex.config.json` snippet for
+ * site can render a ready-to-copy `delendai.config.json` snippet for
  * each plugin. See l100 s6.
  *
  * Plugins opt in by exporting a `configExample` object (or by adding
@@ -39,7 +39,7 @@ export interface IPluginConfigExample {
 	/**
 	 * The example config object. Will be serialised with
 	 * `JSON.stringify(value, null, 2)` and rendered as preformatted
-	 * text. The shape MUST match what `mcp-vertex.config.json` accepts
+	 * text. The shape MUST match what `delendai.config.json` accepts
 	 * for this plugin (i.e. the keys under
 	 * `plugins.<pluginShortName>.options`); the docs site wraps it in
 	 * the outer object so users can copy-paste the whole file.

@@ -2,7 +2,7 @@
  * init-config-tool.ts — `<prefix>_init_config`, the server-side
  * self-init (f00117 S2).
  *
- * Any MCP client can bootstrap its own `mcp-vertex.config.json` with
+ * Any MCP client can bootstrap its own `delendai.config.json` with
  * one call — no CLI required. Dry-run by default (returns the derived
  * config + rationale, writes nothing); `write: true` persists it
  * atomically. A valid existing config is merged as the project authority;
@@ -26,7 +26,7 @@ export interface IInitConfigToolDeps {
 	readonly reader: IFileReader;
 }
 
-const CONFIG_FILENAME = 'mcp-vertex.config.json';
+const CONFIG_FILENAME = 'delendai.config.json';
 
 const OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
@@ -45,14 +45,14 @@ export const buildInitConfigToolRegistration = (
 ): IToolRegistration => ({
 	id: 'init_config',
 	summary:
-		'Derive (and optionally write) mcp-vertex.config.json from the live project — the self-init any MCP client can call.',
+		'Derive (and optionally write) delendai.config.json from the live project — the self-init any MCP client can call.',
 	tags: ['orientation', 'bootstrap'],
 	register: async (server) => {
 		server.registerTool(
 			`${deps.namespacePrefix}_init_config`,
 			{
 				description:
-					'Derive a recommended mcp-vertex.config.json from THIS project (language, monorepo shape, real top-level dirs) — the server-side self-init for hosts with no CLI available. Dry-run by default: returns {preset, config, rationale} without writing. Pass write:true to add missing setup atomically while preserving an existing valid project config; pass overwrite:true only to intentionally replace it.',
+					'Derive a recommended delendai.config.json from THIS project (language, monorepo shape, real top-level dirs) — the server-side self-init for hosts with no CLI available. Dry-run by default: returns {preset, config, rationale} without writing. Pass write:true to add missing setup atomically while preserving an existing valid project config; pass overwrite:true only to intentionally replace it.',
 				inputSchema: z.object({
 					write: z.boolean().optional(),
 					overwrite: z.boolean().optional(),

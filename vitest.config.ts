@@ -77,7 +77,7 @@ export default defineConfig({
 		projects: [
 			'packages/*',
 			'plugins/*',
-			'docs/mcp-vertex/examples/custom-plugin',
+			'docs/delendai/examples/custom-plugin',
 			'apps/web',
 			'apps/shared',
 			'packages/ui-extension',
@@ -106,7 +106,7 @@ export default defineConfig({
 		//     ratchet scripts that already triage failures offline).
 		bail: 1,
 		//   - the journal reporter writes every run (pass or fail) to
-		//     `.cache/mcp-vertex/results/logs/test-runs.jsonl`, so the
+		//     `.cache/delendai/results/logs/test-runs.jsonl`, so the
 		//     failures of a run that has already scrolled away can be read
 		//     with `bun run test:failures` instead of running the suite a
 		//     second time. It never prints and never throws.
@@ -115,7 +115,7 @@ export default defineConfig({
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
 		// `bun run test` stays fast.
 		//
-		// RATCHET POLICY (re-measured 2026-08-29, see docs/mcp-vertex/coverage-ratchet.md):
+		// RATCHET POLICY (re-measured 2026-08-29, see docs/delendai/coverage-ratchet.md):
 		// measured twice back-to-back — 83.23/70.29/84.05/84.90 then
 		// 83.30/70.34/84.12/84.98 (statements/branches/functions/lines) — so
 		// run-to-run drift on this suite is well under 0.1pt per metric.

@@ -23,13 +23,13 @@ describe('tool-surface-runtime schema accounting', () => {
 			descriptors: [
 				{
 					registrationId: 'overview',
-					name: 'mcp-vertex_overview',
+					name: 'delendai_overview',
 					toolId: 'overview',
 					summary: 'compact overview',
 				},
 				{
 					registrationId: 'search_search',
-					name: 'mcp-vertex_search_search',
+					name: 'delendai_search_search',
 					toolId: 'search',
 					pluginId: 'search',
 					namespace: 'search',
@@ -48,7 +48,7 @@ describe('tool-surface-runtime schema accounting', () => {
 		const searchHandle = makeHandle();
 		runtime.bindRegisteredTool({
 			registrationId: 'overview',
-			name: 'mcp-vertex_overview',
+			name: 'delendai_overview',
 			description: 'Read the overview',
 			inputSchema: z.object({ compact: z.boolean().optional() }),
 			outputSchema: z.object({ ok: z.boolean() }),
@@ -57,7 +57,7 @@ describe('tool-surface-runtime schema accounting', () => {
 		});
 		runtime.bindRegisteredTool({
 			registrationId: 'search_search',
-			name: 'mcp-vertex_search_search',
+			name: 'delendai_search_search',
 			description: 'Search files',
 			inputSchema: z.object({ query: z.string() }),
 			handler: async () => undefined,
@@ -82,14 +82,14 @@ describe('tool-surface-runtime schema accounting', () => {
 			descriptors: [
 				{
 					registrationId: 'alpha_run',
-					name: 'mcp-vertex_alpha_run',
+					name: 'delendai_alpha_run',
 					toolId: 'run',
 					pluginId: 'alpha',
 					namespace: 'alpha',
 				},
 				{
 					registrationId: 'beta_run',
-					name: 'mcp-vertex_beta_run',
+					name: 'delendai_beta_run',
 					toolId: 'run',
 					pluginId: 'beta',
 					namespace: 'beta',
@@ -109,8 +109,8 @@ describe('tool-surface-runtime schema accounting', () => {
 			],
 		});
 		for (const [registrationId, name] of [
-			['alpha_run', 'mcp-vertex_alpha_run'],
-			['beta_run', 'mcp-vertex_beta_run'],
+			['alpha_run', 'delendai_alpha_run'],
+			['beta_run', 'delendai_beta_run'],
 		] as const) {
 			// A `bindLazyTool` activator must be retained BEFORE the tool
 			// materializes (x00286): eviction can only relaze a plugin it
@@ -138,7 +138,7 @@ describe('tool-surface-runtime schema accounting', () => {
 		});
 		expect(context.warmPlugins).toHaveLength(1);
 		expect(context.loadedPlugins).toEqual(['alpha', 'beta']);
-		expect(runtime.isToolExposed('mcp-vertex_alpha_run')).toBe(true);
+		expect(runtime.isToolExposed('delendai_alpha_run')).toBe(true);
 		expect(runtime.evictIdlePlugins(Date.now() + 101)).toHaveLength(1);
 		expect(
 			runtime.getProjectContext({ workspaceRoot: '/workspace' })
@@ -179,7 +179,7 @@ describe('tool-surface-runtime schema accounting', () => {
 			descriptors: [
 				{
 					registrationId: 'memory_save',
-					name: 'mcp-vertex_memory_save',
+					name: 'delendai_memory_save',
 					toolId: 'save',
 					pluginId: 'memory',
 					namespace: 'memory',
@@ -209,7 +209,7 @@ describe('tool-surface-runtime schema accounting', () => {
 		});
 		runtime.bindRegisteredTool({
 			registrationId: 'memory_save',
-			name: 'mcp-vertex_memory_save',
+			name: 'delendai_memory_save',
 			handler: async () => {
 				markStarted();
 				await blocked;
@@ -218,7 +218,7 @@ describe('tool-surface-runtime schema accounting', () => {
 			handle: makeHandle(),
 		});
 		runtime.activatePlugin('memory');
-		const call = runtime.invokeTool('mcp-vertex_memory_save', {}, {});
+		const call = runtime.invokeTool('delendai_memory_save', {}, {});
 		await started;
 		expect(runtime.evictIdlePlugins(Date.now() + 101)).toEqual([]);
 		release();
@@ -236,7 +236,7 @@ describe('tool-surface-runtime access state (visibility vs. authorization)', () 
 			descriptors: [
 				{
 					registrationId: 'reports_run',
-					name: 'mcp-vertex_reports_run',
+					name: 'delendai_reports_run',
 					toolId: 'run',
 					pluginId: 'reports',
 					namespace: 'reports',
@@ -255,18 +255,18 @@ describe('tool-surface-runtime access state (visibility vs. authorization)', () 
 		const runtime = buildDeactivatableRuntime('native');
 		runtime.bindRegisteredTool({
 			registrationId: 'reports_run',
-			name: 'mcp-vertex_reports_run',
+			name: 'delendai_reports_run',
 			handler: async () => ({ ok: true }),
 			handle: makeHandle(true),
 		});
 		runtime.finalizeInitialSurface();
 		runtime.applySurfaceMode('compact');
 
-		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(false);
+		expect(runtime.isToolExposed('delendai_reports_run')).toBe(false);
 		const route = runtime.resolveRoute('reports', 'run');
 		expect(route?.active).toBe(false);
 		await expect(
-			runtime.invokeTool('mcp-vertex_reports_run', {}, {}),
+			runtime.invokeTool('delendai_reports_run', {}, {}),
 		).resolves.toEqual({ ok: true });
 	});
 
@@ -274,7 +274,7 @@ describe('tool-surface-runtime access state (visibility vs. authorization)', () 
 		const runtime = buildDeactivatableRuntime('native');
 		runtime.bindRegisteredTool({
 			registrationId: 'reports_run',
-			name: 'mcp-vertex_reports_run',
+			name: 'delendai_reports_run',
 			handler: async () => ({ ok: true }),
 			handle: makeHandle(true),
 		});
@@ -282,15 +282,15 @@ describe('tool-surface-runtime access state (visibility vs. authorization)', () 
 
 		const change = runtime.deactivatePlugin('reports');
 		expect(change?.active).toBe(false);
-		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(false);
+		expect(runtime.isToolExposed('delendai_reports_run')).toBe(false);
 
 		// resolveRoute still finds the tool — routing metadata is not gated
 		// by authorization — but invokeTool must refuse to run it.
 		const route = runtime.resolveRoute('reports', 'run');
-		expect(route?.name).toBe('mcp-vertex_reports_run');
+		expect(route?.name).toBe('delendai_reports_run');
 
 		await expect(
-			runtime.invokeTool('mcp-vertex_reports_run', {}, {}),
+			runtime.invokeTool('delendai_reports_run', {}, {}),
 		).rejects.toBeInstanceOf(ToolNotAuthorizedError);
 	});
 
@@ -298,7 +298,7 @@ describe('tool-surface-runtime access state (visibility vs. authorization)', () 
 		const runtime = buildDeactivatableRuntime('native');
 		runtime.bindRegisteredTool({
 			registrationId: 'reports_run',
-			name: 'mcp-vertex_reports_run',
+			name: 'delendai_reports_run',
 			handler: async () => ({ ok: true }),
 			handle: makeHandle(true),
 		});
@@ -307,14 +307,14 @@ describe('tool-surface-runtime access state (visibility vs. authorization)', () 
 
 		runtime.applySurfaceMode('native');
 
-		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(false);
+		expect(runtime.isToolExposed('delendai_reports_run')).toBe(false);
 	});
 
 	it('reactivating a plugin restores both visibility and authorization', async () => {
 		const runtime = buildDeactivatableRuntime('native');
 		runtime.bindRegisteredTool({
 			registrationId: 'reports_run',
-			name: 'mcp-vertex_reports_run',
+			name: 'delendai_reports_run',
 			handler: async () => ({ ok: true }),
 			handle: makeHandle(true),
 		});
@@ -322,9 +322,9 @@ describe('tool-surface-runtime access state (visibility vs. authorization)', () 
 		runtime.deactivatePlugin('reports');
 		runtime.activatePlugin('reports');
 
-		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(true);
+		expect(runtime.isToolExposed('delendai_reports_run')).toBe(true);
 		await expect(
-			runtime.invokeTool('mcp-vertex_reports_run', {}, {}),
+			runtime.invokeTool('delendai_reports_run', {}, {}),
 		).resolves.toEqual({ ok: true });
 	});
 });

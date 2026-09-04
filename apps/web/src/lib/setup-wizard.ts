@@ -4,7 +4,7 @@
  *
  * This mirrors the agnostic step engine in
  * `packages/core/src/lib/setup/setup-steps.ts` and the canonical 7-step
- * guide in `docs/mcp-vertex/CROSS-PROJECT-SETUP.md` (§"The 7 steps of `setup-github`").
+ * guide in `docs/delendai/CROSS-PROJECT-SETUP.md` (§"The 7 steps of `setup-github`").
  * The web wizard renders those same 7 steps statically; this module is the
  * single, testable source the `.astro` page maps over.
  *
@@ -96,7 +96,7 @@ export const mcpJsonSnippet = (presetId = 'full'): string =>
 		return JSON.stringify(
 			{
 				servers: {
-					'mcp-vertex': {
+					delendai: {
 						command: launch.command,
 						args: launch.args,
 					},
@@ -129,7 +129,7 @@ export const buildSetupWizard = (
 			id: 'confirm-repo',
 			title: s.confirmRepoTitle,
 			body: s.confirmRepoBody,
-			command: 'mcp-vertex setup-github',
+			command: 'delendai setup-github',
 			commandLang: 'bash',
 			optional: false,
 		},
@@ -169,7 +169,7 @@ export const buildSetupWizard = (
 			id: 'mark-configured',
 			title: s.markConfiguredTitle,
 			body: s.markConfiguredBody,
-			command: 'mcp-vertex setup-github --mark-configured',
+			command: 'delendai setup-github --mark-configured',
 			commandLang: 'bash',
 			optional: true,
 		},

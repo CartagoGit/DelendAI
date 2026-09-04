@@ -27,7 +27,7 @@ import { TOKEN_BUDGETS, type IMcpToolSurfaceMode } from '@delendai/core/public';
  *
  * Risk rule: if a change regresses the measured bytes, tighten the budgets or
  * the surface deliberately. Rough estimate only: ~4 bytes/token. See N23 and
- * docs/mcp-vertex/TOKEN-BUDGETS.md.
+ * docs/delendai/TOKEN-BUDGETS.md.
  */
 const budgetWarning = (label: string, value: number, warning: number): void => {
 	if (value > warning) {
@@ -51,7 +51,7 @@ const jsonBytes = (value: unknown): number =>
 
 const dynamicSurfaceCapabilities: ClientCapabilities = {
 	extensions: {
-		'mcp-vertex/surface': {
+		'delendai/surface': {
 			toolsListChanged: true,
 		},
 	},
@@ -66,7 +66,7 @@ const classifyToolOwner = (
 	toolName: string,
 	pluginIds: readonly string[],
 ): string => {
-	const qualifiedPrefix = 'mcp-vertex_';
+	const qualifiedPrefix = 'delendai_';
 	const unqualified = toolName.startsWith(qualifiedPrefix)
 		? toolName.slice(qualifiedPrefix.length)
 		: toolName;
@@ -199,11 +199,11 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				generatedAt: '2026-06-25T00:00:00.000Z',
 				skills: [
 					{
-						id: 'mcp-vertex-token-budget-playbook',
+						id: 'delendai-token-budget-playbook',
 						version: '1.0.0',
 						minCoreVersion: '0.1.0',
 						bodyPath:
-							'packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md',
+							'packages/core/skills/delendai-token-budget-playbook/SKILL.md',
 						tags: ['metrics', 'compact'],
 					},
 				],
@@ -276,8 +276,8 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	 * `managed` ones.
 	 */
 	it('native overview listing stays under its own dedicated budget', async () => {
-		const full = await textBytes('mcp-vertex_overview', {});
-		const compact = await textBytes('mcp-vertex_overview', {
+		const full = await textBytes('delendai_overview', {});
+		const compact = await textBytes('delendai_overview', {
 			compact: true,
 		});
 		expectWithinBudget(
@@ -322,8 +322,8 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				)[0]?.text;
 				return Buffer.byteLength(text ?? '', 'utf8');
 			};
-			const full = await adaptiveTextBytes('mcp-vertex_overview', {});
-			const compact = await adaptiveTextBytes('mcp-vertex_overview', {
+			const full = await adaptiveTextBytes('delendai_overview', {});
+			const compact = await adaptiveTextBytes('delendai_overview', {
 				compact: true,
 			});
 
@@ -382,11 +382,11 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				return Buffer.byteLength(text ?? '', 'utf8');
 			};
 			const overviewCompact = await textBytesForSwarm(
-				'mcp-vertex_overview',
+				'delendai_overview',
 				{ compact: true },
 			);
 			const roundContext = await textBytesForSwarm(
-				'mcp-vertex_proposals_round_context',
+				'delendai_proposals_round_context',
 				{},
 			);
 
@@ -502,10 +502,10 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			return Buffer.byteLength(text ?? '', 'utf8');
 		};
 		try {
-			const compact = await catalogTextBytes('mcp-vertex_agent_catalog', {
+			const compact = await catalogTextBytes('delendai_agent_catalog', {
 				mode: 'compact',
 			});
-			const full = await catalogTextBytes('mcp-vertex_agent_catalog', {
+			const full = await catalogTextBytes('delendai_agent_catalog', {
 				mode: 'full',
 			});
 
@@ -529,7 +529,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		const proposalDir = join(
 			workspace,
 			'docs',
-			'mcp-vertex',
+			'delendai',
 			'proposals',
 			'ready',
 		);
@@ -559,10 +559,10 @@ title: token budget fixture
 `,
 		);
 		await client.callTool({
-			name: 'mcp-vertex_proposals_sync_proposals',
+			name: 'delendai_proposals_sync_proposals',
 			arguments: {},
 		});
-		const bytes = await textBytes('mcp-vertex_proposals_auto_work', {});
+		const bytes = await textBytes('delendai_proposals_auto_work', {});
 		expectWithinBudget(
 			'auto_work claim-ready plan',
 			bytes,
@@ -574,8 +574,8 @@ title: token budget fixture
 		// Bare calls — the compact summary is the default since x00101;
 		// the exhaustive payload (205 963 B measured against this repo)
 		// requires full:true.
-		const analyze = await textBytes('mcp-vertex_analyze_project', {});
-		const plan = await textBytes('mcp-vertex_plan_mcp_project', {});
+		const analyze = await textBytes('delendai_analyze_project', {});
+		const plan = await textBytes('delendai_plan_mcp_project', {});
 		expectWithinBudget(
 			'analyze compact',
 			analyze,
@@ -601,29 +601,29 @@ title: token budget fixture
 			return Buffer.byteLength(text ?? '', 'utf8');
 		};
 		try {
-			// Prime a few events so mcp-vertex_logs_tail has real output.
+			// Prime a few events so delendai_logs_tail has real output.
 			await extra.client.callTool({
-				name: 'mcp-vertex_search_search',
+				name: 'delendai_search_search',
 				arguments: { query: 'proposal', maxResults: 5, context: 0 },
 			});
 			await extra.client.callTool({
-				name: 'mcp-vertex_docs_docs_list',
+				name: 'delendai_docs_docs_list',
 				arguments: { limit: 10 },
 			});
 
-			const search = await extraTextBytes('mcp-vertex_search_search', {
+			const search = await extraTextBytes('delendai_search_search', {
 				query: 'proposal',
 				maxResults: 5,
 				context: 0,
 			});
-			const docsList = await extraTextBytes('mcp-vertex_docs_docs_list', {
+			const docsList = await extraTextBytes('delendai_docs_docs_list', {
 				limit: 10,
 			});
 			const roundContext = await extraTextBytes(
-				'mcp-vertex_proposals_round_context',
+				'delendai_proposals_round_context',
 				{},
 			);
-			const logsTail = await extraTextBytes('mcp-vertex_logs_tail', {
+			const logsTail = await extraTextBytes('delendai_logs_tail', {
 				limit: 10,
 			});
 
@@ -643,7 +643,7 @@ title: token budget fixture
 				TOKEN_BUDGETS.toolPayloads.roundContext,
 			);
 			expectWithinBudget(
-				'mcp-vertex_logs_tail',
+				'delendai_logs_tail',
 				logsTail,
 				TOKEN_BUDGETS.toolPayloads.logsTail,
 			);
@@ -677,7 +677,7 @@ title: token budget fixture
 			false,
 			{ surfaceMode: 'managed' },
 		);
-		// Capabilities that declare `mcp-vertex/surface` listChanged support
+		// Capabilities that declare `delendai/surface` listChanged support
 		// would infer `managed`; pinning `native` here must still win.
 		const nativeWithManagedCapabilities = await connectClient(
 			TOKEN_BUDGETS.fixturePluginIds.join(','),
@@ -691,7 +691,7 @@ title: token budget fixture
 		try {
 			const managedBytes = await (async () => {
 				const res = await managedNoCapabilities.client.callTool({
-					name: 'mcp-vertex_overview',
+					name: 'delendai_overview',
 					arguments: {},
 				});
 				const text = (
@@ -701,7 +701,7 @@ title: token budget fixture
 			})();
 			const nativeBytes = await (async () => {
 				const res = await nativeWithManagedCapabilities.client.callTool(
-					{ name: 'mcp-vertex_overview', arguments: {} },
+					{ name: 'delendai_overview', arguments: {} },
 				);
 				const text = (
 					res.content as Array<{ type: string; text: string }>

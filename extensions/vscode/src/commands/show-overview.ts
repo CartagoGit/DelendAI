@@ -14,15 +14,12 @@ export const registerShowOverviewCommand = (deps: ICommandDeps) =>
 				compact: true,
 			});
 			const panel = deps.vscode.window.createWebviewPanel(
-				'mcpVertexOverview',
-				'mcp-vertex Overview',
+				'delendaiOverview',
+				'delendai Overview',
 				deps.vscode.ViewColumn.One,
 				{ enableScripts: false },
 			);
-			panel.webview.html = renderJsonHtml(
-				'mcp-vertex Overview',
-				overview,
-			);
+			panel.webview.html = renderJsonHtml('delendai Overview', overview);
 		} catch (err) {
 			await showCommandError(deps.vscode, 'show overview', err);
 		}

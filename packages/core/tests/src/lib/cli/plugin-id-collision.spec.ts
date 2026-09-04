@@ -14,7 +14,7 @@ import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project'
 import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
-const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-collision-');
+const WRITABLE_WORKSPACE = createTestWorkspace('delendai-collision-');
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 const pluginWithPingTool = (name: string) => ({
@@ -57,8 +57,8 @@ describe('R12 — same internal tool id across plugins', async () => {
 		expect(loadResult.errors).toEqual([]);
 
 		const ids = config.extraTools!.map((t) => t.id);
-		expect(ids).toContain('mcp-vertex_alpha_ping');
-		expect(ids).toContain('mcp-vertex_beta_ping');
+		expect(ids).toContain('delendai_alpha_ping');
+		expect(ids).toContain('delendai_beta_ping');
 		// The raw, ambiguous id must not survive into the global sequence.
 		expect(ids).not.toContain('ping');
 		expect(ids).not.toContain('alpha_ping');
@@ -68,7 +68,7 @@ describe('R12 — same internal tool id across plugins', async () => {
 	it('builds the real MCP server without throwing a duplicate-id error', async () => {
 		const { config } = await assembleTwoPlugins();
 		const assembled = await createMcpProject(config);
-		expect(assembled.registrationOrder).toContain('mcp-vertex_alpha_ping');
-		expect(assembled.registrationOrder).toContain('mcp-vertex_beta_ping');
+		expect(assembled.registrationOrder).toContain('delendai_alpha_ping');
+		expect(assembled.registrationOrder).toContain('delendai_beta_ping');
 	});
 });

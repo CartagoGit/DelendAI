@@ -2,7 +2,7 @@
 /**
  * check-stray-cache-files.script.spec.ts — f00081 + f00082 acceptance.
  *
- * f00081: the lint walks `<repoRoot>/.cache/mcp-vertex` and reports any
+ * f00081: the lint walks `<repoRoot>/.cache/delendai` and reports any
  * file that looks like an agent's dropped source (`.ts`, `.mjs`, `.sh`,
  * `.py`, …) in a subdir that is NOT one of the sanctioned cache
  * roots. The five branches:
@@ -52,7 +52,7 @@ describe('findStrayCacheFiles (f00081)', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	const cacheRoot = (): string => join(root, '.cache', 'mcp-vertex');
+	const cacheRoot = (): string => join(root, '.cache', 'delendai');
 
 	it('returns ok=true on a clean cache root with only sanctioned subdirs', async () => {
 		// Sanctioned subdirs populated with their canonical artefacts.
@@ -195,7 +195,7 @@ describe('findStrayRootFiles (f00082)', () => {
 			'bunfig.toml',
 			'bun.lock',
 			'lefthook.yml',
-			'mcp-vertex.config.json',
+			'delendai.config.json',
 			'stylelint.config.mjs',
 			'tsconfig.base.json',
 			'tsconfig.json',
@@ -347,12 +347,12 @@ describe('findStrayCacheFiles — a00072 S7.a zero-byte stale tmp detection', ()
 	// `stale-zero-byte-tmp` so the operator can clean it up. The
 	// test injects `mtimeMs` via a wrapper to bypass the 60s wait.
 	it('flags a 0-byte .tmp file older than the stale threshold', async () => {
-		// Create a tmp file at .cache/mcp-vertex/results/usage-tracking/
+		// Create a tmp file at .cache/delendai/results/usage-tracking/
 		// with size 0 and an mtime that is 5 minutes in the past.
 		const usageDir = join(
 			root,
 			'.cache',
-			'mcp-vertex',
+			'delendai',
 			'results',
 			'usage-tracking',
 		);
@@ -366,7 +366,7 @@ describe('findStrayCacheFiles — a00072 S7.a zero-byte stale tmp detection', ()
 		await utimes(tmpPath, past, past);
 
 		const summary = await findStrayCacheFiles(
-			join(root, '.cache', 'mcp-vertex'),
+			join(root, '.cache', 'delendai'),
 		);
 		const zeroByte = summary.strays.filter(
 			(s) => s.reason === 'stale-zero-byte-tmp',
@@ -382,7 +382,7 @@ describe('findStrayCacheFiles — a00072 S7.a zero-byte stale tmp detection', ()
 		const usageDir = join(
 			root,
 			'.cache',
-			'mcp-vertex',
+			'delendai',
 			'results',
 			'usage-tracking',
 		);
@@ -391,7 +391,7 @@ describe('findStrayCacheFiles — a00072 S7.a zero-byte stale tmp detection', ()
 		writeFileSync(tmpPath, '', 'utf8');
 		// mtime is "now" — within the 60s window. Walker should skip.
 		const summary = await findStrayCacheFiles(
-			join(root, '.cache', 'mcp-vertex'),
+			join(root, '.cache', 'delendai'),
 		);
 		const zeroByte = summary.strays.filter(
 			(s) => s.reason === 'stale-zero-byte-tmp',
@@ -403,7 +403,7 @@ describe('findStrayCacheFiles — a00072 S7.a zero-byte stale tmp detection', ()
 		const usageDir = join(
 			root,
 			'.cache',
-			'mcp-vertex',
+			'delendai',
 			'results',
 			'usage-tracking',
 		);
@@ -415,7 +415,7 @@ describe('findStrayCacheFiles — a00072 S7.a zero-byte stale tmp detection', ()
 		await utimes(tmpPath, past, past);
 
 		const summary = await findStrayCacheFiles(
-			join(root, '.cache', 'mcp-vertex'),
+			join(root, '.cache', 'delendai'),
 		);
 		const zeroByte = summary.strays.filter(
 			(s) => s.reason === 'stale-zero-byte-tmp',

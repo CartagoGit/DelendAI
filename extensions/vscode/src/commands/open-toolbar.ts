@@ -1,5 +1,5 @@
 /**
- * `mcp-vertex.openToolbar` — opens the in-extension toolbar
+ * `delendai.openToolbar` — opens the in-extension toolbar
  * webview. The toolbar is a 3-column grid of action cards grouped
  * by category, rendered by
  * `@delendai/ui-extension/public`'s `renderToolbar(...)`.
@@ -7,7 +7,7 @@
  * The toolbar is the user's one-click entry point to the repo's
  * most useful actions: proposals board, knowledge navigator,
  * today's log, docs, validation, git status, memory, etc. Each
- * card dispatches a `mcp-vertex.*` command via the existing
+ * card dispatches a `delendai.*` command via the existing
  * command palette; the toolbar is pure UI over those commands,
  * no new domain logic.
  */
@@ -22,7 +22,7 @@ import {
 import { HOST_LANG_KEY } from './setup-github';
 import type { ICommandDeps } from './types';
 
-export const OPEN_TOOLBAR_COMMAND = 'mcp-vertex.openToolbar';
+export const OPEN_TOOLBAR_COMMAND = 'delendai.openToolbar';
 
 /**
  * f00079 S2 (closes a00040 H3): allow-list of command ids the toolbar
@@ -43,7 +43,7 @@ export const ALLOWED_TOOLBAR_COMMANDS: ReadonlySet<string> = new Set(
 /**
  * Resolve the canonical command id the toolbar message wants to run.
  * Prefers the renderer-embedded `commandId`; falls back to deriving
- * `mcp-vertex.<action>` from the raw action id (legacy bridges). Returns
+ * `delendai.<action>` from the raw action id (legacy bridges). Returns
  * `undefined` when neither yields a usable string.
  */
 export const resolveToolbarCommandId = (
@@ -52,13 +52,13 @@ export const resolveToolbarCommandId = (
 ): string | undefined => {
 	if (typeof commandId === 'string' && commandId.length > 0) return commandId;
 	if (typeof action === 'string' && action.length > 0) {
-		return `mcp-vertex.${action.replace(/\./g, '_')}`;
+		return `delendai.${action.replace(/\./g, '_')}`;
 	}
 	return undefined;
 };
 
-const TOOLBAR_VIEW_TYPE = 'mcpVertexToolbar';
-const TOOLBAR_TITLE = 'mcp-vertex Toolbar';
+const TOOLBAR_VIEW_TYPE = 'delendaiToolbar';
+const TOOLBAR_TITLE = 'delendai Toolbar';
 
 /** Resolve the host's persisted language (f00050 S7) with a typed fallback. */
 const resolveLang = (deps: ICommandDeps): Lang => {
@@ -117,11 +117,11 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 		// `script-src 'unsafe-inline'` while still denying frames/connect.
 		panel.webview.html = withCsp('toolbar', html);
 		// FIX (T1): wire the host bridge so toolbar card clicks
-		// dispatch their `data-mcpv-command`. The toolbar's
+		// dispatch their `data-delendai-command`. The toolbar's
 		// `renderHostBridge()` script posts
 		// `{command:'mcpvAction', action, commandId}`. We prefer the
 		// commandId embedded by the renderer (it's the canonical
-		// `mcp-vertex.*` command id) and fall back to a generic
+		// `delendai.*` command id) and fall back to a generic
 		// execution of the action id when missing. Without this
 		// listener the runtime's fallback host swallowed every
 		// click as a silent no-op.
@@ -146,7 +146,7 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 				// instead of executing it.
 				if (!ALLOWED_TOOLBAR_COMMANDS.has(commandId)) {
 					await deps.vscode.window.showErrorMessage?.(
-						`mcp-vertex: toolbar action "${commandId}" is not allowed.`,
+						`delendai: toolbar action "${commandId}" is not allowed.`,
 					);
 					return;
 				}
@@ -154,7 +154,7 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 					await deps.vscode.commands.executeCommand?.(commandId);
 				} catch (err) {
 					await deps.vscode.window.showErrorMessage?.(
-						`mcp-vertex: toolbar action "${commandId}" failed: ${
+						`delendai: toolbar action "${commandId}" failed: ${
 							err instanceof Error ? err.message : String(err)
 						}`,
 					);

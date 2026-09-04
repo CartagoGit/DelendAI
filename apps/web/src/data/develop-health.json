@@ -1,5 +1,5 @@
 {
-	"$schema": "https://mcp-vertex.dev/schemas/develop-health.v1.json",
+	"$schema": "https://delendai.dev/schemas/develop-health.v1.json",
 	"lastVerifiedAt": null,
 	"ciStatus": "red",
 	"protectedBranches": {

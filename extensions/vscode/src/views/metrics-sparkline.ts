@@ -49,10 +49,10 @@ export const renderMetricsHtml = (
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex ${escapeHtml(copy.metrics)}</title>
+	<title>delendai ${escapeHtml(copy.metrics)}</title>
 </head>
 <body>
-	<h1>mcp-vertex ${escapeHtml(copy.metrics)}</h1>
+	<h1>delendai ${escapeHtml(copy.metrics)}</h1>
 	${renderMetricsSparkline(points)}
 	<p>${escapeHtml(countLabel(snapshot.totals.calls, copy.callSingular, copy.calls))}, ${escapeHtml(countLabel(snapshot.totals.errors, copy.errorSingular, copy.errors))}</p>
 </body>
@@ -76,7 +76,7 @@ export const renderMetricsBody = (
 ): string => {
 	const points = metricsToPoints(snapshot);
 	return `<section class="metrics">
-	<h1>mcp-vertex ${escapeHtml(copy.metrics)}</h1>
+	<h1>delendai ${escapeHtml(copy.metrics)}</h1>
 	${renderMetricsSparkline(points)}
 	<p class="metrics__totals">${escapeHtml(countLabel(snapshot.totals.calls, copy.callSingular, copy.calls))}, ${escapeHtml(countLabel(snapshot.totals.errors, copy.errorSingular, copy.errors))}</p>
 </section>`;

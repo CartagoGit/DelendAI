@@ -8,7 +8,7 @@ order: 1
 # Running quality gates for any language
 
 The `quality` plugin is **language-agnostic** by design: it spawns
-whatever command your `mcp-vertex.config.json` says and reports
+whatever command your `delendai.config.json` says and reports
 the exit code. This walkthrough shows the three sources of
 scopes (in precedence order), how to run one, and how to cancel a
 runaway.
@@ -23,7 +23,7 @@ fails, the scope is not ok.
 
 ```
 ┌─ plugin options.scopes (highest priority)
-├─ mcp-vertex.config.json → validationMatrix.scopes
+├─ delendai.config.json → validationMatrix.scopes
 └─ detected package.json scripts → "all" (lint, typecheck, test, build)
 ```
 
@@ -96,7 +96,7 @@ The core runs whatever your config says. Example for a polyglot
 project (TypeScript + Python):
 
 ```jsonc
-// mcp-vertex.config.json
+// delendai.config.json
 {
   "plugins": { "quality": { "options": {} } },
   "validationMatrix": {

@@ -32,21 +32,18 @@ const emptySources = {
 
 describe('agent bootstrap prompt', () => {
 	it('renders configured autonomy and engineering principles', async () => {
-		const registration = buildAgentBootstrapPromptRegistration(
-			'mcp-vertex',
-			{
-				sources: emptySources,
-				server: {
-					name: 'test',
-					version: '1.0.0',
-					namespacePrefix: 'mcp-vertex',
-				},
-				agentPolicy: {
-					autonomous: false,
-					principles: ['Prefer existing abstractions.'],
-				},
+		const registration = buildAgentBootstrapPromptRegistration('delendai', {
+			sources: emptySources,
+			server: {
+				name: 'test',
+				version: '1.0.0',
+				namespacePrefix: 'delendai',
 			},
-		);
+			agentPolicy: {
+				autonomous: false,
+				principles: ['Prefer existing abstractions.'],
+			},
+		});
 		const fake = fakeServer();
 		await registration.register(fake.server as never);
 		const result = await fake.invoke();
@@ -58,17 +55,14 @@ describe('agent bootstrap prompt', () => {
 	});
 
 	it('uses the autonomous engineering defaults when omitted', async () => {
-		const registration = buildAgentBootstrapPromptRegistration(
-			'mcp-vertex',
-			{
-				sources: emptySources,
-				server: {
-					name: 'test',
-					version: '1.0.0',
-					namespacePrefix: 'mcp-vertex',
-				},
+		const registration = buildAgentBootstrapPromptRegistration('delendai', {
+			sources: emptySources,
+			server: {
+				name: 'test',
+				version: '1.0.0',
+				namespacePrefix: 'delendai',
 			},
-		);
+		});
 		const fake = fakeServer();
 		await registration.register(fake.server as never);
 		const text = (await fake.invoke()).messages[0]?.content.text ?? '';

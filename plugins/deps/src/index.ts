@@ -8,7 +8,7 @@ import { buildDepsWriteToolRegistrations } from './lib/tools/write-tools';
  * Dependency inventory + offline health plugin. `deps_list` enumerates the
  * manifest's declared dependencies; `deps_check` flags a missing lockfile,
  * unpinned version ranges and cross-section duplicates — all offline,
- * agnostic, no network/CVE database. Load with `mcp-vertex --plugins=deps`.
+ * agnostic, no network/CVE database. Load with `delendai --plugins=deps`.
  * Configure the manifest path via `plugins.deps.options.manifest`. Set
  * `plugins.deps.options.allowNetwork: true` to also expose `deps_outdated`
  * (the one declared exception to "offline by design": it queries npm). Set

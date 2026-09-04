@@ -72,13 +72,13 @@ export const formatInstallReport = (report: IInstallReport): string => {
 		}
 		lines.push('');
 		lines.push(
-			'mcp-vertex was merged in WITHOUT touching your other servers. Reload your IDE.',
+			'delendai was merged in WITHOUT touching your other servers. Reload your IDE.',
 		);
 	}
 	return `${lines.join('\n')}\n${JSON.stringify(report, null, 2)}\n`;
 };
 
-/** `mcp-vertex init …`: detect/merge our MCP server into IDE configs. */
+/** `delendai init …`: detect/merge our MCP server into IDE configs. */
 export const runInit = async (
 	argv: readonly string[],
 	cwd: string,

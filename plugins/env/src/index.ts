@@ -10,7 +10,7 @@ import { buildEnvExplainsRegistration } from './lib/tools/env-explains.tool';
  * normalized findings — never leaking a value. `env_explains` diffs the same
  * file against an injected requirements catalog to surface which plugin
  * capabilities are unlocked vs blocked. Offline, pure. Load with
- * `mcp-vertex --plugins=env`.
+ * `delendai --plugins=env`.
  */
 const OptionsSchema = z.object({});
 

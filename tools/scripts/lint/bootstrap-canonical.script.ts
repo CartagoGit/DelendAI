@@ -3,7 +3,7 @@
  * bootstrap-canonical.script.ts — f00083 S2.
  *
  * Enforce the "single source of truth" contract for the universal agent
- * bootstrap (`docs/mcp-vertex/AGENT-BOOTSTRAP.md`):
+ * bootstrap (`docs/delendai/AGENT-BOOTSTRAP.md`):
  *
  *   1. The preamble anchor string MUST be present
  *      ("This file is the only place agent rules live."). The anchor
@@ -36,7 +36,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /** Canonical location of the universal agent bootstrap. */
-export const BOOTSTRAP_PATH = 'docs/mcp-vertex/AGENT-BOOTSTRAP.md';
+export const BOOTSTRAP_PATH = 'docs/delendai/AGENT-BOOTSTRAP.md';
 
 /**
  * Anchor string. The first sentence of the preamble that makes the

@@ -7,9 +7,9 @@
  * the browser preview behaves the same as the real extension would
  * inside VS Code:
  *
- *   1. Read the canonical `servers.mcp-vertex` declaration from
+ *   1. Read the canonical `servers.delendai` declaration from
  *      `<cwd>/.vscode/mcp.json`.
- *   2. Fall back to the legacy `mcp-vertex.server` override in
+ *   2. Fall back to the legacy `delendai.server` override in
  *      `<cwd>/.vscode/settings.json`, then to the CLI launcher.
  *
  * The `args` field accepts either a JSON array (typed verbatim in
@@ -39,7 +39,7 @@ export interface IMcpSpawn {
 
 const DEFAULTS: IMcpSpawn = {
 	command: 'bun',
-	args: ['run', 'mcp-vertex'],
+	args: ['run', 'delendai'],
 	source: 'default',
 };
 
@@ -95,14 +95,14 @@ const spawnFromSection = (
 
 export const resolveMcpStdioSpawn = async (cwd: string): Promise<IMcpSpawn> => {
 	// VS Code's canonical MCP declaration lives in `.vscode/mcp.json`.
-	// The old resolver ignored it and fell through to `bun run mcp-vertex`,
+	// The old resolver ignored it and fell through to `bun run delendai`,
 	// which is not a script in this repository. That made a correctly
 	// configured preview wait for the dashboard timeout on every load.
 	const mcp = await parseJsonc(join(cwd, '.vscode', 'mcp.json'));
 	const servers = mcp?.servers;
 	const declared =
 		servers !== null && typeof servers === 'object'
-			? (servers as Record<string, unknown>)['mcp-vertex']
+			? (servers as Record<string, unknown>)['delendai']
 			: undefined;
 	const canonical = spawnFromSection(declared, cwd, 'workspace-mcp');
 	if (canonical) {
@@ -123,7 +123,7 @@ export const resolveMcpStdioSpawn = async (cwd: string): Promise<IMcpSpawn> => {
 			canonical.command === 'bunx' &&
 			canonical.args.includes('@delendai/cli')
 		) {
-			const config = join(cwd, 'mcp-vertex.config.json');
+			const config = join(cwd, 'delendai.config.json');
 			return {
 				command: 'bun',
 				args: [
@@ -140,7 +140,7 @@ export const resolveMcpStdioSpawn = async (cwd: string): Promise<IMcpSpawn> => {
 	const settings = await parseJsonc(join(cwd, '.vscode', 'settings.json'));
 	return (
 		spawnFromSection(
-			settings?.['mcp-vertex.server'],
+			settings?.['delendai.server'],
 			cwd,
 			'workspace-settings',
 		) ?? DEFAULTS

@@ -7,8 +7,8 @@ import {
 } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 import type {
-	IMcpVertexConfigFile,
-	IMcpVertexPluginConfig,
+	IDelendaiConfigFile,
+	IDelendaiPluginConfig,
 	PluginOrigin,
 } from '@delendai/core/public';
 import type {
@@ -16,9 +16,7 @@ import type {
 	ISetPluginActivationResult,
 } from '../../lib/contracts/interfaces/plugin-activation.interface';
 
-const readConfig = async (
-	configFile: string,
-): Promise<IMcpVertexConfigFile> => {
+const readConfig = async (configFile: string): Promise<IDelendaiConfigFile> => {
 	let raw: string;
 	try {
 		raw = await readFile(configFile, 'utf8');
@@ -46,14 +44,14 @@ const readConfig = async (
 			`Config file "${configFile}" must contain a JSON object`,
 		);
 	}
-	return parsed as IMcpVertexConfigFile;
+	return parsed as IDelendaiConfigFile;
 };
 
 const setExternalServerActivation = (
-	config: IMcpVertexConfigFile,
+	config: IDelendaiConfigFile,
 	id: string,
 	active: boolean,
-): IMcpVertexConfigFile => {
+): IDelendaiConfigFile => {
 	const serverId = id.startsWith('ext.') ? id.slice(4) : '';
 	if (serverId.length === 0) {
 		throw new Error(`Invalid external activation id: "${id}"`);
@@ -86,12 +84,12 @@ const setExternalServerActivation = (
 };
 
 const setNativePluginActivation = (
-	config: IMcpVertexConfigFile,
+	config: IDelendaiConfigFile,
 	id: string,
 	origin: PluginOrigin,
 	active: boolean,
-): IMcpVertexConfigFile => {
-	const plugins: Record<string, IMcpVertexPluginConfig> = {
+): IDelendaiConfigFile => {
+	const plugins: Record<string, IDelendaiPluginConfig> = {
 		...(config.plugins ?? {}),
 	};
 	plugins[id] = { ...(plugins[id] ?? {}), enabled: active, origin };

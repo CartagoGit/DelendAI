@@ -10,7 +10,7 @@ import type { IPersistentTaskQueue } from '@delendai/proposals/lib/agents/persis
 const TEMP_DIRS: string[] = [];
 
 const createTempDir = (): string => {
-	const dir = mkdtempSync(join(tmpdir(), 'mcp-vertex-por-'));
+	const dir = mkdtempSync(join(tmpdir(), 'delendai-por-'));
 	TEMP_DIRS.push(dir);
 	return dir;
 };

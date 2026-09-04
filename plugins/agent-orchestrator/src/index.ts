@@ -10,7 +10,7 @@
  *   - `policy` — the full `IOrchestratorPolicy` (default mode +
  *     defaults + per-mode overrides, applied when the resolved mode
  *     matches). When omitted, the plugin reads
- *     `mcp-vertex.config.json → orchestration` and falls back to
+ *     `delendai.config.json → orchestration` and falls back to
  *     `auto` if absent.
  *   - `portFactory` — factory producing the host's real
  *     `IDispatchPort`. Required in production; see `resolveDispatchPort`.
@@ -112,7 +112,7 @@ export default definePlugin({
 			assertPolicyValid(policy);
 		} catch (err) {
 			// Fail closed: surface a structured error envelope to the host
-			// and ship zero tools. The host (mcp-vertex core) can decide
+			// and ship zero tools. The host (delendai core) can decide
 			// whether to retry or skip the plugin.
 			return {
 				tools: [],

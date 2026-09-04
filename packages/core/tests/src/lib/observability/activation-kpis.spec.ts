@@ -97,8 +97,8 @@ describe('activation-kpis (f00198) — accumulator', () => {
 		const k = createActivationKpis();
 		const s = k.recordSession({
 			taskId: 't1',
-			invoked: ['mcp-vertex_overview', 'mcp-vertex_git_status'],
-			expected: ['mcp-vertex_overview'],
+			invoked: ['delendai_overview', 'delendai_git_status'],
+			expected: ['delendai_overview'],
 		});
 		expect(s.precision).toBe(0.5);
 		expect(s.recall).toBe(1);
@@ -215,13 +215,13 @@ describe('activation-kpis (f00198) — dashboard formatter', () => {
 		const k = createActivationKpis();
 		k.recordSession({
 			taskId: 'audit',
-			invoked: ['mcp-vertex_overview'],
-			expected: ['mcp-vertex_overview'],
+			invoked: ['delendai_overview'],
+			expected: ['delendai_overview'],
 		});
 		k.recordSession({
 			taskId: 'audit',
-			invoked: ['mcp-vertex_overview', 'mcp-vertex_tool_search'],
-			expected: ['mcp-vertex_overview'],
+			invoked: ['delendai_overview', 'delendai_tool_search'],
+			expected: ['delendai_overview'],
 		});
 		return k;
 	};
@@ -362,7 +362,7 @@ describe('activation-kpis (f00198) — persistence round-trip', () => {
 		const session = await store.finishSession();
 
 		expect(store.path).toBe(
-			join(workspaceRootAbs, '.vscode/mcp-vertex/kpis.json'),
+			join(workspaceRootAbs, '.vscode/delendai/kpis.json'),
 		);
 		expect(session?.precision).toBe(0.5);
 		expect(hydrateKpis(JSON.parse(persisted)).aggregate()).toMatchObject({

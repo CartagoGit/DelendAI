@@ -4,7 +4,7 @@
  *
  *   bun run tools/scripts/test/read-test-journal.script.ts
  *
- * Reads `.cache/mcp-vertex/results/logs/test-runs.jsonl` and prints
+ * Reads `.cache/delendai/results/logs/test-runs.jsonl` and prints
  * nothing but the failures: file, test name, assertion, expected/
  * received, and the source line inside this repo. No vitest banner, no
  * per-test pass lines, and — the whole point — no second test run.

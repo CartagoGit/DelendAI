@@ -21,7 +21,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const findConfigPath = (startDir: string): string => {
 	let cur = startDir;
 	while (true) {
-		const candidate = resolve(cur, 'mcp-vertex.config.json');
+		const candidate = resolve(cur, 'delendai.config.json');
 		if (existsSync(candidate)) {
 			return candidate;
 		}
@@ -31,7 +31,7 @@ const findConfigPath = (startDir: string): string => {
 		}
 		cur = parent;
 	}
-	return resolve(startDir, '..', '..', '..', 'mcp-vertex.config.json');
+	return resolve(startDir, '..', '..', '..', 'delendai.config.json');
 };
 
 const CONFIG_PATH = findConfigPath(HERE);
@@ -53,5 +53,5 @@ export const resolveToolsNamespacePrefix = (): string => {
 			return candidate.trim();
 		}
 	}
-	return 'mcp-vertex';
+	return 'delendai';
 };

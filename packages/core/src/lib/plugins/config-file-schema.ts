@@ -15,7 +15,7 @@
  *     place, and the type-side interfaces (`IBootstrapPatternOverride`,
  *     etc.) live in `load-config-file.ts` next to their parser.
  *
- * The schema mirrors the composite `IMcpVertexConfigFile` shape
+ * The schema mirrors the composite `IDelendaiConfigFile` shape
  * exactly — `.strict()` everywhere so a typo in the config file is
  * reported as a schema violation instead of being silently ignored.
  */
@@ -176,7 +176,7 @@ export const CONFIG_FILE_SCHEMA = z
 			.strict()
 			.optional(),
 		// S5 (L3 — feature flags): optional top-level feature
-		// flags block. Default-off; see `docs/mcp-vertex/api/feature-flags.md`.
+		// flags block. Default-off; see `docs/delendai/api/feature-flags.md`.
 		// Per-plugin flags live under `plugins.<name>.options.featureFlags`.
 		featureFlags: z.record(z.string(), z.boolean()).optional(),
 		// S4 — operator-chosen source/conventions block.

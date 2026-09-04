@@ -145,11 +145,11 @@ describe('adopt_project stage filter (f00280 S3)', () => {
 		const workspace = createWorkspacePathProvider(root);
 		adopt = await capture(
 			buildAdoptProjectToolRegistration({
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspace,
 				corePaths: {
-					cacheDir: '.cache/mcp-vertex',
-					docsDir: 'docs/mcp-vertex',
+					cacheDir: '.cache/delendai',
+					docsDir: 'docs/delendai',
 				},
 				reader: createWorkspaceFileReader(workspace),
 			}),

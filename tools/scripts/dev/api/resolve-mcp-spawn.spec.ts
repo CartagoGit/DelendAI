@@ -20,7 +20,7 @@ describe('resolveMcpStdioSpawn', () => {
 			join(cwd, '.vscode', 'settings.json'),
 			`{
 				// Local override wins over mcp.json.
-				"mcp-vertex.server": {
+				"delendai.server": {
 					"command": "custom-server",
 					"args": "--workspace \${workspaceFolder}",
 				},
@@ -36,13 +36,13 @@ describe('resolveMcpStdioSpawn', () => {
 	it('uses the canonical .vscode/mcp.json declaration and expands workspace tokens', async () => {
 		writeFileSync(
 			join(cwd, '.vscode', 'settings.json'),
-			'{"mcp-vertex.server":{"command":"bun","args":["run","mcp-vertex"]}}',
+			'{"delendai.server":{"command":"bun","args":["run","delendai"]}}',
 		);
 		writeFileSync(
 			join(cwd, '.vscode', 'mcp.json'),
 			JSON.stringify({
 				servers: {
-					'mcp-vertex': {
+					delendai: {
 						command: 'bun',
 						args: [
 							'${workspaceFolder}/tools/scripts/host/host-server.script.ts',
@@ -69,7 +69,7 @@ describe('resolveMcpStdioSpawn', () => {
 
 		await expect(resolveMcpStdioSpawn(cwd)).resolves.toEqual({
 			command: 'bun',
-			args: ['run', 'mcp-vertex'],
+			args: ['run', 'delendai'],
 			source: 'default',
 		});
 	});
@@ -78,14 +78,19 @@ describe('resolveMcpStdioSpawn', () => {
 		const localHost = join(cwd, 'tools/scripts/host/host-server.script.ts');
 		mkdirSync(join(cwd, 'tools/scripts/host'), { recursive: true });
 		writeFileSync(localHost, '');
-		writeFileSync(join(cwd, 'mcp-vertex.config.json'), '{}');
+		writeFileSync(join(cwd, 'delendai.config.json'), '{}');
 		writeFileSync(
 			join(cwd, '.vscode', 'mcp.json'),
 			JSON.stringify({
 				servers: {
-					'mcp-vertex': {
+					delendai: {
 						command: 'bunx',
-						args: ['--package', '@delendai/cli', 'mcpv', '__serve'],
+						args: [
+							'--package',
+							'@delendai/cli',
+							'delendai',
+							'__serve',
+						],
 					},
 				},
 			}),
@@ -96,7 +101,7 @@ describe('resolveMcpStdioSpawn', () => {
 			args: [
 				localHost,
 				`--workspace=${cwd}`,
-				`--config=${join(cwd, 'mcp-vertex.config.json')}`,
+				`--config=${join(cwd, 'delendai.config.json')}`,
 			],
 			source: 'workspace-local',
 		});

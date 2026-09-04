@@ -7,7 +7,7 @@ operator knows the agent is now idle and will continue **only** when
 explicitly told.
 
 ```bash
-mcp-vertex --plugins=completion
+delendai --plugins=completion
 ```
 
 ## Why
@@ -58,7 +58,7 @@ turns that into a durable, machine-readable record plus a push.
 ```jsonc
 {
 	"servers": {
-		"mcp-vertex": {
+		"delendai": {
 			"command": "bunx",
 			"args": ["@delendai/core", "--plugins=completion"]
 		}

@@ -71,21 +71,21 @@ describe('classifyInstructionSource (U3 detection)', () => {
 });
 
 describe('extractOriginalProse', () => {
-	it('returns the whole file when there is no mcp-vertex block', () => {
+	it('returns the whole file when there is no delendai block', () => {
 		expect(extractOriginalProse('# Rules\n\nbe nice')).toBe(
 			'# Rules\n\nbe nice',
 		);
 	});
 
-	it('strips the mcp-vertex block, keeping surrounding prose', () => {
+	it('strips the delendai block, keeping surrounding prose', () => {
 		const content =
-			'# Rules\n\n<!-- mcp-vertex:begin -->\n\ninjected\n\n<!-- mcp-vertex:end -->\n';
+			'# Rules\n\n<!-- delendai:begin -->\n\ninjected\n\n<!-- delendai:end -->\n';
 		expect(extractOriginalProse(content)).toBe('# Rules');
 	});
 
 	it('is empty for a pointer-only file', () => {
 		const content =
-			'<!-- mcp-vertex:begin -->\n\n<!-- mcp-vertex:pointer -->\n\nsee canonical\n\n<!-- mcp-vertex:end -->\n';
+			'<!-- delendai:begin -->\n\n<!-- delendai:pointer -->\n\nsee canonical\n\n<!-- delendai:end -->\n';
 		expect(extractOriginalProse(content)).toBe('');
 	});
 });
@@ -117,7 +117,7 @@ describe('discoverInstructionSources (U3 detection)', () => {
 			readerFrom({
 				'CLAUDE.md': 'real prose',
 				'AGENTS.md':
-					'<!-- mcp-vertex:begin -->\n\n<!-- mcp-vertex:pointer -->\n\nsee canonical\n\n<!-- mcp-vertex:end -->\n',
+					'<!-- delendai:begin -->\n\n<!-- delendai:pointer -->\n\nsee canonical\n\n<!-- delendai:end -->\n',
 			}),
 		);
 		const claude = sources.find((s) => s.relPath === 'CLAUDE.md');
@@ -156,7 +156,7 @@ describe('renderLegacyPointerBody', () => {
 		const body = renderLegacyPointerBody('Cursor');
 		expect(body).toContain(CANONICAL_AGENT_DOC_REL);
 		expect(body).toContain('Cursor');
-		expect(body).toContain('<!-- mcp-vertex:pointer -->');
+		expect(body).toContain('<!-- delendai:pointer -->');
 	});
 });
 
@@ -189,7 +189,7 @@ describe('planInstructionConsolidation (U3 plan)', () => {
 		const pointer = consolidation.writes.find((w) => w.role === 'pointer');
 		expect(pointer?.content).toContain('# Local rules');
 		expect(pointer?.content).toContain('keep me');
-		expect(pointer?.content).toContain('<!-- mcp-vertex:pointer -->');
+		expect(pointer?.content).toContain('<!-- delendai:pointer -->');
 	});
 
 	it('still emits the canonical doc when there is nothing to absorb', async () => {

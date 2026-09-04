@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexLogsCorrelateOutput {
+export interface DelendaiLogsCorrelateOutput {
 	detail: "compact" | "normal" | "full";
 	chain: unknown[];
 	firstTs: string | null;
@@ -20,51 +20,51 @@ export interface McpVertexLogsCorrelateOutput {
 	gaps: unknown;
 }
 
-export interface McpVertexLogsErrorsTailOutput {
+export interface DelendaiLogsErrorsTailOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	oldestTs: string | null;
 	newestTs: string | null;
 }
 
-export interface McpVertexLogsIncidentsOutput {
+export interface DelendaiLogsIncidentsOutput {
 	incidents: unknown;
 	totalIncidents: number;
 }
 
-export interface McpVertexLogsLogOutput {
+export interface DelendaiLogsLogOutput {
 	ok: true;
 	ts: string;
 	incidentType: string;
 	severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
 }
 
-export interface McpVertexLogsQueryOutput {
+export interface DelendaiLogsQueryOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	cursor: string | null;
 	hasMore: boolean;
 }
 
-export interface McpVertexLogsRedactTestOutput {
+export interface DelendaiLogsRedactTestOutput {
 	detected: string[];
 	redacted: string;
 }
 
-export interface McpVertexLogsSearchOutput {
+export interface DelendaiLogsSearchOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	matched: number;
 	hasMore: boolean;
 }
 
-export interface McpVertexLogsSubscribeOutput {
+export interface DelendaiLogsSubscribeOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	stream: "logs";
 }
 
-export interface McpVertexLogsTailOutput {
+export interface DelendaiLogsTailOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
 	oldestTs: string | null;
@@ -73,13 +73,13 @@ export interface McpVertexLogsTailOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface LogsToolOutputs {
-	"mcp-vertex_logs_correlate": McpVertexLogsCorrelateOutput;
-	"mcp-vertex_logs_errors_tail": McpVertexLogsErrorsTailOutput;
-	"mcp-vertex_logs_incidents": McpVertexLogsIncidentsOutput;
-	"mcp-vertex_logs_log": McpVertexLogsLogOutput;
-	"mcp-vertex_logs_query": McpVertexLogsQueryOutput;
-	"mcp-vertex_logs_redact_test": McpVertexLogsRedactTestOutput;
-	"mcp-vertex_logs_search": McpVertexLogsSearchOutput;
-	"mcp-vertex_logs_subscribe": McpVertexLogsSubscribeOutput;
-	"mcp-vertex_logs_tail": McpVertexLogsTailOutput;
+	"delendai_logs_correlate": DelendaiLogsCorrelateOutput;
+	"delendai_logs_errors_tail": DelendaiLogsErrorsTailOutput;
+	"delendai_logs_incidents": DelendaiLogsIncidentsOutput;
+	"delendai_logs_log": DelendaiLogsLogOutput;
+	"delendai_logs_query": DelendaiLogsQueryOutput;
+	"delendai_logs_redact_test": DelendaiLogsRedactTestOutput;
+	"delendai_logs_search": DelendaiLogsSearchOutput;
+	"delendai_logs_subscribe": DelendaiLogsSubscribeOutput;
+	"delendai_logs_tail": DelendaiLogsTailOutput;
 }

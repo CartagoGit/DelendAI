@@ -22,7 +22,7 @@ const log = (
 	overrides?: Partial<IReadonlyLocalLogLine>,
 ): IReadonlyLocalLogLine => ({
 	ts: '2026-07-25T11:58:00.000Z',
-	logFile: '.cache/mcp-vertex/results/logs/2026-07-25.jsonl',
+	logFile: '.cache/delendai/results/logs/2026-07-25.jsonl',
 	line: '{"ts":"2026-07-25T11:58:00.000Z","summary":"tool-failed: TypeError Cannot read properties of undefined"}',
 	lineNumber: 4,
 	...overrides,
@@ -49,17 +49,17 @@ describe('correlateErrorsWithLocal', () => {
 		expect(result.matches).toEqual([
 			{
 				issueId: 'issue-1',
-				logFile: '.cache/mcp-vertex/results/logs/2026-07-25.jsonl',
+				logFile: '.cache/delendai/results/logs/2026-07-25.jsonl',
 				line: 1,
 				summary:
-					'TypeError matched local log .cache/mcp-vertex/results/logs/2026-07-25.jsonl:1 — {"ts":"2026-07-25T11:58:00.000Z","summary":"tool-failed: TypeError Cannot read properties of undefined"}',
+					'TypeError matched local log .cache/delendai/results/logs/2026-07-25.jsonl:1 — {"ts":"2026-07-25T11:58:00.000Z","summary":"tool-failed: TypeError Cannot read properties of undefined"}',
 			},
 			{
 				issueId: 'issue-2',
-				logFile: '.cache/mcp-vertex/results/logs/2026-07-25.jsonl',
+				logFile: '.cache/delendai/results/logs/2026-07-25.jsonl',
 				line: 2,
 				summary:
-					'ReferenceError matched local log .cache/mcp-vertex/results/logs/2026-07-25.jsonl:2 — {"ts":"2026-07-25T11:58:30.000Z","summary":"tool-failed: ReferenceError x is not defined"}',
+					'ReferenceError matched local log .cache/delendai/results/logs/2026-07-25.jsonl:2 — {"ts":"2026-07-25T11:58:30.000Z","summary":"tool-failed: ReferenceError x is not defined"}',
 			},
 		]);
 	});

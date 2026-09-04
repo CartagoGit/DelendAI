@@ -7,7 +7,7 @@
  *   1. install the package (`npm install <package>` or `bun add`);
  *   2. wire the six monorepo points (tsconfig, vitest, plugin-defaults,
  *      preset-catalog, publish-order, regenerated tool-outputs);
- *   3. add the plugin to the user's `mcp-vertex.config.json`.
+ *   3. add the plugin to the user's `delendai.config.json`.
  *
  * The function is **pure** over its inputs: no fs, no subprocess.
  * Production callers inject an `IPluginAddRunner` that does the I/O;
@@ -91,12 +91,12 @@ export const buildPluginAddRecipe = (
 			kind: 'wire',
 			summary: monorepoDev
 				? `Wire "${entry.id}" into the six monorepo points (tsconfig, vitest, plugin-defaults, preset-catalog, publish-order, regenerated tool-outputs).`
-				: `Enable "${entry.id}" for this project: add it to the host's plugin/preset load list (e.g. mcp-vertex.config.json or the host's --plugins flag) so the server actually loads it. No monorepo-only wiring applies here — this project consumes "${entry.package}" as a published dependency, not as source inside the @delendai/core monorepo.`,
+				: `Enable "${entry.id}" for this project: add it to the host's plugin/preset load list (e.g. delendai.config.json or the host's --plugins flag) so the server actually loads it. No monorepo-only wiring applies here — this project consumes "${entry.package}" as a published dependency, not as source inside the @delendai/core monorepo.`,
 			detail: { id: entry.id, preset: entry.defaultPreset ?? 'manual' },
 		},
 		{
 			kind: 'config',
-			summary: `Add "plugins.${entry.id}.options" to mcp-vertex.config.json.`,
+			summary: `Add "plugins.${entry.id}.options" to delendai.config.json.`,
 			detail: { id: entry.id, key: `plugins.${entry.id}` },
 		},
 	];

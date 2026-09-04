@@ -5,47 +5,47 @@ import {
 	buildIssueBody,
 	buildIssueTitle,
 	classificationOf,
-	isMcpVertexInternal,
+	isDelendaiInternal,
 	registerInternalPath,
 	resetInternalPathRegistry,
 	safeFailureClassOf,
 	signatureOf,
 } from '../src/lib/signature.helper';
 import { extractSafeMcpFrames } from '../src/lib/frame-extractor.helper';
-import { McpVertexInternalError } from '../src/lib/contracts/interfaces/reporter.interface';
+import { DelendaiInternalError } from '../src/lib/contracts/interfaces/reporter.interface';
 
-describe('isMcpVertexInternal', () => {
-	it('detects a stack trace originating inside mcp-vertex', () => {
+describe('isDelendaiInternal', () => {
+	it('detects a stack trace originating inside delendai', () => {
 		const error = new Error('invariant violated');
 		error.stack = [
 			'Error: invariant violated',
 			'    at Plugin.register (/home/u/app/node_modules/@delendai/issues/dist/index.js:12:3)',
 		].join('\n');
-		expect(isMcpVertexInternal(error)).toBe(true);
+		expect(isDelendaiInternal(error)).toBe(true);
 	});
 
 	it('detects the package scope in the message alone', () => {
-		const error = new McpVertexInternalError({
+		const error = new DelendaiInternalError({
 			code: 'PLUGIN_LOAD_FAILED',
 			packageId: '@delendai/issues',
 			componentId: 'loader',
 		});
-		expect(isMcpVertexInternal(error)).toBe(true);
+		expect(isDelendaiInternal(error)).toBe(true);
 	});
 
-	it('ignores host-project failures with no mcp-vertex marker', () => {
+	it('ignores host-project failures with no delendai marker', () => {
 		const error = new Error("Cannot read file './src/app.ts'");
 		error.stack = [
 			'Error: Cannot read file',
 			'    at doThing (/home/u/app/src/app.ts:4:2)',
 		].join('\n');
-		expect(isMcpVertexInternal(error)).toBe(false);
+		expect(isDelendaiInternal(error)).toBe(false);
 	});
 });
 
 describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 	it('classifies typed timeout errors as performance', () => {
-		const error = new McpVertexInternalError({
+		const error = new DelendaiInternalError({
 			code: 'PLUGIN_REGISTER_TIMEOUT',
 			packageId: '@delendai/error-reporting',
 			componentId: 'register',
@@ -77,7 +77,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			'    at report (/srv/build/project-b/plugins/error-reporting/src/index.ts:10:2)',
 		].join('\n');
 		const a = signatureOf({
-			mcpVertexVersion: '0.7.5',
+			delendaiVersion: '0.7.5',
 			packageId: '@delendai/error-reporting',
 			toolId: 'quality_run_quality',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -86,7 +86,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			mcpFrames: extractSafeMcpFrames(leftError),
 		});
 		const b = signatureOf({
-			mcpVertexVersion: '0.7.9',
+			delendaiVersion: '0.7.9',
 			packageId: '@delendai/error-reporting',
 			toolId: 'quality_run_quality',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -99,7 +99,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 
 	it('differs across safe package identities', () => {
 		const left = signatureOf({
-			mcpVertexVersion: '0.1.0',
+			delendaiVersion: '0.1.0',
 			packageId: '@delendai/error-reporting',
 			toolId: 'search_search',
 			failureClass: 'INTERNAL_RUNTIME_ERROR',
@@ -107,7 +107,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			mcpFrames: [{ file: '@delendai/error-reporting/src/index.ts' }],
 		});
 		const right = signatureOf({
-			mcpVertexVersion: '0.1.0',
+			delendaiVersion: '0.1.0',
 			packageId: '@delendai/core',
 			toolId: 'search_search',
 			failureClass: 'INTERNAL_RUNTIME_ERROR',
@@ -119,7 +119,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 
 	it('collapses the same internal bug even when runtime message and values differ', () => {
 		const left = signatureOf({
-			mcpVertexVersion: '0.1.0',
+			delendaiVersion: '0.1.0',
 			packageId: '@delendai/error-reporting',
 			componentId: 'src/index.ts',
 			toolId: 'search_search',
@@ -135,7 +135,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			],
 		});
 		const right = signatureOf({
-			mcpVertexVersion: '0.1.0',
+			delendaiVersion: '0.1.0',
 			packageId: '@delendai/error-reporting',
 			componentId: 'src/index.ts',
 			toolId: 'search_search',
@@ -156,7 +156,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 
 	it('does not collapse different bugs that share only the error code', () => {
 		const left = signatureOf({
-			mcpVertexVersion: '0.1.0',
+			delendaiVersion: '0.1.0',
 			packageId: '@delendai/error-reporting',
 			componentId: 'src/index.ts',
 			toolId: 'search_search',
@@ -172,7 +172,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			],
 		});
 		const right = signatureOf({
-			mcpVertexVersion: '0.1.0',
+			delendaiVersion: '0.1.0',
 			packageId: '@delendai/error-reporting',
 			componentId: 'src/lib/report-store.service.ts',
 			toolId: 'search_search',
@@ -194,7 +194,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 describe('buildIssueTitle / buildIssueBody', () => {
 	const report = {
 		reporterVersion: '0.1.0',
-		mcpVertexVersion: '0.1.0',
+		delendaiVersion: '0.1.0',
 		packageId: '@delendai/error-reporting',
 		toolOwner: 'host-project',
 		toolCategory: 'host-specific',

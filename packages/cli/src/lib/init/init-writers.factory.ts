@@ -20,20 +20,20 @@ import {
 } from '../config-file.service';
 import { buildCoreSkillProjection } from './core-skill-projection.service';
 import {
-	mergeMcpVertexServerEntry,
-	renderMcpVertexServerEntry,
+	mergeDelendaiServerEntry,
+	renderDelendaiServerEntry,
 } from './init-render.service';
 
 export type { IInitWrite, IMcpJsonWriteResult };
 
 /**
- * Writes the canonical `mcp-vertex.config.json` for the workspace. A valid
+ * Writes the canonical `delendai.config.json` for the workspace. A valid
  * existing project configuration is merged by default: its values and plugin
  * options win, while generated defaults only fill gaps. `force=true` is the
  * deliberate replacement path. Invalid existing JSON is left untouched unless
  * replacement was explicitly requested.
  */
-export const writeMcpVertexConfig = async (
+export const writeDelendaiConfig = async (
 	workspace: string,
 	value: Record<string, unknown>,
 	force: boolean,
@@ -42,7 +42,7 @@ export const writeMcpVertexConfig = async (
 	| { kind: 'merged'; path: string }
 	| { kind: 'exists'; path: string }
 > => {
-	const path = `${workspace}/mcp-vertex.config.json`;
+	const path = `${workspace}/delendai.config.json`;
 	const probe = existsSync(path);
 	if (!probe || force) {
 		const written = await writeConfigSafely(workspace, value);
@@ -85,7 +85,7 @@ const mergeSkillManifest = (
 		if (!Array.isArray(current.skills) || !Array.isArray(next.skills))
 			return undefined;
 		// De-dup `current.skills` by id before spreading: if the existing
-		// manifest already has duplicate id entries (e.g. two `mcp-vertex-
+		// manifest already has duplicate id entries (e.g. two `delendai-
 		// operator` rows from a prior broken merge), the previous version
 		// preserved them verbatim and the new merge never stripped them.
 		const seenIds = new Set<string>();
@@ -170,11 +170,11 @@ export const writeCoreSkillProjection = async (
  * Outcome of writing `.vscode/mcp.json`. Three terminal states:
  *
  *   - `written`: the merge succeeded (existing servers preserved,
- *     `mcp-vertex` entry upserted). Use this for the recap's
+ *     `delendai` entry upserted). Use this for the recap's
  *     `[ok]` stamp.
  *   - `merged`: an existing `.vscode/mcp.json` was updated via
  *     merge — the file existed and we successfully upserted only
- *     the `mcp-vertex` entry while preserving every other server.
+ *     the `delendai` entry while preserving every other server.
  *     Surfaced in the recap as `[merged]` to make the upsert
  *     visible to the operator (this is the path that used to
  *     silently destroy their other MCP servers).
@@ -195,7 +195,7 @@ export const writeCoreSkillProjection = async (
  * Write `.vscode/mcp.json` preserving every other server entry.
  *
  * The merge semantics are described in
- * `mergeMcpVertexServerEntry` (init-render.ts). This writer adds:
+ * `mergeDelendaiServerEntry` (init-render.ts). This writer adds:
  *
  *   - Atomic write through `writeWorkspaceFileSafely` (mutex +
  *     atomic rename + redact).
@@ -212,7 +212,7 @@ const writeMcpJson = async (
 	kind: 'servers' | 'mcpServers',
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
-	serverName = 'mcp-vertex',
+	serverName = 'delendai',
 ): Promise<IMcpJsonWriteResult> => {
 	const path = `${workspace}/${relPath}`;
 	if (mode === 'skip') return { kind: 'skipped', path };
@@ -220,10 +220,10 @@ const writeMcpJson = async (
 	const probe = existsSync(path);
 	if (!probe) {
 		// Fresh install — write the canonical bundle with only the
-		// `mcp-vertex` server. The merge would have nothing to merge
+		// `delendai` server. The merge would have nothing to merge
 		// against, so we skip it.
 		const content = `${JSON.stringify(
-			{ [kind]: { [serverName]: renderMcpVertexServerEntry(launch) } },
+			{ [kind]: { [serverName]: renderDelendaiServerEntry(launch) } },
 			null,
 			'\t',
 		)}\n`;
@@ -237,12 +237,7 @@ const writeMcpJson = async (
 
 	// File exists — read, merge, write.
 	const existing = await readFile(path, 'utf8');
-	const merged = mergeMcpVertexServerEntry(
-		launch,
-		existing,
-		kind,
-		serverName,
-	);
+	const merged = mergeDelendaiServerEntry(launch, existing, kind, serverName);
 	if (merged === undefined) {
 		// Refused to merge: existing content isn't a JSON object.
 		// Leave it alone and surface `exists` so the operator knows
@@ -253,7 +248,7 @@ const writeMcpJson = async (
 	const written = await writeWorkspaceFileSafely(workspace, relPath, merged);
 
 	// Compute the list of servers we preserved (everything in the
-	// merged file except `mcp-vertex`) so the recap can surface a
+	// merged file except `delendai`) so the recap can surface a
 	// hint like "preserved 2 server(s): filesystem, github".
 	let preserved: readonly string[] = [];
 	try {
@@ -276,7 +271,7 @@ export const writeVscodeMcpJson = (
 	workspace: string,
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
-	serverName = 'mcp-vertex',
+	serverName = 'delendai',
 ): Promise<IMcpJsonWriteResult> =>
 	writeMcpJson(
 		workspace,
@@ -291,7 +286,7 @@ export const writeGenericMcpJson = (
 	workspace: string,
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
-	serverName = 'mcp-vertex',
+	serverName = 'delendai',
 ): Promise<IMcpJsonWriteResult> =>
 	writeMcpJson(
 		workspace,

@@ -51,7 +51,7 @@ describe('PRESET_CATALOG', async () => {
 		// external-mcps, observability — lazily indexed, so they cost a
 		// catalog entry until one of their tools is called).
 		expect(PRESET_CATALOG[4]?.members.length).toBe(13);
-		// vertex: 38 members, exactly mirroring mcp-vertex.config.json's
+		// vertex: 38 members, exactly mirroring delendai.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
 		// missing 17 real ones, including `proposals`; f00165 added
@@ -106,7 +106,7 @@ describe('PRESET_CATALOG', async () => {
 		const vertex = PRESET_CATALOG[5];
 		expect(vertex).toBeDefined();
 		expect(vertex?.independent).toBe(true);
-		expect(vertex?.role).toBe('mcp-vertex-dogfood');
+		expect(vertex?.role).toBe('delendai-dogfood');
 	});
 
 	it('marks every stack pack (web-app, backend-api, cli-tool) as independent', async () => {
@@ -160,16 +160,16 @@ describe('PRESET_CATALOG', async () => {
 		const registration = await apiPlugin.register({
 			namespacePrefix: 'api',
 			options: {},
-			cacheDir: '.cache/mcp-vertex',
-			pluginCacheDir: '.cache/mcp-vertex/api',
+			cacheDir: '.cache/delendai',
+			pluginCacheDir: '.cache/delendai/api',
 			pluginDocsDir: 'docs/plugins/api',
 			workspace: {
 				root: '/workspace',
 				resolve: (path: string) => `/workspace/${path}`,
 			},
 			corePaths: {
-				cacheDir: '.cache/mcp-vertex',
-				docsDir: 'docs/mcp-vertex',
+				cacheDir: '.cache/delendai',
+				docsDir: 'docs/delendai',
 			},
 			keepLegacy: false,
 			agentWorktreeEnabled: false,
@@ -317,7 +317,7 @@ describe('resolvePresetMembers', async () => {
 		const resolved = resolvePresetMembers('vertex');
 		const config = JSON.parse(
 			await readFile(
-				join(repoRootFromSpec(), 'mcp-vertex.config.json'),
+				join(repoRootFromSpec(), 'delendai.config.json'),
 				'utf8',
 			),
 		) as {

@@ -4,7 +4,7 @@ import type { IWorkspacePathProvider } from './workspace-paths.interface';
 
 export const PROJECT_PROFILE_VERSION = 1 as const;
 
-export const PROJECT_PROFILE_FILENAME = '.mcp-vertex/project-profile.json';
+export const PROJECT_PROFILE_FILENAME = '.delendai/project-profile.json';
 
 export interface IProjectProfileWorkspace {
 	readonly path: string;

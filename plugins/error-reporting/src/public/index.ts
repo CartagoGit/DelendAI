@@ -36,7 +36,7 @@ export {
 	buildIssueBody,
 	buildIssueTitle,
 	isMarkedInternalBoundary,
-	isMcpVertexInternal,
+	isDelendaiInternal,
 	markErrorAsInternalBoundary,
 	registerInternalPath,
 	registerInternalRuntimePaths,
@@ -46,10 +46,10 @@ export {
 } from '../lib/signature.helper';
 export type { ISafeFingerprintInput } from '../lib/contracts/interfaces/signature.interface';
 export {
-	MCP_VERTEX_ERROR_CODES,
-	isMcpVertexErrorCode,
+	DELENDAI_ERROR_CODES,
+	isDelendaiErrorCode,
 } from '../lib/contracts/constants/error-codes.constant';
-export type { McpVertexErrorCode } from '../lib/contracts/constants/error-codes.constant';
+export type { DelendaiErrorCode } from '../lib/contracts/constants/error-codes.constant';
 
 export {
 	extractSafeMcpFrames,
@@ -78,7 +78,7 @@ export type {
 	IEnvironmentClass,
 	IIssueExec,
 	IIssueExecResult,
-	ISafeMcpVertexReport,
+	ISafeDelendaiReport,
 	ISafeReporter,
 	ISafeReporterConfig,
 	ISafeSyntheticExample,
@@ -96,7 +96,7 @@ export type {
 } from '../lib/contracts/interfaces/report-scheduler.interface';
 export {
 	ISSUE_CLASSIFICATIONS,
-	McpVertexInternalError,
+	DelendaiInternalError,
 	SAFE_FAILURE_CLASSES,
 	isSafeScalar,
 } from '../lib/contracts/interfaces/reporter.interface';

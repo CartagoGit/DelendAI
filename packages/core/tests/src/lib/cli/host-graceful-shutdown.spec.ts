@@ -23,7 +23,7 @@ import {
  * Resolve the Bun binary used to spawn `scripts/host-server.ts`.
  *
  * Order:
- * 1. `process.env.MCP_VERTEX_TEST_BUN` — explicit override.
+ * 1. `process.env.DELENDAI_TEST_BUN` — explicit override.
  * 2. `which bun` via the system PATH (POSIX).
  * 3. `process.execPath` — only valid when the test itself is
  *    already running under Bun (e.g. `bun test`).
@@ -33,7 +33,7 @@ import {
  * shim is not guaranteed to exist.
  */
 const resolveBunBinary = (): string => {
-	const override = process.env.MCP_VERTEX_TEST_BUN;
+	const override = process.env.DELENDAI_TEST_BUN;
 	if (override !== undefined && override !== '') return override;
 	// Hardcode the Linux Bun path: the cross-mount PATH exposed to
 	// vitest under WSL picks up the Windows Bun first (which resolves
@@ -78,7 +78,7 @@ const waitForHostReady = async (
 		};
 		const onData = (chunk: Buffer): void => {
 			stderr += chunk.toString('utf8');
-			if (!stderr.includes('[mcp-vertex] signal-handlers-ready')) return;
+			if (!stderr.includes('[delendai] signal-handlers-ready')) return;
 			cleanupListeners();
 			resolveReady();
 		};
@@ -131,7 +131,7 @@ describe('gracefulShutdown — unit', async () => {
 			// catches it inside the .rejects assertion.
 			throw new Error(`__test_exit__:${code ?? 0}`);
 		}) as typeof process.exit;
-		// Capture the "[mcp-vertex] gracefulShutdown: ..." diagnostic
+		// Capture the "[delendai] gracefulShutdown: ..." diagnostic
 		// that gracefulShutdown writes to stderr on the rejection /
 		// timeout paths so it doesn't leak into the validate stream.
 		// The two cases that exercise those paths assert on the call
@@ -255,11 +255,11 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 
 	beforeEach(() => {
 		workspace = mkdtempSync(join(tmpdir(), 'mcp-gs-'));
-		// Minimal mcp-vertex config so the host can boot without the
+		// Minimal delendai config so the host can boot without the
 		// full preset swarm plugins loaded (we only need the server
 		// to start, not to serve real tools for this test).
 		writeFileSync(
-			join(workspace, 'mcp-vertex.config.json'),
+			join(workspace, 'delendai.config.json'),
 			`{ "plugins": {} }\n`,
 		);
 		cleanup = () => {
@@ -295,7 +295,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 				// forwarded, so normal startup diagnostics stay out of validate.
 				stdio: ['ignore', 'ignore', 'pipe'],
 				detached: false,
-				env: { ...process.env, MCP_VERTEX_TEST_READY: '1' },
+				env: { ...process.env, DELENDAI_TEST_READY: '1' },
 			},
 		);
 
@@ -336,7 +336,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 				// See SIGTERM test for rationale: stderr stays local to the test.
 				stdio: ['ignore', 'ignore', 'pipe'],
 				detached: false,
-				env: { ...process.env, MCP_VERTEX_TEST_READY: '1' },
+				env: { ...process.env, DELENDAI_TEST_READY: '1' },
 			},
 		);
 
@@ -377,7 +377,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 				// so the host's startup banner does not leak.
 				stdio: ['ignore', 'ignore', 'pipe'],
 				detached: false,
-				env: { ...process.env, MCP_VERTEX_TEST_READY: '1' },
+				env: { ...process.env, DELENDAI_TEST_READY: '1' },
 			},
 		);
 

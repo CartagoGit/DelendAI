@@ -2,7 +2,7 @@
 	"name": "@delendai/memory",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes under the cache dir, so agents keep continuity across sessions with minimal tokens. Load with `mcp-vertex --plugins=memory`.",
+	"description": "Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes under the cache dir, so agents keep continuity across sessions with minimal tokens. Load with `delendai --plugins=memory`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

@@ -80,13 +80,13 @@ bunx @delendai/cli validate`}</code></pre>
 
 				<h2 id="config">4. Configuration</h2>
 				<p>
-					Place a <code>mcp-vertex.config.json</code> at the workspace root. The
+					Place a <code>delendai.config.json</code> at the workspace root. The
 					loader auto-detects it. Schema lives at
-					<code>packages/core/schema/mcp-vertex.config.schema.json</code>.
+					<code>packages/core/schema/delendai.config.schema.json</code>.
 				</p>
 				<pre><code>{`{
-  "cacheDir": ".cache/mcp-vertex",
-  "docsDir": "docs/mcp-vertex",
+  "cacheDir": ".cache/delendai",
+  "docsDir": "docs/delendai",
   "plugins": {
     "memory": { "options": { "ttlSeconds": 86400 } },
     "proposals": { "prefix": "work" }
@@ -145,7 +145,7 @@ bunx @delendai/cli validate`}</code></pre>
 					core defines <code>IValidationCommand = &#123; command, expect &#125;</code>
 					and <code>IValidationMatrix = &#123; scopes: Record&lt;string, IValidationCommand[]&gt; &#125;</code>
 					(both re-exported from <code>@delendai/core/public</code>), and the
-					JSON schema in <code>mcp-vertex.config.json</code> validates the
+					JSON schema in <code>delendai.config.json</code> validates the
 					shape. Any command that returns exit-code 0 works — <code>tsc</code>,
 					<code>mypy</code>, <code>cargo check</code>, <code>go vet</code>,
 					<code>ruff</code>, <code>detekt</code>, <code>shellcheck</code>, etc.
@@ -153,7 +153,7 @@ bunx @delendai/cli validate`}</code></pre>
 				<p>Three sources of scopes, in precedence order:</p>
 				<ol>
 					<li>Plugin options — <code>quality.scopes = &#123; feature: ["..."] &#125;</code>.</li>
-					<li><code>mcp-vertex.config.json</code> →
+					<li><code>delendai.config.json</code> →
 					<code>validationMatrix.scopes</code> (the canonical surface).</li>
 					<li>Detected <code>package.json</code> scripts
 					(<code>lint</code>, <code>typecheck</code>, <code>test</code>,
@@ -191,7 +191,7 @@ bunx @delendai/cli validate`}</code></pre>
 				<p>
 					<strong>Trust boundary:</strong> <code>run_quality</code>
 					executes whatever the host config says. The commands come from
-					<em>your</em> <code>mcp-vertex.config.json</code> or your plugin
+					<em>your</em> <code>delendai.config.json</code> or your plugin
 					options — so the trust boundary is the host, not the agent. To
 					harden a setup where a less-trusted agent can call
 					<code>run_quality</code>, restrict which binaries may run with
@@ -218,11 +218,11 @@ bunx @delendai/cli validate`}</code></pre>
 					of <code>quality_*</code> tools.
 				</p>
 
-				<h2 id="extending">10. Extending mcp-vertex</h2>
+				<h2 id="extending">10. Extending delendai</h2>
 				<p>
 					Write your own plugin by exporting <code>IMcpPlugin</code> from a
-					package and adding it to <code>mcp-vertex.config.json</code>. See the
-					<a href="https://github.com/CartagoGit/mcp-vertex/tree/main/docs/mcp-vertex/examples/custom-plugin">custom-plugin example</a>.
+					package and adding it to <code>delendai.config.json</code>. See the
+					<a href="https://github.com/CartagoGit/delendai/tree/main/docs/delendai/examples/custom-plugin">custom-plugin example</a>.
 				</p>
 
 				<h2 id="tokens">11. Token budgets</h2>
@@ -242,7 +242,7 @@ bunx @delendai/cli validate`}</code></pre>
 				<h2 id="faq">13. FAQ</h2>
 				<h3>How is this different from the official MCP SDK?</h3>
 				<p>
-					The official SDK gives you the protocol primitives; mcp-vertex gives you
+					The official SDK gives you the protocol primitives; delendai gives you
 					a project-agnostic <em>server</em> with a plugin loader, registry, view
 					transitions, and a measured token budget.
 				</p>

@@ -7,7 +7,7 @@ import type { IRunnerInfo } from './runners';
  * Render the canonical test convention as a markdown block suitable
  * for the `test-convention-overview` knowledge entry. The agent can
  * read this on demand via `<prefix>_get_convention` or via the
- * core's `mcp-vertex_knowledge` tool.
+ * core's `delendai_knowledge` tool.
  */
 export const renderOverviewMarkdown = (c: ITestConvention): string => {
 	const mock = effectiveMockStyle(c);
@@ -85,7 +85,7 @@ export const renderRunnersMarkdown = (
 		'',
 		'## Multi-runner projects',
 		'',
-		'Set `runners` explicitly in `mcp-vertex.config.json` when both `vitest` and `jest`',
+		'Set `runners` explicitly in `delendai.config.json` when both `vitest` and `jest`',
 		'coexist (e.g. a migration window). The plugin then reports `wrong-mock-api`',
 		'when a spec uses an API that does not match the **detected** runner.',
 		'',
@@ -107,7 +107,7 @@ export const renderCoverageMarkdown = (c: ITestConvention): string =>
 		'## Override per-project',
 		'',
 		'```jsonc',
-		'// mcp-vertex.config.json',
+		'// delendai.config.json',
 		'{',
 		'  "plugins": {',
 		'    "test-convention": {',

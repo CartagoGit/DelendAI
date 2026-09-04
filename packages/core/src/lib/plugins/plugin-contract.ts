@@ -41,14 +41,14 @@ export interface IMcpPluginContext {
 	/** Shorthand for `corePaths.docsDir`. */
 	readonly docsDir: string;
 	/**
-	 * Global preservation preference from `mcp-vertex.config.json`.
+	 * Global preservation preference from `delendai.config.json`.
 	 * Default false: generated scaffolds skip existing files. Plugins that
 	 * regenerate durable project files may opt in to legacy snapshots when true.
 	 */
 	readonly keepLegacy: boolean;
 	/**
 	 * Host-scoped capability gate for `agent_worktree`, resolved at boot
-	 * (host CLI `--agent-worktree` > `mcp-vertex.config.json#agentWorktree`
+	 * (host CLI `--agent-worktree` > `delendai.config.json#agentWorktree`
 	 * > `false`). The CLI loader always sets a concrete boolean; it is
 	 * additive/optional on the contract so existing programmatic hosts and
 	 * test fixtures that build a context literal keep compiling. A plugin
@@ -68,7 +68,7 @@ export interface IMcpPluginContext {
 	readonly namespacePrefix: string;
 	/**
 	 * Typed, structured options for THIS plugin, read from the
-	 * `mcp-vertex.config.json` file under `plugins.<name>.options`. May
+	 * `delendai.config.json` file under `plugins.<name>.options`. May
 	 * hold nested objects/arrays — anything JSON. Empty when no config
 	 * file (or no entry for this plugin) is present.
 	 */
@@ -102,7 +102,7 @@ export interface IMcpPluginContext {
 	/**
 	 * Boot-resolved host identity (f00082 S3): the client/IDE (`host`) and
 	 * `model` driving this process, resolved once at assembly from the same
-	 * source as {@link commitAuthor} (`mcp-vertex.config.json#commitAuthor` or
+	 * source as {@link commitAuthor} (`delendai.config.json#commitAuthor` or
 	 * the `agent-client`/`agent-model` args). A plugin that records who did a
 	 * piece of work (the proposals swarm registry) uses this as the DEFAULT
 	 * identity when a per-call `host`/`model` argument is absent, so an
@@ -365,9 +365,9 @@ export interface IMcpPluginRegistrations {
 }
 
 /**
- * The contract every mcp-vertex plugin implements. A plugin package's
+ * The contract every delendai plugin implements. A plugin package's
  * entry module must `export default` one of these (or a factory that
- * returns one). Resolved by name via the CLI: `mcp-vertex --plugins=foo`
+ * returns one). Resolved by name via the CLI: `delendai --plugins=foo`
  * loads `@delendai/foo`, a bare npm name, or a local path.
  */
 export interface IMcpPlugin {
@@ -426,7 +426,7 @@ export interface IMcpPlugin {
 	readonly configExample?: IPluginConfigExample;
 	/**
 	 * Opts this plugin's `pluginCacheDir` into a sub-namespace instead of
-	 * the default `<cacheDir>/<name>`. `.cache/mcp-vertex/` mixes two
+	 * the default `<cacheDir>/<name>`. `.cache/delendai/` mixes two
 	 * genuinely different things under one "cache" label: derivable
 	 * scratch that is safe to delete and rebuild (bootstrap snapshots,
 	 * drift analysis, vendored rule packs, the proposals index) and

@@ -2,7 +2,7 @@ import type { IMcpToolSurfaceMode } from './surface-mode.interface';
 
 /**
  * A declarative, name-matched default for a known MCP host — the code
- * form of `docs/mcp-vertex/host-compatibility-matrix.md` (AUD-C01 /
+ * form of `docs/delendai/host-compatibility-matrix.md` (AUD-C01 /
  * x00285). `decideSurfaceModeFromCapabilities` walks these before ever
  * falling back to capability detection, so a host this repo has already
  * verified keeps the exact mode the matrix documents regardless of what

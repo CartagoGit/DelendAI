@@ -48,12 +48,12 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			peerReviewLogPathAbs: join(
 				root,
-				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+				'.cache/delendai/proposals/peer-review.jsonl',
 			),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			runValidation: async () => ({
@@ -240,7 +240,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 			agent: 'copilot-minimax-m3',
 		});
 		const raw = readFileSync(
-			join(root, '.cache/mcp-vertex/review-identity.jsonl'),
+			join(root, '.cache/delendai/review-identity.jsonl'),
 			'utf8',
 		);
 		const record = JSON.parse(raw.trim());

@@ -1,5 +1,5 @@
 /**
- * run-cli.ts — the `mcp-vertex` bin's process entry, the `--check`/
+ * run-cli.ts — the `delendai` bin's process entry, the `--check`/
  * `--doctor` report, the `--verbose` diagnostics and the first-start
  * blueprint hook (r00009: extracted verbatim from `assemble.ts`, which
  * now owns ONLY the config-assembly concern).
@@ -12,10 +12,10 @@ import {
 	createWorkspaceFileReader,
 } from '../bootstrap/index';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
-import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import { parseCliArgs } from '../plugins/parse-cli-args';
-import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
+import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { createMcpProject } from '../project/create-mcp-project';
 import { gracefulShutdown } from './graceful-shutdown';
 import {
@@ -60,7 +60,7 @@ export interface IDoctorReport {
  * in any environment before wiring it into a client.
  */
 export const runDoctor = async (
-	args: IMcpVertexCliArgs,
+	args: IDelendaiCliArgs,
 	deps: IAssembleCliDeps = {},
 ): Promise<IDoctorReport> => {
 	// Single source of truth: assembleCliConfig already read + diagnosed the
@@ -112,7 +112,7 @@ export const runDoctor = async (
  * can review and materialise it. Idempotent (writes once) and never
  * writes into the repo itself. Skipped by `--mcp-project-create=false`.
  * If a server already exists, the blueprint's notes explain how to
- * integrate it with mcp-vertex organically.
+ * integrate it with delendai organically.
  *
  * r00003 S1 (F-002, S + D): the existence check + mkdir + writeFile
  * triple was a race condition with two concurrent first-starts able to
@@ -123,10 +123,10 @@ export const runDoctor = async (
  * a half-written file.
  */
 export const prepareServerBlueprintOnStart = async (
-	args: IMcpVertexCliArgs,
+	args: IDelendaiCliArgs,
 	// The already-resolved cacheDir (CLI flag → config file → default). Passing
 	// it avoids drift: the blueprint must land under the SAME cacheDir as the
-	// rest of the store, including when it comes from mcp-vertex.config.json.
+	// rest of the store, including when it comes from delendai.config.json.
 	resolvedCacheDir?: string,
 	// Dependency-injection seam for tests and alternative storage
 	// (e.g. an in-memory writer). Defaults to the filesystem-backed
@@ -181,9 +181,9 @@ export interface IAssemblyDiagnostics {
 
 /** Pure: assemble a diagnostics snapshot of what the server will expose. */
 export const buildAssemblyDiagnostics = (
-	args: IMcpVertexCliArgs,
+	args: IDelendaiCliArgs,
 	loadResult: IPluginLoadResult,
-	config: IMcpVertexHostConfig,
+	config: IDelendaiHostConfig,
 	registrationOrder: readonly string[],
 ): IAssemblyDiagnostics => ({
 	workspace: args.workspace,
@@ -213,19 +213,19 @@ export const formatVerbose = (d: IAssemblyDiagnostics): string => {
 		.map((p) => (p.version ? `${p.name}@${p.version}` : p.name))
 		.join(', ');
 	return `${[
-		`[mcp-vertex] verbose: workspace=${d.workspace} cacheDir=${d.cacheDir} docsDir=${d.docsDir}`,
-		`[mcp-vertex] verbose: plugins requested=[${d.plugins.requested.join(', ')}] loaded=[${loaded}] errors=${d.plugins.errors.length}`,
-		`[mcp-vertex] verbose: counts tools=${d.counts.tools} prompts=${d.counts.prompts} resources=${d.counts.resources}`,
-		`[mcp-vertex] verbose: registrationOrder=[${d.registrationOrder.join(', ')}]`,
+		`[delendai] verbose: workspace=${d.workspace} cacheDir=${d.cacheDir} docsDir=${d.docsDir}`,
+		`[delendai] verbose: plugins requested=[${d.plugins.requested.join(', ')}] loaded=[${loaded}] errors=${d.plugins.errors.length}`,
+		`[delendai] verbose: counts tools=${d.counts.tools} prompts=${d.counts.prompts} resources=${d.counts.resources}`,
+		`[delendai] verbose: registrationOrder=[${d.registrationOrder.join(', ')}]`,
 	].join('\n')}\n`;
 };
 
-/** Entry point for the `mcp-vertex` bin. */
+/** Entry point for the `delendai` bin. */
 export const runCli = async (
 	argv: readonly string[],
 	cwd: string,
 ): Promise<void> => {
-	// `init`: merge the mcp-vertex server into the detected IDE configs and exit.
+	// `init`: merge the delendai server into the detected IDE configs and exit.
 	if (argv[0] === 'init') {
 		const { runInit } = await import('./run-init');
 		await runInit(argv.slice(1), cwd);
@@ -252,13 +252,13 @@ export const runCli = async (
 	} = await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		// stderr only: stdout is the MCP stdio transport.
-		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
+		process.stderr.write(`[delendai] plugin error: ${error.message}\n`);
 	}
 	// S1: config issues (schema violations, dead docsDir/roots) are
 	// warnings, not boot failures — but they must be visible in the host's
 	// server log, not only behind an explicit `--check`.
 	for (const issue of configDiagnostic.issues) {
-		process.stderr.write(`[mcp-vertex] config warning: ${issue}\n`);
+		process.stderr.write(`[delendai] config warning: ${issue}\n`);
 	}
 	const assembled = await createMcpProject(config);
 	const surfaceRuntime = config.toolSurfaceRuntime?.get();
@@ -320,7 +320,7 @@ export const runCli = async (
 				.dispose()
 				.catch((error: unknown) => {
 					process.stderr.write(
-						`[mcp-vertex] dispose() failed during shutdown: ${error instanceof Error ? error.message : String(error)}\n`,
+						`[delendai] dispose() failed during shutdown: ${error instanceof Error ? error.message : String(error)}\n`,
 					);
 				})
 				.finally(() => {
@@ -338,7 +338,7 @@ export const runCli = async (
 			.then((result) => {
 				if (result.written) {
 					process.stderr.write(
-						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcp-vertex_plan_mcp_project.\n`,
+						`[delendai] wrote a project MCP server blueprint to ${result.path}; review it or call delendai_plan_mcp_project.\n`,
 					);
 				}
 			})

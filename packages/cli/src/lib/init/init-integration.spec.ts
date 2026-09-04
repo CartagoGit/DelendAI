@@ -7,7 +7,7 @@ import { InitAnswers } from './init-answers.schema';
 import type { IInitAnswers } from './init-answers.types';
 import { renderInitBundle, resolvePluginSet } from './init-render.service';
 import {
-	writeMcpVertexConfig,
+	writeDelendaiConfig,
 	writeWorkspaceText,
 } from './init-writers.factory';
 
@@ -20,7 +20,7 @@ describe('init integration (f00084 S10)', () => {
 	let workspace: string;
 
 	beforeEach(async () => {
-		workspace = await mkdtemp(join(tmpdir(), 'mcpv-init-integration-'));
+		workspace = await mkdtemp(join(tmpdir(), 'delendai-init-integration-'));
 		// a00063: seed stable top-level source dirs so the derived
 		// search/conventions roots are a fixed point across renders —
 		// init itself creates docs/ on write, and rendering from an
@@ -43,12 +43,12 @@ describe('init integration (f00084 S10)', () => {
 		const first = await renderInitBundle(answers);
 
 		for (const file of first.files) {
-			if (file.relPath === 'mcp-vertex.config.json') {
+			if (file.relPath === 'delendai.config.json') {
 				const parsed = JSON.parse(file.content) as Record<
 					string,
 					unknown
 				>;
-				const result = await writeMcpVertexConfig(
+				const result = await writeDelendaiConfig(
 					workspace,
 					parsed,
 					false,
@@ -67,7 +67,7 @@ describe('init integration (f00084 S10)', () => {
 		}
 
 		const configOnDisk = await readFile(
-			join(workspace, 'mcp-vertex.config.json'),
+			join(workspace, 'delendai.config.json'),
 			'utf8',
 		);
 		const parsedConfig = JSON.parse(configOnDisk) as {

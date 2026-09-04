@@ -322,7 +322,7 @@ export const createMockReleasePrProvider = (): IMockReleasePrProvider => {
 		createPullRequest: async (input) => {
 			const record: IReleasePrRecord = Object.freeze({
 				number: counter++,
-				url: `https://github.com/mcp-vertex/core/pull/${String(counter - 1)}`,
+				url: `https://github.com/delendai/core/pull/${String(counter - 1)}`,
 				title: input.title,
 				headBranch: input.headBranch,
 				baseBranch: input.baseBranch,
@@ -350,7 +350,7 @@ export const createSimulatedMergeReader =
 			number: 42,
 			title: 'Release (simulated)',
 			branch: 'release/minor/cli-typed-forge-boundary',
-			url: 'https://github.com/mcp-vertex/core/pull/42',
+			url: 'https://github.com/delendai/core/pull/42',
 			draft: false,
 			author: 'dogfood',
 			labels: [],

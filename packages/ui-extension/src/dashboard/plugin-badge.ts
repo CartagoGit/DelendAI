@@ -35,9 +35,9 @@ export const renderPluginBadge = (
 	const brand = renderBrandIcon(options.code);
 	const title = TITLE_TEXT(options.title, options.label);
 	if (brand.length > 0) {
-		return `<span class="mcpv-badge mcpv-badge--brand" data-code="${options.code}" title="${title.replace(/"/g, '&quot;')}" style="--mcpv-badge-size:${size}px">${brand}</span>`;
+		return `<span class="delendai-badge delendai-badge--brand" data-code="${options.code}" title="${title.replace(/"/g, '&quot;')}" style="--delendai-badge-size:${size}px">${brand}</span>`;
 	}
 	const initials = INITIALS_FALLBACK(options.label);
-	const colour = options.fallbackColour ?? 'var(--mcpv-brand-blue)';
-	return `<span class="mcpv-badge mcpv-badge--initials" data-code="${options.code}" title="${title.replace(/"/g, '&quot;')}" style="--mcpv-badge-size:${size}px;background:${colour}">${initials}</span>`;
+	const colour = options.fallbackColour ?? 'var(--delendai-brand-blue)';
+	return `<span class="delendai-badge delendai-badge--initials" data-code="${options.code}" title="${title.replace(/"/g, '&quot;')}" style="--delendai-badge-size:${size}px;background:${colour}">${initials}</span>`;
 };

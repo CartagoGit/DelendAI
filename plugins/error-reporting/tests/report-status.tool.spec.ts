@@ -158,7 +158,7 @@ describe('report_status tool', () => {
 		expect(body.projectContextSent).toBe(false);
 		expect(body.transmittedFields.safeDtoFields).toEqual([
 			'reporterVersion',
-			'mcpVertexVersion',
+			'delendaiVersion',
 			'packageId',
 			'safeToolId',
 			'toolOwner',
@@ -174,7 +174,7 @@ describe('report_status tool', () => {
 		expect(body.transmittedFields.issueBodyTableFields).toEqual([
 			'packageId',
 			'reporterVersion',
-			'mcpVertexVersion',
+			'delendaiVersion',
 			'classification',
 			'failureClass',
 			'fingerprint',

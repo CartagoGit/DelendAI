@@ -6,16 +6,16 @@
  * host instruction files (`AGENTS.md`, `CLAUDE.md`,
  * `.github/copilot-instructions.md`):
  *
- *   1. Each host file MUST contain a link to `docs/mcp-vertex/AGENT-BOOTSTRAP.md`.
+ *   1. Each host file MUST contain a link to `docs/delendai/AGENT-BOOTSTRAP.md`.
  *      Without the link, the host is not anchored to the central rule source.
  *
  *   2. Each host file MUST NOT enumerate skill / tool / proposal ids.
  *      Only the three bootstrap entry points are allowed as tool names
- *      (`mcp-vertex_overview`, `mcp-vertex_agent_catalog`,
- *      `mcp-vertex_agent_bootstrap`). Skill ids follow the kebab-case
- *      convention `mcp-vertex-*` and are listed in the skill manifest,
+ *      (`delendai_overview`, `delendai_agent_catalog`,
+ *      `delendai_agent_bootstrap`). Skill ids follow the kebab-case
+ *      convention `delendai-*` and are listed in the skill manifest,
  *      not the host file. Proposal ids follow `[a-z]\d{5}` and live in
- *      `docs/mcp-vertex/proposals/`, not the host file.
+ *      `docs/delendai/proposals/`, not the host file.
  *
  *   3. Any failure outputs a per-file `BLOCKING` list with line numbers
  *      and a next-action that points at the bootstrap.
@@ -32,13 +32,13 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 
-const BOOTSTRAP_PATH = 'docs/mcp-vertex/AGENT-BOOTSTRAP.md';
+const BOOTSTRAP_PATH = 'docs/delendai/AGENT-BOOTSTRAP.md';
 
 /** The three bootstrap entry points that the renderer accepts. */
 const ALLOWED_TOOL_NAMES = new Set([
-	'mcp-vertex_overview',
-	'mcp-vertex_agent_catalog',
-	'mcp-vertex_agent_bootstrap',
+	'delendai_overview',
+	'delendai_agent_catalog',
+	'delendai_agent_bootstrap',
 ]);
 
 /**
@@ -52,10 +52,10 @@ const SKILL_ID_PATTERN = /`[a-z][a-z0-9-]*-[a-z][a-z0-9-]+`/g;
 const SKILL_MANIFEST_PATH = 'packages/core/skills/manifest.json';
 
 /**
- * Tool name pattern: backtick-quoted `mcp-vertex_<suffix>`.
+ * Tool name pattern: backtick-quoted `delendai_<suffix>`.
  * We allow the three bootstrap entry points explicitly.
  */
-const TOOL_NAME_PATTERN = /`mcp-vertex_[a-z_]+`/g;
+const TOOL_NAME_PATTERN = /`delendai_[a-z_]+`/g;
 
 /**
  * Proposal id pattern: backtick-quoted `[a-z]\d{5}`.
@@ -77,7 +77,7 @@ export interface IHostViolation {
 		| 'tool-id-enumeration'
 		| 'proposal-id-enumeration'
 		// f00092: hand-split attempt — a *.generated.md sibling of the
-		// canonical single fragment under docs/mcp-vertex/host-hints/.
+		// canonical single fragment under docs/delendai/host-hints/.
 		// Only `host-hints-fragments.script.ts` emits this kind.
 		| 'stray-fragment';
 	readonly snippet: string;
@@ -88,10 +88,10 @@ const TOOL_FIX = (toolName: string): string =>
 	`remove the inline reference to \`${toolName}\`; the bootstrap already lists it under §2. Move the rule to ${BOOTSTRAP_PATH} or rephrase without naming a specific tool.`;
 
 const SKILL_FIX = (skillId: string): string =>
-	`remove the inline reference to \`${skillId}\`; skills are surfaced live by \`mcp-vertex_agent_catalog { section: "skills" }\`. Move any rule about when to use it to ${BOOTSTRAP_PATH}.`;
+	`remove the inline reference to \`${skillId}\`; skills are surfaced live by \`delendai_agent_catalog { section: "skills" }\`. Move any rule about when to use it to ${BOOTSTRAP_PATH}.`;
 
 const PROPOSAL_FIX = (proposalId: string): string =>
-	`remove the inline reference to \`${proposalId}\`; actionable proposals are surfaced live by \`mcp-vertex_agent_catalog { section: "proposals" }\`. Move any context about it to ${BOOTSTRAP_PATH}.`;
+	`remove the inline reference to \`${proposalId}\`; actionable proposals are surfaced live by \`delendai_agent_catalog { section: "proposals" }\`. Move any context about it to ${BOOTSTRAP_PATH}.`;
 
 const MISSING_BOOTSTRAP_FIX = `add a link to ${BOOTSTRAP_PATH} in the first 30 lines. Without the link, the host file is not anchored to the central source of agent rules.`;
 
@@ -171,7 +171,7 @@ export const lintHostFile = async (
 		text,
 		TOOL_NAME_PATTERN,
 	)) {
-		const inner = match.match(/`(mcp-vertex_[a-z_]+)`/);
+		const inner = match.match(/`(delendai_[a-z_]+)`/);
 		const toolName = inner?.[1];
 		if (toolName && !ALLOWED_TOOL_NAMES.has(toolName)) {
 			violations.push({

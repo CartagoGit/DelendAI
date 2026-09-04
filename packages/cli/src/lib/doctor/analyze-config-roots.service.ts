@@ -1,9 +1,9 @@
 /**
  * analyze-config-roots.service.ts — a00064: config-vs-reality preflight
- * for `mcpv doctor`.
+ * for `delendai doctor`.
  *
  * Cross-checks every `plugins.<id>.options.roots` array in
- * `mcp-vertex.config.json` against the actual workspace tree — the
+ * `delendai.config.json` against the actual workspace tree — the
  * exact misconfiguration (roots describing a different project's
  * layout) that silently starved search/docs/conventions of files and
  * sent an adopter agent into the a00063 retry meltdown. Pure over the

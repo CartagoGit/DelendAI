@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { McpStdioClient, type IOverview } from '../../src/public/index';
 
-describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => {
+describe('e2e: McpStdioClient over a real delendai stdio server', async () => {
 	const workspaces: string[] = [];
 	const coreCli = fileURLToPath(
 		new URL('../../../core/src/cli.ts', import.meta.url),
@@ -20,13 +20,13 @@ describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => 
 	});
 
 	it('spawns the source CLI and calls overview', async () => {
-		const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-client-'));
+		const workspace = mkdtempSync(join(tmpdir(), 'delendai-client-'));
 		workspaces.push(workspace);
 		const client = await McpStdioClient.connect({
 			command: 'bun',
 			args: [coreCli, '--plugins=', `--workspace=${workspace}`],
 			// Silence the spawned CLI's stderr so its status banner
-			// ("[mcp-vertex] wrote a project MCP server blueprint...")
+			// ("[delendai] wrote a project MCP server blueprint...")
 			// does not leak into the validate output stream.
 			stderr: 'ignore',
 		});
@@ -34,14 +34,14 @@ describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => 
 		try {
 			const tools = await client.listTools();
 			expect(tools.map((tool) => tool.name)).toContain(
-				'mcp-vertex_overview',
+				'delendai_overview',
 			);
 
 			const overview = await client.request<{ compact: true }, IOverview>(
-				'mcp-vertex_overview',
+				'delendai_overview',
 				{ compact: true },
 			);
-			expect(overview.server.name).toBe('mcp-vertex');
+			expect(overview.server.name).toBe('delendai');
 			// compact `tools` is grouped by plugin ({ core: [...], … }); assert
 			// the groups exist and carry stems (the flat count comes via
 			// client.listTools() above).

@@ -67,9 +67,9 @@ const contextFixture = (
 			provider: 'github',
 			host,
 			owner: 'CartagoGit',
-			repository: 'mcp-vertex',
-			webUrl: `${webBaseUrl}/CartagoGit/mcp-vertex`,
-			apiUrl: `${apiBaseUrl}/repos/CartagoGit/mcp-vertex`,
+			repository: 'delendai',
+			webUrl: `${webBaseUrl}/CartagoGit/delendai`,
+			apiUrl: `${apiBaseUrl}/repos/CartagoGit/delendai`,
 		},
 		timeoutMs: 15_000,
 		maxRetries: 0,
@@ -157,7 +157,7 @@ describe('github remote diagnostics delivery gate', () => {
 									head_branch: 'release/1.0',
 									status: 'completed',
 									conclusion: 'failure',
-									html_url: `${context.webBaseUrl}/CartagoGit/mcp-vertex/actions/runs/91`,
+									html_url: `${context.webBaseUrl}/CartagoGit/delendai/actions/runs/91`,
 									created_at: '2026-08-31T00:00:00Z',
 									updated_at: '2026-08-31T00:05:00Z',
 								},
@@ -172,7 +172,7 @@ describe('github remote diagnostics delivery gate', () => {
 							head_branch: 'release/1.0',
 							status: 'completed',
 							conclusion: 'failure',
-							html_url: `${context.webBaseUrl}/CartagoGit/mcp-vertex/actions/runs/91`,
+							html_url: `${context.webBaseUrl}/CartagoGit/delendai/actions/runs/91`,
 							created_at: '2026-08-31T00:00:00Z',
 							updated_at: '2026-08-31T00:05:00Z',
 						});
@@ -185,7 +185,7 @@ describe('github remote diagnostics delivery gate', () => {
 									name: 'test',
 									status: 'completed',
 									conclusion: 'failure',
-									html_url: `${context.webBaseUrl}/CartagoGit/mcp-vertex/actions/runs/91/job/7`,
+									html_url: `${context.webBaseUrl}/CartagoGit/delendai/actions/runs/91/job/7`,
 									started_at: '2026-08-31T00:01:00Z',
 									completed_at: '2026-08-31T00:04:00Z',
 								},
@@ -210,7 +210,7 @@ describe('github remote diagnostics delivery gate', () => {
 					webBaseUrl: context.webBaseUrl,
 					repository: {
 						owner: 'CartagoGit',
-						repository: 'mcp-vertex',
+						repository: 'delendai',
 					},
 				},
 			});
@@ -231,7 +231,7 @@ describe('github remote diagnostics delivery gate', () => {
 					runs: [
 						{
 							id: 91,
-							url: `${context.webBaseUrl}/CartagoGit/mcp-vertex/actions/runs/91`,
+							url: `${context.webBaseUrl}/CartagoGit/delendai/actions/runs/91`,
 						},
 					],
 				},
@@ -259,9 +259,9 @@ describe('github remote diagnostics delivery gate', () => {
 			});
 
 			expect(suite.calls.map((request) => request.path)).toEqual([
-				'/repos/CartagoGit/mcp-vertex/actions/runs',
-				'/repos/CartagoGit/mcp-vertex/actions/runs/91',
-				'/repos/CartagoGit/mcp-vertex/actions/runs/91/jobs',
+				'/repos/CartagoGit/delendai/actions/runs',
+				'/repos/CartagoGit/delendai/actions/runs/91',
+				'/repos/CartagoGit/delendai/actions/runs/91/jobs',
 			]);
 			expect(fetchSpy).not.toHaveBeenCalled();
 		});
@@ -302,7 +302,7 @@ describe('github remote diagnostics delivery gate', () => {
 		});
 		expect(suite.calls).toEqual([
 			{
-				path: '/repos/CartagoGit/mcp-vertex/actions/jobs/321/logs',
+				path: '/repos/CartagoGit/delendai/actions/jobs/321/logs',
 				parseAs: 'text',
 			},
 		]);

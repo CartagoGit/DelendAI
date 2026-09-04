@@ -16,9 +16,9 @@ afterAll(() => {
 
 const makeBridge = () => {
 	const { transport } = createFakeTransport({
-		'mcp-vertex_metrics': {
+		delendai_metrics: {
 			tools: {
-				'mcp-vertex_overview': {
+				delendai_overview: {
 					calls: 1,
 					errors: 0,
 					totalMs: 100,

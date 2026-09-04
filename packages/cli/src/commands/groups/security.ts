@@ -4,14 +4,14 @@
  * secret scan and the full posture audit straight from the terminal.
  *
  * Tools mapped:
- *   - `mcp-vertex_security_security_secrets` ({ scope?, includeTests? })
- *   - `mcp-vertex_security_security_audit`   (no args)
+ *   - `delendai_security_security_secrets` ({ scope?, includeTests? })
+ *   - `delendai_security_security_audit`   (no args)
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, hasFlag, request, scalarArg } from './group-helpers';
 
-const SECRETS = 'mcp-vertex_security_security_secrets';
-const AUDIT = 'mcp-vertex_security_security_audit';
+const SECRETS = 'delendai_security_security_secrets';
+const AUDIT = 'delendai_security_security_audit';
 
 const securitySecretsCommand: ICliCommand = {
 	name: 'security secrets',

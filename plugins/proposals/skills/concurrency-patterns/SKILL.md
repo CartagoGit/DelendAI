@@ -1,12 +1,12 @@
 ---
-name: mcp-vertex-concurrency-patterns
+name: delendai-concurrency-patterns
 appliesTo: ['@delendai/proposals', '@delendai/notification']
 description: The repo's two concurrency primitives — withFileMutex (cross-process critical sections) and agent_lock/agent_worktree (multi-agent file-ownership coordination) — and when to use each. Use when several agents (or processes) might touch the same files at the same time.
 ---
 
 # concurrency patterns
 
-mcp-vertex has two distinct concurrency mechanisms that solve different
+delendai has two distinct concurrency mechanisms that solve different
 problems. Confusing them is the most common source of "it worked alone but
 broke with two agents" bugs.
 
@@ -52,7 +52,7 @@ agent B: agent_lock { action: 'claim', files: ['plugins/x/src/a.ts'] }
 ## `agent_worktree` — branch isolation, used together with `agent_lock`
 
 > **Host gate (f00052):** `agent_worktree` is a host-scoped *capability*,
-> off by default. Read `mcp-vertex.config.json#agentWorktree` (or the
+> off by default. Read `delendai.config.json#agentWorktree` (or the
 > `--agent-worktree` CLI flag). If `false`/unset — do not call
 > `proposals_agent_worktree`; commit to the active branch instead. This
 > section documents the *primitive*; the *when-to-use* decision lives in the
@@ -61,7 +61,7 @@ agent B: agent_lock { action: 'claim', files: ['plugins/x/src/a.ts'] }
 `agent_lock` stops two agents editing the *same file*; it does not stop a
 push from one agent clobbering another's in-flight branch. `agent_worktree`
 creates a disposable git worktree + branch per agent, so each agent's
-`commit-and-push` (see `mcp-vertex-token-budget-playbook` / `mcp-vertex-proposal-swarm-runner`
+`commit-and-push` (see `delendai-token-budget-playbook` / `delendai-proposal-swarm-runner`
 for `auto_work`'s persist modes) lands on its own branch, not on a shared
 checkout. Use them together: `agent_lock` for "who owns these files right
 now", `agent_worktree` for "where does this agent's git history live until

@@ -100,7 +100,7 @@ export const buildCallToolRegistration = (
 		tags: ['external-mcps', 'lazy', 'subprocess'],
 		summary:
 			'Invoke ext.<server>.<tool> on a declared external MCP server (lazy-boots the child).',
-		descriptionKey: 'mcp-vertex_external-mcps_call',
+		descriptionKey: 'delendai_external-mcps_call',
 		effects: ['spawn'],
 		register: async (server) => {
 			server.registerTool(

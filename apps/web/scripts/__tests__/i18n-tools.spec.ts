@@ -15,10 +15,10 @@ import { describe, expect, it } from 'vitest';
 import { describeTool } from '../../src/i18n/tools';
 
 describe('describeTool (per-tool i18n catalogue)', () => {
-	it('resolves mcp-vertex_overview in every supported language', () => {
-		const es = describeTool('mcp-vertex_overview', 'es');
-		const fr = describeTool('mcp-vertex_overview', 'fr');
-		const ja = describeTool('mcp-vertex_overview', 'ja');
+	it('resolves delendai_overview in every supported language', () => {
+		const es = describeTool('delendai_overview', 'es');
+		const fr = describeTool('delendai_overview', 'fr');
+		const ja = describeTool('delendai_overview', 'ja');
 		expect(es).toBeDefined();
 		expect(fr).toBeDefined();
 		expect(ja).toBeDefined();
@@ -33,7 +33,7 @@ describe('describeTool (per-tool i18n catalogue)', () => {
 		// `xx` is a defensive fallback test: a future unknown lang must NOT
 		// throw, must NOT return English by accident — the runtime description
 		// (from `t.description`) is the safe fallback the caller uses.
-		const fallback = describeTool('mcp-vertex_overview', 'en');
+		const fallback = describeTool('delendai_overview', 'en');
 		expect(fallback).toBeDefined();
 		expect(fallback?.length ?? 0).toBeGreaterThan(20);
 	});
@@ -48,10 +48,10 @@ describe('listRegisteredTools (check-i18n gate surface)', () => {
 	it('exposes every opted-in catalogue entry with its full dict', async () => {
 		const { listRegisteredTools } = await import('../../src/i18n/tools');
 		const entries = listRegisteredTools();
-		// The catalogue ships with at least one entry (mcp-vertex_overview);
+		// The catalogue ships with at least one entry (delendai_overview);
 		// future slices add more, the test must stay green either way.
 		expect(entries.length).toBeGreaterThanOrEqual(1);
-		const overview = entries.find((e) => e.name === 'mcp-vertex_overview');
+		const overview = entries.find((e) => e.name === 'delendai_overview');
 		expect(overview).toBeDefined();
 		// Every supported language must be present in the entry — this is the
 		// same invariant `check-i18n.ts` enforces, so the catalogue and the

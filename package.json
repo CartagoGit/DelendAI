@@ -11,7 +11,7 @@
 		"plugins/*",
 		"apps/*",
 		"extensions/*",
-		"docs/mcp-vertex/examples/*",
+		"docs/delendai/examples/*",
 		"tools",
 		"tools/docs-api"
 	],

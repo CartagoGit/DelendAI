@@ -121,14 +121,14 @@ describe('gitlab remote diagnostics delivery gate', () => {
 			host: 'gitlab.com',
 			apiBaseUrl: 'https://gitlab.com/api/v4',
 			webBaseUrl: 'https://gitlab.com',
-			projectPath: 'CartagoGit/mcp-vertex',
+			projectPath: 'CartagoGit/delendai',
 		},
 		{
 			label: 'self-managed GitLab',
 			host: 'gitlab.self.example',
 			apiBaseUrl: 'https://gitlab.self.example/api/v4',
 			webBaseUrl: 'https://gitlab.self.example',
-			projectPath: 'platform/mcp-vertex',
+			projectPath: 'platform/delendai',
 		},
 	] as const) {
 		it(`keeps ${fixture.label} diagnostics schema-safe without plugin-git`, async () => {

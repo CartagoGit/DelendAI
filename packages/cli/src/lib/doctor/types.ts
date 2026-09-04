@@ -1,5 +1,5 @@
 /**
- * doctor/types.ts — shared types for the `mcpv doctor` health checks
+ * doctor/types.ts — shared types for the `delendai doctor` health checks
  * (f00191 / q00006 Track I).
  *
  * `doctor` is a sectioned health report. Each section is one health
@@ -11,7 +11,7 @@
  * are testable without a real workspace.
  *
  * Server-dependent checks (`plugins`, `tools`) bypass this surface and
- * call `mcp-vertex_overview` directly via the `request` helper the
+ * call `delendai_overview` directly via the `request` helper the
  * runner passes into the command; they live in the command group file
  * itself, not here.
  */

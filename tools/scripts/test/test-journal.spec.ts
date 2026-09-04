@@ -165,7 +165,7 @@ describe('test-journal persistence', () => {
 	let root = '';
 
 	beforeEach(async () => {
-		root = await mkdtemp(join(tmpdir(), 'mcpv-test-journal-'));
+		root = await mkdtemp(join(tmpdir(), 'delendai-test-journal-'));
 	});
 
 	afterEach(async () => {

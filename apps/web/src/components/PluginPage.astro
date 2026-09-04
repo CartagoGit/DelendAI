@@ -64,7 +64,7 @@ const pluginTutorials = (
 	(capabilities as { tutorials?: ITutorial[] }).tutorials ?? []
 ).filter((t) => slugOf(t.plugin) === slug);
 // a00085: `capabilities.tools[].namespace` is always the plugin's own
-// short name ("core", "search", …) — there is no separate "mcp-vertex"
+// short name ("core", "search", …) — there is no separate "delendai"
 // namespace value in the manifest, so no remapping is needed (or
 // correct — the old `nsFor` mapped "core" to a namespace that no tool
 // actually has, silently hiding every core-plugin tool from this tab).
@@ -221,7 +221,7 @@ const title = pkg?.name ?? `@delendai/${slug}`;
 							{t.ui.codeCopy}
 						</button>
 						<pre id={`cfg-${slug}`}><code>{
-							// The outer object mirrors the user's mcp-vertex.config.json
+							// The outer object mirrors the user's delendai.config.json
 							// so they can paste the whole block. The plugin key is the
 							// package short-name; `options` is what the plugin sees as
 							// `ctx.options` at registration time.

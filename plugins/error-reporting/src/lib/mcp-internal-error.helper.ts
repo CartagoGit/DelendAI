@@ -1,4 +1,4 @@
-import type { McpVertexErrorCode } from './contracts/constants/error-codes.constant';
+import type { DelendaiErrorCode } from './contracts/constants/error-codes.constant';
 import type { SafeScalar } from './contracts/interfaces/reporter.interface';
 
 export const isSafeScalar = (value: unknown): value is SafeScalar => {
@@ -22,15 +22,15 @@ export const isSafeScalar = (value: unknown): value is SafeScalar => {
 	return true;
 };
 
-export class McpVertexInternalError extends Error {
-	readonly code: McpVertexErrorCode;
-	readonly mcpVertexErrorCode: McpVertexErrorCode;
+export class DelendaiInternalError extends Error {
+	readonly code: DelendaiErrorCode;
+	readonly delendaiErrorCode: DelendaiErrorCode;
 	readonly packageId: string;
 	readonly componentId: string;
 	readonly safeContext?: Readonly<Record<string, SafeScalar>> | undefined;
 
 	constructor(input: {
-		readonly code: McpVertexErrorCode;
+		readonly code: DelendaiErrorCode;
 		readonly packageId: string;
 		readonly componentId: string;
 		readonly safeContext?: Readonly<Record<string, SafeScalar>> | undefined;
@@ -40,9 +40,9 @@ export class McpVertexInternalError extends Error {
 		super(input.message ?? input.code, {
 			...(input.cause !== undefined ? { cause: input.cause } : {}),
 		});
-		this.name = 'McpVertexInternalError';
+		this.name = 'DelendaiInternalError';
 		this.code = input.code;
-		this.mcpVertexErrorCode = input.code;
+		this.delendaiErrorCode = input.code;
 		this.packageId = input.packageId;
 		this.componentId = input.componentId;
 		if (
@@ -50,7 +50,7 @@ export class McpVertexInternalError extends Error {
 			!isSafeScalar(input.safeContext)
 		) {
 			throw new TypeError(
-				'McpVertexInternalError.safeContext must contain only SafeScalar values',
+				'DelendaiInternalError.safeContext must contain only SafeScalar values',
 			);
 		}
 		this.safeContext = input.safeContext;

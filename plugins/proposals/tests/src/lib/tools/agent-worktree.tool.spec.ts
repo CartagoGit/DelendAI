@@ -118,13 +118,13 @@ describe('buildAgentWorktreeRegistration — host gate (f00052 S7)', async () =>
 		const handler = await captureHandler(
 			true,
 			run,
-			'.cache/mcp-vertex/.worktrees',
+			'.cache/delendai/.worktrees',
 		);
 
 		const result = await handler({ action: 'create', agent: 'agent-A' });
 
 		expect(result.structuredContent?.path).toBe(
-			'/ws/.cache/mcp-vertex/.worktrees/agent-a',
+			'/ws/.cache/delendai/.worktrees/agent-a',
 		);
 		expect(
 			calls.find((c) => c[0] === 'worktree' && c[1] === 'add'),
@@ -133,7 +133,7 @@ describe('buildAgentWorktreeRegistration — host gate (f00052 S7)', async () =>
 			'add',
 			'-b',
 			'agent/agent-a',
-			'/ws/.cache/mcp-vertex/.worktrees/agent-a',
+			'/ws/.cache/delendai/.worktrees/agent-a',
 			'HEAD',
 		]);
 	});

@@ -6,11 +6,11 @@ import { dictsByLang } from '@delendai/shared/i18n';
 import { renderPanelStatus } from '../../src/dashboard/render-panel-status';
 
 const baseOverview = {
-	serverName: 'mcp-vertex',
+	serverName: 'delendai',
 	serverVersion: '0.42.0',
-	namespacePrefix: 'mcp-vertex',
+	namespacePrefix: 'delendai',
 	plugins: [{ name: 'core' }, { name: 'memory' }],
-	tools: [{ name: 'mcp-vertex_overview', plugin: 'core' }],
+	tools: [{ name: 'delendai_overview', plugin: 'core' }],
 	knowledgeIds: ['overview'],
 	recommendedNextAction: 'Pick a slice from the Proposals tab.',
 	totals: {
@@ -61,7 +61,7 @@ const fixture: IDashboardAllModels = {
 	sessions: { total: 0, byStatus: {}, rows: [] },
 	times: {
 		totalWallMs: 200,
-		slowestTool: { tool: 'mcp-vertex_overview', maxMs: 50 },
+		slowestTool: { tool: 'delendai_overview', maxMs: 50 },
 		p50Ms: 5,
 		p95Ms: 50,
 		histogram: [],
@@ -126,7 +126,7 @@ const fixture: IDashboardAllModels = {
 		},
 	},
 	server: {
-		name: 'mcp-vertex',
+		name: 'delendai',
 		version: '0.42.0',
 		fetchedAt: '2026-06-21T07:00:00Z',
 	},
@@ -136,15 +136,15 @@ describe('renderPanelStatus', () => {
 	it('renders the panel with server identity, KPIs and activity', () => {
 		const html = renderPanelStatus(fixture, dictsByLang.en);
 		expect(html).toContain('panel-status');
-		expect(html).toContain('mcp-vertex');
+		expect(html).toContain('delendai');
 		expect(html).toContain('0.42.0');
 		expect(html).toContain('Pick a slice');
 	});
 
 	it('renders the pulse + connection chip', () => {
 		const html = renderPanelStatus(fixture, dictsByLang.en);
-		expect(html).toContain('mcpv-status__pulse');
-		expect(html).toContain('mcpv-status__chip');
+		expect(html).toContain('delendai-status__pulse');
+		expect(html).toContain('delendai-status__chip');
 	});
 
 	it('marks the connection as lost when server is unavailable', () => {
@@ -158,17 +158,17 @@ describe('renderPanelStatus', () => {
 
 	it('shows the idle activity hint when there are no recent agents', () => {
 		const html = renderPanelStatus(fixture, dictsByLang.en);
-		expect(html).toContain('mcpv-status__activity--idle');
+		expect(html).toContain('delendai-status__activity--idle');
 	});
 
 	it('renders the savings + error-rate progress rings', () => {
 		const html = renderPanelStatus(fixture, dictsByLang.en);
-		expect(html).toContain('mcpv-status__ring');
-		expect(html).toContain('mcpv-status__ring-svg');
-		expect(html).toMatch(/stroke="var\(--mcpv-brand-purple\)"/);
+		expect(html).toContain('delendai-status__ring');
+		expect(html).toContain('delendai-status__ring-svg');
+		expect(html).toMatch(/stroke="var\(--delendai-brand-purple\)"/);
 		// The default fixture has zero errors so the error ring stays empty.
 		// Assert the ring container is present even if the arc is skipped.
-		expect(html).toContain('mcpv-status__ring');
+		expect(html).toContain('delendai-status__ring');
 	});
 
 	it('renders the full error ring when error rate > 0', () => {
@@ -185,7 +185,7 @@ describe('renderPanelStatus', () => {
 			},
 			dictsByLang.en,
 		);
-		expect(html).toMatch(/stroke="var\(--mcpv-error\)"/);
+		expect(html).toMatch(/stroke="var\(--delendai-error\)"/);
 	});
 
 	it('renders the latency sparkline when samples are available', () => {
@@ -195,12 +195,12 @@ describe('renderPanelStatus', () => {
 				metrics: {
 					...fixture.metrics,
 					sparklines: {
-						'mcp-vertex_overview': [1, 2, 3, 4, 5, 6, 7, 8],
+						delendai_overview: [1, 2, 3, 4, 5, 6, 7, 8],
 					},
 				},
 			},
 			dictsByLang.en,
 		);
-		expect(html).toContain('mcpv-status__sparkline');
+		expect(html).toContain('delendai-status__sparkline');
 	});
 });

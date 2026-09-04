@@ -16,7 +16,7 @@ describe('getBaselineSnapshot', async () => {
 		const snapshot = {
 			at: '2026-06-21T00:00:00.000Z',
 			tools: {
-				'mcp-vertex_overview': {
+				delendai_overview: {
 					calls: 1,
 					errors: 0,
 					totalMs: 5,
@@ -43,7 +43,7 @@ describe('getBaselineSnapshot', async () => {
 
 		const result = await getBaselineSnapshot(
 			'CartagoGit',
-			'mcp-vertex',
+			'delendai',
 			fetchImpl,
 		);
 
@@ -59,7 +59,7 @@ describe('getBaselineSnapshot', async () => {
 
 		const result = await getBaselineSnapshot(
 			'CartagoGit',
-			'mcp-vertex',
+			'delendai',
 			fetchImpl,
 		);
 
@@ -71,7 +71,7 @@ describe('getBaselineSnapshot', async () => {
 
 		const result = await getBaselineSnapshot(
 			'CartagoGit',
-			'mcp-vertex',
+			'delendai',
 			fetchImpl,
 		);
 
@@ -89,7 +89,7 @@ describe('getBaselineSnapshot', async () => {
 
 		const result = await getBaselineSnapshot(
 			'CartagoGit',
-			'mcp-vertex',
+			'delendai',
 			fetchImpl,
 		);
 
@@ -105,7 +105,7 @@ describe('getBaselineSnapshot', async () => {
 
 		const result = await getBaselineSnapshot(
 			'CartagoGit',
-			'mcp-vertex',
+			'delendai',
 			fetchImpl,
 		);
 

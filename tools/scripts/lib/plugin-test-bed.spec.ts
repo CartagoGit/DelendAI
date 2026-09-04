@@ -49,7 +49,7 @@ describe('plugin-test-bed (Solid DRY extraction)', async () => {
 			const bed = await assemblePluginForTest({
 				workspaceRoot: REPO_ROOT,
 				pluginName: 'status-marker',
-				// Isolate from the repo's real mcp-vertex.config.json —
+				// Isolate from the repo's real delendai.config.json —
 				// only the plugin under test.
 				syntheticConfig: {},
 			});

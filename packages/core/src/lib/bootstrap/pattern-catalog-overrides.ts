@@ -4,7 +4,7 @@
 // Use case: a project that ships a custom project type (e.g.
 // `data-pipeline` for an ETL repo) needs the bootstrap blueprint to
 // pick up its tools, plugins and knowledge hints. The host declares
-// the override in `mcp-vertex.config.json`:
+// the override in `delendai.config.json`:
 //
 // ```jsonc
 // {

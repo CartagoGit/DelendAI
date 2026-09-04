@@ -117,7 +117,7 @@ export const buildAckToolRegistration = (
 	effects: ['write'],
 	summary:
 		'Record the human accept/reject for an external-server activation, or list pending acks.',
-	descriptionKey: 'mcp-vertex_external-mcps_ack',
+	descriptionKey: 'delendai_external-mcps_ack',
 	register: async (server) => {
 		const store = createPendingAcksStore(options.pendingAcksPath);
 		server.registerTool(

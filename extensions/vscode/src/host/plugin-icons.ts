@@ -1,6 +1,6 @@
 /**
  * plugin-icons.ts — the canonical, single-source mapping of every
- * mcp-vertex plugin to a DISTINCT, semantically representative icon
+ * delendai plugin to a DISTINCT, semantically representative icon
  * (f00053 S3).
  *
  * Before this module the tool tree gave every plugin the same default
@@ -66,7 +66,7 @@ export const SERVER_ICON_ID = 'server-process';
 
 /**
  * Fallback for any namespace that is not one of the 16 plugins (e.g.
- * the core meta-tools under the `mcp-vertex` namespace). Still a real,
+ * the core meta-tools under the `delendai` namespace). Still a real,
  * non-text icon so the tree never shows a bare label.
  */
 export const DEFAULT_PLUGIN_ICON_ID = 'extensions';

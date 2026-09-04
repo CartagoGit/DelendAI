@@ -59,7 +59,7 @@ const cleanBootstrap = (): string =>
 describe('bootstrap-canonical lint', () => {
 	it('exports the canonical anchor and the canonical section list', () => {
 		expect(ANCHOR).toBe('This file is the only place agent rules live');
-		expect(BOOTSTRAP_PATH).toBe('docs/mcp-vertex/AGENT-BOOTSTRAP.md');
+		expect(BOOTSTRAP_PATH).toBe('docs/delendai/AGENT-BOOTSTRAP.md');
 		expect(CANONICAL_SECTIONS.length).toBe(9);
 		expect(CANONICAL_SECTIONS[0]).toBe('## Table of contents');
 		expect(CANONICAL_SECTIONS.at(-1)).toBe('## 8. Host appendices');
@@ -148,7 +148,7 @@ describe('bootstrap-canonical lint', () => {
 	});
 
 	it('lintBootstrapForWorkspace with a fixture bootstrap returns zero violations', () => {
-		mkdirSync(resolve(workspaceRoot, 'docs/mcp-vertex'), {
+		mkdirSync(resolve(workspaceRoot, 'docs/delendai'), {
 			recursive: true,
 		});
 		writeFileSync(resolve(workspaceRoot, BOOTSTRAP_PATH), cleanBootstrap());

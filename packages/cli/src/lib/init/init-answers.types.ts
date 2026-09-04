@@ -9,7 +9,7 @@
  * `contracts/constants/init-answers.constant.ts` because they are
  * consumed by both the schema and the prompt flow.
  *
- * Conventions (see `docs/mcp-vertex/FILE-CONVENTIONS.md`):
+ * Conventions (see `docs/delendai/FILE-CONVENTIONS.md`):
  *
  *   - `*.types.ts` — feature-private structural helpers; they do NOT
  *     live under `contracts/interfaces/` because they are not the

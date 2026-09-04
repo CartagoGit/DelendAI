@@ -21,25 +21,25 @@ const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 		exposedTools: [
 			{
 				registrationId: 'overview',
-				name: 'mcp-vertex_overview',
+				name: 'delendai_overview',
 				toolId: 'overview',
 				summary: 'orient',
 			},
 			{
 				registrationId: 'tool_search',
-				name: 'mcp-vertex_tool_search',
+				name: 'delendai_tool_search',
 				toolId: 'tool_search',
 				summary: 'search',
 			},
 			{
 				registrationId: 'vertex',
-				name: 'mcp-vertex_vertex',
+				name: 'delendai_vertex',
 				toolId: 'vertex',
 				summary: 'route',
 			},
 			{
 				registrationId: 'status',
-				name: 'mcp-vertex_status',
+				name: 'delendai_status',
 				toolId: 'status',
 				summary: 'health',
 			},
@@ -52,7 +52,7 @@ const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 		status: 'loaded-hidden',
 		availableTools: Array.from({ length: 10 }, (_, i) => ({
 			registrationId: `g${i}`,
-			name: `mcp-vertex_git_${i}`,
+			name: `delendai_git_${i}`,
 			toolId: `git_${i}`,
 			summary: `git tool ${i}`,
 		})),
@@ -65,7 +65,7 @@ const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 		status: 'loaded-hidden',
 		availableTools: Array.from({ length: 34 }, (_, i) => ({
 			registrationId: `p${i}`,
-			name: `mcp-vertex_proposals_${i}`,
+			name: `delendai_proposals_${i}`,
 			toolId: `proposals_${i}`,
 			summary: `proposal tool ${i}`,
 		})),
@@ -193,14 +193,14 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 			expect(shouldUseAnsiColors({ FORCE_COLOR: '1' })).toBe(true);
 		});
 
-		it('returns true when MCP_VERTEX_COLOR=always', () => {
-			expect(shouldUseAnsiColors({ MCP_VERTEX_COLOR: 'always' })).toBe(
+		it('returns true when DELENDAI_COLOR=always', () => {
+			expect(shouldUseAnsiColors({ DELENDAI_COLOR: 'always' })).toBe(
 				true,
 			);
 		});
 
-		it('returns false when MCP_VERTEX_COLOR=never', () => {
-			expect(shouldUseAnsiColors({ MCP_VERTEX_COLOR: 'never' })).toBe(
+		it('returns false when DELENDAI_COLOR=never', () => {
+			expect(shouldUseAnsiColors({ DELENDAI_COLOR: 'never' })).toBe(
 				false,
 			);
 		});
@@ -310,11 +310,11 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 		it('emits ANSI codes only when the channel opts in', () => {
 			const report = buildStartupReport(baseInput(), 'medium');
 			const plain = renderStartupReportAnsi(report, {
-				MCP_VERTEX_COLOR: 'never',
+				DELENDAI_COLOR: 'never',
 			});
 			expect(plain).not.toContain('\u001B[');
 			const colour = renderStartupReportAnsi(report, {
-				MCP_VERTEX_COLOR: 'always',
+				DELENDAI_COLOR: 'always',
 			});
 			expect(colour).toContain('\u001B[');
 			expect(colour).toContain('\u001B[32m=== Server summary ===');
@@ -329,7 +329,7 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 		it('keeps the same content shape as the plain renderer when colour is forced off', () => {
 			const report = buildStartupReport(baseInput(), 'medium');
 			const off = renderStartupReportAnsi(report, {
-				MCP_VERTEX_COLOR: 'never',
+				DELENDAI_COLOR: 'never',
 			});
 			const plain = renderStartupReportPlain(report);
 			expect(off).toBe(plain);

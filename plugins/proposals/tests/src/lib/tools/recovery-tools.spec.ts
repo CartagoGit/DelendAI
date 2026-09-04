@@ -115,7 +115,7 @@ describe('recovery tools (f00016 S9)', async () => {
 		const eventBuffer = createRecoveryEventBuffer();
 		options = {
 			namespacePrefix: 'proposals',
-			indexPathAbs: join(dir, '.cache/mcp-vertex/proposals/index.json'),
+			indexPathAbs: join(dir, '.cache/delendai/proposals/index.json'),
 			proposalsDirAbs: proposalsDir,
 			lockPathAbs: lockPath,
 			agentRegistryPathAbs: registryPath,
@@ -387,13 +387,10 @@ describe('a00072 S1.a (F148) proposal_diagnose cross-proposal stale detection', 
 
 	const baseOptions = (): IRecoveryToolOptions => ({
 		namespacePrefix: 'test',
-		indexPathAbs: join(dir, '.cache/mcp-vertex/proposals/index.json'),
-		proposalsDirAbs: join(dir, 'docs/mcp-vertex/proposals'),
-		lockPathAbs: join(dir, '.cache/mcp-vertex/agents.lock.json'),
-		agentRegistryPathAbs: join(
-			dir,
-			'.cache/mcp-vertex/agent-registry.json',
-		),
+		indexPathAbs: join(dir, '.cache/delendai/proposals/index.json'),
+		proposalsDirAbs: join(dir, 'docs/delendai/proposals'),
+		lockPathAbs: join(dir, '.cache/delendai/agents.lock.json'),
+		agentRegistryPathAbs: join(dir, '.cache/delendai/agent-registry.json'),
 		workspaceRoot: dir,
 		eventBuffer: createRecoveryEventBuffer(),
 	});
@@ -533,13 +530,10 @@ describe('x00154 S2 — proposal_diagnose uniform { ok: true | false } envelope'
 
 	const envelopeOptions = (): IRecoveryToolOptions => ({
 		namespacePrefix: 'test',
-		indexPathAbs: join(dir, '.cache/mcp-vertex/proposals/index.json'),
-		proposalsDirAbs: join(dir, 'docs/mcp-vertex/proposals'),
-		lockPathAbs: join(dir, '.cache/mcp-vertex/agents.lock.json'),
-		agentRegistryPathAbs: join(
-			dir,
-			'.cache/mcp-vertex/agent-registry.json',
-		),
+		indexPathAbs: join(dir, '.cache/delendai/proposals/index.json'),
+		proposalsDirAbs: join(dir, 'docs/delendai/proposals'),
+		lockPathAbs: join(dir, '.cache/delendai/agents.lock.json'),
+		agentRegistryPathAbs: join(dir, '.cache/delendai/agent-registry.json'),
 		workspaceRoot: dir,
 		eventBuffer: createRecoveryEventBuffer(),
 	});

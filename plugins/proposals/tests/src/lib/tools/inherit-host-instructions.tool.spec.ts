@@ -46,12 +46,11 @@ const fakeHomeReader = (files: Record<string, string>): IUserHomeReader => ({
 		relativeToHome in files ? files[relativeToHome] : undefined,
 });
 
-const MCP_BLOCK =
-	'<!-- mcp-vertex:begin -->\n# mcp-vertex\n<!-- mcp-vertex:end -->';
+const MCP_BLOCK = '<!-- delendai:begin -->\n# delendai\n<!-- delendai:end -->';
 
 describe('inherit_host_instructions', () => {
 	let root = '';
-	const proposalsRel = 'docs/mcp-vertex/proposals';
+	const proposalsRel = 'docs/delendai/proposals';
 
 	const buildOptions = (
 		reader: IFileReader,
@@ -64,7 +63,7 @@ describe('inherit_host_instructions', () => {
 		counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 		layout: {
 			proposalsDir: proposalsRel,
-			proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+			proposalIndexFile: '.cache/delendai/proposals/index.json',
 		},
 		...(home ? { homeReader: home } : {}),
 	});
@@ -88,7 +87,7 @@ describe('inherit_host_instructions', () => {
 		expect(existsSync(join(root, proposalsRel))).toBe(false);
 	});
 
-	it('skips a file that is already mcp-vertex-managed (no proposal)', async () => {
+	it('skips a file that is already delendai-managed (no proposal)', async () => {
 		const handler = await capture(
 			buildInheritHostInstructionsRegistration(
 				buildOptions(fakeRepoReader({ 'AGENTS.md': MCP_BLOCK })),

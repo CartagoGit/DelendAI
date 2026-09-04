@@ -14,7 +14,7 @@ interface ICaptured {
 
 const captureErd = async (): Promise<ICaptured> => {
 	const registrations = buildDiagramProposalsToolRegistrations({
-		namespacePrefix: 'mcp-vertex',
+		namespacePrefix: 'delendai',
 	});
 	const erd = registrations.find((r) => r.id === 'diagram_erd');
 	if (!erd) throw new Error('diagram_erd not registered');

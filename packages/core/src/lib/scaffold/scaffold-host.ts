@@ -1,11 +1,11 @@
 // host scaffolding kit: "tools to create tools". A project that
-// imports mcp-vertex calls these generators (directly or through the
+// imports delendai calls these generators (directly or through the
 // `<prefix>_scaffold` MCP tool) to create its OWN MCP server,
 // orchestrator and subagent adapters, instructions file, tools,
 // prompts and skills — all templated so every agent DELEGATES to the
 // project's own MCP server (`<prefix>_overview` first — the universal
-// mcp-vertex entry point), never to a hardcoded host. Templates only name
-// tools that exist: `overview` (always, via the mcp-vertex CLI) and the
+// delendai entry point), never to a hardcoded host. Templates only name
+// tools that exist: `overview` (always, via the delendai CLI) and the
 // generated scaffold tool; proposal-workflow tools are shown as
 // conditional on loading the `proposals` plugin.
 
@@ -47,7 +47,7 @@ export interface IScaffoldHostOptions {
 	/**
 	 * When true, the scaffolder skips emitting `libs/mcp-project/`
 	 * (host-config, server entry, `.vscode/mcp.json`) because the
-	 * project already wires mcp-vertex via its own `mcp-vertex.config.json`
+	 * project already wires delendai via its own `delendai.config.json`
 	 * + `plugins/` layout. Agents / instructions / skill are still
 	 * emitted so the host-instruction contract is honoured on every
 	 * supported editor (Copilot Chat, Claude Code, Codex CLI).
@@ -55,7 +55,7 @@ export interface IScaffoldHostOptions {
 	 * Defaults to `false` so greenfield projects still get the
 	 * `libs/mcp-project/` bootstrap.
 	 */
-	readonly existingMcpVertex?: boolean;
+	readonly existingDelendai?: boolean;
 	/**
 	 * The MCP server's actual registration key in the editor config
 	 * (`.vscode/mcp.json`'s `servers.<key>`, `.mcp.json`'s
@@ -67,9 +67,9 @@ export interface IScaffoldHostOptions {
 	 * Defaults to `mcp-project-${namespacePrefix}` — the key
 	 * `scaffoldServerEntryFiles` registers for a fresh greenfield
 	 * project, so omitting this option reproduces today's output
-	 * exactly. A project adopting mcp-vertex as a guest
-	 * (`existingMcpVertex: true`) already has its OWN server key (e.g.
-	 * `mcp-vertex`, or whatever its `.vscode/mcp.json` already names) —
+	 * exactly. A project adopting delendai as a guest
+	 * (`existingDelendai: true`) already has its OWN server key (e.g.
+	 * `delendai`, or whatever its `.vscode/mcp.json` already names) —
 	 * pass it here so generated agents reference a server that actually
 	 * exists instead of the greenfield default, which does not.
 	 */
@@ -331,7 +331,7 @@ This file is only the Copilot adapter; the agent contract lives in \`${serverNam
 1. First call \`${prefix}_overview\` once per turn (tool: \`${serverName}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
 2. Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
 3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
-4. When the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
+4. When the server loads the \`proposals\` plugin (\`delendai --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
 5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
 6. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis: ${isRoot ? '' : 'escalate to the root so '}the orchestrator can call ${bootstrapTools}. The first tool inspects; the second returns an exhaustive blueprint (tools + prompts + skills + agents + tests); the third materialises the files. The orchestrator (or a delegated runner) writes them.
 `,
@@ -469,7 +469,7 @@ export const scaffoldInstructionsFile = (
 The MCP server \`${serverName}\` rules. Do NOT re-derive workflow from docs:
 
 - Entry point: \`${prefix}_overview\` (ALWAYS the first call) — it lists the server's tools, plugins and a \`recommendedNextAction\`.
-- The multi-agent proposal workflow (\`${prefix}_auto_work\`, \`${prefix}_continue_proposal\`, \`${prefix}_delegate\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`).
+- The multi-agent proposal workflow (\`${prefix}_auto_work\`, \`${prefix}_continue_proposal\`, \`${prefix}_delegate\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`delendai --plugins=proposals\`).
 
 ## Lane
 
@@ -491,25 +491,25 @@ export const scaffoldHostConfigFile = (
 	buildStandaloneCoreToolRegistrations,
 	createWorkspacePathProvider,
 } from '@delendai/core/public';
-import type { IMcpVertexHostConfig } from '@delendai/core/public';
+import type { IDelendaiHostConfig } from '@delendai/core/public';
 
 // The core is project-agnostic. The standalone surface registers the
 // orientation + bootstrap tools the generated agents rely on
 // (overview, analyze/plan/create/drift, scaffold). Domain behaviour —
 // including the multi-agent proposal workflow — comes from plugins via
-// the mcp-vertex CLI (\`mcp-vertex --plugins=proposals\`) rather than
+// the delendai CLI (\`delendai --plugins=proposals\`) rather than
 // being wired here; see the package README for both launch paths.
 // Hermetic: the workspace root is injected by the caller (the server
 // entry point), never guessed from the current working directory here —
 // a lib must not guess where the project lives, so this stays correct
 // under CI, containers and tests.
-export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => {
+export const buildHostConfig = (workspaceRoot: string): IDelendaiHostConfig => {
 	const workspace = createWorkspacePathProvider(workspaceRoot);
 	return {
 		metadata: {
 			name: 'mcp-project-${prefix}',
 			version: '0.0.1',
-			description: '${options.projectName} workspace MCP server (built on mcp-vertex).',
+			description: '${options.projectName} workspace MCP server (built on delendai).',
 		},
 		namespacePrefix: '${prefix}',
 		workspace,
@@ -542,7 +542,7 @@ export const scaffoldServerEntryFiles = (
 import { buildHostConfig } from './lib/shared/host-config';
 
 // The entry point is the ONE place allowed to read the launch directory
-// (like mcp-vertex's own CLI). It resolves the workspace root and injects
+// (like delendai's own CLI). It resolves the workspace root and injects
 // it into the (hermetic) host config.
 export async function startServer(workspaceRoot = process.cwd()): Promise<void> {
 	const assembled = await createMcpProject(buildHostConfig(workspaceRoot));
@@ -600,7 +600,7 @@ export const scaffoldHostPackageFiles = (
 					version: '0.0.1',
 					private: true,
 					type: 'module',
-					description: `${projectName} workspace MCP server (built on mcp-vertex).`,
+					description: `${projectName} workspace MCP server (built on delendai).`,
 					scripts: {
 						dev: 'bun --watch run src/index.ts',
 						typecheck: 'tsc --noEmit -p tsconfig.json',
@@ -642,7 +642,7 @@ export const scaffoldHostPackageFiles = (
 		},
 		{
 			path: targetPath(options.targetDir, 'README.md'),
-			content: `# ${projectName} — MCP server (built on mcp-vertex)
+			content: `# ${projectName} — MCP server (built on delendai)
 
 This host registers the orientation + bootstrap surface (${prefix}_overview,
 ${prefix}_analyze_project, ${prefix}_plan_mcp_project, ${prefix}_create_project,
@@ -654,16 +654,16 @@ generate project tools.
 1. **Own server (this package)** — run \`bun install\` then \`bun run dev\`.
    This host is plugin-less: it exposes orientation + bootstrap only.
 
-2. **Full mcp-vertex (recommended)** — launch the canonical CLI to load
+2. **Full delendai (recommended)** — launch the canonical CLI to load
    plugins (the multi-agent proposal workflow, issues, quality gates, …):
 
    \`\`\`bash
-   bunx --package @delendai/cli mcpv __serve --workspace . --preset full
+   bunx --package @delendai/cli delendai __serve --workspace . --preset full
    \`\`\`
 
    The editor registration in \`.vscode/mcp.json\` is the source of truth for
    which launch the IDE actually uses. See
-   \`docs/mcp-vertex/CROSS-PROJECT-SETUP.md\` for the full setup guide.
+   \`docs/delendai/CROSS-PROJECT-SETUP.md\` for the full setup guide.
 `,
 		},
 	];
@@ -694,9 +694,9 @@ cwd = "${targetDir === '.' ? '.' : targetDir}"
  * host formats: Copilot `.agent.md`, Claude Code `.claude/agents`,
  * Codex CLI `.codex/agents`) + instructions + a starter skill.
  *
- * When `options.existingMcpVertex === true`, the host server entry
- * files are omitted — the caller has wired the project to mcp-vertex
- * via its own `mcp-vertex.config.json` + `plugins/` layout and does
+ * When `options.existingDelendai === true`, the host server entry
+ * files are omitted — the caller has wired the project to delendai
+ * via its own `delendai.config.json` + `plugins/` layout and does
  * not want the scaffolder to overwrite that with a fresh
  * `libs/mcp-project/` server. The agents, instructions and skill are
  * still emitted (those are the contract surface any host needs).
@@ -712,7 +712,7 @@ export const scaffoldHostProject = (
 		scaffoldCodexAgentFile(options, 'orchestrator'),
 		...SUBAGENT_SLOTS.map((slot) => scaffoldCodexAgentFile(options, slot)),
 	];
-	const hostFiles: IScaffoldedFile[] = options.existingMcpVertex
+	const hostFiles: IScaffoldedFile[] = options.existingDelendai
 		? []
 		: [
 				scaffoldHostConfigFile(options),
@@ -736,7 +736,7 @@ export const scaffoldHostProject = (
 };
 
 // ---------------------------------------------------------------------------
-// Plugin generator — "mcp-vertex knows how to create plugins"
+// Plugin generator — "delendai knows how to create plugins"
 // ---------------------------------------------------------------------------
 
 export interface IScaffoldPluginOptions {
@@ -750,7 +750,7 @@ export interface IScaffoldPluginOptions {
 
 /**
  * Generate a ready-to-load plugin package implementing `IMcpPlugin`.
- * The result is loadable with `mcp-vertex --plugins=<pluginName>` once
+ * The result is loadable with `delendai --plugins=<pluginName>` once
  * published or linked. Tools are namespaced by the plugin name and
  * return structured JSON so any agent/model can consume them.
  */
@@ -801,7 +801,7 @@ import z from 'zod';
 /**
  * ${safeDescription}
  *
- * Loaded with \`mcp-vertex --plugins=${id}\`. Every tool is namespaced by
+ * Loaded with \`delendai --plugins=${id}\`. Every tool is namespaced by
  * the plugin name and returns structured JSON so any agent or model
  * can consume it deterministically.
  */
@@ -901,7 +901,7 @@ ${safeDescription}
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-vertex": {
+		"delendai": {
 			"command": "bunx",
 			"args": ["@delendai/core", "--plugins=${id}"]
 		}
@@ -909,7 +909,7 @@ ${safeDescription}
 }
 \`\`\`
 
-See \`PLUGINS-MCP-VERTEX.md\` at the docs folder for the full plugin guide.
+See \`PLUGINS-DELENDAI.md\` at the docs folder for the full plugin guide.
 `,
 		},
 		// f00120 S1: complete the plugin scaffold with the four files the
@@ -919,10 +919,10 @@ See \`PLUGINS-MCP-VERTEX.md\` at the docs folder for the full plugin guide.
 		{
 			// Self-contained vitest config (a00067/f00120): the emitter used to
 			// import `../../vitest.shared`, which only resolves inside a real
-			// mcp-vertex monorepo. An adopter who runs `create_project` in their
+			// delendai monorepo. An adopter who runs `create_project` in their
 			// own repo has no `vitest.shared` at the root and tsc fails on the
 			// very first build. Drop the dependency and emit an inline, runnable
-			// vitest config that any project shape can boot. The mcp-vertex
+			// vitest config that any project shape can boot. The delendai
 			// monorepo can still override `vitest.config.ts` after the wire step
 			// if it wants the shared aliases.
 			path: `plugins/${id}/vitest.config.ts`,
@@ -968,7 +968,7 @@ SOFTWARE.
  *
  * Re-exports every value the rest of the workspace is allowed to import.
  * Internal helpers stay in \`src/lib/\` and are not re-exported here, so
- * the public contract is what \`mcp-vertex.config.json\` consumers see.
+ * the public contract is what \`delendai.config.json\` consumers see.
  */
 export { default } from '../index';
 export type { IPluginOptions } from '../contracts/interfaces/plugin-options.interface';
@@ -978,7 +978,7 @@ export type { IPluginOptions } from '../contracts/interfaces/plugin-options.inte
 			path: `plugins/${id}/src/contracts/interfaces/plugin-options.interface.ts`,
 			content: `/**
  * \`@cartago-git/mcp-${id}\` options schema. Plugins carry a typed
- * \`options\` block that hosts materialise from \`mcp-vertex.config.json\`.
+ * \`options\` block that hosts materialise from \`delendai.config.json\`.
  * Empty by default; a plugin with knobs extends this with \`zod\` and
  * surfaces it via \`definePlugin({ options })\`.
  */
@@ -1037,7 +1037,7 @@ export interface IScaffoldClientOptions {
 	readonly scope?: string;
 	/** Command the client spawns to reach the server (default `bunx`). */
 	readonly serverCommand?: string;
-	/** Args for that command (default loads mcp-vertex with no plugins). */
+	/** Args for that command (default loads delendai with no plugins). */
 	readonly serverArgs?: readonly string[];
 }
 
@@ -1166,7 +1166,7 @@ import { create${fn}Client } from '${pkg}';
 
 const mcp = await create${fn}Client();
 const tools = await mcp.listTools();
-const result = await mcp.callTool('mcp-vertex_overview');
+const result = await mcp.callTool('delendai_overview');
 await mcp.close();
 \`\`\`
 `,

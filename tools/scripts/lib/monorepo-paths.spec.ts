@@ -149,7 +149,7 @@ describe('monorepo-paths', async () => {
 
 		it('vscodeVsix is rooted under build/extensions/vscode/<version>', async () => {
 			expect(WELL_KNOWN.vscodeVsix('0.2.0')).toBe(
-				`${repoRoot()}/build/extensions/vscode/0.2.0/mcp-vertex-vscode-0.2.0.vsix`,
+				`${repoRoot()}/build/extensions/vscode/0.2.0/delendai-vscode-0.2.0.vsix`,
 			);
 		});
 	});

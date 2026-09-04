@@ -30,7 +30,7 @@ export const permissionListSchema = z
 
 /**
  * f00180 S1: per-tool permission map. Keys are bare tool ids
- * (without the `mcp-vertex_<plugin>_` namespace prefix); values are
+ * (without the `delendai_<plugin>_` namespace prefix); values are
  * the permission categories each tool actually requires. Keys must
  * be unique; values must be a non-empty subset of
  * `PERMISSION_CATEGORIES` with no duplicates.

@@ -1,7 +1,7 @@
 declare const SAFE_TOOL_ID_BRAND: unique symbol;
 
 export type ToolOwner =
-	| 'mcp-vertex'
+	| 'delendai'
 	| 'first-party-host'
 	| 'external-mcp'
 	| 'host-project';

@@ -14,11 +14,11 @@ import {
 	buildIssueBody,
 	classifyInternalError,
 	extractSafeMcpFrames,
-	McpVertexInternalError,
+	DelendaiInternalError,
 	signatureOf,
 	validateSafeReport,
 	validateSerializedSafeReport,
-	type ISafeMcpVertexReport,
+	type ISafeDelendaiReport,
 } from '../src/public/index';
 import {
 	asReportableError,
@@ -28,7 +28,7 @@ import {
 	ALL_PRIVATE_MARKERS,
 	EXPECTED_SAFE_MCP_FRAMES,
 	FIXED_ENVIRONMENT_CLASS,
-	FIXED_MCP_VERTEX_VERSION,
+	FIXED_DELENDAI_VERSION,
 	FIXED_REPORTER_VERSION,
 	FIXED_SAFE_TOOL_ID,
 	PROJECT_A_FIXTURE,
@@ -39,7 +39,7 @@ import {
 const INTERNAL_ERROR_CODE = 'PLUGIN_REGISTER_TIMEOUT';
 const INTERNAL_COMPONENT_ID = 'createSafeReporter';
 const INTERNAL_PACKAGE_ID = '@delendai/error-reporting';
-const LLM_TOOL_NAME = 'mcp-vertex_orchestrator-runner_invoke';
+const LLM_TOOL_NAME = 'delendai_orchestrator-runner_invoke';
 const LLM_SPOOF_TOOL_NAME = 'acme_private_billing_orchestrator-runner_invoke';
 
 const registryOf = (
@@ -52,7 +52,7 @@ const registryOf = (
 const llmToolRegistry = registryOf({
 	[LLM_TOOL_NAME]: {
 		packageName: '@delendai/orchestrator-runner',
-		owner: 'mcp-vertex',
+		owner: 'delendai',
 		publicToolName: 'invoke',
 		category: 'orchestration',
 	},
@@ -68,8 +68,8 @@ const spoofedLlmToolRegistry = registryOf({
 
 const buildInternalError = (
 	fixture: IAdversarialProjectFixture,
-): McpVertexInternalError => {
-	const error = new McpVertexInternalError({
+): DelendaiInternalError => {
+	const error = new DelendaiInternalError({
 		code: INTERNAL_ERROR_CODE,
 		packageId: INTERNAL_PACKAGE_ID,
 		componentId: INTERNAL_COMPONENT_ID,
@@ -95,11 +95,11 @@ const buildArtifacts = (fixture: IAdversarialProjectFixture) => {
 		classification.errorCode === undefined
 	) {
 		throw new TypeError(
-			'Expected a fully classified internal mcp-vertex error',
+			'Expected a fully classified internal delendai error',
 		);
 	}
 	const fingerprint = signatureOf({
-		mcpVertexVersion: FIXED_MCP_VERTEX_VERSION,
+		delendaiVersion: FIXED_DELENDAI_VERSION,
 		packageId: classification.packageId,
 		componentId: classification.componentId,
 		toolId: FIXED_SAFE_TOOL_ID,
@@ -108,12 +108,12 @@ const buildArtifacts = (fixture: IAdversarialProjectFixture) => {
 		classification: classification.classification,
 		mcpFrames,
 	});
-	const report: ISafeMcpVertexReport = {
+	const report: ISafeDelendaiReport = {
 		reporterVersion: FIXED_REPORTER_VERSION,
-		mcpVertexVersion: FIXED_MCP_VERTEX_VERSION,
+		delendaiVersion: FIXED_DELENDAI_VERSION,
 		packageId: classification.packageId,
-		safeToolId: FIXED_SAFE_TOOL_ID as ISafeMcpVertexReport['safeToolId'],
-		toolOwner: 'mcp-vertex',
+		safeToolId: FIXED_SAFE_TOOL_ID as ISafeDelendaiReport['safeToolId'],
+		toolOwner: 'delendai',
 		toolCategory: 'reporting',
 		errorCode: classification.errorCode,
 		failureClass: classification.failureClass,
@@ -202,7 +202,7 @@ describe('privacy adversarial invariant', () => {
 			evidence: [
 				'mcp-package-frame',
 				'typed-internal-error',
-				'mcp-vertex-error-code',
+				'delendai-error-code',
 			],
 		});
 		expect(projectB.classification).toMatchObject({
@@ -216,7 +216,7 @@ describe('privacy adversarial invariant', () => {
 			evidence: [
 				'mcp-package-frame',
 				'typed-internal-error',
-				'mcp-vertex-error-code',
+				'delendai-error-code',
 			],
 		});
 

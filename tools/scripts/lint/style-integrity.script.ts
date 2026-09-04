@@ -24,7 +24,7 @@
  * hooks whose elements/modifiers carry the styles). A few third-party /
  * cross-ratchet prefixes are built-in ignores instead of waivers:
  * `astro-*` (Astro islands), `pagefind*` (search UI), `markdown-body`
- * and `sr-only` (injected utility hooks), and `mcpv-*` — shared mcpv-*
+ * and `sr-only` (injected utility hooks), and `delendai-*` — shared delendai-*
  * tokens are owned by the f00102 shared-ui ratchet (lint:shared-ui-ratchet),
  * which is the authoritative gate for shared-component classes.
  */
@@ -53,7 +53,7 @@ export const MIN_WAIVER_LENGTH = 12;
 
 /**
  * Built-in ignores — classes no scss in this repo is expected to define.
- * `mcpv-*` is deliberate: shared mcpv-* tokens are owned by the f00102
+ * `delendai-*` is deliberate: shared delendai-* tokens are owned by the f00102
  * shared-ui ratchet, so this script stays out of that contract.
  */
 const BUILTIN_IGNORES: readonly RegExp[] = [
@@ -61,7 +61,7 @@ const BUILTIN_IGNORES: readonly RegExp[] = [
 	/^pagefind/,
 	/^markdown-body$/,
 	/^sr-only$/,
-	/^mcpv-/,
+	/^delendai-/,
 ];
 
 /** A usable class token — anything else in a class attribute is skipped. */

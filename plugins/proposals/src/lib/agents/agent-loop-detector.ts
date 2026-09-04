@@ -18,7 +18,7 @@
  *       consecutive calls do not count.
  *   S4 (regression specs): 8-claim false positive is suppressed.
  *
- * @see docs/mcp-vertex/proposals/x00074-loop-detector-distinguish-backoff-from-stuck.md
+ * @see docs/delendai/proposals/x00074-loop-detector-distinguish-backoff-from-stuck.md
  */
 import { createHash } from 'node:crypto';
 

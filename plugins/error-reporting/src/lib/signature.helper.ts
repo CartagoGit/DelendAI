@@ -6,13 +6,13 @@
  */
 import { createHash } from 'node:crypto';
 
-import type { ISafeMcpVertexReport } from './contracts/interfaces/reporter.interface';
+import type { ISafeDelendaiReport } from './contracts/interfaces/reporter.interface';
 import type { ISafeFingerprintInput } from './contracts/interfaces/signature.interface';
 export {
 	classifyInternalError,
 	classificationFromEvidence,
 	classificationOf,
-	isMcpVertexInternal,
+	isDelendaiInternal,
 	isMarkedInternalBoundary,
 	markErrorAsInternalBoundary,
 	registerInternalPath,
@@ -64,7 +64,7 @@ export const signatureOf = (input: ISafeFingerprintInput): string => {
 	return createHash('sha256')
 		.update(
 			[
-				versionMajorMinorOf(input.mcpVertexVersion),
+				versionMajorMinorOf(input.delendaiVersion),
 				input.packageId,
 				componentIdOf(input),
 				input.errorCode ?? '',
@@ -78,25 +78,25 @@ const truncate = (value: string, max: number): string =>
 	value.length > max ? `${value.slice(0, max - 1)}…` : value;
 
 /** Issue title built only from controlled, internal-safe vocabulary. */
-export const buildIssueTitle = (report: ISafeMcpVertexReport): string =>
+export const buildIssueTitle = (report: ISafeDelendaiReport): string =>
 	truncate(
 		`[auto] ${report.classification} ${report.packageId}${report.errorCode !== undefined ? `: ${report.errorCode}` : ''}`,
 		MAX_TITLE_LENGTH,
 	);
 
 /** Full markdown body built from the safe DTO only. */
-export const buildIssueBody = (report: ISafeMcpVertexReport): string => {
+export const buildIssueBody = (report: ISafeDelendaiReport): string => {
 	const lines: string[] = [
 		'## Automatic error report',
 		'',
 		'This issue was opened automatically by `@delendai/error-reporting` ' +
-			'after an mcp-vertex internal failure was reduced to a safe DTO.',
+			'after an delendai internal failure was reduced to a safe DTO.',
 		'',
 		'| Field | Value |',
 		'| --- | --- |',
 		`| Package | \`${report.packageId}\` |`,
 		`| Reporter version | \`${report.reporterVersion}\` |`,
-		`| MCP Vertex version | \`${report.mcpVertexVersion}\` |`,
+		`| DelendAI version | \`${report.delendaiVersion}\` |`,
 		`| Classification | \`${report.classification}\` |`,
 		`| Failure class | \`${report.failureClass}\` |`,
 		`| Tool owner | \`${report.toolOwner}\` |`,
@@ -117,7 +117,7 @@ export const buildIssueBody = (report: ISafeMcpVertexReport): string => {
 	if (report.mcpFrames.length > 0) {
 		lines.push(
 			'',
-			'## MCP Vertex frames',
+			'## DelendAI frames',
 			'',
 			'```text',
 			...report.mcpFrames.map((frame) => {

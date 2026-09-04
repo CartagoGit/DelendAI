@@ -26,7 +26,7 @@ const REPO_ROOT = join(
 );
 const DOC_PATH = join(
 	REPO_ROOT,
-	'docs/mcp-vertex/CORE-PROPOSALS-BOUNDARY-INVENTORY.md',
+	'docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md',
 );
 
 describe('core -> proposals boundary inventory (r00043 S0)', () => {
@@ -56,14 +56,14 @@ describe('core -> proposals boundary inventory (r00043 S0)', () => {
 
 	it('flags synthetic unclassified proposal-domain lines in a new file', () => {
 		const text = [
-			"const nextAction = 'mcp-vertex_proposals_auto_work';",
+			"const nextAction = 'delendai_proposals_auto_work';",
 			"const section = 'proposals';",
 		].join('\n');
 		const result = detectUnclassifiedCandidates(
 			'packages/core/src/lib/synthetic/new-boundary.ts',
 			text,
 		);
-		// `\bproposals\b` does not match inside `mcp-vertex_proposals_auto_work`
+		// `\bproposals\b` does not match inside `delendai_proposals_auto_work`
 		// (`_` is a word char), so only the quoted `'proposals'` literal is a
 		// candidate, and it has no rule in this synthetic file -> unclassified.
 		expect(result).toHaveLength(1);

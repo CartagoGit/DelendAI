@@ -189,7 +189,7 @@ export const resolveWorkspaceContainedLexical = resolveWorkspaceContained;
  *   rejected with the workspace "path escapes" message.
  *
  * Authorization is explicit and durable: `authorizedRoots` comes from the
- * committed `mcp-vertex.config.json` (`filesystem.authorizedRoots`), never
+ * committed `delendai.config.json` (`filesystem.authorizedRoots`), never
  * from LLM-expanded input. Containment stays lexical (no `realpath`), which
  * covers the `..`/absolute vectors; symlink escape remains the host
  * sandbox's job, exactly as {@link resolveWorkspaceContained} documents.

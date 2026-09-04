@@ -1,15 +1,15 @@
 ---
-name: mcp-vertex-quality-and-rules-gates
+name: delendai-quality-and-rules-gates
 appliesTo: ['@delendai/quality', '@delendai/rules']
 description: How the quality plugin resolves which commands to run (scope precedence), the commandPolicy trust boundary, and how the rules plugin's enforcement mode (strict/mixed/none/proposal) shapes the plan apply_rules returns. Use before calling run_quality or apply_rules, or when a command is unexpectedly blocked.
 ---
 
-# mcp-vertex quality + rules gates
+# delendai quality + rules gates
 
 ## Decision tree
 
 1. Wondering which commands `run_quality` will execute for a scope? -> check
-   precedence: `options.scopes` > `mcp-vertex.config.json` `validationMatrix.scopes`
+   precedence: `options.scopes` > `delendai.config.json` `validationMatrix.scopes`
    > detected `package.json` scripts (folded into one `all` scope).
 2. A command got blocked (`code 126` / policy reason)? -> that's
    `commandPolicy` (trust boundary), not a bug — deny always wins over
@@ -27,7 +27,7 @@ description: How the quality plugin resolves which commands to run (scope preced
 From `plugins/quality/src/lib/scopes.ts` `resolveScopes`, highest wins:
 
 1. **`options.scopes`** — explicit plugin config (`{ scope: [cmd, ...] }`).
-2. **`mcp-vertex.config.json` `validationMatrix.scopes`** — host-level config.
+2. **`delendai.config.json` `validationMatrix.scopes`** — host-level config.
 3. **`package.json` scripts** — auto-detected `lint`/`typecheck`/`test`/`build`
    scripts, folded into a single `all` scope with the right package manager
    prefix (`bun run`/`pnpm`/`yarn`/`npm run`, detected from the lockfile).

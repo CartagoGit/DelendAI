@@ -618,16 +618,16 @@ describe('canonical **Files** lists (x00098 S1)', async () => {
 				'### S1 — mass status sync',
 				'- **Status**: pending',
 				'- **Files**:',
-				'  - `docs/mcp-vertex/proposals/done/{resumes,chores,audits}/*` (frontmatter + slice rows in those proposals only)',
+				'  - `docs/delendai/proposals/done/{resumes,chores,audits}/*` (frontmatter + slice rows in those proposals only)',
 				'  - `tools/scripts/proposals/sync-proposal-registry.script.ts` (re-run at the end)',
 				'- **Gate**: bun tools/scripts/lint/proposals.script.ts',
 				'',
 			].join('\n'),
 		);
 		expect(plan?.slices[0]?.files).toEqual([
-			'docs/mcp-vertex/proposals/done/resumes/*',
-			'docs/mcp-vertex/proposals/done/chores/*',
-			'docs/mcp-vertex/proposals/done/audits/*',
+			'docs/delendai/proposals/done/resumes/*',
+			'docs/delendai/proposals/done/chores/*',
+			'docs/delendai/proposals/done/audits/*',
 			'tools/scripts/proposals/sync-proposal-registry.script.ts',
 		]);
 	});

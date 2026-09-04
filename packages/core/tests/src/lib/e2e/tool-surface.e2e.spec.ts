@@ -52,13 +52,13 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 			import: async (specifier: string) => {
 				if (
 					specifier.includes('mcp-memory') ||
-					specifier.includes('mcp-vertex/memory')
+					specifier.includes('delendai/memory')
 				) {
 					return { default: memoryPlugin };
 				}
 				if (
 					specifier.includes('mcp-git') ||
-					specifier.includes('mcp-vertex/git')
+					specifier.includes('delendai/git')
 				) {
 					return { default: gitPlugin };
 				}
@@ -83,7 +83,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 
 	const toolListChangedClientCaps: ClientCapabilities = {
 		extensions: {
-			'mcp-vertex/surface': {
+			'delendai/surface': {
 				toolsListChanged: true,
 			},
 		},
@@ -111,17 +111,17 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		});
 		const initial = await client.listTools();
 		const initialNames = initial.tools.map((tool) => tool.name);
-		expect(initialNames).toContain('mcp-vertex_overview');
-		expect(initialNames).toContain('mcp-vertex_plugin_activate');
-		expect(initialNames).toContain('mcp-vertex_tool_search');
-		expect(initialNames).toContain('mcp-vertex_status');
-		expect(initialNames).toContain('mcp-vertex_vertex');
-		expect(initialNames).not.toContain('mcp-vertex_project_context');
-		expect(initialNames).not.toContain('mcp-vertex_configuration_center');
-		expect(initialNames).not.toContain('mcp-vertex_memory_save');
+		expect(initialNames).toContain('delendai_overview');
+		expect(initialNames).toContain('delendai_plugin_activate');
+		expect(initialNames).toContain('delendai_tool_search');
+		expect(initialNames).toContain('delendai_status');
+		expect(initialNames).toContain('delendai_vertex');
+		expect(initialNames).not.toContain('delendai_project_context');
+		expect(initialNames).not.toContain('delendai_configuration_center');
+		expect(initialNames).not.toContain('delendai_memory_save');
 
 		const adaptiveOverview = await client.callTool({
-			name: 'mcp-vertex_overview',
+			name: 'delendai_overview',
 			arguments: {},
 		});
 		const overviewTools = (
@@ -129,10 +129,10 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 				tools: Array<{ name: string }>;
 			}
 		).tools.map((tool) => tool.name);
-		expect(overviewTools).not.toContain('mcp-vertex_memory_save');
+		expect(overviewTools).not.toContain('delendai_memory_save');
 
 		const activated = await client.callTool({
-			name: 'mcp-vertex_plugin_activate',
+			name: 'delendai_plugin_activate',
 			arguments: { plugin: 'memory' },
 		});
 		expect(
@@ -153,11 +153,11 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 
 		const afterActivate = await client.listTools();
 		const afterActivateNames = afterActivate.tools.map((tool) => tool.name);
-		expect(afterActivateNames).toContain('mcp-vertex_memory_save');
-		expect(afterActivateNames).toContain('mcp-vertex_memory_recall');
+		expect(afterActivateNames).toContain('delendai_memory_save');
+		expect(afterActivateNames).toContain('delendai_memory_recall');
 
 		const deactivated = await client.callTool({
-			name: 'mcp-vertex_plugin_deactivate',
+			name: 'delendai_plugin_deactivate',
 			arguments: { plugin: 'memory' },
 		});
 		expect(
@@ -170,7 +170,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 
 		const afterDeactivate = await client.listTools();
 		expect(afterDeactivate.tools.map((tool) => tool.name)).not.toContain(
-			'mcp-vertex_memory_save',
+			'delendai_memory_save',
 		);
 	});
 
@@ -184,13 +184,13 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		});
 		const initial = await client.listTools();
 		const names = initial.tools.map((tool) => tool.name);
-		expect(names).toContain('mcp-vertex_vertex');
-		expect(names).not.toContain('mcp-vertex_knowledge');
-		expect(names).not.toContain('mcp-vertex_git_status');
-		expect(names).not.toContain('mcp-vertex_memory_list');
+		expect(names).toContain('delendai_vertex');
+		expect(names).not.toContain('delendai_knowledge');
+		expect(names).not.toContain('delendai_git_status');
+		expect(names).not.toContain('delendai_memory_list');
 
 		const searched = await client.callTool({
-			name: 'mcp-vertex_tool_search',
+			name: 'delendai_tool_search',
 			arguments: { plugin: 'memory' },
 		});
 		const toolSearchEntries = (
@@ -203,14 +203,14 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 			}
 		).entries;
 		const hiddenMemoryList = toolSearchEntries.find(
-			(entry) => entry.name === 'mcp-vertex_memory_list',
+			(entry) => entry.name === 'delendai_memory_list',
 		);
 		expect(hiddenMemoryList?.active).toBe(false);
 
 		expect(hiddenMemoryList?.detailsId).toContain('tool:');
 
 		const routedMemory = await client.callTool({
-			name: 'mcp-vertex_vertex',
+			name: 'delendai_vertex',
 			arguments: { domain: 'memory', action: 'list', args: {} },
 		});
 		expect(
@@ -220,13 +220,13 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 					isError: boolean;
 				}
 			).tool,
-		).toBe('mcp-vertex_memory_list');
+		).toBe('delendai_memory_list');
 		expect(
 			(routedMemory.structuredContent as { isError: boolean }).isError,
 		).toBe(false);
 
 		const routedGit = await client.callTool({
-			name: 'mcp-vertex_vertex',
+			name: 'delendai_vertex',
 			arguments: { domain: 'git', action: 'status', args: {} },
 		});
 		expect(
@@ -236,7 +236,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 					structuredContent?: unknown;
 				}
 			).tool,
-		).toBe('mcp-vertex_git_status');
+		).toBe('delendai_git_status');
 	});
 
 	it('defaults a KNOWN host (no private capability) to managed', async () => {
@@ -252,17 +252,17 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		});
 		const initial = await client.listTools();
 		const names = initial.tools.map((tool) => tool.name);
-		expect(names).not.toContain('mcp-vertex_memory_save');
-		expect(names).not.toContain('mcp-vertex_memory_recall');
+		expect(names).not.toContain('delendai_memory_save');
+		expect(names).not.toContain('delendai_memory_recall');
 		// The stable bootstrap remains visible, including the internal router.
-		expect(names).toContain('mcp-vertex_overview');
-		expect(names).toContain('mcp-vertex_tool_search');
-		expect(names).toContain('mcp-vertex_vertex');
+		expect(names).toContain('delendai_overview');
+		expect(names).toContain('delendai_tool_search');
+		expect(names).toContain('delendai_vertex');
 	});
 
 	it('defaults an UNKNOWN client with no listChanged signal to native (AUD-C01 / x00285)', async () => {
 		// A client this repo has never verified, and that declares no
-		// mcp-vertex/surface support, gets the full native surface up
+		// delendai/surface support, gets the full native surface up
 		// front instead of being stranded behind a notification it may
 		// never act on.
 		await connect({
@@ -282,14 +282,14 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 			while (Date.now() < deadline) {
 				const initial = await client.listTools();
 				latest = initial.tools.map((tool) => tool.name);
-				if (latest.includes('mcp-vertex_memory_save')) return latest;
+				if (latest.includes('delendai_memory_save')) return latest;
 				await new Promise((resolve) => setTimeout(resolve, 25));
 			}
 			return latest;
 		})();
-		expect(names).toContain('mcp-vertex_memory_save');
-		expect(names).toContain('mcp-vertex_memory_recall');
-		expect(names).toContain('mcp-vertex_overview');
+		expect(names).toContain('delendai_memory_save');
+		expect(names).toContain('delendai_memory_recall');
+		expect(names).toContain('delendai_overview');
 	});
 
 	it('a KNOWN host that never refreshes tools/list can still reach an activated tool through the router (r00027 / TOK-004 follow-up)', async () => {
@@ -307,11 +307,11 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		// client that ignores/never acts on list_changed.
 		const initial = await client.listTools();
 		expect(initial.tools.map((tool) => tool.name)).not.toContain(
-			'mcp-vertex_memory_save',
+			'delendai_memory_save',
 		);
 
 		const direct = await client.callTool({
-			name: 'mcp-vertex_vertex',
+			name: 'delendai_vertex',
 			arguments: {
 				domain: 'memory',
 				action: 'save',
@@ -335,7 +335,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		});
 		const initial = await client.listTools();
 		expect(initial.tools.map((tool) => tool.name)).toContain(
-			'mcp-vertex_memory_save',
+			'delendai_memory_save',
 		);
 	});
 });

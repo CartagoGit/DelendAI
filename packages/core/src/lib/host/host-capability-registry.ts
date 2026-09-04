@@ -20,7 +20,7 @@ export type {
  * disagree about instead of one to agree on.
  */
 export const GENERIC_MCP_HOST_CAPABILITY_MANIFEST = {
-	contract: 'mcp-vertex.host-capability-manifest',
+	contract: 'delendai.host-capability-manifest',
 	version: 1,
 	hostId: 'generic-mcp',
 	mcp: {
@@ -61,7 +61,7 @@ const validateManifest = (manifest: IHostCapabilityManifest): void => {
 			`host capability manifest id must be kebab-case: ${manifest.hostId}`,
 		);
 	}
-	if (manifest.contract !== 'mcp-vertex.host-capability-manifest') {
+	if (manifest.contract !== 'delendai.host-capability-manifest') {
 		throw new Error('unsupported host capability manifest contract');
 	}
 	if (manifest.version !== 1) {

@@ -2,7 +2,7 @@
 
 > Commit-authority plugin for `@delendai/core`. Configurable identity, cadence
 > and audit-trail policy on top of the [`git`](../../git) plugin's primitives.
-> Off by default — opt in via `mcp-vertex.config.json`.
+> Off by default — opt in via `delendai.config.json`.
 
 ## What it does
 
@@ -25,7 +25,7 @@ opt in. See "Configuration" below for the exact knobs.
 ## Configuration
 
 ```jsonc
-// mcp-vertex.config.json
+// delendai.config.json
 {
   "plugins": {
     "commit-policy": {
@@ -71,7 +71,7 @@ fallback. GitHub and GitLab public hosts are supported through their
 authenticated CLIs; self-hosted hosts can be mapped with `push.providerByHost`;
 unmapped hosts return an explicit `unsupported` state and leave the local configuration active. The refresh is not executed during
 plugin registration unless the host explicitly sets
-`MCP_VERTEX_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true`.
+`DELENDAI_COMMIT_POLICY_REFRESH_BRANCH_PROTECTION_ON_REGISTER=true`.
 
 ### Branch rules
 
@@ -122,7 +122,7 @@ The host configuration is the persistent authority. `commit-policy` can
 complement other plugins when their effects are distinct, but startup is
 blocked before registration when effective options contradict each other.
 Diagnostics name the exact keys and values, state precedence, and include a
-JSON patch for `mcp-vertex.config.json`.
+JSON patch for `delendai.config.json`.
 
 For slice automation, `commit-policy` owns persistence whenever its commit
 policy is enabled with a `slice` cadence. In that case, `proposals` resolves
@@ -147,7 +147,7 @@ Read-only snapshot. Reports:
 - `push.enabled`, `push.onCommit`, `push.everyNCommits`, `push.everyNMinutes`,
   `push.force`, `push.protectedBranches`, `push.remote`, `push.branch`.
 
-Bilingual summary via `MCP_VERTEX_LOCALE` (`en` default, `es` available).
+Bilingual summary via `DELENDAI_LOCALE` (`en` default, `es` available).
 
 ### `commit_policy_commit`
 
@@ -193,7 +193,7 @@ returns a structured refusal.
 
 ## Dogfooding on this repo
 
-The root `mcp-vertex.config.json` opts in with:
+The root `delendai.config.json` opts in with:
 
 ```jsonc
 "commit-policy": {

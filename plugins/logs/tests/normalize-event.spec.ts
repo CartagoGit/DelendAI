@@ -19,10 +19,10 @@ import {
 describe('serializeRedactedEvent truncation (f00111 S2)', () => {
 	it('keeps meta.toolName and meta.taskId when the line is truncated', () => {
 		const event = normalizeEvent('tool-completed', {
-			toolName: 'mcp-vertex_agent_catalog',
-			taskId: 'mcp-vertex_agent_catalog',
+			toolName: 'delendai_agent_catalog',
+			taskId: 'delendai_agent_catalog',
 			result: { blob: 'x'.repeat(20_000) },
-			summary: 'tool-completed: mcp-vertex_agent_catalog',
+			summary: 'tool-completed: delendai_agent_catalog',
 		});
 		const line = serializeRedactedEvent(event, 8 * 1024);
 		expect(Buffer.byteLength(line, 'utf8')).toBeLessThanOrEqual(8 * 1024);
@@ -34,17 +34,17 @@ describe('serializeRedactedEvent truncation (f00111 S2)', () => {
 			};
 		};
 		expect(parsed.meta.__truncated__).toBe(true);
-		expect(parsed.meta.toolName).toBe('mcp-vertex_agent_catalog');
-		expect(parsed.meta.taskId).toBe('mcp-vertex_agent_catalog');
+		expect(parsed.meta.toolName).toBe('delendai_agent_catalog');
+		expect(parsed.meta.taskId).toBe('delendai_agent_catalog');
 	});
 
 	it('keeps meta.callId when the line is truncated (the only field that disambiguates concurrent calls to the same tool)', () => {
 		const event = normalizeEvent('tool-completed', {
-			toolName: 'mcp-vertex_agent_catalog',
-			taskId: 'mcp-vertex_agent_catalog',
+			toolName: 'delendai_agent_catalog',
+			taskId: 'delendai_agent_catalog',
 			callId: 'call-abc-123',
 			result: { blob: 'x'.repeat(20_000) },
-			summary: 'tool-completed: mcp-vertex_agent_catalog',
+			summary: 'tool-completed: delendai_agent_catalog',
 		});
 		const line = serializeRedactedEvent(event, 8 * 1024);
 		const parsed = JSON.parse(line) as {
@@ -68,7 +68,7 @@ describe('serializeRedactedEvent truncation (f00111 S2)', () => {
 
 	it('terminates when the cap is smaller than the attribution envelope', () => {
 		const event = normalizeEvent('tool-completed', {
-			toolName: 'mcp-vertex_agent_catalog',
+			toolName: 'delendai_agent_catalog',
 			taskId: 'task-1',
 			result: 'x'.repeat(2_000),
 		});
@@ -80,7 +80,7 @@ describe('serializeRedactedEvent truncation (f00111 S2)', () => {
 			};
 		};
 		expect(parsed.meta.__truncated__).toBe(true);
-		expect(parsed.meta.toolName).toBe('mcp-vertex_agent_catalog');
+		expect(parsed.meta.toolName).toBe('delendai_agent_catalog');
 		expect(parsed.meta.taskId).toBe('task-1');
 	});
 });

@@ -71,7 +71,7 @@ const createEngine = (repo: ITempGitRepo) =>
 				envVars: Object.freeze({}),
 			},
 			workspaceRoot: repo.cwd,
-			pluginCacheDir: '.cache/mcp-vertex/commit-policy',
+			pluginCacheDir: '.cache/delendai/commit-policy',
 			auditAgent: null,
 		},
 		branchPolicy: DEFAULT_BRANCH_POLICY,

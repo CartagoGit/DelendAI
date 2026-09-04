@@ -19,9 +19,9 @@ import { buildCloseTools } from './lib/tools/close-tools';
  * `<prefix>_validate`, `<prefix>_ping`) and a knowledge entry that
  * exposes the full 8-state table. Activation is opt-in via the loader:
  *
- *   `mcp-vertex --plugins=status-marker`
+ *   `delendai --plugins=status-marker`
  *
- * See the status-marker proposal in `docs/mcp-vertex/proposals/done/feats/`
+ * See the status-marker proposal in `docs/delendai/proposals/done/feats/`
  * for the design rationale and the §4 gap analysis (the core currently
  * exposes no `onBeforePrompt` / `onAfterRespond` hook, so enforcement
  * today is **agent-driven**: the table + helper are exposed, but the

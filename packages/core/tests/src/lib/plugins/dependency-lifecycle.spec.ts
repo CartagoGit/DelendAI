@@ -5,12 +5,12 @@ import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contra
 
 const ctx = (name: string, cacheNamespace?: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (path: string) => `/ws/${path}` },
-	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	corePaths: { cacheDir: '.cache/delendai', docsDir: 'docs/delendai' },
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: `.cache/mcp-vertex/${cacheNamespace ? `${cacheNamespace}/${name}` : name}`,
-	pluginDocsDir: `docs/mcp-vertex/${name}`,
+	pluginCacheDir: `.cache/delendai/${cacheNamespace ? `${cacheNamespace}/${name}` : name}`,
+	pluginDocsDir: `docs/delendai/${name}`,
 	namespacePrefix: name,
 	options: {},
 	args: {},

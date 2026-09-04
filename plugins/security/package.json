@@ -2,7 +2,7 @@
 	"name": "@delendai/security",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Security scanning plugin for @delendai/core: security_secrets detects leaked secrets (private keys, cloud/API tokens) with high-precision offline rules and normalized findings. No network. Load with `mcp-vertex --plugins=security`.",
+	"description": "Security scanning plugin for @delendai/core: security_secrets detects leaked secrets (private keys, cloud/API tokens) with high-precision offline rules and normalized findings. No network. Load with `delendai --plugins=security`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

@@ -7,7 +7,7 @@
  * degrades to `undefined` when the plugin is absent, and `showCommandError`
  * on failure). Two surfaces, one tool:
  *
- * - **Command** (`mcp-vertex.externalMcps.ack`): list pending activations →
+ * - **Command** (`delendai.externalMcps.ack`): list pending activations →
  *   QuickPick a server → accept/reject → record the decision durably via
  *   the tool (which persists it under the plugin cache dir and emits its
  *   own non-modal host notification).
@@ -30,7 +30,7 @@ import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { showCommandError } from './types';
 import { HOST_LANG_KEY } from './setup-github';
 
-export const EXTERNAL_MCPS_ACK_COMMAND = 'mcp-vertex.externalMcps.ack';
+export const EXTERNAL_MCPS_ACK_COMMAND = 'delendai.externalMcps.ack';
 
 /** The `external_mcp_ack` tool suffix (host prefix is prepended at call time). */
 const ACK_TOOL_SUFFIX = 'external-mcps_ack';
@@ -115,7 +115,7 @@ const runAckFlow = async (deps: IExternalMcpsAckDeps): Promise<void> => {
 	const pending = await listPending(deps);
 	if (pending.length === 0) {
 		await deps.vscode.window.showInformationMessage?.(
-			`mcp-vertex: ${s.noPending}`,
+			`delendai: ${s.noPending}`,
 		);
 		return;
 	}
@@ -140,7 +140,7 @@ const runAckFlow = async (deps: IExternalMcpsAckDeps): Promise<void> => {
 		{ server: serverId, accept },
 	);
 	await deps.vscode.window.showInformationMessage?.(
-		`mcp-vertex: ${serverId} — ${accept ? s.acceptedInfo : s.rejectedInfo}`,
+		`delendai: ${serverId} — ${accept ? s.acceptedInfo : s.rejectedInfo}`,
 	);
 };
 
@@ -157,7 +157,7 @@ export const surfaceExternalMcpsPendingAcks = async (
 		if (pending.length === 0) return;
 		const s = stringsFor(deps);
 		const choice = await deps.vscode.window.showInformationMessage?.(
-			`mcp-vertex: ${pending.length} ${s.pendingNotification}`,
+			`delendai: ${pending.length} ${s.pendingNotification}`,
 			s.reviewAction,
 		);
 		if (choice === s.reviewAction) await runAckFlow(deps);

@@ -58,7 +58,7 @@ describe('IDE installer (M39)', async () => {
 		const cfg = JSON.parse(
 			readFileSync(join(dir, '.vscode/mcp.json'), 'utf8'),
 		);
-		expect(cfg.servers['mcp-vertex'].type).toBe('stdio');
+		expect(cfg.servers['delendai'].type).toBe('stdio');
 	});
 
 	it('installToTarget creates the Zed config with the context_servers shape', async () => {
@@ -70,11 +70,11 @@ describe('IDE installer (M39)', async () => {
 		const cfg = JSON.parse(
 			readFileSync(join(dir, '.config/zed/settings.json'), 'utf8'),
 		);
-		expect(cfg.context_servers['mcp-vertex']).toEqual({
+		expect(cfg.context_servers['delendai']).toEqual({
 			command: 'npx',
 			args: ['-y', '@delendai/core', '--preset=standard'],
 		});
-		expect(cfg.context_servers['mcp-vertex'].type).toBeUndefined();
+		expect(cfg.context_servers['delendai'].type).toBeUndefined();
 	});
 
 	it('merges into an existing config without removing the user’s servers', async () => {
@@ -89,7 +89,7 @@ describe('IDE installer (M39)', async () => {
 			readFileSync(join(dir, '.cursor/mcp.json'), 'utf8'),
 		);
 		expect(cfg.mcpServers.existing).toEqual({ command: 'foo' }); // preserved
-		expect(cfg.mcpServers['mcp-vertex']).toBeDefined();
+		expect(cfg.mcpServers['delendai']).toBeDefined();
 	});
 
 	it('merges Zed config without removing unrelated agent settings', async () => {
@@ -113,7 +113,7 @@ describe('IDE installer (M39)', async () => {
 			command: 'foo',
 			args: ['bar'],
 		});
-		expect(cfg.context_servers['mcp-vertex']).toBeDefined();
+		expect(cfg.context_servers['delendai']).toBeDefined();
 	});
 
 	it('auto-detects targets whose signal dir exists', async () => {

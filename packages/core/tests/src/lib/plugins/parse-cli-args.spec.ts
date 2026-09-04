@@ -11,8 +11,8 @@ describe('parseCliArgs', async () => {
 		expect(args.plugins).toEqual([]);
 		expect(args.presetPlugins).toEqual([]);
 		expect(args.flagPlugins).toEqual([]);
-		expect(args.cacheDir).toBe('.cache/mcp-vertex');
-		expect(args.docsDir).toBe('docs/mcp-vertex');
+		expect(args.cacheDir).toBe('.cache/delendai');
+		expect(args.docsDir).toBe('docs/delendai');
 		expect(args.workspace).toBe('/cwd');
 		expect(args.surfaceMode).toBe('managed');
 		expect(args.mcpProjectCreate).toBe(true);

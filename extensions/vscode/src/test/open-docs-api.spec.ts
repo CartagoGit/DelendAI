@@ -68,7 +68,7 @@ describe('resolveDocsApiTargets', () => {
 	});
 });
 
-describe('mcp-vertex.openDocsApi', () => {
+describe('delendai.openDocsApi', () => {
 	it('registers the command', () => {
 		const { vscode, commands } = createVscode();
 		registerOpenDocsApiCommand({ vscode });

@@ -14,9 +14,9 @@ import {
 import { buildCapabilityMatrixMarkdown } from '../gen/capability-matrix.script.ts';
 import { buildTokenBudgetDashboardMarkdown } from '../report/token-budget-dashboard.script.ts';
 
-const DASHBOARD_RELATIVE_PATH = 'docs/mcp-vertex/TOKEN-BUDGETS.md';
+const DASHBOARD_RELATIVE_PATH = 'docs/delendai/TOKEN-BUDGETS.md';
 const CAPABILITY_MATRIX_RELATIVE_PATH =
-	'docs/mcp-vertex/security/capability-matrix.md';
+	'docs/delendai/security/capability-matrix.md';
 
 const normalizeDashboard = (text: string | null): string | null =>
 	text === null

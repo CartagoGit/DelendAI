@@ -2,7 +2,7 @@
 	"name": "@delendai/tech-debt",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Tech-debt visibility plugin for @delendai/core: debt_scan finds TODO/FIXME/HACK/XXX/BUG/DEPRECATED/NOTE markers across the workspace, ranked by severity. Offline. Load with `mcp-vertex --plugins=tech-debt`.",
+	"description": "Tech-debt visibility plugin for @delendai/core: debt_scan finds TODO/FIXME/HACK/XXX/BUG/DEPRECATED/NOTE markers across the workspace, ranked by severity. Offline. Load with `delendai --plugins=tech-debt`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

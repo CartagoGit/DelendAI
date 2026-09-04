@@ -1,6 +1,6 @@
 # AGENT.md — plugin `plugins/context-for-change`
 
-> Below the `<!-- mcp-vertex:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions.
@@ -25,7 +25,7 @@
 
 ## Writes
 
-- <host workspace>/.mcp-vertex/cache/context-for-change/
+- <host workspace>/.delendai/cache/context-for-change/
 
 ## Entry points
 
@@ -40,7 +40,7 @@
 ## Do not
 
 - Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
-- Do not hand-edit content between `<!-- mcp-vertex:begin -->`/`<!-- mcp-vertex:end -->` markers; regenerate via the owning `gen:*` script instead.
+- Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
 - Do not import `@delendai/core/lib/...`; use `@delendai/core/public`.
 - Do not run user-facing shell or destructive tools without `dryRunSupported: true`.
 - Do not surface absolute host paths; use `workspaceRoot`-relative paths only.
@@ -49,5 +49,5 @@
 
 _(none)_
 
-<!-- mcp-vertex:end agent-md -->
+<!-- delendai:end agent-md -->
 

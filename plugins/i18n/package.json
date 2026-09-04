@@ -2,7 +2,7 @@
 	"name": "@delendai/i18n",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-placeholder mismatches across locale JSON files. Offline, pure. Load with `mcp-vertex --plugins=i18n`.",
+	"description": "i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-placeholder mismatches across locale JSON files. Offline, pure. Load with `delendai --plugins=i18n`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

@@ -24,7 +24,7 @@ import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
 export const OPEN_CONFIGURATION_CENTER_COMMAND =
-	'mcp-vertex.openConfigurationCenter';
+	'delendai.openConfigurationCenter';
 type ConfigurationCenterStrings =
 	(typeof configurationCenterStringsByLang)[Lang];
 
@@ -159,7 +159,7 @@ export const registerOpenConfigurationCenterCommand = (deps: ICommandDeps) =>
 			if (workspaceRoot === undefined) return undefined;
 			try {
 				const panel = deps.vscode.window.createWebviewPanel(
-					'mcpVertexConfigurationCenter',
+					'delendaiConfigurationCenter',
 					strings.panelTitle,
 					deps.vscode.ViewColumn.One,
 					{ enableScripts: true },

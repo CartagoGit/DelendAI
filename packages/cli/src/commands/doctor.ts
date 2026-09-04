@@ -168,7 +168,7 @@ export const runDoctorBody = async (
 export const doctorCommand: ICliCommand = {
 	name: 'doctor',
 	summary:
-		'Run local MCP Vertex health checks and print a scored report with JSON support.',
+		'Run local DelendAI health checks and print a scored report with JSON support.',
 	async run(_args, ctx) {
 		return runDoctorBody(ctx);
 	},

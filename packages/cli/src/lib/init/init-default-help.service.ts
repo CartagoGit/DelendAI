@@ -18,13 +18,13 @@ import { c, colorOn, heading, paint } from '../helpers/cli-color.helper';
  *
  * Format:
  *
- *   mcp-vertex › init:default
+ *   delendai › init:default
  *   ────────────────────────────────────────────────
  *     Non-interactive bootstrap with the operator defaults
  *     (vertex preset + managed instructions + skills + agents + scaffold).
  *
  *   Usage:
- *     init:default [--dry-run] [--mcp-vertex-root=<path>] [...]
+ *     init:default [--dry-run] [--delendai-root=<path>] [...]
  *
  *   Flags:
  *     --dry-run                       preview the bundle without writing
@@ -44,20 +44,20 @@ export const renderInitDefaultHelp = (): string => {
 
 	const lines: string[] = [
 		enabled
-			? heading('mcp-vertex › init:default')
-			: 'mcp-vertex › init:default',
+			? heading('delendai › init:default')
+			: 'delendai › init:default',
 		dim(horiz),
 		'',
 		`  Non-interactive bootstrap with the operator defaults`,
 		`  (vertex preset + managed instructions + skills + agents + scaffold).`,
 		'',
 		bold('Usage:'),
-		`  ${cyan('init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]')}`,
+		`  ${cyan('init:default [--dry-run] [--delendai-root=<path>] [--plugin-paths-root=<path>]')}`,
 		'',
 		bold('Flags:'),
 		`  ${bold('--dry-run')}                       preview the bundle without writing`,
 		`  ${bold('--force')}                         intentionally replace project config/managed files`,
-		`  ${bold('--mcp-vertex-root=<path>')}        path to the mcp-vertex checkout to scaffold from`,
+		`  ${bold('--delendai-root=<path>')}        path to the delendai checkout to scaffold from`,
 		`  ${bold('--plugin-paths-root=<path>')}      override the detected plugin source root`,
 		`  ${bold('--options-<plugin>-<k>=<v>')}      override a plugin option (repeatable)`,
 		`  ${bold('--help, -h')}                      show this help and exit`,

@@ -33,8 +33,8 @@ const registerWith = async (
 	const root = await mkdtemp(join(tmpdir(), 'error-reporting-register-'));
 	dirs.push(root);
 	const result = await plugin.register({
-		namespacePrefix: 'mcp-vertex',
-		pluginCacheDir: '.cache/mcp-vertex/error-reporting',
+		namespacePrefix: 'delendai',
+		pluginCacheDir: '.cache/delendai/error-reporting',
 		options: { enabled },
 		workspace: {
 			root,

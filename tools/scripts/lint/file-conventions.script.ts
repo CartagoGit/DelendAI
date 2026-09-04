@@ -190,7 +190,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 				'plugins',
 				'extensions',
 				'apps',
-				'docs/mcp-vertex/examples',
+				'docs/delendai/examples',
 				'tools',
 			] as const);
 	const rootDir = process.cwd();

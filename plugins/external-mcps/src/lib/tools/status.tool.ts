@@ -50,7 +50,7 @@ export const buildStatusToolRegistration = (
 	tags: ['external-mcps', 'lazy', 'subprocess'],
 	summary:
 		'Per-declared-server subprocess status: running, pid, bootedAt, lastError.',
-	descriptionKey: 'mcp-vertex_external-mcps_status',
+	descriptionKey: 'delendai_external-mcps_status',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_status`,

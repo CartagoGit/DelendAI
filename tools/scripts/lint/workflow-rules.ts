@@ -55,7 +55,7 @@ export interface IWorkflowRule {
 	readonly detect: (ctx: IWorkflowContext) => readonly IWorkflowFinding[];
 }
 
-const PROPOSAL_INDEX_PATH = 'docs/mcp-vertex/proposals/index.json';
+const PROPOSAL_INDEX_PATH = 'docs/delendai/proposals/index.json';
 const WORKFLOW_LINT_ENFORCEMENT_EPOCH_MS = Date.parse(
 	'2026-06-24T00:00:00+02:00',
 );
@@ -70,7 +70,7 @@ const isBeforeWorkflowLintEnforcement = (commit: ICommitInfo): boolean => {
 	return Number.isFinite(ms) && ms < WORKFLOW_LINT_ENFORCEMENT_EPOCH_MS;
 };
 
-/** Rule 1 — no mixed commit may touch `docs/mcp-vertex/proposals/index.json`.
+/** Rule 1 — no mixed commit may touch `docs/delendai/proposals/index.json`.
  *  Dedicated generated refresh commits are allowed; mixed edits are
  *  the risky workflow shape because reviewers cannot tell whether the
  *  index was regenerated after the proposal change or hand-edited.
@@ -89,7 +89,7 @@ export const HandEditedIndexRule: IWorkflowRule = {
 			) {
 				findings.push({
 					rule: 'hand-edited-index',
-					detail: `commit ${commit.hash.slice(0, 12)} by ${commit.author} touched docs/mcp-vertex/proposals/index.json with other changes — regenerate the index in a dedicated refresh commit`,
+					detail: `commit ${commit.hash.slice(0, 12)} by ${commit.author} touched docs/delendai/proposals/index.json with other changes — regenerate the index in a dedicated refresh commit`,
 				});
 				break;
 			}
@@ -118,7 +118,7 @@ export const PushFromMainRule: IWorkflowRule = {
 };
 
 /** Rule 3 — placeholder for the sync-race heuristic. The real
- *  enforcement requires cross-referencing `mcp-vertex_proposals_sync_proposals`
+ *  enforcement requires cross-referencing `delendai_proposals_sync_proposals`
  *  MCP invocations against slice-close timestamps; that telemetry is
  *  not yet exported by the proposals plugin (post-f00049 follow-up).
  *

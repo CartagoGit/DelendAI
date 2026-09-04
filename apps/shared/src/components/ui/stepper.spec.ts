@@ -3,14 +3,14 @@
  * `renderStepper` unit tests.
  *
  * Contract pinned:
- *   - root is `<ol class="mcpv-stepper" start="…">`
- *   - one `<li class="mcpv-stepper__item">` per step
- *   - each item has `<span class="mcpv-stepper__num">` with the
+ *   - root is `<ol class="delendai-stepper" start="…">`
+ *   - one `<li class="delendai-stepper__item">` per step
+ *   - each item has `<span class="delendai-stepper__num">` with the
  *     step number (1-indexed from `start`, default 1)
  *   - inline `` `backticks` `` in step bodies are split into
  *     `<code>` chips; the rest is escaped plain text
  *   - the whole body is wrapped in
- *     `<div class="mcpv-stepper__body"><p class="mcpv-stepper__text">`
+ *     `<div class="delendai-stepper__body"><p class="delendai-stepper__text">`
  *   - all interpolations are HTML-escaped
  */
 import { describe, expect, it } from 'vitest';
@@ -20,13 +20,13 @@ import { renderStepper } from './stepper';
 describe('renderStepper', () => {
 	it('emits the canonical ol root with the default start (1)', () => {
 		const out = renderStepper({ steps: ['Step one', 'Step two'] });
-		expect(out).toContain('<ol class="mcpv-stepper" start="1">');
+		expect(out).toContain('<ol class="delendai-stepper" start="1">');
 	});
 
-	it('renders one <li class="mcpv-stepper__item"> per step', () => {
+	it('renders one <li class="delendai-stepper__item"> per step', () => {
 		const out = renderStepper({ steps: ['A', 'B', 'C'] });
 		expect(
-			out.match(/<li class="mcpv-stepper__item">/g) ?? [],
+			out.match(/<li class="delendai-stepper__item">/g) ?? [],
 		).toHaveLength(3);
 	});
 
@@ -49,7 +49,7 @@ describe('renderStepper', () => {
 			steps: ['Run `bun install` to fetch deps.'],
 		});
 		expect(out).toContain(
-			'<p class="mcpv-stepper__text">Run <code>bun install</code> to fetch deps.</p>',
+			'<p class="delendai-stepper__text">Run <code>bun install</code> to fetch deps.</p>',
 		);
 	});
 
@@ -64,8 +64,8 @@ describe('renderStepper', () => {
 		expect(out).toContain('<code>x&lt;y&amp;z</code>');
 	});
 
-	it('renders the wrapping mcpv-stepper__body div per item', () => {
+	it('renders the wrapping delendai-stepper__body div per item', () => {
 		const out = renderStepper({ steps: ['A'] });
-		expect(out).toContain('<div class="mcpv-stepper__body">');
+		expect(out).toContain('<div class="delendai-stepper__body">');
 	});
 });

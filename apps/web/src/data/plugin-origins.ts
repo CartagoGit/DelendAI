@@ -18,7 +18,7 @@ const copy: Readonly<
 		bundled: {
 			label: 'Ours · bundled',
 			description:
-				'First-party @mcp-vertex plugins maintained and published with the project.',
+				'First-party @delendai plugins maintained and published with the project.',
 		},
 		'user-local': {
 			label: 'Yours · local',
@@ -36,7 +36,7 @@ const copy: Readonly<
 		bundled: {
 			label: 'Nuestros · incluidos',
 			description:
-				'Plugins oficiales @mcp-vertex mantenidos y publicados con el proyecto.',
+				'Plugins oficiales @delendai mantenidos y publicados con el proyecto.',
 		},
 		'user-local': {
 			label: 'Tuyos · locales',
@@ -54,7 +54,7 @@ const copy: Readonly<
 		bundled: {
 			label: 'Nôtres · inclus',
 			description:
-				'Plugins officiels @mcp-vertex maintenus et publiés avec le projet.',
+				'Plugins officiels @delendai maintenus et publiés avec le projet.',
 		},
 		'user-local': {
 			label: 'Vôtres · locaux',
@@ -72,7 +72,7 @@ const copy: Readonly<
 		bundled: {
 			label: 'Unsere · gebündelt',
 			description:
-				'Offizielle @mcp-vertex-Plugins, die mit dem Projekt gepflegt werden.',
+				'Offizielle @delendai-Plugins, die mit dem Projekt gepflegt werden.',
 		},
 		'user-local': {
 			label: 'Ihre · lokal',
@@ -89,7 +89,7 @@ const copy: Readonly<
 		bundled: {
 			label: 'Nostri · inclusi',
 			description:
-				'Plugin ufficiali @mcp-vertex mantenuti e pubblicati con il progetto.',
+				'Plugin ufficiali @delendai mantenuti e pubblicati con il progetto.',
 		},
 		'user-local': {
 			label: 'Tuoi · locali',
@@ -107,7 +107,7 @@ const copy: Readonly<
 		bundled: {
 			label: 'Nossos · incluídos',
 			description:
-				'Plugins oficiais @mcp-vertex mantidos e publicados com o projeto.',
+				'Plugins oficiais @delendai mantidos e publicados com o projeto.',
 		},
 		'user-local': {
 			label: 'Seus · locais',
@@ -125,7 +125,7 @@ const copy: Readonly<
 		bundled: {
 			label: '公式・同梱',
 			description:
-				'プロジェクトと共に保守・公開される公式 @mcp-vertex プラグイン。',
+				'プロジェクトと共に保守・公開される公式 @delendai プラグイン。',
 		},
 		'user-local': {
 			label: 'ユーザー・ローカル',
@@ -142,7 +142,7 @@ const copy: Readonly<
 		intro: '启用前即可确认每项能力的维护方。',
 		bundled: {
 			label: '官方·内置',
-			description: '随项目维护和发布的官方 @mcp-vertex 插件。',
+			description: '随项目维护和发布的官方 @delendai 插件。',
 		},
 		'user-local': {
 			label: '你的·本地',
@@ -158,7 +158,7 @@ const copy: Readonly<
 		bundled: {
 			label: 'हमारे · शामिल',
 			description:
-				'परियोजना के साथ रखे और प्रकाशित आधिकारिक @mcp-vertex प्लगइन।',
+				'परियोजना के साथ रखे और प्रकाशित आधिकारिक @delendai प्लगइन।',
 		},
 		'user-local': {
 			label: 'आपके · स्थानीय',
@@ -173,8 +173,7 @@ const copy: Readonly<
 		intro: 'اعرف الجهة المسؤولة عن كل قدرة قبل تفعيلها.',
 		bundled: {
 			label: 'خاصتنا · مضمّنة',
-			description:
-				'إضافات @mcp-vertex الرسمية التي تُصان وتُنشر مع المشروع.',
+			description: 'إضافات @delendai الرسمية التي تُصان وتُنشر مع المشروع.',
 		},
 		'user-local': {
 			label: 'خاصتك · محلية',
@@ -189,7 +188,7 @@ const copy: Readonly<
 		intro: 'ทราบผู้ดูแลแต่ละความสามารถก่อนเปิดใช้งาน',
 		bundled: {
 			label: 'ของเรา · รวมมาให้',
-			description: 'ปลั๊กอิน @mcp-vertex ทางการที่ดูแลและเผยแพร่พร้อมโครงการ',
+			description: 'ปลั๊กอิน @delendai ทางการที่ดูแลและเผยแพร่พร้อมโครงการ',
 		},
 		'user-local': {
 			label: 'ของคุณ · ภายใน',
@@ -205,7 +204,7 @@ const copy: Readonly<
 		bundled: {
 			label: 'Của chúng tôi · đi kèm',
 			description:
-				'Plugin @mcp-vertex chính thức được duy trì và phát hành cùng dự án.',
+				'Plugin @delendai chính thức được duy trì và phát hành cùng dự án.',
 		},
 		'user-local': {
 			label: 'Của bạn · cục bộ',

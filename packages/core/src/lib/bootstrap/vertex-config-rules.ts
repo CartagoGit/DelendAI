@@ -1,5 +1,5 @@
 // vertex-config-rules: declarative table for "does the project's
-// `mcp-vertex.config.json` declare custom plugin / validation
+// `delendai.config.json` declare custom plugin / validation
 // config?".
 //
 // SOLID — Open/Closed. The previous `detectCustomVertexConfig`
@@ -103,7 +103,7 @@ export const matchVertexConfig = (
 };
 
 /**
- * Convenience: parse the raw `mcp-vertex.config.json` and run
+ * Convenience: parse the raw `delendai.config.json` and run
  * the rule table against it. Returns an empty list on parse
  * error (the file may be absent, malformed, or just empty).
  */

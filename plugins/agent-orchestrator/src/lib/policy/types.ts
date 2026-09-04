@@ -122,7 +122,7 @@ export const DEFAULT_ROTATION_POLICY: IRotationPolicy = {
 	],
 };
 
-/** The full policy the host passes in `mcp-vertex.config.json`. */
+/** The full policy the host passes in `delendai.config.json`. */
 export interface IOrchestratorPolicy {
 	readonly defaultMode: OrchestrationMode;
 	readonly defaults: {

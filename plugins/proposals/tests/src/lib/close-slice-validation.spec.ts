@@ -109,9 +109,9 @@ describe('close_slice validation gate (a00069 S5)', () => {
 
 	beforeEach(async () => {
 		root = mkdtempSync(join(tmpdir(), 'close-val-'));
-		const proposalsDir = join(root, 'docs/mcp-vertex/proposals');
+		const proposalsDir = join(root, 'docs/delendai/proposals');
 		mkdirSync(join(proposalsDir, 'in-progress'), { recursive: true });
-		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+		mkdirSync(join(root, '.cache/delendai/proposals'), {
 			recursive: true,
 		});
 		docPath = join(proposalsDir, 'in-progress', 'f00999-s5-fixture.md');
@@ -119,7 +119,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
 			proposalsDirAbs: proposalsDir,
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			validationCommand: 'bun run validate',
@@ -131,7 +131,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 	const writeValidateLog = (lines: readonly string[]) => {
 		const logPath = join(
 			root,
-			'.cache/mcp-vertex/results/logs/validate.jsonl',
+			'.cache/delendai/results/logs/validate.jsonl',
 		);
 		mkdirSync(join(logPath, '..'), { recursive: true });
 		writeFileSync(logPath, `${lines.join('\n')}\n`, 'utf8');
@@ -140,8 +140,8 @@ describe('close_slice validation gate (a00069 S5)', () => {
 	const seed = async (md: string) => {
 		writeFileSync(docPath, md, 'utf8');
 		await syncProposalRegistry(root, {
-			proposalsDir: 'docs/mcp-vertex/proposals',
-			proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+			proposalsDir: 'docs/delendai/proposals',
+			proposalIndexFile: '.cache/delendai/proposals/index.json',
 		});
 	};
 
@@ -149,7 +149,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 	// from `in-progress/` to `done/<kind>/`. Read from the live location
 	// rather than the path that was originally seeded.
 	const readCurrentProposal = (): string => {
-		const proposalsDir = join(root, 'docs/mcp-vertex/proposals');
+		const proposalsDir = join(root, 'docs/delendai/proposals');
 		const stack = [proposalsDir];
 		while (stack.length > 0) {
 			const current = stack.pop();
@@ -288,9 +288,9 @@ describe('close_slice quality gate (a00072 S3.c)', () => {
 
 	beforeEach(async () => {
 		root = mkdtempSync(join(tmpdir(), 'close-quality-'));
-		const proposalsDir = join(root, 'docs/mcp-vertex/proposals');
+		const proposalsDir = join(root, 'docs/delendai/proposals');
 		mkdirSync(join(proposalsDir, 'in-progress'), { recursive: true });
-		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+		mkdirSync(join(root, '.cache/delendai/proposals'), {
 			recursive: true,
 		});
 		docPath = join(proposalsDir, 'in-progress', 'f00999-s3-quality.md');
@@ -298,7 +298,7 @@ describe('close_slice quality gate (a00072 S3.c)', () => {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
 			proposalsDirAbs: proposalsDir,
-			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			validationCommand: 'bun run validate',
@@ -310,13 +310,13 @@ describe('close_slice quality gate (a00072 S3.c)', () => {
 	const seed = async (md: string) => {
 		writeFileSync(docPath, md, 'utf8');
 		await syncProposalRegistry(root, {
-			proposalsDir: 'docs/mcp-vertex/proposals',
-			proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+			proposalsDir: 'docs/delendai/proposals',
+			proposalIndexFile: '.cache/delendai/proposals/index.json',
 		});
 	};
 
 	const readCurrentProposal = (): string => {
-		const entries = readdirSync(join(root, 'docs/mcp-vertex/proposals'), {
+		const entries = readdirSync(join(root, 'docs/delendai/proposals'), {
 			recursive: true,
 			withFileTypes: true,
 		});

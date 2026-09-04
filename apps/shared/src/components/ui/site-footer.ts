@@ -9,8 +9,8 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mcpv-sitefoot` plus `mcpv-sitefoot__*` and the
- *   `mcpv-sitefoot__col--brand` modifier. Legacy `.sitefoot*`
+ * - Class namespace: `delendai-sitefoot` plus `delendai-sitefoot__*` and the
+ *   `delendai-sitefoot__col--brand` modifier. Legacy `.sitefoot*`
  *   selectors live in the companion SCSS via `@extend` so the
  *   docs site keeps emitting its existing markup without a
  *   rename.
@@ -20,7 +20,7 @@
  * - The repo / creators / npm URLs are hard-coded constants — the
  *   hosting org doesn't change between surfaces. Hosts that want
  *   to override them all together can pass a new set via
- *   `urls`; the default is the mcp-vertex project.
+ *   `urls`; the default is the delendai project.
  *
  * The `transition:persist` directive that used to live in
  * SiteFooter.astro is an Astro runtime hint; the shared renderer
@@ -120,7 +120,7 @@ const resolveHref = (baseHref: string, href: string): string => {
 
 /**
  * Render the site-footer block as a string. The host wraps the
- * result in `<footer class="mcpv-sitefoot sitefoot" transition:persist>`
+ * result in `<footer class="delendai-sitefoot sitefoot" transition:persist>`
  * to keep the structural scope and the Astro view-transition
  * persistence hint.
  *
@@ -153,27 +153,27 @@ export const renderSiteFooter = (props: ISiteFooterProps): string => {
 		.join('');
 
 	return [
-		`<div class="mcpv-sitefoot__inner">`,
-		`<div class="mcpv-sitefoot__col mcpv-sitefoot__col--brand">`,
-		`<strong>@mcp-vertex</strong>`,
+		`<div class="delendai-sitefoot__inner">`,
+		`<div class="delendai-sitefoot__col delendai-sitefoot__col--brand">`,
+		`<strong>@delendai</strong>`,
 		`<p data-footer-key="tagline">${escapeHtml(mergedLabels.tagline)}</p>`,
-		`<p class="mcpv-sitefoot__credit" data-footer-key="madeBy">${escapeHtml(mergedLabels.madeBy)}</p>`,
+		`<p class="delendai-sitefoot__credit" data-footer-key="madeBy">${escapeHtml(mergedLabels.madeBy)}</p>`,
 		`</div>`,
-		`<nav class="mcpv-sitefoot__col" aria-label="Sections">`,
+		`<nav class="delendai-sitefoot__col" aria-label="Sections">`,
 		`<strong data-footer-key="sections">${escapeHtml(mergedLabels.sections)}</strong>`,
 		sectionLinks,
 		`</nav>`,
-		`<nav class="mcpv-sitefoot__col" aria-label="Resources">`,
+		`<nav class="delendai-sitefoot__col" aria-label="Resources">`,
 		`<strong data-footer-key="resources">${escapeHtml(mergedLabels.resources)}</strong>`,
 		`<a href="${escapeHtml(`${baseHref}/${urls.apiDocs}`)}">API (TypeDoc)</a>`,
-		`<a href="${escapeHtml(urls.repo)}" rel="external">@mcp-vertex · GitHub</a>`,
-		`<a href="${escapeHtml(urls.npmPackage)}" rel="external">@mcp-vertex · npm</a>`,
+		`<a href="${escapeHtml(urls.repo)}" rel="external">@delendai · GitHub</a>`,
+		`<a href="${escapeHtml(urls.npmPackage)}" rel="external">@delendai · npm</a>`,
 		`<a data-footer-key="creatorsRepo" href="${escapeHtml(urls.creatorsRepo)}" rel="external">${escapeHtml(mergedLabels.creatorsRepo)}</a>`,
 		`<a data-footer-key="creatorsNpm" href="${escapeHtml(urls.creatorsNpm)}" rel="external">${escapeHtml(mergedLabels.creatorsNpm)}</a>`,
 		`</nav>`,
 		`</div>`,
-		`<div class="mcpv-sitefoot__base">`,
-		`<span>© ${year} mcp-vertex · BSD-3-Clause · <span data-footer-key="built">${escapeHtml(mergedLabels.built)}</span></span>`,
+		`<div class="delendai-sitefoot__base">`,
+		`<span>© ${year} delendai · BSD-3-Clause · <span data-footer-key="built">${escapeHtml(mergedLabels.built)}</span></span>`,
 		`</div>`,
 	].join('');
 };

@@ -8,18 +8,18 @@
 export interface ICorePaths {
 	/**
 	 * Scratch/state root for transient artefacts.
-	 * CLI: `--cacheDir` (default `.cache/mcp-vertex`).
+	 * CLI: `--cacheDir` (default `.cache/delendai`).
 	 */
 	readonly cacheDir: string;
 	/**
 	 * Human-edited document root (proposals, generated guides, etc.).
-	 * CLI: `--docsDir` (default `docs/mcp-vertex`).
+	 * CLI: `--docsDir` (default `docs/delendai`).
 	 */
 	readonly docsDir: string;
 }
 
 /** Default core roots when the CLI is run without overrides. */
 export const DEFAULT_CORE_PATHS: ICorePaths = {
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 };

@@ -42,11 +42,11 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'config get': 'Read one config dot path.',
 	'config doctor': 'Diagnose the config file.',
 	'config set': 'Safely set one config dot path.',
-	init: 'Interactive workspace bootstrap for mcp-vertex (writes config, .vscode/mcp.json, agent .md, host-instructions).',
+	init: 'Interactive workspace bootstrap for delendai (writes config, .vscode/mcp.json, agent .md, host-instructions).',
 	'init:default':
 		'Non-interactive bootstrap with operator defaults (swarm + overwrite + skills + agents + scaffold).',
 	'init:global':
-		'Install the shared mcp-vertex MCP server into user-level host configurations.',
+		'Install the shared delendai MCP server into user-level host configurations.',
 	search: 'Search workspace text files.',
 	'docs list': 'List project documentation.',
 	'docs read': 'Read one project documentation file.',
@@ -107,7 +107,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'fs write':
 		'Write a workspace file (atomic by default, never outside the root).',
 	knowledge: 'List knowledge entries, or print one by id.',
-	adopt: 'Assess or scaffold mcp-vertex adoption for the current project.',
+	adopt: 'Assess or scaffold delendai adoption for the current project.',
 	'project analyze':
 		'Inspect the project and recommend an MCP server plan (read-only).',
 	'project plan':
@@ -180,7 +180,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'conventions apply':
 		'Guarded apply: reports outstanding violations (no blind rename).',
 	doctor: 'Sectioned health report (env, config, plugins, tools) + exit code.',
-	completion: 'Print a shell-completion script (bash|zsh|fish) for mcpv.',
+	completion: 'Print a shell-completion script (bash|zsh|fish) for delendai.',
 	'usage-tracking report':
 		'Report recorded tool usage/cost grouped by provider, plugin, agent or extension.',
 	'usage-tracking clear':
@@ -196,7 +196,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'Workspace root (default: current directory)',
 		flagRemote: 'Use stdio transport (tcp:// is reserved for v2)',
 		flagPlugins:
-			'Extra plugins to load into the MCP server (any entry under `plugins.<name>` in `mcp-vertex.config.json` may also declare `path` to load a local plugin)',
+			'Extra plugins to load into the MCP server (any entry under `plugins.<name>` in `delendai.config.json` may also declare `path` to load a local plugin)',
 		flagPreset: 'Core plugin preset passed to the MCP server',
 		flagConfig: 'Config file passed to the MCP server',
 		flagAgentWorktree:
@@ -213,7 +213,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'Raiz del workspace (por defecto: directorio actual)',
 		flagRemote: 'Usa transporte stdio (tcp:// queda reservado para v2)',
 		flagPlugins:
-			'Plugins extra que cargar en el servidor MCP (tambien cualquier entrada bajo `plugins.<name>` en `mcp-vertex.config.json` puede declarar `path` para cargar un plugin local)',
+			'Plugins extra que cargar en el servidor MCP (tambien cualquier entrada bajo `plugins.<name>` en `delendai.config.json` puede declarar `path` para cargar un plugin local)',
 		flagPreset: 'Preset de plugins del core para el servidor MCP',
 		flagConfig: 'Archivo de configuracion para el servidor MCP',
 		flagAgentWorktree:
@@ -227,11 +227,11 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 			overview: 'Muestra el mapa del servidor cargado.',
 			'plugin list': 'Lista los plugins cargados.',
 			'config doctor': 'Diagnostica el archivo de configuracion.',
-			init: 'Bootstrap interactivo del workspace para mcp-vertex (escribe config, .vscode/mcp.json, agent .md, host-instructions).',
+			init: 'Bootstrap interactivo del workspace para delendai (escribe config, .vscode/mcp.json, agent .md, host-instructions).',
 			'init:default':
 				'Bootstrap no interactivo con los defaults del operador (swarm + overwrite + skills + agents + scaffold).',
 			'init:global':
-				'Instala el servidor MCP compartido de mcp-vertex en las configuraciones globales de los hosts del usuario.',
+				'Instala el servidor MCP compartido de delendai en las configuraciones globales de los hosts del usuario.',
 			search: 'Busca en archivos de texto del workspace.',
 			scaffold: 'Genera scaffolds a traves de la herramienta del core.',
 		},
@@ -243,7 +243,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'جذر مساحة العمل (الافتراضي: الدليل الحالي)',
 		flagRemote: 'استخدم نقل stdio (tcp:// محجوز للإصدار v2)',
 		flagPlugins:
-			'إضافات إضافية لتحميلها في خادم MCP (يمكن لأي إدخال تحت `plugins.<name>` في `mcp-vertex.config.json` تعريف `path` لتحميل إضافة محلية)',
+			'إضافات إضافية لتحميلها في خادم MCP (يمكن لأي إدخال تحت `plugins.<name>` في `delendai.config.json` تعريف `path` لتحميل إضافة محلية)',
 		flagPreset: 'إعداد core المسبق المرسل إلى خادم MCP',
 		flagConfig: 'ملف الإعدادات المرسل إلى خادم MCP',
 		flagAgentWorktree:
@@ -260,7 +260,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'Workspace-Root (Standard: aktuelles Verzeichnis)',
 		flagRemote: 'Stdio-Transport verwenden (tcp:// ist fuer v2 reserviert)',
 		flagPlugins:
-			'Zusaetzliche Plugins fuer den MCP-Server laden (jeder Eintrag unter `plugins.<name>` in `mcp-vertex.config.json` kann `path` setzen, um ein lokales Plugin zu laden)',
+			'Zusaetzliche Plugins fuer den MCP-Server laden (jeder Eintrag unter `plugins.<name>` in `delendai.config.json` kann `path` setzen, um ein lokales Plugin zu laden)',
 		flagPreset: 'Core-Plugin-Preset fuer den MCP-Server',
 		flagConfig: 'Konfigurationsdatei fuer den MCP-Server',
 		flagAgentWorktree:
@@ -277,7 +277,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'Racine du workspace (defaut : repertoire courant)',
 		flagRemote: 'Utilise le transport stdio (tcp:// est reserve a v2)',
 		flagPlugins:
-			'Plugins supplementaires a charger dans le serveur MCP (toute entree sous `plugins.<name>` dans `mcp-vertex.config.json` peut aussi definir `path` pour charger un plugin local)',
+			'Plugins supplementaires a charger dans le serveur MCP (toute entree sous `plugins.<name>` dans `delendai.config.json` peut aussi definir `path` pour charger un plugin local)',
 		flagPreset: 'Preset core envoye au serveur MCP',
 		flagConfig: 'Fichier de configuration envoye au serveur MCP',
 		flagAgentWorktree:
@@ -294,7 +294,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'वर्कस्पेस रूट (डिफॉल्ट: वर्तमान डायरेक्टरी)',
 		flagRemote: 'stdio transport उपयोग करें (tcp:// v2 के लिए आरक्षित है)',
 		flagPlugins:
-			'MCP सर्वर में लोड करने के लिए अतिरिक्त प्लगइन (`mcp-vertex.config.json` में `plugins.<name>` के तहत कोई भी प्रविष्टि स्थानीय प्लगइन लोड करने के लिए `path` घोषित कर सकती है)',
+			'MCP सर्वर में लोड करने के लिए अतिरिक्त प्लगइन (`delendai.config.json` में `plugins.<name>` के तहत कोई भी प्रविष्टि स्थानीय प्लगइन लोड करने के लिए `path` घोषित कर सकती है)',
 		flagPreset: 'MCP सर्वर को दिया जाने वाला core plugin preset',
 		flagConfig: 'MCP सर्वर को दिया जाने वाला config file',
 		flagAgentWorktree:
@@ -311,7 +311,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'Root del workspace (default: directory corrente)',
 		flagRemote: 'Usa il trasporto stdio (tcp:// e riservato a v2)',
 		flagPlugins:
-			'Plugin extra da caricare nel server MCP (qualsiasi voce sotto `plugins.<name>` in `mcp-vertex.config.json` puo anche dichiarare `path` per caricare un plugin locale)',
+			'Plugin extra da caricare nel server MCP (qualsiasi voce sotto `plugins.<name>` in `delendai.config.json` puo anche dichiarare `path` per caricare un plugin locale)',
 		flagPreset: 'Preset core passato al server MCP',
 		flagConfig: 'File di configurazione passato al server MCP',
 		flagAgentWorktree:
@@ -328,7 +328,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'ワークスペースルート (既定: 現在のディレクトリ)',
 		flagRemote: 'stdio トランスポートを使う (tcp:// は v2 予定)',
 		flagPlugins:
-			'MCP サーバーに追加で読み込むプラグイン (`mcp-vertex.config.json` の `plugins.<name>` 配下のエントリは `path` を指定してローカルプラグインを読み込めます)',
+			'MCP サーバーに追加で読み込むプラグイン (`delendai.config.json` の `plugins.<name>` 配下のエントリは `path` を指定してローカルプラグインを読み込めます)',
 		flagPreset: 'MCP サーバーへ渡す core プリセット',
 		flagConfig: 'MCP サーバーへ渡す設定ファイル',
 		flagAgentWorktree:
@@ -342,7 +342,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 			overview: '読み込まれたサーバーマップを表示します。',
 			'plugin list': '読み込まれたプラグインを一覧します。',
 			'config doctor': '設定ファイルを診断します。',
-			init: '最小の mcp-vertex.config.json を作成します。',
+			init: '最小の delendai.config.json を作成します。',
 			search: 'ワークスペースのテキストファイルを検索します。',
 			scaffold: 'core ツール経由で scaffold を生成します。',
 		},
@@ -354,7 +354,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'Raiz do workspace (padrao: diretorio atual)',
 		flagRemote: 'Usa transporte stdio (tcp:// fica reservado para v2)',
 		flagPlugins:
-			'Plugins extra para carregar no servidor MCP (qualquer entrada em `plugins.<name>` no `mcp-vertex.config.json` tambem pode declarar `path` para carregar um plugin local)',
+			'Plugins extra para carregar no servidor MCP (qualquer entrada em `plugins.<name>` no `delendai.config.json` tambem pode declarar `path` para carregar um plugin local)',
 		flagPreset: 'Preset core enviado ao servidor MCP',
 		flagConfig: 'Arquivo de configuracao enviado ao servidor MCP',
 		flagAgentWorktree:
@@ -371,7 +371,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'ราก workspace (ค่าเริ่มต้น: ไดเรกทอรีปัจจุบัน)',
 		flagRemote: 'ใช้ stdio transport (tcp:// สงวนไว้สำหรับ v2)',
 		flagPlugins:
-			'ปลั๊กอินเพิ่มเติมที่จะโหลดเข้า MCP server (รายการใดๆ ภายใต้ `plugins.<name>` ใน `mcp-vertex.config.json` สามารถประกาศ `path` เพื่อโหลดปลั๊กอินในเครื่องได้)',
+			'ปลั๊กอินเพิ่มเติมที่จะโหลดเข้า MCP server (รายการใดๆ ภายใต้ `plugins.<name>` ใน `delendai.config.json` สามารถประกาศ `path` เพื่อโหลดปลั๊กอินในเครื่องได้)',
 		flagPreset: 'core plugin preset ที่ส่งให้ MCP server',
 		flagConfig: 'ไฟล์ config ที่ส่งให้ MCP server',
 		flagAgentWorktree:
@@ -388,7 +388,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: 'Goc workspace (mac dinh: thu muc hien tai)',
 		flagRemote: 'Dung stdio transport (tcp:// danh cho v2)',
 		flagPlugins:
-			'Plugin bo sung de nap vao MCP server (bat ky muc nao duoi `plugins.<name>` trong `mcp-vertex.config.json` cung co the khai bao `path` de nap plugin cuc bo)',
+			'Plugin bo sung de nap vao MCP server (bat ky muc nao duoi `plugins.<name>` trong `delendai.config.json` cung co the khai bao `path` de nap plugin cuc bo)',
 		flagPreset: 'Core plugin preset truyen vao MCP server',
 		flagConfig: 'File cau hinh truyen vao MCP server',
 		flagAgentWorktree:
@@ -405,7 +405,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagWorkspace: '工作区根目录 (默认: 当前目录)',
 		flagRemote: '使用 stdio 传输 (tcp:// 保留给 v2)',
 		flagPlugins:
-			'加载到 MCP 服务器的额外插件 (`mcp-vertex.config.json` 中 `plugins.<name>` 下的任何条目也可以声明 `path` 以加载本地插件)',
+			'加载到 MCP 服务器的额外插件 (`delendai.config.json` 中 `plugins.<name>` 下的任何条目也可以声明 `path` 以加载本地插件)',
 		flagPreset: '传给 MCP 服务器的 core 插件预设',
 		flagConfig: '传给 MCP 服务器的配置文件',
 		flagAgentWorktree: '启用按代理的 git worktree (主机级；默认关闭)',

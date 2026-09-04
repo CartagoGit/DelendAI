@@ -1,21 +1,21 @@
 /**
  * `tools/scripts/dev/api/setup-status.ts` — server-side workspace
  * detection. Reports whether the current workspace looks like a
- * project that *uses* mcp-vertex (so the dev preview can render the
+ * project that *uses* delendai (so the dev preview can render the
  * full dashboard) or one that *doesn't* (so it can show the setup
  * wizard).
  *
  * The detection ladder (most-specific → least-specific):
- *   1. `.vscode/mcp.json` declares the `mcp-vertex` stdio server.
- *   2. `.vscode/settings.json` configures `mcp-vertex.server.command`.
- *   3. `mcp-vertex.config.json` is present at the workspace root.
+ *   1. `.vscode/mcp.json` declares the `delendai` stdio server.
+ *   2. `.vscode/settings.json` configures `delendai.server.command`.
+ *   3. `delendai.config.json` is present at the workspace root.
  *
  * Strict semantics: a workspace is **`configured`** only when the two
- * `.vscode/*` files BOTH declare the mcp-vertex server. Anything
+ * `.vscode/*` files BOTH declare the delendai server. Anything
  * less is `partial` — and the wizard should walk you through the
  * missing pieces. We do NOT count `.proposals/` as a signal because
  * that directory is workflow-agnostic (any repo can use a
- * `pNNN-*.md` convention without mcp-vertex).
+ * `pNNN-*.md` convention without delendai).
  *
  * We do NOT spawn the MCP server here — that's `real-data.ts`'s job
  * and it is expensive (several seconds cold). Setup status is a cheap
@@ -27,7 +27,7 @@ import { join } from 'node:path';
 export type WorkspaceKind = 'configured' | 'partial' | 'unconfigured';
 
 export interface ISetupSignal {
-	readonly id: 'mcp-json' | 'settings-server' | 'mcp-vertex-config';
+	readonly id: 'mcp-json' | 'settings-server' | 'delendai-config';
 	readonly present: boolean;
 	readonly path: string;
 	readonly detail?: string;
@@ -73,10 +73,10 @@ const hasJsoncKey = (path: string, dotted: string): boolean => {
 	if (parsed === null || typeof parsed !== 'object') return false;
 	const root = parsed as Record<string, unknown>;
 	// VS Code's settings.json treats dotted keys as **flat** entries
-	// (e.g. `"mcp-vertex.server": { ... }` is a single top-level
-	// key, not a nested `{ mcp-vertex: { server: ... } }` object).
+	// (e.g. `"delendai.server": { ... }` is a single top-level
+	// key, not a nested `{ delendai: { server: ... } }` object).
 	// mcp.json is the opposite — it uses true nested objects
-	// (e.g. `servers.mcp-vertex`). The lookup therefore tries the
+	// (e.g. `servers.delendai`). The lookup therefore tries the
 	// flat key first (covers settings.json), then walks the dotted
 	// path (covers mcp.json + any other nested JSONC).
 	if (root[dotted] !== undefined) return true;
@@ -105,7 +105,7 @@ const signal = (
 export const detectSetupStatus = (cwd: string): ISetupStatus => {
 	const mcpJsonPath = join(cwd, '.vscode', 'mcp.json');
 	const settingsPath = join(cwd, '.vscode', 'settings.json');
-	const configPath = join(cwd, 'mcp-vertex.config.json');
+	const configPath = join(cwd, 'delendai.config.json');
 
 	const signals: readonly ISetupSignal[] = [
 		signal(
@@ -116,12 +116,12 @@ export const detectSetupStatus = (cwd: string): ISetupStatus => {
 		signal(
 			'settings-server',
 			settingsPath,
-			'mcp-vertex.server.command set in .vscode/settings.json',
+			'delendai.server.command set in .vscode/settings.json',
 		),
 		signal(
-			'mcp-vertex-config',
+			'delendai-config',
 			configPath,
-			'mcp-vertex.config.json declares the plugin surface',
+			'delendai.config.json declares the plugin surface',
 		),
 	];
 
@@ -129,9 +129,9 @@ export const detectSetupStatus = (cwd: string): ISetupStatus => {
 	// file must actually DECLARE the relevant section. A workspace can
 	// have an empty `mcp.json`; that's not "configured".
 	const mcpDeclares =
-		hasJsoncKey(mcpJsonPath, 'servers.mcp-vertex') ||
-		hasJsoncKey(mcpJsonPath, 'servers."mcp-vertex"');
-	const settingsDeclares = hasJsoncKey(settingsPath, 'mcp-vertex.server');
+		hasJsoncKey(mcpJsonPath, 'servers.delendai') ||
+		hasJsoncKey(mcpJsonPath, 'servers."delendai"');
+	const settingsDeclares = hasJsoncKey(settingsPath, 'delendai.server');
 	const configDeclares = safeExists(configPath);
 
 	const bothVscodeOk = mcpDeclares && settingsDeclares;
@@ -154,14 +154,14 @@ export const detectSetupStatus = (cwd: string): ISetupStatus => {
 	const missing: string[] = [];
 	if (!mcpDeclares) missing.push('.vscode/mcp.json');
 	if (!settingsDeclares)
-		missing.push('.vscode/settings.json (mcp-vertex.server)');
+		missing.push('.vscode/settings.json (delendai.server)');
 
 	const suggestion =
 		kind === 'configured'
 			? 'Workspace looks ready. The dev preview will spawn the MCP server on the first refresh.'
 			: kind === 'partial'
 				? `Partially wired: missing ${missing.join(' / ')}. Click Install to drop the missing piece (idempotent — existing content is preserved).`
-				: "This workspace doesn't use mcp-vertex yet. Click Install to drop a minimal .vscode/mcp.json + .vscode/settings.json (and a starter mcp-vertex.config.json if you want a preset plugin surface).";
+				: "This workspace doesn't use delendai yet. Click Install to drop a minimal .vscode/mcp.json + .vscode/settings.json (and a starter delendai.config.json if you want a preset plugin surface).";
 
 	return { kind, signals, nextStep, suggestion };
 };

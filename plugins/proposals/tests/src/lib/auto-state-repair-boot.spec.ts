@@ -86,7 +86,7 @@ describe('a00069 S10 auto state_repair on boot', () => {
 	});
 
 	const opts = () => ({
-		namespacePrefix: 'mcp-vertex_proposals',
+		namespacePrefix: 'delendai_proposals',
 		lockPathAbs: lockPath,
 		queuePathAbs: queuePath,
 		closedTasksPathAbs: closedPath,

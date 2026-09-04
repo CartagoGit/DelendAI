@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 
-const callLogPath = process.env.MCP_VERTEX_BENCH_CALL_LOG;
+const callLogPath = process.env.DELENDAI_BENCH_CALL_LOG;
 
 const appendCall = (payload) => {
 	if (typeof callLogPath !== 'string' || callLogPath.length === 0) return;
@@ -40,7 +40,7 @@ const handleMessage = (message) => {
 		ok(id, {
 			tools: [
 				{
-					name: 'mcp-vertex_overview',
+					name: 'delendai_overview',
 					description: 'Benchmark overview tool',
 					inputSchema: {
 						type: 'object',
@@ -55,14 +55,14 @@ const handleMessage = (message) => {
 	}
 	if (method === 'tools/call') {
 		appendCall({ name: params?.name ?? 'unknown' });
-		if (params?.name === 'mcp-vertex_overview') {
+		if (params?.name === 'delendai_overview') {
 			ok(
 				id,
 				toolResult({
-					server: { name: 'mcp-vertex', version: '0.1.0' },
-					namespacePrefix: 'mcp-vertex',
+					server: { name: 'delendai', version: '0.1.0' },
+					namespacePrefix: 'delendai',
 					plugins: ['core'],
-					tools: ['mcp-vertex_overview'],
+					tools: ['delendai_overview'],
 					knowledge: [],
 					recommendedNextAction: 'Benchmark stub',
 				}),

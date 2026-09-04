@@ -20,22 +20,22 @@ import type { IWebviewPanel } from '@delendai/ui-extension/public';
 const fakeClient = (): McpStdioClient =>
 	McpStdioClient.fromTransport({
 		async callTool(input) {
-			if (input.name === 'mcp-vertex_overview') {
+			if (input.name === 'delendai_overview') {
 				return {
 					structuredContent: {
-						namespacePrefix: 'mcp-vertex',
-						server: { name: 'mcp-vertex', version: '0.1.0' },
+						namespacePrefix: 'delendai',
+						server: { name: 'delendai', version: '0.1.0' },
 						plugins: ['core'],
-						tools: ['mcp-vertex_overview'],
+						tools: ['delendai_overview'],
 						knowledge: [],
 						recommendedNextAction: 'OK',
 					},
 				};
 			}
-			if (input.name === 'mcp-vertex_metrics') {
+			if (input.name === 'delendai_metrics') {
 				return { structuredContent: { tools: {}, totals: {} } };
 			}
-			if (input.name === 'mcp-vertex_health') {
+			if (input.name === 'delendai_health') {
 				return {
 					structuredContent: { healthy: true, stale: [] },
 				};

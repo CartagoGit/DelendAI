@@ -28,11 +28,11 @@ describe('HealthService', async () => {
 		expect(snap.staleCount).toBe(0);
 		// 3 upstream tool calls (state_health, stale_list, agent_names).
 		const names = calls.map((c) => c.tool);
-		expect(names).toContain('mcp-vertex_proposals_state_health');
-		expect(names).toContain('mcp-vertex_proposals_proposal_stale_list');
-		expect(names).toContain('mcp-vertex_proposals_agent_names');
+		expect(names).toContain('delendai_proposals_state_health');
+		expect(names).toContain('delendai_proposals_proposal_stale_list');
+		expect(names).toContain('delendai_proposals_agent_names');
 		expect(
-			calls.find((c) => c.tool === 'mcp-vertex_proposals_agent_names')
+			calls.find((c) => c.tool === 'delendai_proposals_agent_names')
 				?.args,
 		).toEqual({ action: 'list' });
 	});
@@ -55,7 +55,7 @@ describe('HealthService', async () => {
 		const { service, calls } = makeService(healthyFixture);
 		await service.snapshot({ includeStaleList: false });
 		const names = calls.map((c) => c.tool);
-		expect(names).not.toContain('mcp-vertex_proposals_proposal_stale_list');
+		expect(names).not.toContain('delendai_proposals_proposal_stale_list');
 	});
 
 	it('degrades gracefully when every tool is missing', async () => {

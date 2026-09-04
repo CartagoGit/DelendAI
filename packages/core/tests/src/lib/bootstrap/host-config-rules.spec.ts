@@ -31,7 +31,7 @@ describe('matchHostConfig', async () => {
 		const result = await matchHostConfig(
 			reader({
 				'src/lib/shared/host-config.ts': `
-export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => ({
+export const buildHostConfig = (workspaceRoot: string): IDelendaiHostConfig => ({
 	extraTools: [
 		buildScaffoldToolRegistration({...}),
 	],
@@ -45,7 +45,7 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 		const result = await matchHostConfig(
 			reader({
 				'src/lib/shared/host-config.ts': `
-export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => ({
+export const buildHostConfig = (workspaceRoot: string): IDelendaiHostConfig => ({
 	extraTools: [
 		buildScaffoldToolRegistration({...}),
 		myCustomTool(),
@@ -56,7 +56,7 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 		);
 		expect(result).toEqual(['custom-extra-tools']);
 	});
-	it('reads the mcp-vertex monorepo layout first', async () => {
+	it('reads the delendai monorepo layout first', async () => {
 		// Both layouts are present; the monorepo one wins.
 		const result = await matchHostConfig(
 			reader({

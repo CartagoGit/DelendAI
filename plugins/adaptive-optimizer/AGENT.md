@@ -1,6 +1,6 @@
 # AGENT.md — plugin `plugins/adaptive-optimizer`
 
-> Below the `<!-- mcp-vertex:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.
@@ -32,7 +32,7 @@
 
 ## Writes
 
-- <host workspace>/.mcp-vertex/cache/adaptive-optimizer/
+- <host workspace>/.delendai/cache/adaptive-optimizer/
 
 ## Entry points
 
@@ -49,15 +49,15 @@
 ## Do not
 
 - Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
-- Do not hand-edit content between `<!-- mcp-vertex:begin -->`/`<!-- mcp-vertex:end -->` markers; regenerate via the owning `gen:*` script instead.
+- Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
 - Do not import `@delendai/core/lib/...`; use `@delendai/core/public`.
 - Do not run user-facing shell or destructive tools without `dryRunSupported: true`.
 - Do not surface absolute host paths; use `workspaceRoot`-relative paths only.
 
 ## Token hotspots
 
-- `mcp-vertex_adaptive-optimizer_adaptive_facade` — 4,771 B total, 3,666 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
-- `mcp-vertex_adaptive-optimizer_optimize_run` — 2,302 B total, 911 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `delendai_adaptive-optimizer_adaptive_facade` — 4,771 B total, 3,666 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_adaptive-optimizer_optimize_run` — 2,302 B total, 911 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
-<!-- mcp-vertex:end agent-md -->
+<!-- delendai:end agent-md -->
 

@@ -154,14 +154,14 @@ const expandWorkspaces = (
 /**
  * Minimal glob expander for the patterns used by this monorepo
  * (`packages/*`, `plugins/*`, `apps/*`, `extensions/*`,
- * `docs/mcp-vertex/examples/*`, `tools`, `tools/docs-api`). Any
+ * `docs/delendai/examples/*`, `tools`, `tools/docs-api`). Any
  * pattern we don't recognise falls through as a literal directory
  * so the workspace list never silently shrinks.
  *
  * Recognised shapes:
  *   - `<group>/*`             — every immediate child directory of `<group>`.
  *   - `<group>/<group>/*`     — multi-level wildcard (e.g.
- *                                `docs/mcp-vertex/examples/*`).
+ *                                `docs/delendai/examples/*`).
  *   - `<literal>`             — single literal directory.
  */
 const expandGlob = (rootDir: string, pattern: string): readonly string[] => {

@@ -52,7 +52,7 @@ describe('commit_policy_status', () => {
 			]),
 		);
 		const result = await runCommitPolicyStatus({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			options: parsed,
 			identityCtx: { run: runner, envVars: Object.freeze({}) },
 		});
@@ -104,7 +104,7 @@ describe('commit_policy_status', () => {
 	it('surfaces a resolution error when identity cannot resolve', async () => {
 		const parsed = CommitPolicyOptionsSchema.parse({});
 		const result = await runCommitPolicyStatus({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			options: parsed,
 			identityCtx: {
 				run: buildRunner(new Map()),
@@ -125,7 +125,7 @@ describe('commit_policy_status', () => {
 	it('renders the Spanish summary when locale=es', async () => {
 		const parsed = CommitPolicyOptionsSchema.parse({});
 		const result = await runCommitPolicyStatus({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			options: parsed,
 			identityCtx: {
 				run: buildRunner(new Map()),

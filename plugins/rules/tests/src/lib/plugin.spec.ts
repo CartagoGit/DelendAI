@@ -16,12 +16,12 @@ const makeCtx = (
 	options: Record<string, unknown> = {},
 ): IMcpPluginContext => ({
 	workspace: { root, resolve: (rel: string) => join(root, rel) },
-	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	corePaths: { cacheDir: '.cache/delendai', docsDir: 'docs/delendai' },
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: '.cache/mcp-vertex/rules',
-	pluginDocsDir: 'docs/mcp-vertex/rules',
+	pluginCacheDir: '.cache/delendai/rules',
+	pluginDocsDir: 'docs/delendai/rules',
 	namespacePrefix: 'rules',
 	options,
 	args: {},
@@ -70,16 +70,16 @@ describe('@delendai/rules plugin', async () => {
 	it('materialises default presets + a manifest into the cache on register', async () => {
 		await plugin.register(await makeCtx(root));
 		expect(
-			existsSync(join(root, '.cache/mcp-vertex/rules/rules-map.json')),
+			existsSync(join(root, '.cache/delendai/rules/rules-map.json')),
 		).toBe(true);
 		expect(
 			existsSync(
-				join(root, '.cache/mcp-vertex/rules/angular.eslint.config.mjs'),
+				join(root, '.cache/delendai/rules/angular.eslint.config.mjs'),
 			),
 		).toBe(true);
 		expect(
 			existsSync(
-				join(root, '.cache/mcp-vertex/rules/vanilla-ts.tsconfig.json'),
+				join(root, '.cache/delendai/rules/vanilla-ts.tsconfig.json'),
 			),
 		).toBe(true);
 	});

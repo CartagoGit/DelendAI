@@ -24,7 +24,7 @@ const dict: LangDict = {
 		troubleshooting: 'Troubleshooting',
 	},
 	hero: {
-		title: { a: 'The agnostic ', b: 'MCP Vertex', c: '' },
+		title: { a: 'The agnostic ', b: 'DelendAI', c: '' },
 		subheader: 'An MCP server core + plugin loader for any project.',
 		tagline:
 			'A project-agnostic Model Context Protocol server core. The core knows nothing about your domain — capabilities ship as plugins you load on demand, all measured for low token cost.',
@@ -38,7 +38,7 @@ const dict: LangDict = {
 	},
 	concept: {
 		title: 'One small core, many plugins',
-		body: 'mcp-vertex is the hermetic core: deterministic tool registration, injected workspace paths, a CLI plugin loader and a token-measured tool surface. Everything domain-specific is a plugin — load only what you need, under any host or model.',
+		body: 'delendai is the hermetic core: deterministic tool registration, injected workspace paths, a CLI plugin loader and a token-measured tool surface. Everything domain-specific is a plugin — load only what you need, under any host or model.',
 		f1: {
 			t: 'Project-agnostic',
 			b: 'No domain code in the core. The same plugin behaves identically under any host or model.',
@@ -81,7 +81,7 @@ const dict: LangDict = {
 			title: 'Orientation cost · measured live',
 			note: 'Tokens of the result text an agent sees (≈4 bytes/token), measured live over the protocol with proposals+memory. The baseline is an illustrative estimate of orienting by hand — not a measured third-party tool.',
 		},
-		baseline: 'without mcp-vertex (by hand · estimate)',
+		baseline: 'without delendai (by hand · estimate)',
 	},
 	plugins: {
 		title: 'Plugins',
@@ -154,7 +154,7 @@ const dict: LangDict = {
 			description:
 				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
 			requires: 'requires',
-			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+			installSnippet: 'delendai --plugins=proposals,issues',
 		},
 	},
 	toolpage: {
@@ -177,7 +177,7 @@ const dict: LangDict = {
 	},
 	firstFiveMinutes: {
 		title: 'First 5 minutes',
-		lead: 'Three copy-pasteable quickstarts. Pick the one that matches how you run mcp-vertex.',
+		lead: 'Three copy-pasteable quickstarts. Pick the one that matches how you run delendai.',
 		profileTabBunNode: 'Bun / Node',
 		profileTabVscode: 'VS Code / Copilot',
 		profileTabClaude: 'Claude Code',
@@ -186,20 +186,20 @@ const dict: LangDict = {
 			intro: 'No editor integration required: run the host server from a terminal and point any MCP client at its stdio transport.',
 			steps: [
 				'Install: `bun add @delendai/core` (or `npm install @delendai/core`).',
-				'Run: `bunx mcp-vertex --preset=standard` (or `npx mcp-vertex --preset=standard`).',
+				'Run: `bunx delendai --preset=standard` (or `npx delendai --preset=standard`).',
 				'Verify: the process prints the loaded plugin list and waits on stdio — Ctrl+C to stop.',
 				'Point your MCP client config at the binary with `--preset=minimal|standard|swarm|full` (see Install for the full flag list).',
-				'Call `mcp-vertex_overview { compact: true }` first — it tells you what to do next.',
+				'Call `delendai_overview { compact: true }` first — it tells you what to do next.',
 			],
 		},
 		vscode: {
 			title: 'VS Code / GitHub Copilot',
-			intro: 'The one-command installer detects VS Code and merges mcp-vertex into your MCP server list without touching existing servers.',
+			intro: 'The one-command installer detects VS Code and merges delendai into your MCP server list without touching existing servers.',
 			steps: [
 				'Run the one-command installer from the Install page (auto-detects your IDE).',
 				'Reload the window (`Developer: Reload Window`) so Copilot picks up the new server.',
-				'Open the Copilot chat panel and select the `mcp-vertex` agent from the agent picker.',
-				'Ask it to call `mcp-vertex_overview` — it should report the loaded preset and a recommended next action.',
+				'Open the Copilot chat panel and select the `delendai` agent from the agent picker.',
+				'Ask it to call `delendai_overview` — it should report the loaded preset and a recommended next action.',
 				'If the server does not appear, see Troubleshooting → "MCP server not detected".',
 			],
 		},
@@ -209,16 +209,16 @@ const dict: LangDict = {
 			steps: [
 				'Run the one-command installer — it detects Claude Code and writes `.mcp.json`.',
 				'Restart Claude Code (or run `/mcp` to reload servers) so it picks up the new entry.',
-				'In a fresh session, the always-loaded `AGENTS.md` + `CLAUDE.md` already point at `mcp-vertex_overview` as the first call.',
-				'Confirm with `mcp-vertex_overview { compact: true }` — the `recommendedNextAction` field tells you what to do next.',
-				'For multi-agent sessions, read the `mcp-vertex-proposal-swarm-runner` skill before claiming a slice.',
+				'In a fresh session, the always-loaded `AGENTS.md` + `CLAUDE.md` already point at `delendai_overview` as the first call.',
+				'Confirm with `delendai_overview { compact: true }` — the `recommendedNextAction` field tells you what to do next.',
+				'For multi-agent sessions, read the `delendai-proposal-swarm-runner` skill before claiming a slice.',
 			],
 		},
 		nextSteps: 'Where to go next',
 		nextToolsCta: 'Browse every tool',
 		nextTroubleshootingCta: 'Something not working? Troubleshooting',
 		overviewHint:
-			'After the server starts, call mcp-vertex_overview with compact: true; recommendedNextAction tells the agent exactly what to do next.',
+			'After the server starts, call delendai_overview with compact: true; recommendedNextAction tells the agent exactly what to do next.',
 	},
 	troubleshooting: {
 		title: 'Troubleshooting',
@@ -280,7 +280,7 @@ const dict: LangDict = {
 	},
 	setup: {
 		title: 'Cross-project setup',
-		lead: 'Wire mcp-vertex into any repository and get the GitHub issues plugin ready for that repo — the same 7 steps the setup-github command runs.',
+		lead: 'Wire delendai into any repository and get the GitHub issues plugin ready for that repo — the same 7 steps the setup-github command runs.',
 		stepsTitle: 'The 7 steps',
 		docsLinkLabel: 'Read the canonical cross-project setup guide',
 		detectRepoTitle: 'Detect repo',
@@ -294,7 +294,7 @@ const dict: LangDict = {
 			'Use gh when gh auth status succeeds, rest-authed when GITHUB_TOKEN is set, or rest-anon otherwise (capped at 60 requests/hour).',
 		writeConfigTitle: 'Write config',
 		writeConfigBody:
-			'Write plugins.issues.options.repo into mcp-vertex.config.json without touching unrelated plugin settings.',
+			'Write plugins.issues.options.repo into delendai.config.json without touching unrelated plugin settings.',
 		verifyTierTitle: 'Verify tier',
 		verifyTierBody:
 			'Launch the host with the issues plugin loaded so the chosen auth tier is exercised end-to-end.',
@@ -333,7 +333,7 @@ const dict: LangDict = {
 			{ id: 'yarn', note: 'Classic alternative to npm.' },
 			{
 				id: 'bun',
-				note: 'All-in-one runtime + package manager — mcp-vertex itself is built with bun.',
+				note: 'All-in-one runtime + package manager — delendai itself is built with bun.',
 			},
 			{
 				id: 'deno',
@@ -399,7 +399,7 @@ const dict: LangDict = {
 				id: 'setup',
 				label: 'Cross-project setup',
 				summary:
-					'Wire mcp-vertex into any repo and get the issues plugin ready.',
+					'Wire delendai into any repo and get the issues plugin ready.',
 				href: 'setup',
 				icon: '/logos/github.png',
 			},
@@ -408,7 +408,7 @@ const dict: LangDict = {
 	cli: {
 		title: 'CLI guide',
 		description:
-			'How to drive the mcpv / @delendai/core CLI: global flags, per-plugin command groups, and common workflows.',
+			'How to drive the delendai / @delendai/core CLI: global flags, per-plugin command groups, and common workflows.',
 	},
 	guide: {
 		title: 'Guide',
@@ -424,7 +424,7 @@ const dict: LangDict = {
 			'7. Skills',
 			'8. i18n',
 			'9. Quality gates & multi-language',
-			'10. Extending mcp-vertex',
+			'10. Extending delendai',
 			'11. Token budgets',
 			'12. View transitions',
 			'13. FAQ',

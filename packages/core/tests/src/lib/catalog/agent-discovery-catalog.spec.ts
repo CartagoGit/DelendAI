@@ -11,21 +11,21 @@ import type { IProviderSummary } from '@delendai/core/lib/contracts/interfaces/p
 import { buildAgentCatalogToolRegistration } from '@delendai/core/lib/tools/agent-catalog-tool';
 
 const server = {
-	name: 'mcp-vertex',
+	name: 'delendai',
 	version: '1.2.3',
-	namespacePrefix: 'mcp-vertex',
+	namespacePrefix: 'delendai',
 } as const;
 
 const tools: readonly IToolSummary[] = [
 	{
-		name: 'mcp-vertex_search_search',
+		name: 'delendai_search_search',
 		plugin: 'search',
 		summary: 'Find symbols and files',
 		tags: ['find', 'lookup'],
 	},
 	{
-		name: 'mcp-vertex_agent_catalog',
-		plugin: 'mcp-vertex',
+		name: 'delendai_agent_catalog',
+		plugin: 'delendai',
 		summary: 'Unified catalog entrypoint',
 		tags: ['orientation', 'catalog'],
 	},
@@ -33,23 +33,23 @@ const tools: readonly IToolSummary[] = [
 
 const skills: readonly ISkillSummary[] = [
 	{
-		id: 'mcp-vertex-token-budget-playbook',
+		id: 'delendai-token-budget-playbook',
 		version: '1.0.0',
 		minCoreVersion: '0.1.0',
 		summary: 'Budget every response before it drifts.',
 		appliesTo: ['@delendai/*'],
 		tags: ['metrics', 'compact'],
 		bodyPath:
-			'packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md',
+			'packages/core/skills/delendai-token-budget-playbook/SKILL.md',
 	},
 	{
-		id: 'mcp-vertex-audit-playbook',
+		id: 'delendai-audit-playbook',
 		version: '1.0.0',
 		minCoreVersion: '0.1.0',
 		summary: 'Run exhaustive code audits.',
 		appliesTo: ['@delendai/audit'],
 		tags: ['audit'],
-		bodyPath: 'plugins/audit/skills/mcp-vertex-audit-playbook/SKILL.md',
+		bodyPath: 'plugins/audit/skills/delendai-audit-playbook/SKILL.md',
 	},
 ];
 
@@ -138,7 +138,7 @@ const registerToolHandler = async () => {
 				query?: string;
 		  }) => Promise<unknown>)
 		| undefined;
-	const registration = buildAgentCatalogToolRegistration('mcp-vertex', {
+	const registration = buildAgentCatalogToolRegistration('delendai', {
 		sources,
 		server,
 		now: fixedNow,
@@ -168,12 +168,12 @@ describe('buildCatalog', async () => {
 		);
 
 		expect(snapshot.tools.map((entry) => entry.name)).toEqual([
-			'mcp-vertex_agent_catalog',
-			'mcp-vertex_search_search',
+			'delendai_agent_catalog',
+			'delendai_search_search',
 		]);
 		expect(snapshot.skills.map((entry) => entry.id)).toEqual([
-			'mcp-vertex-audit-playbook',
-			'mcp-vertex-token-budget-playbook',
+			'delendai-audit-playbook',
+			'delendai-token-budget-playbook',
 		]);
 		expect(snapshot.proposals.map((entry) => entry.id)).toEqual([
 			'a00001',
@@ -202,8 +202,8 @@ describe('buildCatalog', async () => {
 			compact.proposals.every((entry) => entry.date === undefined),
 		).toBe(true);
 		expect(compact.tools).toEqual([
-			{ name: 'mcp-vertex_agent_catalog' },
-			{ name: 'mcp-vertex_search_search', plugin: 'search' },
+			{ name: 'delendai_agent_catalog' },
+			{ name: 'delendai_search_search', plugin: 'search' },
 		]);
 		expect(full.proposals.map((entry) => entry.id)).toEqual([
 			'a00001',
@@ -250,10 +250,10 @@ describe('buildCatalog', async () => {
 		);
 
 		expect((toolResult.tools as Array<{ name: string }>)[0]?.name).toBe(
-			'mcp-vertex_agent_catalog',
+			'delendai_agent_catalog',
 		);
 		expect((skillResult.skills as Array<{ id: string }>)[0]?.id).toBe(
-			'mcp-vertex-token-budget-playbook',
+			'delendai-token-budget-playbook',
 		);
 		expect((proposalResult.proposals as Array<{ id: string }>)[0]?.id).toBe(
 			'f00056',
@@ -406,10 +406,10 @@ describe('buildCatalog', async () => {
 		});
 
 		expect(second.tools.map((entry) => entry.name)).toContain(
-			'mcp-vertex_agent_catalog',
+			'delendai_agent_catalog',
 		);
 		expect(second.skills.map((entry) => entry.id)).toContain(
-			'mcp-vertex-audit-playbook',
+			'delendai-audit-playbook',
 		);
 		expect(second.proposals.map((entry) => entry.id)).toContain('a00001');
 	});

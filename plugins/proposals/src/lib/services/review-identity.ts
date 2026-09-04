@@ -45,7 +45,7 @@ export type IApproveIdentityCheckResult =
 
 export const REVIEW_IDENTITY_RELATIVE_PATH = join(
 	'.cache',
-	'mcp-vertex',
+	'delendai',
 	'review-identity.jsonl',
 );
 
@@ -205,7 +205,7 @@ export const checkApproveIdentity = async (input: {
 			reason: 'missing-submit-identity',
 			nextAction:
 				`no review round is open for ${input.proposalId} ${input.sliceId}. The IMPLEMENTER (not you, the reviewer) must open it first: ` +
-				`mcp-vertex_proposal_review { action: "submit", proposalId: "${input.proposalId}", sliceId: "${input.sliceId}", agent: "<implementer>", note: "<what was built>" } ` +
+				`delendai_proposal_review { action: "submit", proposalId: "${input.proposalId}", sliceId: "${input.sliceId}", agent: "<implementer>", note: "<what was built>" } ` +
 				`— or from a terminal: bun tools/scripts/review/proposal-review.script.ts --id=${input.proposalId} --slice=${input.sliceId} --agent=<implementer> --action=submit --note="<what was built>". ` +
 				'Then retry this approve as a different agent.',
 		};

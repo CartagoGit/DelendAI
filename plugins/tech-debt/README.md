@@ -17,7 +17,7 @@ Offline, pure. The scan is a pure function (exported from
 ## Load
 
 ```bash
-mcp-vertex --plugins=tech-debt
+delendai --plugins=tech-debt
 ```
 
 ## License

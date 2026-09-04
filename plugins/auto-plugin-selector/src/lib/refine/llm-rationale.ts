@@ -105,7 +105,7 @@ const formatPrompt = (
 	fits: readonly IPluginFit[],
 ): string => {
 	const lines: string[] = [
-		'You are a plugin-fit assistant for a developer tool (mcp-vertex).',
+		'You are a plugin-fit assistant for a developer tool (delendai).',
 		'Given the project signals + the deterministic plugin-fit ranking below,',
 		'produce a one-paragraph rationale per top-5 plugin: why it fits OR',
 		'why it does not. Be terse, evidence-based, no marketing.',

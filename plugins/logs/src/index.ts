@@ -86,7 +86,7 @@ export default definePlugin({
 		// context (elapsedMs, error message + stack, args). The error
 		// stream is what an audit reads first to know where to look
 		// before opening a single source file — see the
-		// `mcp-vertex-audit-playbook` skill's pre-flight step.
+		// `delendai-audit-playbook` skill's pre-flight step.
 		const appendEvent = async (event: ILogEvent): Promise<void> => {
 			await mainStore.appendEvent(event);
 			if (isErrorOutcome(event.outcome)) {

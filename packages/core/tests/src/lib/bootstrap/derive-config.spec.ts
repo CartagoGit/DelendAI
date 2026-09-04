@@ -74,8 +74,8 @@ describe('deriveConfig (f00117 S1)', () => {
 
 	it('every recommendation carries a one-line rationale and canonical paths', () => {
 		const derived = deriveConfig(analysis({}), { topLevelDirs: [] });
-		expect(derived.config.cacheDir).toBe('.cache/mcp-vertex');
-		expect(derived.config.docsDir).toBe('docs/mcp-vertex');
+		expect(derived.config.cacheDir).toBe('.cache/delendai');
+		expect(derived.config.docsDir).toBe('docs/delendai');
 		expect(derived.rationale.every((line) => line.length > 10)).toBe(true);
 	});
 });

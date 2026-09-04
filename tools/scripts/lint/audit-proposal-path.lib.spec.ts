@@ -29,7 +29,7 @@ describe('audit proposal path guard', () => {
 	it('rejects the legacy audit directory', async () => {
 		const root = await mkdtemp(join(tmpdir(), 'audit-path-guard-'));
 		roots.push(root);
-		await mkdir(join(root, 'docs/mcp-vertex/audits'), { recursive: true });
+		await mkdir(join(root, 'docs/delendai/audits'), { recursive: true });
 
 		await expect(assertNoLegacyAuditDirectory(root)).rejects.toThrow(
 			'legacy audit directory',

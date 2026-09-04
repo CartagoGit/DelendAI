@@ -34,7 +34,7 @@ const autoWorkCommand: ICliCommand = {
 	async run(args, ctx) {
 		const persist = scalarArg(args, 'persist') ?? scalarArg(args, 'mode');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_auto_work', {
+			await request(ctx, 'delendai_proposals_auto_work', {
 				...(persist !== undefined ? { persist } : {}),
 			}),
 		);
@@ -49,7 +49,7 @@ const continueCommand: ICliCommand = {
 		const mode = scalarArg(args, 'mode');
 		const sliceId = scalarArg(args, 'slice') ?? scalarArg(args, 'sliceId');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_continue_proposal', {
+			await request(ctx, 'delendai_proposals_continue_proposal', {
 				...(proposalId !== undefined ? { proposalId } : {}),
 				...(mode !== undefined ? { mode } : {}),
 				...(sliceId !== undefined ? { sliceId } : {}),
@@ -73,7 +73,7 @@ const createCommand: ICliCommand = {
 		const track = scalarArg(args, 'track');
 		const slices = jsonArg(args);
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_create_proposal', {
+			await request(ctx, 'delendai_proposals_create_proposal', {
 				title,
 				...(kind !== undefined ? { kind } : {}),
 				...(goal !== undefined ? { goal } : {}),
@@ -95,7 +95,7 @@ const closeSliceCommand: ICliCommand = {
 			return usage('proposals close-slice <proposalId> <sliceId>');
 		}
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_close_slice', {
+			await request(ctx, 'delendai_proposals_close_slice', {
 				proposalId,
 				sliceId,
 			}),
@@ -116,7 +116,7 @@ const transitionCommand: ICliCommand = {
 			return usage('proposals transition <id> <to> --reason=<why>');
 		}
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_proposal_transition', {
+			await request(ctx, 'delendai_proposals_proposal_transition', {
 				id,
 				to,
 				reason,
@@ -130,7 +130,7 @@ const boardCommand: ICliCommand = {
 	summary: 'Show each actionable proposal with its slices (verbose).',
 	async run(_args, ctx) {
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_proposal_board', {}),
+			await request(ctx, 'delendai_proposals_proposal_board', {}),
 		);
 	},
 };
@@ -141,7 +141,7 @@ const statusCommand: ICliCommand = {
 	async run(args, ctx) {
 		const fields = listArg(args, 'fields');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_compact_status', {
+			await request(ctx, 'delendai_proposals_compact_status', {
 				...(fields !== undefined ? { fields } : {}),
 			}),
 		);
@@ -153,9 +153,7 @@ const healthCommand: ICliCommand = {
 	summary:
 		'Diagnose swarm state (locks, queue, registry) without changing it.',
 	async run(_args, ctx) {
-		return data(
-			await request(ctx, 'mcp-vertex_proposals_state_health', {}),
-		);
+		return data(await request(ctx, 'delendai_proposals_state_health', {}));
 	},
 };
 
@@ -170,7 +168,7 @@ const agentNamesCommand: ICliCommand = {
 		const agent = scalarArg(args, 'agent');
 		const taskId = scalarArg(args, 'task') ?? scalarArg(args, 'taskId');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_agent_names', {
+			await request(ctx, 'delendai_proposals_agent_names', {
 				action,
 				...(agent !== undefined ? { agent } : {}),
 				...(taskId !== undefined ? { task_id: taskId } : {}),
@@ -191,7 +189,7 @@ const lockCommand: ICliCommand = {
 		const taskId = scalarArg(args, 'task') ?? scalarArg(args, 'taskId');
 		const files = listArg(args, 'files');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_agent_lock', {
+			await request(ctx, 'delendai_proposals_agent_lock', {
 				action,
 				...(agent !== undefined ? { agent } : {}),
 				...(taskId !== undefined ? { task_id: taskId } : {}),
@@ -212,7 +210,7 @@ const worktreeCommand: ICliCommand = {
 		const agent = scalarArg(args, 'agent');
 		const baseBranch = scalarArg(args, 'base-branch');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_agent_worktree', {
+			await request(ctx, 'delendai_proposals_agent_worktree', {
 				action,
 				...(agent !== undefined ? { agent } : {}),
 				...(baseBranch !== undefined
@@ -229,7 +227,7 @@ const staleListCommand: ICliCommand = {
 	summary: 'List proposals whose owner emitted agent-dead.',
 	async run(_args, ctx) {
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_proposal_stale_list', {}),
+			await request(ctx, 'delendai_proposals_proposal_stale_list', {}),
 		);
 	},
 };
@@ -239,7 +237,7 @@ const roundContextCommand: ICliCommand = {
 	summary: 'Return the persisted multi-agent round context (+ staleness).',
 	async run(args, ctx) {
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_round_context', {
+			await request(ctx, 'delendai_proposals_round_context', {
 				...(hasFlag(args, 'force') ? { forceRefresh: true } : {}),
 			}),
 		);
@@ -251,11 +249,7 @@ const workflowCommand: ICliCommand = {
 	summary: 'Return the proposal workflow (families, locations, template).',
 	async run(_args, ctx) {
 		return data(
-			await request(
-				ctx,
-				'mcp-vertex_proposals_get_proposal_workflow',
-				{},
-			),
+			await request(ctx, 'delendai_proposals_get_proposal_workflow', {}),
 		);
 	},
 };
@@ -267,7 +261,7 @@ const diagnoseCommand: ICliCommand = {
 		const id = positionalArg(args);
 		if (id === undefined) return usage('proposals diagnose <id>');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_proposal_diagnose', {
+			await request(ctx, 'delendai_proposals_proposal_diagnose', {
 				id,
 			}),
 		);
@@ -280,7 +274,7 @@ const adoptCommand: ICliCommand = {
 	async run(args, ctx) {
 		const dir = scalarArg(args, 'dir');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_proposal_adopt', {
+			await request(ctx, 'delendai_proposals_proposal_adopt', {
 				...(dir !== undefined ? { dir } : {}),
 			}),
 		);
@@ -299,15 +293,11 @@ const forceTransitionCommand: ICliCommand = {
 			return usage('proposals force-transition <id> <to> --reason=<why>');
 		}
 		return data(
-			await request(
-				ctx,
-				'mcp-vertex_proposals_proposal_force_transition',
-				{
-					id,
-					to,
-					reason,
-				},
-			),
+			await request(ctx, 'delendai_proposals_proposal_force_transition', {
+				id,
+				to,
+				reason,
+			}),
 		);
 	},
 };
@@ -320,14 +310,10 @@ const reconcileFolderCommand: ICliCommand = {
 		if (id === undefined)
 			return usage('proposals reconcile-folder <id> [--dry-run]');
 		return data(
-			await request(
-				ctx,
-				'mcp-vertex_proposals_proposal_reconcile_folder',
-				{
-					id,
-					...(hasFlag(args, 'dry-run') ? { dryRun: true } : {}),
-				},
-			),
+			await request(ctx, 'delendai_proposals_proposal_reconcile_folder', {
+				id,
+				...(hasFlag(args, 'dry-run') ? { dryRun: true } : {}),
+			}),
 		);
 	},
 };
@@ -337,7 +323,7 @@ const stateRepairCommand: ICliCommand = {
 	summary: 'Auto-heal stale swarm state (dry-run unless --execute).',
 	async run(args, ctx) {
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_state_repair', {
+			await request(ctx, 'delendai_proposals_state_repair', {
 				mode: hasFlag(args, 'execute') ? 'execute' : 'dry-run',
 			}),
 		);
@@ -362,15 +348,11 @@ const releaseOrphanCommand: ICliCommand = {
 			);
 		}
 		return data(
-			await request(
-				ctx,
-				'mcp-vertex_proposals_agent_lock_release_orphan',
-				{
-					taskId,
-					agent,
-					reason,
-				},
-			),
+			await request(ctx, 'delendai_proposals_agent_lock_release_orphan', {
+				taskId,
+				agent,
+				reason,
+			}),
 		);
 	},
 };
@@ -396,7 +378,7 @@ const reviewCommand: ICliCommand = {
 		}
 		const note = scalarArg(args, 'note');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_proposal_review', {
+			await request(ctx, 'delendai_proposals_proposal_review', {
 				proposalId,
 				sliceId,
 				action,
@@ -412,7 +394,7 @@ const syncCommand: ICliCommand = {
 	summary: 'Regenerate the proposal index from the proposals tree.',
 	async run(_args, ctx) {
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_sync_proposals', {}),
+			await request(ctx, 'delendai_proposals_sync_proposals', {}),
 		);
 	},
 };
@@ -429,7 +411,7 @@ const taskQueueCommand: ICliCommand = {
 		}
 		const params = jsonArg(args);
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_task_queue', {
+			await request(ctx, 'delendai_proposals_task_queue', {
 				action,
 				...(params !== undefined && typeof params === 'object'
 					? { params }
@@ -454,7 +436,7 @@ const delegateCommand: ICliCommand = {
 		const topic = scalarArg(args, 'topic');
 		const agentName = scalarArg(args, 'agent');
 		return data(
-			await request(ctx, 'mcp-vertex_proposals_delegate', {
+			await request(ctx, 'delendai_proposals_delegate', {
 				taskId,
 				slot,
 				files,

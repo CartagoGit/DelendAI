@@ -1,5 +1,5 @@
 /**
- * `SearchService` — client wrapper around the `mcp-vertex_search_search` tool.
+ * `SearchService` — client wrapper around the `delendai_search_search` tool.
  * Adds two higher-level helpers that don't need a server round-trip:
  *
  * - `searchTools(query, tools)` — fuzzy-substring match over the live
@@ -18,7 +18,7 @@ import type {
 	IToolHit,
 } from '../contracts/interfaces/search.interface';
 
-const TOOL_SEARCH = 'mcp-vertex_search_search';
+const TOOL_SEARCH = 'delendai_search_search';
 
 export class SearchService {
 	constructor(private readonly client: McpStdioClient) {}
@@ -45,7 +45,7 @@ export class SearchService {
 			 * Real owning plugin, when the caller already knows it (e.g. from
 			 * `normalizeCompactTools`). Preferred over deriving it from the
 			 * name: `name.split('_', 1)[0]` only ever yields the host segment
-			 * (`mcp-vertex`) because every tool name starts with the host
+			 * (`delendai`) because every tool name starts with the host
 			 * prefix — so the parsed fallback is a last resort, not the truth.
 			 */
 			readonly plugin?: string;

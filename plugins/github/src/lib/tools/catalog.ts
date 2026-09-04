@@ -687,7 +687,7 @@ const _failureEnvelope = (error: unknown, token: string) => ({
 });
 const cacheRoot = (options: IGitHubToolOptions): string =>
 	options.pluginCacheDir === undefined
-		? resolve(options.workspaceRootAbs, '.mcp-vertex-cache', 'github')
+		? resolve(options.workspaceRootAbs, '.delendai-cache', 'github')
 		: resolve(options.workspaceRootAbs, options.pluginCacheDir);
 const writeJsonWithinCache = async (
 	rootAbs: string,

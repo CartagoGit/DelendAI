@@ -229,7 +229,7 @@ const withTempRepo = async (
 			repoDir,
 			git: createWriteGitRunner(repoDir),
 			trackedFile,
-			lockPath: join(repoDir, '.mcp-vertex', 'index-lock.mutex'),
+			lockPath: join(repoDir, '.delendai', 'index-lock.mutex'),
 		});
 	} finally {
 		await rm(repoDir, { recursive: true, force: true });

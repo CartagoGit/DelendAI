@@ -166,7 +166,7 @@ describe('token tax and local KPIs', () => {
 		);
 
 		const regs = buildUsageTrackingToolRegistrations({
-			namespacePrefix: 'mcp-vertex_usage-tracking',
+			namespacePrefix: 'delendai_usage-tracking',
 			invocationsPath,
 			summaryPath,
 			hostLifecyclePath,

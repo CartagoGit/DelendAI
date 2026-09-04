@@ -17,8 +17,8 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mcpv-brand` plus `mcpv-brand__logo`,
- *   `mcpv-brand__text`, and the optional `mcpv-brand--{pill,plain}`
+ * - Class namespace: `delendai-brand` plus `delendai-brand__logo`,
+ *   `delendai-brand__text`, and the optional `delendai-brand--{pill,plain}`
  *   variant modifier. Legacy `.nav__brand` / `.drawer__logo`
  *   selectors are kept in the companion SCSS via `@extend`.
  * - The image is `loading="lazy"` and `decoding="async"` so the
@@ -43,7 +43,7 @@ export interface IBrandMarkProps {
 	/** Accessible name of the logo image; usually empty (`alt=""`)
 	 *  because the wrapping link already carries the brand name. */
 	readonly logoAlt?: string;
-	/** Brand text shown next to the logo (e.g. `@mcp-vertex`). */
+	/** Brand text shown next to the logo (e.g. `@delendai`). */
 	readonly brandText: string;
 	/** Intrinsic width of the logo in pixels. Default `26`. */
 	readonly logoWidth?: number;
@@ -60,13 +60,13 @@ export const renderBrandMark = (props: IBrandMarkProps): string => {
 	const width = props.logoWidth ?? 26;
 	const height = props.logoHeight ?? 26;
 	const alt = props.logoAlt ?? '';
-	const cls = `mcpv-brand mcpv-brand--${variant}`;
+	const cls = `delendai-brand delendai-brand--${variant}`;
 	return (
 		`<a class="${cls}" href="${escapeAttr(props.href)}">` +
-		`<img class="mcpv-brand__logo" src="${escapeAttr(props.logoSrc)}"` +
+		`<img class="delendai-brand__logo" src="${escapeAttr(props.logoSrc)}"` +
 		` width="${width}" height="${height}" alt="${escapeAttr(alt)}"` +
 		` loading="lazy" decoding="async" />` +
-		`<span class="mcpv-brand__text">${escapeAttr(props.brandText)}</span>` +
+		`<span class="delendai-brand__text">${escapeAttr(props.brandText)}</span>` +
 		`</a>`
 	);
 };

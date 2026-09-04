@@ -8,10 +8,10 @@ import {
 } from '../src/lib/frame-extractor.helper';
 
 describe('extractSafeMcpFrames', () => {
-	it('keeps only @mcp-vertex frames and registered internal monorepo paths', () => {
+	it('keeps only @delendai frames and registered internal monorepo paths', () => {
 		resetInternalPathRegistry();
 		registerInternalPath('/home/user/acme');
-		registerInternalPath('/home/user/acme/node_modules/@mcp-vertex');
+		registerInternalPath('/home/user/acme/node_modules/@delendai');
 		const error = new Error('boom');
 		error.stack = [
 			'Error: boom',

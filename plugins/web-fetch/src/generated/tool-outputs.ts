@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpVertexWebFetchWebFetchOutput {
+export interface DelendaiWebFetchWebFetchOutput {
 	ok: boolean;
 	url?: string;
 	status?: number;
@@ -25,5 +25,5 @@ export interface McpVertexWebFetchWebFetchOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface WebFetchToolOutputs {
-	"mcp-vertex_web-fetch_web_fetch": McpVertexWebFetchWebFetchOutput;
+	"delendai_web-fetch_web_fetch": DelendaiWebFetchWebFetchOutput;
 }

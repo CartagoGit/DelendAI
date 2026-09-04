@@ -8,7 +8,7 @@ diff, symbols, references, related tests, docs, conventions and test policy.
 ## Load it
 
 ```bash
-mcp-vertex --plugins=context-for-change
+delendai --plugins=context-for-change
 ```
 
 This registers one tool, `<prefix>_context_for_change`.
@@ -25,7 +25,7 @@ This registers one tool, `<prefix>_context_for_change`.
 Returns a compact object with `sections`, `files`, `dependsOn`, `bytes` and a
 `truncated` marker when the payload had to be reduced to stay within budget.
 
-## Configuration (`mcp-vertex.config.json`)
+## Configuration (`delendai.config.json`)
 
 ```json
 {
@@ -34,7 +34,7 @@ Returns a compact object with `sections`, `files`, `dependsOn`, `bytes` and a
       "options": {
         "maxBytes": 3000,
         "docsRoots": ["docs", "README.md"],
-        "memoryStorePath": ".cache/mcp-vertex/memory/notes.json"
+        "memoryStorePath": ".cache/delendai/memory/notes.json"
       }
     }
   }

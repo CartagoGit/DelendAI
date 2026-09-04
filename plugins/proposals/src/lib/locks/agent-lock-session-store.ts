@@ -107,7 +107,7 @@ export const sessionLogPath = (workspaceRootAbs: string): string => {
 	}
 	return join(
 		workspaceRootAbs,
-		'.cache/mcp-vertex',
+		'.cache/delendai',
 		'agents.lock.session.jsonl',
 	);
 };

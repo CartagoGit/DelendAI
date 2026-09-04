@@ -38,7 +38,7 @@ describe('renderHelp (f00046 S11)', async () => {
 
 	it('renders the full live command surface without throwing', async () => {
 		const out = renderHelp(await registerAllCommands(), 'es');
-		expect(out).toContain('mcp-vertex');
+		expect(out).toContain('delendai');
 		expect(out).toContain('proposals:');
 		expect(out).toContain('Comandos:'); // Spanish locale header
 	});

@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ISafeMcpVertexReport } from '../src/lib/contracts/interfaces/reporter.interface';
+import type { ISafeDelendaiReport } from '../src/lib/contracts/interfaces/reporter.interface';
 import {
 	PRIVACY_VALIDATOR_BLOCKED_CLASSES,
 	validateSafeReport,
 	validateSerializedSafeReport,
 } from '../src/lib/privacy-validator.helper';
 
-const baseReport: ISafeMcpVertexReport = {
+const baseReport: ISafeDelendaiReport = {
 	reporterVersion: '0.1.0',
-	mcpVertexVersion: '0.1.0',
+	delendaiVersion: '0.1.0',
 	packageId: '@delendai/error-reporting',
 	safeToolId:
-		'@delendai/quality.run_quality' as ISafeMcpVertexReport['safeToolId'],
-	toolOwner: 'mcp-vertex',
+		'@delendai/quality.run_quality' as ISafeDelendaiReport['safeToolId'],
+	toolOwner: 'delendai',
 	toolCategory: 'analysis',
 	errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 	failureClass: 'INTERNAL_TIMEOUT',

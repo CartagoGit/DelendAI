@@ -91,7 +91,7 @@ const createDeps = () => {
 
 const openToolbar = async (ctx: ReturnType<typeof createDeps>) => {
 	registerOpenToolbarCommand(ctx.deps);
-	const cmd = ctx.commands.get('mcp-vertex.openToolbar');
+	const cmd = ctx.commands.get('delendai.openToolbar');
 	await cmd?.();
 };
 
@@ -108,10 +108,10 @@ describe('toolbar action allow-list (f00079 S2)', () => {
 
 		await ctx.invoke({
 			command: 'mcpvAction',
-			commandId: 'mcp-vertex.openProposal',
+			commandId: 'delendai.openProposal',
 		});
 
-		expect(ctx.executed).toEqual(['mcp-vertex.openProposal']);
+		expect(ctx.executed).toEqual(['delendai.openProposal']);
 		expect(ctx.errors).toHaveLength(0);
 	});
 
@@ -140,11 +140,11 @@ describe('toolbar action allow-list (f00079 S2)', () => {
 	});
 
 	it('resolveToolbarCommandId prefers commandId, then derives, else undefined', () => {
-		expect(resolveToolbarCommandId('mcp-vertex.openDocs', 'x')).toBe(
-			'mcp-vertex.openDocs',
+		expect(resolveToolbarCommandId('delendai.openDocs', 'x')).toBe(
+			'delendai.openDocs',
 		);
 		expect(resolveToolbarCommandId(undefined, 'open.docs')).toBe(
-			'mcp-vertex.open_docs',
+			'delendai.open_docs',
 		);
 		expect(resolveToolbarCommandId(undefined, undefined)).toBeUndefined();
 		expect(resolveToolbarCommandId('', '')).toBeUndefined();

@@ -61,7 +61,7 @@ export const AGENT_MD_RULES: readonly IAgentMdRule[] = [
 	{
 		id: 'universal-generated-markers',
 		scope: { kind: 'universal' },
-		text: 'Do not hand-edit content between `<!-- mcp-vertex:begin -->`/`<!-- mcp-vertex:end -->` markers; regenerate via the owning `gen:*` script instead.',
+		text: 'Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.',
 		rationale:
 			'Generated-artifact drift checks run repo-wide (`gen:all --check`); a hand-edit inside a marker is reverted by the next regeneration everywhere, not just in one package.',
 	},

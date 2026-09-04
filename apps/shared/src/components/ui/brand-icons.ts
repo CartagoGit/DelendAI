@@ -31,14 +31,14 @@ const GITLAB_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
 
 const REMOTE_PROVIDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="Remote provider">
 	<defs>
-		<linearGradient id="mcpv-remote-grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+		<linearGradient id="delendai-remote-grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
 			<stop offset="0" stop-color="#58a6ff"/>
 			<stop offset="1" stop-color="#a371f7"/>
 		</linearGradient>
 	</defs>
-	<circle cx="12" cy="12" r="10" fill="none" stroke="url(#mcpv-remote-grad)" stroke-width="2"/>
-	<circle cx="12" cy="12" r="3" fill="url(#mcpv-remote-grad)"/>
-	<path d="M2 12a10 10 0 0 1 20 0M22 12a10 10 0 0 1-20 0" stroke="url(#mcpv-remote-grad)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+	<circle cx="12" cy="12" r="10" fill="none" stroke="url(#delendai-remote-grad)" stroke-width="2"/>
+	<circle cx="12" cy="12" r="3" fill="url(#delendai-remote-grad)"/>
+	<path d="M2 12a10 10 0 0 1 20 0M22 12a10 10 0 0 1-20 0" stroke="url(#delendai-remote-grad)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 	<circle cx="12" cy="2" r="1.5" fill="#58a6ff"/>
 	<circle cx="22" cy="12" r="1.5" fill="#a371f7"/>
 	<circle cx="12" cy="22" r="1.5" fill="#58a6ff"/>

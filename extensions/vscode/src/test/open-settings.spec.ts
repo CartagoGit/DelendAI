@@ -15,7 +15,7 @@ import {
 } from '../commands/open-settings';
 import type { ICommandVscodeApi } from '../commands/types';
 
-describe('mcp-vertex.openSettings', async () => {
+describe('delendai.openSettings', async () => {
 	it('opens a settings webview from the injected store', async () => {
 		const commands = new Map<
 			string,
@@ -67,7 +67,7 @@ describe('mcp-vertex.openSettings', async () => {
 		);
 		await commands.get(OPEN_SETTINGS_COMMAND)?.();
 		expect(panels).toHaveLength(1);
-		expect(panels[0]?.webview.html).toContain('mcp-vertex Settings');
+		expect(panels[0]?.webview.html).toContain('delendai Settings');
 		expect(panels[0]?.webview.html).toContain('https://example.com/docs');
 	});
 
@@ -153,7 +153,7 @@ describe('mcp-vertex.openSettings', async () => {
 	});
 });
 
-describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
+describe('delendai.saveSettings (f00062 S3: boundary parse)', () => {
 	const createVscode = (): {
 		vscode: ICommandVscodeApi;
 		commands: Map<string, (...args: readonly unknown[]) => unknown>;
@@ -213,7 +213,7 @@ describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
 		const save = commands.get(SAVE_SETTINGS_COMMAND);
 		expect(save).toBeDefined();
 		await save?.({
-			docsUrl: 'https://mcp-vertex.dev',
+			docsUrl: 'https://delendai.dev',
 			allowLocalhost: 'true',
 			allowPrivateIps: 'false',
 			logLevel: 'info',
@@ -232,7 +232,7 @@ describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
 		const save = commands.get(SAVE_SETTINGS_COMMAND);
 		expect(save).toBeDefined();
 		const valid: IExtensionSettings = {
-			docsUrl: 'https://mcp-vertex.dev',
+			docsUrl: 'https://delendai.dev',
 			allowLocalhost: true,
 			allowPrivateIps: false,
 			logLevel: 'info',
@@ -241,7 +241,7 @@ describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
 			motion: 'system',
 		};
 		await save?.(valid);
-		expect(messages).toContain('mcp-vertex: settings saved.');
+		expect(messages).toContain('delendai: settings saved.');
 		expect(store.writes.length).toBe(1);
 		const written = store.writes[0] as { extension?: IExtensionSettings };
 		expect(written.extension).toEqual(valid);
@@ -253,7 +253,7 @@ describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
 		registerSaveSettingsCommand(vscode, store);
 		const save = commands.get(SAVE_SETTINGS_COMMAND);
 		await save?.({
-			docsUrl: 'https://mcp-vertex.dev',
+			docsUrl: 'https://delendai.dev',
 			allowLocalhost: true,
 			allowPrivateIps: false,
 			logLevel: 'verbose',

@@ -42,7 +42,7 @@ describe('plugin-icons', () => {
 	});
 
 	it('resolves an unknown namespace to a real default icon (never text)', () => {
-		expect(iconIdForPlugin('mcp-vertex')).toBe(DEFAULT_PLUGIN_ICON_ID);
+		expect(iconIdForPlugin('delendai')).toBe(DEFAULT_PLUGIN_ICON_ID);
 		expect(DEFAULT_PLUGIN_ICON_ID.length).toBeGreaterThan(0);
 	});
 

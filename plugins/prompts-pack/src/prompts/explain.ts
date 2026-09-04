@@ -48,7 +48,7 @@ export const buildExplainThisCodePrompt = (
 				`Explain the code in ${target}.`,
 				'',
 				'Read the file or requested slice before commenting on it.',
-				'Ground symbol ownership with `mcp-vertex_refactor_refactor_definition` and fan-in/fan-out with `mcp-vertex_refactor_refactor_references` before you summarize behavior.',
+				'Ground symbol ownership with `delendai_refactor_refactor_definition` and fan-in/fan-out with `delendai_refactor_refactor_references` before you summarize behavior.',
 				'',
 				'Cover these points:',
 				'- What this code is responsible for.',

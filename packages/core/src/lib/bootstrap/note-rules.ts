@@ -73,7 +73,7 @@ export const DEFAULT_NOTE_RULES: readonly INoteRule[] = [
 		notes: ({ analysis }) =>
 			analysis.hasMcpProject
 				? [
-						`An MCP server already exists (${analysis.mcpEvidence.join('; ')}): analyze it and integrate it with mcp-vertex instead of replacing it — register it alongside, reuse its tools, and adopt mcp-vertex conventions incrementally.`,
+						`An MCP server already exists (${analysis.mcpEvidence.join('; ')}): analyze it and integrate it with delendai instead of replacing it — register it alongside, reuse its tools, and adopt delendai conventions incrementally.`,
 					]
 				: [
 						'No MCP server found: create one from this blueprint (scaffold the host project, then each tool/prompt/skill/agent).',

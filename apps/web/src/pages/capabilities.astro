@@ -21,7 +21,7 @@ const t = useTranslations(lang);
 	title={`${t.plugins.title} · ${t.tools.title}`}
 	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
 	crumbs={[{ label: t.nav.capabilities ?? t.plugins.title, href: localePath(lang, 'capabilities') }]}
-	description="A per-plugin breakdown of every tool, prompt, resource and knowledge entry exposed by the mcp-vertex core + plugins."
+	description="A per-plugin breakdown of every tool, prompt, resource and knowledge entry exposed by the delendai core + plugins."
 >
 	<PluginCapabilities lang={lang} heading={t.plugins.title} />
 </PageShell>

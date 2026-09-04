@@ -74,7 +74,7 @@ const createVscode = (clickAction: string | undefined) => {
 const errorWithHint = (line: number) =>
 	Object.assign(new Error('boom'), {
 		logHint: {
-			path: '/tmp/ws/.cache/mcp-vertex/logs/2026-06-22.jsonl',
+			path: '/tmp/ws/.cache/delendai/logs/2026-06-22.jsonl',
 			line,
 			ts: '2026-06-22T10:00:00.000Z',
 		},
@@ -91,7 +91,7 @@ describe('showCommandError — log-link affordance (f00045 S3)', async () => {
 		expect(opened).toEqual([
 			{
 				command: 'vscode.open',
-				path: '/tmp/ws/.cache/mcp-vertex/logs/2026-06-22.jsonl',
+				path: '/tmp/ws/.cache/delendai/logs/2026-06-22.jsonl',
 				fragment: 'L42',
 			},
 		]);

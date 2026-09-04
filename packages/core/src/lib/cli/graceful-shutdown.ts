@@ -91,7 +91,7 @@ export const gracefulShutdown = async (
 	let timedOut = false;
 	const closePromise = server.close().catch((err: unknown) => {
 		process.stderr.write(
-			`[mcp-vertex] gracefulShutdown: server.close() rejected: ${
+			`[delendai] gracefulShutdown: server.close() rejected: ${
 				err instanceof Error ? err.message : String(err)
 			}\n`,
 		);
@@ -107,7 +107,7 @@ export const gracefulShutdown = async (
 
 	if (timedOut) {
 		process.stderr.write(
-			`[mcp-vertex] gracefulShutdown: server.close() did not complete within ${timeoutMs}ms; exiting anyway\n`,
+			`[delendai] gracefulShutdown: server.close() did not complete within ${timeoutMs}ms; exiting anyway\n`,
 		);
 	}
 

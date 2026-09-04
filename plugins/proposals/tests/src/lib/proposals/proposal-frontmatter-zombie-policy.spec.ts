@@ -14,7 +14,7 @@ const write = (content: string): string => {
 };
 
 beforeEach(() => {
-	tmpDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-proposal-zombie-policy-'));
+	tmpDir = mkdtempSync(join(tmpdir(), 'delendai-proposal-zombie-policy-'));
 	tmpFile = join(tmpDir, 'l99-zombie.md');
 });
 

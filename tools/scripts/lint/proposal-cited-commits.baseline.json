@@ -3,7 +3,7 @@
 		{
 			"hash": "1940471",
 			"proposals": [
-				"docs/mcp-vertex/proposals/done/fixes/x00003-fix-host-zombie-on-parent-exit.md"
+				"docs/delendai/proposals/done/fixes/x00003-fix-host-zombie-on-parent-exit.md"
 			],
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
@@ -12,7 +12,7 @@
 		{
 			"hash": "1826609",
 			"proposals": [
-				"docs/mcp-vertex/proposals/done/fixes/x00003-fix-host-zombie-on-parent-exit.md"
+				"docs/delendai/proposals/done/fixes/x00003-fix-host-zombie-on-parent-exit.md"
 			],
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
@@ -21,7 +21,7 @@
 		{
 			"hash": "8199bd1d",
 			"proposals": [
-				"docs/mcp-vertex/proposals/done/fixes/x00153-fix-logs-agent-lock-tail-session-state.md"
+				"docs/delendai/proposals/done/fixes/x00153-fix-logs-agent-lock-tail-session-state.md"
 			],
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
@@ -30,7 +30,7 @@
 		{
 			"hash": "8199bd1d",
 			"proposals": [
-				"docs/mcp-vertex/proposals/done/audits/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md"
+				"docs/delendai/proposals/done/audits/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md"
 			],
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
@@ -39,7 +39,7 @@
 		{
 			"hash": "59325969",
 			"proposals": [
-				"docs/mcp-vertex/proposals/done/audits/a00085-auditoria-exhaustiva-bugs-fixes-y-mantenibilidad.md"
+				"docs/delendai/proposals/done/audits/a00085-auditoria-exhaustiva-bugs-fixes-y-mantenibilidad.md"
 			],
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",

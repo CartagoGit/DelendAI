@@ -9,7 +9,7 @@
 	"excludeInternal": true,
 	"validation": { "notExported": false, "invalidLink": true },
 	"navigationLinks": {
-		"Site": "https://cartagogit.github.io/mcp-vertex/",
+		"Site": "https://cartagogit.github.io/delendai/",
 		"GitHub": "https://github.com/CartagoGit/delendai"
 	}
 }

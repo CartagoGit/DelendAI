@@ -11,7 +11,7 @@
  * import { withIncidentLogging } from '@delendai/core/public';
  *
  * server.registerTool(
- *   'mcp-vertex_audit_plan',
+ *   'delendai_audit_plan',
  *   { description, inputSchema, outputSchema },
  *   withIncidentLogging(
  *     { incidentType: 'audit-failure' },
@@ -160,7 +160,7 @@ export const withIncidentLogging = <TArgs, TResult>(
 			// A sink failure must not propagate to the caller; the
 			// tool error itself is still in `result`.
 			process.stderr.write(
-				`[mcp-vertex] logsSink.record failed: ${
+				`[delendai] logsSink.record failed: ${
 					sinkError instanceof Error
 						? sinkError.message
 						: String(sinkError)
@@ -204,7 +204,7 @@ export const emitIncident = async (
 		await sink.record(event);
 	} catch (sinkError) {
 		process.stderr.write(
-			`[mcp-vertex] emitIncident failed: ${
+			`[delendai] emitIncident failed: ${
 				sinkError instanceof Error
 					? sinkError.message
 					: String(sinkError)

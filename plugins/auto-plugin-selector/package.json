@@ -2,7 +2,7 @@
 	"name": "@delendai/auto-plugin-selector",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Plugin-fit scorer plugin for @delendai/core: recommends the best plugin set for THIS project from its signals (manifest, files, git history, task). Pure deterministic scorer by default; optional LLM rationale via auto-agent-selector. Pairs with the registry index (f00141). Load with `mcp-vertex --plugins=auto-plugin-selector`.",
+	"description": "Plugin-fit scorer plugin for @delendai/core: recommends the best plugin set for THIS project from its signals (manifest, files, git history, task). Pure deterministic scorer by default; optional LLM rationale via auto-agent-selector. Pairs with the registry index (f00141). Load with `delendai --plugins=auto-plugin-selector`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

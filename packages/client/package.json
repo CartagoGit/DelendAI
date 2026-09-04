@@ -2,7 +2,7 @@
 	"name": "@delendai/client",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "IDE-agnostic TypeScript client for talking to an mcp-vertex server over MCP stdio.",
+	"description": "IDE-agnostic TypeScript client for talking to an delendai server over MCP stdio.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -10,7 +10,7 @@
 		"model-context-protocol",
 		"client",
 		"ide",
-		"mcp-vertex"
+		"delendai"
 	],
 	"main": "./dist/index.js",
 	"files": [

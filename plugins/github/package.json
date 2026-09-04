@@ -2,7 +2,7 @@
 	"name": "@delendai/github",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "GitHub read-only provider plugin for @delendai/core: configuration, provider context and hermetic HTTP client for future read tools. Load with `mcp-vertex --plugins=github`.",
+	"description": "GitHub read-only provider plugin for @delendai/core: configuration, provider context and hermetic HTTP client for future read tools. Load with `delendai --plugins=github`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

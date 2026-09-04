@@ -100,7 +100,7 @@ describe('metrics tool — persist snapshots (M29)', async () => {
 		const registry = createMetricsRegistry();
 		registry.record('demo_ping', { ms: 5, bytes: 10, isError: false });
 		const reg = buildMetricsToolRegistration(
-			'mcp-vertex',
+			'delendai',
 			registry,
 			persistDir,
 		);
@@ -154,7 +154,7 @@ describe('metrics tool — persist snapshots (M29)', async () => {
 	it('reset:true returns the pre-reset snapshot but zeroes the registry for the next read', async () => {
 		const registry = createMetricsRegistry();
 		registry.record('demo_ping', { ms: 5, bytes: 10, isError: false });
-		const reg = buildMetricsToolRegistration('mcp-vertex', registry);
+		const reg = buildMetricsToolRegistration('delendai', registry);
 		let handler: (
 			a: unknown,
 		) => Promise<{ structuredContent?: Record<string, unknown> }>;

@@ -33,8 +33,8 @@ const renderLangPicker = (current: string): string => {
 		'header.language',
 		'Language',
 	);
-	return `<label class="mcpv-header__lang-picker">
-		<span class="mcpv-header__lang-flag" aria-hidden="true">${currentFlag}</span>
+	return `<label class="delendai-header__lang-picker">
+		<span class="delendai-header__lang-flag" aria-hidden="true">${currentFlag}</span>
 		<select name="language" data-header-lang aria-label="${langLabel}">
 			${HOST_LANGUAGE_CHOICES.map((code) => {
 				const meta = languages.find((entry) => entry.code === code);
@@ -55,8 +55,8 @@ const renderThemeSwitcher = (current: string): string => {
 		'nord',
 	] as const;
 	const themeTitle = extensionText(EMPTY_LANG_DICT, 'header.theme', 'Theme');
-	return `<label class="mcpv-header__theme-picker" title="${themeTitle}">
-		<span class="mcpv-header__theme-icon" aria-hidden="true">◐</span>
+	return `<label class="delendai-header__theme-picker" title="${themeTitle}">
+		<span class="delendai-header__theme-icon" aria-hidden="true">◐</span>
 		<select name="theme" data-header-theme aria-label="${themeTitle}">
 			${themes
 				.map(
@@ -75,7 +75,7 @@ export function buildHeader(
 	const connection: 'ok' | 'lost' =
 		model.server.version === 'unavailable' ? 'lost' : 'ok';
 	return renderHeaderBar({
-		brandName: 'mcp-vertex',
+		brandName: 'delendai',
 		version: `${escapeHtml(model.server.version)} · ${escapeHtml(model.server.name)}`,
 		direction: rtlLangs.includes(settings.language) ? 'rtl' : 'ltr',
 		connection,

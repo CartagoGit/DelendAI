@@ -12,7 +12,7 @@ spawns a model subprocess or spends money (subprocess invocation lands in S6).
 > `usage-tracking` is not also loaded (CRITICAL I15).
 
 ```bash
-mcp-vertex --plugins=usage-tracking,orchestrator-runner
+delendai --plugins=usage-tracking,orchestrator-runner
 ```
 
 ## Tools (3 of the runner's eventual 10)

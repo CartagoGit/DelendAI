@@ -16,9 +16,9 @@
  *    + the spot-checked tools resolve.
  *  - `--presets=<list>` (f00178, MAN-002): per-preset smoke — for each
  *    preset in the list, create a throwaway project that has a
- *    `mcp-vertex.config.json` activating that preset, `npm install`
+ *    `delendai.config.json` activating that preset, `npm install`
  *    the tarballs into it, boot the installed CLI against the config,
- *    listTools, call `mcp-vertex_overview`, exit cleanly. Presets are
+ *    listTools, call `delendai_overview`, exit cleanly. Presets are
  *    derived from `PRESET_CATALOG` (no hardcoded list).
  */
 import { execFileSync } from 'node:child_process';
@@ -200,26 +200,26 @@ const PLUGIN_IDS = PACKED_PACKAGE_DIRS.filter((dir) =>
  * new plugin no longer forces an edit here to keep the smoke green.
  */
 const SPOT_CHECK_PLUGIN_TOOLS: Record<string, string> = {
-	audit: 'mcp-vertex_audit_audit_plan',
-	deps: 'mcp-vertex_deps_deps_list',
-	docs: 'mcp-vertex_docs_docs_list',
-	git: 'mcp-vertex_git_status',
-	logs: 'mcp-vertex_logs_query',
-	memory: 'mcp-vertex_memory_save',
-	notification: 'mcp-vertex_notification_notify_status',
-	proposals: 'mcp-vertex_proposals_auto_work',
-	quality: 'mcp-vertex_quality_get_quality_scopes',
-	rules: 'mcp-vertex_rules_get_rules',
-	search: 'mcp-vertex_search_search',
-	'status-marker': 'mcp-vertex_status-marker_ping',
-	'test-convention': 'mcp-vertex_test-convention_get_convention',
-	'web-fetch': 'mcp-vertex_web-fetch_web_fetch',
-	conventions: 'mcp-vertex_conventions_conventions_check',
-	'test-policy': 'mcp-vertex_test-policy_get_test_policy',
+	audit: 'delendai_audit_audit_plan',
+	deps: 'delendai_deps_deps_list',
+	docs: 'delendai_docs_docs_list',
+	git: 'delendai_git_status',
+	logs: 'delendai_logs_query',
+	memory: 'delendai_memory_save',
+	notification: 'delendai_notification_notify_status',
+	proposals: 'delendai_proposals_auto_work',
+	quality: 'delendai_quality_get_quality_scopes',
+	rules: 'delendai_rules_get_rules',
+	search: 'delendai_search_search',
+	'status-marker': 'delendai_status-marker_ping',
+	'test-convention': 'delendai_test-convention_get_convention',
+	'web-fetch': 'delendai_web-fetch_web_fetch',
+	conventions: 'delendai_conventions_conventions_check',
+	'test-policy': 'delendai_test-policy_get_test_policy',
 };
 
 const REQUIRED_TOOLS = [
-	'mcp-vertex_overview',
+	'delendai_overview',
 	...PLUGIN_IDS.map((id) => SPOT_CHECK_PLUGIN_TOOLS[id]).filter(
 		(t): t is string => t !== undefined,
 	),
@@ -291,7 +291,7 @@ interface IRunSmokeOpts {
 
 /**
  * Run one smoke cycle against a throwaway project. Either no
- * `mcp-vertex.config.json` (default package smoke, all packed
+ * `delendai.config.json` (default package smoke, all packed
  * plugins enabled) or an explicit preset-driven config (per-preset
  * smoke). When `configJson` is `null`, the CLI auto-resolves every
  * packed plugin; when present, the CLI uses the explicit config.
@@ -306,7 +306,7 @@ const runSmokeAgainstWorkdir = async (
 	);
 	if (configJson !== null) {
 		writeFileSync(
-			join(workdir, 'mcp-vertex.config.json'),
+			join(workdir, 'delendai.config.json'),
 			JSON.stringify(configJson, null, 2),
 		);
 	}
@@ -339,7 +339,7 @@ const runSmokeAgainstWorkdir = async (
 			}
 		}
 		const overviewRes = await client.callTool({
-			name: 'mcp-vertex_overview',
+			name: 'delendai_overview',
 			arguments: { compact: true },
 		});
 		const overview = JSON.parse(
@@ -391,7 +391,7 @@ const runPackageSmoke = async (
 			],
 		});
 		console.log(
-			`✓ pack smoke: mcpv bin + installed-from-tarball CLI serves ${result.toolCount} tools under node ` +
+			`✓ pack smoke: delendai bin + installed-from-tarball CLI serves ${result.toolCount} tools under node ` +
 				`(${PACKED_PACKAGE_DIRS.length} packed packages incl. client+cli, ` +
 				`all ${PLUGIN_IDS.length} plugins in overview.plugins).`,
 		);
@@ -456,7 +456,7 @@ const main = async (): Promise<void> => {
 	// publish time) BEFORE it can assert entrypoints or pack anything —
 	// packing the raw workspace dir packs a manifest whose `./dist/...`
 	// entrypoint was never written on disk.
-	const stagingRoot = mkdtempSync(join(tmpdir(), 'mcp-vertex-pack-stage-'));
+	const stagingRoot = mkdtempSync(join(tmpdir(), 'delendai-pack-stage-'));
 	try {
 		const stagedDirs = await stagePackedPackages(stagingRoot);
 		assertPackedEntrypointsExist(stagedDirs);

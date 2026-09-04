@@ -4,19 +4,19 @@
  *
  * Why this exists (commit 75f896bc follow-up, 2026-08-01):
  * The original `makeVerifyTmpDir` helper used `process.cwd()` as the root
- * for `<cwd>/.cache/mcp-vertex/verify-tmp/<prefix>-XXXXXX/`. That works
+ * for `<cwd>/.cache/delendai/verify-tmp/<prefix>-XXXXXX/`. That works
  * when the suite runs from the repo root, but when the suite runs from
  * an isolated agent worktree (the swarm pattern: `bun --cwd`
  * + `.worktrees/agent-<id>/`), `process.cwd()` resolves to the
- * worktree, and the spec writes a `.cache/mcp-vertex/` dir **inside**
+ * worktree, and the spec writes a `.cache/delendai/` dir **inside**
  * the worktree. The `check-cache` lint only sees the tracked tree, so
  * the leak is invisible to the gate until someone opens the worktree
  * in their IDE.
  *
  * The fix: walk up from `import.meta.url` until we find the
  * repo-root marker (`AGENTS.md` is the only universal file in every
- * mcp-vertex checkout). The cache root is then
- * `<repoRoot>/.cache/mcp-vertex/verify-tmp/`, regardless of cwd.
+ * delendai checkout). The cache root is then
+ * `<repoRoot>/.cache/delendai/verify-tmp/`, regardless of cwd.
  *
  * Why not `import { cacheRoot } from 'tools/scripts/lib/monorepo-paths'`?
  * That would couple a plugin spec to a tools-scripts module — a
@@ -26,7 +26,7 @@
  *
  * Why not `process.cwd()` + sandbox hint? Because the bug is exactly
  * that `process.cwd()` is the wrong source of truth under isolation.
- * The mcp-vertex.monorepo has exactly one canonical cache root, and
+ * The delendai.monorepo has exactly one canonical cache root, and
  * the import-meta walk is the smallest reliable way to find it from
  * anywhere in the source tree (worktree, hoisted checkout, etc.).
  */
@@ -37,7 +37,7 @@ import { fileURLToPath } from 'node:url';
 
 /**
  * Workspace-marker file that exists at the repo root in every
- * mcp-vertex checkout. Picked over `package.json` because the root
+ * delendai checkout. Picked over `package.json` because the root
  * `package.json` is the workspace root marker for the build system,
  * but a future republished single-package snapshot would still ship
  * `AGENTS.md` while collapsing the workspace root.
@@ -50,7 +50,7 @@ const REPO_MARKER = 'AGENTS.md';
  * `undefined` if the walk reaches the filesystem root without a hit.
  *
  * The walk is bounded by `MAX_WALK_DEPTH` (8) so a corrupted
- * workspace cannot spin forever; mcp-vertex is shallow enough (root
+ * workspace cannot spin forever; delendai is shallow enough (root
  * + 1–2 levels of `packages/` / `plugins/`) that 8 is plenty.
  */
 const findRepoRoot = (startDir: string): string | undefined => {
@@ -70,7 +70,7 @@ const findRepoRoot = (startDir: string): string | undefined => {
  * Matches `DEFAULT_CORE_PATHS.cacheDir` (see
  * `packages/core/src/lib/contracts/interfaces/core-paths.interface.ts`).
  */
-const CACHE_DIR_REL = '.cache/mcp-vertex';
+const CACHE_DIR_REL = '.cache/delendai';
 
 /**
  * Resolve the cache root from `import.meta.url`: walks up to the
@@ -99,7 +99,7 @@ const resolveCacheRoot = (): string => {
 
 /**
  * Returns the canonical ephemeral test scratch root for the three
- * lock specs: `<repoRoot>/.cache/mcp-vertex/verify-tmp/`. Created on
+ * lock specs: `<repoRoot>/.cache/delendai/verify-tmp/`. Created on
  * disk on first call so `mkdtempSync` has a parent to play in.
  *
  * The returned path is absolute and stable across callers.

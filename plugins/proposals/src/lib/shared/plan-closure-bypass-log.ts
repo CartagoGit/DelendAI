@@ -70,7 +70,7 @@ export const recordPlanClosureBypass = (input: {
 	// "Failed to parse message" with no hint of where it came from.
 	// `lint:no-stdout-in-runtime` enforces this.
 	console.warn(
-		`[mcp-vertex] plan-closure-bypassed proposal=${event.proposalId} via=${event.via} agent=${event.agent} reason=${JSON.stringify(event.reason)}`,
+		`[delendai] plan-closure-bypassed proposal=${event.proposalId} via=${event.via} agent=${event.agent} reason=${JSON.stringify(event.reason)}`,
 	);
 	return event;
 };

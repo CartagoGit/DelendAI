@@ -8,7 +8,7 @@ import { REPOSITORY_SLUG } from '@delendai/core/public';
  */
 export const OptionsSchema = z.object({
 	/**
-	 * Master switch. Default `true` — mcp-vertex reports its OWN
+	 * Master switch. Default `true` — delendai reports its OWN
 	 * internal failures so they can be fixed. Set `false` to disable
 	 * dispatch entirely; the server announces both the default and this
 	 * line on every start.
@@ -16,10 +16,10 @@ export const OptionsSchema = z.object({
 	enabled: z.boolean().optional(),
 	/**
 	 * Deprecated compatibility field. The effective destination is always
-	 * the MCP Vertex repository and this value is ignored.
+	 * the DelendAI repository and this value is ignored.
 	 */
 	targetRepo: z.string().optional(),
-	/** Deprecated compatibility field. Labels are fixed by MCP Vertex. */
+	/** Deprecated compatibility field. Labels are fixed by DelendAI. */
 	labels: z.array(z.string()).optional(),
 	/** De-duplication window in hours. Defaults to one day. */
 	dedupeWindowHours: z.number().int().positive().optional(),

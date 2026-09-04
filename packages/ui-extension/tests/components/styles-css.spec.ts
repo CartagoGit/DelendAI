@@ -8,25 +8,25 @@ describe('componentCss', async () => {
 	});
 
 	it('covers the five component primitives', async () => {
-		expect(componentCss).toContain('.mcpv-header');
-		expect(componentCss).toContain('.mcpv-dropdown');
-		expect(componentCss).toContain('.mcpv-disclosure');
-		expect(componentCss).toContain('.mcpv-lang-picker');
-		expect(componentCss).toContain('.mcpv-toast');
+		expect(componentCss).toContain('.delendai-header');
+		expect(componentCss).toContain('.delendai-dropdown');
+		expect(componentCss).toContain('.delendai-disclosure');
+		expect(componentCss).toContain('.delendai-lang-picker');
+		expect(componentCss).toContain('.delendai-toast');
 	});
 
 	it('honors prefers-reduced-motion', async () => {
 		expect(componentCss).toContain('prefers-reduced-motion');
 	});
 
-	it('uses the shared --mcpv-transition tokens', async () => {
+	it('uses the shared --delendai-transition tokens', async () => {
 		// The transition shorthand should reference the shared token (with or
-		// without a fallback). The literal `var(--mcpv-transition-base, …)` is
+		// without a fallback). The literal `var(--delendai-transition-base, …)` is
 		// the expected form because it gives older browsers a hard-coded
 		// fallback that the brand token overrides.
-		expect(componentCss).toMatch(/var\(--mcpv-transition-base/);
-		// It should NOT define its own `--mcpv-transition-*` (only the tokens
+		expect(componentCss).toMatch(/var\(--delendai-transition-base/);
+		// It should NOT define its own `--delendai-transition-*` (only the tokens
 		// file owns those definitions).
-		expect(componentCss).not.toMatch(/--mcpv-transition-(fast|base):/);
+		expect(componentCss).not.toMatch(/--delendai-transition-(fast|base):/);
 	});
 });

@@ -4,7 +4,7 @@ import { runCli } from './lib/cli/run-cli';
 /**
  * Backward-compatible MCP server entrypoint.
  *
- * The human-facing `mcp-vertex` / `mcpv` binaries live in
+ * The human-facing `delendai` / `delendai` binaries live in
  * `@delendai/cli`; this file stays available for hosts that still
  * start the core MCP server entry directly.
  */

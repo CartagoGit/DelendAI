@@ -30,14 +30,14 @@ describe('componentCss token contract', async () => {
 		).toMatchInlineSnapshot(`
 				"{
 				  "tokenKeys": [
-				    "--mcpv-bg-primary",
-				    "--mcpv-fg-primary"
+				    "--delendai-bg-primary",
+				    "--delendai-fg-primary"
 				  ],
 				  "migrationMap": {
-				    "--vscode-editor-background": "--mcpv-bg-primary",
-				    "--vscode-editor-foreground": "--mcpv-fg-primary"
+				    "--vscode-editor-background": "--delendai-bg-primary",
+				    "--vscode-editor-foreground": "--delendai-fg-primary"
 				  },
-				  "rootCss": ":root {\\n\\t--mcpv-bg-primary: var(--vscode-editor-background, #0d1117);\\n\\t--mcpv-fg-primary: var(--vscode-editor-foreground, #c9d1d9);\\n}"
+				  "rootCss": ":root {\\n\\t--delendai-bg-primary: var(--vscode-editor-background, #0d1117);\\n\\t--delendai-fg-primary: var(--vscode-editor-foreground, #c9d1d9);\\n}"
 				}"
 			`);
 	});
@@ -52,8 +52,8 @@ describe('componentCss token contract', async () => {
 			JSON.stringify(
 				{
 					settingsUsesComponentTokens:
-						settingsSource.includes('var(--mcpv-bg-primary)') &&
-						settingsSource.includes('var(--mcpv-fg-primary)'),
+						settingsSource.includes('var(--delendai-bg-primary)') &&
+						settingsSource.includes('var(--delendai-fg-primary)'),
 					settingsHasDirectVscodeEditorTokens:
 						settingsSource.includes(
 							'var(--vscode-editor-background',
@@ -62,8 +62,10 @@ describe('componentCss token contract', async () => {
 							'var(--vscode-editor-foreground',
 						),
 					knowledgeUsesComponentTokens:
-						knowledgeSource.includes('var(--mcpv-bg-primary)') &&
-						knowledgeSource.includes('var(--mcpv-fg-primary)'),
+						knowledgeSource.includes(
+							'var(--delendai-bg-primary)',
+						) &&
+						knowledgeSource.includes('var(--delendai-fg-primary)'),
 					knowledgeHasDirectVscodeEditorTokens:
 						knowledgeSource.includes(
 							'var(--vscode-editor-background',

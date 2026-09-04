@@ -107,7 +107,7 @@ export const listDocs = async (
 			? options.roots
 			: DEFAULT_DOC_ROOTS;
 	// a00062: `extOf()` returns a bare, dot-less extension ("md", not
-	// ".md"), but a host's `mcp-vertex.config.json#plugins.docs.options
+	// ".md"), but a host's `delendai.config.json#plugins.docs.options
 	// .extensions` (and the natural authoring instinct, matching
 	// `path.extname()`) writes the dot-prefixed form — this repo's own
 	// committed config did. Stripping a leading dot here makes the
@@ -194,7 +194,7 @@ export const listDocs = async (
 				`no files matched the extensions [${[...extensions].join(', ')}] under roots [${roots.join(', ')}]`,
 			);
 		}
-		diagnostic = `found 0 docs: ${parts.join('; ')}. Check plugins.docs.options.roots in mcp-vertex.config.json.`;
+		diagnostic = `found 0 docs: ${parts.join('; ')}. Check plugins.docs.options.roots in delendai.config.json.`;
 	}
 	return {
 		docs,

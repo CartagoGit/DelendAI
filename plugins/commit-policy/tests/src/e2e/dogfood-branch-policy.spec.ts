@@ -79,7 +79,7 @@ describe('commit-policy dogfood E2E — branch policy', () => {
 			},
 		});
 		const status = await runCommitPolicyStatus({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			options: policy,
 			identityCtx: { run: runner, envVars: Object.freeze({}) },
 		});
@@ -125,7 +125,7 @@ describe('commit-policy dogfood E2E — branch policy', () => {
 		const result = await runCommitPolicyRun(
 			{ kind: 'manual', dryRun: true },
 			{
-				namespacePrefix: 'mcp-vertex',
+				namespacePrefix: 'delendai',
 				workspaceRoot: workspace,
 				docsDir: 'docs',
 				policy,

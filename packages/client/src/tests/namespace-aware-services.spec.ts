@@ -7,7 +7,7 @@
  *
  * Covers:
  *  - the `_namespace` helpers (`formatToolName`, `parsePrefix`);
- *  - default prefix produces `mcp-vertex_<suffix>` (no behaviour change);
+ *  - default prefix produces `delendai_<suffix>` (no behaviour change);
  *  - a custom prefix produces `<custom>_<suffix>`;
  *  - a missing prefix is treated as the default;
  *  - across OverviewService, NotificationsService, ConnectionHealthService
@@ -59,9 +59,7 @@ describe('_namespace helpers', () => {
 	});
 
 	it('formatToolName composes prefix + suffix', () => {
-		expect(formatToolName(undefined, 'overview')).toBe(
-			'mcp-vertex_overview',
-		);
+		expect(formatToolName(undefined, 'overview')).toBe('delendai_overview');
 		expect(formatToolName('acme', 'overview')).toBe('acme_overview');
 		expect(formatToolName('acme_', 'notification_notify_status')).toBe(
 			'acme_notification_notify_status',
@@ -72,10 +70,10 @@ describe('_namespace helpers', () => {
 describe('OverviewService namespace prefix', () => {
 	const overviewReply = () => ({ tools: [], plugins: [] });
 
-	it('default prefix produces mcp-vertex_overview', async () => {
+	it('default prefix produces delendai_overview', async () => {
 		const client = new RecordingClient(overviewReply);
 		await new OverviewService(asClient(client)).getOverview();
-		expect(client.calls).toEqual(['mcp-vertex_overview']);
+		expect(client.calls).toEqual(['delendai_overview']);
 	});
 
 	it('custom prefix produces <custom>_overview', async () => {
@@ -90,7 +88,7 @@ describe('OverviewService namespace prefix', () => {
 			asClient(client),
 			DEFAULT_NAMESPACE_PREFIX,
 		).getOverview();
-		expect(client.calls).toEqual(['mcp-vertex_overview']);
+		expect(client.calls).toEqual(['delendai_overview']);
 	});
 });
 
@@ -102,10 +100,10 @@ describe('NotificationsService namespace prefix', () => {
 		agentEvents: 0,
 	});
 
-	it('default prefix produces mcp-vertex_notification_notify_status', async () => {
+	it('default prefix produces delendai_notification_notify_status', async () => {
 		const client = new RecordingClient(statusReply);
 		await new NotificationsService(asClient(client)).status();
-		expect(client.calls).toEqual(['mcp-vertex_notification_notify_status']);
+		expect(client.calls).toEqual(['delendai_notification_notify_status']);
 	});
 
 	it('custom prefix produces <custom>_notification_notify_status', async () => {
@@ -116,7 +114,7 @@ describe('NotificationsService namespace prefix', () => {
 });
 
 describe('ConnectionHealthService namespace prefix', () => {
-	it('default prefix pings mcp-vertex_status-marker_ping', async () => {
+	it('default prefix pings delendai_status-marker_ping', async () => {
 		const client = new RecordingClient();
 		const svc = new ConnectionHealthService(asClient(client), {});
 		// `ping` is private; exercise it via the public snapshot loop by
@@ -126,7 +124,7 @@ describe('ConnectionHealthService namespace prefix', () => {
 		svc.start();
 		svc.stop();
 		await Promise.resolve();
-		expect(client.calls).toEqual(['mcp-vertex_status-marker_ping']);
+		expect(client.calls).toEqual(['delendai_status-marker_ping']);
 	});
 
 	it('custom prefix pings <custom>_status-marker_ping', async () => {
@@ -167,16 +165,14 @@ describe('DashboardService namespace prefix', () => {
 		expect(client.calls).toContain('acme_metrics');
 		expect(client.calls).toContain('acme_proposals_proposal_board');
 		expect(client.calls).toContain('acme_proposals_agent_names');
-		expect(client.calls.some((c) => c.startsWith('mcp-vertex_'))).toBe(
-			false,
-		);
+		expect(client.calls.some((c) => c.startsWith('delendai_'))).toBe(false);
 	});
 
 	it('default prefix preserves existing tool names', async () => {
 		const client = new RecordingClient(reply);
 		const svc = new DashboardService({ client: asClient(client) });
 		await svc.getOverviewModel();
-		expect(client.calls).toContain('mcp-vertex_overview');
-		expect(client.calls).toContain('mcp-vertex_metrics');
+		expect(client.calls).toContain('delendai_overview');
+		expect(client.calls).toContain('delendai_metrics');
 	});
 });

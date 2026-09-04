@@ -28,7 +28,7 @@ export const buildListModelsRegistration = (
 	tags: ['orchestrator-runner', 'lazy', 'routing'],
 	summary:
 		'Enumerate the merged provider roster with capability profiles and current reachability.',
-	descriptionKey: 'mcp-vertex_orchestrator-runner_list_models',
+	descriptionKey: 'delendai_orchestrator-runner_list_models',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_list_models`,

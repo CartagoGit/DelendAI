@@ -33,7 +33,7 @@ const createVscode = () => {
 	return { vscode, commands, messages };
 };
 
-describe('mcp-vertex.restartServer', async () => {
+describe('delendai.restartServer', async () => {
 	it('uses a custom restartFn when provided', async () => {
 		const { vscode, commands, messages } = createVscode();
 		let called = false;
@@ -45,7 +45,7 @@ describe('mcp-vertex.restartServer', async () => {
 		expect(commands.has(RESTART_SERVER_COMMAND)).toBe(true);
 		await commands.get(RESTART_SERVER_COMMAND)?.();
 		expect(called).toBe(true);
-		expect(messages).toContain('mcp-vertex: server restarted.');
+		expect(messages).toContain('delendai: server restarted.');
 	});
 
 	it('falls back to an info message when no restartFn is provided', async () => {

@@ -4,7 +4,7 @@
  * Detects the three inputs the agnostic core step-engine needs — the
  * repo (from `git remote get-url origin`), the auth tier (`gh` CLI >
  * `GITHUB_TOKEN` > anonymous), and whether the issues plugin is already
- * declared in `mcp-vertex.config.json` — then composes the core
+ * declared in `delendai.config.json` — then composes the core
  * `buildGithubSetupSteps` + `renderCrossProjectGuide` into one result.
  *
  * All side-effecting probes are injected (`IGithubSetupDeps`) so the
@@ -27,7 +27,7 @@ export interface IGithubSetupDeps {
 	readonly hasGhCli: () => boolean;
 	/** Value of `GITHUB_TOKEN` (or undefined). */
 	readonly githubToken: () => string | undefined;
-	/** Raw `mcp-vertex.config.json` text (or undefined when absent). */
+	/** Raw `delendai.config.json` text (or undefined when absent). */
 	readonly readConfig: () => string | undefined;
 	/** Workspace-relative config path, for the guide header. */
 	readonly configPath: string;

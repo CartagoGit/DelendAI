@@ -20,12 +20,12 @@ const TRIAGE_NEEDS_REPO_BODY = [
 
 /**
  * `@delendai/issues-triage` — internal-only issue bot for the
- * mcp-vertex repository itself.
+ * delendai repository itself.
  *
  * PRIVATE by design: this package is `"private": true`, is absent from
  * every preset, absent from `PUBLISH_ORDER`, and absent from the
  * first-party plugin index — it can only be loaded explicitly inside
- * this monorepo (`mcp-vertex --plugins=proposals,issues-triage`).
+ * this monorepo (`delendai --plugins=proposals,issues-triage`).
  *
  * It reads GitHub issues, classifies them mechanically, drafts a
  * complete fix proposal (optionally writing it under

@@ -3,7 +3,7 @@
  * agent-claims.script.ts — x00080 S2 (claim-or-no-touch validation gate).
  *
  * Verifies that all git-tracked files modified in the working tree are
- * actively claimed in `.cache/mcp-vertex/agents.lock.json`. Fails the
+ * actively claimed in `.cache/delendai/agents.lock.json`. Fails the
  * validation gate (exits 2) if any modified file has no active lock.
  */
 import { spawnSync } from 'node:child_process';
@@ -209,7 +209,7 @@ if (isMainModule()) {
 		console.warn(
 			`⚠ agent-claims: stale claim '${entry.task_id}' by ${entry.agent} ` +
 				`(last_seen ${entry.last_seen ?? '<missing>'}). ` +
-				`Release it: bun mcp-vertex_proposals_agent_lock release --task_id=${entry.task_id}`,
+				`Release it: bun delendai_proposals_agent_lock release --task_id=${entry.task_id}`,
 		);
 	}
 

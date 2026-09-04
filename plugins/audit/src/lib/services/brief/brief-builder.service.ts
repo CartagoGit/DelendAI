@@ -70,14 +70,14 @@ export interface IBriefOptions {
 	 * Human-readable project name, rendered in the brief header and in
 	 * the "no layers configured" fallback. Defaults to `"the project"`.
 	 * Keep the value generic — the brief is meant to land in any model
-	 * session and should not assume mcp-vertex-specific vocabulary.
+	 * session and should not assume delendai-specific vocabulary.
 	 */
 	readonly projectName?: string;
 	/**
 	 * Path to the host config file, rendered in the "no layers
 	 * configured" hint. Defaults to `"<config-file>"` (a placeholder).
 	 * Hosts that want to point the model at a concrete file (e.g.
-	 * `mcp-vertex.config.json`, `app.toml`, `settings.yaml`) can pass it
+	 * `delendai.config.json`, `app.toml`, `settings.yaml`) can pass it
 	 * here without leaking that path into the agnostic default brief.
 	 */
 	readonly configFileName?: string;

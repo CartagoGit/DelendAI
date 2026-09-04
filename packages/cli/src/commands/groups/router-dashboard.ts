@@ -27,9 +27,9 @@ import { buildDashboard } from '@delendai/auto-agent-selector/public';
 import { formatRows } from '../../lib/text-format.service';
 import { data, hasFlag, request, scalarArg } from './group-helpers';
 
-const STATUS = 'mcp-vertex_auto-agent-selector_auto_status';
-const RECOMMEND = 'mcp-vertex_auto-agent-selector_auto_recommend';
-const USAGE = 'mcp-vertex_usage-tracking_usage_report';
+const STATUS = 'delendai_auto-agent-selector_auto_status';
+const RECOMMEND = 'delendai_auto-agent-selector_auto_recommend';
+const USAGE = 'delendai_usage-tracking_usage_report';
 
 /**
  * A short, opinionated default set of task types the dashboard surfaces
@@ -105,7 +105,7 @@ const textFor = (vm: ReturnType<typeof buildDashboard>): string => {
 		'calls',
 		'note',
 	]);
-	return [`mcp-vertex router-dashboard`, `  ${vm.headline}`, '', table].join(
+	return [`delendai router-dashboard`, `  ${vm.headline}`, '', table].join(
 		'\n',
 	);
 };

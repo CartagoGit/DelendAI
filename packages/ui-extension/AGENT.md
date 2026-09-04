@@ -1,9 +1,9 @@
 # AGENT.md — package `packages/ui-extension`
 
-> Below the `<!-- mcp-vertex:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
-- Host-agnostic UI shell (dashboard, panels, command palette, brand assets) consumed by every @mcp-vertex extension host (vscode today; jetbrains, zed, cursor, antigravity tomorrow). Pure HTML + CSS + vanilla JS, no host imports.
+- Host-agnostic UI shell (dashboard, panels, command palette, brand assets) consumed by every @delendai extension host (vscode today; jetbrains, zed, cursor, antigravity tomorrow). Pure HTML + CSS + vanilla JS, no host imports.
 
 ## Public API
 
@@ -46,11 +46,11 @@ _(none)_
 ## Do not
 
 - Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
-- Do not hand-edit content between `<!-- mcp-vertex:begin -->`/`<!-- mcp-vertex:end -->` markers; regenerate via the owning `gen:*` script instead.
+- Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
 
 ## Token hotspots
 
 _(none)_
 
-<!-- mcp-vertex:end agent-md -->
+<!-- delendai:end agent-md -->
 

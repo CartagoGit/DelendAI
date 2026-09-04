@@ -340,7 +340,7 @@ const historyPathOf = (options: IProjectKpisToolOptions): string =>
 	joinUnderRoot(cacheDirAbsOf(options), 'results/project-kpis/history.json');
 
 const activationPathOf = (options: IProjectKpisToolOptions): string =>
-	joinRel(options.workspaceRootAbs, '.vscode/mcp-vertex/kpis.json');
+	joinRel(options.workspaceRootAbs, '.vscode/delendai/kpis.json');
 
 const buildSource = (input: {
 	readonly id: IProjectKpisSource['id'];
@@ -1464,7 +1464,7 @@ const buildViewPayload = async (
 			? {
 					activation: {
 						status,
-						source: 'activation-kpis/.vscode/mcp-vertex/kpis.json',
+						source: 'activation-kpis/.vscode/delendai/kpis.json',
 						sessionCount: state.activation?.sessionCount ?? 0,
 						...(state.activation?.meanPrecision !== undefined
 							? { meanPrecision: state.activation.meanPrecision }

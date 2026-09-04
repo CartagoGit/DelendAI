@@ -466,10 +466,10 @@ const buildConflicts = (
 	((): IAssessmentConflict => {
 		const hostOptions = {
 			projectName: options.projectName ?? analysis.name ?? 'Workspace',
-			namespacePrefix: options.namespacePrefix ?? 'mcp-vertex',
+			namespacePrefix: options.namespacePrefix ?? 'delendai',
 			projectPackageName: '@delendai/adopted',
-			mcpServerName: options.mcpServerName ?? 'mcp-vertex',
-			existingMcpVertex: true,
+			mcpServerName: options.mcpServerName ?? 'delendai',
+			existingDelendai: true,
 			...(options.defaultModel !== undefined
 				? { defaultModel: options.defaultModel }
 				: {}),

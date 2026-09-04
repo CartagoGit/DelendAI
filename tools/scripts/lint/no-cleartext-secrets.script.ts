@@ -7,8 +7,8 @@
  * ENV-VAR references — `"apiKey": "${OPENAI_API_KEY}"` or an env-var NAME the
  * runtime reads (`"envVar": "OPENAI_API_KEY"`) — never the literal key.
  *
- * This gate walks every tracked `mcp-vertex.config.json` / `*.config.json`
- * under the workspace (EXCLUDING test fixtures and the `docs/mcp-vertex/
+ * This gate walks every tracked `delendai.config.json` / `*.config.json`
+ * under the workspace (EXCLUDING test fixtures and the `docs/delendai/
  * examples/**` sample configs) and fails if it finds a field whose NAME ends in
  * a secret-ish word (`api[_-]?key`, `secret`, `token`, `password`, `passwd`,
  * `pwd`, `access[_-]?key`, `client[_-]?secret`) AND whose string VALUE is
@@ -41,7 +41,7 @@ const ENV_NAME_RE = /^[A-Z][A-Z0-9_]{2,}$/;
 
 /** Directories/globs whose configs are samples or fixtures, not real secrets. */
 const EXCLUDE_RE =
-	/(?:^|\/)(?:tests?|__tests__|fixtures)(?:\/|$)|^docs\/mcp-vertex\/examples\//;
+	/(?:^|\/)(?:tests?|__tests__|fixtures)(?:\/|$)|^docs\/delendai\/examples\//;
 
 export interface ICleartextFinding {
 	readonly file: string;
@@ -87,11 +87,11 @@ export const findCleartextSecrets = (
 	return out;
 };
 
-/** Tracked `*.config.json` / `mcp-vertex.config.json`, sans fixtures/examples. */
+/** Tracked `*.config.json` / `delendai.config.json`, sans fixtures/examples. */
 export const collectConfigFiles = (root: string): string[] => {
 	const raw = execFileSync(
 		'git',
-		['ls-files', 'mcp-vertex.config.json', '*.config.json'],
+		['ls-files', 'delendai.config.json', '*.config.json'],
 		{ cwd: root, encoding: 'utf8' },
 	);
 	return [

@@ -91,17 +91,17 @@ const looksLikeTerminalLine = (line: string): boolean =>
 const looksLikeDecorationLine = (line: string): boolean =>
 	/^[╭╰│─┌└├🥊|\s]*$/u.test(line) ||
 	/\(skip\)/u.test(line) ||
-	// mcp-vertex's OWN output, echoed back at us.
+	// delendai's OWN output, echoed back at us.
 	//
 	// A git hook in this repo runs `bun run …` scripts that boot
-	// mcp-vertex, so every push captures the error-reporting startup
+	// delendai, so every push captures the error-reporting startup
 	// banner and the generator's progress lines. On 2026-09-03 a real
 	// push failure came back as "failed to push some refs" followed by
 	// three lines of privacy notice and `gen:agent-md → …`, and the cap
 	// cut the reason before git's actual explanation of WHY the push was
 	// rejected. Our own announcements are never the cause of a git
 	// failure, so they sort last.
-	/^\[mcp-vertex\]/u.test(line) ||
+	/^\[delendai\]/u.test(line) ||
 	/^gen:[a-z-]+ →/u.test(line);
 
 /**

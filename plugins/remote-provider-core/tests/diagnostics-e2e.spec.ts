@@ -143,10 +143,10 @@ const input = (): IRemoteDiagnosticInput => {
 			project: {
 				provider: 'gitlab',
 				host: 'gitlab.self.example',
-				projectPath: 'cartago/mcp-vertex',
-				displayName: 'cartago/mcp-vertex',
-				webUrl: 'https://gitlab.self.example/cartago/mcp-vertex',
-				apiUrl: 'https://gitlab.self.example/api/v4/projects/cartago%2Fmcp-vertex',
+				projectPath: 'cartago/delendai',
+				displayName: 'cartago/delendai',
+				webUrl: 'https://gitlab.self.example/cartago/delendai',
+				apiUrl: 'https://gitlab.self.example/api/v4/projects/cartago%2Fdelendai',
 			},
 			ref: {
 				kind: 'branch',
@@ -203,7 +203,7 @@ const input = (): IRemoteDiagnosticInput => {
 						fullName: 'refs/heads/release/1.0',
 						sha: 'ffff9999eeee',
 					},
-					webUrl: 'https://gitlab.self.example/cartago/mcp-vertex/-/pipelines/91',
+					webUrl: 'https://gitlab.self.example/cartago/delendai/-/pipelines/91',
 				},
 				jobs: [
 					{
@@ -218,7 +218,7 @@ const input = (): IRemoteDiagnosticInput => {
 							fullName: 'refs/heads/release/1.0',
 							sha: 'ffff9999eeee',
 						},
-						webUrl: 'https://gitlab.self.example/cartago/mcp-vertex/-/jobs/1',
+						webUrl: 'https://gitlab.self.example/cartago/delendai/-/jobs/1',
 						artifacts: [
 							{
 								id: 'artifact-1',
@@ -236,7 +236,7 @@ const input = (): IRemoteDiagnosticInput => {
 								].join('\n'),
 							),
 							durationMs: 9_500,
-							url: 'https://gitlab.self.example/cartago/mcp-vertex/-/jobs/1/raw',
+							url: 'https://gitlab.self.example/cartago/delendai/-/jobs/1/raw',
 						},
 					},
 				],
@@ -294,8 +294,8 @@ describe('remote diagnostics delivery gate', () => {
 					provider: 'github',
 					host: 'github.com',
 					owner: 'CartagoGit',
-					repository: 'mcp-vertex',
-					displayName: 'CartagoGit/mcp-vertex',
+					repository: 'delendai',
+					displayName: 'CartagoGit/delendai',
 				},
 			},
 			runs: [],

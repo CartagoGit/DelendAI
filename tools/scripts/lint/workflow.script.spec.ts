@@ -40,13 +40,13 @@ const ctx = (over: Partial<IWorkflowContext> = {}): IWorkflowContext => ({
 });
 
 describe('HandEditedIndexRule', async () => {
-	it('flags a mixed commit that touched docs/mcp-vertex/proposals/index.json', async () => {
+	it('flags a mixed commit that touched docs/delendai/proposals/index.json', async () => {
 		const findings = HandEditedIndexRule.detect(
 			ctx({
 				recentCommits: [
 					commit({
 						files: [
-							'docs/mcp-vertex/proposals/index.json',
+							'docs/delendai/proposals/index.json',
 							'src/x.ts',
 						],
 					}),
@@ -64,7 +64,7 @@ describe('HandEditedIndexRule', async () => {
 					commit({
 						iso: '2026-06-23T17:45:01+02:00',
 						files: [
-							'docs/mcp-vertex/proposals/index.json',
+							'docs/delendai/proposals/index.json',
 							'src/x.ts',
 						],
 					}),
@@ -80,7 +80,7 @@ describe('HandEditedIndexRule', async () => {
 				recentCommits: [
 					commit({
 						subject: 'chore: refresh proposals index',
-						files: ['docs/mcp-vertex/proposals/index.json'],
+						files: ['docs/delendai/proposals/index.json'],
 					}),
 				],
 			}),
@@ -138,7 +138,7 @@ describe('lintWorkflow (engine over the default rule chain)', async () => {
 				recentCommits: [
 					commit({
 						files: [
-							'docs/mcp-vertex/proposals/index.json',
+							'docs/delendai/proposals/index.json',
 							'src/x.ts',
 						],
 					}),

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ICapabilityGraph } from '../../src/capability-graph.interface';
 
 const POLYGLOT_PROJECT = {
-	contract: 'mcp-vertex.capability-graph',
+	contract: 'delendai.capability-graph',
 	version: 1,
 	languages: [
 		{
@@ -69,7 +69,7 @@ const POLYGLOT_PROJECT = {
 
 describe('capability graph contract', () => {
 	it('represents plural languages and roles with traceable evidence', () => {
-		expect(POLYGLOT_PROJECT.contract).toBe('mcp-vertex.capability-graph');
+		expect(POLYGLOT_PROJECT.contract).toBe('delendai.capability-graph');
 		expect(POLYGLOT_PROJECT.version).toBe(1);
 		expect(POLYGLOT_PROJECT.languages.map(({ id }) => id)).toEqual([
 			'typescript',
@@ -86,7 +86,7 @@ describe('capability graph contract', () => {
 
 	it('permits an honest empty result when no detector has evidence', () => {
 		const unknownProject = {
-			contract: 'mcp-vertex.capability-graph',
+			contract: 'delendai.capability-graph',
 			version: 1,
 			languages: [],
 			primaryLanguage: undefined,

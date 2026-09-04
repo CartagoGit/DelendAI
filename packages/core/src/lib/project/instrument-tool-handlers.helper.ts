@@ -1,6 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { PluginHookName } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import {
 	estimateErrorCost,
@@ -13,7 +13,7 @@ import {
 import { injectToolResultMeta, toolError } from '../shared/tool-response';
 
 const resolveLogFilePath = (
-	config: IMcpVertexHostConfig,
+	config: IDelendaiHostConfig,
 	now: Date,
 ): string | null => {
 	if (!config.corePaths) return null;
@@ -41,7 +41,7 @@ const injectLogHintIntoResult = (
 
 export const instrumentToolHandlers = (
 	server: McpServer,
-	config: IMcpVertexHostConfig,
+	config: IDelendaiHostConfig,
 ): void => {
 	type RegisterTool = McpServer['registerTool'];
 	const original = server.registerTool.bind(server) as RegisterTool;

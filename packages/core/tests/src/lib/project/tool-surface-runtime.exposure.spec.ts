@@ -21,12 +21,12 @@ const buildRuntime = () =>
 		descriptors: [
 			{
 				registrationId: 'vertex',
-				name: 'mcp-vertex_vertex',
+				name: 'delendai_vertex',
 				toolId: 'vertex',
 			},
 			{
 				registrationId: 'reports_run',
-				name: 'mcp-vertex_reports_run',
+				name: 'delendai_reports_run',
 				toolId: 'run',
 				pluginId: 'reports',
 				namespace: 'reports',
@@ -57,14 +57,14 @@ const buildDisclosureRuntime = () =>
 		descriptors: [
 			{
 				registrationId: 'proposals_auto_work',
-				name: 'mcp-vertex_proposals_auto_work',
+				name: 'delendai_proposals_auto_work',
 				toolId: 'auto_work',
 				pluginId: 'proposals',
 				namespace: 'proposals',
 			},
 			{
 				registrationId: 'proposals_state_repair',
-				name: 'mcp-vertex_proposals_state_repair',
+				name: 'delendai_proposals_state_repair',
 				toolId: 'state_repair',
 				pluginId: 'proposals',
 				namespace: 'proposals',
@@ -107,33 +107,29 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 		const runtime = buildRuntime();
 		runtime.bindRegisteredTool({
 			registrationId: 'reports_run',
-			name: 'mcp-vertex_reports_run',
+			name: 'delendai_reports_run',
 			handler: async () => ({ ok: true }),
 			handle: makeHandle(true),
 		});
 		runtime.finalizeInitialSurface();
 
-		expect(runtime.getToolExposure('mcp-vertex_reports_run')).toBe(
-			'visible',
-		);
-		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(true);
+		expect(runtime.getToolExposure('delendai_reports_run')).toBe('visible');
+		expect(runtime.isToolExposed('delendai_reports_run')).toBe(true);
 	});
 
 	it('reports hidden for a registered tool hidden by surface mode', () => {
 		const runtime = buildRuntime();
 		runtime.bindRegisteredTool({
 			registrationId: 'reports_run',
-			name: 'mcp-vertex_reports_run',
+			name: 'delendai_reports_run',
 			handler: async () => ({ ok: true }),
 			handle: makeHandle(true),
 		});
 		runtime.finalizeInitialSurface();
 		runtime.applySurfaceMode('compact');
 
-		expect(runtime.getToolExposure('mcp-vertex_reports_run')).toBe(
-			'hidden',
-		);
-		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(false);
+		expect(runtime.getToolExposure('delendai_reports_run')).toBe('hidden');
+		expect(runtime.isToolExposed('delendai_reports_run')).toBe(false);
 	});
 
 	describe('q00016 S8 — disclosure-hidden tools stay callable', () => {
@@ -141,20 +137,20 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 			const runtime = buildDisclosureRuntime();
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_auto_work',
-				name: 'mcp-vertex_proposals_auto_work',
+				name: 'delendai_proposals_auto_work',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_state_repair',
-				name: 'mcp-vertex_proposals_state_repair',
+				name: 'delendai_proposals_state_repair',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.finalizeInitialSurface();
 
 			expect(
-				runtime.getToolExposure('mcp-vertex_proposals_auto_work'),
+				runtime.getToolExposure('delendai_proposals_auto_work'),
 			).toBe('visible');
 		});
 
@@ -162,20 +158,20 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 			const runtime = buildDisclosureRuntime();
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_auto_work',
-				name: 'mcp-vertex_proposals_auto_work',
+				name: 'delendai_proposals_auto_work',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_state_repair',
-				name: 'mcp-vertex_proposals_state_repair',
+				name: 'delendai_proposals_state_repair',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.finalizeInitialSurface();
 
 			expect(
-				runtime.getToolExposure('mcp-vertex_proposals_state_repair'),
+				runtime.getToolExposure('delendai_proposals_state_repair'),
 			).toBe('hidden');
 		});
 
@@ -183,34 +179,32 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 			const runtime = buildDisclosureRuntime();
 			runtime.bindRegisteredTool({
 				registrationId: 'vertex',
-				name: 'mcp-vertex_vertex',
+				name: 'delendai_vertex',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_state_repair',
-				name: 'mcp-vertex_proposals_state_repair',
+				name: 'delendai_proposals_state_repair',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.finalizeInitialSurface();
 
-			expect(runtime.getToolExposure('mcp-vertex_vertex')).toBe(
-				'visible',
-			);
+			expect(runtime.getToolExposure('delendai_vertex')).toBe('visible');
 		});
 
 		it('does not reveal administrative tools when their plugin is reactivated', () => {
 			const runtime = buildDisclosureRuntime();
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_auto_work',
-				name: 'mcp-vertex_proposals_auto_work',
+				name: 'delendai_proposals_auto_work',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_state_repair',
-				name: 'mcp-vertex_proposals_state_repair',
+				name: 'delendai_proposals_state_repair',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
@@ -220,10 +214,10 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 			runtime.activatePlugin('proposals');
 
 			expect(
-				runtime.getToolExposure('mcp-vertex_proposals_auto_work'),
+				runtime.getToolExposure('delendai_proposals_auto_work'),
 			).toBe('visible');
 			expect(
-				runtime.getToolExposure('mcp-vertex_proposals_state_repair'),
+				runtime.getToolExposure('delendai_proposals_state_repair'),
 			).toBe('hidden');
 		});
 
@@ -243,13 +237,13 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 			const handler = vi.fn(async () => ({ ok: true, ranHidden: true }));
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_auto_work',
-				name: 'mcp-vertex_proposals_auto_work',
+				name: 'delendai_proposals_auto_work',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_state_repair',
-				name: 'mcp-vertex_proposals_state_repair',
+				name: 'delendai_proposals_state_repair',
 				handler,
 				handle: makeHandle(true),
 			});
@@ -257,11 +251,11 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 
 			// hidden, not deactivated: getToolExposure/isToolExposed say no...
 			expect(
-				runtime.getToolExposure('mcp-vertex_proposals_state_repair'),
+				runtime.getToolExposure('delendai_proposals_state_repair'),
 			).toBe('hidden');
 			// ...but the router still dispatches to it.
 			const result = await runtime.invokeTool(
-				'mcp-vertex_proposals_state_repair',
+				'delendai_proposals_state_repair',
 				{},
 				{},
 			);
@@ -273,20 +267,20 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 			const runtime = buildDisclosureRuntime();
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_auto_work',
-				name: 'mcp-vertex_proposals_auto_work',
+				name: 'delendai_proposals_auto_work',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.bindRegisteredTool({
 				registrationId: 'proposals_state_repair',
-				name: 'mcp-vertex_proposals_state_repair',
+				name: 'delendai_proposals_state_repair',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
 			runtime.finalizeInitialSurface();
 
 			const found = runtime.resolveRoute('proposals', 'state_repair');
-			expect(found?.name).toBe('mcp-vertex_proposals_state_repair');
+			expect(found?.name).toBe('delendai_proposals_state_repair');
 			expect(found?.active).toBe(false);
 		});
 	});

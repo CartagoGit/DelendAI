@@ -112,7 +112,7 @@ const buildPolicy = (
 const baseOptions = (run: IGitRunner, policy: ICommitPolicyOptions) => ({
 	workspaceRoot: '/tmp/dry-run-test',
 	docsDir: '/tmp/dry-run-test/docs',
-	namespacePrefix: 'mcp-vertex_commit-policy',
+	namespacePrefix: 'delendai_commit-policy',
 	policy,
 	run,
 	identityCtx: {

@@ -7,12 +7,12 @@ import issuesPlugin from '../src/index';
 
 const ctx = (name: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
-	cacheDir: '.cache/mcp-vertex',
-	docsDir: 'docs/mcp-vertex',
+	corePaths: { cacheDir: '.cache/delendai', docsDir: 'docs/delendai' },
+	cacheDir: '.cache/delendai',
+	docsDir: 'docs/delendai',
 	keepLegacy: false,
-	pluginCacheDir: `.cache/mcp-vertex/${name}`,
-	pluginDocsDir: `docs/mcp-vertex/${name}`,
+	pluginCacheDir: `.cache/delendai/${name}`,
+	pluginDocsDir: `docs/delendai/${name}`,
 	namespacePrefix: name,
 	options: {},
 	args: {},
@@ -99,14 +99,14 @@ describe('issues plugin — UX guard when `repo` is missing', async () => {
 	const buildCtx = (options: Record<string, unknown>): IMcpPluginContext => ({
 		workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
 		corePaths: {
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
 		},
-		cacheDir: '.cache/mcp-vertex',
-		docsDir: 'docs/mcp-vertex',
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
 		keepLegacy: false,
-		pluginCacheDir: '.cache/mcp-vertex/issues',
-		pluginDocsDir: 'docs/mcp-vertex/issues',
+		pluginCacheDir: '.cache/delendai/issues',
+		pluginDocsDir: 'docs/delendai/issues',
 		namespacePrefix: 'issues',
 		options,
 		args: {},
@@ -154,7 +154,7 @@ describe('issues plugin — UX guard when `repo` is missing', async () => {
 
 	it('registers the 9 `issues_*` tools + setup_github when `repo` is provided', async () => {
 		const result = await unwrap(
-			issuesPlugin.register(buildCtx({ repo: 'CartagoGit/mcp-vertex' })),
+			issuesPlugin.register(buildCtx({ repo: 'CartagoGit/delendai' })),
 		);
 		expect(result.tools ?? []).toHaveLength(10);
 		const toolIds = (result.tools ?? []).map((t) => t.id).sort();
@@ -179,7 +179,7 @@ describe('issues plugin — UX guard when `repo` is missing', async () => {
 		expect(() =>
 			issuesPlugin.register(
 				buildCtx({
-					repo: 'CartagoGit/mcp-vertex',
+					repo: 'CartagoGit/delendai',
 					scaffoldDir: '../escape',
 				}),
 			),

@@ -27,11 +27,11 @@ const tool = (
 });
 
 const baseTools = [
-	tool('mcp-vertex_overview', 'mcp-vertex', {
+	tool('delendai_overview', 'delendai', {
 		summary: 'Overview',
 		tags: ['orientation'],
 	}),
-	tool('mcp-vertex_git_status', 'mcp-vertex', {
+	tool('delendai_git_status', 'delendai', {
 		summary: 'Git status',
 		tags: ['git'],
 		effects: ['write'],
@@ -112,7 +112,7 @@ const createFixtureRoot = async (options?: {
 	readonly skillBodies?: Readonly<Record<string, string>>;
 	// x00xxx (drift-in-CI fix): a fresh checkout — like the `drift`
 	// workflow's CI runner — has the checked-in proposal markdown but no
-	// gitignored `.cache/mcp-vertex/proposals/index.json`. These two let a
+	// gitignored `.cache/delendai/proposals/index.json`. These two let a
 	// test reproduce exactly that shape instead of always pre-seeding the
 	// cache file the way every other fixture in this suite does.
 	readonly skipProposalsIndex?: boolean;
@@ -142,8 +142,8 @@ const createFixtureRoot = async (options?: {
 		recursive: true,
 	});
 	await mkdir(join(root, 'packages/core/skills'), { recursive: true });
-	await mkdir(join(root, 'docs/mcp-vertex/proposals'), { recursive: true });
-	await mkdir(join(root, '.cache/mcp-vertex/proposals'), { recursive: true });
+	await mkdir(join(root, 'docs/delendai/proposals'), { recursive: true });
+	await mkdir(join(root, '.cache/delendai/proposals'), { recursive: true });
 	for (const [relativePath, content] of Object.entries(skillBodies)) {
 		await mkdir(
 			join(root, relativePath.split('/').slice(0, -1).join('/')),
@@ -161,13 +161,13 @@ const createFixtureRoot = async (options?: {
 	for (const [relativePath, content] of Object.entries(
 		options?.proposalMarkdownFiles ?? {},
 	)) {
-		const absPath = join(root, 'docs/mcp-vertex/proposals', relativePath);
+		const absPath = join(root, 'docs/delendai/proposals', relativePath);
 		await mkdir(join(absPath, '..'), { recursive: true });
 		await writeFile(absPath, content, 'utf8');
 	}
 	if (options?.skipProposalsIndex !== true) {
 		await writeFile(
-			join(root, '.cache/mcp-vertex/proposals/index.json'),
+			join(root, '.cache/delendai/proposals/index.json'),
 			`${JSON.stringify(proposals, null, '\t')}\n`,
 			'utf8',
 		);
@@ -306,8 +306,8 @@ describe('generate-agent-catalog script', async () => {
 				},
 			);
 			expect(result.artifact.tools).toEqual([
-				{ name: 'mcp-vertex_git_status' },
-				{ name: 'mcp-vertex_overview' },
+				{ name: 'delendai_git_status' },
+				{ name: 'delendai_overview' },
 			]);
 		});
 	});
@@ -343,7 +343,7 @@ describe('generate-agent-catalog script', async () => {
 				);
 				const warningsPath = join(
 					root,
-					'docs/mcp-vertex/agent-catalog.generated.lint-warnings.txt',
+					'docs/delendai/agent-catalog.generated.lint-warnings.txt',
 				);
 				const warningText = await readFile(warningsPath, 'utf8');
 				expect(warningText).toContain('alpha-skill');
@@ -390,8 +390,8 @@ describe('generate-agent-catalog script', async () => {
 
 	it('self-heals the proposal index from checked-in markdown when the cache is absent (fresh CI checkout)', async () => {
 		// Reproduces the `drift` workflow's actual failure mode: a fresh
-		// `actions/checkout` has `docs/mcp-vertex/proposals/**` (tracked)
-		// but no `.cache/mcp-vertex/proposals/index.json` (gitignored —
+		// `actions/checkout` has `docs/delendai/proposals/**` (tracked)
+		// but no `.cache/delendai/proposals/index.json` (gitignored —
 		// only ever built by the MCP server or an explicit sync). The
 		// generator must rebuild the index from the markdown, not throw.
 		await withFixture(

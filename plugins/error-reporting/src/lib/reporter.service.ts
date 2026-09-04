@@ -7,7 +7,7 @@ import {
 
 import type {
 	IIssueExec,
-	ISafeMcpVertexReport,
+	ISafeDelendaiReport,
 	ISafeReporter,
 	ISafeReporterConfig,
 	ISubmitIssueOutcome,
@@ -82,7 +82,7 @@ export const createSafeReporter = (
 	config: ISafeReporterConfig,
 ): ISafeReporter => ({
 	submitSafeReport: async (
-		report: ISafeMcpVertexReport,
+		report: ISafeDelendaiReport,
 		exec: IIssueExec = ghIssueExec,
 	): Promise<ISubmitIssueOutcome> => {
 		const connected = await (config.networkProbe ?? defaultNetworkProbe)();

@@ -4,7 +4,7 @@
  *
  * `apps/shared/src/styles/_themes.scss` declares the canonical
  * `#58a6ff` / `#a371f7` palette as CSS variables
- * (`--mcpv-brand-blue`, `--mcpv-brand-purple`). CSS variables are
+ * (`--delendai-brand-blue`, `--delendai-brand-purple`). CSS variables are
  * not usable inside inline SVG `stop-color` attributes because the
  * SVG is rendered into webviews that do not load the shared theme
  * sheet by default. To keep the brand single-sourced, this module

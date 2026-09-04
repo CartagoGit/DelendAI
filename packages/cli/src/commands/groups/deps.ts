@@ -3,9 +3,9 @@
  * Pure 1:1 delegation. Read-only, offline (no network / CVE database).
  *
  * Tools mapped:
- *   - `mcp-vertex_deps_deps_list`     ({ manifest? })
- *   - `mcp-vertex_deps_deps_check`    ({ manifest? })
- *   - `mcp-vertex_deps_deps_polyglot` (no args)
+ *   - `delendai_deps_deps_list`     ({ manifest? })
+ *   - `delendai_deps_deps_check`    ({ manifest? })
+ *   - `delendai_deps_deps_polyglot` (no args)
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, request, scalarArg } from './group-helpers';
@@ -16,7 +16,7 @@ const depsListCommand: ICliCommand = {
 	async run(args, ctx) {
 		const manifest = scalarArg(args, 'manifest');
 		return data(
-			await request(ctx, 'mcp-vertex_deps_deps_list', {
+			await request(ctx, 'delendai_deps_deps_list', {
 				...(manifest !== undefined ? { manifest } : {}),
 			}),
 		);
@@ -30,7 +30,7 @@ const depsCheckCommand: ICliCommand = {
 	async run(args, ctx) {
 		const manifest = scalarArg(args, 'manifest');
 		return data(
-			await request(ctx, 'mcp-vertex_deps_deps_check', {
+			await request(ctx, 'delendai_deps_deps_check', {
 				...(manifest !== undefined ? { manifest } : {}),
 			}),
 		);
@@ -42,7 +42,7 @@ const depsPolyglotCommand: ICliCommand = {
 	summary:
 		'List declared deps from pyproject/Cargo/go.mod (non-npm ecosystems).',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'mcp-vertex_deps_deps_polyglot', {}));
+		return data(await request(ctx, 'delendai_deps_deps_polyglot', {}));
 	},
 };
 
@@ -53,7 +53,7 @@ const depsLicensesCommand: ICliCommand = {
 	async run(args, ctx) {
 		const manifest = scalarArg(args, 'manifest');
 		return data(
-			await request(ctx, 'mcp-vertex_deps_deps_licenses', {
+			await request(ctx, 'delendai_deps_deps_licenses', {
 				...(manifest !== undefined ? { manifest } : {}),
 			}),
 		);
@@ -65,7 +65,7 @@ const depsAuditCommand: ICliCommand = {
 	summary:
 		'Scan dependencies for known CVEs via bun audit (opt-in via allowNetwork).',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'mcp-vertex_deps_deps_audit', {}));
+		return data(await request(ctx, 'delendai_deps_deps_audit', {}));
 	},
 };
 

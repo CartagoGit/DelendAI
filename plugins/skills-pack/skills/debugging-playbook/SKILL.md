@@ -4,7 +4,7 @@ id: debugging-playbook
 title: Debugging playbook
 category: dev
 tags: ['debugging', 'triage', 'logs', 'state']
-tools: ['mcp-vertex_logs_query', 'mcp-vertex_logs_tail', 'mcp-vertex_proposals_state_health', 'mcp-vertex_proposals_state_repair', 'mcp-vertex_proposals_proposal_diagnose', 'mcp-vertex_proposals_agents_lock_diagnose', 'mcp-vertex_proposals_agent_lock', 'mcp-vertex_proposals_agent_lock_release_orphan']
+tools: ['delendai_logs_query', 'delendai_logs_tail', 'delendai_proposals_state_health', 'delendai_proposals_state_repair', 'delendai_proposals_proposal_diagnose', 'delendai_proposals_agents_lock_diagnose', 'delendai_proposals_agent_lock', 'delendai_proposals_agent_lock_release_orphan']
 appliesTo: ['@delendai/skills-pack', '@delendai/logs', '@delendai/proposals']
 description: Triage a failing agent or unexpected output by checking the evidence trail first, then diagnosing proposal state and file-lock ownership before repairing anything.
 ---
@@ -24,23 +24,23 @@ proposal workflow appears stuck after a crash or interrupted session.
 
 ## Steps
 
-1. Query the recent timeline with `mcp-vertex_logs_query` using the narrowest
+1. Query the recent timeline with `delendai_logs_query` using the narrowest
    time window and correlation key you have.
-2. Follow with `mcp-vertex_logs_tail` when you need the live edge of the same
+2. Follow with `delendai_logs_tail` when you need the live edge of the same
    execution stream instead of a historical slice.
 3. If the symptom involves proposal progress, run
-   `mcp-vertex_proposals_proposal_diagnose` on the proposal id that looks stuck.
+   `delendai_proposals_proposal_diagnose` on the proposal id that looks stuck.
 4. When the failure smells like stale or contradictory state, inspect
-   `mcp-vertex_proposals_state_health` before attempting repair.
+   `delendai_proposals_state_health` before attempting repair.
 5. If edits are blocked by claims, inspect ownership with
-   `mcp-vertex_proposals_agents_lock_diagnose` and confirm whether the holder is
+   `delendai_proposals_agents_lock_diagnose` and confirm whether the holder is
    active, stale, or orphaned.
-6. Use `mcp-vertex_proposals_agent_lock` only for legitimate claim, release, or
+6. Use `delendai_proposals_agent_lock` only for legitimate claim, release, or
    status operations on files you actually own.
-7. Use `mcp-vertex_proposals_agent_lock_release_orphan` only after the
+7. Use `delendai_proposals_agent_lock_release_orphan` only after the
    diagnosis proves the lock holder is orphaned and no active agent can release
    it cleanly.
-8. Call `mcp-vertex_proposals_state_repair` only after you can name the exact
+8. Call `delendai_proposals_state_repair` only after you can name the exact
    inconsistency it is supposed to fix.
 
 ## Checks
@@ -60,11 +60,11 @@ proposal workflow appears stuck after a crash or interrupted session.
 
 ## References
 
-- `mcp-vertex_logs_query`
-- `mcp-vertex_logs_tail`
-- `mcp-vertex_proposals_state_health`
-- `mcp-vertex_proposals_state_repair`
-- `mcp-vertex_proposals_proposal_diagnose`
-- `mcp-vertex_proposals_agents_lock_diagnose`
-- `mcp-vertex_proposals_agent_lock`
-- `mcp-vertex_proposals_agent_lock_release_orphan`
+- `delendai_logs_query`
+- `delendai_logs_tail`
+- `delendai_proposals_state_health`
+- `delendai_proposals_state_repair`
+- `delendai_proposals_proposal_diagnose`
+- `delendai_proposals_agents_lock_diagnose`
+- `delendai_proposals_agent_lock`
+- `delendai_proposals_agent_lock_release_orphan`

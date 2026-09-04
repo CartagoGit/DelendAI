@@ -73,8 +73,8 @@ const renderForeignSection = (inventory: IForeignProposalInventory): string => {
 	if (!inventory.found) {
 		return (
 			`**Foreign proposal system.** No existing proposal/plan convention was\n` +
-			`detected in this project. This plan adopts the canonical mcp-vertex\n` +
-			`layout from scratch under \`docs/mcp-vertex/proposals/\`.\n\n`
+			`detected in this project. This plan adopts the canonical delendai\n` +
+			`layout from scratch under \`docs/delendai/proposals/\`.\n\n`
 		);
 	}
 	const lines = inventory.conventions
@@ -86,7 +86,7 @@ const renderForeignSection = (inventory: IForeignProposalInventory): string => {
 		`convention in this project:\n\n` +
 		`${lines}\n\n` +
 		`This plan is **advisory output**: it maps the foreign convention onto the\n` +
-		`canonical mcp-vertex layout. \`init\` does **not** rewrite, delete, or move\n` +
+		`canonical delendai layout. \`init\` does **not** rewrite, delete, or move\n` +
 		`any of the files above — the target's own agents execute the mapping.\n\n` +
 		(primary
 			? `Primary source to migrate: \`${primary.location}\` ` +
@@ -101,7 +101,7 @@ const renderForeignSection = (inventory: IForeignProposalInventory): string => {
  * instead of allocating a fresh id on every invocation (which would let
  * `init` litter the target with `f00001`, `f00002`, … duplicates).
  *
- * Scans every canonical status folder for `<id>-adopt-mcp-vertex-<scope>.md`
+ * Scans every canonical status folder for `<id>-adopt-delendai-<scope>.md`
  * and returns the existing id, or `undefined` when none exists yet.
  */
 const findExistingAdoptionId = async (
@@ -109,25 +109,25 @@ const findExistingAdoptionId = async (
 	scope: string,
 ): Promise<string | undefined> => {
 	// f00154 S2 audit: the previous `\d+` accepted 1+ digits, so a stray
-	// pre-padding file like `f1-adopt-mcp-vertex-…` was picked up even
+	// pre-padding file like `f1-adopt-delendai-…` was picked up even
 	// though the canonical allocator emits 5-digit padded ids. Require
 	// at least 5 digits so we only match canonical-shape files and a
 	// re-run after a stray legacy file can't reuse it.
-	const re = new RegExp(`^(f\\d{5,})-adopt-mcp-vertex-${scope}\\.md$`);
+	const re = new RegExp(`^(f\\d{5,})-adopt-delendai-${scope}\\.md$`);
 	// Scan every canonical status folder (root + 7 sub-folders) so a
 	// prior plan that has already transitioned out of `ready` does not
 	// cause `init` to allocate a duplicate id.
 	for (const folder of PROPOSAL_STATUS_FOLDERS) {
-		const dir = `docs/mcp-vertex/proposals/${folder}`;
+		const dir = `docs/delendai/proposals/${folder}`;
 		const entries = await reader.listDir(dir);
 		for (const name of entries) {
 			const m = name.match(re);
 			if (m) return m[1];
 		}
 	}
-	// Plus the root `docs/mcp-vertex/proposals/` (which holds the legacy
+	// Plus the root `docs/delendai/proposals/` (which holds the legacy
 	// `f00001-migrate-legacy` style stubs).
-	const rootEntries = await reader.listDir('docs/mcp-vertex/proposals');
+	const rootEntries = await reader.listDir('docs/delendai/proposals');
 	for (const name of rootEntries) {
 		const m = name.match(re);
 		if (m) return m[1];
@@ -171,11 +171,11 @@ export const renderAdoptionPlan = async (
 	const id =
 		(await findExistingAdoptionId(options.reader, scope)) ??
 		(await allocateNextAdoptionId(options.reader, inventory));
-	const relPath = `docs/mcp-vertex/proposals/ready/${id}-adopt-mcp-vertex-${scope}.md`;
+	const relPath = `docs/delendai/proposals/ready/${id}-adopt-delendai-${scope}.md`;
 	const date = new Date().toISOString().slice(0, 10);
 	const title = inventory.found
-		? `Adopt mcp-vertex: migrate the existing ${inventory.primary?.kind ?? 'proposal'} system (${scope})`
-		: `Adopt mcp-vertex workflow (${scope})`;
+		? `Adopt delendai: migrate the existing ${inventory.primary?.kind ?? 'proposal'} system (${scope})`
+		: `Adopt delendai workflow (${scope})`;
 
 	const content =
 		`---\n` +
@@ -193,22 +193,22 @@ export const renderAdoptionPlan = async (
 		`    - f00089 # adoption-plan umbrella\n` +
 		`ownership:\n` +
 		`    - { agent: technical_investigator, task: 'A1: inventory the foreign proposal/skill/tool surface (do not modify it)' }\n` +
-		`    - { agent: proposal_guardian, task: 'A2: map the foreign convention onto the canonical mcp-vertex layout' }\n` +
+		`    - { agent: proposal_guardian, task: 'A2: map the foreign convention onto the canonical delendai layout' }\n` +
 		`globalGate: validate\n` +
 		`acceptance:\n` +
 		`    - { command: bun run typecheck, expect: exit0 }\n` +
 		`    - { command: bun run test, expect: exit0 }\n` +
 		`    - { command: bun run validate, expect: exit0 }\n` +
 		`---\n\n` +
-		`# ${id} — Adopt mcp-vertex (${scope})\n\n` +
+		`# ${id} — Adopt delendai (${scope})\n\n` +
 		`## goal\n\n` +
-		`Adopt the mcp-vertex workflow in this project: a single canonical\n` +
+		`Adopt the delendai workflow in this project: a single canonical\n` +
 		`proposals layout, namespace-prefixed tools, the \`{ ok, error }\` envelope,\n` +
 		`and a proposals-driven swarm. Where the project already has its own\n` +
 		`proposal/plan convention, **migrate** it onto ours rather than starting\n` +
 		`a parallel system.\n\n` +
 		`## why\n\n` +
-		`This proposal was scaffolded by \`mcpv init\` (f00089 U1). The id \`${id}\`\n` +
+		`This proposal was scaffolded by \`delendai init\` (f00089 U1). The id \`${id}\`\n` +
 		`was allocated as the next free id in this project's canonical proposals\n` +
 		`space — it is **not** a hardcoded \`f00001\`, so it cannot collide with a\n` +
 		`proposal that already exists here.\n\n` +
@@ -225,27 +225,27 @@ export const renderAdoptionPlan = async (
 		`## slices\n\n` +
 		`### S1 — inventory the foreign surface (read-only)\n\n` +
 		`- **Status**: pending\n` +
-		`- **Files**: \`docs/mcp-vertex/proposals/ready/${id}-a1-inventory.md\`\n` +
+		`- **Files**: \`docs/delendai/proposals/ready/${id}-a1-inventory.md\`\n` +
 		`- **Gate**: bun run validate\n\n` +
 		`Capture every existing proposal/record, skill, and tool the project\n` +
 		`declares. Save the structured output under\n` +
-		`\`docs/mcp-vertex/proposals/ready/${id}-a1-inventory.md\`. Touch nothing.\n\n` +
+		`\`docs/delendai/proposals/ready/${id}-a1-inventory.md\`. Touch nothing.\n\n` +
 		`### S2 — map foreign → canonical\n\n` +
 		`- **Status**: pending\n` +
-		`- **Files**: \`docs/mcp-vertex/proposals/\`\n` +
+		`- **Files**: \`docs/delendai/proposals/\`\n` +
 		`- **Gate**: bun run validate\n\n` +
 		`Produce the mapping from the foreign convention to the canonical\n` +
-		`mcp-vertex layout (file naming, id space, status folders). The mapping\n` +
+		`delendai layout (file naming, id space, status folders). The mapping\n` +
 		`is advisory; converting the foreign files is a later, explicit step the\n` +
 		`target's agents perform — \`init\` never converts them in place.\n\n` +
 		sections.skillSection +
 		sections.toolSection +
 		`### S5 — one agent source of truth\n\n` +
 		`- **Status**: pending\n` +
-		`- **Files**: \`AGENTS.md\`, \`docs/mcp-vertex/AGENT-BOOTSTRAP.md\`\n` +
+		`- **Files**: \`AGENTS.md\`, \`docs/delendai/AGENT-BOOTSTRAP.md\`\n` +
 		`- **Gate**: bun run validate\n\n` +
 		`Consolidate this project's agent guidance into ONE canonical source:\n` +
-		`\`docs/mcp-vertex/AGENT-BOOTSTRAP.md\` holds the rules; \`AGENTS.md\` and\n` +
+		`\`docs/delendai/AGENT-BOOTSTRAP.md\` holds the rules; \`AGENTS.md\` and\n` +
 		`\`CLAUDE.md\` stay thin pointers to it. Fold any pre-existing agent\n` +
 		`instructions found in this repo (a \`CONTRIBUTING\` agent section, a\n` +
 		`custom \`.cursorrules\`, a hand-written \`CLAUDE.md\`) into the bootstrap so\n` +

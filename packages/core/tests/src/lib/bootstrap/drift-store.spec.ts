@@ -22,7 +22,7 @@ describe('drift-store', async () => {
 	let root: string;
 
 	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'mcp-vertex-drift-'));
+		root = mkdtempSync(join(tmpdir(), 'delendai-drift-'));
 	});
 
 	afterEach(() => {
@@ -32,7 +32,7 @@ describe('drift-store', async () => {
 	it('returns undefined on the first call (file does not exist)', async () => {
 		const result = await loadDriftSnapshot(
 			createWorkspacePathProvider(root),
-			'.cache/mcp-vertex',
+			'.cache/delendai',
 		);
 		expect(result.snapshot).toBeUndefined();
 		expect(result.corruptBackupPath).toBeNull();
@@ -56,8 +56,8 @@ describe('drift-store', async () => {
 			scripts: { test: 'vitest' },
 			signals: [],
 		};
-		await saveDriftSnapshot(workspace, '.cache/mcp-vertex', analysis);
-		const result = await loadDriftSnapshot(workspace, '.cache/mcp-vertex');
+		await saveDriftSnapshot(workspace, '.cache/delendai', analysis);
+		const result = await loadDriftSnapshot(workspace, '.cache/delendai');
 		expect(result.snapshot).toBeDefined();
 		expect(result.snapshot?.version).toBe(DRIFT_STORE_VERSION);
 		expect(result.snapshot?.analysis.name).toBe('acme');
@@ -67,17 +67,17 @@ describe('drift-store', async () => {
 	it('quarantines a corrupt snapshot and returns undefined', async () => {
 		const workspace = createWorkspacePathProvider(root);
 		const target = workspace.resolve(
-			'.cache/mcp-vertex/drift/last-analysis.json',
+			'.cache/delendai/drift/last-analysis.json',
 		);
-		mkdirSync(join(root, '.cache/mcp-vertex/drift'), { recursive: true });
+		mkdirSync(join(root, '.cache/delendai/drift'), { recursive: true });
 		writeFileSync(target, '{ not valid json', 'utf8');
-		const result = await loadDriftSnapshot(workspace, '.cache/mcp-vertex');
+		const result = await loadDriftSnapshot(workspace, '.cache/delendai');
 		expect(result.snapshot).toBeUndefined();
 		expect(result.corruptBackupPath).not.toBeNull();
 		// The corrupt file is preserved (not silently deleted).
 		expect(existsSync(result.corruptBackupPath ?? '')).toBe(true);
 		// Subsequent load returns undefined with no new backup.
-		const result2 = await loadDriftSnapshot(workspace, '.cache/mcp-vertex');
+		const result2 = await loadDriftSnapshot(workspace, '.cache/delendai');
 		expect(result2.snapshot).toBeUndefined();
 	});
 
@@ -103,13 +103,13 @@ describe('drift-store', async () => {
 		// final file must be one of the saved payloads (not a mix).
 		await Promise.all(
 			[0, 1, 2, 3, 4].map((i) =>
-				saveDriftSnapshot(workspace, '.cache/mcp-vertex', mk(i)),
+				saveDriftSnapshot(workspace, '.cache/delendai', mk(i)),
 			),
 		);
-		const result = await loadDriftSnapshot(workspace, '.cache/mcp-vertex');
+		const result = await loadDriftSnapshot(workspace, '.cache/delendai');
 		expect(result.snapshot).toBeDefined();
 		const raw = readFileSync(
-			workspace.resolve('.cache/mcp-vertex/drift/last-analysis.json'),
+			workspace.resolve('.cache/delendai/drift/last-analysis.json'),
 			'utf8',
 		);
 		// Valid JSON, not truncated.

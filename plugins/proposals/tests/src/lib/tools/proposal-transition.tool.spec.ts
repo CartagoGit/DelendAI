@@ -665,7 +665,7 @@ describe('proposal_transition', async () => {
 			);
 			expect(result.isError).toBeUndefined();
 			const log = await readFile(
-				join(root, '.cache', 'mcp-vertex', 'proposals-state.log'),
+				join(root, '.cache', 'delendai', 'proposals-state.log'),
 				'utf8',
 			);
 			const lines = log.trim().split('\n');
@@ -810,7 +810,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			peerReviewLogPathAbs: join(
 				root,
 				'.cache',
-				'mcp-vertex',
+				'delendai',
 				'peer-review.jsonl',
 			),
 			requirePeerReview: true,
@@ -1195,7 +1195,7 @@ describe('a00072 S4 — plan-closure DFA shortcut', () => {
 		const indexPathAbs = join(
 			root,
 			'.cache',
-			'mcp-vertex',
+			'delendai',
 			'proposals',
 			'index.json',
 		);
@@ -1214,7 +1214,7 @@ describe('a00072 S4 — plan-closure DFA shortcut', () => {
 			peerReviewLogPathAbs: join(
 				root,
 				'.cache',
-				'mcp-vertex',
+				'delendai',
 				'peer-review.jsonl',
 			),
 			requirePeerReview: false,

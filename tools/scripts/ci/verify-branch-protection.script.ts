@@ -51,7 +51,7 @@
  *
  * The verifier is **read-only**: it never writes back to GitHub.
  * A human operator applies the changes via the UI/API (see
- * `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`).
+ * `docs/delendai/GOVERNANCE-BRANCH-PROTECTION.md`).
  */
 
 import { readFile } from 'node:fs/promises';
@@ -503,7 +503,7 @@ export const run = async (
 		);
 	}
 	errWriter(
-		`verify-branch-protection: ${allDrifts.length} drift(s) — see docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`,
+		`verify-branch-protection: ${allDrifts.length} drift(s) — see docs/delendai/GOVERNANCE-BRANCH-PROTECTION.md`,
 	);
 	return 1;
 };

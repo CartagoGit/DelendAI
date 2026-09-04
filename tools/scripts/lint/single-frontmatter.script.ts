@@ -32,7 +32,7 @@
  * ``` / ~~~ fences. More than one such line outside fences means more
  * than one frontmatter block.
  *
- * Scope: `docs/mcp-vertex/proposals/**​/*.md`, excluding `legacy/` (the
+ * Scope: `docs/delendai/proposals/**​/*.md`, excluding `legacy/` (the
  * frozen archive is covered by `closed-frozen-guard`, not this gate).
  *
  * Exit codes:
@@ -151,7 +151,7 @@ const isMainModule = (): boolean => {
 if (isMainModule()) {
 	void (async () => {
 		const root = repoRoot();
-		const proposalsDirAbs = join(root, 'docs', 'mcp-vertex', 'proposals');
+		const proposalsDirAbs = join(root, 'docs', 'delendai', 'proposals');
 		const violations = await detectMultipleFrontmatter(proposalsDirAbs);
 
 		if (violations.length === 0) {

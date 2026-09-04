@@ -1,5 +1,5 @@
 /**
- * `mcp-vertex.restartServer` — re-spawns the MCP server. Used by the
+ * `delendai.restartServer` — re-spawns the MCP server. Used by the
  * connection-health status bar when the stdio drops and the user
  * clicks the "Restart" action on the toast.
  *
@@ -10,7 +10,7 @@
  */
 import type { ICommandVscodeApi } from './types';
 
-export const RESTART_SERVER_COMMAND = 'mcp-vertex.restartServer';
+export const RESTART_SERVER_COMMAND = 'delendai.restartServer';
 
 export interface IRestartServerOptions {
 	/** Custom restart function (e.g. spawn a new stdio process). */
@@ -25,12 +25,12 @@ export const registerRestartServerCommand = (
 		if (options.restartFn) {
 			await options.restartFn();
 			await vscode.window.showInformationMessage?.(
-				'mcp-vertex: server restarted.',
+				'delendai: server restarted.',
 			);
 			return;
 		}
 		// Default: tell the user to restart manually.
 		await vscode.window.showInformationMessage?.(
-			'mcp-vertex: please restart the extension or reload the window to re-spawn the MCP server.',
+			'delendai: please restart the extension or reload the window to re-spawn the MCP server.',
 		);
 	});

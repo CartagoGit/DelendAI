@@ -34,7 +34,7 @@ export const main = (argv: readonly string[]): number => {
 		command = [...argv.slice(1)];
 	}
 
-	const tempDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-pack-smoke-'));
+	const tempDir = mkdtempSync(join(tmpdir(), 'delendai-pack-smoke-'));
 	const outputPath = join(tempDir, 'output.log');
 	const outputFd = openSync(outputPath, 'w');
 	let result: ReturnType<typeof spawnSync>;

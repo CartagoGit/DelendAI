@@ -43,7 +43,7 @@ describe('usage-tracking plugin (register + hooks)', () => {
 			keepLegacy: false,
 			pluginCacheDir: 'usage-tracking',
 			pluginDocsDir: 'docs/usage-tracking',
-			namespacePrefix: 'mcp-vertex_usage-tracking',
+			namespacePrefix: 'delendai_usage-tracking',
 			hostIdentity: { host: 'Claude Code' },
 			peerPlugins: {
 				list: () => ['proposals', 'usage-tracking'],
@@ -67,9 +67,9 @@ describe('usage-tracking plugin (register + hooks)', () => {
 
 	it('records a paired start+call as a durable, attributed record', async () => {
 		const reg = await plugin.register(makeCtx());
-		reg.onToolStart?.('mcp-vertex_proposals_auto_work', {});
+		reg.onToolStart?.('delendai_proposals_auto_work', {});
 		reg.onToolCall?.(
-			'mcp-vertex_proposals_auto_work',
+			'delendai_proposals_auto_work',
 			{ sessionId: 's_call' },
 			{ ok: true },
 			undefined,
@@ -93,9 +93,9 @@ describe('usage-tracking plugin (register + hooks)', () => {
 
 	it('records an error outcome when the hook carries an error', async () => {
 		const reg = await plugin.register(makeCtx());
-		reg.onToolStart?.('mcp-vertex_docs_docs_read', {});
+		reg.onToolStart?.('delendai_docs_docs_read', {});
 		reg.onToolCall?.(
-			'mcp-vertex_docs_docs_read',
+			'delendai_docs_docs_read',
 			{},
 			undefined,
 			new Error('nope'),

@@ -39,7 +39,7 @@ describe('proposal_adopt apply mode (f00116 S1)', () => {
 
 	beforeEach(async () => {
 		root = mkdtempSync(join(tmpdir(), 'adopt-apply-'));
-		proposalsDirAbs = join(root, 'docs/mcp-vertex/proposals');
+		proposalsDirAbs = join(root, 'docs/delendai/proposals');
 		adopt = await capture(
 			buildAdoptRegistration({
 				namespacePrefix: 'proposals',
@@ -47,7 +47,7 @@ describe('proposal_adopt apply mode (f00116 S1)', () => {
 				proposalsDirAbs,
 				indexPathAbs: join(
 					root,
-					'.cache/mcp-vertex/proposals/index.json',
+					'.cache/delendai/proposals/index.json',
 				),
 				lockPathAbs: join(root, '.cache/agents.lock.json'),
 				counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
@@ -81,7 +81,7 @@ describe('proposal_adopt apply mode (f00116 S1)', () => {
 		expect(readme).toContain('create_proposal');
 		// The index was (re)built as part of the bootstrap.
 		expect(
-			existsSync(join(root, '.cache/mcp-vertex/proposals/index.json')),
+			existsSync(join(root, '.cache/delendai/proposals/index.json')),
 		).toBe(true);
 		expect(report.created.length).toBeGreaterThan(7);
 	});

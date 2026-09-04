@@ -30,7 +30,7 @@ const makeWorkspace = async (): Promise<string> => {
 	await mkdir(join(root, 'docs'), { recursive: true });
 	await mkdir(join(root, 'packages/cli'), { recursive: true });
 	await writeFile(
-		join(root, 'mcp-vertex.config.json'),
+		join(root, 'delendai.config.json'),
 		'{"plugins":{}}\n',
 		'utf8',
 	);
@@ -48,7 +48,7 @@ describe('activation_metrics', () => {
 	it('registers alongside optimize_run', async () => {
 		const root = await makeWorkspace();
 		const registrations = buildAdaptiveOptimizerToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			maxBytes: 2000,
 			discoverRosterFn: async () => ({ available: [], missing: [] }),
@@ -63,7 +63,7 @@ describe('activation_metrics', () => {
 	it('starts in the discriminated no-samples state', async () => {
 		const root = await makeWorkspace();
 		const registrations = buildAdaptiveOptimizerToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			maxBytes: 2000,
 			discoverRosterFn: async () => ({ available: [], missing: [] }),
@@ -73,7 +73,7 @@ describe('activation_metrics', () => {
 			await registration.register(server as never);
 		}
 		const out = parseStructured(
-			await server.tools['mcp-vertex_activation_metrics']!.handler({}),
+			await server.tools['delendai_activation_metrics']!.handler({}),
 		);
 		expect(out).toEqual({
 			activations: 0,
@@ -84,7 +84,7 @@ describe('activation_metrics', () => {
 	it('records one activation per successful optimize_run call', async () => {
 		const root = await makeWorkspace();
 		const registrations = buildAdaptiveOptimizerToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			maxBytes: 2000,
 			discoverRosterFn: async () => ({ available: [], missing: [] }),
@@ -93,13 +93,13 @@ describe('activation_metrics', () => {
 		for (const registration of registrations) {
 			await registration.register(server as never);
 		}
-		await server.tools['mcp-vertex_optimize_run']!.handler({
+		await server.tools['delendai_optimize_run']!.handler({
 			candidates: [{ id: 'candidate-a' }],
 			budget: 10,
 			consent: true,
 		});
 		const out = parseStructured(
-			await server.tools['mcp-vertex_activation_metrics']!.handler({}),
+			await server.tools['delendai_activation_metrics']!.handler({}),
 		);
 		expect(out.activations).toBe(1);
 		expect((out.responses as { hasSamples: boolean }).hasSamples).toBe(
@@ -110,7 +110,7 @@ describe('activation_metrics', () => {
 	it('does not record an activation when optimize_run rejects (no consent)', async () => {
 		const root = await makeWorkspace();
 		const registrations = buildAdaptiveOptimizerToolRegistrations({
-			namespacePrefix: 'mcp-vertex',
+			namespacePrefix: 'delendai',
 			workspaceRootAbs: root,
 			maxBytes: 2000,
 			discoverRosterFn: async () => ({ available: [], missing: [] }),
@@ -119,13 +119,13 @@ describe('activation_metrics', () => {
 		for (const registration of registrations) {
 			await registration.register(server as never);
 		}
-		await server.tools['mcp-vertex_optimize_run']!.handler({
+		await server.tools['delendai_optimize_run']!.handler({
 			candidates: [{ id: 'candidate-a' }],
 			budget: 10,
 			consent: false,
 		});
 		const out = parseStructured(
-			await server.tools['mcp-vertex_activation_metrics']!.handler({}),
+			await server.tools['delendai_activation_metrics']!.handler({}),
 		);
 		expect(out).toEqual({
 			activations: 0,
