@@ -82,11 +82,16 @@ describe('isLaunchApproved (x00072 S2)', () => {
 	});
 
 	it('invalidates when launch changes', async () => {
+		// The altered argv must actually DIFFER from `baseLaunch`. It used
+		// to be the second of two product names, and when both collapsed
+		// into one during the rename this asserted that an identical
+		// launch was a different one. A neutral argument keeps the test
+		// about fingerprint invalidation rather than about our naming.
 		await recordApproval(store, baseLaunch);
 		expect(
 			isLaunchApproved(store, {
 				...baseLaunch,
-				args: ['run', 'delendai'],
+				args: ['run', 'some-other-server'],
 			}),
 		).toBe(false);
 	});
