@@ -146,7 +146,7 @@ hint, e.g.:
 - review-log: approved by delivery_verifier
 ### S3 — `commit_policy_storms` tool
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/tools/storms.tool.ts`
 - **Gate**: lint, types, test
 
@@ -173,9 +173,11 @@ Read-only tool that the agent queries. Returns the snapshot:
 
 The tool is registered alongside `commit_policy_status` and
 exposed via `delendai_overview`.
-- review-state: in_review
+- review-state: done
 - review-implementer: storms-tool-runner
+- review-reviewer: delendai-delivery-verifier
 - review-log: requested_changes by delivery_verifier — La tool se declara read-only, pero runCommitPolicyStorms invoca onSnapshot y el registro lo cablea a stormLog.write; una consulta diagnóstica persiste estado. Debe eliminarse ese side effect y corregirse el spec.
+- review-log: approved by delendai-delivery-verifier — La segunda ronda elimina el side effect de onSnapshot; RFC3339, outputSchema y envelope siguen correctos. El cableado muerto restante es deuda menor no bloqueante.
 ### S4 — Persisted repair log
 
 - **Status**: pending
