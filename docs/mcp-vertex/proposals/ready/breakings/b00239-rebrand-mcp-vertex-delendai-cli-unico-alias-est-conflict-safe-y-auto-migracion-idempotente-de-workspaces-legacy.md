@@ -44,7 +44,9 @@ la funcionalidad**. Un rebranding que obligue al usuario a perseguir
 referencias a mano es exactamente el trabajo que este proyecto existe para
 eliminar.
 
-## Inventario cuantificado
+## Architecture
+
+### Inventario cuantificado
 
 Medido sobre el árbol real (`git grep` / `git ls-files`, 5.828 ficheros
 versionados, 2026-09-04):
@@ -81,7 +83,7 @@ Manifiestos: **72** `package.json`, de los cuales **67** declaran un nombre
    settings.
 9. Variables de entorno `MCP_VERTEX_*`.
 
-## Decisiones ya tomadas (no reabrir)
+### Decisiones ya tomadas (no reabrir)
 
 - **Nombre**: DelendAI.
 - **Un solo paquete de CLI**: `@delendai/cli`. No existe `@delendai/est`.
@@ -93,7 +95,17 @@ Manifiestos: **72** `package.json`, de los cuales **67** declaran un nombre
 - **Hard cut**, no marca dual: los paquetes viejos se deprecan tras una
   única release puente.
 
-## Decisiones abiertas (requieren al maintainer)
+## Non-goals
+
+Esta propuesta NO hace el hard cut hasta que S1-S9 estén probados, NO
+mantiene dos productos en paralelo, NO crea un segundo paquete para el
+alias `est`, NO reescribe prosa histórica (una frase como "mcp-vertex
+0.1.x hacía X" se conserva por ser cierta) y NO toca un ejecutable ajeno
+llamado `est`.
+
+## Risks and mitigations
+
+### Decisiones abiertas (requieren al maintainer)
 
 1. **Clearance de marca.** No aparece "DelendAI" como producto de software
    relevante, pero existe una empresa tecnológica llamada **DELENDA**. Un
@@ -107,7 +119,7 @@ Manifiestos: **72** `package.json`, de los cuales **67** declaran un nombre
    redirecciones, pero rompe las URLs canónicas en documentación publicada.
 4. **Ventana de deprecación** de `@mcp-vertex/*` en npm.
 
-## Riesgos que podrían impedir un hard cut seguro
+### Riesgos que podrían impedir un hard cut seguro
 
 - **Bootstrap**: los proyectos actuales arrancan un comando (`mcpv`) que
   dejará de existir. Sin la release puente (S3) no hay forma de que se
@@ -121,6 +133,26 @@ Manifiestos: **72** `package.json`, de los cuales **67** declaran un nombre
   documentarla, no disimularla.
 - **Namespace de tools**: renombrar `mcp-vertex_*` invalida los prompts,
   memorias y configuraciones de host que los agentes ya tengan aprendidos.
+
+## Acceptance
+
+La propuesta se cierra cuando, y solo cuando:
+
+1. Un workspace legacy real —el fixture de S9— arranca por el binario
+   antiguo, se migra solo y queda operativo bajo DelendAI, sin que nadie
+   edite un fichero a mano.
+2. Ejecutar la migración una segunda vez no cambia un solo byte.
+3. El scanner residual (S8) reporta **cero** referencias LIVE sobre este
+   repositorio y sobre el fixture migrado.
+4. `est` ocupado por software ajeno deja a DelendAI plenamente funcional
+   por `delendai`, con un aviso claro y no fatal, y sin haber tocado el
+   ejecutable ajeno.
+5. Ninguna configuración MCP generada, script de CI o Dockerfile invoca
+   `est`: el software siempre llama a `delendai`.
+6. Un fallo inyectado en APPLY y otro en VALIDATE dejan el workspace
+   exactamente como estaba, verificado por hash.
+7. `bun run validate` en verde.
+
 
 ## Slices
 
