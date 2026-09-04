@@ -285,13 +285,10 @@ describe('withFileMutex state-machine invariants', () => {
 			const waiterTimeoutMs = Math.max(15, entry.heartbeatMs * 3);
 
 			__setWithFileMutexTestHooks({
-				// x00420: an aged lease alone no longer means "abandoned" —
-				// the reclaimer also asks whether the holder's process is
-				// still running, and in a single-process test that pid is
-				// ours, so a real holder would look alive forever. A holder
-				// that is genuinely abandoned is one whose process is gone,
-				// which is what this probe states.
-				isPidAlive: () => false,
+				// This scenario models a live holder whose heartbeats keep the
+				// lease fresh across a long critical section, so reclaim must
+				// continue to see the pid as alive for the lifetime of the test.
+				isPidAlive: () => true,
 				afterHeartbeat: () => {
 					heartbeatCount += 1;
 				},
