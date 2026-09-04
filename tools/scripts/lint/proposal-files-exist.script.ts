@@ -36,14 +36,49 @@ const BASELINE_REL = 'tools/scripts/lint/proposal-files-exist.baseline.json';
 
 const NON_PATH = new Set(['none', 'n/a', 'tbd']);
 
-/** Matches a `**Files**:` list through its continuation lines, stopping
- * at the next bullet, blank line, or heading. */
+/**
+ * Matches a `- **Files**:` list through its continuation lines, stopping
+ * at the next bullet, blank line, or heading.
+ *
+ * The leading `- ` is load-bearing. Without it the pattern also matched
+ * `**Files**:` written mid-sentence — and a proposal about the proposal
+ * FORMAT quotes that syntax while explaining it. x00098 does exactly that,
+ * and the block then ran on into prose four lines below and reported
+ * `ready/` and `in-progress/` as missing deliverables. They are status
+ * folder names in a sentence describing where a file gets created.
+ *
+ * A Files declaration is a bullet, not a phrase.
+ */
 const FILES_BLOCK_RE =
-	/\*\*Files\*\*:\s*([\s\S]*?)(?=\n\s*-\s*\*\*|\n\n|\n#{2,3}\s|$)/g;
+	/^\s*-\s+\*\*Files\*\*:\s*([\s\S]*?)(?=\n\s*-\s*\*\*|\n\n|\n#{2,3}\s|$)/gm;
+
+/**
+ * The declared paths in a `**Files**:` block.
+ *
+ * A Files block comes in two shapes, and the difference matters. Inline —
+ * `` `a.ts`, `b.ts` `` — every backticked token is a path. As a bullet
+ * list, each line is `` - `path` — prose explaining it ``, and that prose
+ * routinely mentions other paths in backticks: a directory the code reads,
+ * a constant, a file that was deleted.
+ *
+ * Taking every backticked token from the block therefore reported prose as
+ * a missing deliverable. x00423 was refused for naming `.commit-policy/`
+ * while EXPLAINING what happens when that directory is absent — a
+ * sentence that is correct precisely because the path does not exist.
+ *
+ * So on a bullet line only the FIRST backticked token counts: what comes
+ * after the em dash is commentary, not a declaration. Inline blocks are
+ * unaffected.
+ */
+const pathsFromLine = (line: string): string[] => {
+	const ticked = [...line.matchAll(/`([^`]+)`/g)].map((m) => m[1] ?? '');
+	return /^\s*-\s/.test(line) ? ticked.slice(0, 1) : ticked;
+};
 
 const extractPathCandidates = (block: string): string[] =>
-	[...block.matchAll(/`([^`]+)`/g)]
-		.map((m) => m[1] ?? '')
+	block
+		.split('\n')
+		.flatMap(pathsFromLine)
 		.map((path) => path.trim())
 		.filter((p) => {
 			if (p.length < 4) return false;
