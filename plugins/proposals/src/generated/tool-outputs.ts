@@ -114,13 +114,13 @@ export interface DelendaiProposalsAgentWorktreeOutput {
 	removed?: boolean;
 	strandedPurge?: {
 		dryRun: boolean;
-		candidates: Array<{
+		candidates: {
 			branch: string;
 			ahead: number;
 			behind: number;
 			lastCommitIso: string;
-			worktreePath: string | null;
-		}>;
+			worktreePath: string;
+		}[];
 		deleted: string[];
 		skipped: {
 			branch: string;
@@ -153,18 +153,18 @@ export interface DelendaiProposalsAgentsLockDiagnoseOutput {
 		mtime: string;
 		ageSeconds: number;
 	}[];
-	logGaps: Array<{
+	logGaps: {
 		task_id: string;
 		lock_last_seen: string;
-		latest_log_ts: string | null;
-		gap_seconds: number | null;
-	}>;
-	waits: Array<{
+		latest_log_ts: string;
+		gap_seconds: number;
+	}[];
+	waits: {
 		waiter: string;
 		waitingOnTaskId: string;
-		holder: string | null;
-		waitingForSeconds: number | null;
-	}>;
+		holder: string;
+		waitingForSeconds: number;
+	}[];
 	deadlocks: string[][];
 }
 
@@ -286,7 +286,7 @@ export interface DelendaiProposalsCloseSliceOutput {
 		hash?: string;
 		reason?: string;
 	};
-	pendingIntegrationBranch?: string | null;
+	pendingIntegrationBranch?: string;
 	kind?: string;
 	validationOutput?: string;
 }
@@ -414,7 +414,7 @@ export interface DelendaiProposalsInheritHostInstructionsOutput {
 	scope: "repo" | "all";
 	files: string[];
 	totalNonCanonical: number;
-	id: string | null;
+	id: string;
 	file?: string;
 	path?: string;
 	indexCount?: number;
@@ -468,17 +468,17 @@ export interface DelendaiProposalsProposalAdoptOutput {
 }
 
 export interface DelendaiProposalsProposalBoardOutput {
-	proposals: Array<{
+	proposals: {
 		id: string;
 		status: string;
-		slices: Array<{
+		slices: {
 			sliceId: string;
 			status: string;
-			owner: string | null;
-		}>;
+			owner: string;
+		}[];
 		claimableSliceIds?: string[];
 		unreadable?: string;
-	}>;
+	}[];
 }
 
 export interface DelendaiProposalsProposalDiagnoseOutput {
@@ -517,30 +517,30 @@ export interface DelendaiProposalsProposalForceTransitionOutput {
 }
 
 export interface DelendaiProposalsProposalGetOutput {
-	proposals?: Array<{
+	proposals?: {
 		id: string;
 		status: string;
-		kind: string | null;
+		kind: string;
 		track: string;
 		title: string;
 		summary: string;
-		progress: string | null;
-		next: string | null;
-	}>;
-	nextCursor?: string | null;
+		progress: string;
+		next: string;
+	}[];
+	nextCursor?: string;
 	level?: "compact" | "normal" | "full";
 	proposal?: {
 		id: string;
 		status: string;
-		kind: string | null;
+		kind: string;
 		track: string;
 		title: string;
 		summary: string;
-		progress: string | null;
-		next: string | null;
-		priority: string | null;
-		parentPlan: string | null;
-		auditSection: string | null;
+		progress: string;
+		next: string;
+		priority: string;
+		parentPlan: string;
+		auditSection: string;
 		related: string[];
 		slices: {
 			id: string;
@@ -600,8 +600,8 @@ export interface DelendaiProposalsProposalReviewOutput {
 	sliceId: string;
 	action: string;
 	status: "none" | "in_review" | "changes_requested" | "done";
-	implementer: string | null;
-	reviewer: string | null;
+	implementer: string;
+	reviewer: string;
 	rounds: Array<{
 		verdict: "requested_changes" | "approved";
 		agent: string;

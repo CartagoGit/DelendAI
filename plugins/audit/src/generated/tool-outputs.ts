@@ -20,14 +20,14 @@ export interface DelendaiAuditAuditConsolidateOutput {
 		path: string;
 		reason: string;
 	}[];
-	consensus: Array<{
+	consensus: {
 		dimension: string;
-		scores: Array<{
+		scores: {
 			model: string;
-			score: number | null;
-		}>;
-		average: number | null;
-	}>;
+			score: number;
+		}[];
+		average: number;
+	}[];
 	findings: Array<{
 		id: string;
 		titles: string[];

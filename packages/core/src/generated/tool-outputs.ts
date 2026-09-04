@@ -240,7 +240,7 @@ export interface DelendaiConfigurationCenterOutput {
 		id: string;
 		kind: "agent" | "skill" | "prompt" | "resource" | "knowledge";
 		owner: {
-			id: string | null;
+			id: string;
 			origin: "bundled" | "user-local" | "external" | "unknown";
 		};
 	}>;
@@ -435,7 +435,7 @@ export interface DelendaiDriftCheckOutput {
 		summary: string;
 	}>;
 	isFirstSnapshot: boolean;
-	lastSnapshotAt: string | null;
+	lastSnapshotAt: string;
 	summary: string;
 }
 
@@ -497,9 +497,9 @@ export interface DelendaiEnvEnvExplainsOutput {
 export interface DelendaiFsReadOutput {
 	path: string;
 	found: boolean;
-	content: string | null;
-	totalLines: number | null;
-	range: unknown[] | null;
+	content: string;
+	totalLines: number;
+	range: never[] | null;
 }
 
 export interface DelendaiFsWriteOutput {
@@ -673,7 +673,7 @@ export interface DelendaiObservabilityObsErrorsOutput {
 		context: string;
 		url: string;
 	}>;
-	nextCursor: string | null;
+	nextCursor: string;
 	redactions: number;
 }
 
@@ -706,14 +706,14 @@ export interface DelendaiObservabilityObsRuntimeMetricsOutput {
 
 export interface DelendaiObservabilityObsTraceOutput {
 	sampleSize: number;
-	groups: Array<{
+	groups: {
 		service: string;
 		traceId: string;
 		hourBucket: string;
 		count: number;
 		errorRate: number;
-		topError: string | null;
-	}>;
+		topError: string;
+	}[];
 	summary: {
 		critical: number;
 		high: number;
@@ -982,17 +982,17 @@ export interface DelendaiProjectPluginsRepairOutput {
 
 export interface DelendaiPromptEvalEvalReportOutput {
 	tool: "eval_report";
-	rows: Array<{
+	rows: {
 		providerId: string;
 		costTier: number;
 		attempts: number;
 		passes: number;
-		winRate: number | null;
+		winRate: number;
 		totalCostUsd: number;
 		compositeScore: number;
-	}>;
-	winner: string | null;
-	worst: string | null;
+	}[];
+	winner: string;
+	worst: string;
 	totalCostUsd: number;
 	totalPasses: number;
 	markdown: string;
@@ -1000,7 +1000,7 @@ export interface DelendaiPromptEvalEvalReportOutput {
 
 export interface DelendaiPromptEvalEvalRunOutput {
 	tool: "eval_run";
-	taskType: string | null;
+	taskType: string;
 	attempts: {
 		providerId: string;
 		costTier: number;
@@ -1010,7 +1010,7 @@ export interface DelendaiPromptEvalEvalRunOutput {
 	}[];
 	passed: number;
 	totalCostUsd: number;
-	winner: string | null;
+	winner: string;
 }
 
 export interface DelendaiRefactorRefactorApplyOutput {

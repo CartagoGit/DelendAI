@@ -16,7 +16,7 @@ export interface DelendaiWebFetchWebFetchOutput {
 	ok: boolean;
 	url?: string;
 	status?: number;
-	contentType?: string | null;
+	contentType?: string;
 	body?: string;
 	truncated?: boolean;
 	reason?: "blocked-host" | "invalid-url" | "redirect-blocked" | "too-many-redirects" | "timeout" | "fetch-error";

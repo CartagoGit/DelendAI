@@ -15,16 +15,16 @@
 export interface DelendaiLogsCorrelateOutput {
 	detail: "compact" | "normal" | "full";
 	chain: unknown[];
-	firstTs: string | null;
-	lastTs: string | null;
+	firstTs: string;
+	lastTs: string;
 	gaps: unknown;
 }
 
 export interface DelendaiLogsErrorsTailOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
-	oldestTs: string | null;
-	newestTs: string | null;
+	oldestTs: string;
+	newestTs: string;
 }
 
 export interface DelendaiLogsIncidentsOutput {
@@ -42,7 +42,7 @@ export interface DelendaiLogsLogOutput {
 export interface DelendaiLogsQueryOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
-	cursor: string | null;
+	cursor: string;
 	hasMore: boolean;
 }
 
@@ -67,8 +67,8 @@ export interface DelendaiLogsSubscribeOutput {
 export interface DelendaiLogsTailOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
-	oldestTs: string | null;
-	newestTs: string | null;
+	oldestTs: string;
+	newestTs: string;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
