@@ -98,9 +98,9 @@ Reference slice: [f00392 / S2](../proposals/ready/feats/f00392-adaptive-preferre
 | test:plugins/observability/src/lib/traces/real-deps.spec.ts | plugins/observability/src/lib/traces/real-deps.spec.ts | [plugins/observability/src/lib/traces/real-deps.spec.ts](../../../plugins/observability/src/lib/traces/real-deps.spec.ts) |
 | test:plugins/observability/src/lib/traces/release-health.spec.ts | plugins/observability/src/lib/traces/release-health.spec.ts | [plugins/observability/src/lib/traces/release-health.spec.ts](../../../plugins/observability/src/lib/traces/release-health.spec.ts) |
 | test:plugins/observability/src/lib/traces/trace-summarizer.spec.ts | plugins/observability/src/lib/traces/trace-summarizer.spec.ts | [plugins/observability/src/lib/traces/trace-summarizer.spec.ts](../../../plugins/observability/src/lib/traces/trace-summarizer.spec.ts) |
-| commit:8514f99 | commit:8514f99 | [https://github.com/CartagoGit/mcp-vertex/commit/8514f99](https://github.com/CartagoGit/mcp-vertex/commit/8514f99) |
-| release:v0.1.1 | release:v0.1.1 | [https://github.com/CartagoGit/mcp-vertex/releases/tag/v0.1.1](https://github.com/CartagoGit/mcp-vertex/releases/tag/v0.1.1) |
-| pr:52 | pr:#52 | [https://github.com/CartagoGit/mcp-vertex/pull/52](https://github.com/CartagoGit/mcp-vertex/pull/52) |
+| commit:8514f99 | commit:8514f99 | [https://github.com/CartagoGit/delendai/commit/8514f99](https://github.com/CartagoGit/delendai/commit/8514f99) |
+| release:v0.1.1 | release:v0.1.1 | [https://github.com/CartagoGit/delendai/releases/tag/v0.1.1](https://github.com/CartagoGit/delendai/releases/tag/v0.1.1) |
+| pr:52 | pr:#52 | [https://github.com/CartagoGit/delendai/pull/52](https://github.com/CartagoGit/delendai/pull/52) |
 
 | from | relation | to |
 | --- | --- | --- |

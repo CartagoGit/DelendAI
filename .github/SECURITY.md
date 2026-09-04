@@ -4,7 +4,7 @@
 
 Please report security issues **privately**, not via a public issue:
 
-- Use GitHub's [private vulnerability reporting](https://github.com/CartagoGit/mcp-vertex/security/advisories/new)
+- Use GitHub's [private vulnerability reporting](https://github.com/CartagoGit/delendai/security/advisories/new)
   ("Report a vulnerability" on the Security tab), or
 - email the maintainer (see the `author` field in `package.json`).
 

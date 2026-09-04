@@ -38,7 +38,7 @@ mcp-vertex --plugins=forge
 	"arguments": {
 		"query": "definePlugin",
 		"language": "ts",
-		"repo": "CartagoGit/mcp-vertex",
+		"repo": "CartagoGit/delendai",
 		"limit": 5
 	}
 }

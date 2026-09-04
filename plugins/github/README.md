@@ -4,7 +4,7 @@ GitHub provider for @mcp-vertex/core. The default surface is read-only. Remote m
 
 ## What this plugin is for
 
-Use this plugin when you want mcp-vertex to read a GitHub repository directly over the GitHub API. For this repository, the remote project slug is `CartagoGit/mcp-vertex`.
+Use this plugin when you want mcp-vertex to read a GitHub repository directly over the GitHub API. For this repository, the remote project slug is `CartagoGit/delendai`.
 
 This is the normal fit when you need to:
 
@@ -112,7 +112,7 @@ If you later enable remote mutations, prefer a separate token or a narrower writ
 This plugin is designed to operate independently.
 
 - It does not require plugin-git.
-- It does not require a checked out copy of `CartagoGit/mcp-vertex`.
+- It does not require a checked out copy of `CartagoGit/delendai`.
 - It does not need a local `origin` remote to discover the repository.
 - It can resolve the remote repository directly from `GITHUB_OWNER` and `GITHUB_REPOSITORY`, or from `plugins.github.options.defaultRepository`.
 

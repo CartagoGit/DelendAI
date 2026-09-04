@@ -40,7 +40,7 @@ workspace paths, cwd, tool args, tool outputs, raw exception messages, raw
 stacks, environment variables or request headers from the consuming project.
 
 The network destination is fixed: the allowlisted GitHub repository is always
-`CartagoGit/mcp-vertex`. Project configuration cannot override or redirect the
+`CartagoGit/delendai`. Project configuration cannot override or redirect the
 destination. The plugin does not derive the destination from runtime/project
 data.
 
@@ -100,7 +100,7 @@ Inspect the current state with the `<prefix>_report_status` tool.
 | Option              | Type       | Default                    | Purpose                                                                                         |
 | ------------------- | ---------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
 | `enabled`           | `boolean`  | `false`                    | Master switch. `true` explicitly enables reporting.                                             |
-| `targetRepo`        | `string`   | `CartagoGit/mcp-vertex`    | Deprecated and ignored. The destination is fixed and cannot be changed by the consumer project. |
+| `targetRepo`        | `string`   | `CartagoGit/delendai`    | Deprecated and ignored. The destination is fixed and cannot be changed by the consumer project. |
 | `labels`            | `string[]` | `["auto-reported", "bug"]` | Deprecated and ignored. MCP Vertex applies only its canonical labels.                           |
 | `dedupeWindowHours` | `number`   | `24`                       | De-duplication window in hours.                                                                 |
 

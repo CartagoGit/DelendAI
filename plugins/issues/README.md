@@ -125,7 +125,7 @@ or read it from `mcp-vertex_overview` (which lists knowledge ids).
 
 | Option | Type | Default | Purpose |
 |---|---|---|---|
-| `repo` | `string` (e.g. `"CartagoGit/mcp-vertex"`) | — | The GitHub repo to fetch issues from. **Without it, the plugin registers zero tools + emits an `issues-needs-repo-config` knowledge entry** (discoverable via `mcp-vertex_overview` and `mcp-vertex_knowledge`). |
+| `repo` | `string` (e.g. `"CartagoGit/delendai"`) | — | The GitHub repo to fetch issues from. **Without it, the plugin registers zero tools + emits an `issues-needs-repo-config` knowledge entry** (discoverable via `mcp-vertex_overview` and `mcp-vertex_knowledge`). |
 | `scaffoldDir` | workspace-relative path | `docs/mcp-vertex/proposals/retired/issues` | Where `issues_ingest` / `issues_resolve` write scaffold files. Must stay inside the workspace (validated by `resolveWorkspaceContained`). |
 
 ## Tools in detail

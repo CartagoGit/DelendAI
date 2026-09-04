@@ -58,7 +58,7 @@ El repositorio pasó por dos posturas de gobernanza de ramas sucesivas:
 
 Verificado en la sesión de origen (2026-08-29) y de nuevo al escribir
 este ADR: GitHub no exige pull request para aterrizar en `main`. La
-respuesta de `gh api repos/CartagoGit/mcp-vertex/branches/main/protection`
+respuesta de `gh api repos/CartagoGit/delendai/branches/main/protection`
 no incluye la clave `required_pull_request_reviews` en absoluto — no
 es que el toggle esté desactivado, es que nunca se configuró. Un SHA
 que ya tenga `ci-complete` en verde en otra rama puede aterrizar en
@@ -125,7 +125,7 @@ alcance ampliado.
 
 ## Verification
 
-- `gh api repos/CartagoGit/mcp-vertex/branches/main/protection` —
+- `gh api repos/CartagoGit/delendai/branches/main/protection` —
   confirma qué exige GitHub hoy para `main`; ausencia de
   `required_pull_request_reviews` es el gap conocido (trigger 4).
 - `tools/scripts/lint/push-to-develop-discipline.script.ts` — confirma

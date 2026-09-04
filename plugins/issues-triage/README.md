@@ -21,7 +21,7 @@ mcp-vertex --plugins=proposals,issues-triage
 {
   "plugins": {
     "proposals": {},
-    "issues-triage": { "options": { "repo": "CartagoGit/mcp-vertex" } }
+    "issues-triage": { "options": { "repo": "CartagoGit/delendai" } }
   }
 }
 ```

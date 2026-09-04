@@ -1,6 +1,6 @@
 # @mcp-vertex/auto-agent-selector
 
-Zero-config multi-agent routing for [mcp-vertex](https://github.com/CartagoGit/mcp-vertex).
+Zero-config multi-agent routing for [mcp-vertex](https://github.com/CartagoGit/delendai).
 
 Add the plugin and it **auto-discovers every LLM/agent the workspace can
 reach** — CLIs found on `PATH` (Claude Code, Codex, Copilot, Gemini, Aider)

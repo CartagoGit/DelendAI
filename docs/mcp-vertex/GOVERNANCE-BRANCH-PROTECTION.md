@@ -58,7 +58,7 @@ an explicit config override wins over the default.
 
 ### Step 1 — Open GitHub settings
 
-1. Visit <https://github.com/CartagoGit/mcp-vertex/settings/branches>.
+1. Visit <https://github.com/CartagoGit/delendai/settings/branches>.
 2. Create or edit one rule for `main`.
 3. Create or edit one rule for `develop`.
 
@@ -99,13 +99,13 @@ With a PAT that can administer the repository:
 gh api \
    --method PUT \
    -H "Accept: application/vnd.github+json" \
-   repos/CartagoGit/mcp-vertex/branches/main/protection \
+   repos/CartagoGit/delendai/branches/main/protection \
    --input .github/branch-protection-main.payload.json
 
 gh api \
    --method PUT \
    -H "Accept: application/vnd.github+json" \
-   repos/CartagoGit/mcp-vertex/branches/develop/protection \
+   repos/CartagoGit/delendai/branches/develop/protection \
    --input .github/branch-protection-develop.payload.json
 ```
 
@@ -170,8 +170,8 @@ If the verifier reports drift immediately after a UI change:
 4. Re-read the API response directly:
 
     ```bash
-    gh api repos/CartagoGit/mcp-vertex/branches/develop/protection
-    gh api repos/CartagoGit/mcp-vertex/branches/main/protection
+    gh api repos/CartagoGit/delendai/branches/develop/protection
+    gh api repos/CartagoGit/delendai/branches/main/protection
     ```
 
 If the verifier reports an auth or rate-limit problem, that is not policy drift;
