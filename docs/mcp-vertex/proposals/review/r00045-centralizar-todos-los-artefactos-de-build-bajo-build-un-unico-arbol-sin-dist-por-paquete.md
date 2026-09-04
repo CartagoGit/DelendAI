@@ -107,8 +107,10 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "Demostración: `bun tools/scripts/gen-all.script.ts --check` corre sin tocar `build/`; los `require()` que aparezcan en su stdout apuntan todos a `src/`"
   - "`docs/mcp-vertex/AGENT-BOOTSTRAP.md` sección "Build / dist layout" reescrita para reflejar el árbol `build/{group}/{<version>/` y la regla "scripts nunca resuelven a `build/`""
   - "`bun run validate` exit 0 completo"
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5
+- review-reviewer: sonnet-delivery-verifier
+- review-log: requested_changes by sonnet-delivery-verifier — Dos defectos verificados empiricamente. (1) S2 afirma que el unico dist/ vive en un staging bajo tmpdir y se borra al terminar: falso. mirrorBuildIntoPackageDist en build.script.ts:417 escribe dist/ persistente en cada packages/* y plugins/* en CADA build ordinaria; hay 62 directorios en disco. Esta gitignorado, asi que git status sale limpio, pero contradice la afirmacion central de la Goal. (2) S1 afirma que una segunda corrida sin cambios no toca timestamps: falso y reproducible; los bytes son identicos (md5 igual) pero el mtime cambia porque el driver reescribe siempre. Recomendacion: que el mirror omita el fichero cuando el contenido no cambia, y reescribir el bullet de S2 para describir el invariante real (un mirror por paquete, gitignorado y regenerado).
 ## acceptance
 
 - bun run build escribe `build/packages/core/<version>/index.js` y `.d.ts` con subpaths `contracts/`, `runtime/`, `plugin/`, `node/`, `version`
