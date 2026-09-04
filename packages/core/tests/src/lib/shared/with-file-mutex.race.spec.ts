@@ -103,6 +103,13 @@ describe('withFileMutex race window (MUT2-001)', () => {
 		let reclaimRenameCount = 0;
 
 		__setWithFileMutexTestHooks({
+			// x00420: an aged lease alone no longer means "abandoned" —
+			// the reclaimer also asks whether the holder's process is
+			// still running, and in a single-process test that pid is
+			// ours, so a real holder would look alive forever. A holder
+			// that is genuinely abandoned is one whose process is gone,
+			// which is what this probe states.
+			isPidAlive: () => false,
 			afterObserveStale: async () => {
 				observedStaleCount += 1;
 				const observedLease = await readStructuredLease(lockPath);

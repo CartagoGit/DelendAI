@@ -285,6 +285,13 @@ describe('withFileMutex state-machine invariants', () => {
 			const waiterTimeoutMs = Math.max(15, entry.heartbeatMs * 3);
 
 			__setWithFileMutexTestHooks({
+				// x00420: an aged lease alone no longer means "abandoned" —
+				// the reclaimer also asks whether the holder's process is
+				// still running, and in a single-process test that pid is
+				// ours, so a real holder would look alive forever. A holder
+				// that is genuinely abandoned is one whose process is gone,
+				// which is what this probe states.
+				isPidAlive: () => false,
 				afterHeartbeat: () => {
 					heartbeatCount += 1;
 				},
@@ -342,6 +349,13 @@ describe('withFileMutex state-machine invariants', () => {
 			writeFileSync(targetCase, '{}');
 
 			__setWithFileMutexTestHooks({
+				// x00420: an aged lease alone no longer means "abandoned" —
+				// the reclaimer also asks whether the holder's process is
+				// still running, and in a single-process test that pid is
+				// ours, so a real holder would look alive forever. A holder
+				// that is genuinely abandoned is one whose process is gone,
+				// which is what this probe states.
+				isPidAlive: () => false,
 				afterHeartbeat: (lease) => {
 					if (lease.token !== caseToken) return;
 					generations.push(lease.generation);

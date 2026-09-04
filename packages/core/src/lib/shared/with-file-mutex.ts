@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
+import { hostname } from 'node:os';
 import {
 	mkdir,
 	open,
@@ -94,9 +95,19 @@ interface IObservedLockLease {
 	readonly heartbeatAt: number;
 	readonly mtimeMs: number;
 	readonly token: string;
+	/**
+	 * x00420: the holder's host and process id, so a reclaimer can ask
+	 * whether the holder is still ALIVE instead of inferring death from a
+	 * timer that load can silence. Absent on legacy sidecars written
+	 * before this field existed — that case stays on the old behaviour.
+	 */
+	readonly host?: string | undefined;
+	readonly pid?: number | undefined;
 }
 
 interface IWithFileMutexTestHooks {
+	/** x00420: override the process-liveness probe deterministically. */
+	isPidAlive?(pid: number): boolean;
 	afterObserveStale?(lease: IObservedLockLease): Promise<void> | void;
 	afterHeartbeat?(lease: IObservedLockLease): Promise<void> | void;
 	afterReclaimRename?(context: {
@@ -110,6 +121,8 @@ interface ILockLeasePayload {
 	readonly generation: number;
 	readonly heartbeatAt: number;
 	readonly token: string;
+	readonly host?: string | undefined;
+	readonly pid?: number | undefined;
 }
 
 let withFileMutexTestHooks: IWithFileMutexTestHooks | undefined;
@@ -141,6 +154,55 @@ const sleep = (ms: number): Promise<void> =>
 
 const RECLAIM_GRACE_MS = 50;
 
+const LOCAL_HOST = hostname();
+
+/**
+ * x00420: whether the holder recorded in a lease is still running.
+ *
+ * `'unknown'` is a first-class answer and the important one. A lease with
+ * no identity (written by an older build) or one stamped by a DIFFERENT
+ * host — the sidecar may live on a shared volume — cannot be judged from
+ * this process's table: a pid from another machine either collides with
+ * an unrelated local process or looks absent, and the second reading
+ * would license an optimistic steal of a perfectly live holder. Both
+ * fall back to the heartbeat-only rule.
+ */
+export type THolderLiveness = 'alive' | 'dead' | 'unknown';
+
+export const classifyHolderLiveness = (
+	lease: {
+		readonly host?: string | undefined;
+		readonly pid?: number | undefined;
+	},
+	localHost: string,
+	isPidAlive: (pid: number) => boolean,
+): THolderLiveness => {
+	if (lease.pid === undefined || lease.host === undefined) return 'unknown';
+	if (lease.host !== localHost) return 'unknown';
+	return isPidAlive(lease.pid) ? 'alive' : 'dead';
+};
+
+/**
+ * `kill(pid, 0)` sends no signal; it only asks whether the process exists
+ * and is signallable. `EPERM` means it exists but belongs to another
+ * user — alive, and emphatically not ours to declare dead.
+ */
+const isPidAlive = (pid: number): boolean => {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch (error) {
+		return (error as NodeJS.ErrnoException).code === 'EPERM';
+	}
+};
+
+const observeHolderLiveness = (lease: IObservedLockLease): THolderLiveness =>
+	classifyHolderLiveness(
+		lease,
+		LOCAL_HOST,
+		withFileMutexTestHooks?.isPidAlive ?? isPidAlive,
+	);
+
 const isLockLeasePayload = (value: unknown): value is ILockLeasePayload => {
 	if (typeof value !== 'object' || value === null) {
 		return false;
@@ -158,6 +220,25 @@ const isLockLeasePayload = (value: unknown): value is ILockLeasePayload => {
 	);
 };
 
+/**
+ * x00420: `host` and `pid` are read defensively. A sidecar written by an
+ * older build has neither, and a hand-edited one may have anything; in
+ * both cases the reclaimer must fall back to the heartbeat-only
+ * judgement rather than trust a value it cannot verify.
+ */
+const readHolderIdentity = (
+	candidate: Pick<ILockLeasePayload, 'host' | 'pid'>,
+): { host?: string; pid?: number } => ({
+	...(typeof candidate.host === 'string' && candidate.host.length > 0
+		? { host: candidate.host }
+		: {}),
+	...(typeof candidate.pid === 'number' &&
+	Number.isInteger(candidate.pid) &&
+	candidate.pid > 0
+		? { pid: candidate.pid }
+		: {}),
+});
+
 const createLeasePayload = (
 	token: string,
 	nowMs: number,
@@ -167,6 +248,12 @@ const createLeasePayload = (
 	generation: previous?.generation ?? 0,
 	heartbeatAt: nowMs,
 	token,
+	// Always this process: the lease is only ever written by its own
+	// holder (the heartbeat refuses to touch a lease whose token is not
+	// ours), so stamping the current identity is correct on both the
+	// initial write and every refresh.
+	host: LOCAL_HOST,
+	pid: process.pid,
 });
 
 const serializeLeasePayload = (lease: ILockLeasePayload): string =>
@@ -185,6 +272,7 @@ const parseObservedLockLease = (
 				heartbeatAt: parsed.heartbeatAt,
 				mtimeMs,
 				token: parsed.token,
+				...readHolderIdentity(parsed),
 			};
 		}
 	} catch {
@@ -282,6 +370,11 @@ const refreshLeaseHeartbeat = async (
 			generation: current.generation + 1,
 			heartbeatAt: Date.now(),
 			token,
+			// Re-stamped on every refresh: a lease that lost its identity
+			// here would be judged by heartbeat alone from the next tick
+			// on, which is the regression this fix exists to remove.
+			host: LOCAL_HOST,
+			pid: process.pid,
 		};
 		await writeLeaseToHandle(handle, nextLease);
 		await withFileMutexTestHooks?.afterHeartbeat?.({
@@ -378,7 +471,27 @@ export const withFileMutex = async <T>(
 				if (observedLease === undefined) {
 					continue;
 				}
-				if (isLeaseStale(observedLease, Date.now(), staleMs)) {
+				// x00420: a silent heartbeat is not proof of death.
+				// `setInterval` does not fire while the event loop is
+				// busy, and the critical section is exactly where the
+				// holder does its heavy work — four concurrent
+				// `bun run validate` runs are enough to swallow three
+				// consecutive ticks. Judging on the timer alone lets a
+				// contender steal the lock from a live holder, putting
+				// two writers inside the section the mutex exists to
+				// serialise, with no error raised anywhere.
+				//
+				// So staleness only opens the question; the holder's
+				// process answers it. A holder we can see is alive keeps
+				// its lock and we keep waiting (the `timeoutMs` /
+				// `onContention` path below still breaks a real
+				// deadlock). A holder we can see is gone is reclaimed
+				// straight away, faster than before.
+				const liveness = observeHolderLiveness(observedLease);
+				if (
+					isLeaseStale(observedLease, Date.now(), staleMs) &&
+					liveness !== 'alive'
+				) {
 					await withFileMutexTestHooks?.afterObserveStale?.(
 						observedLease,
 					);
@@ -397,7 +510,12 @@ export const withFileMutex = async <T>(
 						}),
 					);
 					try {
-						await sleep(reclaimGraceMs);
+						// A dead holder cannot come back and refresh, so
+						// the grace period buys nothing against it — only
+						// delay. The re-check below still runs: it is what
+						// guards the window where a THIRD contender acts
+						// between our observation and the rename.
+						if (liveness !== 'dead') await sleep(reclaimGraceMs);
 						const recheckedLease = await observeLockLease(lockPath);
 						if (recheckedLease === undefined) {
 							continue;
