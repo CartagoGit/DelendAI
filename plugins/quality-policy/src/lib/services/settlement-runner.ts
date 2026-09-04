@@ -37,7 +37,11 @@ export const runSettlement = async (
 
 	for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
 		try {
-			await execFileAsync('sh', ['-c', cmd], {
+			// `bash`, never `sh` — AGENT-BOOTSTRAP §6. `sh` is dash on
+			// Debian/Ubuntu/WSL, ash on Alpine and an old bash on macOS,
+			// so a validate command using any bash-only syntax silently
+			// behaves differently depending on the machine it settles on.
+			await execFileAsync('bash', ['-c', cmd], {
 				cwd: options.cwd,
 				timeout: 600_000,
 				maxBuffer: 16 * 1024 * 1024,

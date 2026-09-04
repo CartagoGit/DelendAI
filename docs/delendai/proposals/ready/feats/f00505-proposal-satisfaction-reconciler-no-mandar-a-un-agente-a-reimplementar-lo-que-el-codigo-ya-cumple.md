@@ -52,7 +52,8 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
   - "El resultado indica explícitamente por qué no se despachó y qué evidencia lo respalda."
   - "Un caso ambiguo produce `verification-needed` y una acción de verificación, no de implementación."
   - "Una propuesta archivada o congelada nunca entra en la reconciliación."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-f00505
 ### S3 — Barrido de estado desfasado sobre el tablero
 - **Status**: pending
 - **DependsOn**: [S2]
