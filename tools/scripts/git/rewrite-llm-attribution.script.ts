@@ -38,6 +38,8 @@
  *   bun tools/scripts/git/rewrite-llm-attribution.script.ts --repo <path> --apply
  */
 import { spawn, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { llmDomainIn, llmPhraseIn } from '../lint/llm-attribution-rules';
 
@@ -50,38 +52,41 @@ export interface IGitIdentity {
 	readonly email: string;
 }
 
-/** The one identity every rewritten commit is attributed to. */
-export const CANONICAL_OWNER: IGitIdentity = {
-	name: 'Cartago',
-	email: 'cartago.relaxingcup@gmail.com',
-};
-
 /**
- * Identities that are NOT the owner and are still legitimate.
+ * Platform bots that are NOT the owner and are still legitimate.
  *
- * Only two kinds belong here: other humans, and platform bots whose presence
- * carries no claim about who wrote the code. Dependabot is the latter —
- * every repository on GitHub has it, and erasing it would repaint automated
- * dependency bumps as hand-written commits, a worse misattribution than the
- * one being fixed.
+ * A bot whose presence carries no claim about who wrote the code belongs
+ * here. Dependabot is the case: every repository on GitHub has it, and
+ * erasing it would repaint automated dependency bumps as hand-written
+ * commits — a worse misattribution than the one being fixed. These are
+ * public bot identities, not anybody's personal details.
  */
-export const ALLOWED_NON_OWNER_EMAILS: readonly string[] = [
+export const ALLOWED_BOT_EMAILS: readonly string[] = [
 	'49699333+dependabot[bot]@users.noreply.github.com',
 ];
 
 /**
- * Every spelling of the owner's own identity across machines and shells.
- * These are not "allowed through" — they are normalised ONTO the canonical
- * one, which is what collapses the contributor graph to a single person.
+ * The owner identity is READ from the repository's own configuration, never
+ * written down here.
+ *
+ * Two reasons. It is the maintainer's personal name and address, and a
+ * source file committed to a public repository is the last place it should
+ * be duplicated. And it is configuration, not policy: `commit-policy`
+ * already holds the single answer to "who owns this repository's commits",
+ * so a copy in this script is a second answer that can drift from the first.
  */
-export const OWNER_ALIAS_EMAILS: readonly string[] = [
-	'cartago.relaxingcup@gmail.com',
-	'cartago@example.com',
-	'cartago@relaxingcup.dev',
-	'cartago@local',
-	'agent@cartago.dev',
-	'volarich@beateam.es',
-];
+export const readOwnerIdentity = (repo: string): IGitIdentity => {
+	const fromConfig = readConfiguredOwner(repo);
+	if (fromConfig !== undefined) return fromConfig;
+	const name = gitConfig(repo, 'user.name');
+	const email = gitConfig(repo, 'user.email');
+	if (name === undefined || email === undefined)
+		throw new Error(
+			'no owner identity: set plugins.commit-policy.options.identity.owner ' +
+				'in mcp-vertex.config.json, or git config user.name/user.email',
+		);
+	return { name, email };
+};
 
 export type IIdentityVerdict = 'canonical' | 'allowed' | 'rewritten';
 
@@ -89,31 +94,30 @@ export type IIdentityVerdict = 'canonical' | 'allowed' | 'rewritten';
  * Decide what happens to one author/committer identity.
  *
  * `rewritten` is the default on purpose — see the allowlist rationale in the
- * module header.
+ * module header. It also means the owner's OTHER spellings (a second
+ * machine, an old work address) need no enumeration: they are not the
+ * canonical identity, so they are normalised onto it like everything else.
  */
 export const classifyIdentity = (
 	identity: IGitIdentity,
-	allowed: readonly string[] = ALLOWED_NON_OWNER_EMAILS,
-	ownerAliases: readonly string[] = OWNER_ALIAS_EMAILS,
+	owner: IGitIdentity,
+	allowed: readonly string[] = ALLOWED_BOT_EMAILS,
 ): IIdentityVerdict => {
 	const email = identity.email.toLowerCase();
 	if (allowed.some((entry) => entry.toLowerCase() === email))
 		return 'allowed';
-	const isOwnerAlias = ownerAliases.some(
-		(entry) => entry.toLowerCase() === email,
-	);
-	if (
-		isOwnerAlias &&
-		email === CANONICAL_OWNER.email.toLowerCase() &&
-		identity.name === CANONICAL_OWNER.name
-	)
-		return 'canonical';
-	return 'rewritten';
+	return email === owner.email.toLowerCase() && identity.name === owner.name
+		? 'canonical'
+		: 'rewritten';
 };
 
 /** Map an identity through the policy. */
-export const canonicalIdentity = (identity: IGitIdentity): IGitIdentity =>
-	classifyIdentity(identity) === 'allowed' ? identity : CANONICAL_OWNER;
+export const canonicalIdentity = (
+	identity: IGitIdentity,
+	owner: IGitIdentity,
+	allowed: readonly string[] = ALLOWED_BOT_EMAILS,
+): IGitIdentity =>
+	classifyIdentity(identity, owner, allowed) === 'allowed' ? identity : owner;
 
 // ---------------------------------------------------------------------------
 // Message policy
@@ -230,6 +234,7 @@ export interface IRewriteStats {
  */
 export const rewriteFastExportStream = (
 	input: Buffer,
+	owner: IGitIdentity,
 ): { readonly output: Buffer; readonly stats: IRewriteStats } => {
 	const chunks: Buffer[] = [];
 	let commits = 0;
@@ -249,10 +254,10 @@ export const rewriteFastExportStream = (
 		const identity = line.match(IDENTITY_LINE);
 		if (identity !== null) {
 			const [, role, name, email, when] = identity;
-			const mapped = canonicalIdentity({
-				name: name ?? '',
-				email: email ?? '',
-			});
+			const mapped = canonicalIdentity(
+				{ name: name ?? '', email: email ?? '' },
+				owner,
+			);
 			if (mapped.name !== name || mapped.email !== email)
 				identitiesRewritten += 1;
 			chunks.push(
@@ -306,6 +311,61 @@ const git = (repo: string, args: readonly string[]): string => {
 	return res.stdout;
 };
 
+function gitConfig(repo: string, key: string): string | undefined {
+	const res = spawnSync('git', ['-C', repo, 'config', '--get', key], {
+		encoding: 'utf8',
+	});
+	const value = (res.stdout ?? '').trim();
+	return res.status === 0 && value.length > 0 ? value : undefined;
+}
+
+/**
+ * The owner declared by `commit-policy` in `mcp-vertex.config.json`.
+ *
+ * Returns `undefined` rather than throwing when the file is absent or the
+ * field is unset: this script must also work in a bare clone (the safest
+ * place to run a rewrite), where there is no working tree to read it from,
+ * and the git-config fallback answers there.
+ */
+function readConfiguredOwner(repo: string): IGitIdentity | undefined {
+	const raw = ((): string | undefined => {
+		try {
+			return readFileSync(join(repo, 'mcp-vertex.config.json'), 'utf8');
+		} catch {
+			return undefined;
+		}
+	})();
+	if (raw === undefined) return undefined;
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch {
+		return undefined;
+	}
+	const owner = readPath(parsed, [
+		'plugins',
+		'commit-policy',
+		'options',
+		'identity',
+		'owner',
+	]);
+	const name = readPath(owner, ['name']);
+	const email = readPath(owner, ['email']);
+	return typeof name === 'string' && typeof email === 'string'
+		? { name, email }
+		: undefined;
+}
+
+/** Walk a parsed-JSON value by key path, yielding `undefined` at any miss. */
+function readPath(value: unknown, path: readonly string[]): unknown {
+	let current = value;
+	for (const key of path) {
+		if (typeof current !== 'object' || current === null) return undefined;
+		current = (current as Record<string, unknown>)[key];
+	}
+	return current;
+}
+
 const exportStream = async (repo: string): Promise<Buffer> =>
 	new Promise((resolve, reject) => {
 		const child = spawn(
@@ -356,7 +416,10 @@ export interface IIdentityAuditRow {
 }
 
 /** Every author/committer identity in the repository, with its verdict. */
-export const auditIdentities = (repo: string): readonly IIdentityAuditRow[] => {
+export const auditIdentities = (
+	repo: string,
+	owner: IGitIdentity,
+): readonly IIdentityAuditRow[] => {
 	const seen = new Map<string, { identity: IGitIdentity; commits: number }>();
 	for (const role of ['%an <%ae>', '%cn <%ce>']) {
 		const log = git(repo, ['log', '--all', `--format=${role}`]);
@@ -373,7 +436,7 @@ export const auditIdentities = (repo: string): readonly IIdentityAuditRow[] => {
 	return [...seen.values()]
 		.map((entry) => ({
 			...entry,
-			verdict: classifyIdentity(entry.identity),
+			verdict: classifyIdentity(entry.identity, owner),
 		}))
 		.sort((left, right) => right.commits - left.commits);
 };
@@ -384,13 +447,14 @@ const main = async (): Promise<number> => {
 	const repo = repoAt === -1 ? process.cwd() : (args[repoAt + 1] ?? '.');
 	const apply = args.includes('--apply');
 
-	for (const row of auditIdentities(repo))
+	const owner = readOwnerIdentity(repo);
+	for (const row of auditIdentities(repo, owner))
 		console.log(
 			`  ${row.verdict.padEnd(9)} ${String(row.commits).padStart(5)}  ${row.identity.name} <${row.identity.email}>`,
 		);
 
 	const stream = await exportStream(repo);
-	const { output, stats } = rewriteFastExportStream(stream);
+	const { output, stats } = rewriteFastExportStream(stream, owner);
 	console.log(
 		`commits=${stats.commits} identities-rewritten=${stats.identitiesRewritten} messages-changed=${stats.messagesChanged}`,
 	);

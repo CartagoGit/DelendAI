@@ -29,6 +29,12 @@ const LLM_PHRASES: ReadonlyArray<readonly string[]> = [
 	['claude', '4'],
 	['claude', '5'],
 	['claude', '3'],
+	// The product name, not a model name. It is what the "Generated with"
+	// footer actually says — 29 pull requests on this repository carry
+	// `Generated with [Claude Code]` and none of them named a model, so a
+	// rule that only knew model names saw every one of them as clean.
+	['claude', 'code'],
+	['github', 'copilot'],
 	// minimax
 	['minimax', 'm3'],
 	['minimax', 'opus'],
@@ -85,6 +91,9 @@ const LLM_PHRASES: ReadonlyArray<readonly string[]> = [
 
 const LLM_DOMAINS: ReadonlyArray<string> = [
 	'anthropic.com',
+	'claude.com',
+	'claude.ai',
+	'openai.com',
 	'minimax.ai',
 	'minimax.local',
 	'users.noreply.github.com',
