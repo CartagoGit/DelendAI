@@ -1,364 +1,405 @@
 #!/usr/bin/env bun
 /**
- * rewrite-llm-attribution.script.ts — f00500 S8b.
+ * rewrite-llm-attribution.script.ts — f00500 S8.
  *
- * DESTRUCTIVE history rewrite. Removes every LLM-attributing trailer
- * (`Co-Authored-By: Claude ...`, `Co-Authored-By: MiniMax M3 ...`, etc.)
- * from the commit history, AND collapses every LLM-attributed author onto
- * the canonical `Cartago <cartago.relaxingcup@gmail.com>` identity using
- * the repo's `.mailmap` file.
+ * Strips LLM attribution from git history: the `Co-Authored-By: <model>`
+ * trailers, the `Generated with <tool>` footers, the agent branch names
+ * baked into merge subjects, and the ~30 synthetic author/committer
+ * identities (`copilot-minimax-m3`, `mcp-vertex@MiniMax.local`,
+ * `MCP-V Bot <ci@anthropic.com>`, ...) that swarm runs recorded before
+ * `commit-policy` was switched to `identity.mode: 'explicit'`.
  *
- * This script is NEVER executed automatically. It is the runbook half of
- * S8d: an operator must:
- *   1. Coordinate with all collaborators.
- *   2. Run `git clone --mirror` to take a backup.
- *   3. Run this script in `--apply` mode on a fresh clone of the mirror.
- *   4. Verify `git log --all --format='%B' | grep -ciE 'co-authored-by:.*(claude|minimax|gpt|gemini|codex|llama|mistral|qwen|deepseek|chatgpt|grok)'` returns 0.
- *   5. Force-push to origin (re-clone for collaborators).
- *   6. Leave the old refs in `refs/original/*` for 30 days.
+ * ## Why a fast-export pipe and not `git filter-repo --replace-message`
  *
- * The script defaults to `--dry-run` mode: it prints a report of what
- * WOULD change, never touching history. `--apply` performs the rewrite.
+ * filter-repo takes its message rules as a regex file and its callbacks as
+ * Python. Either way the logic that RUNS during the rewrite would be a
+ * second copy of the logic this repo TESTS, and this codebase has been bitten
+ * repeatedly by exactly that shape — a writer and a reader that agree only
+ * until one of them is edited. So the transform is one tested TypeScript
+ * function, `rewriteFastExportStream`, and git only supplies and re-consumes
+ * the stream around it.
  *
- * Tools:
- *   - `git filter-repo` (preferred, requires `pip install git-filter-repo`).
- *   - Falls back to `git filter-branch` if filter-repo is unavailable.
+ * ## Why identities are an allowlist, not a denylist
+ *
+ * A denylist of LLM vendors is out of date the day a new model ships, and
+ * the cost of a missing entry is the exact leak this proposal exists to
+ * close. So: every identity that is not a KNOWN human collaborator or
+ * platform bot is rewritten to the repository owner. A new agent identity,
+ * a new vendor, a new hostname — all covered already, without an edit.
+ *
+ * ## Safety
+ *
+ * The rewrite is irreversible on the remote. Always take a bundle first
+ * (`git bundle create <path> --all`); `--dry-run` (the default) reports what
+ * would change without touching any ref.
  *
  * Usage:
- *   bun tools/scripts/git/rewrite-llm-attribution.script.ts               # dry-run report
- *   bun tools/scripts/git/rewrite-llm-attribution.script.ts --apply      # execute the rewrite
- *   bun tools/scripts/git/rewrite-llm-attribution.script.ts --backup     # take a mirror backup
+ *   bun tools/scripts/git/rewrite-llm-attribution.script.ts
+ *   bun tools/scripts/git/rewrite-llm-attribution.script.ts --repo <path> --apply
  */
-import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { spawn, spawnSync } from 'node:child_process';
 
-const ARGS = process.argv.slice(2);
-const APPLY = ARGS.includes('--apply');
-const BACKUP = ARGS.includes('--backup');
+import { llmDomainIn, llmPhraseIn } from '../lint/llm-attribution-rules';
 
-// Phrases that name an LLM in a trailer value. MUST stay in sync with
-// `tools/scripts/lint/no-llm-attribution.script.ts#LLM_PHRASES`.
-const LLM_PHRASES: ReadonlyArray<readonly string[]> = [
-	['claude', 'opus'],
-	['claude', 'sonnet'],
-	['claude', 'haiku'],
-	['claude', 'fable', '5'],
-	['claude', 'minimax', 'm3'],
-	['claude', 'chat'],
-	['claude', 'm3'],
-	['claude', '4'],
-	['claude', '5'],
-	['claude', '3'],
-	['minimax', 'm3'],
-	['minimax', 'opus'],
-	['minimax', 'sonnet'],
-	['minimax', 'pro'],
-	['minimax', 'mini'],
-	['gpt', '3'],
-	['gpt', '4'],
-	['gpt', '5'],
-	['gpt', '4o'],
-	['gpt', '5o'],
-	['chatgpt'],
-	['gemini', '1'],
-	['gemini', '2'],
-	['gemini', '3'],
-	['gemini', 'pro'],
-	['gemini', 'ultra'],
-	['gemini', 'flash'],
-	['copilot', 'minimax', 'm3'],
-	['copilot', 'gpt'],
-	['copilot', 'claude'],
-	['codex', 'gpt', '5'],
-	['codex', 'gpt'],
-	['codex', 'minimax'],
-	['grok', '1'],
-	['grok', '2'],
-	['grok', '3'],
-	['grok', '4'],
-	['llama', '2'],
-	['llama', '3'],
-	['llama', '4'],
-	['mistral', '7b'],
-	['mixtral'],
-	['qwen', '2'],
-	['qwen', '3'],
-	['deepseek', 'v1'],
-	['deepseek', 'v2'],
-	['deepseek', 'v3'],
-];
-const LLM_DOMAINS: ReadonlyArray<string> = [
-	'anthropic.com',
-	'minimax.ai',
-	'minimax.local',
-	'users.noreply.github.com',
-	'copilot@local',
-	'copilot@anthropic',
-];
+// ---------------------------------------------------------------------------
+// Identity policy
+// ---------------------------------------------------------------------------
 
-const tokenize = (s: string): readonly string[] =>
-	s
-		.toLowerCase()
-		.split(/[^a-z0-9]+/u)
-		.filter((t) => t.length > 0);
+export interface IGitIdentity {
+	readonly name: string;
+	readonly email: string;
+}
 
-const matchesLlmPhrase = (
-	tokens: readonly string[],
-): readonly string[] | null => {
-	for (const phrase of LLM_PHRASES) {
-		for (let i = 0; i + phrase.length <= tokens.length; i++) {
-			let ok = true;
-			for (let j = 0; j < phrase.length; j++) {
-				if (tokens[i + j] !== phrase[j]) {
-					ok = false;
-					break;
-				}
-			}
-			if (ok) return phrase;
-		}
-	}
-	return null;
+/** The one identity every rewritten commit is attributed to. */
+export const CANONICAL_OWNER: IGitIdentity = {
+	name: 'Cartago',
+	email: 'cartago.relaxingcup@gmail.com',
 };
 
-const matchesLlmDomain = (value: string): string | null => {
-	const lower = value.toLowerCase();
-	for (const d of LLM_DOMAINS) {
-		const re = new RegExp(
-			`(?:^|[^a-z0-9])@?${d.replace(/\./gu, '\\.')}`,
-			'iu',
-		);
-		if (re.test(lower)) return d;
-	}
-	return null;
-};
+/**
+ * Identities that are NOT the owner and are still legitimate.
+ *
+ * Only two kinds belong here: other humans, and platform bots whose presence
+ * carries no claim about who wrote the code. Dependabot is the latter —
+ * every repository on GitHub has it, and erasing it would repaint automated
+ * dependency bumps as hand-written commits, a worse misattribution than the
+ * one being fixed.
+ */
+export const ALLOWED_NON_OWNER_EMAILS: readonly string[] = [
+	'49699333+dependabot[bot]@users.noreply.github.com',
+];
 
-const trailerIsLlm = (line: string): boolean => {
-	const m = line.match(/^[A-Za-z][\w-]*\s*:\s*(.+)$/u);
-	if (m === null) return false;
-	const value = (m[1] ?? '').replace(/[<>"'`]+/gu, ' ').trim();
-	const tokens = tokenize(value);
-	return (
-		matchesLlmPhrase(tokens) !== null || matchesLlmDomain(value) !== null
+/**
+ * Every spelling of the owner's own identity across machines and shells.
+ * These are not "allowed through" — they are normalised ONTO the canonical
+ * one, which is what collapses the contributor graph to a single person.
+ */
+export const OWNER_ALIAS_EMAILS: readonly string[] = [
+	'cartago.relaxingcup@gmail.com',
+	'cartago@example.com',
+	'cartago@relaxingcup.dev',
+	'cartago@local',
+	'agent@cartago.dev',
+	'volarich@beateam.es',
+];
+
+export type IIdentityVerdict = 'canonical' | 'allowed' | 'rewritten';
+
+/**
+ * Decide what happens to one author/committer identity.
+ *
+ * `rewritten` is the default on purpose — see the allowlist rationale in the
+ * module header.
+ */
+export const classifyIdentity = (
+	identity: IGitIdentity,
+	allowed: readonly string[] = ALLOWED_NON_OWNER_EMAILS,
+	ownerAliases: readonly string[] = OWNER_ALIAS_EMAILS,
+): IIdentityVerdict => {
+	const email = identity.email.toLowerCase();
+	if (allowed.some((entry) => entry.toLowerCase() === email))
+		return 'allowed';
+	const isOwnerAlias = ownerAliases.some(
+		(entry) => entry.toLowerCase() === email,
 	);
+	if (
+		isOwnerAlias &&
+		email === CANONICAL_OWNER.email.toLowerCase() &&
+		identity.name === CANONICAL_OWNER.name
+	)
+		return 'canonical';
+	return 'rewritten';
 };
 
-const runGit = (
-	cwd: string,
-	args: readonly string[],
-): { ok: boolean; stdout: string; stderr: string } => {
-	const res = spawnSync('git', ['--no-pager', ...args], {
-		cwd,
-		encoding: 'utf8',
-	});
+/** Map an identity through the policy. */
+export const canonicalIdentity = (identity: IGitIdentity): IGitIdentity =>
+	classifyIdentity(identity) === 'allowed' ? identity : CANONICAL_OWNER;
+
+// ---------------------------------------------------------------------------
+// Message policy
+// ---------------------------------------------------------------------------
+
+const TRAILER_LINE = /^([A-Za-z][\w-]*)\s*:\s*(.+)$/u;
+
+const ATTRIBUTION_TRAILER =
+	/^(?:co-?authored-by|signed-off-by|generated-?with|generated-?by|helped-?by|thanked)$/iu;
+
+const GENERATED_FOOTER =
+	/^\s*\W*\s*(?:generated|written|built|crafted|created|produced)\s+(?:with|by|using)\s+(.+)$/iu;
+
+/**
+ * Agent branch names leak the vendor into merge subjects
+ * (`Merge branch 'agent/copilot-minimax-m3-s57' into develop`). The branch
+ * itself is long gone; only the sentence survives, so the sentence is what
+ * gets neutralised.
+ */
+const AGENT_BRANCH =
+	/\bagent\/(?:claude|copilot|minimax|gpt|codex|gemini|grok|llama|mistral|qwen|deepseek)[a-z0-9]*-?/giu;
+
+const neutraliseAgentBranches = (line: string): string =>
+	line.replace(AGENT_BRANCH, 'agent/');
+
+/**
+ * True when this single line is pure LLM attribution and carries nothing
+ * else — the only case where deleting the whole line is safe.
+ */
+export const isLlmAttributionLine = (line: string): boolean => {
+	const trailer = line.match(TRAILER_LINE);
+	if (trailer !== null) {
+		const [, key, value] = trailer;
+		if (key === undefined || value === undefined) return false;
+		if (!ATTRIBUTION_TRAILER.test(key)) return false;
+		return llmPhraseIn(value) !== null || llmDomainIn(value) !== null;
+	}
+	const footer = line.match(GENERATED_FOOTER);
+	if (footer !== null) {
+		const tail = footer[1] ?? '';
+		return llmPhraseIn(tail) !== null || llmDomainIn(tail) !== null;
+	}
+	return false;
+};
+
+/**
+ * Strip LLM attribution from one commit message.
+ *
+ * Deletes whole attribution lines, neutralises agent branch names in the
+ * lines that remain, and collapses the blank runs the deletions leave
+ * behind, so a message that ended in a trailer block does not end in three
+ * blank lines.
+ */
+export const sanitizeCommitMessage = (message: string): string => {
+	const kept: string[] = [];
+	for (const line of message.split('\n')) {
+		if (isLlmAttributionLine(line)) continue;
+		kept.push(neutraliseAgentBranches(line));
+	}
+	const collapsed: string[] = [];
+	for (const line of kept) {
+		const previous = collapsed[collapsed.length - 1];
+		if (
+			line.trim() === '' &&
+			previous !== undefined &&
+			previous.trim() === ''
+		)
+			continue;
+		collapsed.push(line);
+	}
+	while (
+		collapsed.length > 0 &&
+		(collapsed[collapsed.length - 1] ?? '').trim() === ''
+	)
+		collapsed.pop();
+	// A commit message is a line-oriented file: git writes it with a
+	// trailing newline, and an empty message must stay empty rather than
+	// become a lone newline.
+	return collapsed.length === 0 ? '' : `${collapsed.join('\n')}\n`;
+};
+
+// ---------------------------------------------------------------------------
+// fast-export stream transform
+// ---------------------------------------------------------------------------
+
+const IDENTITY_LINE = /^(author|committer|tagger) (.*) <([^>]*)> (.*)$/u;
+
+export interface IRewriteStats {
+	readonly commits: number;
+	readonly identitiesRewritten: number;
+	readonly messagesChanged: number;
+}
+
+/**
+ * Rewrite a `git fast-export` stream in place.
+ *
+ * Works on bytes, not on a decoded string: a `data <n>` header counts BYTES,
+ * so sanitising a message that contains any non-ASCII character (this
+ * repository's messages are half Spanish) and re-emitting the original count
+ * would desynchronise the stream and corrupt every commit after it.
+ *
+ * A `data` block is treated as a message only when it directly follows an
+ * identity line, which is what distinguishes it from a blob.
+ */
+export const rewriteFastExportStream = (
+	input: Buffer,
+): { readonly output: Buffer; readonly stats: IRewriteStats } => {
+	const chunks: Buffer[] = [];
+	let commits = 0;
+	let identitiesRewritten = 0;
+	let messagesChanged = 0;
+	let afterIdentity = false;
+	let offset = 0;
+
+	while (offset < input.length) {
+		const newlineAt = input.indexOf(0x0a, offset);
+		const lineEnd = newlineAt === -1 ? input.length : newlineAt;
+		const line = input.subarray(offset, lineEnd).toString('utf8');
+		offset = lineEnd + 1;
+
+		if (line.startsWith('commit ')) commits += 1;
+
+		const identity = line.match(IDENTITY_LINE);
+		if (identity !== null) {
+			const [, role, name, email, when] = identity;
+			const mapped = canonicalIdentity({
+				name: name ?? '',
+				email: email ?? '',
+			});
+			if (mapped.name !== name || mapped.email !== email)
+				identitiesRewritten += 1;
+			chunks.push(
+				Buffer.from(
+					`${role ?? ''} ${mapped.name} <${mapped.email}> ${when ?? ''}\n`,
+					'utf8',
+				),
+			);
+			afterIdentity = true;
+			continue;
+		}
+
+		const data = line.match(/^data (\d+)$/u);
+		if (data !== null && afterIdentity) {
+			const size = Number(data[1]);
+			const payload = input.subarray(offset, offset + size);
+			offset += size;
+			const original = payload.toString('utf8');
+			const sanitized = sanitizeCommitMessage(original);
+			if (sanitized !== original) messagesChanged += 1;
+			const body = Buffer.from(sanitized, 'utf8');
+			chunks.push(Buffer.from(`data ${body.length}\n`, 'utf8'), body);
+			afterIdentity = false;
+			continue;
+		}
+
+		// `encoding`/`original-oid` sit between the identity and its data
+		// block, so they must not clear the flag.
+		if (!line.startsWith('encoding ') && !line.startsWith('original-oid '))
+			afterIdentity = false;
+		chunks.push(Buffer.from(`${line}\n`, 'utf8'));
+	}
+
 	return {
-		ok: res.status === 0,
-		stdout: res.stdout ?? '',
-		stderr: res.stderr ?? '',
+		output: Buffer.concat(chunks),
+		stats: { commits, identitiesRewritten, messagesChanged },
 	};
 };
 
-const report = (title: string, body: string): void => {
-	console.log(`\n=== ${title} ===`);
-	console.log(body);
+// ---------------------------------------------------------------------------
+// Driver
+// ---------------------------------------------------------------------------
+
+const git = (repo: string, args: readonly string[]): string => {
+	const res = spawnSync('git', ['-C', repo, ...args], {
+		encoding: 'utf8',
+		maxBuffer: 1024 * 1024 * 512,
+	});
+	if (res.status !== 0)
+		throw new Error(`git ${args.join(' ')} failed: ${res.stderr}`);
+	return res.stdout;
 };
 
-const main = (): void => {
-	if (BACKUP) {
-		const remote = runGit(process.cwd(), ['remote', 'get-url', 'origin']);
-		if (!remote.ok) {
-			console.error(
-				'rewrite-llm-attribution: cannot determine origin URL',
-			);
-			process.exit(2);
-		}
-		const url = remote.stdout.trim();
-		const stamp = new Date().toISOString().replace(/[:.]/gu, '-');
-		const target = join(
-			process.cwd(),
-			`..`,
-			`mcp-vertex-backup-${stamp}.git`,
-		);
-		console.log(`Cloning mirror to ${target}…`);
-		const res = spawnSync('git', ['clone', '--mirror', url, target], {
-			encoding: 'utf8',
-		});
-		if (res.status !== 0) {
-			console.error('mirror clone failed:', res.stderr);
-			process.exit(1);
-		}
-		console.log(`Mirror saved at ${target}.`);
-		return;
-	}
-
-	if (!existsSync('.mailmap')) {
-		console.error(
-			'rewrite-llm-attribution: no .mailmap at repo root. Run S8a first.',
-		);
-		process.exit(2);
-	}
-
-	// 1) Report: how many commits contain an LLM trailer?
-	const log = runGit(process.cwd(), [
-		'log',
-		'--all',
-		'--format=%H%n%B%n---END---',
-	]);
-	if (log.stdout.length === 0) {
-		console.error(
-			'git log returned no output:',
-			log.stderr || '(no stderr)',
-		);
-		process.exit(2);
-	}
-	const commits = log.stdout
-		.split('---END---')
-		.map((c) => c.trim())
-		.filter(Boolean);
-	let totalLlmCommits = 0;
-	let totalLlmTrailers = 0;
-	const sampleCommits: string[] = [];
-	for (const c of commits) {
-		const lines = c.split('\n');
-		const hash = lines[0] ?? '';
-		const body = lines.slice(1).join('\n');
-		const offending = body.split('\n').filter((l) => trailerIsLlm(l));
-		if (offending.length > 0) {
-			totalLlmCommits++;
-			totalLlmTrailers += offending.length;
-			if (sampleCommits.length < 5) {
-				sampleCommits.push(
-					`  ${hash.slice(0, 12)}: ${offending.length} trailer(s)`,
-				);
-			}
-		}
-	}
-	report(
-		'Trailer scan',
-		`Total commits scanned: ${commits.length}\n` +
-			`Commits with at least one LLM trailer: ${totalLlmCommits}\n` +
-			`Total LLM trailer lines: ${totalLlmTrailers}\n` +
-			`Samples (up to 5):\n${sampleCommits.join('\n') || '  (none)'}`,
-	);
-
-	// 2) Report: how many unique authors are in .mailmap?
-	const mailmapLines = readFileSync('.mailmap', 'utf8')
-		.split('\n')
-		.filter((l) => l.length > 0 && !l.startsWith('#'));
-	report('Mailmap entries', `${mailmapLines.length} non-comment lines`);
-
-	if (!APPLY) {
-		console.log(
-			'\nDRY RUN complete. Re-run with --apply to perform the rewrite.\n' +
-				'DO NOT --apply without first running --backup and reading docs/mcp-vertex/wiki/git-history-rewrite.md.\n',
-		);
-		return;
-	}
-
-	// 3) Apply the rewrite.
-	// Strategy: write a Python file that drives `git filter-repo` to:
-	//   (a) apply .mailmap for author rewriting
-	//   (b) remove every line that matches the LLM trailer pattern
-	// If filter-repo is unavailable, fall back to `git filter-branch`
-	// with --msg-filter and a simpler mailmap-rewrite.
-	console.log('Applying rewrite…');
-	const frCheck = runGit(process.cwd(), ['--version']);
-	if (frCheck.ok) {
-		// Generate a small filter-repo callback
-		const callback = join(process.cwd(), '.rewrite-filter.py');
-		const script = `#!/usr/bin/env python3
-"""git-filter-repo callback for f00500 S8b."""
-import re
-PHRASES = ${JSON.stringify(LLM_PHRASES.map((p) => [...p]))}
-DOMAINS = ${JSON.stringify(LLM_DOMAINS)}
-
-def tokenize(s):
-    return [t for t in re.split(r'[^a-z0-9]+', s.lower()) if t]
-
-def is_llm_line(line):
-    m = re.match(r'^[A-Za-z][\\w-]*\\s*:\\s*(.+)$', line)
-    if not m:
-        return False
-    value = re.sub(r'[<>"\\'\\\`]+', ' ', m.group(1)).strip()
-    tokens = tokenize(value)
-    for phrase in PHRASES:
-        for i in range(len(tokens) - len(phrase) + 1):
-            if tokens[i:i+len(phrase)] == phrase:
-                return True
-    for d in DOMAINS:
-        if re.search(r'(?:^|[^a-z0-9])@?' + re.escape(d), value, re.IGNORECASE):
-            return True
-    return False
-
-def filter_message(message):
-    if not message:
-        return message
-    out = []
-    for line in message.split('\\n'):
-        if not is_llm_line(line):
-            out.append(line)
-    return '\\n'.join(out).rstrip() + '\\n'
-`;
-		writeFileSync(callback, script, 'utf8');
-		const fr = spawnSync(
+const exportStream = async (repo: string): Promise<Buffer> =>
+	new Promise((resolve, reject) => {
+		const child = spawn(
 			'git',
 			[
-				'filter-repo',
-				'--force',
-				'--mailmap',
-				'.mailmap',
-				'--message-callback',
-				`cat > /tmp/msg-filter-input; python3 ${callback} < /tmp/msg-filter-input`,
-			],
-			{ encoding: 'utf8' },
-		);
-		if (fr.status !== 0) {
-			console.error('filter-repo failed:', fr.stderr);
-			process.exit(1);
-		}
-		rmSync(callback, { force: true });
-	} else {
-		// Fallback: git filter-branch with --msg-filter
-		console.warn(
-			'git-filter-repo not available; using git filter-branch (slower).',
-		);
-		const fb = spawnSync(
-			'git',
-			[
-				'filter-branch',
-				'-f',
-				'--msg-filter',
-				`cat > /tmp/msg; node -e "
-const phrases = ${JSON.stringify(LLM_PHRASES.map((p) => [...p]))};
-const domains = ${JSON.stringify(LLM_DOMAINS)};
-const text = require('fs').readFileSync('/tmp/msg', 'utf8');
-const out = text.split('\\n').filter(l => {
-  const m = l.match(/^[A-Za-z][\\w-]*\\s*:\\s*(.+)$/);
-  if (!m) return true;
-  const val = m[1].replace(/[<>\\"\\'\\\`]+/g, ' ').trim();
-  const tokens = val.toLowerCase().split(/[^a-z0-9]+/).filter(t => t);
-  for (const p of phrases) for (let i=0;i+ p.length<=tokens.length;i++) if (tokens.slice(i,i+p.length).join(' ')===p.join(' ')) return false;
-  for (const d of domains) if (new RegExp('(?:^|[^a-z0-9])@?' + d.replace(/\\\\./g,'\\\\\\\\.'),'i').test(val)) return false;
-  return true;
-});
-process.stdout.write(out.join('\\n').replace(/\\n+$/,'') + '\\n');
-";`,
-				'--',
+				'-C',
+				repo,
+				'fast-export',
 				'--all',
+				'--no-data',
+				'--reencode=yes',
+				'--signed-tags=strip',
+				'--tag-of-filtered-object=rewrite',
+				'--use-done-feature',
 			],
-			{ encoding: 'utf8' },
+			{ stdio: ['ignore', 'pipe', 'inherit'] },
 		);
-		if (fb.status !== 0) {
-			console.error('filter-branch failed:', fb.stderr);
-			process.exit(1);
+		const parts: Buffer[] = [];
+		child.stdout.on('data', (chunk: Buffer) => parts.push(chunk));
+		child.on('error', reject);
+		child.on('close', (code) =>
+			code === 0
+				? resolve(Buffer.concat(parts))
+				: reject(new Error(`fast-export exited ${String(code)}`)),
+		);
+	});
+
+const importStream = async (repo: string, stream: Buffer): Promise<void> =>
+	new Promise((resolve, reject) => {
+		const child = spawn(
+			'git',
+			['-C', repo, 'fast-import', '--force', '--quiet'],
+			{ stdio: ['pipe', 'inherit', 'inherit'] },
+		);
+		child.on('error', reject);
+		child.on('close', (code) =>
+			code === 0
+				? resolve()
+				: reject(new Error(`fast-import exited ${String(code)}`)),
+		);
+		child.stdin.end(stream);
+	});
+
+export interface IIdentityAuditRow {
+	readonly identity: IGitIdentity;
+	readonly verdict: IIdentityVerdict;
+	readonly commits: number;
+}
+
+/** Every author/committer identity in the repository, with its verdict. */
+export const auditIdentities = (repo: string): readonly IIdentityAuditRow[] => {
+	const seen = new Map<string, { identity: IGitIdentity; commits: number }>();
+	for (const role of ['%an <%ae>', '%cn <%ce>']) {
+		const log = git(repo, ['log', '--all', `--format=${role}`]);
+		for (const raw of log.split('\n')) {
+			const match = raw.match(/^(.*) <([^>]*)>$/u);
+			if (match === null) continue;
+			const identity = { name: match[1] ?? '', email: match[2] ?? '' };
+			const key = `${identity.name} ${identity.email}`;
+			const entry = seen.get(key) ?? { identity, commits: 0 };
+			entry.commits += 1;
+			seen.set(key, entry);
 		}
 	}
-
-	console.log(
-		'Rewrite complete.\n' +
-			"Verification: git log --all --format='%B' | grep -ciE 'co-authored-by:.*(claude|minimax|gpt-?[3-9]|gemini|codex|llama|mistral|qwen|deepseek|chatgpt|grok)' should now be 0.\n" +
-			'Coordinate force-push with collaborators. Leave refs/original/* intact for 30 days.',
-	);
+	return [...seen.values()]
+		.map((entry) => ({
+			...entry,
+			verdict: classifyIdentity(entry.identity),
+		}))
+		.sort((left, right) => right.commits - left.commits);
 };
 
-main();
+const main = async (): Promise<number> => {
+	const args = process.argv.slice(2);
+	const repoAt = args.indexOf('--repo');
+	const repo = repoAt === -1 ? process.cwd() : (args[repoAt + 1] ?? '.');
+	const apply = args.includes('--apply');
+
+	for (const row of auditIdentities(repo))
+		console.log(
+			`  ${row.verdict.padEnd(9)} ${String(row.commits).padStart(5)}  ${row.identity.name} <${row.identity.email}>`,
+		);
+
+	const stream = await exportStream(repo);
+	const { output, stats } = rewriteFastExportStream(stream);
+	console.log(
+		`commits=${stats.commits} identities-rewritten=${stats.identitiesRewritten} messages-changed=${stats.messagesChanged}`,
+	);
+
+	if (!apply) {
+		console.log('dry run: no refs touched (pass --apply to rewrite)');
+		return 0;
+	}
+
+	await importStream(repo, output);
+	console.log('rewrite applied. Verify, then force-push.');
+	return 0;
+};
+
+if (import.meta.main) {
+	main()
+		.then((code) => process.exit(code))
+		.catch((error: unknown) => {
+			console.error(`rewrite-llm-attribution: ${String(error)}`);
+			process.exit(1);
+		});
+}
