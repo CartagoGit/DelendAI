@@ -46,44 +46,42 @@ describe('definePluginManifest', () => {
 			expect(() => definePluginManifest(base)).not.toThrow();
 		});
 
-		it('accepts a declared block and keeps it on the manifest', () => {
+		it('accepts an override of the wording alone', () => {
 			const manifest = definePluginManifest({
 				...base,
-				configDocs: {
-					summary: 'Automatiza el navegador.',
-					docs: 'docs/delendai/plugins/browser.md',
-					defaultEnabled: false,
-				},
+				configDocs: { summary: 'Automatiza el navegador.' },
+			});
+
+			expect(manifest.configDocs?.summary).toBe(
+				'Automatiza el navegador.',
+			);
+		});
+
+		it('accepts an override of the docs pointer alone', () => {
+			const manifest = definePluginManifest({
+				...base,
+				configDocs: { docs: 'https://delendai.dev/browser' },
 			});
 
 			expect(manifest.configDocs?.docs).toBe(
-				'docs/delendai/plugins/browser.md',
+				'https://delendai.dev/browser',
 			);
-			expect(manifest.configDocs?.defaultEnabled).toBe(false);
 		});
 
-		it('rejects a summary too short to teach the user anything', () => {
+		it('rejects a summary too short to replace a real one', () => {
 			expect(() =>
 				definePluginManifest({
 					...base,
-					configDocs: {
-						summary: 'browser',
-						docs: 'docs/delendai/plugins/browser.md',
-						defaultEnabled: false,
-					},
+					configDocs: { summary: 'browser' },
 				}),
 			).toThrow(/configDocs.summary/u);
 		});
 
-		it('rejects an empty docs pointer', () => {
+		it('rejects a blank docs pointer', () => {
 			expect(() =>
 				definePluginManifest({
 					...base,
-					configDocs: {
-						summary: 'Automatiza el navegador.',
-						docs: '   ',
-						defaultEnabled: false,
-					},
+					configDocs: { docs: '   ' },
 				}),
 			).toThrow(/configDocs.docs/u);
 		});

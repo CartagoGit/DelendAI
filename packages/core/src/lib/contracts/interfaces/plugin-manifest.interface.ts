@@ -27,26 +27,25 @@ export type IPluginManifestTokenBudget =
 	| IPluginTokenBudget;
 
 /**
- * f00502 S3: what `delendai init` writes above this plugin's entry in
- * `delendai.config.json`, and what the docs site and the config schema
- * render for it.
+ * f00502 S3: OVERRIDES for what `delendai init` writes above this
+ * plugin's entry in `delendai.config.json`.
  *
- * It exists so that text has exactly one home. Writing it by hand in an
- * init template would fork it from the docs the moment either changed,
- * and the generated config is supposed to teach the user what the
- * plugin does without sending them to look it up.
+ * Both fields are optional on purpose. The manifest already carries a
+ * `summary`, and every plugin already has a generated documentation
+ * page at the conventional path, so `resolvePluginConfigDocs` derives
+ * the comment from what exists instead of asking 56 manifests to
+ * repeat it. A plugin declares this block only when the config file
+ * needs different wording from the catalog summary, or when its
+ * options are documented somewhere other than the conventional page.
+ *
+ * Enablement is deliberately absent: the preset decides what is
+ * enabled, and a manifest-level default would fight it.
  */
 export interface IPluginConfigDocs {
-	/** One line, written for the user reading their own config file. */
-	readonly summary: string;
-	/** Where the full options live, as a repo-relative path or a URL. */
-	readonly docs: string;
-	/**
-	 * Whether a preset that does not mention this plugin should leave it
-	 * enabled. The preset still decides; this is the fallback answer
-	 * when it says nothing.
-	 */
-	readonly defaultEnabled: boolean;
+	/** Replaces the manifest `summary` in the config comment. */
+	readonly summary?: string | undefined;
+	/** Replaces the conventional docs path, as a repo path or a URL. */
+	readonly docs?: string | undefined;
 }
 
 export interface IPluginManifest {
@@ -79,9 +78,8 @@ export interface IPluginManifest {
 	/** Plugin registration creates lifecycle side effects during boot. */
 	readonly startupActivation?: boolean | undefined;
 	/**
-	 * Documentation `init` and the docs site read to describe this
-	 * plugin's configuration. Optional while plugins adopt it; once a
-	 * plugin declares it, it is the only source for that text.
+	 * Overrides for the configuration comment `init` writes. Absent for
+	 * almost every plugin — see `IPluginConfigDocs`.
 	 */
 	readonly configDocs?: IPluginConfigDocs | undefined;
 }

@@ -97,17 +97,21 @@ const TOKEN_BUDGET_SCHEMA = z.union([
 ]) satisfies z.ZodType<IPluginManifestTokenBudget>;
 
 /**
- * f00502 S3. `summary` is what the user reads above the plugin's entry
- * in their own config file, so an empty or one-word line defeats the
- * point; `docs` must actually point somewhere.
+ * f00502 S3. Both fields override a derived default, so both are
+ * optional — but declaring one and leaving it blank is a mistake, not
+ * an override: an empty summary would replace a real one with nothing.
  */
 const CONFIG_DOCS_SCHEMA = z.object({
 	summary: z
 		.string()
 		.trim()
-		.min(10, 'configDocs.summary must be at least 10 chars'),
-	docs: z.string().trim().min(1, 'configDocs.docs must not be empty'),
-	defaultEnabled: z.boolean(),
+		.min(10, 'configDocs.summary must be at least 10 chars')
+		.optional(),
+	docs: z
+		.string()
+		.trim()
+		.min(1, 'configDocs.docs must not be empty')
+		.optional(),
 }) satisfies z.ZodType<IPluginConfigDocs>;
 
 const PLUGIN_MANIFEST_SCHEMA = z
