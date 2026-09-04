@@ -42,7 +42,8 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
   - "Una edición puntual de una clave preserva comentarios, claves desconocidas, orden y formato manual del resto del documento."
   - "Round-trip sin cambios es byte-idéntico al original."
   - "La API es la única vía de escritura: no expone `JSON.stringify` sobre el documento completo."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-f00502
 ### S2 — El loader del core deja de usar JSON.parse
 - **Status**: pending
 - **DependsOn**: [S1]
@@ -52,7 +53,8 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
   - "Una configuración con comentarios carga correctamente en lugar de fallar el parseo."
   - "Los dos puntos de `JSON.parse` del cargador pasan por el documento JSONC."
   - "Un error de sintaxis sigue produciendo un diagnóstico con línea y columna."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-f00502
 ### S3 — Metadata `configDocs` en el contrato de manifest de plugin
 - **Status**: pending
 - **Files**: `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`, `packages/core/src/lib/manifest/define-plugin-manifest.ts`
@@ -61,7 +63,8 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
   - "El manifest declara `configDocs` con resumen, ruta de documentación y `defaultEnabled`."
   - "El campo se valida en `define-plugin-manifest` como el resto del manifest."
   - "Es una sola fuente de verdad: init, docs generados y schema la consumen; ninguno redefine el texto."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-f00502
 ### S4 — `init` emite todos los plugins con su comentario generado
 - **Status**: pending
 - **DependsOn**: [S2, S3]
@@ -72,7 +75,8 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
   - "Cada entrada lleva el resumen y el enlace a opciones tomados de `configDocs`, no de una plantilla."
   - "Ejecutar init dos veces es idempotente y no duplica comentarios."
   - "Añadir un plugin nuevo al catálogo lo añade al fichero sin borrar comentarios ni personalización existente."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-f00502
 ## acceptance
 
 - Parsea JSONC (comentarios de línea y de bloque, comas colgantes) devolviendo el valor y el AST.
