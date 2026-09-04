@@ -220,6 +220,29 @@ const verifyPlugin = async (
 				});
 				continue;
 			}
+			// An empty payload is the safe default for a READ-ONLY tool,
+			// and `IToolRegistration.effects` is where a tool says it is
+			// not one ("Omit for read-only tools"). The harness used to
+			// invoke everything whose inputs were satisfiable by `{}`,
+			// which is a different question: `quality_policy_run_settlement`
+			// takes only optional arguments and shells out to `bun run
+			// validate` with bounded retries, so this "pure verification
+			// harness, no I/O, no writes" ran the entire test suite as a
+			// smoke test — 883 seconds, a timeout, and several concurrent
+			// validate runs on the machine.
+			//
+			// Schema conformance is still checked; only the invocation is
+			// withheld, and it is reported rather than silently skipped.
+			if (t.effects !== undefined && t.effects.length > 0) {
+				results.push({
+					plugin: label,
+					tool: t.id,
+					schemaCompatible: 'needs-input',
+					handlerReturned: false,
+					detail: `not invoked: declares effects [${t.effects.join(', ')}]; an empty payload is only safe for read-only tools`,
+				});
+				continue;
+			}
 			const probe = await runEmptyInputProbe(handle);
 			results.push(probeToVerify(label, probe));
 		} catch (err) {

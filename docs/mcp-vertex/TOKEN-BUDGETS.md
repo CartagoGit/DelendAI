@@ -92,7 +92,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
 | full | full | native | managed | tokens-gate | 39 | 197 | 230,406 | 57602 | 188,385 | 17,000 | 57,224 | 131,161 | 52,319 | 59 | 153 | within hard | within hard | none |
 | full | full | adaptive | managed | dynamic-client | 39 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
-| vertex | vertex | native | managed | tokens-gate | 38 | 198 | 251,433 | 62859 | 206,926 | 19,010 | 61,750 | 145,176 | 52,319 | 59 | 153 | within hard | within hard | none |
+| vertex | vertex | native | managed | tokens-gate | 38 | 198 | 251,461 | 62866 | 206,954 | 19,010 | 61,778 | 145,176 | 52,319 | 59 | 153 | within hard | within hard | none |
 | vertex | vertex | adaptive | managed | dynamic-client | 38 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | within hard | within hard | none |
 | web-app | web-app | native | managed | tokens-gate | 18 | 89 | 103,626 | 25907 | 85,113 | 7,393 | 26,221 | 58,892 | 8,639 | 58 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | managed | dynamic-client | 18 | 6 | 4,900 | 1225 | 3,656 | 526 | 1,020 | 2,636 | 0 | 56 | n/a | n/a | n/a | none |
@@ -218,7 +218,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | vertex | native | managed | tokens-gate | i18n | 2 | 2,725 | 174 | 230 | 2,072 | 0 | 54 | 136 | 1.1% |
 | vertex | native | managed | tokens-gate | impact-analysis | 2 | 2,052 | 248 | 404 | 1,122 | 0 | 54 | 136 | 0.8% |
 | vertex | native | managed | tokens-gate | project-health | 1 | 1,392 | 100 | 227 | 928 | 0 | 27 | 68 | 0.6% |
-| vertex | native | managed | tokens-gate | quality-policy | 2 | 1,248 | 286 | 420 | 268 | 0 | 54 | 136 | 0.5% |
+| vertex | native | managed | tokens-gate | quality-policy | 2 | 1,276 | 286 | 448 | 268 | 0 | 54 | 136 | 0.5% |
 | vertex | native | managed | tokens-gate | link-check | 1 | 1,354 | 112 | 85 | 1,028 | 0 | 27 | 68 | 0.5% |
 | vertex | native | managed | tokens-gate | logs | 9 | 7,718 | 710 | 3,016 | 2,908 | 0 | 243 | 612 | 3.1% |
 | vertex | native | managed | tokens-gate | memory | 9 | 8,639 | 553 | 2,737 | 4,242 | 0 | 243 | 612 | 3.4% |
@@ -326,7 +326,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | swarm | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | native | managed | tokens-gate | 230,406 | 55711 | 57042 | 57602 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| vertex | native | managed | tokens-gate | 251,433 | 60593 | 61832 | 62859 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| vertex | native | managed | tokens-gate | 251,461 | 60601 | 61840 | 62866 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | vertex | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | native | managed | tokens-gate | 103,626 | 24734 | 25370 | 25907 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | adaptive | managed | dynamic-client | 4,900 | 1151 | 1187 | 1225 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
@@ -350,7 +350,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | standard | 4,900 | ok | — | 120,339 | ok | — |
 | swarm | 4,900 | ok | — | 197,637 | ok | — |
 | full | 4,900 | ok | — | 230,406 | ok | — |
-| vertex | 4,900 | ok | — | 251,433 | ok | — |
+| vertex | 4,900 | ok | — | 251,461 | ok | — |
 | web-app | 4,900 | n/a | — | 103,626 | n/a | — |
 | backend-api | 4,900 | n/a | — | 102,042 | n/a | — |
 | cli-tool | 4,900 | n/a | — | 70,153 | n/a | — |

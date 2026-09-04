@@ -21,6 +21,11 @@ const RunSettlementInput = z
 		cwd: z.string().optional(),
 		maxAttempts: z.number().int().positive().optional(),
 		validateCommand: z.string().optional(),
+		/**
+		 * Transversal dry-run protocol (f00189): report the command and
+		 * bounds this call WOULD use, and spawn nothing.
+		 */
+		dryRun: z.boolean().optional(),
 	})
 	.strict();
 
@@ -30,6 +35,12 @@ export const buildSettlementToolRegistration = (params: {
 }): IToolRegistration => ({
 	id: 'quality_policy_run_settlement',
 	tags: ['quality', 'settlement', 'q00013'],
+	// This tool shells out to `bun run validate` with bounded retries. It
+	// declared nothing, and `effects` is documented as "omit for read-only
+	// tools" — so by omission it claimed to be read-only, and `verify:tools`
+	// believed it and ran the whole suite as a smoke test.
+	effects: ['spawn'],
+	dryRunSupported: true,
 	summary:
 		'Run the q00013 settlement phase: bounded `bun run validate` retries; on success returns the green head sha; on failure returns the failing-file list for the repair agent.',
 	register: async (server) => {
@@ -45,6 +56,15 @@ export const buildSettlementToolRegistration = (params: {
 				const parsed = RunSettlementInput.safeParse(toolArgs ?? {});
 				if (!parsed.success) {
 					throw new Error(`invalid input: ${parsed.error.message}`);
+				}
+				if (parsed.data.dryRun === true) {
+					return toolJson({
+						dryRun: true,
+						wouldRun:
+							parsed.data.validateCommand ?? 'bun run validate',
+						cwd: parsed.data.cwd ?? params.defaultCwd,
+						maxAttempts: parsed.data.maxAttempts ?? null,
+					});
 				}
 				const result = await runSettlement({
 					cwd: parsed.data.cwd ?? params.defaultCwd,
