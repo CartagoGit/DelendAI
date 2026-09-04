@@ -1,7 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterAll, describe, expect, it } from 'vitest';
 
 import {
+	createEvidenceStoreIo,
+	createFileEvidenceStore,
 	deriveEvidenceKey,
+	evidenceFilePath,
 	findReusableEvidence,
 	recordEvidence,
 	type IEvidenceStore,
@@ -173,6 +180,145 @@ describe('validation evidence (f00506 S1)', () => {
 			expect((await findReusableEvidence(key(), store)).reusable).toBe(
 				true,
 			);
+		});
+	});
+	describe('persistence (f00506 S1, reworked after review)', () => {
+		const roots: string[] = [];
+		const freshDir = async (): Promise<string> => {
+			const dir = await mkdtemp(join(tmpdir(), 'delendai-evidence-'));
+			roots.push(dir);
+			return dir;
+		};
+
+		afterAll(async () => {
+			for (const root of roots) {
+				await rm(root, { recursive: true, force: true });
+			}
+		});
+
+		it('a pass recorded by one process is found by the next one', async () => {
+			// The whole point: the agent that benefits is a LATER one, in
+			// a different session, that would otherwise re-run the check.
+			const dir = await freshDir();
+			const io = createEvidenceStoreIo();
+
+			await recordEvidence(evidence(), createFileEvidenceStore(dir, io));
+			const verdict = await findReusableEvidence(
+				key(),
+				createFileEvidenceStore(dir, io),
+			);
+
+			expect(verdict.reusable).toBe(true);
+			expect(verdict.evidence?.durationMs).toBe(12_000);
+			expect(verdict.evidence?.relevantInputs).toEqual([
+				'packages/core/src/a.ts',
+			]);
+		});
+
+		it('files one entry per key, so unrelated validations never contend', async () => {
+			const dir = await freshDir();
+			const store = createFileEvidenceStore(dir, createEvidenceStoreIo());
+
+			await recordEvidence(evidence(), store);
+			await recordEvidence(
+				evidence({ key: key({ scope: 'plugins/git' }) }),
+				store,
+			);
+
+			const own = await readFile(
+				evidenceFilePath(dir, deriveEvidenceKey(key())),
+				'utf8',
+			);
+			expect(JSON.parse(own)).toMatchObject({ result: 'pass' });
+			expect(
+				await readFile(
+					evidenceFilePath(
+						dir,
+						deriveEvidenceKey(key({ scope: 'plugins/git' })),
+					),
+					'utf8',
+				),
+			).toContain('plugins/git');
+		});
+
+		it('reads nothing rather than throwing when nothing was ever written', async () => {
+			const dir = await freshDir();
+			const store = createFileEvidenceStore(dir, createEvidenceStoreIo());
+
+			expect((await findReusableEvidence(key(), store)).reusable).toBe(
+				false,
+			);
+		});
+
+		it('degrades corrupt evidence into "no evidence", never into a verdict', async () => {
+			// A truncated or garbled cache entry must cost one honest
+			// re-run. Throwing here would turn a cache problem into a
+			// failed validation, which is a false statement about the code.
+			const dir = await freshDir();
+			const io = createEvidenceStoreIo();
+			const store = createFileEvidenceStore(dir, io);
+			await recordEvidence(evidence(), store);
+			await io.writeAtomic(
+				evidenceFilePath(dir, deriveEvidenceKey(key())),
+				'{ "result": "pa',
+			);
+
+			const verdict = await findReusableEvidence(key(), store);
+
+			expect(verdict.reusable).toBe(false);
+			expect(verdict.reason).toContain('no evidence recorded');
+		});
+
+		it('rejects a well-formed JSON file that is not evidence', async () => {
+			const dir = await freshDir();
+			const io = createEvidenceStoreIo();
+			const store = createFileEvidenceStore(dir, io);
+			await io.ensureDir(dir);
+			await io.writeAtomic(
+				evidenceFilePath(dir, deriveEvidenceKey(key())),
+				'{"result":"pass"}',
+			);
+
+			expect((await findReusableEvidence(key(), store)).reusable).toBe(
+				false,
+			);
+		});
+
+		it('concurrent writes of the same key leave one whole record, never a mix', async () => {
+			const dir = await freshDir();
+			const store = createFileEvidenceStore(dir, createEvidenceStoreIo());
+
+			await Promise.all(
+				Array.from({ length: 8 }, async (_unused, index) =>
+					recordEvidence(
+						evidence({ durationMs: 1_000 + index }),
+						store,
+					),
+				),
+			);
+
+			const raw = await readFile(
+				evidenceFilePath(dir, deriveEvidenceKey(key())),
+				'utf8',
+			);
+			const parsed = JSON.parse(raw) as IValidationEvidence;
+			expect(parsed.result).toBe('pass');
+			expect(parsed.durationMs).toBeGreaterThanOrEqual(1_000);
+			expect(parsed.durationMs).toBeLessThanOrEqual(1_007);
+		});
+
+		it('still never reuses a failure once it is on disk', async () => {
+			const dir = await freshDir();
+			const store = createFileEvidenceStore(dir, createEvidenceStoreIo());
+			await recordEvidence(evidence({ result: 'fail' }), store);
+
+			const verdict = await findReusableEvidence(
+				key(),
+				createFileEvidenceStore(dir, createEvidenceStoreIo()),
+			);
+
+			expect(verdict.reusable).toBe(false);
+			expect(verdict.reason).toContain('never reused');
 		});
 	});
 });

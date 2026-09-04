@@ -21,6 +21,14 @@
  * is testable without touching a disk.
  */
 import { createHash } from 'node:crypto';
+import { mkdir } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
+
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@delendai/core/public';
 
 export type TValidationResult = 'pass' | 'fail';
 
@@ -120,3 +128,102 @@ export const recordEvidence = async (
 ): Promise<void> => {
 	await store.write(deriveEvidenceKey(evidence.key), evidence);
 };
+
+/**
+ * The on-disk store — f00506 S1's persistence half.
+ *
+ * Evidence is worth keeping only if it outlives the process that recorded
+ * it: the whole point is that the NEXT agent, in a different session, does
+ * not re-run a check this one already paid for.
+ *
+ * One file per key, named by the digest. That is what makes concurrency
+ * cheap: two agents recording evidence for different validations never
+ * touch the same path, so they never contend, and a corrupted or truncated
+ * file can only ever cost one cache entry. The write goes through
+ * `writeFileAtomic` so a reader never observes half a record, and through
+ * `withFileMutex` so two agents proving the SAME thing at the same time
+ * cannot interleave into a mixed file.
+ *
+ * A read that cannot be parsed returns `undefined` rather than throwing.
+ * Corrupt evidence must degrade into "no evidence recorded", which merely
+ * costs one honest re-run — never into a failed validation, which would
+ * turn a cache problem into a false verdict about the code.
+ */
+export const evidenceFilePath = (root: string, hash: string): string =>
+	join(root, `${hash}.json`);
+
+export interface IEvidenceStoreIo {
+	readonly readText: (path: string) => Promise<string | undefined>;
+	readonly writeAtomic: (path: string, content: string) => Promise<void>;
+	readonly ensureDir: (path: string) => Promise<void>;
+	readonly withLock: <T>(path: string, work: () => Promise<T>) => Promise<T>;
+}
+
+const isEvidence = (value: unknown): value is IValidationEvidence => {
+	if (typeof value !== 'object' || value === null) return false;
+	const candidate = value as Partial<IValidationEvidence>;
+	return (
+		typeof candidate.result === 'string' &&
+		(candidate.result === 'pass' || candidate.result === 'fail') &&
+		typeof candidate.recordedAt === 'number' &&
+		typeof candidate.durationMs === 'number' &&
+		Array.isArray(candidate.relevantInputs) &&
+		typeof candidate.key === 'object' &&
+		candidate.key !== null
+	);
+};
+
+export const createFileEvidenceStore = (
+	directory: string,
+	io: IEvidenceStoreIo,
+): IEvidenceStore => ({
+	read: async (hash) => {
+		const raw = await io.readText(evidenceFilePath(directory, hash));
+		if (raw === undefined || raw.trim() === '') return undefined;
+		try {
+			const parsed: unknown = JSON.parse(raw);
+			return isEvidence(parsed) ? parsed : undefined;
+		} catch {
+			return undefined;
+		}
+	},
+	write: async (hash, evidence) => {
+		const path = evidenceFilePath(directory, hash);
+		await io.ensureDir(directory);
+		await io.withLock(path, async () => {
+			await io.writeAtomic(
+				path,
+				`${JSON.stringify(evidence, null, 2)}\n`,
+			);
+		});
+	},
+});
+
+/** The real filesystem wiring, kept apart so the decisions stay testable. */
+export const createEvidenceStoreIo = (): IEvidenceStoreIo => ({
+	readText: async (path) => {
+		try {
+			const { content } = await new SafeWorkspaceReader(
+				dirname(path),
+			).readText(basename(path));
+			return content;
+		} catch (error: unknown) {
+			if (
+				error !== null &&
+				typeof error === 'object' &&
+				'code' in error &&
+				error.code === 'ENOENT'
+			) {
+				return undefined;
+			}
+			throw error;
+		}
+	},
+	writeAtomic: async (path, content) => {
+		await writeFileAtomic(path, content);
+	},
+	ensureDir: async (path) => {
+		await mkdir(path, { recursive: true });
+	},
+	withLock: async (path, work) => withFileMutex(path, work),
+});
