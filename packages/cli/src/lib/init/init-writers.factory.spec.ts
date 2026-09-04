@@ -55,8 +55,8 @@ describe('init-writers.factory (f00084 S2)', () => {
 			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8'),
 		) as { servers: Record<string, unknown> };
 		expect(Object.keys(onDisk.servers).sort()).toEqual([
-			'filesystem',
 			'delendai',
+			'filesystem',
 		]);
 
 		// And `.mcp.json` must NOT exist — the merge must not have leaked
@@ -83,8 +83,8 @@ describe('init-writers.factory (f00084 S2)', () => {
 			await readFile(join(workspace, '.mcp.json'), 'utf8'),
 		) as { mcpServers: Record<string, unknown> };
 		expect(Object.keys(onDisk.mcpServers).sort()).toEqual([
-			'filesystem',
 			'delendai',
+			'filesystem',
 		]);
 
 		// And `.vscode/mcp.json` must NOT exist — the merge must not have
