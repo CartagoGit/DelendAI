@@ -54,7 +54,7 @@
 
 ## Token hotspots
 
-- `delendai_orchestrator-runner_format_handoff` — 1,951 B total, 282 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+_(none)_
 
 <!-- delendai:end agent-md -->
 

@@ -57,7 +57,10 @@
 
 ## Token hotspots
 
-_(none)_
+- `delendai_proposals_agent_lock` — 3,197 B total, 2,501 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_proposals_proposal_adopt` — 2,604 B total, 2,090 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_proposals_proposal_get` — 2,580 B total, 2,375 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_proposals_close_slice` — 2,467 B total, 1,767 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 
