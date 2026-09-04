@@ -173,7 +173,7 @@ export {
 	REPOSITORY_OWNER,
 	REPOSITORY_SLUG,
 	REPOSITORY_URL,
-} from '../lib/contracts/constants/repository-identity.constant';
+} from '@mcp-vertex/contracts/repository-identity';
 export type {
 	ActivationSource,
 	IActivationEntry,
