@@ -1532,22 +1532,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00423",
-				"title": "x00423",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00424",
-				"title": "x00424",
-				"track": "general",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00425",
 				"title": "x00425",
 				"track": "quality",
@@ -1565,11 +1549,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 26,
+			"ready": 24,
 			"in-progress": 10,
-			"review": 5,
+			"review": 6,
 			"paused": 1,
-			"done": 715,
+			"done": 716,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0
