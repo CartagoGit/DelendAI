@@ -1567,14 +1567,6 @@
 				"id": "x00419",
 				"title": "x00419",
 				"track": "quality",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00420",
-				"title": "x00420",
-				"track": "concurrency",
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
@@ -1613,9 +1605,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 31,
+			"ready": 30,
 			"in-progress": 11,
-			"review": 5,
+			"review": 6,
 			"paused": 1,
 			"done": 719,
 			"blocked": 23,

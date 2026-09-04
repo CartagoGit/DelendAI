@@ -116,7 +116,7 @@ All 369 tests in `plugins/commit-policy` pass after the change.
 - review-log: approved by delivery_verifier
 ### S2 — StormDetector
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/storm-detector.ts`
 - **Gate**: lint, types, test
 
@@ -140,8 +140,10 @@ hint, e.g.:
 - `CROSS_AGENT_CONTAMINATION` →
   "commit-driver.ts: staged set includes paths from another
   agent. Review ownership filters."
-- review-state: in_review
-- review-implementer: claude-opus-5-verify
+- review-state: done
+- review-implementer: storm-detector-runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ### S3 — `commit_policy_storms` tool
 
 - **Status**: pending
