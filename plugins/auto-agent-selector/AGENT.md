@@ -54,7 +54,7 @@
 
 ## Token hotspots
 
-- `delendai_auto-agent-selector_auto_run` — 2,646 B total, 1,796 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_auto-agent-selector_auto_run` — 2,644 B total, 1,796 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

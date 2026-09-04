@@ -246,6 +246,10 @@
 			"plugin": "forge"
 		},
 		{
+			"name": "delendai_forge_delendai_issue_create",
+			"plugin": "forge"
+		},
+		{
 			"name": "delendai_forge_issue_create",
 			"plugin": "forge"
 		},
@@ -255,10 +259,6 @@
 		},
 		{
 			"name": "delendai_forge_issue_show",
-			"plugin": "forge"
-		},
-		{
-			"name": "delendai_forge_delendai_issue_create",
 			"plugin": "forge"
 		},
 		{
@@ -845,42 +845,6 @@
 			"bodyPath": "plugins/skills-pack/skills/debugging-playbook/SKILL.md"
 		},
 		{
-			"id": "error-collection",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",
-			"appliesTo": [
-				"@delendai/*"
-			],
-			"tags": [
-				"error-collection",
-				"privacy",
-				"redaction",
-				"sink"
-			],
-			"bodyPath": "packages/core/skills/error-collection/SKILL.md"
-		},
-		{
-			"id": "incident-response",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
-			"appliesTo": [
-				"@delendai/logs",
-				"@delendai/notification",
-				"@delendai/observability",
-				"@delendai/proposals",
-				"@delendai/skills-pack"
-			],
-			"tags": [
-				"incident",
-				"logs",
-				"operations",
-				"recovery"
-			],
-			"bodyPath": "plugins/skills-pack/skills/incident-response/SKILL.md"
-		},
-		{
 			"id": "delendai-audit-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -1171,6 +1135,42 @@
 				"token-budget"
 			],
 			"bodyPath": "packages/core/skills/delendai-token-budget-playbook/SKILL.md"
+		},
+		{
+			"id": "error-collection",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",
+			"appliesTo": [
+				"@delendai/*"
+			],
+			"tags": [
+				"error-collection",
+				"privacy",
+				"redaction",
+				"sink"
+			],
+			"bodyPath": "packages/core/skills/error-collection/SKILL.md"
+		},
+		{
+			"id": "incident-response",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
+			"appliesTo": [
+				"@delendai/logs",
+				"@delendai/notification",
+				"@delendai/observability",
+				"@delendai/proposals",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"incident",
+				"logs",
+				"operations",
+				"recovery"
+			],
+			"bodyPath": "plugins/skills-pack/skills/incident-response/SKILL.md"
 		},
 		{
 			"id": "migrate-from-x",

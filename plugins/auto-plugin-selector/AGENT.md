@@ -45,7 +45,7 @@
 
 ## Token hotspots
 
-- `delendai_auto-plugin-selector_plugins_recommend` — 3,827 B total, 2,300 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_auto-plugin-selector_plugins_recommend` — 3,825 B total, 2,300 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

@@ -53,7 +53,7 @@
 
 ## Token hotspots
 
-- `delendai_project-kpis_project_kpis` — 4,275 B total, 2,895 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_project-kpis_project_kpis` — 4,273 B total, 2,895 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 
