@@ -28,8 +28,10 @@
  * `classifyPath` without monkey-patching; the production wiring is
  * the default export.
  */
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
+
+import { walkTsFiles } from '@mcp-vertex/core/public';
 
 import { classifyPath, DEFAULT_TS_RULES, type Role } from './file-conventions';
 
@@ -96,47 +98,33 @@ export const walkAndClassify = async (
 	rootDir: string,
 	scanRoots: readonly string[],
 ): Promise<readonly IRoleFinding[]> => {
-	const findings: IRoleFinding[] = [];
-	const stack: string[] = [...scanRoots];
-	while (stack.length > 0) {
-		const rel = stack.pop() as string;
-		const abs = join(rootDir, rel);
-		let entries: readonly import('node:fs').Dirent[];
-		try {
-			entries = await readdir(abs, { withFileTypes: true });
-		} catch {
-			// Missing root (e.g. `docs/` filtered out) — skip silently.
-			continue;
-		}
-		for (const entry of entries) {
-			const childRel = rel === '' ? entry.name : `${rel}/${entry.name}`;
-			if (entry.isDirectory()) {
-				if (
-					entry.name === 'node_modules' ||
-					entry.name === 'dist' ||
-					entry.name === 'build'
-				)
-					continue;
-				stack.push(childRel);
-				continue;
-			}
-			if (!entry.isFile()) continue;
-			if (!/\.tsx?$/.test(entry.name)) continue;
-			// `.d.ts` is emitted build output, not authored source:
-			// `.gitignore` excludes `packages/*/src/**/*.d.ts`. Judging it
-			// reported 113 "unmatched" files that are not in the
-			// repository and that no naming convention could ever apply
-			// to, since their names are chosen by `tsc` from the `.ts`
-			// this walk already classified.
-			if (entry.name.endsWith('.d.ts')) continue;
-			const role = classifyPath(childRel, DEFAULT_TS_RULES);
-			if (role === 'other') {
-				findings.push({ relPath: childRel, role, reason: 'unmatched' });
-			}
-		}
-	}
-	findings.sort((a, b) => a.relPath.localeCompare(b.relPath));
-	return findings;
+	// Uses the SHARED walker rather than a private `readdir` loop.
+	//
+	// This gate had its own copy, and when emitted `.d.ts` files started
+	// being reported as 113 "unmatched" filenames chosen by `tsc`, the fix
+	// went into the shared walker for the gates that consume it AND was
+	// pasted separately into the copy here — two implementations of one
+	// rule, which is the arrangement that produced the bug in the first
+	// place. An independent review caught the discrepancy between what the
+	// fix claimed ("one change to the shared walker, not four gates") and
+	// what it did.
+	//
+	// So there is one walker now. The next exclusion it learns — a
+	// generated directory, a new emitted extension — is learned by every
+	// gate at once, which is the only reason to have a shared walker at
+	// all.
+	const files = await walkTsFiles(rootDir, scanRoots);
+	return files
+		.map((relPath) => ({
+			relPath,
+			role: classifyPath(relPath, DEFAULT_TS_RULES),
+		}))
+		.filter(({ role }) => role === 'other')
+		.map(({ relPath, role }) => ({
+			relPath,
+			role,
+			reason: 'unmatched' as const,
+		}));
 };
 
 /**

@@ -2,7 +2,7 @@
 id: x00423
 title: "El baseline del slice listener descarta en silencio el trabajo terminado mientras el servidor estaba parado"
 kind: fix
-status: review
+status: done
 type: proposal
 track: concurrency
 date: 2026-09-03
@@ -95,8 +95,10 @@ slice: el listener nunca emitió el que el test espera.
 - **Files**:
   - `plugins/commit-policy/tests/src/lib/triggers/slice-listener-baseline.spec.ts` (nuevo) — dos casos que hoy no se pueden distinguir: (a) 83 slices `done` con resultado terminal en el store → cero eventos; (b) una slice `done` ausente del store → exactamente un evento. Y el caso de cota: 200 slices desconocidas → `BASELINE_EMIT_LIMIT` eventos más un aviso que nombra el resto.
 - **Gate**: lint, types, test
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: sonnet-delivery-verifier
+- review-log: approved by sonnet-delivery-verifier — Los cuatro criterios verificados de forma independiente. S1: collectUnpersistedBaseline consulta isAlreadyPersisted por cada slice done y solo encola las no persistidas; el cableado en index.ts pasa un cierre real contra IProcessedEventsStore, no un stub. Un fallo al leer el almacen se trata como persistido, la direccion segura. S2: BASELINE_EMIT_LIMIT=10 aplicado por splice y verificado; el aviso sale por stderr una vez en el primer poll con total y perPoll. S3: 8 tests que discriminan historia de trabajo perdido en vez de ser tautologias — toHaveLength(0) sobre 83 slices ya persistidas, y exactamente 1 al invertir el predicado; una regresion al baseline incondicional los rompe. El e2e de auto-work que la propuesta cita vuelve a pasar. Pega no bloqueante: la descripcion de S2 promete orden por recencia y un comando de inspeccion que no estan implementados; el criterio formal no los exige.
 ## acceptance
 
 1. Reiniciar el servidor con una slice cerrada durante la parada

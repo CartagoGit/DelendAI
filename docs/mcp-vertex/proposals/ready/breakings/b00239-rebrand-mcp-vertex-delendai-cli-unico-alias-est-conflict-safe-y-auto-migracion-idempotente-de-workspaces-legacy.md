@@ -147,7 +147,7 @@ alias de DelendAI y si está ocupado por otro ejecutable.
 
 ### S2 — `LegacyMigrationManager`: motor versionado e idempotente
 - **Status**: pending
-- **Files**: `packages/core/src/lib/migration/legacy-migration-manager.ts`, `packages/core/src/lib/migration/migrations/mcp-vertex-to-delendai-v1.ts`, `packages/core/src/lib/migration/migration-registry.ts`, `packages/cli/src/lib/cli/entrypoint.ts`, `packages/core/tests/src/lib/migration/legacy-migration-manager.spec.ts`
+- **Files**: `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/src/lib/workspace-migration/migrations/mcp-vertex-to-delendai-v1.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/cli/src/lib/cli/entrypoint.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration-manager.spec.ts`
 - **DependsOn**: [S1]
 - **Gate**: validate
 
@@ -194,7 +194,7 @@ ejecute código nuevo no puede migrarse mágicamente.
 
 ### S4 — Migradores estructurados por formato
 - **Status**: pending
-- **Files**: `packages/core/src/lib/migration/migrators/config-file.migrator.ts`, `packages/core/src/lib/migration/migrators/package-manifest.migrator.ts`, `packages/core/src/lib/migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/migration/migrators/cache-and-docs.migrator.ts`, `packages/core/src/lib/migration/migrators/agent-files.migrator.ts`, `packages/core/src/lib/migration/migrators/vscode.migrator.ts`, `packages/core/tests/src/lib/migration/migrators/`
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/config-file.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/package-manifest.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/cache-and-docs.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/vscode.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/`
 - **DependsOn**: [S2]
 - **Gate**: validate
 
@@ -220,7 +220,7 @@ persistente creado por versiones anteriores.
 
 ### S5 — Configuraciones fuera del workspace, con prueba de pertenencia
 - **Status**: pending
-- **Files**: `packages/core/src/lib/migration/host-scope/workspace-ownership.ts`, `packages/core/src/lib/migration/host-scope/global-config.migrator.ts`, `packages/core/tests/src/lib/migration/host-scope/workspace-ownership.spec.ts`
+- **Files**: `packages/core/src/lib/workspace-migration/host-scope/workspace-ownership.ts`, `packages/core/src/lib/workspace-migration/host-scope/global-config.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/workspace-ownership.spec.ts`
 - **DependsOn**: [S4]
 - **Gate**: validate
 
@@ -241,7 +241,7 @@ primera ejecución.
 
 ### S6 — Migración transaccional con rollback
 - **Status**: pending
-- **Files**: `packages/core/src/lib/migration/transaction/migration-transaction.ts`, `packages/core/src/lib/migration/transaction/migration-manifest.ts`, `packages/core/src/lib/migration/transaction/rollback.ts`, `packages/cli/src/lib/commands/migrate.command.ts`, `packages/core/tests/src/lib/migration/transaction/migration-transaction.spec.ts`
+- **Files**: `packages/core/src/lib/workspace-migration/transaction/migration-transaction.ts`, `packages/core/src/lib/workspace-migration/transaction/migration-manifest.ts`, `packages/core/src/lib/workspace-migration/transaction/rollback.ts`, `packages/cli/src/lib/commands/migrate.command.ts`, `packages/core/tests/src/lib/workspace-migration/transaction/migration-transaction.spec.ts`
 - **DependsOn**: [S4]
 - **Gate**: validate
 
@@ -263,7 +263,7 @@ no cambia que la migración normal sea automática.
 
 ### S7 — Gestor de paquetes y lockfiles
 - **Status**: pending
-- **Files**: `packages/core/src/lib/migration/package-manager/detect-package-manager.ts`, `packages/core/src/lib/migration/package-manager/lockfile-refresh.ts`, `packages/core/tests/src/lib/migration/package-manager/detect-package-manager.spec.ts`
+- **Files**: `packages/core/src/lib/workspace-migration/package-manager/detect-package-manager.ts`, `packages/core/src/lib/workspace-migration/package-manager/lockfile-refresh.ts`, `packages/core/tests/src/lib/workspace-migration/package-manager/detect-package-manager.spec.ts`
 - **DependsOn**: [S6]
 - **Gate**: validate
 
@@ -279,7 +279,7 @@ Nunca dejar un `package.json` migrado con un lockfile que lo contradiga.
 
 ### S8 — Scanner de identidad residual
 - **Status**: pending
-- **Files**: `packages/core/src/lib/migration/scanner/legacy-identity-scanner.ts`, `packages/core/src/lib/migration/scanner/classification.ts`, `packages/core/tests/src/lib/migration/scanner/legacy-identity-scanner.spec.ts`, `docs/mcp-vertex/wiki/migration-to-delendai.md`
+- **Files**: `packages/core/src/lib/workspace-migration/scanner/legacy-identity-scanner.ts`, `packages/core/src/lib/workspace-migration/scanner/classification.ts`, `packages/core/tests/src/lib/workspace-migration/scanner/legacy-identity-scanner.spec.ts`, `docs/mcp-vertex/wiki/migration-to-delendai.md`
 - **DependsOn**: [S7]
 - **Gate**: validate
 
