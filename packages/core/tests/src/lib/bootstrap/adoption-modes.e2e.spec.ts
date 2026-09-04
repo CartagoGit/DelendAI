@@ -108,10 +108,16 @@ describe('consumer adoption modes e2e', () => {
 		expect(
 			files.every(({ path }) => !path.startsWith('libs/mcp-project')),
 		).toBe(true);
+		// No generated TypeScript may carry a HYPHENATED identifier: a
+		// namespace with a hyphen has to be sanitised before it becomes a
+		// symbol. This asserted the hyphenated form of the product name,
+		// which stopped meaning anything the moment that name lost its
+		// hyphen, so it now checks the property directly.
+		const hyphenatedIdentifier = /\b[A-Z][A-Z0-9]*-[A-Z0-9]/u;
 		expect(
 			files
 				.filter(({ path }) => path.endsWith('.ts'))
-				.every(({ content }) => !content.includes('DELENDAI')),
+				.every(({ content }) => !hyphenatedIdentifier.test(content)),
 		).toBe(true);
 	});
 });

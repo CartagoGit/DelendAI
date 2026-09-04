@@ -296,7 +296,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', async () => {
 			plan_mcp_project:
 				// x00101 + r00014: plan defaults to a compact paged summary and
 				// only emits the exhaustive blueprint/files payload on opt-in.
-				'2494fd2f72da988cc2ae5d51c5b82dd190f29232919d34789a08f57c9568e665',
+				'6cdb7899522cb0cfe5cef81af8710a7c72a1751331de823f36d0206f528c3821',
 			scaffold:
 				'd2f13f06246544b123f1b3dcc98c68e0159ed91002df748df86ad72343a49ffc',
 			metrics:

@@ -75,7 +75,7 @@ describe('catalog-task-context-cost measurement', () => {
 		const output = runMeasurementScript();
 
 		expect(output).toContain(
-			'| agent_catalog compact | native | 743 | 186 |',
+			'| agent_catalog compact | native | 727 | 186 |',
 		);
 		expect(output).toContain(
 			'| agent_catalog full | native | 9,519 | 2,380 |',
@@ -104,11 +104,11 @@ describe('catalog-task-context-cost measurement', () => {
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
 		}
-		expect(output).toContain('| cold start | 682 | 171 |');
-		expect(output).toContain('| after search.search | 738 | 185 |');
-		expect(output).toContain('| after docs.docs_list | 786 | 197 |');
-		expect(output).toContain('| after logs.tail | 834 | 209 |');
-		expect(output).toContain('| p50 | 738 | 185 |');
-		expect(output).toContain('| p95 | 834 | 209 |');
+		expect(output).toContain('| cold start | 672 | 168 |');
+		expect(output).toContain('| after search.search | 728 | 182 |');
+		expect(output).toContain('| after docs.docs_list | 776 | 194 |');
+		expect(output).toContain('| after logs.tail | 824 | 206 |');
+		expect(output).toContain('| p50 | 728 | 182 |');
+		expect(output).toContain('| p95 | 824 | 206 |');
 	});
 });
