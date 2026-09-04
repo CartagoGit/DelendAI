@@ -10,9 +10,10 @@ node_modules/
 # Monorepo-wide artifact layout (see docs/mcp-vertex/AGENT-BOOTSTRAP.md → "Build / dist layout"):
 #   build/<group>/<name>/         — bundler/compiler outputs (typedoc, astrosite, vsce staging…)
 #   build/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
-# Per-package dist/ inside packages/*/ and plugins/*/ is intentionally kept
-# tracked — each package.json `main` / `exports` points there, and the
-# publishable surface is what consumers import. Those entries are NOT ignored.
+# Per-package `dist/` inside packages/*/ and plugins/*/ IS ignored (see the
+# entries at the bottom of this block). It used to be tracked, and the note
+# saying so outlived the change by long enough to contradict the r00045 note
+# twelve lines below it.
 #
 # Anchored to repo root (`/build/`): an unanchored `build/` also matched
 # `tools/scripts/build/` — a real, wired-in (`package.json#build:stable-manifest`)
@@ -21,11 +22,17 @@ node_modules/
 # in q00005's Track D (x00251/x00252 follow-up); root-cause fixed here rather
 # than baselined away.
 #
-# r00045 S1: the canonical build tree is now `/build/{group}/{name}/{version}/`.
-# Every package and plugin compiles into this single tree; `npm publish` (and
-# any extension like `vsce`) reads its own slice from there. Per-package
-# `dist/` directories are no longer produced — old ones in the repo are
-# gitignored by `/dist/` below and can be wiped with `git clean -fdx dist/`.
+# r00045 S1: the canonical build tree is `/build/{group}/{name}/{version}/`.
+# Every package and plugin compiles into that single tree, and `npm publish`
+# (or `vsce`) packs its own slice from a staging copy under `tmpdir()`.
+#
+# Per-package `dist/` IS still produced, on every build, as a gitignored
+# mirror of that tree — an earlier version of this note claimed it was "no
+# longer produced", which was never true. It has to exist: all 62 manifests
+# declare `"main": "./dist/index.js"`, and `exports` cannot escape the
+# package directory with `../build`, so resolution by package name has
+# nowhere else to look. Wipe it with `git clean -fdX packages plugins`; the
+# next build regenerates it.
 /build/
 /dist/
 
@@ -34,9 +41,8 @@ packages/*/build/
 apps/*/build/
 plugins/*/build/
 
-# r00045 S1: every per-package `dist/` is now a legacy artefact (build
-# output is centralised under `/build/`). Keep these entries until the
-# migration completes; they will be removed in a follow-up cleanup.
+# The per-package mirrors described above. Not legacy and not going away:
+# they are what `main` / `exports` resolve to in development.
 packages/*/dist/
 apps/*/dist/
 plugins/*/dist/

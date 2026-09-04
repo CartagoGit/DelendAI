@@ -20,7 +20,12 @@ directorio del paquete con `../build`. Por tanto, `build/` será la única salid
 de compilación del monorepo, mientras que el pipeline de publicación creará un
 staging temporal por paquete, copiará allí su slice de `build/` como `dist/`,
 ejecutará `npm pack`/`npm publish` sobre ese staging y lo eliminará al terminar.
-No habrá `dist/` persistentes en los workspaces.
+No habrá `dist/` **versionados** en los workspaces. Sí existe un
+`dist/` por paquete, gitignorado y regenerado: los 62 manifests
+declaran `"main": "./dist/index.js"` y `exports` no puede escapar del
+directorio del paquete con `../build`, así que la resolución por
+nombre de paquete necesita ese árbol. Es un espejo de `build/`, no un
+segundo build: `build/` es lo que se compila y lo que CI limpia.
 
 Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `packages/*`, `plugins/*`, `extensions/*`, `apps/*` y `tools/*` — y centralizar todos los artefactos de transpilación/bundling bajo un único árbol versionado por nombre + versión: `build/{group}/{name}/{version}/{...}`. Cada `package.json#main` / `#exports` apunta a su ruta canónica en `build/`. Esto cierra tres clases de bugs que arrastramos: (a) drift entre `dist/`s al ejecutar `gen-all --check` porque el resolver cae a `dist/` cuando un consumidor (bun, vitest, tsc) no inyecta la condition `@mcp-vertex/source`; (b) fugas cruzadas entre bundlers (un `dist/` que importa `../src/` de otro paquete) porque cada `package.json#exports` es ahora un único árbol inmutable; (c) 25 MB de `dist/` duplicados en cada clonación de CI, todos resueltos con un solo `git clean -fdx build/`. El trabajo se estructura en 4 slices paralelos por dominio: (S1) build driver — `tools/scripts/compile/build.script.ts` reescrito para emitir bajo `build/packages/<name>/<version>/`, `build/plugins/<name>/<version>/`, etc., con `--outdir` absoluto; (S2) `package.json#exports` — reescribir los 57 paquetes con `main` y `exports` apuntando a `../../build/<group>/<name>/<version>/...` (relativos al `package.json`); (S3) anti-fuga — nuevo lint `lint:no-build-imports-from-src` que escanea `build/**/*.js` y falla si algún `from '../src/'` o `from '../../src/'` cruza de `build/` a `src/`; (S4) runtime resolver — forzar `bun --conditions @mcp-vertex/source` globalmente vía `bunfig.toml` y `tsconfig.base.json#customConditions` para que `bun tools/scripts/**`, `vitest` y `tsc --noEmit` nunca resuelvan contra `build/` salvo para `npm publish`. Acceptance/DoD: (1) `git status` no muestra ningún `dist/` modificado tras `bun run build`; (2) `bun tools/scripts/gen-all.script.ts --check` resuelve TODOS sus `@mcp-vertex/*` desde `src/`, no `build/`; (3) `bun run validate` exit 0 incluyendo el nuevo lint; (4) `npm publish --dry-run` sobre `packages/core` genera un tarball con el árbol canónico bajo `build/packages/core/<version>/` y los consumers lo importan vía `exports`; (5) cero referencias a `./dist/` o `dist/index.js` en cualquier `package.json` del monorepo (validable con `rg '"\\./dist' packages plugins extensions apps`).
 
@@ -47,7 +52,9 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
 - acceptance:
   - "bun run build escribe `build/packages/core/<version>/index.js` y `.d.ts` con subpaths `contracts/`, `runtime/`, `plugin/`, `node/`, `version`"
   - "bun run build escribe `build/plugins/proposals/<version>/{index,public/index}.{js,d.ts}`"
-  - "bun run build es idempotente: una segunda corrida sin cambios no toca timestamps ni genera bytes"
+  - "`bun run build` es idempotente en contenido: una segunda corrida sin cambios produce bytes idénticos"
+  - "El espejo `dist/` es idempotente también en timestamps: una segunda corrida sin cambios no toca un solo fichero (comparación por contenido en `mirrorBuildIntoPackageDist`)"
+  - "`build/<group>/<name>/<version>/` sí se reescribe entero en cada corrida, deliberadamente: se borra antes de compilar para que un cambio de versión no pueda dejar ficheros huérfanos. La idempotencia que se exige ahí es de bytes, no de mtime."
   - "bun run build.script.ts build packages/core sale con exit 0 y el árbol bajo `build/packages/core/<version>/` contiene `index.js`, `public/index.js`, `contracts/index.js`, `runtime/index.js`, `plugin/index.js`, `node/index.js`, `version.js` y sus `.d.ts`"
   - "**Superseded by the S2 correction (2026-09-01), kept for history:** this bullet originally read '57 `package.json#main` entries move off `./dist/...`'. That's wrong per the Goal's design note — `exports` cannot point outside the package directory at `../build`, so manifests correctly KEEP `./dist/...`; see the canonical `## acceptance` section below and S2's correction note."
   - ".gitignore deja de ignorar `dist/` raíz y `packages/*/dist/`, `plugins/*/dist/` (siguen ignorados por la nueva entrada `/build/`)"
@@ -83,7 +90,8 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "`release.script.ts` (publish real), `tools/scripts/smoke/pack.script.ts` (pack-smoke) y `tools/scripts/verify/external-install-smoke.script.ts` empaquetan SIEMPRE la copia de staging, nunca `packages/<name>/` ni `plugins/<name>/` directamente"
   - "`bun tools/scripts/ci/pack-smoke.script.ts --real` sale con exit 0 en un checkout sin ningún `dist/` preexistente (solo `build/` recién generado por `bun run build`)"
   - "`bun run verify:external-install` sale con exit 0 bajo la misma condición"
-  - "`git status` no muestra ningún `packages/*/dist/` ni `plugins/*/dist/` tras correr el pack-smoke o el publish real — el único `dist/` que existe en cualquier momento vive dentro de un directorio de staging bajo `tmpdir()`, borrado al terminar"
+  - "`git status` no muestra ningún `packages/*/dist/` ni `plugins/*/dist/` tras correr el pack-smoke o el publish real: están gitignorados"
+  - "El `dist/` que se EMPAQUETA vive siempre en un directorio de staging bajo `tmpdir()`, borrado al terminar; el `dist/` que queda en el workspace es el espejo local de `build/`, gitignorado y regenerable, que existe para que la resolución por nombre de paquete funcione en desarrollo"
 
 ### S3 — lint:no-build-imports-from-src — anti-fuga entre `build/` y `src/`
 - **Status**: done (verified 2026-09-02: `bun run lint:no-build-imports-from-src` → 0 violations, wired into `validate:run`)
@@ -107,15 +115,15 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "Demostración: `bun tools/scripts/gen-all.script.ts --check` corre sin tocar `build/`; los `require()` que aparezcan en su stdout apuntan todos a `src/`"
   - "`docs/mcp-vertex/AGENT-BOOTSTRAP.md` sección "Build / dist layout" reescrita para reflejar el árbol `build/{group}/{<version>/` y la regla "scripts nunca resuelven a `build/`""
   - "`bun run validate` exit 0 completo"
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5
-- review-reviewer: sonnet-delivery-verifier
 - review-log: requested_changes by sonnet-delivery-verifier — Dos defectos verificados empiricamente. (1) S2 afirma que el unico dist/ vive en un staging bajo tmpdir y se borra al terminar: falso. mirrorBuildIntoPackageDist en build.script.ts:417 escribe dist/ persistente en cada packages/* y plugins/* en CADA build ordinaria; hay 62 directorios en disco. Esta gitignorado, asi que git status sale limpio, pero contradice la afirmacion central de la Goal. (2) S1 afirma que una segunda corrida sin cambios no toca timestamps: falso y reproducible; los bytes son identicos (md5 igual) pero el mtime cambia porque el driver reescribe siempre. Recomendacion: que el mirror omita el fichero cuando el contenido no cambia, y reescribir el bullet de S2 para describir el invariante real (un mirror por paquete, gitignorado y regenerado).
 ## acceptance
 
 - bun run build escribe `build/packages/core/<version>/index.js` y `.d.ts` con subpaths `contracts/`, `runtime/`, `plugin/`, `node/`, `version`
 - bun run build escribe `build/plugins/proposals/<version>/{index,public/index}.{js,d.ts}`
-- bun run build es idempotente: una segunda corrida sin cambios no toca timestamps ni genera bytes
+- `bun run build` es idempotente en contenido; el espejo `dist/` lo es
+  además en timestamps, y `build/` se reescribe a propósito
 - bun run build.script.ts build packages/core sale con exit 0 y el árbol bajo `build/packages/core/<version>/` contiene `index.js`, `public/index.js`, `contracts/index.js`, `runtime/index.js`, `plugin/index.js`, `node/index.js`, `version.js` y sus `.d.ts`
 - Las 57 entradas `package.json#main` con valor `./dist/...` se reducen a 0 (verificable con `rg '"\\./dist' packages plugins extensions apps -l`)
 - .gitignore deja de ignorar `dist/` raíz y `packages/*/dist/`, `plugins/*/dist/` (siguen ignorados por la nueva entrada `/build/`)
