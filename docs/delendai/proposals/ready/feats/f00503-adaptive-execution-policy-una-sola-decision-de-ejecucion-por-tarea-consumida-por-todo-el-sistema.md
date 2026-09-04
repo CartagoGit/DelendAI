@@ -43,7 +43,8 @@ La inteligencia principal que falta no es hacer más cosas, sino saber cuánto p
   - "`ExecutionDecision` declara ceremonia, ejecución, contexto, validación, respuesta, routing, presupuestos, `confidence` y `reasons`."
   - "Las señales que la alimentan se registran, no se cablean con `if`/`switch` encadenados."
   - "El contrato es serializable y estable: cualquier consumidor puede leerlo sin importar el plugin que lo produjo."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S2 — Clasificador de ceremonia con reglas duras y reason codes
 - **Status**: pending
 - **DependsOn**: [S1]
@@ -54,7 +55,8 @@ La inteligencia principal que falta no es hacer más cosas, sino saber cuánto p
   - "Reglas duras que fuerzan `proposal` con independencia de la puntuación: frontera de seguridad, migración de formato persistente y diagrama de contratos públicos."
   - "Reglas duras que fuerzan `direct`: un solo subsistema local, reversible y con regresión identificada."
   - "Toda decisión emite `reasons` legibles; ninguna es una suma opaca."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S3 — El orquestador consume la decisión en lugar de reclasificar
 - **Status**: pending
 - **DependsOn**: [S2]
