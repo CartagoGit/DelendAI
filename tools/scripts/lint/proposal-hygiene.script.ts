@@ -91,8 +91,18 @@ export const checkProposal = (
 ): readonly IProposalHygieneFinding[] => {
 	const findings: IProposalHygieneFinding[] = [];
 
+	// A placeholder counts only where the scaffold puts it: alone on its
+	// own line, optionally as a list item. A substring search also matched
+	// prose that QUOTES the placeholder — this gate's own sibling proposal
+	// explains the defect by naming it, and got reported for saying so.
+	// A gate that fires on the documentation of the thing it checks is a
+	// gate that gets baselined into silence.
+	const lines = text.split('\n');
 	for (const placeholder of SCAFFOLD_PLACEHOLDERS) {
-		if (!text.includes(placeholder)) continue;
+		const unfilled = lines.some(
+			(line) => line.replace(/^-\s+/u, '').trim() === placeholder,
+		);
+		if (!unfilled) continue;
 		findings.push({
 			file,
 			rule: 'unfilled-scaffold',
