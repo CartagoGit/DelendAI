@@ -109,6 +109,20 @@ describe('sanitizeCommitMessage', () => {
 		).toBe('feat(x): do the thing\n\nA real body paragraph.\n');
 	});
 
+	it('strips the branch prefix before prose substitutions can hide it', () => {
+		// The ordering bug this pins: substituting the vendor string first
+		// turned `agent/copilot-minimax-m3-copilot-orchestrator-…` into
+		// `agent/concurrent-agent-copilot-orchestrator-…`, which the branch
+		// rule no longer recognised — so the rewrite reported success and
+		// left `copilot` in the subject.
+		expect(
+			sanitizeCommitMessage(
+				"Merge branch 'agent/copilot-minimax-m3-copilot-orchestrator-night-shift' into develop\n",
+				[{ find: 'copilot-minimax-m3', replace: 'concurrent-agent' }],
+			),
+		).toBe("Merge branch 'agent/orchestrator-night-shift' into develop\n");
+	});
+
 	it('neutralises every vendor segment of an agent branch name', () => {
 		expect(
 			sanitizeCommitMessage(

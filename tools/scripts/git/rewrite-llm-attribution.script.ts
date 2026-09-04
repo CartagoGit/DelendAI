@@ -216,9 +216,16 @@ export const sanitizeCommitMessage = (
 	substitutions: readonly ISubjectSubstitution[] = [],
 ): string => {
 	const kept: string[] = [];
-	for (const line of applySubstitutions(message, substitutions).split('\n')) {
+	// Branch names first, prose second, and the order is load-bearing: the
+	// substitution `copilot-minimax-m3` -> `concurrent-agent` rewrote the
+	// INSIDE of `agent/copilot-minimax-m3-copilot-orchestrator-...` when it
+	// ran first, and the branch rule then no longer recognised the prefix it
+	// was meant to strip. Structure is matched before prose is edited.
+	for (const line of message.split('\n')) {
 		if (isLlmAttributionLine(line)) continue;
-		kept.push(neutraliseAgentBranches(line));
+		kept.push(
+			applySubstitutions(neutraliseAgentBranches(line), substitutions),
+		);
 	}
 	const collapsed: string[] = [];
 	for (const line of kept) {
