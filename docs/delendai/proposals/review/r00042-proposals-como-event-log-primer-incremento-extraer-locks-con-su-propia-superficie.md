@@ -140,7 +140,7 @@ plugins/proposals/src/lib/tools/*.tool.ts
 
 ### S3 — Ningún fichero de `locks/` supera 600 líneas tras la extracción
 
-- **Status**: done (verified 2026-09-04: `engine.ts` 1,394 → 215 lines and `file-lock-table.ts` 745 → 535 across 11 new cohesive modules, all declarations moved verbatim; `lint:proposals-locks-file-size` reports 21 files, none over 600, and is wired into `validate:run`; `bunx vitest run plugins/proposals` → 157 files / 1,400 tests pass)
+- **Status**: done (verified 2026-09-04: `engine.ts` 1,394 → 217 lines and `file-lock-table.ts` 745 → 556 across 11 new cohesive modules, all declarations moved verbatim; `lint:proposals-locks-file-size` reports 21 files, none over 600, and is wired into `validate:run`; `bunx vitest run plugins/proposals` → 157 files / 1,400 tests pass)
 - **Files**:
     - los ficheros resultantes de S1 (`engine.ts`, `public/index.ts`,
       y cualquier módulo auxiliar que la partición requiera)
@@ -243,11 +243,11 @@ flight, and it declined — correctly — to ship an unvalidated split of a
 concurrency-sensitive file. That constraint is gone.
 
 The split was done under one rule: **move declarations, never edit them.**
-`engine.ts` went 1,394 → 215 lines across nine modules
+`engine.ts` went 1,394 → 217 lines across nine modules
 (`session-balance`, `lock-paths`, `tmp-file-sweeper`, `lock-store`,
 `contention-escalation`, `release-audit`, `lock-lifecycle`, `lock-args`,
 `claim-with-file-locks`, `execute-lock-action`), and `file-lock-table.ts`
-745 → 535 across two (`file-lock-contentions`, `file-lock-document`). The
+745 → 556 across two (`file-lock-contentions`, `file-lock-document`). The
 types moved to `contracts/interfaces/agent-lock.interface.ts`, which the
 repo's own `types-in-contracts` convention wanted anyway.
 
@@ -265,3 +265,11 @@ session-balance group in the engine because of one `let`.
 The gate is a hard limit rather than a ratchet, deliberately: it starts
 satisfied, so there is no inherited debt to grandfather, and a baseline
 would only be somewhere for the next 900-line file to hide.
+
+Review found one leftover the split dragged along: an unused
+`let lastSessionWorkspaceRoot` in `release-audit.ts`, a copy-paste
+artefact of the module boundary. Provably never read or written, so it
+never created a second source of truth — but it touched the one variable
+this refactor flagged as highest-risk, which is precisely where a stray
+declaration should not be left lying. Removed. The counts in this note
+were also off by a line or two and now read 217 and 556.

@@ -62,5 +62,3 @@ export const appendReleaseAuditEntry = async (
 		}
 	});
 };
-
-let lastSessionWorkspaceRoot: string | undefined;

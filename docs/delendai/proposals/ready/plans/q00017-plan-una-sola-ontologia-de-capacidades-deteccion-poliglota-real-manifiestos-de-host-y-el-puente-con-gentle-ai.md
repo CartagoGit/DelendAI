@@ -179,7 +179,7 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 ### S7 — Puente de sólo lectura con Gentle-AI
 
-- **Status**: pending
+- **Status**: re-scoped to `f00501` (2026-09-04) — ver la nota al final
 - **Files**:
   - `plugins/gentle-ai/package.json` — plugin opt-in, desactivado por defecto.
   - `plugins/gentle-ai/src/index.ts` — lee la configuración de hosts que Gentle-AI ya mantiene y la traduce a manifiestos de host de S5. **Sólo lectura**: no escribe configuración de agentes ni instala nada.
@@ -240,3 +240,27 @@ este repositorio no es añadir más detección, sino tener una sola
 ontología de la que todo derive. Hay tantas buenas ideas avanzando en
 paralelo que empiezan a existir representaciones distintas de la misma
 verdad, y `analyzeProject` frente a `detectStack` es el ejemplo exacto.
+
+### 2026-09-04 — S1–S6 done; S7 re-scoped to f00501
+
+Las seis primeras slices están hechas y verificadas. Los siete criterios
+de aceptación de este plan se cumplen sin S7: ninguno menciona Gentle-AI.
+
+S7 sale a `f00501` en vez de quedarse aquí bloqueando un plan que ya está
+completo, y la razón conviene dejarla escrita porque no es una excusa.
+
+**El formato en disco de Gentle-AI no es observable desde este repositorio.**
+Se conoce la superficie conceptual de su contrato Adapter —detección,
+instalación, directorios, system prompts, skills, configuración, MCP,
+slash commands, output styles, subagentes, capacidades— por la revisión
+cruzada del 2026-09-03, pero no cómo se serializa. Un adaptador escrito
+contra un formato adivinado es peor que ninguno: parece terminado, se lee
+como autoridad y falla en silencio contra la realidad.
+
+La revisión externa del 2026-09-04 llega a lo mismo por otra vía:
+«terminar S7 de q00017/Gentle-AI solo si realmente aporta valor; no lo
+pondría por delante de los anteriores».
+
+`f00501` parte el puente en la mitad que sí se puede construir hoy —la
+traducción, pura y con fixtures— y la que no —el lector, bloqueada hasta
+que exista un fichero real que observar.
