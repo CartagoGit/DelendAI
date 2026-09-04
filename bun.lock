@@ -47,6 +47,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@mcp-vertex/client": "workspace:*",
+        "@mcp-vertex/contracts": "workspace:*",
         "sass": "^1.101.0",
       },
     },
@@ -183,6 +184,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@mcp-vertex/client": "workspace:*",
+        "@mcp-vertex/contracts": "workspace:*",
         "@mcp-vertex/shared": "workspace:*",
         "zod": "^4.4.3",
       },

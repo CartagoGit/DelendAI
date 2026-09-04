@@ -4,6 +4,7 @@ import { definePlugin } from '@mcp-vertex/core/public';
 import z from 'zod';
 
 import { buildTriageToolRegistrations } from './lib/tools/triage.tools';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 const TRIAGE_NEEDS_REPO_BODY = [
 	'# issues-triage — repo not configured',
@@ -13,7 +14,7 @@ const TRIAGE_NEEDS_REPO_BODY = [
 	'Set it to the GitHub repository this internal bot should watch, e.g.:',
 	'',
 	'```jsonc',
-	'{ "plugins": { "issues-triage": { "options": { "repo": "CartagoGit/mcp-vertex" } } } }',
+	`{ "plugins": { "issues-triage": { "options": { "repo": "${REPOSITORY_SLUG}" } } } }`,
 	'```',
 ].join('\n');
 

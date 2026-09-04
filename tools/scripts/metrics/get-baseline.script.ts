@@ -26,6 +26,7 @@
 import { dirname } from 'node:path';
 
 import type { IPluginMetricsSnapshot } from './payload-percentile.schema';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 /** A single tool's recorded metrics inside a persisted snapshot. */
 export interface IMetricSnapshotEntry {
@@ -213,7 +214,7 @@ const isMainModule = (): boolean => {
 
 if (isMainModule()) {
 	const [owner, repo] = (
-		process.env.GITHUB_REPOSITORY ?? 'CartagoGit/mcp-vertex'
+		process.env.GITHUB_REPOSITORY ?? REPOSITORY_SLUG
 	).split('/');
 	if (owner === undefined || repo === undefined) {
 		console.error('✖ get-baseline: GITHUB_REPOSITORY must be "owner/repo"');

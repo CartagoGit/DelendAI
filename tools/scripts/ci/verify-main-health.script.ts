@@ -13,9 +13,10 @@ import {
 	loadDeclaredBranchProtectionConfig,
 	type IDeclaredBranchPolicy,
 } from './verify-branch-protection.script.ts';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 const SCRIPT_NAME = 'verify-main-health';
-const DEFAULT_REPOSITORY = 'CartagoGit/mcp-vertex';
+const DEFAULT_REPOSITORY = REPOSITORY_SLUG;
 const GITHUB_API_VERSION = '2022-11-28';
 const PASSING_CHECK_CONCLUSIONS = new Set(['success', 'neutral', 'skipped']);
 

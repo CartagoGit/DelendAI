@@ -16,11 +16,12 @@ import {
 	type IProvenanceEventInput,
 	type IProvenanceGraph,
 } from '../../../plugins/observability/src/public';
+import { REPOSITORY_URL } from '@mcp-vertex/contracts/repository-identity';
 
 const OUTPUT_REL =
 	'docs/mcp-vertex/generated/observability-provenance.generated.md';
 const OUTPUT_DIR_REL = 'docs/mcp-vertex/generated';
-const REPO_URL = 'https://github.com/CartagoGit/mcp-vertex';
+const REPO_URL = REPOSITORY_URL;
 const PROPOSAL_PATH =
 	'docs/mcp-vertex/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md';
 

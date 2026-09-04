@@ -1,3 +1,4 @@
+import { REPOSITORY_URL } from '@mcp-vertex/contracts/repository-identity';
 /**
  * shared-ui-strings.ts — the single, host-agnostic home for the brand /
  * UI copy that BOTH surfaces use: the docs site (`apps/web`, which imports
@@ -28,7 +29,7 @@ export const SHARED_UI_STRINGS = {
 	tagline:
 		'A project-agnostic Model Context Protocol server core. The core knows nothing about your domain — capabilities ship as plugins you load on demand, all measured for low token cost.',
 	/** Canonical source repository. */
-	repoUrl: 'https://github.com/CartagoGit/mcp-vertex',
+	repoUrl: REPOSITORY_URL,
 	/** Canonical docs site. */
 	docsUrl: 'https://mcp-vertex.dev',
 } as const;

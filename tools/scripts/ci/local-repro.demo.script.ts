@@ -14,6 +14,7 @@
 import { spawnSync } from 'node:child_process';
 
 import { normalizeRunId } from './local-repro.script';
+import { REPOSITORY_SLUG, REPOSITORY_URL } from '@mcp-vertex/core/public';
 
 interface IRunListEntry {
 	readonly databaseId?: number;
@@ -42,7 +43,7 @@ const DEFAULT_REAL_FAILED_RUN: IDemoRunSelection = {
 	runId: '33281963947',
 	source: 'fixture',
 	name: 'quality-gate',
-	url: 'https://github.com/CartagoGit/mcp-vertex/actions/runs/33281963947',
+	url: `${REPOSITORY_URL}/actions/runs/33281963947`,
 };
 
 export const defaultDemoGhRunner: DemoGhRunner = (args) => {
@@ -124,7 +125,7 @@ export const main = (argv: readonly string[]): number => {
 		console.error(`local-repro demo: run URL ${selection.url}`);
 	}
 
-	const repo = process.env.LOCAL_REPRO_REPO ?? 'CartagoGit/mcp-vertex';
+	const repo = process.env.LOCAL_REPRO_REPO ?? REPOSITORY_SLUG;
 	const output = process.env.LOCAL_REPRO_OUTPUT ?? 'build/ci';
 	const step = process.env.LOCAL_REPRO_STEP;
 	const args = [

@@ -4,7 +4,7 @@
  *
  * Refuses a second copy of the repository slug.
  *
- * `packages/core/src/lib/contracts/constants/repository-identity.constant.ts`
+ * `packages/contracts/src/repository-identity.ts`
  * declares where this project lives. Everything else is supposed to import
  * it. The point is that renaming the repository becomes one edit — and the
  * only thing that makes a one-line rename trustworthy is a check proving
@@ -39,13 +39,12 @@ import {
 	REPOSITORY_NAME,
 	REPOSITORY_OWNER,
 	REPOSITORY_SLUG,
-} from '@mcp-vertex/core/public';
+} from '@mcp-vertex/contracts/repository-identity';
 
 const BASELINE = 'tools/scripts/lint/repository-identity.baseline.json';
 
 /** The file that is allowed — required — to spell the slug out. */
-const DECLARATION =
-	'packages/core/src/lib/contracts/constants/repository-identity.constant.ts';
+const DECLARATION = 'packages/contracts/src/repository-identity.ts';
 
 /** Roots that must import rather than repeat. */
 const SOURCE_ROOTS = ['packages', 'plugins', 'apps', 'extensions', 'tools'];
@@ -160,9 +159,64 @@ export const findManifestDisagreements = (root: string): readonly string[] => {
 	return bad;
 };
 
+/**
+ * Rewrite every manifest `repository.url` to agree with the constant.
+ *
+ * The manifests are the one part that cannot import the declaration, so
+ * without this a rename is "change one line, then hand-edit 51 files" —
+ * and 51 hand edits is where one gets missed. With it the whole rename is
+ * one line plus `--fix`, and the gate proves the result.
+ */
+export const fixManifests = (root: string): readonly string[] => {
+	const fixed: string[] = [];
+	for (const group of ['packages', 'plugins', 'apps', 'extensions']) {
+		let names: string[];
+		try {
+			names = readdirSync(join(root, group));
+		} catch {
+			continue;
+		}
+		for (const name of names) {
+			const manifest = join(root, group, name, 'package.json');
+			let raw: string;
+			try {
+				raw = readFileSync(manifest, 'utf8');
+			} catch {
+				continue;
+			}
+			// Textual, not parse-and-serialise: rewriting the JSON would
+			// reorder keys and reformat the whole file, burying a one-field
+			// change in a diff nobody can review.
+			const stale = new RegExp(
+				`https://github\\.com/${REPOSITORY_OWNER}/[A-Za-z0-9._-]+`,
+				'g',
+			);
+			const next = raw.replace(
+				stale,
+				`https://github.com/${REPOSITORY_SLUG}`,
+			);
+			if (next === raw) continue;
+			writeFileSync(manifest, next, 'utf8');
+			fixed.push(`${group}/${name}/package.json`);
+		}
+	}
+	return fixed;
+};
+
 const main = (): number => {
 	const update = process.argv.includes('--update');
 	const root = process.cwd();
+
+	if (process.argv.includes('--fix')) {
+		const fixed = fixManifests(root);
+		console.log(
+			fixed.length === 0
+				? `repository-identity: every manifest already names ${REPOSITORY_SLUG}.`
+				: `repository-identity: ${fixed.length} manifest(s) repointed at ${REPOSITORY_SLUG}.`,
+		);
+		for (const entry of fixed) console.log(`  ${entry}`);
+		return 0;
+	}
 
 	const files: string[] = [];
 	for (const source of SOURCE_ROOTS) walk(join(root, source), root, files);
@@ -237,7 +291,7 @@ const main = (): number => {
 				`  ${finding.file}:${finding.line}\n    ${finding.text}`,
 			);
 		console.error(
-			`\nImport { REPOSITORY_SLUG } from '@mcp-vertex/core/public' instead of writing\n` +
+			`\nImport { REPOSITORY_SLUG } from '@mcp-vertex/contracts/repository-identity' (or\n@mcp-vertex/core/public, which re-exports it) instead of writing\n` +
 				`"${REPOSITORY_OWNER}/${REPOSITORY_NAME}". A private copy is a copy that survives a\n` +
 				'rename by pointing at a redirect, which is the worst kind of stale reference\n' +
 				'because nothing fails.',

@@ -22,6 +22,7 @@ import type {
 	IIssueCreateResultData,
 } from '../contracts/interfaces/forge-write.interface';
 import { detectForgeProvider } from './forge';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 const GIT_TOOL: IExternalTool = {
 	id: 'git',
@@ -272,7 +273,7 @@ const repoPathFor = (
 const gitlabProjectId = (repoPath: string): string =>
 	encodeURIComponent(repoPath);
 
-const MCP_VERTEX_REPOSITORY = 'CartagoGit/mcp-vertex';
+const MCP_VERTEX_REPOSITORY = REPOSITORY_SLUG;
 
 const parsePrCreateResult = (
 	payload: Record<string, unknown>,

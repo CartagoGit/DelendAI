@@ -66,11 +66,12 @@ import {
 	reportUnverifiedBranches,
 } from './lib/github-protection.lib.ts';
 import { parseWorkflowYaml } from './workflow-yaml.ts';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 const SCRIPT_NAME = 'verify-branch-protection';
 const REPO_ROOT = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
 const DEFAULT_CONFIG_PATH = join(REPO_ROOT, '.github/branch-protection.yml');
-const DEFAULT_REPOSITORY = 'CartagoGit/mcp-vertex';
+const DEFAULT_REPOSITORY = REPOSITORY_SLUG;
 
 const out = (msg: string) => process.stdout.write(`${msg}\n`);
 const err = (msg: string) => process.stderr.write(`${msg}\n`);

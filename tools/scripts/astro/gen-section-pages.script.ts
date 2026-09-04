@@ -68,7 +68,7 @@ import { useTranslations, type Lang } from '../../i18n/ui';
 const lang: Lang = '${params.lang}';
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\\/$/, '');
-const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const repo = REPOSITORY_URL;
 const homeHref = \`\${base}/${params.lang}/\`;
 ---
 
@@ -98,11 +98,12 @@ import Base from '../../../layouts/Base.astro';
 import PluginsSection from '../../../components/PluginsSection.astro';
 import SiteFooter from '../../../components/SiteFooter.astro';
 import { useTranslations, type Lang } from '../../../i18n/ui';
+import { REPOSITORY_URL } from '@mcp-vertex/contracts/repository-identity';
 
 const lang: Lang = '${params.lang}';
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\\/$/, '');
-const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const repo = REPOSITORY_URL;
 const homeHref = \`\${base}/${params.lang}/\`;
 ---
 

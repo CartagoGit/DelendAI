@@ -28,6 +28,7 @@ import {
 	createMcpVertexIssue,
 	createPr,
 } from '../services/forge-write';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 export interface IForgeWriteToolOptions {
 	readonly namespacePrefix: string;
@@ -149,8 +150,7 @@ export const buildForgeWriteToolRegistrations = (
 			server.registerTool(
 				`${options.namespacePrefix}_mcp_vertex_issue_create`,
 				{
-					description:
-						'Create an issue for an mcp-vertex error or defect in CartagoGit/mcp-vertex. This destination is fixed and does not use the consuming project origin. Requires confirm:true.',
+					description: `Create an issue for an mcp-vertex error or defect in ${REPOSITORY_SLUG}. This destination is fixed and does not use the consuming project origin. Requires confirm:true.`,
 					inputSchema: FORGE_MCP_VERTEX_ISSUE_CREATE_INPUT_SCHEMA,
 					outputSchema: FORGE_ISSUE_CREATE_OUTPUT_SCHEMA,
 				},

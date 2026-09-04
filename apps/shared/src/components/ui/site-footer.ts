@@ -27,6 +27,7 @@
  * emits plain markup and the wrapper Astro applies the directive.
  */
 import { escapeHtml } from '../../lib/escape';
+import { REPOSITORY_URL } from '@mcp-vertex/contracts/repository-identity';
 
 export interface ISiteFooterLabels {
 	readonly tagline: string;
@@ -85,7 +86,7 @@ const DEFAULT_LABELS: ISiteFooterLabels = {
 };
 
 const DEFAULT_URLS: ISiteFooterUrls = {
-	repo: 'https://github.com/CartagoGit/mcp-vertex',
+	repo: REPOSITORY_URL,
 	creatorsRepo: 'https://github.com/CartagoGit',
 	creatorsNpm: 'https://www.npmjs.com/~cartago-git',
 	npmPackage: 'https://www.npmjs.com/package/@mcp-vertex/core',
