@@ -29,28 +29,17 @@
  * no error here, only a file someone has their hands on.
  */
 
-export interface IRecentEditFilterResult {
-	readonly files: readonly string[];
-	/** Withheld paths, each with how long ago it was touched (ms). */
-	readonly withheld: ReadonlyArray<{
-		readonly file: string;
-		readonly ageMs: number;
-	}>;
-}
+import { DEFAULT_QUIET_PERIOD_MS } from '../contracts/constants/recent-edit-filter.constant';
+import type {
+	IModifiedAtReader,
+	IRecentEditFilterResult,
+} from '../contracts/interfaces/recent-edit-filter.interface';
 
-/** Reads a file's last-modified time, or `undefined` if it cannot. */
-export type IModifiedAtReader = (
-	file: string,
-) => Promise<number | undefined> | number | undefined;
-
-/**
- * Default quiet period.
- *
- * Shorter than the smallest sensible sweep interval, so a file left alone
- * is picked up by the very next sweep rather than lingering: the point is
- * to miss the edit in progress, not to postpone the commit.
- */
-export const DEFAULT_QUIET_PERIOD_MS = 90_000;
+export { DEFAULT_QUIET_PERIOD_MS };
+export type {
+	IModifiedAtReader,
+	IRecentEditFilterResult,
+} from '../contracts/interfaces/recent-edit-filter.interface';
 
 export const filterRecentlyEditedFiles = async (input: {
 	readonly files: readonly string[];

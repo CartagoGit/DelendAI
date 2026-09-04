@@ -31,62 +31,23 @@
  * cannot express "this project skipped v1 because it started at v2".
  */
 
-/** A migration's stable identity. Recorded, so completion is a fact. */
-export type IMigrationId = string;
+import type {
+	IMigration,
+	IMigrationContext,
+	IMigrationJournal,
+	IMigrationOutcome,
+	IMigrationRunResult,
+} from '../contracts/interfaces/workspace-migration.interface';
 
-export interface IMigrationContext {
-	readonly workspaceRoot: string;
-	/** True for a rehearsal: detect and plan, change nothing. */
-	readonly dryRun: boolean;
-}
-
-export interface IMigrationPlanStep {
-	readonly kind: string;
-	readonly detail: string;
-}
-
-export interface IMigration {
-	readonly id: IMigrationId;
-	/**
-	 * Cheap probe: does this workspace carry the old identity at all?
-	 *
-	 * Must be fast and must not write. It runs before every server start,
-	 * so anything expensive here is a tax on every project that has
-	 * nothing to migrate — which, after the transition, is all of them.
-	 */
-	readonly detect: (ctx: IMigrationContext) => Promise<boolean>;
-	/** What `apply` would do. Used by `--dry-run` and by the manifest. */
-	readonly plan: (
-		ctx: IMigrationContext,
-	) => Promise<readonly IMigrationPlanStep[]>;
-	readonly apply: (ctx: IMigrationContext) => Promise<void>;
-}
-
-export interface IMigrationJournal {
-	/** Migration ids already applied to this workspace. */
-	readonly read: (workspaceRoot: string) => Promise<readonly IMigrationId[]>;
-	readonly record: (workspaceRoot: string, id: IMigrationId) => Promise<void>;
-}
-
-export type IMigrationOutcome =
-	| { readonly status: 'not-needed' }
-	| {
-			readonly status: 'planned';
-			readonly id: IMigrationId;
-			readonly steps: readonly IMigrationPlanStep[];
-	  }
-	| { readonly status: 'migrated'; readonly id: IMigrationId }
-	| {
-			readonly status: 'failed';
-			readonly id: IMigrationId;
-			readonly reason: string;
-	  };
-
-export interface IMigrationRunResult {
-	readonly outcomes: readonly IMigrationOutcome[];
-	/** True when at least one migration ran or would run. */
-	readonly acted: boolean;
-}
+export type {
+	IMigration,
+	IMigrationContext,
+	IMigrationId,
+	IMigrationJournal,
+	IMigrationOutcome,
+	IMigrationPlanStep,
+	IMigrationRunResult,
+} from '../contracts/interfaces/workspace-migration.interface';
 
 /**
  * Run every pending migration, in registry order.

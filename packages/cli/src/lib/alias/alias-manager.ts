@@ -39,55 +39,23 @@
  *                 leaving it alone.
  */
 
-export type IAliasState = 'absent' | 'ours' | 'foreign' | 'unreadable';
+import { ALIAS_MARKER } from '../../contracts/constants/alias.constant';
+import type {
+	IAliasEnvironment,
+	IAliasIo,
+	IAliasOutcome,
+	IAliasStatus,
+} from '../../contracts/interfaces/alias.interface';
 
-export type IAliasAction = 'created' | 'unchanged' | 'refused' | 'failed';
-
-export interface IAliasStatus {
-	readonly alias: string;
-	readonly canonical: string;
-	readonly state: IAliasState;
-	/** Where the alias lives, or would live. */
-	readonly path: string | undefined;
-	/** Present when `state` is `foreign`: what occupies the name. */
-	readonly occupiedBy?: string | undefined;
-}
-
-export interface IAliasOutcome {
-	readonly action: IAliasAction;
-	readonly status: IAliasStatus;
-	/** Human-readable, non-fatal explanation. Always set for refused/failed. */
-	readonly detail?: string | undefined;
-}
-
-/**
- * Every alias this tool writes carries this marker, so a later run can
- * tell its own work from somebody else's and remove only what it created.
- * An alias we cannot prove is ours is treated as foreign — see the module
- * header for why the tie goes that way.
- */
-export const ALIAS_MARKER = 'delendai-managed-alias';
-
-export interface IAliasEnvironment {
-	/** Platform, so Windows gets shims rather than a POSIX symlink. */
-	readonly platform: 'win32' | 'posix';
-	/** Directory the package manager puts executables in. */
-	readonly binDir: string;
-	/** Absolute path of the canonical executable the alias must reach. */
-	readonly canonicalPath: string;
-}
-
-export interface IAliasIo {
-	/** Contents of `path`, or `undefined` when it does not exist. */
-	readonly read: (path: string) => Promise<string | undefined>;
-	readonly write: (path: string, contents: string) => Promise<void>;
-	readonly remove: (path: string) => Promise<void>;
-	/** True when something occupies `path`, whatever it is. */
-	readonly exists: (path: string) => Promise<boolean>;
-	/** Join path segments for the target platform. */
-	readonly join: (...parts: readonly string[]) => string;
-	readonly makeExecutable?: (path: string) => Promise<void>;
-}
+export { ALIAS_MARKER };
+export type {
+	IAliasAction,
+	IAliasEnvironment,
+	IAliasIo,
+	IAliasOutcome,
+	IAliasState,
+	IAliasStatus,
+} from '../../contracts/interfaces/alias.interface';
 
 /**
  * The files an alias occupies on a given platform.
