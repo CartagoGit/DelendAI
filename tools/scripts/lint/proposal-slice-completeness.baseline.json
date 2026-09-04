@@ -85,6 +85,5 @@
 	"t00015-plugin-lifecycle-regression-suite-dag-cycle-rollback-abortsignal-timeout.md": 4,
 	"q00004-plan-hardening-post-auditoria-externa-chatgpt-5-6-sol-segunda-pasada-sobre-develop-privacidad-p0-filesystem-mutex-tokens-manifests-y-gobernanza.md": 1,
 	"q00003-consolidacion-post-auditoria-de-develop-privacidad-lifecycle-tokens-registry-y-arquitectura.md": 1,
-	"q00002-self-managing-mcp-vertex-consumer-repos-bootstrap-migrate-and-observe-themselves.md": 1,
-	"x00424-corregir-blockers-de-validate-residuos-de-cache-y-regresiones-biome.md": 1
+	"q00002-self-managing-mcp-vertex-consumer-repos-bootstrap-migrate-and-observe-themselves.md": 1
 }
