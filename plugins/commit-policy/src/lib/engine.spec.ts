@@ -381,6 +381,73 @@ describe('CommitPolicyEngine trigger surface', () => {
 		await pushFailureEngine.dispose();
 	});
 
+	it('invokes onResult once with the typed event and result', async () => {
+		const runner = buildRunner('feature/x', ['only-this.ts']);
+		const onResult = vi.fn(async () => undefined);
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: runner,
+				policy: basePolicy(),
+				identityCtx: { run: runner, envVars: Object.freeze({}) },
+				auditAgent: null,
+				workspaceRoot: '/tmp/workspace',
+				pluginCacheDir: '.cache/delendai/commit-policy',
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			onResult,
+		});
+
+		const event = {
+			kind: 'manual',
+			message: 'chore: manual commit-policy snapshot',
+			eventId: 'manual-on-result',
+		} as const;
+		const result = await engine.handle(event);
+
+		expect(result).toMatchObject({ ack: 'OK', commitCreated: true });
+		expect(onResult).toHaveBeenCalledTimes(1);
+		expect(onResult).toHaveBeenCalledWith(event, result);
+
+		await engine.dispose();
+	});
+
+	it('keeps the engine result when onResult fails', async () => {
+		const runner = buildRunner('feature/x', ['only-this.ts']);
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const onResult = vi.fn(async () => {
+			throw new Error('storm sink offline');
+		});
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: runner,
+				policy: basePolicy(),
+				identityCtx: { run: runner, envVars: Object.freeze({}) },
+				auditAgent: null,
+				workspaceRoot: '/tmp/workspace',
+				pluginCacheDir: '.cache/delendai/commit-policy',
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			onResult,
+		});
+
+		const result = await engine.handle({
+			kind: 'manual',
+			message: 'chore: manual commit-policy snapshot',
+			eventId: 'manual-on-result-failure',
+		});
+
+		expect(result).toMatchObject({ ack: 'OK', commitCreated: true });
+		expect(onResult).toHaveBeenCalledTimes(1);
+		expect(
+			warnSpy.mock.calls.some(([line]) =>
+				String(line).includes('commit-policy.result-hook-failed'),
+			),
+		).toBe(true);
+
+		warnSpy.mockRestore();
+		await engine.dispose();
+	});
+
 	it('logs downstream steps as SKIP after an early refusal', async () => {
 		const runner = buildRunner('develop');
 		const engine = createCommitPolicyEngine({

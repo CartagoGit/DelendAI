@@ -47,9 +47,11 @@ export interface IPushSchedulerOptions {
 
 export interface IPushScheduler {
 	/**
-	 * Start the periodic scheduler (no-op when `everyNMinutes`
-	 * is unset). Idempotent. The plugin calls this once after
-	 * register().
+	 * Start the periodic reconciler. It runs whenever push is enabled
+	 * and any automatic push mode was asked for; `everyNMinutes` sets
+	 * the cadence, and its absence no longer means "never". A no-op
+	 * when push is off or no automatic mode was requested. Idempotent.
+	 * The plugin calls this once after register().
 	 */
 	start(): void;
 	/**
@@ -74,6 +76,41 @@ export interface IPushScheduler {
 }
 
 const SCHEDULER_INTERVAL_MS = (minutes: number): number => minutes * 60_000;
+
+/**
+ * How often to reconcile when a host enabled push but never said how
+ * often — x00427 S2.
+ *
+ * Five minutes is chosen to be boring: long enough that the check is
+ * free next to a real push, short enough that a branch does not sit
+ * behind for a working session. It only ever runs
+ * `gitUnpushedCommitCount`, and pushes nothing when the branch is level.
+ */
+const DEFAULT_RECONCILE_MINUTES = 5;
+
+/**
+ * The interval the automatic path should actually run at, and why.
+ *
+ * `everyNMinutes` used to mean two things at once: how often to
+ * reconcile, and whether to reconcile at all. That conflation is the
+ * whole bug. A host that turned push on and asked for `onCommit` or
+ * `everyNCommits` has said it wants the remote in sync; leaving foreign
+ * commits behind forever is not a policy anyone selected, it is what
+ * happens when nobody declared a field. `everyNMinutes` now means only
+ * "how often".
+ *
+ * Nothing runs when push is disabled, and nothing runs when no push mode
+ * was requested at all — that host really did opt out.
+ */
+export const resolveReconcileMinutes = (
+	policy: ICommitPolicyPush,
+): number | undefined => {
+	if (!policy.enabled) return undefined;
+	if (policy.everyNMinutes !== undefined) return policy.everyNMinutes;
+	const wantsAutomaticPush =
+		policy.onCommit || policy.everyNCommits !== undefined;
+	return wantsAutomaticPush ? DEFAULT_RECONCILE_MINUTES : undefined;
+};
 
 export const createPushScheduler = (
 	options: IPushSchedulerOptions,
@@ -233,15 +270,19 @@ export const createPushScheduler = (
 			await pendingTick;
 		},
 		start() {
-			// The interval scheduler only runs when the host
-			// explicitly opts in via `everyNMinutes`. The
-			// slice/interval trigger in run-tool remains the
-			// single-shot helper for `commit_policy_run`.
-			if (options.policy.everyNMinutes === undefined) return;
+			// x00427: the reconciling tick is what covers commits this
+			// process did not make. `onCommit` cannot: it fires under
+			// `commitCreated`, so the moment another agent commits and
+			// leaves the tree clean, this engine creates nothing and
+			// never pushes again. The branch then sits ahead of its
+			// upstream while the plugin reports itself healthy, which is
+			// exactly what was observed on this repository.
+			const minutes = resolveReconcileMinutes(options.policy);
+			if (minutes === undefined) return;
 			if (interval !== undefined) return;
 			interval = setInterval(
 				scheduleTick,
-				SCHEDULER_INTERVAL_MS(options.policy.everyNMinutes),
+				SCHEDULER_INTERVAL_MS(minutes),
 			);
 			if (typeof interval.unref === 'function') interval.unref();
 		},

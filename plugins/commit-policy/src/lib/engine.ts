@@ -287,6 +287,13 @@ const logPipelineStep = (
 export interface IEngineOptions {
 	readonly driver: ICommitDriverOptions;
 	readonly branchPolicy: IBranchPolicy;
+	/**
+	 * Best-effort observer invoked once per typed engine result,
+	 * after the serialized event finishes computing.
+	 */
+	readonly onResult?:
+		| ((event: IEngineEvent, result: IEngineResult) => Promise<void>)
+		| undefined;
 	/** Hook fired after a successful commit so the push scheduler can act. */
 	readonly onCommitSucceeded?:
 		| (() => Promise<IPushDriverResult | null>)
@@ -406,6 +413,28 @@ export const createCommitPolicyEngine = (
 			message: 'chore: manual commit-policy snapshot',
 			eventId,
 		};
+	};
+	const notifyResult = async (
+		event: IEngineEvent,
+		result: IEngineResult,
+	): Promise<IEngineResult> => {
+		if (options.onResult === undefined) return result;
+		try {
+			await options.onResult(event, result);
+		} catch (error) {
+			console.warn(
+				JSON.stringify({
+					event: 'commit-policy.result-hook-failed',
+					trigger: event.kind,
+					eventId: logEventId(event.eventId),
+					ack: result.ack,
+					...(result.ack === 'ERR' ? { code: result.code } : {}),
+					reason:
+						error instanceof Error ? error.message : String(error),
+				}),
+			);
+		}
+		return result;
 	};
 	const handleEvent = async (event: IEngineEvent): Promise<IEngineResult> => {
 		const completedSteps = new Set<IPipelineStep>();
@@ -885,12 +914,14 @@ export const createCommitPolicyEngine = (
 	return {
 		handle(event) {
 			const normalizedEvent = normalizeEvent(event);
-			const handleQueuedEvent = () =>
-				withGitWriteLock(
+			const handleQueuedEvent = async () => {
+				const result = await withGitWriteLock(
 					options.driver.workspaceRoot,
 					options.driver.pluginCacheDir,
 					() => handleEvent(normalizedEvent),
 				);
+				return await notifyResult(normalizedEvent, result);
+			};
 			const queued = handleTail.then(handleQueuedEvent);
 			handleTail = queued.then(
 				() => undefined,

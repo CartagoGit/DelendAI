@@ -31,7 +31,11 @@ import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { createPushScheduler } from './lib/services/push-scheduler';
-import { createCommitPolicyEngine, type IEngineResult } from './lib/engine';
+import {
+	createCommitPolicyEngine,
+	type IEngineEvent,
+	type IEngineResult,
+} from './lib/engine';
 import {
 	computeIdempotencyKey,
 	createProcessedEventsStore,
@@ -58,6 +62,12 @@ const resolveConfiguredProvider = (
 		: normalizedHost === 'gitlab.com'
 			? 'gitlab'
 			: 'unknown';
+};
+
+const stormProposalIdFor = (event: IEngineEvent): string | undefined => {
+	if (event.kind === 'slice') return event.proposalId;
+	if (event.kind === 'manual') return event.slice?.proposalId;
+	return undefined;
 };
 
 export const validateCommitPolicyConfiguration = (
@@ -424,6 +434,42 @@ export default definePlugin({
 				...(policy.push.protectedPrefixes !== undefined
 					? { protectedPrefixes: policy.push.protectedPrefixes }
 					: {}),
+			},
+			onResult: async (event, result) => {
+				if (result.ack !== 'ERR') return;
+				const timestamp = Date.now();
+				const proposalId = stormProposalIdFor(event);
+				stormDetector.observe({
+					trigger: event.kind,
+					code: result.code,
+					timestamp,
+					...(proposalId !== undefined ? { proposalId } : {}),
+				});
+				const storm = stormDetector
+					.snapshot(timestamp)
+					.storms.find(
+						(entry) =>
+							entry.trigger === event.kind &&
+							entry.code === result.code,
+					);
+				if (storm === undefined) return;
+				await stormLog.write(
+					[
+						{
+							trigger: storm.trigger,
+							code: storm.code,
+							firstSeenAt: storm.firstSeenAt,
+							lastSeenAt: timestamp,
+							timestamps: [timestamp],
+							sampleProposalIds:
+								proposalId !== undefined ? [proposalId] : [],
+							...(storm.suggestedFix !== undefined
+								? { suggestedFix: storm.suggestedFix }
+								: {}),
+						},
+					],
+					timestamp,
+				);
 			},
 			onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
 			processedEvents,

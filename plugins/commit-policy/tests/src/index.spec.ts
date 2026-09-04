@@ -11,11 +11,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import plugin from '@delendai/commit-policy';
 import * as corePublic from '@delendai/core/public';
 import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
+import { StormDetector } from '@delendai/commit-policy/lib/services/storm-detector';
+import { StormLog } from '@delendai/commit-policy/lib/services/storm-log';
 import type {
 	IMcpPluginContext,
 	IExternalToolRun,
 } from '@delendai/core/public';
-import type { ISliceListener } from '@delendai/commit-policy/lib/triggers/slice-listener';
+import type {
+	ISliceListener,
+	ITriggerAck,
+	ITriggerEvent,
+} from '@delendai/commit-policy/lib/triggers/slice-listener';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({
 	workspace: {
@@ -282,6 +288,117 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 		}
 	});
 
+	it('persists refusal storms through register() and replays them from disk on the next register', async () => {
+		let capturedHandler:
+			| ((event: ITriggerEvent) => Promise<ITriggerAck>)
+			| undefined;
+		vi.resetModules();
+		vi.doMock(
+			'@delendai/commit-policy/lib/triggers/slice-listener',
+			async () => {
+				const actual = await vi.importActual<
+					typeof import('@delendai/commit-policy/lib/triggers/slice-listener')
+				>('@delendai/commit-policy/lib/triggers/slice-listener');
+				return {
+					...actual,
+					createSliceListener: vi.fn(
+						(
+							_workspaceRoot: string,
+							_cacheDir: string,
+							_trigger: unknown,
+							handler: (
+								event: ITriggerEvent,
+							) => Promise<ITriggerAck>,
+						) => {
+							capturedHandler = handler;
+							const listener: ISliceListener = {
+								check: async () => [],
+								drainPending: () => [],
+								drainRefusals: () => [],
+								start: vi.fn(),
+								stop: vi.fn(),
+							};
+							return listener;
+						},
+					),
+				};
+			},
+		);
+
+		try {
+			const { default: reloadedPlugin } = await import(
+				'@delendai/commit-policy'
+			);
+			const pluginCacheDir = join(
+				workspace,
+				'.cache',
+				'delendai',
+				'commit-policy',
+			);
+			const ctx = {
+				...buildCtx(workspace),
+				cacheDir: join(workspace, '.cache', 'delendai'),
+				docsDir: join(workspace, 'docs', 'delendai'),
+				pluginCacheDir,
+				options: {
+					commit: { enabled: true },
+					cadence: {
+						triggers: [{ kind: 'slice', onStatuses: ['done'] }],
+					},
+				},
+			} satisfies IMcpPluginContext;
+
+			const firstRuntime = asRuntime(await reloadedPlugin.register(ctx));
+			expect(capturedHandler).toBeDefined();
+			if (capturedHandler === undefined) {
+				throw new Error('expected slice handler from register()');
+			}
+
+			await capturedHandler({
+				kind: 'slice',
+				proposalId: 'x00419',
+				sliceId: 'S4',
+				status: 'done',
+				files: { paths: [] },
+			});
+			await capturedHandler({
+				kind: 'slice',
+				proposalId: 'x00419',
+				sliceId: 'S4',
+				status: 'done',
+				files: { paths: [] },
+			});
+
+			const persistedLog = new StormLog({ cacheDir: pluginCacheDir });
+			const persisted = await persistedLog.readOne(
+				'slice',
+				'SLICE_HAS_NO_FILES',
+			);
+			expect(persisted?.timestamps).toHaveLength(2);
+			expect(persisted?.sampleProposalIds).toEqual(['x00419']);
+
+			const secondRuntime = asRuntime(await reloadedPlugin.register(ctx));
+			const replayLog = new StormLog({ cacheDir: pluginCacheDir });
+			const replayedDetector = new StormDetector();
+			await replayLog.replayInto(replayedDetector);
+			const replayed = replayedDetector
+				.snapshot()
+				.storms.find(
+					(storm) =>
+						storm.trigger === 'slice' &&
+						storm.code === 'SLICE_HAS_NO_FILES',
+				);
+			expect(replayed?.count).toBe(2);
+			expect(replayed?.firstSeenAt).toBe(persisted?.firstSeenAt);
+
+			await firstRuntime.dispose();
+			await secondRuntime.dispose();
+		} finally {
+			vi.doUnmock('@delendai/commit-policy/lib/triggers/slice-listener');
+			vi.resetModules();
+		}
+	});
+
 	it('register() failing mid-way at the slice listener leaves zero zombie timers', async () => {
 		vi.resetModules();
 		vi.doMock(
@@ -310,9 +427,9 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 			// creation, so a throw there propagates out and no
 			// runtime/dispose is ever returned to the caller — this
 			// is the "register() falla a mitad" shape from AUD-CP-003.
-			expect(() => reloadedPlugin.register(buildCtx(workspace))).toThrow(
-				'boom: slice listener failed to attach',
-			);
+			await expect(
+				reloadedPlugin.register(buildCtx(workspace)),
+			).rejects.toThrow('boom: slice listener failed to attach');
 
 			// The interval trigger's setInterval() call happens after
 			// slice-listener setup in register(), so nothing reaches
