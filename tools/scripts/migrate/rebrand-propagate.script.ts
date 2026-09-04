@@ -30,7 +30,13 @@
 // See docs/delendai/BRAND.md (canonical brand contract).
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import {
+	existsSync,
+	readFileSync,
+	readdirSync,
+	statSync,
+	type Stats,
+} from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
 
 interface IOptions {
@@ -189,7 +195,7 @@ const findFilesWith = (
 		}
 		for (const name of entries) {
 			const abs = join(current, name);
-			let st;
+			let st: Stats;
 			try {
 				st = statSync(abs);
 			} catch {
