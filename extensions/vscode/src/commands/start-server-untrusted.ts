@@ -60,7 +60,7 @@ export const registerStartServerUntrusted = async (
 		],
 		{
 			placeHolder:
-				'MCP-Vertex: approve launching this command in an untrusted workspace?',
+				'DelendAI: approve launching this command in an untrusted workspace?',
 			detail,
 		},
 	);
@@ -72,6 +72,6 @@ export const registerStartServerUntrusted = async (
 	await deps.onClientConnected?.(client);
 	await recordApproval(store, launch);
 	await vscode.window.showInformationMessage?.(
-		'MCP-Vertex: child server started in untrusted workspace.',
+		'DelendAI: child server started in untrusted workspace.',
 	);
 };

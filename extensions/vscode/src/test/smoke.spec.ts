@@ -559,7 +559,7 @@ describe('VS Code extension smoke', async () => {
 		McpStdioClient.connect = (async (opts: {
 			onStderr?: (chunk: string) => void;
 		}) => {
-			opts.onStderr?.('MCP-Vertex ready\\n');
+			opts.onStderr?.('DelendAI ready\\n');
 			return McpStdioClient.fromTransport({
 				async callTool() {
 					return { structuredContent: overviewFixture };
@@ -573,7 +573,7 @@ describe('VS Code extension smoke', async () => {
 			McpStdioClient.connect = originalConnect;
 		}
 
-		expect(output).toEqual(['MCP-Vertex ready\\n']);
+		expect(output).toEqual(['DelendAI ready\\n']);
 	});
 
 	it('escapes overview content before rendering HTML', async () => {

@@ -520,7 +520,7 @@ export const activate = async (
 					});
 				} catch (err) {
 					await vscode.window.showErrorMessage?.(
-						`MCP-Vertex: start-server failed: ${(err as Error).message}`,
+						`DelendAI: start-server failed: ${(err as Error).message}`,
 					);
 				}
 			},
@@ -575,7 +575,7 @@ export const activate = async (
 		runSafely(
 			Promise.resolve(
 				vscode.window.showInformationMessage?.(
-					'MCP-Vertex: workspace is untrusted — child server NOT started. Run `MCP-Vertex: Start Server (Untrusted)` to start manually.',
+					'DelendAI: workspace is untrusted — child server NOT started. Run `DelendAI: Start Server (Untrusted)` to start manually.',
 				),
 			),
 		);

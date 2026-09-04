@@ -254,8 +254,8 @@
 			},
 			{
 				"command": "delendai.startServerUntrusted",
-				"title": "MCP-Vertex: Start Server (Untrusted)",
-				"category": "MCP-Vertex"
+				"title": "Start Server (Untrusted)",
+				"category": "DelendAI"
 			}
 		],
 		"menus": {
