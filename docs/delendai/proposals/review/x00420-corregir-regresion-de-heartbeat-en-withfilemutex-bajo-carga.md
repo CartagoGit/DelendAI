@@ -2,15 +2,15 @@
 id: x00420
 title: "Corregir regresión de heartbeat en withFileMutex bajo carga"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: concurrency
 date: 2026-09-02
 related:
     - x00422 # duplicado, reabsorbido aquí
-last-transition-id: a0deeec9-85d2-49ea-a75b-10f05d1fcf53
-last-correlation-id: a0deeec9-85d2-49ea-a75b-10f05d1fcf53
-last-transition-from: ready
+last-transition-id: 5b5d4ed6-b395-4cd3-a096-eee384170a50
+last-correlation-id: 5b5d4ed6-b395-4cd3-a096-eee384170a50
+last-transition-from: in-progress
 ---
 
 # x00420 — Corregir regresión de heartbeat en withFileMutex bajo carga

@@ -260,6 +260,19 @@ describe('StormDetector (x00419)', () => {
 		expect(snap.storms[0]?.suggestedFix).toBe('look at foo.ts');
 	});
 
+	it('infers suggestedFix in snapshot when the observed event does not provide one', () => {
+		const detector = new StormDetector({ threshold: 1 });
+		detector.observe({
+			timestamp: NOW,
+			code: 'WORKSPACE_HAS_NO_FILES',
+			trigger: 'slice',
+		});
+		const snap = detector.snapshot(NOW + 100);
+		expect(snap.storms[0]?.suggestedFix).toBe(
+			inferSuggestedFix('WORKSPACE_HAS_NO_FILES'),
+		);
+	});
+
 	it('reset() drops all in-memory state', () => {
 		const detector = new StormDetector({ threshold: 1 });
 		detector.observe({

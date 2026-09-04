@@ -157,6 +157,7 @@ export class StormDetector {
 			const firstSeenAt = bucket.firstSeenAt;
 			const lastSeenAt =
 				bucket.timestamps[bucket.timestamps.length - 1] ?? firstSeenAt;
+			const suggestedFix = bucket.suggestedFix ?? inferSuggestedFix(code);
 
 			storms.push({
 				code,
@@ -166,9 +167,7 @@ export class StormDetector {
 				sampleProposalIds: [...bucket.proposalIds],
 				firstSeenAt,
 				lastSeenAt,
-				...(bucket.suggestedFix !== undefined
-					? { suggestedFix: bucket.suggestedFix }
-					: {}),
+				...(suggestedFix !== undefined ? { suggestedFix } : {}),
 				exceedsThreshold: count >= this.threshold,
 			});
 		}

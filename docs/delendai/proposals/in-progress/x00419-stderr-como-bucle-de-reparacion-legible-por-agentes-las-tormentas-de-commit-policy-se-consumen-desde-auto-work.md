@@ -2,7 +2,7 @@
 id: x00419
 kind: fix
 title: "Stderr como bucle de reparación legible por agentes: las tormentas de commit-policy se consumen desde auto_work"
-status: ready
+status: in-progress
 author: cartago
 created: 2026-09-02
 date: 2026-09-02
@@ -23,6 +23,9 @@ slices:
     title: Agent-facing skill: `read_stderr_storm` → ingest a recipe, apply the fix slice
   - id: S7
     title: Fix commit-driver shared-index path: reset main index before non-slice trigger staging
+last-transition-id: ec9fd8e0-df86-4235-8afb-33bedb2a39c8
+last-correlation-id: ec9fd8e0-df86-4235-8afb-33bedb2a39c8
+last-transition-from: ready
 ---
 
 # x00419 — Stderr → agent-readable repair loop
@@ -85,7 +88,7 @@ repairs without a human in the middle.
 
 ### S1 — Fix the resolver
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/resolve-scope.ts`
 - **Gate**: lint, types, test
 
@@ -107,8 +110,10 @@ but doesn't `git add` it (a normal slice flow). The fix is to
 - The resolver never throws and never refuses.
 
 All 369 tests in `plugins/commit-policy` pass after the change.
-- review-state: in_review
-- review-implementer: claude-opus-5-verify
+- review-state: done
+- review-implementer: storm-scope-runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier
 ### S2 — StormDetector
 
 - **Status**: pending
